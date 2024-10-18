@@ -1,3 +1,4 @@
+import { TableOfContents } from '@/components'
 import { type Lang, fallbackLang } from '@/features/i18n'
 import { PostCategories } from '@/features/posts/components/PostCategories'
 import { PostHero } from '@/features/posts/components/PostHero'
@@ -9,7 +10,6 @@ import type { FC } from 'react'
 import { findPostByLangAndSlug, getNextPost, getPrevPost } from '../../utils'
 import { NavNextPost } from '../NavNextPost'
 import { NavPreviousPost } from '../NavPreviousPost'
-import { TableOfContents } from '../TableOfContents'
 import styles from './PostDetailPage.module.css'
 
 const TOC_TARGET_CLASS_NAME = 'target-toc'
