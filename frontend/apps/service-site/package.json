@@ -21,6 +21,7 @@
     "fmt:biome": "biome check --write --unsafe ."
   },
   "dependencies": {
+    "@next/third-parties": "^14.2.15",
     "@packages/ui": "workspace:*",
     "clsx": "^2.1.1",
     "contentlayer2": "^0.5.1",
