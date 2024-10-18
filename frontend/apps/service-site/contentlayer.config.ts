@@ -56,9 +56,25 @@ export const Post = defineDocumentType(() => ({
   },
 }))
 
+export const Privacy = defineDocumentType(() => ({
+  name: 'Privacy',
+  filePathPattern: 'privacy/*.mdx',
+  contentType: 'mdx',
+  computedFields: {
+    lang: {
+      type: 'string',
+      resolve: (post) => {
+        // ex. segments = [ 'posts', 'en' ]
+        const segments = post._raw.flattenedPath.split('/')
+        return segments[1]
+      },
+    },
+  },
+}))
+
 export default makeSource({
   contentDirPath: 'src/contents',
-  documentTypes: [Post],
+  documentTypes: [Post, Privacy],
   mdx: {
     remarkPlugins: [remarkGfm, remarkBreaks, remarkLinkCard],
     rehypePlugins: [rehypeSlug, rehypePrettyCode],
