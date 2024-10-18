@@ -7,6 +7,7 @@
 }
 
 .h2 {
+  margin-top: var(--spacing-10);
   font-size: var(--font-size-10, 1.5rem);
 }
 
@@ -24,6 +25,7 @@
 
 @media screen and (max-width: 768px) {
   .h2 {
+    margin-top: var(--spacing-20);
     font-size: var(--font-size-8, 1.25rem);
   }
 
