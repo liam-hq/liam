@@ -1,0 +1,9 @@
+.container {
+  padding: 0 var(--spacing-20, 80px);
+}
+
+.postCardList {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(376px, 1fr));
+  gap: var(--spacing-6);
+}
