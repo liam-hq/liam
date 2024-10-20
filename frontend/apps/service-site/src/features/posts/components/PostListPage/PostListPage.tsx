@@ -14,7 +14,9 @@ export const PostListPage: FC<Props> = ({ lang, posts }) => {
 
   return (
     <div className={styles.container}>
-      <h1>{t('posts.title')}</h1>
+      <div className={styles.header}>
+        <h1>{t('posts.title')}</h1>
+      </div>
       <div className={styles.postCardList}>
         {posts.map((post) => (
           <PostCard key={post.slug} post={post} />

@@ -1,9 +1,44 @@
 .container {
-  padding: 0 var(--spacing-20, 80px);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-10);
+  padding: 0 var(--spacing-20);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  height: 219px;
+  padding: var(--spacing-20) var(--spacing-6);
+  font-size: var(--font-size-18);
+  font-weight: 500;
 }
 
 .postCardList {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(376px, 1fr));
   gap: var(--spacing-6);
+}
+
+@media screen and (max-width: 1024px) {
+  .container {
+    padding: 0 var(--spacing-5);
+  }
+
+  .postCardList {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .container {
+    padding: 0 var(--spacing-2);
+  }
+
+  .header {
+    height: 119px;
+    padding: var(--spacing-10) var(--spacing-5);
+    font-size: var(--font-size-14);
+  }
 }

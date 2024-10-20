@@ -29,7 +29,7 @@ export const PostCard: FC<Props> = ({ post, lang }) => {
           />
           <div className={styles.footer}>
             <h2 className={styles.title}>{post.title}</h2>
-            <p>Text by {post.writer}</p>
+            <p className={styles.writer}>Text by {post.writer}</p>
           </div>
         </div>
       </Link>

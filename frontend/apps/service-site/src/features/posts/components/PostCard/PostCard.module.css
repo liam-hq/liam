@@ -1,6 +1,11 @@
 .postCard {
   padding: var(--spacing-6);
-  /* background-color: gray; */
+  max-width: 424px;
+}
+
+.postCard:hover {
+  color: var(--color-black-alpha-100);
+  background-color: var(--color-gray-0);
 }
 
 .inner {
@@ -21,4 +26,24 @@
   flex-direction: column;
   justify-content: space-between;
   height: 149px;
+}
+
+@media screen and (max-width: 1024px) {
+  .postCard {
+    padding: var(--spacing-5);
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .postCard {
+    padding: var(--spacing-4) var(--spacing-2);
+  }
+
+  .title {
+    font-size: var(--font-size-5);
+  }
+  
+  .writer {
+    font-size: var(--font-size-1);
+  }
 }
