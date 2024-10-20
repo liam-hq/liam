@@ -1,0 +1,33 @@
+.moreLink {
+  position: relative;
+  padding-right: var(--spacing-7);
+  transition: all 0.3s ease-in-out;
+  font-size: var(--font-size-7);
+}
+
+.moreLink:hover {
+  color: var(--primary-accent);
+}
+
+.chevronRight {
+  position: absolute;
+  right: 0;
+  transition: transform 0.3s ease-in-out;
+}
+
+.moreLink:hover .chevronRight {
+  transform: translateX(4px);
+  fill: var(--primary-accent);
+}
+
+@media screen and (max-width: 768px) {
+  .moreLink {
+    font-size: var(--font-size-5);
+    padding-right: var(--spacing-5);
+  }
+
+  .chevronRight svg {
+    width: 16px;
+    height: 16px;
+  }
+}

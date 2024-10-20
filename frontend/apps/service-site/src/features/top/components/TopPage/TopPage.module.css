@@ -1,0 +1,11 @@
+.footer {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: var(--spacing-20);
+}
+
+@media screen and (max-width: 768px) {
+  .footer {
+    margin-top: var(--spacing-4);
+  }
+}
