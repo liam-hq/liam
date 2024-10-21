@@ -1,4 +1,4 @@
-import { ChevronRight } from '@/components'
+import { ChevronRight } from 'lucide-react'
 import Link from 'next/link'
 import type { FC } from 'react'
 import styles from './MoreLink.module.css'
