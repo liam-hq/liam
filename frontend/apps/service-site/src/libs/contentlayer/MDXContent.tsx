@@ -40,8 +40,11 @@ const mdxComponents: MDXComponents = {
   ),
   p: ({ children, ...props }) => {
     // Check if children contain a <figure> element
-    const hasNestedFigure = Children.toArray(children).some((child) =>
-      React.isValidElement(child),
+    const hasNestedFigure = Children.toArray(children).some(
+      (child) =>
+        React.isValidElement(child) &&
+        !['blockquote', 'pre'].includes(child.type as string) &&
+        child.props.children?.type === 'figure',
     )
 
     // Use <div> if it contains a <figure>, otherwise use <p>
