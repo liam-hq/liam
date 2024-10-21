@@ -1,6 +1,9 @@
 .postCard {
   padding: var(--spacing-6);
   max-width: 424px;
+  transition: color var(--default-hover-animation-duration)
+    var(--default-timing-function), background-color
+    var(--default-hover-animation-duration) var(--default-timing-function);
 }
 
 .postCard:hover {
@@ -19,6 +22,7 @@
   font-family: var(--message-font);
   font-size: var(--font-size-10);
   font-weight: 400;
+  line-height: normal;
 }
 
 .footer {
