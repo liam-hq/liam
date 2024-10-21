@@ -1,10 +1,8 @@
 .wrapper {
-  --wrapper-padding: var(--spacing-10, 40px);
-  --wrapper-margin: var(--spacing-5, 20px);
-  padding: var(--wrapper-padding);
+  padding: var(--spacing-10, 40px);
   border: 1px solid var(--global-border, #383a3b);
   background: url('/images/svg/Cross.svg') repeat;
-  margin: var(--wrapper-margin) 0;
+  margin: var(--spacing-10, 40px) 0;
 }
 
 .blockquote p {
@@ -26,6 +24,7 @@
   text-align: right;
   display: block;
   margin-top: var(--spacing-2, 8px);
+  font-style: normal;
 }
 
 .blockquote a {
@@ -38,8 +37,8 @@
 
 @media screen and (max-width: 768px) {
   .wrapper {
-    --wrapper-padding: var(--spacing-4, 16px);
-    --wrapper-margin: var(--spacing-4, 16px);
+    padding: var(--spacing-4, 16px);
+    margin: var(--spacing-8, 32px) 0;
   }
 
   .blockquote {

@@ -34,7 +34,9 @@ export const PostDetailPage: FC<Props> = ({ lang, slug }) => {
           <TableOfContents contentSelector={TOC_TARGET_CLASS_NAME} />
         </div>
         <div className={styles.center}>
-          <MDXContent code={post.body.code} />
+          <div className={styles.content}>
+            <MDXContent code={post.body.code} />
+          </div>
           <PostWriter post={post} />
           <div className={styles.navPostWrapper}>
             {prevPost && (

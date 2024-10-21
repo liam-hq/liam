@@ -6,6 +6,7 @@
   border-left: 1px solid var(--global-foreground, #fff);
   transition: border-color var(--default-hover-animation-duration)
     var(--default-timing-function);
+  margin: var(--spacing-10, 40px) 0;
 }
 
 .link:hover {

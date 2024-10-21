@@ -1,3 +1,7 @@
+.wrapper {
+  margin-top: var(--spacing-10, 40px);
+}
+
 .wrapper[data-rehype-pretty-code-figure] {
   position: relative;
 }

@@ -45,6 +45,8 @@
 .center {
   width: 880px;
   padding: var(--spacing-6, 24px);
+  display: grid;
+  gap: var(--spacing-20, 80px);
 }
 
 .right {
@@ -62,7 +64,7 @@
 
   .left {
     width: 100%;
-    padding: var(--spacing-5, 20px);
+    padding: var(--spacing-5, 20px) var(--spacing-5, 20px) 0;
     position: relative;
   }
 
@@ -81,9 +83,52 @@
     padding: 0 var(--spacing-2, 8px);
   }
 
-  .left,
   .center,
   .right {
     padding: var(--spacing-2, 8px);
+  }
+
+  .left {
+    padding: var(--spacing-2, 8px) var(--spacing-2, 8px) 0;
+  }
+
+  .center {
+    gap: var(--spacing-10, 40px);
+  }
+}
+
+.content {
+  & > h2 + p {
+    margin-top: var(--spacing-10, 40px);
+  }
+
+  & > h3 + p {
+    margin-top: var(--spacing-4, 16px);
+  }
+
+  & > h3 {
+    margin-top: var(--spacing-10, 40px);
+  }
+
+  & > p {
+    margin: var(--spacing-4, 16px) 0;
+  }
+
+  /* Apply margin to headers except for the first h2 */
+  & > h2:not(:first-child) {
+    margin-top: var(--spacing-20, 80px);
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .content {
+    & > h2 + p {
+      margin-top: var(--spacing-4, 16px);
+    }
+
+    /* Apply margin to headers except for the first h2 */
+    & > h2:not(:first-child) {
+      margin-top: var(--spacing-10, 40px);
+    }
   }
 }

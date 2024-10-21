@@ -8,6 +8,7 @@
   overflow: hidden;
   border-collapse: separate;
   border-spacing: 0;
+  margin-top: var(--spacing-10, 40px);
 }
 
 .table tr {
@@ -63,6 +64,7 @@
 
   .table {
     width: 768px;
+    margin-top: var(--spacing-6, 24px);
   }
 
   .table th,

@@ -4,6 +4,7 @@
   flex-direction: column;
   align-items: center;
   gap: var(--spacing-5, 20px);
+  margin-top: var(--spacing-20, 80px);
 }
 
 .image {
@@ -19,6 +20,10 @@
 }
 
 @media screen and (max-width: 768px) {
+  .figure {
+    margin-top: var(--spacing-10, 40px);
+  }
+
   .figcaption {
     font-size: var(--font-size-3, 12px);
   }

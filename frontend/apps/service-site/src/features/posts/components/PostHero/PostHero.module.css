@@ -119,7 +119,7 @@
 
 @media screen and (max-width: 768px) {
   .postHero {
-    padding: var(--mobile-large-card-padding) 0;
+    padding: var(--mobile-large-card-padding) 0 0;
   }
 
   .imageContainer,
@@ -132,7 +132,7 @@
   }
 
   .textContainer {
-    padding: var(--mobile-large-card-padding);
+    padding: var(--mobile-large-card-padding) var(--mobile-large-card-padding) 0;
   }
 
   .tag,
