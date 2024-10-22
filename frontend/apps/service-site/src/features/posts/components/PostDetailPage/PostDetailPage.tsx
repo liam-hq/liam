@@ -7,8 +7,10 @@ import { MDXContent } from '@/libs/contentlayer'
 import { notFound } from 'next/navigation'
 import type { FC } from 'react'
 import { findPostByLangAndSlug, getNextPost, getPrevPost } from '../../utils'
+import { getRelatedPosts } from '../../utils'
 import { NavNextPost } from '../NavNextPost'
 import { NavPreviousPost } from '../NavPreviousPost'
+import { RelatedPosts } from '../RelatedPosts'
 import { TableOfContents } from '../TableOfContents'
 import styles from './PostDetailPage.module.css'
 
@@ -25,6 +27,8 @@ export const PostDetailPage: FC<Props> = ({ lang, slug }) => {
 
   const prevPost = getPrevPost({ lang: lang ?? fallbackLang, targetPost: post })
   const nextPost = getNextPost({ lang: lang ?? fallbackLang, targetPost: post })
+
+  const relatedPosts = getRelatedPosts({ lang: lang ?? fallbackLang, post })
 
   return (
     <article className={TOC_TARGET_CLASS_NAME}>
@@ -56,6 +60,7 @@ export const PostDetailPage: FC<Props> = ({ lang, slug }) => {
           <PostTags tags={post.tags.map((tag) => ({ name: tag }))} />
         </div>
       </div>
+      <RelatedPosts posts={relatedPosts} lang={lang} />
     </article>
   )
 }

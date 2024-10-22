@@ -1,0 +1,85 @@
+.wrapper {
+  padding: 0 var(--spacing-20, 80px);
+}
+
+.title {
+  color: var(--global-foreground);
+  padding: 40px var(--spacing-6) 0;
+  font-size: var(--font-size-6);
+  font-weight: 600;
+  line-height: 120%;
+}
+
+.postsWrapper {
+  display: flex;
+  flex-wrap: wrap;
+  margin-top: var(--spacing-6);
+}
+
+.post {
+  width: 376px;
+  padding: var(--spacing-6);
+}
+
+.postTitle {
+  margin-top: var(--spacing-6);
+  font-family: var(--message-font);
+  font-weight: var(--text-weight-en-regular);
+  font-size: var(--font-size-10);
+  line-height: 120%;
+  min-height: 116px;
+}
+
+.image {
+  width: 100%;
+  height: auto;
+}
+
+.writer {
+  margin-top: var(--spacing-5);
+}
+
+@media screen and (max-width: 1024px) {
+  .wrapper {
+    padding: var(--spacing-6) var(--spacing-4);
+  }
+
+  .postsWrapper {
+    justify-content: center;
+  }
+
+  .postTitle {
+    min-height: auto;
+  }
+
+  .post {
+    flex: 1 1 calc(50% - var(--spacing-6) * 2);
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .wrapper {
+    padding: var(--spacing-6) var(--spacing-2);
+  }
+
+  .title {
+    padding: 32px var(--spacing-2) 0;
+    font-size: var(--font-size-5);
+  }
+
+  .postsWrapper {
+    margin-top: var(--spacing-4);
+  }
+
+  .post {
+    padding: var(--spacing-6) var(--spacing-2);
+  }
+
+  .postTitle {
+    font-size: var(--font-size-5);
+  }
+
+  .writer {
+    font-size: var(--font-size-1);
+  }
+}
