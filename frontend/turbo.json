@@ -11,6 +11,9 @@
     "lint": {
       "dependsOn": ["gen", "^lint"]
     },
-    "fmt": {}
+    "fmt": {},
+    "test": {
+      "outputs": []
+    }
   }
 }

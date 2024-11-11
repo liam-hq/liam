@@ -44,3 +44,20 @@ jobs:
         with:
           working-directory: ${{ env.working-directory }}
       - run: pnpm lint
+
+  frontend-ci:
+    needs: [setup-job]
+    if: ${{ needs.setup-job.outputs.has-changes == 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    defaults:
+      run:
+        working-directory: ${{ env.working-directory }}
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/pnpm-setup
+        with:
+          working-directory: ${{ env.working-directory }}
+      - run: pnpm test:turbo
