@@ -10,6 +10,12 @@ $ liam erd preview
 # Launches the web application for preview
 ```
 
+## Test
+
+```bash
+pnpm run test
+```
+
 ## Building and Installing the Standalone CLI for Development
 
 To build the CLI for development purposes, run:

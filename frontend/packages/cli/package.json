@@ -15,7 +15,8 @@
     "lint:biome": "biome check .",
     "lint:tsc": "tsc --noEmit",
     "fmt": "conc -c auto pnpm:fmt:*",
-    "fmt:biome": "biome check --write --unsafe ."
+    "fmt:biome": "biome check --write --unsafe .",
+    "test": "pnpm vitest"
   },
   "dependencies": {
     "@liam/erd-core": "workspace:*",
