@@ -1,4 +1,5 @@
 import resolve from '@rollup/plugin-node-resolve'
+import json from '@rollup/plugin-json'
 import typescript from '@rollup/plugin-typescript'
 import execute from 'rollup-plugin-execute'
 
@@ -15,6 +16,7 @@ export default {
       preferBuiltins: true,
       extensions: ['.mjs', '.js', '.json', '.node', '.ts'],
     }),
+    json(),
     typescript({
       outputToFilesystem: true,
       tsconfig: './tsconfig.node.json',

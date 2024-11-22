@@ -34,6 +34,7 @@
     "@biomejs/biome": "1.9.3",
     "@liam/db-structure": "workspace:*",
     "@liam/erd-core": "workspace:*",
+    "@rollup/plugin-json": "^6.1.0",
     "@rollup/plugin-node-resolve": "^15.3.0",
     "@rollup/plugin-typescript": "^12.1.1",
     "@types/node": "^22.9.0",
