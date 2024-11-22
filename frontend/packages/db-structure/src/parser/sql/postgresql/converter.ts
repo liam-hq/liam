@@ -31,9 +31,10 @@ export const convertToDBStructure = (ast: RawStmtWrapper[]): DBStructure => {
     }
   }
 
-  for (const statement of ast) {
-    if (statement?.RawStmt.stmt === undefined) continue
-    const stmt = statement.RawStmt.stmt
+  // @ts-expect-error
+  for (const statement of ast.parse_tree.stmts) {
+    if (statement?.stmt === undefined) continue
+    const stmt = statement.stmt
     if (isCreateStmt(stmt)) {
       const createStmt = stmt.CreateStmt
       if (!createStmt || !createStmt.relation || !createStmt.tableElts) continue

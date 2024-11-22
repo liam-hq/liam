@@ -1,3 +1,3 @@
 import type { DBStructure } from '../schema'
 
-export type Processor = (str: string) => DBStructure
+export type Processor = (str: string) => DBStructure | Promise<DBStructure>

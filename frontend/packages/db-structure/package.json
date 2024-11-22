@@ -15,7 +15,7 @@
     "gen:parser": "./scripts/generateParser.sh"
   },
   "dependencies": {
-    "pgsql-parser": "^13.16.0",
+    "pg-query-emscripten": "^5.1.0",
     "valibot": "^1.0.0-beta.5"
   },
   "devDependencies": {
