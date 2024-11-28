@@ -1,0 +1,28 @@
+{
+  "name": "@liam/docs",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "build": "next build",
+    "dev": "next dev",
+    "start": "next start",
+    "postinstall": "fumadocs-mdx"
+  },
+  "dependencies": {
+    "next": "15.0.3",
+    "fumadocs-ui": "14.5.4",
+    "fumadocs-core": "14.5.4",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "fumadocs-mdx": "11.1.2"
+  },
+  "devDependencies": {
+    "@types/node": "22.9.3",
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "typescript": "^5.7.2",
+    "@types/mdx": "^2.0.13",
+    "eslint": "^8",
+    "eslint-config-next": "15.0.3"
+  }
+}
