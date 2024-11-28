@@ -1,0 +1,15 @@
+{
+  "name": "@liam/docs",
+  "dependencies": {
+    "next": "^15.0.3",
+    "nextra": "^3.2.4",
+    "nextra-theme-docs": "^3.2.4",
+    "react": "^18",
+    "react-dom": "^18"
+  },
+  "scripts": {
+    "dev": "next",
+    "build": "next build",
+    "start": "next start"
+  }
+}
