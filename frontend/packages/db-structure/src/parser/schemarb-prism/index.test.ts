@@ -11,7 +11,12 @@ describe(processor, () => {
           users: aTable({
             name: 'users',
             columns: {
-              id: aColumn(),
+              id: aColumn({
+                name: 'id',
+                type: 'bigserial',
+                notNull: true,
+                primary: true,
+              }),
               ...override?.columns,
             },
           }),
@@ -27,12 +32,6 @@ describe(processor, () => {
 
       const expected = userTable({
         columns: {
-          id: aColumn({
-            name: 'id',
-            type: 'bigserial',
-            notNull: true,
-            primary: true,
-          }),
           name: aColumn({
             name: 'name',
             type: 'string',
@@ -53,12 +52,6 @@ describe(processor, () => {
 
       const expected = userTable({
         columns: {
-          id: aColumn({
-            name: 'id',
-            type: 'bigserial',
-            notNull: true,
-            primary: true,
-          }),
           name: aColumn({
             name: 'name',
             type: 'string',
@@ -79,12 +72,6 @@ describe(processor, () => {
 
       const expected = userTable({
         columns: {
-          id: aColumn({
-            name: 'id',
-            type: 'bigserial',
-            notNull: true,
-            primary: true,
-          }),
           name: aColumn({
             name: 'name',
             type: 'string',
@@ -106,12 +93,6 @@ describe(processor, () => {
 
       const expected = userTable({
         columns: {
-          id: aColumn({
-            name: 'id',
-            type: 'bigserial',
-            notNull: true,
-            primary: true,
-          }),
           age: aColumn({
             name: 'age',
             type: 'integer',
@@ -133,12 +114,6 @@ describe(processor, () => {
 
       const expected = userTable({
         columns: {
-          id: aColumn({
-            name: 'id',
-            type: 'bigserial',
-            notNull: true,
-            primary: true,
-          }),
           active: aColumn({
             name: 'active',
             type: 'boolean',
@@ -179,12 +154,6 @@ describe(processor, () => {
 
       const expected = userTable({
         columns: {
-          id: aColumn({
-            name: 'id',
-            type: 'bigserial',
-            notNull: true,
-            primary: true,
-          }),
           name: aColumn({
             name: 'name',
             type: 'string',
