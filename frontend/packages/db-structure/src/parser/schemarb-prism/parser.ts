@@ -1,4 +1,5 @@
 import {
+  type Node,
   AssocNode,
   CallNode,
   FalseNode,
@@ -165,7 +166,7 @@ class DBStructureFinder extends Visitor {
       const argNodes = node.arguments_?.compactChildNodes() || []
 
       const table: Table = {
-        name: this.extractTableName(argNodes as unknown as Node[]),
+        name: this.extractTableName(argNodes),
         columns: {},
         comment: null,
         indices: [],
@@ -173,11 +174,11 @@ class DBStructureFinder extends Visitor {
 
       const columns: Column[] = []
 
-      const idColumn = this.processIdColumn(argNodes as unknown as Node[])
+      const idColumn = this.processIdColumn(argNodes)
       if (idColumn) columns.push(idColumn)
 
       const blockNodes = node.block?.compactChildNodes() || []
-      columns.push(...this.processTableColumns(blockNodes as unknown as Node[]))
+      columns.push(...this.processTableColumns(blockNodes))
 
       table.columns = columns.reduce((acc, column) => {
         acc[column.name] = column
