@@ -16,6 +16,64 @@ import {
 import type { Column, Columns, DBStructure, Table, Tables } from 'src/schema'
 import type { Processor } from '../types.js'
 
+function extractDefaultValue(
+  value: TrueNode | FalseNode | StringNode | IntegerNode,
+): string | number | boolean | null {
+  if (value instanceof TrueNode) return true
+  if (value instanceof FalseNode) return false
+  // @ts-expect-error: unescaped is defined as string but it is actually object
+  if (value instanceof StringNode) return value.unescaped.value
+  // @ts-expect-error: IntegerNode actually has value property
+  if (value instanceof IntegerNode) return value.value
+  return null
+}
+
+function processColumnOptions(hashNode: KeywordHashNode, column: Column): void {
+  for (const argElement of hashNode.elements) {
+    // @ts-expect-error: unescaped is defined as string but it is actually object
+    const key = (argElement as AssocNode).key.unescaped.value
+    const value = (argElement as AssocNode).value
+
+    switch (key) {
+      case 'null':
+        column.notNull = value instanceof FalseNode
+        break
+      case 'default':
+        column.default = extractDefaultValue(value)
+        break
+      case 'unique':
+        column.unique = value instanceof TrueNode
+        break
+    }
+  }
+}
+
+function extractColumnDetails(node: CallNode): Column {
+  const column: Column = {
+    name: '',
+    type: node.name,
+    notNull: false,
+    default: null,
+    check: null,
+    comment: null,
+    primary: false,
+    unique: false,
+    increment: false,
+  }
+
+  const argNodes = node.arguments_?.compactChildNodes() || []
+  for (const argNode of argNodes) {
+    if (argNode instanceof StringNode) {
+      // @ts-expect-error: unescaped is defined as string but it is actually object
+      column.name = argNode.unescaped.value
+    } else if (argNode instanceof KeywordHashNode) {
+      processColumnOptions(argNode, column)
+    }
+  }
+
+  return column
+}
+
 class DBStructureFinder extends Visitor {
   private tables: Table[] = []
 
@@ -90,7 +148,7 @@ class DBStructureFinder extends Visitor {
             // Skip index fields
             if (node.name === 'index') continue
 
-            const column = this.extractColumnDetails(node)
+            const column = extractColumnDetails(node)
             if (column.name) columns.push(column)
           }
         }
@@ -98,67 +156,6 @@ class DBStructureFinder extends Visitor {
     }
 
     return columns
-  }
-
-  private extractColumnDetails(node: CallNode): Column {
-    const column: Column = {
-      name: '',
-      type: node.name,
-      notNull: false,
-      default: null,
-      check: null,
-      comment: null,
-      primary: false,
-      unique: false,
-      increment: false,
-    }
-
-    const argNodes = node.arguments_?.compactChildNodes() || []
-    for (const argNode of argNodes) {
-      if (argNode instanceof StringNode) {
-        // @ts-expect-error: unescaped is defined as string but it is actually object
-        column.name = argNode.unescaped.value
-      } else if (argNode instanceof KeywordHashNode) {
-        this.processColumnOptions(argNode, column)
-      }
-    }
-
-    return column
-  }
-
-  private processColumnOptions(
-    hashNode: KeywordHashNode,
-    column: Column,
-  ): void {
-    for (const argElement of hashNode.elements) {
-      // @ts-expect-error: unescaped is defined as string but it is actually object
-      const key = (argElement as AssocNode).key.unescaped.value
-      const value = (argElement as AssocNode).value
-
-      switch (key) {
-        case 'null':
-          column.notNull = value instanceof FalseNode
-          break
-        case 'default':
-          column.default = this.extractDefaultValue(value)
-          break
-        case 'unique':
-          column.unique = value instanceof TrueNode
-          break
-      }
-    }
-  }
-
-  private extractDefaultValue(
-    value: TrueNode | FalseNode | StringNode | IntegerNode,
-  ): string | number | boolean | null {
-    if (value instanceof TrueNode) return true
-    if (value instanceof FalseNode) return false
-    // @ts-expect-error: unescaped is defined as string but it is actually object
-    if (value instanceof StringNode) return value.unescaped.value
-    // @ts-expect-error: IntegerNode actually has value property
-    if (value instanceof IntegerNode) return value.value
-    return null
   }
 
   override visitCallNode(node: CallNode): void {
