@@ -7,7 +7,7 @@ import {
   type LocalVariableReadNode,
   StatementsNode,
   StringNode,
-  type SymbolNode,
+  SymbolNode,
   TrueNode,
   Visitor,
   loadPrism,
@@ -31,8 +31,12 @@ class DBStructureFinder extends Visitor {
 
   private extractTableName(argNodes: Node[]): string {
     const nameNode = argNodes.find((node) => node instanceof StringNode)
+    if (!nameNode) {
+      throw new Error('Table name not found')
+    }
+
     // @ts-ignore: unescaped is defined as string but it is actually object
-    return (nameNode as StringNode).unescaped.value
+    return nameNode.unescaped.value
   }
 
   private processIdColumn(argNodes: Node[]): Column | null {
@@ -53,12 +57,13 @@ class DBStructureFinder extends Visitor {
     }
 
     if (idKeywordHash) {
-      const idAssoc = (idKeywordHash as KeywordHashNode).elements.find(
+      const idAssoc = idKeywordHash.elements.find(
         (elem) =>
           elem instanceof AssocNode &&
+          elem.key instanceof SymbolNode &&
           // @ts-ignore: unescaped is defined as string but it is actually object
-          (elem.key as SymbolNode).unescaped.value === 'id',
-      ) as AssocNode | undefined
+          elem.key.unescaped.value === 'id',
+      )
 
       if (idAssoc) {
         // @ts-ignore: unescaped is defined as string but it is actually object
