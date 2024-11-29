@@ -36,7 +36,7 @@ class DBStructureFinder extends Visitor {
       throw new Error('Table name not found')
     }
 
-    // @ts-ignore: unescaped is defined as string but it is actually object
+    // @ts-expect-error: unescaped is defined as string but it is actually object
     return nameNode.unescaped.value
   }
 
@@ -62,12 +62,12 @@ class DBStructureFinder extends Visitor {
         (elem) =>
           elem instanceof AssocNode &&
           elem.key instanceof SymbolNode &&
-          // @ts-ignore: unescaped is defined as string but it is actually object
+          // @ts-expect-error: unescaped is defined as string but it is actually object
           elem.key.unescaped.value === 'id',
       )
 
       if (idAssoc) {
-        // @ts-ignore: unescaped is defined as string but it is actually object
+        // @ts-expect-error: unescaped is defined as string but it is actually object
         idColumn.type = (idAssoc.value as SymbolNode).unescaped.value
         return idColumn
       }
@@ -116,7 +116,7 @@ class DBStructureFinder extends Visitor {
     const argNodes = node.arguments_?.compactChildNodes() || []
     for (const argNode of argNodes) {
       if (argNode instanceof StringNode) {
-        // @ts-ignore: unescaped is defined as string but it is actually object
+        // @ts-expect-error: unescaped is defined as string but it is actually object
         column.name = argNode.unescaped.value
       } else if (argNode instanceof KeywordHashNode) {
         this.processColumnOptions(argNode, column)
@@ -131,7 +131,7 @@ class DBStructureFinder extends Visitor {
     column: Column,
   ): void {
     for (const argElement of hashNode.elements) {
-      // @ts-ignore: unescaped is defined as string but it is actually object
+      // @ts-expect-error: unescaped is defined as string but it is actually object
       const key = (argElement as AssocNode).key.unescaped.value
       const value = (argElement as AssocNode).value
 
@@ -154,9 +154,9 @@ class DBStructureFinder extends Visitor {
   ): string | number | boolean | null {
     if (value instanceof TrueNode) return true
     if (value instanceof FalseNode) return false
-    // @ts-ignore: unescaped is defined as string but it is actually object
+    // @ts-expect-error: unescaped is defined as string but it is actually object
     if (value instanceof StringNode) return value.unescaped.value
-    // @ts-ignore: IntegerNode actually has value property
+    // @ts-expect-error: IntegerNode actually has value property
     if (value instanceof IntegerNode) return value.value
     return null
   }
