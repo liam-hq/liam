@@ -14,6 +14,7 @@ import {
   loadPrism,
 } from '@ruby/prism'
 import type { Column, Columns, DBStructure, Table, Tables } from 'src/schema'
+import { aColumn, aTable } from 'src/schema/factories'
 import type { Processor } from '../types.js'
 
 function extractTableName(argNodes: Node[]): string {
@@ -28,17 +29,13 @@ function extractTableName(argNodes: Node[]): string {
 function extractIdColumn(argNodes: Node[]): Column | null {
   const idKeywordHash = argNodes.find((node) => node instanceof KeywordHashNode)
 
-  const idColumn: Column = {
+  const idColumn = aColumn({
     name: 'id',
     type: '',
     notNull: true,
-    default: null,
     primary: true,
-    check: null,
-    comment: null,
-    unique: false,
-    increment: false,
-  }
+    unique: true,
+  })
 
   if (idKeywordHash) {
     const idAssoc = idKeywordHash.elements.find(
@@ -85,17 +82,10 @@ function extractTableColumns(blockNodes: Node[]): Column[] {
 }
 
 function extractColumnDetails(node: CallNode): Column {
-  const column: Column = {
+  const column = aColumn({
     name: '',
     type: node.name,
-    notNull: false,
-    default: null,
-    check: null,
-    comment: null,
-    primary: false,
-    unique: false,
-    increment: false,
-  }
+  })
 
   const argNodes = node.arguments_?.compactChildNodes() || []
   for (const argNode of argNodes) {
@@ -161,12 +151,9 @@ class DBStructureFinder extends Visitor {
     if (node.name === 'create_table') {
       const argNodes = node.arguments_?.compactChildNodes() || []
 
-      const table: Table = {
+      const table = aTable({
         name: extractTableName(argNodes),
-        columns: {},
-        comment: null,
-        indices: [],
-      }
+      })
 
       const columns: Column[] = []
 
