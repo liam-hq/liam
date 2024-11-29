@@ -4,10 +4,11 @@ import {
   FalseNode,
   IntegerNode,
   KeywordHashNode,
-  type LocalVariableReadNode,
+  LocalVariableReadNode,
+  type Node,
   StatementsNode,
   StringNode,
-  type SymbolNode,
+  SymbolNode,
   TrueNode,
   Visitor,
   loadPrism,
@@ -31,8 +32,11 @@ class DBStructureFinder extends Visitor {
 
   private extractTableName(argNodes: Node[]): string {
     const nameNode = argNodes.find((node) => node instanceof StringNode)
+    if (!nameNode) {
+      throw new Error('Table name not found')
+    }
     // @ts-ignore: unescaped is defined as string but it is actually object
-    return (nameNode as StringNode).unescaped.value
+    return nameNode.unescaped.value
   }
 
   private processIdColumn(argNodes: Node[]): Column | null {
@@ -53,16 +57,17 @@ class DBStructureFinder extends Visitor {
     }
 
     if (idKeywordHash) {
-      const idAssoc = (idKeywordHash as KeywordHashNode).elements.find(
+      const idAssoc = idKeywordHash.elements.find(
         (elem) =>
           elem instanceof AssocNode &&
+          elem.key instanceof SymbolNode &&
           // @ts-ignore: unescaped is defined as string but it is actually object
-          (elem.key as SymbolNode).unescaped.value === 'id',
-      ) as AssocNode | undefined
+          elem.key.unescaped.value === 'id',
+      )
 
-      if (idAssoc) {
+      if (idAssoc && idAssoc instanceof AssocNode) {
         // @ts-ignore: unescaped is defined as string but it is actually object
-        idColumn.type = (idAssoc.value as SymbolNode).unescaped.value
+        idColumn.type = idAssoc.value.unescaped.value
         return idColumn
       }
     }
@@ -79,7 +84,8 @@ class DBStructureFinder extends Visitor {
         for (const node of blockNode.compactChildNodes()) {
           if (
             node instanceof CallNode &&
-            (node.receiver as LocalVariableReadNode).name === 't'
+            node.receiver instanceof LocalVariableReadNode &&
+            node.receiver.name === 't'
           ) {
             // Skip index fields
             if (node.name === 'index') continue
@@ -125,9 +131,10 @@ class DBStructureFinder extends Visitor {
     column: Column,
   ): void {
     for (const argElement of hashNode.elements) {
+      if (!(argElement instanceof AssocNode)) continue
       // @ts-ignore: unescaped is defined as string but it is actually object
-      const key = (argElement as AssocNode).key.unescaped.value
-      const value = (argElement as AssocNode).value
+      const key = argElement.key.unescaped.value
+      const value = argElement.value
 
       switch (key) {
         case 'null':
@@ -160,7 +167,7 @@ class DBStructureFinder extends Visitor {
       const argNodes = node.arguments_?.compactChildNodes() || []
 
       const table: Table = {
-        name: this.extractTableName(argNodes as unknown as Node[]),
+        name: this.extractTableName(argNodes),
         columns: {},
         comment: null,
         indices: [],
@@ -168,11 +175,11 @@ class DBStructureFinder extends Visitor {
 
       const columns: Column[] = []
 
-      const idColumn = this.processIdColumn(argNodes as unknown as Node[])
+      const idColumn = this.processIdColumn(argNodes)
       if (idColumn) columns.push(idColumn)
 
       const blockNodes = node.block?.compactChildNodes() || []
-      columns.push(...this.processTableColumns(blockNodes as unknown as Node[]))
+      columns.push(...this.processTableColumns(blockNodes))
 
       table.columns = columns.reduce((acc, column) => {
         acc[column.name] = column
