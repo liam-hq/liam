@@ -9,7 +9,7 @@ const relationshipNameSchema = v.string()
 const columnSchema = v.object({
   name: columnNameSchema,
   type: v.string(),
-  default: v.nullable(v.string()),
+  default: v.nullable(v.union([v.string(), v.number(), v.boolean()])),
   check: v.nullable(v.string()),
   primary: v.boolean(),
   unique: v.boolean(),
