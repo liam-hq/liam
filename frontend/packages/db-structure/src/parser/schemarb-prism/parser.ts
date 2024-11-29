@@ -203,8 +203,4 @@ async function parseRubySchema(schemaString: string): Promise<DBStructure> {
   return tableFinder.getDBStructure()
 }
 
-export const processor: Processor = async (
-  str: string,
-): Promise<DBStructure> => {
-  return await parseRubySchema(str)
-}
+export const processor: Processor = (str) => parseRubySchema(str)
