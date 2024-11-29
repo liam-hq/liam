@@ -11,7 +11,12 @@ describe(processor, () => {
           users: aTable({
             name: 'users',
             columns: {
-              id: aColumn(),
+              id: aColumn({
+                name: 'id',
+                type: 'bigserial',
+                notNull: true,
+                primary: true,
+              }),
               ...override?.columns,
             },
           }),
@@ -27,12 +32,6 @@ describe(processor, () => {
 
       const expected = userTable({
         columns: {
-          id: aColumn({
-            name: 'id',
-            type: 'bigserial',
-            notNull: true,
-            primary: true,
-          }),
           name: aColumn({
             name: 'name',
             type: 'string',
