@@ -53,6 +53,8 @@ function extractIdColumn(argNodes: Node[]): Column | null {
     }
   }
 
+  // Since 5.1 PostgreSQL adapter uses bigserial type for primary key in default
+  // See:https://github.com/rails/rails/blob/v8.0.0/activerecord/lib/active_record/migration/compatibility.rb#L377
   idColumn.type = 'bigserial'
   return idColumn
 }
