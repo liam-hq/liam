@@ -70,7 +70,7 @@ function extractTableColumns(blockNodes: Node[]): Column[] {
           node.receiver instanceof LocalVariableReadNode &&
           node.receiver.name === 't'
         ) {
-          // Skip index fields
+          // TODO: Need to handle index
           if (node.name === 'index') continue
 
           const column = extractColumnDetails(node)
