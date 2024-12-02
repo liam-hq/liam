@@ -3,7 +3,10 @@
   "private": true,
   "version": "0.0.1",
   "type": "module",
-  "main": "dist/index.js",
+  "exports": {
+    ".": "./dist/index.js",
+    "./server": "./dist/server.js"
+  },
   "dependencies": {
     "@bjorn3/browser_wasi_shim": "^0.3.0",
     "@ruby/prism": "1.2.0",
