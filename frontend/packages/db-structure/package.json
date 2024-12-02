@@ -5,6 +5,7 @@
   "type": "module",
   "main": "dist/index.js",
   "dependencies": {
+    "@bjorn3/browser_wasi_shim": "^0.3.0",
     "@ruby/prism": "1.2.0",
     "pg-query-emscripten": "5.1.0",
     "valibot": "^1.0.0-beta.5"
@@ -27,7 +28,8 @@
     "lint": "pnpm run '/^lint:.*/'",
     "lint:biome": "biome check .",
     "lint:tsc": "tsc --noEmit",
-    "test": "vitest --watch=false"
+    "test": "vitest --watch=false",
+    "cp:prism": "cp node_modules/@ruby/prism/src/prism.wasm src/parser/schemarb-prism/prism.wasm"
   },
   "types": "dist/index.d.ts"
 }
