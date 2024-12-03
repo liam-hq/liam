@@ -86,9 +86,9 @@ describe(processor, () => {
           primaryColumnName: 'id',
           foreignTableName: 'posts',
           foreignColumnName: 'user_id',
-          cardinality: 'one_to_many',
-          updateConstraint: 'no action',
-          deleteConstraint: 'no action',
+          cardinality: 'ONE_TO_MANY',
+          updateConstraint: 'NO ACTION',
+          deleteConstraint: 'NO ACTION',
         },
       }
 

@@ -92,17 +92,17 @@ export const convertToDBStructure = (ast: RawStmtWrapper[]): DBStructure => {
           const getConstraintAction = (action?: string): string => {
             switch (action?.toLowerCase()) {
               case 'r':
-                return 'restrict'
+                return 'RESTRICT'
               case 'c':
-                return 'cascade'
+                return 'CASCADE'
               case 'n':
-                return 'set null'
+                return 'SET NULL'
               case 'd':
-                return 'set default'
+                return 'SET DEFAULT'
               case 'a':
-                return 'no action'
+                return 'NO ACTION'
               default:
-                return 'no action' // Default to 'no action' for unknown or missing values
+                return 'NO ACTION' // Default to 'NO ACTION' for unknown or missing values
             }
           }
 
@@ -137,7 +137,7 @@ export const convertToDBStructure = (ast: RawStmtWrapper[]): DBStructure => {
                 primaryColumnName,
                 foreignTableName: tableName,
                 foreignColumnName,
-                cardinality: 'one_to_many', // default to one_to_many
+                cardinality: 'ONE_TO_MANY', // TODO: Consider implementing other cardinalities
                 updateConstraint,
                 deleteConstraint,
               }
