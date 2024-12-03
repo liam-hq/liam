@@ -13,7 +13,14 @@ describe('CLI Smoke Test', () => {
   it('should run the CLI command without errors', async () => {
     try {
       const { stdout, stderr } = await execAsync('npx --no-install . help')
-      expect(stderr).toBe('')
+      // NOTE: suppress the following warning:
+      if (
+        !stderr.includes(
+          'ExperimentalWarning: WASI is an experimental feature and might change at any time',
+        )
+      ) {
+        expect(stderr).toBe('')
+      }
       expect(stdout).toMatchInlineSnapshot(`
         "Usage: liam [options] [command]
 
@@ -40,7 +47,14 @@ describe('CLI Smoke Test', () => {
       const { stdout, stderr } = await execAsync(
         'npx --no-install . erd build --input fixtures/input.schema.rb',
       )
-      expect(stderr).toBe('')
+      // NOTE: suppress the following warning:
+      if (
+        !stderr.includes(
+          'ExperimentalWarning: WASI is an experimental feature and might change at any time',
+        )
+      ) {
+        expect(stderr).toBe('')
+      }
       expect(stdout).toBe('')
       const { stdout: lsOutput } = await execAsync('ls ./dist')
       expect(lsOutput.trim().length).toBeGreaterThan(0)

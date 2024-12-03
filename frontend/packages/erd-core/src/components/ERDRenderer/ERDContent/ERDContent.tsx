@@ -1,17 +1,18 @@
-import { Background, Controls, type Node, ReactFlow } from '@xyflow/react'
+import { Background, Controls, ReactFlow } from '@xyflow/react'
 import type { FC } from 'react'
+import { useDBStructureStore } from '../../../stores'
+import { convertDBStructureToNodes } from '../convertDBStructureToNodes'
 import styles from './ERDContent.module.css'
 import { TableNode } from './TableNode'
-
-interface ERDContentProps {
-  nodes: Node[]
-}
 
 const nodeTypes = {
   table: TableNode,
 }
 
-export const ERDContent: FC<ERDContentProps> = ({ nodes }) => {
+export const ERDContent: FC = () => {
+  const dbStructure = useDBStructureStore()
+  const nodes = convertDBStructureToNodes(dbStructure)
+
   return (
     <div className={styles.wrapper}>
       <ReactFlow

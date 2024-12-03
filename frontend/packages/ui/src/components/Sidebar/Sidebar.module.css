@@ -1,0 +1,70 @@
+.sidebarProvider {
+  min-height: 100svh;
+}
+
+.sidebarGap {
+  width: var(--sidebar-width);
+  height: 100svh;
+  transition-duration: 200ms;
+  animation-timing-function: linear;
+  transition-property: width;
+}
+
+[data-collapsible='offcanvas'] .sidebarGap {
+  width: 0;
+}
+
+.sidebarWrapper {
+  width: var(--sidebar-width);
+  height: 100svh;
+  position: fixed;
+  inset: 0 auto auto 0;
+  z-index: 10;
+  transition-duration: 200ms;
+  animation-timing-function: linear;
+  transition-property: left, right, width;
+  display: flex;
+  left: 0;
+  color: var(--global-foreground);
+}
+
+[data-collapsible='offcanvas'] .sidebarWrapper {
+  left: calc(var(--sidebar-width) * -1);
+}
+
+.sidebar {
+  background: var(--pane-background);
+  width: 100%;
+  height: 100%;
+}
+
+.sidebarGroup {
+  padding: var(--spacing-2);
+}
+
+.sidebarGroupLabel {
+  display: inline-flex;
+  align-items: center;
+  height: 24px;
+}
+
+.sidebarRail {
+  cursor: w-resize;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1rem;
+  right: -1rem;
+}
+
+[data-collapsible='offcanvas'] .sidebarRail {
+  cursor: e-resize;
+}
+
+.sidebarRail::after {
+  content: '';
+  width: 2px;
+  top: 0px;
+  bottom: 0px;
+  position: absolute;
+}

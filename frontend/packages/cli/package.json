@@ -1,9 +1,12 @@
 {
   "name": "@liam-hq/cli",
   "license": "Apache-2.0",
-  "private": true,
-  "version": "0.0.0",
+  "private": false,
+  "version": "0.0.1",
   "type": "module",
+  "publishConfig": {
+    "access": "public"
+  },
   "bin": {
     "liam": "./dist-cli/bin/cli.js"
   },

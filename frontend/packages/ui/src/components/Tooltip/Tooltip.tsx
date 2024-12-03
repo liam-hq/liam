@@ -6,12 +6,7 @@ import {
   Root,
   Trigger,
 } from '@radix-ui/react-tooltip'
-import {
-  type ComponentProps,
-  type FC,
-  type PropsWithChildren,
-  forwardRef,
-} from 'react'
+import { type ComponentProps, type FC, forwardRef } from 'react'
 import styles from './Tooltip.module.css'
 
 export const TooltipContent = forwardRef<
@@ -23,8 +18,15 @@ export const TooltipContent = forwardRef<
 
 TooltipContent.displayName = 'TooltipContent'
 
-export const TooltipProvider: FC<PropsWithChildren> = ({ children }) => {
-  return <Provider delayDuration={100}>{children}</Provider>
+export const TooltipProvider: FC<ComponentProps<typeof Provider>> = ({
+  children,
+  ...props
+}) => {
+  return (
+    <Provider delayDuration={100} {...props}>
+      {children}
+    </Provider>
+  )
 }
 export const TooltipPortal = Portal
 export const TooltipRoot = Root

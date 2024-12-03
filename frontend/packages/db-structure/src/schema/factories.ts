@@ -19,7 +19,6 @@ export const aTable = (override?: Partial<Table>): Table => ({
   ...override,
   indices: [],
   columns: {
-    id: aColumn(),
     ...override?.columns,
   },
 })

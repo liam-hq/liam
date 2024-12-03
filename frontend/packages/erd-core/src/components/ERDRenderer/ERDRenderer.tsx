@@ -1,19 +1,31 @@
 import '@xyflow/react/dist/style.css'
-import type { DBStructure } from '@liam-hq/db-structure'
+import {
+  SidebarProvider,
+  SidebarTrigger,
+  getSidebarStateFromCookie,
+} from '@liam-hq/ui'
 import { ReactFlowProvider } from '@xyflow/react'
 import type { FC } from 'react'
 import { ERDContent } from './ERDContent'
-import { convertDBStructureToNodes } from './convertDBStructureToNodes'
+import styles from './ERDRenderer.module.css'
+import { LeftPane } from './LeftPane'
 
-interface ERDRendererProps {
-  dbStructure: DBStructure
-}
+export const ERDRenderer: FC = () => {
+  const defaultOpen = getSidebarStateFromCookie()
 
-export const ERDRenderer: FC<ERDRendererProps> = ({ dbStructure }) => {
-  const nodes = convertDBStructureToNodes(dbStructure)
   return (
-    <ReactFlowProvider>
-      <ERDContent nodes={nodes} />
-    </ReactFlowProvider>
+    <SidebarProvider defaultOpen={defaultOpen}>
+      <div className={styles.wrapper}>
+        <LeftPane />
+        <main className={styles.main}>
+          <div className={styles.triggerWrapper}>
+            <SidebarTrigger />
+          </div>
+          <ReactFlowProvider>
+            <ERDContent />
+          </ReactFlowProvider>
+        </main>
+      </div>
+    </SidebarProvider>
   )
 }

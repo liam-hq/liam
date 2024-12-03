@@ -1,35 +1,27 @@
-import { type DBStructure, dbStructureSchema } from '@liam-hq/db-structure'
-import { ERDRenderer } from '@liam-hq/erd-core'
-import { useEffect, useState } from 'react'
+import { dbStructureSchema } from '@liam-hq/db-structure'
+import { ERDRenderer, initDBStructureStore } from '@liam-hq/erd-core'
 import * as v from 'valibot'
 
-function App() {
-  const [schemaJsonContent, setSchemaJsonContent] =
-    useState<DBStructure | null>(null)
-
-  useEffect(() => {
-    async function loadSchemaContent() {
-      try {
-        const response = await fetch('/schema.json')
-        if (!response.ok) {
-          throw new Error(`Failed to fetch schema: ${response.statusText}`)
-        }
-        const data = await response.json()
-        const result = v.safeParse(dbStructureSchema, data)
-        result.success
-          ? setSchemaJsonContent(result.output)
-          : console.info(result.issues)
-      } catch (error) {
-        console.error('Error loading schema content:', error)
-      }
+async function loadSchemaContent() {
+  try {
+    const response = await fetch('/schema.json')
+    if (!response.ok) {
+      throw new Error(`Failed to fetch schema: ${response.statusText}`)
     }
+    const data = await response.json()
+    const result = v.safeParse(dbStructureSchema, data)
+    result.success
+      ? initDBStructureStore(result.output)
+      : console.info(result.issues)
+  } catch (error) {
+    console.error('Error loading schema content:', error)
+  }
+}
 
-    loadSchemaContent()
-  }, [])
+loadSchemaContent()
 
-  return (
-    <>{schemaJsonContent && <ERDRenderer dbStructure={schemaJsonContent} />}</>
-  )
+function App() {
+  return <ERDRenderer />
 }
 
 export default App
