@@ -88,7 +88,7 @@ export const convertToDBStructure = (ast: RawStmtWrapper[]): DBStructure => {
           // Handle REFERENCES constraints for relationships
 
           // Update or delete constraint for foreign key
-          // see: https://github.com/launchql/pgsql-parser/blob/main/packages/deparser/src/deparser.ts#L3101-L3141
+          // see: https://github.com/launchql/pgsql-parser/blob/pgsql-parser%4013.16.0/packages/deparser/src/deparser.ts#L3101-L3141
           const getConstraintAction = (action?: string): string => {
             switch (action?.toLowerCase()) {
               case 'r':
