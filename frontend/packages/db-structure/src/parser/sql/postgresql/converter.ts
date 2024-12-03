@@ -117,8 +117,13 @@ export const convertToDBStructure = (ast: RawStmtWrapper[]): DBStructure => {
             const primaryTableName = foreign.pktable?.relname
             const primaryColumnName =
               foreign.pk_attrs?.[0] && isStringNode(foreign.pk_attrs[0])
-                ? (foreign.pk_attrs[0].String.sval ?? 'id')
-                : 'id'
+                ? foreign.pk_attrs[0].String.sval
+                : undefined
+
+            if (!primaryTableName || !primaryColumnName) {
+              throw new Error('Invalid foreign key constraint')
+            }
+
             const foreignColumnName = colDef.colname || ''
 
             if (primaryTableName && tableName) {
