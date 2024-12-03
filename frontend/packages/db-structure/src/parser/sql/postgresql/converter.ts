@@ -127,8 +127,8 @@ export const convertToDBStructure = (ast: RawStmtWrapper[]): DBStructure => {
             const foreignColumnName = colDef.colname || ''
 
             if (primaryTableName && tableName) {
-              // relationshipName example: "users_posts"
-              const relationshipName = `${primaryTableName}_${tableName}`
+              // relationshipName example: "users_id_to_posts_user_id"
+              const relationshipName = `${primaryTableName}_${primaryColumnName}_to_${tableName}_${foreignColumnName}`
               const updateConstraint = getConstraintAction(
                 foreign.fk_upd_action,
               )

@@ -80,8 +80,8 @@ describe(processor, () => {
       `)
 
       const expectedRelationships = {
-        users_posts: {
-          name: 'users_posts',
+        users_id_to_posts_user_id: {
+          name: 'users_id_to_posts_user_id',
           primaryTableName: 'users',
           primaryColumnName: 'id',
           foreignTableName: 'posts',
