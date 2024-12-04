@@ -2,7 +2,7 @@ import { describe, it } from 'vitest'
 import { processor } from '.'
 
 describe(processor, () => {
-  it('Up to 2000 lines can be parsed.', async () => {
+  it('test.', async () => {
     const result = await processor(/* PostgreSQL */ `
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -2001,6 +2001,503 @@ CREATE SEQUENCE public.lists_id_seq
 --
 
 ALTER SEQUENCE public.lists_id_seq OWNED BY public.lists.id;
+
+
+--
+-- Name: login_activities; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.login_activities (
+    id bigint NOT NULL,
+    user_id bigint NOT NULL,
+    authentication_method character varying,
+    provider character varying,
+    success boolean,
+    failure_reason character varying,
+    ip inet,
+    user_agent character varying,
+    created_at timestamp without time zone
+);
+
+
+--
+-- Name: login_activities_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.login_activities_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: login_activities_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.login_activities_id_seq OWNED BY public.login_activities.id;
+
+
+--
+-- Name: markers; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.markers (
+    id bigint NOT NULL,
+    user_id bigint,
+    timeline character varying DEFAULT ''::character varying NOT NULL,
+    last_read_id bigint DEFAULT 0 NOT NULL,
+    lock_version integer DEFAULT 0 NOT NULL,
+    created_at timestamp without time zone NOT NULL,
+    updated_at timestamp without time zone NOT NULL
+);
+
+
+--
+-- Name: markers_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.markers_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: markers_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.markers_id_seq OWNED BY public.markers.id;
+
+
+--
+-- Name: media_attachments; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.media_attachments (
+    status_id bigint,
+    file_file_name character varying,
+    file_content_type character varying,
+    file_file_size integer,
+    file_updated_at timestamp without time zone,
+    remote_url character varying DEFAULT ''::character varying NOT NULL,
+    created_at timestamp without time zone NOT NULL,
+    updated_at timestamp without time zone NOT NULL,
+    shortcode character varying,
+    type integer DEFAULT 0 NOT NULL,
+    file_meta json,
+    account_id bigint,
+    id bigint DEFAULT public.timestamp_id('media_attachments'::text) NOT NULL,
+    description text,
+    scheduled_status_id bigint,
+    blurhash character varying,
+    processing integer,
+    file_storage_schema_version integer,
+    thumbnail_file_name character varying,
+    thumbnail_content_type character varying,
+    thumbnail_file_size integer,
+    thumbnail_updated_at timestamp without time zone,
+    thumbnail_remote_url character varying
+);
+
+
+--
+-- Name: media_attachments_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.media_attachments_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: media_attachments_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.media_attachments_id_seq OWNED BY public.media_attachments.id;
+
+
+--
+-- Name: mentions; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.mentions (
+    status_id bigint NOT NULL,
+    created_at timestamp without time zone NOT NULL,
+    updated_at timestamp without time zone NOT NULL,
+    account_id bigint NOT NULL,
+    id bigint NOT NULL,
+    silent boolean DEFAULT false NOT NULL
+);
+
+
+--
+-- Name: mentions_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.mentions_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: mentions_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.mentions_id_seq OWNED BY public.mentions.id;
+
+
+--
+-- Name: mutes; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.mutes (
+    created_at timestamp without time zone NOT NULL,
+    updated_at timestamp without time zone NOT NULL,
+    hide_notifications boolean DEFAULT true NOT NULL,
+    account_id bigint NOT NULL,
+    id bigint NOT NULL,
+    target_account_id bigint NOT NULL,
+    expires_at timestamp without time zone
+);
+
+
+--
+-- Name: mutes_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.mutes_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: mutes_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.mutes_id_seq OWNED BY public.mutes.id;
+
+
+--
+-- Name: notification_permissions; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.notification_permissions (
+    id bigint NOT NULL,
+    account_id bigint NOT NULL,
+    from_account_id bigint NOT NULL,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL
+);
+
+
+--
+-- Name: notification_permissions_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.notification_permissions_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: notification_permissions_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.notification_permissions_id_seq OWNED BY public.notification_permissions.id;
+
+
+--
+-- Name: notification_policies; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.notification_policies (
+    id bigint NOT NULL,
+    account_id bigint NOT NULL,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL,
+    for_not_following integer DEFAULT 0 NOT NULL,
+    for_not_followers integer DEFAULT 0 NOT NULL,
+    for_new_accounts integer DEFAULT 0 NOT NULL,
+    for_private_mentions integer DEFAULT 1 NOT NULL,
+    for_limited_accounts integer DEFAULT 1 NOT NULL
+);
+
+
+--
+-- Name: notification_policies_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.notification_policies_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: notification_policies_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.notification_policies_id_seq OWNED BY public.notification_policies.id;
+
+
+--
+-- Name: notification_requests; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.notification_requests (
+    id bigint DEFAULT public.timestamp_id('notification_requests'::text) NOT NULL,
+    account_id bigint NOT NULL,
+    from_account_id bigint NOT NULL,
+    last_status_id bigint,
+    notifications_count bigint DEFAULT 0 NOT NULL,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL
+);
+
+
+--
+-- Name: notification_requests_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.notification_requests_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: notification_requests_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.notification_requests_id_seq OWNED BY public.notification_requests.id;
+
+
+--
+-- Name: notifications; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.notifications (
+    activity_id bigint NOT NULL,
+    activity_type character varying NOT NULL,
+    created_at timestamp without time zone NOT NULL,
+    updated_at timestamp without time zone NOT NULL,
+    account_id bigint NOT NULL,
+    from_account_id bigint NOT NULL,
+    id bigint NOT NULL,
+    type character varying,
+    filtered boolean DEFAULT false NOT NULL,
+    group_key character varying
+);
+
+
+--
+-- Name: notifications_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.notifications_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: notifications_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.notifications_id_seq OWNED BY public.notifications.id;
+
+
+--
+-- Name: oauth_access_grants; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.oauth_access_grants (
+    token character varying NOT NULL,
+    expires_in integer NOT NULL,
+    redirect_uri text NOT NULL,
+    created_at timestamp without time zone NOT NULL,
+    revoked_at timestamp without time zone,
+    scopes character varying,
+    application_id bigint NOT NULL,
+    id bigint NOT NULL,
+    resource_owner_id bigint NOT NULL,
+    code_challenge character varying,
+    code_challenge_method character varying
+);
+
+
+--
+-- Name: oauth_access_grants_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.oauth_access_grants_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: oauth_access_grants_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.oauth_access_grants_id_seq OWNED BY public.oauth_access_grants.id;
+
+
+--
+-- Name: oauth_access_tokens; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.oauth_access_tokens (
+    token character varying NOT NULL,
+    refresh_token character varying,
+    expires_in integer,
+    revoked_at timestamp without time zone,
+    created_at timestamp without time zone NOT NULL,
+    scopes character varying,
+    application_id bigint,
+    id bigint NOT NULL,
+    resource_owner_id bigint,
+    last_used_at timestamp without time zone,
+    last_used_ip inet
+);
+
+
+--
+-- Name: oauth_access_tokens_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.oauth_access_tokens_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: oauth_access_tokens_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.oauth_access_tokens_id_seq OWNED BY public.oauth_access_tokens.id;
+
+
+--
+-- Name: oauth_applications; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.oauth_applications (
+    name character varying NOT NULL,
+    uid character varying NOT NULL,
+    secret character varying NOT NULL,
+    redirect_uri text NOT NULL,
+    scopes character varying DEFAULT ''::character varying NOT NULL,
+    created_at timestamp without time zone,
+    updated_at timestamp without time zone,
+    superapp boolean DEFAULT false NOT NULL,
+    website character varying,
+    owner_type character varying,
+    id bigint NOT NULL,
+    owner_id bigint,
+    confidential boolean DEFAULT true NOT NULL
+);
+
+
+--
+-- Name: oauth_applications_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.oauth_applications_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: oauth_applications_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.oauth_applications_id_seq OWNED BY public.oauth_applications.id;
+
+
+--
+-- Name: pghero_space_stats; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.pghero_space_stats (
+    id bigint NOT NULL,
+    database text,
+    schema text,
+    relation text,
+    size bigint,
+    captured_at timestamp without time zone
+);
+
+
+--
+-- Name: pghero_space_stats_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.pghero_space_stats_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: pghero_space_stats_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.pghero_space_stats_id_seq OWNED BY public.pghero_space_stats.id;
+
+
+--
+-- Name: poll_votes; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.poll_votes (
+    id bigint NOT NULL,
+    account_id bigint,
+    poll_id bigint,
+    choice integer DEFAULT 0 NOT NULL,
+    created_at timestamp without time zone NOT NULL,
+    updated_at timestamp without time zone NOT NULL,
+    uri character varying
+);
 
     `)
 
