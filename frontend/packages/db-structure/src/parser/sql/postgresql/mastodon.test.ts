@@ -2499,6 +2499,117 @@ CREATE TABLE public.poll_votes (
     uri character varying
 );
 
+
+--
+-- Name: poll_votes_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.poll_votes_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: poll_votes_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.poll_votes_id_seq OWNED BY public.poll_votes.id;
+
+
+--
+-- Name: polls; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.polls (
+    id bigint NOT NULL,
+    account_id bigint,
+    status_id bigint,
+    expires_at timestamp without time zone,
+    options character varying[] DEFAULT '{}'::character varying[] NOT NULL,
+    cached_tallies bigint[] DEFAULT '{}'::bigint[] NOT NULL,
+    multiple boolean DEFAULT false NOT NULL,
+    hide_totals boolean DEFAULT false NOT NULL,
+    votes_count bigint DEFAULT 0 NOT NULL,
+    last_fetched_at timestamp without time zone,
+    created_at timestamp without time zone NOT NULL,
+    updated_at timestamp without time zone NOT NULL,
+    lock_version integer DEFAULT 0 NOT NULL,
+    voters_count bigint
+);
+
+
+--
+-- Name: polls_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.polls_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: polls_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.polls_id_seq OWNED BY public.polls.id;
+
+
+--
+-- Name: preview_card_providers; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.preview_card_providers (
+    id bigint NOT NULL,
+    domain character varying DEFAULT ''::character varying NOT NULL,
+    icon_file_name character varying,
+    icon_content_type character varying,
+    icon_file_size bigint,
+    icon_updated_at timestamp without time zone,
+    trendable boolean,
+    reviewed_at timestamp without time zone,
+    requested_review_at timestamp without time zone,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL
+);
+
+
+--
+-- Name: preview_card_providers_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.preview_card_providers_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: preview_card_providers_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.preview_card_providers_id_seq OWNED BY public.preview_card_providers.id;
+
+
+--
+-- Name: preview_card_trends; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.preview_card_trends (
+    id bigint NOT NULL,
+    preview_card_id bigint NOT NULL,
+    score double precision DEFAULT 0.0 NOT NULL,
+    rank integer DEFAULT 0 NOT NULL,
+    allowed boolean DEFAULT false NOT NULL,
+    language character varying
+);
     `)
 
     console.log(result)
