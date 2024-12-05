@@ -6,6 +6,6 @@
     "@liam-hq/cli": "workspace:*"
   },
   "scripts": {
-    "build-erd-sample": "pnpm liam erd build --input ../../"
+    "build": "pnpm liam erd build --input ../../packages/cli/fixtures/input.schema.rb --format schemarb"
   }
 }
