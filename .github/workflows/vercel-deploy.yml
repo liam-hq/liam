@@ -14,7 +14,8 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       environment: ${{ steps.environment.outputs.environment }}
-      has-changes: ${{ steps.changes.outputs.src }}
+      has-changes-docs: ${{ steps.changes-docs.outputs.src }}
+      has-changes-erd-sample: ${{ steps.changes-erd-sample.outputs.src }}
     steps:
       - uses: actions/checkout@v4
       - uses: tj-actions/branch-names@v7.0.7
@@ -24,24 +25,39 @@ jobs:
         run: |
           echo "environment=${{ steps.branch-name.outputs.current_branch == 'main' && 'production' || 'preview' }}" >> $GITHUB_OUTPUT
       - uses: dorny/paths-filter@v3
-        id: changes
+        id: changes-docs
         with:
           filters: |
             src:
               - './.github/workflows/vercel-deploy.yml'
               - './frontend/apps/docs/**'
+      - uses: dorny/paths-filter@v3
+        id: changes-erd-sample
+        with:
+          filters: |
+            src:
+              - './.github/workflows/vercel-deploy.yml'
+              - './frontend/apps/erd-sample/**'
+              - './frontend/packages/cli/**'
+              - './frontend/packages/db-structure/**'
+              - './frontend/packages/erd-core/**'
+              - './frontend/packages/ui/**'
 
   deploy:
     name: Deploy
     needs: [setup-deployment]
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    if: ${{ needs.setup-deployment.outputs.has-changes == 'true' }}
+    if: ${{ (needs.setup-deployment.outputs.has-changes-docs == 'true' && matrix.apps.name == 'docs') || (needs.setup-deployment.outputs.has-changes-erd-sample == 'true' && matrix.apps.name == 'erd-sample')}}
     strategy:
       matrix:
         apps:
           - name: docs
+            prepare: "true"
             vercel-project-id-key: VERCEL_PROJECT_ID_DOCS
+          - name: erd-sample
+            prepare: "pnpm build"
+            vercel-project-id-key: VERCEL_PROJECT_ID_ERD_SAMPLE
     environment:
       name: "${{ needs.setup-deployment.outputs.environment }} - ${{ matrix.apps.name }}"
       url: ${{ steps.deployment.outputs.deployment-url }}
@@ -60,6 +76,8 @@ jobs:
         run: pnpm add --global vercel@latest
       - name: Pull Vercel Enviroment Infomation
         run: vercel pull --yes --environment=${{ needs.setup-deployment.outputs.environment }} --token=${{ secrets.VERCEL_TOKEN }}
+      - name: Run prepare command
+        run:  ${{ matrix.apps.prepare }}
       - name: Build Project Artifacts
         run: vercel build --token=${{ secrets.VERCEL_TOKEN }} ${{ needs.setup-deployment.outputs.environment == 'production' && '--prod' || '' }}
       - name: Deploy Project Artifacts to Vercel
