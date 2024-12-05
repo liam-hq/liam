@@ -1,0 +1,11 @@
+{
+  "name": "@liam-hq/erd-sample",
+  "private": true,
+  "version": "0.0.0",
+  "devDependencies": {
+    "@liam-hq/cli": "workspace:*"
+  },
+  "scripts": {
+    "build-erd-sample": "pnpm liam erd build --input ../../"
+  }
+}
