@@ -48,14 +48,16 @@ jobs:
     needs: [setup-deployment]
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    if: ${{ (needs.setup-deployment.outputs.has-changes-docs == 'true' && matrix.apps.name == 'docs') || (needs.setup-deployment.outputs.has-changes-erd-sample == 'true' && matrix.apps.name == 'erd-sample')}}
+    if: ${{ needs.setup-deployment.outputs.has-changes-docs == 'true' || needs.setup-deployment.outputs.has-changes-erd-sample == 'true' }}
     strategy:
       matrix:
         apps:
           - name: docs
+            execute: ${{ needs.setup-deployment.outputs.has-changes-docs == 'true' }}
             prepare: "true"
             vercel-project-id-key: VERCEL_PROJECT_ID_DOCS
           - name: erd-sample
+            execute: ${{ needs.setup-deployment.outputs.has-changes-erd-sample == 'true' }}
             prepare: "pnpm build"
             vercel-project-id-key: VERCEL_PROJECT_ID_ERD_SAMPLE
     environment:
@@ -69,18 +71,25 @@ jobs:
       VERCEL_PROJECT_ID: ${{ secrets[matrix.apps.vercel-project-id-key] }}
     steps:
       - uses: actions/checkout@v4
+        if: ${{ matrix.apps.execute }}
       - uses: ./.github/actions/pnpm-setup
+        if: ${{ matrix.apps.execute }}
         with:
           working-directory: frontend
       - name: Install Vercel CLI
+        if: ${{ matrix.apps.execute }}
         run: pnpm add --global vercel@latest
       - name: Pull Vercel Enviroment Infomation
+        if: ${{ matrix.apps.execute }}
         run: vercel pull --yes --environment=${{ needs.setup-deployment.outputs.environment }} --token=${{ secrets.VERCEL_TOKEN }}
       - name: Run prepare command
+        if: ${{ matrix.apps.execute }}
         run:  ${{ matrix.apps.prepare }}
       - name: Build Project Artifacts
+        if: ${{ matrix.apps.execute }}
         run: vercel build --token=${{ secrets.VERCEL_TOKEN }} ${{ needs.setup-deployment.outputs.environment == 'production' && '--prod' || '' }}
       - name: Deploy Project Artifacts to Vercel
+        if: ${{ matrix.apps.execute }}
         run: |
           vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }} ${{ needs.setup-deployment.outputs.environment == 'production' && '--prod' || '' }} > deployment-url.txt
           echo "deployment-url=$(cat deployment-url.txt)" >> $GITHUB_OUTPUT
