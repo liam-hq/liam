@@ -61,7 +61,7 @@ jobs:
             prepare: "pnpm build"
             vercel-project-id-key: VERCEL_PROJECT_ID_ERD_SAMPLE
     environment:
-      name: matrix.apps.execute && "${{ needs.setup-deployment.outputs.environment }} - ${{ matrix.apps.name }}"
+      name:
       url: ${{ steps.deployment.outputs.deployment-url }}
     outputs:
       app-name: ${{ matrix.apps.name }}
