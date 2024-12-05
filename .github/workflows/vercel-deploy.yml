@@ -85,6 +85,7 @@ jobs:
       - name: Run prepare command
         if: ${{ matrix.apps.execute }}
         run:  ${{ matrix.apps.prepare }}
+        working-directory: frontend
       - name: Build Project Artifacts
         if: ${{ matrix.apps.execute }}
         run: vercel build --token=${{ secrets.VERCEL_TOKEN }} ${{ needs.setup-deployment.outputs.environment == 'production' && '--prod' || '' }}
