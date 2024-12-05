@@ -58,7 +58,7 @@ jobs:
             vercel-project-id-key: VERCEL_PROJECT_ID_DOCS
           - name: erd-sample
             execute: ${{ needs.setup-deployment.outputs.has-changes-erd-sample == 'true' }}
-            prepare: "pnpm build"
+            prepare: "pnpm build && pnpm i"
             vercel-project-id-key: VERCEL_PROJECT_ID_ERD_SAMPLE
     environment:
       name: "${{ needs.setup-deployment.outputs.environment }} - ${{ matrix.apps.name }}"
