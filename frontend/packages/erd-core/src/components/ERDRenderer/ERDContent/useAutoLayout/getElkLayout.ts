@@ -8,6 +8,11 @@ import { convertNodesToElkNodes } from './convertNodesToElkNodes'
 const elk = new ELK()
 const layoutOptions: LayoutOptions = {
   'elk.algorithm': 'org.eclipse.elk.force',
+  'elk.force.model': 'EADES',
+  'elk.force.repulsion': '2',
+  'elk.force.iterations': '500',
+  'elk.spacing.nodeNode': '20',
+  'elk.force.repulsivePower': '4',
 }
 
 type Params = {
