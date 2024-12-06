@@ -1,3 +1,4 @@
+import { useDBStructureStore } from '@/stores'
 import type { Table } from '@liam-hq/db-structure'
 import {
   DiamondFillIcon,
@@ -10,21 +11,21 @@ import {
 } from '@liam-hq/ui'
 import { Handle, type Node, type NodeProps, Position } from '@xyflow/react'
 import type { FC } from 'react'
-import type { Relationship } from '../../types'
 import { TableDetail } from './TableDetail'
 import { TableHeader } from './TableHeader'
 import styles from './TableNode.module.css'
 
 type Data = {
   table: Table
-  relationships: Relationship[]
 }
 
 type TableNodeType = Node<Data, 'Table'>
 
 type Props = NodeProps<TableNodeType>
 
-export const TableNode: FC<Props> = ({ data: { table, relationships } }) => {
+export const TableNode: FC<Props> = ({ data: { table } }) => {
+  const { relationships } = useDBStructureStore()
+
   return (
     <>
       <DrawerRoot direction="right">
@@ -34,11 +35,16 @@ export const TableNode: FC<Props> = ({ data: { table, relationships } }) => {
             <ul>
               {Object.values(table.columns).map((column) => {
                 const handleId = `${table.name}-${column.name}`
-                const isSource = relationships.some(
-                  (rel) => rel.sourceHandle === handleId,
+                const isSource = Object.values(relationships).some(
+                  (relationship) =>
+                    relationship.primaryTableName === table.name &&
+                    relationship.primaryColumnName === column.name,
                 )
-                const isTarget = relationships.some(
-                  (rel) => rel.targetHandle === handleId,
+
+                const isTarget = Object.values(relationships).some(
+                  (relationship) =>
+                    relationship.foreignTableName === table.name &&
+                    relationship.foreignColumnName === column.name,
                 )
 
                 return (

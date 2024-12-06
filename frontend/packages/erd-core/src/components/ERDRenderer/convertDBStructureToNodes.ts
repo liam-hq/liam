@@ -17,16 +17,11 @@ export const convertDBStructureToNodes = (
   }))
 
   const nodes = tables.map((table, index) => {
-    const relatedRelationships = relationships.filter(
-      (rel) => rel.source === table.name || rel.target === table.name,
-    )
-
     return {
       id: table.name,
       type: 'table',
       data: {
         table,
-        relationships: relatedRelationships,
       },
       position: { x: index * 300, y: 50 },
     }
