@@ -121,7 +121,7 @@ function extractTableDetails(blockNodes: Node[]): [Column[], Index[]] {
 function extractColumnDetails(node: CallNode): Column {
   const column = aColumn({
     name: '',
-    type: node.name,
+    type: node.name === 'string' ? 'varchar' : node.name,
   })
 
   const argNodes = node.arguments_?.compactChildNodes() || []

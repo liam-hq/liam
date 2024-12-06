@@ -115,7 +115,7 @@ exports[`parse > should parse schema.rb to JSON correctly 1`] = `
           "name": "age",
           "notNull": false,
           "primary": false,
-          "type": "string",
+          "type": "varchar",
           "unique": false,
         },
         "company_id": {
@@ -155,7 +155,7 @@ exports[`parse > should parse schema.rb to JSON correctly 1`] = `
           "name": "is_deleted",
           "notNull": false,
           "primary": false,
-          "type": "string",
+          "type": "varchar",
           "unique": false,
         },
         "name": {
@@ -165,7 +165,7 @@ exports[`parse > should parse schema.rb to JSON correctly 1`] = `
           "name": "name",
           "notNull": false,
           "primary": false,
-          "type": "string",
+          "type": "varchar",
           "unique": false,
         },
         "user_name": {
@@ -175,7 +175,7 @@ exports[`parse > should parse schema.rb to JSON correctly 1`] = `
           "name": "user_name",
           "notNull": true,
           "primary": false,
-          "type": "string",
+          "type": "varchar",
           "unique": false,
         },
       },
