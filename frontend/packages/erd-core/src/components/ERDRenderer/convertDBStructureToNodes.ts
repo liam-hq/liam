@@ -15,6 +15,9 @@ export const convertDBStructureToNodes = (
         table,
       },
       position: { x: index * 300, y: 50 },
+      style: {
+        opacity: 0,
+      },
     }
   })
 
@@ -26,6 +29,9 @@ export const convertDBStructureToNodes = (
     sourceHandle: `${rel.primaryTableName}-${rel.primaryColumnName}`,
     targetHandle: `${rel.foreignTableName}-${rel.foreignColumnName}`,
     data: { relationship: rel },
+    style: {
+      opacity: 0,
+    },
   }))
 
   return { nodes, edges }
