@@ -22,11 +22,27 @@ import type {
   Index,
   Indices,
   Relationship,
+  Relationships,
   Table,
   Tables,
 } from '../../schema/index.js'
 import { aColumn, aRelationship, aTable, anIndex } from '../../schema/index.js'
 import type { Processor } from '../types.js'
+
+// If there is a unique index for a column in relationships, make it `ONE_TO_ONE` cardinality.
+const handleOneToOneRelationships = (
+  tables: Tables,
+  relationships: Relationships,
+) => {
+  for (const relationship of Object.values(relationships)) {
+    const foreignTable = tables[relationship.foreignTableName]
+    const foreignColumn = foreignTable?.columns[relationship.foreignColumnName]
+
+    if (foreignColumn?.unique) {
+      relationship.cardinality = 'ONE_TO_ONE'
+    }
+  }
+}
 
 function extractTableName(argNodes: Node[]): string {
   const nameNode = argNodes.find((node) => node instanceof StringNode)
@@ -313,6 +329,7 @@ class DBStructureFinder extends Visitor {
         {} as Record<string, Relationship>,
       ),
     }
+    handleOneToOneRelationships(dbStructure.tables, dbStructure.relationships)
     return dbStructure
   }
 

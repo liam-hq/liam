@@ -220,5 +220,28 @@ describe(processor, () => {
 
       expect(result.relationships).toEqual(expected)
     })
+
+    it('unique foreign key', async () => {
+      const result = await processor(/* Ruby */ `
+        create_table "posts" do |t|
+          t.bigint "user_id", unique: true
+        end
+
+        add_foreign_key "posts", "users", column: "user_id", name: "fk_posts_user_id"
+      `)
+
+      const rel = aRelationship({
+        name: 'fk_posts_user_id',
+        primaryTableName: 'users',
+        primaryColumnName: 'id',
+        foreignTableName: 'posts',
+        foreignColumnName: 'user_id',
+        cardinality: 'ONE_TO_ONE',
+      })
+
+      const expected = { fk_posts_user_id: rel }
+
+      expect(result.relationships).toEqual(expected)
+    })
   })
 })
