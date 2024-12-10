@@ -1,10 +1,10 @@
 # frontend
 
-As of December  9, 2024 12:25pm. 1020 total
+As of December 10, 2024  6:35am. 1024 total
 
 ## Summary
-* 888 MIT
-* 59 ISC
+* 889 MIT
+* 61 ISC
 * 30 Apache 2.0
 * 14 Simplified BSD
 * 11 New BSD
@@ -1997,6 +1997,17 @@ LGPL-3.0-or-later permitted
 
 
 
+<a name="@types/d3-force"></a>
+### @types/d3-force v3.0.10
+#### 
+
+##### Paths
+* /home/runner/work/liam/liam/frontend
+
+<a href="http://opensource.org/licenses/mit-license">MIT</a> permitted
+
+
+
 <a name="@types/d3-interpolate"></a>
 ### @types/d3-interpolate v3.0.4
 #### 
@@ -3816,8 +3827,30 @@ CC-BY-4.0 permitted
 
 
 
+<a name="d3-force"></a>
+### d3-force v3.0.0
+#### 
+
+##### Paths
+* /home/runner/work/liam/liam/frontend
+
+<a href="http://en.wikipedia.org/wiki/ISC_license">ISC</a> permitted
+
+
+
 <a name="d3-interpolate"></a>
 ### d3-interpolate v3.0.1
+#### 
+
+##### Paths
+* /home/runner/work/liam/liam/frontend
+
+<a href="http://en.wikipedia.org/wiki/ISC_license">ISC</a> permitted
+
+
+
+<a name="d3-quadtree"></a>
+### d3-quadtree v3.0.1
 #### 
 
 ##### Paths
@@ -11268,3 +11301,5 @@ Unknown manually approved
 * /home/runner/work/liam/liam/frontend
 
 <a href="http://opensource.org/licenses/mit-license">MIT</a> permitted
+
+
