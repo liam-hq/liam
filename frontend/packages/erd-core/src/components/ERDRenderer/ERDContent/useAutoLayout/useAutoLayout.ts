@@ -10,6 +10,10 @@ export const useAutoLayout = () => {
     const nodes = getNodes()
     const edges = getEdges()
 
+    if (!nodes.length || !nodesInitialized) {
+      return
+    }
+
     const { nodes: newNodes, edges: newEdges } = await getElkLayout({
       nodes,
       edges,
@@ -18,11 +22,9 @@ export const useAutoLayout = () => {
     setNodes(newNodes)
     setEdges(newEdges)
     setTimeout(() => fitView(), 0)
-  }, [getNodes, setNodes, getEdges, setEdges, fitView])
+  }, [nodesInitialized, getNodes, setNodes, getEdges, setEdges, fitView])
 
   useEffect(() => {
-    if (nodesInitialized) {
-      handleLayout()
-    }
-  }, [nodesInitialized, handleLayout])
+    handleLayout()
+  }, [handleLayout])
 }
