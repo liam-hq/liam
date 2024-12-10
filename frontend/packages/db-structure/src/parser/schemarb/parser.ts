@@ -31,6 +31,7 @@ import { type ProcessError, WarningError } from '../errors.js'
 import type { ProcessResult, Processor } from '../types.js'
 import { handleOneToOneRelationships } from '../utils/index.js'
 import { convertColumnType } from './convertColumnType.js'
+import { singularize } from './singularize.js'
 
 export class UnsupportedTokenError extends WarningError {
   constructor(message: string) {
@@ -315,6 +316,11 @@ function extractForeignKeyOptions(
               )
             }
             break
+        }
+
+        // ref: https://api.rubyonrails.org/classes/ActiveRecord/ConnectionAdapters/SchemaStatements.html#method-i-add_foreign_key
+        if (relation.foreignColumnName === '') {
+          relation.foreignColumnName = `${singularize(relation.primaryTableName)}_id`
         }
       }
     }
