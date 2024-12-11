@@ -74,3 +74,15 @@
 .handle[data-handlepos='left'] {
   transform: translate(-50%, 0%);
 }
+
+.contextMenuContent {
+  padding: var(--spacing-4);
+  background-color: var(--node-background);
+  border: solid 1px var(--overlay-20);
+}
+
+.contextMenuItem {
+  display: flex;
+  align-items: center;
+  color: white;
+}

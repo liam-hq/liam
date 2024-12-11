@@ -5,8 +5,8 @@ import { GotoIcon, IconButton } from '@liam-hq/ui'
 import { ReactFlowProvider } from '@xyflow/react'
 import type { FC } from 'react'
 import { ERDContent } from '../../../ERDContent'
+import { extractDBStructureForTable } from '../../extractDBStructureForTable'
 import styles from './RelatedTables.module.css'
-import { extractDBStructureForTable } from './extractDBStructureForTable'
 
 type Props = {
   table: Table
