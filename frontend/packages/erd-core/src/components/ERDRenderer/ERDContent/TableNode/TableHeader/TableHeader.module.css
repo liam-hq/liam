@@ -18,3 +18,8 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
+.name:hover {
+  overflow: visible;
+  text-overflow: unset;
+}
