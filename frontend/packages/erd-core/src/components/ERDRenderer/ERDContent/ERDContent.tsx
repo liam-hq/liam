@@ -1,3 +1,5 @@
+import { useDBStructureStore } from '@/stores'
+import type { Relationships } from '@liam-hq/db-structure'
 import {
   Background,
   BackgroundVariant,
@@ -35,6 +37,19 @@ type Props = {
     | undefined
 }
 
+export const isRelatedToTable = (
+  relationships: Relationships,
+  tableName: string,
+  targetTableName: string | undefined,
+) =>
+  Object.values(relationships).some(
+    (relationship) =>
+      (relationship.primaryTableName === tableName ||
+        relationship.foreignTableName === tableName) &&
+      (relationship.primaryTableName === targetTableName ||
+        relationship.foreignTableName === targetTableName),
+  )
+
 export const ERDContent: FC<Props> = ({
   nodes: _nodes,
   edges: _edges,
@@ -42,6 +57,7 @@ export const ERDContent: FC<Props> = ({
 }) => {
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>([])
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([])
+  const { relationships } = useDBStructureStore()
 
   useEffect(() => {
     setNodes(_nodes)
@@ -64,11 +80,13 @@ export const ERDContent: FC<Props> = ({
       )
       setNodes((nodes) =>
         nodes.map((n) =>
-          n.id === id ? { ...n, data: { ...n.data, isHighlighted: true } } : n,
+          n.id === id || isRelatedToTable(relationships, n.id, id)
+            ? { ...n, data: { ...n.data, isHighlighted: true } }
+            : n,
         ),
       )
     },
-    [setNodes, setEdges],
+    [setEdges, setNodes, relationships],
   )
 
   const handleMouseLeaveNode: NodeMouseHandler<Node> = useCallback(
@@ -86,11 +104,13 @@ export const ERDContent: FC<Props> = ({
       )
       setNodes((nodes) =>
         nodes.map((n) =>
-          n.id === id ? { ...n, data: { ...n.data, isHighlighted: false } } : n,
+          n.id === id || isRelatedToTable(relationships, n.id, id)
+            ? { ...n, data: { ...n.data, isHighlighted: false } }
+            : n,
         ),
       )
     },
-    [setNodes, setEdges],
+    [setEdges, setNodes, relationships],
   )
 
   const handleMouseEnterEdge: EdgeMouseHandler<Edge> = useCallback(
