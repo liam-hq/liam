@@ -1,5 +1,11 @@
 # @liam-hq/cli
 
+## 0.0.6
+
+### Patch Changes
+
+- Various improvements to the UI/UX
+
 ## 0.0.5
 
 ### Patch Changes
