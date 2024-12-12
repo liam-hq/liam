@@ -6,6 +6,8 @@ import Module from 'pg-query-emscripten'
 export const parse = async (str: string): Promise<RawStmtWrapper[]> => {
   const pgQuery = await new Module()
   const result = pgQuery.parse(str)
+  // should we have --verbose or --debug mode?
+  if (result.error) console.error(result.error)
   return result
 }
 
