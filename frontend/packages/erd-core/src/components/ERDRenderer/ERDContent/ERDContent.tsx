@@ -13,7 +13,6 @@ import { type FC, useCallback, useEffect } from 'react'
 import styles from './ERDContent.module.css'
 import { RelationshipEdge } from './RelationshipEdge'
 import { TableNode } from './TableNode'
-import { Toolbar } from './Toolbar'
 import { useAutoLayout } from './useAutoLayout'
 import { useFitViewWhenActiveTableChange } from './useFitViewWhenActiveTableChange'
 
@@ -146,9 +145,6 @@ export const ERDContent: FC<Props> = ({
           gap={16}
         />
       </ReactFlow>
-      <div className={styles.toolbarWrapper}>
-        <Toolbar />
-      </div>
     </div>
   )
 }

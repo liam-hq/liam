@@ -12,6 +12,8 @@ import styles from './ERDRenderer.module.css'
 import { LeftPane } from './LeftPane'
 import '@/styles/globals.css'
 import { useDBStructureStore, useUserEditingStore } from '@/stores'
+// biome-ignore lint/nursery/useImportRestrictions: Fixed in the next PR.
+import { Toolbar } from './ERDContent/Toolbar'
 import { TableDetailDrawer, TableDetailDrawerRoot } from './TableDetailDrawer'
 import { convertDBStructureToNodes } from './convertDBStructureToNodes'
 
@@ -37,6 +39,9 @@ export const ERDRenderer: FC = () => {
             <TableDetailDrawerRoot>
               <ReactFlowProvider>
                 <ERDContent nodes={nodes} edges={edges} />
+                <div className={styles.toolbarWrapper}>
+                  <Toolbar />
+                </div>
               </ReactFlowProvider>
               <TableDetailDrawer />
             </TableDetailDrawerRoot>

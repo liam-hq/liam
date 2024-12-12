@@ -23,3 +23,20 @@
   left: 8px;
   z-index: 1;
 }
+
+.toolbarWrapper {
+  position: absolute;
+  left: 0;
+  bottom: 2rem;
+  right: 0;
+  display: grid;
+  justify-content: center;
+  margin: 0 auto;
+  /* NOTE: Disable pointer events to allow interaction with Reactflow underneath the toolbar */
+  pointer-events: none;
+}
+
+/* NOTE: Make the toolbar itself clickable */
+.toolbarWrapper > * {
+  pointer-events: auto;
+}
