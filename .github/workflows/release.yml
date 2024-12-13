@@ -31,6 +31,7 @@ jobs:
         with:
           token: ${{ steps.app-token.outputs.token }}
           sparse-checkout: |
+            .changesets
             .github
             ${{ env.working-directory }}
       - uses: ./.github/actions/pnpm-setup
