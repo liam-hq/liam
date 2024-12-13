@@ -1,5 +1,16 @@
 # @liam-hq/cli
 
+## 0.0.8
+
+### Patch Changes
+
+- Fixed border radius for TABLE_NAME show mode.
+- Update HTML and view header titles in ERD.
+- feat: 1:n and 1:1 notations can now be displayed when highlighting relationships
+- Added links to documentation and community resources
+- fix: disable delete key functionality for delete TableNode
+- refactor: optimize edge highlighting using useReactFlow hooks
+
 ## 0.0.7
 
 ### Patch Changes
