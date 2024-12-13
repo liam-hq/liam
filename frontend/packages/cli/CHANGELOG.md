@@ -1,5 +1,11 @@
 # @liam-hq/cli
 
+## 0.0.8
+
+### Patch Changes
+
+- Update HTML and view header titles in ERD.
+
 ## 0.0.7
 
 ### Patch Changes

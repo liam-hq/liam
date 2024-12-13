@@ -1,5 +1,11 @@
 # @liam-hq/erd-core
 
+## 0.0.3
+
+### Patch Changes
+
+- Update HTML and view header titles in ERD.
+
 ## 0.0.2
 
 ### Patch Changes
