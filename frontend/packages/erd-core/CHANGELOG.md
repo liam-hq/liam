@@ -1,5 +1,17 @@
 # @liam-hq/erd-core
 
+## 0.0.4
+
+### Patch Changes
+
+- Fixed border radius for TABLE_NAME show mode.
+- Update HTML and view header titles in ERD.
+- feat: 1:n and 1:1 notations can now be displayed when highlighting relationships
+- Added links to documentation and community resources
+- feat: update ELK layout options for improved node placement and spacing
+- fix: disable delete key functionality for delete TableNode
+- refactor: optimize edge highlighting using useReactFlow hooks
+
 ## 0.0.3
 
 ### Patch Changes
