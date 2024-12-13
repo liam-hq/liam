@@ -1,8 +1,9 @@
-name: release
+name: release (investigation now)
 on:
   push:
     branches:
       - main
+      - changeset-invest3
 env:
   working-directory: frontend
 
