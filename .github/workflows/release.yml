@@ -39,8 +39,11 @@ jobs:
         with:
           working-directory: ${{ env.working-directory }}
 
+      - name: debug - 4
+        run: cat /home/runner/work/liam/liam/.changeset/noop.js
       - name: debug - 3
         run: ln -s frontend/node_modules
+
 
       - name: Create Release Pull Request or Publish to npm
         uses: changesets/action@v1.4.9
