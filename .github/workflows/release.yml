@@ -43,8 +43,8 @@ jobs:
         with:
           cwd: ${{ env.working-directory }}
           # publish: pnpm run release
-        #env:
-        #  GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
+        env:
+          GITHUB_TOKEN: foo
         #  NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
       - name: debug - 2
         run: ls -alF .changeset
