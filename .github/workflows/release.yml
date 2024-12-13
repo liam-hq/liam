@@ -39,8 +39,12 @@ jobs:
         with:
           working-directory: ${{ env.working-directory }}
 
+      - name: debug - 4
+        run: tree -L 3 node_modules/.pnpm/@changesets+cli@2.27.10/node_modules
+        working-directory: ${{ env.working-directory }}
+
       - name: debug - 3
-        run: ls -alF node_modules
+        run: ls -alF /home/runner/work/liam/liam/frontend/node_modules/.pnpm/@changesets+cli@2.27.10/node_modules/@changesets/cli/
         working-directory: ${{ env.working-directory }}
 
       - name: Create Release Pull Request or Publish to npm
