@@ -50,7 +50,7 @@ jobs:
       - name: Create Release Pull Request or Publish to npm
         uses: changesets/action@v1.4.9
         with:
-          cwd: ${{ env.working-directory }}
+          cwd: /home/runner/work/liam/liam/frontend
           # publish: pnpm run release
         env:
           GITHUB_TOKEN: foo
