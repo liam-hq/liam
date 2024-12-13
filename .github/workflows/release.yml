@@ -45,5 +45,5 @@ jobs:
           cwd: ${{ env.working-directory }}
           # publish: pnpm run release
         env:
-          GITHUB_TOKEN: foo
+          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
         #  NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
