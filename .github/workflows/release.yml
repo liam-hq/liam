@@ -39,18 +39,13 @@ jobs:
         with:
           working-directory: ${{ env.working-directory }}
 
-      - name: debug - 4
-        run: tree -L 3 node_modules/.pnpm/@changesets+cli@2.27.10/node_modules
-        working-directory: ${{ env.working-directory }}
-
       - name: debug - 3
-        run: ls -alF /home/runner/work/liam/liam/frontend/node_modules/.pnpm/@changesets+cli@2.27.10/node_modules/@changesets/cli/
-        working-directory: ${{ env.working-directory }}
+        run: ln -s frontend/node_modules
 
       - name: Create Release Pull Request or Publish to npm
         uses: changesets/action@v1.4.9
         with:
-          cwd: /home/runner/work/liam/liam/frontend
+          cwd: ${{ env.working-directory }}
           # publish: pnpm run release
         env:
           GITHUB_TOKEN: foo
