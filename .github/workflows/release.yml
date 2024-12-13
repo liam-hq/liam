@@ -38,6 +38,15 @@ jobs:
       - uses: ./.github/actions/pnpm-setup
         with:
           working-directory: ${{ env.working-directory }}
+      - name: debug - 2
+        run: ls -alF .changeset
+        working-directory: ${{ env.working-directory }}
+      - name: debug - 1
+        run: ls -alF .
+        working-directory: ${{ env.working-directory }}
+      - name: debug 0
+        run: git ls-files
+        working-directory: ${{ env.working-directory }}
       - name: debug 1
         run: pnpm changeset version
         working-directory: ${{ env.working-directory }}
