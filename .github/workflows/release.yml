@@ -40,7 +40,7 @@ jobs:
           working-directory: ${{ env.working-directory }}
 
       - name: debug - 3
-        run: node_modules
+        run: ls -alF node_modules
         working-directory: ${{ env.working-directory }}
 
       - name: Create Release Pull Request or Publish to npm
