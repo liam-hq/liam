@@ -1,8 +1,9 @@
-name: release
+name: release(investigation now)
 on:
   push:
     branches:
       - main
+  workflow_dispatch:
 env:
   working-directory: frontend
 
@@ -37,12 +38,9 @@ jobs:
       - uses: ./.github/actions/pnpm-setup
         with:
           working-directory: ${{ env.working-directory }}
-
-      - name: Create Release Pull Request or Publish to npm
-        uses: changesets/action@v1.4.9
-        with:
-          cwd: ${{ env.working-directory }}
-          publish: pnpm run release
-        env:
-          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - name: debug 1
+        run: pnpm changeset version
+        working-directory: ${{ env.working-directory }}
+      - name: debug 2
+        run: git status
+        working-directory: ${{ env.working-directory }}
