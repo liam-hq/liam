@@ -3,7 +3,7 @@ on:
   push:
     branches:
       - main
-  workflow_dispatch:
+      - changeset-invest1
 env:
   working-directory: frontend
 
