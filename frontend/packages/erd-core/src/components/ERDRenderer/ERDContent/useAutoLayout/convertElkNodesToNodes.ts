@@ -6,6 +6,7 @@ export function convertElkNodesToNodes(
   originNodes: Node[],
 ): Node[] {
   const nodes: Node[] = []
+
   for (const elkNode of elkNodes) {
     const originNode = originNodes.find((node) => node.id === elkNode.id)
     if (!originNode) continue
@@ -19,6 +20,12 @@ export function convertElkNodesToNodes(
       width: elkNode.width ?? 0,
       height: elkNode.height ?? 0,
     })
+
+    if (elkNode.children) {
+      for (const child of elkNode.children) {
+        nodes.push(...convertElkNodesToNodes([child], originNodes))
+      }
+    }
   }
 
   return nodes
