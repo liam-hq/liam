@@ -1,3 +1,4 @@
+import { addHiddenNode, removeHiddenNode } from '@/stores/hiddenNodes'
 import { Eye, EyeClosed, SidebarMenuAction } from '@liam-hq/ui'
 import { useReactFlow } from '@xyflow/react'
 import { type FC, type MouseEvent, useCallback } from 'react'
@@ -14,9 +15,10 @@ export const VisibilityButton: FC<Props> = ({ tableName, hidden }) => {
   const handleClick = useCallback(
     (event: MouseEvent) => {
       event.stopPropagation()
+      !hidden ? addHiddenNode(tableName) : removeHiddenNode(tableName)
       updateNode(tableName, (node) => ({ ...node, hidden: !node.hidden }))
     },
-    [updateNode, tableName],
+    [updateNode, tableName, hidden],
   )
 
   return (

@@ -1,3 +1,4 @@
+import { useHiddenNodesStore } from '@/stores/hiddenNodes'
 import type { Column, Relationships, Table } from '@liam-hq/db-structure'
 import { DiamondFillIcon, DiamondIcon, KeyRound } from '@liam-hq/ui'
 import { Handle, Position } from '@xyflow/react'
@@ -25,14 +26,19 @@ export const TableColumn: FC<TableColumnProps> = ({
 }) => {
   const handleId = `${table.name}-${column.name}`
 
-  const isSource = Object.values(relationships).some(
+  const hiddenNodes = useHiddenNodesStore()
+
+  const isVisibleSourceCardinality = Object.values(relationships).some(
     (relationship) =>
       relationship.primaryTableName === table.name &&
-      relationship.primaryColumnName === column.name,
+      relationship.primaryColumnName === column.name &&
+      !hiddenNodes.includes(relationship.foreignTableName),
   )
   const targetCardinality = Object.values(relationships).find(
-    ({ foreignTableName, foreignColumnName }) =>
-      foreignTableName === table.name && foreignColumnName === column.name,
+    ({ foreignTableName, foreignColumnName, primaryTableName }) =>
+      foreignTableName === table.name &&
+      foreignColumnName === column.name &&
+      !hiddenNodes.includes(primaryTableName),
   )?.cardinality
 
   return (
@@ -70,7 +76,7 @@ export const TableColumn: FC<TableColumnProps> = ({
         <span className={styles.columnType}>{column.type}</span>
       </span>
 
-      {isSource && (
+      {isVisibleSourceCardinality && (
         <>
           <Handle
             id={handleId}
