@@ -15,12 +15,14 @@ import styles from './ERDContent.module.css'
 import { ERDContentProvider, useERDContentContext } from './ERDContentContext'
 import { RelationshipEdge } from './RelationshipEdge'
 import { TableNode } from './TableNode'
+import { VerticalContainerNode } from './VerticalContainerNode'
 import { useActiveTableNameFromUrl } from './useActiveTableNameFromUrl'
 import { useFitViewWhenActiveTableChange } from './useFitViewWhenActiveTableChange'
 import { useInitialAutoLayout } from './useInitialAutoLayout'
 
 const nodeTypes = {
   table: TableNode,
+  verticalContainer: VerticalContainerNode,
 }
 
 const edgeTypes = {
