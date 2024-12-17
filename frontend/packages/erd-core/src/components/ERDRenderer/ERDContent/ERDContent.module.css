@@ -4,3 +4,20 @@
   height: 100%;
   background-color: var(--global-background);
 }
+
+.loading {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 10%;
+  max-width: 200px;
+  height: 100%;
+  opacity: 1;
+  z-index: 1;
+  pointer-events: none;
+}
+
+:global([data-loading='false']) .loading {
+  opacity: 0;
+}

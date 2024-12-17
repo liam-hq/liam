@@ -13,6 +13,7 @@ import {
 import { type FC, useCallback } from 'react'
 import styles from './ERDContent.module.css'
 import { ERDContentProvider, useERDContentContext } from './ERDContentContext'
+import { Loading } from './Loading'
 import { RelationshipEdge } from './RelationshipEdge'
 import { TableNode } from './TableNode'
 import { useActiveTableNameFromUrl } from './useActiveTableNameFromUrl'
@@ -150,6 +151,7 @@ export const ERDContentInner: FC<Props> = ({
 
   return (
     <div className={styles.wrapper} data-loading={loading}>
+      <Loading className={styles.loading} />
       <ReactFlow
         nodes={nodes}
         edges={edges}
