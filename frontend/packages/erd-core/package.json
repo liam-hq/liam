@@ -7,6 +7,7 @@
   "dependencies": {
     "@liam-hq/ui": "workspace:*",
     "@radix-ui/react-toolbar": "1.1.0",
+    "@rive-app/react-canvas": "4.17.3",
     "@xyflow/react": "12.3.5",
     "clsx": "2.1.1",
     "elkjs": "0.9.3",

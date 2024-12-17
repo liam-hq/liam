@@ -197,6 +197,9 @@ importers:
       '@radix-ui/react-toolbar':
         specifier: 1.1.0
         version: 1.1.0(@types/react-dom@18.3.1)(@types/react@18.3.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@rive-app/react-canvas':
+        specifier: 4.17.3
+        version: 4.17.3(react@18.3.1)
       '@xyflow/react':
         specifier: 12.3.5
         version: 12.3.5(@types/react@18.3.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -1668,6 +1671,14 @@ packages:
 
   '@radix-ui/rect@1.1.0':
     resolution: {integrity: sha512-A9+lCBZoaMJlVKcRBz2YByCG+Cp2t6nAnMnNba+XiWxnj6r4JUFqfsgwocMBZU9LPtdxC6wB56ySYpc7LQIoJg==}
+
+  '@rive-app/canvas@2.25.1':
+    resolution: {integrity: sha512-d0vpj8+hiyzTbwUCPIB6Nw5erNaeYveVi71BMnoatSGls6NbWeUjTif1KuWuyn4DIYouU/9q7GQMwDFm0rGbjg==}
+
+  '@rive-app/react-canvas@4.17.3':
+    resolution: {integrity: sha512-n32zFCOJLiVBqesQU5MIOWg5wxmVsY/pdRd7p9fllrIb9JFYePIc+3socIOBcIK84+RildBUoVBkSXniksnk0g==}
+    peerDependencies:
+      react: ^16.8.0 || ^17.0.0 || ^18.0.0
 
   '@rollup/plugin-node-resolve@15.3.0':
     resolution: {integrity: sha512-9eO5McEICxMzJpDW9OnMYSv4Sta3hmt7VtBFz5zR9273suNOydOyq/FrGeGy+KsTRFm8w0SLVhzig2ILFT63Ag==}
@@ -7139,6 +7150,13 @@ snapshots:
       '@types/react-dom': 18.3.1
 
   '@radix-ui/rect@1.1.0': {}
+
+  '@rive-app/canvas@2.25.1': {}
+
+  '@rive-app/react-canvas@4.17.3(react@18.3.1)':
+    dependencies:
+      '@rive-app/canvas': 2.25.1
+      react: 18.3.1
 
   '@rollup/plugin-node-resolve@15.3.0(rollup@4.27.3)':
     dependencies:
