@@ -29,8 +29,10 @@ export const useAutoLayout = () => {
     })
 
     setNodes([...hiddenNodes, ...newNodes])
-    setLoading(false)
-    setTimeout(() => fitView(), 0)
+    setTimeout(() => {
+      setLoading(false)
+      fitView()
+    })
   }, [getNodes, setNodes, getEdges, fitView, setLoading])
 
   return { handleLayout }

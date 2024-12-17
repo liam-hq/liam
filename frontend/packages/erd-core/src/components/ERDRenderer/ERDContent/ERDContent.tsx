@@ -10,7 +10,7 @@ import {
   useEdgesState,
   useNodesState,
 } from '@xyflow/react'
-import { type FC, useCallback } from 'react'
+import { type FC, ReactNode, useCallback } from 'react'
 import styles from './ERDContent.module.css'
 import { ERDContentProvider, useERDContentContext } from './ERDContentContext'
 import { Loading } from './Loading'
@@ -36,6 +36,7 @@ type Props = {
         fitViewWhenActiveTableChange?: boolean | undefined
       }
     | undefined
+  children?: ReactNode
 }
 
 export const isRelatedToTable = (
@@ -59,6 +60,7 @@ export const ERDContentInner: FC<Props> = ({
   nodes: _nodes,
   edges: _edges,
   enabledFeatures,
+  children,
 }) => {
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>(_nodes)
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>(_edges)
@@ -151,7 +153,8 @@ export const ERDContentInner: FC<Props> = ({
 
   return (
     <div className={styles.wrapper} data-loading={loading}>
-      <Loading className={styles.loading} />
+      {/* <Loading className={styles.loading} /> */}
+      {children}
       <ReactFlow
         nodes={nodes}
         edges={edges}

@@ -11,6 +11,8 @@
     "liam": "./dist-cli/bin/cli.js"
   },
   "dependencies": {
+    "@rive-app/canvas": "^2.25.1",
+    "@rive-app/react-canvas": "4.17.3",
     "commander": "12.1.0",
     "react": "18.3.1",
     "react-dom": "18",
@@ -38,7 +40,7 @@
     "build": "pnpm run '/^build:.*/'",
     "build:cli": "rollup -c  && pnpm run cp:prism",
     "build:vite": "vite build",
-    "command:build": "node ./dist-cli/bin/cli.js erd build --input fixtures/input.schema.rb --format schemarb",
+    "command:build": "node ./dist-cli/bin/cli.js erd build --input ../../../../../mastodon/mastodon/db/schema.rb --format schemarb",
     "cp:prism": "cp ../db-structure/node_modules/@ruby/prism/src/prism.wasm ./dist-cli/bin/prism.wasm",
     "dev": "pnpm command:build && cp dist/schema.json public/ && pnpm run '/^dev:.*/'",
     "dev:app": "vite",

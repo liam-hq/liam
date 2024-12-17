@@ -87,6 +87,12 @@ importers:
 
   packages/cli:
     dependencies:
+      '@rive-app/canvas':
+        specifier: ^2.25.1
+        version: 2.25.1
+      '@rive-app/react-canvas':
+        specifier: 4.17.3
+        version: 4.17.3(react@18.3.1)
       commander:
         specifier: 12.1.0
         version: 12.1.0
@@ -197,6 +203,9 @@ importers:
       '@radix-ui/react-toolbar':
         specifier: 1.1.0
         version: 1.1.0(@types/react-dom@18.3.1)(@types/react@18.3.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@rive-app/canvas':
+        specifier: ^2.25.1
+        version: 2.25.1
       '@rive-app/react-canvas':
         specifier: 4.17.3
         version: 4.17.3(react@18.3.1)

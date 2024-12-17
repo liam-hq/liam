@@ -13,6 +13,7 @@ import styles from './ERDRenderer.module.css'
 import { LeftPane } from './LeftPane'
 import '@/styles/globals.css'
 import { useDBStructureStore, useUserEditingStore } from '@/stores'
+import { Loading } from './ERDContent/Loading'
 // biome-ignore lint/nursery/useImportRestrictions: Fixed in the next PR.
 import { Toolbar } from './ERDContent/Toolbar'
 import { TableDetailDrawer, TableDetailDrawerRoot } from './TableDetailDrawer'
@@ -26,6 +27,7 @@ export const ERDRenderer: FC = () => {
     dbStructure,
     showMode,
   })
+  const loading = <Loading className={styles.loading} />
 
   return (
     <div className={styles.wrapper}>
@@ -44,7 +46,9 @@ export const ERDRenderer: FC = () => {
                     key={`${nodes.length}-${showMode}`}
                     nodes={nodes}
                     edges={edges}
-                  />
+                  >
+                    {loading}
+                  </ERDContent>
                   <div className={styles.toolbarWrapper}>
                     <Toolbar />
                   </div>
