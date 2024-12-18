@@ -8,6 +8,10 @@
   stroke: transparent;
 }
 
+marker {
+  transition: stroke 0.3s var(--default-timing-function);
+}
+
 .hovered {
   stroke: var(--node-layout);
 }
