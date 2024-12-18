@@ -1,6 +1,11 @@
 import { useDBStructureStore } from '@/stores'
 import type { Relationships } from '@liam-hq/db-structure'
 import {
+  CardinalityZeroOrManyLeftMarker,
+  CardinalityZeroOrOneLeftMarker,
+  CardinalityZeroOrOneRightMarker,
+} from '@liam-hq/ui'
+import {
   Background,
   BackgroundVariant,
   type Edge,
@@ -294,6 +299,30 @@ export const ERDContentInner: FC<Props> = ({
   return (
     <div className={styles.wrapper} data-loading={loading}>
       {loading && <Spinner className={styles.loading} />}
+      <CardinalityZeroOrOneLeftMarker
+        id="zeroOrOneLeft"
+        color="var(--pane-border-hover)"
+      />
+      <CardinalityZeroOrOneLeftMarker
+        id="zeroOrOneLeftHighlight"
+        color="var(--node-layout)"
+      />
+      <CardinalityZeroOrOneRightMarker
+        id="zeroOrOneRight"
+        color="var(--pane-border-hover)"
+      />
+      <CardinalityZeroOrOneRightMarker
+        id="zeroOrOneRightHighlight"
+        color="var(--node-layout)"
+      />
+      <CardinalityZeroOrManyLeftMarker
+        id="zeroOrManyLeft"
+        color="var(--pane-border-hover)"
+      />
+      <CardinalityZeroOrManyLeftMarker
+        id="zeroOrManyLeftHighlight"
+        color="var(--node-layout)"
+      />
       <ReactFlow
         nodes={nodes.map((node) => ({
           ...node,
