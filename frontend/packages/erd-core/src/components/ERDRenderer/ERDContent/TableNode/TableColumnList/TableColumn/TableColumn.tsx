@@ -6,9 +6,6 @@ import { DiamondFillIcon, DiamondIcon, KeyRound } from '@liam-hq/ui'
 import { Handle, Position } from '@xyflow/react'
 import clsx from 'clsx'
 import type { FC } from 'react'
-import { match } from 'ts-pattern'
-import { Cardinality } from './Cardinality'
-import { CardinalityNotation } from './CardinalityNotation'
 import styles from './TableColumn.module.css'
 
 type TableColumnProps = {
@@ -22,7 +19,6 @@ type TableColumnProps = {
 export const TableColumn: FC<TableColumnProps> = ({
   column,
   handleId,
-  isHighlighted,
   isSource,
   targetCardinality,
 }) => {
@@ -62,65 +58,21 @@ export const TableColumn: FC<TableColumnProps> = ({
       </span>
 
       {isSource && (
-        <>
-          <Handle
-            id={handleId}
-            type="source"
-            position={Position.Right}
-            className={clsx([styles.handle])}
-          />
-          <Cardinality
-            direction="right"
-            cardinality="ONE_TO_ONE"
-            isHighlighted={isHighlighted}
-          />
-          <CardinalityNotation
-            direction="right"
-            notation="1"
-            isHighlighted={isHighlighted}
-          />
-        </>
+        <Handle
+          id={handleId}
+          type="source"
+          position={Position.Right}
+          className={clsx([styles.handle])}
+        />
       )}
 
       {targetCardinality && (
-        <>
-          <Handle
-            id={handleId}
-            type="target"
-            position={Position.Left}
-            className={clsx([styles.handle])}
-          />
-          {match(targetCardinality)
-            .with('ONE_TO_ONE', () => (
-              <>
-                <Cardinality
-                  direction="left"
-                  cardinality="ONE_TO_ONE"
-                  isHighlighted={isHighlighted}
-                />
-                <CardinalityNotation
-                  direction="left"
-                  notation="1"
-                  isHighlighted={isHighlighted}
-                />
-              </>
-            ))
-            .with('ONE_TO_MANY', () => (
-              <>
-                <Cardinality
-                  direction="left"
-                  cardinality="ONE_TO_MANY"
-                  isHighlighted={isHighlighted}
-                />
-                <CardinalityNotation
-                  direction="left"
-                  notation="n"
-                  isHighlighted={isHighlighted}
-                />
-              </>
-            ))
-            .otherwise(() => null)}
-        </>
+        <Handle
+          id={handleId}
+          type="target"
+          position={Position.Left}
+          className={clsx([styles.handle])}
+        />
       )}
     </li>
   )
