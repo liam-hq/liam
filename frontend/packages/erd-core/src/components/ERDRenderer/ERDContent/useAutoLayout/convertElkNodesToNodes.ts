@@ -19,6 +19,12 @@ export function convertElkNodesToNodes(
       width: elkNode.width ?? 0,
       height: elkNode.height ?? 0,
     })
+
+    if (elkNode.children) {
+      for (const child of elkNode.children) {
+        nodes.push(...convertElkNodesToNodes([child], originNodes))
+      }
+    }
   }
 
   return nodes

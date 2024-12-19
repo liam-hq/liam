@@ -1,6 +1,6 @@
 import type { QueryParam } from '@/schemas/queryParam'
 import { updateActiveTableName } from '@/stores'
-import { useNodesInitialized } from '@xyflow/react'
+import { useReactFlow } from '@xyflow/react'
 import { useEffect } from 'react'
 import { useERDContentContext } from './ERDContentContext'
 import { useAutoLayout } from './useAutoLayout'
@@ -14,7 +14,9 @@ const getActiveTableNameFromUrl = (): string | undefined => {
 }
 
 export const useInitialAutoLayout = () => {
-  const nodesInitialized = useNodesInitialized()
+  const { getNodes } = useReactFlow()
+  const nodes = getNodes()
+
   const {
     state: { initializeComplete },
   } = useERDContentContext()
@@ -25,14 +27,18 @@ export const useInitialAutoLayout = () => {
       return
     }
 
+    const tableNodesInitialized = nodes
+      .filter((node) => node.type === 'table')
+      .some((node) => node.measured)
+
     const tableNameFromUrl = getActiveTableNameFromUrl()
     updateActiveTableName(tableNameFromUrl)
     const fitViewOptions = tableNameFromUrl
       ? { maxZoom: 1, duration: 300, nodes: [{ id: tableNameFromUrl }] }
       : undefined
 
-    if (nodesInitialized) {
+    if (tableNodesInitialized) {
       handleLayout(fitViewOptions)
     }
-  }, [nodesInitialized, initializeComplete, handleLayout])
+  }, [initializeComplete, handleLayout, nodes])
 }

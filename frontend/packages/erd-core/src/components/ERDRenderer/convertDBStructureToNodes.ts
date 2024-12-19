@@ -3,6 +3,8 @@ import type { Cardinality, DBStructure } from '@liam-hq/db-structure'
 import type { Edge, Node } from '@xyflow/react'
 import { columnHandleId } from './columnHandleId'
 
+const NON_RELATED_TABLE_GROUP_NODE_ID = 'non-related-table-group'
+
 type Params = {
   dbStructure: DBStructure
   showMode: ShowMode
@@ -17,12 +19,16 @@ export const convertDBStructureToNodes = ({
 } => {
   const tables = Object.values(dbStructure.tables)
   const relationships = Object.values(dbStructure.relationships)
+
+  const tablesWithRelationships = new Set<string>()
   const sourceColumns = new Map<string, string>()
   const tableColumnCardinalities = new Map<
     string,
     Record<string, Cardinality>
   >()
   for (const relationship of relationships) {
+    tablesWithRelationships.add(relationship.primaryTableName)
+    tablesWithRelationships.add(relationship.foreignTableName)
     sourceColumns.set(
       relationship.primaryTableName,
       relationship.primaryColumnName,
@@ -33,8 +39,14 @@ export const convertDBStructureToNodes = ({
     })
   }
 
-  const nodes: Node[] = tables.map((table) => {
-    return {
+  const nodes: Node[] = [
+    {
+      id: NON_RELATED_TABLE_GROUP_NODE_ID,
+      type: 'nonRelatedTableGroup',
+      data: {},
+      position: { x: 0, y: 0 },
+    },
+    ...tables.map((table) => ({
       id: table.name,
       type: 'table',
       data: {
@@ -44,8 +56,11 @@ export const convertDBStructureToNodes = ({
       },
       position: { x: 0, y: 0 },
       zIndex: 1,
-    }
-  })
+      ...(!tablesWithRelationships.has(table.name)
+        ? { parentId: NON_RELATED_TABLE_GROUP_NODE_ID }
+        : {}),
+    })),
+  ]
 
   const edges: Edge[] = relationships.map((rel) => ({
     id: rel.name,
