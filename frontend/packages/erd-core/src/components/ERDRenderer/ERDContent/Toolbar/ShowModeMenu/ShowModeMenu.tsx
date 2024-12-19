@@ -1,3 +1,4 @@
+import { clickLogEvent } from '@/features/gtm/utils'
 import { type ShowMode, showModeSchema } from '@/schemas/showMode'
 import { updateShowMode, useUserEditingStore } from '@/stores'
 import {
@@ -28,6 +29,11 @@ export const ShowModeMenu: FC = () => {
 
     if (parsed.success) {
       updateShowMode(parsed.output)
+
+      clickLogEvent({
+        element: 'changeShowMode',
+        showMode: value,
+      })
     }
   }, [])
 
