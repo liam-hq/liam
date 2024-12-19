@@ -1,5 +1,32 @@
 # @liam-hq/erd-core
 
+## 0.0.7
+
+### Patch Changes
+
+- f3e454a: refactor: integrate highlightNodesAndEdges function for improved node and edge highlighting on hover
+- 18e5e8e: ♻️ Remove LinkIcon and replace its usage with Link component
+- 594386f: refactor: Remove highlightedHandles
+- 07b922e: :chart_with_upwards_trend: add types for select table logging
+- 298c7cc: ✨Implementing a key-only view
+- 555a157: feat: hidden nodes can now be reflected from query parameters
+- c0934d3: ✨ Add LinkIcon🔗 and apply it as an icon for foreign keys.
+- 9b62de2: Resolving the issue of remaining highlights
+- 343e01d: New `ReleaseVersion` component into `HelpButton`
+- 4859d37: feat: get hidden nodes via query parameter now compresses
+- 8c9c9c5: 🐛 Fixed an issue where opening an active table from a query parameter would not highlight it
+- b372a0f: refactor: Refactoring of highlight edges on active table
+- 7c75b53: 📈: integrate toggle logging for sidebar and visibility button actions
+- f46d097: 📈 : add click logging for CopyLinkButton
+- d8ff5d5: Refactoring and testing of highlights on active tables
+- 6c2a2d5: 📈 : add toggleLogEvent utility for logging toggle actions
+- c0b2d01: refactor Integrated `isRelated` into `isHighlighted`
+- aecbcc5: fix: Fixed failure to highlight parent tables
+- Updated dependencies [18e5e8e]
+- Updated dependencies [0870088]
+- Updated dependencies [c0934d3]
+  - @liam-hq/ui@0.0.4
+
 ## 0.0.6
 
 ### Patch Changes

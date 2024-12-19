@@ -2,7 +2,7 @@
   "name": "@liam-hq/cli",
   "license": "Apache-2.0",
   "private": false,
-  "version": "0.0.11",
+  "version": "0.0.12",
   "type": "module",
   "publishConfig": {
     "access": "public"

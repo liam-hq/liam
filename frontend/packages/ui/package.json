@@ -1,7 +1,7 @@
 {
   "name": "@liam-hq/ui",
   "private": true,
-  "version": "0.0.3",
+  "version": "0.0.4",
   "main": "src/index.ts",
   "dependencies": {
     "@radix-ui/react-dropdown-menu": "2.1.2",
