@@ -10,7 +10,7 @@ import {
   useEdgesState,
   useNodesState,
 } from '@xyflow/react'
-import { type FC, useCallback, useState } from 'react'
+import { type FC, type ReactNode, useCallback, useState } from 'react'
 import styles from './ERDContent.module.css'
 import { ERDContentProvider, useERDContentContext } from './ERDContentContext'
 import { RelationshipEdge } from './RelationshipEdge'
@@ -37,6 +37,7 @@ type Props = {
         fitViewWhenActiveTableChange?: boolean | undefined
       }
     | undefined
+  children?: ReactNode
 }
 
 const highlightEdge = (edge: Edge): Edge => ({
@@ -97,7 +98,7 @@ export const ERDContentInner: FC<Props> = ({
   } = useERDContentContext()
   const [activeNodeId, setActiveNodeId] = useState<string | null>(null)
 
-  useUpdateNodeCardinalities(nodes, relationships, setNodes)
+  // useUpdateNodeCardinalities(nodes, relationships, setNodes)
   useInitialAutoLayout()
   useFitViewWhenActiveTableChange(
     enabledFeatures?.fitViewWhenActiveTableChange ?? true,
@@ -321,10 +322,11 @@ export const ERDContentInner: FC<Props> = ({
   )
 }
 
-export const ERDContent: FC<Props> = (props) => {
+export const ERDContent: FC<Props> = ({ children, ...props }) => {
   return (
     <ERDContentProvider>
       <ERDContentInner {...props} />
+      {children}
     </ERDContentProvider>
   )
 }

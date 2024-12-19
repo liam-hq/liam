@@ -7,6 +7,7 @@ import { TableColumnList } from './TableColumnList'
 import { TableHeader } from './TableHeader'
 import styles from './TableNode.module.css'
 import type { TableNodeType } from './type'
+import { useERDContentContext } from '../ERDContentContext'
 
 export const isTableNode = (node: Node): node is TableNodeType =>
   node.type === 'table'
@@ -17,8 +18,10 @@ export const TableNode: FC<Props> = ({ data }) => {
   const { relationships } = useDBStructureStore()
   const {
     active: { tableName },
-    showMode,
   } = useUserEditingStore()
+  const {
+    state: { showMode },
+  } = useERDContentContext()
 
   const isActive = tableName === data.table.name
 

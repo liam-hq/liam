@@ -1,4 +1,3 @@
-import { useUserEditingStore } from '@/stores'
 import {
   Table2,
   TooltipContent,
@@ -10,6 +9,7 @@ import {
 import { Handle, Position } from '@xyflow/react'
 import clsx from 'clsx'
 import type { FC } from 'react'
+import { useERDContentContext } from '../../ERDContentContext'
 import type { Data } from '../type'
 import styles from './TableHeader.module.css'
 
@@ -19,7 +19,9 @@ type Props = {
 
 export const TableHeader: FC<Props> = ({ data }) => {
   const name = data.table.name
-  const { showMode } = useUserEditingStore()
+  const {
+    state: { showMode },
+  } = useERDContentContext()
 
   const isTarget = data.targetColumnCardinalities !== undefined
   const isSource = data.sourceColumnName !== undefined
@@ -46,16 +48,8 @@ export const TableHeader: FC<Props> = ({ data }) => {
         </TooltipRoot>
       </TooltipProvider>
 
-      {showMode === 'TABLE_NAME' && (
-        <>
-          {isTarget && (
-            <Handle id={name} type="target" position={Position.Left} />
-          )}
-          {isSource && (
-            <Handle id={name} type="source" position={Position.Right} />
-          )}
-        </>
-      )}
+      <Handle id={name} type="target" position={Position.Left} />
+      <Handle id={name} type="source" position={Position.Right} />
     </div>
   )
 }

@@ -1,5 +1,4 @@
 import { type ShowMode, showModeSchema } from '@/schemas/showMode'
-import { updateShowMode, useUserEditingStore } from '@/stores'
 import {
   Button,
   ChevronDown,
@@ -13,6 +12,7 @@ import {
 import { type FC, useCallback } from 'react'
 import { safeParse } from 'valibot'
 import styles from './ShowModeMenu.module.css'
+import { useERDContentContext } from '../../ERDContentContext'
 
 const OPTION_LIST: { value: ShowMode; label: string }[] = [
   { value: 'ALL_FIELDS', label: 'All Fields' },
@@ -21,15 +21,19 @@ const OPTION_LIST: { value: ShowMode; label: string }[] = [
 ]
 
 export const ShowModeMenu: FC = () => {
-  const { showMode } = useUserEditingStore()
+  const {
+    state: { showMode },
+    actions: { setShowMode },
+  } = useERDContentContext()
 
   const handleChangeValue = useCallback((value: string) => {
     const parsed = safeParse(showModeSchema, value)
+    console.log(parsed)
 
     if (parsed.success) {
-      updateShowMode(parsed.output)
+      setShowMode(parsed.output)
     }
-  }, [])
+  }, [setShowMode])
 
   return (
     <div className={styles.wrapper}>

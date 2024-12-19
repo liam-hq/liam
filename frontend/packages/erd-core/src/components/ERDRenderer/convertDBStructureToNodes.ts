@@ -52,14 +52,6 @@ export const convertDBStructureToNodes = ({
     type: 'relationship',
     source: rel.primaryTableName,
     target: rel.foreignTableName,
-    sourceHandle:
-      showMode === 'TABLE_NAME'
-        ? null
-        : columnHandleId(rel.primaryTableName, rel.primaryColumnName),
-    targetHandle:
-      showMode === 'TABLE_NAME'
-        ? null
-        : columnHandleId(rel.foreignTableName, rel.foreignColumnName),
     data: { relationship: rel },
   }))
 
