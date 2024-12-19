@@ -1,4 +1,5 @@
 import { selectTableLogEvent } from '@/features/gtm/utils'
+import { repositionTableLogEvent } from '@/features/gtm/utils/repositionTableLogEvent'
 import { updateActiveTableName, useUserEditingActiveStore } from '@/stores'
 import type { Relationships } from '@liam-hq/db-structure'
 import {
@@ -7,6 +8,7 @@ import {
   type Edge,
   type Node,
   type NodeMouseHandler,
+  type OnNodeDrag,
   ReactFlow,
   useEdgesState,
   useNodesState,
@@ -115,6 +117,15 @@ export const ERDContentInner: FC<Props> = ({
     setNodes(updatedNodes)
   }, [edges, nodes, setNodes, setEdges, activeTableName])
 
+  const handleDragStopNode: OnNodeDrag<Node> = useCallback(
+    (_event, _node, nodes) => {
+      if (nodes.length === 1 && nodes[0]) {
+        repositionTableLogEvent({ tableId: nodes[0].id })
+      }
+    },
+    [],
+  )
+
   const panOnDrag = [1, 2]
 
   return (
@@ -139,6 +150,7 @@ export const ERDContentInner: FC<Props> = ({
         onPaneClick={handlePaneClick}
         onNodeMouseEnter={handleMouseEnterNode}
         onNodeMouseLeave={handleMouseLeaveNode}
+        onNodeDragStop={handleDragStopNode}
         panOnScroll
         panOnDrag={panOnDrag}
         selectionOnDrag
