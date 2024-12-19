@@ -13,6 +13,7 @@ import {
 import { type FC, useCallback, useState } from 'react'
 import styles from './ERDContent.module.css'
 import { ERDContentProvider, useERDContentContext } from './ERDContentContext'
+import { NonRelatedTableGroupNode } from './NonRelatedTableGroupNode'
 import { RelationshipEdge } from './RelationshipEdge'
 import { Spinner } from './Spinner'
 import { TableNode } from './TableNode'
@@ -23,6 +24,7 @@ import { useUpdateNodeCardinalities } from './useUpdateNodeCardinalities'
 
 const nodeTypes = {
   table: TableNode,
+  nonRelatedTableGroup: NonRelatedTableGroupNode,
 }
 
 const edgeTypes = {
