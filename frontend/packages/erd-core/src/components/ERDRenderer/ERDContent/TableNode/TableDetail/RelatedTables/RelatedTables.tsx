@@ -1,4 +1,5 @@
 import { convertDBStructureToNodes } from '@/components/ERDRenderer/convertDBStructureToNodes'
+import { OpenRelatedTablesLogEvent } from '@/features/gtm/utils'
 import { updateActiveTableName, useDBStructureStore } from '@/stores'
 import type { Table } from '@liam-hq/db-structure'
 import { GotoIcon, IconButton } from '@liam-hq/ui'
@@ -29,7 +30,10 @@ export const RelatedTables: FC<Props> = ({ table }) => {
       }))
     })
     updateActiveTableName(undefined)
-  }, [nodes, setNodes])
+    OpenRelatedTablesLogEvent({
+      tableId: table.name,
+    })
+  }, [nodes, setNodes, table.name])
 
   return (
     <div className={styles.wrapper}>
