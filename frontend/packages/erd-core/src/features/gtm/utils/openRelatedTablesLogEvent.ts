@@ -4,7 +4,7 @@ type OpenRelatedTablesLogEvent = {
   tableId: string
 }
 
-export const OpenRelatedTablesLogEvent = ({
+export const openRelatedTablesLogEvent = ({
   tableId,
 }: OpenRelatedTablesLogEvent) => {
   pushToDataLayer({
