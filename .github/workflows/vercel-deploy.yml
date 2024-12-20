@@ -57,8 +57,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/pnpm-setup
-        with:
-          working-directory: frontend
       - name: Install Vercel CLI
         run: pnpm add --global vercel@latest
       - name: Pull Vercel Enviroment Infomation

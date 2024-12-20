@@ -4,9 +4,6 @@ on:
   pull_request:
   merge_group:
 
-env:
-  working-directory: frontend
-
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -34,15 +31,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
-    defaults:
-      run:
-        working-directory: ${{ env.working-directory }}
-
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/pnpm-setup
-        with:
-          working-directory: ${{ env.working-directory }}
       - run: pnpm lint
 
   frontend-ci:
@@ -51,13 +42,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
-    defaults:
-      run:
-        working-directory: ${{ env.working-directory }}
-
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/pnpm-setup
-        with:
-          working-directory: ${{ env.working-directory }}
       - run: pnpm test:turbo
