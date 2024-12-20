@@ -21,7 +21,7 @@ importers:
         specifier: 2.1.2
         version: 2.1.2
 
-  apps/docs:
+  frontend/apps/docs:
     dependencies:
       fumadocs-core:
         specifier: 14.5.4
@@ -79,13 +79,13 @@ importers:
         specifier: '5'
         version: 5.6.2
 
-  apps/erd-sample:
+  frontend/apps/erd-sample:
     devDependencies:
       '@liam-hq/cli':
         specifier: workspace:*
         version: link:../../packages/cli
 
-  packages/cli:
+  frontend/packages/cli:
     dependencies:
       commander:
         specifier: 12.1.0
@@ -149,7 +149,7 @@ importers:
         specifier: 2.1.4
         version: 2.1.4(@types/node@22.9.0)
 
-  packages/configs:
+  frontend/packages/configs:
     devDependencies:
       '@biomejs/biome':
         specifier: 1.9.3
@@ -158,7 +158,7 @@ importers:
         specifier: 2.0.5
         version: 2.0.5
 
-  packages/db-structure:
+  frontend/packages/db-structure:
     dependencies:
       '@ruby/prism':
         specifier: 1.2.0
@@ -189,7 +189,7 @@ importers:
         specifier: 2.1.4
         version: 2.1.4(@types/node@22.9.0)
 
-  packages/erd-core:
+  frontend/packages/erd-core:
     dependencies:
       '@liam-hq/ui':
         specifier: workspace:*
@@ -241,7 +241,7 @@ importers:
         specifier: 2.1.4
         version: 2.1.4(@types/node@22.9.0)
 
-  packages/figma-to-css-variables:
+  frontend/packages/figma-to-css-variables:
     dependencies:
       style-dictionary:
         specifier: 4.1.3
@@ -254,7 +254,7 @@ importers:
         specifier: workspace:*
         version: link:../configs
 
-  packages/ui:
+  frontend/packages/ui:
     dependencies:
       '@radix-ui/react-dropdown-menu':
         specifier: 2.1.2
@@ -2667,10 +2667,6 @@ packages:
   create-require@1.1.1:
     resolution: {integrity: sha512-dcKFX3jn0MpIaXjisoRvexIJVEKzaq7z2rZKxf+MSr9TkdmHmsU4m2lcLojrj/FHl8mk5VxMmYA+ftRkP/3oKQ==}
 
-  cross-spawn@7.0.3:
-    resolution: {integrity: sha512-iRDPJKUPVEND7dHPO8rkbOnPpyDygcDFtWjpeWNCgy8WP2rXcxXL8TskReQl6OrB2G7+UJrags1q15Fudc7G6w==}
-    engines: {node: '>= 8'}
-
   cross-spawn@7.0.6:
     resolution: {integrity: sha512-uV2QOWP2nWzsy2aMp8aRibhi9dlzF5Hgh5SHaB9OiTGEyDTiJJyx0uy51QXdyWbtAHNua4XJzUKca3OzKUd3vA==}
     engines: {node: '>= 8'}
@@ -4355,10 +4351,6 @@ packages:
     resolution: {integrity: sha512-RSn9F68PjH9HqtltsSnqYC1XXoWe9Bju5+213R98cNGttag9q9yAOTzdbsqvIa7aNm5WffBZFpWYr2aWrklWAw==}
     engines: {node: '>= 6'}
 
-  object-inspect@1.13.2:
-    resolution: {integrity: sha512-IRZSRuzJiynemAXPYtPe5BoI/RESNYR7TYm50MC5Mqbd3Jmw5y790sErYw3V6SryFJD64b74qQQs9wn5Bg/k3g==}
-    engines: {node: '>= 0.4'}
-
   object-inspect@1.13.3:
     resolution: {integrity: sha512-kDCGIbxkDSXE3euJZZXzc6to7fCrKHNI/hSRQnRuQ+BWjFNzZwiFF8fj/6o2t2G9/jTj8PSIYTfCLelLZEeRpA==}
     engines: {node: '>= 0.4'}
@@ -5835,7 +5827,7 @@ snapshots:
     dependencies:
       '@babel/helper-validator-identifier': 7.25.9
       js-tokens: 4.0.0
-      picocolors: 1.1.0
+      picocolors: 1.1.1
 
   '@babel/compat-data@7.26.2': {}
 
@@ -7992,7 +7984,7 @@ snapshots:
       caniuse-lite: 1.0.30001677
       fraction.js: 4.3.7
       normalize-range: 0.1.2
-      picocolors: 1.1.0
+      picocolors: 1.1.1
       postcss: 8.4.49
       postcss-value-parser: 4.2.0
 
@@ -8296,12 +8288,6 @@ snapshots:
       typescript: 5.6.2
 
   create-require@1.1.1: {}
-
-  cross-spawn@7.0.3:
-    dependencies:
-      path-key: 3.1.1
-      shebang-command: 2.0.0
-      which: 2.0.2
 
   cross-spawn@7.0.6:
     dependencies:
@@ -8856,7 +8842,7 @@ snapshots:
       '@ungap/structured-clone': 1.2.0
       ajv: 6.12.6
       chalk: 4.1.2
-      cross-spawn: 7.0.3
+      cross-spawn: 7.0.6
       debug: 4.3.7
       doctrine: 3.0.0
       escape-string-regexp: 4.0.0
@@ -9100,7 +9086,7 @@ snapshots:
 
   foreground-child@3.3.0:
     dependencies:
-      cross-spawn: 7.0.3
+      cross-spawn: 7.0.6
       signal-exit: 4.1.0
 
   forwarded@0.2.0: {}
@@ -10550,8 +10536,6 @@ snapshots:
 
   object-hash@3.0.0: {}
 
-  object-inspect@1.13.2: {}
-
   object-inspect@1.13.3: {}
 
   object-is@1.1.6:
@@ -10758,7 +10742,7 @@ snapshots:
       '@yarnpkg/lockfile': 1.1.0
       chalk: 4.1.2
       ci-info: 3.9.0
-      cross-spawn: 7.0.3
+      cross-spawn: 7.0.6
       find-yarn-workspace-root: 2.0.0
       fs-extra: 9.1.0
       json-stable-stringify: 1.1.1
@@ -10888,7 +10872,7 @@ snapshots:
   postcss@8.4.31:
     dependencies:
       nanoid: 3.3.7
-      picocolors: 1.1.0
+      picocolors: 1.1.1
       source-map-js: 1.2.1
 
   postcss@8.4.49:
@@ -11418,7 +11402,7 @@ snapshots:
       call-bind: 1.0.7
       es-errors: 1.3.0
       get-intrinsic: 1.2.4
-      object-inspect: 1.13.2
+      object-inspect: 1.13.3
 
   siginfo@2.0.0: {}
 
@@ -11972,7 +11956,7 @@ snapshots:
     dependencies:
       browserslist: 4.24.2
       escalade: 3.2.0
-      picocolors: 1.1.0
+      picocolors: 1.1.1
 
   update-check@1.5.4:
     dependencies:
