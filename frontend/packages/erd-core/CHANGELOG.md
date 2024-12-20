@@ -1,5 +1,12 @@
 # @liam-hq/erd-core
 
+## 0.0.9
+
+### Patch Changes
+
+- 34dd3eb: refactor: Remove unused isRelatedToTable function and simplify TableNode component logic
+- 82ec743: 🐛 Fixed problem with TableNode not being highlighted when opened from URL with query parameter
+
 ## 0.0.8
 
 ### Patch Changes

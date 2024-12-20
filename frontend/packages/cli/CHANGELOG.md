@@ -1,5 +1,12 @@
 # @liam-hq/cli
 
+## 0.0.14
+
+### Patch Changes
+
+- 34dd3eb: refactor: Remove unused isRelatedToTable function and simplify TableNode component logic
+- 82ec743: 🐛 Fixed problem with TableNode not being highlighted when opened from URL with query parameter
+
 ## 0.0.13
 
 ### Patch Changes
