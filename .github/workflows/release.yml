@@ -3,8 +3,6 @@ on:
   push:
     branches:
       - main
-env:
-  working-directory: frontend
 
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 
@@ -30,17 +28,10 @@ jobs:
       - uses: actions/checkout@v4
         with:
           token: ${{ steps.app-token.outputs.token }}
-          sparse-checkout: |
-            .github
-            ${{ env.working-directory }}
       - uses: ./.github/actions/pnpm-setup
-        with:
-          working-directory: ${{ env.working-directory }}
-
       - name: Create Release Pull Request or Publish to npm
         uses: changesets/action@v1.4.9
         with:
-          cwd: ${{ env.working-directory }}
           publish: pnpm run release
         env:
           GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}

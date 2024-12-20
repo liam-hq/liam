@@ -61,18 +61,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/pnpm-setup
-        with:
-          working-directory: frontend
       - name: Install Vercel CLI
         run: pnpm add --global vercel@latest
       - name: Pull Vercel Enviroment Infomation
         run: vercel pull --yes --environment=${{ needs.setup-deployment.outputs.environment }} --token=${{ secrets.VERCEL_TOKEN }}
       - name: Run prepare command
         run:  pnpm build
-        working-directory: frontend
       - name: Update index.html content
         run:  pnpm --filter ${{ matrix.apps.name }} update_dist_content
-        working-directory: frontend
       - name: Build Project Artifacts
         run: vercel build ${{ needs.setup-deployment.outputs.environment == 'production' && '--prod' || '' }}
       - name: Deploy Project Artifacts to Vercel

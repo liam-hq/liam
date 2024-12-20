@@ -3,9 +3,6 @@ name: Figma to CSS Variables
 on:
   workflow_dispatch:
 
-env:
-  working-directory: frontend
-
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -19,15 +16,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
-    defaults:
-      run:
-        working-directory: ${{ env.working-directory }}
-
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/pnpm-setup
-        with:
-          working-directory: ${{ env.working-directory }}
       - run: pnpm --filter @packages/figma-to-css-variables sync --output '../../apps/service-site/src/styles' --filter-modes "Dark,Mode 1"
         env:
           FIGMA_FILE_KEY: ${{ secrets.FIGMA_FILE_KEY }}
