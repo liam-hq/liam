@@ -2,8 +2,9 @@ name: pnpm-setup
 
 inputs:
   working-directory:
-    required: true
+    required: false
     type: string
+    default: '.'
 
 runs:
   using: composite
