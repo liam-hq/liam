@@ -6,7 +6,6 @@
   padding: var(--spacing-2);
   border-bottom: 1px solid var(--global-border);
   color: var(--global-foreground);
-  font-family: var(--main-font);
   font-size: var(--font-size-2);
   font-style: normal;
   font-weight: 500;

@@ -10,7 +10,6 @@
   align-items: center;
   gap: var(--spacing-1);
   color: var(--global-foreground);
-  font-family: var(--main-font);
   font-size: var(--font-size-3);
   font-style: normal;
   font-weight: 400;
@@ -29,7 +28,6 @@
 
 .listItem {
   color: var(--color-white-alpha-70);
-  font-family: var(--main-font);
   font-size: var(--font-size-2);
   font-style: normal;
   font-weight: 400;

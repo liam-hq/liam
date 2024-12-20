@@ -7,7 +7,6 @@
 
 .label {
   color: var(--overlay-60);
-  font-family: var(--main-font);
   font-size: var(--font-size-3);
   font-style: normal;
   font-weight: 400;

@@ -13,7 +13,6 @@
 
 .heading {
   color: var(--global-foreground);
-  font-family: var(--main-font);
   font-size: var(--font-size-3);
   font-style: normal;
   font-weight: 400;

@@ -8,7 +8,6 @@
   border-radius: var(--border-radius-base);
   background: var(--pane-muted-background);
   color: var(--color-white-alpha-70);
-  font-family: var(--main-font);
   font-size: var(--font-size-3);
   font-style: normal;
   font-weight: 400;

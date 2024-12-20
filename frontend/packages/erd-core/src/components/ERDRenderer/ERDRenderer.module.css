@@ -5,6 +5,8 @@
   /* NOTE: workaround for that drawer with modal={false} does not work */
   /* ref: https://github.com/emilkowalski/vaul/issues/492 */
   pointer-events: all;
+
+  font-family: var(--main-font);
 }
 
 .mainWrapper {

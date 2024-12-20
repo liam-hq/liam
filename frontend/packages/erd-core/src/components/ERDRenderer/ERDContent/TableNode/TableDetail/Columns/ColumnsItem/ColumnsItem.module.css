@@ -6,7 +6,6 @@
 
 .heading {
   color: var(--global-foreground);
-  font-family: var(--main-font);
   font-size: var(--font-size-3);
   font-style: normal;
   font-weight: 400;
@@ -15,7 +14,6 @@
 
 .comment {
   color: var(--color-white-alpha-70);
-  font-family: var(--main-font);
   font-size: var(--font-size-2);
   font-style: normal;
   font-weight: 400;
@@ -44,7 +42,6 @@
   padding: var(--spacing-1) var(--spacing-2);
   border-right: solid 1px var(--global-border);
   color: var(--color-white-alpha-70);
-  font-family: var(--main-font);
   font-size: var(--font-size-2);
   font-style: normal;
   font-weight: 400;
