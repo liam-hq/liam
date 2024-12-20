@@ -5,6 +5,7 @@ type ToolbarActionLogEvent = {
   zoomLevel?: string
   showMode?: string
   cliVer: string
+  appEnv: string
 }
 
 export const toolbarActionLogEvent = ({

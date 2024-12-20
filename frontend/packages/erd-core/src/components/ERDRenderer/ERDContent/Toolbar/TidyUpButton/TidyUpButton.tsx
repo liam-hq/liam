@@ -15,9 +15,10 @@ export const TidyUpButton: FC = () => {
       element: 'tidyUp',
       showMode,
       cliVer: cliVersion.version,
+      appEnv: cliVersion.envName,
     })
     handleLayout()
-  }, [handleLayout, showMode, cliVersion.version])
+  }, [handleLayout, showMode, cliVersion.version, cliVersion.envName])
 
   return (
     <ToolbarButton asChild>

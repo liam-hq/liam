@@ -34,8 +34,9 @@ export const CopyLinkButton: FC = () => {
     clickLogEvent({
       element: 'copyLinkButton',
       cliVer: cliVersion.version,
+      appEnv: cliVersion.envName,
     })
-  }, [toast, cliVersion.version])
+  }, [toast, cliVersion.version, cliVersion.envName])
 
   return (
     <TooltipProvider>

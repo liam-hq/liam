@@ -39,9 +39,10 @@ export const ERDRenderer: FC = () => {
         element: 'leftPane',
         isShow: open,
         cliVer: cliVersion.version,
+        appEnv: cliVersion.envName,
       })
     },
-    [cliVersion.version],
+    [cliVersion.version, cliVersion.envName],
   )
 
   return (

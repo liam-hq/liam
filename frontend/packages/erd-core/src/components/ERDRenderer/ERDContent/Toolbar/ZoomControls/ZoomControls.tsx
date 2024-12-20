@@ -19,9 +19,10 @@ export const ZoomControls: FC = () => {
       zoomLevel: zoomLevel.toFixed(2),
       showMode,
       cliVer: cliVersion.version,
+      appEnv: cliVersion.envName,
     })
     zoomOut()
-  }, [zoomOut, zoomLevel, showMode, cliVersion.version])
+  }, [zoomOut, zoomLevel, showMode, cliVersion.version, cliVersion.envName])
 
   const handleClickZoomIn = useCallback(() => {
     toolbarActionLogEvent({
@@ -29,9 +30,10 @@ export const ZoomControls: FC = () => {
       zoomLevel: zoomLevel.toFixed(2),
       showMode: showMode,
       cliVer: cliVersion.version,
+      appEnv: cliVersion.envName,
     })
     zoomIn()
-  }, [zoomIn, zoomLevel, showMode, cliVersion.version])
+  }, [zoomIn, zoomLevel, showMode, cliVersion.version, cliVersion.envName])
 
   return (
     <div className={styles.wrapper}>

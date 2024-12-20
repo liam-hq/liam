@@ -20,6 +20,7 @@ export const TableDetail: FC<Props> = ({ table }) => {
     clickLogEvent({
       element: 'closeTableDetailButton',
       cliVer: cliVersion.version,
+      appEnv: cliVersion.envName,
     })
   }
 

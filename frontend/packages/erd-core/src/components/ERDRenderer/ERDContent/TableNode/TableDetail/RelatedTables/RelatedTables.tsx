@@ -39,8 +39,9 @@ export const RelatedTables: FC<Props> = ({ table }) => {
     openRelatedTablesLogEvent({
       tableId: table.name,
       cliVer: cliVersion.version,
+      appEnv: cliVersion.envName,
     })
-  }, [nodes, getNodes, table.name, cliVersion.version])
+  }, [nodes, getNodes, table.name, cliVersion.version, cliVersion.envName])
 
   return (
     <div className={styles.wrapper}>

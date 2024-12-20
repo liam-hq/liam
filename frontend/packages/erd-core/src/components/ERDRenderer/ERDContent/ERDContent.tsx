@@ -91,9 +91,10 @@ export const ERDContentInner: FC<Props> = ({
         ref: 'mainArea',
         tableId,
         cliVer: cliVersion.version,
+        appEnv: cliVersion.envName,
       })
     },
-    [cliVersion.version],
+    [cliVersion.version, cliVersion.envName],
   )
 
   const handlePaneClick = useCallback(() => {
@@ -137,10 +138,11 @@ export const ERDContentInner: FC<Props> = ({
           tableId,
           operationId,
           cliVer: cliVersion.version,
+          appEnv: cliVersion.envName,
         })
       }
     },
-    [cliVersion.version],
+    [cliVersion.version, cliVersion.envName],
   )
 
   const panOnDrag = [1, 2]

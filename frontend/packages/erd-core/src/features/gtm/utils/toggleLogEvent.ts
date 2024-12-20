@@ -5,6 +5,7 @@ type ToggleLogEvent = {
   isShow: boolean
   tableId?: string
   cliVer: string
+  appEnv: string
 }
 
 export const toggleLogEvent = (params: ToggleLogEvent) => {

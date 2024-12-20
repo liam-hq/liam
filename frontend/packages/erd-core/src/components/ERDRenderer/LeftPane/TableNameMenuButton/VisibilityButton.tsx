@@ -21,9 +21,10 @@ export const VisibilityButton: FC<Props> = ({ tableName, hidden }) => {
         isShow: !!hidden,
         tableId: tableName,
         cliVer: cliVersion.version,
+        appEnv: cliVersion.envName,
       })
     },
-    [tableName, hidden, cliVersion.version],
+    [tableName, hidden, cliVersion.version, cliVersion.envName],
   )
 
   return (

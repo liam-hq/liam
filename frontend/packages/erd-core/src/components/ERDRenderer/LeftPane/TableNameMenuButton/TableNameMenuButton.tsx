@@ -27,6 +27,7 @@ export const TableNameMenuButton: FC<Props> = ({ node }) => {
       ref: 'leftPane',
       tableId,
       cliVer: cliVersion.version,
+      appEnv: cliVersion.envName,
     })
   }
 

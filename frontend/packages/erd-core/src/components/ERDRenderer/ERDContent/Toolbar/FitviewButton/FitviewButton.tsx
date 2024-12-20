@@ -16,9 +16,10 @@ export const FitviewButton: FC = () => {
       element: 'fitview',
       showMode,
       cliVer: cliVersion.version,
+      appEnv: cliVersion.envName,
     })
     fitView()
-  }, [fitView, showMode, cliVersion.version])
+  }, [fitView, showMode, cliVersion.version, cliVersion.envName])
 
   return (
     <ToolbarButton asChild onClick={handleClick}>

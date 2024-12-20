@@ -37,10 +37,11 @@ export const ShowModeMenu: FC = () => {
           element: 'changeShowMode',
           showMode: value,
           cliVer: cliVersion.version,
+          appEnv: cliVersion.envName,
         })
       }
     },
-    [cliVersion.version],
+    [cliVersion.version, cliVersion.envName],
   )
 
   return (
