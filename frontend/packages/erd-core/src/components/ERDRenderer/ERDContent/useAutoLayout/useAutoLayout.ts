@@ -43,7 +43,7 @@ export const useAutoLayout = () => {
         fitView(fitViewOptions)
         setLoading(false)
         setInitializeComplete(true)
-      }, 0)
+      }, 10)
     },
     [setNodes, fitView, setLoading, setInitializeComplete],
   )
