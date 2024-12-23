@@ -1,7 +1,21 @@
+@keyframes identifier {
+  0% {
+    stroke-dashoffset: 32;
+  }
+}
+
 .edge {
-  stroke: var(--pane-border-hover);
-  stroke-dasharray: 2;
+  --xy-edge-stroke: var(--pane-border-hover);
+
+  stroke-width: 1px;
+  stroke-dasharray: 16;
   transition: stroke 0.3s var(--default-timing-function);
+  shape-rendering: optimizeSpeed;
+}
+
+:global(.react-flow__edge.animated path) {
+  stroke-dasharray: 16;
+  animation: identifier 0.5s linear infinite;
 }
 
 :global([data-loading='true']) .edge {
@@ -14,5 +28,5 @@ marker {
 }
 
 .hovered {
-  stroke: var(--node-layout);
+  --xy-edge-stroke: var(--node-layout);
 }
