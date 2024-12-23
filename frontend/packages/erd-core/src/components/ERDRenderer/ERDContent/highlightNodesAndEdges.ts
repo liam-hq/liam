@@ -66,7 +66,7 @@ const unhighlightNode = (node: TableNodeType): TableNodeType => ({
 
 const highlightEdge = (edge: Edge): Edge => ({
   ...edge,
-  animated: true,
+  animated: false, // TODO: Decide whether to make this treatment permanent
   zIndex: zIndex.edgeHighlighted,
   data: { ...edge.data, isHighlighted: true },
 })
