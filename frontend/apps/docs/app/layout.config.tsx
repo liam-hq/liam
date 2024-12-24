@@ -1,5 +1,6 @@
 import { LiamLogo } from '@/components'
 import type { BaseLayoutProps } from 'fumadocs-ui/layouts/shared'
+import { FolderKanban } from 'lucide-react'
 
 /**
  * Shared layout configurations
@@ -14,4 +15,11 @@ export const baseOptions: BaseLayoutProps = {
     url: '/docs',
   },
   githubUrl: 'https://github.com/liam-hq/liam',
+  links: [
+    {
+      icon: <FolderKanban />,
+      text: 'Roadmap',
+      url: 'https://github.com/orgs/liam-hq/projects/1',
+    },
+  ],
 }

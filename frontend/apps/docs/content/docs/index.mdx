@@ -1,44 +1,68 @@
 ---
-title: Getting Started
-description: Getting Started with Liam ERD
+title: Welcome to Liam ERD
+description: Liam ERD is a tool that effortlessly generates beautiful and easy-to-read ER diagrams.
 ---
 
 import { Package, Globe } from "lucide-react";
 
-Welcome to **Liam ERD**, the open-source tool designed to simplify database design and visualization. Whether you're working on a public open-source project or managing private repositories, Liam ERD makes it easy to generate and share **beautiful, interactive ER diagrams**.
-
 ![Liam logo](/images/default.png)
+
+Liam ERD is an open-source tool that instantly generates beautiful, interactive ER diagrams from your database. Whether you’re working on public or private repositories, Liam ERD helps you visualize complex schemas with ease.
 
 ## Why Choose Liam ERD?
 
-Liam ERD stands out with its:
+- **Beautiful UI & Interactive**: A clean design and intuitive features (like panning, zooming, and filtering) make it easy to understand even the most complex databases.
+- **Simple Reverse Engineering**: Seamlessly turn your existing database schemas into clear, readable diagrams.
+- **Effortless Setup**: Get started with zero configuration—just provide your schema, and you’re good to go.
+- **High Performance**: Optimized for both small and large projects, easily handling 100+ tables.
+- **Fully Open-Source**: Contribute to the project and shape Liam ERD to fit your needs.
 
-- **Open-Source**: Fully open for customization and contributions.
-- **Modern, Beautiful UI**: Enjoy a clean, interactive experience with features like pan, zoom, and Cmd+K search.
-- **Effortless Setup**: Get started faster than ever with zero configuration required.
-- **Scalability**: Handles large-scale database schemas, like 100-table structures, with ease.
-- **PostgreSQL and Popular ORMs Support**: Works seamlessly with PostgreSQL, Prisma, and Ruby on Rails.
+## Explore Diagrams
+
+Curious about what Liam ERD can do? Visit https://liambx.com/erd/galaxy to browse a variety of example ER diagrams from real-world schemas.
+
+## Supported Schemas
+
+Legend:
+
+- ✅: Supported
+- ❌: Not in progress
+- ⌛️: In progress
+
+| Technology                                  | Schema DSL Parsing | Support via database URL (PostgreSQL) |
+| ------------------------------------------- | ------------------ | ------------------------------------- |
+| [PostgreSQL](/docs/static-build/postgresql) | ✅                 | ✅                                    |
+| [Ruby on Rails](/docs/static-build/rails)   | ✅                 | ✅                                    |
+| [Prisma](/docs/static-build/prisma)         | ❌                 | ✅                                    |
+| [Drizzle](/docs/static-build/drizzle)       | ❌                 | ✅                                    |
+| MySQL                                       | ❌                 | ❌                                    |
+
+If there’s another database schema or ORM you’d love to see supported, please let us know in the [GitHub Discussions](https://github.com/liam-hq/liam/discussions/364).
 
 ## How to Get Started
 
-Choose one of the following workflows depending on your needs:
+### Public Project Setup
 
-<Cards>
-  <Card icon={<Globe />} title="URL-Based access" href="/docs/url-based-access">
-    Generate ER diagrams from your schema URL without any configuration. Ideal
-    for public repositories!
-  </Card>
-  <Card icon={<Package />} title="Static build" href="/docs/static-build/getting-started">
-    Use this method to secure your diagrams in private repositories or host them
-    within your internal environment.
-  </Card>
-</Cards>
+Want a quick setup for a public repository? Just drop the URL of your schema file!
 
-## Features in Action
+<input />
+<button>Generate</button>
 
-Liam ERD is built to streamline your workflow:
+For detailed instructions, check out [URL-based access](/docs/url-based-access).
 
-- **Interactive UI**: Filter tables, explore relationships, and focus on what matters.
-- **Cmd+K Search**: Quickly locate specific tables or columns.
-- **Scalable Layouts**: Optimized for large databases with 100+ tables.
-- **No Maintenance Overhead**: Automatically update diagrams with your schema changes.
+### Private Project Setup
+
+For internal or private repositories, run this command to start an interactive setup:
+
+```package-install
+npx @liam-hq/cli init
+```
+
+Then follow the prompts to build a static version of your diagrams.
+
+For more info, see [Static Build](/docs/static-build).
+
+## Need More?
+
+- **Feature Requests & Ideas**: Share your thoughts on our [GitHub Discussions](https://github.com/liam-hq/liam/discussions).
+- **Roadmap**: Check our latest progress on the [Roadmap](https://github.com/orgs/liam-hq/projects/1/views/1).
