@@ -48,6 +48,22 @@ export const RelationshipEdge: FC<Props> = ({
         className={clsx(styles.edge, data?.isHighlighted && styles.hovered)}
       />
       <defs>
+        <filter id="glowingShadow" x="-50%" y="-50%" width="200%" height="200%">
+          <feGaussianBlur in="SourceGraphic" stdDeviation="1" result="blur" />
+          <feFlood flood-color="white" flood-opacity="0.8" result="glowColor" />
+          <feComposite
+            in="glowColor"
+            in2="blur"
+            operator="in"
+            result="softGlow"
+          />
+          <feGaussianBlur in="softGlow" stdDeviation="2" result="spread" />
+          <feMerge>
+            <feMergeNode in="spread" />
+            <feMergeNode in="softGlow" />
+            <feMergeNode in="SourceGraphic" />
+          </feMerge>
+        </filter>
         <linearGradient id="myGradient" gradientTransform="rotate(45)">
           <stop offset="0%" stop-color="white" stop-opacity="0.9" />
           <stop offset="45%" stop-color="rgba(255, 255, 255, 0.8)" />
@@ -56,27 +72,47 @@ export const RelationshipEdge: FC<Props> = ({
           <stop offset="100%" stop-color="rgba(255, 255, 255, 0.3)" />
         </linearGradient>
       </defs>
-      <path path={edgePath} stroke="url('#myGradient')" />
 
       {data?.isHighlighted && (
-        <rect
-          width="5"
-          height="2"
-          x="-2.5"
-          y="-1"
-          rx="1"
-          fill="url('#myGradient')"
-        >
-          <animateMotion
-            begin="0s"
-            dur="3s"
-            repeatCount="indefinite"
-            rotate="auto"
-            calcMode="spline"
-            keySplines="0.4 0 0.2 1"
-            path={edgePath}
-          />
-        </rect>
+        <>
+          <rect
+            width="5"
+            height="2"
+            x="-2.5"
+            y="-1"
+            rx="1"
+            fill="url('#myGradient')"
+            filter="url(#brightGlow)"
+          >
+            <animateMotion
+              begin="0s"
+              dur="3s"
+              repeatCount="indefinite"
+              rotate="auto"
+              calcMode="spline"
+              keySplines="0.4 0 0.2 1"
+              path={edgePath}
+            />
+          </rect>
+          <rect
+            width="5"
+            height="2"
+            x="-2.5"
+            y="-1"
+            rx="1"
+            fill="url('#myGradient')"
+          >
+            <animateMotion
+              begin="1.5s"
+              dur="3s"
+              repeatCount="indefinite"
+              rotate="auto"
+              calcMode="spline"
+              keySplines="0.4 0 0.2 1"
+              path={edgePath}
+            />
+          </rect>
+        </>
       )}
     </>
   )
