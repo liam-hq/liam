@@ -17,6 +17,18 @@ export const useSyncHighlightsActiveTableChange = () => {
     }
 
     const nodes = getNodes()
+    if (
+      !nodes.some(
+        (node) =>
+          node.type === 'table' &&
+          node.position.x !== 0 &&
+          node.position.y !== 0,
+      )
+    ) {
+      console.warn('nodes are not auto-layouted yet')
+      return
+    }
+
     const edges = getEdges()
     const { nodes: updatedNodes, edges: updatedEdges } = highlightNodesAndEdges(
       nodes,

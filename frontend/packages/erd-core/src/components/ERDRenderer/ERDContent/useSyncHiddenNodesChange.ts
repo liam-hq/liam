@@ -15,6 +15,17 @@ export const useSyncHiddenNodesChange = () => {
       return
     }
     const nodes = getNodes()
+    if (
+      !nodes.some(
+        (node) =>
+          node.type === 'table' &&
+          node.position.x !== 0 &&
+          node.position.y !== 0,
+      )
+    ) {
+      console.warn('nodes are not auto-layouted yet')
+      return
+    }
     const updatedNodes = nodes.map((node) => {
       const hidden = hiddenNodeIds.has(node.id)
       return { ...node, hidden }
