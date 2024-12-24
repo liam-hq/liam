@@ -181,12 +181,12 @@ describe(highlightNodesAndEdges, () => {
 
       expect(updatedEdges).toEqual([
         anEdge('users', 'posts', 'users-id', 'posts-user_id', {
-          animated: true,
+          animated: false,
           zIndex: zIndex.edgeHighlighted,
           data: { isHighlighted: true },
         }),
         anEdge('users', 'comment_users', 'users-id', 'comment_users-user_id', {
-          animated: true,
+          animated: false,
           zIndex: zIndex.edgeHighlighted,
           data: { isHighlighted: true },
         }),
@@ -228,12 +228,12 @@ describe(highlightNodesAndEdges, () => {
 
       expect(updatedEdges).toEqual([
         anEdge('users', 'posts', 'users-id', 'posts-user_id', {
-          animated: true,
+          animated: false,
           zIndex: zIndex.edgeHighlighted,
           data: { isHighlighted: true },
         }),
         anEdge('users', 'comment_users', 'users-id', 'comment_users-user_id', {
-          animated: true,
+          animated: false,
           zIndex: zIndex.edgeHighlighted,
           data: { isHighlighted: true },
         }),
@@ -253,12 +253,12 @@ describe(highlightNodesAndEdges, () => {
 
       expect(updatedEdges).toEqual([
         anEdge('users', 'posts', 'users-id', 'posts-user_id', {
-          animated: true,
+          animated: false,
           zIndex: zIndex.edgeHighlighted,
           data: { isHighlighted: true },
         }),
         anEdge('users', 'comment_users', 'users-id', 'comment_users-user_id', {
-          animated: true,
+          animated: false,
           zIndex: zIndex.edgeHighlighted,
           data: { isHighlighted: true },
         }),
@@ -268,7 +268,7 @@ describe(highlightNodesAndEdges, () => {
           'comments-id',
           'comment_users-comment_id',
           {
-            animated: true,
+            animated: false,
             zIndex: zIndex.edgeHighlighted,
             data: { isHighlighted: true },
           },

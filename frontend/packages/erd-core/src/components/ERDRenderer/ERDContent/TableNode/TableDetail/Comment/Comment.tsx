@@ -9,7 +9,7 @@ type Props = {
 export const Comment: FC<Props> = ({ comment }) => {
   return (
     <DrawerDescription className={styles.wrapper}>
-      <p className={styles.text}>{comment}</p>
+      <span className={styles.text}>{comment}</span>
     </DrawerDescription>
   )
 }
