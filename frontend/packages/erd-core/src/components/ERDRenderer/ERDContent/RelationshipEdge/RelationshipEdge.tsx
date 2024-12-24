@@ -1,9 +1,11 @@
 import { BaseEdge, type EdgeProps, getBezierPath } from '@xyflow/react'
-
 import clsx from 'clsx'
 import type { FC } from 'react'
 import styles from './RelationshipEdge.module.css'
 import type { RelationshipEdgeType } from './type'
+
+const PARTICLE_COUNT = 6
+const ANIMATE_DURATION = 3
 
 type Props = EdgeProps<RelationshipEdgeType>
 
@@ -48,72 +50,41 @@ export const RelationshipEdge: FC<Props> = ({
         className={clsx(styles.edge, data?.isHighlighted && styles.hovered)}
       />
       <defs>
-        <filter id="glowingShadow" x="-50%" y="-50%" width="200%" height="200%">
-          <feGaussianBlur in="SourceGraphic" stdDeviation="1" result="blur" />
-          <feFlood flood-color="white" flood-opacity="0.8" result="glowColor" />
-          <feComposite
-            in="glowColor"
-            in2="blur"
-            operator="in"
-            result="softGlow"
+        <radialGradient
+          id="myGradient"
+          cx="50%"
+          cy="50%"
+          r="50%"
+          fx="50%"
+          fy="50%"
+        >
+          <stop offset="0%" stopColor="var(--node-layout)" stopOpacity="1" />
+          <stop
+            offset="100%"
+            stopColor="var(--node-layout)"
+            stopOpacity="0.4"
           />
-          <feGaussianBlur in="softGlow" stdDeviation="2" result="spread" />
-          <feMerge>
-            <feMergeNode in="spread" />
-            <feMergeNode in="softGlow" />
-            <feMergeNode in="SourceGraphic" />
-          </feMerge>
-        </filter>
-        <linearGradient id="myGradient" gradientTransform="rotate(45)">
-          <stop offset="0%" stop-color="white" stop-opacity="0.9" />
-          <stop offset="45%" stop-color="rgba(255, 255, 255, 0.8)" />
-          <stop offset="50%" stop-color="rgba(255, 255, 255, 1)" />
-          <stop offset="55%" stop-color="rgba(255, 255, 255, 0.8)" />
-          <stop offset="100%" stop-color="rgba(255, 255, 255, 0.3)" />
-        </linearGradient>
+        </radialGradient>
       </defs>
-
-      {data?.isHighlighted && (
-        <>
-          <rect
-            width="5"
-            height="2"
-            x="-2.5"
-            y="-1"
-            rx="1"
-            fill="url('#myGradient')"
-            filter="url(#brightGlow)"
+      {data?.isHighlighted &&
+        [...Array(PARTICLE_COUNT)].map((_, i) => (
+          <ellipse
+            key={`particle-${i}-${ANIMATE_DURATION}`}
+            rx="5"
+            ry="1.6"
+            fill="url(#myGradient)"
           >
             <animateMotion
-              begin="0s"
-              dur="3s"
+              begin={`${i * (ANIMATE_DURATION / PARTICLE_COUNT)}s`}
+              dur={`${ANIMATE_DURATION}s`}
               repeatCount="indefinite"
               rotate="auto"
-              calcMode="spline"
-              keySplines="0.4 0 0.2 1"
               path={edgePath}
-            />
-          </rect>
-          <rect
-            width="5"
-            height="2"
-            x="-2.5"
-            y="-1"
-            rx="1"
-            fill="url('#myGradient')"
-          >
-            <animateMotion
-              begin="1.5s"
-              dur="3s"
-              repeatCount="indefinite"
-              rotate="auto"
               calcMode="spline"
-              keySplines="0.4 0 0.2 1"
-              path={edgePath}
+              keySplines="0.42, 0, 0.58, 1.0"
             />
-          </rect>
-        </>
-      )}
+          </ellipse>
+        ))}
     </>
   )
 }
