@@ -3,7 +3,6 @@
 
   stroke-width: 1px;
   transition: stroke 0.3s var(--default-timing-function);
-  shape-rendering: optimizeSpeed;
 }
 
 :global([data-loading='true']) .edge {
