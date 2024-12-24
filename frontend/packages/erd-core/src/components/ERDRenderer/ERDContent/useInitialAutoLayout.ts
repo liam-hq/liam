@@ -38,6 +38,7 @@ export const useInitialAutoLayout = (nodes: Node[]) => {
 
   const {
     state: { initializeComplete },
+    actions: { setFoo },
   } = useERDContentContext()
   const { handleLayout } = useAutoLayout()
 
@@ -65,9 +66,17 @@ export const useInitialAutoLayout = (nodes: Node[]) => {
 
       if (tableNodesInitialized) {
         handleLayout(updatedNodes, updatedEdges, fitViewOptions)
+        setFoo(true) // make effect
       }
     }
 
     initialize()
-  }, [tableNodesInitialized, initializeComplete, handleLayout, nodes, getEdges])
+  }, [
+    tableNodesInitialized,
+    initializeComplete,
+    handleLayout,
+    nodes,
+    getEdges,
+    setFoo,
+  ])
 }

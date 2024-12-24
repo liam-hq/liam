@@ -39,11 +39,11 @@ export const useAutoLayout = () => {
       })
 
       setNodes([...hiddenNodes, ...newNodes])
-      setTimeout(() => {
+      window.requestAnimationFrame(() => {
         fitView(fitViewOptions)
         setLoading(false)
         setInitializeComplete(true)
-      }, 10)
+      })
     },
     [setNodes, fitView, setLoading, setInitializeComplete],
   )
