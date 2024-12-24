@@ -66,7 +66,9 @@ export const useInitialAutoLayout = (nodes: Node[]) => {
 
       if (tableNodesInitialized) {
         handleLayout(updatedNodes, updatedEdges, fitViewOptions)
-        setFoo(true) // make effect
+        window.requestAnimationFrame(() => {
+          setFoo(true) // make effect
+        })
       }
     }
 
