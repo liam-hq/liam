@@ -21,12 +21,14 @@
     "vitest": "2.1.4"
   },
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && pnpm run cp:prism",
+    "cp:prism": "cp node_modules/@ruby/prism/src/prism.wasm dist/parser/schemarb/",
     "fmt": "pnpm run '/^fmt:.*/'",
     "fmt:biome": "biome check --write --unsafe .",
     "lint": "pnpm run '/^lint:.*/'",
     "lint:biome": "biome check .",
     "lint:tsc": "tsc --noEmit",
+    "postinstall": "cp node_modules/@ruby/prism/src/prism.wasm src/parser/schemarb/prism.wasm",
     "test": "vitest --watch=false"
   },
   "types": "dist/index.d.ts"
