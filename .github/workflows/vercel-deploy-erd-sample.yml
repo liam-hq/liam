@@ -59,8 +59,10 @@ jobs:
       VERCEL_ORG_ID: ${{ vars.VERCEL_ORG_ID }}
       VERCEL_PROJECT_ID: ${{ vars[matrix.apps.vercel-project-id-key] }}
     steps:
+      - run: node -v
       - uses: actions/checkout@v4
       - uses: ./.github/actions/pnpm-setup
+      - run: node -v
       - name: Install Vercel CLI
         run: pnpm add --global vercel@latest
       - name: Pull Vercel Enviroment Infomation

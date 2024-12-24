@@ -12,7 +12,6 @@ import {
   SymbolNode,
   TrueNode,
   Visitor,
-  loadPrism,
 } from '@ruby/prism'
 import { type Result, err, ok } from 'neverthrow'
 import type {
@@ -38,6 +37,7 @@ import {
   handleOneToOneRelationships,
 } from '../utils/index.js'
 import { convertColumnType } from './convertColumnType.js'
+import { loadPrism } from './loadPrism.js'
 import { singularize } from './singularize.js'
 
 export class UnsupportedTokenError extends WarningError {
