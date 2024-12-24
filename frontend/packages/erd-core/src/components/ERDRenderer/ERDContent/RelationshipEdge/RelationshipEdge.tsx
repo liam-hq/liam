@@ -60,9 +60,9 @@ export const RelationshipEdge: FC<Props> = ({
 
       {data?.isHighlighted && (
         <rect
-          width="10"
+          width="5"
           height="2"
-          x="-5"
+          x="-2.5"
           y="-1"
           rx="1"
           fill="url('#myGradient')"
