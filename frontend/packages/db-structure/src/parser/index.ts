@@ -13,10 +13,11 @@ export type SupportedFormat = v.InferOutput<typeof supportedFormatSchema>
 export const parse = (
   str: string,
   format: SupportedFormat,
+  serverSideWasmPath?: string,
 ): Promise<ProcessResult> => {
   switch (format) {
     case 'schemarb':
-      return schemarbProcessor(str)
+      return schemarbProcessor(str, serverSideWasmPath)
     case 'postgres':
       return postgresqlProcessor(str)
   }

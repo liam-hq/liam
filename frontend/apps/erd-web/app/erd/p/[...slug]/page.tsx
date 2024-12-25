@@ -23,7 +23,11 @@ export default async function Page({
   const input = await res.text()
 
   // Currently supports Postgres only
-  const { value: dbStructure, errors } = await parse(input, 'postgres')
+  const { value: dbStructure, errors } = await parse(
+    input,
+    'schemarb',
+    'node_modules/@liam-hq/db-structure/dist/parser/schemarb/prism.wasm',
+  )
   if (errors.length > 0) {
     for (const error of errors) {
       console.error(error)

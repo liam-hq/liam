@@ -447,8 +447,11 @@ class DBStructureFinder extends Visitor {
   }
 }
 
-async function parseRubySchema(schemaString: string): Promise<ProcessResult> {
-  const parse = await loadPrism()
+async function parseRubySchema(
+  schemaString: string,
+  serverSideWasmPath?: string,
+): Promise<ProcessResult> {
+  const parse = await loadPrism(serverSideWasmPath)
   const tableFinder = new DBStructureFinder()
 
   const parseResult = parse(schemaString)
@@ -460,4 +463,7 @@ async function parseRubySchema(schemaString: string): Promise<ProcessResult> {
   }
 }
 
-export const processor: Processor = (str) => parseRubySchema(str)
+export const processor: Processor = (
+  str: string,
+  serverSideWasmPath?: string,
+) => parseRubySchema(str, serverSideWasmPath)

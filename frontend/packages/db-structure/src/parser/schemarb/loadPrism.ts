@@ -7,8 +7,12 @@ import { WASI } from 'node:wasi'
 import type { ParseResult } from '@ruby/prism/src/deserialize.js'
 import { parsePrism } from '@ruby/prism/src/parsePrism.js'
 
-export async function loadPrism(): Promise<(source: string) => ParseResult> {
-  const path = fileURLToPath(new URL('prism.wasm', import.meta.url))
+export async function loadPrism(
+  serverSideWasmPath?: string,
+): Promise<(source: string) => ParseResult> {
+  const path = serverSideWasmPath
+    ? serverSideWasmPath
+    : fileURLToPath(new URL('prism.wasm', import.meta.url))
   const wasm = await WebAssembly.compile(await readFile(path))
 
   const wasi = new WASI({ version: 'preview1' })
