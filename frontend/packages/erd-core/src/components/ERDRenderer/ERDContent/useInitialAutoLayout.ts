@@ -30,7 +30,9 @@ export const useInitialAutoLayout = (nodes: Node[]) => {
   console.info(
     'useInitialAutoLayout - func called',
     new Date().toISOString().slice(11, -1),
+    nodes[1]?.position,
   )
+
   const tableNodesInitialized = useMemo(
     () =>
       nodes

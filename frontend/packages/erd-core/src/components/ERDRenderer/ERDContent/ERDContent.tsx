@@ -58,6 +58,12 @@ export const ERDContentInner: FC<Props> = ({
   } = useERDContentContext()
   const { tableName: activeTableName } = useUserEditingActiveStore()
 
+  console.info({
+    loading,
+    enabledFeatures,
+    _node: _nodes[1]?.position,
+    node: nodes[1]?.position,
+  })
   useInitialAutoLayout(nodes)
   useFitViewWhenActiveTableChange(
     enabledFeatures?.fitViewWhenActiveTableChange ?? true,

@@ -39,38 +39,40 @@ export const useAutoLayout = () => {
       })
 
       console.info(
-        'useAutoLayout - setNodes',
+        'useAutoLayout - ★setNodes★',
         new Date().toISOString().slice(11, -1),
       )
       console.info([...hiddenNodes, ...newNodes])
       setNodes([...hiddenNodes, ...newNodes])
-      window.requestAnimationFrame(() => {
-        console.info(
-          'window.requestAnimationFrame 1 - top',
-          new Date().toISOString().slice(11, -1),
-        )
-        fitView(fitViewOptions)
+      setTimeout(() => {
         window.requestAnimationFrame(() => {
           console.info(
-            'window.requestAnimationFrame 2 - top',
+            'window.requestAnimationFrame 1 - top',
             new Date().toISOString().slice(11, -1),
           )
+          fitView(fitViewOptions)
+          window.requestAnimationFrame(() => {
+            console.info(
+              'window.requestAnimationFrame 2 - top',
+              new Date().toISOString().slice(11, -1),
+            )
+            console.info(
+              'setLoading false',
+              new Date().toISOString().slice(11, -1),
+            )
+            setLoading(false)
+            setInitializeComplete(true)
+            console.info(
+              'window.requestAnimationFrame 2 - bottom',
+              new Date().toISOString().slice(11, -1),
+            )
+          })
           console.info(
-            'setLoading false',
-            new Date().toISOString().slice(11, -1),
-          )
-          setLoading(false)
-          setInitializeComplete(true)
-          console.info(
-            'window.requestAnimationFrame 2 - bottom',
+            'window.requestAnimationFrame 1 - bottom',
             new Date().toISOString().slice(11, -1),
           )
         })
-        console.info(
-          'window.requestAnimationFrame 1 - bottom',
-          new Date().toISOString().slice(11, -1),
-        )
-      })
+      }, 0)
     },
     [setNodes, fitView, setLoading, setInitializeComplete],
   )
