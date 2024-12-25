@@ -42,6 +42,7 @@ export const useAutoLayout = () => {
         'useAutoLayout - setNodes',
         new Date().toISOString().slice(11, -1),
       )
+      console.info([...hiddenNodes, ...newNodes])
       setNodes([...hiddenNodes, ...newNodes])
       window.requestAnimationFrame(() => {
         console.info(
