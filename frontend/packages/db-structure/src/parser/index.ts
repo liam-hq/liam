@@ -3,6 +3,8 @@ import { processor as schemarbProcessor } from './schemarb/index.js'
 import { processor as postgresqlProcessor } from './sql/index.js'
 import type { ProcessResult } from './types.js'
 
+export { setPrismWasmUrl } from './schemarb/index.js'
+
 export const supportedFormatSchema = v.union([
   v.literal('schemarb'),
   v.literal('postgres'),

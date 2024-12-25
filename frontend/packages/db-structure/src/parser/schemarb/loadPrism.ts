@@ -15,15 +15,27 @@ Consider removing this patch once support for Node.js v18 is no longer necessary
 // biome-ignore lint/correctness/noNodejsModules: This import is server-side specific because loadPrism() is exclusively invoked in server environments.
 import { readFile } from 'node:fs/promises'
 // biome-ignore lint/correctness/noNodejsModules: This import is server-side specific because loadPrism() is exclusively invoked in server environments.
-import { fileURLToPath } from 'node:url'
+// import { fileURLToPath } from 'node:url'
 // biome-ignore lint/correctness/noNodejsModules: This import is server-side specific because loadPrism() is exclusively invoked in server environments.
 import { WASI } from 'node:wasi'
 import type { ParseResult } from '@ruby/prism/src/deserialize.js'
 import { parsePrism } from '@ruby/prism/src/parsePrism.js'
 
+// let prismWasmUrl = fileURLToPath(new URL('prism.wasm', import.meta.url))
+let prismWasmUrl = ''
+
+export const setPrismWasmUrl = (url: string): void => {
+  prismWasmUrl = url
+}
+
 export async function loadPrism(): Promise<(source: string) => ParseResult> {
-  const path = fileURLToPath(new URL('prism.wasm', import.meta.url))
-  const wasm = await WebAssembly.compile(await readFile(path))
+  // console.log({
+  //   url: new URL('prism.wasm', import.meta.url),
+  //   // fileURLToPath: fileURLToPath(new URL('prism.wasm', import.meta.url)),
+  //   // prismWasmUrl,
+  // })
+  const wasm = await WebAssembly.compile(await readFile(prismWasmUrl))
+  // const wasm = await WebAssembly.compileStreaming(fetch("https://unpkg.com/@ruby/prism@latest/src/prism.wasm"));
 
   const wasi = new WASI({ version: 'preview1' })
 

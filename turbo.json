@@ -14,6 +14,11 @@
       "cache": false,
       "persistent": true
     },
+    "@liam-hq/erd-web#dev": {
+      "dependsOn": ["^build"],
+      "cache": false,
+      "persistent": true
+    },
     "gen": {
       "dependsOn": ["^gen"]
     },
