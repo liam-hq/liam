@@ -42,6 +42,13 @@ export const useInitialAutoLayout = (nodes: Node[]) => {
   const { handleLayout } = useAutoLayout()
 
   useEffect(() => {
+    console.info(
+      'useInitialAutoLayout - start',
+      new Date().toISOString().slice(11, -1),
+      tableNodesInitialized,
+      initializeComplete,
+      nodes.length,
+    )
     const initialize = async () => {
       if (initializeComplete) {
         return
@@ -65,9 +72,22 @@ export const useInitialAutoLayout = (nodes: Node[]) => {
 
       if (tableNodesInitialized) {
         handleLayout(updatedNodes, updatedEdges, fitViewOptions)
+        console.info(
+          'useInitialAutoLayout - tableNodesInitialized',
+          new Date().toISOString().slice(11, -1),
+          tableNodesInitialized,
+          initializeComplete,
+        )
       }
     }
 
     initialize()
+    console.info(
+      'useInitialAutoLayout - finish',
+      new Date().toISOString().slice(11, -1),
+      tableNodesInitialized,
+      initializeComplete,
+      nodes.length,
+    )
   }, [tableNodesInitialized, initializeComplete, handleLayout, nodes, getEdges])
 }
