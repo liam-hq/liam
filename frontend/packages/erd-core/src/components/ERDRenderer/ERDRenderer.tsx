@@ -28,6 +28,10 @@ export const ERDRenderer: FC<Props> = ({ defaultSidebarOpen = false }) => {
     dbStructure,
     showMode,
   })
+  if (nodes.length === 0) {
+    throw new Error('No nodes found')
+  }
+  console.info('Nodes found:', nodes)
 
   const { cliVersion } = useCliVersion()
   const handleChangeOpen = useCallback(

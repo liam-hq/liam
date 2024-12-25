@@ -15,6 +15,11 @@ async function loadSchemaContent() {
     }
     const data = await response.json()
     const result = v.safeParse(dbStructureSchema, data)
+    console.info(
+      'Schema·content loaded:',
+      new Date().toISOString().slice(11, -1),
+      result,
+    )
     result.success
       ? initDBStructureStore(result.output)
       : console.info(result.issues)
