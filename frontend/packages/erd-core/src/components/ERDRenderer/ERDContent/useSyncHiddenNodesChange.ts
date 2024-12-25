@@ -15,6 +15,10 @@ export const useSyncHiddenNodesChange = () => {
       return
     }
     const nodes = getNodes()
+    if (nodes.some((node) => node.position.x !== 0 || node.position.y !== 0)) {
+    } else {
+      console.warn('Nodes are not initialized yet')
+    }
     const updatedNodes = nodes.map((node) => {
       const hidden = hiddenNodeIds.has(node.id)
       return { ...node, hidden }
