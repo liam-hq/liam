@@ -43,25 +43,28 @@ export const useAutoLayout = () => {
         new Date().toISOString().slice(11, -1),
       )
       console.info([...hiddenNodes, ...newNodes])
-      setNodes([...hiddenNodes, ...newNodes])
+      setNodes([])
       setTimeout(() => {
-        window.requestAnimationFrame(() => {
-          console.info(
-            'window.requestAnimationFrame 1 - top',
-            new Date().toISOString().slice(11, -1),
-          )
-          fitView(fitViewOptions)
-          console.info(
-            'setLoading false',
-            new Date().toISOString().slice(11, -1),
-          )
-          setLoading(false)
-          setInitializeComplete(true)
-          console.info(
-            'window.requestAnimationFrame 1 - bottom',
-            new Date().toISOString().slice(11, -1),
-          )
-        })
+        setNodes([...hiddenNodes, ...newNodes])
+        setTimeout(() => {
+          window.requestAnimationFrame(() => {
+            console.info(
+              'window.requestAnimationFrame 1 - top',
+              new Date().toISOString().slice(11, -1),
+            )
+            fitView(fitViewOptions)
+            console.info(
+              'setLoading false',
+              new Date().toISOString().slice(11, -1),
+            )
+            setLoading(false)
+            setInitializeComplete(true)
+            console.info(
+              'window.requestAnimationFrame 1 - bottom',
+              new Date().toISOString().slice(11, -1),
+            )
+          })
+        }, 0)
       }, 0)
     },
     [setNodes, fitView, setLoading, setInitializeComplete],
