@@ -40,7 +40,10 @@ export const useAutoLayout = () => {
 
       setNodes([...hiddenNodes, ...newNodes])
       setTimeout(() => {
-        fitView(fitViewOptions)
+        fitView({
+          ...fitViewOptions,
+          nodes: newNodes,
+        })
         setLoading(false)
         setInitializeComplete(true)
       }, 0)
