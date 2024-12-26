@@ -5,6 +5,7 @@ import { IconButton, TidyUpIcon } from '@liam-hq/ui'
 import { ToolbarButton } from '@radix-ui/react-toolbar'
 import { useReactFlow } from '@xyflow/react'
 import { type FC, useCallback } from 'react'
+import { useERDContentContext } from '../../ERDContentContext'
 import { useAutoLayout } from '../../useAutoLayout'
 
 export const TidyUpButton: FC = () => {
@@ -12,6 +13,9 @@ export const TidyUpButton: FC = () => {
   const { handleLayout } = useAutoLayout()
   const { showMode } = useUserEditingStore()
   const { cliVersion } = useCliVersion()
+  const {
+    actions: { setAutoLayoutComplete },
+  } = useERDContentContext()
   const handleClick = useCallback(() => {
     toolbarActionLogEvent({
       element: 'tidyUp',
@@ -19,10 +23,12 @@ export const TidyUpButton: FC = () => {
       cliVer: cliVersion.version,
       appEnv: cliVersion.envName,
     })
+    setAutoLayoutComplete(false)
     handleLayout(getNodes(), getEdges())
   }, [
     handleLayout,
     showMode,
+    setAutoLayoutComplete,
     getNodes,
     getEdges,
     cliVersion.version,
