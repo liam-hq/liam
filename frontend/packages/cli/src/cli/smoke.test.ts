@@ -35,6 +35,7 @@ describe('CLI Smoke Test', () => {
 
         Commands:
           erd             ERD commands
+          init            Initialize the setup process for your database or ORM
           help [command]  display help for command
         "
       `)

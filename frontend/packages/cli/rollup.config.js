@@ -21,5 +21,5 @@ export default {
     }),
     execute('chmod +x dist-cli/bin/cli.js'),
   ],
-  external: ['commander'],
+  external: ['commander', 'inquirer'],
 }
