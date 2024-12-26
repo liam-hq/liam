@@ -27,6 +27,9 @@ const getHiddenNodeIdsFromUrl = async (): Promise<string[]> => {
 }
 
 export const useInitialAutoLayout = (nodes: Node[]) => {
+  console.info('useInitialAutoLayout - func called')
+  console.info({ node: nodes[1]?.position })
+
   const tableNodesInitialized = useMemo(
     () =>
       nodes

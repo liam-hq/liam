@@ -40,9 +40,18 @@ export const useAutoLayout = () => {
 
       setNodes([...hiddenNodes, ...newNodes])
       setTimeout(() => {
-        fitView(fitViewOptions)
-        setLoading(false)
-        setInitializeComplete(true)
+        window.requestAnimationFrame(async () => {
+          console.info('await fitView start')
+          await fitView(fitViewOptions)
+          console.info('await fitView finish')
+          window.requestAnimationFrame(() => {
+            console.info('setLoading(false) start')
+            setLoading(false)
+            console.info('setLoading(false) finished')
+            setInitializeComplete(true)
+            console.info('setInitializeComplete(true) finished')
+          })
+        })
       }, 0)
     },
     [setNodes, fitView, setLoading, setInitializeComplete],

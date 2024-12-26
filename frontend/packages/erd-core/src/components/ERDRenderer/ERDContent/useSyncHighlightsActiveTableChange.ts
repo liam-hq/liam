@@ -17,6 +17,10 @@ export const useSyncHighlightsActiveTableChange = () => {
     }
 
     const nodes = getNodes()
+    if (nodes.some((node) => node.position.x !== 0 || node.position.y !== 0)) {
+    } else {
+      console.warn('Nodes are not initialized yet')
+    }
     const edges = getEdges()
     const { nodes: updatedNodes, edges: updatedEdges } = highlightNodesAndEdges(
       nodes,
