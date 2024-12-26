@@ -38,31 +38,16 @@ export const useAutoLayout = () => {
         edges: visibleEdges,
       })
 
-      console.info(
-        'useAutoLayout - ★setNodes★',
-        new Date().toISOString().slice(11, -1),
-      )
-      console.info([...hiddenNodes, ...newNodes])
       setNodes([...hiddenNodes, ...newNodes])
       setTimeout(() => {
-        window.requestAnimationFrame(async() => {
-          console.info(
-            'window.requestAnimationFrame 1 - top',
-            new Date().toISOString().slice(11, -1),
-          )
-          await fitView(fitViewOptions)
-          window.requestAnimationFrame(() => {
-            console.info(
-              'setLoading false',
-              new Date().toISOString().slice(11, -1),
-            )
-            setLoading(false)
-            setInitializeComplete(true)
-          })
-          console.info(
-            'window.requestAnimationFrame 1 - bottom',
-            new Date().toISOString().slice(11, -1),
-          )
+        window.requestAnimationFrame(() => {
+          console.info('setLoading(false) start')
+          setLoading(false)
+          console.info('setLoading(false) finished')
+          setInitializeComplete(true)
+          console.info('calling fitView start')
+          fitView(fitViewOptions)
+          console.info('calling fitView finish')
         })
       }, 0)
     },

@@ -27,11 +27,8 @@ const getHiddenNodeIdsFromUrl = async (): Promise<string[]> => {
 }
 
 export const useInitialAutoLayout = (nodes: Node[]) => {
-  console.info(
-    'useInitialAutoLayout - func called',
-    new Date().toISOString().slice(11, -1),
-    nodes[1]?.position,
-  )
+  console.info('useInitialAutoLayout - func called')
+  console.info({ node: nodes[1]?.position })
 
   const tableNodesInitialized = useMemo(
     () =>
@@ -48,13 +45,6 @@ export const useInitialAutoLayout = (nodes: Node[]) => {
   const { handleLayout } = useAutoLayout()
 
   useEffect(() => {
-    console.info(
-      'useInitialAutoLayout - start',
-      new Date().toISOString().slice(11, -1),
-      tableNodesInitialized,
-      initializeComplete,
-      nodes.length,
-    )
     const initialize = async () => {
       if (initializeComplete) {
         return
@@ -78,22 +68,9 @@ export const useInitialAutoLayout = (nodes: Node[]) => {
 
       if (tableNodesInitialized) {
         handleLayout(updatedNodes, updatedEdges, fitViewOptions)
-        console.info(
-          'useInitialAutoLayout - tableNodesInitialized',
-          new Date().toISOString().slice(11, -1),
-          tableNodesInitialized,
-          initializeComplete,
-        )
       }
     }
 
     initialize()
-    console.info(
-      'useInitialAutoLayout - finish',
-      new Date().toISOString().slice(11, -1),
-      tableNodesInitialized,
-      initializeComplete,
-      nodes.length,
-    )
   }, [tableNodesInitialized, initializeComplete, handleLayout, nodes, getEdges])
 }
