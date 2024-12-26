@@ -2,6 +2,9 @@ import CopyPlugin from 'copy-webpack-plugin'
 import type { NextConfig } from 'next'
 
 const nextConfig: NextConfig = {
+  outputFileTracingIncludes: {
+    '/erd/p/\\[\\[\\.\\.\\.slug\\]\\]': ['./.next/server/prism.wasm'],
+  },
   webpack: (config) => {
     config.plugins.push(
       new CopyPlugin({
