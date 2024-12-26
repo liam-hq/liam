@@ -2,7 +2,7 @@
 
 
 ## Summary
-* 889 MIT
+* 904 MIT
 * 59 ISC
 * 30 Apache 2.0
 * 14 Simplified BSD
@@ -750,6 +750,160 @@ LGPL-3.0-or-later permitted
 * /home/runner/work/liam/liam
 
 <a href="http://www.apache.org/licenses/LICENSE-2.0.txt">Apache 2.0</a> permitted
+
+
+
+<a name="@inquirer/checkbox"></a>
+### @inquirer/checkbox v4.0.4
+#### 
+
+##### Paths
+* /home/runner/work/liam/liam
+
+<a href="http://opensource.org/licenses/mit-license">MIT</a> permitted
+
+
+
+<a name="@inquirer/confirm"></a>
+### @inquirer/confirm v5.1.1
+#### 
+
+##### Paths
+* /home/runner/work/liam/liam
+
+<a href="http://opensource.org/licenses/mit-license">MIT</a> permitted
+
+
+
+<a name="@inquirer/core"></a>
+### @inquirer/core v10.1.2
+#### 
+
+##### Paths
+* /home/runner/work/liam/liam
+
+<a href="http://opensource.org/licenses/mit-license">MIT</a> permitted
+
+
+
+<a name="@inquirer/editor"></a>
+### @inquirer/editor v4.2.1
+#### 
+
+##### Paths
+* /home/runner/work/liam/liam
+
+<a href="http://opensource.org/licenses/mit-license">MIT</a> permitted
+
+
+
+<a name="@inquirer/expand"></a>
+### @inquirer/expand v4.0.4
+#### 
+
+##### Paths
+* /home/runner/work/liam/liam
+
+<a href="http://opensource.org/licenses/mit-license">MIT</a> permitted
+
+
+
+<a name="@inquirer/figures"></a>
+### @inquirer/figures v1.0.9
+#### 
+
+##### Paths
+* /home/runner/work/liam/liam
+
+<a href="http://opensource.org/licenses/mit-license">MIT</a> permitted
+
+
+
+<a name="@inquirer/input"></a>
+### @inquirer/input v4.1.1
+#### 
+
+##### Paths
+* /home/runner/work/liam/liam
+
+<a href="http://opensource.org/licenses/mit-license">MIT</a> permitted
+
+
+
+<a name="@inquirer/number"></a>
+### @inquirer/number v3.0.4
+#### 
+
+##### Paths
+* /home/runner/work/liam/liam
+
+<a href="http://opensource.org/licenses/mit-license">MIT</a> permitted
+
+
+
+<a name="@inquirer/password"></a>
+### @inquirer/password v4.0.4
+#### 
+
+##### Paths
+* /home/runner/work/liam/liam
+
+<a href="http://opensource.org/licenses/mit-license">MIT</a> permitted
+
+
+
+<a name="@inquirer/prompts"></a>
+### @inquirer/prompts v7.2.1
+#### 
+
+##### Paths
+* /home/runner/work/liam/liam
+
+<a href="http://opensource.org/licenses/mit-license">MIT</a> permitted
+
+
+
+<a name="@inquirer/rawlist"></a>
+### @inquirer/rawlist v4.0.4
+#### 
+
+##### Paths
+* /home/runner/work/liam/liam
+
+<a href="http://opensource.org/licenses/mit-license">MIT</a> permitted
+
+
+
+<a name="@inquirer/search"></a>
+### @inquirer/search v3.0.4
+#### 
+
+##### Paths
+* /home/runner/work/liam/liam
+
+<a href="http://opensource.org/licenses/mit-license">MIT</a> permitted
+
+
+
+<a name="@inquirer/select"></a>
+### @inquirer/select v4.0.4
+#### 
+
+##### Paths
+* /home/runner/work/liam/liam
+
+<a href="http://opensource.org/licenses/mit-license">MIT</a> permitted
+
+
+
+<a name="@inquirer/type"></a>
+### @inquirer/type v3.0.2
+#### 
+
+##### Paths
+* /home/runner/work/liam/liam
+
+<a href="http://opensource.org/licenses/mit-license">MIT</a> permitted
 
 
 
@@ -11239,6 +11393,17 @@ Unknown manually approved
 
 <a name="yocto-queue"></a>
 ### yocto-queue v0.1.0
+#### 
+
+##### Paths
+* /home/runner/work/liam/liam
+
+<a href="http://opensource.org/licenses/mit-license">MIT</a> permitted
+
+
+
+<a name="yoctocolors-cjs"></a>
+### yoctocolors-cjs v2.1.2
 #### 
 
 ##### Paths
