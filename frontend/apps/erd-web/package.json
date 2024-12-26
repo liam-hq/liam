@@ -15,11 +15,12 @@
     "@types/node": "22.9.0",
     "@types/react": "18",
     "@types/react-dom": "18",
+    "copy-webpack-plugin": "^12.0.2",
     "typescript": "5"
   },
   "scripts": {
     "build": "next build",
-    "dev": "next dev --turbopack",
+    "dev": "next dev",
     "fmt": "pnpm run '/^fmt:.*/'",
     "fmt:biome": "biome check --write --unsafe .",
     "lint": "pnpm run '/^lint:.*/'",

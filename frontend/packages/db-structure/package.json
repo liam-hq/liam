@@ -5,7 +5,8 @@
   "type": "module",
   "exports": {
     ".": "./dist/index.js",
-    "./parser": "./dist/parser.js"
+    "./parser": "./dist/parser.js",
+    "./parser/schemarb/prism.wasm": "./dist/parser/schemarb/prism.wasm"
   },
   "dependencies": {
     "@ruby/prism": "1.2.0",
