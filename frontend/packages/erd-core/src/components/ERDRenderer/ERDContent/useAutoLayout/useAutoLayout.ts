@@ -45,7 +45,7 @@ export const useAutoLayout = () => {
       console.info([...hiddenNodes, ...newNodes])
       setNodes([...hiddenNodes, ...newNodes])
       setTimeout(() => {
-        window.requestAnimationFrame(async () => {
+        window.requestAnimationFrame(async() => {
           console.info(
             'window.requestAnimationFrame 1 - top',
             new Date().toISOString().slice(11, -1),
