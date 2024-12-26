@@ -43,11 +43,15 @@ export const useAutoLayout = () => {
         window.requestAnimationFrame(() => {
           console.info('setLoading(false) start')
           setLoading(false)
-          console.info('setLoading(false) finished')
-          setInitializeComplete(true)
-          console.info('calling fitView start')
-          fitView(fitViewOptions)
-          console.info('calling fitView finish')
+          window.requestAnimationFrame(() => {
+            console.info('setInitializeComplete(true) start')
+            setInitializeComplete(true)
+
+            window.requestAnimationFrame(() => {
+              console.info('calling fitView start')
+              fitView(fitViewOptions)
+            })
+          })
         })
       }, 0)
     },
