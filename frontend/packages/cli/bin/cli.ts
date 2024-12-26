@@ -24,6 +24,7 @@ function generateWorkflow(type: WorkflowType) {
       `# Example workflow for ${type}
 # This is a placeholder for the actual workflow content.`,
     )
+    console.info('')
     console.info(`Workflow generated: ${filePath}`)
   }
 }
@@ -81,7 +82,9 @@ program
   .command('init')
   .description('Initialize the setup process for your database or ORM')
   .action(async () => {
-    console.info('Welcome to the @liam-hq/cli setup process!')
+    console.info('')
+    console.info('👾 Welcome to the @liam-hq/cli setup process!')
+    console.info('')
     await runSetup()
   })
 
