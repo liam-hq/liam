@@ -30,6 +30,7 @@ export default defineConfig({
         format: 'iife',
       },
     },
+    modulePreload: false,
   },
   plugins: [react(), offlinePlugin(), tsconfigPaths(), renameImportWasi(), setEnvPlugin()],
   test: {

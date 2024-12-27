@@ -7,13 +7,15 @@ import {
 } from '@liam-hq/erd-core'
 import * as v from 'valibot'
 
+declare global {
+  interface Window {
+    __liam_schema: object
+  }
+}
+
 async function loadSchemaContent() {
   try {
-    const response = await fetch('./schema.json')
-    if (!response.ok) {
-      throw new Error(`Failed to fetch schema: ${response.statusText}`)
-    }
-    const data = await response.json()
+    const data = window.__liam_schema
     const result = v.safeParse(dbStructureSchema, data)
     result.success
       ? initDBStructureStore(result.output)
