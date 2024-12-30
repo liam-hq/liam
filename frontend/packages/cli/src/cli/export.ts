@@ -14,42 +14,38 @@ generateMdCommand.action(async () => {
   const markdownLines: string[] = []
 
   markdownLines.push('# Database Structure')
+  markdownLines.push('## Tables')
 
   for (const [tableName, table] of Object.entries(dbStructure.tables)) {
-    markdownLines.push(`## Table: ${tableName}`)
-    markdownLines.push(`### Columns`)
+    markdownLines.push(`### ${tableName}`)
+    if (table.comment !== null) markdownLines.push(table.comment)
+    markdownLines.push(`#### Columns`)
     for (const [columnName, column] of Object.entries(table.columns)) {
-      markdownLines.push(`- **${columnName}**: ${column.type}`)
-      if (column.default !== null)
+      markdownLines.push(`- ${columnName}: ${column.type}`)
+      if (column.default !== null && column.default !== '')
         markdownLines.push(`  - Default: ${column.default}`)
-      if (column.check !== null)
+      if (column.check !== null && column.check !== '')
         markdownLines.push(`  - Check: ${column.check}`)
       if (column.primary) markdownLines.push(`  - Primary Key`)
-      if (column.unique) markdownLines.push(`  - Unique`)
       if (column.notNull) markdownLines.push(`  - Not Null`)
       if (column.comment !== null)
         markdownLines.push(`  - Comment: ${column.comment}`)
     }
-    markdownLines.push(`### Indices`)
+    markdownLines.push(`#### Indices`)
     for (const [indexName, index] of Object.entries(table.indices)) {
-      markdownLines.push(`- **${indexName}**`)
-      markdownLines.push(`  - Unique: ${index.unique}`)
+      markdownLines.push(`- ${indexName}`)
+      if (index.unique) markdownLines.push(`  - Unique`)
       markdownLines.push(`  - Columns: ${index.columns.join(', ')}`)
     }
-    if (table.comment !== null)
-      markdownLines.push(`### Comment: ${table.comment}`)
   }
 
   markdownLines.push(`## Relationships`)
   for (const [relationshipName, relationship] of Object.entries(
     dbStructure.relationships,
   )) {
-    markdownLines.push(`- **${relationshipName}**`)
-    markdownLines.push(`  - Primary Table: ${relationship.primaryTableName}`)
-    markdownLines.push(`  - Primary Column: ${relationship.primaryColumnName}`)
-    markdownLines.push(`  - Foreign Table: ${relationship.foreignTableName}`)
-    markdownLines.push(`  - Foreign Column: ${relationship.foreignColumnName}`)
-    markdownLines.push(`  - Cardinality: ${relationship.cardinality}`)
+    markdownLines.push(`- ${relationshipName}`)
+    markdownLines.push(`  - Primary: ${relationship.primaryTableName}.${relationship.primaryColumnName}`)
+    markdownLines.push(`  - Foreign: ${relationship.foreignTableName}.${relationship.foreignColumnName}`)
     markdownLines.push(
       `  - Update Constraint: ${relationship.updateConstraint}`,
     )
