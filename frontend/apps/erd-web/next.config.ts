@@ -12,6 +12,7 @@ const nextConfig: NextConfig = {
     NEXT_PUBLIC_GIT_HASH: gitCommitHash,
     NEXT_PUBLIC_RELEASE_DATE: releaseDate,
   },
+  assetPrefix: process.env.ASSET_PREFIX,
 }
 
 export default nextConfig
