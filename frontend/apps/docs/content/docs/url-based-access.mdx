@@ -3,3 +3,24 @@ title: URL-Based Access
 ---
 
 TBD
+
+## Detect schema format
+
+You can instantly generate an ER diagram by appending a GitHub file URL to `liambx.com/erd/p/`. For example:
+
+https://liambx.com/erd/p/github.com/mastodon/mastodon/blob/main/db/schema.rb
+
+When Liam ERD fetches your schema file, it automatically attempts to determine the schema format. Here’s how the detection works:
+
+- **File name check**: Certain filenames like `schema.rb` or `Schemafile` are assumed to be **`schemarb`**.
+- **File extension check**: Files ending with **`.rb`** are treated as **`schemarb`**, while files ending with **`.sql`** are treated as **`postgresql`**.
+- For more details, refer to the [detectFormat.ts](https://github.com/liam-hq/liam/blob/main/frontend/packages/db-structure/src/parser/supportedFormat/detectFormat.ts) file in our GitHub repository.
+
+### Override the Detected Format
+If the automatic detection doesn’t match your desired format, you can specify it manually via query parameters. For example:
+
+```
+https://liambx.com/erd/p/example?format=schemarb
+```
+
+Check [**/docs/supported-format**](/docs/supported-format) for a full list of valid format identifiers.

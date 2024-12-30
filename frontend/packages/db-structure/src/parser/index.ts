@@ -1,16 +1,14 @@
-import * as v from 'valibot'
 import { processor as schemarbProcessor } from './schemarb/index.js'
 import { processor as postgresqlProcessor } from './sql/index.js'
+import type { SupportedFormat } from './supportedFormat/index.js'
 import type { ProcessResult } from './types.js'
 
 export { setPrismWasmUrl } from './schemarb/index.js'
-
-export const supportedFormatSchema = v.union([
-  v.literal('schemarb'),
-  v.literal('postgres'),
-])
-
-export type SupportedFormat = v.InferOutput<typeof supportedFormatSchema>
+export {
+  supportedFormatSchema,
+  type SupportedFormat,
+  detectFormat,
+} from './supportedFormat/index.js'
 
 export const parse = (
   str: string,

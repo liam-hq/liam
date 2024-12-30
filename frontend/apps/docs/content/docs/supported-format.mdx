@@ -1,0 +1,24 @@
+---
+title: Supported Format
+---
+
+**Legend**
+
+- ✅: Supported
+- ⛔: Not in progress
+- ⌛️: In progress
+
+Below is a list of currently supported (or planned) formats and integrations.
+
+- **Identifier**: Used for specifying the format in the CLI (via `--format=postgresql`) or as a web query parameter (e.g., `?format=schemarb`).
+- **Schema DSL Parsing**: If marked as **✅**, you can parse the schema DSL file both in the CLI and on the web version.
+
+| Technology                                  | Schema DSL Parsing | Support via Database URL (PostgreSQL) | Identifier   |
+| ------------------------------------------- | ------------------ | ------------------------------------- | ------------ |
+| [PostgreSQL](/docs/static-build/postgresql) | ✅                 | ✅                                    | `postgresql` |
+| [Ruby on Rails](/docs/static-build/rails)   | ✅                 | ✅                                    | `schemarb`   |
+| [Prisma](/docs/static-build/prisma)         | ⛔                 | ✅                                    | -            |
+| [Drizzle](/docs/static-build/drizzle)       | ⛔                 | ✅                                    | -            |
+| MySQL                                       | ⛔                 | ⛔                                    | -            |
+
+If there’s another database schema or ORM you’d love to see supported, please let us know in the [GitHub Discussions](https://github.com/liam-hq/liam/discussions/364).
