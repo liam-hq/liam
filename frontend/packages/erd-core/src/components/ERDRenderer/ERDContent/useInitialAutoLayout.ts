@@ -26,7 +26,10 @@ const getHiddenNodeIdsFromUrl = async (): Promise<string[]> => {
   return hiddenNodeIds ? hiddenNodeIds.split(',') : []
 }
 
-export const useInitialAutoLayout = (nodes: Node[]) => {
+export const useInitialAutoLayout = (
+  nodes: Node[],
+  shouldFitViewToActiveTable: boolean,
+) => {
   const tableNodesInitialized = useMemo(
     () =>
       nodes
@@ -59,9 +62,10 @@ export const useInitialAutoLayout = (nodes: Node[]) => {
       const { nodes: updatedNodes, edges: updatedEdges } =
         highlightNodesAndEdges(hiddenNodes, edges, { activeTableName })
 
-      const fitViewOptions = activeTableName
-        ? { maxZoom: 1, duration: 300, nodes: [{ id: activeTableName }] }
-        : undefined
+      const fitViewOptions =
+        shouldFitViewToActiveTable && activeTableName
+          ? { maxZoom: 1, duration: 300, nodes: [{ id: activeTableName }] }
+          : undefined
 
       if (tableNodesInitialized) {
         handleLayout(updatedNodes, updatedEdges, fitViewOptions)
@@ -69,5 +73,12 @@ export const useInitialAutoLayout = (nodes: Node[]) => {
     }
 
     initialize()
-  }, [tableNodesInitialized, initializeComplete, handleLayout, nodes, getEdges])
+  }, [
+    tableNodesInitialized,
+    initializeComplete,
+    handleLayout,
+    nodes,
+    getEdges,
+    shouldFitViewToActiveTable,
+  ])
 }

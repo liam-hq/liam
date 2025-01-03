@@ -59,7 +59,10 @@ export const RelatedTables: FC<Props> = ({ table }) => {
           <ERDContent
             nodes={nodes}
             edges={edges}
-            enabledFeatures={{ fitViewWhenActiveTableChange: false }}
+            enabledFeatures={{
+              fitViewWhenActiveTableChange: false,
+              initialFitViewToActiveTable: false,
+            }}
           />
         </ReactFlowProvider>
       </div>

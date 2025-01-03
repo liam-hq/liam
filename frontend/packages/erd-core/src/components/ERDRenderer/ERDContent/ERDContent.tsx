@@ -41,6 +41,7 @@ type Props = {
   enabledFeatures?:
     | {
         fitViewWhenActiveTableChange?: boolean | undefined
+        initialFitViewToActiveTable?: boolean | undefined
       }
     | undefined
 }
@@ -57,7 +58,10 @@ export const ERDContentInner: FC<Props> = ({
   } = useERDContentContext()
   const { tableName: activeTableName } = useUserEditingActiveStore()
 
-  useInitialAutoLayout(nodes)
+  useInitialAutoLayout(
+    nodes,
+    enabledFeatures?.initialFitViewToActiveTable ?? true,
+  )
   useFitViewWhenActiveTableChange(
     enabledFeatures?.fitViewWhenActiveTableChange ?? true,
   )
