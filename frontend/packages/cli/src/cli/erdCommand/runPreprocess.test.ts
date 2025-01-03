@@ -3,6 +3,7 @@ import os from 'node:os'
 import path from 'node:path'
 import type { SupportedFormat } from '@liam-hq/db-structure/parser'
 import { describe, expect, it } from 'vitest'
+import { ArgumentError, WarningProcessingError } from '../errors.js'
 import { runPreprocess } from './runPreprocess.js'
 
 describe('runPreprocess', () => {
@@ -22,7 +23,7 @@ describe('runPreprocess', () => {
         end
       `,
     },
-  ]
+  ] as const
 
   it.each(testCases)(
     'should create schema.json with the content in $format format',
@@ -32,13 +33,14 @@ describe('runPreprocess', () => {
 
       fs.writeFileSync(inputPath, content, 'utf8')
 
-      const outputFilePath = await runPreprocess(
+      const { outputFilePath, errors } = await runPreprocess(
         inputPath,
         tmpDir,
-        format as SupportedFormat,
+        format,
       )
       if (!outputFilePath) throw new Error('Failed to run preprocess')
 
+      expect(errors).toEqual([])
       expect(fs.existsSync(outputFilePath)).toBe(true)
 
       // Validate output file content
@@ -47,7 +49,7 @@ describe('runPreprocess', () => {
     },
   )
 
-  it('should throw an error if the format is invalid', async () => {
+  it('should return an error if the format is invalid', async () => {
     const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'test-distDir-'))
     const inputPath = path.join(tmpDir, 'input.sql')
     fs.writeFileSync(
@@ -56,10 +58,34 @@ describe('runPreprocess', () => {
       'utf8',
     )
 
-    await expect(
-      runPreprocess(inputPath, tmpDir, 'invalid' as SupportedFormat),
-    ).rejects.toThrow(
-      '--format is missing, invalid, or specifies an unsupported format. Please provide a valid format (e.g., "schemarb" or "postgres").',
+    const { outputFilePath, errors } = await runPreprocess(
+      inputPath,
+      tmpDir,
+      'invalid' as SupportedFormat,
     )
+    expect(outputFilePath).toBeNull()
+    expect(errors).toEqual([
+      new ArgumentError(
+        '--format is missing, invalid, or specifies an unsupported format. Please provide a valid format (e.g., "schemarb" or "postgres").',
+      ),
+    ])
+  })
+
+  it('should return an error if failed parcing schema file', async () => {
+    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'test-distDir-'))
+    const inputPath = path.join(tmpDir, 'input.sql')
+    fs.writeFileSync(inputPath, 'invalid;', 'utf8')
+
+    const { outputFilePath, errors } = await runPreprocess(
+      inputPath,
+      tmpDir,
+      'postgres',
+    )
+    expect(outputFilePath).toBeNull()
+    expect(errors).toEqual([
+      new WarningProcessingError(
+        'Error during parcing schema file: syntax error at or near "invalid"',
+      ),
+    ])
   })
 })

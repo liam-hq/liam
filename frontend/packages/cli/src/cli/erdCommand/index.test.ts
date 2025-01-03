@@ -5,7 +5,7 @@ import { buildCommand } from './buildCommand/index.js'
 // Function to set up mocks
 function setupMocks() {
   vi.mock('./buildCommand', () => ({
-    buildCommand: vi.fn(),
+    buildCommand: vi.fn().mockImplementation(() => Promise.resolve([])),
   }))
 }
 
