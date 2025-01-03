@@ -1,6 +1,7 @@
 // biome-ignore lint/correctness/noNodejsModules: Required for the server component to read the wasm file
 import path from 'node:path'
 import { parse, setPrismWasmUrl } from '@liam-hq/db-structure/parser'
+import * as Sentry from '@sentry/nextjs'
 import { cookies } from 'next/headers'
 import { notFound } from 'next/navigation'
 import ERDViewer from './erdViewer'
@@ -31,6 +32,7 @@ export default async function Page({
   const { value: dbStructure, errors } = await parse(input, 'schemarb')
   if (errors.length > 0) {
     for (const error of errors) {
+      Sentry.captureException(error)
       console.error(error)
     }
   }

@@ -5,6 +5,7 @@
   "dependencies": {
     "@liam-hq/db-structure": "workspace:*",
     "@liam-hq/erd-core": "workspace:*",
+    "@sentry/nextjs": "8",
     "next": "15.1.2",
     "react": "18.3.1",
     "react-dom": "18",
