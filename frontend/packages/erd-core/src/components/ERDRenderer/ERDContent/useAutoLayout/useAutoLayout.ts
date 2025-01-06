@@ -1,3 +1,4 @@
+import { useNodesContext } from '@/providers'
 import { useReactFlow } from '@xyflow/react'
 import type { Edge, FitViewOptions, Node } from '@xyflow/react'
 import { useCallback } from 'react'
@@ -5,7 +6,8 @@ import { useERDContentContext } from '../ERDContentContext'
 import { getElkLayout } from './getElkLayout'
 
 export const useAutoLayout = () => {
-  const { setNodes, fitView } = useReactFlow()
+  const { setNodes } = useNodesContext()
+  const { fitView } = useReactFlow()
   const {
     actions: { setLoading, setInitializeComplete },
   } = useERDContentContext()
@@ -38,14 +40,18 @@ export const useAutoLayout = () => {
         edges: visibleEdges,
       })
 
-      setNodes([...hiddenNodes, ...newNodes])
+      setNodes({
+        type: 'UPDATE_SIZE_AND_POSITION',
+        payload: [...hiddenNodes, ...newNodes],
+      })
+
       setTimeout(() => {
         fitView(fitViewOptions)
         setLoading(false)
         setInitializeComplete(true)
-      }, 0)
+      }, 1)
     },
-    [setNodes, fitView, setLoading, setInitializeComplete],
+    [setNodes, setLoading, setInitializeComplete, fitView],
   )
 
   return { handleLayout }

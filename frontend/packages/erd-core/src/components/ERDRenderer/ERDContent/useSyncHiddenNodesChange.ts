@@ -1,6 +1,7 @@
 import { useUserEditingStore } from '@/stores'
-import { type Node, useReactFlow } from '@xyflow/react'
-import { useEffect } from 'react'
+import type { Node } from '@xyflow/react'
+import { useEffect, useMemo } from 'react'
+import { useNodesContext } from '../../../providers/NodesProvider'
 import { NON_RELATED_TABLE_GROUP_NODE_ID } from '../convertDBStructureToNodes'
 import { useERDContentContext } from './ERDContentContext'
 
@@ -22,14 +23,17 @@ export const useSyncHiddenNodesChange = () => {
   const {
     state: { initializeComplete },
   } = useERDContentContext()
-  const { getNodes, setNodes } = useReactFlow()
+  const { nodes, setNodes } = useNodesContext()
   const { hiddenNodeIds } = useUserEditingStore()
 
+  const shouldUpdate = useMemo(() => {
+    return nodes.some((node) => node.hidden !== hiddenNodeIds.has(node.id))
+  }, [hiddenNodeIds, nodes])
+
   useEffect(() => {
-    if (!initializeComplete) {
+    if (!initializeComplete || !shouldUpdate) {
       return
     }
-    const nodes = getNodes()
     const updatedNodes: Node[] = nodes.map((node) => {
       const hidden = hiddenNodeIds.has(node.id)
       return { ...node, hidden }
@@ -39,6 +43,9 @@ export const useSyncHiddenNodesChange = () => {
       updatedNodes.push(nonRelatedTableGroupNode)
     }
 
-    setNodes(updatedNodes)
-  }, [initializeComplete, getNodes, setNodes, hiddenNodeIds])
+    setNodes({
+      type: 'UPDATE_HIDDEN',
+      payload: updatedNodes,
+    })
+  }, [initializeComplete, shouldUpdate, nodes, setNodes, hiddenNodeIds])
 }

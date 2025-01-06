@@ -1,6 +1,6 @@
 import { convertDBStructureToNodes } from '@/components/ERDRenderer/convertDBStructureToNodes'
 import { openRelatedTablesLogEvent } from '@/features/gtm/utils'
-import { useVersion } from '@/providers'
+import { NodesProvider, useNodesContext, useVersion } from '@/providers'
 import {
   replaceHiddenNodeIds,
   updateActiveTableName,
@@ -8,7 +8,7 @@ import {
 } from '@/stores'
 import type { Table } from '@liam-hq/db-structure'
 import { GotoIcon, IconButton } from '@liam-hq/ui'
-import { ReactFlowProvider, useReactFlow } from '@xyflow/react'
+import { ReactFlowProvider } from '@xyflow/react'
 import { type FC, useCallback } from 'react'
 import { ERDContent } from '../../../ERDContent'
 import styles from './RelatedTables.module.css'
@@ -25,11 +25,10 @@ export const RelatedTables: FC<Props> = ({ table }) => {
     dbStructure: extractedDBStructure,
     showMode: 'TABLE_NAME',
   })
-  const { getNodes } = useReactFlow()
+  const { nodes: mainPaneNodes } = useNodesContext()
   const { version } = useVersion()
   const handleClick = useCallback(() => {
     const visibleNodeIds: string[] = nodes.map((node) => node.id)
-    const mainPaneNodes = getNodes()
     const hiddenNodeIds = mainPaneNodes
       .filter((node) => !visibleNodeIds.includes(node.id))
       .map((node) => node.id)
@@ -42,7 +41,7 @@ export const RelatedTables: FC<Props> = ({ table }) => {
         cliVer: version.version,
         appEnv: version.envName,
       })
-  }, [nodes, getNodes, table.name, version])
+  }, [nodes, mainPaneNodes, table.name, version])
 
   return (
     <div className={styles.wrapper}>
@@ -55,16 +54,16 @@ export const RelatedTables: FC<Props> = ({ table }) => {
         />
       </div>
       <div className={styles.contentWrapper}>
-        <ReactFlowProvider>
-          <ERDContent
-            nodes={nodes}
-            edges={edges}
-            enabledFeatures={{
-              fitViewWhenActiveTableChange: false,
-              initialFitViewToActiveTable: false,
-            }}
-          />
-        </ReactFlowProvider>
+        <NodesProvider nodes={nodes} edges={edges}>
+          <ReactFlowProvider>
+            <ERDContent
+              enabledFeatures={{
+                fitViewWhenActiveTableChange: false,
+                initialFitViewToActiveTable: false,
+              }}
+            />
+          </ReactFlowProvider>
+        </NodesProvider>
       </div>
     </div>
   )

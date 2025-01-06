@@ -8,7 +8,7 @@ import styles from './ERDRenderer.module.css'
 import { LeftPane } from './LeftPane'
 import '@/styles/globals.css'
 import { toggleLogEvent } from '@/features/gtm/utils'
-import { useVersion } from '@/providers'
+import { NodesProvider, useVersion } from '@/providers'
 import { useDBStructureStore, useUserEditingStore } from '@/stores'
 import { CardinalityMarkers } from './CardinalityMarkers'
 // biome-ignore lint/nursery/useImportRestrictions: Fixed in the next PR.
@@ -53,27 +53,25 @@ export const ERDRenderer: FC<Props> = ({ defaultSidebarOpen = false }) => {
       <ToastProvider>
         <AppBar />
         <SidebarProvider open={open} onOpenChange={handleChangeOpen}>
-          <ReactFlowProvider>
-            <div className={styles.mainWrapper}>
-              <LeftPane />
-              <main className={styles.main}>
-                <div className={styles.triggerWrapper}>
-                  <SidebarTrigger />
-                </div>
-                <TableDetailDrawerRoot>
-                  <ERDContent
-                    key={`${nodes.length}-${showMode}`}
-                    nodes={nodes}
-                    edges={edges}
-                  />
-                  <div className={styles.toolbarWrapper}>
-                    <Toolbar />
+          <NodesProvider nodes={nodes} edges={edges}>
+            <ReactFlowProvider>
+              <div className={styles.mainWrapper}>
+                <LeftPane />
+                <main className={styles.main}>
+                  <div className={styles.triggerWrapper}>
+                    <SidebarTrigger />
                   </div>
-                  <TableDetailDrawer />
-                </TableDetailDrawerRoot>
-              </main>
-            </div>
-          </ReactFlowProvider>
+                  <TableDetailDrawerRoot>
+                    <ERDContent key={`${nodes.length}-${showMode}`} />
+                    <div className={styles.toolbarWrapper}>
+                      <Toolbar />
+                    </div>
+                    <TableDetailDrawer />
+                  </TableDetailDrawerRoot>
+                </main>
+              </div>
+            </ReactFlowProvider>
+          </NodesProvider>
         </SidebarProvider>
       </ToastProvider>
     </div>

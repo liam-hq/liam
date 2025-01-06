@@ -1,7 +1,7 @@
+import { useNodesContext } from '@/providers'
 import type { QueryParam } from '@/schemas/queryParam'
 import { addHiddenNodeIds, updateActiveTableName } from '@/stores'
 import { decompressFromEncodedURIComponent } from '@/utils'
-import { type Node, useReactFlow } from '@xyflow/react'
 import { useEffect, useMemo } from 'react'
 import { useERDContentContext } from './ERDContentContext'
 import { highlightNodesAndEdges } from './highlightNodesAndEdges'
@@ -26,10 +26,9 @@ const getHiddenNodeIdsFromUrl = async (): Promise<string[]> => {
   return hiddenNodeIds ? hiddenNodeIds.split(',') : []
 }
 
-export const useInitialAutoLayout = (
-  nodes: Node[],
-  shouldFitViewToActiveTable: boolean,
-) => {
+export const useInitialAutoLayout = (shouldFitViewToActiveTable: boolean) => {
+  const { nodes, edges } = useNodesContext()
+
   const tableNodesInitialized = useMemo(
     () =>
       nodes
@@ -37,7 +36,6 @@ export const useInitialAutoLayout = (
         .some((node) => node.measured),
     [nodes],
   )
-  const { getEdges } = useReactFlow()
 
   const {
     state: { initializeComplete },
@@ -46,7 +44,7 @@ export const useInitialAutoLayout = (
 
   useEffect(() => {
     const initialize = async () => {
-      if (initializeComplete) {
+      if (initializeComplete || !tableNodesInitialized) {
         return
       }
 
@@ -54,7 +52,6 @@ export const useInitialAutoLayout = (
       updateActiveTableName(activeTableName)
       const hiddenNodeIds = await getHiddenNodeIdsFromUrl()
       addHiddenNodeIds(hiddenNodeIds)
-      const edges = getEdges()
       const hiddenNodes = nodes.map((node) => ({
         ...node,
         hidden: hiddenNodeIds.includes(node.id),
@@ -67,9 +64,7 @@ export const useInitialAutoLayout = (
           ? { maxZoom: 1, duration: 300, nodes: [{ id: activeTableName }] }
           : undefined
 
-      if (tableNodesInitialized) {
-        handleLayout(updatedNodes, updatedEdges, fitViewOptions)
-      }
+      handleLayout(updatedNodes, updatedEdges, fitViewOptions)
     }
 
     initialize()
@@ -78,7 +73,7 @@ export const useInitialAutoLayout = (
     initializeComplete,
     handleLayout,
     nodes,
-    getEdges,
+    edges,
     shouldFitViewToActiveTable,
   ])
 }

@@ -6,14 +6,21 @@ import {
   Background,
   BackgroundVariant,
   type Edge,
+  type EdgeChange,
   type Node,
+  type NodeChange,
   type NodeMouseHandler,
   type OnNodeDrag,
   ReactFlow,
+  applyEdgeChanges,
+  applyNodeChanges,
   useEdgesState,
-  useNodesState,
 } from '@xyflow/react'
 import { type FC, useCallback } from 'react'
+import {
+  NodesProvider,
+  useNodesContext,
+} from '../../../providers/NodesProvider'
 import styles from './ERDContent.module.css'
 import { ERDContentProvider, useERDContentContext } from './ERDContentContext'
 import { NonRelatedTableGroupNode } from './NonRelatedTableGroupNode'
@@ -36,8 +43,6 @@ const edgeTypes = {
 }
 
 type Props = {
-  nodes: Node[]
-  edges: Edge[]
   enabledFeatures?:
     | {
         fitViewWhenActiveTableChange?: boolean | undefined
@@ -46,28 +51,21 @@ type Props = {
     | undefined
 }
 
-export const ERDContentInner: FC<Props> = ({
-  nodes: _nodes,
-  edges: _edges,
-  enabledFeatures,
-}) => {
-  const [nodes, setNodes, onNodesChange] = useNodesState<Node>(_nodes)
-  const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>(_edges)
+export const ERDContentInner: FC<Props> = ({ enabledFeatures }) => {
+  const { nodes, setNodes, edges, setEdges } = useNodesContext()
   const {
     state: { loading },
   } = useERDContentContext()
   const { tableName: activeTableName } = useUserEditingActiveStore()
 
-  useInitialAutoLayout(
-    nodes,
-    enabledFeatures?.initialFitViewToActiveTable ?? true,
-  )
+  useInitialAutoLayout(enabledFeatures?.initialFitViewToActiveTable ?? true)
   useFitViewWhenActiveTableChange(
     enabledFeatures?.fitViewWhenActiveTableChange ?? true,
   )
   useSyncHighlightsActiveTableChange()
   useSyncHiddenNodesChange()
 
+  console.log(nodes)
   const { version } = useVersion()
   const handleNodeClick = useCallback(
     (tableId: string) => {
@@ -95,13 +93,20 @@ export const ERDContentInner: FC<Props> = ({
           hoverTableName: id,
         })
 
-      setEdges(updatedEdges)
-      setNodes(updatedNodes)
+      setEdges({
+        type: 'UPDATE_EDGES',
+        payload: updatedEdges,
+      })
+      setNodes({
+        type: 'UPDATE_DATA',
+        payload: updatedNodes,
+      })
     },
     [edges, nodes, setNodes, setEdges, activeTableName],
   )
 
   const handleMouseLeaveNode: NodeMouseHandler<Node> = useCallback(() => {
+    console.log('handleMouseLeaveNode')
     const { nodes: updatedNodes, edges: updatedEdges } = highlightNodesAndEdges(
       nodes,
       edges,
@@ -111,8 +116,14 @@ export const ERDContentInner: FC<Props> = ({
       },
     )
 
-    setEdges(updatedEdges)
-    setNodes(updatedNodes)
+    setEdges({
+      type: 'UPDATE_EDGES',
+      payload: updatedEdges,
+    })
+    setNodes({
+      type: 'UPDATE_DATA',
+      payload: updatedNodes,
+    })
   }, [edges, nodes, setNodes, setEdges, activeTableName])
 
   const handleDragStopNode: OnNodeDrag<Node> = useCallback(
@@ -130,6 +141,26 @@ export const ERDContentInner: FC<Props> = ({
       }
     },
     [version],
+  )
+
+  const onNodesChange = useCallback(
+    (changes: NodeChange<Node>[]) => {
+      setNodes({
+        type: 'UPDATE_NODES',
+        payload: applyNodeChanges(changes, nodes),
+      })
+    },
+    [setNodes, nodes],
+  )
+
+  const onEdgesChange = useCallback(
+    (changes: EdgeChange<Edge>[]) => {
+      setEdges({
+        type: 'UPDATE_EDGES',
+        payload: applyEdgeChanges(changes, edges),
+      })
+    },
+    [setEdges, edges],
   )
 
   const panOnDrag = [1, 2]
