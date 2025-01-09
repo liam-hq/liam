@@ -9,6 +9,7 @@ import {
   supportedFormatSchema,
 } from '@liam-hq/db-structure/parser'
 import * as Sentry from '@sentry/nextjs'
+import { JSDOM } from 'jsdom'
 import type { Metadata } from 'next'
 import { cookies } from 'next/headers'
 import { notFound } from 'next/navigation'
@@ -54,11 +55,13 @@ export async function generateMetadata({
   const projectName = await (async () => {
     if (res?.ok) {
       const html = await res.text()
-      const ogTitleMatch = html.match(
-        /<meta property="og:title" content="([^"]+)" \/>/,
-      )
-      const htmlTitleMatch = html.match(/<title>([^<]+)<\/title>/)
-      return ogTitleMatch?.[1] ?? htmlTitleMatch?.[1] ?? joinedPath
+      const dom = new JSDOM(html)
+      const ogTitle = dom.window.document
+        .querySelector('meta[property="og:title"]')
+        ?.getAttribute('content')
+      const htmlTitle = dom.window.document.querySelector('title')?.textContent
+
+      return ogTitle ?? htmlTitle ?? joinedPath
     }
     return joinedPath
   })()
