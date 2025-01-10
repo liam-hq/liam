@@ -1,9 +1,15 @@
 {
   "name": "@liam-hq/erd-core",
-  "private": true,
+  "license": "Apache-2.0",
+  "private": false,
   "version": "0.0.14",
   "type": "module",
-  "main": "src/index.ts",
+  "publishConfig": {
+    "access": "public"
+  },
+  "exports": {
+    ".": "./dist/index.js"
+  },
   "dependencies": {
     "@liam-hq/ui": "workspace:*",
     "@radix-ui/react-toolbar": "1.1.0",
@@ -25,6 +31,7 @@
     "vitest": "2.1.4"
   },
   "scripts": {
+    "build": "tsc",
     "dev": "pnpm run '/^dev:.*/'",
     "dev:css": "tcm src --watch",
     "fmt": "pnpm run '/^fmt:.*/'",
@@ -35,5 +42,6 @@
     "lint:biome": "biome check .",
     "lint:tsc": "tsc --noEmit",
     "test": "vitest --watch=false"
-  }
+  },
+  "types": "dist/index.d.ts"
 }
