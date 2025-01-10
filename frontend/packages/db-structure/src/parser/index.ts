@@ -3,7 +3,6 @@ import { processor as postgresqlProcessor } from './sql/index.js'
 import type { SupportedFormat } from './supportedFormat/index.js'
 import type { ProcessResult } from './types.js'
 
-export { ProcessError } from './errors.js'
 export { setPrismWasmUrl } from './schemarb/index.js'
 export {
   supportedFormatSchema,

@@ -1,3 +1,4 @@
+// biome-ignore lint/correctness/noNodejsModules: Required for the server component to read the wasm file
 import path from 'node:path'
 import type { PageProps } from '@/app/types'
 import {
@@ -116,9 +117,11 @@ export default async function Page({
   }
 
   const { value: dbStructure, errors } = await parse(input, format)
+  // TODO: Show error message in the UI
   if (errors.length > 0) {
     for (const error of errors) {
       Sentry.captureException(error)
+      console.error(error)
     }
   }
 
@@ -129,7 +132,6 @@ export default async function Page({
     <ERDViewer
       dbStructure={dbStructure}
       defaultSidebarOpen={defaultSidebarOpen}
-      errors={errors}
     />
   )
 }
