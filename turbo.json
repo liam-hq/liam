@@ -5,6 +5,10 @@
       "dependsOn": ["^build"],
       "outputs": ["dist", "dist-cli"]
     },
+    "@liam-hq/erd-core#build": {
+      "dependsOn": ["^build", "gen"],
+      "outputs": ["dist"]
+    },
     "dev": {
       "cache": false,
       "persistent": true
