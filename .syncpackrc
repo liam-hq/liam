@@ -7,6 +7,7 @@
     "type",
     "publishConfig",
     "main",
+    "module",
     "exports",
     "bin",
     "dependencies",
@@ -14,7 +15,8 @@
     "peerDependencies",
     "scripts",
     "packageManager",
-    "files"
+    "files",
+    "types"
   ],
   "sortPackages": true,
   "semverGroups": [
