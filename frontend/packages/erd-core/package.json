@@ -54,8 +54,7 @@
     "test": "vitest --watch=false"
   },
   "files": [
-    "dist",
-    "index.d.ts"
+    "dist"
   ],
   "types": "./dist/index.d.ts"
 }
