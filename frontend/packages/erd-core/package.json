@@ -3,14 +3,19 @@
   "private": true,
   "version": "0.0.17",
   "type": "module",
-  "main": "src/index.ts",
+  "main": "./dist/index.umd.cjs",
+  "module": "./dist/index.js",
+  "exports": {
+    "types": "./dist/index.d.ts",
+    "import": "./dist/index.js",
+    "require": "./dist/index.umd.cjs"
+  },
   "dependencies": {
     "@liam-hq/ui": "workspace:*",
     "@radix-ui/react-toolbar": "1.1.0",
     "@xyflow/react": "12.3.5",
     "clsx": "2.1.1",
     "elkjs": "0.9.3",
-    "react": "18.3.1",
     "ts-pattern": "5.4.0",
     "valibot": "^1.0.0-beta.5",
     "valtio": "2.1.2"
@@ -20,11 +25,20 @@
     "@liam-hq/configs": "workspace:*",
     "@liam-hq/db-structure": "workspace:*",
     "@types/react": "18",
+    "@types/react-dom": "18",
+    "@vitejs/plugin-react": "4.3.3",
     "typed-css-modules": "0.9.1",
     "typescript": "5",
+    "vite": "5.4.10",
+    "vite-tsconfig-paths": "5.1.3",
     "vitest": "2.1.4"
   },
+  "peerDependencies": {
+    "react": "18.3.1",
+    "react-dom": "18"
+  },
   "scripts": {
+    "build": "vite build && tsc",
     "dev": "pnpm run '/^dev:.*/'",
     "dev:css": "tcm src --watch",
     "fmt": "pnpm run '/^fmt:.*/'",
@@ -35,5 +49,10 @@
     "lint:biome": "biome check .",
     "lint:tsc": "tsc --noEmit",
     "test": "vitest --watch=false"
-  }
+  },
+  "files": [
+    "dist",
+    "index.d.ts"
+  ],
+  "types": "./dist/index.d.ts"
 }

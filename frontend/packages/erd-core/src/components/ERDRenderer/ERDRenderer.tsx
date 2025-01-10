@@ -1,4 +1,3 @@
-import '@xyflow/react/dist/style.css'
 import type { ProcessError } from '@liam-hq/db-structure'
 import { SidebarProvider, SidebarTrigger, ToastProvider } from '@liam-hq/ui'
 import { ReactFlowProvider } from '@xyflow/react'

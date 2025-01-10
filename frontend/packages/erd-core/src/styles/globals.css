@@ -1,4 +1,5 @@
 @import url('@liam-hq/ui/src/styles/globals.css');
+@import url('@xyflow/react/dist/style.css');
 @import './variables.css';
 
 /* https://github.com/radix-ui/primitives/issues/2908 */
