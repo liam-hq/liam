@@ -2,7 +2,7 @@
 
 
 ## Summary
-* 975 MIT
+* 976 MIT
 * 77 Apache 2.0
 * 61 ISC
 * 27 Simplified BSD
@@ -1954,6 +1954,17 @@ LGPL-3.0-or-later permitted
 
 <a name="@rollup/plugin-commonjs"></a>
 ### @rollup/plugin-commonjs v28.0.1
+#### 
+
+##### Paths
+* /home/runner/work/liam/liam
+
+<a href="http://opensource.org/licenses/mit-license">MIT</a> permitted
+
+
+
+<a name="@rollup/plugin-json"></a>
+### @rollup/plugin-json v6.1.0
 #### 
 
 ##### Paths
