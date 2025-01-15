@@ -1,13 +1,16 @@
 import resolve from '@rollup/plugin-node-resolve'
 import typescript from '@rollup/plugin-typescript'
+import commonjs from '@rollup/plugin-commonjs'
 import execute from 'rollup-plugin-execute'
+import json from '@rollup/plugin-json';
+
 
 // This file is for building the CLI entry point.
 
 export default {
   input: 'bin/cli.ts',
   output: {
-    file: 'dist-cli/bin/cli.js',
+    dir: 'dist-cli/bin',
     format: 'esm',
   },
   plugins: [
@@ -20,6 +23,8 @@ export default {
       tsconfig: './tsconfig.node.json',
     }),
     execute('chmod +x dist-cli/bin/cli.js'),
+    commonjs(),
+    json(),
   ],
   external: ['commander', '@prisma/internals'],
 }
