@@ -1,3 +1,4 @@
+import { processor as prismaProcessor } from './prisma/index.js'
 import { processor as schemarbProcessor } from './schemarb/index.js'
 import { processor as postgresqlProcessor } from './sql/index.js'
 import type { SupportedFormat } from './supportedFormat/index.js'
@@ -20,5 +21,7 @@ export const parse = (
       return schemarbProcessor(str)
     case 'postgres':
       return postgresqlProcessor(str)
+    case 'prisma':
+      return prismaProcessor(str)
   }
 }
