@@ -1,8 +1,9 @@
-import { getDMMF } from '@prisma/internals'
+import pkg from '@prisma/internals'
 import type { Columns, Relationship, Table } from '../../schema/index.js'
 import type { ProcessResult, Processor } from '../types.js'
 
 async function parsePrismaSchema(schemaString: string): Promise<ProcessResult> {
+  const { getDMMF } = pkg
   const dmmf = await getDMMF({ datamodel: schemaString })
   const tables: Record<string, Table> = {}
   const relationships: Record<string, Relationship> = {}
