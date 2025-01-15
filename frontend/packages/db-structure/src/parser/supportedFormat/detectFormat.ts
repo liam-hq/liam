@@ -6,11 +6,13 @@ import type { SupportedFormat } from './index.js'
 const nameToFormatMap: Record<string, SupportedFormat> = {
   'schema.rb': 'schemarb',
   schemafile: 'schemarb',
+  'schema.prisma': 'prisma',
 }
 
 const extensionToFormatMap: Record<string, SupportedFormat> = {
   rb: 'schemarb',
   sql: 'postgres',
+  prisma: 'prisma',
 }
 
 export const detectFormat = (
