@@ -11,6 +11,7 @@
     "liam": "./dist-cli/bin/cli.js"
   },
   "dependencies": {
+    "@prisma/internals": "6.2.1",
     "commander": "12.1.0",
     "react": "18.3.1",
     "react-dom": "18",
