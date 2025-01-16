@@ -9,7 +9,7 @@ export async function POST(request: Request) {
     if (!input || !format) {
       return NextResponse.json(
         { error: 'Input and format are required' },
-        { status: 400 }
+        { status: 400 },
       )
     }
 
@@ -29,7 +29,7 @@ export async function POST(request: Request) {
     console.error('Parse error:', error)
     return NextResponse.json(
       { error: 'Internal server error' },
-      { status: 500 }
+      { status: 500 },
     )
   }
 }
