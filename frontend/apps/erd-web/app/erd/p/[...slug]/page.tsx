@@ -3,7 +3,6 @@ import type { PageProps } from '@/app/types'
 import {
   type SupportedFormat,
   detectFormat,
-  parse,
   setPrismWasmUrl,
   supportedFormatSchema,
 } from '@liam-hq/db-structure/parser'
@@ -21,6 +20,8 @@ const paramsSchema = v.object({
 const searchParamsSchema = v.object({
   format: v.optional(supportedFormatSchema),
 })
+
+const API_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
 
 const resolveContentUrl = (url: string): string | undefined => {
   try {
@@ -157,8 +158,6 @@ export default async function Page({
     format = detectFormat(contentUrl)
   }
   if (format === undefined) {
-    // Strictly speaking, this is not always a network error, but the error name is temporarily set as "NetworkError" for display purposes.
-    // TODO: Update the error name to something more appropriate.
     return (
       <ERDViewer
         dbStructure={blankDbStructure}
@@ -173,14 +172,31 @@ export default async function Page({
     )
   }
 
-  const { value: dbStructure, errors } = await parse(input, format)
-  for (const error of errors) {
-    Sentry.captureException(error)
+  const parseResponse = await fetch(`${API_URL}/api/parse`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ input, format }),
+  })
+
+  if (!parseResponse.ok) {
+    return (
+      <ERDViewer
+        dbStructure={blankDbStructure}
+        defaultSidebarOpen={false}
+        errorObjects={[
+          {
+            name: 'NetworkError',
+            message: 'Failed to parse the input',
+          },
+        ]}
+      />
+    )
   }
-  const errorObjects = errors.map((error) => ({
-    name: error.name,
-    message: error.message,
-  }))
+
+  const { dbStructure, errorObjects } = await parseResponse.json()
+
   const cookieStore = await cookies()
   const defaultSidebarOpen = cookieStore.get('sidebar:state')?.value === 'true'
 
