@@ -26,7 +26,7 @@ describe('runPreprocess', () => {
   ] as const
 
   it.each(testCases)(
-    'should create schema.json with the content in $format format',
+    'should create schema.js with the content in $format format',
     async ({ format, inputFilename, content }) => {
       const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'test-distDir-'))
       const inputPath = path.join(tmpDir, inputFilename)

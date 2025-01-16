@@ -56,7 +56,7 @@ pnpm link --global
    This command currently performs the following actions:
    - Builds the CLI.
    - Executes the CLI with the command `erd build --input ./fixtures/input.schema.rb --format schemarb`.
-   - Copies the generated `schema.json` to the `public/` directory and launches the Vite development server.
+   - Copies the generated `schema.js` to the `public/` directory and launches the Vite development server.
 
 ## Project File Structure
 

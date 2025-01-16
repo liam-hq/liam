@@ -28,5 +28,5 @@ dist-ssr
 
 
 dist-cli
-public/schema.json
+public/schema.js
 .rollup.cache

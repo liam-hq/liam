@@ -12,7 +12,7 @@ export const buildCommand = async (
   outDir: string,
   format: SupportedFormat,
 ): Promise<CliError[]> => {
-  // generate schema.json
+  // generate schema.js
   const { errors: preprocessErrors } = await runPreprocess(
     inputPath,
     outDir,

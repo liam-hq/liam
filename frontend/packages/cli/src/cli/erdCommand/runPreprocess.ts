@@ -50,7 +50,7 @@ export async function runPreprocess(
     }
   }
 
-  const filePath = path.join(outputDir, 'schema.json')
+  const filePath = path.join(outputDir, 'schema.js')
 
   if (!fs.existsSync(outputDir)) {
     fs.mkdirSync(outputDir, { recursive: true })
