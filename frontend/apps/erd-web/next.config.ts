@@ -8,12 +8,10 @@ const releaseDate = new Date().toISOString().split('T')[0]
 const nextConfig: NextConfig = {
   // NOTE: Exclude '@prisma/internals' from the client-side bundle
   // This module is server-side only and should not be included in the client build
-  webpack: (config, { isServer }) => {
-    if (!isServer) {
-      config.resolve.alias = {
-        ...config.resolve.alias,
-        '@prisma/internals': false,
-      }
+  webpack: (config) => {
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      '@prisma/internals': require.resolve('@prisma/internals'),
     }
     return config
   },
