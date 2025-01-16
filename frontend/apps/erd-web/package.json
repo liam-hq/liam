@@ -5,6 +5,7 @@
   "dependencies": {
     "@liam-hq/db-structure": "workspace:*",
     "@liam-hq/erd-core": "workspace:*",
+    "@liam-hq/schema-parser": "workspace:*",
     "@sentry/nextjs": "8",
     "cheerio": "1.0.0",
     "next": "15.1.2",

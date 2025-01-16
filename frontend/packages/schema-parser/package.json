@@ -1,0 +1,19 @@
+{
+  "name": "@liam-hq/schema-parser",
+  "type": "module",
+  "exports": {
+    ".": "./dist/index.js"
+  },
+  "dependencies": {
+    "@liam-hq/db-structure": "workspace:*",
+    "@prisma/internals": "6.2.1"
+  },
+  "devDependencies": {
+    "@liam-hq/configs": "workspace:*",
+    "typescript": "5"
+  },
+  "scripts": {
+    "build": "tsc"
+  },
+    "types": "dist/index.d.ts"
+}

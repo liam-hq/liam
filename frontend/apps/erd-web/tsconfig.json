@@ -23,6 +23,7 @@
         "./*",
         "../../packages/erd-core/src/*",
         "../../packages/db-structure/src/*",
+        "../../packages/schema-parser/src/*",
         "../../packages/ui/src/*"
       ]
     }
