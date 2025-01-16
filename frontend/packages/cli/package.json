@@ -43,7 +43,7 @@
     "build:vite": "vite build",
     "command:build": "node ./dist-cli/bin/cli.js erd build --input fixtures/input.schema.rb --format schemarb",
     "cp:prism": "cp ../db-structure/node_modules/@ruby/prism/src/prism.wasm ./dist-cli/bin/prism.wasm",
-    "dev": "pnpm command:build && cp dist/schema.js public/ && pnpm run '/^dev:.*/'",
+    "dev": "pnpm command:build && cp dist/src/schema.js public/src && pnpm run '/^dev:.*/'",
     "dev:app": "vite --port 5173",
     "dev:css": "tcm src --watch",
     "fmt": "pnpm run '/^fmt:.*/'",

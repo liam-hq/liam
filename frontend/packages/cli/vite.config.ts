@@ -2,7 +2,11 @@ import { rmSync } from 'node:fs'
 import react from '@vitejs/plugin-react'
 import tsconfigPaths from 'vite-tsconfig-paths'
 import { defineConfig } from 'vitest/config'
-import { offlinePlugin, renameImportWasi, setEnvPlugin } from './vite-plugins/index.js'
+import {
+  offlinePlugin,
+  renameImportWasi,
+  setEnvPlugin,
+} from './vite-plugins/index.js'
 
 const outDir = 'dist-cli/html'
 
@@ -32,7 +36,13 @@ export default defineConfig({
     },
     modulePreload: false,
   },
-  plugins: [react(), offlinePlugin(), tsconfigPaths(), renameImportWasi(), setEnvPlugin()],
+  plugins: [
+    react(),
+    offlinePlugin(),
+    tsconfigPaths(),
+    renameImportWasi(),
+    setEnvPlugin(),
+  ],
   test: {
     globals: true,
     environment: 'node',

@@ -50,15 +50,17 @@ export async function runPreprocess(
     }
   }
 
-  const filePath = path.join(outputDir, 'schema.js')
+  const outputSrcDir = `${outputDir}/src`
+  const filePath = path.join(outputSrcDir, 'schema.js')
 
-  if (!fs.existsSync(outputDir)) {
-    fs.mkdirSync(outputDir, { recursive: true })
+  if (!fs.existsSync(outputSrcDir)) {
+    fs.mkdirSync(outputSrcDir, { recursive: true })
   }
 
   try {
     const jsonContent = JSON.stringify(json, null, 2)
-    fs.writeFileSync(filePath, jsonContent, 'utf8')
+    const variant = 'window.__liam_schema = '
+    fs.writeFileSync(filePath, variant + jsonContent, 'utf8')
     return { outputFilePath: filePath, errors: [] }
   } catch (error) {
     return {

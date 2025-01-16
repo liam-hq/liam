@@ -1,4 +1,4 @@
-import { type Plugin } from 'vite'
+import type { Plugin } from 'vite'
 
 export function offlinePlugin(): Plugin {
   return {
@@ -8,7 +8,9 @@ export function offlinePlugin(): Plugin {
     // offlien plugin
     // https://github.com/JuanQP/vite-plugin-make-offline/blob/v1.0.1/src/index.ts
     transformIndexHtml(html: string) {
-      return html.replace(' type="module" crossorigin ', ' defer ')
+      return html
+        .replace(' type="module" crossorigin ', ' defer ')
+        .replace(' defer type="text/javascript"', ' type="text/javascript"')
     },
   }
 }

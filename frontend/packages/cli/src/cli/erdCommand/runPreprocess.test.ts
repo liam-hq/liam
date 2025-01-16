@@ -44,8 +44,13 @@ describe('runPreprocess', () => {
       expect(fs.existsSync(outputFilePath)).toBe(true)
 
       // Validate output file content
-      const outputContent = JSON.parse(fs.readFileSync(outputFilePath, 'utf8'))
+
+      const json = fs
+        .readFileSync(outputFilePath, 'utf8')
+        .replace(/^window.__liam_schema = /, '')
+      const outputContent = JSON.parse(json)
       expect(outputContent.tables).toBeDefined()
+      expect(outputContent.relationships).toBeDefined()
     },
   )
 
