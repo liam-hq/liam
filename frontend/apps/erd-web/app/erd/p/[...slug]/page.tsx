@@ -14,7 +14,6 @@ import { cookies } from 'next/headers'
 import { notFound } from 'next/navigation'
 import * as v from 'valibot'
 import ERDViewer from './erdViewer'
-import { processor } from '@liam-hq/schema-parser'
 
 const paramsSchema = v.object({
   slug: v.array(v.string()),
@@ -178,6 +177,7 @@ export default async function Page({
   let errors = []
 
   if (format === 'prisma') {
+    const { processor } = await import('@liam-hq/schema-parser')
     const { value, errors: _errors } = await processor(input)
     dbStructure = value
     errors = _errors
