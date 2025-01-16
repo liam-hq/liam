@@ -6,6 +6,7 @@ export {
   type Column,
   type Index,
   type Indices,
+  type Relationship,
   type Relationships,
   type Cardinality,
   dbStructureSchema,

@@ -14,6 +14,7 @@ import { cookies } from 'next/headers'
 import { notFound } from 'next/navigation'
 import * as v from 'valibot'
 import ERDViewer from './erdViewer'
+import { processor } from '@liam-hq/schema-parser'
 
 const paramsSchema = v.object({
   slug: v.array(v.string()),
@@ -173,10 +174,23 @@ export default async function Page({
     )
   }
 
-  const { value: dbStructure, errors } = await parse(input, format)
+  let dbStructure = undefined
+  let errors = []
+
+  if (format === 'prisma') {
+    const { value, errors: _errors } = await processor(input)
+    dbStructure = value
+    errors = _errors
+  } else {
+  const { value, errors: _errors } = await parse(input, format)
+  dbStructure = value
+  errors = _errors
+  }
+
   for (const error of errors) {
     Sentry.captureException(error)
   }
+  // @ts-expect-error
   const errorObjects = errors.map((error) => ({
     name: error.name,
     message: error.message,
