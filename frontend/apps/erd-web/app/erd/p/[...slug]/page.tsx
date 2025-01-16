@@ -146,8 +146,6 @@ export default async function Page({
 
   const input = await res.text()
 
-  setPrismWasmUrl(path.resolve(process.cwd(), 'prism.wasm'))
-
   let format: SupportedFormat | undefined
   const searchParams = await _searchParams
   if (v.is(searchParamsSchema, searchParams)) {
@@ -156,45 +154,68 @@ export default async function Page({
   if (format === undefined) {
     format = detectFormat(contentUrl)
   }
-  if (format === undefined) {
-    // Strictly speaking, this is not always a network error, but the error name is temporarily set as "NetworkError" for display purposes.
-    // TODO: Update the error name to something more appropriate.
+
+  let dbStructure = blankDbStructure
+  let errors = []
+
+  try {
+    const parseRes = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/parse`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ input, format }),
+    })
+
+    if (!parseRes.ok) {
+      return (
+        <ERDViewer
+          dbStructure={blankDbStructure}
+          defaultSidebarOpen={false}
+          errorObjects={[
+            {
+              name: 'ParseError',
+              message: `HTTP status is ${parseRes.status}: ${parseRes.statusText}.`,
+            },
+          ]}
+        />
+      )
+    }
+
+    const {
+      dbStructure: parsedStructure,
+      errors: parsedErrors,
+      error,
+    } = await parseRes.json()
+
+    if (error) {
+      return (
+        <ERDViewer
+          dbStructure={blankDbStructure}
+          defaultSidebarOpen={false}
+          errorObjects={[error]}
+        />
+      )
+    }
+
+    dbStructure = parsedStructure
+    errors = parsedErrors
+  } catch (e) {
     return (
       <ERDViewer
         dbStructure={blankDbStructure}
         defaultSidebarOpen={false}
         errorObjects={[
           {
-            name: 'NetworkError',
-            message: 'We could not detect the format of the file',
+            name: 'ParseError',
+            message:
+              e instanceof Error ? e.message : '不明なエラーが発生しました',
           },
         ]}
       />
     )
   }
 
-  let dbStructure = undefined
-  let errors = []
-
-  if (format === 'prisma') {
-    const { processor } = await import('@liam-hq/schema-parser')
-    const { value, errors: _errors } = await processor(input)
-    dbStructure = value
-    errors = _errors
-  } else {
-  const { value, errors: _errors } = await parse(input, format)
-  dbStructure = value
-  errors = _errors
-  }
-
-  for (const error of errors) {
-    Sentry.captureException(error)
-  }
-  // @ts-expect-error
-  const errorObjects = errors.map((error) => ({
-    name: error.name,
-    message: error.message,
-  }))
   const cookieStore = await cookies()
   const defaultSidebarOpen = cookieStore.get('sidebar:state')?.value === 'true'
 
@@ -202,7 +223,7 @@ export default async function Page({
     <ERDViewer
       dbStructure={dbStructure}
       defaultSidebarOpen={defaultSidebarOpen}
-      errorObjects={errorObjects}
+      errorObjects={errors}
     />
   )
 }
