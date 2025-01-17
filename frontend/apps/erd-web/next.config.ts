@@ -6,6 +6,7 @@ const gitCommitHash = execSync('git rev-parse --short HEAD').toString().trim()
 const releaseDate = new Date().toISOString().split('T')[0]
 
 const nextConfig: NextConfig = {
+  serverExternalPackages: ['@liam-hq/schema-parser'],
   outputFileTracingIncludes: {
     '/erd/p/\\[\\.\\.\\.slug\\]': ['./prism.wasm'],
   },
