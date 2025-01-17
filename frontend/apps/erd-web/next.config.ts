@@ -13,6 +13,7 @@ const nextConfig: NextConfig = {
     }
     return config
   },
+  serverExternalPackages: ['@prisma/internals'],
   outputFileTracingIncludes: {
     '/erd/p/\\[\\.\\.\\.slug\\]': ['./prism.wasm'],
   },
