@@ -1,5 +1,5 @@
 {
-  "name": "@liam/prisma-internals-esm",
+  "name": "@liam-hq/prisma-internals-esm",
   "version": "1.0.0",
   "private": true,
   "type": "module",
@@ -7,7 +7,8 @@
   "exports": {
     ".": {
       "import": "./dist/index.mjs",
-      "require": "./dist/index.mjs"
+      "require": "./dist/index.mjs",
+      "types": "./src/index.d.ts"
     }
   },
   "main": "dist/index.mjs",

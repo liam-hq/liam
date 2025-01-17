@@ -8,7 +8,7 @@
     "./parser": "./dist/parser.js"
   },
   "dependencies": {
-    "@prisma/internals": "6.2.1",
+    "@liam-hq/prisma-internals-esm": "workspace:*",
     "@ruby/prism": "1.2.0",
     "neverthrow": "8.1.1",
     "pg-query-emscripten": "5.1.0",

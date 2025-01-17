@@ -14,7 +14,22 @@ export default {
       preferBuiltins: true
     }),
     commonjs(),
-    json()
+    json(),
+    {
+      name: 'mock-fs-plugin',
+      resolveId(source) {
+        if (source === 'fs') {
+          return 'virtual:fs';
+        }
+        return null;
+      },
+      load(id) {
+        if (id === 'virtual:fs') {
+          return 'export default {};';
+        }
+        return null;
+      },
+    }
   ],
   external: [
     'fs',
@@ -22,6 +37,7 @@ export default {
     'crypto',
     'util',
     'os',
-    'child_process'
+    'child_process',
+    '@prisma/internals'
   ]
 };
