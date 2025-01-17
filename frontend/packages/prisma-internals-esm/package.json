@@ -1,0 +1,26 @@
+{
+  "name": "@liam/prisma-internals-esm",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "ESM wrapper for @prisma/internals",
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.mjs"
+    }
+  },
+  "main": "dist/index.mjs",
+  "scripts": {
+    "build": "rollup -c"
+  },
+  "dependencies": {
+    "@prisma/internals": "6.2.1"
+  },
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "28.0.2",
+    "@rollup/plugin-json": "6.1.0",
+    "@rollup/plugin-node-resolve": "16.0.0",
+    "rollup": "4.27.3"
+  }
+}
