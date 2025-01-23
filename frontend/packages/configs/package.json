@@ -4,7 +4,6 @@
   "version": "0.0.1",
   "type": "module",
   "devDependencies": {
-    "@biomejs/biome": "1.9.3",
     "@tsconfig/strictest": "2.0.5"
   }
 }

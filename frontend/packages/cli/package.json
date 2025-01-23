@@ -11,7 +11,6 @@
     "liam": "./dist-cli/bin/cli.js"
   },
   "dependencies": {
-    "@prisma/internals": "6.2.1",
     "commander": "12.1.0",
     "glob": "11.0.1",
     "inquirer": "12.3.2",

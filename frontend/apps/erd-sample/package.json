@@ -2,9 +2,7 @@
   "name": "@liam-hq/erd-sample",
   "private": true,
   "version": "0.0.0",
-  "devDependencies": {
-    "@liam-hq/cli": "workspace:*"
-  },
+  "devDependencies": {},
   "scripts": {
     "build": "node ../../packages/cli/dist-cli/bin/cli.js erd build --input https://github.com/mastodon/mastodon/blob/main/db/schema.rb --format schemarb",
     "update_dist_content": "node ./scripts/update_dist_content.mjs"
