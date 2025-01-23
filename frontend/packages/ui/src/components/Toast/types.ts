@@ -1,6 +1,6 @@
 export type ToastId = string
 
-export type ToastStatus = 'success' | 'error' | 'warning' | 'info'
+type ToastStatus = 'success' | 'error' | 'warning' | 'info'
 
 export type ToastOptions = {
   title: string

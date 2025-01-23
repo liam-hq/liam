@@ -83,4 +83,3 @@ export function setEnvPlugin(): Plugin {
   }
 }
 
-export default setEnvPlugin
