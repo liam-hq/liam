@@ -47,7 +47,7 @@ type Props = {
     | undefined
 }
 
-export const ERDContentInner: FC<Props> = ({
+const ERDContentInner: FC<Props> = ({
   nodes: _nodes,
   edges: _edges,
   enabledFeatures,
