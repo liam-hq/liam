@@ -67,7 +67,7 @@ describe('runPreprocess', () => {
     expect(errors).toEqual([
       new ArgumentError(
         `--format is missing, invalid, or specifies an unsupported format. Please provide a valid format.
-Invalid type: Expected ("schemarb" | "postgres" | "prisma") but received "invalid"`,
+Invalid type: Expected ("schemarb" | "postgres" | "prisma" | "tbls") but received "invalid"`,
       ),
     ])
   })

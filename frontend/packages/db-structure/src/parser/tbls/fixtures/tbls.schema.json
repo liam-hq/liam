@@ -1,0 +1,1467 @@
+{
+  "name": "testdb",
+  "desc": "Sample PostgreSQL database document.",
+  "tables": [
+    {
+      "name": "public.users",
+      "type": "BASE TABLE",
+      "comment": "Users table",
+      "columns": [
+        {
+          "name": "id",
+          "type": "integer",
+          "nullable": false,
+          "default": "nextval('users_id_seq'::regclass)",
+          "comment": ""
+        },
+        {
+          "name": "username",
+          "type": "varchar(50)",
+          "nullable": false,
+          "default": null,
+          "comment": ""
+        },
+        {
+          "name": "password",
+          "type": "varchar(50)",
+          "nullable": false,
+          "default": null,
+          "comment": ""
+        },
+        {
+          "name": "email",
+          "type": "varchar(355)",
+          "nullable": false,
+          "default": null,
+          "comment": "ex. user@example.com"
+        },
+        {
+          "name": "created",
+          "type": "timestamp without time zone",
+          "nullable": false,
+          "default": null,
+          "comment": ""
+        },
+        {
+          "name": "updated",
+          "type": "timestamp without time zone",
+          "nullable": true,
+          "default": null,
+          "comment": ""
+        }
+      ],
+      "indexes": [
+        {
+          "name": "users_pkey",
+          "def": "CREATE UNIQUE INDEX users_pkey ON public.users USING btree (id)",
+          "table": "public.users",
+          "columns": ["id"],
+          "comment": ""
+        },
+        {
+          "name": "users_username_key",
+          "def": "CREATE UNIQUE INDEX users_username_key ON public.users USING btree (username)",
+          "table": "public.users",
+          "columns": ["username"],
+          "comment": ""
+        },
+        {
+          "name": "users_email_key",
+          "def": "CREATE UNIQUE INDEX users_email_key ON public.users USING btree (email)",
+          "table": "public.users",
+          "columns": ["email"],
+          "comment": ""
+        }
+      ],
+      "constraints": [
+        {
+          "name": "users_username_check",
+          "type": "CHECK",
+          "def": "CHECK ((char_length((username)::text) \u003e 4))",
+          "table": "public.users",
+          "referenced_table": "",
+          "columns": ["username"],
+          "referenced_columns": [],
+          "comment": ""
+        },
+        {
+          "name": "users_pkey",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (id)",
+          "table": "public.users",
+          "referenced_table": "",
+          "columns": ["id"],
+          "referenced_columns": [],
+          "comment": ""
+        },
+        {
+          "name": "users_username_key",
+          "type": "UNIQUE",
+          "def": "UNIQUE (username)",
+          "table": "public.users",
+          "referenced_table": "",
+          "columns": ["username"],
+          "referenced_columns": [],
+          "comment": ""
+        },
+        {
+          "name": "users_email_key",
+          "type": "UNIQUE",
+          "def": "UNIQUE (email)",
+          "table": "public.users",
+          "referenced_table": "",
+          "columns": ["email"],
+          "referenced_columns": [],
+          "comment": ""
+        }
+      ],
+      "triggers": [
+        {
+          "name": "update_users_updated",
+          "def": "CREATE TRIGGER update_users_updated AFTER INSERT OR UPDATE ON public.users FOR EACH ROW EXECUTE FUNCTION update_updated()",
+          "comment": "Update updated when users insert or update"
+        }
+      ],
+      "def": ""
+    },
+    {
+      "name": "public.user_options",
+      "type": "BASE TABLE",
+      "comment": "User options table",
+      "columns": [
+        {
+          "name": "user_id",
+          "type": "integer",
+          "nullable": false,
+          "default": null,
+          "comment": ""
+        },
+        {
+          "name": "show_email",
+          "type": "boolean",
+          "nullable": false,
+          "default": "false",
+          "comment": ""
+        },
+        {
+          "name": "created",
+          "type": "timestamp without time zone",
+          "nullable": false,
+          "default": null,
+          "comment": ""
+        },
+        {
+          "name": "updated",
+          "type": "timestamp without time zone",
+          "nullable": true,
+          "default": null,
+          "comment": ""
+        }
+      ],
+      "indexes": [
+        {
+          "name": "user_options_pkey",
+          "def": "CREATE UNIQUE INDEX user_options_pkey ON public.user_options USING btree (user_id)",
+          "table": "public.user_options",
+          "columns": ["user_id"],
+          "comment": "PRIMARY KEY"
+        }
+      ],
+      "constraints": [
+        {
+          "name": "user_options_user_id_fk",
+          "type": "FOREIGN KEY",
+          "def": "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE",
+          "table": "public.user_options",
+          "referenced_table": "users",
+          "columns": ["user_id"],
+          "referenced_columns": ["id"],
+          "comment": "FK"
+        },
+        {
+          "name": "user_options_pkey",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (user_id)",
+          "table": "public.user_options",
+          "referenced_table": "",
+          "columns": ["user_id"],
+          "referenced_columns": [],
+          "comment": ""
+        }
+      ],
+      "triggers": [],
+      "def": ""
+    },
+    {
+      "name": "public.posts",
+      "type": "BASE TABLE",
+      "comment": "Posts table",
+      "columns": [
+        {
+          "name": "id",
+          "type": "bigint",
+          "nullable": false,
+          "default": "nextval('posts_id_seq'::regclass)",
+          "comment": ""
+        },
+        {
+          "name": "user_id",
+          "type": "integer",
+          "nullable": false,
+          "default": null,
+          "comment": ""
+        },
+        {
+          "name": "title",
+          "type": "varchar(255)",
+          "nullable": false,
+          "default": "'Untitled'::character varying",
+          "comment": ""
+        },
+        {
+          "name": "body",
+          "type": "text",
+          "nullable": false,
+          "default": null,
+          "comment": "post body"
+        },
+        {
+          "name": "post_type",
+          "type": "post_types",
+          "nullable": false,
+          "default": null,
+          "comment": "public/private/draft"
+        },
+        {
+          "name": "labels",
+          "type": "varchar(50)[]",
+          "nullable": true,
+          "default": null,
+          "comment": ""
+        },
+        {
+          "name": "created",
+          "type": "timestamp without time zone",
+          "nullable": false,
+          "default": null,
+          "comment": ""
+        },
+        {
+          "name": "updated",
+          "type": "timestamp without time zone",
+          "nullable": true,
+          "default": null,
+          "comment": ""
+        }
+      ],
+      "indexes": [
+        {
+          "name": "posts_id_pk",
+          "def": "CREATE UNIQUE INDEX posts_id_pk ON public.posts USING btree (id)",
+          "table": "public.posts",
+          "columns": ["id"],
+          "comment": ""
+        },
+        {
+          "name": "posts_user_id_title_key",
+          "def": "CREATE UNIQUE INDEX posts_user_id_title_key ON public.posts USING btree (user_id, title)",
+          "table": "public.posts",
+          "columns": ["user_id", "title"],
+          "comment": ""
+        },
+        {
+          "name": "posts_user_id_idx",
+          "def": "CREATE INDEX posts_user_id_idx ON public.posts USING btree (user_id)",
+          "table": "public.posts",
+          "columns": ["user_id"],
+          "comment": "posts.user_id index"
+        }
+      ],
+      "constraints": [
+        {
+          "name": "update_posts_updated",
+          "type": "TRIGGER",
+          "def": "CREATE CONSTRAINT TRIGGER update_posts_updated AFTER INSERT OR UPDATE ON public.posts NOT DEFERRABLE INITIALLY IMMEDIATE FOR EACH ROW EXECUTE FUNCTION update_updated()",
+          "table": "public.posts",
+          "referenced_table": "",
+          "columns": [
+            "tableoid",
+            "cmax",
+            "xmax",
+            "cmin",
+            "xmin",
+            "ctid",
+            "id",
+            "user_id",
+            "title",
+            "body",
+            "post_type",
+            "labels",
+            "created",
+            "updated"
+          ],
+          "referenced_columns": [],
+          "comment": ""
+        },
+        {
+          "name": "posts_user_id_fk",
+          "type": "FOREIGN KEY",
+          "def": "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL (user_id)",
+          "table": "public.posts",
+          "referenced_table": "users",
+          "columns": ["user_id"],
+          "referenced_columns": ["id"],
+          "comment": "posts -\u003e users"
+        },
+        {
+          "name": "posts_id_pk",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (id)",
+          "table": "public.posts",
+          "referenced_table": "",
+          "columns": ["id"],
+          "referenced_columns": [],
+          "comment": ""
+        },
+        {
+          "name": "posts_user_id_title_key",
+          "type": "UNIQUE",
+          "def": "UNIQUE (user_id, title)",
+          "table": "public.posts",
+          "referenced_table": "",
+          "columns": ["user_id", "title"],
+          "referenced_columns": [],
+          "comment": ""
+        }
+      ],
+      "triggers": [
+        {
+          "name": "update_posts_updated",
+          "def": "CREATE CONSTRAINT TRIGGER update_posts_updated AFTER INSERT OR UPDATE ON public.posts NOT DEFERRABLE INITIALLY IMMEDIATE FOR EACH ROW EXECUTE FUNCTION update_updated()",
+          "comment": "Update updated when posts update"
+        }
+      ],
+      "def": ""
+    },
+    {
+      "name": "public.comments",
+      "type": "BASE TABLE",
+      "comment": "Comments\nMulti-line\r\ntable\rcomment",
+      "columns": [
+        {
+          "name": "id",
+          "type": "bigint",
+          "nullable": false,
+          "default": "nextval('comments_id_seq'::regclass)",
+          "comment": ""
+        },
+        {
+          "name": "post_id",
+          "type": "bigint",
+          "nullable": false,
+          "default": null,
+          "comment": ""
+        },
+        {
+          "name": "user_id",
+          "type": "integer",
+          "nullable": false,
+          "default": null,
+          "comment": ""
+        },
+        {
+          "name": "comment",
+          "type": "text",
+          "nullable": false,
+          "default": null,
+          "comment": "Comment\nMulti-line\r\ncolumn\rcomment"
+        },
+        {
+          "name": "post_id_desc",
+          "type": "bigint",
+          "nullable": true,
+          "default": null,
+          "comment": "",
+          "extra_def": "GENERATED ALWAYS AS (post_id * '-1'::integer) STORED"
+        },
+        {
+          "name": "created",
+          "type": "timestamp without time zone",
+          "nullable": false,
+          "default": null,
+          "comment": ""
+        },
+        {
+          "name": "updated",
+          "type": "timestamp without time zone",
+          "nullable": true,
+          "default": null,
+          "comment": ""
+        }
+      ],
+      "indexes": [
+        {
+          "name": "comments_id_pk",
+          "def": "CREATE UNIQUE INDEX comments_id_pk ON public.comments USING btree (id)",
+          "table": "public.comments",
+          "columns": ["id"],
+          "comment": ""
+        },
+        {
+          "name": "comments_post_id_user_id_key",
+          "def": "CREATE UNIQUE INDEX comments_post_id_user_id_key ON public.comments USING btree (post_id, user_id)",
+          "table": "public.comments",
+          "columns": ["post_id", "user_id"],
+          "comment": ""
+        },
+        {
+          "name": "comments_post_id_user_id_idx",
+          "def": "CREATE INDEX comments_post_id_user_id_idx ON public.comments USING btree (post_id, user_id)",
+          "table": "public.comments",
+          "columns": ["post_id", "user_id"],
+          "comment": ""
+        }
+      ],
+      "constraints": [
+        {
+          "name": "comments_user_id_fk",
+          "type": "FOREIGN KEY",
+          "def": "FOREIGN KEY (user_id) REFERENCES users(id)",
+          "table": "public.comments",
+          "referenced_table": "users",
+          "columns": ["user_id"],
+          "referenced_columns": ["id"],
+          "comment": ""
+        },
+        {
+          "name": "comments_post_id_fk",
+          "type": "FOREIGN KEY",
+          "def": "FOREIGN KEY (post_id) REFERENCES posts(id)",
+          "table": "public.comments",
+          "referenced_table": "posts",
+          "columns": ["post_id"],
+          "referenced_columns": ["id"],
+          "comment": ""
+        },
+        {
+          "name": "comments_id_pk",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (id)",
+          "table": "public.comments",
+          "referenced_table": "",
+          "columns": ["id"],
+          "referenced_columns": [],
+          "comment": ""
+        },
+        {
+          "name": "comments_post_id_user_id_key",
+          "type": "UNIQUE",
+          "def": "UNIQUE (post_id, user_id)",
+          "table": "public.comments",
+          "referenced_table": "",
+          "columns": ["post_id", "user_id"],
+          "referenced_columns": [],
+          "comment": ""
+        }
+      ],
+      "triggers": [],
+      "def": ""
+    },
+    {
+      "name": "public.comment_stars",
+      "type": "BASE TABLE",
+      "comment": "",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false,
+          "default": "uuid_generate_v4()",
+          "comment": ""
+        },
+        {
+          "name": "user_id",
+          "type": "integer",
+          "nullable": false,
+          "default": null,
+          "comment": ""
+        },
+        {
+          "name": "comment_post_id",
+          "type": "bigint",
+          "nullable": false,
+          "default": null,
+          "comment": ""
+        },
+        {
+          "name": "comment_user_id",
+          "type": "integer",
+          "nullable": false,
+          "default": null,
+          "comment": ""
+        },
+        {
+          "name": "created",
+          "type": "timestamp without time zone",
+          "nullable": false,
+          "default": null,
+          "comment": ""
+        },
+        {
+          "name": "updated",
+          "type": "timestamp without time zone",
+          "nullable": true,
+          "default": null,
+          "comment": ""
+        }
+      ],
+      "indexes": [
+        {
+          "name": "comment_stars_user_id_comment_post_id_comment_user_id_key",
+          "def": "CREATE UNIQUE INDEX comment_stars_user_id_comment_post_id_comment_user_id_key ON public.comment_stars USING btree (user_id, comment_post_id, comment_user_id)",
+          "table": "public.comment_stars",
+          "columns": ["user_id", "comment_post_id", "comment_user_id"],
+          "comment": ""
+        }
+      ],
+      "constraints": [
+        {
+          "name": "comment_stars_user_id_fk",
+          "type": "FOREIGN KEY",
+          "def": "FOREIGN KEY (comment_user_id) REFERENCES users(id)",
+          "table": "public.comment_stars",
+          "referenced_table": "users",
+          "columns": ["comment_user_id"],
+          "referenced_columns": ["id"],
+          "comment": ""
+        },
+        {
+          "name": "comment_stars_user_id_post_id_fk",
+          "type": "FOREIGN KEY",
+          "def": "FOREIGN KEY (comment_post_id, comment_user_id) REFERENCES comments(post_id, user_id)",
+          "table": "public.comment_stars",
+          "referenced_table": "comments",
+          "columns": [
+            "comment_post_id",
+            "comment_post_id",
+            "comment_user_id",
+            "comment_user_id"
+          ],
+          "referenced_columns": ["post_id", "user_id", "post_id", "user_id"],
+          "comment": ""
+        },
+        {
+          "name": "comment_stars_user_id_comment_post_id_comment_user_id_key",
+          "type": "UNIQUE",
+          "def": "UNIQUE (user_id, comment_post_id, comment_user_id)",
+          "table": "public.comment_stars",
+          "referenced_table": "",
+          "columns": ["user_id", "comment_post_id", "comment_user_id"],
+          "referenced_columns": [],
+          "comment": ""
+        }
+      ],
+      "triggers": [],
+      "def": ""
+    },
+    {
+      "name": "public.logs",
+      "type": "BASE TABLE",
+      "comment": "audit log table",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false,
+          "default": "uuid_generate_v4()",
+          "comment": ""
+        },
+        {
+          "name": "user_id",
+          "type": "integer",
+          "nullable": false,
+          "default": null,
+          "comment": ""
+        },
+        {
+          "name": "post_id",
+          "type": "bigint",
+          "nullable": true,
+          "default": null,
+          "comment": ""
+        },
+        {
+          "name": "comment_id",
+          "type": "bigint",
+          "nullable": true,
+          "default": null,
+          "comment": ""
+        },
+        {
+          "name": "comment_star_id",
+          "type": "uuid",
+          "nullable": true,
+          "default": null,
+          "comment": ""
+        },
+        {
+          "name": "payload",
+          "type": "text",
+          "nullable": true,
+          "default": null,
+          "comment": ""
+        },
+        {
+          "name": "created",
+          "type": "timestamp without time zone",
+          "nullable": false,
+          "default": null,
+          "comment": ""
+        }
+      ],
+      "indexes": [],
+      "constraints": [],
+      "triggers": [],
+      "def": ""
+    },
+    {
+      "name": "public.post_comments",
+      "type": "VIEW",
+      "comment": "post and comments View table",
+      "columns": [
+        {
+          "name": "id",
+          "type": "bigint",
+          "nullable": true,
+          "default": null,
+          "comment": "comments.id"
+        },
+        {
+          "name": "title",
+          "type": "varchar(255)",
+          "nullable": true,
+          "default": null,
+          "comment": "posts.title"
+        },
+        {
+          "name": "post_user",
+          "type": "varchar(50)",
+          "nullable": true,
+          "default": null,
+          "comment": "posts.users.username"
+        },
+        {
+          "name": "comment",
+          "type": "text",
+          "nullable": true,
+          "default": null,
+          "comment": ""
+        },
+        {
+          "name": "comment_user",
+          "type": "varchar(50)",
+          "nullable": true,
+          "default": null,
+          "comment": "comments.users.username"
+        },
+        {
+          "name": "created",
+          "type": "timestamp without time zone",
+          "nullable": true,
+          "default": null,
+          "comment": "comments.created"
+        },
+        {
+          "name": "updated",
+          "type": "timestamp without time zone",
+          "nullable": true,
+          "default": null,
+          "comment": "comments.updated"
+        }
+      ],
+      "indexes": [],
+      "constraints": [],
+      "triggers": [],
+      "def": "CREATE VIEW post_comments AS (\n SELECT c.id,\n    p.title,\n    u.username AS post_user,\n    c.comment,\n    u2.username AS comment_user,\n    c.created,\n    c.updated\n   FROM (((posts p\n     LEFT JOIN comments c ON ((p.id = c.post_id)))\n     LEFT JOIN users u ON ((u.id = p.user_id)))\n     LEFT JOIN users u2 ON ((u2.id = c.user_id)))\n)",
+      "referenced_tables": ["public.posts", "public.comments", "public.users"]
+    },
+    {
+      "name": "public.post_comment_stars",
+      "type": "MATERIALIZED VIEW",
+      "comment": "",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": true,
+          "default": null,
+          "comment": ""
+        },
+        {
+          "name": "comment_user",
+          "type": "varchar(50)",
+          "nullable": true,
+          "default": null,
+          "comment": ""
+        },
+        {
+          "name": "comment_star_user",
+          "type": "varchar(50)",
+          "nullable": true,
+          "default": null,
+          "comment": ""
+        },
+        {
+          "name": "created",
+          "type": "timestamp without time zone",
+          "nullable": true,
+          "default": null,
+          "comment": ""
+        },
+        {
+          "name": "updated",
+          "type": "timestamp without time zone",
+          "nullable": true,
+          "default": null,
+          "comment": ""
+        }
+      ],
+      "indexes": [],
+      "constraints": [],
+      "triggers": [],
+      "def": "CREATE MATERIALIZED VIEW post_comment_stars AS (\n SELECT cs.id,\n    cu.username AS comment_user,\n    csu.username AS comment_star_user,\n    cs.created,\n    cs.updated\n   FROM (((comments c\n     LEFT JOIN comment_stars cs ON (((cs.comment_post_id = c.id) AND (cs.comment_user_id = c.user_id))))\n     LEFT JOIN users cu ON ((cu.id = cs.comment_user_id)))\n     LEFT JOIN users csu ON ((csu.id = cs.user_id)))\n)",
+      "referenced_tables": [
+        "public.comments",
+        "public.comment_stars",
+        "public.users"
+      ]
+    },
+    {
+      "name": "public.CamelizeTable",
+      "type": "BASE TABLE",
+      "comment": "",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false,
+          "default": "uuid_generate_v4()",
+          "comment": ""
+        },
+        {
+          "name": "created",
+          "type": "timestamp without time zone",
+          "nullable": false,
+          "default": null,
+          "comment": ""
+        }
+      ],
+      "indexes": [
+        {
+          "name": "CamelizeTable_id_key",
+          "def": "CREATE UNIQUE INDEX \"CamelizeTable_id_key\" ON public.\"CamelizeTable\" USING btree (id)",
+          "table": "public.CamelizeTable",
+          "columns": ["id"],
+          "comment": ""
+        }
+      ],
+      "constraints": [
+        {
+          "name": "CamelizeTable_id_key",
+          "type": "UNIQUE",
+          "def": "UNIQUE (id)",
+          "table": "public.CamelizeTable",
+          "referenced_table": "",
+          "columns": ["id"],
+          "referenced_columns": [],
+          "comment": ""
+        }
+      ],
+      "triggers": [],
+      "def": ""
+    },
+    {
+      "name": "public.hyphen-table",
+      "type": "BASE TABLE",
+      "comment": "",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false,
+          "default": "uuid_generate_v4()",
+          "comment": ""
+        },
+        {
+          "name": "hyphen-column",
+          "type": "text",
+          "nullable": false,
+          "default": null,
+          "comment": ""
+        },
+        {
+          "name": "CamelizeTableId",
+          "type": "uuid",
+          "nullable": false,
+          "default": null,
+          "comment": ""
+        },
+        {
+          "name": "created",
+          "type": "timestamp without time zone",
+          "nullable": false,
+          "default": null,
+          "comment": ""
+        }
+      ],
+      "indexes": [
+        {
+          "name": "hyphen-table_hyphen-column_key",
+          "def": "CREATE UNIQUE INDEX \"hyphen-table_hyphen-column_key\" ON public.\"hyphen-table\" USING btree (\"hyphen-column\")",
+          "table": "public.hyphen-table",
+          "columns": ["hyphen-column"],
+          "comment": ""
+        }
+      ],
+      "constraints": [
+        {
+          "name": "hyphen-table_CamelizeTableId_fk",
+          "type": "FOREIGN KEY",
+          "def": "FOREIGN KEY (\"CamelizeTableId\") REFERENCES \"CamelizeTable\"(id) ON DELETE CASCADE",
+          "table": "public.hyphen-table",
+          "referenced_table": "CamelizeTable",
+          "columns": ["CamelizeTableId"],
+          "referenced_columns": ["id"],
+          "comment": ""
+        },
+        {
+          "name": "hyphen-table_hyphen-column_key",
+          "type": "UNIQUE",
+          "def": "UNIQUE (\"hyphen-column\")",
+          "table": "public.hyphen-table",
+          "referenced_table": "",
+          "columns": ["hyphen-column"],
+          "referenced_columns": [],
+          "comment": ""
+        }
+      ],
+      "triggers": [],
+      "def": ""
+    },
+    {
+      "name": "administrator.blogs",
+      "type": "BASE TABLE",
+      "comment": "admin blogs",
+      "columns": [
+        {
+          "name": "id",
+          "type": "integer",
+          "nullable": false,
+          "default": "nextval('administrator.blogs_id_seq'::regclass)",
+          "comment": ""
+        },
+        {
+          "name": "user_id",
+          "type": "integer",
+          "nullable": false,
+          "default": null,
+          "comment": ""
+        },
+        {
+          "name": "name",
+          "type": "text",
+          "nullable": false,
+          "default": null,
+          "comment": ""
+        },
+        {
+          "name": "description",
+          "type": "text",
+          "nullable": true,
+          "default": null,
+          "comment": ""
+        },
+        {
+          "name": "created",
+          "type": "timestamp without time zone",
+          "nullable": false,
+          "default": null,
+          "comment": ""
+        },
+        {
+          "name": "updated",
+          "type": "timestamp without time zone",
+          "nullable": true,
+          "default": null,
+          "comment": ""
+        }
+      ],
+      "indexes": [
+        {
+          "name": "blogs_pkey",
+          "def": "CREATE UNIQUE INDEX blogs_pkey ON administrator.blogs USING btree (id)",
+          "table": "administrator.blogs",
+          "columns": ["id"],
+          "comment": ""
+        }
+      ],
+      "constraints": [
+        {
+          "name": "blogs_user_id_fk",
+          "type": "FOREIGN KEY",
+          "def": "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE",
+          "table": "administrator.blogs",
+          "referenced_table": "users",
+          "columns": ["user_id"],
+          "referenced_columns": ["id"],
+          "comment": ""
+        },
+        {
+          "name": "blogs_pkey",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (id)",
+          "table": "administrator.blogs",
+          "referenced_table": "",
+          "columns": ["id"],
+          "referenced_columns": [],
+          "comment": ""
+        }
+      ],
+      "triggers": [],
+      "def": ""
+    },
+    {
+      "name": "backup.blogs",
+      "type": "BASE TABLE",
+      "comment": "",
+      "columns": [
+        {
+          "name": "id",
+          "type": "integer",
+          "nullable": false,
+          "default": "nextval('blogs_id_seq'::regclass)",
+          "comment": ""
+        },
+        {
+          "name": "user_id",
+          "type": "integer",
+          "nullable": false,
+          "default": null,
+          "comment": ""
+        },
+        {
+          "name": "dump",
+          "type": "text",
+          "nullable": false,
+          "default": null,
+          "comment": ""
+        },
+        {
+          "name": "created",
+          "type": "timestamp without time zone",
+          "nullable": false,
+          "default": null,
+          "comment": ""
+        },
+        {
+          "name": "updated",
+          "type": "timestamp without time zone",
+          "nullable": true,
+          "default": null,
+          "comment": ""
+        }
+      ],
+      "indexes": [
+        {
+          "name": "blogs_pkey",
+          "def": "CREATE UNIQUE INDEX blogs_pkey ON backup.blogs USING btree (id)",
+          "table": "backup.blogs",
+          "columns": ["id"],
+          "comment": ""
+        }
+      ],
+      "constraints": [
+        {
+          "name": "blogs_pkey",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (id)",
+          "table": "backup.blogs",
+          "referenced_table": "",
+          "columns": ["id"],
+          "referenced_columns": [],
+          "comment": ""
+        }
+      ],
+      "triggers": [],
+      "def": ""
+    },
+    {
+      "name": "backup.blog_options",
+      "type": "BASE TABLE",
+      "comment": "",
+      "columns": [
+        {
+          "name": "id",
+          "type": "integer",
+          "nullable": false,
+          "default": "nextval('blog_options_id_seq'::regclass)",
+          "comment": ""
+        },
+        {
+          "name": "blog_id",
+          "type": "integer",
+          "nullable": false,
+          "default": null,
+          "comment": ""
+        },
+        {
+          "name": "label",
+          "type": "text",
+          "nullable": true,
+          "default": null,
+          "comment": ""
+        },
+        {
+          "name": "updated",
+          "type": "timestamp without time zone",
+          "nullable": true,
+          "default": null,
+          "comment": ""
+        }
+      ],
+      "indexes": [
+        {
+          "name": "blog_options_pkey",
+          "def": "CREATE UNIQUE INDEX blog_options_pkey ON backup.blog_options USING btree (id)",
+          "table": "backup.blog_options",
+          "columns": ["id"],
+          "comment": ""
+        }
+      ],
+      "constraints": [
+        {
+          "name": "blog_options_blog_id_fk",
+          "type": "FOREIGN KEY",
+          "def": "FOREIGN KEY (blog_id) REFERENCES blogs(id) ON DELETE CASCADE",
+          "table": "backup.blog_options",
+          "referenced_table": "blogs",
+          "columns": ["blog_id"],
+          "referenced_columns": ["id"],
+          "comment": ""
+        },
+        {
+          "name": "blog_options_pkey",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (id)",
+          "table": "backup.blog_options",
+          "referenced_table": "",
+          "columns": ["id"],
+          "referenced_columns": [],
+          "comment": ""
+        }
+      ],
+      "triggers": [],
+      "def": ""
+    },
+    {
+      "name": "time.bar",
+      "type": "BASE TABLE",
+      "comment": "",
+      "columns": [
+        {
+          "name": "id",
+          "type": "integer",
+          "nullable": false,
+          "default": null,
+          "comment": ""
+        }
+      ],
+      "indexes": [
+        {
+          "name": "bar_pkey",
+          "def": "CREATE UNIQUE INDEX bar_pkey ON \"time\".bar USING btree (id)",
+          "table": "time.bar",
+          "columns": ["id"],
+          "comment": ""
+        }
+      ],
+      "constraints": [
+        {
+          "name": "bar_pkey",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (id)",
+          "table": "time.bar",
+          "referenced_table": "",
+          "columns": ["id"],
+          "referenced_columns": [],
+          "comment": ""
+        }
+      ],
+      "triggers": [],
+      "def": ""
+    },
+    {
+      "name": "time.hyphenated-table",
+      "type": "BASE TABLE",
+      "comment": "",
+      "columns": [
+        {
+          "name": "id",
+          "type": "integer",
+          "nullable": false,
+          "default": null,
+          "comment": ""
+        }
+      ],
+      "indexes": [
+        {
+          "name": "hyphenated-table_pkey",
+          "def": "CREATE UNIQUE INDEX \"hyphenated-table_pkey\" ON \"time\".\"hyphenated-table\" USING btree (id)",
+          "table": "time.hyphenated-table",
+          "columns": ["id"],
+          "comment": ""
+        }
+      ],
+      "constraints": [
+        {
+          "name": "hyphenated-table_pkey",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (id)",
+          "table": "time.hyphenated-table",
+          "referenced_table": "",
+          "columns": ["id"],
+          "referenced_columns": [],
+          "comment": ""
+        }
+      ],
+      "triggers": [],
+      "def": ""
+    },
+    {
+      "name": "time.referencing",
+      "type": "BASE TABLE",
+      "comment": "",
+      "columns": [
+        {
+          "name": "id",
+          "type": "integer",
+          "nullable": false,
+          "default": null,
+          "comment": ""
+        },
+        {
+          "name": "bar_id",
+          "type": "integer",
+          "nullable": false,
+          "default": null,
+          "comment": ""
+        },
+        {
+          "name": "ht_id",
+          "type": "integer",
+          "nullable": false,
+          "default": null,
+          "comment": ""
+        }
+      ],
+      "indexes": [
+        {
+          "name": "referencing_pkey",
+          "def": "CREATE UNIQUE INDEX referencing_pkey ON \"time\".referencing USING btree (id)",
+          "table": "time.referencing",
+          "columns": ["id"],
+          "comment": ""
+        }
+      ],
+      "constraints": [
+        {
+          "name": "referencing_bar_id",
+          "type": "FOREIGN KEY",
+          "def": "FOREIGN KEY (bar_id) REFERENCES \"time\".bar(id)",
+          "table": "time.referencing",
+          "referenced_table": "bar",
+          "columns": ["bar_id"],
+          "referenced_columns": ["id"],
+          "comment": ""
+        },
+        {
+          "name": "referencing_ht_id",
+          "type": "FOREIGN KEY",
+          "def": "FOREIGN KEY (ht_id) REFERENCES \"time\".\"hyphenated-table\"(id)",
+          "table": "time.referencing",
+          "referenced_table": "hyphenated-table",
+          "columns": ["ht_id"],
+          "referenced_columns": ["id"],
+          "comment": ""
+        },
+        {
+          "name": "referencing_pkey",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (id)",
+          "table": "time.referencing",
+          "referenced_table": "",
+          "columns": ["id"],
+          "referenced_columns": [],
+          "comment": ""
+        }
+      ],
+      "triggers": [],
+      "def": ""
+    }
+  ],
+  "relations": [
+    {
+      "table": "public.user_options",
+      "columns": ["user_id"],
+      "cardinality": "Zero or one",
+      "parent_table": "public.users",
+      "parent_columns": ["id"],
+      "parent_cardinality": "Exactly one",
+      "def": "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE",
+      "virtual": false
+    },
+    {
+      "table": "public.posts",
+      "columns": ["user_id"],
+      "cardinality": "Zero or more",
+      "parent_table": "public.users",
+      "parent_columns": ["id"],
+      "parent_cardinality": "Exactly one",
+      "def": "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL (user_id)",
+      "virtual": false
+    },
+    {
+      "table": "public.comments",
+      "columns": ["user_id"],
+      "cardinality": "Zero or more",
+      "parent_table": "public.users",
+      "parent_columns": ["id"],
+      "parent_cardinality": "Exactly one",
+      "def": "FOREIGN KEY (user_id) REFERENCES users(id)",
+      "virtual": false
+    },
+    {
+      "table": "public.comments",
+      "columns": ["post_id"],
+      "cardinality": "Zero or more",
+      "parent_table": "public.posts",
+      "parent_columns": ["id"],
+      "parent_cardinality": "Exactly one",
+      "def": "FOREIGN KEY (post_id) REFERENCES posts(id)",
+      "virtual": false
+    },
+    {
+      "table": "public.comment_stars",
+      "columns": ["comment_user_id"],
+      "cardinality": "Zero or more",
+      "parent_table": "public.users",
+      "parent_columns": ["id"],
+      "parent_cardinality": "Exactly one",
+      "def": "FOREIGN KEY (comment_user_id) REFERENCES users(id)",
+      "virtual": false
+    },
+    {
+      "table": "public.comment_stars",
+      "columns": ["comment_post_id", "comment_user_id"],
+      "cardinality": "Zero or more",
+      "parent_table": "public.comments",
+      "parent_columns": ["post_id", "user_id"],
+      "parent_cardinality": "Exactly one",
+      "def": "FOREIGN KEY (comment_post_id, comment_user_id) REFERENCES comments(post_id, user_id)",
+      "virtual": false
+    },
+    {
+      "table": "public.hyphen-table",
+      "columns": ["CamelizeTableId"],
+      "cardinality": "Zero or more",
+      "parent_table": "public.CamelizeTable",
+      "parent_columns": ["id"],
+      "parent_cardinality": "Exactly one",
+      "def": "FOREIGN KEY (\"CamelizeTableId\") REFERENCES \"CamelizeTable\"(id) ON DELETE CASCADE",
+      "virtual": false
+    },
+    {
+      "table": "administrator.blogs",
+      "columns": ["user_id"],
+      "cardinality": "Zero or more",
+      "parent_table": "public.users",
+      "parent_columns": ["id"],
+      "parent_cardinality": "Exactly one",
+      "def": "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE",
+      "virtual": false
+    },
+    {
+      "table": "backup.blog_options",
+      "columns": ["blog_id"],
+      "cardinality": "Zero or more",
+      "parent_table": "backup.blogs",
+      "parent_columns": ["id"],
+      "parent_cardinality": "Exactly one",
+      "def": "FOREIGN KEY (blog_id) REFERENCES blogs(id) ON DELETE CASCADE",
+      "virtual": false
+    },
+    {
+      "table": "time.referencing",
+      "columns": ["bar_id"],
+      "cardinality": "Zero or more",
+      "parent_table": "time.bar",
+      "parent_columns": ["id"],
+      "parent_cardinality": "Exactly one",
+      "def": "FOREIGN KEY (bar_id) REFERENCES \"time\".bar(id)",
+      "virtual": false
+    },
+    {
+      "table": "time.referencing",
+      "columns": ["ht_id"],
+      "cardinality": "Zero or more",
+      "parent_table": "time.hyphenated-table",
+      "parent_columns": ["id"],
+      "parent_cardinality": "Exactly one",
+      "def": "FOREIGN KEY (ht_id) REFERENCES \"time\".\"hyphenated-table\"(id)",
+      "virtual": false
+    },
+    {
+      "table": "public.logs",
+      "columns": ["user_id"],
+      "cardinality": "Zero or more",
+      "parent_table": "public.users",
+      "parent_columns": ["id"],
+      "parent_cardinality": "Exactly one",
+      "def": "logs-\u003eusers",
+      "virtual": true
+    },
+    {
+      "table": "public.logs",
+      "columns": ["post_id"],
+      "cardinality": "Zero or more",
+      "parent_table": "public.posts",
+      "parent_columns": ["id"],
+      "parent_cardinality": "Zero or one",
+      "def": "Additional Relation",
+      "virtual": true
+    },
+    {
+      "table": "public.logs",
+      "columns": ["comment_id"],
+      "cardinality": "Zero or more",
+      "parent_table": "public.comments",
+      "parent_columns": ["id"],
+      "parent_cardinality": "Zero or one",
+      "def": "Additional Relation",
+      "virtual": true
+    },
+    {
+      "table": "public.logs",
+      "columns": ["comment_star_id"],
+      "cardinality": "Zero or more",
+      "parent_table": "public.comment_stars",
+      "parent_columns": ["id"],
+      "parent_cardinality": "Zero or one",
+      "def": "Additional Relation",
+      "virtual": true
+    }
+  ],
+  "functions": [
+    {
+      "name": "public.uuid_nil",
+      "return_type": "uuid",
+      "arguments": "",
+      "type": "FUNCTION"
+    },
+    {
+      "name": "public.uuid_ns_dns",
+      "return_type": "uuid",
+      "arguments": "",
+      "type": "FUNCTION"
+    },
+    {
+      "name": "public.uuid_ns_url",
+      "return_type": "uuid",
+      "arguments": "",
+      "type": "FUNCTION"
+    },
+    {
+      "name": "public.uuid_ns_oid",
+      "return_type": "uuid",
+      "arguments": "",
+      "type": "FUNCTION"
+    },
+    {
+      "name": "public.uuid_ns_x500",
+      "return_type": "uuid",
+      "arguments": "",
+      "type": "FUNCTION"
+    },
+    {
+      "name": "public.uuid_generate_v1",
+      "return_type": "uuid",
+      "arguments": "",
+      "type": "FUNCTION"
+    },
+    {
+      "name": "public.uuid_generate_v1mc",
+      "return_type": "uuid",
+      "arguments": "",
+      "type": "FUNCTION"
+    },
+    {
+      "name": "public.uuid_generate_v3",
+      "return_type": "uuid",
+      "arguments": "namespace uuid, name text",
+      "type": "FUNCTION"
+    },
+    {
+      "name": "public.uuid_generate_v4",
+      "return_type": "uuid",
+      "arguments": "",
+      "type": "FUNCTION"
+    },
+    {
+      "name": "public.uuid_generate_v5",
+      "return_type": "uuid",
+      "arguments": "namespace uuid, name text",
+      "type": "FUNCTION"
+    },
+    {
+      "name": "public.update_updated",
+      "return_type": "trigger",
+      "arguments": "",
+      "type": "FUNCTION"
+    },
+    {
+      "name": "public.reset_comment",
+      "return_type": "void",
+      "arguments": "IN comment_id integer",
+      "type": "PROCEDURE"
+    }
+  ],
+  "enums": [
+    {
+      "name": "public.post_types",
+      "values": ["draft", "private", "public"]
+    }
+  ],
+  "driver": {
+    "name": "postgres",
+    "database_version": "PostgreSQL 15.10 (Debian 15.10-1.pgdg120+1) on aarch64-unknown-linux-gnu, compiled by gcc (Debian 12.2.0-14) 12.2.0, 64-bit",
+    "meta": {
+      "current_schema": "public",
+      "search_paths": ["postgres", "public", "backup"],
+      "dict": {
+        "Functions": "Stored procedures and functions"
+      }
+    }
+  },
+  "viewpoints": [
+    {
+      "name": "post",
+      "desc": "for post",
+      "tables": ["public.post*"]
+    },
+    {
+      "name": "administrator",
+      "desc": "administrator schema only",
+      "tables": ["administrator.*"]
+    }
+  ]
+}

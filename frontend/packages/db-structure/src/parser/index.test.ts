@@ -25,4 +25,14 @@ describe(parse, () => {
     const { value } = await parse(schemaText, 'postgres')
     expect(value).toMatchSnapshot()
   })
+
+  it('should parse tbls schema to JSON correctly', async () => {
+    const schemaText = fs.readFileSync(
+      path.resolve(__dirname, './tbls/fixtures/tbls.schema.json'),
+      'utf-8',
+    )
+
+    const { value } = await parse(schemaText, 'tbls')
+    expect(value).toMatchSnapshot()
+  })
 })
