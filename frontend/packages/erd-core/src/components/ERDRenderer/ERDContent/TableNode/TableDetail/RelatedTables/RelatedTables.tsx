@@ -46,7 +46,7 @@ export const RelatedTables: FC<Props> = ({ table }) => {
   }, [nodes, getNodes, table.name, version])
 
   return (
-    <div className={styles.wrapper}>
+    <div>
       <div className={styles.header}>
         <div className={styles.iconTitleContainer}>
           <WaypointsIcon width={12} />
@@ -58,17 +58,19 @@ export const RelatedTables: FC<Props> = ({ table }) => {
           onClick={handleClick}
         />
       </div>
-      <div className={styles.contentWrapper}>
-        <ReactFlowProvider>
-          <ERDContent
-            nodes={nodes}
-            edges={edges}
-            enabledFeatures={{
-              fitViewWhenActiveTableChange: false,
-              initialFitViewToActiveTable: false,
-            }}
-          />
-        </ReactFlowProvider>
+      <div className={styles.outerWrapper}>
+        <div className={styles.contentWrapper}>
+          <ReactFlowProvider>
+            <ERDContent
+              nodes={nodes}
+              edges={edges}
+              enabledFeatures={{
+                fitViewWhenActiveTableChange: false,
+                initialFitViewToActiveTable: false,
+              }}
+            />
+          </ReactFlowProvider>
+        </div>
       </div>
     </div>
   )

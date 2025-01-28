@@ -28,5 +28,12 @@
 }
 
 .itemWrapper {
+  max-height: 0;
+  transition: max-height 0.2s var(--default-timing-function);
+  overflow: hidden;
+}
+
+.itemWrapper.visible {
+  max-height: 100vh;
   border-bottom: 1px solid var(--global-border);
 }

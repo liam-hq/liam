@@ -1,6 +1,7 @@
 export * from './BookText'
 export * from './Check'
 export * from './ChevronDown'
+export * from './ChevronUp'
 export * from './CircleHelp'
 export * from './InfoIcon'
 export * from './FacebookIcon'
