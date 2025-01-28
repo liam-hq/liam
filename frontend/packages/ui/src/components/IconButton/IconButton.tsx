@@ -15,7 +15,10 @@ type Props = {
 } & ComponentProps<'button'>
 
 export const IconButton = forwardRef<HTMLButtonElement, Props>(
-  ({ icon, tooltipSide = 'bottom', tooltipContent, ...props }, ref) => {
+  (
+    { icon, tooltipSide = 'bottom', tooltipContent, children, ...props },
+    ref,
+  ) => {
     return (
       <TooltipProvider>
         <TooltipRoot>
@@ -27,6 +30,7 @@ export const IconButton = forwardRef<HTMLButtonElement, Props>(
               {...props}
             >
               <span className={styles.icon}>{icon}</span>
+              {children && <span>{children}</span>}
             </button>
           </TooltipTrigger>
           <TooltipPortal>

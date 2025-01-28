@@ -1,5 +1,16 @@
+@media screen and (max-width: 767px) {
+  .root {
+    display: none;
+  }
+}
+
+@media screen and (min-width: 768px) {
+  .root {
+    display: inline-flex;
+  }
+}
+
 .root {
-  display: inline-flex;
   padding: var(--spacing-1half) var(--spacing-2);
   border: 1px solid var(--global-border);
   border-radius: var(--border-radius-lg);

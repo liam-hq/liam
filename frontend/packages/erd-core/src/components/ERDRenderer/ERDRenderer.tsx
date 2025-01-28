@@ -12,7 +12,9 @@ import { useVersion } from '@/providers'
 import { useDBStructureStore, useUserEditingStore } from '@/stores'
 import { CardinalityMarkers } from './CardinalityMarkers'
 // biome-ignore lint/nursery/useImportRestrictions: Fixed in the next PR.
-import { Toolbar } from './ERDContent/Toolbar'
+import { MobileToolbar } from './ERDContent/Toolbar'
+// biome-ignore lint/nursery/useImportRestrictions: Fixed in the next PR.
+import { DesktopToolbar } from './ERDContent/Toolbar'
 import { ErrorDisplay } from './ErrorDisplay'
 import { RelationshipEdgeParticleMarker } from './RelationshipEdgeParticleMarker'
 import { TableDetailDrawer, TableDetailDrawerRoot } from './TableDetailDrawer'
@@ -82,15 +84,19 @@ export const ERDRenderer: FC<Props> = ({
                         nodes={nodes}
                         edges={edges}
                       />
-                      <div className={styles.toolbarWrapper}>
-                        <Toolbar />
-                      </div>
                       <TableDetailDrawer />
                     </>
                   )}
                 </TableDetailDrawerRoot>
               </main>
             </div>
+
+            {errorObjects.length > 0 || (
+              <div className={styles.toolbarWrapper}>
+                <DesktopToolbar />
+                <MobileToolbar />
+              </div>
+            )}
           </ReactFlowProvider>
         </SidebarProvider>
       </ToastProvider>
