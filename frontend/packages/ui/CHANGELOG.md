@@ -1,5 +1,11 @@
 # @liam-hq/ui
 
+## 0.0.9
+
+### Patch Changes
+
+- 9cba809: 💄 Add icons to the table detail component and update the header style.
+
 ## 0.0.8
 
 ### Patch Changes
