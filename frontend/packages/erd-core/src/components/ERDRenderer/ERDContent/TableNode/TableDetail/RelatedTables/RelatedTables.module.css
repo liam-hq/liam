@@ -1,14 +1,10 @@
-.wrapper {
-  display: grid;
-  gap: var(--spacing-4);
-  padding: var(--spacing-4);
-}
-
 .header {
   display: grid;
   grid-auto-flow: column;
   align-items: center;
   justify-content: space-between;
+  padding: var(--spacing-2);
+  border-bottom: 1px solid var(--global-border);
 }
 
 .iconTitleContainer {
@@ -25,6 +21,10 @@
   font-style: normal;
   font-weight: 400;
   line-height: normal;
+}
+
+.outerWrapper {
+  padding: var(--spacing-3);
 }
 
 .contentWrapper {
