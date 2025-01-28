@@ -31,7 +31,7 @@ export const TableHeader: FC<Props> = ({ data }) => {
         showMode === 'TABLE_NAME' && styles.wrapperTableNameMode,
       )}
     >
-      <Table2 width={16} />
+      <Table2 width={16} className={styles.tableIcon} />
 
       <TooltipProvider>
         <TooltipRoot>

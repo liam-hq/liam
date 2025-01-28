@@ -18,6 +18,10 @@
   border-bottom-right-radius: var(--border-radius-md);
 }
 
+.tableIcon {
+  min-width: 16px;
+}
+
 .name {
   overflow: hidden;
   text-overflow: ellipsis;
