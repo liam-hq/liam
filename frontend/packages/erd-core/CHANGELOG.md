@@ -1,5 +1,13 @@
 # @liam-hq/erd-core
 
+## 0.0.21
+
+### Patch Changes
+
+- 9cba809: 💄 Add icons to the table detail component and update the header style.
+- Updated dependencies [9cba809]
+  - @liam-hq/ui@0.0.9
+
 ## 0.0.20
 
 ### Patch Changes

@@ -1,5 +1,12 @@
 # @liam-hq/db-structure
 
+## 0.0.12
+
+### Patch Changes
+
+- 70741a0: ✨ Add support for primary key constraints in tbls parser
+- 44975cc: ✨ Add support for default values in tbls parser and tests
+
 ## 0.0.11
 
 ### Patch Changes
