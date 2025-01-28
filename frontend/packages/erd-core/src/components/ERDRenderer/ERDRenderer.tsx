@@ -58,42 +58,44 @@ export const ERDRenderer: FC<Props> = ({
   )
 
   return (
-    <div className={styles.wrapper}>
+    <SidebarProvider
+      className={styles.wrapper}
+      open={open}
+      onOpenChange={handleChangeOpen}
+    >
       <CardinalityMarkers />
       <RelationshipEdgeParticleMarker />
       <ToastProvider>
         <AppBar />
-        <SidebarProvider open={open} onOpenChange={handleChangeOpen}>
-          <ReactFlowProvider>
-            <div className={styles.mainWrapper}>
-              <LeftPane />
-              <main className={styles.main}>
-                <div className={styles.triggerWrapper}>
-                  <SidebarTrigger />
-                </div>
-                <TableDetailDrawerRoot>
-                  {errorObjects.length > 0 && (
-                    <ErrorDisplay errors={errorObjects} />
-                  )}
-                  {errorObjects.length > 0 || (
-                    <>
-                      <ERDContent
-                        key={`${nodes.length}-${showMode}`}
-                        nodes={nodes}
-                        edges={edges}
-                      />
-                      <div className={styles.toolbarWrapper}>
-                        <Toolbar />
-                      </div>
-                      <TableDetailDrawer />
-                    </>
-                  )}
-                </TableDetailDrawerRoot>
-              </main>
-            </div>
-          </ReactFlowProvider>
-        </SidebarProvider>
+        <ReactFlowProvider>
+          <div className={styles.mainWrapper}>
+            <LeftPane />
+            <main className={styles.main}>
+              <div className={styles.triggerWrapper}>
+                <SidebarTrigger />
+              </div>
+              <TableDetailDrawerRoot>
+                {errorObjects.length > 0 && (
+                  <ErrorDisplay errors={errorObjects} />
+                )}
+                {errorObjects.length > 0 || (
+                  <>
+                    <ERDContent
+                      key={`${nodes.length}-${showMode}`}
+                      nodes={nodes}
+                      edges={edges}
+                    />
+                    <div className={styles.toolbarWrapper}>
+                      <Toolbar />
+                    </div>
+                    <TableDetailDrawer />
+                  </>
+                )}
+              </TableDetailDrawerRoot>
+            </main>
+          </div>
+        </ReactFlowProvider>
       </ToastProvider>
-    </div>
+    </SidebarProvider>
   )
 }

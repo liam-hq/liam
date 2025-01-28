@@ -3,10 +3,30 @@
   grid-template-columns: auto 1fr auto;
   align-items: center;
   min-height: var(--default-header-height);
-  padding: 0 var(--spacing-4);
+  padding: var(--spacing-2) var(--spacing-2) var(--spacing-2) var(--spacing-0);
   background-color: var(--global-muted-background);
   border-bottom: 1px solid var(--pane-border);
   z-index: var(--z-index-header);
+
+  @media (min-width: 768px) {
+    padding: 0 var(--spacing-4);
+  }
+}
+
+.menuButtonWrapper {
+  display: block;
+
+  @media (min-width: 768px) {
+    display: none;
+  }
+}
+
+.logoWrapper {
+  display: none;
+
+  @media (min-width: 768px) {
+    display: block;
+  }
 }
 
 .logo {
@@ -25,10 +45,14 @@
 }
 
 .rightSide {
-  display: grid;
-  grid-auto-flow: column;
-  gap: var(--spacing-4);
-  align-items: center;
+  display: none;
+
+  @media (min-width: 768px) {
+    display: grid;
+    grid-auto-flow: column;
+    gap: var(--spacing-4);
+    align-items: center;
+  }
 }
 
 .iconButtonGroup {
