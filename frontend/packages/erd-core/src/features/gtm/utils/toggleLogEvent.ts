@@ -1,10 +1,11 @@
 import { pushToDataLayer } from './pushToDataLayer'
-import type { CommonLogEvent } from './types'
 
-type ToggleLogEvent = CommonLogEvent & {
+type ToggleLogEvent = {
   element: string
   isShow: boolean
   tableId?: string
+  cliVer: string
+  appEnv: string
 }
 
 export const toggleLogEvent = (params: ToggleLogEvent) => {

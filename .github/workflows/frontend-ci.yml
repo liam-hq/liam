@@ -12,9 +12,6 @@ jobs:
   setup-job:
     runs-on: ubuntu-latest
     timeout-minutes: 3
-    permissions:
-      contents: read
-      pull-requests: read
     outputs:
       has-changes: ${{ steps.changes.outputs.has-changes }}
     steps:

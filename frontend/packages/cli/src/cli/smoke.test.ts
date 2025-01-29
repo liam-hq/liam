@@ -1,7 +1,6 @@
 import { exec } from 'node:child_process'
 import { promisify } from 'node:util'
 import { beforeAll, describe, expect, it } from 'vitest'
-import { blueBright } from 'yoctocolors'
 
 // NOTE: This CLI smoke test is a preliminary implementation, lacks refinement, and is relatively slow.
 // We should explore alternative approaches for testing.
@@ -60,16 +59,7 @@ describe('CLI Smoke Test', () => {
       ) {
         expect(stderr).toBe('')
       }
-
-      expect(stdout).toBe(`
-ERD has been generated successfully in the \`dist/\` directory.
-Note: You cannot open this file directly using \`file://\`.
-Please serve the \`dist/\` directory with an HTTP server and access it via \`http://\`.
-Example:
-    ${blueBright('$ npx http-server dist/')}
-
-`)
-
+      expect(stdout).toBe('')
       const { stdout: lsOutput } = await execAsync('ls ./dist')
       expect(lsOutput.trim().length).toBeGreaterThan(0)
     } catch (error) {

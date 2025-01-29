@@ -1,29 +1,22 @@
+.wrapper {
+  display: grid;
+  gap: var(--spacing-4);
+  padding: var(--spacing-4);
+}
+
 .header {
   display: grid;
   grid-auto-flow: column;
   align-items: center;
   justify-content: space-between;
-  padding: var(--spacing-2);
-  border-bottom: 1px solid var(--global-border);
-}
-
-.iconTitleContainer {
-  display: grid;
-  grid-auto-flow: column;
-  gap: var(--spacing-1);
-  align-items: center;
-  color: var(--overlay-70);
 }
 
 .heading {
   color: var(--global-foreground);
-  font-size: var(--font-size-2);
+  font-size: var(--font-size-3);
   font-style: normal;
+  font-weight: 400;
   line-height: normal;
-}
-
-.outerWrapper {
-  padding: var(--spacing-3);
 }
 
 .contentWrapper {

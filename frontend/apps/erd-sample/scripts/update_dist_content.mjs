@@ -11,12 +11,24 @@ const filePath = path.join(__dirname, '..', 'dist', 'index.html')
 
 // Content to insert into <head>
 const contentToInsertHead = `
+  <!-- Google Tag Manager -->
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','GTM-T4N2TJXW');</script>
+<!-- End Google Tag Manager -->
+
 <!-- Add meta tag to prevent search engines from indexing or following links -->
 <meta name="robots" content="noindex, nofollow, noarchive">
 `
 
 // Content to insert into <body>
 const contentToInsertBody = `
+  <!-- Google Tag Manager (noscript) -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-T4N2TJXW"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<!-- End Google Tag Manager (noscript) -->
 `
 
 // Read the file

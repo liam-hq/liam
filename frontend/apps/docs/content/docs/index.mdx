@@ -4,9 +4,8 @@ description: Liam ERD is a tool that effortlessly generates beautiful and easy-t
 ---
 
 import { Package, Globe } from "lucide-react";
-import { Tab, Tabs } from 'fumadocs-ui/components/tabs'; // For package-install code blocks
 
-![Liam logo](/images/liam_erd.png)
+![Liam logo](/images/default.png)
 
 Liam ERD is an open-source tool that instantly generates beautiful, interactive ER diagrams from your database. Whether you’re working on public or private repositories, Liam ERD helps you visualize complex schemas with ease.
 
@@ -18,30 +17,38 @@ Liam ERD is an open-source tool that instantly generates beautiful, interactive 
 - **High Performance**: Optimized for both small and large projects, easily handling 100+ tables.
 - **Fully Open-Source**: Contribute to the project and shape Liam ERD to fit your needs.
 
-## Supported Formats
+## Explore Diagrams
 
-Liam ERD supports a variety of schema formats. For a detailed and up-to-date list, check out [Supported Formats](/docs/parser/supported-formats).
+Curious about what Liam ERD can do? Visit https://liambx.com/erd/galaxy to browse a variety of example ER diagrams from real-world schemas.
+
+## Supported Schemas
+
+Legend:
+
+- ✅: Supported
+- ⛔: Not in progress
+- ⌛️: In progress
+
+| Technology                                  | Schema DSL Parsing | Support via database URL (PostgreSQL) |
+| ------------------------------------------- | ------------------ | ------------------------------------- |
+| [PostgreSQL](/docs/static-build/postgresql) | ✅                 | ✅                                    |
+| [Ruby on Rails](/docs/static-build/rails)   | ✅                 | ✅                                    |
+| [Prisma](/docs/static-build/prisma)         | ⛔                 | ✅                                    |
+| [Drizzle](/docs/static-build/drizzle)       | ⛔                 | ✅                                    |
+| MySQL                                       | ⛔                 | ⛔                                    |
+
+If there’s another database schema or ORM you’d love to see supported, please let us know in the [GitHub Discussions](https://github.com/liam-hq/liam/discussions/364).
 
 ## How to Get Started
 
 ### Public Project Setup
 
-Want a quick setup for a public repository?
-For example, if the schema file you want to explore is hosted at the following URL:
+Want a quick setup for a public repository? Just drop the URL of your schema file!
 
-```
-# A public repo's schema file
-https://github.com/docusealco/docuseal/blob/master/db/schema.rb
-```
+<input />
+<button>Generate</button>
 
-You can generate an ER diagram by inserting `liambx.com/erd/p/` into the URL:
-
-```
-https://liambx.com/erd/p/github.com/docusealco/docuseal/blob/master/db/schema.rb
-      👾^^^^^^^^^^^^^^^^^👾
-```
-
-For detailed instructions, check out [Web version](/docs/web).
+For detailed instructions, check out [URL-based access](/docs/url-based-access).
 
 ### Private Project Setup
 
@@ -53,7 +60,7 @@ npx @liam-hq/cli init
 
 Then follow the prompts to build a static version of your diagrams.
 
-For more info, see [CLI version](/docs/cli).
+For more info, see [Static Build](/docs/static-build).
 
 ## Need More?
 

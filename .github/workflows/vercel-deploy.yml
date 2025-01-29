@@ -1,5 +1,5 @@
-# This workflow deploys some `apps/*` apps.
-# For the `apps/erd-sample` and `apps/erd-web` app, see `.github/workflows/vercel-deploy-erd.yml`.
+# This workflow deploys all `apps/*` apps.
+# For the `apps/erd-sample` app, see `.github/workflows/vercel-deploy-erd-sample.yml`.
 name: Vercel Deployment
 
 on:
@@ -15,9 +15,6 @@ concurrency:
 jobs:
   setup-deployment:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      pull-requests: read
     outputs:
       environment: ${{ steps.environment.outputs.environment }}
       has-changes: ${{ steps.changes.outputs.src }}
@@ -36,6 +33,7 @@ jobs:
             src:
               - './.github/workflows/vercel-deploy.yml'
               - './frontend/apps/docs/**'
+              - './frontend/apps/erd-web/**'
 
   deploy:
     name: Deploy
@@ -48,12 +46,11 @@ jobs:
         apps:
           - name: docs
             vercel-project-id-key: VERCEL_PROJECT_ID_DOCS
+          - name: erd-web
+            vercel-project-id-key: VERCEL_PROJECT_ID_ERD_WEB
     environment:
       name: "${{ needs.setup-deployment.outputs.environment }} - ${{ matrix.apps.name }}"
       url: ${{ steps.deployment.outputs.deployment-url }}
-    permissions:
-      contents: read
-      deployments: write
     outputs:
       app-name: ${{ matrix.apps.name }}
       url: ${{ steps.deployment.outputs.deployment-url }}

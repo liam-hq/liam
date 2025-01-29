@@ -1,8 +1,7 @@
 .wrapper {
   border-radius: var(--border-radius-md);
   border: 1px solid var(--overlay-20);
-  min-width: 172px;
-  width: auto;
+  width: 172px;
   transition: border-color 300ms var(--default-timing-function), border-width
     300ms var(--default-timing-function);
   opacity: 1;

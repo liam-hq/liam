@@ -3,7 +3,7 @@ import type { Table } from '../../schema/index.js'
 import { aColumn, aDBStructure, aTable } from '../../schema/index.js'
 import { UnsupportedTokenError, processor } from './index.js'
 
-import { createParserTestCases } from '../__tests__/index.js'
+import { parserTestCases } from '../__tests__/index.js'
 
 describe(processor, () => {
   const userTable = (override?: Partial<Table>) =>
@@ -28,7 +28,6 @@ describe(processor, () => {
         }),
       },
     })
-  const parserTestCases = createParserTestCases(userTable)
 
   describe('should parse create_table correctly', () => {
     it('table comment', async () => {
@@ -189,7 +188,6 @@ describe(processor, () => {
     })
 
     it('index (unique: false)', async () => {
-      const indexName = 'index_users_on_id_and_email'
       const { value } = await processor(/* Ruby */ `
         create_table "users" do |t|
           t.string "email"
@@ -197,7 +195,7 @@ describe(processor, () => {
         end
       `)
 
-      expect(value).toEqual(parserTestCases['index (unique: false)'](indexName))
+      expect(value).toEqual(parserTestCases['index (unique: false)'])
     })
 
     it('index (unique: true)', async () => {
@@ -246,7 +244,6 @@ describe(processor, () => {
     })
 
     it('foreign key (one-to-one)', async () => {
-      const keyName = 'users_id_to_posts_user_id'
       const { value } = await processor(/* Ruby */ `
         create_table "posts" do |t|
           t.bigint "user_id", unique: true
@@ -256,7 +253,7 @@ describe(processor, () => {
       `)
 
       expect(value.relationships).toEqual(
-        parserTestCases['foreign key (one-to-one)'](keyName),
+        parserTestCases['foreign key (one-to-one)'],
       )
     })
 

@@ -1,3 +1,2 @@
 dist
 src/parser/schemarb/prism.wasm
-src/parser/tbls/schema.generated.ts

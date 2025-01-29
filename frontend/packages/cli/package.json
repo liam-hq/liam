@@ -1,21 +1,8 @@
 {
   "name": "@liam-hq/cli",
-  "description": "Command-line tool designed to generate a web application that displays ER diagrams. See https://liambx.com/docs/cli",
-  "keywords": [
-    "data-visualization",
-    "entity-relationship-diagram",
-    "er-diagram",
-    "erd"
-  ],
-  "homepage": "https://github.com/liam-hq/liam",
-  "bugs": "https://github.com/liam-hq/liam/issues",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/liam-hq/liam.git"
-  },
   "license": "Apache-2.0",
   "private": false,
-  "version": "0.3.0",
+  "version": "0.0.20",
   "type": "module",
   "publishConfig": {
     "access": "public"
@@ -24,10 +11,7 @@
     "liam": "./dist-cli/bin/cli.js"
   },
   "dependencies": {
-    "@prisma/internals": "6.2.1",
     "commander": "12.1.0",
-    "glob": "11.0.1",
-    "inquirer": "12.3.2",
     "react": "18.3.1",
     "react-dom": "18",
     "valibot": "^1.0.0-beta.5",
@@ -39,7 +23,6 @@
     "@liam-hq/erd-core": "workspace:*",
     "@rollup/plugin-node-resolve": "15.3.0",
     "@rollup/plugin-typescript": "12.1.1",
-    "@types/glob": "8.1.0",
     "@types/node": "22.9.0",
     "@types/react": "18",
     "@types/react-dom": "18",
@@ -59,7 +42,7 @@
     "command:build": "node ./dist-cli/bin/cli.js erd build --input fixtures/input.schema.rb --format schemarb",
     "cp:prism": "cp ../db-structure/node_modules/@ruby/prism/src/prism.wasm ./dist-cli/bin/prism.wasm",
     "dev": "pnpm command:build && cp dist/schema.json public/ && pnpm run '/^dev:.*/'",
-    "dev:app": "vite --port 5173",
+    "dev:app": "vite",
     "dev:css": "tcm src --watch",
     "fmt": "pnpm run '/^fmt:.*/'",
     "fmt:biome": "biome check --write --unsafe .",

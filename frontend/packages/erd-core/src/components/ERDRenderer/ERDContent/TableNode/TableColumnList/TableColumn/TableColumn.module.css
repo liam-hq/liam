@@ -33,7 +33,12 @@
   display: inline-flex;
   justify-content: space-between;
   align-items: center;
-  gap: var(--spacing-3);
+}
+
+.columnName {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .columnType {

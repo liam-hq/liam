@@ -6,7 +6,7 @@
 
 .heading {
   color: var(--global-foreground);
-  font-size: var(--font-size-2);
+  font-size: var(--font-size-3);
   font-style: normal;
   font-weight: 400;
   line-height: normal;
@@ -16,6 +16,7 @@
   color: var(--color-white-alpha-70);
   font-size: var(--font-size-2);
   font-style: normal;
+  font-weight: 400;
   line-height: 150%;
 }
 

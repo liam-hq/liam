@@ -7,7 +7,7 @@ import {
   useDBStructureStore,
 } from '@/stores'
 import type { Table } from '@liam-hq/db-structure'
-import { GotoIcon, IconButton, Waypoints as WaypointsIcon } from '@liam-hq/ui'
+import { GotoIcon, IconButton } from '@liam-hq/ui'
 import { ReactFlowProvider, useReactFlow } from '@xyflow/react'
 import { type FC, useCallback } from 'react'
 import { ERDContent } from '../../../ERDContent'
@@ -36,41 +36,35 @@ export const RelatedTables: FC<Props> = ({ table }) => {
 
     replaceHiddenNodeIds(hiddenNodeIds)
     updateActiveTableName(undefined)
-    openRelatedTablesLogEvent({
-      tableId: table.name,
-      platform: version.displayedOn,
-      gitHash: version.gitHash,
-      ver: version.version,
-      appEnv: version.envName,
-    })
+    version.displayedOn === 'cli' &&
+      openRelatedTablesLogEvent({
+        tableId: table.name,
+        cliVer: version.version,
+        appEnv: version.envName,
+      })
   }, [nodes, getNodes, table.name, version])
 
   return (
-    <div>
+    <div className={styles.wrapper}>
       <div className={styles.header}>
-        <div className={styles.iconTitleContainer}>
-          <WaypointsIcon width={12} />
-          <h2 className={styles.heading}>Related tables</h2>
-        </div>
+        <h2 className={styles.heading}>Related tables</h2>
         <IconButton
           icon={<GotoIcon />}
           tooltipContent="Open in main area"
           onClick={handleClick}
         />
       </div>
-      <div className={styles.outerWrapper}>
-        <div className={styles.contentWrapper}>
-          <ReactFlowProvider>
-            <ERDContent
-              nodes={nodes}
-              edges={edges}
-              enabledFeatures={{
-                fitViewWhenActiveTableChange: false,
-                initialFitViewToActiveTable: false,
-              }}
-            />
-          </ReactFlowProvider>
-        </div>
+      <div className={styles.contentWrapper}>
+        <ReactFlowProvider>
+          <ERDContent
+            nodes={nodes}
+            edges={edges}
+            enabledFeatures={{
+              fitViewWhenActiveTableChange: false,
+              initialFitViewToActiveTable: false,
+            }}
+          />
+        </ReactFlowProvider>
       </div>
     </div>
   )

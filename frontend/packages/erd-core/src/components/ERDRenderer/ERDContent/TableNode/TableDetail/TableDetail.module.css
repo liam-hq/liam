@@ -18,20 +18,13 @@
   justify-content: space-between;
   padding: var(--spacing-2);
   border-bottom: 1px solid var(--global-border);
-  color: var(--overlay-70);
-}
-
-.iconTitleContainer {
-  display: grid;
-  grid-auto-flow: column;
-  gap: var(--spacing-1);
-  align-items: center;
 }
 
 .heading {
   color: var(--global-foreground);
   font-size: var(--font-size-2);
   font-style: normal;
+  font-weight: 500;
   line-height: normal;
 }
 

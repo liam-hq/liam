@@ -74,14 +74,13 @@ export const ERDContentInner: FC<Props> = ({
   const handleNodeClick = useCallback(
     (tableId: string) => {
       updateActiveTableName(tableId)
-      selectTableLogEvent({
-        ref: 'mainArea',
-        tableId,
-        platform: version.displayedOn,
-        gitHash: version.gitHash,
-        ver: version.version,
-        appEnv: version.envName,
-      })
+      version.displayedOn === 'cli' &&
+        selectTableLogEvent({
+          ref: 'mainArea',
+          tableId,
+          cliVer: version.version,
+          appEnv: version.envName,
+        })
     },
     [version],
   )
@@ -123,14 +122,13 @@ export const ERDContentInner: FC<Props> = ({
       const operationId = `id_${new Date().getTime()}`
       for (const node of nodes) {
         const tableId = node.id
-        repositionTableLogEvent({
-          tableId,
-          operationId,
-          platform: version.displayedOn,
-          gitHash: version.gitHash,
-          ver: version.version,
-          appEnv: version.envName,
-        })
+        version.displayedOn === 'cli' &&
+          repositionTableLogEvent({
+            tableId,
+            operationId,
+            cliVer: version.version,
+            appEnv: version.envName,
+          })
       }
     },
     [version],
@@ -161,7 +159,6 @@ export const ERDContentInner: FC<Props> = ({
         panOnDrag={panOnDrag}
         selectionOnDrag
         deleteKeyCode={null} // Turn off because it does not want to be deleted
-        attributionPosition="bottom-left"
       >
         <Background
           color="var(--color-gray-600)"

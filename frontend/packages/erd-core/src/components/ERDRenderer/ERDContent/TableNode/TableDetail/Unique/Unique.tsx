@@ -10,12 +10,10 @@ type Props = {
 export const Unique: FC<Props> = ({ columns }) => {
   return (
     <div className={styles.wrapper}>
-      <div className={styles.header}>
-        <div className={styles.iconTitleContainer}>
-          <Fingerprint width={12} />
-          <h2 className={styles.heading}>Unique</h2>
-        </div>
-      </div>
+      <h2 className={styles.heading}>
+        <Fingerprint className={styles.icon} />
+        <span>Unique</span>
+      </h2>
       <ul className={styles.list}>
         {Object.entries(columns).map(([key, column]) => {
           if (!column.unique) return null

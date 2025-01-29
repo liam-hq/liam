@@ -14,14 +14,6 @@ describe('detectFormat', () => {
     expect(detectFormat('path/to/file.rb')).toBe('schemarb')
   })
 
-  it('should return "prisma" for schema.prisma', () => {
-    expect(detectFormat('path/to/schema.prisma')).toBe('prisma')
-  })
-
-  it('should return "prisma" for file with .prisma extension', () => {
-    expect(detectFormat('path/to/file.prisma')).toBe('prisma')
-  })
-
   it('should return "postgres" for file with .sql extension', () => {
     expect(detectFormat('path/to/file.sql')).toBe('postgres')
   })
@@ -36,9 +28,5 @@ describe('detectFormat', () => {
 
   it('should return undefined for path without file name', () => {
     expect(detectFormat('path/to/')).toBeUndefined()
-  })
-
-  it('should return "tbls" for schema.json', () => {
-    expect(detectFormat('path/to/schema.json')).toBe('tbls')
   })
 })

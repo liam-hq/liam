@@ -22,8 +22,7 @@
       "@/*": [
         "./*",
         "../../packages/erd-core/src/*",
-        "../../packages/db-structure/src/*",
-        "../../packages/ui/src/*"
+        "../../packages/db-structure/src/*"
       ]
     }
   },

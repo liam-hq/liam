@@ -25,14 +25,13 @@ export async function runPreprocess(
   format: SupportedFormat,
 ): Promise<Output> {
   const input = await getInputContent(inputPath)
-  const result = v.safeParse(supportedFormatSchema, format)
-  if (!result.success) {
-    const errorMessage = result.issues.map((issue) => issue.message).join('\n')
+
+  if (!v.safeParse(supportedFormatSchema, format).success) {
     return {
       outputFilePath: null,
       errors: [
         new ArgumentError(
-          `--format is missing, invalid, or specifies an unsupported format. Please provide a valid format.\n${errorMessage}`,
+          '--format is missing, invalid, or specifies an unsupported format. Please provide a valid format (e.g., "schemarb" or "postgres").',
         ),
       ],
     }
@@ -45,7 +44,7 @@ export async function runPreprocess(
       errors: errors.map(
         (err) =>
           new WarningProcessingError(
-            `Error during parsing schema file: ${err.message}`,
+            `Error during parcing schema file: ${err.message}`,
           ),
       ),
     }

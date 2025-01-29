@@ -23,8 +23,6 @@ jobs:
     timeout-minutes: 10
     env:
       LICENSE_REPORT: docs/packages-license.md
-    permissions:
-      contents: write
     steps:
       - name: Check if running in a fork
         id: fork-check

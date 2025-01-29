@@ -1,17 +1,5 @@
 # @liam-hq/ui
 
-## 0.0.9
-
-### Patch Changes
-
-- 9cba809: 💄 Add icons to the table detail component and update the header style.
-
-## 0.0.8
-
-### Patch Changes
-
-- 46cd9e6: 🐛 Fix CSS import issue and improve font handling in `erd-web`
-
 ## 0.0.7
 
 ### Patch Changes

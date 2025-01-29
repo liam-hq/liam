@@ -135,6 +135,26 @@ exports[`parse > should parse schema.rb to JSON correctly 1`] = `
       "primaryTableName": "companies",
       "updateConstraint": "RESTRICT",
     },
+    "fk_invoices_company_id": {
+      "cardinality": "ONE_TO_MANY",
+      "deleteConstraint": "CASCADE",
+      "foreignColumnName": "company_id",
+      "foreignTableName": "invoices",
+      "name": "fk_invoices_company_id",
+      "primaryColumnName": "id",
+      "primaryTableName": "companies",
+      "updateConstraint": "RESTRICT",
+    },
+    "fk_invoices_project_id": {
+      "cardinality": "ONE_TO_MANY",
+      "deleteConstraint": "CASCADE",
+      "foreignColumnName": "project_id",
+      "foreignTableName": "invoices",
+      "name": "fk_invoices_project_id",
+      "primaryColumnName": "id",
+      "primaryTableName": "projects",
+      "updateConstraint": "RESTRICT",
+    },
     "fk_project_assignments_project_id": {
       "cardinality": "ONE_TO_MANY",
       "deleteConstraint": "CASCADE",
@@ -251,7 +271,7 @@ exports[`parse > should parse schema.rb to JSON correctly 1`] = `
       "columns": {
         "content": {
           "check": null,
-          "comment": "The content of the comment.",
+          "comment": null,
           "default": null,
           "name": "content",
           "notNull": true,
@@ -261,7 +281,7 @@ exports[`parse > should parse schema.rb to JSON correctly 1`] = `
         },
         "created_at": {
           "check": null,
-          "comment": "The timestamp when the comment was created.",
+          "comment": null,
           "default": null,
           "name": "created_at",
           "notNull": true,
@@ -281,7 +301,7 @@ exports[`parse > should parse schema.rb to JSON correctly 1`] = `
         },
         "task_id": {
           "check": null,
-          "comment": "Foreign key linking the comment to a task.",
+          "comment": null,
           "default": null,
           "name": "task_id",
           "notNull": true,
@@ -291,7 +311,7 @@ exports[`parse > should parse schema.rb to JSON correctly 1`] = `
         },
         "user_id": {
           "check": null,
-          "comment": "Foreign key linking the comment to the user who wrote it.",
+          "comment": null,
           "default": null,
           "name": "user_id",
           "notNull": true,
@@ -300,30 +320,15 @@ exports[`parse > should parse schema.rb to JSON correctly 1`] = `
           "unique": false,
         },
       },
-      "comment": "Stores comments on tasks, enabling discussions or updates.",
-      "indices": {
-        "index_comments_on_task_id": {
-          "columns": [
-            "task_id",
-          ],
-          "name": "index_comments_on_task_id",
-          "unique": false,
-        },
-        "index_comments_on_user_id": {
-          "columns": [
-            "user_id",
-          ],
-          "name": "index_comments_on_user_id",
-          "unique": false,
-        },
-      },
+      "comment": "store task comments",
+      "indices": {},
       "name": "comments",
     },
     "companies": {
       "columns": {
         "address": {
           "check": null,
-          "comment": "The registered address of the company.",
+          "comment": null,
           "default": null,
           "name": "address",
           "notNull": true,
@@ -343,7 +348,7 @@ exports[`parse > should parse schema.rb to JSON correctly 1`] = `
         },
         "name": {
           "check": null,
-          "comment": "The name of the company.",
+          "comment": null,
           "default": null,
           "name": "name",
           "notNull": true,
@@ -352,7 +357,7 @@ exports[`parse > should parse schema.rb to JSON correctly 1`] = `
           "unique": false,
         },
       },
-      "comment": "Represents organizations using the system. Each company is a top-level entity that owns departments, users, and projects.",
+      "comment": "store companies",
       "indices": {},
       "name": "companies",
     },
@@ -360,7 +365,7 @@ exports[`parse > should parse schema.rb to JSON correctly 1`] = `
       "columns": {
         "company_id": {
           "check": null,
-          "comment": "Foreign key linking the department to a company.",
+          "comment": null,
           "default": null,
           "name": "company_id",
           "notNull": true,
@@ -380,7 +385,7 @@ exports[`parse > should parse schema.rb to JSON correctly 1`] = `
         },
         "name": {
           "check": null,
-          "comment": "The name of the department.",
+          "comment": null,
           "default": null,
           "name": "name",
           "notNull": true,
@@ -389,17 +394,76 @@ exports[`parse > should parse schema.rb to JSON correctly 1`] = `
           "unique": false,
         },
       },
-      "comment": "Represents departments within a company, organizing users into functional groups.",
-      "indices": {
-        "index_departments_on_company_id": {
-          "columns": [
-            "company_id",
-          ],
-          "name": "index_departments_on_company_id",
+      "comment": "store departments",
+      "indices": {},
+      "name": "departments",
+    },
+    "invoices": {
+      "columns": {
+        "amount": {
+          "check": null,
+          "comment": null,
+          "default": null,
+          "name": "amount",
+          "notNull": true,
+          "primary": false,
+          "type": "decimal",
+          "unique": false,
+        },
+        "company_id": {
+          "check": null,
+          "comment": null,
+          "default": null,
+          "name": "company_id",
+          "notNull": true,
+          "primary": false,
+          "type": "uuid",
+          "unique": false,
+        },
+        "due_date": {
+          "check": null,
+          "comment": null,
+          "default": null,
+          "name": "due_date",
+          "notNull": false,
+          "primary": false,
+          "type": "timestamp",
+          "unique": false,
+        },
+        "id": {
+          "check": null,
+          "comment": null,
+          "default": null,
+          "name": "id",
+          "notNull": true,
+          "primary": true,
+          "type": "uuid",
+          "unique": true,
+        },
+        "invoice_date": {
+          "check": null,
+          "comment": null,
+          "default": null,
+          "name": "invoice_date",
+          "notNull": true,
+          "primary": false,
+          "type": "timestamp",
+          "unique": false,
+        },
+        "project_id": {
+          "check": null,
+          "comment": null,
+          "default": null,
+          "name": "project_id",
+          "notNull": true,
+          "primary": false,
+          "type": "uuid",
           "unique": false,
         },
       },
-      "name": "departments",
+      "comment": "store invoices",
+      "indices": {},
+      "name": "invoices",
     },
     "project_assignments": {
       "columns": {
@@ -415,7 +479,7 @@ exports[`parse > should parse schema.rb to JSON correctly 1`] = `
         },
         "project_id": {
           "check": null,
-          "comment": "Foreign key linking to the project.",
+          "comment": null,
           "default": null,
           "name": "project_id",
           "notNull": true,
@@ -425,7 +489,7 @@ exports[`parse > should parse schema.rb to JSON correctly 1`] = `
         },
         "user_id": {
           "check": null,
-          "comment": "Foreign key linking to the user.",
+          "comment": null,
           "default": null,
           "name": "user_id",
           "notNull": true,
@@ -434,24 +498,15 @@ exports[`parse > should parse schema.rb to JSON correctly 1`] = `
           "unique": false,
         },
       },
-      "comment": "Associates users with projects they are assigned to work on.",
-      "indices": {
-        "index_project_assignments_on_user_id_and_project_id": {
-          "columns": [
-            "user_id",
-            "project_id",
-          ],
-          "name": "index_project_assignments_on_user_id_and_project_id",
-          "unique": true,
-        },
-      },
+      "comment": "join table for users and projects",
+      "indices": {},
       "name": "project_assignments",
     },
     "projects": {
       "columns": {
         "company_id": {
           "check": null,
-          "comment": "Foreign key linking the project to a company.",
+          "comment": null,
           "default": null,
           "name": "company_id",
           "notNull": true,
@@ -461,7 +516,7 @@ exports[`parse > should parse schema.rb to JSON correctly 1`] = `
         },
         "description": {
           "check": null,
-          "comment": "A detailed description of the project.",
+          "comment": null,
           "default": null,
           "name": "description",
           "notNull": false,
@@ -481,7 +536,7 @@ exports[`parse > should parse schema.rb to JSON correctly 1`] = `
         },
         "name": {
           "check": null,
-          "comment": "The name of the project.",
+          "comment": null,
           "default": null,
           "name": "name",
           "notNull": true,
@@ -490,23 +545,15 @@ exports[`parse > should parse schema.rb to JSON correctly 1`] = `
           "unique": false,
         },
       },
-      "comment": "Represents projects managed within a company. Projects are linked to tasks and users.",
-      "indices": {
-        "index_projects_on_company_id": {
-          "columns": [
-            "company_id",
-          ],
-          "name": "index_projects_on_company_id",
-          "unique": false,
-        },
-      },
+      "comment": "store projects",
+      "indices": {},
       "name": "projects",
     },
     "roles": {
       "columns": {
         "description": {
           "check": null,
-          "comment": "A brief description of the role's purpose or permissions.",
+          "comment": null,
           "default": null,
           "name": "description",
           "notNull": false,
@@ -526,7 +573,7 @@ exports[`parse > should parse schema.rb to JSON correctly 1`] = `
         },
         "name": {
           "check": null,
-          "comment": "The name of the role.",
+          "comment": null,
           "default": null,
           "name": "name",
           "notNull": true,
@@ -535,7 +582,7 @@ exports[`parse > should parse schema.rb to JSON correctly 1`] = `
           "unique": false,
         },
       },
-      "comment": "Defines roles that can be assigned to users, such as 'Admin' or 'Manager'.",
+      "comment": "store roles",
       "indices": {},
       "name": "roles",
     },
@@ -543,7 +590,7 @@ exports[`parse > should parse schema.rb to JSON correctly 1`] = `
       "columns": {
         "assigned_user_id": {
           "check": null,
-          "comment": "Foreign key linking the task to the assigned user.",
+          "comment": null,
           "default": null,
           "name": "assigned_user_id",
           "notNull": true,
@@ -553,7 +600,7 @@ exports[`parse > should parse schema.rb to JSON correctly 1`] = `
         },
         "description": {
           "check": null,
-          "comment": "A detailed description of the task.",
+          "comment": null,
           "default": null,
           "name": "description",
           "notNull": false,
@@ -563,7 +610,7 @@ exports[`parse > should parse schema.rb to JSON correctly 1`] = `
         },
         "due_date": {
           "check": null,
-          "comment": "The deadline for completing the task.",
+          "comment": null,
           "default": null,
           "name": "due_date",
           "notNull": false,
@@ -583,7 +630,7 @@ exports[`parse > should parse schema.rb to JSON correctly 1`] = `
         },
         "project_id": {
           "check": null,
-          "comment": "Foreign key linking the task to a project.",
+          "comment": null,
           "default": null,
           "name": "project_id",
           "notNull": true,
@@ -593,7 +640,7 @@ exports[`parse > should parse schema.rb to JSON correctly 1`] = `
         },
         "status": {
           "check": null,
-          "comment": "The current status of the task (e.g., 0: pending, 1: in progress, 2: completed).",
+          "comment": null,
           "default": 0,
           "name": "status",
           "notNull": false,
@@ -603,7 +650,7 @@ exports[`parse > should parse schema.rb to JSON correctly 1`] = `
         },
         "title": {
           "check": null,
-          "comment": "The title of the task.",
+          "comment": null,
           "default": null,
           "name": "title",
           "notNull": true,
@@ -612,30 +659,15 @@ exports[`parse > should parse schema.rb to JSON correctly 1`] = `
           "unique": false,
         },
       },
-      "comment": "Represents tasks within a project, assigned to users with deadlines and statuses.",
-      "indices": {
-        "index_tasks_on_assigned_user_id": {
-          "columns": [
-            "assigned_user_id",
-          ],
-          "name": "index_tasks_on_assigned_user_id",
-          "unique": false,
-        },
-        "index_tasks_on_project_id": {
-          "columns": [
-            "project_id",
-          ],
-          "name": "index_tasks_on_project_id",
-          "unique": false,
-        },
-      },
+      "comment": "store tasks",
+      "indices": {},
       "name": "tasks",
     },
     "timesheets": {
       "columns": {
         "duration_minutes": {
           "check": null,
-          "comment": "The total duration of work in minutes.",
+          "comment": null,
           "default": null,
           "name": "duration_minutes",
           "notNull": true,
@@ -645,7 +677,7 @@ exports[`parse > should parse schema.rb to JSON correctly 1`] = `
         },
         "end_time": {
           "check": null,
-          "comment": "The timestamp when the user stopped working on the task.",
+          "comment": null,
           "default": null,
           "name": "end_time",
           "notNull": false,
@@ -665,7 +697,7 @@ exports[`parse > should parse schema.rb to JSON correctly 1`] = `
         },
         "start_time": {
           "check": null,
-          "comment": "The timestamp when the user started working on the task.",
+          "comment": null,
           "default": null,
           "name": "start_time",
           "notNull": true,
@@ -675,7 +707,7 @@ exports[`parse > should parse schema.rb to JSON correctly 1`] = `
         },
         "task_id": {
           "check": null,
-          "comment": "Foreign key linking the timesheet to a task.",
+          "comment": null,
           "default": null,
           "name": "task_id",
           "notNull": true,
@@ -685,7 +717,7 @@ exports[`parse > should parse schema.rb to JSON correctly 1`] = `
         },
         "user_id": {
           "check": null,
-          "comment": "Foreign key linking the timesheet to a user.",
+          "comment": null,
           "default": null,
           "name": "user_id",
           "notNull": true,
@@ -694,23 +726,8 @@ exports[`parse > should parse schema.rb to JSON correctly 1`] = `
           "unique": false,
         },
       },
-      "comment": "Tracks time spent by users on tasks for reporting or billing purposes.",
-      "indices": {
-        "index_timesheets_on_task_id": {
-          "columns": [
-            "task_id",
-          ],
-          "name": "index_timesheets_on_task_id",
-          "unique": false,
-        },
-        "index_timesheets_on_user_id": {
-          "columns": [
-            "user_id",
-          ],
-          "name": "index_timesheets_on_user_id",
-          "unique": false,
-        },
-      },
+      "comment": "store timesheet records",
+      "indices": {},
       "name": "timesheets",
     },
     "user_roles": {
@@ -727,7 +744,7 @@ exports[`parse > should parse schema.rb to JSON correctly 1`] = `
         },
         "role_id": {
           "check": null,
-          "comment": "Foreign key linking to the role.",
+          "comment": null,
           "default": null,
           "name": "role_id",
           "notNull": true,
@@ -737,7 +754,7 @@ exports[`parse > should parse schema.rb to JSON correctly 1`] = `
         },
         "user_id": {
           "check": null,
-          "comment": "Foreign key linking to the user.",
+          "comment": null,
           "default": null,
           "name": "user_id",
           "notNull": true,
@@ -746,34 +763,25 @@ exports[`parse > should parse schema.rb to JSON correctly 1`] = `
           "unique": false,
         },
       },
-      "comment": "Associates users with roles to define their permissions within the company.",
-      "indices": {
-        "index_user_roles_on_user_id_and_role_id": {
-          "columns": [
-            "user_id",
-            "role_id",
-          ],
-          "name": "index_user_roles_on_user_id_and_role_id",
-          "unique": true,
-        },
-      },
+      "comment": "join table for users and roles",
+      "indices": {},
       "name": "user_roles",
     },
     "users": {
       "columns": {
         "age": {
           "check": null,
-          "comment": "The user's age.",
+          "comment": null,
           "default": 30,
           "name": "age",
           "notNull": false,
           "primary": false,
-          "type": "integer",
+          "type": "varchar",
           "unique": false,
         },
         "company_id": {
           "check": null,
-          "comment": "Foreign key linking the user to a company.",
+          "comment": null,
           "default": null,
           "name": "company_id",
           "notNull": true,
@@ -783,7 +791,7 @@ exports[`parse > should parse schema.rb to JSON correctly 1`] = `
         },
         "created_at": {
           "check": null,
-          "comment": "The timestamp when the user was created.",
+          "comment": null,
           "default": null,
           "name": "created_at",
           "notNull": true,
@@ -793,7 +801,7 @@ exports[`parse > should parse schema.rb to JSON correctly 1`] = `
         },
         "department_id": {
           "check": null,
-          "comment": "Foreign key linking the user to a department.",
+          "comment": null,
           "default": null,
           "name": "department_id",
           "notNull": true,
@@ -813,17 +821,17 @@ exports[`parse > should parse schema.rb to JSON correctly 1`] = `
         },
         "is_deleted": {
           "check": null,
-          "comment": "Indicates whether the user is deleted (soft delete).",
+          "comment": null,
           "default": false,
           "name": "is_deleted",
           "notNull": false,
           "primary": false,
-          "type": "boolean",
+          "type": "varchar",
           "unique": false,
         },
         "name": {
           "check": null,
-          "comment": "The user's full name.",
+          "comment": null,
           "default": "new user",
           "name": "name",
           "notNull": false,
@@ -833,7 +841,7 @@ exports[`parse > should parse schema.rb to JSON correctly 1`] = `
         },
         "user_name": {
           "check": null,
-          "comment": "A unique identifier or login name for the user.",
+          "comment": null,
           "default": null,
           "name": "user_name",
           "notNull": true,
@@ -842,23 +850,8 @@ exports[`parse > should parse schema.rb to JSON correctly 1`] = `
           "unique": false,
         },
       },
-      "comment": "Represents employees or members of a company, who are assigned roles and tasks.",
-      "indices": {
-        "index_users_on_company_id": {
-          "columns": [
-            "company_id",
-          ],
-          "name": "index_users_on_company_id",
-          "unique": false,
-        },
-        "index_users_on_department_id": {
-          "columns": [
-            "department_id",
-          ],
-          "name": "index_users_on_department_id",
-          "unique": false,
-        },
-      },
+      "comment": "store users",
+      "indices": {},
       "name": "users",
     },
   },

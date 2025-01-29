@@ -1,27 +1,22 @@
 {
   "name": "@liam-hq/db-structure",
   "private": true,
-  "version": "0.0.12",
+  "version": "0.0.5",
   "type": "module",
   "exports": {
     ".": "./dist/index.js",
     "./parser": "./dist/parser.js"
   },
   "dependencies": {
-    "@prisma/internals": "6.2.1",
     "@ruby/prism": "1.2.0",
     "neverthrow": "8.1.1",
     "pg-query-emscripten": "5.1.0",
-    "valibot": "^1.0.0-beta.5",
-    "zod": "3.24.1"
+    "valibot": "^1.0.0-beta.5"
   },
   "devDependencies": {
     "@biomejs/biome": "1.9.3",
     "@liam-hq/configs": "workspace:*",
     "@pgsql/types": "15.0.2",
-    "@prisma/generator-helper": "6.2.1",
-    "json-refs": "3.0.15",
-    "json-schema-to-zod": "2.6.0",
     "typescript": "5",
     "vitest": "2.1.4"
   },
@@ -33,9 +28,7 @@
     "lint": "pnpm run '/^lint:.*/'",
     "lint:biome": "biome check .",
     "lint:tsc": "tsc --noEmit",
-    "postinstall": "pnpm run '/^postinstall:.*/'",
-    "postinstall:cp-prism": "cp node_modules/@ruby/prism/src/prism.wasm src/parser/schemarb/prism.wasm",
-    "postinstall:gen-tbls-schema": "node scripts/tblsJsonSchemaToZod.mjs",
+    "postinstall": "cp node_modules/@ruby/prism/src/prism.wasm src/parser/schemarb/prism.wasm",
     "test": "vitest --watch=false"
   },
   "types": "dist/index.d.ts"

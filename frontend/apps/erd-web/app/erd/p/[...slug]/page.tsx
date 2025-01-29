@@ -1,3 +1,4 @@
+// biome-ignore lint/correctness/noNodejsModules: Required for the server component to read the wasm file
 import path from 'node:path'
 import type { PageProps } from '@/app/types'
 import {
@@ -8,8 +9,6 @@ import {
   supportedFormatSchema,
 } from '@liam-hq/db-structure/parser'
 import * as Sentry from '@sentry/nextjs'
-import { load } from 'cheerio'
-import type { Metadata } from 'next'
 import { cookies } from 'next/headers'
 import { notFound } from 'next/navigation'
 import * as v from 'valibot'
@@ -38,115 +37,28 @@ const resolveContentUrl = (url: string): string | undefined => {
   }
 }
 
-export async function generateMetadata({
-  params,
-}: PageProps): Promise<Metadata> {
-  const parsedParams = v.safeParse(paramsSchema, await params)
-  if (!parsedParams.success) return notFound()
-
-  const joinedPath = parsedParams.output.slug.join('/')
-
-  const projectUrl = `https://${joinedPath}`
-
-  const res = await fetch(projectUrl).catch(() => null)
-
-  const projectName = await (async () => {
-    if (res?.ok) {
-      const html = await res.text()
-      const $ = load(html)
-      const ogTitle = $('meta[property="og:title"]').attr('content')
-      const htmlTitle = $('title').text()
-      return ogTitle || htmlTitle || joinedPath
-    }
-    return joinedPath
-  })()
-
-  const metaTitle = `${projectName} - Liam ERD`
-  const metaDescription =
-    'Generate ER diagrams effortlessly by entering a schema file URL. Ideal for visualizing, reviewing, and documenting database structures.'
-
-  const imageUrl = '/assets/liam_erd.png'
-
-  return {
-    title: metaTitle,
-    description: metaDescription,
-    openGraph: {
-      url: `https://liambx.com/erd/p/${joinedPath}`,
-      images: imageUrl,
-    },
-  }
-}
-
 export default async function Page({
   params,
   searchParams: _searchParams,
 }: PageProps) {
   const parsedParams = v.safeParse(paramsSchema, await params)
-  if (!parsedParams.success) notFound()
+  if (!parsedParams.success) {
+    notFound()
+  }
 
   const joinedPath = parsedParams.output.slug.join('/')
+  if (!joinedPath) {
+    notFound()
+  }
 
   const url = `https://${joinedPath}`
-
-  const blankDbStructure = { tables: {}, relationships: {} }
-
   const contentUrl = resolveContentUrl(url)
-  if (!contentUrl) {
-    return (
-      <ERDViewer
-        dbStructure={blankDbStructure}
-        defaultSidebarOpen={false}
-        errorObjects={[{ name: 'NetworkError', message: 'Invalid URL' }]}
-      />
-    )
-  }
-  console.warn(`Fetching content from ${contentUrl}`)
-  const networkErrorObjects: {
-    name: 'NetworkError'
-    message: string
-  }[] = []
-  const pleaseCheck = `Please check the URL ${url} and try again`
-  const res = await fetch(contentUrl, { cache: 'no-store' }).catch((e) => {
-    if (e instanceof Error) {
-      networkErrorObjects.push({
-        name: 'NetworkError',
-        message: `${e.name}: ${e.message}. ${pleaseCheck}.`,
-      })
-    } else {
-      networkErrorObjects.push({
-        name: 'NetworkError',
-        message: `Unknown error. ${pleaseCheck}.`,
-      })
-    }
+  if (!contentUrl) notFound()
+
+  const res = await fetch(contentUrl, { cache: 'no-store' }).catch(() => {
+    notFound()
   })
-  if (!res && networkErrorObjects.length === 0)
-    networkErrorObjects.push({
-      name: 'NetworkError',
-      message: `Unknown error. ${pleaseCheck}.`,
-    })
-  if (!res || networkErrorObjects.length > 0) {
-    return (
-      <ERDViewer
-        dbStructure={blankDbStructure}
-        defaultSidebarOpen={false}
-        errorObjects={networkErrorObjects}
-      />
-    )
-  }
-  if (!res.ok) {
-    return (
-      <ERDViewer
-        dbStructure={blankDbStructure}
-        defaultSidebarOpen={false}
-        errorObjects={[
-          {
-            name: 'NetworkError',
-            message: `HTTP status is ${res.status}: ${res.statusText}. ${pleaseCheck}.`,
-          },
-        ]}
-      />
-    )
-  }
+  if (!res.ok) notFound()
 
   const input = await res.text()
 
@@ -161,30 +73,19 @@ export default async function Page({
     format = detectFormat(contentUrl)
   }
   if (format === undefined) {
-    // Strictly speaking, this is not always a network error, but the error name is temporarily set as "NetworkError" for display purposes.
-    // TODO: Update the error name to something more appropriate.
-    return (
-      <ERDViewer
-        dbStructure={blankDbStructure}
-        defaultSidebarOpen={false}
-        errorObjects={[
-          {
-            name: 'NetworkError',
-            message: 'We could not detect the format of the file',
-          },
-        ]}
-      />
-    )
+    // TODO: Show error message in the UI
+    notFound()
   }
 
   const { value: dbStructure, errors } = await parse(input, format)
-  for (const error of errors) {
-    Sentry.captureException(error)
+  // TODO: Show error message in the UI
+  if (errors.length > 0) {
+    for (const error of errors) {
+      Sentry.captureException(error)
+      console.error(error)
+    }
   }
-  const errorObjects = errors.map((error) => ({
-    name: error.name,
-    message: error.message,
-  }))
+
   const cookieStore = await cookies()
   const defaultSidebarOpen = cookieStore.get('sidebar:state')?.value === 'true'
 
@@ -192,7 +93,6 @@ export default async function Page({
     <ERDViewer
       dbStructure={dbStructure}
       defaultSidebarOpen={defaultSidebarOpen}
-      errorObjects={errorObjects}
     />
   )
 }

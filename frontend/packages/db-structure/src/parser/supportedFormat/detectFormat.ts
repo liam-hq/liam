@@ -1,19 +1,13 @@
-// NOTE: Linked from `frontend/apps/docs`.
-// Please be cautious when renaming, updating, or deleting this file.
-
 import type { SupportedFormat } from './index.js'
 
 const nameToFormatMap: Record<string, SupportedFormat> = {
   'schema.rb': 'schemarb',
   schemafile: 'schemarb',
-  'prisma.schema': 'prisma',
-  'schema.json': 'tbls',
 }
 
 const extensionToFormatMap: Record<string, SupportedFormat> = {
   rb: 'schemarb',
   sql: 'postgres',
-  prisma: 'prisma',
 }
 
 export const detectFormat = (

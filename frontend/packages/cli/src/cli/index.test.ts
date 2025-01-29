@@ -35,24 +35,6 @@ describe('program', () => {
     const buildSubCommand = findSubCommand(erdCommand, 'build')
     expect(buildSubCommand).toBeDefined()
     expect(buildSubCommand?.description()).toBe('Build ERD html assets')
-
-    const inputOption = buildSubCommand?.options.find(
-      (option) => option.name() === 'input',
-    )
-    expect(inputOption).toBeDefined()
-    expect(inputOption?.flags).toBe('--input <path|url>')
-    expect(inputOption?.description).toBe(
-      'Path (supports glob patterns) or URL to the schema file(s)',
-    )
-
-    const formatOption = buildSubCommand?.options.find(
-      (option) => option.name() === 'format',
-    )
-    expect(formatOption).toBeDefined()
-    expect(formatOption?.flags).toBe('--format <format>')
-    expect(formatOption?.description).toBe(
-      'Format of the input file (schemarb|postgres|prisma|tbls)',
-    )
   })
 
   it('should have an "init" command with subcommands', () => {

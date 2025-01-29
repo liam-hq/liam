@@ -31,13 +31,12 @@ export const CopyLinkButton: FC = () => {
         })
       })
 
-    clickLogEvent({
-      element: 'copyLinkButton',
-      platform: version.displayedOn,
-      ver: version.version,
-      gitHash: version.gitHash,
-      appEnv: version.envName,
-    })
+    version.displayedOn === 'cli' &&
+      clickLogEvent({
+        element: 'copyLinkButton',
+        cliVer: version.version,
+        appEnv: version.envName,
+      })
   }, [toast, version])
 
   return (

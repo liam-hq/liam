@@ -16,15 +16,14 @@ export const VisibilityButton: FC<Props> = ({ tableName, hidden }) => {
     (event: MouseEvent) => {
       event.stopPropagation()
       toggleHiddenNodeId(tableName)
-      toggleLogEvent({
-        element: 'tableNameMenuButton',
-        isShow: !!hidden,
-        tableId: tableName,
-        platform: version.displayedOn,
-        gitHash: version.gitHash,
-        ver: version.version,
-        appEnv: version.envName,
-      })
+      version.displayedOn === 'cli' &&
+        toggleLogEvent({
+          element: 'tableNameMenuButton',
+          isShow: !!hidden,
+          tableId: tableName,
+          cliVer: version.version,
+          appEnv: version.envName,
+        })
     },
     [tableName, hidden, version],
   )

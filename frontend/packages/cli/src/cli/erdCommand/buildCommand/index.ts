@@ -4,7 +4,6 @@ import { dirname } from 'node:path'
 import { resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import type { SupportedFormat } from '@liam-hq/db-structure/parser'
-import { blueBright } from 'yoctocolors'
 import { type CliError, FileSystemError } from '../../errors.js'
 import { runPreprocess } from '../runPreprocess.js'
 
@@ -20,8 +19,6 @@ export const buildCommand = async (
     format,
   )
   if (preprocessErrors.length > 0) {
-    // In the future, we want to allow dist to be generated and the process to complete successfully with a warning message, even if there are minor errors.
-    // see also: actionRunner.ts
     return preprocessErrors
   }
 
@@ -59,14 +56,5 @@ export const buildCommand = async (
     )
   })
 
-  if (errors.length === 0) {
-    console.info(`
-ERD has been generated successfully in the \`dist/\` directory.
-Note: You cannot open this file directly using \`file://\`.
-Please serve the \`dist/\` directory with an HTTP server and access it via \`http://\`.
-Example:
-    ${blueBright('$ npx http-server dist/')}
-`)
-  }
   return errors
 }

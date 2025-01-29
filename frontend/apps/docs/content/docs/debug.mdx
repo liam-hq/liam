@@ -1,0 +1,122 @@
+---
+title: (debug) All components
+---
+
+import { Accordion, Accordions } from "fumadocs-ui/components/accordion";
+import { File, Folder, Files } from "fumadocs-ui/components/files";
+import { Step, Steps } from "fumadocs-ui/components/steps";
+import { Tab, Tabs } from "fumadocs-ui/components/tabs";
+import { TypeTable } from "fumadocs-ui/components/type-table";
+
+# Heading
+
+## Heading
+
+### Heading
+
+#### Heading
+
+Hello World, **Bold**, _Italic_, ~~Hidden~~
+
+```js
+console.log("code block");
+```
+
+1. First
+2. Second
+3. Third
+
+- Item 1
+- Item 2
+
+> Quote here
+
+## Image
+
+![Liam logo](/images/default.png)
+
+## Table
+
+| Table | Description |
+| ----- | ----------- |
+| Hello | World       |
+
+## Link
+
+[My Link](https://github.com/liam-hq/liam)
+
+## Cards
+
+<Cards>
+  <Card
+    href="https://nextjs.org/docs/app/building-your-application/data-fetching/fetching-caching-and-revalidating"
+    title="Fetching, Caching, and Revalidating"
+  >
+    Learn more about caching in Next.js
+  </Card>
+</Cards>
+
+## Callout
+
+<Callout title="info" type="info">Hello World</Callout>
+<Callout title="warn" type="warn">Hello World</Callout>
+<Callout title="error" type="error">Hello World</Callout>
+
+## Accordion
+
+<Accordions>
+  <Accordion title="My Title1">My Content1</Accordion>
+  <Accordion title="My Title2">My Content2</Accordion>
+</Accordions>
+
+## Files
+
+<Files>
+  <Folder name="app" defaultOpen>
+    <File name="layout.tsx" />
+    <File name="page.tsx" />
+    <File name="global.css" />
+  </Folder>
+  <Folder name="components">
+    <File name="button.tsx" />
+    <File name="tabs.tsx" />
+    <File name="dialog.tsx" />
+  </Folder>
+  <File name="package.json" />
+</Files>
+
+## Step
+
+<Steps>
+<Step>
+
+### Step 1
+
+</Step>
+
+<Step>
+
+### Step 2
+
+</Step>
+</Steps>
+
+## Tab
+
+<Tabs items={["Javascript", "Rust"]}>
+  <Tab value="Javascript">Javascript is weird</Tab>
+  <Tab value="Rust">Rust is fast</Tab>
+</Tabs>
+
+## Type Table
+
+<TypeTable
+  type={{
+    percentage: {
+      description:
+        "The percentage of scroll position to display the roll button",
+      type: "number",
+      default: 0.2,
+    },
+  }}
+/>

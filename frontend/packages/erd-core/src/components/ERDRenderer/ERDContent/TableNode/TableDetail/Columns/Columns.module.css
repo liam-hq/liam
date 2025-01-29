@@ -2,38 +2,16 @@
   border-bottom: 1px solid var(--global-border);
 }
 
-.header {
-  display: grid;
-  grid-auto-flow: column;
-  align-items: center;
-  justify-content: space-between;
+.heading {
   padding: var(--spacing-2);
   border-bottom: 1px solid var(--global-border);
-  cursor: pointer;
-}
-
-.iconTitleContainer {
-  display: grid;
-  grid-auto-flow: column;
-  gap: var(--spacing-1);
-  align-items: center;
-  color: var(--overlay-70);
-}
-
-.heading {
   color: var(--global-foreground);
   font-size: var(--font-size-2);
   font-style: normal;
+  font-weight: 500;
   line-height: normal;
 }
 
 .itemWrapper {
-  max-height: 0;
-  transition: max-height 0.1s var(--default-timing-function);
-  overflow: hidden;
-}
-
-.itemWrapper.visible {
-  max-height: 100vh;
   border-bottom: 1px solid var(--global-border);
 }

@@ -41,6 +41,3 @@ prism.wasm
 
 # Sentry Config File
 .env.sentry-build-plugin
-
-# typed-css-modules
-*.css.d.ts

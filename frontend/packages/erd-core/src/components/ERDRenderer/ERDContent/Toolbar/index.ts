@@ -1,2 +1,1 @@
-export * from './DesktopToolbar'
-export * from './MobileToolbar'
+export * from './Toolbar'

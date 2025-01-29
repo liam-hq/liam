@@ -12,28 +12,16 @@ import { useVersion } from '@/providers'
 import { useDBStructureStore, useUserEditingStore } from '@/stores'
 import { CardinalityMarkers } from './CardinalityMarkers'
 // biome-ignore lint/nursery/useImportRestrictions: Fixed in the next PR.
-import { MobileToolbar } from './ERDContent/Toolbar'
-// biome-ignore lint/nursery/useImportRestrictions: Fixed in the next PR.
-import { DesktopToolbar } from './ERDContent/Toolbar'
-import { ErrorDisplay } from './ErrorDisplay'
+import { Toolbar } from './ERDContent/Toolbar'
 import { RelationshipEdgeParticleMarker } from './RelationshipEdgeParticleMarker'
 import { TableDetailDrawer, TableDetailDrawerRoot } from './TableDetailDrawer'
 import { convertDBStructureToNodes } from './convertDBStructureToNodes'
 
-type ErrorObject = {
-  name: string
-  message: string
-}
-
 type Props = {
   defaultSidebarOpen?: boolean | undefined
-  errorObjects?: ErrorObject[] | undefined
 }
 
-export const ERDRenderer: FC<Props> = ({
-  defaultSidebarOpen = false,
-  errorObjects = [],
-}) => {
+export const ERDRenderer: FC<Props> = ({ defaultSidebarOpen = false }) => {
   const [open, setOpen] = useState(defaultSidebarOpen)
 
   const { showMode } = useUserEditingStore()
@@ -47,14 +35,13 @@ export const ERDRenderer: FC<Props> = ({
   const handleChangeOpen = useCallback(
     (open: boolean) => {
       setOpen(open)
-      toggleLogEvent({
-        element: 'leftPane',
-        isShow: open,
-        platform: version.displayedOn,
-        gitHash: version.gitHash,
-        ver: version.version,
-        appEnv: version.envName,
-      })
+      version.displayedOn === 'cli' &&
+        toggleLogEvent({
+          element: 'leftPane',
+          isShow: open,
+          cliVer: version.version,
+          appEnv: version.envName,
+        })
     },
     [version],
   )
@@ -74,29 +61,18 @@ export const ERDRenderer: FC<Props> = ({
                   <SidebarTrigger />
                 </div>
                 <TableDetailDrawerRoot>
-                  {errorObjects.length > 0 && (
-                    <ErrorDisplay errors={errorObjects} />
-                  )}
-                  {errorObjects.length > 0 || (
-                    <>
-                      <ERDContent
-                        key={`${nodes.length}-${showMode}`}
-                        nodes={nodes}
-                        edges={edges}
-                      />
-                      <TableDetailDrawer />
-                    </>
-                  )}
+                  <ERDContent
+                    key={`${nodes.length}-${showMode}`}
+                    nodes={nodes}
+                    edges={edges}
+                  />
+                  <div className={styles.toolbarWrapper}>
+                    <Toolbar />
+                  </div>
+                  <TableDetailDrawer />
                 </TableDetailDrawerRoot>
               </main>
             </div>
-
-            {errorObjects.length === 0 && (
-              <div className={styles.toolbarWrapper}>
-                <DesktopToolbar />
-                <MobileToolbar />
-              </div>
-            )}
           </ReactFlowProvider>
         </SidebarProvider>
       </ToastProvider>

@@ -1,52 +1,5 @@
 # @liam-hq/erd-core
 
-## 0.0.21
-
-### Patch Changes
-
-- 18db4ca: 💄Fixed icon size
-- 9cba809: 💄 Add icons to the table detail component and update the header style.
-- Updated dependencies [9cba809]
-  - @liam-hq/ui@0.0.9
-
-## 0.0.20
-
-### Patch Changes
-
-- 2137216: 💄 Add elk.alignment property to node conversion for centralized layout
-- 76bc7be: 🚸 Make node width variable to accommodate table/column name and type
-- 18e75a3: 🚧 Prevent omission of TableColumn
-
-## 0.0.19
-
-### Patch Changes
-
-- 48ae2c2: 🐛 Update TableCounter to count only table nodes
-
-## 0.0.18
-
-### Patch Changes
-
-- dd1e7b4: 🚸 Add dedicated handling for network-related errors with a new `NetworkErrorDisplay` component.
-- 97c5996: ✨ Implement show mode handling in URL parameters and state management
-- 6a34d7b: 🚸 Enhanced error rendering in the `ErrorDisplay` component, adding detailed error summaries
-
-## 0.0.17
-
-### Patch Changes
-
-- aa74483: 🐛 Fix argument type of errors
-
-## 0.0.16
-
-### Patch Changes
-
-- 71b6f60: 🚸 Add ErrorDisplay component for handling and displaying errors in ERDViewer
-- d0858af: 🚸 delete unnecessary margin on mobile
-- 40dffc8: 💄 Move react flow attribution from bottom-right to bottom-left
-- Updated dependencies [46cd9e6]
-  - @liam-hq/ui@0.0.8
-
 ## 0.0.15
 
 ### Patch Changes

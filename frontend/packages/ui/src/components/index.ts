@@ -1,5 +1,4 @@
 export * from './Button'
-export * from './CookieConsent'
 export * from './Drawer'
 export * from './DropdownMenu'
 export * from './IconButton'

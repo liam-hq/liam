@@ -1,0 +1,28 @@
+.root {
+  display: inline-flex;
+  padding: var(--spacing-1half) var(--spacing-2);
+  border: 1px solid var(--global-border);
+  border-radius: var(--border-radius-lg);
+  background-color: var(--pane-background);
+  box-shadow: 0px 4px 20px 0px var(--shadow-basic-shadow);
+}
+
+.separator {
+  margin: 0 var(--spacing-4);
+  border-left: 1px solid var(--global-border);
+}
+
+.buttons {
+  display: grid;
+  grid-auto-flow: column;
+  gap: var(--spacing-2);
+  align-items: center;
+}
+
+.content {
+  overflow: hidden;
+  background-color: white;
+  border-radius: 6px;
+  box-shadow: 0px 10px 38px -10px rgba(22, 23, 24, 0.35), 0px 10px 20px -15px
+    rgba(22, 23, 24, 0.2);
+}

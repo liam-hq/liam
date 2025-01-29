@@ -1,35 +1,9 @@
 import { describe, expect, it } from 'vitest'
-import type { Table } from '../../../schema/index.js'
-import { aColumn, aDBStructure, aTable } from '../../../schema/index.js'
-import { createParserTestCases } from '../../__tests__/index.js'
+import { parserTestCases } from '../../__tests__/index.js'
 import { UnexpectedTokenWarningError } from '../../errors.js'
 import { processor } from './index.js'
 
 describe(processor, () => {
-  const userTable = (override?: Partial<Table>) =>
-    aDBStructure({
-      tables: {
-        users: aTable({
-          name: 'users',
-          columns: {
-            id: aColumn({
-              name: 'id',
-              type: 'bigserial',
-              notNull: true,
-              primary: true,
-              unique: true,
-            }),
-            ...override?.columns,
-          },
-          indices: {
-            ...override?.indices,
-          },
-          comment: override?.comment ?? null,
-        }),
-      },
-    })
-  const parserTestCases = createParserTestCases(userTable)
-
   describe('should parse CREATE TABLE statement correctly', () => {
     it('table comment', async () => {
       const { value } = await processor(/* sql */ `
@@ -121,7 +95,6 @@ describe(processor, () => {
     })
 
     it('index (unique: false)', async () => {
-      const indexName = 'index_users_on_id_and_email'
       const { value } = await processor(/* sql */ `
         CREATE TABLE users (
           id BIGSERIAL PRIMARY KEY,
@@ -131,7 +104,7 @@ describe(processor, () => {
         CREATE INDEX index_users_on_id_and_email ON public.users USING btree (id, email);
       `)
 
-      expect(value).toEqual(parserTestCases['index (unique: false)'](indexName))
+      expect(value).toEqual(parserTestCases['index (unique: false)'])
     })
 
     it('index (unique: true)', async () => {
@@ -179,7 +152,6 @@ describe(processor, () => {
     })
 
     it('foreign key (one-to-one)', async () => {
-      const keyName = 'users_id_to_posts_user_id'
       const { value } = await processor(/* sql */ `
         CREATE TABLE posts (
           id BIGSERIAL PRIMARY KEY,
@@ -188,7 +160,7 @@ describe(processor, () => {
       `)
 
       expect(value.relationships).toEqual(
-        parserTestCases['foreign key (one-to-one)'](keyName),
+        parserTestCases['foreign key (one-to-one)'],
       )
     })
   })
@@ -207,7 +179,6 @@ describe(processor, () => {
     })
 
     it('foreign key (one-to-one)', async () => {
-      const keyName = 'users_id_to_posts_user_id'
       const { value } = await processor(/* sql */ `
         CREATE TABLE posts (
             id SERIAL PRIMARY KEY,
@@ -219,7 +190,7 @@ describe(processor, () => {
       `)
 
       expect(value.relationships).toEqual(
-        parserTestCases['foreign key (one-to-one)'](keyName),
+        parserTestCases['foreign key (one-to-one)'],
       )
     })
 
