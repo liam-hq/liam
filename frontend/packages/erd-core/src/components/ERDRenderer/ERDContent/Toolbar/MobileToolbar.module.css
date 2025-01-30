@@ -1,7 +1,7 @@
 @keyframes collapse {
   from {
     width: 170px; /* TODO: 157px */
-    height: 150px;
+    height: 245px;
   }
   to {
     width: 40px;
@@ -16,6 +16,7 @@
   }
   to {
     width: 170px;
+    height: 245px;
   }
 }
 
@@ -60,6 +61,7 @@
 
 .initialOpen {
   width: 170px;
+  height: 245px !important;
   animation: none;
 }
 
@@ -70,6 +72,7 @@
 }
 
 .open {
+  height: 245px !important;
   animation: expand 150ms ease-out forwards;
 }
 
