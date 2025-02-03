@@ -4,14 +4,23 @@ import { useUserEditingStore } from '@/stores'
 import { IconButton, Scan } from '@liam-hq/ui'
 import { ToolbarButton } from '@radix-ui/react-toolbar'
 import { useReactFlow } from '@xyflow/react'
-import { type FC, type ReactNode, useCallback } from 'react'
+import {
+  type ComponentProps,
+  type FC,
+  type ReactNode,
+  useCallback,
+} from 'react'
 import styles from './Fitview.module.css'
 
 interface FitviewButtonProps {
   children?: ReactNode
+  size?: ComponentProps<typeof IconButton>['size']
 }
 
-export const FitviewButton: FC<FitviewButtonProps> = ({ children = '' }) => {
+export const FitviewButton: FC<FitviewButtonProps> = ({
+  children = '',
+  size = 'md',
+}) => {
   const { fitView } = useReactFlow()
   const { showMode } = useUserEditingStore()
   const { version } = useVersion()
@@ -30,7 +39,7 @@ export const FitviewButton: FC<FitviewButtonProps> = ({ children = '' }) => {
 
   return (
     <ToolbarButton asChild onClick={handleClick} className={styles.menuButton}>
-      <IconButton icon={<Scan />} tooltipContent="Zoom to Fit">
+      <IconButton size={size} icon={<Scan />} tooltipContent="Zoom to Fit">
         {children}
       </IconButton>
     </ToolbarButton>

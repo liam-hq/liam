@@ -1,0 +1,36 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  align-self: stretch;
+}
+
+.radioWrapper {
+  display: grid;
+  align-items: center;
+}
+
+.item {
+  color: var(--global-foreground);
+  background-color: var(--dropdown-background-active);
+  display: grid;
+  grid-template-columns: 1fr auto;
+  column-gap: var(--spacing-2);
+  place-content: center;
+  align-items: center;
+  font-size: var(--font-size-2);
+  cursor: default;
+  border-radius: var(--border-radius-base);
+  padding: var(--border-radius-lg, 8px) var(--spacing-1, 4px);
+}
+
+.item[data-state='checked'] span[data-state='checked'] {
+  color: var(--primary-accent);
+}
+
+.item:focus-visible {
+  outline: none;
+}
+
+.label {
+  cursor: pointer;
+}

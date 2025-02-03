@@ -1,0 +1,74 @@
+.root {
+  display: none;
+  border: 1px solid var(--global-border);
+  border-radius: var(--border-radius-lg);
+  background-color: var(--pane-background);
+  box-shadow: 0px 4px 20px 0px var(--shadow-basic-shadow);
+  position: fixed;
+  left: 16px;
+  bottom: 16px;
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--spacing-2, 8px);
+  transition: width 150ms ease, height 150ms ease; /* Smooth resizing animation */
+  overflow: hidden;
+  min-height: 40px;
+  z-index: var(--z-index-toolbar);
+}
+
+@media screen and (max-width: 767px) {
+  .root {
+    display: block;
+  }
+}
+
+.ellipsis {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.positionRelative {
+  position: relative; /* Ensures child elements can be absolutely positioned */
+}
+
+/* Resize animation for opening and closing */
+.closed {
+  width: 40px;
+  height: 40px;
+}
+
+.open {
+  width: 157px;
+  height: 245px;
+}
+
+.openShowModeMenu {
+  width: 157px;
+  height: 178px;
+}
+
+/* Fade-in animation for elements when they become visible */
+.hidden {
+  visibility: hidden; /* Hide element from the viewport */
+  pointer-events: none; /* Prevent interactions while hidden */
+  opacity: 0; /* Start with zero opacity */
+  transition: opacity 165ms ease; /* Smooth fade-in animation */
+}
+
+.content {
+  position: absolute;
+  top: 0;
+  left: 0;
+  opacity: 0; /* Initially hidden */
+  transition: opacity 165ms ease; /* Smooth opacity transition */
+  transition-delay: 150ms; /* Delay to sync with resize animation */
+}
+
+.content.active {
+  opacity: 1; /* Make content fully visible */
+  visibility: visible; /* Ensure element is displayed */
+  pointer-events: auto; /* Enable interactions */
+}

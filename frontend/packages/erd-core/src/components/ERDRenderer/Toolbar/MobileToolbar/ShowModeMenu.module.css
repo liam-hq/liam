@@ -1,0 +1,46 @@
+.wrapper {
+  display: flex;
+  padding: var(--spacing-2, 8px);
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  gap: var(--spacing-2, 8px);
+}
+
+.backButton {
+  display: flex;
+  padding: var(--spacing-1, 4px) 0px;
+  align-items: center;
+  gap: var(--spacing-1, 4px);
+  align-self: stretch;
+}
+
+.cheveron {
+  display: flex;
+  padding: var(--spacing-1, 4px);
+  align-items: center;
+}
+
+.text {
+  color: var(--overlay-60, rgba(255, 255, 255, 0.6));
+  font-size: var(--font-size-3, 12px);
+}
+
+.divider {
+  width: 141px;
+  height: 1px;
+  color: var(--global-border, #383a3b);
+}
+
+.closeButton {
+  display: flex;
+  height: 23px;
+  padding: var(--spacing-1, 4px) var(--spacing-2, 8px);
+  justify-content: center;
+  gap: var(--spacing-1half, 6px);
+  width: 100%;
+  border-radius: var(--border-radius-base, 4px);
+  border: 1px solid var(--button-border, #434546);
+  color: var(--button-secondary-foreground, #fff);
+  font-size: var(--font-size-3, 12px);
+}

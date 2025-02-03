@@ -1,4 +1,6 @@
+import clsx from 'clsx'
 import { type ComponentProps, type ReactNode, forwardRef } from 'react'
+import { match } from 'ts-pattern'
 import {
   TooltipContent,
   TooltipPortal,
@@ -12,13 +14,25 @@ type Props = {
   icon: ReactNode
   tooltipSide?: ComponentProps<typeof TooltipContent>['side']
   tooltipContent: string
+  size?: 'sm' | 'md'
 } & ComponentProps<'button'>
 
 export const IconButton = forwardRef<HTMLButtonElement, Props>(
   (
-    { icon, tooltipSide = 'bottom', tooltipContent, children, ...props },
+    {
+      icon,
+      tooltipSide = 'bottom',
+      tooltipContent,
+      size = 'md',
+      children,
+      ...props
+    },
     ref,
   ) => {
+    const sizeClassName = match(size)
+      .with('sm', () => styles.sm)
+      .with('md', () => styles.md)
+      .exhaustive()
     return (
       <TooltipProvider>
         <TooltipRoot>
@@ -29,7 +43,7 @@ export const IconButton = forwardRef<HTMLButtonElement, Props>(
               className={styles.iconWrapper}
               {...props}
             >
-              <span className={styles.icon}>{icon}</span>
+              <span className={clsx(styles.icon, sizeClassName)}>{icon}</span>
               {children && <span>{children}</span>}
             </button>
           </TooltipTrigger>

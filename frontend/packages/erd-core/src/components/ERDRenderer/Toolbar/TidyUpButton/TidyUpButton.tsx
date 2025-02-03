@@ -4,15 +4,24 @@ import { useUserEditingStore } from '@/stores'
 import { IconButton, TidyUpIcon } from '@liam-hq/ui'
 import { ToolbarButton } from '@radix-ui/react-toolbar'
 import { useReactFlow } from '@xyflow/react'
-import { type FC, type ReactNode, useCallback } from 'react'
+import {
+  type ComponentProps,
+  type FC,
+  type ReactNode,
+  useCallback,
+} from 'react'
 import { useAutoLayout } from '../../ERDContent'
 import styles from './TidyUpButton.module.css'
 
 interface TidyUpButtonProps {
   children?: ReactNode
+  size?: ComponentProps<typeof IconButton>['size']
 }
 
-export const TidyUpButton: FC<TidyUpButtonProps> = ({ children = '' }) => {
+export const TidyUpButton: FC<TidyUpButtonProps> = ({
+  children = '',
+  size = 'md',
+}) => {
   const { getNodes, getEdges } = useReactFlow()
   const { handleLayout } = useAutoLayout()
   const { showMode } = useUserEditingStore()
@@ -35,6 +44,7 @@ export const TidyUpButton: FC<TidyUpButtonProps> = ({ children = '' }) => {
         icon={<TidyUpIcon />}
         tooltipContent="Tidy up"
         onClick={handleClick}
+        size={size}
       >
         {children}
       </IconButton>
