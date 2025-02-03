@@ -2,7 +2,7 @@
 
 
 ## Summary
-* 966 MIT
+* 967 MIT
 * 80 Apache 2.0
 * 63 ISC
 * 25 Simplified BSD
@@ -1899,6 +1899,17 @@ LGPL-3.0-or-later permitted
 
 <a name="@radix-ui/react-primitive"></a>
 ### @radix-ui/react-primitive v2.0.0
+#### 
+
+##### Paths
+* /home/runner/work/liam/liam
+
+<a href="http://opensource.org/licenses/mit-license">MIT</a> permitted
+
+
+
+<a name="@radix-ui/react-radio-group"></a>
+### @radix-ui/react-radio-group v1.2.2
 #### 
 
 ##### Paths
