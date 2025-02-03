@@ -1,5 +1,13 @@
 # @liam-hq/erd-core
 
+## 0.0.23
+
+### Patch Changes
+
+- 17d61e8: 🐛 Fixed the 'data-erd' attribute in the active table to make type names visible
+- 7904b7e: 💄 Change position of info icon to error display for mobile view
+- 21d5609: 🐛 remove meaningless connection
+
 ## 0.0.22
 
 ### Patch Changes

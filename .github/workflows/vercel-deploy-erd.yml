@@ -41,6 +41,7 @@ jobs:
               - './frontend/packages/db-structure/**'
               - './frontend/packages/erd-core/**'
               - './frontend/packages/ui/**'
+              - './pnpm-lock.yaml'
 
   deploy:
     name: Deploy
