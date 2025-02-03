@@ -22,7 +22,10 @@ export const TableNode: FC<Props> = ({ data }) => {
         data.isHighlighted && styles.wrapperHighlighted,
         data.isActiveHighlighted && styles.wrapperActive,
       )}
-      data-erd={data.isHighlighted && 'table-node-highlighted'}
+      data-erd={
+        (data.isHighlighted || data.isActiveHighlighted) &&
+        'table-node-highlighted'
+      }
     >
       <TableHeader data={data} />
       {showMode === 'ALL_FIELDS' && <TableColumnList data={data} />}

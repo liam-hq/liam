@@ -3,4 +3,4 @@
 "@liam-hq/cli": patch
 ---
 
-💄 Improve error display responsive styling
+🐛 remove meaningless connection

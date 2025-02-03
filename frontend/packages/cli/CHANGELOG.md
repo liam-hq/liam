@@ -1,5 +1,21 @@
 # @liam-hq/cli
 
+## 0.3.1
+
+### Patch Changes
+
+- aecb91a: ✨ Implement collapsible columns in ERD table detail view
+- 56fab7f: ♻︎ Simplify tbls schema.json generation instructions
+- d7bbb7f: 🚸 Add new Mobilie Toolbar
+- ee5f79e: ✨ Add support for hidden nodes in URL state management
+- f3a8940: 💄 Add styling for mobile widths
+- 69e391a: 💄 Enhance mobile Toolbar animation behavior and improve UI responsiveness
+- fe2af29: ✨ Add toggle function for all sections in TableDetailDrawer
+- 203936a: 💄 Update styles for responsive design and sticky headers in TableDetail components
+- 47a7cdb: ✨ Add browser back and forward support for showMode
+- 93fc858: ♻️ Refactor TableDetail components to use CollapsibleHeader
+- 553c40f: 💄 Improve error display responsive styling
+
 ## 0.3.0
 
 ### Minor Changes

@@ -1,5 +1,14 @@
 # @liam-hq/ui
 
+## 0.0.10
+
+### Patch Changes
+
+- aecb91a: ✨ Implement collapsible columns in ERD table detail view
+- d7bbb7f: 🚸 Add new Mobilie Toolbar
+- f3a8940: 💄 Add styling for mobile widths
+- f3a8940: ✨ Add Menu icon to UI package
+
 ## 0.0.9
 
 ### Patch Changes

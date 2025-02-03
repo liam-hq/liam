@@ -36,9 +36,11 @@
 .handle[data-handlepos='right'] {
   transform: translate(50%, 0%);
   right: -17px;
+  pointer-events: none;
 }
 
 .handle[data-handlepos='left'] {
   transform: translate(-50%, 0%);
   left: -20px;
+  pointer-events: none;
 }

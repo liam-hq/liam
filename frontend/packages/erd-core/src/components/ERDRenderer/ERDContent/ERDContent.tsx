@@ -162,6 +162,7 @@ export const ERDContentInner: FC<Props> = ({
         selectionOnDrag
         deleteKeyCode={null} // Turn off because it does not want to be deleted
         attributionPosition="bottom-left"
+        nodesConnectable={false}
       >
         <Background
           color="var(--color-gray-600)"

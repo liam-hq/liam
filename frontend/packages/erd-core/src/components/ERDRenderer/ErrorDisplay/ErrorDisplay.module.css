@@ -21,11 +21,7 @@
 }
 
 .iconWrapper {
-  display: flex;
-  min-width: 24px;
-  min-height: 24px;
-  padding-top: var(--spacing-1, 4px);
-  align-items: center;
+  display: none;
 }
 
 @media screen and (min-width: 768px) {
@@ -42,5 +38,8 @@
 
   .iconWrapper {
     width: 24px;
+    display: flex;
+    padding-top: var(--spacing-1, 4px);
+    align-items: center;
   }
 }
