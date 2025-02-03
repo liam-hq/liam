@@ -6,11 +6,15 @@
   "main": "src/index.ts",
   "dependencies": {
     "@liam-hq/ui": "workspace:*",
+    "@radix-ui/react-dialog": "1.1.5",
     "@radix-ui/react-toolbar": "1.1.0",
     "@xyflow/react": "12.3.5",
     "clsx": "2.1.1",
     "elkjs": "0.9.3",
+    "fuse.js": "7.1.0",
+    "lucide-react": "0.451.0",
     "react": "18.3.1",
+    "react-dom": "18",
     "ts-pattern": "5.4.0",
     "valibot": "^1.0.0-beta.5",
     "valtio": "2.1.2"

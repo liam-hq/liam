@@ -5,6 +5,7 @@ import {
   initDBStructureStore,
   versionSchema,
 } from '@liam-hq/erd-core'
+import SearchOverlay from '@liam-hq/erd-core/src/components/Search/SearchOverlay'
 import * as v from 'valibot'
 
 async function loadSchemaContent() {
@@ -48,6 +49,7 @@ function App() {
   return (
     <VersionProvider version={version}>
       <ERDRenderer defaultSidebarOpen={defaultSidebarOpen} />
+      <SearchOverlay />
     </VersionProvider>
   )
 }
