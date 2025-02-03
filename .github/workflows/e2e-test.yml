@@ -37,7 +37,7 @@ jobs:
     timeout-minutes: 10
     runs-on: ubuntu-latest
     container:
-      image: mcr.microsoft.com/playwright:v1.46.0-noble
+      image: mcr.microsoft.com/playwright:v1.50.0-jammy
     defaults:
       run:
         working-directory: ${{ env.WORKING_DIRECTORY }}
