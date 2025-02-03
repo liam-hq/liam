@@ -46,6 +46,8 @@ jobs:
       - uses: ./.github/actions/pnpm-setup
         with:
           working-directory: ${{ env.WORKING_DIRECTORY }}
+      - run: pnpm exec playwright install --with-deps
+      - run: pnpm list @playwright/test
       - run: pnpm test:e2e
         env:
           BASE_URL: ${{ github.event.deployment_status.environment_url }}
