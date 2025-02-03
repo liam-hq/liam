@@ -1,0 +1,57 @@
+name: E2E Tests
+on:
+  deployment_status:
+
+env:
+  CI: true
+  WORKING_DIRECTORY: .
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  setup-job:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      has-changes: ${{ steps.changes.outputs.has-changes }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v2
+        id: changes
+        with:
+          filters: |
+            has-changes:
+              - '.github/composite-actions/pnpm-setup/**'
+              - '.github/workflows/e2e-test.yml'
+              - './frontend/**'
+              - '!frontend/**/*.md'
+
+  test:
+    needs: [setup-job]
+    if: needs.setup-job.outputs.has-changes == 'true' && github.event_name == 'deployment_status' && github.event.deployment_status.state == 'success'
+    timeout-minutes: 10
+    runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/playwright:v1.46.0-noble
+    defaults:
+      run:
+        working-directory: ${{ env.WORKING_DIRECTORY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/pnpm-setup
+        with:
+          working-directory: ${{ env.WORKING_DIRECTORY }}
+      - run: pnpm test:e2e
+        env:
+          BASE_URL: ${{ github.event.deployment_status.environment_url }}
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: test-results
+          path: ${{ env.WORKING_DIRECTORY }}/test-results/
+          retention-days: 30
