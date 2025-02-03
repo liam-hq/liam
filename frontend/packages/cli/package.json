@@ -37,6 +37,7 @@
     "@biomejs/biome": "1.9.3",
     "@liam-hq/db-structure": "workspace:*",
     "@liam-hq/erd-core": "workspace:*",
+    "@playwright/test": "1.50.0",
     "@rollup/plugin-node-resolve": "15.3.0",
     "@rollup/plugin-typescript": "12.1.1",
     "@types/glob": "8.1.0",
@@ -68,7 +69,8 @@
     "lint": "pnpm run '/^lint:.*/'",
     "lint:biome": "biome check .",
     "lint:tsc": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "test:e2e": "playwright test tests/e2e"
   },
   "files": [
     "dist-cli/**/*"

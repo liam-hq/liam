@@ -1,2 +1,5 @@
 # typed-css-modules
 *.css.d.ts
+
+# playwright
+/test-results/

@@ -30,3 +30,6 @@ dist-ssr
 dist-cli
 public/schema.json
 .rollup.cache
+
+# playwright
+/test-results/

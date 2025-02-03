@@ -1,2 +1,7 @@
 node_modules
 .turbo
+
+# playwright
+/playwright-report/
+/blob-report/
+/playwright/.cache/
