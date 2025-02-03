@@ -1,6 +1,11 @@
 name: E2E Tests
 on:
-  deployment_status:
+  workflow_run:
+    workflows:
+      - "Vercel Deployment"
+      - "Vercel Deployment erd-sample"
+    types:
+      - completed
 
 env:
   CI: true
@@ -11,49 +16,32 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  setup-job:
+  fetch-deployment-outputs:
     runs-on: ubuntu-latest
-    timeout-minutes: 3
-    permissions:
-      contents: read
-      pull-requests: read
-    outputs:
-      has-changes: ${{ steps.changes.outputs.has-changes }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: dorny/paths-filter@v2
-        id: changes
-        with:
-          filters: |
-            has-changes:
-              - '.github/composite-actions/pnpm-setup/**'
-              - '.github/workflows/e2e-test.yml'
-              - './frontend/**'
-              - '!frontend/**/*.md'
+      - name: Get deployment outputs
+        run: |
+          DEPLOYMENT_RUN_ID=${{ github.event.workflow_run.id }}
+          OUTPUTS=$(gh run view $DEPLOYMENT_RUN_ID --json outputs -q ".outputs")
 
-  test:
-    needs: [setup-job]
-    if: needs.setup-job.outputs.has-changes == 'true' && github.event_name == 'deployment_status' && github.event.deployment_status.state == 'success'
-    timeout-minutes: 10
-    runs-on: ubuntu-latest
-    container:
-      image: mcr.microsoft.com/playwright:v1.50.0-jammy
-    defaults:
-      run:
-        working-directory: ${{ env.WORKING_DIRECTORY }}
-    steps:
-      - uses: actions/checkout@v4
-      - uses: ./.github/actions/pnpm-setup
-        with:
-          working-directory: ${{ env.WORKING_DIRECTORY }}
-      - run: pnpm exec playwright install --with-deps
-      - run: pnpm list @playwright/test
-      - run: pnpm test:e2e
+          ERD_WEB_URL=$(echo "$OUTPUTS" | jq -r '.erd-web-url')
+          CLI_URL=$(echo "$OUTPUTS" | jq -r '.cli-url')
+
+          echo "ERD_WEB_URL=$ERD_WEB_URL" >> $GITHUB_ENV
+          echo "CLI_URL=$CLI_URL" >> $GITHUB_ENV
         env:
-          BASE_URL: ${{ github.event.deployment_status.environment_url }}
-      - uses: actions/upload-artifact@v4
-        if: failure()
-        with:
-          name: test-results
-          path: ${{ env.WORKING_DIRECTORY }}/test-results/
-          retention-days: 30
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  test-cli:
+    needs: [fetch-deployment-outputs]
+    if: github.event.workflow_run.conclusion == 'success'
+    uses: ./.github/workflows/_run_e2e_test.yml
+    with:
+      base-url: ${{ env.CLI_URL }}
+
+  test-erd-web:
+    needs: [fetch-deployment-outputs]
+    if: github.event.workflow_run.conclusion == 'success'
+    uses: ./.github/workflows/_run_e2e_test.yml
+    with:
+      base-url: ${{ env.ERD_WEB_URL }}
