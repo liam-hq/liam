@@ -31,19 +31,10 @@ jobs:
       - name: Install Playwright browsers
         run: pnpm exec playwright install --with-deps
 
-      - name: Set BASE_URL
-        run: |
-          if [[ "${{ inputs.working-directory }}" == *"cli"* ]]; then
-            echo "CLI_URL=${{ inputs.url }}" >> $GITHUB_ENV
-          elif [[ "${{ inputs.working-directory }}" == *"erd-web"* ]]; then
-            echo "ERD_WEB_URL=${{ inputs.url }}" >> $GITHUB_ENV
-          fi
-
-
       - name: Run e2e tests
         run: pnpm test:e2e
         env:
-          BASE_URL: ${{ inputs.url }}
+          URL: ${{ inputs.url }}
 
       - name: Upload test results
         uses: actions/upload-artifact@v4

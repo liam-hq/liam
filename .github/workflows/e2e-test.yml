@@ -24,4 +24,4 @@ jobs:
     uses: ./.github/workflows/_run_e2e_test.yml
     with:
       url: 'https://liam-erd-web.vercel.app/erd/p/github.com/mastodon/mastodon/blob/main/db/schema.rb'
-      working-directory: 'frontend/apps/erd-web'
+      working-directory: 'frontend/packages/erd-core'
