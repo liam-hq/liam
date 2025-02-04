@@ -2250,7 +2250,7 @@ LGPL-3.0-or-later permitted
 
 
 <a name="@sentry-internal/browser-utils"></a>
-### @sentry-internal/browser-utils v8.53.0
+### @sentry-internal/browser-utils v8.49.0
 #### 
 
 ##### Paths
@@ -2261,7 +2261,7 @@ LGPL-3.0-or-later permitted
 
 
 <a name="@sentry-internal/feedback"></a>
-### @sentry-internal/feedback v8.53.0
+### @sentry-internal/feedback v8.49.0
 #### 
 
 ##### Paths
@@ -2272,7 +2272,7 @@ LGPL-3.0-or-later permitted
 
 
 <a name="@sentry-internal/replay"></a>
-### @sentry-internal/replay v8.53.0
+### @sentry-internal/replay v8.49.0
 #### 
 
 ##### Paths
@@ -2283,7 +2283,7 @@ LGPL-3.0-or-later permitted
 
 
 <a name="@sentry-internal/replay-canvas"></a>
-### @sentry-internal/replay-canvas v8.53.0
+### @sentry-internal/replay-canvas v8.49.0
 #### 
 
 ##### Paths
@@ -2305,7 +2305,7 @@ LGPL-3.0-or-later permitted
 
 
 <a name="@sentry/browser"></a>
-### @sentry/browser v8.53.0
+### @sentry/browser v8.49.0
 #### 
 
 ##### Paths
@@ -2349,7 +2349,7 @@ LGPL-3.0-or-later permitted
 
 
 <a name="@sentry/core"></a>
-### @sentry/core v8.53.0
+### @sentry/core v8.49.0
 #### 
 
 ##### Paths
@@ -2360,7 +2360,7 @@ LGPL-3.0-or-later permitted
 
 
 <a name="@sentry/nextjs"></a>
-### @sentry/nextjs v8.53.0
+### @sentry/nextjs v8.49.0
 #### 
 
 ##### Paths
@@ -2371,7 +2371,7 @@ LGPL-3.0-or-later permitted
 
 
 <a name="@sentry/node"></a>
-### @sentry/node v8.53.0
+### @sentry/node v8.49.0
 #### 
 
 ##### Paths
@@ -2382,7 +2382,7 @@ LGPL-3.0-or-later permitted
 
 
 <a name="@sentry/opentelemetry"></a>
-### @sentry/opentelemetry v8.53.0
+### @sentry/opentelemetry v8.49.0
 #### 
 
 ##### Paths
@@ -2393,7 +2393,7 @@ LGPL-3.0-or-later permitted
 
 
 <a name="@sentry/react"></a>
-### @sentry/react v8.53.0
+### @sentry/react v8.49.0
 #### 
 
 ##### Paths
@@ -2404,7 +2404,7 @@ LGPL-3.0-or-later permitted
 
 
 <a name="@sentry/vercel-edge"></a>
-### @sentry/vercel-edge v8.53.0
+### @sentry/vercel-edge v8.49.0
 #### 
 
 ##### Paths
