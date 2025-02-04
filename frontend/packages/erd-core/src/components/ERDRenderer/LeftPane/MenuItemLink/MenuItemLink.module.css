@@ -1,0 +1,13 @@
+.link {
+  display: grid;
+  grid-auto-flow: column;
+  gap: var(--spacing-2);
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.label {
+  color: var(--global-foreground);
+  font-family: var(--main-font);
+  font-size: var(--font-size-2);
+}

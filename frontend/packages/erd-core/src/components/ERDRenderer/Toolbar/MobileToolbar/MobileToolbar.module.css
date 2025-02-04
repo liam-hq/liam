@@ -13,7 +13,7 @@
   transition: width 150ms ease, height 150ms ease; /* Smooth resizing animation */
   overflow: hidden;
   min-height: 40px;
-  z-index: var(--z-index-toolbar);
+  z-index: var(--z-index-toolbar-closed);
 }
 
 @media screen and (max-width: 767px) {
@@ -43,11 +43,13 @@
 .open {
   width: 157px;
   height: 245px;
+  z-index: var(--z-index-toolbar-opened);
 }
 
 .openShowModeMenu {
   width: 157px;
   height: 178px;
+  z-index: var(--z-index-toolbar-opened);
 }
 
 /* Fade-in animation for elements when they become visible */
@@ -71,4 +73,14 @@
   opacity: 1; /* Make content fully visible */
   visibility: visible; /* Ensure element is displayed */
   pointer-events: auto; /* Enable interactions */
+}
+
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: transparent;
+  z-index: var(--z-index-overlay);
 }

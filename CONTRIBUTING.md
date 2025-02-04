@@ -6,6 +6,8 @@ Please note we have a [code of conduct](CODE_OF_CONDUCT.md), please follow it in
 
 ## Development environment setup
 
+Before setting up the development environment, we recommend reviewing our [Repository Architecture](https://liambx.com/docs/contributing/repository-architecture) documentation to understand how our packages are organized.
+
 To set up a development environment, please follow these steps:
 
 1. Clone the repo
@@ -30,11 +32,11 @@ To set up a development environment, please follow these steps:
 
 4. Open apps
 
-   | package | url |
-   | --- | --- |
+   | package          | url                   |
+   | ---------------- | --------------------- |
    | @liam-hq/erd-web | http://localhost:3001 |
-   | @liam-hq/cli | http://localhost:5173 |
-   | @liam-hq/docs | http://localhost:3002 |
+   | @liam-hq/cli     | http://localhost:5173 |
+   | @liam-hq/docs    | http://localhost:3002 |
 
 ## Issues and feature requests
 
@@ -55,13 +57,13 @@ Please try to create bug reports that are:
 2. Fork the project
 3. Create your feature branch (`git switch -c feat/amazing_feature`)
 4. **Write a clear and concise changeset description**
-   * If your changes include modifications to any packages within the ``frontend/packages`` directory:
-      * Use `pnpm changeset` at the top level of this project.
-      * **Always select the @liam-hq/cli package**, in addition to any other modified packages.
-    * **Write a clear and concise commit message using the emoji (e.g., ✨) itself, not the textual representation (e.g., `:sparkles:`).** A list of supported gitmojis can be found [here](https://gitmoji.dev/). Examples:
-       * ✨ Added a new feature to filter tables
-       * 🐛 Fixed a typo in the welcome message
-       * 📝 Updated README.md with new installation instructions
+   - If your changes include modifications to any packages within the `frontend/packages` directory:
+     - Use `pnpm changeset` at the top level of this project.
+     - **Always select the @liam-hq/cli package**, in addition to any other modified packages.
+   - **Write a clear and concise commit message using the emoji (e.g., ✨) itself, not the textual representation (e.g., `:sparkles:`).** A list of supported gitmojis can be found [here](https://gitmoji.dev/). Examples:
+     - ✨ Added a new feature to filter tables
+     - 🐛 Fixed a typo in the welcome message
+     - 📝 Updated README.md with new installation instructions
 5. Commit your changes (`git commit -m 'feat: add amazing_feature'`)
 6. Push to the branch (`git push origin feat/amazing_feature`)
 7. [Open a Pull Request](https://github.com/liam-hq/liam/compare?expand=1)

@@ -1,0 +1,122 @@
+---
+title: Repository Architecture
+description: This document provides a detailed overview of our repository structure, architecture, and development workflow.
+---
+
+## Overview
+
+Our project uses a monorepo structure managed with pnpm workspaces, allowing us to maintain multiple packages and applications in a single repository while sharing dependencies and code.
+
+## Repository Structure
+
+```text
+/
+├── frontend/
+│   ├── apps/
+│   │   ├── docs/              # Documentation site (@liam-hq/docs)
+│   │   │   ├── content/       # MDX documentation files
+│   │   │   └── app/            # Next.js app router
+│   │   │   └── components/          # Documentation site components
+│   │   └── erd-web/          # Main web application (@liam-hq/erd-web)
+│   │       ├── app/      # Next.js app router
+│   │      └── components/
+│   │       └── public/       # Static assets
+│   └── packages/
+│       ├── cli/              # Command-line tool (@liam-hq/cli)
+│       │   ├── src/
+│       │   └── package.json
+│       ├── configs/          # Shared configurations (@liam-hq/configs)
+│       │   ├── biome/
+│       │   ├── tsconfig/
+│       │   └── package.json
+│       ├── db-structure/     # Database structure parser (@liam-hq/db-structure)
+│       │   ├── src/
+│       │   │   ├── parser/
+│       │   │   └── utils/
+│       │   └── package.json
+│       ├── erd-core/         # Core ERD functionality (@liam-hq/erd-core)
+│       │   ├── src/
+│       │   │   ├── components/
+│       │   │   ├── hooks/
+│       │   │   └── utils/
+│       │   └── package.json
+│       └── ui/               # UI component library (@liam-hq/ui)
+│           ├── src/
+│           │   ├── components/
+│           │   └── styles/
+│           └── package.json
+└── package.json             # Root package (liam-frontend)
+```
+
+## Packages
+
+This section describes the main responsibilities and relationships between packages in our monorepo. Each package is designed to be modular and focused on specific functionality.
+
+### Web Application (`@liam-hq/erd-web`)
+
+Next.js App Router based web application for exploring ER diagrams. see: [/docs/web](/docs/web)
+
+**Key Responsibilities:**
+
+- Interactive ERD interface
+- Schema file URL parsing
+- Server Components optimization
+
+### CLI Package (`@liam-hq/cli`)
+
+Command-line tool for generating static ERD visualization files. see: [/docs/cli](/docs/cli)
+
+**Key Responsibilities:**
+
+- Interactive project setup via `init` command
+- Static site generation with Vite
+
+### DB Structure Package (`@liam-hq/db-structure`)
+
+Database schema parser supporting multiple formats. see: [/docs/parser/supported-formats](/docs/parser/supported-formats)
+
+**Key Responsibilities:**
+
+- Multiple format parser implementations
+- Automatic format detection
+- Type-safe schema validation
+
+### ERD Core Package (`@liam-hq/erd-core`)
+
+React Flow based ERD visualization components and logic. see: [/docs/ui-features](/docs/ui-features)
+
+**Key Responsibilities:**
+
+- ERD Visualization
+- UI Components
+- State Management
+
+### UI Package (`@liam-hq/ui`)
+
+Base UI component library.
+
+**Key Responsibilities:**
+
+- Reusable components
+- Design systems
+
+**Tech Stack:**
+
+- CSS Modules
+- Radix UI
+- Lucide Icons
+
+### Documentation Site (`frontend/apps/docs`)
+
+Built with [Fumadocs](https://fumadocs.vercel.app/).
+
+**Key Responsibilities:**
+
+- User documentation
+- Contribution guides
+
+### Development Tools
+
+- **Linting & Formatting**: Biome
+- **Testing**: Vitest
+- **Build Tool**: Turborepo

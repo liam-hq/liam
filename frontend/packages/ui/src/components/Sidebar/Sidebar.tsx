@@ -324,9 +324,7 @@ const SidebarGroupContent = forwardRef<HTMLDivElement, ComponentProps<'div'>>(
 SidebarGroupContent.displayName = 'SidebarGroupContent'
 
 const SidebarMenu = forwardRef<HTMLUListElement, ComponentProps<'ul'>>(
-  ({ className, ...props }, ref) => (
-    <ul ref={ref} data-sidebar="menu" {...props} />
-  ),
+  ({ ...props }, ref) => <ul ref={ref} data-sidebar="menu" {...props} />,
 )
 SidebarMenu.displayName = 'SidebarMenu'
 

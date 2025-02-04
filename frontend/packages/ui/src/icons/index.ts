@@ -31,6 +31,7 @@ export * from './Eye'
 export * from './EyeClosed'
 
 export {
+  Copy,
   KeyRound,
   Hash,
   Link,

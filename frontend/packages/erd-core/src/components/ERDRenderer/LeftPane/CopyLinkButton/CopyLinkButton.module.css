@@ -1,0 +1,19 @@
+.button {
+  display: grid;
+  grid-auto-flow: column;
+  gap: var(--spacing-2);
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.icon {
+  width: 0.75rem;
+  height: 0.75rem;
+  color: var(--overlay-70);
+}
+
+.label {
+  color: var(--global-foreground);
+  font-family: var(--main-font);
+  font-size: var(--font-size-2);
+}

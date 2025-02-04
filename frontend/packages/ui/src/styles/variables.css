@@ -6,12 +6,14 @@
   --code-font: 'ui-monospace', 'IBM Plex Mono', SF Mono, Menlo, Monaco, Consolas,
     monospace;
 
+  --z-index-toolbar-closed: 800;
   --z-index-sidebar: 900;
   --z-index-drawer: 900;
   --z-index-header: 1000;
-  --z-index-toolbar: 1050;
   --z-index-dropdown-menu: 1100;
   --z-index-tooltip: 2000;
   --z-index-toast: 3000;
+  --z-index-overlay: 3100;
+  --z-index-toolbar-opened: 3200;
   --z-index-cookie-consent: 4000;
 }

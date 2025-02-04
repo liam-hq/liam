@@ -2,10 +2,10 @@
 
 
 ## Summary
-* 967 MIT
-* 80 Apache 2.0
-* 63 ISC
-* 25 Simplified BSD
+* 1011 MIT
+* 77 Apache 2.0
+* 64 ISC
+* 27 Simplified BSD
 * 17 New BSD
 * 3 MIT OR Apache-2.0
 * 3 BlueOak-1.0.0

@@ -12,6 +12,7 @@
 @media screen and (max-width: 767px) {
   .header {
     position: sticky;
+    z-index: 1;
   }
   .header[data-state='closed'] {
     position: relative;
