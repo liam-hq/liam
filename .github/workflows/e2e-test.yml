@@ -1,9 +1,11 @@
 name: E2E Tests
 on:
-  push:
-    branches:
-      - main
-  pull_request:
+  workflow_run:
+    workflows:
+      - "Vercel Deployment"
+      - "Vercel Deployment erd-sample"
+    types:
+      - completed
 
 env:
   CI: true
@@ -14,14 +16,36 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  fetch-deployment-outputs:
+    runs-on: ubuntu-latest
+    outputs:
+      erd-web-url: ${{ steps.set-env.outputs.erd-web-url }}
+      cli-url: ${{ steps.set-env.outputs.cli-url }}
+    steps:
+      - name: Get deployment outputs
+        id: set-env
+        run: |
+          DEPLOYMENT_RUN_ID=${{ github.event.workflow_run.id }}
+          OUTPUTS=$(gh run view $DEPLOYMENT_RUN_ID --json jobs -q ".jobs[0].steps[-1].outputs")
+
+          ERD_WEB_URL=$(echo "$OUTPUTS" | jq -r '.erd-web-url')
+          CLI_URL=$(echo "$OUTPUTS" | jq -r '.cli-url')
+
+          echo "erd-web-url=$ERD_WEB_URL" >> $GITHUB_OUTPUT
+          echo "cli-url=$CLI_URL" >> $GITHUB_OUTPUT
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
   test-cli:
+    needs: fetch-deployment-outputs
     uses: ./.github/workflows/_run_e2e_test.yml
     with:
-      url: 'https://liam-erd-sample.vercel.app/'
+      url: ${{ needs.fetch-deployment-outputs.outputs.cli-url }}
       working-directory: 'frontend/packages/cli'
 
   test-erd-web:
+    needs: fetch-deployment-outputs
     uses: ./.github/workflows/_run_e2e_test.yml
     with:
-      url: 'https://liam-erd-web.vercel.app/erd/p/github.com/mastodon/mastodon/blob/main/db/schema.rb'
+      url: ${{ needs.fetch-deployment-outputs.outputs.erd-web-url }}
       working-directory: 'frontend/packages/erd-core'
