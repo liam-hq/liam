@@ -6,6 +6,7 @@
   "main": "src/index.ts",
   "dependencies": {
     "@liam-hq/ui": "workspace:*",
+    "@orama/orama": "3.0.5",
     "@radix-ui/react-dialog": "1.1.5",
     "@radix-ui/react-toolbar": "1.1.0",
     "@xyflow/react": "12.3.5",

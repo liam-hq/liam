@@ -110,3 +110,33 @@
   width: 1px;
   background-color: var(--fd-border, #e5e7eb);
 }
+
+/* radioGroup */
+
+.radioGroup {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.radioGroup label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.radioGroup input[type='radio'] {
+  width: 1rem;
+  height: 1rem;
+  appearance: revert;
+}
+
+.radioGroup input[type='radio']:checked + span {
+  font-weight: bold;
+}
+
+.radioGroup input[type='radio']:focus {
+  outline-offset: 2px;
+}

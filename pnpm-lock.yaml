@@ -306,6 +306,9 @@ importers:
       '@liam-hq/ui':
         specifier: workspace:*
         version: link:../ui
+      '@orama/orama':
+        specifier: 3.0.5
+        version: 3.0.5
       '@radix-ui/react-dialog':
         specifier: 1.1.5
         version: 1.1.5(@types/react-dom@19.0.2(@types/react@18.3.12))(@types/react@18.3.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -1718,6 +1721,10 @@ packages:
 
   '@orama/orama@3.0.2':
     resolution: {integrity: sha512-1dfxup89K2DB2bbfx9rXyr/IAvhCKbH79lZCXVh5HWvdJ9g0VAvPIs3+UzjiyOdycEHYTbYundCTN6+Ygj3z4w==}
+    engines: {node: '>= 16.0.0'}
+
+  '@orama/orama@3.0.5':
+    resolution: {integrity: sha512-0cQT/yzRrGCYemggH9Hz2gs7spdWJOqbKCdIRY/f4YkLEyodLMs0B9UXkikoFfLX3Gf2Pcduktlolv34cw79Yw==}
     engines: {node: '>= 16.0.0'}
 
   '@pgsql/types@15.0.2':
@@ -8675,6 +8682,8 @@ snapshots:
       '@opentelemetry/core': 1.30.1(@opentelemetry/api@1.9.0)
 
   '@orama/orama@3.0.2': {}
+
+  '@orama/orama@3.0.5': {}
 
   '@pgsql/types@15.0.2': {}
 
