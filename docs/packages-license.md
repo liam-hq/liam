@@ -3,7 +3,7 @@
 
 ## Summary
 * 1011 MIT
-* 77 Apache 2.0
+* 78 Apache 2.0
 * 64 ISC
 * 27 Simplified BSD
 * 17 New BSD
@@ -6760,6 +6760,17 @@ CC-BY-4.0 permitted
 * /home/runner/work/liam/liam
 
 <a href="http://opensource.org/licenses/mit-license">MIT</a> permitted
+
+
+
+<a name="fuse.js"></a>
+### fuse.js v7.1.0
+#### 
+
+##### Paths
+* /home/runner/work/liam/liam
+
+<a href="http://www.apache.org/licenses/LICENSE-2.0.txt">Apache 2.0</a> permitted
 
 
 
