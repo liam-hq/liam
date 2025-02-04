@@ -20,6 +20,7 @@
     "@liam-hq/configs": "workspace:*",
     "@liam-hq/db-structure": "workspace:*",
     "@playwright/test": "1.50.0",
+    "@types/node": "22.9.0",
     "@types/react": "18",
     "typed-css-modules": "0.9.1",
     "typescript": "5",
