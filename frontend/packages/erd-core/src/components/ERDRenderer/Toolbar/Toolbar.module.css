@@ -1,0 +1,23 @@
+.wrapper {
+  position: fixed;
+  bottom: 16px;
+  left: 16px;
+  transition: transform var(--default-animation-duration)
+    var(--default-timing-function);
+}
+
+.wrapperWithSidebar {
+  left: calc(16px + var(--sidebar-width));
+}
+
+@media (min-width: 768px) {
+  .wrapper {
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: 2rem;
+  }
+
+  .wrapperWithSidebar {
+    left: calc(50% + var(--sidebar-width) / 2);
+  }
+}

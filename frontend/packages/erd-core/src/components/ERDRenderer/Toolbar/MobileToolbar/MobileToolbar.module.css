@@ -4,11 +4,9 @@
   border-radius: var(--border-radius-lg);
   background-color: var(--pane-background);
   box-shadow: 0px 4px 20px 0px var(--shadow-basic-shadow);
-  position: fixed;
-  left: 16px;
-  bottom: 16px;
   flex-direction: column;
   justify-content: center;
+  position: relative;
   gap: var(--spacing-2, 8px);
   transition: width 150ms ease, height 150ms ease; /* Smooth resizing animation */
   overflow: hidden;
