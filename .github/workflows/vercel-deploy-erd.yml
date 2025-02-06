@@ -75,7 +75,7 @@ jobs:
       - uses: ./.github/actions/pnpm-setup
       - name: Install Vercel CLI
         run: pnpm add --global vercel@latest
-      - name: Pull Vercel Enviroment Infomation
+      - name: Pull Vercel Environment Information
         run: vercel pull --yes --environment=${{ needs.setup-deployment.outputs.environment }} --token=${{ secrets.VERCEL_TOKEN }}
       - name: Run prepare command
         run:  pnpm build
@@ -86,17 +86,39 @@ jobs:
       - name: Deploy Project Artifacts to Vercel
         run: |
           vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }} ${{ needs.setup-deployment.outputs.environment == 'production' && '--prod' || '' }} > deployment-url.txt
-          echo "deployment-url=$(cat deployment-url.txt)" >> $GITHUB_OUTPUT
-        id: deployment
+          DEPLOY_URL=$(cat deployment-url.txt)
+          echo "deployment-url=$DEPLOY_URL" >> $GITHUB_OUTPUT
+      - name: Save Deployment URLs
+        run: |
+          echo '{"${{ matrix.apps.name }}": "'"$DEPLOY_URL"'"}' > deployment-urls.json
+      - name: Upload Deployment URLs
+        uses: actions/upload-artifact@v4
+        with:
+          name: deployment-urls
+          path: deployment-urls.json
+
   run-e2e:
     needs: deploy
     if: needs.deploy.result == 'success'
-    strategy:
-      matrix:
-        apps: ${{ fromJson(needs.deploy.outputs.matrix) }}
-    uses: ./.github/workflows/_run_e2e_test.yml
-    with:
-      url: ${{ needs.deploy.outputs[matrix.apps.name].url }}
-    concurrency:
-      group: ${{ github.workflow }}-${{ github.ref }}-e2e-${{ matrix.apps.name }}
-      cancel-in-progress: true
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: deployment-urls
+
+      - name: Read Deployment URLs
+        id: deployment-urls
+        run: |
+          cat deployment-urls.json
+          echo "DEPLOYMENT_URLS=$(cat deployment-urls.json)" >> $GITHUB_ENV
+
+      - name: Run E2E Tests
+        run: |
+          deployment_urls='${{ env.DEPLOYMENT_URLS }}'
+          echo "Deployment URLs JSON: $deployment_urls"
+
+          for app in $(echo "$deployment_urls" | jq -r 'keys[]'); do
+            url=$(echo "$deployment_urls" | jq -r ".\"$app\"")
+            echo "Running E2E tests for $app at $url"
+            URL = "$url" pnpm test:e2e
+          done
