@@ -91,9 +91,12 @@ jobs:
   run-e2e:
     needs: deploy
     if: needs.deploy.result == 'success'
+    strategy:
+      matrix:
+        apps: ${{ fromJson(needs.deploy.outputs.matrix) }}
     uses: ./.github/workflows/_run_e2e_test.yml
     with:
-      url: ${{ needs.deploy.outputs.url }}
+      url: ${{ needs.deploy.outputs[matrix.apps.name].url }}
     concurrency:
-      group: ${{ github.workflow }}-${{ github.ref }}-e2e
+      group: ${{ github.workflow }}-${{ github.ref }}-e2e-${{ matrix.apps.name }}
       cancel-in-progress: true
