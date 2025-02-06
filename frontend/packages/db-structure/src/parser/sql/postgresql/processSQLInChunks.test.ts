@@ -60,5 +60,18 @@ describe(processSQLInChunks, () => {
       expect(callback).toHaveBeenCalledWith('SELECT 1;\nSELECT 2;\nSELECT 3;')
       expect(callback).toHaveBeenCalledWith('SELECT 4;')
     })
+
+    it('should correctly process SQL chunks while ignoring multi-line comments', async () => {
+      const input =
+        'SELECT 1;\n/* This is a\nmulti-line comment */\nSELECT 2;\nSELECT 3;'
+      const chunkSize = 3
+      const callback = vi.fn()
+
+      await processSQLInChunks(input, chunkSize, callback)
+
+      expect(callback).toHaveBeenCalledTimes(2)
+      expect(callback).toHaveBeenCalledWith('SELECT 1;\n\nSELECT 2;')
+      expect(callback).toHaveBeenCalledWith('SELECT 3;')
+    })
   })
 })
