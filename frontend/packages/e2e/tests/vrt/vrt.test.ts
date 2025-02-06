@@ -4,7 +4,9 @@ import { expect, test } from '@playwright/test'
 const screenshot = async (page: Page, targetPage: TargetPage) => {
   await page.goto(targetPage.path)
 
-  const cookieAcceptButton = page.getByRole('button', { name: 'Accept' })
+  const cookieAcceptButton = page.getByRole('button', {
+    name: 'Accept All Cookies',
+  })
   if ((await cookieAcceptButton.count()) > 0) {
     await cookieAcceptButton.click()
   }
