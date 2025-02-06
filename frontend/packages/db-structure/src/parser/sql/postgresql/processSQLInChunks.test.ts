@@ -60,5 +60,38 @@ describe(processSQLInChunks, () => {
       expect(callback).toHaveBeenCalledWith('SELECT 1;\nSELECT 2;\nSELECT 3;')
       expect(callback).toHaveBeenCalledWith('SELECT 4;')
     })
+
+    it('should handle dollar-quoted string literals correctly', async () => {
+      const input = `
+        CREATE FUNCTION test1() RETURNS void
+        LANGUAGE plpgsql
+        AS $$
+        BEGIN
+          SELECT 1;
+        END;
+        $$;SELECT 2;
+        CREATE FUNCTION test2() RETURNS void
+        LANGUAGE plpgsql
+        AS $$
+        BEGIN
+          SELECT 3;
+          SELECT 4;
+        END;
+        $$;SELECT 5;
+      `
+      const chunkSize = 6
+      const callback = vi.fn()
+
+      await processSQLInChunks(input, chunkSize, callback)
+
+      expect(callback).toHaveBeenCalledTimes(2)
+      expect(callback.mock.calls[0]?.[0]).toContain('CREATE FUNCTION test1()')
+      expect(callback.mock.calls[0]?.[0]).toContain('SELECT 1;')
+      expect(callback.mock.calls[1]?.[0]).toContain('SELECT 2;')
+      expect(callback.mock.calls[1]?.[0]).toContain('CREATE FUNCTION test2()')
+      expect(callback.mock.calls[1]?.[0]).toContain('SELECT 3;')
+      expect(callback.mock.calls[1]?.[0]).toContain('SELECT 4;')
+      expect(callback.mock.calls[1]?.[0]).toContain('SELECT 5;')
+    })
   })
 })
