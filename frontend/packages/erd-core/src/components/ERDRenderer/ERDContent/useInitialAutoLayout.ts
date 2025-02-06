@@ -22,7 +22,7 @@ export const useInitialAutoLayout = (
     () =>
       nodes
         .filter((node) => node.type === 'table')
-        .some((node) => node.measured),
+        .some((node) => node.measured) || nodes.length === 1,
     [nodes],
   )
   const { getEdges } = useReactFlow()
