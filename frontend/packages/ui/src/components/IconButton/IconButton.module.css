@@ -17,6 +17,10 @@
   }
 }
 
+.iconWrapper:focus-visible {
+  outline: 1px solid var(--primary-color);
+}
+
 .icon {
   display: inline-flex;
   align-items: center;

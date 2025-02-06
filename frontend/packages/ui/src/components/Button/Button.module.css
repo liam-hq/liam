@@ -7,6 +7,10 @@
   color: var(--button-primary-foreground);
 }
 
+.wrapper:focus-visible {
+  outline: 1px solid var(--button-primary);
+}
+
 .icon {
   display: flex;
   place-content: center;

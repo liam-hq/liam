@@ -73,6 +73,10 @@
     var(--default-timing-function);
 }
 
+.iconWrapper:focus-visible {
+  outline: 1px solid var(--primary-color);
+}
+
 .iconWrapper:hover {
   background-color: var(--pane-background-active);
 

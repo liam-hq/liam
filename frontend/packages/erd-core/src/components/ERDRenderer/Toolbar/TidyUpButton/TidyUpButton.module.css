@@ -3,7 +3,11 @@
   padding: var(--spacing-2, 8px) var(--spacing-1, 4px);
   align-items: center;
   gap: var(--spacing-2, 8px);
-
+  border-radius: var(--border-radius-base);
   color: var(--global-foreground, #fff);
   font-size: var(--font-size-2, 11px);
+}
+
+.menuButton:focus-visible {
+  outline: 1px solid var(--primary-color);
 }

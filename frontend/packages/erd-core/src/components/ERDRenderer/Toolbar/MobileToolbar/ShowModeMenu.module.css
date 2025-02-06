@@ -13,6 +13,11 @@
   align-items: center;
   gap: var(--spacing-1, 4px);
   align-self: stretch;
+  border-radius: var(--border-radius-base);
+}
+
+.backButton:focus-visible {
+  outline: 1px solid var(--primary-color);
 }
 
 .cheveron {
@@ -43,4 +48,8 @@
   border: 1px solid var(--button-border, #434546);
   color: var(--button-secondary-foreground, #fff);
   font-size: var(--font-size-3, 12px);
+}
+
+.closeButton:focus-visible {
+  outline: 1px solid var(--primary-color);
 }

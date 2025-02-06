@@ -21,6 +21,10 @@
   color: var(--overlay-70);
 }
 
+.header:focus-visible {
+  outline: 1px solid var(--primary-color);
+}
+
 .iconTitleContainer {
   display: grid;
   grid-auto-flow: column;

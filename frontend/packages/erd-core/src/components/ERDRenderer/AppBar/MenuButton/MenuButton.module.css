@@ -2,11 +2,16 @@
   display: grid;
   align-items: center;
   justify-content: center;
-  padding: var(--spacing-2);
-
+  padding: var(--spacing-1);
+  margin: 0 var(--spacing-2);
+  border-radius: var(--border-radius-base);
   &:hover .icon {
     color: var(--global-foreground);
   }
+}
+
+.wrapper:focus-visible {
+  outline: 1px solid var(--primary-color);
 }
 
 .icon {

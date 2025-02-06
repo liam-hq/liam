@@ -9,6 +9,14 @@
   cursor: pointer;
 }
 
+.header:focus-visible {
+  outline: 1px solid var(--primary-color);
+}
+
+.header:focus-visible {
+  outline: 1px solid var(--primary-color);
+}
+
 @media screen and (max-width: 767px) {
   .header {
     position: sticky;

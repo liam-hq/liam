@@ -49,6 +49,11 @@
   gap: var(--spacing-2, 8px);
   color: var(--global-foreground, #fff);
   font-size: var(--font-size-2, 11px);
+  border-radius: var(--border-radius-base);
+}
+
+.menuButton:focus-visible {
+  outline: 1px solid var(--primary-color);
 }
 
 .showMode {
@@ -64,9 +69,13 @@
   padding: var(--spacing-1, 4px) var(--spacing-2, 8px);
   align-items: center;
   gap: var(--spacing-1half, 6px);
-
+  border-radius: var(--border-radius-base);
   color: var(--button-secondary-foreground, #fff);
   font-size: var(--font-size-3, 12px);
+}
+
+.showModeMenuButton:focus-visible {
+  outline: 1px solid var(--primary-color);
 }
 
 .cheveron {
@@ -93,4 +102,8 @@
   border: 1px solid var(--button-border, #434546);
   color: var(--button-secondary-foreground, #fff);
   font-size: var(--font-size-3, 12px);
+}
+
+.closeButton:focus-visible {
+  outline: 1px solid var(--primary-color);
 }

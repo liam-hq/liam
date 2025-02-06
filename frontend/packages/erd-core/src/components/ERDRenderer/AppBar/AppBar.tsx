@@ -24,7 +24,7 @@ export const AppBar: FC = () => {
         <TooltipProvider>
           <TooltipRoot>
             <TooltipTrigger asChild>
-              <a href="https://liambx.com" target="_blank" rel="noreferrer">
+              <a href="https://liambx.com" target="_blank" rel="noreferrer" className={styles.iconWrapper}>
                 <LiamLogoMark className={styles.logo} />
               </a>
             </TooltipTrigger>
