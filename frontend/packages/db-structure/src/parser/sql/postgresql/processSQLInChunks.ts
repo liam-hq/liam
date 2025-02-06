@@ -11,8 +11,13 @@ export const processSQLInChunks = async (
   callback: (chunk: string) => Promise<void>,
 ): Promise<void> => {
   const semicolon = ';'
-  // Even though the parser can handle "--", we remove such lines for ease of splitting by semicolons.
-  const lines = input.split('\n').filter((line) => !line.startsWith('--'))
+
+  // Even though the parser can handle comments,
+  // we remove such lines for ease of splitting by semicolons.
+  const processedInput = input.replace(/\/\*[\s\S]*?\*\//g, '')
+  const lines = processedInput
+    .split('\n')
+    .filter((line) => !line.trim().startsWith('--'))
 
   let partialStmt = ''
 
