@@ -1,7 +1,7 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest'
-import inquirer from 'inquirer'
 import fs from 'node:fs'
 import path from 'node:path'
+import inquirer from 'inquirer'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { initCommand } from './index.js'
 
 function setupMocks() {
@@ -38,7 +38,9 @@ describe('initCommand', () => {
     await initCommand.parseAsync(['node', 'test', 'init'])
 
     expect(console.info).toHaveBeenCalledWith(
-      expect.stringContaining('npx @liam-hq/cli erd build --input schema.sql --format postgresql'),
+      expect.stringContaining(
+        'npx @liam-hq/cli erd build --input schema.sql --format postgresql',
+      ),
     )
   })
 
@@ -58,12 +60,12 @@ describe('initCommand', () => {
 
     expect(mockFs.mkdirSync).toHaveBeenCalledWith(
       expect.stringContaining('.github/workflows'),
-      expect.any(Object)
+      expect.any(Object),
     )
     expect(mockFs.writeFileSync).toHaveBeenCalledWith(
       expect.stringContaining('erd.yml'),
       expect.stringContaining('name: ERD Build'),
-      'utf-8'
+      'utf-8',
     )
   })
 })
