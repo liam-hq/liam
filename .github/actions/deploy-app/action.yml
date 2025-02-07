@@ -1,0 +1,45 @@
+name: "Deploy App"
+
+inputs:
+  app-name:
+    required: true
+    type: string
+  environment:
+    required: true
+    type: string
+  vercel-project-id-key:
+    required: true
+    type: string
+  vercel-token:
+    required: true
+    type: string
+outputs:
+  deployment-url:
+    value: ${{ steps.deployment.outputs.deployment-url }}
+
+runs:
+  using: composite
+  steps:
+    - uses: actions/checkout@v4
+    - uses: ./.github/actions/pnpm-setup
+    - name: Install Vercel CLI
+      run: pnpm add --global vercel@latest
+      shell: bash
+    - name: Pull Vercel Environment Information
+      run: vercel pull --yes --environment=${{ inputs.environment }} --token=${{ inputs.vercel-token }}
+      shell: bash
+    - name: Run prepare command
+      run: pnpm build
+      shell: bash
+    - name: Update index.html content
+      run: pnpm --filter ${{ inputs.app-name }} update_dist_content
+      shell: bash
+    - name: Build Project Artifacts
+      run: vercel build ${{ inputs.environment == 'production' && '--prod' || '' }}
+      shell: bash
+    - name: Deploy Project Artifacts to Vercel
+      id: deployment
+      run: |
+        DEPLOY_URL=$(vercel deploy --prebuilt --token=${{ inputs.vercel-token }} ${{ inputs.environment == 'production' && '--prod' || '' }})
+        echo "deployment-url=$DEPLOY_URL" >> $GITHUB_OUTPUT
+      shell: bash
