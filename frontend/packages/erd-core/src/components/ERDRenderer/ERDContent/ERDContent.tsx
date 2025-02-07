@@ -2,6 +2,7 @@ import { selectTableLogEvent } from '@/features/gtm/utils'
 import { repositionTableLogEvent } from '@/features/gtm/utils/repositionTableLogEvent'
 import { useVersion } from '@/providers'
 import { updateActiveTableName, useUserEditingActiveStore } from '@/stores'
+import { isTouchDevice } from '@/utils'
 import {
   Background,
   BackgroundVariant,
@@ -159,7 +160,7 @@ export const ERDContentInner: FC<Props> = ({
         onNodeDragStop={handleDragStopNode}
         panOnScroll
         panOnDrag={panOnDrag}
-        selectionOnDrag
+        selectionOnDrag={!isTouchDevice()}
         deleteKeyCode={null} // Turn off because it does not want to be deleted
         attributionPosition="bottom-left"
         nodesConnectable={false}

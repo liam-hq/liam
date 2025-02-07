@@ -1,5 +1,18 @@
 # @liam-hq/cli
 
+## 0.3.4
+
+### Patch Changes
+
+- [#677](https://github.com/liam-hq/liam/pull/677) - 🐛 Removed a green dot on the left top when it rendered / Thanks [@tnyo43](https://github.com/tnyo43)!
+- [#680](https://github.com/liam-hq/liam/pull/680) - 🎨 Add Mr.Jack svg to NetworkError / Thanks [@hoshinotsuyoshi](https://github.com/hoshinotsuyoshi)!
+- [#671](https://github.com/liam-hq/liam/pull/671) - 🐛 Improve ERD auto-layout rendering with state-based approach / Thanks [@junkisai](https://github.com/junkisai)!
+- [#677](https://github.com/liam-hq/liam/pull/677) - 🐛 Removed a green dot on the left top when it rendered / Thanks [@tnyo43](https://github.com/tnyo43)!
+- [#680](https://github.com/liam-hq/liam/pull/680) - 🎨 Add Mr.Jack svg to NetworkError / Thanks [@hoshinotsuyoshi](https://github.com/hoshinotsuyoshi)!
+- [#690](https://github.com/liam-hq/liam/pull/690) - ✨ Disable selectionOnDrag on touch devices / Thanks [@MH4GF](https://github.com/MH4GF)!
+- [#673](https://github.com/liam-hq/liam/pull/673) - 🐛 Adjust the item height calculation in the Columns component. / Thanks [@MH4GF](https://github.com/MH4GF)!
+- [#671](https://github.com/liam-hq/liam/pull/671) - 🐛 Improve ERD auto-layout rendering with state-based approach / Thanks [@junkisai](https://github.com/junkisai)!
+
 ## 0.3.3
 
 ### Patch Changes

@@ -59,7 +59,7 @@ export const RelationshipEdge: FC<Props> = ({
             fill="url(#myGradient)"
           >
             <animateMotion
-              begin={`${i * (ANIMATE_DURATION / PARTICLE_COUNT)}s`}
+              begin={`${-i * (ANIMATE_DURATION / PARTICLE_COUNT)}s`}
               dur={`${ANIMATE_DURATION}s`}
               repeatCount="indefinite"
               rotate="auto"

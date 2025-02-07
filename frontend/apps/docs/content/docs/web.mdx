@@ -28,6 +28,21 @@ https://liambx.com/erd/p/github.com/docusealco/docuseal/blob/master/db/schema.rb
 
 It's so easy! Isn't it? 🚀
 
+## Tips & Tricks
+
+### Bookmarklet for Quick Access
+
+You can create a bookmarklet to quickly open schema files in Liam ERD. Here's how:
+
+1. Create a new bookmark in your browser
+2. Set the following JavaScript code as the URL:
+
+```javascript
+javascript:(function(){var u=window.location.href;var newUrl="https://liambx.com/erd/p/" + u.replace(/^https?:\/\//, '');window.open(newUrl,'_blank');})();
+```
+
+Now, when viewing a schema file (like `schema.rb`) on GitHub, simply click the bookmarklet to open it directly in Liam ERD! 🎯
+
 ## Appendix: Schema Format Options
 
 ### Auto-Detecting Schema Format
