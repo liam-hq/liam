@@ -9463,7 +9463,7 @@ Public Domain manually approved
 
 
 <a name="nanoid"></a>
-### nanoid v3.3.7
+### nanoid v5.0.9
 #### 
 
 ##### Paths
