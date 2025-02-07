@@ -2,6 +2,9 @@
   "name": "@liam-hq/e2e",
   "private": true,
   "version": "0.0.0",
+  "publishConfig": {
+    "access": "public"
+  },
   "devDependencies": {
     "@biomejs/biome": "1.9.3",
     "@playwright/test": "1.50.1",

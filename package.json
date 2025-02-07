@@ -2,6 +2,9 @@
   "name": "liam-frontend",
   "private": true,
   "version": "0.0.1",
+  "publishConfig": {
+    "access": "public"
+  },
   "devDependencies": {
     "@changesets/cli": "2.27.10",
     "@changesets/get-github-info": "0.6.0",

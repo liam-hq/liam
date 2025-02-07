@@ -7,6 +7,9 @@ inputs:
   environment:
     required: true
     type: string
+  vercel-org-id:
+    required: true
+    type: string
   vercel-project-id-key:
     required: true
     type: string
@@ -20,8 +23,10 @@ outputs:
 runs:
   using: composite
   steps:
-    - uses: actions/checkout@v4
-    - uses: ./.github/actions/pnpm-setup
+    - name: Checkout repository
+      uses: actions/checkout@v4
+    - name: Setup pnpm
+      uses: ./.github/actions/pnpm-setup
     - name: Install Vercel CLI
       run: pnpm add --global vercel@latest
       shell: bash
@@ -35,11 +40,18 @@ runs:
       run: pnpm --filter ${{ inputs.app-name }} update_dist_content
       shell: bash
     - name: Build Project Artifacts
-      run: vercel build ${{ inputs.environment == 'production' && '--prod' || '' }}
+      env:
+        VERCEL_ORG_ID: ${{ inputs.vercel-org-id }}
+        VERCEL_PROJECT_ID: ${{ inputs.vercel-project-id-key }}
+      run: vercel build --output .vercel/output ${{ inputs.environment == 'production' && '--prod' || '' }}
       shell: bash
+
     - name: Deploy Project Artifacts to Vercel
       id: deployment
+      env:
+        VERCEL_ORG_ID: ${{ inputs.vercel-org-id }}
+        VERCEL_PROJECT_ID: ${{ inputs.vercel-project-id-key }}
       run: |
-        DEPLOY_URL=$(vercel deploy --prebuilt --token=${{ inputs.vercel-token }} ${{ inputs.environment == 'production' && '--prod' || '' }})
-        echo "deployment-url=$DEPLOY_URL" >> $GITHUB_OUTPUT
+        vercel deploy --prebuilt --token=${{ inputs.vercel-token }} ${{ inputs.environment == 'production' && '--prod' || '' }} > deployment-url.txt
+        echo "deployment-url=$(cat deployment-url.txt)" >> $GITHUB_OUTPUT
       shell: bash

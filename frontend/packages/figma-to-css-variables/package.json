@@ -2,6 +2,9 @@
   "name": "@liam-hq/figma-to-css-variables",
   "private": true,
   "version": "0.0.0",
+  "publishConfig": {
+    "access": "public"
+  },
   "main": "bin/index.mjs",
   "dependencies": {
     "style-dictionary": "4.1.3"
