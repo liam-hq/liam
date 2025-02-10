@@ -44,7 +44,7 @@ runs:
         find . -type d -name 'public' -exec ls -ld {} \;
       shell: bash
     - name: Build Project Artifacts
-      run: vercel build --output .vercel/output ${{ inputs.environment == 'production' && '--prod' || '' }}
+      run: vercel build ${{ inputs.environment == 'production' && '--prod' || '' }}
       shell: bash
     - name: Deploy Project Artifacts to Vercel
       id: deployment
