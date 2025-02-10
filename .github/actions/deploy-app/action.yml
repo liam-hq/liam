@@ -39,6 +39,10 @@ runs:
     - name: Update index.html content
       run: pnpm --filter ${{ inputs.app-name }} update_dist_content
       shell: bash
+    - name: Find all public directories and check permissions
+      run: |
+        find . -type d -name 'public' -exec ls -ld {} \;
+      shell: bash
     - name: Build Project Artifacts
       run: vercel build --output .vercel/output ${{ inputs.environment == 'production' && '--prod' || '' }}
       shell: bash
