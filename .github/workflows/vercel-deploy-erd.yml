@@ -85,6 +85,9 @@ jobs:
         run:  pnpm build
       - name: Update index.html content
         run:  pnpm --filter ${{ matrix.apps.name }} update_dist_content
+      - name: Find all public directories and check permissions
+        run: |
+          find . -type d -name 'public' -exec ls -ld {} \;
       - name: Build Project Artifacts
         run: vercel build ${{ needs.setup-deployment.outputs.environment == 'production' && '--prod' || '' }}
       - name: Deploy Project Artifacts to Vercel
