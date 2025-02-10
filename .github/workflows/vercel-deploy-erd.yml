@@ -74,7 +74,6 @@ jobs:
         with:
           app-name: ${{ matrix.apps.name }}
           environment: ${{ needs.setup-deployment.outputs.environment }}
-          vercel-org-id: ${{ vars.VERCEL_ORG_ID }}
           vercel-project-id-key: ${{ matrix.apps.vercel-project-id-key }}
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
 

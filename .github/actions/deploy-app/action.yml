@@ -22,28 +22,24 @@ runs:
   steps:
     - name: Checkout repository
       uses: actions/checkout@v4
-    - name: Check node_modules and public folder
-      run: |
-        ls -al ./node_modules
-        ls -al ./public
-      working-directory: '.'
     - name: Cache dependency files
       uses: actions/cache@v4
       id: cache
       with:
         path: |
-          .github/workflows/vercel-deploy-erd.yml
-          .github/workflows/_run_e2e_test.yml
-          frontend/apps/erd-sample/**
-          frontend/apps/erd-web/**
-          frontend/packages/cli/**
-          frontend/packages/db-structure/**
-          frontend/packages/e2e/**
-          frontend/packages/erd-core/**
-          frontend/packages/ui/**
-          pnpm-lock.yaml
+          node_modules
+          frontend/apps/erd-sample/node_modules
+          frontend/apps/erd-web/node_modules
+        key: ${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
+    - name: Check cache status
+      run: |
+        echo "Cache hit: ${{ steps.cache.outputs.cache-hit }}"
+      shell: bash
     - name: Setup pnpm
       uses: ./.github/actions/pnpm-setup
+    - name: List files
+      run: ls -R
+      shell: bash
     - name: Install Vercel CLI
       run: pnpm add --global vercel@latest
       shell: bash
