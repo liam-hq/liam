@@ -24,8 +24,6 @@ runs:
       uses: actions/checkout@v4
     - name: Setup pnpm
       uses: ./.github/actions/pnpm-setup
-      with:
-        working-directory: frontend/apps/${{ inputs.app-name }}
     - name: List files
       run: ls -R
       shell: bash
