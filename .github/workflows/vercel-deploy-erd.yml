@@ -54,7 +54,7 @@ jobs:
     strategy:
       matrix:
         apps:
-          - name: "@liam-hq/erd-sample"
+          - name: erd-sample
             vercel-project-id-key: VERCEL_PROJECT_ID_ERD_SAMPLE
           - name: erd-web
             vercel-project-id-key: VERCEL_PROJECT_ID_ERD_WEB

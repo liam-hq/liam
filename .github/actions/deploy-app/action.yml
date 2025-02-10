@@ -22,21 +22,10 @@ runs:
   steps:
     - name: Checkout repository
       uses: actions/checkout@v4
-    - name: Cache dependency files
-      uses: actions/cache@v4
-      id: cache
-      with:
-        path: |
-          node_modules
-          frontend/apps/erd-sample/node_modules
-          frontend/apps/erd-web/node_modules
-        key: ${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
-    - name: Check cache status
-      run: |
-        echo "Cache hit: ${{ steps.cache.outputs.cache-hit }}"
-      shell: bash
     - name: Setup pnpm
       uses: ./.github/actions/pnpm-setup
+      with:
+        working-directory: frontend/apps/${{ inputs.app-name }}
     - name: List files
       run: ls -R
       shell: bash
