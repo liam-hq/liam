@@ -73,6 +73,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/pnpm-setup
+      - name: Check current directory
+        run: pwd
+      - name: List files
+        run: ls -R
       - name: Install Vercel CLI
         run: pnpm add --global vercel@latest
       - name: Pull Vercel Enviroment Infomation
