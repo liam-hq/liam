@@ -7,9 +7,6 @@ inputs:
   environment:
     required: true
     type: string
-  vercel-org-id:
-    required: true
-    type: string
   vercel-project-id-key:
     required: true
     type: string
@@ -25,6 +22,26 @@ runs:
   steps:
     - name: Checkout repository
       uses: actions/checkout@v4
+    - name: Check node_modules and public folder
+      run: |
+        ls -al ./node_modules
+        ls -al ./public
+      working-directory: '.'
+    - name: Cache dependency files
+      uses: actions/cache@v4
+      id: cache
+      with:
+        path: |
+          .github/workflows/vercel-deploy-erd.yml
+          .github/workflows/_run_e2e_test.yml
+          frontend/apps/erd-sample/**
+          frontend/apps/erd-web/**
+          frontend/packages/cli/**
+          frontend/packages/db-structure/**
+          frontend/packages/e2e/**
+          frontend/packages/erd-core/**
+          frontend/packages/ui/**
+          pnpm-lock.yaml
     - name: Setup pnpm
       uses: ./.github/actions/pnpm-setup
     - name: Install Vercel CLI
@@ -40,18 +57,11 @@ runs:
       run: pnpm --filter ${{ inputs.app-name }} update_dist_content
       shell: bash
     - name: Build Project Artifacts
-      env:
-        VERCEL_ORG_ID: ${{ inputs.vercel-org-id }}
-        VERCEL_PROJECT_ID: ${{ inputs.vercel-project-id-key }}
-      run: vercel build ${{ inputs.environment == 'production' && '--prod' || '' }}
-      shell: /usr/bin/bash -e {0}
-
+      run: vercel build --output .vercel/output ${{ inputs.environment == 'production' && '--prod' || '' }}
+      shell: bash
     - name: Deploy Project Artifacts to Vercel
       id: deployment
-      env:
-        VERCEL_ORG_ID: ${{ inputs.vercel-org-id }}
-        VERCEL_PROJECT_ID: ${{ inputs.vercel-project-id-key }}
       run: |
         vercel deploy --prebuilt --token=${{ inputs.vercel-token }} ${{ inputs.environment == 'production' && '--prod' || '' }} > deployment-url.txt
         echo "deployment-url=$(cat deployment-url.txt)" >> $GITHUB_OUTPUT
-      shell: /usr/bin/bash -e {0}
+      shell: bash

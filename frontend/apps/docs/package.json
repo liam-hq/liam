@@ -2,6 +2,9 @@
   "name": "@liam-hq/docs",
   "private": true,
   "version": "0.0.0",
+  "publishConfig": {
+    "access": "public"
+  },
   "dependencies": {
     "@liam-hq/ui": "workspace:*",
     "@next/third-parties": "15.1.5",
