@@ -2,9 +2,7 @@ import type { ShowMode } from '@/schemas/showMode'
 import type { Cardinality, DBStructure } from '@liam-hq/db-structure'
 import type { Edge, Node } from '@xyflow/react'
 import { columnHandleId } from './columnHandleId'
-import { zIndex } from './constants'
-
-export const NON_RELATED_TABLE_GROUP_NODE_ID = 'non-related-table-group'
+import { NON_RELATED_TABLE_GROUP_NODE_ID, zIndex } from './constants'
 
 type Params = {
   dbStructure: DBStructure
