@@ -11,7 +11,10 @@ const expectColumnVisibilityInTable = async (
   await loadingStatus.waitFor({ state: 'hidden' })
 
   // Find table and ensure it's ready
-  const table = page.getByRole('button', { name: `${tableName} table`, exact: true })
+  const table = page.getByRole('button', {
+    name: `${tableName} table`,
+    exact: true,
+  })
   await table.waitFor({ state: 'attached' })
   await expect(table).toBeVisible()
 
