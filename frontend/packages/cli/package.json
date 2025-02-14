@@ -15,7 +15,7 @@
   },
   "license": "Apache-2.0",
   "private": false,
-  "version": "0.3.5",
+  "version": "0.3.6",
   "type": "module",
   "publishConfig": {
     "access": "public"
@@ -56,7 +56,7 @@
     "build": "pnpm run '/^build:.*/'",
     "build:cli": "rollup -c  && pnpm run cp:prism",
     "build:vite": "vite build",
-    "command:build": "node ./dist-cli/bin/cli.js erd build --input fixtures/input.schema.rb --format schemarb",
+    "command:build": "node ./dist-cli/bin/cli.js erd build --input https://github.com/mastodon/mastodon/blob/main/db/schema.rb --format schemarb",
     "cp:prism": "cp ../db-structure/node_modules/@ruby/prism/src/prism.wasm ./dist-cli/bin/prism.wasm",
     "dev": "pnpm command:build && cp dist/schema.json public/ && pnpm run '/^dev:.*/'",
     "dev:app": "vite --port 5173",

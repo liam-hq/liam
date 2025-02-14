@@ -1,5 +1,11 @@
 # @liam-hq/erd-core
 
+## 0.0.26
+
+### Patch Changes
+
+- [#713](https://github.com/liam-hq/liam/pull/713) - 🐛 Fix hydration error in Mobile / Thanks [@MH4GF](https://github.com/MH4GF)!
+
 ## 0.0.25
 
 ### Patch Changes

@@ -1,5 +1,11 @@
 # @liam-hq/cli
 
+## 0.3.6
+
+### Patch Changes
+
+- [#713](https://github.com/liam-hq/liam/pull/713) - 🐛 Fix hydration error in Mobile / Thanks [@MH4GF](https://github.com/MH4GF)!
+
 ## 0.3.5
 
 ### Patch Changes
