@@ -12,7 +12,6 @@ import {
 import { type Node, useReactFlow } from '@xyflow/react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useERDContentContext } from './ERDContentContext'
-import { computeAutoLayout } from './computeAutoLayout'
 import { highlightNodesAndEdges } from './highlightNodesAndEdges'
 
 export const useInitialAutoLayout = (
@@ -59,10 +58,9 @@ export const useInitialAutoLayout = (
         highlightNodesAndEdges(updatedNodes, getEdges(), {
           activeTableName,
         })
-      const { nodes: layoutedNodes, edges: layoutedEdges } =
-        await computeAutoLayout(highlightedNodes, highlightedEdges)
-      setNodes(layoutedNodes)
-      setEdges(layoutedEdges)
+
+      setNodes(highlightedNodes)
+      setEdges(highlightedEdges)
 
       const fitViewOptions =
         shouldFitViewToActiveTable && activeTableName
