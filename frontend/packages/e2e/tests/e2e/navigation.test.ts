@@ -10,19 +10,20 @@ const expectColumnVisibilityInTable = async (
   const loadingStatus = page.getByRole('status', { name: 'Loading' })
   await loadingStatus.waitFor({ state: 'hidden' })
 
-  // Find table and ensure it's ready
+  // Find and click the table to expand it
   const table = page.getByRole('button', {
     name: `${tableName} table`,
     exact: true,
   })
   await table.waitFor({ state: 'attached' })
   await expect(table).toBeVisible()
+  await table.click()
 
   // Wait for table content to be stable
   await page.waitForLoadState('domcontentloaded')
 
   // Find column and check visibility
-  const column = table.getByText(columnName, { exact: true })
+  const column = page.getByText(columnName, { exact: true })
   await column.waitFor({ state: 'attached' })
 
   if (visibility === 'visible') {
