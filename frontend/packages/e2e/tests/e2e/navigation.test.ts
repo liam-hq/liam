@@ -48,7 +48,7 @@ test.describe('Navigation and URL Parameters', () => {
       await tableNameOption.click()
 
       await expect(page).toHaveURL(/.*showMode=ALL_FIELDS/)
-      await expectColumnVisibilityInTable(page, 'users', 'name', 'visible')
+      await expectColumnVisibilityInTable(page, 'accounts', 'username', 'visible')
     })
 
     test.skip('selecting a table should update active parameter', async () => {})
@@ -77,17 +77,17 @@ test.describe('Navigation and URL Parameters', () => {
       })
       await keyOnlyOption.click()
       await expect(page).toHaveURL(/.*showMode=KEY_ONLY/)
-      await expectColumnVisibilityInTable(page, 'users', 'name', 'hidden')
+      await expectColumnVisibilityInTable(page, 'accounts', 'username', 'hidden')
 
       // Go back
       await page.goBack()
       await expect(page).toHaveURL(/.*showMode=ALL_FIELDS/)
-      await expectColumnVisibilityInTable(page, 'users', 'name', 'visible')
+      await expectColumnVisibilityInTable(page, 'accounts', 'username', 'visible')
 
       // Go forward
       await page.goForward()
       await expect(page).toHaveURL(/.*showMode=KEY_ONLY/)
-      await expectColumnVisibilityInTable(page, 'users', 'name', 'hidden')
+      await expectColumnVisibilityInTable(page, 'accounts', 'username', 'hidden')
     })
 
     test.skip('should handle back/forward navigation with table selection and hiding', async () => {})
