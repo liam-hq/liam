@@ -17,6 +17,15 @@ export const extractDBStructureForTable = (
       relationship.foreignTableName === table.name,
   )
 
+  if (relatedRelationshipsArray.length === 0) {
+    return {
+      tables: {
+        [table.name]: table,
+      },
+      relationships: {},
+    }
+  }
+
   const relatedRelationships: Relationships = {}
   for (const relationship of relatedRelationshipsArray) {
     relatedRelationships[relationship.name] = relationship
