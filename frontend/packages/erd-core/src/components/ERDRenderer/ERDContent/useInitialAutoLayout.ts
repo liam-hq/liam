@@ -13,7 +13,9 @@ import type { Node } from '@xyflow/react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useERDContentContext } from './ERDContentContext'
 import { computeAutoLayout } from './computeAutoLayout'
+import { hasNonRelatedChildNodes } from './hasNonRelatedChildNodes'
 import { highlightNodesAndEdges } from './highlightNodesAndEdges'
+import { updateNodesHiddenState } from './updateNodesHiddenState'
 
 export const useInitialAutoLayout = (
   nodes: Node[],
@@ -49,10 +51,12 @@ export const useInitialAutoLayout = (
 
     if (tableNodesInitialized) {
       setLoading(true)
-      const updatedNodes = nodes.map((node) => ({
-        ...node,
-        hidden: hiddenNodeIds.includes(node.id),
-      }))
+
+      const updatedNodes = updateNodesHiddenState({
+        nodes,
+        hiddenNodeIds,
+        shouldHideGroupNodeId: !hasNonRelatedChildNodes(nodes),
+      })
 
       const { nodes: highlightedNodes, edges: highlightedEdges } =
         highlightNodesAndEdges(updatedNodes, getEdges(), {
