@@ -2,6 +2,7 @@ import {
   addHiddenNodeIds,
   updateActiveTableName,
   updateShowMode,
+  useDBStructureStore,
 } from '@/stores'
 import {
   getActiveTableNameFromUrl,
@@ -18,13 +19,16 @@ export const useInitialAutoLayout = (
   nodes: Node[],
   shouldFitViewToActiveTable: boolean,
 ) => {
-  const tableNodesInitialized = useMemo(
-    () =>
-      nodes
-        .filter((node) => node.type === 'table')
-        .some((node) => node.measured),
-    [nodes],
-  )
+  const dbStructure = useDBStructureStore()
+  const tableNodesInitialized = useMemo(() => {
+    const tableNodes = nodes.filter((node) => node.type === 'table')
+    const isInitializedDbStructure = Object.keys(dbStructure.tables).length > 0
+
+    return (
+      tableNodes.some((node) => node.measured) ||
+      (isInitializedDbStructure && tableNodes.length === 0)
+    )
+  }, [nodes, dbStructure.tables])
   const { getEdges } = useReactFlow()
 
   const {
