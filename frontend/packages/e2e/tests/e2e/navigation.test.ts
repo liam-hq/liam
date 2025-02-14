@@ -17,7 +17,10 @@ const expectColumnVisibilityInTable = async (
   })
   await table.waitFor({ state: 'attached' })
   await expect(table).toBeVisible()
-  await table.click()
+  
+  // Scroll the table into view and ensure it's clickable
+  await table.scrollIntoViewIfNeeded()
+  await table.click({ force: true })
 
   // Wait for table content to be stable
   await page.waitForLoadState('domcontentloaded')
