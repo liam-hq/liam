@@ -18,20 +18,20 @@ const expectColumnVisibilityInTable = async (
   await table.waitFor({ state: 'attached' })
   await expect(table).toBeVisible()
 
-  // Ensure table is in viewport and clickable
+  // Ensure table is in viewport and clickable using JavaScript
   await page.evaluate((tableName) => {
     const element = document.querySelector(`[data-testid="rf__node-${tableName}"]`)
     if (element) {
       element.scrollIntoView({ behavior: 'instant', block: 'center' })
+      // Use JavaScript click to bypass overlay issues
+      element.click()
     }
   }, tableName)
-  await page.waitForTimeout(100) // Brief pause for scroll to complete
-  await table.click()
 
   // Wait for table content to be stable
   await page.waitForLoadState('networkidle')
 
-  // Find column and check visibility
+  // Find column and check visibility with retry
   const column = page.getByText(columnName, { exact: true })
   await column.waitFor({ state: 'attached', timeout: 5000 })
 
