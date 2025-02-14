@@ -20,7 +20,7 @@ const expectColumnVisibilityInTable = async (
 
   // Ensure table is in viewport and clickable using JavaScript
   await page.evaluate((tableName) => {
-    const element = document.querySelector(`[data-testid="rf__node-${tableName}"]`)
+    const element = document.querySelector(`[data-testid="rf__node-${tableName}"]`) as HTMLElement
     if (element) {
       element.scrollIntoView({ behavior: 'instant', block: 'center' })
       // Use JavaScript click to bypass overlay issues
