@@ -32,7 +32,7 @@ const expectColumnVisibilityInTable = async (
   await page.waitForLoadState('networkidle')
 
   // Find column and check visibility with retry
-  const column = page.getByText(columnName, { exact: true })
+  const column = page.getByRole('heading', { name: columnName, exact: true })
   await column.waitFor({ state: 'attached', timeout: 5000 })
 
   if (visibility === 'visible') {
