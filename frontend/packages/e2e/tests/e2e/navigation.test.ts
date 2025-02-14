@@ -1,25 +1,34 @@
 import { type Page, expect, test } from '@playwright/test'
 
-const expectUserTableColumnInAccountsTableVisibility = async (
+const expectColumnVisibilityInTable = async (
   page: Page,
+  tableName: string,
+  columnName: string,
   visibility: 'visible' | 'hidden',
 ) => {
-  const accountsTable = page.getByRole('button', {
-    name: 'accounts table',
-    exact: true,
-  })
-  const userNameColumn = accountsTable.getByText('username')
+  // Wait for loading state to be hidden
+  const loadingStatus = page.getByRole('status', { name: 'Loading' })
+  await loadingStatus.waitFor({ state: 'hidden' })
 
+  // Find table using role and wait for it to be ready
+  const table = page.getByRole('button', { name: `${tableName} table` })
+  await table.waitFor({ state: 'visible' })
+
+  // Find column and check visibility using web-first assertions
+  const column = table.getByText(columnName, { exact: true })
   if (visibility === 'visible') {
-    await expect(userNameColumn).toBeVisible()
+    await expect(column).toBeVisible()
   } else {
-    await expect(userNameColumn).not.toBeVisible()
+    await expect(column).not.toBeVisible()
   }
 }
 
 test.describe('Navigation and URL Parameters', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/')
+    // Wait for initial page load
+    const loadingStatus = page.getByRole('status', { name: 'Loading' })
+    await loadingStatus.waitFor({ state: 'hidden' })
   })
 
   test.describe('Basic URL Parameters', () => {
@@ -33,7 +42,7 @@ test.describe('Navigation and URL Parameters', () => {
       await tableNameOption.click()
 
       await expect(page).toHaveURL(/.*showMode=ALL_FIELDS/)
-      await expectUserTableColumnInAccountsTableVisibility(page, 'visible')
+      await expectColumnVisibilityInTable(page, 'users', 'name', 'visible')
     })
 
     test.skip('selecting a table should update active parameter', async () => {})
@@ -62,17 +71,17 @@ test.describe('Navigation and URL Parameters', () => {
       })
       await keyOnlyOption.click()
       await expect(page).toHaveURL(/.*showMode=KEY_ONLY/)
-      await expectUserTableColumnInAccountsTableVisibility(page, 'hidden')
+      await expectColumnVisibilityInTable(page, 'users', 'name', 'hidden')
 
       // Go back
       await page.goBack()
       await expect(page).toHaveURL(/.*showMode=ALL_FIELDS/)
-      await expectUserTableColumnInAccountsTableVisibility(page, 'visible')
+      await expectColumnVisibilityInTable(page, 'users', 'name', 'visible')
 
       // Go forward
       await page.goForward()
       await expect(page).toHaveURL(/.*showMode=KEY_ONLY/)
-      await expectUserTableColumnInAccountsTableVisibility(page, 'hidden')
+      await expectColumnVisibilityInTable(page, 'users', 'name', 'hidden')
     })
 
     test.skip('should handle back/forward navigation with table selection and hiding', async () => {})
