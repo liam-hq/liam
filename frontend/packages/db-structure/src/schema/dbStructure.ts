@@ -10,6 +10,7 @@ const relationshipNameSchema = v.string()
 
 const columnSchema = v.object({
   name: columnNameSchema,
+  actualName: v.optional(v.undefinedable(v.string())),
   type: v.string(),
   default: v.nullable(v.union([v.string(), v.number(), v.boolean()])),
   check: v.nullable(v.string()),
