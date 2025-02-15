@@ -33,7 +33,7 @@ export const Unique: FC<Props> = ({ columns }) => {
             if (!column.unique) return null
             return (
               <li key={key} className={styles.listItem}>
-                {column.name}
+                {column.actualName ?? column.name}
               </li>
             )
           })}

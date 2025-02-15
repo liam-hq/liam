@@ -11,7 +11,7 @@ type Props = {
 export const ColumnsItem: FC<Props> = ({ column }) => {
   return (
     <div className={styles.wrapper}>
-      <h3 className={styles.heading}>{column.name}</h3>
+      <h3 className={styles.heading}>{column.actualName ?? column.name}</h3>
       {column.comment && <p className={styles.comment}>{column.comment}</p>}
       <dl className={styles.dl}>
         <div className={styles.dlItem}>
