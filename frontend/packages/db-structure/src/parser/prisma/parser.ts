@@ -27,6 +27,7 @@ async function parsePrismaSchema(schemaString: string): Promise<ProcessResult> {
       const defaultValue = extractDefaultValue(field)
       columns[field.name] = {
         name: field.name,
+        actualName: field.dbName ?? undefined,
         type: convertToPostgresColumnType(
           field.type,
           field.nativeType,
