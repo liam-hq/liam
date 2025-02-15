@@ -380,5 +380,28 @@ describe(_processor, () => {
 
       expect(value).toEqual(expected)
     })
+
+    it('map', async () => {
+      const { value } = await processor(`
+        model users {
+          id   BigInt    @id @default(autoincrement())
+          email String   @map("user_email_address")
+        }
+      `)
+
+      const expected = userTable({
+        columns: {
+          email: aColumn({
+            name: 'email',
+            actualName: 'user_email_address',
+            type: 'text',
+            notNull: true,
+            unique: false,
+          }),
+        },
+      })
+
+      expect(value).toEqual(expected)
+    })
   })
 })
