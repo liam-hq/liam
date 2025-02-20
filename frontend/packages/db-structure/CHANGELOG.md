@@ -1,5 +1,13 @@
 # @liam-hq/db-structure
 
+## 0.0.14
+
+### Patch Changes
+
+- [#699](https://github.com/liam-hq/liam/pull/699) - ♻️ Refactor SQL chunk processing to reduce memory errors. / Thanks [@hoshinotsuyoshi](https://github.com/hoshinotsuyoshi)!
+
+Increases the likelihood of processing larger `.sql` files without encountering memory errors.
+
 ## 0.0.13
 
 ### Patch Changes
