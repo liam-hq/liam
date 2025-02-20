@@ -1,6 +1,6 @@
 <h1 align="center">
-  <img src="./assets/logo-light.png#gh-light-mode-only" alt="Liam" width="300">
-  <img src="./assets/logo-dark.png#gh-dark-mode-only" alt="Liam" width="300">
+  <img src="./assets/logo-light.png#gh-light-mode-only" alt="Liam" width="445">
+  <img src="./assets/logo-dark.png#gh-dark-mode-only" alt="Liam" width="445">
 </h1>
 
 <h2 align="center">
@@ -35,7 +35,9 @@ Liam ERD generates beautiful, interactive ER diagrams from your database. Whethe
 ## Quick Start
 
 ### For Public Repositories
+
 Insert `liambx.com/erd/p/` into your schema file's URL:
+
 ```
 # Original: https://github.com/user/repo/blob/master/db/schema.rb
 # Modified: https://liambx.com/erd/p/github.com/user/repo/blob/master/db/schema.rb
@@ -43,7 +45,9 @@ Insert `liambx.com/erd/p/` into your schema file's URL:
 ```
 
 ### For Private Repositories
+
 Run the interactive setup:
+
 ```bash
 npx @liam-hq/cli init
 ```
