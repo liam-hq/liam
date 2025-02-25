@@ -16,8 +16,7 @@ const initCommand = new Command('init').description(
 )
 
 // Map user-friendly selections to the correct --format value
-type FormatMap = Record<string, string>
-const formatMap: FormatMap = {
+const formatMap: Record<string, string> = {
   PostgreSQL: 'postgresql',
   'Ruby on Rails (schema.rb)': 'schemarb',
   'Prisma (schema.prisma)': 'prisma',
