@@ -2,7 +2,8 @@ import { red, yellow } from 'yoctocolors'
 import { CriticalError, WarningError } from './errors.js'
 import { TroubleshootingUrl } from './urls.js'
 
-function actionErrorHandler(error: Error) {
+type ErrorType = Error
+function actionErrorHandler(error: ErrorType) {
   if (error instanceof CriticalError) {
     console.error(red(`ERROR: ${error.message}`))
     return

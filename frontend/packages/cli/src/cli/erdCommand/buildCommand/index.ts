@@ -15,7 +15,7 @@ export const buildCommand = async (
   const { errors: preprocessErrors } = await runPreprocess(
     inputPath,
     outDir,
-    format,
+    format as SupportedFormat, // Type assertion to handle the optional parameter
   )
   if (preprocessErrors.length > 0) {
     // In the future, we want to allow dist to be generated and the process to complete successfully with a warning message, even if there are minor errors.
