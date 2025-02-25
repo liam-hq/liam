@@ -24,6 +24,9 @@
       },
       "suspicious": {
         "noConsoleLog": "error"
+      },
+      "complexity": {
+        "useLiteralKeys": "off"
       }
     }
   },

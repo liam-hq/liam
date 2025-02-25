@@ -315,9 +315,7 @@ describe(_processor, () => {
         }
       `)
 
-      // biome-ignore lint/complexity/useLiteralKeys: for readability and simplicity
       const usersTable = value.tables['users']
-      // biome-ignore lint/complexity/useLiteralKeys: for readability and simplicity
       const postsTable = value.tables['posts']
 
       if (!usersTable || !usersTable.columns) {
@@ -464,7 +462,6 @@ describe(_processor, () => {
           }),
         },
       })
-      // biome-ignore lint/complexity/useLiteralKeys: <explanation>
       expectedTables['relationships'] = {
         postsTousers: aRelationship({
           name: 'postsTousers',

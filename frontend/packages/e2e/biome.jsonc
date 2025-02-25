@@ -4,11 +4,6 @@
     "ignore": ["test-results"]
   },
   "linter": {
-    "rules": {
-      "complexity": {
-        // NOTE: Because of conflicts with typescript settings
-        "useLiteralKeys": "off"
-      }
-    }
+    "rules": {}
   }
 }
