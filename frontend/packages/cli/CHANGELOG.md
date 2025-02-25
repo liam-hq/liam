@@ -1,5 +1,16 @@
 # @liam-hq/cli
 
+## 0.4.3
+
+### Patch Changes
+
+- [#760](https://github.com/liam-hq/liam/pull/760) - ✨ Made `--format` optional in CLI command / Thanks [@NoritakaIkeda](https://github.com/NoritakaIkeda)!
+- [#699](https://github.com/liam-hq/liam/pull/699) - ♻️ Refactor SQL chunk processing to reduce memory errors. / Thanks [@hoshinotsuyoshi](https://github.com/hoshinotsuyoshi)!
+
+Increases the likelihood of processing larger `.sql` files without encountering memory errors.
+
+- [#767](https://github.com/liam-hq/liam/pull/767) - ✨ Support field name mapping with @map in Prisma / Thanks [@tnyo43](https://github.com/tnyo43)!
+
 ## 0.4.2
 
 ### Patch Changes
