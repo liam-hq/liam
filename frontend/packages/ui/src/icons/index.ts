@@ -38,4 +38,5 @@ export {
   AlertTriangle,
   Info,
   XCircle,
+  Dot,
 } from 'lucide-react'

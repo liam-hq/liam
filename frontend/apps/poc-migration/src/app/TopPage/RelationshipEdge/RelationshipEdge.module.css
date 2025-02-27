@@ -1,0 +1,14 @@
+.edge {
+  stroke: var(--pane-border-hover);
+  stroke-width: 1px;
+  transition: stroke 0.3s var(--default-timing-function);
+}
+
+:global([data-loading='true']) .edge {
+  stroke: transparent;
+  opacity: 0;
+}
+
+.hovered {
+  stroke: var(--node-layout);
+}

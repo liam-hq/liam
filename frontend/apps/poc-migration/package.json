@@ -1,0 +1,33 @@
+{
+  "name": "@liam-hq/poc-migration",
+  "private": true,
+  "version": "0.1.0",
+  "scripts": {
+    "gen": "pnpm run '/^gen:.*/'",
+    "gen:css": "tcm src",
+    "dev": "pnpm run '/^dev:.*/'",
+    "dev:css": "tcm src --watch",
+    "dev:next": "next dev --port 3003",
+    "lint": "pnpm run '/^lint:.*/'",
+    "lint:biome": "biome check .",
+    "fmt": "pnpm run '/^fmt:.*/'",
+    "fmt:biome": "biome check --write --unsafe ."
+  },
+  "dependencies": {
+    "@liam-hq/db-structure": "workspace:*",
+    "@liam-hq/ui": "workspace:*",
+    "@xyflow/react": "12.3.5",
+    "next": "15.1.2",
+    "react": "18.3.1",
+    "react-dom": "18",
+    "ts-pattern": "5.4.0"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "1.9.3",
+    "@types/node": "22.9.0",
+    "@types/react": "18",
+    "@types/react-dom": "18",
+    "typed-css-modules": "0.9.1",
+    "typescript": "5"
+  }
+}

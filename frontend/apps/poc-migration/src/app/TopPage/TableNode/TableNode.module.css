@@ -1,0 +1,6 @@
+.wrapper {
+  border-radius: var(--border-radius-md);
+  border: 1px solid var(--overlay-20);
+  min-width: 172px;
+  width: auto;
+}

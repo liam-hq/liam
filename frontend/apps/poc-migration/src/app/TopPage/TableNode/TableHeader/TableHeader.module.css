@@ -1,0 +1,51 @@
+.wrapper {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  background: var(--global-muted-background);
+}
+
+.box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 100%;
+  border-top-left-radius: var(--border-radius-md);
+  background: var(--overlay-10);
+}
+
+.bgGreen {
+  background-color: #1ded831a;
+}
+
+.bgRed {
+  background-color: #f7504933;
+}
+
+.bgYellow {
+  background-color: #ffd7481a;
+}
+
+.container {
+  display: flex;
+  padding: var(--spacing-2);
+  align-items: center;
+  gap: var(--spacing-1);
+  border-top-right-radius: var(--border-radius-md);
+  backdrop-filter: blur(8px);
+  color: var(--overlay-60);
+  text-overflow: ellipsis;
+  font-size: var(--font-size-5);
+  font-weight: 500;
+  line-height: normal;
+}
+
+.tableIcon {
+  min-width: 16px;
+}
+
+.name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
