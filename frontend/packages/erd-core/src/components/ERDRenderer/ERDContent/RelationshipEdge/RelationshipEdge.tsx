@@ -36,26 +36,28 @@ export const RelationshipEdge: FC<Props> = (props) => {
     targetPosition,
   })
 
+  // Ensure marker attributes are set correctly for E2E tests
+  const markerStart = data?.isHighlighted
+    ? 'url(#zeroOrOneRightHighlight)'
+    : 'url(#zeroOrOneRight)'
+  
+  const markerEnd = data?.cardinality === 'ONE_TO_ONE'
+    ? data?.isHighlighted
+      ? 'url(#zeroOrOneLeftHighlight)'
+      : 'url(#zeroOrOneLeft)'
+    : data?.isHighlighted
+      ? 'url(#zeroOrManyLeftHighlight)'
+      : 'url(#zeroOrManyLeft)'
+
   return (
     <>
       <BaseEdge
         id={id}
         path={edgePath}
-        markerStart={
-          data?.isHighlighted
-            ? 'url(#zeroOrOneRightHighlight)'
-            : 'url(#zeroOrOneRight)'
-        }
-        markerEnd={
-          data?.cardinality === 'ONE_TO_ONE'
-            ? data?.isHighlighted
-              ? 'url(#zeroOrOneLeftHighlight)'
-              : 'url(#zeroOrOneLeft)'
-            : data?.isHighlighted
-              ? 'url(#zeroOrManyLeftHighlight)'
-              : 'url(#zeroOrManyLeft)'
-        }
+        markerStart={markerStart}
+        markerEnd={markerEnd}
         className={clsx(styles.edge, data?.isHighlighted && styles.hovered)}
+        data-testid="relationship-edge"
         {...rest}
       />
       {data?.isHighlighted &&
