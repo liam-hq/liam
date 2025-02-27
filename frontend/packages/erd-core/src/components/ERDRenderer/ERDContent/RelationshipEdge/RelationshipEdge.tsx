@@ -19,7 +19,11 @@ export const RelationshipEdge: FC<Props> = ({
   targetPosition,
   id,
   data,
+  sourceHandleId,
+  targetHandleId,
 }) => {
+  // Pass sourceHandleId and targetHandleId to getBezierPath to properly connect
+  // edges to specific handles on nodes in different show modes
   const [edgePath] = getBezierPath({
     sourceX,
     sourceY,
@@ -27,6 +31,8 @@ export const RelationshipEdge: FC<Props> = ({
     targetX,
     targetY,
     targetPosition,
+    ...(sourceHandleId ? { sourceHandleId } : {}),
+    ...(targetHandleId ? { targetHandleId } : {}),
   })
 
   return (
