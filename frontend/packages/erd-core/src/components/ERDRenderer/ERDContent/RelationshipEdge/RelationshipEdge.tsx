@@ -10,19 +10,17 @@ const ANIMATE_DURATION = 6
 
 type Props = EdgeProps<RelationshipEdgeType>
 
-export const RelationshipEdge: FC<Props> = (props) => {
-  const {
-    sourceX,
-    sourceY,
-    sourcePosition,
-    targetX,
-    targetY,
-    targetPosition,
-    id,
-    data,
-    // The rest of the props are handled by React Flow internally
-    ...rest
-  } = props
+export const RelationshipEdge: FC<Props> = ({
+  sourceX,
+  sourceY,
+  sourcePosition,
+  targetX,
+  targetY,
+  targetPosition,
+  id,
+  data,
+  ...rest
+}) => {
   // The sourceHandleId and targetHandleId are used by React Flow internally
   // to connect edges to specific handles on nodes in different show modes
   const [edgePath] = getBezierPath({
