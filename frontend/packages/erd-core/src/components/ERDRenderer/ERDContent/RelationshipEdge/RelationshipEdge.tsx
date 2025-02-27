@@ -10,20 +10,21 @@ const ANIMATE_DURATION = 6
 
 type Props = EdgeProps<RelationshipEdgeType>
 
-export const RelationshipEdge: FC<Props> = ({
-  sourceX,
-  sourceY,
-  sourcePosition,
-  targetX,
-  targetY,
-  targetPosition,
-  id,
-  data,
-  sourceHandleId,
-  targetHandleId,
-}) => {
-  // Pass sourceHandleId and targetHandleId to getBezierPath to properly connect
-  // edges to specific handles on nodes in different show modes
+export const RelationshipEdge: FC<Props> = (props) => {
+  const {
+    sourceX,
+    sourceY,
+    sourcePosition,
+    targetX,
+    targetY,
+    targetPosition,
+    id,
+    data,
+    // The rest of the props are handled by React Flow internally
+    ...rest
+  } = props
+  // The sourceHandleId and targetHandleId are used by React Flow internally
+  // to connect edges to specific handles on nodes in different show modes
   const [edgePath] = getBezierPath({
     sourceX,
     sourceY,
@@ -31,8 +32,6 @@ export const RelationshipEdge: FC<Props> = ({
     targetX,
     targetY,
     targetPosition,
-    ...(sourceHandleId ? { sourceHandleId } : {}),
-    ...(targetHandleId ? { targetHandleId } : {}),
   })
 
   return (
@@ -55,6 +54,7 @@ export const RelationshipEdge: FC<Props> = ({
               : 'url(#zeroOrManyLeft)'
         }
         className={clsx(styles.edge, data?.isHighlighted && styles.hovered)}
+        {...rest}
       />
       {data?.isHighlighted &&
         [...Array(PARTICLE_COUNT)].map((_, i) => (
