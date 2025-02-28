@@ -37,8 +37,10 @@ export default function Account({ session }) {
           const reposResponse = await fetch('https://api.github.com/user/repos', {
             headers: { Authorization: `Bearer ${provider_token}` },
           });
-          const reposData = await reposResponse.json();
-          setRepos(reposData || []);
+          if (reposResponse.ok) {
+            const reposData = await reposResponse.json();
+            setRepos(reposData || []);
+          }
         } else {
           console.warn("No GitHub access token found.");
         }
