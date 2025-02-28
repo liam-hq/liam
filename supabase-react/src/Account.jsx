@@ -30,14 +30,10 @@ export default function Account({ session }) {
           setAvatarUrl(data.avatar_url);
         }
 
-        // 2. Get GitHub User Info and Repos
-        if (provider_token) {
-          const userResponse = await fetch('https://api.github.com/user', {
-            headers: { Authorization: `Bearer ${provider_token}` },
-          });
-          const userData = await userResponse.json();
-          setGithubUser(userData);
+        setGithubUser({ login: user.user_metadata.user_name, avatar_url: user.user_metadata.avatar_url });
 
+        // 2. Get GitHub Repos
+        if (provider_token) {
           const reposResponse = await fetch('https://api.github.com/user/repos', {
             headers: { Authorization: `Bearer ${provider_token}` },
           });
