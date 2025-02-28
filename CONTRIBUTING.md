@@ -60,9 +60,10 @@ Please try to create bug reports that are:
    - If your changes include modifications to any packages within the `frontend/packages` directory:
      - Use `pnpm changeset` at the top level of this project.
    - **Write a clear and concise commit message using the emoji (e.g., ✨) itself, not the textual representation (e.g., `:sparkles:`).** A list of supported gitmojis can be found [here](https://gitmoji.dev/). Examples:
-     - ✨ Added a new feature to filter tables
-     - 🐛 Fixed a typo in the welcome message
-     - 📝 Updated README.md with new installation instructions
+      - ✨ Added a new feature to filter tables
+      - 🐛 Fixed a typo in the welcome message
+      - 📝 Updated README.md with new installation instructions
+   - Note: Changes to `@liam-hq/docs` package do not require changesets as it is listed in the ignore array in `.changeset/config.json`. You will see a message from the changeset-bot titled "⚠️ No Changeset found" - this is the expected behavior and confirms that the ignore configuration is working correctly.
 5. Commit your changes (`git commit -m 'feat: add amazing_feature'`)
 6. Push to the branch (`git push origin feat/amazing_feature`)
 7. [Open a Pull Request](https://github.com/liam-hq/liam/compare?expand=1)

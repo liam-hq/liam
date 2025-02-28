@@ -2,5 +2,8 @@
   "extends": ["../../packages/configs/biome.jsonc"],
   "files": {
     "ignore": ["test-results"]
+  },
+  "linter": {
+    "rules": {}
   }
 }

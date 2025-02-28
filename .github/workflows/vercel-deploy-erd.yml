@@ -37,7 +37,6 @@ jobs:
             src:
               - './.github/workflows/vercel-deploy-erd.yml'
               - './.github/workflows/_run_e2e_test.yml'
-              - './frontend/apps/erd-sample/**'
               - './frontend/apps/erd-web/**'
               - './frontend/packages/cli/**'
               - './frontend/packages/db-structure/**'
@@ -55,8 +54,6 @@ jobs:
     strategy:
       matrix:
         apps:
-          - name: "@liam-hq/erd-sample"
-            vercel-project-id-key: VERCEL_PROJECT_ID_ERD_SAMPLE
           - name: erd-web
             vercel-project-id-key: VERCEL_PROJECT_ID_ERD_WEB
     environment:

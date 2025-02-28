@@ -1,0 +1,3 @@
+[pr_description]
+use_description_markers = true
+include_generated_by_header = true

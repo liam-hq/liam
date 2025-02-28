@@ -14,19 +14,68 @@ import { convertToPostgresColumnType } from './convertToPostgresColumnType.js'
 // CommonJS module can not support all module.exports as named exports
 const { getDMMF } = pkg
 
+const getFieldRenamedRelationship = (
+  relationship: Relationship,
+  tableFieldsRenaming: Record<string, Record<string, string>>,
+) => {
+  const mappedPrimaryColumnName =
+    tableFieldsRenaming[relationship.primaryTableName]?.[
+      relationship.primaryColumnName
+    ]
+  if (mappedPrimaryColumnName) {
+    relationship.primaryColumnName = mappedPrimaryColumnName
+  }
+
+  const mappedForeignColumnName =
+    tableFieldsRenaming[relationship.foreignTableName]?.[
+      relationship.foreignColumnName
+    ]
+  if (mappedForeignColumnName) {
+    relationship.foreignColumnName = mappedForeignColumnName
+  }
+
+  return relationship
+}
+
+const getFieldRenamedIndex = (
+  index: DMMF.Index,
+  tableFieldsRenaming: Record<string, Record<string, string>>,
+): DMMF.Index => {
+  const fieldsRenaming = tableFieldsRenaming[index.model]
+  if (!fieldsRenaming) return index
+  const newFields = index.fields.map((field) => ({
+    ...field,
+    name: fieldsRenaming[field.name] ?? field.name,
+  }))
+  return { ...index, fields: newFields }
+}
+
 async function parsePrismaSchema(schemaString: string): Promise<ProcessResult> {
   const dmmf = await getDMMF({ datamodel: schemaString })
   const tables: Record<string, Table> = {}
   const relationships: Record<string, Relationship> = {}
   const errors: Error[] = []
 
+  const tableFieldRenaming: Record<string, Record<string, string>> = {}
+  for (const model of dmmf.datamodel.models) {
+    for (const field of model.fields) {
+      if (field.dbName) {
+        const fieldConversions = tableFieldRenaming[model.name] ?? {}
+        fieldConversions[field.name] = field.dbName
+        tableFieldRenaming[model.name] = fieldConversions
+      }
+    }
+  }
+
   for (const model of dmmf.datamodel.models) {
     const columns: Columns = {}
     for (const field of model.fields) {
       if (field.relationName) continue
       const defaultValue = extractDefaultValue(field)
-      columns[field.name] = {
-        name: field.name,
+      const fieldName =
+        tableFieldRenaming[model.name]?.[field.name] ?? field.name
+      columns[fieldName] = {
+        name: fieldName,
         type: convertToPostgresColumnType(
           field.type,
           field.nativeType,
@@ -83,14 +132,19 @@ async function parsePrismaSchema(schemaString: string): Promise<ProcessResult> {
             deleteConstraint: 'NO_ACTION',
           } as const)
 
-      relationships[relationship.name] = relationship
+      relationships[relationship.name] = getFieldRenamedRelationship(
+        relationship,
+        tableFieldRenaming,
+      )
     }
   }
   for (const index of dmmf.datamodel.indexes) {
     const table = tables[index.model]
     if (!table) continue
 
-    const indexInfo = extractIndex(index)
+    const indexInfo = extractIndex(
+      getFieldRenamedIndex(index, tableFieldRenaming),
+    )
     if (!indexInfo) continue
     table.indices[indexInfo.name] = indexInfo
   }

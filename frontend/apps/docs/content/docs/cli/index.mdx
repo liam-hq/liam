@@ -21,10 +21,10 @@ For more control over the ERD generation process, you can use the `erd` command 
 Generate an ERD from your schema file using the following command:
 
 ```package-install
-npx @liam-hq/cli erd build --input <path|url> --format <format>
+npx @liam-hq/cli erd build --input <path|url>
 ```
 
-This command processes your schema file and generates interactive ERD visualization files in the `dist` directory.
+This command processes your schema file and generates interactive ERD visualization files in the `dist` directory. The schema format is automatically detected (see [Format Auto-Detection](/docs/parser/supported-formats#format-auto-detection)), but you can override it using the `--format` option if needed.
 
 Once the ERD is generated, you can view it by serving the files using a local HTTP server:
 
@@ -39,7 +39,7 @@ You can use any hosting service of your choice to serve the generated files.
 ### Options
 
 - `--input <path|url>`: Path to your schema file or URL
-- `--format <format>`: Schema format specification
+- `--format <format>`: (Optional) Override the auto-detected schema format
 
 ### From GitHub Public Repository
 

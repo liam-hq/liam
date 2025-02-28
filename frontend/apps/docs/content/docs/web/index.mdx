@@ -1,0 +1,56 @@
+---
+title: Liam ERD Web
+---
+
+Liam ERD Web is an online tool hosted by [@liam-hq](https://github.com/liam-hq) that allows you to explore real-world ER diagrams without needing to install a CLI! 🛸💫
+
+It enables you to view ER diagrams generated from publicly available schema files, such as `db/schema.rb`, `prisma.schema`, or SQL files derived from `pg_dump`.
+
+## How to Explore
+
+Inserting `liambx.com/erd/p/` into your browser's address bar will generate an ER diagram for your schema file.
+
+![Inserting Animation](/images/content/docs/web.gif)
+
+For example, if the schema file you want to explore is hosted at the following URL:
+
+```
+# A public repo's schema file
+https://github.com/docusealco/docuseal/blob/master/db/schema.rb
+```
+
+You can generate an ER diagram by inserting `liambx.com/erd/p/` into the URL:
+
+```
+https://liambx.com/erd/p/github.com/docusealco/docuseal/blob/master/db/schema.rb
+      👾^^^^^^^^^^^^^^^^^👾
+```
+
+It's so easy! Isn't it? 🚀
+
+## Tips & Tricks
+
+### Bookmarklet for Quick Access
+
+You can create a bookmarklet to quickly open schema files in Liam ERD. Here's how:
+
+1. Create a new bookmark in your browser
+2. Set the following JavaScript code as the URL:
+
+```javascript
+javascript:(function(){var u=window.location.href;var newUrl="https://liambx.com/erd/p/" + u.replace(/^https?:\/\//, '');window.open(newUrl,'_blank');})();
+```
+
+Now, when viewing a schema file (like `schema.rb`) on GitHub, simply click the bookmarklet to open it directly in Liam ERD! 🎯
+
+## Appendix: Schema Format Options
+
+### Schema Format
+
+Liam ERD automatically detects the schema format (see [Format Auto-Detection](/docs/parser/supported-formats#format-auto-detection)). If needed, you can override the detected format using the `format` query parameter:
+
+```
+https://liambx.com/erd/p/public.example.net/path/to/file?format=schemarb
+```
+
+For more details about format detection and supported formats, check [**/docs/parser/supported-formats**](/docs/parser/supported-formats).

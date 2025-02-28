@@ -18,7 +18,7 @@ export const CookieConsent: FC<Props> = ({
   return (
     <div className={styles.wrapper}>
       <div className={styles.content}>
-        <h4 className={styles.title}>Liam Cookie Consent</h4>
+        <h4 className={styles.title}>Liam ERD Cookie Consent</h4>
         <div>
           <p className={styles.description}>
             By clicking “Accept All Cookies”, you agree to the storing of

@@ -1,13 +1,7 @@
 {
   "extends": "@liam-hq/configs/tsconfig/base.json",
   "compilerOptions": {
-    "baseUrl": ".",
-    "declaration": true,
-    "esModuleInterop": true,
-    "module": "ESNext",
-    "target": "ES2022",
-    "moduleResolution": "node"
+    "baseUrl": "."
   },
-  "include": ["tests/**/*"],
-  "exclude": ["node_modules"]
+  "include": ["tests/**/*", "playwright.config.ts"]
 }

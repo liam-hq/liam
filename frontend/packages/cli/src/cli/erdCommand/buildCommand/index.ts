@@ -1,7 +1,5 @@
-import { execFile } from 'node:child_process'
-import { existsSync } from 'node:fs'
-import { dirname } from 'node:path'
-import { resolve } from 'node:path'
+import { cpSync, existsSync, mkdirSync } from 'node:fs'
+import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import type { SupportedFormat } from '@liam-hq/db-structure/parser'
 import { blueBright } from 'yoctocolors'
@@ -11,7 +9,7 @@ import { runPreprocess } from '../runPreprocess.js'
 export const buildCommand = async (
   inputPath: string,
   outDir: string,
-  format: SupportedFormat,
+  format?: SupportedFormat,
 ): Promise<CliError[]> => {
   // generate schema.json
   const { errors: preprocessErrors } = await runPreprocess(
@@ -39,25 +37,14 @@ export const buildCommand = async (
     return errors
   }
 
-  // Ensure the output directory exists
-  execFile('mkdir', ['-p', outDir], (error) => {
-    if (error) {
-      errors.push(
-        new FileSystemError(`Error creating output directory: ${error}`),
-      )
-      return
-    }
-
-    execFile(
-      'cp',
-      ['-R', `${cliHtmlPath}/.`, outDir],
-      (error, _stdout, stderr) => {
-        if (error) {
-          errors.push(new FileSystemError(`Error copying files: ${stderr}`))
-        }
-      },
-    )
-  })
+  try {
+    // Ensure the output directory exists
+    mkdirSync(outDir, { recursive: true })
+    // Copy files recursively
+    cpSync(cliHtmlPath, outDir, { recursive: true })
+  } catch (error) {
+    errors.push(new FileSystemError(`Error processing files: ${error}`))
+  }
 
   if (errors.length === 0) {
     console.info(`

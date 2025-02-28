@@ -4,6 +4,10 @@ on:
   merge_group:
   pull_request:
 
+permissions:
+  contents: read
+  pull-requests: write
+
 jobs:
   dependency_review:
     uses: route06/actions/.github/workflows/dependency_review.yml@v2

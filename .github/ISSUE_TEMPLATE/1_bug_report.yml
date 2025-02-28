@@ -15,12 +15,12 @@ body:
 
   - type: dropdown
     attributes:
-      label: Cloud or Self Hosted
-      description: How / Where was it installed from?
-      multiple: true
+      label: Version Type
+      description: Which version of Liam ERD are you using?
+      multiple: false
       options:
-        - Cloud
-        - Self Hosted
+        - Web Version (liambx.com)
+        - CLI Version (npm package)
     validations:
       required: true
 

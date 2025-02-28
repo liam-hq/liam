@@ -254,4 +254,20 @@ describe(processor, () => {
       expect(result).toEqual({ value, errors })
     })
   })
+
+  describe('Long statement (exceeds 500 lines, surpassing CHUNK_SIZE)', () => {
+    it('parses without errors', async () => {
+      const _500Lines = '\n'.repeat(500)
+      const { value, errors } = await processor(/* sql */ `
+        CREATE TABLE users (
+          id BIGSERIAL PRIMARY KEY,
+          name VARCHAR(255) NOT NULL
+          ${_500Lines}
+        );
+      `)
+
+      expect(value).toEqual(parserTestCases.normal)
+      expect(errors).toEqual([])
+    })
+  })
 })

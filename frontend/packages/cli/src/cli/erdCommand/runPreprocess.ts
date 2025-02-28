@@ -2,6 +2,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 import {
   type SupportedFormat,
+  detectFormat,
   parse,
   supportedFormatSchema,
 } from '@liam-hq/db-structure/parser'
@@ -25,7 +26,26 @@ export async function runPreprocess(
   format: SupportedFormat,
 ): Promise<Output> {
   const input = await getInputContent(inputPath)
-  const result = v.safeParse(supportedFormatSchema, format)
+  let detectedFormat: SupportedFormat | undefined
+
+  if (format === undefined) {
+    detectedFormat = detectFormat(inputPath)
+  } else {
+    detectedFormat = format
+  }
+
+  if (detectedFormat === undefined) {
+    return {
+      outputFilePath: null,
+      errors: [
+        new ArgumentError(
+          '--format is missing, invalid, or specifies an unsupported format. Please provide a valid format.',
+        ),
+      ],
+    }
+  }
+
+  const result = v.safeParse(supportedFormatSchema, detectedFormat)
   if (!result.success) {
     const errorMessage = result.issues.map((issue) => issue.message).join('\n')
     return {
@@ -38,7 +58,7 @@ export async function runPreprocess(
     }
   }
 
-  const { value: json, errors } = await parse(input, format)
+  const { value: json, errors } = await parse(input, detectedFormat)
   if (errors.length > 0) {
     return {
       outputFilePath: null,

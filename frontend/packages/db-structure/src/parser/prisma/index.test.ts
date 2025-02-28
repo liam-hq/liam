@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest'
 import type { Table } from '../../schema/index.js'
-import { aColumn, aDBStructure, aTable, anIndex } from '../../schema/index.js'
+import {
+  aColumn,
+  aDBStructure,
+  aRelationship,
+  aTable,
+  anIndex,
+} from '../../schema/index.js'
 import { createParserTestCases } from '../__tests__/index.js'
 import { processor as _processor } from './index.js'
 
@@ -309,9 +315,7 @@ describe(_processor, () => {
         }
       `)
 
-      // biome-ignore lint/complexity/useLiteralKeys: for readability and simplicity
       const usersTable = value.tables['users']
-      // biome-ignore lint/complexity/useLiteralKeys: for readability and simplicity
       const postsTable = value.tables['posts']
 
       if (!usersTable || !usersTable.columns) {
@@ -379,6 +383,96 @@ describe(_processor, () => {
       })
 
       expect(value).toEqual(expected)
+    })
+
+    it('@map', async () => {
+      const { value } = await processor(`
+        model users {
+          id   BigInt    @id @default(autoincrement()) @map("_id")
+          posts posts[]
+          email String   @map("raw_email_address")
+          @@unique([email])
+        }
+
+        model posts {
+          id   BigInt    @id @default(autoincrement())
+          user users     @relation(fields: [user_id], references: [id])
+          user_id BigInt @map("raw_user_id")
+        }
+      `)
+
+      const expectedTables = aDBStructure({
+        tables: {
+          users: aTable({
+            name: 'users',
+            columns: {
+              _id: aColumn({
+                name: '_id',
+                type: 'bigserial',
+                default: 'autoincrement()',
+                notNull: true,
+                primary: true,
+                unique: true,
+              }),
+              raw_email_address: aColumn({
+                name: 'raw_email_address',
+                type: 'text',
+                notNull: true,
+                unique: true,
+              }),
+            },
+            indices: {
+              users_pkey: anIndex({
+                name: 'users_pkey',
+                columns: ['_id'],
+                unique: true,
+              }),
+              users_raw_email_address_key: {
+                name: 'users_raw_email_address_key',
+                columns: ['raw_email_address'],
+                unique: true,
+              },
+            },
+          }),
+          posts: aTable({
+            name: 'posts',
+            columns: {
+              id: aColumn({
+                name: 'id',
+                type: 'bigserial',
+                default: 'autoincrement()',
+                notNull: true,
+                primary: true,
+                unique: true,
+              }),
+              raw_user_id: aColumn({
+                name: 'raw_user_id',
+                type: 'bigint',
+                notNull: true,
+                unique: false,
+              }),
+            },
+            indices: {
+              posts_pkey: anIndex({
+                name: 'posts_pkey',
+                unique: true,
+                columns: ['id'],
+              }),
+            },
+          }),
+        },
+      })
+      expectedTables['relationships'] = {
+        postsTousers: aRelationship({
+          name: 'postsTousers',
+          foreignColumnName: 'raw_user_id',
+          foreignTableName: 'posts',
+          primaryColumnName: '_id',
+          primaryTableName: 'users',
+        }),
+      }
+
+      expect(value).toEqual(expectedTables)
     })
   })
 })

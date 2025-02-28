@@ -31,4 +31,16 @@ For CLI support marked with ⚡, you can use the following workarounds:
 - Generate a PostgreSQL file using pg_dump ([see instructions](/docs/parser/supported-formats/postgresql#using-a-pg_dump-generated-sql-file)), then process it with the `postgresql` format
 - Generate a schema.json using tbls ([see instructions](/docs/parser/supported-formats/tbls#using-tbls-json-output)), then process it with the `tbls` format
 
+## Format Auto-Detection
+
+Liam ERD automatically attempts to determine the schema format for both Web and CLI versions. The detection process works as follows:
+
+- **File Name Check**: Filenames such as `schema.rb` or `Schemafile` are assumed to be in **`schemarb`** format.
+- **File Extension Check**: Files ending in **`.rb`** are treated as **`schemarb`**, while files ending in **`.sql`** are treated as **`postgresql`**.
+- For more details, refer to the [`detectFormat.ts`](https://github.com/liam-hq/liam/blob/main/frontend/packages/db-structure/src/parser/supportedFormat/detectFormat.ts) file in our GitHub repository.
+
+If the automatic detection does not match your desired format, you can specify it manually:
+- **Web**: Use the `format` query parameter (e.g., `?format=schemarb`)
+- **CLI**: Use the `--format` option (e.g., `--format=schemarb`)
+
 If there's another database schema or ORM you'd love to see supported, please let us know in the [GitHub Discussions](https://github.com/liam-hq/liam/discussions/364).

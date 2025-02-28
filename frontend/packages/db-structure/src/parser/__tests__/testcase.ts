@@ -8,6 +8,15 @@ import {
 export const createParserTestCases = (
   userTable: (override?: Partial<Table>) => DBStructure,
 ) => ({
+  normal: userTable({
+    columns: {
+      name: aColumn({
+        name: 'name',
+        type: 'varchar',
+        notNull: true,
+      }),
+    },
+  }),
   'table comment': userTable({
     comment: 'store our users.',
   }),

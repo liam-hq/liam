@@ -1,0 +1,31 @@
+---
+title: Troubleshooting Web Version
+---
+
+## Loading Schema Files Hosted Outside GitHub
+
+Liam ERD Web supports loading schema files hosted on GitHub by default. When you specify a GitHub URL (e.g., `github.com/username/repo/blob/branch/path/to/schema.rb`), Liam ERD automatically converts it to a raw content URL (`raw.githubusercontent.com/username/repo/branch/path/to/schema.rb`).
+
+However, when loading schema files hosted on platforms other than GitHub, please note the following:
+
+### Important Notes for Files Hosted Outside GitHub
+
+- Liam ERD Web does not perform URL conversion for non-GitHub sources
+- You must provide a direct link to the raw content file, not an HTML page
+- The URL should point to a page that returns only the schema file content without HTML markup
+
+### Examples
+
+✅ **Correct URL Format (Raw Content)**
+```
+https://gist.githubusercontent.com/username/gistid/raw/commitsha/filename.yml
+https://gitlab.com/username/repo/-/raw/main/db/schema.rb
+https://bitbucket.org/username/repo/raw/main/prisma.schema
+```
+
+❌ **Incorrect URL Format (HTML Pages)**
+```
+https://gist.github.com/username/gistid
+https://gitlab.com/username/repo/-/blob/main/db/schema.rb
+https://bitbucket.org/username/repo/src/main/prisma.schema
+```

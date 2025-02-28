@@ -12,6 +12,18 @@ import { type Plugin, loadEnv } from 'vite'
  * These variables are essential for maintaining version consistency and tracking within the deployment environment.
  */
 export function setEnvPlugin(): Plugin {
+  // To enable remote to be acquired because it cannot be acquired in the vercel auto-deployment environment
+  const remoteAddOrigin = () => {
+    try {
+      const remotes = execSync('git remote show').toString().trim().split('\n')
+      if (!remotes.includes('origin')) {
+        execSync('git remote add origin https://github.com/liam-hq/liam.git')
+      }
+    } catch (error) {
+      console.error('Failed to add remote origin:', error)
+    }
+  }
+
   const fetchGitHash = () => {
     try {
       return execSync('git rev-parse HEAD').toString().trim()
@@ -45,16 +57,25 @@ export function setEnvPlugin(): Plugin {
   const isReleasedGitHash = (gitHash: string, packageJsonVersion: string) => {
     const latestTagName = `${versionPrefix}${packageJsonVersion}`
     try {
+      // Setup and fetch tags
+      remoteAddOrigin()
       execSync('git fetch --tags')
+
+      // First check if the tag exists before trying to resolve it
+      const tagOutput = execSync(`git ls-remote --tags origin ${latestTagName}`)
+        .toString()
+        .trim()
+      if (tagOutput === '') {
+        return 0 // Tag doesn't exist
+      }
+
+      // If tag exists, check if current hash matches the tag
       const tagCommit = execSync(`git rev-parse ${latestTagName}`)
         .toString()
         .trim()
-      if (gitHash === tagCommit) {
-        return 1
-      }
-      return 0
+      return gitHash === tagCommit ? 1 : 0
     } catch (error) {
-      console.error('Failed to get git tag:', error)
+      console.error('Failed during git operations:', error)
       return 0
     }
   }
@@ -62,6 +83,7 @@ export function setEnvPlugin(): Plugin {
   return {
     name: 'set-env',
     config(_, { mode }) {
+      remoteAddOrigin()
       const env = loadEnv(mode, process.cwd(), '')
 
       const packageJsonVersion = env.npm_package_version
