@@ -56,18 +56,20 @@
 - - :approve
   - argparse
   - :who: OSPO @masutaka
-    :why: Python 2.0 license is compatible with Apache-2.0. But License Finder does
+    :why:
+      Python 2.0 license is compatible with Apache-2.0. But License Finder does
       not support the name "Python-2.0". See https://github.com/pivotal/LicenseFinder/pull/1053
     :versions:
-    - 2.0.1
+      - 2.0.1
     :when: 2024-11-28 08:54:56.971593000 Z
 - - :approve
   - jsonify
   - :who: OSPO @masutaka
-    :why: Public Domain is compatible with Apache-2.0. But it is not a software license.
+    :why:
+      Public Domain is compatible with Apache-2.0. But it is not a software license.
       See https://github.com/liam-hq/liam/issues/111
     :versions:
-    - 0.0.1
+      - 0.0.1
     :when: 2024-11-29 03:35:11.884802000 Z
 - - :permit
   - LGPL-3.0-or-later
@@ -84,10 +86,11 @@
 - - :approve
   - spawndamnit
   - :who: OSPO @masutaka
-    :why: Its license is MIT, but it is mis-detected as a "SEE LICENSE IN LICENSE"
+    :why:
+      Its license is MIT, but it is mis-detected as a "SEE LICENSE IN LICENSE"
       license. See https://github.com/jamiebuilds/spawndamnit/pull/11
     :versions:
-    - 3.0.1
+      - 3.0.1
     :when: 2024-11-29 09:06:33.106701000 Z
 - - :permit
   - Mozilla Public License 2.0
@@ -101,3 +104,9 @@
     :why: Compatible with Apache-2.0 license. See https://opensource.org/license/epl-2-0
     :versions: []
     :when: 2024-12-09 09:29:53.604007000 Z
+- - :approve
+  - "@browserbasehq/sdk"
+  - :who: OSPO @masutaka
+    :why: The license is Apache-2.0. License Finder failed to identify the license.
+    :versions: []
+    :when: 2025-03-04 07:55:29.625648000 Z

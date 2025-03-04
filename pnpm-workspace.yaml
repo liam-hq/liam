@@ -1,3 +1,5 @@
 packages:
   - "frontend/apps/*"
   - "frontend/packages/*"
+  # NOTE: ignore migration-web until it's ready to be deployed
+  - "!frontend/apps/migration-web"

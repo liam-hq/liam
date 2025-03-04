@@ -3,8 +3,11 @@
   "private": true,
   "version": "0.1.0",
   "dependencies": {
+    "@langchain/community": "0.3.33",
     "@langchain/core": "0.3.42",
     "@langchain/openai": "0.4.4",
+    "@supabase/supabase-js": "2.49.1",
+    "html-to-text": "9.0.5",
     "langchain": "0.3.19",
     "langfuse-langchain": "3.36.0",
     "next": "15.1.2",
@@ -16,7 +19,6 @@
     "@types/node": "22.9.0",
     "@types/react": "18",
     "@types/react-dom": "18",
-    "supabase": "2.15.8",
     "typed-css-modules": "0.9.1",
     "typescript": "5"
   },
@@ -32,7 +34,7 @@
     "lint": "pnpm run '/^lint:.*/'",
     "lint:biome": "biome check .",
     "start": "next start",
-    "supabase:pull": "pnpm supabase pull",
+    "supabase:pull": "pnpm supabase db pull",
     "supabase:reset": "pnpm supabase db reset",
     "supabase:start": "pnpm supabase start",
     "supabase:stop": "pnpm supabase stop"
