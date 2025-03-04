@@ -1,0 +1,70 @@
+.panelGroup {
+  display: flex;
+  height: 100%;
+  width: 100%;
+}
+
+.panelGroup[data-panel-group-direction='vertical'] {
+  flex-direction: column;
+}
+
+.handle {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: transparent;
+}
+
+.handle::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 2px;
+  z-index: 1;
+  background-color: transparent;
+  transition: background-color var(--default-hover-animation-duration)
+    var(--default-timing-function);
+}
+
+.handle[data-resize-handle-state='hover']::after,
+.handle[data-resize-handle-state='drag']::after {
+  background-color: var(--pane-border-hover);
+}
+
+.handle:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 1px var(--ring-color);
+  outline-offset: 1px;
+}
+
+.handle[data-panel-group-direction='vertical'] {
+  height: 1px;
+  width: 100%;
+}
+
+.handle[data-panel-group-direction='vertical']::after {
+  left: 0;
+  height: 1px;
+  width: 100%;
+  transform: translateY(-50%);
+}
+
+.handle[data-panel-group-direction='vertical'] > div {
+  transform: rotate(90deg);
+}
+
+.handleIcon {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  height: 16px;
+  width: 12px;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--border-radius-sm);
+  border: 1px solid var(--border-color);
+  background-color: var(--border-color);
+}

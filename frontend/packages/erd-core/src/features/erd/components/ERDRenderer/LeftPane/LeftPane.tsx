@@ -14,7 +14,6 @@ import {
   SidebarGroupLabel,
   SidebarMenu,
   SidebarMenuItem,
-  SidebarRail,
 } from '@liam-hq/ui'
 import { useNodes } from '@xyflow/react'
 import { useMemo } from 'react'
@@ -130,8 +129,6 @@ export const LeftPane = () => {
           <TableCounter allCount={allCount} visibleCount={visibleCount} />
         </div>
       </SidebarFooter>
-
-      <SidebarRail />
     </Sidebar>
   )
 }

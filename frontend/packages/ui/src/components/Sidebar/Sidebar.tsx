@@ -29,8 +29,9 @@ const SIDEBAR_WIDTH = '16rem'
 const SIDEBAR_WIDTH_ICON = '3rem'
 const SIDEBAR_KEYBOARD_SHORTCUT = 'b'
 
+export type SidebarState = 'expanded' | 'collapsed'
 type SidebarContext = {
-  state: 'expanded' | 'collapsed'
+  state: SidebarState
   open: boolean
   setOpen: (open: boolean) => void
   toggleSidebar: () => void
@@ -52,7 +53,7 @@ const SidebarProvider = forwardRef<
   ComponentProps<'div'> & {
     defaultOpen?: boolean
     open?: boolean
-    onOpenChange?: (open: boolean) => void
+    onOpenChange?: (nextPanelState: boolean) => void
   }
 >(
   (
@@ -90,7 +91,7 @@ const SidebarProvider = forwardRef<
 
     // Helper to toggle the sidebar.
     const toggleSidebar = useCallback(() => {
-      return setOpen((open) => !open)
+      setOpen((open) => !open)
     }, [setOpen])
 
     // Adds a keyboard shortcut to toggle the sidebar.
@@ -104,7 +105,6 @@ const SidebarProvider = forwardRef<
           toggleSidebar()
         }
       }
-
       window.addEventListener('keydown', handleKeyDown)
       return () => window.removeEventListener('keydown', handleKeyDown)
     }, [toggleSidebar])
@@ -183,56 +183,36 @@ const Sidebar = forwardRef<
 })
 Sidebar.displayName = 'Sidebar'
 
-const SidebarTrigger = forwardRef<
-  ElementRef<'button'>,
-  ComponentProps<'button'>
->(({ className, onClick, ...props }, ref) => {
-  const { toggleSidebar, state } = useSidebar()
+type SidebarTriggerProps = Omit<ComponentProps<'button'>, 'onClick'> & {
+  onClick?: (state: SidebarState) => void
+}
 
-  return (
-    <TooltipRoot>
-      <TooltipTrigger asChild>
-        <button
-          ref={ref}
-          data-sidebar="trigger"
-          aria-label="Toggle Sidebar Icon Button"
-          className={clsx(styles.sidebarTrigger, className)}
-          onClick={(event) => {
-            onClick?.(event)
-            toggleSidebar()
-          }}
-          {...props}
-        >
-          <PanelLeft width={16} height={16} />
-        </button>
-      </TooltipTrigger>
-      <TooltipContent side="right" align="center" sideOffset={8}>
-        {state === 'collapsed' ? 'Expand' : 'Collapse'}
-      </TooltipContent>
-    </TooltipRoot>
-  )
-})
-SidebarTrigger.displayName = 'SidebarTrigger'
-
-const SidebarRail = forwardRef<HTMLButtonElement, ComponentProps<'button'>>(
-  ({ className, ...props }, ref) => {
-    const { toggleSidebar } = useSidebar()
+const SidebarTrigger = forwardRef<ElementRef<'button'>, SidebarTriggerProps>(
+  ({ className, onClick, ...props }, ref) => {
+    const { toggleSidebar, state } = useSidebar()
 
     return (
-      <button
-        ref={ref}
-        data-sidebar="rail"
-        aria-label="Toggle Sidebar"
-        tabIndex={-1}
-        onClick={toggleSidebar}
-        title="Toggle Sidebar"
-        className={clsx(styles.sidebarRail, className)}
-        {...props}
-      />
+      <TooltipRoot>
+        <TooltipTrigger asChild>
+          <button
+            ref={ref}
+            data-sidebar="trigger"
+            aria-label="Toggle Sidebar Icon Button"
+            className={clsx(styles.sidebarTrigger, className)}
+            onClick={toggleSidebar}
+            {...props}
+          >
+            <PanelLeft width={16} height={16} />
+          </button>
+        </TooltipTrigger>
+        <TooltipContent side="right" align="center" sideOffset={8}>
+          {state === 'collapsed' ? 'Expand' : 'Collapse'}
+        </TooltipContent>
+      </TooltipRoot>
     )
   },
 )
-SidebarRail.displayName = 'SidebarRail'
+SidebarTrigger.displayName = 'SidebarTrigger'
 
 const SidebarHeader = forwardRef<HTMLDivElement, ComponentProps<'div'>>(
   ({ className, ...props }, ref) => {
@@ -474,7 +454,6 @@ export {
   SidebarMenuSubButton,
   SidebarMenuSubItem,
   SidebarProvider,
-  SidebarRail,
   SidebarTrigger,
   useSidebar,
 }

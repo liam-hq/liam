@@ -17,6 +17,7 @@
     "lucide-react": "0.451.0",
     "nanoid": "5.0.9",
     "react": "18.3.1",
+    "react-resizable-panels": "2.1.7",
     "ts-pattern": "5.4.0",
     "vaul": "1.1.1"
   },

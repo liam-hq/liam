@@ -36,18 +36,28 @@ const versionData = {
 }
 const version = v.parse(versionSchema, versionData)
 
-function getSidebarStateFromCookie(): boolean {
+function getSidebarSettingsFromCookie(): { isOpen: boolean; width: number } {
   const cookies = document.cookie.split('; ').map((cookie) => cookie.split('='))
-  const cookie = cookies.find(([key]) => key === 'sidebar:state')
-  return cookie ? cookie[1] === 'true' : false
+
+  const stateCookie = cookies.find(([key]) => key === 'sidebar:state')
+  const widthCookie = cookies.find(([key]) => key === 'sidebar:width')
+
+  return {
+    isOpen: stateCookie ? stateCookie[1] === 'true' : false,
+    width: widthCookie ? Number.parseInt(widthCookie[1], 10) || 20 : 20,
+  }
 }
 
 function App() {
-  const defaultSidebarOpen = getSidebarStateFromCookie()
+  const { isOpen: defaultSidebarOpen, width: defaultSidebarWidth } =
+    getSidebarSettingsFromCookie()
 
   return (
     <VersionProvider version={version}>
-      <ERDRenderer defaultSidebarOpen={defaultSidebarOpen} />
+      <ERDRenderer
+        defaultSidebarOpen={defaultSidebarOpen}
+        defaultSidebarWidth={defaultSidebarWidth}
+      />
     </VersionProvider>
   )
 }

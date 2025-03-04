@@ -139,6 +139,7 @@ export default async function Page({
       <ERDViewer
         dbStructure={blankDbStructure}
         defaultSidebarOpen={false}
+        defaultSidebarWidth={20}
         errorObjects={networkErrorObjects}
       />
     )
@@ -148,6 +149,7 @@ export default async function Page({
       <ERDViewer
         dbStructure={blankDbStructure}
         defaultSidebarOpen={false}
+        defaultSidebarWidth={20}
         errorObjects={[
           {
             name: 'NetworkError',
@@ -178,6 +180,7 @@ export default async function Page({
       <ERDViewer
         dbStructure={blankDbStructure}
         defaultSidebarOpen={false}
+        defaultSidebarWidth={20}
         errorObjects={[
           {
             name: 'NetworkError',
@@ -201,10 +204,18 @@ export default async function Page({
   const cookieStore = await cookies()
   const defaultSidebarOpen = cookieStore.get('sidebar:state')?.value === 'true'
 
+  const sidebarWidthValue = cookieStore.get('sidebar:width')?.value
+  const parsedWidth = sidebarWidthValue
+    ? Number.parseInt(sidebarWidthValue, 10)
+    : Number.NaN
+
+  const defaultSidebarWidth = Number.isNaN(parsedWidth) ? 20 : parsedWidth
+
   return (
     <ERDViewer
       dbStructure={dbStructure}
       defaultSidebarOpen={defaultSidebarOpen}
+      defaultSidebarWidth={defaultSidebarWidth}
       errorObjects={errorObjects}
     />
   )

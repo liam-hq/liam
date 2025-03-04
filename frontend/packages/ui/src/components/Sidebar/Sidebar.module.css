@@ -16,7 +16,7 @@
 }
 
 .sidebarGap {
-  width: var(--sidebar-width);
+  width: 100%;
   height: 100%;
   transition-duration: 200ms;
   animation-timing-function: linear;
@@ -28,10 +28,8 @@
 }
 
 .sidebarWrapper {
-  width: var(--sidebar-width);
-  height: 100%;
-  position: absolute;
-  inset: 0 auto auto 0;
+  width: 100%;
+  height: 100vh;
   z-index: var(--z-index-sidebar);
   transition-duration: 200ms;
   animation-timing-function: linear;
@@ -119,34 +117,6 @@
   font-size: var(--font-size-2);
   font-weight: 500;
   line-height: normal;
-}
-
-.sidebarRail {
-  cursor: w-resize;
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  width: 1rem;
-  right: -1rem;
-}
-
-[data-collapsible='offcanvas'] .sidebarRail {
-  cursor: e-resize;
-}
-
-.sidebarRail::after {
-  content: '';
-  width: 2px;
-  top: 0px;
-  bottom: 0px;
-  left: 0px;
-  position: absolute;
-  transition: background-color var(--default-hover-animation-duration)
-    var(--default-timing-function);
-}
-
-.sidebarRail:hover::after {
-  background: var(--pane-border-hover);
 }
 
 .sidebarFooter {
