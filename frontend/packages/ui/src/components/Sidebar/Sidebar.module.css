@@ -76,8 +76,11 @@
 }
 
 .sidebarMenuButton:hover {
-  padding-right: var(--spacing-9);
   background: var(--pane-background-hover);
+}
+
+.sidebarMenuButton:hover span {
+  width: 80%;
 }
 
 .sidebarMenuButton:focus-visible {
