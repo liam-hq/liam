@@ -98,7 +98,6 @@ export default async function Page({
       <ERDViewer
         dbStructure={blankDbStructure}
         defaultSidebarOpen={false}
-        defaultLeftPanelWidth={20}
         errorObjects={[
           {
             name: 'NetworkError',
@@ -149,7 +148,6 @@ export default async function Page({
       <ERDViewer
         dbStructure={blankDbStructure}
         defaultSidebarOpen={false}
-        defaultLeftPanelWidth={20}
         errorObjects={[
           {
             name: 'NetworkError',
@@ -203,26 +201,16 @@ export default async function Page({
   const cookieStore = await cookies()
   const defaultSidebarOpen = cookieStore.get('sidebar:state')?.value === 'true'
 
-  const sidebarWidthValue = cookieStore.get('left-panel:width')?.value
-  const parsedWidth = sidebarWidthValue
-    ? Number.parseInt(sidebarWidthValue, 10)
-    : Number.NaN
-  const defaultLeftPanelWidth = Number.isNaN(parsedWidth) ? 20 : parsedWidth
-
-  const rightPanelWidthValue = cookieStore.get('right-panel:width')?.value
-  const parsedRightWidth = rightPanelWidthValue
-    ? Number.parseInt(rightPanelWidthValue, 10)
-    : Number.NaN
-  const defaultRightPanelWidth = Number.isNaN(parsedRightWidth)
-    ? 80
-    : parsedRightWidth
+  const layoutCookie = cookieStore.get('panels:layout')
+  const defaultPanelSizes = layoutCookie
+    ? JSON.parse(layoutCookie.value)
+    : [20, 80]
 
   return (
     <ERDViewer
       dbStructure={dbStructure}
       defaultSidebarOpen={defaultSidebarOpen}
-      defaultLeftPanelWidth={defaultLeftPanelWidth}
-      defaultRightPanelWidth={defaultRightPanelWidth}
+      defaultPanelSizes={defaultPanelSizes}
       errorObjects={errorObjects}
     />
   )

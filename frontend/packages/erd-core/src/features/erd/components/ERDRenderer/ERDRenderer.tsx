@@ -33,20 +33,17 @@ type ErrorObject = {
 type Props = {
   defaultSidebarOpen?: boolean | undefined
   errorObjects?: ErrorObject[] | undefined
-  defaultLeftPanelWidth?: number
-  defaultRightPanelWidth?: number
+  defaultPanelSizes?: number[]
 }
 
 const SIDEBAR_COOKIE_NAME = 'sidebar:state'
-const LEFT_PANEL_WIDTH_COOKIE_NAME = 'left-panel:width'
-const RIGHT_PANEL_WIDTH_COOKIE_NAME = 'right-panel:width'
-const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7
+const PANEL_LAYOUT_COOKIE_NAME = 'panels:layout'
+const COOKIE_MAX_AGE = 60 * 60 * 24 * 7
 
 export const ERDRenderer: FC<Props> = ({
   defaultSidebarOpen = false,
   errorObjects = [],
-  defaultLeftPanelWidth = 20,
-  defaultRightPanelWidth = 80,
+  defaultPanelSizes = [20, 80],
 }) => {
   const [open, setOpen] = useState(defaultSidebarOpen)
   const [isResizing, setIsResizing] = useState(false)
@@ -77,17 +74,13 @@ export const ERDRenderer: FC<Props> = ({
         ? leftPanelRef.current?.collapse()
         : leftPanelRef.current?.expand()
 
-      // This sets the cookie to keep the sidebar state.
-      document.cookie = `${SIDEBAR_COOKIE_NAME}=${nextPanelState}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`
+      document.cookie = `${SIDEBAR_COOKIE_NAME}=${nextPanelState}; path=/; max-age=${COOKIE_MAX_AGE}`
     },
     [version, leftPanelRef],
   )
 
-  // This sets the cookie to keep the panel widths
   const setWidth = useCallback((sizes: number[]) => {
-    const [leftWidth, rightWidth] = sizes
-    document.cookie = `${LEFT_PANEL_WIDTH_COOKIE_NAME}=${leftWidth}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`
-    document.cookie = `${RIGHT_PANEL_WIDTH_COOKIE_NAME}=${rightWidth}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`
+    document.cookie = `${PANEL_LAYOUT_COOKIE_NAME}=${JSON.stringify(sizes)}; path=/; max-age=${COOKIE_MAX_AGE}`
   }, [])
 
   return (
@@ -108,7 +101,7 @@ export const ERDRenderer: FC<Props> = ({
           >
             <ResizablePanel
               collapsible
-              defaultSize={open ? defaultLeftPanelWidth : 0}
+              defaultSize={open ? defaultPanelSizes[0] : 0}
               minSize={10}
               maxSize={30}
               ref={leftPanelRef}
@@ -119,7 +112,7 @@ export const ERDRenderer: FC<Props> = ({
             <ResizableHandle onDragging={(e) => setIsResizing(e)} />
             <ResizablePanel
               collapsible
-              defaultSize={defaultRightPanelWidth}
+              defaultSize={defaultPanelSizes[1]}
               isResizing={isResizing}
             >
               <main className={styles.main}>
