@@ -59,6 +59,7 @@ function getSidebarSettingsFromCookie(): {
       }
     } catch {
       // Use default values if parsing fails
+      console.error('Failed to parse panel sizes from cookie')
     }
   }
 
