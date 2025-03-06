@@ -59,7 +59,6 @@ export const ERDRenderer: FC<Props> = ({
   })
 
   const leftPanelRef = createRef<ImperativePanelHandle>()
-  const rightPanelRef = createRef<ImperativePanelHandle>()
 
   const { version } = useVersion()
   const handleChangeOpen = useCallback(
@@ -85,19 +84,11 @@ export const ERDRenderer: FC<Props> = ({
   )
 
   // This sets the cookie to keep the panel widths
-  const setWidth = useCallback(() => {
-    const leftWidth = leftPanelRef.current?.getSize() ?? defaultLeftPanelWidth
-    const rightWidth =
-      rightPanelRef.current?.getSize() ?? defaultRightPanelWidth
-
+  const setWidth = useCallback((sizes: number[]) => {
+    const [leftWidth, rightWidth] = sizes
     document.cookie = `${LEFT_PANEL_WIDTH_COOKIE_NAME}=${leftWidth}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`
     document.cookie = `${RIGHT_PANEL_WIDTH_COOKIE_NAME}=${rightWidth}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`
-  }, [
-    leftPanelRef,
-    rightPanelRef,
-    defaultLeftPanelWidth,
-    defaultRightPanelWidth,
-  ])
+  }, [])
 
   return (
     <SidebarProvider
@@ -129,7 +120,6 @@ export const ERDRenderer: FC<Props> = ({
             <ResizablePanel
               collapsible
               defaultSize={defaultRightPanelWidth}
-              ref={rightPanelRef}
               isResizing={isResizing}
             >
               <main className={styles.main}>
