@@ -44,3 +44,6 @@ prism.wasm
 
 # typed-css-modules
 *.css.d.ts
+
+# Liam ERD build
+dist

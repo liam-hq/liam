@@ -7,6 +7,7 @@
     "@liam-hq/erd-core": "workspace:*",
     "@liam-hq/ui": "workspace:*",
     "@next/third-parties": "15.1.5",
+    "@prisma/client": "6.4.1",
     "@sentry/nextjs": "8",
     "cheerio": "1.0.0",
     "date-fns": "4.1.0",
@@ -21,6 +22,7 @@
     "@types/node": "22.9.0",
     "@types/react": "18",
     "@types/react-dom": "18",
+    "prisma": "6.4.1",
     "typed-css-modules": "0.9.1",
     "typescript": "5"
   },

@@ -1,0 +1,189 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  extensions = [uuid_ossp(map: "uuid-ossp", schema: "extensions"), vector]
+}
+
+model documents {
+  id        BigInt                 @id @default(autoincrement())
+  content   String?
+  metadata  Json?
+  embedding Unsupported("vector")?
+}
+
+enum KnowledgeStatus {
+  pending
+  accept
+}
+
+model Project {
+  id             BigInt            @id @default(autoincrement()) @db.BigInt
+  watchFilePath  String?
+  description    String?
+
+  guidelines     Guideline[]
+  incidents      Incident[]
+  overallReviews OverallReview[]
+  knowledges     Knowledge[]
+  rules          Rule[]
+  erdGroups      ErdGroup[]
+  erdNotes       ErdNote[]
+  pullRequests   PullRequest[]
+}
+
+model Guideline {
+  id          BigInt   @id @default(autoincrement()) @db.BigInt
+  projectId   BigInt   @db.BigInt
+  project     Project  @relation(fields: [projectId], references: [id])
+  title       String?
+  description String?
+}
+
+model Incident {
+  id          BigInt    @id @default(autoincrement()) @db.BigInt
+  projectId   BigInt    @db.BigInt
+  project     Project   @relation(fields: [projectId], references: [id])
+  title       String?
+  description String?
+  occurredAt  DateTime?
+  resolvedAt  DateTime?
+}
+
+model OverallReview {
+  id            BigInt             @id @default(autoincrement()) @db.BigInt
+  projectId     BigInt             @db.BigInt
+  project       Project            @relation(fields: [projectId], references: [id])
+  reviewComment String?
+  reviewedAt    DateTime           @default(now())
+  pullRequestId BigInt?            @db.BigInt
+  pullRequest   PullRequest?       @relation(fields: [pullRequestId], references: [id])
+  fileReviews   FileReview[]
+  comments      OverallReviewComment[]
+}
+
+model FileReview {
+  id              BigInt          @id @default(autoincrement()) @db.BigInt
+  overallReviewId BigInt          @db.BigInt
+  overallReview   OverallReview   @relation(fields: [overallReviewId], references: [id])
+  filePath        String?
+  lineStart       Int?
+  lineEnd         Int?
+  reviewComment   String?
+  reviewedAt      DateTime        @default(now())
+  pullRequestId   BigInt?         @db.BigInt
+  pullRequest     PullRequest?    @relation(fields: [pullRequestId], references: [id])
+  resolved        Boolean         @default(false)
+  comments        FileReviewComment[]
+  impactAnalysis  ImpactAnalysis?
+}
+
+model OverallReviewComment {
+  id              BigInt         @id @default(autoincrement()) @db.BigInt
+  overallReviewId BigInt         @db.BigInt
+  overallReview   OverallReview  @relation(fields: [overallReviewId], references: [id])
+  commenterId     BigInt         @db.BigInt
+  comment         String
+  createdAt       DateTime       @default(now())
+}
+
+model FileReviewComment {
+  id            BigInt       @id @default(autoincrement()) @db.BigInt
+  fileReviewId  BigInt       @db.BigInt
+  fileReview    FileReview   @relation(fields: [fileReviewId], references: [id])
+  commenterId   BigInt       @db.BigInt
+  comment       String
+  createdAt     DateTime     @default(now())
+}
+
+model Knowledge {
+  id         BigInt          @id @default(autoincrement()) @db.BigInt
+  title      String?
+  content    String?
+  status     KnowledgeStatus
+  enabled    Boolean         @default(true)
+  createdAt  DateTime        @default(now())
+  projectId  BigInt?         @db.BigInt
+  project    Project?        @relation(fields: [projectId], references: [id])
+}
+
+model Rule {
+  id         BigInt    @id @default(autoincrement()) @db.BigInt
+  projectId  BigInt    @db.BigInt
+  project    Project   @relation(fields: [projectId], references: [id])
+  title      String
+  content    String
+  createdAt  DateTime  @default(now())
+}
+
+model ImpactAnalysis {
+  id               BigInt                   @id @default(autoincrement()) @db.BigInt
+  fileReviewId     BigInt                   @unique @db.BigInt
+  fileReview       FileReview               @relation(fields: [fileReviewId], references: [id])
+  overallEvaluation String?
+  overallScore     Int?
+  evaluations      ImpactAnalysisEvaluation[]
+}
+
+model ImpactAnalysisEvaluation {
+  id               BigInt           @id @default(autoincrement()) @db.BigInt
+  impactAnalysisId BigInt           @db.BigInt
+  impactAnalysis   ImpactAnalysis   @relation(fields: [impactAnalysisId], references: [id])
+  evaluationType   String
+  score            Int
+  description      String?
+}
+
+model ErdGroup {
+  id         BigInt      @id @default(autoincrement()) @db.BigInt
+  projectId  BigInt      @db.BigInt
+  project    Project     @relation(fields: [projectId], references: [id])
+  title      String
+  description String?
+  createdAt  DateTime    @default(now())
+  items      ErdGroupItem[]
+}
+
+model ErdGroupItem {
+  id          BigInt    @id @default(autoincrement()) @db.BigInt
+  erdGroupId  BigInt    @db.BigInt
+  erdGroup    ErdGroup  @relation(fields: [erdGroupId], references: [id])
+  groupableId BigInt    @db.BigInt
+  createdAt   DateTime  @default(now())
+}
+
+model ErdNote {
+  id         BigInt   @id @default(autoincrement()) @db.BigInt
+  projectId  BigInt   @db.BigInt
+  project    Project  @relation(fields: [projectId], references: [id])
+  content    String
+  positionX  Int
+  positionY  Int
+  createdAt  DateTime @default(now())
+}
+
+model PullRequest {
+  id         BigInt         @id @default(autoincrement()) @db.BigInt
+  projectId  BigInt         @db.BigInt
+  project    Project        @relation(fields: [projectId], references: [id])
+  prNumber   Int
+  title      String
+  description String?
+  createdAt  DateTime       @default(now())
+
+  prCommits      PRCommit[]
+  overallReviews OverallReview[]
+  fileReviews    FileReview[]
+}
+
+model PRCommit {
+  id            BigInt        @id @default(autoincrement()) @db.BigInt
+  pullRequestId BigInt        @db.BigInt
+  pullRequest   PullRequest   @relation(fields: [pullRequestId], references: [id])
+  commitHash    String
+  committedAt   DateTime
+}
