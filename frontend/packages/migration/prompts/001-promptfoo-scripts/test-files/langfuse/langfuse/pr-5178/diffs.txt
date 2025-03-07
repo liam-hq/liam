@@ -1,0 +1,341 @@
+Date:   Thu Jan 23 15:42:24 2025 +0100
+
+    feat: allow data retention configuration in project settings (#5178)
+    
+    * feat: allow data retention configuration in project settings
+    
+    * chore: remove prefix
+    
+    * chore: hide data retention on cloud
+    
+    * chore: lint
+    
+    * chore: disable box on missing entitlement and add integer enforcement
+
+diff --git a/packages/shared/prisma/generated/types.ts b/packages/shared/prisma/generated/types.ts
+index 4815ef32..d5a000d4 100644
+--- a/packages/shared/prisma/generated/types.ts
++++ b/packages/shared/prisma/generated/types.ts
+@@ -468,6 +468,7 @@ export type Project = {
+     updated_at: Generated<Timestamp>;
+     deleted_at: Timestamp | null;
+     name: string;
++    retention_days: number | null;
+ };
+ export type ProjectMembership = {
+     org_membership_id: string;
+diff --git a/packages/shared/prisma/migrations/20250123103200_add_retention_days_to_projects/migration.sql b/packages/shared/prisma/migrations/20250123103200_add_retention_days_to_projects/migration.sql
+new file mode 100644
+index 00000000..f667b63d
+--- /dev/null
++++ b/packages/shared/prisma/migrations/20250123103200_add_retention_days_to_projects/migration.sql
+@@ -0,0 +1,3 @@
++-- AlterTable
++ALTER TABLE "projects"
++    ADD COLUMN "retention_days" INTEGER;
+diff --git a/packages/shared/prisma/schema.prisma b/packages/shared/prisma/schema.prisma
+index 5fe35f2d..6c1286cb 100644
+--- a/packages/shared/prisma/schema.prisma
++++ b/packages/shared/prisma/schema.prisma
+@@ -115,6 +115,7 @@ model Project {
+   updatedAt           DateTime               @default(now()) @updatedAt @map("updated_at")
+   deletedAt           DateTime?              @map("deleted_at")
+   name                String
++  retentionDays       Int?                   @map("retention_days")
+   projectMembers      ProjectMembership[]
+   organization        Organization           @relation(fields: [orgId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+   traces              Trace[]
+diff --git a/web/src/features/auth/lib/projectRetentionSchema.ts b/web/src/features/auth/lib/projectRetentionSchema.ts
+new file mode 100644
+index 00000000..610ba014
+--- /dev/null
++++ b/web/src/features/auth/lib/projectRetentionSchema.ts
+@@ -0,0 +1,10 @@
++import * as z from "zod";
++
++export const projectRetentionSchema = z.object({
++  retention: z.coerce
++    .number()
++    .int("Must be an integer")
++    .refine((value) => value === 0 || value >= 7, {
++      message: "Value must be 0 or at least 7 days",
++    }),
++});
+diff --git a/web/src/features/entitlements/constants/entitlements.ts b/web/src/features/entitlements/constants/entitlements.ts
+index d638001e..1eb44f73 100644
+--- a/web/src/features/entitlements/constants/entitlements.ts
++++ b/web/src/features/entitlements/constants/entitlements.ts
+@@ -14,6 +14,7 @@ const entitlements = [
+   "prompt-experiments",
+   "trace-deletion",
+   "audit-logs",
++  "data-retention",
+ ] as const;
+ export type Entitlement = (typeof entitlements)[number];
+ 
+@@ -76,6 +77,7 @@ export const entitlementAccess: Record<
+       ...cloudAllPlansEntitlements,
+       "rbac-project-roles",
+       "audit-logs",
++      "data-retention",
+     ],
+     entitlementLimits: {
+       "annotation-queue-count": false,
+diff --git a/web/src/features/posthog-analytics/usePostHogClientCapture.ts b/web/src/features/posthog-analytics/usePostHogClientCapture.ts
+index f1fb8a7e..6ae26414 100644
+--- a/web/src/features/posthog-analytics/usePostHogClientCapture.ts
++++ b/web/src/features/posthog-analytics/usePostHogClientCapture.ts
+@@ -130,6 +130,7 @@ const events = {
+   project_settings: [
+     "project_delete",
+     "rename_form_submit",
++    "retention_form_submit",
+     "project_transfer",
+     "api_key_delete",
+     "api_key_create",
+diff --git a/web/src/features/projects/components/ConfigureRetention.tsx b/web/src/features/projects/components/ConfigureRetention.tsx
+new file mode 100644
+index 00000000..261ba440
+--- /dev/null
++++ b/web/src/features/projects/components/ConfigureRetention.tsx
+@@ -0,0 +1,145 @@
++import { Card } from "@/src/components/ui/card";
++import { Input } from "@/src/components/ui/input";
++import { api } from "@/src/utils/api";
++import type * as z from "zod";
++import { zodResolver } from "@hookform/resolvers/zod";
++import { useForm } from "react-hook-form";
++import {
++  Form,
++  FormControl,
++  FormField,
++  FormItem,
++  FormMessage,
++} from "@/src/components/ui/form";
++import Header from "@/src/components/layouts/header";
++import { usePostHogClientCapture } from "@/src/features/posthog-analytics/usePostHogClientCapture";
++import { LockIcon } from "lucide-react";
++import { useQueryProject } from "@/src/features/projects/hooks";
++import { useSession } from "next-auth/react";
++import { useHasProjectAccess } from "@/src/features/rbac/utils/checkProjectAccess";
++import { projectRetentionSchema } from "@/src/features/auth/lib/projectRetentionSchema";
++import { ActionButton } from "@/src/components/ActionButton";
++import { useHasEntitlement } from "@/src/features/entitlements/hooks";
++
++export default function ConfigureRetention() {
++  const { update: updateSession } = useSession();
++  const { project } = useQueryProject();
++  const capture = usePostHogClientCapture();
++  const hasAccess = useHasProjectAccess({
++    projectId: project?.id,
++    scope: "project:update",
++  });
++  const hasEntitlement = useHasEntitlement("data-retention");
++
++  const form = useForm<z.infer<typeof projectRetentionSchema>>({
++    resolver: zodResolver(projectRetentionSchema),
++    defaultValues: {
++      retention: project?.retentionDays ?? 0,
++    },
++  });
++  const setRetention = api.projects.setRetention.useMutation({
++    onSuccess: (_) => {
++      void updateSession();
++    },
++    onError: (error) => form.setError("retention", { message: error.message }),
++  });
++
++  function onSubmit(values: z.infer<typeof projectRetentionSchema>) {
++    if (!hasAccess || !project) return;
++    capture("project_settings:retention_form_submit");
++    setRetention
++      .mutateAsync({
++        projectId: project.id,
++        retention: values.retention || null, // Fallback to null for indefinite retention
++      })
++      .then(() => {
++        form.reset();
++      })
++      .catch((error) => {
++        console.error(error);
++      });
++  }
++
++  return (
++    <div>
++      <Header title="Data Retention (Beta)" level="h3" />
++      <Card className="mb-4 p-3">
++        <p className="mb-4 text-sm text-primary">
++          Data retention automatically deletes events older than the specified
++          number of days. The value must be an integer larger than 7. Set to 0
++          to retain data indefinitely. The deletion happens asynchronously, i.e.
++          event may be available for a while after they expired.
++        </p>
++        {Boolean(form.getValues().retention) &&
++        form.getValues().retention !== project?.retentionDays ? (
++          <p className="mb-4 text-sm text-primary">
++            Your Project&#39;s retention will be set from &quot;
++            {project?.retentionDays ?? "Indefinite"}
++            &quot; to &quot;
++            {Number(form.watch().retention) === 0
++              ? "Indefinite"
++              : form.watch().retention}
++            &quot; days.
++          </p>
++        ) : !Boolean(project?.retentionDays) ? (
++          <p className="mb-4 text-sm text-primary">
++            Your Project retains data indefinitely.
++          </p>
++        ) : (
++          <p className="mb-4 text-sm text-primary">
++            Your Project&#39;s current retention is &quot;
++            {project?.retentionDays ?? ""}
++            &quot; days.
++          </p>
++        )}
++        <Form {...form}>
++          <form
++            // eslint-disable-next-line @typescript-eslint/no-misused-promises
++            onSubmit={form.handleSubmit(onSubmit)}
++            className="flex-1"
++            id="set-retention-project-form"
++          >
++            <FormField
++              control={form.control}
++              name="retention"
++              render={({ field }) => (
++                <FormItem>
++                  <FormControl>
++                    <div className="relative">
++                      <Input
++                        type="number"
++                        step="1"
++                        placeholder={project?.retentionDays?.toString() ?? ""}
++                        {...field}
++                        value={field.value ?? ""}
++                        className="flex-1"
++                        disabled={!hasAccess || !hasEntitlement}
++                      />
++                      {!hasAccess && (
++                        <span title="No access">
++                          <LockIcon className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 transform text-muted" />
++                        </span>
++                      )}
++                    </div>
++                  </FormControl>
++                  <FormMessage />
++                </FormItem>
++              )}
++            />
++            <ActionButton
++              variant="secondary"
++              hasAccess={hasAccess}
++              hasEntitlement={hasEntitlement}
++              loading={setRetention.isLoading}
++              disabled={form.getValues().retention === null}
++              className="mt-4"
++              type="submit"
++            >
++              Save
++            </ActionButton>
++          </form>
++        </Form>
++      </Card>
++    </div>
++  );
++}
+diff --git a/web/src/features/projects/server/projectsRouter.ts b/web/src/features/projects/server/projectsRouter.ts
+index 87b034d6..1f021c43 100644
+--- a/web/src/features/projects/server/projectsRouter.ts
++++ b/web/src/features/projects/server/projectsRouter.ts
+@@ -101,6 +101,39 @@ export const projectsRouter = createTRPCRouter({
+       return true;
+     }),
+ 
++  setRetention: protectedProjectProcedure
++    .input(
++      z.object({
++        projectId: z.string(),
++        retention: z.number().int().gte(7).nullable(),
++      }),
++    )
++    .mutation(async ({ input, ctx }) => {
++      throwIfNoProjectAccess({
++        session: ctx.session,
++        projectId: input.projectId,
++        scope: "project:update",
++      });
++
++      const project = await ctx.prisma.project.update({
++        where: {
++          id: input.projectId,
++          orgId: ctx.session.orgId,
++        },
++        data: {
++          retentionDays: input.retention,
++        },
++      });
++      await auditLog({
++        session: ctx.session,
++        resourceType: "project",
++        resourceId: input.projectId,
++        action: "update",
++        after: project,
++      });
++      return true;
++    }),
++
+   delete: protectedProjectProcedure
+     .input(
+       z.object({
+diff --git a/web/src/pages/project/[projectId]/settings/index.tsx b/web/src/pages/project/[projectId]/settings/index.tsx
+index c5acd792..0424ebc1 100644
+--- a/web/src/pages/project/[projectId]/settings/index.tsx
++++ b/web/src/pages/project/[projectId]/settings/index.tsx
+@@ -23,11 +23,14 @@ import { ActionButton } from "@/src/components/ActionButton";
+ import { BatchExportsSettingsPage } from "@/src/features/batch-exports/components/BatchExportsSettingsPage";
+ import { AuditLogsSettingsPage } from "@/src/ee/features/audit-log-viewer/AuditLogsSettingsPage";
+ import { ModelsSettings } from "@/src/features/models/components/ModelSettings";
++import ConfigureRetention from "@/src/features/projects/components/ConfigureRetention";
++import { env } from "@/src/env.mjs";
+ 
+ export default function SettingsPage() {
+   const { project, organization } = useQueryProject();
+   const router = useRouter();
+   const showBillingSettings = useHasEntitlement("cloud-billing");
++  const isLangfuseCloud = Boolean(env.NEXT_PUBLIC_LANGFUSE_CLOUD_REGION);
+   if (!project || !organization) return null;
+   return (
+     <div className="lg:container">
+@@ -42,6 +45,7 @@ export default function SettingsPage() {
+               <div className="flex flex-col gap-6">
+                 <HostNameProject />
+                 <RenameProject />
++                {isLangfuseCloud && <ConfigureRetention />}
+                 <div>
+                   <Header title="Debug Information" level="h3" />
+                   <JSONView
+diff --git a/web/src/server/auth.ts b/web/src/server/auth.ts
+index a5f9f3f9..54f2005e 100644
+--- a/web/src/server/auth.ts
++++ b/web/src/server/auth.ts
+@@ -469,6 +469,7 @@ export async function getAuthOptions(): Promise<NextAuthOptions> {
+                                 id: project.id,
+                                 name: project.name,
+                                 role: projectRole,
++                                retentionDays: project.retentionDays,
+                                 deletedAt: project.deletedAt,
+                               };
+                             })
+diff --git a/web/types/next-auth.d.ts b/web/types/next-auth.d.ts
+index 96e2a9c8..86d436c8 100644
+--- a/web/types/next-auth.d.ts
++++ b/web/types/next-auth.d.ts
+@@ -45,6 +45,7 @@ declare module "next-auth" {
+         id: PrismaProject["id"];
+         name: PrismaProject["name"];
+         deletedAt: PrismaProject["deletedAt"];
++        retentionDays: PrismaProject["retentionDays"];
+         role: Role; // include only projects where user has a role
+       }[];
+     }[];

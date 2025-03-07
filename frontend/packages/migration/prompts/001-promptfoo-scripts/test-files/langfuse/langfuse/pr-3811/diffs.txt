@@ -1,0 +1,4044 @@
+Date:   Thu Oct 24 18:12:38 2024 +0200
+
+    feat(cost): make cost tracking flexible (#3811)
+
+diff --git a/packages/shared/clickhouse/migrations/0002_observations.up.sql b/packages/shared/clickhouse/migrations/0002_observations.up.sql
+index d03a558d..a1f82b5c 100644
+--- a/packages/shared/clickhouse/migrations/0002_observations.up.sql
++++ b/packages/shared/clickhouse/migrations/0002_observations.up.sql
+@@ -16,18 +16,10 @@ CREATE TABLE observations (
+     `provided_model_name` Nullable(String),
+     `internal_model_id` Nullable(String),
+     `model_parameters` Nullable(String),
+-    `provided_input_usage_units` Nullable(Decimal64(12)),
+-    `provided_output_usage_units` Nullable(Decimal64(12)),
+-    `provided_total_usage_units` Nullable(Decimal64(12)),
+-    `input_usage_units` Nullable(Decimal64(12)),
+-    `output_usage_units` Nullable(Decimal64(12)),
+-    `total_usage_units` Nullable(Decimal64(12)),
+-    `unit` Nullable(String),
+-    `provided_input_cost` Nullable(Decimal64(12)),
+-    `provided_output_cost` Nullable(Decimal64(12)),
+-    `provided_total_cost` Nullable(Decimal64(12)),
+-    `input_cost` Nullable(Decimal64(12)),
+-    `output_cost` Nullable(Decimal64(12)),
++    `provided_usage_details` Map(LowCardinality(String), UInt64),
++    `usage_details` Map(LowCardinality(String), UInt64),
++    `provided_cost_details` Map(LowCardinality(String), Decimal64(12)),
++    `cost_details` Map(LowCardinality(String), Decimal64(12)),
+     `total_cost` Nullable(Decimal64(12)),
+     `completion_start_time` Nullable(DateTime64(3)),
+     `prompt_id` Nullable(String),
+diff --git a/packages/shared/clickhouse/migrations/0004_observations_wide.up.sql b/packages/shared/clickhouse/migrations/0004_observations_wide.up.sql
+index f44620cb..5127f1e3 100644
+--- a/packages/shared/clickhouse/migrations/0004_observations_wide.up.sql
++++ b/packages/shared/clickhouse/migrations/0004_observations_wide.up.sql
+@@ -24,18 +24,10 @@ CREATE TABLE observations_wide
+     `provided_model_name` Nullable(String),
+     `internal_model_id` Nullable(String),
+     `model_parameters` Nullable(String),
+-    `provided_input_usage_units` Nullable(Decimal64(12)),
+-    `provided_output_usage_units` Nullable(Decimal64(12)),
+-    `provided_total_usage_units` Nullable(Decimal64(12)),
+-    `input_usage_units` Nullable(Decimal64(12)),
+-    `output_usage_units` Nullable(Decimal64(12)),
+-    `total_usage_units` Nullable(Decimal64(12)),
+-    `unit` Nullable(String),
+-    `provided_input_cost` Nullable(Decimal64(12)),
+-    `provided_output_cost` Nullable(Decimal64(12)),
+-    `provided_total_cost` Nullable(Decimal64(12)),
+-    `input_cost` Nullable(Decimal64(12)),
+-    `output_cost` Nullable(Decimal64(12)),
++    `provided_usage_details` Map(LowCardinality(String), UInt64),
++    `usage_details` Map(LowCardinality(String), UInt64),
++    `provided_cost_details` Map(LowCardinality(String), Decimal64(12)),
++    `cost_details` Map(LowCardinality(String), Decimal64(12)),
+     `total_cost` Nullable(Decimal64(12)),
+     `completion_start_time` Nullable(DateTime64(3)),
+     `prompt_id` Nullable(String),
+@@ -94,18 +86,10 @@ SELECT
+     argMax(o.provided_model_name, o.event_ts) as provided_model_name,
+     argMax(o.internal_model_id, o.event_ts) as internal_model_id,
+     argMax(o.model_parameters, o.event_ts) as model_parameters,
+-    argMax(o.provided_input_usage_units, o.event_ts) as provided_input_usage_units,
+-    argMax(o.provided_output_usage_units, o.event_ts) as provided_output_usage_units,
+-    argMax(o.provided_total_usage_units, o.event_ts) as provided_total_usage_units,
+-    argMax(o.input_usage_units, o.event_ts) as input_usage_units,
+-    argMax(o.output_usage_units, o.event_ts) as output_usage_units,
+-    argMax(o.total_usage_units, o.event_ts) as total_usage_units,
+-    argMax(o.unit, o.event_ts) as unit,
+-    argMax(o.provided_input_cost, o.event_ts) as provided_input_cost,
+-    argMax(o.provided_output_cost, o.event_ts) as provided_output_cost,
+-    argMax(o.provided_total_cost, o.event_ts) as provided_total_cost,
+-    argMax(o.input_cost, o.event_ts) as input_cost,
+-    argMax(o.output_cost, o.event_ts) as output_cost,
++    argMax(o.provided_usage_details, o.event_ts) as provided_usage_details,
++    argMax(o.provided_cost_details, o.event_ts) as provided_cost_details,
++    argMax(o.usage_details, o.event_ts) as usage_details,
++    argMax(o.cost_details, o.event_ts) as cost_details,
+     argMax(o.total_cost, o.event_ts) as total_cost,
+     argMax(o.completion_start_time, o.event_ts) as completion_start_time,
+     argMax(o.prompt_id, o.event_ts) as prompt_id,
+@@ -148,18 +132,10 @@ SELECT
+     argMax(o.provided_model_name, o.event_ts) as provided_model_name,
+     argMax(o.internal_model_id, o.event_ts) as internal_model_id,
+     argMax(o.model_parameters, o.event_ts) as model_parameters,
+-    argMax(o.provided_input_usage_units, o.event_ts) as provided_input_usage_units,
+-    argMax(o.provided_output_usage_units, o.event_ts) as provided_output_usage_units,
+-    argMax(o.provided_total_usage_units, o.event_ts) as provided_total_usage_units,
+-    argMax(o.input_usage_units, o.event_ts) as input_usage_units,
+-    argMax(o.output_usage_units, o.event_ts) as output_usage_units,
+-    argMax(o.total_usage_units, o.event_ts) as total_usage_units,
+-    argMax(o.unit, o.event_ts) as unit,
+-    argMax(o.provided_input_cost, o.event_ts) as provided_input_cost,
+-    argMax(o.provided_output_cost, o.event_ts) as provided_output_cost,
+-    argMax(o.provided_total_cost, o.event_ts) as provided_total_cost,
+-    argMax(o.input_cost, o.event_ts) as input_cost,
+-    argMax(o.output_cost, o.event_ts) as output_cost,
++    argMax(o.provided_usage_details, o.event_ts) as provided_usage_details,
++    argMax(o.provided_cost_details, o.event_ts) as provided_cost_details,
++    argMax(o.usage_details, o.event_ts) as usage_details,
++    argMax(o.cost_details, o.event_ts) as cost_details,
+     argMax(o.total_cost, o.event_ts) as total_cost,
+     argMax(o.completion_start_time, o.event_ts) as completion_start_time,
+     argMax(o.prompt_id, o.event_ts) as prompt_id,
+diff --git a/packages/shared/clickhouse/migrations/0005_traces_wide.up.sql b/packages/shared/clickhouse/migrations/0005_traces_wide.up.sql
+index 99a993df..82288097 100644
+--- a/packages/shared/clickhouse/migrations/0005_traces_wide.up.sql
++++ b/packages/shared/clickhouse/migrations/0005_traces_wide.up.sql
+@@ -24,18 +24,10 @@ CREATE TABLE traces_wide
+     `provided_model_name` Nullable(String),
+     `internal_model_id` Nullable(String),
+     `model_parameters` Nullable(String),
+-    `provided_input_usage_units` Nullable(Decimal64(12)),
+-    `provided_output_usage_units` Nullable(Decimal64(12)),
+-    `provided_total_usage_units` Nullable(Decimal64(12)),
+-    `input_usage_units` Nullable(Decimal64(12)),
+-    `output_usage_units` Nullable(Decimal64(12)),
+-    `total_usage_units` Nullable(Decimal64(12)),
+-    `unit` Nullable(String),
+-    `provided_input_cost` Nullable(Decimal64(12)),
+-    `provided_output_cost` Nullable(Decimal64(12)),
+-    `provided_total_cost` Nullable(Decimal64(12)),
+-    `input_cost` Nullable(Decimal64(12)),
+-    `output_cost` Nullable(Decimal64(12)),
++    `provided_usage_details` Map(LowCardinality(String), UInt64),
++    `usage_details` Map(LowCardinality(String), UInt64),
++    `provided_cost_details` Map(LowCardinality(String), Decimal64(12)),
++    `cost_details` Map(LowCardinality(String), Decimal64(12)),
+     `total_cost` Nullable(Decimal64(12)),
+     `completion_start_time` Nullable(DateTime64(3)),
+     `prompt_id` Nullable(String),
+@@ -93,19 +85,11 @@ SELECT
+     argMax(o.provided_model_name, t.event_ts) as provided_model_name,
+     argMax(o.internal_model_id, t.event_ts) as internal_model_id,
+     argMax(o.model_parameters, t.event_ts) as model_parameters,
+-    argMax(o.provided_input_usage_units, t.event_ts) as provided_input_usage_units,
+-    argMax(o.provided_output_usage_units, t.event_ts) as provided_output_usage_units,
+-    argMax(o.provided_total_usage_units, t.event_ts) as provided_total_usage_units,
+-    argMax(o.input_usage_units, t.event_ts) as input_usage_units,
+-    argMax(o.output_usage_units, t.event_ts) as output_usage_units,
+-    argMax(o.total_usage_units, t.event_ts) as total_usage_units,
+-    argMax(o.unit, t.event_ts) as unit,
+-    argMax(o.provided_input_cost, t.event_ts) as provided_input_cost,
+-    argMax(o.provided_output_cost, t.event_ts) as provided_output_cost,
+-    argMax(o.provided_total_cost, t.event_ts) as provided_total_cost,
+-    argMax(o.input_cost, t.event_ts) as input_cost,
+-    argMax(o.output_cost, t.event_ts) as output_cost,
+-    argMax(o.total_cost, t.event_ts) as total_cost,
++    argMax(o.provided_usage_details, o.event_ts) as provided_usage_details,
++    argMax(o.provided_cost_details, o.event_ts) as provided_cost_details,
++    argMax(o.usage_details, o.event_ts) as usage_details,
++    argMax(o.cost_details, o.event_ts) as cost_details,
++    argMax(o.total_cost, o.event_ts) as total_cost,
+     argMax(o.completion_start_time, t.event_ts) as completion_start_time,
+     argMax(o.prompt_id, t.event_ts) as prompt_id,
+     argMax(o.prompt_name, t.event_ts) as prompt_name,
+@@ -147,18 +131,10 @@ SELECT
+     argMax(o.provided_model_name, o.event_ts) as provided_model_name,
+     argMax(o.internal_model_id, o.event_ts) as internal_model_id,
+     argMax(o.model_parameters, o.event_ts) as model_parameters,
+-    argMax(o.provided_input_usage_units, o.event_ts) as provided_input_usage_units,
+-    argMax(o.provided_output_usage_units, o.event_ts) as provided_output_usage_units,
+-    argMax(o.provided_total_usage_units, o.event_ts) as provided_total_usage_units,
+-    argMax(o.input_usage_units, o.event_ts) as input_usage_units,
+-    argMax(o.output_usage_units, o.event_ts) as output_usage_units,
+-    argMax(o.total_usage_units, o.event_ts) as total_usage_units,
+-    argMax(o.unit, o.event_ts) as unit,
+-    argMax(o.provided_input_cost, o.event_ts) as provided_input_cost,
+-    argMax(o.provided_output_cost, o.event_ts) as provided_output_cost,
+-    argMax(o.provided_total_cost, o.event_ts) as provided_total_cost,
+-    argMax(o.input_cost, o.event_ts) as input_cost,
+-    argMax(o.output_cost, o.event_ts) as output_cost,
++    argMax(o.provided_usage_details, o.event_ts) as provided_usage_details,
++    argMax(o.provided_cost_details, o.event_ts) as provided_cost_details,
++    argMax(o.usage_details, o.event_ts) as usage_details,
++    argMax(o.cost_details, o.event_ts) as cost_details,
+     argMax(o.total_cost, o.event_ts) as total_cost,
+     argMax(o.completion_start_time, o.event_ts) as completion_start_time,
+     argMax(o.prompt_id, o.event_ts) as prompt_id,
+diff --git a/packages/shared/prisma/generated/types.ts b/packages/shared/prisma/generated/types.ts
+index 5a79d5f9..20759d48 100644
+--- a/packages/shared/prisma/generated/types.ts
++++ b/packages/shared/prisma/generated/types.ts
+@@ -304,7 +304,7 @@ export type Model = {
+     input_price: string | null;
+     output_price: string | null;
+     total_price: string | null;
+-    unit: string;
++    unit: string | null;
+     tokenizer_id: string | null;
+     tokenizer_config: unknown | null;
+ };
+@@ -402,6 +402,14 @@ export type PosthogIntegration = {
+     enabled: boolean;
+     created_at: Generated<Timestamp>;
+ };
++export type Price = {
++    id: string;
++    created_at: Generated<Timestamp>;
++    updated_at: Generated<Timestamp>;
++    model_id: string;
++    usage_type: string;
++    price: string;
++};
+ export type Project = {
+     id: string;
+     org_id: string;
+@@ -565,6 +573,7 @@ export type DB = {
+     organization_memberships: OrganizationMembership;
+     organizations: Organization;
+     posthog_integrations: PosthogIntegration;
++    prices: Price;
+     project_memberships: ProjectMembership;
+     projects: Project;
+     prompts: Prompt;
+diff --git a/packages/shared/prisma/migrations/20241024100928_add_prices_table/migration.sql b/packages/shared/prisma/migrations/20241024100928_add_prices_table/migration.sql
+new file mode 100644
+index 00000000..c521a81e
+--- /dev/null
++++ b/packages/shared/prisma/migrations/20241024100928_add_prices_table/migration.sql
+@@ -0,0 +1,62 @@
++-- CreateTable
++CREATE TABLE "prices" (
++    "id" TEXT NOT NULL,
++    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
++    "updated_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
++    "model_id" TEXT NOT NULL,
++    "usage_type" TEXT NOT NULL,
++    "price" DECIMAL(65,30) NOT NULL,
++
++    CONSTRAINT "prices_pkey" PRIMARY KEY ("id")
++);
++
++-- CreateIndex
++CREATE INDEX "prices_model_id_idx" ON "prices"("model_id");
++
++-- CreateIndex
++CREATE UNIQUE INDEX "prices_model_id_usage_type_key" ON "prices"("model_id", "usage_type");
++
++-- AddForeignKey
++ALTER TABLE "prices" ADD CONSTRAINT "prices_model_id_fkey" FOREIGN KEY ("model_id") REFERENCES "models"("id") ON DELETE CASCADE ON UPDATE CASCADE;
++
++-- Alter Table to make unit column nullable
++ALTER TABLE "models" ALTER COLUMN "unit" DROP NOT NULL;
++
++
++-- Create a temporary table to store the new prices for user-defined models
++CREATE TEMPORARY TABLE temp_prices AS
++SELECT 
++    id AS model_id,
++    'input' AS usage_type,
++    input_price AS price
++FROM models
++WHERE project_id IS NOT NULL AND input_price IS NOT NULL
++UNION ALL
++SELECT 
++    id AS model_id,
++    'output' AS usage_type,
++    output_price AS price
++FROM models
++WHERE project_id IS NOT NULL AND output_price IS NOT NULL
++UNION ALL
++SELECT 
++    id AS model_id,
++    'total' AS usage_type,
++    total_price AS price
++FROM models
++WHERE project_id IS NOT NULL AND total_price IS NOT NULL;
++
++-- Insert into prices table
++INSERT INTO prices (id, created_at, updated_at, model_id, usage_type, price)
++SELECT 
++    md5(random()::text || clock_timestamp()::text || model_id::text || usage_type::text)::uuid AS id,
++    NOW() AS created_at,
++    NOW() AS updated_at,
++    model_id,
++    usage_type,
++    price
++FROM temp_prices
++ON CONFLICT (model_id, usage_type) DO NOTHING;
++
++-- Drop the temporary table
++DROP TABLE temp_prices;
+\ No newline at end of file
+diff --git a/packages/shared/prisma/schema.prisma b/packages/shared/prisma/schema.prisma
+index 1c96076f..f23edee5 100644
+--- a/packages/shared/prisma/schema.prisma
++++ b/packages/shared/prisma/schema.prisma
+@@ -753,15 +753,30 @@ model Model {
+     inputPrice      Decimal?  @map("input_price")
+     outputPrice     Decimal?  @map("output_price")
+     totalPrice      Decimal?  @map("total_price")
+-    unit            String // TOKENS, CHARACTERS, MILLISECONDS, SECONDS, REQUESTS, or IMAGES
++    unit            String? // TOKENS, CHARACTERS, MILLISECONDS, SECONDS, REQUESTS, or IMAGES
+     tokenizerId     String?   @map("tokenizer_id")
+     tokenizerConfig Json?     @map("tokenizer_config")
++    Price           Price[]
+ 
+     @@unique([projectId, modelName, startDate, unit])
+     @@index(modelName)
+     @@map("models")
+ }
+ 
++model Price {
++    id        String   @id @default(cuid())
++    createdAt DateTime @default(now()) @map("created_at")
++    updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
++    modelId   String   @map("model_id") // Model is already linked to project (or default), so we don't need projectId here
++    Model     Model    @relation(fields: [modelId], references: [id], onDelete: Cascade)
++    usageType String   @map("usage_type")
++    price     Decimal
++
++    @@unique([modelId, usageType])
++    @@index(modelId)
++    @@map("prices")
++}
++
+ // No FK constraints to preserve audit logs
+ model AuditLog {
+     id              String   @id @default(cuid())
+diff --git a/packages/shared/scripts/prepareClickhouse.ts b/packages/shared/scripts/prepareClickhouse.ts
+index 74c6782f..7e6dec4f 100644
+--- a/packages/shared/scripts/prepareClickhouse.ts
++++ b/packages/shared/scripts/prepareClickhouse.ts
+@@ -101,20 +101,12 @@ export const prepareClickhouse = async (
+         when number % 2 = 0 then 'cltr0w45b000008k1407o9qv1'
+         else 'clrntkjgy000f08jx79v9g1xj'
+       end as internal_model_id,
+-      'model_parameters' AS model_parameters,
+-      toInt32(randUniform(0, 1000)) AS provided_input_usage_units,
+-      toInt32(randUniform(0, 1000)) AS provided_output_usage_units,
+-      toInt32(randUniform(0, 1000)) AS provided_total_usage_units,
+-      toInt32(randUniform(0, 1000)) AS input_usage_units,
+-      toInt32(randUniform(0, 1000)) AS output_usage_units,
+-      toInt32(randUniform(0, 1000)) AS total_usage_units,
+-      toInt32(randUniform(0, 1000)) AS provided_input_cost,
+-      toInt32(randUniform(0, 1000)) AS provided_output_cost,
+-      toInt32(randUniform(0, 1000)) AS provided_total_cost,
+-      'TOKENS' AS unit,
+-      toInt32(randUniform(0, 1000)) AS input_cost,
+-      toInt32(randUniform(0, 1000)) AS output_cost,
+-      toInt32(randUniform(0, 1000)) AS total_cost,
++      '{"temperature": 0.7, "max_tokens": 15d0}' AS model_parameters,
++      map('input', toUInt64(randUniform(0, 1000)), 'output', toUInt64(randUniform(0, 1000)), 'total', toUInt64(randUniform(0, 2000))) AS provided_usage_details,
++      map('input', toUInt64(randUniform(0, 1000)), 'output', toUInt64(randUniform(0, 1000)), 'total', toUInt64(randUniform(0, 2000))) AS usage_details,
++      map('input', toDecimal64(randUniform(0, 1000), 12), 'output', toDecimal64(randUniform(0, 1000), 12), 'total', toDecimal64(randUniform(0, 2000), 12)) AS provided_cost_details,
++      map('input', toDecimal64(randUniform(0, 1000), 12), 'output', toDecimal64(randUniform(0, 1000), 12), 'total', toDecimal64(randUniform(0, 2000), 12)) AS cost_details,
++      toDecimal64(randUniform(0, 2000), 12) AS total_cost,
+       start_time AS completion_start_time,
+       toString(rand()) AS prompt_id,
+       toString(rand()) AS prompt_name,
+diff --git a/packages/shared/src/server/definitions.ts b/packages/shared/src/server/definitions.ts
+index 4b38d1cf..8e18200d 100644
+--- a/packages/shared/src/server/definitions.ts
++++ b/packages/shared/src/server/definitions.ts
+@@ -7,6 +7,9 @@ export const clickhouseStringDateSchema = z
+   .transform((str) => str.replace(" ", "T") + "Z")
+   .pipe(z.string().datetime());
+ 
++export const UsageCostSchema = z.record(z.string(), z.coerce.number());
++export type UsageCostType = z.infer<typeof UsageCostSchema>;
++
+ export const observationRecordBaseSchema = z.object({
+   id: z.string(),
+   trace_id: z.string().nullish(),
+@@ -23,19 +26,11 @@ export const observationRecordBaseSchema = z.object({
+   provided_model_name: z.string().nullish(),
+   internal_model_id: z.string().nullish(),
+   model_parameters: z.string().nullish(),
+-  unit: z.string().nullish(),
+-  input_usage_units: z.number().nullish(),
+-  output_usage_units: z.number().nullish(),
+-  total_usage_units: z.number().nullish(),
+-  input_cost: z.number().nullish(),
+-  output_cost: z.number().nullish(),
++  provided_usage_details: UsageCostSchema,
++  provided_cost_details: UsageCostSchema,
++  usage_details: UsageCostSchema,
++  cost_details: UsageCostSchema,
+   total_cost: z.number().nullish(),
+-  provided_input_usage_units: z.number().nullish(),
+-  provided_output_usage_units: z.number().nullish(),
+-  provided_total_usage_units: z.number().nullish(),
+-  provided_input_cost: z.number().nullish(),
+-  provided_output_cost: z.number().nullish(),
+-  provided_total_cost: z.number().nullish(),
+   prompt_id: z.string().nullish(),
+   prompt_name: z.string().nullish(),
+   prompt_version: z.number().nullish(),
+diff --git a/web/src/__tests__/model-definitions.servertest.ts b/web/src/__tests__/model-definitions.servertest.ts
+index 297d3bea..293cccf9 100644
+--- a/web/src/__tests__/model-definitions.servertest.ts
++++ b/web/src/__tests__/model-definitions.servertest.ts
+@@ -116,6 +116,25 @@ describe("/models API Endpoints", () => {
+       tokenizerConfig: { tokensPerMessage: 3, tokensPerName: 1 },
+       isLangfuseManaged: false,
+     });
++
++    const prices = await prisma.price.findMany({
++      where: { modelId: customModel.body.id },
++    });
++
++    expect(prices.length).toBe(2);
++
++    expect(prices.map((p) => ({ ...p, price: Number(p.price) }))).toEqual(
++      expect.arrayContaining([
++        expect.objectContaining({
++          usageType: "input",
++          price: 0.002,
++        }),
++        expect.objectContaining({
++          usageType: "output",
++          price: 0.004,
++        }),
++      ]),
++    );
+   });
+ 
+   it("Post model with invalid matchPattern", async () => {
+diff --git a/web/src/components/table/use-cases/models.tsx b/web/src/components/table/use-cases/models.tsx
+index e69802f4..dcc8646f 100644
+--- a/web/src/components/table/use-cases/models.tsx
++++ b/web/src/components/table/use-cases/models.tsx
+@@ -276,7 +276,7 @@ export default function ModelTable({ projectId }: { projectId: string }) {
+         ? new Decimal(model.outputPrice)
+         : undefined,
+       totalPrice: model.totalPrice ? new Decimal(model.totalPrice) : undefined,
+-      unit: model.unit,
++      unit: model.unit ?? "",
+       tokenizerId: model.tokenizerId ?? undefined,
+       config: model.tokenizerConfig,
+     };
+diff --git a/web/src/pages/api/public/models/index.ts b/web/src/pages/api/public/models/index.ts
+index 750c4551..1f3c5372 100644
+--- a/web/src/pages/api/public/models/index.ts
++++ b/web/src/pages/api/public/models/index.ts
+@@ -78,13 +78,39 @@ export default withMiddlewares({
+         );
+       }
+       const { tokenizerConfig, ...rest } = body;
+-      const model = await prisma.model.create({
+-        data: {
+-          ...rest,
+-          tokenizerConfig: tokenizerConfig ?? undefined,
+-          projectId: auth.scope.projectId,
+-        },
++
++      const model = await prisma.$transaction(async (tx) => {
++        const createdModel = await tx.model.create({
++          data: {
++            ...rest,
++            tokenizerConfig: tokenizerConfig ?? undefined,
++            projectId: auth.scope.projectId,
++          },
++        });
++
++        const prices = [
++          { usageType: "input", price: body.inputPrice },
++          { usageType: "output", price: body.outputPrice },
++          { usageType: "total", price: body.totalPrice },
++        ];
++
++        await Promise.all(
++          prices
++            .filter(({ price }) => price != null)
++            .map(({ usageType, price }) =>
++              tx.price.create({
++                data: {
++                  modelId: createdModel.id,
++                  usageType,
++                  price: price as number, // type guard checked in array filter
++                },
++              }),
++            ),
++        );
++
++        return createdModel;
+       });
++
+       return prismaToApiModelDefinition(model);
+     },
+   }),
+diff --git a/web/src/server/api/repositories/clickhouse.ts b/web/src/server/api/repositories/clickhouse.ts
+index e96708ae..0e3d00c7 100644
+--- a/web/src/server/api/repositories/clickhouse.ts
++++ b/web/src/server/api/repositories/clickhouse.ts
+@@ -105,7 +105,7 @@ function convertObservations(jsonRecords: unknown[]): ObservationView[] {
+       output:
+         (record.output ? parseJsonPrioritised(record.output) : undefined) ??
+         null,
+-      unit: record.unit ?? null,
++      unit: null,
+ 
+       createdAt: new Date(record.created_at),
+       updatedAt: new Date(record.updated_at),
+@@ -125,13 +125,14 @@ function convertObservations(jsonRecords: unknown[]): ObservationView[] {
+           )
+         : null,
+ 
+-      promptTokens: record.provided_input_usage_units ?? 0,
+-      completionTokens: record.provided_output_usage_units ?? 0,
+-      totalTokens: record.provided_total_usage_units ?? 0,
++      promptTokens: record.usage_details.input ?? 0,
++      completionTokens: record.usage_details.output ?? 0,
++      totalTokens: record.usage_details.total ?? 0,
+ 
+-      calculatedInputCost: new Decimal(record.input_cost ?? 0) || null,
+-      calculatedOutputCost: new Decimal(record.output_cost ?? 0) || null,
+-      calculatedTotalCost: new Decimal(record.total_cost ?? 0) || null,
++      calculatedInputCost: new Decimal(record.cost_details.input ?? 0) || null,
++      calculatedOutputCost:
++        new Decimal(record.cost_details.output ?? 0) || null,
++      calculatedTotalCost: new Decimal(record.cost_details.total ?? 0) || null,
+ 
+       promptId: record.prompt_id ?? null,
+       promptName: record.prompt_name ?? null,
+diff --git a/web/src/server/api/routers/models.ts b/web/src/server/api/routers/models.ts
+index edde7956..8d94679a 100644
+--- a/web/src/server/api/routers/models.ts
++++ b/web/src/server/api/routers/models.ts
+@@ -132,19 +132,42 @@ export const modelRouter = createTRPCRouter({
+         });
+       }
+ 
+-      const createdModel = await ctx.prisma.model.create({
+-        data: {
+-          projectId: input.projectId,
+-          modelName: input.modelName,
+-          matchPattern: input.matchPattern,
+-          startDate: input.startDate,
+-          inputPrice: input.inputPrice,
+-          outputPrice: input.outputPrice,
+-          totalPrice: input.totalPrice,
+-          unit: input.unit,
+-          tokenizerId: input.tokenizerId,
+-          tokenizerConfig: input.tokenizerConfig,
+-        },
++      const createdModel = await ctx.prisma.$transaction(async (tx) => {
++        const createdModel = await tx.model.create({
++          data: {
++            projectId: input.projectId,
++            modelName: input.modelName,
++            matchPattern: input.matchPattern,
++            startDate: input.startDate,
++            inputPrice: input.inputPrice,
++            outputPrice: input.outputPrice,
++            totalPrice: input.totalPrice,
++            unit: input.unit,
++            tokenizerId: input.tokenizerId,
++            tokenizerConfig: input.tokenizerConfig,
++          },
++        });
++
++        // Populate prices table
++        const prices = [
++          { usageType: "input", price: input.inputPrice },
++          { usageType: "output", price: input.outputPrice },
++          { usageType: "total", price: input.totalPrice },
++        ];
++
++        for (const { usageType, price } of prices) {
++          if (price != null) {
++            await tx.price.create({
++              data: {
++                modelId: createdModel.id,
++                usageType,
++                price,
++              },
++            });
++          }
++        }
++
++        return createdModel;
+       });
+ 
+       await auditLog({
+diff --git a/worker/src/__tests__/utils.ts b/worker/src/__tests__/utils.ts
+index ee0594ab..49338ebd 100644
+--- a/worker/src/__tests__/utils.ts
++++ b/worker/src/__tests__/utils.ts
+@@ -21,4 +21,5 @@ export const pruneDatabase = async () => {
+   await prisma.jobConfiguration.deleteMany();
+   await prisma.evalTemplate.deleteMany();
+   await prisma.llmApiKeys.deleteMany();
++  await prisma.price.deleteMany();
+ };
+diff --git a/worker/src/app.ts b/worker/src/app.ts
+index d3a1554b..3e20d296 100644
+--- a/worker/src/app.ts
++++ b/worker/src/app.ts
+@@ -1,3 +1,5 @@
++import "./initialize";
++
+ import express from "express";
+ import cors from "cors";
+ import * as middlewares from "./middlewares";
+@@ -49,7 +51,7 @@ if (env.QUEUE_CONSUMER_EVAL_EXECUTION_QUEUE_IS_ENABLED === "true") {
+     evalJobExecutorQueueProcessor,
+     {
+       concurrency: env.LANGFUSE_EVAL_EXECUTION_WORKER_CONCURRENCY,
+-    },
++    }
+   );
+ }
+ 
+@@ -79,7 +81,7 @@ if (
+     cloudUsageMeteringQueueProcessor,
+     {
+       concurrency: 1,
+-    },
++    }
+   );
+ }
+ 
+@@ -87,7 +89,7 @@ if (env.QUEUE_CONSUMER_LEGACY_INGESTION_QUEUE_IS_ENABLED === "true") {
+   WorkerManager.register(
+     QueueName.LegacyIngestionQueue,
+     legacyIngestionQueueProcessor,
+-    { concurrency: env.LANGFUSE_LEGACY_INGESTION_WORKER_CONCURRENCY }, // n ingestion batches at a time
++    { concurrency: env.LANGFUSE_LEGACY_INGESTION_WORKER_CONCURRENCY } // n ingestion batches at a time
+   );
+ }
+ 
+diff --git a/worker/src/constants/default-model-prices.json b/worker/src/constants/default-model-prices.json
+new file mode 100644
+index 00000000..f6f89f4e
+--- /dev/null
++++ b/worker/src/constants/default-model-prices.json
+@@ -0,0 +1,1138 @@
++[
++  {
++    "id": "b9854a5c92dc496b997d99d20",
++    "model_name": "gpt-4o",
++    "match_pattern": "(?i)^(gpt-4o)$",
++    "created_at": "2024-05-13T23:15:07.670Z",
++    "updated_at": "2024-05-13T23:15:07.670Z",
++    "prices": {
++      "input": 0.000005,
++      "output": 0.000015
++    },
++    "tokenizer_config": {
++      "tokensPerName": 1,
++      "tokenizerModel": "gpt-4o",
++      "tokensPerMessage": 3
++    },
++    "tokenizer_id": "openai"
++  },
++  {
++    "id": "b9854a5c92dc496b997d99d21",
++    "model_name": "gpt-4o-2024-05-13",
++    "match_pattern": "(?i)^(gpt-4o-2024-05-13)$",
++    "created_at": "2024-05-13T23:15:07.670Z",
++    "updated_at": "2024-05-13T23:15:07.670Z",
++    "prices": {
++      "input": 0.000005,
++      "output": 0.000015
++    },
++    "tokenizer_config": {
++      "tokensPerName": 1,
++      "tokenizerModel": "gpt-4o-2024-05-13",
++      "tokensPerMessage": 3
++    },
++    "tokenizer_id": "openai"
++  },
++  {
++    "id": "clrkvq6iq000008ju6c16gynt",
++    "model_name": "gpt-4-1106-preview",
++    "match_pattern": "(?i)^(gpt-4-1106-preview)$",
++    "created_at": "2024-04-23T10:37:17.092Z",
++    "updated_at": "2024-04-23T10:37:17.092Z",
++    "prices": {
++      "input": 0.00001,
++      "output": 0.00003
++    },
++    "tokenizer_config": {
++      "tokensPerName": 1,
++      "tokenizerModel": "gpt-4-1106-preview",
++      "tokensPerMessage": 3
++    },
++    "tokenizer_id": "openai"
++  },
++  {
++    "id": "clrkvx5gp000108juaogs54ea",
++    "model_name": "gpt-4-turbo-vision",
++    "match_pattern": "(?i)^(gpt-4(-\\d{4})?-vision-preview)$",
++    "created_at": "2024-01-24T10:19:21.693Z",
++    "updated_at": "2024-01-24T10:19:21.693Z",
++    "prices": {
++      "input": 0.00001,
++      "output": 0.00003
++    },
++    "tokenizer_config": {
++      "tokensPerName": 1,
++      "tokenizerModel": "gpt-4-vision-preview",
++      "tokensPerMessage": 3
++    },
++    "tokenizer_id": "openai"
++  },
++  {
++    "id": "clrkvyzgw000308jue4hse4j9",
++    "model_name": "gpt-4-32k",
++    "match_pattern": "(?i)^(gpt-4-32k)$",
++    "created_at": "2024-01-24T10:19:21.693Z",
++    "updated_at": "2024-01-24T10:19:21.693Z",
++    "prices": {
++      "input": 0.00006,
++      "output": 0.00012
++    },
++    "tokenizer_config": {
++      "tokensPerName": 1,
++      "tokenizerModel": "gpt-4-32k",
++      "tokensPerMessage": 3
++    },
++    "tokenizer_id": "openai"
++  },
++  {
++    "id": "clrkwk4cb000108l5hwwh3zdi",
++    "model_name": "gpt-4-32k-0613",
++    "match_pattern": "(?i)^(gpt-4-32k-0613)$",
++    "created_at": "2024-01-24T10:19:21.693Z",
++    "updated_at": "2024-01-24T10:19:21.693Z",
++    "prices": {
++      "input": 0.00006,
++      "output": 0.00012
++    },
++    "tokenizer_config": {
++      "tokensPerName": 1,
++      "tokenizerModel": "gpt-4-32k-0613",
++      "tokensPerMessage": 3
++    },
++    "tokenizer_id": "openai"
++  },
++  {
++    "id": "clrkwk4cb000208l59yvb9yq8",
++    "model_name": "gpt-3.5-turbo-1106",
++    "match_pattern": "(?i)^(gpt-)(35|3.5)(-turbo-1106)$",
++    "created_at": "2024-01-24T10:19:21.693Z",
++    "updated_at": "2024-01-24T10:19:21.693Z",
++    "prices": {
++      "input": 0.000001,
++      "output": 0.000002
++    },
++    "tokenizer_config": {
++      "tokensPerName": 1,
++      "tokenizerModel": "gpt-3.5-turbo-1106",
++      "tokensPerMessage": 3
++    },
++    "tokenizer_id": "openai"
++  },
++  {
++    "id": "clrkwk4cc000808l51xmk4uic",
++    "model_name": "gpt-3.5-turbo-0613",
++    "match_pattern": "(?i)^(gpt-)(35|3.5)(-turbo-0613)$",
++    "created_at": "2024-01-24T10:19:21.693Z",
++    "updated_at": "2024-01-24T10:19:21.693Z",
++    "prices": {
++      "input": 0.0000015,
++      "output": 0.000002
++    },
++    "tokenizer_config": {
++      "tokensPerName": 1,
++      "tokenizerModel": "gpt-3.5-turbo-0613",
++      "tokensPerMessage": 3
++    },
++    "tokenizer_id": "openai"
++  },
++  {
++    "id": "clrkwk4cc000908l537kl0rx3",
++    "model_name": "gpt-4-0613",
++    "match_pattern": "(?i)^(gpt-4-0613)$",
++    "created_at": "2024-01-24T10:19:21.693Z",
++    "updated_at": "2024-01-24T10:19:21.693Z",
++    "prices": {
++      "input": 0.00003,
++      "output": 0.00006
++    },
++    "tokenizer_config": {
++      "tokensPerName": 1,
++      "tokenizerModel": "gpt-4-0613",
++      "tokensPerMessage": 3
++    },
++    "tokenizer_id": "openai"
++  },
++  {
++    "id": "clrkwk4cc000a08l562uc3s9g",
++    "model_name": "gpt-3.5-turbo-instruct",
++    "match_pattern": "(?i)^(gpt-)(35|3.5)(-turbo-instruct)$",
++    "created_at": "2024-01-24T10:19:21.693Z",
++    "updated_at": "2024-01-24T10:19:21.693Z",
++    "prices": {
++      "input": 0.0000015,
++      "output": 0.000002
++    },
++    "tokenizer_config": {
++      "tokensPerName": 1,
++      "tokenizerModel": "gpt-3.5-turbo",
++      "tokensPerMessage": 3
++    },
++    "tokenizer_id": "openai"
++  },
++  {
++    "id": "clrntjt89000108jwcou1af71",
++    "model_name": "text-ada-001",
++    "match_pattern": "(?i)^(text-ada-001)$",
++    "created_at": "2024-01-24T18:18:50.861Z",
++    "updated_at": "2024-01-24T18:18:50.861Z",
++    "prices": {
++      "total": 0.000004
++    },
++    "tokenizer_config": {
++      "tokenizerModel": "text-ada-001"
++    },
++    "tokenizer_id": "openai"
++  },
++  {
++    "id": "clrntjt89000208jwawjr894q",
++    "model_name": "text-babbage-001",
++    "match_pattern": "(?i)^(text-babbage-001)$",
++    "created_at": "2024-01-24T18:18:50.861Z",
++    "updated_at": "2024-01-24T18:18:50.861Z",
++    "prices": {
++      "total": 5e-7
++    },
++    "tokenizer_config": {
++      "tokenizerModel": "text-babbage-001"
++    },
++    "tokenizer_id": "openai"
++  },
++  {
++    "id": "clrntjt89000308jw0jtfa4rs",
++    "model_name": "text-curie-001",
++    "match_pattern": "(?i)^(text-curie-001)$",
++    "created_at": "2024-01-24T18:18:50.861Z",
++    "updated_at": "2024-01-24T18:18:50.861Z",
++    "prices": {
++      "total": 0.00002
++    },
++    "tokenizer_config": {
++      "tokenizerModel": "text-curie-001"
++    },
++    "tokenizer_id": "openai"
++  },
++  {
++    "id": "clrntjt89000408jwc2c93h6i",
++    "model_name": "text-davinci-001",
++    "match_pattern": "(?i)^(text-davinci-001)$",
++    "created_at": "2024-01-24T18:18:50.861Z",
++    "updated_at": "2024-01-24T18:18:50.861Z",
++    "prices": {
++      "total": 0.00002
++    },
++    "tokenizer_config": {
++      "tokenizerModel": "text-davinci-001"
++    },
++    "tokenizer_id": "openai"
++  },
++  {
++    "id": "clrntjt89000508jw192m64qi",
++    "model_name": "text-davinci-002",
++    "match_pattern": "(?i)^(text-davinci-002)$",
++    "created_at": "2024-01-24T18:18:50.861Z",
++    "updated_at": "2024-01-24T18:18:50.861Z",
++    "prices": {
++      "total": 0.00002
++    },
++    "tokenizer_config": {
++      "tokenizerModel": "text-davinci-002"
++    },
++    "tokenizer_id": "openai"
++  },
++  {
++    "id": "clrntjt89000608jw4m3x5s55",
++    "model_name": "text-davinci-003",
++    "match_pattern": "(?i)^(text-davinci-003)$",
++    "created_at": "2024-01-24T18:18:50.861Z",
++    "updated_at": "2024-01-24T18:18:50.861Z",
++    "prices": {
++      "total": 0.00002
++    },
++    "tokenizer_config": {
++      "tokenizerModel": "text-davinci-003"
++    },
++    "tokenizer_id": "openai"
++  },
++  {
++    "id": "clrntjt89000908jwhvkz5crg",
++    "model_name": "text-embedding-ada-002-v2",
++    "match_pattern": "(?i)^(text-embedding-ada-002-v2)$",
++    "created_at": "2024-01-24T18:18:50.861Z",
++    "updated_at": "2024-01-24T18:18:50.861Z",
++    "prices": {
++      "total": 1e-7
++    },
++    "tokenizer_config": {
++      "tokenizerModel": "text-embedding-ada-002"
++    },
++    "tokenizer_id": "openai"
++  },
++  {
++    "id": "clrntjt89000908jwhvkz5crm",
++    "model_name": "text-embedding-ada-002",
++    "match_pattern": "(?i)^(text-embedding-ada-002)$",
++    "created_at": "2024-01-24T18:18:50.861Z",
++    "updated_at": "2024-01-24T18:18:50.861Z",
++    "prices": {
++      "total": 1e-7
++    },
++    "tokenizer_config": {
++      "tokenizerModel": "text-embedding-ada-002"
++    },
++    "tokenizer_id": "openai"
++  },
++  {
++    "id": "clrntjt89000a08jw0gcdbd5a",
++    "model_name": "gpt-3.5-turbo-16k-0613",
++    "match_pattern": "(?i)^(gpt-)(35|3.5)(-turbo-16k-0613)$",
++    "created_at": "2024-02-03T17:29:57.350Z",
++    "updated_at": "2024-02-03T17:29:57.350Z",
++    "prices": {
++      "input": 0.000003,
++      "output": 0.000004
++    },
++    "tokenizer_config": {
++      "tokensPerName": 1,
++      "tokenizerModel": "gpt-3.5-turbo-16k-0613",
++      "tokensPerMessage": 3
++    },
++    "tokenizer_id": "openai"
++  },
++  {
++    "id": "clrntkjgy000a08jx4e062mr0",
++    "model_name": "gpt-3.5-turbo-0301",
++    "match_pattern": "(?i)^(gpt-)(35|3.5)(-turbo-0301)$",
++    "created_at": "2024-01-24T10:19:21.693Z",
++    "updated_at": "2024-01-24T10:19:21.693Z",
++    "prices": {
++      "input": 0.000002,
++      "output": 0.000002
++    },
++    "tokenizer_config": {
++      "tokensPerName": -1,
++      "tokenizerModel": "gpt-3.5-turbo-0301",
++      "tokensPerMessage": 4
++    },
++    "tokenizer_id": "openai"
++  },
++  {
++    "id": "clrntkjgy000d08jx0p4y9h4l",
++    "model_name": "gpt-4-32k-0314",
++    "match_pattern": "(?i)^(gpt-4-32k-0314)$",
++    "created_at": "2024-01-24T10:19:21.693Z",
++    "updated_at": "2024-01-24T10:19:21.693Z",
++    "prices": {
++      "input": 0.00006,
++      "output": 0.00012
++    },
++    "tokenizer_config": {
++      "tokensPerName": 1,
++      "tokenizerModel": "gpt-4-32k-0314",
++      "tokensPerMessage": 3
++    },
++    "tokenizer_id": "openai"
++  },
++  {
++    "id": "clrntkjgy000e08jx4x6uawoo",
++    "model_name": "gpt-4-0314",
++    "match_pattern": "(?i)^(gpt-4-0314)$",
++    "created_at": "2024-01-24T10:19:21.693Z",
++    "updated_at": "2024-01-24T10:19:21.693Z",
++    "prices": {
++      "input": 0.00003,
++      "output": 0.00006
++    },
++    "tokenizer_config": {
++      "tokensPerName": 1,
++      "tokenizerModel": "gpt-4-0314",
++      "tokensPerMessage": 3
++    },
++    "tokenizer_id": "openai"
++  },
++  {
++    "id": "clrntkjgy000f08jx79v9g1xj",
++    "model_name": "gpt-4",
++    "match_pattern": "(?i)^(gpt-4)$",
++    "created_at": "2024-01-24T10:19:21.693Z",
++    "updated_at": "2024-01-24T10:19:21.693Z",
++    "prices": {
++      "input": 0.00003,
++      "output": 0.00006
++    },
++    "tokenizer_config": {
++      "tokensPerName": 1,
++      "tokenizerModel": "gpt-4",
++      "tokensPerMessage": 3
++    },
++    "tokenizer_id": "openai"
++  },
++  {
++    "id": "clrnwb41q000308jsfrac9uh6",
++    "model_name": "claude-instant-1.2",
++    "match_pattern": "(?i)^(claude-instant-1.2)$",
++    "created_at": "2024-01-30T15:44:13.447Z",
++    "updated_at": "2024-01-30T15:44:13.447Z",
++    "prices": {
++      "input": 0.00000163,
++      "output": 0.00000551
++    },
++    "tokenizer_config": null,
++    "tokenizer_id": "claude"
++  },
++  {
++    "id": "clrnwb836000408jsallr6u11",
++    "model_name": "claude-2.0",
++    "match_pattern": "(?i)^(claude-2.0)$",
++    "created_at": "2024-01-30T15:44:13.447Z",
++    "updated_at": "2024-01-30T15:44:13.447Z",
++    "prices": {
++      "input": 0.000008,
++      "output": 0.000024
++    },
++    "tokenizer_config": null,
++    "tokenizer_id": "claude"
++  },
++  {
++    "id": "clrnwbd1m000508js4hxu6o7n",
++    "model_name": "claude-2.1",
++    "match_pattern": "(?i)^(claude-2.1)$",
++    "created_at": "2024-01-30T15:44:13.447Z",
++    "updated_at": "2024-01-30T15:44:13.447Z",
++    "prices": {
++      "input": 0.000008,
++      "output": 0.000024
++    },
++    "tokenizer_config": null,
++    "tokenizer_id": "claude"
++  },
++  {
++    "id": "clrnwbg2b000608jse2pp4q2d",
++    "model_name": "claude-1.3",
++    "match_pattern": "(?i)^(claude-1.3)$",
++    "created_at": "2024-01-30T15:44:13.447Z",
++    "updated_at": "2024-01-30T15:44:13.447Z",
++    "prices": {
++      "input": 0.000008,
++      "output": 0.000024
++    },
++    "tokenizer_config": null,
++    "tokenizer_id": "claude"
++  },
++  {
++    "id": "clrnwbi9d000708jseiy44k26",
++    "model_name": "claude-1.2",
++    "match_pattern": "(?i)^(claude-1.2)$",
++    "created_at": "2024-01-30T15:44:13.447Z",
++    "updated_at": "2024-01-30T15:44:13.447Z",
++    "prices": {
++      "input": 0.000008,
++      "output": 0.000024
++    },
++    "tokenizer_config": null,
++    "tokenizer_id": "claude"
++  },
++  {
++    "id": "clrnwblo0000808jsc1385hdp",
++    "model_name": "claude-1.1",
++    "match_pattern": "(?i)^(claude-1.1)$",
++    "created_at": "2024-01-30T15:44:13.447Z",
++    "updated_at": "2024-01-30T15:44:13.447Z",
++    "prices": {
++      "input": 0.000008,
++      "output": 0.000024
++    },
++    "tokenizer_config": null,
++    "tokenizer_id": "claude"
++  },
++  {
++    "id": "clrnwbota000908jsgg9mb1ml",
++    "model_name": "claude-instant-1",
++    "match_pattern": "(?i)^(claude-instant-1)$",
++    "created_at": "2024-01-30T15:44:13.447Z",
++    "updated_at": "2024-01-30T15:44:13.447Z",
++    "prices": {
++      "input": 0.00000163,
++      "output": 0.00000551
++    },
++    "tokenizer_config": null,
++    "tokenizer_id": "claude"
++  },
++  {
++    "id": "clrs2dnql000108l46vo0gp2t",
++    "model_name": "babbage-002",
++    "match_pattern": "(?i)^(babbage-002)$",
++    "created_at": "2024-01-26T17:35:21.129Z",
++    "updated_at": "2024-01-26T17:35:21.129Z",
++    "prices": {
++      "input": 4e-7,
++      "output": 0.0000016
++    },
++    "tokenizer_config": {
++      "tokenizerModel": "babbage-002"
++    },
++    "tokenizer_id": "openai"
++  },
++  {
++    "id": "clrs2ds35000208l4g4b0hi3u",
++    "model_name": "davinci-002",
++    "match_pattern": "(?i)^(davinci-002)$",
++    "created_at": "2024-01-26T17:35:21.129Z",
++    "updated_at": "2024-01-26T17:35:21.129Z",
++    "prices": {
++      "input": 0.000006,
++      "output": 0.000012
++    },
++    "tokenizer_config": {
++      "tokenizerModel": "davinci-002"
++    },
++    "tokenizer_id": "openai"
++  },
++  {
++    "id": "clruwn3pc00010al7bl611c8o",
++    "model_name": "text-embedding-3-small",
++    "match_pattern": "(?i)^(text-embedding-3-small)$",
++    "created_at": "2024-01-26T17:35:21.129Z",
++    "updated_at": "2024-01-26T17:35:21.129Z",
++    "prices": {
++      "total": 2e-8
++    },
++    "tokenizer_config": {
++      "tokenizerModel": "text-embedding-ada-002"
++    },
++    "tokenizer_id": "openai"
++  },
++  {
++    "id": "clruwn76700020al7gp8e4g4l",
++    "model_name": "text-embedding-3-large",
++    "match_pattern": "(?i)^(text-embedding-3-large)$",
++    "created_at": "2024-01-26T17:35:21.129Z",
++    "updated_at": "2024-01-26T17:35:21.129Z",
++    "prices": {
++      "total": 1.3e-7
++    },
++    "tokenizer_config": {
++      "tokenizerModel": "text-embedding-ada-002"
++    },
++    "tokenizer_id": "openai"
++  },
++  {
++    "id": "clruwnahl00030al7ab9rark7",
++    "model_name": "gpt-3.5-turbo-0125",
++    "match_pattern": "(?i)^(gpt-)(35|3.5)(-turbo-0125)$",
++    "created_at": "2024-01-26T17:35:21.129Z",
++    "updated_at": "2024-01-26T17:35:21.129Z",
++    "prices": {
++      "input": 5e-7,
++      "output": 0.0000015
++    },
++    "tokenizer_config": {
++      "tokensPerName": 1,
++      "tokenizerModel": "gpt-3.5-turbo",
++      "tokensPerMessage": 3
++    },
++    "tokenizer_id": "openai"
++  },
++  {
++    "id": "clruwnahl00040al78f1lb0at",
++    "model_name": "gpt-3.5-turbo",
++    "match_pattern": "(?i)^(gpt-)(35|3.5)(-turbo)$",
++    "created_at": "2024-02-13T12:00:37.424Z",
++    "updated_at": "2024-02-13T12:00:37.424Z",
++    "prices": {
++      "input": 5e-7,
++      "output": 0.0000015
++    },
++    "tokenizer_config": {
++      "tokensPerName": 1,
++      "tokenizerModel": "gpt-3.5-turbo",
++      "tokensPerMessage": 3
++    },
++    "tokenizer_id": "openai"
++  },
++  {
++    "id": "clruwnahl00050al796ck3p44",
++    "model_name": "gpt-4-0125-preview",
++    "match_pattern": "(?i)^(gpt-4-0125-preview)$",
++    "created_at": "2024-01-26T17:35:21.129Z",
++    "updated_at": "2024-01-26T17:35:21.129Z",
++    "prices": {
++      "input": 0.00001,
++      "output": 0.00003
++    },
++    "tokenizer_config": {
++      "tokensPerName": 1,
++      "tokenizerModel": "gpt-4",
++      "tokensPerMessage": 3
++    },
++    "tokenizer_id": "openai"
++  },
++  {
++    "id": "cls08r8sq000308jq14ae96f0",
++    "model_name": "ft:gpt-3.5-turbo-1106",
++    "match_pattern": "(?i)^(ft:)(gpt-3.5-turbo-1106:)(.+)(:)(.*)(:)(.+)$",
++    "created_at": "2024-01-31T13:25:02.141Z",
++    "updated_at": "2024-01-31T13:25:02.141Z",
++    "prices": {
++      "input": 0.000003,
++      "output": 0.000006
++    },
++    "tokenizer_config": {
++      "tokensPerName": 1,
++      "tokenizerModel": "gpt-3.5-turbo-1106",
++      "tokensPerMessage": 3
++    },
++    "tokenizer_id": "openai"
++  },
++  {
++    "id": "cls08rp99000408jqepxoakjv",
++    "model_name": "ft:gpt-3.5-turbo-0613",
++    "match_pattern": "(?i)^(ft:)(gpt-3.5-turbo-0613:)(.+)(:)(.*)(:)(.+)$",
++    "created_at": "2024-01-31T13:25:02.141Z",
++    "updated_at": "2024-01-31T13:25:02.141Z",
++    "prices": {
++      "input": 0.000012,
++      "output": 0.000016
++    },
++    "tokenizer_config": {
++      "tokensPerName": 1,
++      "tokenizerModel": "gpt-3.5-turbo-0613",
++      "tokensPerMessage": 3
++    },
++    "tokenizer_id": "openai"
++  },
++  {
++    "id": "cls08rv9g000508jq5p4z4nlr",
++    "model_name": "ft:davinci-002",
++    "match_pattern": "(?i)^(ft:)(davinci-002:)(.+)(:)(.*)(:)(.+)$$",
++    "created_at": "2024-01-31T13:25:02.141Z",
++    "updated_at": "2024-01-31T13:25:02.141Z",
++    "prices": {
++      "input": 0.000012,
++      "output": 0.000012
++    },
++    "tokenizer_config": {
++      "tokenizerModel": "davinci-002"
++    },
++    "tokenizer_id": "openai"
++  },
++  {
++    "id": "cls08s2bw000608jq57wj4un2",
++    "model_name": "ft:babbage-002",
++    "match_pattern": "(?i)^(ft:)(babbage-002:)(.+)(:)(.*)(:)(.+)$$",
++    "created_at": "2024-01-31T13:25:02.141Z",
++    "updated_at": "2024-01-31T13:25:02.141Z",
++    "prices": {
++      "input": 0.0000016,
++      "output": 0.0000016
++    },
++    "tokenizer_config": {
++      "tokenizerModel": "babbage-002"
++    },
++    "tokenizer_id": "openai"
++  },
++  {
++    "id": "cls0iv12d000108l251gf3038",
++    "model_name": "chat-bison",
++    "match_pattern": "(?i)^(chat-bison)(@[a-zA-Z0-9]+)?$",
++    "created_at": "2024-01-31T13:25:02.141Z",
++    "updated_at": "2024-01-31T13:25:02.141Z",
++    "prices": {
++      "input": 2.5e-7,
++      "output": 5e-7
++    },
++    "tokenizer_config": null,
++    "tokenizer_id": null
++  },
++  {
++    "id": "cls0j33v1000008joagkc4lql",
++    "model_name": "codechat-bison-32k",
++    "match_pattern": "(?i)^(codechat-bison-32k)(@[a-zA-Z0-9]+)?$",
++    "created_at": "2024-01-31T13:25:02.141Z",
++    "updated_at": "2024-01-31T13:25:02.141Z",
++    "prices": {
++      "input": 2.5e-7,
++      "output": 5e-7
++    },
++    "tokenizer_config": null,
++    "tokenizer_id": null
++  },
++  {
++    "id": "cls0jmc9v000008l8ee6r3gsd",
++    "model_name": "codechat-bison",
++    "match_pattern": "(?i)^(codechat-bison)(@[a-zA-Z0-9]+)?$",
++    "created_at": "2024-01-31T13:25:02.141Z",
++    "updated_at": "2024-01-31T13:25:02.141Z",
++    "prices": {
++      "input": 2.5e-7,
++      "output": 5e-7
++    },
++    "tokenizer_config": null,
++    "tokenizer_id": null
++  },
++  {
++    "id": "cls0jmjt3000108l83ix86w0d",
++    "model_name": "text-bison-32k",
++    "match_pattern": "(?i)^(text-bison-32k)(@[a-zA-Z0-9]+)?$",
++    "created_at": "2024-01-31T13:25:02.141Z",
++    "updated_at": "2024-01-31T13:25:02.141Z",
++    "prices": {
++      "input": 2.5e-7,
++      "output": 5e-7
++    },
++    "tokenizer_config": null,
++    "tokenizer_id": null
++  },
++  {
++    "id": "cls0jni4t000008jk3kyy803r",
++    "model_name": "chat-bison-32k",
++    "match_pattern": "(?i)^(chat-bison-32k)(@[a-zA-Z0-9]+)?$",
++    "created_at": "2024-01-31T13:25:02.141Z",
++    "updated_at": "2024-01-31T13:25:02.141Z",
++    "prices": {
++      "input": 2.5e-7,
++      "output": 5e-7
++    },
++    "tokenizer_config": null,
++    "tokenizer_id": null
++  },
++  {
++    "id": "cls0jungb000208jk12gm4gk1",
++    "model_name": "text-unicorn",
++    "match_pattern": "(?i)^(text-unicorn)(@[a-zA-Z0-9]+)?$",
++    "created_at": "2024-01-31T13:25:02.141Z",
++    "updated_at": "2024-01-31T13:25:02.141Z",
++    "prices": {
++      "input": 0.0000025,
++      "output": 0.0000075
++    },
++    "tokenizer_config": null,
++    "tokenizer_id": null
++  },
++  {
++    "id": "cls0juygp000308jk2a6x9my2",
++    "model_name": "text-bison",
++    "match_pattern": "(?i)^(text-bison)(@[a-zA-Z0-9]+)?$",
++    "created_at": "2024-01-31T13:25:02.141Z",
++    "updated_at": "2024-01-31T13:25:02.141Z",
++    "prices": {
++      "input": 2.5e-7,
++      "output": 5e-7
++    },
++    "tokenizer_config": null,
++    "tokenizer_id": null
++  },
++  {
++    "id": "cls1nyj5q000208l33ne901d8",
++    "model_name": "textembedding-gecko",
++    "match_pattern": "(?i)^(textembedding-gecko)(@[a-zA-Z0-9]+)?$",
++    "created_at": "2024-01-31T13:25:02.141Z",
++    "updated_at": "2024-01-31T13:25:02.141Z",
++    "prices": {
++      "total": 1e-7
++    },
++    "tokenizer_config": null,
++    "tokenizer_id": null
++  },
++  {
++    "id": "cls1nyyjp000308l31gxy1bih",
++    "model_name": "textembedding-gecko-multilingual",
++    "match_pattern": "(?i)^(textembedding-gecko-multilingual)(@[a-zA-Z0-9]+)?$",
++    "created_at": "2024-01-31T13:25:02.141Z",
++    "updated_at": "2024-01-31T13:25:02.141Z",
++    "prices": {
++      "total": 1e-7
++    },
++    "tokenizer_config": null,
++    "tokenizer_id": null
++  },
++  {
++    "id": "cls1nzjt3000508l3dnwad3g0",
++    "model_name": "code-gecko",
++    "match_pattern": "(?i)^(code-gecko)(@[a-zA-Z0-9]+)?$",
++    "created_at": "2024-01-31T13:25:02.141Z",
++    "updated_at": "2024-01-31T13:25:02.141Z",
++    "prices": {
++      "input": 2.5e-7,
++      "output": 5e-7
++    },
++    "tokenizer_config": null,
++    "tokenizer_id": null
++  },
++  {
++    "id": "cls1nzwx4000608l38va7e4tv",
++    "model_name": "code-bison",
++    "match_pattern": "(?i)^(code-bison)(@[a-zA-Z0-9]+)?$",
++    "created_at": "2024-01-31T13:25:02.141Z",
++    "updated_at": "2024-01-31T13:25:02.141Z",
++    "prices": {
++      "input": 2.5e-7,
++      "output": 5e-7
++    },
++    "tokenizer_config": null,
++    "tokenizer_id": null
++  },
++  {
++    "id": "cls1o053j000708l39f8g4bgs",
++    "model_name": "code-bison-32k",
++    "match_pattern": "(?i)^(code-bison-32k)(@[a-zA-Z0-9]+)?$",
++    "created_at": "2024-01-31T13:25:02.141Z",
++    "updated_at": "2024-01-31T13:25:02.141Z",
++    "prices": {
++      "input": 2.5e-7,
++      "output": 5e-7
++    },
++    "tokenizer_config": null,
++    "tokenizer_id": null
++  },
++  {
++    "id": "clsk9lntu000008jwfc51bbqv",
++    "model_name": "gpt-3.5-turbo-16k",
++    "match_pattern": "(?i)^(gpt-)(35|3.5)(-turbo-16k)$",
++    "created_at": "2024-02-13T12:00:37.424Z",
++    "updated_at": "2024-02-13T12:00:37.424Z",
++    "prices": {
++      "input": 5e-7,
++      "output": 0.0000015
++    },
++    "tokenizer_config": {
++      "tokensPerName": 1,
++      "tokenizerModel": "gpt-3.5-turbo-16k",
++      "tokensPerMessage": 3
++    },
++    "tokenizer_id": "openai"
++  },
++  {
++    "id": "clsnq07bn000008l4e46v1ll8",
++    "model_name": "gpt-4-turbo-preview",
++    "match_pattern": "(?i)^(gpt-4-turbo-preview)$",
++    "created_at": "2024-02-15T21:21:50.947Z",
++    "updated_at": "2024-02-15T21:21:50.947Z",
++    "prices": {
++      "input": 0.00001,
++      "output": 0.00003
++    },
++    "tokenizer_config": {
++      "tokensPerName": 1,
++      "tokenizerModel": "gpt-4",
++      "tokensPerMessage": 3
++    },
++    "tokenizer_id": "openai"
++  },
++  {
++    "id": "cltgy0iuw000008le3vod1hhy",
++    "model_name": "claude-3-opus-20240229",
++    "match_pattern": "(?i)^(claude-3-opus-20240229|anthropic\\.claude-3-opus-20240229-v1:0|claude-3-opus@20240229)$",
++    "created_at": "2024-03-07T17:55:38.139Z",
++    "updated_at": "2024-03-07T17:55:38.139Z",
++    "prices": {
++      "input": 0.000015,
++      "output": 0.000075
++    },
++    "tokenizer_config": null,
++    "tokenizer_id": "claude"
++  },
++  {
++    "id": "cltgy0pp6000108le56se7bl3",
++    "model_name": "claude-3-sonnet-20240229",
++    "match_pattern": "(?i)^(claude-3-sonnet-20240229|anthropic\\.claude-3-sonnet-20240229-v1:0|claude-3-sonnet@20240229)$",
++    "created_at": "2024-03-07T17:55:38.139Z",
++    "updated_at": "2024-03-07T17:55:38.139Z",
++    "prices": {
++      "input": 0.000003,
++      "output": 0.000015
++    },
++    "tokenizer_config": null,
++    "tokenizer_id": "claude"
++  },
++  {
++    "id": "cltr0w45b000008k1407o9qv1",
++    "model_name": "claude-3-haiku-20240307",
++    "match_pattern": "(?i)^(claude-3-haiku-20240307|anthropic\\.claude-3-haiku-20240307-v1:0|claude-3-haiku@20240307)$",
++    "created_at": "2024-03-14T09:41:18.736Z",
++    "updated_at": "2024-03-14T09:41:18.736Z",
++    "prices": {
++      "input": 2.5e-7,
++      "output": 0.00000125
++    },
++    "tokenizer_config": null,
++    "tokenizer_id": "claude"
++  },
++  {
++    "id": "cluv2sjeo000008ih0fv23hi0",
++    "model_name": "gemini-1.0-pro-latest",
++    "match_pattern": "(?i)^(gemini-1.0-pro-latest)(@[a-zA-Z0-9]+)?$",
++    "created_at": "2024-04-11T10:27:46.517Z",
++    "updated_at": "2024-04-11T10:27:46.517Z",
++    "prices": {
++      "input": 2.5e-7,
++      "output": 5e-7
++    },
++    "tokenizer_config": null,
++    "tokenizer_id": null
++  },
++  {
++    "id": "cluv2subq000108ih2mlrga6a",
++    "model_name": "gemini-1.0-pro",
++    "match_pattern": "(?i)^(gemini-1.0-pro)(@[a-zA-Z0-9]+)?$",
++    "created_at": "2024-04-11T10:27:46.517Z",
++    "updated_at": "2024-04-11T10:27:46.517Z",
++    "prices": {
++      "input": 1.25e-7,
++      "output": 3.75e-7
++    },
++    "tokenizer_config": null,
++    "tokenizer_id": null
++  },
++  {
++    "id": "cluv2sx04000208ihbek75lsz",
++    "model_name": "gemini-1.0-pro-001",
++    "match_pattern": "(?i)^(gemini-1.0-pro-001)(@[a-zA-Z0-9]+)?$",
++    "created_at": "2024-04-11T10:27:46.517Z",
++    "updated_at": "2024-04-11T10:27:46.517Z",
++    "prices": {
++      "input": 1.25e-7,
++      "output": 3.75e-7
++    },
++    "tokenizer_config": null,
++    "tokenizer_id": null
++  },
++  {
++    "id": "cluv2szw0000308ihch3n79x7",
++    "model_name": "gemini-pro",
++    "match_pattern": "(?i)^(gemini-pro)(@[a-zA-Z0-9]+)?$",
++    "created_at": "2024-04-11T10:27:46.517Z",
++    "updated_at": "2024-04-11T10:27:46.517Z",
++    "prices": {
++      "input": 1.25e-7,
++      "output": 3.75e-7
++    },
++    "tokenizer_config": null,
++    "tokenizer_id": null
++  },
++  {
++    "id": "cluv2t2x0000408ihfytl45l1",
++    "model_name": "gemini-1.5-pro-latest",
++    "match_pattern": "(?i)^(gemini-1.5-pro-latest)(@[a-zA-Z0-9]+)?$",
++    "created_at": "2024-04-11T10:27:46.517Z",
++    "updated_at": "2024-04-11T10:27:46.517Z",
++    "prices": {
++      "input": 0.0000025,
++      "output": 0.0000075
++    },
++    "tokenizer_config": null,
++    "tokenizer_id": null
++  },
++  {
++    "id": "cluv2t5k3000508ih5kve9zag",
++    "model_name": "gpt-4-turbo-2024-04-09",
++    "match_pattern": "(?i)^(gpt-4-turbo-2024-04-09)$",
++    "created_at": "2024-04-23T10:37:17.092Z",
++    "updated_at": "2024-04-23T10:37:17.092Z",
++    "prices": {
++      "input": 0.00001,
++      "output": 0.00003
++    },
++    "tokenizer_config": {
++      "tokensPerName": 1,
++      "tokenizerModel": "gpt-4-turbo-2024-04-09",
++      "tokensPerMessage": 3
++    },
++    "tokenizer_id": "openai"
++  },
++  {
++    "id": "cluvpl4ls000008l6h2gx3i07",
++    "model_name": "gpt-4-turbo",
++    "match_pattern": "(?i)^(gpt-4-turbo)$",
++    "created_at": "2024-04-11T21:13:44.989Z",
++    "updated_at": "2024-04-11T21:13:44.989Z",
++    "prices": {
++      "input": 0.00001,
++      "output": 0.00003
++    },
++    "tokenizer_config": {
++      "tokensPerName": 1,
++      "tokenizerModel": "gpt-4-1106-preview",
++      "tokensPerMessage": 3
++    },
++    "tokenizer_id": "openai"
++  },
++  {
++    "id": "clv2o2x0p000008jsf9afceau",
++    "model_name": " gpt-4-preview",
++    "match_pattern": "(?i)^(gpt-4-preview)$",
++    "created_at": "2024-04-23T10:37:17.092Z",
++    "updated_at": "2024-04-23T10:37:17.092Z",
++    "prices": {
++      "input": 0.00001,
++      "output": 0.00003
++    },
++    "tokenizer_config": {
++      "tokensPerName": 1,
++      "tokenizerModel": "gpt-4-turbo-preview",
++      "tokensPerMessage": 3
++    },
++    "tokenizer_id": "openai"
++  },
++  {
++    "id": "clx30djsn0000w9mzebiv41we",
++    "model_name": "gemini-1.5-flash",
++    "match_pattern": "(?i)^(gemini-1.5-flash)(@[a-zA-Z0-9]+)?$",
++    "created_at": "2024-06-12T17:09:36.206Z",
++    "updated_at": "2024-06-12T17:09:36.206Z",
++    "prices": {},
++    "tokenizer_config": null,
++    "tokenizer_id": null
++  },
++  {
++    "id": "clx30hkrx0000w9mz7lqi0ial",
++    "model_name": "gemini-1.5-pro",
++    "match_pattern": "(?i)^(gemini-1.5-pro)(@[a-zA-Z0-9]+)?$",
++    "created_at": "2024-06-12T17:09:36.206Z",
++    "updated_at": "2024-06-12T17:09:36.206Z",
++    "prices": {},
++    "tokenizer_config": null,
++    "tokenizer_id": null
++  },
++  {
++    "id": "clxt0n0m60000pumz1j5b7zsf",
++    "model_name": "claude-3-5-sonnet-20240620",
++    "match_pattern": "(?i)^(claude-3-5-sonnet-20240620|anthropic\\.claude-3-5-sonnet-20240620-v1:0|claude-3-5-sonnet@20240620)$",
++    "created_at": "2024-06-25T11:47:24.475Z",
++    "updated_at": "2024-06-25T11:47:24.475Z",
++    "prices": {
++      "input": 0.000003,
++      "output": 0.000015
++    },
++    "tokenizer_config": null,
++    "tokenizer_id": "claude"
++  },
++  {
++    "id": "clyrjp56f0000t0mzapoocd7u",
++    "model_name": "gpt-4o-mini",
++    "match_pattern": "(?i)^(gpt-4o-mini)$",
++    "created_at": "2024-07-18T17:56:09.591Z",
++    "updated_at": "2024-07-18T17:56:09.591Z",
++    "prices": {
++      "input": 1.5e-7,
++      "output": 6e-7
++    },
++    "tokenizer_config": {
++      "tokensPerName": 1,
++      "tokenizerModel": "gpt-4o",
++      "tokensPerMessage": 3
++    },
++    "tokenizer_id": "openai"
++  },
++  {
++    "id": "clyrjpbe20000t0mzcbwc42rg",
++    "model_name": "gpt-4o-mini-2024-07-18",
++    "match_pattern": "(?i)^(gpt-4o-mini-2024-07-18)$",
++    "created_at": "2024-07-18T17:56:09.591Z",
++    "updated_at": "2024-07-18T17:56:09.591Z",
++    "prices": {
++      "input": 1.5e-7,
++      "output": 6e-7
++    },
++    "tokenizer_config": {
++      "tokensPerName": 1,
++      "tokenizerModel": "gpt-4o",
++      "tokensPerMessage": 3
++    },
++    "tokenizer_id": "openai"
++  },
++  {
++    "id": "clzjr85f70000ymmzg7hqffra",
++    "model_name": "gpt-4o-2024-08-06",
++    "match_pattern": "(?i)^(gpt-4o-2024-08-06)$",
++    "created_at": "2024-08-07T11:54:31.298Z",
++    "updated_at": "2024-08-07T11:54:31.298Z",
++    "prices": {
++      "input": 0.0000025,
++      "output": 0.00001
++    },
++    "tokenizer_config": {
++      "tokensPerName": 1,
++      "tokenizerModel": "gpt-4o",
++      "tokensPerMessage": 3
++    },
++    "tokenizer_id": "openai"
++  },
++  {
++    "id": "cm10ivcdp0000gix7lelmbw80",
++    "model_name": "o1-preview",
++    "match_pattern": "(?i)^(o1-preview)$",
++    "created_at": "2024-09-13T10:01:35.373Z",
++    "updated_at": "2024-09-13T10:01:35.373Z",
++    "prices": {
++      "input": 0.000015,
++      "output": 0.00006
++    },
++    "tokenizer_config": null,
++    "tokenizer_id": null
++  },
++  {
++    "id": "cm10ivo130000n8x7qopcjjcg",
++    "model_name": "o1-preview-2024-09-12",
++    "match_pattern": "(?i)^(o1-preview-2024-09-12)$",
++    "created_at": "2024-09-13T10:01:35.373Z",
++    "updated_at": "2024-09-13T10:01:35.373Z",
++    "prices": {
++      "input": 0.000015,
++      "output": 0.00006
++    },
++    "tokenizer_config": null,
++    "tokenizer_id": null
++  },
++  {
++    "id": "cm10ivwo40000r1x7gg3syjq0",
++    "model_name": "o1-mini",
++    "match_pattern": "(?i)^(o1-mini)$",
++    "created_at": "2024-09-13T10:01:35.373Z",
++    "updated_at": "2024-09-13T10:01:35.373Z",
++    "prices": {
++      "input": 0.000003,
++      "output": 0.000012
++    },
++    "tokenizer_config": null,
++    "tokenizer_id": null
++  },
++  {
++    "id": "cm10iw6p20000wgx7it1hlb22",
++    "model_name": "o1-mini-2024-09-12",
++    "match_pattern": "(?i)^(o1-mini-2024-09-12)$",
++    "created_at": "2024-09-13T10:01:35.373Z",
++    "updated_at": "2024-09-13T10:01:35.373Z",
++    "prices": {
++      "input": 0.000003,
++      "output": 0.000012
++    },
++    "tokenizer_config": null,
++    "tokenizer_id": null
++  },
++  {
++    "id": "cm2krz1uf000208jjg5653iud",
++    "model_name": "claude-3.5-sonnet-20241022",
++    "match_pattern": "(?i)^(claude-3-5-sonnet-20241022|anthropic\\.claude-3-5-sonnet-20241022-v2:0|claude-3-5-sonnet-V2@20241022)$",
++    "created_at": "2024-10-22T18:48:01.676Z",
++    "updated_at": "2024-10-22T18:48:01.676Z",
++    "prices": {
++      "input": 0.000003,
++      "output": 0.000015
++    },
++    "tokenizer_config": null,
++    "tokenizer_id": "claude"
++  },
++  {
++    "id": "cm2ks2vzn000308jjh4ze1w7q",
++    "model_name": "claude-3.5-sonnet-latest",
++    "match_pattern": "(?i)^(claude-3-5-sonnet-latest)$",
++    "created_at": "2024-10-22T18:48:01.676Z",
++    "updated_at": "2024-10-22T18:48:01.676Z",
++    "prices": {
++      "input": 0.000003,
++      "output": 0.000015
++    },
++    "tokenizer_config": null,
++    "tokenizer_id": "claude"
++  }
++]
+\ No newline at end of file
+diff --git a/worker/src/initialize.ts b/worker/src/initialize.ts
+new file mode 100644
+index 00000000..fb876d52
+--- /dev/null
++++ b/worker/src/initialize.ts
+@@ -0,0 +1,3 @@
++import { upsertDefaultModelPrices } from "./scripts/upsertDefaultModelPrices";
++
++upsertDefaultModelPrices();
+diff --git a/worker/src/scripts/createDefaultModelPricesJson.ts b/worker/src/scripts/createDefaultModelPricesJson.ts
+new file mode 100644
+index 00000000..525ad702
+--- /dev/null
++++ b/worker/src/scripts/createDefaultModelPricesJson.ts
+@@ -0,0 +1,83 @@
++import fs from "node:fs/promises";
++
++import { prisma, Prisma } from "@langfuse/shared/src/db";
++import { redis } from "@langfuse/shared/src/server";
++import Decimal from "decimal.js";
++
++const EXPORT_PATH = `${__dirname}/../constants/default-model-prices.json`;
++
++export async function getDefaultModelPrices() {
++  const modelPricesFromDb = await prisma.$queryRaw<
++    {
++      id: string;
++      model_name: string;
++      match_pattern: string;
++      input_price: Decimal | null;
++      output_price: Decimal | null;
++      total_price: Decimal | null;
++      created_at: Date | null;
++      updated_at: Date | null;
++      tokenizer_config: Prisma.JsonValue | null;
++      tokenizer_id: string | null;
++    }[]
++  >`
++    SELECT DISTINCT ON (model_name)
++      id,
++      model_name,
++      match_pattern,
++      input_price,
++      output_price,
++      total_price,
++      created_at,
++      updated_at,
++      tokenizer_config,
++      tokenizer_id
++    FROM
++      models
++    WHERE
++      project_id IS NULL
++    ORDER BY
++      model_name,
++      start_date DESC NULLS LAST;
++  `;
++
++  return modelPricesFromDb
++    .map((modelPrice) => {
++      return {
++        id: modelPrice.id,
++        model_name: modelPrice.model_name,
++        match_pattern: modelPrice.match_pattern,
++        created_at: modelPrice.created_at,
++        updated_at: modelPrice.updated_at,
++        prices: {
++          input: modelPrice.input_price?.toNumber(),
++          output: modelPrice.output_price?.toNumber(),
++          total: modelPrice.total_price?.toNumber(),
++        },
++        tokenizer_config: modelPrice.tokenizer_config,
++        tokenizer_id: modelPrice.tokenizer_id,
++      };
++    })
++    .sort((a, b) => a.id.localeCompare(b.id));
++}
++
++async function main() {
++  try {
++    const modelPrices = await getDefaultModelPrices();
++
++    await fs.writeFile(EXPORT_PATH, JSON.stringify(modelPrices, null, 2));
++
++    console.log(
++      `✅ ${modelPrices.length} default model prices written to ${EXPORT_PATH}.`
++    );
++  } catch (error) {
++    console.error(error);
++  } finally {
++    await prisma.$disconnect();
++    redis?.disconnect();
++  }
++}
++
++main().then(() => {
++  console.log("Done");
++});
+diff --git a/worker/src/scripts/upsertDefaultModelPrices.ts b/worker/src/scripts/upsertDefaultModelPrices.ts
+new file mode 100644
+index 00000000..69ffbd97
+--- /dev/null
++++ b/worker/src/scripts/upsertDefaultModelPrices.ts
+@@ -0,0 +1,192 @@
++import { z } from "zod";
++import { prisma } from "@langfuse/shared/src/db";
++import defaultModelPrices from "../constants/default-model-prices.json";
++import { logger } from "@langfuse/shared/src/server";
++
++const DefaultModelPriceSchema = z.object({
++  id: z.string(),
++  model_name: z.string(),
++  match_pattern: z.string(),
++  created_at: z.coerce.date(),
++  updated_at: z.coerce.date(),
++  prices: z.record(z.number()),
++  tokenizer_config: z.record(z.union([z.string(), z.number()])).nullish(),
++  tokenizer_id: z.string().nullish(),
++});
++
++/**
++ * Upserts default model prices into the database into models and prices tables.
++ *
++ * This function performs the following operations:
++ * 1. Fetches existing default models from the database (single query, not in transaction).
++ * 2. Parses and validates the default model prices from the JSON file in the constants folder.
++ * 3. Processes the default model prices in batches.
++ *
++ * Transaction behavior:
++ * - Each batch is processed in parallel
++ * - Within a batch, each model upsert and corresponding price upsert are in the same transaction
++ *
++ * Batching:
++ * - Default model prices are processed in batches of 10 to optimize performance / not overwhelm the database
++ *
++ * Server start-time overhead:
++ * - If all models are up-to-date and 'force' is false, only the initial query to fetch
++ *   existing model update dates will be executed.
++ *
++ * @param force - If true, updates all models regardless of their last update time.
++ *                If false, only updates models that are outdated.
++ */
++
++export const upsertDefaultModelPrices = async (force = false) => {
++  const startTime = Date.now();
++  try {
++    logger.debug(`Starting upsert of default model prices (force = ${force})`);
++
++    const parsedDefaultModelPrices = z
++      .array(DefaultModelPriceSchema)
++      .parse(defaultModelPrices);
++
++    // Fetch existing default models. Store in a map for O(1) lookup.
++    const existingModelUpdateDates = new Map(
++      (
++        await prisma.model.findMany({
++          where: {
++            projectId: null,
++          },
++          select: {
++            id: true,
++            updatedAt: true,
++          },
++        })
++      ).map((model) => [model.id, model.updatedAt])
++    );
++
++    // Upsert in batches
++    const batchSize = 10;
++    const numBatches = Math.ceil(parsedDefaultModelPrices.length / batchSize);
++
++    for (let i = 0; i < numBatches; i++) {
++      logger.debug(`Processing batch ${i + 1} of ${numBatches}...`);
++
++      const batch = parsedDefaultModelPrices.slice(
++        i * batchSize,
++        (i + 1) * batchSize
++      );
++
++      const promises = [];
++
++      for (const defaultModelPrice of batch) {
++        const existingModelUpdateDate = existingModelUpdateDates.get(
++          defaultModelPrice.id
++        );
++
++        if (
++          !force &&
++          existingModelUpdateDate &&
++          existingModelUpdateDate > defaultModelPrice.updated_at
++        ) {
++          logger.error(
++            `Model drift detected for default model ${defaultModelPrice.model_name} (${defaultModelPrice.id}). updatedAt ${existingModelUpdateDate} after ${defaultModelPrice.updated_at}.`
++          );
++          continue;
++        }
++
++        if (
++          !force &&
++          existingModelUpdateDate &&
++          existingModelUpdateDate.getTime() ==
++            defaultModelPrice.updated_at.getTime()
++        ) {
++          logger.debug(
++            `Default model ${defaultModelPrice.model_name} (${defaultModelPrice.id}) already up to date. Skipping.`
++          );
++          continue;
++        }
++
++        // Upsert model and prices in a transaction
++        promises.push(
++          prisma
++            .$transaction(async (tx) => {
++              await tx.model.upsert({
++                where: {
++                  projectId: null,
++                  id: defaultModelPrice.id,
++                },
++                update: {
++                  modelName: defaultModelPrice.model_name,
++                  matchPattern: defaultModelPrice.match_pattern,
++                  updatedAt: defaultModelPrice.updated_at,
++                  tokenizerConfig:
++                    defaultModelPrice.tokenizer_config ?? undefined,
++                  tokenizerId: defaultModelPrice.tokenizer_id,
++                },
++                create: {
++                  projectId: null,
++                  id: defaultModelPrice.id,
++                  modelName: defaultModelPrice.model_name,
++                  matchPattern: defaultModelPrice.match_pattern,
++                  tokenizerConfig:
++                    defaultModelPrice.tokenizer_config ?? undefined,
++                  tokenizerId: defaultModelPrice.tokenizer_id,
++                  createdAt: defaultModelPrice.created_at,
++                  updatedAt: defaultModelPrice.updated_at,
++                },
++              });
++
++              for (const [usageType, price] of Object.entries(
++                defaultModelPrice.prices
++              )) {
++                await tx.price.upsert({
++                  where: {
++                    modelId_usageType: {
++                      modelId: defaultModelPrice.id,
++                      usageType,
++                    },
++                  },
++                  update: {
++                    price,
++                    updatedAt: defaultModelPrice.updated_at,
++                  },
++                  create: {
++                    modelId: defaultModelPrice.id,
++                    usageType,
++                    price,
++                    createdAt: defaultModelPrice.created_at,
++                    updatedAt: defaultModelPrice.updated_at,
++                  },
++                });
++              }
++
++              logger.info(
++                `Upserted default model ${defaultModelPrice.model_name} (${defaultModelPrice.id})`
++              );
++            })
++            .catch((error) => {
++              logger.error(
++                `Error upserting default model ${defaultModelPrice.model_name} (${defaultModelPrice.id}): ${error.message}`,
++                {
++                  error,
++                }
++              );
++            })
++        );
++      }
++
++      await Promise.all(promises);
++      logger.debug(`Completed batch ${i + 1} of ${numBatches}`);
++    }
++
++    logger.info(
++      `Finished upserting default model prices in ${Date.now() - startTime}ms`
++    );
++  } catch (error) {
++    logger.error(
++      `Error upserting default model prices after ${Date.now() - startTime}ms: ${
++        error instanceof Error ? error.message : ""
++      }`,
++      {
++        error,
++      }
++    );
++  }
++};
+diff --git a/worker/src/services/IngestionService/index.ts b/worker/src/services/IngestionService/index.ts
+index 3d808301..6bad0c67 100644
+--- a/worker/src/services/IngestionService/index.ts
++++ b/worker/src/services/IngestionService/index.ts
+@@ -1,8 +1,8 @@
+ import { Redis } from "ioredis";
+ import { randomUUID } from "node:crypto";
+-import { v4 } from "uuid";
++import { v4, version } from "uuid";
+ 
+-import { Model, PrismaClient, Prompt } from "@langfuse/shared";
++import { Model, Price, PrismaClient, Prompt } from "@langfuse/shared";
+ import {
+   convertObservationReadToInsert,
+   convertScoreReadToInsert,
+@@ -26,6 +26,7 @@ import {
+   ClickhouseEntityType,
+   PromptService,
+   IngestionEventType,
++  UsageCostType,
+ } from "@langfuse/shared/src/server";
+ 
+ import { tokenCount } from "../../features/tokenisation/usage";
+@@ -66,7 +67,7 @@ export class IngestionService {
+ 
+   constructor(
+     private redis: Redis,
+-    prisma: PrismaClient,
++    private prisma: PrismaClient,
+     private clickHouseWriter: ClickhouseWriter,
+     private clickhouseClient: ClickhouseClientType
+   ) {
+@@ -436,54 +437,56 @@ export class IngestionService {
+   }): Promise<
+     | Pick<
+         ObservationRecordInsertType,
+-        | "input_usage_units"
+-        | "output_usage_units"
+-        | "total_usage_units"
+-        | "input_cost"
+-        | "output_cost"
+-        | "total_cost"
+-        | "internal_model_id"
++        "usage_details" | "cost_details" | "total_cost" | "internal_model_id"
+       >
+     | {}
+   > {
+     const { projectId, observationRecord } = params;
+-
+     const internalModel = await findModel({
+       event: {
+         projectId,
+         model: observationRecord.provided_model_name ?? undefined,
+-        unit: observationRecord.unit ?? undefined,
+       },
+     });
+ 
+-    const tokenCounts = this.getTokenCounts(observationRecord, internalModel);
+-    const tokenCosts = IngestionService.calculateTokenCosts(
+-      internalModel,
++    const final_usage_details = this.getUsageUnits(
++      observationRecord,
++      internalModel
++    );
++    const modelPrices = await this.getModelPrices(internalModel?.id);
++    const final_cost_details = IngestionService.calculateUsageCosts(
++      modelPrices,
+       observationRecord,
+-      tokenCounts
++      final_usage_details.usage_details ?? {}
+     );
+ 
+     return {
+-      ...tokenCounts,
+-      ...tokenCosts,
++      ...final_usage_details,
++      ...final_cost_details,
+       internal_model_id: internalModel?.id,
+-      unit: observationRecord.unit ?? internalModel?.unit,
+     };
+   }
+ 
+-  private getTokenCounts(
++  private async getModelPrices(modelId?: string): Promise<Price[]> {
++    return modelId
++      ? ((await this.prisma.price.findMany({ where: { modelId } })) ?? [])
++      : [];
++  }
++
++  private getUsageUnits(
+     observationRecord: ObservationRecordInsertType,
+     model: Model | null | undefined
+-  ): Pick<
+-    ObservationRecordInsertType,
+-    "input_usage_units" | "output_usage_units" | "total_usage_units"
+-  > {
++  ): Pick<ObservationRecordInsertType, "usage_details"> {
++    const providedUsageKeys = Object.entries(
++      observationRecord.provided_usage_details ?? {}
++    )
++      .filter(([_, value]) => value != null)
++      .map(([key]) => key);
++
+     if (
+-      // No user provided usage. Note only two equal signs operator here to check for null and undefined
++      // Manual tokenisation when no user provided usage
+       model &&
+-      observationRecord.provided_input_usage_units == null &&
+-      observationRecord.provided_output_usage_units == null &&
+-      observationRecord.provided_total_usage_units == null
++      providedUsageKeys.length === 0
+     ) {
+       const newInputCount = tokenCount({
+         text: observationRecord.input,
+@@ -499,73 +502,84 @@ export class IngestionService {
+           ? (newInputCount ?? 0) + (newOutputCount ?? 0)
+           : undefined;
+ 
+-      return {
+-        input_usage_units: newInputCount,
+-        output_usage_units: newOutputCount,
+-        total_usage_units: newTotalCount,
+-      };
++      const usage_details: Record<string, number> = {};
++
++      if (newInputCount != null) usage_details.input = newInputCount;
++      if (newOutputCount != null) usage_details.output = newOutputCount;
++      if (newTotalCount != null) usage_details.total = newTotalCount;
++
++      return { usage_details };
+     }
+ 
+     return {
+-      input_usage_units: observationRecord.provided_input_usage_units,
+-      output_usage_units: observationRecord.provided_output_usage_units,
+-      total_usage_units: observationRecord.provided_total_usage_units,
++      usage_details: observationRecord.provided_usage_details,
+     };
+   }
+ 
+-  static calculateTokenCosts(
+-    model: Model | null | undefined,
++  static calculateUsageCosts(
++    modelPrices: Price[] | null | undefined,
+     observationRecord: ObservationRecordInsertType,
+-    tokenCounts: {
+-      input_usage_units?: number | null;
+-      output_usage_units?: number | null;
+-      total_usage_units?: number | null;
+-    }
+-  ): {
+-    input_cost: number | null | undefined;
+-    output_cost: number | null | undefined;
+-    total_cost: number | null | undefined;
+-  } {
+-    const { provided_input_cost, provided_output_cost, provided_total_cost } =
+-      observationRecord;
++    usageUnits: UsageCostType
++  ): Pick<ObservationRecordInsertType, "cost_details" | "total_cost"> {
++    const { provided_cost_details } = observationRecord;
++
++    const providedCostKeys = Object.entries(provided_cost_details ?? {})
++      .filter(([_, value]) => value != null)
++      .map(([key]) => key);
++
++    // If user has provided any cost point, do not calculate any other cost points
++    if (providedCostKeys.length) {
++      const cost_details = { ...provided_cost_details };
++      const finalTotalCost =
++        (provided_cost_details ?? {})["total"] ??
++        // Use provided input and output cost if available, but only if no other cost points are provided
++        (providedCostKeys.every((key) => ["input", "output"].includes(key))
++          ? ((provided_cost_details ?? {})["input"] ?? 0) +
++            ((provided_cost_details ?? {})["output"] ?? 0)
++          : undefined);
++
++      if (
++        !Object.prototype.hasOwnProperty.call(cost_details, "total") &&
++        finalTotalCost != null
++      ) {
++        cost_details.total = finalTotalCost;
++      }
+ 
+-    // If user has provided any cost point, do not calculate anything else
+-    if (
+-      provided_input_cost != null ||
+-      provided_output_cost != null ||
+-      provided_total_cost != null
+-    ) {
+       return {
+-        input_cost: provided_input_cost,
+-        output_cost: provided_output_cost,
+-        total_cost:
+-          provided_total_cost ??
+-          (provided_input_cost ?? 0) + (provided_output_cost ?? 0),
++        cost_details,
++        total_cost: finalTotalCost,
+       };
+     }
+ 
+-    const finalInputCost =
+-      tokenCounts.input_usage_units != null && model?.inputPrice
+-        ? model.inputPrice.toNumber() * tokenCounts.input_usage_units
+-        : undefined;
++    const finalCostEntries: [string, number][] = [];
+ 
+-    const finalOutputCost =
+-      tokenCounts.output_usage_units != null && model?.outputPrice
+-        ? model.outputPrice.toNumber() * tokenCounts.output_usage_units
+-        : finalInputCost
+-          ? 0
+-          : undefined;
++    for (const [key, units] of Object.entries(usageUnits)) {
++      const price = modelPrices?.find((price) => price.usageType === key);
+ 
+-    const finalTotalCost =
+-      tokenCounts.total_usage_units != null && model?.totalPrice
+-        ? model.totalPrice.toNumber() * tokenCounts.total_usage_units
+-        : (finalInputCost ?? finalOutputCost)
+-          ? (finalInputCost ?? 0) + (finalOutputCost ?? 0)
+-          : undefined;
++      if (units != null && price) {
++        finalCostEntries.push([key, price.price.mul(units).toNumber()]);
++      }
++    }
++
++    const finalCostDetails = Object.fromEntries(finalCostEntries);
++
++    let finalTotalCost;
++    if (
++      Object.prototype.hasOwnProperty.call(finalCostDetails, "total") &&
++      finalCostDetails.total != null
++    ) {
++      finalTotalCost = finalCostDetails.total;
++    } else if (finalCostEntries.length > 0) {
++      finalTotalCost = finalCostEntries.reduce(
++        (acc, [_, cost]) => acc + cost,
++        0
++      );
++
++      finalCostDetails.total = finalTotalCost;
++    }
+ 
+     return {
+-      input_cost: finalInputCost,
+-      output_cost: finalOutputCost,
++      cost_details: finalCostDetails,
+       total_cost: finalTotalCost,
+     };
+   }
+@@ -707,7 +721,22 @@ export class IngestionService {
+           ? newInputCount + newOutputCount
+           : (newInputCount ?? newOutputCount));
+ 
+-      const newUnit = "usage" in obs.body ? obs.body.usage?.unit : undefined;
++      const provided_usage_details: Record<string, number> = {};
++
++      if (newInputCount != null) provided_usage_details.input = newInputCount;
++      if (newOutputCount != null)
++        provided_usage_details.output = newOutputCount;
++      if (newTotalCount != null) provided_usage_details.total = newTotalCount;
++
++      const provided_cost_details: Record<string, number> = {};
++
++      if ("usage" in obs.body) {
++        const { inputCost, outputCost, totalCost } = obs.body.usage ?? {};
++
++        if (inputCost != null) provided_cost_details.input = inputCost;
++        if (outputCost != null) provided_cost_details.output = outputCost;
++        if (totalCost != null) provided_cost_details.total = totalCost;
++      }
+ 
+       const observationRecord: ObservationRecordInsertType = {
+         id: entityId,
+@@ -737,21 +766,15 @@ export class IngestionService {
+             : undefined,
+         input: this.stringify(obs.body.input),
+         output: this.stringify(obs.body.output),
+-        provided_input_usage_units: newInputCount,
+-        provided_output_usage_units: newOutputCount,
+-        provided_total_usage_units: newTotalCount,
+-        unit: newUnit,
++        provided_usage_details,
++        provided_cost_details,
++        usage_details: provided_usage_details,
++        cost_details: provided_cost_details,
+         level: obs.body.level ?? "DEFAULT",
+         status_message: obs.body.statusMessage ?? undefined,
+         parent_observation_id: obs.body.parentObservationId ?? undefined,
+         version: obs.body.version ?? undefined,
+         project_id: projectId,
+-        provided_input_cost:
+-          "usage" in obs.body ? obs.body.usage?.inputCost : undefined,
+-        provided_output_cost:
+-          "usage" in obs.body ? obs.body.usage?.outputCost : undefined,
+-        provided_total_cost:
+-          "usage" in obs.body ? obs.body.usage?.totalCost : undefined,
+         prompt_id: prompt?.id,
+         prompt_name: prompt?.name,
+         prompt_version: prompt?.version,
+diff --git a/worker/src/services/IngestionService/tests/IngestionService.integration.test.ts b/worker/src/services/IngestionService/tests/IngestionService.integration.test.ts
+index 8c1a6f3d..5000b122 100644
+--- a/worker/src/services/IngestionService/tests/IngestionService.integration.test.ts
++++ b/worker/src/services/IngestionService/tests/IngestionService.integration.test.ts
+@@ -110,30 +110,29 @@ describe("Ingestion end-to-end tests", () => {
+         outputCost: 456,
+         totalCost: 789,
+       },
+-      expectedUnit: ModelUsageUnit.Characters,
+-      expectedPromptTokens: 100,
+-      expectedCompletionTokens: 200,
+-      expectedTotalTokens: 100,
++      expectedInputUnits: 100,
++      expectedOutputUnits: 200,
++      expectedTotalUnits: 100,
+     },
+     {
+       usage: {
+         total: 100,
+         unit: ModelUsageUnit.Characters,
+       },
+-      expectedUnit: ModelUsageUnit.Characters,
+-      expectedPromptTokens: null,
+-      expectedCompletionTokens: null,
+-      expectedTotalTokens: 100,
++
++      expectedInputUnits: undefined,
++      expectedOutputUnits: undefined,
++      expectedTotalUnits: 100,
+     },
+     {
+       usage: {
+         total: 100,
+         unit: ModelUsageUnit.Milliseconds,
+       },
+-      expectedUnit: ModelUsageUnit.Milliseconds,
+-      expectedPromptTokens: null,
+-      expectedCompletionTokens: null,
+-      expectedTotalTokens: 100,
++
++      expectedInputUnits: undefined,
++      expectedOutputUnits: undefined,
++      expectedTotalUnits: 100,
+     },
+     {
+       usage: {
+@@ -141,10 +140,10 @@ describe("Ingestion end-to-end tests", () => {
+         output: 2,
+         unit: ModelUsageUnit.Images,
+       },
+-      expectedUnit: ModelUsageUnit.Images,
+-      expectedPromptTokens: 1,
+-      expectedCompletionTokens: 2,
+-      expectedTotalTokens: 3,
++
++      expectedInputUnits: 1,
++      expectedOutputUnits: 2,
++      expectedTotalUnits: 3,
+     },
+     {
+       usage: {
+@@ -152,10 +151,10 @@ describe("Ingestion end-to-end tests", () => {
+         output: 2,
+         unit: ModelUsageUnit.Requests,
+       },
+-      expectedUnit: ModelUsageUnit.Requests,
+-      expectedPromptTokens: 1,
+-      expectedCompletionTokens: 2,
+-      expectedTotalTokens: 3,
++
++      expectedInputUnits: 1,
++      expectedOutputUnits: 2,
++      expectedTotalUnits: 3,
+     },
+     {
+       usage: {
+@@ -163,40 +162,37 @@ describe("Ingestion end-to-end tests", () => {
+         output: 10,
+         unit: ModelUsageUnit.Seconds,
+       },
+-      expectedUnit: ModelUsageUnit.Seconds,
+-      expectedPromptTokens: 30,
+-      expectedCompletionTokens: 10,
+-      expectedTotalTokens: 40,
++
++      expectedInputUnits: 30,
++      expectedOutputUnits: 10,
++      expectedTotalUnits: 40,
+     },
+     {
+       usage: {
+         total: 100,
+       },
+-      expectedUnit: null,
+-      expectedPromptTokens: null,
+-      expectedCompletionTokens: null,
+-      expectedTotalTokens: 100,
++
++      expectedInputUnits: undefined,
++      expectedOutputUnits: undefined,
++      expectedTotalUnits: 100,
+     },
+     {
+       usage: undefined,
+-      expectedPromptTokens: null,
+-      expectedCompletionTokens: null,
+-      expectedTotalTokens: null,
+-      expectedUnit: null,
++      expectedInputUnits: undefined,
++      expectedOutputUnits: undefined,
++      expectedTotalUnits: undefined,
+     },
+     {
+       usage: null,
+-      expectedPromptTokens: null,
+-      expectedCompletionTokens: null,
+-      expectedTotalTokens: null,
+-      expectedUnit: null,
++      expectedInputUnits: undefined,
++      expectedOutputUnits: undefined,
++      expectedTotalUnits: undefined,
+     },
+     {
+       usage: {},
+-      expectedPromptTokens: null,
+-      expectedCompletionTokens: null,
+-      expectedTotalTokens: null,
+-      expectedUnit: null,
++      expectedInputUnits: undefined,
++      expectedOutputUnits: undefined,
++      expectedTotalUnits: undefined,
+     },
+   ].forEach((testConfig) => {
+     it(`should create trace, generation and score without matching models ${JSON.stringify(
+@@ -344,16 +340,15 @@ describe("Ingestion end-to-end tests", () => {
+       expect(parseMetadata(generation.metadata)).toEqual({ key: "value" });
+       expect(generation.version).toBe("2.0.0");
+       expect(generation.internal_model_id).toBeNull();
+-      expect(generation.input_usage_units).toEqual(
+-        testConfig.expectedPromptTokens
++      expect(generation.usage_details.input).toEqual(
++        testConfig.expectedInputUnits
+       );
+-      expect(generation.output_usage_units).toEqual(
+-        testConfig.expectedCompletionTokens
++      expect(generation.usage_details.output).toEqual(
++        testConfig.expectedOutputUnits
+       );
+-      expect(generation.total_usage_units).toEqual(
+-        testConfig.expectedTotalTokens
++      expect(generation.usage_details.total).toEqual(
++        testConfig.expectedTotalUnits
+       );
+-      expect(generation.unit).toEqual(testConfig.expectedUnit);
+       expect(generation.output).toEqual(
+         JSON.stringify({
+           key: "this is a great gpt output",
+@@ -387,8 +382,8 @@ describe("Ingestion end-to-end tests", () => {
+       observationStartTime: new Date("2021-01-01T00:00:00.000Z"),
+       modelUnit: ModelUsageUnit.Tokens,
+       expectedInternalModelId: "custom-model-id",
+-      expectedPromptTokens: 5,
+-      expectedCompletionTokens: 7,
++      expectedInputUnits: 5,
++      expectedOutputUnits: 7,
+       models: [
+         {
+           id: "custom-model-id",
+@@ -405,8 +400,8 @@ describe("Ingestion end-to-end tests", () => {
+       observationStartTime: new Date("2021-01-01T00:00:00.000Z"),
+       modelUnit: ModelUsageUnit.Tokens,
+       expectedInternalModelId: "custom-model-id",
+-      expectedPromptTokens: 5,
+-      expectedCompletionTokens: 7,
++      expectedInputUnits: 5,
++      expectedOutputUnits: 7,
+       models: [
+         {
+           id: "custom-model-id",
+@@ -423,8 +418,8 @@ describe("Ingestion end-to-end tests", () => {
+       observationStartTime: new Date("2021-01-01T00:00:00.000Z"),
+       modelUnit: ModelUsageUnit.Tokens,
+       expectedInternalModelId: "custom-model-id",
+-      expectedPromptTokens: 5,
+-      expectedCompletionTokens: 7,
++      expectedInputUnits: 5,
++      expectedOutputUnits: 7,
+       models: [
+         {
+           id: "custom-model-id",
+@@ -441,8 +436,8 @@ describe("Ingestion end-to-end tests", () => {
+       observationStartTime: new Date("2021-01-01T00:00:00.000Z"),
+       modelUnit: ModelUsageUnit.Tokens,
+       expectedInternalModelId: "custom-model-id-2",
+-      expectedPromptTokens: 5,
+-      expectedCompletionTokens: 7,
++      expectedInputUnits: 5,
++      expectedOutputUnits: 7,
+       models: [
+         {
+           id: "custom-model-id-1",
+@@ -468,8 +463,8 @@ describe("Ingestion end-to-end tests", () => {
+       observationStartTime: new Date("2021-01-02T00:00:00.000Z"),
+       modelUnit: ModelUsageUnit.Tokens,
+       expectedInternalModelId: "custom-model-id-2",
+-      expectedPromptTokens: 5,
+-      expectedCompletionTokens: 7,
++      expectedInputUnits: 5,
++      expectedOutputUnits: 7,
+       models: [
+         {
+           id: "custom-model-id-1",
+@@ -495,8 +490,8 @@ describe("Ingestion end-to-end tests", () => {
+       observationStartTime: new Date("2022-01-01T10:00:00.000Z"),
+       modelUnit: ModelUsageUnit.Tokens,
+       expectedInternalModelId: "custom-model-id-1",
+-      expectedPromptTokens: null,
+-      expectedCompletionTokens: null,
++      expectedInputUnits: undefined,
++      expectedOutputUnits: undefined,
+       models: [
+         {
+           id: "custom-model-id-1",
+@@ -513,8 +508,8 @@ describe("Ingestion end-to-end tests", () => {
+       observationStartTime: new Date("2022-01-01T10:00:00.000Z"),
+       modelUnit: ModelUsageUnit.Tokens,
+       expectedInternalModelId: "custom-model-id-1",
+-      expectedPromptTokens: null,
+-      expectedCompletionTokens: null,
++      expectedInputUnits: undefined,
++      expectedOutputUnits: undefined,
+       models: [
+         {
+           id: "custom-model-id-1",
+@@ -531,8 +526,8 @@ describe("Ingestion end-to-end tests", () => {
+       observationStartTime: new Date("2021-01-01T00:00:00.000Z"),
+       modelUnit: ModelUsageUnit.Tokens,
+       expectedInternalModelId: null,
+-      expectedPromptTokens: null,
+-      expectedCompletionTokens: null,
++      expectedInputUnits: undefined,
++      expectedOutputUnits: undefined,
+       models: [
+         {
+           id: "custom-model-id-1",
+@@ -549,8 +544,8 @@ describe("Ingestion end-to-end tests", () => {
+       observationStartTime: new Date("2021-01-01T00:00:00.000Z"),
+       modelUnit: ModelUsageUnit.Characters,
+       expectedInternalModelId: null,
+-      expectedPromptTokens: null,
+-      expectedCompletionTokens: null,
++      expectedInputUnits: undefined,
++      expectedOutputUnits: undefined,
+       models: [
+         {
+           id: "custom-model-id-1",
+@@ -654,11 +649,11 @@ describe("Ingestion end-to-end tests", () => {
+       expect(generation.provided_model_name).toBe(
+         testConfig.observationExternalModel
+       );
+-      // expect(generation.input_usage_units).toBe(
+-      //   testConfig.expectedPromptTokens
+-      // );
+-      expect(generation.output_usage_units).toBe(
+-        testConfig.expectedCompletionTokens
++      expect(generation.usage_details.input).toBe(
++        testConfig.expectedInputUnits
++      );
++      expect(generation.usage_details.output).toBe(
++        testConfig.expectedOutputUnits
+       );
+       expect(generation.internal_model_id).toBe(
+         testConfig.expectedInternalModelId
+@@ -1197,23 +1192,21 @@ describe("Ingestion end-to-end tests", () => {
+       generationId
+     );
+ 
+-    expect(generation.provided_input_usage_units).toEqual(1285);
+-    expect(generation.provided_output_usage_units).toEqual(513);
+-    expect(generation.provided_total_usage_units).toEqual(1798);
+-
+-    expect(generation.input_usage_units).toEqual(1285);
+-    expect(generation.output_usage_units).toEqual(513);
+-    expect(generation.total_usage_units).toEqual(1798);
++    expect(generation.usage_details.input).toEqual(1285);
++    expect(generation.usage_details.output).toEqual(513);
++    expect(generation.usage_details.total).toEqual(1798);
+ 
+-    expect(generation.provided_input_cost).toEqual(0.0006425);
+-    expect(generation.provided_output_cost).toEqual(0.0007695);
+-    expect(generation.provided_total_cost).toEqual(0.001412);
++    expect(generation.usage_details.input).toEqual(1285);
++    expect(generation.usage_details.output).toEqual(513);
++    expect(generation.usage_details.total).toEqual(1798);
+ 
+-    expect(generation.provided_input_cost).toEqual(0.0006425);
+-    expect(generation.provided_output_cost).toEqual(0.0007695);
+-    expect(generation.provided_total_cost).toEqual(0.001412);
++    expect(generation.cost_details.input).toEqual(0.0006425);
++    expect(generation.cost_details.output).toEqual(0.0007695);
++    expect(generation.cost_details.total).toEqual(0.001412);
+ 
+-    expect(generation.unit).toEqual("TOKENS");
++    expect(generation.provided_cost_details.input).toEqual(0.0006425);
++    expect(generation.provided_cost_details.output).toEqual(0.0007695);
++    expect(generation.provided_cost_details.total).toEqual(0.001412);
+   });
+ 
+   it("should update all token counts if update does not contain model name", async () => {
+@@ -1310,8 +1303,8 @@ describe("Ingestion end-to-end tests", () => {
+     expect(generation?.output).toEqual(
+       JSON.stringify({ key: "this is a great gpt output" })
+     );
+-    expect(generation?.input_usage_units).toEqual(5);
+-    expect(generation?.output_usage_units).toEqual(11);
++    expect(generation?.usage_details.input).toEqual(5);
++    expect(generation?.usage_details.output).toEqual(11);
+   });
+ 
+   it("should update all token counts if update does not contain model name and events come in wrong order", async () => {
+@@ -1403,8 +1396,8 @@ describe("Ingestion end-to-end tests", () => {
+     expect(observation?.output).toEqual(
+       JSON.stringify({ key: "this is a great gpt output" })
+     );
+-    expect(observation?.input_usage_units).toEqual(5);
+-    expect(observation?.output_usage_units).toEqual(11);
++    expect(observation?.usage_details.input).toEqual(5);
++    expect(observation?.usage_details.output).toEqual(11);
+   });
+ 
+   it("null does not override set values", async () => {
+diff --git a/worker/src/services/IngestionService/tests/calculateTokenCost.unit.test.ts b/worker/src/services/IngestionService/tests/calculateTokenCost.unit.test.ts
+index 0d81efc4..f3b1e916 100644
+--- a/worker/src/services/IngestionService/tests/calculateTokenCost.unit.test.ts
++++ b/worker/src/services/IngestionService/tests/calculateTokenCost.unit.test.ts
+@@ -1,8 +1,8 @@
+ import Decimal from "decimal.js";
+ import { v4 as uuidv4 } from "uuid";
+-import { beforeEach, describe, expect, it, vi } from "vitest";
++import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
+ 
+-import { ModelUsageUnit } from "@langfuse/shared";
++import { ModelUsageUnit, Price } from "@langfuse/shared";
+ import { prisma } from "@langfuse/shared/src/db";
+ 
+ import { pruneDatabase } from "../../../__tests__/utils";
+@@ -40,14 +40,11 @@ describe("Token Cost Calculation", () => {
+   const generationId = uuidv4();
+   const projectId = "7a88fb47-b4e2-43b8-a06c-a5ce950dc53a";
+ 
++  const modelId = uuidv4();
+   const tokenModelData = {
+-    id: uuidv4(),
++    id: modelId,
+     modelName,
+     matchPattern,
+-    inputPrice: new Decimal(0.01),
+-    outputPrice: new Decimal(0.02),
+-    totalPrice: new Decimal(0.03),
+-    unit: ModelUsageUnit.Tokens,
+     tokenizerId: "openai",
+     tokenizerConfig: {
+       tokensPerName: 1,
+@@ -56,30 +53,33 @@ describe("Token Cost Calculation", () => {
+     },
+   };
+ 
+-  const imageModelData = {
+-    id: uuidv4(),
+-    modelName,
+-    matchPattern,
+-    inputPrice: new Decimal(1),
+-    outputPrice: new Decimal(2),
+-    totalPrice: new Decimal(3),
+-    unit: ModelUsageUnit.Images,
+-    tokenizerId: "openai",
+-    tokenizerConfig: {
+-      tokensPerName: 1,
+-      tokenizerModel: "gpt-4o",
+-      tokensPerMessage: 3,
++  const modelPrices: Pick<Price, "price" | "usageType">[] = [
++    {
++      price: new Decimal(0.01),
++      usageType: "input",
+     },
+-  };
++    {
++      price: new Decimal(0.02),
++      usageType: "output",
++    },
++    {
++      price: new Decimal(0.03),
++      usageType: "total",
++    },
++  ];
+ 
+   beforeEach(async () => {
+     await pruneDatabase();
++    await prisma.model.create({
++      data: tokenModelData,
++    });
+     await Promise.all([
+-      prisma.model.create({
+-        data: tokenModelData,
+-      }),
+-      prisma.model.create({
+-        data: imageModelData,
++      prisma.price.createMany({
++        data: modelPrices.map((price) => ({
++          modelId,
++          usageType: price.usageType,
++          price: price.price,
++        })),
+       }),
+       prisma.trace.create({
+         data: {
+@@ -92,77 +92,80 @@ describe("Token Cost Calculation", () => {
+   });
+ 
+   it("should correctly calculate token costs with provided model prices", async () => {
+-    const model = {
+-      inputPrice: new Decimal(0.01),
+-      outputPrice: new Decimal(0.02),
+-      totalPrice: new Decimal(0.03),
+-    };
++    const prices = await prisma.price.findMany({
++      where: {
++        modelId,
++      },
++    });
+ 
+-    const tokenCounts = {
+-      input_usage_units: 100,
+-      output_usage_units: 200,
+-      total_usage_units: 300,
++    const usageUnits = {
++      input: 100,
++      output: 200,
++      total: 300,
+     };
+ 
+     const userProvidedCosts = {
+-      provided_input_cost: null,
+-      provided_output_cost: null,
+-      provided_total_cost: null,
++      input: null,
++      output: null,
++      total: null,
+     };
+ 
+-    const costs = (IngestionService as any).calculateTokenCosts(
+-      model as any,
++    const costs = (IngestionService as any).calculateUsageCosts(
++      prices as any,
+       userProvidedCosts,
+-      tokenCounts
++      usageUnits
+     );
+ 
+-    expect(costs.input_cost).toBe(1.0); // 100 tokens * 0.01
+-    expect(costs.output_cost).toBe(4.0); // 200 tokens * 0.02
+-    expect(costs.total_cost).toBe(9.0); // 300 tokens * 0.03
++    expect(costs.cost_details.input).toBe(1.0); // 100 tokens * 0.01
++    expect(costs.cost_details.output).toBe(4.0); // 200 tokens * 0.02
++    expect(costs.cost_details.total).toBe(9.0); // 300 tokens * 0.03
++    expect(costs.total_cost).toBe(9.0);
+   });
+ 
+   it("should correctly calculate token costs with user provided costs", async () => {
+-    const model = {
+-      inputPrice: new Decimal(0.01),
+-      outputPrice: new Decimal(0.02),
+-    };
++    const prices = await prisma.price.findMany({
++      where: {
++        modelId,
++      },
++    });
+ 
+-    const tokenCounts = {
+-      input_usage_units: 100,
+-      output_usage_units: 200,
+-      total_usage_units: 300,
++    const usageUnits = {
++      input: 100,
++      output: 200,
++      total: 300,
+     };
+ 
+     const userProvidedCosts = {
+-      provided_input_cost: 2.0,
+-      provided_output_cost: 3.0,
+-      provided_total_cost: 5.0,
++      input: 2.0,
++      output: 3.0,
++      total: 5.0,
+     };
+ 
+-    const costs = (IngestionService as any).calculateTokenCosts(
+-      model as any,
+-      userProvidedCosts,
+-      tokenCounts
++    const costs = (IngestionService as any).calculateUsageCosts(
++      prices as any,
++      { provided_cost_details: userProvidedCosts },
++      usageUnits
+     );
+ 
+-    expect(costs.input_cost).toBe(2.0); // Overridden by user provided cost
+-    expect(costs.output_cost).toBe(3.0); // Overridden by user provided cost
+-    expect(costs.total_cost).toBe(5.0); // Overridden by user provided cost
++    expect(costs.cost_details.input).toBe(2.0); // Overridden by user provided cost
++    expect(costs.cost_details.output).toBe(3.0); // Overridden by user provided cost
++    expect(costs.cost_details.total).toBe(5.0); // Overridden by user provided cost
++    expect(costs.total_cost).toBe(5.0);
+   });
+ 
+   it("should correctly calculate token costs when only some user provided costs are given", async () => {
+-    const model = {
+-      inputPrice: new Decimal(1),
+-      outputPrice: new Decimal(1),
+-    };
++    const prices = await prisma.price.findMany({
++      where: {
++        modelId,
++      },
++    });
+ 
+     const data = [
+       // missing total
+       {
+         userProvidedCosts: {
+-          provided_input_cost: 1,
+-          provided_output_cost: 2,
+-          provided_total_cost: undefined,
++          input: 1,
++          output: 2,
+         },
+         expectedCost: {
+           input_cost: 1,
+@@ -173,25 +176,19 @@ describe("Token Cost Calculation", () => {
+       // only total
+       {
+         userProvidedCosts: {
+-          provided_input_cost: undefined,
+-          provided_output_cost: undefined,
+-          provided_total_cost: 2,
++          total: 2,
+         },
+         expectedCost: {
+-          input_cost: undefined,
+-          output_cost: undefined,
+           total_cost: 2,
+         },
+       },
+       // missing input
+       {
+         userProvidedCosts: {
+-          provided_input_cost: undefined,
+-          provided_output_cost: 2,
+-          provided_total_cost: 2,
++          output: 2,
++          total: 2,
+         },
+         expectedCost: {
+-          input_cost: undefined,
+           output_cost: 2,
+           total_cost: 2,
+         },
+@@ -199,13 +196,10 @@ describe("Token Cost Calculation", () => {
+       // only input
+       {
+         userProvidedCosts: {
+-          provided_input_cost: 1,
+-          provided_output_cost: undefined,
+-          provided_total_cost: undefined,
++          input: 1,
+         },
+         expectedCost: {
+           input_cost: 1,
+-          output_cost: undefined,
+           total_cost: 1,
+         },
+       },
+@@ -213,9 +207,8 @@ describe("Token Cost Calculation", () => {
+       // missing output
+       {
+         userProvidedCosts: {
+-          provided_input_cost: 1,
+-          provided_output_cost: undefined,
+-          provided_total_cost: 1,
++          input: 1,
++          total: 1,
+         },
+         expectedCost: {
+           input_cost: 1,
+@@ -227,9 +220,7 @@ describe("Token Cost Calculation", () => {
+       // only output
+       {
+         userProvidedCosts: {
+-          provided_input_cost: undefined,
+-          provided_output_cost: 2,
+-          provided_total_cost: undefined,
++          output: 2,
+         },
+         expectedCost: {
+           input_cost: undefined,
+@@ -240,166 +231,172 @@ describe("Token Cost Calculation", () => {
+     ];
+ 
+     for (const { userProvidedCosts, expectedCost } of data) {
+-      const tokenCounts = {
+-        input_usage_units: 0,
+-        output_usage_units: 0,
+-        total_usage_units: 0,
++      const usageUnits = {
++        input: 0,
++        output: 0,
++        total: 0,
+       };
+ 
+-      const costs = (IngestionService as any).calculateTokenCosts(
+-        model as any,
+-        userProvidedCosts as any,
+-        tokenCounts
++      const costs = (IngestionService as any).calculateUsageCosts(
++        prices as any,
++        { provided_cost_details: userProvidedCosts } as any,
++        usageUnits
+       );
+ 
+-      expect(costs.input_cost).toBe(expectedCost.input_cost);
+-      expect(costs.output_cost).toBe(expectedCost.output_cost);
++      expect(costs.cost_details.input).toBe(expectedCost.input_cost);
++      expect(costs.cost_details.output).toBe(expectedCost.output_cost);
++      expect(costs.cost_details.total).toBe(expectedCost.total_cost);
+       expect(costs.total_cost).toBe(expectedCost.total_cost);
+     }
+   });
+ 
+   it("should return empty costs if no model is provided", async () => {
+-    const tokenCounts = {
+-      input_usage_units: 100,
+-      output_usage_units: 200,
+-      total_usage_units: 300,
++    const usageUnits = {
++      input: 100,
++      output: 200,
++      total: 300,
+     };
+ 
+     const userProvidedCosts = {
+-      provided_input_cost: null,
+-      provided_output_cost: null,
+-      provided_total_cost: null,
++      input: null,
++      output: null,
++      total: null,
+     };
+ 
+-    const costs = (IngestionService as any).calculateTokenCosts(
++    const costs = (IngestionService as any).calculateUsageCosts(
+       null,
+       userProvidedCosts,
+-      tokenCounts
++      usageUnits
+     );
+ 
+-    expect(costs.input_cost).toBeUndefined();
+-    expect(costs.output_cost).toBeUndefined();
++    expect(costs.cost_details.input).toBeUndefined();
++    expect(costs.cost_details.output).toBeUndefined();
++    expect(costs.cost_details.total).toBeUndefined();
+     expect(costs.total_cost).toBeUndefined();
+   });
+ 
+   it("should handle zero token counts correctly", async () => {
+-    const model = {
+-      inputPrice: new Decimal(0.01),
+-      outputPrice: new Decimal(0.02),
+-      totalPrice: new Decimal(0.03),
+-    };
++    const prices = await prisma.price.findMany({
++      where: {
++        modelId,
++      },
++    });
+ 
+-    const tokenCounts = {
+-      input_usage_units: 0,
+-      output_usage_units: 0,
+-      total_usage_units: 0,
++    const usageUnits = {
++      input: 0,
++      output: 0,
++      total: 0,
+     };
+ 
+     const userProvidedCosts = {
+-      provided_input_cost: null,
+-      provided_output_cost: null,
+-      provided_total_cost: null,
++      input: null,
++      output: null,
++      total: null,
+     };
+ 
+-    const costs = (IngestionService as any).calculateTokenCosts(
+-      model as any,
++    const costs = (IngestionService as any).calculateUsageCosts(
++      prices as any,
+       userProvidedCosts,
+-      tokenCounts
++      usageUnits
+     );
+ 
+-    expect(costs.input_cost).toBe(0); // 0 tokens * 0.01
+-    expect(costs.output_cost).toBe(0); // 0 tokens * 0.02
+-    expect(costs.total_cost).toBe(0); // 0 tokens * 0.03
++    expect(costs.cost_details.input).toBe(0); // 0 tokens * 0.01
++    expect(costs.cost_details.output).toBe(0); // 0 tokens * 0.02
++    expect(costs.cost_details.total).toBe(0); // 0 tokens * 0.03
++    expect(costs.total_cost).toBe(0);
+   });
+ 
+   it("should handle missing token counts correctly", async () => {
+-    const model = {
+-      inputPrice: new Decimal(0.01),
+-      outputPrice: new Decimal(0.02),
+-      totalPrice: new Decimal(0.03),
+-    };
++    const prices = await prisma.price.findMany({
++      where: {
++        modelId,
++      },
++    });
+ 
+-    const tokenCounts = {
+-      input_usage_units: undefined,
+-      output_usage_units: undefined,
+-      total_usage_units: undefined,
++    const usageUnits = {
++      input: undefined,
++      output: undefined,
++      total: undefined,
+     };
+ 
+     const userProvidedCosts = {
+-      provided_input_cost: null,
+-      provided_output_cost: null,
+-      provided_total_cost: null,
++      input: null,
++      output: null,
++      total: null,
+     };
+ 
+-    const costs = (IngestionService as any).calculateTokenCosts(
+-      model as any,
++    const costs = (IngestionService as any).calculateUsageCosts(
++      prices as any,
+       userProvidedCosts,
+-      tokenCounts
++      usageUnits
+     );
+ 
+-    expect(costs.input_cost).toBeUndefined();
+-    expect(costs.output_cost).toBeUndefined();
++    expect(costs.cost_details.input).toBeUndefined();
++    expect(costs.cost_details.output).toBeUndefined();
++    expect(costs.cost_details.total).toBeUndefined();
+     expect(costs.total_cost).toBeUndefined();
+   });
+ 
+   it("should handle fractional token counts correctly", async () => {
+-    const model = {
+-      inputPrice: new Decimal(0.01),
+-      outputPrice: new Decimal(0.02),
+-      totalPrice: new Decimal(0.03),
+-    };
++    const prices = await prisma.price.findMany({
++      where: {
++        modelId,
++      },
++    });
+ 
+-    const tokenCounts = {
+-      input_usage_units: 150.5,
+-      output_usage_units: 250.25,
+-      total_usage_units: 400.75,
++    const usageUnits = {
++      input: 150.5,
++      output: 250.25,
++      total: 400.75,
+     };
+ 
+     const userProvidedCosts = {
+-      provided_input_cost: null,
+-      provided_output_cost: null,
+-      provided_total_cost: null,
++      input: null,
++      output: null,
++      total: null,
+     };
+ 
+-    const costs = (IngestionService as any).calculateTokenCosts(
+-      model as any,
++    const costs = (IngestionService as any).calculateUsageCosts(
++      prices as any,
+       userProvidedCosts,
+-      tokenCounts
++      usageUnits
+     );
+ 
+-    expect(costs.input_cost).toBeCloseTo(1.505); // 150.5 tokens * 0.01
+-    expect(costs.output_cost).toBeCloseTo(5.005); // 250.25 tokens * 0.02
+-    expect(costs.total_cost).toBeCloseTo(12.0225); // 400.75 tokens * 0.03
++    expect(costs.cost_details.input).toBeCloseTo(1.505); // 150.5 tokens * 0.01
++    expect(costs.cost_details.output).toBeCloseTo(5.005); // 250.25 tokens * 0.02
++    expect(costs.cost_details.total).toBeCloseTo(12.0225); // 400.75 tokens * 0.03
++    expect(costs.total_cost).toBeCloseTo(12.0225);
+   });
+ 
+   it("should handle large token counts correctly", async () => {
+-    const model = {
+-      inputPrice: new Decimal(0.01),
+-      outputPrice: new Decimal(0.02),
+-      totalPrice: new Decimal(0.03),
+-    };
++    const prices = await prisma.price.findMany({
++      where: {
++        modelId,
++      },
++    });
+ 
+-    const tokenCounts = {
+-      input_usage_units: 1e6,
+-      output_usage_units: 2e6,
+-      total_usage_units: 3e6,
++    const usageUnits = {
++      input: 1e6,
++      output: 2e6,
++      total: 3e6,
+     };
+ 
+     const userProvidedCosts = {
+-      provided_input_cost: null,
+-      provided_output_cost: null,
+-      provided_total_cost: null,
++      input: null,
++      output: null,
++      total: null,
+     };
+ 
+-    const costs = (IngestionService as any).calculateTokenCosts(
+-      model as any,
++    const costs = (IngestionService as any).calculateUsageCosts(
++      prices as any,
+       userProvidedCosts,
+-      tokenCounts
++      usageUnits
+     );
+ 
+-    expect(costs.input_cost).toBe(10000); // 1e6 tokens * 0.01
+-    expect(costs.output_cost).toBe(40000); // 2e6 tokens * 0.02
+-    expect(costs.total_cost).toBe(90000); // 3e6 tokens * 0.03
++    expect(costs.cost_details.input).toBe(10000); // 1e6 tokens * 0.01
++    expect(costs.cost_details.output).toBe(40000); // 2e6 tokens * 0.02
++    expect(costs.cost_details.total).toBe(90000); // 3e6 tokens * 0.03
++    expect(costs.total_cost).toBe(90000);
+   });
+ 
+   it("should correctly match model prices from the database", async () => {
+@@ -409,7 +406,6 @@ describe("Token Cost Calculation", () => {
+         input: 100,
+         output: 200,
+         total: 300,
+-        unit: ModelUsageUnit.Tokens,
+       },
+     };
+ 
+@@ -443,27 +439,26 @@ describe("Token Cost Calculation", () => {
+ 
+     // Model name should be matched
+ 
+-    expect(generation.unit).toEqual(tokenModelData.unit);
+     expect(generation.internal_model_id).toBe(tokenModelData.id);
+ 
+     // No user provided cost
+-    expect(generation.provided_input_cost).toBeUndefined();
+-    expect(generation.provided_output_cost).toBeUndefined();
+-    expect(generation.provided_total_cost).toBeUndefined();
++    expect(generation.provided_cost_details.input).toBeUndefined();
++    expect(generation.provided_cost_details.output).toBeUndefined();
++    expect(generation.provided_cost_details.total).toBeUndefined();
+ 
+     // Calculated cost
+-    expect(generation.input_cost).toBe(
+-      generationUsage.usage.input * tokenModelData.inputPrice.toNumber()
++    expect(generation.cost_details.input).toBe(
++      generationUsage.usage.input * modelPrices[0].price.toNumber()
+     );
+-    expect(generation.output_cost).toBe(
+-      generationUsage.usage.output * tokenModelData.outputPrice.toNumber()
++    expect(generation.cost_details.output).toBe(
++      generationUsage.usage.output * modelPrices[1].price.toNumber()
+     );
+-    expect(generation.total_cost).toBe(
+-      generationUsage.usage.total * tokenModelData.totalPrice.toNumber()
++    expect(generation.cost_details.total).toBe(
++      generationUsage.usage.total * modelPrices[2].price.toNumber()
+     );
+-    expect(generation.input_usage_units).toBe(generationUsage.usage.input);
+-    expect(generation.output_usage_units).toBe(generationUsage.usage.output);
+-    expect(generation.total_usage_units).toBe(generationUsage.usage.total);
++    expect(generation.usage_details.input).toBe(generationUsage.usage.input);
++    expect(generation.usage_details.output).toBe(generationUsage.usage.output);
++    expect(generation.usage_details.total).toBe(generationUsage.usage.total);
+   });
+ 
+   it("should overwrite costs for a generation without previous user provided costs", async () => {
+@@ -473,7 +468,6 @@ describe("Token Cost Calculation", () => {
+         input: 1,
+         output: 2,
+         total: 3,
+-        unit: ModelUsageUnit.Tokens,
+       },
+     };
+ 
+@@ -483,7 +477,6 @@ describe("Token Cost Calculation", () => {
+         input: 100,
+         output: 200,
+         total: 300,
+-        unit: ModelUsageUnit.Tokens,
+       },
+     };
+ 
+@@ -523,27 +516,27 @@ describe("Token Cost Calculation", () => {
+     expect(generation.type).toBe("GENERATION");
+ 
+     // Model name should be matched
+-    expect(generation.unit).toEqual(tokenModelData.unit);
++
+     expect(generation.internal_model_id).toBe(tokenModelData.id);
+ 
+     // No user provided cost
+-    expect(generation.provided_input_cost).toBeUndefined();
+-    expect(generation.provided_output_cost).toBeUndefined();
+-    expect(generation.provided_total_cost).toBeUndefined();
++    expect(generation.provided_cost_details.input).toBeUndefined();
++    expect(generation.provided_cost_details.output).toBeUndefined();
++    expect(generation.provided_cost_details.total).toBeUndefined();
+ 
+     // Calculated cost
+-    expect(generation.input_cost).toBe(
+-      generationUsage2.usage.input * tokenModelData.inputPrice.toNumber()
++    expect(generation.cost_details.input).toBe(
++      generationUsage2.usage.input * modelPrices[0].price.toNumber()
+     );
+-    expect(generation.output_cost).toBe(
+-      generationUsage2.usage.output * tokenModelData.outputPrice.toNumber()
++    expect(generation.cost_details.output).toBe(
++      generationUsage2.usage.output * modelPrices[1].price.toNumber()
+     );
+-    expect(generation.total_cost).toBe(
+-      generationUsage2.usage.total * tokenModelData.totalPrice.toNumber()
++    expect(generation.cost_details.total).toBe(
++      generationUsage2.usage.total * modelPrices[2].price.toNumber()
+     );
+-    expect(generation.input_usage_units).toBe(generationUsage2.usage.input);
+-    expect(generation.output_usage_units).toBe(generationUsage2.usage.output);
+-    expect(generation.total_usage_units).toBe(generationUsage2.usage.total);
++    expect(generation.usage_details.input).toBe(generationUsage2.usage.input);
++    expect(generation.usage_details.output).toBe(generationUsage2.usage.output);
++    expect(generation.usage_details.total).toBe(generationUsage2.usage.total);
+   });
+ 
+   it("should correctly handle first manual tokenization and then provided tokens", async () => {
+@@ -560,7 +553,6 @@ describe("Token Cost Calculation", () => {
+         input: 100,
+         output: 200,
+         total: 300,
+-        unit: ModelUsageUnit.Tokens,
+       },
+     };
+ 
+@@ -600,27 +592,27 @@ describe("Token Cost Calculation", () => {
+     expect(generation.type).toBe("GENERATION");
+ 
+     // Model name should be matched
+-    expect(generation.unit).toEqual(tokenModelData.unit);
++
+     expect(generation.internal_model_id).toBe(tokenModelData.id);
+ 
+     // No user provided cost
+-    expect(generation.provided_input_cost).toBeUndefined();
+-    expect(generation.provided_output_cost).toBeUndefined();
+-    expect(generation.provided_total_cost).toBeUndefined();
++    expect(generation.provided_cost_details.input).toBeUndefined();
++    expect(generation.provided_cost_details.output).toBeUndefined();
++    expect(generation.provided_cost_details.total).toBeUndefined();
+ 
+     // Calculated cost
+-    expect(generation.input_cost).toBe(
+-      generationUsage2.usage.input * tokenModelData.inputPrice.toNumber()
++    expect(generation.cost_details.input).toBe(
++      generationUsage2.usage.input * modelPrices[0].price.toNumber()
+     );
+-    expect(generation.output_cost).toBe(
+-      generationUsage2.usage.output * tokenModelData.outputPrice.toNumber()
++    expect(generation.cost_details.output).toBe(
++      generationUsage2.usage.output * modelPrices[1].price.toNumber()
+     );
+-    expect(generation.total_cost).toBe(
+-      generationUsage2.usage.total * tokenModelData.totalPrice.toNumber()
++    expect(generation.cost_details.total).toBe(
++      generationUsage2.usage.total * modelPrices[2].price.toNumber()
+     );
+-    expect(generation.input_usage_units).toBe(generationUsage2.usage.input);
+-    expect(generation.output_usage_units).toBe(generationUsage2.usage.output);
+-    expect(generation.total_usage_units).toBe(generationUsage2.usage.total);
++    expect(generation.usage_details.input).toBe(generationUsage2.usage.input);
++    expect(generation.usage_details.output).toBe(generationUsage2.usage.output);
++    expect(generation.usage_details.total).toBe(generationUsage2.usage.total);
+   });
+ 
+   it("should use the matched model of the previous generation call to calculate costs", async () => {
+@@ -630,7 +622,6 @@ describe("Token Cost Calculation", () => {
+         input: 1,
+         output: 2,
+         total: 3,
+-        unit: ModelUsageUnit.Tokens,
+       },
+     };
+ 
+@@ -640,7 +631,6 @@ describe("Token Cost Calculation", () => {
+         input: 100,
+         output: 200,
+         total: 300,
+-        unit: ModelUsageUnit.Tokens,
+       },
+     };
+ 
+@@ -680,90 +670,27 @@ describe("Token Cost Calculation", () => {
+     expect(generation.type).toBe("GENERATION");
+ 
+     // Model name should be matched
+-    expect(generation.unit).toEqual(tokenModelData.unit);
++
+     expect(generation.internal_model_id).toBe(tokenModelData.id);
+ 
+     // No user provided cost
+-    expect(generation.provided_input_cost).toBeUndefined();
+-    expect(generation.provided_output_cost).toBeUndefined();
+-    expect(generation.provided_total_cost).toBeUndefined();
++    expect(generation.provided_cost_details.input).toBeUndefined();
++    expect(generation.provided_cost_details.output).toBeUndefined();
++    expect(generation.provided_cost_details.total).toBeUndefined();
+ 
+     // Calculated cost
+-    expect(generation.input_cost).toBe(
+-      generationUsage2.usage.input * tokenModelData.inputPrice.toNumber()
++    expect(generation.cost_details.input).toBe(
++      generationUsage2.usage.input * modelPrices[0].price.toNumber()
+     );
+-    expect(generation.output_cost).toBe(
+-      generationUsage2.usage.output * tokenModelData.outputPrice.toNumber()
++    expect(generation.cost_details.output).toBe(
++      generationUsage2.usage.output * modelPrices[1].price.toNumber()
+     );
+-    expect(generation.total_cost).toBe(
+-      generationUsage2.usage.total * tokenModelData.totalPrice.toNumber()
++    expect(generation.cost_details.total).toBe(
++      generationUsage2.usage.total * modelPrices[2].price.toNumber()
+     );
+-    expect(generation.input_usage_units).toBe(generationUsage2.usage.input);
+-    expect(generation.output_usage_units).toBe(generationUsage2.usage.output);
+-    expect(generation.total_usage_units).toBe(generationUsage2.usage.total);
+-  });
+-
+-  it("should discard model if following event has different unit", async () => {
+-    const generationUsage1 = {
+-      model: modelName,
+-    };
+-
+-    const generationUsage2 = {
+-      model: modelName,
+-      usage: {
+-        totalCost: 10,
+-        unit: ModelUsageUnit.Characters, // Different unit for which model is not matched
+-      },
+-    };
+-
+-    const events = [
+-      {
+-        id: uuidv4(),
+-        type: "generation-create",
+-        timestamp: new Date().toISOString(),
+-        body: {
+-          id: generationId,
+-          ...generationUsage1,
+-        },
+-      },
+-      {
+-        id: uuidv4(),
+-        type: "generation-update",
+-        timestamp: new Date().toISOString(),
+-        body: {
+-          id: generationId,
+-          ...generationUsage2,
+-        },
+-      },
+-    ];
+-
+-    await (mockIngestionService as any).processObservationEventList({
+-      projectId,
+-      entityId: generationId,
+-      observationEventList: events,
+-    });
+-    expect(mockAddToClickhouseWriter).toHaveBeenCalled();
+-    const args = mockAddToClickhouseWriter.mock.calls[0];
+-    const tableName = args[0];
+-    const generation = args[1];
+-
+-    expect(tableName).toBe("observations");
+-    expect(generation).toBeDefined();
+-    expect(generation.type).toBe("GENERATION");
+-
+-    // Model name should be matched
+-
+-    expect(generation.unit).toEqual(ModelUsageUnit.Characters);
+-
+-    // No user provided cost
+-    expect(generation.provided_input_cost).toBeUndefined();
+-    expect(generation.provided_output_cost).toBeUndefined();
+-    expect(generation.provided_total_cost).toBe(10);
+-
+-    // Calculated cost
+-    expect(generation.input_cost).toBeUndefined();
+-    expect(generation.output_cost).toBeUndefined();
+-    expect(generation.total_cost).toBe(10);
++    expect(generation.usage_details.input).toBe(generationUsage2.usage.input);
++    expect(generation.usage_details.output).toBe(generationUsage2.usage.output);
++    expect(generation.usage_details.total).toBe(generationUsage2.usage.total);
+   });
+ 
+   it("should overwrite costs if new costs are user provided", async () => {
+@@ -773,7 +700,6 @@ describe("Token Cost Calculation", () => {
+         input: 1,
+         output: 2,
+         total: 3,
+-        unit: ModelUsageUnit.Tokens,
+       },
+     };
+ 
+@@ -786,7 +712,6 @@ describe("Token Cost Calculation", () => {
+         inputCost: 1234,
+         outputCost: 23523,
+         totalCost: 5354,
+-        unit: ModelUsageUnit.Tokens,
+       },
+     };
+ 
+@@ -827,27 +752,32 @@ describe("Token Cost Calculation", () => {
+ 
+     // Model name should be matched
+ 
+-    expect(generation.unit).toEqual(tokenModelData.unit);
+     expect(generation.internal_model_id).toBe(tokenModelData.id);
+ 
+     // User provided cost
+-    expect(generation.provided_input_cost).toBe(
++    expect(generation.provided_cost_details.input).toBe(
+       generationUsage2.usage.inputCost
+     );
+-    expect(generation.provided_output_cost).toBe(
++    expect(generation.provided_cost_details.output).toBe(
+       generationUsage2.usage.outputCost
+     );
+-    expect(generation.provided_total_cost).toBe(
++    expect(generation.provided_cost_details.total).toBe(
+       generationUsage2.usage.totalCost
+     );
+ 
+     // Calculated cost
+-    expect(generation.input_cost).toBe(generationUsage2.usage.inputCost);
+-    expect(generation.output_cost).toBe(generationUsage2.usage.outputCost);
+-    expect(generation.total_cost).toBe(generationUsage2.usage.totalCost);
+-    expect(generation.input_usage_units).toBe(generationUsage2.usage.input);
+-    expect(generation.output_usage_units).toBe(generationUsage2.usage.output);
+-    expect(generation.total_usage_units).toBe(generationUsage2.usage.total);
++    expect(generation.cost_details.input).toBe(
++      generationUsage2.usage.inputCost
++    );
++    expect(generation.cost_details.output).toBe(
++      generationUsage2.usage.outputCost
++    );
++    expect(generation.cost_details.total).toBe(
++      generationUsage2.usage.totalCost
++    );
++    expect(generation.usage_details.input).toBe(generationUsage2.usage.input);
++    expect(generation.usage_details.output).toBe(generationUsage2.usage.output);
++    expect(generation.usage_details.total).toBe(generationUsage2.usage.total);
+   });
+ 
+   it("should overwrite costs if new costs are user provided and zero", async () => {
+@@ -857,7 +787,6 @@ describe("Token Cost Calculation", () => {
+         input: 1,
+         output: 2,
+         total: 3,
+-        unit: ModelUsageUnit.Tokens,
+       },
+     };
+ 
+@@ -870,7 +799,6 @@ describe("Token Cost Calculation", () => {
+         inputCost: 0,
+         outputCost: 0,
+         totalCost: 0,
+-        unit: ModelUsageUnit.Tokens,
+       },
+     };
+ 
+@@ -911,27 +839,32 @@ describe("Token Cost Calculation", () => {
+ 
+     // Model name should be matched
+ 
+-    expect(generation.unit).toEqual(tokenModelData.unit);
+     expect(generation.internal_model_id).toBe(tokenModelData.id);
+ 
+     // User provided cost
+-    expect(generation.provided_input_cost).toBe(
++    expect(generation.provided_cost_details.input).toBe(
+       generationUsage2.usage.inputCost
+     );
+-    expect(generation.provided_output_cost).toBe(
++    expect(generation.provided_cost_details.output).toBe(
+       generationUsage2.usage.outputCost
+     );
+-    expect(generation.provided_total_cost).toBe(
++    expect(generation.provided_cost_details.total).toBe(
+       generationUsage2.usage.totalCost
+     );
+ 
+     // Calculated cost
+-    expect(generation.input_cost).toBe(generationUsage2.usage.inputCost);
+-    expect(generation.output_cost).toBe(generationUsage2.usage.outputCost);
+-    expect(generation.total_cost).toBe(generationUsage2.usage.totalCost);
+-    expect(generation.input_usage_units).toBe(generationUsage2.usage.input);
+-    expect(generation.output_usage_units).toBe(generationUsage2.usage.output);
+-    expect(generation.total_usage_units).toBe(generationUsage2.usage.total);
++    expect(generation.cost_details.input).toBe(
++      generationUsage2.usage.inputCost
++    );
++    expect(generation.cost_details.output).toBe(
++      generationUsage2.usage.outputCost
++    );
++    expect(generation.cost_details.total).toBe(
++      generationUsage2.usage.totalCost
++    );
++    expect(generation.usage_details.input).toBe(generationUsage2.usage.input);
++    expect(generation.usage_details.output).toBe(generationUsage2.usage.output);
++    expect(generation.usage_details.total).toBe(generationUsage2.usage.total);
+   });
+ 
+   it("should overwrite costs if new costs are user provided and only partial", async () => {
+@@ -941,7 +874,6 @@ describe("Token Cost Calculation", () => {
+         input: 1,
+         output: 2,
+         total: 3,
+-        unit: ModelUsageUnit.Tokens,
+       },
+     };
+ 
+@@ -949,7 +881,6 @@ describe("Token Cost Calculation", () => {
+       model: modelName,
+       usage: {
+         outputCost: 1,
+-        unit: ModelUsageUnit.Tokens,
+       },
+     };
+ 
+@@ -990,23 +921,24 @@ describe("Token Cost Calculation", () => {
+ 
+     // Model name should be matched
+ 
+-    expect(generation.unit).toEqual(tokenModelData.unit);
+     expect(generation.internal_model_id).toBe(tokenModelData.id);
+ 
+     // User provided cost
+-    expect(generation.provided_input_cost).toBe(undefined);
+-    expect(generation.provided_output_cost).toBe(
++    expect(generation.provided_cost_details.input).toBe(undefined);
++    expect(generation.provided_cost_details.output).toBe(
+       generationUsage2.usage.outputCost
+     );
+-    expect(generation.provided_total_cost).toBe(undefined);
++    expect(generation.provided_cost_details.total).toBe(undefined);
+ 
+     // Calculated cost
+-    expect(generation.input_cost).toBe(undefined);
+-    expect(generation.output_cost).toBe(generationUsage2.usage.outputCost);
+-    expect(generation.total_cost).toBe(1);
+-    expect(generation.input_usage_units).toBe(generationUsage1.usage.input);
+-    expect(generation.output_usage_units).toBe(generationUsage1.usage.output);
+-    expect(generation.total_usage_units).toBe(generationUsage1.usage.total);
++    expect(generation.cost_details.input).toBe(undefined);
++    expect(generation.cost_details.output).toBe(
++      generationUsage2.usage.outputCost
++    );
++    expect(generation.cost_details.total).toBe(1);
++    expect(generation.usage_details.input).toBe(generationUsage1.usage.input);
++    expect(generation.usage_details.output).toBe(generationUsage1.usage.output);
++    expect(generation.usage_details.total).toBe(generationUsage1.usage.total);
+   });
+ 
+   it("should not overwrite costs if previous cost were user provided", async () => {
+@@ -1019,7 +951,6 @@ describe("Token Cost Calculation", () => {
+         inputCost: 1234,
+         outputCost: 23523,
+         totalCost: 5354,
+-        unit: ModelUsageUnit.Tokens,
+       },
+     };
+ 
+@@ -1029,7 +960,6 @@ describe("Token Cost Calculation", () => {
+         input: 100,
+         output: 200,
+         total: 300,
+-        unit: ModelUsageUnit.Tokens,
+       },
+     };
+ 
+@@ -1070,27 +1000,32 @@ describe("Token Cost Calculation", () => {
+ 
+     // Model name should be matched
+ 
+-    expect(generation.unit).toEqual(tokenModelData.unit);
+     expect(generation.internal_model_id).toBe(tokenModelData.id);
+ 
+     // User provided cost
+-    expect(generation.provided_input_cost).toBe(
++    expect(generation.provided_cost_details.input).toBe(
+       generationUsage1.usage.inputCost
+     );
+-    expect(generation.provided_output_cost).toBe(
++    expect(generation.provided_cost_details.output).toBe(
+       generationUsage1.usage.outputCost
+     );
+-    expect(generation.provided_total_cost).toBe(
++    expect(generation.provided_cost_details.total).toBe(
+       generationUsage1.usage.totalCost
+     );
+ 
+     // Calculated cost
+-    expect(generation.input_cost).toBe(generationUsage1.usage.inputCost);
+-    expect(generation.output_cost).toBe(generationUsage1.usage.outputCost);
+-    expect(generation.total_cost).toBe(generationUsage1.usage.totalCost);
+-    expect(generation.input_usage_units).toBe(generationUsage2.usage.input);
+-    expect(generation.output_usage_units).toBe(generationUsage2.usage.output);
+-    expect(generation.total_usage_units).toBe(generationUsage2.usage.total);
++    expect(generation.cost_details.input).toBe(
++      generationUsage1.usage.inputCost
++    );
++    expect(generation.cost_details.output).toBe(
++      generationUsage1.usage.outputCost
++    );
++    expect(generation.cost_details.total).toBe(
++      generationUsage1.usage.totalCost
++    );
++    expect(generation.usage_details.input).toBe(generationUsage2.usage.input);
++    expect(generation.usage_details.output).toBe(generationUsage2.usage.output);
++    expect(generation.usage_details.total).toBe(generationUsage2.usage.total);
+   });
+ 
+   it("should not calculate anything if no costs are provided and no model is matched", async () => {
+@@ -1100,7 +1035,6 @@ describe("Token Cost Calculation", () => {
+         input: 1,
+         output: 2,
+         total: 3,
+-        unit: ModelUsageUnit.Tokens,
+       },
+     };
+ 
+@@ -1110,7 +1044,6 @@ describe("Token Cost Calculation", () => {
+         input: 100,
+         output: 200,
+         total: 300,
+-        unit: ModelUsageUnit.Tokens,
+       },
+     };
+ 
+@@ -1151,180 +1084,22 @@ describe("Token Cost Calculation", () => {
+ 
+     // Model name should not be matched
+     expect(generation.internal_model).toBeUndefined();
+-    expect(generation.unit).toEqual(tokenModelData.unit);
++
+     expect(generation.internal_model_id).toBeUndefined();
+ 
+     // No user provided cost
+-    expect(generation.provided_input_cost).toBeUndefined();
+-    expect(generation.provided_output_cost).toBeUndefined();
+-    expect(generation.provided_total_cost).toBeUndefined();
++    expect(generation.provided_cost_details.input).toBeUndefined();
++    expect(generation.provided_cost_details.output).toBeUndefined();
++    expect(generation.provided_cost_details.total).toBeUndefined();
+ 
+     // No calculated cost
+-    expect(generation.input_cost).toBeUndefined();
+-    expect(generation.output_cost).toBeUndefined();
+-    expect(generation.total_cost).toBeUndefined();
++    expect(generation.cost_details.input).toBeUndefined();
++    expect(generation.cost_details.output).toBeUndefined();
++    expect(generation.cost_details.total).toBeUndefined();
+ 
+-    expect(generation.input_usage_units).toBe(generationUsage2.usage.input);
+-    expect(generation.output_usage_units).toBe(generationUsage2.usage.output);
+-    expect(generation.total_usage_units).toBe(generationUsage2.usage.total);
+-  });
+-
+-  it("should handle different model usage units correctly", async () => {
+-    const generationUsage1 = {
+-      model: modelName,
+-      usage: {
+-        input: 1,
+-        output: 2,
+-        total: 3,
+-        unit: ModelUsageUnit.Tokens,
+-      },
+-    };
+-
+-    const generationUsage2 = {
+-      model: modelName,
+-      usage: {
+-        input: 100,
+-        output: 200,
+-        total: 300,
+-        unit: ModelUsageUnit.Images, // Different unit
+-      },
+-    };
+-
+-    const events = [
+-      {
+-        id: uuidv4(),
+-        type: "generation-create",
+-        timestamp: new Date().toISOString(),
+-        body: {
+-          id: generationId,
+-          ...generationUsage1,
+-        },
+-      },
+-      {
+-        id: uuidv4(),
+-        type: "generation-update",
+-        timestamp: new Date().toISOString(),
+-        body: {
+-          id: generationId,
+-          ...generationUsage2,
+-        },
+-      },
+-    ];
+-
+-    await (mockIngestionService as any).processObservationEventList({
+-      projectId,
+-      entityId: generationId,
+-      observationEventList: events,
+-    });
+-    expect(mockAddToClickhouseWriter).toHaveBeenCalled();
+-    const args = mockAddToClickhouseWriter.mock.calls[0];
+-    const tableName = args[0];
+-    const generation = args[1];
+-
+-    expect(tableName).toBe("observations");
+-    expect(generation).toBeDefined();
+-    expect(generation.type).toBe("GENERATION");
+-    expect(generation.type).toBe("GENERATION");
+-
+-    // Model name should be matched
+-    expect(generation.unit).toEqual(imageModelData.unit);
+-    expect(generation.internal_model_id).toBe(imageModelData.id);
+-
+-    // No user provided cost
+-    expect(generation.provided_input_cost).toBeUndefined();
+-    expect(generation.provided_output_cost).toBeUndefined();
+-    expect(generation.provided_total_cost).toBeUndefined();
+-
+-    // Calculated cost
+-    expect(generation.input_cost).toBe(
+-      generationUsage2.usage.input * imageModelData.inputPrice.toNumber()
+-    );
+-    expect(generation.output_cost).toBe(
+-      generationUsage2.usage.output * imageModelData.outputPrice.toNumber()
+-    );
+-    expect(generation.total_cost).toBe(
+-      generationUsage2.usage.total * imageModelData.totalPrice.toNumber()
+-    );
+-    expect(generation.input_usage_units).toBe(generationUsage2.usage.input);
+-    expect(generation.output_usage_units).toBe(generationUsage2.usage.output);
+-    expect(generation.total_usage_units).toBe(generationUsage2.usage.total);
+-  });
+-
+-  it("should take the latest user provided model for matching", async () => {
+-    // Create a new model with the same name but different prices
+-    const newModelData = {
+-      id: uuidv4(),
+-      modelName,
+-      matchPattern,
+-      startDate: new Date().toISOString(),
+-      inputPrice: new Decimal(tokenModelData.inputPrice.toNumber() * 2),
+-      outputPrice: new Decimal(tokenModelData.outputPrice.toNumber() * 2),
+-      totalPrice: new Decimal(tokenModelData.totalPrice.toNumber() * 2),
+-      unit: ModelUsageUnit.Tokens,
+-    };
+-
+-    await prisma.model.create({
+-      data: newModelData,
+-    });
+-
+-    const generationUsage = {
+-      model: modelName,
+-      usage: {
+-        input: 100,
+-        output: 200,
+-        total: 300,
+-        unit: ModelUsageUnit.Tokens,
+-      },
+-    };
+-
+-    const events = [
+-      {
+-        id: uuidv4(),
+-        type: "generation-create",
+-        timestamp: new Date().toISOString(),
+-        body: {
+-          id: generationId,
+-          ...generationUsage,
+-        },
+-      },
+-    ];
+-
+-    await (mockIngestionService as any).processObservationEventList({
+-      projectId,
+-      entityId: generationId,
+-      observationEventList: events,
+-    });
+-    expect(mockAddToClickhouseWriter).toHaveBeenCalled();
+-    const args = mockAddToClickhouseWriter.mock.calls[0];
+-    const tableName = args[0];
+-    const generation = args[1];
+-
+-    expect(tableName).toBe("observations");
+-    expect(generation).toBeDefined();
+-    expect(generation.type).toBe("GENERATION");
+-
+-    // Model name should be matched
+-    expect(generation.unit).toEqual(newModelData.unit);
+-    expect(generation.internal_model_id).toBe(newModelData.id);
+-
+-    // No user provided cost
+-    expect(generation.provided_input_cost).toBeUndefined();
+-    expect(generation.provided_output_cost).toBeUndefined();
+-    expect(generation.provided_total_cost).toBeUndefined();
+-
+-    // Calculated cost
+-    expect(generation.input_cost).toBe(
+-      generationUsage.usage.input * newModelData.inputPrice.toNumber()
+-    );
+-    expect(generation.output_cost).toBe(
+-      generationUsage.usage.output * newModelData.outputPrice.toNumber()
+-    );
+-    expect(generation.total_cost).toBe(
+-      generationUsage.usage.total * newModelData.totalPrice.toNumber()
+-    );
+-    expect(generation.input_usage_units).toBe(generationUsage.usage.input);
+-    expect(generation.output_usage_units).toBe(generationUsage.usage.output);
+-    expect(generation.total_usage_units).toBe(generationUsage.usage.total);
++    expect(generation.usage_details.input).toBe(generationUsage2.usage.input);
++    expect(generation.usage_details.output).toBe(generationUsage2.usage.output);
++    expect(generation.usage_details.total).toBe(generationUsage2.usage.total);
+   });
+ 
+   it("should use the tokens of the previous call without model if model comes with following call", async () => {
+@@ -1334,7 +1109,6 @@ describe("Token Cost Calculation", () => {
+         input: 1,
+         output: 2,
+         total: 3,
+-        unit: ModelUsageUnit.Tokens,
+       },
+     };
+ 
+@@ -1378,27 +1152,25 @@ describe("Token Cost Calculation", () => {
+     expect(generation.type).toBe("GENERATION");
+ 
+     // Model name should be matched
+-
+-    expect(generation.unit).toEqual(tokenModelData.unit);
+     expect(generation.internal_model_id).toBe(tokenModelData.id);
+ 
+     // No user provided cost
+-    expect(generation.provided_input_cost).toBeUndefined();
+-    expect(generation.provided_output_cost).toBeUndefined();
+-    expect(generation.provided_total_cost).toBeUndefined();
++    expect(generation.provided_cost_details.input).toBeUndefined();
++    expect(generation.provided_cost_details.output).toBeUndefined();
++    expect(generation.provided_cost_details.total).toBeUndefined();
+ 
+     // Calculated cost
+-    expect(generation.input_cost).toBe(
+-      generationUsage1.usage.input * tokenModelData.inputPrice.toNumber()
++    expect(generation.cost_details.input).toBe(
++      generationUsage1.usage.input * modelPrices[0].price.toNumber()
+     );
+-    expect(generation.output_cost).toBe(
+-      generationUsage1.usage.output * tokenModelData.outputPrice.toNumber()
++    expect(generation.cost_details.output).toBe(
++      generationUsage1.usage.output * modelPrices[1].price.toNumber()
+     );
+-    expect(generation.total_cost).toBe(
+-      generationUsage1.usage.total * tokenModelData.totalPrice.toNumber()
++    expect(generation.cost_details.total).toBe(
++      generationUsage1.usage.total * modelPrices[2].price.toNumber()
+     );
+-    expect(generation.input_usage_units).toBe(generationUsage1.usage.input);
+-    expect(generation.output_usage_units).toBe(generationUsage1.usage.output);
+-    expect(generation.total_usage_units).toBe(generationUsage1.usage.total);
++    expect(generation.usage_details.input).toBe(generationUsage1.usage.input);
++    expect(generation.usage_details.output).toBe(generationUsage1.usage.output);
++    expect(generation.usage_details.total).toBe(generationUsage1.usage.total);
+   });
+ });
+diff --git a/worker/src/services/IngestionService/utils.ts b/worker/src/services/IngestionService/utils.ts
+index c92aee5b..ae325e15 100644
+--- a/worker/src/services/IngestionService/utils.ts
++++ b/worker/src/services/IngestionService/utils.ts
+@@ -36,8 +36,8 @@ export const mergeRecords = (
+   record2?: Record<string, string>
+ ): Record<string, string> | undefined => {
+   const merged = mergeJson(
+-    record1 ? convertRecordToJsonSchema(record1) ?? undefined : undefined,
+-    record2 ? convertRecordToJsonSchema(record2) ?? undefined : undefined
++    record1 ? (convertRecordToJsonSchema(record1) ?? undefined) : undefined,
++    record2 ? (convertRecordToJsonSchema(record2) ?? undefined) : undefined
+   );
+ 
+   return merged ? convertJsonSchemaToRecord(merged) : undefined;
+@@ -81,7 +81,11 @@ export function overwriteObject(
+   nonOverwritableKeys: string[]
+ ) {
+   const result = _.mergeWith({}, a, b, (objValue, srcValue, key) => {
+-    if (nonOverwritableKeys.includes(key) || srcValue == null) {
++    if (
++      nonOverwritableKeys.includes(key) ||
++      srcValue == null ||
++      (typeof srcValue === "object" && Object.keys(srcValue).length === 0) // empty object check for cost / usage details
++    ) {
+       return objValue;
+     } else {
+       return srcValue;
+@@ -93,7 +97,7 @@ export function overwriteObject(
+       ? b.metadata
+       : !b.metadata && a.metadata
+         ? a.metadata
+-        : mergeRecords(a.metadata, b.metadata) ?? {};
++        : (mergeRecords(a.metadata, b.metadata) ?? {});
+ 
+   if ("tags" in result) {
+     result.tags = Array.from(
+diff --git a/worker/tsconfig.json b/worker/tsconfig.json
+index 10d75b5b..50e2c216 100644
+--- a/worker/tsconfig.json
++++ b/worker/tsconfig.json
+@@ -9,7 +9,8 @@
+     "lib": ["ES2021"],
+     "outDir": "./dist",
+     "types": ["node"],
+-    "downlevelIteration": true
++    "downlevelIteration": true,
++    "resolveJsonModule": true
+   },
+   "include": ["."],
+   "exclude": ["node_modules", "dist", "src/**/*.test.ts"]

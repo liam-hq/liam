@@ -1,0 +1,157 @@
+Date:   Tue Oct 29 14:39:10 2024 +0100
+
+    fix(models): upsert prices on model drift; (#3955)
+
+diff --git a/packages/shared/prisma/migrations/20241029130802_prices_drop_excess_index/migration.sql b/packages/shared/prisma/migrations/20241029130802_prices_drop_excess_index/migration.sql
+new file mode 100644
+index 00000000..6ab72444
+--- /dev/null
++++ b/packages/shared/prisma/migrations/20241029130802_prices_drop_excess_index/migration.sql
+@@ -0,0 +1,2 @@
++-- DropIndex
++DROP INDEX CONCURRENTLY "prices_model_id_idx";
+diff --git a/packages/shared/prisma/schema.prisma b/packages/shared/prisma/schema.prisma
+index 4a231d31..e06854a2 100644
+--- a/packages/shared/prisma/schema.prisma
++++ b/packages/shared/prisma/schema.prisma
+@@ -787,7 +787,6 @@ model Price {
+   price     Decimal
+ 
+   @@unique([modelId, usageType])
+-  @@index(modelId)
+   @@map("prices")
+ }
+ 
+diff --git a/web/src/server/api/routers/models.ts b/web/src/server/api/routers/models.ts
+index 8d94679a..848535ad 100644
+--- a/web/src/server/api/routers/models.ts
++++ b/web/src/server/api/routers/models.ts
+@@ -155,18 +155,23 @@ export const modelRouter = createTRPCRouter({
+           { usageType: "total", price: input.totalPrice },
+         ];
+ 
++        const pricesToCreate = [];
+         for (const { usageType, price } of prices) {
+           if (price != null) {
+-            await tx.price.create({
+-              data: {
+-                modelId: createdModel.id,
+-                usageType,
+-                price,
+-              },
+-            });
++            pricesToCreate.push(
++              tx.price.create({
++                data: {
++                  modelId: createdModel.id,
++                  usageType,
++                  price,
++                },
++              }),
++            );
+           }
+         }
+ 
++        await Promise.all(pricesToCreate);
++
+         return createdModel;
+       });
+ 
+diff --git a/worker/src/scripts/upsertDefaultModelPrices.ts b/worker/src/scripts/upsertDefaultModelPrices.ts
+index 3bea9e2f..142b1442 100644
+--- a/worker/src/scripts/upsertDefaultModelPrices.ts
++++ b/worker/src/scripts/upsertDefaultModelPrices.ts
+@@ -80,16 +80,14 @@ export const upsertDefaultModelPrices = async (force = false) => {
+           defaultModelPrice.id
+         );
+ 
+-        const toleranceInMs = 1000 * 60 * 60 * 3; // 3 hours. US and EU databases have different update times for when the migration was applied.
+-
+         if (
+           !force &&
+           existingModelUpdateDate &&
+-          existingModelUpdateDate.getTime() >
+-            defaultModelPrice.updated_at.getTime() + toleranceInMs
++          existingModelUpdateDate.getTime() ===
++            defaultModelPrice.updated_at.getTime()
+         ) {
+-          logger.error(
+-            `Model drift detected for default model ${defaultModelPrice.model_name} (${defaultModelPrice.id}). updatedAt ${existingModelUpdateDate} after ${defaultModelPrice.updated_at}.`
++          logger.debug(
++            `Default model ${defaultModelPrice.model_name} (${defaultModelPrice.id}) already up to date. Skipping.`
+           );
+           continue;
+         }
+@@ -97,15 +95,12 @@ export const upsertDefaultModelPrices = async (force = false) => {
+         if (
+           !force &&
+           existingModelUpdateDate &&
+-          Math.abs(
+-            existingModelUpdateDate.getTime() -
+-              defaultModelPrice.updated_at.getTime()
+-          ) <= toleranceInMs
++          existingModelUpdateDate.getTime() >
++            defaultModelPrice.updated_at.getTime()
+         ) {
+-          logger.debug(
+-            `Default model ${defaultModelPrice.model_name} (${defaultModelPrice.id}) already up to date. Skipping.`
++          logger.error(
++            `Model drift detected for default model ${defaultModelPrice.model_name} (${defaultModelPrice.id}). updatedAt ${existingModelUpdateDate.toISOString()} after ${defaultModelPrice.updated_at.toISOString()}. Upserting model and prices.`
+           );
+-          continue;
+         }
+ 
+         // Upsert model and prices in a transaction
+@@ -138,30 +133,36 @@ export const upsertDefaultModelPrices = async (force = false) => {
+                 },
+               });
+ 
++              const pricesToUpsert = [];
++
+               for (const [usageType, price] of Object.entries(
+                 defaultModelPrice.prices
+               )) {
+-                await tx.price.upsert({
+-                  where: {
+-                    modelId_usageType: {
++                pricesToUpsert.push(
++                  tx.price.upsert({
++                    where: {
++                      modelId_usageType: {
++                        modelId: defaultModelPrice.id,
++                        usageType,
++                      },
++                    },
++                    update: {
++                      price,
++                      updatedAt: defaultModelPrice.updated_at,
++                    },
++                    create: {
+                       modelId: defaultModelPrice.id,
+                       usageType,
++                      price,
++                      createdAt: defaultModelPrice.created_at,
++                      updatedAt: defaultModelPrice.updated_at,
+                     },
+-                  },
+-                  update: {
+-                    price,
+-                    updatedAt: defaultModelPrice.updated_at,
+-                  },
+-                  create: {
+-                    modelId: defaultModelPrice.id,
+-                    usageType,
+-                    price,
+-                    createdAt: defaultModelPrice.created_at,
+-                    updatedAt: defaultModelPrice.updated_at,
+-                  },
+-                });
++                  })
++                );
+               }
+ 
++              await Promise.all(pricesToUpsert);
++
+               logger.info(
+                 `Upserted default model ${defaultModelPrice.model_name} (${defaultModelPrice.id})`
+               );

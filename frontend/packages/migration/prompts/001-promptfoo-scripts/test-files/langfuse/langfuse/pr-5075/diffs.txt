@@ -1,0 +1,403 @@
+Date:   Fri Jan 17 12:13:46 2025 +0100
+
+    feat(cloud): snapshot usage metering to postgres db (#5075)
+
+diff --git a/packages/shared/prisma/generated/types.ts b/packages/shared/prisma/generated/types.ts
+index 99443630..f3ab6f32 100644
+--- a/packages/shared/prisma/generated/types.ts
++++ b/packages/shared/prisma/generated/types.ts
+@@ -170,6 +170,17 @@ export type BatchExport = {
+     url: string | null;
+     log: string | null;
+ };
++export type BillingMeterBackup = {
++    stripe_customer_id: string;
++    meter_id: string;
++    start_time: Timestamp;
++    end_time: Timestamp;
++    aggregated_value: number;
++    event_name: string;
++    org_id: string;
++    created_at: Generated<Timestamp>;
++    updated_at: Generated<Timestamp>;
++};
+ export type Comment = {
+     id: string;
+     project_id: string;
+@@ -611,6 +622,7 @@ export type DB = {
+     audit_logs: AuditLog;
+     background_migrations: BackgroundMigration;
+     batch_exports: BatchExport;
++    billing_meter_backups: BillingMeterBackup;
+     comments: Comment;
+     cron_jobs: CronJobs;
+     dataset_items: DatasetItem;
+diff --git a/packages/shared/prisma/migrations/20250116154613_add_billing_meter_backups/migration.sql b/packages/shared/prisma/migrations/20250116154613_add_billing_meter_backups/migration.sql
+new file mode 100644
+index 00000000..b1eff32a
+--- /dev/null
++++ b/packages/shared/prisma/migrations/20250116154613_add_billing_meter_backups/migration.sql
+@@ -0,0 +1,21 @@
++-- CreateTable
++CREATE TABLE "billing_meter_backups" (
++    "stripe_customer_id" TEXT NOT NULL,
++    "meter_id" TEXT NOT NULL,
++    "start_time" TIMESTAMP(3) NOT NULL,
++    "end_time" TIMESTAMP(3) NOT NULL,
++    
++    "aggregated_value" INTEGER NOT NULL,
++    
++    "event_name" TEXT NOT NULL,
++    "org_id" TEXT NOT NULL,
++    
++    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
++    "updated_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP
++);
++
++-- CreateIndex
++CREATE INDEX "billing_meter_backups_stripe_customer_id_meter_id_start_tim_idx" ON "billing_meter_backups"("stripe_customer_id", "meter_id", "start_time", "end_time");
++
++-- CreateIndex
++CREATE UNIQUE INDEX "billing_meter_backups_stripe_customer_id_meter_id_start_tim_key" ON "billing_meter_backups"("stripe_customer_id", "meter_id", "start_time", "end_time");
+diff --git a/packages/shared/prisma/schema.prisma b/packages/shared/prisma/schema.prisma
+index b0bfe514..c25fb742 100644
+--- a/packages/shared/prisma/schema.prisma
++++ b/packages/shared/prisma/schema.prisma
+@@ -1026,3 +1026,26 @@ model QueueBackUp {
+ 
+   @@map("queue_backups")
+ }
++
++model BillingMeterBackup {
++  // unique
++  stripeCustomerId String   @map("stripe_customer_id")
++  meterId          String   @map("meter_id")
++  startTime        DateTime @map("start_time")
++  endTime          DateTime @map("end_time")
++
++  // value
++  aggregatedValue Int @map("aggregated_value")
++
++  // labels
++  eventName String @map("event_name")
++  orgId     String @map("org_id")
++
++  // ts
++  createdAt DateTime @default(now()) @map("created_at")
++  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
++
++  @@unique([stripeCustomerId, meterId, startTime, endTime])
++  @@index([stripeCustomerId, meterId, startTime, endTime])
++  @@map("billing_meter_backups")
++}
+diff --git a/packages/shared/src/env.ts b/packages/shared/src/env.ts
+index 145e3091..8fa60d03 100644
+--- a/packages/shared/src/env.ts
++++ b/packages/shared/src/env.ts
+@@ -63,6 +63,9 @@ const EnvSchema = z.object({
+   LANGFUSE_S3_CORE_DATA_EXPORT_IS_ENABLED: z
+     .enum(["true", "false"])
+     .default("false"),
++  LANGFUSE_POSTGRES_METERING_DATA_EXPORT_IS_ENABLED: z
++    .enum(["true", "false"])
++    .default("false"),
+ });
+ 
+ export const env: z.infer<typeof EnvSchema> =
+diff --git a/packages/shared/src/server/index.ts b/packages/shared/src/server/index.ts
+index f6819be4..0904c8c6 100644
+--- a/packages/shared/src/server/index.ts
++++ b/packages/shared/src/server/index.ts
+@@ -33,6 +33,7 @@ export * from "./redis/ingestionQueue";
+ export * from "./redis/postHogIntegrationQueue";
+ export * from "./redis/postHogIntegrationProcessingQueue";
+ export * from "./redis/coreDataS3ExportQueue";
++export * from "./redis/meteringDataPostgresExportQueue";
+ export * from "./redis/experimentCreateQueue";
+ export * from "./auth/types";
+ export * from "./ingestion/legacy/index";
+diff --git a/packages/shared/src/server/queues.ts b/packages/shared/src/server/queues.ts
+index 6a696be9..305f2a85 100644
+--- a/packages/shared/src/server/queues.ts
++++ b/packages/shared/src/server/queues.ts
+@@ -119,6 +119,7 @@ export enum QueueName {
+   PostHogIntegrationQueue = "posthog-integration-queue",
+   PostHogIntegrationProcessingQueue = "posthog-integration-processing-queue",
+   CoreDataS3ExportQueue = "core-data-s3-export-queue",
++  MeteringDataPostgresExportQueue = "metering-data-postgres-export-queue",
+ }
+ 
+ export enum QueueJobs {
+@@ -136,6 +137,7 @@ export enum QueueJobs {
+   PostHogIntegrationJob = "posthog-integration-job",
+   PostHogIntegrationProcessingJob = "posthog-integration-processing-job",
+   CoreDataS3ExportJob = "core-data-s3-export-job",
++  MeteringDataPostgresExportJob = "metering-data-postgres-export-job",
+ }
+ 
+ export type TQueueJobTypes = {
+diff --git a/packages/shared/src/server/redis/getQueue.ts b/packages/shared/src/server/redis/getQueue.ts
+index 7ae7b553..d1ae6309 100644
+--- a/packages/shared/src/server/redis/getQueue.ts
++++ b/packages/shared/src/server/redis/getQueue.ts
+@@ -13,6 +13,7 @@ import { ProjectDeleteQueue } from "./projectDelete";
+ import { PostHogIntegrationQueue } from "./postHogIntegrationQueue";
+ import { PostHogIntegrationProcessingQueue } from "./postHogIntegrationProcessingQueue";
+ import { CoreDataS3ExportQueue } from "./coreDataS3ExportQueue";
++import { MeteringDataPostgresExportQueue } from "./meteringDataPostgresExportQueue";
+ 
+ export function getQueue(queueName: QueueName): Queue | null {
+   switch (queueName) {
+@@ -44,6 +45,8 @@ export function getQueue(queueName: QueueName): Queue | null {
+       return SecondaryIngestionQueue.getInstance();
+     case QueueName.CoreDataS3ExportQueue:
+       return CoreDataS3ExportQueue.getInstance();
++    case QueueName.MeteringDataPostgresExportQueue:
++      return MeteringDataPostgresExportQueue.getInstance();
+     default:
+       const exhaustiveCheckDefault: never = queueName;
+       throw new Error(`Queue ${queueName} not found`);
+diff --git a/packages/shared/src/server/redis/meteringDataPostgresExportQueue.ts b/packages/shared/src/server/redis/meteringDataPostgresExportQueue.ts
+new file mode 100644
+index 00000000..48fafee5
+--- /dev/null
++++ b/packages/shared/src/server/redis/meteringDataPostgresExportQueue.ts
+@@ -0,0 +1,64 @@
++import { Queue } from "bullmq";
++import { QueueName, QueueJobs } from "../queues";
++import { createNewRedisInstance, redisQueueRetryOptions } from "./redis";
++import { logger } from "../logger";
++import { env } from "../../env";
++
++export class MeteringDataPostgresExportQueue {
++  private static instance: Queue | null = null;
++
++  public static getInstance(): Queue | null {
++    if (env.LANGFUSE_POSTGRES_METERING_DATA_EXPORT_IS_ENABLED !== "true") {
++      return null;
++    }
++
++    if (MeteringDataPostgresExportQueue.instance) {
++      return MeteringDataPostgresExportQueue.instance;
++    }
++
++    const newRedis = createNewRedisInstance({
++      enableOfflineQueue: false,
++      ...redisQueueRetryOptions,
++    });
++
++    MeteringDataPostgresExportQueue.instance = newRedis
++      ? new Queue(QueueName.MeteringDataPostgresExportQueue, {
++          connection: newRedis,
++          defaultJobOptions: {
++            removeOnComplete: true,
++            removeOnFail: 100,
++            attempts: 5,
++            backoff: {
++              type: "exponential",
++              delay: 5000,
++            },
++          },
++        })
++      : null;
++
++    MeteringDataPostgresExportQueue.instance?.on("error", (err) => {
++      logger.error("MeteringDataPostgresExportQueue error", err);
++    });
++
++    if (MeteringDataPostgresExportQueue.instance) {
++      logger.debug("Scheduling jobs for MeteringDataPostgresExportQueue");
++      MeteringDataPostgresExportQueue.instance
++        .add(
++          QueueJobs.MeteringDataPostgresExportJob,
++          {},
++          {
++            // repeat: { pattern: "30 3 * * *" }, // every day at 3:30am UTC
++            repeat: { pattern: "0 * * * *" }, // initially, run every hour
++          },
++        )
++        .catch((err) => {
++          logger.error(
++            "Error adding MeteringDataPostgresExportJob schedule",
++            err,
++          );
++        });
++    }
++
++    return MeteringDataPostgresExportQueue.instance;
++  }
++}
+diff --git a/worker/src/app.ts b/worker/src/app.ts
+index 24f935f9..ada392af 100644
+--- a/worker/src/app.ts
++++ b/worker/src/app.ts
+@@ -25,6 +25,7 @@ import {
+   logger,
+   PostHogIntegrationQueue,
+   CoreDataS3ExportQueue,
++  MeteringDataPostgresExportQueue,
+ } from "@langfuse/shared/src/server";
+ import { env } from "./env";
+ import { ingestionQueueProcessorBuilder } from "./queues/ingestionQueue";
+@@ -37,6 +38,7 @@ import {
+   postHogIntegrationProcessor,
+ } from "./queues/postHogIntegrationQueue";
+ import { coreDataS3ExportProcessor } from "./queues/coreDataS3ExportQueue";
++import { meteringDataPostgresExportProcessor } from "./ee/meteringDataPostgresExport/handleMeteringDataPostgresExportJob";
+ 
+ const app = express();
+ 
+@@ -80,6 +82,22 @@ if (env.LANGFUSE_S3_CORE_DATA_EXPORT_IS_ENABLED === "true") {
+   );
+ }
+ 
++if (env.LANGFUSE_POSTGRES_METERING_DATA_EXPORT_IS_ENABLED === "true") {
++  // Instantiate the queue to trigger scheduled jobs
++  MeteringDataPostgresExportQueue.getInstance();
++  WorkerManager.register(
++    QueueName.MeteringDataPostgresExportQueue,
++    meteringDataPostgresExportProcessor,
++    {
++      limiter: {
++        // Process at most `max` jobs per 30 seconds
++        max: 1,
++        duration: 30_000,
++      },
++    },
++  );
++}
++
+ if (env.QUEUE_CONSUMER_TRACE_DELETE_QUEUE_IS_ENABLED === "true") {
+   WorkerManager.register(QueueName.TraceDelete, traceDeleteProcessor, {
+     concurrency: env.LANGFUSE_TRACE_DELETE_CONCURRENCY,
+@@ -163,6 +181,11 @@ if (
+     cloudUsageMeteringQueueProcessor,
+     {
+       concurrency: 1,
++      limiter: {
++        // Process at most `max` jobs per 30 seconds
++        max: 1,
++        duration: 30_000,
++      },
+     },
+   );
+ }
+diff --git a/worker/src/ee/meteringDataPostgresExport/handleMeteringDataPostgresExportJob.ts b/worker/src/ee/meteringDataPostgresExport/handleMeteringDataPostgresExportJob.ts
+new file mode 100644
+index 00000000..30019c63
+--- /dev/null
++++ b/worker/src/ee/meteringDataPostgresExport/handleMeteringDataPostgresExportJob.ts
+@@ -0,0 +1,88 @@
++import { Job, Processor } from "bullmq";
++import { logger } from "@langfuse/shared/src/server";
++import { Prisma, prisma } from "@langfuse/shared/src/db";
++import { env } from "../../env";
++import Stripe from "stripe";
++import { parseDbOrg } from "@langfuse/shared";
++
++export const meteringDataPostgresExportProcessor: Processor = async (
++  job: Job,
++): Promise<void> => {
++  logger.info(
++    "[METERING POSTGRES EXPORT] Starting metering data Postgres export",
++  );
++
++  if (!env.STRIPE_SECRET_KEY) {
++    logger.warn("[METERING POSTGRES EXPORT] Stripe secret key not found");
++    throw new Error("Stripe secret key not found");
++  }
++
++  // setup stripe client
++  const stripe = new Stripe(env.STRIPE_SECRET_KEY);
++
++  const endTime = Math.floor(new Date().setUTCHours(0, 0, 0, 0) / 1000);
++  const startTime = endTime - 100 * 24 * 60 * 60; // 100 days ago, stripe exports 100 days at a time
++
++  const activeMeters = (await stripe.billing.meters.list()).data.filter(
++    (meter) => meter.status === "active",
++  );
++
++  const billingOrganizations = (
++    await prisma.organization.findMany({
++      where: {
++        cloudConfig: { not: Prisma.DbNull },
++      },
++    })
++  )
++    .map(parseDbOrg)
++    .filter((org) => org.cloudConfig?.stripe?.customerId);
++
++  logger.info(
++    `[METERING POSTGRES EXPORT] Found ${activeMeters.length} meters and ${billingOrganizations.length} organizations`,
++  );
++
++  // purge all existing backups
++  await prisma.billingMeterBackup.deleteMany();
++  logger.debug("[METERING POSTGRES EXPORT] Deleted existing rows in table");
++
++  for (const meter of activeMeters) {
++    for (const org of billingOrganizations) {
++      // type check
++      const stripeCustomerId = org.cloudConfig?.stripe?.customerId;
++      if (!stripeCustomerId) continue;
++
++      try {
++        const eventSummaries = await stripe.billing.meters.listEventSummaries(
++          meter.id,
++          {
++            customer: stripeCustomerId,
++            start_time: startTime,
++            end_time: endTime,
++            limit: 100,
++            value_grouping_window: "day",
++          },
++        );
++
++        await prisma.billingMeterBackup.createMany({
++          data: eventSummaries.data.map((event) => ({
++            orgId: org.id,
++            meterId: meter.id,
++            eventName: meter.event_name,
++            stripeCustomerId,
++            startTime: new Date(event.start_time * 1000),
++            endTime: new Date(event.end_time * 1000),
++            aggregatedValue: event.aggregated_value,
++          })),
++        });
++      } catch (error) {
++        logger.error(
++          `[METERING POSTGRES EXPORT] Error exporting meter ${meter.id} for org ${org.id}: ${error}`,
++        );
++      }
++    }
++  }
++
++  logger.info(
++    "[METERING POSTGRES EXPORT] Finished metering data Postgres export",
++  );
++};
+diff --git a/worker/src/env.ts b/worker/src/env.ts
+index f31ee3ad..77fc354b 100644
+--- a/worker/src/env.ts
++++ b/worker/src/env.ts
+@@ -155,7 +155,7 @@ const EnvSchema = z.object({
+     .enum(["true", "false"])
+     .default("true"),
+ 
+-  // Core data S3 upload - only used internally
++  // Core data S3 upload - Langfuse Cloud
+   LANGFUSE_S3_CORE_DATA_EXPORT_IS_ENABLED: z
+     .enum(["true", "false"])
+     .default("false"),
+@@ -168,6 +168,11 @@ const EnvSchema = z.object({
+   LANGFUSE_S3_CORE_DATA_UPLOAD_FORCE_PATH_STYLE: z
+     .enum(["true", "false"])
+     .default("false"),
++
++  // Metering data Postgres export - Langfuse Cloud
++  LANGFUSE_POSTGRES_METERING_DATA_EXPORT_IS_ENABLED: z
++    .enum(["true", "false"])
++    .default("false"),
+ });
+ 
+ export const env: z.infer<typeof EnvSchema> =

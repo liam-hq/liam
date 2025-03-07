@@ -1,0 +1,493 @@
+Date:   Tue Jan 28 17:32:05 2025 +0100
+
+    feat(prompts): support `commit_message` (#5197)
+    
+    * chore(prompts-ui): add nullable `commit_message` col
+    
+    * chore(prompts-ui): add commit message to prompts
+    
+    * chore(prompts-api): add commit message to prompts v2 api
+    
+    * chore: rename migration
+    
+    * chore: extract commit message length const
+    
+    * fix: legacy types
+    
+    * push
+    
+    * chore: refactor types to not extend legancy, but create base types
+    
+    * feat: add commit message to prompt diff view between versions
+    
+    * chore: migration final in order
+    
+    * push
+
+diff --git a/fern/apis/server/definition/prompts.yml b/fern/apis/server/definition/prompts.yml
+index c28d0153..0cbd609d 100644
+--- a/fern/apis/server/definition/prompts.yml
++++ b/fern/apis/server/definition/prompts.yml
+@@ -90,6 +90,9 @@ types:
+       tags:
+         type: optional<list<string>>
+         docs: List of tags to apply to all versions of this prompt.
++      commitMessage:
++        type: optional<string>
++        docs: Commit message for this prompt version.
+ 
+   CreateTextPromptRequest:
+     properties:
+@@ -102,6 +105,10 @@ types:
+       tags:
+         type: optional<list<string>>
+         docs: List of tags to apply to all versions of this prompt.
++      commitMessage:
++        type: optional<string>
++        docs: Commit message for this prompt version.
++
+   Prompt:
+     union:
+       chat: ChatPrompt
+@@ -118,6 +125,9 @@ types:
+       tags:
+         type: list<string>
+         docs: List of tags. Used to filter via UI and API. The same across versions of a prompt.
++      commitMessage:
++        type: optional<string>
++        docs: Commit message for this prompt version.
+ 
+   ChatMessage:
+     properties:
+diff --git a/packages/shared/prisma/generated/types.ts b/packages/shared/prisma/generated/types.ts
+index d5a000d4..583225fb 100644
+--- a/packages/shared/prisma/generated/types.ts
++++ b/packages/shared/prisma/generated/types.ts
+@@ -492,6 +492,7 @@ export type Prompt = {
+     config: Generated<unknown>;
+     tags: Generated<string[]>;
+     labels: Generated<string[]>;
++    commit_message: string | null;
+ };
+ export type QueueBackUp = {
+     id: string;
+diff --git a/packages/shared/prisma/migrations/20250128163035_add_nullable_commit_message_prompts/migration.sql b/packages/shared/prisma/migrations/20250128163035_add_nullable_commit_message_prompts/migration.sql
+new file mode 100644
+index 00000000..e0c5e7e6
+--- /dev/null
++++ b/packages/shared/prisma/migrations/20250128163035_add_nullable_commit_message_prompts/migration.sql
+@@ -0,0 +1,2 @@
++-- AlterTable
++ALTER TABLE "prompts" ADD COLUMN     "commit_message" TEXT;
+diff --git a/packages/shared/prisma/schema.prisma b/packages/shared/prisma/schema.prisma
+index 6c1286cb..46306c3a 100644
+--- a/packages/shared/prisma/schema.prisma
++++ b/packages/shared/prisma/schema.prisma
+@@ -738,14 +738,15 @@ model Prompt {
+ 
+   createdBy String @map("created_by")
+ 
+-  prompt   Json
+-  name     String
+-  version  Int
+-  type     String   @default("text")
+-  isActive Boolean? @map("is_active") // Deprecated. To be removed once 'production' labels work as expected.
+-  config   Json     @default("{}") @db.Json
+-  tags     String[] @default([])
+-  labels   String[] @default([])
++  prompt        Json
++  name          String
++  version       Int
++  type          String   @default("text")
++  isActive      Boolean? @map("is_active") // Deprecated. To be removed once 'production' labels work as expected.
++  config        Json     @default("{}") @db.Json
++  tags          String[] @default([])
++  labels        String[] @default([])
++  commitMessage String?  @map("commit_message")
+ 
+   @@unique([projectId, name, version])
+   @@index([projectId, id])
+diff --git a/web/public/generated/api/openapi.yml b/web/public/generated/api/openapi.yml
+index 95c2ea41..b0a5e470 100644
+--- a/web/public/generated/api/openapi.yml
++++ b/web/public/generated/api/openapi.yml
+@@ -4523,6 +4523,10 @@ components:
+             type: string
+           nullable: true
+           description: List of tags to apply to all versions of this prompt.
++        commitMessage:
++          type: string
++          nullable: true
++          description: Commit message for this prompt version.
+       required:
+         - name
+         - prompt
+@@ -4548,6 +4552,10 @@ components:
+             type: string
+           nullable: true
+           description: List of tags to apply to all versions of this prompt.
++        commitMessage:
++          type: string
++          nullable: true
++          description: Commit message for this prompt version.
+       required:
+         - name
+         - prompt
+@@ -4597,6 +4605,10 @@ components:
+           description: >-
+             List of tags. Used to filter via UI and API. The same across
+             versions of a prompt.
++        commitMessage:
++          type: string
++          nullable: true
++          description: Commit message for this prompt version.
+       required:
+         - name
+         - version
+diff --git a/web/public/generated/postman/collection.json b/web/public/generated/postman/collection.json
+index 949d2dbd..a323ea9b 100644
+--- a/web/public/generated/postman/collection.json
++++ b/web/public/generated/postman/collection.json
+@@ -1247,7 +1247,7 @@
+             "auth": null,
+             "body": {
+               "mode": "raw",
+-              "raw": "{\n    \"type\": \"chat\",\n    \"name\": \"example\",\n    \"prompt\": [\n        {\n            \"role\": \"example\",\n            \"content\": \"example\"\n        }\n    ],\n    \"config\": \"UNKNOWN\",\n    \"labels\": [\n        \"example\"\n    ],\n    \"tags\": [\n        \"example\"\n    ]\n}",
++              "raw": "{\n    \"type\": \"chat\",\n    \"name\": \"example\",\n    \"prompt\": [\n        {\n            \"role\": \"example\",\n            \"content\": \"example\"\n        }\n    ],\n    \"config\": \"UNKNOWN\",\n    \"labels\": [\n        \"example\"\n    ],\n    \"tags\": [\n        \"example\"\n    ],\n    \"commitMessage\": \"example\"\n}",
+               "options": {
+                 "raw": {
+                   "language": "json"
+diff --git a/web/src/__tests__/prompts.v2.servertest.ts b/web/src/__tests__/prompts.v2.servertest.ts
+index d518666d..c05cbab0 100644
+--- a/web/src/__tests__/prompts.v2.servertest.ts
++++ b/web/src/__tests__/prompts.v2.servertest.ts
+@@ -423,6 +423,7 @@ describe("/api/public/v2/prompts API Endpoint", () => {
+         prompt: chatMessages,
+         type: "chat",
+         labels: ["production"],
++        commitMessage: "chore: setup initial prompt",
+       });
+ 
+       expect(response.status).toBe(201);
+@@ -442,6 +443,7 @@ describe("/api/public/v2/prompts API Endpoint", () => {
+       expect(validatedPrompt.labels).toEqual(["production", "latest"]);
+       expect(validatedPrompt.createdBy).toBe("API");
+       expect(validatedPrompt.config).toEqual({});
++      expect(validatedPrompt.commitMessage).toBe("chore: setup initial prompt");
+     });
+ 
+     it("should fail if chat prompt has string prompt", async () => {
+diff --git a/web/src/components/DiffViewer.tsx b/web/src/components/DiffViewer.tsx
+index f11eca99..332eaf2d 100644
+--- a/web/src/components/DiffViewer.tsx
++++ b/web/src/components/DiffViewer.tsx
+@@ -17,6 +17,8 @@ type DiffViewerProps = {
+   newString: string;
+   oldLabel?: string;
+   newLabel?: string;
++  oldSubLabel?: string;
++  newSubLabel?: string;
+   className?: string;
+ };
+ 
+@@ -37,6 +39,8 @@ const DiffViewer: React.FC<DiffViewerProps> = ({
+   newString,
+   oldLabel = "Original Version",
+   newLabel = "New Version",
++  oldSubLabel,
++  newSubLabel,
+   className,
+ }) => {
+   const [diffLines, setDiffLines] = useState<{
+@@ -168,11 +172,27 @@ const DiffViewer: React.FC<DiffViewerProps> = ({
+       <Card>
+         <CardContent className="p-0">
+           <div className="grid grid-cols-2">
+-            <div className="border-b border-r bg-muted px-4 py-2 text-xs font-semibold">
++            <div className="flex flex-row gap-1 border-b border-r bg-muted px-4 py-2 text-xs font-semibold">
+               {oldLabel}
++              {oldSubLabel && (
++                <div
++                  className="truncate text-xs text-muted-foreground"
++                  title={oldSubLabel}
++                >
++                  {oldSubLabel}
++                </div>
++              )}
+             </div>
+-            <div className="border-b bg-muted px-4 py-2 text-xs font-semibold">
++            <div className="flex flex-row gap-1 border-b bg-muted px-4 py-2 text-xs font-semibold">
+               {newLabel}
++              {newSubLabel && (
++                <div
++                  className="truncate text-xs text-muted-foreground"
++                  title={newSubLabel}
++                >
++                  {newSubLabel}
++                </div>
++              )}
+             </div>
+           </div>
+           <div>
+diff --git a/web/src/features/prompts/components/NewPromptForm/index.tsx b/web/src/features/prompts/components/NewPromptForm/index.tsx
+index 5699f3f8..d0b8c961 100644
+--- a/web/src/features/prompts/components/NewPromptForm/index.tsx
++++ b/web/src/features/prompts/components/NewPromptForm/index.tsx
+@@ -383,6 +383,25 @@ export const NewPromptForm: React.FC<NewPromptFormProps> = (props) => {
+             </FormItem>
+           )}
+         />
++
++        <FormField
++          control={form.control}
++          name="commitMessage"
++          render={({ field }) => (
++            <FormItem className="relative">
++              <FormLabel>Commit message (optional)</FormLabel>
++              <FormControl>
++                <Textarea
++                  placeholder="Add commit message..."
++                  {...field}
++                  className="rounded-md border text-xs focus:outline-none focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0 active:ring-0"
++                />
++              </FormControl>
++              <FormMessage className="ml-2 text-xs" />
++            </FormItem>
++          )}
++        />
++
+         {initialPrompt ? (
+           <div className="flex flex-col gap-2">
+             <ReviewPromptDialog
+diff --git a/web/src/features/prompts/components/NewPromptForm/validation.ts b/web/src/features/prompts/components/NewPromptForm/validation.ts
+index ae7d63f3..535a1416 100644
+--- a/web/src/features/prompts/components/NewPromptForm/validation.ts
++++ b/web/src/features/prompts/components/NewPromptForm/validation.ts
+@@ -1,6 +1,7 @@
+ import { z } from "zod";
+ import { PromptType } from "@/src/features/prompts/server/utils/validation";
+ import { ChatMessageListSchema, TextPromptSchema } from "@langfuse/shared";
++import { COMMIT_MESSAGE_MAX_LENGTH } from "@/src/features/prompts/constants";
+ 
+ const NewPromptBaseSchema = z.object({
+   name: z.string().min(1, "Enter a name"),
+@@ -8,6 +9,12 @@ const NewPromptBaseSchema = z.object({
+     required_error: "Enter whether the prompt should go live",
+   }),
+   config: z.string().refine(validateJson, "Config needs to be valid JSON"),
++  commitMessage: z
++    .string()
++    .trim()
++    .min(1)
++    .max(COMMIT_MESSAGE_MAX_LENGTH)
++    .optional(),
+ });
+ 
+ const NewChatPromptSchema = NewPromptBaseSchema.extend({
+diff --git a/web/src/features/prompts/components/PromptVersionDiffDialog.tsx b/web/src/features/prompts/components/PromptVersionDiffDialog.tsx
+index a677168c..4224ebbc 100644
+--- a/web/src/features/prompts/components/PromptVersionDiffDialog.tsx
++++ b/web/src/features/prompts/components/PromptVersionDiffDialog.tsx
+@@ -79,6 +79,8 @@ export const PromptVersionDiffDialog: React.FC<PromptVersionDiffDialogProps> = (
+                   }
+                   oldLabel={`v${leftPrompt.version}`}
+                   newLabel={`v${rightPrompt.version}`}
++                  oldSubLabel={leftPrompt.commitMessage ?? undefined}
++                  newSubLabel={rightPrompt.commitMessage ?? undefined}
+                 />
+               </div>
+               <div>
+diff --git a/web/src/features/prompts/components/prompt-detail.tsx b/web/src/features/prompts/components/prompt-detail.tsx
+index 1ae82a69..ccd27942 100644
+--- a/web/src/features/prompts/components/prompt-detail.tsx
++++ b/web/src/features/prompts/components/prompt-detail.tsx
+@@ -302,6 +302,18 @@ export const PromptDetail = () => {
+           {prompt.config && JSON.stringify(prompt.config) !== "{}" && (
+             <JSONView className="mt-5" json={prompt.config} title="Config" />
+           )}
++
++          {prompt.commitMessage && (
++            <div className="mx-auto mt-5 w-full rounded-lg border text-base">
++              <div className="border-b px-3 py-1 text-xs font-medium">
++                Commit message
++              </div>
++              <div className="flex flex-wrap gap-2 p-2 text-xs">
++                {prompt.commitMessage}
++              </div>
++            </div>
++          )}
++
+           <p className="mt-6 text-xs text-muted-foreground">
+             Fetch prompts via Python or JS/TS SDKs. See{" "}
+             <a
+diff --git a/web/src/features/prompts/components/prompt-history.tsx b/web/src/features/prompts/components/prompt-history.tsx
+index adb294e1..ed079eb1 100644
+--- a/web/src/features/prompts/components/prompt-history.tsx
++++ b/web/src/features/prompts/components/prompt-history.tsx
+@@ -61,12 +61,22 @@ const PromptHistoryTraceNode = (props: {
+         {badges}
+       </div>
+       <div className="grid w-full grid-cols-1 items-start justify-between gap-1 md:grid-cols-[1fr,auto]">
+-        <div>
++        <div className="min-w-0">
+           <div className="flex gap-2">
+             <span className="text-xs text-muted-foreground">
+               {prompt.createdAt.toLocaleString()}
+             </span>
+           </div>
++          {prompt.commitMessage && (
++            <div className="flex flex-1 flex-nowrap gap-2">
++              <span
++                className="min-w-0 max-w-full truncate text-xs text-muted-foreground"
++                title={prompt.commitMessage}
++              >
++                {prompt.commitMessage}
++              </span>
++            </div>
++          )}
+           <div className="flex gap-2">
+             <span className="text-xs text-muted-foreground">
+               by {prompt.creator || prompt.createdBy}
+diff --git a/web/src/features/prompts/constants.ts b/web/src/features/prompts/constants.ts
+index ef2e47da..565d9487 100644
+--- a/web/src/features/prompts/constants.ts
++++ b/web/src/features/prompts/constants.ts
+@@ -1,2 +1,3 @@
+ export const PRODUCTION_LABEL = "production";
+ export const LATEST_PROMPT_LABEL = "latest";
++export const COMMIT_MESSAGE_MAX_LENGTH = 500;
+diff --git a/web/src/features/prompts/server/actions/createPrompt.ts b/web/src/features/prompts/server/actions/createPrompt.ts
+index 12fbd7b2..4c50df0b 100644
+--- a/web/src/features/prompts/server/actions/createPrompt.ts
++++ b/web/src/features/prompts/server/actions/createPrompt.ts
+@@ -38,6 +38,7 @@ export const createPrompt = async ({
+   createdBy,
+   prisma,
+   tags,
++  commitMessage,
+ }: CreatePromptParams) => {
+   const latestPrompt = await prisma.prompt.findFirst({
+     where: { projectId, name },
+@@ -67,6 +68,7 @@ export const createPrompt = async ({
+         version: latestPrompt?.version ? latestPrompt.version + 1 : 1,
+         project: { connect: { id: projectId } },
+         config: jsonSchema.parse(config),
++        commitMessage,
+       },
+     }),
+   ];
+@@ -166,6 +168,7 @@ export const duplicatePrompt = async ({
+     tags: prompt.tags,
+     projectId,
+     createdBy,
++    commitMessage: prompt.commitMessage,
+   }));
+ 
+   // Create all prompts in a single operation
+diff --git a/web/src/features/prompts/server/utils/validation.ts b/web/src/features/prompts/server/utils/validation.ts
+index 5ea7f7e7..0724d3c6 100644
+--- a/web/src/features/prompts/server/utils/validation.ts
++++ b/web/src/features/prompts/server/utils/validation.ts
+@@ -1,6 +1,7 @@
+ import { z } from "zod";
+ import { jsonSchema } from "@langfuse/shared";
+ import type { Prompt } from "@langfuse/shared";
++import { COMMIT_MESSAGE_MAX_LENGTH } from "@/src/features/prompts/constants";
+ 
+ export const ChatMessageSchema = z.object({
+   role: z.string(),
+@@ -21,7 +22,7 @@ export const PromptLabelSchema = z
+     "Label must be lowercase alphanumeric with optional underscores, hyphens, or periods",
+   );
+ 
+-export const CreateTextPromptSchema = z.object({
++const BaseCreateTextPromptSchema = z.object({
+   name: z.string(),
+   labels: z.array(PromptLabelSchema).default([]),
+   type: z.literal(PromptType.Text).optional(),
+@@ -30,7 +31,13 @@ export const CreateTextPromptSchema = z.object({
+   tags: z.array(z.string()).nullish(),
+ });
+ 
+-export const CreateChatPromptSchema = z.object({
++const LegacyCreateTextPromptSchema = BaseCreateTextPromptSchema;
++
++export const CreateTextPromptSchema = BaseCreateTextPromptSchema.extend({
++  commitMessage: z.string().max(COMMIT_MESSAGE_MAX_LENGTH).nullish(),
++});
++
++const BaseCreateChatPromptSchema = z.object({
+   name: z.string(),
+   labels: z.array(PromptLabelSchema).default([]),
+   type: z.literal(PromptType.Chat),
+@@ -39,6 +46,12 @@ export const CreateChatPromptSchema = z.object({
+   tags: z.array(z.string()).nullish(),
+ });
+ 
++const LegacyCreateChatPromptSchema = BaseCreateChatPromptSchema;
++
++export const CreateChatPromptSchema = BaseCreateChatPromptSchema.extend({
++  commitMessage: z.string().max(COMMIT_MESSAGE_MAX_LENGTH).nullish(),
++});
++
+ export const CreatePromptSchema = z.union([
+   CreateTextPromptSchema,
+   CreateChatPromptSchema,
+@@ -84,7 +97,7 @@ export const GetPromptByNameSchema = z.object({
+   label: z.string().optional(),
+ });
+ 
+-export const TextPromptSchema = z.object({
++const BaseTextPromptSchema = z.object({
+   id: z.string(),
+   createdAt: z.date(),
+   updatedAt: z.date(),
+@@ -99,12 +112,18 @@ export const TextPromptSchema = z.object({
+   config: jsonSchema,
+ });
+ 
++const LegacyTextPromptSchema = BaseTextPromptSchema;
++
++export const TextPromptSchema = BaseTextPromptSchema.extend({
++  commitMessage: z.string().max(COMMIT_MESSAGE_MAX_LENGTH).nullish(),
++});
++
+ export type TextPromptType =
+   z.infer<typeof TextPromptSchema> extends Prompt
+     ? z.infer<typeof TextPromptSchema>
+     : never;
+ 
+-export const ChatPromptSchema = z.object({
++export const BaseChatPromptSchema = z.object({
+   id: z.string(),
+   createdAt: z.date(),
+   updatedAt: z.date(),
+@@ -119,6 +138,12 @@ export const ChatPromptSchema = z.object({
+   config: jsonSchema,
+ });
+ 
++const LegacyChatPromptSchema = BaseChatPromptSchema;
++
++export const ChatPromptSchema = BaseChatPromptSchema.extend({
++  commitMessage: z.string().max(COMMIT_MESSAGE_MAX_LENGTH).nullish(),
++});
++
+ export type ChatPromptType =
+   z.infer<typeof ChatPromptSchema> extends Prompt
+     ? z.infer<typeof ChatPromptSchema>
+@@ -129,11 +154,11 @@ export type ValidatedPrompt = z.infer<typeof PromptSchema>;
+ 
+ // Backward compat for V1 prompts endpoint
+ export const LegacyCreatePromptSchema = z.union([
+-  CreateTextPromptSchema.extend({ isActive: z.boolean() }),
+-  CreateChatPromptSchema.extend({ isActive: z.boolean() }),
++  LegacyCreateTextPromptSchema.extend({ isActive: z.boolean() }),
++  LegacyCreateChatPromptSchema.extend({ isActive: z.boolean() }),
+ ]);
+ export const LegacyPromptSchema = z.union([
+-  TextPromptSchema.extend({ isActive: z.boolean() }),
+-  ChatPromptSchema.extend({ isActive: z.boolean() }),
++  LegacyTextPromptSchema.extend({ isActive: z.boolean() }),
++  LegacyChatPromptSchema.extend({ isActive: z.boolean() }),
+ ]);
+ export type LegacyValidatedPrompt = z.infer<typeof LegacyPromptSchema>;

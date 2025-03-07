@@ -1,0 +1,380 @@
+Date:   Mon Nov 4 13:26:42 2024 +0100
+
+    chore: remove temporary column from PG to CH migrations (#4031)
+
+diff --git a/packages/shared/prisma/generated/types.ts b/packages/shared/prisma/generated/types.ts
+index 1ecdc366..458a8056 100644
+--- a/packages/shared/prisma/generated/types.ts
++++ b/packages/shared/prisma/generated/types.ts
+@@ -148,6 +148,7 @@ export type BackgroundMigration = {
+     name: string;
+     script: string;
+     args: unknown;
++    state: unknown;
+     finished_at: Timestamp | null;
+     failed_at: Timestamp | null;
+     failed_reason: string | null;
+diff --git a/packages/shared/prisma/migrations/20241104111600_background_migrations_add_state_column/migration.sql b/packages/shared/prisma/migrations/20241104111600_background_migrations_add_state_column/migration.sql
+new file mode 100644
+index 00000000..73d3b84a
+--- /dev/null
++++ b/packages/shared/prisma/migrations/20241104111600_background_migrations_add_state_column/migration.sql
+@@ -0,0 +1,2 @@
++-- AlterTable
++ALTER TABLE "background_migrations" ADD COLUMN "state" jsonb NOT NULL DEFAULT '{}';
+\ No newline at end of file
+diff --git a/packages/shared/prisma/schema.prisma b/packages/shared/prisma/schema.prisma
+index e06854a2..f752dee7 100644
+--- a/packages/shared/prisma/schema.prisma
++++ b/packages/shared/prisma/schema.prisma
+@@ -166,6 +166,7 @@ model BackgroundMigration {
+   name         String    @unique
+   script       String    @map("script")
+   args         Json      @map("args")
++  state        Json      @map("state")
+   finishedAt   DateTime? @map("finished_at")
+   failedAt     DateTime? @map("failed_at")
+   failedReason String?   @map("failed_reason")
+diff --git a/worker/src/backgroundMigrations/migrateObservationsFromPostgresToClickhouse.ts b/worker/src/backgroundMigrations/migrateObservationsFromPostgresToClickhouse.ts
+index 3df4a0df..84a90b9b 100644
+--- a/worker/src/backgroundMigrations/migrateObservationsFromPostgresToClickhouse.ts
++++ b/worker/src/backgroundMigrations/migrateObservationsFromPostgresToClickhouse.ts
+@@ -8,31 +8,14 @@ import { parseArgs } from "node:util";
+ import { prisma, Prisma } from "@langfuse/shared/src/db";
+ import { env } from "../env";
+ 
+-async function addTemporaryColumnIfNotExists() {
+-  const columnExists = await prisma.$queryRaw<{ column_exists: boolean }[]>(
+-    Prisma.sql`
+-      SELECT EXISTS (
+-        SELECT 1
+-        FROM information_schema.columns
+-        WHERE table_name = 'observations'
+-        AND column_name = 'tmp_migrated_to_clickhouse'
+-      ) AS column_exists;
+-    `,
+-  );
+-  if (!columnExists[0]?.column_exists) {
+-    await prisma.$executeRaw`ALTER TABLE observations ADD COLUMN tmp_migrated_to_clickhouse BOOLEAN DEFAULT FALSE;`;
+-    logger.info("Added temporary column tmp_migrated_to_clickhouse");
+-  } else {
+-    logger.info(
+-      "Temporary column tmp_migrated_to_clickhouse already exists. Continuing...",
+-    );
+-  }
+-}
++// This is hard-coded in our migrations and uniquely identifies the row in background_migrations table
++const backgroundMigrationId = "7526e7c9-0026-4595-af2c-369dfd9176ec";
+ 
+ export default class MigrateObservationsFromPostgresToClickhouse
+   implements IBackgroundMigration
+ {
+   private isAborted = false;
++  private isFinished = false;
+ 
+   async validate(
+     args: Record<string, unknown>,
+@@ -56,19 +39,33 @@ export default class MigrateObservationsFromPostgresToClickhouse
+     const batchSize = Number(args.batchSize ?? 5000);
+     const maxDate = new Date((args.maxDate as string) ?? new Date());
+ 
+-    await addTemporaryColumnIfNotExists();
++    await prisma.backgroundMigration.update({
++      where: { id: backgroundMigrationId },
++      data: { state: { maxDate } },
++    });
+ 
+     let processedRows = 0;
+-    while (!this.isAborted && processedRows < maxRowsToProcess) {
++    while (
++      !this.isAborted &&
++      !this.isFinished &&
++      processedRows < maxRowsToProcess
++    ) {
+       const fetchStart = Date.now();
+ 
++      // @ts-ignore
++      const migrationState: { state: { maxDate: string } } =
++        await prisma.backgroundMigration.findUniqueOrThrow({
++          where: { id: backgroundMigrationId },
++          select: { state: true },
++        });
++
+       const observations = await prisma.$queryRaw<
+         Array<Record<string, any>>
+       >(Prisma.sql`
+         SELECT o.id, o.trace_id, o.project_id, o.type, o.parent_observation_id, o.start_time, o.end_time, o.name, o.metadata, o.level, o.status_message, o.version, o.input, o.output, o.unit, o.model, o.internal_model_id, o."modelParameters" as model_parameters, o.prompt_tokens, o.completion_tokens, o.total_tokens, o.completion_start_time, o.prompt_id, p.name as prompt_name, p.version as prompt_version, o.input_cost, o.output_cost, o.total_cost, o.calculated_input_cost, o.calculated_output_cost, o.calculated_total_cost, o.created_at, o.updated_at
+         FROM observations o
+         LEFT JOIN prompts p ON o.prompt_id = p.id
+-        WHERE o.tmp_migrated_to_clickhouse = FALSE AND o.created_at <= ${maxDate}
++        WHERE o.created_at <= ${new Date(migrationState.state.maxDate)}
+         ORDER BY o.created_at DESC
+         LIMIT ${batchSize};
+       `);
+@@ -92,14 +89,24 @@ export default class MigrateObservationsFromPostgresToClickhouse
+         `Inserted ${observations.length} observations into Clickhouse in ${Date.now() - insertStart}ms`,
+       );
+ 
+-      await prisma.$executeRaw`
+-        UPDATE observations
+-        SET tmp_migrated_to_clickhouse = TRUE
+-        WHERE id IN (${Prisma.join(observations.map((observation) => observation.id))});
+-      `;
++      await prisma.backgroundMigration.update({
++        where: { id: backgroundMigrationId },
++        data: {
++          state: {
++            maxDate: new Date(observations[observations.length - 1].created_at),
++          },
++        },
++      });
++
++      if (observations.length < batchSize) {
++        logger.info("No more observations to migrate. Exiting...");
++        this.isFinished = true;
++      }
+ 
+       processedRows += observations.length;
+-      logger.info(`Processed batch in ${Date.now() - fetchStart}ms`);
++      logger.info(
++        `Processed batch in ${Date.now() - fetchStart}ms. Oldest record in batch: ${new Date(observations[observations.length - 1].created_at).toISOString()}`,
++      );
+     }
+ 
+     if (this.isAborted) {
+@@ -109,7 +116,6 @@ export default class MigrateObservationsFromPostgresToClickhouse
+       return;
+     }
+ 
+-    await prisma.$executeRaw`ALTER TABLE observations DROP COLUMN IF EXISTS tmp_migrated_to_clickhouse;`;
+     logger.info(
+       `Finished migration of observations from Postgres to Clickhouse in ${Date.now() - start}ms`,
+     );
+diff --git a/worker/src/backgroundMigrations/migrateScoresFromPostgresToClickhouse.ts b/worker/src/backgroundMigrations/migrateScoresFromPostgresToClickhouse.ts
+index 02699d69..55ac454a 100644
+--- a/worker/src/backgroundMigrations/migrateScoresFromPostgresToClickhouse.ts
++++ b/worker/src/backgroundMigrations/migrateScoresFromPostgresToClickhouse.ts
+@@ -8,31 +8,14 @@ import { parseArgs } from "node:util";
+ import { prisma, Prisma } from "@langfuse/shared/src/db";
+ import { env } from "../env";
+ 
+-async function addTemporaryColumnIfNotExists() {
+-  const columnExists = await prisma.$queryRaw<{ column_exists: boolean }[]>(
+-    Prisma.sql`
+-      SELECT EXISTS (
+-        SELECT 1
+-        FROM information_schema.columns
+-        WHERE table_name = 'scores'
+-        AND column_name = 'tmp_migrated_to_clickhouse'
+-      ) AS column_exists;
+-    `,
+-  );
+-  if (!columnExists[0]?.column_exists) {
+-    await prisma.$executeRaw`ALTER TABLE scores ADD COLUMN tmp_migrated_to_clickhouse BOOLEAN DEFAULT FALSE;`;
+-    logger.info("Added temporary column tmp_migrated_to_clickhouse");
+-  } else {
+-    logger.info(
+-      "Temporary column tmp_migrated_to_clickhouse already exists. Continuing...",
+-    );
+-  }
+-}
++// This is hard-coded in our migrations and uniquely identifies the row in background_migrations table
++const backgroundMigrationId = "94e50334-50d3-4e49-ad2e-9f6d92c85ef7";
+ 
+ export default class MigrateScoresFromPostgresToClickhouse
+   implements IBackgroundMigration
+ {
+   private isAborted = false;
++  private isFinished = false;
+ 
+   async validate(
+     args: Record<string, unknown>,
+@@ -56,18 +39,32 @@ export default class MigrateScoresFromPostgresToClickhouse
+     const batchSize = Number(args.batchSize ?? 5000);
+     const maxDate = new Date((args.maxDate as string) ?? new Date());
+ 
+-    await addTemporaryColumnIfNotExists();
++    await prisma.backgroundMigration.update({
++      where: { id: backgroundMigrationId },
++      data: { state: { maxDate } },
++    });
+ 
+     let processedRows = 0;
+-    while (!this.isAborted && processedRows < maxRowsToProcess) {
++    while (
++      !this.isAborted &&
++      !this.isFinished &&
++      processedRows < maxRowsToProcess
++    ) {
+       const fetchStart = Date.now();
+ 
++      // @ts-ignore
++      const migrationState: { state: { maxDate: string } } =
++        await prisma.backgroundMigration.findUniqueOrThrow({
++          where: { id: backgroundMigrationId },
++          select: { state: true },
++        });
++
+       const scores = await prisma.$queryRaw<
+         Array<Record<string, any>>
+       >(Prisma.sql`
+         SELECT id, timestamp, project_id, trace_id, observation_id, name, value, source, comment, author_user_id, config_id, data_type, string_value, queue_id, created_at, updated_at
+         FROM scores
+-        WHERE tmp_migrated_to_clickhouse = FALSE AND created_at <= ${maxDate}
++        WHERE created_at <= ${new Date(migrationState.state.maxDate)}
+         ORDER BY created_at DESC
+         LIMIT ${batchSize};
+       `);
+@@ -91,14 +88,24 @@ export default class MigrateScoresFromPostgresToClickhouse
+         `Inserted ${scores.length} scores into Clickhouse in ${Date.now() - insertStart}ms`,
+       );
+ 
+-      await prisma.$executeRaw`
+-        UPDATE scores
+-        SET tmp_migrated_to_clickhouse = TRUE
+-        WHERE id IN (${Prisma.join(scores.map((score) => score.id))});
+-      `;
++      await prisma.backgroundMigration.update({
++        where: { id: backgroundMigrationId },
++        data: {
++          state: {
++            maxDate: new Date(scores[scores.length - 1].created_at),
++          },
++        },
++      });
++
++      if (scores.length < batchSize) {
++        logger.info("No more scores to migrate. Exiting...");
++        this.isFinished = true;
++      }
+ 
+       processedRows += scores.length;
+-      logger.info(`Processed batch in ${Date.now() - fetchStart}ms`);
++      logger.info(
++        `Processed batch in ${Date.now() - fetchStart}ms. Oldest record in batch: ${new Date(scores[scores.length - 1].created_at).toISOString()}`,
++      );
+     }
+ 
+     if (this.isAborted) {
+@@ -108,7 +115,6 @@ export default class MigrateScoresFromPostgresToClickhouse
+       return;
+     }
+ 
+-    await prisma.$executeRaw`ALTER TABLE scores DROP COLUMN IF EXISTS tmp_migrated_to_clickhouse;`;
+     logger.info(
+       `Finished migration of scores from Postgres to Clickhouse in ${Date.now() - start}ms`,
+     );
+diff --git a/worker/src/backgroundMigrations/migrateTracesFromPostgresToClickhouse.ts b/worker/src/backgroundMigrations/migrateTracesFromPostgresToClickhouse.ts
+index 69442361..99ac47ce 100644
+--- a/worker/src/backgroundMigrations/migrateTracesFromPostgresToClickhouse.ts
++++ b/worker/src/backgroundMigrations/migrateTracesFromPostgresToClickhouse.ts
+@@ -8,31 +8,14 @@ import { parseArgs } from "node:util";
+ import { prisma, Prisma } from "@langfuse/shared/src/db";
+ import { env } from "../env";
+ 
+-async function addTemporaryColumnIfNotExists() {
+-  const columnExists = await prisma.$queryRaw<{ column_exists: boolean }[]>(
+-    Prisma.sql`
+-      SELECT EXISTS (
+-        SELECT 1
+-        FROM information_schema.columns
+-        WHERE table_name = 'traces'
+-        AND column_name = 'tmp_migrated_to_clickhouse'
+-      ) AS column_exists;
+-    `,
+-  );
+-  if (!columnExists[0]?.column_exists) {
+-    await prisma.$executeRaw`ALTER TABLE traces ADD COLUMN tmp_migrated_to_clickhouse BOOLEAN DEFAULT FALSE;`;
+-    logger.info("Added temporary column tmp_migrated_to_clickhouse");
+-  } else {
+-    logger.info(
+-      "Temporary column tmp_migrated_to_clickhouse already exists. Continuing...",
+-    );
+-  }
+-}
++// This is hard-coded in our migrations and uniquely identifies the row in background_migrations table
++const backgroundMigrationId = "5960f22a-748f-480c-b2f3-bc4f9d5d84bc";
+ 
+ export default class MigrateTracesFromPostgresToClickhouse
+   implements IBackgroundMigration
+ {
+   private isAborted = false;
++  private isFinished = false;
+ 
+   async validate(
+     args: Record<string, unknown>,
+@@ -56,18 +39,32 @@ export default class MigrateTracesFromPostgresToClickhouse
+     const batchSize = Number(args.batchSize ?? 5000);
+     const maxDate = new Date((args.maxDate as string) ?? new Date());
+ 
+-    await addTemporaryColumnIfNotExists();
++    await prisma.backgroundMigration.update({
++      where: { id: backgroundMigrationId },
++      data: { state: { maxDate } },
++    });
+ 
+     let processedRows = 0;
+-    while (!this.isAborted && processedRows < maxRowsToProcess) {
++    while (
++      !this.isAborted &&
++      !this.isFinished &&
++      processedRows < maxRowsToProcess
++    ) {
+       const fetchStart = Date.now();
+ 
++      // @ts-ignore
++      const migrationState: { state: { maxDate: string } } =
++        await prisma.backgroundMigration.findUniqueOrThrow({
++          where: { id: backgroundMigrationId },
++          select: { state: true },
++        });
++
+       const traces = await prisma.$queryRaw<
+         Array<Record<string, any>>
+       >(Prisma.sql`
+         SELECT id, timestamp, name, user_id, metadata, release, version, project_id, public, bookmarked, tags, input, output, session_id, created_at, updated_at
+         FROM traces
+-        WHERE tmp_migrated_to_clickhouse = FALSE AND created_at <= ${maxDate}
++        WHERE created_at <= ${new Date(migrationState.state.maxDate)}
+         ORDER BY created_at DESC
+         LIMIT ${batchSize};
+       `);
+@@ -91,14 +88,24 @@ export default class MigrateTracesFromPostgresToClickhouse
+         `Inserted ${traces.length} traces into Clickhouse in ${Date.now() - insertStart}ms`,
+       );
+ 
+-      await prisma.$executeRaw`
+-        UPDATE traces
+-        SET tmp_migrated_to_clickhouse = TRUE
+-        WHERE id IN (${Prisma.join(traces.map((trace) => trace.id))});
+-      `;
++      await prisma.backgroundMigration.update({
++        where: { id: backgroundMigrationId },
++        data: {
++          state: {
++            maxDate: new Date(traces[traces.length - 1].created_at),
++          },
++        },
++      });
++
++      if (traces.length < batchSize) {
++        logger.info("No more traces to migrate. Exiting...");
++        this.isFinished = true;
++      }
+ 
+       processedRows += traces.length;
+-      logger.info(`Processed batch in ${Date.now() - fetchStart}ms`);
++      logger.info(
++        `Processed batch in ${Date.now() - fetchStart}ms. Oldest record in batch: ${new Date(traces[traces.length - 1].created_at).toISOString()}`,
++      );
+     }
+ 
+     if (this.isAborted) {
+@@ -108,7 +115,6 @@ export default class MigrateTracesFromPostgresToClickhouse
+       return;
+     }
+ 
+-    await prisma.$executeRaw`ALTER TABLE traces DROP COLUMN IF EXISTS tmp_migrated_to_clickhouse;`;
+     logger.info(
+       `Finished migration of traces from Postgres to Clickhouse in ${Date.now() - start}ms`,
+     );

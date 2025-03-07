@@ -1,0 +1,1565 @@
+Date:   Tue Aug 20 15:39:23 2024 +0200
+
+    feat(comments): add comments on objects (#2971)
+
+diff --git a/packages/shared/prisma/generated/types.ts b/packages/shared/prisma/generated/types.ts
+index 7ef15969..45d95a25 100644
+--- a/packages/shared/prisma/generated/types.ts
++++ b/packages/shared/prisma/generated/types.ts
+@@ -42,6 +42,13 @@ export const DatasetStatus = {
+     ARCHIVED: "ARCHIVED"
+ } as const;
+ export type DatasetStatus = (typeof DatasetStatus)[keyof typeof DatasetStatus];
++export const CommentObjectType = {
++    TRACE: "TRACE",
++    OBSERVATION: "OBSERVATION",
++    SESSION: "SESSION",
++    PROMPT: "PROMPT"
++} as const;
++export type CommentObjectType = (typeof CommentObjectType)[keyof typeof CommentObjectType];
+ export const JobType = {
+     EVAL: "EVAL"
+ } as const;
+@@ -116,6 +123,16 @@ export type BatchExport = {
+     url: string | null;
+     log: string | null;
+ };
++export type Comment = {
++    id: string;
++    project_id: string;
++    object_type: CommentObjectType;
++    object_id: string;
++    created_at: Generated<Timestamp>;
++    updated_at: Generated<Timestamp>;
++    content: string;
++    author_user_id: string | null;
++};
+ export type CronJobs = {
+     name: string;
+     last_run: Timestamp | null;
+@@ -491,6 +508,7 @@ export type DB = {
+     api_keys: ApiKey;
+     audit_logs: AuditLog;
+     batch_exports: BatchExport;
++    comments: Comment;
+     cron_jobs: CronJobs;
+     dataset_items: DatasetItem;
+     dataset_run_items: DatasetRunItems;
+diff --git a/packages/shared/prisma/migrations/20240815171916_add_comments/migration.sql b/packages/shared/prisma/migrations/20240815171916_add_comments/migration.sql
+new file mode 100644
+index 00000000..bb7b1185
+--- /dev/null
++++ b/packages/shared/prisma/migrations/20240815171916_add_comments/migration.sql
+@@ -0,0 +1,22 @@
++-- CreateEnum
++CREATE TYPE "CommentObjectType" AS ENUM ('TRACE', 'OBSERVATION', 'SESSION', 'PROMPT');
++
++-- CreateTable
++CREATE TABLE "comments" (
++    "id" TEXT NOT NULL,
++    "project_id" TEXT NOT NULL,
++    "object_type" "CommentObjectType" NOT NULL,
++    "object_id" TEXT NOT NULL,
++    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
++    "updated_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
++    "content" TEXT NOT NULL,
++    "author_user_id" TEXT,
++
++    CONSTRAINT "comments_pkey" PRIMARY KEY ("id")
++);
++
++-- CreateIndex
++CREATE INDEX "comments_project_id_object_type_object_id_idx" ON "comments"("project_id", "object_type", "object_id");
++
++-- AddForeignKey
++ALTER TABLE "comments" ADD CONSTRAINT "comments_project_id_fkey" FOREIGN KEY ("project_id") REFERENCES "projects"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+diff --git a/packages/shared/prisma/schema.prisma b/packages/shared/prisma/schema.prisma
+index 406f6a71..2b11532f 100644
+--- a/packages/shared/prisma/schema.prisma
++++ b/packages/shared/prisma/schema.prisma
+@@ -129,6 +129,7 @@ model Project {
+     Score              Score[]
+     scoreConfig        ScoreConfig[]
+     BatchExport        BatchExport[]
++    comment            Comment[]
+ 
+     @@index([orgId])
+     @@map("projects")
+@@ -635,6 +636,28 @@ model Events {
+     @@map("events")
+ }
+ 
++model Comment {
++    id           String            @id @default(cuid())
++    projectId    String            @map("project_id")
++    project      Project           @relation(fields: [projectId], references: [id], onDelete: Cascade)
++    objectType   CommentObjectType @map("object_type")
++    objectId     String            @map("object_id")
++    createdAt    DateTime          @default(now()) @map("created_at")
++    updatedAt    DateTime          @default(now()) @updatedAt @map("updated_at")
++    content      String
++    authorUserId String?           @map("author_user_id") // no fk constraint, user can be deleted
++
++    @@index([projectId, objectType, objectId])
++    @@map("comments")
++}
++
++enum CommentObjectType {
++    TRACE
++    OBSERVATION
++    SESSION
++    PROMPT
++}
++
+ model Prompt {
+     id        String   @id @default(cuid())
+     createdAt DateTime @default(now()) @map("created_at")
+diff --git a/packages/shared/prisma/seed.ts b/packages/shared/prisma/seed.ts
+index 3ad1135a..8485f40c 100644
+--- a/packages/shared/prisma/seed.ts
++++ b/packages/shared/prisma/seed.ts
+@@ -257,21 +257,29 @@ async function main() {
+ 
+     const traceVolume = environment === "load" ? LOAD_TRACE_VOLUME : 100;
+ 
+-    const { traces, observations, scores, sessions, events } = createObjects(
+-      traceVolume,
+-      envTags,
+-      colorTags,
+-      project1,
+-      project2,
+-      promptIds,
+-      configIdsAndNames
+-    );
++    const { traces, observations, scores, sessions, events, comments } =
++      createObjects(
++        traceVolume,
++        envTags,
++        colorTags,
++        project1,
++        project2,
++        promptIds,
++        configIdsAndNames
++      );
+ 
+     console.log(
+       `Seeding ${traces.length} traces, ${observations.length} observations, and ${scores.length} scores`
+     );
+ 
+-    await uploadObjects(traces, observations, scores, sessions, events);
++    await uploadObjects(
++      traces,
++      observations,
++      scores,
++      sessions,
++      events,
++      comments
++    );
+ 
+     // If openai key is in environment, add it to the projects LLM API keys
+     const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
+@@ -464,7 +472,8 @@ async function uploadObjects(
+   observations: Prisma.ObservationCreateManyInput[],
+   scores: Prisma.ScoreCreateManyInput[],
+   sessions: Prisma.TraceSessionCreateManyInput[],
+-  events: Prisma.ObservationCreateManyInput[]
++  events: Prisma.ObservationCreateManyInput[],
++  comments: Prisma.CommentCreateManyInput[]
+ ) {
+   let promises: Prisma.PrismaPromise<unknown>[] = [];
+ 
+@@ -556,6 +565,22 @@ async function uploadObjects(
+       );
+     await promises[i];
+   }
++
++  promises = [];
++  chunk(comments, chunkSize).forEach((chunk) => {
++    promises.push(
++      prisma.comment.createMany({
++        data: chunk,
++      })
++    );
++  });
++  for (let i = 0; i < promises.length; i++) {
++    if (i + 1 >= promises.length || i % Math.ceil(promises.length / 10) === 0)
++      console.log(
++        `Seeding of Comments ${((i + 1) / promises.length) * 100}% complete`
++      );
++    await promises[i];
++  }
+ }
+ 
+ function createObjects(
+@@ -581,6 +606,7 @@ function createObjects(
+   const sessions: Prisma.TraceSessionCreateManyInput[] = [];
+   const events: Prisma.ObservationCreateManyInput[] = [];
+   const configs: Prisma.ScoreConfigCreateManyInput[] = [];
++  const comments: Prisma.CommentCreateManyInput[] = [];
+ 
+   for (let i = 0; i < traceVolume; i++) {
+     // print progress to console with a progress bar that refreshes every 10 iterations
+@@ -711,6 +737,15 @@ function createObjects(
+         : []),
+     ];
+ 
++    if (Math.random() > 0.9)
++      comments.push({
++        projectId: trace.projectId,
++        objectId: trace.id,
++        objectType: "TRACE",
++        content: "Trace comment content",
++        ...(Math.random() > 0.5 ? { authorUserId: `user-${i}` } : {}),
++      });
++
+     scores.push(...traceScores);
+ 
+     const existingSpanIds: string[] = [];
+@@ -887,6 +922,14 @@ function createObjects(
+             createdAt: traceTs,
+           });
+ 
++        if (Math.random() > 0.8)
++          comments.push({
++            projectId: trace.projectId,
++            objectId: generation.id,
++            objectType: "OBSERVATION",
++            content: "Observation comment content",
++          });
++
+         for (let l = 0; l < Math.floor(Math.random() * 2); l++) {
+           // random start time within span
+           const eventTs = new Date(
+@@ -925,6 +968,7 @@ function createObjects(
+     configs,
+     sessions: uniqueSessions,
+     events,
++    comments,
+   };
+ }
+ 
+diff --git a/packages/shared/src/features/comments/types.ts b/packages/shared/src/features/comments/types.ts
+new file mode 100644
+index 00000000..00f67e52
+--- /dev/null
++++ b/packages/shared/src/features/comments/types.ts
+@@ -0,0 +1,22 @@
++import { z } from "zod";
++
++const COMMENT_OBJECT_TYPES = [
++  "TRACE",
++  "OBSERVATION",
++  "SESSION",
++  "PROMPT",
++] as const;
++
++export const CreateCommentData = z.object({
++  projectId: z.string(),
++  content: z.string().trim().min(1).max(500),
++  objectId: z.string(),
++  objectType: z.enum(COMMENT_OBJECT_TYPES),
++});
++
++export const DeleteCommentData = z.object({
++  projectId: z.string(),
++  commentId: z.string(),
++  objectId: z.string(),
++  objectType: z.enum(COMMENT_OBJECT_TYPES),
++});
+diff --git a/packages/shared/src/index.ts b/packages/shared/src/index.ts
+index 35a41d5b..329205d8 100644
+--- a/packages/shared/src/index.ts
++++ b/packages/shared/src/index.ts
+@@ -32,6 +32,9 @@ export * from "./features/annotation/types";
+ export * from "./features/scores/scoreConfigTypes";
+ export * from "./features/scores/scoreTypes";
+ 
++// comments
++export * from "./features/comments/types";
++
+ // export db types only
+ export * from "@prisma/client";
+ export { type DB } from "../prisma/generated/types";
+diff --git a/web/src/components/session/index.tsx b/web/src/components/session/index.tsx
+index e4aa6640..a4212071 100644
+--- a/web/src/components/session/index.tsx
++++ b/web/src/components/session/index.tsx
+@@ -16,6 +16,7 @@ import { useEffect, useState } from "react";
+ import { AnnotateDrawer } from "@/src/features/scores/components/AnnotateDrawer";
+ import { Button } from "@/src/components/ui/button";
+ import useLocalStorage from "@/src/components/useLocalStorage";
++import { CommentDrawerButton } from "@/src/features/comments/CommentDrawerButton";
+ 
+ // some projects have thousands of traces in a sessions, paginate to avoid rendering all at once
+ const PAGE_SIZE = 50;
+@@ -52,6 +53,15 @@ export const SessionPage: React.FC<{
+     string[]
+   >("emptySelectedConfigIds", []);
+ 
++  const commentCounts = api.comments.getCountsByObjectIds.useQuery(
++    {
++      projectId,
++      objectIds: [sessionId],
++      objectType: "SESSION",
++    },
++    { enabled: session.isSuccess },
++  );
++
+   if (session.error?.data?.code === "UNAUTHORIZED")
+     return <ErrorPage message="You do not have access to this session." />;
+ 
+@@ -87,6 +97,14 @@ export const SessionPage: React.FC<{
+             }
+             listKey="sessions"
+           />,
++          <CommentDrawerButton
++            key="comment"
++            size="sm"
++            projectId={projectId}
++            objectId={sessionId}
++            objectType="SESSION"
++            count={commentCounts.data?.get(sessionId)}
++          />,
+         ]}
+       />
+       <div className="flex flex-wrap gap-2">
+diff --git a/web/src/components/trace/ObservationPreview.tsx b/web/src/components/trace/ObservationPreview.tsx
+index 78fcb1ab..b07d8d95 100644
+--- a/web/src/components/trace/ObservationPreview.tsx
++++ b/web/src/components/trace/ObservationPreview.tsx
+@@ -23,6 +23,7 @@ import { ScoresPreview } from "@/src/components/trace/ScoresPreview";
+ import { JumpToPlaygroundButton } from "@/src/ee/features/playground/page/components/JumpToPlaygroundButton";
+ import { AnnotateDrawer } from "@/src/features/scores/components/AnnotateDrawer";
+ import useLocalStorage from "@/src/components/useLocalStorage";
++import { CommentDrawerButton } from "@/src/features/comments/CommentDrawerButton";
+ 
+ export const ObservationPreview = (props: {
+   observations: Array<ObservationReturnType>;
+@@ -30,6 +31,7 @@ export const ObservationPreview = (props: {
+   scores: APIScore[];
+   currentObservationId: string;
+   traceId: string;
++  commentCounts?: Map<string, number>;
+ }) => {
+   const [selectedTab, setSelectedTab] = useQueryParam(
+     "view",
+@@ -163,6 +165,12 @@ export const ObservationPreview = (props: {
+             </div>
+           </div>
+           <div className="flex flex-wrap gap-2">
++            <CommentDrawerButton
++              projectId={preloadedObservation.projectId}
++              objectId={preloadedObservation.id}
++              objectType="OBSERVATION"
++              count={props.commentCounts?.get(preloadedObservation.id)}
++            />
+             <AnnotateDrawer
+               projectId={props.projectId}
+               traceId={preloadedObservation.traceId}
+diff --git a/web/src/components/trace/ObservationTree.tsx b/web/src/components/trace/ObservationTree.tsx
+index a7f79e7a..626b29fe 100644
+--- a/web/src/components/trace/ObservationTree.tsx
++++ b/web/src/components/trace/ObservationTree.tsx
+@@ -14,6 +14,7 @@ import {
+   nestObservations,
+   treeItemColors,
+ } from "@/src/components/trace/lib/helpers";
++import { CommentCountIcon } from "@/src/features/comments/CommentCountIcon";
+ 
+ export const ObservationTree = (props: {
+   observations: ObservationReturnType[];
+@@ -27,6 +28,8 @@ export const ObservationTree = (props: {
+   setCurrentObservationId: (id: string | undefined) => void;
+   showMetrics: boolean;
+   showScores: boolean;
++  observationCommentCounts?: Map<string, number>;
++  traceCommentCounts?: Map<string, number>;
+   className?: string;
+ }) => {
+   const nestedObservations = nestObservations(props.observations);
+@@ -37,6 +40,7 @@ export const ObservationTree = (props: {
+         collapseAll={props.collapseAll}
+         trace={props.trace}
+         scores={props.scores}
++        comments={props.traceCommentCounts}
+         currentObservationId={props.currentObservationId}
+         setCurrentObservationId={props.setCurrentObservationId}
+         showMetrics={props.showMetrics}
+@@ -47,6 +51,7 @@ export const ObservationTree = (props: {
+         collapsedObservations={props.collapsedObservations}
+         toggleCollapsedObservation={props.toggleCollapsedObservation}
+         scores={props.scores}
++        comments={props.observationCommentCounts}
+         indentationLevel={1}
+         currentObservationId={props.currentObservationId}
+         setCurrentObservationId={props.setCurrentObservationId}
+@@ -62,6 +67,7 @@ const ObservationTreeTraceNode = (props: {
+   expandAll: () => void;
+   collapseAll: () => void;
+   scores: APIScore[];
++  comments: Map<string, number> | undefined;
+   currentObservationId: string | undefined;
+   setCurrentObservationId: (id: string | undefined) => void;
+   showMetrics?: boolean;
+@@ -79,23 +85,28 @@ const ObservationTreeTraceNode = (props: {
+   >
+     <div className="flex gap-2">
+       <span className={cn("rounded-sm bg-input p-1 text-xs")}>TRACE</span>
+-      <span className="flex-1 break-all text-sm">{props.trace.name}</span>
+-      <Button
+-        onClick={(ev) => (ev.stopPropagation(), props.expandAll())}
+-        size="xs"
+-        variant="ghost"
+-        title="Expand all"
+-      >
+-        <PlusCircleIcon className="h-4 w-4" />
+-      </Button>
+-      <Button
+-        onClick={(ev) => (ev.stopPropagation(), props.collapseAll())}
+-        size="xs"
+-        variant="ghost"
+-        title="Collapse all"
+-      >
+-        <MinusCircle className="h-4 w-4" />
+-      </Button>
++      <span className="break-all text-sm">{props.trace.name}</span>
++      {props.comments ? (
++        <CommentCountIcon count={props.comments.get(props.trace.id)} />
++      ) : null}
++      <div className="flex flex-1 justify-end">
++        <Button
++          onClick={(ev) => (ev.stopPropagation(), props.expandAll())}
++          size="xs"
++          variant="ghost"
++          title="Expand all"
++        >
++          <PlusCircleIcon className="h-4 w-4" />
++        </Button>
++        <Button
++          onClick={(ev) => (ev.stopPropagation(), props.collapseAll())}
++          size="xs"
++          variant="ghost"
++          title="Collapse all"
++        >
++          <MinusCircle className="h-4 w-4" />
++        </Button>
++      </div>
+     </div>
+ 
+     {props.showMetrics && props.trace.latency ? (
+@@ -120,6 +131,7 @@ const ObservationTreeNode = (props: {
+   collapsedObservations: string[];
+   toggleCollapsedObservation: (id: string) => void;
+   scores: APIScore[];
++  comments?: Map<string, number> | undefined;
+   indentationLevel: number;
+   currentObservationId: string | undefined;
+   setCurrentObservationId: (id: string | undefined) => void;
+@@ -154,9 +166,16 @@ const ObservationTreeNode = (props: {
+                     <ColorCodedObservationType
+                       observationType={observation.type}
+                     />
+-                    <span className="flex-1 break-all text-sm">
+-                      {observation.name}
+-                    </span>
++                    <div className="grid flex-1 grid-cols-[auto,1fr] gap-2">
++                      <span className="break-all text-sm">
++                        {observation.name}
++                      </span>
++                      {props.comments ? (
++                        <CommentCountIcon
++                          count={props.comments.get(observation.id)}
++                        />
++                      ) : null}
++                    </div>
+                     {observation.children.length === 0 ? null : (
+                       <Toggle
+                         onClick={(ev) => (
+@@ -244,6 +263,7 @@ const ObservationTreeNode = (props: {
+                   collapsedObservations={props.collapsedObservations}
+                   toggleCollapsedObservation={props.toggleCollapsedObservation}
+                   scores={props.scores}
++                  comments={props.comments}
+                   indentationLevel={props.indentationLevel + 1}
+                   currentObservationId={props.currentObservationId}
+                   setCurrentObservationId={props.setCurrentObservationId}
+diff --git a/web/src/components/trace/TracePreview.tsx b/web/src/components/trace/TracePreview.tsx
+index c4d528fe..445138cf 100644
+--- a/web/src/components/trace/TracePreview.tsx
++++ b/web/src/components/trace/TracePreview.tsx
+@@ -20,15 +20,18 @@ import ScoresTable from "@/src/components/table/use-cases/scores";
+ import { ScoresPreview } from "@/src/components/trace/ScoresPreview";
+ import { AnnotateDrawer } from "@/src/features/scores/components/AnnotateDrawer";
+ import useLocalStorage from "@/src/components/useLocalStorage";
++import { CommentDrawerButton } from "@/src/features/comments/CommentDrawerButton";
+ 
+ export const TracePreview = ({
+   trace,
+   observations,
+   scores,
++  commentCounts,
+ }: {
+   trace: Trace & { latency?: number };
+   observations: ObservationReturnType[];
+   scores: APIScore[];
++  commentCounts?: Map<string, number>;
+ }) => {
+   const [selectedTab, setSelectedTab] = useQueryParam(
+     "view",
+@@ -99,6 +102,12 @@ export const TracePreview = ({
+             </div>
+           </div>
+           <div className="flex flex-wrap gap-2">
++            <CommentDrawerButton
++              projectId={trace.projectId}
++              objectId={trace.id}
++              objectType="TRACE"
++              count={commentCounts?.get(trace.id)}
++            />
+             <AnnotateDrawer
+               projectId={trace.projectId}
+               traceId={trace.id}
+diff --git a/web/src/components/trace/TraceTimelineView.tsx b/web/src/components/trace/TraceTimelineView.tsx
+index c00012b4..a221d138 100644
+--- a/web/src/components/trace/TraceTimelineView.tsx
++++ b/web/src/components/trace/TraceTimelineView.tsx
+@@ -29,6 +29,7 @@ import {
+ import { TracePreview } from "@/src/components/trace/TracePreview";
+ import { ObservationPreview } from "@/src/components/trace/ObservationPreview";
+ import useSessionStorage from "@/src/components/useSessionStorage";
++import { api } from "@/src/utils/api";
+ 
+ // Fixed widths for styling for v1
+ const SCALE_WIDTH = 800;
+@@ -44,12 +45,14 @@ const PREDEFINED_STEP_SIZES = [
+ 
+ const getNestedObservationKeys = (
+   observations: NestedObservation[],
+-): string[] => {
++): { keys: string[]; ids: string[] } => {
+   const keys: string[] = [];
++  const ids: string[] = [];
+ 
+   const collectKeys = (obs: NestedObservation[]) => {
+     obs.forEach((observation) => {
+       keys.push(`observation-${observation.id}`);
++      ids.push(observation.id);
+       if (observation.children) {
+         collectKeys(observation.children);
+       }
+@@ -57,7 +60,7 @@ const getNestedObservationKeys = (
+   };
+ 
+   collectKeys(observations);
+-  return keys;
++  return { keys, ids };
+ };
+ 
+ const calculateStepSize = (latency: number, scaleWidth: number) => {
+@@ -181,6 +184,7 @@ function TraceTreeItem({
+   scores,
+   observations,
+   cardWidth,
++  commentCounts,
+ }: {
+   observation: NestedObservation;
+   level: number;
+@@ -190,6 +194,7 @@ function TraceTreeItem({
+   scores: APIScore[];
+   observations: Array<ObservationReturnType>;
+   cardWidth: number;
++  commentCounts?: Map<string, number>;
+ }) {
+   const { startTime, endTime } = observation || {};
+   const [backgroundColor, setBackgroundColor] = useState("");
+@@ -232,6 +237,7 @@ function TraceTreeItem({
+                 projectId={projectId}
+                 currentObservationId={observation.id}
+                 traceId={observation.traceId}
++                commentCounts={commentCounts}
+               />
+             </div>
+           </>
+@@ -250,6 +256,7 @@ function TraceTreeItem({
+               scores={scores}
+               observations={observations}
+               cardWidth={cardWidth}
++              commentCounts={commentCounts}
+             />
+           ))
+         : null}
+@@ -298,11 +305,43 @@ export function TraceTimelineView({
+     () => nestObservations(observations),
+     [observations],
+   );
+-  const nestedObservationKeys = useMemo(
++  const { keys: nestedObservationKeys, ids: nestedObservationIds } = useMemo(
+     () => getNestedObservationKeys(nestedObservations),
+     [nestedObservations],
+   );
+ 
++  const observationCommentCounts = api.comments.getCountsByObjectIds.useQuery(
++    {
++      projectId: trace.projectId,
++      objectIds: nestedObservationIds,
++      objectType: "OBSERVATION",
++    },
++    {
++      trpc: {
++        context: {
++          skipBatch: true,
++        },
++      },
++      refetchOnMount: false, // prevents refetching loops
++    },
++  );
++
++  const traceCommentCounts = api.comments.getCountsByObjectIds.useQuery(
++    {
++      projectId: trace.projectId,
++      objectIds: [trace.id],
++      objectType: "TRACE",
++    },
++    {
++      trpc: {
++        context: {
++          skipBatch: true,
++        },
++      },
++      refetchOnMount: false, // prevents refetching loops
++    },
++  );
++
+   if (!latency) return null;
+ 
+   const stepSize = calculateStepSize(latency, SCALE_WIDTH);
+@@ -414,6 +453,7 @@ export function TraceTimelineView({
+                       trace={trace}
+                       observations={observations}
+                       scores={scores}
++                      commentCounts={traceCommentCounts.data}
+                     />
+                   </div>
+                 </TreeItemInner>
+@@ -431,6 +471,7 @@ export function TraceTimelineView({
+                       scores={scores}
+                       observations={observations}
+                       cardWidth={cardWidth}
++                      commentCounts={observationCommentCounts.data}
+                     />
+                   ))
+                 : null}
+diff --git a/web/src/components/trace/index.tsx b/web/src/components/trace/index.tsx
+index 5fd41006..65631cc3 100644
+--- a/web/src/components/trace/index.tsx
++++ b/web/src/components/trace/index.tsx
+@@ -27,7 +27,7 @@ import {
+ } from "lucide-react";
+ import { usdFormatter } from "@/src/utils/numbers";
+ import Decimal from "decimal.js";
+-import { useCallback, useState } from "react";
++import { useCallback, useMemo, useState } from "react";
+ import { DeleteButton } from "@/src/components/deleteButton";
+ import { usePostHogClientCapture } from "@/src/features/posthog-analytics/usePostHogClientCapture";
+ import { Tabs, TabsList, TabsTrigger } from "@/src/components/ui/tabs";
+@@ -57,6 +57,42 @@ export function Trace(props: {
+     [],
+   );
+ 
++  const observationObjectIds: string[] = useMemo(() => {
++    return props.observations.map(({ id }) => id);
++  }, [props.observations]);
++
++  const observationCommentCounts = api.comments.getCountsByObjectIds.useQuery(
++    {
++      projectId: props.trace.projectId,
++      objectIds: observationObjectIds,
++      objectType: "OBSERVATION",
++    },
++    {
++      trpc: {
++        context: {
++          skipBatch: true,
++        },
++      },
++      refetchOnMount: false, // prevents refetching loops
++    },
++  );
++
++  const traceCommentCounts = api.comments.getCountsByObjectIds.useQuery(
++    {
++      projectId: props.trace.projectId,
++      objectIds: [props.trace.id],
++      objectType: "TRACE",
++    },
++    {
++      trpc: {
++        context: {
++          skipBatch: true,
++        },
++      },
++      refetchOnMount: false, // prevents refetching loops
++    },
++  );
++
+   const toggleCollapsedObservation = useCallback(
+     (id: string) => {
+       if (collapsedObservations.includes(id)) {
+@@ -114,6 +150,7 @@ export function Trace(props: {
+             trace={props.trace}
+             observations={props.observations}
+             scores={props.scores}
++            commentCounts={traceCommentCounts.data}
+           />
+         ) : (
+           <ObservationPreview
+@@ -122,6 +159,7 @@ export function Trace(props: {
+             projectId={props.projectId}
+             currentObservationId={currentObservationId}
+             traceId={props.trace.id}
++            commentCounts={observationCommentCounts.data}
+           />
+         )}
+       </div>
+@@ -171,6 +209,8 @@ export function Trace(props: {
+           setCurrentObservationId={setCurrentObservationId}
+           showMetrics={metricsOnObservationTree}
+           showScores={scoresOnObservationTree}
++          observationCommentCounts={observationCommentCounts.data}
++          traceCommentCounts={traceCommentCounts.data}
+           className="flex w-full flex-col overflow-y-auto"
+         />
+       </div>
+diff --git a/web/src/components/ui/drawer.tsx b/web/src/components/ui/drawer.tsx
+index 7f884fae..8f9e46a9 100644
+--- a/web/src/components/ui/drawer.tsx
++++ b/web/src/components/ui/drawer.tsx
+@@ -6,6 +6,12 @@ import { Drawer as DrawerPrimitive } from "vaul";
+ import { cn } from "@/src/utils/tailwind";
+ import { useMediaQuery } from "react-responsive";
+ 
++type DrawerContentProps = React.ComponentPropsWithoutRef<
++  typeof DrawerPrimitive.Content
++> & {
++  overlayClassName?: string;
++};
++
+ // https://tailwindcss.com/docs/responsive-design
+ const TAILWIND_MD_MEDIA_QUERY = 768;
+ 
+@@ -48,10 +54,10 @@ DrawerOverlay.displayName = DrawerPrimitive.Overlay.displayName;
+ 
+ const DrawerContent = React.forwardRef<
+   React.ElementRef<typeof DrawerPrimitive.Content>,
+-  React.ComponentPropsWithoutRef<typeof DrawerPrimitive.Content>
+->(({ className, children, ...props }, ref) => (
++  DrawerContentProps
++>(({ className, children, overlayClassName, ...props }, ref) => (
+   <DrawerPortal>
+-    <DrawerOverlay />
++    <DrawerOverlay className={overlayClassName} />
+     <DrawerPrimitive.Content
+       ref={ref}
+       className={cn(
+diff --git a/web/src/features/audit-logs/auditLog.ts b/web/src/features/audit-logs/auditLog.ts
+index 6b1b3296..0b872199 100644
+--- a/web/src/features/audit-logs/auditLog.ts
++++ b/web/src/features/audit-logs/auditLog.ts
+@@ -5,6 +5,7 @@ export type AuditableResource =
+   | "orgMembership"
+   | "projectMembership"
+   | "membershipInvitation"
++  | "comment"
+   | "datasetItem"
+   | "dataset"
+   | "trace"
+diff --git a/web/src/features/comments/CommentCountIcon.tsx b/web/src/features/comments/CommentCountIcon.tsx
+new file mode 100644
+index 00000000..3550938f
+--- /dev/null
++++ b/web/src/features/comments/CommentCountIcon.tsx
+@@ -0,0 +1,17 @@
++import { MessageCircleMore } from "lucide-react";
++
++export function CommentCountIcon({ count }: { count?: number }) {
++  if (!count) return null;
++
++  return (
++    <span className="relative mr-1 text-xs">
++      <MessageCircleMore className="h-5 w-5" />
++      <span
++        className="absolute -top-0.5 left-3 flex max-h-[1rem] min-w-[1rem] items-center justify-center rounded-full border border-muted-foreground bg-accent-light-blue px-0.5"
++        style={{ fontSize: "0.6rem" }}
++      >
++        {count > 99 ? "99+" : count}
++      </span>
++    </span>
++  );
++}
+diff --git a/web/src/features/comments/CommentDrawerButton.tsx b/web/src/features/comments/CommentDrawerButton.tsx
+new file mode 100644
+index 00000000..0616a842
+--- /dev/null
++++ b/web/src/features/comments/CommentDrawerButton.tsx
+@@ -0,0 +1,72 @@
++import Header from "@/src/components/layouts/header";
++import { Button } from "@/src/components/ui/button";
++import {
++  Drawer,
++  DrawerContent,
++  DrawerHeader,
++  DrawerTrigger,
++} from "@/src/components/ui/drawer";
++import { CommentCountIcon } from "@/src/features/comments/CommentCountIcon";
++import { CommentList } from "@/src/features/comments/CommentList";
++import { useHasProjectAccess } from "@/src/features/rbac/utils/checkProjectAccess";
++import { type CommentObjectType } from "@langfuse/shared";
++import { MessageCircleIcon, MessageCircleOff } from "lucide-react";
++import React from "react";
++
++export function CommentDrawerButton({
++  projectId,
++  objectId,
++  objectType,
++  count,
++  size = "icon",
++}: {
++  projectId: string;
++  objectId: string;
++  objectType: CommentObjectType;
++  count?: number;
++  size?: "icon" | "sm";
++}) {
++  const hasReadAccess = useHasProjectAccess({
++    projectId,
++    scope: "comments:read",
++  });
++  const hasWriteAccess = useHasProjectAccess({
++    projectId,
++    scope: "comments:CUD",
++  });
++
++  if (!hasReadAccess || (!hasWriteAccess && !count))
++    return (
++      <Button type="button" variant="secondary" disabled>
++        <MessageCircleOff className="h-4 w-4 text-muted-foreground" />
++      </Button>
++    );
++
++  return (
++    <Drawer>
++      <DrawerTrigger asChild>
++        <Button type="button" variant="secondary" size={size}>
++          {!!count ? (
++            <CommentCountIcon count={count} />
++          ) : (
++            <MessageCircleIcon className="h-5 w-5" />
++          )}
++        </Button>
++      </DrawerTrigger>
++      <DrawerContent className="h-1/3" overlayClassName="bg-primary/10">
++        <div className="mx-auto w-full overflow-y-auto md:max-h-full">
++          <DrawerHeader className="sticky top-0 z-10 rounded-sm bg-background">
++            <Header title="Comments" level="h3"></Header>
++          </DrawerHeader>
++          <div data-vaul-no-drag className="px-4">
++            <CommentList
++              projectId={projectId}
++              objectId={objectId}
++              objectType={objectType}
++            />
++          </div>
++        </div>
++      </DrawerContent>
++    </Drawer>
++  );
++}
+diff --git a/web/src/features/comments/CommentList.tsx b/web/src/features/comments/CommentList.tsx
+new file mode 100644
+index 00000000..191a17b5
+--- /dev/null
++++ b/web/src/features/comments/CommentList.tsx
+@@ -0,0 +1,238 @@
++import {
++  Avatar,
++  AvatarFallback,
++  AvatarImage,
++} from "@/src/components/ui/avatar";
++import { Button } from "@/src/components/ui/button";
++import {
++  Form,
++  FormControl,
++  FormField,
++  FormItem,
++  FormMessage,
++} from "@/src/components/ui/form";
++import { Textarea } from "@/src/components/ui/textarea";
++import { useHasProjectAccess } from "@/src/features/rbac/utils/checkProjectAccess";
++import { api } from "@/src/utils/api";
++import { getRelativeTimestampFromNow } from "@/src/utils/dates";
++import { cn } from "@/src/utils/tailwind";
++import { zodResolver } from "@hookform/resolvers/zod";
++import { type CommentObjectType, CreateCommentData } from "@langfuse/shared";
++import { ArrowUpToLine, LoaderCircle, Trash } from "lucide-react";
++import { useSession } from "next-auth/react";
++import React, { useEffect, useMemo } from "react";
++import { useForm } from "react-hook-form";
++import { type z } from "zod";
++
++export function CommentList({
++  projectId,
++  objectId,
++  objectType,
++  cardView = false,
++  className,
++}: {
++  projectId: string;
++  objectId: string;
++  objectType: CommentObjectType;
++  cardView?: boolean;
++  className?: string;
++}) {
++  const session = useSession();
++  const hasReadAccess = useHasProjectAccess({
++    projectId,
++    scope: "comments:read",
++  });
++
++  const hasWriteAccess = useHasProjectAccess({
++    projectId,
++    scope: "comments:CUD",
++  });
++
++  const comments = api.comments.getByObjectId.useQuery(
++    {
++      projectId,
++      objectId,
++      objectType,
++    },
++    { enabled: hasReadAccess },
++  );
++
++  const form = useForm<z.infer<typeof CreateCommentData>>({
++    resolver: zodResolver(CreateCommentData),
++    defaultValues: {
++      content: "",
++      projectId,
++      objectId,
++      objectType,
++    },
++  });
++
++  useEffect(() => {
++    form.reset({ content: "", projectId, objectId, objectType });
++    // eslint-disable-next-line react-hooks/exhaustive-deps
++  }, [objectId, objectType]);
++
++  const utils = api.useUtils();
++
++  const createCommentMutation = api.comments.create.useMutation({
++    onSuccess: async () => {
++      await Promise.all([utils.comments.invalidate()]);
++      form.reset();
++    },
++  });
++
++  const deleteCommentMutation = api.comments.delete.useMutation({
++    onSuccess: async () => {
++      await Promise.all([utils.comments.invalidate()]);
++    },
++  });
++
++  const commentsWithFormattedTimestamp = useMemo(() => {
++    return comments.data?.map((comment) => ({
++      ...comment,
++      timestamp: getRelativeTimestampFromNow(comment.createdAt),
++    }));
++  }, [comments.data]);
++
++  if (!hasReadAccess || (!hasWriteAccess && comments.data?.length === 0))
++    return null;
++
++  function onSubmit(values: z.infer<typeof CreateCommentData>) {
++    createCommentMutation.mutateAsync({
++      ...values,
++    });
++  }
++
++  const handleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
++    if (event.key === "Enter" && event.metaKey) {
++      event.preventDefault(); // Prevent the default newline behavior
++      form.handleSubmit(onSubmit)(); // Submit the form on cmd+enter
++    }
++  };
++
++  if (comments.isLoading)
++    return (
++      <div
++        className={cn(
++          "flex min-h-[9rem] items-center justify-center rounded border border-dashed p-2",
++          className,
++        )}
++      >
++        <LoaderCircle className="mr-1.5 h-4 w-4 animate-spin text-muted-foreground" />
++        <span className="text-xs text-muted-foreground opacity-60">
++          Loading comments...
++        </span>
++      </div>
++    );
++
++  return (
++    <div className={cn(cardView && "rounded-md border", className)}>
++      {cardView && (
++        <div className="border-b px-3 py-1 text-sm font-medium">Comments</div>
++      )}
++      {hasWriteAccess && (
++        <div className="mx-2 mb-2 mt-2 rounded-md border">
++          <div className="border-b px-3 py-1 text-xs font-medium">
++            New comment
++          </div>
++          <Form {...form}>
++            <form className="relative">
++              <FormField
++                control={form.control}
++                name="content"
++                render={({ field }) => (
++                  <FormItem>
++                    <FormControl>
++                      <Textarea
++                        placeholder="Add comment..."
++                        {...field}
++                        onKeyDown={handleKeyDown} // cmd+enter to submit
++                        className="border-none text-xs focus:outline-none focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0 active:ring-0"
++                      />
++                    </FormControl>
++                    <FormMessage className="ml-2 text-xs" />
++                  </FormItem>
++                )}
++              />
++              <div className="flex justify-end">
++                <Button
++                  type="submit"
++                  size="xs"
++                  variant="outline"
++                  loading={createCommentMutation.isLoading}
++                  onClick={() => {
++                    form.handleSubmit(onSubmit)();
++                  }}
++                  className="absolute bottom-2 right-2"
++                >
++                  <ArrowUpToLine className="h-4 w-4" />
++                </Button>
++              </div>
++            </form>
++          </Form>
++        </div>
++      )}
++      <div className="mb-2">
++        {commentsWithFormattedTimestamp?.map((comment) => (
++          <div
++            key={comment.id}
++            className="group grid grid-cols-[auto,1fr] gap-1 p-2"
++          >
++            <Avatar className="mt-1 h-7 w-7">
++              <AvatarImage src={comment.authorUserImage ?? undefined} />
++              <AvatarFallback>
++                {comment.authorUserName
++                  ? comment.authorUserName
++                      .split(" ")
++                      .map((word) => word[0])
++                      .slice(0, 2)
++                      .concat("")
++                  : comment.authorUserId ?? "U"}
++              </AvatarFallback>
++            </Avatar>
++            <div className="relative rounded-md border">
++              <div className="flex h-8 flex-row items-center justify-between border-b px-3 py-1 text-xs font-medium">
++                <div>
++                  {comment.authorUserName ?? comment.authorUserId ?? "User"}
++                </div>
++                <div className="flex flex-row items-center gap-2">
++                  <div>{comment.timestamp}</div>
++                  <div className="hidden min-h-6 justify-end group-hover:flex">
++                    {session.data?.user?.id === comment.authorUserId && (
++                      <Button
++                        type="button"
++                        size="xs"
++                        variant="destructive-secondary"
++                        title="Delete comment"
++                        loading={deleteCommentMutation.isLoading}
++                        className="-mr-2"
++                        onClick={() => {
++                          if (
++                            confirm(
++                              "Are you sure you want to delete this comment?",
++                            )
++                          )
++                            deleteCommentMutation.mutateAsync({
++                              commentId: comment.id,
++                              projectId,
++                              objectId,
++                              objectType,
++                            });
++                        }}
++                      >
++                        <Trash className="h-3 w-3" />
++                      </Button>
++                    )}
++                  </div>
++                </div>
++              </div>
++              <div className="mx-3 my-3 select-text whitespace-pre-wrap text-xs">
++                {comment.content}
++              </div>
++            </div>
++          </div>
++        ))}
++      </div>
++    </div>
++  );
++}
+diff --git a/web/src/features/prompts/components/prompt-detail.tsx b/web/src/features/prompts/components/prompt-detail.tsx
+index b222f8c0..a438b53e 100644
+--- a/web/src/features/prompts/components/prompt-detail.tsx
++++ b/web/src/features/prompts/components/prompt-detail.tsx
+@@ -29,6 +29,7 @@ import {
+ import { usePostHogClientCapture } from "@/src/features/posthog-analytics/usePostHogClientCapture";
+ import { JumpToPlaygroundButton } from "@/src/ee/features/playground/page/components/JumpToPlaygroundButton";
+ import { ChatMlArraySchema } from "@/src/components/schemas/ChatMlSchema";
++import { CommentList } from "@/src/features/comments/CommentList";
+ 
+ export const PromptDetail = () => {
+   const projectId = useProjectIdFromURL();
+@@ -226,6 +227,13 @@ export const PromptDetail = () => {
+               </AccordionContent>
+             </AccordionItem>
+           </Accordion>
++          <CommentList
++            projectId={prompt.projectId}
++            objectId={prompt.id}
++            objectType="PROMPT"
++            className="mt-10"
++            cardView
++          />
+         </div>
+         <div className="flex h-screen flex-col">
+           <div className="text-m px-3 font-medium">
+diff --git a/web/src/features/rbac/constants/projectAccessRights.ts b/web/src/features/rbac/constants/projectAccessRights.ts
+index f3622e96..602ef6da 100644
+--- a/web/src/features/rbac/constants/projectAccessRights.ts
++++ b/web/src/features/rbac/constants/projectAccessRights.ts
+@@ -42,6 +42,9 @@ const projectScopes = [
+   "llmApiKeys:read",
+   "llmApiKeys:create",
+   "llmApiKeys:delete",
++
++  "comments:CUD",
++  "comments:read",
+ ] as const;
+ 
+ // type string of all Resource:Action, e.g. "members:read"
+@@ -78,6 +81,8 @@ export const projectRoleAccessRights: Record<Role, ProjectScope[]> = {
+     "llmApiKeys:create",
+     "llmApiKeys:delete",
+     "batchExport:create",
++    "comments:CUD",
++    "comments:read",
+   ],
+   ADMIN: [
+     "project:read",
+@@ -108,6 +113,8 @@ export const projectRoleAccessRights: Record<Role, ProjectScope[]> = {
+     "llmApiKeys:create",
+     "llmApiKeys:delete",
+     "batchExport:create",
++    "comments:CUD",
++    "comments:read",
+   ],
+   MEMBER: [
+     "project:read",
+@@ -129,6 +136,8 @@ export const projectRoleAccessRights: Record<Role, ProjectScope[]> = {
+     "evalJobExecution:read",
+     "llmApiKeys:read",
+     "batchExport:create",
++    "comments:CUD",
++    "comments:read",
+   ],
+   VIEWER: [
+     "project:read",
+@@ -138,6 +147,7 @@ export const projectRoleAccessRights: Record<Role, ProjectScope[]> = {
+     "evalJob:read",
+     "evalJobExecution:read",
+     "llmApiKeys:read",
++    "comments:read",
+   ],
+   NONE: [],
+ };
+diff --git a/web/src/features/scores/components/AnnotateDrawer.tsx b/web/src/features/scores/components/AnnotateDrawer.tsx
+index cfd642b7..84d5e24e 100644
+--- a/web/src/features/scores/components/AnnotateDrawer.tsx
++++ b/web/src/features/scores/components/AnnotateDrawer.tsx
+@@ -85,7 +85,9 @@ export function AnnotateDrawer({
+         ) : (
+           <Button
+             className="h-6 rounded-full px-3 text-xs"
+-            onClick={() =>
++            disabled={!hasAccess}
++            onClick={() => {
++              setIsDrawerOpen(true);
+               capture(
+                 Boolean(scores.length)
+                   ? "score:update_form_open"
+@@ -94,8 +96,8 @@ export function AnnotateDrawer({
+                   type: type,
+                   source: source,
+                 },
+-              )
+-            }
++              );
++            }}
+           >
+             Annotate
+           </Button>
+diff --git a/web/src/pages/api/trpc/[trpc].ts b/web/src/pages/api/trpc/[trpc].ts
+index fc1fc5fb..55002504 100644
+--- a/web/src/pages/api/trpc/[trpc].ts
++++ b/web/src/pages/api/trpc/[trpc].ts
+@@ -1,6 +1,5 @@
+ import { createNextApiHandler } from "@trpc/server/adapters/next";
+ 
+-import { env } from "@/src/env.mjs";
+ import { createTRPCContext } from "@/src/server/api/trpc";
+ import { appRouter } from "@/src/server/api/root";
+ 
+@@ -15,12 +14,7 @@ export default createNextApiHandler({
+   // batching: {
+   //   enabled: false,
+   // },
+-  onError:
+-    env.NODE_ENV === "development"
+-      ? ({ path, error }) => {
+-          console.error(
+-            `❌ tRPC failed on ${path ?? "<no-path>"}: ${error.message}`,
+-          );
+-        }
+-      : undefined,
++  onError: ({ path, error }) => {
++    console.error(`❌ tRPC failed on ${path ?? "<no-path>"}: ${error.message}`);
++  },
+ });
+diff --git a/web/src/server/api/root.ts b/web/src/server/api/root.ts
+index 11722b80..4ef8e3d8 100644
+--- a/web/src/server/api/root.ts
++++ b/web/src/server/api/root.ts
+@@ -23,6 +23,7 @@ import { credentialsRouter } from "@/src/features/auth-credentials/server/creden
+ import { batchExportRouter } from "@/src/server/api/routers/batchExport";
+ import { utilsRouter } from "@/src/server/api/routers/utilities";
+ import { uiCustomizationRouter } from "@/src/ee/features/ui-customization/uiCustomizationRouter";
++import { commentsRouter } from "@/src/server/api/routers/comments";
+ 
+ /**
+  * This is the primary router for your server.
+@@ -54,6 +55,7 @@ export const appRouter = createTRPCRouter({
+   credentials: credentialsRouter,
+   utilities: utilsRouter,
+   uiCustomization: uiCustomizationRouter,
++  comments: commentsRouter,
+ });
+ 
+ // export type definition of API
+diff --git a/web/src/server/api/routers/comments.ts b/web/src/server/api/routers/comments.ts
+new file mode 100644
+index 00000000..c0a96ee9
+--- /dev/null
++++ b/web/src/server/api/routers/comments.ts
+@@ -0,0 +1,262 @@
++import { z } from "zod";
++
++import { throwIfNoProjectAccess } from "@/src/features/rbac/utils/checkProjectAccess";
++import {
++  createTRPCRouter,
++  protectedProjectProcedure,
++} from "@/src/server/api/trpc";
++import { CommentObjectType } from "@langfuse/shared";
++import { Prisma, CreateCommentData, DeleteCommentData } from "@langfuse/shared";
++import { auditLog } from "@/src/features/audit-logs/auditLog";
++import { TRPCError } from "@trpc/server";
++
++const COMMENT_OBJECT_TYPE_TO_PRISMA_MODEL = {
++  [CommentObjectType.TRACE]: "trace",
++  [CommentObjectType.OBSERVATION]: "observation",
++  [CommentObjectType.SESSION]: "session",
++  [CommentObjectType.PROMPT]: "prompt",
++} as const;
++
++const validateCommentReferenceObject = async ({
++  ctx,
++  input,
++}: {
++  ctx: any;
++  input: z.infer<typeof CreateCommentData>;
++}): Promise<void> => {
++  const { objectId, objectType, projectId } = input;
++  const prismaModel = COMMENT_OBJECT_TYPE_TO_PRISMA_MODEL[objectType];
++
++  if (!prismaModel) {
++    throw new TRPCError({
++      code: "NOT_FOUND",
++      message: `No prisma model for object type ${objectType}`,
++    });
++  }
++
++  const model = ctx.prisma[prismaModel];
++  const object = await model.findFirst({
++    where: {
++      id: objectId,
++      projectId,
++    },
++  });
++
++  if (!object) {
++    throw new TRPCError({
++      code: "NOT_FOUND",
++      message: `No ${prismaModel} with id ${objectId} in project ${projectId}`,
++    });
++  }
++};
++
++export const commentsRouter = createTRPCRouter({
++  create: protectedProjectProcedure
++    .input(CreateCommentData)
++    .mutation(async ({ input, ctx }) => {
++      try {
++        throwIfNoProjectAccess({
++          session: ctx.session,
++          projectId: input.projectId,
++          scope: "comments:CUD",
++        });
++
++        validateCommentReferenceObject({ ctx, input });
++
++        const comment = await ctx.prisma.comment.create({
++          data: {
++            projectId: input.projectId,
++            content: input.content,
++            objectId: input.objectId,
++            objectType: input.objectType,
++            authorUserId: ctx.session.user.id,
++          },
++        });
++
++        await auditLog({
++          session: ctx.session,
++          resourceType: "comment",
++          resourceId: comment.id,
++          action: "create",
++          after: comment,
++        });
++
++        return comment;
++      } catch (error) {
++        console.error(error);
++        if (error instanceof TRPCError) {
++          throw error;
++        }
++        throw new TRPCError({
++          code: "INTERNAL_SERVER_ERROR",
++          message: "Creating comment failed.",
++        });
++      }
++    }),
++  delete: protectedProjectProcedure
++    .input(DeleteCommentData)
++    .mutation(async ({ input, ctx }) => {
++      try {
++        throwIfNoProjectAccess({
++          session: ctx.session,
++          projectId: input.projectId,
++          scope: "comments:CUD",
++        });
++
++        const comment = await ctx.prisma.comment.findFirst({
++          where: {
++            id: input.commentId,
++            projectId: input.projectId,
++            objectId: input.objectId,
++            objectType: input.objectType,
++          },
++        });
++        if (!comment) {
++          throw new TRPCError({
++            code: "NOT_FOUND",
++            message: "No comment with this id in this project.",
++          });
++        }
++
++        if (comment.authorUserId !== ctx.session.user.id) {
++          throw new TRPCError({
++            code: "NOT_FOUND",
++            message: "Comment author user id does not match provided user id",
++          });
++        }
++
++        await ctx.prisma.comment.delete({
++          where: {
++            id: comment.id,
++            projectId: comment.projectId,
++            objectId: comment.objectId,
++            objectType: comment.objectType,
++          },
++        });
++
++        await auditLog({
++          session: ctx.session,
++          resourceType: "comment",
++          resourceId: comment.id,
++          action: "delete",
++          before: comment,
++        });
++      } catch (error) {
++        console.error(error);
++        if (error instanceof TRPCError) {
++          throw error;
++        }
++        throw new TRPCError({
++          code: "INTERNAL_SERVER_ERROR",
++          message: "Deleting comment failed.",
++        });
++      }
++    }),
++  getByObjectId: protectedProjectProcedure
++    .input(
++      z.object({
++        projectId: z.string(),
++        objectId: z.string(),
++        objectType: z.nativeEnum(CommentObjectType),
++      }),
++    )
++    .query(async ({ input, ctx }) => {
++      try {
++        throwIfNoProjectAccess({
++          session: ctx.session,
++          projectId: input.projectId,
++          scope: "comments:read",
++        });
++
++        const comments = await ctx.prisma.$queryRaw<
++          Array<{
++            id: string;
++            content: string;
++            createdAt: Date;
++            authorUserId: string | null;
++            authorUserImage: string | null;
++            authorUserName: string | null;
++          }>
++        >(
++          Prisma.sql`
++        SELECT
++          c.id, 
++          c.content, 
++          c.created_at AS "createdAt",
++          u.id AS "authorUserId",
++          u.image AS "authorUserImage", 
++          u.name AS "authorUserName"
++        FROM comments c
++        LEFT JOIN users u ON u.id = c.author_user_id AND u.id in (SELECT user_id FROM organization_memberships WHERE org_id = ${ctx.session.orgId})
++        WHERE 
++          c."project_id" = ${input.projectId}
++          AND c."object_id" = ${input.objectId}
++          AND c."object_type"::text = ${input.objectType}
++        ORDER BY 
++          c.created_at DESC
++        `,
++        );
++
++        return comments;
++      } catch (error) {
++        console.error(error);
++        if (error instanceof TRPCError) {
++          throw error;
++        }
++        throw new TRPCError({
++          code: "INTERNAL_SERVER_ERROR",
++          message: "Fetching comments by object id failed.",
++        });
++      }
++    }),
++  getCountsByObjectIds: protectedProjectProcedure
++    .input(
++      z.object({
++        projectId: z.string(),
++        objectIds: z.array(z.string()),
++        objectType: z.nativeEnum(CommentObjectType),
++      }),
++    )
++    .query(async ({ input, ctx }) => {
++      try {
++        throwIfNoProjectAccess({
++          session: ctx.session,
++          projectId: input.projectId,
++          scope: "comments:read",
++        });
++
++        const comments = await ctx.prisma.comment.findMany({
++          select: {
++            id: true,
++            objectId: true,
++          },
++          where: {
++            projectId: input.projectId,
++            objectId: { in: input.objectIds },
++            objectType: input.objectType,
++          },
++        });
++        const commentCountByObject = new Map<string, number>();
++
++        comments.forEach(({ objectId }) => {
++          const prevCount = commentCountByObject.get(objectId);
++          if (!!prevCount) {
++            commentCountByObject.set(objectId, prevCount + 1);
++          } else {
++            commentCountByObject.set(objectId, 1);
++          }
++        });
++
++        return commentCountByObject;
++      } catch (error) {
++        console.error(error);
++        if (error instanceof TRPCError) {
++          throw error;
++        }
++        throw new TRPCError({
++          code: "INTERNAL_SERVER_ERROR",
++          message: "Fetching comment count failed.",
++        });
++      }
++    }),
++});
+diff --git a/web/src/utils/dates.ts b/web/src/utils/dates.ts
+index 5d9e22e2..b590373a 100644
+--- a/web/src/utils/dates.ts
++++ b/web/src/utils/dates.ts
+@@ -56,3 +56,24 @@ export const getTimezoneDetails = () => {
+   const utcDifference = -(new Date().getTimezoneOffset() / 60); // negative because TZ info is the opposite of UTC offset
+   return `${location} (UTC${utcDifference >= 0 ? "+" : ""}${utcDifference})`;
+ };
++
++export const getRelativeTimestampFromNow = (timestamp: Date): string => {
++  const diffInMs = new Date().getTime() - timestamp.getTime();
++  const diffInMinutes = diffInMs / (1000 * 60);
++  const diffInHours = diffInMinutes / 60;
++  const diffInDays = diffInHours / 24;
++
++  if (diffInHours < 1) {
++    return `${Math.floor(diffInMinutes)} minutes ago`;
++  } else if (diffInHours < 24) {
++    return `${Math.floor(diffInHours)} hours ago`;
++  } else if (diffInDays < 7) {
++    return `${Math.floor(diffInDays)} days ago`;
++  } else {
++    return timestamp.toLocaleDateString("en-US", {
++      year: "2-digit",
++      month: "numeric",
++      day: "numeric",
++    });
++  }
++};

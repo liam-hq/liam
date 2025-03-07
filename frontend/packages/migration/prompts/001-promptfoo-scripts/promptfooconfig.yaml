@@ -1,0 +1,282 @@
+# yaml-language-server: $schema=https://promptfoo.dev/config-schema.json
+description: "My eval"
+
+prompts:
+  - prompt.yaml
+providers:
+  - id: openai:gpt-4o-mini
+    config:
+      response_format:
+        type: json_schema
+        json_schema:
+          name: migration_review
+          strict: true
+          schema:
+            type: object
+            properties:
+              review:
+                type: string
+                description: "The migration review report"
+              issues:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    kind:
+                      type: string
+                      enum:
+                        - Migration Safety
+                        - Data Integrity
+                        - Performance Impact
+                        - Project Rules Consistency
+                        - Security or Scalability
+                    severity:
+                      type: string
+                      enum: ["high", "medium", "low"]
+                    description:
+                      type: string
+                    suggestion:
+                      type: string
+                  required: ["kind", "severity", "description", "suggestion"]
+                  additionalProperties: false
+              scores:
+                type: array
+                description: "The scores for each kind. The length of the array is the same as the number of kinds."
+                items:
+                  type: object
+                  properties:
+                    kind:
+                      type: string
+                      enum:
+                        - Migration Safety
+                        - Data Integrity
+                        - Performance Impact
+                        - Project Rules Consistency
+                        - Security or Scalability
+                    value:
+                      type: number
+                      description: "The score for kind. It ranges from 0 to 10. 10 is the highest score."
+                    reason:
+                      type: string
+                      description: "The reason for the score"
+                  required: ["kind", "value", "reason"]
+                  additionalProperties: false
+              summary:
+                type: string
+                description: "A brief summary of the review"
+            required: ["review", "issues", "scores", "summary"]
+            additionalProperties: false
+
+defaultTest:
+  options:
+    provider: openai:gpt-4o-mini
+  assert:
+    # - type: llm-rubric
+    #   value: 'The report evaluates the **risk of data loss**.'
+    - type: cost
+      threshold: 0.02
+
+    # use side-effect...
+    - type: python
+      value: |
+        import os
+
+        def write_output_file(context, output):
+            print(context)
+            number = context["vars"]["number"]
+            github_workspace = os.getenv("GITHUB_WORKSPACE")
+            if github_workspace:
+                output_dir = os.path.join(github_workspace, f"frontend/packages/migration/prompts/001-promptfoo-scripts/test-files/langfuse/langfuse/pr-{number}")
+            else:
+                output_dir = f"test-files/langfuse/langfuse/pr-{number}"
+            outfile = os.path.join(output_dir, "output.txt")
+
+            with open(outfile, "w", encoding="utf-8") as file:
+                import json
+                if isinstance(output, dict):
+                    # for json_schema, the output is a dict
+                    file.write(json.dumps(output, indent=4))
+                else:
+                    # for other providers, the output is a string
+                    file.write(output)
+            return {
+                "pass": True,
+                "score": 1.0,
+                "reason": number,
+            }
+
+        return write_output_file(context, output)
+
+# TODO: ValidJSON test.
+#    - type: is-json
+#      metric: ValidJSON
+tests:
+  - vars:
+      number: '5672'
+      diffs: 'file://test-files/langfuse/langfuse/pr-5672/diffs.txt'
+      before_schema: 'file://test-files/langfuse/langfuse/pr-5672/before_schema.txt'
+
+  - vars:
+      number: '5656'
+      diffs: 'file://test-files/langfuse/langfuse/pr-5656/diffs.txt'
+      before_schema: 'file://test-files/langfuse/langfuse/pr-5656/before_schema.txt'
+
+  - vars:
+      number: '5488'
+      diffs: 'file://test-files/langfuse/langfuse/pr-5488/diffs.txt'
+      before_schema: 'file://test-files/langfuse/langfuse/pr-5488/before_schema.txt'
+
+  - vars:
+      number: '5472'
+      diffs: 'file://test-files/langfuse/langfuse/pr-5472/diffs.txt'
+      before_schema: 'file://test-files/langfuse/langfuse/pr-5472/before_schema.txt'
+
+  - vars:
+      number: '5471'
+      diffs: 'file://test-files/langfuse/langfuse/pr-5471/diffs.txt'
+      before_schema: 'file://test-files/langfuse/langfuse/pr-5471/before_schema.txt'
+
+  - vars:
+      number: '5381'
+      diffs: 'file://test-files/langfuse/langfuse/pr-5381/diffs.txt'
+      before_schema: 'file://test-files/langfuse/langfuse/pr-5381/before_schema.txt'
+
+  - vars:
+      number: '5197'
+      diffs: 'file://test-files/langfuse/langfuse/pr-5197/diffs.txt'
+      before_schema: 'file://test-files/langfuse/langfuse/pr-5197/before_schema.txt'
+
+  - vars:
+      number: '5178'
+      diffs: 'file://test-files/langfuse/langfuse/pr-5178/diffs.txt'
+      before_schema: 'file://test-files/langfuse/langfuse/pr-5178/before_schema.txt'
+
+  - vars:
+      number: '5167'
+      diffs: 'file://test-files/langfuse/langfuse/pr-5167/diffs.txt'
+      before_schema: 'file://test-files/langfuse/langfuse/pr-5167/before_schema.txt'
+  
+  - vars:
+      number: '5075'
+      diffs: 'file://test-files/langfuse/langfuse/pr-5075/diffs.txt'
+      before_schema: 'file://test-files/langfuse/langfuse/pr-5075/before_schema.txt'
+  
+  - vars:
+      number: '4946'
+      diffs: 'file://test-files/langfuse/langfuse/pr-4946/diffs.txt'
+      before_schema: 'file://test-files/langfuse/langfuse/pr-4946/before_schema.txt'
+  
+  - vars:
+      number: '4943'
+      diffs: 'file://test-files/langfuse/langfuse/pr-4943/diffs.txt'
+      before_schema: 'file://test-files/langfuse/langfuse/pr-4943/before_schema.txt'
+  
+  - vars:
+      number: '4612'
+      diffs: 'file://test-files/langfuse/langfuse/pr-4612/diffs.txt'
+      before_schema: 'file://test-files/langfuse/langfuse/pr-4612/before_schema.txt'
+  
+  - vars:
+      number: '4399'
+      diffs: 'file://test-files/langfuse/langfuse/pr-4399/diffs.txt'
+      before_schema: 'file://test-files/langfuse/langfuse/pr-4399/before_schema.txt'
+  
+  - vars:
+      number: '4086'
+      diffs: 'file://test-files/langfuse/langfuse/pr-4086/diffs.txt'
+      before_schema: 'file://test-files/langfuse/langfuse/pr-4086/before_schema.txt'
+  
+  - vars:
+      number: '3989'
+      diffs: 'file://test-files/langfuse/langfuse/pr-3989/diffs.txt'
+      before_schema: 'file://test-files/langfuse/langfuse/pr-3989/before_schema.txt'
+  
+  - vars:
+      number: '4094'
+      diffs: 'file://test-files/langfuse/langfuse/pr-4094/diffs.txt'
+      before_schema: 'file://test-files/langfuse/langfuse/pr-4094/before_schema.txt'
+  
+  - vars:
+      number: '4031'
+      diffs: 'file://test-files/langfuse/langfuse/pr-4031/diffs.txt'
+      before_schema: 'file://test-files/langfuse/langfuse/pr-4031/before_schema.txt'
+  
+  - vars:
+      number: '3955'
+      diffs: 'file://test-files/langfuse/langfuse/pr-3955/diffs.txt'
+      before_schema: 'file://test-files/langfuse/langfuse/pr-3955/before_schema.txt'
+  
+  - vars:
+      number: '3895'
+      diffs: 'file://test-files/langfuse/langfuse/pr-3895/diffs.txt'
+      before_schema: 'file://test-files/langfuse/langfuse/pr-3895/before_schema.txt'
+  
+  - vars:
+      number: '3811'
+      diffs: 'file://test-files/langfuse/langfuse/pr-3811/diffs.txt'
+      before_schema: 'file://test-files/langfuse/langfuse/pr-3811/before_schema.txt'
+  
+  - vars:
+      number: '3759'
+      diffs: 'file://test-files/langfuse/langfuse/pr-3759/diffs.txt'
+      before_schema: 'file://test-files/langfuse/langfuse/pr-3759/before_schema.txt'
+  
+  - vars:
+      number: '3711'
+      diffs: 'file://test-files/langfuse/langfuse/pr-3711/diffs.txt'
+      before_schema: 'file://test-files/langfuse/langfuse/pr-3711/before_schema.txt'
+  
+  - vars:
+      number: '3499'
+      diffs: 'file://test-files/langfuse/langfuse/pr-3499/diffs.txt'
+      before_schema: 'file://test-files/langfuse/langfuse/pr-3499/before_schema.txt'
+  
+  - vars:
+      number: '3651'
+      diffs: 'file://test-files/langfuse/langfuse/pr-3651/diffs.txt'
+      before_schema: 'file://test-files/langfuse/langfuse/pr-3651/before_schema.txt'
+  
+  - vars:
+      number: '3377'
+      diffs: 'file://test-files/langfuse/langfuse/pr-3377/diffs.txt'
+      before_schema: 'file://test-files/langfuse/langfuse/pr-3377/before_schema.txt'
+  
+  - vars:
+      number: '3356'
+      diffs: 'file://test-files/langfuse/langfuse/pr-3356/diffs.txt'
+      before_schema: 'file://test-files/langfuse/langfuse/pr-3356/before_schema.txt'
+  
+  - vars:
+      number: '2971'
+      diffs: 'file://test-files/langfuse/langfuse/pr-2971/diffs.txt'
+      before_schema: 'file://test-files/langfuse/langfuse/pr-2971/before_schema.txt'
+  
+  - vars:
+      number: '2942'
+      diffs: 'file://test-files/langfuse/langfuse/pr-2942/diffs.txt'
+      before_schema: 'file://test-files/langfuse/langfuse/pr-2942/before_schema.txt'
+  
+  - vars:
+      number: '2083'
+      diffs: 'file://test-files/langfuse/langfuse/pr-2083/diffs.txt'
+      before_schema: 'file://test-files/langfuse/langfuse/pr-2083/before_schema.txt'
+  
+  - vars:
+      number: '2750'
+      diffs: 'file://test-files/langfuse/langfuse/pr-2750/diffs.txt'
+      before_schema: 'file://test-files/langfuse/langfuse/pr-2750/before_schema.txt'
+  
+  - vars:
+      number: '2665'
+      diffs: 'file://test-files/langfuse/langfuse/pr-2665/diffs.txt'
+      before_schema: 'file://test-files/langfuse/langfuse/pr-2665/before_schema.txt'
+  
+  - vars:
+      number: '2651'
+      diffs: 'file://test-files/langfuse/langfuse/pr-2651/diffs.txt'
+      before_schema: 'file://test-files/langfuse/langfuse/pr-2651/before_schema.txt'
+  
+  - vars:
+      number: '2655'
+      diffs: 'file://test-files/langfuse/langfuse/pr-2655/diffs.txt'
+      before_schema: 'file://test-files/langfuse/langfuse/pr-2655/before_schema.txt'

@@ -1,0 +1,54 @@
+Date:   Wed Jul 17 13:53:29 2024 +0200
+
+    feat: send prisma stats to sentry (#2655)
+
+diff --git a/packages/shared/prisma/schema.prisma b/packages/shared/prisma/schema.prisma
+index d58677b7..21680a0a 100644
+--- a/packages/shared/prisma/schema.prisma
++++ b/packages/shared/prisma/schema.prisma
+@@ -3,7 +3,7 @@
+ 
+ generator client {
+     provider        = "prisma-client-js"
+-    previewFeatures = ["tracing", "views", "relationJoins"]
++    previewFeatures = ["tracing", "views", "relationJoins", "metrics"]
+ }
+ 
+ datasource db {
+diff --git a/web/src/pages/api/public/ingestion.ts b/web/src/pages/api/public/ingestion.ts
+index b42e4cb3..bc05609c 100644
+--- a/web/src/pages/api/public/ingestion.ts
++++ b/web/src/pages/api/public/ingestion.ts
+@@ -84,6 +84,8 @@ export default async function handler(
+       parsedSchema.success ? parsedSchema.data.batch.length : 0,
+     );
+ 
++    await gaugePrismaStats();
++
+     if (!parsedSchema.success) {
+       console.log("Invalid request data", parsedSchema.error);
+       return res.status(400).json({
+@@ -294,6 +296,7 @@ const handleSingleEvent = async (
+     const { output, ...rest } = restEvent;
+     restEvent = rest;
+   }
++
+   console.log(
+     `handling single event ${event.id} of type ${event.type}:  ${JSON.stringify({ body: restEvent })}`,
+   );
+@@ -549,3 +552,15 @@ export const sendToWorkerIfEnvironmentConfigured = async (
+     console.error("Error sending events to worker", error);
+   }
+ };
++
++const gaugePrismaStats = async () => {
++  // execute with a 50% probability
++  if (Math.random() > 0.5) {
++    return;
++  }
++  const metrics = await prisma.$metrics.json();
++
++  metrics.gauges.forEach((gauge) => {
++    Sentry.metrics.gauge(gauge.key, gauge.value, gauge.labels);
++  });
++};

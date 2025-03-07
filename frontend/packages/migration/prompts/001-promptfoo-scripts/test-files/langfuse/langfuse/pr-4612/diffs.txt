@@ -1,0 +1,186 @@
+Date:   Fri Dec 6 14:02:54 2024 +0100
+
+    chore: drop FK v3 constraints (#4612)
+    
+    * chore: drop FK v3 constraints
+    
+    * make sleep great again
+    
+    * make sleep great again
+    
+    * make sleep great again
+    
+    * make sleep great again
+    
+    ---------
+    
+    Co-authored-by: steffen911 <steffen@langfuse.com>
+
+diff --git a/packages/shared/prisma/migrations/20241206115829_remove_trace_score_observation_constraints/migration.sql b/packages/shared/prisma/migrations/20241206115829_remove_trace_score_observation_constraints/migration.sql
+new file mode 100644
+index 00000000..4a551beb
+--- /dev/null
++++ b/packages/shared/prisma/migrations/20241206115829_remove_trace_score_observation_constraints/migration.sql
+@@ -0,0 +1,5 @@
++-- DropForeignKey
++ALTER TABLE "job_executions" DROP CONSTRAINT "job_executions_job_output_score_id_fkey";
++
++-- DropForeignKey
++ALTER TABLE "traces" DROP CONSTRAINT "traces_session_id_project_id_fkey";
+diff --git a/packages/shared/prisma/schema.prisma b/packages/shared/prisma/schema.prisma
+index 7a5ce8b6..8333d583 100644
+--- a/packages/shared/prisma/schema.prisma
++++ b/packages/shared/prisma/schema.prisma
+@@ -469,25 +469,24 @@ enum ObservationLevel {
+ }
+ 
+ model Score {
+-  id            String         @id @default(cuid())
+-  timestamp     DateTime       @default(now())
+-  projectId     String         @map("project_id")
+-  project       Project        @relation(fields: [projectId], references: [id], onDelete: Cascade)
++  id            String        @id @default(cuid())
++  timestamp     DateTime      @default(now())
++  projectId     String        @map("project_id")
++  project       Project       @relation(fields: [projectId], references: [id], onDelete: Cascade)
+   name          String
+   value         Float? // always defined if data type is NUMERIC or BOOLEAN, optional for CATEGORICAL
+   source        ScoreSource
+-  authorUserId  String?        @map("author_user_id")
++  authorUserId  String?       @map("author_user_id")
+   comment       String?
+-  traceId       String         @map("trace_id")
+-  observationId String?        @map("observation_id")
+-  configId      String?        @map("config_id")
+-  stringValue   String?        @map("string_value") // always defined if data type is CATEGORICAL or BOOLEAN, null for NUMERIC
+-  queueId       String?        @map("queue_id")
+-  createdAt     DateTime       @default(now()) @map("created_at")
+-  updatedAt     DateTime       @default(now()) @updatedAt @map("updated_at")
+-  dataType      ScoreDataType  @default(NUMERIC) @map("data_type")
+-  JobExecution  JobExecution[]
+-  scoreConfig   ScoreConfig?   @relation(fields: [configId], references: [id], onDelete: SetNull)
++  traceId       String        @map("trace_id")
++  observationId String?       @map("observation_id")
++  configId      String?       @map("config_id")
++  stringValue   String?       @map("string_value") // always defined if data type is CATEGORICAL or BOOLEAN, null for NUMERIC
++  queueId       String?       @map("queue_id")
++  createdAt     DateTime      @default(now()) @map("created_at")
++  updatedAt     DateTime      @default(now()) @updatedAt @map("updated_at")
++  dataType      ScoreDataType @default(NUMERIC) @map("data_type")
++  scoreConfig   ScoreConfig?  @relation(fields: [configId], references: [id], onDelete: SetNull)
+ 
+   @@unique([id, projectId]) // used for upserts via prisma
+   @@index(timestamp)
+@@ -904,7 +903,6 @@ model JobExecution {
+   jobInputDatasetItemId String? @map("job_input_dataset_item_id") // no fk constraint - job execution sensible standalone
+ 
+   jobOutputScoreId String? @map("job_output_score_id")
+-  score            Score?  @relation(fields: [jobOutputScoreId], references: [id], onDelete: SetNull) // job remains when scores are deleted
+ 
+   @@index([projectId, status])
+   @@index([projectId, id])
+diff --git a/packages/shared/src/server/repositories/scores.ts b/packages/shared/src/server/repositories/scores.ts
+index 74278c9f..cca52dac 100644
+--- a/packages/shared/src/server/repositories/scores.ts
++++ b/packages/shared/src/server/repositories/scores.ts
+@@ -93,6 +93,32 @@ export const getScoreById = async (
+   return rows.map(convertToScore).shift();
+ };
+ 
++export const getScoresByIds = async (
++  projectId: string,
++  scoreId: string[],
++  source?: ScoreSource,
++) => {
++  const query = `
++    SELECT *
++    FROM scores s
++    WHERE s.project_id = {projectId: String}
++    AND s.id IN ({scoreId: Array(String)})
++    ${source ? `AND s.source = {source: String}` : ""}
++    ORDER BY s.event_ts DESC
++    LIMIT 1 BY s.id, s.project_id
++  `;
++
++  const rows = await queryClickhouse<ScoreRecordReadType>({
++    query,
++    params: {
++      projectId,
++      scoreId,
++      ...(source !== undefined ? { source } : {}),
++    },
++  });
++  return rows.map(convertToScore);
++};
++
+ /**
+  * Accepts a score in a Clickhouse-ready format.
+  * id, project_id, name, and timestamp must always be provided.
+diff --git a/web/src/ee/features/evals/server/router.ts b/web/src/ee/features/evals/server/router.ts
+index 616d368d..87c0b736 100644
+--- a/web/src/ee/features/evals/server/router.ts
++++ b/web/src/ee/features/evals/server/router.ts
+@@ -21,6 +21,7 @@ import { decrypt } from "@langfuse/shared/encryption";
+ import { throwIfNoEntitlement } from "@/src/features/entitlements/server/hasEntitlement";
+ import {
+   fetchLLMCompletion,
++  getScoresByIds,
+   LLMApiKeySchema,
+   logger,
+ } from "@langfuse/shared/src/server";
+@@ -28,6 +29,8 @@ import { TRPCError } from "@trpc/server";
+ import { EvalReferencedEvaluators } from "@/src/ee/features/evals/types";
+ import { EvaluatorStatus } from "../types";
+ import { traceException } from "@langfuse/shared/src/server";
++import { isNotNullOrUndefined } from "@/src/utils/types";
++import { measureAndReturnApi } from "@/src/server/utils/checkClickhouseAccess";
+ 
+ const APIEvaluatorSchema = z.object({
+   id: z.string(),
+@@ -695,7 +698,7 @@ export const evalRouter = createTRPCRouter({
+           endTime: true,
+           error: true,
+           jobInputTraceId: true,
+-          score: true,
++          jobOutputScoreId: true,
+           jobConfiguration: {
+             select: {
+               evalTemplateId: true,
+@@ -720,8 +723,36 @@ export const evalRouter = createTRPCRouter({
+             : undefined),
+         },
+       });
++
++      const scoreIds = jobExecutions
++        .map((je) => je.jobOutputScoreId)
++        .filter(isNotNullOrUndefined);
++
++      const scores =
++        scoreIds.length > 0
++          ? await measureAndReturnApi({
++              input: { projectId: input.projectId, queryClickhouse: false },
++              operation: "get-scores-eval-log",
++              user: ctx.session.user,
++              pgExecution: async () => {
++                return await ctx.prisma.score.findMany({
++                  where: {
++                    projectId: input.projectId,
++                    id: { in: scoreIds },
++                  },
++                });
++              },
++              clickhouseExecution: async () => {
++                return await getScoresByIds(input.projectId, scoreIds);
++              },
++            })
++          : [];
++
+       return {
+-        data: jobExecutions,
++        data: jobExecutions.map((je) => ({
++          ...je,
++          score: scores.find((s) => s?.id === je.jobOutputScoreId),
++        })),
+         totalCount: count,
+       };
+     }),

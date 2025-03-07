@@ -1,0 +1,1242 @@
+Date:   Wed Jul 24 11:22:13 2024 +0200
+
+    refactor(api): dataset-related ids unique on project level (#2665)
+
+diff --git a/fern/apis/server/definition/dataset-items.yml b/fern/apis/server/definition/dataset-items.yml
+index 88abdf86..8820f922 100644
+--- a/fern/apis/server/definition/dataset-items.yml
++++ b/fern/apis/server/definition/dataset-items.yml
+@@ -49,7 +49,7 @@ types:
+       sourceObservationId: optional<string>
+       id:
+         type: optional<string>
+-        docs: Dataset items are upserted on their id. Id needs to be globally unique and cannot be reused across datasets.
++        docs: Dataset items are upserted on their id. Id needs to be unique (project-level) and cannot be reused across datasets.
+       status:
+         type: optional<commons.DatasetStatus>
+         docs: Defaults to ACTIVE for newly created items
+diff --git a/packages/shared/prisma/generated/types.ts b/packages/shared/prisma/generated/types.ts
+index 90cbc16b..37b2b143 100644
+--- a/packages/shared/prisma/generated/types.ts
++++ b/packages/shared/prisma/generated/types.ts
+@@ -121,15 +121,16 @@ export type CronJobs = {
+ };
+ export type Dataset = {
+     id: string;
++    project_id: string;
+     name: string;
+     description: string | null;
+     metadata: unknown | null;
+-    project_id: string;
+     created_at: Generated<Timestamp>;
+     updated_at: Generated<Timestamp>;
+ };
+ export type DatasetItem = {
+     id: string;
++    project_id: string;
+     status: Generated<DatasetStatus>;
+     input: unknown | null;
+     expected_output: unknown | null;
+@@ -142,6 +143,7 @@ export type DatasetItem = {
+ };
+ export type DatasetRunItems = {
+     id: string;
++    project_id: string;
+     dataset_run_id: string;
+     dataset_item_id: string;
+     trace_id: string;
+@@ -151,6 +153,7 @@ export type DatasetRunItems = {
+ };
+ export type DatasetRuns = {
+     id: string;
++    project_id: string;
+     name: string;
+     description: string | null;
+     metadata: unknown | null;
+diff --git a/packages/shared/prisma/migrations/20240718004923_datasets_tables_add_projectid_composite_key/migration.sql b/packages/shared/prisma/migrations/20240718004923_datasets_tables_add_projectid_composite_key/migration.sql
+new file mode 100644
+index 00000000..bb38ff75
+--- /dev/null
++++ b/packages/shared/prisma/migrations/20240718004923_datasets_tables_add_projectid_composite_key/migration.sql
+@@ -0,0 +1,68 @@
++-- Add project_id to datasets, dataset_items, dataset_runs, dataset_run_items
++ALTER TABLE "dataset_items" 
++ADD COLUMN "project_id" TEXT;
++
++ALTER TABLE "dataset_run_items" 
++ADD COLUMN "project_id" TEXT;
++
++ALTER TABLE "dataset_runs" 
++ADD COLUMN "project_id" TEXT;
++
++-- Backfill project_id for dataset_items
++UPDATE dataset_items
++SET project_id = datasets.project_id
++FROM datasets
++WHERE dataset_items.dataset_id = datasets.id;
++
++-- Backfill project_id for dataset_runs
++UPDATE dataset_runs
++SET project_id = datasets.project_id
++FROM datasets
++WHERE dataset_runs.dataset_id = datasets.id;
++
++-- Backfill project_id for dataset_run_items
++UPDATE dataset_run_items
++SET project_id = dataset_runs.project_id
++FROM dataset_runs
++WHERE dataset_run_items.dataset_run_id = dataset_runs.id;
++
++-- Drop the old foreign keys
++ALTER TABLE "dataset_run_items" 
++DROP CONSTRAINT "dataset_run_items_dataset_item_id_fkey",
++DROP CONSTRAINT "dataset_run_items_dataset_run_id_fkey";
++
++ALTER TABLE "dataset_items" 
++DROP CONSTRAINT "dataset_items_dataset_id_fkey";
++
++ALTER TABLE "dataset_runs" 
++DROP CONSTRAINT "dataset_runs_dataset_id_fkey";
++
++-- Now alter the columns to NOT NULL and update primary keys
++ALTER TABLE "datasets" 
++DROP CONSTRAINT "datasets_pkey",
++ADD CONSTRAINT "datasets_pkey" PRIMARY KEY ("id", "project_id");
++
++ALTER TABLE "dataset_items" 
++ALTER COLUMN "project_id" SET NOT NULL,
++DROP CONSTRAINT "dataset_items_pkey",
++ADD CONSTRAINT "dataset_items_pkey" PRIMARY KEY ("id", "project_id");
++
++ALTER TABLE "dataset_runs" 
++ALTER COLUMN "project_id" SET NOT NULL,
++DROP CONSTRAINT "dataset_runs_pkey",
++ADD CONSTRAINT "dataset_runs_pkey" PRIMARY KEY ("id", "project_id");
++
++ALTER TABLE "dataset_run_items" 
++ALTER COLUMN "project_id" SET NOT NULL,
++DROP CONSTRAINT "dataset_run_items_pkey",
++ADD CONSTRAINT "dataset_run_items_pkey" PRIMARY KEY ("id", "project_id");
++
++
++-- Add new foreign keys
++ALTER TABLE "dataset_items" ADD CONSTRAINT "dataset_items_dataset_id_project_id_fkey" FOREIGN KEY ("dataset_id", "project_id") REFERENCES "datasets"("id", "project_id") ON DELETE CASCADE ON UPDATE CASCADE;
++
++ALTER TABLE "dataset_runs" ADD CONSTRAINT "dataset_runs_dataset_id_project_id_fkey" FOREIGN KEY ("dataset_id", "project_id") REFERENCES "datasets"("id", "project_id") ON DELETE CASCADE ON UPDATE CASCADE;
++
++ALTER TABLE "dataset_run_items" ADD CONSTRAINT "dataset_run_items_dataset_run_id_project_id_fkey" FOREIGN KEY ("dataset_run_id", "project_id") REFERENCES "dataset_runs"("id", "project_id") ON DELETE CASCADE ON UPDATE CASCADE;
++
++ALTER TABLE "dataset_run_items" ADD CONSTRAINT "dataset_run_items_dataset_item_id_project_id_fkey" FOREIGN KEY ("dataset_item_id", "project_id") REFERENCES "dataset_items"("id", "project_id") ON DELETE CASCADE ON UPDATE CASCADE;
+diff --git a/packages/shared/prisma/migrations/20240718011733_dataset_runs_add_unique_dataset_id_project_id_name copy/migration.sql b/packages/shared/prisma/migrations/20240718011733_dataset_runs_add_unique_dataset_id_project_id_name copy/migration.sql
+new file mode 100644
+index 00000000..e18b61fc
+--- /dev/null
++++ b/packages/shared/prisma/migrations/20240718011733_dataset_runs_add_unique_dataset_id_project_id_name copy/migration.sql	
+@@ -0,0 +1,2 @@
++-- CreateIndex
++CREATE UNIQUE INDEX CONCURRENTLY "dataset_runs_dataset_id_project_id_name_key" ON "dataset_runs"("dataset_id", "project_id", "name");
+diff --git a/packages/shared/prisma/migrations/20240718011734_dataset_runs_drop_unique_dataset_id_name/migration.sql b/packages/shared/prisma/migrations/20240718011734_dataset_runs_drop_unique_dataset_id_name/migration.sql
+new file mode 100644
+index 00000000..92bafaf7
+--- /dev/null
++++ b/packages/shared/prisma/migrations/20240718011734_dataset_runs_drop_unique_dataset_id_name/migration.sql
+@@ -0,0 +1,2 @@
++-- DropIndex
++DROP INDEX CONCURRENTLY "dataset_runs_dataset_id_name_key";
+\ No newline at end of file
+diff --git a/packages/shared/prisma/schema.prisma b/packages/shared/prisma/schema.prisma
+index b83e13fa..89a72eae 100644
+--- a/packages/shared/prisma/schema.prisma
++++ b/packages/shared/prisma/schema.prisma
+@@ -488,17 +488,18 @@ model CronJobs {
+ }
+ 
+ model Dataset {
+-    id           String        @id @default(cuid())
++    id           String        @default(cuid())
++    projectId    String        @map("project_id")
+     name         String
+     description  String?
+     metadata     Json?
+-    projectId    String        @map("project_id")
+     project      Project       @relation(fields: [projectId], references: [id], onDelete: Cascade)
+     createdAt    DateTime      @default(now()) @map("created_at")
+     updatedAt    DateTime      @default(now()) @updatedAt @map("updated_at")
+     datasetItems DatasetItem[]
+     datasetRuns  DatasetRuns[]
+ 
++    @@id([id, projectId])
+     @@unique([projectId, name])
+     @@index([projectId], type: Hash)
+     @@index([createdAt])
+@@ -507,7 +508,8 @@ model Dataset {
+ }
+ 
+ model DatasetItem {
+-    id                  String            @id @default(cuid())
++    id                  String            @default(cuid())
++    projectId           String            @map("project_id")
+     status              DatasetStatus     @default(ACTIVE)
+     input               Json?
+     expectedOutput      Json?             @map("expected_output")
+@@ -517,11 +519,12 @@ model DatasetItem {
+     sourceObservationId String?           @map("source_observation_id")
+     sourceObservation   Observation?      @relation(fields: [sourceObservationId], references: [id], onDelete: SetNull)
+     datasetId           String            @map("dataset_id")
+-    dataset             Dataset           @relation(fields: [datasetId], references: [id], onDelete: Cascade)
++    dataset             Dataset           @relation(fields: [datasetId, projectId], references: [id, projectId], onDelete: Cascade)
+     createdAt           DateTime          @default(now()) @map("created_at")
+     updatedAt           DateTime          @default(now()) @updatedAt @map("updated_at")
+     datasetRunItems     DatasetRunItems[]
+ 
++    @@id([id, projectId])
+     @@index([sourceTraceId], type: Hash)
+     @@index([sourceObservationId], type: Hash)
+     @@index([datasetId], type: Hash)
+@@ -536,17 +539,19 @@ enum DatasetStatus {
+ }
+ 
+ model DatasetRuns {
+-    id              String            @id @default(cuid())
++    id              String            @default(cuid())
++    projectId       String            @map("project_id")
+     name            String
+     description     String?
+     metadata        Json?
+     datasetId       String            @map("dataset_id")
+-    dataset         Dataset           @relation(fields: [datasetId], references: [id], onDelete: Cascade)
++    dataset         Dataset           @relation(fields: [datasetId, projectId], references: [id, projectId], onDelete: Cascade)
+     createdAt       DateTime          @default(now()) @map("created_at")
+     updatedAt       DateTime          @default(now()) @updatedAt @map("updated_at")
+     datasetRunItems DatasetRunItems[]
+ 
+-    @@unique([datasetId, name])
++    @@id([id, projectId])
++    @@unique([datasetId, projectId, name])
+     @@index([datasetId], type: Hash)
+     @@index([createdAt])
+     @@index([updatedAt])
+@@ -554,16 +559,18 @@ model DatasetRuns {
+ }
+ 
+ model DatasetRunItems {
+-    id            String      @id @default(cuid())
++    id            String      @default(cuid())
++    projectId     String      @map("project_id")
+     datasetRunId  String      @map("dataset_run_id")
+-    datasetRun    DatasetRuns @relation(fields: [datasetRunId], references: [id], onDelete: Cascade)
++    datasetRun    DatasetRuns @relation(fields: [datasetRunId, projectId], references: [id, projectId], onDelete: Cascade)
+     datasetItemId String      @map("dataset_item_id")
+-    datasetItem   DatasetItem @relation(fields: [datasetItemId], references: [id], onDelete: Cascade)
++    datasetItem   DatasetItem @relation(fields: [datasetItemId, projectId], references: [id, projectId], onDelete: Cascade)
+     traceId       String      @map("trace_id")
+     observationId String?     @map("observation_id")
+     createdAt     DateTime    @default(now()) @map("created_at")
+     updatedAt     DateTime    @default(now()) @updatedAt @map("updated_at")
+ 
++    @@id([id, projectId])
+     @@index([datasetRunId], type: Hash)
+     @@index([datasetItemId], type: Hash)
+     @@index([observationId], type: Hash)
+diff --git a/packages/shared/prisma/seed.ts b/packages/shared/prisma/seed.ts
+index c0998971..2b4e64a4 100644
+--- a/packages/shared/prisma/seed.ts
++++ b/packages/shared/prisma/seed.ts
+@@ -286,6 +286,7 @@ async function main() {
+             : undefined;
+         const datasetItem = await prisma.datasetItem.create({
+           data: {
++            projectId: project2.id,
+             datasetId: dataset.id,
+             sourceTraceId: sourceObservation?.traceId,
+             sourceObservationId:
+@@ -312,6 +313,7 @@ async function main() {
+       for (let datasetRunNumber = 0; datasetRunNumber < 5; datasetRunNumber++) {
+         const datasetRun = await prisma.datasetRuns.create({
+           data: {
++            projectId: project2.id,
+             name: `demo-dataset-run-${datasetRunNumber}`,
+             description: Math.random() > 0.5 ? "Dataset run description" : "",
+             datasetId: dataset.id,
+@@ -336,6 +338,7 @@ async function main() {
+ 
+           await prisma.datasetRunItems.create({
+             data: {
++              projectId: project2.id,
+               datasetItemId,
+               traceId: observation.traceId as string,
+               observationId: Math.random() > 0.5 ? observation.id : undefined,
+diff --git a/packages/shared/src/index.ts b/packages/shared/src/index.ts
+index 706b38c6..b2a7c5e5 100644
+--- a/packages/shared/src/index.ts
++++ b/packages/shared/src/index.ts
+@@ -13,6 +13,7 @@ export * from "./observationsTable";
+ export * from "./features/ingestion/types";
+ export * from "./utils/zod";
+ export * from "./utils/json";
++export * from "./utils/objects";
+ export { env } from "./env";
+ 
+ // llm api
+diff --git a/packages/shared/src/utils/objects.ts b/packages/shared/src/utils/objects.ts
+new file mode 100644
+index 00000000..b97ba11f
+--- /dev/null
++++ b/packages/shared/src/utils/objects.ts
+@@ -0,0 +1,16 @@
++type OmitKeys<T, K extends keyof T> = Pick<T, Exclude<keyof T, K>>;
++
++/**
++ * Removes specified keys from an object and returns a new object without those keys.
++ */
++
++export function removeObjectKeys<T, K extends keyof T>(
++  obj: T,
++  keys: K[]
++): OmitKeys<T, K> {
++  const result = { ...obj };
++  for (const key of keys) {
++    delete result[key];
++  }
++  return result;
++}
+diff --git a/web/public/generated/api/openapi.yml b/web/public/generated/api/openapi.yml
+index 98d6aec0..ed63fee2 100644
+--- a/web/public/generated/api/openapi.yml
++++ b/web/public/generated/api/openapi.yml
+@@ -2715,8 +2715,8 @@ components:
+           type: string
+           nullable: true
+           description: >-
+-            Dataset items are upserted on their id. Id needs to be globally
+-            unique and cannot be reused across datasets.
++            Dataset items are upserted on their id. Id needs to be unique
++            (project-level) and cannot be reused across datasets.
+         status:
+           $ref: '#/components/schemas/DatasetStatus'
+           nullable: true
+diff --git a/web/src/__tests__/datasets.servertest.ts b/web/src/__tests__/datasets.servertest.ts
+index e51b1ecb..13e15c05 100644
+--- a/web/src/__tests__/datasets.servertest.ts
++++ b/web/src/__tests__/datasets.servertest.ts
+@@ -21,6 +21,7 @@ import {
+   PostDatasetsV1Response,
+   PostDatasetsV2Response,
+ } from "@/src/features/public-api/types/datasets";
++import { v4 as uuidv4 } from "uuid";
+ 
+ describe("/api/public/datasets and /api/public/dataset-items API Endpoints", () => {
+   const traceId = v4();
+@@ -295,12 +296,15 @@ describe("/api/public/datasets and /api/public/dataset-items API Endpoints", ()
+       },
+     });
+     expect(dbDatasetItems.length).toBe(5);
+-    const dbDatasetItemsApiResponseFormat = dbDatasetItems.map((item) => ({
+-      ...item,
+-      createdAt: item.createdAt.toISOString(),
+-      updatedAt: item.updatedAt.toISOString(),
+-      datasetName: "dataset-name",
+-    }));
++    const dbDatasetItemsApiResponseFormat = dbDatasetItems.map(
++      // eslint-disable-next-line @typescript-eslint/no-unused-vars
++      ({ projectId, ...item }) => ({
++        ...item,
++        createdAt: item.createdAt.toISOString(),
++        updatedAt: item.updatedAt.toISOString(),
++        datasetName: "dataset-name",
++      }),
++    );
+ 
+     // add another dataset to test the list endpoint
+     await makeZodVerifiedAPICall(
+@@ -333,7 +337,8 @@ describe("/api/public/datasets and /api/public/dataset-items API Endpoints", ()
+     });
+     expect(dbDatasetItemsOther.length).toBe(1);
+     const dbDatasetItemsOtherApiResponseFormat = dbDatasetItemsOther.map(
+-      (item) => ({
++      // eslint-disable-next-line @typescript-eslint/no-unused-vars
++      ({ projectId, ...item }) => ({
+         ...item,
+         createdAt: item.createdAt.toISOString(),
+         updatedAt: item.updatedAt.toISOString(),
+@@ -784,12 +789,15 @@ describe("/api/public/datasets and /api/public/dataset-items API Endpoints", ()
+       },
+     });
+     expect(dbRuns.length).toBe(3);
+-    const dbRunsApiResponseFormat = dbRuns.map((run) => ({
+-      ...run,
+-      createdAt: run.createdAt.toISOString(),
+-      updatedAt: run.updatedAt.toISOString(),
+-      datasetName: "dataset-name",
+-    }));
++    const dbRunsApiResponseFormat = dbRuns.map(
++      // eslint-disable-next-line @typescript-eslint/no-unused-vars
++      ({ projectId, ...run }) => ({
++        ...run,
++        createdAt: run.createdAt.toISOString(),
++        updatedAt: run.updatedAt.toISOString(),
++        datasetName: "dataset-name",
++      }),
++    );
+ 
+     // test get runs
+     const getRuns = await makeZodVerifiedAPICall(
+@@ -835,4 +843,89 @@ describe("/api/public/datasets and /api/public/dataset-items API Endpoints", ()
+     );
+     expect(response.status).toBe(400);
+   });
++
++  it("dataset item ids should be reusable across projects", async () => {
++    const otherProject = await prisma.project.create({
++      data: {
++        name: "other-project",
++      },
++    });
++
++    // dataset ids are always generated
++    const datasetBody = {
++      name: "dataset-name",
++    };
++    // dataset, id is generated
++    const apiDataset = await makeZodVerifiedAPICall(
++      PostDatasetsV1Response,
++      "POST",
++      "/api/public/datasets",
++      { ...datasetBody, metadata: "api-dataset" },
++    );
++    const otherProjDbDataset = await prisma.dataset.create({
++      data: {
++        ...datasetBody,
++        projectId: otherProject.id,
++        id: apiDataset.body.id, // use the same id, not possible via api, done to check security of this
++      },
++    });
++    const getApiDataset = await makeZodVerifiedAPICall(
++      GetDatasetV1Response,
++      "GET",
++      `/api/public/datasets/${encodeURIComponent(datasetBody.name)}`,
++    );
++    expect(getApiDataset.body.metadata).toBe("api-dataset");
++
++    // item ids can be set by the user
++    const datasetItemBody = {
++      input: "item-input",
++      id: uuidv4(),
++    };
++    await prisma.datasetItem.create({
++      data: {
++        ...datasetItemBody,
++        expectedOutput: "other-proj",
++        projectId: otherProject.id,
++        datasetId: otherProjDbDataset.id,
++      },
++    });
++
++    // dataset item, id is set
++    await makeZodVerifiedAPICall(
++      PostDatasetItemsV1Response,
++      "POST",
++      "/api/public/dataset-items",
++      {
++        ...datasetItemBody,
++        expectedOutput: "api-item",
++        datasetName: datasetBody.name,
++        metadata: "api-item",
++      },
++    );
++    const getApiDatasetItem = await makeZodVerifiedAPICall(
++      GetDatasetItemV1Response,
++      "GET",
++      `/api/public/dataset-items/${datasetItemBody.id}`,
++    );
++    expect(getApiDatasetItem.body.metadata).toBe("api-item");
++    const dbItems = await prisma.datasetItem.findMany({
++      where: { id: datasetItemBody.id },
++    });
++    expect(dbItems.length).toBe(2);
++    expect(dbItems).toHaveLength(2);
++    expect(dbItems).toEqual(
++      expect.arrayContaining([
++        expect.objectContaining({
++          metadata: "api-item",
++          projectId: apiDataset.body.projectId,
++          id: datasetItemBody.id,
++        }),
++        expect.objectContaining({
++          metadata: null,
++          projectId: otherProject.id,
++          id: datasetItemBody.id,
++        }),
++      ]),
++    );
++  });
+ });
+diff --git a/web/src/features/datasets/server/dataset-router.ts b/web/src/features/datasets/server/dataset-router.ts
+index 6ef5f863..7a7c238f 100644
+--- a/web/src/features/datasets/server/dataset-router.ts
++++ b/web/src/features/datasets/server/dataset-router.ts
+@@ -38,8 +38,16 @@ export const datasetRouter = createTRPCRouter({
+     )
+     .query(async ({ input, ctx }) => {
+       const query = DB.selectFrom("datasets")
+-        .leftJoin("dataset_items", "datasets.id", "dataset_items.dataset_id")
+-        .leftJoin("dataset_runs", "datasets.id", "dataset_runs.dataset_id")
++        .leftJoin("dataset_items", (join) =>
++          join
++            .onRef("datasets.id", "=", "dataset_items.dataset_id")
++            .on("dataset_items.project_id", "=", input.projectId),
++        )
++        .leftJoin("dataset_runs", (join) =>
++          join
++            .onRef("datasets.id", "=", "dataset_runs.dataset_id")
++            .on("dataset_runs.project_id", "=", input.projectId),
++        )
+         .select(({ eb }) => [
+           "datasets.id",
+           "datasets.name",
+@@ -55,6 +63,8 @@ export const datasetRouter = createTRPCRouter({
+         .groupBy([
+           "datasets.id",
+           "datasets.name",
++          "datasets.description",
++          "datasets.metadata",
+           "datasets.created_at",
+           "datasets.updated_at",
+         ])
+@@ -95,8 +105,10 @@ export const datasetRouter = createTRPCRouter({
+     .query(async ({ input, ctx }) => {
+       return ctx.prisma.dataset.findUnique({
+         where: {
+-          id: input.datasetId,
+-          projectId: input.projectId,
++          id_projectId: {
++            id: input.datasetId,
++            projectId: input.projectId,
++          },
+         },
+       });
+     }),
+@@ -111,11 +123,11 @@ export const datasetRouter = createTRPCRouter({
+     .query(async ({ input, ctx }) => {
+       return ctx.prisma.datasetRuns.findUnique({
+         where: {
+-          id: input.runId,
+-          datasetId: input.datasetId,
+-          dataset: {
++          id_projectId: {
++            id: input.runId,
+             projectId: input.projectId,
+           },
++          datasetId: input.datasetId,
+         },
+       });
+     }),
+@@ -151,7 +163,7 @@ export const datasetRouter = createTRPCRouter({
+           COALESCE(run_items_count.count, 0)::int "countRunItems"
+         FROM
+           dataset_runs runs
+-          JOIN datasets ON datasets.id = runs.dataset_id
++          JOIN datasets ON datasets.id = runs.dataset_id AND datasets.project_id = ${input.projectId}
+           LEFT JOIN LATERAL (
+             SELECT
+               jsonb_object_agg(s.name, s.avg_value) AS scores
+@@ -165,9 +177,9 @@ export const datasetRouter = createTRPCRouter({
+                   ON s.trace_id = ri.trace_id 
+                   AND (ri.observation_id IS NULL OR s.observation_id = ri.observation_id)
+                   AND s.project_id = ${input.projectId}
+-                JOIN traces t ON t.id = s.trace_id
++                JOIN traces t ON t.id = s.trace_id AND t.project_id = ${input.projectId}
+               WHERE 
+-                t.project_id = ${input.projectId}
++                ri.project_id = ${input.projectId}
+                 AND s.data_type != 'CATEGORICAL'
+                 AND s.value IS NOT NULL
+                 AND ri.dataset_run_id = runs.id
+@@ -180,19 +192,20 @@ export const datasetRouter = createTRPCRouter({
+               AVG(COALESCE(o.calculated_total_cost, 0)) AS "avgTotalCost"
+             FROM
+               dataset_run_items ri
+-              JOIN observations_view o ON o.id = ri.observation_id
++              JOIN observations_view o ON o.id = ri.observation_id AND o.project_id = ${input.projectId}
+             WHERE 
+-              o.project_id = ${input.projectId}
++              ri.project_id = ${input.projectId}
+               AND ri.dataset_run_id = runs.id
+           ) latency_and_total_cost ON true
+           LEFT JOIN LATERAL (
+             SELECT count(*) as count 
+             FROM dataset_run_items ri 
+             WHERE ri.dataset_run_id = runs.id
++            AND ri.project_id = ${input.projectId}
+           ) run_items_count ON true
+         WHERE 
+           runs.dataset_id = ${input.datasetId}
+-          AND datasets.project_id = ${input.projectId}
++          AND runs.project_id = ${input.projectId}
+         ORDER BY
+           runs.created_at DESC
+         LIMIT ${input.limit}
+@@ -202,9 +215,7 @@ export const datasetRouter = createTRPCRouter({
+       const totalRuns = await ctx.prisma.datasetRuns.count({
+         where: {
+           datasetId: input.datasetId,
+-          dataset: {
+-            projectId: input.projectId,
+-          },
++          projectId: input.projectId,
+         },
+       });
+ 
+@@ -224,11 +235,8 @@ export const datasetRouter = createTRPCRouter({
+     .query(async ({ input, ctx }) => {
+       return ctx.prisma.datasetItem.findUnique({
+         where: {
+-          id: input.datasetItemId,
++          id_projectId: { id: input.datasetItemId, projectId: input.projectId },
+           datasetId: input.datasetId,
+-          dataset: {
+-            projectId: input.projectId,
+-          },
+         },
+       });
+     }),
+@@ -241,31 +249,37 @@ export const datasetRouter = createTRPCRouter({
+       }),
+     )
+     .query(async ({ input, ctx }) => {
+-      const datasetItems = await ctx.prisma.datasetItem.findMany({
++      const dataset = await ctx.prisma.dataset.findUnique({
+         where: {
+-          datasetId: input.datasetId,
+-          dataset: {
++          id_projectId: {
++            id: input.datasetId,
+             projectId: input.projectId,
+           },
+         },
+-        orderBy: [
+-          {
+-            status: "asc",
++        include: {
++          datasetItems: {
++            orderBy: [
++              {
++                status: "asc",
++              },
++              {
++                createdAt: "desc",
++              },
++            ],
++            take: input.limit,
++            skip: input.page * input.limit,
+           },
+-          {
+-            createdAt: "desc",
+-          },
+-        ],
+-        take: input.limit,
+-        skip: input.page * input.limit,
++        },
+       });
++      const datasetItems = dataset?.datasetItems ?? [];
+ 
+       const totalDatasetItems = await ctx.prisma.datasetItem.count({
+         where: {
+-          datasetId: input.datasetId,
+           dataset: {
++            id: input.datasetId,
+             projectId: input.projectId,
+           },
++          projectId: input.projectId,
+         },
+       });
+ 
+@@ -296,11 +310,11 @@ export const datasetRouter = createTRPCRouter({
+       });
+       const datasetItem = await ctx.prisma.datasetItem.update({
+         where: {
+-          id: input.datasetItemId,
+-          datasetId: input.datasetId,
+-          dataset: {
++          id_projectId: {
++            id: input.datasetItemId,
+             projectId: input.projectId,
+           },
++          datasetId: input.datasetId,
+         },
+         data: {
+           input:
+@@ -394,8 +408,10 @@ export const datasetRouter = createTRPCRouter({
+       });
+       const dataset = await ctx.prisma.dataset.update({
+         where: {
+-          id: input.datasetId,
+-          projectId: input.projectId,
++          id_projectId: {
++            id: input.datasetId,
++            projectId: input.projectId,
++          },
+         },
+         data: {
+           name: input.name ?? undefined,
+@@ -429,8 +445,10 @@ export const datasetRouter = createTRPCRouter({
+       });
+       const deletedDataset = await ctx.prisma.dataset.delete({
+         where: {
+-          id: input.datasetId,
+-          projectId: input.projectId,
++          id_projectId: {
++            id: input.datasetId,
++            projectId: input.projectId,
++          },
+         },
+       });
+       await auditLog({
+@@ -463,8 +481,10 @@ export const datasetRouter = createTRPCRouter({
+       });
+       const dataset = await ctx.prisma.dataset.findUnique({
+         where: {
+-          id: input.datasetId,
+-          projectId: input.projectId,
++          id_projectId: {
++            id: input.datasetId,
++            projectId: input.projectId,
++          },
+         },
+       });
+       if (!dataset) {
+@@ -494,6 +514,7 @@ export const datasetRouter = createTRPCRouter({
+           datasetId: input.datasetId,
+           sourceTraceId: input.sourceTraceId,
+           sourceObservationId: input.sourceObservationId,
++          projectId: input.projectId,
+         },
+       });
+       await auditLog({
+@@ -511,7 +532,6 @@ export const datasetRouter = createTRPCRouter({
+       z
+         .object({
+           projectId: z.string(),
+-          datasetId: z.string(),
+           datasetRunId: z.string().optional(),
+           datasetItemId: z.string().optional(),
+           ...paginationZod,
+@@ -524,13 +544,9 @@ export const datasetRouter = createTRPCRouter({
+     .query(async ({ input, ctx }) => {
+       const runItems = await ctx.prisma.datasetRunItems.findMany({
+         where: {
++          projectId: input.projectId,
+           datasetRunId: input.datasetRunId,
+           datasetItemId: input.datasetItemId,
+-          datasetRun: {
+-            dataset: {
+-              projectId: ctx.session.projectId,
+-            },
+-          },
+         },
+         orderBy: {
+           createdAt: "desc",
+@@ -564,13 +580,9 @@ export const datasetRouter = createTRPCRouter({
+ 
+       const totalRunItems = await ctx.prisma.datasetRunItems.count({
+         where: {
++          projectId: input.projectId,
+           datasetRunId: input.datasetRunId,
+           datasetItemId: input.datasetItemId,
+-          datasetRun: {
+-            dataset: {
+-              projectId: ctx.session.projectId,
+-            },
+-          },
+         },
+       });
+ 
+@@ -611,7 +623,7 @@ export const datasetRouter = createTRPCRouter({
+                 FROM
+                   observations o1
+                 WHERE
+-                  o1.project_id = t.project_id
++                  o1.project_id = ${input.projectId}
+                   AND o1.trace_id = t.id
+                 GROUP BY
+                   o1.project_id,
+@@ -661,11 +673,9 @@ export const datasetRouter = createTRPCRouter({
+     .query(async ({ input, ctx }) => {
+       return ctx.prisma.datasetItem.findMany({
+         where: {
++          projectId: input.projectId,
+           sourceTraceId: input.traceId,
+           sourceObservationId: input.observationId ?? null, // null as it should not include observations from the same trace
+-          dataset: {
+-            projectId: input.projectId,
+-          },
+         },
+         select: {
+           dataset: {
+diff --git a/web/src/features/public-api/types/datasets.ts b/web/src/features/public-api/types/datasets.ts
+index f6e69f78..1c15c2aa 100644
+--- a/web/src/features/public-api/types/datasets.ts
++++ b/web/src/features/public-api/types/datasets.ts
+@@ -3,6 +3,10 @@ import {
+   paginationZod,
+   paginationMetaResponseZod,
+   queryStringZod,
++  type DatasetRuns as DbDatasetRuns,
++  type DatasetItem as DbDatasetItems,
++  type DatasetRunItems as DbDatasetRunItems,
++  removeObjectKeys,
+ } from "@langfuse/shared";
+ import { z } from "zod";
+ 
+@@ -10,7 +14,7 @@ import { z } from "zod";
+  * Objects
+  */
+ 
+-const Dataset = z
++const APIDataset = z
+   .object({
+     id: z.string(),
+     projectId: z.string(),
+@@ -22,7 +26,7 @@ const Dataset = z
+   })
+   .strict();
+ 
+-const DatasetRun = z
++const APIDatasetRun = z
+   .object({
+     datasetName: z.string(),
+     id: z.string(),
+@@ -35,7 +39,7 @@ const DatasetRun = z
+   })
+   .strict();
+ 
+-const DatasetRunItem = z
++const APIDatasetRunItem = z
+   .object({
+     datasetRunName: z.string(),
+     id: z.string(),
+@@ -48,7 +52,7 @@ const DatasetRunItem = z
+   })
+   .strict();
+ 
+-const DatasetItem = z
++const APIDatasetItem = z
+   .object({
+     datasetName: z.string(),
+     id: z.string(),
+@@ -64,6 +68,25 @@ const DatasetItem = z
+   })
+   .strict();
+ 
++/**
++ * Transforms
++ */
++
++export const transformDbDatasetRunToAPIDatasetRun = (
++  dbDatasetRun: DbDatasetRuns & { datasetName: string },
++): z.infer<typeof APIDatasetRun> =>
++  removeObjectKeys(dbDatasetRun, ["projectId"]);
++
++export const transformDbDatasetItemToAPIDatasetItem = (
++  dbDatasetItem: DbDatasetItems & { datasetName: string },
++): z.infer<typeof APIDatasetItem> =>
++  removeObjectKeys(dbDatasetItem, ["projectId"]);
++
++export const transformDbDatasetRunItemToAPIDatasetRunItem = (
++  dbDatasetRunItem: DbDatasetRunItems & { datasetRunName: string },
++): z.infer<typeof APIDatasetRunItem> =>
++  removeObjectKeys(dbDatasetRunItem, ["projectId"]);
++
+ /**
+  * Endpoints
+  */
+@@ -74,7 +97,7 @@ export const PostDatasetsV2Body = z.object({
+   description: z.string().nullish(),
+   metadata: jsonSchema.nullish(),
+ });
+-export const PostDatasetsV2Response = Dataset.strict();
++export const PostDatasetsV2Response = APIDataset.strict();
+ 
+ // GET /v2/datasets
+ export const GetDatasetsV2Query = z.object({
+@@ -82,7 +105,7 @@ export const GetDatasetsV2Query = z.object({
+ });
+ export const GetDatasetsV2Response = z
+   .object({
+-    data: z.array(Dataset),
++    data: z.array(APIDataset),
+     meta: paginationMetaResponseZod,
+   })
+   .strict();
+@@ -91,7 +114,7 @@ export const GetDatasetsV2Response = z
+ export const GetDatasetV2Query = z.object({
+   datasetName: queryStringZod,
+ });
+-export const GetDatasetV2Response = Dataset.strict();
++export const GetDatasetV2Response = APIDataset.strict();
+ 
+ // GET /datasets/{name}/runs
+ export const GetDatasetRunsV1Query = z.object({
+@@ -100,7 +123,7 @@ export const GetDatasetRunsV1Query = z.object({
+ });
+ export const GetDatasetRunsV1Response = z
+   .object({
+-    data: z.array(DatasetRun),
++    data: z.array(APIDatasetRun),
+     meta: paginationMetaResponseZod,
+   })
+   .strict();
+@@ -110,8 +133,8 @@ export const GetDatasetRunV1Query = z.object({
+   name: queryStringZod, // dataset name from URL, name as it is v1
+   runName: queryStringZod,
+ });
+-export const GetDatasetRunV1Response = DatasetRun.extend({
+-  datasetRunItems: z.array(DatasetRunItem),
++export const GetDatasetRunV1Response = APIDatasetRun.extend({
++  datasetRunItems: z.array(APIDatasetRunItem),
+ }).strict();
+ 
+ // POST /dataset-items
+@@ -125,7 +148,7 @@ export const PostDatasetItemsV1Body = z.object({
+   sourceObservationId: z.string().nullish(),
+   status: z.enum(["ACTIVE", "ARCHIVED"]).nullish(),
+ });
+-export const PostDatasetItemsV1Response = DatasetItem.strict();
++export const PostDatasetItemsV1Response = APIDatasetItem.strict();
+ 
+ // GET /dataset-items
+ export const GetDatasetItemsV1Query = z.object({
+@@ -136,7 +159,7 @@ export const GetDatasetItemsV1Query = z.object({
+ });
+ export const GetDatasetItemsV1Response = z
+   .object({
+-    data: z.array(DatasetItem),
++    data: z.array(APIDatasetItem),
+     meta: paginationMetaResponseZod,
+   })
+   .strict();
+@@ -145,7 +168,7 @@ export const GetDatasetItemsV1Response = z
+ export const GetDatasetItemV1Query = z.object({
+   datasetItemId: z.string(),
+ });
+-export const GetDatasetItemV1Response = DatasetItem.strict();
++export const GetDatasetItemV1Response = APIDatasetItem.strict();
+ 
+ // POST /dataset-run-items
+ export const PostDatasetRunItemsV1Body = z
+@@ -162,7 +185,7 @@ export const PostDatasetRunItemsV1Body = z
+     message: "observationId or traceId must be provided",
+     path: ["observationId", "traceId"], // Specify the path of the error
+   });
+-export const PostDatasetRunItemsV1Response = DatasetRunItem.strict();
++export const PostDatasetRunItemsV1Response = APIDatasetRunItem.strict();
+ 
+ /**
+  * Deprecated endpoints replaced with v2, available for backward compatibility
+@@ -174,9 +197,9 @@ export const PostDatasetsV1Body = z.object({
+   description: z.string().nullish(),
+   metadata: jsonSchema.nullish(),
+ });
+-export const PostDatasetsV1Response = Dataset.extend({
+-  items: z.array(DatasetItem),
+-  runs: z.array(DatasetRun),
++export const PostDatasetsV1Response = APIDataset.extend({
++  items: z.array(APIDatasetItem),
++  runs: z.array(APIDatasetRun),
+ }).strict();
+ 
+ // GET /datasets
+@@ -186,7 +209,7 @@ export const GetDatasetsV1Query = z.object({
+ export const GetDatasetsV1Response = z
+   .object({
+     data: z.array(
+-      Dataset.extend({
++      APIDataset.extend({
+         items: z.array(z.string()), // dataset item ids
+         runs: z.array(z.string()), // dataset run names
+       }),
+@@ -199,7 +222,7 @@ export const GetDatasetsV1Response = z
+ export const GetDatasetV1Query = z.object({
+   name: queryStringZod,
+ });
+-export const GetDatasetV1Response = Dataset.extend({
+-  items: z.array(DatasetItem),
++export const GetDatasetV1Response = APIDataset.extend({
++  items: z.array(APIDatasetItem),
+   runs: z.array(z.string()), // dataset run names
+ }).strict();
+diff --git a/web/src/pages/api/public/dataset-items/[datasetItemId].ts b/web/src/pages/api/public/dataset-items/[datasetItemId].ts
+index 81d8531f..b8276a22 100644
+--- a/web/src/pages/api/public/dataset-items/[datasetItemId].ts
++++ b/web/src/pages/api/public/dataset-items/[datasetItemId].ts
+@@ -4,6 +4,7 @@ import { createAuthedAPIRoute } from "@/src/features/public-api/server/createAut
+ import {
+   GetDatasetItemV1Query,
+   GetDatasetItemV1Response,
++  transformDbDatasetItemToAPIDatasetItem,
+ } from "@/src/features/public-api/types/datasets";
+ import { LangfuseNotFoundError } from "@langfuse/shared";
+ 
+@@ -15,11 +16,11 @@ export default withMiddlewares({
+     fn: async ({ query, auth }) => {
+       const { datasetItemId } = query;
+ 
+-      const datasetItem = await prisma.datasetItem.findFirst({
++      const datasetItem = await prisma.datasetItem.findUnique({
+         where: {
+-          id: datasetItemId,
+-          dataset: {
++          id_projectId: {
+             projectId: auth.scope.projectId,
++            id: datasetItemId,
+           },
+         },
+         include: {
+@@ -35,10 +36,11 @@ export default withMiddlewares({
+       }
+ 
+       const { dataset, ...datasetItemBody } = datasetItem;
+-      return {
++
++      return transformDbDatasetItemToAPIDatasetItem({
+         ...datasetItemBody,
+         datasetName: dataset.name,
+-      };
++      });
+     },
+   }),
+ });
+diff --git a/web/src/pages/api/public/dataset-items/index.ts b/web/src/pages/api/public/dataset-items/index.ts
+index 71d536ba..65e069f9 100644
+--- a/web/src/pages/api/public/dataset-items/index.ts
++++ b/web/src/pages/api/public/dataset-items/index.ts
+@@ -7,6 +7,7 @@ import {
+   GetDatasetItemsV1Response,
+   PostDatasetItemsV1Body,
+   PostDatasetItemsV1Response,
++  transformDbDatasetItemToAPIDatasetItem,
+ } from "@/src/features/public-api/types/datasets";
+ import { LangfuseNotFoundError } from "@langfuse/shared";
+ 
+@@ -41,8 +42,11 @@ export default withMiddlewares({
+ 
+       const item = await prisma.datasetItem.upsert({
+         where: {
+-          id: itemId,
+           datasetId: dataset.id,
++          id_projectId: {
++            projectId: auth.scope.projectId,
++            id: itemId,
++          },
+         },
+         create: {
+           id: itemId,
+@@ -53,6 +57,7 @@ export default withMiddlewares({
+           sourceTraceId: sourceTraceId ?? undefined,
+           sourceObservationId: sourceObservationId ?? undefined,
+           status: status ?? undefined,
++          projectId: auth.scope.projectId,
+         },
+         update: {
+           input: input ?? undefined,
+@@ -64,10 +69,10 @@ export default withMiddlewares({
+         },
+       });
+ 
+-      return {
++      return transformDbDatasetItemToAPIDatasetItem({
+         ...item,
+         datasetName: dataset.name,
+-      };
++      });
+     },
+   }),
+   GET: createAuthedAPIRoute({
+@@ -95,6 +100,7 @@ export default withMiddlewares({
+       const items = (
+         await prisma.datasetItem.findMany({
+           where: {
++            projectId: auth.scope.projectId,
+             dataset: {
+               projectId: auth.scope.projectId,
+               ...(datasetId ? { id: datasetId } : {}),
+@@ -132,7 +138,7 @@ export default withMiddlewares({
+       });
+ 
+       return {
+-        data: items,
++        data: items.map(transformDbDatasetItemToAPIDatasetItem),
+         meta: {
+           page,
+           limit,
+diff --git a/web/src/pages/api/public/dataset-run-items.ts b/web/src/pages/api/public/dataset-run-items.ts
+index b85b93f0..60d854b5 100644
+--- a/web/src/pages/api/public/dataset-run-items.ts
++++ b/web/src/pages/api/public/dataset-run-items.ts
+@@ -4,6 +4,7 @@ import { createAuthedAPIRoute } from "@/src/features/public-api/server/createAut
+ import {
+   PostDatasetRunItemsV1Body,
+   PostDatasetRunItemsV1Response,
++  transformDbDatasetRunItemToAPIDatasetRunItem,
+ } from "@/src/features/public-api/types/datasets";
+ import { LangfuseNotFoundError, InvalidRequestError } from "@langfuse/shared";
+ 
+@@ -24,11 +25,11 @@ export default withMiddlewares({
+ 
+       const datasetItem = await prisma.datasetItem.findUnique({
+         where: {
+-          id: datasetItemId,
+-          status: "ACTIVE",
+-          dataset: {
++          id_projectId: {
+             projectId: auth.scope.projectId,
++            id: datasetItemId,
+           },
++          status: "ACTIVE",
+         },
+         include: {
+           dataset: true,
+@@ -63,9 +64,10 @@ export default withMiddlewares({
+ 
+       const run = await prisma.datasetRuns.upsert({
+         where: {
+-          datasetId_name: {
++          datasetId_projectId_name: {
+             datasetId: datasetItem.datasetId,
+             name: runName,
++            projectId: auth.scope.projectId,
+           },
+         },
+         create: {
+@@ -73,6 +75,7 @@ export default withMiddlewares({
+           description: runDescription ?? undefined,
+           datasetId: datasetItem.datasetId,
+           metadata: metadata ?? undefined,
++          projectId: auth.scope.projectId,
+         },
+         update: {
+           metadata: metadata ?? undefined,
+@@ -86,13 +89,14 @@ export default withMiddlewares({
+           traceId: finalTraceId,
+           observationId,
+           datasetRunId: run.id,
++          projectId: auth.scope.projectId,
+         },
+       });
+ 
+-      return {
++      return transformDbDatasetRunItemToAPIDatasetRunItem({
+         ...runItem,
+         datasetRunName: run.name,
+-      };
++      });
+     },
+   }),
+ });
+diff --git a/web/src/pages/api/public/datasets/[name]/index.ts b/web/src/pages/api/public/datasets/[name]/index.ts
+index 9c5cbc95..3ade617d 100644
+--- a/web/src/pages/api/public/datasets/[name]/index.ts
++++ b/web/src/pages/api/public/datasets/[name]/index.ts
+@@ -4,6 +4,7 @@ import { createAuthedAPIRoute } from "@/src/features/public-api/server/createAut
+ import {
+   GetDatasetV1Query,
+   GetDatasetV1Response,
++  transformDbDatasetItemToAPIDatasetItem,
+ } from "@/src/features/public-api/types/datasets";
+ import { LangfuseNotFoundError } from "@langfuse/shared";
+ 
+@@ -45,10 +46,12 @@ export default withMiddlewares({
+ 
+       return {
+         ...params,
+-        items: datasetItems.map((item) => ({
+-          ...item,
+-          datasetName: dataset.name,
+-        })),
++        items: datasetItems
++          .map((item) => ({
++            ...item,
++            datasetName: dataset.name,
++          }))
++          .map(transformDbDatasetItemToAPIDatasetItem),
+         runs: datasetRuns.map((run) => run.name),
+       };
+     },
+diff --git a/web/src/pages/api/public/datasets/[name]/runs/[runName].ts b/web/src/pages/api/public/datasets/[name]/runs/[runName].ts
+index 5285056e..4159517b 100644
+--- a/web/src/pages/api/public/datasets/[name]/runs/[runName].ts
++++ b/web/src/pages/api/public/datasets/[name]/runs/[runName].ts
+@@ -2,6 +2,8 @@ import { prisma } from "@langfuse/shared/src/db";
+ import {
+   GetDatasetRunV1Query,
+   GetDatasetRunV1Response,
++  transformDbDatasetRunItemToAPIDatasetRunItem,
++  transformDbDatasetRunToAPIDatasetRun,
+ } from "@/src/features/public-api/types/datasets";
+ import { withMiddlewares } from "@/src/features/public-api/server/withMiddlewares";
+ import { createAuthedAPIRoute } from "@/src/features/public-api/server/createAuthedAPIRoute";
+@@ -15,6 +17,7 @@ export default withMiddlewares({
+     fn: async ({ query, auth }) => {
+       const datasetRuns = await prisma.datasetRuns.findMany({
+         where: {
++          projectId: auth.scope.projectId,
+           name: query.runName,
+           dataset: {
+             name: query.name,
+@@ -39,12 +42,16 @@ export default withMiddlewares({
+       const { dataset, datasetRunItems, ...run } = datasetRuns[0];
+ 
+       return {
+-        ...run,
+-        datasetRunItems: datasetRunItems.map((item) => ({
+-          ...item,
+-          datasetRunName: run.name,
+-        })),
+-        datasetName: dataset.name,
++        ...transformDbDatasetRunToAPIDatasetRun({
++          ...run,
++          datasetName: dataset.name,
++        }),
++        datasetRunItems: datasetRunItems
++          .map((item) => ({
++            ...item,
++            datasetRunName: run.name,
++          }))
++          .map(transformDbDatasetRunItemToAPIDatasetRunItem),
+       };
+     },
+   }),
+diff --git a/web/src/pages/api/public/datasets/[name]/runs/index.ts b/web/src/pages/api/public/datasets/[name]/runs/index.ts
+index 9b40da8f..82e24efd 100644
+--- a/web/src/pages/api/public/datasets/[name]/runs/index.ts
++++ b/web/src/pages/api/public/datasets/[name]/runs/index.ts
+@@ -2,6 +2,7 @@ import { prisma } from "@langfuse/shared/src/db";
+ import {
+   GetDatasetRunsV1Query,
+   GetDatasetRunsV1Response,
++  transformDbDatasetRunToAPIDatasetRun,
+ } from "@/src/features/public-api/types/datasets";
+ import { withMiddlewares } from "@/src/features/public-api/server/withMiddlewares";
+ import { createAuthedAPIRoute } from "@/src/features/public-api/server/createAuthedAPIRoute";
+@@ -36,14 +37,17 @@ export default withMiddlewares({
+       const totalItems = await prisma.datasetRuns.count({
+         where: {
+           datasetId: dataset.id,
++          projectId: auth.scope.projectId,
+         },
+       });
+ 
+       return {
+-        data: dataset.datasetRuns.map((run) => ({
+-          ...run,
+-          datasetName: dataset.name,
+-        })),
++        data: dataset.datasetRuns
++          .map((run) => ({
++            ...run,
++            datasetName: dataset.name,
++          }))
++          .map(transformDbDatasetRunToAPIDatasetRun),
+         meta: {
+           page: query.page,
+           limit: query.limit,

@@ -1,0 +1,602 @@
+Date:   Thu Dec 5 14:13:22 2024 +0100
+
+    chore: make project deletion asynchronous (#4399)
+    
+    * chore: make project deletion asynchronous
+    
+    * chore: delete projects on the worker
+    
+    * chore: indicate in UI overview that project is being deleted
+    
+    * chore: remove API keys from Postgres in project deletion call
+
+diff --git a/packages/shared/prisma/generated/types.ts b/packages/shared/prisma/generated/types.ts
+index 933d47cf..359651d4 100644
+--- a/packages/shared/prisma/generated/types.ts
++++ b/packages/shared/prisma/generated/types.ts
+@@ -453,6 +453,7 @@ export type Project = {
+     org_id: string;
+     created_at: Generated<Timestamp>;
+     updated_at: Generated<Timestamp>;
++    deleted_at: Timestamp | null;
+     name: string;
+ };
+ export type ProjectMembership = {
+diff --git a/packages/shared/prisma/migrations/20241124115100_add_projects_deleted_at/migration.sql b/packages/shared/prisma/migrations/20241124115100_add_projects_deleted_at/migration.sql
+new file mode 100644
+index 00000000..bf107372
+--- /dev/null
++++ b/packages/shared/prisma/migrations/20241124115100_add_projects_deleted_at/migration.sql
+@@ -0,0 +1,2 @@
++-- AlterTable
++ALTER TABLE "projects" ADD COLUMN "deleted_at" TIMESTAMP(3);
+diff --git a/packages/shared/prisma/schema.prisma b/packages/shared/prisma/schema.prisma
+index aff09d47..7a5ce8b6 100644
+--- a/packages/shared/prisma/schema.prisma
++++ b/packages/shared/prisma/schema.prisma
+@@ -113,6 +113,7 @@ model Project {
+   orgId               String                 @map("org_id")
+   createdAt           DateTime               @default(now()) @map("created_at")
+   updatedAt           DateTime               @default(now()) @updatedAt @map("updated_at")
++  deletedAt           DateTime?              @map("deleted_at")
+   name                String
+   projectMembers      ProjectMembership[]
+   organization        Organization           @relation(fields: [orgId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+@@ -900,7 +901,7 @@ model JobExecution {
+ 
+   jobInputObservationId String? @map("job_input_observation_id") // no fk constraint - observations in ClickHouse, deletion handled via project cascade
+ 
+-  jobInputDatasetItemId String?      @map("job_input_dataset_item_id") // no fk constraint - job execution sensible standalone
++  jobInputDatasetItemId String? @map("job_input_dataset_item_id") // no fk constraint - job execution sensible standalone
+ 
+   jobOutputScoreId String? @map("job_output_score_id")
+   score            Score?  @relation(fields: [jobOutputScoreId], references: [id], onDelete: SetNull) // job remains when scores are deleted
+diff --git a/packages/shared/src/server/index.ts b/packages/shared/src/server/index.ts
+index f722c000..a8e0df6a 100644
+--- a/packages/shared/src/server/index.ts
++++ b/packages/shared/src/server/index.ts
+@@ -25,6 +25,7 @@ export * from "./redis/traceUpsert";
+ export * from "./redis/cloudUsageMeteringQueue";
+ export * from "./redis/getQueue";
+ export * from "./redis/traceDelete";
++export * from "./redis/projectDelete";
+ export * from "./redis/datasetRunItemUpsert";
+ export * from "./redis/batchExport";
+ export * from "./redis/legacyIngestion";
+diff --git a/packages/shared/src/server/queues.ts b/packages/shared/src/server/queues.ts
+index 43e27c4a..29f9852f 100644
+--- a/packages/shared/src/server/queues.ts
++++ b/packages/shared/src/server/queues.ts
+@@ -71,6 +71,10 @@ export const TracesQueueEventSchema = z.object({
+   projectId: z.string(),
+   traceIds: z.array(z.string()),
+ });
++export const ProjectQueueEventSchema = z.object({
++  projectId: z.string(),
++  orgId: z.string(),
++});
+ export const DatasetRunItemUpsertEventSchema = z.object({
+   projectId: z.string(),
+   datasetItemId: z.string(),
+@@ -93,6 +97,7 @@ export const ExperimentCreateEventSchema = z.object({
+ export type BatchExportJobType = z.infer<typeof BatchExportJobSchema>;
+ export type TraceQueueEventType = z.infer<typeof TraceQueueEventSchema>;
+ export type TracesQueueEventType = z.infer<typeof TracesQueueEventSchema>;
++export type ProjectQueueEventType = z.infer<typeof ProjectQueueEventSchema>;
+ export type DatasetRunItemUpsertEventType = z.infer<
+   typeof DatasetRunItemUpsertEventSchema
+ >;
+@@ -126,6 +131,7 @@ export type EventBodyType = z.infer<typeof EventBodySchema>;
+ export enum QueueName {
+   TraceUpsert = "trace-upsert", // Ingestion pipeline adds events on each Trace upsert
+   TraceDelete = "trace-delete",
++  ProjectDelete = "project-delete",
+   EvaluationExecution = "evaluation-execution-queue", // Worker executes Evals
+   DatasetRunItemUpsert = "dataset-run-item-upsert-queue",
+   BatchExport = "batch-export-queue",
+@@ -138,6 +144,7 @@ export enum QueueName {
+ export enum QueueJobs {
+   TraceUpsert = "trace-upsert",
+   TraceDelete = "trace-delete",
++  ProjectDelete = "project-delete",
+   DatasetRunItemUpsert = "dataset-run-item-upsert",
+   EvaluationExecution = "evaluation-execution-job",
+   BatchExportJob = "batch-export-job",
+@@ -161,6 +168,12 @@ export type TQueueJobTypes = {
+     payload: TracesQueueEventType | TraceQueueEventType;
+     name: QueueJobs.TraceDelete;
+   };
++  [QueueName.ProjectDelete]: {
++    timestamp: Date;
++    id: string;
++    payload: ProjectQueueEventType;
++    name: QueueJobs.ProjectDelete;
++  };
+   [QueueName.DatasetRunItemUpsert]: {
+     timestamp: Date;
+     id: string;
+diff --git a/packages/shared/src/server/redis/getQueue.ts b/packages/shared/src/server/redis/getQueue.ts
+index 04724259..e445943a 100644
+--- a/packages/shared/src/server/redis/getQueue.ts
++++ b/packages/shared/src/server/redis/getQueue.ts
+@@ -9,6 +9,7 @@ import { IngestionQueue } from "./ingestionQueue";
+ import { LegacyIngestionQueue } from "./legacyIngestion";
+ import { TraceUpsertQueue } from "./traceUpsert";
+ import { TraceDeleteQueue } from "./traceDelete";
++import { ProjectDeleteQueue } from "./projectDelete";
+ 
+ export function getQueue(queueName: QueueName): Queue | null {
+   switch (queueName) {
+@@ -30,6 +31,8 @@ export function getQueue(queueName: QueueName): Queue | null {
+       return TraceDeleteQueue.getInstance();
+     case QueueName.IngestionQueue:
+       return IngestionQueue.getInstance();
++    case QueueName.ProjectDelete:
++      return ProjectDeleteQueue.getInstance();
+     default:
+       const exhaustiveCheckDefault: never = queueName;
+       throw new Error(`Queue ${queueName} not found`);
+diff --git a/packages/shared/src/server/redis/projectDelete.ts b/packages/shared/src/server/redis/projectDelete.ts
+new file mode 100644
+index 00000000..898dceb6
+--- /dev/null
++++ b/packages/shared/src/server/redis/projectDelete.ts
+@@ -0,0 +1,45 @@
++import { QueueName, TQueueJobTypes } from "../queues";
++import { Queue } from "bullmq";
++import { createNewRedisInstance, redisQueueRetryOptions } from "./redis";
++import { logger } from "../logger";
++
++export class ProjectDeleteQueue {
++  private static instance: Queue<
++    TQueueJobTypes[QueueName.ProjectDelete]
++  > | null = null;
++
++  public static getInstance(): Queue<
++    TQueueJobTypes[QueueName.ProjectDelete]
++  > | null {
++    if (ProjectDeleteQueue.instance) return ProjectDeleteQueue.instance;
++
++    const newRedis = createNewRedisInstance({
++      enableOfflineQueue: false,
++      ...redisQueueRetryOptions,
++    });
++
++    ProjectDeleteQueue.instance = newRedis
++      ? new Queue<TQueueJobTypes[QueueName.ProjectDelete]>(
++          QueueName.ProjectDelete,
++          {
++            connection: newRedis,
++            defaultJobOptions: {
++              removeOnComplete: true,
++              removeOnFail: 100_000,
++              attempts: 5,
++              backoff: {
++                type: "exponential",
++                delay: 5000,
++              },
++            },
++          },
++        )
++      : null;
++
++    ProjectDeleteQueue.instance?.on("error", (err) => {
++      logger.error("ProjectDeleteQueue error", err);
++    });
++
++    return ProjectDeleteQueue.instance;
++  }
++}
+diff --git a/packages/shared/src/server/repositories/observations.ts b/packages/shared/src/server/repositories/observations.ts
+index 92e2a421..dd1ece62 100644
+--- a/packages/shared/src/server/repositories/observations.ts
++++ b/packages/shared/src/server/repositories/observations.ts
+@@ -895,6 +895,22 @@ export const deleteObservationsByTraceIds = async (
+   });
+ };
+ 
++export const deleteObservationsByProjectId = async (projectId: string) => {
++  const query = `
++    DELETE FROM observations
++    WHERE project_id = {projectId: String};
++  `;
++  await commandClickhouse({
++    query: query,
++    params: {
++      projectId,
++    },
++    clickhouseConfigs: {
++      request_timeout: 120_000, // 2 minutes
++    },
++  });
++};
++
+ export const getObservationsWithPromptName = async (
+   projectId: string,
+   promptNames: string[],
+diff --git a/packages/shared/src/server/repositories/scores.ts b/packages/shared/src/server/repositories/scores.ts
+index 372653b9..74278c9f 100644
+--- a/packages/shared/src/server/repositories/scores.ts
++++ b/packages/shared/src/server/repositories/scores.ts
+@@ -482,6 +482,22 @@ export const deleteScoresByTraceIds = async (
+   });
+ };
+ 
++export const deleteScoresByProjectId = async (projectId: string) => {
++  const query = `
++    DELETE FROM scores
++    WHERE project_id = {projectId: String};
++  `;
++  await commandClickhouse({
++    query: query,
++    params: {
++      projectId,
++    },
++    clickhouseConfigs: {
++      request_timeout: 120_000, // 2 minutes
++    },
++  });
++};
++
+ export const getNumericScoreHistogram = async (
+   projectId: string,
+   filter: FilterState,
+diff --git a/packages/shared/src/server/repositories/traces.ts b/packages/shared/src/server/repositories/traces.ts
+index 630de14f..89706fff 100644
+--- a/packages/shared/src/server/repositories/traces.ts
++++ b/packages/shared/src/server/repositories/traces.ts
+@@ -595,6 +595,22 @@ export const deleteTraces = async (projectId: string, traceIds: string[]) => {
+   });
+ };
+ 
++export const deleteTracesByProjectId = async (projectId: string) => {
++  const query = `
++    DELETE FROM traces
++    WHERE project_id = {projectId: String};
++  `;
++  await commandClickhouse({
++    query: query,
++    params: {
++      projectId,
++    },
++    clickhouseConfigs: {
++      request_timeout: 120_000, // 2 minutes
++    },
++  });
++};
++
+ export const getTotalUserCount = async (
+   projectId: string,
+   filter: FilterState,
+diff --git a/web/src/features/organizations/components/ProjectOverview.tsx b/web/src/features/organizations/components/ProjectOverview.tsx
+index 21668c93..ab07570c 100644
+--- a/web/src/features/organizations/components/ProjectOverview.tsx
++++ b/web/src/features/organizations/components/ProjectOverview.tsx
+@@ -134,16 +134,22 @@ const SingleOrganizationProjectOverview = ({
+               <CardHeader>
+                 <CardTitle className="text-base">{project.name}</CardTitle>
+               </CardHeader>
+-              <CardFooter className="gap-2">
+-                <Button asChild variant="secondary">
+-                  <Link href={`/project/${project.id}`}>Go to project</Link>
+-                </Button>
+-                <Button asChild variant="ghost">
+-                  <Link href={`/project/${project.id}/settings`}>
+-                    <Settings size={16} />
+-                  </Link>
+-                </Button>
+-              </CardFooter>
++              {!project.deletedAt ? (
++                <CardFooter className="gap-2">
++                  <Button asChild variant="secondary">
++                    <Link href={`/project/${project.id}`}>Go to project</Link>
++                  </Button>
++                  <Button asChild variant="ghost">
++                    <Link href={`/project/${project.id}/settings`}>
++                      <Settings size={16} />
++                    </Link>
++                  </Button>
++                </CardFooter>
++              ) : (
++                <CardContent>
++                  <CardDescription>Project is being deleted</CardDescription>
++                </CardContent>
++              )}
+             </Card>
+           ))}
+       </div>
+diff --git a/web/src/features/organizations/server/organizationRouter.ts b/web/src/features/organizations/server/organizationRouter.ts
+index 0f99da60..1e98c612 100644
+--- a/web/src/features/organizations/server/organizationRouter.ts
++++ b/web/src/features/organizations/server/organizationRouter.ts
+@@ -101,6 +101,7 @@ export const organizationsRouter = createTRPCRouter({
+       const countProjects = await ctx.prisma.project.count({
+         where: {
+           orgId: input.orgId,
++          deletedAt: null,
+         },
+       });
+       if (countProjects > 0) {
+diff --git a/web/src/features/projects/server/projectsRouter.ts b/web/src/features/projects/server/projectsRouter.ts
+index a909e8d6..aa6062aa 100644
+--- a/web/src/features/projects/server/projectsRouter.ts
++++ b/web/src/features/projects/server/projectsRouter.ts
+@@ -10,7 +10,12 @@ import { projectNameSchema } from "@/src/features/auth/lib/projectNameSchema";
+ import { auditLog } from "@/src/features/audit-logs/auditLog";
+ import { throwIfNoOrganizationAccess } from "@/src/features/rbac/utils/checkOrganizationAccess";
+ import { ApiAuthService } from "@/src/features/public-api/server/apiAuth";
+-import { redis } from "@langfuse/shared/src/server";
++import {
++  QueueJobs,
++  redis,
++  ProjectDeleteQueue,
++} from "@langfuse/shared/src/server";
++import { randomUUID } from "crypto";
+ 
+ export const projectsRouter = createTRPCRouter({
+   create: protectedOrganizationProcedure
+@@ -113,6 +118,12 @@ export const projectsRouter = createTRPCRouter({
+           id: input.projectId,
+         },
+       });
++      if (!beforeProject) {
++        throw new TRPCError({
++          code: "NOT_FOUND",
++          message: "Project not found",
++        });
++      }
+       await auditLog({
+         session: ctx.session,
+         resourceType: "project",
+@@ -121,10 +132,10 @@ export const projectsRouter = createTRPCRouter({
+         action: "delete",
+       });
+ 
+-      await ctx.prisma.project.delete({
++      // Delete API keys from DB first
++      await ctx.prisma.apiKey.deleteMany({
+         where: {
+-          id: input.projectId,
+-          orgId: ctx.session.orgId,
++          projectId: input.projectId,
+         },
+       });
+ 
+@@ -133,6 +144,35 @@ export const projectsRouter = createTRPCRouter({
+         input.projectId,
+       );
+ 
++      await ctx.prisma.project.update({
++        where: {
++          id: input.projectId,
++          orgId: ctx.session.orgId,
++        },
++        data: {
++          deletedAt: new Date(),
++        },
++      });
++
++      const projectDeleteQueue = ProjectDeleteQueue.getInstance();
++      if (!projectDeleteQueue) {
++        throw new TRPCError({
++          code: "INTERNAL_SERVER_ERROR",
++          message:
++            "ProjectDeleteQueue is not available. Please try again later.",
++        });
++      }
++
++      await projectDeleteQueue.add(QueueJobs.ProjectDelete, {
++        timestamp: new Date(),
++        id: randomUUID(),
++        payload: {
++          projectId: input.projectId,
++          orgId: ctx.session.orgId,
++        },
++        name: QueueJobs.ProjectDelete,
++      });
++
+       return true;
+     }),
+ 
+@@ -160,13 +200,15 @@ export const projectsRouter = createTRPCRouter({
+       const project = await ctx.prisma.project.findUnique({
+         where: {
+           id: input.projectId,
++          deletedAt: null,
+         },
+       });
+-      if (!project)
++      if (!project) {
+         throw new TRPCError({
+           code: "NOT_FOUND",
+           message: "Project not found",
+         });
++      }
+ 
+       await auditLog({
+         session: ctx.session,
+diff --git a/web/src/features/rbac/server/membersRouter.ts b/web/src/features/rbac/server/membersRouter.ts
+index 581e8c8a..cbec230e 100644
+--- a/web/src/features/rbac/server/membersRouter.ts
++++ b/web/src/features/rbac/server/membersRouter.ts
+@@ -172,6 +172,7 @@ export const membersRouter = createTRPCRouter({
+             where: {
+               id: input.projectId,
+               orgId: input.orgId,
++              deletedAt: null,
+             },
+           })
+         : null;
+diff --git a/web/src/features/telemetry/index.ts b/web/src/features/telemetry/index.ts
+index 683b2a0e..3c7daa46 100644
+--- a/web/src/features/telemetry/index.ts
++++ b/web/src/features/telemetry/index.ts
+@@ -152,7 +152,11 @@ async function posthogTelemetry({
+   try {
+     const posthog = new ServerPosthog();
+     // Count projects
+-    const totalProjects = await prisma.project.count();
++    const totalProjects = await prisma.project.count({
++      where: {
++        deletedAt: null,
++      },
++    });
+ 
+     // Count traces
+     const countTraces = await prisma.trace.count({
+diff --git a/web/src/pages/api/public/projects.ts b/web/src/pages/api/public/projects.ts
+index 12b48c65..0262f843 100644
+--- a/web/src/pages/api/public/projects.ts
++++ b/web/src/pages/api/public/projects.ts
+@@ -29,6 +29,7 @@ export default async function handler(
+       const projects = await prisma.project.findMany({
+         where: {
+           id: authCheck.scope.projectId,
++          // deletedAt: null, // here we want to include deleted projects and grey them in the UI.
+         },
+       });
+ 
+diff --git a/web/src/server/api/trpc.ts b/web/src/server/api/trpc.ts
+index b8556904..c28fb8cc 100644
+--- a/web/src/server/api/trpc.ts
++++ b/web/src/server/api/trpc.ts
+@@ -220,6 +220,7 @@ const enforceUserIsAuthedAndProjectMember = t.middleware(
+           },
+           where: {
+             id: projectId,
++            deletedAt: null,
+           },
+         });
+         if (!dbProject) {
+diff --git a/web/src/server/auth.ts b/web/src/server/auth.ts
+index 371b88a4..3e12ca6f 100644
+--- a/web/src/server/auth.ts
++++ b/web/src/server/auth.ts
+@@ -452,6 +452,7 @@ export async function getAuthOptions(): Promise<NextAuthOptions> {
+                                 id: project.id,
+                                 name: project.name,
+                                 role: projectRole,
++                                deletedAt: project.deletedAt,
+                               };
+                             })
+                             // Only include projects where the user has the required role
+diff --git a/web/types/next-auth.d.ts b/web/types/next-auth.d.ts
+index 95630129..96e2a9c8 100644
+--- a/web/types/next-auth.d.ts
++++ b/web/types/next-auth.d.ts
+@@ -44,6 +44,7 @@ declare module "next-auth" {
+       projects: {
+         id: PrismaProject["id"];
+         name: PrismaProject["name"];
++        deletedAt: PrismaProject["deletedAt"];
+         role: Role; // include only projects where user has a role
+       }[];
+     }[];
+diff --git a/worker/src/app.ts b/worker/src/app.ts
+index 71664ddd..01956e1e 100644
+--- a/worker/src/app.ts
++++ b/worker/src/app.ts
+@@ -26,6 +26,7 @@ import { ingestionQueueProcessor } from "./queues/ingestionQueue";
+ import { BackgroundMigrationManager } from "./backgroundMigrations/backgroundMigrationManager";
+ import { experimentCreateQueueProcessor } from "./queues/experimentQueue";
+ import { traceDeleteProcessor } from "./queues/traceDelete";
++import { projectDeleteProcessor } from "./queues/projectDelete";
+ 
+ const app = express();
+ 
+@@ -66,6 +67,12 @@ if (env.QUEUE_CONSUMER_TRACE_DELETE_QUEUE_IS_ENABLED === "true") {
+   });
+ }
+ 
++if (env.QUEUE_CONSUMER_PROJECT_DELETE_QUEUE_IS_ENABLED === "true") {
++  WorkerManager.register(QueueName.ProjectDelete, projectDeleteProcessor, {
++    concurrency: env.LANGFUSE_PROJECT_DELETE_CONCURRENCY,
++  });
++}
++
+ if (env.QUEUE_CONSUMER_DATASET_RUN_ITEM_UPSERT_QUEUE_IS_ENABLED === "true") {
+   WorkerManager.register(
+     QueueName.DatasetRunItemUpsert,
+diff --git a/worker/src/env.ts b/worker/src/env.ts
+index aa60cb5c..24bad895 100644
+--- a/worker/src/env.ts
++++ b/worker/src/env.ts
+@@ -88,6 +88,7 @@ const EnvSchema = z.object({
+     .positive()
+     .default(25),
+   LANGFUSE_TRACE_DELETE_CONCURRENCY: z.coerce.number().positive().default(1),
++  LANGFUSE_PROJECT_DELETE_CONCURRENCY: z.coerce.number().positive().default(1),
+   LANGFUSE_EVAL_EXECUTION_WORKER_CONCURRENCY: z.coerce
+     .number()
+     .positive()
+@@ -132,6 +133,9 @@ const EnvSchema = z.object({
+   QUEUE_CONSUMER_TRACE_DELETE_QUEUE_IS_ENABLED: z
+     .enum(["true", "false"])
+     .default("true"),
++  QUEUE_CONSUMER_PROJECT_DELETE_QUEUE_IS_ENABLED: z
++    .enum(["true", "false"])
++    .default("true"),
+   QUEUE_CONSUMER_DATASET_RUN_ITEM_UPSERT_QUEUE_IS_ENABLED: z
+     .enum(["true", "false"])
+     .default("true"),
+diff --git a/worker/src/queues/projectDelete.ts b/worker/src/queues/projectDelete.ts
+new file mode 100644
+index 00000000..7d5f161e
+--- /dev/null
++++ b/worker/src/queues/projectDelete.ts
+@@ -0,0 +1,55 @@
++import { Job, Processor } from "bullmq";
++import {
++  deleteObservationsByProjectId,
++  deleteScoresByProjectId,
++  deleteTracesByProjectId,
++  logger,
++  QueueName,
++  TQueueJobTypes,
++} from "@langfuse/shared/src/server";
++import { prisma } from "@langfuse/shared/src/db";
++
++export const projectDeleteProcessor: Processor = async (
++  job: Job<TQueueJobTypes[QueueName.ProjectDelete]>,
++): Promise<void> => {
++  const { orgId, projectId } = job.data.payload;
++  logger.info(`Deleting ${projectId} in org ${orgId}`);
++
++  // Delete project data from ClickHouse first
++  await Promise.all([
++    deleteTracesByProjectId(projectId),
++    deleteObservationsByProjectId(projectId),
++    deleteScoresByProjectId(projectId),
++  ]);
++
++  // Try to delete traces, observations, and scores from Prisma individually
++  // as those will take the longest time and might kill a transaction
++  await Promise.all([
++    prisma.trace.deleteMany({
++      where: {
++        projectId,
++      },
++    }),
++    prisma.observation.deleteMany({
++      where: {
++        projectId,
++      },
++    }),
++    prisma.score.deleteMany({
++      where: {
++        projectId,
++      },
++    }),
++  ]);
++
++  // Finally, delete the project itself which should delete all related
++  // resources due to the referential actions defined via Prisma
++  await prisma.project.delete({
++    where: {
++      id: projectId,
++      orgId,
++    },
++  });
++
++  logger.info(`Deleted ${projectId} in org ${orgId}`);
++};

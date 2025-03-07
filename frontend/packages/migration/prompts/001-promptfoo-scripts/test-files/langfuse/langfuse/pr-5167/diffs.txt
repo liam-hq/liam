@@ -1,0 +1,410 @@
+Date:   Thu Jan 23 14:59:00 2025 +0100
+
+    feat(llm-api-keys): allow for extra headers (#5167)
+
+diff --git a/packages/shared/prisma/generated/types.ts b/packages/shared/prisma/generated/types.ts
+index f3ab6f32..4815ef32 100644
+--- a/packages/shared/prisma/generated/types.ts
++++ b/packages/shared/prisma/generated/types.ts
+@@ -304,6 +304,8 @@ export type LlmApiKeys = {
+     base_url: string | null;
+     custom_models: Generated<string[]>;
+     with_default_models: Generated<boolean>;
++    extra_headers: string | null;
++    extra_header_keys: Generated<string[]>;
+     config: unknown | null;
+     project_id: string;
+ };
+diff --git a/packages/shared/prisma/migrations/20250122152102_add_llm_api_keys_extra_headers/migration.sql b/packages/shared/prisma/migrations/20250122152102_add_llm_api_keys_extra_headers/migration.sql
+new file mode 100644
+index 00000000..3ba86567
+--- /dev/null
++++ b/packages/shared/prisma/migrations/20250122152102_add_llm_api_keys_extra_headers/migration.sql
+@@ -0,0 +1,3 @@
++ALTER TABLE "llm_api_keys"
++    ADD COLUMN "extra_headers" TEXT,
++    ADD COLUMN "extra_header_keys" TEXT[] NOT NULL DEFAULT '{}'::TEXT[];
+diff --git a/packages/shared/prisma/schema.prisma b/packages/shared/prisma/schema.prisma
+index c25fb742..5fe35f2d 100644
+--- a/packages/shared/prisma/schema.prisma
++++ b/packages/shared/prisma/schema.prisma
+@@ -192,6 +192,8 @@ model LlmApiKeys {
+   baseURL           String?  @map("base_url")
+   customModels      String[] @default([]) @map("custom_models")
+   withDefaultModels Boolean  @default(true) @map("with_default_models")
++  extraHeaders      String?  @map("extra_headers")
++  extraHeaderKeys   String[] @default([]) @map("extra_header_keys")
+   config            Json?
+ 
+   projectId String  @map("project_id")
+diff --git a/packages/shared/src/server/index.ts b/packages/shared/src/server/index.ts
+index 58e47a40..1d1fd50c 100644
+--- a/packages/shared/src/server/index.ts
++++ b/packages/shared/src/server/index.ts
+@@ -8,6 +8,7 @@ export * from "./auth/apiKeys";
+ export * from "./auth/customSsoProvider";
+ export * from "./auth/gitHubEnterpriseProvider";
+ export * from "./llm/fetchLLMCompletion";
++export * from "./llm/utils";
+ export * from "./llm/types";
+ export * from "./utils/DatabaseReadStream";
+ export * from "./utils/transforms";
+diff --git a/packages/shared/src/server/llm/fetchLLMCompletion.ts b/packages/shared/src/server/llm/fetchLLMCompletion.ts
+index fc26b6b7..3132c288 100644
+--- a/packages/shared/src/server/llm/fetchLLMCompletion.ts
++++ b/packages/shared/src/server/llm/fetchLLMCompletion.ts
+@@ -49,6 +49,7 @@ type LLMCompletionParams = {
+   callbacks?: BaseCallbackHandler[];
+   baseURL?: string;
+   apiKey: string;
++  extraHeaders?: Record<string, string>;
+   maxRetries?: number;
+   config?: Record<string, string> | null;
+   traceParams?: TraceParams;
+@@ -100,6 +101,7 @@ export async function fetchLLMCompletion(
+     maxRetries,
+     config,
+     traceParams,
++    extraHeaders,
+   } = params;
+ 
+   let finalCallbacks: BaseCallbackHandler[] | undefined = callbacks ?? [];
+@@ -176,6 +178,7 @@ export async function fetchLLMCompletion(
+       maxRetries,
+       configuration: {
+         baseURL,
++        defaultHeaders: extraHeaders,
+       },
+       timeout: 1000 * 60 * 2, // 2 minutes timeout
+     });
+diff --git a/packages/shared/src/server/llm/types.ts b/packages/shared/src/server/llm/types.ts
+index a89ff58f..eb14904e 100644
+--- a/packages/shared/src/server/llm/types.ts
++++ b/packages/shared/src/server/llm/types.ts
+@@ -148,6 +148,8 @@ export const LLMApiKeySchema = z
+     provider: z.string(),
+     displaySecretKey: z.string(),
+     secretKey: z.string(),
++    extraHeaders: z.string().nullish(),
++    extraHeaderKeys: z.array(z.string()),
+     baseURL: z.string().nullable(),
+     customModels: z.array(z.string()),
+     withDefaultModels: z.boolean(),
+diff --git a/packages/shared/src/server/llm/utils.ts b/packages/shared/src/server/llm/utils.ts
+new file mode 100644
+index 00000000..403aeb8f
+--- /dev/null
++++ b/packages/shared/src/server/llm/utils.ts
+@@ -0,0 +1,13 @@
++import { z } from "zod";
++
++import { decrypt } from "../../encryption";
++
++const ExtraHeaderSchema = z.record(z.string(), z.string());
++
++export function decryptAndParseExtraHeaders(
++  extraHeaders: string | null | undefined,
++) {
++  if (!extraHeaders) return;
++
++  return ExtraHeaderSchema.parse(decrypt(extraHeaders));
++}
+diff --git a/web/src/ee/features/evals/server/router.ts b/web/src/ee/features/evals/server/router.ts
+index aeaea73b..f43ff4da 100644
+--- a/web/src/ee/features/evals/server/router.ts
++++ b/web/src/ee/features/evals/server/router.ts
+@@ -20,6 +20,7 @@ import {
+ import { decrypt } from "@langfuse/shared/encryption";
+ import { throwIfNoEntitlement } from "@/src/features/entitlements/server/hasEntitlement";
+ import {
++  decryptAndParseExtraHeaders,
+   fetchLLMCompletion,
+   getScoresByIds,
+   LLMApiKeySchema,
+@@ -536,6 +537,9 @@ export const evalRouter = createTRPCRouter({
+           await fetchLLMCompletion({
+             streaming: false,
+             apiKey: decrypt(parsedKey.data.secretKey), // decrypt the secret key
++            extraHeaders: decryptAndParseExtraHeaders(
++              parsedKey.data.extraHeaders,
++            ),
+             baseURL: parsedKey.data.baseURL ?? undefined,
+             messages: [
+               {
+diff --git a/web/src/ee/features/playground/server/chatCompletionHandler.ts b/web/src/ee/features/playground/server/chatCompletionHandler.ts
+index 75658462..bc004fcc 100644
+--- a/web/src/ee/features/playground/server/chatCompletionHandler.ts
++++ b/web/src/ee/features/playground/server/chatCompletionHandler.ts
+@@ -17,6 +17,7 @@ import {
+   LLMApiKeySchema,
+   logger,
+   fetchLLMCompletion,
++  decryptAndParseExtraHeaders,
+ } from "@langfuse/shared/src/server";
+ 
+ export default async function chatCompletionHandler(req: NextRequest) {
+@@ -51,6 +52,7 @@ export default async function chatCompletionHandler(req: NextRequest) {
+       streaming: true,
+       callbacks: [new PosthogCallbackHandler("playground", body, userId)],
+       apiKey: decrypt(parsedKey.data.secretKey),
++      extraHeaders: decryptAndParseExtraHeaders(parsedKey.data.extraHeaders),
+       baseURL: parsedKey.data.baseURL || undefined,
+       config: parsedKey.data.config,
+     });
+diff --git a/web/src/features/llm-api-key/server/router.ts b/web/src/features/llm-api-key/server/router.ts
+index 2473460a..3de89039 100644
+--- a/web/src/features/llm-api-key/server/router.ts
++++ b/web/src/features/llm-api-key/server/router.ts
+@@ -41,6 +41,12 @@ export const llmApiKeyRouter = createTRPCRouter({
+           data: {
+             projectId: input.projectId,
+             secretKey: encrypt(input.secretKey),
++            extraHeaders: input.extraHeaders
++              ? encrypt(JSON.stringify(input.extraHeaders))
++              : undefined,
++            extraHeaderKeys: input.extraHeaders
++              ? Object.keys(input.extraHeaders)
++              : undefined,
+             adapter: input.adapter,
+             displaySecretKey: getDisplaySecretKey(input.secretKey),
+             provider: input.provider,
+@@ -104,10 +110,15 @@ export const llmApiKeyRouter = createTRPCRouter({
+       });
+ 
+       const apiKeys = z
+-        .array(LLMApiKeySchema.extend({ secretKey: z.undefined() }))
++        .array(
++          LLMApiKeySchema.extend({
++            secretKey: z.undefined(),
++            extraHeaders: z.undefined(),
++          }),
++        )
+         .parse(
+           await ctx.prisma.llmApiKeys.findMany({
+-            // we must not return the secret key via the API, hence not selected
++            // we must not return the secret key AND extra headers via the API, hence not selected
+             select: {
+               id: true,
+               createdAt: true,
+@@ -119,6 +130,7 @@ export const llmApiKeyRouter = createTRPCRouter({
+               baseURL: true,
+               customModels: true,
+               withDefaultModels: true,
++              extraHeaderKeys: true,
+             },
+             where: {
+               projectId: input.projectId,
+@@ -169,6 +181,7 @@ export const llmApiKeyRouter = createTRPCRouter({
+           },
+           baseURL: input.baseURL,
+           apiKey: input.secretKey,
++          extraHeaders: input.extraHeaders,
+           messages: testMessages,
+           streaming: false,
+           maxRetries: 1,
+diff --git a/web/src/features/llm-api-key/types.ts b/web/src/features/llm-api-key/types.ts
+index 0bfc6a2e..b53e50a7 100644
+--- a/web/src/features/llm-api-key/types.ts
++++ b/web/src/features/llm-api-key/types.ts
+@@ -10,4 +10,5 @@ export const CreateLlmApiKey = z.object({
+   withDefaultModels: z.boolean().optional(),
+   customModels: z.array(z.string().min(1)).optional(),
+   config: BedrockConfigSchema.optional(),
++  extraHeaders: z.record(z.string(), z.string()).optional(),
+ });
+diff --git a/web/src/features/public-api/components/CreateLLMApiKeyForm.tsx b/web/src/features/public-api/components/CreateLLMApiKeyForm.tsx
+index 8ae0d5a0..2460ace1 100644
+--- a/web/src/features/public-api/components/CreateLLMApiKeyForm.tsx
++++ b/web/src/features/public-api/components/CreateLLMApiKeyForm.tsx
+@@ -44,6 +44,9 @@ const formSchema = z
+     awsAccessKeyId: z.string().optional(),
+     awsSecretAccessKey: z.string().optional(),
+     awsRegion: z.string().optional(),
++    extraHeaders: z.array(
++      z.object({ key: z.string().min(1), value: z.string().min(1) }),
++    ),
+   })
+   .refine((data) => data.withDefaultModels || data.customModels.length > 0, {
+     message:
+@@ -115,6 +118,7 @@ export function CreateLLMApiKeyForm({
+       baseURL: getCustomizedBaseURL(defaultAdapter),
+       withDefaultModels: true,
+       customModels: [],
++      extraHeaders: [],
+     },
+   });
+ 
+@@ -125,6 +129,15 @@ export function CreateLLMApiKeyForm({
+     name: "customModels",
+   });
+ 
++  const {
++    fields: headerFields,
++    append: appendHeader,
++    remove: removeHeader,
++  } = useFieldArray({
++    control: form.control,
++    name: "extraHeaders",
++  });
++
+   async function onSubmit(values: z.infer<typeof formSchema>) {
+     if (!projectId) return console.error("No project ID found.");
+     if (
+@@ -155,6 +168,17 @@ export function CreateLLMApiKeyForm({
+       };
+     }
+ 
++    const extraHeaders =
++      values.extraHeaders.length > 0
++        ? values.extraHeaders.reduce(
++            (acc, header) => {
++              acc[header.key] = header.value;
++              return acc;
++            },
++            {} as Record<string, string>,
++          )
++        : undefined;
++
+     const newKey = {
+       projectId,
+       secretKey: secretKey ?? "",
+@@ -166,6 +190,7 @@ export function CreateLLMApiKeyForm({
+       customModels: values.customModels
+         .map((m) => m.value.trim())
+         .filter(Boolean),
++      extraHeaders,
+     };
+ 
+     try {
+@@ -383,6 +408,57 @@ export function CreateLLMApiKeyForm({
+           />
+         )}
+ 
++        {/* Extra Headers */}
++        {currentAdapter === "openai" ? (
++          <FormField
++            control={form.control}
++            name="extraHeaders"
++            render={() => (
++              <FormItem>
++                <FormLabel>Extra Headers</FormLabel>
++                <FormDescription>
++                  Optional additional HTTP headers to include with requests
++                  towards LLM provider. All header values stored encrypted on
++                  our servers.
++                </FormDescription>
++
++                {headerFields.map((header, index) => (
++                  <div key={header.id} className="flex flex-row space-x-2">
++                    <Input
++                      {...form.register(`extraHeaders.${index}.key`)}
++                      placeholder="Header name"
++                    />
++                    <Input
++                      {...form.register(`extraHeaders.${index}.value`)}
++                      placeholder="Header value"
++                    />
++                    <Button
++                      type="button"
++                      variant="ghost"
++                      onClick={() => removeHeader(index)}
++                    >
++                      <TrashIcon className="h-4 w-4" />
++                    </Button>
++                  </div>
++                ))}
++
++                <Button
++                  type="button"
++                  variant="ghost"
++                  onClick={() => appendHeader({ key: "", value: "" })}
++                  className="w-full"
++                >
++                  <PlusIcon
++                    className="-ml-0.5 mr-1.5 h-5 w-5"
++                    aria-hidden="true"
++                  />
++                  Add Header
++                </Button>
++              </FormItem>
++            )}
++          />
++        ) : null}
++
+         {/* With default models */}
+         <FormField
+           control={form.control}
+diff --git a/web/src/features/public-api/components/LLMApiKeyList.tsx b/web/src/features/public-api/components/LLMApiKeyList.tsx
+index 2ef9c266..5c59e41d 100644
+--- a/web/src/features/public-api/components/LLMApiKeyList.tsx
++++ b/web/src/features/public-api/components/LLMApiKeyList.tsx
+@@ -49,6 +49,10 @@ export function LlmApiKeyList(props: { projectId: string }) {
+     },
+   );
+ 
++  const hasExtraHeaderKeys = apiKeys.data?.data.some(
++    (key) => key.extraHeaderKeys.length > 0,
++  );
++
+   if (!isAvailable) return null;
+ 
+   if (!hasAccess) {
+@@ -89,6 +93,9 @@ export function LlmApiKeyList(props: { projectId: string }) {
+                 Base URL
+               </TableHead>
+               <TableHead className="text-primary">Secret Key</TableHead>
++              {hasExtraHeaderKeys ? (
++                <TableHead className="text-primary">Extra headers</TableHead>
++              ) : null}
+               <TableHead />
+             </TableRow>
+           </TableHeader>
+@@ -116,6 +123,9 @@ export function LlmApiKeyList(props: { projectId: string }) {
+                   <TableCell className="font-mono">
+                     {apiKey.displaySecretKey}
+                   </TableCell>
++                  {hasExtraHeaderKeys ? (
++                    <TableCell> {apiKey.extraHeaderKeys.join(", ")} </TableCell>
++                  ) : null}
+                   <TableCell>
+                     <DeleteApiKeyButton
+                       projectId={props.projectId}
+diff --git a/worker/src/__tests__/experimentsService.test.ts b/worker/src/__tests__/experimentsService.test.ts
+index f9ffdac0..f4c44fdd 100644
+--- a/worker/src/__tests__/experimentsService.test.ts
++++ b/worker/src/__tests__/experimentsService.test.ts
+@@ -384,6 +384,7 @@ describe("create experiment job calls with langfuse server side tracing", async
+       secretKey: encrypt("test-key"),
+       baseURL: null,
+       customModels: [],
++      extraHeaderKeys: [],
+       withDefaultModels: true,
+       config: null,
+     } as any);
+diff --git a/worker/src/features/utilities.ts b/worker/src/features/utilities.ts
+index e4bb4938..05a73293 100644
+--- a/worker/src/features/utilities.ts
++++ b/worker/src/features/utilities.ts
+@@ -1,5 +1,6 @@
+ import {
+   ChatMessage,
++  decryptAndParseExtraHeaders,
+   fetchLLMCompletion,
+   logger,
+   type TraceParams,
+@@ -24,6 +25,7 @@ export async function callStructuredLLM<T extends ZodSchema>(
+     const { completion, processTracedEvents } = await fetchLLMCompletion({
+       streaming: false,
+       apiKey: decrypt(llmApiKey.secretKey), // decrypt the secret key
++      extraHeaders: decryptAndParseExtraHeaders(llmApiKey.extraHeaders),
+       baseURL: llmApiKey.baseURL || undefined,
+       messages,
+       modelParams: {
+@@ -67,6 +69,7 @@ export async function callLLM(
+     const { completion, processTracedEvents } = await fetchLLMCompletion({
+       streaming: false,
+       apiKey: decrypt(llmApiKey.secretKey), // decrypt the secret key
++      extraHeaders: decryptAndParseExtraHeaders(llmApiKey.extraHeaders),
+       baseURL: llmApiKey.baseURL || undefined,
+       messages,
+       modelParams: {

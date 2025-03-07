@@ -1,0 +1,17 @@
+Date:   Thu Nov 7 09:25:32 2024 +0100
+
+    chore: include backgroundmigration state default in schema.prisma (#4094)
+
+diff --git a/packages/shared/prisma/schema.prisma b/packages/shared/prisma/schema.prisma
+index f752dee7..83a541dd 100644
+--- a/packages/shared/prisma/schema.prisma
++++ b/packages/shared/prisma/schema.prisma
+@@ -166,7 +166,7 @@ model BackgroundMigration {
+   name         String    @unique
+   script       String    @map("script")
+   args         Json      @map("args")
+-  state        Json      @map("state")
++  state        Json      @default("{}") @map("state")
+   finishedAt   DateTime? @map("finished_at")
+   failedAt     DateTime? @map("failed_at")
+   failedReason String?   @map("failed_reason")
