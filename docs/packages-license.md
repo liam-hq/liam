@@ -3,7 +3,7 @@
 
 ## Summary
 * 969 MIT
-* 80 Apache 2.0
+* 82 Apache 2.0
 * 63 ISC
 * 25 Simplified BSD
 * 18 New BSD
@@ -1558,6 +1558,17 @@ LGPL-3.0-or-later permitted
 
 <a name="@playwright/test"></a>
 ### @playwright/test v1.50.1
+#### 
+
+##### Paths
+* /home/runner/work/liam/liam
+
+<a href="http://www.apache.org/licenses/LICENSE-2.0.txt">Apache 2.0</a> permitted
+
+
+
+<a name="@prisma/client"></a>
+### @prisma/client v6.4.1
 #### 
 
 ##### Paths
@@ -10152,6 +10163,17 @@ BlueOak-1.0.0 permitted
 * /home/runner/work/liam/liam
 
 <a href="http://opensource.org/licenses/mit-license">MIT</a> permitted
+
+
+
+<a name="prisma"></a>
+### prisma v6.4.1
+#### 
+
+##### Paths
+* /home/runner/work/liam/liam
+
+<a href="http://www.apache.org/licenses/LICENSE-2.0.txt">Apache 2.0</a> permitted
 
 
 
