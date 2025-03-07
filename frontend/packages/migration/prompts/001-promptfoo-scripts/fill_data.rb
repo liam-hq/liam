@@ -2,7 +2,7 @@ require 'open3'
 require 'fileutils'
 require 'pathname'
 
-BASE_PATH = '/Users/hoshino/.local/share/go/src/github.com'
+BASE_PATH = ENV['GITHUB_REPOS_PATH'] || File.expand_path('~/github')
 
 def command(script)
   stdout, _, _ = Open3.capture3(script)
