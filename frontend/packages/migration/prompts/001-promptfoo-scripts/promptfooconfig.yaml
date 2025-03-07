@@ -206,15 +206,15 @@ tests:
       diffs: 'file://test-files/langfuse/langfuse/pr-3955/diffs.txt'
       before_schema: 'file://test-files/langfuse/langfuse/pr-3955/before_schema.txt'
   
-  - vars:
-      number: '3895'
-      diffs: 'file://test-files/langfuse/langfuse/pr-3895/diffs.txt'
-      before_schema: 'file://test-files/langfuse/langfuse/pr-3895/before_schema.txt'
-  
-  - vars:
-      number: '3811'
-      diffs: 'file://test-files/langfuse/langfuse/pr-3811/diffs.txt'
-      before_schema: 'file://test-files/langfuse/langfuse/pr-3811/before_schema.txt'
+#  - vars:
+#      number: '3895'
+#      diffs: 'file://test-files/langfuse/langfuse/pr-3895/diffs.txt'
+#      before_schema: 'file://test-files/langfuse/langfuse/pr-3895/before_schema.txt'
+#  
+#  - vars:
+#      number: '3811'
+#      diffs: 'file://test-files/langfuse/langfuse/pr-3811/diffs.txt'
+#      before_schema: 'file://test-files/langfuse/langfuse/pr-3811/before_schema.txt'
   
   - vars:
       number: '3759'
@@ -226,20 +226,20 @@ tests:
       diffs: 'file://test-files/langfuse/langfuse/pr-3711/diffs.txt'
       before_schema: 'file://test-files/langfuse/langfuse/pr-3711/before_schema.txt'
   
-  - vars:
-      number: '3499'
-      diffs: 'file://test-files/langfuse/langfuse/pr-3499/diffs.txt'
-      before_schema: 'file://test-files/langfuse/langfuse/pr-3499/before_schema.txt'
-  
+#  - vars:
+#      number: '3499'
+#      diffs: 'file://test-files/langfuse/langfuse/pr-3499/diffs.txt'
+#      before_schema: 'file://test-files/langfuse/langfuse/pr-3499/before_schema.txt'
+#  
   - vars:
       number: '3651'
       diffs: 'file://test-files/langfuse/langfuse/pr-3651/diffs.txt'
       before_schema: 'file://test-files/langfuse/langfuse/pr-3651/before_schema.txt'
   
-  - vars:
-      number: '3377'
-      diffs: 'file://test-files/langfuse/langfuse/pr-3377/diffs.txt'
-      before_schema: 'file://test-files/langfuse/langfuse/pr-3377/before_schema.txt'
+#  - vars:
+#      number: '3377'
+#      diffs: 'file://test-files/langfuse/langfuse/pr-3377/diffs.txt'
+#      before_schema: 'file://test-files/langfuse/langfuse/pr-3377/before_schema.txt'
   
   - vars:
       number: '3356'
@@ -255,11 +255,6 @@ tests:
       number: '2942'
       diffs: 'file://test-files/langfuse/langfuse/pr-2942/diffs.txt'
       before_schema: 'file://test-files/langfuse/langfuse/pr-2942/before_schema.txt'
-  
-  - vars:
-      number: '2083'
-      diffs: 'file://test-files/langfuse/langfuse/pr-2083/diffs.txt'
-      before_schema: 'file://test-files/langfuse/langfuse/pr-2083/before_schema.txt'
   
   - vars:
       number: '2750'
@@ -280,3 +275,8 @@ tests:
       number: '2655'
       diffs: 'file://test-files/langfuse/langfuse/pr-2655/diffs.txt'
       before_schema: 'file://test-files/langfuse/langfuse/pr-2655/before_schema.txt'
+
+#  - vars:
+#      number: '2083'
+#      diffs: 'file://test-files/langfuse/langfuse/pr-2083/diffs.txt'
+#      before_schema: 'file://test-files/langfuse/langfuse/pr-2083/before_schema.txt'

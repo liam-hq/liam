@@ -33,4 +33,4 @@ jobs:
           config: 'frontend/packages/migration/prompts/001-promptfoo-scripts/promptfooconfig.yaml'
           prompts: 'frontend/packages/migration/prompts/001-promptfoo-scripts/prompt.yaml'
           cache-path: ~/.cache/promptfoo
-          # no-share: true
+          no-share: true # NOTE: no-share: false is unstable?
