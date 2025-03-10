@@ -2,7 +2,7 @@
 
 
 ## Summary
-* 1016 MIT
+* 1019 MIT
 * 84 Apache 2.0
 * 73 ISC
 * 25 Simplified BSD
@@ -2909,6 +2909,17 @@ LGPL-3.0-or-later permitted
 
 
 
+<a name="@supabase/ssr"></a>
+### @supabase/ssr v0.5.2
+#### 
+
+##### Paths
+* /home/runner/work/liam/liam
+
+<a href="http://opensource.org/licenses/mit-license">MIT</a> permitted
+
+
+
 <a name="@supabase/storage-js"></a>
 ### @supabase/storage-js v2.7.1
 #### 
@@ -3120,6 +3131,17 @@ LGPL-3.0-or-later permitted
 
 <a name="@types/connect"></a>
 ### @types/connect v3.4.36
+#### 
+
+##### Paths
+* /home/runner/work/liam/liam
+
+<a href="http://opensource.org/licenses/mit-license">MIT</a> permitted
+
+
+
+<a name="@types/cookie"></a>
+### @types/cookie v0.6.0
 #### 
 
 ##### Paths
@@ -5236,6 +5258,17 @@ BlueOak-1.0.0 permitted
 
 <a name="convert-source-map"></a>
 ### convert-source-map v2.0.0
+#### 
+
+##### Paths
+* /home/runner/work/liam/liam
+
+<a href="http://opensource.org/licenses/mit-license">MIT</a> permitted
+
+
+
+<a name="cookie"></a>
+### cookie v0.7.2
 #### 
 
 ##### Paths
