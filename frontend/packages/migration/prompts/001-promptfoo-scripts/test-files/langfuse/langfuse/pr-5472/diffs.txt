@@ -1,0 +1,105 @@
+Date:   Tue Feb 11 12:45:43 2025 +0100
+
+    chore: drop postgres events table (#5472)
+    
+    * chore: drop postgres events table
+    
+    * chore: celanup
+    
+    * chore: drop events table
+
+diff --git a/packages/shared/prisma/generated/types.ts b/packages/shared/prisma/generated/types.ts
+index 583225fb..be988164 100644
+--- a/packages/shared/prisma/generated/types.ts
++++ b/packages/shared/prisma/generated/types.ts
+@@ -253,16 +253,6 @@ export type EvalTemplate = {
+     vars: Generated<string[]>;
+     output_schema: unknown;
+ };
+-export type Events = {
+-    id: string;
+-    created_at: Generated<Timestamp>;
+-    updated_at: Generated<Timestamp>;
+-    project_id: string;
+-    data: unknown;
+-    headers: Generated<unknown>;
+-    url: string | null;
+-    method: string | null;
+-};
+ export type JobConfiguration = {
+     id: string;
+     created_at: Generated<Timestamp>;
+@@ -634,7 +624,6 @@ export type DB = {
+     dataset_runs: DatasetRuns;
+     datasets: Dataset;
+     eval_templates: EvalTemplate;
+-    events: Events;
+     job_configurations: JobConfiguration;
+     job_executions: JobExecution;
+     llm_api_keys: LlmApiKeys;
+diff --git a/packages/shared/prisma/migrations/20250211123300_drop_events_table/migration.sql b/packages/shared/prisma/migrations/20250211123300_drop_events_table/migration.sql
+new file mode 100644
+index 00000000..8669feae
+--- /dev/null
++++ b/packages/shared/prisma/migrations/20250211123300_drop_events_table/migration.sql
+@@ -0,0 +1,2 @@
++-- DropTable
++DROP TABLE events;
+diff --git a/packages/shared/prisma/schema.prisma b/packages/shared/prisma/schema.prisma
+index 46306c3a..86589de6 100644
+--- a/packages/shared/prisma/schema.prisma
++++ b/packages/shared/prisma/schema.prisma
+@@ -122,7 +122,6 @@ model Project {
+   observations        Observation[]
+   apiKeys             ApiKey[]
+   dataset             Dataset[]
+-  RawEvents           Events[]
+   invitations         MembershipInvitation[]
+   sessions            TraceSession[]
+   Prompt              Prompt[]
+@@ -691,21 +690,6 @@ model DatasetRunItems {
+   @@map("dataset_run_items")
+ }
+ 
+-model Events {
+-  id        String   @id @default(cuid())
+-  createdAt DateTime @default(now()) @map("created_at")
+-  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
+-  projectId String   @map("project_id")
+-  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+-  data      Json
+-  headers   Json     @default("{}")
+-  url       String?
+-  method    String?
+-
+-  @@index(projectId)
+-  @@map("events")
+-}
+-
+ model Comment {
+   id           String            @id @default(cuid())
+   projectId    String            @map("project_id")
+diff --git a/web/src/__tests__/test-utils.ts b/web/src/__tests__/test-utils.ts
+index 3e1bd12b..a7356f42 100644
+--- a/web/src/__tests__/test-utils.ts
++++ b/web/src/__tests__/test-utils.ts
+@@ -20,7 +20,6 @@ export const pruneDatabase = async () => {
+   await prisma.dataset.deleteMany();
+   await prisma.datasetRuns.deleteMany();
+   await prisma.prompt.deleteMany();
+-  await prisma.events.deleteMany();
+   await prisma.model.deleteMany();
+   await prisma.llmApiKeys.deleteMany();
+   await prisma.comment.deleteMany();
+diff --git a/worker/src/__tests__/utils.ts b/worker/src/__tests__/utils.ts
+index 49338ebd..8b615a11 100644
+--- a/worker/src/__tests__/utils.ts
++++ b/worker/src/__tests__/utils.ts
+@@ -15,7 +15,6 @@ export const pruneDatabase = async () => {
+   await prisma.dataset.deleteMany();
+   await prisma.datasetRuns.deleteMany();
+   await prisma.prompt.deleteMany();
+-  await prisma.events.deleteMany();
+   await prisma.model.deleteMany();
+   await prisma.jobExecution.deleteMany();
+   await prisma.jobConfiguration.deleteMany();

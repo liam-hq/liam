@@ -1,0 +1,75 @@
+### About the Documents:
+- **Document A:** Contains the review generation prompt that was provided to the LLM.
+- **Document Z:** Contains 34 consecutive examples of the review results.
+
+For each individual review, we plan to generate a fixed evaluation score for the reviewee. These scores will be presented in a radar chart based on the following five evaluation axes:
+
+- Migration Safety
+- Data Integrity
+- Performance Impact
+- Project Rules Consistency
+- Security or Scalability
+
+
+### Task 1:
+For each specific issue noted in the review results, please analyze whether it corresponds to one of the five evaluation axes. If it does, explain how it maps to the respective axis. Summarize your findings.
+
+### Task 2:
+Please propose any improvements for the five evaluation axes themselves.
+
+-------
+Document A
+-------
+    The purpose of this task is to create a minimal review report.  
+    The RDBMS used is PostgreSQL.  
+
+    (1) contains the differences between the Prisma schema file and the migration DDL. It also includes differences in the application code.  
+    (2) is the schema.prisma file before the changes.  
+
+    ### Instructions:
+    #### **Instruction 1: Important**  
+    Please review this migration, focusing **only** on the changes in the following files:  
+    - packages/shared/prisma/migrations/**  
+    - packages/shared/prisma/schema.prisma  
+
+    At the beginning of your review, add the following disclaimer:  
+    *"This review is based **only** on the provided diff files (packages/shared/prisma/migrations/** and packages/shared/prisma/schema.prisma)."*  
+
+    #### **Instruction 2: Important**  
+    While you may reference "application code" and "commit messages" as supporting information for assessing the migration, **do not** include them in the review comments.  
+
+    #### **Instruction 3:**  
+    If there are any uncertainties in making a judgment, please point them out as well.  
+
+    #### **Instruction 4:**  
+    Focus on evaluating whether the migration follows best practices, including:
+    - Whether the migration results in data loss.
+    - Whether the changes are safe and allow for online DDL.
+    - Efficient indexing.
+    - **Project Rules Consistency:** Evaluate whether the migration adheres to the team-specific project rules and best practices by checking:
+      - **Backward/Forward Compatibility:** Ensure that existing code or external services are not adversely affected and that the schema is designed for future expansion or separation.
+      - **Naming Conventions:** Verify that table names, column names, indexes, and constraints follow the team's naming guidelines (e.g., snake_case vs. camelCase, pluralization rules, and forbidden prefixes such as temp_).
+      - **Architecture/Design Guidelines:** Assess whether the table structure supports modularity and maintainability, avoiding overly redundant tables or excessively complex relationships.
+      - **Team Best Practices:** Confirm adherence to rules such as using uuid for ID columns and standardized foreign key constraints (e.g., employing ON DELETE CASCADE).
+      - **Documentation / Maintainability:** Check if tables and columns include adequate comments and if the migration history is traceable, which supports long-term maintainability.
+      
+    #### **Instruction 5:**  
+    If there are issues related to **Instruction 4**, provide actionable suggestions for the reviewer wherever possible. For instance, if a column name does not follow the naming conventions, suggest renaming it (e.g., change customerId to customer_id). Similarly, if a table or constraint does not comply with team best practices, include recommendations to adjust them accordingly.
+
+    #### **Instruction 6: Important**  
+    To reiterate, **do not** comment on the following:
+    - The need to modify "application code".
+    - The need to revise "commit messages".
+    - The need to update any other documentation.
+
+    #### **Instruction 7:**  
+    At the end of your review, add a disclaimer such as:  
+    *"**Disclaimer:** This review is based solely on the provided information. A complete assessment would require a full understanding of the overall application."*  
+
+    That concludes the main instructions. Below are the reference materials.
+
+-------
+Document Z
+-------
+
+<paste text by $ cat test-files/langfuse/langfuse/pr-*/output.txt >

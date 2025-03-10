@@ -1,0 +1,70 @@
+Date:   Fri Sep 13 21:10:44 2024 +0200
+
+    fix(auth): unknown argument refresh_token_expires_in with Github connection (#3356)
+    
+    fix(auth): unknown argument `refresh_token_expires_in` with Github connection
+    
+    Fixes langfuse/langfuse#3355
+
+diff --git a/packages/shared/prisma/generated/types.ts b/packages/shared/prisma/generated/types.ts
+index 45d95a25..a69fd9ad 100644
+--- a/packages/shared/prisma/generated/types.ts
++++ b/packages/shared/prisma/generated/types.ts
+@@ -80,6 +80,7 @@ export type Account = {
+     scope: string | null;
+     id_token: string | null;
+     session_state: string | null;
++    refresh_token_expires_in: number | null;
+ };
+ export type ApiKey = {
+     id: string;
+diff --git a/packages/shared/prisma/migrations/20240913185822_account_add_refresh_token_expires_in/migration.sql b/packages/shared/prisma/migrations/20240913185822_account_add_refresh_token_expires_in/migration.sql
+new file mode 100644
+index 00000000..bdc7f4f4
+--- /dev/null
++++ b/packages/shared/prisma/migrations/20240913185822_account_add_refresh_token_expires_in/migration.sql
+@@ -0,0 +1,2 @@
++-- AlterTable
++ALTER TABLE "Account" ADD COLUMN     "refresh_token_expires_in" INTEGER;
+diff --git a/packages/shared/prisma/schema.prisma b/packages/shared/prisma/schema.prisma
+index 2b11532f..0471ebf3 100644
+--- a/packages/shared/prisma/schema.prisma
++++ b/packages/shared/prisma/schema.prisma
+@@ -34,21 +34,22 @@ generator kysely {
+ 
+ // Necessary for Next auth
+ model Account {
+-    id                String  @id @default(cuid())
+-    userId            String  @map("user_id")
+-    type              String
+-    provider          String
+-    providerAccountId String
+-    refresh_token     String? // @db.Text
+-    access_token      String? // @db.Text
+-    expires_at        Int?
+-    expires_in        Int?
+-    ext_expires_in    Int?
+-    token_type        String?
+-    scope             String?
+-    id_token          String? // @db.Text
+-    session_state     String?
+-    user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
++    id                       String  @id @default(cuid())
++    userId                   String  @map("user_id")
++    type                     String
++    provider                 String
++    providerAccountId        String
++    refresh_token            String? // @db.Text
++    access_token             String? // @db.Text
++    expires_at               Int?
++    expires_in               Int?
++    ext_expires_in           Int?
++    token_type               String?
++    scope                    String?
++    id_token                 String? // @db.Text
++    session_state            String?
++    refresh_token_expires_in Int?
++    user                     User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+ 
+     @@unique([provider, providerAccountId])
+     @@index([userId])

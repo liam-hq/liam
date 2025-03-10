@@ -1,0 +1,76 @@
+Date:   Thu Feb 20 16:06:39 2025 +0100
+
+    chore: add environment column to trace_sessions (#5656)
+    
+    * chore: add environment column to trace_sessions
+    
+    * chore: update test
+
+diff --git a/packages/shared/prisma/generated/types.ts b/packages/shared/prisma/generated/types.ts
+index aefdb40b..13f7d56c 100644
+--- a/packages/shared/prisma/generated/types.ts
++++ b/packages/shared/prisma/generated/types.ts
+@@ -571,6 +571,7 @@ export type TraceSession = {
+     project_id: string;
+     bookmarked: Generated<boolean>;
+     public: Generated<boolean>;
++    environment: Generated<string>;
+ };
+ export type TraceView = {
+     id: string;
+diff --git a/packages/shared/prisma/migrations/20250220141500_add_environment_to_trace_sessions/migration.sql b/packages/shared/prisma/migrations/20250220141500_add_environment_to_trace_sessions/migration.sql
+new file mode 100644
+index 00000000..647e0a8f
+--- /dev/null
++++ b/packages/shared/prisma/migrations/20250220141500_add_environment_to_trace_sessions/migration.sql
+@@ -0,0 +1,3 @@
++-- AlterTable
++ALTER TABLE "trace_sessions"
++ADD COLUMN "environment" TEXT NOT NULL DEFAULT 'default';
+diff --git a/packages/shared/prisma/schema.prisma b/packages/shared/prisma/schema.prisma
+index 4708f69f..686eb5fc 100644
+--- a/packages/shared/prisma/schema.prisma
++++ b/packages/shared/prisma/schema.prisma
+@@ -267,13 +267,14 @@ enum Role {
+ }
+ 
+ model TraceSession {
+-  id         String   @default(cuid())
+-  createdAt  DateTime @default(now()) @map("created_at")
+-  updatedAt  DateTime @default(now()) @updatedAt @map("updated_at")
+-  projectId  String   @map("project_id")
+-  project    Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+-  bookmarked Boolean  @default(false)
+-  public     Boolean  @default(false)
++  id          String   @default(cuid())
++  createdAt   DateTime @default(now()) @map("created_at")
++  updatedAt   DateTime @default(now()) @updatedAt @map("updated_at")
++  projectId   String   @map("project_id")
++  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
++  bookmarked  Boolean  @default(false)
++  public      Boolean  @default(false)
++  environment String   @default("default")
+ 
+   @@id([id, projectId])
+   @@index([projectId])
+diff --git a/web/src/__tests__/async/sessions-trpc.servertest.ts b/web/src/__tests__/async/sessions-trpc.servertest.ts
+index 40dc246b..27906cd7 100644
+--- a/web/src/__tests__/async/sessions-trpc.servertest.ts
++++ b/web/src/__tests__/async/sessions-trpc.servertest.ts
+@@ -14,7 +14,7 @@ import {
+ } from "@langfuse/shared/src/server";
+ import { randomUUID } from "crypto";
+ 
+-describe("traces trps", () => {
++describe("traces trpc", () => {
+   const projectId = "7a88fb47-b4e2-43b8-a06c-a5ce950dc53a";
+ 
+   beforeEach(async () => await pruneDatabase());
+@@ -105,6 +105,7 @@ describe("traces trps", () => {
+         createdAt: expect.any(Date),
+         updatedAt: expect.any(Date),
+         projectId: projectId,
++        environment: "default",
+         bookmarked: false,
+         public: false,
+         traces: expect.arrayContaining([

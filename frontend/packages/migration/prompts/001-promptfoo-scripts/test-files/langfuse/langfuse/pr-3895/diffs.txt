@@ -1,0 +1,3509 @@
+Date:   Mon Oct 28 15:24:08 2024 +0100
+
+    chore: add background migrations for long-running tasks (#3895)
+
+diff --git a/packages/shared/clickhouse/migrations/0000_flags.down.sql b/packages/shared/clickhouse/migrations/0000_flags.down.sql
+new file mode 100644
+index 00000000..410d9ec7
+--- /dev/null
++++ b/packages/shared/clickhouse/migrations/0000_flags.down.sql
+@@ -0,0 +1 @@
++SET allow_experimental_json_type=0;
+diff --git a/packages/shared/clickhouse/migrations/0000_flags.up.sql b/packages/shared/clickhouse/migrations/0000_flags.up.sql
+new file mode 100644
+index 00000000..97a484b9
+--- /dev/null
++++ b/packages/shared/clickhouse/migrations/0000_flags.up.sql
+@@ -0,0 +1 @@
++SET allow_experimental_json_type=1;
+diff --git a/packages/shared/clickhouse/migrations/0002_observations.up.sql b/packages/shared/clickhouse/migrations/0002_observations.up.sql
+index a1f82b5c..5ccdeb4a 100644
+--- a/packages/shared/clickhouse/migrations/0002_observations.up.sql
++++ b/packages/shared/clickhouse/migrations/0002_observations.up.sql
+@@ -7,7 +7,7 @@ CREATE TABLE observations (
+     `start_time` DateTime64(3),
+     `end_time` Nullable(DateTime64(3)),
+     `name` String,
+-    `metadata` Map(LowCardinality(String), String) CODEC(ZSTD(1)),
++    `metadata` JSON(max_dynamic_paths=32),
+     `level` LowCardinality(String),
+     `status_message` Nullable(String),
+     `version` Nullable(String),
+@@ -31,16 +31,13 @@ CREATE TABLE observations (
+     is_deleted UInt8,
+     INDEX idx_id id TYPE bloom_filter() GRANULARITY 1,
+     INDEX idx_trace_id trace_id TYPE bloom_filter() GRANULARITY 1,
+-    INDEX idx_project_id project_id TYPE bloom_filter() GRANULARITY 1,
+-    INDEX idx_res_metadata_key mapKeys(metadata) TYPE bloom_filter() GRANULARITY 1,
+-    INDEX idx_res_metadata_value mapValues(metadata) TYPE bloom_filter() GRANULARITY 1
++    INDEX idx_project_id project_id TYPE bloom_filter() GRANULARITY 1
+ ) ENGINE = ReplacingMergeTree(event_ts, is_deleted) Partition by toYYYYMM(start_time)
+ PRIMARY KEY (
+         project_id,
+         `type`,
+         toDate(start_time)
+     )
+-
+ ORDER BY (
+         project_id,
+         `type`,
+diff --git a/packages/shared/clickhouse/migrations/0004_observations_wide.down.sql b/packages/shared/clickhouse/migrations/0004_observations_wide.down.sql
+deleted file mode 100644
+index 019b55bb..00000000
+--- a/packages/shared/clickhouse/migrations/0004_observations_wide.down.sql
++++ /dev/null
+@@ -1,3 +0,0 @@
+-DROP TABLE IF EXISTS observations_to_observations_wide;
+-DROP TABLE IF EXISTS traces_to_observations_wide;
+-DROP TABLE IF EXISTS observations_wide;
+diff --git a/packages/shared/clickhouse/migrations/0004_observations_wide.up.sql b/packages/shared/clickhouse/migrations/0004_observations_wide.up.sql
+deleted file mode 100644
+index 5127f1e3..00000000
+--- a/packages/shared/clickhouse/migrations/0004_observations_wide.up.sql
++++ /dev/null
+@@ -1,153 +0,0 @@
+-CREATE TABLE observations_wide
+-(
+-    `id` String,
+-    trace_id Nullable(String),
+-    `name` Nullable(String),
+-    `project_id` String,
+-    `user_id` Nullable(String),
+-    `metadata` Map(String, String),
+-    `release` Nullable(String),
+-    `version` Nullable(String),
+-    `public` Bool,
+-    `bookmarked` Bool,
+-    `tags` Array(String),
+-    `session_id` Nullable(String),
+-    `created_at` DateTime64(3),
+-    `updated_at` DateTime64(3),
+-    event_ts DateTime64(3),
+-    `type` LowCardinality(String),
+-    `parent_observation_id` Nullable(String),
+-    `start_time` DateTime64(3),
+-    `end_time` Nullable(DateTime64(3)),
+-    `level` LowCardinality(String),
+-    `status_message` Nullable(String),
+-    `provided_model_name` Nullable(String),
+-    `internal_model_id` Nullable(String),
+-    `model_parameters` Nullable(String),
+-    `provided_usage_details` Map(LowCardinality(String), UInt64),
+-    `usage_details` Map(LowCardinality(String), UInt64),
+-    `provided_cost_details` Map(LowCardinality(String), Decimal64(12)),
+-    `cost_details` Map(LowCardinality(String), Decimal64(12)),
+-    `total_cost` Nullable(Decimal64(12)),
+-    `completion_start_time` Nullable(DateTime64(3)),
+-    `prompt_id` Nullable(String),
+-    `prompt_name` Nullable(String),
+-    `prompt_version` Nullable(UInt16),
+-    trace_timestamp DateTime64(3),
+-    trace_name String,
+-    trace_user_id Nullable(String),
+-    trace_metadata Map(String, String),
+-    trace_release Nullable(String),
+-    trace_version Nullable(String),
+-    trace_public Bool,
+-    trace_bookmarked Bool,
+-    trace_tags Array(String),
+-    trace_session_id Nullable(String),
+-    trace_event_ts DateTime64(3),
+-    is_deleted UInt8,
+-) ENGINE = ReplacingMergeTree(event_ts, is_deleted) Partition by toYYYYMM(start_time)
+-PRIMARY KEY (
+-        project_id,
+-        `type`,
+-        toDate(start_time)
+-    )
+-ORDER BY (
+-        project_id,
+-        `type`,
+-        toDate(start_time),
+-        id
+-    );
+-
+-CREATE MATERIALIZED VIEW traces_to_observations_wide TO observations_wide AS
+-SELECT 
+-    argMax(t.`name`, o.event_ts) as trace_name,
+-    argMax(t.timestamp, o.event_ts) as trace_timestamp,
+-    argMax(t.user_id, o.event_ts) as trace_user_id,
+-    argMax(t.metadata, o.event_ts) as trace_metadata,
+-    argMax(t.release, o.event_ts) as trace_release,
+-    argMax(t.version, o.event_ts) as trace_version,
+-    argMax(t.project_id, o.event_ts) as trace_project_id,
+-    argMax(t.public, o.event_ts) as trace_public,
+-    argMax(t.bookmarked, o.event_ts) as trace_bookmarked,
+-    argMax(t.tags, o.event_ts) as trace_tags,
+-    argMax(t.session_id, o.event_ts) as trace_session_id,
+-    argMax(t.event_ts, o.event_ts) as trace_event_ts,
+-    o.id as id,
+-    argMax(o.trace_id, o.event_ts) as trace_id,
+-    argMax(o.name, o.event_ts) as `name`,
+-    o.project_id as project_id,
+-    argMax(o.metadata, o.event_ts) as metadata,
+-    argMax(o.type, o.event_ts) as type,
+-    argMax(o.parent_observation_id, o.event_ts) as parent_observation_id,
+-    argMax(o.start_time, o.event_ts) as start_time,
+-    argMax(o.end_time, o.event_ts) as end_time,
+-    argMax(o.level, o.event_ts) as level,
+-    argMax(o.status_message, o.event_ts) as status_message,
+-    argMax(o.provided_model_name, o.event_ts) as provided_model_name,
+-    argMax(o.internal_model_id, o.event_ts) as internal_model_id,
+-    argMax(o.model_parameters, o.event_ts) as model_parameters,
+-    argMax(o.provided_usage_details, o.event_ts) as provided_usage_details,
+-    argMax(o.provided_cost_details, o.event_ts) as provided_cost_details,
+-    argMax(o.usage_details, o.event_ts) as usage_details,
+-    argMax(o.cost_details, o.event_ts) as cost_details,
+-    argMax(o.total_cost, o.event_ts) as total_cost,
+-    argMax(o.completion_start_time, o.event_ts) as completion_start_time,
+-    argMax(o.prompt_id, o.event_ts) as prompt_id,
+-    argMax(o.prompt_name, o.event_ts) as prompt_name,
+-    argMax(o.prompt_version, o.event_ts) as prompt_version,
+-    argMax(o.created_at, o.event_ts) as created_at,
+-    argMax(o.updated_at, o.event_ts) as updated_at,
+-    argMax(o.event_ts, o.event_ts) as event_ts
+-FROM traces t
+-INNER JOIN observations o ON t.id = o.trace_id
+-GROUP BY o.id, o.project_id
+-ORDER BY event_ts desc
+-LIMIT 1 by o.id;
+-
+-CREATE MATERIALIZED VIEW observations_to_observations_wide TO observations_wide AS
+-SELECT 
+-  argMax(t.timestamp, o.event_ts) as trace_timestamp,
+-    argMax(t.name, o.event_ts) as trace_name,
+-    argMax(t.user_id, o.event_ts) as trace_user_id,
+-    argMax(t.metadata, o.event_ts) as trace_metadata,
+-    argMax(t.release, o.event_ts) as trace_release,
+-    argMax(t.version, o.event_ts) as trace_version,
+-    argMax(t.project_id, o.event_ts) as trace_project_id,
+-    argMax(t.public, o.event_ts) as trace_public,
+-    argMax(t.bookmarked, o.event_ts) as trace_bookmarked,
+-    argMax(t.tags, o.event_ts) as trace_tags,
+-    argMax(t.session_id, o.event_ts) as trace_session_id,
+-    argMax(t.event_ts, o.event_ts) as trace_event_ts,
+-    o.id as id,
+-    argMax(o.trace_id, o.event_ts) as trace_id,
+-    argMax(o.name, o.event_ts) as name,
+-    o.project_id as project_id,
+-    argMax(o.metadata, o.event_ts) as metadata,
+-    argMax(o.type, o.event_ts) as type,
+-    argMax(o.parent_observation_id, o.event_ts) as parent_observation_id,
+-    argMax(o.start_time, o.event_ts) as start_time,
+-    argMax(o.end_time, o.event_ts) as end_time,
+-    argMax(o.level, o.event_ts) as level,
+-    argMax(o.status_message, o.event_ts) as status_message,
+-    argMax(o.provided_model_name, o.event_ts) as provided_model_name,
+-    argMax(o.internal_model_id, o.event_ts) as internal_model_id,
+-    argMax(o.model_parameters, o.event_ts) as model_parameters,
+-    argMax(o.provided_usage_details, o.event_ts) as provided_usage_details,
+-    argMax(o.provided_cost_details, o.event_ts) as provided_cost_details,
+-    argMax(o.usage_details, o.event_ts) as usage_details,
+-    argMax(o.cost_details, o.event_ts) as cost_details,
+-    argMax(o.total_cost, o.event_ts) as total_cost,
+-    argMax(o.completion_start_time, o.event_ts) as completion_start_time,
+-    argMax(o.prompt_id, o.event_ts) as prompt_id,
+-    argMax(o.prompt_name, o.event_ts) as prompt_name,
+-    argMax(o.prompt_version, o.event_ts) as prompt_version,
+-    argMax(o.created_at, o.event_ts) as created_at,
+-    argMax(o.updated_at, o.event_ts) as updated_at,
+-    argMax(o.event_ts, o.event_ts) as event_ts
+-FROM observations o
+-LEFT OUTER JOIN traces t ON t.id = o.trace_id
+-GROUP BY o.id, o.project_id 
+-ORDER BY event_ts desc
+-LIMIT 1 by o.id;
+-
+-
+diff --git a/packages/shared/clickhouse/migrations/0005_traces_wide.down.sql b/packages/shared/clickhouse/migrations/0005_traces_wide.down.sql
+deleted file mode 100644
+index a2c2d63f..00000000
+--- a/packages/shared/clickhouse/migrations/0005_traces_wide.down.sql
++++ /dev/null
+@@ -1,3 +0,0 @@
+-DROP TABLE IF EXISTS observations_to_traces_wide;
+-DROP TABLE IF EXISTS traces_to_traces_wide;
+-DROP TABLE IF EXISTS traces_wide;
+diff --git a/packages/shared/clickhouse/migrations/0005_traces_wide.up.sql b/packages/shared/clickhouse/migrations/0005_traces_wide.up.sql
+deleted file mode 100644
+index 82288097..00000000
+--- a/packages/shared/clickhouse/migrations/0005_traces_wide.up.sql
++++ /dev/null
+@@ -1,152 +0,0 @@
+-CREATE TABLE traces_wide
+-(
+-    `id` String,
+-    trace_id Nullable(String),
+-    `name` Nullable(String),
+-    `project_id` String,
+-    `user_id` Nullable(String),
+-    `metadata` Map(String, String),
+-    `release` Nullable(String),
+-    `version` Nullable(String),
+-    `public` Bool,
+-    `bookmarked` Bool,
+-    `tags` Array(String),
+-    `session_id` Nullable(String),
+-    `created_at` DateTime64(3),
+-    `updated_at` DateTime64(3),
+-    event_ts DateTime64(3),
+-    `type` LowCardinality(String),
+-    `parent_observation_id` Nullable(String),
+-    `start_time` DateTime64(3),
+-    `end_time` Nullable(DateTime64(3)),
+-    `level` LowCardinality(String),
+-    `status_message` Nullable(String),
+-    `provided_model_name` Nullable(String),
+-    `internal_model_id` Nullable(String),
+-    `model_parameters` Nullable(String),
+-    `provided_usage_details` Map(LowCardinality(String), UInt64),
+-    `usage_details` Map(LowCardinality(String), UInt64),
+-    `provided_cost_details` Map(LowCardinality(String), Decimal64(12)),
+-    `cost_details` Map(LowCardinality(String), Decimal64(12)),
+-    `total_cost` Nullable(Decimal64(12)),
+-    `completion_start_time` Nullable(DateTime64(3)),
+-    `prompt_id` Nullable(String),
+-    `prompt_name` Nullable(String),
+-    `prompt_version` Nullable(UInt16),
+-    trace_timestamp DateTime64(3),
+-    trace_name String,
+-    trace_user_id Nullable(String),
+-    trace_metadata Map(String, String),
+-    trace_release Nullable(String),
+-    trace_version Nullable(String),
+-    trace_public Bool,
+-    trace_bookmarked Bool,
+-    trace_tags Array(String),
+-    trace_session_id Nullable(String),
+-    trace_event_ts DateTime64(3),
+-    is_deleted UInt8
+-) ENGINE = ReplacingMergeTree(event_ts, is_deleted) Partition by toYYYYMM(start_time)
+-PRIMARY KEY (
+-        project_id,
+-        `type`,
+-        toDate(trace_timestamp)
+-    )
+-ORDER BY (
+-        project_id,
+-        `type`,
+-        toDate(trace_timestamp),
+-        id
+-    );
+-
+-CREATE MATERIALIZED VIEW traces_to_traces_wide TO traces_wide AS
+-SELECT 
+-    argMax(t.`name`, t.event_ts) as trace_name,
+-    argMax(t.timestamp, t.event_ts) as trace_timestamp,
+-    argMax(t.user_id, t.event_ts) as trace_user_id,
+-    argMax(t.metadata, t.event_ts) as trace_metadata,
+-    argMax(t.release, t.event_ts) as trace_release,
+-    argMax(t.version, t.event_ts) as trace_version,
+-    argMax(t.public, t.event_ts) as trace_public,
+-    argMax(t.bookmarked, t.event_ts) as trace_bookmarked,
+-    argMax(t.tags, t.event_ts) as trace_tags,
+-    argMax(t.session_id, t.event_ts) as trace_session_id,
+-    argMax(t.event_ts, t.event_ts) as trace_event_ts,
+-    o.id as id,
+-    argMax(o.trace_id, t.event_ts) as trace_id,
+-    argMax(o.name, t.event_ts) as `name`,
+-    o.project_id as project_id,
+-    argMax(o.metadata, t.event_ts) as metadata,
+-    argMax(o.type, t.event_ts) as type,
+-    argMax(o.parent_observation_id, t.event_ts) as parent_observation_id,
+-    argMax(o.start_time, t.event_ts) as start_time,
+-    argMax(o.end_time, t.event_ts) as end_time,
+-    argMax(o.level, t.event_ts) as level,
+-    argMax(o.status_message, t.event_ts) as status_message,
+-    argMax(o.provided_model_name, t.event_ts) as provided_model_name,
+-    argMax(o.internal_model_id, t.event_ts) as internal_model_id,
+-    argMax(o.model_parameters, t.event_ts) as model_parameters,
+-    argMax(o.provided_usage_details, o.event_ts) as provided_usage_details,
+-    argMax(o.provided_cost_details, o.event_ts) as provided_cost_details,
+-    argMax(o.usage_details, o.event_ts) as usage_details,
+-    argMax(o.cost_details, o.event_ts) as cost_details,
+-    argMax(o.total_cost, o.event_ts) as total_cost,
+-    argMax(o.completion_start_time, t.event_ts) as completion_start_time,
+-    argMax(o.prompt_id, t.event_ts) as prompt_id,
+-    argMax(o.prompt_name, t.event_ts) as prompt_name,
+-    argMax(o.prompt_version, t.event_ts) as prompt_version,
+-    argMax(o.created_at, t.event_ts) as created_at,
+-    argMax(o.updated_at, t.event_ts) as updated_at,
+-    argMax(o.event_ts, t.event_ts) as event_ts
+-FROM traces t
+-LEFT JOIN observations o ON t.id = o.trace_id
+-GROUP BY o.id, o.project_id
+-ORDER BY event_ts desc
+-LIMIT 1 by o.id;
+-
+-
+-CREATE MATERIALIZED VIEW observations_to_traces_wide TO traces_wide AS
+-SELECT 
+-    argMax(t.timestamp, o.event_ts) as trace_timestamp,
+-    argMax(t.name, o.event_ts) as trace_name,
+-    argMax(t.user_id, o.event_ts) as trace_user_id,
+-    argMax(t.metadata, o.event_ts) as trace_metadata,
+-    argMax(t.release, o.event_ts) as trace_release,
+-    argMax(t.version, o.event_ts) as trace_version,
+-    argMax(t.public, o.event_ts) as trace_public,
+-    argMax(t.bookmarked, o.event_ts) as trace_bookmarked,
+-    argMax(t.tags, o.event_ts) as trace_tags,
+-    argMax(t.session_id, o.event_ts) as trace_session_id,
+-    argMax(t.event_ts, o.event_ts) as trace_event_ts,
+-    o.id as id,
+-    argMax(o.trace_id, o.event_ts) as trace_id,
+-    argMax(o.name, o.event_ts) as name,
+-    o.project_id as project_id,
+-    argMax(o.metadata, o.event_ts) as metadata,
+-    argMax(o.type, o.event_ts) as type,
+-    argMax(o.parent_observation_id, o.event_ts) as parent_observation_id,
+-    argMax(o.start_time, o.event_ts) as start_time,
+-    argMax(o.end_time, o.event_ts) as end_time,
+-    argMax(o.level, o.event_ts) as level,
+-    argMax(o.status_message, o.event_ts) as status_message,
+-    argMax(o.provided_model_name, o.event_ts) as provided_model_name,
+-    argMax(o.internal_model_id, o.event_ts) as internal_model_id,
+-    argMax(o.model_parameters, o.event_ts) as model_parameters,
+-    argMax(o.provided_usage_details, o.event_ts) as provided_usage_details,
+-    argMax(o.provided_cost_details, o.event_ts) as provided_cost_details,
+-    argMax(o.usage_details, o.event_ts) as usage_details,
+-    argMax(o.cost_details, o.event_ts) as cost_details,
+-    argMax(o.total_cost, o.event_ts) as total_cost,
+-    argMax(o.completion_start_time, o.event_ts) as completion_start_time,
+-    argMax(o.prompt_id, o.event_ts) as prompt_id,
+-    argMax(o.prompt_name, o.event_ts) as prompt_name,
+-    argMax(o.prompt_version, o.event_ts) as prompt_version,
+-    argMax(o.created_at, o.event_ts) as created_at,
+-    argMax(o.updated_at, o.event_ts) as updated_at,
+-    argMax(o.event_ts, o.event_ts) as event_ts
+-FROM observations o
+-INNER JOIN traces t ON t.id = o.trace_id
+-WHERE t.id IS NOT NULL
+-GROUP BY o.id, o.project_id
+-ORDER BY event_ts desc
+-LIMIT 1 by o.id;
+-
+diff --git a/packages/shared/prisma/generated/types.ts b/packages/shared/prisma/generated/types.ts
+index 20759d48..1ecdc366 100644
+--- a/packages/shared/prisma/generated/types.ts
++++ b/packages/shared/prisma/generated/types.ts
+@@ -143,6 +143,17 @@ export type AuditLog = {
+     before: string | null;
+     after: string | null;
+ };
++export type BackgroundMigration = {
++    id: string;
++    name: string;
++    script: string;
++    args: unknown;
++    finished_at: Timestamp | null;
++    failed_at: Timestamp | null;
++    failed_reason: string | null;
++    worker_id: string | null;
++    locked_at: Timestamp | null;
++};
+ export type BatchExport = {
+     id: string;
+     created_at: Generated<Timestamp>;
+@@ -554,6 +565,7 @@ export type DB = {
+     annotation_queues: AnnotationQueue;
+     api_keys: ApiKey;
+     audit_logs: AuditLog;
++    background_migrations: BackgroundMigration;
+     batch_exports: BatchExport;
+     comments: Comment;
+     cron_jobs: CronJobs;
+diff --git a/packages/shared/prisma/migrations/20241024111800_add_background_migrations_table/migration.sql b/packages/shared/prisma/migrations/20241024111800_add_background_migrations_table/migration.sql
+new file mode 100644
+index 00000000..54f6a920
+--- /dev/null
++++ b/packages/shared/prisma/migrations/20241024111800_add_background_migrations_table/migration.sql
+@@ -0,0 +1,18 @@
++-- CreateTable
++CREATE TABLE "background_migrations" (
++    "id" TEXT NOT NULL,
++    "name" TEXT NOT NULL,
++    "script" TEXT NOT NULL,
++    "args" JSONB NOT NULL,
++
++    "finished_at" TIMESTAMP(3),
++    "failed_at" TIMESTAMP(3),
++    "failed_reason" TEXT,
++    "worker_id" TEXT,
++    "locked_at" TIMESTAMP(3),
++
++    CONSTRAINT "background_migrations_pkey" PRIMARY KEY ("id")
++);
++
++-- CreateIndex
++CREATE UNIQUE INDEX "background_migrations_name_key" ON "background_migrations"("name");
+diff --git a/packages/shared/prisma/migrations/20241024121500_add_generations_cost_backfill_background_migration/migration.sql b/packages/shared/prisma/migrations/20241024121500_add_generations_cost_backfill_background_migration/migration.sql
+new file mode 100644
+index 00000000..cb479b7b
+--- /dev/null
++++ b/packages/shared/prisma/migrations/20241024121500_add_generations_cost_backfill_background_migration/migration.sql
+@@ -0,0 +1,2 @@
++INSERT INTO background_migrations (id, name, script, args)
++VALUES ('32859a35-98f5-4a4a-b438-ebc579349e00', '20241024_1216_add_generations_cost_backfill', 'addGenerationsCostBackfill', '{}');
+diff --git a/packages/shared/prisma/migrations/20241024173000_add_traces_pg_to_ch_background_migration/migration.sql b/packages/shared/prisma/migrations/20241024173000_add_traces_pg_to_ch_background_migration/migration.sql
+new file mode 100644
+index 00000000..de145b4b
+--- /dev/null
++++ b/packages/shared/prisma/migrations/20241024173000_add_traces_pg_to_ch_background_migration/migration.sql
+@@ -0,0 +1,2 @@
++INSERT INTO background_migrations (id, name, script, args)
++VALUES ('5960f22a-748f-480c-b2f3-bc4f9d5d84bc', '20241024_1730_migrate_traces_from_pg_to_ch', 'migrateTracesFromPostgresToClickhouse', '{}');
+diff --git a/packages/shared/prisma/migrations/20241024173700_add_observations_pg_to_ch_background_migration/migration.sql b/packages/shared/prisma/migrations/20241024173700_add_observations_pg_to_ch_background_migration/migration.sql
+new file mode 100644
+index 00000000..901313d3
+--- /dev/null
++++ b/packages/shared/prisma/migrations/20241024173700_add_observations_pg_to_ch_background_migration/migration.sql
+@@ -0,0 +1,2 @@
++INSERT INTO background_migrations (id, name, script, args)
++VALUES ('7526e7c9-0026-4595-af2c-369dfd9176ec', '20241024_1737_migrate_observations_from_pg_to_ch', 'migrateObservationsFromPostgresToClickhouse', '{}');
+diff --git a/packages/shared/prisma/migrations/20241024173800_add_scores_pg_to_ch_background_migration/migration.sql b/packages/shared/prisma/migrations/20241024173800_add_scores_pg_to_ch_background_migration/migration.sql
+new file mode 100644
+index 00000000..52fd6d91
+--- /dev/null
++++ b/packages/shared/prisma/migrations/20241024173800_add_scores_pg_to_ch_background_migration/migration.sql
+@@ -0,0 +1,2 @@
++INSERT INTO background_migrations (id, name, script, args)
++VALUES ('94e50334-50d3-4e49-ad2e-9f6d92c85ef7', '20241024_1738_migrate_scores_from_pg_to_ch', 'migrateScoresFromPostgresToClickhouse', '{}');
+diff --git a/packages/shared/prisma/schema.prisma b/packages/shared/prisma/schema.prisma
+index f23edee5..4a231d31 100644
+--- a/packages/shared/prisma/schema.prisma
++++ b/packages/shared/prisma/schema.prisma
+@@ -2,948 +2,962 @@
+ // learn more about it in the docs: https://pris.ly/d/prisma-schema
+ 
+ generator client {
+-    provider        = "prisma-client-js"
+-    previewFeatures = ["tracing", "views", "relationJoins", "metrics"]
++  provider        = "prisma-client-js"
++  previewFeatures = ["tracing", "views", "relationJoins", "metrics"]
+ }
+ 
+ datasource db {
+-    provider          = "postgresql"
+-    url               = env("DATABASE_URL")
+-    directUrl         = env("DIRECT_URL")
+-    shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
++  provider          = "postgresql"
++  url               = env("DATABASE_URL")
++  directUrl         = env("DIRECT_URL")
++  shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
+ }
+ 
+ generator erd {
+-    provider     = "prisma-erd-generator"
+-    ignoreTables = ["_prisma_migrations", "Session", "Account", "Example"]
+-    disabled     = true
+-    ignoreEnums  = true
+-    output       = "database.svg"
++  provider     = "prisma-erd-generator"
++  ignoreTables = ["_prisma_migrations", "Session", "Account", "Example"]
++  disabled     = true
++  ignoreEnums  = true
++  output       = "database.svg"
+ }
+ 
+ generator kysely {
+-    provider = "prisma-kysely"
++  provider = "prisma-kysely"
+ 
+-    // Optionally provide a destination directory for the generated file
+-    // and a filename of your choice
+-    // output = "../src/db"
+-    // fileName = "types.ts"
+-    // Optionally generate runtime enums to a separate file
+-    // enumFileName = "enums.ts"
++  // Optionally provide a destination directory for the generated file
++  // and a filename of your choice
++  // output = "../src/db"
++  // fileName = "types.ts"
++  // Optionally generate runtime enums to a separate file
++  // enumFileName = "enums.ts"
+ }
+ 
+ // Necessary for Next auth
+ model Account {
+-    id                       String  @id @default(cuid())
+-    userId                   String  @map("user_id")
+-    type                     String
+-    provider                 String
+-    providerAccountId        String
+-    refresh_token            String? // @db.Text
+-    access_token             String? // @db.Text
+-    expires_at               Int?
+-    expires_in               Int?
+-    ext_expires_in           Int?
+-    token_type               String?
+-    scope                    String?
+-    id_token                 String? // @db.Text
+-    session_state            String?
+-    refresh_token_expires_in Int?
+-    created_at               Int? // GitLab
+-    user                     User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+-
+-    @@unique([provider, providerAccountId])
+-    @@index([userId])
++  id                       String  @id @default(cuid())
++  userId                   String  @map("user_id")
++  type                     String
++  provider                 String
++  providerAccountId        String
++  refresh_token            String? // @db.Text
++  access_token             String? // @db.Text
++  expires_at               Int?
++  expires_in               Int?
++  ext_expires_in           Int?
++  token_type               String?
++  scope                    String?
++  id_token                 String? // @db.Text
++  session_state            String?
++  refresh_token_expires_in Int?
++  created_at               Int? // GitLab
++  user                     User    @relation(fields: [userId], references: [id], onDelete: Cascade)
++
++  @@unique([provider, providerAccountId])
++  @@index([userId])
+ }
+ 
+ model Session {
+-    id           String   @id @default(cuid())
+-    sessionToken String   @unique @map("session_token")
+-    userId       String   @map("user_id")
+-    expires      DateTime
+-    user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
++  id           String   @id @default(cuid())
++  sessionToken String   @unique @map("session_token")
++  userId       String   @map("user_id")
++  expires      DateTime
++  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+ }
+ 
+ model User {
+-    id                      String                   @id @default(cuid())
+-    name                    String?
+-    email                   String?                  @unique
+-    emailVerified           DateTime?                @map("email_verified")
+-    password                String?
+-    image                   String?
+-    admin                   Boolean                  @default(false)
+-    accounts                Account[]
+-    sessions                Session[]
+-    organizationMemberships OrganizationMembership[]
+-    projectMemberships      ProjectMembership[]
+-    invitations             MembershipInvitation[]
+-    createdAt               DateTime                 @default(now()) @map("created_at")
+-    updatedAt               DateTime                 @default(now()) @updatedAt @map("updated_at")
+-    featureFlags            String[]                 @default([]) @map("feature_flags")
+-    annotatedLockedItem     AnnotationQueueItem[]    @relation("LockedByUser")
+-    annotatedCompletedItem  AnnotationQueueItem[]    @relation("AnnotatorUser")
+-
+-    @@map("users")
++  id                      String                   @id @default(cuid())
++  name                    String?
++  email                   String?                  @unique
++  emailVerified           DateTime?                @map("email_verified")
++  password                String?
++  image                   String?
++  admin                   Boolean                  @default(false)
++  accounts                Account[]
++  sessions                Session[]
++  organizationMemberships OrganizationMembership[]
++  projectMemberships      ProjectMembership[]
++  invitations             MembershipInvitation[]
++  createdAt               DateTime                 @default(now()) @map("created_at")
++  updatedAt               DateTime                 @default(now()) @updatedAt @map("updated_at")
++  featureFlags            String[]                 @default([]) @map("feature_flags")
++  annotatedLockedItem     AnnotationQueueItem[]    @relation("LockedByUser")
++  annotatedCompletedItem  AnnotationQueueItem[]    @relation("AnnotatorUser")
++
++  @@map("users")
+ }
+ 
+ model VerificationToken {
+-    identifier String
+-    token      String   @unique
+-    expires    DateTime
++  identifier String
++  token      String   @unique
++  expires    DateTime
+ 
+-    @@unique([identifier, token])
+-    @@map("verification_tokens")
++  @@unique([identifier, token])
++  @@map("verification_tokens")
+ }
+ 
+ model Organization {
+-    id                      String                   @id @default(cuid())
+-    name                    String
+-    createdAt               DateTime                 @default(now()) @map("created_at")
+-    updatedAt               DateTime                 @default(now()) @updatedAt @map("updated_at")
+-    cloudConfig             Json?                    @map("cloud_config") // Langfuse Cloud, for zod schema see @/src/features/organizations/utils/cloudConfigSchema
+-    organizationMemberships OrganizationMembership[]
+-    projects                Project[]
+-    MembershipInvitation    MembershipInvitation[]
++  id                      String                   @id @default(cuid())
++  name                    String
++  createdAt               DateTime                 @default(now()) @map("created_at")
++  updatedAt               DateTime                 @default(now()) @updatedAt @map("updated_at")
++  cloudConfig             Json?                    @map("cloud_config") // Langfuse Cloud, for zod schema see @/src/features/organizations/utils/cloudConfigSchema
++  organizationMemberships OrganizationMembership[]
++  projects                Project[]
++  MembershipInvitation    MembershipInvitation[]
+ 
+-    @@map("organizations")
++  @@map("organizations")
+ }
+ 
+ model Project {
+-    id                  String                 @id @default(cuid())
+-    orgId               String                 @map("org_id")
+-    createdAt           DateTime               @default(now()) @map("created_at")
+-    updatedAt           DateTime               @default(now()) @updatedAt @map("updated_at")
+-    name                String
+-    projectMembers      ProjectMembership[]
+-    organization        Organization           @relation(fields: [orgId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+-    traces              Trace[]
+-    observations        Observation[]
+-    apiKeys             ApiKey[]
+-    dataset             Dataset[]
+-    RawEvents           Events[]
+-    invitations         MembershipInvitation[]
+-    sessions            TraceSession[]
+-    Prompt              Prompt[]
+-    Model               Model[]
+-    EvalTemplate        EvalTemplate[]
+-    JobConfiguration    JobConfiguration[]
+-    JobExecution        JobExecution[]
+-    LlmApiKeys          LlmApiKeys[]
+-    PosthogIntegration  PosthogIntegration[]
+-    Score               Score[]
+-    scoreConfig         ScoreConfig[]
+-    BatchExport         BatchExport[]
+-    comment             Comment[]
+-    annotationQueue     AnnotationQueue[]
+-    annotationQueueItem AnnotationQueueItem[]
+-
+-    @@index([orgId])
+-    @@map("projects")
++  id                  String                 @id @default(cuid())
++  orgId               String                 @map("org_id")
++  createdAt           DateTime               @default(now()) @map("created_at")
++  updatedAt           DateTime               @default(now()) @updatedAt @map("updated_at")
++  name                String
++  projectMembers      ProjectMembership[]
++  organization        Organization           @relation(fields: [orgId], references: [id], onUpdate: Cascade, onDelete: Cascade)
++  traces              Trace[]
++  observations        Observation[]
++  apiKeys             ApiKey[]
++  dataset             Dataset[]
++  RawEvents           Events[]
++  invitations         MembershipInvitation[]
++  sessions            TraceSession[]
++  Prompt              Prompt[]
++  Model               Model[]
++  EvalTemplate        EvalTemplate[]
++  JobConfiguration    JobConfiguration[]
++  JobExecution        JobExecution[]
++  LlmApiKeys          LlmApiKeys[]
++  PosthogIntegration  PosthogIntegration[]
++  Score               Score[]
++  scoreConfig         ScoreConfig[]
++  BatchExport         BatchExport[]
++  comment             Comment[]
++  annotationQueue     AnnotationQueue[]
++  annotationQueueItem AnnotationQueueItem[]
++
++  @@index([orgId])
++  @@map("projects")
+ }
+ 
+ model ApiKey {
+-    id                  String    @id @unique @default(cuid())
+-    createdAt           DateTime  @default(now()) @map("created_at")
+-    note                String?
+-    publicKey           String    @unique @map("public_key")
+-    hashedSecretKey     String    @unique @map("hashed_secret_key")
+-    fastHashedSecretKey String?   @unique @map("fast_hashed_secret_key")
+-    displaySecretKey    String    @map("display_secret_key")
+-    lastUsedAt          DateTime? @map("last_used_at")
+-    expiresAt           DateTime? @map("expires_at")
+-    projectId           String    @map("project_id")
+-    project             Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+-
+-    @@index(projectId)
+-    @@index(publicKey)
+-    @@index(hashedSecretKey)
+-    @@index(fastHashedSecretKey)
+-    @@map("api_keys")
++  id                  String    @id @unique @default(cuid())
++  createdAt           DateTime  @default(now()) @map("created_at")
++  note                String?
++  publicKey           String    @unique @map("public_key")
++  hashedSecretKey     String    @unique @map("hashed_secret_key")
++  fastHashedSecretKey String?   @unique @map("fast_hashed_secret_key")
++  displaySecretKey    String    @map("display_secret_key")
++  lastUsedAt          DateTime? @map("last_used_at")
++  expiresAt           DateTime? @map("expires_at")
++  projectId           String    @map("project_id")
++  project             Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
++
++  @@index(projectId)
++  @@index(publicKey)
++  @@index(hashedSecretKey)
++  @@index(fastHashedSecretKey)
++  @@map("api_keys")
++}
++
++model BackgroundMigration {
++  id           String    @id @default(cuid())
++  name         String    @unique
++  script       String    @map("script")
++  args         Json      @map("args")
++  finishedAt   DateTime? @map("finished_at")
++  failedAt     DateTime? @map("failed_at")
++  failedReason String?   @map("failed_reason")
++  workerId     String?   @map("worker_id")
++  lockedAt     DateTime? @map("locked_at")
++
++  @@map("background_migrations")
+ }
+ 
+ model LlmApiKeys {
+-    id        String   @id @unique @default(cuid())
+-    createdAt DateTime @default(now()) @map("created_at")
+-    updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
++  id        String   @id @unique @default(cuid())
++  createdAt DateTime @default(now()) @map("created_at")
++  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
+ 
+-    provider          String
+-    adapter           String // This controls the interface that is used to connect with the LLM, e.g. 'openai' or 'anthropic'
+-    displaySecretKey  String   @map("display_secret_key")
+-    secretKey         String   @map("secret_key")
+-    baseURL           String?  @map("base_url")
+-    customModels      String[] @default([]) @map("custom_models")
+-    withDefaultModels Boolean  @default(true) @map("with_default_models")
+-    config            Json?
++  provider          String
++  adapter           String // This controls the interface that is used to connect with the LLM, e.g. 'openai' or 'anthropic'
++  displaySecretKey  String   @map("display_secret_key")
++  secretKey         String   @map("secret_key")
++  baseURL           String?  @map("base_url")
++  customModels      String[] @default([]) @map("custom_models")
++  withDefaultModels Boolean  @default(true) @map("with_default_models")
++  config            Json?
+ 
+-    projectId String  @map("project_id")
+-    project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
++  projectId String  @map("project_id")
++  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+ 
+-    @@unique([projectId, provider])
+-    @@map("llm_api_keys")
++  @@unique([projectId, provider])
++  @@map("llm_api_keys")
+ }
+ 
+ model OrganizationMembership {
+-    id                 String              @id @default(cuid())
+-    orgId              String              @map("org_id")
+-    organization       Organization        @relation(fields: [orgId], references: [id], onDelete: Cascade)
+-    userId             String              @map("user_id")
+-    user               User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+-    role               Role                @map("role")
+-    createdAt          DateTime            @default(now()) @map("created_at")
+-    updatedAt          DateTime            @default(now()) @updatedAt @map("updated_at")
+-    ProjectMemberships ProjectMembership[]
++  id                 String              @id @default(cuid())
++  orgId              String              @map("org_id")
++  organization       Organization        @relation(fields: [orgId], references: [id], onDelete: Cascade)
++  userId             String              @map("user_id")
++  user               User                @relation(fields: [userId], references: [id], onDelete: Cascade)
++  role               Role                @map("role")
++  createdAt          DateTime            @default(now()) @map("created_at")
++  updatedAt          DateTime            @default(now()) @updatedAt @map("updated_at")
++  ProjectMemberships ProjectMembership[]
+ 
+-    @@unique([orgId, userId])
+-    @@index([userId])
+-    @@map("organization_memberships")
++  @@unique([orgId, userId])
++  @@index([userId])
++  @@map("organization_memberships")
+ }
+ 
+ // Set a project-specific role for a user in an organization
+ model ProjectMembership {
+-    orgMembershipId        String                 @map("org_membership_id")
+-    organizationMembership OrganizationMembership @relation(fields: [orgMembershipId], references: [id], onDelete: Cascade)
+-    projectId              String                 @map("project_id")
+-    project                Project                @relation(fields: [projectId], references: [id], onDelete: Cascade)
+-    userId                 String                 @map("user_id")
+-    user                   User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+-    role                   Role
+-    createdAt              DateTime               @default(now()) @map("created_at")
+-    updatedAt              DateTime               @default(now()) @updatedAt @map("updated_at")
+-
+-    @@id([projectId, userId])
+-    @@index([userId])
+-    @@index([projectId])
+-    @@index([orgMembershipId])
+-    @@map("project_memberships")
++  orgMembershipId        String                 @map("org_membership_id")
++  organizationMembership OrganizationMembership @relation(fields: [orgMembershipId], references: [id], onDelete: Cascade)
++  projectId              String                 @map("project_id")
++  project                Project                @relation(fields: [projectId], references: [id], onDelete: Cascade)
++  userId                 String                 @map("user_id")
++  user                   User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
++  role                   Role
++  createdAt              DateTime               @default(now()) @map("created_at")
++  updatedAt              DateTime               @default(now()) @updatedAt @map("updated_at")
++
++  @@id([projectId, userId])
++  @@index([userId])
++  @@index([projectId])
++  @@index([orgMembershipId])
++  @@map("project_memberships")
+ }
+ 
+ model MembershipInvitation {
+-    id              String       @id @unique @default(cuid())
+-    email           String
+-    orgId           String       @map("org_id")
+-    organization    Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+-    orgRole         Role         @map("org_role")
+-    projectId       String?      @map("project_id")
+-    project         Project?     @relation(fields: [projectId], references: [id], onDelete: SetNull)
+-    projectRole     Role?        @map("project_role")
+-    invitedByUserId String?      @map("invited_by_user_id")
+-    invitedByUser   User?        @relation(fields: [invitedByUserId], references: [id], onDelete: SetNull)
+-    createdAt       DateTime     @default(now()) @map("created_at")
+-    updatedAt       DateTime     @default(now()) @updatedAt @map("updated_at")
+-
+-    @@index([projectId])
+-    @@index([orgId])
+-    @@index([email])
+-    @@map("membership_invitations")
++  id              String       @id @unique @default(cuid())
++  email           String
++  orgId           String       @map("org_id")
++  organization    Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
++  orgRole         Role         @map("org_role")
++  projectId       String?      @map("project_id")
++  project         Project?     @relation(fields: [projectId], references: [id], onDelete: SetNull)
++  projectRole     Role?        @map("project_role")
++  invitedByUserId String?      @map("invited_by_user_id")
++  invitedByUser   User?        @relation(fields: [invitedByUserId], references: [id], onDelete: SetNull)
++  createdAt       DateTime     @default(now()) @map("created_at")
++  updatedAt       DateTime     @default(now()) @updatedAt @map("updated_at")
++
++  @@index([projectId])
++  @@index([orgId])
++  @@index([email])
++  @@map("membership_invitations")
+ }
+ 
+ enum Role {
+-    OWNER
+-    ADMIN
+-    MEMBER
+-    VIEWER
+-    NONE
++  OWNER
++  ADMIN
++  MEMBER
++  VIEWER
++  NONE
+ }
+ 
+ model TraceSession {
+-    id         String   @default(cuid())
+-    createdAt  DateTime @default(now()) @map("created_at")
+-    updatedAt  DateTime @default(now()) @updatedAt @map("updated_at")
+-    projectId  String   @map("project_id")
+-    project    Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+-    bookmarked Boolean  @default(false)
+-    public     Boolean  @default(false)
+-    traces     Trace[]
+-
+-    @@id([id, projectId])
+-    @@index([projectId])
+-    @@index([createdAt])
+-    @@index([updatedAt])
+-    @@map("trace_sessions")
++  id         String   @default(cuid())
++  createdAt  DateTime @default(now()) @map("created_at")
++  updatedAt  DateTime @default(now()) @updatedAt @map("updated_at")
++  projectId  String   @map("project_id")
++  project    Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
++  bookmarked Boolean  @default(false)
++  public     Boolean  @default(false)
++  traces     Trace[]
++
++  @@id([id, projectId])
++  @@index([projectId])
++  @@index([createdAt])
++  @@index([updatedAt])
++  @@map("trace_sessions")
+ }
+ 
+ // Update TraceView below when making changes to this model!
+ 
+ model Trace {
+-    id         String        @id @default(cuid())
+-    externalId String?       @map("external_id")
+-    timestamp  DateTime      @default(now())
+-    name       String?
+-    userId     String?       @map("user_id")
+-    metadata   Json?
+-    release    String?
+-    version    String?
+-    projectId  String        @map("project_id")
+-    project    Project       @relation(fields: [projectId], references: [id], onDelete: Cascade)
+-    public     Boolean       @default(false)
+-    bookmarked Boolean       @default(false)
+-    tags       String[]      @default([])
+-    input      Json?
+-    output     Json?
+-    sessionId  String?       @map("session_id")
+-    session    TraceSession? @relation(fields: [sessionId, projectId], references: [id, projectId])
+-    createdAt  DateTime      @default(now()) @map("created_at")
+-    updatedAt  DateTime      @default(now()) @updatedAt @map("updated_at")
+-
+-    JobExecution JobExecution[]
+-
+-    @@index([projectId, timestamp])
+-    @@index([sessionId])
+-    @@index([name])
+-    @@index([userId])
+-    @@index([id, userId])
+-    @@index(timestamp)
+-    @@index(createdAt)
+-    @@index([tags(ops: ArrayOps)], type: Gin)
+-    @@map("traces")
++  id         String        @id @default(cuid())
++  externalId String?       @map("external_id")
++  timestamp  DateTime      @default(now())
++  name       String?
++  userId     String?       @map("user_id")
++  metadata   Json?
++  release    String?
++  version    String?
++  projectId  String        @map("project_id")
++  project    Project       @relation(fields: [projectId], references: [id], onDelete: Cascade)
++  public     Boolean       @default(false)
++  bookmarked Boolean       @default(false)
++  tags       String[]      @default([])
++  input      Json?
++  output     Json?
++  sessionId  String?       @map("session_id")
++  session    TraceSession? @relation(fields: [sessionId, projectId], references: [id, projectId])
++  createdAt  DateTime      @default(now()) @map("created_at")
++  updatedAt  DateTime      @default(now()) @updatedAt @map("updated_at")
++
++  JobExecution JobExecution[]
++
++  @@index([projectId, timestamp])
++  @@index([sessionId])
++  @@index([name])
++  @@index([userId])
++  @@index([id, userId])
++  @@index(timestamp)
++  @@index(createdAt)
++  @@index([tags(ops: ArrayOps)], type: Gin)
++  @@map("traces")
+ }
+ 
+ // This view is based on the trace table. Once prisma supports
+ // inheritance, we should remove code duplication here.
+ view TraceView {
+-    // trace fields
+-    id         String   @id @default(cuid())
+-    externalId String?  @map("external_id")
+-    timestamp  DateTime @default(now())
+-    name       String?
+-    userId     String?  @map("user_id")
+-    metadata   Json?
+-    release    String?
+-    version    String?
+-    projectId  String   @map("project_id")
+-    public     Boolean  @default(false)
+-    bookmarked Boolean  @default(false)
+-    tags       String[] @default([])
+-    input      Json?
+-    output     Json?
+-    sessionId  String?  @map("session_id")
+-    createdAt  DateTime @map("created_at")
+-    updatedAt  DateTime @map("updated_at")
+-
+-    // calculated fields
+-    duration Float? @map("duration") // can be null if no observations in trace
+-
+-    @@map("traces_view")
++  // trace fields
++  id         String   @id @default(cuid())
++  externalId String?  @map("external_id")
++  timestamp  DateTime @default(now())
++  name       String?
++  userId     String?  @map("user_id")
++  metadata   Json?
++  release    String?
++  version    String?
++  projectId  String   @map("project_id")
++  public     Boolean  @default(false)
++  bookmarked Boolean  @default(false)
++  tags       String[] @default([])
++  input      Json?
++  output     Json?
++  sessionId  String?  @map("session_id")
++  createdAt  DateTime @map("created_at")
++  updatedAt  DateTime @map("updated_at")
++
++  // calculated fields
++  duration Float? @map("duration") // can be null if no observations in trace
++
++  @@map("traces_view")
+ }
+ 
+ // Update ObservationView below when making changes to this model!
+ // traceId is optional only due to timing during data injestion 
+ // (traceId is not necessarily known at the time of observation creation)
+ model Observation {
+-    id                  String           @id @default(cuid())
+-    traceId             String?          @map("trace_id")
+-    projectId           String           @map("project_id")
+-    type                ObservationType
+-    startTime           DateTime         @default(now()) @map("start_time")
+-    endTime             DateTime?        @map("end_time")
+-    name                String?
+-    metadata            Json?
+-    parentObservationId String?          @map("parent_observation_id")
+-    level               ObservationLevel @default(DEFAULT)
+-    statusMessage       String?          @map("status_message")
+-    version             String?
+-    createdAt           DateTime         @default(now()) @map("created_at")
+-    updatedAt           DateTime         @default(now()) @updatedAt @map("updated_at")
+-
+-    // GENERATION ONLY
+-    model           String? // user-provided model attribute
+-    internalModel   String? @map("internal_model") // matched model.name that is matched at ingestion time, to be deprecated
+-    internalModelId String? @map("internal_model_id") // matched model.id that is matched at ingestion time
+-
+-    modelParameters  Json?
+-    input            Json?
+-    output           Json?
+-    promptTokens     Int     @default(0) @map("prompt_tokens")
+-    completionTokens Int     @default(0) @map("completion_tokens")
+-    totalTokens      Int     @default(0) @map("total_tokens")
+-    unit             String?
+-
+-    // User provided cost at ingestion
+-    inputCost  Decimal? @map("input_cost")
+-    outputCost Decimal? @map("output_cost")
+-    totalCost  Decimal? @map("total_cost")
+-
+-    // Calculated cost
+-    calculatedInputCost  Decimal? @map("calculated_input_cost")
+-    calculatedOutputCost Decimal? @map("calculated_output_cost")
+-    calculatedTotalCost  Decimal? @map("calculated_total_cost")
+-
+-    completionStartTime DateTime? @map("completion_start_time")
+-    project             Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+-
+-    promptId String? @map("prompt_id") // no fk constraint, prompt can be deleted
+-
+-    @@unique([id, projectId])
+-    @@index([projectId, internalModel, startTime, unit])
+-    @@index([traceId, projectId, type, startTime])
+-    @@index([traceId, projectId, startTime])
+-    @@index([type])
+-    @@index(startTime)
+-    @@index(createdAt)
+-    @@index(model)
+-    @@index(internalModel)
+-    @@index([projectId, promptId])
+-    @@index(promptId)
+-    @@index([projectId, startTime, type])
+-    @@map("observations")
++  id                  String           @id @default(cuid())
++  traceId             String?          @map("trace_id")
++  projectId           String           @map("project_id")
++  type                ObservationType
++  startTime           DateTime         @default(now()) @map("start_time")
++  endTime             DateTime?        @map("end_time")
++  name                String?
++  metadata            Json?
++  parentObservationId String?          @map("parent_observation_id")
++  level               ObservationLevel @default(DEFAULT)
++  statusMessage       String?          @map("status_message")
++  version             String?
++  createdAt           DateTime         @default(now()) @map("created_at")
++  updatedAt           DateTime         @default(now()) @updatedAt @map("updated_at")
++
++  // GENERATION ONLY
++  model           String? // user-provided model attribute
++  internalModel   String? @map("internal_model") // matched model.name that is matched at ingestion time, to be deprecated
++  internalModelId String? @map("internal_model_id") // matched model.id that is matched at ingestion time
++
++  modelParameters  Json?
++  input            Json?
++  output           Json?
++  promptTokens     Int     @default(0) @map("prompt_tokens")
++  completionTokens Int     @default(0) @map("completion_tokens")
++  totalTokens      Int     @default(0) @map("total_tokens")
++  unit             String?
++
++  // User provided cost at ingestion
++  inputCost  Decimal? @map("input_cost")
++  outputCost Decimal? @map("output_cost")
++  totalCost  Decimal? @map("total_cost")
++
++  // Calculated cost
++  calculatedInputCost  Decimal? @map("calculated_input_cost")
++  calculatedOutputCost Decimal? @map("calculated_output_cost")
++  calculatedTotalCost  Decimal? @map("calculated_total_cost")
++
++  completionStartTime DateTime? @map("completion_start_time")
++  project             Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
++
++  promptId String? @map("prompt_id") // no fk constraint, prompt can be deleted
++
++  @@unique([id, projectId])
++  @@index([projectId, internalModel, startTime, unit])
++  @@index([traceId, projectId, type, startTime])
++  @@index([traceId, projectId, startTime])
++  @@index([type])
++  @@index(startTime)
++  @@index(createdAt)
++  @@index(model)
++  @@index(internalModel)
++  @@index([projectId, promptId])
++  @@index(promptId)
++  @@index([projectId, startTime, type])
++  @@map("observations")
+ }
+ 
+ // This view is a mix of the observation and model. Once prisma supports
+ // inheritance, we should remove code duplication here.
+ view ObservationView {
+-    id                  String           @id @default(cuid())
+-    traceId             String?          @map("trace_id")
+-    projectId           String           @map("project_id")
+-    type                ObservationType
+-    startTime           DateTime         @map("start_time")
+-    endTime             DateTime?        @map("end_time")
+-    name                String?
+-    metadata            Json?
+-    parentObservationId String?          @map("parent_observation_id")
+-    level               ObservationLevel @default(DEFAULT)
+-    statusMessage       String?          @map("status_message")
+-    version             String?
+-    createdAt           DateTime         @map("created_at")
+-    updatedAt           DateTime         @map("updated_at")
+-
+-    // GENERATION ONLY
+-    model               String?
+-    modelParameters     Json?
+-    input               Json?
+-    output              Json?
+-    promptTokens        Int       @default(0) @map("prompt_tokens")
+-    completionTokens    Int       @default(0) @map("completion_tokens")
+-    totalTokens         Int       @default(0) @map("total_tokens")
+-    unit                String?
+-    completionStartTime DateTime? @map("completion_start_time")
+-
+-    // prompts
+-    promptId      String? @map("prompt_id")
+-    promptName    String? @map("prompt_name")
+-    promptVersion Int?    @map("prompt_version")
+-
+-    // model fields
+-    modelId     String?  @map("model_id")
+-    inputPrice  Decimal? @map("input_price")
+-    outputPrice Decimal? @map("output_price")
+-    totalPrice  Decimal? @map("total_price")
+-
+-    // calculated fields
+-    calculatedInputCost  Decimal? @map("calculated_input_cost")
+-    calculatedOutputCost Decimal? @map("calculated_output_cost")
+-    calculatedTotalCost  Decimal? @map("calculated_total_cost")
+-    latency              Float?   @map("latency")
+-    timeToFirstToken     Float?   @map("time_to_first_token")
+-
+-    @@map("observations_view")
++  id                  String           @id @default(cuid())
++  traceId             String?          @map("trace_id")
++  projectId           String           @map("project_id")
++  type                ObservationType
++  startTime           DateTime         @map("start_time")
++  endTime             DateTime?        @map("end_time")
++  name                String?
++  metadata            Json?
++  parentObservationId String?          @map("parent_observation_id")
++  level               ObservationLevel @default(DEFAULT)
++  statusMessage       String?          @map("status_message")
++  version             String?
++  createdAt           DateTime         @map("created_at")
++  updatedAt           DateTime         @map("updated_at")
++
++  // GENERATION ONLY
++  model               String?
++  modelParameters     Json?
++  input               Json?
++  output              Json?
++  promptTokens        Int       @default(0) @map("prompt_tokens")
++  completionTokens    Int       @default(0) @map("completion_tokens")
++  totalTokens         Int       @default(0) @map("total_tokens")
++  unit                String?
++  completionStartTime DateTime? @map("completion_start_time")
++
++  // prompts
++  promptId      String? @map("prompt_id")
++  promptName    String? @map("prompt_name")
++  promptVersion Int?    @map("prompt_version")
++
++  // model fields
++  modelId     String?  @map("model_id")
++  inputPrice  Decimal? @map("input_price")
++  outputPrice Decimal? @map("output_price")
++  totalPrice  Decimal? @map("total_price")
++
++  // calculated fields
++  calculatedInputCost  Decimal? @map("calculated_input_cost")
++  calculatedOutputCost Decimal? @map("calculated_output_cost")
++  calculatedTotalCost  Decimal? @map("calculated_total_cost")
++  latency              Float?   @map("latency")
++  timeToFirstToken     Float?   @map("time_to_first_token")
++
++  @@map("observations_view")
+ }
+ 
+ enum ObservationType {
+-    SPAN
+-    EVENT
+-    GENERATION
++  SPAN
++  EVENT
++  GENERATION
+ }
+ 
+ enum ObservationLevel {
+-    DEBUG
+-    DEFAULT
+-    WARNING
+-    ERROR
++  DEBUG
++  DEFAULT
++  WARNING
++  ERROR
+ }
+ 
+ model Score {
+-    id            String         @id @default(cuid())
+-    timestamp     DateTime       @default(now())
+-    projectId     String         @map("project_id")
+-    project       Project        @relation(fields: [projectId], references: [id], onDelete: Cascade)
+-    name          String
+-    value         Float? // always defined if data type is NUMERIC or BOOLEAN, optional for CATEGORICAL
+-    source        ScoreSource
+-    authorUserId  String?        @map("author_user_id")
+-    comment       String?
+-    traceId       String         @map("trace_id")
+-    observationId String?        @map("observation_id")
+-    configId      String?        @map("config_id")
+-    stringValue   String?        @map("string_value") // always defined if data type is CATEGORICAL or BOOLEAN, null for NUMERIC
+-    queueId       String?        @map("queue_id")
+-    createdAt     DateTime       @default(now()) @map("created_at")
+-    updatedAt     DateTime       @default(now()) @updatedAt @map("updated_at")
+-    dataType      ScoreDataType  @default(NUMERIC) @map("data_type")
+-    JobExecution  JobExecution[]
+-    scoreConfig   ScoreConfig?   @relation(fields: [configId], references: [id], onDelete: SetNull)
+-
+-    @@unique([id, projectId]) // used for upserts via prisma
+-    @@index(timestamp)
+-    @@index([value])
+-    @@index([projectId, name])
+-    @@index([authorUserId])
+-    @@index([configId])
+-    @@index([traceId], type: Hash)
+-    @@index([observationId], type: Hash)
+-    @@index([source])
+-    @@index([createdAt])
+-    @@map("scores")
++  id            String         @id @default(cuid())
++  timestamp     DateTime       @default(now())
++  projectId     String         @map("project_id")
++  project       Project        @relation(fields: [projectId], references: [id], onDelete: Cascade)
++  name          String
++  value         Float? // always defined if data type is NUMERIC or BOOLEAN, optional for CATEGORICAL
++  source        ScoreSource
++  authorUserId  String?        @map("author_user_id")
++  comment       String?
++  traceId       String         @map("trace_id")
++  observationId String?        @map("observation_id")
++  configId      String?        @map("config_id")
++  stringValue   String?        @map("string_value") // always defined if data type is CATEGORICAL or BOOLEAN, null for NUMERIC
++  queueId       String?        @map("queue_id")
++  createdAt     DateTime       @default(now()) @map("created_at")
++  updatedAt     DateTime       @default(now()) @updatedAt @map("updated_at")
++  dataType      ScoreDataType  @default(NUMERIC) @map("data_type")
++  JobExecution  JobExecution[]
++  scoreConfig   ScoreConfig?   @relation(fields: [configId], references: [id], onDelete: SetNull)
++
++  @@unique([id, projectId]) // used for upserts via prisma
++  @@index(timestamp)
++  @@index([value])
++  @@index([projectId, name])
++  @@index([authorUserId])
++  @@index([configId])
++  @@index([traceId], type: Hash)
++  @@index([observationId], type: Hash)
++  @@index([source])
++  @@index([createdAt])
++  @@map("scores")
+ }
+ 
+ enum ScoreSource {
+-    ANNOTATION
+-    API
+-    EVAL
++  ANNOTATION
++  API
++  EVAL
+ }
+ 
+ model ScoreConfig {
+-    id          String        @id @default(cuid())
+-    createdAt   DateTime      @default(now()) @map("created_at")
+-    updatedAt   DateTime      @default(now()) @updatedAt @map("updated_at")
+-    projectId   String        @map("project_id")
+-    project     Project       @relation(fields: [projectId], references: [id], onDelete: Cascade)
+-    name        String
+-    dataType    ScoreDataType @map("data_type")
+-    isArchived  Boolean       @default(false) @map("is_archived")
+-    minValue    Float?        @map("min_value")
+-    maxValue    Float?        @map("max_value")
+-    categories  Json?         @map("categories")
+-    description String?
+-    score       Score[]
+-
+-    @@unique([id, projectId]) // used for upserts via prisma
+-    @@index([dataType])
+-    @@index([isArchived])
+-    @@index([projectId])
+-    @@index([categories])
+-    @@index([createdAt])
+-    @@index([updatedAt])
+-    @@map("score_configs")
++  id          String        @id @default(cuid())
++  createdAt   DateTime      @default(now()) @map("created_at")
++  updatedAt   DateTime      @default(now()) @updatedAt @map("updated_at")
++  projectId   String        @map("project_id")
++  project     Project       @relation(fields: [projectId], references: [id], onDelete: Cascade)
++  name        String
++  dataType    ScoreDataType @map("data_type")
++  isArchived  Boolean       @default(false) @map("is_archived")
++  minValue    Float?        @map("min_value")
++  maxValue    Float?        @map("max_value")
++  categories  Json?         @map("categories")
++  description String?
++  score       Score[]
++
++  @@unique([id, projectId]) // used for upserts via prisma
++  @@index([dataType])
++  @@index([isArchived])
++  @@index([projectId])
++  @@index([categories])
++  @@index([createdAt])
++  @@index([updatedAt])
++  @@map("score_configs")
+ }
+ 
+ enum ScoreDataType {
+-    CATEGORICAL
+-    NUMERIC
+-    BOOLEAN
++  CATEGORICAL
++  NUMERIC
++  BOOLEAN
+ }
+ 
+ model AnnotationQueue {
+-    id                  String                @id @default(cuid())
+-    name                String
+-    description         String?
+-    scoreConfigIds      String[]              @default([]) @map("score_config_ids")
+-    projectId           String                @map("project_id")
+-    project             Project               @relation(fields: [projectId], references: [id], onDelete: Cascade)
+-    createdAt           DateTime              @default(now()) @map("created_at")
+-    updatedAt           DateTime              @default(now()) @updatedAt @map("updated_at")
+-    annotationQueueItem AnnotationQueueItem[]
+-
+-    @@unique([projectId, name])
+-    @@index([id, projectId])
+-    @@index([projectId, createdAt])
+-    @@map("annotation_queues")
++  id                  String                @id @default(cuid())
++  name                String
++  description         String?
++  scoreConfigIds      String[]              @default([]) @map("score_config_ids")
++  projectId           String                @map("project_id")
++  project             Project               @relation(fields: [projectId], references: [id], onDelete: Cascade)
++  createdAt           DateTime              @default(now()) @map("created_at")
++  updatedAt           DateTime              @default(now()) @updatedAt @map("updated_at")
++  annotationQueueItem AnnotationQueueItem[]
++
++  @@unique([projectId, name])
++  @@index([id, projectId])
++  @@index([projectId, createdAt])
++  @@map("annotation_queues")
+ }
+ 
+ model AnnotationQueueItem {
+-    id              String                    @id @default(cuid())
+-    queueId         String                    @map("queue_id")
+-    queue           AnnotationQueue           @relation(fields: [queueId], references: [id], onDelete: Cascade)
+-    objectId        String                    @map("object_id")
+-    objectType      AnnotationQueueObjectType @map("object_type")
+-    status          AnnotationQueueStatus     @default(PENDING)
+-    lockedAt        DateTime?                 @map("locked_at")
+-    lockedByUserId  String?                   @map("locked_by_user_id")
+-    lockedByUser    User?                     @relation("LockedByUser", fields: [lockedByUserId], references: [id], onDelete: SetNull)
+-    annotatorUserId String?                   @map("annotator_user_id")
+-    annotatorUser   User?                     @relation("AnnotatorUser", fields: [annotatorUserId], references: [id], onDelete: SetNull)
+-    completedAt     DateTime?                 @map("completed_at")
+-    projectId       String                    @map("project_id")
+-    project         Project                   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+-    createdAt       DateTime                  @default(now()) @map("created_at")
+-    updatedAt       DateTime                  @default(now()) @updatedAt @map("updated_at")
+-
+-    @@index([id, projectId])
+-    @@index([projectId, queueId, status])
+-    @@index([objectId, objectType, projectId, queueId])
+-    @@index([annotatorUserId])
+-    @@index([createdAt])
+-    @@map("annotation_queue_items")
++  id              String                    @id @default(cuid())
++  queueId         String                    @map("queue_id")
++  queue           AnnotationQueue           @relation(fields: [queueId], references: [id], onDelete: Cascade)
++  objectId        String                    @map("object_id")
++  objectType      AnnotationQueueObjectType @map("object_type")
++  status          AnnotationQueueStatus     @default(PENDING)
++  lockedAt        DateTime?                 @map("locked_at")
++  lockedByUserId  String?                   @map("locked_by_user_id")
++  lockedByUser    User?                     @relation("LockedByUser", fields: [lockedByUserId], references: [id], onDelete: SetNull)
++  annotatorUserId String?                   @map("annotator_user_id")
++  annotatorUser   User?                     @relation("AnnotatorUser", fields: [annotatorUserId], references: [id], onDelete: SetNull)
++  completedAt     DateTime?                 @map("completed_at")
++  projectId       String                    @map("project_id")
++  project         Project                   @relation(fields: [projectId], references: [id], onDelete: Cascade)
++  createdAt       DateTime                  @default(now()) @map("created_at")
++  updatedAt       DateTime                  @default(now()) @updatedAt @map("updated_at")
++
++  @@index([id, projectId])
++  @@index([projectId, queueId, status])
++  @@index([objectId, objectType, projectId, queueId])
++  @@index([annotatorUserId])
++  @@index([createdAt])
++  @@map("annotation_queue_items")
+ }
+ 
+ enum AnnotationQueueStatus {
+-    PENDING
+-    COMPLETED
++  PENDING
++  COMPLETED
+ }
+ 
+ enum AnnotationQueueObjectType {
+-    TRACE
+-    OBSERVATION
++  TRACE
++  OBSERVATION
+ }
+ 
+ model CronJobs {
+-    name         String    @id
+-    lastRun      DateTime? @map("last_run")
+-    jobStartedAt DateTime? @map("job_started_at")
+-    state        String?
++  name         String    @id
++  lastRun      DateTime? @map("last_run")
++  jobStartedAt DateTime? @map("job_started_at")
++  state        String?
+ 
+-    @@map("cron_jobs")
++  @@map("cron_jobs")
+ }
+ 
+ model Dataset {
+-    id           String        @default(cuid())
+-    projectId    String        @map("project_id")
+-    name         String
+-    description  String?
+-    metadata     Json?
+-    project      Project       @relation(fields: [projectId], references: [id], onDelete: Cascade)
+-    createdAt    DateTime      @default(now()) @map("created_at")
+-    updatedAt    DateTime      @default(now()) @updatedAt @map("updated_at")
+-    datasetItems DatasetItem[]
+-    datasetRuns  DatasetRuns[]
+-
+-    @@id([id, projectId])
+-    @@unique([projectId, name])
+-    @@index([createdAt])
+-    @@index([updatedAt])
+-    @@map("datasets")
++  id           String        @default(cuid())
++  projectId    String        @map("project_id")
++  name         String
++  description  String?
++  metadata     Json?
++  project      Project       @relation(fields: [projectId], references: [id], onDelete: Cascade)
++  createdAt    DateTime      @default(now()) @map("created_at")
++  updatedAt    DateTime      @default(now()) @updatedAt @map("updated_at")
++  datasetItems DatasetItem[]
++  datasetRuns  DatasetRuns[]
++
++  @@id([id, projectId])
++  @@unique([projectId, name])
++  @@index([createdAt])
++  @@index([updatedAt])
++  @@map("datasets")
+ }
+ 
+ model DatasetItem {
+-    id                  String            @default(cuid())
+-    projectId           String            @map("project_id")
+-    status              DatasetStatus     @default(ACTIVE)
+-    input               Json?
+-    expectedOutput      Json?             @map("expected_output")
+-    metadata            Json?
+-    sourceTraceId       String?           @map("source_trace_id")
+-    sourceObservationId String?           @map("source_observation_id")
+-    datasetId           String            @map("dataset_id")
+-    dataset             Dataset           @relation(fields: [datasetId, projectId], references: [id, projectId], onDelete: Cascade)
+-    createdAt           DateTime          @default(now()) @map("created_at")
+-    updatedAt           DateTime          @default(now()) @updatedAt @map("updated_at")
+-    datasetRunItems     DatasetRunItems[]
+-
+-    @@id([id, projectId])
+-    @@index([sourceTraceId], type: Hash)
+-    @@index([sourceObservationId], type: Hash)
+-    @@index([datasetId], type: Hash)
+-    @@index([createdAt])
+-    @@index([updatedAt])
+-    @@map("dataset_items")
++  id                  String            @default(cuid())
++  projectId           String            @map("project_id")
++  status              DatasetStatus     @default(ACTIVE)
++  input               Json?
++  expectedOutput      Json?             @map("expected_output")
++  metadata            Json?
++  sourceTraceId       String?           @map("source_trace_id")
++  sourceObservationId String?           @map("source_observation_id")
++  datasetId           String            @map("dataset_id")
++  dataset             Dataset           @relation(fields: [datasetId, projectId], references: [id, projectId], onDelete: Cascade)
++  createdAt           DateTime          @default(now()) @map("created_at")
++  updatedAt           DateTime          @default(now()) @updatedAt @map("updated_at")
++  datasetRunItems     DatasetRunItems[]
++
++  @@id([id, projectId])
++  @@index([sourceTraceId], type: Hash)
++  @@index([sourceObservationId], type: Hash)
++  @@index([datasetId], type: Hash)
++  @@index([createdAt])
++  @@index([updatedAt])
++  @@map("dataset_items")
+ }
+ 
+ enum DatasetStatus {
+-    ACTIVE
+-    ARCHIVED
++  ACTIVE
++  ARCHIVED
+ }
+ 
+ model DatasetRuns {
+-    id              String            @default(cuid())
+-    projectId       String            @map("project_id")
+-    name            String
+-    description     String?
+-    metadata        Json?
+-    datasetId       String            @map("dataset_id")
+-    dataset         Dataset           @relation(fields: [datasetId, projectId], references: [id, projectId], onDelete: Cascade)
+-    createdAt       DateTime          @default(now()) @map("created_at")
+-    updatedAt       DateTime          @default(now()) @updatedAt @map("updated_at")
+-    datasetRunItems DatasetRunItems[]
+-
+-    @@id([id, projectId])
+-    @@unique([datasetId, projectId, name])
+-    @@index([datasetId], type: Hash)
+-    @@index([createdAt])
+-    @@index([updatedAt])
+-    @@map("dataset_runs")
++  id              String            @default(cuid())
++  projectId       String            @map("project_id")
++  name            String
++  description     String?
++  metadata        Json?
++  datasetId       String            @map("dataset_id")
++  dataset         Dataset           @relation(fields: [datasetId, projectId], references: [id, projectId], onDelete: Cascade)
++  createdAt       DateTime          @default(now()) @map("created_at")
++  updatedAt       DateTime          @default(now()) @updatedAt @map("updated_at")
++  datasetRunItems DatasetRunItems[]
++
++  @@id([id, projectId])
++  @@unique([datasetId, projectId, name])
++  @@index([datasetId], type: Hash)
++  @@index([createdAt])
++  @@index([updatedAt])
++  @@map("dataset_runs")
+ }
+ 
+ model DatasetRunItems {
+-    id            String      @default(cuid())
+-    projectId     String      @map("project_id")
+-    datasetRunId  String      @map("dataset_run_id")
+-    datasetRun    DatasetRuns @relation(fields: [datasetRunId, projectId], references: [id, projectId], onDelete: Cascade)
+-    datasetItemId String      @map("dataset_item_id")
+-    datasetItem   DatasetItem @relation(fields: [datasetItemId, projectId], references: [id, projectId], onDelete: Cascade)
+-    traceId       String      @map("trace_id")
+-    observationId String?     @map("observation_id")
+-    createdAt     DateTime    @default(now()) @map("created_at")
+-    updatedAt     DateTime    @default(now()) @updatedAt @map("updated_at")
+-
+-    @@id([id, projectId])
+-    @@index([datasetRunId], type: Hash)
+-    @@index([datasetItemId], type: Hash)
+-    @@index([observationId], type: Hash)
+-    @@index([traceId])
+-    @@index([createdAt])
+-    @@index([updatedAt])
+-    @@map("dataset_run_items")
++  id            String      @default(cuid())
++  projectId     String      @map("project_id")
++  datasetRunId  String      @map("dataset_run_id")
++  datasetRun    DatasetRuns @relation(fields: [datasetRunId, projectId], references: [id, projectId], onDelete: Cascade)
++  datasetItemId String      @map("dataset_item_id")
++  datasetItem   DatasetItem @relation(fields: [datasetItemId, projectId], references: [id, projectId], onDelete: Cascade)
++  traceId       String      @map("trace_id")
++  observationId String?     @map("observation_id")
++  createdAt     DateTime    @default(now()) @map("created_at")
++  updatedAt     DateTime    @default(now()) @updatedAt @map("updated_at")
++
++  @@id([id, projectId])
++  @@index([datasetRunId], type: Hash)
++  @@index([datasetItemId], type: Hash)
++  @@index([observationId], type: Hash)
++  @@index([traceId])
++  @@index([createdAt])
++  @@index([updatedAt])
++  @@map("dataset_run_items")
+ }
+ 
+ model Events {
+-    id        String   @id @default(cuid())
+-    createdAt DateTime @default(now()) @map("created_at")
+-    updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
+-    projectId String   @map("project_id")
+-    project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+-    data      Json
+-    headers   Json     @default("{}")
+-    url       String?
+-    method    String?
++  id        String   @id @default(cuid())
++  createdAt DateTime @default(now()) @map("created_at")
++  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
++  projectId String   @map("project_id")
++  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
++  data      Json
++  headers   Json     @default("{}")
++  url       String?
++  method    String?
+ 
+-    @@index(projectId)
+-    @@map("events")
++  @@index(projectId)
++  @@map("events")
+ }
+ 
+ model Comment {
+-    id           String            @id @default(cuid())
+-    projectId    String            @map("project_id")
+-    project      Project           @relation(fields: [projectId], references: [id], onDelete: Cascade)
+-    objectType   CommentObjectType @map("object_type")
+-    objectId     String            @map("object_id")
+-    createdAt    DateTime          @default(now()) @map("created_at")
+-    updatedAt    DateTime          @default(now()) @updatedAt @map("updated_at")
+-    content      String
+-    authorUserId String?           @map("author_user_id") // no fk constraint, user can be deleted
++  id           String            @id @default(cuid())
++  projectId    String            @map("project_id")
++  project      Project           @relation(fields: [projectId], references: [id], onDelete: Cascade)
++  objectType   CommentObjectType @map("object_type")
++  objectId     String            @map("object_id")
++  createdAt    DateTime          @default(now()) @map("created_at")
++  updatedAt    DateTime          @default(now()) @updatedAt @map("updated_at")
++  content      String
++  authorUserId String?           @map("author_user_id") // no fk constraint, user can be deleted
+ 
+-    @@index([projectId, objectType, objectId])
+-    @@map("comments")
++  @@index([projectId, objectType, objectId])
++  @@map("comments")
+ }
+ 
+ enum CommentObjectType {
+-    TRACE
+-    OBSERVATION
+-    SESSION
+-    PROMPT
++  TRACE
++  OBSERVATION
++  SESSION
++  PROMPT
+ }
+ 
+ model Prompt {
+-    id        String   @id @default(cuid())
+-    createdAt DateTime @default(now()) @map("created_at")
+-    updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
++  id        String   @id @default(cuid())
++  createdAt DateTime @default(now()) @map("created_at")
++  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
+ 
+-    projectId String  @map("project_id")
+-    project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
++  projectId String  @map("project_id")
++  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+ 
+-    createdBy String @map("created_by")
++  createdBy String @map("created_by")
+ 
+-    prompt   Json
+-    name     String
+-    version  Int
+-    type     String   @default("text")
+-    isActive Boolean? @map("is_active") // Deprecated. To be removed once 'production' labels work as expected.
+-    config   Json     @default("{}") @db.Json
+-    tags     String[] @default([])
+-    labels   String[] @default([])
++  prompt   Json
++  name     String
++  version  Int
++  type     String   @default("text")
++  isActive Boolean? @map("is_active") // Deprecated. To be removed once 'production' labels work as expected.
++  config   Json     @default("{}") @db.Json
++  tags     String[] @default([])
++  labels   String[] @default([])
+ 
+-    @@unique([projectId, name, version])
+-    @@index([projectId, id])
+-    @@index([createdAt])
+-    @@index([updatedAt])
+-    @@index([tags(ops: ArrayOps)], type: Gin)
+-    @@map("prompts")
++  @@unique([projectId, name, version])
++  @@index([projectId, id])
++  @@index([createdAt])
++  @@index([updatedAt])
++  @@index([tags(ops: ArrayOps)], type: Gin)
++  @@map("prompts")
+ }
+ 
+ // Update ObservationView below when making changes to this model!
+ model Model {
+-    id        String   @id @default(cuid())
+-    createdAt DateTime @default(now()) @map("created_at")
+-    updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
++  id        String   @id @default(cuid())
++  createdAt DateTime @default(now()) @map("created_at")
++  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
+ 
+-    projectId String?  @map("project_id")
+-    project   Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
++  projectId String?  @map("project_id")
++  project   Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
+ 
+-    modelName       String    @map("model_name")
+-    matchPattern    String    @map("match_pattern")
+-    startDate       DateTime? @map("start_date")
+-    inputPrice      Decimal?  @map("input_price")
+-    outputPrice     Decimal?  @map("output_price")
+-    totalPrice      Decimal?  @map("total_price")
+-    unit            String? // TOKENS, CHARACTERS, MILLISECONDS, SECONDS, REQUESTS, or IMAGES
+-    tokenizerId     String?   @map("tokenizer_id")
+-    tokenizerConfig Json?     @map("tokenizer_config")
+-    Price           Price[]
++  modelName       String    @map("model_name")
++  matchPattern    String    @map("match_pattern")
++  startDate       DateTime? @map("start_date")
++  inputPrice      Decimal?  @map("input_price")
++  outputPrice     Decimal?  @map("output_price")
++  totalPrice      Decimal?  @map("total_price")
++  unit            String? // TOKENS, CHARACTERS, MILLISECONDS, SECONDS, REQUESTS, or IMAGES
++  tokenizerId     String?   @map("tokenizer_id")
++  tokenizerConfig Json?     @map("tokenizer_config")
++  Price           Price[]
+ 
+-    @@unique([projectId, modelName, startDate, unit])
+-    @@index(modelName)
+-    @@map("models")
++  @@unique([projectId, modelName, startDate, unit])
++  @@index(modelName)
++  @@map("models")
+ }
+ 
+ model Price {
+-    id        String   @id @default(cuid())
+-    createdAt DateTime @default(now()) @map("created_at")
+-    updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
+-    modelId   String   @map("model_id") // Model is already linked to project (or default), so we don't need projectId here
+-    Model     Model    @relation(fields: [modelId], references: [id], onDelete: Cascade)
+-    usageType String   @map("usage_type")
+-    price     Decimal
++  id        String   @id @default(cuid())
++  createdAt DateTime @default(now()) @map("created_at")
++  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
++  modelId   String   @map("model_id") // Model is already linked to project (or default), so we don't need projectId here
++  Model     Model    @relation(fields: [modelId], references: [id], onDelete: Cascade)
++  usageType String   @map("usage_type")
++  price     Decimal
+ 
+-    @@unique([modelId, usageType])
+-    @@index(modelId)
+-    @@map("prices")
++  @@unique([modelId, usageType])
++  @@index(modelId)
++  @@map("prices")
+ }
+ 
+ // No FK constraints to preserve audit logs
+ model AuditLog {
+-    id              String   @id @default(cuid())
+-    createdAt       DateTime @default(now()) @map("created_at")
+-    updatedAt       DateTime @default(now()) @updatedAt @map("updated_at")
+-    userId          String   @map("user_id")
+-    orgId           String   @map("org_id")
+-    userOrgRole     String   @map("user_org_role")
+-    projectId       String?  @map("project_id")
+-    userProjectRole String?  @map("user_project_role")
+-    resourceType    String   @map("resource_type")
+-    resourceId      String   @map("resource_id")
+-    action          String
+-    before          String? //stringified JSON
+-    after           String? // stringified JSON
+-
+-    @@index([projectId])
+-    @@index([userId])
+-    @@index([orgId])
+-    @@index([createdAt])
+-    @@index([updatedAt])
+-    @@map("audit_logs")
++  id              String   @id @default(cuid())
++  createdAt       DateTime @default(now()) @map("created_at")
++  updatedAt       DateTime @default(now()) @updatedAt @map("updated_at")
++  userId          String   @map("user_id")
++  orgId           String   @map("org_id")
++  userOrgRole     String   @map("user_org_role")
++  projectId       String?  @map("project_id")
++  userProjectRole String?  @map("user_project_role")
++  resourceType    String   @map("resource_type")
++  resourceId      String   @map("resource_id")
++  action          String
++  before          String? //stringified JSON
++  after           String? // stringified JSON
++
++  @@index([projectId])
++  @@index([userId])
++  @@index([orgId])
++  @@index([createdAt])
++  @@index([updatedAt])
++  @@map("audit_logs")
+ }
+ 
+ model EvalTemplate {
+-    id        String   @id @default(cuid())
+-    createdAt DateTime @default(now()) @map("created_at")
+-    updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
++  id        String   @id @default(cuid())
++  createdAt DateTime @default(now()) @map("created_at")
++  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
+ 
+-    projectId String  @map("project_id")
+-    project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
++  projectId String  @map("project_id")
++  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+ 
+-    name             String
+-    version          Int
+-    prompt           String
+-    model            String
+-    provider         String
+-    modelParams      Json               @map("model_params")
+-    vars             String[]           @default([])
+-    outputSchema     Json               @map("output_schema")
+-    JobConfiguration JobConfiguration[]
++  name             String
++  version          Int
++  prompt           String
++  model            String
++  provider         String
++  modelParams      Json               @map("model_params")
++  vars             String[]           @default([])
++  outputSchema     Json               @map("output_schema")
++  JobConfiguration JobConfiguration[]
+ 
+-    @@unique([projectId, name, version])
+-    @@index([projectId, id])
+-    @@map("eval_templates")
++  @@unique([projectId, name, version])
++  @@index([projectId, id])
++  @@map("eval_templates")
+ }
+ 
+ enum JobType {
+-    EVAL
++  EVAL
+ }
+ 
+ enum JobConfigState {
+-    ACTIVE
+-    INACTIVE
++  ACTIVE
++  INACTIVE
+ }
+ 
+ model JobConfiguration {
+-    id        String   @id @default(cuid())
+-    createdAt DateTime @default(now()) @map("created_at")
+-    updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
++  id        String   @id @default(cuid())
++  createdAt DateTime @default(now()) @map("created_at")
++  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
+ 
+-    projectId String  @map("project_id")
+-    project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
++  projectId String  @map("project_id")
++  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+ 
+-    jobType        JobType        @map("job_type")
+-    status         JobConfigState @default(ACTIVE)
+-    evalTemplateId String?        @map("eval_template_id")
+-    evalTemplate   EvalTemplate?  @relation(fields: [evalTemplateId], references: [id], onDelete: SetNull)
++  jobType        JobType        @map("job_type")
++  status         JobConfigState @default(ACTIVE)
++  evalTemplateId String?        @map("eval_template_id")
++  evalTemplate   EvalTemplate?  @relation(fields: [evalTemplateId], references: [id], onDelete: SetNull)
+ 
+-    scoreName       String         @map("score_name")
+-    filter          Json
+-    targetObject    String         @map("target_object")
+-    variableMapping Json           @map("variable_mapping")
+-    sampling        Decimal // ratio of jobs that are executed for sampling (0..1)  
+-    delay           Int // delay in milliseconds
+-    JobExecution    JobExecution[]
++  scoreName       String         @map("score_name")
++  filter          Json
++  targetObject    String         @map("target_object")
++  variableMapping Json           @map("variable_mapping")
++  sampling        Decimal // ratio of jobs that are executed for sampling (0..1)
++  delay           Int // delay in milliseconds
++  JobExecution    JobExecution[]
+ 
+-    @@index([projectId, id])
+-    @@map("job_configurations")
++  @@index([projectId, id])
++  @@map("job_configurations")
+ }
+ 
+ enum JobExecutionStatus {
+-    COMPLETED
+-    ERROR
+-    PENDING
+-    CANCELLED
++  COMPLETED
++  ERROR
++  PENDING
++  CANCELLED
+ }
+ 
+ model JobExecution {
+-    id        String   @id @default(cuid())
+-    createdAt DateTime @default(now()) @map("created_at")
+-    updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
++  id        String   @id @default(cuid())
++  createdAt DateTime @default(now()) @map("created_at")
++  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
+ 
+-    projectId String  @map("project_id")
+-    project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
++  projectId String  @map("project_id")
++  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+ 
+-    jobConfigurationId String           @map("job_configuration_id")
+-    jobConfiguration   JobConfiguration @relation(fields: [jobConfigurationId], references: [id], onDelete: Cascade)
++  jobConfigurationId String           @map("job_configuration_id")
++  jobConfiguration   JobConfiguration @relation(fields: [jobConfigurationId], references: [id], onDelete: Cascade)
+ 
+-    status    JobExecutionStatus
+-    startTime DateTime?          @map("start_time")
+-    endTime   DateTime?          @map("end_time")
+-    error     String?
++  status    JobExecutionStatus
++  startTime DateTime?          @map("start_time")
++  endTime   DateTime?          @map("end_time")
++  error     String?
+ 
+-    jobInputTraceId String? @map("job_input_trace_id")
+-    trace           Trace?  @relation(fields: [jobInputTraceId], references: [id], onDelete: SetNull) // job remains when traces are deleted
++  jobInputTraceId String? @map("job_input_trace_id")
++  trace           Trace?  @relation(fields: [jobInputTraceId], references: [id], onDelete: SetNull) // job remains when traces are deleted
+ 
+-    jobOutputScoreId String? @map("job_output_score_id")
+-    score            Score?  @relation(fields: [jobOutputScoreId], references: [id], onDelete: SetNull) // job remains when scores are deleted
++  jobOutputScoreId String? @map("job_output_score_id")
++  score            Score?  @relation(fields: [jobOutputScoreId], references: [id], onDelete: SetNull) // job remains when scores are deleted
+ 
+-    @@index([projectId, status])
+-    @@index([projectId, id])
+-    @@index([jobConfigurationId])
+-    @@index([jobOutputScoreId])
+-    @@index([jobInputTraceId])
+-    @@index([createdAt])
+-    @@index([updatedAt])
+-    @@map("job_executions")
++  @@index([projectId, status])
++  @@index([projectId, id])
++  @@index([jobConfigurationId])
++  @@index([jobOutputScoreId])
++  @@index([jobInputTraceId])
++  @@index([createdAt])
++  @@index([updatedAt])
++  @@map("job_executions")
+ }
+ 
+ // Single Sign-On configuration for a domain
+ // This feature is part of the Enterprise Edition
+ model SsoConfig {
+-    domain       String   @id @default(cuid()) // e.g. "google.com"
+-    createdAt    DateTime @default(now()) @map("created_at")
+-    updatedAt    DateTime @default(now()) @updatedAt @map("updated_at")
+-    authProvider String   @map("auth_provider") // e.g. "okta", ee/sso/types.ts
++  domain       String   @id @default(cuid()) // e.g. "google.com"
++  createdAt    DateTime @default(now()) @map("created_at")
++  updatedAt    DateTime @default(now()) @updatedAt @map("updated_at")
++  authProvider String   @map("auth_provider") // e.g. "okta", ee/sso/types.ts
+ 
+-    authConfig Json? @map("auth_config")
+-    // e.g. { "clientId": "1234", "clientSecret": "5678" }, null if credentials from env should be used
+-    // secrets like clientSecret are encrypted on the application level
++  authConfig Json? @map("auth_config")
++  // e.g. { "clientId": "1234", "clientSecret": "5678" }, null if credentials from env should be used
++  // secrets like clientSecret are encrypted on the application level
+ 
+-    @@map("sso_configs")
++  @@map("sso_configs")
+ }
+ 
+ model PosthogIntegration {
+-    projectId              String    @id @map("project_id")
+-    project                Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+-    encryptedPosthogApiKey String    @map("encrypted_posthog_api_key")
+-    posthogHostName        String    @map("posthog_host_name")
+-    lastSyncAt             DateTime? @map("last_sync_at")
+-    enabled                Boolean
+-    createdAt              DateTime  @default(now()) @map("created_at")
++  projectId              String    @id @map("project_id")
++  project                Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
++  encryptedPosthogApiKey String    @map("encrypted_posthog_api_key")
++  posthogHostName        String    @map("posthog_host_name")
++  lastSyncAt             DateTime? @map("last_sync_at")
++  enabled                Boolean
++  createdAt              DateTime  @default(now()) @map("created_at")
+ 
+-    @@map("posthog_integrations")
++  @@map("posthog_integrations")
+ }
+ 
+ model BatchExport {
+-    id        String   @id @default(cuid())
+-    createdAt DateTime @default(now()) @map("created_at")
+-    updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
+-
+-    projectId String  @map("project_id")
+-    project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+-    userId    String  @map("user_id")
+-
+-    finishedAt DateTime? @map("finished_at")
+-    expiresAt  DateTime? @map("expires_at")
+-
+-    name   String
+-    status String
+-    query  Json
+-    format String
+-    url    String?
+-    log    String?
+-
+-    @@index([projectId, userId])
+-    @@index([status])
+-    @@map("batch_exports")
++  id        String   @id @default(cuid())
++  createdAt DateTime @default(now()) @map("created_at")
++  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
++
++  projectId String  @map("project_id")
++  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
++  userId    String  @map("user_id")
++
++  finishedAt DateTime? @map("finished_at")
++  expiresAt  DateTime? @map("expires_at")
++
++  name   String
++  status String
++  query  Json
++  format String
++  url    String?
++  log    String?
++
++  @@index([projectId, userId])
++  @@index([status])
++  @@map("batch_exports")
+ }
+diff --git a/packages/shared/scripts/prepareClickhouse.ts b/packages/shared/scripts/prepareClickhouse.ts
+index 183964de..1bd8d337 100644
+--- a/packages/shared/scripts/prepareClickhouse.ts
++++ b/packages/shared/scripts/prepareClickhouse.ts
+@@ -88,8 +88,8 @@ export const prepareClickhouse = async (
+       toDateTime(now() - randUniform(0, ${opts.numberOfDays} * 24 * 60 * 60)) AS start_time,
+       addSeconds(start_time, if(rand() < 0.6, floor(randUniform(0, 20)), floor(randUniform(0, 3600)))) AS end_time,
+       concat('name', toString(rand() % 100)) AS name,
+-      map('key', 'value') AS metadata,
+-      if(rand() < 0.9, 'DEFAULT', if(rand() < 0.5, 'ERROR', if(rand() < 0.5, 'DEBUG', 'WANING'))) AS level,
++      '{"key": "value"}' AS metadata,
++      if(rand() < 0.9, 'DEFAULT', if(rand() < 0.5, 'ERROR', if(rand() < 0.5, 'DEBUG', 'WARNING'))) AS level,
+       'status_message' AS status_message,
+       'version' AS version,
+       repeat('input', toInt64(randExponential(1 / 100))) AS input,
+diff --git a/web/package.json b/web/package.json
+index 64975e56..c0a18a67 100644
+--- a/web/package.json
++++ b/web/package.json
+@@ -18,8 +18,7 @@
+     "test:watch": "dotenv -e ../.env -- jest --watch --runInBand",
+     "test:e2e": "dotenv -e ../.env -- playwright test",
+     "test:e2e:server": "dotenv -e ../.env -- jest --runInBand --detectOpenHandles --verbose --testPathPattern='__e2e__'",
+-    "models:migrate": "dotenv -e ../.env -- tsx scripts/model-match.ts",
+-    "generationCost:backfill": "dotenv -e ../.env -- tsx scripts/observations-backfill-calculated-cost.ts"
++    "models:migrate": "dotenv -e ../.env -- tsx scripts/model-match.ts"
+   },
+   "dependencies": {
+     "@anthropic-ai/tokenizer": "^0.0.4",
+diff --git a/web/scripts/observations-backfill-calculated-cost.ts b/web/scripts/observations-backfill-calculated-cost.ts
+deleted file mode 100644
+index 897b1c8a..00000000
+--- a/web/scripts/observations-backfill-calculated-cost.ts
++++ /dev/null
+@@ -1,249 +0,0 @@
+-import "dotenv/config";
+-
+-import { z } from "zod";
+-import { prisma, Prisma } from "@langfuse/shared/src/db";
+-
+-const BackfillCalculatedGenerationArgsSchema = z
+-  .object({
+-    batchSize: z.coerce.number().optional().default(5_000),
+-    maxRowsToProcess: z.coerce.number().optional().default(Infinity), // Default to process all rows
+-    maxDate: z.coerce.date().optional().default(new Date()), // Default to today
+-  })
+-  .strict();
+-
+-const backfillCalculatedGenerationCost = async () => {
+-  let previousTimeout;
+-  try {
+-    const args = parseArgs(process.argv.slice(2));
+-    const { batchSize, maxRowsToProcess, maxDate } = args;
+-
+-    log("Starting backfillCalculatedGenerationCost with params", args);
+-
+-    // Set the statement timeout
+-    const newTimeout = "19min";
+-    previousTimeout = await updateStatementTimeout(newTimeout, previousTimeout);
+-
+-    // Drop column if it exists and add temporary column
+-    await addTemporaryColumnIfNotExists();
+-
+-    let currentDateCutoff = maxDate.toISOString();
+-    let totalRowsProcessed = 0;
+-
+-    log("Starting batch update loop...");
+-
+-    // Step 3: Batch update in a loop
+-    while (true) {
+-      log(`Starting batch update for generations before: ${currentDateCutoff}`);
+-      const startDate = Date.now();
+-      const batchUpdate = await prisma.$queryRaw<
+-        { start_time: Date }[]
+-      >(Prisma.sql`
+-        WITH batch AS (
+-            SELECT o.id,
+-                o.start_time,
+-                o.prompt_tokens,
+-                o.completion_tokens,
+-                o.total_tokens,
+-                o.input_cost,
+-                o.output_cost,
+-                o.total_cost,
+-                m.id AS model_id,
+-                m.input_price,
+-                m.output_price,
+-                m.total_price
+-            FROM observations o
+-            LEFT JOIN LATERAL (
+-                SELECT models.id,
+-                    models.input_price,
+-                    models.output_price,
+-                    models.total_price
+-                FROM models
+-                WHERE (models.project_id = o.project_id OR models.project_id IS NULL)
+-                  AND models.model_name = o.internal_model
+-                  AND (models.start_date < o.start_time OR models.start_date IS NULL)
+-                  AND o.unit = models.unit
+-                ORDER BY models.project_id, models.start_date DESC NULLS LAST
+-                LIMIT 1
+-            ) m ON true
+-            WHERE
+-                start_time <= ${currentDateCutoff}::TIMESTAMP WITH TIME ZONE AT TIME ZONE 'UTC'
+-              	AND (internal_model IS NOT NULL
+-                      OR input_cost IS NOT NULL
+-                      OR output_cost IS NOT NULL
+-                      OR total_cost IS NOT NULL) 
+-            ORDER BY
+-              start_time DESC
+-            LIMIT ${batchSize}
+-        ),
+-        updated_batch AS (
+-            UPDATE observations o
+-            SET calculated_input_cost = 
+-                    CASE
+-                        WHEN batch.input_cost IS NULL AND batch.output_cost IS NULL AND batch.total_cost IS NULL 
+-                        THEN batch.prompt_tokens::numeric * batch.input_price
+-                        ELSE batch.input_cost
+-                    END,
+-                calculated_output_cost = 
+-                    CASE
+-                        WHEN batch.input_cost IS NULL AND batch.output_cost IS NULL AND batch.total_cost IS NULL 
+-                        THEN batch.completion_tokens::numeric * batch.output_price
+-                        ELSE batch.output_cost
+-                    END,
+-                calculated_total_cost = 
+-                    CASE
+-                        WHEN batch.input_cost IS NULL AND batch.output_cost IS NULL AND batch.total_cost IS NULL 
+-                        THEN
+-                            CASE
+-                                WHEN batch.total_price IS NOT NULL AND batch.total_tokens IS NOT NULL THEN batch.total_price * batch.total_tokens::numeric
+-                                ELSE batch.prompt_tokens::numeric * batch.input_price + batch.completion_tokens::numeric * batch.output_price
+-                            END
+-                        ELSE batch.total_cost
+-                    END,
+-                internal_model_id = batch.model_id,
+-                tmp_has_calculated_cost = TRUE
+-            FROM batch
+-            WHERE o.id = batch.id
+-            RETURNING o.id
+-        )
+-        -- Get the last id of the updated batch
+-        SELECT start_time FROM batch LIMIT 1 OFFSET ${batchSize - 1};
+-      `);
+-
+-      log(`Batch update completed in ${Date.now() - startDate} ms`);
+-
+-      if (!batchUpdate[0]?.start_time) {
+-        log(
+-          `No more rows to process, breaking loop after ${totalRowsProcessed.toLocaleString()} rows processed.`,
+-        );
+-
+-        break;
+-      }
+-
+-      currentDateCutoff = batchUpdate[0]?.start_time.toISOString();
+-      totalRowsProcessed += batchSize;
+-
+-      log(
+-        `Total rows processed after increment: ${totalRowsProcessed.toLocaleString()} rows`,
+-      );
+-      if (maxRowsToProcess && totalRowsProcessed >= maxRowsToProcess) {
+-        log(
+-          `Max rows to process reached: ${maxRowsToProcess.toLocaleString()}, breaking loop.`,
+-        );
+-
+-        break;
+-      }
+-    }
+-
+-    log("✅ Finished batch update loop.");
+-
+-    // Drop the temporary column
+-    log("Dropping temporary column...");
+-    await prisma.$executeRaw`ALTER TABLE observations DROP COLUMN IF EXISTS tmp_has_calculated_cost;`;
+-    log("✅ Dropped temporary column");
+-
+-    log("✅ Finished backfillCalculatedGenerationCost");
+-  } catch (err) {
+-    console.error("Error executing script", err);
+-  } finally {
+-    // Reset the statement timeout to two minutes
+-    await prisma.$executeRawUnsafe(
+-      `SET statement_timeout = '${previousTimeout}';`,
+-    );
+-    log(
+-      `Reset statement_timeout to ${previousTimeout}. Current statement_timeout: ${JSON.stringify(
+-        await prisma.$queryRaw(Prisma.sql`SHOW statement_timeout;`),
+-      )}`,
+-    );
+-
+-    // Disconnect from the database
+-    await prisma.$disconnect();
+-    log("Disconnected from the database.");
+-  }
+-};
+-
+-function parseArgs(args: string[]) {
+-  try {
+-    const namedArgs: Record<string, string | boolean> = {};
+-    for (let i = 0; i < args.length; i++) {
+-      if (args[i].startsWith("--")) {
+-        const key = args[i].slice(2);
+-        const value =
+-          args[i + 1] && !args[i + 1].startsWith("--") ? args[i + 1] : true;
+-        namedArgs[key] = value;
+-        if (value !== true) i++; // Skip the next argument if it was used as a value
+-      }
+-    }
+-
+-    return BackfillCalculatedGenerationArgsSchema.parse(namedArgs);
+-  } catch (error) {
+-    if (error instanceof z.ZodError) {
+-      console.error("Validation error:", error.errors);
+-    } else {
+-      console.error("An unexpected error occurred:", error);
+-    }
+-
+-    process.exit(1);
+-  }
+-}
+-
+-async function addTemporaryColumnIfNotExists() {
+-  const columnExists = await prisma.$queryRaw<{ column_exists: boolean }[]>(
+-    Prisma.sql`
+-            SELECT EXISTS (
+-                SELECT 1
+-                FROM information_schema.columns
+-                WHERE table_name = 'observations'
+-                AND column_name = 'tmp_has_calculated_cost'
+-            ) AS column_exists;
+-        `,
+-  );
+-  if (!columnExists[0]?.column_exists) {
+-    await prisma.$executeRaw`ALTER TABLE observations ADD COLUMN tmp_has_calculated_cost BOOLEAN DEFAULT FALSE;`;
+-    log("✅ Added temporary column tmp_has_calculated_cost");
+-  } else {
+-    log(
+-      "⚠️ Temporary column tmp_has_calculated_cost already exists. Continuing...",
+-    );
+-  }
+-}
+-
+-type StatementTimeout = {
+-  statement_timeout: string;
+-};
+-
+-async function updateStatementTimeout(
+-  newTimeout: string,
+-  previousTimeout: any,
+-) {
+-  const [{ statement_timeout: previousTimeoutRead }] = await prisma.$queryRaw<
+-    StatementTimeout[]
+-  >(Prisma.sql`SHOW statement_timeout;`);
+-
+-  log(`Current statement_timeout read from DB: ${previousTimeoutRead}`);
+-
+-  if (!previousTimeoutRead || previousTimeoutRead === newTimeout) {
+-    // If the statement_timeout is already set to 19 minutes, assume it was set by this script and reset it to 2 minutes
+-    previousTimeout = "2min";
+-  } else {
+-    previousTimeout = previousTimeoutRead;
+-  }
+-
+-  log(`Setting statement_timeout to ${newTimeout} minutes...`);
+-
+-  await prisma.$executeRawUnsafe(`SET statement_timeout = '${newTimeout}';`);
+-
+-  log(
+-    `Updated statement_timeout. Current statement_timeout: ${JSON.stringify(
+-      await prisma.$queryRaw(Prisma.sql`SHOW statement_timeout;`),
+-    )}`,
+-  );
+-
+-  return previousTimeout;
+-}
+-
+-function log(message: string, ...args: any[]) {
+-  console.log(new Date().toISOString(), " - ", message, ...args);
+-}
+-
+-// Execute the script
+-backfillCalculatedGenerationCost();
+diff --git a/worker/src/app.ts b/worker/src/app.ts
+index 3e20d296..ea732876 100644
+--- a/worker/src/app.ts
++++ b/worker/src/app.ts
+@@ -19,9 +19,10 @@ import helmet from "helmet";
+ import { legacyIngestionQueueProcessor } from "./queues/legacyIngestionQueue";
+ import { cloudUsageMeteringQueueProcessor } from "./queues/cloudUsageMeteringQueue";
+ import { WorkerManager } from "./queues/workerManager";
+-import { QueueName } from "@langfuse/shared/src/server";
++import { QueueName, logger } from "@langfuse/shared/src/server";
+ import { env } from "./env";
+ import { ingestionQueueProcessor } from "./queues/ingestionQueue";
++import { BackgroundMigrationManager } from "./backgroundMigrations/backgroundMigrationManager";
+ 
+ const app = express();
+ 
+@@ -39,6 +40,13 @@ app.use("/api", api);
+ app.use(middlewares.notFound);
+ app.use(middlewares.errorHandler);
+ 
++if (env.LANGFUSE_ENABLE_BACKGROUND_MIGRATIONS === "true") {
++  // Will start background migrations without blocking the queue workers
++  BackgroundMigrationManager.run().catch((err) => {
++    logger.error("Error running background migrations", err);
++  });
++}
++
+ if (env.QUEUE_CONSUMER_TRACE_UPSERT_QUEUE_IS_ENABLED === "true") {
+   WorkerManager.register(QueueName.TraceUpsert, evalJobCreatorQueueProcessor, {
+     concurrency: env.LANGFUSE_EVAL_CREATOR_WORKER_CONCURRENCY,
+diff --git a/worker/src/backgroundMigrations/IBackgroundMigration.ts b/worker/src/backgroundMigrations/IBackgroundMigration.ts
+new file mode 100644
+index 00000000..fa8b6e40
+--- /dev/null
++++ b/worker/src/backgroundMigrations/IBackgroundMigration.ts
+@@ -0,0 +1,7 @@
++export interface IBackgroundMigration {
++  validate: (
++    args: Record<string, unknown>,
++  ) => Promise<{ valid: boolean; invalidReason: string | undefined }>;
++  run: (args: Record<string, unknown>) => Promise<void>;
++  abort: () => Promise<void>;
++}
+diff --git a/worker/src/backgroundMigrations/README.md b/worker/src/backgroundMigrations/README.md
+new file mode 100644
+index 00000000..244d49d8
+--- /dev/null
++++ b/worker/src/backgroundMigrations/README.md
+@@ -0,0 +1,38 @@
++# Background Migrations
++
++Background migrations are longer running jobs that must not be complete before a new application version can
++be served correctly.
++They are used to fill new optional columns, migrate data between tables or systems, or perform other actions
++that would take too long to run in a standard migration.
++A good threshold is something that takes more than 5 minutes to run or is not an atomic operation.
++
++You can execute a background migration locally using
++```bash
++$ cd worker
++$ dotenv -e ../.env -- npx ts-node src/backgroundMigrations/<script-name>.ts
++
++# Example
++$ dotenv -e ../.env -- npx ts-node src/backgroundMigrations/addGenerationsCostBackfill.ts
++```
++
++## Requirements
++
++- The background migration must be recoverable at all times, i.e. it can be interrupted and must be resumed at any stage of the operation.
++  We can achieve this by making them either idempotent for cross-system migrations or by making each change atomic if it's in a single database.
++- Only one background migration can run at a time. This is not a technical limitation, but makes reasoning about them easier.
++- We must highlight in the changelog and potentially another page if the code relies on some background migration having finished. 
++  See GitLab's [upgrade stops](https://docs.gitlab.com/ee/update/upgrade_paths.html) for an example on how to communicate this.
++- The migration name must be sortable, as we run migrations in order. Preferably, we prefix with a date.
++
++## Implementation
++
++We have a `background_migrations` table in the database that stores the state of each migration.
++Adding a new background migrations requires a new line within that table and a new migration file in the current directory.
++The default export of that file must implement the `IBackgroundMigration` interface and adhere to the requirements above.
++
++The worker will load all background migrations that must run and check whether one of them is pending.
++In that case, it will try to acquire a lock and start the execution.
++If it completes, it marks the migration as done and proceeds with the next one until all are complete.
++If the worker is killed for any reason, another worker will pick up the migration and continue where it left off after the lock expired.
++
++Ideally, background migrations can also be executed via the commandline, e.g. to run them locally or to test them in a staging environment.
+diff --git a/worker/src/backgroundMigrations/addGenerationsCostBackfill.ts b/worker/src/backgroundMigrations/addGenerationsCostBackfill.ts
+new file mode 100644
+index 00000000..a119aa69
+--- /dev/null
++++ b/worker/src/backgroundMigrations/addGenerationsCostBackfill.ts
+@@ -0,0 +1,236 @@
++import { IBackgroundMigration } from "./IBackgroundMigration";
++import { logger } from "@langfuse/shared/src/server";
++import { parseArgs } from "node:util";
++import { prisma, Prisma } from "@langfuse/shared/src/db";
++
++type StatementTimeout = {
++  statement_timeout: string;
++};
++
++async function updateStatementTimeout(
++  newTimeout: string,
++  previousTimeout: any,
++) {
++  const [{ statement_timeout: previousTimeoutRead }] = await prisma.$queryRaw<
++    StatementTimeout[]
++  >(Prisma.sql`SHOW statement_timeout;`);
++  logger.info(`Current statement_timeout ${previousTimeoutRead}`);
++  if (!previousTimeoutRead || previousTimeoutRead === newTimeout) {
++    // If the statement_timeout is already set to 19 minutes, assume it was set by this script and reset it to 2 minutes
++    previousTimeout = "2min";
++  } else {
++    previousTimeout = previousTimeoutRead;
++  }
++  await prisma.$executeRawUnsafe(`SET statement_timeout = '${newTimeout}';`);
++  logger.info(`Updated statement_timeout to ${newTimeout}`);
++  return previousTimeout;
++}
++
++async function addTemporaryColumnIfNotExists() {
++  const columnExists = await prisma.$queryRaw<{ column_exists: boolean }[]>(
++    Prisma.sql`
++      SELECT EXISTS (
++        SELECT 1
++        FROM information_schema.columns
++        WHERE table_name = 'observations'
++        AND column_name = 'tmp_has_calculated_cost'
++      ) AS column_exists;
++    `,
++  );
++  if (!columnExists[0]?.column_exists) {
++    await prisma.$executeRaw`ALTER TABLE observations ADD COLUMN tmp_has_calculated_cost BOOLEAN DEFAULT FALSE;`;
++    logger.info("Added temporary column tmp_has_calculated_cost");
++  } else {
++    logger.info(
++      "Temporary column tmp_has_calculated_cost already exists. Continuing...",
++    );
++  }
++}
++
++export default class AddGenerationsCostBackfill
++  implements IBackgroundMigration
++{
++  private isAborted = false;
++
++  async validate(
++    args: Record<string, unknown>,
++  ): Promise<{ valid: boolean; invalidReason: string | undefined }> {
++    // No validation to be done
++    return { valid: true, invalidReason: undefined };
++  }
++
++  async run(args: Record<string, unknown>): Promise<void> {
++    logger.info(
++      `Running AddGenerationsCostBackfill migration with ${JSON.stringify(args)}`,
++    );
++    let previousTimeout;
++
++    const maxRowsToProcess = Number(args.maxRowsToProcess ?? Infinity);
++    const batchSize = Number(args.batchSize ?? 5000);
++    let currentDateCutoff = args.maxDate ?? new Date().toISOString();
++
++    try {
++      // Set the statement timeout
++      const newTimeout = "19min";
++      previousTimeout = await updateStatementTimeout(
++        newTimeout,
++        previousTimeout,
++      );
++
++      // Add tracking column
++      await addTemporaryColumnIfNotExists();
++
++      let totalRowsProcessed = 0;
++      while (!this.isAborted && totalRowsProcessed < maxRowsToProcess) {
++        const batchUpdate = await prisma.$queryRaw<
++          { start_time: Date }[]
++        >(Prisma.sql`
++          WITH batch AS (
++            SELECT o.id,
++              o.start_time,
++              o.prompt_tokens,
++              o.completion_tokens,
++              o.total_tokens,
++              o.input_cost,
++              o.output_cost,
++              o.total_cost,
++              m.id AS model_id,
++              m.input_price,
++              m.output_price,
++              m.total_price
++            FROM observations o
++            LEFT JOIN LATERAL (
++              SELECT models.id,
++                models.input_price,
++                models.output_price,
++                models.total_price
++              FROM models
++              WHERE (models.project_id = o.project_id OR models.project_id IS NULL)
++                AND models.model_name = o.internal_model
++                AND (models.start_date < o.start_time OR models.start_date IS NULL)
++                AND o.unit = models.unit
++              ORDER BY models.project_id, models.start_date DESC NULLS LAST
++              LIMIT 1
++            ) m ON true
++            WHERE start_time <= ${currentDateCutoff}::TIMESTAMP WITH TIME ZONE AT TIME ZONE 'UTC'
++           	  AND (internal_model IS NOT NULL
++              OR input_cost IS NOT NULL
++              OR output_cost IS NOT NULL
++              OR total_cost IS NOT NULL) 
++            ORDER BY start_time DESC
++            LIMIT ${batchSize}
++          ),
++          updated_batch AS (
++            UPDATE observations o
++              SET 
++                calculated_input_cost = 
++                CASE
++                  WHEN batch.input_cost IS NULL AND batch.output_cost IS NULL AND batch.total_cost IS NULL 
++                  THEN batch.prompt_tokens::numeric * batch.input_price
++                  ELSE batch.input_cost
++                END,
++                calculated_output_cost = 
++                CASE
++                  WHEN batch.input_cost IS NULL AND batch.output_cost IS NULL AND batch.total_cost IS NULL 
++                  THEN batch.completion_tokens::numeric * batch.output_price
++                  ELSE batch.output_cost
++                END,
++                calculated_total_cost = 
++                CASE
++                  WHEN batch.input_cost IS NULL AND batch.output_cost IS NULL AND batch.total_cost IS NULL 
++                  THEN
++                    CASE
++                      WHEN batch.total_price IS NOT NULL AND batch.total_tokens IS NOT NULL THEN batch.total_price * batch.total_tokens::numeric
++                      ELSE batch.prompt_tokens::numeric * batch.input_price + batch.completion_tokens::numeric * batch.output_price
++                    END
++                  ELSE batch.total_cost
++                END,
++                internal_model_id = batch.model_id,
++                tmp_has_calculated_cost = TRUE
++            FROM batch
++            WHERE o.id = batch.id
++            RETURNING o.id
++          )
++          -- Get the last id of the updated batch
++          SELECT start_time FROM batch LIMIT 1 OFFSET ${batchSize - 1};
++        `);
++
++        if (!batchUpdate[0]?.start_time) {
++          logger.info(
++            `No more rows to process, breaking loop after ${totalRowsProcessed} rows processed.`,
++          );
++          break;
++        }
++
++        currentDateCutoff = batchUpdate[0]?.start_time.toISOString();
++        totalRowsProcessed += batchSize;
++
++        logger.info(
++          `Total rows processed after increment: ${totalRowsProcessed} rows`,
++        );
++        if (maxRowsToProcess && totalRowsProcessed >= maxRowsToProcess) {
++          logger.info(
++            `Max rows to process reached: ${maxRowsToProcess.toLocaleString()}, breaking loop.`,
++          );
++
++          break;
++        }
++      }
++
++      if (this.isAborted) {
++        logger.info(
++          `Backfill aborted after processing ${totalRowsProcessed} rows. Skipping cleanup.`,
++        );
++        return;
++      }
++
++      await prisma.$executeRaw`ALTER TABLE observations DROP COLUMN IF EXISTS tmp_has_calculated_cost;`;
++      logger.info(
++        `Backfill completed after processing ${totalRowsProcessed} rows`,
++      );
++    } catch (e) {
++      logger.error(`Error backfilling costs: ${e}`, e);
++      throw e;
++    } finally {
++      await prisma.$executeRawUnsafe(
++        `SET statement_timeout = '${previousTimeout}';`,
++      );
++      logger.info(`Reset statement_timeout to ${previousTimeout}`);
++    }
++  }
++
++  async abort(): Promise<void> {
++    logger.info(`Aborting AddGenerationsCostBackfill migration`);
++    this.isAborted = true;
++  }
++}
++
++async function main() {
++  const args = parseArgs({
++    options: {
++      batchSize: { type: "string", short: "b", default: "5000" },
++      maxRowsToProcess: { type: "string", short: "r", default: "Infinity" },
++      maxDate: {
++        type: "string",
++        short: "d",
++        default: new Date().toISOString(),
++      },
++    },
++  });
++
++  const migration = new AddGenerationsCostBackfill();
++  await migration.validate(args.values);
++  await migration.run(args.values);
++}
++
++// If the script is being executed directly (not imported), run the main function
++if (require.main === module) {
++  main()
++    .then(() => {
++      process.exit(0);
++    })
++    .catch((error) => {
++      logger.error(`Migration execution failed: ${error}`);
++      process.exit(1); // Exit with an error code
++    });
++}
+diff --git a/worker/src/backgroundMigrations/backgroundMigrationManager.ts b/worker/src/backgroundMigrations/backgroundMigrationManager.ts
+new file mode 100644
+index 00000000..7a8812d4
+--- /dev/null
++++ b/worker/src/backgroundMigrations/backgroundMigrationManager.ts
+@@ -0,0 +1,185 @@
++import { randomUUID } from "crypto";
++import { IBackgroundMigration } from "./IBackgroundMigration";
++import { prisma, Prisma } from "@langfuse/shared/src/db";
++import { instrumentAsync, logger } from "@langfuse/shared/src/server";
++
++export class BackgroundMigrationManager {
++  private static workerId = randomUUID();
++  private static activeMigration:
++    | {
++        id: string;
++        name: string;
++        args: Record<string, unknown>;
++        migration: IBackgroundMigration;
++      }
++    | undefined;
++
++  private static async heartBeat(): Promise<void> {
++    if (!BackgroundMigrationManager.activeMigration) {
++      return;
++    }
++
++    await prisma.backgroundMigration.updateMany({
++      where: {
++        id: BackgroundMigrationManager.activeMigration.id,
++        workerId: BackgroundMigrationManager.workerId,
++        finishedAt: null,
++        failedAt: null,
++      },
++      data: {
++        lockedAt: new Date(),
++      },
++    });
++
++    // Schedule next heartbeat in 15s
++    setTimeout(BackgroundMigrationManager.heartBeat, 15 * 1000);
++  }
++
++  public static async run(): Promise<void> {
++    await instrumentAsync({ name: "background-migration-run" }, async () => {
++      let migrationToRun = true;
++
++      while (migrationToRun) {
++        await prisma.$transaction(
++          async (tx) => {
++            // Read background migrations from database
++            const migration = await tx.backgroundMigration.findFirst({
++              where: {
++                finishedAt: null,
++                failedAt: null,
++              },
++              orderBy: { name: "asc" },
++            });
++
++            // Abort if there is no migration to run or migration was locked less than 60s ago
++            // We do not check lockedAt in the DB query, because findFirst might return other uncompleted migrations
++            // which would lead to concurrent execution.
++            if (
++              !migration ||
++              (migration.lockedAt &&
++                migration.lockedAt > new Date(Date.now() - 60 * 1000))
++            ) {
++              logger.info(
++                "[Background Migration] No background migrations to run",
++              );
++              migrationToRun = false;
++              return;
++            }
++
++            logger.info(
++              `[Background Migration] Found background migrations ${migration.name} to run`,
++            );
++
++            // Acquire lock
++            await tx.backgroundMigration.update({
++              where: {
++                id: migration.id,
++              },
++              data: {
++                workerId: BackgroundMigrationManager.workerId,
++                lockedAt: new Date(),
++              },
++            });
++            logger.info(
++              `[Background Migration] Acquired lock for background migration ${migration.name}`,
++            );
++            BackgroundMigrationManager.activeMigration = {
++              id: migration.id,
++              name: migration.name,
++              args: migration.args as any,
++              migration: new (require(`./${migration.script}`).default)(),
++            };
++          },
++          {
++            maxWait: 5000,
++            isolationLevel: Prisma.TransactionIsolationLevel.Serializable,
++          },
++        );
++
++        if (!BackgroundMigrationManager.activeMigration) {
++          continue;
++        }
++
++        // Initiate heartbeats every couple seconds
++        await BackgroundMigrationManager.heartBeat();
++
++        const { migration, args } = BackgroundMigrationManager.activeMigration;
++        const { valid, invalidReason } = await migration.validate(args);
++        if (!valid) {
++          logger.error(
++            `[Background Migration] Validation failed for background migration ${BackgroundMigrationManager.activeMigration.name}: ${invalidReason}`,
++          );
++          await prisma.backgroundMigration.update({
++            where: {
++              id: BackgroundMigrationManager.activeMigration.id,
++              workerId: BackgroundMigrationManager.workerId,
++            },
++            data: {
++              lockedAt: null,
++              failedAt: new Date(),
++              failedReason: invalidReason,
++            },
++          });
++          continue;
++        }
++
++        try {
++          await migration.run(args);
++
++          if (BackgroundMigrationManager.activeMigration !== undefined) {
++            // Only mark as complete if still active. Otherwise, it was aborted.
++            await prisma.backgroundMigration.update({
++              where: {
++                id: BackgroundMigrationManager.activeMigration.id,
++                workerId: BackgroundMigrationManager.workerId,
++              },
++              data: {
++                finishedAt: new Date(),
++                lockedAt: null,
++              },
++            });
++            logger.info(
++              `[Background Migration] Finished background migration ${BackgroundMigrationManager.activeMigration.name}`,
++            );
++          }
++        } catch (err) {
++          logger.error(
++            `[Background Migration] Failed to run background migration ${BackgroundMigrationManager.activeMigration.name}: ${err}`,
++          );
++          await prisma.backgroundMigration.update({
++            where: {
++              id: BackgroundMigrationManager.activeMigration.id,
++              workerId: BackgroundMigrationManager.workerId,
++            },
++            data: {
++              lockedAt: null,
++              failedAt: new Date(),
++              failedReason:
++                err instanceof Error ? err.message : "Unknown error",
++            },
++          });
++        }
++        BackgroundMigrationManager.activeMigration = undefined;
++      }
++    });
++  }
++
++  public static async close(): Promise<void> {
++    if (BackgroundMigrationManager.activeMigration) {
++      await BackgroundMigrationManager.activeMigration.migration.abort();
++      await prisma.backgroundMigration.update({
++        where: {
++          id: BackgroundMigrationManager.activeMigration.id,
++          workerId: BackgroundMigrationManager.workerId,
++        },
++        data: {
++          lockedAt: null,
++        },
++      });
++      logger.info(
++        `[Background Migration] Aborted active migration ${BackgroundMigrationManager.activeMigration.name}`,
++      );
++      BackgroundMigrationManager.activeMigration = undefined;
++    }
++  }
++}
+diff --git a/worker/src/backgroundMigrations/migrateObservationsFromPostgresToClickhouse.ts b/worker/src/backgroundMigrations/migrateObservationsFromPostgresToClickhouse.ts
+new file mode 100644
+index 00000000..2bcd0343
+--- /dev/null
++++ b/worker/src/backgroundMigrations/migrateObservationsFromPostgresToClickhouse.ts
+@@ -0,0 +1,186 @@
++import { IBackgroundMigration } from "./IBackgroundMigration";
++import { clickhouseClient, logger } from "@langfuse/shared/src/server";
++import { parseArgs } from "node:util";
++import { prisma, Prisma } from "@langfuse/shared/src/db";
++import { env } from "../env";
++import { Observation } from "@prisma/client";
++
++async function addTemporaryColumnIfNotExists() {
++  const columnExists = await prisma.$queryRaw<{ column_exists: boolean }[]>(
++    Prisma.sql`
++      SELECT EXISTS (
++        SELECT 1
++        FROM information_schema.columns
++        WHERE table_name = 'observations'
++        AND column_name = 'tmp_migrated_to_clickhouse'
++      ) AS column_exists;
++    `,
++  );
++  if (!columnExists[0]?.column_exists) {
++    await prisma.$executeRaw`ALTER TABLE observations ADD COLUMN tmp_migrated_to_clickhouse BOOLEAN DEFAULT FALSE;`;
++    logger.info("Added temporary column tmp_migrated_to_clickhouse");
++  } else {
++    logger.info(
++      "Temporary column tmp_migrated_to_clickhouse already exists. Continuing...",
++    );
++  }
++}
++
++export default class MigrateObservationsFromPostgresToClickhouse
++  implements IBackgroundMigration
++{
++  private isAborted = false;
++
++  async validate(
++    args: Record<string, unknown>,
++  ): Promise<{ valid: boolean; invalidReason: string | undefined }> {
++    if (!env.CLICKHOUSE_URL) {
++      return {
++        valid: false,
++        invalidReason: "Clickhouse URL must be configured to perform migration",
++      };
++    }
++    return { valid: true, invalidReason: undefined };
++  }
++
++  async run(args: Record<string, unknown>): Promise<void> {
++    logger.info(
++      `Migrating observations from postgres to clickhouse with ${JSON.stringify(args)}`,
++    );
++
++    const maxRowsToProcess = Number(args.maxRowsToProcess ?? Infinity);
++    const batchSize = Number(args.batchSize ?? 5000);
++    const maxDate = new Date((args.maxDate as string) ?? new Date());
++
++    await addTemporaryColumnIfNotExists();
++
++    let processedRows = 0;
++    while (!this.isAborted && processedRows < maxRowsToProcess) {
++      const observations = await prisma.$queryRaw<
++        Array<Observation> & { prompt_name: string; prompt_version: string }
++      >(Prisma.sql`
++        SELECT o.id, o.trace_id, o.project_id, o.type, o.parent_observation_id, o.start_time, o.end_time, o.name, o.metadata, o.level, o.status_message, o.version, o.input, o.output, o.unit, o.model, o.internal_model_id, o."modelParameters", o.prompt_tokens, o.completion_tokens, o.total_tokens, o.completion_start_time, o.prompt_id, p.name as prompt_name, p.version as prompt_version, o.input_cost, o.output_cost, o.total_cost, o.created_at, o.updated_at
++        FROM observations o
++        LEFT JOIN prompts p ON o.prompt_id = p.id
++        WHERE o.tmp_migrated_to_clickhouse = FALSE AND o.created_at <= ${maxDate}
++        ORDER BY o.created_at DESC
++        LIMIT ${batchSize};
++      `);
++      if (observations.length === 0) {
++        logger.info("No more observations to migrate. Exiting...");
++        break;
++      }
++
++      await clickhouseClient.insert({
++        table: "observations",
++        values: observations.map((observation) => ({
++          ...observation,
++          totalCost: observation.calculatedTotalCost,
++          usage_details: {
++            input: observation.promptTokens,
++            output: observation.completionTokens,
++            total: observation.totalTokens,
++          },
++          provided_usage_details: {},
++          provided_cost_details: {
++            input: observation.inputCost,
++            output: observation.outputCost,
++            total: observation.totalCost,
++          },
++          cost_details: {
++            input: observation.calculatedInputCost,
++            output: observation.calculatedOutputCost,
++            total: observation.calculatedTotalCost,
++          },
++          provided_model_name: observation.model,
++          model_parameters: observation.modelParameters,
++          start_time:
++            observation.startTime
++              ?.toISOString()
++              .replace("T", " ")
++              .slice(0, -1) ?? null,
++          end_time:
++            observation.endTime?.toISOString().replace("T", " ").slice(0, -1) ??
++            null,
++          created_at:
++            observation.createdAt
++              ?.toISOString()
++              .replace("T", " ")
++              .slice(0, -1) ?? null,
++          updated_at:
++            observation.updatedAt
++              ?.toISOString()
++              .replace("T", " ")
++              .slice(0, -1) ?? null,
++          completion_start_time:
++            observation.completionStartTime
++              ?.toISOString()
++              .replace("T", " ")
++              .slice(0, -1) ?? null,
++        })),
++        format: "JSONEachRow",
++      });
++
++      logger.info(
++        `Inserted ${observations.length} observations into Clickhouse`,
++      );
++
++      await prisma.$executeRaw`
++        UPDATE observations
++        SET tmp_migrated_to_clickhouse = TRUE
++        WHERE id IN (${Prisma.join(observations.map((observation) => observation.id))});
++      `;
++
++      processedRows += observations.length;
++    }
++
++    if (this.isAborted) {
++      logger.info(
++        `Migration of observations from Postgres to Clickhouse aborted after processing ${processedRows} rows. Skipping cleanup.`,
++      );
++      return;
++    }
++
++    await prisma.$executeRaw`ALTER TABLE observations DROP COLUMN IF EXISTS tmp_migrated_to_clickhouse;`;
++    logger.info(
++      "Finished migration of observations from Postgres to CLickhouse",
++    );
++  }
++
++  async abort(): Promise<void> {
++    logger.info(
++      `Aborting migration of observations from Postgres to clickhouse`,
++    );
++    this.isAborted = true;
++  }
++}
++
++async function main() {
++  const args = parseArgs({
++    options: {
++      batchSize: { type: "string", short: "b", default: "5000" },
++      maxRowsToProcess: { type: "string", short: "r", default: "Infinity" },
++      maxDate: {
++        type: "string",
++        short: "d",
++        default: new Date().toISOString(),
++      },
++    },
++  });
++
++  const migration = new MigrateObservationsFromPostgresToClickhouse();
++  await migration.validate(args.values);
++  await migration.run(args.values);
++}
++
++// If the script is being executed directly (not imported), run the main function
++if (require.main === module) {
++  main()
++    .then(() => {
++      process.exit(0);
++    })
++    .catch((error) => {
++      logger.error(`Migration execution failed: ${error}`);
++      process.exit(1); // Exit with an error code
++    });
++}
+diff --git a/worker/src/backgroundMigrations/migrateScoresFromPostgresToClickhouse.ts b/worker/src/backgroundMigrations/migrateScoresFromPostgresToClickhouse.ts
+new file mode 100644
+index 00000000..a7941124
+--- /dev/null
++++ b/worker/src/backgroundMigrations/migrateScoresFromPostgresToClickhouse.ts
+@@ -0,0 +1,144 @@
++import { IBackgroundMigration } from "./IBackgroundMigration";
++import { clickhouseClient, logger } from "@langfuse/shared/src/server";
++import { parseArgs } from "node:util";
++import { prisma, Prisma } from "@langfuse/shared/src/db";
++import { env } from "../env";
++import { Score } from "@prisma/client";
++
++async function addTemporaryColumnIfNotExists() {
++  const columnExists = await prisma.$queryRaw<{ column_exists: boolean }[]>(
++    Prisma.sql`
++      SELECT EXISTS (
++        SELECT 1
++        FROM information_schema.columns
++        WHERE table_name = 'scores'
++        AND column_name = 'tmp_migrated_to_clickhouse'
++      ) AS column_exists;
++    `,
++  );
++  if (!columnExists[0]?.column_exists) {
++    await prisma.$executeRaw`ALTER TABLE scores ADD COLUMN tmp_migrated_to_clickhouse BOOLEAN DEFAULT FALSE;`;
++    logger.info("Added temporary column tmp_migrated_to_clickhouse");
++  } else {
++    logger.info(
++      "Temporary column tmp_migrated_to_clickhouse already exists. Continuing...",
++    );
++  }
++}
++
++export default class MigrateScoresFromPostgresToClickhouse
++  implements IBackgroundMigration
++{
++  private isAborted = false;
++
++  async validate(
++    args: Record<string, unknown>,
++  ): Promise<{ valid: boolean; invalidReason: string | undefined }> {
++    if (!env.CLICKHOUSE_URL) {
++      return {
++        valid: false,
++        invalidReason: "Clickhouse URL must be configured to perform migration",
++      };
++    }
++    return { valid: true, invalidReason: undefined };
++  }
++
++  async run(args: Record<string, unknown>): Promise<void> {
++    logger.info(
++      `Migrating scores from postgres to clickhouse with ${JSON.stringify(args)}`,
++    );
++
++    const maxRowsToProcess = Number(args.maxRowsToProcess ?? Infinity);
++    const batchSize = Number(args.batchSize ?? 5000);
++    const maxDate = new Date((args.maxDate as string) ?? new Date());
++
++    await addTemporaryColumnIfNotExists();
++
++    let processedRows = 0;
++    while (!this.isAborted && processedRows < maxRowsToProcess) {
++      const scores = await prisma.$queryRaw<Array<Score>>(Prisma.sql`
++        SELECT id, timestamp, project_id, trace_id, observation_id, name, value, source, comment, author_user_id, config_id, data_type, string_value, created_at, updated_at
++        FROM scores
++        WHERE tmp_migrated_to_clickhouse = FALSE AND created_at <= ${maxDate}
++        ORDER BY created_at DESC
++        LIMIT ${batchSize};
++      `);
++      if (scores.length === 0) {
++        logger.info("No more scores to migrate. Exiting...");
++        break;
++      }
++
++      await clickhouseClient.insert({
++        table: "scores",
++        values: scores.map((score) => ({
++          ...score,
++          timestamp:
++            score.timestamp?.toISOString().replace("T", " ").slice(0, -1) ??
++            null,
++          created_at:
++            score.createdAt?.toISOString().replace("T", " ").slice(0, -1) ??
++            null,
++          updated_at:
++            score.updatedAt?.toISOString().replace("T", " ").slice(0, -1) ??
++            null,
++        })),
++        format: "JSONEachRow",
++      });
++
++      logger.info(`Inserted ${scores.length} scores into Clickhouse`);
++
++      await prisma.$executeRaw`
++        UPDATE scores
++        SET tmp_migrated_to_clickhouse = TRUE
++        WHERE id IN (${Prisma.join(scores.map((score) => score.id))});
++      `;
++
++      processedRows += scores.length;
++    }
++
++    if (this.isAborted) {
++      logger.info(
++        `Migration of scores from Postgres to Clickhouse aborted after processing ${processedRows} rows. Skipping cleanup.`,
++      );
++      return;
++    }
++
++    await prisma.$executeRaw`ALTER TABLE scores DROP COLUMN IF EXISTS tmp_migrated_to_clickhouse;`;
++    logger.info("Finished migration of scores from Postgres to CLickhouse");
++  }
++
++  async abort(): Promise<void> {
++    logger.info(`Aborting migration of scores from Postgres to clickhouse`);
++    this.isAborted = true;
++  }
++}
++
++async function main() {
++  const args = parseArgs({
++    options: {
++      batchSize: { type: "string", short: "b", default: "5000" },
++      maxRowsToProcess: { type: "string", short: "r", default: "Infinity" },
++      maxDate: {
++        type: "string",
++        short: "d",
++        default: new Date().toISOString(),
++      },
++    },
++  });
++
++  const migration = new MigrateScoresFromPostgresToClickhouse();
++  await migration.validate(args.values);
++  await migration.run(args.values);
++}
++
++// If the script is being executed directly (not imported), run the main function
++if (require.main === module) {
++  main()
++    .then(() => {
++      process.exit(0);
++    })
++    .catch((error) => {
++      logger.error(`Migration execution failed: ${error}`);
++      process.exit(1); // Exit with an error code
++    });
++}
+diff --git a/worker/src/backgroundMigrations/migrateTracesFromPostgresToClickhouse.ts b/worker/src/backgroundMigrations/migrateTracesFromPostgresToClickhouse.ts
+new file mode 100644
+index 00000000..9e3c6284
+--- /dev/null
++++ b/worker/src/backgroundMigrations/migrateTracesFromPostgresToClickhouse.ts
+@@ -0,0 +1,144 @@
++import { IBackgroundMigration } from "./IBackgroundMigration";
++import { clickhouseClient, logger } from "@langfuse/shared/src/server";
++import { parseArgs } from "node:util";
++import { prisma, Prisma } from "@langfuse/shared/src/db";
++import { env } from "../env";
++import { Trace } from "@prisma/client";
++
++async function addTemporaryColumnIfNotExists() {
++  const columnExists = await prisma.$queryRaw<{ column_exists: boolean }[]>(
++    Prisma.sql`
++      SELECT EXISTS (
++        SELECT 1
++        FROM information_schema.columns
++        WHERE table_name = 'traces'
++        AND column_name = 'tmp_migrated_to_clickhouse'
++      ) AS column_exists;
++    `,
++  );
++  if (!columnExists[0]?.column_exists) {
++    await prisma.$executeRaw`ALTER TABLE traces ADD COLUMN tmp_migrated_to_clickhouse BOOLEAN DEFAULT FALSE;`;
++    logger.info("Added temporary column tmp_migrated_to_clickhouse");
++  } else {
++    logger.info(
++      "Temporary column tmp_migrated_to_clickhouse already exists. Continuing...",
++    );
++  }
++}
++
++export default class MigrateTracesFromPostgresToClickhouse
++  implements IBackgroundMigration
++{
++  private isAborted = false;
++
++  async validate(
++    args: Record<string, unknown>,
++  ): Promise<{ valid: boolean; invalidReason: string | undefined }> {
++    if (!env.CLICKHOUSE_URL) {
++      return {
++        valid: false,
++        invalidReason: "Clickhouse URL must be configured to perform migration",
++      };
++    }
++    return { valid: true, invalidReason: undefined };
++  }
++
++  async run(args: Record<string, unknown>): Promise<void> {
++    logger.info(
++      `Migrating traces from postgres to clickhouse with ${JSON.stringify(args)}`,
++    );
++
++    const maxRowsToProcess = Number(args.maxRowsToProcess ?? Infinity);
++    const batchSize = Number(args.batchSize ?? 5000);
++    const maxDate = new Date((args.maxDate as string) ?? new Date());
++
++    await addTemporaryColumnIfNotExists();
++
++    let processedRows = 0;
++    while (!this.isAborted && processedRows < maxRowsToProcess) {
++      const traces = await prisma.$queryRaw<Array<Trace>>(Prisma.sql`
++        SELECT id, timestamp, name, user_id, metadata, release, version, project_id, public, bookmarked, tags, input, output, session_id, created_at, updated_at
++        FROM traces
++        WHERE tmp_migrated_to_clickhouse = FALSE AND created_at <= ${maxDate}
++        ORDER BY created_at DESC
++        LIMIT ${batchSize};
++      `);
++      if (traces.length === 0) {
++        logger.info("No more traces to migrate. Exiting...");
++        break;
++      }
++
++      await clickhouseClient.insert({
++        table: "traces",
++        values: traces.map((trace) => ({
++          ...trace,
++          timestamp:
++            trace.timestamp?.toISOString().replace("T", " ").slice(0, -1) ??
++            null,
++          created_at:
++            trace.createdAt?.toISOString().replace("T", " ").slice(0, -1) ??
++            null,
++          updated_at:
++            trace.updatedAt?.toISOString().replace("T", " ").slice(0, -1) ??
++            null,
++        })),
++        format: "JSONEachRow",
++      });
++
++      logger.info(`Inserted ${traces.length} traces into Clickhouse`);
++
++      await prisma.$executeRaw`
++        UPDATE traces
++        SET tmp_migrated_to_clickhouse = TRUE
++        WHERE id IN (${Prisma.join(traces.map((trace) => trace.id))});
++      `;
++
++      processedRows += traces.length;
++    }
++
++    if (this.isAborted) {
++      logger.info(
++        `Migration of traces from Postgres to Clickhouse aborted after processing ${processedRows} rows. Skipping cleanup.`,
++      );
++      return;
++    }
++
++    await prisma.$executeRaw`ALTER TABLE traces DROP COLUMN IF EXISTS tmp_migrated_to_clickhouse;`;
++    logger.info("Finished migration of traces from Postgres to CLickhouse");
++  }
++
++  async abort(): Promise<void> {
++    logger.info(`Aborting migration of traces from Postgres to clickhouse`);
++    this.isAborted = true;
++  }
++}
++
++async function main() {
++  const args = parseArgs({
++    options: {
++      batchSize: { type: "string", short: "b", default: "5000" },
++      maxRowsToProcess: { type: "string", short: "r", default: "Infinity" },
++      maxDate: {
++        type: "string",
++        short: "d",
++        default: new Date().toISOString(),
++      },
++    },
++  });
++
++  const migration = new MigrateTracesFromPostgresToClickhouse();
++  await migration.validate(args.values);
++  await migration.run(args.values);
++}
++
++// If the script is being executed directly (not imported), run the main function
++if (require.main === module) {
++  main()
++    .then(() => {
++      process.exit(0);
++    })
++    .catch((error) => {
++      logger.error(`Migration execution failed: ${error}`, error);
++      process.exit(1); // Exit with an error code
++    });
++}
+diff --git a/worker/src/env.ts b/worker/src/env.ts
+index cb539a20..0184b62d 100644
+--- a/worker/src/env.ts
++++ b/worker/src/env.ts
+@@ -91,6 +91,10 @@ const EnvSchema = z.object({
+   OTEL_EXPORTER_OTLP_ENDPOINT: z.string().default("http://localhost:4318"),
+   OTEL_SERVICE_NAME: z.string().default("worker"),
+ 
++  LANGFUSE_ENABLE_BACKGROUND_MIGRATIONS: z
++    .enum(["true", "false"])
++    .default("false"),
++
+   // Flags to toggle queue consumers on or off.
+   QUEUE_CONSUMER_LEGACY_INGESTION_QUEUE_IS_ENABLED: z
+     .enum(["true", "false"])
+diff --git a/worker/src/utils/shutdown.ts b/worker/src/utils/shutdown.ts
+index 401aea35..403de54f 100644
+--- a/worker/src/utils/shutdown.ts
++++ b/worker/src/utils/shutdown.ts
+@@ -7,6 +7,7 @@ import { server } from "../index";
+ import { freeAllTokenizers } from "../features/tokenisation/usage";
+ import { WorkerManager } from "../queues/workerManager";
+ import { prisma } from "@langfuse/shared/src/db";
++import { BackgroundMigrationManager } from "../backgroundMigrations/backgroundMigrationManager";
+ 
+ export const onShutdown: NodeJS.SignalsListener = async (signal) => {
+   logger.info(`Received ${signal}, closing server...`);
+@@ -19,6 +20,9 @@ export const onShutdown: NodeJS.SignalsListener = async (signal) => {
+   // Shutdown workers (https://docs.bullmq.io/guide/going-to-production#gracefully-shut-down-workers)
+   await WorkerManager.closeWorkers();
+ 
++  // Shutdown background migrations
++  await BackgroundMigrationManager.close();
++
+   // Flush all pending writes to Clickhouse AFTER closing ingestion queue worker that is writing to it
+   await ClickhouseWriter.getInstance().shutdown();
+   logger.info("Clickhouse writer has been shut down.");

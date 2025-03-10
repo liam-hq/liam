@@ -1,0 +1,2439 @@
+Date:   Thu Nov 14 10:26:30 2024 +0100
+
+    feat(multimodal): add media upload / download endpoints (#3989)
+
+diff --git a/.env.dev.example b/.env.dev.example
+index e8c58d7a..64a81680 100644
+--- a/.env.dev.example
++++ b/.env.dev.example
+@@ -42,6 +42,17 @@ S3_REGION=us-east-1
+ ## Necessary for minio compatibility
+ S3_FORCE_PATH_STYLE=true
+ 
++# # S3 Media Upload LOCAL
++LANGFUSE_S3_MEDIA_UPLOAD_ENABLED=true
++LANGFUSE_S3_MEDIA_UPLOAD_BUCKET=langfuse
++LANGFUSE_S3_MEDIA_UPLOAD_ACCESS_KEY_ID=minio
++LANGFUSE_S3_MEDIA_UPLOAD_SECRET_ACCESS_KEY=miniosecret
++LANGFUSE_S3_MEDIA_UPLOAD_REGION=us-east-1
++LANGFUSE_S3_MEDIA_UPLOAD_ENDPOINT=http://localhost:9090
++## Necessary for minio compatibility
++LANGFUSE_S3_MEDIA_UPLOAD_FORCE_PATH_STYLE=true
++LANGFUSE_S3_MEDIA_UPLOAD_PREFIX=media/
++
+ # S3 Event Bucket Upload
+ ## Set to true to test uploading all events to S3
+ LANGFUSE_S3_EVENT_UPLOAD_ENABLED=true
+diff --git a/fern/apis/server/definition/media.yml b/fern/apis/server/definition/media.yml
+new file mode 100644
+index 00000000..ff53f3d3
+--- /dev/null
++++ b/fern/apis/server/definition/media.yml
+@@ -0,0 +1,101 @@
++# yaml-language-server: $schema=https://raw.githubusercontent.com/fern-api/fern/main/fern.schema.json
++imports:
++  commons: ./commons.yml
++
++service:
++  auth: true
++  base-path: /api/public
++  endpoints:
++    get:
++      docs: Get a media record
++      method: GET
++      path: /media/{mediaId}
++      path-parameters:
++        mediaId:
++          type: string
++          docs: The unique langfuse identifier of a media record
++      response: GetMediaResponse
++
++    patch:
++      docs: Patch a media record
++      method: PATCH
++      path: /media/{mediaId}
++      path-parameters:
++        mediaId:
++          type: string
++          docs: The unique langfuse identifier of a media record
++      request: PatchMediaBody
++
++    getUploadUrl:
++      docs: Get a presigned upload URL for a media record
++      method: POST
++      path: /media
++      request: GetMediaUploadUrlRequest
++      response: GetMediaUploadUrlResponse
++
++types:
++  GetMediaResponse:
++    properties:
++      mediaId:
++        type: string
++        docs: The unique langfuse identifier of a media record
++      contentType:
++        type: string
++        docs: The MIME type of the media record
++      contentLength:
++        type: integer
++        docs: The size of the media record in bytes
++      uploadedAt:
++        type: datetime
++        docs: The date and time when the media record was uploaded
++      url:
++        type: string
++        docs: The download URL of the media record
++      urlExpiry:
++        type: string
++        docs: The expiry date and time of the media record download URL
++
++  PatchMediaBody:
++    properties:
++      uploadedAt:
++        type: datetime
++        docs: The date and time when the media record was uploaded
++      uploadHttpStatus:
++        type: integer
++        docs: The HTTP status code of the upload
++      uploadHttpError:
++        type: optional<string>
++        docs: The HTTP error message of the upload
++      uploadTimeMs:
++        type: optional<integer>
++        docs: The time in milliseconds it took to upload the media record
++
++  GetMediaUploadUrlRequest:
++    properties:
++      traceId:
++        type: string
++        docs: The trace ID associated with the media record
++      observationId:
++        type: optional<string>
++        docs: The observation ID associated with the media record. If the media record is associated directly with a trace, this will be null.
++      contentType:
++        type: string
++        docs: The MIME type of the media record
++      contentLength:
++        type: integer
++        docs: The size of the media record in bytes
++      sha256Hash:
++        type: string
++        docs: The SHA-256 hash of the media record
++      field:
++        type: string
++        docs: The trace / observation field the media record is associated with. This can be one of `input`, `output`, `metadata`
++
++  GetMediaUploadUrlResponse:
++    properties:
++      uploadUrl:
++        type: optional<string>
++        docs: The presigned upload URL. If the asset is already uploaded, this will be null
++      mediaId:
++        type: string
++        docs: The unique langfuse identifier of a media record
+diff --git a/fern/apis/server/definition/score.yml b/fern/apis/server/definition/score.yml
+index 5534f71e..d9173cbb 100644
+--- a/fern/apis/server/definition/score.yml
++++ b/fern/apis/server/definition/score.yml
+@@ -147,10 +147,29 @@ types:
+       tags:
+         type: optional<list<string>>
+         docs: A list of tags associated with the trace referenced by score
+-  GetScoresResponseData:
++
++  GetScoresResponseDataNumeric:
++    extends: commons.NumericScore
++    properties:
++      trace: GetScoresResponseTraceData
++
++  GetScoresResponseDataCategorical:
++    extends: commons.CategoricalScore
+     properties:
+-      <<: commons.Score
+       trace: GetScoresResponseTraceData
++
++  GetScoresResponseDataBoolean:
++    extends: commons.BooleanScore
++    properties:
++      trace: GetScoresResponseTraceData
++
++  GetScoresResponseData:
++    discriminant: dataType
++    union:
++      NUMERIC: GetScoresResponseDataNumeric
++      CATEGORICAL: GetScoresResponseDataCategorical
++      BOOLEAN: GetScoresResponseDataBoolean
++
+   GetScoresResponse:
+     properties:
+       data: list<GetScoresResponseData>
+diff --git a/packages/shared/prisma/generated/types.ts b/packages/shared/prisma/generated/types.ts
+index 3a1269aa..aaee1cbb 100644
+--- a/packages/shared/prisma/generated/types.ts
++++ b/packages/shared/prisma/generated/types.ts
+@@ -294,6 +294,20 @@ export type LlmApiKeys = {
+     config: unknown | null;
+     project_id: string;
+ };
++export type Media = {
++    id: string;
++    sha_256_hash: string;
++    project_id: string;
++    created_at: Generated<Timestamp>;
++    updated_at: Generated<Timestamp>;
++    uploaded_at: Timestamp | null;
++    upload_http_status: number | null;
++    upload_http_error: string | null;
++    bucket_path: string;
++    bucket_name: string;
++    content_type: string;
++    content_length: string;
++};
+ export type MembershipInvitation = {
+     id: string;
+     email: string;
+@@ -354,6 +368,16 @@ export type Observation = {
+     completion_start_time: Timestamp | null;
+     prompt_id: string | null;
+ };
++export type ObservationMedia = {
++    id: string;
++    project_id: string;
++    created_at: Generated<Timestamp>;
++    updated_at: Generated<Timestamp>;
++    media_id: string;
++    trace_id: string;
++    observation_id: string;
++    field: string;
++};
+ export type ObservationView = {
+     id: string;
+     trace_id: string | null;
+@@ -515,6 +539,15 @@ export type Trace = {
+     created_at: Generated<Timestamp>;
+     updated_at: Generated<Timestamp>;
+ };
++export type TraceMedia = {
++    id: string;
++    project_id: string;
++    created_at: Generated<Timestamp>;
++    updated_at: Generated<Timestamp>;
++    media_id: string;
++    trace_id: string;
++    field: string;
++};
+ export type TraceSession = {
+     id: string;
+     created_at: Generated<Timestamp>;
+@@ -579,8 +612,10 @@ export type DB = {
+     job_configurations: JobConfiguration;
+     job_executions: JobExecution;
+     llm_api_keys: LlmApiKeys;
++    media: Media;
+     membership_invitations: MembershipInvitation;
+     models: Model;
++    observation_media: ObservationMedia;
+     observations: Observation;
+     observations_view: ObservationView;
+     organization_memberships: OrganizationMembership;
+@@ -594,6 +629,7 @@ export type DB = {
+     scores: Score;
+     Session: Session;
+     sso_configs: SsoConfig;
++    trace_media: TraceMedia;
+     trace_sessions: TraceSession;
+     traces: Trace;
+     traces_view: TraceView;
+diff --git a/packages/shared/prisma/migrations/20241106122605_add_media_tables/migration.sql b/packages/shared/prisma/migrations/20241106122605_add_media_tables/migration.sql
+new file mode 100644
+index 00000000..56f62970
+--- /dev/null
++++ b/packages/shared/prisma/migrations/20241106122605_add_media_tables/migration.sql
+@@ -0,0 +1,71 @@
++-- CreateTable
++CREATE TABLE "media" (
++    "id" TEXT NOT NULL,
++    "sha_256_hash" CHAR(44) NOT NULL,
++    "project_id" TEXT NOT NULL,
++    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
++    "updated_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
++    "uploaded_at" TIMESTAMP(3),
++    "upload_http_status" INTEGER,
++    "upload_http_error" TEXT,
++    "bucket_path" TEXT NOT NULL,
++    "bucket_name" TEXT NOT NULL,
++    "content_type" TEXT NOT NULL,
++    "content_length" BIGINT NOT NULL,
++
++    CONSTRAINT "media_pkey" PRIMARY KEY ("id")
++);
++
++-- CreateTable
++CREATE TABLE "trace_media" (
++    "id" TEXT NOT NULL,
++    "project_id" TEXT NOT NULL,
++    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
++    "updated_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
++    "media_id" TEXT NOT NULL,
++    "trace_id" TEXT NOT NULL,
++    "field" TEXT NOT NULL,
++
++    CONSTRAINT "trace_media_pkey" PRIMARY KEY ("id")
++);
++
++-- CreateTable
++CREATE TABLE "observation_media" (
++    "id" TEXT NOT NULL,
++    "project_id" TEXT NOT NULL,
++    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
++    "updated_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
++    "media_id" TEXT NOT NULL,
++    "trace_id" TEXT NOT NULL,
++    "observation_id" TEXT NOT NULL,
++    "field" TEXT NOT NULL,
++
++    CONSTRAINT "observation_media_pkey" PRIMARY KEY ("id")
++);
++
++-- CreateIndex
++CREATE UNIQUE INDEX "media_project_id_sha_256_hash_key" ON "media"("project_id", "sha_256_hash");
++
++-- CreateIndex
++CREATE UNIQUE INDEX "trace_media_project_id_trace_id_media_id_field_key" ON "trace_media"("project_id", "trace_id", "media_id", "field");
++
++-- CreateIndex
++CREATE INDEX "observation_media_project_id_observation_id_idx" ON "observation_media"("project_id", "observation_id");
++
++-- CreateIndex
++CREATE UNIQUE INDEX "observation_media_project_id_trace_id_observation_id_media__key" ON "observation_media"("project_id", "trace_id", "observation_id", "media_id", "field");
++
++-- AddForeignKey
++ALTER TABLE "media" ADD CONSTRAINT "media_project_id_fkey" FOREIGN KEY ("project_id") REFERENCES "projects"("id") ON DELETE CASCADE ON UPDATE CASCADE;
++
++-- AddForeignKey
++ALTER TABLE "trace_media" ADD CONSTRAINT "trace_media_project_id_fkey" FOREIGN KEY ("project_id") REFERENCES "projects"("id") ON DELETE CASCADE ON UPDATE CASCADE;
++
++-- AddForeignKey
++ALTER TABLE "trace_media" ADD CONSTRAINT "trace_media_media_id_fkey" FOREIGN KEY ("media_id") REFERENCES "media"("id") ON DELETE CASCADE ON UPDATE CASCADE;
++
++-- AddForeignKey
++ALTER TABLE "observation_media" ADD CONSTRAINT "observation_media_project_id_fkey" FOREIGN KEY ("project_id") REFERENCES "projects"("id") ON DELETE CASCADE ON UPDATE CASCADE;
++
++-- AddForeignKey
++ALTER TABLE "observation_media" ADD CONSTRAINT "observation_media_media_id_fkey" FOREIGN KEY ("media_id") REFERENCES "media"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+diff --git a/packages/shared/prisma/schema.prisma b/packages/shared/prisma/schema.prisma
+index 83a541dd..1c418ede 100644
+--- a/packages/shared/prisma/schema.prisma
++++ b/packages/shared/prisma/schema.prisma
+@@ -136,6 +136,9 @@ model Project {
+   comment             Comment[]
+   annotationQueue     AnnotationQueue[]
+   annotationQueueItem AnnotationQueueItem[]
++  TraceMedia          TraceMedia[]
++  Media               Media[]
++  ObservationMedia    ObservationMedia[]
+ 
+   @@index([orgId])
+   @@map("projects")
+@@ -961,3 +964,56 @@ model BatchExport {
+   @@index([status])
+   @@map("batch_exports")
+ }
++
++model Media {
++  id               String             @id @default(cuid())
++  sha256Hash       String             @map("sha_256_hash") @db.Char(44)
++  projectId        String             @map("project_id")
++  project          Project            @relation(fields: [projectId], references: [id], onDelete: Cascade)
++  createdAt        DateTime           @default(now()) @map("created_at")
++  updatedAt        DateTime           @default(now()) @updatedAt @map("updated_at")
++  uploadedAt       DateTime?          @map("uploaded_at")
++  uploadHttpStatus Int?               @map("upload_http_status")
++  uploadHttpError  String?            @map("upload_http_error")
++  bucketPath       String             @map("bucket_path")
++  bucketName       String             @map("bucket_name")
++  contentType      String             @map("content_type")
++  contentLength    BigInt             @map("content_length")
++  TraceMedia       TraceMedia[]
++  ObservationMedia ObservationMedia[]
++
++  @@unique([projectId, sha256Hash])
++  @@map("media")
++}
++
++model TraceMedia {
++  id        String   @id @default(cuid())
++  projectId String   @map("project_id")
++  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
++  createdAt DateTime @default(now()) @map("created_at")
++  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
++  mediaId   String   @map("media_id")
++  media     Media    @relation(fields: [mediaId], references: [id], onDelete: Cascade)
++  traceId   String   @map("trace_id")
++  field     String   @map("field")
++
++  @@unique([projectId, traceId, mediaId, field])
++  @@map("trace_media")
++}
++
++model ObservationMedia {
++  id            String   @id @default(cuid())
++  projectId     String   @map("project_id")
++  project       Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
++  createdAt     DateTime @default(now()) @map("created_at")
++  updatedAt     DateTime @default(now()) @updatedAt @map("updated_at")
++  mediaId       String   @map("media_id")
++  media         Media    @relation(fields: [mediaId], references: [id], onDelete: Cascade)
++  traceId       String   @map("trace_id")
++  observationId String   @map("observation_id")
++  field         String   @map("field")
++
++  @@unique([projectId, traceId, observationId, mediaId, field])
++  @@index([projectId, observationId])
++  @@map("observation_media")
++}
+diff --git a/packages/shared/src/env.ts b/packages/shared/src/env.ts
+index 9315718e..b6d10298 100644
+--- a/packages/shared/src/env.ts
++++ b/packages/shared/src/env.ts
+@@ -22,7 +22,7 @@ const EnvSchema = z.object({
+     .string()
+     .length(
+       64,
+-      "ENCRYPTION_KEY must be 256 bits, 64 string characters in hex format, generate via: openssl rand -hex 32",
++      "ENCRYPTION_KEY must be 256 bits, 64 string characters in hex format, generate via: openssl rand -hex 32"
+     )
+     .optional(),
+   LANGFUSE_CACHE_PROMPT_ENABLED: z.enum(["true", "false"]).default("false"),
+diff --git a/packages/shared/src/server/instrumentation/index.ts b/packages/shared/src/server/instrumentation/index.ts
+index 697f6a80..a38de891 100644
+--- a/packages/shared/src/server/instrumentation/index.ts
++++ b/packages/shared/src/server/instrumentation/index.ts
+@@ -1,10 +1,10 @@
+-import * as opentelemetry from "@opentelemetry/api";
+-import * as dd from "dd-trace";
+-import { env } from "../../env";
+ import {
+   CloudWatchClient,
+   PutMetricDataCommand,
+ } from "@aws-sdk/client-cloudwatch";
++import * as opentelemetry from "@opentelemetry/api";
++import * as dd from "dd-trace";
++import { env } from "../../env";
+ import { logger } from "../logger";
+ 
+ // type CallbackFn<T> = () => T;
+diff --git a/packages/shared/src/server/services/S3StorageService.ts b/packages/shared/src/server/services/S3StorageService.ts
+index 96a60614..05494225 100644
+--- a/packages/shared/src/server/services/S3StorageService.ts
++++ b/packages/shared/src/server/services/S3StorageService.ts
+@@ -121,9 +121,10 @@ export class S3StorageService {
+     }
+   }
+ 
+-  private async getSignedUrl(
++  public async getSignedUrl(
+     fileName: string,
+     ttlSeconds: number,
++    asAttachment: boolean = true,
+   ): Promise<string> {
+     try {
+       return await getSignedUrl(
+@@ -131,7 +132,9 @@ export class S3StorageService {
+         new GetObjectCommand({
+           Bucket: this.bucketName,
+           Key: fileName,
+-          ResponseContentDisposition: `attachment; filename="${fileName}"`,
++          ResponseContentDisposition: asAttachment
++            ? `attachment; filename="${fileName}"`
++            : undefined,
+         }),
+         { expiresIn: ttlSeconds },
+       );
+@@ -140,4 +143,30 @@ export class S3StorageService {
+       throw Error("Failed to generate signed URL");
+     }
+   }
++
++  public async getSignedUploadUrl(params: {
++    path: string;
++    ttlSeconds: number;
++    sha256Hash: string;
++    contentType: string;
++    contentLength: number;
++  }): Promise<string> {
++    const { path, ttlSeconds, contentType, contentLength, sha256Hash } = params;
++
++    return await getSignedUrl(
++      this.client,
++      new PutObjectCommand({
++        Bucket: this.bucketName,
++        Key: path,
++        ContentType: contentType,
++        ChecksumSHA256: sha256Hash,
++        ContentLength: contentLength,
++      }),
++      {
++        expiresIn: ttlSeconds,
++        signableHeaders: new Set(["content-type", "content-length"]),
++        unhoistableHeaders: new Set(["x-amz-checksum-sha256"]),
++      },
++    );
++  }
+ }
+diff --git a/web/public/generated/api/openapi.yml b/web/public/generated/api/openapi.yml
+index c378bd3b..2311e438 100644
+--- a/web/public/generated/api/openapi.yml
++++ b/web/public/generated/api/openapi.yml
+@@ -788,6 +788,148 @@ paths:
+                     debugging.
+               required:
+                 - batch
++  /api/public/media/{mediaId}:
++    get:
++      description: Get a media record
++      operationId: media_get
++      tags:
++        - Media
++      parameters:
++        - name: mediaId
++          in: path
++          description: The unique langfuse identifier of a media record
++          required: true
++          schema:
++            type: string
++      responses:
++        '200':
++          description: ''
++          content:
++            application/json:
++              schema:
++                $ref: '#/components/schemas/GetMediaResponse'
++        '400':
++          description: ''
++          content:
++            application/json:
++              schema: {}
++        '401':
++          description: ''
++          content:
++            application/json:
++              schema: {}
++        '403':
++          description: ''
++          content:
++            application/json:
++              schema: {}
++        '404':
++          description: ''
++          content:
++            application/json:
++              schema: {}
++        '405':
++          description: ''
++          content:
++            application/json:
++              schema: {}
++      security:
++        - BasicAuth: []
++    patch:
++      description: Patch a media record
++      operationId: media_patch
++      tags:
++        - Media
++      parameters:
++        - name: mediaId
++          in: path
++          description: The unique langfuse identifier of a media record
++          required: true
++          schema:
++            type: string
++      responses:
++        '204':
++          description: ''
++        '400':
++          description: ''
++          content:
++            application/json:
++              schema: {}
++        '401':
++          description: ''
++          content:
++            application/json:
++              schema: {}
++        '403':
++          description: ''
++          content:
++            application/json:
++              schema: {}
++        '404':
++          description: ''
++          content:
++            application/json:
++              schema: {}
++        '405':
++          description: ''
++          content:
++            application/json:
++              schema: {}
++      security:
++        - BasicAuth: []
++      requestBody:
++        required: true
++        content:
++          application/json:
++            schema:
++              $ref: '#/components/schemas/PatchMediaBody'
++  /api/public/media:
++    post:
++      description: Get a presigned upload URL for a media record
++      operationId: media_getUploadUrl
++      tags:
++        - Media
++      parameters: []
++      responses:
++        '200':
++          description: ''
++          content:
++            application/json:
++              schema:
++                $ref: '#/components/schemas/GetMediaUploadUrlResponse'
++        '400':
++          description: ''
++          content:
++            application/json:
++              schema: {}
++        '401':
++          description: ''
++          content:
++            application/json:
++              schema: {}
++        '403':
++          description: ''
++          content:
++            application/json:
++              schema: {}
++        '404':
++          description: ''
++          content:
++            application/json:
++              schema: {}
++        '405':
++          description: ''
++          content:
++            application/json:
++              schema: {}
++      security:
++        - BasicAuth: []
++      requestBody:
++        required: true
++        content:
++          application/json:
++            schema:
++              $ref: '#/components/schemas/GetMediaUploadUrlRequest'
+   /api/public/metrics/daily:
+     get:
+       description: Get daily metrics of the Langfuse project
+@@ -3813,6 +3955,106 @@ components:
+       required:
+         - successes
+         - errors
++    GetMediaResponse:
++      title: GetMediaResponse
++      type: object
++      properties:
++        mediaId:
++          type: string
++          description: The unique langfuse identifier of a media record
++        contentType:
++          type: string
++          description: The MIME type of the media record
++        contentLength:
++          type: integer
++          description: The size of the media record in bytes
++        uploadedAt:
++          type: string
++          format: date-time
++          description: The date and time when the media record was uploaded
++        url:
++          type: string
++          description: The download URL of the media record
++        urlExpiry:
++          type: string
++          description: The expiry date and time of the media record download URL
++      required:
++        - mediaId
++        - contentType
++        - contentLength
++        - uploadedAt
++        - url
++        - urlExpiry
++    PatchMediaBody:
++      title: PatchMediaBody
++      type: object
++      properties:
++        uploadedAt:
++          type: string
++          format: date-time
++          description: The date and time when the media record was uploaded
++        uploadHttpStatus:
++          type: integer
++          description: The HTTP status code of the upload
++        uploadHttpError:
++          type: string
++          nullable: true
++          description: The HTTP error message of the upload
++        uploadTimeMs:
++          type: integer
++          nullable: true
++          description: The time in milliseconds it took to upload the media record
++      required:
++        - uploadedAt
++        - uploadHttpStatus
++    GetMediaUploadUrlRequest:
++      title: GetMediaUploadUrlRequest
++      type: object
++      properties:
++        traceId:
++          type: string
++          description: The trace ID associated with the media record
++        observationId:
++          type: string
++          nullable: true
++          description: >-
++            The observation ID associated with the media record. If the media
++            record is associated directly with a trace, this will be null.
++        contentType:
++          type: string
++          description: The MIME type of the media record
++        contentLength:
++          type: integer
++          description: The size of the media record in bytes
++        sha256Hash:
++          type: string
++          description: The SHA-256 hash of the media record
++        field:
++          type: string
++          description: >-
++            The trace / observation field the media record is associated with.
++            This can be one of `input`, `output`, `metadata`
++      required:
++        - traceId
++        - contentType
++        - contentLength
++        - sha256Hash
++        - field
++    GetMediaUploadUrlResponse:
++      title: GetMediaUploadUrlResponse
++      type: object
++      properties:
++        uploadUrl:
++          type: string
++          nullable: true
++          description: >-
++            The presigned upload URL. If the asset is already uploaded, this
++            will be null
++        mediaId:
++          type: string
++          description: The unique langfuse identifier of a media record
++      required:
++        - mediaId
+     DailyMetrics:
+       title: DailyMetrics
+       type: object
+@@ -4330,17 +4572,72 @@ components:
+             type: string
+           nullable: true
+           description: A list of tags associated with the trace referenced by score
+-    GetScoresResponseData:
+-      title: GetScoresResponseData
++    GetScoresResponseDataNumeric:
++      title: GetScoresResponseDataNumeric
++      type: object
++      properties:
++        trace:
++          $ref: '#/components/schemas/GetScoresResponseTraceData'
++      required:
++        - trace
++      allOf:
++        - $ref: '#/components/schemas/NumericScore'
++    GetScoresResponseDataCategorical:
++      title: GetScoresResponseDataCategorical
+       type: object
+       properties:
+-        '<<':
+-          $ref: '#/components/schemas/Score'
+         trace:
+           $ref: '#/components/schemas/GetScoresResponseTraceData'
+       required:
+-        - '<<'
+         - trace
++      allOf:
++        - $ref: '#/components/schemas/CategoricalScore'
++    GetScoresResponseDataBoolean:
++      title: GetScoresResponseDataBoolean
++      type: object
++      properties:
++        trace:
++          $ref: '#/components/schemas/GetScoresResponseTraceData'
++      required:
++        - trace
++      allOf:
++        - $ref: '#/components/schemas/BooleanScore'
++    GetScoresResponseData:
++      title: GetScoresResponseData
++      oneOf:
++        - type: object
++          allOf:
++            - type: object
++              properties:
++                dataType:
++                  type: string
++                  enum:
++                    - NUMERIC
++            - $ref: '#/components/schemas/GetScoresResponseDataNumeric'
++          required:
++            - dataType
++        - type: object
++          allOf:
++            - type: object
++              properties:
++                dataType:
++                  type: string
++                  enum:
++                    - CATEGORICAL
++            - $ref: '#/components/schemas/GetScoresResponseDataCategorical'
++          required:
++            - dataType
++        - type: object
++          allOf:
++            - type: object
++              properties:
++                dataType:
++                  type: string
++                  enum:
++                    - BOOLEAN
++            - $ref: '#/components/schemas/GetScoresResponseDataBoolean'
++          required:
++            - dataType
+     GetScoresResponse:
+       title: GetScoresResponse
+       type: object
+diff --git a/web/public/generated/postman/collection.json b/web/public/generated/postman/collection.json
+index 66d71225..061ad475 100644
+--- a/web/public/generated/postman/collection.json
++++ b/web/public/generated/postman/collection.json
+@@ -589,6 +589,118 @@
+         }
+       ]
+     },
++    {
++      "_type": "container",
++      "description": null,
++      "name": "Media",
++      "item": [
++        {
++          "_type": "endpoint",
++          "name": "Get",
++          "request": {
++            "description": "Get a media record",
++            "url": {
++              "raw": "{{baseUrl}}/api/public/media/:mediaId",
++              "host": [
++                "{{baseUrl}}"
++              ],
++              "path": [
++                "api",
++                "public",
++                "media",
++                ":mediaId"
++              ],
++              "query": [],
++              "variable": [
++                {
++                  "key": "mediaId",
++                  "value": "",
++                  "description": "The unique langfuse identifier of a media record"
++                }
++              ]
++            },
++            "header": [],
++            "method": "GET",
++            "auth": null,
++            "body": null
++          },
++          "response": []
++        },
++        {
++          "_type": "endpoint",
++          "name": "Patch",
++          "request": {
++            "description": "Patch a media record",
++            "url": {
++              "raw": "{{baseUrl}}/api/public/media/:mediaId",
++              "host": [
++                "{{baseUrl}}"
++              ],
++              "path": [
++                "api",
++                "public",
++                "media",
++                ":mediaId"
++              ],
++              "query": [],
++              "variable": [
++                {
++                  "key": "mediaId",
++                  "value": "",
++                  "description": "The unique langfuse identifier of a media record"
++                }
++              ]
++            },
++            "header": [],
++            "method": "PATCH",
++            "auth": null,
++            "body": {
++              "mode": "raw",
++              "raw": "{\n    \"uploadedAt\": \"1994-11-05T13:15:30Z\",\n    \"uploadHttpStatus\": 0,\n    \"uploadHttpError\": \"example\",\n    \"uploadTimeMs\": 0\n}",
++              "options": {
++                "raw": {
++                  "language": "json"
++                }
++              }
++            }
++          },
++          "response": []
++        },
++        {
++          "_type": "endpoint",
++          "name": "Get Upload Url",
++          "request": {
++            "description": "Get a presigned upload URL for a media record",
++            "url": {
++              "raw": "{{baseUrl}}/api/public/media",
++              "host": [
++                "{{baseUrl}}"
++              ],
++              "path": [
++                "api",
++                "public",
++                "media"
++              ],
++              "query": [],
++              "variable": []
++            },
++            "header": [],
++            "method": "POST",
++            "auth": null,
++            "body": {
++              "mode": "raw",
++              "raw": "{\n    \"traceId\": \"example\",\n    \"observationId\": \"example\",\n    \"contentType\": \"example\",\n    \"contentLength\": 0,\n    \"sha256Hash\": \"example\",\n    \"field\": \"example\"\n}",
++              "options": {
++                "raw": {
++                  "language": "json"
++                }
++              }
++            }
++          },
++          "response": []
++        }
++      ]
++    },
+     {
+       "_type": "container",
+       "description": null,
+diff --git a/web/src/__tests__/media.servertest.ts b/web/src/__tests__/media.servertest.ts
+new file mode 100644
+index 00000000..0d46b018
+--- /dev/null
++++ b/web/src/__tests__/media.servertest.ts
+@@ -0,0 +1,845 @@
++import crypto from "crypto";
++import fs from "fs";
++import path from "path";
++import { z } from "zod";
++
++import { makeZodVerifiedAPICallSilent } from "@/src/__tests__/test-utils";
++import { env } from "@/src/env.mjs";
++import {
++  type GetMediaResponse,
++  GetMediaResponseSchema,
++  type GetMediaUploadUrlResponse,
++  GetMediaUploadUrlResponseSchema,
++} from "@/src/features/media/validation";
++import {
++  type Media,
++  type ObservationMedia,
++  prisma,
++  type TraceMedia,
++} from "@langfuse/shared/src/db";
++import { redis } from "@langfuse/shared/src/server";
++
++describe("Media Upload API", () => {
++  const projectId = "7a88fb47-b4e2-43b8-a06c-a5ce950dc53a";
++
++  // Read the image file once and reuse it for all tests
++  const imagePathPNG = path.join(__dirname, "static/langfuse-logo.png");
++  const fileBytesPNG = fs.readFileSync(imagePathPNG);
++  const contentTypePNG = "image/png";
++  const contentLengthPNG = fileBytesPNG.length;
++  const sha256HashPNG = crypto
++    .createHash("sha256")
++    .update(fileBytesPNG)
++    .digest("base64");
++
++  const validPNG = {
++    contentType: contentTypePNG,
++    contentLength: contentLengthPNG,
++    sha256Hash: sha256HashPNG,
++    fileBytes: fileBytesPNG,
++  };
++
++  // Read the PDF file once and reuse it for all tests
++  const imagePathPDF = path.join(__dirname, "static/bitcoin.pdf");
++  const fileBytesPDF = fs.readFileSync(imagePathPDF);
++  const contentTypePDF = "application/pdf";
++  const contentLengthPDF = fileBytesPDF.length;
++  const sha256HashPDF = crypto
++    .createHash("sha256")
++    .update(fileBytesPDF)
++    .digest("base64");
++
++  const validPDF = {
++    contentType: contentTypePDF,
++    contentLength: contentLengthPDF,
++    sha256Hash: sha256HashPDF,
++    fileBytes: fileBytesPDF,
++  };
++
++  // Run the upload end-to-end test for a given set of media data
++  async function runMediaUploadEndToEndTest({
++    contentType,
++    contentLength,
++    traceId,
++    observationId,
++    field,
++    sha256Hash,
++    fileBytes,
++    claimedContentType,
++    claimedContentLength,
++    claimedSha256Hash,
++  }: {
++    contentType: string;
++    contentLength: number;
++    traceId: string;
++    observationId?: string;
++    field: string;
++    sha256Hash: string;
++    fileBytes: Uint8Array;
++    claimedContentType?: string;
++    claimedContentLength?: number;
++    claimedSha256Hash?: string;
++  }) {
++    const basePath = "api/public/media";
++    const result: {
++      getUploadUrlResponse: HttpResponse<GetMediaUploadUrlResponse> | null;
++      uploadFileResponse: Response | null;
++      updateMediaResponse: HttpResponse<void> | null;
++      getDownloadUrlResponse: HttpResponse<GetMediaResponse> | null;
++      fetchMediaAssetResponse: Response | null;
++      mediaRecord: Media | null;
++      traceMediaRecord: TraceMedia | null;
++      observationMediaRecord: ObservationMedia | null;
++    } = {
++      getUploadUrlResponse: null,
++      uploadFileResponse: null,
++      updateMediaResponse: null,
++      getDownloadUrlResponse: null,
++      fetchMediaAssetResponse: null,
++      mediaRecord: null,
++      traceMediaRecord: null,
++      observationMediaRecord: null,
++    };
++    let mediaId: string | null = null;
++
++    try {
++      // Get upload URL
++      const getUploadUrlResponse = await makeZodVerifiedAPICallSilent(
++        GetMediaUploadUrlResponseSchema,
++        "POST",
++        basePath,
++        {
++          contentType: claimedContentType ?? contentType,
++          contentLength: claimedContentLength ?? contentLength,
++          traceId,
++          observationId,
++          field,
++          sha256Hash: claimedSha256Hash ?? sha256Hash,
++        },
++      );
++      result.getUploadUrlResponse = getUploadUrlResponse;
++
++      if (!getUploadUrlResponse.body.uploadUrl) {
++        return result;
++      }
++
++      mediaId = getUploadUrlResponse.body.mediaId;
++
++      // Upload file
++      const uploadFileResponse = await fetch(
++        getUploadUrlResponse.body.uploadUrl,
++        {
++          method: "PUT",
++          body: fileBytes,
++          headers: {
++            "Content-Type": contentType,
++            "X-Amz-Checksum-Sha256": sha256Hash,
++          },
++        },
++      ).catch((err) => console.error(err));
++
++      result.uploadFileResponse = uploadFileResponse
++        ? uploadFileResponse
++        : null;
++
++      if (!uploadFileResponse) {
++        return result;
++      }
++
++      // Update media record
++      const updateMediaResponse = await makeZodVerifiedAPICallSilent(
++        z.any(),
++        "PATCH",
++        basePath + `/${mediaId}`,
++        {
++          uploadedAt: new Date().toISOString(),
++          uploadHttpStatus: uploadFileResponse.status,
++          uploadHttpError: await uploadFileResponse.text(),
++        },
++      );
++      result.updateMediaResponse = updateMediaResponse;
++
++      // Get download URL
++      const getDownloadUrlResponse = await makeZodVerifiedAPICallSilent(
++        GetMediaResponseSchema,
++        "GET",
++        basePath + `/${mediaId}`,
++      );
++      result.getDownloadUrlResponse = getDownloadUrlResponse;
++
++      if (getDownloadUrlResponse.status !== 200) {
++        return result;
++      }
++
++      const fetchMediaAssetResponse = await fetch(
++        getDownloadUrlResponse.body.url,
++      );
++
++      result.fetchMediaAssetResponse = fetchMediaAssetResponse;
++    } catch (error) {
++      console.error(error);
++      return result;
++    } finally {
++      if (mediaId) {
++        result.mediaRecord = await prisma.media.findUnique({
++          where: { id: mediaId },
++        });
++        result.traceMediaRecord = await prisma.traceMedia.findUnique({
++          where: {
++            projectId_traceId_mediaId_field: {
++              projectId,
++              traceId,
++              mediaId,
++              field,
++            },
++          },
++        });
++        result.observationMediaRecord = observationId
++          ? await prisma.observationMedia.findUnique({
++              where: {
++                projectId_traceId_observationId_mediaId_field: {
++                  projectId,
++                  traceId,
++                  observationId,
++                  mediaId,
++                  field,
++                },
++              },
++            })
++          : null;
++      }
++      return result;
++    }
++  }
++
++  beforeEach(async () => {
++    if (!env.DATABASE_URL.includes("localhost:5432")) {
++      throw new Error("You cannot prune database unless running on localhost.");
++    }
++
++    await prisma.media.deleteMany();
++  });
++
++  afterAll(async () => {
++    if (redis) {
++      redis.disconnect();
++    }
++  });
++
++  describe("End-to-end tests", () => {
++    it("should upload and retrieve a PNG media asset for trace input", async () => {
++      const traceId = "test";
++      const field = "input";
++
++      const result = await runMediaUploadEndToEndTest({
++        ...validPNG,
++        traceId,
++        field,
++      });
++
++      expect(result.getUploadUrlResponse?.status).toBe(201);
++      expect(result.updateMediaResponse?.status).toBe(200);
++      expect(result.getDownloadUrlResponse?.status).toBe(200);
++      expect(result.uploadFileResponse?.status).toBe(200);
++      expect(result.mediaRecord).not.toBeNull();
++      expect(result.mediaRecord).toMatchObject({
++        sha256Hash: validPNG.sha256Hash,
++        contentType: validPNG.contentType,
++        contentLength: BigInt(validPNG.contentLength),
++        bucketName: env.LANGFUSE_S3_MEDIA_UPLOAD_BUCKET,
++        bucketPath: expect.any(String),
++        uploadHttpStatus: 200,
++        uploadHttpError: null,
++      });
++      expect(result.traceMediaRecord).not.toBeNull();
++      expect(result.traceMediaRecord).toMatchObject({
++        projectId,
++        traceId,
++        mediaId: result.mediaRecord?.id,
++        field,
++      });
++      expect(result.observationMediaRecord).toBeNull();
++      expect(result.fetchMediaAssetResponse?.status).toBe(200);
++      expect(result.fetchMediaAssetResponse?.headers.get("content-type")).toBe(
++        validPNG.contentType,
++      );
++      expect(
++        result.fetchMediaAssetResponse?.headers.get("content-length"),
++      ).toBe(validPNG.contentLength.toString());
++
++      const responseBuffer =
++        await result.fetchMediaAssetResponse?.arrayBuffer();
++      if (!responseBuffer) {
++        throw new Error("Response buffer is undefined");
++      }
++      const responseHash = crypto
++        .createHash("sha256")
++        .update(Buffer.from(responseBuffer))
++        .digest("base64");
++      expect(responseHash).toEqual(validPNG.sha256Hash);
++    }, 10_000);
++
++    it("should upload and retrieve a PDF media asset for observation output", async () => {
++      const traceId = "test";
++      const observationId = "test";
++      const field = "output";
++
++      const result = await runMediaUploadEndToEndTest({
++        ...validPDF,
++        traceId,
++        observationId,
++        field,
++      });
++
++      expect(result.getUploadUrlResponse?.status).toBe(201);
++      expect(result.updateMediaResponse?.status).toBe(200);
++      expect(result.getDownloadUrlResponse?.status).toBe(200);
++      expect(result.uploadFileResponse?.status).toBe(200);
++      expect(result.mediaRecord).not.toBeNull();
++      expect(result.mediaRecord).toMatchObject({
++        sha256Hash: validPDF.sha256Hash,
++        contentType: validPDF.contentType,
++        contentLength: BigInt(validPDF.contentLength),
++        bucketName: env.LANGFUSE_S3_MEDIA_UPLOAD_BUCKET,
++        bucketPath: expect.any(String),
++      });
++      expect(result.traceMediaRecord).toBeNull();
++      expect(result.observationMediaRecord).not.toBeNull();
++      expect(result.observationMediaRecord).toMatchObject({
++        projectId,
++        observationId,
++        mediaId: result.mediaRecord?.id,
++        field,
++      });
++      expect(result.fetchMediaAssetResponse?.status).toBe(200);
++      expect(result.fetchMediaAssetResponse?.headers.get("content-type")).toBe(
++        validPDF.contentType,
++      );
++      expect(
++        result.fetchMediaAssetResponse?.headers.get("content-length"),
++      ).toBe(validPDF.contentLength.toString());
++
++      const responseBuffer =
++        await result.fetchMediaAssetResponse?.arrayBuffer();
++      if (!responseBuffer) {
++        throw new Error("Response buffer is undefined");
++      }
++      const responseHash = crypto
++        .createHash("sha256")
++        .update(Buffer.from(responseBuffer))
++        .digest("base64");
++      expect(responseHash).toEqual(validPDF.sha256Hash);
++    }, 10_000);
++
++    it("should allow retrying with correct content length", async () => {
++      const traceId = "test";
++      const field = "input";
++
++      const failedResult = await runMediaUploadEndToEndTest({
++        ...validPNG,
++        traceId,
++        field,
++        claimedContentLength: 100,
++      });
++
++      expect(failedResult.getUploadUrlResponse?.status).toBe(201);
++      expect(failedResult.updateMediaResponse?.status).toBe(200);
++      expect(failedResult.uploadFileResponse?.status).toBe(403);
++      expect(failedResult.getDownloadUrlResponse?.status).toBe(404);
++      expect(failedResult.mediaRecord).not.toBeNull();
++      expect(failedResult.mediaRecord).toMatchObject({
++        sha256Hash: validPNG.sha256Hash,
++        contentType: validPNG.contentType,
++        contentLength: BigInt(100),
++        bucketName: env.LANGFUSE_S3_MEDIA_UPLOAD_BUCKET,
++        bucketPath: expect.any(String),
++        uploadHttpStatus: 403,
++        uploadHttpError: expect.any(String),
++      });
++      expect(failedResult.traceMediaRecord).not.toBeNull();
++      expect(failedResult.traceMediaRecord).toMatchObject({
++        projectId,
++        traceId,
++        mediaId: failedResult.mediaRecord?.id,
++        field,
++      });
++      expect(failedResult.observationMediaRecord).toBeNull();
++      expect(failedResult.fetchMediaAssetResponse).toBeNull();
++
++      const result = await runMediaUploadEndToEndTest({
++        ...validPNG,
++        traceId,
++        field,
++      });
++
++      expect(result.getUploadUrlResponse?.status).toBe(201);
++      expect(result.updateMediaResponse?.status).toBe(200);
++      expect(result.getDownloadUrlResponse?.status).toBe(200);
++      expect(result.uploadFileResponse?.status).toBe(200);
++      expect(result.mediaRecord).not.toBeNull();
++      expect(result.mediaRecord).toMatchObject({
++        sha256Hash: validPNG.sha256Hash,
++        contentType: validPNG.contentType,
++        contentLength: BigInt(validPNG.contentLength),
++        bucketName: env.LANGFUSE_S3_MEDIA_UPLOAD_BUCKET,
++        bucketPath: expect.any(String),
++        uploadHttpStatus: 200,
++        uploadHttpError: null,
++      });
++      expect(result.traceMediaRecord).not.toBeNull();
++      expect(result.traceMediaRecord).toMatchObject({
++        projectId,
++        traceId,
++        mediaId: result.mediaRecord?.id,
++        field,
++      });
++      expect(result.observationMediaRecord).toBeNull();
++      expect(result.fetchMediaAssetResponse?.status).toBe(200);
++      expect(result.fetchMediaAssetResponse?.headers.get("content-type")).toBe(
++        validPNG.contentType,
++      );
++      expect(
++        result.fetchMediaAssetResponse?.headers.get("content-length"),
++      ).toBe(validPNG.contentLength.toString());
++
++      const responseBuffer =
++        await result.fetchMediaAssetResponse?.arrayBuffer();
++      if (!responseBuffer) {
++        throw new Error("Response buffer is undefined");
++      }
++      const responseHash = crypto
++        .createHash("sha256")
++        .update(Buffer.from(responseBuffer))
++        .digest("base64");
++      expect(responseHash).toEqual(validPNG.sha256Hash);
++    }, 10_000);
++
++    it("should allow retrying with correct content bytes", async () => {
++      const traceId = "test";
++      const field = "input";
++
++      const failedResult = await runMediaUploadEndToEndTest({
++        ...validPNG,
++        traceId,
++        field,
++        fileBytes: new Uint8Array([1, 2, 3]),
++      });
++
++      expect(failedResult.getUploadUrlResponse?.status).toBe(201);
++      expect(failedResult.uploadFileResponse?.status).toBe(403);
++      expect(failedResult.updateMediaResponse?.status).toBe(200);
++      expect(failedResult.getDownloadUrlResponse?.status).toBe(404);
++      expect(failedResult.mediaRecord).not.toBeNull();
++      expect(failedResult.mediaRecord).toMatchObject({
++        sha256Hash: validPNG.sha256Hash,
++        contentType: validPNG.contentType,
++        contentLength: BigInt(validPNG.contentLength),
++        bucketName: env.LANGFUSE_S3_MEDIA_UPLOAD_BUCKET,
++        bucketPath: expect.any(String),
++        uploadHttpStatus: 403,
++        uploadHttpError: expect.any(String),
++      });
++      expect(failedResult.traceMediaRecord).not.toBeNull();
++      expect(failedResult.traceMediaRecord).toMatchObject({
++        projectId,
++        traceId,
++        mediaId: failedResult.mediaRecord?.id,
++        field,
++      });
++      expect(failedResult.observationMediaRecord).toBeNull();
++      expect(failedResult.fetchMediaAssetResponse).toBeNull();
++
++      const result = await runMediaUploadEndToEndTest({
++        ...validPNG,
++        traceId,
++        field,
++      });
++
++      expect(result.getUploadUrlResponse?.status).toBe(201);
++      expect(result.updateMediaResponse?.status).toBe(200);
++      expect(result.getDownloadUrlResponse?.status).toBe(200);
++      expect(result.uploadFileResponse?.status).toBe(200);
++      expect(result.mediaRecord).not.toBeNull();
++      expect(result.mediaRecord).toMatchObject({
++        sha256Hash: validPNG.sha256Hash,
++        contentType: validPNG.contentType,
++        contentLength: BigInt(validPNG.contentLength),
++        bucketName: env.LANGFUSE_S3_MEDIA_UPLOAD_BUCKET,
++        bucketPath: expect.any(String),
++        uploadHttpStatus: 200,
++        uploadHttpError: null,
++      });
++      expect(result.traceMediaRecord).not.toBeNull();
++      expect(result.traceMediaRecord).toMatchObject({
++        projectId,
++        traceId,
++        mediaId: result.mediaRecord?.id,
++        field,
++      });
++      expect(result.observationMediaRecord).toBeNull();
++      expect(result.fetchMediaAssetResponse?.status).toBe(200);
++      expect(result.fetchMediaAssetResponse?.headers.get("content-type")).toBe(
++        validPNG.contentType,
++      );
++      expect(
++        result.fetchMediaAssetResponse?.headers.get("content-length"),
++      ).toBe(validPNG.contentLength.toString());
++
++      const responseBuffer =
++        await result.fetchMediaAssetResponse?.arrayBuffer();
++      if (!responseBuffer) {
++        throw new Error("Response buffer is undefined");
++      }
++      const responseHash = crypto
++        .createHash("sha256")
++        .update(Buffer.from(responseBuffer))
++        .digest("base64");
++      expect(responseHash).toEqual(validPNG.sha256Hash);
++    }, 10_000);
++
++    it("should allow retrying with correct content type", async () => {
++      const traceId = "test";
++      const field = "input";
++
++      const failedResult = await runMediaUploadEndToEndTest({
++        ...validPNG,
++        traceId,
++        field,
++        claimedContentType: "image/jpeg",
++      });
++
++      expect(failedResult.getUploadUrlResponse?.status).toBe(201);
++      expect(failedResult.updateMediaResponse?.status).toBe(200);
++      expect(failedResult.uploadFileResponse?.status).toBe(403);
++      expect(failedResult.getDownloadUrlResponse?.status).toBe(404);
++      expect(failedResult.mediaRecord).not.toBeNull();
++      expect(failedResult.mediaRecord).toMatchObject({
++        sha256Hash: validPNG.sha256Hash,
++        contentType: "image/jpeg",
++        contentLength: BigInt(validPNG.contentLength),
++        bucketName: env.LANGFUSE_S3_MEDIA_UPLOAD_BUCKET,
++        bucketPath: expect.any(String),
++        uploadHttpStatus: 403,
++        uploadHttpError: expect.any(String),
++      });
++      expect(failedResult.traceMediaRecord).not.toBeNull();
++      expect(failedResult.traceMediaRecord).toMatchObject({
++        projectId,
++        traceId,
++        mediaId: failedResult.mediaRecord?.id,
++        field,
++      });
++      expect(failedResult.observationMediaRecord).toBeNull();
++      expect(failedResult.fetchMediaAssetResponse).toBeNull();
++
++      const result = await runMediaUploadEndToEndTest({
++        ...validPNG,
++        traceId,
++        field,
++      });
++
++      expect(result.getUploadUrlResponse?.status).toBe(201);
++      expect(result.updateMediaResponse?.status).toBe(200);
++      expect(result.getDownloadUrlResponse?.status).toBe(200);
++      expect(result.uploadFileResponse?.status).toBe(200);
++      expect(result.mediaRecord).not.toBeNull();
++      expect(result.mediaRecord).toMatchObject({
++        sha256Hash: validPNG.sha256Hash,
++        contentType: validPNG.contentType,
++        contentLength: BigInt(validPNG.contentLength),
++        bucketName: env.LANGFUSE_S3_MEDIA_UPLOAD_BUCKET,
++        bucketPath: expect.any(String),
++        uploadHttpStatus: 200,
++        uploadHttpError: null,
++      });
++      expect(result.traceMediaRecord).not.toBeNull();
++      expect(result.traceMediaRecord).toMatchObject({
++        projectId,
++        traceId,
++        mediaId: result.mediaRecord?.id,
++        field,
++      });
++      expect(result.observationMediaRecord).toBeNull();
++      expect(result.fetchMediaAssetResponse?.status).toBe(200);
++      expect(result.fetchMediaAssetResponse?.headers.get("content-type")).toBe(
++        validPNG.contentType,
++      );
++      expect(
++        result.fetchMediaAssetResponse?.headers.get("content-length"),
++      ).toBe(validPNG.contentLength.toString());
++
++      const responseBuffer =
++        await result.fetchMediaAssetResponse?.arrayBuffer();
++      if (!responseBuffer) {
++        throw new Error("Response buffer is undefined");
++      }
++      const responseHash = crypto
++        .createHash("sha256")
++        .update(Buffer.from(responseBuffer))
++        .digest("base64");
++      expect(responseHash).toEqual(validPNG.sha256Hash);
++    }, 10_000);
++
++    it("should allow reuploading with different content type", async () => {
++      const traceId = "test";
++      const field = "input";
++
++      const firstResult = await runMediaUploadEndToEndTest({
++        ...validPNG,
++        traceId,
++        field,
++        contentType: "image/jpeg",
++      });
++
++      expect(firstResult.getUploadUrlResponse?.status).toBe(201);
++      expect(firstResult.updateMediaResponse?.status).toBe(200);
++      expect(firstResult.getDownloadUrlResponse?.status).toBe(200);
++      expect(firstResult.uploadFileResponse?.status).toBe(200);
++      expect(firstResult.mediaRecord).not.toBeNull();
++      expect(firstResult.mediaRecord).toMatchObject({
++        sha256Hash: validPNG.sha256Hash,
++        contentType: "image/jpeg",
++        contentLength: BigInt(validPNG.contentLength),
++        bucketName: env.LANGFUSE_S3_MEDIA_UPLOAD_BUCKET,
++        bucketPath: expect.any(String),
++        uploadHttpStatus: 200,
++        uploadHttpError: null,
++      });
++      expect(firstResult.traceMediaRecord).not.toBeNull();
++      expect(firstResult.traceMediaRecord).toMatchObject({
++        projectId,
++        traceId,
++        mediaId: firstResult.mediaRecord?.id,
++        field,
++      });
++      expect(firstResult.observationMediaRecord).toBeNull();
++      expect(firstResult.fetchMediaAssetResponse?.status).toBe(200);
++      expect(
++        firstResult.fetchMediaAssetResponse?.headers.get("content-type"),
++      ).toBe("image/jpeg");
++      expect(
++        firstResult.fetchMediaAssetResponse?.headers.get("content-length"),
++      ).toBe(validPNG.contentLength.toString());
++
++      const firstResponseBuffer =
++        await firstResult.fetchMediaAssetResponse?.arrayBuffer();
++      if (!firstResponseBuffer) {
++        throw new Error("Response buffer is undefined");
++      }
++      const firstResponseHash = crypto
++        .createHash("sha256")
++        .update(Buffer.from(firstResponseBuffer))
++        .digest("base64");
++      expect(firstResponseHash).toEqual(validPNG.sha256Hash);
++
++      const secondResult = await runMediaUploadEndToEndTest({
++        ...validPNG,
++        traceId,
++        field,
++      });
++
++      expect(secondResult.getUploadUrlResponse?.status).toBe(201);
++      expect(secondResult.updateMediaResponse?.status).toBe(200);
++      expect(secondResult.getDownloadUrlResponse?.status).toBe(200);
++      expect(secondResult.uploadFileResponse?.status).toBe(200);
++      expect(secondResult.mediaRecord).not.toBeNull();
++      expect(secondResult.mediaRecord).toMatchObject({
++        sha256Hash: validPNG.sha256Hash,
++        contentType: validPNG.contentType,
++        contentLength: BigInt(validPNG.contentLength),
++        bucketName: env.LANGFUSE_S3_MEDIA_UPLOAD_BUCKET,
++        bucketPath: expect.any(String),
++        uploadHttpStatus: 200,
++        uploadHttpError: null,
++      });
++      expect(secondResult.traceMediaRecord).not.toBeNull();
++      expect(secondResult.traceMediaRecord).toMatchObject({
++        projectId,
++        traceId,
++        mediaId: secondResult.mediaRecord?.id,
++        field,
++      });
++      expect(secondResult.observationMediaRecord).toBeNull();
++      expect(secondResult.fetchMediaAssetResponse?.status).toBe(200);
++      expect(
++        secondResult.fetchMediaAssetResponse?.headers.get("content-type"),
++      ).toBe(validPNG.contentType);
++      expect(
++        secondResult.fetchMediaAssetResponse?.headers.get("content-length"),
++      ).toBe(validPNG.contentLength.toString());
++
++      const responseBuffer =
++        await secondResult.fetchMediaAssetResponse?.arrayBuffer();
++      if (!responseBuffer) {
++        throw new Error("Response buffer is undefined");
++      }
++      const responseHash = crypto
++        .createHash("sha256")
++        .update(Buffer.from(responseBuffer))
++        .digest("base64");
++      expect(responseHash).toEqual(validPNG.sha256Hash);
++    }, 10_000);
++
++    it("should return mediaId without upload URL if media file is already uploaded", async () => {
++      const traceId = "test";
++      const field = "input";
++
++      const result = await runMediaUploadEndToEndTest({
++        ...validPNG,
++        traceId,
++        field,
++      });
++
++      expect(result.getUploadUrlResponse?.status).toBe(201);
++      expect(result.updateMediaResponse?.status).toBe(200);
++      expect(result.getDownloadUrlResponse?.status).toBe(200);
++      expect(result.uploadFileResponse?.status).toBe(200);
++      expect(result.mediaRecord).not.toBeNull();
++      expect(result.mediaRecord).toMatchObject({
++        sha256Hash: validPNG.sha256Hash,
++        contentType: validPNG.contentType,
++        contentLength: BigInt(validPNG.contentLength),
++        bucketName: env.LANGFUSE_S3_MEDIA_UPLOAD_BUCKET,
++        bucketPath: expect.any(String),
++        uploadHttpStatus: 200,
++        uploadHttpError: null,
++      });
++      expect(result.traceMediaRecord).not.toBeNull();
++      expect(result.traceMediaRecord).toMatchObject({
++        projectId,
++        traceId,
++        mediaId: result.mediaRecord?.id,
++        field,
++      });
++      expect(result.observationMediaRecord).toBeNull();
++      expect(result.fetchMediaAssetResponse?.status).toBe(200);
++      expect(result.fetchMediaAssetResponse?.headers.get("content-type")).toBe(
++        validPNG.contentType,
++      );
++      expect(
++        result.fetchMediaAssetResponse?.headers.get("content-length"),
++      ).toBe(validPNG.contentLength.toString());
++
++      const responseBuffer =
++        await result.fetchMediaAssetResponse?.arrayBuffer();
++      if (!responseBuffer) {
++        throw new Error("Response buffer is undefined");
++      }
++      const responseHash = crypto
++        .createHash("sha256")
++        .update(Buffer.from(responseBuffer))
++        .digest("base64");
++      expect(responseHash).toEqual(validPNG.sha256Hash);
++
++      const secondResult = await runMediaUploadEndToEndTest({
++        ...validPNG,
++        traceId,
++        field,
++      });
++
++      expect(secondResult.getUploadUrlResponse?.status).toBe(201);
++      expect(secondResult.getUploadUrlResponse?.body.uploadUrl).toBeNull();
++      expect(secondResult.getUploadUrlResponse?.body.mediaId).toBeDefined();
++    }, 10_000);
++  });
++
++  describe("Request Validation", () => {
++    it("should reject invalid content types", async () => {
++      const traceId = "test";
++      const field = "input";
++
++      const result = await runMediaUploadEndToEndTest({
++        ...validPNG,
++        traceId,
++        field,
++        contentType: "invalid",
++      });
++
++      expect(result.getUploadUrlResponse?.status).toBe(400);
++      expect(result.updateMediaResponse).toBeNull();
++      expect(result.getDownloadUrlResponse).toBeNull();
++      expect(result.uploadFileResponse).toBeNull();
++      expect(result.mediaRecord).toBeNull();
++      expect(result.traceMediaRecord).toBeNull();
++      expect(result.observationMediaRecord).toBeNull();
++    }, 10_000);
++
++    it("should reject content length exceeding maximum allowed size", async () => {
++      const traceId = "test";
++      const field = "input";
++
++      const result = await runMediaUploadEndToEndTest({
++        ...validPNG,
++        traceId,
++        field,
++        contentLength: env.LANGFUSE_S3_MEDIA_MAX_CONTENT_LENGTH + 1,
++      });
++
++      expect(result.getUploadUrlResponse?.status).toBe(400);
++      expect(result.updateMediaResponse).toBeNull();
++      expect(result.getDownloadUrlResponse).toBeNull();
++      expect(result.uploadFileResponse).toBeNull();
++      expect(result.mediaRecord).toBeNull();
++      expect(result.traceMediaRecord).toBeNull();
++      expect(result.observationMediaRecord).toBeNull();
++    }, 10_000);
++
++    it("should reject invalid SHA-256 hash format", async () => {
++      const traceId = "test";
++      const field = "input";
++
++      const result = await runMediaUploadEndToEndTest({
++        ...validPNG,
++        traceId,
++        field,
++        sha256Hash: "invalid-hash-that-is-not-base64", // Not base64 encoded
++      });
++
++      expect(result.getUploadUrlResponse?.status).toBe(400);
++      expect(result.updateMediaResponse).toBeNull();
++      expect(result.getDownloadUrlResponse).toBeNull();
++      expect(result.uploadFileResponse).toBeNull();
++      expect(result.mediaRecord).toBeNull();
++      expect(result.traceMediaRecord).toBeNull();
++      expect(result.observationMediaRecord).toBeNull();
++    }, 10_000);
++  });
++
++  describe("Upload Integrity", () => {
++    it("should detect SHA-256 hash mismatch during upload", async () => {
++      const traceId = "test";
++      const field = "input";
++
++      // Create a modified copy of the PNG file bytes by changing a single byte
++      const modifiedFileBytes = Buffer.from(validPNG.fileBytes);
++      modifiedFileBytes[0] = modifiedFileBytes[0] ^ 0xff; // Flip bits of first byte
++
++      const result = await runMediaUploadEndToEndTest({
++        ...validPNG,
++        traceId,
++        field,
++        fileBytes: modifiedFileBytes, // Use modified bytes but keep original hash
++      });
++
++      expect(result.getUploadUrlResponse?.status).toBe(201);
++      expect(result.uploadFileResponse?.status).toBe(400); // S3 should reject due to checksum mismatch
++      expect(result.updateMediaResponse?.status).toBe(200);
++      expect(result.getDownloadUrlResponse?.status).toBe(404);
++      expect(result.mediaRecord).not.toBeNull();
++      expect(result.mediaRecord?.uploadHttpStatus).toBe(400);
++      expect(result.mediaRecord?.uploadHttpError).toContain("ChecksumMismatch");
++      expect(result.traceMediaRecord).toMatchObject({
++        projectId,
++        traceId,
++        mediaId: result.mediaRecord?.id,
++        field,
++      });
++      expect(result.observationMediaRecord).toBeNull();
++    }, 10_000);
++  });
++});
++
++type HttpResponse<T> = {
++  body: T;
++  status: number;
++};
+diff --git a/web/src/__tests__/static/bitcoin.pdf b/web/src/__tests__/static/bitcoin.pdf
+new file mode 100644
+index 00000000..1e19b739
+Binary files /dev/null and b/web/src/__tests__/static/bitcoin.pdf differ
+diff --git a/web/src/__tests__/static/langfuse-logo.png b/web/src/__tests__/static/langfuse-logo.png
+new file mode 100644
+index 00000000..8b765fb0
+Binary files /dev/null and b/web/src/__tests__/static/langfuse-logo.png differ
+diff --git a/web/src/__tests__/test-utils.ts b/web/src/__tests__/test-utils.ts
+index 0e33d578..56853e40 100644
+--- a/web/src/__tests__/test-utils.ts
++++ b/web/src/__tests__/test-utils.ts
+@@ -21,6 +21,7 @@ export const pruneDatabase = async () => {
+   await prisma.model.deleteMany();
+   await prisma.llmApiKeys.deleteMany();
+   await prisma.comment.deleteMany();
++  await prisma.media.deleteMany();
+ 
+   if (!env.CLICKHOUSE_URL?.includes("localhost:8123")) {
+     throw new Error("You cannot prune clickhouse unless running on localhost.");
+@@ -107,3 +108,25 @@ export async function makeZodVerifiedAPICall<T extends z.ZodTypeAny>(
+   }
+   return { body: resBody, status };
+ }
++
++export async function makeZodVerifiedAPICallSilent<T extends z.ZodTypeAny>(
++  responseZodSchema: T,
++  method: "POST" | "GET" | "PUT" | "DELETE" | "PATCH",
++  url: string,
++  body?: unknown,
++  auth?: string,
++): Promise<{ body: z.infer<T>; status: number }> {
++  const { body: resBody, status } = await makeAPICall(method, url, body, auth);
++
++  if (status === 200) {
++    const typeCheckResult = responseZodSchema.safeParse(resBody);
++    if (!typeCheckResult.success) {
++      console.error(typeCheckResult.error);
++      throw new Error(
++        `API call (${method} ${url}) did not return valid response, returned status ${status}, body ${JSON.stringify(resBody)}, error ${typeCheckResult.error}`,
++      );
++    }
++  }
++
++  return { body: resBody, status };
++}
+diff --git a/web/src/env.mjs b/web/src/env.mjs
+index 1a74a662..c4da4163 100644
+--- a/web/src/env.mjs
++++ b/web/src/env.mjs
+@@ -158,9 +158,41 @@ export const env = createEnv({
+     // langfuse caching
+     LANGFUSE_CACHE_API_KEY_ENABLED: z.enum(["true", "false"]).default("false"),
+     LANGFUSE_CACHE_API_KEY_TTL_SECONDS: z.coerce.number().default(120),
++
++    // Multimodal media upload to S3
++    LANGFUSE_S3_MEDIA_MAX_CONTENT_LENGTH: z.coerce
++      .number()
++      .positive()
++      .int()
++      .default(1_000_000_000),
++    LANGFUSE_S3_MEDIA_UPLOAD_ENABLED: z
++      .enum(["true", "false"])
++      .default("false"),
++    LANGFUSE_S3_MEDIA_UPLOAD_BUCKET: z.string().optional(),
++    LANGFUSE_S3_MEDIA_UPLOAD_PREFIX: z
++      .string()
++      .default("media/")
++      .refine(
++        (value) => value.endsWith("/"),
++        "LANGFUSE_S3_MEDIA_UPLOAD_PREFIX must end with a slash ('/')",
++      ),
++    LANGFUSE_S3_MEDIA_UPLOAD_REGION: z.string().optional(),
++    LANGFUSE_S3_MEDIA_UPLOAD_ENDPOINT: z.string().optional(),
++    LANGFUSE_S3_MEDIA_UPLOAD_ACCESS_KEY_ID: z.string().optional(),
++    LANGFUSE_S3_MEDIA_UPLOAD_SECRET_ACCESS_KEY: z.string().optional(),
++    LANGFUSE_S3_MEDIA_UPLOAD_FORCE_PATH_STYLE: z
++      .enum(["true", "false"])
++      .default("false"),
++    LANGFUSE_S3_MEDIA_DOWNLOAD_URL_EXPIRY_SECONDS: z.coerce
++      .number()
++      .nonnegative()
++      .default(3600),
++
++    // Ingestion event upload to S3
+     LANGFUSE_S3_EVENT_UPLOAD_ENABLED: z
+       .enum(["true", "false"])
+       .default("false"),
++
+     LANGFUSE_S3_EVENT_UPLOAD_BUCKET: z.string().optional(),
+     LANGFUSE_S3_EVENT_UPLOAD_PREFIX: z.string().default(""),
+     LANGFUSE_S3_EVENT_UPLOAD_REGION: z.string().optional(),
+@@ -332,6 +364,28 @@ export const env = createEnv({
+     S3_BUCKET_NAME: process.env.S3_BUCKET_NAME,
+     S3_REGION: process.env.S3_REGION,
+     S3_FORCE_PATH_STYLE: process.env.S3_FORCE_PATH_STYLE,
++
++    // S3 media upload
++    LANGFUSE_S3_MEDIA_MAX_CONTENT_LENGTH:
++      process.env.LANGFUSE_S3_MEDIA_MAX_CONTENT_LENGTH,
++    LANGFUSE_S3_MEDIA_UPLOAD_ENABLED:
++      process.env.LANGFUSE_S3_MEDIA_UPLOAD_ENABLED,
++    LANGFUSE_S3_MEDIA_UPLOAD_BUCKET:
++      process.env.LANGFUSE_S3_MEDIA_UPLOAD_BUCKET,
++    LANGFUSE_S3_MEDIA_UPLOAD_PREFIX:
++      process.env.LANGFUSE_S3_MEDIA_UPLOAD_PREFIX,
++    LANGFUSE_S3_MEDIA_UPLOAD_REGION:
++      process.env.LANGFUSE_S3_MEDIA_UPLOAD_REGION,
++    LANGFUSE_S3_MEDIA_UPLOAD_ENDPOINT:
++      process.env.LANGFUSE_S3_MEDIA_UPLOAD_ENDPOINT,
++    LANGFUSE_S3_MEDIA_UPLOAD_ACCESS_KEY_ID:
++      process.env.LANGFUSE_S3_MEDIA_UPLOAD_ACCESS_KEY_ID,
++    LANGFUSE_S3_MEDIA_UPLOAD_SECRET_ACCESS_KEY:
++      process.env.LANGFUSE_S3_MEDIA_UPLOAD_SECRET_ACCESS_KEY,
++    LANGFUSE_S3_MEDIA_UPLOAD_FORCE_PATH_STYLE:
++      process.env.LANGFUSE_S3_MEDIA_UPLOAD_FORCE_PATH_STYLE,
++    LANGFUSE_S3_MEDIA_DOWNLOAD_URL_EXPIRY_SECONDS:
++      process.env.LANGFUSE_S3_MEDIA_DOWNLOAD_URL_EXPIRY_SECONDS,
+     // S3 event upload
+     LANGFUSE_S3_EVENT_UPLOAD_ENABLED:
+       process.env.LANGFUSE_S3_EVENT_UPLOAD_ENABLED,
+diff --git a/web/src/features/media/server/getFileExtensionFromContentType.ts b/web/src/features/media/server/getFileExtensionFromContentType.ts
+new file mode 100644
+index 00000000..0b0ca2fc
+--- /dev/null
++++ b/web/src/features/media/server/getFileExtensionFromContentType.ts
+@@ -0,0 +1,24 @@
++import { MediaContentType, MediaFileExtension } from "../validation";
++
++export const getFileExtensionFromContentType = (
++  contentType: MediaContentType,
++): MediaFileExtension => {
++  const mimeToExtension: Record<MediaContentType, MediaFileExtension> = {
++    [MediaContentType.PNG]: MediaFileExtension.PNG,
++    [MediaContentType.JPEG]: MediaFileExtension.JPEG,
++    [MediaContentType.JPG]: MediaFileExtension.JPG,
++    [MediaContentType.WEBP]: MediaFileExtension.WEBP,
++    [MediaContentType.MP3]: MediaFileExtension.MP3,
++    [MediaContentType.MP3_LEGACY]: MediaFileExtension.MP3,
++    [MediaContentType.WAV]: MediaFileExtension.WAV,
++    [MediaContentType.TXT]: MediaFileExtension.TXT,
++    [MediaContentType.PDF]: MediaFileExtension.PDF,
++  };
++
++  const extension = mimeToExtension[contentType as MediaContentType];
++  if (!extension) {
++    throw new Error(`Unsupported content type: ${contentType}`);
++  }
++
++  return extension;
++};
+diff --git a/web/src/features/media/server/getMediaStorageClient.ts b/web/src/features/media/server/getMediaStorageClient.ts
+new file mode 100644
+index 00000000..aa438c08
+--- /dev/null
++++ b/web/src/features/media/server/getMediaStorageClient.ts
+@@ -0,0 +1,20 @@
++import { env } from "@/src/env.mjs";
++import { S3StorageService } from "@langfuse/shared/src/server";
++
++let s3StorageServiceClient: S3StorageService;
++
++export const getMediaStorageServiceClient = (
++  bucketName: string,
++): S3StorageService => {
++  if (!s3StorageServiceClient) {
++    s3StorageServiceClient = new S3StorageService({
++      bucketName,
++      accessKeyId: env.LANGFUSE_S3_MEDIA_UPLOAD_ACCESS_KEY_ID,
++      secretAccessKey: env.LANGFUSE_S3_MEDIA_UPLOAD_SECRET_ACCESS_KEY,
++      endpoint: env.LANGFUSE_S3_MEDIA_UPLOAD_ENDPOINT,
++      region: env.LANGFUSE_S3_MEDIA_UPLOAD_REGION,
++      forcePathStyle: env.LANGFUSE_S3_MEDIA_UPLOAD_FORCE_PATH_STYLE === "true",
++    });
++  }
++  return s3StorageServiceClient;
++};
+diff --git a/web/src/features/media/validation.ts b/web/src/features/media/validation.ts
+new file mode 100644
+index 00000000..8b3f24b9
+--- /dev/null
++++ b/web/src/features/media/validation.ts
+@@ -0,0 +1,92 @@
++import { z } from "zod";
++
++export enum MediaEnabledFields {
++  Input = "input",
++  Output = "output",
++  Metadata = "metadata",
++}
++
++export enum MediaContentType {
++  PNG = "image/png",
++  JPEG = "image/jpeg",
++  JPG = "image/jpg",
++  WEBP = "image/webp",
++  MP3 = "audio/mpeg",
++  MP3_LEGACY = "audio/mp3",
++  WAV = "audio/wav",
++  TXT = "text/plain",
++  PDF = "application/pdf",
++}
++
++export enum MediaFileExtension {
++  PNG = "png",
++  JPG = "jpg",
++  JPEG = "jpeg",
++  WEBP = "webp",
++  MP3 = "mp3",
++  MP4 = "mp4",
++  WAV = "wav",
++  TXT = "txt",
++  PDF = "pdf",
++}
++
++export const GetMediaUploadUrlQuerySchema = z.object({
++  traceId: z.string(),
++  observationId: z.string().nullish(),
++  contentType: z.nativeEnum(MediaContentType, {
++    message: `Invalid content type. Only supporting ${Object.values(
++      MediaContentType,
++    ).join(", ")}`,
++  }),
++  contentLength: z.number().positive().int(),
++  sha256Hash: z
++    .string()
++    .regex(
++      /^[A-Za-z0-9+/=]{44}$/,
++      "Must be a 44 character base64 encoded SHA-256 hash",
++    ),
++  field: z.nativeEnum(MediaEnabledFields, {
++    message: `Invalid field. Only supporting ${Object.values(
++      MediaEnabledFields,
++    ).join(", ")}`,
++  }),
++});
++
++export type GetMediaUploadUrlQuery = z.infer<
++  typeof GetMediaUploadUrlQuerySchema
++>;
++
++export const GetMediaUploadUrlResponseSchema = z.object({
++  uploadUrl: z.string().nullish(),
++  mediaId: z.string(),
++});
++
++export type GetMediaUploadUrlResponse = z.infer<
++  typeof GetMediaUploadUrlResponseSchema
++>;
++
++export const PatchMediaBodySchema = z.object({
++  uploadedAt: z.coerce.date(),
++  uploadHttpStatus: z.number().positive().int(),
++  uploadHttpError: z.string().nullish(),
++  uploadTimeMs: z.number().nullish(),
++});
++
++export type PatchMediaBody = z.infer<typeof PatchMediaBodySchema>;
++
++export const GetMediaQuerySchema = z.object({
++  mediaId: z.string(),
++});
++
++export type GetMediaQuery = z.infer<typeof GetMediaQuerySchema>;
++
++export const GetMediaResponseSchema = z.object({
++  mediaId: z.string(),
++  contentType: z.string(),
++  contentLength: z.number(),
++  uploadedAt: z.coerce.date().nullish(),
++  url: z.string(),
++  urlExpiry: z.string(),
++});
++
++export type GetMediaResponse = z.infer<typeof GetMediaResponseSchema>;
+diff --git a/web/src/pages/api/public/media/[mediaId].ts b/web/src/pages/api/public/media/[mediaId].ts
+new file mode 100644
+index 00000000..68d211a2
+--- /dev/null
++++ b/web/src/pages/api/public/media/[mediaId].ts
+@@ -0,0 +1,125 @@
++import { z } from "zod";
++
++import { env } from "@/src/env.mjs";
++import { getMediaStorageServiceClient } from "@/src/features/media/server/getMediaStorageClient";
++import {
++  GetMediaQuerySchema,
++  GetMediaResponseSchema,
++  PatchMediaBodySchema,
++} from "@/src/features/media/validation";
++import { createAuthedAPIRoute } from "@/src/features/public-api/server/createAuthedAPIRoute";
++import { withMiddlewares } from "@/src/features/public-api/server/withMiddlewares";
++import {
++  ForbiddenError,
++  InternalServerError,
++  LangfuseNotFoundError,
++} from "@langfuse/shared";
++import { Prisma, prisma } from "@langfuse/shared/src/db";
++import { recordIncrement, recordHistogram } from "@langfuse/shared/src/server";
++
++export default withMiddlewares({
++  GET: createAuthedAPIRoute({
++    name: "Get Media data",
++    querySchema: GetMediaQuerySchema,
++    responseSchema: GetMediaResponseSchema,
++    fn: async ({ query, auth }) => {
++      if (auth.scope.accessLevel !== "all") throw new ForbiddenError();
++
++      const { projectId } = auth.scope;
++      const { mediaId } = query;
++
++      const media = await prisma.media.findFirst({
++        where: {
++          projectId,
++          id: mediaId,
++        },
++      });
++
++      if (!media) throw new LangfuseNotFoundError("Media asset not found");
++      if (!media.uploadHttpStatus)
++        throw new LangfuseNotFoundError("Media not yet uploaded");
++      if (media.uploadHttpStatus !== 200)
++        throw new LangfuseNotFoundError(
++          `Media upload failed with status ${media.uploadHttpStatus}: \n ${media.uploadHttpError}`,
++        );
++
++      const mediaStorageClient = getMediaStorageServiceClient(media.bucketName);
++      const ttlSeconds = env.LANGFUSE_S3_MEDIA_DOWNLOAD_URL_EXPIRY_SECONDS;
++      const urlExpiry = new Date(Date.now() + ttlSeconds * 1000).toISOString();
++
++      const url = await mediaStorageClient.getSignedUrl(
++        media.bucketPath,
++        ttlSeconds,
++        false,
++      );
++
++      return {
++        mediaId,
++        contentType: media.contentType,
++        contentLength: Number(media.contentLength),
++        url,
++        urlExpiry,
++      };
++    },
++  }),
++
++  PATCH: createAuthedAPIRoute({
++    name: "Update Media Uploaded At",
++    querySchema: z.object({
++      mediaId: z.string(),
++    }),
++    bodySchema: PatchMediaBodySchema,
++    responseSchema: z.void(),
++    fn: async ({ query, body, auth }) => {
++      if (auth.scope.accessLevel !== "all") throw new ForbiddenError();
++
++      const { projectId } = auth.scope;
++      const { mediaId } = query;
++      const { uploadedAt, uploadHttpStatus, uploadHttpError, uploadTimeMs } =
++        body;
++
++      try {
++        await prisma.media.update({
++          where: {
++            projectId,
++            id: mediaId,
++          },
++          data: {
++            uploadedAt,
++            uploadHttpStatus,
++            uploadHttpError: uploadHttpStatus === 200 ? null : uploadHttpError,
++          },
++        });
++
++        recordIncrement("langfuse.media.upload_http_status", 1, {
++          status_code: uploadHttpStatus,
++        });
++
++        if (uploadTimeMs) {
++          recordHistogram("langfuse.media.upload_time_ms", uploadTimeMs, {
++            status_code: uploadHttpStatus,
++          });
++        }
++      } catch (e) {
++        if (
++          e instanceof Prisma.PrismaClientKnownRequestError &&
++          e.code === "P2025"
++        ) {
++          /* https://www.prisma.io/docs/orm/reference/error-reference#p2025
++           * An operation failed because it depends on one or more records that were required but not found.
++           */
++          throw new LangfuseNotFoundError(
++            `Media asset ${mediaId} not found in project ${projectId}`,
++          );
++        }
++
++        throw new InternalServerError(
++          `Error updating uploadedAt on media ID ${mediaId}` +
++          (e instanceof Error ? e.message : "")
++            ? (e as Error).message
++            : "",
++        );
++      }
++    },
++  }),
++});
+diff --git a/web/src/pages/api/public/media/index.ts b/web/src/pages/api/public/media/index.ts
+new file mode 100644
+index 00000000..5894b36a
+--- /dev/null
++++ b/web/src/pages/api/public/media/index.ts
+@@ -0,0 +1,232 @@
++import { randomUUID } from "crypto";
++
++import { env } from "@/src/env.mjs";
++import { getFileExtensionFromContentType } from "@/src/features/media/server/getFileExtensionFromContentType";
++import { getMediaStorageServiceClient } from "@/src/features/media/server/getMediaStorageClient";
++import {
++  GetMediaUploadUrlQuerySchema,
++  GetMediaUploadUrlResponseSchema,
++  type MediaContentType,
++} from "@/src/features/media/validation";
++import { createAuthedAPIRoute } from "@/src/features/public-api/server/createAuthedAPIRoute";
++import { withMiddlewares } from "@/src/features/public-api/server/withMiddlewares";
++import {
++  ForbiddenError,
++  InternalServerError,
++  InvalidRequestError,
++} from "@langfuse/shared";
++import { prisma } from "@langfuse/shared/src/db";
++
++export default withMiddlewares({
++  POST: createAuthedAPIRoute({
++    name: "Get Media Upload URL",
++    bodySchema: GetMediaUploadUrlQuerySchema,
++    responseSchema: GetMediaUploadUrlResponseSchema,
++    successStatusCode: 201,
++    fn: async ({ body, auth }) => {
++      if (auth.scope.accessLevel !== "all") throw new ForbiddenError();
++
++      const { projectId } = auth.scope;
++      const {
++        contentType,
++        contentLength,
++        sha256Hash,
++        traceId,
++        observationId,
++        field,
++      } = body;
++
++      if (contentLength > env.LANGFUSE_S3_MEDIA_MAX_CONTENT_LENGTH)
++        throw new InvalidRequestError(
++          `File size must be less than ${env.LANGFUSE_S3_MEDIA_MAX_CONTENT_LENGTH} bytes`,
++        );
++
++      const existingMedia = await prisma.media.findUnique({
++        where: {
++          projectId_sha256Hash: {
++            projectId,
++            sha256Hash,
++          },
++        },
++      });
++
++      if (
++        existingMedia &&
++        existingMedia.uploadHttpStatus === 200 &&
++        existingMedia.contentType === contentType
++      ) {
++        return await prisma.$transaction<{
++          mediaId: string;
++          uploadUrl: null;
++        }>(async (tx) => {
++          if (observationId) {
++            await tx.observationMedia.upsert({
++              where: {
++                projectId_traceId_observationId_mediaId_field: {
++                  projectId,
++                  traceId,
++                  observationId,
++                  mediaId: existingMedia.id,
++                  field,
++                },
++              },
++              update: {},
++              create: {
++                projectId,
++                traceId,
++                observationId,
++                mediaId: existingMedia.id,
++                field,
++              },
++            });
++          } else {
++            await tx.traceMedia.upsert({
++              where: {
++                projectId_traceId_mediaId_field: {
++                  projectId,
++                  traceId,
++                  mediaId: existingMedia.id,
++                  field,
++                },
++              },
++              update: {},
++              create: {
++                projectId,
++                traceId,
++                field,
++                mediaId: existingMedia.id,
++              },
++            });
++          }
++
++          return {
++            mediaId: existingMedia.id,
++            uploadUrl: null,
++          };
++        });
++      }
++      const mediaId = existingMedia?.id ?? randomUUID();
++
++      if (
++        !(
++          env.LANGFUSE_S3_MEDIA_UPLOAD_ENABLED &&
++          env.LANGFUSE_S3_MEDIA_UPLOAD_BUCKET
++        )
++      )
++        throw new InternalServerError(
++          "Media upload to blob storage not enabled or no bucket configured",
++        );
++
++      const s3Client = getMediaStorageServiceClient(
++        env.LANGFUSE_S3_MEDIA_UPLOAD_BUCKET,
++      );
++
++      const bucketPath = getBucketPath({
++        projectId,
++        mediaId,
++        contentType,
++      });
++
++      const uploadUrl = await s3Client.getSignedUploadUrl({
++        path: bucketPath,
++        ttlSeconds: 60 * 60, // 1 hour
++        sha256Hash,
++        contentType,
++        contentLength,
++      });
++
++      return await prisma.$transaction<{
++        mediaId: string;
++        uploadUrl: string;
++      }>(async (tx) => {
++        if (!env.LANGFUSE_S3_MEDIA_UPLOAD_BUCKET)
++          throw new InternalServerError(
++            "Media upload to bucket not configured",
++          );
++
++        await Promise.all([
++          tx.media.upsert({
++            where: {
++              projectId_sha256Hash: {
++                projectId,
++                sha256Hash,
++              },
++            },
++            update: {
++              bucketName: env.LANGFUSE_S3_MEDIA_UPLOAD_BUCKET,
++              bucketPath,
++              contentType,
++              contentLength,
++            },
++            create: {
++              id: mediaId,
++              projectId,
++              sha256Hash,
++              bucketPath,
++              bucketName: env.LANGFUSE_S3_MEDIA_UPLOAD_BUCKET,
++              contentType,
++              contentLength,
++            },
++          }),
++          observationId
++            ? tx.observationMedia.upsert({
++                where: {
++                  projectId_traceId_observationId_mediaId_field: {
++                    projectId,
++                    traceId,
++                    observationId,
++                    mediaId,
++                    field,
++                  },
++                },
++                update: {},
++                create: {
++                  projectId,
++                  traceId,
++                  observationId,
++                  mediaId,
++                  field,
++                },
++              })
++            : tx.traceMedia.upsert({
++                where: {
++                  projectId_traceId_mediaId_field: {
++                    projectId,
++                    traceId,
++                    mediaId,
++                    field,
++                  },
++                },
++                update: {},
++                create: {
++                  projectId,
++                  traceId,
++                  field,
++                  mediaId,
++                },
++              }),
++        ]);
++
++        return {
++          mediaId,
++          uploadUrl,
++        };
++      });
++    },
++  }),
++});
++
++function getBucketPath(params: {
++  projectId: string;
++  mediaId: string;
++  contentType: MediaContentType;
++}): string {
++  const { projectId, mediaId, contentType } = params;
++  const fileExtension = getFileExtensionFromContentType(contentType);
++
++  const prefix = env.LANGFUSE_S3_MEDIA_UPLOAD_PREFIX
++    ? `${env.LANGFUSE_S3_MEDIA_UPLOAD_PREFIX}`
++    : "";
++
++  return `${prefix}${projectId}/${mediaId}.${fileExtension}`;
++}
