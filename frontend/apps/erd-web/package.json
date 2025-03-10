@@ -3,6 +3,8 @@
   "private": true,
   "version": "0.1.0",
   "dependencies": {
+    "@langchain/core": "0.3.42",
+    "@langchain/openai": "0.4.4",
     "@liam-hq/db-structure": "workspace:*",
     "@liam-hq/erd-core": "workspace:*",
     "@liam-hq/ui": "workspace:*",
@@ -10,6 +12,7 @@
     "@sentry/nextjs": "8",
     "cheerio": "1.0.0",
     "date-fns": "4.1.0",
+    "langchain": "0.3.19",
     "next": "15.1.2",
     "react": "18.3.1",
     "react-dom": "18",
