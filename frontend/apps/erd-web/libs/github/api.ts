@@ -79,12 +79,33 @@ export const createPullRequestComment = async (
 ) => {
   const octokit = await createOctokit(installationId)
 
-  await octokit.issues.createComment({
+  const response = await octokit.issues.createComment({
     owner,
     repo,
     issue_number: pullNumber,
     body,
   })
+
+  return response.data
+}
+
+export const updatePullRequestComment = async (
+  installationId: number,
+  owner: string,
+  repo: string,
+  commentId: number,
+  body: string,
+) => {
+  const octokit = await createOctokit(installationId)
+
+  const response = await octokit.issues.updateComment({
+    owner,
+    repo,
+    comment_id: commentId,
+    body,
+  })
+
+  return response.data
 }
 
 export const verifyWebhookSignature = (
