@@ -57,7 +57,8 @@
   color: var(--primary-accent);
 }
 
-.item:hover {
+.item:hover,
+.item:focus {
   background-color: var(--dropdown-background-hover);
 }
 
