@@ -1,5 +1,11 @@
 # @liam-hq/db-structure
 
+## 0.0.15
+
+### Patch Changes
+
+- [#819](https://github.com/liam-hq/liam/pull/819) - 🔧 fix: update vite and fumadocs-mdx to latest versions / Thanks [@NoritakaIkeda](https://github.com/NoritakaIkeda)!
+
 ## 0.0.14
 
 ### Patch Changes

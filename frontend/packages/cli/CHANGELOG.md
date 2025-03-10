@@ -1,5 +1,12 @@
 # @liam-hq/cli
 
+## 0.4.6
+
+### Patch Changes
+
+- [#819](https://github.com/liam-hq/liam/pull/819) - 🔧 fix: update vite and fumadocs-mdx to latest versions / Thanks [@NoritakaIkeda](https://github.com/NoritakaIkeda)!
+- [#819](https://github.com/liam-hq/liam/pull/819) - 🔧 fix: update vite and fumadocs-mdx to latest versions / Thanks [@NoritakaIkeda](https://github.com/NoritakaIkeda)!
+
 ## 0.4.5
 
 ### Patch Changes
