@@ -4,7 +4,8 @@ datasource db {
 }
 
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "rhel-openssl-3.0.x"]
 }
 
 model Project {
@@ -12,4 +13,17 @@ model Project {
   name      String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model PullRequest {
+  id             Int      @id @default(autoincrement())
+  repositoryName String
+  repositoryOwner String
+  pullNumber     Int
+  commentId      Int?
+  installationId Int
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@unique([repositoryOwner, repositoryName, pullNumber])
 }
