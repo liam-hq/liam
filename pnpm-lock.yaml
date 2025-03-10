@@ -120,6 +120,9 @@ importers:
 
   frontend/apps/erd-web:
     dependencies:
+      '@liam-hq/db':
+        specifier: workspace:*
+        version: link:../../packages/db
       '@liam-hq/db-structure':
         specifier: workspace:*
         version: link:../../packages/db-structure
