@@ -264,31 +264,6 @@ importers:
         specifier: 2.0.5
         version: 2.0.5
 
-  frontend/packages/db:
-    dependencies:
-      '@prisma/client':
-        specifier: 6.4.1
-        version: 6.4.1(prisma@6.4.1(typescript@5.7.3))(typescript@5.7.3)
-      '@supabase/supabase-js':
-        specifier: 2.49.1
-        version: 2.49.1
-    devDependencies:
-      '@biomejs/biome':
-        specifier: 1.9.3
-        version: 1.9.3
-      '@liam-hq/configs':
-        specifier: workspace:*
-        version: link:../configs
-      prisma:
-        specifier: 6.4.1
-        version: 6.4.1(typescript@5.7.3)
-      supabase:
-        specifier: 2.15.8
-        version: 2.15.8
-      typescript:
-        specifier: '5'
-        version: 5.7.3
-
   frontend/packages/db-structure:
     dependencies:
       '@prisma/internals':
@@ -417,6 +392,31 @@ importers:
       '@liam-hq/configs':
         specifier: workspace:*
         version: link:../configs
+
+  frontend/packages/supabase:
+    dependencies:
+      '@prisma/client':
+        specifier: 6.4.1
+        version: 6.4.1(prisma@6.4.1(typescript@5.7.3))(typescript@5.7.3)
+      '@supabase/supabase-js':
+        specifier: 2.49.1
+        version: 2.49.1
+    devDependencies:
+      '@biomejs/biome':
+        specifier: 1.9.3
+        version: 1.9.3
+      '@liam-hq/configs':
+        specifier: workspace:*
+        version: link:../configs
+      prisma:
+        specifier: 6.4.1
+        version: 6.4.1(typescript@5.7.3)
+      supabase:
+        specifier: 2.15.8
+        version: 2.15.8
+      typescript:
+        specifier: '5'
+        version: 5.7.3
 
   frontend/packages/ui:
     dependencies:

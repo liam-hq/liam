@@ -1,5 +1,5 @@
 {
-  "name": "@liam-hq/db",
+  "name": "@liam-hq/supabase",
   "private": true,
   "version": "0.0.0",
   "publishConfig": {
@@ -18,7 +18,6 @@
     "typescript": "5"
   },
   "scripts": {
-    "build": "tsc",
     "fmt": "pnpm run '/^fmt:.*/'",
     "fmt:biome": "biome check --write --unsafe .",
     "lint": "pnpm run '/^lint:.*/'",
