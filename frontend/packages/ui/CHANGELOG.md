@@ -1,5 +1,11 @@
 # @liam-hq/ui
 
+## 0.0.14
+
+### Patch Changes
+
+- [#825](https://github.com/liam-hq/liam/pull/825) - 💄Fixed an issue where the length of the Sidebar button text would change when hovering. / Thanks [@MH4GF](https://github.com/MH4GF)!
+
 ## 0.0.13
 
 ### Patch Changes
