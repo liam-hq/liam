@@ -3,13 +3,18 @@ import {
   getPullRequestFiles,
   verifyWebhookSignature,
 } from '@/libs/github/api'
-import { supportedEvents, validateConfig } from '@/libs/github/config'
+import {
+  configValidationResult,
+  supportedEvents,
+  validateConfig,
+} from '@/libs/github/config'
 import type { GitHubWebhookPayload } from '@/types/github'
 import { type NextRequest, NextResponse } from 'next/server'
 
 export const POST = async (request: NextRequest): Promise<NextResponse> => {
   try {
-    const { valid, missing } = validateConfig()
+    // Use the cached validation result instead of calling validateConfig()
+    const { valid, missing } = configValidationResult
     if (!valid) {
       console.error(
         `Missing required environment variables: ${missing.join(', ')}`,
