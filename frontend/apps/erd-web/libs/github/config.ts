@@ -6,7 +6,8 @@ export const githubConfig = {
   clientSecret: process.env.GITHUB_CLIENT_SECRET,
 }
 
-export const validateConfig = (): { valid: boolean; missing: string[] } => {
+// Cache the validation result at the module level
+const validateConfigOnce = (): { valid: boolean; missing: string[] } => {
   const requiredEnvVars = [
     'GITHUB_APP_ID',
     'GITHUB_PRIVATE_KEY',
@@ -19,6 +20,14 @@ export const validateConfig = (): { valid: boolean; missing: string[] } => {
     valid: missing.length === 0,
     missing,
   }
+}
+
+// Store the validation result when the module is first loaded
+export const configValidationResult = validateConfigOnce()
+
+// Keep the original function for explicit validation if needed
+export const validateConfig = (): { valid: boolean; missing: string[] } => {
+  return configValidationResult
 }
 
 export const supportedEvents = [
