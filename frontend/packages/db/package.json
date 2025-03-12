@@ -27,7 +27,7 @@
     "lint": "pnpm run '/^lint:.*/'",
     "lint:biome": "biome check .",
     "lint:tsc": "tsc --noEmit",
-    "migrate:dev": "prisma migrate dev",
+    "migrate:dev": "sh ./scripts/migrate-dev.sh",
     "migrate:status": "prisma migrate status",
     "supabase:start": "pnpm supabase start"
   }
