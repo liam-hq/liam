@@ -2,6 +2,11 @@ import type { TableNodeData } from "@/features/erd/types";
 import { useUserEditingStore } from "@/stores";
 import {
   Table2,
+  TooltipContent,
+  TooltipPortal,
+  TooltipProvider,
+  TooltipRoot,
+  TooltipTrigger,
 } from "@liam-hq/ui";
 import { Handle, Position } from "@xyflow/react";
 import clsx from "clsx";
@@ -27,8 +32,9 @@ export const TableHeader: FC<Props> = ({ data }) => {
       )}
     >
       <Table2 width={16} className={styles.tableIcon} />
+
       <span className={styles.name}>{name}</span>
-      {name}
+
       {showMode === "TABLE_NAME" && (
         <>
           {isTarget && (
