@@ -7,10 +7,13 @@ import { TableColumnList } from './TableColumnList'
 import { TableHeader } from './TableHeader'
 import styles from './TableNode.module.css'
 
+
 type Props = NodeProps<TableNodeType>
 
 export const TableNode: FC<Props> = ({ data }) => {
   const { showMode } = useUserEditingStore()
+  
+  
 
   return (
     <div
