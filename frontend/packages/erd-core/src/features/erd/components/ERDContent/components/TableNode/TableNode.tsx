@@ -1,11 +1,11 @@
-import type { TableNodeType } from "@/features/erd/types";
-import { useUserEditingStore } from "@/stores";
-import type { NodeProps } from "@xyflow/react";
-import clsx from "clsx";
-import type { FC } from "react";
-import { TableColumnList } from "./TableColumnList";
-import { TableHeader } from "./TableHeader";
-import styles from "./TableNode.module.css";
+import type { TableNodeType } from '@/features/erd/types'
+import { useUserEditingStore } from '@/stores'
+import type { NodeProps } from '@xyflow/react'
+import clsx from 'clsx'
+import type { FC } from 'react'
+import { TableColumnList } from './TableColumnList'
+import { TableHeader } from './TableHeader'
+import styles from './TableNode.module.css'
 
 import {
   TooltipContent,
@@ -13,12 +13,12 @@ import {
   TooltipProvider,
   TooltipRoot,
   TooltipTrigger,
-} from "@liam-hq/ui";
+} from '@liam-hq/ui'
 
-type Props = NodeProps<TableNodeType>;
+type Props = NodeProps<TableNodeType>
 
 export const TableNode: FC<Props> = ({ data }) => {
-  const { showMode } = useUserEditingStore();
+  const { showMode } = useUserEditingStore()
 
   return (
     <TooltipProvider>
@@ -28,26 +28,26 @@ export const TableNode: FC<Props> = ({ data }) => {
             className={clsx(
               styles.wrapper,
               data.isHighlighted && styles.wrapperHighlighted,
-              data.isActiveHighlighted && styles.wrapperActive
+              data.isActiveHighlighted && styles.wrapperActive,
             )}
             data-erd={
               (data.isHighlighted || data.isActiveHighlighted) &&
-              "table-node-highlighted"
+              'table-node-highlighted'
             }
           >
             <TableHeader data={data} />
-            {showMode === "ALL_FIELDS" && <TableColumnList data={data} />}
-            {showMode === "KEY_ONLY" && (
+            {showMode === 'ALL_FIELDS' && <TableColumnList data={data} />}
+            {showMode === 'KEY_ONLY' && (
               <TableColumnList data={data} filter="KEY_ONLY" />
             )}
           </div>
         </TooltipTrigger>
         <TooltipPortal>
-          <TooltipContent side={"top"} sideOffset={4}>
+          <TooltipContent side={'top'} sideOffset={4}>
             {data?.table?.name}
           </TooltipContent>
         </TooltipPortal>
       </TooltipRoot>
     </TooltipProvider>
-  );
-};
+  )
+}
