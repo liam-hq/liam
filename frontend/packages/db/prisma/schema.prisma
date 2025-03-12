@@ -14,7 +14,6 @@ model Project {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
-
 model PullRequest {
   id             Int      @id @default(autoincrement())
   repositoryName String
@@ -22,8 +21,17 @@ model PullRequest {
   pullNumber     BigInt
   commentId      BigInt?
   installationId BigInt
+  fileChanges    FileChange[]
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
   @@unique([repositoryOwner, repositoryName, pullNumber])
+}
+
+model FileChange {
+  id Int @id @default(autoincrement())
+  pullRequest PullRequest @relation(fields: [pullRequestId], references: [id])
+  pullRequestId Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
