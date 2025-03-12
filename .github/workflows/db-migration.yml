@@ -1,0 +1,35 @@
+name: DB Migration
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "frontend/packages/db/prisma/schema.prisma"
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Deploy migrations
+        run: pnpm -F db migrate:deploy
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DIRECT_URL: ${{ secrets.DIRECT_URL }}
+
+      - name: Push Prisma DB changes
+        run: pnpm -F db prisma:db:push
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DIRECT_URL: ${{ secrets.DIRECT_URL }}
