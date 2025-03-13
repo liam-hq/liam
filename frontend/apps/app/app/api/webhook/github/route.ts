@@ -7,13 +7,13 @@ import { type NextRequest, NextResponse } from 'next/server'
 
 export const POST = async (request: NextRequest): Promise<NextResponse> => {
   try {
-    const payload = await request.json()
+    const payload = await request.text()
     const signature = request.headers.get('x-hub-signature-256') ?? ''
 
     validateConfig()
-    verifyWebhookSignature(await request.clone().text(), signature)
+    verifyWebhookSignature(await payload, signature)
 
-    const data = payload as GitHubWebhookPayload
+    const data = JSON.parse(payload) as GitHubWebhookPayload
     const event = request.headers.get('x-github-event') ?? ''
     const action = data.action
     const eventType = `${event}.${action}`
