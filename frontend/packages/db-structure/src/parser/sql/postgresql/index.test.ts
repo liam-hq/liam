@@ -270,4 +270,36 @@ describe(processor, () => {
       expect(errors).toEqual([])
     })
   }, 30000)
+
+  describe('stored procedures', () => {
+    it('should handle long stored procedure (approx 700 lines)', async () => {
+      // Create a long stored procedure based on the sample in the issue comment
+      const procedureLines = [];
+      
+      // Start with the basic structure from the issue comment
+      procedureLines.push(`CREATE OR REPLACE FUNCTION test_proc(p_id integer)`);
+      procedureLines.push(`RETURNS void AS $$`);
+      procedureLines.push(`BEGIN`);
+      
+      // Add approximately 700 lines of procedure body
+      for (let i = 1; i <= 695; i++) {
+        procedureLines.push(`    -- Line ${i}: Adding dummy comment to increase line count`);
+        if (i % 50 === 0) {
+          procedureLines.push(`    RAISE NOTICE 'Processing batch ${i / 50}';`);
+        }
+      }
+      
+      procedureLines.push(`    RAISE NOTICE 'Stored procedure called with parameter: %', p_id;`);
+      procedureLines.push(`END;`);
+      procedureLines.push(`$$ LANGUAGE plpgsql;`);
+      
+      const longProcedure = procedureLines.join('\n');
+      
+      const { value, errors } = await processor(longProcedure);
+      
+      // If the test passes, the parser handled the long procedure correctly
+      expect(errors).toEqual([]);
+      expect(value).toEqual({ tables: {}, relationships: {} });
+    })
+  }, 30000)
 })
