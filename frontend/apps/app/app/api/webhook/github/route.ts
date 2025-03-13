@@ -11,7 +11,7 @@ export const POST = async (request: NextRequest): Promise<NextResponse> => {
     const signature = request.headers.get('x-hub-signature-256') ?? ''
 
     validateConfig()
-    verifyWebhookSignature(await payload, signature)
+    verifyWebhookSignature(payload, signature)
 
     const data = JSON.parse(payload) as GitHubWebhookPayload
     const event = request.headers.get('x-github-event') ?? ''
