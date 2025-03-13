@@ -60,7 +60,7 @@ const nextConfig: NextConfig = {
   // https://github.com/liam-hq/liam/pull/422#discussion_r1906531394
   assetPrefix:
     process.env.NEXT_PUBLIC_ENV_NAME === 'production'
-      ? process.env.ASSET_PREFIX
+      ? process.env.NEXT_PUBLIC_SITE_URL
       : undefined,
 }
 

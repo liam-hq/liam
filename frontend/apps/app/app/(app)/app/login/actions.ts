@@ -10,7 +10,10 @@ function getAuthCallbackUrl({
   next = '/app',
   provider,
 }: { next?: string; provider: OAuthProvider }): string {
-  let url = process.env.VERCEL_URL ?? 'http://localhost:3001/'
+  let url =
+    process?.env?.NEXT_PUBLIC_SITE_URL ??
+    process?.env?.NEXT_PUBLIC_VERCEL_URL ??
+    'http://localhost:3001/'
   url = url.endsWith('/') ? url : `${url}/`
   return `${url}app/auth/callback/${provider}?next=${encodeURIComponent(next)}`
 }
