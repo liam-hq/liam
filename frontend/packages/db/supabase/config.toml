@@ -105,9 +105,9 @@ file_size_limit = "50MiB"
 enabled = true
 # The base URL of your website. Used as an allow-list for redirects and for constructing URLs used
 # in emails.
-site_url = "http://localhost:3001"
+site_url = "https://liam-e4hl7vay3-route-06-core.vercel.app"
 # A list of *exact* URLs that auth providers are permitted to redirect to post authentication.
-additional_redirect_urls = ["https://localhost:3001"]
+additional_redirect_urls = ["https://localhost:3001", "https://liam-e4hl7vay3-route-06-core.vercel.app"]
 # How long tokens are valid for, in seconds. Defaults to 3600 (1 hour), maximum 604,800 (1 week).
 jwt_expiry = 3600
 # If disabled, the refresh token will never expire.
