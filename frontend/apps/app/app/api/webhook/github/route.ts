@@ -18,6 +18,8 @@ export const POST = async (request: NextRequest): Promise<NextResponse> => {
     const action = data.action
     const eventType = `${event}.${action}`
 
+    console.error('eventType', eventType)
+
     if (!supportedEvents.includes(eventType)) {
       return NextResponse.json(
         { message: `Event ${eventType} is not supported` },

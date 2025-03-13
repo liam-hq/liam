@@ -13,8 +13,11 @@ export const handleInstallation = async (
   try {
     switch (action) {
       case 'created': {
+        console.error('installation created', data)
+        console.error('=========')
         const repositories = data.repositories || []
         if (repositories.length === 0) {
+          console.error('length is 0')
           return {
             success: true,
             message: 'No repositories to save',
@@ -26,7 +29,8 @@ export const handleInstallation = async (
             const owner = repo.full_name.split('/')[0]
             const name = repo.full_name.split('/')[1]
 
-            return await prisma.repository.upsert({
+            console.error('upserting', owner, name)
+            const result = await prisma.repository.upsert({
               where: {
                 owner_name: {
                   owner,
@@ -44,9 +48,12 @@ export const handleInstallation = async (
                 isActive: true,
               },
             })
+            console.error('result', result)
+            return result
           }),
         )
 
+        console.error(`Saved ${savedRepos.length} repositories`)
         return {
           success: true,
           message: `Saved ${savedRepos.length} repositories`,
