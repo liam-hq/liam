@@ -25,6 +25,7 @@ export type SavePullRequestResult = {
     changes: number
     patch: string
   }>
+  repositoryDbId: number
 }
 
 export async function processSavePullRequest(
@@ -79,5 +80,6 @@ export async function processSavePullRequest(
     success: true,
     prId: prRecord.id,
     schemaChanges,
+    repositoryDbId: repository.id,
   }
 }
