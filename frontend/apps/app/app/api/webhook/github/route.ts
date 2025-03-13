@@ -1,22 +1,20 @@
 import { verifyWebhookSignature } from '@/libs/github/api'
 import { supportedEvents, validateConfig } from '@/libs/github/config'
 import { handleInstallation } from '@/libs/github/webhooks/installation'
-import { handlePullRequest } from '@/libs/github/webhooks/pull-request'
+import { savePullRequestTask } from '@/src/trigger/jobs'
 import type { GitHubWebhookPayload } from '@/types/github'
 import { type NextRequest, NextResponse } from 'next/server'
 
 export const POST = async (request: NextRequest): Promise<NextResponse> => {
   try {
-    const payload = await request.text()
+    const payload = await request.json()
+    const signature = request.headers.get('x-hub-signature-256') ?? ''
 
-    const signature = request.headers.get('x-hub-signature-256') || ''
-    if (!verifyWebhookSignature(payload, signature)) {
-      return NextResponse.json({ error: 'Invalid signature' }, { status: 401 })
-    }
+    validateConfig()
+    verifyWebhookSignature(await request.clone().text(), signature)
 
-    const data = JSON.parse(payload) as GitHubWebhookPayload
-
-    const event = request.headers.get('x-github-event') || ''
+    const data = payload as GitHubWebhookPayload
+    const event = request.headers.get('x-github-event') ?? ''
     const action = data.action
     const eventType = `${event}.${action}`
 
@@ -29,8 +27,32 @@ export const POST = async (request: NextRequest): Promise<NextResponse> => {
 
     try {
       if (event === 'pull_request') {
-        const result = await handlePullRequest(data)
-        return NextResponse.json(result, { status: 200 })
+        const pullRequest = data.pull_request
+        if (!pullRequest) {
+          throw new Error('Pull request data is missing')
+        }
+
+        switch (action) {
+          case 'opened':
+          case 'synchronize':
+          case 'reopened': {
+            // Queue the savePullRequest task
+            await savePullRequestTask.trigger({
+              pullRequestNumber: pullRequest.number,
+              projectId: undefined,
+              owner: data.repository.owner.login,
+              name: data.repository.name,
+              repositoryId: data.repository.id,
+            })
+
+            return NextResponse.json(
+              { message: 'Pull request processing initiated' },
+              { status: 200 },
+            )
+          }
+          default:
+            throw new Error(`Unsupported pull request action: ${action}`)
+        }
       }
 
       if (event === 'installation') {
@@ -52,7 +74,7 @@ export const POST = async (request: NextRequest): Promise<NextResponse> => {
   } catch (error) {
     console.error('Error processing webhook:', error)
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Failed to process webhook' },
       { status: 500 },
     )
   }

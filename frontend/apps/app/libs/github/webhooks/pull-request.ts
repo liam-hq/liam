@@ -6,6 +6,7 @@ import {
 import type { GitHubWebhookPayload } from '@/types/github'
 import { prisma } from '@liam-hq/db'
 
+// deprecated
 export async function handlePullRequest(
   data: GitHubWebhookPayload,
 ): Promise<{ success: boolean; message: string }> {

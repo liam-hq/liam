@@ -71,19 +71,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/pnpm-setup
-      - name: Install Vercel CLI
-        run: pnpm add --global vercel@latest
       - name: Pull Vercel Enviroment Infomation
-        run: vercel pull --yes --environment=${{ needs.setup-deployment.outputs.environment }} --token=${{ secrets.VERCEL_TOKEN }}
-      - name: Run prepare command
-        run: pnpm build
-      - name: Update index.html content
-        run: pnpm --filter ${{ matrix.apps.name }} update_dist_content
+        run: pnpm exec vercel pull --yes --environment=${{ needs.setup-deployment.outputs.environment }} --token=${{ secrets.VERCEL_TOKEN }}
+      - name: Pull Vercel Enviroment Variables
+        run: pnpm vercel:env-pull --yes --environment=${{ needs.setup-deployment.outputs.environment }} --token=${{ secrets.VERCEL_TOKEN }}
       - name: Build Project Artifacts
-        run: vercel build ${{ needs.setup-deployment.outputs.environment == 'production' && '--prod' || '' }}
+        run: pnpm exec vercel build ${{ needs.setup-deployment.outputs.environment == 'production' && '--prod' || '' }}
       - name: Deploy Project Artifacts to Vercel
         run: |
-          vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }} ${{ needs.setup-deployment.outputs.environment == 'production' && '--prod' || '' }} > deployment-url.txt
+          pnpm exec vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }} ${{ needs.setup-deployment.outputs.environment == 'production' && '--prod' || '' }} > deployment-url.txt
           echo "deployment-url=$(cat deployment-url.txt)" >> $GITHUB_OUTPUT
         id: deployment
   run-e2e:

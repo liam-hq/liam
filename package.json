@@ -8,7 +8,8 @@
     "@changesets/types": "6.0.0",
     "@turbo/gen": "2.1.2",
     "syncpack": "13.0.0",
-    "turbo": "2.1.2"
+    "turbo": "2.1.2",
+    "vercel": "41.4.0"
   },
   "scripts": {
     "build": "turbo build",
@@ -21,12 +22,17 @@
     "lint": "pnpm run '/^lint:.*/'",
     "lint:syncpack": "syncpack lint",
     "lint:turbo": "turbo lint",
-    "release": "turbo build && pnpm changeset publish",
+    "prebuild": "[ -f .env ] || touch .env",
+    "release": "pnpm build && pnpm changeset publish",
     "test:e2e": "turbo test:e2e",
-    "test:turbo": "turbo test"
+    "test:turbo": "turbo test",
+    "vercel:env-pull": "vercel env pull .env",
+    "vercel:link": "vercel link"
   },
   "packageManager": "pnpm@9.11.0+sha512.0a203ffaed5a3f63242cd064c8fb5892366c103e328079318f78062f24ea8c9d50bc6a47aa3567cabefd824d170e78fa2745ed1f16b132e16436146b7688f19b",
   "resolutions": {
-    "esbuild": "0.25.1"
+    "esbuild": "0.25.1",
+    "path-to-regexp": "6.3.0",
+    "undici": "5.28.5"
   }
 }

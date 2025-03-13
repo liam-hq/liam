@@ -5,3 +5,5 @@ node_modules
 # Since the development is done by multiple team members, activeContext may differ for each member, so we will ignore it for now.
 # Cline's Memory Bank seems to be for personal development purposes at the moment. We would like to adjust it as we go.
 memory-bank/activeContext.md
+.vercel
+.env*.local

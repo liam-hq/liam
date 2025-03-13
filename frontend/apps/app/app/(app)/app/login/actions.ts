@@ -7,7 +7,7 @@ import { createClient } from '@/libs/db/server'
 type OAuthProvider = 'github'
 
 function getAuthCallbackUrl({
-  next = '/',
+  next = '/app',
   provider,
 }: { next?: string; provider: OAuthProvider }): string {
   let url = process.env.VERCEL_URL ?? 'http://localhost:3001/'

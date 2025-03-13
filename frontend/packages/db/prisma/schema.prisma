@@ -14,6 +14,7 @@ model Project {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   migrations Migration[]
+  reviews   OverallReview[]
 }
 
 model Repository {
@@ -39,6 +40,7 @@ model PullRequest {
   migration Migration?
   repositoryId   Int
   repository     Repository @relation(fields: [repositoryId], references: [id])
+  reviews        OverallReview[]
 
   @@unique([repositoryId, pullNumber])
 }
@@ -50,6 +52,18 @@ model Migration {
   project        Project     @relation(fields: [projectId], references: [id])
   pullRequestId  Int         @unique
   pullRequest    PullRequest @relation(fields: [pullRequestId], references: [id])
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+}
+
+model OverallReview {
+  id            Int     @id @default(autoincrement())
+  projectId     Int
+  project       Project    @relation(fields: [projectId], references: [id])
+  pullRequestId Int
+  pullRequest   PullRequest @relation(fields: [pullRequestId], references: [id])
+  reviewComment String?
+  reviewedAt    DateTime   @default(now())
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
 }

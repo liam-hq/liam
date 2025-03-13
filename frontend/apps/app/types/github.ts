@@ -54,9 +54,17 @@ export type User = {
 
 export type FileChange = {
   filename: string
-  status: string
+  status:
+    | 'added'
+    | 'removed'
+    | 'modified'
+    | 'renamed'
+    | 'copied'
+    | 'changed'
+    | 'unchanged'
   additions: number
   deletions: number
   changes: number
   fileType: string
+  patch?: string | undefined
 }

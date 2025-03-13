@@ -17,6 +17,17 @@ async function getProject(projectId: string) {
       id: true,
       name: true,
       createdAt: true,
+      migrations: {
+        select: {
+          id: true,
+          title: true,
+          pullRequest: {
+            select: {
+              pullNumber: true,
+            },
+          },
+        },
+      },
     },
   })
 
@@ -56,6 +67,21 @@ export const ProjectDetailPage: FC<Props> = async ({ projectId }) => {
           Created: {project.createdAt.toLocaleDateString('en-US')}
         </p>
       </div>
+      <section style={{ margin: '24px 0' }}>
+        <h2 style={{ fontSize: '24px' }}>Migrations</h2>
+        <ul style={{ display: 'grid', gap: '12px', margin: '16px 0' }}>
+          {project.migrations.map((migration) => (
+            <li key={migration.id}>
+              <Link
+                href={`/app/projects/${project.id}/migrations/${migration.id}`}
+                style={{
+                  textDecoration: 'underline',
+                }}
+              >{`${migration.title} #${migration.pullRequest.pullNumber}`}</Link>
+            </li>
+          ))}
+        </ul>
+      </section>
     </div>
   )
 }

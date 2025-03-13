@@ -1,33 +1,18 @@
 import { PromptTemplate } from '@langchain/core/prompts'
 import { ChatOpenAI } from '@langchain/openai'
-import type { GenerateReviewPayload, Review } from '../types'
+import type { GenerateReviewPayload, ReviewResponse } from '../types'
 
 const REVIEW_TEMPLATE = `You are a database design expert. Please analyze the following schema changes and provide a detailed review.
 
 Schema Changes:
 {schemaChanges}
 
-Please provide a review in the following format:
-1. A summary of the changes and their impact
-2. Specific suggestions for improvement
-3. Best practices that should be followed
-
-The response must be structured to match this JSON format:
-{{
-  "summary": "string",
-  "suggestions": [
-    {{
-      "title": "string",
-      "description": "string",
-      "severity": "low" | "medium" | "high"
-    }}
-  ],
-  "bestPractices": ["string"]
-}}`
+Please provide a comprehensive review of the database schema changes. Your review should be detailed and constructive.
+The response must be a single string containing your detailed review.`
 
 export async function processGenerateReview(
   payload: GenerateReviewPayload,
-): Promise<Review> {
+): Promise<string> {
   try {
     const prompt = PromptTemplate.fromTemplate(REVIEW_TEMPLATE)
 
@@ -41,8 +26,7 @@ export async function processGenerateReview(
       schemaChanges: payload.schemaChanges,
     })
 
-    const review: Review = JSON.parse(response.content.toString())
-    return review
+    return response.content.toString()
   } catch (error) {
     console.error('Error generating review:', error)
     throw error

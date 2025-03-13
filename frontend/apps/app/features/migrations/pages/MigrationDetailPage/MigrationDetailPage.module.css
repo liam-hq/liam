@@ -1,0 +1,62 @@
+.wrapper {
+  display: grid;
+  gap: var(--spacing-6);
+}
+
+.heading {
+  display: grid;
+  gap: var(--spacing-2);
+}
+
+.title {
+  color: var(--global-foreground, #fff);
+  font-family: var(--main-font, Inter);
+  font-size: var(--font-size-5, 0.875rem);
+  font-style: normal;
+  font-weight: 600;
+  line-height: normal;
+}
+
+.subTitle {
+  color: var(--global-mute-text, #bebfc1);
+  /* Typography/2/Regular */
+  font-family: var(--main-font, Inter);
+  font-size: var(--font-size-2, 0.6875rem);
+  font-style: normal;
+  font-weight: 400;
+  line-height: normal;
+}
+
+.backLink {
+  color: #666;
+  text-decoration: none;
+  font-size: 0.875rem;
+  display: inline-flex;
+  align-items: center;
+  transition: color 0.2s;
+}
+
+.twoColumns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--spacing-6);
+}
+
+.box {
+  aspect-ratio: 1;
+  padding: var(--spacing-4);
+  border-radius: 0rem 0rem var(--border-radius-xl, 0.75rem)
+    var(--border-radius-xl, 0.75rem);
+  border: 1px solid var(--overlay-5, rgba(255, 255, 255, 0.05));
+  background: var(--overlay-5, rgba(255, 255, 255, 0.05));
+}
+
+.h2 {
+  color: #fff;
+  font-family: var(--main-font, Inter);
+  font-size: var(--font-size-8, 1.25rem);
+  font-style: normal;
+  font-weight: 500;
+  line-height: normal;
+  letter-spacing: 0.0375rem;
+}

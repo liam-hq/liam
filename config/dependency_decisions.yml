@@ -116,3 +116,9 @@
     :why: The license is Apache-2.0.
     :versions: []
     :when: 2025-03-11 06:08:23.596952 Z
+- - :approve
+  - "@vercel/gatsby-plugin-vercel-builder"
+  - :who: Liam @MH4GF
+    :why: The license is Apache-2.0.
+    :versions: []
+    :when: 2025-03-13 06:08:23.596952 Z

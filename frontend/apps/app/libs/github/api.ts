@@ -51,10 +51,18 @@ export const getPullRequestFiles = async (
   return files.map(
     (file: {
       filename: string
-      status: string
+      status:
+        | 'added'
+        | 'removed'
+        | 'modified'
+        | 'renamed'
+        | 'copied'
+        | 'changed'
+        | 'unchanged'
       additions: number
       deletions: number
       changes: number
+      patch?: string | undefined
     }) => {
       const extension = file.filename.split('.').pop() || 'unknown'
 
@@ -65,6 +73,7 @@ export const getPullRequestFiles = async (
         deletions: file.deletions,
         changes: file.changes,
         fileType: extension,
+        patch: file.patch || '',
       }
     },
   )

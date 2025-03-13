@@ -18,12 +18,19 @@ This document describes the automated review process workflow, from Pull Request
 
 #### Process:
 - Receives PR metadata from webhook
+- Checks if the repository exists in the database
+- Fetches PR files using GitHub API and creates schemaChanges
 - Stores PR information in Supabase
 - On success: Triggers review generation
 - On failure: Logs error and terminates process
 
 #### Key Actions:
-TBD
+- Verify repository existence in the database
+- Fetch PR files using GitHub API
+- Create schemaChanges from PR files
+- Save or update PR record in the database
+- Log success or error messages
+- Trigger the generateReview task with schemaChanges
 
 ### 3. Generate Review (generateReview)
 **Purpose: Analyze PR and create review content**

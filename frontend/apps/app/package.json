@@ -47,7 +47,6 @@
     "lint": "pnpm run '/^lint:.*/'",
     "lint:biome": "biome check .",
     "postinstall": "cp ../../packages/db-structure/node_modules/@ruby/prism/src/prism.wasm prism.wasm",
-    "start": "next start",
-    "update_dist_content": "node scripts/update_dist_content.js"
+    "start": "next start"
   }
 }

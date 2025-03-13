@@ -1,7 +1,12 @@
 import { defineConfig } from '@trigger.dev/sdk/v3'
 import * as dotenv from 'dotenv'
 
-dotenv.config()
+if (process.env.NODE_ENV !== 'production') {
+  dotenv.config({ path: '.env.local' })
+}
+
+dotenv.config({ path: '.env' })
+
 const triggerProjectId = process.env.TRIGGER_PROJECT_ID || 'project-id'
 
 export default defineConfig({
