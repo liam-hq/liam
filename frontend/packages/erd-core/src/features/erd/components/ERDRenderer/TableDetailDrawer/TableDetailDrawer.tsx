@@ -5,7 +5,6 @@ import {
 } from '@/stores'
 import { DrawerContent, DrawerPortal, DrawerRoot } from '@liam-hq/ui'
 import type { FC, PropsWithChildren } from 'react'
-// biome-ignore lint/nursery/useImportRestrictions: Fixed in the next PR.
 import { TableDetail } from '../../ERDContent/components/TableNode/TableDetail'
 import styles from './TableDetailDrawer.module.css'
 

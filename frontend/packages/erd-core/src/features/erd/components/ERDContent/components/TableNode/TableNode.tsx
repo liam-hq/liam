@@ -1,12 +1,5 @@
 import type { TableNodeType } from '@/features/erd/types'
 import { useUserEditingStore } from '@/stores'
-import type { NodeProps } from '@xyflow/react'
-import clsx from 'clsx'
-import type { FC } from 'react'
-import { TableColumnList } from './TableColumnList'
-import { TableHeader } from './TableHeader'
-import styles from './TableNode.module.css'
-
 import {
   TooltipContent,
   TooltipPortal,
@@ -14,6 +7,12 @@ import {
   TooltipRoot,
   TooltipTrigger,
 } from '@liam-hq/ui'
+import type { NodeProps } from '@xyflow/react'
+import clsx from 'clsx'
+import type { FC } from 'react'
+import { TableColumnList } from './TableColumnList'
+import { TableHeader } from './TableHeader'
+import styles from './TableNode.module.css'
 
 type Props = NodeProps<TableNodeType>
 
@@ -43,8 +42,8 @@ export const TableNode: FC<Props> = ({ data }) => {
           </div>
         </TooltipTrigger>
         <TooltipPortal>
-          <TooltipContent side={'top'} sideOffset={4}>
-            {data?.table?.name}
+          <TooltipContent side="top" sideOffset={4}>
+            {data?.table?.name ?? 'Unknown Table'}
           </TooltipContent>
         </TooltipPortal>
       </TooltipRoot>

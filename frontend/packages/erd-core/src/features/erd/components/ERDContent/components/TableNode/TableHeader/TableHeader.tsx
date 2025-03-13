@@ -1,8 +1,6 @@
 import type { TableNodeData } from '@/features/erd/types'
 import { useUserEditingStore } from '@/stores'
-import {
-  Table2,
-} from '@liam-hq/ui'
+import { Table2 } from '@liam-hq/ui'
 import { Handle, Position } from '@xyflow/react'
 import clsx from 'clsx'
 import type { FC } from 'react'
