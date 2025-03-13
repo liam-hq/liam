@@ -27,6 +27,7 @@
   "devDependencies": {
     "@biomejs/biome": "1.9.3",
     "@octokit/openapi-types": "24.0.0",
+    "@prisma/nextjs-monorepo-workaround-plugin": "6.5.0",
     "@types/gtag.js": "0.0.20",
     "@types/node": "22.9.0",
     "@types/react": "18",

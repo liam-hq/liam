@@ -104,6 +104,9 @@ importers:
       '@octokit/openapi-types':
         specifier: 24.0.0
         version: 24.0.0
+      '@prisma/nextjs-monorepo-workaround-plugin':
+        specifier: 6.5.0
+        version: 6.5.0
       '@types/gtag.js':
         specifier: 0.0.20
         version: 0.0.20
@@ -2006,6 +2009,9 @@ packages:
 
   '@prisma/internals@6.2.1':
     resolution: {integrity: sha512-MJ6AvLGhPiIdpk03EvhfxJBy2j0n+owusSTVxf1fzM6VzpZcweUIDtsDpKIK6Y+2UUqRS/Bre0gNmPlhWH+iNg==}
+
+  '@prisma/nextjs-monorepo-workaround-plugin@6.5.0':
+    resolution: {integrity: sha512-W//PmOanuqx7+xUvj3529wpC+6ZQLwtv+JEcMR5PVubUmKyaduhOdDvVEvjACo9sN7nAqVBTFDHMBarIeOw6Ig==}
 
   '@prisma/prisma-schema-wasm@6.2.0-14.4123509d24aa4dede1e864b46351bf2790323b69':
     resolution: {integrity: sha512-3N7czqak9gnE0NnzIaCjAgfA974QVII2MgT5uMe4NR3KmdrAEwtKRbkcdi8m3V2dXUPFpFXoCWjHiyC/3Qvg4A==}
@@ -10331,6 +10337,8 @@ snapshots:
       '@prisma/schema-files-loader': 6.2.1
       arg: 5.0.2
       prompts: 2.4.2
+
+  '@prisma/nextjs-monorepo-workaround-plugin@6.5.0': {}
 
   '@prisma/prisma-schema-wasm@6.2.0-14.4123509d24aa4dede1e864b46351bf2790323b69': {}
 

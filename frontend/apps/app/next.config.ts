@@ -1,4 +1,5 @@
 import { execSync } from 'node:child_process'
+import { PrismaPlugin } from '@prisma/nextjs-monorepo-workaround-plugin'
 import { withSentryConfig } from '@sentry/nextjs'
 import type { NextConfig } from 'next'
 
@@ -46,6 +47,7 @@ const nextConfig: NextConfig = {
         })
       },
     })
+    config.plugins = [...config.plugins, new PrismaPlugin()]
 
     return config
   },
