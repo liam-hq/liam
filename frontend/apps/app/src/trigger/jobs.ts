@@ -4,6 +4,7 @@ import {
   type SavePullRequestPayload,
   processSavePullRequest,
 } from '@/src/functions/processSavePullRequest'
+import { processSaveReview } from '@/src/functions/processSaveReview'
 import { logger, task } from '@trigger.dev/sdk/v3'
 import type { GenerateReviewPayload, ReviewResponse } from '../types'
 
@@ -51,9 +52,7 @@ export const generateReviewTask = task({
     logger.log('Generated review:', { reviewComment })
     await saveReviewTask.trigger({
       reviewComment,
-      projectId: payload.projectId,
-      repositoryDbId: payload.repositoryDbId,
-      pullRequestDbId: payload.pullRequestDbId,
+      ...payload,
     })
     return { reviewComment }
   },
@@ -63,14 +62,49 @@ export const saveReviewTask = task({
   id: 'save-review',
   run: async (payload: ReviewResponse) => {
     logger.log('Executing review save task:', { payload })
-    await postCommentTask.trigger(payload)
-    return { success: true }
+    try {
+      await processSaveReview(payload)
+      await postCommentTask.trigger({
+        reviewComment: payload.reviewComment,
+        projectId: payload.projectId,
+        pullRequestDbId: payload.pullRequestDbId,
+        pullRequestNumber: payload.pullRequestNumber,
+        repositoryDbId: payload.repositoryDbId,
+      })
+      return { success: true }
+    } catch (error) {
+      console.error('Error in review process:', error)
+
+      if (error instanceof Error) {
+        return {
+          success: false,
+          error: {
+            message: error.message,
+            type: error.constructor.name,
+          },
+        }
+      }
+
+      return {
+        success: false,
+        error: {
+          message: 'An unexpected error occurred',
+          type: 'UnknownError',
+        },
+      }
+    }
   },
 })
 
 export const postCommentTask = task({
   id: 'post-comment',
-  run: async (payload: ReviewResponse) => {
+  run: async (payload: {
+    reviewComment: string
+    projectId: number | undefined
+    pullRequestDbId: number
+    pullRequestNumber: number
+    repositoryDbId: number
+  }) => {
     logger.log('Executing comment post task:', { payload })
     const result = await postComment(payload)
     return result

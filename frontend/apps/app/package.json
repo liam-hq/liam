@@ -32,7 +32,8 @@
     "esbuild": "0.25.1",
     "trigger.dev": "3.3.17",
     "typed-css-modules": "0.9.1",
-    "typescript": "5"
+    "typescript": "5",
+    "vitest": "3.0.8"
   },
   "scripts": {
     "build": "pnpm gen && next build",
@@ -47,6 +48,8 @@
     "lint": "pnpm run '/^lint:.*/'",
     "lint:biome": "biome check .",
     "postinstall": "cp ../../packages/db-structure/node_modules/@ruby/prism/src/prism.wasm prism.wasm",
-    "start": "next start"
+    "start": "next start",
+    "test:vitest": "pnpm vitest",
+    "update_dist_content": "node scripts/update_dist_content.js"
   }
 }

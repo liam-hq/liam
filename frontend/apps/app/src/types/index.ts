@@ -17,4 +17,5 @@ export type ReviewResponse = {
   projectId: number | undefined
   repositoryDbId: number
   pullRequestDbId: number
+  pullRequestNumber: number
 }

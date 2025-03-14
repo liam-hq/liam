@@ -1,3 +1,6 @@
 {
-  "extends": ["../../packages/configs/biome.jsonc"]
+  "extends": ["../../packages/configs/biome.jsonc"],
+  "javascript": {
+    "globals": ["beforeEach", "describe", "expect", "it"]
+  }
 }

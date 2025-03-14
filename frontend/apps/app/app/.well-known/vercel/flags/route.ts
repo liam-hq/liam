@@ -1,4 +1,3 @@
-// biome-ignore lint/nursery/useImportRestrictions: <explanation>
 import * as flags from '@/libs/flags'
 import { type ApiData, verifyAccess } from 'flags'
 import { getProviderData } from 'flags/next'
