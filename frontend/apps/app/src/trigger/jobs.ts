@@ -35,6 +35,7 @@ export const savePullRequestTask = task({
         projectId: undefined,
         repositoryId: payload.repositoryId,
         schemaChanges: result.schemaChanges,
+        repositoryDbId: result.repositoryDbId,
       })
 
       return result
@@ -69,6 +70,7 @@ export const saveReviewTask = task({
         projectId: payload.projectId,
         pullRequestId: payload.pullRequestId,
         repositoryId: payload.repositoryId,
+        repositoryDbId: payload.repositoryDbId,
       })
       return { success: true }
     } catch (error) {

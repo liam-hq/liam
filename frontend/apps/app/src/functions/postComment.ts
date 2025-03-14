@@ -9,17 +9,17 @@ export async function postComment(
   payload: ReviewResponse,
 ): Promise<{ success: boolean; message: string }> {
   try {
-    const { reviewComment, pullRequestId, repositoryId } = payload
+    const { reviewComment, pullRequestId, repositoryDbId } = payload
 
     // Get repository information
     const repository = await prisma.repository.findUnique({
       where: {
-        id: repositoryId,
+        id: repositoryDbId,
       },
     })
 
     if (!repository) {
-      throw new Error(`Repository with ID ${repositoryId} not found`)
+      throw new Error(`Repository with ID ${repositoryDbId} not found`)
     }
 
     // Check if there's an existing PR record with a comment

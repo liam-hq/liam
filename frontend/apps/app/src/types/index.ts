@@ -16,6 +16,7 @@ export type GenerateReviewPayload = {
     changes: number
     patch: string
   }>
+  repositoryDbId: number
 }
 
 export type ReviewResponse = {
@@ -23,4 +24,5 @@ export type ReviewResponse = {
   projectId: number | undefined
   pullRequestId: number
   repositoryId: number
+  repositoryDbId: number
 }
