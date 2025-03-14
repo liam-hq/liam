@@ -4,6 +4,3 @@
 
 # build
 dist
-
-# generated prisma client
-generated/client

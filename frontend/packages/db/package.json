@@ -6,9 +6,6 @@
     "access": "restricted"
   },
   "main": "src/index.ts",
-  "exports": {
-    ".": "./src/index.ts"
-  },
   "dependencies": {
     "@prisma/client": "6.4.1",
     "@supabase/ssr": "0.5.2",
