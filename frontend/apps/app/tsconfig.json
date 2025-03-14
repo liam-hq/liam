@@ -25,8 +25,7 @@
         "../../packages/db-structure/src/*",
         "../../packages/ui/src/*"
       ]
-    },
-    "types": ["jest"]
+    }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
   "exclude": ["node_modules"]

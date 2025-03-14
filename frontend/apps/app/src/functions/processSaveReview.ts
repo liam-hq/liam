@@ -5,13 +5,9 @@ export async function processSaveReview(
   payload: ReviewResponse,
 ): Promise<{ success: boolean }> {
   try {
-    // TODO:find pull request by pull request id
     const pullRequest = await prisma.pullRequest.findUnique({
       where: {
-        repositoryId_pullNumber: {
-          repositoryId: payload.repositoryDbId,
-          pullNumber: payload.pullRequestNumber,
-        },
+        id: payload.pullRequestDbId,
       },
     })
 
@@ -27,7 +23,7 @@ export async function processSaveReview(
     await prisma.overallReview.create({
       data: {
         projectId: payload.projectId,
-        pullRequestId: pullRequest.id,
+        pullRequestId: payload.pullRequestDbId,
         reviewComment: payload.reviewComment,
       },
     })

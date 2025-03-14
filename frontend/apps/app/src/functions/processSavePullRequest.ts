@@ -83,3 +83,23 @@ export async function processSavePullRequest(
     repositoryDbId: repository.id,
   }
 }
+
+export async function getPullRequest(
+  repositoryId: number,
+  pullRequestNumber: bigint,
+) {
+  const pullRequest = await prisma.pullRequest.findUnique({
+    where: {
+      repositoryId_pullNumber: {
+        repositoryId: repositoryId,
+        pullNumber: pullRequestNumber,
+      },
+    },
+  })
+
+  if (!pullRequest) {
+    throw new Error('PullRequest not found')
+  }
+
+  return pullRequest
+}
