@@ -12,6 +12,15 @@ export const POST = async (request: Request): Promise<NextResponse> => {
       )
     }
 
+    const pullRequest = await prisma.pullRequest.findFirst({
+      where: {
+        id: 1,
+      },
+    })
+
+    console.info('query is complete')
+    console.info('pullRequest', pullRequest)
+
     const testRecord = await prisma.testTable.create({
       data: {
         name,
