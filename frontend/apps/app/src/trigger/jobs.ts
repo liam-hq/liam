@@ -33,6 +33,7 @@ export const savePullRequestTask = task({
         projectId: undefined,
         schemaChanges: result.schemaChanges,
         repositoryDbId: result.repositoryDbId,
+        pullRequestDbId: result.prId,
       } as GenerateReviewPayload)
 
       return result
@@ -51,8 +52,8 @@ export const generateReviewTask = task({
     await saveReviewTask.trigger({
       reviewComment,
       projectId: payload.projectId,
-      pullRequestId: payload.pullRequestNumber,
       repositoryDbId: payload.repositoryDbId,
+      pullRequestDbId: payload.pullRequestDbId,
     })
     return { reviewComment }
   },

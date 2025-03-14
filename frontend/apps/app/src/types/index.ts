@@ -9,11 +9,12 @@ export type GenerateReviewPayload = {
     patch: string
   }>
   repositoryDbId: number
+  pullRequestDbId: number
 }
 
 export type ReviewResponse = {
   reviewComment: string
   projectId: number | undefined
-  pullRequestId: number
   repositoryDbId: number
+  pullRequestDbId: number
 }

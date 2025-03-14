@@ -9,7 +9,7 @@ export async function postComment(
   payload: ReviewResponse,
 ): Promise<{ success: boolean; message: string }> {
   try {
-    const { reviewComment, pullRequestId, repositoryDbId } = payload
+    const { reviewComment, repositoryDbId, pullRequestDbId } = payload
 
     // Get repository information
     const repository = await prisma.repository.findUnique({
@@ -25,12 +25,12 @@ export async function postComment(
     // Check if there's an existing PR record with a comment
     const prRecord = await prisma.pullRequest.findUnique({
       where: {
-        id: pullRequestId,
+        id: pullRequestDbId,
       },
     })
 
     if (!prRecord) {
-      throw new Error(`Pull request with ID ${pullRequestId} not found`)
+      throw new Error(`Pull request with ID ${pullRequestDbId} not found`)
     }
 
     // Get installation ID from repository
@@ -59,7 +59,7 @@ export async function postComment(
       // Update PR record with the comment ID
       await prisma.pullRequest.update({
         where: {
-          id: pullRequestId,
+          id: pullRequestDbId,
         },
         data: {
           commentId: BigInt(commentResponse.id),
