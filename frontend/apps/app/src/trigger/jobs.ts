@@ -29,18 +29,12 @@ export const savePullRequestTask = task({
       } as SavePullRequestPayload)
       logger.info('Successfully saved PR to database:', { prId: result.prId })
 
-      const pullRequest = await getPullRequest(
-        payload.repositoryId,
-        BigInt(payload.pullRequestNumber),
-      )
-
       // Trigger the next task in the chain - generate review
       await generateReviewTask.trigger({
-        pullRequestId: pullRequest.id,
+        pullRequestId: result.prId,
         projectId: undefined,
         schemaChanges: result.schemaChanges,
         repositoryDbId: result.repositoryDbId,
-        pullRequestDbId: result.prId,
       } as GenerateReviewPayload)
 
       return result
