@@ -9,6 +9,10 @@
       "dependsOn": ["^build"],
       "outputs": [".next"]
     },
+    "@liam-hq/erd-web#build": {
+      "dependsOn": ["^build"],
+      "outputs": [".next"]
+    },
     "dev": {
       "cache": false,
       "persistent": true
