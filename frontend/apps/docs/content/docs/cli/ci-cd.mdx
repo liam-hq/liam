@@ -47,6 +47,7 @@ jobs:
 
       # 2. Generate the ER diagram
       - name: Generate ER Diagram
+        # You can specify a custom output directory with --output-dir option if needed
         run: liam erd build --input ./db/schema.rb --format=schemarb
 
       # 3. Publish the build artifacts (dist folder) to a static hosting service
@@ -66,7 +67,7 @@ The same approach can be applied to hosting services such as [Cloudflare Pages](
 
 ## Liam ERD’s HTML Structure (Vite-based SPA)
 
-When you run `npx @liam-hq/cli erd build` or `liam erd build`, a `./dist` directory is created with the following structure. Here, `index.html` acts as the single entry point for your **single-page application (SPA)**:
+When you run `npx @liam-hq/cli erd build` or `liam erd build`, a `./dist` directory (or the directory specified by `--output-dir` option) is created with the following structure. Here, `index.html` acts as the single entry point for your **single-page application (SPA)**:
 
 <Files>
   <Folder name="dist" defaultOpen>
@@ -130,6 +131,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Generate ER Diagrams
+        # You can specify a custom output directory with --output-dir option if needed
         run: npx @liam-hq/cli erd build --input prisma/schema.prisma --format prisma
       - name: Deploy ERD to Cloudflare Pages
         uses: cloudflare/wrangler-action@v3

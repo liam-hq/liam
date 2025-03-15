@@ -24,12 +24,12 @@ Generate an ERD from your schema file using the following command:
 npx @liam-hq/cli erd build --input <path|url>
 ```
 
-This command processes your schema file and generates interactive ERD visualization files in the `dist` directory. The schema format is automatically detected (see [Format Auto-Detection](/docs/parser/supported-formats#format-auto-detection)), but you can override it using the `--format` option if needed.
+This command processes your schema file and generates interactive ERD visualization files in the `dist` directory. The schema format is automatically detected (see [Format Auto-Detection](/docs/parser/supported-formats#format-auto-detection)), but you can override it using the `--format` option if needed. Also, output directly can be specified by `--output-dir` option.
 
 Once the ERD is generated, you can view it by serving the files using a local HTTP server:
 
 ```package-install
-npx http-server dist
+npx http-server dist  # or your custom output directory
 ```
 
 The server will start and provide you with a local URL (typically http://localhost:8080) where you can view your ERD in a web browser.
@@ -40,6 +40,7 @@ You can use any hosting service of your choice to serve the generated files.
 
 - `--input <path|url>`: Path to your schema file or URL
 - `--format <format>`: (Optional) Override the auto-detected schema format
+- `--output-dir <path>`: (Optional) Specify the output directory for generated files (default: "dist")
 
 ### From GitHub Public Repository
 
@@ -56,12 +57,12 @@ npx @liam-hq/cli erd build --input https://raw.githubusercontent.com/user/repo/m
 
 ### Output
 
-The command generates a simple web application using [Vite](https://vite.dev/), which includes JavaScript, CSS, and HTML files, in the `dist` directory of your current working directory.
+The command generates a simple web application using [Vite](https://vite.dev/), which includes JavaScript, CSS, and HTML files, in the `dist` directory of your current working directory (or the directory specified by `--output-dir` option).
 
-To view the generated ERD, serve the `dist` directory using any HTTP server:
+To view the generated ERD, serve the output directory using any HTTP server:
 
 ```package-install
-npx http-server dist
+npx http-server dist  # or your custom output directory
 ```
 
 ## Sample Projects

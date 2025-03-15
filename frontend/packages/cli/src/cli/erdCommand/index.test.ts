@@ -32,5 +32,24 @@ describe('program', () => {
         )
       },
     )
+
+    it('should use custom output directory when --output-dir is specified', () => {
+      const inputFile = './fixtures/input.schema.rb'
+      const format = 'schemarb'
+      const customOutputDir = 'custom-output'
+
+      program.parse(
+        ['erd', 'build', '--input', inputFile, '--format', format, '--output-dir', customOutputDir],
+        {
+          from: 'user',
+        },
+      )
+
+      expect(buildCommand).toHaveBeenCalledWith(
+        inputFile,
+        customOutputDir,
+        format,
+      )
+    })
   })
 })
