@@ -1,0 +1,49 @@
+Date:   Thu Aug 15 12:27:57 2024 +0200
+
+    perf: drop dataset_items fkey on traces and observations (#2942)
+
+diff --git a/packages/shared/prisma/migrations/20240814233029_dataset_items_drop_fkey_on_traces_and_observations/migration.sql b/packages/shared/prisma/migrations/20240814233029_dataset_items_drop_fkey_on_traces_and_observations/migration.sql
+new file mode 100644
+index 00000000..4997eeb9
+--- /dev/null
++++ b/packages/shared/prisma/migrations/20240814233029_dataset_items_drop_fkey_on_traces_and_observations/migration.sql
+@@ -0,0 +1,5 @@
++-- DropForeignKey
++ALTER TABLE "dataset_items" DROP CONSTRAINT "dataset_items_source_observation_id_fkey";
++
++-- DropForeignKey
++ALTER TABLE "dataset_items" DROP CONSTRAINT "dataset_items_source_trace_id_fkey";
+diff --git a/packages/shared/prisma/schema.prisma b/packages/shared/prisma/schema.prisma
+index 7977ac3d..406f6a71 100644
+--- a/packages/shared/prisma/schema.prisma
++++ b/packages/shared/prisma/schema.prisma
+@@ -279,7 +279,6 @@ model Trace {
+     createdAt  DateTime      @default(now()) @map("created_at")
+     updatedAt  DateTime      @default(now()) @updatedAt @map("updated_at")
+ 
+-    DatasetItem  DatasetItem[]
+     JobExecution JobExecution[]
+ 
+     @@index([projectId])
+@@ -364,9 +363,8 @@ model Observation {
+     calculatedOutputCost Decimal? @map("calculated_output_cost")
+     calculatedTotalCost  Decimal? @map("calculated_total_cost")
+ 
+-    completionStartTime DateTime?     @map("completion_start_time")
+-    project             Project       @relation(fields: [projectId], references: [id], onDelete: Cascade)
+-    derivedDatasetItems DatasetItem[]
++    completionStartTime DateTime? @map("completion_start_time")
++    project             Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+ 
+     promptId String? @map("prompt_id") // no fk constraint, prompt can be deleted
+ 
+@@ -559,9 +557,7 @@ model DatasetItem {
+     expectedOutput      Json?             @map("expected_output")
+     metadata            Json?
+     sourceTraceId       String?           @map("source_trace_id")
+-    sourceTrace         Trace?            @relation(fields: [sourceTraceId], references: [id], onDelete: SetNull)
+     sourceObservationId String?           @map("source_observation_id")
+-    sourceObservation   Observation?      @relation(fields: [sourceObservationId], references: [id], onDelete: SetNull)
+     datasetId           String            @map("dataset_id")
+     dataset             Dataset           @relation(fields: [datasetId, projectId], references: [id, projectId], onDelete: Cascade)
+     createdAt           DateTime          @default(now()) @map("created_at")

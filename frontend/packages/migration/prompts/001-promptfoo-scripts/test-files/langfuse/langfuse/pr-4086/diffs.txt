@@ -1,0 +1,2334 @@
+Date:   Fri Nov 15 16:37:55 2024 +0100
+
+    feat: support evals triggered via dataset run   (#4086)
+
+diff --git a/packages/shared/prisma/generated/types.ts b/packages/shared/prisma/generated/types.ts
+index aaee1cbb..933d47cf 100644
+--- a/packages/shared/prisma/generated/types.ts
++++ b/packages/shared/prisma/generated/types.ts
+@@ -278,6 +278,8 @@ export type JobExecution = {
+     end_time: Timestamp | null;
+     error: string | null;
+     job_input_trace_id: string | null;
++    job_input_observation_id: string | null;
++    job_input_dataset_item_id: string | null;
+     job_output_score_id: string | null;
+ };
+ export type LlmApiKeys = {
+diff --git a/packages/shared/prisma/migrations/20241114175010_job_executions_add_observation_dataset_item_cols/migration.sql b/packages/shared/prisma/migrations/20241114175010_job_executions_add_observation_dataset_item_cols/migration.sql
+new file mode 100644
+index 00000000..f8c1c68f
+--- /dev/null
++++ b/packages/shared/prisma/migrations/20241114175010_job_executions_add_observation_dataset_item_cols/migration.sql
+@@ -0,0 +1,6 @@
++-- DropForeignKey
++ALTER TABLE "job_executions" DROP CONSTRAINT "job_executions_job_input_trace_id_fkey";
++
++-- AlterTable
++ALTER TABLE "job_executions" ADD COLUMN     "job_input_dataset_item_id" TEXT,
++ADD COLUMN     "job_input_observation_id" TEXT;
+diff --git a/packages/shared/prisma/schema.prisma b/packages/shared/prisma/schema.prisma
+index 1c418ede..aff09d47 100644
+--- a/packages/shared/prisma/schema.prisma
++++ b/packages/shared/prisma/schema.prisma
+@@ -303,8 +303,6 @@ model Trace {
+   createdAt  DateTime      @default(now()) @map("created_at")
+   updatedAt  DateTime      @default(now()) @updatedAt @map("updated_at")
+ 
+-  JobExecution JobExecution[]
+-
+   @@index([projectId, timestamp])
+   @@index([sessionId])
+   @@index([name])
+@@ -898,8 +896,11 @@ model JobExecution {
+   endTime   DateTime?          @map("end_time")
+   error     String?
+ 
+-  jobInputTraceId String? @map("job_input_trace_id")
+-  trace           Trace?  @relation(fields: [jobInputTraceId], references: [id], onDelete: SetNull) // job remains when traces are deleted
++  jobInputTraceId String? @map("job_input_trace_id") // no fk constraint - traces in ClickHouse, deletion handled via project cascade
++
++  jobInputObservationId String? @map("job_input_observation_id") // no fk constraint - observations in ClickHouse, deletion handled via project cascade
++
++  jobInputDatasetItemId String?      @map("job_input_dataset_item_id") // no fk constraint - job execution sensible standalone
+ 
+   jobOutputScoreId String? @map("job_output_score_id")
+   score            Score?  @relation(fields: [jobOutputScoreId], references: [id], onDelete: SetNull) // job remains when scores are deleted
+diff --git a/packages/shared/prisma/seed.ts b/packages/shared/prisma/seed.ts
+index dc24115d..a92ccd70 100644
+--- a/packages/shared/prisma/seed.ts
++++ b/packages/shared/prisma/seed.ts
+@@ -388,83 +388,89 @@ async function main() {
+     });
+ 
+     for (let datasetNumber = 0; datasetNumber < 2; datasetNumber++) {
+-      const dataset = await prisma.dataset.create({
+-        data: {
+-          name: `demo-dataset-${datasetNumber}`,
+-          description:
+-            datasetNumber === 0 ? "Dataset test description" : undefined,
+-          projectId: project2.id,
+-          metadata: datasetNumber === 0 ? { key: "value" } : undefined,
+-        },
+-      });
+-
+-      const datasetItemIds = [];
+-      for (let i = 0; i < 18; i++) {
+-        const sourceObservation =
+-          Math.random() > 0.3
+-            ? observations[Math.floor(Math.random() * observations.length)]
+-            : undefined;
+-        const datasetItem = await prisma.datasetItem.create({
+-          data: {
+-            projectId: project2.id,
+-            datasetId: dataset.id,
+-            sourceTraceId: sourceObservation?.traceId,
+-            sourceObservationId:
+-              Math.random() > 0.5 ? sourceObservation?.id : undefined,
+-            input:
+-              Math.random() > 0.3
+-                ? [
+-                    {
+-                      role: "user",
+-                      content: "How can i create a React component?",
+-                    },
+-                  ]
+-                : undefined,
+-            expectedOutput:
+-              Math.random() > 0.3
+-                ? "Creating a React component can be done in two ways: as a functional component or as a class component. Let's start with a basic example of both."
+-                : undefined,
+-            metadata: Math.random() > 0.5 ? { key: "value" } : undefined,
+-          },
+-        });
+-        datasetItemIds.push(datasetItem.id);
+-      }
+-
+-      for (let datasetRunNumber = 0; datasetRunNumber < 5; datasetRunNumber++) {
+-        const datasetRun = await prisma.datasetRuns.create({
++      for (const projectId of [project1.id, project2.id]) {
++        const dataset = await prisma.dataset.create({
+           data: {
+-            projectId: project2.id,
+-            name: `demo-dataset-run-${datasetRunNumber}`,
+-            description: Math.random() > 0.5 ? "Dataset run description" : "",
+-            datasetId: dataset.id,
+-            metadata: [
+-              undefined,
+-              "string",
+-              100,
+-              { key: "value" },
+-              ["tag1", "tag2"],
+-            ][datasetRunNumber % 5],
++            name: `demo-dataset-${datasetNumber}`,
++            description:
++              datasetNumber === 0 ? "Dataset test description" : undefined,
++            projectId,
++            metadata: datasetNumber === 0 ? { key: "value" } : undefined,
+           },
+         });
+ 
+-        for (const datasetItemId of datasetItemIds) {
+-          const relevantObservations = observations.filter(
+-            (o) => o.projectId === project2.id,
+-          );
+-          const observation =
+-            relevantObservations[
+-              Math.floor(Math.random() * relevantObservations.length)
+-            ];
++        const datasetItemIds = [];
++        for (let i = 0; i < 18; i++) {
++          const sourceObservation =
++            Math.random() > 0.3
++              ? observations[Math.floor(Math.random() * observations.length)]
++              : undefined;
++          const datasetItem = await prisma.datasetItem.create({
++            data: {
++              projectId,
++              datasetId: dataset.id,
++              sourceTraceId: sourceObservation?.traceId,
++              sourceObservationId:
++                Math.random() > 0.5 ? sourceObservation?.id : undefined,
++              input:
++                Math.random() > 0.3
++                  ? [
++                      {
++                        role: "user",
++                        content: "How can i create a React component?",
++                      },
++                    ]
++                  : undefined,
++              expectedOutput:
++                Math.random() > 0.3
++                  ? "Creating a React component can be done in two ways: as a functional component or as a class component. Let's start with a basic example of both."
++                  : undefined,
++              metadata: Math.random() > 0.5 ? { key: "value" } : undefined,
++            },
++          });
++          datasetItemIds.push(datasetItem.id);
++        }
+ 
+-          await prisma.datasetRunItems.create({
++        for (
++          let datasetRunNumber = 0;
++          datasetRunNumber < 5;
++          datasetRunNumber++
++        ) {
++          const datasetRun = await prisma.datasetRuns.create({
+             data: {
+-              projectId: project2.id,
+-              datasetItemId,
+-              traceId: observation.traceId as string,
+-              observationId: Math.random() > 0.5 ? observation.id : undefined,
+-              datasetRunId: datasetRun.id,
++              projectId,
++              name: `demo-dataset-run-${datasetRunNumber}`,
++              description: Math.random() > 0.5 ? "Dataset run description" : "",
++              datasetId: dataset.id,
++              metadata: [
++                undefined,
++                "string",
++                100,
++                { key: "value" },
++                ["tag1", "tag2"],
++              ][datasetRunNumber % 5],
+             },
+           });
++
++          for (const datasetItemId of datasetItemIds) {
++            const relevantObservations = observations.filter(
++              (o) => o.projectId === projectId,
++            );
++            const observation =
++              relevantObservations[
++                Math.floor(Math.random() * relevantObservations.length)
++              ];
++
++            await prisma.datasetRunItems.create({
++              data: {
++                projectId,
++                datasetItemId,
++                traceId: observation.traceId as string,
++                observationId: Math.random() > 0.5 ? observation.id : undefined,
++                datasetRunId: datasetRun.id,
++              },
++            });
++          }
+         }
+       }
+     }
+diff --git a/packages/shared/src/features/evals/types.ts b/packages/shared/src/features/evals/types.ts
+index 78c1e5f6..294386bc 100644
+--- a/packages/shared/src/features/evals/types.ts
++++ b/packages/shared/src/features/evals/types.ts
+@@ -5,6 +5,7 @@ export const langfuseObjects = [
+   "span",
+   "generation",
+   "event",
++  "dataset_item",
+ ] as const;
+ 
+ // variable mapping stored in the db for eval templates
+@@ -21,7 +22,7 @@ export const variableMapping = z
+     (value) => value.langfuseObject === "trace" || value.objectName !== null,
+     {
+       message: "objectName is required for langfuseObjects other than trace",
+-    }
++    },
+   );
+ 
+ export const variableMappingList = z.array(variableMapping);
+@@ -44,7 +45,7 @@ const observationCols = [
+   { name: "Output", id: "output", internal: 'o."output"' },
+ ];
+ 
+-export const availableEvalVariables = [
++export const availableTraceEvalVariables = [
+   {
+     id: "trace",
+     display: "Trace",
+@@ -76,6 +77,28 @@ export const availableEvalVariables = [
+   },
+ ];
+ 
++export const availableDatasetEvalVariables = [
++  {
++    id: "dataset_item",
++    display: "Dataset item",
++    availableColumns: [
++      {
++        name: "Metadata",
++        id: "metadata",
++        type: "stringObject",
++        internal: 'd."metadata"',
++      },
++      { name: "Input", id: "input", internal: 'd."input"' },
++      {
++        name: "Expected output",
++        id: "expected_output",
++        internal: 'd."expected_output"',
++      },
++    ],
++  },
++  ...availableTraceEvalVariables,
++];
++
+ export const OutputSchema = z.object({
+   reasoning: z.string(),
+   score: z.string(),
+@@ -83,6 +106,7 @@ export const OutputSchema = z.object({
+ 
+ export enum EvalTargetObject {
+   Trace = "trace",
++  Dataset = "dataset",
+ }
+ 
+ export const DEFAULT_TRACE_JOB_DELAY = 10_000;
+diff --git a/packages/shared/src/server/index.ts b/packages/shared/src/server/index.ts
+index 032a6a76..45971122 100644
+--- a/packages/shared/src/server/index.ts
++++ b/packages/shared/src/server/index.ts
+@@ -19,6 +19,7 @@ export * from "../server/ingestion/types";
+ export * from "../server/ingestion/validateAndInflateScore";
+ export * from "./redis/redis";
+ export * from "./redis/traceUpsert";
++export * from "./redis/datasetRunItemUpsert";
+ export * from "./redis/batchExport";
+ export * from "./redis/legacyIngestion";
+ export * from "./redis/ingestionQueue";
+diff --git a/packages/shared/src/server/ingestion/legacy/index.ts b/packages/shared/src/server/ingestion/legacy/index.ts
+index b1760fb5..633043a5 100644
+--- a/packages/shared/src/server/ingestion/legacy/index.ts
++++ b/packages/shared/src/server/ingestion/legacy/index.ts
+@@ -181,7 +181,10 @@ export const addTracesToTraceUpsertQueue = async (
+       typeof result.result === "object" &&
+       "id" in result.result
+         ? // ingestion API only gets traces for one projectId
+-          { traceId: result.result.id as string, projectId }
++          {
++            traceId: result.result.id as string,
++            projectId,
++          }
+         : null,
+     )
+     .filter(isNotNullOrUndefined);
+diff --git a/packages/shared/src/server/queues.ts b/packages/shared/src/server/queues.ts
+index 5e568319..de806db8 100644
+--- a/packages/shared/src/server/queues.ts
++++ b/packages/shared/src/server/queues.ts
+@@ -66,6 +66,12 @@ export const TraceUpsertEventSchema = z.object({
+   projectId: z.string(),
+   traceId: z.string(),
+ });
++export const DatasetRunItemUpsertEventSchema = z.object({
++  projectId: z.string(),
++  datasetItemId: z.string(),
++  traceId: z.string(),
++  observationId: z.string().optional(),
++});
+ export const EvalExecutionEvent = z.object({
+   projectId: z.string(),
+   jobExecutionId: z.string(),
+@@ -74,6 +80,9 @@ export const EvalExecutionEvent = z.object({
+ 
+ export type BatchExportJobType = z.infer<typeof BatchExportJobSchema>;
+ export type TraceUpsertEventType = z.infer<typeof TraceUpsertEventSchema>;
++export type DatasetRunItemUpsertEventType = z.infer<
++  typeof DatasetRunItemUpsertEventSchema
++>;
+ export type EvalExecutionEventType = z.infer<typeof EvalExecutionEvent>;
+ export type LegacyIngestionEventType = z.infer<typeof LegacyIngestionEvent>;
+ export type IngestionEventQueueType = z.infer<typeof IngestionEvent>;
+@@ -97,6 +106,7 @@ export type EventBodyType = z.infer<typeof EventBodySchema>;
+ export enum QueueName {
+   TraceUpsert = "trace-upsert", // Ingestion pipeline adds events on each Trace upsert
+   EvaluationExecution = "evaluation-execution-queue", // Worker executes Evals
++  DatasetRunItemUpsert = "dataset-run-item-upsert-queue",
+   BatchExport = "batch-export-queue",
+   IngestionQueue = "ingestion-queue", // Process single events with S3-merge
+   LegacyIngestionQueue = "legacy-ingestion-queue", // Used for batch processing of Ingestion
+@@ -105,6 +115,7 @@ export enum QueueName {
+ 
+ export enum QueueJobs {
+   TraceUpsert = "trace-upsert",
++  DatasetRunItemUpsert = "dataset-run-item-upsert",
+   EvaluationExecution = "evaluation-execution-job",
+   BatchExportJob = "batch-export-job",
+   EnqueueBatchExportJobs = "enqueue-batch-export-jobs",
+@@ -120,6 +131,12 @@ export type TQueueJobTypes = {
+     payload: TraceUpsertEventType;
+     name: QueueJobs.TraceUpsert;
+   };
++  [QueueName.DatasetRunItemUpsert]: {
++    timestamp: Date;
++    id: string;
++    payload: DatasetRunItemUpsertEventType;
++    name: QueueJobs.DatasetRunItemUpsert;
++  };
+   [QueueName.EvaluationExecution]: {
+     timestamp: Date;
+     id: string;
+diff --git a/packages/shared/src/server/redis/datasetRunItemUpsert.ts b/packages/shared/src/server/redis/datasetRunItemUpsert.ts
+new file mode 100644
+index 00000000..25044bd8
+--- /dev/null
++++ b/packages/shared/src/server/redis/datasetRunItemUpsert.ts
+@@ -0,0 +1,46 @@
++import { QueueName, TQueueJobTypes } from "../queues";
++import { Queue } from "bullmq";
++import { createNewRedisInstance, redisQueueRetryOptions } from "./redis";
++import { logger } from "../logger";
++
++export class DatasetRunItemUpsertQueue {
++  private static instance: Queue<
++    TQueueJobTypes[QueueName.DatasetRunItemUpsert]
++  > | null = null;
++
++  public static getInstance(): Queue<
++    TQueueJobTypes[QueueName.DatasetRunItemUpsert]
++  > | null {
++    if (DatasetRunItemUpsertQueue.instance)
++      return DatasetRunItemUpsertQueue.instance;
++
++    const newRedis = createNewRedisInstance({
++      enableOfflineQueue: false,
++      ...redisQueueRetryOptions,
++    });
++
++    DatasetRunItemUpsertQueue.instance = newRedis
++      ? new Queue<TQueueJobTypes[QueueName.DatasetRunItemUpsert]>(
++          QueueName.DatasetRunItemUpsert,
++          {
++            connection: newRedis,
++            defaultJobOptions: {
++              removeOnComplete: true,
++              removeOnFail: 10_000,
++              attempts: 2,
++              backoff: {
++                type: "exponential",
++                delay: 5000,
++              },
++            },
++          },
++        )
++      : null;
++
++    DatasetRunItemUpsertQueue.instance?.on("error", (err) => {
++      logger.error("DatasetRunItemUpsertQueue error", err);
++    });
++
++    return DatasetRunItemUpsertQueue.instance;
++  }
++}
+diff --git a/packages/shared/src/tableDefinitions/tracesTable.ts b/packages/shared/src/tableDefinitions/tracesTable.ts
+index 3451bbcf..f65a3baa 100644
+--- a/packages/shared/src/tableDefinitions/tracesTable.ts
++++ b/packages/shared/src/tableDefinitions/tracesTable.ts
+@@ -138,17 +138,44 @@ export const tracesTableCols: ColumnDefinition[] = [
+   },
+ ];
+ 
+-export const evalTableCols: ColumnDefinition[] = tracesOnlyCols;
++// Used only for dataset evaluator form, not on any table
++export const datasetOnlyCols: ColumnDefinition[] = [
++  {
++    name: "Dataset",
++    id: "datasetId",
++    type: "stringOptions",
++    internal: 'di."dataset_id"',
++    options: [], // to be filled in at runtime
++  },
++];
+ 
++export const evalTraceTableCols: ColumnDefinition[] = tracesOnlyCols;
++export const evalDatasetFormFilterCols: ColumnDefinition[] = datasetOnlyCols;
+ export type TraceOptions = {
+   scores_avg: Array<string>;
+   name: Array<OptionsDefinition>;
+   tags: Array<OptionsDefinition>;
+ };
++export type DatasetOptions = {
++  datasetId: Array<OptionsDefinition>;
++};
++
++// Used only for dataset evaluator, not on dataset table
++export function datasetFormFilterColsWithOptions(
++  options?: DatasetOptions,
++  cols: ColumnDefinition[] = evalDatasetFormFilterCols,
++): ColumnDefinition[] {
++  return cols.map((col) => {
++    if (col.id === "datasetId") {
++      return { ...col, options: options?.datasetId ?? [] };
++    }
++    return col;
++  });
++}
+ 
+ export function tracesTableColsWithOptions(
+   options?: TraceOptions,
+-  cols: ColumnDefinition[] = tracesTableCols
++  cols: ColumnDefinition[] = tracesTableCols,
+ ): ColumnDefinition[] {
+   return cols.map((col) => {
+     if (col.id === "scores_avg") {
+diff --git a/packages/shared/src/tableDefinitions/types.ts b/packages/shared/src/tableDefinitions/types.ts
+index e9b19e48..d965bbe0 100644
+--- a/packages/shared/src/tableDefinitions/types.ts
++++ b/packages/shared/src/tableDefinitions/types.ts
+@@ -9,6 +9,7 @@ export type UiColumnMapping = {
+ export type OptionsDefinition = {
+   value: string;
+   count?: number;
++  displayValue?: string; // FIX: Temporary workaround: Used to display a different value than the actual value since multiSelect doesn't support key-value pairs
+ };
+ 
+ export type ColumnDefinition =
+@@ -55,6 +56,7 @@ export const tableNames = [
+   "sessions",
+   "prompts",
+   "users",
++  "dataset_items",
+ ] as const;
+ 
+ export type TableNames = (typeof tableNames)[number];
+diff --git a/packages/shared/src/types.ts b/packages/shared/src/types.ts
+index d719cc88..6eca2685 100644
+--- a/packages/shared/src/types.ts
++++ b/packages/shared/src/types.ts
+@@ -23,6 +23,7 @@ export type WipFilterState = WipFilterCondition[];
+ export type FilterOption = {
+   value: string;
+   count?: number;
++  displayValue?: string; // FIX: Temporary workaround: Used to display a different value than the actual value since multiSelect doesn't support key-value pairs
+ };
+ 
+ export type TableName =
+diff --git a/web/src/ee/features/evals/components/evaluator-form.tsx b/web/src/ee/features/evals/components/evaluator-form.tsx
+index 47e97dae..c5a9fb99 100644
+--- a/web/src/ee/features/evals/components/evaluator-form.tsx
++++ b/web/src/ee/features/evals/components/evaluator-form.tsx
+@@ -21,13 +21,17 @@ import { zodResolver } from "@hookform/resolvers/zod";
+ import { Tabs, TabsList, TabsTrigger } from "@/src/components/ui/tabs";
+ import {
+   tracesTableColsWithOptions,
+-  evalTableCols,
++  evalTraceTableCols,
++  evalDatasetFormFilterCols,
+   singleFilter,
+   type JobConfiguration,
+-  availableEvalVariables,
++  availableTraceEvalVariables,
++  datasetFormFilterColsWithOptions,
++  availableDatasetEvalVariables,
++  type langfuseObjects,
+ } from "@langfuse/shared";
+ import * as z from "zod";
+-import { useEffect, useState } from "react";
++import { useEffect, useMemo, useState } from "react";
+ import { api } from "@/src/utils/api";
+ import { InlineFilterBuilder } from "@/src/features/filters/components/filter-builder";
+ import {
+@@ -61,6 +65,7 @@ import { cn } from "@/src/utils/tailwind";
+ import { Dialog, DialogContent, DialogTitle } from "@/src/components/ui/dialog";
+ import { EvalTemplateForm } from "@/src/ee/features/evals/components/template-form";
+ import { showSuccessToast } from "@/src/features/notifications/showSuccessToast";
++import useIsFeatureEnabled from "@/src/features/feature-flags/hooks/useIsFeatureEnabled";
+ 
+ const formSchema = z.object({
+   scoreName: z.string(),
+@@ -71,6 +76,12 @@ const formSchema = z.object({
+   delay: z.coerce.number().optional().default(10),
+ });
+ 
++type LangfuseObject = (typeof langfuseObjects)[number];
++
++const isTraceTarget = (target: string): boolean => target === "trace";
++const isTraceOrDatasetObject = (object: LangfuseObject): boolean =>
++  object === "trace" || object === "dataset_item";
++
+ export const EvaluatorForm = (props: {
+   projectId: string;
+   evalTemplates: EvalTemplate[];
+@@ -282,6 +293,7 @@ export const InnerEvalConfigForm = (props: {
+ }) => {
+   const [formError, setFormError] = useState<string | null>(null);
+   const capture = usePostHogClientCapture();
++  const isFeatureFlagEnabled = useIsFeatureEnabled("evaluatorsOnDatasetRuns");
+ 
+   const form = useForm<z.infer<typeof formSchema>>({
+     resolver: zodResolver(formSchema),
+@@ -289,7 +301,7 @@ export const InnerEvalConfigForm = (props: {
+     defaultValues: {
+       scoreName:
+         props.existingEvaluator?.scoreName ?? `${props.evalTemplate.name}`,
+-      target: props.existingEvaluator?.targetObject ?? "",
++      target: props.existingEvaluator?.targetObject ?? "trace",
+       filter: props.existingEvaluator?.filter
+         ? z.array(singleFilter).parse(props.existingEvaluator.filter)
+         : [],
+@@ -332,6 +344,33 @@ export const InnerEvalConfigForm = (props: {
+     },
+   );
+ 
++  const datasets = api.datasets.allDatasetMeta.useQuery(
++    {
++      projectId: props.projectId,
++    },
++    {
++      trpc: {
++        context: {
++          skipBatch: true,
++        },
++      },
++      refetchOnMount: false,
++      refetchOnWindowFocus: false,
++      refetchOnReconnect: false,
++      staleTime: Infinity,
++    },
++  );
++
++  const datasetFilterOptions = useMemo(() => {
++    if (!datasets.data) return undefined;
++    return {
++      datasetId: datasets.data?.map((d) => ({
++        value: d.id,
++        displayValue: d.name,
++      })),
++    };
++  }, [datasets.data]);
++
+   useEffect(() => {
+     if (props.evalTemplate && form.getValues("mapping").length === 0) {
+       form.setValue(
+@@ -342,10 +381,7 @@ export const InnerEvalConfigForm = (props: {
+           selectedColumnId: "input",
+         })),
+       );
+-      form.setValue(
+-        "scoreName",
+-        `${props.evalTemplate.name}-v${props.evalTemplate.version}`,
+-      );
++      form.setValue("scoreName", `${props.evalTemplate.name}`);
+     }
+   }, [form, props.evalTemplate]);
+ 
+@@ -359,6 +395,13 @@ export const InnerEvalConfigForm = (props: {
+     onSuccess: () => utils.models.invalidate(),
+     onError: (error) => setFormError(error.message),
+   });
++  const [availableVariables, setAvailableVariables] = useState<
++    typeof availableTraceEvalVariables | typeof availableDatasetEvalVariables
++  >(
++    isTraceTarget(props.existingEvaluator?.targetObject ?? "trace")
++      ? availableTraceEvalVariables
++      : availableDatasetEvalVariables,
++  );
+ 
+   function onSubmit(values: z.infer<typeof formSchema>) {
+     capture("eval_config:new_form_submit");
+@@ -420,7 +463,7 @@ export const InnerEvalConfigForm = (props: {
+       <form
+         // eslint-disable-next-line @typescript-eslint/no-misused-promises
+         onSubmit={form.handleSubmit(onSubmit)}
+-        className="flex flex-col gap-4"
++        className="flex w-full flex-col gap-4"
+       >
+         <div className="grid gap-4">
+           <FormField
+@@ -444,11 +487,38 @@ export const InnerEvalConfigForm = (props: {
+                 <FormItem>
+                   <FormLabel>Target object</FormLabel>
+                   <FormControl>
+-                    <Tabs defaultValue="trace">
+-                      <TabsList {...field}>
+-                        <TabsTrigger value="trace">Trace</TabsTrigger>
+-                        <TabsTrigger value="dataset" disabled={true}>
+-                          Dataset (coming soon)
++                    <Tabs
++                      defaultValue="trace"
++                      value={field.value}
++                      onValueChange={(value) => {
++                        const isTrace = isTraceTarget(value);
++                        const langfuseObject: LangfuseObject = isTrace
++                          ? "trace"
++                          : "dataset_item";
++                        const newMapping = form
++                          .getValues("mapping")
++                          .map((field) => ({ ...field, langfuseObject }));
++                        form.setValue("mapping", newMapping);
++                        form.setValue("delay", isTrace ? 10 : 20);
++                        setAvailableVariables(
++                          isTrace
++                            ? availableTraceEvalVariables
++                            : availableDatasetEvalVariables,
++                        );
++                        field.onChange(value);
++                      }}
++                    >
++                      <TabsList>
++                        <TabsTrigger value="trace" disabled={props.disabled}>
++                          Trace
++                        </TabsTrigger>
++                        <TabsTrigger
++                          value="dataset"
++                          disabled={props.disabled || !isFeatureFlagEnabled}
++                        >
++                          {isFeatureFlagEnabled
++                            ? "Dataset"
++                            : "Dataset (coming soon)"}
+                         </TabsTrigger>
+                       </TabsList>
+                     </Tabs>
+@@ -464,21 +534,44 @@ export const InnerEvalConfigForm = (props: {
+               render={({ field }) => (
+                 <FormItem>
+                   <FormLabel>Target filter</FormLabel>
+-                  <FormControl>
+-                    <InlineFilterBuilder
+-                      columns={tracesTableColsWithOptions(
+-                        traceFilterOptions.data,
+-                        evalTableCols,
+-                      )}
+-                      filterState={field.value ?? []}
+-                      onChange={(value) => field.onChange(value)}
+-                      disabled={props.disabled}
+-                    />
+-                  </FormControl>
+-                  <FormDescription>
+-                    This will run on all future traces that match these filters
+-                  </FormDescription>
+-                  <FormMessage />
++                  {isTraceTarget(form.watch("target")) ? (
++                    <>
++                      <FormControl>
++                        <InlineFilterBuilder
++                          columns={tracesTableColsWithOptions(
++                            traceFilterOptions.data,
++                            evalTraceTableCols,
++                          )}
++                          filterState={field.value ?? []}
++                          onChange={(value) => field.onChange(value)}
++                          disabled={props.disabled}
++                        />
++                      </FormControl>
++                      <FormDescription>
++                        This will run on all future traces that match these
++                        filters
++                      </FormDescription>
++                      <FormMessage />
++                    </>
++                  ) : (
++                    <>
++                      <FormControl>
++                        <InlineFilterBuilder
++                          columns={datasetFormFilterColsWithOptions(
++                            datasetFilterOptions,
++                            evalDatasetFormFilterCols,
++                          )}
++                          filterState={field.value ?? []}
++                          onChange={(value) => field.onChange(value)}
++                          disabled={props.disabled}
++                        />
++                      </FormControl>
++                      <FormDescription>
++                        This will run on all future dataset experiment runs
++                      </FormDescription>
++                      <FormMessage />
++                    </>
++                  )}
+                 </FormItem>
+               )}
+             />
+@@ -504,7 +597,7 @@ export const InnerEvalConfigForm = (props: {
+                       json={props.evalTemplate.prompt ?? null}
+                       className={cn(
+                         "min-h-48 bg-muted",
+-                        !props.shouldWrapVariables && "lg:w-1/2",
++                        !props.shouldWrapVariables && "lg:w-2/3",
+                       )}
+                     />
+                     <div
+@@ -535,7 +628,7 @@ export const InnerEvalConfigForm = (props: {
+                             render={({ field }) => (
+                               <div className="flex items-center gap-2">
+                                 <VariableMappingDescription
+-                                  title={"Trace object"}
++                                  title="Object"
+                                   description={
+                                     "Langfuse object to retrieve the data from."
+                                   }
+@@ -554,7 +647,7 @@ export const InnerEvalConfigForm = (props: {
+                                         <SelectValue />
+                                       </SelectTrigger>
+                                       <SelectContent>
+-                                        {availableEvalVariables.map(
++                                        {availableVariables.map(
+                                           (evalObject) => (
+                                             <SelectItem
+                                               value={evalObject.id}
+@@ -573,8 +666,9 @@ export const InnerEvalConfigForm = (props: {
+                             )}
+                           />
+ 
+-                          {form.watch(`mapping.${index}.langfuseObject`) !==
+-                          "trace" ? (
++                          {!isTraceOrDatasetObject(
++                            form.watch(`mapping.${index}.langfuseObject`),
++                          ) ? (
+                             <FormField
+                               control={form.control}
+                               key={`${mappingField.id}-objectName`}
+@@ -627,13 +721,14 @@ export const InnerEvalConfigForm = (props: {
+                                       defaultValue={field.value ?? undefined}
+                                       onValueChange={(value) => {
+                                         const availableColumns =
+-                                          availableEvalVariables.find(
++                                          availableVariables.find(
+                                             (evalObject) =>
+                                               evalObject.id ===
+                                               form.watch(
+                                                 `mapping.${index}.langfuseObject`,
+                                               ),
+                                           )?.availableColumns;
++
+                                         const column = availableColumns?.find(
+                                           (column) => column.id === value,
+                                         );
+@@ -645,7 +740,7 @@ export const InnerEvalConfigForm = (props: {
+                                         <SelectValue placeholder="Object type" />
+                                       </SelectTrigger>
+                                       <SelectContent>
+-                                        {availableEvalVariables
++                                        {availableVariables
+                                           .find(
+                                             (evalObject) =>
+                                               evalObject.id ===
+@@ -724,8 +819,8 @@ export const InnerEvalConfigForm = (props: {
+                     <Input {...field} type="number" />
+                   </FormControl>
+                   <FormDescription>
+-                    Time between first Trace event and evaluation execution to
+-                    ensure all Trace data is available
++                    Time between first Trace/Dataset run event and evaluation
++                    execution to ensure all data is available
+                   </FormDescription>
+                   <FormMessage />
+                 </FormItem>
+diff --git a/web/src/ee/features/evals/components/evaluator-table.tsx b/web/src/ee/features/evals/components/evaluator-table.tsx
+index 3ab5d6a5..407abc01 100644
+--- a/web/src/ee/features/evals/components/evaluator-table.tsx
++++ b/web/src/ee/features/evals/components/evaluator-table.tsx
+@@ -13,7 +13,7 @@ import { type ReactNode, useEffect } from "react";
+ import { useQueryParams, withDefault, NumberParam } from "use-query-params";
+ import { z } from "zod";
+ 
+-export type EvalConfigRow = {
++export type EvaluatorDataRow = {
+   id: string;
+   status: string;
+   createdAt: string;
+@@ -23,6 +23,7 @@ export type EvalConfigRow = {
+     version: number;
+   };
+   scoreName: string;
++  target: string; // "trace" or "dataset"
+   filter: FilterState;
+ };
+ 
+@@ -46,6 +47,8 @@ export default function EvaluatorTable({
+   });
+   const totalCount = evaluators.data?.totalCount ?? null;
+ 
++  const datasets = api.datasets.allDatasetMeta.useQuery({ projectId });
++
+   useEffect(() => {
+     if (evaluators.isSuccess) {
+       setDetailPageList(
+@@ -56,7 +59,7 @@ export default function EvaluatorTable({
+     // eslint-disable-next-line react-hooks/exhaustive-deps
+   }, [evaluators.isSuccess, evaluators.data]);
+ 
+-  const columnHelper = createColumnHelper<EvalConfigRow>();
++  const columnHelper = createColumnHelper<EvaluatorDataRow>();
+   const columns = [
+     columnHelper.accessor("id", {
+       header: "Id",
+@@ -101,6 +104,11 @@ export default function EvaluatorTable({
+         );
+       },
+     }),
++    columnHelper.accessor("target", {
++      id: "target",
++      header: "Target",
++      size: 150,
++    }),
+     columnHelper.accessor("scoreName", {
+       id: "scoreName",
+       header: "Score Name",
+@@ -111,22 +119,41 @@ export default function EvaluatorTable({
+       header: "Filter",
+       size: 200,
+       cell: (row) => {
+-        const node = row.getValue();
++        const filterState = row.getValue();
++
++        // FIX: Temporary workaround: Used to display a different value than the actual value since multiSelect doesn't support key-value pairs
++        const newFilterState = filterState.map((filter) => {
++          if (filter.type === "stringOptions" && filter.column === "Dataset") {
++            return {
++              ...filter,
++              value: filter.value.map(
++                (datasetId) =>
++                  datasets.data?.find((d) => d.id === datasetId)?.name ??
++                  datasetId,
++              ),
++            };
++          }
++          return filter;
++        });
++
+         return (
+           <div className="flex h-full overflow-x-auto">
+-            <InlineFilterState filterState={node} />
++            <InlineFilterState filterState={newFilterState} />
+           </div>
+         );
+       },
+     }),
+-  ] as LangfuseColumnDef<EvalConfigRow>[];
++  ] as LangfuseColumnDef<EvaluatorDataRow>[];
+ 
+   const [columnVisibility, setColumnVisibility] =
+-    useColumnVisibility<EvalConfigRow>("evalConfigColumnVisibility", columns);
++    useColumnVisibility<EvaluatorDataRow>(
++      "evalConfigColumnVisibility",
++      columns,
++    );
+ 
+   const convertToTableRow = (
+     jobConfig: RouterOutputs["evals"]["allConfigs"]["configs"][number],
+-  ): EvalConfigRow => {
++  ): EvaluatorDataRow => {
+     return {
+       id: jobConfig.id,
+       status: jobConfig.status,
+@@ -139,6 +166,7 @@ export default function EvaluatorTable({
+           }
+         : undefined,
+       scoreName: jobConfig.scoreName,
++      target: jobConfig.targetObject,
+       filter: z.array(singleFilter).parse(jobConfig.filter),
+     };
+   };
+diff --git a/web/src/ee/features/evals/server/addDatasetRunItemsToEvalQueue.ts b/web/src/ee/features/evals/server/addDatasetRunItemsToEvalQueue.ts
+new file mode 100644
+index 00000000..9c33043e
+--- /dev/null
++++ b/web/src/ee/features/evals/server/addDatasetRunItemsToEvalQueue.ts
+@@ -0,0 +1,47 @@
++import { env } from "@/src/env.mjs";
++import { DatasetRunItemUpsertQueue } from "../../../../../../packages/shared/dist/src/server/redis/datasetRunItemUpsert";
++import { randomUUID } from "crypto";
++import { QueueJobs, redis } from "@langfuse/shared/src/server";
++
++export const addDatasetRunItemsToEvalQueue = async ({
++  projectId,
++  datasetItemId,
++  traceId,
++  observationId,
++}: {
++  projectId: string;
++  datasetItemId: string;
++  traceId: string;
++  observationId?: string;
++}) => {
++  if (redis && env.NEXT_PUBLIC_LANGFUSE_CLOUD_REGION) {
++    const queue = DatasetRunItemUpsertQueue.getInstance();
++
++    if (queue) {
++      await queue.add(
++        QueueJobs.DatasetRunItemUpsert,
++        {
++          payload: {
++            projectId,
++            datasetItemId: datasetItemId,
++            traceId,
++            observationId: observationId ?? undefined,
++          },
++          id: randomUUID(),
++          timestamp: new Date(),
++          name: QueueJobs.DatasetRunItemUpsert as const,
++        },
++        {
++          attempts: 3, // retry 3 times
++          backoff: {
++            type: "exponential",
++            delay: 1000,
++          },
++          delay: 10000, // 10 seconds
++          removeOnComplete: true,
++          removeOnFail: 1_000,
++        },
++      );
++    }
++  }
++};
+diff --git a/web/src/ee/features/evals/server/router.ts b/web/src/ee/features/evals/server/router.ts
+index abbddcde..662c0daf 100644
+--- a/web/src/ee/features/evals/server/router.ts
++++ b/web/src/ee/features/evals/server/router.ts
+@@ -8,7 +8,6 @@ import { throwIfNoProjectAccess } from "@/src/features/rbac/utils/checkProjectAc
+ import { auditLog } from "@/src/features/audit-logs/auditLog";
+ import {
+   DEFAULT_TRACE_JOB_DELAY,
+-  EvalTargetObject,
+   ZodModelConfig,
+   singleFilter,
+   variableMapping,
+@@ -358,7 +357,7 @@ export const evalRouter = createTRPCRouter({
+             jobType: "EVAL",
+             evalTemplateId: input.evalTemplateId,
+             scoreName: input.scoreName,
+-            targetObject: EvalTargetObject.Trace,
++            targetObject: input.target,
+             filter: input.filter ?? [],
+             variableMapping: input.mapping,
+             sampling: input.sampling,
+diff --git a/web/src/features/feature-flags/available-flags.ts b/web/src/features/feature-flags/available-flags.ts
+index 72b86bcf..08805076 100644
+--- a/web/src/features/feature-flags/available-flags.ts
++++ b/web/src/features/feature-flags/available-flags.ts
+@@ -1,4 +1,5 @@
+ export const availableFlags = [
+   "templateFlag",
++  "evaluatorsOnDatasetRuns",
+   "excludeClickhouseRead",
+ ] as const;
+diff --git a/web/src/features/filters/components/multi-select.tsx b/web/src/features/filters/components/multi-select.tsx
+index 174d4fae..9b9b55e8 100644
+--- a/web/src/features/filters/components/multi-select.tsx
++++ b/web/src/features/filters/components/multi-select.tsx
+@@ -83,7 +83,9 @@ export function MultiSelect({
+     const hasCustomOption =
+       !!freeText &&
+       !!getFreeTextInput(isCustomSelectEnabled, values, optionValues);
+-    const customOption = hasCustomOption ? [{ value: freeText }] : [];
++    const customOption: FilterOption[] = hasCustomOption
++      ? [{ value: freeText }]
++      : [];
+ 
+     return [...selectedOptions, ...customOption];
+   }
+@@ -125,7 +127,7 @@ export function MultiSelect({
+                       key={option.value}
+                       className="rounded-sm px-1 font-normal"
+                     >
+-                      {option.value}
++                      {option.displayValue ?? option.value}
+                     </Badge>
+                   ))
+                 )}
+@@ -168,7 +170,9 @@ export function MultiSelect({
+                     >
+                       <Check className={cn("h-4 w-4")} />
+                     </div>
+-                    <span className="overflow-x-scroll">{option.value}</span>
++                    <span className="overflow-x-scroll">
++                      {option.displayValue ?? option.value}
++                    </span>
+                     {option.count !== undefined ? (
+                       <span className="ml-auto flex h-4 w-4 items-center justify-center pl-1 font-mono text-xs">
+                         {option.count}
+diff --git a/web/src/pages/api/public/dataset-run-items.ts b/web/src/pages/api/public/dataset-run-items.ts
+index 60d854b5..24922f8d 100644
+--- a/web/src/pages/api/public/dataset-run-items.ts
++++ b/web/src/pages/api/public/dataset-run-items.ts
+@@ -7,6 +7,7 @@ import {
+   transformDbDatasetRunItemToAPIDatasetRunItem,
+ } from "@/src/features/public-api/types/datasets";
+ import { LangfuseNotFoundError, InvalidRequestError } from "@langfuse/shared";
++import { addDatasetRunItemsToEvalQueue } from "@/src/ee/features/evals/server/addDatasetRunItemsToEvalQueue";
+ 
+ export default withMiddlewares({
+   POST: createAuthedAPIRoute({
+@@ -23,6 +24,10 @@ export default withMiddlewares({
+         metadata,
+       } = body;
+ 
++      /**************
++       * VALIDATION *
++       **************/
++
+       const datasetItem = await prisma.datasetItem.findUnique({
+         where: {
+           id_projectId: {
+@@ -62,6 +67,10 @@ export default withMiddlewares({
+         throw new InvalidRequestError("No traceId set");
+       }
+ 
++      /********************
++       * RUN ITEM CREATION *
++       ********************/
++
+       const run = await prisma.datasetRuns.upsert({
+         where: {
+           datasetId_projectId_name: {
+@@ -93,6 +102,17 @@ export default withMiddlewares({
+         },
+       });
+ 
++      /********************
++       * ASYNC RUN ITEM EVAL *
++       ********************/
++
++      await addDatasetRunItemsToEvalQueue({
++        projectId: auth.scope.projectId,
++        datasetItemId,
++        traceId: finalTraceId,
++        observationId: observationId ?? undefined,
++      });
++
+       return transformDbDatasetRunItemToAPIDatasetRunItem({
+         ...runItem,
+         datasetRunName: run.name,
+diff --git a/web/src/server/api/routers/traces.ts b/web/src/server/api/routers/traces.ts
+index ae38c0a2..5fa367ec 100644
+--- a/web/src/server/api/routers/traces.ts
++++ b/web/src/server/api/routers/traces.ts
+@@ -636,6 +636,21 @@ export const traceRouter = createTRPCRouter({
+             projectId: input.projectId,
+           },
+         }),
++        // given traces and observations live in ClickHouse we cannot enforce a fk relationship and onDelete: setNull
++        ctx.prisma.jobExecution.updateMany({
++          where: {
++            jobInputTraceId: { in: input.traceIds },
++            projectId: input.projectId,
++          },
++          data: {
++            jobInputTraceId: {
++              set: null,
++            },
++            jobInputObservationId: {
++              set: null,
++            },
++          },
++        }),
+       ]);
+ 
+       if (env.CLICKHOUSE_URL) {
+diff --git a/web/src/server/api/services/tableDefinitions.ts b/web/src/server/api/services/tableDefinitions.ts
+index bb3b0560..28e00945 100644
+--- a/web/src/server/api/services/tableDefinitions.ts
++++ b/web/src/server/api/services/tableDefinitions.ts
+@@ -273,4 +273,17 @@ export const tableDefinitions: TableDefinitions = {
+       traceTags,
+     ],
+   },
++
++  // definition required only for internal mapping of dataset eval filters
++  dataset_items: {
++    table: ` dataset_items di`,
++    columns: [
++      {
++        name: "Dataset",
++        id: "datasetId",
++        type: "string",
++        internal: 'di."dataset_id"',
++      },
++    ],
++  },
+ };
+diff --git a/worker/src/__tests__/evalService.test.ts b/worker/src/__tests__/evalService.test.ts
+index f96d89e6..96c4aff0 100644
+--- a/worker/src/__tests__/evalService.test.ts
++++ b/worker/src/__tests__/evalService.test.ts
+@@ -1,8 +1,9 @@
+ import { expect, test, describe, afterAll, beforeAll, vi } from "vitest";
+ import {
+-  createEvalJobs,
++  createDatasetEvalJobs,
++  createTraceEvalJobs,
+   evaluate,
+-  extractVariablesFromTrace,
++  extractVariables,
+ } from "../features/evaluation/evalService";
+ import { kyselyPrisma, prisma } from "@langfuse/shared/src/db";
+ import { randomUUID } from "crypto";
+@@ -18,7 +19,7 @@ import { encrypt } from "@langfuse/shared/encryption";
+ import { OpenAIServer } from "./network";
+ import { afterEach } from "node:test";
+ import { QueueName } from "@langfuse/shared/src/server";
+-import { Worker, Job } from "bullmq";
++import { Worker, Job, ConnectionOptions } from "bullmq";
+ 
+ let OPENAI_API_KEY = process.env.OPENAI_API_KEY;
+ const hasActiveKey = Boolean(OPENAI_API_KEY);
+@@ -35,7 +36,7 @@ afterEach(openAIServer.reset);
+ afterAll(openAIServer.teardown);
+ 
+ describe("create eval jobs", () => {
+-  test("creates new eval job", async () => {
++  test("creates new 'trace' eval job", async () => {
+     await pruneDatabase();
+     const traceId = randomUUID();
+ 
+@@ -55,7 +56,7 @@ describe("create eval jobs", () => {
+         jobType: "EVAL",
+         delay: 0,
+         sampling: new Decimal("1"),
+-        targetObject: "traces",
++        targetObject: "trace",
+         scoreName: "score",
+         variableMapping: JSON.parse("[]"),
+       },
+@@ -66,7 +67,7 @@ describe("create eval jobs", () => {
+       traceId: traceId,
+     };
+ 
+-    await createEvalJobs({ event: payload });
++    await createTraceEvalJobs({ event: payload });
+ 
+     const jobs = await kyselyPrisma.$kysely
+       .selectFrom("job_executions")
+@@ -81,6 +82,87 @@ describe("create eval jobs", () => {
+     expect(jobs[0].start_time).not.toBeNull();
+   }, 10_000);
+ 
++  test("creates new 'dataset' eval job", async () => {
++    await pruneDatabase();
++    const traceId = randomUUID();
++    const observationId = randomUUID();
++    const datasetId = randomUUID();
++    const datasetItemId = randomUUID();
++
++    await kyselyPrisma.$kysely
++      .insertInto("traces")
++      .values({
++        id: traceId,
++        project_id: "7a88fb47-b4e2-43b8-a06c-a5ce950dc53a",
++      })
++      .execute();
++
++    await kyselyPrisma.$kysely
++      .insertInto("observations")
++      .values({
++        id: observationId,
++        trace_id: traceId,
++        project_id: "7a88fb47-b4e2-43b8-a06c-a5ce950dc53a",
++        type: sql`'GENERATION'::"ObservationType"`,
++      })
++      .execute();
++
++    await kyselyPrisma.$kysely
++      .insertInto("datasets")
++      .values({
++        id: datasetId,
++        project_id: "7a88fb47-b4e2-43b8-a06c-a5ce950dc53a",
++        name: "test-dataset",
++      })
++      .execute();
++
++    await kyselyPrisma.$kysely
++      .insertInto("dataset_items")
++      .values({
++        id: datasetItemId,
++        project_id: "7a88fb47-b4e2-43b8-a06c-a5ce950dc53a",
++        dataset_id: datasetId,
++      })
++      .execute();
++
++    await prisma.jobConfiguration.create({
++      data: {
++        id: randomUUID(),
++        projectId: "7a88fb47-b4e2-43b8-a06c-a5ce950dc53a",
++        filter: JSON.parse("[]"),
++        jobType: "EVAL",
++        delay: 0,
++        sampling: new Decimal("1"),
++        targetObject: "dataset",
++        scoreName: "score",
++        variableMapping: JSON.parse("[]"),
++      },
++    });
++
++    const payload = {
++      projectId: "7a88fb47-b4e2-43b8-a06c-a5ce950dc53a",
++      traceId: traceId,
++      datasetItemId: datasetItemId,
++      observationId: observationId,
++    };
++
++    await createDatasetEvalJobs({ event: payload });
++
++    const jobs = await kyselyPrisma.$kysely
++      .selectFrom("job_executions")
++      .selectAll()
++      .where("project_id", "=", "7a88fb47-b4e2-43b8-a06c-a5ce950dc53a")
++      .execute();
++
++    expect(jobs.length).toBe(1);
++    expect(jobs[0].project_id).toBe("7a88fb47-b4e2-43b8-a06c-a5ce950dc53a");
++    expect(jobs[0].job_input_trace_id).toBe(traceId);
++    expect(jobs[0].job_input_observation_id).toBe(observationId);
++    expect(jobs[0].job_input_dataset_item_id).toBe(datasetItemId);
++    expect(jobs[0].status.toString()).toBe("PENDING");
++    expect(jobs[0].start_time).not.toBeNull();
++  }, 10_000);
++
+   test("does not create job for inactive config", async () => {
+     await pruneDatabase();
+     const traceId = randomUUID();
+@@ -101,7 +183,7 @@ describe("create eval jobs", () => {
+         jobType: "EVAL",
+         delay: 0,
+         sampling: new Decimal("1"),
+-        targetObject: "traces",
++        targetObject: "trace",
+         scoreName: "score",
+         variableMapping: JSON.parse("[]"),
+         status: "INACTIVE",
+@@ -113,7 +195,7 @@ describe("create eval jobs", () => {
+       traceId: traceId,
+     };
+ 
+-    await createEvalJobs({ event: payload });
++    await createTraceEvalJobs({ event: payload });
+ 
+     const jobs = await kyselyPrisma.$kysely
+       .selectFrom("job_executions")
+@@ -157,7 +239,7 @@ describe("create eval jobs", () => {
+         jobType: "EVAL",
+         delay: 0,
+         sampling: new Decimal("1"),
+-        targetObject: "traces",
++        targetObject: "trace",
+         scoreName: "score",
+         variableMapping: JSON.parse("[]"),
+       },
+@@ -168,8 +250,8 @@ describe("create eval jobs", () => {
+       traceId: traceId,
+     };
+ 
+-    await createEvalJobs({ event: payload });
+-    await createEvalJobs({ event: payload }); // calling it twice to check it is only generated once
++    await createTraceEvalJobs({ event: payload });
++    await createTraceEvalJobs({ event: payload }); // calling it twice to check it is only generated once
+ 
+     const jobs = await kyselyPrisma.$kysely
+       .selectFrom("job_executions")
+@@ -205,7 +287,7 @@ describe("create eval jobs", () => {
+         jobType: "EVAL",
+         delay: 0,
+         sampling: new Decimal("1"),
+-        targetObject: "traces",
++        targetObject: "trace",
+         scoreName: "score",
+         variableMapping: JSON.parse("[]"),
+         status: "INACTIVE",
+@@ -217,7 +299,7 @@ describe("create eval jobs", () => {
+       traceId: traceId,
+     };
+ 
+-    await createEvalJobs({ event: payload });
++    await createTraceEvalJobs({ event: payload });
+ 
+     const jobs = await kyselyPrisma.$kysely
+       .selectFrom("job_executions")
+@@ -261,7 +343,7 @@ describe("create eval jobs", () => {
+         jobType: "EVAL",
+         delay: 0,
+         sampling: new Decimal("0"),
+-        targetObject: "traces",
++        targetObject: "trace",
+         scoreName: "score",
+         variableMapping: JSON.parse("[]"),
+       },
+@@ -272,7 +354,7 @@ describe("create eval jobs", () => {
+       traceId: traceId,
+     };
+ 
+-    await createEvalJobs({ event: payload });
++    await createTraceEvalJobs({ event: payload });
+ 
+     const jobs = await kyselyPrisma.$kysely
+       .selectFrom("job_executions")
+@@ -343,7 +425,7 @@ describe("create eval jobs", () => {
+         jobType: "EVAL",
+         delay: 0,
+         sampling: new Decimal("1"),
+-        targetObject: "traces",
++        targetObject: "trace",
+         scoreName: "score",
+         variableMapping: JSON.parse("[]"),
+         evalTemplateId: templateId,
+@@ -355,7 +437,7 @@ describe("create eval jobs", () => {
+       traceId: traceId,
+     };
+ 
+-    await createEvalJobs({ event: payload });
++    await createTraceEvalJobs({ event: payload });
+ 
+     // update the trace to deselect the trace
+     await kyselyPrisma.$kysely
+@@ -364,7 +446,7 @@ describe("create eval jobs", () => {
+       .where("id", "=", traceId)
+       .execute();
+ 
+-    await createEvalJobs({
++    await createTraceEvalJobs({
+       event: payload,
+     }); // calling it twice to check it is only generated once
+ 
+@@ -384,7 +466,7 @@ describe("create eval jobs", () => {
+ });
+ 
+ describe("execute evals", () => {
+-  test("evals a valid event", async () => {
++  test("evals a valid 'trace' event", async () => {
+     await pruneDatabase();
+     openAIServer.respondWithDefault();
+     const traceId = randomUUID();
+@@ -434,7 +516,7 @@ describe("execute evals", () => {
+         jobType: "EVAL",
+         delay: 0,
+         sampling: new Decimal("1"),
+-        targetObject: "traces",
++        targetObject: "trace",
+         scoreName: "score",
+         variableMapping: JSON.parse("[]"),
+         evalTemplateId: templateId,
+@@ -550,7 +632,7 @@ describe("execute evals", () => {
+         jobType: "EVAL",
+         delay: 0,
+         sampling: new Decimal("1"),
+-        targetObject: "traces",
++        targetObject: "trace",
+         scoreName: "score",
+         variableMapping: JSON.parse("[]"),
+         evalTemplateId: templateId,
+@@ -645,7 +727,7 @@ describe("execute evals", () => {
+         jobType: "EVAL",
+         delay: 0,
+         sampling: new Decimal("1"),
+-        targetObject: "traces",
++        targetObject: "trace",
+         scoreName: "score",
+         variableMapping: JSON.parse("[]"),
+         evalTemplateId: templateId,
+@@ -682,7 +764,7 @@ describe("execute evals", () => {
+     expect(jobs.length).toBe(0);
+   }, 10_000);
+ 
+-  test("evals a valid event and inserts score to ingestion pipeline", async () => {
++  test("evals a valid 'trace' event and inserts score to ingestion pipeline", async () => {
+     await pruneDatabase();
+     openAIServer.respondWithDefault();
+     const traceId = randomUUID();
+@@ -732,7 +814,7 @@ describe("execute evals", () => {
+         jobType: "EVAL",
+         delay: 0,
+         sampling: new Decimal("1"),
+-        targetObject: "traces",
++        targetObject: "trace",
+         scoreName: "score",
+         variableMapping: JSON.parse("[]"),
+         evalTemplateId: templateId,
+@@ -811,7 +893,7 @@ describe("execute evals", () => {
+           }
+         },
+         {
+-          connection: redis,
++          connection: redis as ConnectionOptions,
+         },
+       );
+     });
+@@ -819,6 +901,76 @@ describe("execute evals", () => {
+ });
+ 
+ describe("test variable extraction", () => {
++  test("extracts variables from a dataset item", async () => {
++    await pruneDatabase();
++    const datasetId = randomUUID();
++    const datasetItemId = randomUUID();
++    const traceId = randomUUID();
++
++    await kyselyPrisma.$kysely
++      .insertInto("traces")
++      .values({
++        id: traceId,
++        project_id: "7a88fb47-b4e2-43b8-a06c-a5ce950dc53a",
++        user_id: "a",
++        input: { input: "This is a great prompt" },
++        output: { output: "This is a great response" },
++      })
++      .execute();
++
++    await kyselyPrisma.$kysely
++      .insertInto("datasets")
++      .values({
++        id: datasetId,
++        project_id: "7a88fb47-b4e2-43b8-a06c-a5ce950dc53a",
++        name: "test-dataset",
++      })
++      .execute();
++
++    await kyselyPrisma.$kysely
++      .insertInto("dataset_items")
++      .values({
++        id: datasetItemId,
++        input: { input: "This is a great prompt" },
++        expected_output: { expected_output: "This is a great response" },
++        project_id: "7a88fb47-b4e2-43b8-a06c-a5ce950dc53a",
++        dataset_id: datasetId,
++      })
++      .execute();
++
++    const variableMapping = variableMappingList.parse([
++      {
++        langfuseObject: "dataset_item",
++        selectedColumnId: "input",
++        templateVariable: "input",
++      },
++      {
++        langfuseObject: "dataset_item",
++        selectedColumnId: "expected_output",
++        templateVariable: "output",
++      },
++    ]);
++
++    const result = await extractVariables({
++      projectId: "7a88fb47-b4e2-43b8-a06c-a5ce950dc53a",
++      variables: ["input", "output"],
++      traceId: traceId,
++      datasetItemId: datasetItemId,
++      variableMapping: variableMapping,
++    });
++
++    expect(result).toEqual([
++      {
++        value: '{"input":"This is a great prompt"}',
++        var: "input",
++      },
++      {
++        value: '{"expected_output":"This is a great response"}',
++        var: "output",
++      },
++    ]);
++  }, 10_000);
++
+   test("extracts variables from a trace", async () => {
+     await pruneDatabase();
+     const traceId = randomUUID();
+@@ -847,12 +999,12 @@ describe("test variable extraction", () => {
+       },
+     ]);
+ 
+-    const result = await extractVariablesFromTrace(
+-      "7a88fb47-b4e2-43b8-a06c-a5ce950dc53a",
+-      ["input", "output"],
+-      traceId,
+-      variableMapping,
+-    );
++    const result = await extractVariables({
++      projectId: "7a88fb47-b4e2-43b8-a06c-a5ce950dc53a",
++      variables: ["input", "output"],
++      traceId: traceId,
++      variableMapping: variableMapping,
++    });
+ 
+     expect(result).toEqual([
+       {
+@@ -909,12 +1061,12 @@ describe("test variable extraction", () => {
+       },
+     ]);
+ 
+-    const result = await extractVariablesFromTrace(
+-      "7a88fb47-b4e2-43b8-a06c-a5ce950dc53a",
+-      ["input", "output"],
+-      traceId,
+-      variableMapping,
+-    );
++    const result = await extractVariables({
++      projectId: "7a88fb47-b4e2-43b8-a06c-a5ce950dc53a",
++      variables: ["input", "output"],
++      traceId: traceId,
++      variableMapping: variableMapping,
++    });
+ 
+     expect(result).toEqual([
+       {
+@@ -959,12 +1111,12 @@ describe("test variable extraction", () => {
+     ]);
+ 
+     await expect(
+-      extractVariablesFromTrace(
+-        "7a88fb47-b4e2-43b8-a06c-a5ce950dc53a",
+-        ["input", "output"],
+-        traceId,
+-        variableMapping,
+-      ),
++      extractVariables({
++        projectId: "7a88fb47-b4e2-43b8-a06c-a5ce950dc53a",
++        variables: ["input", "output"],
++        traceId: traceId,
++        variableMapping: variableMapping,
++      }),
+     ).rejects.toThrowError(
+       new LangfuseNotFoundError(
+         `Observation great-llm-name for trace ${traceId} not found. Please ensure the mapped data exists and consider extending the job delay.`,
+@@ -1014,12 +1166,12 @@ describe("test variable extraction", () => {
+       },
+     ]);
+ 
+-    const result = await extractVariablesFromTrace(
+-      "7a88fb47-b4e2-43b8-a06c-a5ce950dc53a",
+-      ["input", "output"],
+-      traceId,
+-      variableMapping,
+-    );
++    const result = await extractVariables({
++      projectId: "7a88fb47-b4e2-43b8-a06c-a5ce950dc53a",
++      variables: ["input", "output"],
++      traceId: traceId,
++      variableMapping: variableMapping,
++    });
+ 
+     expect(result).toEqual([
+       {
+@@ -1090,12 +1242,12 @@ describe("test variable extraction", () => {
+       },
+     ]);
+ 
+-    const result = await extractVariablesFromTrace(
+-      "7a88fb47-b4e2-43b8-a06c-a5ce950dc53a",
+-      ["input", "output"],
+-      traceId,
+-      variableMapping,
+-    );
++    const result = await extractVariables({
++      projectId: "7a88fb47-b4e2-43b8-a06c-a5ce950dc53a",
++      variables: ["input", "output"],
++      traceId: traceId,
++      variableMapping: variableMapping,
++    });
+ 
+     expect(result).toEqual([
+       {
+diff --git a/worker/src/app.ts b/worker/src/app.ts
+index ea732876..a033acd6 100644
+--- a/worker/src/app.ts
++++ b/worker/src/app.ts
+@@ -9,8 +9,9 @@ import MessageResponse from "./interfaces/MessageResponse";
+ require("dotenv").config();
+ 
+ import {
+-  evalJobCreatorQueueProcessor,
++  evalJobDatasetCreatorQueueProcessor,
+   evalJobExecutorQueueProcessor,
++  evalJobTraceCreatorQueueProcessor,
+ } from "./queues/evalQueue";
+ import { batchExportQueueProcessor } from "./queues/batchExportQueue";
+ import { onShutdown } from "./utils/shutdown";
+@@ -48,9 +49,23 @@ if (env.LANGFUSE_ENABLE_BACKGROUND_MIGRATIONS === "true") {
+ }
+ 
+ if (env.QUEUE_CONSUMER_TRACE_UPSERT_QUEUE_IS_ENABLED === "true") {
+-  WorkerManager.register(QueueName.TraceUpsert, evalJobCreatorQueueProcessor, {
+-    concurrency: env.LANGFUSE_EVAL_CREATOR_WORKER_CONCURRENCY,
+-  });
++  WorkerManager.register(
++    QueueName.TraceUpsert,
++    evalJobTraceCreatorQueueProcessor,
++    {
++      concurrency: env.LANGFUSE_EVAL_CREATOR_WORKER_CONCURRENCY,
++    },
++  );
++}
++
++if (env.QUEUE_CONSUMER_DATASET_RUN_ITEM_UPSERT_QUEUE_IS_ENABLED === "true") {
++  WorkerManager.register(
++    QueueName.DatasetRunItemUpsert,
++    evalJobDatasetCreatorQueueProcessor,
++    {
++      concurrency: env.LANGFUSE_EVAL_CREATOR_WORKER_CONCURRENCY,
++    },
++  );
+ }
+ 
+ if (env.QUEUE_CONSUMER_EVAL_EXECUTION_QUEUE_IS_ENABLED === "true") {
+@@ -59,7 +74,7 @@ if (env.QUEUE_CONSUMER_EVAL_EXECUTION_QUEUE_IS_ENABLED === "true") {
+     evalJobExecutorQueueProcessor,
+     {
+       concurrency: env.LANGFUSE_EVAL_EXECUTION_WORKER_CONCURRENCY,
+-    }
++    },
+   );
+ }
+ 
+@@ -89,7 +104,7 @@ if (
+     cloudUsageMeteringQueueProcessor,
+     {
+       concurrency: 1,
+-    }
++    },
+   );
+ }
+ 
+@@ -97,7 +112,7 @@ if (env.QUEUE_CONSUMER_LEGACY_INGESTION_QUEUE_IS_ENABLED === "true") {
+   WorkerManager.register(
+     QueueName.LegacyIngestionQueue,
+     legacyIngestionQueueProcessor,
+-    { concurrency: env.LANGFUSE_LEGACY_INGESTION_WORKER_CONCURRENCY } // n ingestion batches at a time
++    { concurrency: env.LANGFUSE_LEGACY_INGESTION_WORKER_CONCURRENCY }, // n ingestion batches at a time
+   );
+ }
+ 
+diff --git a/worker/src/env.ts b/worker/src/env.ts
+index 0184b62d..f9f41e34 100644
+--- a/worker/src/env.ts
++++ b/worker/src/env.ts
+@@ -114,6 +114,9 @@ const EnvSchema = z.object({
+   QUEUE_CONSUMER_TRACE_UPSERT_QUEUE_IS_ENABLED: z
+     .enum(["true", "false"])
+     .default("true"),
++  QUEUE_CONSUMER_DATASET_RUN_ITEM_UPSERT_QUEUE_IS_ENABLED: z
++    .enum(["true", "false"])
++    .default("true"),
+ });
+ 
+ export const env = EnvSchema.parse(removeEmptyEnvVariables(process.env));
+diff --git a/worker/src/features/evaluation/evalService.ts b/worker/src/features/evaluation/evalService.ts
+index b0ce92b3..40a260bb 100644
+--- a/worker/src/features/evaluation/evalService.ts
++++ b/worker/src/features/evaluation/evalService.ts
+@@ -7,8 +7,9 @@ import {
+   QueueJobs,
+   QueueName,
+   EvalExecutionEvent,
+-  TraceUpsertEventSchema,
+   tableColumnsToSqlFilterAndPrefix,
++  TraceUpsertEventSchema,
++  DatasetRunItemUpsertEventSchema,
+   traceException,
+   S3StorageService,
+   eventTypes,
+@@ -17,9 +18,9 @@ import {
+ } from "@langfuse/shared/src/server";
+ import {
+   ApiError,
+-  availableEvalVariables,
++  availableTraceEvalVariables,
+   ChatMessageRole,
+-  evalTableCols,
++  evalTraceTableCols,
+   ForbiddenError,
+   LangfuseNotFoundError,
+   LLMApiKeySchema,
+@@ -29,6 +30,8 @@ import {
+   variableMappingList,
+   ZodModelConfig,
+   EvalTemplate,
++  evalDatasetFormFilterCols,
++  availableDatasetEvalVariables,
+ } from "@langfuse/shared";
+ import { decrypt } from "@langfuse/shared/encryption";
+ import { kyselyPrisma, prisma } from "@langfuse/shared/src/db";
+@@ -36,6 +39,7 @@ import { fetchLLMCompletion, logger } from "@langfuse/shared/src/server";
+ import { EvalExecutionQueue } from "../../queues/evalQueue";
+ import { backOff } from "exponential-backoff";
+ import { env } from "../../env";
++import { JobConfigState } from "../../../../packages/shared/dist/prisma/generated/types";
+ 
+ let s3StorageServiceClient: S3StorageService;
+ 
+@@ -55,7 +59,7 @@ const getS3StorageServiceClient = (bucketName: string): S3StorageService => {
+ 
+ // this function is used to determine which eval jobs to create for a given trace
+ // there might be multiple eval jobs to create for a single trace
+-export const createEvalJobs = async ({
++export const createTraceEvalJobs = async ({
+   event,
+ }: {
+   event: z.infer<typeof TraceUpsertEventSchema>;
+@@ -65,18 +69,20 @@ export const createEvalJobs = async ({
+     .selectAll()
+     .where(sql.raw("job_type::text"), "=", "EVAL")
+     .where("project_id", "=", event.projectId)
++    .where("target_object", "=", "trace")
+     .execute();
+ 
+   if (configs.length === 0) {
+     logger.debug("No evaluation jobs found for project", event.projectId);
+     return;
+   }
++
+   logger.debug(
+     `Creating eval jobs for trace ${event.traceId} on project ${event.projectId}`,
+   );
+ 
+   for (const config of configs) {
+-    if (config.status === "INACTIVE") {
++    if (config.status === JobConfigState.INACTIVE) {
+       logger.debug(`Skipping inactive config ${config.id}`);
+       continue;
+     }
+@@ -86,7 +92,7 @@ export const createEvalJobs = async ({
+ 
+     const condition = tableColumnsToSqlFilterAndPrefix(
+       validatedFilter,
+-      evalTableCols,
++      evalTraceTableCols,
+       "traces",
+     );
+ 
+@@ -110,7 +116,7 @@ export const createEvalJobs = async ({
+ 
+     // if we matched a trace, we might want to create a job
+     if (traces.length > 0) {
+-      logger.info(
++      logger.debug(
+         `Eval job for config ${config.id} matched trace ids ${JSON.stringify(traces.map((t) => t.id))}`,
+       );
+ 
+@@ -118,7 +124,7 @@ export const createEvalJobs = async ({
+ 
+       // deduplication: if a job exists already for a trace event, we do not create a new one.
+       if (existingJob.length > 0) {
+-        logger.info(
++        logger.debug(
+           `Eval job for config ${config.id} and trace ${event.traceId} already exists`,
+         );
+         continue;
+@@ -130,14 +136,14 @@ export const createEvalJobs = async ({
+       if (parseFloat(config.sampling) !== 1) {
+         const random = Math.random();
+         if (random > parseFloat(config.sampling)) {
+-          logger.info(
++          logger.debug(
+             `Eval job for config ${config.id} and trace ${event.traceId} was sampled out`,
+           );
+           continue;
+         }
+       }
+ 
+-      logger.info(
++      logger.debug(
+         `Creating eval job for config ${config.id} and trace ${event.traceId}`,
+       );
+ 
+@@ -179,9 +185,9 @@ export const createEvalJobs = async ({
+     } else {
+       // if we do not have a match, and execution exists, we mark the job as cancelled
+       // we do this, because a second trace event might 'deselect' a trace
+-      logger.info(`Eval job for config ${config.id} did not match trace`);
++      logger.debug(`Eval job for config ${config.id} did not match trace`);
+       if (existingJob.length > 0) {
+-        logger.info(
++        logger.debug(
+           `Cancelling eval job for config ${config.id} and trace ${event.traceId}`,
+         );
+         await kyselyPrisma.$kysely
+@@ -195,13 +201,201 @@ export const createEvalJobs = async ({
+   }
+ };
+ 
++// this function is used to determine which eval jobs to create for a given dataset run item
++// there will only be one or no eval jobs to create for a single dataset run item
++export const createDatasetEvalJobs = async ({
++  event,
++}: {
++  event: z.infer<typeof DatasetRunItemUpsertEventSchema>;
++}) => {
++  const configs = await kyselyPrisma.$kysely
++    .selectFrom("job_configurations")
++    .selectAll()
++    .where(sql.raw("job_type::text"), "=", "EVAL")
++    .where("project_id", "=", event.projectId)
++    .where("target_object", "=", "dataset")
++    .execute();
++
++  if (configs.length === 0) {
++    logger.debug("No evaluation jobs found for project", event.projectId);
++    return;
++  }
++
++  logger.debug(
++    `Creating eval jobs for dataset run item ${event.datasetItemId} on project ${event.projectId}`,
++  );
++
++  for (const config of configs) {
++    if (config.status === JobConfigState.INACTIVE) {
++      logger.debug(`Skipping inactive config ${config.id}`);
++      continue;
++    }
++
++    logger.debug("Creating eval job for config", config.id);
++    const validatedFilter = z.array(singleFilter).parse(config.filter);
++
++    const condition = tableColumnsToSqlFilterAndPrefix(
++      validatedFilter,
++      evalDatasetFormFilterCols,
++      "dataset_items",
++    );
++
++    const joinedQuery = Prisma.sql`
++        SELECT id
++        FROM dataset_items as di
++        WHERE project_id = ${event.projectId}
++        AND id = ${event.datasetItemId}
++        ${condition}
++      `;
++
++    const datasetItems =
++      await prisma.$queryRaw<Array<{ id: string }>>(joinedQuery);
++
++    const existingJob = await kyselyPrisma.$kysely
++      .selectFrom("job_executions")
++      .select("id")
++      .where("project_id", "=", event.projectId)
++      .where("job_configuration_id", "=", config.id)
++      .where("job_input_dataset_item_id", "=", event.datasetItemId)
++      .where("job_input_trace_id", "=", event.traceId)
++      .where(
++        "job_input_observation_id",
++        event.observationId ? "=" : "is",
++        event.observationId ?? null,
++      )
++      .execute();
++
++    // if we matched a dataset item, we might want to create a job
++    if (datasetItems.length > 0) {
++      // check if trace and observation exist, otherwise retry
++      // Verify trace exists before proceeding
++      const traceExists = await kyselyPrisma.$kysely
++        .selectFrom("traces")
++        .select("id")
++        .where("project_id", "=", event.projectId)
++        .where("id", "=", event.traceId)
++        .executeTakeFirst();
++
++      if (!traceExists) {
++        logger.info(
++          `Trace ${event.traceId} not found, retrying dataset eval later`,
++        );
++        throw new Error("Trace not found - initiate retry");
++      }
++
++      if (event.observationId) {
++        const observationExists = await kyselyPrisma.$kysely
++          .selectFrom("observations")
++          .select("id")
++          .where("project_id", "=", event.projectId)
++          .where("id", "=", event.observationId)
++          .executeTakeFirst();
++
++        if (!observationExists) {
++          logger.info(
++            `Observation ${event.observationId} not found, retrying dataset eval later`,
++          );
++          throw new Error("Observation not found - initiate retry");
++        }
++      }
++
++      logger.debug(
++        `Eval job for config ${config.id} matched dataset run item ids ${JSON.stringify(datasetItems.map((d) => d.id))}`,
++      );
++
++      const jobExecutionId = randomUUID();
++
++      // deduplication: if a job exists already for the given dataset item, trace and observation, we do not create a new one.
++      if (existingJob.length > 0) {
++        logger.debug(
++          `Eval job for config ${config.id}, dataset item ${event.datasetItemId} already exists for the given run`,
++        );
++        continue;
++      }
++
++      // apply sampling. Only if the job is sampled, we create a job
++      // user supplies a number between 0 and 1, which is the probability of sampling
++      if (parseFloat(config.sampling) !== 1) {
++        const random = Math.random();
++        if (random > parseFloat(config.sampling)) {
++          logger.debug(
++            `Eval job for config ${config.id} and trace ${event.traceId} was sampled out`,
++          );
++          continue;
++        }
++      }
++
++      logger.debug(
++        `Creating eval job for config ${config.id} and trace ${event.traceId}`,
++      );
++
++      await prisma.jobExecution.create({
++        data: {
++          id: jobExecutionId,
++          projectId: event.projectId,
++          jobConfigurationId: config.id,
++          jobInputTraceId: event.traceId,
++          jobInputObservationId: event.observationId ?? null,
++          jobInputDatasetItemId: event.datasetItemId,
++          status: "PENDING",
++          startTime: new Date(),
++        },
++      });
++
++      // add the job to the next queue so that eval can be executed
++      await EvalExecutionQueue.getInstance()?.add(
++        QueueName.EvaluationExecution,
++        {
++          name: QueueJobs.EvaluationExecution,
++          id: randomUUID(),
++          timestamp: new Date(),
++          payload: {
++            projectId: event.projectId,
++            jobExecutionId: jobExecutionId,
++            delay: config.delay,
++          },
++        },
++        {
++          attempts: 10,
++          backoff: {
++            type: "exponential",
++            delay: 1000,
++          },
++          delay: config.delay, // milliseconds
++          removeOnComplete: true,
++          removeOnFail: 1_000,
++        },
++      );
++    } else {
++      // if we do not have a match, and execution exists, we mark the job as cancelled
++      // we do this, because a second trace event might 'deselect' a trace
++      logger.debug(`Eval job for config ${config.id} did not match trace`);
++      if (existingJob.length > 0) {
++        logger.debug(
++          `Cancelling eval job for config ${config.id} and dataset item ${event.datasetItemId}`,
++        );
++        await kyselyPrisma.$kysely
++          .updateTable("job_executions")
++          .set("status", sql`'CANCELLED'::"JobExecutionStatus"`)
++          .set("end_time", new Date())
++          .where("id", "=", existingJob[0].id)
++          .execute();
++      }
++    }
++  }
++};
++
++// this function is used to determine which eval jobs to create for a given trace or dataset run item
++// there might be multiple eval jobs to create for a single trace
++// there might be 0 or 1 eval jobs to create for a single dataset run item
++
+ // for a single eval job, this function is used to evaluate the job
+ export const evaluate = async ({
+   event,
+ }: {
+   event: z.infer<typeof EvalExecutionEvent>;
+ }) => {
+-  logger.info(
++  logger.debug(
+     `Evaluating job ${event.jobExecutionId} for project ${event.projectId}`,
+   );
+   // first, fetch all the context required for the evaluation
+@@ -213,11 +407,13 @@ export const evaluate = async ({
+     .executeTakeFirstOrThrow();
+ 
+   if (!job?.job_input_trace_id) {
+-    throw new ForbiddenError("Jobs can only be executed on traces for now.");
++    throw new ForbiddenError(
++      "Jobs can only be executed on traces and dataset runs for now.",
++    );
+   }
+ 
+   if (job.status === "CANCELLED") {
+-    logger.info(`Job ${job.id} for project ${event.projectId} was cancelled.`);
++    logger.debug(`Job ${job.id} for project ${event.projectId} was cancelled.`);
+ 
+     await kyselyPrisma.$kysely
+       .deleteFrom("job_executions")
+@@ -261,12 +457,13 @@ export const evaluate = async ({
+   );
+ 
+   // extract the variables which need to be inserted into the prompt
+-  const mappingResult = await extractVariablesFromTrace(
+-    event.projectId,
+-    template.vars,
+-    job.job_input_trace_id,
+-    parsedVariableMapping,
+-  );
++  const mappingResult = await extractVariables({
++    projectId: event.projectId,
++    variables: template.vars,
++    traceId: job.job_input_trace_id,
++    datasetItemId: job.job_input_dataset_item_id ?? undefined,
++    variableMapping: parsedVariableMapping,
++  });
+ 
+   logger.debug(
+     `Evaluating job ${event.jobExecutionId} extracted variables ${JSON.stringify(mappingResult)} `,
+@@ -335,7 +532,7 @@ export const evaluate = async ({
+     },
+   );
+ 
+-  logger.info(
++  logger.debug(
+     `Evaluating job ${event.jobExecutionId} Parsed LLM output ${JSON.stringify(parsedLLMOutput)}`,
+   );
+ 
+@@ -345,6 +542,7 @@ export const evaluate = async ({
+   const baseScore = {
+     id: scoreId,
+     traceId: job.job_input_trace_id,
++    observationId: job.job_input_observation_id,
+     name: config.score_name,
+     value: parsedLLMOutput.score,
+     comment: parsedLLMOutput.reasoning,
+@@ -414,7 +612,7 @@ export const evaluate = async ({
+     throw new Error(`Failed to write score ${scoreId} into IngestionQueue`);
+   }
+ 
+-  logger.info(
++  logger.debug(
+     `Evaluating job ${event.jobExecutionId} persisted score ${scoreId} for trace ${job.job_input_trace_id}`,
+   );
+ 
+@@ -426,7 +624,7 @@ export const evaluate = async ({
+     .where("id", "=", event.jobExecutionId)
+     .execute();
+ 
+-  logger.info(
++  logger.debug(
+     `Eval job ${job.id} for project ${event.projectId} completed with score ${parsedLLMOutput.score}`,
+   );
+ };
+@@ -477,13 +675,20 @@ export function compileHandlebarString(
+   return template(context);
+ }
+ 
+-export async function extractVariablesFromTrace(
+-  projectId: string,
+-  variables: string[],
+-  traceId: string,
++export async function extractVariables({
++  projectId,
++  variables,
++  traceId,
++  variableMapping,
++  datasetItemId,
++}: {
++  projectId: string;
++  variables: string[];
++  traceId: string;
+   // this here are variables which were inserted by users. Need to validate before DB query.
+-  variableMapping: z.infer<typeof variableMappingList>,
+-) {
++  variableMapping: z.infer<typeof variableMappingList>;
++  datasetItemId?: string;
++}) {
+   const mappingResult: { var: string; value: string }[] = [];
+ 
+   // find the context for each variable of the template
+@@ -498,9 +703,59 @@ export async function extractVariablesFromTrace(
+       continue; // no need to fetch additional data
+     }
+ 
++    if (mapping.langfuseObject === "dataset_item") {
++      if (!datasetItemId) {
++        logger.error(
++          `No dataset item id found for variable ${variable}. Eval will succeed without dataset item input.`,
++        );
++        mappingResult.push({ var: variable, value: "" });
++        continue;
++      }
++
++      // find the internal definitions of the column
++      const safeInternalColumn = availableDatasetEvalVariables
++        .find((o) => o.id === "dataset_item")
++        ?.availableColumns.find((col) => col.id === mapping.selectedColumnId);
++
++      // if no column was found, we still process with an empty variable
++      if (!safeInternalColumn?.id) {
++        logger.error(
++          `No column found for variable ${variable} and column ${mapping.selectedColumnId}`,
++        );
++        mappingResult.push({ var: variable, value: "" });
++        continue;
++      }
++
++      const datasetItem = await kyselyPrisma.$kysely
++        .selectFrom("dataset_items as d")
++        .select(
++          sql`${sql.raw(safeInternalColumn.internal)}`.as(
++            safeInternalColumn.id,
++          ),
++        ) // query the internal column name raw
++        .where("id", "=", datasetItemId)
++        .where("project_id", "=", projectId)
++        .executeTakeFirst();
++
++      // user facing errors
++      if (!datasetItem) {
++        logger.error(
++          `Dataset item ${datasetItemId} for project ${projectId} not found. Eval will succeed without dataset item input. Please ensure the mapped data on the dataset item exists and consider extending the job delay.`,
++        );
++        throw new LangfuseNotFoundError(
++          `Dataset item ${datasetItemId} for project ${projectId} not found. Eval will succeed without dataset item input. Please ensure the mapped data on the dataset item exists and consider extending the job delay.`,
++        );
++      }
++
++      mappingResult.push({
++        var: variable,
++        value: parseUnknownToString(datasetItem[mapping.selectedColumnId]),
++      });
++    }
++
+     if (mapping.langfuseObject === "trace") {
+       // find the internal definitions of the column
+-      const safeInternalColumn = availableEvalVariables
++      const safeInternalColumn = availableTraceEvalVariables
+         .find((o) => o.id === "trace")
+         ?.availableColumns.find((col) => col.id === mapping.selectedColumnId);
+ 
+@@ -536,11 +791,11 @@ export async function extractVariablesFromTrace(
+ 
+       mappingResult.push({
+         var: variable,
+-        value: parseUnknwnToString(trace[mapping.selectedColumnId]),
++        value: parseUnknownToString(trace[mapping.selectedColumnId]),
+       });
+     }
+     if (["generation", "span", "event"].includes(mapping.langfuseObject)) {
+-      const safeInternalColumn = availableEvalVariables
++      const safeInternalColumn = availableTraceEvalVariables
+         .find((o) => o.id === mapping.langfuseObject)
+         ?.availableColumns.find((col) => col.id === mapping.selectedColumnId);
+ 
+@@ -585,14 +840,14 @@ export async function extractVariablesFromTrace(
+ 
+       mappingResult.push({
+         var: variable,
+-        value: parseUnknwnToString(observation[mapping.selectedColumnId]),
++        value: parseUnknownToString(observation[mapping.selectedColumnId]),
+       });
+     }
+   }
+   return mappingResult;
+ }
+ 
+-export const parseUnknwnToString = (value: unknown): string => {
++export const parseUnknownToString = (value: unknown): string => {
+   if (value === null || value === undefined) {
+     return "";
+   }
+diff --git a/worker/src/queues/evalQueue.ts b/worker/src/queues/evalQueue.ts
+index 5adf358f..f58d388a 100644
+--- a/worker/src/queues/evalQueue.ts
++++ b/worker/src/queues/evalQueue.ts
+@@ -1,6 +1,10 @@
+ import { Job, Queue } from "bullmq";
+ import { ApiError, BaseError } from "@langfuse/shared";
+-import { evaluate, createEvalJobs } from "../features/evaluation/evalService";
++import {
++  createDatasetEvalJobs,
++  createTraceEvalJobs,
++  evaluate,
++} from "../features/evaluation/evalService";
+ import { kyselyPrisma } from "@langfuse/shared/src/db";
+ import { sql } from "kysely";
+ import {
+@@ -41,7 +45,7 @@ export class EvalExecutionQueue {
+                 delay: 5000,
+               },
+             },
+-          }
++          },
+         )
+       : null;
+ 
+@@ -53,16 +57,32 @@ export class EvalExecutionQueue {
+   }
+ }
+ 
+-export const evalJobCreatorQueueProcessor = async (
+-  job: Job<TQueueJobTypes[QueueName.TraceUpsert]>
++export const evalJobTraceCreatorQueueProcessor = async (
++  job: Job<TQueueJobTypes[QueueName.TraceUpsert]>,
+ ) => {
+   try {
+-    await createEvalJobs({ event: job.data.payload });
++    await createTraceEvalJobs({ event: job.data.payload });
+     return true;
+   } catch (e) {
+     logger.error(
+       `Failed job Evaluation for traceId ${job.data.payload.traceId}`,
+-      e
++      e,
++    );
++    traceException(e);
++    throw e;
++  }
++};
++
++export const evalJobDatasetCreatorQueueProcessor = async (
++  job: Job<TQueueJobTypes[QueueName.DatasetRunItemUpsert]>,
++) => {
++  try {
++    await createDatasetEvalJobs({ event: job.data.payload });
++    return true;
++  } catch (e) {
++    logger.error(
++      `Failed job Evaluation for dataset item: ${job.data.payload.datasetItemId}`,
++      e,
+     );
+     traceException(e);
+     throw e;
+@@ -70,7 +90,7 @@ export const evalJobCreatorQueueProcessor = async (
+ };
+ 
+ export const evalJobExecutorQueueProcessor = async (
+-  job: Job<TQueueJobTypes[QueueName.EvaluationExecution]>
++  job: Job<TQueueJobTypes[QueueName.EvaluationExecution]>,
+ ) => {
+   try {
+     logger.info("Executing Evaluation Execution Job", job.data);
+@@ -95,7 +115,7 @@ export const evalJobExecutorQueueProcessor = async (
+       !(
+         e instanceof BaseError &&
+         e.message.includes(
+-          "Please ensure the mapped data exists and consider extending the job delay."
++          "Please ensure the mapped data exists and consider extending the job delay.",
+         )
+       ) &&
+       !(e instanceof ApiError) // API errors are expected (e.g. wrong API key or rate limit or invalid return data)
+@@ -103,7 +123,7 @@ export const evalJobExecutorQueueProcessor = async (
+       traceException(e);
+       logger.error(
+         `Failed Evaluation_Execution job for id ${job.data.payload.jobExecutionId}`,
+-        e
++        e,
+       );
+       throw e;
+     }
+diff --git a/worker/src/queues/workerManager.ts b/worker/src/queues/workerManager.ts
+index 7455b402..ceca6cb6 100644
+--- a/worker/src/queues/workerManager.ts
++++ b/worker/src/queues/workerManager.ts
+@@ -12,6 +12,7 @@ import {
+   recordIncrement,
+   redisQueueRetryOptions,
+   TraceUpsertQueue,
++  DatasetRunItemUpsertQueue,
+ } from "@langfuse/shared/src/server";
+ import { CloudUsageMeteringQueue } from "./cloudUsageMeteringQueue";
+ import { EvalExecutionQueue } from "./evalQueue";
+@@ -27,6 +28,8 @@ export class WorkerManager {
+         return BatchExportQueue.getInstance();
+       case QueueName.CloudUsageMeteringQueue:
+         return CloudUsageMeteringQueue.getInstance();
++      case QueueName.DatasetRunItemUpsert:
++        return DatasetRunItemUpsertQueue.getInstance();
+       case QueueName.EvaluationExecution:
+         return EvalExecutionQueue.getInstance();
+       case QueueName.TraceUpsert:

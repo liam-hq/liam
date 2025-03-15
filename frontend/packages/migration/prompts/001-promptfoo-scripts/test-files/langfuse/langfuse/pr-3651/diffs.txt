@@ -1,0 +1,100 @@
+Date:   Wed Oct 9 10:16:17 2024 +0530
+
+    fix: add Gitlab Issuer and Account.created_at col (#3651)
+    
+    
+    
+    ---------
+    
+    Co-authored-by: Marc Klingen <git@marcklingen.com>
+
+diff --git a/.env.prod.example b/.env.prod.example
+index 5716113f..6d426563 100644
+--- a/.env.prod.example
++++ b/.env.prod.example
+@@ -70,6 +70,7 @@ OTEL_SERVICE_NAME="langfuse"
+ # AUTH_GITLAB_CLIENT_ID=
+ # AUTH_GITLAB_CLIENT_SECRET=
+ # AUTH_GITLAB_ALLOW_ACCOUNT_LINKING=false
++# AUTH_GITLAB_ISSUER=
+ # AUTH_AZURE_AD_CLIENT_ID=
+ # AUTH_AZURE_AD_CLIENT_SECRET=
+ # AUTH_AZURE_AD_TENANT_ID=
+diff --git a/packages/shared/prisma/generated/types.ts b/packages/shared/prisma/generated/types.ts
+index a69fd9ad..2589771e 100644
+--- a/packages/shared/prisma/generated/types.ts
++++ b/packages/shared/prisma/generated/types.ts
+@@ -81,6 +81,7 @@ export type Account = {
+     id_token: string | null;
+     session_state: string | null;
+     refresh_token_expires_in: number | null;
++    created_at: number | null;
+ };
+ export type ApiKey = {
+     id: string;
+diff --git a/packages/shared/prisma/migrations/20241009042557_auth_add_created_at_for_gitlab/migration.sql b/packages/shared/prisma/migrations/20241009042557_auth_add_created_at_for_gitlab/migration.sql
+new file mode 100644
+index 00000000..4e582808
+--- /dev/null
++++ b/packages/shared/prisma/migrations/20241009042557_auth_add_created_at_for_gitlab/migration.sql
+@@ -0,0 +1,2 @@
++-- AlterTable
++ALTER TABLE "Account" ADD COLUMN     "created_at" INTEGER;
+diff --git a/packages/shared/prisma/schema.prisma b/packages/shared/prisma/schema.prisma
+index 4f500520..c0b4e5b1 100644
+--- a/packages/shared/prisma/schema.prisma
++++ b/packages/shared/prisma/schema.prisma
+@@ -49,6 +49,7 @@ model Account {
+   id_token                 String? // @db.Text
+   session_state            String?
+   refresh_token_expires_in Int?
++  created_at               Int? // GitLab
+   user                     User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+ 
+   @@unique([provider, providerAccountId])
+diff --git a/web/src/ee/features/multi-tenant-sso/types.ts b/web/src/ee/features/multi-tenant-sso/types.ts
+index 23083b65..ba6756f2 100644
+--- a/web/src/ee/features/multi-tenant-sso/types.ts
++++ b/web/src/ee/features/multi-tenant-sso/types.ts
+@@ -34,6 +34,7 @@ export const GitlabProviderSchema = base.extend({
+     .object({
+       clientId: z.string(),
+       clientSecret: z.string(),
++      issuer: z.string().optional(),
+       allowDangerousEmailAccountLinking: z.boolean().optional().default(false),
+     })
+     .nullish(),
+diff --git a/web/src/env.mjs b/web/src/env.mjs
+index 52de73b3..6df46e5c 100644
+--- a/web/src/env.mjs
++++ b/web/src/env.mjs
+@@ -58,6 +58,7 @@ export const env = createEnv({
+     AUTH_GITLAB_CLIENT_ID: z.string().optional(),
+     AUTH_GITLAB_CLIENT_SECRET: z.string().optional(),
+     AUTH_GITLAB_ALLOW_ACCOUNT_LINKING: z.enum(["true", "false"]).optional(),
++    AUTH_GITLAB_ISSUER: z.string().optional(),
+     AUTH_AZURE_AD_CLIENT_ID: z.string().optional(),
+     AUTH_AZURE_AD_CLIENT_SECRET: z.string().optional(),
+     AUTH_AZURE_AD_TENANT_ID: z.string().optional(),
+@@ -319,6 +320,7 @@ export const env = createEnv({
+     AUTH_GITHUB_CLIENT_SECRET: process.env.AUTH_GITHUB_CLIENT_SECRET,
+     AUTH_GITHUB_ALLOW_ACCOUNT_LINKING:
+       process.env.AUTH_GITHUB_ALLOW_ACCOUNT_LINKING,
++    AUTH_GITLAB_ISSUER: process.env.AUTH_GITLAB_ISSUER,
+     AUTH_GITLAB_CLIENT_ID: process.env.AUTH_GITLAB_CLIENT_ID,
+     AUTH_GITLAB_CLIENT_SECRET: process.env.AUTH_GITLAB_CLIENT_SECRET,
+     AUTH_GITLAB_ALLOW_ACCOUNT_LINKING:
+diff --git a/web/src/server/auth.ts b/web/src/server/auth.ts
+index 15bd2bc0..bd3c90af 100644
+--- a/web/src/server/auth.ts
++++ b/web/src/server/auth.ts
+@@ -234,7 +234,8 @@ if (env.AUTH_GITLAB_CLIENT_ID && env.AUTH_GITLAB_CLIENT_SECRET)
+       clientSecret: env.AUTH_GITLAB_CLIENT_SECRET,
+       allowDangerousEmailAccountLinking:
+         env.AUTH_GITLAB_ALLOW_ACCOUNT_LINKING === "true",
+-    })
++      issuer: env.AUTH_GITLAB_ISSUER,
++    }),
+   );
+ 
+ if (

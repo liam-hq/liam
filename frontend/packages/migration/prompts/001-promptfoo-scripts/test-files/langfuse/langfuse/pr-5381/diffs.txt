@@ -1,0 +1,421 @@
+Date:   Wed Feb 5 15:05:45 2025 +0100
+
+    chore: optionally log s3 event bucket uploads in postgres (#5381)
+    
+    * chore: optionally log s3 event bucket uploads in postgres
+    
+    * chore: reduce uniqueness constraints and separate eventId from eventLog id field
+
+diff --git a/packages/shared/prisma/generated/types.ts b/packages/shared/prisma/generated/types.ts
+index 583225fb..1f6c956c 100644
+--- a/packages/shared/prisma/generated/types.ts
++++ b/packages/shared/prisma/generated/types.ts
+@@ -253,6 +253,18 @@ export type EvalTemplate = {
+     vars: Generated<string[]>;
+     output_schema: unknown;
+ };
++export type EventLog = {
++    id: string;
++    bucket_name: string;
++    bucket_path: string;
++    project_id: string;
++    entity_type: string;
++    entity_id: string;
++    event_id: string;
++    trace_id: string | null;
++    created_at: Generated<Timestamp>;
++    updated_at: Generated<Timestamp>;
++};
+ export type Events = {
+     id: string;
+     created_at: Generated<Timestamp>;
+@@ -634,6 +646,7 @@ export type DB = {
+     dataset_runs: DatasetRuns;
+     datasets: Dataset;
+     eval_templates: EvalTemplate;
++    event_log: EventLog;
+     events: Events;
+     job_configurations: JobConfiguration;
+     job_executions: JobExecution;
+diff --git a/packages/shared/prisma/migrations/20250204180200_add_event_log_table/migration.sql b/packages/shared/prisma/migrations/20250204180200_add_event_log_table/migration.sql
+new file mode 100644
+index 00000000..bd8638a8
+--- /dev/null
++++ b/packages/shared/prisma/migrations/20250204180200_add_event_log_table/migration.sql
+@@ -0,0 +1,20 @@
++-- CreateTable
++CREATE TABLE "event_log" (
++    "id" TEXT NOT NULL,
++    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
++    "updated_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
++    "bucket_name" TEXT NOT NULL,
++    "bucket_path" TEXT NOT NULL,
++    "project_id" TEXT NOT NULL,
++    "entity_type" TEXT NOT NULL,
++    "entity_id" TEXT NOT NULL,
++    "event_id" TEXT NOT NULL,
++
++    "trace_id" TEXT,
++
++    CONSTRAINT "event_log_pkey" PRIMARY KEY ("id"),
++    CONSTRAINT "event_log_project_id_fkey" FOREIGN KEY ("project_id") REFERENCES "projects"("id") ON DELETE CASCADE ON UPDATE CASCADE
++);
++
++-- CreateIndex
++CREATE INDEX "event_log_project_id_entity_type_entity_id_idx" ON "event_log"("project_id", "entity_type", "entity_id");
+diff --git a/packages/shared/prisma/schema.prisma b/packages/shared/prisma/schema.prisma
+index 46306c3a..eee9cb99 100644
+--- a/packages/shared/prisma/schema.prisma
++++ b/packages/shared/prisma/schema.prisma
+@@ -141,6 +141,7 @@ model Project {
+   TraceMedia          TraceMedia[]
+   Media               Media[]
+   ObservationMedia    ObservationMedia[]
++  EventLog            EventLog[]
+ 
+   @@index([orgId])
+   @@map("projects")
+@@ -706,6 +707,29 @@ model Events {
+   @@map("events")
+ }
+ 
++model EventLog {
++  id String @id @default(cuid())
++
++  bucketName String  @map("bucket_name")
++  bucketPath String  @map("bucket_path")
++  projectId  String  @map("project_id")
++  project    Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
++  entityType String  @map("entity_type")
++  entityId   String  @map("entity_id")
++  eventId    String  @map("event_id")
++
++  // traceId is only optional, because we cannot guarantee its presence for observations.
++  // We use it to support deletions on traces as we cannot cascade it down to scores and observations otherwise.
++  // We expect a traceId to be present in most cases.
++  traceId String? @map("trace_id")
++
++  createdAt DateTime @default(now()) @map("created_at")
++  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
++
++  @@index([projectId, entityType, entityId])
++  @@map("event_log")
++}
++
+ model Comment {
+   id           String            @id @default(cuid())
+   projectId    String            @map("project_id")
+diff --git a/packages/shared/src/env.ts b/packages/shared/src/env.ts
+index 8fa60d03..5f049223 100644
+--- a/packages/shared/src/env.ts
++++ b/packages/shared/src/env.ts
+@@ -46,6 +46,9 @@ const EnvSchema = z.object({
+   ENABLE_AWS_CLOUDWATCH_METRIC_PUBLISHING: z
+     .enum(["true", "false"])
+     .default("false"),
++  LANGFUSE_S3_EVENT_UPLOAD_POSTGRES_LOG_ENABLED: z
++    .enum(["true", "false"])
++    .default("false"),
+   LANGFUSE_S3_EVENT_UPLOAD_BUCKET: z.string({
+     required_error: "Langfuse requires a bucket name for S3 Event Uploads.",
+   }),
+diff --git a/packages/shared/src/server/index.ts b/packages/shared/src/server/index.ts
+index 6dadce86..4b0361be 100644
+--- a/packages/shared/src/server/index.ts
++++ b/packages/shared/src/server/index.ts
+@@ -12,6 +12,7 @@ export * from "./llm/utils";
+ export * from "./llm/types";
+ export * from "./utils/DatabaseReadStream";
+ export * from "./utils/transforms";
++export * from "./utils/eventLog";
+ export * from "./clickhouse/client";
+ export * from "./clickhouse/schemaUtils";
+ export * from "./clickhouse/schema";
+diff --git a/packages/shared/src/server/ingestion/processEventBatch.ts b/packages/shared/src/server/ingestion/processEventBatch.ts
+index 388b9eb8..51d3167d 100644
+--- a/packages/shared/src/server/ingestion/processEventBatch.ts
++++ b/packages/shared/src/server/ingestion/processEventBatch.ts
+@@ -21,33 +21,14 @@ import { logger } from "../logger";
+ import { QueueJobs } from "../queues";
+ import { IngestionQueue } from "../redis/ingestionQueue";
+ import { redis } from "../redis/redis";
+-import {
+-  StorageService,
+-  StorageServiceFactory,
+-} from "../services/StorageService";
+ import { eventTypes, ingestionEvent, IngestionEventType } from "./types";
++import { uploadEventToS3 } from "../utils/eventLog";
+ 
+ export type TokenCountDelegate = (p: {
+   model: Model;
+   text: unknown;
+ }) => number | undefined;
+ 
+-let s3StorageServiceClient: StorageService;
+-
+-const getS3StorageServiceClient = (bucketName: string): StorageService => {
+-  if (!s3StorageServiceClient) {
+-    s3StorageServiceClient = StorageServiceFactory.getInstance({
+-      bucketName,
+-      accessKeyId: env.LANGFUSE_S3_EVENT_UPLOAD_ACCESS_KEY_ID,
+-      secretAccessKey: env.LANGFUSE_S3_EVENT_UPLOAD_SECRET_ACCESS_KEY,
+-      endpoint: env.LANGFUSE_S3_EVENT_UPLOAD_ENDPOINT,
+-      region: env.LANGFUSE_S3_EVENT_UPLOAD_REGION,
+-      forcePathStyle: env.LANGFUSE_S3_EVENT_UPLOAD_FORCE_PATH_STYLE === "true",
+-    });
+-  }
+-  return s3StorageServiceClient;
+-};
+-
+ /**
+  * Get the delay for the event based on the event type. Uses delay if set, 0 if current UTC timestamp is not between
+  * 23:45 and 00:15, and env.LANGFUSE_INGESTION_QUEUE_DELAY_MS otherwise.
+@@ -181,9 +162,6 @@ export const processEventBatch = async (
+    ********************/
+   let s3UploadErrored = false;
+   await instrumentAsync({ name: "s3-upload-events" }, async () => {
+-    const s3Client = getS3StorageServiceClient(
+-      env.LANGFUSE_S3_EVENT_UPLOAD_BUCKET,
+-    );
+     // S3 Event Upload is blocking, but non-failing.
+     // If a promise rejects, we log it below, but do not throw an error.
+     // In this case, we upload the full batch into the Redis queue.
+@@ -193,8 +171,21 @@ export const processEventBatch = async (
+         // That way we batch updates from the same invocation into a single file and reduce
+         // write operations on S3.
+         const { data, key, type, eventBodyId } = sortedBatchByEventBodyId[id];
+-        return s3Client.uploadJson(
+-          `${env.LANGFUSE_S3_EVENT_UPLOAD_PREFIX}${authCheck.scope.projectId}/${getClickhouseEntityType(type)}/${eventBodyId}/${key}.json`,
++        return uploadEventToS3(
++          {
++            projectId: authCheck.scope.projectId,
++            entityType: getClickhouseEntityType(type),
++            entityId: eventBodyId,
++            eventId: key,
++            traceId:
++              data // Use the first truthy traceId for the event log.
++                .flatMap((event) =>
++                  "traceId" in event.body && event.body.traceId
++                    ? [event.body.traceId]
++                    : [],
++                )
++                .shift() ?? null,
++          },
+           data,
+         );
+       }),
+diff --git a/packages/shared/src/server/repositories/clickhouse.ts b/packages/shared/src/server/repositories/clickhouse.ts
+index 51b6b892..31562419 100644
+--- a/packages/shared/src/server/repositories/clickhouse.ts
++++ b/packages/shared/src/server/repositories/clickhouse.ts
+@@ -5,30 +5,11 @@ import {
+ } from "../clickhouse/client";
+ import { logger } from "../logger";
+ import { getTracer, instrumentAsync } from "../instrumentation";
+-import {
+-  StorageService,
+-  StorageServiceFactory,
+-} from "../services/StorageService";
+ import { randomUUID } from "crypto";
+ import { getClickhouseEntityType } from "../clickhouse/schemaUtils";
+ import { NodeClickHouseClientConfigOptions } from "@clickhouse/client/dist/config";
+ import { context, trace } from "@opentelemetry/api";
+-
+-let s3StorageServiceClient: StorageService;
+-
+-const getS3StorageServiceClient = (bucketName: string): StorageService => {
+-  if (!s3StorageServiceClient) {
+-    s3StorageServiceClient = StorageServiceFactory.getInstance({
+-      bucketName,
+-      accessKeyId: env.LANGFUSE_S3_EVENT_UPLOAD_ACCESS_KEY_ID,
+-      secretAccessKey: env.LANGFUSE_S3_EVENT_UPLOAD_SECRET_ACCESS_KEY,
+-      endpoint: env.LANGFUSE_S3_EVENT_UPLOAD_ENDPOINT,
+-      region: env.LANGFUSE_S3_EVENT_UPLOAD_REGION,
+-      forcePathStyle: env.LANGFUSE_S3_EVENT_UPLOAD_FORCE_PATH_STYLE === "true",
+-    });
+-  }
+-  return s3StorageServiceClient;
+-};
++import { uploadEventToS3 } from "../utils/eventLog";
+ 
+ export async function upsertClickhouse<
+   T extends Record<string, unknown>,
+@@ -41,9 +22,6 @@ export async function upsertClickhouse<
+     // https://opentelemetry.io/docs/specs/semconv/database/database-spans/
+     span.setAttribute("ch.query.table", opts.table);
+ 
+-    const s3Client = getS3StorageServiceClient(
+-      env.LANGFUSE_S3_EVENT_UPLOAD_BUCKET,
+-    );
+     await Promise.all(
+       opts.records.map((record) => {
+         // drop trailing s and pretend it's always a create.
+@@ -53,11 +31,19 @@ export async function upsertClickhouse<
+           // @ts-ignore - If it's an observation we now that `type` is a string
+           eventType = `${record["type"].toLowerCase()}-create`;
+         }
+-        s3Client.uploadJson(
+-          `${env.LANGFUSE_S3_EVENT_UPLOAD_PREFIX}${record.project_id}/${getClickhouseEntityType(eventType)}/${record.id}/${randomUUID()}.json`,
++
++        const eventId = randomUUID();
++        return uploadEventToS3(
++          {
++            projectId: record.project_id as string,
++            entityType: getClickhouseEntityType(eventType),
++            entityId: record.id as string,
++            eventId,
++            traceId: record?.trace_id as string,
++          },
+           [
+             {
+-              id: randomUUID(),
++              id: eventId,
+               timestamp: new Date().toISOString(),
+               type: eventType,
+               body: opts.eventBodyMapper(record),
+diff --git a/packages/shared/src/server/utils/eventLog.ts b/packages/shared/src/server/utils/eventLog.ts
+new file mode 100644
+index 00000000..b65cbd93
+--- /dev/null
++++ b/packages/shared/src/server/utils/eventLog.ts
+@@ -0,0 +1,52 @@
++import { EventLog } from "@prisma/client";
++import { prisma } from "../../db";
++import { logger } from "../logger";
++import { env } from "../../env";
++import {
++  StorageService,
++  StorageServiceFactory,
++} from "../services/StorageService";
++
++let s3StorageServiceClient: StorageService;
++
++const getS3StorageServiceClient = (bucketName: string): StorageService => {
++  if (!s3StorageServiceClient) {
++    s3StorageServiceClient = StorageServiceFactory.getInstance({
++      bucketName,
++      accessKeyId: env.LANGFUSE_S3_EVENT_UPLOAD_ACCESS_KEY_ID,
++      secretAccessKey: env.LANGFUSE_S3_EVENT_UPLOAD_SECRET_ACCESS_KEY,
++      endpoint: env.LANGFUSE_S3_EVENT_UPLOAD_ENDPOINT,
++      region: env.LANGFUSE_S3_EVENT_UPLOAD_REGION,
++      forcePathStyle: env.LANGFUSE_S3_EVENT_UPLOAD_FORCE_PATH_STYLE === "true",
++    });
++  }
++  return s3StorageServiceClient;
++};
++
++export const uploadEventToS3 = async (
++  event: Omit<
++    EventLog,
++    "createdAt" | "updatedAt" | "bucketPath" | "bucketName" | "id"
++  >,
++  data: Record<string, unknown>[],
++) => {
++  const bucketPath = `${env.LANGFUSE_S3_EVENT_UPLOAD_PREFIX}${event.projectId}/${event.entityType}/${event.entityId}/${event.eventId}.json`;
++  if (env.LANGFUSE_S3_EVENT_UPLOAD_POSTGRES_LOG_ENABLED === "true") {
++    try {
++      await prisma.eventLog.create({
++        data: {
++          ...event,
++          bucketPath,
++          bucketName: env.LANGFUSE_S3_EVENT_UPLOAD_BUCKET,
++        },
++      });
++    } catch (e) {
++      logger.error("Failed to write event log to Postgres", e);
++      // Fallthrough as this shouldn't block further execution right now.
++    }
++  }
++
++  return getS3StorageServiceClient(
++    env.LANGFUSE_S3_EVENT_UPLOAD_BUCKET,
++  ).uploadJson(bucketPath, data);
++};
+diff --git a/web/src/__tests__/async/ingestion-api.servertest.ts b/web/src/__tests__/async/ingestion-api.servertest.ts
+index 7e53a4af..1846f94e 100644
+--- a/web/src/__tests__/async/ingestion-api.servertest.ts
++++ b/web/src/__tests__/async/ingestion-api.servertest.ts
+@@ -7,6 +7,7 @@ import {
+   getTraceById,
+ } from "@langfuse/shared/src/server";
+ import { v4 } from "uuid";
++import { prisma } from "@langfuse/shared/src/db";
+ 
+ const projectId = "7a88fb47-b4e2-43b8-a06c-a5ce950dc53a";
+ 
+@@ -217,6 +218,38 @@ describe("/api/public/ingestion API Endpoint", () => {
+     expect(response.body.errors[0].message).toBe("Invalid request data");
+   });
+ 
++  // Disabled until eventLog becomes the default behaviour.
++  it.skip("should create a log entry for the S3 file", async () => {
++    const traceId = v4();
++
++    const response = await makeAPICall("POST", "/api/public/ingestion", {
++      batch: [
++        {
++          id: v4(),
++          type: "trace-create",
++          timestamp: new Date().toISOString(),
++          body: {
++            id: traceId,
++            name: "Foo Bar",
++            userId: "user-1",
++            metadata: { key: "value" },
++            release: "1.0.0",
++            version: "2.0.0",
++          },
++        },
++      ],
++    });
++    expect(response.status).toBe(207);
++
++    const logs = await prisma.eventLog.findMany({
++      where: {
++        entityType: "trace",
++        entityId: traceId,
++      },
++    });
++    expect(logs.length).toBe(1);
++  });
++
+   it("#4900: should clear score comment on update with `null`", async () => {
+     const scoreId = randomUUID();
+     const score1 = {
+diff --git a/worker/src/ee/evaluation/evalService.ts b/worker/src/ee/evaluation/evalService.ts
+index b5c69a2b..55118630 100644
+--- a/worker/src/ee/evaluation/evalService.ts
++++ b/worker/src/ee/evaluation/evalService.ts
+@@ -21,6 +21,7 @@ import {
+   getObservationForTraceIdByName,
+   DatasetRunItemUpsertEventType,
+   TraceQueueEventType,
++  uploadEventToS3,
+ } from "@langfuse/shared/src/server";
+ import {
+   availableTraceEvalVariables,
+@@ -437,14 +438,18 @@ export const evaluate = async ({
+ 
+   // Write score to S3 and ingest into queue for Clickhouse processing
+   try {
+-    const s3Client = getS3StorageServiceClient(
+-      env.LANGFUSE_S3_EVENT_UPLOAD_BUCKET,
+-    );
+-    await s3Client.uploadJson(
+-      `${env.LANGFUSE_S3_EVENT_UPLOAD_PREFIX}${event.projectId}/score/${scoreId}/${randomUUID()}.json`,
++    const eventId = randomUUID();
++    await uploadEventToS3(
++      {
++        projectId: event.projectId,
++        entityType: "score",
++        entityId: scoreId,
++        eventId,
++        traceId: job.job_input_trace_id,
++      },
+       [
+         {
+-          id: randomUUID(),
++          id: eventId,
+           timestamp: new Date().toISOString(),
+           type: eventTypes.SCORE_CREATE,
+           body: {
