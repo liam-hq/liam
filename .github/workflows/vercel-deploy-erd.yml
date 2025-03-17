@@ -24,7 +24,7 @@ jobs:
       has-changes: ${{ steps.changes.outputs.src }}
     steps:
       - uses: actions/checkout@v4
-      - uses: tj-actions/branch-names@6c999acf206f5561e19f46301bb310e9e70d8815 # v7.0.7
+      - uses: tj-actions/branch-names@6871f53176ad61624f978536bbf089c574dc19a2 # v8.0.1
         id: branch-name
       - name: Detect Environment Changes
         id: environment
