@@ -24,6 +24,7 @@
     "fmt:biome": "biome check --write --unsafe .",
     "gen": "pnpm run '/^gen:.*/'",
     "gen:prisma": "prisma generate",
+    "gen:supabase": "supabase gen types typescript --local > supabase/database.types.ts",
     "lint": "pnpm run '/^lint:.*/'",
     "lint:biome": "biome check .",
     "lint:tsc": "tsc --noEmit",
