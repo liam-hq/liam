@@ -89,3 +89,10 @@ model WatchSchemaFilePattern {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
+
+model TestTable {
+  id Int @id @default(autoincrement())
+  name String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
