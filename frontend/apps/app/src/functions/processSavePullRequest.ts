@@ -1,5 +1,10 @@
-import { getPullRequestFiles } from '@/libs/github/api.server'
+import {
+  getFileContent,
+  getPullRequestDetails,
+  getPullRequestFiles,
+} from '@/libs/github/api.server'
 import { prisma } from '@liam-hq/db'
+import { minimatch } from 'minimatch'
 
 export type SavePullRequestPayload = {
   prNumber: number
@@ -12,6 +17,10 @@ export type SavePullRequestPayload = {
 export type SavePullRequestResult = {
   success: boolean
   prId: number
+  schemaFiles: Array<{
+    filename: string
+    content: string
+  }>
   schemaChanges: Array<{
     filename: string
     status:
@@ -50,6 +59,62 @@ export async function processSavePullRequest(
     repository.owner,
     repository.name,
     payload.prNumber,
+  )
+
+  const projectMappings = await prisma.projectRepositoryMapping.findMany({
+    where: {
+      repositoryId: repository.id,
+    },
+    include: {
+      project: {
+        include: {
+          watchSchemaFilePatterns: true,
+        },
+      },
+    },
+  })
+
+  const allPatterns = projectMappings.flatMap(
+    (mapping) => mapping.project.watchSchemaFilePatterns,
+  )
+
+  const matchedFiles = fileChanges.filter((file) =>
+    allPatterns.some((pattern) => minimatch(file.filename, pattern.pattern)),
+  )
+
+  const prDetails = await getPullRequestDetails(
+    Number(repository.installationId),
+    repository.owner,
+    repository.name,
+    payload.prNumber,
+  )
+
+  const schemaFiles: Array<{
+    filename: string
+    content: string
+  }> = await Promise.all(
+    matchedFiles.map(async (file) => {
+      try {
+        const content = await getFileContent(
+          Number(repository.installationId),
+          repository.owner,
+          repository.name,
+          file.filename,
+          prDetails.head.ref,
+        )
+
+        return {
+          filename: file.filename,
+          content,
+        }
+      } catch (error) {
+        console.error(`Error fetching content for ${file.filename}:`, error)
+        return {
+          filename: file.filename,
+          content: '',
+        }
+      }
+    }),
   )
 
   const schemaChanges = fileChanges.map((file) => {
@@ -91,6 +156,7 @@ export async function processSavePullRequest(
   return {
     success: true,
     prId: prRecord.id,
+    schemaFiles,
     schemaChanges,
   }
 }

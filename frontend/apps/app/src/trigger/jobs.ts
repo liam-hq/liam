@@ -33,6 +33,7 @@ export const savePullRequestTask = task({
         pullRequestId: result.prId,
         projectId: payload.projectId,
         repositoryId: payload.repositoryId,
+        schemaFiles: result.schemaFiles,
         schemaChanges: result.schemaChanges,
       })
 

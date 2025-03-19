@@ -117,6 +117,38 @@ export const updatePullRequestComment = async (
   return response.data
 }
 
+export const getFileContent = async (
+  installationId: number,
+  owner: string,
+  repo: string,
+  path: string,
+  ref?: string,
+): Promise<string> => {
+  const octokit = await createOctokit(installationId)
+
+  try {
+    const response = await octokit.repos.getContent({
+      owner,
+      repo,
+      path,
+      ref,
+    })
+
+    // The GitHub API returns the file content encoded in Base64
+    if ('content' in response.data && !Array.isArray(response.data)) {
+      const content = Buffer.from(response.data.content, 'base64').toString(
+        'utf-8',
+      )
+      return content
+    }
+
+    throw new Error('Not a file or file content not available')
+  } catch (error) {
+    console.error(`Error fetching file content for ${path}:`, error)
+    throw error
+  }
+}
+
 export const verifyWebhookSignature = (
   payload: string,
   signature: string,

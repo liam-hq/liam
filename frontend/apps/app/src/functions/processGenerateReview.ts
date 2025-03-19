@@ -2,13 +2,19 @@ import { PromptTemplate } from '@langchain/core/prompts'
 import { ChatOpenAI } from '@langchain/openai'
 import type { GenerateReviewPayload, ReviewResponse } from '../types'
 
-const REVIEW_TEMPLATE = `You are a database design expert. Please analyze the following schema changes and provide a detailed review.
+const REVIEW_TEMPLATE = `
+You are a database design expert.
+Please analyze the following schema changes in the context of the complete schema file content provided, and deliver a detailed review.
+
+Schema Files:
+{schemaFiles}
 
 Schema Changes:
 {schemaChanges}
 
 Please provide a comprehensive review of the database schema changes. Your review should be detailed and constructive.
-The response must be a single string containing your detailed review.`
+The response must be a single string containing your detailed review.
+`
 
 export async function processGenerateReview(
   payload: GenerateReviewPayload,
@@ -23,6 +29,7 @@ export async function processGenerateReview(
 
     const chain = prompt.pipe(model)
     const response = await chain.invoke({
+      schemaFiles: payload.schemaFiles,
       schemaChanges: payload.schemaChanges,
     })
 
