@@ -108,24 +108,24 @@ async function parsePrismaSchema(schemaString: string): Promise<ProcessResult> {
         field.relationFromFields?.[0] &&
         (field.relationFromFields?.length ?? 0) > 0
 
-      let relationship: Relationship = {
+      const relationship: Relationship = {
         name: field.relationName,
         primaryTableName: field.type,
         primaryColumnName:
           Array.isArray(field.relationToFields) &&
-            field.relationToFields.length > 0
-              ? field.relationToFields[0]
-              : '',
+          field.relationToFields.length > 0
+            ? field.relationToFields[0]
+            : '',
         foreignTableName: model.name,
         foreignColumnName:
           Array.isArray(field.relationFromFields) &&
-            field.relationFromFields.length > 0
+          field.relationFromFields.length > 0
             ? field.relationFromFields[0]
             : '',
         cardinality: 'ONE_TO_ONE', // Default
         updateConstraint: 'NO_ACTION',
         deleteConstraint: normalizeConstraintName(field.relationOnDelete ?? ''),
-      };
+      }
 
       if (field.isList) {
         if (
@@ -133,21 +133,20 @@ async function parsePrismaSchema(schemaString: string): Promise<ProcessResult> {
           existingRelationship.cardinality === 'ONE_TO_ONE'
         ) {
           // If an existing relation is ONE_TO_ONE and this field is a list → Change it to ONE_TO_MANY
-          relationship.cardinality = 'ONE_TO_MANY';
+          relationship.cardinality = 'ONE_TO_MANY'
         } else {
           // Otherwise, it's a MANY_TO_MANY relationship
-          relationship.cardinality = 'MANY_TO_MANY';
+          relationship.cardinality = 'MANY_TO_MANY'
         }
       } else {
         if (
           existingRelationship &&
-          existingRelationship.cardinality == 'MANY_TO_MANY' &&
+          existingRelationship.cardinality === 'MANY_TO_MANY' &&
           isTargetField
         ) {
-          relationship.cardinality = 'ONE_TO_MANY';
+          relationship.cardinality = 'ONE_TO_MANY'
         }
       }
-
 
       relationships[relationship.name] = getFieldRenamedRelationship(
         relationship,
@@ -166,6 +165,107 @@ async function parsePrismaSchema(schemaString: string): Promise<ProcessResult> {
     table.indices[indexInfo.name] = indexInfo
   }
 
+  const manyToManyRelationships = Object.fromEntries(
+    Object.entries(relationships).filter(
+      ([_, rel]) => rel.cardinality === 'MANY_TO_MANY',
+    ),
+  )
+
+  if (Object.keys(manyToManyRelationships).length) {
+    for (const relationship in manyToManyRelationships) {
+      const relationshipValue = manyToManyRelationships[relationship]
+      const primaryTableName = relationshipValue?.primaryTableName
+      const foreignTableName = relationshipValue?.foreignTableName
+      const indexes = dmmf?.datamodel?.indexes
+      const primaryTableIndices = indexes.filter(
+        (index) => index.model === primaryTableName && index.type === 'id',
+      )
+      const foreignTableIndices = indexes.filter(
+        (index) => index.model === foreignTableName && index.type === 'id',
+      )
+      const columns: Columns = {}
+      for (const primaryTable of primaryTableIndices) {
+        for (const field of primaryTable.fields) {
+          const existingColumns =
+            primaryTableName && tables[primaryTableName]?.columns['id']
+          const columnName = primaryTable.model + field.name
+          if (existingColumns && typeof existingColumns === 'object') {
+            columns[columnName] = {
+              name: columnName,
+              type: existingColumns.type ?? 'id',
+              default: existingColumns.default ?? '',
+              notNull: existingColumns.notNull,
+              unique: existingColumns.unique,
+              primary: existingColumns.primary,
+              comment: existingColumns.comment,
+              check: existingColumns.check,
+            }
+          } else {
+            columns[columnName] = {
+              name: columnName,
+              type: 'id',
+              default: '',
+              notNull: false,
+              unique: false,
+              primary: false,
+              comment: '',
+              check: '',
+            }
+          }
+        }
+      }
+
+      for (const foreignTable of foreignTableIndices) {
+        for (const field of foreignTable.fields) {
+          const existingColumns =
+            primaryTableName && tables[primaryTableName]?.columns['id']
+          const columnName = foreignTable.model + field.name
+          if (existingColumns && typeof existingColumns === 'object') {
+            columns[columnName] = {
+              name: columnName,
+              type: existingColumns.type ?? 'id',
+              default: existingColumns.default ?? '',
+              notNull: existingColumns.notNull,
+              unique: existingColumns.unique,
+              primary: existingColumns.primary,
+              comment: existingColumns.comment,
+              check: existingColumns.check,
+            }
+          } else {
+            columns[columnName] = {
+              name: columnName,
+              type: 'id',
+              default: '',
+              notNull: false,
+              unique: false,
+              primary: false,
+              comment: '',
+              check: '',
+            }
+          }
+        }
+      }
+
+      const indicesColumn = Object.keys(columns)
+
+      const indicesName = `${relationshipValue?.name}_pkey`
+
+      const indices = {
+        [indicesName]: {
+          name: indicesName,
+          unique: true,
+          columns: indicesColumn,
+        },
+      }
+
+      tables[relationship] = {
+        name: relationship,
+        columns,
+        comment: null,
+        indices,
+      }
+    }
+  }
   return {
     value: {
       tables,
