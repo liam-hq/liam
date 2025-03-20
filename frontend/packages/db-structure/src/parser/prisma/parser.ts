@@ -108,29 +108,46 @@ async function parsePrismaSchema(schemaString: string): Promise<ProcessResult> {
         field.relationFromFields?.[0] &&
         (field.relationFromFields?.length ?? 0) > 0
 
-      const relationship: Relationship = isTargetField
-        ? ({
-            name: field.relationName,
-            primaryTableName: field.type,
-            primaryColumnName: field.relationToFields[0] ?? '',
-            foreignTableName: model.name,
-            foreignColumnName: field.relationFromFields[0] ?? '',
-            cardinality: existingRelationship?.cardinality ?? 'ONE_TO_MANY',
-            updateConstraint: 'NO_ACTION',
-            deleteConstraint: normalizeConstraintName(
-              field.relationOnDelete ?? '',
-            ),
-          } as const)
-        : ({
-            name: field.relationName,
-            primaryTableName: existingRelationship?.primaryTableName ?? '',
-            primaryColumnName: existingRelationship?.primaryColumnName ?? '',
-            foreignTableName: existingRelationship?.foreignTableName ?? '',
-            foreignColumnName: existingRelationship?.foreignColumnName ?? '',
-            cardinality: field.isList ? 'ONE_TO_MANY' : 'ONE_TO_ONE',
-            updateConstraint: 'NO_ACTION',
-            deleteConstraint: 'NO_ACTION',
-          } as const)
+      let relationship: Relationship = {
+        name: field.relationName,
+        primaryTableName: field.type,
+        primaryColumnName:
+          Array.isArray(field.relationToFields) &&
+            field.relationToFields.length > 0
+              ? field.relationToFields[0]
+              : '',
+        foreignTableName: model.name,
+        foreignColumnName:
+          Array.isArray(field.relationFromFields) &&
+            field.relationFromFields.length > 0
+            ? field.relationFromFields[0]
+            : '',
+        cardinality: 'ONE_TO_ONE', // Default
+        updateConstraint: 'NO_ACTION',
+        deleteConstraint: normalizeConstraintName(field.relationOnDelete ?? ''),
+      };
+
+      if (field.isList) {
+        if (
+          existingRelationship &&
+          existingRelationship.cardinality === 'ONE_TO_ONE'
+        ) {
+          // If an existing relation is ONE_TO_ONE and this field is a list → Change it to ONE_TO_MANY
+          relationship.cardinality = 'ONE_TO_MANY';
+        } else {
+          // Otherwise, it's a MANY_TO_MANY relationship
+          relationship.cardinality = 'MANY_TO_MANY';
+        }
+      } else {
+        if (
+          existingRelationship &&
+          existingRelationship.cardinality == 'MANY_TO_MANY' &&
+          isTargetField
+        ) {
+          relationship.cardinality = 'ONE_TO_MANY';
+        }
+      }
+
 
       relationships[relationship.name] = getFieldRenamedRelationship(
         relationship,
