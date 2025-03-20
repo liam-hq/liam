@@ -20,6 +20,11 @@ export const RelationshipEdge: FC<Props> = ({
   id,
   data,
 }) => {
+  
+  if (data?.cardinality === 'MANY_TO_MANY') {
+    return null // Don't render anything if it's MANY_TO_MANY
+  }
+  
   const [edgePath] = getBezierPath({
     sourceX,
     sourceY,
