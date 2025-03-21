@@ -28,7 +28,8 @@
       "complexity": {
         "useLiteralKeys": "off"
       }
-    }
+    },
+    "ignore": []
   },
   "vcs": {
     "enabled": true,

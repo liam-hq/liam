@@ -25,7 +25,7 @@
     "gen": "pnpm run '/^gen:.*/'",
     "gen:prisma": "prisma generate",
     "lint": "pnpm run '/^lint:.*/'",
-    "lint:biome": "biome check .",
+    "lint:biome": "biome check --error-on-warnings .",
     "lint:tsc": "tsc --noEmit",
     "migrate:dev": "sh ./scripts/migrate-dev.sh",
     "migrate:status": "prisma migrate status",

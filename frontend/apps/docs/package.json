@@ -39,7 +39,7 @@
     "fmt": "pnpm run '/^fmt:.*/'",
     "fmt:biome": "biome check --write --unsafe .",
     "lint": "pnpm run '/^lint:.*/'",
-    "lint:biome": "biome check .",
+    "lint:biome": "biome check --error-on-warnings .",
     "lint:next": "next lint",
     "lint:tsc": "tsc --noEmit",
     "postinstall": "fumadocs-mdx",

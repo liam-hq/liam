@@ -35,7 +35,7 @@
     "gen": "pnpm run '/^gen:.*/'",
     "gen:css": "tcm src",
     "lint": "pnpm run '/^lint:.*/'",
-    "lint:biome": "biome check .",
+    "lint:biome": "biome check --error-on-warnings .",
     "lint:tsc": "tsc --noEmit",
     "test": "vitest --watch=false"
   }

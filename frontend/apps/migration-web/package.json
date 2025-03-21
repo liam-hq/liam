@@ -34,7 +34,7 @@
     "gen": "pnpm run '/^gen:.*/'",
     "gen:css": "tcm components",
     "lint": "pnpm run '/^lint:.*/'",
-    "lint:biome": "biome check .",
+    "lint:biome": "biome check --error-on-warnings .",
     "start": "next start",
     "supabase:pull": "pnpm supabase db pull",
     "supabase:reset": "pnpm supabase db reset",

@@ -38,7 +38,7 @@
     "gen:cp-prism": "cp node_modules/@ruby/prism/src/prism.wasm src/parser/schemarb/prism.wasm",
     "gen:gen-tbls-schema": "node scripts/tblsJsonSchemaToZod.mjs",
     "lint": "pnpm run '/^lint:.*/'",
-    "lint:biome": "biome check .",
+    "lint:biome": "biome check --error-on-warnings .",
     "lint:tsc": "tsc --noEmit",
     "test": "vitest --watch=false"
   },
