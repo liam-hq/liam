@@ -96,7 +96,7 @@ export default withSentryConfig(nextConfig, {
   // Hides source maps from generated client bundles
   sourcemaps: {
     disable: false,
-    assets: '.next',
+    assets: '.next/static/**/*.map',
   },
 
   hideSourceMaps: true,
