@@ -7,6 +7,7 @@
     "@langchain/core": "0.3.42",
     "@langchain/openai": "0.4.4",
     "@liam-hq/db": "workspace:*",
+    "@prisma/client": "6.4.1",
     "@trigger.dev/build": "3.3.17",
     "@trigger.dev/sdk": "3.3.17",
     "minimatch": "10.0.1"
@@ -14,7 +15,8 @@
   "devDependencies": {
     "@biomejs/biome": "1.9.3",
     "@types/node": "22.9.0",
-    "typescript": "5"
+    "typescript": "5",
+    "vitest": "3.0.8"
   },
   "scripts": {
     "build": "tsc",
