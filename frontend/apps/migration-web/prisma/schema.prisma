@@ -186,4 +186,5 @@ model PRCommit {
   pullRequest   PullRequest   @relation(fields: [pullRequestId], references: [id])
   commitHash    String
   committedAt   DateTime
+  sample        String
 }
