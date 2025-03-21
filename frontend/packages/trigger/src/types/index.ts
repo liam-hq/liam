@@ -46,4 +46,4 @@ export type ReviewResponse = {
   projectId: number
   pullRequestId: number
   repositoryId: number
-} 
+}

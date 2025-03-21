@@ -1,18 +1,8 @@
 {
   "name": "@liam-hq/trigger",
-  "version": "0.1.0",
   "private": true,
+  "version": "0.1.0",
   "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "scripts": {
-    "build": "tsc",
-    "dev": "tsc --watch",
-    "lint": "pnpm run '/^lint:.*/'",
-    "lint:biome": "biome check .",
-    "lint:tsc": "tsc --noEmit",
-    "fmt": "pnpm run '/^fmt:.*/'",
-    "fmt:biome": "biome check --write --unsafe ."
-  },
   "dependencies": {
     "@langchain/core": "0.3.42",
     "@langchain/openai": "0.4.4",
@@ -25,5 +15,15 @@
     "@biomejs/biome": "1.9.3",
     "@types/node": "22.9.0",
     "typescript": "5"
-  }
-} 
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "fmt": "pnpm run '/^fmt:.*/'",
+    "fmt:biome": "biome check --write --unsafe .",
+    "lint": "pnpm run '/^lint:.*/'",
+    "lint:biome": "biome check .",
+    "lint:tsc": "tsc --noEmit"
+  },
+  "types": "./dist/index.d.ts"
+}

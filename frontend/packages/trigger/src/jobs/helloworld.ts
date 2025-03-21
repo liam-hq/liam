@@ -6,4 +6,4 @@ export const helloWorldTask = task({
     logger.log('Executing Hello World task:', { payload })
     return `Hello ${payload.name}`
   },
-}) 
+})

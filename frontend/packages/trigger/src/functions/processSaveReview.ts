@@ -1,7 +1,9 @@
 import { prisma } from '@liam-hq/db'
 import type { ReviewResponse } from '../types'
 
-export const processSaveReview = async (payload: ReviewResponse): Promise<void> => {
+export const processSaveReview = async (
+  payload: ReviewResponse,
+): Promise<void> => {
   try {
     const { reviewComment, pullRequestId } = payload
 
@@ -12,10 +14,8 @@ export const processSaveReview = async (payload: ReviewResponse): Promise<void> 
         pullRequestId,
       },
     })
-
-    console.log(`Review saved for PR ${pullRequestId}`)
   } catch (error) {
     console.error('Error in processSaveReview:', error)
     throw error
   }
-} 
+}

@@ -9,4 +9,4 @@ export { postComment } from './functions/postComment'
 
 // Export jobs
 export { createReviewTasks } from './jobs/review'
-export { helloWorldTask } from './jobs/helloworld' 
+export { helloWorldTask } from './jobs/helloworld'

@@ -1,6 +1,6 @@
 import { logger, task } from '@trigger.dev/sdk/v3'
-import { processGenerateReview } from '../functions/processGenerateReview'
 import { postComment } from '../functions/postComment'
+import { processGenerateReview } from '../functions/processGenerateReview'
 import { processSavePullRequest } from '../functions/processSavePullRequest'
 import { processSaveReview } from '../functions/processSaveReview'
 import type { GenerateReviewPayload, ReviewResponse } from '../types'
@@ -107,7 +107,9 @@ export const createReviewTasks = (dependencies: Dependencies) => {
     id: 'post-comment',
     run: async (payload: ReviewResponse) => {
       logger.log('Executing comment post task:', { payload })
-      const result = await postComment(dependencies.githubClientFactory)(payload)
+      const result = await postComment(dependencies.githubClientFactory)(
+        payload,
+      )
       return result
     },
   })
@@ -118,4 +120,4 @@ export const createReviewTasks = (dependencies: Dependencies) => {
     saveReviewTask,
     postCommentTask,
   }
-} 
+}
