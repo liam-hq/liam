@@ -1,6 +1,7 @@
 # Supabase
 .branches
 .temp
+database.types.ts
 
 # dotenvx
 .env.keys
