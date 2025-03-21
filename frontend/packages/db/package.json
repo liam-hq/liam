@@ -29,6 +29,7 @@
     "lint:tsc": "tsc --noEmit",
     "migrate:dev": "sh ./scripts/migrate-dev.sh",
     "migrate:status": "prisma migrate status",
+    "schema:gen": "sh ./scripts/generate-schema-ddl.sh",
     "supabase:reset": "pnpm supabase db reset",
     "supabase:start": "pnpm supabase start",
     "supabase:stop": "pnpm supabase stop"
