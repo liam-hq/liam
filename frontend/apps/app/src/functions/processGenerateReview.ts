@@ -1,6 +1,7 @@
 import { PromptTemplate } from '@langchain/core/prompts'
 import { ChatOpenAI } from '@langchain/openai'
 import { prisma } from '@liam-hq/db'
+import { langfuseLangchainHandler } from '../../lib'
 import type { GenerateReviewPayload, ReviewResponse } from '../types'
 
 const REVIEW_TEMPLATE = `
@@ -35,7 +36,10 @@ export async function processGenerateReview(
     })
 
     const docsContent = docs
-      .map((doc) => `# ${doc.title}\n\n${doc.content}`)
+      .map(
+        (doc: { title: string; content: string }) =>
+          `# ${doc.title}\n\n${doc.content}`,
+      )
       .join('\n\n---\n\n')
     const prompt = PromptTemplate.fromTemplate(REVIEW_TEMPLATE)
 
@@ -45,11 +49,16 @@ export async function processGenerateReview(
     })
 
     const chain = prompt.pipe(model)
-    const response = await chain.invoke({
-      docsContent,
-      schemaFiles: payload.schemaFiles,
-      schemaChanges: payload.schemaChanges,
-    })
+    const response = await chain.invoke(
+      {
+        docsContent,
+        schemaFiles: payload.schemaFiles,
+        schemaChanges: payload.schemaChanges,
+      },
+      {
+        callbacks: [langfuseLangchainHandler],
+      },
+    )
 
     return response.content.toString()
   } catch (error) {

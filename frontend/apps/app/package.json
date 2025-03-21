@@ -20,6 +20,7 @@
     "date-fns": "4.1.0",
     "dotenv": "16.4.7",
     "flags": "3.1.1",
+    "langfuse-langchain": "3.36.0",
     "minimatch": "10.0.1",
     "next": "15.1.2",
     "react": "18.3.1",

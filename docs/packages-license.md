@@ -2,7 +2,7 @@
 
 
 ## Summary
-* 1144 MIT
+* 1151 MIT
 * 120 Apache 2.0
 * 80 ISC
 * 31 New BSD
@@ -1255,6 +1255,17 @@ LGPL-3.0-or-later permitted
 
 <a name="@langchain/openai"></a>
 ### @langchain/openai v0.4.4
+#### 
+
+##### Paths
+* /home/runner/work/liam/liam
+
+<a href="http://opensource.org/licenses/mit-license">MIT</a> permitted
+
+
+
+<a name="@langchain/textsplitters"></a>
+### @langchain/textsplitters v0.1.0
 #### 
 
 ##### Paths
@@ -9977,6 +9988,17 @@ Public Domain manually approved
 
 
 
+<a name="jsonpointer"></a>
+### jsonpointer v5.0.1
+#### 
+
+##### Paths
+* /home/runner/work/liam/liam
+
+<a href="http://opensource.org/licenses/mit-license">MIT</a> permitted
+
+
+
 <a name="jsonwebtoken"></a>
 ### jsonwebtoken v9.0.2
 #### 
@@ -10056,6 +10078,50 @@ Public Domain manually approved
 
 <a name="kleur"></a>
 ### kleur v3.0.3
+#### 
+
+##### Paths
+* /home/runner/work/liam/liam
+
+<a href="http://opensource.org/licenses/mit-license">MIT</a> permitted
+
+
+
+<a name="langchain"></a>
+### langchain v0.3.19
+#### 
+
+##### Paths
+* /home/runner/work/liam/liam
+
+<a href="http://opensource.org/licenses/mit-license">MIT</a> permitted
+
+
+
+<a name="langfuse"></a>
+### langfuse v3.37.0
+#### 
+
+##### Paths
+* /home/runner/work/liam/liam
+
+<a href="http://opensource.org/licenses/mit-license">MIT</a> permitted
+
+
+
+<a name="langfuse-core"></a>
+### langfuse-core v3.37.0
+#### 
+
+##### Paths
+* /home/runner/work/liam/liam
+
+<a href="http://opensource.org/licenses/mit-license">MIT</a> permitted
+
+
+
+<a name="langfuse-langchain"></a>
+### langfuse-langchain v3.36.0
 #### 
 
 ##### Paths
@@ -11723,6 +11789,17 @@ Public Domain manually approved
 * /home/runner/work/liam/liam
 
 <a href="http://www.apache.org/licenses/LICENSE-2.0.txt">Apache 2.0</a> permitted
+
+
+
+<a name="openapi-types"></a>
+### openapi-types v12.1.3
+#### 
+
+##### Paths
+* /home/runner/work/liam/liam
+
+<a href="http://opensource.org/licenses/mit-license">MIT</a> permitted
 
 
 
