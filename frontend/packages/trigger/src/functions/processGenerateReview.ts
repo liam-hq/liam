@@ -1,7 +1,7 @@
 import { PromptTemplate } from '@langchain/core/prompts'
 import { ChatOpenAI } from '@langchain/openai'
 import { prisma } from '@liam-hq/db'
-import type { GenerateReviewPayload } from '../types'
+import type { GenerateReviewPayload, ReviewResponse } from '../types'
 
 const REVIEW_TEMPLATE = `
 You are a database design expert.
@@ -20,9 +20,9 @@ Please provide a comprehensive review of the database schema changes. Your revie
 The response must be a single string containing your detailed review.
 `
 
-export const processGenerateReview = async (
+export async function processGenerateReview(
   payload: GenerateReviewPayload,
-): Promise<string> => {
+): Promise<string> {
   try {
     const docs = await prisma.doc.findMany({
       where: {
