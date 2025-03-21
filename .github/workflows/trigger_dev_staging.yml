@@ -3,8 +3,8 @@ on:
   push:
     branches:
       - staging
-    path:
-      - frontend/apps/app/
+    paths:
+      - frontend/packages/trigger/**
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -24,7 +24,7 @@ jobs:
           TRIGGER_ACCESS_TOKEN: ${{ secrets.TRIGGER_ACCESS_TOKEN }}
           TRIGGER_PROJECT_ID: ${{ vars.TRIGGER_PROJECT_ID }}
         run: |
-          cd frontend/apps/app/
+          cd frontend/packages/trigger/
           pnpm dlx trigger.dev@latest deploy --env staging
 
       - name: Slack Notification on Failure

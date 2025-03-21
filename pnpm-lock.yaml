@@ -483,6 +483,37 @@ importers:
         specifier: workspace:*
         version: link:../configs
 
+  frontend/packages/trigger:
+    dependencies:
+      '@langchain/core':
+        specifier: 0.3.42
+        version: 0.3.42(openai@4.86.2(encoding@0.1.13)(ws@8.18.1)(zod@3.24.1))
+      '@langchain/openai':
+        specifier: 0.4.4
+        version: 0.4.4(@langchain/core@0.3.42(openai@4.86.2(encoding@0.1.13)(ws@8.18.1)(zod@3.24.1)))(encoding@0.1.13)(ws@8.18.1)
+      '@liam-hq/db':
+        specifier: workspace:*
+        version: link:../db
+      '@trigger.dev/build':
+        specifier: 3.3.17
+        version: 3.3.17(typescript@5.8.2)
+      '@trigger.dev/sdk':
+        specifier: 3.3.17
+        version: 3.3.17(zod@3.24.1)
+      minimatch:
+        specifier: 10.0.1
+        version: 10.0.1
+    devDependencies:
+      '@biomejs/biome':
+        specifier: 1.9.3
+        version: 1.9.3
+      '@types/node':
+        specifier: 22.9.0
+        version: 22.9.0
+      typescript:
+        specifier: '5'
+        version: 5.8.2
+
   frontend/packages/ui:
     dependencies:
       '@radix-ui/react-dropdown-menu':

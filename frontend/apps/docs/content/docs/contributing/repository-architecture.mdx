@@ -12,6 +12,7 @@ Liam is built using a modern JavaScript/TypeScript stack with a focus on React a
 - **React 18**: UI library for building component-based interfaces
 - **Next.js 15**: React framework for server-rendered applications
 - **Vite**: Build tool used in CLI for static site generation
+- **Trigger.dev**: Framework for running background jobs and workflows
 
 ## Frontend
 - **UI Components**: Custom component library with Radix UI primitives
@@ -34,6 +35,7 @@ Liam is built using a modern JavaScript/TypeScript stack with a focus on React a
 
 ## Deployment
 - **Web Applications**: Deployed with Vercel
+- **Background Jobs**: Deployed with Trigger.dev
 - **CI/CD**: GitHub Actions for continuous integration
 
 ## Overview
@@ -72,6 +74,12 @@ Our project uses a monorepo structure managed with pnpm workspaces, allowing us 
 │       │   │   ├── components/
 │       │   │   ├── hooks/
 │       │   │   └── utils/
+│       │   └── package.json
+│       ├── trigger/          # Trigger.dev jobs and workflows (@liam-hq/trigger)
+│       │   ├── src/
+│       │   │   ├── functions/
+│       │   │   ├── jobs/
+│       │   │   └── types/
 │       │   └── package.json
 │       └── ui/               # UI component library (@liam-hq/ui)
 │           ├── src/
@@ -123,6 +131,21 @@ React Flow based ERD visualization components and logic. see: [/docs/ui-features
 - ERD Visualization
 - UI Components
 - State Management
+
+### Trigger Package (`@liam-hq/trigger`)
+
+Trigger.dev job definitions and utilities for handling background jobs.
+
+**Key Responsibilities:**
+
+- Pull request review workflow
+- GitHub integration for comments
+- Background job orchestration
+
+**Tech Stack:**
+
+- Trigger.dev SDK
+- LangChain for AI-powered reviews
 
 ### UI Package (`@liam-hq/ui`)
 
