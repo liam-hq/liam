@@ -29,6 +29,7 @@ export * from './CardinalityZeroOrOneRightIcon'
 export * from './CardinalityZeroOrOneLeftIcon'
 export * from './Eye'
 export * from './EyeClosed'
+export * from './FileText'
 
 export {
   Copy,
