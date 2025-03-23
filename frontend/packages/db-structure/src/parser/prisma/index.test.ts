@@ -259,7 +259,7 @@ describe(_processor, () => {
     })
 
     it('relationship (many-to-many)', async () => {
-      const keyName = 'postsToUsers'
+      const keyName = 'postsTousers'
 
       const { value } = await processor(`
         model users {
