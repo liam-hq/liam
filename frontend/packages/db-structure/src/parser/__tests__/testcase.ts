@@ -136,6 +136,18 @@ export const createParserTestCases = (
       deleteConstraint: 'NO_ACTION',
     },
   }),
+  'foreign key (many-to-many)': (name: string) => ({
+    [name]: {
+      name,
+      primaryTableName: 'users',
+      primaryColumnName: '',
+      foreignTableName: 'posts',
+      foreignColumnName: '',
+      cardinality: 'MANY_TO_MANY',
+      updateConstraint: 'NO_ACTION',
+      deleteConstraint: 'NO_ACTION',
+    },
+  }),
   'foreign key with action': {
     fk_posts_user_id: {
       name: 'fk_posts_user_id',

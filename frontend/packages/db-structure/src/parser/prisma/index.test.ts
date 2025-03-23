@@ -258,6 +258,26 @@ describe(_processor, () => {
       )
     })
 
+    it('relationship (many-to-many)', async () => {
+      const keyName = 'postsToUsers'
+
+      const { value } = await processor(`
+        model users {
+          id   BigInt    @id @default(autoincrement())
+          posts posts[]
+        }
+
+        model posts {
+          id   BigInt    @id @default(autoincrement())
+          user users[]
+        }
+      `)
+
+      expect(value.relationships).toEqual(
+        parserTestCases['foreign key (many-to-many)'](keyName),
+      )
+    })
+
     describe('foreign key constraints (on delete)', () => {
       const constraintCases = [
         ['Cascade', 'CASCADE'],
