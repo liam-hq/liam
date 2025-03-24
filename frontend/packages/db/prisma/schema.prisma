@@ -18,6 +18,14 @@ model Project {
   repositoryMappings ProjectRepositoryMapping[]
   watchSchemaFilePatterns WatchSchemaFilePattern[]
   docs      Doc[]
+  schemaMeta SchemaMeta? @relation("ProjectToSchemaMeta")
+}
+
+model SchemaMeta {
+  id        Int      @id @default(autoincrement())
+  projectId Int      @unique
+  project   Project  @relation("ProjectToSchemaMeta", fields: [projectId], references: [id])
+  content   Json     @default("{}")
 }
 
 model Repository {
