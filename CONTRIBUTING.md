@@ -24,7 +24,9 @@ To set up a development environment, please follow these steps:
    pnpm install
    ```
 
-3. Set up environment variables **For maintainers (Vercel team members only):**
+3. Set up environment variables
+
+   **For maintainers (Vercel team members only):**
 
    First, link your local project to the Vercel project:
 
@@ -44,7 +46,22 @@ To set up a development environment, please follow these steps:
    pnpm vercel:env-pull
    ```
 
-   This will download the environment variables from Vercel and write them to the specified file (defaults to `.env.local` if no file is specified). After updating environment variables on Vercel (through the dashboard or CLI), you'll need to run this command again to get the updated values.
+   This will download the environment variables from Vercel and write them to the specified file. After updating environment variables on Vercel (through the dashboard or CLI), you'll need to run this command again to get the updated values.
+
+   Next, create a `.env.local` file at the root directory and set values for the following keys:
+
+   - `OPENAI_API_KEY`
+   - `TRIGGER_SECRET_KEY`
+
+   **For other contributors:**
+
+   Copy the template environment file to create your local environment file:
+
+   ```sh
+   cp .env.template .env
+   ```
+
+   Then edit the `.env` file and fill in the necessary values for the environment variables you need for your development work.
 
    These environment variables provide access to Supabase, GitHub App, Trigger.dev, and other service credentials needed for development.
 

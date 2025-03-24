@@ -1,0 +1,1 @@
+export { DocsListPage } from './DocsListPage'

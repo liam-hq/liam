@@ -6,6 +6,10 @@ import type { ProcessError } from '../../errors.js'
  * @param sqlInput - The SQL input string to be processed.
  * @param chunkSize - The number of lines per chunk (e.g., 500).
  * @param callback - An asynchronous function to process each chunk.
+ * @returns A tuple of [retryOffset, readOffset, errors] where:
+ *   - retryOffset: Position where parsing failed, indicating where to retry from with a different chunk size
+ *   - readOffset: Position of the last successfully parsed statement, used for partial chunk processing
+ *   - errors: Array of parsing errors encountered during processing
  */
 export const processSQLInChunks = async (
   sqlInput: string,
@@ -32,7 +36,7 @@ export const processSQLInChunks = async (
 
     while (true) {
       // NOTE: To minimize unnecessary retries, avoid increasing currentChunkSize excessively,
-      //       especially when errorOffset is present.
+      //       especially when retryOffset is present.
       if (retryDirection === retryDirectionValues.decrease) {
         if (i + currentChunkSize > lines.length) {
           currentChunkSize = lines.length - i
@@ -40,9 +44,9 @@ export const processSQLInChunks = async (
       }
 
       const chunk = lines.slice(i, i + currentChunkSize).join('\n')
-      const [errorOffset, readOffset, errors] = await callback(chunk)
+      const [retryOffset, readOffset, errors] = await callback(chunk)
 
-      if (errorOffset !== null) {
+      if (retryOffset !== null) {
         if (retryDirection === retryDirectionValues.decrease) {
           currentChunkSize--
           if (currentChunkSize === 0) {
@@ -66,7 +70,7 @@ export const processSQLInChunks = async (
       } else if (readOffset !== null) {
         const lineNumber = getLineNumber(chunk, readOffset)
         if (lineNumber === null) {
-          throw new Error('UnexpectedCondition')
+          throw new Error('UnexpectedCondition. lineNumber === null')
         }
         i += lineNumber
         break

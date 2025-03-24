@@ -109,8 +109,9 @@ model DocVersion {
   docId     Int
   doc       Doc       @relation(fields: [docId], references: [id])
   version   Int
+  title     String
   content   String
-  createdAt       DateTime    @default(now())
+  createdAt DateTime  @default(now())
 
   @@unique([docId, version])
 }

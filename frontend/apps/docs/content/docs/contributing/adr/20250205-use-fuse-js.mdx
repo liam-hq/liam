@@ -1,4 +1,6 @@
-# 20250205 - Use fuse.js
+---
+title: 20250205 - Use fuse.js
+---
 
 ## Status
 
@@ -21,7 +23,7 @@ We considered the following technologies as the primary tools for browser-based 
 
 In Pull Request [#652](https://github.com/liam-hq/liam/pull/652), we created a prototype search box using radix-ui (as used in fumadocs) and tested the speed and user experience using a benchmark project (mastodon/mastodon).
 
-While Orama’s pre-indexing offers high-speed performance, we observed that fuse.js, despite its O(n) search complexity, delivered comparable search speeds. Please refer to Pull Request [#652](https://github.com/liam-hq/liam/pull/652) for detailed performance metrics.
+While Orama's pre-indexing offers high-speed performance, we observed that fuse.js, despite its O(n) search complexity, delivered comparable search speeds. Please refer to Pull Request [#652](https://github.com/liam-hq/liam/pull/652) for detailed performance metrics.
 
 ## Decision
 
@@ -35,8 +37,8 @@ In our PoC (Pull Request [#652](https://github.com/liam-hq/liam/pull/652)), we c
 
 > - **fuse.js** provides efficient fuzzy search capabilities out-of-the-box, without needing additional configuration for stemming or indexing.
 > - **Orama** excels in search speed due to pre-built inverted indexes and offers O(1) search performance, while fuse.js operates with O(n) complexity.
-> - Despite the theoretical performance differences, practical benchmarks on a project of Mastodon’s scale (99 tables) revealed that both libraries deliver comparable performance, with search times ranging from 0.1ms to 1.0ms.
-> - Orama’s pre-indexing time was approximately 30ms-100ms, initiated upon loading the application. fuse.js does not require pre-indexing, leading to simpler integration and faster initial load times.
+> - Despite the theoretical performance differences, practical benchmarks on a project of Mastodon's scale (99 tables) revealed that both libraries deliver comparable performance, with search times ranging from 0.1ms to 1.0ms.
+> - Orama's pre-indexing time was approximately 30ms-100ms, initiated upon loading the application. fuse.js does not require pre-indexing, leading to simpler integration and faster initial load times.
 > - Both libraries successfully handled partial matches during live typing. However, Orama struggled with exact matches for incorrectly typed queries (e.g., "expire_at" instead of "expires_at").
 
 Based on these observations, **fuse.js** was chosen for its ease of implementation and sufficient performance, especially for initial deployments where the data scale is moderate.

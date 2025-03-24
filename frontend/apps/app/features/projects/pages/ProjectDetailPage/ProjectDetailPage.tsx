@@ -84,12 +84,20 @@ export const ProjectDetailPage: FC<Props> = async ({ projectId }) => {
           </Link>
           <h1 className={styles.title}>{project.name || 'Untitled Project'}</h1>
         </div>
-        <Link
-          href={`/app/projects/${project.id}/migrations`}
-          className={styles.reviewButton}
-        >
-          View Migrations
-        </Link>
+        <div className={styles.headerActions}>
+          <Link
+            href={`/app/projects/${project.id}/migrations`}
+            className={styles.actionButton}
+          >
+            View Migrations
+          </Link>
+          <Link
+            href={`/app/projects/${project.id}/docs`}
+            className={styles.actionButton}
+          >
+            View Docs
+          </Link>
+        </div>
       </div>
 
       <div className={styles.content}>
@@ -103,7 +111,7 @@ export const ProjectDetailPage: FC<Props> = async ({ projectId }) => {
           {project.migrations.map((migration) => (
             <li key={migration.id}>
               <Link
-                href={`/app/projects/${project.id}/migrations/${migration.id}`}
+                href={`/app/migrations/${migration.id}`}
                 style={{
                   textDecoration: 'underline',
                 }}

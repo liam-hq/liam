@@ -46,4 +46,7 @@ prism.wasm
 *.css.d.ts
 
 .trigger
+
+# Environment
 .env
+!.env.local

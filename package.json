@@ -22,7 +22,7 @@
     "lint": "pnpm run '/^lint:.*/'",
     "lint:syncpack": "syncpack lint",
     "lint:turbo": "turbo lint",
-    "prebuild": "[ -f .env ] || touch .env",
+    "prebuild": "([ -f .env ] || touch .env) && ([ -f .env.local ] || touch .env.local)",
     "release": "pnpm build && pnpm changeset publish",
     "test:e2e": "turbo test:e2e",
     "test:turbo": "turbo test",

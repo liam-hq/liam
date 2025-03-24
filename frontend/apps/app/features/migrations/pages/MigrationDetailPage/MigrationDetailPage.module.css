@@ -1,6 +1,7 @@
 .wrapper {
   display: grid;
   gap: var(--spacing-6);
+  max-width: 1200px;
 }
 
 .heading {
@@ -59,4 +60,47 @@
   font-weight: 500;
   line-height: normal;
   letter-spacing: 0.0375rem;
+}
+
+.erdLink {
+  display: inline-block;
+  margin-top: 1rem;
+  color: var(--color-primary);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.erdLink:hover {
+  text-decoration: underline;
+}
+
+.reviewContent {
+  margin-top: 1rem;
+  background-color: var(--bg-secondary, #fff);
+  color: var(--text-primary, #666);
+  padding: 1.5rem;
+  border-radius: 0.5rem;
+  border: 1px solid var(--border-color, #fff);
+  white-space: pre-wrap;
+  font-family: var(--font-mono, monospace);
+  overflow-x: auto;
+  line-height: 1.6;
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.metadataSection {
+  padding: 1rem;
+  background-color: white;
+  border-radius: 0.5rem;
+}
+
+.metadata {
+  margin-bottom: 0.5rem;
+  color: #666;
+  font-size: 0.875rem;
+}
+
+.metadata:last-child {
+  margin-bottom: 0;
 }

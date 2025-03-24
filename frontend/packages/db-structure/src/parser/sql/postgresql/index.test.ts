@@ -255,7 +255,7 @@ describe(processor, () => {
     })
   })
 
-  describe('Long statement (exceeds 500 lines, surpassing CHUNK_SIZE)', () => {
+  describe('Long "create table" statement (exceeds 500 lines, surpassing CHUNK_SIZE)', () => {
     it('parses without errors', async () => {
       const _500Lines = '\n'.repeat(500)
       const { value, errors } = await processor(/* sql */ `
@@ -266,6 +266,28 @@ describe(processor, () => {
         );
       `)
 
+      expect(value).toEqual(parserTestCases.normal)
+      expect(errors).toEqual([])
+    })
+  }, 30000)
+
+  describe('Long "create function" statement (exceeds 500 lines, surpassing CHUNK_SIZE)', () => {
+    it('parses without errors', async () => {
+      const _500Lines = '\n'.repeat(500)
+      const { value, errors } = await processor(/* sql */ `
+        CREATE TABLE users (
+          id BIGSERIAL PRIMARY KEY,
+          name VARCHAR(255) NOT NULL
+        );
+
+        CREATE OR REPLACE FUNCTION test_proc(p_id integer)
+        RETURNS void AS $$
+        BEGIN
+            RAISE NOTICE 'Stored procedure called with parameter: %', p_id;
+            ${_500Lines}
+        END;
+        $$ LANGUAGE plpgsql;
+      `)
       expect(value).toEqual(parserTestCases.normal)
       expect(errors).toEqual([])
     })

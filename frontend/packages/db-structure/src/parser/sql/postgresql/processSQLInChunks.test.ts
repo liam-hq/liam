@@ -53,7 +53,7 @@ describe(processSQLInChunks, () => {
   describe('processSQLInChunks, partially consuming chunk lines', () => {
     // Helper function to create a mock callback that asserts the query and returns the expected value.
     type SQLCallbackResult = [
-      errorOffset: number | null,
+      retryOffset: number | null,
       readOffset: number | null,
       errors: UnexpectedTokenWarningError[],
     ]
@@ -85,7 +85,7 @@ SELECT 3, -- partial statement
 4;`
       const chunkSize = 3
       const expectedCalls: [query: string, result: SQLCallbackResult][] = [
-        // [query, [errorOffset, readOffset, errors]]
+        // [query, [retryOffset, readOffset, errors]]
 
         // 1st: Processes "SELECT 1;", "SELECT 2;", and "SELECT 3,".
         // Since "SELECT 3," is an incomplete statement, the parser returns readOffset at the end of the second statement (position 19).
@@ -104,7 +104,7 @@ SELECT 3, -- partial statement
       expect(callback).toHaveBeenCalledTimes(expectedCalls.length)
     })
 
-    it('should correctly handle errorOffset by partially consuming chunk lines', async () => {
+    it('should correctly handle retryOffset by partially consuming chunk lines', async () => {
       // Test case where a statement (a 6-line CREATE TABLE statement) exceeds the chunk size (3 lines).
       //
       // NOTE:
@@ -126,9 +126,9 @@ CREATE TABLE t1 (
       const chunkSize = 3
       const error = new UnexpectedTokenWarningError('')
       const expectedCalls: [query: string, result: SQLCallbackResult][] = [
-        // [query, [errorOffset, readOffset, errors]]
+        // [query, [retryOffset, readOffset, errors]]
 
-        // 1st: Reads the first three lines. "CREATE TABLE t1 (" is incomplete, so the parser returns an errorOffset at position 38.
+        // 1st: Reads the first three lines. "CREATE TABLE t1 (" is incomplete, so the parser returns an retryOffset at position 38.
         ['SELECT 1;\nSELECT 2;\nCREATE TABLE t1 (', [38, null, [error]]],
         // 2nd: Retries processing only the first two lines.
         ['SELECT 1;\nSELECT 2;', [null, null, []]],

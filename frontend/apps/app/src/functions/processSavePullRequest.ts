@@ -96,16 +96,14 @@ export async function processSavePullRequest(
     matchedFiles.map(async (file) => {
       try {
         const content = await getFileContent(
-          Number(repository.installationId),
-          repository.owner,
-          repository.name,
+          `${repository.owner}/${repository.name}`,
           file.filename,
           prDetails.head.ref,
+          Number(repository.installationId),
         )
-
         return {
           filename: file.filename,
-          content,
+          content: content ?? '',
         }
       } catch (error) {
         console.error(`Error fetching content for ${file.filename}:`, error)

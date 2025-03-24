@@ -21,20 +21,27 @@ export const processor: Processor = async (sql: string) => {
   const parseErrors: ProcessError[] = []
 
   const errors = await processSQLInChunks(sql, CHUNK_SIZE, async (chunk) => {
+    // Offset markers for chunk processing control:
+    // - readOffset: Tracks the position after the last complete statement,
+    //   used when a statement is partially processed and needs continuation
+    // - retryOffset: Indicates where parsing failed and/or should be retried
+    //   with a different chunk size (used in shrinking/expanding modes)
     let readOffset: number | null = null
-    let errorOffset: number | null = null
+    let retryOffset: number | null = null
     const errors: ProcessError[] = []
 
     const { parse_tree, error: parseError } = await parse(chunk)
 
     if (parse_tree.stmts.length > 0 && parseError !== null) {
-      throw new Error('UnexpectedCondition')
+      throw new Error(
+        'UnexpectedCondition. parse_tree.stmts.length > 0 && parseError !== null',
+      )
     }
 
     if (parseError !== null) {
       errors.push(new UnexpectedTokenWarningError(parseError.message))
-      errorOffset = parseError.cursorpos
-      return [errorOffset, readOffset, errors]
+      retryOffset = parseError.cursorpos
+      return [retryOffset, readOffset, errors]
     }
 
     let isLastStatementComplete = true
@@ -45,7 +52,8 @@ export const processor: Processor = async (sql: string) => {
       if (lastStmt?.stmt_len === undefined) {
         isLastStatementComplete = false
         if (lastStmt?.stmt_location === undefined) {
-          throw new Error('UnexpectedCondition')
+          retryOffset = 0 // no error, but the statement is not complete
+          return [retryOffset, readOffset, errors]
         }
         readOffset = lastStmt?.stmt_location - 1
       }
@@ -64,7 +72,7 @@ export const processor: Processor = async (sql: string) => {
 
     mergeDBStructures(dbSchema, convertedSchema)
 
-    return [errorOffset, readOffset, errors]
+    return [retryOffset, readOffset, errors]
   })
 
   return { value: dbSchema, errors: parseErrors.concat(errors) }
