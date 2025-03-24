@@ -73,8 +73,8 @@ export default withSentryConfig(nextConfig, {
   org: process.env.SENTRY_ORG,
   project: process.env.SENTRY_PROJECT,
 
-  // Only print logs for uploading source maps in CI
-  silent: !process.env.CI,
+  // Only print logs for uploading source maps in preview or production environments
+  silent: process.env.NEXT_PUBLIC_ENV_NAME === 'development',
 
   // For all available options, see:
   // https://docs.sentry.io/platforms/javascript/guides/nextjs/manual-setup/
@@ -96,7 +96,21 @@ export default withSentryConfig(nextConfig, {
   // Hides source maps from generated client bundles
   sourcemaps: {
     disable: false,
-    assets: '.next',
+    assets: [
+      '.next/**/*.js',
+      '.next/**/*.js.map',
+      '.next/static/chunks/**/*.js',
+      '.next/static/chunks/**/*.js.map',
+      '.next/static/runtime/*.js',
+      '.next/static/runtime/*.js.map',
+      '.next/server/pages/**/*.js',
+      '.next/server/pages/**/*.js.map',
+      '.next/server/chunks/*.js',
+      '.next/server/chunks/*.js.map',
+      '.next/app-build-manifest.json',
+      '.next/build-manifest.json',
+    ],
+    ignore: ['node_modules/**/*'],
   },
 
   hideSourceMaps: true,

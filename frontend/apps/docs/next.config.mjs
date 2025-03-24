@@ -16,8 +16,8 @@ export default withSentryConfig(withMDX(config), {
   org: process.env.SENTRY_ORG,
   project: process.env.SENTRY_PROJECT,
 
-  // Only print logs for uploading source maps in CI
-  silent: !process.env.CI,
+  // Only print logs for uploading source maps in preview or production environments
+  silent: process.env.NEXT_PUBLIC_ENV_NAME === 'development',
 
   // For all available options, see:
   // https://docs.sentry.io/platforms/javascript/guides/nextjs/manual-setup/
