@@ -17,6 +17,7 @@ model Project {
   reviews   OverallReview[]
   repositoryMappings ProjectRepositoryMapping[]
   watchSchemaFilePatterns WatchSchemaFilePattern[]
+  watchSchemaMetaFilePatterns WatchSchemaMetaFilePattern[]
   docs      Doc[]
 }
 
@@ -83,6 +84,15 @@ model ProjectRepositoryMapping {
 }
 
 model WatchSchemaFilePattern {
+  id        Int      @id @default(autoincrement())
+  pattern   String
+  projectId Int
+  project   Project  @relation(fields: [projectId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model WatchSchemaMetaFilePattern {
   id        Int      @id @default(autoincrement())
   pattern   String
   projectId Int
