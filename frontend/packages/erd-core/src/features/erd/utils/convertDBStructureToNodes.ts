@@ -69,7 +69,7 @@ export const convertDBStructureToNodes = ({
     id: rel.name,
     type: 'relationship',
     source: rel?.cardinality === 'MANY_TO_MANY' ? '' : rel.primaryTableName,
-    target: rel?.cardinality === 'MANY_TO_MANY' ? '' : rel.primaryTableName,
+    target: rel?.cardinality === 'MANY_TO_MANY' ? '' : rel.foreignTableName,
     sourceHandle:
       showMode === 'TABLE_NAME'
         ? null
