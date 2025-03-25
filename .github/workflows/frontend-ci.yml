@@ -27,6 +27,12 @@ jobs:
               - '.github/workflows/frontend-ci.yml'
               - '.github/actions/pnpm-setup/**'
               - './frontend/**'
+              - '.syncpackrc'
+              - 'biome.jsonc'
+              - 'package.json'
+              - 'pnpm-lock.yaml'
+              - 'pnpm-workspace.yaml'
+              - 'turbo.json'
 
   frontend-lint:
     needs: [setup-job]
@@ -49,3 +55,29 @@ jobs:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/pnpm-setup
       - run: pnpm test:turbo
+
+  check-supabase-types-diff:
+    needs: [setup-job]
+    if: ${{ needs.setup-job.outputs.has-changes == 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: ./frontend/packages/db
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/pnpm-setup
+      - run: pnpm supabase:start
+      - run: pnpm supabase:gen
+      - name: Check for diff in generated types
+        run: |
+          git add supabase/database.types.ts
+          if ! git diff HEAD --ignore-space-at-eol --exit-code supabase/database.types.ts; then
+            echo "Generated types differ from committed file."
+            git diff HEAD supabase/database.types.ts
+            exit 1
+          else
+            echo "Generated types are up-to-date."
+            exit 0
+          fi

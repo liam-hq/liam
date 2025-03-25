@@ -1,14 +1,15 @@
 import * as v from 'valibot'
 
-const columnNameSchema = v.string()
+// Export these schema definitions
+export const columnNameSchema = v.string()
 
-const tableNameSchema = v.string()
+export const tableNameSchema = v.string()
 
-const indexNameSchema = v.string()
+export const indexNameSchema = v.string()
 
-const relationshipNameSchema = v.string()
+export const relationshipNameSchema = v.string()
 
-const columnSchema = v.object({
+export const columnSchema = v.object({
   name: columnNameSchema,
   type: v.string(),
   default: v.nullable(v.union([v.string(), v.number(), v.boolean()])),
@@ -33,7 +34,7 @@ export type Index = v.InferOutput<typeof indexSchema>
 const indicesSchema = v.record(indexNameSchema, indexSchema)
 export type Indices = v.InferOutput<typeof indicesSchema>
 
-const tableSchema = v.object({
+export const tableSchema = v.object({
   name: tableNameSchema,
   columns: columnsSchema,
   comment: v.nullable(v.string()),
@@ -61,7 +62,7 @@ export type ForeignKeyConstraint = v.InferOutput<
   typeof foreignKeyConstraintSchema
 >
 
-const relationshipSchema = v.object({
+export const relationshipSchema = v.object({
   name: relationshipNameSchema,
   primaryTableName: tableNameSchema,
   primaryColumnName: columnNameSchema,

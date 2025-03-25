@@ -11,7 +11,7 @@
     "html-to-text": "9.0.5",
     "langchain": "0.3.19",
     "langfuse-langchain": "3.36.0",
-    "next": "15.1.2",
+    "next": "15.2.3",
     "prisma": "6.2.2",
     "react": "18.3.1",
     "react-dom": "18"

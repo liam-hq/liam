@@ -1,19 +1,15 @@
-import { prisma } from '@liam-hq/db'
+import { createClient } from '@/libs/db/server'
 import Link from 'next/link'
 import type { FC } from 'react'
 import styles from './ProjectsPage.module.css'
 
 async function getProjects() {
-  const projects = await prisma.project.findMany({
-    select: {
-      id: true,
-      name: true,
-      createdAt: true,
-    },
-    orderBy: {
-      id: 'desc',
-    },
-  })
+  const supabase = await createClient()
+  const { data: projects } = await supabase
+    .from('Project')
+    .select('id, name, createdAt')
+    .order('id', { ascending: false })
+
   return projects
 }
 
@@ -29,7 +25,7 @@ export const ProjectsPage: FC = async () => {
         </Link>
       </div>
 
-      {projects.length === 0 ? (
+      {projects === null || projects.length === 0 ? (
         <div className={styles.emptyState}>
           <p>No projects found.</p>
           <p>Create a new project to get started.</p>
@@ -43,9 +39,7 @@ export const ProjectsPage: FC = async () => {
               className={styles.projectCard}
             >
               <h2>{project.name || 'Untitled Project'}</h2>
-              <p className={styles.createdAt}>
-                Created: {project.createdAt.toLocaleDateString('en-US')}
-              </p>
+              <p className={styles.createdAt}>Created: {project.createdAt}</p>
             </Link>
           ))}
         </div>

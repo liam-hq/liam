@@ -1,5 +1,11 @@
 # @liam-hq/db-structure
 
+## 0.0.16
+
+### Patch Changes
+
+- [#957](https://github.com/liam-hq/liam/pull/957) - 🐛 Enhance tests for long SQL statements and fix errorOffset handling. ref. https://github.com/liam-hq/liam/issues/874 / Thanks [@hoshinotsuyoshi](https://github.com/hoshinotsuyoshi)!
+
 ## 0.0.15
 
 ### Patch Changes

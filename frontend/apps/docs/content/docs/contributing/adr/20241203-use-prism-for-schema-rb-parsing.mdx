@@ -1,0 +1,87 @@
+---
+title: 20241203 - Use Prism for schema.rb Parsing
+---
+
+## Status
+
+- [ ] Proposed
+- [x] Accepted
+- [ ] Rejected
+- [ ] Deprecated
+- [ ] Superseded
+
+## Context
+
+As part of our [Node.js-based unified database schema parsing approach](https://liambx.com/docs/contributing/adr/20241206-node-js-based-unified-db-schema-parsing), Liam needs a specific parser for Ruby's `schema.rb` files. This ADR focuses on the selection of the appropriate Ruby parser that would work within our Node.js environment.
+
+We evaluated several parser options to determine the best fit for our needs, focusing primarily on [PEG.js](https://github.com/pegjs/pegjs) and [Prism](https://github.com/ruby/prism).
+
+## Decision
+
+We have decided to adopt Prism as our parser for processing Ruby's `schema.rb` files.
+
+The decision was based on a comprehensive evaluation of multiple factors:
+
+### Parser Comparison
+
+| Feature                 | Prism                                     | PEG.js                                    |
+| ----------------------- | ----------------------------------------- | ----------------------------------------- |
+| Parser Type             | Dedicated Ruby parser                     | General parser generator                  |
+| Development             | By Shopify for Ruby                       | Community-maintained general tool         |
+| Error Tolerance         | ✅ High (designed for editor integration) | ❌ Limited                                |
+| Learning Curve          | ✅ Low for TypeScript developers          | ❌ Higher (requires grammar definition)   |
+| TypeScript Support      | ✅ Full TypeScript definitions            | ❌ Limited                                |
+| AST Traversal           | ✅ Built-in Visitor pattern               | ❌ Manual implementation needed           |
+| npm Package             | ✅ Available                              | ✅ Available                              |
+| Ruby-specific Features  | ✅ Native understanding of Ruby syntax    | ❌ Requires custom grammar implementation |
+| Implementation Effort   | ✅ Lower (ready to use for Ruby)          | ❌ Higher (needs custom grammar)          |
+| Community/Documentation | ✅ Growing, backed by Shopify             | ✅ Established                            |
+
+### Key Adoption Factors
+
+#### 1. Development Efficiency
+
+- **Lower Learning Curve**: Prism doesn't require writing custom grammar definitions
+- **Intuitive for TypeScript Developers**: The AST can be manipulated directly using familiar TypeScript patterns
+- **Ready for Ruby**: Built specifically for parsing Ruby code, eliminating the need for custom grammar development
+
+#### 2. Type Safety
+
+- TypeScript definitions provided out-of-the-box
+- Enhanced IDE support with autocompletion and type checking
+- Reduced risk of runtime errors through compile-time type checking
+
+#### 3. Implementation Pattern Unification
+
+- Using AST-based parsing approach creates consistency across the project
+- Visitor pattern for AST traversal promotes clean, maintainable code
+- Reusable patterns can be established for various parsing needs
+
+#### 4. Contribution Accessibility
+
+- Lower barrier to entry for TypeScript developers to contribute
+- Clear documentation and typing makes the codebase more approachable
+- Potential for contribution back to the Prism ecosystem
+
+#### 5. Marketing Opportunities
+
+- Novel use case of Prism in Node.js environments
+- Potential for conference presentations (e.g., RubyKaigi)
+- Opportunity to showcase Liam's innovative approach to Ruby tooling
+
+## Consequences
+
+For broader implications regarding our Node.js-based parsing approach, including WASM considerations and performance concerns, see the [Node.js-Based Unified DB Schema Parsing ADR](https://liambx.com/docs/contributing/adr/20241206-node-js-based-unified-db-schema-parsing).
+
+### Prism-Specific Consequences
+
+#### Positive
+
+- Faster development cycle due to lower learning curve and TypeScript integration
+- Improved code quality through static typing and better IDE support
+- Lower barrier to entry for TypeScript developers to contribute
+
+#### Negative
+
+- Limited control over the underlying parser implementation compared to a custom grammar
+- Dependency on Prism's development roadmap and feature support

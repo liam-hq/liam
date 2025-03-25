@@ -1,0 +1,57 @@
+---
+title: 20241206 - Node.js-Based Unified DB Schema Parsing
+---
+
+## Status
+
+- [ ] Proposed
+- [x] Accepted
+- [ ] Rejected
+- [ ] Deprecated
+- [ ] Superseded
+
+## Context
+
+Liam ERD needs to handle multiple database schema formats (e.g., PostgreSQL DDL, Rails `schema.rb`, and Prisma’s `schema.prisma`) and convert them into a unified internal structure for generating ER diagrams. The goal is to minimize user setup requirements—ideally enabling them to prepend a specific URL (for example, `liambx.com/erd/p/`) to a schema file’s location and immediately render an ER diagram.
+
+Many existing ER diagram tools introduce high operational overhead or require multiple dependencies (Java runtime, Graphviz, or issuing DML commands on a database). To achieve the desired ease of use and portability, Liam ERD must avoid these external dependencies whenever possible.
+
+However, multiple languages and formats complicate the parsing process. Each format may require its own parsing logic. Relying on multiple language runtimes (e.g., Ruby, PHP) increases complexity. The team prefers to keep the entire parsing and rendering workflow in a single environment—Node.js—potentially using WASM parsers to handle different schemas while avoiding extra runtime installations.
+
+## Decision
+
+We will perform all DB schema parsing within a Node.js environment. Specifically:
+
+1. **Node.js as the Server-Side Runtime**
+
+   - Use Node.js exclusively on the server side to perform schema parsing and ER diagram generation.
+   - Deliver the rendered ER diagrams to the client via our web application (e.g., React Server Components) without running Node.js in the browser.
+
+2. **Existing Parsers**
+
+   - For Prisma schemas (`schema.prisma`), we can leverage existing Node.js libraries.
+   - For Rails’ `schema.rb`, we plan to use [ruby/prism](https://github.com/ruby/prism) in a form that can run under Node.js (e.g., via WASM).
+   - For PostgreSQL DDL, we aim to use a WASM-compatible SQL parser tailored to PostgreSQL syntax.
+
+3. **Unified Data Model**
+
+   - Map every schema format to a common `DBStructure` type so that subsequent ER diagram generation remains format-agnostic.
+
+4. **Future Growth**
+   - If new formats emerge, we will first look for a WASM or JavaScript solution. Only if absolutely necessary will we consider introducing new runtimes or custom parser generators.
+
+## Consequences
+
+- **Positive Impacts**
+
+  - **Simplicity**: Users only need to modify the URL (e.g., prepend `liambx.com/erd/p/`) to get a rendered ER diagram, avoiding additional installs.
+  - **Consistent Tech Stack**: All parsing and server-side code is in Node.js, reducing learning and operational overhead.
+  - **Testability**: We can write tests using familiar tooling (e.g., Vitest), and integrate easily with CI/CD pipelines.
+  - **Extensibility**: A unified internal model (`DBStructure`) makes it simpler to add support for new formats later.
+
+- **Negative Impacts**
+
+  - **Parser Maintenance**: Each new format or language feature may require a dedicated parser and integration work.
+    - Even for unsupported formats or languages, users can migrate their schema to PostgreSQL and use `pg_dump` as a workaround for standardized parsing.
+  - **WASM Overhead**: Using WASM-based parsers may incur performance overhead under high load or large schemas, although this is not currently a major concern.
+  - **Dynamic Code Limitation**: Static parsing only - cannot execute dynamic features (variables, loops, conditionals) in schema files. Affects Rails' `schema.rb` and other ORM schemas that use runtime execution.

@@ -9,7 +9,7 @@ export async function postComment(
   payload: ReviewResponse,
 ): Promise<{ success: boolean; message: string }> {
   try {
-    const { reviewComment, projectId, pullRequestId, repositoryId } = payload
+    const { reviewComment, pullRequestId, repositoryId } = payload
 
     // Get repository information
     const repository = await prisma.repository.findFirst({
@@ -44,7 +44,7 @@ export async function postComment(
 
     const migration = prRecord.migration
 
-    const migrationUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/app/projects/${projectId}/migrations/${migration.id}`
+    const migrationUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/app/migrations/${migration.id}`
 
     // Append migration URL to the review comment
     const fullComment = `${reviewComment}\n\nMigration URL: ${migrationUrl}`

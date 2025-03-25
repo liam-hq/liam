@@ -6,6 +6,12 @@ import type { NextConfig } from 'next'
 const gitCommitHash = execSync('git rev-parse --short HEAD').toString().trim()
 const releaseDate = new Date().toISOString().split('T')[0]
 
+if (process.env.VERCEL_ENV === 'production') {
+  if (!process.env.ASSET_PREFIX) {
+    throw new Error('ASSET_PREFIX is not set')
+  }
+}
+
 const nextConfig: NextConfig = {
   // NOTE: Exclude Prisma-related packages from the bundle
   // These packages are installed separately in the node_modules/@prisma directory
@@ -92,12 +98,6 @@ export default withSentryConfig(nextConfig, {
   // Note: Check that the configured route will not match with your Next.js middleware, otherwise reporting of client-
   // side errors will fail.
   // tunnelRoute: "/monitoring",
-
-  // Hides source maps from generated client bundles
-  sourcemaps: {
-    disable: false,
-    assets: '.next',
-  },
 
   hideSourceMaps: true,
 

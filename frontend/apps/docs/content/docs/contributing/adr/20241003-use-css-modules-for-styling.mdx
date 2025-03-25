@@ -1,0 +1,127 @@
+---
+title: 20241003 - Use CSS Modules for Styling
+---
+
+## Status
+
+- [ ] Proposed
+- [x] Accepted
+- [ ] Rejected
+- [ ] Deprecated
+- [ ] Superseded
+
+## Context
+
+Frontend styling approaches significantly impact development efficiency, maintainability, and performance. Our project required a styling solution that meets the following requirements:
+
+1. **Design System Consistency** - Effective management of design tokens for a unified UI
+2. **Implementation Efficiency** - Leveraging Figma style export to accelerate development
+3. **AI Utilization** - Maximizing AI-assisted coding support
+4. **Code Quality** - Preventing conflicts through scoped styling
+
+We considered the following options to meet these requirements:
+
+- CSS Modules
+- Tailwind CSS
+- CSS in JS
+
+## Decision
+
+We have decided to adopt CSS Modules as our styling approach. The key factors behind this decision are:
+
+### 1. Stability and Future-Proofing with Standard Technologies
+
+- **Standard CSS Specification** - Most stable styling approach using direct CSS
+- **Immediate Access to New CSS Features** - Seamless utilization of features like CSS Variables
+- **Tool Chain Compatibility** - Standard support in major bundlers (Webpack, Vite)
+- **Technology Longevity** - Long-term viability independent of frameworks
+
+### 2. Efficient Design System Implementation
+
+- **Consistent Design Token Management** - Global variable management via CSS Variables
+- **Direct Figma Integration** - Efficient conversion from design to CSS
+- **Easy Theme Switching** - Simplified dark mode implementation through variable changes
+- **Rapid Design Change Propagation** - Changes in one place affect the entire system
+
+### 3. Team Development Optimization
+
+- **Parallel Development via Component Isolation** - Independent work areas through scoping
+- **Automatic Name Collision Avoidance** - Component-level CSS modularization
+- **Minimal Learning Curve** - Development possible with standard CSS knowledge only
+- **Code Review Simplification** - Improved readability through separation of styles and logic
+
+### 4. High Compatibility with AI-Assisted Coding
+
+- **High-Precision Generation Based on Standard Specifications** - Improved code generation accuracy
+- **Abundant Reference Information** - Leveraging global information as learning data
+- **Predictable Structure** - Streamlined debugging and modifications
+- **Adaptation to Future AI Technology Evolution** - Continuous improvement expected for standard technologies
+
+### 5. Balance Between Performance and Quality
+
+- **Build-Time Optimization** - Reduced runtime overhead
+- **Easy Code Splitting** - Component-level code splitting
+- **Caching Strategy** - Efficient caching design
+- **Bundle Size Optimization** - Automatic elimination of unnecessary styles
+
+## Consequences
+
+### Positive Impacts
+
+1. **Design Quality and Consistency**
+
+   - UI unification through design tokens
+   - Visual coherence between components
+   - Simplified multi-theme support
+
+2. **Development Productivity**
+
+   - Accelerated implementation from direct Figma export
+   - Enhanced development efficiency through AI assistance
+   - Parallel development at component level
+
+3. **Code Quality**
+
+   - Prevention of style conflicts through scoping
+   - Clear responsibility separation at component level
+   - Predictable style application
+
+4. **Technical Stability**
+
+   - Long-term maintainability through standard technologies
+   - Tool chain compatibility
+   - Performance optimization
+
+### Negative Impacts
+
+1. **UI Component Library**
+
+   - Lack of compatibility with Tailwind CSS-based libraries (shadcn/ui, etc.)
+   - Development and maintenance costs of custom UI component libraries
+   - Additional effort for third-party integration
+
+2. **Style Sharing and Global Management**
+
+   - Complexity in designing shared styles between components
+   - Need for special management of global styles
+   - Construction of style override strategies
+
+3. **Team Adaptation Costs**
+
+   - CSS Modules convention adoption
+   - Promoting understanding of the design token system
+   - Maintaining consistent implementation style
+
+### Technical Flexibility
+
+1. **Possibility of Gradual Evolution**
+
+   - Room for combining with other technologies in the future
+   - Tolerance for different approaches in specific components
+   - Natural adaptation to standard CSS evolution
+
+2. **Development Environment Interoperability**
+
+   - Integration with TypeScript
+   - Standard integration with CI/CD environments
+   - Compatibility with existing tool chains

@@ -1,0 +1,99 @@
+---
+title: 20241128 - Use Fumadocs for Documentation Site
+---
+
+## Status
+
+- [ ] Proposed
+- [x] Accepted
+- [ ] Rejected
+- [ ] Deprecated
+- [ ] Superseded
+
+## Context
+
+The Liam project required a documentation site framework that would provide a high-quality developer and user experience while being cost-effective and maintainable by the team. We needed a solution that would:
+
+- Support static site generation for optimal performance
+- Provide robust search capabilities
+- Allow for customization and extension
+  - As a design-focused team, we wanted the ability to create impactful UI components for our documentation
+- Offer a good developer experience for both code contributors and documentation writers
+
+We evaluated several popular documentation frameworks to determine the best fit for our needs, focusing on [Fumadocs](https://fumadocs.vercel.app/), [Nextra](https://nextra.site/), and [Mintlify](https://mintlify.com/).
+
+## Decision
+
+We have decided to adopt Fumadocs as our documentation site framework.
+
+The decision was based on a comprehensive evaluation of multiple factors:
+
+### Feature Comparison
+
+| Feature                    | Fumadocs                               | Nextra               | Mintlify                               |
+| -------------------------- | -------------------------------------- | -------------------- | -------------------------------------- |
+| Static Generation          | ✅                                     | ✅                   | ✅                                     |
+| Caching                    | ✅                                     | ✅                   | ✅                                     |
+| Light/Dark Mode            | ✅                                     | ✅                   | ✅                                     |
+| Syntax Highlighting        | ✅                                     | ✅                   | ✅                                     |
+| Table of Contents          | ✅                                     | ✅                   | ✅                                     |
+| Full-Text Search           | ✅ Free, with Algolia migration option | ✅ FlexSearch only   | ✅                                     |
+| Internationalization       | ✅                                     | ✅                   | ✅                                     |
+| Last Edit Date             | ✅                                     | ✅                   | ✅                                     |
+| Page Icons                 | ✅                                     | ✅                   | ✅                                     |
+| React Server Components    | ✅ App Router support                  | ❌ Pages Router only | - (Users manage MDX only)              |
+| Remote Sources             | ✅                                     | ✅                   | ✅                                     |
+| SEO                        | ✅                                     | ✅                   | ✅                                     |
+| Built-in Components        | ✅ Rich variety                        | ✅                   | ❌ Limited                             |
+| Custom Components          | ✅                                     | ✅                   | ❌                                     |
+| OpenAPI Integration        | ✅                                     | ❌                   | ✅                                     |
+| TypeScript Docs Generation | ✅                                     | ❌                   | ❌                                     |
+| TypeScript Twoslash        | ✅                                     | ✅                   | ❌                                     |
+| Styling                    | ✅ Flexible                            | ✅ Flexible          | ❌ Paid for custom CSS/JS              |
+| Web Editor                 | ❌                                     | ❌                   | ✅ In development                      |
+| Thumbs up feedback         | ❌                                     | ❌                   | ✅                                     |
+| Pricing                    | ✅ Free                                | ✅ Free              | ❌ $150/month + $100/month for preview |
+
+### Key Adoption Factors
+
+- **Cost Efficiency**: Fumadocs is open-source and free to use, aligning with our resource constraints
+- **Design Quality**: Provides high-quality UI components with minimal code requirements
+- **Functionality**: Offers comprehensive features needed for Liam documentation (full-text search, built-in components, theme switching)
+- **Extensibility**: Being Next.js-based allows for extension with custom React components
+- **Hosting and Operations**: Leverages our team's existing Next.js expertise for hosting and maintenance
+- **Marketing Opportunity**: Potential visibility through listing on the [Fumadocs showcase](https://fumadocs.vercel.app/showcase)
+
+### Why Other Options Were Not Selected
+
+- **Mintlify**:
+
+  - Prohibitively expensive pricing model
+  - Usage-based billing for AI chat features beyond 250 queries with no apparent way to disable
+  - Slower deployment process
+
+- **Nextra**:
+  - Lacks App Router and React Server Components support
+  - Limited search capabilities (FlexSearch only)
+  - Fumadocs addresses these limitations while maintaining Nextra's positive attributes
+
+## Consequences
+
+### Positive
+
+- No licensing fees, reducing project costs
+- Modern documentation site with excellent UX for our users
+- Integration with our existing Next.js knowledge and tooling
+- Flexibility to customize and extend as our documentation needs evolve
+- App Router and RSC support enables better performance and development experience
+- Rich built-in components accelerate documentation creation
+
+### Negative
+
+- Tailwind-based styling differs from Liam's [CSS Modules approach](https://liambx.com/docs/contributing/adr/20241003-use-css-modules-for-styling), creating some inconsistency
+- Requires self-hosting and domain management (though this is also an advantage for control)
+- As a newer framework, the community and ecosystem are smaller than more established alternatives
+
+### Neutral
+
+- Regular maintenance will be required to keep the documentation site updated
+- The team will need to develop expertise in Fumadocs-specific features and configurations

@@ -3,6 +3,12 @@ import { createMDX } from 'fumadocs-mdx/next'
 
 const withMDX = createMDX()
 
+if (process.env.VERCEL_ENV === 'production') {
+  if (!process.env.ASSET_PREFIX) {
+    throw new Error('ASSET_PREFIX is not set')
+  }
+}
+
 /** @type {import('next').NextConfig} */
 const config = {
   reactStrictMode: true,

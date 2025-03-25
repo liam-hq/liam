@@ -1,0 +1,64 @@
+---
+title: 20241112 - Use React Flow for ERD Visualization
+---
+
+## Status
+
+- [ ] Proposed
+- [x] Accepted
+- [ ] Rejected
+- [ ] Deprecated
+- [ ] Superseded
+
+## Context
+
+For our Entity Relationship Diagram (ERD) implementation, we needed a solution that meets the following requirements:
+
+- Ability to render 100+ tables efficiently
+- Interactive navigation features (pan, zoom)
+- Programmatic focus on specific nodes
+- Auto-formatting capabilities for table layouts
+
+Two main implementation approaches were considered:
+
+1. Using React Flow (@xyflow/react)
+2. Custom implementation using Canvas API
+
+Performance with large datasets was a primary concern, as was the ability to deliver a smooth user experience with features like panning, zooming, and automatic layout optimization.
+
+## Decision
+
+We have decided to adopt React Flow as our ERD visualization engine.
+
+The decision was based on successful performance testing showing that React Flow can handle 100+ tables with acceptable rendering performance. While we initially experienced some performance issues with edge animations (using stroke-dasharray), we were able to optimize this by implementing custom animated edges using SVG elements.
+
+React Flow also satisfies our UX requirements:
+
+- Built-in pan and zoom functionality
+- Support for programmatic node focusing
+- Integration with ELK.js for automatic layout formatting
+
+## Consequences
+
+### Positive
+
+- Faster development time compared to building a custom Canvas-based solution
+- Built-in support for essential features like pan, zoom, and node selection
+- Strong TypeScript support ensuring type safety across our implementation
+- Active community and robust documentation
+- Extensible architecture allowing for custom nodes and edges
+- Performance optimization capabilities when needed (as demonstrated with our edge animation improvements)
+
+### Negative
+
+- We depend strongly on React Flow and call the API directly
+  - But even if the React Flow is not optimal for us, we have decided that it is faster to rewrite everything.
+- Some performance tuning was necessary for optimal results with large datasets
+- Limited by React Flow's architecture and update cycle for future features
+
+### Neutral
+
+- Team needed to learn React Flow's API and concepts
+- Integration with ELK.js for auto-layout required additional development effort, but would have been necessary regardless of the chosen solution
+
+Our implementation has proven that React Flow, with appropriate optimizations, can efficiently handle our ERD visualization needs while providing an excellent user experience.
