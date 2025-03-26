@@ -140,6 +140,63 @@ export type Database = {
           },
         ]
       }
+      KnowledgeSuggestion: {
+        Row: {
+          approvedAt: string | null
+          content: string
+          createdAt: string
+          fileSha: string
+          id: number
+          overallReviewId: number | null
+          path: string
+          projectId: number
+          title: string
+          type: Database['public']['Enums']['KnowledgeType']
+          updatedAt: string
+        }
+        Insert: {
+          approvedAt?: string | null
+          content: string
+          createdAt?: string
+          fileSha: string
+          id?: number
+          overallReviewId?: number | null
+          path: string
+          projectId: number
+          title: string
+          type: Database['public']['Enums']['KnowledgeType']
+          updatedAt: string
+        }
+        Update: {
+          approvedAt?: string | null
+          content?: string
+          createdAt?: string
+          fileSha?: string
+          id?: number
+          overallReviewId?: number | null
+          path?: string
+          projectId?: number
+          title?: string
+          type?: Database['public']['Enums']['KnowledgeType']
+          updatedAt?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'KnowledgeSuggestion_overallReviewId_fkey'
+            columns: ['overallReviewId']
+            isOneToOne: false
+            referencedRelation: 'OverallReview'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'KnowledgeSuggestion_projectId_fkey'
+            columns: ['projectId']
+            isOneToOne: false
+            referencedRelation: 'Project'
+            referencedColumns: ['id']
+          },
+        ]
+      }
       Migration: {
         Row: {
           createdAt: string
@@ -382,7 +439,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      KnowledgeType: 'SCHEMA' | 'DOCS'
     }
     CompositeTypes: {
       [_ in never]: never
