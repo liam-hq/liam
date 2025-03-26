@@ -62,11 +62,6 @@ export const KnowledgeSuggestionsListPage: FC<Props> = async ({
           </Link>
           <h1>{project.name} - Knowledge Suggestions</h1>
         </div>
-        <div>
-          <Link href={`/app/projects/${projectId}/knowledge-suggestions/new`}>
-            Create New Knowledge Suggestion
-          </Link>
-        </div>
       </div>
 
       <div>
