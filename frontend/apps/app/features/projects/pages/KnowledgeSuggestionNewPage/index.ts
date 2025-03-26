@@ -1,0 +1,1 @@
+export { KnowledgeSuggestionNewPage } from './KnowledgeSuggestionNewPage'
