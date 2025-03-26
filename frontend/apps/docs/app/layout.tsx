@@ -1,6 +1,7 @@
 'use client'
 
 import { Banner } from '@/components'
+import { SentryErrorCapture } from '@/components/SentryErrorCapture'
 import { add, getTime, isAfter } from 'date-fns'
 import './global.css'
 import {
@@ -85,6 +86,7 @@ export default function Layout({ children }: { children: ReactNode }) {
           >
             {"We're launched Liam ERD!"}
           </Banner>
+          <SentryErrorCapture />
           {children}
         </RootProvider>
         <CookieConsent
