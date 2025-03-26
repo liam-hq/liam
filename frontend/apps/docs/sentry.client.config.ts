@@ -26,3 +26,27 @@ Sentry.init({
 
   environment: process.env.NEXT_PUBLIC_ENV_NAME,
 })
+
+document.addEventListener(
+  'error',
+  (event) => {
+    const target = event.target as HTMLElement
+    if (
+      target instanceof HTMLScriptElement ||
+      target instanceof HTMLLinkElement ||
+      target instanceof HTMLImageElement
+    ) {
+      const src =
+        target instanceof HTMLScriptElement ||
+        target instanceof HTMLImageElement
+          ? target.src
+          : target instanceof HTMLLinkElement
+            ? target.href
+            : null
+      if (src) {
+        Sentry.captureMessage(`Failed to load resource: ${src}`, 'error')
+      }
+    }
+  },
+  true,
+)
