@@ -8,9 +8,7 @@ const paramsSchema = v.object({
   id: v.string(),
 })
 
-export default async function KnowledgeSuggestionDetailPageWrapper({
-  params,
-}: PageProps) {
+export default async function Page({ params }: PageProps) {
   const parsedParams = v.safeParse(paramsSchema, await params)
   if (!parsedParams.success) return notFound()
 

@@ -33,7 +33,7 @@ export const processCreateKnowledgeSuggestion = async (
   const { sha } = await getFileContentWithSha(
     repositoryFullName,
     path,
-    'main', // Use main branch
+    'tmp-knowledge-suggestion', // Use tmp-knowledge-suggestion branch
     installationId,
   )
 

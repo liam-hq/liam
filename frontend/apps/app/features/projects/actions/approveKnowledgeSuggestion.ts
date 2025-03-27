@@ -3,18 +3,52 @@
 import { updateFileContent } from '@/libs/github/api.server'
 import { prisma } from '@liam-hq/db'
 import { redirect } from 'next/navigation'
+import * as v from 'valibot'
+
+// Define schema for form data validation with transforms
+const formDataSchema = v.object({
+  suggestionId: v.pipe(
+    v.string(),
+    v.transform((value) => Number(value)),
+  ),
+  repositoryOwner: v.string(),
+  repositoryName: v.string(),
+  installationId: v.pipe(
+    v.string(),
+    v.transform((value) => Number(value)),
+  ),
+  branch: v.string(),
+})
 
 export const approveKnowledgeSuggestion = async (formData: FormData) => {
-  const suggestionId = formData.get('suggestionId') as string
-  const repositoryOwner = formData.get('repositoryOwner') as string
-  const repositoryName = formData.get('repositoryName') as string
-  const installationId = formData.get('installationId') as string
+  // Parse and validate form data
+  const formDataObject = {
+    suggestionId: formData.get('suggestionId'),
+    repositoryOwner: formData.get('repositoryOwner'),
+    repositoryName: formData.get('repositoryName'),
+    installationId: formData.get('installationId'),
+    branch: formData.get('branch') ?? 'tmp-knowledge-suggestion',
+  }
+
+  const parsedData = v.safeParse(formDataSchema, formDataObject)
+
+  if (!parsedData.success) {
+    throw new Error(`Invalid form data: ${JSON.stringify(parsedData.issues)}`)
+  }
+
+  const {
+    suggestionId,
+    repositoryOwner,
+    repositoryName,
+    installationId,
+    branch,
+  } = parsedData.output
 
   try {
     // Get the knowledge suggestion
     const suggestion = await prisma.knowledgeSuggestion.findUnique({
       where: {
-        id: Number(suggestionId),
+        id: suggestionId,
       },
     })
 
@@ -30,8 +64,8 @@ export const approveKnowledgeSuggestion = async (formData: FormData) => {
       suggestion.content,
       suggestion.fileSha,
       suggestion.title, // Use title as commit message
-      Number(installationId),
-      'main', // Use main branch
+      installationId,
+      branch,
     )
 
     if (!success) {
@@ -41,7 +75,7 @@ export const approveKnowledgeSuggestion = async (formData: FormData) => {
     // Update the knowledge suggestion with approvedAt
     await prisma.knowledgeSuggestion.update({
       where: {
-        id: Number(suggestionId),
+        id: suggestionId,
       },
       data: {
         approvedAt: new Date(),
