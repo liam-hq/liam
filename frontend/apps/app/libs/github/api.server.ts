@@ -180,3 +180,77 @@ export const getFileContent = async (
     return null
   }
 }
+
+export const getFileContentWithSha = async (
+  repositoryFullName: string,
+  filePath: string,
+  ref: string,
+  installationId: number,
+): Promise<{ content: string | null; sha: string | null }> => {
+  const [owner, repo] = repositoryFullName.split('/')
+
+  if (!owner || !repo) {
+    console.error('Invalid repository format:', repositoryFullName)
+    return { content: null, sha: null }
+  }
+
+  const octokit = await createOctokit(installationId)
+
+  try {
+    const { data } = await octokit.repos.getContent({
+      owner,
+      repo,
+      path: filePath,
+      ref,
+    })
+
+    if ('type' in data && data.type === 'file' && 'content' in data) {
+      return {
+        content: Buffer.from(data.content, 'base64').toString('utf-8'),
+        sha: data.sha,
+      }
+    }
+
+    console.warn('Not a file:', filePath)
+    return { content: null, sha: null }
+  } catch (error) {
+    console.error(`Error fetching file content for ${filePath}:`, error)
+    return { content: null, sha: null }
+  }
+}
+
+export const updateFileContent = async (
+  repositoryFullName: string,
+  filePath: string,
+  content: string,
+  sha: string,
+  message: string,
+  installationId: number,
+  branch = 'tmp-knowledge-suggestion',
+): Promise<boolean> => {
+  const [owner, repo] = repositoryFullName.split('/')
+
+  if (!owner || !repo) {
+    console.error('Invalid repository format:', repositoryFullName)
+    return false
+  }
+
+  const octokit = await createOctokit(installationId)
+
+  try {
+    await octokit.repos.createOrUpdateFileContents({
+      owner,
+      repo,
+      path: filePath,
+      message,
+      content: Buffer.from(content).toString('base64'),
+      sha,
+      branch,
+    })
+
+    return true
+  } catch (error) {
+    console.error(`Error updating file content for ${filePath}:`, error)
+    return false
+  }
+}

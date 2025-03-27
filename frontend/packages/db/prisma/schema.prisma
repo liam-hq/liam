@@ -18,6 +18,7 @@ model Project {
   repositoryMappings ProjectRepositoryMapping[]
   watchSchemaFilePatterns WatchSchemaFilePattern[]
   docs      Doc[]
+  knowledgeSuggestions KnowledgeSuggestion[]
 }
 
 model Repository {
@@ -68,6 +69,7 @@ model OverallReview {
   reviewedAt    DateTime   @default(now())
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
+  knowledgeSuggestions KnowledgeSuggestion[]
 }
 
 model ProjectRepositoryMapping {
@@ -114,4 +116,25 @@ model DocVersion {
   createdAt DateTime  @default(now())
 
   @@unique([docId, version])
+}
+
+enum KnowledgeType {
+  SCHEMA
+  DOCS
+}
+
+model KnowledgeSuggestion {
+  id             Int           @id @default(autoincrement())
+  type           KnowledgeType // Either Schema or Docs
+  title          String        // Used as commit message
+  path           String        // Target file path
+  content        String        // Full content of the new file
+  fileSha        String        // SHA of the file to be updated
+  projectId      Int
+  project        Project       @relation(fields: [projectId], references: [id])
+  overallReviewId Int?
+  overallReview  OverallReview? @relation(fields: [overallReviewId], references: [id])
+  approvedAt     DateTime?     // Approval timestamp (null if not approved)
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
 }

@@ -2,6 +2,9 @@ export type GenerateReviewPayload = {
   pullRequestId: number
   projectId: number
   repositoryId: number
+  owner: string
+  name: string
+  pullRequestNumber: number
   schemaFiles: Array<{
     filename: string
     content: string
@@ -27,4 +30,12 @@ export type ReviewResponse = {
   projectId: number
   pullRequestId: number
   repositoryId: number
+}
+
+export type SchemaChangeInfo = {
+  filename: string
+  content: string
+  owner: string
+  name: string
+  pullRequestNumber: number
 }
