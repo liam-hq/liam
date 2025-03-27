@@ -7,40 +7,32 @@ type Props = {
   projectId: string
 }
 
-async function getProjectKnowledgeSuggestions(projectId: string) {
+async function getKnowledgeSuggestions(projectId: string) {
   try {
     const projectId_num = Number(projectId)
 
-    // Get the project with knowledge suggestions
-    const project = await prisma.project.findUnique({
+    // Directly query knowledge suggestions by projectId
+    const knowledgeSuggestions = await prisma.knowledgeSuggestion.findMany({
       where: {
-        id: projectId_num,
+        projectId: projectId_num,
       },
-      include: {
-        knowledgeSuggestions: {
-          select: {
-            id: true,
-            type: true,
-            title: true,
-            path: true,
-            approvedAt: true,
-            createdAt: true,
-            updatedAt: true,
-          },
-          orderBy: {
-            createdAt: 'desc',
-          },
-        },
+      select: {
+        id: true,
+        type: true,
+        title: true,
+        path: true,
+        approvedAt: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+      orderBy: {
+        createdAt: 'desc',
       },
     })
 
-    if (!project) {
-      notFound()
-    }
-
-    return project
+    return knowledgeSuggestions
   } catch (error) {
-    console.error('Error fetching project knowledge suggestions:', error)
+    console.error('Error fetching knowledge suggestions:', error)
     notFound()
   }
 }
@@ -48,7 +40,7 @@ async function getProjectKnowledgeSuggestions(projectId: string) {
 export const KnowledgeSuggestionsListPage: FC<Props> = async ({
   projectId,
 }) => {
-  const project = await getProjectKnowledgeSuggestions(projectId)
+  const knowledgeSuggestions = await getKnowledgeSuggestions(projectId)
 
   return (
     <div>
@@ -60,18 +52,18 @@ export const KnowledgeSuggestionsListPage: FC<Props> = async ({
           >
             ← Back to Project
           </Link>
-          <h1>{project.name} - Knowledge Suggestions</h1>
+          <h1>Knowledge Suggestions</h1>
         </div>
       </div>
 
       <div>
-        {project.knowledgeSuggestions.length === 0 ? (
+        {knowledgeSuggestions.length === 0 ? (
           <div>
             <p>No knowledge suggestions found for this project.</p>
           </div>
         ) : (
           <ul>
-            {project.knowledgeSuggestions.map((suggestion) => (
+            {knowledgeSuggestions.map((suggestion) => (
               <li key={suggestion.id}>
                 <Link
                   href={`/app/projects/${projectId}/knowledge-suggestions/${suggestion.id}`}
