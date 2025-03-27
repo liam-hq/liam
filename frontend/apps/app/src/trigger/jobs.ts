@@ -84,7 +84,7 @@ export const saveReviewTask = task({
         projectId: payload.projectId,
         type: 'DOCS',
         title: `Docs update from PR #${payload.pullRequestNumber}`,
-        path: 'tmp/docs.md',
+        path: 'README.md',
         content: `edited from PR #${payload.pullRequestNumber}`,
         repositoryOwner: payload.owner,
         repositoryName: payload.name,
