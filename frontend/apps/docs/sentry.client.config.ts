@@ -22,7 +22,15 @@ Sentry.init({
   replaysOnErrorSampleRate: 1.0,
 
   // Setting this option to true will print useful information to the console while you're setting up Sentry.
-  debug: false,
+  debug: process.env.NEXT_PUBLIC_ENV_NAME === 'development',
 
   environment: process.env.NEXT_PUBLIC_ENV_NAME,
+
+  beforeSend(event) {
+    return event
+  },
 })
+
+if (!process.env.SENTRY_DSN && typeof window !== 'undefined') {
+  console.warn('Sentry DSN is not set. Error tracking will be disabled.')
+}

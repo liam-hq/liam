@@ -24,7 +24,7 @@ export const SentryErrorCapture = () => {
         target instanceof HTMLLinkElement ||
         target instanceof HTMLImageElement
       ) {
-        let src = null
+        let src: string | null = null
         if (
           target instanceof HTMLScriptElement ||
           target instanceof HTMLImageElement
@@ -35,7 +35,13 @@ export const SentryErrorCapture = () => {
         }
 
         if (src) {
-          Sentry.captureMessage(`Failed to load resource: ${src}`, 'error')
+          try {
+            if (process.env.NEXT_PUBLIC_ENV_NAME === 'development') {
+            }
+            Sentry.captureMessage(`Failed to load resource: ${src}`, 'error')
+          } catch (e) {
+            console.warn('Failed to send error to Sentry:', e)
+          }
         }
       }
     }
