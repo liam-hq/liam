@@ -68,8 +68,8 @@ export const convertDBStructureToNodes = ({
   const edges: Edge[] = relationships.map((rel) => ({
     id: rel.name,
     type: 'relationship',
-    source: rel?.cardinality === 'MANY_TO_MANY' ? '' : rel.primaryTableName,
-    target: rel?.cardinality === 'MANY_TO_MANY' ? '' : rel.foreignTableName,
+    source: rel.primaryTableName,
+    target: rel.foreignTableName,
     sourceHandle:
       showMode === 'TABLE_NAME'
         ? null

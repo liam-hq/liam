@@ -97,6 +97,7 @@ async function parsePrismaSchema(schemaString: string): Promise<ProcessResult> {
       indices: {},
     }
   }
+
   for (const model of dmmf.datamodel.models) {
     for (const field of model.fields) {
       if (!field.relationName) continue
@@ -154,6 +155,7 @@ async function parsePrismaSchema(schemaString: string): Promise<ProcessResult> {
       )
     }
   }
+
   for (const index of dmmf.datamodel.indexes) {
     const table = tables[index.model]
     if (!table) continue
@@ -175,33 +177,43 @@ async function parsePrismaSchema(schemaString: string): Promise<ProcessResult> {
     for (const relationship in manyToManyRelationships) {
       const relationshipValue = manyToManyRelationships[relationship]
       if (!relationshipValue) continue // Skip if undefined
+      const relationshipName = relationshipValue?.name
 
       const { primaryTableName, foreignTableName } = relationshipValue
       const indexes = dmmf?.datamodel?.indexes
       if (!indexes) continue
 
       const primaryTableIndices = getTableIndices(indexes, primaryTableName)
+
       const foreignTableIndices = getTableIndices(indexes, foreignTableName)
 
       const columns: Columns = {}
+
+      const relationshipTableName = `_${relationship}`
       processTableIndices(
         primaryTableIndices,
         primaryTableName,
         tables,
         columns,
+        relationshipName,
+        relationships,
+        relationshipTableName,
       )
       processTableIndices(
         foreignTableIndices,
         primaryTableName,
         tables,
         columns,
+        relationshipName,
+        relationships,
+        relationshipTableName,
       )
 
       const indicesColumn = Object.keys(columns)
       const indicesName = `${relationshipValue?.name}_pkey`
 
-      tables[relationship] = {
-        name: relationship,
+      tables[relationshipTableName] = {
+        name: relationshipTableName,
         columns,
         comment: null,
         indices: {
@@ -212,6 +224,12 @@ async function parsePrismaSchema(schemaString: string): Promise<ProcessResult> {
           },
         },
       }
+    }
+  }
+
+  for (const key in relationships) {
+    if (relationships[key]?.cardinality === 'MANY_TO_MANY') {
+      delete relationships[key]
     }
   }
   return {
@@ -233,13 +251,17 @@ function extractIndex(index: DMMF.Index): Index | null {
       }
     case 'unique':
       return {
-        name: `${index.model}_${index.fields.map((field) => field.name).join('_')}_key`,
+        name: `${index.model}_${index.fields
+          .map((field) => field.name)
+          .join('_')}_key`,
         unique: true,
         columns: index.fields.map((field) => field.name),
       }
     case 'normal':
       return {
-        name: `${index.model}_${index.fields.map((field) => field.name).join('_')}_idx`,
+        name: `${index.model}_${index.fields
+          .map((field) => field.name)
+          .join('_')}_idx`,
         unique: false,
         columns: index.fields.map((field) => field.name),
       }
@@ -299,6 +321,9 @@ function processTableIndices(
   tableName: string,
   tables: Record<string, Table>,
   columns: Columns,
+  relationshipName: string,
+  relationships: Record<string, Relationship>,
+  relationshipTableName: string,
 ): void {
   for (const table of indices) {
     for (const field of table.fields) {
@@ -326,6 +351,18 @@ function processTableIndices(
           comment: '',
           check: '',
         }
+      }
+
+      const relationShipWithTheTable = `${table.model}To${relationshipName}`
+      relationships[relationShipWithTheTable] = {
+        name: relationShipWithTheTable,
+        primaryTableName: table.model,
+        primaryColumnName: field?.name,
+        foreignTableName: relationshipTableName,
+        foreignColumnName: columnName,
+        cardinality: 'ONE_TO_MANY',
+        updateConstraint: 'NO_ACTION',
+        deleteConstraint: 'NO_ACTION',
       }
     }
   }
