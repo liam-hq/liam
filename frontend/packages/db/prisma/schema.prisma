@@ -17,7 +17,6 @@ model Project {
   reviews   OverallReview[]
   repositoryMappings ProjectRepositoryMapping[]
   watchSchemaFilePatterns WatchSchemaFilePattern[]
-  docs      Doc[]
   knowledgeSuggestions KnowledgeSuggestion[]
   githubDocFilePaths GitHubDocFilePath[]
 }
@@ -94,30 +93,6 @@ model WatchSchemaFilePattern {
   updatedAt DateTime @updatedAt
 }
 
-model Doc {
-  id              Int         @id @default(autoincrement())
-  title           String
-  content         String
-  latestVersionId Int?
-  projectId       Int
-  project         Project     @relation(fields: [projectId], references: [id])
-  createdAt       DateTime    @default(now())
-  updatedAt       DateTime    @updatedAt
-
-  versions        DocVersion[]
-}
-
-model DocVersion {
-  id        Int       @id @default(autoincrement())
-  docId     Int
-  doc       Doc       @relation(fields: [docId], references: [id])
-  version   Int
-  title     String
-  content   String
-  createdAt DateTime  @default(now())
-
-  @@unique([docId, version])
-}
 
 enum KnowledgeType {
   SCHEMA
