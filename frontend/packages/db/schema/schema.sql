@@ -45,73 +45,6 @@ SET default_tablespace = '';
 SET default_table_access_method = heap;
 
 --
--- Name: Doc; Type: TABLE; Schema: public; Owner: -
---
-
-CREATE TABLE public."Doc" (
-    id integer NOT NULL,
-    title text NOT NULL,
-    content text NOT NULL,
-    "latestVersionId" integer,
-    "projectId" integer NOT NULL,
-    "createdAt" timestamp(3) without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    "updatedAt" timestamp(3) without time zone NOT NULL
-);
-
-
---
--- Name: DocVersion; Type: TABLE; Schema: public; Owner: -
---
-
-CREATE TABLE public."DocVersion" (
-    id integer NOT NULL,
-    "docId" integer NOT NULL,
-    version integer NOT NULL,
-    content text NOT NULL,
-    "createdAt" timestamp(3) without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    title text NOT NULL
-);
-
-
---
--- Name: DocVersion_id_seq; Type: SEQUENCE; Schema: public; Owner: -
---
-
-CREATE SEQUENCE public."DocVersion_id_seq"
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
---
--- Name: DocVersion_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
---
-
-ALTER SEQUENCE public."DocVersion_id_seq" OWNED BY public."DocVersion".id;
-
-
---
--- Name: Doc_id_seq; Type: SEQUENCE; Schema: public; Owner: -
---
-
-CREATE SEQUENCE public."Doc_id_seq"
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
---
--- Name: Doc_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
---
-
-ALTER SEQUENCE public."Doc_id_seq" OWNED BY public."Doc".id;
-
-
---
 -- Name: GitHubDocFilePath; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -428,20 +361,6 @@ CREATE TABLE public._prisma_migrations (
 
 
 --
--- Name: Doc id; Type: DEFAULT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public."Doc" ALTER COLUMN id SET DEFAULT nextval('public."Doc_id_seq"'::regclass);
-
-
---
--- Name: DocVersion id; Type: DEFAULT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public."DocVersion" ALTER COLUMN id SET DEFAULT nextval('public."DocVersion_id_seq"'::regclass);
-
-
---
 -- Name: GitHubDocFilePath id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -502,22 +421,6 @@ ALTER TABLE ONLY public."Repository" ALTER COLUMN id SET DEFAULT nextval('public
 --
 
 ALTER TABLE ONLY public."WatchSchemaFilePattern" ALTER COLUMN id SET DEFAULT nextval('public."WatchSchemaFilePattern_id_seq"'::regclass);
-
-
---
--- Name: DocVersion DocVersion_pkey; Type: CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public."DocVersion"
-    ADD CONSTRAINT "DocVersion_pkey" PRIMARY KEY (id);
-
-
---
--- Name: Doc Doc_pkey; Type: CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public."Doc"
-    ADD CONSTRAINT "Doc_pkey" PRIMARY KEY (id);
 
 
 --
@@ -601,13 +504,6 @@ ALTER TABLE ONLY public._prisma_migrations
 
 
 --
--- Name: DocVersion_docId_version_key; Type: INDEX; Schema: public; Owner: -
---
-
-CREATE UNIQUE INDEX "DocVersion_docId_version_key" ON public."DocVersion" USING btree ("docId", version);
-
-
---
 -- Name: GitHubDocFilePath_path_projectId_key; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -640,22 +536,6 @@ CREATE UNIQUE INDEX "PullRequest_repositoryId_pullNumber_key" ON public."PullReq
 --
 
 CREATE UNIQUE INDEX "Repository_owner_name_key" ON public."Repository" USING btree (owner, name);
-
-
---
--- Name: DocVersion DocVersion_docId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public."DocVersion"
-    ADD CONSTRAINT "DocVersion_docId_fkey" FOREIGN KEY ("docId") REFERENCES public."Doc"(id) ON UPDATE CASCADE ON DELETE RESTRICT;
-
-
---
--- Name: Doc Doc_projectId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public."Doc"
-    ADD CONSTRAINT "Doc_projectId_fkey" FOREIGN KEY ("projectId") REFERENCES public."Project"(id) ON UPDATE CASCADE ON DELETE RESTRICT;
 
 
 --
@@ -738,24 +618,6 @@ GRANT USAGE ON SCHEMA public TO postgres;
 GRANT USAGE ON SCHEMA public TO anon;
 GRANT USAGE ON SCHEMA public TO authenticated;
 GRANT USAGE ON SCHEMA public TO service_role;
-
-
---
--- Name: SEQUENCE "DocVersion_id_seq"; Type: ACL; Schema: public; Owner: -
---
-
-GRANT ALL ON SEQUENCE public."DocVersion_id_seq" TO anon;
-GRANT ALL ON SEQUENCE public."DocVersion_id_seq" TO authenticated;
-GRANT ALL ON SEQUENCE public."DocVersion_id_seq" TO service_role;
-
-
---
--- Name: SEQUENCE "Doc_id_seq"; Type: ACL; Schema: public; Owner: -
---
-
-GRANT ALL ON SEQUENCE public."Doc_id_seq" TO anon;
-GRANT ALL ON SEQUENCE public."Doc_id_seq" TO authenticated;
-GRANT ALL ON SEQUENCE public."Doc_id_seq" TO service_role;
 
 
 --
