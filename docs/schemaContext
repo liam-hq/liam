@@ -1,0 +1,5 @@
+# Project-Specific Constraints that Shape Schema Design
+
+- All new fields added to models must be assessed for their necessity in terms of application logic and data integrity.
+- The inclusion of nullable fields should be carefully considered, and defaults should be applied when appropriate to ensure that application behavior remains predictable.
+- Communication about schema changes is critical across teams, especially for those working on front-end and API integrations.
