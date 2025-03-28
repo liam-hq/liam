@@ -1,0 +1,2 @@
+### Field/Model Specific Patterns
+- The `sample` field in the `PRCommit` model is intended for storing additional context or metadata related to pull request commits.
