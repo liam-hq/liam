@@ -1,0 +1,6 @@
+# Reusable Patterns and Rules for Database Schema Design
+
+- When adding new fields to existing models, ensure that they are documented clearly in project documentation.
+- Consider specifying constraints (like `@required` or `@unique`) for new fields to maintain data integrity, especially if they are essential for business logic.
+- If a new field is likely to be queried frequently, evaluate the need for indexing to enhance performance.
+- Default values should be set for fields that should not be nullable to prevent unintended null entries.
