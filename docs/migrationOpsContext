@@ -1,0 +1,4 @@
+# Operational Constraints on Executing Migrations
+
+- Timing of migrations should be carefully planned to minimize disruption, especially if changes impact application logic significantly.
+- Ensure that the deployment process includes steps for verifying the impact of schema changes in a staging environment before production rollout.
