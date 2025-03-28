@@ -1,11 +1,12 @@
 import type { PageProps } from '@/app/types'
+import { branchOrCommitSchema } from '@/utils/routes'
 import { notFound } from 'next/navigation'
 import * as v from 'valibot'
 import { DocsListPage } from './DocsListPage'
 
 const paramsSchema = v.object({
   projectId: v.string(),
-  branchOrCommit: v.string(),
+  branchOrCommit: branchOrCommitSchema,
 })
 
 export default async function Page({ params }: PageProps) {

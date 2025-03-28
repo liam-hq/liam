@@ -1,3 +1,4 @@
+import { urlgen } from '@/utils/routes'
 import Link from 'next/link'
 import { getGitHubDocFilePaths } from './getGitHubDocFilePaths'
 
@@ -28,7 +29,14 @@ export const DocsListPage = async ({
         {docFilePaths.map((docFilePath) => (
           <li key={docFilePath.id}>
             <Link
-              href={`/app/projects/${projectId}/ref/${branchOrCommit}/docs/${docFilePath.path}`}
+              href={urlgen(
+                'projects/[projectId]/ref/[branchOrCommit]/docs/[docFilePath]',
+                {
+                  projectId,
+                  branchOrCommit,
+                  docFilePath: docFilePath.path,
+                },
+              )}
             >
               {docFilePath.path}
             </Link>

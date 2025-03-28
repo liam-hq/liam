@@ -18,6 +18,11 @@ export type RouteDefinitions = {
     id: string
   }) => string
   'migrations/[migrationId]': (params: { migrationId: string }) => string
+  'projects/[projectId]/ref/[branchOrCommit]/docs/[docFilePath]': (params: {
+    projectId: string
+    branchOrCommit: string
+    docFilePath: string
+  }) => string
 }
 
 export const routeDefinitions: RouteDefinitions = {
@@ -49,5 +54,13 @@ export const routeDefinitions: RouteDefinitions = {
   },
   'migrations/[migrationId]': ({ migrationId }) => {
     return `/app/migrations/${migrationId}`
+  },
+  'projects/[projectId]/ref/[branchOrCommit]/docs/[docFilePath]': ({
+    projectId,
+    branchOrCommit,
+    docFilePath,
+  }) => {
+    const encodedBranchOrCommit = encodeURIComponent(branchOrCommit)
+    return `/app/projects/${projectId}/ref/${encodedBranchOrCommit}/docs/${docFilePath}`
   },
 } as const
