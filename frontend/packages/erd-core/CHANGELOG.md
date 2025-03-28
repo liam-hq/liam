@@ -1,5 +1,11 @@
 # @liam-hq/erd-core
 
+## 0.1.6
+
+### Patch Changes
+
+- [#964](https://github.com/liam-hq/liam/pull/964) - 💄 Show Indexes instead of Unique / Thanks [@ya2s](https://github.com/ya2s)!
+
 ## 0.1.5
 
 ### Patch Changes
