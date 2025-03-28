@@ -30,7 +30,7 @@
     "migrate:dev": "sh ./scripts/migrate-dev.sh",
     "migrate:status": "prisma migrate status",
     "supabase:gen": "pnpm run '/^supabase:gen:.*/'",
-    "supabase:gen:schema_sql": "bash ./scripts/generate-schema-ddl.sh",
+    "supabase:gen:schema_sql": "pnpm supabase db dump --local > ./schema/schema.sql",
     "supabase:gen:types": "supabase gen types typescript --local > supabase/database.types.ts && biome check --write --unsafe supabase/database.types.ts",
     "supabase:migration": "supabase db diff -f",
     "supabase:reset": "pnpm supabase db reset",
