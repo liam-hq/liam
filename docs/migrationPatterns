@@ -1,0 +1,5 @@
+# Safe and Consistent Migration Strategies
+
+- Ensure that migrations reflect changes in the schema accurately, particularly when adding new fields to models.
+- Test all CRUD operations after schema modifications to confirm that new fields are handled correctly across the application.
+- Document schema changes thoroughly, including their purpose and usage, to facilitate team understanding and integration.
