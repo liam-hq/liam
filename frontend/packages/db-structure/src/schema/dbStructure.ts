@@ -43,7 +43,7 @@ export const tableSchema = v.object({
 
 export type Table = v.InferOutput<typeof tableSchema>
 
-const cardinalitySchema = v.picklist(['ONE_TO_ONE', 'ONE_TO_MANY'])
+const cardinalitySchema = v.picklist(['ONE_TO_ONE', 'ONE_TO_MANY', 'MANY_TO_MANY'])
 export type Cardinality = v.InferOutput<typeof cardinalitySchema>
 
 const foreignKeyConstraintSchema = v.picklist([
