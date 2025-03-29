@@ -165,18 +165,21 @@ function extractIndex(index: DMMF.Index): Index | null {
         name: `${index.model}_pkey`,
         unique: true,
         columns: index.fields.map((field) => field.name),
+        type: '',
       }
     case 'unique':
       return {
         name: `${index.model}_${index.fields.map((field) => field.name).join('_')}_key`,
         unique: true,
         columns: index.fields.map((field) => field.name),
+        type: '',
       }
     case 'normal':
       return {
         name: `${index.model}_${index.fields.map((field) => field.name).join('_')}_idx`,
         unique: false,
         columns: index.fields.map((field) => field.name),
+        type: index.algorithm ?? '',
       }
     // NOTE: fulltext index is not supported for postgres
     // ref: https://www.prisma.io/docs/orm/prisma-schema/data-model/indexes#full-text-indexes-mysql-and-mongodb

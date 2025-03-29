@@ -176,6 +176,7 @@ function extractIndexDetails(node: CallNode): Index {
     name: '',
     unique: false,
     columns: [],
+    type: '',
   })
 
   const argNodes = node.arguments_?.compactChildNodes() || []
@@ -235,6 +236,10 @@ function extractIndexOptions(hashNode: KeywordHashNode, index: Index): void {
         break
       case 'unique':
         index.unique = value instanceof TrueNode
+        break
+      case 'using':
+        // @ts-expect-error: unescaped is defined as string but it is actually object
+        index.type = value.unescaped.value
         break
     }
   }

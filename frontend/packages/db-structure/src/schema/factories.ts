@@ -35,6 +35,7 @@ export const anIndex = (override?: Partial<Index>): Index => ({
   name: '',
   unique: false,
   columns: [],
+  type: '',
   ...override,
 })
 

@@ -128,6 +128,8 @@ async function parseTblsSchema(schemaString: string): Promise<ProcessResult> {
           name: tblsIndex.name,
           columns: tblsIndex.columns,
           unique: tblsIndex.def.toLowerCase().includes('unique'),
+          type:
+            tblsIndex.def.toLocaleLowerCase().match(/using\s+(\w+)/)?.[1] || '',
         })
       }
     }

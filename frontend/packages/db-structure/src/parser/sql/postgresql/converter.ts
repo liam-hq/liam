@@ -239,6 +239,7 @@ export const convertToDBStructure = (stmts: RawStmt[]): ProcessResult => {
         return undefined
       })
       .filter((name): name is string => name !== undefined)
+    const type = indexStmt.accessMethod ?? ''
 
     if (tableName) {
       tables[tableName] = {
@@ -251,6 +252,7 @@ export const convertToDBStructure = (stmts: RawStmt[]): ProcessResult => {
             name: indexName,
             unique: unique,
             columns,
+            type,
           },
         },
       }

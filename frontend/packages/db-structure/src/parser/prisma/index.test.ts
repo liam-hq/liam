@@ -431,6 +431,7 @@ describe(_processor, () => {
                 name: 'users_raw_email_address_key',
                 columns: ['raw_email_address'],
                 unique: true,
+                type: '',
               },
             },
           }),

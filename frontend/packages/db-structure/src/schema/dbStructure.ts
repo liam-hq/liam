@@ -28,6 +28,7 @@ const indexSchema = v.object({
   name: v.string(),
   unique: v.boolean(),
   columns: v.array(v.string()),
+  type: v.string(),
 })
 export type Index = v.InferOutput<typeof indexSchema>
 
