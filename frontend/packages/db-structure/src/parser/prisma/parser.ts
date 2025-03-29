@@ -108,7 +108,7 @@ async function parsePrismaSchema(schemaString: string): Promise<ProcessResult> {
         field.relationFromFields?.[0] &&
         (field.relationFromFields?.length ?? 0) > 0
 
-      let relationship: Relationship = {
+      const relationship: Relationship = {
         name: field.relationName,
         primaryTableName: field.type,
         primaryColumnName:
@@ -124,9 +124,7 @@ async function parsePrismaSchema(schemaString: string): Promise<ProcessResult> {
             : '',
         cardinality: 'ONE_TO_ONE',
         updateConstraint: 'NO_ACTION',
-        deleteConstraint: normalizeConstraintName(
-              field.relationOnDelete ?? '',
-        ),
+        deleteConstraint: normalizeConstraintName(field.relationOnDelete ?? ''),
       }
 
       if (field.isList) {
@@ -156,6 +154,7 @@ async function parsePrismaSchema(schemaString: string): Promise<ProcessResult> {
       )
     }
   }
+
   for (const index of dmmf.datamodel.indexes) {
     const table = tables[index.model]
     if (!table) continue
@@ -165,6 +164,66 @@ async function parsePrismaSchema(schemaString: string): Promise<ProcessResult> {
     )
     if (!indexInfo) continue
     table.indexes[indexInfo.name] = indexInfo
+  }
+
+  const manyToManyRelationships = Object.fromEntries(
+    Object.entries(relationships).filter(
+      ([_, rel]) => rel.cardinality === 'MANY_TO_MANY',
+    ),
+  )
+
+  if (Object.keys(manyToManyRelationships).length) {
+    for (const relationship in manyToManyRelationships) {
+      const relationshipValue = manyToManyRelationships[relationship]
+      if (!relationshipValue) continue // Skip if undefined
+      const relationshipName = relationshipValue?.name
+
+      const { primaryTableName, foreignTableName } = relationshipValue
+      const indexes = dmmf?.datamodel?.indexes
+      if (!indexes) continue
+
+      const primaryTableIndices = getTableIndices(indexes, primaryTableName)
+
+      const foreignTableIndices = getTableIndices(indexes, foreignTableName)
+
+      const columns: Columns = {}
+
+      const relationshipTableName = `_${relationship}`
+      processTableIndices(
+        primaryTableIndices,
+        primaryTableName,
+        tables,
+        columns,
+        relationshipName,
+        relationships,
+        relationshipTableName,
+      )
+      processTableIndices(
+        foreignTableIndices,
+        foreignTableName,
+        tables,
+        columns,
+        relationshipName,
+        relationships,
+        relationshipTableName,
+      )
+
+      const indicesColumn = Object.keys(columns)
+      const indicesName = `${relationshipValue?.name}_pkey`
+
+      tables[relationshipTableName] = {
+        name: relationshipTableName,
+        columns,
+        comment: null,
+        indexes: {
+          [indicesName]: {
+            name: indicesName,
+            unique: true,
+            columns: indicesColumn,
+          },
+        },
+      }
+    }
   }
 
   return {
@@ -241,4 +300,61 @@ function normalizeConstraintName(constraint: string): ForeignKeyConstraint {
   }
 }
 
+function getTableIndices(indexes: readonly DMMF.Index[], tableName: string) {
+  return indexes.filter(
+    (index) => index.model === tableName && index.type === 'id',
+  )
+}
+
+function processTableIndices(
+  indices: readonly DMMF.Index[],
+  tableName: string,
+  tables: Record<string, Table>,
+  columns: Columns,
+  relationshipName: string,
+  relationships: Record<string, Relationship>,
+  relationshipTableName: string,
+): void {
+  for (const table of indices) {
+    for (const field of table.fields) {
+      const existingColumns = tableName && tables[tableName]?.columns['id']
+      const columnName = `${table.model}_${field.name}`
+      if (existingColumns && typeof existingColumns === 'object') {
+        columns[columnName] = {
+          name: columnName,
+          type: existingColumns.type ?? 'id',
+          default: existingColumns.default ?? '',
+          notNull: existingColumns.notNull,
+          unique: existingColumns.unique,
+          primary: existingColumns.primary,
+          comment: existingColumns.comment,
+          check: existingColumns.check,
+        }
+      } else {
+        columns[columnName] = {
+          name: columnName,
+          type: 'id',
+          default: '',
+          notNull: false,
+          unique: false,
+          primary: false,
+          comment: '',
+          check: '',
+        }
+      }
+
+      const relationShipWithTheTable = `${table.model}To${relationshipName}`
+      relationships[relationShipWithTheTable] = {
+        name: relationShipWithTheTable,
+        primaryTableName: table.model,
+        primaryColumnName: field?.name,
+        foreignTableName: relationshipTableName,
+        foreignColumnName: columnName,
+        cardinality: 'ONE_TO_MANY',
+        updateConstraint: 'CASCADE',
+        deleteConstraint: 'CASCADE',
+      }
+    }
+  }
+}
 export const processor: Processor = (str) => parsePrismaSchema(str)
