@@ -226,6 +226,12 @@ async function parsePrismaSchema(schemaString: string): Promise<ProcessResult> {
     }
   }
 
+  for (const key in relationships) {
+    if (relationships[key]?.cardinality === 'MANY_TO_MANY') {
+      delete relationships[key]
+    }
+  }
+
   return {
     value: {
       tables,
