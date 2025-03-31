@@ -1,0 +1,11 @@
+# Safe and Consistent Migration Strategies
+
+## Sequencing Rules
+- Always create new tables before modifying existing tables to avoid issues with referential integrity.
+
+## Rollout Patterns
+- Migrations should include comprehensive detail, including sequences and privilege adjustments, to maintain security and integrity.
+
+## Reversibility Requirements
+- Ensure each migration can be reversed, especially those that alter foreign key constraints or permissions.
+- Document permission changes to clarify why they were made and ensure they meet application access requirements.
