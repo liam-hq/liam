@@ -1,0 +1,5 @@
+# Schema Context
+
+- The recent removal of the `Doc` and `DocVersion` models indicates a shift in document management strategy towards using GitHub, impacting overall architecture and data handling.
+- There is a need to ensure that existing data in the removed models is backed up or migrated appropriately to prevent data loss.
+- The `Project` model has been updated to reflect the removal of the `docs` relation, indicating a complete transition to the new document management approach.
