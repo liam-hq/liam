@@ -1,0 +1,15 @@
+# Reusable Patterns and Rules for Database Schema Design
+
+## Structural Modeling Patterns
+- Use `SERIAL` type for auto-incrementing primary keys (e.g., `id` field).
+- Prefer `TEXT` for flexible string storage, but consider constrained types like `VARCHAR(n)` when applicable.
+- Always include `createdAt` and `updatedAt` fields with default values set to `CURRENT_TIMESTAMP` for tracking record creation and updates.
+
+## Naming Conventions
+- Table names should be in `PascalCase` (e.g., `TestTable`).
+- Field names should be in `camelCase` (e.g., `createdAt`, `updatedAt`).
+
+## Canonical Design Choices
+- Explicitly define primary key constraints using `CONSTRAINT` statements for clarity and enforcement.
+- Use unique indexes on primary keys to optimize query performance and ensure data integrity.
+- Maintain consistency across model definitions in the ORM schema (e.g., Prisma) for better maintainability.
