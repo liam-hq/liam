@@ -1,0 +1,6 @@
+# Schema Patterns
+
+- **Model Removal**: When removing models (e.g., `Doc` and `DocVersion`), ensure thorough documentation of the rationale and implications for future development.
+- **Integration with External Systems**: Prefer integration with services like GitHub for document management to enhance performance and reduce schema complexity.
+- **Clear Documentation**: Maintain clear records of features tied to removed models to guide future development and prevent loss of important functionalities.
+- **Foreign Key Management**: Always drop foreign key constraints and associated indexes when removing models to avoid referential integrity issues.
