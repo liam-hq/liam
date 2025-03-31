@@ -1,0 +1,13 @@
+# Operational Constraints on Executing Migrations
+
+## Timing
+- Migrations should be executed during low-traffic periods to minimize disruption.
+
+## Tooling
+- Utilize Supabase migration tools for comprehensive management of schema changes.
+
+## Deployment Risks
+- Monitor application behavior post-deployment to identify any unforeseen issues related to new structures.
+
+## Safety Strategies
+- Implement thorough testing to validate the behavior of the application with new tables and constraints.
