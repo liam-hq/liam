@@ -10,7 +10,7 @@
   "dependencies": {
     "@liam-hq/ui": "workspace:*",
     "@radix-ui/react-toolbar": "1.1.0",
-    "@xyflow/react": "12.5.0",
+    "@xyflow/react": "12.3.5",
     "clsx": "2.1.1",
     "elkjs": "0.9.3",
     "react": "18.3.1",
