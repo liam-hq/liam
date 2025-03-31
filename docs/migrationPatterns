@@ -1,0 +1,5 @@
+# Migration Patterns
+
+- **Data Migration Strategy**: Prior to removing models, ensure a data migration strategy is in place to handle existing data and prevent loss.
+- **Versioning and Management Practices**: Maintain proper versioning practices during schema updates to ensure clear tracking of changes and their implications.
+- **Documentation of Migration Workflows**: Document migration workflows thoroughly to maintain consistency across development environments and align developer practices.
