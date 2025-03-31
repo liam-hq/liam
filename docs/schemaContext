@@ -1,0 +1,2 @@
+- New fields should be added with consideration of existing application dependencies, ensuring they won’t disrupt current functionality.
+- If a new field is critical for functionality, constraints should be established to maintain data integrity and prevent null or invalid entries.
