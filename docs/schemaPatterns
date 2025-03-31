@@ -1,6 +1,7 @@
-# Reusable Patterns and Rules for Database Schema Design
+### Schema Patterns
+- **Field Naming Conventions**: Use descriptive names for fields that clarify their purpose. For example, 'sample' in the `PRCommit` model clearly indicates the content it holds.
+- **Data Type Selection**: Consider the size and nature of the data when choosing types. For textual data that may exceed a typical length, prefer `Text` over `String` in PostgreSQL.
+- **Optional Fields**: If a field is optional, document its nullable nature clearly, as the absence of the `@required` directive implies it can be null.
 
-- When adding new fields to existing models, ensure that they are documented clearly in project documentation.
-- Consider specifying constraints (like `@required` or `@unique`) for new fields to maintain data integrity, especially if they are essential for business logic.
-- If a new field is likely to be queried frequently, evaluate the need for indexing to enhance performance.
-- Default values should be set for fields that should not be nullable to prevent unintended null entries.
+### Canonical Design Choices
+- New fields should be added with a clear intention and documented purpose to ensure understanding among developers.
