@@ -1,0 +1,11 @@
+# Project-Specific Constraints that Shape Schema Design
+
+## Technical Assumptions
+- The application requires all tables to follow a standard structure for consistency.
+- Nullable foreign keys are acceptable based on business logic, as seen with `OverallReview` allowing a nullable `projectId`.
+
+## ORM Limitations
+- Ensure that any changes made in the database schema are reflected in the Prisma schema to maintain synchronization.
+
+## Domain Modeling Needs
+- Models should be designed to allow flexibility for future expansions, including potential relationships with other entities (e.g., possible foreign keys in `TestTable`).
