@@ -1,0 +1,5 @@
+# Migration Operations Context
+
+- **Operational Risks**: Be cautious of potential risks during migration, especially regarding data loss from removed models and ensure adequate backups are in place.
+- **Timing of Migrations**: Schedule migrations during low-usage periods to minimize impact on users and application performance.
+- **Communication**: Ensure clear communication regarding schema changes and their implications for both development and operational teams.
