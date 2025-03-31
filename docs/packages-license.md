@@ -4877,7 +4877,7 @@ Unknown manually approved
 
 
 <a name="@xyflow/react"></a>
-### @xyflow/react v12.5.0
+### @xyflow/react v12.5.1
 #### 
 
 ##### Paths
