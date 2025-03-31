@@ -113,15 +113,3 @@ model KnowledgeSuggestion {
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
 }
-
-model GitHubDocFilePath {
-  id             Int      @id @default(autoincrement())
-  path           String   // File path in GitHub repository
-  isReviewEnabled Boolean @default(true)  // Whether ReviewAgent should read this file
-  projectId      Int
-  project        Project  @relation(fields: [projectId], references: [id])
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
-
-  @@unique([path, projectId])  // Composite unique key to ensure no duplicate paths within a project
-}
