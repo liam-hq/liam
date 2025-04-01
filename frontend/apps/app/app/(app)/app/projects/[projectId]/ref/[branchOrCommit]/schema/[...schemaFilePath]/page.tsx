@@ -212,6 +212,8 @@ export default async function Page({
         tableGroups={tableGroups}
         defaultSidebarOpen={defaultSidebarOpen}
         defaultPanelSizes={defaultPanelSizes}
+        projectId={projectId}
+        branchOrCommit={branchOrCommit}
         errorObjects={errors.map((error) => ({
           name: error.name,
           message: error.message,

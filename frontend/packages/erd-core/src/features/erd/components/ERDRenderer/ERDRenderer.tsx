@@ -36,6 +36,8 @@ type Props = {
   errorObjects?: ErrorObject[] | undefined
   defaultPanelSizes?: number[]
   tableGroups?: Record<string, TableGroup>
+  projectId?: string
+  branchOrCommit?: string
 }
 
 const SIDEBAR_COOKIE_NAME = 'sidebar:state'
@@ -47,6 +49,8 @@ export const ERDRenderer: FC<Props> = ({
   errorObjects = [],
   defaultPanelSizes = [20, 80],
   tableGroups = {},
+  projectId,
+  branchOrCommit,
 }) => {
   const [open, setOpen] = useState(defaultSidebarOpen)
   const [isResizing, setIsResizing] = useState(false)
@@ -141,7 +145,10 @@ export const ERDRenderer: FC<Props> = ({
                 </TableDetailDrawerRoot>
                 {errorObjects.length === 0 && (
                   <div className={styles.toolbarWrapper}>
-                    <Toolbar />
+                    <Toolbar
+                      projectId={projectId}
+                      branchOrCommit={branchOrCommit}
+                    />
                   </div>
                 )}
               </main>

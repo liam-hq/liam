@@ -24,6 +24,8 @@ export type ERDViewerProps = {
   errorObjects: ErrorObject[]
   defaultSidebarOpen: boolean
   defaultPanelSizes?: number[]
+  projectId?: string
+  branchOrCommit?: string
 }
 
 export default function ERDViewer({
@@ -32,6 +34,8 @@ export default function ERDViewer({
   errorObjects,
   defaultSidebarOpen,
   defaultPanelSizes = [20, 80],
+  projectId,
+  branchOrCommit,
 }: ERDViewerProps) {
   const [isShowCookieConsent, setShowCookieConsent] = useState(false)
 
@@ -57,6 +61,8 @@ export default function ERDViewer({
           defaultPanelSizes={defaultPanelSizes}
           errorObjects={errorObjects}
           tableGroups={tableGroups}
+          projectId={projectId}
+          branchOrCommit={branchOrCommit}
         />
       </VersionProvider>
       {isShowCookieConsent && <CookieConsent />}
