@@ -122,3 +122,9 @@
     :why: The license is Apache-2.0.
     :versions: []
     :when: 2025-03-13 06:08:23.596952 Z
+- - :approve
+  - url-template
+  - :who: Liam @hoshinotsuyoshi
+    :why: The package uses BSD-3-Clause license but is incorrectly labeled as BSD at version 2.0.8. See https://github.com/bramstein/url-template/pull/27
+    :versions: ["2.0.8"]
+    :when: 2025-04-02 05:45:00.000000 Z

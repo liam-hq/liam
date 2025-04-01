@@ -1,0 +1,6 @@
+{
+  "name": "node-gtts",
+  "description": "Mock for node-gtts. This package is not real one.",
+  "private": true,
+  "version": "2.0.2"
+}

@@ -1,5 +1,6 @@
 packages:
   - "frontend/apps/*"
   - "frontend/packages/*"
+  - "frontend/packages/__mocks__"
   # NOTE: ignore migration-web until it's ready to be deployed
   - "!frontend/apps/migration-web"

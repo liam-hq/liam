@@ -10,3 +10,5 @@ export { processSaveReview } from './functions/processSaveReview'
 export { postComment } from './functions/postComment'
 
 export { savePullRequest, helloWorld } from './trigger/jobs'
+
+export * from './prompts'

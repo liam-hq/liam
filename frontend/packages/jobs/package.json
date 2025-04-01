@@ -19,8 +19,10 @@
   "devDependencies": {
     "@biomejs/biome": "1.9.3",
     "@liam-hq/configs": "workspace:*",
+    "@types/json-schema": "7.0.15",
     "@types/node": "22.9.0",
     "dotenv": "16.4.7",
+    "json-schema": "0.4.0",
     "trigger.dev": "3.3.17",
     "typescript": "5",
     "vitest": "3.0.8"

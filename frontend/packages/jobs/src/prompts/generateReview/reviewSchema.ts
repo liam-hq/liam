@@ -1,4 +1,13 @@
-import { array, enum as enumType, number, object, string } from 'valibot'
+import {
+  array,
+  enum as enumType,
+  maxValue,
+  minValue,
+  number,
+  object,
+  pipe,
+  string,
+} from 'valibot'
 
 const KindEnum = enumType({
   'Migration Safety': 'Migration Safety',
@@ -27,7 +36,7 @@ export const reviewSchema = object({
   scores: array(
     object({
       kind: KindEnum,
-      value: number(), // Optional: you can add `number([minValue(0), maxValue(10)])` if you want to enforce the 0-10 rule
+      value: pipe(number(), minValue(0), maxValue(10)),
       reason: string(),
     }),
   ),

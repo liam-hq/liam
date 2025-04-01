@@ -1,22 +1,13 @@
 import type { Callbacks } from '@langchain/core/callbacks/manager'
-import { PromptTemplate } from '@langchain/core/prompts'
+import { ChatPromptTemplate } from '@langchain/core/prompts'
 import { ChatOpenAI } from '@langchain/openai'
 import { toJsonSchema } from '@valibot/to-json-schema'
+import type { JSONSchema7 } from 'json-schema'
 import { parse } from 'valibot'
 import type { GenerateReviewPayload } from '../../types'
 import { reviewSchema } from './reviewSchema'
 
-const REVIEW_TEMPLATE = `
-You are a database design expert tasked with reviewing database schema changes. Analyze the provided context and schema changes carefully, and respond strictly in the provided JSON schema format.
-
-Documentation Context:
-{docsContent}
-
-Schema Files:
-{schemaFiles}
-
-Schema Changes:
-{schemaChanges}
+export const SYSTEM_PROMPT = `You are a database design expert tasked with reviewing database schema changes. Analyze the provided context and schema changes carefully, and respond strictly in the provided JSON schema format.
 
 Your JSON-formatted response must contain:
 
@@ -39,9 +30,19 @@ Your JSON-formatted response must contain:
   - The bodyMarkdown should be a markdown formatted string.
 
 Ensure your response strictly adheres to the provided JSON schema.
+**Your output must be raw JSON only. Do not include any markdown code blocks or extraneous formatting.**
 `
 
-const reviewJsonSchema = toJsonSchema(reviewSchema)
+export const USER_PROMPT = `Documentation Context:
+{docsContent}
+
+Schema Files:
+{schemaFiles}
+
+Schema Changes:
+{schemaChanges}`
+
+export const reviewJsonSchema: JSONSchema7 = toJsonSchema(reviewSchema)
 
 export const generateReview = async (
   docsContent: string,
@@ -49,12 +50,17 @@ export const generateReview = async (
   schemaChanges: GenerateReviewPayload['schemaChanges'],
   callbacks: Callbacks,
 ) => {
-  const prompt = PromptTemplate.fromTemplate(REVIEW_TEMPLATE)
+  const chatPrompt = ChatPromptTemplate.fromMessages([
+    ['system', SYSTEM_PROMPT],
+    ['human', USER_PROMPT],
+  ])
+
   const model = new ChatOpenAI({
     temperature: 0.7,
     model: 'gpt-4o-mini',
   })
-  const chain = prompt.pipe(model.withStructuredOutput(reviewJsonSchema))
+
+  const chain = chatPrompt.pipe(model.withStructuredOutput(reviewJsonSchema))
   const response = await chain.invoke(
     {
       docsContent,
