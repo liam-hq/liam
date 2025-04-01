@@ -3,8 +3,21 @@
     "tableGroups": {
       "Github": {
         "name": "Github",
-        "tables": ["Repository", "PullRequest", "ProjectRepositoryMapping"],
+        "tables": [
+          "Repository",
+          "PullRequest",
+          "ProjectRepositoryMapping"
+        ],
         "comment": "Tables related to Github"
+      },
+      "test": {
+        "name": "test",
+        "tables": [
+          "WatchSchemaFilePattern",
+          "KnowledgeSuggestion",
+          "GitHubDocFilePath"
+        ],
+        "comment": null
       }
     },
     "addTables": {
