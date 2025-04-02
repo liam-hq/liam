@@ -178,6 +178,7 @@ export type Database = {
       KnowledgeSuggestion: {
         Row: {
           approvedAt: string | null
+          branchName: string
           content: string
           createdAt: string
           fileSha: string
@@ -190,6 +191,7 @@ export type Database = {
         }
         Insert: {
           approvedAt?: string | null
+          branchName: string
           content: string
           createdAt?: string
           fileSha: string
@@ -202,6 +204,7 @@ export type Database = {
         }
         Update: {
           approvedAt?: string | null
+          branchName?: string
           content?: string
           createdAt?: string
           fileSha?: string

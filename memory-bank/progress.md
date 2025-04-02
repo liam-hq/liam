@@ -11,6 +11,7 @@
 - Text document viewer page that renders raw text content from GitHub repositories.
 - Documentation list page that displays all GitHubDocFilePath entries for a project with links to individual document pages.
 - Supabase JS integration for database access in the document viewer page, with optimized queries using nested joins.
+- Dynamic branch name management for KnowledgeSuggestion operations, replacing hardcoded branch names.
 
 ## What's Left to Build
 
@@ -27,7 +28,7 @@ The project is currently focused on enhancing the Reviewer User experience, with
 
 The core review pipeline is now operational, connecting GitHub webhooks to AI-powered review generation and PR comment posting. This enables automatic review of database schema changes when pull requests are opened or updated.
 
-The KnowledgeSuggestion feature is being implemented to allow AI-generated suggestions for Schema and Docs updates. The database model has been created, which will store suggestions that can be approved and then committed to GitHub using the GitHub API.
+The KnowledgeSuggestion feature is being implemented to allow AI-generated suggestions for Schema and Docs updates. The database model has been created, which will store suggestions that can be approved and then committed to GitHub using the GitHub API. Recent improvements include adding a branchName column to the KnowledgeSuggestion table to replace hardcoded branch names with dynamic ones, making the system more flexible and maintainable.
 
 A new text document viewer page has been implemented at `/app/projects/[projectId]/docs/[branchOrCommit]/[...slug]` that fetches and displays raw text content from GitHub repositories. This page uses Supabase JS for database access instead of Prisma, demonstrating the flexibility of our data access layer. The implementation uses a single optimized query with nested joins to efficiently retrieve all necessary data. This serves as a prototype for the planned migration from Prisma to Supabase JS across the entire application.
 

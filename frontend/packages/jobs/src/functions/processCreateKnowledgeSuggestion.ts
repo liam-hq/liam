@@ -77,6 +77,7 @@ export const processCreateKnowledgeSuggestion = async (
       content,
       fileSha,
       projectId,
+      branchName: branch,
     },
   })
 

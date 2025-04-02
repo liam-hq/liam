@@ -181,7 +181,7 @@ export const updateFileContent = async (
   sha: string,
   message: string,
   installationId: number,
-  branch = 'tmp-knowledge-suggestion',
+  branch: string,
 ): Promise<boolean> => {
   const [owner, repo] = repositoryFullName.split('/')
 

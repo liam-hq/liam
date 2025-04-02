@@ -131,6 +131,7 @@ model KnowledgeSuggestion {
   path           String        // Target file path
   content        String        // Full content of the new file
   fileSha        String        // SHA of the file to be updated
+  branchName     String        // Branch name for GitHub operations
   projectId      Int
   project        Project       @relation(fields: [projectId], references: [id])
   approvedAt     DateTime?     // Approval timestamp (null if not approved)
