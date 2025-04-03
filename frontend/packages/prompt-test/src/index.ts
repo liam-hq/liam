@@ -88,6 +88,7 @@ async function main() {
       outputPath: 'results.json',
     },
     {
+      repeat: 3,
       maxConcurrency: 4,
       // NOTE: if you want to test the prompt without caching, set this to false
       // cache: false,
