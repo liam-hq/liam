@@ -7,7 +7,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import type { FC } from 'react'
 import { RadarChart } from '../../components/RadarChart/RadarChart'
-import type { CategoryEnum as RadarChartCategoryEnum } from '../../components/RadarChart/RadarChart'
+import type { CategoryEnumType } from '../../components/RadarChart/RadarChart'
 import styles from './MigrationDetailPage.module.css'
 
 type Props = {
@@ -154,7 +154,7 @@ export const MigrationDetailPage: FC<Props> = async ({ migrationId }) => {
                   id: score.id,
                   overallReviewId: score.overallReviewId,
                   overallScore: score.overallScore,
-                  category: score.category as RadarChartCategoryEnum,
+                  category: score.category as CategoryEnumType,
                 }))}
               />
             </div>
