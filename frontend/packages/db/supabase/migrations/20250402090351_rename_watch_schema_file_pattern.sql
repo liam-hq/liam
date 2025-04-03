@@ -1,3 +1,5 @@
+BEGIN;
+
 -- Create the new GitHubSchemaFilePath table
 create sequence "public"."GitHubSchemaFilePath_id_seq";
 
@@ -28,3 +30,5 @@ FROM "public"."WatchSchemaFilePattern";
 
 -- Drop the old WatchSchemaFilePattern table
 DROP TABLE "public"."WatchSchemaFilePattern";
+
+COMMIT;
