@@ -1,0 +1,2 @@
+- Before adding required fields, review the entire codebase to ensure compatibility with new schema changes, particularly for fields that impact critical functionality.
+- Implement a strategy to safely introduce new fields by either making them optional initially or providing sensible default values to avoid migration failures.
