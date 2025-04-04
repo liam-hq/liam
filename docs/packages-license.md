@@ -10143,7 +10143,7 @@ BlueOak-1.0.0 permitted
 
 
 <a name="fumadocs-mdx"></a>
-### fumadocs-mdx v11.5.6
+### fumadocs-mdx v11.5.7
 #### 
 
 ##### Paths
@@ -10671,7 +10671,7 @@ BlueOak-1.0.0 permitted
 
 
 <a name="hast-util-to-jsx-runtime"></a>
-### hast-util-to-jsx-runtime v2.3.3
+### hast-util-to-jsx-runtime v2.3.6
 #### 
 
 ##### Paths
