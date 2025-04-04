@@ -3183,7 +3183,7 @@ LGPL-3.0-or-later permitted
 
 
 <a name="@radix-ui/primitive"></a>
-### @radix-ui/primitive v1.1.0
+### @radix-ui/primitive v1.1.1
 #### 
 
 ##### Paths
@@ -3205,7 +3205,7 @@ LGPL-3.0-or-later permitted
 
 
 <a name="@radix-ui/react-arrow"></a>
-### @radix-ui/react-arrow v1.1.0
+### @radix-ui/react-arrow v1.1.2
 #### 
 
 ##### Paths
@@ -3227,7 +3227,7 @@ LGPL-3.0-or-later permitted
 
 
 <a name="@radix-ui/react-collection"></a>
-### @radix-ui/react-collection v1.1.0
+### @radix-ui/react-collection v1.1.2
 #### 
 
 ##### Paths
@@ -3238,7 +3238,7 @@ LGPL-3.0-or-later permitted
 
 
 <a name="@radix-ui/react-compose-refs"></a>
-### @radix-ui/react-compose-refs v1.1.0
+### @radix-ui/react-compose-refs v1.1.1
 #### 
 
 ##### Paths
@@ -3249,7 +3249,7 @@ LGPL-3.0-or-later permitted
 
 
 <a name="@radix-ui/react-context"></a>
-### @radix-ui/react-context v1.1.0
+### @radix-ui/react-context v1.1.1
 #### 
 
 ##### Paths
@@ -3282,7 +3282,7 @@ LGPL-3.0-or-later permitted
 
 
 <a name="@radix-ui/react-dismissable-layer"></a>
-### @radix-ui/react-dismissable-layer v1.1.1
+### @radix-ui/react-dismissable-layer v1.1.5
 #### 
 
 ##### Paths
@@ -3293,7 +3293,7 @@ LGPL-3.0-or-later permitted
 
 
 <a name="@radix-ui/react-dropdown-menu"></a>
-### @radix-ui/react-dropdown-menu v2.1.2
+### @radix-ui/react-dropdown-menu v2.1.6
 #### 
 
 ##### Paths
@@ -3315,7 +3315,7 @@ LGPL-3.0-or-later permitted
 
 
 <a name="@radix-ui/react-focus-scope"></a>
-### @radix-ui/react-focus-scope v1.1.0
+### @radix-ui/react-focus-scope v1.1.2
 #### 
 
 ##### Paths
@@ -3337,7 +3337,7 @@ LGPL-3.0-or-later permitted
 
 
 <a name="@radix-ui/react-menu"></a>
-### @radix-ui/react-menu v2.1.2
+### @radix-ui/react-menu v2.1.6
 #### 
 
 ##### Paths
@@ -3370,7 +3370,7 @@ LGPL-3.0-or-later permitted
 
 
 <a name="@radix-ui/react-popper"></a>
-### @radix-ui/react-popper v1.2.0
+### @radix-ui/react-popper v1.2.2
 #### 
 
 ##### Paths
@@ -3381,7 +3381,7 @@ LGPL-3.0-or-later permitted
 
 
 <a name="@radix-ui/react-portal"></a>
-### @radix-ui/react-portal v1.1.2
+### @radix-ui/react-portal v1.1.4
 #### 
 
 ##### Paths
@@ -3392,7 +3392,7 @@ LGPL-3.0-or-later permitted
 
 
 <a name="@radix-ui/react-presence"></a>
-### @radix-ui/react-presence v1.1.1
+### @radix-ui/react-presence v1.1.2
 #### 
 
 ##### Paths
@@ -3403,7 +3403,7 @@ LGPL-3.0-or-later permitted
 
 
 <a name="@radix-ui/react-primitive"></a>
-### @radix-ui/react-primitive v2.0.0
+### @radix-ui/react-primitive v2.0.2
 #### 
 
 ##### Paths
@@ -3414,7 +3414,7 @@ LGPL-3.0-or-later permitted
 
 
 <a name="@radix-ui/react-radio-group"></a>
-### @radix-ui/react-radio-group v1.2.2
+### @radix-ui/react-radio-group v1.2.3
 #### 
 
 ##### Paths
@@ -3425,7 +3425,7 @@ LGPL-3.0-or-later permitted
 
 
 <a name="@radix-ui/react-roving-focus"></a>
-### @radix-ui/react-roving-focus v1.1.0
+### @radix-ui/react-roving-focus v1.1.2
 #### 
 
 ##### Paths
@@ -3447,7 +3447,7 @@ LGPL-3.0-or-later permitted
 
 
 <a name="@radix-ui/react-separator"></a>
-### @radix-ui/react-separator v1.1.0
+### @radix-ui/react-separator v1.1.2
 #### 
 
 ##### Paths
@@ -3458,7 +3458,7 @@ LGPL-3.0-or-later permitted
 
 
 <a name="@radix-ui/react-slot"></a>
-### @radix-ui/react-slot v1.1.0
+### @radix-ui/react-slot v1.1.2
 #### 
 
 ##### Paths
@@ -3480,7 +3480,7 @@ LGPL-3.0-or-later permitted
 
 
 <a name="@radix-ui/react-toast"></a>
-### @radix-ui/react-toast v1.2.3
+### @radix-ui/react-toast v1.2.6
 #### 
 
 ##### Paths
@@ -3491,7 +3491,7 @@ LGPL-3.0-or-later permitted
 
 
 <a name="@radix-ui/react-toggle"></a>
-### @radix-ui/react-toggle v1.1.0
+### @radix-ui/react-toggle v1.1.2
 #### 
 
 ##### Paths
@@ -3502,7 +3502,7 @@ LGPL-3.0-or-later permitted
 
 
 <a name="@radix-ui/react-toggle-group"></a>
-### @radix-ui/react-toggle-group v1.1.0
+### @radix-ui/react-toggle-group v1.1.2
 #### 
 
 ##### Paths
@@ -3513,7 +3513,7 @@ LGPL-3.0-or-later permitted
 
 
 <a name="@radix-ui/react-toolbar"></a>
-### @radix-ui/react-toolbar v1.1.0
+### @radix-ui/react-toolbar v1.1.2
 #### 
 
 ##### Paths
@@ -3524,7 +3524,7 @@ LGPL-3.0-or-later permitted
 
 
 <a name="@radix-ui/react-tooltip"></a>
-### @radix-ui/react-tooltip v1.1.3
+### @radix-ui/react-tooltip v1.1.8
 #### 
 
 ##### Paths
@@ -3612,7 +3612,7 @@ LGPL-3.0-or-later permitted
 
 
 <a name="@radix-ui/react-visually-hidden"></a>
-### @radix-ui/react-visually-hidden v1.1.0
+### @radix-ui/react-visually-hidden v1.1.2
 #### 
 
 ##### Paths
@@ -15449,7 +15449,7 @@ BlueOak-1.0.0 permitted
 
 
 <a name="react-remove-scroll"></a>
-### react-remove-scroll v2.6.0
+### react-remove-scroll v2.6.3
 #### 
 
 ##### Paths
