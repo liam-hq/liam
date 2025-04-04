@@ -71,11 +71,6 @@ async function getMigrationContents(migrationId: string) {
     .limit(1)
     .single()
 
-  if (reviewError || !overallReview) {
-    console.error('OverallReview error:', reviewError)
-    return notFound()
-  }
-
   const prDetails = await getPullRequestDetails(
     Number(repository.installationId),
     repository.owner,
@@ -90,6 +85,23 @@ async function getMigrationContents(migrationId: string) {
     Number(pullRequest.pullNumber),
   )
 
+  // If there's no overallReview, return with empty review data
+  if (reviewError || !overallReview) {
+    console.info('No OverallReview found for migration:', migrationId)
+    return {
+      migration,
+      overallReview: {
+        id: null,
+        projectId: null,
+        reviewComment: null,
+        reviewedAt: null,
+        reviewIssues: [],
+        reviewScores: [],
+      },
+      erdLinks: [],
+    }
+  }
+
   const { data: schemaPaths, error: pathsError } = await supabase
     .from('GitHubSchemaFilePath')
     .select('path')
@@ -97,7 +109,11 @@ async function getMigrationContents(migrationId: string) {
 
   if (pathsError) {
     console.error('Error fetching schema paths:', pathsError)
-    return notFound()
+    return {
+      migration,
+      overallReview,
+      erdLinks: [],
+    }
   }
 
   const matchedFiles = files
@@ -131,18 +147,20 @@ export const MigrationDetailPage: FC<Props> = async ({ migrationId }) => {
 
   const projectId = overallReview.projectId
 
-  const formattedReviewDate = new Date(
-    overallReview.reviewedAt,
-  ).toLocaleDateString('en-US')
+  const formattedReviewDate = overallReview.reviewedAt
+    ? new Date(overallReview.reviewedAt).toLocaleDateString('en-US')
+    : 'Not reviewed yet'
 
   return (
     <main className={styles.wrapper}>
-      <Link
-        href={urlgen('projects/[projectId]', { projectId: `${projectId}` })}
-        className={styles.backLink}
-      >
-        ← Back to Project Detail
-      </Link>
+      {projectId && (
+        <Link
+          href={urlgen('projects/[projectId]', { projectId: `${projectId}` })}
+          className={styles.backLink}
+        >
+          ← Back to Project Detail
+        </Link>
+      )}
 
       <div className={styles.heading}>
         <h1 className={styles.title}>{migration.title}</h1>
@@ -152,16 +170,20 @@ export const MigrationDetailPage: FC<Props> = async ({ migrationId }) => {
         <div className={styles.box}>
           <h2 className={styles.h2}>Migration Health</h2>
           <div className={styles.healthContent}>
-            <div className={styles.radarChartContainer}>
-              <RadarChart
-                scores={overallReview.reviewScores.map((score) => ({
-                  id: score.id,
-                  overallReviewId: score.overallReviewId,
-                  overallScore: score.overallScore,
-                  category: score.category as CategoryEnum,
-                }))}
-              />
-            </div>
+            {overallReview.reviewScores.length > 0 ? (
+              <div className={styles.radarChartContainer}>
+                <RadarChart
+                  scores={overallReview.reviewScores.map((score) => ({
+                    id: score.id,
+                    overallReviewId: score.overallReviewId,
+                    overallScore: score.overallScore,
+                    category: score.category as CategoryEnum,
+                  }))}
+                />
+              </div>
+            ) : (
+              <p className={styles.noScores}>No review scores found.</p>
+            )}
             <div className={styles.erdLinks}>
               {erdLinks.map(({ path, filename }) => (
                 <Link key={path} href={path} className={styles.erdLink}>
@@ -176,13 +198,20 @@ export const MigrationDetailPage: FC<Props> = async ({ migrationId }) => {
         </div>
         <div className={styles.box}>
           <h2 className={styles.h2}>Review Content</h2>
-          <pre className={styles.reviewContent}>
-            {overallReview.reviewComment}
-          </pre>
-          {/* Client-side user feedback component */}
-          <div className={styles.feedbackSection}>
-            <UserFeedbackClient traceId={overallReview.traceId} />
-          </div>
+          {overallReview.reviewComment ? (
+            <>
+              <pre className={styles.reviewContent}>
+                {overallReview.reviewComment}
+              </pre>
+              {overallReview.traceId && (
+                <div className={styles.feedbackSection}>
+                  <UserFeedbackClient traceId={overallReview.traceId} />
+                </div>
+              )}
+            </>
+          ) : (
+            <p className={styles.noContent}>No review content found.</p>
+          )}
         </div>
         <div className={styles.box}>
           <h2 className={styles.h2}>Review Issues</h2>
