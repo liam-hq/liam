@@ -4,7 +4,7 @@ assert:
   value: The report evaluates the **risk of data loss**.
 - type: is-json
 - type: javascript
-  value: JSON.parse(output).scores[0].value >= 1
+  value: output.scores[0].value >= 1
 - type: cost
   threshold: 0.008
 
