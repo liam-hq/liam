@@ -1918,7 +1918,7 @@ LGPL-3.0-or-later permitted
 
 
 <a name="@langchain/core"></a>
-### @langchain/core v0.3.42
+### @langchain/core v0.3.43
 #### 
 
 ##### Paths

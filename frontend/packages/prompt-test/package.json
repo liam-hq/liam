@@ -5,7 +5,7 @@
   "main": "src/index.ts",
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
-    "@langchain/core": "0.3.42",
+    "@langchain/core": "0.3.43",
     "@liam-hq/configs": "workspace:*",
     "@liam-hq/jobs": "workspace:*",
     "dotenv": "16.4.7",
