@@ -6,6 +6,7 @@ import { notFound } from 'next/navigation'
 import type { FC, ReactNode } from 'react'
 import { UserFeedbackClient } from '../../../../components/UserFeedbackClient'
 import { approveKnowledgeSuggestion } from '../../actions/approveKnowledgeSuggestion'
+import { EditableContent } from '../../components/EditableContent/EditableContent'
 import { getOriginalDocumentContent } from '../../utils/getOriginalDocumentContent'
 import styles from './KnowledgeSuggestionDetailPage.module.css'
 
@@ -102,10 +103,17 @@ export const KnowledgeSuggestionDetailPage: FC<Props> = async ({
         </div>
 
         <div className={styles.contentSection}>
-          <h2 className={styles.sectionTitle}>Content</h2>
-          {suggestion.approvedAt ? (
-            <pre className={styles.codeContent}>{suggestion.content}</pre>
-          ) : (
+          <div className={styles.header}>
+            <h2 className={styles.sectionTitle}>Content</h2>
+          </div>
+
+          <EditableContent
+            content={suggestion.content}
+            suggestionId={suggestion.id}
+            className={styles.codeContent}
+          />
+
+          {!suggestion.approvedAt && (
             <DiffDisplay
               originalContent={
                 await getOriginalDocumentContent(
@@ -117,6 +125,7 @@ export const KnowledgeSuggestionDetailPage: FC<Props> = async ({
               newContent={suggestion.content}
             />
           )}
+
           {/* Client-side user feedback component */}
           <div className={styles.feedbackSection}>
             <UserFeedbackClient traceId={suggestion.traceId} />
