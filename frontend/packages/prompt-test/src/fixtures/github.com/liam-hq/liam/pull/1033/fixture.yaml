@@ -1142,6 +1142,97 @@ vars:
       \      suggestion.title, // Use title as commit message\n       installationId,\n-
       \     branch,\n+      suggestion.branchName,\n     )\n \n     if (!success)
       {"
+    currentContent: |
+      'use server'
+      
+      import { urlgen } from '@/utils/routes'
+      import { prisma } from '@liam-hq/db'
+      import { updateFileContent } from '@liam-hq/github'
+      import { redirect } from 'next/navigation'
+      import * as v from 'valibot'
+      
+      // Define schema for form data validation with transforms
+      const formDataSchema = v.object({
+        suggestionId: v.pipe(
+          v.string(),
+          v.transform((value) => Number(value)),
+        ),
+        repositoryOwner: v.string(),
+        repositoryName: v.string(),
+        installationId: v.pipe(
+          v.string(),
+          v.transform((value) => Number(value)),
+        ),
+      })
+      
+      export const approveKnowledgeSuggestion = async (formData: FormData) => {
+        // Parse and validate form data
+        const formDataObject = {
+          suggestionId: formData.get('suggestionId'),
+          repositoryOwner: formData.get('repositoryOwner'),
+          repositoryName: formData.get('repositoryName'),
+          installationId: formData.get('installationId'),
+        }
+      
+        const parsedData = v.safeParse(formDataSchema, formDataObject)
+      
+        if (!parsedData.success) {
+          throw new Error(`Invalid form data: ${JSON.stringify(parsedData.issues)}`)
+        }
+      
+        const { suggestionId, repositoryOwner, repositoryName, installationId } =
+          parsedData.output
+      
+        try {
+          // Get the knowledge suggestion
+          const suggestion = await prisma.knowledgeSuggestion.findUnique({
+            where: {
+              id: suggestionId,
+            },
+          })
+      
+          if (!suggestion) {
+            throw new Error('Knowledge suggestion not found')
+          }
+      
+          // Update the file on GitHub
+          const repositoryFullName = `${repositoryOwner}/${repositoryName}`
+          const success = await updateFileContent(
+            repositoryFullName,
+            suggestion.path,
+            suggestion.content,
+            suggestion.fileSha,
+            suggestion.title, // Use title as commit message
+            installationId,
+            suggestion.branchName,
+          )
+      
+          if (!success) {
+            throw new Error('Failed to update file on GitHub')
+          }
+      
+          // Update the knowledge suggestion with approvedAt
+          await prisma.knowledgeSuggestion.update({
+            where: {
+              id: suggestionId,
+            },
+            data: {
+              approvedAt: new Date(),
+            },
+          })
+      
+          // Redirect back to the knowledge suggestion detail page
+          redirect(
+            urlgen('projects/[projectId]/knowledge-suggestions/[id]', {
+              projectId: `${suggestion.projectId}`,
+              id: `${suggestionId}`,
+            }),
+          )
+        } catch (error) {
+          console.error('Error approving knowledge suggestion:', error)
+          throw error
+        }
+      }
   - filename: frontend/packages/db/prisma/migrations/20250328105323_add_branch_name_to_knowledge_suggestion/migration.sql
     status: added
     changes: 8
@@ -1155,6 +1246,15 @@ vars:
       +*/
       +-- AlterTable
       +ALTER TABLE "KnowledgeSuggestion" ADD COLUMN     "branchName" TEXT NOT NULL;
+    currentContent: |
+      /*
+        Warnings:
+      
+        - Added the required column `branchName` to the `KnowledgeSuggestion` table without a default value. This is not possible if the table is not empty.
+      
+      */
+      -- AlterTable
+      ALTER TABLE "KnowledgeSuggestion" ADD COLUMN     "branchName" TEXT NOT NULL;
   - filename: frontend/packages/db/prisma/schema.prisma
     status: modified
     changes: 1
@@ -1167,6 +1267,7 @@ vars:
          projectId      Int
          project        Project       @relation(fields: [projectId], references: [id])
          approvedAt     DateTime?     // Approval timestamp (null if not approved)
+    # currentContent: comment out for verbose input
   - filename: frontend/packages/db/schema/schema.sql
     status: modified
     changes: 3
@@ -1175,6 +1276,8 @@ vars:
       timestamp(3) without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,\n-    \"updatedAt\"
       timestamp(3) without time zone NOT NULL\n+    \"updatedAt\" timestamp(3) without
       time zone NOT NULL,\n+    \"branchName\" text NOT NULL\n );\n \n "
+    # currentContent: comment out for verbose input
+
   - filename: frontend/packages/db/supabase/database.types.ts
     status: modified
     changes: 3
@@ -1203,24 +1306,961 @@ vars:
                  content?: string
                  createdAt?: string
                  fileSha?: string
+    currentContent: |
+      export type Json =
+        | string
+        | number
+        | boolean
+        | null
+        | { [key: string]: Json | undefined }
+        | Json[]
+      
+      export type Database = {
+        graphql_public: {
+          Tables: {
+            [_ in never]: never
+          }
+          Views: {
+            [_ in never]: never
+          }
+          Functions: {
+            graphql: {
+              Args: {
+                operationName?: string
+                query?: string
+                variables?: Json
+                extensions?: Json
+              }
+              Returns: Json
+            }
+          }
+          Enums: {
+            [_ in never]: never
+          }
+          CompositeTypes: {
+            [_ in never]: never
+          }
+        }
+        public: {
+          Tables: {
+            _prisma_migrations: {
+              Row: {
+                applied_steps_count: number
+                checksum: string
+                finished_at: string | null
+                id: string
+                logs: string | null
+                migration_name: string
+                rolled_back_at: string | null
+                started_at: string
+              }
+              Insert: {
+                applied_steps_count?: number
+                checksum: string
+                finished_at?: string | null
+                id: string
+                logs?: string | null
+                migration_name: string
+                rolled_back_at?: string | null
+                started_at?: string
+              }
+              Update: {
+                applied_steps_count?: number
+                checksum?: string
+                finished_at?: string | null
+                id?: string
+                logs?: string | null
+                migration_name?: string
+                rolled_back_at?: string | null
+                started_at?: string
+              }
+              Relationships: []
+            }
+            Doc: {
+              Row: {
+                content: string
+                createdAt: string
+                id: number
+                latestVersionId: number | null
+                projectId: number
+                title: string
+                updatedAt: string
+              }
+              Insert: {
+                content: string
+                createdAt?: string
+                id?: number
+                latestVersionId?: number | null
+                projectId: number
+                title: string
+                updatedAt: string
+              }
+              Update: {
+                content?: string
+                createdAt?: string
+                id?: number
+                latestVersionId?: number | null
+                projectId?: number
+                title?: string
+                updatedAt?: string
+              }
+              Relationships: [
+                {
+                  foreignKeyName: 'Doc_projectId_fkey'
+                  columns: ['projectId']
+                  isOneToOne: false
+                  referencedRelation: 'Project'
+                  referencedColumns: ['id']
+                },
+              ]
+            }
+            DocVersion: {
+              Row: {
+                content: string
+                createdAt: string
+                docId: number
+                id: number
+                title: string
+                version: number
+              }
+              Insert: {
+                content: string
+                createdAt?: string
+                docId: number
+                id?: number
+                title: string
+                version: number
+              }
+              Update: {
+                content?: string
+                createdAt?: string
+                docId?: number
+                id?: number
+                title?: string
+                version?: number
+              }
+              Relationships: [
+                {
+                  foreignKeyName: 'DocVersion_docId_fkey'
+                  columns: ['docId']
+                  isOneToOne: false
+                  referencedRelation: 'Doc'
+                  referencedColumns: ['id']
+                },
+              ]
+            }
+            GitHubDocFilePath: {
+              Row: {
+                createdAt: string
+                id: number
+                isReviewEnabled: boolean
+                path: string
+                projectId: number
+                updatedAt: string
+              }
+              Insert: {
+                createdAt?: string
+                id?: number
+                isReviewEnabled?: boolean
+                path: string
+                projectId: number
+                updatedAt: string
+              }
+              Update: {
+                createdAt?: string
+                id?: number
+                isReviewEnabled?: boolean
+                path?: string
+                projectId?: number
+                updatedAt?: string
+              }
+              Relationships: [
+                {
+                  foreignKeyName: 'GitHubDocFilePath_projectId_fkey'
+                  columns: ['projectId']
+                  isOneToOne: false
+                  referencedRelation: 'Project'
+                  referencedColumns: ['id']
+                },
+              ]
+            }
+            KnowledgeSuggestion: {
+              Row: {
+                approvedAt: string | null
+                branchName: string
+                content: string
+                createdAt: string
+                fileSha: string
+                id: number
+                path: string
+                projectId: number
+                title: string
+                type: Database['public']['Enums']['KnowledgeType']
+                updatedAt: string
+              }
+              Insert: {
+                approvedAt?: string | null
+                branchName: string
+                content: string
+                createdAt?: string
+                fileSha: string
+                id?: number
+                path: string
+                projectId: number
+                title: string
+                type: Database['public']['Enums']['KnowledgeType']
+                updatedAt: string
+              }
+              Update: {
+                approvedAt?: string | null
+                branchName?: string
+                content?: string
+                createdAt?: string
+                fileSha?: string
+                id?: number
+                path?: string
+                projectId?: number
+                title?: string
+                type?: Database['public']['Enums']['KnowledgeType']
+                updatedAt?: string
+              }
+              Relationships: [
+                {
+                  foreignKeyName: 'KnowledgeSuggestion_projectId_fkey'
+                  columns: ['projectId']
+                  isOneToOne: false
+                  referencedRelation: 'Project'
+                  referencedColumns: ['id']
+                },
+              ]
+            }
+            Migration: {
+              Row: {
+                createdAt: string
+                id: number
+                pullRequestId: number
+                title: string
+                updatedAt: string
+              }
+              Insert: {
+                createdAt?: string
+                id?: number
+                pullRequestId: number
+                title: string
+                updatedAt: string
+              }
+              Update: {
+                createdAt?: string
+                id?: number
+                pullRequestId?: number
+                title?: string
+                updatedAt?: string
+              }
+              Relationships: [
+                {
+                  foreignKeyName: 'Migration_pullRequestId_fkey'
+                  columns: ['pullRequestId']
+                  isOneToOne: false
+                  referencedRelation: 'PullRequest'
+                  referencedColumns: ['id']
+                },
+              ]
+            }
+            OverallReview: {
+              Row: {
+                branchName: string
+                createdAt: string
+                id: number
+                projectId: number | null
+                pullRequestId: number
+                reviewComment: string | null
+                reviewedAt: string
+                updatedAt: string
+              }
+              Insert: {
+                branchName: string
+                createdAt?: string
+                id?: number
+                projectId?: number | null
+                pullRequestId: number
+                reviewComment?: string | null
+                reviewedAt?: string
+                updatedAt: string
+              }
+              Update: {
+                branchName?: string
+                createdAt?: string
+                id?: number
+                projectId?: number | null
+                pullRequestId?: number
+                reviewComment?: string | null
+                reviewedAt?: string
+                updatedAt?: string
+              }
+              Relationships: [
+                {
+                  foreignKeyName: 'OverallReview_projectId_fkey'
+                  columns: ['projectId']
+                  isOneToOne: false
+                  referencedRelation: 'Project'
+                  referencedColumns: ['id']
+                },
+                {
+                  foreignKeyName: 'OverallReview_pullRequestId_fkey'
+                  columns: ['pullRequestId']
+                  isOneToOne: false
+                  referencedRelation: 'PullRequest'
+                  referencedColumns: ['id']
+                },
+              ]
+            }
+            Project: {
+              Row: {
+                createdAt: string
+                id: number
+                name: string
+                updatedAt: string
+              }
+              Insert: {
+                createdAt?: string
+                id?: number
+                name: string
+                updatedAt: string
+              }
+              Update: {
+                createdAt?: string
+                id?: number
+                name?: string
+                updatedAt?: string
+              }
+              Relationships: []
+            }
+            ProjectRepositoryMapping: {
+              Row: {
+                createdAt: string
+                id: number
+                projectId: number
+                repositoryId: number
+                updatedAt: string
+              }
+              Insert: {
+                createdAt?: string
+                id?: number
+                projectId: number
+                repositoryId: number
+                updatedAt: string
+              }
+              Update: {
+                createdAt?: string
+                id?: number
+                projectId?: number
+                repositoryId?: number
+                updatedAt?: string
+              }
+              Relationships: [
+                {
+                  foreignKeyName: 'ProjectRepositoryMapping_projectId_fkey'
+                  columns: ['projectId']
+                  isOneToOne: false
+                  referencedRelation: 'Project'
+                  referencedColumns: ['id']
+                },
+                {
+                  foreignKeyName: 'ProjectRepositoryMapping_repositoryId_fkey'
+                  columns: ['repositoryId']
+                  isOneToOne: false
+                  referencedRelation: 'Repository'
+                  referencedColumns: ['id']
+                },
+              ]
+            }
+            PullRequest: {
+              Row: {
+                commentId: number | null
+                createdAt: string
+                id: number
+                pullNumber: number
+                repositoryId: number
+                updatedAt: string
+              }
+              Insert: {
+                commentId?: number | null
+                createdAt?: string
+                id?: number
+                pullNumber: number
+                repositoryId: number
+                updatedAt: string
+              }
+              Update: {
+                commentId?: number | null
+                createdAt?: string
+                id?: number
+                pullNumber?: number
+                repositoryId?: number
+                updatedAt?: string
+              }
+              Relationships: [
+                {
+                  foreignKeyName: 'PullRequest_repositoryId_fkey'
+                  columns: ['repositoryId']
+                  isOneToOne: false
+                  referencedRelation: 'Repository'
+                  referencedColumns: ['id']
+                },
+              ]
+            }
+            Repository: {
+              Row: {
+                createdAt: string
+                id: number
+                installationId: number
+                isActive: boolean
+                name: string
+                owner: string
+                updatedAt: string
+              }
+              Insert: {
+                createdAt?: string
+                id?: number
+                installationId: number
+                isActive?: boolean
+                name: string
+                owner: string
+                updatedAt: string
+              }
+              Update: {
+                createdAt?: string
+                id?: number
+                installationId?: number
+                isActive?: boolean
+                name?: string
+                owner?: string
+                updatedAt?: string
+              }
+              Relationships: []
+            }
+            WatchSchemaFilePattern: {
+              Row: {
+                createdAt: string
+                id: number
+                pattern: string
+                projectId: number
+                updatedAt: string
+              }
+              Insert: {
+                createdAt?: string
+                id?: number
+                pattern: string
+                projectId: number
+                updatedAt: string
+              }
+              Update: {
+                createdAt?: string
+                id?: number
+                pattern?: string
+                projectId?: number
+                updatedAt?: string
+              }
+              Relationships: [
+                {
+                  foreignKeyName: 'WatchSchemaFilePattern_projectId_fkey'
+                  columns: ['projectId']
+                  isOneToOne: false
+                  referencedRelation: 'Project'
+                  referencedColumns: ['id']
+                },
+              ]
+            }
+          }
+          Views: {
+            [_ in never]: never
+          }
+          Functions: {
+            [_ in never]: never
+          }
+          Enums: {
+            KnowledgeType: 'SCHEMA' | 'DOCS'
+          }
+          CompositeTypes: {
+            [_ in never]: never
+          }
+        }
+      }
+      
+      type PublicSchema = Database[Extract<keyof Database, 'public'>]
+      
+      export type Tables<
+        PublicTableNameOrOptions extends
+          | keyof (PublicSchema['Tables'] & PublicSchema['Views'])
+          | { schema: keyof Database },
+        TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
+          ? keyof (Database[PublicTableNameOrOptions['schema']]['Tables'] &
+              Database[PublicTableNameOrOptions['schema']]['Views'])
+          : never = never,
+      > = PublicTableNameOrOptions extends { schema: keyof Database }
+        ? (Database[PublicTableNameOrOptions['schema']]['Tables'] &
+            Database[PublicTableNameOrOptions['schema']]['Views'])[TableName] extends {
+            Row: infer R
+          }
+          ? R
+          : never
+        : PublicTableNameOrOptions extends keyof (PublicSchema['Tables'] &
+              PublicSchema['Views'])
+          ? (PublicSchema['Tables'] &
+              PublicSchema['Views'])[PublicTableNameOrOptions] extends {
+              Row: infer R
+            }
+            ? R
+            : never
+          : never
+      
+      export type TablesInsert<
+        PublicTableNameOrOptions extends
+          | keyof PublicSchema['Tables']
+          | { schema: keyof Database },
+        TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
+          ? keyof Database[PublicTableNameOrOptions['schema']]['Tables']
+          : never = never,
+      > = PublicTableNameOrOptions extends { schema: keyof Database }
+        ? Database[PublicTableNameOrOptions['schema']]['Tables'][TableName] extends {
+            Insert: infer I
+          }
+          ? I
+          : never
+        : PublicTableNameOrOptions extends keyof PublicSchema['Tables']
+          ? PublicSchema['Tables'][PublicTableNameOrOptions] extends {
+              Insert: infer I
+            }
+            ? I
+            : never
+          : never
+      
+      export type TablesUpdate<
+        PublicTableNameOrOptions extends
+          | keyof PublicSchema['Tables']
+          | { schema: keyof Database },
+        TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
+          ? keyof Database[PublicTableNameOrOptions['schema']]['Tables']
+          : never = never,
+      > = PublicTableNameOrOptions extends { schema: keyof Database }
+        ? Database[PublicTableNameOrOptions['schema']]['Tables'][TableName] extends {
+            Update: infer U
+          }
+          ? U
+          : never
+        : PublicTableNameOrOptions extends keyof PublicSchema['Tables']
+          ? PublicSchema['Tables'][PublicTableNameOrOptions] extends {
+              Update: infer U
+            }
+            ? U
+            : never
+          : never
+      
+      export type Enums<
+        PublicEnumNameOrOptions extends
+          | keyof PublicSchema['Enums']
+          | { schema: keyof Database },
+        EnumName extends PublicEnumNameOrOptions extends { schema: keyof Database }
+          ? keyof Database[PublicEnumNameOrOptions['schema']]['Enums']
+          : never = never,
+      > = PublicEnumNameOrOptions extends { schema: keyof Database }
+        ? Database[PublicEnumNameOrOptions['schema']]['Enums'][EnumName]
+        : PublicEnumNameOrOptions extends keyof PublicSchema['Enums']
+          ? PublicSchema['Enums'][PublicEnumNameOrOptions]
+          : never
+      
+      export type CompositeTypes<
+        PublicCompositeTypeNameOrOptions extends
+          | keyof PublicSchema['CompositeTypes']
+          | { schema: keyof Database },
+        CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
+          schema: keyof Database
+        }
+          ? keyof Database[PublicCompositeTypeNameOrOptions['schema']]['CompositeTypes']
+          : never = never,
+      > = PublicCompositeTypeNameOrOptions extends { schema: keyof Database }
+        ? Database[PublicCompositeTypeNameOrOptions['schema']]['CompositeTypes'][CompositeTypeName]
+        : PublicCompositeTypeNameOrOptions extends keyof PublicSchema['CompositeTypes']
+          ? PublicSchema['CompositeTypes'][PublicCompositeTypeNameOrOptions]
+          : never
   - filename: frontend/packages/db/supabase/migrations/20250328105339_add_branch_name_to_knowledge_suggestion.sql
     status: added
     changes: 1
     patch: |-
       @@ -0,0 +1 @@
       +alter table "public"."KnowledgeSuggestion" add column "branchName" text not null;
+    currentContent: |
+      alter table "public"."KnowledgeSuggestion" add column "branchName" text not null;
   - filename: frontend/packages/github/src/api.server.ts
     status: modified
     changes: 2
     patch: "@@ -181,7 +181,7 @@ export const updateFileContent = async (\n   sha:
       string,\n   message: string,\n   installationId: number,\n-  branch = 'tmp-knowledge-suggestion',\n+
       \ branch: string,\n ): Promise<boolean> => {\n   const [owner, repo] = repositoryFullName.split('/')\n "
+    currentContent: |
+      import { createAppAuth } from '@octokit/auth-app'
+      import { Octokit } from '@octokit/rest'
+      import type { FileChange } from './types'
+      
+      const createOctokit = async (installationId: number) => {
+        const octokit = new Octokit({
+          authStrategy: createAppAuth,
+          auth: {
+            appId: process.env['GITHUB_APP_ID'],
+            privateKey: process.env['GITHUB_PRIVATE_KEY']?.replace(/\\n/g, '\n'),
+            installationId,
+          },
+        })
+      
+        return octokit
+      }
+      
+      export const getPullRequestDetails = async (
+        installationId: number,
+        owner: string,
+        repo: string,
+        pullNumber: number,
+      ) => {
+        const octokit = await createOctokit(installationId)
+      
+        const { data: pullRequest } = await octokit.pulls.get({
+          owner,
+          repo,
+          pull_number: pullNumber,
+        })
+      
+        return pullRequest
+      }
+      
+      export const getPullRequestFiles = async (
+        installationId: number,
+        owner: string,
+        repo: string,
+        pullNumber: number,
+      ): Promise<FileChange[]> => {
+        const octokit = await createOctokit(installationId)
+      
+        const { data: files } = await octokit.pulls.listFiles({
+          owner,
+          repo,
+          pull_number: pullNumber,
+          per_page: 100,
+        })
+      
+        return files.map(
+          (file: {
+            filename: string
+            status:
+              | 'added'
+              | 'removed'
+              | 'modified'
+              | 'renamed'
+              | 'copied'
+              | 'changed'
+              | 'unchanged'
+            additions: number
+            deletions: number
+            changes: number
+            patch?: string | undefined
+          }) => {
+            const extension = file.filename.split('.').pop() || 'unknown'
+      
+            return {
+              filename: file.filename,
+              status: file.status,
+              additions: file.additions,
+              deletions: file.deletions,
+              changes: file.changes,
+              fileType: extension,
+              patch: file.patch || '',
+            }
+          },
+        )
+      }
+      
+      export const createPullRequestComment = async (
+        installationId: number,
+        owner: string,
+        repo: string,
+        pullNumber: number,
+        body: string,
+      ) => {
+        const octokit = await createOctokit(installationId)
+      
+        const response = await octokit.issues.createComment({
+          owner,
+          repo,
+          issue_number: pullNumber,
+          body,
+        })
+      
+        return response.data
+      }
+      
+      export const updatePullRequestComment = async (
+        installationId: number,
+        owner: string,
+        repo: string,
+        commentId: number,
+        body: string,
+      ) => {
+        const octokit = await createOctokit(installationId)
+      
+        const response = await octokit.issues.updateComment({
+          owner,
+          repo,
+          comment_id: commentId,
+          body,
+        })
+      
+        return response.data
+      }
+      
+      export const getRepository = async (
+        projectId: string,
+        installationId: number,
+      ) => {
+        const [owner, repo] = projectId.split('/')
+        if (!owner || !repo) throw new Error('Invalid project ID format')
+      
+        const octokit = await createOctokit(installationId)
+        const { data } = await octokit.repos.get({
+          owner,
+          repo,
+        })
+      
+        return data
+      }
+      
+      /**
+       * Gets file content and SHA from GitHub repository
+       * @returns Object containing content and SHA
+       */
+      export const getFileContent = async (
+        repositoryFullName: string,
+        filePath: string,
+        ref: string,
+        installationId: number,
+      ): Promise<{ content: string | null; sha: string | null }> => {
+        const [owner, repo] = repositoryFullName.split('/')
+      
+        if (!owner || !repo) {
+          console.error('Invalid repository format:', repositoryFullName)
+          return { content: null, sha: null }
+        }
+      
+        const octokit = await createOctokit(installationId)
+      
+        try {
+          const { data } = await octokit.repos.getContent({
+            owner,
+            repo,
+            path: filePath,
+            ref,
+          })
+      
+          if ('type' in data && data.type === 'file' && 'content' in data) {
+            return {
+              content: Buffer.from(data.content, 'base64').toString('utf-8'),
+              sha: data.sha,
+            }
+          }
+      
+          console.warn('Not a file:', filePath)
+          return { content: null, sha: null }
+        } catch (error) {
+          console.error(`Error fetching file content for ${filePath}:`, error)
+          return { content: null, sha: null }
+        }
+      }
+      
+      export const updateFileContent = async (
+        repositoryFullName: string,
+        filePath: string,
+        content: string,
+        sha: string,
+        message: string,
+        installationId: number,
+        branch: string,
+      ): Promise<boolean> => {
+        const [owner, repo] = repositoryFullName.split('/')
+      
+        if (!owner || !repo) {
+          console.error('Invalid repository format:', repositoryFullName)
+          return false
+        }
+      
+        const octokit = await createOctokit(installationId)
+      
+        try {
+          await octokit.repos.createOrUpdateFileContents({
+            owner,
+            repo,
+            path: filePath,
+            message,
+            content: Buffer.from(content).toString('base64'),
+            sha,
+            branch,
+          })
+      
+          return true
+        } catch (error) {
+          console.error(`Error updating file content for ${filePath}:`, error)
+          return false
+        }
+      }
+      
+      export const getRepositoryBranches = async (
+        installationId: number,
+        owner: string,
+        repo: string,
+      ) => {
+        const octokit = await createOctokit(installationId)
+      
+        const { data: branches } = await octokit.repos.listBranches({
+          owner,
+          repo,
+          per_page: 100,
+        })
+      
+        return branches
+      }
+      
+      /**
+       * Creates a new file in the GitHub repository
+       * @returns Object containing success status and SHA of the created file
+       */
+      export const createFileContent = async (
+        repositoryFullName: string,
+        filePath: string,
+        content: string,
+        message: string,
+        installationId: number,
+        branch = 'main',
+      ): Promise<{ success: boolean; sha: string | null }> => {
+        const [owner, repo] = repositoryFullName.split('/')
+      
+        if (!owner || !repo) {
+          console.error('Invalid repository format:', repositoryFullName)
+          return { success: false, sha: null }
+        }
+      
+        const octokit = await createOctokit(installationId)
+      
+        try {
+          const response = await octokit.repos.createOrUpdateFileContents({
+            owner,
+            repo,
+            path: filePath,
+            message,
+            content: Buffer.from(content).toString('base64'),
+            branch,
+          })
+      
+          return {
+            success: true,
+            sha: response.data.content?.sha || null,
+          }
+        } catch (error) {
+          console.error(`Error creating file ${filePath}:`, error)
+          return { success: false, sha: null }
+        }
+      }
   - filename: frontend/packages/jobs/src/functions/processCreateKnowledgeSuggestion.ts
     status: modified
     changes: 1
     patch: "@@ -77,6 +77,7 @@ export const processCreateKnowledgeSuggestion = async
       (\n       content,\n       fileSha,\n       projectId,\n+      branchName: branch,\n
       \    },\n   })\n "
+    currentContent: |
+      import { prisma } from '@liam-hq/db'
+      import { createFileContent, getFileContent } from '@liam-hq/github'
+      import type { KnowledgeType } from '@prisma/client'
+      
+      type CreateKnowledgeSuggestionPayload = {
+        projectId: number
+        type: KnowledgeType
+        title: string
+        path: string
+        content: string
+        branch: string
+      }
+      
+      export const processCreateKnowledgeSuggestion = async (
+        payload: CreateKnowledgeSuggestionPayload,
+      ) => {
+        const { projectId, type, title, path, content, branch } = payload
+      
+        const project = await prisma.project.findUnique({
+          where: { id: projectId },
+          include: {
+            repositoryMappings: {
+              include: {
+                repository: true,
+              },
+              take: 1,
+            },
+          },
+        })
+      
+        if (!project || !project.repositoryMappings[0]?.repository) {
+          throw new Error('Repository information not found for the project')
+        }
+      
+        const repository = project.repositoryMappings[0].repository
+        const repositoryOwner = repository.owner
+        const repositoryName = repository.name
+        const installationId = Number(repository.installationId)
+      
+        const repositoryFullName = `${repositoryOwner}/${repositoryName}`
+        let fileSha: string | null = null
+      
+        // First, try to get the SHA of the existing file
+        const existingFile = await getFileContent(
+          repositoryFullName,
+          path,
+          branch,
+          installationId,
+        )
+      
+        if (existingFile.sha) {
+          fileSha = existingFile.sha
+        } else {
+          // If file doesn't exist, create a new one
+          const result = await createFileContent(
+            repositoryFullName,
+            path,
+            content,
+            `Create ${title}`,
+            installationId,
+            branch,
+          )
+      
+          if (!result.success || !result.sha) {
+            throw new Error('Failed to create file in GitHub')
+          }
+      
+          fileSha = result.sha
+        }
+      
+        // Create the knowledge suggestion with the file SHA
+        const knowledgeSuggestion = await prisma.knowledgeSuggestion.create({
+          data: {
+            type,
+            title,
+            path,
+            content,
+            fileSha,
+            projectId,
+            branchName: branch,
+          },
+        })
+      
+        return {
+          suggestionId: knowledgeSuggestion.id,
+          success: true,
+        }
+      }
   - filename: memory-bank/progress.md
     status: modified
     changes: 3
@@ -1250,3 +2290,46 @@ vars:
       data access layer. The implementation uses a single optimized query with nested
       joins to efficiently retrieve all necessary data. This serves as a prototype
       for the planned migration from Prisma to Supabase JS across the entire application.\n "
+    currentContent: |
+      # Progress
+
+      ## What Works
+
+      - AI components have been successfully integrated to analyze migration impacts and provide intelligent suggestions.
+      - The product is deployed in the AWS us-east-1 region, supporting English-speaking markets.
+      - The GitHub App integration is operational, automating comments and review approvals on PRs.
+      - Complete review pipeline from GitHub webhook to AI review generation to PR comment posting.
+      - Modular architecture with separate functions for review generation and comment posting.
+      - KnowledgeSuggestion database model for storing and managing AI-generated suggestions for Schema and Docs updates.
+      - Text document viewer page that renders raw text content from GitHub repositories.
+      - Documentation list page that displays all GitHubDocFilePath entries for a project with links to individual document pages.
+      - Supabase JS integration for database access in the document viewer page, with optimized queries using nested joins.
+      - Dynamic branch name management for KnowledgeSuggestion operations, replacing hardcoded branch names.
+
+      ## What's Left to Build
+
+      - Enhanced schema change detection to better identify and analyze database migrations.
+      - Improved review prompt template for more detailed and contextual analysis.
+      - Further refinement of AI components to enhance the accuracy and relevance of suggestions.
+      - Development of Builder User features, planned for later phases, leveraging accumulated review data and feedback.
+      - Exploration of multi-region deployment opportunities as user needs grow.
+      - Complete migration from Prisma ORM to Supabase JS across all components to standardize database access patterns.
+
+      ## Current Status
+
+      The project is currently focused on enhancing the Reviewer User experience, with AI-driven analysis and suggestions integrated into the migration review process. The initial release prioritizes the Reviewer User, with Builder User features planned for future phases.
+
+      The core review pipeline is now operational, connecting GitHub webhooks to AI-powered review generation and PR comment posting. This enables automatic review of database schema changes when pull requests are opened or updated.
+
+      The KnowledgeSuggestion feature is being implemented to allow AI-generated suggestions for Schema and Docs updates. The database model has been created, which will store suggestions that can be approved and then committed to GitHub using the GitHub API. Recent improvements include adding a branchName column to the KnowledgeSuggestion table to replace hardcoded branch names with dynamic ones, making the system more flexible and maintainable.
+
+      A new text document viewer page has been implemented at `/app/projects/[projectId]/docs/[branchOrCommit]/[...slug]` that fetches and displays raw text content from GitHub repositories. This page uses Supabase JS for database access instead of Prisma, demonstrating the flexibility of our data access layer. The implementation uses a single optimized query with nested joins to efficiently retrieve all necessary data. This serves as a prototype for the planned migration from Prisma to Supabase JS across the entire application.
+
+      A documentation list page has been implemented at `/app/projects/[projectId]/ref/[branchOrCommit]/docs` that displays all GitHubDocFilePath entries for a project. The page provides links to individual document pages and shows the review status of each document. This enhances the user experience by providing a centralized view of all documentation files associated with a project.
+
+      ## Known Issues
+
+      - The schema change detection is basic and needs enhancement to better identify relevant migration files.
+      - The review prompt template is simple and could be improved to provide more detailed analysis.
+      - Continuous learning for AI components is required to improve accuracy and relevance over time.
+      - The coexistence with the OSS version needs to be managed carefully to ensure a sustainable business model.

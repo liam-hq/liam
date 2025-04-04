@@ -28,6 +28,7 @@ export type SavePullRequestResult = {
       | 'unchanged'
     changes: number
     patch: string
+    currentContent: string | null
   }>
   branchName: string
 }
@@ -137,6 +138,7 @@ export async function processSavePullRequest(
       status: file.status,
       changes: file.changes,
       patch: file?.patch || '',
+      currentContent: file.currentContent || null,
     }
   })
 

@@ -40,6 +40,13 @@ export const getPullRequestFiles = async (
 ): Promise<FileChange[]> => {
   const octokit = await createOctokit(installationId)
 
+  const pull = await octokit.pulls.get({
+    owner,
+    repo,
+    pull_number: pullNumber,
+  })
+  const ref = pull.data.head.ref
+
   const { data: files } = await octokit.pulls.listFiles({
     owner,
     repo,
@@ -47,34 +54,43 @@ export const getPullRequestFiles = async (
     per_page: 100,
   })
 
-  return files.map(
-    (file: {
-      filename: string
-      status:
-        | 'added'
-        | 'removed'
-        | 'modified'
-        | 'renamed'
-        | 'copied'
-        | 'changed'
-        | 'unchanged'
-      additions: number
-      deletions: number
-      changes: number
-      patch?: string | undefined
-    }) => {
-      const extension = file.filename.split('.').pop() || 'unknown'
+  return Promise.all(
+    files.map(
+      async (file: {
+        filename: string
+        status:
+          | 'added'
+          | 'removed'
+          | 'modified'
+          | 'renamed'
+          | 'copied'
+          | 'changed'
+          | 'unchanged'
+        additions: number
+        deletions: number
+        changes: number
+        patch?: string | undefined
+      }) => {
+        const extension = file.filename.split('.').pop() || 'unknown'
+        const currentContent = await getFileContent(
+          `${owner}/${repo}`,
+          file.filename,
+          ref,
+          installationId,
+        )
 
-      return {
-        filename: file.filename,
-        status: file.status,
-        additions: file.additions,
-        deletions: file.deletions,
-        changes: file.changes,
-        fileType: extension,
-        patch: file.patch || '',
-      }
-    },
+        return {
+          filename: file.filename,
+          status: file.status,
+          additions: file.additions,
+          deletions: file.deletions,
+          changes: file.changes,
+          fileType: extension,
+          patch: file.patch || '',
+          currentContent: currentContent.content,
+        }
+      },
+    ),
   )
 }
 

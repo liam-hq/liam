@@ -31,6 +31,7 @@ export type GenerateReviewPayload = {
       | 'unchanged'
     changes: number
     patch: string
+    currentContent: string | null
   }>
 }
 

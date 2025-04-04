@@ -18,6 +18,7 @@ export type FileChange = {
   changes: number
   fileType: string
   patch: string
+  currentContent: string | null
 }
 
 export type GitHubWebhookPayload = {
