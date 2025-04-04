@@ -71,12 +71,16 @@ async function main() {
         {
           id: 'openai:gpt-4o-mini',
           config: {
-            responseFormat: {
+            response_format: {
               type: 'json_schema',
-              schema: reviewJsonSchema,
-              strict: true,
+              json_schema: {
+                name: 'review',
+                schema: reviewJsonSchema,
+                strict: true,
+              },
             },
             temperature: 0.7,
+            max_tokens: 10000,
           },
         },
       ],

@@ -1,11 +1,9 @@
 import {
   array,
   enum as enumType,
-  maxValue,
-  minValue,
   number,
-  object,
   pipe,
+  strictObject,
   string,
 } from 'valibot'
 
@@ -23,16 +21,16 @@ const SeverityEnum = enumType({
   POSITIVE: 'POSITIVE',
 })
 
-export const reviewSchema = object({
+export const reviewSchema = strictObject({
   bodyMarkdown: string(),
   issues: array(
-    object({
+    strictObject({
       kind: KindEnum,
       severity: SeverityEnum,
       description: string(),
       suggestion: string(),
       suggestionSnippets: array(
-        object({
+        strictObject({
           filename: string(),
           snippet: string(),
         }),
@@ -40,9 +38,9 @@ export const reviewSchema = object({
     }),
   ),
   scores: array(
-    object({
+    strictObject({
       kind: KindEnum,
-      value: pipe(number(), minValue(0), maxValue(10)),
+      value: pipe(number()),
       reason: string(),
     }),
   ),
