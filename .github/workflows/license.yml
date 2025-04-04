@@ -35,13 +35,13 @@ jobs:
           private-key: ${{ secrets.LICENSE_CI_TRIGGER_APP_PRIVATE_KEY }}
       - name: Checkout code for non-fork PRs
         if: steps.fork-check.outputs.is_fork != 'true'
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           ref: ${{ github.event.pull_request.head.ref }}
           token: ${{ steps.app-token.outputs.token }}
       - name: Checkout code for forked PRs
         if: steps.fork-check.outputs.is_fork == 'true'
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
       # To make the success of this job a prerequisite for merging into the main branch,
       # set a filter here instead of on: to determine whether or not to proceed to the next step.
       - name: Cache dependency files

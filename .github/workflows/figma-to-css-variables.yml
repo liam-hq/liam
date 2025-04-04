@@ -17,7 +17,7 @@ jobs:
     timeout-minutes: 15
 
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
       - uses: ./.github/actions/pnpm-setup
       - run: pnpm --filter @packages/figma-to-css-variables sync --output '../../apps/service-site/src/styles' --filter-modes "Dark,Mode 1"
         env:
