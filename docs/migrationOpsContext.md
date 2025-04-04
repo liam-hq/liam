@@ -1,0 +1,2 @@
+- Migration operations should include a review phase to assess the impact of schema changes on existing data before deployment.
+- Timing of migrations should consider the usage of the affected models to minimize disruption during peak usage times.
