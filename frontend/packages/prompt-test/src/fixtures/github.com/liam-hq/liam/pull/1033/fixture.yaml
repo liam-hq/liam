@@ -2,6 +2,8 @@
 assert:
 - type: llm-rubric
   value: The report mentions about ensuring that this table is empty before the migration
+- type: llm-rubric
+  value: The report includes `suggestionPatches` with patch-style strings for each suggestion
 - type: is-json
 - type: javascript
   value: JSON.parse(output).scores[0].value >= 1

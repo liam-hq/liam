@@ -27,6 +27,9 @@ Your JSON-formatted response must contain:
   - "severity": For each issue, assign a severity value. Use "CRITICAL" or "WARNING" if the item represents a problem, and "POSITIVE" if it does not indicate an issue.
   - "description": A clear and precise explanation of the issue.
   - "suggestion": Actionable recommendations for addressing the issue.
+  - "suggestionPatches": An array of suggestionsPatches for each issue kind in the "suggestions" field, each including:
+    - "filename": The filename of the file that needs to be patched.
+    - "patch": The patch to the file changes to address the issue.
 - An array of scores for each issue kind in the "scores" field, each including:
   - "kind": One of the issue categories listed above.
   - "value": A numeric score from 0 to 10, using a deduction-based approach:

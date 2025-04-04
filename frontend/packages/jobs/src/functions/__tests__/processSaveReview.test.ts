@@ -96,6 +96,7 @@ describe.skip('processSaveReview', () => {
             severity: 'CRITICAL',
             description: 'Test issue',
             suggestion: 'Fix the issue',
+            suggestionPatches: [],
           },
         ],
       },
