@@ -3,6 +3,7 @@ import { getRepositoryBranches } from '@liam-hq/github'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import type { FC } from 'react'
+import { urlgen } from '../../../../utils/routes/urlgen'
 import styles from './ProjectBranchesListPage.module.css'
 
 type Props = {
@@ -92,7 +93,10 @@ export const ProjectBranchesListPage: FC<Props> = async ({ projectId }) => {
               {repo.branches.map((branch) => (
                 <li key={branch.name} className={styles.branchItem}>
                   <Link
-                    href={`/app/projects/${project.id}/ref/${branch.name}`}
+                    href={urlgen('projects/[projectId]/ref/[branchOrCommit]', {
+                      projectId: project.id.toString(),
+                      branchOrCommit: branch.name,
+                    })}
                     className={styles.branchName}
                   >
                     {branch.name}
