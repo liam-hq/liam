@@ -11980,7 +11980,7 @@ BlueOak-1.0.0 permitted
 
 
 <a name="json-schema-to-zod"></a>
-### json-schema-to-zod v2.6.0
+### json-schema-to-zod v2.6.1
 #### 
 
 ##### Paths
