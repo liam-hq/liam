@@ -83,9 +83,6 @@ importers:
       '@trigger.dev/sdk':
         specifier: 3.3.17
         version: 3.3.17(zod@3.23.8)
-      '@types/diff':
-        specifier: 7.0.2
-        version: 7.0.2
       cheerio:
         specifier: 1.0.0
         version: 1.0.0
@@ -135,6 +132,9 @@ importers:
       '@prisma/nextjs-monorepo-workaround-plugin':
         specifier: 6.5.0
         version: 6.5.0
+      '@types/diff':
+        specifier: 7.0.2
+        version: 7.0.2
       '@types/gtag.js':
         specifier: 0.0.20
         version: 0.0.20
