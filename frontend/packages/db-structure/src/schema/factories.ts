@@ -63,6 +63,6 @@ const tables = (override?: Tables): Tables => {
 
 export const aDBStructure = (override?: Partial<DBStructure>): DBStructure => ({
   tables: tables(override?.tables),
-  relationships: {},
-  tableGroups: {},
+  relationships: override?.relationships || {},
+  tableGroups: override?.tableGroups || {},
 })

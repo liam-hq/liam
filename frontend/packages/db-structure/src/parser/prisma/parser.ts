@@ -58,6 +58,16 @@ async function parsePrismaSchema(schemaString: string): Promise<ProcessResult> {
   const tableGroups: Record<string, TableGroup> = {}
   const errors: Error[] = []
 
+  // Track many-to-many relationships for later processing
+  // Use a Set to store unique relationship identifiers to avoid duplicates
+  const processedManyToManyRelations = new Set<string>()
+  const manyToManyRelations: Array<{
+    model1: string
+    model2: string
+    field1: DMMF.Field
+    field2: DMMF.Field
+  }> = []
+
   const tableFieldRenaming: Record<string, Record<string, string>> = {}
   for (const model of dmmf.datamodel.models) {
     for (const field of model.fields) {
@@ -103,6 +113,17 @@ async function parsePrismaSchema(schemaString: string): Promise<ProcessResult> {
     for (const field of model.fields) {
       if (!field.relationName) continue
 
+      // Check if this is a many-to-many relation and process it
+      if (detectAndStoreManyToManyRelation(
+        field,
+        model,
+        dmmf.datamodel.models,
+        processedManyToManyRelations,
+        manyToManyRelations
+      )) {
+        continue; // Skip normal relationship processing
+      }
+
       const existingRelationship = relationships[field.relationName]
       const isTargetField =
         field.relationToFields?.[0] &&
@@ -110,20 +131,24 @@ async function parsePrismaSchema(schemaString: string): Promise<ProcessResult> {
         field.relationFromFields?.[0] &&
         (field.relationFromFields?.length ?? 0) > 0
 
+      // Get the column names with fallback to empty string
+      const primaryColumnName = field.relationToFields?.[0] ?? '';
+      const foreignColumnName = field.relationFromFields?.[0] ?? '';
+
       const relationship: Relationship = isTargetField
-        ? ({
+        ? {
             name: field.relationName,
             primaryTableName: field.type,
-            primaryColumnName: field.relationToFields[0] ?? '',
+            primaryColumnName,
             foreignTableName: model.name,
-            foreignColumnName: field.relationFromFields[0] ?? '',
+            foreignColumnName,
             cardinality: existingRelationship?.cardinality ?? 'ONE_TO_MANY',
             updateConstraint: 'NO_ACTION',
             deleteConstraint: normalizeConstraintName(
               field.relationOnDelete ?? '',
             ),
-          } as const)
-        : ({
+          }
+        : {
             name: field.relationName,
             primaryTableName: existingRelationship?.primaryTableName ?? '',
             primaryColumnName: existingRelationship?.primaryColumnName ?? '',
@@ -132,7 +157,7 @@ async function parsePrismaSchema(schemaString: string): Promise<ProcessResult> {
             cardinality: field.isList ? 'ONE_TO_MANY' : 'ONE_TO_ONE',
             updateConstraint: 'NO_ACTION',
             deleteConstraint: 'NO_ACTION',
-          } as const)
+          }
 
       relationships[relationship.name] = getFieldRenamedRelationship(
         relationship,
@@ -151,6 +176,25 @@ async function parsePrismaSchema(schemaString: string): Promise<ProcessResult> {
     table.indexes[indexInfo.name] = indexInfo
   }
 
+  // Process many-to-many relations
+  for (const relation of manyToManyRelations) {
+    const joinTableName = createManyToManyJoinTableName(relation.model1, relation.model2);
+
+    // Create join table
+    tables[joinTableName] = createManyToManyJoinTable(joinTableName);
+
+    // Add relationships for the join table
+    const joinTableRelationships = createManyToManyRelationships(
+      joinTableName,
+      relation.model1,
+      relation.model2
+    );
+
+    // Add the relationships to the global relationships object
+    Object.assign(relationships, joinTableRelationships);
+  }
+
+  // Default return for other cases
   return {
     value: {
       tables,
@@ -227,6 +271,145 @@ function normalizeConstraintName(constraint: string): ForeignKeyConstraint {
     default:
       return 'NO_ACTION'
   }
+}
+
+/**
+ * Creates the name for a many-to-many join table
+ */
+function createManyToManyJoinTableName(model1: string, model2: string): string {
+  return `_${model1}To${model2}`;
+}
+
+/**
+ * Creates a join table for a many-to-many relationship
+ */
+function createManyToManyJoinTable(joinTableName: string): Table {
+  return {
+    name: joinTableName,
+    columns: {
+      A: {
+        name: 'A',
+        type: 'serial',
+        default: null,
+        notNull: true,
+        unique: false,
+        primary: false,
+        comment: null,
+        check: null,
+      },
+      B: {
+        name: 'B',
+        type: 'serial',
+        default: null,
+        notNull: true,
+        unique: false,
+        primary: false,
+        comment: null,
+        check: null,
+      },
+    },
+    comment: null,
+    indexes: {
+      [`${joinTableName}_AB_pkey`]: {
+        name: `${joinTableName}_AB_pkey`,
+        unique: true,
+        columns: ['A', 'B'],
+        type: '',
+      },
+      [`${joinTableName}_B_index`]: {
+        name: `${joinTableName}_B_index`,
+        unique: false,
+        columns: ['B'],
+        type: '',
+      },
+    },
+  };
+}
+
+/**
+ * Creates relationships for a many-to-many join table
+ */
+function createManyToManyRelationships(
+  joinTableName: string,
+  model1: string,
+  model2: string
+): Record<string, Relationship> {
+  return {
+    [`${joinTableName}_A_fkey`]: {
+      name: `${joinTableName}_A_fkey`,
+      primaryTableName: model1,
+      primaryColumnName: 'id',
+      foreignTableName: joinTableName,
+      foreignColumnName: 'A',
+      cardinality: 'ONE_TO_MANY',
+      updateConstraint: 'CASCADE',
+      deleteConstraint: 'CASCADE',
+    },
+    [`${joinTableName}_B_fkey`]: {
+      name: `${joinTableName}_B_fkey`,
+      primaryTableName: model2,
+      primaryColumnName: 'id',
+      foreignTableName: joinTableName,
+      foreignColumnName: 'B',
+      cardinality: 'ONE_TO_MANY',
+      updateConstraint: 'CASCADE',
+      deleteConstraint: 'CASCADE',
+    },
+  };
+}
+
+/**
+ * Detects if a field is part of a many-to-many relation and stores it for later processing
+ */
+function detectAndStoreManyToManyRelation(
+  field: DMMF.Field,
+  model: DMMF.Model,
+  models: readonly DMMF.Model[],
+  processedRelations: Set<string>,
+  manyToManyRelations: Array<{
+    model1: string
+    model2: string
+    field1: DMMF.Field
+    field2: DMMF.Field
+  }>
+): boolean {
+  // Check if this is a many-to-many relation (list field with no relation fields)
+  if (field.isList &&
+      (!field.relationFromFields || field.relationFromFields.length === 0) &&
+      (!field.relationToFields || field.relationToFields.length === 0)) {
+
+    // Find the corresponding field in the related model
+    const relatedModel = models.find(m => m.name === field.type)
+    if (relatedModel) {
+      const relatedField = relatedModel.fields.find(f =>
+        f.relationName === field.relationName &&
+        f.isList &&
+        f.type === model.name
+      )
+
+      if (relatedField) {
+        // Create a unique identifier for this relationship
+        // Sort model names to ensure consistent ordering
+        const modelNames = [model.name, field.type].sort()
+        const relationId = `${modelNames[0]}_${modelNames[1]}`
+
+        // Only process this relationship if we haven't seen it before
+        if (!processedRelations.has(relationId)) {
+          processedRelations.add(relationId)
+
+          // Store this many-to-many relation for later processing
+          manyToManyRelations.push({
+            model1: modelNames[0],
+            model2: modelNames[1],
+            field1: field,
+            field2: relatedField
+          })
+        }
+        return true // Indicate that we found and processed a many-to-many relation
+      }
+    }
+  }
+  return false // Not a many-to-many relation
 }
 
 export const processor: Processor = (str) => parsePrismaSchema(str)
