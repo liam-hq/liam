@@ -576,6 +576,11 @@ ALTER TABLE ONLY "public"."ReviewScore"
 
 
 ALTER TABLE ONLY "public"."User"
+    ADD CONSTRAINT "User_email_key" UNIQUE ("email");
+
+
+
+ALTER TABLE ONLY "public"."User"
     ADD CONSTRAINT "User_pkey" PRIMARY KEY ("id");
 
 

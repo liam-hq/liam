@@ -32,6 +32,10 @@ ALTER TABLE ONLY "public"."User" ALTER COLUMN "id" SET DEFAULT nextval('"public"
 ALTER TABLE ONLY "public"."User"
     ADD CONSTRAINT "User_pkey" PRIMARY KEY ("id");
 
+-- Add unique constraint for email
+ALTER TABLE ONLY "public"."User"
+    ADD CONSTRAINT "User_email_key" UNIQUE ("email");
+
 -- Add foreign key constraint for repositoryId
 ALTER TABLE ONLY "public"."User"
     ADD CONSTRAINT "User_repositoryId_fkey" FOREIGN KEY ("repositoryId") REFERENCES "public"."Repository"("id");
