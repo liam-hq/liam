@@ -474,6 +474,44 @@ export type Database = {
           },
         ]
       }
+      User: {
+        Row: {
+          createdAt: string
+          email: string
+          id: number
+          name: string | null
+          repositoryId: number | null
+          repositoryName: string | null
+          updatedAt: string
+        }
+        Insert: {
+          createdAt?: string
+          email: string
+          id?: number
+          name?: string | null
+          repositoryId?: number | null
+          repositoryName?: string | null
+          updatedAt: string
+        }
+        Update: {
+          createdAt?: string
+          email?: string
+          id?: number
+          name?: string | null
+          repositoryId?: number | null
+          repositoryName?: string | null
+          updatedAt?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'User_repositoryId_fkey'
+            columns: ['repositoryId']
+            isOneToOne: false
+            referencedRelation: 'Repository'
+            referencedColumns: ['id']
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never

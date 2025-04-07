@@ -423,6 +423,35 @@ ALTER SEQUENCE "public"."ReviewScore_id_seq" OWNED BY "public"."ReviewScore"."id
 
 
 
+CREATE TABLE IF NOT EXISTS "public"."User" (
+    "id" integer NOT NULL,
+    "email" "text" NOT NULL,
+    "name" "text",
+    "repositoryId" integer,
+    "repositoryName" "text",
+    "createdAt" timestamp(3) without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    "updatedAt" timestamp(3) without time zone NOT NULL
+);
+
+
+ALTER TABLE "public"."User" OWNER TO "postgres";
+
+
+CREATE SEQUENCE IF NOT EXISTS "public"."User_id_seq"
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE "public"."User_id_seq" OWNER TO "postgres";
+
+
+ALTER SEQUENCE "public"."User_id_seq" OWNED BY "public"."User"."id";
+
+
+
 CREATE TABLE IF NOT EXISTS "public"."_prisma_migrations" (
     "id" character varying(36) NOT NULL,
     "checksum" character varying(64) NOT NULL,
@@ -479,6 +508,10 @@ ALTER TABLE ONLY "public"."ReviewIssue" ALTER COLUMN "id" SET DEFAULT "nextval"(
 
 
 ALTER TABLE ONLY "public"."ReviewScore" ALTER COLUMN "id" SET DEFAULT "nextval"('"public"."ReviewScore_id_seq"'::"regclass");
+
+
+
+ALTER TABLE ONLY "public"."User" ALTER COLUMN "id" SET DEFAULT "nextval"('"public"."User_id_seq"'::"regclass");
 
 
 
@@ -539,6 +572,11 @@ ALTER TABLE ONLY "public"."ReviewIssue"
 
 ALTER TABLE ONLY "public"."ReviewScore"
     ADD CONSTRAINT "ReviewScore_pkey" PRIMARY KEY ("id");
+
+
+
+ALTER TABLE ONLY "public"."User"
+    ADD CONSTRAINT "User_pkey" PRIMARY KEY ("id");
 
 
 
@@ -619,6 +657,11 @@ ALTER TABLE ONLY "public"."ReviewIssue"
 
 ALTER TABLE ONLY "public"."ReviewScore"
     ADD CONSTRAINT "ReviewScore_overallReviewId_fkey" FOREIGN KEY ("overallReviewId") REFERENCES "public"."OverallReview"("id") ON UPDATE CASCADE ON DELETE RESTRICT;
+
+
+
+ALTER TABLE ONLY "public"."User"
+    ADD CONSTRAINT "User_repositoryId_fkey" FOREIGN KEY ("repositoryId") REFERENCES "public"."Repository"("id");
 
 
 
@@ -964,6 +1007,18 @@ GRANT ALL ON TABLE "public"."ReviewScore" TO "service_role";
 GRANT ALL ON SEQUENCE "public"."ReviewScore_id_seq" TO "anon";
 GRANT ALL ON SEQUENCE "public"."ReviewScore_id_seq" TO "authenticated";
 GRANT ALL ON SEQUENCE "public"."ReviewScore_id_seq" TO "service_role";
+
+
+
+GRANT ALL ON TABLE "public"."User" TO "anon";
+GRANT ALL ON TABLE "public"."User" TO "authenticated";
+GRANT ALL ON TABLE "public"."User" TO "service_role";
+
+
+
+GRANT ALL ON SEQUENCE "public"."User_id_seq" TO "anon";
+GRANT ALL ON SEQUENCE "public"."User_id_seq" TO "authenticated";
+GRANT ALL ON SEQUENCE "public"."User_id_seq" TO "service_role";
 
 
 
