@@ -629,8 +629,8 @@ importers:
         specifier: 16.4.7
         version: 16.4.7
       promptfoo:
-        specifier: 0.107.7
-        version: 0.107.7(tl2tkeqxdmlcycthztwgcfyjem)
+        specifier: 0.108.0
+        version: 0.108.0(tl2tkeqxdmlcycthztwgcfyjem)
       tsx:
         specifier: 4.7.1
         version: 4.7.1
@@ -8549,8 +8549,8 @@ packages:
   promisepipe@3.0.0:
     resolution: {integrity: sha512-V6TbZDJ/ZswevgkDNpGt/YqNCiZP9ASfgU+p83uJE6NrGtvSGoOcHLiDCqkMs2+yg7F5qHdLV8d0aS8O26G/KA==}
 
-  promptfoo@0.107.7:
-    resolution: {integrity: sha512-Ccj5Zu4RRBDHglcLx90x9ksBstVXOCTE57vWgMxt+cYWm8/DcO9oOkVyJkoMKg4qmOn7GwPCzVkT8bVSA6S5OQ==}
+  promptfoo@0.108.0:
+    resolution: {integrity: sha512-QA/1bpQMDGNTD6+Z/xG6O+7SKHKPtiCybkjFdIkb4Pwg1y+ZxOGQjWSkj3bTrv3/BHmt6o3rzhHsTmqhcueWmw==}
     engines: {node: '>=18.0.0'}
     hasBin: true
     peerDependencies:
@@ -10499,7 +10499,7 @@ snapshots:
 
   '@anthropic-ai/sdk@0.39.0(encoding@0.1.13)':
     dependencies:
-      '@types/node': 18.19.80
+      '@types/node': 18.19.86
       '@types/node-fetch': 2.6.12
       abort-controller: 3.0.0
       agentkeepalive: 4.6.0
@@ -17184,7 +17184,7 @@ snapshots:
       array-flatten: 1.1.1
       body-parser: 1.20.3
       content-disposition: 0.5.4
-      content-type: 1.0.4
+      content-type: 1.0.5
       cookie: 0.7.1
       cookie-signature: 1.0.6
       debug: 2.6.9
@@ -17985,7 +17985,7 @@ snapshots:
       isstream: 0.1.2
       jsonwebtoken: 9.0.2
       mime-types: 2.1.35
-      retry-axios: 2.6.0(axios@1.8.4(debug@4.4.0))
+      retry-axios: 2.6.0(axios@1.8.4)
       tough-cookie: 4.1.4
     transitivePeerDependencies:
       - supports-color
@@ -19655,7 +19655,7 @@ snapshots:
 
   openai@4.91.1(encoding@0.1.13)(ws@8.18.1)(zod@3.23.8):
     dependencies:
-      '@types/node': 18.19.80
+      '@types/node': 18.19.86
       '@types/node-fetch': 2.6.12
       abort-controller: 3.0.0
       agentkeepalive: 4.6.0
@@ -19671,7 +19671,7 @@ snapshots:
 
   openai@4.91.1(encoding@0.1.13)(ws@8.18.1)(zod@3.24.2):
     dependencies:
-      '@types/node': 18.19.80
+      '@types/node': 18.19.86
       '@types/node-fetch': 2.6.12
       abort-controller: 3.0.0
       agentkeepalive: 4.6.0
@@ -20142,7 +20142,7 @@ snapshots:
 
   promisepipe@3.0.0: {}
 
-  promptfoo@0.107.7(tl2tkeqxdmlcycthztwgcfyjem):
+  promptfoo@0.108.0(tl2tkeqxdmlcycthztwgcfyjem):
     dependencies:
       '@adaline/anthropic': 0.20.0
       '@adaline/azure': 0.9.2
@@ -20313,7 +20313,7 @@ snapshots:
 
   pump@3.0.2:
     dependencies:
-      end-of-stream: 1.1.0
+      end-of-stream: 1.4.4
       once: 1.4.0
 
   punycode@1.4.1: {}
@@ -20685,7 +20685,7 @@ snapshots:
       onetime: 7.0.0
       signal-exit: 4.1.0
 
-  retry-axios@2.6.0(axios@1.8.4(debug@4.4.0)):
+  retry-axios@2.6.0(axios@1.8.4):
     dependencies:
       axios: 1.8.4(debug@4.4.0)
 
