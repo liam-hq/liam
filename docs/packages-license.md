@@ -14965,7 +14965,7 @@ BlueOak-1.0.0 permitted
 
 
 <a name="promptfoo"></a>
-### promptfoo v0.107.7
+### promptfoo v0.108.0
 #### 
 
 ##### Paths
