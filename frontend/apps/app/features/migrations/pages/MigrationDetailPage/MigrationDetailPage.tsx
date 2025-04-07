@@ -1,7 +1,6 @@
+import { createClient } from '@/libs/db/server'
 import { urlgen } from '@/utils/routes'
-import { prisma } from '@liam-hq/db'
 import { getPullRequestDetails, getPullRequestFiles } from '@liam-hq/github'
-import { minimatch } from 'minimatch'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import type { FC } from 'react'
@@ -12,42 +11,50 @@ type Props = {
 }
 
 async function getMigrationContents(migrationId: string) {
-  const migration = await prisma.migration.findUnique({
-    where: {
-      id: Number(migrationId),
-    },
-    select: {
-      id: true,
-      title: true,
-      createdAt: true,
-      pullRequest: {
-        select: {
-          id: true,
-          pullNumber: true,
-          repository: {
-            select: {
-              installationId: true,
-              name: true,
-              owner: true,
-            },
-          },
-        },
-      },
-    },
-  })
+  const supabase = await createClient()
 
-  if (!migration) {
+  // Get migration with pull request and repository details
+  const { data: migration, error: migrationError } = await supabase
+    .from('Migration')
+    .select(`
+      id,
+      title,
+      createdAt,
+      pullRequestId,
+      PullRequest:pullRequestId (
+        id,
+        pullNumber,
+        repositoryId,
+        Repository:repositoryId (
+          id,
+          installationId,
+          name,
+          owner
+        )
+      )
+    `)
+    .eq('id', Number(migrationId))
+    .single()
+
+  if (migrationError || !migration) {
+    console.error('Error fetching migration:', migrationError)
     return notFound()
   }
 
-  const pullRequest = migration.pullRequest
-  const { repository } = pullRequest
+  const pullRequest = migration.PullRequest
+  const repository = pullRequest.Repository
 
-  const overallReview = await prisma.overallReview.findFirst({
-    where: {
-      pullRequestId: pullRequest.id,
-    },
-  })
+  // Get overall review
+  const { data: overallReview, error: reviewError } = await supabase
+    .from('OverallReview')
+    .select('*')
+    .eq('pullRequestId', pullRequest.id)
+    .single()
+
+  if (reviewError || !overallReview) {
+    console.error('Error fetching overall review:', reviewError)
+    return notFound()
+  }
 
   if (!overallReview) {
     return notFound()
@@ -67,15 +74,20 @@ async function getMigrationContents(migrationId: string) {
     Number(pullRequest.pullNumber),
   )
 
-  const patterns = await prisma.watchSchemaFilePattern.findMany({
-    where: { projectId: Number(overallReview.projectId) },
-    select: { pattern: true },
-  })
+  const { data: schemaPaths, error: pathsError } = await supabase
+    .from('GitHubSchemaFilePath')
+    .select('path')
+    .eq('projectId', overallReview.projectId || 0)
+
+  if (pathsError) {
+    console.error('Error fetching schema paths:', pathsError)
+    return notFound()
+  }
 
   const matchedFiles = files
     .map((file) => file.filename)
     .filter((filename) =>
-      patterns.some((pattern) => minimatch(filename, pattern.pattern)),
+      schemaPaths.some((schemaPath) => filename === schemaPath.path),
     )
 
   const erdLinks = matchedFiles.map((filename) => ({
@@ -103,9 +115,9 @@ export const MigrationDetailPage: FC<Props> = async ({ migrationId }) => {
 
   const projectId = overallReview.projectId
 
-  const formattedReviewDate = overallReview.reviewedAt
-    ? overallReview.reviewedAt.toLocaleDateString('en-US')
-    : 'Not available'
+  const formattedReviewDate = new Date(
+    overallReview.reviewedAt,
+  ).toLocaleDateString('en-US')
 
   return (
     <main className={styles.wrapper}>
@@ -118,7 +130,7 @@ export const MigrationDetailPage: FC<Props> = async ({ migrationId }) => {
 
       <div className={styles.heading}>
         <h1 className={styles.title}>{migration.title}</h1>
-        <p className={styles.subTitle}>#{migration.pullRequest.pullNumber}</p>
+        <p className={styles.subTitle}>#{migration.PullRequest.pullNumber}</p>
       </div>
       <div className={styles.twoColumns}>
         <div className={styles.box}>

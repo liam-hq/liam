@@ -135,6 +135,33 @@ ALTER SEQUENCE "public"."GitHubDocFilePath_id_seq" OWNED BY "public"."GitHubDocF
 
 
 
+CREATE TABLE IF NOT EXISTS "public"."GitHubSchemaFilePath" (
+    "id" integer NOT NULL,
+    "path" "text" NOT NULL,
+    "projectId" integer NOT NULL,
+    "createdAt" timestamp(3) without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    "updatedAt" timestamp(3) without time zone NOT NULL
+);
+
+
+ALTER TABLE "public"."GitHubSchemaFilePath" OWNER TO "postgres";
+
+
+CREATE SEQUENCE IF NOT EXISTS "public"."GitHubSchemaFilePath_id_seq"
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE "public"."GitHubSchemaFilePath_id_seq" OWNER TO "postgres";
+
+
+ALTER SEQUENCE "public"."GitHubSchemaFilePath_id_seq" OWNED BY "public"."GitHubSchemaFilePath"."id";
+
+
+
 CREATE TABLE IF NOT EXISTS "public"."KnowledgeSuggestion" (
     "id" integer NOT NULL,
     "type" "public"."KnowledgeType" NOT NULL,
@@ -394,33 +421,6 @@ ALTER SEQUENCE "public"."ReviewScore_id_seq" OWNED BY "public"."ReviewScore"."id
 
 
 
-CREATE TABLE IF NOT EXISTS "public"."WatchSchemaFilePattern" (
-    "id" integer NOT NULL,
-    "pattern" "text" NOT NULL,
-    "projectId" integer NOT NULL,
-    "createdAt" timestamp(3) without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    "updatedAt" timestamp(3) without time zone NOT NULL
-);
-
-
-ALTER TABLE "public"."WatchSchemaFilePattern" OWNER TO "postgres";
-
-
-CREATE SEQUENCE IF NOT EXISTS "public"."WatchSchemaFilePattern_id_seq"
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
-ALTER TABLE "public"."WatchSchemaFilePattern_id_seq" OWNER TO "postgres";
-
-
-ALTER SEQUENCE "public"."WatchSchemaFilePattern_id_seq" OWNED BY "public"."WatchSchemaFilePattern"."id";
-
-
-
 CREATE TABLE IF NOT EXISTS "public"."_prisma_migrations" (
     "id" character varying(36) NOT NULL,
     "checksum" character varying(64) NOT NULL,
@@ -437,6 +437,10 @@ ALTER TABLE "public"."_prisma_migrations" OWNER TO "postgres";
 
 
 ALTER TABLE ONLY "public"."GitHubDocFilePath" ALTER COLUMN "id" SET DEFAULT "nextval"('"public"."GitHubDocFilePath_id_seq"'::"regclass");
+
+
+
+ALTER TABLE ONLY "public"."GitHubSchemaFilePath" ALTER COLUMN "id" SET DEFAULT "nextval"('"public"."GitHubSchemaFilePath_id_seq"'::"regclass");
 
 
 
@@ -476,12 +480,18 @@ ALTER TABLE ONLY "public"."ReviewScore" ALTER COLUMN "id" SET DEFAULT "nextval"(
 
 
 
-ALTER TABLE ONLY "public"."WatchSchemaFilePattern" ALTER COLUMN "id" SET DEFAULT "nextval"('"public"."WatchSchemaFilePattern_id_seq"'::"regclass");
-
-
-
 ALTER TABLE ONLY "public"."GitHubDocFilePath"
     ADD CONSTRAINT "GitHubDocFilePath_pkey" PRIMARY KEY ("id");
+
+
+
+ALTER TABLE ONLY "public"."GitHubSchemaFilePath"
+    ADD CONSTRAINT "GitHubSchemaFilePath_path_projectId_key" UNIQUE ("path", "projectId");
+
+
+
+ALTER TABLE ONLY "public"."GitHubSchemaFilePath"
+    ADD CONSTRAINT "GitHubSchemaFilePath_pkey" PRIMARY KEY ("id");
 
 
 
@@ -530,11 +540,6 @@ ALTER TABLE ONLY "public"."ReviewScore"
 
 
 
-ALTER TABLE ONLY "public"."WatchSchemaFilePattern"
-    ADD CONSTRAINT "WatchSchemaFilePattern_pkey" PRIMARY KEY ("id");
-
-
-
 ALTER TABLE ONLY "public"."_prisma_migrations"
     ADD CONSTRAINT "_prisma_migrations_pkey" PRIMARY KEY ("id");
 
@@ -562,6 +567,11 @@ CREATE UNIQUE INDEX "Repository_owner_name_key" ON "public"."Repository" USING "
 
 ALTER TABLE ONLY "public"."GitHubDocFilePath"
     ADD CONSTRAINT "GitHubDocFilePath_projectId_fkey" FOREIGN KEY ("projectId") REFERENCES "public"."Project"("id") ON UPDATE CASCADE ON DELETE RESTRICT;
+
+
+
+ALTER TABLE ONLY "public"."GitHubSchemaFilePath"
+    ADD CONSTRAINT "GitHubSchemaFilePath_projectId_fkey" FOREIGN KEY ("projectId") REFERENCES "public"."Project"("id") ON UPDATE CASCADE ON DELETE RESTRICT;
 
 
 
@@ -607,11 +617,6 @@ ALTER TABLE ONLY "public"."ReviewIssue"
 
 ALTER TABLE ONLY "public"."ReviewScore"
     ADD CONSTRAINT "ReviewScore_overallReviewId_fkey" FOREIGN KEY ("overallReviewId") REFERENCES "public"."OverallReview"("id") ON UPDATE CASCADE ON DELETE RESTRICT;
-
-
-
-ALTER TABLE ONLY "public"."WatchSchemaFilePattern"
-    ADD CONSTRAINT "WatchSchemaFilePattern_projectId_fkey" FOREIGN KEY ("projectId") REFERENCES "public"."Project"("id") ON UPDATE CASCADE ON DELETE RESTRICT;
 
 
 
@@ -840,6 +845,18 @@ GRANT ALL ON SEQUENCE "public"."GitHubDocFilePath_id_seq" TO "service_role";
 
 
 
+GRANT ALL ON TABLE "public"."GitHubSchemaFilePath" TO "anon";
+GRANT ALL ON TABLE "public"."GitHubSchemaFilePath" TO "authenticated";
+GRANT ALL ON TABLE "public"."GitHubSchemaFilePath" TO "service_role";
+
+
+
+GRANT ALL ON SEQUENCE "public"."GitHubSchemaFilePath_id_seq" TO "anon";
+GRANT ALL ON SEQUENCE "public"."GitHubSchemaFilePath_id_seq" TO "authenticated";
+GRANT ALL ON SEQUENCE "public"."GitHubSchemaFilePath_id_seq" TO "service_role";
+
+
+
 GRANT ALL ON TABLE "public"."KnowledgeSuggestion" TO "anon";
 GRANT ALL ON TABLE "public"."KnowledgeSuggestion" TO "authenticated";
 GRANT ALL ON TABLE "public"."KnowledgeSuggestion" TO "service_role";
@@ -945,18 +962,6 @@ GRANT ALL ON TABLE "public"."ReviewScore" TO "service_role";
 GRANT ALL ON SEQUENCE "public"."ReviewScore_id_seq" TO "anon";
 GRANT ALL ON SEQUENCE "public"."ReviewScore_id_seq" TO "authenticated";
 GRANT ALL ON SEQUENCE "public"."ReviewScore_id_seq" TO "service_role";
-
-
-
-GRANT ALL ON TABLE "public"."WatchSchemaFilePattern" TO "anon";
-GRANT ALL ON TABLE "public"."WatchSchemaFilePattern" TO "authenticated";
-GRANT ALL ON TABLE "public"."WatchSchemaFilePattern" TO "service_role";
-
-
-
-GRANT ALL ON SEQUENCE "public"."WatchSchemaFilePattern_id_seq" TO "anon";
-GRANT ALL ON SEQUENCE "public"."WatchSchemaFilePattern_id_seq" TO "authenticated";
-GRANT ALL ON SEQUENCE "public"."WatchSchemaFilePattern_id_seq" TO "service_role";
 
 
 

@@ -1,6 +1,5 @@
 import { createClient } from '@/libs/db/server'
 import { getPullRequestFiles } from '@liam-hq/github'
-import { minimatch } from 'minimatch'
 
 type CheckSchemaChangesParams = {
   installationId: number
@@ -25,23 +24,22 @@ export const checkSchemaChanges = async (
   )
   const filenames = files.map((file) => file.filename)
 
-  // Get patterns for the project
   const supabase = await createClient()
-  const { data: patterns, error } = await supabase
-    .from('WatchSchemaFilePattern')
-    .select('pattern')
+  const { data: schemaPaths, error } = await supabase
+    .from('GitHubSchemaFilePath')
+    .select('path')
     .eq('projectId', projectId)
 
   if (error) {
-    throw new Error('Failed to fetch schema file patterns')
+    throw new Error('Failed to fetch schema file paths')
   }
 
-  if (!patterns || patterns.length === 0) {
+  if (!schemaPaths || schemaPaths.length === 0) {
     return { shouldContinue: false }
   }
-  // Check if filenames match the patterns
+  // Check if filenames match the paths directly
   const matchedFiles = filenames.filter((filename) =>
-    patterns.some((pattern) => minimatch(filename, pattern.pattern)),
+    schemaPaths.some((schemaPath) => filename === schemaPath.path),
   )
 
   if (matchedFiles.length === 0) {

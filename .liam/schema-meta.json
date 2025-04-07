@@ -3,7 +3,7 @@
     "tableGroups": {
       "Github": {
         "name": "Github",
-        "tables": ["Repository", "PullRequest", "ProjectRepositoryMapping"],
+        "tables": ["Repository", "PullRequest", "ProjectRepositoryMapping", "GitHubSchemaFilePath"],
         "comment": "Tables related to Github"
       }
     }

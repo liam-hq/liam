@@ -98,9 +98,6 @@ importers:
       langfuse-langchain:
         specifier: 3.36.0
         version: 3.36.0(langchain@0.3.19(@langchain/core@0.3.42(openai@4.91.1(encoding@0.1.13)(ws@8.18.1)(zod@3.23.8)))(axios@1.8.4)(cheerio@1.0.0)(encoding@0.1.13)(handlebars@4.7.8)(openai@4.91.1(encoding@0.1.13)(ws@8.18.1)(zod@3.23.8))(ws@8.18.1))
-      minimatch:
-        specifier: 10.0.1
-        version: 10.0.1
       next:
         specifier: 15.2.3
         version: 15.2.3(@opentelemetry/api@1.9.0)(@playwright/test@1.51.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -555,9 +552,6 @@ importers:
       langfuse-langchain:
         specifier: 3.36.0
         version: 3.36.0(langchain@0.3.19(@langchain/core@0.3.42(openai@4.91.1(encoding@0.1.13)(ws@8.18.1)(zod@3.23.8)))(axios@1.8.4)(cheerio@1.0.0)(encoding@0.1.13)(handlebars@4.7.8)(openai@4.91.1(encoding@0.1.13)(ws@8.18.1)(zod@3.23.8))(ws@8.18.1))
-      minimatch:
-        specifier: 10.0.1
-        version: 10.0.1
       valibot:
         specifier: ^1.0.0-beta.5
         version: 1.0.0-rc.3(typescript@5.8.2)

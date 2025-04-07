@@ -57,6 +57,7 @@
 - During the transition from Prisma to Supabase JS, both database access methods will coexist, requiring careful coordination to ensure consistent data access patterns.
 - Type compatibility issues between Prisma and Supabase require careful handling, particularly for bigint fields and nested relationships.
 - Schema metadata generation requires accurate analysis of database schema changes and proper integration with the knowledge suggestion system.
+- Supabase types need to be updated whenever database schema changes are made, to maintain type safety across the application.
 
 ## Dependencies
 - **AWS**: Used for deployment, with a focus on the us-east-1 region.

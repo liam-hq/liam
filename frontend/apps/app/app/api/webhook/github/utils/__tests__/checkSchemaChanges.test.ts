@@ -1,5 +1,4 @@
 import { getPullRequestFiles } from '@liam-hq/github'
-import { minimatch } from 'minimatch'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { checkSchemaChanges } from '../checkSchemaChanges'
 
@@ -26,7 +25,7 @@ describe('checkSchemaChanges', () => {
     vi.clearAllMocks()
   })
 
-  it('should return false if project has no watchSchemaFilePatterns', async () => {
+  it('should return false if project has no schema file paths', async () => {
     // Setup GitHub API mock to return some files
     vi.mocked(getPullRequestFiles).mockResolvedValue([
       {
@@ -44,7 +43,7 @@ describe('checkSchemaChanges', () => {
     expect(result).toEqual({ shouldContinue: false })
   })
 
-  it('should return false if no files match the watch patterns', async () => {
+  it('should return false if no files match the schema paths', async () => {
     // Setup GitHub API mock to return non-matching files
     vi.mocked(getPullRequestFiles).mockResolvedValue([
       {
@@ -93,20 +92,20 @@ describe('checkSchemaChanges', () => {
     }
 
     try {
-      // Create a test pattern for the project
-      const { data: pattern, error: patternError } = await supabase
-        .from('WatchSchemaFilePattern')
+      // Create a test schema path for the project
+      const { data: schemaPath, error: schemaPathError } = await supabase
+        .from('GitHubSchemaFilePath')
         .insert({
-          pattern: '**/*.sql',
+          path: 'migrations/2024_update.sql',
           projectId: project.id,
           updatedAt: now,
         })
         .select()
         .single()
 
-      if (patternError || !pattern) {
-        console.error('Failed to create test pattern:', patternError)
-        throw patternError
+      if (schemaPathError || !schemaPath) {
+        console.error('Failed to create test schema path:', schemaPathError)
+        throw schemaPathError
       }
 
       // Mock the GitHub API to return SQL files
@@ -141,11 +140,11 @@ describe('checkSchemaChanges', () => {
       const result = await checkSchemaChanges(testParams)
       expect(result).toEqual({ shouldContinue: true })
 
-      // Clean up the pattern
+      // Clean up the schema path
       await supabase
-        .from('WatchSchemaFilePattern')
+        .from('GitHubSchemaFilePath')
         .delete()
-        .eq('id', pattern.id)
+        .eq('id', schemaPath.id)
     } finally {
       // Clean up the project
       await supabase.from('Project').delete().eq('id', project.id)

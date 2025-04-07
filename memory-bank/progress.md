@@ -15,15 +15,18 @@
 - Streamlined database schema with removal of unused Doc and DocVersion models, focusing on GitHub-integrated document management.
 - Schema metadata generation pipeline that creates and stores metadata suggestions based on PR reviews.
 - Type-safe implementation of Supabase queries with proper handling of bigint fields and nested relationships.
+- Improved schema file management with the GitHubSchemaFilePath table (renamed from WatchSchemaFilePattern) and direct path comparison instead of pattern matching.
+- Standardized Supabase client usage across the codebase using a shared createClient function.
 
 ## What's Left to Build
 
-- Enhanced schema change detection to better identify and analyze database migrations.
+- Further enhancement of schema change detection to better identify and analyze database migrations.
 - Improved review prompt template for more detailed and contextual analysis.
 - Further refinement of AI components to enhance the accuracy and relevance of suggestions.
 - Development of Builder User features, planned for later phases, leveraging accumulated review data and feedback.
 - Exploration of multi-region deployment opportunities as user needs grow.
 - Complete migration from Prisma ORM to Supabase JS across all components to standardize database access patterns.
+- Ensure consistent Supabase type updates whenever database schema changes are made.
 
 ## Current Status
 
@@ -45,29 +48,14 @@ As part of the transition to Supabase JS, manual rollback processing has been re
 
 The testing approach has been updated to use a direct testing strategy with Supabase. Instead of mocking the Supabase client or creating mock implementations of functions (as was necessary with Prisma), we now create real records in the database, run the actual functions with these records, and then clean up the test data afterwards. This approach provides more realistic tests that verify the actual functions with real database interactions, leveraging Supabase's ability to be executed directly in test environments. This approach differs significantly from the Prisma approach, which typically required extensive mocking.
 
-## Database Migration Workflow
-
-A standardized workflow has been established for database schema changes:
-
-1. **Schema Modification**: Update the schema.prisma file with the desired changes.
-2. **Migration Creation and Application**: 
-   ```bash
-   pnpm migrate:dev <migration_name>
-   ```
-   This script creates a Prisma migration, applies it to the database, and generates a corresponding Supabase migration.
-3. **Client Generation**: After any migration, always run:
-   ```bash
-   pnpm gen:prisma    # Generate Prisma client
-   pnpm supabase:gen  # Generate Supabase types and run related scripts
-   ```
-
-This workflow ensures consistency between the database schema, Prisma client, and Supabase types, maintaining synchronization across all components of the system.
+The schema file management has been improved by renaming the `WatchSchemaFilePattern` table to `GitHubSchemaFilePath` and changing from pattern matching to direct path comparison. This provides a more precise and efficient approach to schema file management, aligning with the existing `GitHubDocFilePath` model and providing a more consistent approach to file path handling across the application. The implementation includes a migration file that handles the table rename and data transfer, updates to all affected components to use the new table name and field names, and standardization of Supabase client usage across the codebase.
 
 ## Known Issues
 
-- The schema change detection is basic and needs enhancement to better identify relevant migration files.
+- The schema change detection has been improved with direct path comparison but still needs further enhancement to better identify relevant migration files.
 - The review prompt template is simple and could be improved to provide more detailed analysis.
 - Continuous learning for AI components is required to improve accuracy and relevance over time.
 - The coexistence with the OSS version needs to be managed carefully to ensure a sustainable business model.
 - Type compatibility issues between Prisma and Supabase require careful handling, particularly for bigint fields and nested relationships.
 - The transition from Prisma to Supabase JS is ongoing and requires consistent patterns for database access across the application.
+- Supabase types need to be updated whenever database schema changes are made, to maintain type safety across the application.
