@@ -5,3 +5,7 @@
 
 ## Preferred Types
 - Use ENUM types for fields that have a limited set of valid values, such as categories and severities, to promote consistency.
+
+## Canonical Design Choices
+- Ensure that fields intended to be unique, like `email`, have UNIQUE constraints to maintain data integrity.
+- Avoid redundant fields, such as `repositoryName`, to reduce complexity and prevent data anomalies.
