@@ -54,6 +54,7 @@ async function parsePrismaSchema(schemaString: string): Promise<ProcessResult> {
   const dmmf = await getDMMF({ datamodel: schemaString })
   const tables: Record<string, Table> = {}
   const relationships: Record<string, Relationship> = {}
+  const manyToManyRelationships: Record<string, Relationship> = {}
   const errors: Error[] = []
 
   const tableFieldRenaming: Record<string, Record<string, string>> = {}
@@ -102,11 +103,9 @@ async function parsePrismaSchema(schemaString: string): Promise<ProcessResult> {
       if (!field.relationName) continue
 
       const existingRelationship = relationships[field.relationName]
-      const isTargetField =
-        field.relationToFields?.[0] &&
-        (field.relationToFields?.length ?? 0) > 0 &&
-        field.relationFromFields?.[0] &&
-        (field.relationFromFields?.length ?? 0) > 0
+      const existInManyToMany = Object.keys(manyToManyRelationships).includes(
+        field.relationName,
+      )
 
       const relationship: Relationship = {
         name: field.relationName,
@@ -134,18 +133,29 @@ async function parsePrismaSchema(schemaString: string): Promise<ProcessResult> {
         ) {
           // If an existing relation is ONE_TO_ONE and this field is a list → Change it to ONE_TO_MANY
           relationship.cardinality = 'ONE_TO_MANY'
+          relationships[relationship.name] = getFieldRenamedRelationship(
+            relationship,
+            tableFieldRenaming,
+          )
         } else {
           // Otherwise, it's a MANY_TO_MANY relationship
-          relationship.cardinality = 'MANY_TO_MANY'
+          manyToManyRelationships[relationship.name] =
+            getFieldRenamedRelationship(relationship, tableFieldRenaming)
         }
       } else {
-        if (
-          existingRelationship &&
-          existingRelationship.cardinality === 'MANY_TO_MANY' &&
-          isTargetField
-        ) {
+        if (existInManyToMany) {
           relationship.cardinality = 'ONE_TO_MANY'
+          relationships[relationship.name] = getFieldRenamedRelationship(
+            relationship,
+            tableFieldRenaming,
+          )
+          delete manyToManyRelationships[relationship.name]
         }
+
+        relationships[relationship.name] = getFieldRenamedRelationship(
+          relationship,
+          tableFieldRenaming,
+        )
       }
 
       relationships[relationship.name] = getFieldRenamedRelationship(
@@ -165,12 +175,6 @@ async function parsePrismaSchema(schemaString: string): Promise<ProcessResult> {
     if (!indexInfo) continue
     table.indexes[indexInfo.name] = indexInfo
   }
-
-  const manyToManyRelationships = Object.fromEntries(
-    Object.entries(relationships).filter(
-      ([_, rel]) => rel.cardinality === 'MANY_TO_MANY',
-    ),
-  )
 
   if (Object.keys(manyToManyRelationships).length) {
     for (const relationship in manyToManyRelationships) {
@@ -223,12 +227,6 @@ async function parsePrismaSchema(schemaString: string): Promise<ProcessResult> {
           },
         },
       }
-    }
-  }
-
-  for (const key in relationships) {
-    if (relationships[key]?.cardinality === 'MANY_TO_MANY') {
-      delete relationships[key]
     }
   }
 
