@@ -19,13 +19,6 @@ CREATE EXTENSION IF NOT EXISTS "pg_net" WITH SCHEMA "extensions";
 
 
 
-CREATE EXTENSION IF NOT EXISTS "pgsodium";
-
-
-
-
-
-
 COMMENT ON SCHEMA "public" IS 'standard public schema';
 
 
@@ -910,15 +903,6 @@ GRANT USAGE ON SCHEMA "public" TO "service_role";
 
 
 
-
-
-
-
-
-
-
-
-
 GRANT ALL ON TABLE "public"."GitHubDocFilePath" TO "anon";
 GRANT ALL ON TABLE "public"."GitHubDocFilePath" TO "authenticated";
 GRANT ALL ON TABLE "public"."GitHubDocFilePath" TO "service_role";
@@ -1072,6 +1056,12 @@ GRANT ALL ON SEQUENCE "public"."ReviewSuggestionSnippet_id_seq" TO "service_role
 GRANT ALL ON TABLE "public"."ReviewSuggestionSnippet" TO "anon";
 GRANT ALL ON TABLE "public"."ReviewSuggestionSnippet" TO "authenticated";
 GRANT ALL ON TABLE "public"."ReviewSuggestionSnippet" TO "service_role";
+
+
+
+
+
+
 
 
 
