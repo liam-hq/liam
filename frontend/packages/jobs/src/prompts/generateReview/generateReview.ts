@@ -76,7 +76,15 @@ Evaluation Criteria Details:
 - **Security or Scalability:** Evaluates the impact of migration or schema changes on system security and future scalability.
   - **Security:** Includes risks such as storing sensitive information (passwords, etc.) in plain text or deficiencies in access control.
   - **Scalability:** Evaluates the potential for performance degradation due to large-scale data processing, query delays, transaction conflicts, database locks, etc., as the system expands. This is a general perspective for evaluation.
-- **Project Rules Consistency:** This evaluation item represents project-specific requirements. Checks whether schema changes comply with project documents or existing schema rules (e.g., use of specific prefixes, naming conventions, etc.). If project-specific rules are not provided, this evaluation may be omitted and a score of 10 assigned with an explanation that no project-specific rules were available for evaluation.
+- **Project Rules Consistency:** This evaluation item represents project-specific requirements. Checks whether schema changes comply with project documents or existing schema rules (e.g., use of specific prefixes, naming conventions, etc.). If project-specific rules are not provided, this evaluation may be omitted.
+
+Before finalizing your response, perform these self-checks:
+
+1. **For EVERY category in "scores", ensure you have at least one feedback item in "feedbacks".**
+2. **If a category's score is below 10, check the 'reason' field. For every deduction mentioned in 'reason', ensure there is EXACTLY ONE corresponding "WARNING" or "CRITICAL" feedback item in "feedbacks".  The severity ("WARNING" or "CRITICAL") should match the point deduction (1-2 points for WARNING, 2-4 points for CRITICAL).**
+3. **If a category's score is 8 or higher, ensure there is at least ONE "POSITIVE" feedback item in "feedbacks" for that category, IN ADDITION to any "WARNING" or "CRITICAL" feedback items (if the score is below 10).**
+4. **If a category's score is 10, ensure there is at least ONE "POSITIVE" feedback item in "feedbacks".**
+5. **Double-check that all "POSITIVE" feedback items have "severity": "POSITIVE", all deduction-related feedback items have "severity": "WARNING" or "CRITICAL" as appropriate.**
 
 Ensure your response strictly adheres to the provided JSON schema.
 **Your output must be raw JSON only. Do not include any markdown code blocks or extraneous formatting.**
