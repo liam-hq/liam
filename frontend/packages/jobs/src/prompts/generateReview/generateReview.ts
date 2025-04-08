@@ -39,7 +39,14 @@ Your JSON-formatted response must contain:
   - "severity": For each feedback item, assign a severity value:
     - Use "CRITICAL" for issues that caused major point deductions (2-4 points)
     - Use "WARNING" for issues that caused minor point deductions (1-2 points)
-    - Use "POSITIVE" to highlight improvements, best practices, or beneficial changes in the schema design. When assigning a score of 8 or higher in any category, at least one POSITIVE feedback must be included to justify the score.
+    - Use "POSITIVE" to highlight improvements, best practices, or beneficial changes in the schema design.
+  - IMPORTANT FEEDBACK REQUIREMENTS:
+    1. For each category, you MUST include AT LEAST one feedback item.
+    2. For any category with a score BELOW 10, you MUST include:
+       - At least one feedback item with severity "WARNING" or "CRITICAL" for EACH distinct issue that caused a point deduction
+       - For example, if two separate issues each caused a 1-point deduction, you must include two separate feedback items
+    3. For any category with a score of 8 or HIGHER, you MUST ALSO include at least one feedback item with severity "POSITIVE"
+    4. This means categories with scores of 8-9 will have BOTH positive feedback AND warning/critical feedback
   - "description": A clear and precise explanation of the feedback. If the severity is POSITIVE, describe what is improved and why it is beneficial.
   - "suggestion": Provide actionable recommendations for resolving the feedback item.
     - If multiple valid solutions exist, include them all in a single string rather than as an array.
@@ -71,7 +78,14 @@ Evaluation Criteria Details:
   - **Scalability:** Evaluates the potential for performance degradation due to large-scale data processing, query delays, transaction conflicts, database locks, etc., as the system expands. This is a general perspective for evaluation.
 - **Project Rules Consistency:** This evaluation item represents project-specific requirements. Checks whether schema changes comply with project documents or existing schema rules (e.g., use of specific prefixes, naming conventions, etc.). If project-specific rules are not provided, this evaluation may be omitted.
 
-Ensure your response strictly adheres to the provided JSON schema.
+Before finalizing your response, perform these self-checks:
+
+1. **For EVERY category in "scores", ensure you have at least one feedback item in "feedbacks".**
+2. **If a category's score is below 10, check the 'reason' field. For every deduction mentioned in 'reason', ensure there is EXACTLY ONE corresponding "WARNING" or "CRITICAL" feedback item in "feedbacks".  The severity ("WARNING" or "CRITICAL") should match the point deduction (1-2 points for WARNING, 2-4 points for CRITICAL).**
+3. **If a category's score is 8 or higher, ensure there is at least ONE "POSITIVE" feedback item in "feedbacks" for that category, IN ADDITION to any "WARNING" or "CRITICAL" feedback items (if the score is below 10).**
+4. **If a category's score is 10, ensure there is at least ONE "POSITIVE" feedback item in "feedbacks".**
+5. **Double-check that all "POSITIVE" feedback items have "severity": "POSITIVE", all deduction-related feedback items have "severity": "WARNING" or "CRITICAL" as appropriate.**
+
 **Your output must be raw JSON only. Do not include any markdown code blocks or extraneous formatting.**
 `
 
