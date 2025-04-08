@@ -1,7 +1,7 @@
 ---
 assert:
 - type: javascript
-  value: output.feedbacks.filter(feedback => feedback.severity === "POSITIVE").length > 0
+  value: "output.scores[0].value < 8 || output.feedbacks.filter(feedback => feedback.severity === 'POSITIVE').length > 0"
 - type: is-json
 - type: javascript
   value: output.scores[0].value >= 1
@@ -1202,4 +1202,3 @@ vars:
       +The KnowledgeSuggestion feature is being implemented to allow AI-generated suggestions for Schema and Docs updates. The database model has been created, which will store suggestions that can be approved and then committed to GitHub using the GitHub API. Recent improvements include adding a branchName column to the KnowledgeSuggestion table to replace hardcoded branch names with dynamic ones, making the system more flexible and maintainable.
        
        A new text document viewer page has been implemented at `/app/projects/[projectId]/docs/[branchOrCommit]/[...slug]` that fetches and displays raw text content from GitHub repositories. This page uses Supabase JS for database access instead of Prisma, demonstrating the flexibility of our data access layer. The implementation uses a single optimized query with nested joins to efficiently retrieve all necessary data. This serves as a prototype for the planned migration from Prisma to Supabase JS across the entire application.
-     

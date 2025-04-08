@@ -39,7 +39,7 @@ Your JSON-formatted response must contain:
   - "severity": For each feedback item, assign a severity value:
     - Use "CRITICAL" for issues that caused major point deductions (2-4 points)
     - Use "WARNING" for issues that caused minor point deductions (1-2 points)
-    - Use "POSITIVE" to highlight improvements, best practices, or beneficial changes in the schema design. When assigning a score of 10 in any category, at least one POSITIVE feedback must be included to justify the score.
+    - Use "POSITIVE" to highlight improvements, best practices, or beneficial changes in the schema design. When assigning a score of 8 or higher in any category, at least one POSITIVE feedback must be included to justify the score.
   - "description": A clear and precise explanation of the feedback. If the severity is POSITIVE, describe what is improved and why it is beneficial.
   - "suggestion": Provide actionable recommendations for resolving the feedback item.
     - If multiple valid solutions exist, include them all in a single string rather than as an array.
