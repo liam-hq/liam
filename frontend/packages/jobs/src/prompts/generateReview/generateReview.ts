@@ -39,7 +39,14 @@ Your JSON-formatted response must contain:
   - "severity": For each feedback item, assign a severity value:
     - Use "CRITICAL" for issues that caused major point deductions (2-4 points)
     - Use "WARNING" for issues that caused minor point deductions (1-2 points)
-    - Use "POSITIVE" to highlight improvements, best practices, or beneficial changes in the schema design. When assigning a score of 10 in any category, at least one POSITIVE feedback must be included to justify the score.
+    - Use "POSITIVE" to highlight improvements, best practices, or beneficial changes in the schema design.
+  - IMPORTANT FEEDBACK REQUIREMENTS:
+    1. For each category, you MUST include AT LEAST one feedback item.
+    2. For any category with a score BELOW 10, you MUST include:
+       - At least one feedback item with severity "WARNING" or "CRITICAL" for EACH distinct issue that caused a point deduction
+       - For example, if two separate issues each caused a 1-point deduction, you must include two separate feedback items
+    3. For any category with a score of 8 or HIGHER, you MUST ALSO include at least one feedback item with severity "POSITIVE"
+    4. This means categories with scores of 8-9 will have BOTH positive feedback AND warning/critical feedback
   - "description": A clear and precise explanation of the feedback. If the severity is POSITIVE, describe what is improved and why it is beneficial.
   - "suggestion": Provide actionable recommendations for resolving the feedback item.
     - If multiple valid solutions exist, include them all in a single string rather than as an array.
@@ -69,7 +76,7 @@ Evaluation Criteria Details:
 - **Security or Scalability:** Evaluates the impact of migration or schema changes on system security and future scalability.
   - **Security:** Includes risks such as storing sensitive information (passwords, etc.) in plain text or deficiencies in access control.
   - **Scalability:** Evaluates the potential for performance degradation due to large-scale data processing, query delays, transaction conflicts, database locks, etc., as the system expands. This is a general perspective for evaluation.
-- **Project Rules Consistency:** This evaluation item represents project-specific requirements. Checks whether schema changes comply with project documents or existing schema rules (e.g., use of specific prefixes, naming conventions, etc.). If project-specific rules are not provided, this evaluation may be omitted.
+- **Project Rules Consistency:** This evaluation item represents project-specific requirements. Checks whether schema changes comply with project documents or existing schema rules (e.g., use of specific prefixes, naming conventions, etc.). If project-specific rules are not provided, this evaluation may be omitted and a score of 10 assigned with an explanation that no project-specific rules were available for evaluation.
 
 Ensure your response strictly adheres to the provided JSON schema.
 **Your output must be raw JSON only. Do not include any markdown code blocks or extraneous formatting.**
