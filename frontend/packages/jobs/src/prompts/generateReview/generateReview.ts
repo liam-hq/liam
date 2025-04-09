@@ -1,8 +1,8 @@
 import { ChatAnthropic } from '@langchain/anthropic'
 import type { Callbacks } from '@langchain/core/callbacks/manager'
+import { JsonOutputParser } from '@langchain/core/output_parsers'
 import { ChatPromptTemplate } from '@langchain/core/prompts'
 import { toJsonSchema } from '@valibot/to-json-schema'
-import type { JSONSchema7 } from 'json-schema'
 import { parse } from 'valibot'
 import type { GenerateReviewPayload } from '../../types'
 import { reviewSchema } from './reviewSchema'
@@ -76,7 +76,10 @@ Before finalizing your response, perform these self-checks:
 2. For every identified issue, ensure there is a corresponding feedback item with the correct severity.
 3. Ensure that there is at least one "POSITIVE" feedback item in "feedbacks" across all categories.
 
-**Your output must be raw JSON only. Do not include any markdown code blocks or extraneous formatting.****
+**Your output must be raw JSON only. Do not include any markdown code blocks or extraneous formatting.**
+
+The response should strictly follow this JSON schema:
+${JSON.stringify(toJsonSchema(reviewSchema), null, 2)}
 `
 
 export const USER_PROMPT = `Pull Request Description:
@@ -94,8 +97,6 @@ Schema Files:
 File Changes:
 {fileChanges}`
 
-export const reviewJsonSchema: JSONSchema7 = toJsonSchema(reviewSchema)
-
 export const generateReview = async (
   docsContent: string,
   schemaFiles: GenerateReviewPayload['schemaFiles'],
@@ -105,6 +106,8 @@ export const generateReview = async (
   callbacks: Callbacks,
   runId: string,
 ) => {
+  const parser = new JsonOutputParser()
+
   const chatPrompt = ChatPromptTemplate.fromMessages([
     ['system', SYSTEM_PROMPT],
     ['human', USER_PROMPT],
@@ -115,21 +118,28 @@ export const generateReview = async (
     model: 'claude-3-7-sonnet-latest',
   })
 
-  const chain = chatPrompt.pipe(model.withStructuredOutput(reviewJsonSchema))
-  const response = await chain.invoke(
-    {
-      docsContent,
-      schemaFiles,
-      fileChanges,
-      prDescription,
-      prComments,
-    },
-    {
-      callbacks,
-      runId,
-      tags: ['generateReview'],
-    },
-  )
-  const parsedResponse = parse(reviewSchema, response)
-  return parsedResponse
+  const chain = chatPrompt.pipe(model).pipe(parser)
+
+  try {
+    const response = await chain.invoke(
+      {
+        docsContent,
+        schemaFiles,
+        fileChanges,
+        prDescription,
+        prComments,
+      },
+      {
+        callbacks,
+        runId,
+        tags: ['generateReview'],
+      },
+    )
+
+    // Validate the response with valibot
+    return parse(reviewSchema, response)
+  } catch (error) {
+    console.error('Error generating or parsing review:', error)
+    throw new Error('Failed to generate or parse review response')
+  }
 }
