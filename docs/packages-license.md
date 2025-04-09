@@ -6047,7 +6047,7 @@ Unknown manually approved
 
 
 <a name="@xyflow/react"></a>
-### @xyflow/react v12.3.5
+### @xyflow/react v12.5.5
 #### 
 
 ##### Paths
@@ -6058,7 +6058,7 @@ Unknown manually approved
 
 
 <a name="@xyflow/system"></a>
-### @xyflow/system v0.0.46
+### @xyflow/system v0.0.55
 #### 
 
 ##### Paths
