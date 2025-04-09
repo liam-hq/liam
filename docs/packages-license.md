@@ -2,7 +2,7 @@
 
 
 ## Summary
-* 1308 MIT
+* 1309 MIT
 * 207 Apache 2.0
 * 82 ISC
 * 32 New BSD
@@ -187,7 +187,7 @@
 
 
 <a name="@anthropic-ai/sdk"></a>
-### @anthropic-ai/sdk v0.39.0
+### @anthropic-ai/sdk v0.37.0
 #### 
 
 ##### Paths
@@ -1903,6 +1903,17 @@ LGPL-3.0-or-later permitted
 * /home/runner/work/liam/liam
 
 <a href="http://www.apache.org/licenses/LICENSE-2.0.txt">Apache 2.0</a> permitted
+
+
+
+<a name="@langchain/anthropic"></a>
+### @langchain/anthropic v0.3.16
+#### 
+
+##### Paths
+* /home/runner/work/liam/liam
+
+<a href="http://opensource.org/licenses/mit-license">MIT</a> permitted
 
 
 
