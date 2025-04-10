@@ -322,6 +322,51 @@ export const MigrationDetailPage: FC<Props> = async ({
             )}
           </div>
         </div>
+
+        {/* Knowledge Suggestions Section */}
+        <div className={styles.box}>
+          <h2 className={styles.h2}>Knowledge Suggestions</h2>
+          <div className={styles.knowledgeSuggestions}>
+            {knowledgeSuggestions.length > 0 ? (
+              <div className={styles.suggestionList}>
+                {knowledgeSuggestions.map((suggestion) => (
+                  <div key={suggestion.id} className={styles.suggestionItem}>
+                    <div className={styles.suggestionHeader}>
+                      <span className={styles.suggestionType}>
+                        {suggestion.type}
+                      </span>
+                      <span className={styles.suggestionTitle}>
+                        {suggestion.title}
+                      </span>
+                      <span className={styles.suggestionPath}>
+                        {suggestion.path}
+                      </span>
+                    </div>
+                    <div className={styles.suggestionActions}>
+                      <Link
+                        href={urlgen(
+                          'projects/[projectId]/ref/[branchOrCommit]/knowledge-suggestions/[id]',
+                          {
+                            projectId: `${projectId}`,
+                            branchOrCommit: suggestion.branchName || 'main',
+                            id: `${suggestion.id}`,
+                          },
+                        )}
+                        className={styles.viewButton}
+                      >
+                        View Details →
+                      </Link>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className={styles.noSuggestions}>
+                No knowledge suggestions found.
+              </p>
+            )}
+          </div>
+        </div>
       </div>
 
       <div className={styles.metadataSection}>
