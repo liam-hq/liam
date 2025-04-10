@@ -1121,3 +1121,30 @@ ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT ALL ON TAB
 
 
 RESET ALL;
+
+-- ====================================================================
+-- Dangerous Change Sample: Deletion of columns and tables that destroy the application
+-- ====================================================================
+-- Warning: The following code is for educational purposes only and should never be used in a production environment
+-- These changes will cause the following problems:
+-- 1. Application failure due to deletion of critical tables
+-- 2. Loss of data integrity
+-- 3. Complete functional shutdown of the application
+-- 4. Impact on dependent tables
+
+-- Deletion of critical tables
+DROP TABLE IF EXISTS "public"."Project" CASCADE;
+
+-- Deletion of important columns
+ALTER TABLE "public"."Repository" DROP COLUMN "owner";
+ALTER TABLE "public"."Repository" DROP COLUMN "name";
+
+-- Removing foreign key constraints (this compromises data integrity)
+ALTER TABLE "public"."PullRequest" DROP CONSTRAINT "PullRequest_repositoryId_fkey";
+
+-- Changing ENUM type (incompatible with existing data)
+ALTER TYPE "public"."CategoryEnum" RENAME TO "CategoryEnum_old";
+CREATE TYPE "public"."CategoryEnum" AS ENUM (
+    'DIFFERENT_VALUE1',
+    'DIFFERENT_VALUE2'
+);
