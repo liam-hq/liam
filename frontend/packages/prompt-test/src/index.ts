@@ -101,7 +101,7 @@ async function main() {
         // const output = await chain.invoke(item.input, { callbacks: [handler] })
 
         // TODO: execute some tests by js using output
-        const testByJsScore = 0.8
+        const testByJsScore = 1
         trace.score({
           name: 'test-by-js',
           value: testByJsScore,
@@ -183,9 +183,9 @@ async function main() {
   const result = {
     url,
     datasetRunItemsLength: run.datasetRunItems.length,
-    testByJsBadCount: scoreResult.filter((datum) => datum['test-by-js'] < 0.5)
+    testByJsBadCount: scoreResult.filter((datum) => datum['test-by-js'] < 1)
       .length,
-    testByJsGoodCount: scoreResult.filter((datum) => datum['test-by-js'] >= 0.5)
+    testByJsGoodCount: scoreResult.filter((datum) => datum['test-by-js'] >= 1)
       .length,
     testByLlmBadCount: scoreResult.filter(
       (datum) => datum['test-by-llm'] && datum['test-by-llm'] < 1,

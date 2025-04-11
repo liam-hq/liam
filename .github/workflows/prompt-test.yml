@@ -43,6 +43,18 @@ jobs:
           datasetRunItemsLength=$(cat frontend/packages/prompt-test/result.json | jq -r .datasetRunItemsLength)
           echo "datasetRunItemsLength=$datasetRunItemsLength" >> $GITHUB_OUTPUT
 
+          testByJsGoodCount=$(cat frontend/packages/prompt-test/result.json | jq -r .testByJsGoodCount)
+          echo "testByJsGoodCount=$testByJsGoodCount" >> $GITHUB_OUTPUT
+
+          testByJsBadCount=$(cat frontend/packages/prompt-test/result.json | jq -r .testByJsBadCount)
+          echo "testByJsBadCount=$testByJsBadCount" >> $GITHUB_OUTPUT
+
+          testByLlmGoodCount=$(cat frontend/packages/prompt-test/result.json | jq -r .testByLlmGoodCount)
+          echo "testByLlmGoodCount=$testByLlmGoodCount" >> $GITHUB_OUTPUT
+
+          testByLlmBadCount=$(cat frontend/packages/prompt-test/result.json | jq -r .testByLlmBadCount)
+          echo "testByLlmBadCount=$testByLlmBadCount" >> $GITHUB_OUTPUT
+
       - name: Post result
         if: always()
         uses: marocchino/sticky-pull-request-comment@67d0dec7b07ed060a405f9b2a64b8ab319fdd7db # v2.9.2
@@ -56,7 +68,7 @@ jobs:
             | --- |
             | ${{steps.pnpm-test-prompt.outputs.datasetRunItemsLength}} |
 
-            | kind | pass ✅ | failed ❌️ |
+            | score | pass(&gt;=1) ✅ | failed(&lt;1) ❌️ |
             | ---  | ---: | ---: |
             | test-by-js | ${{steps.pnpm-test-prompt.outputs.testByJsGoodCount}} | ${{steps.pnpm-test-prompt.outputs.testByJsBadCount}} |
             | test-by-llm | ${{steps.pnpm-test-prompt.outputs.testByLlmGoodCount}} | ${{steps.pnpm-test-prompt.outputs.testByLlmBadCount}} |
