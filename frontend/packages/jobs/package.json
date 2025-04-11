@@ -27,6 +27,7 @@
     "@types/node": "22.14.0",
     "@types/uuid": "10.0.0",
     "dotenv": "16.4.7",
+    "glob": "11.0.1",
     "json-schema": "0.4.0",
     "trigger.dev": "3.3.17",
     "typescript": "5.8.3",
@@ -40,6 +41,7 @@
     "lint": "concurrently \"pnpm:lint:*\"",
     "lint:biome": "biome check .",
     "lint:tsc": "tsc --noEmit",
+    "postinstall": "cp ../db-structure/node_modules/@ruby/prism/src/prism.wasm prism.wasm",
     "test": "vitest --watch=false",
     "trigger:dev": "trigger dev"
   }
