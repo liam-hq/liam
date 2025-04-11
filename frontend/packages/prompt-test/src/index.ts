@@ -2,7 +2,7 @@ import * as crypto from 'node:crypto'
 import * as fs from 'node:fs'
 import { chain } from '@liam-hq/jobs/src/prompts/generateReview/generateReview'
 import * as dotenv from 'dotenv'
-import { Langfuse } from 'langfuse'
+import { ApiGetScoresResponse, Langfuse } from 'langfuse'
 import { createDatasetItemHandler } from 'langfuse-langchain'
 import * as YAML from 'yaml'
 
@@ -28,9 +28,8 @@ const inputs = tests.map(
 const datasetName = 'ci-2025-04-09'
 
 async function main() {
-  const langfuse = new Langfuse({
-    environment: process.env['CI'] ? 'test' : 'development',
-  })
+  const environment = process.env['CI'] ? 'test' : 'development'
+  const langfuse = new Langfuse({ environment })
 
   const existingShas = (await langfuse.getDataset(datasetName)).items.map(
     (item) => {
@@ -73,9 +72,10 @@ async function main() {
 
   // step 2: run tests
   const runName = `run-${Date.now()}`
+  const userId = `test-${runName}`
   const dataset = await langfuse.getDataset(datasetName)
 
-  await Promise.all(
+  const testByJsScores = (await Promise.all(
     dataset.items.map(async (item) => {
       if (
         !shas.includes(
@@ -92,23 +92,27 @@ async function main() {
         langfuseClient: langfuse,
       })
 
-      trace.update({
-        userId: `test-${runName}`,
-      })
+      // NOTE: for later score detection.
+      trace.update({ userId })
 
       await chain.invoke(item.input, { callbacks: [handler] })
       // const output = await chain.invoke(item.input, { callbacks: [handler] })
 
       // TODO: execute some tests by js using output
+      const testByJsScore = 0.8
       trace.score({
         name: 'test-by-js',
-        value: 0.8,
+        value: testByJsScore,
         comment: 'This is a test score',
       })
 
       await langfuse.flushAsync()
+      return {
+        traceId: trace.traceId,
+        'test-by-js': testByJsScore,
+      }
     }),
-  )
+  )).filter((datum) => datum !== undefined)
 
   // step 3: put the result to the result.json
   // This is for the github action to get the langfuse dataset run url. see also .github/workflows/prompt-test.yml
@@ -119,19 +123,44 @@ async function main() {
   const result = { url, datasetRunItemsLength: run.datasetRunItems.length }
   fs.writeFileSync('result.json', JSON.stringify(result, null, 2))
 
-  // run.datasetRunItems.forEach(async (item) => {
-  //   const trace = await langfuse.fetchTrace(item.traceId)
-  //   const observation = await langfuse.fetchObservation(item.observationId!!)
-  //   observation.data.id
-  // })
-  // const runnn = await langfuse.api.datasetsGetRun("","") 
-  // const iii = runnn.datasetRunItems[0]!!
-  // iii.traceId
-
-  // const xxx = await langfuse.api.scoreGet({ userId: iii.traceId}, { })
-  // const data = xxx.data!![0]!!
-  // data.traceId
-
+  // step 4: get the score
+  const waitUntilScoreMatches = async () => {
+    let apiGetScoresResponse: ApiGetScoresResponse
+    while (true) {
+      apiGetScoresResponse = await langfuse.api.scoreGet({ userId, name: 'test-by-llm' }, {});
+      if (apiGetScoresResponse.data.length === testByJsScores.length) {
+        const scores = apiGetScoresResponse.data.map((datum) => {
+          const testByJsScore = testByJsScores.find((testByJsScore) => testByJsScore.traceId === datum.traceId)
+          if (!testByJsScore) {
+            throw new Error(`testByJsScore not found for ${datum.traceId}`)
+          }
+          return {
+            ...testByJsScore,
+            'test-by-llm': datum.value,
+          }
+        })
+        return scores
+      }
+      await new Promise((resolve) => setTimeout(resolve, 500));
+    }
+  };
+  
+  const withTimeout = async <T>(promise: Promise<T>, ms: number): Promise<T> => {
+    return Promise.race([
+      promise,
+      new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error("Timed out")), ms)
+      ),
+    ]);
+  };
+  
+  try {
+    // 20秒以内に終わらなければタイムアウト
+    const result = await withTimeout(waitUntilScoreMatches(), 20000);
+    console.log("Score matched:", JSON.stringify(result, null, 2));
+  } catch (err) {
+    console.error("Failed to get matching score in time:", err);
+  }
 }
 
 main().catch(console.error)
