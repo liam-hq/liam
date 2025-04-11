@@ -1,5 +1,5 @@
 ---
-name: 'github.com/liam-hq/liam/pull/1055'
+name: 'liam-hq/liam/pull/1055'
 assert:
 - type: llm-rubric
   value: The report evaluates the **risk of data loss**.

@@ -85,7 +85,7 @@ async function main() {
         // skip
         return
       }
-
+      const testCaseName = (item.metadata as unknown as { name?: string })['name'] ?? ''
       const { handler, trace } = await createDatasetItemHandler({
         item,
         runName,
@@ -108,22 +108,14 @@ async function main() {
 
       await langfuse.flushAsync()
       return {
+        testCaseName,
         traceId: trace.traceId,
         'test-by-js': testByJsScore,
       }
     }),
   )).filter((datum) => datum !== undefined)
 
-  // step 3: put the result to the result.json
-  // This is for the github action to get the langfuse dataset run url. see also .github/workflows/prompt-test.yml
-  const run = await langfuse.getDatasetRun({ datasetName, runName })
-  const baseUrl =
-    process.env['LANGFUSE_BASE_URL'] ?? 'https://cloud.langfuse.com'
-  const url = `${baseUrl}/project/${dataset.projectId}/datasets/${dataset.id}/runs/${run.id}`
-  const result = { url, datasetRunItemsLength: run.datasetRunItems.length }
-  fs.writeFileSync('result.json', JSON.stringify(result, null, 2))
-
-  // step 4: get the score
+  // step 3: get the score
   const waitUntilScoreMatches = async () => {
     let apiGetScoresResponse: ApiGetScoresResponse
     while (true) {
@@ -141,26 +133,52 @@ async function main() {
         })
         return scores
       }
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      await new Promise((resolve) => setTimeout(resolve, 500))
     }
-  };
-  
+  }
   const withTimeout = async <T>(promise: Promise<T>, ms: number): Promise<T> => {
     return Promise.race([
       promise,
       new Promise<never>((_, reject) =>
         setTimeout(() => reject(new Error("Timed out")), ms)
       ),
-    ]);
-  };
-  
-  try {
-    // 20秒以内に終わらなければタイムアウト
-    const result = await withTimeout(waitUntilScoreMatches(), 20000);
-    console.log("Score matched:", JSON.stringify(result, null, 2));
-  } catch (err) {
-    console.error("Failed to get matching score in time:", err);
+    ])
   }
+  let scoreResult: {
+    'test-by-llm': number | null | undefined
+    testCaseName: string
+    traceId: string
+    'test-by-js': number
+  }[] = []
+  try {
+    // Timeout if not finished in 20 seconds
+    scoreResult = await withTimeout(waitUntilScoreMatches(), 20000)
+    console.log("Score matched:", JSON.stringify(scoreResult, null, 2))
+  } catch (err) {
+    if (err instanceof Error && err.message.includes('Timed out')) {
+      console.error('Failed to get matching score in time:', err)
+    } else {
+      throw err
+    }
+  }
+
+  // step 4: put the result to the result.json
+  // This is for the github action to get the langfuse dataset run url. see also .github/workflows/prompt-test.yml
+  const run = await langfuse.getDatasetRun({ datasetName, runName })
+  const baseUrl =
+    process.env['LANGFUSE_BASE_URL'] ?? 'https://cloud.langfuse.com'
+  const url = `${baseUrl}/project/${dataset.projectId}/datasets/${dataset.id}/runs/${run.id}`
+  const result = {
+     url,
+     datasetRunItemsLength: run.datasetRunItems.length,
+     testByJsBadCount: scoreResult.filter((datum) => datum['test-by-js'] < 0.5).length,
+     testByJsGoodCount: scoreResult.filter((datum) => datum['test-by-js'] >= 0.5).length,
+     testByLlmBadCount: scoreResult.filter((datum) => datum['test-by-llm'] && datum['test-by-llm'] < 1).length,
+     testByLlmGoodCount: scoreResult.filter((datum) => datum['test-by-llm'] && datum['test-by-llm'] >= 1).length,
+  }
+  fs.writeFileSync('result.json', JSON.stringify(result, null, 2))
+
+  // TODO: we need some vitest like report?
 }
 
 main().catch(console.error)

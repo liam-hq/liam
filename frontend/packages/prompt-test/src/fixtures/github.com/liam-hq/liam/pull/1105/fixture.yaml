@@ -1,5 +1,5 @@
 ---
-name: 'github.com/liam-hq/liam/pull/1105'
+name: 'liam-hq/liam/pull/1105'
 
 assert:
 - type: javascript
