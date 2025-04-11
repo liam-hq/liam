@@ -172,6 +172,8 @@ async function main() {
     }
   }
 
+  console.info('scoreResult', JSON.stringify(scoreResult, null, 2))
+
   // step 4: put the result to the result.json
   // This is for the github action to get the langfuse dataset run url. see also .github/workflows/prompt-test.yml
   const run = await langfuse.getDatasetRun({ datasetName, runName })

@@ -55,3 +55,8 @@ jobs:
             | run items length |
             | --- |
             | ${{steps.pnpm-test-prompt.outputs.datasetRunItemsLength}} |
+
+            | kind | pass ✅ | failed ❌️ |
+            | ---  | ---: | ---: |
+            | test-by-js | ${{steps.pnpm-test-prompt.outputs.testByJsGoodCount}} | ${{steps.pnpm-test-prompt.outputs.testByJsBadCount}} |
+            | test-by-llm | ${{steps.pnpm-test-prompt.outputs.testByLlmGoodCount}} | ${{steps.pnpm-test-prompt.outputs.testByLlmBadCount}} |
