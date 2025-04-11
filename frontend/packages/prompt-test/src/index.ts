@@ -91,6 +91,11 @@ async function main() {
         runName,
         langfuseClient: langfuse,
       })
+
+      trace.update({
+        userId: `test-${runName}`,
+      })
+
       await chain.invoke(item.input, { callbacks: [handler] })
       // const output = await chain.invoke(item.input, { callbacks: [handler] })
 
@@ -113,6 +118,20 @@ async function main() {
   const url = `${baseUrl}/project/${dataset.projectId}/datasets/${dataset.id}/runs/${run.id}`
   const result = { url, datasetRunItemsLength: run.datasetRunItems.length }
   fs.writeFileSync('result.json', JSON.stringify(result, null, 2))
+
+  // run.datasetRunItems.forEach(async (item) => {
+  //   const trace = await langfuse.fetchTrace(item.traceId)
+  //   const observation = await langfuse.fetchObservation(item.observationId!!)
+  //   observation.data.id
+  // })
+  // const runnn = await langfuse.api.datasetsGetRun("","") 
+  // const iii = runnn.datasetRunItems[0]!!
+  // iii.traceId
+
+  // const xxx = await langfuse.api.scoreGet({ userId: iii.traceId}, { })
+  // const data = xxx.data!![0]!!
+  // data.traceId
+
 }
 
 main().catch(console.error)
