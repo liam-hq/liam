@@ -11,11 +11,15 @@ const layoutOptions: LayoutOptions = {
   'elk.layered.spacing.baseValue': '40',
   'elk.spacing.componentComponent': '80',
   'elk.layered.spacing.edgeNodeBetweenLayers': '120',
-  'elk.layered.considerModelOrder.strategy': 'PREFER_EDGES',
-  'elk.layered.crossingMinimization.forceNodeModelOrder': 'true',
+  'elk.layered.considerModelOrder.strategy': 'NODES_AND_EDGES',
+  'elk.layered.considerModelOrder.components': 'MODEL_ORDER',
+  'elk.hierarchyHandling': 'INCLUDE_CHILDREN',
   'elk.layered.mergeEdges': 'true',
-  'elk.layered.nodePlacement.strategy': 'INTERACTIVE',
-  'elk.layered.layering.strategy': 'INTERACTIVE',
+  'elk.layered.nodePlacement.strategy': 'BRANDES_KOEPF',
+  'elk.layered.nodePlacement.bk.fixedAlignment': 'RIGHTDOWN',
+  'elk.layered.layering.strategy': 'LONGEST_PATH',
+  'elk.layered.layering.nodePromotion.strategy': 'DUMMYNODE_PERCENTAGE',
+  'elk.direction': 'RIGHT',
 }
 
 type Params = {
