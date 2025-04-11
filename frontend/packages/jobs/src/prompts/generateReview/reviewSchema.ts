@@ -15,14 +15,24 @@ export const SeverityEnum = enumType({
   QUESTION: 'QUESTION',
 })
 
+const citationSchema = strictObject({
+  sourceUrl: string(),
+  quote: string(),
+})
+
+const contentWithCitationsSchema = strictObject({
+  content: string(),
+  citations: array(citationSchema),
+})
+
 export const reviewSchema = strictObject({
-  bodyMarkdown: string(),
+  bodyMarkdown: contentWithCitationsSchema,
   feedbacks: array(
     strictObject({
       kind: KindEnum,
       severity: SeverityEnum,
       description: string(),
-      suggestion: string(),
+      suggestion: contentWithCitationsSchema,
       suggestionSnippets: array(
         strictObject({
           filename: string(),

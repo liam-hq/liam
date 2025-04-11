@@ -95,7 +95,7 @@ export const saveReviewTask = task({
       )
 
       await postCommentTask.trigger({
-        reviewComment: payload.review.bodyMarkdown,
+        reviewComment: payload.review.bodyMarkdown.content,
         projectId: payload.projectId,
         pullRequestId: payload.pullRequestId,
         repositoryId: payload.repositoryId,
@@ -105,7 +105,7 @@ export const saveReviewTask = task({
 
       // Trigger docs suggestion generation after review is saved
       await generateDocsSuggestionTask.trigger({
-        reviewComment: payload.review.bodyMarkdown,
+        reviewComment: payload.review.bodyMarkdown.content,
         projectId: payload.projectId,
         pullRequestNumber: payload.pullRequestNumber,
         owner: payload.owner,
