@@ -33,7 +33,7 @@ jobs:
           echo "LANGFUSE_SECRET_KEY=${LANGFUSE_SECRET_KEY}" >> .env
 
           # TODO: fail when there are errors or failures
-          pnpm test:prompt | true
+          pnpm test:prompt || (echo 'failed' ; exit 0)
 
           rm -f .env .env.local
 
