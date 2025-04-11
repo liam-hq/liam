@@ -477,5 +477,126 @@ describe(_processor, () => {
 
       expect(value).toEqual(expectedTables)
     })
+
+    it('relationship (implicit many-to-many)', async () => {
+      const { value } = await processor(`
+        model Post {
+          id         Int        @id @default(autoincrement())
+          title      String
+          categories Category[]
+        }
+        model Category {
+          id    Int    @id @default(autoincrement())
+          name  String
+          posts Post[]
+        }
+      `)
+
+      const expectedDBStructure = aDBStructure({
+        tables: {
+          Post: aTable({
+            name: 'Post',
+            columns: {
+              id: aColumn({
+                name: 'id',
+                type: 'serial',
+                default: 'autoincrement()',
+                notNull: true,
+                primary: true,
+                unique: true,
+              }),
+              title: aColumn({
+                name: 'title',
+                type: 'text',
+                notNull: true,
+              }),
+            },
+            indexes: {
+              Post_pkey: anIndex({
+                name: 'Post_pkey',
+                columns: ['id'],
+                unique: true,
+              }),
+            },
+          }),
+          Category: aTable({
+            name: 'Category',
+            columns: {
+              id: aColumn({
+                name: 'id',
+                type: 'serial',
+                default: 'autoincrement()',
+                notNull: true,
+                primary: true,
+                unique: true,
+              }),
+              name: aColumn({
+                name: 'name',
+                type: 'text',
+                notNull: true,
+              }),
+            },
+            indexes: {
+              Category_pkey: anIndex({
+                name: 'Category_pkey',
+                columns: ['id'],
+                unique: true,
+              }),
+            },
+          }),
+          _CategoryToPost: aTable({
+            name: '_CategoryToPost',
+            columns: {
+              A: aColumn({
+                name: 'A',
+                type: 'integer',
+                notNull: true,
+              }),
+              B: aColumn({
+                name: 'B',
+                type: 'integer',
+                notNull: true,
+              }),
+            },
+            indexes: {
+              _CategoryToPost_AB_pkey: anIndex({
+                name: '_CategoryToPost_AB_pkey',
+                columns: ['A', 'B'],
+                unique: true,
+              }),
+              _CategoryToPost_B_index: anIndex({
+                name: '_CategoryToPost_B_index',
+                columns: ['B'],
+                unique: false,
+              }),
+            },
+          }),
+        },
+        relationships: {
+          _CategoryToPost_A_fkey: aRelationship({
+            name: '_CategoryToPost_A_fkey',
+            primaryTableName: 'Category',
+            primaryColumnName: 'id',
+            foreignTableName: '_CategoryToPost',
+            foreignColumnName: 'A',
+            cardinality: 'ONE_TO_MANY',
+            updateConstraint: 'CASCADE',
+            deleteConstraint: 'CASCADE',
+          }),
+          _CategoryToPost_B_fkey: aRelationship({
+            name: '_CategoryToPost_B_fkey',
+            primaryTableName: 'Post',
+            primaryColumnName: 'id',
+            foreignTableName: '_CategoryToPost',
+            foreignColumnName: 'B',
+            cardinality: 'ONE_TO_MANY',
+            updateConstraint: 'CASCADE',
+            deleteConstraint: 'CASCADE',
+          }),
+        },
+      })
+
+      expect(value).toEqual(expectedDBStructure)
+    })
   })
 })
