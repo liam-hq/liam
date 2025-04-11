@@ -55,9 +55,9 @@ describe.skip('processSaveReview', () => {
 
     if (reviews && reviews.length > 0) {
       const reviewIds = reviews.map((r) => r.id)
-      // Delete associated ReviewIssues
+      // Delete associated ReviewFeedbacks
       await supabase
-        .from('ReviewIssue')
+        .from('ReviewFeedback')
         .delete()
         .in('overallReviewId', reviewIds)
       // Delete OverallReviews
@@ -104,7 +104,7 @@ describe.skip('processSaveReview', () => {
     expect(review.projectId).toBe(testProject.id)
 
     const { data: issues, error: issuesError } = await supabase
-      .from('ReviewIssue')
+      .from('ReviewFeedback')
       .select('*')
       .eq('overallReviewId', review.id)
     if (issuesError) throw issuesError

@@ -4,12 +4,12 @@ import { createClient } from '@/libs/db/server'
 import * as v from 'valibot'
 
 const requestSchema = v.object({
-  issueId: v.pipe(v.number()),
+  feedbackId: v.pipe(v.number()),
   resolutionComment: v.optional(v.nullable(v.string())),
 })
 
 export const resolveReviewFeedback = async (data: {
-  issueId: number
+  feedbackId: number
   resolutionComment?: string | null
 }) => {
   const parsedData = v.safeParse(requestSchema, data)
@@ -18,28 +18,28 @@ export const resolveReviewFeedback = async (data: {
     throw new Error(`Invalid data: ${JSON.stringify(parsedData.issues)}`)
   }
 
-  const { issueId, resolutionComment } = parsedData.output
+  const { feedbackId, resolutionComment } = parsedData.output
 
   try {
     const supabase = await createClient()
 
-    const { data: updatedIssue, error } = await supabase
+    const { data: updatedFeedback, error } = await supabase
       .from('ReviewFeedback')
       .update({
         resolvedAt: new Date().toISOString(),
         resolutionComment: resolutionComment || null,
         updatedAt: new Date().toISOString(),
       })
-      .eq('id', issueId)
+      .eq('id', feedbackId)
       .select()
 
     if (error) {
-      throw new Error(`Failed to resolve issue: ${error.message}`)
+      throw new Error(`Failed to resolve feedback: ${error.message}`)
     }
 
-    return { success: true, data: updatedIssue }
+    return { success: true, data: updatedFeedback }
   } catch (error) {
-    console.error('Error resolving review issue:', error)
+    console.error('Error resolving review feedback:', error)
     throw error
   }
 }

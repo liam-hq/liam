@@ -580,7 +580,7 @@ export type Database = {
         }
         Relationships: []
       }
-      ReviewIssue: {
+      ReviewFeedback: {
         Row: {
           category: Database['public']['Enums']['CategoryEnum']
           createdAt: string
@@ -619,7 +619,7 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'ReviewIssue_overallReviewId_fkey'
+            foreignKeyName: 'ReviewFeedback_overallReviewId_fkey'
             columns: ['overallReviewId']
             isOneToOne: false
             referencedRelation: 'OverallReview'
@@ -632,7 +632,7 @@ export type Database = {
           createdAt: string
           filename: string
           id: number
-          reviewIssueId: number
+          reviewFeedbackId: number
           snippet: string
           updatedAt: string
         }
@@ -640,7 +640,7 @@ export type Database = {
           createdAt?: string
           filename: string
           id?: number
-          reviewIssueId: number
+          reviewFeedbackId: number
           snippet: string
           updatedAt: string
         }
@@ -648,16 +648,16 @@ export type Database = {
           createdAt?: string
           filename?: string
           id?: number
-          reviewIssueId?: number
+          reviewFeedbackId?: number
           snippet?: string
           updatedAt?: string
         }
         Relationships: [
           {
-            foreignKeyName: 'ReviewSuggestionSnippet_reviewIssueId_fkey'
-            columns: ['reviewIssueId']
+            foreignKeyName: 'ReviewSuggestionSnippet_reviewFeedbackId_fkey'
+            columns: ['reviewFeedbackId']
             isOneToOne: false
-            referencedRelation: 'ReviewIssue'
+            referencedRelation: 'ReviewFeedback'
             referencedColumns: ['id']
           },
         ]

@@ -137,15 +137,15 @@
   margin-bottom: 0;
 }
 
-/* Review Issues Styles */
-.reviewIssues {
+/* Review Feedbacks Styles */
+.reviewFeedbacks {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-3, 12px);
   margin-top: var(--spacing-4, 16px);
 }
 
-.reviewIssue {
+.reviewFeedback {
   padding: var(--spacing-3, 12px);
   border-radius: var(--border-radius-md, 6px);
   border-left: 4px solid;

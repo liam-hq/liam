@@ -3,41 +3,41 @@
 import { clsx } from 'clsx'
 import type React from 'react'
 import { CopyButton } from '../../../../components/CopyButton/CopyButton'
-import { resolveReviewIssue } from '../../actions/resolveReviewIssue'
-import { useReviewIssues } from '../../contexts/ReviewIssuesContext'
-import { formatReviewIssue } from '../../utils/formatReviewIssue'
+import { resolveReviewFeedback } from '../../actions/resolveReviewFeedback'
+import { useReviewFeedbacks } from '../../contexts/ReviewFeedbackContext'
+import { formatReviewFeedback } from '../../utils/formatReviewFeedback'
 import { ResolveButton } from '../ResolveButton/ResolveButton'
-import styles from './ReviewIssuesList.module.css'
+import styles from './ReviewFeedbackList.module.css'
 
-interface ReviewIssuesListProps {
+interface ReviewFeedbackListProps {
   containerClassName?: string
 }
 
-export const ReviewIssuesList: React.FC<ReviewIssuesListProps> = ({
+export const ReviewFeedbackList: React.FC<ReviewFeedbackListProps> = ({
   containerClassName,
 }) => {
   // Use the shared context instead of local state
-  const { issues, updateIssue } = useReviewIssues()
+  const { feedbacks, updateFeedback } = useReviewFeedbacks()
 
-  const handleResolve = async (issueId: number, comment: string) => {
+  const handleResolve = async (feedbackId: number, comment: string) => {
     try {
       // Call the server action to update the database
-      await resolveReviewIssue({
-        issueId,
+      await resolveReviewFeedback({
+        feedbackId,
         resolutionComment: comment,
       })
 
-      // Update the issue in the shared context for immediate UI update
-      updateIssue(issueId, {
+      // Update the feedback in the shared context for immediate UI update
+      updateFeedback(feedbackId, {
         resolvedAt: new Date().toISOString(),
         resolutionComment: comment,
       })
     } catch (err) {
-      console.error('Error resolving issue:', err)
+      console.error('Error resolving feedback:', err)
     }
   }
 
-  const sortedIssues = [...issues].sort((a, b) => {
+  const sortedFeedbacks = [...feedbacks].sort((a, b) => {
     // First sort by resolved status (unresolved first)
     if (a.resolvedAt && !b.resolvedAt) return 1
     if (!a.resolvedAt && b.resolvedAt) return -1
@@ -55,53 +55,57 @@ export const ReviewIssuesList: React.FC<ReviewIssuesListProps> = ({
   })
 
   return (
-    <div className={clsx(styles.reviewIssues, containerClassName)}>
-      {sortedIssues.length > 0 ? (
-        sortedIssues.map((issue) => (
+    <div className={clsx(styles.reviewFeedbacks, containerClassName)}>
+      {sortedFeedbacks.length > 0 ? (
+        sortedFeedbacks.map((feedback) => (
           <div
-            key={issue.id}
+            key={feedback.id}
             className={clsx(
-              styles.reviewIssue,
-              styles[`severity${issue.severity}`],
-              issue.resolvedAt && styles.resolved,
+              styles.reviewFeedback,
+              styles[`severity${feedback.severity}`],
+              feedback.resolvedAt && styles.resolved,
             )}
           >
-            <div className={styles.issueHeader}>
-              <span className={styles.issueCategory}>{issue.category}</span>
-              <div className={styles.issueActions}>
-                <span className={styles.issueSeverity}>{issue.severity}</span>
+            <div className={styles.feedbackHeader}>
+              <span className={styles.feedbackCategory}>
+                {feedback.category}
+              </span>
+              <div className={styles.feedbackActions}>
+                <span className={styles.feedbackSeverity}>
+                  {feedback.severity}
+                </span>
                 <CopyButton
-                  text={formatReviewIssue({
-                    category: issue.category,
-                    severity: issue.severity,
-                    description: issue.description || '',
-                    suggestion: issue.suggestion || '',
+                  text={formatReviewFeedback({
+                    category: feedback.category,
+                    severity: feedback.severity,
+                    description: feedback.description || '',
+                    suggestion: feedback.suggestion || '',
                     snippets:
-                      issue.suggestionSnippets?.map(
+                      feedback.suggestionSnippets?.map(
                         (snippet: { filename: string; snippet: string }) => ({
                           filename: snippet.filename,
                           snippet: snippet.snippet,
                         }),
                       ) || [],
                   })}
-                  className={styles.issueCopyButton}
+                  className={styles.feedbackCopyButton}
                 />
                 <ResolveButton
-                  issueId={issue.id}
-                  isResolved={!!issue.resolvedAt}
-                  resolutionComment={issue.resolutionComment}
-                  onResolve={(comment) => handleResolve(issue.id, comment)}
+                  issueId={feedback.id}
+                  isResolved={!!feedback.resolvedAt}
+                  resolutionComment={feedback.resolutionComment}
+                  onResolve={(comment) => handleResolve(feedback.id, comment)}
                 />
               </div>
             </div>
-            <p className={styles.issueDescription}>{issue.description}</p>
-            {issue.suggestion && (
-              <div className={styles.issueSuggestion}>
+            <p className={styles.feedbackDescription}>{feedback.description}</p>
+            {feedback.suggestion && (
+              <div className={styles.feedbackSuggestion}>
                 <h4 className={styles.suggestionTitle}>💡 Suggestion:</h4>
-                <p>{issue.suggestion}</p>
+                <p>{feedback.suggestion}</p>
               </div>
             )}
-            {issue.suggestionSnippets?.map(
+            {feedback.suggestionSnippets?.map(
               (snippet: { filename: string; snippet: string; id: number }) => (
                 <div key={snippet.filename} className={styles.snippetContainer}>
                   <div className={styles.snippetHeader}>
@@ -114,24 +118,24 @@ export const ReviewIssuesList: React.FC<ReviewIssuesListProps> = ({
                 </div>
               ),
             )}
-            {issue.resolvedAt && (
+            {feedback.resolvedAt && (
               <div className={styles.resolvedInfo}>
                 <span className={styles.resolvedIcon}>✓</span>
                 <span className={styles.resolvedText}>
                   Resolved on{' '}
-                  {new Date(issue.resolvedAt).toLocaleString('en-US', {
+                  {new Date(feedback.resolvedAt).toLocaleString('en-US', {
                     dateStyle: 'medium',
                     timeStyle: 'short',
                     hour12: false,
                   })}
                 </span>
-                {issue.resolutionComment && (
+                {feedback.resolutionComment && (
                   <div className={styles.resolutionComment}>
                     <p className={styles.resolutionCommentTitle}>
                       Resolution Comment:
                     </p>
                     <p className={styles.resolutionCommentText}>
-                      {issue.resolutionComment}
+                      {feedback.resolutionComment}
                     </p>
                   </div>
                 )}
@@ -140,7 +144,7 @@ export const ReviewIssuesList: React.FC<ReviewIssuesListProps> = ({
           </div>
         ))
       ) : (
-        <p className={styles.noIssues}>No review issues found.</p>
+        <p className={styles.noFeedbacks}>No review feedbacks found.</p>
       )}
     </div>
   )

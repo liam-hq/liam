@@ -7,9 +7,9 @@ import type { FC } from 'react'
 import { CopyButton } from '../../../../components/CopyButton/CopyButton'
 import { UserFeedbackClient } from '../../../../components/UserFeedbackClient'
 import { MigrationHealthClient } from '../../components/MigrationHealthClient/MigrationHealthClient'
-import { ReviewIssuesList } from '../../components/ReviewIssuesList/ReviewIssuesList'
-import { ReviewIssuesProvider } from '../../contexts/ReviewIssuesContext'
-import { formatAllReviewIssues } from '../../utils/formatReviewIssue'
+import { ReviewFeedbackList } from '../../components/ReviewFeedbackList/ReviewFeedbackList'
+import { ReviewFeedbackProvider } from '../../contexts/ReviewFeedbackContext'
+import { formatAllReviewFeedbacks } from '../../utils/formatReviewFeedback'
 import styles from './MigrationDetailPage.module.css'
 
 type Props = {
@@ -55,7 +55,7 @@ async function getMigrationContents(migrationId: string) {
     .from('OverallReview')
     .select(`
       *,
-      reviewIssues:ReviewIssue (
+      reviewFeedbacks:ReviewFeedback (
         id,
         category,
         severity,
@@ -102,7 +102,7 @@ async function getMigrationContents(migrationId: string) {
         projectId: null,
         reviewComment: null,
         reviewedAt: null,
-        reviewIssues: [],
+        reviewFeedbacks: [],
       },
       erdLinks: [],
       knowledgeSuggestions: [],
@@ -212,7 +212,9 @@ export const MigrationDetailPage: FC<Props> = async ({
         <p className={styles.subTitle}>#{migration.PullRequest.pullNumber}</p>
       </div>
       <div className={styles.twoColumns}>
-        <ReviewIssuesProvider initialIssues={overallReview.reviewIssues}>
+        <ReviewFeedbackProvider
+          initialFeedbacks={overallReview.reviewFeedbacks}
+        >
           <div className={styles.box}>
             <h2 className={styles.h2}>Migration Health</h2>
             <div className={styles.healthContent}>
@@ -248,19 +250,20 @@ export const MigrationDetailPage: FC<Props> = async ({
           </div>
           <div className={styles.box}>
             <div className={styles.sectionHeader}>
-              <h2 className={styles.h2}>Review Issues</h2>
-              {overallReview.reviewIssues.filter(
-                (issue) => issue.severity === 'CRITICAL' && !issue.resolvedAt,
+              <h2 className={styles.h2}>Review Feedbacks</h2>
+              {overallReview.reviewFeedbacks.filter(
+                (feedback) =>
+                  feedback.severity === 'CRITICAL' && !feedback.resolvedAt,
               ).length > 0 && (
                 <CopyButton
-                  text={formatAllReviewIssues(overallReview.reviewIssues)}
+                  text={formatAllReviewFeedbacks(overallReview.reviewFeedbacks)}
                   className={styles.headerCopyButton}
                 />
               )}
             </div>
-            <ReviewIssuesList />
+            <ReviewFeedbackList />
           </div>
-        </ReviewIssuesProvider>
+        </ReviewFeedbackProvider>
 
         {/* Knowledge Suggestions Section */}
         <div className={styles.box}>

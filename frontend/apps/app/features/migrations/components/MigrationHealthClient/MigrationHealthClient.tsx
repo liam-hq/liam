@@ -1,6 +1,6 @@
 'use client'
 
-import { useReviewIssues } from '../../contexts/ReviewIssuesContext'
+import { useReviewFeedbacks } from '../../contexts/ReviewFeedbackContext'
 import { calculateScoresFromIssues } from '../../utils/calculateScores'
 import { RadarChart } from '../RadarChart/RadarChart'
 import styles from './MigrationHealthClient.module.css'
@@ -13,19 +13,19 @@ export const MigrationHealthClient = ({
   className,
 }: MigrationHealthClientProps) => {
   // Use the shared context instead of local state
-  const { issues } = useReviewIssues()
+  const { feedbacks } = useReviewFeedbacks()
 
-  // Calculate scores from issues
-  const scores = calculateScoresFromIssues(issues)
+  // Calculate scores from feedbacks
+  const scores = calculateScoresFromIssues(feedbacks)
 
   return (
     <div className={className}>
-      {issues && issues.length > 0 ? (
+      {feedbacks && feedbacks.length > 0 ? (
         <div className={styles.radarChartContainer}>
           <RadarChart scores={scores} />
         </div>
       ) : (
-        <p className={styles.noScores}>No review issues found.</p>
+        <p className={styles.noScores}>No review feedbacks found.</p>
       )}
     </div>
   )

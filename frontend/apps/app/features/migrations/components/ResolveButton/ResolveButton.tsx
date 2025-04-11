@@ -3,7 +3,7 @@
 import { Button } from '@liam-hq/ui'
 import type React from 'react'
 import { useState } from 'react'
-import { resolveReviewIssue } from '../../actions/resolveReviewIssue'
+import { resolveReviewFeedback } from '../../actions/resolveReviewFeedback'
 import { ResolutionCommentModal } from '../ResolutionCommentModal/ResolutionCommentModal'
 import styles from './ResolveButton.module.css'
 
@@ -38,8 +38,8 @@ export const ResolveButton: React.FC<ResolveButtonProps> = ({
       setError(null)
 
       try {
-        await resolveReviewIssue({
-          issueId,
+        await resolveReviewFeedback({
+          feedbackId: issueId,
           resolutionComment: comment,
         })
 
@@ -49,11 +49,11 @@ export const ResolveButton: React.FC<ResolveButtonProps> = ({
         if (error instanceof Error) {
           throw error
         }
-        throw new Error('Failed to resolve issue')
+        throw new Error('Failed to resolve feedback')
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred')
-      console.error('Error resolving issue:', err)
+      console.error('Error resolving feedback:', err)
     } finally {
       setIsLoading(false)
     }
