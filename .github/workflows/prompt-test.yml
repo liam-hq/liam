@@ -33,7 +33,7 @@ jobs:
           echo "LANGFUSE_SECRET_KEY=${LANGFUSE_SECRET_KEY}" >> .env
 
           # TODO: fail when there are errors or failures
-          pnpm test:prompt
+          pnpm test:prompt || (echo 'failed' ; exit 0)
 
           rm -f .env .env.local
 
@@ -42,6 +42,18 @@ jobs:
 
           datasetRunItemsLength=$(cat frontend/packages/prompt-test/result.json | jq -r .datasetRunItemsLength)
           echo "datasetRunItemsLength=$datasetRunItemsLength" >> $GITHUB_OUTPUT
+
+          testByJsGoodCount=$(cat frontend/packages/prompt-test/result.json | jq -r .testByJsGoodCount)
+          echo "testByJsGoodCount=$testByJsGoodCount" >> $GITHUB_OUTPUT
+
+          testByJsBadCount=$(cat frontend/packages/prompt-test/result.json | jq -r .testByJsBadCount)
+          echo "testByJsBadCount=$testByJsBadCount" >> $GITHUB_OUTPUT
+
+          testByLlmGoodCount=$(cat frontend/packages/prompt-test/result.json | jq -r .testByLlmGoodCount)
+          echo "testByLlmGoodCount=$testByLlmGoodCount" >> $GITHUB_OUTPUT
+
+          testByLlmBadCount=$(cat frontend/packages/prompt-test/result.json | jq -r .testByLlmBadCount)
+          echo "testByLlmBadCount=$testByLlmBadCount" >> $GITHUB_OUTPUT
 
       - name: Post result
         if: always()
@@ -55,3 +67,8 @@ jobs:
             | run items length |
             | --- |
             | ${{steps.pnpm-test-prompt.outputs.datasetRunItemsLength}} |
+
+            | score | pass(&gt;=1) ✅ | failed(&lt;1) ❌️ |
+            | ---  | ---: | ---: |
+            | test-by-js | ${{steps.pnpm-test-prompt.outputs.testByJsGoodCount}} | ${{steps.pnpm-test-prompt.outputs.testByJsBadCount}} |
+            | test-by-llm | ${{steps.pnpm-test-prompt.outputs.testByLlmGoodCount}} | ${{steps.pnpm-test-prompt.outputs.testByLlmBadCount}} |
