@@ -2,7 +2,7 @@ import * as crypto from 'node:crypto'
 import * as fs from 'node:fs'
 import { chain } from '@liam-hq/jobs/src/prompts/generateReview/generateReview'
 import * as dotenv from 'dotenv'
-import { ApiGetScoresResponse, Langfuse } from 'langfuse'
+import { type ApiGetScoresResponse, Langfuse } from 'langfuse'
 import { createDatasetItemHandler } from 'langfuse-langchain'
 import * as YAML from 'yaml'
 
@@ -75,54 +75,62 @@ async function main() {
   const userId = `test-${runName}`
   const dataset = await langfuse.getDataset(datasetName)
 
-  const testByJsScores = (await Promise.all(
-    dataset.items.map(async (item) => {
-      if (
-        !shas.includes(
-          (item.metadata as unknown as { sha?: string })['sha'] ?? '',
-        )
-      ) {
-        // skip
-        return
-      }
-      const testCaseName = (item.metadata as unknown as { name?: string })['name'] ?? ''
-      const { handler, trace } = await createDatasetItemHandler({
-        item,
-        runName,
-        langfuseClient: langfuse,
-      })
+  const testByJsScores = (
+    await Promise.all(
+      dataset.items.map(async (item) => {
+        if (
+          !shas.includes(
+            (item.metadata as unknown as { sha?: string })['sha'] ?? '',
+          )
+        ) {
+          // skip
+          return
+        }
+        const testCaseName =
+          (item.metadata as unknown as { name?: string })['name'] ?? ''
+        const { handler, trace } = await createDatasetItemHandler({
+          item,
+          runName,
+          langfuseClient: langfuse,
+        })
 
-      // NOTE: for later score detection.
-      trace.update({ userId })
+        // NOTE: for later score detection.
+        trace.update({ userId })
 
-      await chain.invoke(item.input, { callbacks: [handler] })
-      // const output = await chain.invoke(item.input, { callbacks: [handler] })
+        await chain.invoke(item.input, { callbacks: [handler] })
+        // const output = await chain.invoke(item.input, { callbacks: [handler] })
 
-      // TODO: execute some tests by js using output
-      const testByJsScore = 0.8
-      trace.score({
-        name: 'test-by-js',
-        value: testByJsScore,
-        comment: 'This is a test score',
-      })
+        // TODO: execute some tests by js using output
+        const testByJsScore = 0.8
+        trace.score({
+          name: 'test-by-js',
+          value: testByJsScore,
+          comment: 'This is a test score',
+        })
 
-      await langfuse.flushAsync()
-      return {
-        testCaseName,
-        traceId: trace.traceId,
-        'test-by-js': testByJsScore,
-      }
-    }),
-  )).filter((datum) => datum !== undefined)
+        await langfuse.flushAsync()
+        return {
+          testCaseName,
+          traceId: trace.traceId,
+          'test-by-js': testByJsScore,
+        }
+      }),
+    )
+  ).filter((datum) => datum !== undefined)
 
   // step 3: get the score
   const waitUntilScoreMatches = async () => {
     let apiGetScoresResponse: ApiGetScoresResponse
     while (true) {
-      apiGetScoresResponse = await langfuse.api.scoreGet({ userId, name: 'test-by-llm' }, {});
+      apiGetScoresResponse = await langfuse.api.scoreGet(
+        { userId, name: 'test-by-llm' },
+        {},
+      )
       if (apiGetScoresResponse.data.length === testByJsScores.length) {
         const scores = apiGetScoresResponse.data.map((datum) => {
-          const testByJsScore = testByJsScores.find((testByJsScore) => testByJsScore.traceId === datum.traceId)
+          const testByJsScore = testByJsScores.find(
+            (testByJsScore) => testByJsScore.traceId === datum.traceId,
+          )
           if (!testByJsScore) {
             throw new Error(`testByJsScore not found for ${datum.traceId}`)
           }
@@ -136,11 +144,14 @@ async function main() {
       await new Promise((resolve) => setTimeout(resolve, 500))
     }
   }
-  const withTimeout = async <T>(promise: Promise<T>, ms: number): Promise<T> => {
+  const withTimeout = async <T>(
+    promise: Promise<T>,
+    ms: number,
+  ): Promise<T> => {
     return Promise.race([
       promise,
       new Promise<never>((_, reject) =>
-        setTimeout(() => reject(new Error("Timed out")), ms)
+        setTimeout(() => reject(new Error('Timed out')), ms),
       ),
     ])
   }
@@ -153,7 +164,6 @@ async function main() {
   try {
     // Timeout if not finished in 20 seconds
     scoreResult = await withTimeout(waitUntilScoreMatches(), 20000)
-    console.log("Score matched:", JSON.stringify(scoreResult, null, 2))
   } catch (err) {
     if (err instanceof Error && err.message.includes('Timed out')) {
       console.error('Failed to get matching score in time:', err)
@@ -169,12 +179,18 @@ async function main() {
     process.env['LANGFUSE_BASE_URL'] ?? 'https://cloud.langfuse.com'
   const url = `${baseUrl}/project/${dataset.projectId}/datasets/${dataset.id}/runs/${run.id}`
   const result = {
-     url,
-     datasetRunItemsLength: run.datasetRunItems.length,
-     testByJsBadCount: scoreResult.filter((datum) => datum['test-by-js'] < 0.5).length,
-     testByJsGoodCount: scoreResult.filter((datum) => datum['test-by-js'] >= 0.5).length,
-     testByLlmBadCount: scoreResult.filter((datum) => datum['test-by-llm'] && datum['test-by-llm'] < 1).length,
-     testByLlmGoodCount: scoreResult.filter((datum) => datum['test-by-llm'] && datum['test-by-llm'] >= 1).length,
+    url,
+    datasetRunItemsLength: run.datasetRunItems.length,
+    testByJsBadCount: scoreResult.filter((datum) => datum['test-by-js'] < 0.5)
+      .length,
+    testByJsGoodCount: scoreResult.filter((datum) => datum['test-by-js'] >= 0.5)
+      .length,
+    testByLlmBadCount: scoreResult.filter(
+      (datum) => datum['test-by-llm'] && datum['test-by-llm'] < 1,
+    ).length,
+    testByLlmGoodCount: scoreResult.filter(
+      (datum) => datum['test-by-llm'] && datum['test-by-llm'] >= 1,
+    ).length,
   }
   fs.writeFileSync('result.json', JSON.stringify(result, null, 2))
 
