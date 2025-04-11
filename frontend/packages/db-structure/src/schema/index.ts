@@ -13,7 +13,8 @@ export type {
   Relationships,
   Index,
   Indexes,
-  ForeignKeyConstraint,
+  Constraints,
+  ForeignKeyConstraintReferenceOption,
   Cardinality,
   TableGroup,
 } from './dbStructure.js'

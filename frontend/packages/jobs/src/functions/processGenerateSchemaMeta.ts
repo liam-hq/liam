@@ -85,7 +85,7 @@ export const processGenerateSchemaMeta = async (
       Number(repository.installationId),
     )
 
-    const schemaMeta = await generateSchemaMeta(
+    const schemaMetaResult = await generateSchemaMeta(
       overallReview.reviewComment || '',
       callbacks,
       currentSchemaMeta,
@@ -93,14 +93,24 @@ export const processGenerateSchemaMeta = async (
       schemaFiles, // Add schema files content
     )
 
+    // If no update is needed, return early with createNeeded: false
+    if (!schemaMetaResult.updateNeeded) {
+      return {
+        createNeeded: false,
+      }
+    }
+
     // Return the schema meta along with information needed for createKnowledgeSuggestionTask
     return {
-      overrides: schemaMeta.overrides,
+      createNeeded: true,
+      override: schemaMetaResult.override,
       projectId: project.id,
       pullRequestNumber: Number(pullRequest.pullNumber), // Convert bigint to number
       branchName: overallReview.branchName, // Get branchName from overallReview
       title: `Schema meta update from PR #${Number(pullRequest.pullNumber)}`,
       traceId: predefinedRunId,
+      reasoning: schemaMetaResult.reasoning,
+      overallReviewId: payload.overallReviewId,
     }
   } catch (error) {
     console.error('Error generating schema meta:', error)

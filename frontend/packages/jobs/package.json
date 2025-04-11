@@ -4,8 +4,8 @@
   "version": "0.1.0",
   "main": "src/index.ts",
   "dependencies": {
-    "@langchain/anthropic": "0.3.16",
-    "@langchain/core": "0.3.43",
+    "@langchain/core": "0.3.44",
+    "@langchain/openai": "0.5.5",
     "@liam-hq/db": "workspace:*",
     "@liam-hq/db-structure": "workspace:*",
     "@liam-hq/github": "workspace:*",
@@ -16,7 +16,7 @@
     "langfuse": "3.37.1",
     "langfuse-langchain": "3.37.1",
     "minimatch": "10.0.1",
-    "uuid": "10.0.0",
+    "uuid": "11.1.0",
     "valibot": "1.0.0"
   },
   "devDependencies": {

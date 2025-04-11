@@ -1,0 +1,39 @@
+.copyButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: var(--border-radius-sm, 4px);
+  background-color: var(--overlay-10, rgba(255, 255, 255, 0.1));
+  border: 1px solid var(--overlay-15, rgba(255, 255, 255, 0.15));
+  color: var(--global-foreground, #fff);
+  font-size: var(--font-size-3, 0.75rem);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.copyButton:hover {
+  background-color: var(--overlay-15, rgba(255, 255, 255, 0.15));
+}
+
+.copyButton:active {
+  transform: translateY(1px);
+}
+
+.icon {
+  font-size: var(--font-size-3, 0.75rem);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.text {
+  font-size: var(--font-size-3, 0.75rem);
+  font-weight: 500;
+}
+
+/* When the button shows "Copied!" */
+.copyButton[aria-pressed='true'] {
+  background-color: var(--color-success, #52c41a);
+  border-color: var(--color-success, #52c41a);
+}

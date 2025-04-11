@@ -12,7 +12,7 @@ import type {
 import { type Result, err, ok } from 'neverthrow'
 import type {
   Columns,
-  ForeignKeyConstraint,
+  ForeignKeyConstraintReferenceOption,
   Relationship,
   Table,
   TableGroup,
@@ -37,7 +37,9 @@ function isStringNode(node: Node | undefined): node is { String: PgString } {
 
 // ON UPDATE or ON DELETE subclauses for foreign key
 // see: https://github.com/launchql/pgsql-parser/blob/pgsql-parser%4013.16.0/packages/deparser/src/deparser.ts#L3101-L3141
-function getConstraintAction(action?: string): ForeignKeyConstraint {
+function getConstraintAction(
+  action?: string,
+): ForeignKeyConstraintReferenceOption {
   switch (action?.toLowerCase()) {
     case 'r':
       return 'RESTRICT'
@@ -218,6 +220,7 @@ export const convertToDBStructure = (stmts: RawStmt[]): ProcessResult => {
       columns,
       comment: null,
       indexes: {},
+      constraints: {},
     }
   }
 
@@ -257,6 +260,7 @@ export const convertToDBStructure = (stmts: RawStmt[]): ProcessResult => {
             type,
           },
         },
+        constraints: {},
       }
     }
   }

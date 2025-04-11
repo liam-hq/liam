@@ -1,4 +1,4 @@
-import { array, enum as enumType, number, strictObject, string } from 'valibot'
+import { array, enum as enumType, strictObject, string } from 'valibot'
 
 const KindEnum = enumType({
   'Migration Safety': 'Migration Safety',
@@ -33,7 +33,6 @@ export const reviewSchema = strictObject({
   scores: array(
     strictObject({
       kind: KindEnum,
-      value: number(),
       reason: string(),
     }),
   ),

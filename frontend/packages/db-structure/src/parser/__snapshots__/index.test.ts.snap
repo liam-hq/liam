@@ -40,6 +40,7 @@ exports[`parse > should parse postgresql to JSON correctly 1`] = `
         },
       },
       "comment": null,
+      "constraints": {},
       "indexes": {},
       "name": "posts",
     },
@@ -87,6 +88,7 @@ exports[`parse > should parse postgresql to JSON correctly 1`] = `
         },
       },
       "comment": "store our users.",
+      "constraints": {},
       "indexes": {
         "index_users_on_id_and_email": {
           "columns": [
@@ -304,6 +306,7 @@ exports[`parse > should parse schema.rb to JSON correctly 1`] = `
         },
       },
       "comment": "Stores comments on tasks, enabling discussions or updates.",
+      "constraints": {},
       "indexes": {
         "index_comments_on_task_id": {
           "columns": [
@@ -358,6 +361,7 @@ exports[`parse > should parse schema.rb to JSON correctly 1`] = `
         },
       },
       "comment": "Represents organizations using the system. Each company is a top-level entity that owns departments, users, and projects.",
+      "constraints": {},
       "indexes": {},
       "name": "companies",
     },
@@ -395,6 +399,7 @@ exports[`parse > should parse schema.rb to JSON correctly 1`] = `
         },
       },
       "comment": "Represents departments within a company, organizing users into functional groups.",
+      "constraints": {},
       "indexes": {
         "index_departments_on_company_id": {
           "columns": [
@@ -441,6 +446,7 @@ exports[`parse > should parse schema.rb to JSON correctly 1`] = `
         },
       },
       "comment": "Associates users with projects they are assigned to work on.",
+      "constraints": {},
       "indexes": {
         "index_project_assignments_on_user_id_and_project_id": {
           "columns": [
@@ -498,6 +504,7 @@ exports[`parse > should parse schema.rb to JSON correctly 1`] = `
         },
       },
       "comment": "Represents projects managed within a company. Projects are linked to tasks and users.",
+      "constraints": {},
       "indexes": {
         "index_projects_on_company_id": {
           "columns": [
@@ -544,6 +551,7 @@ exports[`parse > should parse schema.rb to JSON correctly 1`] = `
         },
       },
       "comment": "Defines roles that can be assigned to users, such as 'Admin' or 'Manager'.",
+      "constraints": {},
       "indexes": {},
       "name": "roles",
     },
@@ -621,6 +629,7 @@ exports[`parse > should parse schema.rb to JSON correctly 1`] = `
         },
       },
       "comment": "Represents tasks within a project, assigned to users with deadlines and statuses.",
+      "constraints": {},
       "indexes": {
         "index_tasks_on_assigned_user_id": {
           "columns": [
@@ -705,6 +714,7 @@ exports[`parse > should parse schema.rb to JSON correctly 1`] = `
         },
       },
       "comment": "Tracks time spent by users on tasks for reporting or billing purposes.",
+      "constraints": {},
       "indexes": {
         "index_timesheets_on_task_id": {
           "columns": [
@@ -759,6 +769,7 @@ exports[`parse > should parse schema.rb to JSON correctly 1`] = `
         },
       },
       "comment": "Associates users with roles to define their permissions within the company.",
+      "constraints": {},
       "indexes": {
         "index_user_roles_on_user_id_and_role_id": {
           "columns": [
@@ -856,6 +867,7 @@ exports[`parse > should parse schema.rb to JSON correctly 1`] = `
         },
       },
       "comment": "Represents employees or members of a company, who are assigned roles and tasks.",
+      "constraints": {},
       "indexes": {
         "index_users_on_company_id": {
           "columns": [

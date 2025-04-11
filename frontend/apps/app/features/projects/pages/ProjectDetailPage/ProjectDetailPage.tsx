@@ -68,6 +68,7 @@ async function getProject(projectId: string) {
   }
 }
 
+// TODO: Delete this page
 export const ProjectDetailPage: FC<Props> = async ({ projectId }) => {
   const project = await getProject(projectId)
 
@@ -115,23 +116,6 @@ export const ProjectDetailPage: FC<Props> = async ({ projectId }) => {
           Created: {new Date(project.createdAt).toLocaleDateString('en-US')}
         </p>
       </div>
-      <section style={{ margin: '24px 0' }}>
-        <h2 style={{ fontSize: '24px' }}>Migrations</h2>
-        <ul style={{ display: 'grid', gap: '12px', margin: '16px 0' }}>
-          {project.migrations.map((migration) => (
-            <li key={migration.id}>
-              <Link
-                href={urlgen('migrations/[migrationId]', {
-                  migrationId: `${migration.id}`,
-                })}
-                style={{
-                  textDecoration: 'underline',
-                }}
-              >{`${migration.title} #${migration.pullNumber}`}</Link>
-            </li>
-          ))}
-        </ul>
-      </section>
     </div>
   )
 }

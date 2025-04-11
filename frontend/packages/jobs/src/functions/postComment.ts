@@ -93,7 +93,13 @@ export async function postComment(
   payload: PostCommentPayload,
 ): Promise<{ success: boolean; message: string }> {
   try {
-    const { reviewComment, pullRequestId, repositoryId } = payload
+    const {
+      reviewComment,
+      pullRequestId,
+      repositoryId,
+      projectId,
+      branchName,
+    } = payload
     const supabase = createClient()
 
     // Get repository information
@@ -139,7 +145,7 @@ export async function postComment(
     }
 
     const migration = prRecord.Migration[0]
-    const migrationUrl = `${process.env['NEXT_PUBLIC_BASE_URL']}/app/migrations/${migration.id}`
+    const migrationUrl = `${process.env['NEXT_PUBLIC_BASE_URL']}/app/projects/${projectId}/ref/${encodeURIComponent(branchName)}/migrations/${migration.id}`
 
     const prDetails = await getPullRequestDetails(
       Number(installationId),

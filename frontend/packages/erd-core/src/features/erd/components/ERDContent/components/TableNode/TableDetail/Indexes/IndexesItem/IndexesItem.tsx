@@ -1,4 +1,10 @@
-import { clsx } from 'clsx'
+import {
+  GridTableDd,
+  GridTableDt,
+  GridTableHeader,
+  GridTableItem,
+  GridTableRoot,
+} from '@liam-hq/ui'
 import type { FC } from 'react'
 import styles from './IndexesItem.module.css'
 
@@ -16,39 +22,37 @@ export const IndexesItem: FC<Props> = ({ index }) => {
 
   return (
     <div className={styles.wrapper}>
-      <dl className={styles.dl}>
-        <div className={styles.dlItem}>
-          <dt className={clsx(styles.dt, styles.dtOnly)}>{index.name}</dt>
-        </div>
+      <GridTableRoot>
+        <GridTableHeader>{index.name}</GridTableHeader>
         {index.type && index.type.toLowerCase() !== HIDE_INDEX_TYPE && (
-          <div className={styles.dlItem}>
-            <dt className={styles.dt}>Type</dt>
-            <dd className={styles.dd}>{index.type}</dd>
-          </div>
+          <GridTableItem>
+            <GridTableDt>Type</GridTableDt>
+            <GridTableDd>{index.type}</GridTableDd>
+          </GridTableItem>
         )}
         {!!index.columns.length && (
-          <div className={styles.dlItem}>
-            <dt className={styles.dt}>
+          <GridTableItem>
+            <GridTableDt>
               {index.columns.length === 1 ? 'Column' : 'Columns'}
-            </dt>
-            <dd className={styles.dd}>
+            </GridTableDt>
+            <GridTableDd>
               {index.columns.length === 1 ? (
                 index.columns[0]
               ) : (
-                <ol>
+                <ol className={styles.list}>
                   {index.columns.map((column) => (
                     <li key={column}>{column}</li>
                   ))}
                 </ol>
               )}
-            </dd>
-          </div>
+            </GridTableDd>
+          </GridTableItem>
         )}
-        <div className={styles.dlItem}>
-          <dt className={styles.dt}>Unique</dt>
-          <dd className={styles.dd}>{index.unique ? 'Yes' : 'No'}</dd>
-        </div>
-      </dl>
+        <GridTableItem>
+          <GridTableDt>Unique</GridTableDt>
+          <GridTableDd>{index.unique ? 'Yes' : 'No'}</GridTableDd>
+        </GridTableItem>
+      </GridTableRoot>
     </div>
   )
 }

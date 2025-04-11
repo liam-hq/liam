@@ -1,0 +1,69 @@
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modalContent {
+  max-width: 500px;
+  width: 100%;
+  background-color: rgba(0, 0, 0);
+  border-radius: var(--border-radius-md, 6px);
+  padding: var(--spacing-4, 16px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.modalHeader {
+  margin-bottom: var(--spacing-4, 16px);
+}
+
+.modalTitle {
+  color: var(--global-foreground, #fff);
+  font-size: var(--font-size-5, 0.875rem);
+  font-weight: 600;
+  margin: 0 0 var(--spacing-2, 8px) 0;
+}
+
+.modalDescription {
+  color: var(--global-mute-text, #bebfc1);
+  font-size: var(--font-size-3, 0.75rem);
+  margin: 0;
+}
+
+.formGroup {
+  margin-bottom: var(--spacing-4, 16px);
+}
+
+.textarea {
+  width: 100%;
+  resize: vertical;
+  background-color: var(--overlay-10, rgba(255, 255, 255, 0.1));
+  border: 1px solid var(--overlay-15, rgba(255, 255, 255, 0.15));
+  border-radius: var(--border-radius-sm, 4px);
+  color: var(--global-foreground, #fff);
+  padding: var(--spacing-2, 8px);
+  font-size: var(--font-size-4, 0.8125rem);
+}
+
+.textarea::placeholder {
+  color: var(--global-mute-text, #bebfc1);
+}
+
+.modalFooter {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.buttonGroup {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--spacing-2, 8px);
+}

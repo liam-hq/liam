@@ -11,6 +11,8 @@ type CreateKnowledgeSuggestionPayload = {
   content: string
   branch: string
   traceId?: string
+  reasoning?: string
+  overallReviewId?: number
 }
 
 type CreateKnowledgeSuggestionResult = {
@@ -90,9 +92,9 @@ const hasContentChanged = async (
 }
 
 /**
- * Create a knowledge suggestion mapping
+ * Create a knowledge suggestion doc mapping
  */
-const createMapping = async (
+const createDocMapping = async (
   knowledgeSuggestionId: number,
   docFilePathId: number,
   timestamp: string,
@@ -107,7 +109,29 @@ const createMapping = async (
     })
 
   if (error) {
-    console.error('Failed to create mapping:', error.message)
+    console.error('Failed to create doc mapping:', error.message)
+  }
+}
+
+/**
+ * Create a mapping between OverallReview and KnowledgeSuggestion
+ */
+const createOverallReviewMapping = async (
+  knowledgeSuggestionId: number,
+  overallReviewId: number,
+  timestamp: string,
+) => {
+  const supabase = createClient()
+  const { error } = await supabase
+    .from('OverallReviewKnowledgeSuggestionMapping')
+    .insert({
+      knowledgeSuggestionId,
+      overallReviewId,
+      updatedAt: timestamp,
+    })
+
+  if (error) {
+    console.error('Failed to create OverallReview mapping:', error.message)
   }
 }
 
@@ -118,7 +142,16 @@ const createMapping = async (
 export const processCreateKnowledgeSuggestion = async (
   payload: CreateKnowledgeSuggestionPayload,
 ): Promise<CreateKnowledgeSuggestionResult> => {
-  const { projectId, type, title, path, content, branch, traceId } = payload
+  const {
+    projectId,
+    type,
+    title,
+    path,
+    content,
+    branch,
+    traceId,
+    overallReviewId,
+  } = payload
 
   try {
     // Get repository information
@@ -171,6 +204,7 @@ export const processCreateKnowledgeSuggestion = async (
         projectId,
         branchName: branch,
         traceId: traceId || null,
+        reasoning: payload.reasoning || null,
         updatedAt: now,
       })
       .select()
@@ -182,9 +216,18 @@ export const processCreateKnowledgeSuggestion = async (
       )
     }
 
-    // Create mapping if needed
+    // Create doc mapping if needed
     if (type === 'DOCS' && docFilePath) {
-      await createMapping(knowledgeSuggestion.id, docFilePath.id, now)
+      await createDocMapping(knowledgeSuggestion.id, docFilePath.id, now)
+    }
+
+    // Create OverallReview mapping if overallReviewId is provided
+    if (overallReviewId) {
+      await createOverallReviewMapping(
+        knowledgeSuggestion.id,
+        overallReviewId,
+        now,
+      )
     }
 
     return {

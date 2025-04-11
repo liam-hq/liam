@@ -10,7 +10,30 @@ The current focus is on enhancing the Reviewer User experience with AI-driven an
 
 ## Recent Changes
 
-1. **Optimized KnowledgeSuggestion Creation**: Enhanced the `processCreateKnowledgeSuggestion.ts` function to avoid creating unnecessary suggestions:
+1. **Switched AI Model from Anthropic to OpenAI**: Changed the AI model used in prompt generators from ChatAnthropic to ChatOpenAI:
+   - Updated all three prompt generator files (generateDocsSuggestion, generateReview, generateSchemaMeta) to use ChatOpenAI
+   - Changed the model from 'claude-3-7-sonnet-latest' to 'o3-mini-2025-01-31'
+   - Created index.ts files for the generateSchemaMeta and generateDocsSuggestion directories
+   - Updated the main prompts/index.ts file to export all three prompt generators
+   - Updated package.json to replace @langchain/anthropic with @langchain/openai v0.5.5
+   - This change standardizes the AI model usage across the application and potentially improves performance and cost-efficiency
+
+2. **Added Reasoning Field to KnowledgeSuggestion**: Enhanced the KnowledgeSuggestion table to store the rationale behind schema metadata update suggestions:
+   - Created a migration to add a `reasoning` TEXT field with a default empty string value
+   - Updated the database.types.ts file to include the new field in the type definitions
+   - Modified the KnowledgeSuggestionDetailPage.tsx component to display the reasoning field when available
+   - This enhancement helps users understand the context and rationale behind schema metadata update suggestions, enabling more informed decisions when approving suggestions
+
+2. **OverallReview to KnowledgeSuggestion Relationship**: Implemented a relationship between OverallReview and KnowledgeSuggestion tables:
+   - Created a new intermediate table `OverallReviewKnowledgeSuggestionMapping` to link OverallReview and KnowledgeSuggestion
+   - Modified `processCreateKnowledgeSuggestion.ts` to accept an optional `overallReviewId` parameter
+   - Implemented `createOverallReviewMapping` function to create mappings in the OverallReviewKnowledgeSuggestionMapping table
+   - Enhanced the MigrationDetailPage to fetch and display related KnowledgeSuggestions
+   - Updated UI to show KnowledgeSuggestions in a dedicated section on the MigrationDetailPage
+   - Implemented proper navigation using the urlgen utility for type-safe route generation
+   - This allows users to track and navigate to KnowledgeSuggestions from the MigrationDetailPage
+
+2. **Optimized KnowledgeSuggestion Creation**: Enhanced the `processCreateKnowledgeSuggestion.ts` function to avoid creating unnecessary suggestions:
    - Implemented content comparison to check if document content has changed before creating a suggestion
    - Refactored the function into smaller, focused helper functions to reduce cognitive complexity
    - Improved type safety with proper type definitions and return types
@@ -135,7 +158,14 @@ The current focus is on enhancing the Reviewer User experience with AI-driven an
    - Align data fetching with component roles
    - Break down complex functions into smaller, focused helper functions
 
-2. **Deployment Process**:
+2. **Code Quality Process**:
+   - Use `pnpm fmt` to format code according to project standards
+   - Use `pnpm lint` to check for code quality issues and type errors
+   - Run these commands before committing changes to ensure consistent code quality
+   - The formatter uses Biome for JavaScript/TypeScript formatting
+   - The linter checks both code style (using Biome) and type correctness (using TypeScript)
+
+3. **Deployment Process**:
    - Use trigger.dev CLI for deploying background jobs
    - Run `npx trigger.dev deploy --dry-run` to verify deployment without applying changes
    - Run `npx trigger.dev deploy` to deploy to production

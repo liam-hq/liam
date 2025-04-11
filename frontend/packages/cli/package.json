@@ -15,7 +15,7 @@
   },
   "license": "Apache-2.0",
   "private": false,
-  "version": "0.5.2",
+  "version": "0.5.3",
   "type": "module",
   "publishConfig": {
     "access": "public"
@@ -26,8 +26,8 @@
   "dependencies": {
     "@liam-hq/db-structure": "workspace:*",
     "@liam-hq/erd-core": "workspace:*",
-    "@prisma/internals": "6.2.1",
-    "commander": "12.1.0",
+    "@prisma/internals": "6.6.0",
+    "commander": "13.1.0",
     "glob": "11.0.1",
     "inquirer": "12.5.2",
     "react": "18.3.1",
@@ -37,7 +37,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
-    "@rollup/plugin-node-resolve": "15.3.1",
+    "@rollup/plugin-node-resolve": "16.0.1",
     "@rollup/plugin-typescript": "12.1.2",
     "@types/glob": "8.1.0",
     "@types/node": "22.14.0",
@@ -48,7 +48,7 @@
     "rollup-plugin-execute": "1.1.1",
     "typed-css-modules": "0.9.1",
     "typescript": "5.8.3",
-    "vite": "6.2.5",
+    "vite": "6.2.6",
     "vite-tsconfig-paths": "5.1.4",
     "vitest": "3.1.1"
   },

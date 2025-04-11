@@ -1,6 +1,6 @@
-import { ChatAnthropic } from '@langchain/anthropic'
 import type { Callbacks } from '@langchain/core/callbacks/manager'
 import { ChatPromptTemplate } from '@langchain/core/prompts'
+import { ChatOpenAI } from '@langchain/openai'
 import { toJsonSchema } from '@valibot/to-json-schema'
 import type { JSONSchema7 } from 'json-schema'
 import { parse } from 'valibot'
@@ -24,7 +24,6 @@ Your JSON-formatted response must contain:
     - Performance Impact
     - Project Rules Consistency
     - Security or Scalability
-  - "value": This field will be calculated by the system. Only provide the "kind" and "reason" fields.
   - "reason": An explanation justifying the score provided, including an overview of identified issues.
 
 - Based on the findings, create an array of identified feedback in the "feedbacks" field. Each feedback item must include:
@@ -110,9 +109,8 @@ export const generateReview = async (
     ['human', USER_PROMPT],
   ])
 
-  const model = new ChatAnthropic({
-    temperature: 0.7,
-    model: 'claude-3-7-sonnet-latest',
+  const model = new ChatOpenAI({
+    model: 'o3-mini-2025-01-31',
   })
 
   const chain = chatPrompt.pipe(model.withStructuredOutput(reviewJsonSchema))

@@ -1,19 +1,50 @@
 import { createClient } from '@/libs/db/server'
 import { urlgen } from '@/utils/routes'
-import * as diffLib from 'diff'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import type { FC, ReactNode } from 'react'
-import { UserFeedbackClient } from '../../../../components/UserFeedbackClient'
+import type { FC } from 'react'
+import { match } from 'ts-pattern'
 import { approveKnowledgeSuggestion } from '../../actions/approveKnowledgeSuggestion'
-import { DiffDisplay } from '../../components/DiffDisplay/DiffDisplay'
-import { EditableContent } from '../../components/EditableContent/EditableContent'
 import { getOriginalDocumentContent } from '../../utils/getOriginalDocumentContent'
+import { ContentForDoc } from './ContentForDoc'
+import { ContentForSchema } from './ContentForSchema'
 import styles from './KnowledgeSuggestionDetailPage.module.css'
+
+async function getSuggestionWithProject(
+  suggestionId: number,
+  projectId: number,
+) {
+  const supabase = await createClient()
+
+  const { data, error } = await supabase
+    .from('KnowledgeSuggestion')
+    .select(`
+      *,
+      project:Project(
+        id,
+        name,
+        repositoryMappings:ProjectRepositoryMapping(
+          repository:Repository(*)
+        )
+      )
+    `)
+    .eq('id', suggestionId)
+    .eq('projectId', projectId)
+    .single()
+
+  if (error) throw error
+
+  return data
+}
+
+export type SuggestionWithProject = Awaited<
+  ReturnType<typeof getSuggestionWithProject>
+>
 
 type Props = {
   projectId: string
   suggestionId: string
+  branchOrCommit: string
 }
 
 async function getKnowledgeSuggestionDetail(
@@ -21,29 +52,14 @@ async function getKnowledgeSuggestionDetail(
   suggestionId: string,
 ) {
   try {
-    const projectId_num = Number(projectId)
-    const suggestionId_num = Number(suggestionId)
-    const supabase = await createClient()
-
     // Get the knowledge suggestion with project info
-    const { data: suggestion, error } = await supabase
-      .from('KnowledgeSuggestion')
-      .select(`
-        *,
-        project:Project(
-          id,
-          name,
-          repositoryMappings:ProjectRepositoryMapping(
-            repository:Repository(*)
-          )
-        )
-      `)
-      .eq('id', suggestionId_num)
-      .eq('projectId', projectId_num)
-      .single()
+    const suggestion = await getSuggestionWithProject(
+      Number(suggestionId),
+      Number(projectId),
+    )
 
-    if (error || !suggestion) {
-      console.error('Error fetching knowledge suggestion:', error)
+    if (!suggestion) {
+      console.error('Error fetching knowledge suggestion')
       notFound()
     }
 
@@ -57,6 +73,7 @@ async function getKnowledgeSuggestionDetail(
 export const KnowledgeSuggestionDetailPage: FC<Props> = async ({
   projectId,
   suggestionId,
+  branchOrCommit,
 }) => {
   const suggestion = await getKnowledgeSuggestionDetail(projectId, suggestionId)
   const repository = suggestion.project.repositoryMappings[0]?.repository
@@ -111,32 +128,40 @@ export const KnowledgeSuggestionDetailPage: FC<Props> = async ({
           )}
         </div>
 
-        <div className={styles.contentSection}>
-          <div className={styles.header}>
-            <h2 className={styles.sectionTitle}>Content</h2>
+        {suggestion.reasoning && (
+          <div className={styles.reasoningSection}>
+            <div className={styles.header}>
+              <h2 className={styles.sectionTitle}>Reasoning</h2>
+            </div>
+            <div className={styles.reasoningContent}>
+              {suggestion.reasoning}
+            </div>
           </div>
+        )}
 
-          <EditableContent
-            content={suggestion.content}
-            suggestionId={suggestion.id}
-            className={styles.codeContent}
-            originalContent={
-              !suggestion.approvedAt
-                ? await getOriginalDocumentContent(
-                    projectId,
-                    suggestion.branchName,
-                    suggestion.path,
-                  )
-                : null
-            }
-            isApproved={!!suggestion.approvedAt}
-          />
-
-          {/* Client-side user feedback component */}
-          <div className={styles.feedbackSection}>
-            <UserFeedbackClient traceId={suggestion.traceId} />
-          </div>
-        </div>
+        {match(suggestion.type)
+          .with('SCHEMA', () => (
+            <ContentForSchema
+              suggestion={suggestion}
+              projectId={projectId}
+              branchOrCommit={branchOrCommit}
+            />
+          ))
+          .with('DOCS', async () => (
+            <ContentForDoc
+              suggestion={suggestion}
+              originalContent={
+                !suggestion.approvedAt
+                  ? await getOriginalDocumentContent(
+                      projectId,
+                      suggestion.branchName,
+                      suggestion.path,
+                    )
+                  : null
+              }
+            />
+          ))
+          .exhaustive()}
 
         {!suggestion.approvedAt && repository && (
           <div className={styles.actionSection}>

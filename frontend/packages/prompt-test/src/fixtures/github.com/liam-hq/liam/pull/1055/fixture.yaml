@@ -11,8 +11,6 @@ assert:
   # `bodyMarkdown` Test 2: Check if the bodyMarkdown word count is approximately less than or equal to 80
   value: |
     output.bodyMarkdown.split(" ").length <= 80
-- type: javascript
-  value: output.scores[0].value >= 1
 - type: cost
   threshold: 0.008
 

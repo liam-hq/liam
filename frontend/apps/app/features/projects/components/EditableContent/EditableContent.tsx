@@ -1,6 +1,6 @@
 'use client'
 
-import React, { type ReactNode, useState } from 'react'
+import React, { useState } from 'react'
 import { updateKnowledgeSuggestionContent } from '../../actions/updateKnowledgeSuggestionContent'
 import { DiffDisplay } from '../DiffDisplay/DiffDisplay'
 import styles from './EditableContent.module.css'
@@ -11,6 +11,7 @@ type EditableContentProps = {
   className?: string
   originalContent: string | null
   isApproved: boolean
+  onContentSaved?: (savedContent: string) => void
 }
 
 export const EditableContent = ({
@@ -19,6 +20,7 @@ export const EditableContent = ({
   className,
   originalContent,
   isApproved,
+  onContentSaved,
 }: EditableContentProps) => {
   const [isEditing, setIsEditing] = useState(false)
   const [editedContent, setEditedContent] = useState(content)
@@ -40,6 +42,10 @@ export const EditableContent = ({
       await updateKnowledgeSuggestionContent(formData)
       setSavedContent(editedContent)
       setIsEditing(false)
+
+      if (onContentSaved) {
+        onContentSaved(editedContent)
+      }
     } catch (error) {
       console.error('Error saving content:', error)
     } finally {

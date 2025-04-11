@@ -39,6 +39,7 @@ describe('overrideDbStructure', () => {
             type: '',
           },
         },
+        constraints: {},
       },
     },
     relationships: {
@@ -202,6 +203,7 @@ describe('overrideDbStructure', () => {
               },
             },
             indexes: {},
+            constraints: {},
           },
         },
         relationships: {},

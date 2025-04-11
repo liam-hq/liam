@@ -4855,7 +4855,7 @@ LGPL-3.0-or-later permitted
 
 
 <a name="@turbo/gen"></a>
-### @turbo/gen v2.1.2
+### @turbo/gen v2.5.0
 #### 
 
 ##### Paths
@@ -4866,7 +4866,7 @@ LGPL-3.0-or-later permitted
 
 
 <a name="@turbo/workspaces"></a>
-### @turbo/workspaces v2.1.2
+### @turbo/workspaces v2.5.0
 #### 
 
 ##### Paths
@@ -17477,7 +17477,7 @@ Unknown manually approved
 
 
 <a name="turbo"></a>
-### turbo v2.1.2
+### turbo v2.5.0
 #### 
 
 ##### Paths
@@ -17488,7 +17488,7 @@ Unknown manually approved
 
 
 <a name="turbo-linux-64"></a>
-### turbo-linux-64 v2.1.2
+### turbo-linux-64 v2.5.0
 #### 
 
 ##### Paths

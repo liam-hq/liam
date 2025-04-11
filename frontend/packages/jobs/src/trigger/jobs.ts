@@ -200,8 +200,8 @@ export const generateDocsSuggestionTask = task({
     logger.log('Generated docs suggestions:', { suggestions, traceId })
 
     for (const key of DOC_FILES) {
-      const content = suggestions[key]
-      if (!content) {
+      const suggestion = suggestions[key]
+      if (!suggestion || !suggestion.content) {
         logger.warn(`No content found for suggestion key: ${key}`)
         continue
       }
@@ -211,9 +211,10 @@ export const generateDocsSuggestionTask = task({
         type: payload.type,
         title: `Docs update from PR #${payload.pullRequestNumber}`,
         path: `docs/${key}`,
-        content,
+        content: suggestion.content,
         branch: payload.branchName,
         traceId,
+        reasoning: suggestion.reasoning || '',
       })
     }
 
@@ -228,16 +229,25 @@ export const generateSchemaMetaSuggestionTask = task({
     const result = await processGenerateSchemaMeta(payload)
     logger.info('Generated schema meta suggestion:', { result })
 
-    // Create a knowledge suggestion with the schema meta using the returned information
-    await createKnowledgeSuggestionTask.trigger({
-      projectId: result.projectId,
-      type: 'SCHEMA',
-      title: result.title,
-      path: OVERRIDE_SCHEMA_FILE_PATH,
-      content: JSON.stringify(result.overrides, null, 2),
-      branch: result.branchName,
-      traceId: result.traceId,
-    })
+    if (result.createNeeded) {
+      // Create a knowledge suggestion with the schema meta using the returned information
+      await createKnowledgeSuggestionTask.trigger({
+        projectId: result.projectId,
+        type: 'SCHEMA',
+        title: result.title,
+        path: OVERRIDE_SCHEMA_FILE_PATH,
+        content: JSON.stringify(result.override, null, 2),
+        branch: result.branchName,
+        traceId: result.traceId,
+        reasoning: result.reasoning || '',
+        overallReviewId: result.overallReviewId,
+      })
+      logger.info('Knowledge suggestion creation triggered')
+    } else {
+      logger.info(
+        'No schema meta update needed, skipping knowledge suggestion creation',
+      )
+    }
 
     return { result }
   },
@@ -253,6 +263,8 @@ export const createKnowledgeSuggestionTask = task({
     content: string
     branch: string
     traceId?: string
+    reasoning: string
+    overallReviewId?: number
   }) => {
     logger.log('Executing create knowledge suggestion task:', { payload })
     try {

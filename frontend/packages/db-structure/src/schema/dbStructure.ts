@@ -11,6 +11,8 @@ export const indexNameSchema = v.string()
 
 export const relationshipNameSchema = v.string()
 
+export const constraintNameSchema = v.string()
+
 export const columnSchema = v.object({
   name: columnNameSchema,
   type: v.string(),
@@ -37,29 +39,75 @@ export type Index = v.InferOutput<typeof indexSchema>
 const indexesSchema = v.record(indexNameSchema, indexSchema)
 export type Indexes = v.InferOutput<typeof indexesSchema>
 
-export const tableSchema = v.object({
-  name: tableNameSchema,
-  columns: columnsSchema,
-  comment: v.nullable(v.string()),
-  indexes: indexesSchema,
-})
-
-export type Table = v.InferOutput<typeof tableSchema>
-
-const cardinalitySchema = v.picklist(['ONE_TO_ONE', 'ONE_TO_MANY'])
-export type Cardinality = v.InferOutput<typeof cardinalitySchema>
-
-const foreignKeyConstraintSchema = v.picklist([
+const foreignKeyConstraintReferenceOptionSchema = v.picklist([
   'CASCADE',
   'RESTRICT',
   'SET_NULL',
   'SET_DEFAULT',
   'NO_ACTION',
 ])
+export type ForeignKeyConstraintReferenceOption = v.InferOutput<
+  typeof foreignKeyConstraintReferenceOptionSchema
+>
 
+const primaryKeyConstraintSchema = v.object({
+  type: v.literal('PRIMARY KEY'),
+  name: constraintNameSchema,
+  columnName: columnNameSchema,
+})
+export type PrimaryKeyConstraint = v.InferOutput<
+  typeof primaryKeyConstraintSchema
+>
+
+const foreignKeyConstraintSchema = v.object({
+  type: v.literal('FOREIGN KEY'),
+  name: constraintNameSchema,
+  columnName: columnNameSchema,
+  targetTableName: tableNameSchema,
+  targetColumnName: columnNameSchema,
+  updateConstraint: foreignKeyConstraintReferenceOptionSchema,
+  deleteConstraint: foreignKeyConstraintReferenceOptionSchema,
+})
 export type ForeignKeyConstraint = v.InferOutput<
   typeof foreignKeyConstraintSchema
 >
+
+const uniqueConstraintSchema = v.object({
+  type: v.literal('UNIQUE'),
+  name: constraintNameSchema,
+  columnName: columnNameSchema,
+})
+export type UniqueConstraint = v.InferOutput<typeof uniqueConstraintSchema>
+
+const checkConstraintSchema = v.object({
+  type: v.literal('CHECK'),
+  name: constraintNameSchema,
+  detail: v.string(),
+})
+export type CheckConstraint = v.InferOutput<typeof checkConstraintSchema>
+
+export const constraintSchema = v.union([
+  primaryKeyConstraintSchema,
+  foreignKeyConstraintSchema,
+  uniqueConstraintSchema,
+  checkConstraintSchema,
+])
+export type Constraint = v.InferOutput<typeof constraintSchema>
+
+const constraintsSchema = v.record(constraintNameSchema, constraintSchema)
+export type Constraints = v.InferOutput<typeof constraintsSchema>
+
+export const tableSchema = v.object({
+  name: tableNameSchema,
+  columns: columnsSchema,
+  comment: v.nullable(v.string()),
+  indexes: indexesSchema,
+  constraints: constraintsSchema,
+})
+export type Table = v.InferOutput<typeof tableSchema>
+
+const cardinalitySchema = v.picklist(['ONE_TO_ONE', 'ONE_TO_MANY'])
+export type Cardinality = v.InferOutput<typeof cardinalitySchema>
 
 export const relationshipSchema = v.object({
   name: relationshipNameSchema,
@@ -68,8 +116,8 @@ export const relationshipSchema = v.object({
   foreignTableName: tableNameSchema,
   foreignColumnName: columnNameSchema,
   cardinality: cardinalitySchema,
-  updateConstraint: foreignKeyConstraintSchema,
-  deleteConstraint: foreignKeyConstraintSchema,
+  updateConstraint: foreignKeyConstraintReferenceOptionSchema,
+  deleteConstraint: foreignKeyConstraintReferenceOptionSchema,
 })
 export type Relationship = v.InferOutput<typeof relationshipSchema>
 

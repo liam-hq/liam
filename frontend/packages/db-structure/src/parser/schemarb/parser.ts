@@ -18,7 +18,7 @@ import type {
   Column,
   Columns,
   DBStructure,
-  ForeignKeyConstraint,
+  ForeignKeyConstraintReferenceOption,
   Index,
   Indexes,
   Relationship,
@@ -280,7 +280,9 @@ function extractRelationshipTableNames(
   return ok([primaryTableName, foreignTableName])
 }
 
-function normalizeConstraintName(constraint: string): ForeignKeyConstraint {
+function normalizeConstraintName(
+  constraint: string,
+): ForeignKeyConstraintReferenceOption {
   // Valid values are :nullify, :cascade, and :restrict
   // https://github.com/rails/rails/blob/v8.0.0/activerecord/lib/active_record/connection_adapters/abstract/schema_statements.rb#L1161-L1164
   switch (constraint) {

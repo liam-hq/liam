@@ -85,7 +85,6 @@ describe.skip('processSaveReview', () => {
         scores: [
           {
             kind: 'Migration Safety',
-            value: 8,
             reason: 'Good migration safety',
           },
         ],

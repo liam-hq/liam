@@ -29,6 +29,9 @@ export const aTable = (override?: Partial<Table>): Table => ({
   columns: {
     ...override?.columns,
   },
+  constraints: {
+    ...override?.constraints,
+  },
 })
 
 export const anIndex = (override?: Partial<Index>): Index => ({

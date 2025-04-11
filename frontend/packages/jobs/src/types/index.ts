@@ -1,3 +1,4 @@
+import type { DBOverride } from '@liam-hq/db-structure'
 import type { InferOutput } from 'valibot'
 import type { reviewSchema } from '../prompts/generateReview/reviewSchema'
 
@@ -58,11 +59,18 @@ export type GenerateSchemaMetaPayload = {
   overallReviewId: number
 }
 
-export type SchemaMetaResult = {
-  overrides: Record<string, unknown>
-  projectId: number
-  pullRequestNumber: number
-  branchName: string
-  title: string
-  traceId: string
-}
+export type SchemaMetaResult =
+  | {
+      createNeeded: true
+      override: DBOverride
+      projectId: number
+      pullRequestNumber: number
+      branchName: string
+      title: string
+      traceId: string
+      overallReviewId: number
+      reasoning?: string
+    }
+  | {
+      createNeeded: false
+    }

@@ -3,8 +3,6 @@ assert:
 - type: javascript
   value: output.feedbacks.filter(feedback => feedback.severity === "POSITIVE").length > 0
 - type: is-json
-- type: javascript
-  value: output.scores[0].value >= 1
 - type: cost
   threshold: 0.008
 

@@ -89,6 +89,11 @@
   border-bottom: 1px solid var(--color-border);
 }
 
+.columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+
 .codeContent {
   padding: 1.25rem;
   background-color: var(--color-background-code);

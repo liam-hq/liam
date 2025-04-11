@@ -1,6 +1,7 @@
 import { getFileContent } from '@liam-hq/github'
 import { v4 as uuidv4 } from 'uuid'
 import { createClient } from '../libs/supabase'
+import type { FileContent } from '../prompts/generateDocsSuggestion/docsSuggestionSchema'
 import { generateDocsSuggestion } from '../prompts/generateDocsSuggestion/generateDocsSuggestion'
 import { langfuseLangchainHandler } from './langfuseLangchainHandler'
 
@@ -9,14 +10,18 @@ export const DOC_FILES = [
   'schemaContext.md',
   'migrationPatterns.md',
   'migrationOpsContext.md',
-  '.liamrules',
 ] as const
+
+export type DocFile = (typeof DOC_FILES)[number]
 
 export async function processGenerateDocsSuggestion(payload: {
   reviewComment: string
   projectId: number
   branchOrCommit?: string
-}): Promise<{ suggestions: Record<string, string>; traceId: string }> {
+}): Promise<{
+  suggestions: Record<DocFile, FileContent>
+  traceId: string
+}> {
   try {
     const supabase = createClient()
 
@@ -42,47 +47,65 @@ export async function processGenerateDocsSuggestion(payload: {
     // Fetch all doc files from GitHub
     const docsPromises = DOC_FILES.map(async (filename) => {
       const filePath = `docs/${filename}`
-      const fileData = await getFileContent(
-        repositoryFullName,
-        filePath,
-        branch,
-        Number(repository.installationId),
-      )
+      try {
+        const fileData = await getFileContent(
+          repositoryFullName,
+          filePath,
+          branch,
+          Number(repository.installationId),
+        )
 
-      return {
-        id: filename,
-        title: filename,
-        content: fileData.content || '',
+        return {
+          id: filename,
+          title: filename,
+          content: fileData.content
+            ? JSON.stringify(
+                Buffer.from(fileData.content, 'base64').toString('utf-8'),
+              ).slice(1, -1)
+            : '',
+        }
+      } catch (error) {
+        console.warn(`Could not fetch file ${filePath}: ${error}`)
+        return {
+          id: filename,
+          title: filename,
+          content: '',
+        }
       }
     })
 
     const docsArray = await Promise.all(docsPromises)
-    const docsArrayString =
-      docsArray.length > 0
-        ? JSON.stringify(docsArray)
-        : 'No existing docs found'
+
+    // Format docs array as structured markdown instead of raw JSON
+    let formattedDocsContent = 'No existing docs found'
+
+    if (docsArray.length > 0) {
+      formattedDocsContent = docsArray
+        .map((doc) => {
+          return `<text>\n\n## ${doc.title}\n\n${doc.content || '*(No content)*'}\n\n</text>\n\n---\n`
+        })
+        .join('\n')
+    }
 
     const predefinedRunId = uuidv4()
 
     const callbacks = [langfuseLangchainHandler]
     const result = await generateDocsSuggestion(
       payload.reviewComment,
-      docsArrayString,
+      formattedDocsContent,
       callbacks,
       predefinedRunId,
     )
 
-    // Filter out undefined values and add .md extension to keys if not already present
-    // TODO: This is a hacky solution. Ideally, we should handle file extensions properly in the LangChain prompt
-    // to ensure consistent naming conventions between the input docs and output suggestions.
     const suggestions = Object.fromEntries(
       Object.entries(result)
         .filter(([_, value]) => value !== undefined)
         .map(([key, value]) => {
+          // Handle file extensions consistently
           const newKey = key.endsWith('.md') ? key : `${key}.md`
           return [newKey, value]
         }),
-    ) as Record<string, string>
+    ) as Record<DocFile, FileContent>
 
     // Return a properly structured object
     return {

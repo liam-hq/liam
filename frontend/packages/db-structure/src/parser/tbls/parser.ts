@@ -1,7 +1,8 @@
 import type {
   Cardinality,
   Columns,
-  ForeignKeyConstraint,
+  Constraints,
+  ForeignKeyConstraintReferenceOption,
   Indexes,
   Relationship,
   TableGroup,
@@ -28,13 +29,13 @@ function extractCardinality(cardinality: string): Cardinality {
 const FK_ACTIONS = 'SET NULL|SET DEFAULT|RESTRICT|CASCADE|NO ACTION'
 
 function extractForeignKeyActions(def: string): {
-  updateConstraint: ForeignKeyConstraint
-  deleteConstraint: ForeignKeyConstraint
+  updateConstraint: ForeignKeyConstraintReferenceOption
+  deleteConstraint: ForeignKeyConstraintReferenceOption
 } {
-  const defaultAction: ForeignKeyConstraint = 'NO_ACTION'
+  const defaultAction: ForeignKeyConstraintReferenceOption = 'NO_ACTION'
   const actions: {
-    updateConstraint: ForeignKeyConstraint
-    deleteConstraint: ForeignKeyConstraint
+    updateConstraint: ForeignKeyConstraintReferenceOption
+    deleteConstraint: ForeignKeyConstraintReferenceOption
   } = {
     updateConstraint: defaultAction,
     deleteConstraint: defaultAction,
@@ -57,7 +58,9 @@ function extractForeignKeyActions(def: string): {
   return actions
 }
 
-function normalizeConstraintName(constraint: string): ForeignKeyConstraint {
+function normalizeConstraintName(
+  constraint: string,
+): ForeignKeyConstraintReferenceOption {
   switch (constraint) {
     case 'cascade':
       return 'CASCADE'
@@ -95,6 +98,7 @@ async function parseTblsSchema(schemaString: string): Promise<ProcessResult> {
   for (const tblsTable of result.data.tables) {
     const columns: Columns = {}
     const indexes: Indexes = {}
+    const constraints: Constraints = {}
 
     const uniqueColumnNames = new Set(
       tblsTable.constraints
@@ -125,6 +129,63 @@ async function parseTblsSchema(schemaString: string): Promise<ProcessResult> {
       })
     }
 
+    if (tblsTable.constraints) {
+      for (const constraint of tblsTable.constraints) {
+        if (
+          constraint.type === 'PRIMARY KEY' &&
+          constraint.columns?.length === 1 &&
+          constraint.columns?.[0]
+        ) {
+          constraints[constraint.name] = {
+            type: 'PRIMARY KEY',
+            name: constraint.name,
+            columnName: constraint.columns[0],
+          }
+        }
+
+        if (
+          constraint.type === 'FOREIGN KEY' &&
+          constraint.columns?.length === 1 &&
+          constraint.columns[0] &&
+          constraint.referenced_columns?.length === 1 &&
+          constraint.referenced_columns[0] &&
+          constraint.referenced_table
+        ) {
+          const { updateConstraint, deleteConstraint } =
+            extractForeignKeyActions(constraint.def)
+          constraints[constraint.name] = {
+            type: 'FOREIGN KEY',
+            name: constraint.name,
+            columnName: constraint.columns[0],
+            targetTableName: constraint.referenced_table,
+            targetColumnName: constraint.referenced_columns[0],
+            updateConstraint,
+            deleteConstraint,
+          }
+        }
+
+        if (
+          constraint.type === 'UNIQUE' &&
+          constraint.columns?.length === 1 &&
+          constraint.columns[0]
+        ) {
+          constraints[constraint.name] = {
+            type: 'UNIQUE',
+            name: constraint.name,
+            columnName: constraint.columns[0],
+          }
+        }
+
+        if (constraint.type === 'CHECK') {
+          constraints[constraint.name] = {
+            type: 'CHECK',
+            name: constraint.name,
+            detail: constraint.def,
+          }
+        }
+      }
+    }
+
     if (tblsTable.indexes) {
       for (const tblsIndex of tblsTable.indexes) {
         indexes[tblsIndex.name] = anIndex({
@@ -141,6 +202,7 @@ async function parseTblsSchema(schemaString: string): Promise<ProcessResult> {
       name: tblsTable.name,
       columns,
       indexes,
+      constraints,
       comment: tblsTable.comment ?? null,
     })
   }

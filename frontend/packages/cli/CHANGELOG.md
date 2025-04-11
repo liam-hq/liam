@@ -1,5 +1,11 @@
 # @liam-hq/cli
 
+## 0.5.3
+
+### Patch Changes
+
+- [#1168](https://github.com/liam-hq/liam/pull/1168) - ✨ feat: enhance schema to adopt constraints data / Thanks [@tnyo43](https://github.com/tnyo43)!
+
 ## 0.5.2
 
 ### Patch Changes

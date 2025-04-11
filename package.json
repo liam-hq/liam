@@ -6,10 +6,10 @@
     "@changesets/cli": "2.28.1",
     "@changesets/get-github-info": "0.6.0",
     "@changesets/types": "6.1.0",
-    "@turbo/gen": "2.1.2",
+    "@turbo/gen": "2.5.0",
     "concurrently": "9.1.2",
     "syncpack": "13.0.3",
-    "turbo": "2.1.2",
+    "turbo": "2.5.0",
     "vercel": "41.5.0"
   },
   "scripts": {
@@ -42,7 +42,7 @@
   },
   "resolutions": {
     "esbuild": "0.25.2",
-    "path-to-regexp": "6.3.0",
-    "undici": "5.29.0"
+    "path-to-regexp": "8.2.0",
+    "undici": "7.7.0"
   }
 }

@@ -1,5 +1,11 @@
 # @liam-hq/db-structure
 
+## 0.0.18
+
+### Patch Changes
+
+- [#1168](https://github.com/liam-hq/liam/pull/1168) - ✨ feat: enhance schema to adopt constraints data / Thanks [@tnyo43](https://github.com/tnyo43)!
+
 ## 0.0.17
 
 ### Patch Changes

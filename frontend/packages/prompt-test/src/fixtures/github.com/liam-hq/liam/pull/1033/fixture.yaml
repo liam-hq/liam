@@ -12,8 +12,6 @@ assert:
   value: |
     !!output.feedbacks.flatMap(feedback => feedback.suggestionSnippets).find(snippet => snippet.snippet.includes("ALTER TABLE \"KnowledgeSuggestion\" ADD COLUMN \"branchName\" TEXT NOT NULL DEFAULT '"))
 - type: javascript
-  value: output.scores[0].value >= 1
-- type: javascript
   # `bodyMarkdown` Test 1: Check if the bodyMarkdown sentence is less than or equal to 3
   value: |
     output.bodyMarkdown.split(". ").length <= 3

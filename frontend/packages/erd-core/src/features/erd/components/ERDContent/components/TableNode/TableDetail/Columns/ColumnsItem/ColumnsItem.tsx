@@ -1,6 +1,14 @@
 import type { Column } from '@liam-hq/db-structure'
-import { DiamondFillIcon, DiamondIcon, KeyRound } from '@liam-hq/ui'
-import { clsx } from 'clsx'
+import {
+  DiamondFillIcon,
+  DiamondIcon,
+  GridTableDd,
+  GridTableDt,
+  GridTableItem,
+  GridTableRoot,
+  GridTableRow,
+  KeyRound,
+} from '@liam-hq/ui'
 import type { FC } from 'react'
 import styles from './ColumnsItem.module.css'
 
@@ -13,41 +21,41 @@ export const ColumnsItem: FC<Props> = ({ column }) => {
     <div className={styles.wrapper}>
       <h3 className={styles.heading}>{column.name}</h3>
       {column.comment && <p className={styles.comment}>{column.comment}</p>}
-      <dl className={styles.dl}>
-        <div className={styles.dlItem}>
-          <dt className={styles.dt}>Type</dt>
-          <dd className={styles.dd}>{column.type}</dd>
-        </div>
+      <GridTableRoot>
+        <GridTableItem>
+          <GridTableDt>Type</GridTableDt>
+          <GridTableDd>{column.type}</GridTableDd>
+        </GridTableItem>
         {column.default !== null && (
-          <div className={styles.dlItem}>
-            <dt className={styles.dt}>Default</dt>
-            <dd className={styles.dd}>{column.default}</dd>
-          </div>
+          <GridTableItem>
+            <GridTableDt>Default</GridTableDt>
+            <GridTableDd>{column.default}</GridTableDd>
+          </GridTableItem>
         )}
         {column.primary && (
-          <div className={styles.dlItem}>
-            <dt className={clsx(styles.dt, styles.dtWithIcon)}>
+          <GridTableItem>
+            <GridTableRow>
               <KeyRound className={styles.primaryKeyIcon} />
-              <span>Primary Key</span>
-            </dt>
-          </div>
+              Primary Key
+            </GridTableRow>
+          </GridTableItem>
         )}
         {column.notNull ? (
-          <div className={styles.dlItem}>
-            <dt className={clsx(styles.dt, styles.dtWithIcon)}>
+          <GridTableItem>
+            <GridTableRow>
               <DiamondFillIcon className={styles.diamondIcon} />
-              <span>Not-null</span>
-            </dt>
-          </div>
+              Not-null
+            </GridTableRow>
+          </GridTableItem>
         ) : (
-          <div className={styles.dlItem}>
-            <dt className={clsx(styles.dt, styles.dtWithIcon)}>
+          <GridTableItem>
+            <GridTableRow>
               <DiamondIcon className={styles.diamondIcon} />
-              <span>Nullable</span>
-            </dt>
-          </div>
+              Nullable
+            </GridTableRow>
+          </GridTableItem>
         )}
-      </dl>
+      </GridTableRoot>
     </div>
   )
 }

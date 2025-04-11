@@ -1,0 +1,180 @@
+.reviewIssues {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-3, 12px);
+  margin-top: var(--spacing-4, 16px);
+}
+
+.reviewIssue {
+  padding: var(--spacing-3, 12px);
+  border-radius: var(--border-radius-md, 6px);
+  border-left: 4px solid;
+  background-color: var(--overlay-5, rgba(255, 255, 255, 0.05));
+  transition: opacity 0.3s ease;
+}
+
+.severityCRITICAL {
+  border-left-color: var(--color-error, #ff4d4f);
+  background-color: var(--color-error-bg, rgba(255, 77, 79, 0.1));
+}
+
+.severityWARNING {
+  border-left-color: var(--color-warning, #faad14);
+  background-color: var(--color-warning-bg, rgba(250, 173, 20, 0.1));
+}
+
+.severityPOSITIVE {
+  border-left-color: var(--color-success, #52c41a);
+  background-color: var(--color-success-bg, rgba(82, 196, 26, 0.1));
+}
+
+.resolved {
+  opacity: 0.7;
+}
+
+.issueHeader {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: var(--spacing-2, 8px);
+  font-weight: 600;
+}
+
+.issueCategory {
+  font-size: var(--font-size-3, 0.75rem);
+  color: var(--global-foreground, #fff);
+  text-transform: uppercase;
+}
+
+.issueActions {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2, 8px);
+}
+
+.issueSeverity {
+  font-size: var(--font-size-3, 0.75rem);
+  color: var(--global-foreground, #fff);
+}
+
+.issueCopyButton {
+  font-size: var(--font-size-2, 0.6875rem);
+  padding: 0.125rem 0.375rem;
+}
+
+.issueDescription {
+  font-size: var(--font-size-4, 0.8125rem);
+  line-height: 1.5;
+  color: var(--global-foreground, #fff);
+  margin-bottom: var(--spacing-2, 8px);
+}
+
+.issueSuggestion {
+  margin-top: var(--spacing-2, 8px);
+  padding-top: var(--spacing-2, 8px);
+  border-top: 1px solid var(--overlay-10, rgba(255, 255, 255, 0.1));
+}
+
+.suggestionTitle {
+  font-size: var(--font-size-3, 0.75rem);
+  font-weight: 600;
+  color: var(--global-foreground, #fff);
+  margin-bottom: var(--spacing-1, 4px);
+}
+
+.issueSuggestion p {
+  font-size: var(--font-size-4, 0.8125rem);
+  line-height: 1.5;
+  color: var(--global-foreground, #fff);
+}
+
+.noIssues {
+  font-style: italic;
+  color: var(--global-mute-text, #bebfc1);
+  font-size: var(--font-size-4, 0.8125rem);
+}
+
+.snippetContainer {
+  margin: 1rem 0;
+  border: 1px solid var(--border-color, #e2e8f0);
+  border-radius: 0.375rem;
+  overflow: hidden;
+}
+
+.snippetHeader {
+  display: flex;
+  align-items: center;
+  padding: 0.5rem 0.75rem;
+  background-color: var(--background-secondary, #f7fafc);
+  border-bottom: 1px solid var(--border-color, #e2e8f0);
+}
+
+.fileIcon {
+  margin-right: 0.5rem;
+  font-size: 1rem;
+}
+
+.fileName {
+  font-family: monospace;
+  font-size: 0.875rem;
+  color: var(--text-secondary, #4a5568);
+  word-break: break-all;
+}
+
+.codeContainer {
+  max-height: 300px;
+  overflow: auto;
+  background-color: var(--background-code, #f8f9fa);
+}
+
+.codeSnippet {
+  margin: 0;
+  padding: 0.75rem;
+  font-family: monospace;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow-x: auto;
+  color: var(--color-gray-1000, #141616);
+}
+
+.resolvedInfo {
+  display: flex;
+  flex-direction: column;
+  margin-top: var(--spacing-3, 12px);
+  padding-top: var(--spacing-2, 8px);
+  border-top: 1px solid var(--overlay-10, rgba(255, 255, 255, 0.1));
+  font-size: var(--font-size-3, 0.75rem);
+}
+
+.resolvedIcon {
+  margin-right: var(--spacing-1, 4px);
+  font-weight: bold;
+  color: var(--color-success, #52c41a);
+}
+
+.resolvedText {
+  color: var(--global-mute-text, #bebfc1);
+  display: flex;
+  align-items: center;
+}
+
+.resolutionComment {
+  margin-top: var(--spacing-2, 8px);
+  padding: var(--spacing-2, 8px);
+  background-color: var(--overlay-5, rgba(255, 255, 255, 0.05));
+  border-radius: var(--border-radius-sm, 4px);
+  border-left: 2px solid var(--color-success, #52c41a);
+}
+
+.resolutionCommentTitle {
+  font-weight: 600;
+  margin: 0 0 var(--spacing-1, 4px) 0;
+  color: var(--global-foreground, #fff);
+}
+
+.resolutionCommentText {
+  margin: 0;
+  color: var(--global-mute-text, #bebfc1);
+  white-space: pre-wrap;
+}

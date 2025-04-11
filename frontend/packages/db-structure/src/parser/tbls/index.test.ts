@@ -20,6 +20,7 @@ describe(processor, () => {
             ...override?.columns,
           },
           indexes: override?.indexes ?? {},
+          constraints: override?.constraints ?? {},
         }),
       },
     })
@@ -162,6 +163,13 @@ describe(processor, () => {
             type: 'text',
             unique: true,
           }),
+        },
+        constraints: {
+          users_email_key: {
+            type: 'UNIQUE',
+            name: 'users_email_key',
+            columnName: 'email',
+          },
         },
       })
 
@@ -313,6 +321,13 @@ describe(processor, () => {
             primary: true,
             notNull: true,
           }),
+        },
+        constraints: {
+          users_pkey: {
+            type: 'PRIMARY KEY',
+            name: 'users_pkey',
+            columnName: 'id',
+          },
         },
       })
 
@@ -523,6 +538,160 @@ describe(processor, () => {
       })
 
       expect(value).toEqual(expected)
+    })
+
+    describe('constraint', () => {
+      it('PRIMARY KEY constraint', async () => {
+        const { value } = await processor(
+          JSON.stringify({
+            name: 'testdb',
+            tables: [
+              {
+                name: 'users',
+                type: 'TABLE',
+                columns: [{ name: 'id', type: 'int', nullable: false }],
+                constraints: [
+                  {
+                    name: 'PRIMARY',
+                    type: 'PRIMARY KEY',
+                    def: 'PRIMARY KEY (id)',
+                    table: 'users',
+                    columns: ['id'],
+                  },
+                ],
+              },
+            ],
+          }),
+        )
+
+        const expected = {
+          PRIMARY: {
+            type: 'PRIMARY KEY',
+            name: 'PRIMARY',
+            columnName: 'id',
+          },
+        }
+
+        expect(value.tables['users']?.constraints).toEqual(expected)
+      })
+
+      it('FOREIGN KEY constraint', async () => {
+        const { value } = await processor(
+          JSON.stringify({
+            name: 'testdb',
+            tables: [
+              {
+                name: 'users',
+                type: 'TABLE',
+                columns: [{ name: 'id', type: 'int', nullable: false }],
+              },
+              {
+                name: 'posts',
+                type: 'TABLE',
+                columns: [
+                  { name: 'id', type: 'int', nullable: false },
+                  { name: 'user_id', type: 'int', nullable: false },
+                ],
+                constraints: [
+                  {
+                    type: 'FOREIGN KEY',
+                    name: 'post_user_id_fk',
+                    def: 'FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE ON UPDATE RESTRICT',
+                    table: 'posts',
+                    referenced_table: 'users',
+                    columns: ['user_id'],
+                    referenced_columns: ['id'],
+                  },
+                ],
+              },
+            ],
+          }),
+        )
+
+        const expected = {
+          post_user_id_fk: {
+            type: 'FOREIGN KEY',
+            name: 'post_user_id_fk',
+            columnName: 'user_id',
+            targetTableName: 'users',
+            targetColumnName: 'id',
+            updateConstraint: 'RESTRICT',
+            deleteConstraint: 'CASCADE',
+          },
+        }
+
+        expect(value.tables['posts']?.constraints).toEqual(expected)
+      })
+
+      it('UNIQUE constraint', async () => {
+        const { value } = await processor(
+          JSON.stringify({
+            name: 'testdb',
+            tables: [
+              {
+                name: 'users',
+                type: 'TABLE',
+                columns: [{ name: 'id', type: 'int', nullable: false }],
+                constraints: [
+                  {
+                    type: 'UNIQUE',
+                    name: 'user_id',
+                    def: 'UNIQUE (id)',
+                    table: 'users',
+                    columns: ['id'],
+                  },
+                ],
+              },
+            ],
+          }),
+        )
+
+        const expected = {
+          user_id: {
+            type: 'UNIQUE',
+            name: 'user_id',
+            columnName: 'id',
+          },
+        }
+
+        expect(value.tables['users']?.constraints).toEqual(expected)
+      })
+
+      it('CHECK constraint', async () => {
+        const { value } = await processor(
+          JSON.stringify({
+            name: 'testdb',
+            tables: [
+              {
+                name: 'users',
+                type: 'TABLE',
+                columns: [
+                  { name: 'id', type: 'int', nullable: false },
+                  { name: 'username', type: 'varchar(50)', nullable: false },
+                ],
+                constraints: [
+                  {
+                    name: 'users_chk_1',
+                    type: 'CHECK',
+                    def: 'CHECK ((char_length(`username`) > 4))',
+                    table: 'users',
+                  },
+                ],
+              },
+            ],
+          }),
+        )
+
+        const expected = {
+          users_chk_1: {
+            type: 'CHECK',
+            name: 'users_chk_1',
+            detail: 'CHECK ((char_length(`username`) > 4))',
+          },
+        }
+
+        expect(value.tables['users']?.constraints).toEqual(expected)
+      })
     })
 
     describe('relationship', () => {
