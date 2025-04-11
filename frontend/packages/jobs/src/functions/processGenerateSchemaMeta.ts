@@ -1,4 +1,6 @@
+import path from 'node:path'
 import { type DBOverride, dbOverrideSchema } from '@liam-hq/db-structure'
+import { parse, setPrismWasmUrl } from '@liam-hq/db-structure/parser'
 import { getFileContent } from '@liam-hq/github'
 import { v4 as uuidv4 } from 'uuid'
 import { safeParse } from 'valibot'
@@ -78,19 +80,25 @@ export const processGenerateSchemaMeta = async (
     }
 
     // Enrich AI context with actual schema structure for more accurate metadata suggestions
-    const schemaFile = await fetchSchemaFileContent(
+    const { content, format } = await fetchSchemaFileContent(
       Number(project.id),
       overallReview.branchName,
       repositoryFullName,
       Number(repository.installationId),
     )
+    setPrismWasmUrl(path.resolve(process.cwd(), 'prism.wasm'))
+    const { value: dbStructure, errors } = await parse(content, format)
+
+    if (errors.length > 0) {
+      console.warn('Errors parsing schema file:', errors)
+    }
 
     const schemaMetaResult = await generateSchemaMeta(
       overallReview.reviewComment || '',
       callbacks,
       currentSchemaMeta,
       predefinedRunId,
-      schemaFile, // Pass single schema file content
+      dbStructure,
     )
 
     // If no update is needed, return early with createNeeded: false
