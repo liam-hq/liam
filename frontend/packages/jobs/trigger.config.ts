@@ -1,8 +1,12 @@
+import { dirname, resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { sentryEsbuildPlugin } from '@sentry/esbuild-plugin'
 import * as Sentry from '@sentry/node'
 import { esbuildPlugin } from '@trigger.dev/build/extensions'
+import { additionalFiles } from '@trigger.dev/build/extensions/core'
 import { defineConfig } from '@trigger.dev/sdk/v3'
 import * as dotenv from 'dotenv'
+import { globSync } from 'glob'
 
 if (process.env.NODE_ENV !== 'production') {
   dotenv.config({ path: '.env.local' })
@@ -11,6 +15,40 @@ if (process.env.NODE_ENV !== 'production') {
 dotenv.config({ path: '.env' })
 
 const triggerProjectId = process.env.TRIGGER_PROJECT_ID || 'project-id'
+
+// Current file and directory
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = dirname(__filename)
+
+// Project root directory (3 levels up from trigger.config.ts in frontend/packages/jobs)
+const rootDir = resolve(__dirname, '../../..')
+
+// Find Prisma WASM files using glob patterns relative to the project root
+const findPrismaWasmFiles = () => {
+  const patterns = [
+    // Look in node_modules for prisma WASM files (pnpm structure)
+    'node_modules/.pnpm/@prisma+prisma-schema-wasm@*/node_modules/@prisma/prisma-schema-wasm/src/*.wasm',
+    'node_modules/.pnpm/prisma@*/node_modules/prisma/build/*.wasm',
+    // Look in standard node_modules locations as fallback
+    'node_modules/@prisma/prisma-schema-wasm/src/*.wasm',
+    'node_modules/prisma/build/*.wasm',
+  ]
+
+  const files: string[] = []
+
+  for (const pattern of patterns) {
+    const found = globSync(pattern, { cwd: rootDir, absolute: true })
+    files.push(...found)
+  }
+
+  // eslint-disable-next-line no-console
+  console.info('Found Prisma WASM files:', files)
+
+  return files
+}
+
+// Find all WASM files and make paths relative for additionalFiles
+const prismaWasmFiles = findPrismaWasmFiles()
 
 export default defineConfig({
   project: triggerProjectId,
@@ -40,8 +78,24 @@ export default defineConfig({
         }),
         { placement: 'last', target: 'deploy' },
       ),
+      // Add all necessary WASM files
+      additionalFiles({
+        files: ['prism.wasm', ...prismaWasmFiles],
+      }),
     ],
-    external: ['uuid'],
+    external: [
+      'uuid',
+      '@prisma/client',
+      '@prisma/debug',
+      '@prisma/engines',
+      '@prisma/engines-version',
+      '@prisma/fetch-engine',
+      '@prisma/generator-helper',
+      '@prisma/get-platform',
+      '@prisma/internals',
+      '@prisma/prisma-schema-wasm',
+      '@prisma/schema-files-loader',
+    ],
   },
   init: async () => {
     Sentry.init({
