@@ -12,8 +12,10 @@ export const SYSTEM_PROMPT = `You are a database design expert tasked with revie
 When analyzing the changes, consider:
 1. The pull request description, which often contains the rationale behind changes and domain-specific information
 2. The pull request comments, which may include discussions and additional context
-3. The documentation context and schema files to understand the existing system
+3. The documentation context and schema files to understand the existing system - pay special attention to the documentation and cite it when relevant
 4. The file changes to identify potential issues and improvements
+
+IMPORTANT: The documentation provided contains important guidelines and rules for database schema design. You must carefully review the schema changes against these guidelines and cite specific parts of the documentation when providing feedback.
 
 Your JSON-formatted response must contain:
 
@@ -37,15 +39,22 @@ Your JSON-formatted response must contain:
     5. QUESTION feedback should focus on ensuring the design meets all requirements and identifying potential gaps between implementation and specifications.
   - "description": A clear and precise explanation of the feedback.
   - "suggestion": Provide actionable recommendations for resolving the feedback item.
-    - If multiple valid solutions exist, include them all in a single string rather than as an array.
-      - For example, when adding a non-null column without a default value, always propose both "setting a default value" and "ensuring that the table is empty."
-    - If the severity is "POSITIVE", do not set "suggestion" to null.
-      - Instead, write a brief sentence indicating that no improvement is needed.
-      - For example, "No suggestions needed", "Nothing to improve", "Keep up the good work", etc.
-    - If the severity is "QUESTION", format the "suggestion" field as a specific question or set of questions that need to be answered.
-      - Make questions clear, direct and actionable.
-      - Focus on seeking information about requirements, confirming design intentions, or clarifying business rules that impact the database schema.
-      - For example, "Could you clarify if user accounts need to support multiple email addresses?" or "Is there a reason this column doesn't have a foreign key constraint?"
+    - The "suggestion" field now contains both "content" and "citations"
+    - For "content":
+      - If multiple valid solutions exist, include them all in a single string rather than as an array.
+        - For example, when adding a non-null column without a default value, always propose both "setting a default value" and "ensuring that the table is empty."
+      - If the severity is "POSITIVE", do not set "content" to null.
+        - Instead, write a brief sentence indicating that no improvement is needed.
+        - For example, "No suggestions needed", "Nothing to improve", "Keep up the good work", etc.
+      - If the severity is "QUESTION", format the "content" field as a specific question or set of questions that need to be answered.
+        - Make questions clear, direct and actionable.
+        - Focus on seeking information about requirements, confirming design intentions, or clarifying business rules that impact the database schema.
+        - For example, "Could you clarify if user accounts need to support multiple email addresses?" or "Is there a reason this column doesn't have a foreign key constraint?"
+    - For "citations":
+      - Include citations for any statements made in the content that reference documentation
+      - Each citation should include:
+        - "sourceUrl": The path of the documentation file (e.g., the URL value from the provided docs)
+        - "quote": The exact text being referenced from the documentation
   - "suggestionSnippets": An array of suggestion snippets for each feedback kind in the "suggestions" field, each including:
     - "filename": The filename of the file that needs to be applied.
     - "snippet": The snippet of the file that needs to be applied.
@@ -54,14 +63,21 @@ Your JSON-formatted response must contain:
 
 - A concise overall review in the "bodyMarkdown" field that follows these rules:
   - IMPORTANT:
-    - Write no more than 3 sentences and approximately 70 words in total
-    - Never exceed these limits, even if it means omitting context or detail
-    - Brevity takes absolute priority
-    - The output must be a single markdown-formatted paragraph (no bullet points or headings)
-    - Each sentence should have a clear purpose:
-      1. First sentence: Briefly describe the schema or migration change (what was added, removed, or modified)
-      2. Second sentence: Highlight the most important issue or risk, if any exist
-      3. Third sentence: If no major issues exist, highlight a positive aspect of the change; otherwise, briefly emphasize the impact or importance of resolving the issue
+    - The "bodyMarkdown" field now contains both "content" and "citations"
+    - For "content":
+      - Write no more than 3 sentences and approximately 70 words in total
+      - Never exceed these limits, even if it means omitting context or detail
+      - Brevity takes absolute priority
+      - The output must be a single markdown-formatted paragraph (no bullet points or headings)
+      - Each sentence should have a clear purpose:
+        1. First sentence: Briefly describe the schema or migration change (what was added, removed, or modified)
+        2. Second sentence: Highlight the most important issue or risk, if any exist
+        3. Third sentence: If no major issues exist, highlight a positive aspect of the change; otherwise, briefly emphasize the impact or importance of resolving the issue
+    - For "citations":
+      - Include citations for any statements made in the content that reference documentation
+      - Each citation should include:
+        - "sourceUrl": The path of the documentation file (e.g., the URL value from the provided docs)
+        - "quote": The exact text being referenced from the documentation
 
 Evaluation Criteria Details:
 - **Migration Safety:** Evaluates whether mechanisms are in place to ensure that all changes are atomically rolled back and system integrity is maintained even if migration operations (such as DDL operations and data migration) are interrupted or fail midway. This is a general safety indicator.
@@ -113,7 +129,7 @@ export const chain = chatPrompt.pipe(
 )
 
 export const generateReview = async (
-  docsContent: string,
+  docsContent: { url: string; content: string }[],
   schemaFile: GenerateReviewPayload['schemaFile'],
   fileChanges: GenerateReviewPayload['fileChanges'],
   prDescription: string,
@@ -121,9 +137,24 @@ export const generateReview = async (
   callbacks: Callbacks,
   runId: string,
 ) => {
+  // Format the docs content for the prompt
+  const formattedDocsContent = docsContent
+    .map((doc) => `# ${doc.url}\n\n${doc.content}`)
+    .join('\n\n---\n\n')
+
+  const chatPrompt = ChatPromptTemplate.fromMessages([
+    ['system', SYSTEM_PROMPT],
+    ['human', USER_PROMPT],
+  ])
+
+  const model = new ChatOpenAI({
+    model: 'o3-mini-2025-01-31',
+  })
+
+  const chain = chatPrompt.pipe(model.withStructuredOutput(reviewJsonSchema))
   const response = await chain.invoke(
     {
-      docsContent,
+      docsContent: formattedDocsContent,
       schemaFile,
       fileChanges,
       prDescription,

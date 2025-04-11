@@ -44,7 +44,7 @@ export const processGenerateReview = async (
     }
 
     // Fetch content for each doc path
-    const docsContentArray = await Promise.all(
+    const docsContent = await Promise.all(
       docPaths.map(async (docPath: { path: string }) => {
         try {
           const fileData = await getFileContent(
@@ -59,16 +59,19 @@ export const processGenerateReview = async (
             return null
           }
 
-          return `# ${docPath.path}\n\n${fileData.content}`
+          return {
+            url: docPath.path,
+            content: fileData.content,
+          }
         } catch (error) {
           console.error(`Error fetching content for ${docPath.path}:`, error)
           return null
         }
       }),
+    ).then(
+      (results) =>
+        results.filter(Boolean) as { url: string; content: string }[],
     )
-
-    // Filter out null values and join content
-    const docsContent = docsContentArray.filter(Boolean).join('\n\n---\n\n')
 
     const predefinedRunId = uuidv4()
 

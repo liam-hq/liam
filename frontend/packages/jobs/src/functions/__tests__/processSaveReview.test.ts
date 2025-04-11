@@ -77,13 +77,19 @@ describe.skip('processSaveReview', () => {
       branchName: 'test-branch',
       traceId: 'test-trace-id-123',
       review: {
-        bodyMarkdown: 'Test review comment',
+        bodyMarkdown: {
+          content: 'Test review comment',
+          citations: [],
+        },
         feedbacks: [
           {
             kind: 'Migration Safety',
             severity: 'CRITICAL',
             description: 'Test issue',
-            suggestion: 'Fix the issue',
+            suggestion: {
+              content: 'Fix the issue',
+              citations: [],
+            },
             suggestionSnippets: [],
           },
         ],
@@ -120,7 +126,10 @@ describe.skip('processSaveReview', () => {
       branchName: 'test-branch',
       traceId: 'test-trace-id-123',
       review: {
-        bodyMarkdown: 'Test review',
+        bodyMarkdown: {
+          content: 'Test review',
+          citations: [],
+        },
         feedbacks: [],
       },
     }
@@ -138,7 +147,10 @@ describe.skip('processSaveReview', () => {
       branchName: 'test-branch',
       traceId: 'test-trace-id-123',
       review: {
-        bodyMarkdown: 'Test review',
+        bodyMarkdown: {
+          content: 'Test review',
+          citations: [],
+        },
         feedbacks: [],
       },
     }
