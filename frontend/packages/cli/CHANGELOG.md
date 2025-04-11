@@ -1,5 +1,11 @@
 # @liam-hq/cli
 
+## 0.5.4
+
+### Patch Changes
+
+- [#1221](https://github.com/liam-hq/liam/pull/1221) - Update dependency @ruby/prism to v1.4.0 / Thanks [@renovate](https://github.com/apps/renovate)!
+
 ## 0.5.3
 
 ### Patch Changes
