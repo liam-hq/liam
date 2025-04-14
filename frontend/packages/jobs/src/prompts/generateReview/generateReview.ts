@@ -5,6 +5,10 @@ import { toJsonSchema } from '@valibot/to-json-schema'
 import type { JSONSchema7 } from 'json-schema'
 import { parse } from 'valibot'
 import type { GenerateReviewPayload } from '../../types'
+import {
+  addCitationsToFeedback,
+  prepareDocumentReferences,
+} from './citationUtils'
 import { reviewSchema } from './reviewSchema'
 
 export const SYSTEM_PROMPT = `You are a database design expert tasked with reviewing database schema changes. Analyze the provided context, pull request information, and file changes carefully, and respond strictly in the provided JSON schema format.
@@ -70,7 +74,13 @@ Evaluation Criteria Details:
 - **Security or Scalability:** Evaluates the impact of migration or schema changes on system security and future scalability.
   - **Security:** Includes risks such as storing sensitive information (passwords, etc.) in plain text or deficiencies in access control.
   - **Scalability:** Evaluates the potential for performance degradation due to large-scale data processing, query delays, transaction conflicts, database locks, etc., as the system expands. This is a general perspective for evaluation.
-- **Project Rules Consistency:** This evaluation item represents project-specific requirements. Checks whether schema changes comply with project documents or existing schema rules (e.g., use of specific prefixes, naming conventions, etc.). If project-specific rules are not provided, this evaluation may be omitted.
+- **Project Rules Consistency:** This evaluation item represents project-specific requirements. Carefully compare schema changes with the provided Documentation Context to check for compliance with:
+  - Explicit rules, guidelines, and conventions documented in the project's documentation
+  - Implicit patterns established in existing schema design
+  - Naming conventions for tables, columns, constraints, and indices
+  - Data type selections, foreign key relationships, and constraint usage
+  - Project-specific standards around nullable fields, default values, and indexing strategies
+  For each feedback item in this category, explicitly reference the specific documentation source or existing pattern that supports your evaluation. When appropriate, direct quotations from the Documentation Context with citations should be included in your feedback to establish clear traceability between project requirements and your assessment.
 
 Before finalizing your response, perform these self-checks:
 
@@ -78,6 +88,7 @@ Before finalizing your response, perform these self-checks:
 1. Ensure that each category has at least one feedback item in "feedbacks".
 2. For every identified issue, ensure there is a corresponding feedback item with the correct severity.
 3. Ensure that there is at least one "POSITIVE" feedback item in "feedbacks" across all categories.
+4. Verify that your Project Rules Consistency feedback items specifically reference relevant sections from the Documentation Context when appropriate.
 
 **Your output must be raw JSON only. Do not include any markdown code blocks or extraneous formatting.****
 `
@@ -121,20 +132,56 @@ export const generateReview = async (
   callbacks: Callbacks,
   runId: string,
 ) => {
-  const response = await chain.invoke(
-    {
-      docsContent,
-      schemaFile,
-      fileChanges,
-      prDescription,
-      prComments,
-    },
-    {
-      callbacks,
-      runId,
-      tags: ['generateReview'],
-    },
-  )
-  const parsedResponse = parse(reviewSchema, response)
-  return parsedResponse
+  try {
+    // Prepare document references
+    const docReferences = prepareDocumentReferences(docsContent)
+
+    // Generate review via LLM
+    const response = await chain.invoke(
+      {
+        docsContent,
+        schemaFile,
+        fileChanges,
+        prDescription,
+        prComments,
+      },
+      {
+        callbacks,
+        runId,
+        tags: ['generateReview'],
+      },
+    )
+
+    // Validate schema
+    const parsedResponse = parse(reviewSchema, response)
+
+    // Add citations to Project Rules Consistency feedback
+    const enhancedResponse = addCitationsToFeedback(
+      parsedResponse,
+      docReferences,
+    )
+
+    return enhancedResponse
+  } catch (error) {
+    console.error('Error enhancing review with citations:', error)
+    // In case of error, return original response
+    const parsedResponse = parse(
+      reviewSchema,
+      await chain.invoke(
+        {
+          docsContent,
+          schemaFile,
+          fileChanges,
+          prDescription,
+          prComments,
+        },
+        {
+          callbacks,
+          runId,
+          tags: ['generateReview'],
+        },
+      ),
+    )
+    return parsedResponse
+  }
 }
