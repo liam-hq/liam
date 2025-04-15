@@ -1,0 +1,17 @@
+{
+  "name": "@liam-hq/script-update-fixture",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "update-fixture": "node src/index.js"
+  },
+  "dependencies": {
+    "@liam-hq/db-structure": "workspace:*",
+    "yaml": "^2.3.4",
+    "fs-extra": "^11.2.0"
+  },
+  "devDependencies": {
+    "@types/fs-extra": "^11.0.4",
+    "@types/node": "^22.14.0"
+  }
+}

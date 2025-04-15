@@ -1,0 +1,10 @@
+overrides:
+  tableGroups:
+    Github:
+      name: Github
+      tables:
+        - Repository
+        - PullRequest
+        - ProjectRepositoryMapping
+        - GitHubDocFilePath
+      comment: Tables related to Github

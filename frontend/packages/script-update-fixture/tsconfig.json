@@ -1,0 +1,14 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "outDir": "dist",
+    "module": "Node16",
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "moduleResolution": "node16",
+    "target": "ES2020",
+    "lib": ["ES2020"],
+    "strict": true
+  },
+  "include": ["src"]
+}
