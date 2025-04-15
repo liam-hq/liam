@@ -15,8 +15,8 @@ import {
   parse,
   string,
 } from 'valibot'
-import { langfuseLangchainHandler } from '../../functions/langfuseLangchainHandler'
 import { createClient } from '../../libs/supabase'
+import { langfuseLangchainHandler } from '../../utils/langfuseLangchainHandler'
 import { fetchSchemaInfoWithOverrides } from '../../utils/schemaUtils'
 import { createKnowledgeSuggestionTask } from './createKnowledgeSuggestion'
 

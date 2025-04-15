@@ -1,8 +1,8 @@
 import { logger, task } from '@trigger.dev/sdk/v3'
-import { getInstallationIdFromRepositoryId } from '../../functions/getInstallationIdFromRepositoryId'
 import { createClient } from '../../libs/supabase'
 import { generateDocsSuggestionTask } from '../../tasks/knowledge/generateDocsSuggestion'
 import { generateSchemaMetaSuggestionTask } from '../../tasks/knowledge/generateSchemaMeta'
+import { getInstallationIdFromRepositoryId } from '../../utils/getInstallationIdFromRepositoryId'
 import type { ReviewResponse } from './generateReview'
 import { postCommentTask } from './postComment'
 
