@@ -7,8 +7,8 @@ import { logger, task } from '@trigger.dev/sdk/v3'
 import { v4 as uuidv4 } from 'uuid'
 import { langfuseLangchainHandler } from '../../functions/langfuseLangchainHandler'
 import { createClient } from '../../libs/supabase'
-import { generateReview } from '../../prompts/generateReview/generateReview'
 import { fetchSchemaInfoWithOverrides } from '../../utils/schemaUtils'
+import { generateReview } from './reviewPrompt'
 import { saveReviewTask } from './saveReview'
 
 export type GenerateReviewPayload = {

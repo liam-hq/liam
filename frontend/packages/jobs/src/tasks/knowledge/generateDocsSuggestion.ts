@@ -3,15 +3,78 @@ import { ChatPromptTemplate } from '@langchain/core/prompts'
 import { RunnableLambda } from '@langchain/core/runnables'
 import { ChatOpenAI } from '@langchain/openai'
 import type { Schema } from '@liam-hq/db-structure'
+import { getFileContent } from '@liam-hq/github'
+import { logger, task } from '@trigger.dev/sdk/v3'
 import { toJsonSchema } from '@valibot/to-json-schema'
-import { parse } from 'valibot'
+import { v4 as uuidv4 } from 'uuid'
 import {
-  type DocFileContentMap,
-  type DocsSuggestion,
-  type EvaluationResult,
-  docsSuggestionSchema,
-  evaluationSchema,
-} from './docsSuggestionSchema'
+  type InferOutput,
+  boolean,
+  object,
+  optional,
+  parse,
+  string,
+} from 'valibot'
+import { langfuseLangchainHandler } from '../../functions/langfuseLangchainHandler'
+import { createClient } from '../../libs/supabase'
+import { fetchSchemaInfoWithOverrides } from '../../utils/schemaUtils'
+import { createKnowledgeSuggestionTask } from './createKnowledgeSuggestion'
+
+// Define a common evaluation object structure
+const fileEvaluationSchema = object({
+  updateNeeded: boolean(),
+  reasoning: string(),
+  suggestedChanges: string(),
+})
+
+// Evaluation schema to determine which files need updates
+export const evaluationSchema = object({
+  schemaPatterns: fileEvaluationSchema,
+  schemaContext: fileEvaluationSchema,
+  migrationPatterns: fileEvaluationSchema,
+  migrationOpsContext: fileEvaluationSchema,
+})
+
+// Define a file content with reasoning structure that can be reused
+export const fileContentSchema = object({
+  content: string(),
+  reasoning: string(),
+})
+
+// Updated schema with optional fields that include content and reasoning
+export const docsSuggestionSchema = object({
+  schemaPatterns: optional(string()),
+  schemaContext: optional(string()),
+  migrationPatterns: optional(string()),
+  migrationOpsContext: optional(string()),
+})
+
+// Define types for easier usage
+export type EvaluationResult = InferOutput<typeof evaluationSchema>
+export type FileContent = InferOutput<typeof fileContentSchema>
+export type DocsSuggestion = InferOutput<typeof docsSuggestionSchema>
+export type DocFileContentMap = Record<string, FileContent>
+
+export const DOC_FILES = [
+  'schemaPatterns.md',
+  'schemaContext.md',
+  'migrationPatterns.md',
+  'migrationOpsContext.md',
+] as const
+
+export type DocFile = (typeof DOC_FILES)[number]
+
+export type GenerateDocsSuggestionPayload = {
+  reviewComment: string
+  projectId: number
+  pullRequestNumber: number
+  owner: string
+  name: string
+  installationId: number
+  type: 'DOCS'
+  branchName: string
+  overallReviewId: number
+}
 
 // Common documentation structure description
 const DOCS_STRUCTURE_DESCRIPTION = `
@@ -36,6 +99,119 @@ migrationOpsContext.md:
 - Operational constraints on executing migrations
 - Timing, tooling, deployment risks, safety strategies
 `
+
+export async function processGenerateDocsSuggestion(payload: {
+  reviewComment: string
+  projectId: number
+  branchOrCommit?: string
+}): Promise<{
+  suggestions: Record<DocFile, FileContent>
+  traceId: string
+}> {
+  try {
+    const supabase = createClient()
+
+    // Get repository information from supabase
+    const { data: projectRepo, error } = await supabase
+      .from('ProjectRepositoryMapping')
+      .select(`
+        *,
+        repository:Repository(*)
+      `)
+      .eq('projectId', payload.projectId)
+      .limit(1)
+      .maybeSingle()
+
+    if (error || !projectRepo?.repository) {
+      throw new Error('Repository information not found')
+    }
+
+    const { repository } = projectRepo
+    const repositoryFullName = `${repository.owner}/${repository.name}`
+    const branch = payload.branchOrCommit || 'main'
+
+    // Fetch all doc files from GitHub
+    const docsPromises = DOC_FILES.map(async (filename) => {
+      const filePath = `docs/${filename}`
+      try {
+        const fileData = await getFileContent(
+          repositoryFullName,
+          filePath,
+          branch,
+          Number(repository.installationId),
+        )
+
+        return {
+          id: filename,
+          title: filename,
+          content: fileData.content
+            ? JSON.stringify(
+                Buffer.from(fileData.content, 'base64').toString('utf-8'),
+              ).slice(1, -1)
+            : '',
+        }
+      } catch (error) {
+        console.warn(`Could not fetch file ${filePath}: ${error}`)
+        return {
+          id: filename,
+          title: filename,
+          content: '',
+        }
+      }
+    })
+
+    const docsArray = await Promise.all(docsPromises)
+
+    // Format docs array as structured markdown instead of raw JSON
+    let formattedDocsContent = 'No existing docs found'
+
+    if (docsArray.length > 0) {
+      formattedDocsContent = docsArray
+        .map((doc) => {
+          return `<text>\n\n## ${doc.title}\n\n${doc.content || '*(No content)*'}\n\n</text>\n\n---\n`
+        })
+        .join('\n')
+    }
+
+    const predefinedRunId = uuidv4()
+    const callbacks = [langfuseLangchainHandler]
+
+    // Fetch schema information with overrides
+    const { overriddenSchema } = await fetchSchemaInfoWithOverrides(
+      payload.projectId,
+      branch,
+      repositoryFullName,
+      Number(repository.installationId),
+    )
+
+    const result = await generateDocsSuggestion(
+      payload.reviewComment,
+      formattedDocsContent,
+      callbacks,
+      predefinedRunId,
+      overriddenSchema,
+    )
+
+    const suggestions = Object.fromEntries(
+      Object.entries(result)
+        .filter(([_, value]) => value !== undefined)
+        .map(([key, value]) => {
+          // Handle file extensions consistently
+          const newKey = key.endsWith('.md') ? key : `${key}.md`
+          return [newKey, value]
+        }),
+    ) as Record<DocFile, FileContent>
+
+    // Return a properly structured object
+    return {
+      suggestions,
+      traceId: predefinedRunId,
+    }
+  } catch (error) {
+    console.error('Error generating docs suggestions:', error)
+    throw error
+  }
+}
 
 // Convert schemas to JSON format for LLM
 const evaluationJsonSchema = toJsonSchema(evaluationSchema)
@@ -332,3 +508,38 @@ export const generateDocsSuggestion = async (
     tags: ['generateDocsSuggestion'],
   })
 }
+
+export const generateDocsSuggestionTask = task({
+  id: 'generate-docs-suggestion',
+  run: async (payload: GenerateDocsSuggestionPayload) => {
+    const { suggestions, traceId } = await processGenerateDocsSuggestion({
+      reviewComment: payload.reviewComment,
+      projectId: payload.projectId,
+      branchOrCommit: payload.branchName,
+    })
+
+    logger.log('Generated docs suggestions:', { suggestions, traceId })
+
+    for (const key of DOC_FILES) {
+      const suggestion = suggestions[key]
+      if (!suggestion || !suggestion.content) {
+        logger.warn(`No content found for suggestion key: ${key}`)
+        continue
+      }
+
+      await createKnowledgeSuggestionTask.trigger({
+        projectId: payload.projectId,
+        type: payload.type,
+        title: `Docs update from PR #${payload.pullRequestNumber}`,
+        path: `docs/${key}`,
+        content: suggestion.content,
+        branch: payload.branchName,
+        traceId,
+        reasoning: suggestion.reasoning || '',
+        overallReviewId: payload.overallReviewId,
+      })
+    }
+
+    return { suggestions, traceId }
+  },
+})

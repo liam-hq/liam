@@ -4,9 +4,41 @@ import { ChatOpenAI } from '@langchain/openai'
 import type { Schema } from '@liam-hq/db-structure'
 import { toJsonSchema } from '@valibot/to-json-schema'
 import type { JSONSchema7 } from 'json-schema'
-import { parse } from 'valibot'
-import type { GenerateReviewPayload } from '../../types'
-import { reviewSchema } from './reviewSchema'
+import { array, enum as enumType, parse, strictObject, string } from 'valibot'
+import type { GenerateReviewPayload } from './generateReview'
+
+const KindEnum = enumType({
+  'Migration Safety': 'Migration Safety',
+  'Data Integrity': 'Data Integrity',
+  'Performance Impact': 'Performance Impact',
+  'Project Rules Consistency': 'Project Rules Consistency',
+  'Security or Scalability': 'Security or Scalability',
+})
+
+export const SeverityEnum = enumType({
+  CRITICAL: 'CRITICAL',
+  WARNING: 'WARNING',
+  POSITIVE: 'POSITIVE',
+  QUESTION: 'QUESTION',
+})
+
+export const reviewSchema = strictObject({
+  bodyMarkdown: string(),
+  feedbacks: array(
+    strictObject({
+      kind: KindEnum,
+      severity: SeverityEnum,
+      description: string(),
+      suggestion: string(),
+      suggestionSnippets: array(
+        strictObject({
+          filename: string(),
+          snippet: string(),
+        }),
+      ),
+    }),
+  ),
+})
 
 export const SYSTEM_PROMPT = `You are a database design expert tasked with reviewing database schema changes. Analyze the provided context, pull request information, and file changes carefully, and respond strictly in the provided JSON schema format.
 
