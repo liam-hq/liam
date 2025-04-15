@@ -26,7 +26,7 @@ export const processSaveReview = async (
       .insert({
         projectId: payload.projectId,
         pullRequestId: pullRequest.id,
-        reviewComment: payload.review.bodyMarkdown,
+        reviewComment: payload.review.bodyMarkdown.content,
         branchName: payload.branchName,
         traceId: payload.traceId,
         updatedAt: now,
@@ -48,7 +48,7 @@ export const processSaveReview = async (
       category: mapCategoryEnum(feedback.kind),
       severity: feedback.severity,
       description: feedback.description,
-      suggestion: feedback.suggestion,
+      suggestion: feedback.suggestion.content,
       updatedAt: now,
     }))
 
