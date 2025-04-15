@@ -197,8 +197,19 @@ export const saveReviewTask = task({
         traceId: payload.traceId,
       })
 
+      const typedReview = {
+        bodyMarkdown: payload.review.bodyMarkdown,
+        feedbacks: payload.review.feedbacks.map(feedback => ({
+          kind: feedback.kind as "Migration Safety" | "Data Integrity" | "Performance Impact" | "Project Rules Consistency" | "Security or Scalability",
+          severity: mapSeverityEnum(feedback.severity),
+          description: feedback.description,
+          suggestion: feedback.suggestion,
+          suggestionSnippets: feedback.suggestionSnippets
+        }))
+      }
+
       await generateDocsSuggestionTask.trigger({
-        reviewComment: payload.review.bodyMarkdown,
+        review: typedReview,
         projectId: payload.projectId,
         pullRequestNumber: payload.pullRequestNumber,
         owner: payload.owner,
