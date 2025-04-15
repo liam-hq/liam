@@ -4,8 +4,17 @@ import {
   getPullRequestFiles,
   updatePullRequestComment,
 } from '@liam-hq/github'
-import { createClient } from '../libs/supabase'
-import type { PostCommentPayload } from '../types'
+import { logger, task } from '@trigger.dev/sdk/v3'
+import { createClient } from '../../libs/supabase'
+
+export type PostCommentPayload = {
+  reviewComment: string
+  projectId: number
+  pullRequestId: number
+  repositoryId: number
+  branchName: string
+  traceId: string
+}
 
 /**
  * Generate ER diagram link for a schema file in a pull request
@@ -27,7 +36,6 @@ async function generateERDLink({
 }): Promise<string> {
   const supabase = createClient()
 
-  // Fetch schema path for the project
   const { data: schemaPath, error } = await supabase
     .from('GitHubSchemaFilePath')
     .select('path')
@@ -48,7 +56,6 @@ async function generateERDLink({
     Number(pullNumber),
   )
 
-  // Check if the schema file is in the PR files
   const matchedFile = files.find((file) => file.filename === schemaPath.path)
 
   if (!matchedFile) {
@@ -72,7 +79,6 @@ export async function postComment(
     } = payload
     const supabase = createClient()
 
-    // Get repository information
     const { data: repository, error: repoError } = await supabase
       .from('Repository')
       .select('*')
@@ -85,12 +91,10 @@ export async function postComment(
       )
     }
 
-    // Get installation ID from repository
     const installationId = repository.installationId
     const owner = repository.owner
     const repo = repository.name
 
-    // Check if there's an existing PR record with a comment
     const { data: prRecord, error: prError } = await supabase
       .from('PullRequest')
       .select(`
@@ -135,7 +139,6 @@ export async function postComment(
 
     const fullComment = `${reviewComment}\n\nMigration URL: ${migrationUrl}${erdLinkText}`
 
-    // If PR already has a comment, update it; otherwise create a new one
     if (prRecord.commentId) {
       await updatePullRequestComment(
         Number(installationId),
@@ -153,7 +156,6 @@ export async function postComment(
         fullComment,
       )
 
-      // Update PR record with the comment ID
       const { error: updateError } = await supabase
         .from('PullRequest')
         .update({ commentId: commentResponse.id })
@@ -175,3 +177,12 @@ export async function postComment(
     throw error
   }
 }
+
+export const postCommentTask = task({
+  id: 'post-comment',
+  run: async (payload: PostCommentPayload) => {
+    logger.log('Executing comment post task:', { payload })
+    const result = await postComment(payload)
+    return result
+  },
+})

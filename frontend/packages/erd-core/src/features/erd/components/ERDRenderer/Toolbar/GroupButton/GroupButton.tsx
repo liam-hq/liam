@@ -1,8 +1,9 @@
 import type { TableGroup } from '@liam-hq/db-structure'
-import { IconButton, Scan } from '@liam-hq/ui'
+import { Group, IconButton } from '@liam-hq/ui'
 import { ToolbarButton } from '@radix-ui/react-toolbar'
 import { useNodes } from '@xyflow/react'
 import { type ComponentProps, type FC, useCallback, useMemo } from 'react'
+import styles from './GroupButton.module.css'
 
 interface GroupButtonProps {
   size?: ComponentProps<typeof IconButton>['size']
@@ -43,13 +44,14 @@ export const GroupButton: FC<GroupButtonProps> = ({
   }, [hasSelectedNodes, selectedNodes, onAddTableGroup])
 
   return (
-    <ToolbarButton asChild onClick={handleClick}>
+    <ToolbarButton asChild className={styles.menuButton}>
       <IconButton
-        icon={<Scan />}
+        icon={<Group />}
         size={size}
-        tooltipContent="Group selected tables"
+        tooltipContent="Group tables"
         disabled={!hasSelectedNodes}
         aria-label="Group tables"
+        onClick={handleClick}
       />
     </ToolbarButton>
   )

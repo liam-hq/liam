@@ -1,14 +1,20 @@
 export type {
   GenerateReviewPayload,
   ReviewResponse,
-} from './types'
+} from './tasks/review/generateReview'
+export type { PostCommentPayload } from './tasks/review/postComment'
 
-export { processGenerateReview } from './functions/processGenerateReview'
+export { processGenerateReview } from './tasks/review/generateReview'
 export { processSavePullRequest } from './tasks/review/savePullRequest'
-export { processSaveReview } from './functions/processSaveReview'
-export { postComment } from './functions/postComment'
+export { processSaveReview } from './tasks/review/saveReview'
+export { postComment } from './tasks/review/postComment'
 
-export { savePullRequestTask } from './tasks/review/savePullRequest'
+export {
+  savePullRequestTask,
+  generateReviewTask,
+  saveReviewTask,
+  postCommentTask,
+} from './tasks/review'
 export { helloWorld } from './trigger/jobs'
 
 export * from './prompts'

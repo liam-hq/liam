@@ -50,6 +50,7 @@ export default function ERDViewer({
     <div style={{ height: '100dvh' }}>
       <VersionProvider version={version}>
         <ERDRenderer
+          withAppBar
           defaultSidebarOpen={defaultSidebarOpen}
           defaultPanelSizes={defaultPanelSizes}
           errorObjects={errorObjects}

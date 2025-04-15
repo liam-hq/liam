@@ -11,22 +11,19 @@ import {
   it,
   vi,
 } from 'vitest'
-import { createClient } from '../../libs/supabase'
+import { createClient } from '../../../libs/supabase'
 import { postComment } from '../postComment'
 
-// Mock the GitHub API functions
 vi.mock('@liam-hq/github', () => ({
   createPullRequestComment: vi.fn(),
   updatePullRequestComment: vi.fn(),
 }))
 
-// Mock environment variables
 vi.stubEnv('NEXT_PUBLIC_BASE_URL', 'http://localhost:3000')
 
 describe.skip('postComment', () => {
   const supabase = createClient()
 
-  // Test data
   const testRepository = {
     id: 9999,
     name: 'test-repo',
@@ -54,7 +51,6 @@ describe.skip('postComment', () => {
     updatedAt: new Date().toISOString(),
   }
 
-  // Setup: Insert test data before tests
   beforeEach(async () => {
     vi.clearAllMocks()
 
@@ -63,9 +59,7 @@ describe.skip('postComment', () => {
     await supabase.from('Migration').insert(testMigration)
   })
 
-  // Cleanup: Remove test data after tests
   afterEach(async () => {
-    // Delete test data in reverse order to avoid foreign key constraints
     await supabase.from('Migration').delete().eq('id', testMigration.id)
     await supabase.from('PullRequest').delete().eq('id', testPullRequest.id)
     await supabase.from('Repository').delete().eq('id', testRepository.id)
@@ -102,7 +96,6 @@ Migration URL: ${process.env['NEXT_PUBLIC_BASE_URL']}/app/migrations/${testMigra
     )
     expect(createPullRequestComment).toHaveBeenCalledTimes(1)
 
-    // Verify the update in the database
     const { data: updatedPR } = await supabase
       .from('PullRequest')
       .select('*')
@@ -113,7 +106,6 @@ Migration URL: ${process.env['NEXT_PUBLIC_BASE_URL']}/app/migrations/${testMigra
   })
 
   it('should update existing comment when comment exists', async () => {
-    // First update the test pull request to have a comment ID
     const existingCommentId = 456
     await supabase
       .from('PullRequest')
@@ -173,7 +165,6 @@ Migration URL: ${process.env['NEXT_PUBLIC_BASE_URL']}/app/migrations/${testMigra
   })
 
   it('should throw error when migration not found', async () => {
-    // Create a pull request without a migration
     const prWithoutMigration = {
       id: 8888,
       pullNumber: 2,
@@ -199,7 +190,6 @@ Migration URL: ${process.env['NEXT_PUBLIC_BASE_URL']}/app/migrations/${testMigra
         /Migration for Pull request with ID 8888 not found/,
       )
     } finally {
-      // Clean up the extra test data
       await supabase
         .from('PullRequest')
         .delete()

@@ -35,6 +35,7 @@ type Props = {
   defaultSidebarOpen?: boolean | undefined
   errorObjects?: ErrorObject[] | undefined
   defaultPanelSizes?: number[]
+  withAppBar?: boolean
   tableGroups?: Record<string, TableGroup>
   onAddTableGroup?: ((params: TableGroup) => void) | undefined
 }
@@ -47,6 +48,7 @@ export const ERDRenderer: FC<Props> = ({
   defaultSidebarOpen = false,
   errorObjects = [],
   defaultPanelSizes = [20, 80],
+  withAppBar = false,
   tableGroups = {},
   onAddTableGroup,
 }) => {
@@ -98,7 +100,7 @@ export const ERDRenderer: FC<Props> = ({
       <CardinalityMarkers />
       <RelationshipEdgeParticleMarker />
       <ToastProvider>
-        <AppBar />
+        {withAppBar && <AppBar />}
         <ReactFlowProvider>
           <ResizablePanelGroup
             direction="horizontal"
