@@ -5,6 +5,23 @@ overrides:
       tables:
         - Repository
         - PullRequest
-        - ProjectRepositoryMapping
         - GitHubSchemaFilePath
-      comment: Tables related to Github
+        - GitHubDocFilePath
+      comment: "Tables related to Github. All tables in this group should have a GitHub prefix. External tables must not depend on these tables (e.g., no pullRequestId foreign keys in tables outside this group)."
+    Organization:
+      name: Organization
+      tables:
+        - MembershipInvites
+        - Organization
+        - OrganizationMember
+        - User
+      comment: ""
+  tables:
+    Repository:
+      comment: "TODO: Rename to GitHubRepository to match the GitHub prefix pattern of this table group"
+    PullRequest:
+      comment: "TODO: Rename to GitHubPullRequest to match the GitHub prefix pattern of this table group. Should be updated to have migrationId instead of Migration having pullRequestId."
+    Migration:
+      comment: "Should have projectId instead of pullRequestId to remove GitHub dependency"
+    OverallReview:
+      comment: "Should have migrationId instead of pullRequestId to remove GitHub dependency"

@@ -75,6 +75,7 @@ function App() {
   return (
     <VersionProvider version={version}>
       <ERDRenderer
+        withAppBar
         defaultSidebarOpen={defaultSidebarOpen}
         defaultPanelSizes={panelSizes}
       />

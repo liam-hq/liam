@@ -49,7 +49,7 @@
   font-style: normal;
   font-weight: 400;
   line-height: normal;
-  flex-direction: column;
+  gap: var(--spacing-1);
   align-items: flex-start;
 }
 

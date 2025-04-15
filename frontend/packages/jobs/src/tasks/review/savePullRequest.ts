@@ -5,7 +5,7 @@ import {
 } from '@liam-hq/github'
 import { logger, task } from '@trigger.dev/sdk/v3'
 import { type SupabaseClient, createClient } from '../../libs/supabase'
-import { generateReviewTask } from '../../trigger/jobs'
+import { generateReviewTask } from './generateReview'
 
 type SavePullRequestPayload = {
   prNumber: number

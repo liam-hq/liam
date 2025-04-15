@@ -1,16 +1,76 @@
-import { v4 as uuidv4 } from 'uuid'
-
 import {
   getFileContent,
   getIssueComments,
   getPullRequestDetails,
 } from '@liam-hq/github'
-import { createClient } from '../libs/supabase'
+import { logger, task } from '@trigger.dev/sdk/v3'
+import { v4 as uuidv4 } from 'uuid'
+import { langfuseLangchainHandler } from '../../functions/langfuseLangchainHandler'
+import { createClient } from '../../libs/supabase'
+import { generateReview } from '../../prompts/generateReview/generateReview'
+import { fetchSchemaInfoWithOverrides } from '../../utils/schemaUtils'
+import { saveReviewTask } from './saveReview'
 
-import { generateReview } from '../prompts/generateReview/generateReview'
-import type { GenerateReviewPayload, Review } from '../types'
-import { fetchSchemaInfoWithOverrides } from '../utils/schemaUtils'
-import { langfuseLangchainHandler } from './langfuseLangchainHandler'
+export type GenerateReviewPayload = {
+  pullRequestId: number
+  projectId: number
+  repositoryId: number
+  branchName: string
+  owner: string
+  name: string
+  pullRequestNumber: number
+  schemaFile: {
+    filename: string
+    content: string
+  }
+  fileChanges: Array<{
+    filename: string
+    status:
+      | 'added'
+      | 'modified'
+      | 'deleted'
+      | 'removed'
+      | 'renamed'
+      | 'copied'
+      | 'changed'
+      | 'unchanged'
+    changes: number
+    patch: string
+  }>
+}
+
+export type Review = {
+  bodyMarkdown: string
+  feedbacks: Array<{
+    kind: string
+    severity:
+      | 'POSITIVE'
+      | 'CRITICAL'
+      | 'WARNING'
+      | 'QUESTION'
+      | 'HIGH'
+      | 'MEDIUM'
+      | 'LOW'
+    description: string
+    suggestion: string
+    suggestionSnippets: Array<{
+      filename: string
+      snippet: string
+    }>
+  }>
+}
+
+export type ReviewResponse = {
+  review: Review
+  projectId: number
+  pullRequestId: number
+  repositoryId: number
+  branchName: string
+  traceId: string
+  pullRequestNumber: number
+  owner: string
+  name: string
+}
 
 export const processGenerateReview = async (
   payload: GenerateReviewPayload,
@@ -18,7 +78,6 @@ export const processGenerateReview = async (
   try {
     const supabase = createClient()
 
-    // Get repository installationId
     const { data: repository, error: repositoryError } = await supabase
       .from('Repository')
       .select('installationId')
@@ -31,7 +90,6 @@ export const processGenerateReview = async (
       )
     }
 
-    // Get review-enabled doc paths
     const { data: docPaths, error: docPathsError } = await supabase
       .from('GitHubDocFilePath')
       .select('*')
@@ -44,7 +102,6 @@ export const processGenerateReview = async (
       )
     }
 
-    // Fetch content for each doc path
     const docsContentArray = await Promise.all(
       docPaths.map(async (docPath: { path: string }) => {
         try {
@@ -68,12 +125,10 @@ export const processGenerateReview = async (
       }),
     )
 
-    // Filter out null values and join content
     const docsContent = docsContentArray.filter(Boolean).join('\n\n---\n\n')
 
     const predefinedRunId = uuidv4()
 
-    // Fetch PR details to get the description
     const prDetails = await getPullRequestDetails(
       Number(repository.installationId),
       payload.owner,
@@ -81,7 +136,6 @@ export const processGenerateReview = async (
       payload.pullRequestNumber,
     )
 
-    // Fetch PR comments
     const prComments = await getIssueComments(
       Number(repository.installationId),
       payload.owner,
@@ -89,10 +143,8 @@ export const processGenerateReview = async (
       payload.pullRequestNumber,
     )
 
-    // Format PR description
     const prDescription = prDetails.body || 'No description provided.'
 
-    // Format comments for the prompt
     const formattedComments = prComments
       .map(
         (comment) => `${comment.user?.login || 'Anonymous'}: ${comment.body}`,
@@ -124,3 +176,17 @@ export const processGenerateReview = async (
     throw error
   }
 }
+
+export const generateReviewTask = task({
+  id: 'generate-review',
+  run: async (payload: GenerateReviewPayload) => {
+    const { review, traceId } = await processGenerateReview(payload)
+    logger.log('Generated review:', { review })
+    await saveReviewTask.trigger({
+      review,
+      traceId,
+      ...payload,
+    })
+    return { review }
+  },
+})

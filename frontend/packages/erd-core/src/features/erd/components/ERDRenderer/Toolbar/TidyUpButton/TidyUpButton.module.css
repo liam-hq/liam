@@ -1,11 +1,15 @@
 .menuButton {
   display: flex;
-  padding: var(--spacing-2, 8px) var(--spacing-1, 4px);
+  padding: var(--spacing-1, 4px);
   align-items: center;
-  gap: var(--spacing-2, 8px);
   border-radius: var(--border-radius-base);
   color: var(--global-foreground, #fff);
-  font-size: var(--font-size-2, 11px);
+  transition: background-color var(--default-hover-animation-duration)
+    var(--default-timing-function);
+}
+
+.menuButton:hover {
+  background-color: var(--pane-background-active, #2e3031);
 }
 
 .menuButton:focus-visible {

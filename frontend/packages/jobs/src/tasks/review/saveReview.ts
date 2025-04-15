@@ -1,5 +1,12 @@
-import { createClient } from '../libs/supabase'
-import type { ReviewResponse } from '../types'
+import { logger, task } from '@trigger.dev/sdk/v3'
+import { getInstallationIdFromRepositoryId } from '../../functions/getInstallationIdFromRepositoryId'
+import { createClient } from '../../libs/supabase'
+import {
+  generateDocsSuggestionTask,
+  generateSchemaMetaSuggestionTask,
+} from '../../trigger/jobs'
+import type { ReviewResponse } from './generateReview'
+import { postCommentTask } from './postComment'
 
 export const processSaveReview = async (
   payload: ReviewResponse,
@@ -20,7 +27,6 @@ export const processSaveReview = async (
 
     const now = new Date().toISOString()
 
-    // create overall review
     const { data: overallReview, error: overallReviewError } = await supabase
       .from('OverallReview')
       .insert({
@@ -40,13 +46,10 @@ export const processSaveReview = async (
       )
     }
 
-    // Create review feedbacks directly from the feedback data
-
-    // Create review feedbacks
     const reviewFeedbacks = payload.review.feedbacks.map((feedback) => ({
       overallReviewId: overallReview.id,
       category: mapCategoryEnum(feedback.kind),
-      severity: feedback.severity,
+      severity: mapSeverityEnum(feedback.severity),
       description: feedback.description,
       suggestion: feedback.suggestion,
       updatedAt: now,
@@ -61,7 +64,6 @@ export const processSaveReview = async (
       )
     }
 
-    // create suggestion snippet
     const suggestionSnippet = payload.review.feedbacks
       .map((feedback, index) => {
         const reviewFeedback = insertedFeedbacks[index]
@@ -115,7 +117,6 @@ export const processSaveReview = async (
   }
 }
 
-// Helper function to map category from review schema to CategoryEnum
 const mapCategoryEnum = (
   category: string,
 ):
@@ -137,7 +138,6 @@ const mapCategoryEnum = (
     'Performance Impact': 'PERFORMANCE_IMPACT',
     'Project Rules Consistency': 'PROJECT_RULES_CONSISTENCY',
     'Security or Scalability': 'SECURITY_OR_SCALABILITY',
-    // Add fallback for unknown category
     Unknown: 'MIGRATION_SAFETY', // Default to MIGRATION_SAFETY for unknown categories
   }
   const result = mapping[category]
@@ -149,3 +149,91 @@ const mapCategoryEnum = (
   }
   return result
 }
+
+const mapSeverityEnum = (
+  severity:
+    | 'POSITIVE'
+    | 'CRITICAL'
+    | 'WARNING'
+    | 'QUESTION'
+    | 'HIGH'
+    | 'MEDIUM'
+    | 'LOW',
+): 'POSITIVE' | 'CRITICAL' | 'WARNING' | 'QUESTION' => {
+  const mapping: Record<
+    string,
+    'POSITIVE' | 'CRITICAL' | 'WARNING' | 'QUESTION'
+  > = {
+    POSITIVE: 'POSITIVE',
+    CRITICAL: 'CRITICAL',
+    WARNING: 'WARNING',
+    QUESTION: 'QUESTION',
+    HIGH: 'CRITICAL',
+    MEDIUM: 'WARNING',
+    LOW: 'QUESTION',
+  }
+  return mapping[severity] || 'WARNING'
+}
+
+export const saveReviewTask = task({
+  id: 'save-review',
+  run: async (payload: ReviewResponse) => {
+    logger.log('Executing review save task:', { payload })
+    try {
+      const { overallReviewId } = await processSaveReview(payload)
+
+      logger.log('Creating knowledge suggestions for docs')
+
+      const installationId = await getInstallationIdFromRepositoryId(
+        payload.repositoryId,
+      )
+
+      await postCommentTask.trigger({
+        reviewComment: payload.review.bodyMarkdown,
+        projectId: payload.projectId,
+        pullRequestId: payload.pullRequestId,
+        repositoryId: payload.repositoryId,
+        branchName: payload.branchName,
+        traceId: payload.traceId,
+      })
+
+      await generateDocsSuggestionTask.trigger({
+        reviewComment: payload.review.bodyMarkdown,
+        projectId: payload.projectId,
+        pullRequestNumber: payload.pullRequestNumber,
+        owner: payload.owner,
+        name: payload.name,
+        installationId,
+        type: 'DOCS',
+        branchName: payload.branchName,
+        overallReviewId,
+      })
+
+      await generateSchemaMetaSuggestionTask.trigger({
+        overallReviewId,
+      })
+
+      return { success: true }
+    } catch (error) {
+      console.error('Error in review process:', error)
+
+      if (error instanceof Error) {
+        return {
+          success: false,
+          error: {
+            message: error.message,
+            type: error.constructor.name,
+          },
+        }
+      }
+
+      return {
+        success: false,
+        error: {
+          message: 'An unexpected error occurred',
+          type: 'UnknownError',
+        },
+      }
+    }
+  },
+})
