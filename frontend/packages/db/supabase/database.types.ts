@@ -580,6 +580,48 @@ export type Database = {
         }
         Relationships: []
       }
+      review_feedback_comments: {
+        Row: {
+          content: string
+          created_at: string
+          id: number
+          review_feedback_id: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: number
+          review_feedback_id: number
+          updated_at: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: number
+          review_feedback_id?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'review_feedback_comments_review_feedback_id_fkey'
+            columns: ['review_feedback_id']
+            isOneToOne: false
+            referencedRelation: 'ReviewFeedback'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'review_feedback_comments_user_id_fkey'
+            columns: ['user_id']
+            isOneToOne: false
+            referencedRelation: 'User'
+            referencedColumns: ['id']
+          },
+        ]
+      }
       ReviewFeedback: {
         Row: {
           category: Database['public']['Enums']['CategoryEnum']
@@ -623,48 +665,6 @@ export type Database = {
             columns: ['overallReviewId']
             isOneToOne: false
             referencedRelation: 'OverallReview'
-            referencedColumns: ['id']
-          },
-        ]
-      }
-      ReviewFeedbackComment: {
-        Row: {
-          content: string
-          createdAt: string
-          id: number
-          reviewFeedbackId: number
-          updatedAt: string
-          userId: string
-        }
-        Insert: {
-          content: string
-          createdAt?: string
-          id?: number
-          reviewFeedbackId: number
-          updatedAt: string
-          userId: string
-        }
-        Update: {
-          content?: string
-          createdAt?: string
-          id?: number
-          reviewFeedbackId?: number
-          updatedAt?: string
-          userId?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: 'ReviewFeedbackComment_reviewFeedbackId_fkey'
-            columns: ['reviewFeedbackId']
-            isOneToOne: false
-            referencedRelation: 'ReviewFeedback'
-            referencedColumns: ['id']
-          },
-          {
-            foreignKeyName: 'ReviewFeedbackComment_userId_fkey'
-            columns: ['userId']
-            isOneToOne: false
-            referencedRelation: 'User'
             referencedColumns: ['id']
           },
         ]

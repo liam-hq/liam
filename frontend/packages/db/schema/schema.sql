@@ -546,30 +546,6 @@ CREATE TABLE IF NOT EXISTS "public"."ReviewFeedback" (
 ALTER TABLE "public"."ReviewFeedback" OWNER TO "postgres";
 
 
-CREATE SEQUENCE IF NOT EXISTS "public"."ReviewFeedbackComment_id_seq"
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
-ALTER TABLE "public"."ReviewFeedbackComment_id_seq" OWNER TO "postgres";
-
-
-CREATE TABLE IF NOT EXISTS "public"."ReviewFeedbackComment" (
-    "id" integer DEFAULT "nextval"('"public"."ReviewFeedbackComment_id_seq"'::"regclass") NOT NULL,
-    "reviewFeedbackId" integer NOT NULL,
-    "userId" "uuid" NOT NULL,
-    "content" "text" NOT NULL,
-    "createdAt" timestamp(3) without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    "updatedAt" timestamp(3) without time zone NOT NULL
-);
-
-
-ALTER TABLE "public"."ReviewFeedbackComment" OWNER TO "postgres";
-
-
 CREATE SEQUENCE IF NOT EXISTS "public"."ReviewFeedback_id_seq"
     START WITH 1
     INCREMENT BY 1
@@ -632,6 +608,30 @@ CREATE TABLE IF NOT EXISTS "public"."_prisma_migrations" (
 
 
 ALTER TABLE "public"."_prisma_migrations" OWNER TO "postgres";
+
+
+CREATE SEQUENCE IF NOT EXISTS "public"."review_feedback_comments_id_seq"
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE "public"."review_feedback_comments_id_seq" OWNER TO "postgres";
+
+
+CREATE TABLE IF NOT EXISTS "public"."review_feedback_comments" (
+    "id" integer DEFAULT "nextval"('"public"."review_feedback_comments_id_seq"'::"regclass") NOT NULL,
+    "review_feedback_id" integer NOT NULL,
+    "user_id" "uuid" NOT NULL,
+    "content" "text" NOT NULL,
+    "created_at" timestamp(3) without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    "updated_at" timestamp(3) without time zone NOT NULL
+);
+
+
+ALTER TABLE "public"."review_feedback_comments" OWNER TO "postgres";
 
 
 ALTER TABLE ONLY "public"."GitHubDocFilePath" ALTER COLUMN "id" SET DEFAULT "nextval"('"public"."GitHubDocFilePath_id_seq"'::"regclass");
@@ -762,11 +762,6 @@ ALTER TABLE ONLY "public"."Repository"
 
 
 
-ALTER TABLE ONLY "public"."ReviewFeedbackComment"
-    ADD CONSTRAINT "ReviewFeedbackComment_pkey" PRIMARY KEY ("id");
-
-
-
 ALTER TABLE ONLY "public"."ReviewFeedback"
     ADD CONSTRAINT "ReviewFeedback_pkey" PRIMARY KEY ("id");
 
@@ -789,6 +784,11 @@ ALTER TABLE ONLY "public"."User"
 
 ALTER TABLE ONLY "public"."_prisma_migrations"
     ADD CONSTRAINT "_prisma_migrations_pkey" PRIMARY KEY ("id");
+
+
+
+ALTER TABLE ONLY "public"."review_feedback_comments"
+    ADD CONSTRAINT "review_feedback_comments_pkey" PRIMARY KEY ("id");
 
 
 
@@ -828,7 +828,7 @@ CREATE INDEX "idx_project_organizationId" ON "public"."Project" USING "btree" ("
 
 
 
-CREATE INDEX "idx_review_feedback_comment_review_feedback_id" ON "public"."ReviewFeedbackComment" USING "btree" ("reviewFeedbackId");
+CREATE INDEX "idx_review_feedback_comments_review_feedback_id" ON "public"."review_feedback_comments" USING "btree" ("review_feedback_id");
 
 
 
@@ -938,16 +938,6 @@ ALTER TABLE ONLY "public"."PullRequest"
 
 
 
-ALTER TABLE ONLY "public"."ReviewFeedbackComment"
-    ADD CONSTRAINT "ReviewFeedbackComment_reviewFeedbackId_fkey" FOREIGN KEY ("reviewFeedbackId") REFERENCES "public"."ReviewFeedback"("id") ON UPDATE CASCADE ON DELETE CASCADE;
-
-
-
-ALTER TABLE ONLY "public"."ReviewFeedbackComment"
-    ADD CONSTRAINT "ReviewFeedbackComment_userId_fkey" FOREIGN KEY ("userId") REFERENCES "public"."User"("id") ON UPDATE CASCADE ON DELETE CASCADE;
-
-
-
 ALTER TABLE ONLY "public"."ReviewFeedback"
     ADD CONSTRAINT "ReviewFeedback_overallReviewId_fkey" FOREIGN KEY ("overallReviewId") REFERENCES "public"."OverallReview"("id") ON UPDATE CASCADE ON DELETE RESTRICT;
 
@@ -955,6 +945,16 @@ ALTER TABLE ONLY "public"."ReviewFeedback"
 
 ALTER TABLE ONLY "public"."ReviewSuggestionSnippet"
     ADD CONSTRAINT "ReviewSuggestionSnippet_reviewFeedbackId_fkey" FOREIGN KEY ("reviewFeedbackId") REFERENCES "public"."ReviewFeedback"("id") ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+
+ALTER TABLE ONLY "public"."review_feedback_comments"
+    ADD CONSTRAINT "review_feedback_comments_review_feedback_id_fkey" FOREIGN KEY ("review_feedback_id") REFERENCES "public"."ReviewFeedback"("id") ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+
+ALTER TABLE ONLY "public"."review_feedback_comments"
+    ADD CONSTRAINT "review_feedback_comments_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "public"."User"("id") ON UPDATE CASCADE ON DELETE CASCADE;
 
 
 
@@ -1425,18 +1425,6 @@ GRANT ALL ON TABLE "public"."ReviewFeedback" TO "service_role";
 
 
 
-GRANT ALL ON SEQUENCE "public"."ReviewFeedbackComment_id_seq" TO "anon";
-GRANT ALL ON SEQUENCE "public"."ReviewFeedbackComment_id_seq" TO "authenticated";
-GRANT ALL ON SEQUENCE "public"."ReviewFeedbackComment_id_seq" TO "service_role";
-
-
-
-GRANT ALL ON TABLE "public"."ReviewFeedbackComment" TO "anon";
-GRANT ALL ON TABLE "public"."ReviewFeedbackComment" TO "authenticated";
-GRANT ALL ON TABLE "public"."ReviewFeedbackComment" TO "service_role";
-
-
-
 GRANT ALL ON SEQUENCE "public"."ReviewFeedback_id_seq" TO "anon";
 GRANT ALL ON SEQUENCE "public"."ReviewFeedback_id_seq" TO "authenticated";
 GRANT ALL ON SEQUENCE "public"."ReviewFeedback_id_seq" TO "service_role";
@@ -1458,6 +1446,18 @@ GRANT ALL ON TABLE "public"."ReviewSuggestionSnippet" TO "service_role";
 GRANT ALL ON TABLE "public"."User" TO "anon";
 GRANT ALL ON TABLE "public"."User" TO "authenticated";
 GRANT ALL ON TABLE "public"."User" TO "service_role";
+
+
+
+GRANT ALL ON SEQUENCE "public"."review_feedback_comments_id_seq" TO "anon";
+GRANT ALL ON SEQUENCE "public"."review_feedback_comments_id_seq" TO "authenticated";
+GRANT ALL ON SEQUENCE "public"."review_feedback_comments_id_seq" TO "service_role";
+
+
+
+GRANT ALL ON TABLE "public"."review_feedback_comments" TO "anon";
+GRANT ALL ON TABLE "public"."review_feedback_comments" TO "authenticated";
+GRANT ALL ON TABLE "public"."review_feedback_comments" TO "service_role";
 
 
 
