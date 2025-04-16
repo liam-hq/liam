@@ -16,7 +16,7 @@ const getCommentsSchema = v.object({
 })
 
 // Type for a comment with user information
-export type CommentWithUser = Tables<'ReviewFeedbackComment'> & {
+export type CommentWithUser = Tables<'review_feedback_comments'> & {
   user: Tables<'User'>
 }
 
@@ -47,12 +47,12 @@ export async function addReviewFeedbackComment(data: {
   try {
     // Insert the comment
     const { data: comment, error } = await supabase
-      .from('ReviewFeedbackComment')
+      .from('review_feedback_comments')
       .insert({
-        reviewFeedbackId: feedbackId,
-        userId: userData.user.id,
+        review_feedback_id: feedbackId,
+        user_id: userData.user.id,
         content,
-        updatedAt: now,
+        updated_at: now,
       })
       .select('*')
       .single()
@@ -87,15 +87,15 @@ export async function getReviewFeedbackComments(data: {
 
     // Get comments with user information
     const { data: comments, error } = await supabase
-      .from('ReviewFeedbackComment')
+      .from('review_feedback_comments')
       .select<string, CommentWithUser>(`
         *,
         user:userId (
           name
         )
       `)
-      .eq('reviewFeedbackId', feedbackId)
-      .order('createdAt', { ascending: true })
+      .eq('review_feedback_id', feedbackId)
+      .order('created_at', { ascending: true })
 
     if (error) {
       throw new Error(`Failed to get comments: ${error.message}`)
