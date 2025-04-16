@@ -1,6 +1,6 @@
 import * as crypto from 'node:crypto'
 import * as fs from 'node:fs'
-import { chain } from '@liam-hq/jobs/src/prompts/generateReview/generateReview'
+import { chain } from '@liam-hq/jobs/src/tasks/review/reviewPrompt'
 import * as dotenv from 'dotenv'
 import { Langfuse } from 'langfuse'
 import { createDatasetItemHandler } from 'langfuse-langchain'

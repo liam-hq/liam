@@ -1,5 +1,6 @@
 import { getFileContent } from '@liam-hq/github'
-import { createClient } from '../libs/supabase'
+import { logger, task } from '@trigger.dev/sdk/v3'
+import { createClient } from '../../libs/supabase'
 
 type KnowledgeType = 'SCHEMA' | 'DOCS'
 
@@ -239,3 +240,23 @@ export const processCreateKnowledgeSuggestion = async (
     throw error
   }
 }
+
+export const createKnowledgeSuggestionTask = task({
+  id: 'create-knowledge-suggestion',
+  run: async (payload: CreateKnowledgeSuggestionPayload) => {
+    logger.log('Executing create knowledge suggestion task:', { payload })
+    try {
+      const result = await processCreateKnowledgeSuggestion(payload)
+      logger.info(
+        result.suggestionId === null
+          ? 'Knowledge suggestion creation skipped due to matching content'
+          : 'Successfully created knowledge suggestion:',
+        { suggestionId: result.suggestionId },
+      )
+      return result
+    } catch (error) {
+      logger.error('Error in createKnowledgeSuggestion task:', { error })
+      throw error
+    }
+  },
+})
