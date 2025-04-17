@@ -1,9 +1,30 @@
-import { getProject } from '@/features/projects/pages/ProjectDetailPage/getProject'
 import { ChevronRight, ChevronsUpDown } from '@/icons'
+import { createClient } from '@/libs/db/server'
 import type { Tables } from '@liam-hq/db/supabase/database.types'
 import { Avatar } from '@liam-hq/ui'
 import type { ComponentProps, ReactNode } from 'react'
 import styles from './AppBar.module.css'
+
+async function getProject(projectId: string) {
+  try {
+    const supabase = await createClient()
+    const { data: project, error } = await supabase
+      .from('Project')
+      .select('id, name, createdAt, updatedAt, organizationId')
+      .eq('id', Number(projectId))
+      .single()
+
+    if (error || !project) {
+      console.error('Error fetching project:', error)
+      return null
+    }
+
+    return project
+  } catch (error) {
+    console.error('Error in getProject:', error)
+    return null
+  }
+}
 
 type BreadcrumbItemProps = {
   label: string
@@ -24,7 +45,7 @@ type AppBarProps = {
   avatarInitial?: string
   avatarColor?: string
   minimal?: boolean
-  children?: ReactNode
+
 } & ComponentProps<'div'>
 
 export async function AppBar({
@@ -37,13 +58,9 @@ export async function AppBar({
   avatarInitial = 'L',
   avatarColor = 'var(--avatar-background)',
   minimal = false,
-  children,
   ...props
 }: AppBarProps) {
-  let project: Tables<'Project'> | null | undefined
-  if (projectId) {
-    project = await getProject(projectId)
-  }
+  const project = projectId ? await getProject(projectId) : null
 
   if (minimal) {
     return (
@@ -56,7 +73,6 @@ export async function AppBar({
             onClick={onAvatarClick}
           />
         </div>
-        {children}
       </div>
     )
   }
@@ -91,7 +107,6 @@ export async function AppBar({
           onClick={onAvatarClick}
         />
       </div>
-      {children}
     </div>
   )
 }
