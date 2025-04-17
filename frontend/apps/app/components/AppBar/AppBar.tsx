@@ -1,10 +1,30 @@
-'use client'
-
 import { ChevronRight, ChevronsUpDown } from '@/icons'
-import type { Tables } from '@liam-hq/db/supabase/database.types'
+import { createClient } from '@/libs/db/server'
+import { getPathname } from '@/utils/getPathname'
 import { Avatar } from '@liam-hq/ui'
 import type { ComponentProps, ReactNode } from 'react'
 import styles from './AppBar.module.css'
+
+async function getProject(projectId: string) {
+  try {
+    const supabase = await createClient()
+    const { data: project, error } = await supabase
+      .from('Project')
+      .select('id, name, createdAt, updatedAt, organizationId')
+      .eq('id', Number(projectId))
+      .single()
+
+    if (error || !project) {
+      console.error('Error fetching project:', error)
+      return null
+    }
+
+    return project
+  } catch (error) {
+    console.error('Error in getProject:', error)
+    return null
+  }
+}
 
 type BreadcrumbItemProps = {
   label: string
@@ -15,13 +35,9 @@ type BreadcrumbItemProps = {
   isProject?: boolean
 }
 
-// Using the database type for Project
-type Project = Tables<'Project'>
-
 type AppBarProps = {
-  project?: Project
-  branchName: string
-  branchTag: string
+  branchName?: string
+  branchTag?: string
   onProjectClick?: () => void
   onBranchClick?: () => void
   onAvatarClick?: () => void
@@ -30,8 +46,7 @@ type AppBarProps = {
   minimal?: boolean
 } & ComponentProps<'div'>
 
-export const AppBar = ({
-  project,
+export async function AppBar({
   branchName = 'main',
   branchTag = 'production',
   onProjectClick,
@@ -41,8 +56,23 @@ export const AppBar = ({
   avatarColor = 'var(--avatar-background)',
   minimal = false,
   ...props
-}: AppBarProps) => {
-  if (minimal) {
+}: AppBarProps) {
+  const pathname = await getPathname()
+
+  let extractedProjectId: string | undefined
+  if (pathname) {
+    const projectsPattern = /\/app\/projects\/(\d+)(?:\/|$)/
+    const match = pathname.match(projectsPattern)
+    extractedProjectId = match?.[1]
+  }
+
+  const project = extractedProjectId
+    ? await getProject(extractedProjectId)
+    : undefined
+
+  const isMinimal = minimal || !pathname.includes('/projects/')
+
+  if (minimal || isMinimal) {
     return (
       <div className={`${styles.appBar} ${styles.minimal}`} {...props}>
         <div className={styles.rightSection}>
