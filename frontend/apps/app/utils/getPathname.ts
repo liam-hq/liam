@@ -6,8 +6,10 @@ import { headers } from 'next/headers'
  */
 export function getPathname(): string {
   try {
-    const pathname = headers().get('x-pathname')
-    return pathname || '/'
+    const headersList = headers() as unknown as {
+      get(name: string): string | null
+    }
+    return headersList.get('x-pathname') || '/'
   } catch (error) {
     console.error('Error getting pathname from headers:', error)
     return '/'

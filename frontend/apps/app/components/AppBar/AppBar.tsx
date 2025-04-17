@@ -1,9 +1,8 @@
 import { ChevronRight, ChevronsUpDown } from '@/icons'
 import { createClient } from '@/libs/db/server'
-import type { Tables } from '@liam-hq/db/supabase/database.types'
 import { Avatar } from '@liam-hq/ui'
-import type { ComponentProps, ReactNode } from 'react'
 import { headers } from 'next/headers'
+import type { ComponentProps, ReactNode } from 'react'
 import styles from './AppBar.module.css'
 
 async function getProject(projectId: string) {
@@ -46,7 +45,6 @@ type AppBarProps = {
   avatarInitial?: string
   avatarColor?: string
   minimal?: boolean
-
 } & ComponentProps<'div'>
 
 export async function AppBar({
@@ -63,21 +61,25 @@ export async function AppBar({
 }: AppBarProps) {
   let pathname = ''
   try {
-    const headersList = headers() as any
-    pathname = headersList.get?.('x-pathname') || ''
+    const headersList = headers() as unknown as {
+      get(name: string): string | null
+    }
+    pathname = headersList.get('x-pathname') || ''
   } catch (error) {
     console.error('Error getting pathname from headers:', error)
   }
-  
+
   let extractedProjectId = projectId
   if (!extractedProjectId && pathname) {
     const projectsPattern = /\/app\/projects\/(\d+)(?:\/|$)/
     const match = pathname.match(projectsPattern)
     extractedProjectId = match?.[1]
   }
-  
-  const project = extractedProjectId ? await getProject(extractedProjectId) : undefined
-  
+
+  const project = extractedProjectId
+    ? await getProject(extractedProjectId)
+    : undefined
+
   const isMinimal = minimal || !pathname.includes('/projects/')
 
   if (minimal || isMinimal) {
