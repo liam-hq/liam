@@ -1,7 +1,7 @@
 import { ChevronRight, ChevronsUpDown } from '@/icons'
 import { createClient } from '@/libs/db/server'
+import { getPathname } from '@/utils/getPathname'
 import { Avatar } from '@liam-hq/ui'
-import { headers } from 'next/headers'
 import type { ComponentProps, ReactNode } from 'react'
 import styles from './AppBar.module.css'
 
@@ -36,7 +36,6 @@ type BreadcrumbItemProps = {
 }
 
 type AppBarProps = {
-  projectId?: string
   branchName?: string
   branchTag?: string
   onProjectClick?: () => void
@@ -48,7 +47,6 @@ type AppBarProps = {
 } & ComponentProps<'div'>
 
 export async function AppBar({
-  projectId,
   branchName = 'main',
   branchTag = 'production',
   onProjectClick,
@@ -59,18 +57,10 @@ export async function AppBar({
   minimal = false,
   ...props
 }: AppBarProps) {
-  let pathname = ''
-  try {
-    const headersList = headers() as unknown as {
-      get(name: string): string | null
-    }
-    pathname = headersList.get('x-pathname') || ''
-  } catch (error) {
-    console.error('Error getting pathname from headers:', error)
-  }
+  const pathname = await getPathname()
 
-  let extractedProjectId = projectId
-  if (!extractedProjectId && pathname) {
+  let extractedProjectId: string | undefined
+  if (pathname) {
     const projectsPattern = /\/app\/projects\/(\d+)(?:\/|$)/
     const match = pathname.match(projectsPattern)
     extractedProjectId = match?.[1]
