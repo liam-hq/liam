@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
+import { AppBar } from '../AppBar/AppBar'
 import styles from './CommonLayout.module.css'
 import { GlobalNav } from './GlobalNav'
-import { AppBar } from '../AppBar/AppBar'
 
 type CommonLayoutProps = {
   children: ReactNode

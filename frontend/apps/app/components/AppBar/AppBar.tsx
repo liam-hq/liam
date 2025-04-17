@@ -1,5 +1,5 @@
-import { ChevronRight, ChevronsUpDown } from '@/icons'
 import { getProject } from '@/features/projects/pages/ProjectDetailPage/getProject'
+import { ChevronRight, ChevronsUpDown } from '@/icons'
 import type { Tables } from '@liam-hq/db/supabase/database.types'
 import { Avatar } from '@liam-hq/ui'
 import type { ComponentProps, ReactNode } from 'react'
@@ -13,9 +13,6 @@ type BreadcrumbItemProps = {
   isActive?: boolean
   isProject?: boolean
 }
-
-// Using the database type for Project
-type Project = Tables<'Project'>
 
 type AppBarProps = {
   projectId?: string
