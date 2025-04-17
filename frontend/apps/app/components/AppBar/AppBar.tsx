@@ -40,7 +40,7 @@ export async function AppBar({
   children,
   ...props
 }: AppBarProps) {
-  let project: Tables<'Project'> | null = null
+  let project: Tables<'Project'> | null | undefined
   if (projectId) {
     project = await getProject(projectId)
   }
