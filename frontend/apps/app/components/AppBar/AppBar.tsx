@@ -1,6 +1,5 @@
-'use client'
-
 import { ChevronRight, ChevronsUpDown } from '@/icons'
+import { getProject } from '@/features/projects/pages/ProjectDetailPage/getProject'
 import type { Tables } from '@liam-hq/db/supabase/database.types'
 import { Avatar } from '@liam-hq/ui'
 import type { ComponentProps, ReactNode } from 'react'
@@ -19,19 +18,20 @@ type BreadcrumbItemProps = {
 type Project = Tables<'Project'>
 
 type AppBarProps = {
-  project?: Project
-  branchName: string
-  branchTag: string
+  projectId?: string
+  branchName?: string
+  branchTag?: string
   onProjectClick?: () => void
   onBranchClick?: () => void
   onAvatarClick?: () => void
   avatarInitial?: string
   avatarColor?: string
   minimal?: boolean
+  children?: ReactNode
 } & ComponentProps<'div'>
 
-export const AppBar = ({
-  project,
+export async function AppBar({
+  projectId,
   branchName = 'main',
   branchTag = 'production',
   onProjectClick,
@@ -40,8 +40,14 @@ export const AppBar = ({
   avatarInitial = 'L',
   avatarColor = 'var(--avatar-background)',
   minimal = false,
+  children,
   ...props
-}: AppBarProps) => {
+}: AppBarProps) {
+  let project: Tables<'Project'> | null = null
+  if (projectId) {
+    project = await getProject(projectId)
+  }
+
   if (minimal) {
     return (
       <div className={`${styles.appBar} ${styles.minimal}`} {...props}>
@@ -53,6 +59,7 @@ export const AppBar = ({
             onClick={onAvatarClick}
           />
         </div>
+        {children}
       </div>
     )
   }
@@ -87,6 +94,7 @@ export const AppBar = ({
           onClick={onAvatarClick}
         />
       </div>
+      {children}
     </div>
   )
 }
