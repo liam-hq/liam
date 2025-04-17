@@ -3,6 +3,7 @@ import { createClient } from '@/libs/db/server'
 import type { Tables } from '@liam-hq/db/supabase/database.types'
 import { Avatar } from '@liam-hq/ui'
 import type { ComponentProps, ReactNode } from 'react'
+import { headers } from 'next/headers'
 import styles from './AppBar.module.css'
 
 async function getProject(projectId: string) {
@@ -60,9 +61,26 @@ export async function AppBar({
   minimal = false,
   ...props
 }: AppBarProps) {
-  const project = projectId ? await getProject(projectId) : null
+  let pathname = ''
+  try {
+    const headersList = headers() as any
+    pathname = headersList.get?.('x-pathname') || ''
+  } catch (error) {
+    console.error('Error getting pathname from headers:', error)
+  }
+  
+  let extractedProjectId = projectId
+  if (!extractedProjectId && pathname) {
+    const projectsPattern = /\/app\/projects\/(\d+)(?:\/|$)/
+    const match = pathname.match(projectsPattern)
+    extractedProjectId = match?.[1]
+  }
+  
+  const project = extractedProjectId ? await getProject(extractedProjectId) : undefined
+  
+  const isMinimal = minimal || !pathname.includes('/projects/')
 
-  if (minimal) {
+  if (minimal || isMinimal) {
     return (
       <div className={`${styles.appBar} ${styles.minimal}`} {...props}>
         <div className={styles.rightSection}>
