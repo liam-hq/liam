@@ -1,5 +1,3 @@
-'use client'
-
 import type { ComponentProps } from 'react'
 import styles from './Avatar.module.css'
 

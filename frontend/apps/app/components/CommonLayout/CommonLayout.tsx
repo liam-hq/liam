@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
-import { ClientAppBar } from './ClientAppBar'
 import styles from './CommonLayout.module.css'
 import { GlobalNav } from './GlobalNav'
+import { ServerAppBar } from './ServerAppBar'
 
 type CommonLayoutProps = {
   children: ReactNode
@@ -15,7 +15,7 @@ export async function CommonLayout({ children }: CommonLayoutProps) {
     <div className={styles.layout}>
       <GlobalNav />
       <div className={styles.mainContent}>
-        <ClientAppBar avatarInitial="L" avatarColor="var(--color-teal-800)" />
+        <ServerAppBar avatarInitial="L" avatarColor="var(--color-teal-800)" />
         <main className={styles.content}>{children}</main>
       </div>
     </div>
