@@ -11,7 +11,7 @@
     "date-fns": "4.1.0",
     "fumadocs-core": "15.2.6",
     "fumadocs-docgen": "2.0.0",
-    "fumadocs-mdx": "11.5.8",
+    "fumadocs-mdx": "11.6.0",
     "fumadocs-ui": "15.2.6",
     "lucide-react": "0.488.0",
     "next": "15.3.0",

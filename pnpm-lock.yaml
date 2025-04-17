@@ -187,8 +187,8 @@ importers:
         specifier: 2.0.0
         version: 2.0.0
       fumadocs-mdx:
-        specifier: 11.5.8
-        version: 11.5.8(acorn@8.14.1)(fumadocs-core@15.2.6(@types/react@18.3.20)(next@15.3.0(@opentelemetry/api@1.9.0)(@playwright/test@1.51.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(next@15.3.0(@opentelemetry/api@1.9.0)(@playwright/test@1.51.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
+        specifier: 11.6.0
+        version: 11.6.0(acorn@8.14.1)(fumadocs-core@15.2.6(@types/react@18.3.20)(next@15.3.0(@opentelemetry/api@1.9.0)(@playwright/test@1.51.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(next@15.3.0(@opentelemetry/api@1.9.0)(@playwright/test@1.51.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
       fumadocs-ui:
         specifier: 15.2.6
         version: 15.2.6(@types/react-dom@18.3.6(@types/react@18.3.20))(@types/react@18.3.20)(next@15.3.0(@opentelemetry/api@1.9.0)(@playwright/test@1.51.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(tailwindcss@4.1.3)
@@ -4696,13 +4696,13 @@ packages:
   fumadocs-docgen@2.0.0:
     resolution: {integrity: sha512-jaM/rsCFEvC8rO6Nf0sYXDHp1xOWPAaz0zJHyFyt/CWFSj/nnBaeVIjN/bFX3ZUb93Nnx0I3s42NzAHYKsZI0w==}
 
-  fumadocs-mdx@11.5.8:
-    resolution: {integrity: sha512-kzomF+1E9Hx+nwq6HP5bj7quLD/0mkltTZl25nw/D5ubeunvoJQCVb3ofOs3JgO7BatMeXVBucfSSbXZBv1qug==}
+  fumadocs-mdx@11.6.0:
+    resolution: {integrity: sha512-g0mArgliPBcZgi4691lwTCIw52y2BbxwIila7a6fQ6AEcu236uiBsDHWT4dm+xyjR3S84MlYkty9z2BWVTTNhg==}
     hasBin: true
     peerDependencies:
       '@fumadocs/mdx-remote': ^1.2.0
       fumadocs-core: ^14.0.0 || ^15.0.0
-      next: 14.x.x || 15.x.x
+      next: ^15.3.0
     peerDependenciesMeta:
       '@fumadocs/mdx-remote':
         optional: true
@@ -12384,7 +12384,7 @@ snapshots:
       unist-util-visit: 5.0.0
       zod: 3.24.2
 
-  fumadocs-mdx@11.5.8(acorn@8.14.1)(fumadocs-core@15.2.6(@types/react@18.3.20)(next@15.3.0(@opentelemetry/api@1.9.0)(@playwright/test@1.51.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(next@15.3.0(@opentelemetry/api@1.9.0)(@playwright/test@1.51.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)):
+  fumadocs-mdx@11.6.0(acorn@8.14.1)(fumadocs-core@15.2.6(@types/react@18.3.20)(next@15.3.0(@opentelemetry/api@1.9.0)(@playwright/test@1.51.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(next@15.3.0(@opentelemetry/api@1.9.0)(@playwright/test@1.51.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)):
     dependencies:
       '@mdx-js/mdx': 3.1.0(acorn@8.14.1)
       '@standard-schema/spec': 1.0.0
@@ -12397,6 +12397,7 @@ snapshots:
       gray-matter: 4.0.3
       lru-cache: 11.1.0
       next: 15.3.0(@opentelemetry/api@1.9.0)(@playwright/test@1.51.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      picocolors: 1.1.1
       unist-util-visit: 5.0.0
       zod: 3.24.2
     transitivePeerDependencies:
