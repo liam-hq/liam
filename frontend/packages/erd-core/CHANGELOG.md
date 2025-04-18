@@ -1,5 +1,19 @@
 # @liam-hq/erd-core
 
+## 0.1.7
+
+### Patch Changes
+
+- [#1329](https://github.com/liam-hq/liam/pull/1329) - ✨ add Constraints section in TableDetail / Thanks [@tnyo43](https://github.com/tnyo43)!
+- [#1358](https://github.com/liam-hq/liam/pull/1358) - 💄 Update FitViewButton and TidyUpButton styles with hover effects / Thanks [@junkisai](https://github.com/junkisai)!
+- [#1363](https://github.com/liam-hq/liam/pull/1363) - ✨ add TableGroupNode type and enhance styles with hover effects / Thanks [@junkisai](https://github.com/junkisai)!
+- [#1357](https://github.com/liam-hq/liam/pull/1357) - ✨ feat: add withAppBar prop to ERDRenderer for conditional AppBar rendering / Thanks [@junkisai](https://github.com/junkisai)!
+- [#1367](https://github.com/liam-hq/liam/pull/1367) - 🚸 Disable multi-selection of TableNode components / Thanks [@junkisai](https://github.com/junkisai)!
+- [#1363](https://github.com/liam-hq/liam/pull/1363) - 💄 Update MenuButton styles to apply color to SVG icons / Thanks [@junkisai](https://github.com/junkisai)!
+- [#1382](https://github.com/liam-hq/liam/pull/1382) - ✨ Add Tabs component with TabsRoot, TabsList, TabsTrigger, and TabsContent / Thanks [@junkisai](https://github.com/junkisai)!
+- [#1329](https://github.com/liam-hq/liam/pull/1329) - ✨ add Constraints section in TableDetail / Thanks [@tnyo43](https://github.com/tnyo43)!
+- [#1363](https://github.com/liam-hq/liam/pull/1363) - ✨ add TableGroupNode type and enhance styles with hover effects / Thanks [@junkisai](https://github.com/junkisai)!
+
 ## 0.1.6
 
 ### Patch Changes

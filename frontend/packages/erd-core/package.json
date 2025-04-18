@@ -1,7 +1,7 @@
 {
   "name": "@liam-hq/erd-core",
   "license": "Apache-2.0",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "type": "module",
   "publishConfig": {
     "access": "public"

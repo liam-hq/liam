@@ -1,5 +1,13 @@
 # @liam-hq/db-structure
 
+## 0.0.19
+
+### Patch Changes
+
+- [#1329](https://github.com/liam-hq/liam/pull/1329) - ✨ add Constraints section in TableDetail / Thanks [@tnyo43](https://github.com/tnyo43)!
+- [#1386](https://github.com/liam-hq/liam/pull/1386) - ✨ enhance the Prisma parser to support Constraints / Thanks [@tnyo43](https://github.com/tnyo43)!
+- [#1221](https://github.com/liam-hq/liam/pull/1221) - Update dependency @ruby/prism to v1.4.0 / Thanks [@renovate](https://github.com/apps/renovate)!
+
 ## 0.0.18
 
 ### Patch Changes

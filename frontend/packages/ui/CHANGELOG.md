@@ -1,5 +1,13 @@
 # @liam-hq/ui
 
+## 0.0.16
+
+### Patch Changes
+
+- [#1382](https://github.com/liam-hq/liam/pull/1382) - ✨ Add Tabs component with TabsRoot, TabsList, TabsTrigger, and TabsContent / Thanks [@junkisai](https://github.com/junkisai)!
+- [#1329](https://github.com/liam-hq/liam/pull/1329) - ✨ add Constraints section in TableDetail / Thanks [@tnyo43](https://github.com/tnyo43)!
+- [#1363](https://github.com/liam-hq/liam/pull/1363) - ✨ add TableGroupNode type and enhance styles with hover effects / Thanks [@junkisai](https://github.com/junkisai)!
+
 ## 0.0.15
 
 ### Patch Changes
