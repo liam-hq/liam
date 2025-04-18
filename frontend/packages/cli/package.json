@@ -43,7 +43,7 @@
     "@types/node": "22.14.1",
     "@types/react": "18",
     "@types/react-dom": "18",
-    "@vitejs/plugin-react": "4.3.4",
+    "@vitejs/plugin-react": "4.4.0",
     "rollup": "4.40.0",
     "rollup-plugin-execute": "1.1.1",
     "typed-css-modules": "0.9.1",
