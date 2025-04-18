@@ -1,0 +1,39 @@
+.modalContent {
+  width: 400px;
+  padding: var(--spacing-5);
+}
+
+.formContainer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-4);
+  margin: var(--spacing-5) 0;
+}
+
+.inputContainer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-3);
+  width: 100%;
+}
+
+.errorMessage {
+  color: var(--danger-default);
+  font-size: var(--font-size-3);
+  margin-top: var(--spacing-2);
+}
+
+.successMessage {
+  color: var(--primary-accent);
+  font-size: var(--font-size-3);
+  margin-top: var(--spacing-2);
+}
+
+.cancelButton {
+  border: 1px solid var(--button-border);
+  background-color: transparent;
+}
+
+.inviteButton {
+  background-color: var(--button-background);
+}

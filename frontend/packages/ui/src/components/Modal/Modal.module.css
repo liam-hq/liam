@@ -8,6 +8,7 @@
 }
 
 .dialogContent {
+  font-family: var(--main-font);
   position: fixed;
   top: 50%;
   left: 50%;

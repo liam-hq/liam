@@ -1,8 +1,9 @@
 'use client'
 
-import { Button } from '@liam-hq/ui'
+import { Button, ToastProvider } from '@liam-hq/ui'
 import { type FC, useState } from 'react'
 import styles from './ClientSearchWrapper.module.css'
+import { InviteMemberModal } from './InviteMemberModal'
 import { MemberItem } from './MemberItem'
 import { SearchInput } from './SearchInput'
 
@@ -36,9 +37,11 @@ interface ClientSearchWrapperProps {
 export const ClientSearchWrapper: FC<ClientSearchWrapperProps> = ({
   members = [],
   invites = [],
+  organizationId,
 }) => {
   const [searchQuery, setSearchQuery] = useState('')
   const [loading, setLoading] = useState(false)
+  const [isInviteModalOpen, setIsInviteModalOpen] = useState(false)
 
   // Filter members based on search query
   const filteredMembers = members?.filter(
@@ -58,10 +61,8 @@ export const ClientSearchWrapper: FC<ClientSearchWrapperProps> = ({
     setSearchQuery(query)
   }
 
-  // TODO: Implement invite functionality
   const handleInvite = () => {
-    setLoading(true)
-    setTimeout(() => setLoading(false), 500)
+    setIsInviteModalOpen(true)
   }
 
   // TODO: Implement more options functionality
@@ -86,57 +87,66 @@ export const ClientSearchWrapper: FC<ClientSearchWrapperProps> = ({
   }
 
   return (
-    <div className={styles.container}>
-      <div className={styles.header}>
-        <SearchInput
-          onSearch={handleSearch}
-          loading={loading}
-          placeholder="Search Members.."
+    <ToastProvider>
+      <div className={styles.container}>
+        <InviteMemberModal
+          isOpen={isInviteModalOpen}
+          onClose={() => {
+            setIsInviteModalOpen(false)
+          }}
+          organizationId={organizationId}
         />
-        <Button size="md" onClick={handleInvite}>
-          Invite
-        </Button>
-      </div>
+        <div className={styles.header}>
+          <SearchInput
+            onSearch={handleSearch}
+            loading={loading}
+            placeholder="Search Members.."
+          />
+          <Button size="md" onClick={handleInvite}>
+            Invite
+          </Button>
+        </div>
 
-      <div className={styles.section}>
-        <h2 className={styles.sectionTitle}>Organization Members</h2>
-        <div className={styles.membersList}>
-          {filteredMembers && filteredMembers.length > 0 ? (
-            filteredMembers.map((member) => (
-              <MemberItem
-                key={member.id}
-                name={member.user.name}
-                email={member.user.email}
-                initial={getInitial(member.user.name)}
-                avatarColor={getAvatarColor(member.user.id)}
-                onMoreOptions={() => handleMoreOptions(member.id)}
-              />
-            ))
-          ) : (
-            <p className={styles.emptyState}>No members found.</p>
-          )}
+        <div className={styles.section}>
+          <h2 className={styles.sectionTitle}>Organization Members</h2>
+          <div className={styles.membersList}>
+            {filteredMembers && filteredMembers.length > 0 ? (
+              filteredMembers.map((member) => (
+                <MemberItem
+                  key={member.id}
+                  name={member.user.name}
+                  email={member.user.email}
+                  initial={getInitial(member.user.name)}
+                  avatarColor={getAvatarColor(member.user.id)}
+                  onMoreOptions={() => handleMoreOptions(member.id)}
+                />
+              ))
+            ) : (
+              <p className={styles.emptyState}>No members found.</p>
+            )}
+          </div>
+        </div>
+
+        <div className={styles.section}>
+          <h2 className={styles.sectionTitle}>Pending Invitations</h2>
+          <div className={styles.membersList}>
+            {filteredInvites && filteredInvites.length > 0 ? (
+              filteredInvites.map((invite) => (
+                <MemberItem
+                  key={invite.id}
+                  name={invite.email.split('@')[0]}
+                  email={invite.email}
+                  initial={invite.email.charAt(0).toUpperCase()}
+                  avatarColor={getAvatarColor(invite.email)}
+                  onMoreOptions={() => handleMoreOptions(invite.id)}
+                />
+              ))
+            ) : (
+              <p className={styles.emptyState}>No pending invitations.</p>
+            )}
+          </div>
         </div>
       </div>
-
-      <div className={styles.section}>
-        <h2 className={styles.sectionTitle}>Pending Invitations</h2>
-        <div className={styles.membersList}>
-          {filteredInvites && filteredInvites.length > 0 ? (
-            filteredInvites.map((invite) => (
-              <MemberItem
-                key={invite.id}
-                name={invite.email.split('@')[0]}
-                email={invite.email}
-                initial={invite.email.charAt(0).toUpperCase()}
-                avatarColor={getAvatarColor(invite.email)}
-                onMoreOptions={() => handleMoreOptions(invite.id)}
-              />
-            ))
-          ) : (
-            <p className={styles.emptyState}>No pending invitations.</p>
-          )}
-        </div>
-      </div>
-    </div>
+    </ToastProvider>
   )
 }
