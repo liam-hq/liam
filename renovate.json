@@ -8,5 +8,15 @@
   "lockFileMaintenance": {
     "enabled": true
   },
-  "minimumReleaseAge": "3 days"
+  "minimumReleaseAge": "3 days",
+  "packageRules": [
+    {
+      "groupName": "fumadocs",
+      "matchPackagePatterns": [
+        "^fumadocs-core$",
+        "^fumadocs-mdx$",
+        "^fumadocs-ui$"
+      ]
+    }
+  ]
 }
