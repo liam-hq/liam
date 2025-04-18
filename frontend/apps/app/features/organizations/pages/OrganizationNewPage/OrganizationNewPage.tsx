@@ -1,11 +1,10 @@
 'use client'
 
-import { createClient } from '@/libs/db/client'
-import type { SupabaseClient } from '@/libs/db/server'
 import { urlgen } from '@/utils/routes'
-import { Button } from '@liam-hq/ui'
+import { Button, Input } from '@liam-hq/ui'
 import { useRouter } from 'next/navigation'
 import { type FC, type FormEvent, useState } from 'react'
+import { createOrganization } from '../../actions/createOrganizations'
 import styles from './OrganizationNewPage.module.css'
 
 export const OrganizationNewPage: FC = () => {
@@ -14,29 +13,8 @@ export const OrganizationNewPage: FC = () => {
   const [error, setError] = useState<string | null>(null)
   const router = useRouter()
 
-  const createOrg = async (supabase: SupabaseClient) => {
-    const { data, error } = await supabase
-      .from('organizations')
-      .insert({ name })
-      .select('id')
-      .single()
-
-    if (error) throw error
-    return data
-  }
-
-  const addUserToOrg = async (
-    supabase: SupabaseClient,
-    userId: string,
-    organizationId: string,
-  ) => {
-    const { error } = await supabase.from('organization_members').insert({
-      user_id: userId,
-      organization_id: organizationId,
-    })
-
-    if (error) throw error
-  }
+  // Computed value instead of state
+  const isFormValid = name.trim().length > 0
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
@@ -48,50 +26,70 @@ export const OrganizationNewPage: FC = () => {
     setLoading(true)
     setError(null)
 
-    try {
-      const supabase = await createClient()
+    const result = await createOrganization(name)
 
-      const organization = await createOrg(supabase)
-
-      const { data: userData, error: userError } = await supabase.auth.getUser()
-      if (userError) throw userError
-
-      await addUserToOrg(supabase, userData.user.id, organization.id)
-
+    if (result.success) {
       router.push(
         urlgen('organizations/[organizationId]/projects/new', {
-          organizationId: organization.id.toString(),
+          organizationId: result.organizationId,
         }),
       )
-    } catch (err) {
-      console.error('Error creating organization:', err)
-      setError('Failed to create organization. Please try again.')
-    } finally {
-      setLoading(false)
+    } else {
+      setError(
+        result.error || 'Failed to create organization. Please try again.',
+      )
     }
+    setLoading(false)
   }
+
+  // Define button variant based on form state
+  const buttonVariant =
+    isFormValid && !loading ? 'solid-primary' : 'outline-secondary'
 
   return (
     <div className={styles.container}>
-      <h1 className={styles.title}>Create Organization</h1>
-      <form className={styles.form} onSubmit={handleSubmit}>
-        <div className={styles.formGroup}>
-          <label htmlFor="name">Organization Name</label>
-          <input
-            id="name"
-            type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="Enter organization name"
-            className={styles.input}
-            disabled={loading}
-          />
+      <div className={styles.wrapper}>
+        <h1 className={styles.title}>Create a New Organization</h1>
+        <div className={styles.formContainer}>
+          <form onSubmit={handleSubmit}>
+            <div className={styles.formContent}>
+              <div className={styles.formGroup}>
+                <div className={styles.heading}>
+                  <label htmlFor="name" className={styles.label}>
+                    Organization Name
+                  </label>
+                </div>
+                <div className={styles.inputWrapper}>
+                  <Input
+                    id="name"
+                    type="text"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder="Organization name"
+                    disabled={loading}
+                    aria-label="Organization name"
+                  />
+                  <span className={styles.helperText}>
+                    What's the name of your company or team?
+                  </span>
+                  {error && <p className={styles.error}>{error}</p>}
+                </div>
+              </div>
+            </div>
+            <div className={styles.divider} />
+            <div className={styles.buttonContainer}>
+              <Button
+                type="submit"
+                disabled={loading || !isFormValid}
+                variant={buttonVariant}
+                className={styles.buttonCustom}
+              >
+                Create Organization
+              </Button>
+            </div>
+          </form>
         </div>
-        {error && <p className={styles.error}>{error}</p>}
-        <Button type="submit" disabled={loading}>
-          {loading ? 'Creating...' : 'Create Organization'}
-        </Button>
-      </form>
+      </div>
     </div>
   )
 }

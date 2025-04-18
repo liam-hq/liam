@@ -1,33 +1,111 @@
 .container {
-  max-width: 600px;
-  margin: 0 auto;
-  padding: 2rem;
+  display: flex;
+  padding: var(--spacing-20, 80px) var(--spacing-4, 16px);
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-20, 80px);
+  font-family: var(--main-font);
 }
 
 .title {
-  font-size: 1.5rem;
-  margin-bottom: 1.5rem;
+  display: flex;
+  height: 24px;
+  padding: 2px 823px 2px 0px;
+  align-items: center;
+  align-self: stretch;
 }
 
-.form {
+.wrapper {
+  display: flex;
+  width: 1080px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--spacing-7, 28px);
+}
+
+.formContainer {
+  width: 1080px;
+  background-color: var(--callout-default-background);
+  border: 1px solid var(--global-border);
+  border-radius: var(--border-radius-md);
+  overflow: hidden;
+}
+
+.formContent {
+  padding: var(--spacing-5);
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: var(--spacing-8);
 }
 
 .formGroup {
   display: flex;
+  align-items: center;
+}
+
+.heading {
+  display: flex;
+  width: 200px;
+  height: 36px;
+  padding: 10px 71px 9px 0px;
+  align-items: center;
+}
+
+.label {
+  font-size: var(--font-size-5);
+  font-weight: 500;
+  color: var(--global-foreground);
+  min-width: var(--spacing-30);
+}
+
+.inputWrapper {
+  display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: var(--spacing-2);
+  flex: 1; /* Take up remaining space */
 }
 
 .input {
-  padding: 0.5rem;
-  border: 1px solid #e0e0e0;
-  border-radius: 4px;
+  background-color: var(--global-background);
+  color: var(--global-foreground);
+  border: 1px solid var(--global-border);
+  border-radius: var(--border-radius-md);
+  padding: var(--spacing-2) var(--spacing-3);
+  font-size: var(--font-size-4);
+  height: var(--spacing-9);
+  width: 100%;
+}
+
+.input::placeholder {
+  color: var(--overlay-30);
+}
+
+.helperText {
+  font-size: var(--font-size-2);
+  color: var(--global-mute-text);
+}
+
+.divider {
+  height: 1px;
+  background-color: var(--global-border);
+  width: 100%;
+}
+
+.buttonContainer {
+  padding: var(--spacing-4) var(--spacing-8) var(--spacing-5);
+  display: flex;
+  justify-content: flex-end;
+}
+
+.buttonCustom {
+  min-width: var(--spacing-40);
+  height: var(--spacing-9);
+  font-size: var(--font-size-4);
+  font-weight: 500;
 }
 
 .error {
-  color: #d32f2f;
-  font-size: 0.875rem;
+  color: var(--danger-default);
+  font-size: var(--font-size-3);
+  margin-top: var(--spacing-2);
 }
