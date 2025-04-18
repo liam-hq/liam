@@ -149,31 +149,69 @@ export const inviteMember = async (formData: FormData) => {
     email,
   )
 
+  let dbOperationSuccess = false
+  let operationType = ''
+
   if (existingInvite) {
     // Update existing invite (resend)
-    await updateInvite(supabase, existingInvite.id)
-    return { success: true }
-  }
-
-  // Create new invite
-  const createResult = await createInvite(
-    supabase,
-    organizationId,
-    email,
-    userId,
-  )
-  if (!createResult.success) {
-    return {
-      success: false,
-      error:
-        createResult.error || 'Failed to send invitation. Please try again.',
+    try {
+      await updateInvite(supabase, existingInvite.id)
+      dbOperationSuccess = true
+      operationType = 'updated'
+    } catch (dbError) {
+      console.error('Failed to update invitation record:', dbError)
+      return {
+        success: false,
+        error: 'Failed to update invitation record. Please try again.',
+      }
+    }
+  } else {
+    // Create new invite
+    const createResult = await createInvite(
+      supabase,
+      organizationId,
+      email,
+      userId,
+    )
+    if (createResult.success) {
+      dbOperationSuccess = true
+      operationType = 'created'
+    } else {
+      return {
+        success: false,
+        error:
+          createResult.error ||
+          'Failed to save invitation record. Please try again.',
+      }
     }
   }
 
-  // TODO: Send email to user
+  // Send email invite only if the DB operation was successful
+  if (dbOperationSuccess) {
+    const { error: inviteError } = await supabase.auth.admin.inviteUserByEmail(
+      email,
+      // Optional: Add redirectTo if needed: { redirectTo: 'your-invite-accept-url' }
+    )
+
+    if (inviteError) {
+      console.error('Failed to send invitation email:', inviteError.message)
+      // Return an error indicating DB success but email failure
+      return {
+        success: false,
+        error: `Invitation record ${operationType}, but failed to send email: ${inviteError.message}. Please try again or contact support.`,
+      }
+    }
+  } else {
+    // This case should ideally not be reached if DB operations are handled correctly above,
+    // but added for safety.
+    return {
+      success: false,
+      error: 'Failed to process invitation due to a database error.',
+    }
+  }
 
   revalidatePath(
-    '/(app)/app/organizations/[organizationId]/settings/members/page.tsx',
+    '/(app)/app/organizations/[organizationId]/settings/members',
     'page',
   )
 
