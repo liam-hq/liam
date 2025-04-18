@@ -44,7 +44,7 @@ const checkExistingInvite = async (
   email: string,
 ) => {
   const { data: existingInvites } = await supabase
-    .from('membership_invites')
+    .from('invitations')
     .select('id')
     .eq('organization_id', organizationId)
     .eq('email', email.toLowerCase())
@@ -62,7 +62,7 @@ const updateInvite = async (
   inviteId: string,
 ): Promise<void> => {
   await supabase
-    .from('membership_invites')
+    .from('invitations')
     .update({ invited_at: new Date().toISOString() })
     .eq('id', inviteId)
 }
@@ -76,14 +76,12 @@ const createInvite = async (
   email: string,
   userId: string,
 ): Promise<{ success: boolean; error?: string }> => {
-  const { error: insertError } = await supabase
-    .from('membership_invites')
-    .insert({
-      organization_id: organizationId,
-      email: email.toLowerCase(),
-      invite_by_user_id: userId,
-      invited_at: new Date().toISOString(),
-    })
+  const { error: insertError } = await supabase.from('invitations').insert({
+    organization_id: organizationId,
+    email: email.toLowerCase(),
+    invite_by_user_id: userId,
+    invited_at: new Date().toISOString(),
+  })
 
   if (insertError) {
     return {

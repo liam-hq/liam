@@ -45,7 +45,7 @@ export const getOrganizationInvites = async (organizationId: string) => {
   const supabase = await createClient()
 
   const { data: invites, error } = await supabase
-    .from('membership_invites')
+    .from('invitations')
     .select(`
       id,
       email,

@@ -11,7 +11,7 @@ overrides:
     Organization:
       name: Organization
       tables:
-        - membership_invites
+        - invitations
         - organizations
         - organization_members
         - users

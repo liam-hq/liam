@@ -104,6 +104,45 @@ export type Database = {
           },
         ]
       }
+      invitations: {
+        Row: {
+          email: string
+          id: string
+          invite_by_user_id: string
+          invited_at: string | null
+          organization_id: string
+        }
+        Insert: {
+          email: string
+          id?: string
+          invite_by_user_id: string
+          invited_at?: string | null
+          organization_id: string
+        }
+        Update: {
+          email?: string
+          id?: string
+          invite_by_user_id?: string
+          invited_at?: string | null
+          organization_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'invitations_invite_by_user_id_fkey'
+            columns: ['invite_by_user_id']
+            isOneToOne: false
+            referencedRelation: 'users'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'invitations_organization_id_fkey'
+            columns: ['organization_id']
+            isOneToOne: false
+            referencedRelation: 'organizations'
+            referencedColumns: ['id']
+          },
+        ]
+      }
       knowledge_suggestion_doc_mappings: {
         Row: {
           created_at: string
@@ -195,45 +234,6 @@ export type Database = {
             columns: ['project_id']
             isOneToOne: false
             referencedRelation: 'projects'
-            referencedColumns: ['id']
-          },
-        ]
-      }
-      membership_invites: {
-        Row: {
-          email: string
-          id: string
-          invite_by_user_id: string
-          invited_at: string | null
-          organization_id: string
-        }
-        Insert: {
-          email: string
-          id?: string
-          invite_by_user_id: string
-          invited_at?: string | null
-          organization_id: string
-        }
-        Update: {
-          email?: string
-          id?: string
-          invite_by_user_id?: string
-          invited_at?: string | null
-          organization_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: 'membership_invites_invite_by_user_id_fkey'
-            columns: ['invite_by_user_id']
-            isOneToOne: false
-            referencedRelation: 'users'
-            referencedColumns: ['id']
-          },
-          {
-            foreignKeyName: 'membership_invites_organization_id_fkey'
-            columns: ['organization_id']
-            isOneToOne: false
-            referencedRelation: 'organizations'
             referencedColumns: ['id']
           },
         ]

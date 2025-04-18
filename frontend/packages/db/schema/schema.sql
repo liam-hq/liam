@@ -176,6 +176,18 @@ CREATE TABLE IF NOT EXISTS "public"."github_schema_file_paths" (
 ALTER TABLE "public"."github_schema_file_paths" OWNER TO "postgres";
 
 
+CREATE TABLE IF NOT EXISTS "public"."invitations" (
+    "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
+    "email" "text" NOT NULL,
+    "invite_by_user_id" "uuid" NOT NULL,
+    "organization_id" "uuid" NOT NULL,
+    "invited_at" timestamp with time zone DEFAULT CURRENT_TIMESTAMP
+);
+
+
+ALTER TABLE "public"."invitations" OWNER TO "postgres";
+
+
 CREATE TABLE IF NOT EXISTS "public"."knowledge_suggestion_doc_mappings" (
     "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
     "knowledge_suggestion_id" "uuid" NOT NULL,
@@ -206,18 +218,6 @@ CREATE TABLE IF NOT EXISTS "public"."knowledge_suggestions" (
 
 
 ALTER TABLE "public"."knowledge_suggestions" OWNER TO "postgres";
-
-
-CREATE TABLE IF NOT EXISTS "public"."membership_invites" (
-    "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
-    "email" "text" NOT NULL,
-    "invite_by_user_id" "uuid" NOT NULL,
-    "organization_id" "uuid" NOT NULL,
-    "invited_at" timestamp with time zone DEFAULT CURRENT_TIMESTAMP
-);
-
-
-ALTER TABLE "public"."membership_invites" OWNER TO "postgres";
 
 
 CREATE TABLE IF NOT EXISTS "public"."migrations" (
@@ -411,6 +411,11 @@ ALTER TABLE ONLY "public"."github_schema_file_paths"
 
 
 
+ALTER TABLE ONLY "public"."invitations"
+    ADD CONSTRAINT "invitations_pkey" PRIMARY KEY ("id");
+
+
+
 ALTER TABLE ONLY "public"."knowledge_suggestion_doc_mappings"
     ADD CONSTRAINT "knowledge_suggestion_doc_mapping_pkey" PRIMARY KEY ("id");
 
@@ -418,11 +423,6 @@ ALTER TABLE ONLY "public"."knowledge_suggestion_doc_mappings"
 
 ALTER TABLE ONLY "public"."knowledge_suggestions"
     ADD CONSTRAINT "knowledge_suggestion_pkey" PRIMARY KEY ("id");
-
-
-
-ALTER TABLE ONLY "public"."membership_invites"
-    ADD CONSTRAINT "membership_invites_pkey" PRIMARY KEY ("id");
 
 
 
@@ -517,15 +517,15 @@ CREATE INDEX "idx_review_feedback_comment_review_feedback_id" ON "public"."revie
 
 
 
+CREATE INDEX "invitations_email_idx" ON "public"."invitations" USING "btree" ("email");
+
+
+
+CREATE INDEX "invitations_organization_id_idx" ON "public"."invitations" USING "btree" ("organization_id");
+
+
+
 CREATE UNIQUE INDEX "knowledge_suggestion_doc_mapping_unique_mapping" ON "public"."knowledge_suggestion_doc_mappings" USING "btree" ("knowledge_suggestion_id", "github_doc_file_path_id");
-
-
-
-CREATE INDEX "membership_invites_email_idx" ON "public"."membership_invites" USING "btree" ("email");
-
-
-
-CREATE INDEX "membership_invites_org_id_idx" ON "public"."membership_invites" USING "btree" ("organization_id");
 
 
 
@@ -567,6 +567,16 @@ ALTER TABLE ONLY "public"."github_schema_file_paths"
 
 
 
+ALTER TABLE ONLY "public"."invitations"
+    ADD CONSTRAINT "invitations_invite_by_user_id_fkey" FOREIGN KEY ("invite_by_user_id") REFERENCES "public"."users"("id") ON DELETE CASCADE;
+
+
+
+ALTER TABLE ONLY "public"."invitations"
+    ADD CONSTRAINT "invitations_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "public"."organizations"("id") ON DELETE CASCADE;
+
+
+
 ALTER TABLE ONLY "public"."knowledge_suggestion_doc_mappings"
     ADD CONSTRAINT "knowledge_suggestion_doc_mapping_github_doc_file_path_id_fkey" FOREIGN KEY ("github_doc_file_path_id") REFERENCES "public"."github_doc_file_paths"("id") ON UPDATE CASCADE ON DELETE CASCADE;
 
@@ -579,16 +589,6 @@ ALTER TABLE ONLY "public"."knowledge_suggestion_doc_mappings"
 
 ALTER TABLE ONLY "public"."knowledge_suggestions"
     ADD CONSTRAINT "knowledge_suggestion_project_id_fkey" FOREIGN KEY ("project_id") REFERENCES "public"."projects"("id") ON UPDATE CASCADE ON DELETE RESTRICT;
-
-
-
-ALTER TABLE ONLY "public"."membership_invites"
-    ADD CONSTRAINT "membership_invites_invite_by_user_id_fkey" FOREIGN KEY ("invite_by_user_id") REFERENCES "public"."users"("id") ON DELETE CASCADE;
-
-
-
-ALTER TABLE ONLY "public"."membership_invites"
-    ADD CONSTRAINT "membership_invites_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "public"."organizations"("id") ON DELETE CASCADE;
 
 
 
@@ -982,6 +982,12 @@ GRANT ALL ON TABLE "public"."github_schema_file_paths" TO "service_role";
 
 
 
+GRANT ALL ON TABLE "public"."invitations" TO "anon";
+GRANT ALL ON TABLE "public"."invitations" TO "authenticated";
+GRANT ALL ON TABLE "public"."invitations" TO "service_role";
+
+
+
 GRANT ALL ON TABLE "public"."knowledge_suggestion_doc_mappings" TO "anon";
 GRANT ALL ON TABLE "public"."knowledge_suggestion_doc_mappings" TO "authenticated";
 GRANT ALL ON TABLE "public"."knowledge_suggestion_doc_mappings" TO "service_role";
@@ -991,12 +997,6 @@ GRANT ALL ON TABLE "public"."knowledge_suggestion_doc_mappings" TO "service_role
 GRANT ALL ON TABLE "public"."knowledge_suggestions" TO "anon";
 GRANT ALL ON TABLE "public"."knowledge_suggestions" TO "authenticated";
 GRANT ALL ON TABLE "public"."knowledge_suggestions" TO "service_role";
-
-
-
-GRANT ALL ON TABLE "public"."membership_invites" TO "anon";
-GRANT ALL ON TABLE "public"."membership_invites" TO "authenticated";
-GRANT ALL ON TABLE "public"."membership_invites" TO "service_role";
 
 
 
