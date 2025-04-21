@@ -295,12 +295,7 @@ const BreadcrumbItem = forwardRef<HTMLButtonElement, BreadcrumbItemProps>(
       : `${styles.breadcrumbText} ${styles.branchText}`
 
     return (
-      <button
-        ref={ref}
-        className={`${styles.breadcrumbItem} ${isActive ? styles.active : ''}`}
-        onClick={onClick}
-        type="button"
-      >
+      <>
         {isProject && (
           <div className={styles.breadcrumbIcon}>
             <ProjectIcon
@@ -327,7 +322,7 @@ const BreadcrumbItem = forwardRef<HTMLButtonElement, BreadcrumbItemProps>(
           strokeWidth={1.5}
           className={styles.chevronIcon}
         />
-      </button>
+      </>
     )
   },
 )
