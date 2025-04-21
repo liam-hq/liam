@@ -323,6 +323,7 @@ CREATE TABLE IF NOT EXISTS "public"."github_repositories" (
     "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
     "installation_id" integer NOT NULL,
     "organization_id" "uuid" NOT NULL,
+    "github_repository_identifier" integer NOT NULL,
     "created_at" timestamp(3) with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
     "updated_at" timestamp(3) with time zone NOT NULL
 );
@@ -396,6 +397,19 @@ CREATE TABLE IF NOT EXISTS "public"."users" (
 
 
 ALTER TABLE "public"."users" OWNER TO "postgres";
+
+
+CREATE TABLE IF NOT EXISTS "public"."github_repositories" (
+    "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
+    "installation_id" integer NOT NULL,
+    "organization_id" "uuid" NOT NULL,
+    "github_repository_identifier" integer NOT NULL,
+    "created_at" timestamp(3) with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    "updated_at" timestamp(3) with time zone NOT NULL
+);
+
+
+ALTER TABLE "public"."github_repositories" OWNER TO "postgres";
 
 
 ALTER TABLE ONLY "public"."github_doc_file_paths"
@@ -1193,3 +1207,8 @@ ALTER TABLE ONLY "public"."membership_invites"
 
 ALTER TABLE ONLY "public"."organization_members"
     ADD CONSTRAINT "organization_member_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "public"."organizations"("id") ON UPDATE CASCADE ON DELETE CASCADE;
+
+ALTER TABLE ONLY "public"."github_repositories"
+    ADD CONSTRAINT "github_repository_pkey" PRIMARY KEY ("id");
+
+CREATE UNIQUE INDEX "github_repository_github_repository_identifier_key" ON "public"."github_repositories" USING "btree" ("github_repository_identifier");
