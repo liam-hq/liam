@@ -220,7 +220,7 @@ ALTER TABLE "public"."membership_invites" OWNER TO "postgres";
 CREATE TABLE IF NOT EXISTS "public"."migrations" (
     "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
     "title" "text" NOT NULL,
-    "pull_request_id" "uuid" NOT NULL,
+    "project_id" "uuid" NOT NULL,
     "organization_id" "uuid" NOT NULL,
     "created_at" timestamp(3) with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
     "updated_at" timestamp(3) with time zone NOT NULL
@@ -602,7 +602,7 @@ ALTER TABLE ONLY "public"."membership_invites"
 
 
 ALTER TABLE ONLY "public"."migrations"
-    ADD CONSTRAINT "migration_github_pull_request_id_fkey" FOREIGN KEY ("github_pull_request_id") REFERENCES "public"."github_pull_requests"("id") ON UPDATE CASCADE ON DELETE RESTRICT;
+    ADD CONSTRAINT "migration_project_id_fkey" FOREIGN KEY ("project_id") REFERENCES "public"."projects"("id") ON UPDATE CASCADE ON DELETE RESTRICT;
 
 
 
