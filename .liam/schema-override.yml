@@ -3,9 +3,10 @@ overrides:
     GitHub:
       name: GitHub
       tables:
-        - github_repositories
-        - github_pull_requests
-        - github_pull_request_comments
+        - repositories
+        - pull_requests
+        - github_schema_file_paths
+        - github_doc_file_paths
       comment: "Tables related to GitHub. All tables in this group should have a GitHub prefix. External tables must not depend on these tables (e.g., no pullRequestId foreign keys in tables outside this group)."
     Organization:
       name: Organization
@@ -16,3 +17,11 @@ overrides:
         - users
       comment: ""
   tables:
+    repositories:
+      comment: "TODO: Rename to github_repositories to match the github_ prefix pattern of this table group"
+    pull_requests:
+      comment: "TODO: Rename to github_pull_requests to match the github_ prefix pattern of this table group. Should be updated to have migration_id instead of migrations having pull_request_id."
+    migrations:
+      comment: "Should have project_id instead of pull_request_id to remove GitHub dependency"
+    overall_reviews:
+      comment: "Should have migration_id instead of pull_request_id to remove GitHub dependency"
