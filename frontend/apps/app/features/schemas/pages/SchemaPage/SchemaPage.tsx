@@ -1,5 +1,4 @@
 import path from 'node:path'
-import { TabsContent, TabsRoot } from '@/components'
 import { createClient } from '@/libs/db/server'
 import { parse, setPrismWasmUrl } from '@liam-hq/db-structure/parser'
 import { getFileContent } from '@liam-hq/github'
@@ -7,11 +6,7 @@ import * as Sentry from '@sentry/nextjs'
 import { cookies } from 'next/headers'
 import { notFound } from 'next/navigation'
 import type { ComponentProps, FC } from 'react'
-import styles from './SchemaPage.module.css'
 import { ERDEditor } from './components/ERDEditor'
-import { OverrideEditor } from './components/OverrideEditor'
-import { SchemaHeader } from './components/SchemaHeader'
-import { DEFAULT_SCHEMA_TAB, SCHEMA_TAB } from './constants'
 import { safeApplySchemaOverride } from './utils/safeApplySchemaOverride'
 
 type Params = {
@@ -166,14 +161,9 @@ export const SchemaPage: FC<Props> = async ({
   })
 
   return (
-    <TabsRoot defaultValue={DEFAULT_SCHEMA_TAB} className={styles.wrapper}>
-      <SchemaHeader />
-      <TabsContent value={SCHEMA_TAB.ERD}>
-        <ERDEditor {...contentProps} />
-      </TabsContent>
-      <TabsContent value={SCHEMA_TAB.EDITOR}>
-        <OverrideEditor />
-      </TabsContent>
-    </TabsRoot>
+
+    <>
+      <ERDEditor {...contentProps} />
+    </>
   )
 }
