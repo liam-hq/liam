@@ -265,7 +265,6 @@ ALTER TABLE "public"."overall_review_knowledge_suggestion_mappings" OWNER TO "po
 
 CREATE TABLE IF NOT EXISTS "public"."overall_reviews" (
     "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
-    "project_id" "uuid",
     "migration_id" "uuid" NOT NULL,
     "organization_id" "uuid" NOT NULL,
     "review_comment" "text",
@@ -623,11 +622,6 @@ ALTER TABLE ONLY "public"."overall_review_knowledge_suggestion_mappings"
 
 ALTER TABLE ONLY "public"."overall_review_knowledge_suggestion_mappings"
     ADD CONSTRAINT "overall_review_knowledge_suggestion_mapping_overall_review_id_f" FOREIGN KEY ("overall_review_id") REFERENCES "public"."overall_reviews"("id") ON UPDATE CASCADE ON DELETE CASCADE;
-
-
-
-ALTER TABLE ONLY "public"."overall_reviews"
-    ADD CONSTRAINT "overall_review_project_id_fkey" FOREIGN KEY ("project_id") REFERENCES "public"."projects"("id") ON UPDATE CASCADE ON DELETE SET NULL;
 
 
 
