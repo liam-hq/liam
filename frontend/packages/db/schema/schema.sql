@@ -266,7 +266,7 @@ ALTER TABLE "public"."overall_review_knowledge_suggestion_mappings" OWNER TO "po
 CREATE TABLE IF NOT EXISTS "public"."overall_reviews" (
     "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
     "project_id" "uuid",
-    "pull_request_id" "uuid" NOT NULL,
+    "migration_id" "uuid" NOT NULL,
     "organization_id" "uuid" NOT NULL,
     "review_comment" "text",
     "reviewed_at" timestamp(3) with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
@@ -632,7 +632,7 @@ ALTER TABLE ONLY "public"."overall_reviews"
 
 
 ALTER TABLE ONLY "public"."overall_reviews"
-    ADD CONSTRAINT "overall_review_github_pull_request_id_fkey" FOREIGN KEY ("github_pull_request_id") REFERENCES "public"."github_pull_requests"("id") ON UPDATE CASCADE ON DELETE RESTRICT;
+    ADD CONSTRAINT "overall_review_migration_id_fkey" FOREIGN KEY ("migration_id") REFERENCES "public"."migrations"("id") ON UPDATE CASCADE ON DELETE RESTRICT;
 
 
 
