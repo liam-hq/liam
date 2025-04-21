@@ -157,7 +157,7 @@ CREATE TABLE IF NOT EXISTS "public"."doc_file_paths" (
 ALTER TABLE "public"."doc_file_paths" OWNER TO "postgres";
 
 
-CREATE TABLE IF NOT EXISTS "public"."github_schema_file_paths" (
+CREATE TABLE IF NOT EXISTS "public"."schema_file_paths" (
     "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
     "path" "text" NOT NULL,
     "project_id" "uuid" NOT NULL,
@@ -168,7 +168,7 @@ CREATE TABLE IF NOT EXISTS "public"."github_schema_file_paths" (
 );
 
 
-ALTER TABLE "public"."github_schema_file_paths" OWNER TO "postgres";
+ALTER TABLE "public"."schema_file_paths" OWNER TO "postgres";
 
 
 CREATE TABLE IF NOT EXISTS "public"."knowledge_suggestion_doc_mappings" (
@@ -414,13 +414,13 @@ ALTER TABLE ONLY "public"."doc_file_paths"
 
 
 
-ALTER TABLE ONLY "public"."github_schema_file_paths"
-    ADD CONSTRAINT "github_schema_file_path_path_project_id_key" UNIQUE ("path", "project_id");
+ALTER TABLE ONLY "public"."schema_file_paths"
+    ADD CONSTRAINT "schema_file_path_path_project_id_key" UNIQUE ("path", "project_id");
 
 
 
-ALTER TABLE ONLY "public"."github_schema_file_paths"
-    ADD CONSTRAINT "github_schema_file_path_pkey" PRIMARY KEY ("id");
+ALTER TABLE ONLY "public"."schema_file_paths"
+    ADD CONSTRAINT "schema_file_path_pkey" PRIMARY KEY ("id");
 
 
 
@@ -509,7 +509,7 @@ CREATE UNIQUE INDEX "doc_file_path_path_project_id_key" ON "public"."doc_file_pa
 
 
 
-CREATE UNIQUE INDEX "github_schema_file_path_project_id_key" ON "public"."github_schema_file_paths" USING "btree" ("project_id");
+CREATE UNIQUE INDEX "schema_file_path_project_id_key" ON "public"."schema_file_paths" USING "btree" ("project_id");
 
 
 
@@ -974,9 +974,9 @@ GRANT ALL ON TABLE "public"."doc_file_paths" TO "service_role";
 
 
 
-GRANT ALL ON TABLE "public"."github_schema_file_paths" TO "anon";
-GRANT ALL ON TABLE "public"."github_schema_file_paths" TO "authenticated";
-GRANT ALL ON TABLE "public"."github_schema_file_paths" TO "service_role";
+GRANT ALL ON TABLE "public"."schema_file_paths" TO "anon";
+GRANT ALL ON TABLE "public"."schema_file_paths" TO "authenticated";
+GRANT ALL ON TABLE "public"."schema_file_paths" TO "service_role";
 
 
 
@@ -1144,8 +1144,8 @@ RESET ALL;
 ALTER TABLE ONLY "public"."doc_file_paths"
     ADD CONSTRAINT "doc_file_path_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "public"."organizations"("id") ON UPDATE CASCADE ON DELETE CASCADE;
 
-ALTER TABLE ONLY "public"."github_schema_file_paths"
-    ADD CONSTRAINT "github_schema_file_path_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "public"."organizations"("id") ON UPDATE CASCADE ON DELETE CASCADE;
+ALTER TABLE ONLY "public"."schema_file_paths"
+    ADD CONSTRAINT "schema_file_path_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "public"."organizations"("id") ON UPDATE CASCADE ON DELETE CASCADE;
 
 ALTER TABLE ONLY "public"."knowledge_suggestion_doc_mappings"
     ADD CONSTRAINT "knowledge_suggestion_doc_mapping_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "public"."organizations"("id") ON UPDATE CASCADE ON DELETE CASCADE;
