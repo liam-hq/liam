@@ -15,4 +15,4 @@ overrides:
         - organization_members
         - users
       comment: ""
-  tables:
+  tables: {}
