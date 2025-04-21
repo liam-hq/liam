@@ -5,7 +5,7 @@ import styles from './ProjectNewPage.module.css'
 
 type Props = {
   installations: Installation[]
-  organizationId?: string
+  organizationId: string
 }
 
 export const ProjectNewPage: FC<Props> = ({

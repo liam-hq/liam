@@ -7,19 +7,18 @@ import {
   DropdownMenuRoot,
   DropdownMenuTrigger,
 } from '@/components'
-import { addProject } from '@/features/projects/actions'
-import { createClient } from '@/libs/db/client'
-import { getRepositoriesByInstallationId } from '@liam-hq/github'
-import type { Installation, Repository } from '@liam-hq/github'
-import { type FC, useCallback, useEffect, useState } from 'react'
+import type { Installation } from '@liam-hq/github'
+import { type FC, useState } from 'react'
 import { P, match } from 'ts-pattern'
-import { RepositoryItem } from '../RepositoryItem'
 import styles from './InstallationSelector.module.css'
+import { RepositoriesPanel } from './RepositoriesPanel'
 
 type Props = {
   installations: Installation[]
-  organizationId?: string
+  organizationId: string
 }
+
+const githubAppUrl = process.env.NEXT_PUBLIC_GITHUB_APP_URL
 
 export const InstallationSelector: FC<Props> = ({
   installations,
@@ -27,73 +26,10 @@ export const InstallationSelector: FC<Props> = ({
 }) => {
   const [selectedInstallation, setSelectedInstallation] =
     useState<Installation | null>(null)
-  const [repositories, setRepositories] = useState<Repository[]>([])
-  const [loading, setLoading] = useState(false)
-  const [isAddingProject, setIsAddingProject] = useState(false)
-
-  const githubAppUrl = process.env.NEXT_PUBLIC_GITHUB_APP_URL
-
-  useEffect(() => {
-    if (selectedInstallation) {
-      fetchRepositories(selectedInstallation.id)
-    }
-  }, [selectedInstallation])
-
-  const fetchRepositories = async (installationId: number) => {
-    setLoading(true)
-    try {
-      const supabase = await createClient()
-      const { data } = await supabase.auth.getSession()
-      const session = data.session
-
-      if (session === null) {
-        throw new Error('')
-      }
-
-      const res = await getRepositoriesByInstallationId(
-        data.session,
-        installationId,
-      )
-      setRepositories(res.repositories)
-    } catch (error) {
-      console.error('Error fetching repositories:', error)
-    } finally {
-      setLoading(false)
-    }
-  }
 
   const handleSelectInstallation = (installation: Installation) => {
     setSelectedInstallation(installation)
   }
-
-  const handleClick = useCallback(
-    async (repository: Repository) => {
-      try {
-        setIsAddingProject(true)
-
-        const formData = new FormData()
-        formData.set('projectName', repository.name)
-        formData.set('repositoryName', repository.name)
-        formData.set('repositoryOwner', repository.owner.login)
-        formData.set('repositoryIdentifier', repository.id.toString())
-        formData.set(
-          'installationId',
-          selectedInstallation?.id.toString() || '',
-        )
-
-        if (organizationId) {
-          formData.set('organizationId', organizationId.toString())
-        }
-
-        await addProject(formData)
-        // This point is not reached because a redirect occurs on success
-      } catch (error) {
-        console.error('Error adding project:', error)
-        setIsAddingProject(false)
-      }
-    },
-    [selectedInstallation, organizationId],
-  )
 
   return (
     <>
@@ -136,24 +72,11 @@ export const InstallationSelector: FC<Props> = ({
         </DropdownMenuRoot>
       </div>
 
-      {loading && <div>Loading repositories...</div>}
-
-      {!loading && repositories.length > 0 && (
-        <div className={styles.repositoriesList}>
-          <h3>Repositories</h3>
-          {repositories.map((repo) => (
-            <RepositoryItem
-              key={repo.id}
-              name={repo.name}
-              onClick={() => handleClick(repo)}
-              isLoading={isAddingProject}
-            />
-          ))}
-        </div>
-      )}
-
-      {!loading && selectedInstallation && repositories.length === 0 && (
-        <div>No repositories found</div>
+      {selectedInstallation && (
+        <RepositoriesPanel
+          installationId={selectedInstallation.id}
+          organizationId={organizationId}
+        />
       )}
     </>
   )
