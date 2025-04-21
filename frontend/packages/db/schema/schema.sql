@@ -143,7 +143,7 @@ SET default_tablespace = '';
 SET default_table_access_method = "heap";
 
 
-CREATE TABLE IF NOT EXISTS "public"."github_doc_file_paths" (
+CREATE TABLE IF NOT EXISTS "public"."doc_file_paths" (
     "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
     "path" "text" NOT NULL,
     "is_review_enabled" boolean DEFAULT true NOT NULL,
@@ -154,7 +154,7 @@ CREATE TABLE IF NOT EXISTS "public"."github_doc_file_paths" (
 );
 
 
-ALTER TABLE "public"."github_doc_file_paths" OWNER TO "postgres";
+ALTER TABLE "public"."doc_file_paths" OWNER TO "postgres";
 
 
 CREATE TABLE IF NOT EXISTS "public"."github_schema_file_paths" (
@@ -409,8 +409,8 @@ CREATE TABLE IF NOT EXISTS "public"."github_repositories" (
 ALTER TABLE "public"."github_repositories" OWNER TO "postgres";
 
 
-ALTER TABLE ONLY "public"."github_doc_file_paths"
-    ADD CONSTRAINT "github_doc_file_path_pkey" PRIMARY KEY ("id");
+ALTER TABLE ONLY "public"."doc_file_paths"
+    ADD CONSTRAINT "doc_file_path_pkey" PRIMARY KEY ("id");
 
 
 
@@ -505,7 +505,7 @@ ALTER TABLE ONLY "public"."users"
 
 
 
-CREATE UNIQUE INDEX "github_doc_file_path_path_project_id_key" ON "public"."github_doc_file_paths" USING "btree" ("path", "project_id");
+CREATE UNIQUE INDEX "doc_file_path_path_project_id_key" ON "public"."doc_file_paths" USING "btree" ("path", "project_id");
 
 
 
@@ -565,18 +565,18 @@ CREATE UNIQUE INDEX "github_pull_request_repository_id_github_pull_request_ident
 
 
 
-ALTER TABLE ONLY "public"."github_doc_file_paths"
-    ADD CONSTRAINT "github_doc_file_path_project_id_fkey" FOREIGN KEY ("project_id") REFERENCES "public"."projects"("id") ON UPDATE CASCADE ON DELETE RESTRICT;
+ALTER TABLE ONLY "public"."doc_file_paths"
+    ADD CONSTRAINT "doc_file_path_project_id_fkey" FOREIGN KEY ("project_id") REFERENCES "public"."projects"("id") ON UPDATE CASCADE ON DELETE RESTRICT;
 
 
 
-ALTER TABLE ONLY "public"."github_schema_file_paths"
-    ADD CONSTRAINT "github_schema_file_path_project_id_fkey" FOREIGN KEY ("project_id") REFERENCES "public"."projects"("id") ON UPDATE CASCADE ON DELETE RESTRICT;
+ALTER TABLE ONLY "public"."doc_file_paths"
+    ADD CONSTRAINT "doc_file_path_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "public"."organizations"("id") ON UPDATE CASCADE ON DELETE CASCADE;
 
 
 
 ALTER TABLE ONLY "public"."knowledge_suggestion_doc_mappings"
-    ADD CONSTRAINT "knowledge_suggestion_doc_mapping_github_doc_file_path_id_fkey" FOREIGN KEY ("github_doc_file_path_id") REFERENCES "public"."github_doc_file_paths"("id") ON UPDATE CASCADE ON DELETE CASCADE;
+    ADD CONSTRAINT "knowledge_suggestion_doc_mapping_doc_file_path_id_fkey" FOREIGN KEY ("github_doc_file_path_id") REFERENCES "public"."doc_file_paths"("id") ON UPDATE CASCADE ON DELETE CASCADE;
 
 
 
@@ -968,9 +968,9 @@ GRANT ALL ON FUNCTION "public"."sync_existing_users"() TO "service_role";
 
 
 
-GRANT ALL ON TABLE "public"."github_doc_file_paths" TO "anon";
-GRANT ALL ON TABLE "public"."github_doc_file_paths" TO "authenticated";
-GRANT ALL ON TABLE "public"."github_doc_file_paths" TO "service_role";
+GRANT ALL ON TABLE "public"."doc_file_paths" TO "anon";
+GRANT ALL ON TABLE "public"."doc_file_paths" TO "authenticated";
+GRANT ALL ON TABLE "public"."doc_file_paths" TO "service_role";
 
 
 
@@ -1141,8 +1141,8 @@ ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT ALL ON TAB
 
 RESET ALL;
 
-ALTER TABLE ONLY "public"."github_doc_file_paths"
-    ADD CONSTRAINT "github_doc_file_path_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "public"."organizations"("id") ON UPDATE CASCADE ON DELETE CASCADE;
+ALTER TABLE ONLY "public"."doc_file_paths"
+    ADD CONSTRAINT "doc_file_path_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "public"."organizations"("id") ON UPDATE CASCADE ON DELETE CASCADE;
 
 ALTER TABLE ONLY "public"."github_schema_file_paths"
     ADD CONSTRAINT "github_schema_file_path_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "public"."organizations"("id") ON UPDATE CASCADE ON DELETE CASCADE;
