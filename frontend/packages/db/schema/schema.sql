@@ -1202,3 +1202,6 @@ ALTER TABLE ONLY "public"."github_repositories"
     ADD CONSTRAINT "github_repository_pkey" PRIMARY KEY ("id");
 
 CREATE UNIQUE INDEX "github_repository_github_repository_identifier_key" ON "public"."github_repositories" USING "btree" ("github_repository_identifier");
+
+ALTER TABLE ONLY "public"."github_pull_requests"
+    ADD CONSTRAINT "github_pull_request_repository_id_fkey" FOREIGN KEY ("repository_id") REFERENCES "public"."github_repositories"("id") ON UPDATE CASCADE ON DELETE RESTRICT;
