@@ -1215,3 +1215,16 @@ CREATE TABLE IF NOT EXISTS "public"."github_pull_request_comments" (
 );
 
 ALTER TABLE "public"."github_pull_request_comments" OWNER TO "postgres";
+
+ALTER TABLE ONLY "public"."github_pull_request_comments"
+    ADD CONSTRAINT "github_pull_request_comment_pkey" PRIMARY KEY ("id");
+
+ALTER TABLE ONLY "public"."github_pull_request_comments"
+    ADD CONSTRAINT "github_pull_request_comment_pull_request_id_fkey" FOREIGN KEY ("github_pull_request_id") REFERENCES "public"."github_pull_requests"("id") ON UPDATE CASCADE ON DELETE CASCADE;
+
+ALTER TABLE ONLY "public"."github_pull_request_comments"
+    ADD CONSTRAINT "github_pull_request_comment_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "public"."organizations"("id") ON UPDATE CASCADE ON DELETE CASCADE;
+
+GRANT ALL ON TABLE "public"."github_pull_request_comments" TO "anon";
+GRANT ALL ON TABLE "public"."github_pull_request_comments" TO "authenticated";
+GRANT ALL ON TABLE "public"."github_pull_request_comments" TO "service_role";
