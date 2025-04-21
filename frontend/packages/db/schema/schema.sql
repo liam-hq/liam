@@ -1147,6 +1147,9 @@ ALTER TABLE ONLY "public"."doc_file_paths"
 ALTER TABLE ONLY "public"."schema_file_paths"
     ADD CONSTRAINT "schema_file_path_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "public"."organizations"("id") ON UPDATE CASCADE ON DELETE CASCADE;
 
+ALTER TABLE ONLY "public"."schema_file_paths"
+    ADD CONSTRAINT "schema_file_path_project_id_fkey" FOREIGN KEY ("project_id") REFERENCES "public"."projects"("id") ON UPDATE CASCADE ON DELETE CASCADE;
+
 ALTER TABLE ONLY "public"."knowledge_suggestion_doc_mappings"
     ADD CONSTRAINT "knowledge_suggestion_doc_mapping_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "public"."organizations"("id") ON UPDATE CASCADE ON DELETE CASCADE;
 
@@ -1199,3 +1202,16 @@ CREATE UNIQUE INDEX "github_repository_github_repository_identifier_key" ON "pub
 
 ALTER TABLE ONLY "public"."github_pull_requests"
     ADD CONSTRAINT "github_pull_request_repository_id_fkey" FOREIGN KEY ("repository_id") REFERENCES "public"."github_repositories"("id") ON UPDATE CASCADE ON DELETE RESTRICT;
+
+---
+
+CREATE TABLE IF NOT EXISTS "public"."github_pull_request_comments" (
+    "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
+    "github_pull_request_id" "uuid" NOT NULL,
+    "github_comment_identifier" bigint NOT NULL,
+    "organization_id" "uuid" NOT NULL,
+    "created_at" timestamp(3) with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    "updated_at" timestamp(3) with time zone NOT NULL
+);
+
+ALTER TABLE "public"."github_pull_request_comments" OWNER TO "postgres";
