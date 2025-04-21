@@ -113,12 +113,8 @@ CREATE OR REPLACE FUNCTION "public"."handle_new_user"() RETURNS "trigger"
     SET "search_path" TO ''
     AS $$
 BEGIN
-  INSERT INTO public."users" (id, name, email)
-  VALUES (
-    NEW.id, 
-    COALESCE(NEW.raw_user_meta_data->>'name', NEW.email),
-    NEW.email
-  );
+  INSERT INTO public."users" (id)
+  VALUES (NEW.id);
   RETURN NEW;
 END;
 $$;
@@ -131,11 +127,8 @@ CREATE OR REPLACE FUNCTION "public"."sync_existing_users"() RETURNS "void"
     LANGUAGE "plpgsql" SECURITY DEFINER
     AS $$
 BEGIN
-  INSERT INTO public."users" (id, name, email)
-  SELECT 
-    au.id,
-    COALESCE(au.raw_user_meta_data->>'name', au.email),
-    au.email
+  INSERT INTO public."users" (id)
+  SELECT au.id
   FROM auth.users au
   LEFT JOIN public."users" pu ON au.id = pu.id
   WHERE pu.id IS NULL;
@@ -387,9 +380,7 @@ ALTER TABLE "public"."review_suggestion_snippets" OWNER TO "postgres";
 
 
 CREATE TABLE IF NOT EXISTS "public"."users" (
-    "id" "uuid" NOT NULL,
-    "name" "text" NOT NULL,
-    "email" "text" NOT NULL
+    "id" "uuid" NOT NULL
 );
 
 
@@ -488,11 +479,6 @@ ALTER TABLE ONLY "public"."review_feedbacks"
 
 ALTER TABLE ONLY "public"."review_suggestion_snippets"
     ADD CONSTRAINT "review_suggestion_snippet_pkey" PRIMARY KEY ("id");
-
-
-
-ALTER TABLE ONLY "public"."users"
-    ADD CONSTRAINT "user_email_key" UNIQUE ("email");
 
 
 
