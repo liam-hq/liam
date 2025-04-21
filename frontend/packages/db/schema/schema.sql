@@ -305,18 +305,17 @@ CREATE TABLE IF NOT EXISTS "public"."projects" (
 ALTER TABLE "public"."projects" OWNER TO "postgres";
 
 
-CREATE TABLE IF NOT EXISTS "public"."pull_requests" (
+CREATE TABLE IF NOT EXISTS "public"."github_pull_requests" (
     "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
     "pull_number" bigint NOT NULL,
-    "comment_id" bigint,
+    "github_pull_request_identifier" integer NOT NULL,
     "organization_id" "uuid" NOT NULL,
     "created_at" timestamp(3) with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
     "updated_at" timestamp(3) with time zone NOT NULL,
     "repository_id" "uuid" NOT NULL
 );
 
-
-ALTER TABLE "public"."pull_requests" OWNER TO "postgres";
+ALTER TABLE "public"."github_pull_requests" OWNER TO "postgres";
 
 
 CREATE TABLE IF NOT EXISTS "public"."github_repositories" (
@@ -327,7 +326,6 @@ CREATE TABLE IF NOT EXISTS "public"."github_repositories" (
     "created_at" timestamp(3) with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
     "updated_at" timestamp(3) with time zone NOT NULL
 );
-
 
 ALTER TABLE "public"."github_repositories" OWNER TO "postgres";
 
@@ -481,16 +479,12 @@ ALTER TABLE ONLY "public"."project_repository_mappings"
     ADD CONSTRAINT "project_repository_mapping_pkey" PRIMARY KEY ("id");
 
 
-
-ALTER TABLE ONLY "public"."pull_requests"
-    ADD CONSTRAINT "pull_request_pkey" PRIMARY KEY ("id");
-
+ALTER TABLE ONLY "public"."github_pull_requests"
+    ADD CONSTRAINT "github_pull_request_pkey" PRIMARY KEY ("id");
 
 
 ALTER TABLE ONLY "public"."github_repositories"
     ADD CONSTRAINT "github_repository_pkey" PRIMARY KEY ("id");
-
-
 
 ALTER TABLE ONLY "public"."review_feedback_comments"
     ADD CONSTRAINT "review_feedback_comment_pkey" PRIMARY KEY ("id");
@@ -560,11 +554,15 @@ CREATE UNIQUE INDEX "project_repository_mapping_project_id_repository_id_key" ON
 
 
 
-CREATE UNIQUE INDEX "pull_request_repository_id_pull_number_key" ON "public"."pull_requests" USING "btree" ("repository_id", "pull_number");
+CREATE UNIQUE INDEX "pull_request_repository_id_pull_number_key" ON "public"."github_pull_requests" USING "btree" ("repository_id", "pull_number");
 
 
 
 CREATE UNIQUE INDEX "repository_owner_name_key" ON "public"."github_repositories" USING "btree" ("installation_id", "organization_id");
+
+
+
+CREATE UNIQUE INDEX "github_pull_request_repository_id_github_pull_request_identifier_key" ON "public"."github_pull_requests" USING "btree" ("repository_id", "github_pull_request_identifier");
 
 
 
@@ -604,7 +602,7 @@ ALTER TABLE ONLY "public"."membership_invites"
 
 
 ALTER TABLE ONLY "public"."migrations"
-    ADD CONSTRAINT "migration_pull_request_id_fkey" FOREIGN KEY ("pull_request_id") REFERENCES "public"."pull_requests"("id") ON UPDATE CASCADE ON DELETE RESTRICT;
+    ADD CONSTRAINT "migration_github_pull_request_id_fkey" FOREIGN KEY ("github_pull_request_id") REFERENCES "public"."github_pull_requests"("id") ON UPDATE CASCADE ON DELETE RESTRICT;
 
 
 
@@ -634,7 +632,7 @@ ALTER TABLE ONLY "public"."overall_reviews"
 
 
 ALTER TABLE ONLY "public"."overall_reviews"
-    ADD CONSTRAINT "overall_review_pull_request_id_fkey" FOREIGN KEY ("pull_request_id") REFERENCES "public"."pull_requests"("id") ON UPDATE CASCADE ON DELETE RESTRICT;
+    ADD CONSTRAINT "overall_review_github_pull_request_id_fkey" FOREIGN KEY ("github_pull_request_id") REFERENCES "public"."github_pull_requests"("id") ON UPDATE CASCADE ON DELETE RESTRICT;
 
 
 
@@ -650,11 +648,6 @@ ALTER TABLE ONLY "public"."project_repository_mappings"
 
 ALTER TABLE ONLY "public"."project_repository_mappings"
     ADD CONSTRAINT "project_repository_mapping_repository_id_fkey" FOREIGN KEY ("repository_id") REFERENCES "public"."github_repositories"("id") ON UPDATE CASCADE ON DELETE RESTRICT;
-
-
-
-ALTER TABLE ONLY "public"."pull_requests"
-    ADD CONSTRAINT "pull_request_repository_id_fkey" FOREIGN KEY ("repository_id") REFERENCES "public"."github_repositories"("id") ON UPDATE CASCADE ON DELETE RESTRICT;
 
 
 
@@ -1052,17 +1045,14 @@ GRANT ALL ON TABLE "public"."projects" TO "authenticated";
 GRANT ALL ON TABLE "public"."projects" TO "service_role";
 
 
-
-GRANT ALL ON TABLE "public"."pull_requests" TO "anon";
-GRANT ALL ON TABLE "public"."pull_requests" TO "authenticated";
-GRANT ALL ON TABLE "public"."pull_requests" TO "service_role";
-
+GRANT ALL ON TABLE "public"."github_pull_requests" TO "anon";
+GRANT ALL ON TABLE "public"."github_pull_requests" TO "authenticated";
+GRANT ALL ON TABLE "public"."github_pull_requests" TO "service_role";
 
 
 GRANT ALL ON TABLE "public"."github_repositories" TO "anon";
 GRANT ALL ON TABLE "public"."github_repositories" TO "authenticated";
 GRANT ALL ON TABLE "public"."github_repositories" TO "service_role";
-
 
 
 GRANT ALL ON TABLE "public"."review_feedback_comments" TO "anon";
@@ -1181,8 +1171,8 @@ ALTER TABLE ONLY "public"."overall_reviews"
 ALTER TABLE ONLY "public"."project_repository_mappings"
     ADD CONSTRAINT "project_repository_mapping_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "public"."organizations"("id") ON UPDATE CASCADE ON DELETE CASCADE;
 
-ALTER TABLE ONLY "public"."pull_requests"
-    ADD CONSTRAINT "pull_request_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "public"."organizations"("id") ON UPDATE CASCADE ON DELETE CASCADE;
+ALTER TABLE ONLY "public"."github_pull_requests"
+    ADD CONSTRAINT "github_pull_request_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "public"."organizations"("id") ON UPDATE CASCADE ON DELETE CASCADE;
 
 ALTER TABLE ONLY "public"."github_repositories"
     ADD CONSTRAINT "github_repository_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "public"."organizations"("id") ON UPDATE CASCADE ON DELETE CASCADE;
