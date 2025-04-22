@@ -31,7 +31,7 @@
     "dotenv": "16.5.0",
     "flags": "3.2.0",
     "langfuse": "3.37.2",
-    "langfuse-langchain": "3.37.1",
+    "langfuse-langchain": "3.37.2",
     "next": "15.3.0",
     "react": "18.3.1",
     "react-dom": "18",

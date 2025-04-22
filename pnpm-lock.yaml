@@ -126,8 +126,8 @@ importers:
         specifier: 3.37.2
         version: 3.37.2
       langfuse-langchain:
-        specifier: 3.37.1
-        version: 3.37.1(langchain@0.3.21(@langchain/core@0.3.45(openai@4.94.0(ws@8.18.1)(zod@3.23.8)))(cheerio@1.0.0)(handlebars@4.7.8)(openai@4.94.0(ws@8.18.1)(zod@3.23.8))(ws@8.18.1))
+        specifier: 3.37.2
+        version: 3.37.2(langchain@0.3.21(@langchain/core@0.3.45(openai@4.94.0(ws@8.18.1)(zod@3.23.8)))(cheerio@1.0.0)(handlebars@4.7.8)(openai@4.94.0(ws@8.18.1)(zod@3.23.8))(ws@8.18.1))
       next:
         specifier: 15.3.0
         version: 15.3.0(@opentelemetry/api@1.9.0)(@playwright/test@1.51.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -577,8 +577,8 @@ importers:
         specifier: 3.37.2
         version: 3.37.2
       langfuse-langchain:
-        specifier: 3.37.1
-        version: 3.37.1(langchain@0.3.21(@langchain/core@0.3.45(openai@4.94.0(ws@8.18.1)(zod@3.24.3)))(cheerio@1.0.0)(handlebars@4.7.8)(openai@4.94.0(ws@8.18.1)(zod@3.24.3))(ws@8.18.1))
+        specifier: 3.37.2
+        version: 3.37.2(langchain@0.3.21(@langchain/core@0.3.45(openai@4.94.0(ws@8.18.1)(zod@3.24.3)))(cheerio@1.0.0)(handlebars@4.7.8)(openai@4.94.0(ws@8.18.1)(zod@3.24.3))(ws@8.18.1))
       minimatch:
         specifier: 10.0.1
         version: 10.0.1
@@ -650,8 +650,8 @@ importers:
         specifier: 3.37.2
         version: 3.37.2
       langfuse-langchain:
-        specifier: 3.37.1
-        version: 3.37.1(langchain@0.3.21(@langchain/core@0.3.45(openai@4.94.0(ws@8.18.1)(zod@3.24.3)))(cheerio@1.0.0)(handlebars@4.7.8)(openai@4.94.0(ws@8.18.1)(zod@3.24.3))(ws@8.18.1))
+        specifier: 3.37.2
+        version: 3.37.2(langchain@0.3.21(@langchain/core@0.3.45(openai@4.94.0(ws@8.18.1)(zod@3.24.3)))(cheerio@1.0.0)(handlebars@4.7.8)(openai@4.94.0(ws@8.18.1)(zod@3.24.3))(ws@8.18.1))
       tsx:
         specifier: 4.19.3
         version: 4.19.3
@@ -5443,16 +5443,12 @@ packages:
       typeorm:
         optional: true
 
-  langfuse-core@3.37.1:
-    resolution: {integrity: sha512-YfCegzOmy8Ex1SQg2eCO5a77YwVAJZ7hVUUbfIx+ncREEM9Smk4FrveNG0bOKS3n9C4TJZpX12DfQ+819gmHtw==}
-    engines: {node: '>=18'}
-
   langfuse-core@3.37.2:
     resolution: {integrity: sha512-3iFz1UZzKDi9GEjIRRSSqcKbusmB17uR9qYxMR1BHQYuBkQv2wIV+HI793hWh3tmc6q2pmqPMjtJdoFVBhucDA==}
     engines: {node: '>=18'}
 
-  langfuse-langchain@3.37.1:
-    resolution: {integrity: sha512-R8cb5nHjAJN0SxFlq2Px8Rybl7wZcDQ3djIg7msHhjStHF2wsXWMR7tFbZ9m1MsPCmQVqGuW2eg0eR3NAZdlbg==}
+  langfuse-langchain@3.37.2:
+    resolution: {integrity: sha512-hVxoDitHXzlZ4Hrb6IpSOvd2dZSK1iOlK1KWBZsOAHAr451GGdGYm1WFLpk5T2CIt2yl1iXYAzk/NvUwU6C/uA==}
     engines: {node: '>=18'}
     peerDependencies:
       langchain: '>=0.0.157 <0.4.0'
@@ -13317,25 +13313,21 @@ snapshots:
       - openai
       - ws
 
-  langfuse-core@3.37.1:
-    dependencies:
-      mustache: 4.2.0
-
   langfuse-core@3.37.2:
     dependencies:
       mustache: 4.2.0
 
-  langfuse-langchain@3.37.1(langchain@0.3.21(@langchain/core@0.3.45(openai@4.94.0(ws@8.18.1)(zod@3.23.8)))(cheerio@1.0.0)(handlebars@4.7.8)(openai@4.94.0(ws@8.18.1)(zod@3.23.8))(ws@8.18.1)):
+  langfuse-langchain@3.37.2(langchain@0.3.21(@langchain/core@0.3.45(openai@4.94.0(ws@8.18.1)(zod@3.23.8)))(cheerio@1.0.0)(handlebars@4.7.8)(openai@4.94.0(ws@8.18.1)(zod@3.23.8))(ws@8.18.1)):
     dependencies:
       langchain: 0.3.21(@langchain/core@0.3.45(openai@4.94.0(ws@8.18.1)(zod@3.23.8)))(cheerio@1.0.0)(handlebars@4.7.8)(openai@4.94.0(ws@8.18.1)(zod@3.23.8))(ws@8.18.1)
       langfuse: 3.37.2
-      langfuse-core: 3.37.1
+      langfuse-core: 3.37.2
 
-  langfuse-langchain@3.37.1(langchain@0.3.21(@langchain/core@0.3.45(openai@4.94.0(ws@8.18.1)(zod@3.24.3)))(cheerio@1.0.0)(handlebars@4.7.8)(openai@4.94.0(ws@8.18.1)(zod@3.24.3))(ws@8.18.1)):
+  langfuse-langchain@3.37.2(langchain@0.3.21(@langchain/core@0.3.45(openai@4.94.0(ws@8.18.1)(zod@3.24.3)))(cheerio@1.0.0)(handlebars@4.7.8)(openai@4.94.0(ws@8.18.1)(zod@3.24.3))(ws@8.18.1)):
     dependencies:
       langchain: 0.3.21(@langchain/core@0.3.45(openai@4.94.0(ws@8.18.1)(zod@3.24.3)))(cheerio@1.0.0)(handlebars@4.7.8)(openai@4.94.0(ws@8.18.1)(zod@3.24.3))(ws@8.18.1)
       langfuse: 3.37.2
-      langfuse-core: 3.37.1
+      langfuse-core: 3.37.2
 
   langfuse@3.37.2:
     dependencies:

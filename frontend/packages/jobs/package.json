@@ -14,7 +14,7 @@
     "@trigger.dev/sdk": "3.3.17",
     "@valibot/to-json-schema": "1.0.0",
     "langfuse": "3.37.2",
-    "langfuse-langchain": "3.37.1",
+    "langfuse-langchain": "3.37.2",
     "minimatch": "10.0.1",
     "uuid": "11.1.0",
     "valibot": "1.0.0",
