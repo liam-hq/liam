@@ -51,7 +51,7 @@ describe.skip('postComment', () => {
   const testMigration = {
     id: '9999',
     title: 'Test Migration',
-    pull_request_id: '9999',
+    project_id: '1', // Using testPayload.projectId
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
   }

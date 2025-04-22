@@ -27,18 +27,7 @@ async function getMigrationContents(migrationId: string) {
       id,
       title,
       created_at,
-      pull_request_id,
-      github_pull_requests (
-        id,
-        pull_number,
-        repository_id,
-        github_repositories (
-          id,
-          github_installation_identifier,
-          name,
-          owner
-        )
-      )
+      project_id
     `)
     .eq('id', migrationId)
     .single()
@@ -48,8 +37,44 @@ async function getMigrationContents(migrationId: string) {
     return notFound()
   }
 
-  const pullRequest = migration.github_pull_requests
-  const repository = pullRequest.github_repositories
+  // Get project repository mappings to find repository info
+  const { data: projectMappings, error: mappingError } = await supabase
+    .from('project_repository_mappings')
+    .select(`
+      repository_id,
+      github_repositories (
+        id,
+        github_installation_identifier,
+        name,
+        owner
+      )
+    `)
+    .eq('project_id', migration.project_id)
+    .limit(1)
+    .single()
+
+  if (mappingError || !projectMappings) {
+    console.error('Error fetching repository info:', mappingError)
+    return notFound()
+  }
+
+  const repository = projectMappings.github_repositories
+
+  // Find the latest pull request for this repository
+  const { data: pullRequests, error: prError } = await supabase
+    .from('github_pull_requests')
+    .select('id, pull_number, repository_id')
+    .eq('repository_id', repository.id)
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .single()
+
+  if (prError || !pullRequests) {
+    console.error('Error fetching pull request:', prError)
+    return notFound()
+  }
+
+  const pullRequest = pullRequests
 
   const { data: overallReview, error: reviewError } = await supabase
     .from('overall_reviews')
@@ -73,7 +98,7 @@ async function getMigrationContents(migrationId: string) {
         )
       )
     `)
-    .eq('pull_request_id', pullRequest.id)
+    .eq('project_id', migration.project_id)
     .order('created_at', { ascending: false })
     .limit(1)
     .single()
@@ -97,6 +122,7 @@ async function getMigrationContents(migrationId: string) {
     console.info('No OverallReview found for migration:', migrationId)
     return {
       migration,
+      pullRequest,
       overallReview: {
         id: null,
         project_id: null,
@@ -112,7 +138,7 @@ async function getMigrationContents(migrationId: string) {
   const { data: schemaPath, error: pathError } = await supabase
     .from('github_schema_file_paths')
     .select('path')
-    .eq('project_id', overallReview.project_id || '')
+    .eq('project_id', migration.project_id)
     .single()
 
   if (pathError) {
@@ -121,6 +147,7 @@ async function getMigrationContents(migrationId: string) {
     )
     return {
       migration,
+      pullRequest,
       overallReview,
       erdLinks: [],
       knowledgeSuggestions: [],
@@ -173,6 +200,7 @@ async function getMigrationContents(migrationId: string) {
 
   return {
     migration,
+    pullRequest,
     overallReview,
     erdLinks,
     knowledgeSuggestions: mappedKnowledgeSuggestions,
@@ -186,6 +214,7 @@ export const MigrationDetailPage: FC<Props> = async ({
 }) => {
   const {
     migration,
+    pullRequest,
     overallReview,
     erdLinks,
     knowledgeSuggestions = [],
@@ -209,9 +238,7 @@ export const MigrationDetailPage: FC<Props> = async ({
 
       <div className={styles.heading}>
         <h1 className={styles.title}>{migration.title}</h1>
-        <p className={styles.subTitle}>
-          #{migration.github_pull_requests.pull_number}
-        </p>
+        <p className={styles.subTitle}>#{pullRequest?.pull_number || 'N/A'}</p>
       </div>
       <div className={styles.twoColumns}>
         <ReviewFeedbackProvider

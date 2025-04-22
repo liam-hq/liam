@@ -95,14 +95,10 @@ export async function postComment(
     const owner = repository.owner
     const repo = repository.name
 
+    // Get the PR record
     const { data: prRecord, error: prError } = await supabase
       .from('github_pull_requests')
-      .select(`
-        *,
-        migrations (
-          id
-        )
-      `)
+      .select('*')
       .eq('id', pullRequestId)
       .single()
 
@@ -112,9 +108,16 @@ export async function postComment(
       )
     }
 
-    if (!prRecord.migrations || !prRecord.migrations[0]) {
+    // Get the migration using projectId
+    const { data: migration, error: migrationError } = await supabase
+      .from('migrations')
+      .select('*')
+      .eq('project_id', projectId)
+      .maybeSingle()
+
+    if (migrationError || !migration) {
       throw new Error(
-        `Migration for Pull request with ID ${pullRequestId} not found`,
+        `Migration for project ${projectId} not found: ${migrationError?.message}`,
       )
     }
 
@@ -124,8 +127,6 @@ export async function postComment(
       .select('github_comment_identifier')
       .eq('github_pull_request_id', pullRequestId)
       .maybeSingle()
-
-    const migration = prRecord.migrations[0]
     const migrationUrl = `${process.env['NEXT_PUBLIC_BASE_URL']}/app/projects/${projectId}/ref/${encodeURIComponent(branchName)}/migrations/${migration.id}`
 
     const prDetails = await getPullRequestDetails(

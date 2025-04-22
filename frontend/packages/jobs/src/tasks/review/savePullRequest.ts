@@ -185,13 +185,14 @@ async function getOrCreatePullRequestRecord(
 
 async function createOrUpdateMigrationRecord(
   supabase: SupabaseClient,
-  pullRequestId: string,
+  _pullRequestId: string, // Unused parameter prefixed with underscore
+  projectId: string,
   title: string,
 ): Promise<void> {
   const { data: existingMigration } = await supabase
     .from('migrations')
     .select('id')
-    .eq('pull_request_id', pullRequestId)
+    .eq('project_id', projectId)
     .maybeSingle()
 
   const now = new Date().toISOString()
@@ -214,7 +215,7 @@ async function createOrUpdateMigrationRecord(
     const { error: createMigrationError } = await supabase
       .from('migrations')
       .insert({
-        pull_request_id: pullRequestId,
+        project_id: projectId,
         title,
         updated_at: now,
       })
@@ -267,7 +268,12 @@ export async function processSavePullRequest(
     payload.prNumber,
   )
 
-  await createOrUpdateMigrationRecord(supabase, prRecord.id, prDetails.title)
+  await createOrUpdateMigrationRecord(
+    supabase,
+    prRecord.id,
+    payload.projectId,
+    prDetails.title,
+  )
 
   return {
     success: true,

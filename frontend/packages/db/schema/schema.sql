@@ -262,9 +262,9 @@ ALTER TABLE "public"."knowledge_suggestions" OWNER TO "postgres";
 CREATE TABLE IF NOT EXISTS "public"."migrations" (
     "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
     "title" "text" NOT NULL,
-    "pull_request_id" "uuid" NOT NULL,
     "created_at" timestamp(3) with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    "updated_at" timestamp(3) with time zone NOT NULL
+    "updated_at" timestamp(3) with time zone NOT NULL,
+    "project_id" "uuid" NOT NULL
 );
 
 
@@ -569,10 +569,6 @@ CREATE UNIQUE INDEX "knowledge_suggestion_doc_mapping_unique_mapping" ON "public
 
 
 
-CREATE UNIQUE INDEX "migration_pull_request_id_key" ON "public"."migrations" USING "btree" ("pull_request_id");
-
-
-
 CREATE INDEX "organization_member_organization_id_idx" ON "public"."organization_members" USING "btree" ("organization_id");
 
 
@@ -640,7 +636,7 @@ ALTER TABLE ONLY "public"."knowledge_suggestions"
 
 
 ALTER TABLE ONLY "public"."migrations"
-    ADD CONSTRAINT "migration_pull_request_id_fkey" FOREIGN KEY ("pull_request_id") REFERENCES "public"."github_pull_requests"("id") ON UPDATE CASCADE ON DELETE RESTRICT;
+    ADD CONSTRAINT "migrations_project_id_fkey" FOREIGN KEY ("project_id") REFERENCES "public"."projects"("id") ON UPDATE CASCADE ON DELETE RESTRICT;
 
 
 
