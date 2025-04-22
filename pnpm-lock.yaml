@@ -123,8 +123,8 @@ importers:
         specifier: 3.2.0
         version: 3.2.0(@opentelemetry/api@1.9.0)(next@15.3.0(@opentelemetry/api@1.9.0)(@playwright/test@1.51.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       langfuse:
-        specifier: 3.37.1
-        version: 3.37.1
+        specifier: 3.37.2
+        version: 3.37.2
       langfuse-langchain:
         specifier: 3.37.1
         version: 3.37.1(langchain@0.3.21(@langchain/core@0.3.45(openai@4.94.0(ws@8.18.1)(zod@3.23.8)))(cheerio@1.0.0)(handlebars@4.7.8)(openai@4.94.0(ws@8.18.1)(zod@3.23.8))(ws@8.18.1))
@@ -574,8 +574,8 @@ importers:
         specifier: 1.0.0
         version: 1.0.0(valibot@1.0.0(typescript@5.8.3))
       langfuse:
-        specifier: 3.37.1
-        version: 3.37.1
+        specifier: 3.37.2
+        version: 3.37.2
       langfuse-langchain:
         specifier: 3.37.1
         version: 3.37.1(langchain@0.3.21(@langchain/core@0.3.45(openai@4.94.0(ws@8.18.1)(zod@3.24.3)))(cheerio@1.0.0)(handlebars@4.7.8)(openai@4.94.0(ws@8.18.1)(zod@3.24.3))(ws@8.18.1))
@@ -647,8 +647,8 @@ importers:
         specifier: 16.5.0
         version: 16.5.0
       langfuse:
-        specifier: 3.37.1
-        version: 3.37.1
+        specifier: 3.37.2
+        version: 3.37.2
       langfuse-langchain:
         specifier: 3.37.1
         version: 3.37.1(langchain@0.3.21(@langchain/core@0.3.45(openai@4.94.0(ws@8.18.1)(zod@3.24.3)))(cheerio@1.0.0)(handlebars@4.7.8)(openai@4.94.0(ws@8.18.1)(zod@3.24.3))(ws@8.18.1))
@@ -5447,14 +5447,18 @@ packages:
     resolution: {integrity: sha512-YfCegzOmy8Ex1SQg2eCO5a77YwVAJZ7hVUUbfIx+ncREEM9Smk4FrveNG0bOKS3n9C4TJZpX12DfQ+819gmHtw==}
     engines: {node: '>=18'}
 
+  langfuse-core@3.37.2:
+    resolution: {integrity: sha512-3iFz1UZzKDi9GEjIRRSSqcKbusmB17uR9qYxMR1BHQYuBkQv2wIV+HI793hWh3tmc6q2pmqPMjtJdoFVBhucDA==}
+    engines: {node: '>=18'}
+
   langfuse-langchain@3.37.1:
     resolution: {integrity: sha512-R8cb5nHjAJN0SxFlq2Px8Rybl7wZcDQ3djIg7msHhjStHF2wsXWMR7tFbZ9m1MsPCmQVqGuW2eg0eR3NAZdlbg==}
     engines: {node: '>=18'}
     peerDependencies:
       langchain: '>=0.0.157 <0.4.0'
 
-  langfuse@3.37.1:
-    resolution: {integrity: sha512-U+Jbbpeqaqb10k/xuEkXWvK0Jsh/vVRGOl5j3jIOl0K71V1oeDGRym2PI1kF7dJyIARyGUxBVSbeSIQFM32cxQ==}
+  langfuse@3.37.2:
+    resolution: {integrity: sha512-C4P56hJDNk8vWNJR102JhgyCYXbt3HG19PY0brurlrU4dh5pq91JPt44jyiT5RzUs+NFew//gCkgFEcQd3RogA==}
     engines: {node: '>=18'}
 
   langsmith@0.3.16:
@@ -13317,21 +13321,25 @@ snapshots:
     dependencies:
       mustache: 4.2.0
 
+  langfuse-core@3.37.2:
+    dependencies:
+      mustache: 4.2.0
+
   langfuse-langchain@3.37.1(langchain@0.3.21(@langchain/core@0.3.45(openai@4.94.0(ws@8.18.1)(zod@3.23.8)))(cheerio@1.0.0)(handlebars@4.7.8)(openai@4.94.0(ws@8.18.1)(zod@3.23.8))(ws@8.18.1)):
     dependencies:
       langchain: 0.3.21(@langchain/core@0.3.45(openai@4.94.0(ws@8.18.1)(zod@3.23.8)))(cheerio@1.0.0)(handlebars@4.7.8)(openai@4.94.0(ws@8.18.1)(zod@3.23.8))(ws@8.18.1)
-      langfuse: 3.37.1
+      langfuse: 3.37.2
       langfuse-core: 3.37.1
 
   langfuse-langchain@3.37.1(langchain@0.3.21(@langchain/core@0.3.45(openai@4.94.0(ws@8.18.1)(zod@3.24.3)))(cheerio@1.0.0)(handlebars@4.7.8)(openai@4.94.0(ws@8.18.1)(zod@3.24.3))(ws@8.18.1)):
     dependencies:
       langchain: 0.3.21(@langchain/core@0.3.45(openai@4.94.0(ws@8.18.1)(zod@3.24.3)))(cheerio@1.0.0)(handlebars@4.7.8)(openai@4.94.0(ws@8.18.1)(zod@3.24.3))(ws@8.18.1)
-      langfuse: 3.37.1
+      langfuse: 3.37.2
       langfuse-core: 3.37.1
 
-  langfuse@3.37.1:
+  langfuse@3.37.2:
     dependencies:
-      langfuse-core: 3.37.1
+      langfuse-core: 3.37.2
 
   langsmith@0.3.16(openai@4.94.0(ws@8.18.1)(zod@3.23.8)):
     dependencies:
