@@ -38,6 +38,11 @@ export default async function NewProjectPage({ params }: PageProps) {
   }
 
   const session = await getSessionForGitHubApi()
+  
+  if (!session) {
+    return notFound()
+  }
+  
   const { installations } = await getInstallations(session)
 
   return (
