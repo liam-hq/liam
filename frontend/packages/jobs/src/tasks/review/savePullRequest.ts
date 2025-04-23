@@ -186,24 +186,27 @@ async function getOrCreatePullRequestRecord(
 async function createOrUpdateMigrationRecord(
   supabase: SupabaseClient,
   pullRequestId: string,
+  projectId: string,
   title: string,
 ): Promise<void> {
-  const { data: existingMigration } = await supabase
-    .from('migrations')
-    .select('id')
+  // Get existing migration mapping for this PR
+  const { data: existingMapping } = await supabase
+    .from('migration_pull_request_mappings')
+    .select('migration_id')
     .eq('pull_request_id', pullRequestId)
     .maybeSingle()
 
   const now = new Date().toISOString()
 
-  if (existingMigration) {
+  if (existingMapping) {
+    // If mapping exists, update the associated migration
     const { error: updateMigrationError } = await supabase
       .from('migrations')
       .update({
         title,
         updated_at: now,
       })
-      .eq('id', existingMigration.id)
+      .eq('id', existingMapping.migration_id)
 
     if (updateMigrationError) {
       throw new Error(
@@ -211,17 +214,35 @@ async function createOrUpdateMigrationRecord(
       )
     }
   } else {
-    const { error: createMigrationError } = await supabase
+    // Create a new migration with project_id
+    const { data: newMigration, error: createMigrationError } = await supabase
       .from('migrations')
       .insert({
-        pull_request_id: pullRequestId,
+        project_id: projectId,
         title,
         updated_at: now,
       })
+      .select()
+      .single()
 
-    if (createMigrationError) {
+    if (createMigrationError || !newMigration) {
       throw new Error(
         `Failed to create migration: ${JSON.stringify(createMigrationError)}`,
+      )
+    }
+
+    // Create a mapping between the new migration and the pull request
+    const { error: createMappingError } = await supabase
+      .from('migration_pull_request_mappings')
+      .insert({
+        migration_id: newMigration.id,
+        pull_request_id: pullRequestId,
+        updated_at: now,
+      })
+
+    if (createMappingError) {
+      throw new Error(
+        `Failed to create migration mapping: ${JSON.stringify(createMappingError)}`,
       )
     }
   }
@@ -267,7 +288,12 @@ export async function processSavePullRequest(
     payload.prNumber,
   )
 
-  await createOrUpdateMigrationRecord(supabase, prRecord.id, prDetails.title)
+  await createOrUpdateMigrationRecord(
+    supabase,
+    prRecord.id,
+    payload.projectId,
+    prDetails.title,
+  )
 
   return {
     success: true,
