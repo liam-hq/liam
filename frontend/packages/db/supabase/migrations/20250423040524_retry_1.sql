@@ -12,9 +12,9 @@ create policy "users_same_organization_select_policy" on public.users
             select 1
             from public.organization_members om1
             join public.organization_members om2 on om1.organization_id = om2.organization_id
-            where om1.user_id = id  -- the user being accessed
+            where om1.user_id = public.users.id  -- the user being accessed
               and om2.user_id = auth.uid()  -- the authenticated user
         )
         or
-        id = auth.uid() -- user can select their own record
+        public.users.id = auth.uid() -- user can select their own record
     );
