@@ -1,5 +1,6 @@
 import type { PageProps } from '@/app/types'
 import { ProjectNewPage } from '@/features/projects/pages'
+import { getAuthenticatedUser, getSessionForGitHubApi } from '@/libs/auth'
 import { createClient } from '@/libs/db/server'
 import { getInstallations } from '@liam-hq/github'
 import { notFound } from 'next/navigation'
@@ -15,16 +16,16 @@ export default async function NewProjectPage({ params }: PageProps) {
 
   const { organizationId } = parsedParams.output
   const supabase = await createClient()
-  const { data } = await supabase.auth.getSession()
+  const user = await getAuthenticatedUser()
 
-  if (data.session === null) {
+  if (!user) {
     return notFound()
   }
 
   const { data: organizationMembers, error: orgError } = await supabase
     .from('organization_members')
     .select('id')
-    .eq('user_id', data.session.user.id)
+    .eq('user_id', user.id)
     .eq('organization_id', organizationId)
     .limit(1)
 
@@ -36,7 +37,8 @@ export default async function NewProjectPage({ params }: PageProps) {
     return notFound()
   }
 
-  const { installations } = await getInstallations(data.session)
+  const session = await getSessionForGitHubApi()
+  const { installations } = await getInstallations(session)
 
   return (
     <ProjectNewPage

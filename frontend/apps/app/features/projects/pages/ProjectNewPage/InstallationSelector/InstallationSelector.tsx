@@ -8,7 +8,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components'
 import { addProject } from '@/features/projects/actions'
-import { createClient } from '@/libs/db/client'
+import { getClientSession } from '@/libs/auth'
 import { getRepositoriesByInstallationId } from '@liam-hq/github'
 import type { Installation, Repository } from '@liam-hq/github'
 import { type FC, useCallback, useEffect, useState } from 'react'
@@ -42,16 +42,14 @@ export const InstallationSelector: FC<Props> = ({
   const fetchRepositories = async (installationId: number) => {
     setLoading(true)
     try {
-      const supabase = await createClient()
-      const { data } = await supabase.auth.getSession()
-      const session = data.session
+      const session = await getClientSession()
 
       if (session === null) {
         throw new Error('')
       }
 
       const res = await getRepositoriesByInstallationId(
-        data.session,
+        session,
         installationId,
       )
       setRepositories(res.repositories)

@@ -1,6 +1,7 @@
 import type { PageProps } from '@/app/types'
 import { ProjectsPage } from '@/features/projects/pages'
 import { migrationFlag } from '@/libs'
+import { getAuthenticatedUser } from '@/libs/auth'
 import { createClient } from '@/libs/db/server'
 import { notFound } from 'next/navigation'
 import * as v from 'valibot'
@@ -21,16 +22,16 @@ export default async function Page({ params }: PageProps) {
   }
 
   const supabase = await createClient()
-  const { data } = await supabase.auth.getSession()
+  const user = await getAuthenticatedUser()
 
-  if (data.session === null) {
+  if (!user) {
     return notFound()
   }
 
   const { data: organizationMembers, error: orgError } = await supabase
     .from('organization_members')
     .select('id')
-    .eq('user_id', data.session.user.id)
+    .eq('user_id', user.id)
     .eq('organization_id', organizationId)
     .limit(1)
 
