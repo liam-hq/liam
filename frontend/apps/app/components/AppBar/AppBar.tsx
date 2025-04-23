@@ -1,7 +1,8 @@
 import { Avatar, ChevronRight, ChevronsUpDown } from '@liam-hq/ui'
 import { DropdownMenuRoot, DropdownMenuTrigger } from '@liam-hq/ui'
 import type { ComponentProps, KeyboardEvent, ReactNode } from 'react'
-import { forwardRef, useContext, createContext, useState } from 'react'
+import type React from 'react'
+import { createContext, forwardRef, useContext, useState } from 'react'
 import { BranchDropdown } from '../BranchDropdown/BranchDropdown'
 import { ProjectIcon } from '../ProjectIcon'
 import { ProjectsDropdown } from '../ProjectsDropdown'
@@ -295,76 +296,76 @@ export const AppBar = ({
   )
 }
 
-const BreadcrumbItem = forwardRef<HTMLButtonElement | HTMLSpanElement, BreadcrumbItemProps>(
-  ({ label, tag, onClick, isActive = false, isProject = false }, ref) => {
-    const textClassName = isProject
-      ? `${styles.breadcrumbText} ${styles.projectText}`
-      : `${styles.breadcrumbText} ${styles.branchText}`
-    
-    const isInsideButton = useContext(ButtonContext)
+const BreadcrumbItem = forwardRef<
+  HTMLButtonElement | HTMLSpanElement,
+  BreadcrumbItemProps
+>(({ label, tag, onClick, isActive = false, isProject = false }, ref) => {
+  const textClassName = isProject
+    ? `${styles.breadcrumbText} ${styles.projectText}`
+    : `${styles.breadcrumbText} ${styles.branchText}`
 
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault()
-        onClick?.()
-      }
+  const isInsideButton = useContext(ButtonContext)
+
+  const handleKeyDown = (e: KeyboardEvent) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault()
+      onClick?.()
     }
+  }
 
-    const content = (
-      <>
-        {isProject && (
-          <div className={styles.breadcrumbIcon}>
-            <ProjectIcon
-              width={16}
-              height={16}
-              color="rgba(255, 255, 255, 0.2)"
-            />
-          </div>
-        )}
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 'var(--spacing-1half)',
-          }}
-        >
-          <span className={textClassName}>{label}</span>
-          {tag === 'production' && (
-            <div className={styles.branchTag}>{tag}</div>
-          )}
+  const content = (
+    <>
+      {isProject && (
+        <div className={styles.breadcrumbIcon}>
+          <ProjectIcon
+            width={16}
+            height={16}
+            color="rgba(255, 255, 255, 0.2)"
+          />
         </div>
-        <ChevronsUpDown
-          size={12}
-          strokeWidth={1.5}
-          className={styles.chevronIcon}
-        />
-      </>
-    )
+      )}
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 'var(--spacing-1half)',
+        }}
+      >
+        <span className={textClassName}>{label}</span>
+        {tag === 'production' && <div className={styles.branchTag}>{tag}</div>}
+      </div>
+      <ChevronsUpDown
+        size={12}
+        strokeWidth={1.5}
+        className={styles.chevronIcon}
+      />
+    </>
+  )
 
-    if (isInsideButton) {
-      return (
-        <span
-          ref={ref as React.Ref<HTMLSpanElement>}
-          className={`${styles.breadcrumbItem} ${isActive ? styles.active : ''}`}
-          onClick={onClick}
-        >
-          {content}
-        </span>
-      )
-    }
-
+  if (isInsideButton) {
     return (
-      <button
-        ref={ref as React.Ref<HTMLButtonElement>}
-        type="button"
+      <span
+        ref={ref as React.Ref<HTMLSpanElement>}
         className={`${styles.breadcrumbItem} ${isActive ? styles.active : ''}`}
-        onClick={onClick}
-        onKeyDown={handleKeyDown}
+        role="presentation"
+        tabIndex={-1}
       >
         {content}
-      </button>
+      </span>
     )
-  },
-)
+  }
+
+  return (
+    <button
+      ref={ref as React.Ref<HTMLButtonElement>}
+      type="button"
+      className={`${styles.breadcrumbItem} ${isActive ? styles.active : ''}`}
+      onClick={onClick}
+      onKeyDown={handleKeyDown}
+    >
+      {content}
+    </button>
+  )
+})
 
 BreadcrumbItem.displayName = 'BreadcrumbItem'
