@@ -27,8 +27,6 @@ overrides:
       comment: "GitHub pull requests table with github_ prefix pattern. Should be updated to have migration_id instead of migrations having pull_request_id."
     github_pull_request_comments:
       comment: "Stores GitHub comment information for pull requests, maintaining a 1:1 relationship with github_pull_requests"
-    migrations:
-      comment: "Should have project_id instead of pull_request_id to remove GitHub dependency"
     migration_pull_request_mappings:
       comment: "Maps migrations to GitHub pull requests in a one-to-one relationship, isolating GitHub dependencies"
     overall_reviews:
