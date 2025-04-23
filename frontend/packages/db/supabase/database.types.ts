@@ -343,34 +343,73 @@ export type Database = {
           },
         ]
       }
+      migration_pull_request_mappings: {
+        Row: {
+          created_at: string
+          id: string
+          migration_id: string
+          pull_request_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          migration_id: string
+          pull_request_id: string
+          updated_at: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          migration_id?: string
+          pull_request_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'migration_pull_request_mapping_migration_id_fkey'
+            columns: ['migration_id']
+            isOneToOne: false
+            referencedRelation: 'migrations'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'migration_pull_request_mapping_pull_request_id_fkey'
+            columns: ['pull_request_id']
+            isOneToOne: false
+            referencedRelation: 'github_pull_requests'
+            referencedColumns: ['id']
+          },
+        ]
+      }
       migrations: {
         Row: {
           created_at: string
           id: string
-          pull_request_id: string
+          project_id: string
           title: string
           updated_at: string
         }
         Insert: {
           created_at?: string
           id?: string
-          pull_request_id: string
+          project_id: string
           title: string
           updated_at: string
         }
         Update: {
           created_at?: string
           id?: string
-          pull_request_id?: string
+          project_id?: string
           title?: string
           updated_at?: string
         }
         Relationships: [
           {
-            foreignKeyName: 'migration_pull_request_id_fkey'
-            columns: ['pull_request_id']
+            foreignKeyName: 'migration_project_id_fkey'
+            columns: ['project_id']
             isOneToOne: false
-            referencedRelation: 'github_pull_requests'
+            referencedRelation: 'projects'
             referencedColumns: ['id']
           },
         ]

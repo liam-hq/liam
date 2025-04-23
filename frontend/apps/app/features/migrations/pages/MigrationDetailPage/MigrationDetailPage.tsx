@@ -21,12 +21,27 @@ type Props = {
 async function getMigrationContents(migrationId: string) {
   const supabase = await createClient()
 
+  // Get migration with the related pull request using the mapping table
   const { data: migration, error: migrationError } = await supabase
     .from('migrations')
     .select(`
       id,
       title,
       created_at,
+      project_id
+    `)
+    .eq('id', migrationId)
+    .single()
+
+  if (migrationError || !migration) {
+    console.error('Error fetching migration:', migrationError)
+    return notFound()
+  }
+
+  // Get the related pull request through the mapping table
+  const { data: mappingData, error: mappingError } = await supabase
+    .from('migration_pull_request_mappings')
+    .select(`
       pull_request_id,
       github_pull_requests (
         id,
@@ -40,15 +55,28 @@ async function getMigrationContents(migrationId: string) {
         )
       )
     `)
-    .eq('id', migrationId)
-    .single()
+    .eq('migration_id', migrationId)
+    .maybeSingle()
 
-  if (migrationError || !migration) {
-    console.error('Error fetching migration:', migrationError)
-    return notFound()
+  if (mappingError || !mappingData) {
+    console.warn('No pull request mapping found for migration:', migrationId)
+    return {
+      migration,
+      pullRequest: null,
+      repository: null,
+      overallReview: {
+        id: null,
+        project_id: migration.project_id,
+        review_comment: null,
+        reviewed_at: null,
+        review_feedbacks: [],
+      },
+      erdLinks: [],
+      knowledgeSuggestions: [],
+    }
   }
 
-  const pullRequest = migration.github_pull_requests
+  const pullRequest = mappingData.github_pull_requests
   const repository = pullRequest.github_repositories
 
   const { data: overallReview, error: reviewError } = await supabase
@@ -97,6 +125,8 @@ async function getMigrationContents(migrationId: string) {
     console.info('No OverallReview found for migration:', migrationId)
     return {
       migration,
+      pullRequest,
+      repository,
       overallReview: {
         id: null,
         project_id: null,
@@ -173,6 +203,8 @@ async function getMigrationContents(migrationId: string) {
 
   return {
     migration,
+    pullRequest,
+    repository,
     overallReview,
     erdLinks,
     knowledgeSuggestions: mappedKnowledgeSuggestions,
@@ -186,6 +218,7 @@ export const MigrationDetailPage: FC<Props> = async ({
 }) => {
   const {
     migration,
+    pullRequest,
     overallReview,
     erdLinks,
     knowledgeSuggestions = [],
@@ -209,9 +242,9 @@ export const MigrationDetailPage: FC<Props> = async ({
 
       <div className={styles.heading}>
         <h1 className={styles.title}>{migration.title}</h1>
-        <p className={styles.subTitle}>
-          #{migration.github_pull_requests.pull_number}
-        </p>
+        {pullRequest && (
+          <p className={styles.subTitle}>#{pullRequest.pull_number}</p>
+        )}
       </div>
       <div className={styles.twoColumns}>
         <ReviewFeedbackProvider

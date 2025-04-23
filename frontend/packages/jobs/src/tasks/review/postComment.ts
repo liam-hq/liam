@@ -97,12 +97,7 @@ export async function postComment(
 
     const { data: prRecord, error: prError } = await supabase
       .from('github_pull_requests')
-      .select(`
-        *,
-        migrations (
-          id
-        )
-      `)
+      .select('*')
       .eq('id', pullRequestId)
       .single()
 
@@ -112,9 +107,29 @@ export async function postComment(
       )
     }
 
-    if (!prRecord.migrations || !prRecord.migrations[0]) {
+    // Get the migration through the mapping table
+    const { data: mappingRecord, error: mappingError } = await supabase
+      .from('migration_pull_request_mappings')
+      .select('migration_id')
+      .eq('pull_request_id', pullRequestId)
+      .maybeSingle()
+
+    if (mappingError || !mappingRecord) {
       throw new Error(
         `Migration for Pull request with ID ${pullRequestId} not found`,
+      )
+    }
+
+    // Fetch the migration using the migration_id from the mapping
+    const { data: migration, error: migrationError } = await supabase
+      .from('migrations')
+      .select('id')
+      .eq('id', mappingRecord.migration_id)
+      .single()
+
+    if (migrationError || !migration) {
+      throw new Error(
+        `Migration with ID ${mappingRecord.migration_id} not found: ${migrationError?.message}`,
       )
     }
 
@@ -124,8 +139,6 @@ export async function postComment(
       .select('github_comment_identifier')
       .eq('github_pull_request_id', pullRequestId)
       .maybeSingle()
-
-    const migration = prRecord.migrations[0]
     const migrationUrl = `${process.env['NEXT_PUBLIC_BASE_URL']}/app/projects/${projectId}/ref/${encodeURIComponent(branchName)}/migrations/${migration.id}`
 
     const prDetails = await getPullRequestDetails(
