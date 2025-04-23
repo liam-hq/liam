@@ -796,6 +796,17 @@ COMMENT ON POLICY "service_role_can_update_all_projects" ON "public"."projects" 
 
 
 
+ALTER TABLE "public"."users" ENABLE ROW LEVEL SECURITY;
+
+
+CREATE POLICY "users_same_organization_select_policy" ON "public"."users" FOR SELECT TO "authenticated" USING ((("id" IN ( SELECT "u"."id"
+   FROM (("public"."users" "u"
+     JOIN "public"."organization_members" "om1" ON (("u"."id" = "om1"."user_id")))
+     JOIN "public"."organization_members" "om2" ON (("om1"."organization_id" = "om2"."organization_id")))
+  WHERE ("om2"."user_id" = "auth"."uid"()))) OR ("id" = "auth"."uid"())));
+
+
+
 
 
 ALTER PUBLICATION "supabase_realtime" OWNER TO "postgres";
