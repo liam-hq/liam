@@ -1,6 +1,6 @@
 import { Avatar, ChevronRight, ChevronsUpDown } from '@liam-hq/ui'
 import { DropdownMenuRoot, DropdownMenuTrigger } from '@liam-hq/ui'
-import type { ComponentProps, ReactNode } from 'react'
+import type { ComponentProps, KeyboardEvent, ReactNode } from 'react'
 import { forwardRef, useState } from 'react'
 import { BranchDropdown } from '../BranchDropdown/BranchDropdown'
 import { ProjectIcon } from '../ProjectIcon'
@@ -288,18 +288,27 @@ export const AppBar = ({
   )
 }
 
-const BreadcrumbItem = forwardRef<HTMLButtonElement, BreadcrumbItemProps>(
+const BreadcrumbItem = forwardRef<HTMLDivElement, BreadcrumbItemProps>(
   ({ label, tag, onClick, isActive = false, isProject = false }, ref) => {
     const textClassName = isProject
       ? `${styles.breadcrumbText} ${styles.projectText}`
       : `${styles.breadcrumbText} ${styles.branchText}`
 
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault()
+        onClick?.()
+      }
+    }
+
     return (
-      <button
+      <div
         ref={ref}
         className={`${styles.breadcrumbItem} ${isActive ? styles.active : ''}`}
         onClick={onClick}
-        type="button"
+        onKeyDown={handleKeyDown}
+        role="button"
+        tabIndex={0}
       >
         {isProject && (
           <div className={styles.breadcrumbIcon}>
@@ -327,7 +336,7 @@ const BreadcrumbItem = forwardRef<HTMLButtonElement, BreadcrumbItemProps>(
           strokeWidth={1.5}
           className={styles.chevronIcon}
         />
-      </button>
+      </div>
     )
   },
 )
