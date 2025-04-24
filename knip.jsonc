@@ -20,8 +20,6 @@
     "frontend/packages/jobs/src/trigger/sentry-error-test.ts",
     "frontend/packages/jobs/src/prompts/generateDocsSuggestion/index.ts",
     "frontend/packages/jobs/src/types/index.ts",
-    "frontend/packages/cli/vite-plugins/remove-import-wasi.ts",
-    "frontend/packages/cli/vite-plugins/set-env.ts",
     "frontend/packages/jobs/src/prompts/generateDocsSuggestion/docsSuggestionSchema.ts",
     "frontend/packages/jobs/src/prompts/generateReview/reviewSchema.ts",
     "frontend/packages/jobs/src/tasks/review/index.ts",
