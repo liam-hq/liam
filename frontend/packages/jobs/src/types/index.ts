@@ -1,4 +1,9 @@
-import type { SchemaOverride } from '@liam-hq/db-structure'
+type SchemaOverride = {
+  overrides: {
+    tables?: Record<string, any>
+    tableGroups?: Record<string, any>
+  }
+}
 import type { Tables } from '@liam-hq/db/supabase/database.types'
 import type { InferOutput } from 'valibot'
 import type { reviewSchema } from '../prompts/generateReview/reviewSchema'
@@ -33,7 +38,7 @@ export type GenerateReviewPayload = {
 
 export type Review = InferOutput<typeof reviewSchema>
 
-type ReviewResponse = {
+export type ReviewResponse = {
   review: Review
   projectId: string
   pullRequestId: string
@@ -42,7 +47,7 @@ type ReviewResponse = {
   traceId: string
 }
 
-type PostCommentPayload = {
+export type PostCommentPayload = {
   reviewComment: string
   projectId: string
   pullRequestId: string
