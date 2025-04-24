@@ -1,2 +1,2 @@
-export * from './remove-import-wasi'
-export * from './set-env'
+export * from './remove-import-wasi.js'
+export * from './set-env.js'
