@@ -16,7 +16,7 @@ type ErrorObject = {
   instruction?: string
 }
 
-export type Props = {
+type Props = {
   schema: Schema
   tableGroups?: Record<string, TableGroup>
   errorObjects: ErrorObject[]

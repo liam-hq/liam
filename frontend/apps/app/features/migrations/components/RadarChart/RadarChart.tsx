@@ -3,7 +3,7 @@
 import { useMemo } from 'react'
 import styles from './RadarChart.module.css'
 
-export const categoryEnum = {
+const categoryEnum = {
   MIGRATION_SAFETY: 'MIGRATION_SAFETY',
   DATA_INTEGRITY: 'DATA_INTEGRITY',
   PERFORMANCE_IMPACT: 'PERFORMANCE_IMPACT',
@@ -13,7 +13,7 @@ export const categoryEnum = {
 
 export type CategoryEnum = (typeof categoryEnum)[keyof typeof categoryEnum]
 
-export type ReviewScore = {
+type ReviewScore = {
   id: string
   overallReviewId: string
   overallScore: number

@@ -2,7 +2,7 @@
 
 import { createClient } from '@/libs/db/server'
 
-export type CreateOrganizationResult =
+type CreateOrganizationResult =
   | { success: true; organizationId: string }
   | { success: false; error: string }
 

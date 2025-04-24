@@ -8,7 +8,7 @@ import {
 } from './organizationActions'
 
 // Type definition for action state
-export type ActionState =
+type ActionState =
   | { success: false; error: string; message?: undefined }
   | { success: true; message: string; error?: undefined }
   | { success: false; error: null; message: null }

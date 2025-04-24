@@ -1,9 +1,9 @@
 import type { FC } from 'react'
 import styles from './DiffCount.module.css'
 
-export type DiffCountVariant = 'new' | 'delete'
+type DiffCountVariant = 'new' | 'delete'
 
-export interface DiffCountProps {
+interface DiffCountProps {
   count: number
   variant: DiffCountVariant
 }

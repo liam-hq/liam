@@ -30,7 +30,7 @@ export async function fetchOrganizationData(
 }
 
 // Server component
-export async function OrganizationData({
+async function OrganizationData({
   installationId,
   owner,
   repo,

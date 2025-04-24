@@ -1,7 +1,7 @@
 import { getFileContent } from '@liam-hq/github'
 import { getProjectRepository } from './getProjectRepository'
 
-export interface DocumentContentParams {
+interface DocumentContentParams {
   projectId: string
   branchOrCommit: string
   docFilePath: string[]

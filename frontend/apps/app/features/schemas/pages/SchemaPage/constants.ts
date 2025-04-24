@@ -3,9 +3,9 @@ export const SCHEMA_TAB = {
   EDITOR: 'editor',
 } as const
 
-export type SchemaTabValue = (typeof SCHEMA_TAB)[keyof typeof SCHEMA_TAB]
+type SchemaTabValue = (typeof SCHEMA_TAB)[keyof typeof SCHEMA_TAB]
 
-export interface SchemaTab {
+interface SchemaTab {
   value: SchemaTabValue
   label: string
 }

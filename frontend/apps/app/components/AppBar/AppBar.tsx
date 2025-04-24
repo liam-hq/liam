@@ -22,20 +22,20 @@ export interface Project {
   name: string
 }
 
-export interface ProjectsList {
+interface ProjectsList {
   projects: Project[]
   onProjectSelect: (project: Project) => void
   onAddNewProject?: () => void
 }
 
 // Define a simple Branch interface that matches BranchItem
-export interface Branch {
+interface Branch {
   id: string
   name: string
   tag?: string
 }
 
-export interface BranchesList {
+interface BranchesList {
   branches: Branch[]
   onBranchSelect: (branch: Branch) => void
 }

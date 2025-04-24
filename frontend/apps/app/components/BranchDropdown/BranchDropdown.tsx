@@ -7,13 +7,13 @@ import { Check, GitBranch } from '@liam-hq/ui/src/icons'
 import type { ComponentProps } from 'react'
 import styles from './BranchDropdown.module.css'
 
-export interface BranchItem {
+interface BranchItem {
   id: string
   name: string
   tag?: string
 }
 
-export interface BranchDropdownProps extends ComponentProps<'div'> {
+interface BranchDropdownProps extends ComponentProps<'div'> {
   branches: BranchItem[]
   selectedBranchId?: string | undefined
   onBranchSelect: (branch: BranchItem) => void

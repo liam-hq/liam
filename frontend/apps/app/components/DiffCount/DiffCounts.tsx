@@ -2,7 +2,7 @@ import { DiffCount } from '@/components/DiffCount'
 import type { FC } from 'react'
 import styles from './DiffCounts.module.css'
 
-export interface DiffCountsProps {
+interface DiffCountsProps {
   additions: number
   deletions: number
 }

@@ -17,7 +17,7 @@ export const SettingsTabSchema = union([
 
 export type SettingsTabValue = InferOutput<typeof SettingsTabSchema>
 
-export interface SettingsTab {
+interface SettingsTab {
   value: SettingsTabValue
   label: string
   icon: typeof BookMarked

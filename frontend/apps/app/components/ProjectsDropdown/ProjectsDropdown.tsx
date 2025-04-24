@@ -7,12 +7,12 @@ import { Check, Plus } from '@liam-hq/ui/src/icons'
 import type { ComponentProps } from 'react'
 import { ProjectIcon } from '../ProjectIcon'
 import styles from './ProjectsDropdown.module.css'
-export interface ProjectItem {
+interface ProjectItem {
   id: string
   name: string
 }
 
-export interface ProjectsDropdownProps extends ComponentProps<'div'> {
+interface ProjectsDropdownProps extends ComponentProps<'div'> {
   projects: ProjectItem[]
   selectedProjectId?: string | undefined
   onProjectSelect: (project: ProjectItem) => void

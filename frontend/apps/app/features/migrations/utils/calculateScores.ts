@@ -2,13 +2,13 @@
 
 import type { CategoryEnum } from '../components/RadarChart/RadarChart'
 
-export type ReviewFeedbackForScore = {
+type ReviewFeedbackForScore = {
   category: string
   severity: string
   resolvedAt?: string | null
 }
 
-export type CalculatedScore = {
+type CalculatedScore = {
   id: string
   overallReviewId: string
   overallScore: number
