@@ -295,48 +295,59 @@ function normalizeConstraintName(
   }
 }
 
-function extractForeignKeyOptions(
-  argNodes: Node[],
-  relation: Relationship,
-): void {
-  for (const argNode of argNodes) {
-    if (argNode instanceof KeywordHashNode) {
-      for (const argElement of argNode.elements) {
-        if (!(argElement instanceof AssocNode)) continue
-        // @ts-expect-error: unescaped is defined as string but it is actually object
-        const key = argElement.key.unescaped.value
-        const value = argElement.value
-
-        switch (key) {
-          case 'column':
-            if (value instanceof StringNode || value instanceof SymbolNode) {
-              relation.foreignColumnName = value.unescaped.value
-            }
-            break
-          case 'name':
-            if (value instanceof StringNode || value instanceof SymbolNode) {
-              relation.name = value.unescaped.value
-            }
-            break
-          case 'on_update':
-            if (value instanceof SymbolNode) {
-              relation.updateConstraint = normalizeConstraintName(
-                value.unescaped.value,
-              )
-            }
-            break
-          case 'on_delete':
-            if (value instanceof SymbolNode) {
-              relation.deleteConstraint = normalizeConstraintName(
-                value.unescaped.value,
-              )
-            }
-            break
-        }
-      }
-    }
+function extractStringOrSymbolValue(value: Node): string {
+  if (value instanceof StringNode || value instanceof SymbolNode) {
+    return value.unescaped.value
   }
+  return ''
+}
 
+function processForeignKeyOption(
+  key: string,
+  value: Node,
+  relation: Relationship
+): void {
+  switch (key) {
+    case 'column':
+      if (value instanceof StringNode || value instanceof SymbolNode) {
+        relation.foreignColumnName = extractStringOrSymbolValue(value)
+      }
+      break
+    case 'name':
+      if (value instanceof StringNode || value instanceof SymbolNode) {
+        relation.name = extractStringOrSymbolValue(value)
+      }
+      break
+    case 'on_update':
+      if (value instanceof SymbolNode) {
+        relation.updateConstraint = normalizeConstraintName(
+          value.unescaped.value
+        )
+      }
+      break
+    case 'on_delete':
+      if (value instanceof SymbolNode) {
+        relation.deleteConstraint = normalizeConstraintName(
+          value.unescaped.value
+        )
+      }
+      break
+  }
+}
+
+function processKeywordHashOptions(
+  hashNode: KeywordHashNode,
+  relation: Relationship
+): void {
+  for (const argElement of hashNode.elements) {
+    if (!(argElement instanceof AssocNode)) continue
+    // @ts-expect-error: unescaped is defined as string but it is actually object
+    const key = argElement.key.unescaped.value
+    processForeignKeyOption(key, argElement.value, relation)
+  }
+}
+
+function setDefaultRelationshipValues(relation: Relationship): void {
   // ref: https://api.rubyonrails.org/classes/ActiveRecord/ConnectionAdapters/SchemaStatements.html#method-i-add_foreign_key
   if (relation.foreignColumnName === '') {
     relation.foreignColumnName = `${singularize(relation.primaryTableName)}_id`
@@ -350,6 +361,19 @@ function extractForeignKeyOptions(
       relation.foreignColumnName,
     )
   }
+}
+
+function extractForeignKeyOptions(
+  argNodes: Node[],
+  relation: Relationship,
+): void {
+  for (const argNode of argNodes) {
+    if (argNode instanceof KeywordHashNode) {
+      processKeywordHashOptions(argNode, relation)
+    }
+  }
+
+  setDefaultRelationshipValues(relation)
 }
 
 class SchemaFinder extends Visitor {

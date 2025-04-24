@@ -11,6 +11,120 @@ import type { ProcessError } from '../../errors.js'
  *   - readOffset: Position of the last successfully parsed statement, used for partial chunk processing
  *   - errors: Array of parsing errors encountered during processing
  */
+const retryDirectionValues = {
+  decrease: -1, // Shrinking mode
+  increase: 1, // Expanding mode
+} as const
+type RetryDirection = -1 | 1
+
+/**
+ * Adjusts the chunk size based on the current retry direction
+ */
+function adjustChunkSize(
+  currentChunkSize: number,
+  retryDirection: RetryDirection,
+  i: number,
+  lines: string[]
+): number {
+  if (retryDirection === retryDirectionValues.decrease) {
+    if (i + currentChunkSize > lines.length) {
+      return lines.length - i
+    }
+  }
+  return currentChunkSize
+}
+
+/**
+ * Handles retry logic when a retry offset is encountered
+ */
+function handleRetry(
+  retryDirection: RetryDirection,
+  currentChunkSize: number,
+  chunkSize: number,
+  i: number,
+  lines: string[],
+  errors: ProcessError[]
+): [RetryDirection, number, ProcessError[], boolean] {
+  let newChunkSize = currentChunkSize
+  let newErrors = [...errors]
+  let shouldBreak = false
+  
+  if (retryDirection === retryDirectionValues.decrease) {
+    // Decrease chunk size
+    newChunkSize--
+    if (newChunkSize === 0) {
+      retryDirection = retryDirectionValues.increase
+      newChunkSize = chunkSize
+    }
+  } else if (retryDirection === retryDirectionValues.increase) {
+    // Increase chunk size
+    newChunkSize++
+    
+    if (i + newChunkSize > lines.length) {
+      newErrors = errors
+      shouldBreak = true
+    }
+    else if (newChunkSize > chunkSize * 2) {
+      newErrors = errors
+      shouldBreak = true
+    }
+  }
+  
+  return [retryDirection, newChunkSize, newErrors, shouldBreak]
+}
+
+/**
+ * Processes a single chunk of SQL
+ */
+async function processChunk(
+  lines: string[],
+  i: number,
+  currentChunkSize: number,
+  retryDirection: RetryDirection,
+  chunkSize: number,
+  callback: (chunk: string) => Promise<[number | null, number | null, ProcessError[]]>,
+  processErrors: ProcessError[]
+): Promise<[number, RetryDirection, ProcessError[]]> {
+  const adjustedChunkSize = adjustChunkSize(currentChunkSize, retryDirection, i, lines)
+  
+  const chunk = lines.slice(i, i + adjustedChunkSize).join('\n')
+  const [retryOffset, readOffset, errors] = await callback(chunk)
+  
+  if (retryOffset !== null) {
+    const [newRetryDirection, _, newErrors, shouldBreak] = 
+      handleRetry(retryDirection, adjustedChunkSize, chunkSize, i, lines, errors)
+    
+    if (shouldBreak) {
+      processErrors.push(...newErrors)
+      return [i, newRetryDirection, processErrors]
+    }
+    
+    return [i, newRetryDirection, processErrors]
+  }
+  else if (readOffset !== null) {
+    const lineNumber = getLineNumber(chunk, readOffset)
+    if (lineNumber === null) {
+      throw new Error('UnexpectedCondition. lineNumber === null')
+    }
+    return [i + lineNumber, retryDirection, processErrors]
+  } 
+  else {
+    // Handle complete chunk processing
+    return [i + adjustedChunkSize, retryDirection, processErrors]
+  }
+}
+
+/**
+ * Processes a large SQL input string in chunks (by line count)
+ *
+ * @param sqlInput - The SQL input string to be processed.
+ * @param chunkSize - The number of lines per chunk (e.g., 500).
+ * @param callback - An asynchronous function to process each chunk.
+ * @returns A tuple of [retryOffset, readOffset, errors] where:
+ *   - retryOffset: Position where parsing failed, indicating where to retry from with a different chunk size
+ *   - readOffset: Position of the last successfully parsed statement, used for partial chunk processing
+ *   - errors: Array of parsing errors encountered during processing
+ */
 export const processSQLInChunks = async (
   sqlInput: string,
   chunkSize: number,
@@ -19,68 +133,41 @@ export const processSQLInChunks = async (
   ) => Promise<[number | null, number | null, ProcessError[]]>,
 ): Promise<ProcessError[]> => {
   if (sqlInput === '') return []
+  
   const lines = sqlInput.split('\n')
-  let currentChunkSize = 0
   const processErrors: ProcessError[] = []
-
-  const retryDirectionValues = {
-    decrease: -1, // Shrinking mode
-    increase: 1, // Expanding mode
-  } as const
-  type RetryDirection = -1 | 1
-
+  
   for (let i = 0; i < lines.length; ) {
     if (processErrors.length > 0) break
-    currentChunkSize = chunkSize
+    
+    let currentChunkSize = chunkSize
     let retryDirection: RetryDirection = retryDirectionValues.decrease
-
+    
     while (true) {
-      // NOTE: To minimize unnecessary retries, avoid increasing currentChunkSize excessively,
-      //       especially when retryOffset is present.
-      if (retryDirection === retryDirectionValues.decrease) {
-        if (i + currentChunkSize > lines.length) {
-          currentChunkSize = lines.length - i
-        }
+      const [newPosition, newRetryDirection, newErrors] = await processChunk(
+        lines, i, currentChunkSize, retryDirection, chunkSize, callback, processErrors
+      )
+      
+      retryDirection = newRetryDirection
+      
+      if (newPosition !== i) {
+        i = newPosition
+        break
       }
-
-      const chunk = lines.slice(i, i + currentChunkSize).join('\n')
-      const [retryOffset, readOffset, errors] = await callback(chunk)
-
-      if (retryOffset !== null) {
-        if (retryDirection === retryDirectionValues.decrease) {
-          currentChunkSize--
-          if (currentChunkSize === 0) {
-            retryDirection = retryDirectionValues.increase
-            currentChunkSize = chunkSize
-          }
-        } else if (retryDirection === retryDirectionValues.increase) {
-          currentChunkSize++
-          // NOTE: No further progress can be made in this case, so break.
-          if (i + currentChunkSize > lines.length) {
-            processErrors.push(...errors)
-            break
-          }
-          // NOTE: Prevent excessive memory usage. If currentChunkSize exceeds twice the original chunkSize, return an error.
-          //       The factor of 2 is arbitrary and can be adjusted in the future if necessary.
-          if (currentChunkSize > chunkSize * 2) {
-            processErrors.push(...errors)
-            break
-          }
-        }
-      } else if (readOffset !== null) {
-        const lineNumber = getLineNumber(chunk, readOffset)
-        if (lineNumber === null) {
-          throw new Error('UnexpectedCondition. lineNumber === null')
-        }
-        i += lineNumber
+      
+      if (newErrors.length > processErrors.length) {
+        processErrors.push(...newErrors.slice(processErrors.length))
         break
+      }
+      
+      if (retryDirection === retryDirectionValues.decrease) {
+        currentChunkSize--
       } else {
-        i += currentChunkSize
-        break
+        currentChunkSize++
       }
     }
   }
-
+  
   return processErrors
 }
 
