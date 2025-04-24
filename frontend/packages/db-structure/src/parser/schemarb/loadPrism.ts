@@ -20,11 +20,7 @@ import { fileURLToPath } from 'node:url'
 import type { ParseResult } from '@ruby/prism/src/deserialize.js'
 import { parsePrism } from '@ruby/prism/src/parsePrism.js'
 
-let overrideWasmUrl: string | undefined = undefined
-
-export const setPrismWasmUrl = (url: string): void => {
-  overrideWasmUrl = url
-}
+const overrideWasmUrl: string | undefined = undefined
 
 export async function loadPrism(): Promise<(source: string) => ParseResult> {
   const path =

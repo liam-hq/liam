@@ -6,12 +6,6 @@ import { processor as tblsProcessor } from './tbls/index.js'
 import type { ProcessResult } from './types.js'
 
 export { ProcessError } from './errors.js'
-export { setPrismWasmUrl } from './schemarb/index.js'
-export {
-  supportedFormatSchema,
-  type SupportedFormat,
-  detectFormat,
-} from './supportedFormat/index.js'
 
 export const parse = (
   str: string,
