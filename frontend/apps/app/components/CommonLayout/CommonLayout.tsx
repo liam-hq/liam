@@ -17,7 +17,7 @@ export async function CommonLayout({ children }: CommonLayoutProps) {
   const { data: userData } = await supabase.auth.getUser()
 
   // Get the user's name from the users table
-  let avatarInitial = 'L' // Default initial
+  let avatarInitial = ''
   if (userData?.user?.id) {
     const { data: userDetails } = await supabase
       .from('users')
