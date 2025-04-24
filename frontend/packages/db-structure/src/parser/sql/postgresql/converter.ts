@@ -265,63 +265,106 @@ export const convertToSchema = (stmts: RawStmt[]): ProcessResult => {
     }
   }
 
+  function extractStringValue(item: Node): string | null {
+    return 'String' in item &&
+      typeof item.String === 'object' &&
+      item.String !== null &&
+      'sval' in item.String
+      ? item.String.sval
+      : null
+  }
+
+  function handleTableComment(list: Node[], comment: string) {
+    const last1 = list[list.length - 1]
+    if (!last1) return
+
+    const tableName = extractStringValue(last1)
+    if (!tableName || !tables[tableName]) return
+    
+    tables[tableName].comment = comment
+  }
+
+  function handleColumnComment(list: Node[], comment: string) {
+    const last1 = list[list.length - 1]
+    const last2 = list[list.length - 2]
+    if (!last1 || !last2) return
+
+    const tableName = extractStringValue(last2)
+    if (!tableName || !tables[tableName]) return
+    
+    const columnName = extractStringValue(last1)
+    if (!columnName || !tables[tableName].columns[columnName]) return
+    
+    tables[tableName].columns[columnName].comment = comment
+  }
+
   function handleCommentStmt(commentStmt: CommentStmt) {
     if (
       commentStmt.objtype !== 'OBJECT_TABLE' &&
       commentStmt.objtype !== 'OBJECT_COLUMN'
     )
       return
+    
     const objectNode = commentStmt.object
     if (!objectNode) return
+    
     const isList = (stmt: Node): stmt is { List: List } => 'List' in stmt
     if (!isList(objectNode)) return
 
     const comment = commentStmt.comment
     if (!comment) return
 
-    const extractStringValue = (item: Node): string | null =>
-      'String' in item &&
-      typeof item.String === 'object' &&
-      item.String !== null &&
-      'sval' in item.String
-        ? item.String.sval
-        : null
-
     const list = objectNode.List.items || []
-    const last1 = list[list.length - 1]
-    const last2 = list[list.length - 2]
-    if (!last1) return
-
-    switch (commentStmt.objtype) {
-      case 'OBJECT_TABLE': {
-        // Supports both of the following formats, but currently ignores the validity of `scope_name` values:
-        // `COMMENT ON TABLE <scope_name>.<table_name> IS '<comment>';`
-        // or
-        // `COMMENT ON TABLE <table_name> IS '<comment>';`
-        const tableName = extractStringValue(last1)
-        if (!tableName) return
-        if (!tables[tableName]) return
-        tables[tableName].comment = comment
-        return
-      }
-      case 'OBJECT_COLUMN': {
-        // Supports both of the following formats, but currently ignores the validity of `scope_name` values:
-        // `COMMENT ON COLUMN <scope_name>.<table_name>.<column_name> IS '<comment>';`
-        // or
-        // `COMMENT ON COLUMN <table_name>.<column_name> IS '<comment>';`
-        if (!last2) return
-        const tableName = extractStringValue(last2)
-        if (!tableName) return
-        if (!tables[tableName]) return
-        const columnName = extractStringValue(last1)
-        if (!columnName) return
-        if (!tables[tableName].columns[columnName]) return
-        tables[tableName].columns[columnName].comment = comment
-        return
-      }
-      default:
-      // NOTE: unexpected, but do nothing for now.
+    
+    if (commentStmt.objtype === 'OBJECT_TABLE') {
+      handleTableComment(list, comment)
+    } else if (commentStmt.objtype === 'OBJECT_COLUMN') {
+      handleColumnComment(list, comment)
     }
+    // NOTE: unexpected object types are ignored
+  }
+
+  function processConstraint(
+    foreignTableName: string,
+    constraint: { Constraint: Constraint },
+  ) {
+    const foreignColumnName =
+      constraint.Constraint.fk_attrs?.[0] &&
+      isStringNode(constraint.Constraint.fk_attrs[0])
+        ? constraint.Constraint.fk_attrs[0].String.sval
+        : undefined
+    
+    if (foreignColumnName === undefined) return
+    
+    // Create relationship
+    const relResult = constraintToRelationship(
+      foreignTableName,
+      foreignColumnName,
+      constraint.Constraint,
+    )
+    
+    if (relResult.isErr()) {
+      errors.push(relResult.error)
+      return
+    }
+    
+    if (relResult.value === undefined) return
+    
+    // Store relationship
+    const relationship = relResult.value
+    relationships[relationship.name] = relationship
+  }
+
+  function processAlterTableCmd(foreignTableName: string, cmd: Node) {
+    if (!('AlterTableCmd' in cmd)) return
+
+    const alterTableCmd = cmd.AlterTableCmd
+    if (alterTableCmd.subtype !== 'AT_AddConstraint') return
+    
+    const constraint = alterTableCmd.def
+    if (!constraint || !isConstraintNode(constraint)) return
+    
+    processConstraint(foreignTableName, constraint)
   }
 
   function handleAlterTableStmt(alterTableStmt: AlterTableStmt) {
@@ -332,33 +375,7 @@ export const convertToSchema = (stmts: RawStmt[]): ProcessResult => {
     if (!foreignTableName) return
 
     for (const cmd of alterTableStmt.cmds) {
-      if (!('AlterTableCmd' in cmd)) continue
-
-      const alterTableCmd = cmd.AlterTableCmd
-      if (alterTableCmd.subtype === 'AT_AddConstraint') {
-        const constraint = alterTableCmd.def
-        if (!constraint || !isConstraintNode(constraint)) continue
-        const foreignColumnName =
-          constraint.Constraint.fk_attrs?.[0] &&
-          isStringNode(constraint.Constraint.fk_attrs[0])
-            ? constraint.Constraint.fk_attrs[0].String.sval
-            : undefined
-        if (foreignColumnName === undefined) continue
-
-        const relResult = constraintToRelationship(
-          foreignTableName,
-          foreignColumnName,
-          constraint.Constraint,
-        )
-        if (relResult.isErr()) {
-          errors.push(relResult.error)
-          continue
-        }
-        if (relResult.value === undefined) continue
-        const relationship = relResult.value
-
-        relationships[relationship.name] = relationship
-      }
+      processAlterTableCmd(foreignTableName, cmd)
     }
   }
 
