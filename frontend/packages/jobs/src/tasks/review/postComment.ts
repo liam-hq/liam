@@ -7,7 +7,7 @@ import {
 import { logger, task } from '@trigger.dev/sdk/v3'
 import { createClient } from '../../libs/supabase'
 
-export type PostCommentPayload = {
+type PostCommentPayload = {
   reviewComment: string
   projectId: string
   pullRequestId: string
