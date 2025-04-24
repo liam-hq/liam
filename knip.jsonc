@@ -16,10 +16,6 @@
     "frontend/apps/app/scripts/install-prisma-internals.mjs",
 
     // TODO: Temporarily ignore issues in the following files. Will be addressed later
-    "frontend/packages/erd-core/src/features/erd/components/ERDRenderer/AppBar/ExportButton/ExportButton.tsx",
-    "frontend/packages/erd-core/src/features/erd/components/ERDRenderer/AppBar/ExportButton/index.ts",
-    "frontend/packages/erd-core/src/features/erd/components/ERDRenderer/Toolbar/ViewControlButton/ViewControlButton.tsx",
-    "frontend/packages/erd-core/src/features/erd/components/ERDRenderer/Toolbar/ViewControlButton/index.ts",
     "frontend/packages/jobs/src/jobs/helloworld.ts",
     "frontend/packages/jobs/src/trigger/sentry-error-test.ts",
     "frontend/packages/jobs/src/prompts/generateDocsSuggestion/index.ts",
@@ -30,8 +26,6 @@
     "frontend/packages/jobs/src/prompts/generateReview/reviewSchema.ts",
     "frontend/packages/jobs/src/tasks/review/index.ts",
     "frontend/packages/jobs/src/trigger/jobs.ts",
-    "frontend/packages/erd-core/src/features/erd/types.ts",
-    "frontend/packages/erd-core/src/features/erd/components/ERDContent/components/RelationshipEdge/type.ts",
     "frontend/packages/jobs/src/functions/processGenerateDocsSuggestion.ts",
     "frontend/packages/jobs/src/tasks/review/savePullRequest.ts",
     "frontend/packages/jobs/src/utils/categoryUtils.ts",
