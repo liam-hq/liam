@@ -1,9 +1,4 @@
-type SchemaOverride = {
-  overrides: {
-    tables?: Record<string, any>
-    tableGroups?: Record<string, any>
-  }
-}
+import type { SchemaOverride } from '@liam-hq/db-structure'
 import type { Tables } from '@liam-hq/db/supabase/database.types'
 import type { InferOutput } from 'valibot'
 import type { reviewSchema } from '../prompts/generateReview/reviewSchema'
