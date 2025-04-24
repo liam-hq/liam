@@ -12,7 +12,7 @@ type SavePullRequestPayload = {
   projectId: string
 }
 
-export type SavePullRequestResult = {
+type SavePullRequestResult = {
   success: boolean
   prId: string
   repositoryId: string

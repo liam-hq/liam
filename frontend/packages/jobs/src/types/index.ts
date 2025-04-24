@@ -33,7 +33,7 @@ export type GenerateReviewPayload = {
 
 export type Review = InferOutput<typeof reviewSchema>
 
-export type ReviewResponse = {
+type ReviewResponse = {
   review: Review
   projectId: string
   pullRequestId: string
@@ -42,7 +42,7 @@ export type ReviewResponse = {
   traceId: string
 }
 
-export type PostCommentPayload = {
+type PostCommentPayload = {
   reviewComment: string
   projectId: string
   pullRequestId: string

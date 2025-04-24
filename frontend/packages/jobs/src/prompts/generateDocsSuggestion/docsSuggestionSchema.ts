@@ -16,7 +16,7 @@ export const evaluationSchema = object({
 })
 
 // Define a file content with reasoning structure that can be reused
-export const fileContentSchema = object({
+const fileContentSchema = object({
   content: string(),
   reasoning: string(),
 })

@@ -12,7 +12,7 @@ import { parse as parseYaml } from 'yaml'
 import { SCHEMA_OVERRIDE_FILE_PATH } from '../constants'
 import { fetchSchemaFileContent } from './githubFileUtils'
 
-export type SchemaInfo = {
+type SchemaInfo = {
   schema: Schema // Original schema
   overriddenSchema: Schema // schema with overrides applied
   currentSchemaOverride: SchemaOverride | null // Current schema override

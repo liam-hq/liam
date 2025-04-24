@@ -89,7 +89,7 @@ export const generateSchemaOverrideSuggestionTask = task({
   },
 })
 
-export const createKnowledgeSuggestionTask = task({
+const createKnowledgeSuggestionTask = task({
   id: 'create-knowledge-suggestion',
   run: async (payload: {
     projectId: string

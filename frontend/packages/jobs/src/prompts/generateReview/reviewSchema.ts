@@ -8,7 +8,7 @@ const KindEnum = enumType({
   'Security or Scalability': 'Security or Scalability',
 })
 
-export const SeverityEnum = enumType({
+const SeverityEnum = enumType({
   CRITICAL: 'CRITICAL',
   WARNING: 'WARNING',
   POSITIVE: 'POSITIVE',

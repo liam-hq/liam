@@ -14,7 +14,7 @@ export const DOC_FILES = [
   'migrationOpsContext.md',
 ] as const
 
-export type DocFile = (typeof DOC_FILES)[number]
+type DocFile = (typeof DOC_FILES)[number]
 
 export async function processGenerateDocsSuggestion(payload: {
   review: Review
