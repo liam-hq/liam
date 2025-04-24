@@ -129,6 +129,106 @@ export const convertToSchema = (stmts: RawStmt[]): ProcessResult => {
     return 'AlterTableStmt' in stmt
   }
 
+  function extractColumnType(colDef: any): string {
+    return colDef.typeName?.names
+      ?.filter(isStringNode)
+      .map((n: any) => n.String.sval)
+      .join('') || ''
+  }
+
+  // Extract default value from constraints
+  function extractDefaultValue(constraints: any[]): string | number | boolean | null {
+    if (!constraints) return null
+    
+    const filteredConstraints = constraints.filter(isConstraintNode)
+    for (const c of filteredConstraints) {
+      const constraint = c.Constraint
+      if (
+        constraint.contype !== 'CONSTR_DEFAULT' ||
+        !constraint.raw_expr ||
+        !('A_Const' in constraint.raw_expr)
+      )
+        continue
+
+      const aConst = constraint.raw_expr.A_Const
+      if ('sval' in aConst && 'sval' in aConst.sval)
+        return aConst.sval.sval
+      if ('ival' in aConst && 'ival' in aConst.ival)
+        return aConst.ival.ival
+      if ('boolval' in aConst && 'boolval' in aConst.boolval)
+        return aConst.boolval.boolval
+    }
+    
+    return null
+  }
+
+  function hasConstraintType(constraints: any[], type: string): boolean {
+    if (!constraints) return false
+    return constraints
+      .filter(isConstraintNode)
+      .some((c) => c.Constraint.contype === type)
+  }
+
+  function isColumnUnique(constraints: any[]): boolean {
+    if (!constraints) return false
+    return constraints
+      .filter(isConstraintNode)
+      .some((c) =>
+        ['CONSTR_UNIQUE', 'CONSTR_PRIMARY'].includes(
+          c.Constraint.contype ?? '',
+        ),
+      )
+  }
+
+  function processColumnConstraints(
+    tableName: string,
+    columnName: string,
+    constraints: any[]
+  ) {
+    if (!constraints) return
+    
+    for (const constraint of constraints.filter(isConstraintNode)) {
+      const relResult = constraintToRelationship(
+        tableName,
+        columnName,
+        constraint.Constraint,
+      )
+      if (relResult.isErr()) {
+        errors.push(relResult.error)
+        continue
+      }
+      if (relResult.value === undefined) continue
+      
+      const relationship = relResult.value
+      relationships[relationship.name] = relationship
+    }
+  }
+
+  function processColumnDef(tableName: string, colDef: any): any {
+    if (colDef.colname === undefined) return null
+    
+    const columnName = colDef.colname
+    const columnType = extractColumnType(colDef)
+    const defaultValue = extractDefaultValue(colDef.constraints)
+    const isPrimary = hasConstraintType(colDef.constraints, 'CONSTR_PRIMARY')
+    const isUnique = isColumnUnique(colDef.constraints)
+    const isNotNull = hasConstraintType(colDef.constraints, 'CONSTR_NOTNULL') || isPrimary
+    
+    // Process relationships from column constraints
+    processColumnConstraints(tableName, columnName, colDef.constraints)
+    
+    return {
+      name: columnName,
+      type: columnType,
+      default: defaultValue,
+      check: null, // TODO
+      primary: isPrimary,
+      unique: isUnique,
+      notNull: isNotNull,
+      comment: null, // TODO
+    }
+  }
+
   function handleCreateStmt(createStmt: CreateStmt) {
     if (!createStmt || !createStmt.relation || !createStmt.tableElts) return
 
@@ -136,85 +236,17 @@ export const convertToSchema = (stmts: RawStmt[]): ProcessResult => {
     if (!tableName) return
 
     const columns: Columns = {}
+    
     for (const elt of createStmt.tableElts) {
       if ('ColumnDef' in elt) {
-        const colDef = elt.ColumnDef
-        if (colDef.colname === undefined) continue
-
-        columns[colDef.colname] = {
-          name: colDef.colname,
-          type:
-            colDef.typeName?.names
-              ?.filter(isStringNode)
-              .map((n) => n.String.sval)
-              .join('') || '',
-          default:
-            colDef.constraints
-              ?.filter(isConstraintNode)
-              .reduce<string | number | boolean | null>((defaultValue, c) => {
-                const constraint = c.Constraint
-                if (
-                  constraint.contype !== 'CONSTR_DEFAULT' ||
-                  !constraint.raw_expr ||
-                  !('A_Const' in constraint.raw_expr)
-                )
-                  return defaultValue
-
-                const aConst = constraint.raw_expr.A_Const
-                if ('sval' in aConst && 'sval' in aConst.sval)
-                  return aConst.sval.sval
-                if ('ival' in aConst && 'ival' in aConst.ival)
-                  return aConst.ival.ival
-                if ('boolval' in aConst && 'boolval' in aConst.boolval)
-                  return aConst.boolval.boolval
-
-                return defaultValue
-              }, null) || null,
-          check: null, // TODO
-          primary:
-            colDef.constraints
-              ?.filter(isConstraintNode)
-              .some((c) => c.Constraint.contype === 'CONSTR_PRIMARY') || false,
-          unique:
-            colDef.constraints
-              ?.filter(isConstraintNode)
-              .some((c) =>
-                ['CONSTR_UNIQUE', 'CONSTR_PRIMARY'].includes(
-                  c.Constraint.contype ?? '',
-                ),
-              ) || false,
-          notNull:
-            colDef.constraints
-              ?.filter(isConstraintNode)
-              .some((c) => c.Constraint.contype === 'CONSTR_NOTNULL') ||
-            // If primary key, it's not null
-            colDef.constraints
-              ?.filter(isConstraintNode)
-              .some((c) => c.Constraint.contype === 'CONSTR_PRIMARY') ||
-            false,
-          comment: null, // TODO
-        }
-
-        for (const constraint of (colDef.constraints ?? []).filter(
-          isConstraintNode,
-        )) {
-          const relResult = constraintToRelationship(
-            tableName,
-            colDef.colname,
-            constraint.Constraint,
-          )
-          if (relResult.isErr()) {
-            errors.push(relResult.error)
-            continue
-          }
-          if (relResult.value === undefined) continue
-          const relationship = relResult.value
-
-          relationships[relationship.name] = relationship
+        const column = processColumnDef(tableName, elt.ColumnDef)
+        if (column) {
+          columns[column.name] = column
         }
       }
     }
 
+    // Create table entry
     tables[tableName] = {
       name: tableName,
       columns,
