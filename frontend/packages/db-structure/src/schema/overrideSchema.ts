@@ -12,13 +12,13 @@ import {
 const columnOverrideSchema = v.object({
   comment: v.optional(v.nullable(v.string())),
 })
-type ColumnOverride = v.InferOutput<typeof columnOverrideSchema>
+export type ColumnOverride = v.InferOutput<typeof columnOverrideSchema>
 
 const tableOverrideSchema = v.object({
   comment: v.optional(v.nullable(v.string())),
   columns: v.optional(v.record(columnNameSchema, columnOverrideSchema)),
 })
-type TableOverride = v.InferOutput<typeof tableOverrideSchema>
+export type TableOverride = v.InferOutput<typeof tableOverrideSchema>
 
 // Schema for the entire override structure
 export const schemaOverrideSchema = v.object({

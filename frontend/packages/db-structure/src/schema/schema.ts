@@ -92,7 +92,7 @@ const constraintSchema = v.union([
   uniqueConstraintSchema,
   checkConstraintSchema,
 ])
-type Constraint = v.InferOutput<typeof constraintSchema>
+export type Constraint = v.InferOutput<typeof constraintSchema>
 
 const constraintsSchema = v.record(constraintNameSchema, constraintSchema)
 export type Constraints = v.InferOutput<typeof constraintsSchema>
@@ -140,7 +140,7 @@ export const tableGroupsSchema = v.record(
   tableGroupNameSchema,
   tableGroupSchema,
 )
-type TableGroups = v.InferOutput<typeof tableGroupsSchema>
+export type TableGroups = v.InferOutput<typeof tableGroupsSchema>
 
 export const schemaSchema = v.object({
   tables: tablesSchema,
