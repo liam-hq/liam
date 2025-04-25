@@ -19,10 +19,16 @@ function getAuthCallbackUrl({
   return `${url}app/auth/callback/${provider}?next=${encodeURIComponent(next)}`
 }
 
-export async function login() {
+export async function login(formData: FormData) {
   const supabase = await createClient()
 
-  const redirectTo = getAuthCallbackUrl({ provider: 'github' })
+  // Get the returnTo path from the form data
+  const returnTo = String(formData.get('returnTo') || '/app')
+
+  const redirectTo = getAuthCallbackUrl({
+    provider: 'github',
+    next: returnTo, // Use the returnTo path here
+  })
 
   const provider = 'github'
   const { error, data } = await supabase.auth.signInWithOAuth({
