@@ -109,7 +109,7 @@ importers:
         version: 3.3.17(typescript@5.8.3)
       '@trigger.dev/sdk':
         specifier: 3.3.17
-        version: 3.3.17(zod@3.24.3)
+        version: 3.3.17(zod@3.23.8)
       cheerio:
         specifier: 1.0.0
         version: 1.0.0
@@ -136,7 +136,7 @@ importers:
         version: 3.37.2
       langfuse-langchain:
         specifier: 3.37.2
-        version: 3.37.2(langchain@0.3.21(@langchain/core@0.3.45(openai@4.94.0(ws@8.18.1)(zod@3.24.3)))(cheerio@1.0.0)(handlebars@4.7.8)(openai@4.94.0(ws@8.18.1)(zod@3.24.3))(ws@8.18.1))
+        version: 3.37.2(langchain@0.3.21(@langchain/core@0.3.45(openai@4.94.0(ws@8.18.1)(zod@3.23.8)))(cheerio@1.0.0)(handlebars@4.7.8)(openai@4.94.0(ws@8.18.1)(zod@3.23.8))(ws@8.18.1))
       next:
         specifier: 15.3.1
         version: 15.3.1(@opentelemetry/api@1.9.0)(@playwright/test@1.51.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -497,8 +497,8 @@ importers:
         specifier: 1.1.7
         version: 1.1.7(@types/react-dom@18.3.6(@types/react@18.3.20))(@types/react@18.3.20)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@xyflow/react':
-        specifier: 12.3.5
-        version: 12.3.5(@types/react@18.3.20)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        specifier: 12.5.5
+        version: 12.5.5(@types/react@18.3.20)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       clsx:
         specifier: 2.1.1
         version: 2.1.1
@@ -3646,14 +3646,14 @@ packages:
   '@xtuc/long@4.2.2':
     resolution: {integrity: sha512-NuHqBY1PB/D8xU6s/thBgOAiAP7HOYDQ32+BFZILJ8ivkUkAHQnWfn6WhL79Owj1qmUnoN/YPhktdIoucipkAQ==}
 
-  '@xyflow/react@12.3.5':
-    resolution: {integrity: sha512-wAYqpicdrVo1rxCu0X3M9s3YIF45Agqfabw0IBryTGqjWvr2NyfciI8gIP4MB+NKpWWN5kxZ9tiZ9u8lwC7iAg==}
+  '@xyflow/react@12.5.5':
+    resolution: {integrity: sha512-mAtHuS4ktYBL1ph5AJt7X/VmpzzlmQBN3+OXxyT/1PzxwrVto6AKc3caerfxzwBsg3cA4J8lB63F3WLAuPMmHw==}
     peerDependencies:
       react: '>=17'
       react-dom: '>=17'
 
-  '@xyflow/system@0.0.46':
-    resolution: {integrity: sha512-bmFXvboVdiydIFZmDCjrbBCYgB0d5pYdkcZPWbAxGmhMRUZ+kW3CksYgYxWabrw51rwpWitLEadvLrivG0mVfA==}
+  '@xyflow/system@0.0.55':
+    resolution: {integrity: sha512-6cngWlE4oMXm+zrsbJxerP3wUNUFJcv/cE5kDfu0qO55OWK3fAeSOLW9td3xEVQlomjIW5knds1MzeMnBeCfqw==}
 
   '@yarnpkg/lockfile@1.1.0':
     resolution: {integrity: sha512-GpSwvyXOcOOlV70vbnzjj4fW5xW/FdUF6nQEt1ENy7m4ZCczi1+/buVUPAqmGfqznsORNFzUMjctTIp8a9tuCQ==}
@@ -9061,6 +9061,23 @@ snapshots:
     dependencies:
       tslib: 2.8.1
 
+  '@langchain/core@0.3.45(openai@4.94.0(ws@8.18.1)(zod@3.23.8))':
+    dependencies:
+      '@cfworker/json-schema': 4.1.1
+      ansi-styles: 5.2.0
+      camelcase: 6.3.0
+      decamelize: 1.2.0
+      js-tiktoken: 1.0.19
+      langsmith: 0.3.16(openai@4.94.0(ws@8.18.1)(zod@3.23.8))
+      mustache: 4.2.0
+      p-queue: 6.6.2
+      p-retry: 4.6.2
+      uuid: 10.0.0
+      zod: 3.24.3
+      zod-to-json-schema: 3.24.5(zod@3.24.3)
+    transitivePeerDependencies:
+      - openai
+
   '@langchain/core@0.3.45(openai@4.94.0(ws@8.18.1)(zod@3.24.3))':
     dependencies:
       '@cfworker/json-schema': 4.1.1
@@ -9078,6 +9095,17 @@ snapshots:
     transitivePeerDependencies:
       - openai
 
+  '@langchain/openai@0.5.6(@langchain/core@0.3.45(openai@4.94.0(ws@8.18.1)(zod@3.23.8)))(ws@8.18.1)':
+    dependencies:
+      '@langchain/core': 0.3.45(openai@4.94.0(ws@8.18.1)(zod@3.23.8))
+      js-tiktoken: 1.0.19
+      openai: 4.94.0(ws@8.18.1)(zod@3.24.3)
+      zod: 3.24.3
+      zod-to-json-schema: 3.24.5(zod@3.24.3)
+    transitivePeerDependencies:
+      - encoding
+      - ws
+
   '@langchain/openai@0.5.6(@langchain/core@0.3.45(openai@4.94.0(ws@8.18.1)(zod@3.24.3)))(ws@8.18.1)':
     dependencies:
       '@langchain/core': 0.3.45(openai@4.94.0(ws@8.18.1)(zod@3.24.3))
@@ -9088,6 +9116,11 @@ snapshots:
     transitivePeerDependencies:
       - encoding
       - ws
+
+  '@langchain/textsplitters@0.1.0(@langchain/core@0.3.45(openai@4.94.0(ws@8.18.1)(zod@3.23.8)))':
+    dependencies:
+      '@langchain/core': 0.3.45(openai@4.94.0(ws@8.18.1)(zod@3.23.8))
+      js-tiktoken: 1.0.20
 
   '@langchain/textsplitters@0.1.0(@langchain/core@0.3.45(openai@4.94.0(ws@8.18.1)(zod@3.24.3)))':
     dependencies:
@@ -11111,6 +11144,28 @@ snapshots:
       - supports-color
       - utf-8-validate
 
+  '@trigger.dev/sdk@3.3.17(zod@3.23.8)':
+    dependencies:
+      '@opentelemetry/api': 1.9.0
+      '@opentelemetry/api-logs': 0.52.1
+      '@opentelemetry/semantic-conventions': 1.25.1
+      '@trigger.dev/core': 3.3.17
+      chalk: 5.4.1
+      cronstrue: 2.59.0
+      debug: 4.4.0
+      evt: 2.5.9
+      slug: 6.1.0
+      terminal-link: 3.0.0
+      ulid: 2.4.0
+      uncrypto: 0.1.3
+      uuid: 9.0.1
+      ws: 8.18.1
+      zod: 3.23.8
+    transitivePeerDependencies:
+      - bufferutil
+      - supports-color
+      - utf-8-validate
+
   '@trigger.dev/sdk@3.3.17(zod@3.24.3)':
     dependencies:
       '@opentelemetry/api': 1.9.0
@@ -11642,9 +11697,9 @@ snapshots:
 
   '@xtuc/long@4.2.2': {}
 
-  '@xyflow/react@12.3.5(@types/react@18.3.20)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
+  '@xyflow/react@12.5.5(@types/react@18.3.20)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
     dependencies:
-      '@xyflow/system': 0.0.46
+      '@xyflow/system': 0.0.55
       classcat: 5.0.5
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
@@ -11653,7 +11708,7 @@ snapshots:
       - '@types/react'
       - immer
 
-  '@xyflow/system@0.0.46':
+  '@xyflow/system@0.0.55':
     dependencies:
       '@types/d3-drag': 3.0.7
       '@types/d3-selection': 3.0.11
@@ -13746,6 +13801,29 @@ snapshots:
       zod: 3.24.3
       zod-validation-error: 3.4.0(zod@3.24.3)
 
+  langchain@0.3.21(@langchain/core@0.3.45(openai@4.94.0(ws@8.18.1)(zod@3.23.8)))(cheerio@1.0.0)(handlebars@4.7.8)(openai@4.94.0(ws@8.18.1)(zod@3.23.8))(ws@8.18.1):
+    dependencies:
+      '@langchain/core': 0.3.45(openai@4.94.0(ws@8.18.1)(zod@3.23.8))
+      '@langchain/openai': 0.5.6(@langchain/core@0.3.45(openai@4.94.0(ws@8.18.1)(zod@3.23.8)))(ws@8.18.1)
+      '@langchain/textsplitters': 0.1.0(@langchain/core@0.3.45(openai@4.94.0(ws@8.18.1)(zod@3.23.8)))
+      js-tiktoken: 1.0.20
+      js-yaml: 4.1.0
+      jsonpointer: 5.0.1
+      langsmith: 0.3.21(openai@4.94.0(ws@8.18.1)(zod@3.23.8))
+      openapi-types: 12.1.3
+      p-retry: 4.6.2
+      uuid: 10.0.0
+      yaml: 2.7.1
+      zod: 3.24.3
+      zod-to-json-schema: 3.24.5(zod@3.24.3)
+    optionalDependencies:
+      cheerio: 1.0.0
+      handlebars: 4.7.8
+    transitivePeerDependencies:
+      - encoding
+      - openai
+      - ws
+
   langchain@0.3.21(@langchain/core@0.3.45(openai@4.94.0(ws@8.18.1)(zod@3.24.3)))(cheerio@1.0.0)(handlebars@4.7.8)(openai@4.94.0(ws@8.18.1)(zod@3.24.3))(ws@8.18.1):
     dependencies:
       '@langchain/core': 0.3.45(openai@4.94.0(ws@8.18.1)(zod@3.24.3))
@@ -13773,6 +13851,12 @@ snapshots:
     dependencies:
       mustache: 4.2.0
 
+  langfuse-langchain@3.37.2(langchain@0.3.21(@langchain/core@0.3.45(openai@4.94.0(ws@8.18.1)(zod@3.23.8)))(cheerio@1.0.0)(handlebars@4.7.8)(openai@4.94.0(ws@8.18.1)(zod@3.23.8))(ws@8.18.1)):
+    dependencies:
+      langchain: 0.3.21(@langchain/core@0.3.45(openai@4.94.0(ws@8.18.1)(zod@3.23.8)))(cheerio@1.0.0)(handlebars@4.7.8)(openai@4.94.0(ws@8.18.1)(zod@3.23.8))(ws@8.18.1)
+      langfuse: 3.37.2
+      langfuse-core: 3.37.2
+
   langfuse-langchain@3.37.2(langchain@0.3.21(@langchain/core@0.3.45(openai@4.94.0(ws@8.18.1)(zod@3.24.3)))(cheerio@1.0.0)(handlebars@4.7.8)(openai@4.94.0(ws@8.18.1)(zod@3.24.3))(ws@8.18.1)):
     dependencies:
       langchain: 0.3.21(@langchain/core@0.3.45(openai@4.94.0(ws@8.18.1)(zod@3.24.3)))(cheerio@1.0.0)(handlebars@4.7.8)(openai@4.94.0(ws@8.18.1)(zod@3.24.3))(ws@8.18.1)
@@ -13782,6 +13866,18 @@ snapshots:
   langfuse@3.37.2:
     dependencies:
       langfuse-core: 3.37.2
+
+  langsmith@0.3.16(openai@4.94.0(ws@8.18.1)(zod@3.23.8)):
+    dependencies:
+      '@types/uuid': 10.0.0
+      chalk: 4.1.2
+      console-table-printer: 2.12.1
+      p-queue: 6.6.2
+      p-retry: 4.6.2
+      semver: 7.7.1
+      uuid: 10.0.0
+    optionalDependencies:
+      openai: 4.94.0(ws@8.18.1)(zod@3.23.8)
 
   langsmith@0.3.16(openai@4.94.0(ws@8.18.1)(zod@3.24.3)):
     dependencies:
@@ -13794,6 +13890,18 @@ snapshots:
       uuid: 10.0.0
     optionalDependencies:
       openai: 4.94.0(ws@8.18.1)(zod@3.24.3)
+
+  langsmith@0.3.21(openai@4.94.0(ws@8.18.1)(zod@3.23.8)):
+    dependencies:
+      '@types/uuid': 10.0.0
+      chalk: 4.1.2
+      console-table-printer: 2.12.1
+      p-queue: 6.6.2
+      p-retry: 4.6.2
+      semver: 7.7.1
+      uuid: 10.0.0
+    optionalDependencies:
+      openai: 4.94.0(ws@8.18.1)(zod@3.23.8)
 
   langsmith@0.3.21(openai@4.94.0(ws@8.18.1)(zod@3.24.3)):
     dependencies:
@@ -14700,6 +14808,22 @@ snapshots:
     dependencies:
       is-docker: 2.2.1
       is-wsl: 2.2.0
+
+  openai@4.94.0(ws@8.18.1)(zod@3.23.8):
+    dependencies:
+      '@types/node': 18.19.86
+      '@types/node-fetch': 2.6.12
+      abort-controller: 3.0.0
+      agentkeepalive: 4.6.0
+      form-data-encoder: 1.7.2
+      formdata-node: 4.4.1
+      node-fetch: 2.7.0
+    optionalDependencies:
+      ws: 8.18.1
+      zod: 3.23.8
+    transitivePeerDependencies:
+      - encoding
+    optional: true
 
   openai@4.94.0(ws@8.18.1)(zod@3.24.3):
     dependencies:
