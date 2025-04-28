@@ -1,0 +1,133 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: var(--spacing-6) var(--spacing-4);
+  background-color: var(--global-background);
+}
+
+.formContainer {
+  width: 100%;
+  max-width: 400px;
+  padding: var(--spacing-10);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-8);
+  border-radius: var(--border-radius-xl);
+  background-color: rgba(29, 237, 131, 0.05);
+  backdrop-filter: blur(5px);
+  border: 1px solid rgba(29, 237, 131, 0.5);
+  box-shadow: 0 4px 80px 0 rgba(29, 237, 131, 0.1);
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-3);
+}
+
+.title {
+  color: var(--global-foreground);
+  font-size: var(--font-size-6);
+  font-weight: normal;
+  margin: 0;
+  text-align: center;
+}
+
+.formSection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-4);
+}
+
+.label {
+  display: block;
+  color: var(--global-foreground);
+  font-size: var(--font-size-5);
+  font-weight: 500;
+}
+
+.inputWrapper {
+  width: 100%;
+}
+
+.input {
+  width: 100%;
+  background-color: var(--global-background);
+  border-color: var(--pane-border);
+}
+
+.signupButton {
+  width: 100%;
+  background-color: var(--primary-color);
+  color: var(--button-foreground);
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  margin: 0;
+  gap: var(--spacing-3);
+}
+
+.line {
+  flex: 1;
+  height: 1px;
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.orText {
+  color: rgba(255, 255, 255, 0.4);
+  font-size: var(--font-size-3);
+}
+
+.socialLoginSection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-3);
+}
+
+.socialButton {
+  width: 100%;
+  border-color: rgba(29, 237, 131, 0.15);
+  justify-content: center;
+}
+
+.loginLink {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: var(--spacing-3);
+  margin-top: var(--spacing-6);
+}
+
+.loginText {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: var(--font-size-3);
+}
+
+.loginButton {
+  color: var(--global-foreground);
+  font-weight: bold;
+  font-size: var(--font-size-3);
+  text-decoration: none;
+}
+
+.termsContainer {
+  margin-top: var(--spacing-8);
+  text-align: center;
+}
+
+.termsText {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: var(--font-size-3);
+  line-height: 1.6;
+}
+
+.termsLink {
+  color: var(--primary-color);
+  text-decoration: none;
+}
