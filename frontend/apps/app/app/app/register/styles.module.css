@@ -1,0 +1,170 @@
+.container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-color: var(--global-background);
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 400px;
+  padding: var(--spacing-10);
+  border-radius: var(--border-radius-xl);
+  background: linear-gradient(
+    180deg,
+    rgba(29, 237, 131, 0.12) 0%,
+    rgba(29, 237, 131, 0) 100%
+  );
+  border: 1px solid;
+  border-image-source: linear-gradient(
+    180deg,
+    rgba(29, 237, 131, 1) 0%,
+    rgba(180, 254, 215, 1) 50%,
+    rgba(23, 68, 40, 1) 100%
+  );
+  border-image-slice: 1;
+  box-shadow: inset 0px 4px 80px 0px rgba(29, 237, 131, 0.1);
+  backdrop-filter: blur(5px);
+}
+
+.logoContainer {
+  margin-bottom: var(--spacing-3);
+}
+
+.logo {
+  width: 32px;
+  height: 32px;
+  color: var(--primary-accent);
+}
+
+.title {
+  font-family: var(--main-font);
+  font-size: var(--font-size-6);
+  font-weight: 400;
+  color: var(--global-foreground);
+  margin-bottom: var(--spacing-8);
+  text-align: center;
+}
+
+.formContainer {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-4);
+  margin-bottom: var(--spacing-6);
+}
+
+.inputGroup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2);
+  width: 100%;
+}
+
+.label {
+  font-family: var(--main-font);
+  font-size: var(--font-size-5);
+  font-weight: 500;
+  color: var(--global-foreground);
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  gap: var(--spacing-3);
+  margin: var(--spacing-4) 0;
+  padding: 0 var(--spacing-6);
+}
+
+.line {
+  flex-grow: 1;
+  height: 1px;
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.orText {
+  font-family: var(--main-font);
+  font-size: var(--font-size-3);
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.socialButtons {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-3);
+  margin-bottom: var(--spacing-6);
+}
+
+.socialButton {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: var(--spacing-2);
+  width: 100%;
+  padding: var(--spacing-2) var(--spacing-3);
+  border-radius: var(--border-radius-md);
+  border: 1px solid rgba(29, 237, 131, 0.15);
+  background-color: transparent;
+  font-family: var(--main-font);
+  font-size: var(--font-size-4);
+  font-weight: 500;
+  color: var(--global-foreground);
+  cursor: pointer;
+}
+
+.socialIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.accountPrompt {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-3);
+  margin-bottom: var(--spacing-6);
+}
+
+.accountText {
+  font-family: var(--main-font);
+  font-size: var(--font-size-3);
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.signInLink {
+  font-family: var(--main-font);
+  font-size: var(--font-size-3);
+  font-weight: 700;
+  color: var(--global-foreground);
+  text-decoration: none;
+}
+
+.termsText {
+  font-family: var(--main-font);
+  font-size: var(--font-size-3);
+  font-weight: 400;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.7);
+  text-align: center;
+  max-width: 300px;
+}
+
+.termsLink {
+  color: var(--global-foreground);
+  text-decoration: none;
+}
+
+.googleIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+}
