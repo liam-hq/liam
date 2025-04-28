@@ -27,7 +27,7 @@ async function getKnowledgeSuggestions(
 
   if (error) {
     console.error('Error fetching knowledge suggestions:', error)
-    return null
+    throw new Error('Error fetching knowledge suggestions')
   }
 
   return knowledgeSuggestions || []
@@ -43,7 +43,7 @@ export const KnowledgeSuggestionsListPage: FC<Props> = async ({
   )
 
   if (!knowledgeSuggestions) {
-    return null
+    throw new Error('Knowledge suggestions not found')
   }
 
   return (

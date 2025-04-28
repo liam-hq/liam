@@ -55,7 +55,7 @@ async function getKnowledgeSuggestionDetail(
   const suggestion = await getSuggestionWithProject(suggestionId, projectId)
 
   if (!suggestion) {
-    return null
+    throw new Error('Knowledge suggestion not found')
   }
 
   return suggestion
@@ -69,7 +69,7 @@ export const KnowledgeSuggestionDetailPage: FC<Props> = async ({
   const suggestion = await getKnowledgeSuggestionDetail(projectId, suggestionId)
 
   if (!suggestion) {
-    return null
+    throw new Error('Knowledge suggestion not found')
   }
 
   const repository =

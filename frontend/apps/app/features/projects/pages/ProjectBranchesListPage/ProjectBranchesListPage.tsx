@@ -28,7 +28,7 @@ async function getProjectAndBranches(projectId: string) {
       .single()
 
     if (error || !project) {
-      return null
+      throw new Error('Project not found')
     }
 
     const branchesByRepo = await Promise.all(
@@ -58,7 +58,7 @@ async function getProjectAndBranches(projectId: string) {
     }
   } catch (error) {
     console.error('Error fetching project and branches:', error)
-    return null
+    throw new Error('Failed to fetch project and branches')
   }
 }
 
@@ -66,7 +66,7 @@ export const ProjectBranchesListPage: FC<Props> = async ({ projectId }) => {
   const project = await getProjectAndBranches(projectId)
 
   if (!project) {
-    return null
+    throw new Error('Project not found')
   }
 
   return (

@@ -18,7 +18,7 @@ export async function ProjectsPage({
 
   if (!currentOrganization) {
     console.error('Organization not found')
-    return null
+    throw new Error('Organization not found')
   }
 
   await getUserOrganizations() // Fetch for future use

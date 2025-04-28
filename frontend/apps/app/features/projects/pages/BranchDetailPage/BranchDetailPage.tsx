@@ -28,7 +28,7 @@ async function getBranchDetails(projectId: string) {
 
   if (error || !project) {
     console.error('Error fetching project:', error)
-    return null
+    throw new Error('Error fetching project')
   }
 
   const { data: schemaPath, error: schemaPathError } = await supabase
@@ -74,7 +74,7 @@ export const BranchDetailPage = async ({
   const project = await getBranchDetails(projectId)
 
   if (!project) {
-    return null
+    throw new Error('Project not found')
   }
 
   return (

@@ -35,7 +35,7 @@ async function getMigrationContents(migrationId: string) {
 
   if (migrationError || !migration) {
     console.error('Error fetching migration:', migrationError)
-    return null
+    throw new Error('Migration not found')
   }
 
   // Get the related pull request through the mapping table
@@ -219,7 +219,7 @@ export const MigrationDetailPage: FC<Props> = async ({
   const migrationContents = await getMigrationContents(migrationId)
 
   if (!migrationContents) {
-    return null
+    throw new Error('Migration contents not found')
   }
 
   const {

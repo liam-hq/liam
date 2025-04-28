@@ -25,7 +25,7 @@ export async function CommonLayout({
 
   const { data: authUser, error } = await getAuthUser()
   if (error) {
-    return null
+    throw new Error('Failed to get auth user')
   }
 
   const { data: organizations } = await getOrganizationsByUserId(
