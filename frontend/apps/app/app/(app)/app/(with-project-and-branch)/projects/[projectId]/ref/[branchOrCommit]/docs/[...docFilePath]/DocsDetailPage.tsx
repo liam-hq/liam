@@ -1,4 +1,3 @@
-import { notFound } from 'next/navigation'
 import styles from './DocsDetailPage.module.css'
 import { getDocumentContent } from './getDocumentContent'
 
@@ -21,7 +20,7 @@ export const DocsDetailPage = async ({
     })
 
     if (!content) {
-      return notFound()
+      return null
     }
 
     return (
@@ -31,6 +30,6 @@ export const DocsDetailPage = async ({
     )
   } catch (error) {
     console.error('Error fetching document:', error)
-    throw notFound()
+    return null
   }
 }

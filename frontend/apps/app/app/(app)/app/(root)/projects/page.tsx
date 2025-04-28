@@ -1,7 +1,6 @@
 import { getOrganizationId } from '@/features/organizations/services/getOrganizationId'
 import { ProjectsPage } from '@/features/projects/pages'
 import { createClient } from '@/libs/db/server'
-import { notFound } from 'next/navigation'
 
 export default async function Page() {
   const organizationId = await getOrganizationId()
@@ -20,10 +19,10 @@ export default async function Page() {
 
   if (error || !user) {
     console.error('Error fetching user:', error)
-    return notFound()
+    return null
   }
   if (data.session === null) {
-    return notFound()
+    return null
   }
 
   return <ProjectsPage organizationId={organizationId} />

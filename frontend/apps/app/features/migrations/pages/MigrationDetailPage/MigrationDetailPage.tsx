@@ -2,7 +2,7 @@ import { createClient } from '@/libs/db/server'
 import { urlgen } from '@/utils/routes'
 import { getPullRequestDetails, getPullRequestFiles } from '@liam-hq/github'
 import Link from 'next/link'
-import { notFound } from 'next/navigation'
+
 import type { FC } from 'react'
 import { CopyButton } from '../../../../components/CopyButton/CopyButton'
 import { UserFeedbackClient } from '../../../../components/UserFeedbackClient'
@@ -35,7 +35,7 @@ async function getMigrationContents(migrationId: string) {
 
   if (migrationError || !migration) {
     console.error('Error fetching migration:', migrationError)
-    return notFound()
+    return null
   }
 
   // Get the related pull request through the mapping table
@@ -216,13 +216,19 @@ export const MigrationDetailPage: FC<Props> = async ({
   projectId,
   branchOrCommit,
 }) => {
+  const migrationContents = await getMigrationContents(migrationId)
+
+  if (!migrationContents) {
+    return null
+  }
+
   const {
     migration,
     pullRequest,
     overallReview,
-    erdLinks,
+    erdLinks = [],
     knowledgeSuggestions = [],
-  } = await getMigrationContents(migrationId)
+  } = migrationContents
 
   const formattedReviewDate = overallReview.reviewed_at
     ? new Date(overallReview.reviewed_at).toLocaleDateString('en-US')

@@ -1,7 +1,7 @@
 import type { PageProps } from '@/app/types'
 import { SchemaPage } from '@/features/schemas/pages/SchemaPage'
 import { branchOrCommitSchema } from '@/utils/routes'
-import { notFound } from 'next/navigation'
+
 import * as v from 'valibot'
 
 const paramsSchema = v.object({
@@ -12,7 +12,7 @@ const paramsSchema = v.object({
 
 export default async function Page({ params }: PageProps) {
   const parsedParams = v.safeParse(paramsSchema, await params)
-  if (!parsedParams.success) throw notFound()
+  if (!parsedParams.success) return null
 
   const { projectId, branchOrCommit, schemaFilePath } = parsedParams.output
   const filePath = schemaFilePath.join('/')

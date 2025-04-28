@@ -1,7 +1,7 @@
 import { createClient } from '@/libs/db/server'
 import { urlgen } from '@/utils/routes'
 import Link from 'next/link'
-import { notFound } from 'next/navigation'
+
 import styles from './BranchDetailPage.module.css'
 
 type Props = {
@@ -28,7 +28,7 @@ async function getBranchDetails(projectId: string) {
 
   if (error || !project) {
     console.error('Error fetching project:', error)
-    notFound()
+    return null
   }
 
   const { data: schemaPath, error: schemaPathError } = await supabase
@@ -72,6 +72,10 @@ export const BranchDetailPage = async ({
   branchOrCommit,
 }: Props) => {
   const project = await getBranchDetails(projectId)
+
+  if (!project) {
+    return null
+  }
 
   return (
     <div className={styles.container}>

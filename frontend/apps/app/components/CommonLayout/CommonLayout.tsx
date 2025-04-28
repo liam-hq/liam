@@ -1,5 +1,5 @@
 import { getOrganizationId } from '@/features/organizations/services/getOrganizationId'
-import { notFound } from 'next/navigation'
+
 import type { ReactNode } from 'react'
 import { AppBar } from './AppBar'
 import styles from './CommonLayout.module.css'
@@ -25,7 +25,7 @@ export async function CommonLayout({
 
   const { data: authUser, error } = await getAuthUser()
   if (error) {
-    return notFound()
+    return null
   }
 
   const { data: organizations } = await getOrganizationsByUserId(

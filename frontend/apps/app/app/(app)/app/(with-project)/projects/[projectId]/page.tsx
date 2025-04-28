@@ -1,5 +1,5 @@
 import type { PageProps } from '@/app/types'
-import { notFound, redirect } from 'next/navigation'
+import { redirect } from 'next/navigation'
 import * as v from 'valibot'
 
 const paramsSchema = v.object({
@@ -8,7 +8,7 @@ const paramsSchema = v.object({
 
 export default async function Page({ params }: PageProps) {
   const parsedParams = v.safeParse(paramsSchema, await params)
-  if (!parsedParams.success) return notFound()
+  if (!parsedParams.success) return null
 
   const { projectId } = parsedParams.output
 

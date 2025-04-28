@@ -6,7 +6,7 @@ import { parse, setPrismWasmUrl } from '@liam-hq/db-structure/parser'
 import { getFileContent } from '@liam-hq/github'
 import * as Sentry from '@sentry/nextjs'
 import { cookies } from 'next/headers'
-import { notFound } from 'next/navigation'
+
 import type { ComponentProps, FC } from 'react'
 import styles from './SchemaPage.module.css'
 import { ERDEditor } from './components/ERDEditor'
@@ -59,7 +59,17 @@ async function getERDEditorContent({
     !repository.name
   ) {
     console.error('Repository information not found')
-    return notFound()
+    return {
+      schema: blankSchema,
+      defaultSidebarOpen: false,
+      errorObjects: [
+        {
+          name: 'RepositoryError',
+          message: 'Repository information not found',
+          instruction: 'Please check the project configuration.',
+        },
+      ],
+    }
   }
 
   const repositoryFullName = `${repository.owner}/${repository.name}`

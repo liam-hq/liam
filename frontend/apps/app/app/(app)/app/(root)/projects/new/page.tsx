@@ -2,7 +2,6 @@ import { getOrganizationId } from '@/features/organizations/services/getOrganiza
 import { ProjectNewPage } from '@/features/projects/pages'
 import { createClient } from '@/libs/db/server'
 import { getInstallations } from '@liam-hq/github'
-import { notFound } from 'next/navigation'
 
 export default async function NewProjectPage() {
   const organizationId = await getOrganizationId()
@@ -19,13 +18,13 @@ export default async function NewProjectPage() {
   } = await supabase.auth.getUser()
   if (error || !user) {
     console.error('Error fetching user:', error)
-    return notFound()
+    return null
   }
 
   const { data } = await supabase.auth.getSession()
 
   if (data.session === null) {
-    return notFound()
+    return null
   }
 
   const { installations } = await getInstallations(data.session)

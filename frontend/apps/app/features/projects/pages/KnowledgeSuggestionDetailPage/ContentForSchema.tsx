@@ -1,7 +1,7 @@
 import { createClient } from '@/libs/db/server'
 import { parse } from '@liam-hq/db-structure/parser'
 import { getFileContent } from '@liam-hq/github'
-import { notFound } from 'next/navigation'
+
 import type { FC } from 'react'
 import { processOverrideContent } from '../../actions/processOverrideContent'
 import { getOriginalDocumentContent } from '../../utils/getOriginalDocumentContent'
@@ -18,7 +18,7 @@ async function getGithubSchemaFilePath(projectId: string) {
     .single()
 
   if (error || !gitHubSchemaFilePath) {
-    notFound()
+    return null
   }
 
   return gitHubSchemaFilePath
@@ -40,6 +40,11 @@ export const ContentForSchema: FC<Props> = async ({
   const repositoryFullName = `${repository.owner}/${repository.name}`
 
   const githubSchemaFilePath = await getGithubSchemaFilePath(projectId)
+
+  if (!githubSchemaFilePath) {
+    return null
+  }
+
   const filePath = githubSchemaFilePath.path
   const format = githubSchemaFilePath.format
 

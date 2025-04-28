@@ -2,7 +2,7 @@ import { createClient } from '@/libs/db/server'
 import { urlgen } from '@/utils/routes/urlgen'
 import { Button, Library, RoundBadge, TabsList, TabsTrigger } from '@liam-hq/ui'
 import Link from 'next/link'
-import { notFound } from 'next/navigation'
+
 import type { FC } from 'react'
 import styles from './ProjectHeader.module.css'
 import { PROJECT_TABS } from './projectConstants'
@@ -31,7 +31,7 @@ async function getProject(projectId: string) {
 
   if (error || !project) {
     console.error('Error fetching project:', error)
-    notFound()
+    return null
   }
 
   const { data: schemaPath, error: schemaPathError } = await supabase
@@ -93,6 +93,11 @@ export const ProjectHeader: FC<ProjectHeaderProps> = async ({
   branchOrCommit = 'main', // TODO: get default branch from API(using currentOrganization)
 }) => {
   const project = await getProject(projectId)
+
+  if (!project) {
+    return null
+  }
+
   const knowledgeSuggestionsCount =
     await getKnowledgeSuggestionsCount(projectId)
 

@@ -1,7 +1,7 @@
 import { createClient } from '@/libs/db/server'
 import { getRepositoryBranches } from '@liam-hq/github'
 import Link from 'next/link'
-import { notFound } from 'next/navigation'
+
 import type { FC } from 'react'
 import { urlgen } from '../../../../utils/routes/urlgen'
 import styles from './ProjectBranchesListPage.module.css'
@@ -28,7 +28,7 @@ async function getProjectAndBranches(projectId: string) {
       .single()
 
     if (error || !project) {
-      notFound()
+      return null
     }
 
     const branchesByRepo = await Promise.all(
@@ -58,12 +58,16 @@ async function getProjectAndBranches(projectId: string) {
     }
   } catch (error) {
     console.error('Error fetching project and branches:', error)
-    notFound()
+    return null
   }
 }
 
 export const ProjectBranchesListPage: FC<Props> = async ({ projectId }) => {
   const project = await getProjectAndBranches(projectId)
+
+  if (!project) {
+    return null
+  }
 
   return (
     <div className={styles.container}>
