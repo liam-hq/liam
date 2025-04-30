@@ -4,20 +4,33 @@ import {
 } from '@/features/erd/constants'
 import { columnHandleId } from '@/features/erd/utils'
 import type { ShowMode } from '@/schemas/showMode'
-import type { Cardinality, Schema } from '@liam-hq/db-structure'
-import type { TableGroup } from '@liam-hq/db-structure'
+import type { 
+  Cardinality, 
+  Schema,
+  TableGroup
+} from '@liam-hq/db-structure'
 import type { Edge, Node } from '@xyflow/react'
+
+// Define a simplified type for implementation requests
+export type ProcessedRequests = {
+  openRequests: any[]
+  inProgressRequests: any[]
+  doneRequests: any[]
+  wontfixRequests: any[]
+}
 
 type Params = {
   schema: Schema
   showMode: ShowMode
   tableGroups?: Record<string, TableGroup>
+  implementationRequests?: ProcessedRequests | undefined
 }
 
 export const convertSchemaToNodes = ({
   schema,
   showMode,
   tableGroups = {},
+  implementationRequests,
 }: Params): {
   nodes: Node[]
   edges: Edge[]
@@ -112,6 +125,130 @@ export const convertSchemaToNodes = ({
       cardinality: rel.cardinality,
     },
   }))
+
+  // Process implementation requests if available
+  if (implementationRequests) {
+    // Process open requests
+    for (const request of implementationRequests.openRequests) {
+      // Add tables from requests
+      if (request.tables?.add) {
+        for (const [tableName, tableAddReq] of Object.entries(request.tables.add)) {
+          // Skip if table already exists
+          if (schema.tables[tableName]) continue;
+
+          // Type assertion for tableAddRequest
+          const tableAddRequest = tableAddReq as any;
+
+          // Create a node for the requested table
+          nodes.push({
+            id: `request-${request.id}-table-${tableName}`,
+            type: 'requestedTable',
+            data: {
+              table: tableAddRequest.definition,
+              request,
+              status: 'open',
+            },
+            position: { x: 0, y: 0 },
+            ariaLabel: `Requested table: ${tableName}`,
+            zIndex: zIndex.nodeDefault,
+          });
+        }
+      }
+
+      // Add relationships from requests
+      if (request.relationships?.add) {
+        for (const [relationshipName, relationshipAddReq] of Object.entries(request.relationships.add)) {
+          // Skip if relationship already exists
+          if (schema.relationships[relationshipName]) continue;
+
+          // Type assertion for relationshipAddRequest
+          const relationshipAddRequest = relationshipAddReq as any;
+          const rel = relationshipAddRequest.definition;
+          edges.push({
+            id: `request-${request.id}-relationship-${relationshipName}`,
+            type: 'requestedRelationship',
+            source: rel.primaryTableName,
+            target: rel.foreignTableName,
+            sourceHandle:
+              showMode === 'TABLE_NAME'
+                ? null
+                : columnHandleId(rel.primaryTableName, rel.primaryColumnName),
+            targetHandle:
+              showMode === 'TABLE_NAME'
+                ? null
+                : columnHandleId(rel.foreignTableName, rel.foreignColumnName),
+            data: {
+              relationship: rel,
+              request,
+              status: 'open',
+              cardinality: rel.cardinality,
+            },
+          });
+        }
+      }
+    }
+
+    // Process in-progress requests
+    for (const request of implementationRequests.inProgressRequests) {
+      // Similar processing as open requests, but with 'in_progress' status
+      // Add tables from requests
+      if (request.tables?.add) {
+        for (const [tableName, tableAddReq] of Object.entries(request.tables.add)) {
+          // Skip if table already exists
+          if (schema.tables[tableName]) continue;
+
+          // Type assertion for tableAddRequest
+          const tableAddRequest = tableAddReq as any;
+
+          // Create a node for the requested table
+          nodes.push({
+            id: `request-${request.id}-table-${tableName}`,
+            type: 'requestedTable',
+            data: {
+              table: tableAddRequest.definition,
+              request,
+              status: 'in_progress',
+            },
+            position: { x: 0, y: 0 },
+            ariaLabel: `Requested table (in progress): ${tableName}`,
+            zIndex: zIndex.nodeDefault,
+          });
+        }
+      }
+
+      // Add relationships from requests
+      if (request.relationships?.add) {
+        for (const [relationshipName, relationshipAddReq] of Object.entries(request.relationships.add)) {
+          // Skip if relationship already exists
+          if (schema.relationships[relationshipName]) continue;
+
+          // Type assertion for relationshipAddRequest
+          const relationshipAddRequest = relationshipAddReq as any;
+          const rel = relationshipAddRequest.definition;
+          edges.push({
+            id: `request-${request.id}-relationship-${relationshipName}`,
+            type: 'requestedRelationship',
+            source: rel.primaryTableName,
+            target: rel.foreignTableName,
+            sourceHandle:
+              showMode === 'TABLE_NAME'
+                ? null
+                : columnHandleId(rel.primaryTableName, rel.primaryColumnName),
+            targetHandle:
+              showMode === 'TABLE_NAME'
+                ? null
+                : columnHandleId(rel.foreignTableName, rel.foreignColumnName),
+            data: {
+              relationship: rel,
+              request,
+              status: 'in_progress',
+              cardinality: rel.cardinality,
+            },
+          });
+        }
+      }
+    }
+  }
 
   return { nodes, edges }
 }

@@ -1,5 +1,6 @@
 import {
   type Schema,
+  type ProcessedRequests,
   overrideSchema,
   schemaOverrideSchema,
 } from '@liam-hq/db-structure'
@@ -23,7 +24,7 @@ export const safeApplySchemaOverride = async (
 
   if (overrideContent === null) {
     return {
-      result: { schema: schema, tableGroups: {} },
+      result: { schema: schema, tableGroups: {}, requests: undefined },
       error: null,
     }
   }

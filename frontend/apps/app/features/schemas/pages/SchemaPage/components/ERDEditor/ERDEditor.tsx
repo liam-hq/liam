@@ -14,12 +14,22 @@ import {
   useEffect,
   useState,
 } from 'react'
+
 import { parse } from 'valibot'
 import styles from './ERDEditor.module.css'
+
+// Define a simplified type for implementation requests
+type ProcessedRequests = {
+  openRequests: any[]
+  inProgressRequests: any[]
+  doneRequests: any[]
+  wontfixRequests: any[]
+}
 
 type Props = {
   schema: Schema
   tableGroups?: Record<string, TableGroup>
+  implementationRequests?: ProcessedRequests
   errorObjects: ComponentProps<typeof ERDRenderer>['errorObjects']
   defaultSidebarOpen: boolean
   defaultPanelSizes?: number[]
@@ -30,6 +40,7 @@ type Props = {
 export const ERDEditor: FC<Props> = ({
   schema,
   tableGroups: initialTableGroups = {},
+  implementationRequests,
   errorObjects,
   defaultSidebarOpen,
   defaultPanelSizes = [20, 80],
@@ -99,6 +110,7 @@ export const ERDEditor: FC<Props> = ({
           defaultPanelSizes={defaultPanelSizes}
           errorObjects={errorObjects}
           tableGroups={tableGroups}
+          implementationRequests={implementationRequests}
           onAddTableGroup={addTableGroup}
         />
         {canUpdateFile && (

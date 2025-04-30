@@ -1,5 +1,6 @@
 import '@xyflow/react/dist/style.css'
 import type { TableGroup } from '@liam-hq/db-structure'
+import type { ProcessedRequests } from '../../utils/convertSchemaToNodes'
 import {
   type ImperativePanelHandle,
   ResizableHandle,
@@ -38,6 +39,7 @@ type Props = {
   defaultPanelSizes?: number[]
   withAppBar?: boolean
   tableGroups?: Record<string, TableGroup>
+  implementationRequests?: ProcessedRequests
   onAddTableGroup?: ((params: TableGroup) => void) | undefined
 }
 
@@ -51,6 +53,7 @@ export const ERDRenderer: FC<Props> = ({
   defaultPanelSizes = [20, 80],
   withAppBar = false,
   tableGroups = {},
+  implementationRequests,
   onAddTableGroup,
 }) => {
   const [open, setOpen] = useState(defaultSidebarOpen)
@@ -62,6 +65,7 @@ export const ERDRenderer: FC<Props> = ({
     schema,
     showMode,
     tableGroups,
+    implementationRequests,
   })
 
   const leftPanelRef = createRef<ImperativePanelHandle>()

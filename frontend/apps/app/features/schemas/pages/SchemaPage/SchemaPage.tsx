@@ -123,9 +123,10 @@ async function getERDEditorContent({
     }
   }
 
-  const { schema: overriddenSchema, tableGroups } = result || {
+  const { schema: overriddenSchema, tableGroups, requests } = result || {
     schema,
     tableGroups: {},
+    requests: undefined,
   }
   const cookieStore = await cookies()
   const defaultSidebarOpen = cookieStore.get('sidebar:state')?.value === 'true'
@@ -142,6 +143,7 @@ async function getERDEditorContent({
   return {
     schema: overriddenSchema,
     tableGroups,
+    implementationRequests: requests,
     defaultSidebarOpen,
     defaultPanelSizes,
     errorObjects: errors.map((error) => ({
