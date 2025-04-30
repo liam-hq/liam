@@ -296,4 +296,256 @@ These features allow for enhanced documentation and visualization without affect
 
 ---
 
+## 7  Implementation Requests
+
+The *Implementation Requests* feature provides a structured way to propose, track, and implement schema changes over time. It serves as a living TODO list that is tightly coupled with version control and the ER diagram.
+
+### 7.1  Purpose
+
+Implementation Requests allow contributors to:
+
+* Document proposed schema changes directly alongside the schema definition
+* Track the status of requested changes through the implementation lifecycle
+* Maintain a clear history of schema evolution decisions
+* Link schema changes to issues, commits, and pull requests
+
+### 7.2  Structure
+
+Implementation Requests are defined in the `requests` section of the `schema-override.yml` file:
+
+```yaml
+# Current schema overrides
+overrides:
+  # existing overrides...
+
+# Implementation requests for future changes
+requests:
+  - id: "REQ-2025-05-01-001"
+    description: "Add comment functionality"
+    status: "open"  # open, in_progress, done, wontfix
+    tables:
+      add:
+        comments:
+          definition:
+            name: "comments"
+            columns:
+              id: 
+                name: "id"
+                type: "uuid"
+                default: null
+                check: null
+                primary: true
+                unique: true
+                notNull: true
+                comment: "Primary key"
+              post_id:
+                name: "post_id"
+                type: "uuid"
+                default: null
+                check: null
+                primary: false
+                unique: false
+                notNull: true
+                comment: "Foreign key to posts table"
+              content:
+                name: "content"
+                type: "text"
+                default: null
+                check: null
+                primary: false
+                unique: false
+                notNull: true
+                comment: "Comment content"
+              created_at:
+                name: "created_at"
+                type: "timestamp"
+                default: "now()"
+                check: null
+                primary: false
+                unique: false
+                notNull: true
+                comment: "Creation timestamp"
+            indexes: {}
+            constraints: {}
+    relationships:
+      add:
+        comments_posts_fk:
+          definition:
+            name: "comments_posts_fk"
+            primaryTableName: "posts"
+            primaryColumnName: "id"
+            foreignTableName: "comments"
+            foreignColumnName: "post_id"
+            cardinality: "ONE_TO_MANY"
+            updateConstraint: "CASCADE"
+            deleteConstraint: "CASCADE"
+    createdBy: "hoshinotsuyoshi"
+    createdAt: "2025-05-01T06:45:00Z"
+    refs:
+      issue: "123"
+      commit: null
+```
+
+### 7.3  Request Types
+
+Implementation Requests support various operation types:
+
+#### 7.3.1  Table Operations
+
+* **Add Table**: Define a new table to be created
+  ```yaml
+  tables:
+    add:
+      new_table_name:
+        definition:
+          # table definition
+  ```
+
+* **Drop Table**: Request removal of an existing table
+  ```yaml
+  tables:
+    drop:
+      table_to_remove:
+        reason: "This table is no longer needed because..."
+  ```
+
+* **Alter Table**: Request changes to an existing table
+  ```yaml
+  tables:
+    alter:
+      existing_table:
+        changes:
+          - type: "rename_column"
+            from: "old_name"
+            to: "new_name"
+            reason: "Standardizing naming conventions"
+          
+          - type: "modify_column"
+            column: "column_name"
+            changes:
+              type: 
+                from: "varchar(100)"
+                to: "varchar(255)"
+              notNull:
+                from: false
+                to: true
+            reason: "Supporting longer values and ensuring data integrity"
+          
+          - type: "add_column"
+            definition:
+              name: "new_column"
+              type: "timestamp"
+              default: null
+              notNull: false
+              comment: "New feature data"
+            reason: "Supporting new feature X"
+          
+          - type: "drop_column"
+            name: "obsolete_column"
+            reason: "No longer used after feature Y was removed"
+  ```
+
+#### 7.3.2  Relationship Operations
+
+* **Add Relationship**: Define a new relationship between tables
+  ```yaml
+  relationships:
+    add:
+      new_relationship_name:
+        definition:
+          # relationship definition
+  ```
+
+* **Drop Relationship**: Request removal of a relationship
+  ```yaml
+  relationships:
+    drop:
+      relationship_to_remove:
+        reason: "This relationship is no longer valid because..."
+  ```
+
+#### 7.3.3  Other Operations
+
+Similar patterns can be applied to other schema elements:
+
+* **Indexes**: `indexes.add`, `indexes.drop`, `indexes.alter`
+* **Constraints**: `constraints.add`, `constraints.drop`, `constraints.alter`
+
+### 7.4  Request Lifecycle
+
+| Status | Description | Visualization |
+|--------|-------------|---------------|
+| `open` | Proposed change that hasn't been implemented | Displayed with "TODO" badge in ER diagram |
+| `in_progress` | Change is being implemented | Displayed with "In Progress" badge |
+| `done` | Change has been implemented | No badge, change is reflected in schema |
+| `wontfix` | Change was rejected or is no longer needed | Not displayed |
+
+### 7.5  CI Integration
+
+Implementation Requests can be integrated with CI pipelines:
+
+1. **Validation**: Ensure requests follow the correct format
+2. **Status Tracking**: Automatically update request status based on commits
+3. **Consistency Checks**: Verify that `done` requests match actual schema changes
+4. **Stale Request Detection**: Flag `in_progress` requests that haven't been updated
+
+### 7.6  JSON Schema for Implementation Requests
+
+```jsonc
+{
+  "type": "array",
+  "items": {
+    "type": "object",
+    "required": ["id", "status", "createdBy", "createdAt"],
+    "properties": {
+      "id": {
+        "type": "string",
+        "pattern": "^REQ-\\d{4}-\\d{2}-\\d{2}-\\d{3}$"
+      },
+      "description": { "type": "string" },
+      "status": {
+        "type": "string",
+        "enum": ["open", "in_progress", "done", "wontfix"]
+      },
+      "tables": {
+        "type": "object",
+        "properties": {
+          "add": { "type": "object", "additionalProperties": { /* table definition */ } },
+          "drop": { "type": "object", "additionalProperties": { /* drop details */ } },
+          "alter": { "type": "object", "additionalProperties": { /* alter details */ } }
+        }
+      },
+      "relationships": {
+        "type": "object",
+        "properties": {
+          "add": { "type": "object", "additionalProperties": { /* relationship definition */ } },
+          "drop": { "type": "object", "additionalProperties": { /* drop details */ } }
+        }
+      },
+      "createdBy": { "type": "string" },
+      "createdAt": { "type": "string", "format": "date-time" },
+      "refs": {
+        "type": "object",
+        "properties": {
+          "issue": { "type": ["string", "integer"] },
+          "commit": { "type": ["string", "null"] }
+        }
+      }
+    }
+  }
+}
+```
+
+### 7.7  Benefits
+
+Implementation Requests provide several advantages:
+
+1. **Documentation**: Changes are documented alongside the schema they affect
+2. **Traceability**: Each change is linked to its rationale, creator, and related artifacts
+3. **Visibility**: Proposed changes are visible to all stakeholders
+4. **Process**: Enforces a structured approach to schema evolution
+5. **History**: Maintains a clear record of schema decisions over time
+
+---
+
 *End of Draft v0.3*
