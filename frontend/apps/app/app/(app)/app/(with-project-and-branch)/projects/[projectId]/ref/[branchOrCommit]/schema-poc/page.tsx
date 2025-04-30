@@ -1,12 +1,12 @@
 'use client'
 
-import { useState } from 'react'
-import { ERDEditor } from '@/features/schemas/pages/SchemaPage/components/ERDEditor'
-import { SchemaChat } from '@/features/schemas/components/SchemaChat/SchemaChat'
-import { sampleSchema } from './schema'
 import { Button } from '@/components'
+import { SchemaChat } from '@/features/schemas/components/SchemaChat/SchemaChat'
+import { ERDEditor } from '@/features/schemas/pages/SchemaPage/components/ERDEditor'
 import type { Schema } from '@liam-hq/db-structure'
+import { useState } from 'react'
 import styles from './page.module.css'
+import { sampleSchema } from './schema'
 
 export default function Page() {
   const [schema, setSchema] = useState<Schema>(sampleSchema)
@@ -70,9 +70,7 @@ export default function Page() {
       </div>
       <div className={styles.editorPanel}>
         <div style={{ marginBottom: '16px', padding: '8px' }}>
-          <Button onClick={handleAddTestTable}>
-            Add Test Table
-          </Button>
+          <Button onClick={handleAddTestTable}>Add Test Table</Button>
         </div>
         <ERDEditor
           schema={schema}

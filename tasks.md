@@ -20,15 +20,21 @@
 - [x] Create a prompt template that explains the schema structure
 - [x] Add error handling for API failures
 - [x] Implement rate limiting to prevent abuse (set maxDuration to 30 seconds)
+- [ ] Add Langfuse integration for monitoring and analytics: https://langfuse.com/docs/integrations/vercel-ai-sdk
+  ```bash
+  pnpm add langfuse
+  ```
+  - [x] Set up Langfuse client configuration with API keys
+  - [ ] Implement trace tracking for each chat session
+  - [ ] Add generation tracking with metadata for each AI response
+  - [ ] Implement score tracking for model evaluation
 
 ## 3. Process AI Responses to Modify Schema (update handleModifySchema in schema-poc/page.tsx)
-- [ ] Create a schema modification parser to extract commands from AI responses
-- [ ] Implement a command interpreter that converts natural language to schema operations
-- [ ] Define a set of supported operations (add table, modify column, etc.)
-- [ ] Extend handleModifySchema to support different operation types
-- [ ] Add validation to prevent invalid schema modifications
-- [ ] Implement undo/redo functionality for schema changes
-- [ ] Add visual feedback when schema is modified
+- [x] Create a schema modification parser to extract commands from AI responses
+- [x] Implement a command interpreter that converts natural language to schema operations
+- [x] Extend handleModifySchema to support different operation types
+- [x] Add validation to prevent invalid schema modifications
+- [x] Add visual feedback when schema is modified
 
 ## 4. Enhance User Experience (improve UI in schema-poc/page.tsx)
 - [ ] Add loading states during AI processing

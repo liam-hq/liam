@@ -1,5 +1,6 @@
 import { openai } from '@ai-sdk/openai'
-import type { Schema } from '@liam-hq/db-structure'
+import { type Schema, schemaSchema } from '@liam-hq/db-structure'
+import { toJsonSchema } from '@valibot/to-json-schema'
 import { type Message, streamText } from 'ai'
 import { NextResponse } from 'next/server'
 
@@ -93,6 +94,8 @@ const convertSchemaToText = (schema: Schema): string => {
   return schemaText
 }
 
+const schemaJsonSchema = toJsonSchema(schemaSchema)
+
 export async function POST(request: Request) {
   const { messages, schema } = await request.json()
 
@@ -126,10 +129,70 @@ Follow these guidelines:
 5. Provide only information directly related to the question, avoiding unnecessary details.
 6. Format your responses using GitHub Flavored Markdown (GFM) for better readability.
 
+When suggesting schema changes, provide them in a JSON code block that follows the schema structure:
+
+\`\`\`json
+{
+  "tables": {
+    "table_name": {
+      "name": "table_name",
+      "columns": {
+        "column_name": {
+          "name": "column_name",
+          "type": "data_type",
+          "default": null,
+          "check": null,
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "comment": null
+        }
+      },
+      "comment": "Table description",
+      "indexes": {
+        "index_name": {
+          "name": "index_name",
+          "unique": true,
+          "columns": ["column1", "column2"],
+          "type": "btree"
+        }
+      },
+      "constraints": {}
+    }
+  },
+  "relationships": {
+    "relationship_name": {
+      "name": "relationship_name",
+      "primaryTableName": "primary_table",
+      "primaryColumnName": "primary_column",
+      "foreignTableName": "foreign_table",
+      "foreignColumnName": "foreign_column",
+      "cardinality": "ONE_TO_MANY",
+      "updateConstraint": "CASCADE",
+      "deleteConstraint": "RESTRICT"
+    }
+  },
+  "tableGroups": {
+    "group_id": {
+      "name": "Group Name",
+      "tables": ["table1", "table2"],
+      "comment": "Group description"
+    }
+  }
+}
+\`\`\`
+
+The schema must be valid according to the following JSON schema:
+
+\`\`\`json
+${schemaJsonSchema}
+\`\`\`
+
 Complete Schema Information:
 ${schemaText}
 
 Your goal is to help users understand and optimize their database schemas.
+When the user asks to modify the schema, provide the JSON structure for the requested changes.
 `
 
   // Generate streaming response using Vercel AI SDK

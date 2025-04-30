@@ -3,6 +3,8 @@
 import { useChat } from '@ai-sdk/react'
 import type { Schema } from '@liam-hq/db-structure'
 import { type FC, useEffect, useRef } from 'react'
+import { processSchemaModification } from '../../utils/SchemaModifier'
+import { showSchemaToast } from '../../utils/SchemaToast'
 import { ChatInput } from '../SchemaChat/ChatInput'
 import { ChatMessage } from '../SchemaChat/ChatMessage'
 import styles from './SchemaChat.module.css'
@@ -12,7 +14,7 @@ interface SchemaChatProps {
   onSchemaChange: (newSchema: Schema) => void
 }
 
-export const SchemaChat: FC<SchemaChatProps> = ({ schema }) => {
+export const SchemaChat: FC<SchemaChatProps> = ({ schema, onSchemaChange }) => {
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
   const { messages, input, handleInputChange, handleSubmit, status, error } =
@@ -21,18 +23,37 @@ export const SchemaChat: FC<SchemaChatProps> = ({ schema }) => {
       body: {
         schema,
       },
-      onFinish: () => {
-        // In the future, we could parse schema operations from the message
-        // TODO: Implement schema modification based on AI response
-        // const newSchema = parseSchemaCommands from the last message
-        // onSchemaChange(newSchema);
+      onFinish: (message) => {
+        // Process AI response to extract and apply schema modifications
+        const {
+          schema: updatedSchema,
+          modified,
+          error,
+        } = processSchemaModification(message.content, schema)
+
+        if (modified) {
+          // Apply schema changes
+          onSchemaChange(updatedSchema)
+          // Show success notification
+          showSchemaToast('Schema modified successfully', 'success')
+        } else if (error) {
+          // Show error notification
+          showSchemaToast(`Failed to modify schema: ${error}`, 'error')
+        }
       },
     })
 
-  // Scroll to bottom when new messages are added
+  // Scroll to bottom once component is mounted
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages])
+  }, [])
+
+  // Scroll to bottom when messages change
+  useEffect(() => {
+    if (messages.length > 0) {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+    }
+  }, [messages.length])
 
   return (
     <div className={styles.chatContainer}>
