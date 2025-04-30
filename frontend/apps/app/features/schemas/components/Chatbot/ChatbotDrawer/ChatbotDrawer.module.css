@@ -1,10 +1,14 @@
-.dialog {
-  width: 90%;
-  max-width: 600px;
-  height: 80vh;
-  max-height: 700px;
-  display: flex;
-  flex-direction: column;
+.content {
+  top: var(--default-header-height);
+  right: 0;
+  bottom: 0;
+  width: 400px;
+}
+
+.content[data-vaul-drawer] {
+  transition-duration: 165ms;
+  animation-duration: 165ms;
+  user-select: auto;
 }
 
 .messagesContainer {
@@ -13,6 +17,7 @@
   padding: 16px;
   display: flex;
   flex-direction: column;
+  height: calc(100vh - var(--default-header-height) - 80px); /* Adjust for header and input */
 }
 
 .loadingIndicator {
