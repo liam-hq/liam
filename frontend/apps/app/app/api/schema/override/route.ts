@@ -68,6 +68,7 @@ export async function POST(request: NextRequest) {
       : { overrides: { tableGroups: {} } }
 
     const validationResult = v.safeParse(
+      // @ts-ignore Type instantiation is excessively deep and possibly infinite
       schemaOverrideSchema,
       rawSchemaOverride,
     )

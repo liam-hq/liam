@@ -123,7 +123,11 @@ async function getERDEditorContent({
     }
   }
 
-  const { schema: overriddenSchema, tableGroups, requests } = result || {
+  const {
+    schema: overriddenSchema,
+    tableGroups,
+    requests,
+  } = result || {
     schema,
     tableGroups: {},
     requests: undefined,

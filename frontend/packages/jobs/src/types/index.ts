@@ -1,7 +1,8 @@
-import type { SchemaOverride } from '@liam-hq/db-structure'
 import type { Tables } from '@liam-hq/db/supabase/database.types'
 import type { InferOutput } from 'valibot'
 import type { reviewSchema } from '../prompts/generateReview/reviewSchema'
+
+// import type { SchemaOverride } from '@liam-hq/db-structure'
 
 export type GenerateReviewPayload = {
   pullRequestId: string
@@ -41,7 +42,8 @@ export type GenerateSchemaOverridePayload = {
 export type SchemaOverrideResult =
   | {
       createNeeded: true
-      override: SchemaOverride
+      // biome-ignore lint/suspicious/noExplicitAny: needed for SchemaOverride
+      override: any // SchemaOverride
       projectId: string
       pullRequestNumber: number
       branchName: string

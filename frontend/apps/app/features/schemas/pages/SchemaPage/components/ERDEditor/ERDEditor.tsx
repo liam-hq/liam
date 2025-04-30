@@ -20,9 +20,13 @@ import styles from './ERDEditor.module.css'
 
 // Define a simplified type for implementation requests
 type ProcessedRequests = {
+  // biome-ignore lint/suspicious/noExplicitAny: needed for poc
   openRequests: any[]
+  // biome-ignore lint/suspicious/noExplicitAny: needed for poc
   inProgressRequests: any[]
+  // biome-ignore lint/suspicious/noExplicitAny: needed for poc
   doneRequests: any[]
+  // biome-ignore lint/suspicious/noExplicitAny: needed for poc
   wontfixRequests: any[]
 }
 

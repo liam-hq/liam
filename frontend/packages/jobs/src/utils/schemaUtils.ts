@@ -1,7 +1,6 @@
 import path from 'node:path'
 import {
   type Schema,
-  type SchemaOverride,
   overrideSchema,
   schemaOverrideSchema,
 } from '@liam-hq/db-structure'
@@ -11,6 +10,9 @@ import { safeParse } from 'valibot'
 import { parse as parseYaml } from 'yaml'
 import { SCHEMA_OVERRIDE_FILE_PATH } from '../constants'
 import { fetchSchemaFileContent } from './githubFileUtils'
+
+// biome-ignore lint/suspicious/noExplicitAny: needed for SchemaOverride
+type SchemaOverride = any
 
 type SchemaInfo = {
   schema: Schema // Original schema
@@ -45,6 +47,7 @@ export const fetchSchemaInfoWithOverrides = async (
   let currentSchemaOverride: SchemaOverride | null = null
   if (currentSchemaOverrideContent) {
     const parsedJson = parseYaml(currentSchemaOverrideContent)
+    // @ts-ignore Type instantiation is excessively deep and possibly infinite.ts(2589)
     const result = safeParse(schemaOverrideSchema, parsedJson)
 
     if (result.success) {

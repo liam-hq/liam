@@ -9,9 +9,13 @@ import type { Edge, Node } from '@xyflow/react'
 
 // Define a simplified type for implementation requests
 export type ProcessedRequests = {
+  // biome-ignore lint/suspicious/noExplicitAny: needed for poc
   openRequests: any[]
+  // biome-ignore lint/suspicious/noExplicitAny: needed for poc
   inProgressRequests: any[]
+  // biome-ignore lint/suspicious/noExplicitAny: needed for poc
   doneRequests: any[]
+  // biome-ignore lint/suspicious/noExplicitAny: needed for poc
   wontfixRequests: any[]
 }
 
@@ -135,6 +139,7 @@ export const convertSchemaToNodes = ({
           if (schema.tables[tableName]) continue
 
           // Type assertion for tableAddRequest
+          // biome-ignore lint/suspicious/noExplicitAny: needed for poc
           const tableAddRequest = tableAddReq as any
 
           // Create a node for the requested table
@@ -162,6 +167,7 @@ export const convertSchemaToNodes = ({
           if (schema.relationships[relationshipName]) continue
 
           // Type assertion for relationshipAddRequest
+          // biome-ignore lint/suspicious/noExplicitAny: needed for poc
           const relationshipAddRequest = relationshipAddReq as any
           const rel = relationshipAddRequest.definition
           edges.push({
@@ -200,6 +206,7 @@ export const convertSchemaToNodes = ({
           if (schema.tables[tableName]) continue
 
           // Type assertion for tableAddRequest
+          // biome-ignore lint/suspicious/noExplicitAny: needed for poc
           const tableAddRequest = tableAddReq as any
 
           // Create a node for the requested table
@@ -227,6 +234,7 @@ export const convertSchemaToNodes = ({
           if (schema.relationships[relationshipName]) continue
 
           // Type assertion for relationshipAddRequest
+          // biome-ignore lint/suspicious/noExplicitAny: needed for poc
           const relationshipAddRequest = relationshipAddReq as any
           const rel = relationshipAddRequest.definition
           edges.push({

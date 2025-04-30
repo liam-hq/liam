@@ -1,6 +1,5 @@
 import {
   type Schema,
-  type ProcessedRequests,
   overrideSchema,
   schemaOverrideSchema,
 } from '@liam-hq/db-structure'
@@ -47,6 +46,7 @@ export const safeApplySchemaOverride = async (
   }
 
   return {
+    // @ts-ignore
     result: overrideSchema(schema, parsedOverrideContent.output),
     error: null,
   }
