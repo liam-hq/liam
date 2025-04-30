@@ -23,7 +23,73 @@ overrides:
           comment: "GitHub's repository ID. Maps to 'repository.id' in Octokit and 'Repository.databaseId' in GraphQL API."
     github_pull_requests:
       comment: "GitHub pull requests table with github_ prefix pattern. Should be updated to have migration_id instead of migrations having pull_request_id."
+      # Example of adding a new column to an existing table
+      addColumns:
+        created_at:
+          name: "created_at"
+          type: "timestamp"
+          default: "now()"
+          check: null
+          primary: false
+          unique: false
+          notNull: true
+          comment: "Creation timestamp for the pull request"
     github_pull_request_comments:
       comment: "Stores GitHub comment information for pull requests, maintaining a 1:1 relationship with github_pull_requests"
     migration_pull_request_mappings:
       comment: "Maps migrations to GitHub pull requests in a one-to-one relationship, isolating GitHub dependencies"
+  # Example of adding a completely new table
+  addTables:
+    documentation:
+      name: "documentation"
+      comment: "Documentation resources for repositories"
+      columns:
+        id:
+          name: "id"
+          type: "uuid"
+          default: null
+          check: null
+          primary: true
+          unique: true
+          notNull: true
+          comment: "Primary key"
+        repository_id:
+          name: "repository_id"
+          type: "uuid"
+          default: null
+          check: null
+          primary: false
+          unique: false
+          notNull: true
+          comment: "Foreign key to github_repositories"
+        title:
+          name: "title"
+          type: "varchar"
+          default: null
+          check: null
+          primary: false
+          unique: false
+          notNull: true
+          comment: "Documentation title"
+        content:
+          name: "content"
+          type: "text"
+          default: null
+          check: null
+          primary: false
+          unique: false
+          notNull: true
+          comment: "Documentation content"
+      indexes: {}
+      constraints: {}
+  # Example of adding a new relationship
+  addRelationships:
+    documentation_repository_fk:
+      name: "documentation_repository_fk"
+      primaryTableName: "github_repositories"
+      primaryColumnName: "id"
+      foreignTableName: "documentation"
+      foreignColumnName: "repository_id"
+      cardinality: "ONE_TO_MANY"
+      updateConstraint: "CASCADE"
+      deleteConstraint: "CASCADE"
