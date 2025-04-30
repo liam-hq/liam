@@ -284,7 +284,134 @@ These features allow for enhanced documentation and visualization without affect
 
 ## 5  Physical Schema Baseline — `schema.json`
 
-*(unchanged from v0.2 — see previous section)*
+The parser emits *schema.json* for every database dump. This canonical file represents the exact physical structure **without logical adornments**.
+
+### 5.1 Example snippet
+
+```jsonc
+{
+  "database": {
+    "vendor": "postgres",
+    "version": "15.5"
+  },
+  "tables": [
+    {
+      "name": "invoice",
+      "schema": "public",
+      "columns": [
+        { "name": "id", "type": "uuid", "nullable": false, "primaryKey": true },
+        { "name": "external_id", "type": "text", "nullable": true },
+        { "name": "amount", "type": "numeric", "nullable": false, "default": "0" }
+      ],
+      "indexes": [
+        { "name": "invoice_external_id_idx", "columns": ["external_id"], "unique": true }
+      ],
+      "foreignKeys": [
+        {
+          "name": "invoice_order_id_fkey",
+          "columns": ["order_id"],
+          "references": {
+            "table": "order",
+            "columns": ["id"],
+            "onUpdate": "CASCADE",
+            "onDelete": "RESTRICT"
+          }
+        }
+      ]
+    }
+  ]
+}
+```
+
+### 5.2 JSON Schema for Physical Schema (`schema.schema.json`)
+
+```jsonc
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Physical Database Schema",
+  "type": "object",
+  "required": ["database", "tables"],
+  "additionalProperties": false,
+  "properties": {
+    "database": {
+      "type": "object",
+      "required": ["vendor", "version"],
+      "additionalProperties": false,
+      "properties": {
+        "vendor": { "type": "string", "enum": ["postgres", "mysql", "sqlite", "sqlserver"] },
+        "version": { "type": "string" }
+      }
+    },
+    "tables": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["name", "columns"],
+        "additionalProperties": false,
+        "properties": {
+          "name": { "type": "string" },
+          "schema": { "type": "string" },
+          "columns": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["name", "type"],
+              "additionalProperties": false,
+              "properties": {
+                "name": { "type": "string" },
+                "type": { "type": "string" },
+                "nullable": { "type": "boolean" },
+                "primaryKey": { "type": "boolean" },
+                "default": { "type": ["string", "number", "null"] },
+                "comment": { "type": "string" }
+              }
+            }
+          },
+          "indexes": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["name", "columns"],
+              "additionalProperties": false,
+              "properties": {
+                "name": { "type": "string" },
+                "columns": { "type": "array", "items": { "type": "string" } },
+                "unique": { "type": "boolean" }
+              }
+            }
+          },
+          "foreignKeys": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["columns", "references"],
+              "additionalProperties": false,
+              "properties": {
+                "name": { "type": "string" },
+                "columns": { "type": "array", "items": { "type": "string" } },
+                "references": {
+                  "type": "object",
+                  "required": ["table", "columns"],
+                  "additionalProperties": false,
+                  "properties": {
+                    "table": { "type": "string" },
+                    "columns": { "type": "array", "items": { "type": "string" } },
+                    "onUpdate": { "type": "string" },
+                    "onDelete": { "type": "string" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+```
+
+> **Note:** Indexes, triggers, and constraints beyond FKs are optional at v0.3. Future drafts may extend support.
 
 ---
 
