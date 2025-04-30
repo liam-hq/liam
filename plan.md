@@ -27,6 +27,61 @@
    - オーバーライドがER図にどのように反映されるか確認
    - 表示ロジックとの接続ポイントを特定
 
+### 調査結果: 「override」機能の実装場所
+
+#### コアとなる実装ファイル
+
+1. **`frontend/packages/db-structure/src/schema/overrideSchema.ts`**
+   - スキーマオーバーライド機能の中心的な実装
+   - `schemaOverrideSchema`：オーバーライドのスキーマ定義
+   - `overrideSchema`関数：オーバーライドをスキーマに適用する処理
+   - 現在は`overrides`セクションのみをサポート（`requests`セクションはまだ実装されていない）
+
+2. **`frontend/packages/db-structure/src/schema/schema.ts`**
+   - 基本的なスキーマ構造の定義
+   - テーブル、カラム、リレーションシップ、テーブルグループなどの定義
+
+#### アプリケーションでの利用
+
+1. **`frontend/apps/app/features/schemas/pages/SchemaPage/utils/safeApplySchemaOverride.ts`**
+   - スキーマオーバーライドを安全に適用するユーティリティ関数
+   - GitHubリポジトリから`.liam/schema-override.yml`ファイルを取得
+   - YAMLをパースしてバリデーション
+   - `overrideSchema`関数を呼び出してオーバーライドを適用
+
+2. **`frontend/apps/app/features/schemas/constants.ts`**
+   - `SCHEMA_OVERRIDE_FILE_PATH = '.liam/schema-override.yml'`を定義
+
+3. **`frontend/apps/app/features/schemas/pages/SchemaPage/SchemaPage.tsx`**
+   - スキーマページのメインコンポーネント
+   - スキーマファイルの読み込みとオーバーライドの適用
+   - ERDエディタとオーバーライドエディタのタブを提供
+
+#### ER図表示
+
+1. **`frontend/packages/erd-core/src/features/erd/components/ERDRenderer/ERDRenderer.tsx`**
+   - ER図のレンダリングを担当
+   - テーブルグループ、テーブル、リレーションシップの表示
+
+2. **`frontend/packages/erd-core/src/features/erd/utils/convertSchemaToNodes.ts`**
+   - スキーマをReactFlowのノードとエッジに変換
+   - テーブルグループの処理も含む
+
+#### 処理の流れ
+
+1. ユーザーがスキーマページにアクセス
+2. アプリがGitHubリポジトリからスキーマファイルと`.liam/schema-override.yml`を取得
+3. スキーマファイルがパースされ、オーバーライドが適用される
+4. 結果のスキーマがER図として表示される
+
+#### 「requests」機能の実装に向けて
+
+現在の実装では`overrides`セクションのみをサポートしており、`requests`セクションはまだ実装されていません。`requests`機能を実装するには、以下のファイルを修正する必要があります：
+
+1. `frontend/packages/db-structure/src/schema/overrideSchema.ts`：スキーマ定義と処理関数を拡張
+2. `frontend/packages/erd-core/src/features/erd/utils/convertSchemaToNodes.ts`：リクエストをノードとエッジに変換する処理を追加
+3. `frontend/packages/erd-core/src/features/erd/components/ERDRenderer/ERDRenderer.tsx`：リクエストの視覚的表現を実装
+
 ### 2. 「requests」機能をER図に反映する実装
 
 1. **仕様の理解と設計**
