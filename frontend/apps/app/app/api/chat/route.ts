@@ -2,6 +2,13 @@ import { langfuseHandler } from '@/lib/langfuse/langfuseHandler'
 import {} from '@langchain/core/messages'
 import { ChatPromptTemplate } from '@langchain/core/prompts'
 import { ChatOpenAI } from '@langchain/openai'
+import {
+  type Relationship,
+  type Schema,
+  type Table,
+  type TableGroup,
+  schemaSchema,
+} from '@liam-hq/db-structure'
 import { Document } from 'langchain/document'
 import { NextResponse } from 'next/server'
 
@@ -41,25 +48,35 @@ export interface SchemaData {
 }
 
 // Convert table data to text document
-const tableToDocument = (tableName: string, tableData: TableData): Document => {
+const tableToDocument = (tableName: string, tableData: Table): Document => {
   // Table description
-  const tableDescription = `Table: ${tableName}\nDescription: ${tableData.description || 'No description'}\n`
+  const tableDescription = `Table: ${tableName}\nDescription: ${tableData.comment || 'No description'}\n`
 
   // Columns information
   let columnsText = 'Columns:\n'
   if (tableData.columns) {
     for (const [columnName, columnData] of Object.entries(tableData.columns)) {
-      columnsText += `- ${columnName}: ${columnData.type || 'unknown type'} ${columnData.nullable ? '(nullable)' : '(not nullable)'}\n`
-      if (columnData.description) {
-        columnsText += `  Description: ${columnData.description}\n`
+      columnsText += `- ${columnName}: ${columnData.type || 'unknown type'} ${columnData.notNull ? '(not nullable)' : '(nullable)'}\n`
+      if (columnData.comment) {
+        columnsText += `  Description: ${columnData.comment}\n`
       }
     }
   }
 
   // Primary key information
   let primaryKeyText = ''
-  if (tableData.primaryKey?.columns) {
-    primaryKeyText = `Primary Key: ${tableData.primaryKey.columns.join(', ')}\n`
+  // Find primary key constraints
+  if (tableData.constraints) {
+    const primaryKeyConstraints = Object.values(tableData.constraints).filter(
+      (constraint) => constraint.type === 'PRIMARY KEY',
+    )
+
+    if (primaryKeyConstraints.length > 0) {
+      const primaryKeyColumns = primaryKeyConstraints.map(
+        (constraint) => constraint.columnName,
+      )
+      primaryKeyText = `Primary Key: ${primaryKeyColumns.join(', ')}\n`
+    }
   }
 
   // Combine all information
@@ -74,14 +91,14 @@ const tableToDocument = (tableName: string, tableData: TableData): Document => {
 // Convert relationship data to text document
 const relationshipToDocument = (
   relationshipName: string,
-  relationshipData: RelationshipData,
+  relationshipData: Relationship,
 ): Document => {
   const relationshipText = `Relationship: ${relationshipName}
-From Table: ${relationshipData.fromTable}
-From Column: ${relationshipData.fromColumn}
-To Table: ${relationshipData.toTable}
-To Column: ${relationshipData.toColumn}
-Type: ${relationshipData.type || 'unknown'}\n`
+From Table: ${relationshipData.primaryTableName}
+From Column: ${relationshipData.primaryColumnName}
+To Table: ${relationshipData.foreignTableName}
+To Column: ${relationshipData.foreignColumnName}
+Type: ${relationshipData.cardinality || 'unknown'}\n`
 
   return new Document({
     pageContent: relationshipText,
@@ -91,7 +108,7 @@ Type: ${relationshipData.type || 'unknown'}\n`
 
 // Convert table groups to text document
 const tableGroupsToText = (
-  tableGroups: Record<string, TableGroupData> | undefined,
+  tableGroups: Record<string, TableGroup> | undefined,
 ): string => {
   if (!tableGroups) return ''
 
@@ -115,7 +132,7 @@ const tableGroupsToText = (
 }
 
 // Convert schema data to text format
-const convertSchemaToText = (schema: SchemaData): string => {
+const convertSchemaToText = (schema: Schema): string => {
   let schemaText = 'FULL DATABASE SCHEMA:\n\n'
 
   // Process tables
@@ -195,6 +212,13 @@ Follow these guidelines:
 4. When using technical terms, include brief explanations.
 5. Provide only information directly related to the question, avoiding unnecessary details.
 6. Format your responses using GitHub Flavored Markdown (GFM) for better readability.
+7. When you need to display an ERD diagram for the user's schema, use the following format:
+
+\`\`\`erd
+{schema_schema}
+\`\`\`
+
+This will be rendered as a visual ERD diagram in the chat interface.
 
 Your goal is to help users understand and optimize their database schemas.
 
@@ -217,6 +241,7 @@ Based on the schema information provided and considering any previous conversati
     {
       input: message,
       chat_history: formattedChatHistory,
+      schema_schema: JSON.stringify(schemaSchema),
     },
     {
       callbacks: [langfuseHandler],

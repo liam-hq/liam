@@ -6,6 +6,7 @@ export {
   type Column,
   type Index,
   type Indexes,
+  type Relationship,
   type Relationships,
   type Cardinality,
   type TableGroup,
