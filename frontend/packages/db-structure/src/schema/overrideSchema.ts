@@ -4,17 +4,22 @@ import {
   type TableGroup,
   columnNameSchema,
   columnSchema,
+  relationshipNameSchema,
+  relationshipSchema,
   schemaSchema,
   tableGroupNameSchema,
   tableGroupSchema,
   tableNameSchema,
   tableSchema,
-  relationshipNameSchema,
-  relationshipSchema,
 } from './schema.js'
 
 // Request status enum
-export const requestStatusSchema = v.picklist(['open', 'in_progress', 'done', 'wontfix'])
+export const requestStatusSchema = v.picklist([
+  'open',
+  'in_progress',
+  'done',
+  'wontfix',
+])
 export type RequestStatus = v.InferOutput<typeof requestStatusSchema>
 
 const columnOverrideSchema = v.object({
@@ -27,22 +32,48 @@ const tableDefinitionSchema = v.object({
   name: v.string(),
   comment: v.optional(v.nullable(v.string())),
   columns: v.record(columnNameSchema, columnSchema),
-  indexes: v.optional(v.record(v.string(), v.object({
-    name: v.string(),
-    columns: v.array(v.string()),
-    unique: v.boolean(),
-    type: v.string(),
-  }))),
-  constraints: v.optional(v.record(v.string(), v.object({
-    type: v.picklist(['PRIMARY KEY', 'FOREIGN KEY', 'UNIQUE', 'CHECK']),
-    name: v.optional(v.string()),
-    columnName: v.optional(v.string()),
-    targetTableName: v.optional(v.string()),
-    targetColumnName: v.optional(v.string()),
-    updateConstraint: v.optional(v.picklist(['CASCADE', 'RESTRICT', 'SET_NULL', 'SET_DEFAULT', 'NO_ACTION'])),
-    deleteConstraint: v.optional(v.picklist(['CASCADE', 'RESTRICT', 'SET_NULL', 'SET_DEFAULT', 'NO_ACTION'])),
-    detail: v.optional(v.string()),
-  }))),
+  indexes: v.optional(
+    v.record(
+      v.string(),
+      v.object({
+        name: v.string(),
+        columns: v.array(v.string()),
+        unique: v.boolean(),
+        type: v.string(),
+      }),
+    ),
+  ),
+  constraints: v.optional(
+    v.record(
+      v.string(),
+      v.object({
+        type: v.picklist(['PRIMARY KEY', 'FOREIGN KEY', 'UNIQUE', 'CHECK']),
+        name: v.optional(v.string()),
+        columnName: v.optional(v.string()),
+        targetTableName: v.optional(v.string()),
+        targetColumnName: v.optional(v.string()),
+        updateConstraint: v.optional(
+          v.picklist([
+            'CASCADE',
+            'RESTRICT',
+            'SET_NULL',
+            'SET_DEFAULT',
+            'NO_ACTION',
+          ]),
+        ),
+        deleteConstraint: v.optional(
+          v.picklist([
+            'CASCADE',
+            'RESTRICT',
+            'SET_NULL',
+            'SET_DEFAULT',
+            'NO_ACTION',
+          ]),
+        ),
+        detail: v.optional(v.string()),
+      }),
+    ),
+  ),
 })
 export type TableDefinition = v.InferOutput<typeof tableDefinitionSchema>
 
@@ -54,10 +85,24 @@ const relationshipDefinitionSchema = v.object({
   foreignTableName: v.string(),
   foreignColumnName: v.string(),
   cardinality: v.picklist(['ONE_TO_ONE', 'ONE_TO_MANY']),
-  updateConstraint: v.picklist(['CASCADE', 'RESTRICT', 'SET_NULL', 'SET_DEFAULT', 'NO_ACTION']),
-  deleteConstraint: v.picklist(['CASCADE', 'RESTRICT', 'SET_NULL', 'SET_DEFAULT', 'NO_ACTION']),
+  updateConstraint: v.picklist([
+    'CASCADE',
+    'RESTRICT',
+    'SET_NULL',
+    'SET_DEFAULT',
+    'NO_ACTION',
+  ]),
+  deleteConstraint: v.picklist([
+    'CASCADE',
+    'RESTRICT',
+    'SET_NULL',
+    'SET_DEFAULT',
+    'NO_ACTION',
+  ]),
 })
-export type RelationshipDefinition = v.InferOutput<typeof relationshipDefinitionSchema>
+export type RelationshipDefinition = v.InferOutput<
+  typeof relationshipDefinitionSchema
+>
 
 // Schema for column changes in alter table requests
 const columnChangeSchema = v.object({
@@ -91,7 +136,9 @@ const tableAlterOperationSchema = v.union([
     reason: v.optional(v.string()),
   }),
 ])
-export type TableAlterOperation = v.InferOutput<typeof tableAlterOperationSchema>
+export type TableAlterOperation = v.InferOutput<
+  typeof tableAlterOperationSchema
+>
 
 // Schema for adding columns to an existing table
 const addColumnsSchema = v.record(columnNameSchema, columnSchema)
@@ -126,36 +173,52 @@ export type TableAlterRequest = v.InferOutput<typeof tableAlterRequestSchema>
 const relationshipAddRequestSchema = v.object({
   definition: relationshipDefinitionSchema,
 })
-export type RelationshipAddRequest = v.InferOutput<typeof relationshipAddRequestSchema>
+export type RelationshipAddRequest = v.InferOutput<
+  typeof relationshipAddRequestSchema
+>
 
 // Schema for relationship drop request
 const relationshipDropRequestSchema = v.object({
   reason: v.string(),
 })
-export type RelationshipDropRequest = v.InferOutput<typeof relationshipDropRequestSchema>
+export type RelationshipDropRequest = v.InferOutput<
+  typeof relationshipDropRequestSchema
+>
 
 // Schema for implementation request
 const implementationRequestSchema = v.object({
   id: v.string(), // Removed regex validation as it's causing type issues
   description: v.optional(v.string()),
   status: requestStatusSchema,
-  tables: v.optional(v.object({
-    add: v.optional(v.record(tableNameSchema, tableAddRequestSchema)),
-    drop: v.optional(v.record(tableNameSchema, tableDropRequestSchema)),
-    alter: v.optional(v.record(tableNameSchema, tableAlterRequestSchema)),
-  })),
-  relationships: v.optional(v.object({
-    add: v.optional(v.record(relationshipNameSchema, relationshipAddRequestSchema)),
-    drop: v.optional(v.record(relationshipNameSchema, relationshipDropRequestSchema)),
-  })),
+  tables: v.optional(
+    v.object({
+      add: v.optional(v.record(tableNameSchema, tableAddRequestSchema)),
+      drop: v.optional(v.record(tableNameSchema, tableDropRequestSchema)),
+      alter: v.optional(v.record(tableNameSchema, tableAlterRequestSchema)),
+    }),
+  ),
+  relationships: v.optional(
+    v.object({
+      add: v.optional(
+        v.record(relationshipNameSchema, relationshipAddRequestSchema),
+      ),
+      drop: v.optional(
+        v.record(relationshipNameSchema, relationshipDropRequestSchema),
+      ),
+    }),
+  ),
   createdBy: v.string(),
   createdAt: v.string(), // Removed format validation as it's not available in Valibot
-  refs: v.optional(v.object({
-    issue: v.optional(v.union([v.string(), v.number()])),
-    commit: v.optional(v.nullable(v.string())),
-  })),
+  refs: v.optional(
+    v.object({
+      issue: v.optional(v.union([v.string(), v.number()])),
+      commit: v.optional(v.nullable(v.string())),
+    }),
+  ),
 })
-export type ImplementationRequest = v.InferOutput<typeof implementationRequestSchema>
+export type ImplementationRequest = v.InferOutput<
+  typeof implementationRequestSchema
+>
 
 // Schema for the entire override structure
 export const schemaOverrideSchema = v.object({
@@ -205,10 +268,10 @@ export type ProcessedRequests = {
 export function overrideSchema(
   originalSchema: Schema,
   override: SchemaOverride,
-): { 
-  schema: Schema; 
-  tableGroups: Record<string, TableGroup>;
-  requests?: ProcessedRequests;
+): {
+  schema: Schema
+  tableGroups: Record<string, TableGroup>
+  requests?: ProcessedRequests
 } {
   const result = v.parse(
     schemaSchema,
@@ -221,7 +284,7 @@ export function overrideSchema(
   const tableGroups: Record<string, TableGroup> = originalSchema.tableGroups
     ? { ...originalSchema.tableGroups }
     : {}
-  
+
   // Initialize processed requests
   const processedRequests: ProcessedRequests = {
     openRequests: [],
@@ -389,7 +452,10 @@ export function overrideSchema(
  * @param schema The schema to modify
  * @param request The implementation request to apply
  */
-function applyImplementationRequest(schema: Schema, request: ImplementationRequest): void {
+function applyImplementationRequest(
+  schema: Schema,
+  request: ImplementationRequest,
+): void {
   // Only apply 'done' requests
   if (request.status !== 'done') {
     return
@@ -397,23 +463,29 @@ function applyImplementationRequest(schema: Schema, request: ImplementationReque
 
   // Process table additions
   if (request.tables?.add) {
-    for (const [tableName, tableAddRequest] of Object.entries(request.tables.add)) {
+    for (const [tableName, tableAddRequest] of Object.entries(
+      request.tables.add,
+    )) {
       if (schema.tables[tableName]) {
-        console.warn(`Table ${tableName} already exists, skipping addition from request ${request.id}`)
+        console.warn(
+          `Table ${tableName} already exists, skipping addition from request ${request.id}`,
+        )
         continue
       }
       // Create a properly typed table definition
-      const definition: typeof schema.tables[string] = {
+      const definition: (typeof schema.tables)[string] = {
         name: tableAddRequest.definition.name,
         comment: tableAddRequest.definition.comment ?? null,
         columns: tableAddRequest.definition.columns,
         indexes: {},
         constraints: {},
       }
-      
+
       // Add indexes if they exist
       if (tableAddRequest.definition.indexes) {
-        for (const [indexName, indexDef] of Object.entries(tableAddRequest.definition.indexes)) {
+        for (const [indexName, indexDef] of Object.entries(
+          tableAddRequest.definition.indexes,
+        )) {
           definition.indexes[indexName] = {
             name: indexDef.name,
             columns: indexDef.columns,
@@ -422,10 +494,12 @@ function applyImplementationRequest(schema: Schema, request: ImplementationReque
           }
         }
       }
-      
+
       // Add constraints if they exist
       if (tableAddRequest.definition.constraints) {
-        for (const [constraintName, constraintDef] of Object.entries(tableAddRequest.definition.constraints)) {
+        for (const [constraintName, constraintDef] of Object.entries(
+          tableAddRequest.definition.constraints,
+        )) {
           // Handle each constraint type separately
           switch (constraintDef.type) {
             case 'PRIMARY KEY':
@@ -436,11 +510,16 @@ function applyImplementationRequest(schema: Schema, request: ImplementationReque
                   columnName: constraintDef.columnName,
                 }
               }
-              break;
+              break
             case 'FOREIGN KEY':
-              if (constraintDef.name && constraintDef.columnName && 
-                  constraintDef.targetTableName && constraintDef.targetColumnName && 
-                  constraintDef.updateConstraint && constraintDef.deleteConstraint) {
+              if (
+                constraintDef.name &&
+                constraintDef.columnName &&
+                constraintDef.targetTableName &&
+                constraintDef.targetColumnName &&
+                constraintDef.updateConstraint &&
+                constraintDef.deleteConstraint
+              ) {
                 definition.constraints[constraintName] = {
                   type: 'FOREIGN KEY',
                   name: constraintDef.name,
@@ -451,7 +530,7 @@ function applyImplementationRequest(schema: Schema, request: ImplementationReque
                   deleteConstraint: constraintDef.deleteConstraint,
                 }
               }
-              break;
+              break
             case 'UNIQUE':
               if (constraintDef.name && constraintDef.columnName) {
                 definition.constraints[constraintName] = {
@@ -460,7 +539,7 @@ function applyImplementationRequest(schema: Schema, request: ImplementationReque
                   columnName: constraintDef.columnName,
                 }
               }
-              break;
+              break
             case 'CHECK':
               if (constraintDef.name && constraintDef.detail) {
                 definition.constraints[constraintName] = {
@@ -469,20 +548,24 @@ function applyImplementationRequest(schema: Schema, request: ImplementationReque
                   detail: constraintDef.detail,
                 }
               }
-              break;
+              break
           }
         }
       }
-      
+
       schema.tables[tableName] = definition
     }
   }
 
   // Process relationship additions
   if (request.relationships?.add) {
-    for (const [relationshipName, relationshipAddRequest] of Object.entries(request.relationships.add)) {
+    for (const [relationshipName, relationshipAddRequest] of Object.entries(
+      request.relationships.add,
+    )) {
       if (schema.relationships[relationshipName]) {
-        console.warn(`Relationship ${relationshipName} already exists, skipping addition from request ${request.id}`)
+        console.warn(
+          `Relationship ${relationshipName} already exists, skipping addition from request ${request.id}`,
+        )
         continue
       }
       schema.relationships[relationshipName] = relationshipAddRequest.definition

@@ -4,11 +4,7 @@ import {
 } from '@/features/erd/constants'
 import { columnHandleId } from '@/features/erd/utils'
 import type { ShowMode } from '@/schemas/showMode'
-import type { 
-  Cardinality, 
-  Schema,
-  TableGroup
-} from '@liam-hq/db-structure'
+import type { Cardinality, Schema, TableGroup } from '@liam-hq/db-structure'
 import type { Edge, Node } from '@xyflow/react'
 
 // Define a simplified type for implementation requests
@@ -132,12 +128,14 @@ export const convertSchemaToNodes = ({
     for (const request of implementationRequests.openRequests) {
       // Add tables from requests
       if (request.tables?.add) {
-        for (const [tableName, tableAddReq] of Object.entries(request.tables.add)) {
+        for (const [tableName, tableAddReq] of Object.entries(
+          request.tables.add,
+        )) {
           // Skip if table already exists
-          if (schema.tables[tableName]) continue;
+          if (schema.tables[tableName]) continue
 
           // Type assertion for tableAddRequest
-          const tableAddRequest = tableAddReq as any;
+          const tableAddRequest = tableAddReq as any
 
           // Create a node for the requested table
           nodes.push({
@@ -151,19 +149,21 @@ export const convertSchemaToNodes = ({
             position: { x: 0, y: 0 },
             ariaLabel: `Requested table: ${tableName}`,
             zIndex: zIndex.nodeDefault,
-          });
+          })
         }
       }
 
       // Add relationships from requests
       if (request.relationships?.add) {
-        for (const [relationshipName, relationshipAddReq] of Object.entries(request.relationships.add)) {
+        for (const [relationshipName, relationshipAddReq] of Object.entries(
+          request.relationships.add,
+        )) {
           // Skip if relationship already exists
-          if (schema.relationships[relationshipName]) continue;
+          if (schema.relationships[relationshipName]) continue
 
           // Type assertion for relationshipAddRequest
-          const relationshipAddRequest = relationshipAddReq as any;
-          const rel = relationshipAddRequest.definition;
+          const relationshipAddRequest = relationshipAddReq as any
+          const rel = relationshipAddRequest.definition
           edges.push({
             id: `request-${request.id}-relationship-${relationshipName}`,
             type: 'requestedRelationship',
@@ -183,7 +183,7 @@ export const convertSchemaToNodes = ({
               status: 'open',
               cardinality: rel.cardinality,
             },
-          });
+          })
         }
       }
     }
@@ -193,12 +193,14 @@ export const convertSchemaToNodes = ({
       // Similar processing as open requests, but with 'in_progress' status
       // Add tables from requests
       if (request.tables?.add) {
-        for (const [tableName, tableAddReq] of Object.entries(request.tables.add)) {
+        for (const [tableName, tableAddReq] of Object.entries(
+          request.tables.add,
+        )) {
           // Skip if table already exists
-          if (schema.tables[tableName]) continue;
+          if (schema.tables[tableName]) continue
 
           // Type assertion for tableAddRequest
-          const tableAddRequest = tableAddReq as any;
+          const tableAddRequest = tableAddReq as any
 
           // Create a node for the requested table
           nodes.push({
@@ -212,19 +214,21 @@ export const convertSchemaToNodes = ({
             position: { x: 0, y: 0 },
             ariaLabel: `Requested table (in progress): ${tableName}`,
             zIndex: zIndex.nodeDefault,
-          });
+          })
         }
       }
 
       // Add relationships from requests
       if (request.relationships?.add) {
-        for (const [relationshipName, relationshipAddReq] of Object.entries(request.relationships.add)) {
+        for (const [relationshipName, relationshipAddReq] of Object.entries(
+          request.relationships.add,
+        )) {
           // Skip if relationship already exists
-          if (schema.relationships[relationshipName]) continue;
+          if (schema.relationships[relationshipName]) continue
 
           // Type assertion for relationshipAddRequest
-          const relationshipAddRequest = relationshipAddReq as any;
-          const rel = relationshipAddRequest.definition;
+          const relationshipAddRequest = relationshipAddReq as any
+          const rel = relationshipAddRequest.definition
           edges.push({
             id: `request-${request.id}-relationship-${relationshipName}`,
             type: 'requestedRelationship',
@@ -244,7 +248,7 @@ export const convertSchemaToNodes = ({
               status: 'in_progress',
               cardinality: rel.cardinality,
             },
-          });
+          })
         }
       }
     }

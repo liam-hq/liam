@@ -1,6 +1,5 @@
 import '@xyflow/react/dist/style.css'
 import type { TableGroup } from '@liam-hq/db-structure'
-import type { ProcessedRequests } from '../../utils/convertSchemaToNodes'
 import {
   type ImperativePanelHandle,
   ResizableHandle,
@@ -18,6 +17,7 @@ import {
   useCallback,
   useState,
 } from 'react'
+import type { ProcessedRequests } from '../../utils/convertSchemaToNodes'
 import { AppBar } from './AppBar'
 import styles from './ERDRenderer.module.css'
 import '@/styles/globals.css'
