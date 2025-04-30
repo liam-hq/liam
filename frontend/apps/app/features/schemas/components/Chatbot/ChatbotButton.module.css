@@ -1,27 +1,20 @@
-.chatButton {
+.menuButton {
   display: flex;
+  padding: var(--spacing-1, 4px);
   align-items: center;
-  gap: 8px;
-  padding: 10px 16px;
-  border-radius: 24px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  z-index: 100;
+  border-radius: var(--border-radius-base);
+  transition: background-color var(--default-hover-animation-duration)
+    var(--default-timing-function);
 }
 
-.buttonText {
-  font-size: var(--font-size-3);
+.menuButton svg {
+  color: var(--global-foreground, #fff);
 }
 
-@media (max-width: 768px) {
-  .buttonText {
-    display: none;
-  }
+.menuButton:hover {
+  background-color: var(--pane-background-active, #2e3031);
+}
 
-  .chatButton {
-    width: 48px;
-    height: 48px;
-    padding: 0;
-    justify-content: center;
-    border-radius: 50%;
-  }
+.menuButton:focus-visible {
+  outline: 1px solid var(--primary-color);
 }
