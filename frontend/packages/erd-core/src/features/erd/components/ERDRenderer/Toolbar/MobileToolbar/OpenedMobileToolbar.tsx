@@ -3,26 +3,44 @@ import { useCustomReactflow } from '@/features/reactflow/hooks'
 import { useVersion } from '@/providers'
 import type { ShowMode } from '@/schemas/showMode'
 import { useUserEditingStore } from '@/stores'
+import type { Schema as ERDSchema } from '@liam-hq/db-structure'
 import { ChevronDown } from '@liam-hq/ui'
 import { IconButton, Minus, Plus } from '@liam-hq/ui'
 import { ToolbarButton } from '@radix-ui/react-toolbar'
 import { useStore } from '@xyflow/react'
-import { type FC, useCallback } from 'react'
+import { type ComponentType, type FC, useCallback } from 'react'
 import { FitviewButton } from '../FitviewButton'
 import { GroupButton } from '../GroupButton'
 import { TidyUpButton } from '../TidyUpButton'
 import styles from './OpenedMobileToolbar.module.css'
 
+interface TableGroupData {
+  name?: string
+  tables?: string[]
+  comment?: string | null
+}
+
+interface ChatbotButtonProps {
+  schemaData: ERDSchema
+  tableGroups?: Record<string, TableGroupData>
+}
+
 type Props = {
   withGroupButton?: boolean
   toggleOpenClose: () => void
   toggleShowModeMenu: () => void
+  schemaData?: ERDSchema
+  tableGroups?: Record<string, TableGroupData>
+  ChatbotButtonComponent?: ComponentType<ChatbotButtonProps>
 }
 
 export const OpenedMobileToolbar: FC<Props> = ({
   withGroupButton = false,
   toggleOpenClose,
   toggleShowModeMenu,
+  schemaData,
+  tableGroups,
+  ChatbotButtonComponent,
 }) => {
   const { zoomIn, zoomOut } = useCustomReactflow()
   const zoomLevel = useStore((store) => store.transform[2])
@@ -103,6 +121,12 @@ export const OpenedMobileToolbar: FC<Props> = ({
         <FitviewButton size="sm">Zoom to Fit</FitviewButton>
         <TidyUpButton size="sm">Tidy up</TidyUpButton>
         {withGroupButton && <GroupButton size="sm" />}
+        {schemaData && tableGroups && ChatbotButtonComponent && (
+          <ChatbotButtonComponent
+            schemaData={schemaData}
+            tableGroups={tableGroups}
+          />
+        )}
       </div>
       <hr className={styles.divider} />
 

@@ -1,20 +1,38 @@
+import type { Schema as ERDSchema } from '@liam-hq/db-structure'
 import { Ellipsis } from '@liam-hq/ui'
 import * as ToolbarPrimitive from '@radix-ui/react-toolbar'
 import clsx from 'clsx'
 import { useEffect, useRef, useState } from 'react'
-import type { ComponentProps, FC } from 'react'
+import type { ComponentProps, ComponentType, FC } from 'react'
 import styles from './MobileToolbar.module.css'
 import { OpenedMobileToolbar } from './OpenedMobileToolbar'
 import { ShowModeMenu } from './ShowModeMenu'
+
+interface TableGroupData {
+  name?: string
+  tables?: string[]
+  comment?: string | null
+}
+
+interface ChatbotButtonProps {
+  schemaData: ERDSchema
+  tableGroups?: Record<string, TableGroupData>
+}
 
 type MobileToolbarProps = {
   withGroupButton?: ComponentProps<
     typeof OpenedMobileToolbar
   >['withGroupButton']
+  schemaData?: ERDSchema
+  tableGroups?: Record<string, TableGroupData>
+  ChatbotButtonComponent?: ComponentType<ChatbotButtonProps>
 }
 
 export const MobileToolbar: FC<MobileToolbarProps> = ({
   withGroupButton = false,
+  schemaData,
+  tableGroups,
+  ChatbotButtonComponent,
 }) => {
   const [isOpen, setIsOpen] = useState(false)
   const [isShowModeMenu, setIsShowModeMenu] = useState(false)
@@ -95,6 +113,9 @@ export const MobileToolbar: FC<MobileToolbarProps> = ({
               withGroupButton={withGroupButton}
               toggleOpenClose={toggleOpenClose}
               toggleShowModeMenu={toggleShowModeMenu}
+              schemaData={schemaData}
+              tableGroups={tableGroups}
+              ChatbotButtonComponent={ChatbotButtonComponent}
             />
           </div>
 

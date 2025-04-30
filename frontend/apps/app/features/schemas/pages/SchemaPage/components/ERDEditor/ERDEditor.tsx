@@ -2,6 +2,7 @@
 
 import { Button } from '@/components'
 import { ERDRenderer } from '@/features'
+import { ChatbotButtonWrapper } from '@/features/schemas/components'
 import { useTableGroups } from '@/hooks'
 import { VersionProvider } from '@/providers'
 import { versionSchema } from '@/schemas'
@@ -100,6 +101,7 @@ export const ERDEditor: FC<Props> = ({
           errorObjects={errorObjects}
           tableGroups={tableGroups}
           onAddTableGroup={addTableGroup}
+          ChatbotButtonComponent={ChatbotButtonWrapper}
         />
         {canUpdateFile && (
           <div
