@@ -2,14 +2,21 @@
 
 import { useState } from 'react'
 import { ERDEditor } from '@/features/schemas/pages/SchemaPage/components/ERDEditor'
+import { SchemaChat } from '@/features/schemas/components/SchemaChat/SchemaChat'
 import { sampleSchema } from './schema'
 import { Button } from '@/components'
 import type { Schema } from '@liam-hq/db-structure'
+import styles from './page.module.css'
 
 export default function Page() {
   const [schema, setSchema] = useState<Schema>(sampleSchema)
 
-  const handleModifySchema = () => {
+  const handleModifySchema = (newSchema: Schema) => {
+    // Create a deep copy of the schema to avoid mutating the original
+    setSchema(JSON.parse(JSON.stringify(newSchema)) as Schema)
+  }
+
+  const handleAddTestTable = () => {
     // Create a deep copy of the schema to avoid mutating the original
     const newSchema = JSON.parse(JSON.stringify(schema)) as Schema
 
@@ -57,17 +64,22 @@ export default function Page() {
   }
 
   return (
-    <div>
-      <div style={{ marginBottom: '16px', padding: '8px' }}>
-        <Button onClick={handleModifySchema}>
-          Add Test Table
-        </Button>
+    <div className={styles.container}>
+      <div className={styles.chatPanel}>
+        <SchemaChat schema={schema} onSchemaChange={handleModifySchema} />
       </div>
-      <ERDEditor
-        schema={schema}
-        errorObjects={undefined}
-        defaultSidebarOpen={false}
-      />
+      <div className={styles.editorPanel}>
+        <div style={{ marginBottom: '16px', padding: '8px' }}>
+          <Button onClick={handleAddTestTable}>
+            Add Test Table
+          </Button>
+        </div>
+        <ERDEditor
+          schema={schema}
+          errorObjects={undefined}
+          defaultSidebarOpen={false}
+        />
+      </div>
     </div>
   )
 }

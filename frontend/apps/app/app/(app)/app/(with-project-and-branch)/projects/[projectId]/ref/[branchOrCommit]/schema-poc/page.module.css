@@ -1,0 +1,33 @@
+.container {
+  display: grid;
+  grid-template-columns: 350px 1fr;
+  height: calc(100vh - 60px);
+  width: 100%;
+  overflow: hidden;
+}
+
+.chatPanel {
+  height: 100%;
+  overflow: hidden;
+}
+
+.editorPanel {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+@media (max-width: 1024px) {
+  .container {
+    grid-template-columns: 300px 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .container {
+    grid-template-columns: 1fr;
+    grid-template-rows: 350px 1fr;
+    height: 100vh;
+  }
+}

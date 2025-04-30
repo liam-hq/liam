@@ -1,0 +1,101 @@
+.messageContainer {
+  display: flex;
+  margin-bottom: 12px;
+  max-width: 80%;
+}
+
+.userMessage {
+  margin-left: auto;
+  justify-content: flex-end;
+}
+
+.botMessage {
+  margin-right: auto;
+  justify-content: flex-start;
+}
+
+.messageContent {
+  padding: 12px 16px;
+  border-radius: 12px;
+  position: relative;
+}
+
+.userMessage .messageContent {
+  background-color: var(--primary-accent);
+  color: var(--global-background);
+}
+
+.botMessage .messageContent {
+  background-color: var(--global-foreground-subtle);
+}
+
+.messageTime {
+  font-size: var(--font-size-1);
+  opacity: 0.7;
+  margin-top: 4px;
+  text-align: right;
+}
+
+.messageText {
+  font-size: var(--font-size-2);
+  line-height: 1.5;
+  word-wrap: break-word;
+  white-space: normal;
+}
+
+/* Markdown styles */
+.messageText :global(pre) {
+  padding: 1rem;
+  overflow-x: auto;
+  background-color: var(--global-background-subtle);
+  border-radius: 6px;
+  margin-bottom: 1rem;
+  width: 100%;
+}
+
+.messageText :global(code) {
+  padding: .2em .4em;
+  margin: 0;
+  background-color: var(--global-background-subtle);
+  border-radius: 3px;
+  font-family: var(--code-font);
+  font-size: 85%;
+}
+
+.messageText :global(a) {
+  color: var(--primary-accent);
+  text-decoration: none;
+}
+
+.messageText :global(a:hover) {
+  text-decoration: underline;
+}
+
+.messageText :global(p) {
+  margin-top: 0;
+  margin-bottom: 10px;
+}
+
+.messageText :global(ul),
+.messageText :global(ol) {
+  margin-top: 0;
+  margin-bottom: 16px;
+  padding-left: 2em;
+}
+
+.messageText :global(table) {
+  border-collapse: collapse;
+  width: 100%;
+  margin-bottom: 16px;
+}
+
+.messageText :global(table th),
+.messageText :global(table td) {
+  padding: 8px;
+  border: 1px solid var(--global-border);
+}
+
+.messageText :global(table th) {
+  background-color: var(--global-background-subtle);
+  font-weight: 600;
+}
