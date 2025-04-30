@@ -26,7 +26,7 @@ export const ChatbotButton: FC<ChatbotButtonProps> = ({
     <>
       <ToolbarButton
         asChild
-        onClick={() => setIsDialogOpen(true)}
+        onClick={() => setIsDialogOpen((prev) => !prev)}
         className={styles.menuButton}
       >
         <IconButton
