@@ -1,44 +1,62 @@
+# Schema‑Override & Physical Schema Specifications (Draft)
 
-# Schema‑Override Specification (Draft)
-
-> **Status:** Draft — v0.1 (2025‑04‑30)
->
-> This document describes the *schema‑override* layer used in the **Liam** project for augmenting database schema documentation without changing the physical schema.
+> **Status:** Draft — v0.2 (2025‑04‑30)
+> 
+> This document captures **both** the *schema‑override* layer and the baseline *physical schema (schema.json)* format used in the **Liam** ecosystem.
 
 ---
 
 ## 1  Purpose
 
-The *schema‑override* mechanism allows contributors to attach rich, contextual metadata to an existing database schema. It is intentionally **non‑destructive**: **no migration or runtime behaviour** is affected.
+The *schema‑override* mechanism allows contributors to attach rich, contextual metadata to an **existing** database schema.  
+It is deliberately **non‑destructive**: no migration or runtime behaviour is affected.
 
-- Problems it solves
-  - Visualise **planned but not‑yet‑implemented** tables / columns ("TODO slots")
-  - Provide domain‑specific comments, translations, and logical grouping
-  - Serve as a single communication hub for PM / Designer / QA and engineers
-  - Enable governance metadata (PII flags, data classification) without touching SQL
+The companion *schema.json* format standardises how the physical schema is exported so that
+
+* override validation can cross‑check against reality (CI lint)
+* downstream tools (ER viewer, diff, lineage) can consume a single canonical structure.
+
+---
 
 ## 2  Scope
 
-| Out of the box                     | Out of scope                      |
-| ---------------------------------- | --------------------------------- |
-| Table / column comments            | ALTER TABLE, constraints, indexes |
-| Logical table groups               | Performance tuning hints          |
-| Ad‑hoc relations not present in FK | Data migration scripts            |
-| Metadata flags (PII, GDPR, etc.)   | RLS / policy definitions          |
+| Covered by this spec                        | Out of scope                                          |
+|--------------------------------------------|-------------------------------------------------------|
+| Table & column comments, logical groupings | SQL migrations, constraints, indexes tuning          |
+| Ad‑hoc relations not present in FK metadata| RLS / policy definitions, performance hints          |
+| Physical schema baseline (tables, columns) | Runtime‑specific metadata (Row counts, statistics)    |
 
-## 3  File Format — `schema-override.yml`
+---
+
+## 3  Workflow Overview (high‑level)
+
+```mermaid
+flowchart TD
+  A[Postgres ⇢ parser] -->|export| B(schema.json)
+  B -->|merge with| C(schema‑override.yml)
+  C --> D[merged‑schema.json]
+  D --> E[ER Viewer / Docs]
+  subgraph CI
+    B --> F[ajv diff‑lint]
+    C --> F
+  end
+```
+
+---
+
+## 4  Logical Override Layer — `schema-override.yml`
 
 ```yaml
 version: "0.1"
 
-# 3.1  Table groups (logical modules)
+# 4.1 Table groups (logical modules)
 tableGroups:
   payments:
     title: "Payments & Refunds"
     description: "All financial transaction tables"
     tables: [invoice, refund]
 
-# 3.2  Table‑level overrides
+# 4.2 Table‑level overrides
 tables:
   invoice:
     displayName: "Invoice"
@@ -50,33 +68,16 @@ tables:
       amount:
         classification: personal_data
 
-# 3.3  Extra relations (not in physical FK)
+# 4.3 Extra relations (not in physical FK)
 relations:
   - source: invoice.external_id
     target: external_invoices.id
     description: "Soft link to external billing records"
 ```
 
-## 4  Workflow Summary
+### 4.4 JSON Schema for Overrides (`schema-override.schema.json`)
 
-1. Developer or AI tool edits **schema-override.yml** in a PR
-2. CI
-   - Validates YAML against JSON Schema (Ajv)
-   - Checks orphan entries vs. physical **schema.json**
-3. Merge → `safeApplySchemaOverride.ts` merges at runtime / build
-4. ER Viewer reads merged output and renders enriched diagram
-
-## 5  Non‑goals
-
-- Not a replacement for migration files
-- Not intended for performance guidance; separate ADRs should cover that
-- Should never block application startup — if override fails validation, build must fail early
-
----
-
-## Appendix A — JSON Schema Definition (`schema-override.schema.json`, draft)
-
-```json
+```jsonc
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Schema Override",
@@ -154,14 +155,148 @@ relations:
 }
 ```
 
-> **Note:** This schema is intentionally permissive at v0.1. Future revisions may tighten constraints (e.g. max length, reference integrity against `schema.json`).
+---
+
+## 5  Physical Schema Baseline — `schema.json`
+
+The parser emits *schema.json* for every database dump. This canonical file represents the exact physical structure **without logical adornments**.
+
+### 5.1 Example snippet
+
+```jsonc
+{
+  "database": {
+    "vendor": "postgres",
+    "version": "15.5"
+  },
+  "tables": [
+    {
+      "name": "invoice",
+      "schema": "public",
+      "columns": [
+        { "name": "id", "type": "uuid", "nullable": false, "primaryKey": true },
+        { "name": "external_id", "type": "text", "nullable": true },
+        { "name": "amount", "type": "numeric", "nullable": false, "default": "0" }
+      ],
+      "indexes": [
+        { "name": "invoice_external_id_idx", "columns": ["external_id"], "unique": true }
+      ],
+      "foreignKeys": [
+        {
+          "name": "invoice_order_id_fkey",
+          "columns": ["order_id"],
+          "references": {
+            "table": "order",
+            "columns": ["id"],
+            "onUpdate": "CASCADE",
+            "onDelete": "RESTRICT"
+          }
+        }
+      ]
+    }
+  ]
+}
+```
+
+### 5.2 JSON Schema for Physical Schema (`schema.schema.json`)
+
+```jsonc
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Physical Database Schema",
+  "type": "object",
+  "required": ["database", "tables"],
+  "additionalProperties": false,
+  "properties": {
+    "database": {
+      "type": "object",
+      "required": ["vendor", "version"],
+      "additionalProperties": false,
+      "properties": {
+        "vendor": { "type": "string", "enum": ["postgres", "mysql", "sqlite", "sqlserver"] },
+        "version": { "type": "string" }
+      }
+    },
+    "tables": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["name", "columns"],
+        "additionalProperties": false,
+        "properties": {
+          "name": { "type": "string" },
+          "schema": { "type": "string" },
+          "columns": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["name", "type"],
+              "additionalProperties": false,
+              "properties": {
+                "name": { "type": "string" },
+                "type": { "type": "string" },
+                "nullable": { "type": "boolean" },
+                "primaryKey": { "type": "boolean" },
+                "default": { "type": ["string", "number", "null"] },
+                "comment": { "type": "string" }
+              }
+            }
+          },
+          "indexes": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["name", "columns"],
+              "additionalProperties": false,
+              "properties": {
+                "name": { "type": "string" },
+                "columns": { "type": "array", "items": { "type": "string" } },
+                "unique": { "type": "boolean" }
+              }
+            }
+          },
+          "foreignKeys": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["columns", "references"],
+              "additionalProperties": false,
+              "properties": {
+                "name": { "type": "string" },
+                "columns": { "type": "array", "items": { "type": "string" } },
+                "references": {
+                  "type": "object",
+                  "required": ["table", "columns"],
+                  "additionalProperties": false,
+                  "properties": {
+                    "table": { "type": "string" },
+                    "columns": { "type": "array", "items": { "type": "string" } },
+                    "onUpdate": { "type": "string" },
+                    "onDelete": { "type": "string" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+```
+
+> **Note:** Indexes, triggers, and constraints beyond FKs are optional at v0.2. Future drafts may extend support.
 
 ---
 
-### Next Steps
+## 6  Next Steps
 
-- Fine‑tune property names / enums based on real data
-- Add localisation support (`comment.i18n.ja`, `comment.i18n.en`)
-- Stabilise versioning policy (semver for override file itself)
+1. Review field names / enum values against real parser output.  
+2. Finalise storage location (`schemas/` directory) & publish to npm as `@liam/schema-spec` for IDE auto‑completion.  
+3. Extend CI job to validate **both** `schema.json` and `schema-override.yml` in a single run.
 
+---
+
+*End of Draft v0.2*
 
