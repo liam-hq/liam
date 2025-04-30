@@ -66,6 +66,7 @@ export const ChatbotDrawer: FC<ChatbotDrawerProps> = ({
     },
   ])
   const [isLoading, setIsLoading] = useState(false)
+  const [mode, setMode] = useState<'plan' | 'act'>('plan')
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
   // Scroll to bottom when component mounts
@@ -235,7 +236,16 @@ export const ChatbotDrawer: FC<ChatbotDrawerProps> = ({
           <div ref={messagesEndRef} />
         </div>
         <div className={styles.chatInputContainer}>
-          <ChatInput onSendMessage={handleSendMessage} isLoading={isLoading} />
+          <ChatInput
+            onSendMessage={handleSendMessage}
+            isLoading={isLoading}
+            mode={mode}
+            onModeChange={setMode}
+            onMentionClick={() => {
+              // Handle mention click - can be implemented later
+              // For now, this is a placeholder for future functionality
+            }}
+          />
         </div>
       </DrawerContent>
     </DrawerPortal>

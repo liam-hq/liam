@@ -1,21 +1,81 @@
+.chatInputContainer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2);
+  padding: var(--spacing-4) var(--spacing-2) var(--spacing-2);
+  background-color: var(--color-gray-900);
+  width: 100%;
+}
+
+.controlsContainer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.modeSegmentedControl {
+  display: flex;
+  background-color: var(--color-gray-800);
+  border-radius: var(--border-radius-md);
+  padding: 2px;
+}
+
+.modeButton {
+  font-family: var(--main-font);
+  font-weight: 500;
+  font-size: var(--font-size-1);
+  color: var(--color-white-alpha-50);
+  background: transparent;
+  border: none;
+  border-radius: var(--border-radius-base);
+  padding: 2px var(--spacing-1);
+  cursor: pointer;
+}
+
+.activeMode {
+  background-color: var(--color-green-alpha-40);
+  color: var(--color-gray-0);
+}
+
+.mentionButton {
+  min-width: unset;
+  height: unset;
+  padding: var(--spacing-1);
+  background-color: transparent;
+  border: none;
+  color: var(--color-gray-0);
+}
+
 .inputContainer {
   display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 12px;
-  border-top: 1px solid var(--global-border);
-  background-color: var(--global-background);
+  align-items: flex-end;
+  gap: var(--spacing-1);
+  padding: var(--spacing-2);
+  background-color: var(--color-gray-1000);
+  border: 1px solid var(--color-gray-700);
+  border-radius: var(--border-radius-base);
 }
 
 .input {
   flex: 1;
+  color: var(--color-white-alpha-30);
+  background-color: transparent;
+  border: none;
+}
+
+.input::placeholder {
+  color: var(--color-white-alpha-30);
 }
 
 .sendButton {
-  min-width: 40px;
-  height: 40px;
-  padding: 0;
+  min-width: unset;
+  height: unset;
+  padding: var(--spacing-1);
   display: flex;
   align-items: center;
   justify-content: center;
+  background-color: transparent;
+  border: none;
+  color: var(--color-gray-0);
 }
