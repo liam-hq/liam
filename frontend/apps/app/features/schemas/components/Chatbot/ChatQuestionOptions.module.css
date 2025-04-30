@@ -1,0 +1,27 @@
+.questionContainer {
+  margin-bottom: 12px;
+  padding: 12px;
+  border-radius: 8px;
+  background-color: var(--global-background-secondary);
+}
+
+.questionText {
+  font-weight: 500;
+  color: var(--global-foreground);
+  margin-bottom: 8px;
+}
+
+.optionsContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.optionButton {
+  text-align: left;
+  padding: 8px 12px;
+  border-radius: 6px;
+  transition: background-color 0.2s ease;
+  width: 100%;
+}

@@ -12,6 +12,7 @@ import { useEffect, useRef, useState } from 'react'
 import type { SchemaData, TableGroupData } from '../../../../app/api/chat/route'
 import { ChatInput } from './ChatInput'
 import { ChatMessage, type ChatMessageProps } from './ChatMessage'
+import { ChatQuestionOptions } from './ChatQuestionOptions'
 import styles from './ChatbotDialog.module.css'
 
 interface ChatbotDialogProps {
@@ -167,6 +168,22 @@ export const ChatbotDialog: FC<ChatbotDialogProps> = ({
     }
   }
 
+  const handleOptionSelect = (option: string) => {
+    // When a user selects an option from the question options,
+    // send it as a message
+    handleSendMessage(option)
+  }
+
+  // Get the last AI message to check for questions
+  const lastAiMessage = [...messages]
+    .reverse()
+    .find((msg) => !msg.isUser && msg.content)
+
+  // Check if the last AI message contains options
+  const hasOptions =
+    lastAiMessage?.content &&
+    /```options[\s\S]*?```/g.test(lastAiMessage.content)
+
   return (
     <ModalRoot open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <ModalPortal>
@@ -174,20 +191,49 @@ export const ChatbotDialog: FC<ChatbotDialogProps> = ({
         <ModalContent className={styles.dialog}>
           <ModalTitle>Schema Chatbot</ModalTitle>
           <div className={styles.messagesContainer}>
-            {messages.map((message) => (
-              <ChatMessage
-                key={message.id}
-                content={message.content}
-                isUser={message.isUser}
-                timestamp={message.timestamp}
-              />
-            ))}
+            {messages.map((message) => {
+              // If this is the last AI message and it has options, don't render it here
+              // It will be rendered separately below
+              if (
+                !isLoading &&
+                hasOptions &&
+                message.id === lastAiMessage?.id
+              ) {
+                // Create a modified version of the message without the options blocks
+                const modifiedContent = message.content.replace(
+                  /```options[\s\S]*?```/g,
+                  '',
+                )
+                return (
+                  <ChatMessage
+                    key={message.id}
+                    content={modifiedContent}
+                    isUser={message.isUser}
+                    timestamp={message.timestamp}
+                  />
+                )
+              }
+              return (
+                <ChatMessage
+                  key={message.id}
+                  content={message.content}
+                  isUser={message.isUser}
+                  timestamp={message.timestamp}
+                />
+              )
+            })}
             {isLoading && (
               <div className={styles.loadingIndicator}>
                 <div className={styles.loadingDot} />
                 <div className={styles.loadingDot} />
                 <div className={styles.loadingDot} />
               </div>
+            )}
+            {!isLoading && lastAiMessage && hasOptions && (
+              <ChatQuestionOptions
+                content={lastAiMessage.content}
+                onOptionSelect={handleOptionSelect}
+              />
             )}
             <div ref={messagesEndRef} />
           </div>

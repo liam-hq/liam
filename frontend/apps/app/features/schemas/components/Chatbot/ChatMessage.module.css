@@ -26,7 +26,7 @@
 }
 
 .botMessage .messageContent {
-  background-color: var(--global-foreground-subtle);
+  background-color: var(--global-background);
 }
 
 .messageTime {

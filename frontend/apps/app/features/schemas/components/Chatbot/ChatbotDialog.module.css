@@ -26,7 +26,7 @@
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background-color: var(--global-foreground-subtle);
+  background-color: var(--global-foreground);
   animation: pulse 1.5s infinite ease-in-out;
 }
 
