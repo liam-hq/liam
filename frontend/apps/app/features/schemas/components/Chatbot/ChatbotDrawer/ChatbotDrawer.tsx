@@ -1,17 +1,21 @@
 'use client'
 
 import {
+  DrawerClose,
   DrawerContent,
   DrawerPortal,
   DrawerRoot,
   DrawerTitle,
+  IconButton,
 } from '@liam-hq/ui'
+import { X as CloseIcon } from 'lucide-react'
 import type { FC, ReactNode } from 'react'
 import { useEffect, useRef, useState } from 'react'
 import type {
   SchemaData,
   TableGroupData,
 } from '../../../../../app/api/chat/route'
+import { AskAiIcon } from '../AskAiIcon'
 import { ChatInput } from '../ChatInput'
 import { ChatMessage, type ChatMessageProps } from '../ChatMessage'
 import styles from './ChatbotDrawer.module.css'
@@ -193,7 +197,22 @@ export const ChatbotDrawer: FC<ChatbotDrawerProps> = ({
   return (
     <DrawerPortal>
       <DrawerContent className={styles.content}>
-        <DrawerTitle>Schema Chatbot</DrawerTitle>
+        <div className={styles.chatHeader}>
+          <div className={styles.titleContainer}>
+            <span className={styles.titleIcon}>
+              <AskAiIcon size={16} />
+            </span>
+            <DrawerTitle>Ask AI</DrawerTitle>
+          </div>
+          <DrawerClose asChild>
+            <IconButton
+              icon={<CloseIcon size={16} />}
+              tooltipContent="Close"
+              aria-label="Close chatbot"
+              className={styles.closeButton}
+            />
+          </DrawerClose>
+        </div>
         <div className={styles.messagesContainer}>
           {messages.map((message) => (
             <ChatMessage
@@ -201,6 +220,9 @@ export const ChatbotDrawer: FC<ChatbotDrawerProps> = ({
               content={message.content}
               isUser={message.isUser}
               timestamp={message.timestamp}
+              className={
+                message.isUser ? styles.askMessage : styles.responseMessage
+              }
             />
           ))}
           {isLoading && (
@@ -212,7 +234,9 @@ export const ChatbotDrawer: FC<ChatbotDrawerProps> = ({
           )}
           <div ref={messagesEndRef} />
         </div>
-        <ChatInput onSendMessage={handleSendMessage} isLoading={isLoading} />
+        <div className={styles.chatInputContainer}>
+          <ChatInput onSendMessage={handleSendMessage} isLoading={isLoading} />
+        </div>
       </DrawerContent>
     </DrawerPortal>
   )
