@@ -25,6 +25,7 @@ import { ERDContentProvider, useERDContentContext } from './ERDContentContext'
 import {
   NonRelatedTableGroupNode,
   RelationshipEdge,
+  RequestedTableNode,
   Spinner,
   TableGroupBoundingBox,
   TableGroupNode,
@@ -35,6 +36,7 @@ import { useTableGroupBoundingBox } from './hooks/useTableGroupBoundingBox'
 
 const nodeTypes = {
   table: TableNode,
+  requestedTable: RequestedTableNode,
   nonRelatedTableGroup: NonRelatedTableGroupNode,
   tableGroup: TableGroupNode,
 }

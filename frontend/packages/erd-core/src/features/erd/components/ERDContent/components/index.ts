@@ -1,5 +1,6 @@
 export * from './NonRelatedTableGroupNode'
 export * from './RelationshipEdge'
+export * from './RequestedTableNode'
 export * from './Spinner'
 export * from './TableGroupBoundingBox'
 export * from './TableNode'
