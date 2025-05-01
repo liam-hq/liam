@@ -18,6 +18,23 @@ export type RouteDefinitions = {
     projectId: string
     branchOrCommit: string
   }) => string
+  'projects/[projectId]/ref/[branchOrCommit]/commit/[commit]': (params: {
+    projectId: string
+    branchOrCommit: string
+    commit: string
+  }) => string
+  'projects/[projectId]/ref/[branchOrCommit]/commit/[commit]/schema/[...schemaFilePath]': (params: {
+    projectId: string
+    branchOrCommit: string
+    commit: string
+    schemaFilePath: string
+  }) => string
+  'projects/[projectId]/ref/[branchOrCommit]/commit/[commit]/docs/[docFilePath]': (params: {
+    projectId: string
+    branchOrCommit: string
+    commit: string
+    docFilePath: string
+  }) => string
   'projects/[projectId]/ref/[branchOrCommit]/migrations': (params: {
     projectId: string
     branchOrCommit: string
@@ -145,4 +162,22 @@ export const routeDefinitions: RouteDefinitions = {
     const encodedBranchOrCommit = encodeURIComponent(branchOrCommit)
     return `/app/projects/${projectId}/ref/${encodedBranchOrCommit}/docs/${docFilePath}`
   },
+  'projects/[projectId]/ref/[branchOrCommit]/commit/[commit]': ({
+    projectId,
+    branchOrCommit,
+    commit,
+  }) => {
+    const encodedBranchOrCommit = encodeURIComponent(branchOrCommit)
+    return `/app/projects/${projectId}/ref/${encodedBranchOrCommit}/commit/${commit}`
+  },
+  'projects/[projectId]/ref/[branchOrCommit]/commit/[commit]/schema/[...schemaFilePath]':
+    ({ projectId, branchOrCommit, commit, schemaFilePath }) => {
+      const encodedBranchOrCommit = encodeURIComponent(branchOrCommit)
+      return `/app/projects/${projectId}/ref/${encodedBranchOrCommit}/commit/${commit}/schema/${schemaFilePath}`
+    },
+  'projects/[projectId]/ref/[branchOrCommit]/commit/[commit]/docs/[docFilePath]':
+    ({ projectId, branchOrCommit, commit, docFilePath }) => {
+      const encodedBranchOrCommit = encodeURIComponent(branchOrCommit)
+      return `/app/projects/${projectId}/ref/${encodedBranchOrCommit}/commit/${commit}/docs/${docFilePath}`
+    },
 } as const

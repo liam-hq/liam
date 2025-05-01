@@ -23,6 +23,7 @@ export async function processOverrideContent(content: string, schema: Schema) {
   }
 
   return {
+    // @ts-ignore
     result: overrideSchema(schema, parsedOverrideContent.output),
     error: null,
   }

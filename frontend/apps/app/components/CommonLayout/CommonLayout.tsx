@@ -12,12 +12,16 @@ import { getOrganizationsByUserId } from './services/getOrganizationsByUserId'
 type CommonLayoutProps = {
   projectId?: string
   branchOrCommit?: string
+  branch?: string
+  commit?: string
   children: ReactNode
 }
 
 export async function CommonLayout({
   projectId,
   branchOrCommit,
+  branch,
+  commit,
   children,
 }: CommonLayoutProps) {
   const organizationId = await getOrganizationId()
@@ -43,6 +47,8 @@ export async function CommonLayout({
         <AppBar
           currentProjectId={projectId}
           currentBranchOrCommit={branchOrCommit}
+          currentBranch={branch}
+          currentCommit={commit}
         />
         <main className={styles.content}>{children}</main>
       </div>

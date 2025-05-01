@@ -356,3 +356,43 @@ export const getOrganizationInfo = async (
     return null
   }
 }
+
+/**
+ * Gets multiple commits for a repository branch
+ * @returns Array of commit details or empty array
+ */
+export const getRepositoryCommits = async (
+  installationId: number,
+  owner: string,
+  repo: string,
+  branch = 'main',
+  perPage = 100,
+): Promise<
+  Array<{
+    sha: string
+    message: string
+    author: string
+    date: string
+  }>
+> => {
+  const octokit = await createOctokit(installationId)
+
+  try {
+    const { data: commits } = await octokit.repos.listCommits({
+      owner,
+      repo,
+      sha: branch,
+      per_page: perPage,
+    })
+
+    return commits.map((commit) => ({
+      sha: commit.sha,
+      message: commit.commit.message,
+      author: commit.commit.author?.name || '',
+      date: commit.commit.author?.date || '',
+    }))
+  } catch (error) {
+    console.error(`Error fetching commits for ${owner}/${repo}:`, error)
+    return []
+  }
+}
