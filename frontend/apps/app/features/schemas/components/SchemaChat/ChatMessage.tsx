@@ -57,6 +57,37 @@ export const ChatMessage: FC<ChatMessageProps> = ({
     return jsonBlocks
   }
 
+  // Function to copy text to clipboard
+  const copyToClipboard = async (text: string) => {
+    try {
+      await navigator.clipboard.writeText(text)
+      showCopySuccess()
+    } catch (err) {
+      console.error('Failed to copy text: ', err)
+    }
+  }
+  
+  // Show a temporary success message when content is copied
+  const showCopySuccess = () => {
+    const toast = document.createElement('div')
+    toast.textContent = 'Copied to clipboard'
+    toast.style.position = 'fixed'
+    toast.style.bottom = '20px'
+    toast.style.left = '50%'
+    toast.style.transform = 'translateX(-50%)'
+    toast.style.backgroundColor = 'rgba(0, 0, 0, 0.7)'
+    toast.style.color = 'white'
+    toast.style.padding = '8px 16px'
+    toast.style.borderRadius = '4px'
+    toast.style.zIndex = '9999'
+    
+    document.body.appendChild(toast)
+    
+    setTimeout(() => {
+      document.body.removeChild(toast)
+    }, 2000)
+  }
+
   // Custom renderer for ReactMarkdown to add Apply button to JSON code blocks
   const customComponents = {
     pre: ({ children, ...props }: any) => {
@@ -79,6 +110,16 @@ export const ChatMessage: FC<ChatMessageProps> = ({
       return (
         <pre {...props} className={isJsonBlock ? styles.jsonCodeBlock : ''}>
           {children}
+          {isJsonBlock && (
+            <button
+              type="button"
+              className={styles.copyButton}
+              onClick={() => copyToClipboard(childProps?.children || '')}
+              aria-label="Copy to clipboard"
+            >
+              Copy
+            </button>
+          )}
           {isValidJson && onApplySchema && (
             <button
               type="button"

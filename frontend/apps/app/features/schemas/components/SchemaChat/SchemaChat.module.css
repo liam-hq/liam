@@ -11,6 +11,9 @@
   padding: 16px;
   border-bottom: 1px solid var(--global-border);
   background-color: var(--global-background);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .chatTitle {
@@ -18,6 +21,21 @@
   font-weight: 600;
   margin: 0;
   color: var(--global-foreground);
+}
+
+.showSchemaButton {
+  padding: 6px 10px;
+  border-radius: 6px;
+  background-color: var(--primary-accent);
+  color: white;
+  font-size: var(--font-size-2);
+  cursor: pointer;
+  border: none;
+  transition: background-color 0.2s;
+}
+
+.showSchemaButton:hover {
+  background-color: var(--primary-accent-hover, #0056b3);
 }
 
 .messagesContainer {

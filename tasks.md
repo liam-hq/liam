@@ -47,3 +47,13 @@
 - [x] Implement click handler for Apply button to process schema modifications
 - [x] Style the Apply button to match the application design
 - [x] Add success/error notifications when applying schema changes manually
+
+## 6. Current Schema Display Feature
+- [x] Add a "Show Current Schema" button in the editor toolbar in `schema-poc/page.tsx`
+- [x] Style the button to match the application design
+- [x] Create a modal dialog for displaying the current schema
+- [x] Implement click handler that formats the current schema as a JSON string
+- [x] Create a utility function to format and pretty-print the schema
+- [x] Display the schema in a scrollable container within the modal
+- [x] Add copy button for the schema code block
+- [ ] Update tests to cover the schema display functionality

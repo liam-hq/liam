@@ -127,6 +127,24 @@
   background-color: var(--primary-accent-hover, #0056b3);
 }
 
+.copyButton {
+  position: absolute;
+  top: 8px;
+  right: 80px;
+  padding: 4px 8px;
+  font-size: var(--font-size-1);
+  background-color: var(--global-foreground-subtle);
+  color: var(--global-foreground);
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.copyButton:hover {
+  background-color: var(--global-foreground-muted);
+}
+
 .jsonCodeBlock {
   position: relative;
 }

@@ -18,6 +18,44 @@
   overflow: hidden;
 }
 
+.toolbarContainer {
+  margin-bottom: 16px;
+  padding: 8px;
+  display: flex;
+  gap: 8px;
+}
+
+.schemaContent {
+  width: 100%;
+  max-height: 70vh;
+  overflow: auto;
+  padding: 16px;
+  background-color: var(--global-background-subtle);
+  border-radius: 6px;
+  margin-top: 16px;
+  font-family: var(--code-font);
+  white-space: pre;
+  position: relative;
+}
+
+.copyButton {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  padding: 4px 8px;
+  font-size: var(--font-size-1);
+  background-color: var(--global-foreground-subtle);
+  color: var(--global-foreground);
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.copyButton:hover {
+  background-color: var(--global-foreground-muted);
+}
+
 @media (max-width: 1024px) {
   .container {
     grid-template-columns: 300px 1fr;
