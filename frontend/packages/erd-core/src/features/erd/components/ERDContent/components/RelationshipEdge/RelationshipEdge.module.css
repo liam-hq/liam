@@ -12,3 +12,15 @@
 .hovered {
   stroke: var(--node-layout);
 }
+
+.requested {
+  stroke-dasharray: 5, 5;
+  stroke: rgba(0, 100, 255, 0.6);
+}
+
+.badgeContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}

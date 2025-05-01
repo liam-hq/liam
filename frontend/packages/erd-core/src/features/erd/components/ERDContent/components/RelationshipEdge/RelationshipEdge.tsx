@@ -1,7 +1,7 @@
 import { BaseEdge, type EdgeProps, getBezierPath } from '@xyflow/react'
-
 import clsx from 'clsx'
 import type { FC } from 'react'
+import { StatusBadge } from '../StatusBadge'
 import styles from './RelationshipEdge.module.css'
 import type { RelationshipEdgeType } from './type'
 
@@ -29,6 +29,9 @@ export const RelationshipEdge: FC<Props> = ({
     targetPosition,
   })
 
+  // Check if this is a requested relationship
+  const isRequested = data?.isRequested === true
+
   return (
     <>
       <BaseEdge
@@ -48,8 +51,25 @@ export const RelationshipEdge: FC<Props> = ({
               ? 'url(#zeroOrManyLeftHighlight)'
               : 'url(#zeroOrManyLeft)'
         }
-        className={clsx(styles.edge, data?.isHighlighted && styles.hovered)}
+        className={clsx(
+          styles.edge,
+          data?.isHighlighted && styles.hovered,
+          isRequested && styles.requested,
+        )}
       />
+
+      {/* Display badge for requested relationships */}
+      {isRequested && (
+        <foreignObject
+          width={80}
+          height={24}
+          x={(sourceX + targetX) / 2 - 40}
+          y={(sourceY + targetY) / 2 - 12}
+          className={styles.badgeContainer}
+        >
+          <StatusBadge status="open" />
+        </foreignObject>
+      )}
       {data?.isHighlighted &&
         [...Array(PARTICLE_COUNT)].map((_, i) => (
           <ellipse

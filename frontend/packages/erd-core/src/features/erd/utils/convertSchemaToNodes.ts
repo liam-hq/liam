@@ -168,7 +168,7 @@ export const convertSchemaToNodes = ({
     // This helps us avoid duplicates when processing multiple requests
     const addedTables = new Set<string>()
     const addedRelationships = new Set<string>()
-    
+
     // Store relationship data to process after all tables
     type RelationshipData = {
       relationshipName: string
@@ -219,7 +219,10 @@ export const convertSchemaToNodes = ({
           request.relationships.add,
         )) {
           // Skip if relationship already exists in schema or was added by a previous request
-          if (schema.relationships[relationshipName] || addedRelationships.has(relationshipName)) {
+          if (
+            schema.relationships[relationshipName] ||
+            addedRelationships.has(relationshipName)
+          ) {
             // If the relationship exists but was not added by a previous request,
             // it's a regular relationship in the schema, so we don't need to do anything
             continue
@@ -239,23 +242,31 @@ export const convertSchemaToNodes = ({
     }
 
     // Second pass: Process all relationships after all tables have been added
-    for (const { relationshipName, relationshipAddRequest, request } of relationshipsToProcess) {
+    for (const {
+      relationshipName,
+      relationshipAddRequest,
+      request,
+    } of relationshipsToProcess) {
       // Type assertion for relationshipAddRequest
       // biome-ignore lint/suspicious/noExplicitAny: needed for poc
       const rel = relationshipAddRequest.definition
 
       // Check if both source and target tables exist (either in schema or added by requests)
-      const sourceTableExists = schema.tables[rel.primaryTableName] || addedTables.has(rel.primaryTableName)
-      const targetTableExists = schema.tables[rel.foreignTableName] || addedTables.has(rel.foreignTableName)
+      const sourceTableExists =
+        schema.tables[rel.primaryTableName] ||
+        addedTables.has(rel.primaryTableName)
+      const targetTableExists =
+        schema.tables[rel.foreignTableName] ||
+        addedTables.has(rel.foreignTableName)
 
       // Only add the relationship if both tables exist
       if (sourceTableExists && targetTableExists) {
         // Determine the correct target ID based on whether the target table is a requested table or a regular table
         // If the target table is in the schema, use its name directly
         // If the target table was added by a request, use the request-specific ID format
-        const targetId = schema.tables[rel.foreignTableName] 
-          ? rel.foreignTableName 
-          : `request-${request.id}-table-${rel.foreignTableName}`;
+        const targetId = schema.tables[rel.foreignTableName]
+          ? rel.foreignTableName
+          : `request-${request.id}-table-${rel.foreignTableName}`
 
         edges.push({
           id: `request-${request.id}-relationship-${relationshipName}`,
