@@ -2,7 +2,7 @@
 
 import { Button } from '@liam-hq/ui'
 import { SendIcon } from 'lucide-react'
-import type { ChangeEventHandler, FC, KeyboardEvent } from 'react'
+import { type ChangeEventHandler, type FC, type KeyboardEvent, useState } from 'react'
 import styles from './ChatInput.module.css'
 
 interface ChatInputProps {
@@ -18,9 +18,11 @@ export const ChatInput: FC<ChatInputProps> = ({
   isLoading,
   onSubmit,
 }) => {
+  const [isComposing, setIsComposing] = useState(false)
+
   const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
-    // Submit on Enter without Shift key
-    if (e.key === 'Enter' && !e.shiftKey) {
+    // Don't submit if Shift is pressed or if currently composing (IME input)
+    if (e.key === 'Enter' && !e.shiftKey && !isComposing) {
       e.preventDefault()
       if (value.trim() && !isLoading && onSubmit) {
         onSubmit()
@@ -34,6 +36,8 @@ export const ChatInput: FC<ChatInputProps> = ({
         value={value}
         onChange={onChange}
         onKeyDown={handleKeyDown}
+        onCompositionStart={() => setIsComposing(true)}
+        onCompositionEnd={() => setIsComposing(false)}
         placeholder="Ask about your schema... (Shift+Enter for new line)"
         disabled={isLoading}
         className={styles.input}
