@@ -100,7 +100,7 @@ overrides:
 requests:
   - id: "REQ-2025-05-01-001"
     description: "Add analytics tracking for repositories"
-    status: "open"
+    status: "done"
     tables:
       add:
         repository_analytics:
