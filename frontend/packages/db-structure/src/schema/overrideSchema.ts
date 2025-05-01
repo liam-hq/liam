@@ -249,6 +249,7 @@ export type ProcessedRequests = {
   inProgressRequests: ImplementationRequest[]
   doneRequests: ImplementationRequest[]
   wontfixRequests: ImplementationRequest[]
+  allRequests?: ImplementationRequest[] // Add allRequests property for simplified processing
 }
 
 /**
@@ -291,6 +292,7 @@ export function overrideSchema(
     inProgressRequests: [],
     doneRequests: [],
     wontfixRequests: [],
+    allRequests: [], // Add allRequests property for simplified processing
   }
 
   // Add new tables
@@ -420,6 +422,9 @@ export function overrideSchema(
 
   // Process implementation requests
   if (requests && requests.length > 0) {
+    // Add all requests to the allRequests array
+    processedRequests.allRequests = [...requests]
+
     for (const request of requests) {
       // Categorize requests by status
       switch (request.status) {

@@ -8,15 +8,29 @@ import type { Cardinality, Schema, TableGroup } from '@liam-hq/db-structure'
 import type { Edge, Node } from '@xyflow/react'
 
 // Define a simplified type for implementation requests
+// biome-ignore lint/suspicious/noExplicitAny: needed for poc
+type ProcessedRequest = any & {
+  status?: string
+  id: string
+  tables?: {
+    // biome-ignore lint/suspicious/noExplicitAny: needed for poc
+    add?: Record<string, any>
+  }
+  relationships?: {
+    // biome-ignore lint/suspicious/noExplicitAny: needed for poc
+    add?: Record<string, any>
+  }
+}
+
+// We're simplifying the type to use a single array of requests
 export type ProcessedRequests = {
-  // biome-ignore lint/suspicious/noExplicitAny: needed for poc
-  openRequests: any[]
-  // biome-ignore lint/suspicious/noExplicitAny: needed for poc
-  inProgressRequests: any[]
-  // biome-ignore lint/suspicious/noExplicitAny: needed for poc
-  doneRequests: any[]
-  // biome-ignore lint/suspicious/noExplicitAny: needed for poc
-  wontfixRequests: any[]
+  // For backward compatibility with the rest of the application
+  openRequests: ProcessedRequest[]
+  inProgressRequests: ProcessedRequest[]
+  doneRequests: ProcessedRequest[]
+  wontfixRequests: ProcessedRequest[]
+  // New property that combines all requests
+  allRequests?: ProcessedRequest[]
 }
 
 type Params = {
@@ -76,6 +90,34 @@ export const convertSchemaToNodes = ({
     }
   }
 
+  // Track tables that are part of requests
+  const requestedTableNames = new Set<string>()
+  // biome-ignore lint/suspicious/noExplicitAny: needed for poc
+  const requestedTableData = new Map<string, { request: any; status: string }>()
+
+  // Process implementation requests if available to identify requested tables
+  if (implementationRequests) {
+    // Use allRequests if available, otherwise combine the separate arrays
+    const allRequests = implementationRequests.allRequests || [
+      ...(implementationRequests.openRequests || []),
+      ...(implementationRequests.inProgressRequests || []),
+      ...(implementationRequests.doneRequests || []),
+      ...(implementationRequests.wontfixRequests || []),
+    ]
+
+    // First pass: identify all tables that are part of requests
+    for (const request of allRequests) {
+      const status = request.status || 'unknown'
+
+      if (request.tables?.add) {
+        for (const tableName of Object.keys(request.tables.add)) {
+          requestedTableNames.add(tableName)
+          requestedTableData.set(tableName, { request, status })
+        }
+      }
+    }
+  }
+
   const nodes: Node[] = [
     {
       id: NON_RELATED_TABLE_GROUP_NODE_ID,
@@ -86,17 +128,28 @@ export const convertSchemaToNodes = ({
     ...groupNodes,
     ...tables.map((table) => {
       const groupId = tableToGroupMap.get(table.name)
+      const isRequestedTable = requestedTableNames.has(table.name)
+      const requestData = requestedTableData.get(table.name)
 
       return {
         id: table.name,
-        type: 'table',
+        // Use requestedTable type if the table is part of a request
+        type: isRequestedTable ? 'requestedTable' : 'table',
         data: {
           table,
           sourceColumnName: sourceColumns.get(table.name),
           targetColumnCardinalities: tableColumnCardinalities.get(table.name),
+          // Add request data if this is a requested table
+          ...(isRequestedTable && {
+            request: requestData?.request,
+            status: requestData?.status,
+          }),
         },
         position: { x: 0, y: 0 },
-        ariaLabel: `${table.name} table`,
+        // Update ariaLabel for requested tables
+        ariaLabel: isRequestedTable
+          ? `Requested table (${requestData?.status}): ${table.name}`
+          : `${table.name} table`,
         zIndex: zIndex.nodeDefault,
         ...(!tablesWithRelationships.has(table.name) && !groupId
           ? { parentId: NON_RELATED_TABLE_GROUP_NODE_ID }
@@ -128,8 +181,19 @@ export const convertSchemaToNodes = ({
 
   // Process implementation requests if available
   if (implementationRequests) {
-    // Process open requests
-    for (const request of implementationRequests.openRequests) {
+    // Use allRequests if available, otherwise combine the separate arrays
+    const allRequests = implementationRequests.allRequests || [
+      ...(implementationRequests.openRequests || []),
+      ...(implementationRequests.inProgressRequests || []),
+      ...(implementationRequests.doneRequests || []),
+      ...(implementationRequests.wontfixRequests || []),
+    ]
+
+    // Process all requests in a single loop
+    for (const request of allRequests) {
+      // Get the request status (default to 'unknown' if not available)
+      const status = request.status || 'unknown'
+
       // Add tables from requests
       if (request.tables?.add) {
         for (const [tableName, tableAddReq] of Object.entries(
@@ -149,10 +213,10 @@ export const convertSchemaToNodes = ({
             data: {
               table: tableAddRequest.definition,
               request,
-              status: 'open',
+              status,
             },
             position: { x: 0, y: 0 },
-            ariaLabel: `Requested table: ${tableName}`,
+            ariaLabel: `Requested table (${status}): ${tableName}`,
             zIndex: zIndex.nodeDefault,
           })
         }
@@ -186,74 +250,7 @@ export const convertSchemaToNodes = ({
             data: {
               relationship: rel,
               request,
-              status: 'open',
-              cardinality: rel.cardinality,
-            },
-          })
-        }
-      }
-    }
-
-    // Process in-progress requests
-    for (const request of implementationRequests.inProgressRequests) {
-      // Similar processing as open requests, but with 'in_progress' status
-      // Add tables from requests
-      if (request.tables?.add) {
-        for (const [tableName, tableAddReq] of Object.entries(
-          request.tables.add,
-        )) {
-          // Skip if table already exists
-          if (schema.tables[tableName]) continue
-
-          // Type assertion for tableAddRequest
-          // biome-ignore lint/suspicious/noExplicitAny: needed for poc
-          const tableAddRequest = tableAddReq as any
-
-          // Create a node for the requested table
-          nodes.push({
-            id: `request-${request.id}-table-${tableName}`,
-            type: 'requestedTable',
-            data: {
-              table: tableAddRequest.definition,
-              request,
-              status: 'in_progress',
-            },
-            position: { x: 0, y: 0 },
-            ariaLabel: `Requested table (in progress): ${tableName}`,
-            zIndex: zIndex.nodeDefault,
-          })
-        }
-      }
-
-      // Add relationships from requests
-      if (request.relationships?.add) {
-        for (const [relationshipName, relationshipAddReq] of Object.entries(
-          request.relationships.add,
-        )) {
-          // Skip if relationship already exists
-          if (schema.relationships[relationshipName]) continue
-
-          // Type assertion for relationshipAddRequest
-          // biome-ignore lint/suspicious/noExplicitAny: needed for poc
-          const relationshipAddRequest = relationshipAddReq as any
-          const rel = relationshipAddRequest.definition
-          edges.push({
-            id: `request-${request.id}-relationship-${relationshipName}`,
-            type: 'requestedRelationship',
-            source: rel.primaryTableName,
-            target: rel.foreignTableName,
-            sourceHandle:
-              showMode === 'TABLE_NAME'
-                ? null
-                : columnHandleId(rel.primaryTableName, rel.primaryColumnName),
-            targetHandle:
-              showMode === 'TABLE_NAME'
-                ? null
-                : columnHandleId(rel.foreignTableName, rel.foreignColumnName),
-            data: {
-              relationship: rel,
-              request,
-              status: 'in_progress',
+              status,
               cardinality: rel.cardinality,
             },
           })
