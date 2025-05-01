@@ -169,7 +169,7 @@ When suggesting schema changes, provide them in a JSON code block that follows t
       "foreignColumnName": "foreign_column",
       "cardinality": "ONE_TO_MANY",
       "updateConstraint": "CASCADE",
-      "deleteConstraint": "RESTRICT"
+      "deleteConstraint": "SET_NULL"
     }
   },
   "tableGroups": {
@@ -197,14 +197,9 @@ When the user asks to modify the schema, provide the JSON structure for the requ
 
   // Generate streaming response using Vercel AI SDK
   const result = streamText({
-    model: openai('o3-mini'),
+    model: openai('gpt-4o'),
     system: systemPrompt,
     messages: messages as Message[],
-    providerOptions: {
-      openai: {
-        reasoningEffort: 'high',
-      },
-    },
   })
 
   // Return streaming response with custom error handling

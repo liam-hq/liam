@@ -1,10 +1,29 @@
 .input {
   flex: 1;
+  resize: none;
+  overflow-y: hidden;
+  min-height: 40px;
+  max-height: 200px;
+  padding: 10px;
+  border: 1px solid var(--global-border);
+  border-radius: 6px;
+  background-color: var(--global-background);
+  color: var(--global-foreground);
+  font-family: inherit;
+  font-size: var(--font-size-2);
+  line-height: 1.5;
+  transition: height 0.1s ease-out;
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--primary-accent);
 }
 
 .sendButton {
   min-width: 40px;
   height: 40px;
+  margin-left: 8px;
   padding: 0;
   display: flex;
   align-items: center;

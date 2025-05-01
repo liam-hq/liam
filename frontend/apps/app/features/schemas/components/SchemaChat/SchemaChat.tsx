@@ -73,6 +73,7 @@ export const SchemaChat: FC<SchemaChatProps> = ({ schema, onSchemaChange }) => {
                         modified,
                         error,
                       } = processSchemaModification(jsonSchema, schema)
+                      console.log({ error })
 
                       if (modified) {
                         // Apply schema changes
@@ -88,6 +89,8 @@ export const SchemaChat: FC<SchemaChatProps> = ({ schema, onSchemaChange }) => {
                           `Failed to apply schema: ${error}`,
                           'error',
                         )
+                        // Add error to input for AI to see
+                        handleInputChange({ target: { value: `Error: ${JSON.stringify(error)}. Please fix the schema and try again.` } } as any)
                       } else {
                         showSchemaToast(
                           'No changes were detected in the schema',
@@ -95,10 +98,14 @@ export const SchemaChat: FC<SchemaChatProps> = ({ schema, onSchemaChange }) => {
                         )
                       }
                     } catch (err) {
+                      console.log({ err })
+                      const errorMessage = err instanceof Error ? err.message : 'Unknown error'
                       showSchemaToast(
-                        `Error applying schema: ${err instanceof Error ? err.message : 'Unknown error'}`,
+                        `Error applying schema: ${errorMessage}`,
                         'error',
                       )
+                      // Add error to input for AI to see
+                      handleInputChange({ target: { value: `Error: ${errorMessage}. Please fix the schema and try again.` } } as any)
                     }
                   }
             }

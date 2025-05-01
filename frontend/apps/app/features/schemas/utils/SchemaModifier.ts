@@ -27,35 +27,78 @@ export function processSchemaModification(
   message: string,
   currentSchema: Schema,
 ): SchemaModificationResult {
-  // Process each JSON block
   try {
-    const schemaModification = JSON.parse(message)
-
-    // Merge schema changes with current schema
-    const updatedSchema = mergeSchemaChanges(currentSchema, schemaModification)
-
-    // Ensure the schema is valid before applying changes
+    // Try to extract JSON from the message - it might be wrapped in markdown code blocks
+    let jsonContent = message;
+    
+    // Extract JSON from code blocks if present
+    const jsonCodeBlockMatch = message.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
+    if (jsonCodeBlockMatch && jsonCodeBlockMatch[1]) {
+      jsonContent = jsonCodeBlockMatch[1];
+    }
+    
+    // Parse the JSON
     try {
-      // Validate schema against schemaSchema
-      parse(schemaSchema, updatedSchema)
-
-      // If validation passes, return updated schema
-      return { schema: updatedSchema, modified: true }
-    } catch (validationError) {
-      console.error('Schema validation error:', validationError)
-      // Try next JSON block if available
+      const schemaModification = JSON.parse(jsonContent);
+      
+      // Merge schema changes with current schema
+      const updatedSchema = mergeSchemaChanges(currentSchema, schemaModification);
+      
+      // Ensure the schema is valid before applying changes
+      try {
+        // Validate schema against schemaSchema
+        parse(schemaSchema, updatedSchema);
+        
+        // If validation passes, return updated schema
+        return { schema: updatedSchema, modified: true };
+      } catch (validationError) {
+        console.error('Schema validation error:', validationError);
+        
+        // Get detailed validation issues
+        let details = "Invalid schema format";
+        if (validationError && typeof validationError === 'object') {
+          if ('issues' in validationError) {
+            const issues = validationError.issues;
+            details = Array.isArray(issues) 
+              ? issues.map((issue: any) => 
+                  `${issue.path?.join('.')} ${issue.message || 'is invalid'}`
+                ).join('; ')
+              : JSON.stringify(issues);
+          } else if ('message' in validationError) {
+            details = validationError.message;
+          }
+        }
+        
+        return {
+          schema: currentSchema,
+          modified: false,
+          error: `Validation failed: ${details}`,
+        };
+      }
+    } catch (parseError) {
+      console.error('JSON parsing error:', parseError);
+      return {
+        schema: currentSchema,
+        modified: false,
+        error: `Invalid JSON format: ${parseError instanceof Error ? parseError.message : 'Unknown parse error'}`,
+      };
     }
   } catch (e) {
-    // Log error and continue to next JSON block
-    console.error('Failed to process schema modification:', e)
-    // Skip to next iteration
+    // Handle any other unexpected errors
+    console.error('Failed to process schema modification:', e);
+    
+    return {
+      schema: currentSchema,
+      modified: false,
+      error: `Processing error: ${e instanceof Error ? e.message : JSON.stringify(e)}`,
+    };
   }
 
-  // Return original schema if no valid modifications were found
+  // Code execution should never reach here since all paths above return a value
   return {
     schema: currentSchema,
-    modified: false,
-    error: 'No valid schema modifications found in the message',
+    modified: false, 
+    error: 'Failed to process schema for unknown reasons',
   }
 }
 

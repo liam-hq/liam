@@ -1,9 +1,61 @@
 'use client'
 
-import type { FC } from 'react'
+import type { FC, ReactNode } from 'react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
+import { memo, useMemo } from 'react'
+import { marked } from 'marked'
 import styles from './ChatMessage.module.css'
+
+// Parse markdown content into blocks
+function parseMarkdownIntoBlocks(markdown: string): string[] {
+  const tokens = marked.lexer(markdown)
+  return tokens.map(token => token.raw)
+}
+
+// Memoized markdown block component
+const MemoizedMarkdownBlock = memo(
+  ({ content, components }: { content: string; components?: any }) => {
+    return (
+      <ReactMarkdown remarkPlugins={[remarkGfm]} components={components}>
+        {content}
+      </ReactMarkdown>
+    )
+  },
+  (prevProps, nextProps) => {
+    return prevProps.content === nextProps.content && 
+           prevProps.components === nextProps.components
+  }
+)
+MemoizedMarkdownBlock.displayName = 'MemoizedMarkdownBlock'
+
+// Memoized markdown component that breaks content into blocks
+const MemoizedMarkdown = memo(
+  ({ 
+    content, 
+    id, 
+    components 
+  }: { 
+    content: string; 
+    id: string; 
+    components?: any 
+  }) => {
+    const blocks = useMemo(() => parseMarkdownIntoBlocks(content), [content])
+
+    return (
+      <>
+        {blocks.map((block, index) => (
+          <MemoizedMarkdownBlock 
+            content={block} 
+            components={components}
+            key={`${id}-block_${index}`} 
+          />
+        ))}
+      </>
+    )
+  }
+)
+MemoizedMarkdown.displayName = 'MemoizedMarkdown'
 
 interface MessagePart {
   type: string
@@ -143,7 +195,10 @@ export const ChatMessage: FC<ChatMessageProps> = ({
       <div className={styles.messageContent}>
         {isUser ? (
           <div className={styles.messageText}>
-            <ReactMarkdown remarkPlugins={[remarkGfm]}>{content}</ReactMarkdown>
+            <MemoizedMarkdown 
+              content={content} 
+              id={`user-message-${Date.now()}`} 
+            />
           </div>
         ) : (
           <div className={styles.messageText}>
@@ -152,15 +207,12 @@ export const ChatMessage: FC<ChatMessageProps> = ({
                 {parts.map((part) => {
                   if (part.type === 'text') {
                     return (
-                      <ReactMarkdown
+                      <MemoizedMarkdown
                         key={`text-part-${part.text?.substring(0, 20)}-${Math.random().toString(36).substring(2, 9)}`}
-                        remarkPlugins={[remarkGfm]}
-                        components={
-                          onApplySchema ? customComponents : undefined
-                        }
-                      >
-                        {part.text || ''}
-                      </ReactMarkdown>
+                        content={part.text || ''}
+                        id={`part-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`}
+                        components={onApplySchema ? customComponents : undefined}
+                      />
                     )
                   }
 
@@ -193,12 +245,11 @@ export const ChatMessage: FC<ChatMessageProps> = ({
                 })}
               </>
             ) : (
-              <ReactMarkdown
-                remarkPlugins={[remarkGfm]}
+              <MemoizedMarkdown
+                content={content}
+                id={`message-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`}
                 components={onApplySchema ? customComponents : undefined}
-              >
-                {content}
-              </ReactMarkdown>
+              />
             )}
           </div>
         )}
