@@ -1410,6 +1410,16 @@ COMMENT ON POLICY "authenticated_users_can_insert_org_doc_file_paths" ON "public
 
 
 
+CREATE POLICY "authenticated_users_can_insert_org_github_repositories" ON "public"."github_repositories" FOR INSERT TO "authenticated" WITH CHECK (("organization_id" IN ( SELECT "organization_members"."organization_id"
+   FROM "public"."organization_members"
+  WHERE ("organization_members"."user_id" = "auth"."uid"()))));
+
+
+
+COMMENT ON POLICY "authenticated_users_can_insert_org_github_repositories" ON "public"."github_repositories" IS 'Authenticated users can only create repositories in organizations they are members of';
+
+
+
 CREATE POLICY "authenticated_users_can_insert_org_invitations" ON "public"."invitations" FOR INSERT TO "authenticated" WITH CHECK (("organization_id" IN ( SELECT "organization_members"."organization_id"
    FROM "public"."organization_members"
   WHERE ("organization_members"."user_id" = "auth"."uid"()))));
@@ -1483,6 +1493,16 @@ CREATE POLICY "authenticated_users_can_select_org_github_pull_requests" ON "publ
 
 
 COMMENT ON POLICY "authenticated_users_can_select_org_github_pull_requests" ON "public"."github_pull_requests" IS 'Authenticated users can only view pull requests belonging to organizations they are members of';
+
+
+
+CREATE POLICY "authenticated_users_can_select_org_github_repositories" ON "public"."github_repositories" FOR SELECT TO "authenticated" USING (("organization_id" IN ( SELECT "organization_members"."organization_id"
+   FROM "public"."organization_members"
+  WHERE ("organization_members"."user_id" = "auth"."uid"()))));
+
+
+
+COMMENT ON POLICY "authenticated_users_can_select_org_github_repositories" ON "public"."github_repositories" IS 'Authenticated users can only view repositories belonging to organizations they are members of';
 
 
 
@@ -1641,6 +1661,9 @@ ALTER TABLE "public"."github_pull_request_comments" ENABLE ROW LEVEL SECURITY;
 ALTER TABLE "public"."github_pull_requests" ENABLE ROW LEVEL SECURITY;
 
 
+ALTER TABLE "public"."github_repositories" ENABLE ROW LEVEL SECURITY;
+
+
 ALTER TABLE "public"."invitations" ENABLE ROW LEVEL SECURITY;
 
 
@@ -1747,6 +1770,10 @@ CREATE POLICY "service_role_can_select_all_github_pull_request_comments" ON "pub
 
 
 CREATE POLICY "service_role_can_select_all_github_pull_requests" ON "public"."github_pull_requests" FOR SELECT TO "service_role" USING (true);
+
+
+
+CREATE POLICY "service_role_can_select_all_github_repositories" ON "public"."github_repositories" FOR SELECT TO "service_role" USING (true);
 
 
 

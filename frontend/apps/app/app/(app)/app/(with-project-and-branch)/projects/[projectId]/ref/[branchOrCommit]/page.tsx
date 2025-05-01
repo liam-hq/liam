@@ -10,7 +10,7 @@ const paramsSchema = v.object({
 })
 
 export default async function Page({ params }: PageProps) {
-  const parsedParams = v.safeParse(paramsSchema, params)
+  const parsedParams = v.safeParse(paramsSchema, await params)
   if (!parsedParams.success) throw new Error('Invalid parameters')
 
   const { projectId, branchOrCommit } = parsedParams.output
