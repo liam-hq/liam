@@ -43,6 +43,7 @@
 - [x] Fix ChatInput to prevent submission during IME composition (for Japanese input)
 - [x] Optimize ReactMarkdown with memoization to improve performance and reduce unnecessary re-renders
 - [x] Implement auto-expanding textarea that grows with content
+- [x] Move loading indicator to send button instead of showing separate spinner
 
 ## 5. Manual Schema Application Feature
 - [x] Modify `SchemaChat.tsx` to disable automatic schema application on message completion

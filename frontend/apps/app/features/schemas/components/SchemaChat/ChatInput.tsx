@@ -81,8 +81,10 @@ export const ChatInput: FC<ChatInputProps> = ({
       <Button
         type="submit"
         disabled={!value.trim() || isLoading}
+        isLoading={isLoading}
         className={styles.sendButton}
         aria-label="Send message"
+        loadingIndicatorType="content"
       >
         <SendIcon size={18} />
       </Button>
