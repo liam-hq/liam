@@ -197,7 +197,7 @@ When the user asks to modify the schema, provide the JSON structure for the requ
 
   // Generate streaming response using Vercel AI SDK
   const result = streamText({
-    model: openai('gpt-4o'),
+    model: openai('o4-mini'),
     system: systemPrompt,
     messages: messages as Message[],
   })
