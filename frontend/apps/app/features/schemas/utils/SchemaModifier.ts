@@ -60,12 +60,16 @@ export function processSchemaModification(
           if ('issues' in validationError) {
             const issues = validationError.issues;
             details = Array.isArray(issues) 
-              ? issues.map((issue: any) => 
-                  `${issue.path?.join('.')} ${issue.message || 'is invalid'}`
-                ).join('; ')
-              : JSON.stringify(issues);
-          } else if ('message' in validationError) {
-            details = validationError.message;
+              ? issues.map((issue: any) => {
+                  // Handle path formatting more carefully
+                  const path = Array.isArray(issue.path) 
+                    ? issue.path.map((segment: any) => String(segment)).join('.') 
+                    : 'unknown-path';
+                  return `${path} ${issue.message || 'is invalid'}`;
+                }).join('; ')
+              : "Validation issues present";
+          } else if ('message' in validationError && validationError.message) {
+            details = String(validationError.message);
           }
         }
         

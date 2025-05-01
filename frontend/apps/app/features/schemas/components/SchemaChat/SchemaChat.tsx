@@ -1,6 +1,5 @@
 'use client'
 
-import { Spinner } from '@/components/Spinner'
 import { useChat } from '@ai-sdk/react'
 import type { Schema } from '@liam-hq/db-structure'
 import { type FC, type FormEvent, useEffect, useRef } from 'react'
@@ -90,7 +89,7 @@ export const SchemaChat: FC<SchemaChatProps> = ({ schema, onSchemaChange }) => {
                           'error',
                         )
                         // Add error to input for AI to see
-                        handleInputChange({ target: { value: `Error: ${JSON.stringify(error)}. Please fix the schema and try again.` } } as any)
+                        handleInputChange({ target: { value: `Failed to apply schema: ${error}. Please fix this issue and provide a corrected schema.` } } as any)
                       } else {
                         showSchemaToast(
                           'No changes were detected in the schema',
@@ -105,7 +104,7 @@ export const SchemaChat: FC<SchemaChatProps> = ({ schema, onSchemaChange }) => {
                         'error',
                       )
                       // Add error to input for AI to see
-                      handleInputChange({ target: { value: `Error: ${errorMessage}. Please fix the schema and try again.` } } as any)
+                      handleInputChange({ target: { value: `Error applying schema: ${errorMessage}. Please provide a valid schema that fixes this issue.` } } as any)
                     }
                   }
             }
@@ -113,7 +112,6 @@ export const SchemaChat: FC<SchemaChatProps> = ({ schema, onSchemaChange }) => {
         ))}
         {(status === 'submitted' || status === 'streaming') && (
           <div className={styles.loadingContainer}>
-            <Spinner />
             <button
               type="button"
               onClick={() => stop()}
