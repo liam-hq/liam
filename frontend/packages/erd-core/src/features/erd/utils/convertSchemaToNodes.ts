@@ -10,7 +10,6 @@ import type { Edge, Node } from '@xyflow/react'
 // Define a simplified type for implementation requests
 // biome-ignore lint/suspicious/noExplicitAny: needed for poc
 type ProcessedRequest = any & {
-  status?: string
   id: string
   tables?: {
     // biome-ignore lint/suspicious/noExplicitAny: needed for poc
@@ -22,15 +21,10 @@ type ProcessedRequest = any & {
   }
 }
 
-// We're simplifying the type to use a single array of requests
+// Simplified type for requests - just a single array
 export type ProcessedRequests = {
-  // For backward compatibility with the rest of the application
-  openRequests: ProcessedRequest[]
-  inProgressRequests: ProcessedRequest[]
-  doneRequests: ProcessedRequest[]
-  wontfixRequests: ProcessedRequest[]
-  // New property that combines all requests
-  allRequests?: ProcessedRequest[]
+  // Single array of all requests
+  allRequests: ProcessedRequest[]
 }
 
 type Params = {
@@ -93,26 +87,16 @@ export const convertSchemaToNodes = ({
   // Track tables that are part of requests
   const requestedTableNames = new Set<string>()
   // biome-ignore lint/suspicious/noExplicitAny: needed for poc
-  const requestedTableData = new Map<string, { request: any; status: string }>()
+  const requestedTableData = new Map<string, { request: any }>()
 
   // Process implementation requests if available to identify requested tables
-  if (implementationRequests) {
-    // Use allRequests if available, otherwise combine the separate arrays
-    const allRequests = implementationRequests.allRequests || [
-      ...(implementationRequests.openRequests || []),
-      ...(implementationRequests.inProgressRequests || []),
-      ...(implementationRequests.doneRequests || []),
-      ...(implementationRequests.wontfixRequests || []),
-    ]
-
+  if (implementationRequests?.allRequests) {
     // First pass: identify all tables that are part of requests
-    for (const request of allRequests) {
-      const status = request.status || 'unknown'
-
+    for (const request of implementationRequests.allRequests) {
       if (request.tables?.add) {
         for (const tableName of Object.keys(request.tables.add)) {
           requestedTableNames.add(tableName)
-          requestedTableData.set(tableName, { request, status })
+          requestedTableData.set(tableName, { request })
         }
       }
     }
@@ -142,13 +126,12 @@ export const convertSchemaToNodes = ({
           // Add request data if this is a requested table
           ...(isRequestedTable && {
             request: requestData?.request,
-            status: requestData?.status,
           }),
         },
         position: { x: 0, y: 0 },
         // Update ariaLabel for requested tables
         ariaLabel: isRequestedTable
-          ? `Requested table (${requestData?.status}): ${table.name}`
+          ? `Requested table: ${table.name}`
           : `${table.name} table`,
         zIndex: zIndex.nodeDefault,
         ...(!tablesWithRelationships.has(table.name) && !groupId
@@ -180,27 +163,36 @@ export const convertSchemaToNodes = ({
   }))
 
   // Process implementation requests if available
-  if (implementationRequests) {
-    // Use allRequests if available, otherwise combine the separate arrays
-    const allRequests = implementationRequests.allRequests || [
-      ...(implementationRequests.openRequests || []),
-      ...(implementationRequests.inProgressRequests || []),
-      ...(implementationRequests.doneRequests || []),
-      ...(implementationRequests.wontfixRequests || []),
-    ]
+  if (implementationRequests?.allRequests) {
+    // Track tables and relationships that have been added by requests
+    // This helps us avoid duplicates when processing multiple requests
+    const addedTables = new Set<string>()
+    const addedRelationships = new Set<string>()
+    
+    // Store relationship data to process after all tables
+    type RelationshipData = {
+      relationshipName: string
+      relationshipAddRequest: any
+      request: any
+    }
+    const relationshipsToProcess: RelationshipData[] = []
 
-    // Process all requests in a single loop
-    for (const request of allRequests) {
-      // Get the request status (default to 'unknown' if not available)
-      const status = request.status || 'unknown'
-
+    // First pass: Process all tables from all requests
+    for (const request of implementationRequests.allRequests) {
       // Add tables from requests
       if (request.tables?.add) {
         for (const [tableName, tableAddReq] of Object.entries(
           request.tables.add,
         )) {
-          // Skip if table already exists
-          if (schema.tables[tableName]) continue
+          // Skip if table already exists in schema or was added by a previous request
+          if (schema.tables[tableName] || addedTables.has(tableName)) {
+            // If the table exists but was not added by a previous request,
+            // it's a regular table in the schema, so we don't need to do anything
+            continue
+          }
+
+          // Mark this table as added
+          addedTables.add(tableName)
 
           // Type assertion for tableAddRequest
           // biome-ignore lint/suspicious/noExplicitAny: needed for poc
@@ -213,48 +205,83 @@ export const convertSchemaToNodes = ({
             data: {
               table: tableAddRequest.definition,
               request,
-              status,
             },
             position: { x: 0, y: 0 },
-            ariaLabel: `Requested table (${status}): ${tableName}`,
+            ariaLabel: `Requested table: ${tableName}`,
             zIndex: zIndex.nodeDefault,
           })
         }
       }
 
-      // Add relationships from requests
+      // Collect relationships to process later
       if (request.relationships?.add) {
         for (const [relationshipName, relationshipAddReq] of Object.entries(
           request.relationships.add,
         )) {
-          // Skip if relationship already exists
-          if (schema.relationships[relationshipName]) continue
+          // Skip if relationship already exists in schema or was added by a previous request
+          if (schema.relationships[relationshipName] || addedRelationships.has(relationshipName)) {
+            // If the relationship exists but was not added by a previous request,
+            // it's a regular relationship in the schema, so we don't need to do anything
+            continue
+          }
 
-          // Type assertion for relationshipAddRequest
-          // biome-ignore lint/suspicious/noExplicitAny: needed for poc
-          const relationshipAddRequest = relationshipAddReq as any
-          const rel = relationshipAddRequest.definition
-          edges.push({
-            id: `request-${request.id}-relationship-${relationshipName}`,
-            type: 'requestedRelationship',
-            source: rel.primaryTableName,
-            target: rel.foreignTableName,
-            sourceHandle:
-              showMode === 'TABLE_NAME'
-                ? null
-                : columnHandleId(rel.primaryTableName, rel.primaryColumnName),
-            targetHandle:
-              showMode === 'TABLE_NAME'
-                ? null
-                : columnHandleId(rel.foreignTableName, rel.foreignColumnName),
-            data: {
-              relationship: rel,
-              request,
-              status,
-              cardinality: rel.cardinality,
-            },
+          // Mark this relationship as added to avoid duplicates
+          addedRelationships.add(relationshipName)
+
+          // Store relationship data for later processing
+          relationshipsToProcess.push({
+            relationshipName,
+            relationshipAddRequest: relationshipAddReq,
+            request,
           })
         }
+      }
+    }
+
+    // Second pass: Process all relationships after all tables have been added
+    for (const { relationshipName, relationshipAddRequest, request } of relationshipsToProcess) {
+      // Type assertion for relationshipAddRequest
+      // biome-ignore lint/suspicious/noExplicitAny: needed for poc
+      const rel = relationshipAddRequest.definition
+
+      // Check if both source and target tables exist (either in schema or added by requests)
+      const sourceTableExists = schema.tables[rel.primaryTableName] || addedTables.has(rel.primaryTableName)
+      const targetTableExists = schema.tables[rel.foreignTableName] || addedTables.has(rel.foreignTableName)
+
+      // Only add the relationship if both tables exist
+      if (sourceTableExists && targetTableExists) {
+        // Determine the correct target ID based on whether the target table is a requested table or a regular table
+        // If the target table is in the schema, use its name directly
+        // If the target table was added by a request, use the request-specific ID format
+        const targetId = schema.tables[rel.foreignTableName] 
+          ? rel.foreignTableName 
+          : `request-${request.id}-table-${rel.foreignTableName}`;
+
+        edges.push({
+          id: `request-${request.id}-relationship-${relationshipName}`,
+          type: 'relationship', // Use 'relationship' type since RequestedRelationshipEdge is not used
+          source: rel.primaryTableName,
+          target: targetId,
+          sourceHandle:
+            showMode === 'TABLE_NAME'
+              ? null
+              : columnHandleId(rel.primaryTableName, rel.primaryColumnName),
+          targetHandle:
+            showMode === 'TABLE_NAME'
+              ? null
+              : columnHandleId(rel.foreignTableName, rel.foreignColumnName),
+          data: {
+            relationship: rel,
+            request,
+            cardinality: rel.cardinality,
+            isHighlighted: false,
+            isRequested: true, // Mark as a requested relationship
+          },
+          style: {
+            strokeDasharray: '5,5', // Dashed line for requested relationships
+            stroke: 'rgba(0, 100, 255, 0.6)', // Blue color for requested relationships
+          },
+        })
       }
     }
   }
