@@ -3,7 +3,7 @@
 import { Spinner } from '@/components/Spinner'
 import { useChat } from '@ai-sdk/react'
 import type { Schema } from '@liam-hq/db-structure'
-import { type FC, useEffect, useRef } from 'react'
+import { type FC, type FormEvent, useEffect, useRef } from 'react'
 import { processSchemaModification } from '../../utils/SchemaModifier'
 import { showSchemaToast } from '../../utils/SchemaToast'
 import { ChatInput } from '../SchemaChat/ChatInput'
@@ -17,7 +17,7 @@ interface SchemaChatProps {
 
 export const SchemaChat: FC<SchemaChatProps> = ({ schema, onSchemaChange }) => {
   const messagesEndRef = useRef<HTMLDivElement>(null)
-  
+
   const {
     messages,
     input,
@@ -34,35 +34,35 @@ export const SchemaChat: FC<SchemaChatProps> = ({ schema, onSchemaChange }) => {
     },
     // Removed the automatic schema modification on message completion
   })
-  
+
   // Format schema as pretty JSON and filter non-essential properties
   const formatSchema = (schema: Schema): string => {
     // Clone the schema to avoid modifying the original
     const schemaClone = JSON.parse(JSON.stringify(schema))
-    
+
     // Format the schema JSON with proper indentation
     return JSON.stringify(schemaClone, null, 2)
   }
-  
+
   // Function to format the current schema and add it as a new AI message
   const handleShowCurrentSchema = () => {
     // Get the formatted schema
     const formattedSchema = formatSchema(schema)
-    
+
     // Create a new AI message with the formatted schema
     const newMessage = {
       id: `schema-${Date.now()}`,
       content: `Here is the current schema:\n\n\`\`\`json\n${formattedSchema}\n\`\`\``,
-      role: 'assistant',
-      createdAt: new Date().toISOString(),
+      role: 'assistant' as const,
+      createdAt: new Date(),
     }
-    
+
     // Add the new message to the chat
     setMessages([...messages, newMessage])
-    
+
     // Show notification
     showSchemaToast('Current schema displayed in chat', 'info')
-    
+
     // Scroll to the new message
     setTimeout(() => {
       messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -85,6 +85,13 @@ export const SchemaChat: FC<SchemaChatProps> = ({ schema, onSchemaChange }) => {
     <div className={styles.chatContainer}>
       <div className={styles.chatHeader}>
         <h2 className={styles.chatTitle}>Schema Assistant</h2>
+        <button
+          type="button"
+          className={styles.schemaButton}
+          onClick={handleShowCurrentSchema}
+        >
+          Show Current Schema
+        </button>
       </div>
 
       <div className={styles.messagesContainer}>
@@ -101,7 +108,6 @@ export const SchemaChat: FC<SchemaChatProps> = ({ schema, onSchemaChange }) => {
               !message.role || message.role === 'user'
                 ? undefined
                 : (jsonSchema) => {
-                  console.log({ jsonSchema })
                     try {
                       // Process schema modification when Apply button is clicked
                       const {
@@ -165,6 +171,11 @@ export const SchemaChat: FC<SchemaChatProps> = ({ schema, onSchemaChange }) => {
           value={input}
           onChange={handleInputChange}
           isLoading={status !== 'ready'}
+          onSubmit={() =>
+            handleSubmit({
+              preventDefault: () => {},
+            } as FormEvent<HTMLFormElement>)
+          }
         />
       </form>
     </div>

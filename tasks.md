@@ -39,6 +39,7 @@
 ## 4. Enhance User Experience (improve UI in schema-poc/page.tsx)
 - [x] Add loading states during AI processing
 - [x] Apply ReactMarkdown to user chat messages in `frontend/apps/app/features/schemas/components/SchemaChat/ChatMessage.tsx` for consistent rendering of markdown content
+- [x] Update ChatInput to use Textarea and support Shift+Enter for new lines
 
 ## 5. Manual Schema Application Feature
 - [x] Modify `SchemaChat.tsx` to disable automatic schema application on message completion
