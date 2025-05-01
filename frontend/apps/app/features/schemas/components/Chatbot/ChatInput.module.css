@@ -33,6 +33,12 @@
   border-radius: var(--border-radius-base);
 }
 
+.inputWrapper {
+  position: relative;
+  flex: 1;
+  display: flex;
+}
+
 .input {
   flex: 1;
   color: var(--color-white-alpha-30);
