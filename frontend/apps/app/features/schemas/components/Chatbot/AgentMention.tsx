@@ -9,23 +9,40 @@ interface Agent {
   id: string
   label: string
   description: string
+  agentType: string // Corresponding AgentType value
 }
 
 // Define the list of available agents
 const AGENTS: Agent[] = [
-  { id: 'builder', label: 'builder', description: 'テーブル構造を設計します' },
+  {
+    id: 'builder',
+    label: 'builder',
+    description: 'Designs table structures',
+    agentType: 'build',
+  },
   {
     id: 'reviewer',
     label: 'reviewer',
-    description: 'スキーマのレビューをします',
+    description: 'Reviews schemas',
+    agentType: 'review',
   },
-  { id: 'learn', label: 'learn', description: '背景を学習して対応します' },
+  {
+    id: 'learn',
+    label: 'learn',
+    description: 'Learns context and responds accordingly',
+    agentType: 'learn',
+  },
 ]
 
 interface AgentMentionProps {
   inputValue: string
   cursorPosition: number
-  onSelect: (agentId: string, startPos: number, endPos: number) => void
+  onSelect: (
+    agentId: string,
+    agentType: string,
+    startPos: number,
+    endPos: number,
+  ) => void
   onClose: () => void
   containerRef: React.RefObject<HTMLDivElement>
 }
@@ -114,6 +131,7 @@ export const AgentMention: React.FC<AgentMentionProps> = ({
             const selectedAgent = filteredAgents[selectedIndex]
             onSelect(
               selectedAgent.id,
+              selectedAgent.agentType,
               mentionStartIndex,
               mentionStartIndex + mentionQuery.length + 1,
             )
@@ -201,6 +219,7 @@ export const AgentMention: React.FC<AgentMentionProps> = ({
             onClick={() =>
               onSelect(
                 agent.id,
+                agent.agentType,
                 mentionStartIndex,
                 mentionStartIndex + mentionQuery.length + 1,
               )
@@ -210,6 +229,7 @@ export const AgentMention: React.FC<AgentMentionProps> = ({
                 e.preventDefault()
                 onSelect(
                   agent.id,
+                  agent.agentType,
                   mentionStartIndex,
                   mentionStartIndex + mentionQuery.length + 1,
                 )

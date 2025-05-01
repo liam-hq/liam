@@ -47,6 +47,32 @@ export const ChatInput: FC<ChatInputProps> = ({
     setCursorPosition(input.selectionStart || 0)
   }
 
+  // Function to check for valid agent mentions in text and switch agent if found
+  const checkForAgentMention = (text: string) => {
+    // Define regex to match @agent_name at word boundaries
+    const mentionRegex = /@(builder|reviewer|learn)\b/g
+    const matches = text.match(mentionRegex)
+
+    if (matches && matches.length > 0) {
+      // Get the last mention (most recent)
+      const lastMention = matches[matches.length - 1].substring(1) // Remove @ symbol
+
+      // Map from mention ID to agent type
+      const agentTypeMap: Record<string, AgentType> = {
+        builder: 'build',
+        reviewer: 'review',
+        learn: 'learn',
+      }
+
+      const agentType = agentTypeMap[lastMention]
+
+      // Switch agent if a valid mention is found and it's different from current
+      if (agentType && agentType !== currentMode) {
+        handleModeChange(agentType)
+      }
+    }
+  }
+
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault()
     if (message.trim() && !isLoading) {
@@ -72,9 +98,12 @@ export const ChatInput: FC<ChatInputProps> = ({
           <Input
             value={message}
             onChange={(e) => {
-              setMessage(e.target.value)
+              const newValue = e.target.value
+              setMessage(newValue)
               // Check if we should show mentions
-              setShowMentions(e.target.value.includes('@'))
+              setShowMentions(newValue.includes('@'))
+              // Check for valid agent mentions
+              checkForAgentMention(newValue)
             }}
             onSelect={handleCursorChange}
             onKeyUp={handleCursorChange}
@@ -88,11 +117,20 @@ export const ChatInput: FC<ChatInputProps> = ({
             <AgentMention
               inputValue={message}
               cursorPosition={cursorPosition}
-              onSelect={(agentId, startPos, endPos) => {
+              onSelect={(agentId, agentType, startPos, endPos) => {
                 // Insert the agent mention at the cursor position
                 const newMessage = `${message.substring(0, startPos)}@${agentId} ${message.substring(endPos)}`
                 setMessage(newMessage)
                 setShowMentions(false)
+
+                // Automatically switch to the mentioned agent
+                if (agentType && agentType !== currentMode) {
+                  handleModeChange(agentType as AgentType)
+                }
+
+                // Also check for other mentions in the message
+                // This ensures we handle cases where multiple mentions exist
+                checkForAgentMention(newMessage)
               }}
               onClose={() => setShowMentions(false)}
               containerRef={inputContainerRef}
