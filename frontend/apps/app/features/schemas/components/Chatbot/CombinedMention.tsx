@@ -22,6 +22,7 @@ interface CombinedMentionProps {
   onClose: () => void
   containerRef: React.RefObject<HTMLDivElement>
   contextPriority?: ContextPriority
+  schemaMentionType?: 'table' | 'tableGroup' | 'column' | null
 }
 
 export const CombinedMention: React.FC<CombinedMentionProps> = ({
@@ -34,6 +35,7 @@ export const CombinedMention: React.FC<CombinedMentionProps> = ({
   onClose,
   containerRef,
   contextPriority = null,
+  schemaMentionType = null,
 }) => {
   // Determine the order of sections based on context priority
   const showAgentsFirst = contextPriority === 'agent'
@@ -58,6 +60,7 @@ export const CombinedMention: React.FC<CombinedMentionProps> = ({
     onClose,
     containerRef,
     prioritizeTableGroups,
+    type: schemaMentionType,
   }
 
   return (

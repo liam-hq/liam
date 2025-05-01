@@ -16,6 +16,7 @@ interface SchemaItemMentionProps {
   onClose: () => void
   containerRef: React.RefObject<HTMLDivElement>
   prioritizeTableGroups?: boolean
+  type?: 'table' | 'tableGroup' | 'column' | null
 }
 
 export const SchemaItemMention: React.FC<SchemaItemMentionProps> = ({
@@ -27,6 +28,7 @@ export const SchemaItemMention: React.FC<SchemaItemMentionProps> = ({
   onClose,
   containerRef,
   prioritizeTableGroups = false,
+  type = null,
 }) => {
   const [isVisible, setIsVisible] = useState(false)
   const [mentionQuery, setMentionQuery] = useState('')
@@ -76,14 +78,45 @@ export const SchemaItemMention: React.FC<SchemaItemMentionProps> = ({
     setIsVisible(true)
   }, [inputValue, cursorPosition])
 
-  // Filter items based on the query
+  // Filter items based on the query and type
   useEffect(() => {
-    if (!isVisible) return
+    if (!isVisible) {
+      return
+    }
 
-    // First filter items by query
-    let filtered = allItems.filter((item) =>
-      item.label.toLowerCase().includes(mentionQuery.toLowerCase()),
-    )
+    // First filter items by query, but skip for special keywords
+    let filtered = allItems
+
+    // Special keywords that should skip query filtering
+    const specialQueries = ['table', 'column', 'group']
+    const normalizedQuery = mentionQuery.toLowerCase().trim()
+
+    const skipQueryFilter =
+      type &&
+      (specialQueries.some(
+        (q) => normalizedQuery === q || normalizedQuery.startsWith(`${q} `),
+      ) ||
+        normalizedQuery === '')
+
+    if (!skipQueryFilter) {
+      // Normal query filtering
+      filtered = filtered.filter((item) =>
+        item.label.toLowerCase().includes(mentionQuery.toLowerCase()),
+      )
+    }
+
+    // If type is specified, filter by type
+    if (type) {
+      // Add type mapping to ensure correct filtering
+      const typeMap = {
+        table: 'table',
+        tableGroup: 'tableGroup',
+        column: 'column',
+      } as const
+
+      const typeToMatch = typeMap[type]
+      filtered = filtered.filter((item) => item.type === typeToMatch)
+    }
 
     // If prioritizeTableGroups is true, sort to put table groups first
     if (prioritizeTableGroups) {
@@ -96,7 +129,7 @@ export const SchemaItemMention: React.FC<SchemaItemMentionProps> = ({
 
     setFilteredItems(filtered)
     setSelectedIndex(0) // Reset selection when filter changes
-  }, [mentionQuery, isVisible, allItems, prioritizeTableGroups])
+  }, [mentionQuery, isVisible, allItems, prioritizeTableGroups, type])
 
   // Detect mention when input or cursor changes
   useEffect(() => {

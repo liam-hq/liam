@@ -181,10 +181,6 @@ export const AgentMention: React.FC<AgentMentionProps> = ({
     }
   }, [onClose, containerRef])
 
-  // Always render the dropdown since the component is only rendered when mentionType is 'agent'
-  console.log('AgentMention - isVisible:', isVisible)
-  console.log('AgentMention - filteredAgents:', filteredAgents)
-
   // If no filtered agents, show all agents
   if (filteredAgents.length === 0) {
     setFilteredAgents(AGENTS)

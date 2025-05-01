@@ -13,6 +13,8 @@ import { CombinedMention } from './CombinedMention'
 import { SchemaItemMention } from './SchemaItemMention'
 import type { ContextPriority } from './utils/detectContextPriority'
 import { detectContextPriority } from './utils/detectContextPriority'
+import type { SchemaMentionType } from './utils/detectSchemaMentionType'
+import { detectSchemaMentionType } from './utils/detectSchemaMentionType'
 import type { SchemaItem } from './utils/schemaItemsAdapter'
 import { convertSchemaToMentionItems } from './utils/schemaItemsAdapter'
 
@@ -48,6 +50,9 @@ export const ChatInput: FC<ChatInputProps> = ({
   const [currentMode, setCurrentMode] = useState<AgentType>('build')
   // Add state for context priority
   const [contextPriority, setContextPriority] = useState<ContextPriority>(null)
+  // Add state for schema mention type
+  const [schemaMentionType, setSchemaMentionType] =
+    useState<SchemaMentionType>(null)
   const inputContainerRef = useRef<HTMLDivElement>(null)
   const [allItems, setAllItems] = useState<SchemaItem[]>([])
 
@@ -101,13 +106,21 @@ export const ChatInput: FC<ChatInputProps> = ({
     // Extract the query (text after '@')
     const query = message.substring(startIndex + 1, cursorPosition)
 
+    // Detect schema mention type
+    const schemaType = detectSchemaMentionType(query)
+    setSchemaMentionType(schemaType)
+
+    // If a schema type is detected, prioritize showing schema items
+    if (schemaType) {
+      setMentionType('schemaItem')
+      return
+    }
+
     // Special case: if query starts with "j" or "agent", show agent mention
     if (
       query.toLowerCase().startsWith('j') ||
       query.toLowerCase().startsWith('agent')
     ) {
-      console.log('Query starts with j or agent:', query)
-      console.log('Setting mentionType to agent')
       setMentionType('agent')
       setContextPriority('agent')
       return
@@ -233,9 +246,6 @@ export const ChatInput: FC<ChatInputProps> = ({
     setMentionType(null)
   }
 
-  // Add console log to track mentionType
-  console.log('Current mentionType:', mentionType)
-
   return (
     <div className={styles.chatInputContainer}>
       <form className={styles.inputContainer} onSubmit={handleSubmit}>
@@ -274,6 +284,7 @@ export const ChatInput: FC<ChatInputProps> = ({
               onSelect={handleSchemaItemSelect}
               onClose={() => setMentionType(null)}
               containerRef={inputContainerRef}
+              type={schemaMentionType}
             />
           )}
           {mentionType === 'both' && (
@@ -287,6 +298,7 @@ export const ChatInput: FC<ChatInputProps> = ({
               onClose={() => setMentionType(null)}
               containerRef={inputContainerRef}
               contextPriority={contextPriority}
+              schemaMentionType={schemaMentionType}
             />
           )}
         </div>
