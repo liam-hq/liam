@@ -28,6 +28,9 @@ type ProcessedRequests = {
   doneRequests: any[]
   // biome-ignore lint/suspicious/noExplicitAny: needed for poc
   wontfixRequests: any[]
+  // Required by erd-core's ProcessedRequests type
+  // biome-ignore lint/suspicious/noExplicitAny: needed for poc
+  allRequests: any[]
 }
 
 type Props = {
@@ -58,6 +61,20 @@ export const ERDEditor: FC<Props> = ({
   useEffect(() => {
     initSchemaStore(schema)
   }, [schema])
+
+  // Transform implementation requests to include allRequests property if needed
+  const processedImplementationRequests = implementationRequests
+    ? {
+        ...implementationRequests,
+        // Combine all request types into a single array if allRequests is not already provided
+        allRequests: implementationRequests.allRequests || [
+          ...(implementationRequests.openRequests || []),
+          ...(implementationRequests.inProgressRequests || []),
+          ...(implementationRequests.doneRequests || []),
+          ...(implementationRequests.wontfixRequests || []),
+        ],
+      }
+    : undefined
 
   // Handler for commit & push button
   const handleCommitAndPush = useCallback(async () => {
@@ -114,7 +131,7 @@ export const ERDEditor: FC<Props> = ({
           defaultPanelSizes={defaultPanelSizes}
           errorObjects={errorObjects}
           tableGroups={tableGroups}
-          implementationRequests={implementationRequests}
+          implementationRequests={processedImplementationRequests}
           onAddTableGroup={addTableGroup}
         />
         {canUpdateFile && (

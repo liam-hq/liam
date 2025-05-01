@@ -144,10 +144,24 @@ async function getERDEditorContent({
     return [20, 80]
   })()
 
+  // Ensure implementationRequests has the correct structure with allRequests as an array
+  const processedRequests = requests
+    ? {
+        ...requests,
+        // Ensure allRequests is always an array
+        allRequests: requests.allRequests || [
+          ...(requests.openRequests || []),
+          ...(requests.inProgressRequests || []),
+          ...(requests.doneRequests || []),
+          ...(requests.wontfixRequests || []),
+        ],
+      }
+    : undefined
+
   return {
     schema: overriddenSchema,
     tableGroups,
-    implementationRequests: requests,
+    implementationRequests: processedRequests,
     defaultSidebarOpen,
     defaultPanelSizes,
     errorObjects: errors.map((error) => ({

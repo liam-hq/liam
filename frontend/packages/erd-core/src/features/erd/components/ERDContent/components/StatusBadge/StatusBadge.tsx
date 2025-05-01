@@ -2,7 +2,7 @@ import clsx from 'clsx'
 import type { FC } from 'react'
 import styles from './StatusBadge.module.css'
 
-export type StatusType = 'open' | 'in_progress' | 'done' | 'wontfix' | 'unknown'
+type StatusType = 'open' | 'in_progress' | 'done' | 'wontfix' | 'unknown'
 
 type Props = {
   status?: StatusType

@@ -172,7 +172,9 @@ export const convertSchemaToNodes = ({
     // Store relationship data to process after all tables
     type RelationshipData = {
       relationshipName: string
+      // biome-ignore lint/suspicious/noExplicitAny: needed for poc
       relationshipAddRequest: any
+      // biome-ignore lint/suspicious/noExplicitAny: needed for poc
       request: any
     }
     const relationshipsToProcess: RelationshipData[] = []
@@ -248,7 +250,6 @@ export const convertSchemaToNodes = ({
       request,
     } of relationshipsToProcess) {
       // Type assertion for relationshipAddRequest
-      // biome-ignore lint/suspicious/noExplicitAny: needed for poc
       const rel = relationshipAddRequest.definition
 
       // Check if both source and target tables exist (either in schema or added by requests)
