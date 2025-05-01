@@ -99,3 +99,11 @@
   background-color: var(--global-background-subtle);
   font-weight: 600;
 }
+
+.reasoning {
+  color: var(--global-foreground-muted);
+  font-size: var(--font-size-1);
+  margin-bottom: 8px;
+  white-space: pre-wrap;
+  font-family: var(--code-font);
+}

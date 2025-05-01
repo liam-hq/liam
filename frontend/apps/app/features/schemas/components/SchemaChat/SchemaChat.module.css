@@ -37,10 +37,17 @@
   background-color: var(--global-background);
 }
 
+.loadingContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 12px 0;
+  gap: 12px;
+}
+
 .loadingIndicator {
   display: flex;
   justify-content: center;
-  margin: 12px 0;
   gap: 4px;
 }
 
@@ -58,6 +65,20 @@
 
 .loadingDot:nth-child(3) {
   animation-delay: 0.4s;
+}
+
+.stopButton {
+  padding: 6px 12px;
+  border-radius: 6px;
+  background-color: var(--global-foreground-subtle);
+  color: var(--global-foreground);
+  font-size: var(--font-size-2);
+  cursor: pointer;
+  border: none;
+}
+
+.stopButton:hover {
+  background-color: var(--global-foreground-muted);
 }
 
 .errorMessage {

@@ -197,9 +197,14 @@ When the user asks to modify the schema, provide the JSON structure for the requ
 
   // Generate streaming response using Vercel AI SDK
   const result = streamText({
-    model: openai('o4-mini'),
+    model: openai('o3-mini'),
     system: systemPrompt,
     messages: messages as Message[],
+    providerOptions: {
+      openai: {
+        reasoningEffort: 'high',
+      },
+    },
   })
 
   // Return streaming response with custom error handling
@@ -211,5 +216,7 @@ When the user asks to modify the schema, provide the JSON structure for the requ
     },
     // Send token usage information to the client
     sendUsage: true,
+    // Enable reasoning display
+    sendReasoning: true,
   })
 }
