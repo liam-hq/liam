@@ -65,9 +65,9 @@ export function convertSchemaToMentionItems(
     }
   }
 
-  // Sort items by type priority: column, table, tableGroup
+  // Sort items by type priority: tableGroup, table, column
   return items.sort((a, b) => {
-    const typeOrder = { column: 0, table: 1, tableGroup: 2 }
+    const typeOrder = { tableGroup: 0, table: 1, column: 2 }
     return typeOrder[a.type] - typeOrder[b.type]
   })
 }
