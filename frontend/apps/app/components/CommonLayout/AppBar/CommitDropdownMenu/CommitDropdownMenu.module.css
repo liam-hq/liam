@@ -1,0 +1,63 @@
+.trigger {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  padding: var(--spacing-2) var(--spacing-3);
+  border-radius: var(--border-radius-2);
+  background-color: var(--global-background);
+  border: 1px solid var(--global-border);
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.trigger:hover {
+  background-color: var(--global-background-hover);
+}
+
+.nameAndTag {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+}
+
+.name {
+  font-size: var(--font-size-3);
+  font-weight: 500;
+  color: var(--global-foreground);
+}
+
+.tag {
+  font-size: var(--font-size-2);
+  padding: var(--spacing-1) var(--spacing-2);
+  border-radius: var(--border-radius-1);
+  background-color: var(--primary-accent);
+  color: var(--global-background);
+}
+
+.chevronIcon {
+  width: 16px;
+  height: 16px;
+  color: var(--global-foreground-muted);
+}
+
+.content {
+  width: 300px;
+  max-height: 400px;
+  overflow-y: auto;
+  padding: var(--spacing-2);
+  background-color: var(--global-background);
+  border: 1px solid var(--global-border);
+  border-radius: var(--border-radius-2);
+  box-shadow: var(--shadow-md);
+}
+
+.radioItem {
+  padding: var(--spacing-2) var(--spacing-3);
+  border-radius: var(--border-radius-1);
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.radioItem:hover {
+  background-color: var(--global-background-hover);
+}

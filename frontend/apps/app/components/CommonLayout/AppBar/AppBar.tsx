@@ -3,17 +3,22 @@ import { ChevronRight } from '@/icons'
 import type { FC } from 'react'
 import styles from './AppBar.module.css'
 import { BranchDropdownMenu } from './BranchDropdownMenu'
+import { CommitDropdownMenu } from './CommitDropdownMenu'
 import { ProjectsDropdownMenu } from './ProjectsDropdownMenu'
 import { getAuthUser } from './services/getAuthUser'
 
 type Props = {
   currentProjectId?: string
   currentBranchOrCommit?: string
+  currentBranch?: string // 特定のブランチを表示する場合（ルーティングbの場合）
+  currentCommit?: string // 特定のコミットを表示する場合（ルーティングbの場合）
 }
 
 export const AppBar: FC<Props> = async ({
   currentProjectId,
   currentBranchOrCommit,
+  currentBranch,
+  currentCommit,
 }) => {
   const { data: authUser } = await getAuthUser()
 
@@ -30,7 +35,15 @@ export const AppBar: FC<Props> = async ({
                 <ChevronRight className={styles.chevronRight} />
                 <BranchDropdownMenu
                   currentProjectId={currentProjectId}
-                  currentBranchOrCommit={currentBranchOrCommit}
+                  currentBranchOrCommit={currentBranch || currentBranchOrCommit}
+                />
+                
+                {/* 新しいコミットドロップダウンメニュー */}
+                <ChevronRight className={styles.chevronRight} />
+                <CommitDropdownMenu
+                  currentProjectId={currentProjectId}
+                  currentBranchOrCommit={currentCommit || currentBranchOrCommit}
+                  currentBranch={currentBranch}
                 />
               </>
             )}
