@@ -528,3 +528,65 @@ export const AppBar: FC<Props> = async ({
 7. テストとデバッグ
 
 この実装により、ユーザーはブランチの現在・過去・未来のコミットを簡単に行き来できるようになります。
+
+## 3. 実装上の考慮点と決定事項
+
+### 3.1 複数コミット取得機能
+- **アプローチ**: `@liam-hq/github` パッケージを拡張し、新しい関数 `getRepositoryCommits` を実装する
+- 既存の `createOctokit` 関数を活用し、Octokit の `repos.listCommits` メソッドを呼び出す
+- 実装例:
+  ```typescript
+  export const getRepositoryCommits = async (
+    installationId: number,
+    owner: string,
+    repo: string,
+    branch = 'main',
+    perPage = 100
+  ): Promise<Array<{
+    sha: string,
+    message: string,
+    author: string,
+    date: string
+  }>> => {
+    const octokit = await createOctokit(installationId)
+    
+    try {
+      const { data: commits } = await octokit.repos.listCommits({
+        owner,
+        repo,
+        sha: branch,
+        per_page: perPage
+      })
+      
+      return commits.map(commit => ({
+        sha: commit.sha,
+        message: commit.commit.message,
+        author: commit.commit.author?.name || '',
+        date: commit.commit.author?.date || ''
+      }))
+    } catch (error) {
+      console.error(`Error fetching commits for ${owner}/${repo}:`, error)
+      return []
+    }
+  }
+  ```
+
+### 3.2 コミットの時系列比較
+- **決定事項**: コミットの日時（author date, commit date）ではなく、コミット順（降順）で表示する
+- GitHub APIから返されるコミットの順序をそのまま使用
+- 未来/過去の判断もコミットリスト内の位置関係で決定
+
+### 3.3 パフォーマンスの考慮
+- **決定事項**: 初期実装では最大100件までのコミットを取得
+- ページネーションは当面実装しない
+- パフォーマンス問題が発生した場合は後日対応
+
+### 3.4 新規ルーティングの統合
+- 既存のルーティングおよびpage.tsxの構造を最大限尊重
+- 新規ルーティングでも既存の `BranchDetailPage` コンポーネントを再利用
+- レイアウトやコンテキスト共有の問題は実装後に確認・調整
+
+### 3.5 コミットハッシュの表示形式
+- **UI表示**: コミットハッシュは先頭8文字の短縮形で表示
+- **URL**: 完全な40文字のハッシュをURLに使用
+- ツールチップによる完全ハッシュの表示は初期実装では省略
