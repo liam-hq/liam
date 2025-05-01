@@ -39,15 +39,15 @@
 }
 
 .buildJackIcon {
-  color: var(--color-green-400);
+  color: var(--color-green-400); /* #1DED83 */
 }
 
 .reviewJackIcon {
-  color: var(--color-red-500);
+  color: var(--color-red-500); /* #F75049 */
 }
 
 .learnJackIcon {
-  color: var(--color-yellow-alpha-100);
+  color: var(--color-yellow-alpha-100); /* #FFD748 */
 }
 
 .chevronIcon {
@@ -81,6 +81,7 @@
   border-radius: var(--border-radius-sm);
   cursor: pointer;
   transition: background-color 0.2s ease;
+  justify-content: start;
 }
 
 .agentMenuItem:hover {

@@ -9,6 +9,7 @@ import {
 import { Check, ChevronDown } from 'lucide-react'
 import type { FC } from 'react'
 import styles from './AgentSelect.module.css'
+import { BuildJackIcon, FixJackIcon } from './icons'
 
 interface AgentSelectProps {
   mode: 'plan' | 'act'
@@ -26,25 +27,7 @@ export const AgentSelect: FC<AgentSelectProps> = ({ mode, onModeChange }) => {
         <DropdownMenuTrigger asChild>
           <button type="button" className={styles.agentSelectTrigger}>
             <span className={`${styles.iconContainer} ${styles.buildJackIcon}`}>
-              {/* Green icon for Build Jack */}
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 16 16"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-                aria-labelledby="buildJackIconTitle"
-              >
-                <title id="buildJackIconTitle">Build Jack Icon</title>
-                <path
-                  d="M8 1.5L10.5 2.5V4.5C10.5 5.5 9.5 6.5 8 6.5C6.5 6.5 5.5 5.5 5.5 4.5V2.5L8 1.5Z"
-                  fill="currentColor"
-                />
-                <path
-                  d="M3 7.5V13.5C3 14.0523 3.44772 14.5 4 14.5H12C12.5523 14.5 13 14.0523 13 13.5V7.5H11.5V9.5H10V7.5H6V9.5H4.5V7.5H3Z"
-                  fill="currentColor"
-                />
-              </svg>
+              <BuildJackIcon size={16} />
             </span>
             <span className={styles.agentName}>
               {mode === 'plan' ? 'Build Jack' : 'Act Jack'}
@@ -65,24 +48,7 @@ export const AgentSelect: FC<AgentSelectProps> = ({ mode, onModeChange }) => {
             onSelect={() => handleAgentSelect('plan')}
           >
             <span className={`${styles.iconContainer} ${styles.buildJackIcon}`}>
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 16 16"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-                aria-labelledby="buildJackMenuIconTitle"
-              >
-                <title id="buildJackMenuIconTitle">Build Jack Icon</title>
-                <path
-                  d="M8 1.5L10.5 2.5V4.5C10.5 5.5 9.5 6.5 8 6.5C6.5 6.5 5.5 5.5 5.5 4.5V2.5L8 1.5Z"
-                  fill="currentColor"
-                />
-                <path
-                  d="M3 7.5V13.5C3 14.0523 3.44772 14.5 4 14.5H12C12.5523 14.5 13 14.0523 13 13.5V7.5H11.5V9.5H10V7.5H6V9.5H4.5V7.5H3Z"
-                  fill="currentColor"
-                />
-              </svg>
+              <BuildJackIcon size={16} />
             </span>
             <span>Build Jack</span>
             {mode === 'plan' && (
@@ -100,24 +66,7 @@ export const AgentSelect: FC<AgentSelectProps> = ({ mode, onModeChange }) => {
             <span
               className={`${styles.iconContainer} ${styles.reviewJackIcon}`}
             >
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 16 16"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-                aria-labelledby="actJackIconTitle"
-              >
-                <title id="actJackIconTitle">Act Jack Icon</title>
-                <path
-                  d="M8 1.5L10.5 2.5V4.5C10.5 5.5 9.5 6.5 8 6.5C6.5 6.5 5.5 5.5 5.5 4.5V2.5L8 1.5Z"
-                  fill="currentColor"
-                />
-                <path
-                  d="M3 7.5V13.5C3 14.0523 3.44772 14.5 4 14.5H12C12.5523 14.5 13 14.0523 13 13.5V7.5H11.5V9.5H10V7.5H6V9.5H4.5V7.5H3Z"
-                  fill="currentColor"
-                />
-              </svg>
+              <FixJackIcon size={16} />
             </span>
             <span>Act Jack</span>
             {mode === 'act' && (
