@@ -46,6 +46,10 @@
   border: none;
 }
 
+.input:not(:placeholder-shown) {
+  color: var(--global-foreground);
+}
+
 .input::placeholder {
   color: var(--color-white-alpha-30);
 }
