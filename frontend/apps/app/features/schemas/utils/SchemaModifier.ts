@@ -29,73 +29,73 @@ export function processSchemaModification(
 ): SchemaModificationResult {
   try {
     // Try to extract JSON from the message - it might be wrapped in markdown code blocks
-    let jsonContent = message;
+    let jsonContent = message
 
     // Extract JSON from code blocks if present
-    const jsonCodeBlockMatch = message.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
+    const jsonCodeBlockMatch = message.match(/```(?:json)?\s*([\s\S]*?)\s*```/)
     if (jsonCodeBlockMatch?.[1]) {
-      jsonContent = jsonCodeBlockMatch[1];
+      jsonContent = jsonCodeBlockMatch[1]
     }
 
     // Parse the JSON
     try {
-      const schemaModification = JSON.parse(jsonContent);
+      const schemaModification = JSON.parse(jsonContent)
 
       // Merge schema changes with current schema
-      const updatedSchema = mergeSchemaChanges(currentSchema, schemaModification);
+      const updatedSchema = mergeSchemaChanges(
+        currentSchema,
+        schemaModification,
+      )
 
       // Validate schema against schemaSchema using safeParse
-      const result = safeParse(schemaSchema, updatedSchema);
-      
+      const result = safeParse(schemaSchema, updatedSchema)
+
       if (result.success) {
         // If validation passes, return updated schema
-        return { schema: updatedSchema, modified: true };
+        return { schema: updatedSchema, modified: true }
       }
-      
+
       // Handle validation error
-      console.error('Schema validation error:', result.issues);
-      
+      console.error('Schema validation error:', result.issues)
+
       // Format the validation issues
       const details = Array.isArray(result.issues)
-        ? result.issues.map((issue) => {
-            // Handle path formatting carefully
-            const path = Array.isArray(issue.path)
-              ? issue.path.map(segment => String(segment)).join('.')
-              : 'unknown-path';
-            return `${path} ${issue.message || 'is invalid'}`;
-          }).join('; ')
-        : "Validation issues present";
-      
+        ? result.issues
+            .map((issue) => {
+              // Handle path formatting carefully
+              const path = Array.isArray(issue.path)
+                ? issue.path.map((segment) => String(segment)).join('.')
+                : 'unknown-path'
+              return `${path} ${issue.message || 'is invalid'}`
+            })
+            .join('; ')
+        : 'Validation issues present'
+
       return {
         schema: currentSchema,
         modified: false,
         error: `Validation failed: ${details}`,
-      };
+      }
     } catch (parseError) {
-      console.error('JSON parsing error:', parseError);
+      console.error('JSON parsing error:', parseError)
       return {
         schema: currentSchema,
         modified: false,
         error: `Invalid JSON format: ${parseError instanceof Error ? parseError.message : 'Unknown parse error'}`,
-      };
+      }
     }
   } catch (e) {
     // Handle any other unexpected errors
-    console.error('Failed to process schema modification:', e);
+    console.error('Failed to process schema modification:', e)
 
     return {
       schema: currentSchema,
       modified: false,
       error: `Processing error: ${e instanceof Error ? e.message : JSON.stringify(e)}`,
-    };
+    }
   }
 
-  // Code execution should never reach here since all paths above return a value
-  return {
-    schema: currentSchema,
-    modified: false,
-    error: 'Failed to process schema for unknown reasons',
-  }
+  // All execution paths above should return a value, so this code should never be reached
 }
 
 /**

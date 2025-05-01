@@ -1,18 +1,18 @@
 'use client'
 
 import { Button } from '@/components'
-import {
-  ModalRoot,
-  ModalTrigger,
-  ModalPortal,
-  ModalOverlay,
-  ModalContent,
-  ModalTitle,
-  ModalClose
-} from '@liam-hq/ui'
 import { SchemaChat } from '@/features/schemas/components/SchemaChat/SchemaChat'
 import { ERDEditor } from '@/features/schemas/pages/SchemaPage/components/ERDEditor'
 import type { Schema } from '@liam-hq/db-structure'
+import {
+  ModalClose,
+  ModalContent,
+  ModalOverlay,
+  ModalPortal,
+  ModalRoot,
+  ModalTitle,
+  ModalTrigger,
+} from '@liam-hq/ui'
 import { useState } from 'react'
 import styles from './page.module.css'
 

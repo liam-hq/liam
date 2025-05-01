@@ -2,7 +2,14 @@
 
 import { useChat } from '@ai-sdk/react'
 import type { Schema } from '@liam-hq/db-structure'
-import { type FC, type FormEvent, useEffect, useRef, type ChangeEvent } from 'react'
+import {
+  type ChangeEvent,
+  type FC,
+  type FormEvent,
+  useEffect,
+  useMemo,
+  useRef,
+} from 'react'
 import { processSchemaModification } from '../../utils/SchemaModifier'
 import { showSchemaToast } from '../../utils/SchemaToast'
 import { ChatInput } from '../SchemaChat/ChatInput'
@@ -41,9 +48,11 @@ export const SchemaChat: FC<SchemaChatProps> = ({ schema, onSchemaChange }) => {
   // Scroll to bottom when messages change
   useEffect(() => {
     if (messages.length > 0) {
-      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+      // ストリーミング中は即時スクロール、それ以外はスムーズに
+      const behavior = status === 'streaming' ? 'auto' : 'smooth'
+      messagesEndRef.current?.scrollIntoView({ behavior })
     }
-  }, [messages.length])
+  }, [messages.length, status])
 
   return (
     <div className={styles.chatContainer}>
@@ -52,72 +61,76 @@ export const SchemaChat: FC<SchemaChatProps> = ({ schema, onSchemaChange }) => {
       </div>
 
       <div className={styles.messagesContainer}>
-        {messages.map((message) => (
-          <ChatMessage
-            key={message.id}
-            content={message.content}
-            isUser={message.role === 'user'}
-            timestamp={
-              message.createdAt ? new Date(message.createdAt) : undefined
-            }
-            parts={message.parts}
-            onApplySchema={
-              !message.role || message.role === 'user'
-                ? undefined
-                : (jsonSchema) => {
-                    try {
-                      // Process schema modification when Apply button is clicked
-                      const {
-                        schema: updatedSchema,
-                        modified,
-                        error,
-                      } = processSchemaModification(jsonSchema, schema)
-                      console.log({ error })
+        {useMemo(
+          // eslint-disable-next-line react-hooks/exhaustive-deps
+          () =>
+            messages.map((message) => (
+              <ChatMessage
+                key={message.id}
+                content={message.content}
+                isUser={message.role === 'user'}
+                timestamp={
+                  message.createdAt ? new Date(message.createdAt) : undefined
+                }
+                parts={message.parts}
+                onApplySchema={
+                  !message.role || message.role === 'user'
+                    ? undefined
+                    : (jsonSchema) => {
+                        try {
+                          // Process schema modification when Apply button is clicked
+                          const {
+                            schema: updatedSchema,
+                            modified,
+                            error,
+                          } = processSchemaModification(jsonSchema, schema)
 
-                      if (modified) {
-                        // Apply schema changes
-                        onSchemaChange(updatedSchema)
-                        // Show success notification
-                        showSchemaToast(
-                          'Schema applied successfully',
-                          'success',
-                        )
-                      } else if (error) {
-                        // Show error notification
-                        showSchemaToast(
-                          `Failed to apply schema: ${error}`,
-                          'error',
-                        )
-                        // Add error to input for AI to see
-                        handleInputChange({ 
-                          target: { 
-                            value: `Failed to apply schema: ${error}. Please fix this issue and provide a corrected schema.` 
-                          } 
-                        } as ChangeEvent<HTMLTextAreaElement>)
-                      } else {
-                        showSchemaToast(
-                          'No changes were detected in the schema',
-                          'info',
-                        )
+                          if (modified) {
+                            // Apply schema changes
+                            onSchemaChange(updatedSchema)
+                            // Show success notification
+                            showSchemaToast(
+                              'Schema applied successfully',
+                              'success',
+                            )
+                          } else if (error) {
+                            // Show error notification
+                            showSchemaToast(
+                              `Failed to apply schema: ${error}`,
+                              'error',
+                            )
+                            // Add error to input for AI to see
+                            handleInputChange({
+                              target: {
+                                value: `Failed to apply schema: ${error}. Please fix this issue and provide a corrected schema.`,
+                              },
+                            } as ChangeEvent<HTMLTextAreaElement>)
+                          } else {
+                            showSchemaToast(
+                              'No changes were detected in the schema',
+                              'info',
+                            )
+                          }
+                        } catch (err) {
+                          const errorMessage =
+                            err instanceof Error ? err.message : 'Unknown error'
+                          showSchemaToast(
+                            `Error applying schema: ${errorMessage}`,
+                            'error',
+                          )
+                          // Add error to input for AI to see
+                          handleInputChange({
+                            target: {
+                              value: `Error applying schema: ${errorMessage}. Please provide a valid schema that fixes this issue.`,
+                            },
+                          } as ChangeEvent<HTMLTextAreaElement>)
+                        }
                       }
-                    } catch (err) {
-                      console.log({ err })
-                      const errorMessage = err instanceof Error ? err.message : 'Unknown error'
-                      showSchemaToast(
-                        `Error applying schema: ${errorMessage}`,
-                        'error',
-                      )
-                      // Add error to input for AI to see
-                      handleInputChange({ 
-                        target: { 
-                          value: `Error applying schema: ${errorMessage}. Please provide a valid schema that fixes this issue.` 
-                        } 
-                      } as ChangeEvent<HTMLTextAreaElement>)
-                    }
-                  }
-            }
-          />
-        ))}
+                }
+              />
+            )),
+          [messages, schema],
+        )}
         {(status === 'submitted' || status === 'streaming') && (
           <div className={styles.loadingContainer}>
             <button

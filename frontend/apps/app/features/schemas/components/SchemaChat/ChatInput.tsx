@@ -8,7 +8,7 @@ import {
   type KeyboardEvent,
   useEffect,
   useRef,
-  useState
+  useState,
 } from 'react'
 import styles from './ChatInput.module.css'
 
@@ -28,28 +28,34 @@ export const ChatInput: FC<ChatInputProps> = ({
   const [isComposing, setIsComposing] = useState(false)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
-  // Adjust height when value changes
+  // 高さ調整のための関数
+  const adjustTextareaHeight = () => {
+    const textarea = textareaRef.current
+    if (!textarea) return
+
+    // リサイズの前に高さをリセット
+    textarea.style.height = 'auto'
+
+    // スクロール高さに基づいて高さを設定（最大値あり）
+    const maxHeight = 200
+    const scrollHeight = Math.min(textarea.scrollHeight, maxHeight)
+    textarea.style.height = `${scrollHeight}px`
+
+    // 最大高さを超える場合はスクロールを有効に
+    textarea.style.overflowY =
+      textarea.scrollHeight > maxHeight ? 'auto' : 'hidden'
+  }
+
+  // 値が変更された時だけ高さを調整
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
-    // Auto-resize the textarea based on content
-    const adjustTextareaHeight = () => {
-      const textarea = textareaRef.current
-      if (textarea) {
-        // Reset height to auto to get the correct scrollHeight
-        textarea.style.height = 'auto'
+    // デバウンスのためにsetTimeoutを使用
+    const timeoutId = setTimeout(() => {
+      adjustTextareaHeight()
+    }, 0)
 
-        // Set the height to scrollHeight to fit the content
-        // Set max-height to prevent excessive growth
-        const maxHeight = 200 // Maximum height in pixels
-        const scrollHeight = Math.min(textarea.scrollHeight, maxHeight)
-        textarea.style.height = `${scrollHeight}px`
-
-        // If content exceeds maxHeight, enable scrolling
-        textarea.style.overflowY = textarea.scrollHeight > maxHeight ? 'auto' : 'hidden'
-      }
-    }
-
-    adjustTextareaHeight()
-  }, [])
+    return () => clearTimeout(timeoutId)
+  }, [value])
 
   const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
     // Don't submit if Shift is pressed or if currently composing (IME input)
@@ -66,7 +72,11 @@ export const ChatInput: FC<ChatInputProps> = ({
       <textarea
         ref={textareaRef}
         value={value}
-        onChange={onChange}
+        onChange={(e) => {
+          onChange(e)
+          // メモ化のため、useEffectではなくonChangeで直接高さを調整
+          adjustTextareaHeight()
+        }}
         onKeyDown={handleKeyDown}
         onCompositionStart={() => setIsComposing(true)}
         onCompositionEnd={() => setIsComposing(false)}

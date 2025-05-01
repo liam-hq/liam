@@ -1,21 +1,28 @@
 'use client'
 
-import type { FC, ReactNode } from 'react'
+import { marked } from 'marked'
+import type { ComponentPropsWithoutRef, FC, ReactNode } from 'react'
+import { memo, useMemo } from 'react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
-import { memo, useMemo } from 'react'
-import { marked } from 'marked'
 import styles from './ChatMessage.module.css'
 
 // Parse markdown content into blocks
 function parseMarkdownIntoBlocks(markdown: string): string[] {
   const tokens = marked.lexer(markdown)
-  return tokens.map(token => token.raw)
+  return tokens.map((token) => token.raw)
 }
+
+type ReactMarkdownComponentsType = ComponentPropsWithoutRef<
+  typeof ReactMarkdown
+>['components']
 
 // Memoized markdown block component
 const MemoizedMarkdownBlock = memo(
-  ({ content, components }: { content: string; components?: any }) => {
+  ({
+    content,
+    components,
+  }: { content: string; components?: ReactMarkdownComponentsType }) => {
     return (
       <ReactMarkdown remarkPlugins={[remarkGfm]} components={components}>
         {content}
@@ -23,37 +30,51 @@ const MemoizedMarkdownBlock = memo(
     )
   },
   (prevProps, nextProps) => {
-    return prevProps.content === nextProps.content && 
-           prevProps.components === nextProps.components
-  }
+    return (
+      prevProps.content === nextProps.content &&
+      prevProps.components === nextProps.components
+    )
+  },
 )
 MemoizedMarkdownBlock.displayName = 'MemoizedMarkdownBlock'
 
 // Memoized markdown component that breaks content into blocks
 const MemoizedMarkdown = memo(
-  ({ 
-    content, 
-    id, 
-    components 
-  }: { 
-    content: string; 
-    id: string; 
-    components?: any 
+  ({
+    content,
+    id,
+    components,
+    isStreaming = false,
+  }: {
+    content: string
+    id: string
+    components?: ReactMarkdownComponentsType
+    isStreaming?: boolean
   }) => {
-    const blocks = useMemo(() => parseMarkdownIntoBlocks(content), [content])
+    const blocks = useMemo(() => {
+      // ストリーミング中は軽量処理を使う
+      if (isStreaming) {
+        return [content] // シンプルに分割せずに処理
+      }
+      return parseMarkdownIntoBlocks(content)
+    }, [content, isStreaming])
 
     return (
       <>
-        {blocks.map((block, index) => (
-          <MemoizedMarkdownBlock 
-            content={block} 
-            components={components}
-            key={`${id}-block_${index}`} 
-          />
-        ))}
+        {blocks.map((block, index) => {
+          // indexをキーとして使用することを避けるため、ブロックの内容を一部使用
+          const blockKey = `${id}-${block.substring(0, 10).replace(/\s+/g, '_')}-${index}`
+          return (
+            <MemoizedMarkdownBlock
+              content={block}
+              components={components}
+              key={blockKey}
+            />
+          )
+        })}
       </>
     )
-  }
+  },
 )
 MemoizedMarkdown.displayName = 'MemoizedMarkdown'
 
@@ -97,7 +118,8 @@ export const ChatMessage: FC<ChatMessageProps> = ({
     const jsonBlocks: { start: number; end: number; content: string }[] = []
     const codeBlockRegex = /```(?:json)?\s*([\s\S]*?)```/g
 
-    let match
+    let match: RegExpExecArray | null
+    // eslint-disable-next-line no-cond-assign
     while ((match = codeBlockRegex.exec(text)) !== null) {
       jsonBlocks.push({
         start: match.index,
@@ -118,7 +140,7 @@ export const ChatMessage: FC<ChatMessageProps> = ({
       console.error('Failed to copy text: ', err)
     }
   }
-  
+
   // Show a temporary success message when content is copied
   const showCopySuccess = () => {
     const toast = document.createElement('div')
@@ -132,26 +154,43 @@ export const ChatMessage: FC<ChatMessageProps> = ({
     toast.style.padding = '8px 16px'
     toast.style.borderRadius = '4px'
     toast.style.zIndex = '9999'
-    
+
     document.body.appendChild(toast)
-    
+
     setTimeout(() => {
       document.body.removeChild(toast)
     }, 2000)
   }
 
   // Custom renderer for ReactMarkdown to add Apply button to JSON code blocks
-  const customComponents = {
-    pre: ({ children, ...props }: any) => {
+  const customComponents: ReactMarkdownComponentsType = {
+    // @ts-ignore - この型の不一致は無視する（ReactMarkdownの型定義の制限）
+    pre: ({
+      children,
+      ...props
+    }: { children?: ReactNode; [key: string]: unknown }) => {
       // Check if this is a JSON code block by examining the children
-      const childProps = children?.props
-      const language = childProps?.className?.replace('language-', '')
+      const childProps =
+        typeof children === 'object' && children && 'props' in children
+          ? children.props
+          : undefined
+      const language =
+        childProps &&
+        typeof childProps === 'object' &&
+        'className' in childProps
+          ? String(childProps.className).replace('language-', '')
+          : ''
       const isJsonBlock = language === 'json' || !language
 
       // Try to parse as JSON to ensure it's valid
       let isValidJson = false
       try {
-        if (isJsonBlock && childProps?.children) {
+        if (
+          isJsonBlock &&
+          childProps &&
+          'children' in childProps &&
+          typeof childProps.children === 'string'
+        ) {
           JSON.parse(childProps.children)
           isValidJson = true
         }
@@ -166,7 +205,15 @@ export const ChatMessage: FC<ChatMessageProps> = ({
             <button
               type="button"
               className={styles.copyButton}
-              onClick={() => copyToClipboard(childProps?.children || '')}
+              onClick={() => {
+                const content =
+                  childProps &&
+                  'children' in childProps &&
+                  typeof childProps.children === 'string'
+                    ? childProps.children
+                    : ''
+                copyToClipboard(content)
+              }}
               aria-label="Copy to clipboard"
             >
               Copy
@@ -176,7 +223,15 @@ export const ChatMessage: FC<ChatMessageProps> = ({
             <button
               type="button"
               className={styles.applyButton}
-              onClick={() => onApplySchema(childProps.children)}
+              onClick={() => {
+                if (
+                  childProps &&
+                  'children' in childProps &&
+                  typeof childProps.children === 'string'
+                ) {
+                  onApplySchema(childProps.children)
+                }
+              }}
             >
               Apply
             </button>
@@ -195,9 +250,9 @@ export const ChatMessage: FC<ChatMessageProps> = ({
       <div className={styles.messageContent}>
         {isUser ? (
           <div className={styles.messageText}>
-            <MemoizedMarkdown 
-              content={content} 
-              id={`user-message-${Date.now()}`} 
+            <MemoizedMarkdown
+              content={content}
+              id={`user-message-${content.substring(0, 20)}`}
             />
           </div>
         ) : (
@@ -208,10 +263,13 @@ export const ChatMessage: FC<ChatMessageProps> = ({
                   if (part.type === 'text') {
                     return (
                       <MemoizedMarkdown
-                        key={`text-part-${part.text?.substring(0, 20)}-${Math.random().toString(36).substring(2, 9)}`}
+                        key={`text-part-${part.text?.substring(0, 20)}`}
                         content={part.text || ''}
-                        id={`part-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`}
-                        components={onApplySchema ? customComponents : undefined}
+                        id={`part-${part.text?.substring(0, 20)}`}
+                        components={
+                          onApplySchema ? customComponents : undefined
+                        }
+                        isStreaming={(part.text?.length || 0) > 500}
                       />
                     )
                   }
@@ -247,8 +305,9 @@ export const ChatMessage: FC<ChatMessageProps> = ({
             ) : (
               <MemoizedMarkdown
                 content={content}
-                id={`message-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`}
+                id={`message-${content.substring(0, 20)}`}
                 components={onApplySchema ? customComponents : undefined}
+                isStreaming={content.length > 500}
               />
             )}
           </div>
