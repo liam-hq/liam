@@ -104,6 +104,32 @@
        1. `RequestedTableNode`コンポーネントの作成（`TableNode`をベースに青色スタイリングを適用）
        2. `ERDContent.tsx`の`nodeTypes`マッピングに`requestedTable: RequestedTableNode`を追加
        3. 青色スタイリングの適用（`rgba(29, 237, 131, 0.4)`を青色の値に変更）
+   - statusの場合分けを削除してERD出力を簡略化
+     - 現状分析：
+       - 現在の実装では`openRequests`と`inProgressRequests`に対して別々の処理ブロックがあり、コードが冗長
+       - 各ステータスごとに同様のコードが重複している
+       - `doneRequests`や`wontfixRequests`は処理されていない
+     - 実装計画：
+       1. すべてのリクエストを単一の配列に結合
+          ```typescript
+          const allRequests = [
+            ...(implementationRequests.openRequests || []),
+            ...(implementationRequests.inProgressRequests || []),
+            ...(implementationRequests.doneRequests || []),
+            ...(implementationRequests.wontfixRequests || [])
+          ];
+          ```
+       2. 単一のループですべてのリクエストを処理
+          ```typescript
+          for (const request of allRequests) {
+            // リクエストの元のステータスをノードデータに渡す
+            const status = request.status || 'unknown';
+            
+            // テーブルとリレーションシップの処理
+            // ...
+          }
+          ```
+       3. ステータスに関係なく一貫した処理を行い、表示側でステータスに応じた視覚的な区別を実装
    - リクエストされたテーブル/リレーションシップをER図に表示する機能を追加
    - ステータスに応じた視覚的表現を実装（例：「TODO」バッジ）
    - 既存のテーブルへの変更リクエストの表示方法を実装
