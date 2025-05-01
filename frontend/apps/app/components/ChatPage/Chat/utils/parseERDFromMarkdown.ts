@@ -1,7 +1,7 @@
 'use client'
 
 import { type Schema, schemaSchema } from '@liam-hq/db-structure'
-import { parse } from 'valibot'
+import { safeParse } from 'valibot'
 
 interface ParseERDResult {
   hasERD: boolean
@@ -21,14 +21,17 @@ export const parseERDFromMarkdown = (content: string): ParseERDResult => {
   const erdBlock = match[0]
   const erdContent = erdBlock.replace(/```erd\n/, '').replace(/```$/, '')
 
-  try {
-    const parsedErdContent = parse(schemaSchema, JSON.parse(erdContent))
-    return {
-      hasERD: true,
-      normalContent: content,
-      schema: parsedErdContent,
-    }
-  } catch {
-    return { hasERD: false, normalContent: content, schema: null }
+  console.log(safeParse(schemaSchema, JSON.parse(erdContent)))
+
+  // const parsedErdContent = safeParse(schemaSchema, JSON.parse(erdContent))
+
+  // if (!parsedErdContent.success) {
+  //   return { hasERD: false, normalContent: content, schema: null }
+  // }
+
+  return {
+    hasERD: true,
+    normalContent: content,
+    schema: JSON.parse(erdContent),
   }
 }
