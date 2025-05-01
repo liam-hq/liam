@@ -68,6 +68,9 @@ importers:
       '@codemirror/view':
         specifier: 6.36.5
         version: 6.36.5
+      '@langchain/community':
+        specifier: 0.3.0
+        version: 0.3.0(@langchain/core@0.3.45(openai@4.94.0(ws@8.18.1)(zod@3.24.3)))(@supabase/supabase-js@2.49.4)(cheerio@1.0.0)(handlebars@4.7.8)(html-to-text@9.0.5)(ignore@5.3.2)(lodash@4.17.21)(openai@4.94.0(ws@8.18.1)(zod@3.24.3))(playwright@1.51.1)(ws@8.18.1)
       '@langchain/core':
         specifier: 0.3.45
         version: 0.3.45(openai@4.94.0(ws@8.18.1)(zod@3.24.3))
@@ -110,6 +113,9 @@ importers:
       '@sentry/nextjs':
         specifier: '9'
         version: 9.12.0(@opentelemetry/context-async-hooks@1.30.1(@opentelemetry/api@1.9.0))(@opentelemetry/core@1.30.1(@opentelemetry/api@1.9.0))(@opentelemetry/instrumentation@0.57.2(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-trace-base@1.30.1(@opentelemetry/api@1.9.0))(next@15.3.1(@opentelemetry/api@1.9.0)(@playwright/test@1.51.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)(webpack@5.99.5(esbuild@0.25.2))
+      '@supabase/supabase-js':
+        specifier: 2.49.4
+        version: 2.49.4
       '@trigger.dev/build':
         specifier: 3.3.17
         version: 3.3.17(typescript@5.8.3)
@@ -204,6 +210,9 @@ importers:
       esbuild:
         specifier: 0.25.2
         version: 0.25.2
+      tsx:
+        specifier: 4.7.1
+        version: 4.7.1
       typed-css-modules:
         specifier: 0.9.1
         version: 0.9.1
@@ -212,7 +221,7 @@ importers:
         version: 5.8.3
       vitest:
         specifier: 3.1.2
-        version: 3.1.2(@edge-runtime/vm@3.2.0)(@types/debug@4.1.12)(@types/node@22.15.2)(jiti@2.4.2)(lightningcss@1.29.2)(terser@5.39.0)(tsx@4.19.3)(yaml@2.7.1)
+        version: 3.1.2(@edge-runtime/vm@3.2.0)(@types/debug@4.1.12)(@types/node@22.15.2)(jiti@2.4.2)(lightningcss@1.29.2)(terser@5.39.0)(tsx@4.7.1)(yaml@2.7.1)
 
   frontend/apps/docs:
     dependencies:
@@ -1605,9 +1614,385 @@ packages:
     peerDependencies:
       tslib: '2'
 
+  '@langchain/community@0.3.0':
+    resolution: {integrity: sha512-JUmXn4wt/STMJVN0ZiQGjOF2MMrhv9sJ78KG+7hwSKlxTl1QfhPFO1jr5psls4Ok4TDKaLw/ULziNGEN5cCR/Q==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      '@arcjet/redact': ^v1.0.0-alpha.23
+      '@aws-crypto/sha256-js': ^5.0.0
+      '@aws-sdk/client-bedrock-agent-runtime': ^3.583.0
+      '@aws-sdk/client-bedrock-runtime': ^3.422.0
+      '@aws-sdk/client-dynamodb': ^3.310.0
+      '@aws-sdk/client-kendra': ^3.352.0
+      '@aws-sdk/client-lambda': ^3.310.0
+      '@aws-sdk/client-s3': ^3.310.0
+      '@aws-sdk/client-sagemaker-runtime': ^3.310.0
+      '@aws-sdk/client-sfn': ^3.310.0
+      '@aws-sdk/credential-provider-node': ^3.388.0
+      '@azure/search-documents': ^12.0.0
+      '@azure/storage-blob': ^12.15.0
+      '@browserbasehq/sdk': '*'
+      '@clickhouse/client': ^0.2.5
+      '@cloudflare/ai': '*'
+      '@datastax/astra-db-ts': ^1.0.0
+      '@elastic/elasticsearch': ^8.4.0
+      '@getmetal/metal-sdk': '*'
+      '@getzep/zep-cloud': ^1.0.6
+      '@getzep/zep-js': ^0.9.0
+      '@gomomento/sdk': ^1.51.1
+      '@gomomento/sdk-core': ^1.51.1
+      '@google-ai/generativelanguage': '*'
+      '@google-cloud/storage': ^6.10.1 || ^7.7.0
+      '@gradientai/nodejs-sdk': ^1.2.0
+      '@huggingface/inference': ^2.6.4
+      '@langchain/core': '>=0.2.21 <0.4.0'
+      '@layerup/layerup-security': ^1.5.12
+      '@mendable/firecrawl-js': ^0.0.13
+      '@mlc-ai/web-llm': '*'
+      '@mozilla/readability': '*'
+      '@neondatabase/serverless': '*'
+      '@notionhq/client': ^2.2.10
+      '@opensearch-project/opensearch': '*'
+      '@pinecone-database/pinecone': '*'
+      '@planetscale/database': ^1.8.0
+      '@premai/prem-sdk': ^0.3.25
+      '@qdrant/js-client-rest': ^1.8.2
+      '@raycast/api': ^1.55.2
+      '@rockset/client': ^0.9.1
+      '@smithy/eventstream-codec': ^2.0.5
+      '@smithy/protocol-http': ^3.0.6
+      '@smithy/signature-v4': ^2.0.10
+      '@smithy/util-utf8': ^2.0.0
+      '@spider-cloud/spider-client': ^0.0.21
+      '@supabase/supabase-js': ^2.45.0
+      '@tensorflow-models/universal-sentence-encoder': '*'
+      '@tensorflow/tfjs-converter': '*'
+      '@tensorflow/tfjs-core': '*'
+      '@upstash/ratelimit': ^1.1.3
+      '@upstash/redis': ^1.20.6
+      '@upstash/vector': ^1.1.1
+      '@vercel/kv': ^0.2.3
+      '@vercel/postgres': ^0.5.0
+      '@writerai/writer-sdk': ^0.40.2
+      '@xata.io/client': ^0.28.0
+      '@xenova/transformers': ^2.17.2
+      '@zilliz/milvus2-sdk-node': '>=2.3.5'
+      apify-client: ^2.7.1
+      assemblyai: ^4.6.0
+      better-sqlite3: '>=9.4.0 <12.0.0'
+      cassandra-driver: ^4.7.2
+      cborg: ^4.1.1
+      cheerio: ^1.0.0-rc.12
+      chromadb: '*'
+      closevector-common: 0.1.3
+      closevector-node: 0.1.6
+      closevector-web: 0.1.6
+      cohere-ai: '*'
+      convex: ^1.3.1
+      couchbase: ^4.3.0
+      crypto-js: ^4.2.0
+      d3-dsv: ^2.0.0
+      discord.js: ^14.14.1
+      dria: ^0.0.3
+      duck-duck-scrape: ^2.2.5
+      epub2: ^3.0.1
+      faiss-node: ^0.5.1
+      firebase-admin: ^11.9.0 || ^12.0.0
+      google-auth-library: '*'
+      googleapis: '*'
+      hnswlib-node: ^3.0.0
+      html-to-text: ^9.0.5
+      ignore: ^5.2.0
+      interface-datastore: ^8.2.11
+      ioredis: ^5.3.2
+      it-all: ^3.0.4
+      jsdom: '*'
+      jsonwebtoken: ^9.0.2
+      llmonitor: ^0.5.9
+      lodash: ^4.17.21
+      lunary: ^0.7.10
+      mammoth: ^1.6.0
+      mongodb: '>=5.2.0'
+      mysql2: ^3.9.8
+      neo4j-driver: '*'
+      node-llama-cpp: '*'
+      notion-to-md: ^3.1.0
+      officeparser: ^4.0.4
+      pdf-parse: 1.1.1
+      pg: ^8.11.0
+      pg-copy-streams: ^6.0.5
+      pickleparser: ^0.2.1
+      playwright: ^1.32.1
+      portkey-ai: ^0.1.11
+      puppeteer: '*'
+      pyodide: '>=0.24.1 <0.27.0'
+      redis: '*'
+      replicate: ^0.29.4
+      sonix-speech-recognition: ^2.1.1
+      srt-parser-2: ^1.2.3
+      typeorm: ^0.3.20
+      typesense: ^1.5.3
+      usearch: ^1.1.1
+      vectordb: ^0.1.4
+      voy-search: 0.6.2
+      weaviate-ts-client: '*'
+      web-auth-library: ^1.0.3
+      ws: ^8.14.2
+      youtube-transcript: ^1.0.6
+      youtubei.js: ^9.1.0
+    peerDependenciesMeta:
+      '@arcjet/redact':
+        optional: true
+      '@aws-crypto/sha256-js':
+        optional: true
+      '@aws-sdk/client-bedrock-agent-runtime':
+        optional: true
+      '@aws-sdk/client-bedrock-runtime':
+        optional: true
+      '@aws-sdk/client-dynamodb':
+        optional: true
+      '@aws-sdk/client-kendra':
+        optional: true
+      '@aws-sdk/client-lambda':
+        optional: true
+      '@aws-sdk/client-s3':
+        optional: true
+      '@aws-sdk/client-sagemaker-runtime':
+        optional: true
+      '@aws-sdk/client-sfn':
+        optional: true
+      '@aws-sdk/credential-provider-node':
+        optional: true
+      '@azure/search-documents':
+        optional: true
+      '@azure/storage-blob':
+        optional: true
+      '@browserbasehq/sdk':
+        optional: true
+      '@clickhouse/client':
+        optional: true
+      '@cloudflare/ai':
+        optional: true
+      '@datastax/astra-db-ts':
+        optional: true
+      '@elastic/elasticsearch':
+        optional: true
+      '@getmetal/metal-sdk':
+        optional: true
+      '@getzep/zep-cloud':
+        optional: true
+      '@getzep/zep-js':
+        optional: true
+      '@gomomento/sdk':
+        optional: true
+      '@gomomento/sdk-core':
+        optional: true
+      '@google-ai/generativelanguage':
+        optional: true
+      '@google-cloud/storage':
+        optional: true
+      '@gradientai/nodejs-sdk':
+        optional: true
+      '@huggingface/inference':
+        optional: true
+      '@layerup/layerup-security':
+        optional: true
+      '@mendable/firecrawl-js':
+        optional: true
+      '@mlc-ai/web-llm':
+        optional: true
+      '@mozilla/readability':
+        optional: true
+      '@neondatabase/serverless':
+        optional: true
+      '@notionhq/client':
+        optional: true
+      '@opensearch-project/opensearch':
+        optional: true
+      '@pinecone-database/pinecone':
+        optional: true
+      '@planetscale/database':
+        optional: true
+      '@premai/prem-sdk':
+        optional: true
+      '@qdrant/js-client-rest':
+        optional: true
+      '@raycast/api':
+        optional: true
+      '@rockset/client':
+        optional: true
+      '@smithy/eventstream-codec':
+        optional: true
+      '@smithy/protocol-http':
+        optional: true
+      '@smithy/signature-v4':
+        optional: true
+      '@smithy/util-utf8':
+        optional: true
+      '@spider-cloud/spider-client':
+        optional: true
+      '@supabase/supabase-js':
+        optional: true
+      '@tensorflow-models/universal-sentence-encoder':
+        optional: true
+      '@tensorflow/tfjs-converter':
+        optional: true
+      '@tensorflow/tfjs-core':
+        optional: true
+      '@upstash/ratelimit':
+        optional: true
+      '@upstash/redis':
+        optional: true
+      '@upstash/vector':
+        optional: true
+      '@vercel/kv':
+        optional: true
+      '@vercel/postgres':
+        optional: true
+      '@writerai/writer-sdk':
+        optional: true
+      '@xata.io/client':
+        optional: true
+      '@xenova/transformers':
+        optional: true
+      '@zilliz/milvus2-sdk-node':
+        optional: true
+      apify-client:
+        optional: true
+      assemblyai:
+        optional: true
+      better-sqlite3:
+        optional: true
+      cassandra-driver:
+        optional: true
+      cborg:
+        optional: true
+      cheerio:
+        optional: true
+      chromadb:
+        optional: true
+      closevector-common:
+        optional: true
+      closevector-node:
+        optional: true
+      closevector-web:
+        optional: true
+      cohere-ai:
+        optional: true
+      convex:
+        optional: true
+      couchbase:
+        optional: true
+      crypto-js:
+        optional: true
+      d3-dsv:
+        optional: true
+      discord.js:
+        optional: true
+      dria:
+        optional: true
+      duck-duck-scrape:
+        optional: true
+      epub2:
+        optional: true
+      faiss-node:
+        optional: true
+      firebase-admin:
+        optional: true
+      google-auth-library:
+        optional: true
+      googleapis:
+        optional: true
+      hnswlib-node:
+        optional: true
+      html-to-text:
+        optional: true
+      ignore:
+        optional: true
+      interface-datastore:
+        optional: true
+      ioredis:
+        optional: true
+      it-all:
+        optional: true
+      jsdom:
+        optional: true
+      jsonwebtoken:
+        optional: true
+      llmonitor:
+        optional: true
+      lodash:
+        optional: true
+      lunary:
+        optional: true
+      mammoth:
+        optional: true
+      mongodb:
+        optional: true
+      mysql2:
+        optional: true
+      neo4j-driver:
+        optional: true
+      node-llama-cpp:
+        optional: true
+      notion-to-md:
+        optional: true
+      officeparser:
+        optional: true
+      pdf-parse:
+        optional: true
+      pg:
+        optional: true
+      pg-copy-streams:
+        optional: true
+      pickleparser:
+        optional: true
+      playwright:
+        optional: true
+      portkey-ai:
+        optional: true
+      puppeteer:
+        optional: true
+      pyodide:
+        optional: true
+      redis:
+        optional: true
+      replicate:
+        optional: true
+      sonix-speech-recognition:
+        optional: true
+      srt-parser-2:
+        optional: true
+      typeorm:
+        optional: true
+      typesense:
+        optional: true
+      usearch:
+        optional: true
+      vectordb:
+        optional: true
+      voy-search:
+        optional: true
+      weaviate-ts-client:
+        optional: true
+      web-auth-library:
+        optional: true
+      ws:
+        optional: true
+      youtube-transcript:
+        optional: true
+      youtubei.js:
+        optional: true
+
   '@langchain/core@0.3.45':
     resolution: {integrity: sha512-4icCMCeuauVvwH43zgCE6Hk2Zbke5OccfVhFpTiIJPo8WoU/ALdaZlS22S+6+qZ9lFzFHsgZ6K33Av9aWhxkQA==}
     engines: {node: '>=18'}
+
+  '@langchain/openai@0.3.17':
+    resolution: {integrity: sha512-uw4po32OKptVjq+CYHrumgbfh4NuD7LqyE+ZgqY9I/LrLc6bHLMc+sisHmI17vgek0K/yqtarI0alPJbzrwyag==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      '@langchain/core': '>=0.3.29 <0.4.0'
 
   '@langchain/openai@0.5.6':
     resolution: {integrity: sha512-zN0iyJthPNmcefIBVybZwcTBgcqu/ElJFov42ZntxEncK4heOMAE9lkq9LQ5CaPU/SgrduibrM1oL57+tLUtaA==}
@@ -4747,6 +5132,9 @@ packages:
     resolution: {integrity: sha512-/kP8CAwxzLVEeFrMm4kMmy4CCDlpipyA7MYLVrdJIkV0fYF0UaigQHRsxHiuY/GEea+bh4KSv3TIlgr+2UL6bw==}
     engines: {node: '>=12.0.0'}
 
+  expr-eval@2.0.2:
+    resolution: {integrity: sha512-4EMSHGOPSwAfBiibw3ndnP0AvjDWLsMvGOvWEZ2F96IGk0bIVdjQisOHxReSkE13mHcfbuCiXw+G4y0zv6N8Eg==}
+
   express-rate-limit@7.5.0:
     resolution: {integrity: sha512-eB5zbQh5h+VenMPM3fh+nw1YExi5nMr6HUCR62ELSP11huvxm/Uir1H1QEyTkk5QX6A58pX6NmaTMceKZ0Eodg==}
     engines: {node: '>= 16'}
@@ -4868,6 +5256,10 @@ packages:
         optional: true
       react-dom:
         optional: true
+
+  flat@5.0.2:
+    resolution: {integrity: sha512-b6suED+5/3rTpUBdG1gupIl8MPFCAMA0QXwmljLhvCUKcUvdE4gWky9zpuGCcXHOsz4J9wPGNWq6OKpmIzz3hQ==}
+    hasBin: true
 
   for-each@0.3.5:
     resolution: {integrity: sha512-dKx12eRCVIzqCxFGplyFKJMPvLEWgmNtUrpTiJIR5u97zEhRG8ySrtboPHZXx7daLxQVrl643cTzbab2tkQjxg==}
@@ -5687,6 +6079,14 @@ packages:
   langfuse@3.37.2:
     resolution: {integrity: sha512-C4P56hJDNk8vWNJR102JhgyCYXbt3HG19PY0brurlrU4dh5pq91JPt44jyiT5RzUs+NFew//gCkgFEcQd3RogA==}
     engines: {node: '>=18'}
+
+  langsmith@0.1.68:
+    resolution: {integrity: sha512-otmiysWtVAqzMx3CJ4PrtUBhWRG5Co8Z4o7hSZENPjlit9/j3/vm3TSvbaxpDYakZxtMjhkcJTqrdYFipISEiQ==}
+    peerDependencies:
+      openai: '*'
+    peerDependenciesMeta:
+      openai:
+        optional: true
 
   langsmith@0.3.21:
     resolution: {integrity: sha512-klsPStt91LqcO5+FAHOuD2FJMrpKFSqa5H4ANv+YYs/fCdL2Ey9hg/YAFYKsDsCLabzcD1tCt/SN9A9JsIZ9ag==}
@@ -7687,6 +8087,11 @@ packages:
     engines: {node: '>=18.0.0'}
     hasBin: true
 
+  tsx@4.7.1:
+    resolution: {integrity: sha512-8d6VuibXHtlN5E3zFkgY8u4DX7Y3Z27zvvPKVmLon/D4AjuKzarkUBTLDBgj9iTQ0hg5xM7c/mYiRVM+HETf0g==}
+    engines: {node: '>=18.0.0'}
+    hasBin: true
+
   turbo-darwin-64@2.5.0:
     resolution: {integrity: sha512-fP1hhI9zY8hv0idym3hAaXdPi80TLovmGmgZFocVAykFtOxF+GlfIgM/l4iLAV9ObIO4SUXPVWHeBZQQ+Hpjag==}
     cpu: [x64]
@@ -9116,6 +9521,46 @@ snapshots:
     dependencies:
       tslib: 2.8.1
 
+  '@langchain/community@0.3.0(@langchain/core@0.3.45(openai@4.94.0(ws@8.18.1)(zod@3.24.3)))(@supabase/supabase-js@2.49.4)(cheerio@1.0.0)(handlebars@4.7.8)(html-to-text@9.0.5)(ignore@5.3.2)(lodash@4.17.21)(openai@4.94.0(ws@8.18.1)(zod@3.24.3))(playwright@1.51.1)(ws@8.18.1)':
+    dependencies:
+      '@langchain/core': 0.3.45(openai@4.94.0(ws@8.18.1)(zod@3.24.3))
+      '@langchain/openai': 0.3.17(@langchain/core@0.3.45(openai@4.94.0(ws@8.18.1)(zod@3.24.3)))(ws@8.18.1)
+      binary-extensions: 2.3.0
+      expr-eval: 2.0.2
+      flat: 5.0.2
+      js-yaml: 4.1.0
+      langchain: 0.3.24(@langchain/core@0.3.45(openai@4.94.0(ws@8.18.1)(zod@3.24.3)))(cheerio@1.0.0)(handlebars@4.7.8)(openai@4.94.0(ws@8.18.1)(zod@3.24.3))(ws@8.18.1)
+      langsmith: 0.1.68(openai@4.94.0(ws@8.18.1)(zod@3.24.3))
+      uuid: 10.0.0
+      zod: 3.24.3
+      zod-to-json-schema: 3.24.5(zod@3.24.3)
+    optionalDependencies:
+      '@supabase/supabase-js': 2.49.4
+      cheerio: 1.0.0
+      html-to-text: 9.0.5
+      ignore: 5.3.2
+      lodash: 4.17.21
+      playwright: 1.51.1
+      ws: 8.18.1
+    transitivePeerDependencies:
+      - '@langchain/anthropic'
+      - '@langchain/aws'
+      - '@langchain/cerebras'
+      - '@langchain/cohere'
+      - '@langchain/deepseek'
+      - '@langchain/google-genai'
+      - '@langchain/google-vertexai'
+      - '@langchain/google-vertexai-web'
+      - '@langchain/groq'
+      - '@langchain/mistralai'
+      - '@langchain/ollama'
+      - '@langchain/xai'
+      - axios
+      - encoding
+      - handlebars
+      - openai
+      - peggy
+
   '@langchain/core@0.3.45(openai@4.94.0(ws@8.18.1)(zod@3.23.8))':
     dependencies:
       '@cfworker/json-schema': 4.1.1
@@ -9149,6 +9594,17 @@ snapshots:
       zod-to-json-schema: 3.24.5(zod@3.24.3)
     transitivePeerDependencies:
       - openai
+
+  '@langchain/openai@0.3.17(@langchain/core@0.3.45(openai@4.94.0(ws@8.18.1)(zod@3.24.3)))(ws@8.18.1)':
+    dependencies:
+      '@langchain/core': 0.3.45(openai@4.94.0(ws@8.18.1)(zod@3.24.3))
+      js-tiktoken: 1.0.20
+      openai: 4.94.0(ws@8.18.1)(zod@3.24.3)
+      zod: 3.24.3
+      zod-to-json-schema: 3.24.5(zod@3.24.3)
+    transitivePeerDependencies:
+      - encoding
+      - ws
 
   '@langchain/openai@0.5.6(@langchain/core@0.3.45(openai@4.94.0(ws@8.18.1)(zod@3.23.8)))(ws@8.18.1)':
     dependencies:
@@ -11660,6 +12116,14 @@ snapshots:
     optionalDependencies:
       vite: 6.3.2(@types/node@22.15.2)(jiti@2.4.2)(lightningcss@1.29.2)(terser@5.39.0)(tsx@4.19.3)(yaml@2.7.1)
 
+  '@vitest/mocker@3.1.2(vite@6.3.2(@types/node@22.15.2)(jiti@2.4.2)(lightningcss@1.29.2)(terser@5.39.0)(tsx@4.7.1)(yaml@2.7.1))':
+    dependencies:
+      '@vitest/spy': 3.1.2
+      estree-walker: 3.0.3
+      magic-string: 0.30.17
+    optionalDependencies:
+      vite: 6.3.2(@types/node@22.15.2)(jiti@2.4.2)(lightningcss@1.29.2)(terser@5.39.0)(tsx@4.7.1)(yaml@2.7.1)
+
   '@vitest/pretty-format@3.1.2':
     dependencies:
       tinyrainbow: 2.0.0
@@ -12857,6 +13321,8 @@ snapshots:
 
   expect-type@1.2.1: {}
 
+  expr-eval@2.0.2: {}
+
   express-rate-limit@7.5.0(express@5.1.0):
     dependencies:
       express: 5.1.0
@@ -12996,6 +13462,8 @@ snapshots:
       next: 15.3.1(@opentelemetry/api@1.9.0)(@playwright/test@1.51.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
+
+  flat@5.0.2: {}
 
   for-each@0.3.5:
     dependencies:
@@ -13949,6 +14417,17 @@ snapshots:
   langfuse@3.37.2:
     dependencies:
       langfuse-core: 3.37.2
+
+  langsmith@0.1.68(openai@4.94.0(ws@8.18.1)(zod@3.24.3)):
+    dependencies:
+      '@types/uuid': 10.0.0
+      commander: 10.0.1
+      p-queue: 6.6.2
+      p-retry: 4.6.2
+      semver: 7.7.1
+      uuid: 10.0.0
+    optionalDependencies:
+      openai: 4.94.0(ws@8.18.1)(zod@3.24.3)
 
   langsmith@0.3.21(openai@4.94.0(ws@8.18.1)(zod@3.23.8)):
     dependencies:
@@ -16439,6 +16918,13 @@ snapshots:
     optionalDependencies:
       fsevents: 2.3.3
 
+  tsx@4.7.1:
+    dependencies:
+      esbuild: 0.25.2
+      get-tsconfig: 4.10.0
+    optionalDependencies:
+      fsevents: 2.3.3
+
   turbo-darwin-64@2.5.0:
     optional: true
 
@@ -16721,6 +17207,27 @@ snapshots:
       - tsx
       - yaml
 
+  vite-node@3.1.2(@types/node@22.15.2)(jiti@2.4.2)(lightningcss@1.29.2)(terser@5.39.0)(tsx@4.7.1)(yaml@2.7.1):
+    dependencies:
+      cac: 6.7.14
+      debug: 4.4.0
+      es-module-lexer: 1.6.0
+      pathe: 2.0.3
+      vite: 6.3.2(@types/node@22.15.2)(jiti@2.4.2)(lightningcss@1.29.2)(terser@5.39.0)(tsx@4.7.1)(yaml@2.7.1)
+    transitivePeerDependencies:
+      - '@types/node'
+      - jiti
+      - less
+      - lightningcss
+      - sass
+      - sass-embedded
+      - stylus
+      - sugarss
+      - supports-color
+      - terser
+      - tsx
+      - yaml
+
   vite-tsconfig-paths@5.1.4(typescript@5.8.3)(vite@6.3.2(@types/node@22.15.2)(jiti@2.4.2)(lightningcss@1.29.2)(terser@5.39.0)(tsx@4.19.3)(yaml@2.7.1)):
     dependencies:
       debug: 4.4.0
@@ -16749,6 +17256,23 @@ snapshots:
       tsx: 4.19.3
       yaml: 2.7.1
 
+  vite@6.3.2(@types/node@22.15.2)(jiti@2.4.2)(lightningcss@1.29.2)(terser@5.39.0)(tsx@4.7.1)(yaml@2.7.1):
+    dependencies:
+      esbuild: 0.25.2
+      fdir: 6.4.3(picomatch@4.0.2)
+      picomatch: 4.0.2
+      postcss: 8.5.3
+      rollup: 4.40.0
+      tinyglobby: 0.2.12
+    optionalDependencies:
+      '@types/node': 22.15.2
+      fsevents: 2.3.3
+      jiti: 2.4.2
+      lightningcss: 1.29.2
+      terser: 5.39.0
+      tsx: 4.7.1
+      yaml: 2.7.1
+
   vitest@3.1.2(@edge-runtime/vm@3.2.0)(@types/debug@4.1.12)(@types/node@22.15.2)(jiti@2.4.2)(lightningcss@1.29.2)(terser@5.39.0)(tsx@4.19.3)(yaml@2.7.1):
     dependencies:
       '@vitest/expect': 3.1.2
@@ -16771,6 +17295,47 @@ snapshots:
       tinyrainbow: 2.0.0
       vite: 6.3.2(@types/node@22.15.2)(jiti@2.4.2)(lightningcss@1.29.2)(terser@5.39.0)(tsx@4.19.3)(yaml@2.7.1)
       vite-node: 3.1.2(@types/node@22.15.2)(jiti@2.4.2)(lightningcss@1.29.2)(terser@5.39.0)(tsx@4.19.3)(yaml@2.7.1)
+      why-is-node-running: 2.3.0
+    optionalDependencies:
+      '@edge-runtime/vm': 3.2.0
+      '@types/debug': 4.1.12
+      '@types/node': 22.15.2
+    transitivePeerDependencies:
+      - jiti
+      - less
+      - lightningcss
+      - msw
+      - sass
+      - sass-embedded
+      - stylus
+      - sugarss
+      - supports-color
+      - terser
+      - tsx
+      - yaml
+
+  vitest@3.1.2(@edge-runtime/vm@3.2.0)(@types/debug@4.1.12)(@types/node@22.15.2)(jiti@2.4.2)(lightningcss@1.29.2)(terser@5.39.0)(tsx@4.7.1)(yaml@2.7.1):
+    dependencies:
+      '@vitest/expect': 3.1.2
+      '@vitest/mocker': 3.1.2(vite@6.3.2(@types/node@22.15.2)(jiti@2.4.2)(lightningcss@1.29.2)(terser@5.39.0)(tsx@4.7.1)(yaml@2.7.1))
+      '@vitest/pretty-format': 3.1.2
+      '@vitest/runner': 3.1.2
+      '@vitest/snapshot': 3.1.2
+      '@vitest/spy': 3.1.2
+      '@vitest/utils': 3.1.2
+      chai: 5.2.0
+      debug: 4.4.0
+      expect-type: 1.2.1
+      magic-string: 0.30.17
+      pathe: 2.0.3
+      std-env: 3.9.0
+      tinybench: 2.9.0
+      tinyexec: 0.3.2
+      tinyglobby: 0.2.13
+      tinypool: 1.0.2
+      tinyrainbow: 2.0.0
+      vite: 6.3.2(@types/node@22.15.2)(jiti@2.4.2)(lightningcss@1.29.2)(terser@5.39.0)(tsx@4.7.1)(yaml@2.7.1)
+      vite-node: 3.1.2(@types/node@22.15.2)(jiti@2.4.2)(lightningcss@1.29.2)(terser@5.39.0)(tsx@4.7.1)(yaml@2.7.1)
       why-is-node-running: 2.3.0
     optionalDependencies:
       '@edge-runtime/vm': 3.2.0

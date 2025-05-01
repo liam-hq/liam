@@ -1,8 +1,11 @@
+import { formatGitHubReference } from '@/lib/github/urlGenerator'
 import { langfuseHandler } from '@/lib/langfuse/langfuseHandler'
+import { retrieveRelevantDocuments } from '@/lib/vectorstore/supabaseRetriever'
 import {} from '@langchain/core/messages'
 import { ChatPromptTemplate } from '@langchain/core/prompts'
 import { ChatOpenAI } from '@langchain/openai'
 import { Document } from 'langchain/document'
+import { formatDocumentsAsString } from 'langchain/util/document'
 import { NextResponse } from 'next/server'
 
 // Define types for schema data
@@ -176,6 +179,54 @@ export async function POST(request: Request) {
   // Convert schema to text
   const schemaText = convertSchemaToText(schemaData)
 
+  // Initialize relevant docs text and references
+  let relevantDocsText = ''
+  let relevantDocsReferences: {
+    source: string
+    page: number | null
+    line?: number
+    githubUrl?: string
+  }[] = []
+
+  try {
+    // Retrieve relevant documents from vector store
+    const relevantDocs = await retrieveRelevantDocuments(message, 3)
+
+    // Extract references from document metadata and generate GitHub links
+    relevantDocsReferences = relevantDocs.map((doc) => {
+      const source = doc.metadata.source || 'Unknown source'
+      const page = doc.metadata.page || null
+      const line = doc.metadata.loc?.lines?.from || undefined
+
+      // Generate GitHub reference link if source is available
+      const githubRef =
+        source !== 'Unknown source'
+          ? formatGitHubReference(source, line)
+          : undefined
+
+      return {
+        source,
+        page,
+        line,
+        githubUrl: githubRef,
+      }
+    })
+
+    // Format the retrieved documents as a string
+    relevantDocsText = formatDocumentsAsString(relevantDocs)
+
+    // Log success
+    process.stdout.write(
+      `Retrieved ${relevantDocs.length} relevant documents for query: "${message.substring(0, 50)}${message.length > 50 ? '...' : ''}"\n`,
+    )
+  } catch (error) {
+    // Log the error but continue without vector store results
+    process.stderr.write(
+      `Error retrieving documents from vector store: ${error}\n`,
+    )
+    process.stdout.write('Continuing without vector store results\n')
+  }
+
   // Create a streaming model
   const streamingModel = new ChatOpenAI({
     modelName: 'o4-mini-2025-04-16',
@@ -183,7 +234,7 @@ export async function POST(request: Request) {
     callbacks: [langfuseHandler],
   })
 
-  // Create a prompt template with full schema context and chat history
+  // Create a prompt template with schema context, relevant docs, and chat history
   const prompt = ChatPromptTemplate.fromTemplate(`
 You are a database schema expert.
 Answer questions about the user's schema and provide advice on database design.
@@ -195,18 +246,32 @@ Follow these guidelines:
 4. When using technical terms, include brief explanations.
 5. Provide only information directly related to the question, avoiding unnecessary details.
 6. Format your responses using GitHub Flavored Markdown (GFM) for better readability.
+7. ONLY reference documentation that is provided to you in the "Relevant Database Best Practices and Documentation" section below.
+8. DO NOT include links to external websites like postgresql.org or other documentation sites.
+9. If your answer is based on specific documentation, include references at the end of your response with GitHub links in this format: "References: [document name](github_url)" (e.g., "References: [Naming Conventions](https://github.com/liam-hq/liam/blob/main/docs/best_practices/naming.md?plain=1#L12)").
 
 Your goal is to help users understand and optimize their database schemas.
 
 Complete Schema Information:
 ${schemaText}
 
+Relevant Database Best Practices and Documentation:
+${relevantDocsText}
+
+Document References:
+${relevantDocsReferences
+  .map(
+    (ref) =>
+      `- Source: ${ref.source}${ref.line ? `, Line: ${ref.line}` : ''}${ref.githubUrl ? `, URL: ${ref.githubUrl}` : ''}`,
+  )
+  .join('\n')}
+
 Previous conversation:
 {chat_history}
 
 Question: {input}
 
-Based on the schema information provided and considering any previous conversation, answer the question thoroughly and accurately.
+Based on the schema information provided, relevant documentation, and considering any previous conversation, answer the question thoroughly and accurately. If you reference specific documentation, be sure to include the references at the end of your response as clickable GitHub links. NEVER include links to external websites.
 `)
 
   // Create streaming chain
@@ -217,6 +282,7 @@ Based on the schema information provided and considering any previous conversati
     {
       input: message,
       chat_history: formattedChatHistory,
+      references: relevantDocsReferences,
     },
     {
       callbacks: [langfuseHandler],
@@ -257,7 +323,7 @@ Based on the schema information provided and considering any previous conversati
         await writer.write(encoder.encode(textContent))
       }
     } catch (error) {
-      console.error('Error processing stream:', error)
+      process.stderr.write(`Error processing stream: ${error}\n`)
     } finally {
       await writer.close()
     }
