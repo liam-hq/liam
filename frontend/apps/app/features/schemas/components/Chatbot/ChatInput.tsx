@@ -1,10 +1,39 @@
 'use client'
 
 import { Button, Input } from '@liam-hq/ui'
-import { AtSignIcon, SendIcon } from 'lucide-react'
+import { AtSignIcon, Mic, MicOff, SendIcon } from 'lucide-react'
 import type { FC, FormEvent } from 'react'
 import type React from 'react'
 import { useCallback, useEffect, useRef, useState } from 'react'
+// Add type definition for SpeechRecognition if not available in the global namespace
+interface SpeechRecognitionEvent extends Event {
+  results: SpeechRecognitionResultList
+  resultIndex: number
+}
+
+interface SpeechRecognitionError extends Event {
+  error: string
+}
+
+interface SpeechRecognition extends EventTarget {
+  continuous: boolean
+  interimResults: boolean
+  lang: string
+  start(): void
+  stop(): void
+  abort(): void
+  onresult: ((event: SpeechRecognitionEvent) => void) | null
+  onerror: ((event: SpeechRecognitionError) => void) | null
+  onend: (() => void) | null
+}
+
+// Add global declarations
+declare global {
+  interface Window {
+    SpeechRecognition: new () => SpeechRecognition
+    webkitSpeechRecognition: new () => SpeechRecognition
+  }
+}
 import type { SchemaData, TableGroupData } from '../../../../app/api/chat/route'
 import { AgentMention } from './AgentMention'
 import { AgentSelect } from './AgentSelect'
@@ -53,8 +82,50 @@ export const ChatInput: FC<ChatInputProps> = ({
   // Add state for schema mention type
   const [schemaMentionType, setSchemaMentionType] =
     useState<SchemaMentionType>(null)
+  // Add state for speech recognition
+  const [isListening, setIsListening] = useState(false)
+  const recognitionRef = useRef<SpeechRecognition | null>(null)
   const inputContainerRef = useRef<HTMLDivElement>(null)
   const [allItems, setAllItems] = useState<SchemaItem[]>([])
+
+  // Initialize speech recognition
+  useEffect(() => {
+    // Initialize speech recognition only on client side
+    if (typeof window !== 'undefined') {
+      const SpeechRecognition =
+        window.SpeechRecognition || window.webkitSpeechRecognition
+
+      if (SpeechRecognition) {
+        const recognition = new SpeechRecognition()
+        recognition.lang = 'ja-JP'
+        recognition.interimResults = false
+        recognition.continuous = false
+
+        recognition.onresult = (event) => {
+          const transcript = event.results[0][0].transcript
+          setMessage((prev) => prev + transcript)
+        }
+
+        recognition.onend = () => {
+          setIsListening(false)
+        }
+
+        recognition.onerror = (event) => {
+          console.error('Speech recognition error', event.error)
+          setIsListening(false)
+        }
+
+        recognitionRef.current = recognition
+      }
+    }
+
+    // Cleanup function
+    return () => {
+      if (recognitionRef.current && isListening) {
+        recognitionRef.current.stop()
+      }
+    }
+  }, [isListening]) // Add isListening as a dependency
 
   // Initialize schema items when schema data changes
   useEffect(() => {
@@ -246,6 +317,27 @@ export const ChatInput: FC<ChatInputProps> = ({
     setMentionType(null)
   }
 
+  // Handle toggle speech recognition
+  const handleToggleSpeechRecognition = () => {
+    if (!recognitionRef.current) {
+      console.error('Speech Recognition is not supported in this browser')
+      return
+    }
+
+    if (isListening) {
+      recognitionRef.current.stop()
+      setIsListening(false)
+    } else {
+      try {
+        recognitionRef.current.start()
+        setIsListening(true)
+      } catch (error) {
+        console.error('Failed to start speech recognition:', error)
+        setIsListening(false)
+      }
+    }
+  }
+
   return (
     <div className={styles.chatInputContainer}>
       <form className={styles.inputContainer} onSubmit={handleSubmit}>
@@ -312,14 +404,25 @@ export const ChatInput: FC<ChatInputProps> = ({
       </form>
       <div className={styles.controlsContainer}>
         <AgentSelect mode={currentMode} onModeChange={handleModeChange} />
-        <Button
-          type="button"
-          onClick={onMentionClick}
-          className={styles.mentionButton}
-          disabled={isLoading}
-        >
-          <AtSignIcon size={16} />
-        </Button>
+        <div className={styles.buttonGroup}>
+          <Button
+            type="button"
+            onClick={onMentionClick}
+            className={styles.mentionButton}
+            disabled={isLoading}
+          >
+            <AtSignIcon size={16} />
+          </Button>
+          <Button
+            type="button"
+            onClick={handleToggleSpeechRecognition}
+            className={`${styles.micButton} ${isListening ? styles.recording : ''}`}
+            disabled={isLoading}
+            aria-label={isListening ? '音声入力を停止' : '音声入力を開始'}
+          >
+            {isListening ? <MicOff size={16} /> : <Mic size={16} />}
+          </Button>
+        </div>
       </div>
     </div>
   )
