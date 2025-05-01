@@ -15,6 +15,7 @@ interface SchemaItemMentionProps {
   onSelect: (itemId: string, startPos: number, endPos: number) => void
   onClose: () => void
   containerRef: React.RefObject<HTMLDivElement>
+  prioritizeTableGroups?: boolean
 }
 
 export const SchemaItemMention: React.FC<SchemaItemMentionProps> = ({
@@ -25,6 +26,7 @@ export const SchemaItemMention: React.FC<SchemaItemMentionProps> = ({
   onSelect,
   onClose,
   containerRef,
+  prioritizeTableGroups = false,
 }) => {
   const [isVisible, setIsVisible] = useState(false)
   const [mentionQuery, setMentionQuery] = useState('')
@@ -78,12 +80,23 @@ export const SchemaItemMention: React.FC<SchemaItemMentionProps> = ({
   useEffect(() => {
     if (!isVisible) return
 
-    const filtered = allItems.filter((item) =>
+    // First filter items by query
+    let filtered = allItems.filter((item) =>
       item.label.toLowerCase().includes(mentionQuery.toLowerCase()),
     )
+
+    // If prioritizeTableGroups is true, sort to put table groups first
+    if (prioritizeTableGroups) {
+      filtered = [...filtered].sort((a, b) => {
+        if (a.type === 'tableGroup' && b.type !== 'tableGroup') return -1
+        if (a.type !== 'tableGroup' && b.type === 'tableGroup') return 1
+        return 0
+      })
+    }
+
     setFilteredItems(filtered)
     setSelectedIndex(0) // Reset selection when filter changes
-  }, [mentionQuery, isVisible, allItems])
+  }, [mentionQuery, isVisible, allItems, prioritizeTableGroups])
 
   // Detect mention when input or cursor changes
   useEffect(() => {

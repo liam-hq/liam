@@ -63,8 +63,10 @@ export const AgentMention: React.FC<AgentMentionProps> = ({
 
   // Function to detect if we're in a mention context and extract the query
   const detectMention = useCallback(() => {
+    // Always set isVisible to true since the component is only rendered when mentionType is 'agent'
+    setIsVisible(true)
+
     if (cursorPosition <= 0 || inputValue.length === 0) {
-      setIsVisible(false)
       return
     }
 
@@ -82,7 +84,6 @@ export const AgentMention: React.FC<AgentMentionProps> = ({
     }
 
     if (startIndex === -1) {
-      setIsVisible(false)
       return
     }
 
@@ -90,7 +91,6 @@ export const AgentMention: React.FC<AgentMentionProps> = ({
     const query = inputValue.substring(startIndex + 1, cursorPosition)
     setMentionQuery(query)
     setMentionStartIndex(startIndex)
-    setIsVisible(true)
   }, [inputValue, cursorPosition])
 
   // Filter agents based on the query
@@ -181,9 +181,13 @@ export const AgentMention: React.FC<AgentMentionProps> = ({
     }
   }, [onClose, containerRef])
 
-  // If not visible or no filtered agents, don't render
-  if (!isVisible || filteredAgents.length === 0) {
-    return null
+  // Always render the dropdown since the component is only rendered when mentionType is 'agent'
+  console.log('AgentMention - isVisible:', isVisible)
+  console.log('AgentMention - filteredAgents:', filteredAgents)
+
+  // If no filtered agents, show all agents
+  if (filteredAgents.length === 0) {
+    setFilteredAgents(AGENTS)
   }
 
   // Highlight matching text in agent label

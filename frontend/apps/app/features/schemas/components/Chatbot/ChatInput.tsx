@@ -11,6 +11,8 @@ import { AgentSelect } from './AgentSelect'
 import styles from './ChatInput.module.css'
 import { CombinedMention } from './CombinedMention'
 import { SchemaItemMention } from './SchemaItemMention'
+import type { ContextPriority } from './utils/detectContextPriority'
+import { detectContextPriority } from './utils/detectContextPriority'
 import type { SchemaItem } from './utils/schemaItemsAdapter'
 import { convertSchemaToMentionItems } from './utils/schemaItemsAdapter'
 
@@ -44,6 +46,8 @@ export const ChatInput: FC<ChatInputProps> = ({
   const [mentionType, setMentionType] = useState<MentionType>(null)
   // Add local state to ensure we always have a valid mode, defaulting to 'build'
   const [currentMode, setCurrentMode] = useState<AgentType>('build')
+  // Add state for context priority
+  const [contextPriority, setContextPriority] = useState<ContextPriority>(null)
   const inputContainerRef = useRef<HTMLDivElement>(null)
   const [allItems, setAllItems] = useState<SchemaItem[]>([])
 
@@ -65,7 +69,8 @@ export const ChatInput: FC<ChatInputProps> = ({
   // Handle cursor position changes
   const handleCursorChange = (e: React.SyntheticEvent<HTMLInputElement>) => {
     const input = e.currentTarget
-    setCursorPosition(input.selectionStart || 0)
+    const newPosition = input.selectionStart || 0
+    setCursorPosition(newPosition)
   }
 
   // Function to detect mention type based on cursor position and input value
@@ -96,6 +101,18 @@ export const ChatInput: FC<ChatInputProps> = ({
     // Extract the query (text after '@')
     const query = message.substring(startIndex + 1, cursorPosition)
 
+    // Special case: if query starts with "j" or "agent", show agent mention
+    if (
+      query.toLowerCase().startsWith('j') ||
+      query.toLowerCase().startsWith('agent')
+    ) {
+      console.log('Query starts with j or agent:', query)
+      console.log('Setting mentionType to agent')
+      setMentionType('agent')
+      setContextPriority('agent')
+      return
+    }
+
     // Agent names
     const agentNames = ['builder', 'reviewer', 'learn']
 
@@ -119,6 +136,13 @@ export const ChatInput: FC<ChatInputProps> = ({
     } else if (query === '') {
       // Empty query, show both
       setMentionType('both')
+
+      // When @ is typed, analyze the preceding text to determine context priority
+      if (startIndex > 0) {
+        const precedingText = message.substring(0, startIndex)
+        const priority = detectContextPriority(precedingText)
+        setContextPriority(priority)
+      }
     } else {
       // No matches, default to schema items as they're more numerous
       setMentionType('schemaItem')
@@ -133,6 +157,7 @@ export const ChatInput: FC<ChatInputProps> = ({
   // Function to check for valid agent mentions in text and switch agent if found
   const checkForAgentMention = (text: string) => {
     // Define regex to match @agent_name at word boundaries
+    // Exclude 'jack' from auto-switching, only include actual agents
     const mentionRegex = /@(builder|reviewer|learn)\b/g
     const matches = text.match(mentionRegex)
 
@@ -208,6 +233,9 @@ export const ChatInput: FC<ChatInputProps> = ({
     setMentionType(null)
   }
 
+  // Add console log to track mentionType
+  console.log('Current mentionType:', mentionType)
+
   return (
     <div className={styles.chatInputContainer}>
       <form className={styles.inputContainer} onSubmit={handleSubmit}>
@@ -258,6 +286,7 @@ export const ChatInput: FC<ChatInputProps> = ({
               onSchemaItemSelect={handleSchemaItemSelect}
               onClose={() => setMentionType(null)}
               containerRef={inputContainerRef}
+              contextPriority={contextPriority}
             />
           )}
         </div>
