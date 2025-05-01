@@ -46,7 +46,11 @@ export const ChatMessage: FC<ChatMessageProps> = ({
     >
       <div className={styles.messageContent}>
         {isUser ? (
-          <div className={styles.messageText}>{content}</div>
+          <div className={styles.messageText}>
+            <ReactMarkdown remarkPlugins={[remarkGfm]}>
+              {content}
+            </ReactMarkdown>
+          </div>
         ) : (
           <div className={styles.messageText}>
             {parts && parts.length > 0 ? (
