@@ -4,6 +4,7 @@ import { Button, Input } from '@liam-hq/ui'
 import { AtSignIcon, SendIcon } from 'lucide-react'
 import type { FC, FormEvent } from 'react'
 import { useState } from 'react'
+import { AgentSelect } from './AgentSelect'
 import styles from './ChatInput.module.css'
 
 interface ChatInputProps {
@@ -56,26 +57,7 @@ export const ChatInput: FC<ChatInputProps> = ({
         </Button>
       </form>
       <div className={styles.controlsContainer}>
-        <div className={styles.modeSegmentedControl}>
-          <button
-            type="button"
-            className={`${styles.modeButton} ${
-              mode === 'plan' ? styles.activeMode : ''
-            }`}
-            onClick={() => handleModeChange('plan')}
-          >
-            Plan
-          </button>
-          <button
-            type="button"
-            className={`${styles.modeButton} ${
-              mode === 'act' ? styles.activeMode : ''
-            }`}
-            onClick={() => handleModeChange('act')}
-          >
-            Act
-          </button>
-        </div>
+        <AgentSelect mode={mode} onModeChange={handleModeChange} />
         <Button
           type="button"
           onClick={onMentionClick}
