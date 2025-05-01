@@ -14,30 +14,6 @@
   width: 100%;
 }
 
-.modeSegmentedControl {
-  display: flex;
-  background-color: var(--color-gray-800);
-  border-radius: var(--border-radius-md);
-  padding: 2px;
-}
-
-.modeButton {
-  font-family: var(--main-font);
-  font-weight: 500;
-  font-size: var(--font-size-1);
-  color: var(--color-white-alpha-50);
-  background: transparent;
-  border: none;
-  border-radius: var(--border-radius-base);
-  padding: 2px var(--spacing-1);
-  cursor: pointer;
-}
-
-.activeMode {
-  background-color: var(--color-green-alpha-40);
-  color: var(--color-gray-0);
-}
-
 .mentionButton {
   min-width: unset;
   height: unset;

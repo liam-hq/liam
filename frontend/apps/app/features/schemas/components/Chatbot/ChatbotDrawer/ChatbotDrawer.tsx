@@ -16,6 +16,7 @@ import type {
   TableGroupData,
 } from '../../../../../app/api/chat/route'
 import { AskAiIcon } from '../AskAiIcon'
+import type { AgentType } from '../ChatInput'
 import { ChatInput } from '../ChatInput'
 import { ChatMessage, type ChatMessageProps } from '../ChatMessage'
 import styles from './ChatbotDrawer.module.css'
@@ -66,7 +67,7 @@ export const ChatbotDrawer: FC<ChatbotDrawerProps> = ({
     },
   ])
   const [isLoading, setIsLoading] = useState(false)
-  const [mode, setMode] = useState<'plan' | 'act'>('plan')
+  const [mode, setMode] = useState<AgentType>('build')
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
   // Scroll to bottom when component mounts

@@ -3,25 +3,38 @@
 import { Button, Input } from '@liam-hq/ui'
 import { AtSignIcon, SendIcon } from 'lucide-react'
 import type { FC, FormEvent } from 'react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { AgentSelect } from './AgentSelect'
 import styles from './ChatInput.module.css'
+
+// Define the agent type
+export type AgentType = 'build' | 'learn' | 'review'
 
 interface ChatInputProps {
   onSendMessage: (message: string) => void
   isLoading: boolean
-  mode?: 'plan' | 'act'
-  onModeChange?: (mode: 'plan' | 'act') => void
+  mode?: AgentType
+  onModeChange?: (mode: AgentType) => void
   onMentionClick?: () => void
 }
 
 export const ChatInput: FC<ChatInputProps> = ({
   onSendMessage,
   isLoading,
-  mode = 'plan',
+  mode, // Remove default value here to ensure we use our internal state
   onModeChange,
   onMentionClick,
 }) => {
   const [message, setMessage] = useState('')
+  // Add local state to ensure we always have a valid mode, defaulting to 'build'
+  const [currentMode, setCurrentMode] = useState<AgentType>('build')
+
+  // Update local state when prop changes, but default to 'build' if undefined
+  useEffect(() => {
+    if (mode) {
+      setCurrentMode(mode)
+    }
+  }, [mode])
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault()
@@ -31,7 +44,11 @@ export const ChatInput: FC<ChatInputProps> = ({
     }
   }
 
-  const handleModeChange = (newMode: 'plan' | 'act') => {
+  const handleModeChange = (newMode: AgentType) => {
+    // Update local state
+    setCurrentMode(newMode)
+
+    // Notify parent component
     if (onModeChange) {
       onModeChange(newMode)
     }
@@ -56,26 +73,7 @@ export const ChatInput: FC<ChatInputProps> = ({
         </Button>
       </form>
       <div className={styles.controlsContainer}>
-        <div className={styles.modeSegmentedControl}>
-          <button
-            type="button"
-            className={`${styles.modeButton} ${
-              mode === 'plan' ? styles.activeMode : ''
-            }`}
-            onClick={() => handleModeChange('plan')}
-          >
-            Plan
-          </button>
-          <button
-            type="button"
-            className={`${styles.modeButton} ${
-              mode === 'act' ? styles.activeMode : ''
-            }`}
-            onClick={() => handleModeChange('act')}
-          >
-            Act
-          </button>
-        </div>
+        <AgentSelect mode={currentMode} onModeChange={handleModeChange} />
         <Button
           type="button"
           onClick={onMentionClick}

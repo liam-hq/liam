@@ -1,0 +1,98 @@
+.agentSelectContainer {
+  display: flex;
+  position: relative;
+}
+
+.agentSelectTrigger {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  padding: var(--spacing-2);
+  background-color: var(--global-background);
+  border: none;
+  border-radius: var(--border-radius-md);
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.agentSelectTrigger:hover {
+  background-color: var(--color-gray-800);
+}
+
+.agentSelectTrigger[data-state='open'] {
+  background-color: var(--color-gray-800);
+}
+
+.agentName {
+  font-family: var(--main-font);
+  font-weight: 500;
+  font-size: var(--font-size-2);
+  color: var(--color-white-alpha-100);
+}
+
+.iconContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+}
+
+.buildJackIcon {
+  color: var(--color-green-400); /* #1DED83 */
+}
+
+.reviewJackIcon {
+  color: var(--color-red-500); /* #F75049 */
+}
+
+.learnJackIcon {
+  color: var(--color-yellow-alpha-100); /* #FFD748 */
+}
+
+.chevronIcon {
+  color: var(--color-white-alpha-70);
+  transition: transform 0.2s ease;
+}
+
+.agentSelectTrigger[data-state='open'] .chevronIcon {
+  transform: rotate(180deg);
+  color: var(--color-white-alpha-100);
+}
+
+.agentDropdownContent {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-half);
+  padding: var(--spacing-1);
+  background-color: var(--color-gray-1000);
+  border: 1px solid var(--color-gray-700);
+  border-radius: var(--border-radius-md);
+  box-shadow: 0px 4px 20px 0px rgba(0, 0, 0, 0.4);
+  z-index: 100;
+  width: 161px;
+}
+
+.agentMenuItem {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  padding: var(--spacing-2);
+  border-radius: var(--border-radius-sm);
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  justify-content: start;
+}
+
+.agentMenuItem:hover {
+  background-color: var(--color-gray-900);
+}
+
+.activeMenuItem {
+  background-color: var(--color-gray-800);
+}
+
+.checkIcon {
+  margin-left: auto;
+  color: var(--color-green-400);
+}
