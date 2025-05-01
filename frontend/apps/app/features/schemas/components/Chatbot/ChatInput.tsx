@@ -9,13 +9,16 @@ import type { SchemaData, TableGroupData } from '../../../../app/api/chat/route'
 import { AgentMention } from './AgentMention'
 import { AgentSelect } from './AgentSelect'
 import styles from './ChatInput.module.css'
+import { CombinedMention } from './CombinedMention'
 import { SchemaItemMention } from './SchemaItemMention'
+import type { SchemaItem } from './utils/schemaItemsAdapter'
+import { convertSchemaToMentionItems } from './utils/schemaItemsAdapter'
 
 // Define the agent type
 export type AgentType = 'build' | 'learn' | 'review'
 
 // Define the mention type
-type MentionType = 'agent' | 'schemaItem' | null
+type MentionType = 'agent' | 'schemaItem' | 'both' | null
 
 interface ChatInputProps {
   onSendMessage: (message: string) => void
@@ -42,6 +45,15 @@ export const ChatInput: FC<ChatInputProps> = ({
   // Add local state to ensure we always have a valid mode, defaulting to 'build'
   const [currentMode, setCurrentMode] = useState<AgentType>('build')
   const inputContainerRef = useRef<HTMLDivElement>(null)
+  const [allItems, setAllItems] = useState<SchemaItem[]>([])
+
+  // Initialize schema items when schema data changes
+  useEffect(() => {
+    if (schemaData) {
+      const items = convertSchemaToMentionItems(schemaData, tableGroups)
+      setAllItems(items)
+    }
+  }, [schemaData, tableGroups])
 
   // Update local state when prop changes, but default to 'build' if undefined
   useEffect(() => {
@@ -84,14 +96,34 @@ export const ChatInput: FC<ChatInputProps> = ({
     // Extract the query (text after '@')
     const query = message.substring(startIndex + 1, cursorPosition)
 
-    // Check if it's an agent mention
-    if (/^(builder|reviewer|learn)$/i.test(query)) {
+    // Agent names
+    const agentNames = ['builder', 'reviewer', 'learn']
+
+    // Check if query could match an agent name
+    const matchesAgentPrefix = agentNames.some((name) =>
+      name.toLowerCase().startsWith(query.toLowerCase()),
+    )
+
+    // Check if query could match a schema item
+    const matchesSchemaItem = allItems.some((item) =>
+      item.label.toLowerCase().includes(query.toLowerCase()),
+    )
+
+    if (matchesAgentPrefix && !matchesSchemaItem) {
       setMentionType('agent')
+    } else if (!matchesAgentPrefix && matchesSchemaItem) {
+      setMentionType('schemaItem')
+    } else if (matchesAgentPrefix && matchesSchemaItem) {
+      // Both match, show combined view
+      setMentionType('both')
+    } else if (query === '') {
+      // Empty query, show both
+      setMentionType('both')
     } else {
-      // Default to schema item mention
+      // No matches, default to schema items as they're more numerous
       setMentionType('schemaItem')
     }
-  }, [message, cursorPosition])
+  }, [message, cursorPosition, allItems])
 
   // Detect mention type when input or cursor changes
   useEffect(() => {
@@ -142,6 +174,40 @@ export const ChatInput: FC<ChatInputProps> = ({
     }
   }
 
+  // Handle agent selection
+  const handleAgentSelect = (
+    agentId: string,
+    agentType: string,
+    startPos: number,
+    endPos: number,
+  ) => {
+    // Insert the agent mention at the cursor position
+    const newMessage = `${message.substring(0, startPos)}@${agentId} ${message.substring(endPos)}`
+    setMessage(newMessage)
+    setMentionType(null)
+
+    // Automatically switch to the mentioned agent
+    if (agentType && agentType !== currentMode) {
+      handleModeChange(agentType as AgentType)
+    }
+
+    // Also check for other mentions in the message
+    // This ensures we handle cases where multiple mentions exist
+    checkForAgentMention(newMessage)
+  }
+
+  // Handle schema item selection
+  const handleSchemaItemSelect = (
+    itemId: string,
+    startPos: number,
+    endPos: number,
+  ) => {
+    // Insert the schema item mention at the cursor position
+    const newMessage = `${message.substring(0, startPos)}@${itemId} ${message.substring(endPos)}`
+    setMessage(newMessage)
+    setMentionType(null)
+  }
+
   return (
     <div className={styles.chatInputContainer}>
       <form className={styles.inputContainer} onSubmit={handleSubmit}>
@@ -166,21 +232,7 @@ export const ChatInput: FC<ChatInputProps> = ({
             <AgentMention
               inputValue={message}
               cursorPosition={cursorPosition}
-              onSelect={(agentId, agentType, startPos, endPos) => {
-                // Insert the agent mention at the cursor position
-                const newMessage = `${message.substring(0, startPos)}@${agentId} ${message.substring(endPos)}`
-                setMessage(newMessage)
-                setMentionType(null)
-
-                // Automatically switch to the mentioned agent
-                if (agentType && agentType !== currentMode) {
-                  handleModeChange(agentType as AgentType)
-                }
-
-                // Also check for other mentions in the message
-                // This ensures we handle cases where multiple mentions exist
-                checkForAgentMention(newMessage)
-              }}
+              onSelect={handleAgentSelect}
               onClose={() => setMentionType(null)}
               containerRef={inputContainerRef}
             />
@@ -191,12 +243,19 @@ export const ChatInput: FC<ChatInputProps> = ({
               cursorPosition={cursorPosition}
               schemaData={schemaData}
               tableGroups={tableGroups}
-              onSelect={(itemId, startPos, endPos) => {
-                // Insert the schema item mention at the cursor position
-                const newMessage = `${message.substring(0, startPos)}@${itemId} ${message.substring(endPos)}`
-                setMessage(newMessage)
-                setMentionType(null)
-              }}
+              onSelect={handleSchemaItemSelect}
+              onClose={() => setMentionType(null)}
+              containerRef={inputContainerRef}
+            />
+          )}
+          {mentionType === 'both' && (
+            <CombinedMention
+              inputValue={message}
+              cursorPosition={cursorPosition}
+              schemaData={schemaData}
+              tableGroups={tableGroups}
+              onAgentSelect={handleAgentSelect}
+              onSchemaItemSelect={handleSchemaItemSelect}
               onClose={() => setMentionType(null)}
               containerRef={inputContainerRef}
             />
