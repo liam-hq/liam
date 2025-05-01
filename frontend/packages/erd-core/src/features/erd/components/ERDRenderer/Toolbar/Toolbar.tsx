@@ -1,24 +1,14 @@
 import type { Schema as ERDSchema } from '@liam-hq/db-structure'
-import type { ComponentType, FC } from 'react'
-
-interface TableGroupData {
-  name?: string
-  tables?: string[]
-  comment?: string | null
-}
+import type { FC } from 'react'
 import { DesktopToolbar } from './DesktopToolbar'
 import { MobileToolbar } from './MobileToolbar'
-
-interface ChatbotButtonProps {
-  schemaData: ERDSchema
-  tableGroups?: Record<string, TableGroupData>
-}
+import type { ChatbotButtonComponentType, TableGroupData } from './types'
 
 type ToolbarProps = {
-  withGroupButton?: boolean
-  schemaData?: ERDSchema
-  tableGroups?: Record<string, TableGroupData>
-  ChatbotButtonComponent?: ComponentType<ChatbotButtonProps>
+  withGroupButton?: boolean | undefined
+  schemaData?: ERDSchema | undefined
+  tableGroups?: Record<string, TableGroupData> | undefined
+  ChatbotButtonComponent?: ChatbotButtonComponentType
 }
 
 export const Toolbar: FC<ToolbarProps> = ({

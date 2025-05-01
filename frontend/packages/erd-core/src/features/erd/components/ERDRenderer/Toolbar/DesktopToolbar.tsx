@@ -1,29 +1,19 @@
 import type { Schema as ERDSchema } from '@liam-hq/db-structure'
 import * as ToolbarPrimitive from '@radix-ui/react-toolbar'
-import type { ComponentType, FC } from 'react'
+import type { FC } from 'react'
 import styles from './DesktopToolbar.module.css'
 import { FitviewButton } from './FitviewButton'
 import { GroupButton } from './GroupButton'
 import { ShowModeMenu } from './ShowModeMenu'
 import { TidyUpButton } from './TidyUpButton'
 import { ZoomControls } from './ZoomControls'
-
-interface TableGroupData {
-  name?: string
-  tables?: string[]
-  comment?: string | null
-}
-
-interface ChatbotButtonProps {
-  schemaData: ERDSchema
-  tableGroups?: Record<string, TableGroupData>
-}
+import type { ChatbotButtonComponentType, TableGroupData } from './types'
 
 type DesktopToolbarProps = {
-  withGroupButton?: boolean
-  schemaData?: ERDSchema
-  tableGroups?: Record<string, TableGroupData>
-  ChatbotButtonComponent?: ComponentType<ChatbotButtonProps>
+  withGroupButton?: boolean | undefined
+  schemaData?: ERDSchema | undefined
+  tableGroups?: Record<string, TableGroupData> | undefined
+  ChatbotButtonComponent?: ChatbotButtonComponentType
 }
 
 export const DesktopToolbar: FC<DesktopToolbarProps> = ({

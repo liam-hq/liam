@@ -8,30 +8,20 @@ import { ChevronDown } from '@liam-hq/ui'
 import { IconButton, Minus, Plus } from '@liam-hq/ui'
 import { ToolbarButton } from '@radix-ui/react-toolbar'
 import { useStore } from '@xyflow/react'
-import { type ComponentType, type FC, useCallback } from 'react'
+import { type FC, useCallback } from 'react'
 import { FitviewButton } from '../FitviewButton'
 import { GroupButton } from '../GroupButton'
 import { TidyUpButton } from '../TidyUpButton'
+import type { ChatbotButtonComponentType, TableGroupData } from '../types'
 import styles from './OpenedMobileToolbar.module.css'
 
-interface TableGroupData {
-  name?: string
-  tables?: string[]
-  comment?: string | null
-}
-
-interface ChatbotButtonProps {
-  schemaData: ERDSchema
-  tableGroups?: Record<string, TableGroupData>
-}
-
 type Props = {
-  withGroupButton?: boolean
+  withGroupButton?: boolean | undefined
   toggleOpenClose: () => void
   toggleShowModeMenu: () => void
-  schemaData?: ERDSchema
-  tableGroups?: Record<string, TableGroupData>
-  ChatbotButtonComponent?: ComponentType<ChatbotButtonProps>
+  schemaData?: ERDSchema | undefined
+  tableGroups?: Record<string, TableGroupData> | undefined
+  ChatbotButtonComponent?: ChatbotButtonComponentType
 }
 
 export const OpenedMobileToolbar: FC<Props> = ({

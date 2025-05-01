@@ -3,29 +3,19 @@ import { Ellipsis } from '@liam-hq/ui'
 import * as ToolbarPrimitive from '@radix-ui/react-toolbar'
 import clsx from 'clsx'
 import { useEffect, useRef, useState } from 'react'
-import type { ComponentProps, ComponentType, FC } from 'react'
+import type { ComponentProps, FC } from 'react'
+import type { ChatbotButtonComponentType, TableGroupData } from '../types'
 import styles from './MobileToolbar.module.css'
 import { OpenedMobileToolbar } from './OpenedMobileToolbar'
 import { ShowModeMenu } from './ShowModeMenu'
 
-interface TableGroupData {
-  name?: string
-  tables?: string[]
-  comment?: string | null
-}
-
-interface ChatbotButtonProps {
-  schemaData: ERDSchema
-  tableGroups?: Record<string, TableGroupData>
-}
-
 type MobileToolbarProps = {
-  withGroupButton?: ComponentProps<
-    typeof OpenedMobileToolbar
-  >['withGroupButton']
-  schemaData?: ERDSchema
-  tableGroups?: Record<string, TableGroupData>
-  ChatbotButtonComponent?: ComponentType<ChatbotButtonProps>
+  withGroupButton?:
+    | ComponentProps<typeof OpenedMobileToolbar>['withGroupButton']
+    | undefined
+  schemaData?: ERDSchema | undefined
+  tableGroups?: Record<string, TableGroupData> | undefined
+  ChatbotButtonComponent?: ChatbotButtonComponentType
 }
 
 export const MobileToolbar: FC<MobileToolbarProps> = ({
