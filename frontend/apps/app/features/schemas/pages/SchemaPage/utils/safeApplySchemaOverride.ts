@@ -34,7 +34,10 @@ export const safeApplySchemaOverride = async (
   )
 
   if (!parsedOverrideContent.success) {
-    console.error('error', JSON.stringify(parsedOverrideContent.issues, null, 2))
+    console.error(
+      'error',
+      JSON.stringify(parsedOverrideContent.issues, null, 2),
+    )
     return {
       result: null,
       error: {
