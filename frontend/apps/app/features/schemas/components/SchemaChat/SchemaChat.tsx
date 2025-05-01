@@ -31,24 +31,7 @@ export const SchemaChat: FC<SchemaChatProps> = ({ schema, onSchemaChange }) => {
     body: {
       schema,
     },
-    onFinish: (message) => {
-      // Process AI response to extract and apply schema modifications
-      const {
-        schema: updatedSchema,
-        modified,
-        error,
-      } = processSchemaModification(message.content, schema)
-
-      if (modified) {
-        // Apply schema changes
-        onSchemaChange(updatedSchema)
-        // Show success notification
-        showSchemaToast('Schema modified successfully', 'success')
-      } else if (error) {
-        // Show error notification
-        showSchemaToast(`Failed to modify schema: ${error}`, 'error')
-      }
-    },
+    // Removed the automatic schema modification on message completion
   })
 
   // Scroll to bottom once component is mounted
@@ -79,6 +62,47 @@ export const SchemaChat: FC<SchemaChatProps> = ({ schema, onSchemaChange }) => {
               message.createdAt ? new Date(message.createdAt) : undefined
             }
             parts={message.parts}
+            onApplySchema={
+              !message.role || message.role === 'user'
+                ? undefined
+                : (jsonSchema) => {
+                  console.log({ jsonSchema })
+                    try {
+                      // Process schema modification when Apply button is clicked
+                      const {
+                        schema: updatedSchema,
+                        modified,
+                        error,
+                      } = processSchemaModification(jsonSchema, schema)
+
+                      if (modified) {
+                        // Apply schema changes
+                        onSchemaChange(updatedSchema)
+                        // Show success notification
+                        showSchemaToast(
+                          'Schema applied successfully',
+                          'success',
+                        )
+                      } else if (error) {
+                        // Show error notification
+                        showSchemaToast(
+                          `Failed to apply schema: ${error}`,
+                          'error',
+                        )
+                      } else {
+                        showSchemaToast(
+                          'No changes were detected in the schema',
+                          'info',
+                        )
+                      }
+                    } catch (err) {
+                      showSchemaToast(
+                        `Error applying schema: ${err instanceof Error ? err.message : 'Unknown error'}`,
+                        'error',
+                      )
+                    }
+                  }
+            }
           />
         ))}
         {(status === 'submitted' || status === 'streaming') && (

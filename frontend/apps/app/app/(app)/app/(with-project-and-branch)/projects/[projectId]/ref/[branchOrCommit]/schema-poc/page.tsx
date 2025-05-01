@@ -6,10 +6,15 @@ import { ERDEditor } from '@/features/schemas/pages/SchemaPage/components/ERDEdi
 import type { Schema } from '@liam-hq/db-structure'
 import { useState } from 'react'
 import styles from './page.module.css'
-import { sampleSchema } from './schema'
+
+const emptySchema: Schema = {
+  tables: {},
+  relationships: {},
+  tableGroups: {},
+}
 
 export default function Page() {
-  const [schema, setSchema] = useState<Schema>(sampleSchema)
+  const [schema, setSchema] = useState<Schema>(emptySchema)
 
   const handleModifySchema = (newSchema: Schema) => {
     // Create a deep copy of the schema to avoid mutating the original

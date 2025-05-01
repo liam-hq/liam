@@ -51,6 +51,7 @@
   border-radius: 6px;
   margin-bottom: 1rem;
   width: 100%;
+  position: relative;
 }
 
 .messageText :global(code) {
@@ -106,4 +107,26 @@
   margin-bottom: 8px;
   white-space: pre-wrap;
   font-family: var(--code-font);
+}
+
+.applyButton {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  padding: 4px 8px;
+  font-size: var(--font-size-1);
+  background-color: var(--primary-accent);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.applyButton:hover {
+  background-color: var(--primary-accent-hover, #0056b3);
+}
+
+.jsonCodeBlock {
+  position: relative;
 }

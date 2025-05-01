@@ -37,10 +37,13 @@
 - [x] Add visual feedback when schema is modified
 
 ## 4. Enhance User Experience (improve UI in schema-poc/page.tsx)
-- [ ] Add loading states during AI processing
-- [ ] Implement syntax highlighting for schema-related terms in chat
-- [ ] Add tooltips explaining available commands
-- [ ] Create example prompts for common schema modifications
-- [ ] Implement error messages for unsupported operations
-- [ ] Add confirmation for destructive schema changes
-- [ ] Create documentation for the AI chat feature
+- [x] Add loading states during AI processing
+- [x] Apply ReactMarkdown to user chat messages in `frontend/apps/app/features/schemas/components/SchemaChat/ChatMessage.tsx` for consistent rendering of markdown content
+
+## 5. Manual Schema Application Feature
+- [x] Modify `SchemaChat.tsx` to disable automatic schema application on message completion
+- [x] Detect and identify JSON code blocks in AI responses
+- [x] Add "Apply" button next to JSON code blocks
+- [x] Implement click handler for Apply button to process schema modifications
+- [x] Style the Apply button to match the application design
+- [x] Add success/error notifications when applying schema changes manually

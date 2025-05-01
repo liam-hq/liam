@@ -27,85 +27,36 @@ export function processSchemaModification(
   message: string,
   currentSchema: Schema,
 ): SchemaModificationResult {
+  // Process each JSON block
   try {
-    // Extract JSON blocks from the AI response
-    const jsonBlocks = extractJsonBlocks(message)
-    if (jsonBlocks.length === 0) {
-      return { schema: currentSchema, modified: false }
-    }
+    const schemaModification = JSON.parse(message)
 
-    // Process each JSON block
-    for (const jsonBlock of jsonBlocks) {
-      try {
-        const schemaModification = JSON.parse(jsonBlock)
+    // Merge schema changes with current schema
+    const updatedSchema = mergeSchemaChanges(currentSchema, schemaModification)
 
-        // Merge schema changes with current schema
-        const updatedSchema = mergeSchemaChanges(
-          currentSchema,
-          schemaModification,
-        )
+    // Ensure the schema is valid before applying changes
+    try {
+      // Validate schema against schemaSchema
+      parse(schemaSchema, updatedSchema)
 
-        // Ensure the schema is valid before applying changes
-        try {
-          // Validate schema against schemaSchema
-          parse(schemaSchema, updatedSchema)
-
-          // If validation passes, return updated schema
-          return { schema: updatedSchema, modified: true }
-        } catch (validationError) {
-          console.error('Schema validation error:', validationError)
-          // Try next JSON block if available
-        }
-      } catch (e) {
-        // Log error and continue to next JSON block
-        console.error('Failed to process schema modification:', e)
-        // Skip to next iteration
-      }
-    }
-
-    // If all JSON blocks fail to process
-    return {
-      schema: currentSchema,
-      modified: false,
-      error: 'No valid schema modifications found',
+      // If validation passes, return updated schema
+      return { schema: updatedSchema, modified: true }
+    } catch (validationError) {
+      console.error('Schema validation error:', validationError)
+      // Try next JSON block if available
     }
   } catch (e) {
-    return {
-      schema: currentSchema,
-      modified: false,
-      error: e instanceof Error ? e.message : 'Unknown error',
-    }
-  }
-}
-
-/**
- * Extract JSON blocks from an AI response message
- * @param message - AI response message
- * @returns Array of extracted JSON strings
- */
-function extractJsonBlocks(message: string): string[] {
-  const blocks: string[] = []
-
-  // Extract JSON from code blocks (```json ... ```)
-  const codeBlockRegex = /```(?:json)?\s*([\s\S]*?)```/g
-  let match: RegExpExecArray | null
-
-  // Use a different approach to avoid assignment in expression
-  match = codeBlockRegex.exec(message)
-  while (match !== null) {
-    blocks.push(match[1].trim())
-    match = codeBlockRegex.exec(message)
+    // Log error and continue to next JSON block
+    console.error('Failed to process schema modification:', e)
+    // Skip to next iteration
   }
 
-  // Extract JSON from [SCHEMA_JSON] ... [/SCHEMA_JSON] format
-  const schemaJsonRegex = /\[SCHEMA_JSON\]([\s\S]*?)\[\/SCHEMA_JSON\]/g
-  match = schemaJsonRegex.exec(message)
-  while (match !== null) {
-    blocks.push(match[1].trim())
-    match = schemaJsonRegex.exec(message)
+  // Return original schema if no valid modifications were found
+  return {
+    schema: currentSchema,
+    modified: false,
+    error: 'No valid schema modifications found in the message',
   }
-
-  return blocks
 }
 
 /**

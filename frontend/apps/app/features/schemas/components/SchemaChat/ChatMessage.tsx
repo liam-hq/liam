@@ -22,6 +22,7 @@ export interface ChatMessageProps {
   isUser: boolean
   timestamp?: Date
   parts?: MessagePart[]
+  onApplySchema?: (jsonSchema: string) => void
 }
 
 export const ChatMessage: FC<ChatMessageProps> = ({
@@ -29,6 +30,7 @@ export const ChatMessage: FC<ChatMessageProps> = ({
   isUser,
   timestamp,
   parts,
+  onApplySchema,
 }) => {
   // Format the timestamp only if it exists
   const formattedTime = timestamp
@@ -37,6 +39,59 @@ export const ChatMessage: FC<ChatMessageProps> = ({
         minute: '2-digit',
       })
     : null
+
+  // Function to detect and extract JSON blocks from the content
+  const _findJsonBlocks = (text: string) => {
+    const jsonBlocks: { start: number; end: number; content: string }[] = []
+    const codeBlockRegex = /```(?:json)?\s*([\s\S]*?)```/g
+
+    let match
+    while ((match = codeBlockRegex.exec(text)) !== null) {
+      jsonBlocks.push({
+        start: match.index,
+        end: match.index + match[0].length,
+        content: match[1].trim(),
+      })
+    }
+
+    return jsonBlocks
+  }
+
+  // Custom renderer for ReactMarkdown to add Apply button to JSON code blocks
+  const customComponents = {
+    pre: ({ children, ...props }: any) => {
+      // Check if this is a JSON code block by examining the children
+      const childProps = children?.props
+      const language = childProps?.className?.replace('language-', '')
+      const isJsonBlock = language === 'json' || !language
+
+      // Try to parse as JSON to ensure it's valid
+      let isValidJson = false
+      try {
+        if (isJsonBlock && childProps?.children) {
+          JSON.parse(childProps.children)
+          isValidJson = true
+        }
+      } catch (_e) {
+        isValidJson = false
+      }
+
+      return (
+        <pre {...props} className={isJsonBlock ? styles.jsonCodeBlock : ''}>
+          {children}
+          {isValidJson && onApplySchema && (
+            <button
+              type="button"
+              className={styles.applyButton}
+              onClick={() => onApplySchema(childProps.children)}
+            >
+              Apply
+            </button>
+          )}
+        </pre>
+      )
+    },
+  }
 
   return (
     <div
@@ -47,9 +102,7 @@ export const ChatMessage: FC<ChatMessageProps> = ({
       <div className={styles.messageContent}>
         {isUser ? (
           <div className={styles.messageText}>
-            <ReactMarkdown remarkPlugins={[remarkGfm]}>
-              {content}
-            </ReactMarkdown>
+            <ReactMarkdown remarkPlugins={[remarkGfm]}>{content}</ReactMarkdown>
           </div>
         ) : (
           <div className={styles.messageText}>
@@ -61,6 +114,9 @@ export const ChatMessage: FC<ChatMessageProps> = ({
                       <ReactMarkdown
                         key={`text-part-${part.text?.substring(0, 20)}-${Math.random().toString(36).substring(2, 9)}`}
                         remarkPlugins={[remarkGfm]}
+                        components={
+                          onApplySchema ? customComponents : undefined
+                        }
                       >
                         {part.text || ''}
                       </ReactMarkdown>
@@ -96,7 +152,10 @@ export const ChatMessage: FC<ChatMessageProps> = ({
                 })}
               </>
             ) : (
-              <ReactMarkdown remarkPlugins={[remarkGfm]}>
+              <ReactMarkdown
+                remarkPlugins={[remarkGfm]}
+                components={onApplySchema ? customComponents : undefined}
+              >
                 {content}
               </ReactMarkdown>
             )}
