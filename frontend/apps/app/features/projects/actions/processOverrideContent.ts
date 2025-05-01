@@ -6,6 +6,7 @@ import { safeParse } from 'valibot'
 
 export async function processOverrideContent(content: string, schema: Schema) {
   const parsedOverrideContent = safeParse(
+    // @ts-ignore
     schemaOverrideSchema,
     JSON.parse(content),
   )

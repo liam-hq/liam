@@ -337,6 +337,9 @@ importers:
       '@liam-hq/erd-core':
         specifier: workspace:*
         version: link:../erd-core
+      '@modelcontextprotocol/sdk':
+        specifier: 1.10.1
+        version: 1.10.1
       '@prisma/internals':
         specifier: 6.6.0
         version: 6.6.0(typescript@5.8.3)

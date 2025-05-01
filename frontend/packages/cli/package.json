@@ -26,6 +26,7 @@
   "dependencies": {
     "@liam-hq/db-structure": "workspace:*",
     "@liam-hq/erd-core": "workspace:*",
+    "@modelcontextprotocol/sdk": "1.10.1",
     "@prisma/internals": "6.6.0",
     "commander": "13.1.0",
     "glob": "11.0.1",
