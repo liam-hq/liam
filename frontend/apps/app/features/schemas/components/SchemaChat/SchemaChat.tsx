@@ -26,7 +26,6 @@ export const SchemaChat: FC<SchemaChatProps> = ({ schema, onSchemaChange }) => {
     status,
     error,
     stop,
-    setMessages,
   } = useChat({
     api: '/api/chat/schema-edit',
     body: {
@@ -34,40 +33,6 @@ export const SchemaChat: FC<SchemaChatProps> = ({ schema, onSchemaChange }) => {
     },
     // Removed the automatic schema modification on message completion
   })
-
-  // Format schema as pretty JSON and filter non-essential properties
-  const formatSchema = (schema: Schema): string => {
-    // Clone the schema to avoid modifying the original
-    const schemaClone = JSON.parse(JSON.stringify(schema))
-
-    // Format the schema JSON with proper indentation
-    return JSON.stringify(schemaClone, null, 2)
-  }
-
-  // Function to format the current schema and add it as a new AI message
-  const handleShowCurrentSchema = () => {
-    // Get the formatted schema
-    const formattedSchema = formatSchema(schema)
-
-    // Create a new AI message with the formatted schema
-    const newMessage = {
-      id: `schema-${Date.now()}`,
-      content: `Here is the current schema:\n\n\`\`\`json\n${formattedSchema}\n\`\`\``,
-      role: 'assistant' as const,
-      createdAt: new Date(),
-    }
-
-    // Add the new message to the chat
-    setMessages([...messages, newMessage])
-
-    // Show notification
-    showSchemaToast('Current schema displayed in chat', 'info')
-
-    // Scroll to the new message
-    setTimeout(() => {
-      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-    }, 100)
-  }
 
   // Scroll to bottom once component is mounted
   useEffect(() => {
@@ -85,13 +50,6 @@ export const SchemaChat: FC<SchemaChatProps> = ({ schema, onSchemaChange }) => {
     <div className={styles.chatContainer}>
       <div className={styles.chatHeader}>
         <h2 className={styles.chatTitle}>Schema Assistant</h2>
-        <button
-          type="button"
-          className={styles.schemaButton}
-          onClick={handleShowCurrentSchema}
-        >
-          Show Current Schema
-        </button>
       </div>
 
       <div className={styles.messagesContainer}>
