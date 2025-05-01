@@ -96,6 +96,14 @@
 
 3. **🔄 ER図表示の拡張** (進行中)
    - tables.addで追加命令されたテーブルのノードは、緑色ではなく青色で表示。
+     - 現状分析：
+       - `convertSchemaToNodes.ts`では、`tables.add`で追加されたテーブルに`type: 'requestedTable'`が設定されている
+       - `ERDContent.tsx`の`nodeTypes`マッピングには`'requestedTable'`タイプのコンポーネントが登録されていない
+       - 現在の`TableNode`コンポーネントは、ホバーまたはアクティブ時に緑色のハイライト（`box-shadow: 0px 0px 20px 0px rgba(29, 237, 131, 0.4)`）が適用されている
+     - 実装計画：
+       1. `RequestedTableNode`コンポーネントの作成（`TableNode`をベースに青色スタイリングを適用）
+       2. `ERDContent.tsx`の`nodeTypes`マッピングに`requestedTable: RequestedTableNode`を追加
+       3. 青色スタイリングの適用（`rgba(29, 237, 131, 0.4)`を青色の値に変更）
    - リクエストされたテーブル/リレーションシップをER図に表示する機能を追加
    - ステータスに応じた視覚的表現を実装（例：「TODO」バッジ）
    - 既存のテーブルへの変更リクエストの表示方法を実装
