@@ -184,6 +184,9 @@ requests:
                 name: "last_login"
                 type: "timestamp"
                 default: null
+                check: null
+                primary: false
+                unique: false
                 notNull: false
                 comment: "User's last login timestamp"
               reason: "Track user activity for security monitoring"
@@ -193,6 +196,9 @@ requests:
                 name: "login_count"
                 type: "integer"
                 default: "0"
+                check: null
+                primary: false
+                unique: false
                 notNull: true
                 comment: "Number of times user has logged in"
               reason: "Track user engagement metrics"
