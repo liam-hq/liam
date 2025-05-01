@@ -2,7 +2,7 @@
 
 import { useChat } from '@ai-sdk/react'
 import type { Schema } from '@liam-hq/db-structure'
-import { type FC, type FormEvent, useEffect, useRef } from 'react'
+import { type FC, type FormEvent, useEffect, useRef, type ChangeEvent } from 'react'
 import { processSchemaModification } from '../../utils/SchemaModifier'
 import { showSchemaToast } from '../../utils/SchemaToast'
 import { ChatInput } from '../SchemaChat/ChatInput'
@@ -89,7 +89,11 @@ export const SchemaChat: FC<SchemaChatProps> = ({ schema, onSchemaChange }) => {
                           'error',
                         )
                         // Add error to input for AI to see
-                        handleInputChange({ target: { value: `Failed to apply schema: ${error}. Please fix this issue and provide a corrected schema.` } } as any)
+                        handleInputChange({ 
+                          target: { 
+                            value: `Failed to apply schema: ${error}. Please fix this issue and provide a corrected schema.` 
+                          } 
+                        } as ChangeEvent<HTMLTextAreaElement>)
                       } else {
                         showSchemaToast(
                           'No changes were detected in the schema',
@@ -104,7 +108,11 @@ export const SchemaChat: FC<SchemaChatProps> = ({ schema, onSchemaChange }) => {
                         'error',
                       )
                       // Add error to input for AI to see
-                      handleInputChange({ target: { value: `Error applying schema: ${errorMessage}. Please provide a valid schema that fixes this issue.` } } as any)
+                      handleInputChange({ 
+                        target: { 
+                          value: `Error applying schema: ${errorMessage}. Please provide a valid schema that fixes this issue.` 
+                        } 
+                      } as ChangeEvent<HTMLTextAreaElement>)
                     }
                   }
             }

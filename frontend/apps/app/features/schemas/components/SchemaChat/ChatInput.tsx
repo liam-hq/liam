@@ -2,13 +2,13 @@
 
 import { Button } from '@liam-hq/ui'
 import { SendIcon } from 'lucide-react'
-import { 
-  type ChangeEventHandler, 
-  type FC, 
-  type KeyboardEvent, 
-  useEffect, 
-  useRef, 
-  useState 
+import {
+  type ChangeEventHandler,
+  type FC,
+  type KeyboardEvent,
+  useEffect,
+  useRef,
+  useState
 } from 'react'
 import styles from './ChatInput.module.css'
 
@@ -28,28 +28,28 @@ export const ChatInput: FC<ChatInputProps> = ({
   const [isComposing, setIsComposing] = useState(false)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
-  // Auto-resize the textarea based on content
-  const adjustTextareaHeight = () => {
-    const textarea = textareaRef.current
-    if (textarea) {
-      // Reset height to auto to get the correct scrollHeight
-      textarea.style.height = 'auto'
-      
-      // Set the height to scrollHeight to fit the content
-      // Set max-height to prevent excessive growth
-      const maxHeight = 200 // Maximum height in pixels
-      const scrollHeight = Math.min(textarea.scrollHeight, maxHeight)
-      textarea.style.height = `${scrollHeight}px`
-      
-      // If content exceeds maxHeight, enable scrolling
-      textarea.style.overflowY = textarea.scrollHeight > maxHeight ? 'auto' : 'hidden'
-    }
-  }
-
   // Adjust height when value changes
   useEffect(() => {
+    // Auto-resize the textarea based on content
+    const adjustTextareaHeight = () => {
+      const textarea = textareaRef.current
+      if (textarea) {
+        // Reset height to auto to get the correct scrollHeight
+        textarea.style.height = 'auto'
+
+        // Set the height to scrollHeight to fit the content
+        // Set max-height to prevent excessive growth
+        const maxHeight = 200 // Maximum height in pixels
+        const scrollHeight = Math.min(textarea.scrollHeight, maxHeight)
+        textarea.style.height = `${scrollHeight}px`
+
+        // If content exceeds maxHeight, enable scrolling
+        textarea.style.overflowY = textarea.scrollHeight > maxHeight ? 'auto' : 'hidden'
+      }
+    }
+
     adjustTextareaHeight()
-  }, [value])
+  }, [])
 
   const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
     // Don't submit if Shift is pressed or if currently composing (IME input)
@@ -66,10 +66,7 @@ export const ChatInput: FC<ChatInputProps> = ({
       <textarea
         ref={textareaRef}
         value={value}
-        onChange={(e) => {
-          onChange(e)
-          adjustTextareaHeight() // Adjust height on every change
-        }}
+        onChange={onChange}
         onKeyDown={handleKeyDown}
         onCompositionStart={() => setIsComposing(true)}
         onCompositionEnd={() => setIsComposing(false)}
