@@ -9,7 +9,7 @@ import {
 import { Check, ChevronDown } from 'lucide-react'
 import type { FC } from 'react'
 import styles from './AgentSelect.module.css'
-import { BuildJackIcon, FixJackIcon } from './icons'
+import { BuildJackIcon, FixJackIcon, LearnJackIcon } from './icons'
 
 interface AgentSelectProps {
   mode: 'plan' | 'act'
@@ -30,7 +30,7 @@ export const AgentSelect: FC<AgentSelectProps> = ({ mode, onModeChange }) => {
               <BuildJackIcon size={16} />
             </span>
             <span className={styles.agentName}>
-              {mode === 'plan' ? 'Build Jack' : 'Act Jack'}
+              {mode === 'plan' ? 'Build Jack' : 'Review Jack'}
             </span>
             <span className={`${styles.iconContainer} ${styles.chevronIcon}`}>
               <ChevronDown size={16} />
@@ -68,12 +68,21 @@ export const AgentSelect: FC<AgentSelectProps> = ({ mode, onModeChange }) => {
             >
               <FixJackIcon size={16} />
             </span>
-            <span>Act Jack</span>
+            <span>Review Jack</span>
             {mode === 'act' && (
               <span className={styles.checkIcon}>
                 <Check size={16} />
               </span>
             )}
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            className={styles.agentMenuItem}
+            onSelect={() => {}}
+          >
+            <span className={`${styles.iconContainer} ${styles.learnJackIcon}`}>
+              <LearnJackIcon size={16} />
+            </span>
+            <span>Learn Jack</span>
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenuRoot>
