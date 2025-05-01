@@ -2,71 +2,54 @@
 
 import type React from 'react'
 import { useCallback, useEffect, useRef, useState } from 'react'
-import styles from './AgentMention.module.css'
+import type { SchemaData, TableGroupData } from '../../../../app/api/chat/route'
+import styles from './SchemaItemMention.module.css'
+import type { SchemaItem } from './utils/schemaItemsAdapter'
+import { convertSchemaToMentionItems } from './utils/schemaItemsAdapter'
 
-// Define the agent data structure
-interface Agent {
-  id: string
-  label: string
-  description: string
-  agentType: string // Corresponding AgentType value
-}
-
-// Define the list of available agents
-const AGENTS: Agent[] = [
-  {
-    id: 'builder',
-    label: 'builder',
-    description: 'Designs table structures',
-    agentType: 'build',
-  },
-  {
-    id: 'reviewer',
-    label: 'reviewer',
-    description: 'Reviews schemas',
-    agentType: 'review',
-  },
-  {
-    id: 'learn',
-    label: 'learn',
-    description: 'Learns context and responds accordingly',
-    agentType: 'learn',
-  },
-]
-
-interface AgentMentionProps {
+interface SchemaItemMentionProps {
   inputValue: string
   cursorPosition: number
-  onSelect: (
-    agentId: string,
-    agentType: string,
-    startPos: number,
-    endPos: number,
-  ) => void
+  schemaData: SchemaData
+  tableGroups?: Record<string, TableGroupData>
+  onSelect: (itemId: string, startPos: number, endPos: number) => void
   onClose: () => void
   containerRef: React.RefObject<HTMLDivElement>
+  prioritizeTableGroups?: boolean
+  type?: 'table' | 'tableGroup' | 'column' | null
 }
 
-export const AgentMention: React.FC<AgentMentionProps> = ({
+export const SchemaItemMention: React.FC<SchemaItemMentionProps> = ({
   inputValue,
   cursorPosition,
+  schemaData,
+  tableGroups,
   onSelect,
   onClose,
   containerRef,
+  prioritizeTableGroups = false,
+  type = null,
 }) => {
   const [isVisible, setIsVisible] = useState(false)
   const [mentionQuery, setMentionQuery] = useState('')
-  const [filteredAgents, setFilteredAgents] = useState<Agent[]>(AGENTS)
+  const [allItems, setAllItems] = useState<SchemaItem[]>([])
+  const [filteredItems, setFilteredItems] = useState<SchemaItem[]>([])
   const [selectedIndex, setSelectedIndex] = useState(0)
   const [mentionStartIndex, setMentionStartIndex] = useState(-1)
   const dropdownRef = useRef<HTMLDivElement>(null)
 
+  // Initialize all items from schema data
+  useEffect(() => {
+    if (schemaData) {
+      const items = convertSchemaToMentionItems(schemaData, tableGroups)
+      setAllItems(items)
+    }
+  }, [schemaData, tableGroups])
+
   // Function to detect if we're in a mention context and extract the query
   const detectMention = useCallback(() => {
-    // Always set isVisible to true since the component is only rendered when mentionType is 'agent'
-    setIsVisible(true)
-
     if (cursorPosition <= 0 || inputValue.length === 0) {
+      setIsVisible(false)
       return
     }
 
@@ -84,6 +67,7 @@ export const AgentMention: React.FC<AgentMentionProps> = ({
     }
 
     if (startIndex === -1) {
+      setIsVisible(false)
       return
     }
 
@@ -91,18 +75,61 @@ export const AgentMention: React.FC<AgentMentionProps> = ({
     const query = inputValue.substring(startIndex + 1, cursorPosition)
     setMentionQuery(query)
     setMentionStartIndex(startIndex)
+    setIsVisible(true)
   }, [inputValue, cursorPosition])
 
-  // Filter agents based on the query
+  // Filter items based on the query and type
   useEffect(() => {
-    if (!isVisible) return
+    if (!isVisible) {
+      return
+    }
 
-    const filtered = AGENTS.filter((agent) =>
-      agent.label.toLowerCase().includes(mentionQuery.toLowerCase()),
-    )
-    setFilteredAgents(filtered)
+    // First filter items by query, but skip for special keywords
+    let filtered = allItems
+
+    // Special keywords that should skip query filtering
+    const specialQueries = ['table', 'column', 'group']
+    const normalizedQuery = mentionQuery.toLowerCase().trim()
+
+    const skipQueryFilter =
+      type &&
+      (specialQueries.some(
+        (q) => normalizedQuery === q || normalizedQuery.startsWith(`${q} `),
+      ) ||
+        normalizedQuery === '')
+
+    if (!skipQueryFilter) {
+      // Normal query filtering
+      filtered = filtered.filter((item) =>
+        item.label.toLowerCase().includes(mentionQuery.toLowerCase()),
+      )
+    }
+
+    // If type is specified, filter by type
+    if (type) {
+      // Add type mapping to ensure correct filtering
+      const typeMap = {
+        table: 'table',
+        tableGroup: 'tableGroup',
+        column: 'column',
+      } as const
+
+      const typeToMatch = typeMap[type]
+      filtered = filtered.filter((item) => item.type === typeToMatch)
+    }
+
+    // If prioritizeTableGroups is true, sort to put table groups first
+    if (prioritizeTableGroups) {
+      filtered = [...filtered].sort((a, b) => {
+        if (a.type === 'tableGroup' && b.type !== 'tableGroup') return -1
+        if (a.type !== 'tableGroup' && b.type === 'tableGroup') return 1
+        return 0
+      })
+    }
+
+    setFilteredItems(filtered)
     setSelectedIndex(0) // Reset selection when filter changes
-  }, [mentionQuery, isVisible])
+  }, [mentionQuery, isVisible, allItems, prioritizeTableGroups, type])
 
   // Detect mention when input or cursor changes
   useEffect(() => {
@@ -118,7 +145,7 @@ export const AgentMention: React.FC<AgentMentionProps> = ({
         case 'ArrowDown':
           e.preventDefault()
           setSelectedIndex((prev) =>
-            prev < filteredAgents.length - 1 ? prev + 1 : prev,
+            prev < filteredItems.length - 1 ? prev + 1 : prev,
           )
           break
         case 'ArrowUp':
@@ -127,11 +154,10 @@ export const AgentMention: React.FC<AgentMentionProps> = ({
           break
         case 'Enter':
           e.preventDefault()
-          if (filteredAgents.length > 0) {
-            const selectedAgent = filteredAgents[selectedIndex]
+          if (filteredItems.length > 0) {
+            const selectedItem = filteredItems[selectedIndex]
             onSelect(
-              selectedAgent.id,
-              selectedAgent.agentType,
+              selectedItem.id,
               mentionStartIndex,
               mentionStartIndex + mentionQuery.length + 1,
             )
@@ -145,7 +171,7 @@ export const AgentMention: React.FC<AgentMentionProps> = ({
     },
     [
       isVisible,
-      filteredAgents,
+      filteredItems,
       selectedIndex,
       mentionStartIndex,
       mentionQuery,
@@ -181,12 +207,12 @@ export const AgentMention: React.FC<AgentMentionProps> = ({
     }
   }, [onClose, containerRef])
 
-  // If no filtered agents, show all agents
-  if (filteredAgents.length === 0) {
-    setFilteredAgents(AGENTS)
+  // If not visible or no filtered items, don't render
+  if (!isVisible || filteredItems.length === 0) {
+    return null
   }
 
-  // Highlight matching text in agent label
+  // Highlight matching text in item label
   const highlightMatch = (text: string, query: string) => {
     if (!query) return text
 
@@ -209,17 +235,16 @@ export const AgentMention: React.FC<AgentMentionProps> = ({
 
   return (
     <div className={styles.mentionDropdown} ref={dropdownRef}>
-      {filteredAgents.length > 0 ? (
-        filteredAgents.map((agent, index) => (
+      {filteredItems.length > 0 ? (
+        filteredItems.map((item, index) => (
           <div
-            key={agent.id}
+            key={item.id}
             className={`${styles.mentionItem} ${
               index === selectedIndex ? styles.selected : ''
             }`}
             onClick={() =>
               onSelect(
-                agent.id,
-                agent.agentType,
+                item.id,
                 mentionStartIndex,
                 mentionStartIndex + mentionQuery.length + 1,
               )
@@ -228,8 +253,7 @@ export const AgentMention: React.FC<AgentMentionProps> = ({
               if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault()
                 onSelect(
-                  agent.id,
-                  agent.agentType,
+                  item.id,
                   mentionStartIndex,
                   mentionStartIndex + mentionQuery.length + 1,
                 )
@@ -241,13 +265,14 @@ export const AgentMention: React.FC<AgentMentionProps> = ({
             onMouseEnter={() => setSelectedIndex(index)}
           >
             <div className={styles.mentionName}>
-              @{highlightMatch(agent.label, mentionQuery)}
+              <span className={styles[item.type]}>{item.icon}</span>{' '}
+              {highlightMatch(item.label, mentionQuery)}
             </div>
-            <div className={styles.mentionDescription}>{agent.description}</div>
+            <div className={styles.mentionDescription}>{item.description}</div>
           </div>
         ))
       ) : (
-        <div className={styles.noResults}>No matching agents found</div>
+        <div className={styles.noResults}>No matching items found</div>
       )}
     </div>
   )

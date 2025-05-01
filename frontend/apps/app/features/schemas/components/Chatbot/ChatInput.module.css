@@ -14,6 +14,12 @@
   width: 100%;
 }
 
+.buttonGroup {
+  display: flex;
+  gap: var(--spacing-1);
+  align-items: center;
+}
+
 .mentionButton {
   min-width: unset;
   height: unset;
@@ -21,6 +27,32 @@
   background-color: transparent;
   border: none;
   color: var(--color-gray-0);
+}
+
+.micButton {
+  min-width: unset;
+  height: unset;
+  padding: var(--spacing-1);
+  background-color: transparent;
+  border: none;
+  color: var(--color-gray-0);
+}
+
+.recording {
+  color: var(--color-red-500);
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+  100% {
+    opacity: 1;
+  }
 }
 
 .inputContainer {
