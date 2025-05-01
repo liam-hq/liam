@@ -246,6 +246,8 @@ export const ChatbotDrawer: FC<ChatbotDrawerProps> = ({
               // Handle mention click - can be implemented later
               // For now, this is a placeholder for future functionality
             }}
+            schemaData={schemaData}
+            tableGroups={tableGroups}
           />
         </div>
       </DrawerContent>
