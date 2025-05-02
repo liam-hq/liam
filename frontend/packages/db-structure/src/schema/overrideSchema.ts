@@ -68,7 +68,9 @@ const changeTableOperationSchema = v.object({
   type: v.literal('changeTable'),
   changeTable: changeTableSchema,
 })
-export type ChangeTableOperation = v.InferOutput<typeof changeTableOperationSchema>
+export type ChangeTableOperation = v.InferOutput<
+  typeof changeTableOperationSchema
+>
 
 // Column operation schemas
 const addColumnSchema = columnSchema
@@ -103,7 +105,9 @@ const changeColumnOperationSchema = v.object({
   type: v.literal('changeColumn'),
   changeColumn: changeColumnSchema,
 })
-export type ChangeColumnOperation = v.InferOutput<typeof changeColumnOperationSchema>
+export type ChangeColumnOperation = v.InferOutput<
+  typeof changeColumnOperationSchema
+>
 
 // Define schema for updating a column with partial properties
 const updateColumnPropertiesSchema = v.partial(
@@ -323,23 +327,23 @@ export function overrideSchema(
         case 'changeTable': {
           const { changeTable } = operation
           const { oldTableName, newTableName } = changeTable
-          
+
           // Validate old table exists
           if (!result.tables[oldTableName]) {
             throw new Error(`Cannot rename non-existent table: ${oldTableName}`)
           }
-          
+
           // Validate new table name doesn't already exist
           if (result.tables[newTableName]) {
             throw new Error(`Cannot rename to existing table: ${newTableName}`)
           }
-          
+
           // Copy the table with the new name
           result.tables[newTableName] = {
             ...result.tables[oldTableName],
             name: newTableName,
           }
-          
+
           // Update any relationships that reference this table
           for (const [relationshipName, relationship] of Object.entries(
             result.relationships,
@@ -357,25 +361,27 @@ export function overrideSchema(
               }
             }
           }
-          
+
           // Update any table groups that reference this table
           for (const groupName in result.tableGroups) {
             if (result.tableGroups[groupName]?.tables) {
               result.tableGroups[groupName].tables = result.tableGroups[
                 groupName
-              ].tables.map((name) => (name === oldTableName ? newTableName : name))
+              ].tables.map((name) =>
+                name === oldTableName ? newTableName : name,
+              )
             }
           }
-          
+
           // Also update the tableGroups variable that will be returned
           for (const groupName in tableGroups) {
             if (tableGroups[groupName]?.tables) {
-              tableGroups[groupName].tables = tableGroups[
-                groupName
-              ].tables.map((name) => (name === oldTableName ? newTableName : name))
+              tableGroups[groupName].tables = tableGroups[groupName].tables.map(
+                (name) => (name === oldTableName ? newTableName : name),
+              )
             }
           }
-          
+
           // Delete the old table
           delete result.tables[oldTableName]
           break
@@ -478,34 +484,34 @@ export function overrideSchema(
         case 'changeColumn': {
           const { changeColumn } = operation
           const { tableName, oldColumnName, newColumnName } = changeColumn
-          
+
           // Validate table exists
           if (!result.tables[tableName]) {
             throw new Error(
               `Cannot rename column in non-existent table: ${tableName}`,
             )
           }
-          
+
           // Validate old column exists
           if (!result.tables[tableName].columns[oldColumnName]) {
             throw new Error(
               `Cannot rename non-existent column: ${oldColumnName} in table ${tableName}`,
             )
           }
-          
+
           // Validate new column name doesn't already exist
           if (result.tables[tableName].columns[newColumnName]) {
             throw new Error(
               `Cannot rename to existing column: ${newColumnName} in table ${tableName}`,
             )
           }
-          
+
           // Copy column with new name
           result.tables[tableName].columns[newColumnName] = {
             ...result.tables[tableName].columns[oldColumnName],
             name: newColumnName,
           }
-          
+
           // Update any relationships that reference this column
           for (const [relationshipName, relationship] of Object.entries(
             result.relationships,
@@ -529,7 +535,7 @@ export function overrideSchema(
               }
             }
           }
-          
+
           // Update any indexes that reference this column
           for (const indexName in result.tables[tableName].indexes) {
             const index = result.tables[tableName].indexes[indexName]
@@ -539,7 +545,7 @@ export function overrideSchema(
               )
             }
           }
-          
+
           // Update any constraints that reference this column
           for (const [constraintName, constraint] of Object.entries(
             result.tables[tableName].constraints,
@@ -549,10 +555,12 @@ export function overrideSchema(
               constraint.columnName === oldColumnName
             ) {
               // This is a type assertion to handle the fact that columnName might not exist on all constraint types
-              (result.tables[tableName].constraints[constraintName] as any).columnName = newColumnName
+              ;(
+                result.tables[tableName].constraints[constraintName] as any
+              ).columnName = newColumnName
             }
           }
-          
+
           // Delete the old column
           delete result.tables[tableName].columns[oldColumnName]
           break

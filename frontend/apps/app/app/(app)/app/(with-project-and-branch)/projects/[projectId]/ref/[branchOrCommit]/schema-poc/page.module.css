@@ -65,7 +65,7 @@
 }
 
 /* アクティブなタブ */
-.tabButton[data-state="active"] {
+.tabButton[data-state='active'] {
   color: var(--primary-accent);
   border-bottom: 2px solid var(--primary-accent);
   font-weight: 500;
@@ -146,6 +146,10 @@
   overflow: hidden;
   border: 1px solid var(--position-pattern-border);
   border-radius: 6px;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0; /* これが重要: flexコンテナの中でスクロール可能な要素を作るために必要 */
 }
 
 .errorMessage {

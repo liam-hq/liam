@@ -48,7 +48,7 @@ const customCursorTheme = EditorView.theme({
     animation: 'slow-blink 1s steps(2, start) infinite',
   },
   '.cm-editor': {
-    height: '100%', 
+    height: '100%',
     maxHeight: '100%',
   },
   '.cm-scroller': {

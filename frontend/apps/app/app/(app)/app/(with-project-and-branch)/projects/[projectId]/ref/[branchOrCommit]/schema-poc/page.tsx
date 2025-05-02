@@ -153,13 +153,18 @@ export default function Page() {
             overrideYaml={overrideYaml}
             onOverrideChange={(newOverrideYaml) => {
               // 変更前にオーバーライドの適用テストを行う
-              const validationResult = applySchemaOverride(baseSchema, newOverrideYaml);
+              const validationResult = applySchemaOverride(
+                baseSchema,
+                newOverrideYaml,
+              )
               if (!validationResult.success) {
                 // エラーがある場合は例外をスロー
-                throw new Error(`オーバーライドの適用に失敗しました: ${validationResult.error}`);
+                throw new Error(
+                  `オーバーライドの適用に失敗しました: ${validationResult.error}`,
+                )
               }
               // 問題なければオーバーライドを適用
-              setOverrideYaml(newOverrideYaml);
+              setOverrideYaml(newOverrideYaml)
             }}
           />
         </div>

@@ -1694,8 +1694,12 @@ describe('overrideSchema', () => {
 
       // Relationship should be updated with the new table name
       expect(schema.relationships['posts_users']).toBeDefined()
-      expect(schema.relationships['posts_users']?.primaryTableName).toBe('accounts')
-      expect(schema.relationships['posts_users']?.foreignTableName).toBe('posts')
+      expect(schema.relationships['posts_users']?.primaryTableName).toBe(
+        'accounts',
+      )
+      expect(schema.relationships['posts_users']?.foreignTableName).toBe(
+        'posts',
+      )
     })
 
     it('should update table groups when renaming a table', () => {
@@ -1725,7 +1729,10 @@ describe('overrideSchema', () => {
         },
       }
 
-      const { schema, tableGroups } = overrideSchema(schemaWithTableGroup, override)
+      const { schema, tableGroups } = overrideSchema(
+        schemaWithTableGroup,
+        override,
+      )
 
       // Table group should reference the new table name
       expect(tableGroups['auth']).toBeDefined()
@@ -1813,7 +1820,9 @@ describe('overrideSchema', () => {
       // New column should be present
       expect(schema.tables['users']?.columns['login']).toBeDefined()
       expect(schema.tables['users']?.columns['login']?.type).toBe('varchar')
-      expect(schema.tables['users']?.columns['login']?.comment).toBe('Unique username')
+      expect(schema.tables['users']?.columns['login']?.comment).toBe(
+        'Unique username',
+      )
     })
 
     it('should update relationships when renaming a column', () => {
@@ -1836,10 +1845,16 @@ describe('overrideSchema', () => {
 
       // Relationship should be updated with the new column name
       expect(schema.relationships['posts_users']).toBeDefined()
-      expect(schema.relationships['posts_users']?.primaryTableName).toBe('users')
+      expect(schema.relationships['posts_users']?.primaryTableName).toBe(
+        'users',
+      )
       expect(schema.relationships['posts_users']?.primaryColumnName).toBe('id')
-      expect(schema.relationships['posts_users']?.foreignTableName).toBe('posts')
-      expect(schema.relationships['posts_users']?.foreignColumnName).toBe('author_id')
+      expect(schema.relationships['posts_users']?.foreignTableName).toBe(
+        'posts',
+      )
+      expect(schema.relationships['posts_users']?.foreignColumnName).toBe(
+        'author_id',
+      )
     })
 
     it('should update indexes when renaming a column', () => {
@@ -1861,9 +1876,15 @@ describe('overrideSchema', () => {
       const { schema } = overrideSchema(originalSchema, override)
 
       // Index should be updated with the new column name
-      expect(schema.tables['users']?.indexes['users_username_idx']).toBeDefined()
-      expect(schema.tables['users']?.indexes['users_username_idx']?.columns).toContain('login')
-      expect(schema.tables['users']?.indexes['users_username_idx']?.columns).not.toContain('username')
+      expect(
+        schema.tables['users']?.indexes['users_username_idx'],
+      ).toBeDefined()
+      expect(
+        schema.tables['users']?.indexes['users_username_idx']?.columns,
+      ).toContain('login')
+      expect(
+        schema.tables['users']?.indexes['users_username_idx']?.columns,
+      ).not.toContain('username')
     })
 
     it('should throw an error when trying to rename a column in a non-existent table', () => {
