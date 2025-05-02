@@ -14,12 +14,29 @@ import {
   useEffect,
   useState,
 } from 'react'
+
 import { parse } from 'valibot'
 import styles from './ERDEditor.module.css'
+
+// Define a simplified type for implementation requests
+type ProcessedRequests = {
+  // biome-ignore lint/suspicious/noExplicitAny: needed for poc
+  openRequests: any[]
+  // biome-ignore lint/suspicious/noExplicitAny: needed for poc
+  inProgressRequests: any[]
+  // biome-ignore lint/suspicious/noExplicitAny: needed for poc
+  doneRequests: any[]
+  // biome-ignore lint/suspicious/noExplicitAny: needed for poc
+  wontfixRequests: any[]
+  // Required by erd-core's ProcessedRequests type
+  // biome-ignore lint/suspicious/noExplicitAny: needed for poc
+  allRequests: any[]
+}
 
 type Props = {
   schema: Schema
   tableGroups?: Record<string, TableGroup>
+  implementationRequests?: ProcessedRequests
   errorObjects: ComponentProps<typeof ERDRenderer>['errorObjects']
   defaultSidebarOpen: boolean
   defaultPanelSizes?: number[]
@@ -30,6 +47,7 @@ type Props = {
 export const ERDEditor: FC<Props> = ({
   schema,
   tableGroups: initialTableGroups = {},
+  implementationRequests,
   errorObjects,
   defaultSidebarOpen,
   defaultPanelSizes = [20, 80],
@@ -43,6 +61,20 @@ export const ERDEditor: FC<Props> = ({
   useEffect(() => {
     initSchemaStore(schema)
   }, [schema])
+
+  // Transform implementation requests to include allRequests property if needed
+  const processedImplementationRequests = implementationRequests
+    ? {
+        ...implementationRequests,
+        // Combine all request types into a single array if allRequests is not already provided
+        allRequests: implementationRequests.allRequests || [
+          ...(implementationRequests.openRequests || []),
+          ...(implementationRequests.inProgressRequests || []),
+          ...(implementationRequests.doneRequests || []),
+          ...(implementationRequests.wontfixRequests || []),
+        ],
+      }
+    : undefined
 
   // Handler for commit & push button
   const handleCommitAndPush = useCallback(async () => {
@@ -99,6 +131,7 @@ export const ERDEditor: FC<Props> = ({
           defaultPanelSizes={defaultPanelSizes}
           errorObjects={errorObjects}
           tableGroups={tableGroups}
+          implementationRequests={processedImplementationRequests}
           onAddTableGroup={addTableGroup}
         />
         {canUpdateFile && (

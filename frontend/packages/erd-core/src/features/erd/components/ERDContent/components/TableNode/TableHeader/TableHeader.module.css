@@ -28,6 +28,10 @@
   white-space: nowrap;
 }
 
+.statusBadge {
+  margin-left: 8px;
+}
+
 .handle {
   top: auto;
   opacity: 0;

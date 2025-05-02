@@ -1,3 +1,4 @@
+# Current schema overrides
 overrides:
   tableGroups:
     GitHub:
@@ -5,8 +6,6 @@ overrides:
       tables:
         - github_repositories
         - github_pull_requests
-        - schema_file_paths
-        - doc_file_paths
         - github_pull_request_comments
       comment: "Tables related to GitHub. All tables in this group should have a GitHub prefix. External tables must not depend on these tables (e.g., no pullRequestId foreign keys in tables outside this group)."
     Organization:
@@ -25,7 +24,211 @@ overrides:
           comment: "GitHub's repository ID. Maps to 'repository.id' in Octokit and 'Repository.databaseId' in GraphQL API."
     github_pull_requests:
       comment: "GitHub pull requests table with github_ prefix pattern. Should be updated to have migration_id instead of migrations having pull_request_id."
+      # Example of adding a new column to an existing table
+      # addColumns:
+      #   created_at:
+      #     name: "created_at"
+      #     type: "timestamp"
+      #     default: "now()"
+      #     check: null
+      #     primary: false
+      #     unique: false
+      #     notNull: true
+      #     comment: "Creation timestamp for the pull request"
     github_pull_request_comments:
       comment: "Stores GitHub comment information for pull requests, maintaining a 1:1 relationship with github_pull_requests"
     migration_pull_request_mappings:
       comment: "Maps migrations to GitHub pull requests in a one-to-one relationship, isolating GitHub dependencies"
+  # Example of adding a completely new table
+  # addTables:
+  #   documentation:
+  #     name: "documentation"
+  #     comment: "Documentation resources for repositories"
+  #     columns:
+  #       id:
+  #         name: "id"
+  #         type: "uuid"
+  #         default: null
+  #         check: null
+  #         primary: true
+  #         unique: true
+  #         notNull: true
+  #         comment: "Primary key"
+  #       repository_id:
+  #         name: "repository_id"
+  #         type: "uuid"
+  #         default: null
+  #         check: null
+  #         primary: false
+  #         unique: false
+  #         notNull: true
+  #         comment: "Foreign key to github_repositories"
+  #       title:
+  #         name: "title"
+  #         type: "varchar"
+  #         default: null
+  #         check: null
+  #         primary: false
+  #         unique: false
+  #         notNull: true
+  #         comment: "Documentation title"
+  #       content:
+  #         name: "content"
+  #         type: "text"
+  #         default: null
+  #         check: null
+  #         primary: false
+  #         unique: false
+  #         notNull: true
+  #         comment: "Documentation content"
+  #     indexes: {}
+  #     constraints: {}
+
+  # Example of adding a new relationship
+  # addRelationships:
+  #   documentation_repository_fk:
+  #     name: "documentation_repository_fk"
+  #     primaryTableName: "github_repositories"
+  #     primaryColumnName: "id"
+  #     foreignTableName: "documentation"
+  #     foreignColumnName: "repository_id"
+  #     cardinality: "ONE_TO_MANY"
+  #     updateConstraint: "CASCADE"
+  #     deleteConstraint: "CASCADE"
+
+# Implementation requests for future changes
+requests:
+  - id: "REQ-2025-05-01-001"
+    description: "Add analytics tracking for repositories"
+    status: "done"
+    tables:
+      add:
+        repository_analytics:
+          definition:
+            name: "repository_analytics"
+            columns:
+              id:
+                name: "id"
+                type: "uuid"
+                default: null
+                check: null
+                primary: true
+                unique: true
+                notNull: true
+                comment: "Primary key"
+              repository_id:
+                name: "repository_id"
+                type: "uuid"
+                default: null
+                check: null
+                primary: false
+                unique: false
+                notNull: true
+                comment: "Foreign key to github_repositories"
+              views_count:
+                name: "views_count"
+                type: "integer"
+                default: "0"
+                check: null
+                primary: false
+                unique: false
+                notNull: true
+                comment: "Number of repository views"
+              clones_count:
+                name: "clones_count"
+                type: "integer"
+                default: "0"
+                check: null
+                primary: false
+                unique: false
+                notNull: true
+                comment: "Number of repository clones"
+              last_updated:
+                name: "last_updated"
+                type: "timestamp"
+                default: "now()"
+                check: null
+                primary: false
+                unique: false
+                notNull: true
+                comment: "Last update timestamp"
+            indexes: {}
+            constraints: {}
+    relationships:
+      add:
+        analytics_repository_fk:
+          definition:
+            name: "analytics_repository_fk"
+            primaryTableName: "github_repositories"
+            primaryColumnName: "id"
+            foreignTableName: "repository_analytics"
+            foreignColumnName: "repository_id"
+            cardinality: "ONE_TO_ONE"
+            updateConstraint: "CASCADE"
+            deleteConstraint: "CASCADE"
+    createdBy: "hoshinotsuyoshi"
+    createdAt: "2025-05-01T06:50:00Z"
+    refs:
+      issue: "456"
+      commit: null
+
+  - id: "REQ-2025-05-01-002"
+    description: "Improve user table with additional fields"
+    status: "in_progress"
+    tables:
+      alter:
+        users:
+          changes:
+            - type: "add_column"
+              definition:
+                name: "last_login"
+                type: "timestamp"
+                default: null
+                check: null
+                primary: false
+                unique: false
+                notNull: false
+                comment: "User's last login timestamp"
+              reason: "Track user activity for security monitoring"
+            
+            - type: "add_column"
+              definition:
+                name: "login_count"
+                type: "integer"
+                default: "0"
+                check: null
+                primary: false
+                unique: false
+                notNull: true
+                comment: "Number of times user has logged in"
+              reason: "Track user engagement metrics"
+            
+            - type: "modify_column"
+              column: "email"
+              changes:
+                type:
+                  from: "varchar(100)"
+                  to: "varchar(255)"
+              reason: "Support longer email addresses"
+    createdBy: "hoshinotsuyoshi"
+    createdAt: "2025-05-01T06:51:00Z"
+    refs:
+      issue: "457"
+      commit: null
+
+  - id: "REQ-2025-05-01-003"
+    description: "Remove legacy notification system"
+    status: "open"
+    tables:
+      drop:
+        legacy_notifications:
+          reason: "This table is no longer needed as we've migrated to the new notification system"
+    relationships:
+      drop:
+        legacy_notification_user_fk:
+          reason: "Relationship is no longer needed as the legacy_notifications table will be removed"
+    createdBy: "hoshinotsuyoshi"
+    createdAt: "2025-05-01T06:52:00Z"
+    refs:
+      issue: "458"
+      commit: null

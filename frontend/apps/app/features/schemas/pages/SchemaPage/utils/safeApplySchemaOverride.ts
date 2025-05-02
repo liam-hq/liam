@@ -23,7 +23,7 @@ export const safeApplySchemaOverride = async (
 
   if (overrideContent === null) {
     return {
-      result: { schema: schema, tableGroups: {} },
+      result: { schema: schema, tableGroups: {}, requests: undefined },
       error: null,
     }
   }
@@ -34,6 +34,10 @@ export const safeApplySchemaOverride = async (
   )
 
   if (!parsedOverrideContent.success) {
+    console.error(
+      'error',
+      JSON.stringify(parsedOverrideContent.issues, null, 2),
+    )
     return {
       result: null,
       error: {
@@ -46,6 +50,7 @@ export const safeApplySchemaOverride = async (
   }
 
   return {
+    // @ts-ignore
     result: overrideSchema(schema, parsedOverrideContent.output),
     error: null,
   }

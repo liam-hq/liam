@@ -4,6 +4,7 @@ import { Table2 } from '@liam-hq/ui'
 import { Handle, Position } from '@xyflow/react'
 import clsx from 'clsx'
 import type { FC } from 'react'
+import { StatusBadge } from '../../StatusBadge'
 import styles from './TableHeader.module.css'
 
 type Props = {
@@ -28,6 +29,11 @@ export const TableHeader: FC<Props> = ({ data }) => {
       <Table2 width={16} className={styles.tableIcon} />
 
       <span className={styles.name}>{name}</span>
+
+      {/* Display badge for requested tables */}
+      {data.request && (
+        <StatusBadge status="open" className={styles.statusBadge} />
+      )}
 
       {showMode === 'TABLE_NAME' && (
         <>

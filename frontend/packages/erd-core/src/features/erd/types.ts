@@ -11,6 +11,9 @@ export type TableNodeData = {
     | Record<string, Cardinality | undefined>
     | undefined
   showMode?: ShowMode | undefined
+  // Request-related information
+  // biome-ignore lint/suspicious/noExplicitAny: needed for poc
+  request?: any // Request details
 }
 
 export type TableNodeType = Node<TableNodeData, 'table'>

@@ -1,0 +1,35 @@
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  padding: 2px 6px;
+  font-size: 10px;
+  font-weight: 600;
+  margin-left: 8px;
+}
+
+.open {
+  background-color: rgba(255, 170, 0, 0.2);
+  color: #ffaa00;
+}
+
+.in_progress {
+  background-color: rgba(0, 120, 255, 0.2);
+  color: #0078ff;
+}
+
+.done {
+  background-color: rgba(0, 200, 83, 0.2);
+  color: #00c853;
+}
+
+.wontfix {
+  background-color: rgba(255, 80, 80, 0.2);
+  color: #ff5050;
+}
+
+.unknown {
+  background-color: rgba(150, 150, 150, 0.2);
+  color: #969696;
+}

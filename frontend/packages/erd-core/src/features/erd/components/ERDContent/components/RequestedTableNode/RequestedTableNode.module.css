@@ -1,0 +1,30 @@
+.wrapper {
+  border-radius: var(--border-radius-md);
+  /* Change default border to blue */
+  border: 3px solid rgba(0, 100, 255, 0.3);
+  min-width: 172px;
+  width: auto;
+  transition: border-color 300ms var(--default-timing-function), border-width
+    300ms var(--default-timing-function);
+  opacity: 1;
+  /* Add blue shadow to default state */
+  box-shadow: 0px 0px 20px 0px rgba(0, 100, 255, 0.2);
+}
+
+:global([data-loading='true']) .wrapper {
+  opacity: 0;
+}
+
+.wrapperHighlighted,
+.wrapper:hover {
+  border: 3px solid rgba(0, 100, 255, 0.6);
+  /* Increase blue shadow intensity on hover */
+  box-shadow: 0px 0px 20px 0px rgba(0, 100, 255, 0.6);
+}
+
+.wrapperActive,
+.wrapperActive:hover {
+  border: 6px solid rgba(0, 100, 255, 0.6);
+  /* Increase blue shadow intensity for active state to match hover */
+  box-shadow: 0px 0px 20px 0px rgba(0, 100, 255, 0.6);
+}

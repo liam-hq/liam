@@ -33,4 +33,9 @@ export {
   overrideSchema,
   schemaOverrideSchema,
 } from './overrideSchema.js'
-export type { SchemaOverride } from './overrideSchema.js'
+export type {
+  SchemaOverride,
+  ProcessedRequests,
+  ImplementationRequest,
+  RequestStatus,
+} from './overrideSchema.js'
