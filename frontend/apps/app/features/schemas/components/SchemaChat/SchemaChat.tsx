@@ -175,7 +175,7 @@ export const SchemaChat: FC<SchemaChatProps> = ({
                     : (yamlOperations) => {
                         try {
                           // Process operations from YAML
-                          const { operations, modified, error } =
+                          const { operations, modified, error, operationBlocks } =
                             processSchemaOperations(yamlOperations)
 
                           if (modified && operations.length > 0) {
@@ -207,11 +207,33 @@ export const SchemaChat: FC<SchemaChatProps> = ({
                               stringifyYaml(updatedOverride)
                             onOverrideChange(updatedOverrideYaml)
 
-                            // Show success notification
-                            showSchemaToast(
-                              `Successfully applied ${operations.length} operations to schema override`,
-                              'success',
-                            )
+                            // 複数のオペレーションブロックの状態を確認
+                            const validBlocksCount = operationBlocks?.filter(block => block.valid).length || 0
+                            const invalidBlocksCount = operationBlocks ? operationBlocks.length - validBlocksCount : 0
+                            
+                            // 詳細なトースト通知
+                            if (operationBlocks && operationBlocks.length > 1) {
+                              // 複数ブロックの場合
+                              if (invalidBlocksCount > 0) {
+                                // 一部失敗の場合
+                                showSchemaToast(
+                                  `Applied ${operations.length} operations successfully (${invalidBlocksCount} operations failed)`,
+                                  'warning',
+                                )
+                              } else {
+                                // 全て成功の場合
+                                showSchemaToast(
+                                  `Successfully applied all ${operations.length} operations to schema`,
+                                  'success',
+                                )
+                              }
+                            } else {
+                              // 単一ブロックの場合
+                              showSchemaToast(
+                                `Successfully applied ${operations.length} operations to schema override`,
+                                'success',
+                              )
+                            }
                           } else if (error) {
                             // Show error notification
                             showSchemaToast(

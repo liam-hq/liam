@@ -9,6 +9,7 @@ import {
   syntaxHighlighting,
 } from '@codemirror/language'
 import { type Diagnostic, lintGutter, linter } from '@codemirror/lint'
+import { autocompletion } from '@codemirror/autocomplete'
 import { EditorState, type Extension } from '@codemirror/state'
 import {
   type ViewUpdate,
@@ -27,6 +28,9 @@ import {
   useState,
 } from 'react'
 import { parseDocument } from 'yaml'
+import { jsonSchema } from 'codemirror-json-schema'
+import { toJsonSchema } from '@valibot/to-json-schema'
+import { operationSchema } from '@liam-hq/db-structure'
 
 const customCursorTheme = EditorView.theme({
   '.cm-gutters': {
@@ -60,6 +64,20 @@ const customCursorTheme = EditorView.theme({
   },
   '@keyframes slow-blink': {
     to: { visibility: 'hidden' },
+  },
+  // Style autocompletion popup
+  '.cm-tooltip': {
+    backgroundColor: 'var(--global-background)',
+    border: '1px solid var(--position-pattern-border)',
+    borderRadius: '4px',
+  },
+  '.cm-tooltip-autocomplete': {
+    '& > ul > li': {
+      padding: '4px 8px',
+    },
+    '& > ul > li[aria-selected]': {
+      backgroundColor: 'var(--color-green-alpha-20)',
+    },
   },
 })
 
@@ -97,6 +115,15 @@ const yamlLinter = linter((view) => {
   return diagnostics
 })
 
+// Convert operation schema to JSON schema for editor completion
+const operationJsonSchema = toJsonSchema(operationSchema)
+
+// Create JSON schema extension for autocomplete
+const schemaExtension = jsonSchema({
+  schema: operationJsonSchema,
+  format: 'yaml',
+})
+
 const extensions: Extension[] = [
   lineNumbers(),
   foldGutter(),
@@ -109,6 +136,8 @@ const extensions: Extension[] = [
   yamlLinter,
   syntaxHighlighting(myHighlightStyle),
   customCursorTheme,
+  autocompletion(),
+  schemaExtension,
 ]
 
 type Props = {

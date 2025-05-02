@@ -149,3 +149,55 @@
 .yamlCodeBlock {
   position: relative;
 }
+
+/* 複数のYAMLブロックが存在する場合の「すべてのOperationを適用」ボタン */
+.multiOperationHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 16px;
+  background-color: var(--global-foreground-subtle);
+  border-radius: 8px;
+  margin: 12px 0 8px;
+}
+
+.multiOperationTitle {
+  font-size: var(--font-size-2);
+  font-weight: 500;
+  color: var(--global-foreground);
+  display: flex;
+  align-items: center;
+}
+
+.multiOperationCount {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--primary-accent);
+  color: white;
+  font-size: var(--font-size-1);
+  font-weight: 600;
+  min-width: 24px;
+  height: 24px;
+  border-radius: 12px;
+  padding: 0 8px;
+  margin-left: 8px;
+}
+
+.applyAllButton {
+  background-color: var(--primary-accent);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 6px 12px;
+  font-size: var(--font-size-1);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s;
+}
+
+.applyAllButton:hover {
+  background-color: var(--primary-accent-hover, #0056b3);
+}

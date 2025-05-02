@@ -10,6 +10,17 @@ export interface SchemaOperationResult {
   operations: Operation[]
   modified: boolean
   error?: string
+  operationBlocks?: SchemaOperationBlock[] // 個別のYAMLブロック情報（UI表示用）
+}
+
+/**
+ * 個別のYAMLブロック（YAML操作）に関する情報
+ */
+export interface SchemaOperationBlock {
+  content: string      // 元のYAMLコンテンツ
+  operations: Operation[] // パースされたOperation
+  valid: boolean       // 有効なYAMLかどうか
+  error?: string       // エラーがある場合
 }
 
 /**
@@ -23,6 +34,7 @@ export function processSchemaOperations(
   try {
     // Extract operations from YAML code blocks in the message
     const operations: Operation[] = []
+    const operationBlocks: SchemaOperationBlock[] = []
 
     // Try multiple patterns for YAML code blocks
     // 1. Standard markdown code blocks with yaml/yml language
@@ -45,33 +57,46 @@ export function processSchemaOperations(
           const content = match[1]?.trim()
           if (!content) continue
 
+          // 各YAMLブロックを個別に処理
+          const blockOperations: Operation[] = []
+          let isValid = false
+          let blockError: string | undefined
+
           try {
             // Try to parse the content as YAML
             const parsedYaml = parseYaml(content)
             if (parsedYaml) {
               // Check if it's an array of operations or a single operation
               if (Array.isArray(parsedYaml)) {
+                let allValid = true
                 for (const item of parsedYaml) {
                   const result = safeParse(operationSchema, item)
                   if (result.success) {
+                    blockOperations.push(result.output)
                     operations.push(result.output)
                   } else {
+                    allValid = false
                     console.warn(
                       '[SchemaModifier] Array item failed validation:',
                       result.issues,
                     )
+                    blockError = `配列内のアイテムがvalidationに失敗しました: ${result.issues.map(i => i.message).join(', ')}`
                   }
                 }
+                isValid = allValid && blockOperations.length > 0
               } else {
                 // Handle as single operation
                 const result = safeParse(operationSchema, parsedYaml)
                 if (result.success) {
+                  blockOperations.push(result.output)
                   operations.push(result.output)
+                  isValid = true
                 } else {
                   console.warn(
                     '[SchemaModifier] Code block content failed validation:',
                     result.issues,
                   )
+                  blockError = `オペレーションがvalidationに失敗しました: ${result.issues.map(i => i.message).join(', ')}`
                 }
               }
             }
@@ -80,7 +105,16 @@ export function processSchemaOperations(
               '[SchemaModifier] Failed to parse code block as YAML:',
               e,
             )
+            blockError = `YAMLの解析に失敗しました: ${e instanceof Error ? e.message : String(e)}`
           }
+
+          // このブロックの処理結果を追加
+          operationBlocks.push({
+            content,
+            operations: blockOperations,
+            valid: isValid,
+            error: blockError,
+          })
         }
       }
     }
@@ -97,23 +131,46 @@ export function processSchemaOperations(
 
         const directYaml = parseYaml(cleanedMessage)
         if (directYaml) {
+          const blockOperations: Operation[] = []
+          let isValid = false
+          let blockError: string | undefined
+
           // Check if it's an array of operations or a single operation
           if (Array.isArray(directYaml)) {
+            let allValid = true
             for (const item of directYaml) {
               const result = safeParse(operationSchema, item)
               if (result.success) {
                 operations.push(result.output)
+                blockOperations.push(result.output)
                 foundCodeBlocks = true
+              } else {
+                allValid = false
+                blockError = `配列内のアイテムがvalidationに失敗しました: ${result.issues.map(i => i.message).join(', ')}`
               }
             }
+            isValid = allValid && blockOperations.length > 0
           } else {
             // Handle as single operation
             const result = safeParse(operationSchema, directYaml)
             if (result.success) {
               operations.push(result.output)
+              blockOperations.push(result.output)
               foundCodeBlocks = true
+              isValid = true
             } else {
+              blockError = `オペレーションがvalidationに失敗しました: ${result.issues.map(i => i.message).join(', ')}`
             }
+          }
+
+          // 全体メッセージからのブロックも追加
+          if (blockOperations.length > 0) {
+            operationBlocks.push({
+              content: cleanedMessage,
+              operations: blockOperations,
+              valid: isValid,
+              error: blockError,
+            })
           }
         }
       } catch (_e) {}
@@ -121,6 +178,7 @@ export function processSchemaOperations(
       if (!foundCodeBlocks) {
         return {
           operations: [],
+          operationBlocks: [],
           modified: false,
           error: 'No YAML code blocks or valid YAML content found in response',
         }
@@ -131,11 +189,13 @@ export function processSchemaOperations(
     if (operations.length > 0) {
       return {
         operations,
+        operationBlocks,
         modified: true,
       }
     }
     return {
       operations: [],
+      operationBlocks,
       modified: false,
       error: 'No valid operations found in YAML code blocks',
     }
@@ -144,6 +204,7 @@ export function processSchemaOperations(
     console.error('Failed to process schema operations:', e)
     return {
       operations: [],
+      operationBlocks: [],
       modified: false,
       error: `Processing error: ${e instanceof Error ? e.message : JSON.stringify(e)}`,
     }

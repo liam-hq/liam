@@ -197,8 +197,8 @@ const generateOperationExamples = (): string => {
     },
   }
 
-  // Convert examples to YAML and join
-  return [
+  // 単一操作の例
+  const singleOperationExamples = [
     '# Example 1: Adding a new table',
     stringifyYaml(addTableExample),
     '# Example 2: Adding a column to an existing table',
@@ -212,6 +212,94 @@ const generateOperationExamples = (): string => {
     '# Example 6: Adding a relationship',
     stringifyYaml(addRelationshipExample),
   ].join('\n\n')
+
+  // 複数操作の例（関連する複数の操作をまとめて提供する例）
+  const multipleOperationsExample = `
+# Example 7: Multiple operations in separate YAML blocks
+# First operation: Create users table
+\`\`\`yaml
+type: addTable
+table:
+  name: users
+  comment: User account information
+  columns:
+    id:
+      name: id
+      type: uuid
+      default: null
+      check: null
+      primary: true
+      unique: true
+      notNull: true
+      comment: Primary key
+    email:
+      name: email
+      type: text
+      default: null
+      check: null
+      primary: false
+      unique: true
+      notNull: true
+      comment: User email address
+  indexes: {}
+  constraints: {}
+\`\`\`
+
+# Second operation: Create posts table
+\`\`\`yaml
+type: addTable
+table:
+  name: posts
+  comment: User blog posts
+  columns:
+    id:
+      name: id
+      type: uuid
+      default: null
+      check: null
+      primary: true
+      unique: true
+      notNull: true
+      comment: Primary key
+    title:
+      name: title
+      type: text
+      default: null
+      check: null
+      primary: false
+      unique: false
+      notNull: true
+      comment: Post title
+    user_id:
+      name: user_id
+      type: uuid
+      default: null
+      check: null
+      primary: false
+      unique: false
+      notNull: true
+      comment: Reference to user who created the post
+  indexes: {}
+  constraints: {}
+\`\`\`
+
+# Third operation: Add relationship between users and posts
+\`\`\`yaml
+type: addRelationship
+relationshipName: users_posts
+relationship:
+  name: users_posts
+  primaryTableName: users
+  primaryColumnName: id
+  foreignTableName: posts
+  foreignColumnName: user_id
+  cardinality: ONE_TO_MANY
+  updateConstraint: CASCADE
+  deleteConstraint: CASCADE
+\`\`\`
+`
+
+  return singleOperationExamples + '\n\n' + multipleOperationsExample
 }
 
 const operationJsonSchema = toJsonSchema(operationSchema)
@@ -252,8 +340,8 @@ Follow these guidelines:
 5. Provide only information directly related to the question, avoiding unnecessary details.
 6. Format your responses using GitHub Flavored Markdown (GFM) for better readability.
 
-When suggesting schema changes, provide individual operations in YAML code blocks.
-DO NOT include the full 'overrides' structure - just return the individual operation that should be added to the operations array.
+When suggesting schema changes, provide operations in YAML code blocks.
+DO NOT include the full 'overrides' structure - just return the individual operations.
 
 Here are examples of different operation types in YAML format:
 
@@ -285,16 +373,33 @@ ${operationJsonSchema}
 Complete Schema Information:
 ${schemaText}
 
-Important guidelines:
-- Each operation should be presented in a separate YAML code block
-- DO NOT include the full 'overrides' structure - just return the operation(s)
+Important guidelines for providing schema operations:
+
+1. For simple changes:
+   - Provide a single operation in a YAML code block
+   - Include a brief explanation of what the operation does
+
+2. For complex changes requiring multiple operations:
+   - Break down the changes into separate, focused operations
+   - Present each operation in its own separate YAML code block
+   - Explain the purpose of each operation and how they work together
+   - Present operations in the correct logical order (e.g., create table before adding foreign keys)
+
+3. For related changes (like creating multiple tables that work together):
+   - Present each table creation or modification as a separate YAML code block
+   - Explain how the tables relate to each other
+   - If adding relationships, place these in separate code blocks after the table definitions
+
+Other important requirements:
+- Each operation should be in a separate YAML code block (not combined in one block)
+- DO NOT include the full 'overrides' structure - just return the individual operations
 - Keep operations focused and minimal - only include what's necessary for the specific change
 - Validate that any referenced tables, columns, or relationships actually exist in the schema
-- For any complex changes, break them down into multiple simple operations
 - When adding tables or columns, always include proper comments for documentation
+- Use meaningful names that follow the naming conventions evident in the existing schema
 
 Your goal is to help users understand and optimize their database schemas.
-When the user asks to modify the schema, provide the YAML operation(s) needed to make the requested changes.
+When the user asks for schema modifications, carefully identify if multiple operations are needed and provide all required operations in separate YAML blocks.
 `
 
   // Generate streaming response using Vercel AI SDK

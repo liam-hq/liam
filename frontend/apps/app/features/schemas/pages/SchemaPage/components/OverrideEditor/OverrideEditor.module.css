@@ -2,5 +2,70 @@
   height: 100%;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  overflow: scroll;
+}
+
+.operationsSummary {
+  background-color: var(--global-foreground-subtle);
+  border-radius: 4px;
+  padding: 8px 16px;
+  margin-bottom: 8px;
+  font-size: var(--font-size-2);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.operationsCount {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.operationBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--primary-accent);
+  color: white;
+  font-size: var(--font-size-1);
+  font-weight: 600;
+  min-width: 24px;
+  height: 24px;
+  border-radius: 12px;
+  padding: 0 8px;
+}
+
+.timestamp {
+  color: var(--global-foreground-muted);
+  font-size: var(--font-size-1);
+}
+
+.editorContainer {
+  flex: 1;
+  position: relative;
+}
+
+.highlightOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  animation: fadeOut 2s ease-in-out forwards;
+  background-color: rgba(29, 237, 131, 0.05);
+  z-index: 10;
+}
+
+@keyframes fadeOut {
+  0% {
+    opacity: 1;
+  }
+  20% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
 }

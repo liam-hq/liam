@@ -153,6 +153,32 @@ export const ChatMessage: FC<ChatMessageProps> = ({
   const _findYamlBlocks = (text: string) => {
     return _findCodeBlocks(text, 'yaml|yml')
   }
+  
+  // 複数のYAMLブロックを検出
+  const detectMultipleYamlBlocks = (text: string) => {
+    const yamlPatterns = [
+      /```(?:yaml|yml)\s*([\s\S]*?)\s*```/g, // 明示的なyaml/ymlタグ付き
+      /```\s*([\s\S]*?)\s*```/g, // タグなしのコードブロック
+    ]
+    
+    let blocks: { content: string, index: number }[] = []
+    
+    for (const pattern of yamlPatterns) {
+      let match
+      // eslint-disable-next-line no-cond-assign
+      while ((match = pattern.exec(text)) !== null) {
+        const content = match[1]?.trim()
+        if (content) {
+          blocks.push({ content, index: match.index })
+        }
+      }
+    }
+    
+    // インデックスでソート
+    blocks.sort((a, b) => a.index - b.index)
+    
+    return blocks.length > 1 ? blocks.map(b => b.content) : []
+  }
 
   // Function to copy text to clipboard
   const copyToClipboard = async (text: string) => {
@@ -301,18 +327,40 @@ export const ChatMessage: FC<ChatMessageProps> = ({
               <>
                 {parts.map((part) => {
                   if (part.type === 'text') {
+                    // 複数のYAMLブロックがあるか確認
+                    const multiYamlBlocks = onApplyOperations ? detectMultipleYamlBlocks(part.text || '') : []
+                    const hasMultipleYamlBlocks = multiYamlBlocks.length > 1
+                    
+                    // 複数のYAMLブロックがある場合、「すべて適用」ボタンを表示
                     return (
-                      <MemoizedMarkdown
-                        key={`text-part-${part.text?.substring(0, 20)}`}
-                        content={part.text || ''}
-                        id={`part-${part.text?.substring(0, 20)}`}
-                        components={
-                          onApplySchema || onApplyOperations
-                            ? customComponents
-                            : undefined
-                        }
-                        isStreaming={(part.text?.length || 0) > 500}
-                      />
+                      <>
+                        {hasMultipleYamlBlocks && (
+                          <div className={styles.multiOperationHeader}>
+                            <div className={styles.multiOperationTitle}>
+                              Multiple Schema Operations
+                              <span className={styles.multiOperationCount}>{multiYamlBlocks.length}</span>
+                            </div>
+                            <button
+                              type="button"
+                              className={styles.applyAllButton}
+                              onClick={() => onApplyOperations && onApplyOperations(part.text || '')}
+                            >
+                              Apply All Operations
+                            </button>
+                          </div>
+                        )}
+                        <MemoizedMarkdown
+                          key={`text-part-${part.text?.substring(0, 20)}`}
+                          content={part.text || ''}
+                          id={`part-${part.text?.substring(0, 20)}`}
+                          components={
+                            onApplySchema || onApplyOperations
+                              ? customComponents
+                              : undefined
+                          }
+                          isStreaming={(part.text?.length || 0) > 500}
+                        />
+                      </>
                     )
                   }
 
@@ -345,16 +393,44 @@ export const ChatMessage: FC<ChatMessageProps> = ({
                 })}
               </>
             ) : (
-              <MemoizedMarkdown
-                content={content}
-                id={`message-${content.substring(0, 20)}`}
-                components={
-                  onApplySchema || onApplyOperations
-                    ? customComponents
-                    : undefined
-                }
-                isStreaming={content.length > 500}
-              />
+              <>
+                {/* 通常のメッセージ（parts配列がない場合）*/}
+                {/* 複数のYAMLブロックがあるか確認 */}
+                {(() => {
+                  const multiYamlBlocks = onApplyOperations ? detectMultipleYamlBlocks(content) : []
+                  const hasMultipleYamlBlocks = multiYamlBlocks.length > 1
+                  
+                  return (
+                    <>
+                      {hasMultipleYamlBlocks && (
+                        <div className={styles.multiOperationHeader}>
+                          <div className={styles.multiOperationTitle}>
+                            Multiple Schema Operations
+                            <span className={styles.multiOperationCount}>{multiYamlBlocks.length}</span>
+                          </div>
+                          <button
+                            type="button"
+                            className={styles.applyAllButton}
+                            onClick={() => onApplyOperations && onApplyOperations(content)}
+                          >
+                            Apply All Operations
+                          </button>
+                        </div>
+                      )}
+                      <MemoizedMarkdown
+                        content={content}
+                        id={`message-${content.substring(0, 20)}`}
+                        components={
+                          onApplySchema || onApplyOperations
+                            ? customComponents
+                            : undefined
+                        }
+                        isStreaming={content.length > 500}
+                      />
+                    </>
+                  )
+                })()}
+              </>
             )}
           </div>
         )}
