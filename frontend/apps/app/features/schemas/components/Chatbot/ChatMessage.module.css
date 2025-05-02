@@ -2,6 +2,7 @@
   display: flex;
   margin-bottom: var(--spacing-4);
   width: 100%;
+  align-items: flex-start;
 }
 
 .userMessage {
@@ -14,16 +15,30 @@
   justify-content: flex-start;
 }
 
+.avatarContainer {
+  flex-shrink: 0;
+  margin-right: var(--spacing-3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Agent icon colors */
+.buildIcon {
+  color: #1ded83; /* Build Jack's green color */
+}
+
+.reviewerIcon {
+  color: #f75049; /* Reviewer Jack's color */
+}
+
+.learnIcon {
+  color: #ffd748; /* Learn Jack's yellow color */
+}
+
 .messageContent {
   position: relative;
   width: 100%;
-}
-
-.userMessage .messageContent {
-  color: var(--overlay-70);
-}
-
-.botMessage .messageContent {
   color: var(--global-body-text);
 }
 
