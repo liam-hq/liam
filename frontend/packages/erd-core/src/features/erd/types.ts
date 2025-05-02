@@ -2,6 +2,19 @@ import type { ShowMode } from '@/schemas/showMode/types'
 import type { Cardinality, Table } from '@liam-hq/db-structure'
 import type { Node } from '@xyflow/react'
 
+export type CommentMessageType = {
+  id: string
+  content: string
+  isUser: boolean
+  timestamp?: Date
+}
+
+export type CommentNodeData = {
+  tableId: string
+  messages: CommentMessageType[]
+}
+export type CommentNodeType = Node<CommentNodeData, 'comment'>
+
 export type TableNodeData = {
   table: Table
   isActiveHighlighted: boolean

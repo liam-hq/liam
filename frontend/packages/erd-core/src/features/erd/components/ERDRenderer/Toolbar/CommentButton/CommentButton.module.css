@@ -1,0 +1,28 @@
+.menuButton {
+  display: flex;
+  padding: var(--spacing-1, 4px);
+  align-items: center;
+  border-radius: var(--border-radius-base);
+  transition: background-color var(--default-hover-animation-duration)
+    var(--default-timing-function);
+}
+
+.menuButton svg {
+  color: var(--global-foreground, #fff);
+}
+
+.menuButton[data-state='on'] svg {
+  color: var(--primary-accent);
+}
+
+.menuButton[data-state='on'] {
+  background-color: var(--pane-background-active, #2e3031);
+}
+
+.menuButton:hover {
+  background-color: var(--pane-background-active, #2e3031);
+}
+
+.menuButton:focus-visible {
+  outline: 1px solid var(--primary-color);
+}

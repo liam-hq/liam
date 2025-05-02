@@ -1,5 +1,6 @@
 import * as ToolbarPrimitive from '@radix-ui/react-toolbar'
 import type { FC } from 'react'
+import { CommentButton } from './CommentButton'
 import styles from './DesktopToolbar.module.css'
 import { FitviewButton } from './FitviewButton'
 import { GroupButton } from './GroupButton'
@@ -22,6 +23,7 @@ export const DesktopToolbar: FC<DesktopToolbarProps> = ({
         <FitviewButton />
         <TidyUpButton />
         {withGroupButton && <GroupButton />}
+        <CommentButton />
         {/* TODO: enable once implemented */}
         {/* <ViewControlButton /> */}
       </div>

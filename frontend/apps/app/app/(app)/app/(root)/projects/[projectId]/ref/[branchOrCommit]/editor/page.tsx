@@ -1,5 +1,5 @@
 import type { PageProps } from '@/app/types'
-import { ChatPage } from '@/components/ChatPage'
+import { EditorPage } from '@/components/EditorPage'
 import { branchOrCommitSchema } from '@/utils/routes'
 import * as v from 'valibot'
 
@@ -16,5 +16,5 @@ export default async function Page({ params }: PageProps) {
 
   const { projectId, branchOrCommit } = parsedParams.output
 
-  return <ChatPage projectId={projectId} branchOrCommit={branchOrCommit} />
+  return <EditorPage projectId={projectId} branchOrCommit={branchOrCommit} />
 }

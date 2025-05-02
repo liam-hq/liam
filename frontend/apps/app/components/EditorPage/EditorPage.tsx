@@ -1,4 +1,5 @@
 import path from 'node:path'
+import {} from '@/components'
 import { getOrganizationId } from '@/features/organizations/services/getOrganizationId'
 import { adaptSchemaForChatbot } from '@/features/schemas/components/Chatbot/utils'
 import type { ERDEditor } from '@/features/schemas/pages/SchemaPage/components/ERDEditor'
@@ -9,7 +10,7 @@ import { getFileContent } from '@liam-hq/github'
 import * as Sentry from '@sentry/nextjs'
 import { cookies } from 'next/headers'
 import type { ComponentProps, FC } from 'react'
-import { Chat } from './Chat'
+import { Editor } from './Editor'
 import { getSchemaFilePath } from './services/getSchemaFilePath'
 
 type Params = {
@@ -153,7 +154,7 @@ type Props = {
   branchOrCommit: string
 }
 
-export const ChatPage: FC<Props> = async ({ projectId, branchOrCommit }) => {
+export const EditorPage: FC<Props> = async ({ projectId, branchOrCommit }) => {
   const organizationId = await getOrganizationId()
 
   if (organizationId == null) {
@@ -168,5 +169,11 @@ export const ChatPage: FC<Props> = async ({ projectId, branchOrCommit }) => {
 
   const adaptedSchema = adaptSchemaForChatbot(schema)
 
-  return <Chat schemaData={adaptedSchema} tableGroups={tableGroups} />
+  return (
+    <Editor
+      schema={schema}
+      tableGroups={tableGroups}
+      adaptedSchema={adaptedSchema}
+    />
+  )
 }

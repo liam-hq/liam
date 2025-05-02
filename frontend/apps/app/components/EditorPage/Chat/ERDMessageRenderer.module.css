@@ -1,0 +1,9 @@
+/* ERD Container */
+.erdContainer {
+  margin: 1rem 0;
+  border: 1px solid var(--global-border);
+  border-radius: 6px;
+  overflow: hidden;
+  height: 400px;
+  width: 100%;
+}

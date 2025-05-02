@@ -1,9 +1,8 @@
 'use client'
 
 import type { FC } from 'react'
-import ReactMarkdown from 'react-markdown'
-import remarkGfm from 'remark-gfm'
 import styles from './ChatMessage.module.css'
+import { ERDMessageRenderer } from './ERDMessageRenderer'
 
 export interface ChatMessageProps {
   content: string
@@ -35,7 +34,7 @@ export const ChatMessage: FC<ChatMessageProps> = ({
           <div className={styles.messageText}>{content}</div>
         ) : (
           <div className={styles.messageText}>
-            <ReactMarkdown remarkPlugins={[remarkGfm]}>{content}</ReactMarkdown>
+            <ERDMessageRenderer content={content} />
           </div>
         )}
         {formattedTime && (

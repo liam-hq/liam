@@ -70,7 +70,7 @@ export const ERDContentInner: FC<Props> = ({
   const {
     state: { loading },
   } = useERDContentContext()
-  const { isTableGroupEditMode } = useUserEditingStore()
+  const { isTableGroupEditMode, isCommentMode } = useUserEditingStore()
   const { tableName: activeTableName } = useUserEditingActiveStore()
 
   const { selectTable, deselectTable } = useTableSelection()
@@ -169,6 +169,7 @@ export const ERDContentInner: FC<Props> = ({
       className={clsx(
         styles.wrapper,
         isTableGroupEditMode && styles.groupEditMode,
+        isCommentMode && styles.commentMode,
       )}
       data-loading={loading}
     >

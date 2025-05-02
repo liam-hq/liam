@@ -1,0 +1,134 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+.fileList {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--spacing-4);
+}
+
+.changesList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2);
+}
+
+.changeItem {
+  font-size: var(--font-size-4);
+}
+
+.changeHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-1) 0;
+  cursor: pointer;
+  background: transparent;
+  border: none;
+  text-align: left;
+  width: 100%;
+}
+
+.fileInfo {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+}
+
+.statusIndicator {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--border-radius-full);
+  display: inline-block;
+  margin-left: var(--spacing-2);
+}
+
+.statusAdded {
+  background-color: var(--primary-color); /* 緑色 */
+}
+
+.statusModified {
+  background-color: var(--collaborator-color-9); /* オレンジ色 */
+}
+
+.statusDeleted {
+  background-color: var(--danger-default); /* 赤色 */
+}
+
+.filePath {
+  color: var(--global-body-text);
+}
+
+.folderExpanded,
+.folderCollapsed {
+  font-size: var(--font-size-3);
+  color: var(--global-mute-text);
+  width: 16px;
+  display: inline-block;
+  text-align: center;
+}
+
+.nestedChanges {
+  padding-left: var(--spacing-6);
+}
+
+.commitForm {
+  padding: var(--spacing-4);
+  border-bottom: var(--border-width-base) solid var(--global-border);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2);
+}
+
+.commitMessage {
+  width: 100%;
+  padding: var(--spacing-2) var(--spacing-3);
+  background-color: var(--pane-background);
+  border: var(--border-width-base) solid var(--pane-border);
+  border-radius: var(--border-radius-base);
+  color: var(--global-foreground);
+  font-size: var(--font-size-4);
+  resize: vertical;
+}
+
+.commitMessage:focus {
+  outline: none;
+  border-color: var(--pane-border-active);
+}
+
+.pushButton {
+  align-self: flex-end;
+  padding: var(--spacing-2) var(--spacing-6);
+  width: 100%;
+  background-color: var(--button-primary);
+  color: var(--button-primary-foreground);
+  border: none;
+  border-radius: var(--border-radius-base);
+  font-size: var(--font-size-4);
+  font-weight: var(--text-weight-en-medium);
+  text-align: center;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.pushButton:hover {
+  background-color: var(--button-primary-background-hover);
+}
+
+.pushButton:disabled {
+  background-color: var(--button-disabled-background);
+  color: var(--button-disabled-foreground);
+  cursor: not-allowed;
+}
+
+.erdDiffButtonContainer {
+  padding: var(--spacing-4) var(--spacing-4) 0 var(--spacing-4);
+}
+
+.erdDiffButton {
+  width: 100%;
+}
