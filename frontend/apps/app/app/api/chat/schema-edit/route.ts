@@ -396,7 +396,9 @@ export async function POST(request: Request) {
 CURRENT SCHEMA OPERATIONS:
 The following operations are currently applied to the schema. Consider these when suggesting new operations:
 
+\`\`\`yaml
 ${schemaOverride}
+\`\`\`
 `
     } catch (error) {
       console.error('Error parsing schema override:', error)
@@ -513,7 +515,7 @@ Always remember to include relationship definitions when creating related tables
     model: openai('gpt-4o'),
     system: systemPrompt,
     messages: messages as Message[],
-    experimental_telemetry: { 
+    experimental_telemetry: {
       isEnabled: true,
       metadata: {
         projectId: request.headers.get('x-project-id') || 'unknown',
