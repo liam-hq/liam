@@ -31,7 +31,7 @@
     "date-fns": "4.1.0",
     "diff": "7.0.0",
     "dotenv": "16.5.0",
-    "flags": "3.2.0",
+    "flags": "4.0.0",
     "langchain": "0.3.24",
     "langfuse": "3.37.2",
     "langfuse-langchain": "3.37.2",
