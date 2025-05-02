@@ -28,7 +28,7 @@ const columnsSchema = v.record(columnNameSchema, columnSchema)
 export type Columns = v.InferOutput<typeof columnsSchema>
 export type Column = v.InferOutput<typeof columnSchema>
 
-const indexSchema = v.object({
+export const indexSchema = v.object({
   name: v.string(),
   unique: v.boolean(),
   columns: v.array(v.string()),

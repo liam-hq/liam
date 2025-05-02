@@ -1,12 +1,16 @@
 import * as v from 'valibot'
 import {
+  type Column,
   type Schema,
   type Table,
   type TableGroup,
   columnNameSchema,
   columnSchema,
+  constraintNameSchema,
   constraintSchema,
   indexSchema,
+  relationshipNameSchema,
+  relationshipSchema,
   schemaSchema,
   tableGroupNameSchema,
   tableGroupSchema,
@@ -38,7 +42,7 @@ const addTableSchema = v.object({
 })
 export type AddTable = v.InferOutput<typeof addTableSchema>
 
-// Operation schemas
+// Table operation schemas
 const addTableOperationSchema = v.object({
   type: v.literal('addTable'),
   table: addTableSchema,
@@ -53,10 +57,131 @@ export type DeleteTableOperation = v.InferOutput<
   typeof deleteTableOperationSchema
 >
 
+// Column operation schemas
+const addColumnSchema = columnSchema
+export type AddColumn = v.InferOutput<typeof addColumnSchema>
+
+const addColumnOperationSchema = v.object({
+  type: v.literal('addColumn'),
+  tableName: tableNameSchema,
+  columnName: columnNameSchema,
+  column: addColumnSchema,
+})
+export type AddColumnOperation = v.InferOutput<typeof addColumnOperationSchema>
+
+const deleteColumnOperationSchema = v.object({
+  type: v.literal('deleteColumn'),
+  tableName: tableNameSchema,
+  columnName: columnNameSchema,
+})
+export type DeleteColumnOperation = v.InferOutput<
+  typeof deleteColumnOperationSchema
+>
+
+// Define schema for updating a column with partial properties
+const updateColumnPropertiesSchema = v.partial(
+  v.pick(columnSchema, [
+    'type',
+    'default',
+    'check',
+    'primary',
+    'unique',
+    'notNull',
+    'comment',
+  ]),
+)
+export type UpdateColumnProperties = v.InferOutput<
+  typeof updateColumnPropertiesSchema
+>
+
+const updateColumnOperationSchema = v.object({
+  type: v.literal('updateColumn'),
+  tableName: tableNameSchema,
+  columnName: columnNameSchema,
+  properties: updateColumnPropertiesSchema,
+})
+export type UpdateColumnOperation = v.InferOutput<
+  typeof updateColumnOperationSchema
+>
+
+// Index operation schemas
+const addIndexSchema = indexSchema
+export type AddIndex = v.InferOutput<typeof addIndexSchema>
+
+const addIndexOperationSchema = v.object({
+  type: v.literal('addIndex'),
+  tableName: tableNameSchema,
+  indexName: v.string(),
+  index: addIndexSchema,
+})
+export type AddIndexOperation = v.InferOutput<typeof addIndexOperationSchema>
+
+const deleteIndexOperationSchema = v.object({
+  type: v.literal('deleteIndex'),
+  tableName: tableNameSchema,
+  indexName: v.string(),
+})
+export type DeleteIndexOperation = v.InferOutput<
+  typeof deleteIndexOperationSchema
+>
+
+// Constraint operation schemas
+const addConstraintSchema = constraintSchema
+export type AddConstraint = v.InferOutput<typeof addConstraintSchema>
+
+const addConstraintOperationSchema = v.object({
+  type: v.literal('addConstraint'),
+  tableName: tableNameSchema,
+  constraintName: constraintNameSchema,
+  constraint: addConstraintSchema,
+})
+export type AddConstraintOperation = v.InferOutput<
+  typeof addConstraintOperationSchema
+>
+
+const deleteConstraintOperationSchema = v.object({
+  type: v.literal('deleteConstraint'),
+  tableName: tableNameSchema,
+  constraintName: constraintNameSchema,
+})
+export type DeleteConstraintOperation = v.InferOutput<
+  typeof deleteConstraintOperationSchema
+>
+
+// Relationship operation schemas
+const addRelationshipSchema = relationshipSchema
+export type AddRelationship = v.InferOutput<typeof addRelationshipSchema>
+
+const addRelationshipOperationSchema = v.object({
+  type: v.literal('addRelationship'),
+  relationshipName: relationshipNameSchema,
+  relationship: addRelationshipSchema,
+})
+export type AddRelationshipOperation = v.InferOutput<
+  typeof addRelationshipOperationSchema
+>
+
+const deleteRelationshipOperationSchema = v.object({
+  type: v.literal('deleteRelationship'),
+  relationshipName: relationshipNameSchema,
+})
+export type DeleteRelationshipOperation = v.InferOutput<
+  typeof deleteRelationshipOperationSchema
+>
+
 // Union of all operation types
 const operationSchema = v.union([
   addTableOperationSchema,
   deleteTableOperationSchema,
+  addColumnOperationSchema,
+  deleteColumnOperationSchema,
+  updateColumnOperationSchema,
+  addIndexOperationSchema,
+  deleteIndexOperationSchema,
+  addConstraintOperationSchema,
+  deleteConstraintOperationSchema,
+  addRelationshipOperationSchema,
+  deleteRelationshipOperationSchema,
 ])
 export type Operation = v.InferOutput<typeof operationSchema>
 
@@ -146,20 +271,319 @@ export function overrideSchema(
 
           // Remove the table from any table groups
           for (const groupName in result.tableGroups) {
-            result.tableGroups[groupName].tables = result.tableGroups[
-              groupName
-            ].tables.filter((name) => name !== tableName)
+            if (result.tableGroups[groupName] && result.tableGroups[groupName].tables) {
+              result.tableGroups[groupName].tables = result.tableGroups[groupName].tables.filter(
+                (name) => name !== tableName
+              )
+            }
           }
-          
+
           // Also update the tableGroups variable that will be returned
           for (const groupName in tableGroups) {
-            tableGroups[groupName].tables = tableGroups[
-              groupName
-            ].tables.filter((name) => name !== tableName)
+            if (tableGroups[groupName] && tableGroups[groupName].tables) {
+              tableGroups[groupName].tables = tableGroups[groupName].tables.filter(
+                (name) => name !== tableName
+              )
+            }
           }
 
           // Delete the table
           delete result.tables[tableName]
+          break
+        }
+        case 'addColumn': {
+          const { tableName, columnName, column } = operation
+          // Validate table exists
+          if (!result.tables[tableName]) {
+            throw new Error(
+              `Cannot add column to non-existent table: ${tableName}`,
+            )
+          }
+
+          // Validate column doesn't already exist
+          if (result.tables[tableName].columns[columnName]) {
+            throw new Error(
+              `Column already exists: ${columnName} in table ${tableName}`,
+            )
+          }
+
+          // Add the new column to the table
+          const validatedColumn = v.parse(columnSchema, column) as Column
+          result.tables[tableName].columns[columnName] = validatedColumn
+          break
+        }
+        case 'deleteColumn': {
+          const { tableName, columnName } = operation
+          // Validate table exists
+          if (!result.tables[tableName]) {
+            throw new Error(
+              `Cannot delete column from non-existent table: ${tableName}`,
+            )
+          }
+
+          // Validate column exists
+          if (!result.tables[tableName].columns[columnName]) {
+            throw new Error(
+              `Cannot delete non-existent column: ${columnName} from table ${tableName}`,
+            )
+          }
+
+          // Check for any relationships involving this column
+          const relationshipsToDelete: string[] = []
+          for (const [relationshipName, relationship] of Object.entries(
+            result.relationships,
+          )) {
+            if (
+              (relationship.primaryTableName === tableName &&
+                relationship.primaryColumnName === columnName) ||
+              (relationship.foreignTableName === tableName &&
+                relationship.foreignColumnName === columnName)
+            ) {
+              relationshipsToDelete.push(relationshipName)
+            }
+          }
+
+          // Delete the relationships
+          for (const relationshipName of relationshipsToDelete) {
+            delete result.relationships[relationshipName]
+          }
+
+          // Check if the column is used in any indexes and remove it
+          for (const indexName in result.tables[tableName].indexes) {
+            const index = result.tables[tableName].indexes[indexName]
+            if (index && index.columns.includes(columnName)) {
+              // If index uses only this column, delete the entire index
+              if (index.columns.length === 1) {
+                delete result.tables[tableName].indexes[indexName]
+              } else {
+                // Otherwise, remove the column from the index
+                index.columns = index.columns.filter(
+                  (col) => col !== columnName,
+                )
+              }
+            }
+          }
+
+          // Check if the column is used in any constraints and remove them
+          const constraintsToDelete: string[] = []
+          for (const [constraintName, constraint] of Object.entries(
+            result.tables[tableName].constraints,
+          )) {
+            if (
+              'columnName' in constraint &&
+              constraint.columnName === columnName
+            ) {
+              constraintsToDelete.push(constraintName)
+            }
+          }
+
+          // Delete the constraints
+          for (const constraintName of constraintsToDelete) {
+            delete result.tables[tableName].constraints[constraintName]
+          }
+
+          // Delete the column
+          delete result.tables[tableName].columns[columnName]
+          break
+        }
+        case 'updateColumn': {
+          const { tableName, columnName, properties } = operation
+          // Validate table exists
+          if (!result.tables[tableName]) {
+            throw new Error(
+              `Cannot update column in non-existent table: ${tableName}`,
+            )
+          }
+
+          // Validate column exists
+          if (!result.tables[tableName].columns[columnName]) {
+            throw new Error(
+              `Cannot update non-existent column: ${columnName} in table ${tableName}`,
+            )
+          }
+
+          // Update column properties
+          for (const [key, value] of Object.entries(properties)) {
+            if (value !== undefined) {
+              // Need to use Record<string, unknown> type here for dynamic property access
+              ;(result.tables[tableName].columns[columnName] as Record<string, unknown>)[key] =
+                value
+            }
+          }
+
+          break
+        }
+        case 'addIndex': {
+          const { tableName, indexName, index } = operation
+          // Validate table exists
+          if (!result.tables[tableName]) {
+            throw new Error(
+              `Cannot add index to non-existent table: ${tableName}`,
+            )
+          }
+
+          // Validate index doesn't already exist
+          if (result.tables[tableName].indexes[indexName]) {
+            throw new Error(
+              `Index already exists: ${indexName} in table ${tableName}`,
+            )
+          }
+
+          // Validate that all columns in the index exist in the table
+          if (index && index.columns) {
+            for (const columnName of index.columns) {
+              if (!result.tables[tableName].columns[columnName]) {
+                throw new Error(
+                  `Cannot create index with non-existent column: ${columnName} in table ${tableName}`,
+                )
+              }
+            }
+          }
+
+          // Add the new index to the table
+          result.tables[tableName].indexes[indexName] = index
+          break
+        }
+        case 'deleteIndex': {
+          const { tableName, indexName } = operation
+          // Validate table exists
+          if (!result.tables[tableName]) {
+            throw new Error(
+              `Cannot delete index from non-existent table: ${tableName}`,
+            )
+          }
+
+          // Validate index exists
+          if (!result.tables[tableName].indexes[indexName]) {
+            throw new Error(
+              `Cannot delete non-existent index: ${indexName} from table ${tableName}`,
+            )
+          }
+
+          // Delete the index
+          delete result.tables[tableName].indexes[indexName]
+          break
+        }
+        case 'addConstraint': {
+          const { tableName, constraintName, constraint } = operation
+          // Validate table exists
+          if (!result.tables[tableName]) {
+            throw new Error(
+              `Cannot add constraint to non-existent table: ${tableName}`,
+            )
+          }
+
+          // Validate constraint doesn't already exist
+          if (result.tables[tableName].constraints[constraintName]) {
+            throw new Error(
+              `Constraint already exists: ${constraintName} in table ${tableName}`,
+            )
+          }
+
+          // Additional validations based on constraint type
+          if ('columnName' in constraint) {
+            // For PRIMARY KEY, FOREIGN KEY, and UNIQUE constraints that reference a column
+            if (!result.tables[tableName].columns[constraint.columnName]) {
+              throw new Error(
+                `Cannot create constraint for non-existent column: ${constraint.columnName} in table ${tableName}`,
+              )
+            }
+
+            // Additional validation for FOREIGN KEY constraints
+            if (constraint.type === 'FOREIGN KEY') {
+              // Check that the target table exists
+              if (!result.tables[constraint.targetTableName]) {
+                throw new Error(
+                  `Foreign key target table does not exist: ${constraint.targetTableName}`,
+                )
+              }
+
+              // Check that the target column exists in the target table
+              const targetTable = result.tables[constraint.targetTableName];
+              if (targetTable && !targetTable.columns[constraint.targetColumnName]) {
+                throw new Error(
+                  `Foreign key target column does not exist: ${constraint.targetColumnName} in table ${constraint.targetTableName}`,
+                )
+              }
+            }
+          }
+
+          // Add the new constraint to the table
+          result.tables[tableName].constraints[constraintName] = constraint
+          break
+        }
+        case 'deleteConstraint': {
+          const { tableName, constraintName } = operation
+          // Validate table exists
+          if (!result.tables[tableName]) {
+            throw new Error(
+              `Cannot delete constraint from non-existent table: ${tableName}`,
+            )
+          }
+
+          // Validate constraint exists
+          if (!result.tables[tableName].constraints[constraintName]) {
+            throw new Error(
+              `Cannot delete non-existent constraint: ${constraintName} from table ${tableName}`,
+            )
+          }
+
+          // Delete the constraint
+          delete result.tables[tableName].constraints[constraintName]
+          break
+        }
+        case 'addRelationship': {
+          const { relationshipName, relationship } = operation
+          // Validate relationship doesn't already exist
+          if (result.relationships[relationshipName]) {
+            throw new Error(`Relationship already exists: ${relationshipName}`)
+          }
+
+          // Validate primary table exists
+          if (!result.tables[relationship.primaryTableName]) {
+            throw new Error(
+              `Primary table does not exist: ${relationship.primaryTableName}`,
+            )
+          }
+
+          // Validate foreign table exists
+          if (!result.tables[relationship.foreignTableName]) {
+            throw new Error(
+              `Foreign table does not exist: ${relationship.foreignTableName}`,
+            )
+          }
+
+          // Validate primary column exists in primary table
+          const primaryTable = result.tables[relationship.primaryTableName];
+          if (primaryTable && !primaryTable.columns[relationship.primaryColumnName]) {
+            throw new Error(
+              `Primary column does not exist: ${relationship.primaryColumnName} in table ${relationship.primaryTableName}`,
+            )
+          }
+
+          // Validate foreign column exists in foreign table
+          const foreignTable = result.tables[relationship.foreignTableName];
+          if (foreignTable && !foreignTable.columns[relationship.foreignColumnName]) {
+            throw new Error(
+              `Foreign column does not exist: ${relationship.foreignColumnName} in table ${relationship.foreignTableName}`,
+            )
+          }
+
+          // Add the new relationship
+          result.relationships[relationshipName] = relationship
+          break
+        }
+        case 'deleteRelationship': {
+          const { relationshipName } = operation
+          // Validate relationship exists
+          if (!result.relationships[relationshipName]) {
+            throw new Error(
+              `Cannot delete non-existent relationship: ${relationshipName}`,
+            )
+          }
+
+          // Delete the relationship
+          delete result.relationships[relationshipName]
           break
         }
       }

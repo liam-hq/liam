@@ -35,6 +35,8 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  /* Ensure ERD has enough height to render */
+  min-height: 500px;
 }
 
 .toolbarContainer {
@@ -73,6 +75,44 @@
 
 .copyButton:hover {
   background-color: var(--global-foreground-muted);
+}
+
+.overrideEditorContainer {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  padding: 16px;
+  gap: 16px;
+  overflow: hidden;
+}
+
+.editorWrapper {
+  flex: 1;
+  overflow: hidden;
+  border: 1px solid var(--position-pattern-border);
+  border-radius: 6px;
+}
+
+.errorMessage {
+  padding: 12px 16px;
+  background-color: rgba(255, 59, 48, 0.1);
+  border-left: 4px solid var(--color-red);
+  border-radius: 4px;
+  margin-bottom: 16px;
+  color: var(--global-foreground);
+}
+
+.errorTitle {
+  font-weight: 600;
+  margin-bottom: 4px;
+  color: var(--color-red);
+}
+
+.errorContent {
+  font-family: var(--code-font);
+  font-size: var(--font-size-1);
+  white-space: pre-wrap;
 }
 
 @media (max-width: 1024px) {

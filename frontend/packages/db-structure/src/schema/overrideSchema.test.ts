@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, assert } from 'vitest'
 import { type SchemaOverride, overrideSchema } from './overrideSchema.js'
 import type { Schema } from './schema.js'
 
@@ -396,8 +396,1130 @@ describe('overrideSchema', () => {
       // Table should be deleted
       expect(schema.tables['posts']).toBeUndefined()
       // Table should be removed from the group
-      expect(tableGroups['content'].tables).not.toContain('posts')
-      expect(tableGroups['content'].tables.length).toBe(0)
+      expect(tableGroups['content']?.tables).not.toContain('posts')
+      expect(tableGroups['content']?.tables.length).toBe(0)
+    })
+  })
+
+  describe('Operation: addColumn', () => {
+    it('should add a new column to an existing table', () => {
+      const override: SchemaOverride = {
+        overrides: {
+          operations: [
+            {
+              type: 'addColumn',
+              tableName: 'users',
+              columnName: 'email',
+              column: {
+                name: 'email',
+                type: 'varchar',
+                default: null,
+                check: null,
+                primary: false,
+                unique: true,
+                notNull: true,
+                comment: 'User email address',
+              },
+            },
+          ],
+        },
+      }
+
+      const { schema } = overrideSchema(originalSchema, override)
+
+      // Column should be added
+      expect(schema.tables['users']?.columns['email']).toBeDefined()
+      expect(schema.tables['users']?.columns['email']?.type).toBe('varchar')
+      expect(schema.tables['users']?.columns['email']?.comment).toBe(
+        'User email address',
+      )
+      expect(schema.tables['users']?.columns['email']?.unique).toBe(true)
+
+      // Original columns should be preserved
+      expect(schema.tables['users']?.columns['id']).toBeDefined()
+      expect(schema.tables['users']?.columns['username']).toBeDefined()
+    })
+
+    it('should throw an error when adding a column to a non-existent table', () => {
+      const override: SchemaOverride = {
+        overrides: {
+          operations: [
+            {
+              type: 'addColumn',
+              tableName: 'nonexistent',
+              columnName: 'test',
+              column: {
+                name: 'test',
+                type: 'varchar',
+                default: null,
+                check: null,
+                primary: false,
+                unique: false,
+                notNull: true,
+                comment: 'Test column',
+              },
+            },
+          ],
+        },
+      }
+
+      expect(() => overrideSchema(originalSchema, override)).toThrowError(
+        'Cannot add column to non-existent table: nonexistent',
+      )
+    })
+
+    it('should throw an error when adding a column that already exists', () => {
+      const override: SchemaOverride = {
+        overrides: {
+          operations: [
+            {
+              type: 'addColumn',
+              tableName: 'users',
+              columnName: 'username', // Already exists
+              column: {
+                name: 'username',
+                type: 'varchar',
+                default: null,
+                check: null,
+                primary: false,
+                unique: true,
+                notNull: true,
+                comment: 'Duplicate column',
+              },
+            },
+          ],
+        },
+      }
+
+      expect(() => overrideSchema(originalSchema, override)).toThrowError(
+        'Column already exists: username in table users',
+      )
+    })
+  })
+
+  describe('Operation: deleteColumn', () => {
+    it('should delete an existing column from a table', () => {
+      const override: SchemaOverride = {
+        overrides: {
+          operations: [
+            {
+              type: 'deleteColumn',
+              tableName: 'users',
+              columnName: 'username',
+            },
+          ],
+        },
+      }
+
+      const { schema } = overrideSchema(originalSchema, override)
+
+      // Column should be deleted
+      expect(schema.tables['users']?.columns['username']).toBeUndefined()
+
+      // Other columns should remain
+      expect(schema.tables['users']?.columns['id']).toBeDefined()
+    })
+
+    it('should throw an error when deleting a column from a non-existent table', () => {
+      const override: SchemaOverride = {
+        overrides: {
+          operations: [
+            {
+              type: 'deleteColumn',
+              tableName: 'nonexistent',
+              columnName: 'test',
+            },
+          ],
+        },
+      }
+
+      expect(() => overrideSchema(originalSchema, override)).toThrowError(
+        'Cannot delete column from non-existent table: nonexistent',
+      )
+    })
+
+    it('should throw an error when deleting a non-existent column', () => {
+      const override: SchemaOverride = {
+        overrides: {
+          operations: [
+            {
+              type: 'deleteColumn',
+              tableName: 'users',
+              columnName: 'nonexistent',
+            },
+          ],
+        },
+      }
+
+      expect(() => overrideSchema(originalSchema, override)).toThrowError(
+        'Cannot delete non-existent column: nonexistent from table users',
+      )
+    })
+
+    it('should remove relationships involving the deleted column', () => {
+      const override: SchemaOverride = {
+        overrides: {
+          operations: [
+            {
+              type: 'deleteColumn',
+              tableName: 'posts',
+              columnName: 'user_id',
+            },
+          ],
+        },
+      }
+
+      const { schema } = overrideSchema(schemaWithRelationships, override)
+
+      // Column should be deleted
+      expect(schema.tables['posts']?.columns['user_id']).toBeUndefined()
+
+      // Relationship should be deleted
+      expect(schema.relationships['posts_users']).toBeUndefined()
+    })
+
+    it('should remove the column from indexes', () => {
+      const override: SchemaOverride = {
+        overrides: {
+          operations: [
+            {
+              type: 'deleteColumn',
+              tableName: 'users',
+              columnName: 'username',
+            },
+          ],
+        },
+      }
+
+      const { schema } = overrideSchema(originalSchema, override)
+
+      // The index that only contained this column should be deleted
+      expect(
+        schema.tables['users']?.indexes['users_username_idx'],
+      ).toBeUndefined()
+    })
+  })
+
+  describe('Operation: updateColumn', () => {
+    it('should update column properties in a table', () => {
+      const override: SchemaOverride = {
+        overrides: {
+          operations: [
+            {
+              type: 'updateColumn',
+              tableName: 'users',
+              columnName: 'username',
+              properties: {
+                type: 'text', // Change from varchar to text
+                unique: false, // Change unique constraint
+                comment: 'Updated username comment',
+              },
+            },
+          ],
+        },
+      }
+
+      const { schema } = overrideSchema(originalSchema, override)
+
+      // Column properties should be updated
+      expect(schema.tables['users']?.columns['username']?.type).toBe('text')
+      expect(schema.tables['users']?.columns['username']?.unique).toBe(false)
+      expect(schema.tables['users']?.columns['username']?.comment).toBe(
+        'Updated username comment',
+      )
+
+      // Other properties should remain unchanged
+      expect(schema.tables['users']?.columns['username']?.notNull).toBe(true)
+      expect(schema.tables['users']?.columns['username']?.primary).toBe(false)
+    })
+
+    it('should throw an error when updating a column in a non-existent table', () => {
+      const override: SchemaOverride = {
+        overrides: {
+          operations: [
+            {
+              type: 'updateColumn',
+              tableName: 'nonexistent',
+              columnName: 'test',
+              properties: {
+                type: 'text',
+              },
+            },
+          ],
+        },
+      }
+
+      expect(() => overrideSchema(originalSchema, override)).toThrowError(
+        'Cannot update column in non-existent table: nonexistent',
+      )
+    })
+
+    it('should throw an error when updating a non-existent column', () => {
+      const override: SchemaOverride = {
+        overrides: {
+          operations: [
+            {
+              type: 'updateColumn',
+              tableName: 'users',
+              columnName: 'nonexistent',
+              properties: {
+                type: 'text',
+              },
+            },
+          ],
+        },
+      }
+
+      expect(() => overrideSchema(originalSchema, override)).toThrowError(
+        'Cannot update non-existent column: nonexistent in table users',
+      )
+    })
+
+    it('should only update specified properties', () => {
+      const override: SchemaOverride = {
+        overrides: {
+          operations: [
+            {
+              type: 'updateColumn',
+              tableName: 'users',
+              columnName: 'username',
+              properties: {
+                comment: 'Only update comment',
+              },
+            },
+          ],
+        },
+      }
+
+      const { schema } = overrideSchema(originalSchema, override)
+
+      // Only comment should be updated
+      expect(schema.tables['users']?.columns['username']?.comment).toBe(
+        'Only update comment',
+      )
+
+      // Other properties should remain unchanged
+      expect(schema.tables['users']?.columns['username']?.type).toBe('varchar')
+      expect(schema.tables['users']?.columns['username']?.unique).toBe(true)
+      expect(schema.tables['users']?.columns['username']?.notNull).toBe(true)
+    })
+  })
+
+  describe('Operation: addIndex', () => {
+    it('should add a new index to a table', () => {
+      const override: SchemaOverride = {
+        overrides: {
+          operations: [
+            {
+              type: 'addIndex',
+              tableName: 'users',
+              indexName: 'users_id_idx',
+              index: {
+                name: 'users_id_idx',
+                unique: true,
+                columns: ['id'],
+                type: 'btree',
+              },
+            },
+          ],
+        },
+      }
+
+      const { schema } = overrideSchema(originalSchema, override)
+
+      // Index should be added
+      expect(schema.tables['users']?.indexes['users_id_idx']).toBeDefined()
+      expect(schema.tables['users']?.indexes['users_id_idx']?.unique).toBe(true)
+      expect(schema.tables['users']?.indexes['users_id_idx']?.columns).toContain(
+        'id',
+      )
+      expect(schema.tables['users']?.indexes['users_id_idx']?.type).toBe('btree')
+
+      // Existing indexes should remain
+      expect(schema.tables['users']?.indexes['users_username_idx']).toBeDefined()
+    })
+
+    it('should throw an error when adding an index to a non-existent table', () => {
+      const override: SchemaOverride = {
+        overrides: {
+          operations: [
+            {
+              type: 'addIndex',
+              tableName: 'nonexistent',
+              indexName: 'test_idx',
+              index: {
+                name: 'test_idx',
+                unique: true,
+                columns: ['id'],
+                type: 'btree',
+              },
+            },
+          ],
+        },
+      }
+
+      expect(() => overrideSchema(originalSchema, override)).toThrowError(
+        'Cannot add index to non-existent table: nonexistent',
+      )
+    })
+
+    it('should throw an error when adding an index that already exists', () => {
+      const override: SchemaOverride = {
+        overrides: {
+          operations: [
+            {
+              type: 'addIndex',
+              tableName: 'users',
+              indexName: 'users_username_idx', // Already exists
+              index: {
+                name: 'users_username_idx',
+                unique: true,
+                columns: ['username'],
+                type: 'btree',
+              },
+            },
+          ],
+        },
+      }
+
+      expect(() => overrideSchema(originalSchema, override)).toThrowError(
+        'Index already exists: users_username_idx in table users',
+      )
+    })
+
+    it('should throw an error when adding an index with non-existent columns', () => {
+      const override: SchemaOverride = {
+        overrides: {
+          operations: [
+            {
+              type: 'addIndex',
+              tableName: 'users',
+              indexName: 'users_nonexistent_idx',
+              index: {
+                name: 'users_nonexistent_idx',
+                unique: true,
+                columns: ['nonexistent'],
+                type: 'btree',
+              },
+            },
+          ],
+        },
+      }
+
+      expect(() => overrideSchema(originalSchema, override)).toThrowError(
+        'Cannot create index with non-existent column: nonexistent in table users',
+      )
+    })
+  })
+
+  describe('Operation: deleteIndex', () => {
+    it('should delete an existing index from a table', () => {
+      const override: SchemaOverride = {
+        overrides: {
+          operations: [
+            {
+              type: 'deleteIndex',
+              tableName: 'users',
+              indexName: 'users_username_idx',
+            },
+          ],
+        },
+      }
+
+      const { schema } = overrideSchema(originalSchema, override)
+
+      // Index should be deleted
+      expect(
+        schema.tables['users']?.indexes['users_username_idx'],
+      ).toBeUndefined()
+    })
+
+    it('should throw an error when deleting an index from a non-existent table', () => {
+      const override: SchemaOverride = {
+        overrides: {
+          operations: [
+            {
+              type: 'deleteIndex',
+              tableName: 'nonexistent',
+              indexName: 'test_idx',
+            },
+          ],
+        },
+      }
+
+      expect(() => overrideSchema(originalSchema, override)).toThrowError(
+        'Cannot delete index from non-existent table: nonexistent',
+      )
+    })
+
+    it('should throw an error when deleting a non-existent index', () => {
+      const override: SchemaOverride = {
+        overrides: {
+          operations: [
+            {
+              type: 'deleteIndex',
+              tableName: 'users',
+              indexName: 'nonexistent_idx',
+            },
+          ],
+        },
+      }
+
+      expect(() => overrideSchema(originalSchema, override)).toThrowError(
+        'Cannot delete non-existent index: nonexistent_idx from table users',
+      )
+    })
+  })
+
+  describe('Operation: addConstraint', () => {
+    it('should add a primary key constraint to a table', () => {
+      const override: SchemaOverride = {
+        overrides: {
+          operations: [
+            {
+              type: 'addConstraint',
+              tableName: 'users',
+              constraintName: 'users_pk',
+              constraint: {
+                type: 'PRIMARY KEY',
+                name: 'users_pk',
+                columnName: 'id',
+              },
+            },
+          ],
+        },
+      }
+
+      const { schema } = overrideSchema(originalSchema, override)
+
+      // Constraint should be added
+      expect(schema.tables['users']?.constraints['users_pk']).toBeDefined()
+      expect(schema.tables['users']?.constraints['users_pk']?.type).toBe(
+        'PRIMARY KEY',
+      )
+      const pkConstraint = schema.tables['users']?.constraints['users_pk'];
+      if (pkConstraint && pkConstraint.type === 'PRIMARY KEY') {
+        expect(pkConstraint.columnName).toBe('id');
+      } else {
+        assert.fail('Expected PRIMARY KEY constraint with columnName property');
+      }
+    })
+
+    it('should add a unique constraint to a table', () => {
+      const override: SchemaOverride = {
+        overrides: {
+          operations: [
+            {
+              type: 'addConstraint',
+              tableName: 'users',
+              constraintName: 'users_username_unique',
+              constraint: {
+                type: 'UNIQUE',
+                name: 'users_username_unique',
+                columnName: 'username',
+              },
+            },
+          ],
+        },
+      }
+
+      const { schema } = overrideSchema(originalSchema, override)
+
+      // Constraint should be added
+      expect(
+        schema.tables['users']?.constraints['users_username_unique'],
+      ).toBeDefined()
+      expect(
+        schema.tables['users']?.constraints['users_username_unique']?.type,
+      ).toBe('UNIQUE')
+      const uniqueConstraint = schema.tables['users']?.constraints['users_username_unique'];
+      if (uniqueConstraint && uniqueConstraint.type === 'UNIQUE') {
+        expect(uniqueConstraint.columnName).toBe('username');
+      } else {
+        assert.fail('Expected UNIQUE constraint with columnName property');
+      }
+    })
+
+    it('should add a check constraint to a table', () => {
+      const override: SchemaOverride = {
+        overrides: {
+          operations: [
+            {
+              type: 'addConstraint',
+              tableName: 'users',
+              constraintName: 'username_length_check',
+              constraint: {
+                type: 'CHECK',
+                name: 'username_length_check',
+                detail: 'LENGTH(username) > 3',
+              },
+            },
+          ],
+        },
+      }
+
+      const { schema } = overrideSchema(originalSchema, override)
+
+      // Constraint should be added
+      expect(
+        schema.tables['users']?.constraints['username_length_check'],
+      ).toBeDefined()
+      expect(
+        schema.tables['users']?.constraints['username_length_check']?.type,
+      ).toBe('CHECK')
+      const checkConstraint = schema.tables['users']?.constraints['username_length_check'];
+      if (checkConstraint && checkConstraint.type === 'CHECK') {
+        expect(checkConstraint.detail).toBe('LENGTH(username) > 3');
+      } else {
+        assert.fail('Expected CHECK constraint with detail property');
+      }
+    })
+
+    it('should add a foreign key constraint if target table and column exist', () => {
+      // We need a schema with multiple tables for this test
+      const schemaWithMultipleTables: Schema = {
+        tables: {
+          ...originalSchema.tables,
+          posts: {
+            name: 'posts',
+            comment: 'Blog posts',
+            columns: {
+              id: {
+                name: 'id',
+                type: 'uuid',
+                default: null,
+                check: null,
+                primary: true,
+                unique: true,
+                notNull: true,
+                comment: 'Primary key',
+              },
+              user_id: {
+                name: 'user_id',
+                type: 'uuid',
+                default: null,
+                check: null,
+                primary: false,
+                unique: false,
+                notNull: true,
+                comment: 'Foreign key to users',
+              },
+            },
+            indexes: {},
+            constraints: {},
+          },
+        },
+        relationships: {},
+        tableGroups: {},
+      }
+
+      const override: SchemaOverride = {
+        overrides: {
+          operations: [
+            {
+              type: 'addConstraint',
+              tableName: 'posts',
+              constraintName: 'posts_user_fk',
+              constraint: {
+                type: 'FOREIGN KEY',
+                name: 'posts_user_fk',
+                columnName: 'user_id',
+                targetTableName: 'users',
+                targetColumnName: 'id',
+                updateConstraint: 'CASCADE',
+                deleteConstraint: 'CASCADE',
+              },
+            },
+          ],
+        },
+      }
+
+      const { schema } = overrideSchema(schemaWithMultipleTables, override)
+
+      // Constraint should be added
+      expect(schema.tables['posts']?.constraints['posts_user_fk']).toBeDefined()
+      expect(schema.tables['posts']?.constraints['posts_user_fk']?.type).toBe(
+        'FOREIGN KEY',
+      )
+      const fkConstraint = schema.tables['posts']?.constraints['posts_user_fk'];
+      if (fkConstraint && fkConstraint.type === 'FOREIGN KEY') {
+        expect(fkConstraint.columnName).toBe('user_id');
+        expect(fkConstraint.targetTableName).toBe('users');
+        expect(fkConstraint.targetColumnName).toBe('id');
+        expect(fkConstraint.updateConstraint).toBe('CASCADE');
+        expect(fkConstraint.deleteConstraint).toBe('CASCADE');
+      } else {
+        assert.fail('Expected FOREIGN KEY constraint with proper properties');
+      }
+    })
+
+    it('should throw an error when adding a constraint to a non-existent table', () => {
+      const override: SchemaOverride = {
+        overrides: {
+          operations: [
+            {
+              type: 'addConstraint',
+              tableName: 'nonexistent',
+              constraintName: 'test_pk',
+              constraint: {
+                type: 'PRIMARY KEY',
+                name: 'test_pk',
+                columnName: 'id',
+              },
+            },
+          ],
+        },
+      }
+
+      expect(() => overrideSchema(originalSchema, override)).toThrowError(
+        'Cannot add constraint to non-existent table: nonexistent',
+      )
+    })
+
+    it('should throw an error when adding a constraint that already exists', () => {
+      // First, add a constraint
+      const schemaWithConstraint = overrideSchema(originalSchema, {
+        overrides: {
+          operations: [
+            {
+              type: 'addConstraint',
+              tableName: 'users',
+              constraintName: 'users_pk',
+              constraint: {
+                type: 'PRIMARY KEY',
+                name: 'users_pk',
+                columnName: 'id',
+              },
+            },
+          ],
+        },
+      }).schema
+
+      // Then try to add it again
+      const override: SchemaOverride = {
+        overrides: {
+          operations: [
+            {
+              type: 'addConstraint',
+              tableName: 'users',
+              constraintName: 'users_pk',
+              constraint: {
+                type: 'PRIMARY KEY',
+                name: 'users_pk',
+                columnName: 'id',
+              },
+            },
+          ],
+        },
+      }
+
+      expect(() => overrideSchema(schemaWithConstraint, override)).toThrowError(
+        'Constraint already exists: users_pk in table users',
+      )
+    })
+
+    it('should throw an error when adding a constraint for a non-existent column', () => {
+      const override: SchemaOverride = {
+        overrides: {
+          operations: [
+            {
+              type: 'addConstraint',
+              tableName: 'users',
+              constraintName: 'users_nonexistent_unique',
+              constraint: {
+                type: 'UNIQUE',
+                name: 'users_nonexistent_unique',
+                columnName: 'nonexistent',
+              },
+            },
+          ],
+        },
+      }
+
+      expect(() => overrideSchema(originalSchema, override)).toThrowError(
+        'Cannot create constraint for non-existent column: nonexistent in table users',
+      )
+    })
+
+    it('should throw an error when adding a foreign key with non-existent target table', () => {
+      const override: SchemaOverride = {
+        overrides: {
+          operations: [
+            {
+              type: 'addConstraint',
+              tableName: 'users',
+              constraintName: 'users_fk',
+              constraint: {
+                type: 'FOREIGN KEY',
+                name: 'users_fk',
+                columnName: 'id',
+                targetTableName: 'nonexistent',
+                targetColumnName: 'id',
+                updateConstraint: 'CASCADE',
+                deleteConstraint: 'CASCADE',
+              },
+            },
+          ],
+        },
+      }
+
+      expect(() => overrideSchema(originalSchema, override)).toThrowError(
+        'Foreign key target table does not exist: nonexistent',
+      )
+    })
+
+    it('should throw an error when adding a foreign key with non-existent target column', () => {
+      const override: SchemaOverride = {
+        overrides: {
+          operations: [
+            {
+              type: 'addConstraint',
+              tableName: 'users',
+              constraintName: 'users_fk',
+              constraint: {
+                type: 'FOREIGN KEY',
+                name: 'users_fk',
+                columnName: 'id',
+                targetTableName: 'users',
+                targetColumnName: 'nonexistent',
+                updateConstraint: 'CASCADE',
+                deleteConstraint: 'CASCADE',
+              },
+            },
+          ],
+        },
+      }
+
+      expect(() => overrideSchema(originalSchema, override)).toThrowError(
+        'Foreign key target column does not exist: nonexistent in table users',
+      )
+    })
+  })
+
+  describe('Operation: deleteConstraint', () => {
+    it('should delete an existing constraint from a table', () => {
+      // First, add a constraint
+      const schemaWithConstraint = overrideSchema(originalSchema, {
+        overrides: {
+          operations: [
+            {
+              type: 'addConstraint',
+              tableName: 'users',
+              constraintName: 'users_pk',
+              constraint: {
+                type: 'PRIMARY KEY',
+                name: 'users_pk',
+                columnName: 'id',
+              },
+            },
+          ],
+        },
+      }).schema
+
+      // Then delete it
+      const override: SchemaOverride = {
+        overrides: {
+          operations: [
+            {
+              type: 'deleteConstraint',
+              tableName: 'users',
+              constraintName: 'users_pk',
+            },
+          ],
+        },
+      }
+
+      const { schema } = overrideSchema(schemaWithConstraint, override)
+
+      // Constraint should be deleted
+      expect(schema.tables['users']?.constraints['users_pk']).toBeUndefined()
+    })
+
+    it('should throw an error when deleting a constraint from a non-existent table', () => {
+      const override: SchemaOverride = {
+        overrides: {
+          operations: [
+            {
+              type: 'deleteConstraint',
+              tableName: 'nonexistent',
+              constraintName: 'test_pk',
+            },
+          ],
+        },
+      }
+
+      expect(() => overrideSchema(originalSchema, override)).toThrowError(
+        'Cannot delete constraint from non-existent table: nonexistent',
+      )
+    })
+
+    it('should throw an error when deleting a non-existent constraint', () => {
+      const override: SchemaOverride = {
+        overrides: {
+          operations: [
+            {
+              type: 'deleteConstraint',
+              tableName: 'users',
+              constraintName: 'nonexistent_constraint',
+            },
+          ],
+        },
+      }
+
+      expect(() => overrideSchema(originalSchema, override)).toThrowError(
+        'Cannot delete non-existent constraint: nonexistent_constraint from table users',
+      )
+    })
+  })
+
+  describe('Operation: addRelationship', () => {
+    it('should add a new relationship between tables', () => {
+      // We need a schema with multiple tables for this test
+      const schemaWithMultipleTables: Schema = {
+        tables: {
+          ...originalSchema.tables,
+          posts: {
+            name: 'posts',
+            comment: 'Blog posts',
+            columns: {
+              id: {
+                name: 'id',
+                type: 'uuid',
+                default: null,
+                check: null,
+                primary: true,
+                unique: true,
+                notNull: true,
+                comment: 'Primary key',
+              },
+              user_id: {
+                name: 'user_id',
+                type: 'uuid',
+                default: null,
+                check: null,
+                primary: false,
+                unique: false,
+                notNull: true,
+                comment: 'Foreign key to users',
+              },
+            },
+            indexes: {},
+            constraints: {},
+          },
+        },
+        relationships: {},
+        tableGroups: {},
+      }
+
+      const override: SchemaOverride = {
+        overrides: {
+          operations: [
+            {
+              type: 'addRelationship',
+              relationshipName: 'posts_users',
+              relationship: {
+                name: 'posts_users',
+                primaryTableName: 'users',
+                primaryColumnName: 'id',
+                foreignTableName: 'posts',
+                foreignColumnName: 'user_id',
+                cardinality: 'ONE_TO_MANY',
+                updateConstraint: 'CASCADE',
+                deleteConstraint: 'CASCADE',
+              },
+            },
+          ],
+        },
+      }
+
+      const { schema } = overrideSchema(schemaWithMultipleTables, override)
+
+      // Relationship should be added
+      expect(schema.relationships['posts_users']).toBeDefined()
+      const relationship = schema.relationships['posts_users'];
+      if (relationship) {
+        expect(relationship.primaryTableName).toBe('users');
+        expect(relationship.primaryColumnName).toBe('id');
+        expect(relationship.foreignTableName).toBe('posts');
+        expect(relationship.foreignColumnName).toBe('user_id');
+        expect(relationship.cardinality).toBe('ONE_TO_MANY');
+        expect(relationship.updateConstraint).toBe('CASCADE');
+        expect(relationship.deleteConstraint).toBe('CASCADE');
+      } else {
+        assert.fail('Expected relationship to be defined');
+      }
+    })
+
+    it('should throw an error when adding a relationship that already exists', () => {
+      const override: SchemaOverride = {
+        overrides: {
+          operations: [
+            {
+              type: 'addRelationship',
+              relationshipName: 'posts_users', // Already exists in schemaWithRelationships
+              relationship: {
+                name: 'posts_users',
+                primaryTableName: 'users',
+                primaryColumnName: 'id',
+                foreignTableName: 'posts',
+                foreignColumnName: 'user_id',
+                cardinality: 'ONE_TO_MANY',
+                updateConstraint: 'CASCADE',
+                deleteConstraint: 'CASCADE',
+              },
+            },
+          ],
+        },
+      }
+
+      expect(() =>
+        overrideSchema(schemaWithRelationships, override),
+      ).toThrowError('Relationship already exists: posts_users')
+    })
+
+    it('should throw an error when adding a relationship with non-existent primary table', () => {
+      const override: SchemaOverride = {
+        overrides: {
+          operations: [
+            {
+              type: 'addRelationship',
+              relationshipName: 'test_relationship',
+              relationship: {
+                name: 'test_relationship',
+                primaryTableName: 'nonexistent',
+                primaryColumnName: 'id',
+                foreignTableName: 'users',
+                foreignColumnName: 'id',
+                cardinality: 'ONE_TO_ONE',
+                updateConstraint: 'CASCADE',
+                deleteConstraint: 'CASCADE',
+              },
+            },
+          ],
+        },
+      }
+
+      expect(() => overrideSchema(originalSchema, override)).toThrowError(
+        'Primary table does not exist: nonexistent',
+      )
+    })
+
+    it('should throw an error when adding a relationship with non-existent foreign table', () => {
+      const override: SchemaOverride = {
+        overrides: {
+          operations: [
+            {
+              type: 'addRelationship',
+              relationshipName: 'test_relationship',
+              relationship: {
+                name: 'test_relationship',
+                primaryTableName: 'users',
+                primaryColumnName: 'id',
+                foreignTableName: 'nonexistent',
+                foreignColumnName: 'id',
+                cardinality: 'ONE_TO_ONE',
+                updateConstraint: 'CASCADE',
+                deleteConstraint: 'CASCADE',
+              },
+            },
+          ],
+        },
+      }
+
+      expect(() => overrideSchema(originalSchema, override)).toThrowError(
+        'Foreign table does not exist: nonexistent',
+      )
+    })
+
+    it('should throw an error when adding a relationship with non-existent primary column', () => {
+      const override: SchemaOverride = {
+        overrides: {
+          operations: [
+            {
+              type: 'addRelationship',
+              relationshipName: 'test_relationship',
+              relationship: {
+                name: 'test_relationship',
+                primaryTableName: 'users',
+                primaryColumnName: 'nonexistent',
+                foreignTableName: 'users',
+                foreignColumnName: 'id',
+                cardinality: 'ONE_TO_ONE',
+                updateConstraint: 'CASCADE',
+                deleteConstraint: 'CASCADE',
+              },
+            },
+          ],
+        },
+      }
+
+      expect(() => overrideSchema(originalSchema, override)).toThrowError(
+        'Primary column does not exist: nonexistent in table users',
+      )
+    })
+
+    it('should throw an error when adding a relationship with non-existent foreign column', () => {
+      const override: SchemaOverride = {
+        overrides: {
+          operations: [
+            {
+              type: 'addRelationship',
+              relationshipName: 'test_relationship',
+              relationship: {
+                name: 'test_relationship',
+                primaryTableName: 'users',
+                primaryColumnName: 'id',
+                foreignTableName: 'users',
+                foreignColumnName: 'nonexistent',
+                cardinality: 'ONE_TO_ONE',
+                updateConstraint: 'CASCADE',
+                deleteConstraint: 'CASCADE',
+              },
+            },
+          ],
+        },
+      }
+
+      expect(() => overrideSchema(originalSchema, override)).toThrowError(
+        'Foreign column does not exist: nonexistent in table users',
+      )
+    })
+  })
+
+  describe('Operation: deleteRelationship', () => {
+    it('should delete an existing relationship', () => {
+      const override: SchemaOverride = {
+        overrides: {
+          operations: [
+            {
+              type: 'deleteRelationship',
+              relationshipName: 'posts_users',
+            },
+          ],
+        },
+      }
+
+      const { schema } = overrideSchema(schemaWithRelationships, override)
+
+      // Relationship should be deleted
+      expect(schema.relationships['posts_users']).toBeUndefined()
+    })
+
+    it('should throw an error when deleting a non-existent relationship', () => {
+      const override: SchemaOverride = {
+        overrides: {
+          operations: [
+            {
+              type: 'deleteRelationship',
+              relationshipName: 'nonexistent_relationship',
+            },
+          ],
+        },
+      }
+
+      expect(() => overrideSchema(originalSchema, override)).toThrowError(
+        'Cannot delete non-existent relationship: nonexistent_relationship',
+      )
     })
   })
 
@@ -458,7 +1580,9 @@ describe('overrideSchema', () => {
       expect(schema.tables['users']).toBeUndefined()
       // New table should be added
       expect(schema.tables['new_users']).toBeDefined()
-      expect(schema.tables['new_users']?.comment).toBe('Replacement users table')
+      expect(schema.tables['new_users']?.comment).toBe(
+        'Replacement users table',
+      )
       // Table group should reference new table
       expect(tableGroups['auth']).toBeDefined()
       expect(tableGroups['auth']?.tables).toContain('new_users')
@@ -481,7 +1605,7 @@ describe('overrideSchema', () => {
                     check: null,
                     primary: true,
                     unique: true,
-                    notNull: true, 
+                    notNull: true,
                     comment: 'ID',
                   },
                 },
