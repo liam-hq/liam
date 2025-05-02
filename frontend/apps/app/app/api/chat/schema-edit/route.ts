@@ -508,11 +508,21 @@ When the user asks for schema modifications, carefully identify if multiple oper
 Always remember to include relationship definitions when creating related tables, and handle table name conflicts appropriately.
 `
 
-  // Generate streaming response using Vercel AI SDK
+  // Generate streaming response using Vercel AI SDK with Langfuse telemetry enabled
   const result = streamText({
     model: openai('gpt-4o'),
     system: systemPrompt,
     messages: messages as Message[],
+    experimental_telemetry: { 
+      isEnabled: true,
+      metadata: {
+        projectId: request.headers.get('x-project-id') || 'unknown',
+        userId: request.headers.get('x-user-id') || 'unknown',
+        schemaSize: JSON.stringify(schema).length,
+        messageCount: messages.length,
+        hasOverride: Boolean(schemaOverride?.trim()),
+      }
+    }
   })
 
   // Return streaming response with custom error handling

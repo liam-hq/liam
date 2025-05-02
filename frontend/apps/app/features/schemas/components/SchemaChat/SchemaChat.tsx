@@ -11,6 +11,7 @@ import {
   useRef,
 } from 'react'
 import { parse as parseYaml, stringify as stringifyYaml } from 'yaml'
+import { getLangfuseWeb } from '../../../../lib/langfuseWeb'
 import {
   createOrUpdateSchemaOverride,
   processSchemaOperations,
@@ -19,6 +20,9 @@ import { showSchemaToast } from '../../utils/SchemaToast'
 import { ChatInput } from '../SchemaChat/ChatInput'
 import { ChatMessage } from '../SchemaChat/ChatMessage'
 import styles from './SchemaChat.module.css'
+
+// Initialize Langfuse client for web
+const langfuseClient = getLangfuseWeb()
 
 // 一時的なSchemaModification処理関数（後で適切な場所に移動する）
 interface SchemaModificationResult {
@@ -67,6 +71,7 @@ export const SchemaChat: FC<SchemaChatProps> = ({
   onOverrideChange,
 }) => {
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const chatSessionId = useRef<string>(`schema-chat-${Date.now()}`).current
 
   const {
     messages,
@@ -76,6 +81,7 @@ export const SchemaChat: FC<SchemaChatProps> = ({
     status,
     error,
     stop,
+    data,
   } = useChat({
     api: '/api/chat/schema-edit',
     body: {
@@ -97,6 +103,40 @@ export const SchemaChat: FC<SchemaChatProps> = ({
       messagesEndRef.current?.scrollIntoView({ behavior })
     }
   }, [messages.length, status])
+
+  // Track AI generations with Langfuse
+  useEffect(() => {
+    if (data?.usage && langfuseClient) {
+      langfuseClient.generation({
+        name: 'schema-chat-generation',
+        startTime: new Date(Date.now() - 5000), // Approximate start time
+        endTime: new Date(),
+        input: {
+          messages: messages
+            .filter((msg) => msg.role === 'user')
+            .map((msg) => msg.content)
+            .join('\n'),
+          schema: JSON.stringify(schema).substring(0, 100) + '...',
+          hasOverride: Boolean(overrideYaml?.trim()),
+        },
+        output: messages
+          .filter((msg) => msg.role === 'assistant')
+          .map((msg) => msg.content)
+          .join('\n'),
+        usage: {
+          promptTokens: data.usage.prompt_tokens || 0,
+          completionTokens: data.usage.completion_tokens || 0,
+          totalTokens: data.usage.total_tokens || 0,
+        },
+        metadata: {
+          chatSessionId,
+          projectId: window.location.pathname.split('/')[4] || 'unknown',
+          messageCount: messages.length,
+          status,
+        },
+      })
+    }
+  }, [data?.usage, messages, status, schema, overrideYaml, chatSessionId])
 
   return (
     <div className={styles.chatContainer}>
@@ -243,12 +283,33 @@ export const SchemaChat: FC<SchemaChatProps> = ({
                                 'success',
                               )
                             }
+
+                            // Log a successful operation application to Langfuse
+                            if (langfuseClient) {
+                              langfuseClient.score({
+                                name: 'schema-operation-application',
+                                value: 1, // 1 for success
+                                comment: `Successfully applied ${operations.length} operations`,
+                                traceId: chatSessionId,
+                              })
+                            }
                           } else if (error) {
                             // Show error notification
                             showSchemaToast(
                               `Failed to apply operations: ${error}`,
                               'error',
                             )
+
+                            // Log a failed operation application to Langfuse
+                            if (langfuseClient) {
+                              langfuseClient.score({
+                                name: 'schema-operation-application',
+                                value: 0, // 0 for failure
+                                comment: `Failed to apply operations: ${error}`,
+                                traceId: chatSessionId,
+                              })
+                            }
+
                             // Add error to input for AI to see
                             handleInputChange({
                               target: {
@@ -260,6 +321,17 @@ export const SchemaChat: FC<SchemaChatProps> = ({
                               'No valid operations were found in the response',
                               'info',
                             )
+
+                            // Log an invalid operation attempt to Langfuse
+                            if (langfuseClient) {
+                              langfuseClient.score({
+                                name: 'schema-operation-application',
+                                value: 0.5, // 0.5 for no operations found
+                                comment:
+                                  'No valid operations were found in the response',
+                                traceId: chatSessionId,
+                              })
+                            }
                           }
                         } catch (err) {
                           const errorMessage =
@@ -268,6 +340,17 @@ export const SchemaChat: FC<SchemaChatProps> = ({
                             `Error applying operations: ${errorMessage}`,
                             'error',
                           )
+
+                          // Log an exception during operation application to Langfuse
+                          if (langfuseClient) {
+                            langfuseClient.score({
+                              name: 'schema-operation-application',
+                              value: 0, // 0 for failure
+                              comment: `Error applying operations: ${errorMessage}`,
+                              traceId: chatSessionId,
+                            })
+                          }
+
                           // Add error to input for AI to see
                           handleInputChange({
                             target: {
@@ -286,6 +369,8 @@ export const SchemaChat: FC<SchemaChatProps> = ({
             onOverrideChange,
             onSchemaChange,
             handleInputChange,
+            chatSessionId,
+            langfuseClient,
           ],
         )}
         {(status === 'submitted' || status === 'streaming') && (

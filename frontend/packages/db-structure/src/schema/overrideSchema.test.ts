@@ -1729,10 +1729,11 @@ describe('overrideSchema', () => {
         },
       }
 
-      const { schema, tableGroups } = overrideSchema(
+      const result = overrideSchema(
         schemaWithTableGroup,
         override,
       )
+      const { tableGroups } = result
 
       // Table group should reference the new table name
       expect(tableGroups['auth']).toBeDefined()
