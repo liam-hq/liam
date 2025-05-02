@@ -79,12 +79,27 @@ const relationshipToDocument = (
   relationshipName: string,
   relationshipData: RelationshipData,
 ): Document => {
+  // Escape function - especially for values that start with a colon
+  const escapeValue = (value: string): string => {
+    // Escape values that start with a colon to prevent template variable conflicts
+    if (value.startsWith(':')) {
+      return `"${value}"`
+    }
+    return value
+  }
+
+  const fromTable = escapeValue(relationshipData.fromTable)
+  const fromColumn = escapeValue(relationshipData.fromColumn)
+  const toTable = escapeValue(relationshipData.toTable)
+  const toColumn = escapeValue(relationshipData.toColumn)
+  const relationType = relationshipData.type || 'unknown'
+
   const relationshipText = `Relationship: ${relationshipName}
-From Table: ${relationshipData.fromTable}
-From Column: ${relationshipData.fromColumn}
-To Table: ${relationshipData.toTable}
-To Column: ${relationshipData.toColumn}
-Type: ${relationshipData.type || 'unknown'}\n`
+From Table: ${fromTable}
+From Column: ${fromColumn}
+To Table: ${toTable}
+To Column: ${toColumn}
+Type: ${relationType}\n`
 
   return new Document({
     pageContent: relationshipText,
@@ -186,6 +201,9 @@ export async function POST(request: Request) {
     page: number | null
     line?: number
     githubUrl?: string
+    type?: string
+    name?: string
+    language?: string
   }[] = []
 
   try {
@@ -196,19 +214,40 @@ export async function POST(request: Request) {
     relevantDocsReferences = relevantDocs.map((doc) => {
       const source = doc.metadata.source || 'Unknown source'
       const page = doc.metadata.page || null
-      const line = doc.metadata.loc?.lines?.from || undefined
+      const line =
+        doc.metadata.loc?.lines?.from || doc.metadata.lineStart || undefined
 
       // Generate GitHub reference link if source is available
-      const githubRef =
-        source !== 'Unknown source'
-          ? formatGitHubReference(source, line)
-          : undefined
+      let githubRef: string | undefined
+      if (source !== 'Unknown source') {
+        // Check if this is a code reference with repository and branch information
+        if (doc.metadata.repository && doc.metadata.branch) {
+          githubRef = formatGitHubReference(
+            source,
+            line,
+            doc.metadata.repository,
+            doc.metadata.branch,
+          )
+        } else {
+          // Fall back to default behavior for document references
+          githubRef = formatGitHubReference(source, line)
+        }
+      }
+
+      // Determine if this is a code reference
+      const isCodeReference = doc.metadata.type && doc.metadata.name
 
       return {
         source,
         page,
         line,
         githubUrl: githubRef,
+        // Add code-specific metadata if available
+        ...(isCodeReference && {
+          type: doc.metadata.type,
+          name: doc.metadata.name,
+          language: doc.metadata.language,
+        }),
       }
     })
 
@@ -253,18 +292,13 @@ Follow these guidelines:
 Your goal is to help users understand and optimize their database schemas.
 
 Complete Schema Information:
-${schemaText}
+{schema_text}
 
 Relevant Database Best Practices and Documentation:
-${relevantDocsText}
+{relevant_docs_text}
 
 Document References:
-${relevantDocsReferences
-  .map(
-    (ref) =>
-      `- Source: ${ref.source}${ref.line ? `, Line: ${ref.line}` : ''}${ref.githubUrl ? `, URL: ${ref.githubUrl}` : ''}`,
-  )
-  .join('\n')}
+{document_references}
 
 Previous conversation:
 {chat_history}
@@ -274,6 +308,19 @@ Question: {input}
 Based on the schema information provided, relevant documentation, and considering any previous conversation, answer the question thoroughly and accurately. If you reference specific documentation, be sure to include the references at the end of your response as clickable GitHub links. NEVER include links to external websites.
 `)
 
+  // Format document references for template
+  const documentReferences = relevantDocsReferences
+    .map((ref) => {
+      // Format differently based on whether it's a code or document reference
+      if (ref.type && ref.name) {
+        // Code reference
+        return `- ${ref.type} ${ref.name} in ${ref.source}${ref.line ? `, Line: ${ref.line}` : ''}${ref.githubUrl ? `, URL: ${ref.githubUrl}` : ''}`
+      }
+      // Document reference
+      return `- Source: ${ref.source}${ref.line ? `, Line: ${ref.line}` : ''}${ref.githubUrl ? `, URL: ${ref.githubUrl}` : ''}`
+    })
+    .join('\n')
+
   // Create streaming chain
   const streamingChain = prompt.pipe(streamingModel)
 
@@ -282,7 +329,9 @@ Based on the schema information provided, relevant documentation, and considerin
     {
       input: message,
       chat_history: formattedChatHistory,
-      references: relevantDocsReferences,
+      schema_text: schemaText,
+      relevant_docs_text: relevantDocsText,
+      document_references: documentReferences,
     },
     {
       callbacks: [langfuseHandler],
