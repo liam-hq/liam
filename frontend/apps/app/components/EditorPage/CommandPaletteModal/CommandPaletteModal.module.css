@@ -1,0 +1,17 @@
+.commandList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2);
+  margin-top: var(--spacing-5);
+}
+
+.button {
+  padding: var(--spacing-2);
+  color: var(--global-foreground);
+  border: solid 1px var(--pane-border);
+  border-radius: var(--border-radius-md);
+}
+
+.button:hover {
+  background-color: var(--pane-background-hover);
+}

@@ -15,3 +15,7 @@
 .groupEditMode :global(.react-flow__pane) {
   cursor: crosshair;
 }
+
+.commentMode :global(.react-flow__pane) {
+  cursor: url('/assets/message_circle.svg'), auto !important;
+}
