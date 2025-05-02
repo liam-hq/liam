@@ -1,4 +1,4 @@
-import { describe, expect, it, assert } from 'vitest'
+import { assert, describe, expect, it } from 'vitest'
 import { type SchemaOverride, overrideSchema } from './overrideSchema.js'
 import type { Schema } from './schema.js'
 
@@ -730,13 +730,17 @@ describe('overrideSchema', () => {
       // Index should be added
       expect(schema.tables['users']?.indexes['users_id_idx']).toBeDefined()
       expect(schema.tables['users']?.indexes['users_id_idx']?.unique).toBe(true)
-      expect(schema.tables['users']?.indexes['users_id_idx']?.columns).toContain(
-        'id',
+      expect(
+        schema.tables['users']?.indexes['users_id_idx']?.columns,
+      ).toContain('id')
+      expect(schema.tables['users']?.indexes['users_id_idx']?.type).toBe(
+        'btree',
       )
-      expect(schema.tables['users']?.indexes['users_id_idx']?.type).toBe('btree')
 
       // Existing indexes should remain
-      expect(schema.tables['users']?.indexes['users_username_idx']).toBeDefined()
+      expect(
+        schema.tables['users']?.indexes['users_username_idx'],
+      ).toBeDefined()
     })
 
     it('should throw an error when adding an index to a non-existent table', () => {
@@ -897,11 +901,11 @@ describe('overrideSchema', () => {
       expect(schema.tables['users']?.constraints['users_pk']?.type).toBe(
         'PRIMARY KEY',
       )
-      const pkConstraint = schema.tables['users']?.constraints['users_pk'];
+      const pkConstraint = schema.tables['users']?.constraints['users_pk']
       if (pkConstraint && pkConstraint.type === 'PRIMARY KEY') {
-        expect(pkConstraint.columnName).toBe('id');
+        expect(pkConstraint.columnName).toBe('id')
       } else {
-        assert.fail('Expected PRIMARY KEY constraint with columnName property');
+        assert.fail('Expected PRIMARY KEY constraint with columnName property')
       }
     })
 
@@ -932,11 +936,12 @@ describe('overrideSchema', () => {
       expect(
         schema.tables['users']?.constraints['users_username_unique']?.type,
       ).toBe('UNIQUE')
-      const uniqueConstraint = schema.tables['users']?.constraints['users_username_unique'];
+      const uniqueConstraint =
+        schema.tables['users']?.constraints['users_username_unique']
       if (uniqueConstraint && uniqueConstraint.type === 'UNIQUE') {
-        expect(uniqueConstraint.columnName).toBe('username');
+        expect(uniqueConstraint.columnName).toBe('username')
       } else {
-        assert.fail('Expected UNIQUE constraint with columnName property');
+        assert.fail('Expected UNIQUE constraint with columnName property')
       }
     })
 
@@ -967,11 +972,12 @@ describe('overrideSchema', () => {
       expect(
         schema.tables['users']?.constraints['username_length_check']?.type,
       ).toBe('CHECK')
-      const checkConstraint = schema.tables['users']?.constraints['username_length_check'];
+      const checkConstraint =
+        schema.tables['users']?.constraints['username_length_check']
       if (checkConstraint && checkConstraint.type === 'CHECK') {
-        expect(checkConstraint.detail).toBe('LENGTH(username) > 3');
+        expect(checkConstraint.detail).toBe('LENGTH(username) > 3')
       } else {
-        assert.fail('Expected CHECK constraint with detail property');
+        assert.fail('Expected CHECK constraint with detail property')
       }
     })
 
@@ -1041,15 +1047,15 @@ describe('overrideSchema', () => {
       expect(schema.tables['posts']?.constraints['posts_user_fk']?.type).toBe(
         'FOREIGN KEY',
       )
-      const fkConstraint = schema.tables['posts']?.constraints['posts_user_fk'];
+      const fkConstraint = schema.tables['posts']?.constraints['posts_user_fk']
       if (fkConstraint && fkConstraint.type === 'FOREIGN KEY') {
-        expect(fkConstraint.columnName).toBe('user_id');
-        expect(fkConstraint.targetTableName).toBe('users');
-        expect(fkConstraint.targetColumnName).toBe('id');
-        expect(fkConstraint.updateConstraint).toBe('CASCADE');
-        expect(fkConstraint.deleteConstraint).toBe('CASCADE');
+        expect(fkConstraint.columnName).toBe('user_id')
+        expect(fkConstraint.targetTableName).toBe('users')
+        expect(fkConstraint.targetColumnName).toBe('id')
+        expect(fkConstraint.updateConstraint).toBe('CASCADE')
+        expect(fkConstraint.deleteConstraint).toBe('CASCADE')
       } else {
-        assert.fail('Expected FOREIGN KEY constraint with proper properties');
+        assert.fail('Expected FOREIGN KEY constraint with proper properties')
       }
     })
 
@@ -1336,17 +1342,17 @@ describe('overrideSchema', () => {
 
       // Relationship should be added
       expect(schema.relationships['posts_users']).toBeDefined()
-      const relationship = schema.relationships['posts_users'];
+      const relationship = schema.relationships['posts_users']
       if (relationship) {
-        expect(relationship.primaryTableName).toBe('users');
-        expect(relationship.primaryColumnName).toBe('id');
-        expect(relationship.foreignTableName).toBe('posts');
-        expect(relationship.foreignColumnName).toBe('user_id');
-        expect(relationship.cardinality).toBe('ONE_TO_MANY');
-        expect(relationship.updateConstraint).toBe('CASCADE');
-        expect(relationship.deleteConstraint).toBe('CASCADE');
+        expect(relationship.primaryTableName).toBe('users')
+        expect(relationship.primaryColumnName).toBe('id')
+        expect(relationship.foreignTableName).toBe('posts')
+        expect(relationship.foreignColumnName).toBe('user_id')
+        expect(relationship.cardinality).toBe('ONE_TO_MANY')
+        expect(relationship.updateConstraint).toBe('CASCADE')
+        expect(relationship.deleteConstraint).toBe('CASCADE')
       } else {
-        assert.fail('Expected relationship to be defined');
+        assert.fail('Expected relationship to be defined')
       }
     })
 

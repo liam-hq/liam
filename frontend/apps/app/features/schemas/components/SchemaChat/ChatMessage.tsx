@@ -96,6 +96,7 @@ export interface ChatMessageProps {
   timestamp?: Date
   parts?: MessagePart[]
   onApplySchema?: (jsonSchema: string) => void
+  onApplyOperations?: (yamlOperations: string) => void
 }
 
 export const ChatMessage: FC<ChatMessageProps> = ({
@@ -104,6 +105,7 @@ export const ChatMessage: FC<ChatMessageProps> = ({
   timestamp,
   parts,
   onApplySchema,
+  onApplyOperations,
 }) => {
   // Format the timestamp only if it exists
   const formattedTime = timestamp
@@ -113,22 +115,39 @@ export const ChatMessage: FC<ChatMessageProps> = ({
       })
     : null
 
-  // Function to detect and extract JSON blocks from the content
-  const _findJsonBlocks = (text: string) => {
-    const jsonBlocks: { start: number; end: number; content: string }[] = []
-    const codeBlockRegex = /```(?:json)?\s*([\s\S]*?)```/g
+  // Function to detect and extract code blocks from the content
+  const _findCodeBlocks = (text: string, language: string) => {
+    const codeBlocks: { start: number; end: number; content: string }[] = []
+    // 異なるパターンのコードブロックに対応
+    // 1. ```yaml のように言語指定がある場合
+    // 2. ``` だけのプレーンなコードブロックの場合
+    const codeBlockRegex = new RegExp(
+      `\`\`\`(?:${language})?\s*([\\s\\S]*?)\`\`\``,
+      'g',
+    )
 
     let match: RegExpExecArray | null
     // eslint-disable-next-line no-cond-assign
     while ((match = codeBlockRegex.exec(text)) !== null) {
-      jsonBlocks.push({
+      codeBlocks.push({
         start: match.index,
         end: match.index + match[0].length,
         content: match[1].trim(),
       })
     }
 
-    return jsonBlocks
+    console.log(`[ChatMessage] Found ${codeBlocks.length} code blocks for language: ${language}`, codeBlocks)
+    return codeBlocks
+  }
+
+  // Function to detect and extract JSON blocks from the content
+  const _findJsonBlocks = (text: string) => {
+    return _findCodeBlocks(text, 'json')
+  }
+
+  // Function to detect and extract YAML blocks from the content
+  const _findYamlBlocks = (text: string) => {
+    return _findCodeBlocks(text, 'yaml|yml')
   }
 
   // Function to copy text to clipboard
@@ -162,14 +181,14 @@ export const ChatMessage: FC<ChatMessageProps> = ({
     }, 2000)
   }
 
-  // Custom renderer for ReactMarkdown to add Apply button to JSON code blocks
+  // Custom renderer for ReactMarkdown to add Apply button to code blocks
   const customComponents: ReactMarkdownComponentsType = {
     // @ts-ignore - この型の不一致は無視する（ReactMarkdownの型定義の制限）
     pre: ({
       children,
       ...props
     }: { children?: ReactNode; [key: string]: unknown }) => {
-      // Check if this is a JSON code block by examining the children
+      // Check the code block language by examining the children
       const childProps =
         typeof children === 'object' && children && 'props' in children
           ? children.props
@@ -180,60 +199,75 @@ export const ChatMessage: FC<ChatMessageProps> = ({
         'className' in childProps
           ? String(childProps.className).replace('language-', '')
           : ''
-      const isJsonBlock = language === 'json' || !language
 
-      // Try to parse as JSON to ensure it's valid
+      const isJsonBlock = language === 'json'
+      const isYamlBlock = language === 'yaml' || language === 'yml'
+      const isCodeBlock = isJsonBlock || isYamlBlock || !language
+
+      // Get the content if available
+      const codeContent =
+        childProps &&
+        'children' in childProps &&
+        typeof childProps.children === 'string'
+          ? childProps.children
+          : ''
+
+      // Try to parse as JSON if it's a JSON block
       let isValidJson = false
-      try {
-        if (
-          isJsonBlock &&
-          childProps &&
-          'children' in childProps &&
-          typeof childProps.children === 'string'
-        ) {
-          JSON.parse(childProps.children)
+      if (isJsonBlock && codeContent) {
+        try {
+          JSON.parse(codeContent)
           isValidJson = true
+        } catch (_e) {
+          isValidJson = false
         }
-      } catch (_e) {
-        isValidJson = false
       }
 
+      // For YAML blocks, we'll assume it's valid if it has content
+      // The actual validation happens in the processSchemaOperations function
+      const isValidYaml = isYamlBlock && codeContent.trim().length > 0
+
+      // Style class for the code block
+      const blockClass = isJsonBlock
+        ? styles.jsonCodeBlock
+        : isYamlBlock
+          ? styles.yamlCodeBlock
+          : ''
+
       return (
-        <pre {...props} className={isJsonBlock ? styles.jsonCodeBlock : ''}>
+        <pre {...props} className={blockClass}>
           {children}
-          {isJsonBlock && (
+          {/* Copy button for any code block */}
+          {isCodeBlock && (
             <button
               type="button"
               className={styles.copyButton}
-              onClick={() => {
-                const content =
-                  childProps &&
-                  'children' in childProps &&
-                  typeof childProps.children === 'string'
-                    ? childProps.children
-                    : ''
-                copyToClipboard(content)
-              }}
+              onClick={() => copyToClipboard(codeContent)}
               aria-label="Copy to clipboard"
             >
               Copy
             </button>
           )}
+
+          {/* Apply button for JSON schema */}
           {isValidJson && onApplySchema && (
             <button
               type="button"
               className={styles.applyButton}
-              onClick={() => {
-                if (
-                  childProps &&
-                  'children' in childProps &&
-                  typeof childProps.children === 'string'
-                ) {
-                  onApplySchema(childProps.children)
-                }
-              }}
+              onClick={() => onApplySchema(codeContent)}
             >
-              Apply
+              Apply Schema
+            </button>
+          )}
+
+          {/* Apply button for YAML operations */}
+          {isValidYaml && onApplyOperations && (
+            <button
+              type="button"
+              className={styles.applyButton}
+              onClick={() => onApplyOperations(codeContent)}
+            >
+              Apply Operations
             </button>
           )}
         </pre>
@@ -267,7 +301,9 @@ export const ChatMessage: FC<ChatMessageProps> = ({
                         content={part.text || ''}
                         id={`part-${part.text?.substring(0, 20)}`}
                         components={
-                          onApplySchema ? customComponents : undefined
+                          onApplySchema || onApplyOperations
+                            ? customComponents
+                            : undefined
                         }
                         isStreaming={(part.text?.length || 0) > 500}
                       />
@@ -306,7 +342,11 @@ export const ChatMessage: FC<ChatMessageProps> = ({
               <MemoizedMarkdown
                 content={content}
                 id={`message-${content.substring(0, 20)}`}
-                components={onApplySchema ? customComponents : undefined}
+                components={
+                  onApplySchema || onApplyOperations
+                    ? customComponents
+                    : undefined
+                }
                 isStreaming={content.length > 500}
               />
             )}

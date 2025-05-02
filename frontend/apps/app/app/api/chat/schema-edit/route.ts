@@ -1,8 +1,13 @@
 import { openai } from '@ai-sdk/openai'
-import { type Schema, schemaSchema } from '@liam-hq/db-structure'
+import {
+  type Operation,
+  type Schema,
+  operationSchema,
+} from '@liam-hq/db-structure'
 import { toJsonSchema } from '@valibot/to-json-schema'
 import { type Message, streamText } from 'ai'
 import { NextResponse } from 'next/server'
+import { stringify as stringifyYaml } from 'yaml'
 
 // Allow streaming responses up to 30 seconds
 export const maxDuration = 30
@@ -94,7 +99,99 @@ const convertSchemaToText = (schema: Schema): string => {
   return schemaText
 }
 
-const schemaJsonSchema = toJsonSchema(schemaSchema)
+// Generate example operations in YAML format for different operation types
+const generateOperationExamples = (): string => {
+  // Example 1: Adding a new table
+  const addTableExample: Operation = {
+    type: 'addTable',
+    table: {
+      name: 'users',
+      comment: 'User account information',
+      columns: {
+        id: {
+          name: 'id',
+          type: 'uuid',
+          default: null,
+          check: null,
+          primary: true,
+          unique: true,
+          notNull: true,
+          comment: 'Primary key',
+        },
+        email: {
+          name: 'email',
+          type: 'text',
+          default: null,
+          check: null,
+          primary: false,
+          unique: true,
+          notNull: true,
+          comment: 'User email address',
+        },
+      },
+      indexes: {},
+      constraints: {},
+    },
+  }
+
+  // Example 2: Adding a column to an existing table
+  const addColumnExample: Operation = {
+    type: 'addColumn',
+    tableName: 'existing_table',
+    columnName: 'new_column',
+    column: {
+      name: 'new_column',
+      type: 'text',
+      default: null,
+      check: null,
+      primary: false,
+      unique: false,
+      notNull: false,
+      comment: 'Description of the new column',
+    },
+  }
+
+  // Example 3: Updating a column's properties
+  const updateColumnExample: Operation = {
+    type: 'updateColumn',
+    tableName: 'users',
+    columnName: 'email',
+    properties: {
+      notNull: true,
+      comment: 'Updated description for the email column',
+    },
+  }
+
+  // Example 4: Adding a relationship
+  const addRelationshipExample: Operation = {
+    type: 'addRelationship',
+    relationshipName: 'users_posts',
+    relationship: {
+      name: 'users_posts',
+      primaryTableName: 'users',
+      primaryColumnName: 'id',
+      foreignTableName: 'posts',
+      foreignColumnName: 'user_id',
+      cardinality: 'ONE_TO_MANY',
+      updateConstraint: 'CASCADE',
+      deleteConstraint: 'CASCADE',
+    },
+  }
+
+  // Convert examples to YAML and join
+  return [
+    '# Example 1: Adding a new table',
+    stringifyYaml(addTableExample),
+    '# Example 2: Adding a column to an existing table',
+    stringifyYaml(addColumnExample),
+    "# Example 3: Updating a column's properties",
+    stringifyYaml(updateColumnExample),
+    '# Example 4: Adding a relationship',
+    stringifyYaml(addRelationshipExample),
+  ].join('\n\n')
+}
+
+const operationJsonSchema = toJsonSchema(operationSchema)
 
 export async function POST(request: Request) {
   const { messages, schema } = await request.json()
@@ -116,7 +213,10 @@ export async function POST(request: Request) {
   // Convert schema to text representation
   const schemaText = convertSchemaToText(schema)
 
-  // Create system prompt with schema context
+  // Generate example operations in YAML
+  const operationExamples = generateOperationExamples()
+
+  // Create system prompt with schema context and operation format
   const systemPrompt = `
 You are a database schema expert.
 Answer questions about the user's schema and provide advice on database design.
@@ -129,70 +229,47 @@ Follow these guidelines:
 5. Provide only information directly related to the question, avoiding unnecessary details.
 6. Format your responses using GitHub Flavored Markdown (GFM) for better readability.
 
-When suggesting schema changes, provide them in a JSON code block that follows the schema structure:
+When suggesting schema changes, provide individual operations in YAML code blocks.
+DO NOT include the full 'overrides' structure - just return the individual operation that should be added to the operations array.
 
-\`\`\`json
-{
-  "tables": {
-    "table_name": {
-      "name": "table_name",
-      "columns": {
-        "column_name": {
-          "name": "column_name",
-          "type": "data_type",
-          "default": null,
-          "check": null,
-          "primary": false,
-          "unique": false,
-          "notNull": true,
-          "comment": null
-        }
-      },
-      "comment": "Table description",
-      "indexes": {
-        "index_name": {
-          "name": "index_name",
-          "unique": true,
-          "columns": ["column1", "column2"],
-          "type": "btree"
-        }
-      },
-      "constraints": {}
-    }
-  },
-  "relationships": {
-    "relationship_name": {
-      "name": "relationship_name",
-      "primaryTableName": "primary_table",
-      "primaryColumnName": "primary_column",
-      "foreignTableName": "foreign_table",
-      "foreignColumnName": "foreign_column",
-      "cardinality": "ONE_TO_MANY",
-      "updateConstraint": "CASCADE",
-      "deleteConstraint": "SET_NULL"
-    }
-  },
-  "tableGroups": {
-    "group_id": {
-      "name": "Group Name",
-      "tables": ["table1", "table2"],
-      "comment": "Group description"
-    }
-  }
-}
+Here are examples of different operation types in YAML format:
+
+\`\`\`yaml
+${operationExamples}
 \`\`\`
 
-The schema must be valid according to the following JSON schema:
+Available operation types:
+1. addTable - Add a new table to the schema
+2. deleteTable - Remove an existing table from the schema
+3. addColumn - Add a new column to an existing table
+4. deleteColumn - Remove a column from an existing table
+5. updateColumn - Update properties of an existing column
+6. addIndex - Add a new index to an existing table
+7. deleteIndex - Remove an index from an existing table
+8. addConstraint - Add a constraint to an existing table
+9. deleteConstraint - Remove a constraint from an existing table
+10. addRelationship - Add a relationship between tables
+11. deleteRelationship - Remove a relationship
+
+Each operation must conform to the following JSON schema:
 
 \`\`\`json
-${schemaJsonSchema}
+${operationJsonSchema}
 \`\`\`
 
 Complete Schema Information:
 ${schemaText}
 
+Important guidelines:
+- Each operation should be presented in a separate YAML code block
+- DO NOT include the full 'overrides' structure - just return the operation(s)
+- Keep operations focused and minimal - only include what's necessary for the specific change
+- Validate that any referenced tables, columns, or relationships actually exist in the schema
+- For any complex changes, break them down into multiple simple operations
+- When adding tables or columns, always include proper comments for documentation
+
 Your goal is to help users understand and optimize their database schemas.
-When the user asks to modify the schema, provide the JSON structure for the requested changes.
+When the user asks to modify the schema, provide the YAML operation(s) needed to make the requested changes.
 `
 
   // Generate streaming response using Vercel AI SDK

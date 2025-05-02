@@ -1,274 +1,176 @@
-import type {
-  Column,
-  Relationships,
-  Schema,
-  Table,
-  TableGroup,
-} from '@liam-hq/db-structure'
-import { schemaSchema } from '@liam-hq/db-structure'
+import type { Operation, SchemaOverride } from '@liam-hq/db-structure'
+import { operationSchema } from '@liam-hq/db-structure'
 import { safeParse } from 'valibot'
+import { parse as parseYaml, stringify as stringifyYaml } from 'yaml'
 
 /**
- * Result of processing schema modifications
+ * Result of processing schema operations
  */
-export interface SchemaModificationResult {
-  schema: Schema
+export interface SchemaOperationResult {
+  operations: Operation[]
   modified: boolean
   error?: string
 }
 
 /**
- * Process AI response to extract and apply schema modifications
- * @param message - AI response message containing potential schema modifications
- * @param currentSchema - Current schema to be modified
- * @returns Object containing modified schema, modification status, and any errors
+ * Process AI response to extract schema operations from YAML
+ * @param message - AI response message containing potential schema operations in YAML format
+ * @returns Object containing extracted operations, modification status, and any errors
  */
-export function processSchemaModification(
+export function processSchemaOperations(
   message: string,
-  currentSchema: Schema,
-): SchemaModificationResult {
+): SchemaOperationResult {
   try {
-    // Try to extract JSON from the message - it might be wrapped in markdown code blocks
-    let jsonContent = message
-
-    // Extract JSON from code blocks if present
-    const jsonCodeBlockMatch = message.match(/```(?:json)?\s*([\s\S]*?)\s*```/)
-    if (jsonCodeBlockMatch?.[1]) {
-      jsonContent = jsonCodeBlockMatch[1]
+    console.log('[SchemaModifier] Processing YAML operations from message:', message)
+    
+    // Extract operations from YAML code blocks in the message
+    const operations: Operation[] = []
+    
+    // Try to match YAML code blocks with different patterns
+    const yamlCodeBlocks = message.match(/```(?:yaml|yml)?\s*([\s\S]*?)\s*```/g)
+    
+    // Debug logging
+    console.log('[SchemaModifier] Found YAML code blocks:', yamlCodeBlocks)
+    
+    // Try to directly parse the entire message as YAML if no code blocks found
+    if (!yamlCodeBlocks || yamlCodeBlocks.length === 0) {
+      console.log('[SchemaModifier] No code blocks found, trying to parse entire message as YAML')
+      try {
+        const directYaml = parseYaml(message)
+        if (directYaml) {
+          const result = safeParse(operationSchema, directYaml)
+          if (result.success) {
+            console.log('[SchemaModifier] Successfully parsed entire message as a YAML operation')
+            operations.push(result.output)
+            return {
+              operations,
+              modified: true,
+            }
+          } else {
+            console.log('[SchemaModifier] Direct parsing failed validation:', result.issues)
+          }
+        }
+      } catch (e) {
+        console.log('[SchemaModifier] Direct parsing as YAML failed:', e)
+      }
+      
+      return {
+        operations: [],
+        modified: false,
+        error: 'No YAML code blocks found in response',
+      }
     }
 
-    // Parse the JSON
-    try {
-      const schemaModification = JSON.parse(jsonContent)
+    for (const block of yamlCodeBlocks) {
+      try {
+        // Extract the YAML content from the code block
+        const yamlMatch = block.match(/```(?:yaml|yml)?\s*([\s\S]*?)\s*```/)
+        if (!yamlMatch || !yamlMatch[1]) {
+          console.warn('[SchemaModifier] Could not extract YAML content from code block:', block)
+          continue
+        }
 
-      // Merge schema changes with current schema
-      const updatedSchema = mergeSchemaChanges(
-        currentSchema,
-        schemaModification,
-      )
+        const yamlContent = yamlMatch[1].trim()
+        if (!yamlContent) {
+          console.log('[SchemaModifier] Empty YAML content in block')
+          continue
+        }
+        
+        console.log('[SchemaModifier] Processing YAML content:', yamlContent)
 
-      // Validate schema against schemaSchema using safeParse
-      const result = safeParse(schemaSchema, updatedSchema)
+        // Parse the YAML content
+        const parsedOperation = parseYaml(yamlContent)
+        console.log('[SchemaModifier] Parsed YAML to object:', parsedOperation)
 
-      if (result.success) {
-        // If validation passes, return updated schema
-        return { schema: updatedSchema, modified: true }
+        // Validate that the parsed content is an operation
+        const result = safeParse(operationSchema, parsedOperation)
+
+        if (result.success) {
+          console.log('[SchemaModifier] Valid operation found:', result.output)
+          operations.push(result.output)
+        } else {
+          console.error('[SchemaModifier] Invalid operation in YAML block:', result.issues)
+          // Continue processing other blocks even if this one failed
+        }
+      } catch (error) {
+        console.error('[SchemaModifier] Error processing YAML block:', error)
+        // Continue processing other blocks even if this one failed
       }
+    }
 
-      // Handle validation error
-      console.error('Schema validation error:', result.issues)
-
-      // Format the validation issues
-      const details = Array.isArray(result.issues)
-        ? result.issues
-            .map((issue) => {
-              // Handle path formatting carefully
-              const path = Array.isArray(issue.path)
-                ? issue.path.map((segment) => String(segment)).join('.')
-                : 'unknown-path'
-              return `${path} ${issue.message || 'is invalid'}`
-            })
-            .join('; ')
-        : 'Validation issues present'
-
+    // If we found at least one valid operation, consider the modification successful
+    if (operations.length > 0) {
       return {
-        schema: currentSchema,
-        modified: false,
-        error: `Validation failed: ${details}`,
+        operations,
+        modified: true,
       }
-    } catch (parseError) {
-      console.error('JSON parsing error:', parseError)
-      return {
-        schema: currentSchema,
-        modified: false,
-        error: `Invalid JSON format: ${parseError instanceof Error ? parseError.message : 'Unknown parse error'}`,
-      }
+    }
+    return {
+      operations: [],
+      modified: false,
+      error: 'No valid operations found in YAML code blocks',
     }
   } catch (e) {
-    // Handle any other unexpected errors
-    console.error('Failed to process schema modification:', e)
-
+    // Handle any unexpected errors
+    console.error('Failed to process schema operations:', e)
     return {
-      schema: currentSchema,
+      operations: [],
       modified: false,
       error: `Processing error: ${e instanceof Error ? e.message : JSON.stringify(e)}`,
     }
   }
-
-  // All execution paths above should return a value, so this code should never be reached
 }
 
 /**
- * Merge partial schema changes into the current schema
- * @param currentSchema - Current schema
- * @param changes - Partial schema changes to apply
- * @returns Updated schema with changes applied
+ * Creates or updates a schema override with new operations
+ * @param currentOverride - Current schema override or null if none exists
+ * @param newOperations - New operations to add to the override
+ * @returns Updated schema override with the new operations
  */
-function mergeSchemaChanges(
-  currentSchema: Schema,
-  changes: Partial<Schema>,
-): Schema {
-  // Create deep copy of current schema
-  const newSchema = JSON.parse(JSON.stringify(currentSchema)) as Schema
-
-  // Merge table changes
-  if (changes.tables) {
-    // Ensure each table has the required properties
-    const processedTables: Record<string, Table> = {}
-
-    for (const [tableName, tableData] of Object.entries(changes.tables || {})) {
-      if (tableData) {
-        // Check if the table already exists in the current schema
-        const existingTable = currentSchema.tables[tableName]
-
-        // Initialize the table (copy existing table if it exists, or create new one)
-        const processedTable: Table = existingTable
-          ? JSON.parse(JSON.stringify(existingTable))
-          : {
-              name: tableName,
-              columns: {},
-              comment: tableData.comment ?? null,
-              indexes: {},
-              constraints: {},
-            }
-
-        // Update comment if provided
-        if (tableData.comment !== undefined) {
-          processedTable.comment = tableData.comment
-        }
-
-        // Merge indexes if provided (keeping existing indexes)
-        if (tableData.indexes) {
-          processedTable.indexes = {
-            ...processedTable.indexes,
-            ...tableData.indexes,
-          }
-        }
-
-        // Merge constraints if provided (keeping existing constraints)
-        if (tableData.constraints) {
-          processedTable.constraints = {
-            ...processedTable.constraints,
-            ...tableData.constraints,
-          }
-        }
-
-        // Process columns to ensure they have name property
-        if (tableData.columns) {
-          // Start with existing columns to preserve them
-          const processedColumns: Record<string, Column> = {
-            ...processedTable.columns,
-          }
-
-          for (const [columnName, columnObj] of Object.entries(
-            tableData.columns,
-          )) {
-            // Need to ensure columnObj is treated as a proper object
-            const columnData = columnObj as Partial<Column>
-
-            processedColumns[columnName] = {
-              name: columnName, // Ensure the name property is set
-              type: columnData.type || 'text',
-              default: columnData.default ?? null,
-              check: columnData.check ?? null,
-              primary: columnData.primary ?? false,
-              unique: columnData.unique ?? false,
-              notNull: columnData.notNull ?? false,
-              comment: columnData.comment ?? null,
-            }
-          }
-
-          processedTable.columns = processedColumns
-        }
-
-        processedTables[tableName] = processedTable
-      }
-    }
-
-    newSchema.tables = {
-      ...newSchema.tables,
-      ...processedTables,
+export function createOrUpdateSchemaOverride(
+  currentOverride: SchemaOverride | null,
+  newOperations: Operation[],
+): SchemaOverride {
+  // If no current override exists, create a new one
+  if (!currentOverride) {
+    return {
+      overrides: {
+        tables: {},
+        tableGroups: {},
+        operations: newOperations,
+      },
     }
   }
 
-  // Merge relationship changes
-  if (changes.relationships) {
-    // Check if existing relationships need to be preserved
-    const existingRelationships = newSchema.relationships || {}
+  // Start with a deep copy of the current override
+  const updatedOverride: SchemaOverride = JSON.parse(
+    JSON.stringify(currentOverride),
+  )
 
-    // Process relationships from changes
-    const processedRelationships: Relationships = {}
-
-    for (const [relationshipName, relationshipObj] of Object.entries(
-      changes.relationships || {},
-    )) {
-      if (relationshipObj) {
-        // Create type-safe relationship data
-        const relationshipData = relationshipObj as Record<string, unknown>
-
-        // Extract properties with proper type checking
-        processedRelationships[relationshipName] = {
-          name: relationshipName,
-          primaryTableName: (relationshipData.primaryTableName as string) || '',
-          primaryColumnName:
-            (relationshipData.primaryColumnName as string) || '',
-          foreignTableName: (relationshipData.foreignTableName as string) || '',
-          foreignColumnName:
-            (relationshipData.foreignColumnName as string) || '',
-          cardinality:
-            (relationshipData.cardinality as 'ONE_TO_ONE' | 'ONE_TO_MANY') ||
-            'ONE_TO_MANY',
-          updateConstraint:
-            (relationshipData.updateConstraint as
-              | 'CASCADE'
-              | 'RESTRICT'
-              | 'SET_NULL'
-              | 'SET_DEFAULT'
-              | 'NO_ACTION') || 'NO_ACTION',
-          deleteConstraint:
-            (relationshipData.deleteConstraint as
-              | 'CASCADE'
-              | 'RESTRICT'
-              | 'SET_NULL'
-              | 'SET_DEFAULT'
-              | 'NO_ACTION') || 'NO_ACTION',
-        }
-      }
-    }
-
-    // Merge existing relationships with the new ones
-    newSchema.relationships = {
-      ...existingRelationships,
-      ...processedRelationships,
-    }
+  // Initialize operations array if it doesn't exist
+  if (!updatedOverride.overrides.operations) {
+    updatedOverride.overrides.operations = []
   }
 
-  // Merge table group changes
-  if (changes.tableGroups) {
-    // Ensure each table group has the required properties
-    const processedTableGroups: Record<string, TableGroup> = {}
+  // Add new operations
+  updatedOverride.overrides.operations.push(...newOperations)
 
-    for (const [groupName, groupObj] of Object.entries(
-      changes.tableGroups || {},
-    )) {
-      if (groupObj) {
-        // Need to ensure groupObj is treated as a proper object
-        const groupData = groupObj as Partial<TableGroup>
+  return updatedOverride
+}
 
-        // Ensure table group has name property
-        processedTableGroups[groupName] = {
-          name: groupData.name || groupName, // Ensure the name property is set
-          tables: groupData.tables || [],
-          comment: groupData.comment ?? null,
-        }
-      }
-    }
-
-    newSchema.tableGroups = {
-      ...newSchema.tableGroups,
-      ...processedTableGroups,
-    }
+/**
+ * Convert a schema override to YAML format
+ * @param override - Schema override to convert to YAML
+ * @returns YAML string representation of the schema override
+ */
+export function schemaOverrideToYaml(override: SchemaOverride): string {
+  try {
+    // Use the yaml library to convert the schema override to YAML
+    return stringifyYaml(override)
+  } catch (error) {
+    console.error('Error converting schema override to YAML:', error)
+    throw new Error(
+      `Failed to convert schema override to YAML: ${error instanceof Error ? error.message : 'Unknown error'}`,
+    )
   }
-
-  return newSchema
 }

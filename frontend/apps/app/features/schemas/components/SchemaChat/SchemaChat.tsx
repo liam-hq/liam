@@ -1,7 +1,7 @@
 'use client'
 
 import { useChat } from '@ai-sdk/react'
-import type { Schema } from '@liam-hq/db-structure'
+import type { Schema, SchemaOverride } from '@liam-hq/db-structure'
 import {
   type ChangeEvent,
   type FC,
@@ -10,18 +10,62 @@ import {
   useMemo,
   useRef,
 } from 'react'
-import { processSchemaModification } from '../../utils/SchemaModifier'
+import { parse as parseYaml, stringify as stringifyYaml } from 'yaml'
+import {
+  createOrUpdateSchemaOverride,
+  processSchemaOperations,
+} from '../../utils/SchemaModifier'
 import { showSchemaToast } from '../../utils/SchemaToast'
 import { ChatInput } from '../SchemaChat/ChatInput'
 import { ChatMessage } from '../SchemaChat/ChatMessage'
 import styles from './SchemaChat.module.css'
 
+// 一時的なSchemaModification処理関数（後で適切な場所に移動する）
+interface SchemaModificationResult {
+  schema: Schema
+  modified: boolean
+  error?: string
+}
+
+function processSchemaModification(
+  jsonSchema: string,
+  currentSchema: Schema,
+): SchemaModificationResult {
+  try {
+    // JSONを解析
+    const schemaModification = JSON.parse(jsonSchema)
+
+    // 深いコピーを作成して元のスキーマを変更しないようにする
+    const updatedSchema = JSON.parse(
+      JSON.stringify(schemaModification),
+    ) as Schema
+
+    return {
+      schema: updatedSchema,
+      modified: true,
+    }
+  } catch (error) {
+    return {
+      schema: currentSchema,
+      modified: false,
+      error: error instanceof Error ? error.message : 'Unknown error',
+    }
+  }
+}
+
 interface SchemaChatProps {
   schema: Schema
   onSchemaChange: (newSchema: Schema) => void
+  overrideYaml?: string
+  onOverrideChange?: (newOverrideYaml: string) => void
 }
 
-export const SchemaChat: FC<SchemaChatProps> = ({ schema, onSchemaChange }) => {
+export const SchemaChat: FC<SchemaChatProps> = ({
+  schema,
+  onSchemaChange,
+  overrideYaml,
+  onOverrideChange,
+}) => {
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
   const {
@@ -37,7 +81,6 @@ export const SchemaChat: FC<SchemaChatProps> = ({ schema, onSchemaChange }) => {
     body: {
       schema,
     },
-    // Removed the automatic schema modification on message completion
   })
 
   // Scroll to bottom once component is mounted
@@ -62,7 +105,6 @@ export const SchemaChat: FC<SchemaChatProps> = ({ schema, onSchemaChange }) => {
 
       <div className={styles.messagesContainer}>
         {useMemo(
-          // eslint-disable-next-line react-hooks/exhaustive-deps
           () =>
             messages.map((message) => (
               <ChatMessage
@@ -127,9 +169,93 @@ export const SchemaChat: FC<SchemaChatProps> = ({ schema, onSchemaChange }) => {
                         }
                       }
                 }
+                onApplyOperations={
+                  !message.role || message.role === 'user' || !onOverrideChange
+                    ? undefined
+                    : (yamlOperations) => {
+                        try {
+                          // Process operations from YAML
+                          const { operations, modified, error } =
+                            processSchemaOperations(yamlOperations)
+
+                          if (modified && operations.length > 0) {
+                            // Parse current override YAML if it exists
+                            let currentOverride: SchemaOverride | null = null
+
+                            if (overrideYaml?.trim()) {
+                              try {
+                                currentOverride = parseYaml(
+                                  overrideYaml,
+                                ) as SchemaOverride
+                              } catch (e) {
+                                console.error(
+                                  'Error parsing current override YAML:',
+                                  e,
+                                )
+                              }
+                            }
+
+                            // Create or update schema override with new operations
+                            const updatedOverride =
+                              createOrUpdateSchemaOverride(
+                                currentOverride,
+                                operations,
+                              )
+
+                            // Convert updated override back to YAML and apply changes
+                            const updatedOverrideYaml =
+                              stringifyYaml(updatedOverride)
+                            onOverrideChange(updatedOverrideYaml)
+
+                            // Show success notification
+                            showSchemaToast(
+                              `Successfully applied ${operations.length} operations to schema override`,
+                              'success',
+                            )
+                          } else if (error) {
+                            // Show error notification
+                            showSchemaToast(
+                              `Failed to apply operations: ${error}`,
+                              'error',
+                            )
+                            // Add error to input for AI to see
+                            handleInputChange({
+                              target: {
+                                value: `Failed to apply operations: ${error}. Please fix this issue and provide corrected YAML operations.`,
+                              },
+                            } as ChangeEvent<HTMLTextAreaElement>)
+                          } else {
+                            showSchemaToast(
+                              'No valid operations were found in the response',
+                              'info',
+                            )
+                          }
+                        } catch (err) {
+                          const errorMessage =
+                            err instanceof Error ? err.message : 'Unknown error'
+                          showSchemaToast(
+                            `Error applying operations: ${errorMessage}`,
+                            'error',
+                          )
+                          // Add error to input for AI to see
+                          handleInputChange({
+                            target: {
+                              value: `Error applying operations: ${errorMessage}. Please provide valid YAML operations that fix this issue.`,
+                            },
+                          } as ChangeEvent<HTMLTextAreaElement>)
+                        }
+                      }
+                }
               />
             )),
-          [messages, schema],
+          [
+            messages,
+            schema,
+            overrideYaml,
+            onOverrideChange,
+            onSchemaChange,
+            handleInputChange,
+          ],
         )}
         {(status === 'submitted' || status === 'streaming') && (
           <div className={styles.loadingContainer}>

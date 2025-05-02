@@ -30,6 +30,8 @@ export {
   aRelationship,
 } from './factories.js'
 export {
+  type Operation,
+  operationSchema,
   overrideSchema,
   schemaOverrideSchema,
 } from './overrideSchema.js'

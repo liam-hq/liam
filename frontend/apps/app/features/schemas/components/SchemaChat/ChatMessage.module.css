@@ -145,6 +145,7 @@
   background-color: var(--global-foreground-muted);
 }
 
-.jsonCodeBlock {
+.jsonCodeBlock,
+.yamlCodeBlock {
   position: relative;
 }

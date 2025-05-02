@@ -170,7 +170,7 @@ export type DeleteRelationshipOperation = v.InferOutput<
 >
 
 // Union of all operation types
-const operationSchema = v.union([
+export const operationSchema = v.union([
   addTableOperationSchema,
   deleteTableOperationSchema,
   addColumnOperationSchema,
@@ -271,19 +271,19 @@ export function overrideSchema(
 
           // Remove the table from any table groups
           for (const groupName in result.tableGroups) {
-            if (result.tableGroups[groupName] && result.tableGroups[groupName].tables) {
-              result.tableGroups[groupName].tables = result.tableGroups[groupName].tables.filter(
-                (name) => name !== tableName
-              )
+            if (result.tableGroups[groupName]?.tables) {
+              result.tableGroups[groupName].tables = result.tableGroups[
+                groupName
+              ].tables.filter((name) => name !== tableName)
             }
           }
 
           // Also update the tableGroups variable that will be returned
           for (const groupName in tableGroups) {
-            if (tableGroups[groupName] && tableGroups[groupName].tables) {
-              tableGroups[groupName].tables = tableGroups[groupName].tables.filter(
-                (name) => name !== tableName
-              )
+            if (tableGroups[groupName]?.tables) {
+              tableGroups[groupName].tables = tableGroups[
+                groupName
+              ].tables.filter((name) => name !== tableName)
             }
           }
 
@@ -351,7 +351,7 @@ export function overrideSchema(
           // Check if the column is used in any indexes and remove it
           for (const indexName in result.tables[tableName].indexes) {
             const index = result.tables[tableName].indexes[indexName]
-            if (index && index.columns.includes(columnName)) {
+            if (index?.columns.includes(columnName)) {
               // If index uses only this column, delete the entire index
               if (index.columns.length === 1) {
                 delete result.tables[tableName].indexes[indexName]
@@ -406,8 +406,12 @@ export function overrideSchema(
           for (const [key, value] of Object.entries(properties)) {
             if (value !== undefined) {
               // Need to use Record<string, unknown> type here for dynamic property access
-              ;(result.tables[tableName].columns[columnName] as Record<string, unknown>)[key] =
-                value
+              ;(
+                result.tables[tableName].columns[columnName] as Record<
+                  string,
+                  unknown
+                >
+              )[key] = value
             }
           }
 
@@ -430,7 +434,7 @@ export function overrideSchema(
           }
 
           // Validate that all columns in the index exist in the table
-          if (index && index.columns) {
+          if (index?.columns) {
             for (const columnName of index.columns) {
               if (!result.tables[tableName].columns[columnName]) {
                 throw new Error(
@@ -499,8 +503,11 @@ export function overrideSchema(
               }
 
               // Check that the target column exists in the target table
-              const targetTable = result.tables[constraint.targetTableName];
-              if (targetTable && !targetTable.columns[constraint.targetColumnName]) {
+              const targetTable = result.tables[constraint.targetTableName]
+              if (
+                targetTable &&
+                !targetTable.columns[constraint.targetColumnName]
+              ) {
                 throw new Error(
                   `Foreign key target column does not exist: ${constraint.targetColumnName} in table ${constraint.targetTableName}`,
                 )
@@ -554,16 +561,22 @@ export function overrideSchema(
           }
 
           // Validate primary column exists in primary table
-          const primaryTable = result.tables[relationship.primaryTableName];
-          if (primaryTable && !primaryTable.columns[relationship.primaryColumnName]) {
+          const primaryTable = result.tables[relationship.primaryTableName]
+          if (
+            primaryTable &&
+            !primaryTable.columns[relationship.primaryColumnName]
+          ) {
             throw new Error(
               `Primary column does not exist: ${relationship.primaryColumnName} in table ${relationship.primaryTableName}`,
             )
           }
 
           // Validate foreign column exists in foreign table
-          const foreignTable = result.tables[relationship.foreignTableName];
-          if (foreignTable && !foreignTable.columns[relationship.foreignColumnName]) {
+          const foreignTable = result.tables[relationship.foreignTableName]
+          if (
+            foreignTable &&
+            !foreignTable.columns[relationship.foreignColumnName]
+          ) {
             throw new Error(
               `Foreign column does not exist: ${relationship.foreignColumnName} in table ${relationship.foreignTableName}`,
             )
