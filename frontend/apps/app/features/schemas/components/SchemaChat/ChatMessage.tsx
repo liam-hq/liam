@@ -118,25 +118,29 @@ export const ChatMessage: FC<ChatMessageProps> = ({
   // Function to detect and extract code blocks from the content
   const _findCodeBlocks = (text: string, language: string) => {
     const codeBlocks: { start: number; end: number; content: string }[] = []
-    // 異なるパターンのコードブロックに対応
-    // 1. ```yaml のように言語指定がある場合
-    // 2. ``` だけのプレーンなコードブロックの場合
-    const codeBlockRegex = new RegExp(
-      `\`\`\`(?:${language})?\s*([\\s\\S]*?)\`\`\``,
-      'g',
-    )
 
+    // Handle different patterns of code blocks
+    // 1. With explicit language tag (e.g., ```yaml)
+    // 2. Plain code blocks without language specification (just ```)
+    // For YAML, also match yml variant
+    const pattern = language.includes('|')
+      ? `\`\`\`(?:${language})?\s*([\\s\\S]*?)\`\`\``
+      : `\`\`\`(?:${language})?\s*([\\s\\S]*?)\`\`\``
+
+    const codeBlockRegex = new RegExp(pattern, 'g')
     let match: RegExpExecArray | null
+
     // eslint-disable-next-line no-cond-assign
     while ((match = codeBlockRegex.exec(text)) !== null) {
-      codeBlocks.push({
-        start: match.index,
-        end: match.index + match[0].length,
-        content: match[1].trim(),
-      })
+      const content = match[1]?.trim()
+      if (content) {
+        codeBlocks.push({
+          start: match.index,
+          end: match.index + match[0].length,
+          content: content,
+        })
+      }
     }
-
-    console.log(`[ChatMessage] Found ${codeBlocks.length} code blocks for language: ${language}`, codeBlocks)
     return codeBlocks
   }
 
@@ -223,9 +227,11 @@ export const ChatMessage: FC<ChatMessageProps> = ({
         }
       }
 
-      // For YAML blocks, we'll assume it's valid if it has content
+      // For YAML blocks, we'll assume it's valid if it has content and appears to be YAML format
       // The actual validation happens in the processSchemaOperations function
-      const isValidYaml = isYamlBlock && codeContent.trim().length > 0
+      const isValidYaml =
+        (isYamlBlock || (!isJsonBlock && codeContent.includes(':'))) &&
+        codeContent.trim().length > 0
 
       // Style class for the code block
       const blockClass = isJsonBlock
@@ -267,7 +273,7 @@ export const ChatMessage: FC<ChatMessageProps> = ({
               className={styles.applyButton}
               onClick={() => onApplyOperations(codeContent)}
             >
-              Apply Operations
+              Apply Schema Operation
             </button>
           )}
         </pre>

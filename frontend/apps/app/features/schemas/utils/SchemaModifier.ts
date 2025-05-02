@@ -21,80 +21,109 @@ export function processSchemaOperations(
   message: string,
 ): SchemaOperationResult {
   try {
-    console.log('[SchemaModifier] Processing YAML operations from message:', message)
-    
     // Extract operations from YAML code blocks in the message
     const operations: Operation[] = []
-    
-    // Try to match YAML code blocks with different patterns
-    const yamlCodeBlocks = message.match(/```(?:yaml|yml)?\s*([\s\S]*?)\s*```/g)
-    
-    // Debug logging
-    console.log('[SchemaModifier] Found YAML code blocks:', yamlCodeBlocks)
-    
-    // Try to directly parse the entire message as YAML if no code blocks found
-    if (!yamlCodeBlocks || yamlCodeBlocks.length === 0) {
-      console.log('[SchemaModifier] No code blocks found, trying to parse entire message as YAML')
-      try {
-        const directYaml = parseYaml(message)
-        if (directYaml) {
-          const result = safeParse(operationSchema, directYaml)
-          if (result.success) {
-            console.log('[SchemaModifier] Successfully parsed entire message as a YAML operation')
-            operations.push(result.output)
-            return {
-              operations,
-              modified: true,
+
+    // Try multiple patterns for YAML code blocks
+    // 1. Standard markdown code blocks with yaml/yml language
+    // 2. Code blocks with no language specified
+    const yamlCodeBlockPatterns = [
+      /```(?:yaml|yml)\s*([\s\S]*?)\s*```/g, // With explicit yaml/yml language tag
+      /```\s*([\s\S]*?)\s*```/g, // Any code block (no language specified)
+    ]
+
+    let foundCodeBlocks = false
+
+    // Try each pattern to find code blocks
+    for (const pattern of yamlCodeBlockPatterns) {
+      const matches = Array.from(message.matchAll(pattern))
+
+      if (matches.length > 0) {
+        foundCodeBlocks = true
+
+        for (const match of matches) {
+          const content = match[1]?.trim()
+          if (!content) continue
+
+          try {
+            // Try to parse the content as YAML
+            const parsedYaml = parseYaml(content)
+            if (parsedYaml) {
+              // Check if it's an array of operations or a single operation
+              if (Array.isArray(parsedYaml)) {
+                for (const item of parsedYaml) {
+                  const result = safeParse(operationSchema, item)
+                  if (result.success) {
+                    operations.push(result.output)
+                  } else {
+                    console.warn(
+                      '[SchemaModifier] Array item failed validation:',
+                      result.issues,
+                    )
+                  }
+                }
+              } else {
+                // Handle as single operation
+                const result = safeParse(operationSchema, parsedYaml)
+                if (result.success) {
+                  operations.push(result.output)
+                } else {
+                  console.warn(
+                    '[SchemaModifier] Code block content failed validation:',
+                    result.issues,
+                  )
+                }
+              }
             }
-          } else {
-            console.log('[SchemaModifier] Direct parsing failed validation:', result.issues)
+          } catch (e) {
+            console.warn(
+              '[SchemaModifier] Failed to parse code block as YAML:',
+              e,
+            )
           }
         }
-      } catch (e) {
-        console.log('[SchemaModifier] Direct parsing as YAML failed:', e)
-      }
-      
-      return {
-        operations: [],
-        modified: false,
-        error: 'No YAML code blocks found in response',
       }
     }
 
-    for (const block of yamlCodeBlocks) {
+    // If no code blocks were found or none contained valid YAML, try parsing the entire message
+    if (!foundCodeBlocks || operations.length === 0) {
       try {
-        // Extract the YAML content from the code block
-        const yamlMatch = block.match(/```(?:yaml|yml)?\s*([\s\S]*?)\s*```/)
-        if (!yamlMatch || !yamlMatch[1]) {
-          console.warn('[SchemaModifier] Could not extract YAML content from code block:', block)
-          continue
+        // Clean the input first - try to remove markdown formatting
+        const cleanedMessage = message
+          .replace(/^#+\s+.*$/gm, '') // Remove markdown headers
+          .replace(/\*\*/g, '') // Remove bold formatting
+          .replace(/\*([^*]+)\*/g, '$1') // Remove italic formatting
+          .trim()
+
+        const directYaml = parseYaml(cleanedMessage)
+        if (directYaml) {
+          // Check if it's an array of operations or a single operation
+          if (Array.isArray(directYaml)) {
+            for (const item of directYaml) {
+              const result = safeParse(operationSchema, item)
+              if (result.success) {
+                operations.push(result.output)
+                foundCodeBlocks = true
+              }
+            }
+          } else {
+            // Handle as single operation
+            const result = safeParse(operationSchema, directYaml)
+            if (result.success) {
+              operations.push(result.output)
+              foundCodeBlocks = true
+            } else {
+            }
+          }
         }
+      } catch (_e) {}
 
-        const yamlContent = yamlMatch[1].trim()
-        if (!yamlContent) {
-          console.log('[SchemaModifier] Empty YAML content in block')
-          continue
+      if (!foundCodeBlocks) {
+        return {
+          operations: [],
+          modified: false,
+          error: 'No YAML code blocks or valid YAML content found in response',
         }
-        
-        console.log('[SchemaModifier] Processing YAML content:', yamlContent)
-
-        // Parse the YAML content
-        const parsedOperation = parseYaml(yamlContent)
-        console.log('[SchemaModifier] Parsed YAML to object:', parsedOperation)
-
-        // Validate that the parsed content is an operation
-        const result = safeParse(operationSchema, parsedOperation)
-
-        if (result.success) {
-          console.log('[SchemaModifier] Valid operation found:', result.output)
-          operations.push(result.output)
-        } else {
-          console.error('[SchemaModifier] Invalid operation in YAML block:', result.issues)
-          // Continue processing other blocks even if this one failed
-        }
-      } catch (error) {
-        console.error('[SchemaModifier] Error processing YAML block:', error)
-        // Continue processing other blocks even if this one failed
       }
     }
 
