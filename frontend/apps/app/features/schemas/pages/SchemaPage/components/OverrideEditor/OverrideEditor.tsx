@@ -1,9 +1,9 @@
 'use client'
 
-import { parse as parseYaml } from 'yaml'
 import type React from 'react'
 import type { FC } from 'react'
 import { useEffect, useState } from 'react'
+import { parse as parseYaml } from 'yaml'
 import styles from './OverrideEditor.module.css'
 import { useYamlEditor } from './useYamlEditor'
 
@@ -24,11 +24,12 @@ export const OverrideEditor: FC<OverrideEditorProps> = ({ doc, setDoc }) => {
     if (doc && doc !== prevDoc) {
       try {
         const yamlContent = parseYaml(doc)
-        if (yamlContent && 
-            yamlContent.overrides && 
-            Array.isArray(yamlContent.overrides.operations)) {
+        if (
+          yamlContent?.overrides &&
+          Array.isArray(yamlContent.overrides.operations)
+        ) {
           const newCount = yamlContent.overrides.operations.length
-          
+
           // operationsの数が増えた場合のみハイライト表示
           if (newCount > operationsCount) {
             setShowHighlight(true)
@@ -37,7 +38,7 @@ export const OverrideEditor: FC<OverrideEditorProps> = ({ doc, setDoc }) => {
               setShowHighlight(false)
             }, 2000)
           }
-          
+
           setOperationsCount(newCount)
           setLastUpdateTime(new Date())
         }
@@ -45,7 +46,7 @@ export const OverrideEditor: FC<OverrideEditorProps> = ({ doc, setDoc }) => {
         // YAMLのパースエラーは無視
         console.warn('Failed to parse YAML for operation count:', e)
       }
-      
+
       setPrevDoc(doc)
     }
   }, [doc, prevDoc, operationsCount])
@@ -65,7 +66,7 @@ export const OverrideEditor: FC<OverrideEditorProps> = ({ doc, setDoc }) => {
           )}
         </div>
       )}
-      
+
       <div className={styles.editorContainer}>
         <div ref={editor} className={styles.wrapper} />
         {showHighlight && <div className={styles.highlightOverlay} />}

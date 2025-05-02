@@ -153,16 +153,16 @@ export const ChatMessage: FC<ChatMessageProps> = ({
   const _findYamlBlocks = (text: string) => {
     return _findCodeBlocks(text, 'yaml|yml')
   }
-  
+
   // 複数のYAMLブロックを検出
   const detectMultipleYamlBlocks = (text: string) => {
     const yamlPatterns = [
       /```(?:yaml|yml)\s*([\s\S]*?)\s*```/g, // 明示的なyaml/ymlタグ付き
       /```\s*([\s\S]*?)\s*```/g, // タグなしのコードブロック
     ]
-    
-    let blocks: { content: string, index: number }[] = []
-    
+
+    const blocks: { content: string; index: number }[] = []
+
     for (const pattern of yamlPatterns) {
       let match
       // eslint-disable-next-line no-cond-assign
@@ -173,11 +173,11 @@ export const ChatMessage: FC<ChatMessageProps> = ({
         }
       }
     }
-    
+
     // インデックスでソート
     blocks.sort((a, b) => a.index - b.index)
-    
-    return blocks.length > 1 ? blocks.map(b => b.content) : []
+
+    return blocks.length > 1 ? blocks.map((b) => b.content) : []
   }
 
   // Function to copy text to clipboard
@@ -328,9 +328,11 @@ export const ChatMessage: FC<ChatMessageProps> = ({
                 {parts.map((part) => {
                   if (part.type === 'text') {
                     // 複数のYAMLブロックがあるか確認
-                    const multiYamlBlocks = onApplyOperations ? detectMultipleYamlBlocks(part.text || '') : []
+                    const multiYamlBlocks = onApplyOperations
+                      ? detectMultipleYamlBlocks(part.text || '')
+                      : []
                     const hasMultipleYamlBlocks = multiYamlBlocks.length > 1
-                    
+
                     // 複数のYAMLブロックがある場合、「すべて適用」ボタンを表示
                     return (
                       <>
@@ -338,12 +340,16 @@ export const ChatMessage: FC<ChatMessageProps> = ({
                           <div className={styles.multiOperationHeader}>
                             <div className={styles.multiOperationTitle}>
                               Multiple Schema Operations
-                              <span className={styles.multiOperationCount}>{multiYamlBlocks.length}</span>
+                              <span className={styles.multiOperationCount}>
+                                {multiYamlBlocks.length}
+                              </span>
                             </div>
                             <button
                               type="button"
                               className={styles.applyAllButton}
-                              onClick={() => onApplyOperations && onApplyOperations(part.text || '')}
+                              onClick={() =>
+                                onApplyOperations?.(part.text || '')
+                              }
                             >
                               Apply All Operations
                             </button>
@@ -397,21 +403,25 @@ export const ChatMessage: FC<ChatMessageProps> = ({
                 {/* 通常のメッセージ（parts配列がない場合）*/}
                 {/* 複数のYAMLブロックがあるか確認 */}
                 {(() => {
-                  const multiYamlBlocks = onApplyOperations ? detectMultipleYamlBlocks(content) : []
+                  const multiYamlBlocks = onApplyOperations
+                    ? detectMultipleYamlBlocks(content)
+                    : []
                   const hasMultipleYamlBlocks = multiYamlBlocks.length > 1
-                  
+
                   return (
                     <>
                       {hasMultipleYamlBlocks && (
                         <div className={styles.multiOperationHeader}>
                           <div className={styles.multiOperationTitle}>
                             Multiple Schema Operations
-                            <span className={styles.multiOperationCount}>{multiYamlBlocks.length}</span>
+                            <span className={styles.multiOperationCount}>
+                              {multiYamlBlocks.length}
+                            </span>
                           </div>
                           <button
                             type="button"
                             className={styles.applyAllButton}
-                            onClick={() => onApplyOperations && onApplyOperations(content)}
+                            onClick={() => onApplyOperations?.(content)}
                           >
                             Apply All Operations
                           </button>

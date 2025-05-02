@@ -80,6 +80,7 @@ export const SchemaChat: FC<SchemaChatProps> = ({
     api: '/api/chat/schema-edit',
     body: {
       schema,
+      schemaOverride: overrideYaml,
     },
   })
 
@@ -175,8 +176,12 @@ export const SchemaChat: FC<SchemaChatProps> = ({
                     : (yamlOperations) => {
                         try {
                           // Process operations from YAML
-                          const { operations, modified, error, operationBlocks } =
-                            processSchemaOperations(yamlOperations)
+                          const {
+                            operations,
+                            modified,
+                            error,
+                            operationBlocks,
+                          } = processSchemaOperations(yamlOperations)
 
                           if (modified && operations.length > 0) {
                             // Parse current override YAML if it exists
@@ -208,9 +213,13 @@ export const SchemaChat: FC<SchemaChatProps> = ({
                             onOverrideChange(updatedOverrideYaml)
 
                             // 複数のオペレーションブロックの状態を確認
-                            const validBlocksCount = operationBlocks?.filter(block => block.valid).length || 0
-                            const invalidBlocksCount = operationBlocks ? operationBlocks.length - validBlocksCount : 0
-                            
+                            const validBlocksCount =
+                              operationBlocks?.filter((block) => block.valid)
+                                .length || 0
+                            const invalidBlocksCount = operationBlocks
+                              ? operationBlocks.length - validBlocksCount
+                              : 0
+
                             // 詳細なトースト通知
                             if (operationBlocks && operationBlocks.length > 1) {
                               // 複数ブロックの場合

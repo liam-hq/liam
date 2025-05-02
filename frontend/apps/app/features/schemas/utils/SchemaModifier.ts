@@ -17,10 +17,10 @@ export interface SchemaOperationResult {
  * 個別のYAMLブロック（YAML操作）に関する情報
  */
 export interface SchemaOperationBlock {
-  content: string      // 元のYAMLコンテンツ
+  content: string // 元のYAMLコンテンツ
   operations: Operation[] // パースされたOperation
-  valid: boolean       // 有効なYAMLかどうか
-  error?: string       // エラーがある場合
+  valid: boolean // 有効なYAMLかどうか
+  error?: string // エラーがある場合
 }
 
 /**
@@ -80,7 +80,7 @@ export function processSchemaOperations(
                       '[SchemaModifier] Array item failed validation:',
                       result.issues,
                     )
-                    blockError = `配列内のアイテムがvalidationに失敗しました: ${result.issues.map(i => i.message).join(', ')}`
+                    blockError = `配列内のアイテムがvalidationに失敗しました: ${result.issues.map((i) => i.message).join(', ')}`
                   }
                 }
                 isValid = allValid && blockOperations.length > 0
@@ -96,7 +96,7 @@ export function processSchemaOperations(
                     '[SchemaModifier] Code block content failed validation:',
                     result.issues,
                   )
-                  blockError = `オペレーションがvalidationに失敗しました: ${result.issues.map(i => i.message).join(', ')}`
+                  blockError = `オペレーションがvalidationに失敗しました: ${result.issues.map((i) => i.message).join(', ')}`
                 }
               }
             }
@@ -146,7 +146,7 @@ export function processSchemaOperations(
                 foundCodeBlocks = true
               } else {
                 allValid = false
-                blockError = `配列内のアイテムがvalidationに失敗しました: ${result.issues.map(i => i.message).join(', ')}`
+                blockError = `配列内のアイテムがvalidationに失敗しました: ${result.issues.map((i) => i.message).join(', ')}`
               }
             }
             isValid = allValid && blockOperations.length > 0
@@ -159,7 +159,7 @@ export function processSchemaOperations(
               foundCodeBlocks = true
               isValid = true
             } else {
-              blockError = `オペレーションがvalidationに失敗しました: ${result.issues.map(i => i.message).join(', ')}`
+              blockError = `オペレーションがvalidationに失敗しました: ${result.issues.map((i) => i.message).join(', ')}`
             }
           }
 

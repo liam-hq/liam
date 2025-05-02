@@ -1,5 +1,6 @@
 'use client'
 
+import { autocompletion } from '@codemirror/autocomplete'
 import { defaultKeymap } from '@codemirror/commands'
 import { history, historyKeymap } from '@codemirror/commands'
 import { yaml } from '@codemirror/lang-yaml'
@@ -9,7 +10,6 @@ import {
   syntaxHighlighting,
 } from '@codemirror/language'
 import { type Diagnostic, lintGutter, linter } from '@codemirror/lint'
-import { autocompletion } from '@codemirror/autocomplete'
 import { EditorState, type Extension } from '@codemirror/state'
 import {
   type ViewUpdate,
@@ -18,7 +18,10 @@ import {
   lineNumbers,
 } from '@codemirror/view'
 import { tags } from '@lezer/highlight'
+import { operationSchema } from '@liam-hq/db-structure'
+import { toJsonSchema } from '@valibot/to-json-schema'
 import { EditorView } from 'codemirror'
+import { jsonSchema } from 'codemirror-json-schema'
 import {
   type Dispatch,
   type SetStateAction,
@@ -28,9 +31,6 @@ import {
   useState,
 } from 'react'
 import { parseDocument } from 'yaml'
-import { jsonSchema } from 'codemirror-json-schema'
-import { toJsonSchema } from '@valibot/to-json-schema'
-import { operationSchema } from '@liam-hq/db-structure'
 
 const customCursorTheme = EditorView.theme({
   '.cm-gutters': {

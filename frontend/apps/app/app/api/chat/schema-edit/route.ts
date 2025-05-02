@@ -134,6 +134,12 @@ const generateOperationExamples = (): string => {
     },
   }
 
+  // Example for deleting an existing table
+  const deleteTableExample: Operation = {
+    type: 'deleteTable',
+    tableName: 'existing_table',
+  }
+
   // Example 2: Adding a column to an existing table
   const addColumnExample: Operation = {
     type: 'addColumn',
@@ -201,6 +207,8 @@ const generateOperationExamples = (): string => {
   const singleOperationExamples = [
     '# Example 1: Adding a new table',
     stringifyYaml(addTableExample),
+    '# Example: Deleting an existing table',
+    stringifyYaml(deleteTableExample),
     '# Example 2: Adding a column to an existing table',
     stringifyYaml(addColumnExample),
     "# Example 3: Updating a column's properties",
@@ -299,13 +307,61 @@ relationship:
 \`\`\`
 `
 
-  return singleOperationExamples + '\n\n' + multipleOperationsExample
+  // 既存テーブルの同名テーブル作成例
+  const recreateTableExample = `
+# Example 8: Recreating an existing table
+# First operation: Delete the existing table
+\`\`\`yaml
+type: deleteTable
+tableName: users
+\`\`\`
+
+# Second operation: Create the table with updated structure
+\`\`\`yaml
+type: addTable
+table:
+  name: users
+  comment: Updated user account information
+  columns:
+    id:
+      name: id
+      type: uuid
+      default: null
+      check: null
+      primary: true
+      unique: true
+      notNull: true
+      comment: Primary key
+    email:
+      name: email
+      type: text
+      default: null
+      check: null
+      primary: false
+      unique: true
+      notNull: true
+      comment: User email address
+    full_name:
+      name: full_name
+      type: text
+      default: null
+      check: null
+      primary: false
+      unique: false
+      notNull: true
+      comment: User's full name
+  indexes: {}
+  constraints: {}
+\`\`\`
+`
+
+  return `${singleOperationExamples}\n\n${multipleOperationsExample}\n\n${recreateTableExample}`
 }
 
 const operationJsonSchema = toJsonSchema(operationSchema)
 
 export async function POST(request: Request) {
-  const { messages, schema } = await request.json()
+  const { messages, schema, schemaOverride } = await request.json()
 
   if (!messages || !Array.isArray(messages) || messages.length === 0) {
     return NextResponse.json(
@@ -326,6 +382,27 @@ export async function POST(request: Request) {
 
   // Generate example operations in YAML
   const operationExamples = generateOperationExamples()
+
+  // Parse existing schema override operations if available
+  let currentOperationsText = ''
+  if (
+    schemaOverride &&
+    typeof schemaOverride === 'string' &&
+    schemaOverride.trim()
+  ) {
+    try {
+      // Extract operations from YAML override
+      currentOperationsText = `
+CURRENT SCHEMA OPERATIONS:
+The following operations are currently applied to the schema. Consider these when suggesting new operations:
+
+${schemaOverride}
+`
+    } catch (error) {
+      console.error('Error parsing schema override:', error)
+      // If there's an error parsing the override, we'll just continue without it
+    }
+  }
 
   // Create system prompt with schema context and operation format
   const systemPrompt = `
@@ -373,6 +450,8 @@ ${operationJsonSchema}
 Complete Schema Information:
 ${schemaText}
 
+${currentOperationsText}
+
 Important guidelines for providing schema operations:
 
 1. For simple changes:
@@ -388,7 +467,27 @@ Important guidelines for providing schema operations:
 3. For related changes (like creating multiple tables that work together):
    - Present each table creation or modification as a separate YAML code block
    - Explain how the tables relate to each other
-   - If adding relationships, place these in separate code blocks after the table definitions
+   - ALWAYS include separate addRelationship operations for any relationships between tables
+   - Place relationship operations in separate code blocks after the table definitions
+
+4. For table name uniqueness constraints:
+   - Before creating a table with a name that might already exist, check if that table exists
+   - If creating a table that might have the same name as an existing table, first include a deleteTable operation
+   - When renaming tables, ensure the new name doesn't conflict with existing tables
+
+Critical requirements for common scenarios:
+
+A. When creating multiple related tables:
+   - ALWAYS include addRelationship operations for any relationships between tables
+   - Don't assume foreign key columns automatically create relationships
+   - Each relationship must be explicitly defined with a separate addRelationship operation
+   - Without an addRelationship operation, tables will not be connected in the schema even if they have matching column names
+
+B. When creating a table that might already exist:
+   - First include a deleteTable operation for that table name
+   - Then include the addTable operation with the new table definition
+   - If preserving data is important, use changeTable to rename instead
+   - Remember that table names must be unique in the schema
 
 Other important requirements:
 - Each operation should be in a separate YAML code block (not combined in one block)
@@ -398,8 +497,15 @@ Other important requirements:
 - When adding tables or columns, always include proper comments for documentation
 - Use meaningful names that follow the naming conventions evident in the existing schema
 
+Common pitfalls to avoid:
+1. Forgetting to create relationship definitions after creating related tables
+2. Trying to create a table with a name that already exists without first deleting it
+3. Not checking if referenced tables or columns exist before creating relationships
+4. Missing required properties in operation definitions (refer to JSON schema)
+
 Your goal is to help users understand and optimize their database schemas.
 When the user asks for schema modifications, carefully identify if multiple operations are needed and provide all required operations in separate YAML blocks.
+Always remember to include relationship definitions when creating related tables, and handle table name conflicts appropriately.
 `
 
   // Generate streaming response using Vercel AI SDK
