@@ -1,3 +1,5 @@
+'use client'
+
 import type { FC, SVGProps } from 'react'
 
 interface LearnJackIconProps extends SVGProps<SVGSVGElement> {

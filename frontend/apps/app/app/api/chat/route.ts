@@ -152,7 +152,7 @@ const convertSchemaToText = (schema: SchemaData): string => {
 }
 
 export async function POST(request: Request) {
-  const { message, schemaData, history } = await request.json()
+  const { message, schemaData, history, agentType } = await request.json()
 
   if (!message || typeof message !== 'string' || !message.trim()) {
     return NextResponse.json({ error: 'Message is required' }, { status: 400 })
@@ -183,8 +183,12 @@ export async function POST(request: Request) {
     callbacks: [langfuseHandler],
   })
 
-  // Create a prompt template with full schema context and chat history
-  const prompt = ChatPromptTemplate.fromTemplate(`
+  // Create different prompts based on agent type
+  let promptTemplate = ''
+
+  // Default prompt for 'build' agent type
+  if (!agentType || agentType === 'build') {
+    promptTemplate = `
 You are a database schema expert.
 Answer questions about the user's schema and provide advice on database design.
 Follow these guidelines:
@@ -207,7 +211,65 @@ Previous conversation:
 Question: {input}
 
 Based on the schema information provided and considering any previous conversation, answer the question thoroughly and accurately.
-`)
+`
+  }
+  // Prompt for 'review' agent type
+  else if (agentType === 'review') {
+    promptTemplate = `
+You are a database schema reviewer.
+Your role is to critically analyze the user's schema and provide constructive feedback.
+Follow these guidelines:
+
+1. Identify potential issues, anti-patterns, or areas for improvement in the schema design.
+2. Suggest specific improvements with clear explanations of their benefits.
+3. Highlight good design decisions already present in the schema.
+4. Consider performance, maintainability, and scalability in your review.
+5. Provide code examples when suggesting schema changes.
+6. Format your responses using GitHub Flavored Markdown (GFM) for better readability.
+
+Your goal is to help users improve their database schemas through constructive criticism.
+
+Complete Schema Information:
+${schemaText}
+
+Previous conversation:
+{chat_history}
+
+Question: {input}
+
+Based on the schema information provided and considering any previous conversation, provide a thorough review and constructive feedback.
+`
+  }
+  // Prompt for 'learn' agent type
+  else if (agentType === 'learn') {
+    promptTemplate = `
+You are a database schema educator.
+Your role is to teach users about database concepts and help them learn from their schema.
+Follow these guidelines:
+
+1. Explain database concepts in a clear, educational manner.
+2. Use the user's schema as practical examples to illustrate concepts.
+3. Provide additional context and background information on database principles.
+4. When introducing technical terms, include thorough explanations.
+5. Suggest resources for further learning when appropriate.
+6. Format your responses using GitHub Flavored Markdown (GFM) for better readability.
+
+Your goal is to help users learn database concepts through their own schema.
+
+Complete Schema Information:
+${schemaText}
+
+Previous conversation:
+{chat_history}
+
+Question: {input}
+
+Based on the schema information provided and considering any previous conversation, provide an educational response that helps the user learn.
+`
+  }
+
+  // Create a prompt template with full schema context and chat history
+  const prompt = ChatPromptTemplate.fromTemplate(promptTemplate)
 
   // Create streaming chain
   const streamingChain = prompt.pipe(streamingModel)

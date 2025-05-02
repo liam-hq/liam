@@ -19,6 +19,7 @@ import { AskAiIcon } from '../AskAiIcon'
 import type { AgentType } from '../ChatInput'
 import { ChatInput } from '../ChatInput'
 import { ChatMessage, type ChatMessageProps } from '../ChatMessage'
+import { useAuthUser } from '../hooks/useAuthUser'
 import styles from './ChatbotDrawer.module.css'
 
 interface ChatbotDrawerRootProps {
@@ -64,11 +65,13 @@ export const ChatbotDrawer: FC<ChatbotDrawerProps> = ({
         'Hello! Feel free to ask questions about your schema or consult about database design.',
       isUser: false,
       timestamp: new Date(),
+      agentType: 'build', // Set default agent type for welcome message
     },
   ])
   const [isLoading, setIsLoading] = useState(false)
   const [mode, setMode] = useState<AgentType>('build')
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const { avatarUrl } = useAuthUser()
 
   // Scroll to bottom when component mounts
   useEffect(() => {
@@ -95,6 +98,7 @@ export const ChatbotDrawer: FC<ChatbotDrawerProps> = ({
         content: '',
         isUser: false,
         // No timestamp during streaming
+        agentType: mode, // Store the current agent type with the message
       },
     ])
 
@@ -115,6 +119,7 @@ export const ChatbotDrawer: FC<ChatbotDrawerProps> = ({
           schemaData,
           tableGroups,
           history,
+          agentType: mode, // Pass the current agent type to the API
         }),
       })
 
@@ -139,7 +144,11 @@ export const ChatbotDrawer: FC<ChatbotDrawerProps> = ({
           setMessages((prev) =>
             prev.map((msg) =>
               msg.id === aiMessageId
-                ? { ...msg, content: accumulatedContent, timestamp: new Date() }
+                ? {
+                    ...msg,
+                    content: accumulatedContent,
+                    timestamp: new Date(),
+                  }
                 : msg,
             ),
           )
@@ -176,6 +185,7 @@ export const ChatbotDrawer: FC<ChatbotDrawerProps> = ({
             ...updatedMessages[aiMessageIndex],
             content: 'Sorry, an error occurred. Please try again.',
             timestamp: new Date(),
+            // Keep the existing agentType
           }
           return updatedMessages
         }
@@ -188,6 +198,7 @@ export const ChatbotDrawer: FC<ChatbotDrawerProps> = ({
             content: 'Sorry, an error occurred. Please try again.',
             isUser: false,
             timestamp: new Date(),
+            agentType: mode, // Store the current agent type with the error message
           },
         ]
       })
@@ -216,17 +227,29 @@ export const ChatbotDrawer: FC<ChatbotDrawerProps> = ({
           </DrawerClose>
         </div>
         <div className={styles.messagesContainer}>
-          {messages.map((message) => (
-            <ChatMessage
-              key={message.id}
-              content={message.content}
-              isUser={message.isUser}
-              timestamp={message.timestamp}
-              className={
-                message.isUser ? styles.askMessage : styles.responseMessage
-              }
-            />
-          ))}
+          {messages.map((message) => {
+            // For non-user messages, ensure we're using the message's own agent type
+            const messageAgentType = message.isUser
+              ? undefined
+              : message.agentType
+
+            // Create a unique key that includes the agent type to force re-render when it changes
+            const messageKey = `${message.id}-${messageAgentType || 'user'}`
+
+            return (
+              <ChatMessage
+                key={messageKey}
+                content={message.content}
+                isUser={message.isUser}
+                timestamp={message.timestamp}
+                className={
+                  message.isUser ? styles.askMessage : styles.responseMessage
+                }
+                avatarUrl={message.isUser ? avatarUrl : undefined}
+                agentType={messageAgentType}
+              />
+            )
+          })}
           {isLoading && (
             <div className={styles.loadingIndicator}>
               <div className={styles.loadingDot} />
