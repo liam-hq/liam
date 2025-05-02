@@ -3,6 +3,8 @@
 import { Button } from '@/components'
 import { SchemaChat } from '@/features/schemas/components/SchemaChat/SchemaChat'
 import { ERDEditor } from '@/features/schemas/pages/SchemaPage/components/ERDEditor'
+import { OverrideEditor } from '@/features/schemas/pages/SchemaPage/components/OverrideEditor'
+import { SchemaHeader } from '@/features/schemas/pages/SchemaPage/components/SchemaHeader'
 import type { Schema } from '@liam-hq/db-structure'
 import {
   ModalClose,
@@ -12,8 +14,11 @@ import {
   ModalRoot,
   ModalTitle,
   ModalTrigger,
+  TabsContent,
+  TabsRoot,
 } from '@liam-hq/ui'
 import { useState } from 'react'
+import { DEFAULT_SCHEMA_TAB, SCHEMA_TAB } from './constants'
 import styles from './page.module.css'
 
 const emptySchema: Schema = {
@@ -71,43 +76,53 @@ export default function Page() {
     setSchema(JSON.parse(JSON.stringify(newSchema)) as Schema)
   }
   return (
-    <div className={styles.container}>
-      <div className={styles.chatPanel}>
-        <SchemaChat schema={schema} onSchemaChange={handleModifySchema} />
-      </div>
-      <div className={styles.editorPanel}>
-        <div className={styles.toolbarContainer}>
-          <ModalRoot open={isOpen} onOpenChange={setIsOpen}>
-            <ModalTrigger asChild>
-              <Button variant="outline-secondary">Show Current Schema</Button>
-            </ModalTrigger>
-            <ModalPortal>
-              <ModalOverlay />
-              <ModalContent>
-                <ModalTitle>Current Schema</ModalTitle>
-                <div className={styles.schemaContent}>
-                  {formatSchema(schema)}
-                  <button
-                    type="button"
-                    className={styles.copyButton}
-                    onClick={() => copyToClipboard(formatSchema(schema))}
-                  >
-                    Copy
-                  </button>
-                </div>
-                <ModalClose asChild>
-                  <Button style={{ marginTop: '16px' }}>Close</Button>
-                </ModalClose>
-              </ModalContent>
-            </ModalPortal>
-          </ModalRoot>
+    <TabsRoot defaultValue={DEFAULT_SCHEMA_TAB} className={styles.container}>
+      <SchemaHeader />
+      <TabsContent value={SCHEMA_TAB.ERD} className={styles.tabsContent}>
+        <div className={styles.erdContainer}>
+          <div className={styles.chatPanel}>
+            <SchemaChat schema={schema} onSchemaChange={handleModifySchema} />
+          </div>
+          <div className={styles.editorPanel}>
+            <div className={styles.toolbarContainer}>
+              <ModalRoot open={isOpen} onOpenChange={setIsOpen}>
+                <ModalTrigger asChild>
+                  <Button variant="outline-secondary">
+                    Show Current Schema
+                  </Button>
+                </ModalTrigger>
+                <ModalPortal>
+                  <ModalOverlay />
+                  <ModalContent>
+                    <ModalTitle>Current Schema</ModalTitle>
+                    <div className={styles.schemaContent}>
+                      {formatSchema(schema)}
+                      <button
+                        type="button"
+                        className={styles.copyButton}
+                        onClick={() => copyToClipboard(formatSchema(schema))}
+                      >
+                        Copy
+                      </button>
+                    </div>
+                    <ModalClose asChild>
+                      <Button style={{ marginTop: '16px' }}>Close</Button>
+                    </ModalClose>
+                  </ModalContent>
+                </ModalPortal>
+              </ModalRoot>
+            </div>
+            <ERDEditor
+              schema={schema}
+              errorObjects={undefined}
+              defaultSidebarOpen={false}
+            />
+          </div>
         </div>
-        <ERDEditor
-          schema={schema}
-          errorObjects={undefined}
-          defaultSidebarOpen={false}
-        />
-      </div>
-    </div>
+      </TabsContent>
+      <TabsContent value={SCHEMA_TAB.EDITOR} className={styles.tabsContent}>
+        <OverrideEditor />
+      </TabsContent>
+    </TabsRoot>
   )
 }

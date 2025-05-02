@@ -1,7 +1,26 @@
 .container {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 60px);
+  width: 100%;
+  overflow: hidden;
+}
+
+.tabsContent {
+  display: none;
+  flex: 1;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.tabsContent[data-state='active'] {
+  display: flex;
+}
+
+.erdContainer {
   display: grid;
   grid-template-columns: 350px 1fr;
-  height: calc(100vh - 60px);
+  height: 100%;
   width: 100%;
   overflow: hidden;
 }
