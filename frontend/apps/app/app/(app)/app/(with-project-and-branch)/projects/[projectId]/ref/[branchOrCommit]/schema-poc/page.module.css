@@ -1,4 +1,4 @@
-.container {
+.rootContainer {
   display: flex;
   flex-direction: column;
   height: calc(100vh - 60px);
@@ -6,30 +6,84 @@
   overflow: hidden;
 }
 
+/* Main container with two columns */
+.mainContainer {
+  display: grid;
+  grid-template-columns: 350px 1fr;
+  height: calc(100vh - 60px); /* Full height except for app bar */
+  width: 100%;
+  overflow: hidden;
+}
+
+/* Left pane - Chat */
+.chatPanel {
+  height: 100%;
+  overflow: hidden;
+  border-right: 1px solid var(--global-border);
+}
+
+/* Right pane - Contains tabs */
+.rightPane {
+  height: 100%;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Tabs container */
+.tabsContainer {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+}
+
+/* タブリスト */
+.tabsList {
+  display: flex;
+  border-bottom: 1px solid var(--global-border);
+  margin-bottom: 0;
+  padding: 0 16px;
+}
+
+/* タブボタン */
+.tabButton {
+  padding: 12px 16px;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  font-size: var(--font-size-2);
+  color: var(--global-foreground-muted);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  outline: none;
+}
+
+.tabButton:hover {
+  color: var(--global-foreground);
+}
+
+/* アクティブなタブ */
+.tabButton[data-state="active"] {
+  color: var(--primary-accent);
+  border-bottom: 2px solid var(--primary-accent);
+  font-weight: 500;
+}
+
 .tabsContent {
   display: none;
   flex: 1;
   flex-direction: column;
   overflow: hidden;
+  height: 100%;
 }
 
 .tabsContent[data-state='active'] {
   display: flex;
 }
 
-.erdContainer {
-  display: grid;
-  grid-template-columns: 350px 1fr;
-  height: 100%;
-  width: 100%;
-  overflow: hidden;
-}
-
-.chatPanel {
-  height: 100%;
-  overflow: hidden;
-}
-
+/* ERD Editor panel */
 .editorPanel {
   height: 100%;
   display: flex;

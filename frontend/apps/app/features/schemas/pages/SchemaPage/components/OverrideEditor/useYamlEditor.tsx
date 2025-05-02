@@ -47,6 +47,17 @@ const customCursorTheme = EditorView.theme({
     borderLeft: '2px solid var(--overlay-100)',
     animation: 'slow-blink 1s steps(2, start) infinite',
   },
+  '.cm-editor': {
+    height: '100%', 
+    maxHeight: '100%',
+  },
+  '.cm-scroller': {
+    overflow: 'auto !important',
+    maxHeight: '100%',
+  },
+  '.cm-content': {
+    minHeight: '100%',
+  },
   '@keyframes slow-blink': {
     to: { visibility: 'hidden' },
   },

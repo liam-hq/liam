@@ -1648,6 +1648,288 @@ describe('overrideSchema', () => {
     })
   })
 
+  describe('Operation: changeTable', () => {
+    it('should rename a table', () => {
+      const override: SchemaOverride = {
+        overrides: {
+          operations: [
+            {
+              type: 'changeTable',
+              changeTable: {
+                oldTableName: 'users',
+                newTableName: 'accounts',
+              },
+            },
+          ],
+        },
+      }
+
+      const { schema } = overrideSchema(originalSchema, override)
+
+      // Old table should be gone
+      expect(schema.tables['users']).toBeUndefined()
+      // New table should be present
+      expect(schema.tables['accounts']).toBeDefined()
+      expect(schema.tables['accounts']?.comment).toBe('User accounts')
+      expect(schema.tables['accounts']?.columns['id']).toBeDefined()
+      expect(schema.tables['accounts']?.columns['username']).toBeDefined()
+    })
+
+    it('should update relationships when renaming a table', () => {
+      const override: SchemaOverride = {
+        overrides: {
+          operations: [
+            {
+              type: 'changeTable',
+              changeTable: {
+                oldTableName: 'users',
+                newTableName: 'accounts',
+              },
+            },
+          ],
+        },
+      }
+
+      const { schema } = overrideSchema(schemaWithRelationships, override)
+
+      // Relationship should be updated with the new table name
+      expect(schema.relationships['posts_users']).toBeDefined()
+      expect(schema.relationships['posts_users']?.primaryTableName).toBe('accounts')
+      expect(schema.relationships['posts_users']?.foreignTableName).toBe('posts')
+    })
+
+    it('should update table groups when renaming a table', () => {
+      // Create a schema with a table group containing the users table
+      const schemaWithTableGroup: Schema = {
+        ...originalSchema,
+        tableGroups: {
+          auth: {
+            name: 'Auth',
+            tables: ['users'],
+            comment: 'Authentication tables',
+          },
+        },
+      }
+
+      const override: SchemaOverride = {
+        overrides: {
+          operations: [
+            {
+              type: 'changeTable',
+              changeTable: {
+                oldTableName: 'users',
+                newTableName: 'accounts',
+              },
+            },
+          ],
+        },
+      }
+
+      const { schema, tableGroups } = overrideSchema(schemaWithTableGroup, override)
+
+      // Table group should reference the new table name
+      expect(tableGroups['auth']).toBeDefined()
+      expect(tableGroups['auth']?.tables).not.toContain('users')
+      expect(tableGroups['auth']?.tables).toContain('accounts')
+    })
+
+    it('should throw an error when trying to rename a non-existent table', () => {
+      const override: SchemaOverride = {
+        overrides: {
+          operations: [
+            {
+              type: 'changeTable',
+              changeTable: {
+                oldTableName: 'nonexistent',
+                newTableName: 'accounts',
+              },
+            },
+          ],
+        },
+      }
+
+      expect(() => overrideSchema(originalSchema, override)).toThrowError(
+        'Cannot rename non-existent table: nonexistent',
+      )
+    })
+
+    it('should throw an error when trying to rename to an existing table', () => {
+      const schemaWithTwoTables: Schema = {
+        tables: {
+          ...originalSchema.tables,
+          posts: {
+            name: 'posts',
+            comment: 'Blog posts',
+            columns: {},
+            indexes: {},
+            constraints: {},
+          },
+        },
+        relationships: {},
+        tableGroups: {},
+      }
+
+      const override: SchemaOverride = {
+        overrides: {
+          operations: [
+            {
+              type: 'changeTable',
+              changeTable: {
+                oldTableName: 'users',
+                newTableName: 'posts',
+              },
+            },
+          ],
+        },
+      }
+
+      expect(() => overrideSchema(schemaWithTwoTables, override)).toThrowError(
+        'Cannot rename to existing table: posts',
+      )
+    })
+  })
+
+  describe('Operation: changeColumn', () => {
+    it('should rename a column', () => {
+      const override: SchemaOverride = {
+        overrides: {
+          operations: [
+            {
+              type: 'changeColumn',
+              changeColumn: {
+                tableName: 'users',
+                oldColumnName: 'username',
+                newColumnName: 'login',
+              },
+            },
+          ],
+        },
+      }
+
+      const { schema } = overrideSchema(originalSchema, override)
+
+      // Old column should be gone
+      expect(schema.tables['users']?.columns['username']).toBeUndefined()
+      // New column should be present
+      expect(schema.tables['users']?.columns['login']).toBeDefined()
+      expect(schema.tables['users']?.columns['login']?.type).toBe('varchar')
+      expect(schema.tables['users']?.columns['login']?.comment).toBe('Unique username')
+    })
+
+    it('should update relationships when renaming a column', () => {
+      const override: SchemaOverride = {
+        overrides: {
+          operations: [
+            {
+              type: 'changeColumn',
+              changeColumn: {
+                tableName: 'posts',
+                oldColumnName: 'user_id',
+                newColumnName: 'author_id',
+              },
+            },
+          ],
+        },
+      }
+
+      const { schema } = overrideSchema(schemaWithRelationships, override)
+
+      // Relationship should be updated with the new column name
+      expect(schema.relationships['posts_users']).toBeDefined()
+      expect(schema.relationships['posts_users']?.primaryTableName).toBe('users')
+      expect(schema.relationships['posts_users']?.primaryColumnName).toBe('id')
+      expect(schema.relationships['posts_users']?.foreignTableName).toBe('posts')
+      expect(schema.relationships['posts_users']?.foreignColumnName).toBe('author_id')
+    })
+
+    it('should update indexes when renaming a column', () => {
+      const override: SchemaOverride = {
+        overrides: {
+          operations: [
+            {
+              type: 'changeColumn',
+              changeColumn: {
+                tableName: 'users',
+                oldColumnName: 'username',
+                newColumnName: 'login',
+              },
+            },
+          ],
+        },
+      }
+
+      const { schema } = overrideSchema(originalSchema, override)
+
+      // Index should be updated with the new column name
+      expect(schema.tables['users']?.indexes['users_username_idx']).toBeDefined()
+      expect(schema.tables['users']?.indexes['users_username_idx']?.columns).toContain('login')
+      expect(schema.tables['users']?.indexes['users_username_idx']?.columns).not.toContain('username')
+    })
+
+    it('should throw an error when trying to rename a column in a non-existent table', () => {
+      const override: SchemaOverride = {
+        overrides: {
+          operations: [
+            {
+              type: 'changeColumn',
+              changeColumn: {
+                tableName: 'nonexistent',
+                oldColumnName: 'username',
+                newColumnName: 'login',
+              },
+            },
+          ],
+        },
+      }
+
+      expect(() => overrideSchema(originalSchema, override)).toThrowError(
+        'Cannot rename column in non-existent table: nonexistent',
+      )
+    })
+
+    it('should throw an error when trying to rename a non-existent column', () => {
+      const override: SchemaOverride = {
+        overrides: {
+          operations: [
+            {
+              type: 'changeColumn',
+              changeColumn: {
+                tableName: 'users',
+                oldColumnName: 'nonexistent',
+                newColumnName: 'login',
+              },
+            },
+          ],
+        },
+      }
+
+      expect(() => overrideSchema(originalSchema, override)).toThrowError(
+        'Cannot rename non-existent column: nonexistent in table users',
+      )
+    })
+
+    it('should throw an error when trying to rename to an existing column', () => {
+      const override: SchemaOverride = {
+        overrides: {
+          operations: [
+            {
+              type: 'changeColumn',
+              changeColumn: {
+                tableName: 'users',
+                oldColumnName: 'username',
+                newColumnName: 'id',
+              },
+            },
+          ],
+        },
+      }
+
+      expect(() => overrideSchema(originalSchema, override)).toThrowError(
+        'Cannot rename to existing column: id in table users',
+      )
+    })
+  })
+
   describe('Complex scenarios', () => {
     it('should handle multiple override operations at once', () => {
       const schemaWithPostsForTest: Schema = {

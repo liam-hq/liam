@@ -162,7 +162,26 @@ const generateOperationExamples = (): string => {
     },
   }
 
-  // Example 4: Adding a relationship
+  // Example 4: Changing a table name
+  const changeTableExample: Operation = {
+    type: 'changeTable',
+    changeTable: {
+      oldTableName: 'users',
+      newTableName: 'accounts',
+    },
+  }
+
+  // Example 5: Changing a column name
+  const changeColumnExample: Operation = {
+    type: 'changeColumn',
+    changeColumn: {
+      tableName: 'users',
+      oldColumnName: 'email',
+      newColumnName: 'email_address',
+    },
+  }
+
+  // Example 6: Adding a relationship
   const addRelationshipExample: Operation = {
     type: 'addRelationship',
     relationshipName: 'users_posts',
@@ -186,7 +205,11 @@ const generateOperationExamples = (): string => {
     stringifyYaml(addColumnExample),
     "# Example 3: Updating a column's properties",
     stringifyYaml(updateColumnExample),
-    '# Example 4: Adding a relationship',
+    '# Example 4: Changing a table name',
+    stringifyYaml(changeTableExample),
+    '# Example 5: Changing a column name',
+    stringifyYaml(changeColumnExample),
+    '# Example 6: Adding a relationship',
     stringifyYaml(addRelationshipExample),
   ].join('\n\n')
 }
@@ -241,15 +264,17 @@ ${operationExamples}
 Available operation types:
 1. addTable - Add a new table to the schema
 2. deleteTable - Remove an existing table from the schema
-3. addColumn - Add a new column to an existing table
-4. deleteColumn - Remove a column from an existing table
-5. updateColumn - Update properties of an existing column
-6. addIndex - Add a new index to an existing table
-7. deleteIndex - Remove an index from an existing table
-8. addConstraint - Add a constraint to an existing table
-9. deleteConstraint - Remove a constraint from an existing table
-10. addRelationship - Add a relationship between tables
-11. deleteRelationship - Remove a relationship
+3. changeTable - Rename an existing table (and update all references)
+4. addColumn - Add a new column to an existing table
+5. deleteColumn - Remove a column from an existing table
+6. changeColumn - Rename an existing column (and update all references)
+7. updateColumn - Update properties of an existing column
+8. addIndex - Add a new index to an existing table
+9. deleteIndex - Remove an index from an existing table
+10. addConstraint - Add a constraint to an existing table
+11. deleteConstraint - Remove a constraint from an existing table
+12. addRelationship - Add a relationship between tables
+13. deleteRelationship - Remove a relationship
 
 Each operation must conform to the following JSON schema:
 

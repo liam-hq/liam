@@ -1,65 +1,27 @@
 'use client'
-
-import { Button } from '@/components'
 import { SchemaChat } from '@/features/schemas/components/SchemaChat/SchemaChat'
 import { ERDEditor } from '@/features/schemas/pages/SchemaPage/components/ERDEditor'
 import { OverrideEditor } from '@/features/schemas/pages/SchemaPage/components/OverrideEditor/OverrideEditor'
-import { SchemaHeader } from '@/features/schemas/pages/SchemaPage/components/SchemaHeader'
 import type { Schema, TableGroup } from '@liam-hq/db-structure'
 import { overrideSchema, schemaOverrideSchema } from '@liam-hq/db-structure'
-import { TabsContent, TabsRoot } from '@liam-hq/ui'
+import { TabsContent, TabsList, TabsRoot, TabsTrigger } from '@liam-hq/ui'
 import { useCallback, useEffect, useState } from 'react'
 import { safeParse } from 'valibot'
 import { parse as parseYaml } from 'yaml'
-import { DEFAULT_SCHEMA_TAB, SCHEMA_TAB } from './constants'
+import { DEFAULT_SCHEMA_TAB, SCHEMA_TAB, SCHEMA_TABS } from './constants'
 import styles from './page.module.css'
 
 // デフォルトのYAMLテンプレート
 const defaultOverrideYaml = `overrides:
   tables: {}
   tableGroups: {}
-  operations:
-    - type: addTable
-      table:
-        name: "new_table"
-        comment: "新しいテーブル"
-        columns:
-          id:
-            name: id
-            type: uuid
-            default: null
-            check: null
-            primary: true
-            unique: true
-            notNull: true
-            comment: 'Primary key'
-        indexes: {}
-        constraints: {}
+  operations: []
 `
 
 export default function Page() {
-  // 初期スキーマ定義（最低限テーブルが1つあるスキーマ）
+  // 初期スキーマ定義（空のスキーマ）
   const initialSchema: Schema = {
-    tables: {
-      initial_table: {
-        name: 'initial_table',
-        comment: 'Initial table for testing',
-        columns: {
-          id: {
-            name: 'id',
-            type: 'integer',
-            default: null,
-            check: null,
-            primary: true,
-            unique: true,
-            notNull: true,
-            comment: 'Primary key',
-          },
-        },
-        indexes: {},
-        constraints: {},
-      },
-    },
+    tables: {},
     relationships: {},
     tableGroups: {},
   }
@@ -180,54 +142,79 @@ export default function Page() {
     setBaseSchema(JSON.parse(JSON.stringify(newSchema)) as Schema)
   }
   return (
-    <TabsRoot defaultValue={DEFAULT_SCHEMA_TAB} className={styles.container}>
-      <SchemaHeader />
-      <TabsContent value={SCHEMA_TAB.ERD} className={styles.tabsContent}>
-        <div className={styles.erdContainer}>
-          <div className={styles.chatPanel}>
-            <SchemaChat
-              schema={baseSchema}
-              onSchemaChange={handleModifySchema}
-              overrideYaml={overrideYaml}
-              onOverrideChange={setOverrideYaml}
-            />
-          </div>
-          <div className={styles.editorPanel}>
-            <div className={styles.toolbarContainer}>
-              {/* デバッグ用スキーマ情報ボタン */}
-              <Button
-                variant="outline-secondary"
-                onClick={() => {
-                  alert(
-                    `Schema tables count: ${Object.keys(resultSchema.tables).length}`,
-                  )
-                }}
-              >
-                Debug Schema Info
-              </Button>
-            </div>
-            <ERDEditor
-              schema={resultSchema}
-              tableGroups={tableGroups}
-              errorObjects={undefined}
-              defaultSidebarOpen={false}
-            />
-          </div>
+    <div className={styles.rootContainer}>
+      {/* Main two-column layout */}
+      <div className={styles.mainContainer}>
+        {/* Left pane - SchemaChat (fixed) */}
+        <div className={styles.chatPanel}>
+          <SchemaChat
+            schema={resultSchema}
+            onSchemaChange={handleModifySchema}
+            overrideYaml={overrideYaml}
+            onOverrideChange={(newOverrideYaml) => {
+              // 変更前にオーバーライドの適用テストを行う
+              const validationResult = applySchemaOverride(baseSchema, newOverrideYaml);
+              if (!validationResult.success) {
+                // エラーがある場合は例外をスロー
+                throw new Error(`オーバーライドの適用に失敗しました: ${validationResult.error}`);
+              }
+              // 問題なければオーバーライドを適用
+              setOverrideYaml(newOverrideYaml);
+            }}
+          />
         </div>
-      </TabsContent>
-      <TabsContent value={SCHEMA_TAB.EDITOR} className={styles.tabsContent}>
-        <div className={styles.overrideEditorContainer}>
-          {overrideError && (
-            <div className={styles.errorMessage}>
-              <div className={styles.errorTitle}>オーバーライドエラー</div>
-              <div className={styles.errorContent}>{overrideError}</div>
-            </div>
-          )}
-          <div className={styles.editorWrapper}>
-            <OverrideEditor doc={overrideYaml} setDoc={setOverrideYaml} />
-          </div>
+
+        {/* Right pane - Tabs with ERD or YAML Editor */}
+        <div className={styles.rightPane}>
+          <TabsRoot
+            defaultValue={DEFAULT_SCHEMA_TAB}
+            className={styles.tabsContainer}
+          >
+            {/* タブの切り替えボタン */}
+            <TabsList className={styles.tabsList}>
+              {SCHEMA_TABS.map((tab) => (
+                <TabsTrigger
+                  key={tab.value}
+                  value={tab.value}
+                  className={styles.tabButton}
+                >
+                  {tab.label}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+
+            <TabsContent value={SCHEMA_TAB.ERD} className={styles.tabsContent}>
+              <div className={styles.editorPanel}>
+                <ERDEditor
+                  schema={resultSchema}
+                  tableGroups={tableGroups}
+                  errorObjects={undefined}
+                  defaultSidebarOpen={false}
+                />
+              </div>
+            </TabsContent>
+
+            <TabsContent
+              value={SCHEMA_TAB.EDITOR}
+              className={styles.tabsContent}
+            >
+              <div className={styles.overrideEditorContainer}>
+                {overrideError && (
+                  <div className={styles.errorMessage}>
+                    <div className={styles.errorTitle}>
+                      オーバーライドエラー
+                    </div>
+                    <div className={styles.errorContent}>{overrideError}</div>
+                  </div>
+                )}
+                <div className={styles.editorWrapper}>
+                  <OverrideEditor doc={overrideYaml} setDoc={setOverrideYaml} />
+                </div>
+              </div>
+            </TabsContent>
+          </TabsRoot>
         </div>
-      </TabsContent>
-    </TabsRoot>
+      </div>
+    </div>
   )
 }
