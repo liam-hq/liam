@@ -1,9 +1,12 @@
 'use client'
 
 import { Avatar, AvatarWithImage } from '@liam-hq/ui'
+import { Volume, Volume2 } from 'lucide-react'
 import type { FC } from 'react'
+import { useState } from 'react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
+import { type AudioControl, speakAgentMessage } from '../../../../utils/tts'
 import type { AgentType } from './ChatInput'
 import styles from './ChatMessage.module.css'
 import { BuildJackIcon } from './icons/BuildJackIcon'
@@ -27,6 +30,37 @@ export const ChatMessage: FC<ChatMessageProps> = ({
   avatarUrl,
   agentType = 'build',
 }) => {
+  // Managing audio playback state
+  const [isPlaying, setIsPlaying] = useState(false)
+  const [audioControl, setAudioControl] = useState<AudioControl | null>(null)
+
+  // Audio playback toggle function
+  const handleToggleSpeech = async () => {
+    if (isPlaying && audioControl) {
+      // Stop if currently playing
+      audioControl.stop()
+      setIsPlaying(false)
+      setAudioControl(null)
+      return
+    }
+
+    try {
+      // Start audio playback
+      setIsPlaying(true)
+      const control = await speakAgentMessage(agentType, content)
+      setAudioControl(control)
+
+      // Process when playback completes
+      control.onEnd = () => {
+        setIsPlaying(false)
+        setAudioControl(null)
+      }
+    } catch (error) {
+      console.error('Failed to play speech:', error)
+      setIsPlaying(false)
+    }
+  }
+
   // Only format and display timestamp if it exists
   const formattedTime = timestamp
     ? timestamp.toLocaleTimeString([], {
@@ -81,6 +115,16 @@ export const ChatMessage: FC<ChatMessageProps> = ({
         ) : (
           <div className={styles.messageText}>
             <ReactMarkdown remarkPlugins={[remarkGfm]}>{content}</ReactMarkdown>
+
+            {/* Audio playback button (agent messages only) */}
+            <button
+              onClick={handleToggleSpeech}
+              className={`${styles.speechButton} ${isPlaying ? styles.speechButtonActive : ''}`}
+              aria-label={isPlaying ? 'Stop audio' : 'Read aloud'}
+              type="button"
+            >
+              {isPlaying ? <Volume2 size={16} /> : <Volume size={16} />}
+            </button>
           </div>
         )}
         {formattedTime && (

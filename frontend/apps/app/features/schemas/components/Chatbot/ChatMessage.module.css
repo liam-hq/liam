@@ -66,6 +66,37 @@
   line-height: 1.8;
 }
 
+/* Speech button styles */
+.speechButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  margin-left: 8px;
+  border-radius: 50%;
+  background-color: var(--global-background-secondary);
+  border: none;
+  cursor: pointer;
+  opacity: 0.7;
+  transition: opacity 0.2s ease;
+  vertical-align: middle;
+}
+
+.speechButton:hover {
+  opacity: 1;
+}
+
+.speechButton:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--primary-accent);
+}
+
+.speechButtonActive {
+  color: var(--primary-accent);
+  opacity: 1;
+}
+
 /* Headings */
 .messageText :global(h1),
 .messageText :global(h2),
