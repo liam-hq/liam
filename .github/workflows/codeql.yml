@@ -1,7 +1,7 @@
 name: CodeQL
 
 on:
-  push:
+  pusher:
 
 permissions:
   actions: read
