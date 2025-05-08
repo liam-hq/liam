@@ -1,4 +1,5 @@
 import { SCHEMA_OVERRIDE_FILE_PATH } from '@/features/schemas/constants'
+import { createClient } from '@/libs/db/server'
 import {
   type Schema,
   type SchemaOverride,
@@ -7,16 +8,15 @@ import {
 import { getFileContent } from '@liam-hq/github'
 import { parse as parseYaml } from 'yaml'
 import {
+  buildSchemaOverrideFromDB,
   fetchSchemaOverrides,
   getSchemaOverrideSources,
-  buildSchemaOverrideFromDB,
 } from './fetchSchemaOverrides'
 import { mergeSchemaOverrides } from './mergeSchemaOverrides'
-import { createClient } from '@/libs/db/server'
 
 /**
  * Safely retrieves and applies schema overrides from multiple sources
- * 
+ *
  * @param repositoryFullName Repository full name (owner/repo)
  * @param branchOrCommit Branch or commit ID
  * @param githubInstallationIdentifier GitHub installation ID
@@ -33,7 +33,7 @@ export const safeApplyMultipleSchemaOverrides = async (
 ) => {
   try {
     const overrides: SchemaOverride[] = []
-    
+
     const { content: defaultOverrideContent } = await getFileContent(
       repositoryFullName,
       SCHEMA_OVERRIDE_FILE_PATH,
@@ -43,16 +43,18 @@ export const safeApplyMultipleSchemaOverrides = async (
 
     if (defaultOverrideContent !== null) {
       try {
-        let parsedOverride: SchemaOverride | null = null;
-        const parsedYaml = parseYaml(defaultOverrideContent);
-        
-        if (schemaOverrideSchema && 
-            typeof schemaOverrideSchema === 'object' && 
-            'parse' in schemaOverrideSchema && 
-            typeof schemaOverrideSchema.parse === 'function') {
-          parsedOverride = schemaOverrideSchema.parse(parsedYaml);
+        let parsedOverride: SchemaOverride | null = null
+        const parsedYaml = parseYaml(defaultOverrideContent)
+
+        if (
+          schemaOverrideSchema &&
+          typeof schemaOverrideSchema === 'object' &&
+          'parse' in schemaOverrideSchema &&
+          typeof schemaOverrideSchema.parse === 'function'
+        ) {
+          parsedOverride = schemaOverrideSchema.parse(parsedYaml)
         }
-        
+
         if (parsedOverride) {
           overrides.push(parsedOverride)
         }
@@ -62,12 +64,12 @@ export const safeApplyMultipleSchemaOverrides = async (
     }
 
     const overrideSources = await getSchemaOverrideSources(projectId)
-    
+
     const sourceOverrides = await fetchSchemaOverrides(
       repositoryFullName,
       branchOrCommit,
       githubInstallationIdentifier,
-      overrideSources
+      overrideSources,
     )
     overrides.push(...sourceOverrides)
 
@@ -75,22 +77,22 @@ export const safeApplyMultipleSchemaOverrides = async (
     const repoNameParts = repositoryFullName.split('/')
     const repoOwner = repoNameParts[0]
     const repoName = repoNameParts[1]
-    
+
     const { data: repoData } = await supabase
       .from('github_repositories')
       .select('id')
       .eq('name', repoName)
       .eq('owner', repoOwner)
       .single()
-    
+
     const repositoryId = repoData?.id
-    
+
     if (repositoryId) {
       const dbOverride = await buildSchemaOverrideFromDB(
-        projectId, 
-        repositoryId, 
-        branchOrCommit, 
-        supabase
+        projectId,
+        repositoryId,
+        branchOrCommit,
+        supabase,
       )
       if (dbOverride) {
         overrides.push(dbOverride)
@@ -107,7 +109,7 @@ export const safeApplyMultipleSchemaOverrides = async (
     }
 
     const result = mergeSchemaOverrides(schema, overrides)
-    
+
     return {
       result,
       error: null,
@@ -119,8 +121,7 @@ export const safeApplyMultipleSchemaOverrides = async (
       error: {
         name: 'OverrideError',
         message: 'Failed to apply schema overrides.',
-        instruction:
-          'Please check the schema override sources and formats.',
+        instruction: 'Please check the schema override sources and formats.',
       },
     }
   }

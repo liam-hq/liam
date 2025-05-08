@@ -1,21 +1,15 @@
 import { createClient } from '@/libs/db/server'
-import { type SchemaOverride } from '@liam-hq/db-structure'
-import { type SupabaseClient } from '@supabase/supabase-js'
-import { buildSchemaOverrideFromDB, fetchSchemaOverrides, getSchemaOverrideSources } from './fetchSchemaOverrides'
-
-type SupabaseQueryResult<T> = {
-  data: T[] | null;
-  error: Error | null;
-}
-
-type SupabaseCountResult = {
-  count: number | null;
-  error: Error | null;
-}
+import type { SupabaseClient } from '@/libs/db/server'
+import type { SchemaOverride } from '@liam-hq/db-structure'
+import {
+  buildSchemaOverrideFromDB,
+  fetchSchemaOverrides,
+  getSchemaOverrideSources,
+} from './fetchSchemaOverrides'
 
 /**
  * Gets all schema overrides for a specific branch or commit
- * 
+ *
  * @param repositoryFullName Repository full name (owner/repo)
  * @param repositoryId Repository ID
  * @param branchOrCommit Branch or commit ID
@@ -28,21 +22,21 @@ export async function getBranchSchemaOverrides(
   repositoryId: string,
   branchOrCommit: string,
   githubInstallationIdentifier: number,
-  projectId: string
+  projectId: string,
 ): Promise<SchemaOverride[]> {
   const supabase = await createClient()
   const overrides: SchemaOverride[] = []
 
   try {
     const overrideSources = await getSchemaOverrideSources(projectId)
-    
+
     const fileOverrides = await fetchSchemaOverrides(
       repositoryFullName,
       branchOrCommit,
       githubInstallationIdentifier,
-      overrideSources
+      overrideSources,
     )
-    
+
     if (fileOverrides && Array.isArray(fileOverrides)) {
       overrides.push(...fileOverrides)
     }
@@ -51,9 +45,9 @@ export async function getBranchSchemaOverrides(
       projectId,
       repositoryId,
       branchOrCommit,
-      supabase
+      supabase,
     )
-    
+
     if (dbOverride) {
       overrides.push(dbOverride)
     }
@@ -67,7 +61,7 @@ export async function getBranchSchemaOverrides(
 
 /**
  * Checks if a branch or commit has any schema overrides
- * 
+ *
  * @param repositoryId Repository ID
  * @param branchOrCommit Branch or commit ID
  * @param supabase Supabase client
@@ -76,32 +70,32 @@ export async function getBranchSchemaOverrides(
 export async function hasBranchSchemaOverrides(
   repositoryId: string,
   branchOrCommit: string,
-  supabase: SupabaseClient
+  supabase: SupabaseClient,
 ): Promise<boolean> {
   try {
     const query = supabase
       .from('branch_schema_override_mappings')
       .select('id', { count: 'exact', head: true })
-    
+
     if (!query) {
       return false
     }
-    
+
     const filteredQuery = query
       .eq('repository_id', repositoryId)
       .eq('branch_or_commit', branchOrCommit)
-    
+
     if (!filteredQuery) {
       return false
     }
-    
-    const { data, error, count } = await filteredQuery
-    
+
+    const { error, count } = await filteredQuery
+
     if (error) {
       console.error('Failed to check if branch has schema overrides:', error)
       return false
     }
-    
+
     return typeof count === 'number' && count > 0
   } catch (error) {
     console.error('Failed to check if branch has schema overrides:', error)

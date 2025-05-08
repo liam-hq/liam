@@ -386,6 +386,19 @@ $$;
 ALTER FUNCTION "public"."prevent_delete_last_organization_member"() OWNER TO "postgres";
 
 
+CREATE OR REPLACE FUNCTION "public"."set_branch_schema_override_mappings_organization_id"() RETURNS "trigger"
+    LANGUAGE "plpgsql"
+    AS $$
+BEGIN
+  SELECT organization_id INTO NEW.organization_id FROM github_repositories WHERE id = NEW.repository_id;
+  RETURN NEW;
+END;
+$$;
+
+
+ALTER FUNCTION "public"."set_branch_schema_override_mappings_organization_id"() OWNER TO "postgres";
+
+
 CREATE OR REPLACE FUNCTION "public"."set_doc_file_paths_organization_id"() RETURNS "trigger"
     LANGUAGE "plpgsql" SECURITY DEFINER
     AS $$
@@ -643,6 +656,45 @@ $$;
 ALTER FUNCTION "public"."set_schema_file_paths_organization_id"() OWNER TO "postgres";
 
 
+CREATE OR REPLACE FUNCTION "public"."set_schema_override_sources_organization_id"() RETURNS "trigger"
+    LANGUAGE "plpgsql"
+    AS $$
+BEGIN
+  SELECT organization_id INTO NEW.organization_id FROM projects WHERE id = NEW.project_id;
+  RETURN NEW;
+END;
+$$;
+
+
+ALTER FUNCTION "public"."set_schema_override_sources_organization_id"() OWNER TO "postgres";
+
+
+CREATE OR REPLACE FUNCTION "public"."set_table_groups_organization_id"() RETURNS "trigger"
+    LANGUAGE "plpgsql"
+    AS $$
+BEGIN
+  SELECT organization_id INTO NEW.organization_id FROM projects WHERE id = NEW.project_id;
+  RETURN NEW;
+END;
+$$;
+
+
+ALTER FUNCTION "public"."set_table_groups_organization_id"() OWNER TO "postgres";
+
+
+CREATE OR REPLACE FUNCTION "public"."set_table_overrides_organization_id"() RETURNS "trigger"
+    LANGUAGE "plpgsql"
+    AS $$
+BEGIN
+  SELECT organization_id INTO NEW.organization_id FROM projects WHERE id = NEW.project_id;
+  RETURN NEW;
+END;
+$$;
+
+
+ALTER FUNCTION "public"."set_table_overrides_organization_id"() OWNER TO "postgres";
+
+
 CREATE OR REPLACE FUNCTION "public"."sync_existing_users"() RETURNS "void"
     LANGUAGE "plpgsql" SECURITY DEFINER
     AS $$
@@ -664,6 +716,22 @@ ALTER FUNCTION "public"."sync_existing_users"() OWNER TO "postgres";
 SET default_tablespace = '';
 
 SET default_table_access_method = "heap";
+
+
+CREATE TABLE IF NOT EXISTS "public"."branch_schema_override_mappings" (
+    "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
+    "repository_id" "uuid" NOT NULL,
+    "branch_or_commit" "text" NOT NULL,
+    "schema_override_source_id" "uuid",
+    "table_group_id" "uuid",
+    "table_override_id" "uuid",
+    "created_at" timestamp(3) with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    "updated_at" timestamp(3) with time zone NOT NULL,
+    "organization_id" "uuid" NOT NULL
+);
+
+
+ALTER TABLE "public"."branch_schema_override_mappings" OWNER TO "postgres";
 
 
 CREATE TABLE IF NOT EXISTS "public"."doc_file_paths" (
@@ -942,6 +1010,50 @@ CREATE TABLE IF NOT EXISTS "public"."schema_file_paths" (
 ALTER TABLE "public"."schema_file_paths" OWNER TO "postgres";
 
 
+CREATE TABLE IF NOT EXISTS "public"."schema_override_sources" (
+    "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
+    "project_id" "uuid" NOT NULL,
+    "path" "text" NOT NULL,
+    "description" "text",
+    "priority" integer DEFAULT 0 NOT NULL,
+    "created_at" timestamp(3) with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    "updated_at" timestamp(3) with time zone NOT NULL,
+    "organization_id" "uuid" NOT NULL
+);
+
+
+ALTER TABLE "public"."schema_override_sources" OWNER TO "postgres";
+
+
+CREATE TABLE IF NOT EXISTS "public"."table_groups" (
+    "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
+    "project_id" "uuid" NOT NULL,
+    "name" "text" NOT NULL,
+    "tables" "text"[] NOT NULL,
+    "comment" "text",
+    "created_at" timestamp(3) with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    "updated_at" timestamp(3) with time zone NOT NULL,
+    "organization_id" "uuid" NOT NULL
+);
+
+
+ALTER TABLE "public"."table_groups" OWNER TO "postgres";
+
+
+CREATE TABLE IF NOT EXISTS "public"."table_overrides" (
+    "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
+    "project_id" "uuid" NOT NULL,
+    "table_name" "text" NOT NULL,
+    "comment" "text",
+    "created_at" timestamp(3) with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    "updated_at" timestamp(3) with time zone NOT NULL,
+    "organization_id" "uuid" NOT NULL
+);
+
+
+ALTER TABLE "public"."table_overrides" OWNER TO "postgres";
+
+
 CREATE TABLE IF NOT EXISTS "public"."users" (
     "id" "uuid" NOT NULL,
     "name" "text" NOT NULL,
@@ -950,6 +1062,11 @@ CREATE TABLE IF NOT EXISTS "public"."users" (
 
 
 ALTER TABLE "public"."users" OWNER TO "postgres";
+
+
+ALTER TABLE ONLY "public"."branch_schema_override_mappings"
+    ADD CONSTRAINT "branch_schema_override_mappings_pkey" PRIMARY KEY ("id");
+
 
 
 ALTER TABLE ONLY "public"."doc_file_paths"
@@ -1077,6 +1194,21 @@ ALTER TABLE ONLY "public"."review_suggestion_snippets"
 
 
 
+ALTER TABLE ONLY "public"."schema_override_sources"
+    ADD CONSTRAINT "schema_override_sources_pkey" PRIMARY KEY ("id");
+
+
+
+ALTER TABLE ONLY "public"."table_groups"
+    ADD CONSTRAINT "table_groups_pkey" PRIMARY KEY ("id");
+
+
+
+ALTER TABLE ONLY "public"."table_overrides"
+    ADD CONSTRAINT "table_overrides_pkey" PRIMARY KEY ("id");
+
+
+
 ALTER TABLE ONLY "public"."users"
     ADD CONSTRAINT "user_email_key" UNIQUE ("email");
 
@@ -1084,6 +1216,18 @@ ALTER TABLE ONLY "public"."users"
 
 ALTER TABLE ONLY "public"."users"
     ADD CONSTRAINT "user_pkey" PRIMARY KEY ("id");
+
+
+
+CREATE UNIQUE INDEX "branch_schema_override_mappings_unique_group" ON "public"."branch_schema_override_mappings" USING "btree" ("repository_id", "branch_or_commit", "table_group_id") WHERE ("table_group_id" IS NOT NULL);
+
+
+
+CREATE UNIQUE INDEX "branch_schema_override_mappings_unique_override" ON "public"."branch_schema_override_mappings" USING "btree" ("repository_id", "branch_or_commit", "table_override_id") WHERE ("table_override_id" IS NOT NULL);
+
+
+
+CREATE UNIQUE INDEX "branch_schema_override_mappings_unique_source" ON "public"."branch_schema_override_mappings" USING "btree" ("repository_id", "branch_or_commit", "schema_override_source_id") WHERE ("schema_override_source_id" IS NOT NULL);
 
 
 
@@ -1143,11 +1287,27 @@ CREATE UNIQUE INDEX "schema_file_path_project_id_key" ON "public"."schema_file_p
 
 
 
+CREATE UNIQUE INDEX "schema_override_sources_project_id_path_key" ON "public"."schema_override_sources" USING "btree" ("project_id", "path");
+
+
+
+CREATE UNIQUE INDEX "table_groups_project_id_name_key" ON "public"."table_groups" USING "btree" ("project_id", "name");
+
+
+
+CREATE UNIQUE INDEX "table_overrides_project_id_table_name_key" ON "public"."table_overrides" USING "btree" ("project_id", "table_name");
+
+
+
 CREATE OR REPLACE TRIGGER "check_last_organization_member" BEFORE DELETE ON "public"."organization_members" FOR EACH ROW EXECUTE FUNCTION "public"."prevent_delete_last_organization_member"();
 
 
 
 COMMENT ON TRIGGER "check_last_organization_member" ON "public"."organization_members" IS 'Prevents deletion of the last member of an organization to ensure organizations always have at least one member';
+
+
+
+CREATE OR REPLACE TRIGGER "set_branch_schema_override_mappings_organization_id_trigger" BEFORE INSERT OR UPDATE ON "public"."branch_schema_override_mappings" FOR EACH ROW EXECUTE FUNCTION "public"."set_branch_schema_override_mappings_organization_id"();
 
 
 
@@ -1208,6 +1368,43 @@ CREATE OR REPLACE TRIGGER "set_review_suggestion_snippets_organization_id_trigge
 
 
 CREATE OR REPLACE TRIGGER "set_schema_file_paths_organization_id_trigger" BEFORE INSERT OR UPDATE ON "public"."schema_file_paths" FOR EACH ROW EXECUTE FUNCTION "public"."set_schema_file_paths_organization_id"();
+
+
+
+CREATE OR REPLACE TRIGGER "set_schema_override_sources_organization_id_trigger" BEFORE INSERT OR UPDATE ON "public"."schema_override_sources" FOR EACH ROW EXECUTE FUNCTION "public"."set_schema_override_sources_organization_id"();
+
+
+
+CREATE OR REPLACE TRIGGER "set_table_groups_organization_id_trigger" BEFORE INSERT OR UPDATE ON "public"."table_groups" FOR EACH ROW EXECUTE FUNCTION "public"."set_table_groups_organization_id"();
+
+
+
+CREATE OR REPLACE TRIGGER "set_table_overrides_organization_id_trigger" BEFORE INSERT OR UPDATE ON "public"."table_overrides" FOR EACH ROW EXECUTE FUNCTION "public"."set_table_overrides_organization_id"();
+
+
+
+ALTER TABLE ONLY "public"."branch_schema_override_mappings"
+    ADD CONSTRAINT "branch_schema_override_mappings_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "public"."organizations"("id") ON UPDATE CASCADE ON DELETE RESTRICT;
+
+
+
+ALTER TABLE ONLY "public"."branch_schema_override_mappings"
+    ADD CONSTRAINT "branch_schema_override_mappings_repository_id_fkey" FOREIGN KEY ("repository_id") REFERENCES "public"."github_repositories"("id") ON UPDATE CASCADE ON DELETE RESTRICT;
+
+
+
+ALTER TABLE ONLY "public"."branch_schema_override_mappings"
+    ADD CONSTRAINT "branch_schema_override_mappings_schema_override_source_id_fkey" FOREIGN KEY ("schema_override_source_id") REFERENCES "public"."schema_override_sources"("id") ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+
+ALTER TABLE ONLY "public"."branch_schema_override_mappings"
+    ADD CONSTRAINT "branch_schema_override_mappings_table_group_id_fkey" FOREIGN KEY ("table_group_id") REFERENCES "public"."table_groups"("id") ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+
+ALTER TABLE ONLY "public"."branch_schema_override_mappings"
+    ADD CONSTRAINT "branch_schema_override_mappings_table_override_id_fkey" FOREIGN KEY ("table_override_id") REFERENCES "public"."table_overrides"("id") ON UPDATE CASCADE ON DELETE CASCADE;
 
 
 
@@ -1421,6 +1618,36 @@ ALTER TABLE ONLY "public"."schema_file_paths"
 
 
 
+ALTER TABLE ONLY "public"."schema_override_sources"
+    ADD CONSTRAINT "schema_override_sources_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "public"."organizations"("id") ON UPDATE CASCADE ON DELETE RESTRICT;
+
+
+
+ALTER TABLE ONLY "public"."schema_override_sources"
+    ADD CONSTRAINT "schema_override_sources_project_id_fkey" FOREIGN KEY ("project_id") REFERENCES "public"."projects"("id") ON UPDATE CASCADE ON DELETE RESTRICT;
+
+
+
+ALTER TABLE ONLY "public"."table_groups"
+    ADD CONSTRAINT "table_groups_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "public"."organizations"("id") ON UPDATE CASCADE ON DELETE RESTRICT;
+
+
+
+ALTER TABLE ONLY "public"."table_groups"
+    ADD CONSTRAINT "table_groups_project_id_fkey" FOREIGN KEY ("project_id") REFERENCES "public"."projects"("id") ON UPDATE CASCADE ON DELETE RESTRICT;
+
+
+
+ALTER TABLE ONLY "public"."table_overrides"
+    ADD CONSTRAINT "table_overrides_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "public"."organizations"("id") ON UPDATE CASCADE ON DELETE RESTRICT;
+
+
+
+ALTER TABLE ONLY "public"."table_overrides"
+    ADD CONSTRAINT "table_overrides_project_id_fkey" FOREIGN KEY ("project_id") REFERENCES "public"."projects"("id") ON UPDATE CASCADE ON DELETE RESTRICT;
+
+
+
 CREATE POLICY "authenticated_users_can_delete_org_invitations" ON "public"."invitations" FOR DELETE TO "authenticated" USING (("organization_id" IN ( SELECT "organization_members"."organization_id"
    FROM "public"."organization_members"
   WHERE ("organization_members"."user_id" = "auth"."uid"()))));
@@ -1452,6 +1679,12 @@ CREATE POLICY "authenticated_users_can_delete_org_projects" ON "public"."project
 
 
 COMMENT ON POLICY "authenticated_users_can_delete_org_projects" ON "public"."projects" IS 'Authenticated users can only delete projects in organizations they are members of';
+
+
+
+CREATE POLICY "authenticated_users_can_insert_org_branch_schema_override_mappi" ON "public"."branch_schema_override_mappings" FOR INSERT TO "authenticated" WITH CHECK (("organization_id" IN ( SELECT "organization_members"."organization_id"
+   FROM "public"."organization_members"
+  WHERE ("organization_members"."user_id" = "auth"."uid"()))));
 
 
 
@@ -1539,6 +1772,24 @@ COMMENT ON POLICY "authenticated_users_can_insert_org_schema_file_paths" ON "pub
 
 
 
+CREATE POLICY "authenticated_users_can_insert_org_schema_override_sources" ON "public"."schema_override_sources" FOR INSERT TO "authenticated" WITH CHECK (("organization_id" IN ( SELECT "organization_members"."organization_id"
+   FROM "public"."organization_members"
+  WHERE ("organization_members"."user_id" = "auth"."uid"()))));
+
+
+
+CREATE POLICY "authenticated_users_can_insert_org_table_groups" ON "public"."table_groups" FOR INSERT TO "authenticated" WITH CHECK (("organization_id" IN ( SELECT "organization_members"."organization_id"
+   FROM "public"."organization_members"
+  WHERE ("organization_members"."user_id" = "auth"."uid"()))));
+
+
+
+CREATE POLICY "authenticated_users_can_insert_org_table_overrides" ON "public"."table_overrides" FOR INSERT TO "authenticated" WITH CHECK (("organization_id" IN ( SELECT "organization_members"."organization_id"
+   FROM "public"."organization_members"
+  WHERE ("organization_members"."user_id" = "auth"."uid"()))));
+
+
+
 CREATE POLICY "authenticated_users_can_insert_organizations" ON "public"."organizations" FOR INSERT TO "authenticated" WITH CHECK (true);
 
 
@@ -1554,6 +1805,12 @@ CREATE POLICY "authenticated_users_can_insert_projects" ON "public"."projects" F
 
 
 COMMENT ON POLICY "authenticated_users_can_insert_projects" ON "public"."projects" IS 'Authenticated users can create any project';
+
+
+
+CREATE POLICY "authenticated_users_can_select_org_branch_schema_override_mappi" ON "public"."branch_schema_override_mappings" FOR SELECT TO "authenticated" USING (("organization_id" IN ( SELECT "organization_members"."organization_id"
+   FROM "public"."organization_members"
+  WHERE ("organization_members"."user_id" = "auth"."uid"()))));
 
 
 
@@ -1735,6 +1992,32 @@ COMMENT ON POLICY "authenticated_users_can_select_org_schema_file_paths" ON "pub
 
 
 
+CREATE POLICY "authenticated_users_can_select_org_schema_override_sources" ON "public"."schema_override_sources" FOR SELECT TO "authenticated" USING (("organization_id" IN ( SELECT "organization_members"."organization_id"
+   FROM "public"."organization_members"
+  WHERE ("organization_members"."user_id" = "auth"."uid"()))));
+
+
+
+CREATE POLICY "authenticated_users_can_select_org_table_groups" ON "public"."table_groups" FOR SELECT TO "authenticated" USING (("organization_id" IN ( SELECT "organization_members"."organization_id"
+   FROM "public"."organization_members"
+  WHERE ("organization_members"."user_id" = "auth"."uid"()))));
+
+
+
+CREATE POLICY "authenticated_users_can_select_org_table_overrides" ON "public"."table_overrides" FOR SELECT TO "authenticated" USING (("organization_id" IN ( SELECT "organization_members"."organization_id"
+   FROM "public"."organization_members"
+  WHERE ("organization_members"."user_id" = "auth"."uid"()))));
+
+
+
+CREATE POLICY "authenticated_users_can_update_org_branch_schema_override_mappi" ON "public"."branch_schema_override_mappings" FOR UPDATE TO "authenticated" USING (("organization_id" IN ( SELECT "organization_members"."organization_id"
+   FROM "public"."organization_members"
+  WHERE ("organization_members"."user_id" = "auth"."uid"())))) WITH CHECK (("organization_id" IN ( SELECT "organization_members"."organization_id"
+   FROM "public"."organization_members"
+  WHERE ("organization_members"."user_id" = "auth"."uid"()))));
+
+
+
 CREATE POLICY "authenticated_users_can_update_org_invitations" ON "public"."invitations" FOR UPDATE TO "authenticated" USING (("organization_id" IN ( SELECT "organization_members"."organization_id"
    FROM "public"."organization_members"
   WHERE ("organization_members"."user_id" = "auth"."uid"())))) WITH CHECK (("organization_id" IN ( SELECT "organization_members"."organization_id"
@@ -1801,6 +2084,33 @@ COMMENT ON POLICY "authenticated_users_can_update_org_schema_file_paths" ON "pub
 
 
 
+CREATE POLICY "authenticated_users_can_update_org_schema_override_sources" ON "public"."schema_override_sources" FOR UPDATE TO "authenticated" USING (("organization_id" IN ( SELECT "organization_members"."organization_id"
+   FROM "public"."organization_members"
+  WHERE ("organization_members"."user_id" = "auth"."uid"())))) WITH CHECK (("organization_id" IN ( SELECT "organization_members"."organization_id"
+   FROM "public"."organization_members"
+  WHERE ("organization_members"."user_id" = "auth"."uid"()))));
+
+
+
+CREATE POLICY "authenticated_users_can_update_org_table_groups" ON "public"."table_groups" FOR UPDATE TO "authenticated" USING (("organization_id" IN ( SELECT "organization_members"."organization_id"
+   FROM "public"."organization_members"
+  WHERE ("organization_members"."user_id" = "auth"."uid"())))) WITH CHECK (("organization_id" IN ( SELECT "organization_members"."organization_id"
+   FROM "public"."organization_members"
+  WHERE ("organization_members"."user_id" = "auth"."uid"()))));
+
+
+
+CREATE POLICY "authenticated_users_can_update_org_table_overrides" ON "public"."table_overrides" FOR UPDATE TO "authenticated" USING (("organization_id" IN ( SELECT "organization_members"."organization_id"
+   FROM "public"."organization_members"
+  WHERE ("organization_members"."user_id" = "auth"."uid"())))) WITH CHECK (("organization_id" IN ( SELECT "organization_members"."organization_id"
+   FROM "public"."organization_members"
+  WHERE ("organization_members"."user_id" = "auth"."uid"()))));
+
+
+
+ALTER TABLE "public"."branch_schema_override_mappings" ENABLE ROW LEVEL SECURITY;
+
+
 ALTER TABLE "public"."doc_file_paths" ENABLE ROW LEVEL SECURITY;
 
 
@@ -1861,6 +2171,9 @@ ALTER TABLE "public"."review_suggestion_snippets" ENABLE ROW LEVEL SECURITY;
 ALTER TABLE "public"."schema_file_paths" ENABLE ROW LEVEL SECURITY;
 
 
+ALTER TABLE "public"."schema_override_sources" ENABLE ROW LEVEL SECURITY;
+
+
 CREATE POLICY "service_role_can_delete_all_invitations" ON "public"."invitations" FOR DELETE TO "service_role" USING (true);
 
 
@@ -1878,6 +2191,10 @@ CREATE POLICY "service_role_can_delete_all_projects" ON "public"."projects" FOR 
 
 
 COMMENT ON POLICY "service_role_can_delete_all_projects" ON "public"."projects" IS 'Service role can delete any project (for jobs)';
+
+
+
+CREATE POLICY "service_role_can_insert_all_branch_schema_override_mappings" ON "public"."branch_schema_override_mappings" FOR INSERT TO "service_role" WITH CHECK (true);
 
 
 
@@ -1941,6 +2258,22 @@ CREATE POLICY "service_role_can_insert_all_review_suggestion_snippets" ON "publi
 
 
 
+CREATE POLICY "service_role_can_insert_all_schema_override_sources" ON "public"."schema_override_sources" FOR INSERT TO "service_role" WITH CHECK (true);
+
+
+
+CREATE POLICY "service_role_can_insert_all_table_groups" ON "public"."table_groups" FOR INSERT TO "service_role" WITH CHECK (true);
+
+
+
+CREATE POLICY "service_role_can_insert_all_table_overrides" ON "public"."table_overrides" FOR INSERT TO "service_role" WITH CHECK (true);
+
+
+
+CREATE POLICY "service_role_can_select_all_branch_schema_override_mappings" ON "public"."branch_schema_override_mappings" FOR SELECT TO "service_role" USING (true);
+
+
+
 CREATE POLICY "service_role_can_select_all_doc_file_paths" ON "public"."doc_file_paths" FOR SELECT TO "service_role" USING (true);
 
 
@@ -2001,6 +2334,18 @@ CREATE POLICY "service_role_can_select_all_schema_file_paths" ON "public"."schem
 
 
 
+CREATE POLICY "service_role_can_select_all_schema_override_sources" ON "public"."schema_override_sources" FOR SELECT TO "service_role" USING (true);
+
+
+
+CREATE POLICY "service_role_can_select_all_table_groups" ON "public"."table_groups" FOR SELECT TO "service_role" USING (true);
+
+
+
+CREATE POLICY "service_role_can_select_all_table_overrides" ON "public"."table_overrides" FOR SELECT TO "service_role" USING (true);
+
+
+
 CREATE POLICY "service_role_can_update_all_invitations" ON "public"."invitations" FOR UPDATE TO "service_role" USING (true) WITH CHECK (true);
 
 
@@ -2023,6 +2368,12 @@ CREATE POLICY "service_role_can_update_all_projects" ON "public"."projects" FOR 
 
 COMMENT ON POLICY "service_role_can_update_all_projects" ON "public"."projects" IS 'Service role can update any project (for jobs)';
 
+
+
+ALTER TABLE "public"."table_groups" ENABLE ROW LEVEL SECURITY;
+
+
+ALTER TABLE "public"."table_overrides" ENABLE ROW LEVEL SECURITY;
 
 
 ALTER TABLE "public"."users" ENABLE ROW LEVEL SECURITY;
@@ -2258,6 +2609,12 @@ GRANT ALL ON FUNCTION "public"."prevent_delete_last_organization_member"() TO "s
 
 
 
+GRANT ALL ON FUNCTION "public"."set_branch_schema_override_mappings_organization_id"() TO "anon";
+GRANT ALL ON FUNCTION "public"."set_branch_schema_override_mappings_organization_id"() TO "authenticated";
+GRANT ALL ON FUNCTION "public"."set_branch_schema_override_mappings_organization_id"() TO "service_role";
+
+
+
 GRANT ALL ON FUNCTION "public"."set_doc_file_paths_organization_id"() TO "anon";
 GRANT ALL ON FUNCTION "public"."set_doc_file_paths_organization_id"() TO "authenticated";
 GRANT ALL ON FUNCTION "public"."set_doc_file_paths_organization_id"() TO "service_role";
@@ -2348,6 +2705,24 @@ GRANT ALL ON FUNCTION "public"."set_schema_file_paths_organization_id"() TO "ser
 
 
 
+GRANT ALL ON FUNCTION "public"."set_schema_override_sources_organization_id"() TO "anon";
+GRANT ALL ON FUNCTION "public"."set_schema_override_sources_organization_id"() TO "authenticated";
+GRANT ALL ON FUNCTION "public"."set_schema_override_sources_organization_id"() TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."set_table_groups_organization_id"() TO "anon";
+GRANT ALL ON FUNCTION "public"."set_table_groups_organization_id"() TO "authenticated";
+GRANT ALL ON FUNCTION "public"."set_table_groups_organization_id"() TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."set_table_overrides_organization_id"() TO "anon";
+GRANT ALL ON FUNCTION "public"."set_table_overrides_organization_id"() TO "authenticated";
+GRANT ALL ON FUNCTION "public"."set_table_overrides_organization_id"() TO "service_role";
+
+
+
 GRANT ALL ON FUNCTION "public"."sync_existing_users"() TO "anon";
 GRANT ALL ON FUNCTION "public"."sync_existing_users"() TO "authenticated";
 GRANT ALL ON FUNCTION "public"."sync_existing_users"() TO "service_role";
@@ -2366,6 +2741,12 @@ GRANT ALL ON FUNCTION "public"."sync_existing_users"() TO "service_role";
 
 
 
+
+
+
+GRANT ALL ON TABLE "public"."branch_schema_override_mappings" TO "anon";
+GRANT ALL ON TABLE "public"."branch_schema_override_mappings" TO "authenticated";
+GRANT ALL ON TABLE "public"."branch_schema_override_mappings" TO "service_role";
 
 
 
@@ -2489,15 +2870,27 @@ GRANT ALL ON TABLE "public"."schema_file_paths" TO "service_role";
 
 
 
+GRANT ALL ON TABLE "public"."schema_override_sources" TO "anon";
+GRANT ALL ON TABLE "public"."schema_override_sources" TO "authenticated";
+GRANT ALL ON TABLE "public"."schema_override_sources" TO "service_role";
+
+
+
+GRANT ALL ON TABLE "public"."table_groups" TO "anon";
+GRANT ALL ON TABLE "public"."table_groups" TO "authenticated";
+GRANT ALL ON TABLE "public"."table_groups" TO "service_role";
+
+
+
+GRANT ALL ON TABLE "public"."table_overrides" TO "anon";
+GRANT ALL ON TABLE "public"."table_overrides" TO "authenticated";
+GRANT ALL ON TABLE "public"."table_overrides" TO "service_role";
+
+
+
 GRANT ALL ON TABLE "public"."users" TO "anon";
 GRANT ALL ON TABLE "public"."users" TO "authenticated";
 GRANT ALL ON TABLE "public"."users" TO "service_role";
-
-
-
-
-
-
 
 
 

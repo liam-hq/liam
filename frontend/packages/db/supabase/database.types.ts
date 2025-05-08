@@ -34,6 +34,78 @@ export type Database = {
   }
   public: {
     Tables: {
+      branch_schema_override_mappings: {
+        Row: {
+          branch_or_commit: string
+          created_at: string
+          id: string
+          organization_id: string
+          repository_id: string
+          schema_override_source_id: string | null
+          table_group_id: string | null
+          table_override_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          branch_or_commit: string
+          created_at?: string
+          id?: string
+          organization_id: string
+          repository_id: string
+          schema_override_source_id?: string | null
+          table_group_id?: string | null
+          table_override_id?: string | null
+          updated_at: string
+        }
+        Update: {
+          branch_or_commit?: string
+          created_at?: string
+          id?: string
+          organization_id?: string
+          repository_id?: string
+          schema_override_source_id?: string | null
+          table_group_id?: string | null
+          table_override_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'branch_schema_override_mappings_organization_id_fkey'
+            columns: ['organization_id']
+            isOneToOne: false
+            referencedRelation: 'organizations'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'branch_schema_override_mappings_repository_id_fkey'
+            columns: ['repository_id']
+            isOneToOne: false
+            referencedRelation: 'github_repositories'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'branch_schema_override_mappings_schema_override_source_id_fkey'
+            columns: ['schema_override_source_id']
+            isOneToOne: false
+            referencedRelation: 'schema_override_sources'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'branch_schema_override_mappings_table_group_id_fkey'
+            columns: ['table_group_id']
+            isOneToOne: false
+            referencedRelation: 'table_groups'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'branch_schema_override_mappings_table_override_id_fkey'
+            columns: ['table_override_id']
+            isOneToOne: false
+            referencedRelation: 'table_overrides'
+            referencedColumns: ['id']
+          },
+        ]
+      }
       doc_file_paths: {
         Row: {
           created_at: string
@@ -935,24 +1007,6 @@ export type Database = {
           },
         ]
       }
-      users: {
-        Row: {
-          email: string
-          id: string
-          name: string
-        }
-        Insert: {
-          email: string
-          id: string
-          name: string
-        }
-        Update: {
-          email?: string
-          id?: string
-          name?: string
-        }
-        Relationships: []
-      }
       schema_override_sources: {
         Row: {
           created_at: string
@@ -960,6 +1014,7 @@ export type Database = {
           id: string
           organization_id: string
           path: string
+          priority: number
           project_id: string
           updated_at: string
         }
@@ -969,6 +1024,7 @@ export type Database = {
           id?: string
           organization_id: string
           path: string
+          priority?: number
           project_id: string
           updated_at: string
         }
@@ -978,22 +1034,23 @@ export type Database = {
           id?: string
           organization_id?: string
           path?: string
+          priority?: number
           project_id?: string
           updated_at?: string
         }
         Relationships: [
           {
-            foreignKeyName: 'schema_override_sources_project_id_fkey'
-            columns: ['project_id']
-            isOneToOne: false
-            referencedRelation: 'projects'
-            referencedColumns: ['id']
-          },
-          {
             foreignKeyName: 'schema_override_sources_organization_id_fkey'
             columns: ['organization_id']
             isOneToOne: false
             referencedRelation: 'organizations'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'schema_override_sources_project_id_fkey'
+            columns: ['project_id']
+            isOneToOne: false
+            referencedRelation: 'projects'
             referencedColumns: ['id']
           },
         ]
@@ -1031,17 +1088,17 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'table_groups_project_id_fkey'
-            columns: ['project_id']
-            isOneToOne: false
-            referencedRelation: 'projects'
-            referencedColumns: ['id']
-          },
-          {
             foreignKeyName: 'table_groups_organization_id_fkey'
             columns: ['organization_id']
             isOneToOne: false
             referencedRelation: 'organizations'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'table_groups_project_id_fkey'
+            columns: ['project_id']
+            isOneToOne: false
+            referencedRelation: 'projects'
             referencedColumns: ['id']
           },
         ]
@@ -1076,92 +1133,38 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'table_overrides_project_id_fkey'
-            columns: ['project_id']
-            isOneToOne: false
-            referencedRelation: 'projects'
-            referencedColumns: ['id']
-          },
-          {
             foreignKeyName: 'table_overrides_organization_id_fkey'
             columns: ['organization_id']
             isOneToOne: false
             referencedRelation: 'organizations'
             referencedColumns: ['id']
           },
+          {
+            foreignKeyName: 'table_overrides_project_id_fkey'
+            columns: ['project_id']
+            isOneToOne: false
+            referencedRelation: 'projects'
+            referencedColumns: ['id']
+          },
         ]
       }
-      branch_schema_override_mappings: {
+      users: {
         Row: {
-          branch_or_commit: string
-          created_at: string
+          email: string
           id: string
-          organization_id: string
-          repository_id: string
-          schema_override_source_id: string | null
-          table_group_id: string | null
-          table_override_id: string | null
-          updated_at: string
+          name: string
         }
         Insert: {
-          branch_or_commit: string
-          created_at?: string
-          id?: string
-          organization_id: string
-          repository_id: string
-          schema_override_source_id?: string | null
-          table_group_id?: string | null
-          table_override_id?: string | null
-          updated_at: string
+          email: string
+          id: string
+          name: string
         }
         Update: {
-          branch_or_commit?: string
-          created_at?: string
+          email?: string
           id?: string
-          organization_id?: string
-          repository_id?: string
-          schema_override_source_id?: string | null
-          table_group_id?: string | null
-          table_override_id?: string | null
-          updated_at?: string
+          name?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: 'branch_schema_override_mappings_repository_id_fkey'
-            columns: ['repository_id']
-            isOneToOne: false
-            referencedRelation: 'github_repositories'
-            referencedColumns: ['id']
-          },
-          {
-            foreignKeyName: 'branch_schema_override_mappings_schema_override_source_id_fkey'
-            columns: ['schema_override_source_id']
-            isOneToOne: false
-            referencedRelation: 'schema_override_sources'
-            referencedColumns: ['id']
-          },
-          {
-            foreignKeyName: 'branch_schema_override_mappings_table_group_id_fkey'
-            columns: ['table_group_id']
-            isOneToOne: false
-            referencedRelation: 'table_groups'
-            referencedColumns: ['id']
-          },
-          {
-            foreignKeyName: 'branch_schema_override_mappings_table_override_id_fkey'
-            columns: ['table_override_id']
-            isOneToOne: false
-            referencedRelation: 'table_overrides'
-            referencedColumns: ['id']
-          },
-          {
-            foreignKeyName: 'branch_schema_override_mappings_organization_id_fkey'
-            columns: ['organization_id']
-            isOneToOne: false
-            referencedRelation: 'organizations'
-            referencedColumns: ['id']
-          },
-        ]
+        Relationships: []
       }
     }
     Views: {
