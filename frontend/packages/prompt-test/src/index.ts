@@ -100,6 +100,9 @@ async function main() {
         runName,
         langfuseClient: langfuse,
       })
+
+      // @ts-ignore Type error related to the LangChain to Vercel AI SDK migration.
+      // This code is temporarily disabled as noted at the top of the file
       await chain.invoke(item.input, { callbacks: [handler] })
       // const output = await chain.invoke(item.input, { callbacks: [handler] })
 
