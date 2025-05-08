@@ -141,6 +141,7 @@ export const processGenerateReview = async (
     payload.fileChanges,
     prDescription,
     formattedComments,
+    undefined, // callbacks
     predefinedRunId,
   )
 

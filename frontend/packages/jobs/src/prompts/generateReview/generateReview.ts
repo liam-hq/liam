@@ -1,3 +1,4 @@
+import * as crypto from 'node:crypto'
 import type { Schema } from '@liam-hq/db-structure'
 import { toJsonSchema } from '@valibot/to-json-schema'
 import type { JSONSchema7 } from 'json-schema'
@@ -9,6 +10,16 @@ import {
 } from '../../functions/langfuseHandler'
 import type { GenerateReviewPayload } from '../../types'
 import { reviewSchema } from './reviewSchema'
+
+type Callbacks = Array<{
+  handleLLMStart?: (llm: unknown, prompts: string[]) => Promise<void>
+  handleLLMEnd?: (output: unknown) => Promise<void>
+  handleChainStart?: (
+    chain: unknown,
+    inputs: Record<string, unknown>,
+  ) => Promise<void>
+  handleChainEnd?: (outputs: Record<string, unknown>) => Promise<void>
+}>
 
 export const SYSTEM_PROMPT = `You are a database design expert tasked with reviewing database schema changes. Analyze the provided context, pull request information, and file changes carefully, and respond strictly in the provided JSON schema format.
 
@@ -108,10 +119,11 @@ export const generateReview = async (
   fileChanges: GenerateReviewPayload['fileChanges'],
   prDescription: string,
   prComments: string,
-
-  runId: string,
+  callbacks?: Callbacks,
+  runId?: string,
 ) => {
-  const trace = createLangfuseTrace('generateReview', { runId })
+  const traceId = runId || crypto.randomUUID()
+  const trace = createLangfuseTrace('generateReview', { runId: traceId })
 
   const generation = createLangfuseGeneration(
     trace,
@@ -155,6 +167,14 @@ export const generateReview = async (
       output: parsedResponse,
     })
 
+    if (callbacks) {
+      for (const callback of callbacks) {
+        if (callback.handleChainEnd) {
+          await callback.handleChainEnd({ output: parsedResponse })
+        }
+      }
+    }
+
     return parsedResponse
   } catch (error) {
     generation.end({
@@ -164,4 +184,41 @@ export const generateReview = async (
     throw error
   } finally {
   }
+}
+
+export const chain = {
+  invoke: async (
+    inputs: {
+      docsContent: string
+      schema: string
+      fileChanges: GenerateReviewPayload['fileChanges']
+      prDescription: string
+      prComments: string
+    },
+    options?: {
+      callbacks?: Callbacks
+      runId?: string
+      tags?: string[]
+    },
+  ) => {
+    if (options?.callbacks) {
+      for (const callback of options.callbacks) {
+        if (callback.handleChainStart) {
+          await callback.handleChainStart({ name: 'generateReview' }, inputs)
+        }
+      }
+    }
+
+    const result = await generateReview(
+      inputs.docsContent,
+      JSON.parse(inputs.schema),
+      inputs.fileChanges,
+      inputs.prDescription,
+      inputs.prComments,
+      options?.callbacks,
+      options?.runId,
+    )
+
+    return result
+  },
 }
