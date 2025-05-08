@@ -43,10 +43,19 @@ export const safeApplyMultipleSchemaOverrides = async (
 
     if (defaultOverrideContent !== null) {
       try {
-        const parsedOverride = schemaOverrideSchema.parse(
-          parseYaml(defaultOverrideContent)
-        )
-        overrides.push(parsedOverride)
+        let parsedOverride: SchemaOverride | null = null;
+        const parsedYaml = parseYaml(defaultOverrideContent);
+        
+        if (schemaOverrideSchema && 
+            typeof schemaOverrideSchema === 'object' && 
+            'parse' in schemaOverrideSchema && 
+            typeof schemaOverrideSchema.parse === 'function') {
+          parsedOverride = schemaOverrideSchema.parse(parsedYaml);
+        }
+        
+        if (parsedOverride) {
+          overrides.push(parsedOverride)
+        }
       } catch (error) {
         console.error('Failed to parse default schema override:', error)
       }
@@ -63,9 +72,31 @@ export const safeApplyMultipleSchemaOverrides = async (
     overrides.push(...sourceOverrides)
 
     const supabase = await createClient()
-    const dbOverride = await buildSchemaOverrideFromDB(projectId, supabase)
-    if (dbOverride) {
-      overrides.push(dbOverride)
+    const repoNameParts = repositoryFullName.split('/')
+    const repoOwner = repoNameParts[0]
+    const repoName = repoNameParts[1]
+    
+    const { data: repoData } = await supabase
+      .from('github_repositories')
+      .select('id')
+      .eq('name', repoName)
+      .eq('owner', repoOwner)
+      .single()
+    
+    const repositoryId = repoData?.id
+    
+    if (repositoryId) {
+      const dbOverride = await buildSchemaOverrideFromDB(
+        projectId, 
+        repositoryId, 
+        branchOrCommit, 
+        supabase
+      )
+      if (dbOverride) {
+        overrides.push(dbOverride)
+      }
+    } else {
+      console.error('Repository ID not found for:', repositoryFullName)
     }
 
     if (overrides.length === 0) {
