@@ -79,6 +79,27 @@ export type Database = {
           },
         ]
       }
+      documents: {
+        Row: {
+          content: string
+          embedding: string | null
+          id: string
+          metadata: Json | null
+        }
+        Insert: {
+          content: string
+          embedding?: string | null
+          id?: string
+          metadata?: Json | null
+        }
+        Update: {
+          content?: string
+          embedding?: string | null
+          id?: string
+          metadata?: Json | null
+        }
+        Relationships: []
+      }
       github_pull_request_comments: {
         Row: {
           created_at: string
@@ -692,7 +713,6 @@ export type Database = {
           content: string
           created_at: string
           id: string
-          organization_id: string
           review_feedback_id: string
           updated_at: string
           user_id: string
@@ -701,7 +721,6 @@ export type Database = {
           content: string
           created_at?: string
           id?: string
-          organization_id: string
           review_feedback_id: string
           updated_at: string
           user_id: string
@@ -710,7 +729,6 @@ export type Database = {
           content?: string
           created_at?: string
           id?: string
-          organization_id?: string
           review_feedback_id?: string
           updated_at?: string
           user_id?: string
@@ -728,13 +746,6 @@ export type Database = {
             columns: ['user_id']
             isOneToOne: false
             referencedRelation: 'users'
-            referencedColumns: ['id']
-          },
-          {
-            foreignKeyName: 'review_feedback_comments_organization_id_fkey'
-            columns: ['organization_id']
-            isOneToOne: false
-            referencedRelation: 'organizations'
             referencedColumns: ['id']
           },
         ]
@@ -794,7 +805,6 @@ export type Database = {
           created_at: string
           description: string
           id: string
-          organization_id: string
           overall_review_id: string
           resolution_comment: string | null
           resolved_at: string | null
@@ -807,7 +817,6 @@ export type Database = {
           created_at?: string
           description: string
           id?: string
-          organization_id: string
           overall_review_id: string
           resolution_comment?: string | null
           resolved_at?: string | null
@@ -820,7 +829,6 @@ export type Database = {
           created_at?: string
           description?: string
           id?: string
-          organization_id?: string
           overall_review_id?: string
           resolution_comment?: string | null
           resolved_at?: string | null
@@ -836,13 +844,6 @@ export type Database = {
             referencedRelation: 'overall_reviews'
             referencedColumns: ['id']
           },
-          {
-            foreignKeyName: 'review_feedbacks_organization_id_fkey'
-            columns: ['organization_id']
-            isOneToOne: false
-            referencedRelation: 'organizations'
-            referencedColumns: ['id']
-          },
         ]
       }
       review_suggestion_snippets: {
@@ -850,7 +851,6 @@ export type Database = {
           created_at: string
           filename: string
           id: string
-          organization_id: string
           review_feedback_id: string
           snippet: string
           updated_at: string
@@ -859,7 +859,6 @@ export type Database = {
           created_at?: string
           filename: string
           id?: string
-          organization_id: string
           review_feedback_id: string
           snippet: string
           updated_at: string
@@ -868,7 +867,6 @@ export type Database = {
           created_at?: string
           filename?: string
           id?: string
-          organization_id?: string
           review_feedback_id?: string
           snippet?: string
           updated_at?: string
@@ -879,13 +877,6 @@ export type Database = {
             columns: ['review_feedback_id']
             isOneToOne: false
             referencedRelation: 'review_feedbacks'
-            referencedColumns: ['id']
-          },
-          {
-            foreignKeyName: 'review_suggestion_snippets_organization_id_fkey'
-            columns: ['organization_id']
-            isOneToOne: false
-            referencedRelation: 'organizations'
             referencedColumns: ['id']
           },
         ]
@@ -962,21 +953,123 @@ export type Database = {
         Args: { p_token: string }
         Returns: Json
       }
+      binary_quantize: {
+        Args: { '': string } | { '': unknown }
+        Returns: unknown
+      }
       get_invitation_data: {
         Args: { p_token: string }
         Returns: Json
+      }
+      halfvec_avg: {
+        Args: { '': number[] }
+        Returns: unknown
+      }
+      halfvec_out: {
+        Args: { '': unknown }
+        Returns: unknown
+      }
+      halfvec_send: {
+        Args: { '': unknown }
+        Returns: string
+      }
+      halfvec_typmod_in: {
+        Args: { '': unknown[] }
+        Returns: number
+      }
+      hnsw_bit_support: {
+        Args: { '': unknown }
+        Returns: unknown
+      }
+      hnsw_halfvec_support: {
+        Args: { '': unknown }
+        Returns: unknown
+      }
+      hnsw_sparsevec_support: {
+        Args: { '': unknown }
+        Returns: unknown
+      }
+      hnswhandler: {
+        Args: { '': unknown }
+        Returns: unknown
       }
       invite_organization_member: {
         Args: { p_email: string; p_organization_id: string }
         Returns: Json
       }
-      is_current_user_org_member: {
-        Args: { _org: string }
-        Returns: boolean
+      ivfflat_bit_support: {
+        Args: { '': unknown }
+        Returns: unknown
+      }
+      ivfflat_halfvec_support: {
+        Args: { '': unknown }
+        Returns: unknown
+      }
+      ivfflathandler: {
+        Args: { '': unknown }
+        Returns: unknown
+      }
+      l2_norm: {
+        Args: { '': unknown } | { '': unknown }
+        Returns: number
+      }
+      l2_normalize: {
+        Args: { '': string } | { '': unknown } | { '': unknown }
+        Returns: string
+      }
+      match_documents: {
+        Args: {
+          filter?: Json
+          match_count?: number
+          query_embedding?: string
+          match_threshold?: number
+        }
+        Returns: {
+          id: string
+          content: string
+          metadata: Json
+          similarity: number
+        }[]
+      }
+      sparsevec_out: {
+        Args: { '': unknown }
+        Returns: unknown
+      }
+      sparsevec_send: {
+        Args: { '': unknown }
+        Returns: string
+      }
+      sparsevec_typmod_in: {
+        Args: { '': unknown[] }
+        Returns: number
       }
       sync_existing_users: {
         Args: Record<PropertyKey, never>
         Returns: undefined
+      }
+      vector_avg: {
+        Args: { '': number[] }
+        Returns: string
+      }
+      vector_dims: {
+        Args: { '': string } | { '': unknown }
+        Returns: number
+      }
+      vector_norm: {
+        Args: { '': string }
+        Returns: number
+      }
+      vector_out: {
+        Args: { '': string }
+        Returns: unknown
+      }
+      vector_send: {
+        Args: { '': string }
+        Returns: string
+      }
+      vector_typmod_in: {
+        Args: { '': unknown[] }
+        Returns: number
       }
     }
     Enums: {
