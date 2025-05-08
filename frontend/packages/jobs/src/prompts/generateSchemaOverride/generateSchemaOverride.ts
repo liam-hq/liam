@@ -1,14 +1,15 @@
-import type { Callbacks } from '@langchain/core/callbacks/manager'
-import { ChatPromptTemplate } from '@langchain/core/prompts'
-import { RunnableLambda } from '@langchain/core/runnables'
-import { ChatOpenAI } from '@langchain/openai'
 import {
   type Schema,
   type SchemaOverride,
   schemaOverrideSchema,
 } from '@liam-hq/db-structure'
 import { toJsonSchema } from '@valibot/to-json-schema'
+import OpenAI from 'openai'
 import { type InferOutput, boolean, object, parse, string } from 'valibot'
+import {
+  createLangfuseGeneration,
+  createLangfuseTrace,
+} from '../../functions/langfuseHandler'
 
 // Define evaluation schema using valibot
 const evaluationSchema = object({
@@ -36,7 +37,7 @@ type GenerateSchemaOverrideResult =
     }
 
 // Step 1: Evaluation template to determine if updates are needed
-const EVALUATION_TEMPLATE = ChatPromptTemplate.fromTemplate(`
+const EVALUATION_TEMPLATE = `
 You are Liam, an expert in database schema design and optimization.
 
 ## Your Task
@@ -110,10 +111,10 @@ The response must include:
 3. Default to "updateNeeded: false" unless there is clear evidence that schema override documentation needs improvement
 4. If a table has been removed from the schema (like GitHubDocFilePath), simply suggest removing it from schema-override.yml
 5. Be conservative - schema-override.yml is for documentation purposes only
-`)
+`
 
 // Step 2: Update template for generating schema updates
-const UPDATE_TEMPLATE = ChatPromptTemplate.fromTemplate(`
+const UPDATE_TEMPLATE = `
 You are Liam, an expert in database schema design and optimization for this project.
 
 ## Your Task
@@ -183,85 +184,147 @@ Your response must strictly follow this JSON Schema and maintain the existing st
 3. Adding a relationship that documents a logical connection: Only document relationships between existing tables with correct column references.
 
 REMEMBER: schema-override.yml is ONLY for documentation and organization purposes, NOT for actual schema changes.
-`)
+`
 
 export const generateSchemaOverride = async (
   reviewComment: string,
-  callbacks: Callbacks,
+
   currentSchemaOverride: SchemaOverride | null,
   runId: string,
   schema: Schema,
 ): Promise<GenerateSchemaOverrideResult> => {
-  const evaluationModel = new ChatOpenAI({
-    model: 'o3-mini-2025-01-31',
+  // Create a trace for Langfuse
+  const trace = createLangfuseTrace('generateSchemaOverride', {
+    runId,
   })
 
-  const updateModel = new ChatOpenAI({
-    model: 'o3-mini-2025-01-31',
-  })
-
-  // Create evaluation chain
-  const evaluationChain = EVALUATION_TEMPLATE.pipe(
-    evaluationModel.withStructuredOutput(evaluationJsonSchema),
+  // Create a generation for evaluation step
+  const evaluationGeneration = createLangfuseGeneration(
+    trace,
+    'evaluateSchemaOverride',
+    {
+      reviewComment,
+      currentSchemaOverride: currentSchemaOverride
+        ? JSON.stringify(currentSchemaOverride, null, 2)
+        : '{}',
+      schema: JSON.stringify(schema, null, 2),
+    },
+    {
+      model: 'o3-mini-2025-01-31',
+      tags: ['generateSchemaOverride', 'evaluation'],
+    },
   )
 
-  // Create update chain
-  const updateChain = UPDATE_TEMPLATE.pipe(
-    updateModel.withStructuredOutput(schemaOverrideJsonSchema),
-  )
+  try {
+    // First, run the evaluation to determine if updates are needed
+    const openai = new OpenAI({ apiKey: process.env['OPENAI_API_KEY'] })
+    const evaluationResponse = await openai.chat.completions.create({
+      model: 'o3-mini-2025-01-31',
+      messages: [
+        {
+          role: 'user',
+          content: EVALUATION_TEMPLATE.replace('{reviewComment}', reviewComment)
+            .replace(
+              '{currentSchemaOverride}',
+              currentSchemaOverride
+                ? JSON.stringify(currentSchemaOverride, null, 2)
+                : '{}',
+            )
+            .replace('{schema}', JSON.stringify(schema, null, 2))
+            .replace(
+              '{evaluationJsonSchema}',
+              JSON.stringify(evaluationJsonSchema, null, 2),
+            ),
+        },
+      ],
+      temperature: 0,
+      response_format: { type: 'json_object' },
+    })
 
-  // Define input types for our templates
-  type EvaluationInput = {
-    reviewComment: string
-    currentSchemaOverride: string
-    schema: string
-  }
-
-  type UpdateInput = EvaluationInput & {
-    evaluationResults: string
-    schemaOverrideJsonSchema: string
-  }
-
-  // Create a router function that returns different runnables based on evaluation
-  const schemaOverrideRouter = async (
-    inputs: EvaluationInput & { schemaOverrideJsonSchema: string },
-    config?: { callbacks?: Callbacks; runId?: string; tags?: string[] },
-  ): Promise<GenerateSchemaOverrideResult> => {
-    // First, run the evaluation chain
-    const evaluationResult: EvaluationResult = await evaluationChain.invoke(
-      {
-        reviewComment: inputs.reviewComment,
-        currentSchemaOverride: inputs.currentSchemaOverride,
-        schema: inputs.schema,
-        evaluationJsonSchema: JSON.stringify(evaluationJsonSchema, null, 2),
-      },
-      config,
+    // Parse the evaluation response
+    const content = evaluationResponse.choices[0]?.message?.content || '{}'
+    const evaluationResult: EvaluationResult = parse(
+      evaluationSchema,
+      JSON.parse(content),
     )
 
+    evaluationGeneration.end({
+      output: evaluationResult,
+    })
+
     if (evaluationResult.updateNeeded) {
-      // Update is needed, generate new schema override
-      const updateInput: UpdateInput = {
-        reviewComment: inputs.reviewComment,
-        currentSchemaOverride: inputs.currentSchemaOverride,
-        schema: inputs.schema,
-        schemaOverrideJsonSchema: inputs.schemaOverrideJsonSchema,
-        evaluationResults: evaluationResult.suggestedChanges,
-      }
+      // Create a generation for update step
+      const updateGeneration = createLangfuseGeneration(
+        trace,
+        'updateSchemaOverride',
+        {
+          reviewComment,
+          currentSchemaOverride: currentSchemaOverride
+            ? JSON.stringify(currentSchemaOverride, null, 2)
+            : '{}',
+          schema: JSON.stringify(schema, null, 2),
+          evaluationResults: evaluationResult.suggestedChanges,
+        },
+        {
+          model: 'o3-mini-2025-01-31',
+          tags: ['generateSchemaOverride', 'update'],
+        },
+      )
 
-      const updateResult = await updateChain.invoke(updateInput, {
-        callbacks,
-        runId,
-        tags: ['generateSchemaOverride'],
-      })
+      try {
+        const updateResponse = await openai.chat.completions.create({
+          model: 'o3-mini-2025-01-31',
+          messages: [
+            {
+              role: 'user',
+              content: UPDATE_TEMPLATE.replace('{reviewComment}', reviewComment)
+                .replace(
+                  '{currentSchemaOverride}',
+                  currentSchemaOverride
+                    ? JSON.stringify(currentSchemaOverride, null, 2)
+                    : '{}',
+                )
+                .replace('{schema}', JSON.stringify(schema, null, 2))
+                .replace(
+                  '{evaluationResults}',
+                  evaluationResult.suggestedChanges,
+                )
+                .replace(
+                  '{schemaOverrideJsonSchema}',
+                  JSON.stringify(schemaOverrideJsonSchema, null, 2),
+                ),
+            },
+          ],
+          temperature: 0,
+          response_format: { type: 'json_object' },
+        })
 
-      // Parse the result and add the reasoning from the evaluation
-      const parsedResult = parse(schemaOverrideSchema, updateResult)
+        // Parse the update response
+        const updateContent =
+          updateResponse.choices[0]?.message?.content || '{}'
+        const updateResult = parse(
+          schemaOverrideSchema,
+          JSON.parse(updateContent),
+        )
 
-      // Return the result with the new structure
-      return {
-        updateNeeded: true,
-        override: parsedResult,
-        reasoning: evaluationResult.reasoning,
+        updateGeneration.end({
+          output: updateResult,
+        })
+
+        // Return the result with the new structure
+        return {
+          updateNeeded: true,
+          override: updateResult,
+          reasoning: evaluationResult.reasoning,
+        }
+      } catch (error) {
+        updateGeneration.end({
+          output: {
+            error: error instanceof Error ? error.message : String(error),
+          },
+        })
+
+        throw error
       }
     }
 
@@ -271,28 +334,11 @@ export const generateSchemaOverride = async (
         evaluationResult.reasoning ||
         'No updates needed based on the review comments.',
     }
+  } catch (error) {
+    evaluationGeneration.end({
+      output: { error: error instanceof Error ? error.message : String(error) },
+    })
+
+    throw error
   }
-
-  // Create the router chain using RunnableLambda
-  const routerChain = new RunnableLambda({
-    func: schemaOverrideRouter,
-  })
-
-  // Prepare the common inputs
-  const commonInputs = {
-    reviewComment,
-    schema: JSON.stringify(schema, null, 2),
-    currentSchemaOverride: currentSchemaOverride
-      ? JSON.stringify(currentSchemaOverride, null, 2)
-      : '{}',
-    schemaOverrideJsonSchema: JSON.stringify(schemaOverrideJsonSchema, null, 2),
-    evaluationJsonSchema: JSON.stringify(evaluationJsonSchema, null, 2),
-  }
-
-  // Execute the router chain
-  return await routerChain.invoke(commonInputs, {
-    callbacks,
-    runId,
-    tags: ['generateSchemaOverride'],
-  })
 }

@@ -33,7 +33,10 @@
     "frontend/packages/erd-core/src/features/erd/components/ERDContent/components/RelationshipEdge/type.ts",
     "frontend/packages/ui/src/components/Toast/types.ts",
     "frontend/apps/docs/components/CopyButton/CopyButton.tsx",
-    "frontend/apps/docs/app/docs/sitemap.ts"
+    "frontend/apps/docs/app/docs/sitemap.ts",
+
+    // Ignore langfuseHandler.ts due to false positive in knip
+    "frontend/packages/jobs/src/functions/langfuseHandler.ts"
   ],
 
   // TODO: Review ignoreDependencies configuration later
@@ -48,7 +51,9 @@
     "@trigger.dev/sdk",
     "langfuse",
     "langfuse-langchain",
+    "langfuse-vercel",
     "@langchain/core",
+    "ai",
     "zod",
     "ts-pattern",
     "minimatch",

@@ -1,12 +1,25 @@
-import type { Callbacks } from '@langchain/core/callbacks/manager'
-import { ChatPromptTemplate } from '@langchain/core/prompts'
-import { ChatOpenAI } from '@langchain/openai'
+import * as crypto from 'node:crypto'
 import type { Schema } from '@liam-hq/db-structure'
 import { toJsonSchema } from '@valibot/to-json-schema'
 import type { JSONSchema7 } from 'json-schema'
+import OpenAI from 'openai'
 import { parse } from 'valibot'
+import {
+  createLangfuseGeneration,
+  createLangfuseTrace,
+} from '../../functions/langfuseHandler'
 import type { GenerateReviewPayload } from '../../types'
 import { reviewSchema } from './reviewSchema'
+
+type Callbacks = Array<{
+  handleLLMStart?: (llm: unknown, prompts: string[]) => Promise<void>
+  handleLLMEnd?: (output: unknown) => Promise<void>
+  handleChainStart?: (
+    chain: unknown,
+    inputs: Record<string, unknown>,
+  ) => Promise<void>
+  handleChainEnd?: (outputs: Record<string, unknown>) => Promise<void>
+}>
 
 export const SYSTEM_PROMPT = `You are a database design expert tasked with reviewing database schema changes. Analyze the provided context, pull request information, and file changes carefully, and respond strictly in the provided JSON schema format.
 
@@ -100,29 +113,21 @@ File Changes:
 
 export const reviewJsonSchema: JSONSchema7 = toJsonSchema(reviewSchema)
 
-const model = new ChatOpenAI({
-  model: 'o3-mini-2025-01-31',
-})
-
-const chatPrompt = ChatPromptTemplate.fromMessages([
-  ['system', SYSTEM_PROMPT],
-  ['human', USER_PROMPT],
-])
-
-export const chain = chatPrompt.pipe(
-  model.withStructuredOutput(reviewJsonSchema),
-)
-
 export const generateReview = async (
   docsContent: string,
   schema: Schema,
   fileChanges: GenerateReviewPayload['fileChanges'],
   prDescription: string,
   prComments: string,
-  callbacks: Callbacks,
-  runId: string,
+  callbacks?: Callbacks,
+  runId?: string,
 ) => {
-  const response = await chain.invoke(
+  const traceId = runId || crypto.randomUUID()
+  const trace = createLangfuseTrace('generateReview', { runId: traceId })
+
+  const generation = createLangfuseGeneration(
+    trace,
+    'generateReview',
     {
       docsContent,
       schema: JSON.stringify(schema, null, 2),
@@ -131,11 +136,89 @@ export const generateReview = async (
       prComments,
     },
     {
-      callbacks,
-      runId,
+      model: 'o3-mini-2025-01-31',
       tags: ['generateReview'],
     },
   )
-  const parsedResponse = parse(reviewSchema, response)
-  return parsedResponse
+
+  try {
+    const openai = new OpenAI({ apiKey: process.env['OPENAI_API_KEY'] })
+    const response = await openai.chat.completions.create({
+      model: 'o3-mini-2025-01-31',
+      messages: [
+        { role: 'system', content: SYSTEM_PROMPT },
+        {
+          role: 'user',
+          content: USER_PROMPT.replace('{docsContent}', docsContent)
+            .replace('{schema}', JSON.stringify(schema, null, 2))
+            .replace('{fileChanges}', JSON.stringify(fileChanges, null, 2))
+            .replace('{prDescription}', prDescription)
+            .replace('{prComments}', prComments),
+        },
+      ],
+      temperature: 0,
+      response_format: { type: 'json_object' },
+    })
+
+    const content = response.choices[0]?.message?.content || '{}'
+    const parsedResponse = parse(reviewSchema, JSON.parse(content))
+
+    generation.end({
+      output: parsedResponse,
+    })
+
+    if (callbacks) {
+      for (const callback of callbacks) {
+        if (callback.handleChainEnd) {
+          await callback.handleChainEnd({ output: parsedResponse })
+        }
+      }
+    }
+
+    return parsedResponse
+  } catch (error) {
+    generation.end({
+      output: { error: error instanceof Error ? error.message : String(error) },
+    })
+
+    throw error
+  } finally {
+  }
+}
+
+export const chain = {
+  invoke: async (
+    inputs: {
+      docsContent: string
+      schema: string
+      fileChanges: GenerateReviewPayload['fileChanges']
+      prDescription: string
+      prComments: string
+    },
+    options?: {
+      callbacks?: Callbacks
+      runId?: string
+      tags?: string[]
+    },
+  ) => {
+    if (options?.callbacks) {
+      for (const callback of options.callbacks) {
+        if (callback.handleChainStart) {
+          await callback.handleChainStart({ name: 'generateReview' }, inputs)
+        }
+      }
+    }
+
+    const result = await generateReview(
+      inputs.docsContent,
+      JSON.parse(inputs.schema),
+      inputs.fileChanges,
+      inputs.prDescription,
+      inputs.prComments,
+      options?.callbacks,
+      options?.runId,
+    )
+
+    return result
+  },
 }

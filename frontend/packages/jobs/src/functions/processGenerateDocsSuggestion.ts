@@ -5,7 +5,6 @@ import type { FileContent } from '../prompts/generateDocsSuggestion/docsSuggesti
 import { generateDocsSuggestion } from '../prompts/generateDocsSuggestion/generateDocsSuggestion'
 import type { Review } from '../types'
 import { fetchSchemaInfoWithOverrides } from '../utils/schemaUtils'
-import { langfuseLangchainHandler } from './langfuseLangchainHandler'
 
 export const DOC_FILES = [
   'schemaPatterns.md',
@@ -89,7 +88,6 @@ export async function processGenerateDocsSuggestion(payload: {
   }
 
   const predefinedRunId = uuidv4()
-  const callbacks = [langfuseLangchainHandler]
 
   // Fetch schema information with overrides
   const { overriddenSchema } = await fetchSchemaInfoWithOverrides(
@@ -102,7 +100,6 @@ export async function processGenerateDocsSuggestion(payload: {
   const result = await generateDocsSuggestion(
     payload.review,
     formattedDocsContent,
-    callbacks,
     predefinedRunId,
     overriddenSchema,
   )

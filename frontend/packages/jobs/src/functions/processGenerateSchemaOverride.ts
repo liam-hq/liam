@@ -6,7 +6,6 @@ import type {
   SchemaOverrideResult,
 } from '../types'
 import { fetchSchemaInfoWithOverrides } from '../utils/schemaUtils'
-import { langfuseLangchainHandler } from './langfuseLangchainHandler'
 
 export const processGenerateSchemaOverride = async (
   payload: GenerateSchemaOverridePayload,
@@ -69,7 +68,6 @@ export const processGenerateSchemaOverride = async (
   }
 
   const predefinedRunId = uuidv4()
-  const callbacks = [langfuseLangchainHandler]
 
   // Fetch schema information with overrides
   const repositoryFullName = `${repositories.owner}/${repositories.name}`
@@ -83,7 +81,6 @@ export const processGenerateSchemaOverride = async (
 
   const schemaOverrideResult = await generateSchemaOverride(
     overallReview.review_comment || '',
-    callbacks,
     currentSchemaOverride,
     predefinedRunId,
     overriddenSchema,
