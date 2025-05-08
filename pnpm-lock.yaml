@@ -686,7 +686,7 @@ importers:
         specifier: 10.0.1
         version: 10.0.1
       openai:
-        specifier: ^4.97.0
+        specifier: 4.97.0
         version: 4.97.0(ws@8.18.2)(zod@3.23.8)
       uuid:
         specifier: 11.1.0
