@@ -1,5 +1,5 @@
+import { safeApplyMultipleSchemaOverrides } from '@/features/buildSchemaOverride/utils'
 import { createClient } from '@/libs/db/server'
-import { safeApplyMultipleSchemaOverrides } from '@/features/build/utils'
 import { parse } from '@liam-hq/db-structure/parser'
 import { getFileContent } from '@liam-hq/github'
 import { BuildPageClient } from './BuildPageClient'
@@ -9,6 +9,9 @@ type Props = {
   branchOrCommit: string
 }
 
+/**
+ * Fetches schema file path information from the database
+ */
 async function getGithubSchemaFilePath(projectId: string) {
   const supabase = await createClient()
   const { data: gitHubSchemaFilePath, error } = await supabase
@@ -24,6 +27,9 @@ async function getGithubSchemaFilePath(projectId: string) {
   return gitHubSchemaFilePath
 }
 
+/**
+ * Fetches repository information from the database
+ */
 async function getGithubRepositoryInfo(projectId: string) {
   const supabase = await createClient()
   const { data, error } = await supabase
@@ -51,15 +57,18 @@ async function getGithubRepositoryInfo(projectId: string) {
 }
 
 export async function BuildPage({ projectId, branchOrCommit }: Props) {
+  // Get schema file path and repository info
   const githubSchemaFilePath = await getGithubSchemaFilePath(projectId)
   const repository = await getGithubRepositoryInfo(projectId)
   const repositoryFullName = `${repository.owner}/${repository.name}`
+  const githubInstallationId = Number(repository.github_installation_identifier)
 
+  // Fetch and parse the schema file
   const { content } = await getFileContent(
     repositoryFullName,
     githubSchemaFilePath.path,
     branchOrCommit,
-    Number(repository.github_installation_identifier),
+    githubInstallationId,
   )
 
   const { value: schema, errors } =
@@ -71,22 +80,37 @@ export async function BuildPage({ projectId, branchOrCommit }: Props) {
     throw new Error('Schema could not be parsed')
   }
 
-  const { result, error: overrideError } = await safeApplyMultipleSchemaOverrides(
-    repositoryFullName,
-    branchOrCommit,
-    Number(repository.github_installation_identifier),
-    schema,
-    projectId
-  )
+  // Apply schema overrides from multiple sources
+  const { result, error: overrideError } =
+    await safeApplyMultipleSchemaOverrides(
+      repositoryFullName,
+      branchOrCommit,
+      githubInstallationId,
+      schema,
+      projectId,
+    )
 
   if (overrideError) {
     console.error('Error applying schema overrides:', overrideError)
-    return <BuildPageClient schema={schema} errors={[...errors, overrideError]} tableGroups={{}} />
+    return (
+      <BuildPageClient
+        schema={schema}
+        errors={[...errors, overrideError]}
+        tableGroups={{}}
+      />
+    )
   }
 
-  const { schema: overriddenSchema, tableGroups } = result || { schema, tableGroups: {} }
+  const { schema: overriddenSchema, tableGroups } = result || {
+    schema,
+    tableGroups: {},
+  }
 
   return (
-    <BuildPageClient schema={overriddenSchema} errors={errors || []} tableGroups={tableGroups} />
+    <BuildPageClient
+      schema={overriddenSchema}
+      errors={errors || []}
+      tableGroups={tableGroups}
+    />
   )
 }

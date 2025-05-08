@@ -7,11 +7,7 @@ import {
 } from '@liam-hq/db-structure'
 import { getFileContent } from '@liam-hq/github'
 import { parse as parseYaml } from 'yaml'
-import {
-  buildSchemaOverrideFromDB,
-  fetchSchemaOverrides,
-  getSchemaOverrideSources,
-} from './fetchSchemaOverrides'
+import { getBranchSchemaOverrides } from './getBranchSchemaOverrides'
 import { mergeSchemaOverrides } from './mergeSchemaOverrides'
 
 /**
@@ -32,47 +28,7 @@ export const safeApplyMultipleSchemaOverrides = async (
   projectId: string,
 ) => {
   try {
-    const overrides: SchemaOverride[] = []
-
-    const { content: defaultOverrideContent } = await getFileContent(
-      repositoryFullName,
-      SCHEMA_OVERRIDE_FILE_PATH,
-      branchOrCommit,
-      githubInstallationIdentifier,
-    )
-
-    if (defaultOverrideContent !== null) {
-      try {
-        let parsedOverride: SchemaOverride | null = null
-        const parsedYaml = parseYaml(defaultOverrideContent)
-
-        if (
-          schemaOverrideSchema &&
-          typeof schemaOverrideSchema === 'object' &&
-          'parse' in schemaOverrideSchema &&
-          typeof schemaOverrideSchema.parse === 'function'
-        ) {
-          parsedOverride = schemaOverrideSchema.parse(parsedYaml)
-        }
-
-        if (parsedOverride) {
-          overrides.push(parsedOverride)
-        }
-      } catch (error) {
-        console.error('Failed to parse default schema override:', error)
-      }
-    }
-
-    const overrideSources = await getSchemaOverrideSources(projectId)
-
-    const sourceOverrides = await fetchSchemaOverrides(
-      repositoryFullName,
-      branchOrCommit,
-      githubInstallationIdentifier,
-      overrideSources,
-    )
-    overrides.push(...sourceOverrides)
-
+    // Get repository ID
     const supabase = await createClient()
     const repoNameParts = repositoryFullName.split('/')
     const repoOwner = repoNameParts[0]
@@ -86,21 +42,54 @@ export const safeApplyMultipleSchemaOverrides = async (
       .single()
 
     const repositoryId = repoData?.id
-
-    if (repositoryId) {
-      const dbOverride = await buildSchemaOverrideFromDB(
-        projectId,
-        repositoryId,
-        branchOrCommit,
-        supabase,
-      )
-      if (dbOverride) {
-        overrides.push(dbOverride)
-      }
-    } else {
+    if (!repositoryId) {
       console.error('Repository ID not found for:', repositoryFullName)
+      return {
+        result: { schema, tableGroups: {} },
+        error: null,
+      }
     }
 
+    // Get default schema override from .liam/schema-override.yml
+    const overrides: SchemaOverride[] = []
+    const { content: defaultOverrideContent } = await getFileContent(
+      repositoryFullName,
+      SCHEMA_OVERRIDE_FILE_PATH,
+      branchOrCommit,
+      githubInstallationIdentifier,
+    )
+
+    if (defaultOverrideContent !== null) {
+      try {
+        const parsedYaml = parseYaml(defaultOverrideContent)
+        if (
+          schemaOverrideSchema &&
+          typeof schemaOverrideSchema === 'object' &&
+          'parse' in schemaOverrideSchema &&
+          typeof schemaOverrideSchema.parse === 'function'
+        ) {
+          const parsedOverride = schemaOverrideSchema.parse(parsedYaml)
+          if (parsedOverride) {
+            overrides.push(parsedOverride)
+          }
+        }
+      } catch (error) {
+        console.error('Failed to parse default schema override:', error)
+      }
+    }
+
+    // Get all other schema overrides (from files and DB)
+    const branchOverrides = await getBranchSchemaOverrides(
+      repositoryFullName,
+      repositoryId,
+      branchOrCommit,
+      githubInstallationIdentifier,
+      projectId,
+    )
+
+    overrides.push(...branchOverrides)
+
+    // If no overrides found, return original schema
     if (overrides.length === 0) {
       return {
         result: { schema, tableGroups: {} },
@@ -108,6 +97,7 @@ export const safeApplyMultipleSchemaOverrides = async (
       }
     }
 
+    // Merge all overrides with the schema
     const result = mergeSchemaOverrides(schema, overrides)
 
     return {

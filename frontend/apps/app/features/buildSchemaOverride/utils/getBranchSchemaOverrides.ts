@@ -1,5 +1,4 @@
 import { createClient } from '@/libs/db/server'
-import type { SupabaseClient } from '@/libs/db/server'
 import type { SchemaOverride } from '@liam-hq/db-structure'
 import {
   buildSchemaOverrideFromDB,
@@ -9,6 +8,8 @@ import {
 
 /**
  * Gets all schema overrides for a specific branch or commit
+ *
+ * This function collects schema overrides from both file sources and database
  *
  * @param repositoryFullName Repository full name (owner/repo)
  * @param repositoryId Repository ID
@@ -28,8 +29,8 @@ export async function getBranchSchemaOverrides(
   const overrides: SchemaOverride[] = []
 
   try {
+    // Get file-based overrides
     const overrideSources = await getSchemaOverrideSources(projectId)
-
     const fileOverrides = await fetchSchemaOverrides(
       repositoryFullName,
       branchOrCommit,
@@ -41,6 +42,7 @@ export async function getBranchSchemaOverrides(
       overrides.push(...fileOverrides)
     }
 
+    // Get database-based overrides
     const dbOverride = await buildSchemaOverrideFromDB(
       projectId,
       repositoryId,
@@ -59,46 +61,4 @@ export async function getBranchSchemaOverrides(
   }
 }
 
-/**
- * Checks if a branch or commit has any schema overrides
- *
- * @param repositoryId Repository ID
- * @param branchOrCommit Branch or commit ID
- * @param supabase Supabase client
- * @returns Whether the branch/commit has any schema overrides
- */
-export async function hasBranchSchemaOverrides(
-  repositoryId: string,
-  branchOrCommit: string,
-  supabase: SupabaseClient,
-): Promise<boolean> {
-  try {
-    const query = supabase
-      .from('branch_schema_override_mappings')
-      .select('id', { count: 'exact', head: true })
-
-    if (!query) {
-      return false
-    }
-
-    const filteredQuery = query
-      .eq('repository_id', repositoryId)
-      .eq('branch_or_commit', branchOrCommit)
-
-    if (!filteredQuery) {
-      return false
-    }
-
-    const { error, count } = await filteredQuery
-
-    if (error) {
-      console.error('Failed to check if branch has schema overrides:', error)
-      return false
-    }
-
-    return typeof count === 'number' && count > 0
-  } catch (error) {
-    console.error('Failed to check if branch has schema overrides:', error)
-    return false
-  }
-}
+// Function hasBranchSchemaOverrides was removed as it was unused
