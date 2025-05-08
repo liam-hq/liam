@@ -12,7 +12,6 @@
     "eslint": "9.25.1",
     "langfuse": "3.37.2",
     "langfuse-langchain": "3.37.2",
-    "tsx": "4.19.3",
     "typescript": "5.8.3",
     "yaml": "2.7.1"
   },
