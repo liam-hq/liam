@@ -1,4 +1,5 @@
 import { createClient } from '@/libs/db/server'
+import { safeApplyMultipleSchemaOverrides } from '@/features/build/utils'
 import { parse } from '@liam-hq/db-structure/parser'
 import { getFileContent } from '@liam-hq/github'
 import { BuildPageClient } from './BuildPageClient'
@@ -70,7 +71,22 @@ export async function BuildPage({ projectId, branchOrCommit }: Props) {
     throw new Error('Schema could not be parsed')
   }
 
+  const { result, error: overrideError } = await safeApplyMultipleSchemaOverrides(
+    repositoryFullName,
+    branchOrCommit,
+    Number(repository.github_installation_identifier),
+    schema,
+    projectId
+  )
+
+  if (overrideError) {
+    console.error('Error applying schema overrides:', overrideError)
+    return <BuildPageClient schema={schema} errors={[...errors, overrideError]} tableGroups={{}} />
+  }
+
+  const { schema: overriddenSchema, tableGroups } = result || { schema, tableGroups: {} }
+
   return (
-    <BuildPageClient schema={schema} errors={errors || []} tableGroups={{}} />
+    <BuildPageClient schema={overriddenSchema} errors={errors || []} tableGroups={tableGroups} />
   )
 }
