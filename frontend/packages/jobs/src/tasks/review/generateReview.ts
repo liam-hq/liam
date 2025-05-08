@@ -5,7 +5,6 @@ import {
 } from '@liam-hq/github'
 import { logger, task } from '@trigger.dev/sdk/v3'
 import { v4 as uuidv4 } from 'uuid'
-import { langfuseLangchainHandler } from '../../functions/langfuseLangchainHandler'
 import { createClient } from '../../libs/supabase'
 import { generateReview } from '../../prompts/generateReview/generateReview'
 import type { Review } from '../../types'
@@ -136,14 +135,12 @@ export const processGenerateReview = async (
     repository.github_installation_identifier,
   )
 
-  const callbacks = [langfuseLangchainHandler]
   const review = await generateReview(
     docsContent,
     overriddenSchema,
     payload.fileChanges,
     prDescription,
     formattedComments,
-    callbacks,
     predefinedRunId,
   )
 

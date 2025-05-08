@@ -1,10 +1,11 @@
-import type { Callbacks } from '@langchain/core/callbacks/manager'
-import { ChatPromptTemplate } from '@langchain/core/prompts'
-import { RunnableLambda } from '@langchain/core/runnables'
-import { ChatOpenAI } from '@langchain/openai'
 import type { Schema } from '@liam-hq/db-structure'
-import { toJsonSchema } from '@valibot/to-json-schema'
+import OpenAI from 'openai'
+
 import { parse } from 'valibot'
+import {
+  createLangfuseGeneration,
+  createLangfuseTrace,
+} from '../../functions/langfuseHandler'
 import type { Review } from '../../types'
 import {
   type DocFileContentMap,
@@ -39,8 +40,6 @@ migrationOpsContext.md:
 `
 
 // Convert schemas to JSON format for LLM
-const evaluationJsonSchema = toJsonSchema(evaluationSchema)
-const docsSuggestionJsonSchema = toJsonSchema(docsSuggestionSchema)
 
 // Common evaluation response structure for a single file
 const fileEvaluationExample = {
@@ -109,7 +108,7 @@ ${feedbackSections}
 }
 
 // Step 1: Evaluation template to determine which files need updates
-const EVALUATION_TEMPLATE = ChatPromptTemplate.fromTemplate(`
+const EVALUATION_TEMPLATE = `
 You are Liam, an expert in schema design and migration strategy for this project.
 
 ## Your Task
@@ -164,10 +163,10 @@ Guidelines:
 - Consider the severity level of each feedback in the review
 - For WARNING level issues, suggest minimal and focused changes
 - For ERROR/CRITICAL level issues, be more thorough with your suggested changes
-`)
+`
 
 // Step 2: Update template for generating content for files that need updates
-const UPDATE_TEMPLATE = ChatPromptTemplate.fromTemplate(`
+const UPDATE_TEMPLATE = `
 You are Liam, an expert in schema design and migration strategy for this project.
 
 ## Your Task
@@ -231,21 +230,18 @@ Guidelines:
 - Format changes to be easy to review and apply
 - Focus on reusable knowledge
 - Maintain accuracy and clarity
-`)
+`
 
 export const generateDocsSuggestion = async (
   review: Review,
   formattedDocsContent: string,
-  callbacks: Callbacks,
+
   predefinedRunId: string,
   schema: Schema,
 ): Promise<DocFileContentMap> => {
-  const evaluationModel = new ChatOpenAI({
-    model: 'o3-mini-2025-01-31',
-  })
-
-  const updateModel = new ChatOpenAI({
-    model: 'o3-mini-2025-01-31',
+  // Create a trace for Langfuse
+  const trace = createLangfuseTrace('generateDocsSuggestion', {
+    runId: predefinedRunId,
   })
 
   const formattedReviewResult = formatReview(review)
@@ -262,126 +258,150 @@ export const generateDocsSuggestion = async (
     2,
   )
 
-  // Create evaluation chain
-  const evaluationChain = EVALUATION_TEMPLATE.pipe(
-    evaluationModel.withStructuredOutput(evaluationJsonSchema),
+  // Create a generation for evaluation step
+  const evaluationGeneration = createLangfuseGeneration(
+    trace,
+    'evaluateDocsSuggestion',
+    {
+      reviewResult: formattedReviewResult,
+      formattedDocsContent,
+      schema: JSON.stringify(schema, null, 2),
+      evaluationResponseExampleJson,
+    },
+    {
+      model: 'o3-mini-2025-01-31',
+      tags: ['generateDocsSuggestion', 'evaluation'],
+    },
   )
 
-  // Create update chain
-  const updateChain = UPDATE_TEMPLATE.pipe(
-    updateModel.withStructuredOutput(docsSuggestionJsonSchema),
-  )
+  try {
+    // First, run the evaluation to determine which files need updates
+    const openai = new OpenAI({ apiKey: process.env['OPENAI_API_KEY'] })
+    const evaluationResponse = await openai.chat.completions.create({
+      model: 'o3-mini-2025-01-31',
+      messages: [
+        {
+          role: 'user',
+          content: EVALUATION_TEMPLATE.replace(
+            '{reviewResult}',
+            formattedReviewResult,
+          )
+            .replace('{formattedDocsContent}', formattedDocsContent)
+            .replace('{schema}', JSON.stringify(schema, null, 2))
+            .replace(
+              '{evaluationResponseExampleJson}',
+              evaluationResponseExampleJson,
+            ),
+        },
+      ],
+      temperature: 0,
+      response_format: { type: 'json_object' },
+    })
 
-  // Define input type for update step
-  type UpdateInput = {
-    reviewResult: string
-    formattedDocsContent: string
-    evaluationResults: string
-    updateResponseExampleJson: string
-    schema: string
-  }
+    // Parse the evaluation response
+    const content = evaluationResponse.choices[0]?.message?.content || '{}'
+    const evaluationResult: EvaluationResult = parse(
+      evaluationSchema,
+      JSON.parse(content),
+    )
 
-  // Helper function to collect suggested changes for files that need updates
-  const collectSuggestedChanges = (
-    evaluationResult: EvaluationResult,
-  ): Record<string, string> => {
+    evaluationGeneration.end({
+      output: evaluationResult,
+    })
+
+    // Collect suggested changes for files that need updates
     const suggestedChanges: Record<string, string> = {}
-
     for (const [key, value] of Object.entries(evaluationResult)) {
       if (value.updateNeeded) {
         suggestedChanges[key] = value.suggestedChanges
       }
     }
 
-    return suggestedChanges
-  }
-
-  // Helper function to combine content and reasoning
-  const combineContentAndReasoning = (
-    parsedResult: DocsSuggestion,
-    evaluationResult: EvaluationResult,
-  ): DocFileContentMap => {
-    const result: DocFileContentMap = {}
-
-    const evaluationKeys = Object.keys(evaluationResult) as Array<
-      keyof EvaluationResult
-    >
-
-    for (const key of evaluationKeys) {
-      if (key in parsedResult && parsedResult[key] && evaluationResult[key]) {
-        result[key] = {
-          content: parsedResult[key],
-          reasoning: evaluationResult[key].reasoning,
-        }
-      }
-    }
-
-    return result
-  }
-
-  // Create a router function that returns different runnables based on evaluation
-  const docsSuggestionRouter = async (
-    inputs: {
-      reviewResult: string
-      formattedDocsContent: string
-      evaluationResponseExampleJson: string
-      updateResponseExampleJson: string
-      schema: string
-    },
-    config?: { callbacks?: Callbacks; runId?: string; tags?: string[] },
-  ): Promise<DocFileContentMap> => {
-    // First, run the evaluation chain
-    const evaluationResult: EvaluationResult = await evaluationChain.invoke(
+    // Create a generation for update step
+    const updateGeneration = createLangfuseGeneration(
+      trace,
+      'updateDocsSuggestion',
       {
-        reviewResult: inputs.reviewResult,
-        formattedDocsContent: inputs.formattedDocsContent,
-        evaluationResponseExampleJson: inputs.evaluationResponseExampleJson,
-        schema: inputs.schema,
+        reviewResult: formattedReviewResult,
+        formattedDocsContent,
+        schema: JSON.stringify(schema, null, 2),
+        evaluationResults: JSON.stringify(suggestedChanges, null, 2),
+        updateResponseExampleJson,
       },
-      config,
+      {
+        model: 'o3-mini-2025-01-31',
+        tags: ['generateDocsSuggestion', 'update'],
+      },
     )
 
-    // Collect suggested changes for files that need updates
-    const suggestedChanges = collectSuggestedChanges(evaluationResult)
+    try {
+      // Generate new content for files that need changes
+      const updateResponse = await openai.chat.completions.create({
+        model: 'o3-mini-2025-01-31',
+        messages: [
+          {
+            role: 'user',
+            content: UPDATE_TEMPLATE.replace(
+              '{reviewResult}',
+              formattedReviewResult,
+            )
+              .replace('{formattedDocsContent}', formattedDocsContent)
+              .replace('{schema}', JSON.stringify(schema, null, 2))
+              .replace(
+                '{evaluationResults}',
+                JSON.stringify(suggestedChanges, null, 2),
+              )
+              .replace(
+                '{updateResponseExampleJson}',
+                updateResponseExampleJson,
+              ),
+          },
+        ],
+        temperature: 0,
+        response_format: { type: 'json_object' },
+      })
 
-    // Updates are needed, generate new content for files that need changes
-    const updateInput: UpdateInput = {
-      reviewResult: inputs.reviewResult,
-      formattedDocsContent: inputs.formattedDocsContent,
-      evaluationResults: JSON.stringify(suggestedChanges, null, 2),
-      updateResponseExampleJson: inputs.updateResponseExampleJson,
-      schema: inputs.schema,
+      // Parse the update response
+      const updateContent = updateResponse.choices[0]?.message?.content || '{}'
+      const updateResult: DocsSuggestion = parse(
+        docsSuggestionSchema,
+        JSON.parse(updateContent),
+      )
+
+      updateGeneration.end({
+        output: updateResult,
+      })
+
+      // Combine content with reasoning from evaluation
+      const result: DocFileContentMap = {}
+      const evaluationKeys = Object.keys(evaluationResult) as Array<
+        keyof EvaluationResult
+      >
+
+      for (const key of evaluationKeys) {
+        if (key in updateResult && updateResult[key] && evaluationResult[key]) {
+          result[key] = {
+            content: updateResult[key],
+            reasoning: evaluationResult[key].reasoning,
+          }
+        }
+      }
+
+      return result
+    } catch (error) {
+      updateGeneration.end({
+        output: {
+          error: error instanceof Error ? error.message : String(error),
+        },
+      })
+
+      throw error
     }
-
-    const updateResult = await updateChain.invoke(updateInput, {
-      callbacks,
-      runId: predefinedRunId,
-      tags: ['generateDocsSuggestion'],
+  } catch (error) {
+    evaluationGeneration.end({
+      output: { error: error instanceof Error ? error.message : String(error) },
     })
 
-    // Parse the result and combine content with reasoning
-    const parsedResult = parse(docsSuggestionSchema, updateResult)
-    return combineContentAndReasoning(parsedResult, evaluationResult)
+    throw error
   }
-
-  // Create the router chain using RunnableLambda
-  const routerChain = new RunnableLambda({
-    func: docsSuggestionRouter,
-  })
-
-  // Prepare the inputs
-  const inputs = {
-    reviewResult: formattedReviewResult,
-    formattedDocsContent,
-    evaluationResponseExampleJson,
-    updateResponseExampleJson,
-    schema: JSON.stringify(schema, null, 2),
-  }
-
-  // Execute the router chain
-  return await routerChain.invoke(inputs, {
-    callbacks,
-    runId: predefinedRunId,
-    tags: ['generateDocsSuggestion'],
-  })
 }
