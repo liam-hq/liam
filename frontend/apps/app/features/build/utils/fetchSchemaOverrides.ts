@@ -9,7 +9,7 @@ import { type SupabaseClient } from '@supabase/supabase-js'
 import { parse as parseYaml } from 'yaml'
 
 /**
- * スキーマオーバーライドのソース定義
+ * Schema override source definition
  */
 export type SchemaOverrideSource = {
   id: string
@@ -18,13 +18,13 @@ export type SchemaOverrideSource = {
 }
 
 /**
- * 指定されたソースからスキーマオーバーライドを取得する
+ * Fetches schema overrides from specified sources
  * 
- * @param repositoryFullName リポジトリのフルネーム（owner/repo）
- * @param branchOrCommit ブランチまたはコミットID
- * @param githubInstallationIdentifier GitHubインストールID
- * @param overrideSources オーバーライドソース定義の配列
- * @returns 取得したスキーマオーバーライドの配列
+ * @param repositoryFullName Repository full name (owner/repo)
+ * @param branchOrCommit Branch or commit ID
+ * @param githubInstallationIdentifier GitHub installation ID
+ * @param overrideSources Array of override source definitions
+ * @returns Array of retrieved schema overrides
  */
 export async function fetchSchemaOverrides(
   repositoryFullName: string,
@@ -59,10 +59,10 @@ export async function fetchSchemaOverrides(
 }
 
 /**
- * DBテーブルからスキーマオーバーライドソース情報を取得する
+ * Retrieves schema override source information from DB tables
  * 
- * @param projectId プロジェクトID
- * @returns オーバーライドソース定義の配列
+ * @param projectId Project ID
+ * @returns Array of override source definitions
  */
 export async function getSchemaOverrideSources(
   projectId: string
@@ -84,10 +84,11 @@ export async function getSchemaOverrideSources(
 }
 
 /**
- * DB項目から直接スキーマオーバーライドを構築する
+ * Builds schema override directly from DB items
  * 
- * @param projectId プロジェクトID
- * @returns スキーマオーバーライド
+ * @param projectId Project ID
+ * @param supabase Supabase client
+ * @returns Schema override
  */
 export async function buildSchemaOverrideFromDB(
   projectId: string,

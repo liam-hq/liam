@@ -15,14 +15,14 @@ import { mergeSchemaOverrides } from './mergeSchemaOverrides'
 import { createClient } from '@/libs/db/server'
 
 /**
- * 複数のソースからスキーマオーバーライドを安全に取得し、適用する
+ * Safely retrieves and applies schema overrides from multiple sources
  * 
- * @param repositoryFullName リポジトリのフルネーム（owner/repo）
- * @param branchOrCommit ブランチまたはコミットID
- * @param githubInstallationIdentifier GitHubインストールID
- * @param schema 元のスキーマ
- * @param projectId プロジェクトID
- * @returns マージされたスキーマとテーブルグループ、またはエラー
+ * @param repositoryFullName Repository full name (owner/repo)
+ * @param branchOrCommit Branch or commit ID
+ * @param githubInstallationIdentifier GitHub installation ID
+ * @param schema Original schema
+ * @param projectId Project ID
+ * @returns Merged schema and table groups, or error
  */
 export const safeApplyMultipleSchemaOverrides = async (
   repositoryFullName: string,

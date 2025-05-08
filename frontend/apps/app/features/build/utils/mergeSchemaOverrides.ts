@@ -5,12 +5,12 @@ import {
 } from '@liam-hq/db-structure'
 
 /**
- * 複数のスキーマオーバーライドを優先順位に従ってマージする
- * 配列の後ろのオーバーライドが前のオーバーライドより優先される
+ * Merges multiple schema overrides according to priority
+ * Overrides later in the array take precedence over earlier ones
  * 
- * @param schema 元のスキーマ
- * @param overrides マージするスキーマオーバーライドの配列
- * @returns マージされたスキーマとテーブルグループ
+ * @param schema Original schema
+ * @param overrides Array of schema overrides to merge
+ * @returns Merged schema and table groups
  */
 export function mergeSchemaOverrides(
   schema: Schema,
