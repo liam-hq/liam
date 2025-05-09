@@ -47,14 +47,10 @@ const TooltipDemo = ({
   )
 }
 
-const meta: Meta<typeof TooltipDemo> = {
+const meta = {
   title: 'UI/Tooltip',
   component: TooltipDemo,
-  parameters: {
-    layout: 'centered',
-  },
-  tags: ['autodocs'],
-}
+} satisfies Meta<typeof TooltipDemo>
 
 export default meta
 type Story = StoryObj<typeof TooltipDemo>
