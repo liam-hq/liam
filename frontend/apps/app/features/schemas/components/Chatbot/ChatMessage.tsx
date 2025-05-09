@@ -9,12 +9,14 @@ export interface ChatMessageProps {
   content: string
   isUser: boolean
   timestamp?: Date
+  className?: string
 }
 
 export const ChatMessage: FC<ChatMessageProps> = ({
   content,
   isUser,
   timestamp,
+  className,
 }) => {
   // Only format and display timestamp if it exists
   const formattedTime = timestamp
@@ -28,7 +30,7 @@ export const ChatMessage: FC<ChatMessageProps> = ({
     <div
       className={`${styles.messageContainer} ${
         isUser ? styles.userMessage : styles.botMessage
-      }`}
+      } ${className || ''}`}
     >
       <div className={styles.messageContent}>
         {isUser ? (

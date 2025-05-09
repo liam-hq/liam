@@ -1,12 +1,13 @@
 'use client'
 
-import { Button } from '@liam-hq/ui'
-import { MessageCircleIcon } from 'lucide-react'
+import { IconButton } from '@liam-hq/ui'
+import { ToolbarButton } from '@radix-ui/react-toolbar'
 import type { FC } from 'react'
 import { useState } from 'react'
 import type { TableGroupData } from '../../../../app/api/chat/route'
+import { AskAiIcon } from './AskAiIcon'
 import styles from './ChatbotButton.module.css'
-import { ChatbotDialog } from './ChatbotDialog'
+import { ChatbotDrawer, ChatbotDrawerRoot } from './ChatbotDrawer'
 import { type ERDSchema, adaptSchemaForChatbot } from './utils'
 
 interface ChatbotButtonProps {
@@ -23,20 +24,26 @@ export const ChatbotButton: FC<ChatbotButtonProps> = ({
 
   return (
     <>
-      <Button
-        className={styles.chatButton}
-        onClick={() => setIsDialogOpen(true)}
+      <ToolbarButton
+        asChild
+        onClick={() => setIsDialogOpen((prev) => !prev)}
+        className={styles.menuButton}
       >
-        <MessageCircleIcon size={20} />
-        <span className={styles.buttonText}>Schema Chat</span>
-      </Button>
+        <IconButton
+          className={styles.menuButton}
+          size="md"
+          icon={<AskAiIcon size={20} />}
+          tooltipContent="Ask AI"
+          aria-label="Ask AI"
+        />
+      </ToolbarButton>
 
-      <ChatbotDialog
+      <ChatbotDrawerRoot
         isOpen={isDialogOpen}
         onClose={() => setIsDialogOpen(false)}
-        schemaData={adaptedSchema}
-        tableGroups={tableGroups}
-      />
+      >
+        <ChatbotDrawer schemaData={adaptedSchema} tableGroups={tableGroups} />
+      </ChatbotDrawerRoot>
     </>
   )
 }

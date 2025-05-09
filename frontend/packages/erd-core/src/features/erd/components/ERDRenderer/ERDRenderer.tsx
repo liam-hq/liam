@@ -32,6 +32,7 @@ import { LeftPane } from './LeftPane'
 import { RelationshipEdgeParticleMarker } from './RelationshipEdgeParticleMarker'
 import { TableDetailDrawer, TableDetailDrawerRoot } from './TableDetailDrawer'
 import { Toolbar } from './Toolbar'
+import type { ChatbotButtonComponentType } from './Toolbar/types'
 
 type Props = {
   defaultSidebarOpen?: boolean | undefined
@@ -40,6 +41,7 @@ type Props = {
   withAppBar?: boolean
   tableGroups?: Record<string, TableGroup>
   onAddTableGroup?: ((params: TableGroup) => void) | undefined
+  ChatbotButtonComponent?: ChatbotButtonComponentType
 }
 
 const SIDEBAR_COOKIE_NAME = 'sidebar:state'
@@ -53,6 +55,7 @@ export const ERDRenderer: FC<Props> = ({
   withAppBar = false,
   tableGroups = {},
   onAddTableGroup,
+  ChatbotButtonComponent,
 }) => {
   const [open, setOpen] = useState(defaultSidebarOpen)
   const [isResizing, setIsResizing] = useState(false)
@@ -150,7 +153,12 @@ export const ERDRenderer: FC<Props> = ({
                 </TableDetailDrawerRoot>
                 {errorObjects.length === 0 && (
                   <div className={styles.toolbarWrapper}>
-                    <Toolbar withGroupButton={!!onAddTableGroup} />
+                    <Toolbar
+                      withGroupButton={!!onAddTableGroup}
+                      schemaData={schema}
+                      tableGroups={tableGroups}
+                      ChatbotButtonComponent={ChatbotButtonComponent}
+                    />
                   </div>
                 )}
               </main>
