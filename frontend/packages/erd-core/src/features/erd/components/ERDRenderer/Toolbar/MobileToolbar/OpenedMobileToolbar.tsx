@@ -3,6 +3,7 @@ import { useCustomReactflow } from '@/features/reactflow/hooks'
 import { useVersion } from '@/providers'
 import type { ShowMode } from '@/schemas/showMode'
 import { useUserEditingStore } from '@/stores'
+import type { Schema as ERDSchema } from '@liam-hq/db-structure'
 import { ChevronDown } from '@liam-hq/ui'
 import { IconButton, Minus, Plus } from '@liam-hq/ui'
 import { ToolbarButton } from '@radix-ui/react-toolbar'
@@ -11,18 +12,25 @@ import { type FC, useCallback } from 'react'
 import { FitviewButton } from '../FitviewButton'
 import { GroupButton } from '../GroupButton'
 import { TidyUpButton } from '../TidyUpButton'
+import type { ChatbotButtonComponentType, TableGroupData } from '../types'
 import styles from './OpenedMobileToolbar.module.css'
 
 type Props = {
-  withGroupButton?: boolean
+  withGroupButton?: boolean | undefined
   toggleOpenClose: () => void
   toggleShowModeMenu: () => void
+  schemaData?: ERDSchema | undefined
+  tableGroups?: Record<string, TableGroupData> | undefined
+  ChatbotButtonComponent?: ChatbotButtonComponentType
 }
 
 export const OpenedMobileToolbar: FC<Props> = ({
   withGroupButton = false,
   toggleOpenClose,
   toggleShowModeMenu,
+  schemaData,
+  tableGroups,
+  ChatbotButtonComponent,
 }) => {
   const { zoomIn, zoomOut } = useCustomReactflow()
   const zoomLevel = useStore((store) => store.transform[2])
@@ -103,6 +111,12 @@ export const OpenedMobileToolbar: FC<Props> = ({
         <FitviewButton size="sm">Zoom to Fit</FitviewButton>
         <TidyUpButton size="sm">Tidy up</TidyUpButton>
         {withGroupButton && <GroupButton size="sm" />}
+        {schemaData && tableGroups && ChatbotButtonComponent && (
+          <ChatbotButtonComponent
+            schemaData={schemaData}
+            tableGroups={tableGroups}
+          />
+        )}
       </div>
       <hr className={styles.divider} />
 

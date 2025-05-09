@@ -1,21 +1,99 @@
+.chatInputContainer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2);
+  padding: var(--spacing-4) var(--spacing-2) var(--spacing-2);
+  background-color: var(--color-gray-900);
+  width: 100%;
+}
+
+.controlsContainer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.buttonGroup {
+  display: flex;
+  gap: var(--spacing-1);
+  align-items: center;
+}
+
+.mentionButton {
+  min-width: unset;
+  height: unset;
+  padding: var(--spacing-1);
+  background-color: transparent;
+  border: none;
+  color: var(--color-gray-0);
+}
+
+.micButton {
+  min-width: unset;
+  height: unset;
+  padding: var(--spacing-1);
+  background-color: transparent;
+  border: none;
+  color: var(--color-gray-0);
+}
+
+.recording {
+  color: var(--color-red-500);
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
 .inputContainer {
   display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 12px;
-  border-top: 1px solid var(--global-border);
-  background-color: var(--global-background);
+  align-items: flex-end;
+  gap: var(--spacing-1);
+  padding: var(--spacing-2);
+  background-color: var(--color-gray-1000);
+  border: 1px solid var(--color-gray-700);
+  border-radius: var(--border-radius-base);
+}
+
+.inputWrapper {
+  position: relative;
+  flex: 1;
+  display: flex;
 }
 
 .input {
   flex: 1;
+  color: var(--color-white-alpha-30);
+  background-color: transparent;
+  border: none;
+}
+
+.input:not(:placeholder-shown) {
+  color: var(--global-foreground);
+}
+
+.input::placeholder {
+  color: var(--color-white-alpha-30);
 }
 
 .sendButton {
-  min-width: 40px;
-  height: 40px;
-  padding: 0;
+  min-width: unset;
+  height: unset;
+  padding: var(--spacing-1);
   display: flex;
   align-items: center;
   justify-content: center;
+  background-color: transparent;
+  border: none;
+  color: var(--color-gray-0);
 }

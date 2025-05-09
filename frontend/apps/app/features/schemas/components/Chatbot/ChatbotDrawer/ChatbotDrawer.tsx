@@ -1,29 +1,58 @@
 'use client'
 
 import {
-  ModalContent,
-  ModalOverlay,
-  ModalPortal,
-  ModalRoot,
-  ModalTitle,
+  DrawerClose,
+  DrawerContent,
+  DrawerPortal,
+  DrawerRoot,
+  DrawerTitle,
+  IconButton,
 } from '@liam-hq/ui'
-import type { FC } from 'react'
+import { X as CloseIcon } from 'lucide-react'
+import type { FC, ReactNode } from 'react'
 import { useEffect, useRef, useState } from 'react'
-import type { SchemaData, TableGroupData } from '../../../../app/api/chat/route'
-import { ChatInput } from './ChatInput'
-import { ChatMessage, type ChatMessageProps } from './ChatMessage'
-import styles from './ChatbotDialog.module.css'
+import type {
+  SchemaData,
+  TableGroupData,
+} from '../../../../../app/api/chat/route'
+import { AskAiIcon } from '../AskAiIcon'
+import type { AgentType } from '../ChatInput'
+import { ChatInput } from '../ChatInput'
+import { ChatMessage, type ChatMessageProps } from '../ChatMessage'
+import { useAuthUser } from '../hooks/useAuthUser'
+import styles from './ChatbotDrawer.module.css'
 
-interface ChatbotDialogProps {
+interface ChatbotDrawerRootProps {
   isOpen: boolean
   onClose: () => void
+  children: ReactNode
+}
+
+export const ChatbotDrawerRoot: FC<ChatbotDrawerRootProps> = ({
+  isOpen,
+  onClose,
+  children,
+}) => {
+  return (
+    <DrawerRoot
+      direction="right"
+      // Set snapPoints to an empty array to disable the drawer snapping functionality.
+      snapPoints={[]}
+      open={isOpen}
+      onClose={onClose}
+      modal={false}
+    >
+      {children}
+    </DrawerRoot>
+  )
+}
+
+interface ChatbotDrawerProps {
   schemaData: SchemaData
   tableGroups?: Record<string, TableGroupData>
 }
 
-export const ChatbotDialog: FC<ChatbotDialogProps> = ({
-  isOpen,
-  onClose,
+export const ChatbotDrawer: FC<ChatbotDrawerProps> = ({
   schemaData,
   tableGroups,
 }) => {
@@ -36,10 +65,13 @@ export const ChatbotDialog: FC<ChatbotDialogProps> = ({
         'Hello! Feel free to ask questions about your schema or consult about database design.',
       isUser: false,
       timestamp: new Date(),
+      agentType: 'build', // Set default agent type for welcome message
     },
   ])
   const [isLoading, setIsLoading] = useState(false)
+  const [mode, setMode] = useState<AgentType>('build')
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const { avatarUrl } = useAuthUser()
 
   // Scroll to bottom when component mounts
   useEffect(() => {
@@ -66,6 +98,7 @@ export const ChatbotDialog: FC<ChatbotDialogProps> = ({
         content: '',
         isUser: false,
         // No timestamp during streaming
+        agentType: mode, // Store the current agent type with the message
       },
     ])
 
@@ -86,6 +119,7 @@ export const ChatbotDialog: FC<ChatbotDialogProps> = ({
           schemaData,
           tableGroups,
           history,
+          agentType: mode, // Pass the current agent type to the API
         }),
       })
 
@@ -110,7 +144,11 @@ export const ChatbotDialog: FC<ChatbotDialogProps> = ({
           setMessages((prev) =>
             prev.map((msg) =>
               msg.id === aiMessageId
-                ? { ...msg, content: accumulatedContent, timestamp: new Date() }
+                ? {
+                    ...msg,
+                    content: accumulatedContent,
+                    timestamp: new Date(),
+                  }
                 : msg,
             ),
           )
@@ -147,6 +185,7 @@ export const ChatbotDialog: FC<ChatbotDialogProps> = ({
             ...updatedMessages[aiMessageIndex],
             content: 'Sorry, an error occurred. Please try again.',
             timestamp: new Date(),
+            // Keep the existing agentType
           }
           return updatedMessages
         }
@@ -159,6 +198,7 @@ export const ChatbotDialog: FC<ChatbotDialogProps> = ({
             content: 'Sorry, an error occurred. Please try again.',
             isUser: false,
             timestamp: new Date(),
+            agentType: mode, // Store the current agent type with the error message
           },
         ]
       })
@@ -168,32 +208,72 @@ export const ChatbotDialog: FC<ChatbotDialogProps> = ({
   }
 
   return (
-    <ModalRoot open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <ModalPortal>
-        <ModalOverlay />
-        <ModalContent className={styles.dialog}>
-          <ModalTitle>Schema Chatbot</ModalTitle>
-          <div className={styles.messagesContainer}>
-            {messages.map((message) => (
+    <DrawerPortal>
+      <DrawerContent className={styles.content}>
+        <div className={styles.chatHeader}>
+          <div className={styles.titleContainer}>
+            <span className={styles.titleIcon}>
+              <AskAiIcon size={16} />
+            </span>
+            <DrawerTitle>Ask AI</DrawerTitle>
+          </div>
+          <DrawerClose asChild>
+            <IconButton
+              icon={<CloseIcon size={16} />}
+              tooltipContent="Close"
+              aria-label="Close chatbot"
+              className={styles.closeButton}
+            />
+          </DrawerClose>
+        </div>
+        <div className={styles.messagesContainer}>
+          {messages.map((message) => {
+            // For non-user messages, ensure we're using the message's own agent type
+            const messageAgentType = message.isUser
+              ? undefined
+              : message.agentType
+
+            // Create a unique key that includes the agent type to force re-render when it changes
+            const messageKey = `${message.id}-${messageAgentType || 'user'}`
+
+            return (
               <ChatMessage
-                key={message.id}
+                key={messageKey}
                 content={message.content}
                 isUser={message.isUser}
                 timestamp={message.timestamp}
+                className={
+                  message.isUser ? styles.askMessage : styles.responseMessage
+                }
+                avatarUrl={message.isUser ? avatarUrl : undefined}
+                agentType={messageAgentType}
               />
-            ))}
-            {isLoading && (
-              <div className={styles.loadingIndicator}>
-                <div className={styles.loadingDot} />
-                <div className={styles.loadingDot} />
-                <div className={styles.loadingDot} />
-              </div>
-            )}
-            <div ref={messagesEndRef} />
-          </div>
-          <ChatInput onSendMessage={handleSendMessage} isLoading={isLoading} />
-        </ModalContent>
-      </ModalPortal>
-    </ModalRoot>
+            )
+          })}
+          {isLoading && (
+            <div className={styles.loadingIndicator}>
+              <div className={styles.loadingDot} />
+              <div className={styles.loadingDot} />
+              <div className={styles.loadingDot} />
+            </div>
+          )}
+          <div ref={messagesEndRef} />
+        </div>
+        <div className={styles.chatInputContainer}>
+          <ChatInput
+            onSendMessage={handleSendMessage}
+            isLoading={isLoading}
+            mode={mode}
+            onModeChange={setMode}
+            onMentionClick={() => {
+              // Handle mention click - can be implemented later
+              // For now, this is a placeholder for future functionality
+            }}
+            schemaData={schemaData}
+            tableGroups={tableGroups}
+          />
+        </div>
+      </DrawerContent>
+    </DrawerPortal>
   )
 }

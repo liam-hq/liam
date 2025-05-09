@@ -16,6 +16,8 @@
     "frontend/apps/app/scripts/install-prisma-internals.mjs",
     // - Script file which is read from trigger.config.ts
     "frontend/packages/jobs/src/trigger/jobs.ts",
+    // - Next.js auto-generated file
+    "frontend/apps/erd-web/next-env.d.ts",
 
     // TODO: Temporarily ignore issues in the following files. Will be addressed later
     "frontend/packages/db-structure/src/parser.ts",
@@ -33,7 +35,8 @@
     "frontend/packages/erd-core/src/features/erd/components/ERDContent/components/RelationshipEdge/type.ts",
     "frontend/packages/ui/src/components/Toast/types.ts",
     "frontend/apps/docs/components/CopyButton/CopyButton.tsx",
-    "frontend/apps/docs/app/docs/sitemap.ts"
+    "frontend/apps/docs/app/docs/sitemap.ts",
+    "frontend/packages/erd-core/src/features/erd/components/ERDRenderer/Toolbar/types.ts"
   ],
 
   // TODO: Review ignoreDependencies configuration later
@@ -46,8 +49,6 @@
     "@prisma/internals",
     "@trigger.dev/build",
     "@trigger.dev/sdk",
-    "langfuse",
-    "langfuse-langchain",
     "@langchain/core",
     "zod",
     "ts-pattern",
