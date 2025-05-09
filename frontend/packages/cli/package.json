@@ -15,7 +15,7 @@
   },
   "license": "Apache-2.0",
   "private": false,
-  "version": "0.5.4",
+  "version": "0.5.5",
   "type": "module",
   "publishConfig": {
     "access": "public"
