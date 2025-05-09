@@ -141,6 +141,7 @@ export const tableGroupsSchema = v.record(
   tableGroupSchema,
 )
 
+// Schema definition for the entire database structure
 export const schemaSchema = v.object({
   tables: tablesSchema,
   relationships: relationshipsSchema,
