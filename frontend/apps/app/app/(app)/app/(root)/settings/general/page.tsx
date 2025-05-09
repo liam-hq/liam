@@ -1,5 +1,5 @@
+import { GeneralPage } from '@/components/GeneralPage'
 import { getOrganizationId } from '@/features/organizations/services/getOrganizationId'
-import { GeneralPage } from './GeneralPage'
 
 export default async function Page() {
   const organizationId = await getOrganizationId()
