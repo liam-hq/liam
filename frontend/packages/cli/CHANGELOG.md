@@ -1,5 +1,12 @@
 # @liam-hq/cli
 
+## 0.5.5
+
+### Patch Changes
+
+- [#1581](https://github.com/liam-hq/liam/pull/1581) - 💄 fix the left pane with when mobile device / Thanks [@khiroshi-win](https://github.com/khiroshi-win)!
+- [#1408](https://github.com/liam-hq/liam/pull/1408) - ✨ Enhance the schema.rb parser to support Constraints / Thanks [@tnyo43](https://github.com/tnyo43)!
+
 ## 0.5.4
 
 ### Patch Changes
