@@ -5,7 +5,7 @@
   "dependencies": {
     "@liam-hq/ui": "workspace:*",
     "@next/third-parties": "15.3.1",
-    "@rive-app/react-canvas": "4.18.8",
+    "@rive-app/react-canvas": "4.18.9",
     "@sentry/nextjs": "9",
     "clsx": "2.1.1",
     "date-fns": "4.1.0",

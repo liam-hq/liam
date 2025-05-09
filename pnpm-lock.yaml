@@ -235,8 +235,8 @@ importers:
         specifier: 15.3.1
         version: 15.3.1(next@15.3.1(@opentelemetry/api@1.9.0)(@playwright/test@1.52.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)
       '@rive-app/react-canvas':
-        specifier: 4.18.8
-        version: 4.18.8(react@18.3.1)
+        specifier: 4.18.9
+        version: 4.18.9(react@18.3.1)
       '@sentry/nextjs':
         specifier: '9'
         version: 9.15.0(@opentelemetry/context-async-hooks@1.30.1(@opentelemetry/api@1.9.0))(@opentelemetry/core@1.30.1(@opentelemetry/api@1.9.0))(@opentelemetry/instrumentation@0.57.2(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-trace-base@1.30.1(@opentelemetry/api@1.9.0))(next@15.3.1(@opentelemetry/api@1.9.0)(@playwright/test@1.52.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)(webpack@5.99.8)
@@ -3686,11 +3686,11 @@ packages:
       react: ^18.0 || ^19.0 || ^19.0.0-rc
       react-dom: ^18.0 || ^19.0 || ^19.0.0-rc
 
-  '@rive-app/canvas@2.27.0':
-    resolution: {integrity: sha512-wXGYCjXO+UpqesRPVSy7YmTnKSelhJVEu6kCWNWzwFD5IfwaM7rF9oG6WsubZ/D2Aacl9snaJUWjos7Em8mUSg==}
+  '@rive-app/canvas@2.27.1':
+    resolution: {integrity: sha512-TnRZdwS/y6RvoTwaZJVlG91NP+m97WcXgSY08wY8R8m8iyVQtpvkRN9oNKwlh46YHPAqGTafaqOzxc7H7ijZDw==}
 
-  '@rive-app/react-canvas@4.18.8':
-    resolution: {integrity: sha512-1+Jd7G5mMapoPXhUy2lgImO8EnHHGBvTJ1dX4HJSjtSrRg9g7ffHWtau85e/tSGAAj8bt1vE3VdM4aQVA0duAw==}
+  '@rive-app/react-canvas@4.18.9':
+    resolution: {integrity: sha512-5tzuGTsc+TdUR5zBDyBzLHI60+bNFtHPDS5vXzjBo08bLuqjKLBUJRsu5YCFybsi63BbVQpiHi8Rorsx0+AcJw==}
     peerDependencies:
       react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0
 
@@ -13442,11 +13442,11 @@ snapshots:
       react-dom: 18.3.1(react@18.3.1)
       react-promise-suspense: 0.3.4
 
-  '@rive-app/canvas@2.27.0': {}
+  '@rive-app/canvas@2.27.1': {}
 
-  '@rive-app/react-canvas@4.18.8(react@18.3.1)':
+  '@rive-app/react-canvas@4.18.9(react@18.3.1)':
     dependencies:
-      '@rive-app/canvas': 2.27.0
+      '@rive-app/canvas': 2.27.1
       react: 18.3.1
 
   '@rollup/plugin-commonjs@28.0.1(rollup@4.35.0)':
