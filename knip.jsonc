@@ -18,19 +18,8 @@
     "frontend/packages/jobs/src/trigger/jobs.ts",
 
     // TODO: Temporarily ignore issues in the following files. Will be addressed later
-    "frontend/packages/db-structure/src/parser.ts",
-    "frontend/packages/db-structure/src/parser/index.ts",
-    "frontend/packages/erd-core/src/features/erd/components/ERDRenderer/AppBar/ExportButton/ExportButton.tsx",
-    "frontend/packages/erd-core/src/features/erd/components/ERDRenderer/AppBar/ExportButton/index.ts",
-    "frontend/packages/erd-core/src/features/erd/components/ERDRenderer/Toolbar/ViewControlButton/ViewControlButton.tsx",
-    "frontend/packages/erd-core/src/features/erd/components/ERDRenderer/Toolbar/ViewControlButton/index.ts",
-    "frontend/packages/db-structure/src/schema/schema.ts",
-    "frontend/packages/db-structure/src/parser/sql/postgresql/parser.ts",
-    "frontend/packages/db-structure/src/schema/overrideSchema.ts",
     "frontend/packages/cli/vite-plugins/remove-import-wasi.ts",
     "frontend/packages/cli/vite-plugins/set-env.ts",
-    "frontend/packages/erd-core/src/features/erd/types.ts",
-    "frontend/packages/erd-core/src/features/erd/components/ERDContent/components/RelationshipEdge/type.ts",
     "frontend/packages/ui/src/components/Toast/types.ts",
     "frontend/apps/docs/components/CopyButton/CopyButton.tsx",
     "frontend/apps/docs/app/docs/sitemap.ts"

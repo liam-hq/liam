@@ -11,7 +11,7 @@ export const parse = async (str: string): Promise<ParseResult> => {
 }
 
 // NOTE: pg-query-emscripten does not have types, so we need to define them ourselves
-export interface ParseResult {
+interface ParseResult {
   parse_tree: {
     version: number
     stmts: RawStmt[]
