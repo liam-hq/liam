@@ -31,7 +31,7 @@
     "@types/uuid": "10.0.0",
     "dotenv": "16.5.0",
     "eslint": "9.25.1",
-    "glob": "11.0.1",
+    "glob": "11.0.2",
     "json-schema": "0.4.0",
     "trigger.dev": "3.3.17",
     "typescript": "5.8.3",
