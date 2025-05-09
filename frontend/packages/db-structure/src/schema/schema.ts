@@ -140,7 +140,6 @@ export const tableGroupsSchema = v.record(
   tableGroupNameSchema,
   tableGroupSchema,
 )
-type TableGroups = v.InferOutput<typeof tableGroupsSchema>
 
 export const schemaSchema = v.object({
   tables: tablesSchema,
