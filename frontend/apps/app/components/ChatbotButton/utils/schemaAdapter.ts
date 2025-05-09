@@ -1,8 +1,5 @@
+import type { SchemaData, TableGroupData } from '@/app/api/chat/route'
 import type { Column, Schema, Table } from '@liam-hq/db-structure'
-import type {
-  SchemaData,
-  TableGroupData,
-} from '../../../../../app/api/chat/route'
 
 // 1. Helper function to adapt columns
 function adaptColumns(columns: Record<string, Column>) {
@@ -141,6 +138,3 @@ export function adaptSchemaForChatbot(schema: Schema): SchemaData {
       : undefined,
   }
 }
-
-// For backward compatibility with existing code
-export type ERDSchema = Schema

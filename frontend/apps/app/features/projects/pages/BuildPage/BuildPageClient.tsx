@@ -1,12 +1,12 @@
 'use client'
 
+import { ChatbotButton } from '@/components/ChatbotButton'
 import { ERDRenderer } from '@/features'
-import { ChatbotButton } from '@/features/schemas/components/Chatbot'
-import type { ERDSchema } from '@/features/schemas/components/Chatbot/utils'
 import { useTableGroups } from '@/hooks'
 import { VersionProvider } from '@/providers'
 import { versionSchema } from '@/schemas'
 import { initSchemaStore } from '@/stores'
+import type { Schema } from '@liam-hq/db-structure'
 import { type FC, useEffect, useState } from 'react'
 import * as v from 'valibot'
 import styles from './BuildPage.module.css'
@@ -18,7 +18,7 @@ type ErrorObject = {
 }
 
 type ClientProps = {
-  schema: ERDSchema
+  schema: Schema
   errors: ErrorObject[]
   tableGroups: Record<
     string,
