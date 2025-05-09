@@ -1,6 +1,5 @@
 import type { PageProps } from '@/app/types'
-import { getInvitationData } from '@/features/invitations/actions'
-import { InvitationCard } from '@/features/invitations/components/InvitationCard'
+import { InvitationPage } from '@/components/InvitationPage'
 
 import * as v from 'valibot'
 
@@ -13,13 +12,6 @@ export default async function Page({ params }: PageProps) {
   if (!parsedParams.success) throw new Error('Invalid token parameters')
 
   const { token } = parsedParams.output
-  const { organizationName, currentUser } = await getInvitationData(token)
 
-  return (
-    <InvitationCard
-      token={token}
-      organizationName={organizationName}
-      currentUser={currentUser}
-    />
-  )
+  return <InvitationPage token={token} />
 }
