@@ -17,7 +17,7 @@
     // - Script file which is read from trigger.config.ts
     "frontend/packages/jobs/src/trigger/jobs.ts",
 
-    // Files that still need to be ignored
+    // TODO: Temporarily ignore issues in the following files. Will be addressed later
     "frontend/packages/cli/vite-plugins/remove-import-wasi.ts",
     "frontend/packages/cli/vite-plugins/set-env.ts",
     "frontend/packages/ui/src/components/Toast/types.ts",
