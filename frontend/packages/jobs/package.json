@@ -21,7 +21,6 @@
     "langfuse": "3.37.2",
     "langfuse-vercel": "3.37.2",
     "minimatch": "10.0.1",
-    "openai": "4.97.0",
     "uuid": "11.1.0",
     "valibot": "1.0.0",
     "yaml": "2.7.1"
