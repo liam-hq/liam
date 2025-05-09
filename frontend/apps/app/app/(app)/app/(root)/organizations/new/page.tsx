@@ -1,4 +1,4 @@
-import { OrganizationNewPage } from '@/features/organizations/pages/OrganizationNewPage'
+import { OrganizationNewPage } from '@/components/OrganizationNewPage'
 
 export default function Page() {
   return <OrganizationNewPage />

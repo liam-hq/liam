@@ -1,4 +1,4 @@
-import { OrganizationsPage } from '@/features/organizations/pages/OrganizationsPage/OrganizationsPage'
+import { OrganizationsPage } from '@/components/OrganizationsPage'
 
 export default function Page() {
   return <OrganizationsPage />
