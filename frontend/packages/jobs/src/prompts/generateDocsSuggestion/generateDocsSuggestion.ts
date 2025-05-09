@@ -1,6 +1,8 @@
+import * as crypto from 'node:crypto'
+import { openai } from '@ai-sdk/openai'
 import type { Schema } from '@liam-hq/db-structure'
-import OpenAI from 'openai'
-
+import { Agent } from '@mastra/core/agent'
+import type { JSONSchema7 } from 'json-schema'
 import { parse } from 'valibot'
 import {
   createLangfuseGeneration,
@@ -108,7 +110,7 @@ ${feedbackSections}
 }
 
 // Step 1: Evaluation template to determine which files need updates
-const EVALUATION_TEMPLATE = `
+const EVALUATION_SYSTEM_PROMPT = `
 You are Liam, an expert in schema design and migration strategy for this project.
 
 ## Your Task
@@ -165,8 +167,33 @@ Guidelines:
 - For ERROR/CRITICAL level issues, be more thorough with your suggested changes
 `
 
+const EVALUATION_USER_PROMPT = `
+## Migration Review
+
+<text>
+
+{reviewResult}
+
+</text>
+
+## Current Documentation
+
+<docs>
+
+{formattedDocsContent}
+
+</docs>
+
+## Current Schema
+<json>
+
+{schema}
+
+</json>
+`
+
 // Step 2: Update template for generating content for files that need updates
-const UPDATE_TEMPLATE = `
+const UPDATE_SYSTEM_PROMPT = `
 You are Liam, an expert in schema design and migration strategy for this project.
 
 ## Your Task
@@ -232,16 +259,51 @@ Guidelines:
 - Maintain accuracy and clarity
 `
 
+const UPDATE_USER_PROMPT = `
+## Migration Review
+
+<text>
+
+{reviewResult}
+
+</text>
+
+## Current Documentation
+
+<docs>
+
+{formattedDocsContent}
+
+</docs>
+
+## Current Schema
+<json>
+
+{schema}
+
+</json>
+
+## Evaluation Results
+
+<text>
+
+{evaluationResults}
+
+</text>
+`
+
 export const generateDocsSuggestion = async (
   review: Review,
   formattedDocsContent: string,
-
   predefinedRunId: string,
   schema: Schema,
 ): Promise<DocFileContentMap> => {
+  // Create a trace ID if not provided
+  const traceId = predefinedRunId || crypto.randomUUID()
+
   // Create a trace for Langfuse
   const trace = createLangfuseTrace('generateDocsSuggestion', {
-    runId: predefinedRunId,
+    runId: traceId,
   })
 
   const formattedReviewResult = formatReview(review)
@@ -276,33 +338,33 @@ export const generateDocsSuggestion = async (
 
   try {
     // First, run the evaluation to determine which files need updates
-    const openai = new OpenAI({ apiKey: process.env['OPENAI_API_KEY'] })
-    const evaluationResponse = await openai.chat.completions.create({
-      model: 'o3-mini-2025-01-31',
-      messages: [
+    const agent = new Agent({
+      name: 'Documentation Suggestion Evaluation Agent',
+      instructions: EVALUATION_SYSTEM_PROMPT,
+      model: openai('o3-mini-2025-01-31'),
+    })
+
+    const evaluationResponse = await agent.generate(
+      [
         {
           role: 'user',
-          content: EVALUATION_TEMPLATE.replace(
+          content: EVALUATION_USER_PROMPT.replace(
             '{reviewResult}',
             formattedReviewResult,
           )
             .replace('{formattedDocsContent}', formattedDocsContent)
-            .replace('{schema}', JSON.stringify(schema, null, 2))
-            .replace(
-              '{evaluationResponseExampleJson}',
-              evaluationResponseExampleJson,
-            ),
+            .replace('{schema}', JSON.stringify(schema, null, 2)),
         },
       ],
-      temperature: 0,
-      response_format: { type: 'json_object' },
-    })
+      {
+        output: evaluationSchema as JSONSchema7,
+      },
+    )
 
     // Parse the evaluation response
-    const content = evaluationResponse.choices[0]?.message?.content || '{}'
     const evaluationResult: EvaluationResult = parse(
       evaluationSchema,
-      JSON.parse(content),
+      evaluationResponse.object,
     )
 
     evaluationGeneration.end({
@@ -336,12 +398,17 @@ export const generateDocsSuggestion = async (
 
     try {
       // Generate new content for files that need changes
-      const updateResponse = await openai.chat.completions.create({
-        model: 'o3-mini-2025-01-31',
-        messages: [
+      const updateAgent = new Agent({
+        name: 'Documentation Suggestion Update Agent',
+        instructions: UPDATE_SYSTEM_PROMPT,
+        model: openai('o3-mini-2025-01-31'),
+      })
+
+      const updateResponse = await updateAgent.generate(
+        [
           {
             role: 'user',
-            content: UPDATE_TEMPLATE.replace(
+            content: UPDATE_USER_PROMPT.replace(
               '{reviewResult}',
               formattedReviewResult,
             )
@@ -350,22 +417,18 @@ export const generateDocsSuggestion = async (
               .replace(
                 '{evaluationResults}',
                 JSON.stringify(suggestedChanges, null, 2),
-              )
-              .replace(
-                '{updateResponseExampleJson}',
-                updateResponseExampleJson,
               ),
           },
         ],
-        temperature: 0,
-        response_format: { type: 'json_object' },
-      })
+        {
+          output: docsSuggestionSchema as JSONSchema7,
+        },
+      )
 
       // Parse the update response
-      const updateContent = updateResponse.choices[0]?.message?.content || '{}'
       const updateResult: DocsSuggestion = parse(
         docsSuggestionSchema,
-        JSON.parse(updateContent),
+        updateResponse.object,
       )
 
       updateGeneration.end({

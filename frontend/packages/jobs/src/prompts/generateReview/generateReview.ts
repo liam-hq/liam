@@ -1,8 +1,9 @@
 import * as crypto from 'node:crypto'
+import { openai } from '@ai-sdk/openai'
 import type { Schema } from '@liam-hq/db-structure'
+import { Agent } from '@mastra/core/agent'
 import { toJsonSchema } from '@valibot/to-json-schema'
 import type { JSONSchema7 } from 'json-schema'
-import OpenAI from 'openai'
 import { parse } from 'valibot'
 import {
   createLangfuseGeneration,
@@ -142,83 +143,40 @@ export const generateReview = async (
   )
 
   try {
-    const openai = new OpenAI({ apiKey: process.env['OPENAI_API_KEY'] })
-    const response = await openai.chat.completions.create({
-      model: 'o3-mini-2025-01-31',
-      messages: [
-        { role: 'system', content: SYSTEM_PROMPT },
+    const agent = new Agent({
+      name: 'Migration Review Agent',
+      instructions: SYSTEM_PROMPT,
+      model: openai('o3-mini-2025-01-31'),
+    })
+    const response = await agent.generate(
+      [
         {
           role: 'user',
-          content: USER_PROMPT.replace('{docsContent}', docsContent)
-            .replace('{schema}', JSON.stringify(schema, null, 2))
-            .replace('{fileChanges}', JSON.stringify(fileChanges, null, 2))
-            .replace('{prDescription}', prDescription)
-            .replace('{prComments}', prComments),
+          content: USER_PROMPT,
         },
       ],
-      temperature: 0,
-      response_format: { type: 'json_object' },
-    })
+      {
+        output: reviewJsonSchema,
+      },
+    )
 
-    const content = response.choices[0]?.message?.content || '{}'
-    const parsedResponse = parse(reviewSchema, JSON.parse(content))
-
-    generation.end({
-      output: parsedResponse,
-    })
+    const content = response.object
+    const parsedContent = parse(reviewSchema, content)
 
     if (callbacks) {
       for (const callback of callbacks) {
         if (callback.handleChainEnd) {
-          await callback.handleChainEnd({ output: parsedResponse })
+          await callback.handleChainEnd({ output: parsedContent })
         }
       }
     }
 
-    return parsedResponse
+    return parsedContent
   } catch (error) {
     generation.end({
       output: { error: error instanceof Error ? error.message : String(error) },
     })
 
     throw error
-  } finally {
   }
-}
-
-export const chain = {
-  invoke: async (
-    inputs: {
-      docsContent: string
-      schema: string
-      fileChanges: GenerateReviewPayload['fileChanges']
-      prDescription: string
-      prComments: string
-    },
-    options?: {
-      callbacks?: Callbacks
-      runId?: string
-      tags?: string[]
-    },
-  ) => {
-    if (options?.callbacks) {
-      for (const callback of options.callbacks) {
-        if (callback.handleChainStart) {
-          await callback.handleChainStart({ name: 'generateReview' }, inputs)
-        }
-      }
-    }
-
-    const result = await generateReview(
-      inputs.docsContent,
-      JSON.parse(inputs.schema),
-      inputs.fileChanges,
-      inputs.prDescription,
-      inputs.prComments,
-      options?.callbacks,
-      options?.runId,
-    )
-
-    return result
-  },
 }

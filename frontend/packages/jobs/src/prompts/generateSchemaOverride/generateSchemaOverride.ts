@@ -1,10 +1,13 @@
+import * as crypto from 'node:crypto'
+import { openai } from '@ai-sdk/openai'
 import {
   type Schema,
   type SchemaOverride,
   schemaOverrideSchema,
 } from '@liam-hq/db-structure'
+import { Agent } from '@mastra/core/agent'
 import { toJsonSchema } from '@valibot/to-json-schema'
-import OpenAI from 'openai'
+import type { JSONSchema7 } from 'json-schema'
 import { type InferOutput, boolean, object, parse, string } from 'valibot'
 import {
   createLangfuseGeneration,
@@ -37,7 +40,7 @@ type GenerateSchemaOverrideResult =
     }
 
 // Step 1: Evaluation template to determine if updates are needed
-const EVALUATION_TEMPLATE = `
+const EVALUATION_SYSTEM_PROMPT = `
 You are Liam, an expert in database schema design and optimization.
 
 ## Your Task
@@ -69,7 +72,9 @@ schema-override.yml is a documentation-only enhancement layer on top of the actu
 - If there are concerns about query performance or database operations
 - If there's no clear suggestion to improve documentation or organization
 - If the concern is about schema structure rather than its documentation
+`
 
+const EVALUATION_USER_PROMPT = `
 ## Review Comment for Analysis
 <comment>
 
@@ -114,7 +119,7 @@ The response must include:
 `
 
 // Step 2: Update template for generating schema updates
-const UPDATE_TEMPLATE = `
+const UPDATE_SYSTEM_PROMPT = `
 You are Liam, an expert in database schema design and optimization for this project.
 
 ## Your Task
@@ -130,7 +135,9 @@ It is NOT for:
 - Defining actual database schema changes or migrations
 - Creating migration safety mechanisms or rollbacks
 - Addressing performance concerns or data integrity
+`
 
+const UPDATE_USER_PROMPT = `
 ## Review Comment for Analysis
 <comment>
 
@@ -186,19 +193,13 @@ Your response must strictly follow this JSON Schema and maintain the existing st
 REMEMBER: schema-override.yml is ONLY for documentation and organization purposes, NOT for actual schema changes.
 `
 
-export const generateSchemaOverride = async (
+// Function to execute the evaluation step
+async function evaluateSchemaOverride(
+  trace: ReturnType<typeof createLangfuseTrace>,
   reviewComment: string,
-
   currentSchemaOverride: SchemaOverride | null,
-  runId: string,
   schema: Schema,
-): Promise<GenerateSchemaOverrideResult> => {
-  // Create a trace for Langfuse
-  const trace = createLangfuseTrace('generateSchemaOverride', {
-    runId,
-  })
-
-  // Create a generation for evaluation step
+): Promise<EvaluationResult> {
   const evaluationGeneration = createLangfuseGeneration(
     trace,
     'evaluateSchemaOverride',
@@ -217,13 +218,91 @@ export const generateSchemaOverride = async (
 
   try {
     // First, run the evaluation to determine if updates are needed
-    const openai = new OpenAI({ apiKey: process.env['OPENAI_API_KEY'] })
-    const evaluationResponse = await openai.chat.completions.create({
-      model: 'o3-mini-2025-01-31',
-      messages: [
+    const agent = new Agent({
+      name: 'Schema Override Evaluation Agent',
+      instructions: EVALUATION_SYSTEM_PROMPT,
+      model: openai('o3-mini-2025-01-31'),
+    })
+
+    const evaluationResponse = await agent.generate(
+      [
         {
           role: 'user',
-          content: EVALUATION_TEMPLATE.replace('{reviewComment}', reviewComment)
+          content: EVALUATION_USER_PROMPT.replace(
+            '{reviewComment}',
+            reviewComment,
+          )
+            .replace(
+              '{currentSchemaOverride}',
+              currentSchemaOverride
+                ? JSON.stringify(currentSchemaOverride, null, 2)
+                : '{}',
+            )
+            .replace('{schema}', JSON.stringify(schema, null, 2)),
+        },
+      ],
+      {
+        output: evaluationJsonSchema as JSONSchema7,
+      },
+    )
+
+    // Parse the evaluation response
+    const evaluationResult: EvaluationResult = parse(
+      evaluationSchema,
+      evaluationResponse.object,
+    )
+
+    evaluationGeneration.end({
+      output: evaluationResult,
+    })
+
+    return evaluationResult
+  } catch (error) {
+    evaluationGeneration.end({
+      output: { error: error instanceof Error ? error.message : String(error) },
+    })
+
+    throw error
+  }
+}
+
+// Function to execute the update step
+async function updateSchemaOverride(
+  trace: ReturnType<typeof createLangfuseTrace>,
+  reviewComment: string,
+  currentSchemaOverride: SchemaOverride | null,
+  schema: Schema,
+  evaluationResult: EvaluationResult,
+): Promise<SchemaOverride> {
+  const updateGeneration = createLangfuseGeneration(
+    trace,
+    'updateSchemaOverride',
+    {
+      reviewComment,
+      currentSchemaOverride: currentSchemaOverride
+        ? JSON.stringify(currentSchemaOverride, null, 2)
+        : '{}',
+      schema: JSON.stringify(schema, null, 2),
+      evaluationResults: evaluationResult.suggestedChanges,
+    },
+    {
+      model: 'o3-mini-2025-01-31',
+      tags: ['generateSchemaOverride', 'update'],
+    },
+  )
+
+  try {
+    const updateAgent = new Agent({
+      name: 'Schema Override Update Agent',
+      instructions: UPDATE_SYSTEM_PROMPT,
+      model: openai('o3-mini-2025-01-31'),
+    })
+
+    const updateResponse = await updateAgent.generate(
+      [
+        {
+          role: 'user',
+          content: UPDATE_USER_PROMPT.replace('{reviewComment}', reviewComment)
             .replace(
               '{currentSchemaOverride}',
               currentSchemaOverride
@@ -231,114 +310,76 @@ export const generateSchemaOverride = async (
                 : '{}',
             )
             .replace('{schema}', JSON.stringify(schema, null, 2))
-            .replace(
-              '{evaluationJsonSchema}',
-              JSON.stringify(evaluationJsonSchema, null, 2),
-            ),
+            .replace('{evaluationResults}', evaluationResult.suggestedChanges),
         },
       ],
-      temperature: 0,
-      response_format: { type: 'json_object' },
-    })
-
-    // Parse the evaluation response
-    const content = evaluationResponse.choices[0]?.message?.content || '{}'
-    const evaluationResult: EvaluationResult = parse(
-      evaluationSchema,
-      JSON.parse(content),
+      {
+        output: schemaOverrideJsonSchema as JSONSchema7,
+      },
     )
 
-    evaluationGeneration.end({
-      output: evaluationResult,
+    // Parse the update response
+    const updateResult = parse(schemaOverrideSchema, updateResponse.object)
+
+    updateGeneration.end({
+      output: updateResult,
     })
 
-    if (evaluationResult.updateNeeded) {
-      // Create a generation for update step
-      const updateGeneration = createLangfuseGeneration(
-        trace,
-        'updateSchemaOverride',
-        {
-          reviewComment,
-          currentSchemaOverride: currentSchemaOverride
-            ? JSON.stringify(currentSchemaOverride, null, 2)
-            : '{}',
-          schema: JSON.stringify(schema, null, 2),
-          evaluationResults: evaluationResult.suggestedChanges,
-        },
-        {
-          model: 'o3-mini-2025-01-31',
-          tags: ['generateSchemaOverride', 'update'],
-        },
-      )
-
-      try {
-        const updateResponse = await openai.chat.completions.create({
-          model: 'o3-mini-2025-01-31',
-          messages: [
-            {
-              role: 'user',
-              content: UPDATE_TEMPLATE.replace('{reviewComment}', reviewComment)
-                .replace(
-                  '{currentSchemaOverride}',
-                  currentSchemaOverride
-                    ? JSON.stringify(currentSchemaOverride, null, 2)
-                    : '{}',
-                )
-                .replace('{schema}', JSON.stringify(schema, null, 2))
-                .replace(
-                  '{evaluationResults}',
-                  evaluationResult.suggestedChanges,
-                )
-                .replace(
-                  '{schemaOverrideJsonSchema}',
-                  JSON.stringify(schemaOverrideJsonSchema, null, 2),
-                ),
-            },
-          ],
-          temperature: 0,
-          response_format: { type: 'json_object' },
-        })
-
-        // Parse the update response
-        const updateContent =
-          updateResponse.choices[0]?.message?.content || '{}'
-        const updateResult = parse(
-          schemaOverrideSchema,
-          JSON.parse(updateContent),
-        )
-
-        updateGeneration.end({
-          output: updateResult,
-        })
-
-        // Return the result with the new structure
-        return {
-          updateNeeded: true,
-          override: updateResult,
-          reasoning: evaluationResult.reasoning,
-        }
-      } catch (error) {
-        updateGeneration.end({
-          output: {
-            error: error instanceof Error ? error.message : String(error),
-          },
-        })
-
-        throw error
-      }
-    }
-
-    return {
-      updateNeeded: false,
-      reasoning:
-        evaluationResult.reasoning ||
-        'No updates needed based on the review comments.',
-    }
+    return updateResult
   } catch (error) {
-    evaluationGeneration.end({
-      output: { error: error instanceof Error ? error.message : String(error) },
+    updateGeneration.end({
+      output: {
+        error: error instanceof Error ? error.message : String(error),
+      },
     })
 
     throw error
+  }
+}
+
+export const generateSchemaOverride = async (
+  reviewComment: string,
+  currentSchemaOverride: SchemaOverride | null,
+  runId: string,
+  schema: Schema,
+): Promise<GenerateSchemaOverrideResult> => {
+  // Create a trace ID if not provided
+  const traceId = runId || crypto.randomUUID()
+
+  // Create a trace for Langfuse
+  const trace = createLangfuseTrace('generateSchemaOverride', {
+    runId: traceId,
+  })
+
+  // Execute the evaluation step
+  const evaluationResult = await evaluateSchemaOverride(
+    trace,
+    reviewComment,
+    currentSchemaOverride,
+    schema,
+  )
+
+  // Execute the update step if changes are needed
+  if (evaluationResult.updateNeeded) {
+    const updateResult = await updateSchemaOverride(
+      trace,
+      reviewComment,
+      currentSchemaOverride,
+      schema,
+      evaluationResult,
+    )
+
+    return {
+      updateNeeded: true,
+      override: updateResult,
+      reasoning: evaluationResult.reasoning,
+    }
+  }
+
+  return {
+    updateNeeded: false,
+    reasoning:
+      evaluationResult.reasoning ||
+      'No updates needed based on the review comments.',
   }
 }
