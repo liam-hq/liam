@@ -1,6 +1,10 @@
 {
   "$schema": "https://turbo.build/schema.json",
   "tasks": {
+    "@liam-hq/storybook#build": {
+      "dependsOn": ["^build"],
+      "outputs": ["storybook-static"]
+    },
     "build": {
       "dependsOn": ["^build", "gen"],
       "outputs": ["dist", "dist-cli"],

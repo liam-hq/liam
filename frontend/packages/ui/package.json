@@ -26,6 +26,7 @@
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
     "@liam-hq/configs": "workspace:*",
+    "@storybook/react": "8.6.12",
     "@types/react": "18",
     "eslint": "9.25.1",
     "typed-css-modules": "0.9.1",

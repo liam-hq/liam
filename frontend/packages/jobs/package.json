@@ -2,7 +2,9 @@
   "name": "@liam-hq/jobs",
   "private": true,
   "version": "0.1.0",
-  "type": "module",
+  "publishConfig": {
+    "access": "restricted"
+  },
   "main": "src/index.ts",
   "dependencies": {
     "@liam-hq/db": "workspace:*",

@@ -1,0 +1,6 @@
+{
+  "buildCommand": "mkdir -p public && mkdir -p .storybook/public && pnpm build",
+  "outputDirectory": "storybook-static",
+  "framework": "storybook",
+  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
+}

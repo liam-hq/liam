@@ -24,7 +24,8 @@ export const checkSchemaChanges = async (
   )
   const filenames = files.map((file) => file.filename)
 
-  const supabase = await createClient()
+  const supabase = await createClient({ useServiceRole: true })
+
   const { data: schemaPath, error } = await supabase
     .from('schema_file_paths')
     .select('path')

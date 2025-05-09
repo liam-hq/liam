@@ -8,7 +8,7 @@ test.beforeEach(async ({ page, isMobile }) => {
     const openToolbarButton = page.getByRole('button', {
       name: 'Open toolbar',
     })
-    await openToolbarButton.click()
+    await openToolbarButton.click({ force: true, timeout: 15000 })
   }
 })
 

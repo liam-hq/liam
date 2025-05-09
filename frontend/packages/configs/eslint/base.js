@@ -28,7 +28,7 @@ export function createBaseConfig(options = {}) {
       languageOptions: {
         parser: tsParser,
         parserOptions: {
-          project: tsconfigPath,
+          projectService: tsconfigPath,
           ecmaVersion: 2022,
           sourceType: 'module',
         },

@@ -17,6 +17,7 @@ type Props = {
   tooltipSide?: ComponentProps<typeof TooltipContent>['side']
   tooltipContent: string
   size?: 'sm' | 'md'
+  variant?: 'default' | 'hoverBackground'
 } & ComponentProps<'button'>
 
 export const IconButton = forwardRef<HTMLButtonElement, Props>(
@@ -26,6 +27,7 @@ export const IconButton = forwardRef<HTMLButtonElement, Props>(
       tooltipSide = 'bottom',
       tooltipContent,
       size = 'md',
+      variant = 'default',
       children,
       ...props
     },
@@ -35,6 +37,11 @@ export const IconButton = forwardRef<HTMLButtonElement, Props>(
       .with('sm', () => styles.sm)
       .with('md', () => styles.md)
       .exhaustive()
+
+    const variantClassName = match(variant)
+      .with('default', () => '')
+      .with('hoverBackground', () => styles.hoverBackground)
+      .exhaustive()
     return (
       <TooltipProvider>
         <TooltipRoot>
@@ -42,7 +49,7 @@ export const IconButton = forwardRef<HTMLButtonElement, Props>(
             <button
               ref={ref}
               type="button"
-              className={styles.iconWrapper}
+              className={clsx(styles.iconWrapper, variantClassName)}
               {...props}
             >
               <span className={clsx(styles.icon, sizeClassName)}>{icon}</span>

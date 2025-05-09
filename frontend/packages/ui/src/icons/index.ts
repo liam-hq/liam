@@ -34,6 +34,7 @@ export {
   KeyRound,
   Library,
   Link,
+  List,
   Lock,
   Menu,
   Megaphone,

@@ -42,7 +42,7 @@ const verifySignature = (
 const getProjectInfo = async (
   installationId: number,
 ): Promise<{ projectId: string } | null> => {
-  const supabase = await createClient()
+  const supabase = await createClient({ useServiceRole: true })
 
   const { data: repository, error: repositoryError } = await supabase
     .from('github_repositories')

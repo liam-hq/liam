@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "main": "bin/index.mjs",
   "dependencies": {
-    "style-dictionary": "4.3.3"
+    "style-dictionary": "4.4.0"
   },
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
