@@ -1,16 +1,17 @@
 'use client'
 
+import type { TableGroupData } from '@/app/api/chat/route'
+import type { Schema } from '@liam-hq/db-structure'
 import { Button } from '@liam-hq/ui'
 import { MessageCircleIcon } from 'lucide-react'
 import type { FC } from 'react'
 import { useState } from 'react'
-import type { TableGroupData } from '../../../../app/api/chat/route'
 import styles from './ChatbotButton.module.css'
-import { ChatbotDialog } from './ChatbotDialog'
-import { type ERDSchema, adaptSchemaForChatbot } from './utils'
+import { ChatbotDialog } from './components/ChatbotDialog'
+import { adaptSchemaForChatbot } from './utils'
 
 interface ChatbotButtonProps {
-  schemaData: ERDSchema
+  schemaData: Schema
   tableGroups?: Record<string, TableGroupData>
 }
 

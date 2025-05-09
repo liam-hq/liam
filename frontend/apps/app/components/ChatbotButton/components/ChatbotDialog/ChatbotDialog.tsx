@@ -10,8 +10,8 @@ import {
 import type { FC } from 'react'
 import { useEffect, useRef, useState } from 'react'
 import type { SchemaData, TableGroupData } from '../../../../app/api/chat/route'
-import { ChatInput } from './ChatInput'
-import { ChatMessage, type ChatMessageProps } from './ChatMessage'
+import { ChatInput } from '../ChatInput'
+import { ChatMessage, type ChatMessageProps } from '../ChatMessage'
 import styles from './ChatbotDialog.module.css'
 
 interface ChatbotDialogProps {
