@@ -72,8 +72,8 @@ importers:
         specifier: 0.3.48
         version: 0.3.48(openai@4.97.0(ws@8.18.2)(zod@3.24.3))
       '@langchain/openai':
-        specifier: 0.5.6
-        version: 0.5.6(@langchain/core@0.3.48(openai@4.97.0(ws@8.18.2)(zod@3.24.3)))(ws@8.18.2)
+        specifier: 0.5.7
+        version: 0.5.7(@langchain/core@0.3.48(openai@4.97.0(ws@8.18.2)(zod@3.24.3)))(ws@8.18.2)
       '@lezer/highlight':
         specifier: 1.2.1
         version: 1.2.1
@@ -702,8 +702,8 @@ importers:
         specifier: 0.3.48
         version: 0.3.48(openai@4.97.0(ws@8.18.2)(zod@3.23.8))
       '@langchain/openai':
-        specifier: 0.5.6
-        version: 0.5.6(@langchain/core@0.3.48(openai@4.97.0(ws@8.18.2)(zod@3.23.8)))(ws@8.18.2)
+        specifier: 0.5.7
+        version: 0.5.7(@langchain/core@0.3.48(openai@4.97.0(ws@8.18.2)(zod@3.23.8)))(ws@8.18.2)
       '@liam-hq/db':
         specifier: workspace:*
         version: link:../db
@@ -2371,11 +2371,11 @@ packages:
     resolution: {integrity: sha512-R/G/ax4O3UrDV0JIkz6jiQSLBB68r9FswpHDgN6OPxU0R3YgAVnaiYuiNgUwHymmuUOJ6rZbndsnec73DE0iTw==}
     engines: {node: '>=18'}
 
-  '@langchain/openai@0.5.6':
-    resolution: {integrity: sha512-zN0iyJthPNmcefIBVybZwcTBgcqu/ElJFov42ZntxEncK4heOMAE9lkq9LQ5CaPU/SgrduibrM1oL57+tLUtaA==}
+  '@langchain/openai@0.5.7':
+    resolution: {integrity: sha512-2azobl6XqPJIwe1MC4G33/77sOuvWtsbv2Wa8K6qsEEmIsznOXBXrOcKrp+1PTxRKy3UkIV2JV9mQas+ewPU0Q==}
     engines: {node: '>=18'}
     peerDependencies:
-      '@langchain/core': '>=0.3.39 <0.4.0'
+      '@langchain/core': '>=0.3.48 <0.4.0'
 
   '@langchain/textsplitters@0.1.0':
     resolution: {integrity: sha512-djI4uw9rlkAb5iMhtLED+xJebDdAG935AdP4eRTB02R7OB/act55Bj9wsskhZsvuyQRpO4O1wQOp85s6T6GWmw==}
@@ -11952,7 +11952,7 @@ snapshots:
     transitivePeerDependencies:
       - openai
 
-  '@langchain/openai@0.5.6(@langchain/core@0.3.48(openai@4.97.0(ws@8.18.2)(zod@3.23.8)))(ws@8.18.2)':
+  '@langchain/openai@0.5.7(@langchain/core@0.3.48(openai@4.97.0(ws@8.18.2)(zod@3.23.8)))(ws@8.18.2)':
     dependencies:
       '@langchain/core': 0.3.48(openai@4.97.0(ws@8.18.2)(zod@3.23.8))
       js-tiktoken: 1.0.20
@@ -11963,7 +11963,7 @@ snapshots:
       - encoding
       - ws
 
-  '@langchain/openai@0.5.6(@langchain/core@0.3.48(openai@4.97.0(ws@8.18.2)(zod@3.24.3)))(ws@8.18.2)':
+  '@langchain/openai@0.5.7(@langchain/core@0.3.48(openai@4.97.0(ws@8.18.2)(zod@3.24.3)))(ws@8.18.2)':
     dependencies:
       '@langchain/core': 0.3.48(openai@4.97.0(ws@8.18.2)(zod@3.24.3))
       js-tiktoken: 1.0.20
@@ -17817,7 +17817,7 @@ snapshots:
   langchain@0.3.24(@langchain/core@0.3.48(openai@4.97.0(ws@8.18.2)(zod@3.23.8)))(cheerio@1.0.0)(handlebars@4.7.8)(openai@4.97.0(ws@8.18.2)(zod@3.23.8))(ws@8.18.2):
     dependencies:
       '@langchain/core': 0.3.48(openai@4.97.0(ws@8.18.2)(zod@3.23.8))
-      '@langchain/openai': 0.5.6(@langchain/core@0.3.48(openai@4.97.0(ws@8.18.2)(zod@3.23.8)))(ws@8.18.2)
+      '@langchain/openai': 0.5.7(@langchain/core@0.3.48(openai@4.97.0(ws@8.18.2)(zod@3.23.8)))(ws@8.18.2)
       '@langchain/textsplitters': 0.1.0(@langchain/core@0.3.48(openai@4.97.0(ws@8.18.2)(zod@3.23.8)))
       js-tiktoken: 1.0.20
       js-yaml: 4.1.0
@@ -17840,7 +17840,7 @@ snapshots:
   langchain@0.3.24(@langchain/core@0.3.48(openai@4.97.0(ws@8.18.2)(zod@3.24.3)))(cheerio@1.0.0)(handlebars@4.7.8)(openai@4.97.0(ws@8.18.2)(zod@3.24.3))(ws@8.18.2):
     dependencies:
       '@langchain/core': 0.3.48(openai@4.97.0(ws@8.18.2)(zod@3.24.3))
-      '@langchain/openai': 0.5.6(@langchain/core@0.3.48(openai@4.97.0(ws@8.18.2)(zod@3.24.3)))(ws@8.18.2)
+      '@langchain/openai': 0.5.7(@langchain/core@0.3.48(openai@4.97.0(ws@8.18.2)(zod@3.24.3)))(ws@8.18.2)
       '@langchain/textsplitters': 0.1.0(@langchain/core@0.3.48(openai@4.97.0(ws@8.18.2)(zod@3.24.3)))
       js-tiktoken: 1.0.20
       js-yaml: 4.1.0

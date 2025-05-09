@@ -10,7 +10,7 @@
     "@codemirror/state": "6.5.2",
     "@codemirror/view": "6.36.6",
     "@langchain/core": "0.3.48",
-    "@langchain/openai": "0.5.6",
+    "@langchain/openai": "0.5.7",
     "@lezer/highlight": "1.2.1",
     "@liam-hq/db": "workspace:*",
     "@liam-hq/db-structure": "workspace:*",
