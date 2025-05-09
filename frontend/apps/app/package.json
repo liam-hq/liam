@@ -9,7 +9,7 @@
     "@codemirror/lint": "6.8.5",
     "@codemirror/state": "6.5.2",
     "@codemirror/view": "6.36.6",
-    "@langchain/core": "0.3.48",
+    "@langchain/core": "0.3.49",
     "@langchain/openai": "0.5.6",
     "@lezer/highlight": "1.2.1",
     "@liam-hq/db": "workspace:*",
