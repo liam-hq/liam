@@ -1,9 +1,6 @@
-'use client'
-
 import { BuildPage } from '@/components/BuildPage'
 import type { PageProps } from '@/app/types'
 import * as v from 'valibot'
-import { use } from 'react'
 
 const paramsSchema = v.object({
   projectId: v.string(),
@@ -11,10 +8,7 @@ const paramsSchema = v.object({
 })
 
 export default function Page({ params }: PageProps) {
-  // Unwrap params with React.use() as recommended by Next.js
-  const unwrappedParams = use(params)
-  
-  const parsedParams = v.safeParse(paramsSchema, unwrappedParams)
+  const parsedParams = v.safeParse(paramsSchema, params)
   if (!parsedParams.success) throw new Error("Invalid route parameters")
 
   const { projectId, branchOrCommit } = parsedParams.output

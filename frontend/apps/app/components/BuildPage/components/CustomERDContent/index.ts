@@ -1,0 +1,1 @@
+export { CustomERDContent } from './CustomERDContent'

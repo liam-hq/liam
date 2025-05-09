@@ -1,0 +1,141 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 16px;
+  background-color: var(--color-white);
+  border-left: 1px solid var(--color-gray-300);
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.title {
+  font-size: var(--font-size-4);
+  font-weight: 600;
+  margin: 0;
+}
+
+.icon {
+  width: 16px;
+  height: 16px;
+  margin-right: 4px;
+}
+
+.versionList {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.versionItem {
+  padding: 12px;
+  border-radius: 8px;
+  background-color: var(--color-gray-100);
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.versionItem:hover {
+  background-color: var(--color-gray-200);
+}
+
+.versionItem.active {
+  background-color: var(--color-blue-100);
+  border-left: 4px solid var(--color-blue-500);
+}
+
+.versionInfo {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.versionName {
+  font-weight: 600;
+}
+
+.versionTime {
+  font-size: var(--font-size-2);
+  color: var(--color-gray-700);
+  display: flex;
+  align-items: center;
+}
+
+.timeIcon {
+  width: 12px;
+  height: 12px;
+  margin-right: 4px;
+}
+
+.versionDescription {
+  font-size: var(--font-size-2);
+  color: var(--color-gray-700);
+  margin-top: 4px;
+}
+
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal {
+  background-color: var(--color-white);
+  border-radius: 8px;
+  width: 400px;
+  max-width: 90%;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.modalHeader {
+  padding: 16px;
+  border-bottom: 1px solid var(--color-gray-300);
+}
+
+.modalTitle {
+  margin: 0;
+  font-size: var(--font-size-4);
+  font-weight: 600;
+}
+
+.dialogContent {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px;
+}
+
+.modalFooter {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 16px;
+  border-top: 1px solid var(--color-gray-300);
+}
+
+.inputGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.label {
+  font-size: var(--font-size-2);
+  font-weight: 500;
+  color: var(--color-gray-700);
+}

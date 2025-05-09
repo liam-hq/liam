@@ -1,0 +1,75 @@
+.container {
+  width: 280px;
+  padding: 12px;
+  border-radius: 8px;
+  background-color: var(--color-white);
+  border: 1px solid var(--color-gray-300);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  font-size: var(--font-size-2);
+}
+
+.handle {
+  width: 8px;
+  height: 8px;
+  background-color: var(--color-blue-500);
+  border: 1px solid var(--color-blue-700);
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.entityLabel {
+  font-weight: 600;
+  color: var(--color-blue-700);
+}
+
+.closeButton {
+  padding: 2px;
+  height: auto;
+}
+
+.closeIcon {
+  width: 14px;
+  height: 14px;
+}
+
+.content {
+  padding: 8px;
+  background-color: var(--color-blue-100);
+  border-radius: 6px;
+  margin-bottom: 8px;
+}
+
+.messageTime {
+  font-size: var(--font-size-1);
+  color: var(--color-gray-700);
+  margin-bottom: 4px;
+}
+
+.messageContent {
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.footer {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.threadButton {
+  padding: 4px 8px;
+  height: auto;
+  font-size: var(--font-size-1);
+  display: flex;
+  align-items: center;
+}
+
+.threadIcon {
+  width: 12px;
+  height: 12px;
+  margin-right: 4px;
+}
