@@ -1,10 +1,12 @@
 'use client'
+import { useSchemaStore } from '@/stores'
 import { Command } from 'cmdk'
 import { useEffect, useState } from 'react'
 import styles from './CommandPalette.module.css'
 
 export const CommandPalette = () => {
   const [open, setOpen] = useState(false)
+  const schema = useSchemaStore()
 
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
@@ -29,11 +31,17 @@ export const CommandPalette = () => {
       <Command.List>
         <Command.Empty>No results found.</Command.Empty>
 
-        <Command.Group heading="Letters">
-          <Command.Item>a</Command.Item>
-          <Command.Item>b</Command.Item>
-          <Command.Separator />
-          <Command.Item>c</Command.Item>
+        <Command.Group heading="Suggestions">
+          {Object.values(schema.tables).map((table) => (
+            <Command.Item
+              key={table.name}
+              onSelect={() => {
+                console.log(table.name)
+              }}
+            >
+              {table.name}
+            </Command.Item>
+          ))}
         </Command.Group>
       </Command.List>
     </Command.Dialog>
