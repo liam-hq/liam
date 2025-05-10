@@ -1,0 +1,26 @@
+.content[cmdk-dialog] {
+  z-index: 10000;
+  background-color: white;
+  border-radius: 6px;
+  box-shadow: var(--shadow-6);
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 638px;
+  height: 508px;
+  padding: 25px;
+  animation: contentShow 150ms cubic-bezier(0.16, 1, 0.3, 1);
+  border: 1px solid black;
+}
+
+[cmdk-overlay]:has(+ .content) {
+  z-index: 10000;
+  width: 100vw;
+  height: 100vh;
+  background-color: var(--black-a9);
+  position: fixed;
+  inset: 0;
+  animation: overlayShow 150ms cubic-bezier(0.16, 1, 0.3, 1);
+  backdrop-filter: blur(8px);
+}
