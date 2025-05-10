@@ -40,7 +40,22 @@ exports[`parse > should parse postgresql to JSON correctly 1`] = `
         },
       },
       "comment": null,
-      "constraints": {},
+      "constraints": {
+        "PRIMARY_id": {
+          "columnName": "id",
+          "name": "PRIMARY_id",
+          "type": "PRIMARY KEY",
+        },
+        "users_id_to_posts_user_id": {
+          "columnName": "user_id",
+          "deleteConstraint": "NO_ACTION",
+          "name": "users_id_to_posts_user_id",
+          "targetColumnName": "id",
+          "targetTableName": "users",
+          "type": "FOREIGN KEY",
+          "updateConstraint": "NO_ACTION",
+        },
+      },
       "indexes": {},
       "name": "posts",
     },
@@ -88,7 +103,23 @@ exports[`parse > should parse postgresql to JSON correctly 1`] = `
         },
       },
       "comment": "store our users.",
-      "constraints": {},
+      "constraints": {
+        "PRIMARY_id": {
+          "columnName": "id",
+          "name": "PRIMARY_id",
+          "type": "PRIMARY KEY",
+        },
+        "UNIQUE_email": {
+          "columnName": "email",
+          "name": "UNIQUE_email",
+          "type": "UNIQUE",
+        },
+        "UNIQUE_username": {
+          "columnName": "username",
+          "name": "UNIQUE_username",
+          "type": "UNIQUE",
+        },
+      },
       "indexes": {
         "index_users_on_id_and_email": {
           "columns": [
