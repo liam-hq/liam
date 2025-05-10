@@ -25,6 +25,7 @@
     "@sentry/nextjs": "9",
     "@trigger.dev/build": "3.3.17",
     "@trigger.dev/sdk": "3.3.17",
+    "@xyflow/react": "12.3.5",
     "cheerio": "1.0.0",
     "clsx": "2.1.1",
     "cmdk": "^1.1.1",

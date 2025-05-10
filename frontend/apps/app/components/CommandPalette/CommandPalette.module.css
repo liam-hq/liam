@@ -24,3 +24,11 @@
   animation: overlayShow 150ms cubic-bezier(0.16, 1, 0.3, 1);
   backdrop-filter: blur(8px);
 }
+
+.main {
+  display: flex;
+}
+
+.main > * {
+  width: 50%;
+}
