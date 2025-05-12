@@ -13,9 +13,9 @@
     "@biomejs/biome": "1.9.4",
     "@eslint/compat": "1.2.9",
     "@tsconfig/strictest": "2.0.5",
-    "@typescript-eslint/eslint-plugin": "8.31.1",
-    "@typescript-eslint/parser": "8.31.1",
-    "eslint": "9.25.1"
+    "@typescript-eslint/parser": "8.32.0",
+    "eslint": "9.25.1",
+    "typescript-eslint": "8.32.0"
   },
   "files": [
     "eslint",
