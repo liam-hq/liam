@@ -5,7 +5,9 @@ import * as yaml from "js-yaml"
 export interface Version {
   id: number
   timestamp: Date
+  title: string // Title for the version
   patch?: Operation[]
+  reversePatch?: Operation[] // Reverse patch for undo operation
   fullContent?: any // Full JSON content for the first version
 }
 
@@ -20,38 +22,86 @@ interface VersionState {
   saveVersion: () => void
   selectVersion: (id: number) => void
   revertToVersion: (id: number) => void
+  undoVersion: (id: number) => void
+  redoVersion: (id: number) => void
+  updateVersionTitle: (id: number, title: string) => void
   updateCurrentYaml: (yaml: string) => void
 }
 
 // Sample initial YAML
-const initialYaml = `# Welcome to the YAML Editor
-# Edit this document and save versions to see the history
-
-server:
-  host: example.com
-  port: 8080
-  
-database:
-  url: postgres://user:password@localhost:5432/db
-  pool: 10
-  
-features:
-  - authentication
-  - authorization
-  - logging
+const initialYaml = `
+---
+tables: 
+  Account: 
+    name: "Account"
+    columns: 
+      id: 
+        name: "id"
+        type: "text"
+        default: "cuid(1)"
+        notNull: "true"
+        unique: "true"
+        primary: "true"
+        comment: 
+        check: 
+      user_id: 
+        name: "user_id"
+        type: "text"
+        default: 
+        notNull: "true"
+        unique: "false"
+        primary: "false"
+        comment: 
+        check: 
+  Session: 
+    name: "Session"
+    columns: 
+      id: 
+        name: "id"
+        type: "text"
+        default: "cuid(1)"
+        notNull: "true"
+        unique: "true"
+        primary: "true"
+        comment: 
+        check: 
+      session_token: 
+        name: "session_token"
+        type: "text"
+        default: 
+        notNull: "true"
+        unique: "true"
+        primary: "false"
+        comment: 
+        check: 
+tableGroups: 
 `
 
 export const useVersionStore = create<VersionState>((set, get) => ({
-  versions: [],
+  // Initialize with Version1 by default
+  versions: [{
+    id: 1,
+    timestamp: new Date(),
+    title: "change",
+    fullContent: yaml.load(initialYaml) as Record<string, any>,
+  }],
   currentYaml: initialYaml,
-  selectedVersionId: null,
+  selectedVersionId: 1,
   hasUnsavedChanges: false,
 
   initializeStore: () => {
+    // Create Version1 by default when initializing
+    const initialVersion: Version = {
+      id: 1,
+      timestamp: new Date(),
+      title: "change",
+      fullContent: yaml.load(initialYaml) as Record<string, any>,
+    };
+    
     set({
-      versions: [],
+      versions: [initialVersion],
       currentYaml: initialYaml,
-      selectedVersionId: null,
+      selectedVersionId: 1,
       hasUnsavedChanges: false,
     })
   },
@@ -66,6 +116,7 @@ export const useVersionStore = create<VersionState>((set, get) => ({
       const newVersion: Version = {
         id: newVersionId,
         timestamp: new Date(),
+        title: "change",
         fullContent: currentJson as Record<string, any>,
       }
 
@@ -75,15 +126,18 @@ export const useVersionStore = create<VersionState>((set, get) => ({
         hasUnsavedChanges: false,
       })
     } else {
-      // Subsequent versions - store patch
+      // Subsequent versions - store patch and reverse patch
       const latestVersion = versions[0]
       const latestJson = getVersionContent(versions, latestVersion.id)
       const patch = compare(latestJson, currentJson as Record<string, any>)
+      const reversePatch = compare(currentJson as Record<string, any>, latestJson)
 
       const newVersion: Version = {
         id: newVersionId,
         timestamp: new Date(),
+        title: "change",
         patch,
+        reversePatch,
       }
 
       set({
@@ -120,12 +174,15 @@ export const useVersionStore = create<VersionState>((set, get) => ({
     const latestContent = getVersionContent(versions, latestVersion.id)
 
     const patch = compare(latestContent, content)
+    const reversePatch = compare(content, latestContent)
     const newVersionId = versions.length + 1
 
     const newVersion: Version = {
       id: newVersionId,
       timestamp: new Date(),
+      title: `undo: Version ${id}`,
       patch,
+      reversePatch,
     }
 
     set({
@@ -133,6 +190,179 @@ export const useVersionStore = create<VersionState>((set, get) => ({
       selectedVersionId: newVersionId,
       currentYaml: yaml.dump(content),
       hasUnsavedChanges: false,
+    })
+  },
+
+  undoVersion: (id: number) => {
+    const { versions } = get()
+    
+    // Find the version to undo
+    const versionIndex = versions.findIndex(v => v.id === id)
+    if (versionIndex === -1) return
+    
+    const versionToUndo = versions[versionIndex]
+    
+    // If the version doesn't have a reversePatch, we can't undo it
+    if (!versionToUndo.reversePatch) return
+    
+    // Get the latest content
+    const latestVersion = versions[0]
+    const latestContent = getVersionContent(versions, latestVersion.id)
+    
+    // Apply the reverse patch to get the undone content
+    const undoneContent = JSON.parse(JSON.stringify(latestContent))
+    versionToUndo.reversePatch.forEach(op => {
+      try {
+        // Handle different operation types
+        if (op.op === "replace") {
+          const path = op.path.split("/").filter((p) => p)
+          let current = undoneContent
+          for (let j = 0; j < path.length - 1; j++) {
+            if (current[path[j]] === undefined) {
+              current[path[j]] = {}
+            }
+            current = current[path[j]]
+          }
+          current[path[path.length - 1]] = op.value
+        } else if (op.op === "add") {
+          const path = op.path.split("/").filter((p) => p)
+          let current = undoneContent
+          for (let j = 0; j < path.length - 1; j++) {
+            if (current[path[j]] === undefined) {
+              current[path[j]] = {}
+            }
+            current = current[path[j]]
+          }
+          current[path[path.length - 1]] = op.value
+        } else if (op.op === "remove") {
+          const path = op.path.split("/").filter((p) => p)
+          let current = undoneContent
+          for (let j = 0; j < path.length - 1; j++) {
+            if (current[path[j]] === undefined) {
+              return // Path doesn't exist, nothing to remove
+            }
+            current = current[path[j]]
+          }
+          delete current[path[path.length - 1]]
+        }
+      } catch (error) {
+        console.error("Error applying reverse patch operation:", op, error)
+      }
+    })
+    
+    // Create a new version with the undone content
+    const patch = compare(latestContent, undoneContent)
+    const reversePatch = compare(undoneContent, latestContent)
+    const newVersionId = versions.length + 1
+    
+    const newVersion: Version = {
+      id: newVersionId,
+      timestamp: new Date(),
+      title: `undo: Version ${id}`,
+      patch,
+      reversePatch,
+    }
+    
+    set({
+      versions: [newVersion, ...versions],
+      selectedVersionId: newVersionId,
+      currentYaml: yaml.dump(undoneContent),
+      hasUnsavedChanges: false,
+    })
+  },
+  
+  redoVersion: (id: number) => {
+    const { versions } = get()
+    
+    // Find the version to redo
+    const versionIndex = versions.findIndex(v => v.id === id)
+    if (versionIndex === -1) return
+    
+    const versionToRedo = versions[versionIndex]
+    
+    // If the version doesn't have a patch, we can't redo it
+    if (!versionToRedo.patch) return
+    
+    // Get the latest content
+    const latestVersion = versions[0]
+    const latestContent = getVersionContent(versions, latestVersion.id)
+    
+    // Apply the forward patch to get the redone content
+    const redoneContent = JSON.parse(JSON.stringify(latestContent))
+    versionToRedo.patch.forEach(op => {
+      try {
+        // Handle different operation types
+        if (op.op === "replace") {
+          const path = op.path.split("/").filter((p) => p)
+          let current = redoneContent
+          for (let j = 0; j < path.length - 1; j++) {
+            if (current[path[j]] === undefined) {
+              current[path[j]] = {}
+            }
+            current = current[path[j]]
+          }
+          current[path[path.length - 1]] = op.value
+        } else if (op.op === "add") {
+          const path = op.path.split("/").filter((p) => p)
+          let current = redoneContent
+          for (let j = 0; j < path.length - 1; j++) {
+            if (current[path[j]] === undefined) {
+              current[path[j]] = {}
+            }
+            current = current[path[j]]
+          }
+          current[path[path.length - 1]] = op.value
+        } else if (op.op === "remove") {
+          const path = op.path.split("/").filter((p) => p)
+          let current = redoneContent
+          for (let j = 0; j < path.length - 1; j++) {
+            if (current[path[j]] === undefined) {
+              return // Path doesn't exist, nothing to remove
+            }
+            current = current[path[j]]
+          }
+          delete current[path[path.length - 1]]
+        }
+      } catch (error) {
+        console.error("Error applying forward patch operation:", op, error)
+      }
+    })
+    
+    // Create a new version with the redone content
+    const patch = compare(latestContent, redoneContent)
+    const reversePatch = compare(redoneContent, latestContent)
+    const newVersionId = versions.length + 1
+    
+    const newVersion: Version = {
+      id: newVersionId,
+      timestamp: new Date(),
+      title: `redo: Version ${id}`,
+      patch,
+      reversePatch,
+    }
+    
+    set({
+      versions: [newVersion, ...versions],
+      selectedVersionId: newVersionId,
+      currentYaml: yaml.dump(redoneContent),
+      hasUnsavedChanges: false,
+    })
+  },
+
+  updateVersionTitle: (id: number, title: string) => {
+    const { versions } = get()
+    const versionIndex = versions.findIndex(v => v.id === id)
+    if (versionIndex === -1) return
+    
+    // Create a new versions array with the updated title
+    const updatedVersions = [...versions]
+    updatedVersions[versionIndex] = {
+      ...updatedVersions[versionIndex],
+      title
+    }
+    
+    set({
+      versions: updatedVersions
     })
   },
 
@@ -151,32 +381,72 @@ function getVersionContent(versions: Version[], versionId: number): any {
   const versionIndex = versions.findIndex((v) => v.id === versionId)
   if (versionIndex === -1) return null
 
-  // If it's the first version ever, return its full content
-  if (versions[versions.length - 1].id === versionId) {
-    return versions[versions.length - 1].fullContent
+  // Get the selected version
+  const selectedVersion = versions[versionIndex]
+  
+  // If the selected version has fullContent (it's the base version), return it directly
+  if (selectedVersion.fullContent) {
+    return selectedVersion.fullContent
   }
 
-  // Start with the base version (the oldest one with full content)
-  const baseVersion = versions[versions.length - 1]
+  // Find the base version (the oldest one with full content)
+  const baseVersionIndex = versions.findIndex(v => v.fullContent !== undefined)
+  if (baseVersionIndex === -1) return null
+  
+  const baseVersion = versions[baseVersionIndex]
+  // Create a deep copy of the base content to avoid modifying the original
   const content = JSON.parse(JSON.stringify(baseVersion.fullContent))
 
-  // Apply patches in order from oldest to the requested version
-  for (let i = versions.length - 2; i >= versionIndex; i--) {
-    const version = versions[i]
+  // Sort versions by ID to ensure correct patch application order
+  const sortedVersions = [...versions].sort((a, b) => a.id - b.id)
+  
+  // Find the index of the base version and selected version in the sorted array
+  const sortedBaseIndex = sortedVersions.findIndex(v => v.id === baseVersion.id)
+  const sortedSelectedIndex = sortedVersions.findIndex(v => v.id === selectedVersion.id)
+  
+  // Apply patches in order from the base version up to the selected version
+  for (let i = sortedBaseIndex + 1; i <= sortedSelectedIndex; i++) {
+    const version = sortedVersions[i]
     if (version.patch) {
-      // Apply patch using fast-json-patch (we're using it manually here)
-      // In a real implementation, you'd use applyPatch from fast-json-patch
+      // Apply each operation in the patch
       version.patch.forEach((op) => {
-        // This is a simplified version - in a real app, use the library's applyPatch
-        if (op.op === "replace") {
-          const path = op.path.split("/").filter((p) => p)
-          let current = content
-          for (let j = 0; j < path.length - 1; j++) {
-            current = current[path[j]]
+        try {
+          // Handle different operation types
+          if (op.op === "replace") {
+            const path = op.path.split("/").filter((p) => p)
+            let current = content
+            for (let j = 0; j < path.length - 1; j++) {
+              if (current[path[j]] === undefined) {
+                current[path[j]] = {}
+              }
+              current = current[path[j]]
+            }
+            current[path[path.length - 1]] = op.value
+          } else if (op.op === "add") {
+            const path = op.path.split("/").filter((p) => p)
+            let current = content
+            for (let j = 0; j < path.length - 1; j++) {
+              if (current[path[j]] === undefined) {
+                current[path[j]] = {}
+              }
+              current = current[path[j]]
+            }
+            current[path[path.length - 1]] = op.value
+          } else if (op.op === "remove") {
+            const path = op.path.split("/").filter((p) => p)
+            let current = content
+            for (let j = 0; j < path.length - 1; j++) {
+              if (current[path[j]] === undefined) {
+                return // Path doesn't exist, nothing to remove
+              }
+              current = current[path[j]]
+            }
+            delete current[path[path.length - 1]]
           }
-          current[path[path.length - 1]] = op.value
+          // Additional operations like "move", "copy", etc. could be implemented here
+        } catch (error) {
+          console.error("Error applying patch operation:", op, error)
         }
-        // Handle other operations (add, remove, etc.) as needed
       })
     }
   }

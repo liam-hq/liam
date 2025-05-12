@@ -12,7 +12,7 @@ import * as monaco from "monaco-editor"
 import "monaco-editor/esm/vs/basic-languages/yaml/yaml.contribution"
 
 export function YamlEditor() {
-  const { currentYaml, updateCurrentYaml, saveVersion, hasUnsavedChanges } = useVersionStore()
+  const { currentYaml, updateCurrentYaml, saveVersion, hasUnsavedChanges, selectedVersionId, versions } = useVersionStore()
   const editorRef = useRef<HTMLDivElement>(null)
   const monacoEditorRef = useRef<monaco.editor.IStandaloneCodeEditor | null>(null)
   const [isEditorReady, setIsEditorReady] = useState(false)
@@ -37,6 +37,8 @@ export function YamlEditor() {
       // Listen for content changes
       monacoEditorRef.current.onDidChangeModelContent(() => {
         const value = monacoEditorRef.current?.getValue() || ""
+        // Set the flag to indicate this change came from the editor
+        isInternalChangeRef.current = true
         updateCurrentYaml(value)
       })
 
@@ -52,13 +54,21 @@ export function YamlEditor() {
     }
   }, [])
 
+  // Track whether the change came from the editor itself
+  const isInternalChangeRef = useRef(false);
+
   // Update editor content when currentYaml changes externally
   useEffect(() => {
     if (monacoEditorRef.current && isEditorReady) {
-      const currentValue = monacoEditorRef.current.getValue()
-      if (currentValue !== currentYaml) {
-        monacoEditorRef.current.setValue(currentYaml)
+      // Only update the editor if the change didn't come from the editor itself
+      if (!isInternalChangeRef.current) {
+        const currentValue = monacoEditorRef.current.getValue();
+        if (currentValue !== currentYaml) {
+          monacoEditorRef.current.setValue(currentYaml);
+        }
       }
+      // Reset the flag after processing
+      isInternalChangeRef.current = false;
     }
   }, [currentYaml, isEditorReady])
 
@@ -81,7 +91,21 @@ export function YamlEditor() {
   return (
     <div className="h-full flex flex-col">
       <div className="p-4 border-b border-gray-200 flex justify-between items-center">
-        <h2 className="text-lg font-semibold text-gray-700">YAML Editor</h2>
+        <div className="flex items-center">
+          <h2 className="text-lg font-semibold text-gray-700">YAML Editor</h2>
+          {selectedVersionId && (
+            <div className="ml-2 flex items-center">
+              <span className="text-xs bg-gray-100 text-gray-700 px-2 py-0.5 rounded-md">
+                Version {selectedVersionId}
+              </span>
+              {versions.length > 0 && selectedVersionId === versions[0].id && (
+                <span className="ml-1 text-xs bg-blue-100 text-blue-800 px-1 py-0.5 rounded">
+                  latest
+                </span>
+              )}
+            </div>
+          )}
+        </div>
         <div className="flex items-center gap-2">
           {hasUnsavedChanges && <span className="text-sm text-amber-600">Unsaved changes</span>}
           <Button onClick={handleSave} disabled={!isEditorReady}>
