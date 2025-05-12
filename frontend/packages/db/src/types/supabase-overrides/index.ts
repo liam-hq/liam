@@ -29,10 +29,12 @@ export type AppDatabaseOverrides = MergeDeep<
     GithubPullRequestsOverride &
     MigrationPullRequestMappingsOverride &
     GithubPullRequestCommentsOverride &
+    // eslint-disable-next-line @typescript-eslint/no-duplicate-type-constituents
     OverallReviewKnowledgeSuggestionMappingsOverride &
     SchemaFilePathsOverride &
     DocFilePathsOverride &
     ProjectRepositoryMappingsOverride &
     MigrationsOverride &
+    // eslint-disable-next-line @typescript-eslint/no-duplicate-type-constituents
     GithubPullRequestsOverride
 >
