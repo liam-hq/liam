@@ -7,7 +7,6 @@
     "@biomejs/biome": "1.9.4",
     "@langchain/core": "0.3.48",
     "@liam-hq/configs": "workspace:*",
-    "@liam-hq/jobs": "workspace:*",
     "dotenv": "16.5.0",
     "eslint": "9.25.1",
     "langfuse": "3.37.2",

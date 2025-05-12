@@ -4,8 +4,7 @@
   "compilerOptions": {
     "jsx": "preserve",
     "lib": ["dom", "es2019"],
-    "resolveJsonModule": true,
-    "erasableSyntaxOnly": true
+    "resolveJsonModule": true
   },
   "include": ["**/*.ts", "**/*.tsx"]
 }

@@ -11,7 +11,11 @@
     "@liam-hq/db": "workspace:*",
     "@liam-hq/db-structure": "workspace:*",
     "@liam-hq/github": "workspace:*",
+    "@libsql/client": "0.14.0",
+    "libsql": "0.4.7",
     "@mastra/core": "0.9.3",
+    "@opentelemetry/api-logs": "0.200.0",
+    "@opentelemetry/sdk-logs": "0.200.0",
     "@sentry/node": "9.14.0",
     "@trigger.dev/build": "3.3.17",
     "@trigger.dev/sdk": "3.3.17",
@@ -39,6 +43,9 @@
     "trigger.dev": "3.3.17",
     "typescript": "5.8.3",
     "vitest": "3.1.2"
+  },
+  "optionalDependencies": {
+    "@libsql/linux-x64-gnu": "0.4.7"
   },
   "scripts": {
     "deploy": "trigger deploy",

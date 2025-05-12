@@ -50,6 +50,7 @@
   "resolutions": {
     "esbuild": "0.25.3",
     "path-to-regexp": "8.2.0",
-    "undici": "7.8.0"
+    "undici": "7.8.0",
+    "zod": "3.24.1"
   }
 }
