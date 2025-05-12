@@ -34,7 +34,7 @@ export function createBaseConfig(options = {}) {
         },
       },
       rules: {
-        '@typescript-eslint/no-unsafe-member-access': 'error',
+        ...tseslint.configs?.recommendedTypeChecked?.rules || {},
       },
     },
     {
