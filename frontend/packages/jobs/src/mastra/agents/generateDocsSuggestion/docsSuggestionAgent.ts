@@ -1,14 +1,17 @@
-import * as crypto from 'node:crypto'
 import { openai } from '@ai-sdk/openai'
 import type { Schema } from '@liam-hq/db-structure'
-import { Agent } from '@mastra/core/agent'
+import type { Metric } from '@mastra/core'
+import { Agent, type ToolsInput } from '@mastra/core/agent'
+import { logger } from '@trigger.dev/sdk/v3'
+import { toJsonSchema } from '@valibot/to-json-schema'
 import type { JSONSchema7 } from 'json-schema'
 import { parse } from 'valibot'
 import {
   createLangfuseGeneration,
   createLangfuseTrace,
-} from '../../functions/langfuseHandler'
-import type { Review } from '../../types'
+} from '../../../functions/langfuseHandler'
+import type { Review } from '../../../types'
+import { mastra } from '../../index'
 import {
   type DocFileContentMap,
   type DocsSuggestion,
@@ -42,6 +45,8 @@ migrationOpsContext.md:
 `
 
 // Convert schemas to JSON format for LLM
+const evaluationJsonSchema = toJsonSchema(evaluationSchema)
+const docsSuggestionJsonSchema = toJsonSchema(docsSuggestionSchema)
 
 // Common evaluation response structure for a single file
 const fileEvaluationExample = {
@@ -292,14 +297,25 @@ const UPDATE_USER_PROMPT = `
 </text>
 `
 
+// Create the agent
+export const docsSuggestionAgent: Agent<
+  'Documentation Suggestion Agent',
+  ToolsInput,
+  Record<string, Metric>
+> = new Agent({
+  name: 'Documentation Suggestion Agent',
+  instructions: EVALUATION_SYSTEM_PROMPT,
+  model: openai('o3-mini-2025-01-31'),
+})
+
 export const generateDocsSuggestion = async (
   review: Review,
   formattedDocsContent: string,
-  predefinedRunId: string,
+  traceId: string,
   schema: Schema,
 ): Promise<DocFileContentMap> => {
-  // Create a trace ID if not provided
-  const traceId = predefinedRunId || crypto.randomUUID()
+  // Use traceId for telemetry or logging
+  logger.log(`Starting docs suggestion generation with trace ID: ${traceId}`)
 
   // Create a trace for Langfuse
   const trace = createLangfuseTrace('generateDocsSuggestion', {
@@ -338,28 +354,24 @@ export const generateDocsSuggestion = async (
 
   try {
     // First, run the evaluation to determine which files need updates
-    const agent = new Agent({
-      name: 'Documentation Suggestion Evaluation Agent',
-      instructions: EVALUATION_SYSTEM_PROMPT,
-      model: openai('o3-mini-2025-01-31'),
-    })
-
-    const evaluationResponse = await agent.generate(
-      [
+    const evaluationResponse = await mastra
+      .getAgent('docsSuggestionAgent')
+      .generate(
+        [
+          {
+            role: 'user',
+            content: EVALUATION_USER_PROMPT.replace(
+              '{reviewResult}',
+              formattedReviewResult,
+            )
+              .replace('{formattedDocsContent}', formattedDocsContent)
+              .replace('{schema}', JSON.stringify(schema, null, 2)),
+          },
+        ],
         {
-          role: 'user',
-          content: EVALUATION_USER_PROMPT.replace(
-            '{reviewResult}',
-            formattedReviewResult,
-          )
-            .replace('{formattedDocsContent}', formattedDocsContent)
-            .replace('{schema}', JSON.stringify(schema, null, 2)),
+          output: evaluationJsonSchema as JSONSchema7,
         },
-      ],
-      {
-        output: evaluationSchema as JSONSchema7,
-      },
-    )
+      )
 
     // Parse the evaluation response
     const evaluationResult: EvaluationResult = parse(
@@ -421,7 +433,7 @@ export const generateDocsSuggestion = async (
           },
         ],
         {
-          output: docsSuggestionSchema as JSONSchema7,
+          output: docsSuggestionJsonSchema as JSONSchema7,
         },
       )
 

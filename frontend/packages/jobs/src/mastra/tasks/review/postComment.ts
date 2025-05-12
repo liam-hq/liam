@@ -5,9 +5,9 @@ import {
   updatePullRequestComment,
 } from '@liam-hq/github'
 import { logger, task } from '@trigger.dev/sdk/v3'
-import { createClient } from '../../libs/supabase'
+import { createClient } from '../../../../src/libs/supabase'
 
-export type PostCommentPayload = {
+type PostCommentPayload = {
   reviewComment: string
   projectId: string
   pullRequestId: string

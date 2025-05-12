@@ -1,6 +1,6 @@
 import { v4 as uuidv4 } from 'uuid'
 import { createClient } from '../libs/supabase'
-import { generateSchemaOverride } from '../prompts/generateSchemaOverride/generateSchemaOverride'
+import { generateSchemaOverride } from '../mastra/agents/generateSchemaOverride'
 import type {
   GenerateSchemaOverridePayload,
   SchemaOverrideResult,

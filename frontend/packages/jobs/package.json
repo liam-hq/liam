@@ -11,16 +11,11 @@
     "@liam-hq/db": "workspace:*",
     "@liam-hq/db-structure": "workspace:*",
     "@liam-hq/github": "workspace:*",
-    "@libsql/client": "0.14.0",
-    "libsql": "0.4.7",
     "@mastra/core": "0.9.3",
-    "@opentelemetry/api-logs": "0.200.0",
-    "@opentelemetry/sdk-logs": "0.200.0",
     "@sentry/node": "9.14.0",
     "@trigger.dev/build": "3.3.17",
     "@trigger.dev/sdk": "3.3.17",
     "@valibot/to-json-schema": "1.0.0",
-    "@vercel/otel": "1.12.0",
     "ai": "4.3.15",
     "langfuse": "3.37.2",
     "langfuse-vercel": "3.37.2",
@@ -44,9 +39,6 @@
     "typescript": "5.8.3",
     "vitest": "3.1.2"
   },
-  "optionalDependencies": {
-    "@libsql/linux-x64-gnu": "0.4.7"
-  },
   "scripts": {
     "deploy": "trigger deploy",
     "dev": "tsc --watch",
@@ -60,5 +52,8 @@
     "postinstall": "cp ../db-structure/node_modules/@ruby/prism/src/prism.wasm prism.wasm",
     "test": "vitest --watch=false --passWithNoTests",
     "trigger:dev": "trigger dev"
+  },
+  "optionalDependencies": {
+    "@libsql/linux-x64-gnu": "0.4.7"
   }
 }

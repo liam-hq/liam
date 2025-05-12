@@ -1,11 +1,11 @@
 import { logger, task } from '@trigger.dev/sdk/v3'
-import { getInstallationIdFromRepositoryId } from '../../functions/getInstallationIdFromRepositoryId'
-import { createClient } from '../../libs/supabase'
+import { getInstallationIdFromRepositoryId } from '../../../../src/functions/getInstallationIdFromRepositoryId'
+import { createClient } from '../../../../src/libs/supabase'
+import { kindToCategory } from '../../../../src/utils/categoryUtils'
 import {
   generateDocsSuggestionTask,
   generateSchemaOverrideSuggestionTask,
 } from '../../trigger/jobs'
-import { kindToCategory } from '../../utils/categoryUtils'
 import type { ReviewResponse } from './generateReview'
 import { postCommentTask } from './postComment'
 

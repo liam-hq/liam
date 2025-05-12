@@ -1,7 +1,7 @@
 import type { SchemaOverride } from '@liam-hq/db-structure'
 import type { Tables } from '@liam-hq/db/supabase/database.types'
 import type { InferOutput } from 'valibot'
-import type { reviewSchema } from '../prompts/generateReview/reviewSchema'
+import type { reviewSchema } from '../mastra/agents/generateReview/reviewSchema'
 
 export type GenerateReviewPayload = {
   pullRequestId: string

@@ -7,3 +7,6 @@ dist
 
 # trigger.dev
 .trigger
+
+# Mastra
+.mastra

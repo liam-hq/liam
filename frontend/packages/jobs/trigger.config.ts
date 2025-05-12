@@ -115,5 +115,10 @@ export default defineConfig({
       },
     })
   },
-  dirs: ['./src/trigger', './src/tasks'],
+  dirs: [
+    './src/mastra/trigger',
+    './src/mastra/tasks/review',
+    './src/trigger',
+    './src/tasks',
+  ],
 })

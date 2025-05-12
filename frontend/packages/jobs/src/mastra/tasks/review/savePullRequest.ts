@@ -1,10 +1,14 @@
+import '@mastra/core'
 import {
   getFileContent,
   getPullRequestDetails,
   getPullRequestFiles,
 } from '@liam-hq/github'
 import { logger, task } from '@trigger.dev/sdk/v3'
-import { type SupabaseClient, createClient } from '../../libs/supabase'
+import {
+  type SupabaseClient,
+  createClient,
+} from '../../../../src/libs/supabase'
 import { generateReviewTask } from './generateReview'
 
 type SavePullRequestPayload = {

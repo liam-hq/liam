@@ -1,28 +1,14 @@
-import * as crypto from 'node:crypto'
 import { openai } from '@ai-sdk/openai'
-import type { Schema } from '@liam-hq/db-structure'
-import { Agent } from '@mastra/core/agent'
+import type { Metric } from '@mastra/core'
+import { Agent, type ToolsInput } from '@mastra/core/agent'
+import { logger } from '@trigger.dev/sdk/v3'
 import { toJsonSchema } from '@valibot/to-json-schema'
 import type { JSONSchema7 } from 'json-schema'
 import { parse } from 'valibot'
-import {
-  createLangfuseGeneration,
-  createLangfuseTrace,
-} from '../../functions/langfuseHandler'
-import type { GenerateReviewPayload } from '../../types'
+import { mastra } from '../../index'
 import { reviewSchema } from './reviewSchema'
 
-type Callbacks = Array<{
-  handleLLMStart?: (llm: unknown, prompts: string[]) => Promise<void>
-  handleLLMEnd?: (output: unknown) => Promise<void>
-  handleChainStart?: (
-    chain: unknown,
-    inputs: Record<string, unknown>,
-  ) => Promise<void>
-  handleChainEnd?: (outputs: Record<string, unknown>) => Promise<void>
-}>
-
-export const SYSTEM_PROMPT = `You are a database design expert tasked with reviewing database schema changes. Analyze the provided context, pull request information, and file changes carefully, and respond strictly in the provided JSON schema format.
+const SYSTEM_PROMPT = `You are a database design expert tasked with reviewing database schema changes. Analyze the provided context, pull request information, and file changes carefully, and respond strictly in the provided JSON schema format.
 
 When analyzing the changes, consider:
 1. The pull request description, which often contains the rationale behind changes and domain-specific information
@@ -97,7 +83,7 @@ Before finalizing your response, perform these self-checks:
 **Your output must be raw JSON only. Do not include any markdown code blocks or extraneous formatting.****
 `
 
-export const USER_PROMPT = `Pull Request Description:
+const USER_PROMPT = `Pull Request Description:
 {prDescription}
 
 Pull Request Comments:
@@ -112,42 +98,34 @@ Current Database Schema:
 File Changes:
 {fileChanges}`
 
-export const reviewJsonSchema: JSONSchema7 = toJsonSchema(reviewSchema)
+const reviewJsonSchema: JSONSchema7 = toJsonSchema(reviewSchema)
 
-export const generateReview = async (
-  docsContent: string,
-  schema: Schema,
-  fileChanges: GenerateReviewPayload['fileChanges'],
-  prDescription: string,
-  prComments: string,
-  callbacks?: Callbacks,
-  runId?: string,
-) => {
-  const traceId = runId || crypto.randomUUID()
-  const trace = createLangfuseTrace('generateReview', { runId: traceId })
+export const reviewAgent: Agent<
+  'Migration Review Agent',
+  ToolsInput,
+  Record<string, Metric>
+> = new Agent({
+  name: 'Migration Review Agent',
+  instructions: SYSTEM_PROMPT,
+  model: openai('o3-mini-2025-01-31'),
+})
 
-  const generation = createLangfuseGeneration(
-    trace,
-    'generateReview',
-    {
-      docsContent,
-      schema: JSON.stringify(schema, null, 2),
-      fileChanges,
-      prDescription,
-      prComments,
-    },
-    {
-      model: 'o3-mini-2025-01-31',
-      tags: ['generateReview'],
-    },
-  )
+export const generateReview = async () => {
+  logger.log('Generating review...')
 
   try {
-    const agent = new Agent({
-      name: 'Migration Review Agent',
-      instructions: SYSTEM_PROMPT,
-      model: openai('o3-mini-2025-01-31'),
-    })
+    // Ensure mastra is properly initialized
+    if (!mastra) {
+      throw new Error('Mastra instance is not initialized')
+    }
+
+    // Check if the agent exists
+    const agent = mastra.getAgent('reviewAgent')
+    if (!agent) {
+      throw new Error('reviewAgent not found in Mastra instance')
+    }
+
+    // Generate the review
     const response = await agent.generate(
       [
         {
@@ -160,23 +138,27 @@ export const generateReview = async (
       },
     )
 
+    logger.log('Review generated successfully')
+
     const content = response.object
     const parsedContent = parse(reviewSchema, content)
 
-    if (callbacks) {
-      for (const callback of callbacks) {
-        if (callback.handleChainEnd) {
-          await callback.handleChainEnd({ output: parsedContent })
-        }
-      }
-    }
-
     return parsedContent
   } catch (error) {
-    generation.end({
-      output: { error: error instanceof Error ? error.message : String(error) },
-    })
-
-    throw error
+    logger.error('Error generating review')
+    // Return a minimal valid review object to prevent further errors
+    return {
+      feedbacks: [
+        {
+          kind: 'Migration Safety' as const,
+          severity: 'WARNING' as const,
+          description: `Error generating review: ${error instanceof Error ? error.message : String(error)}`,
+          suggestion: 'Please try again or contact support.',
+          suggestionSnippets: [],
+        },
+      ],
+      bodyMarkdown:
+        'Error generating review. Please try again or contact support.',
+    }
   }
 }

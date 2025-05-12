@@ -1,8 +1,9 @@
 import { getFileContent } from '@liam-hq/github'
+import { logger } from '@trigger.dev/sdk/v3'
 import { v4 as uuidv4 } from 'uuid'
 import { createClient } from '../libs/supabase'
-import type { FileContent } from '../prompts/generateDocsSuggestion/docsSuggestionSchema'
-import { generateDocsSuggestion } from '../prompts/generateDocsSuggestion/generateDocsSuggestion'
+import { generateDocsSuggestion } from '../mastra/agents/generateDocsSuggestion'
+import type { FileContent } from '../mastra/agents/generateDocsSuggestion'
 import type { Review } from '../types'
 import { fetchSchemaInfoWithOverrides } from '../utils/schemaUtils'
 
@@ -65,7 +66,7 @@ export async function processGenerateDocsSuggestion(payload: {
           : '',
       }
     } catch (error) {
-      console.warn(`Could not fetch file ${filePath}: ${error}`)
+      logger.warn(`Could not fetch file ${filePath}: ${error}`)
       return {
         id: filename,
         title: filename,
