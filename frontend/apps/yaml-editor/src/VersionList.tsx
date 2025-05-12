@@ -3,10 +3,19 @@
 import { useVersionStore } from "./versionStore"
 import { Button } from "@/components/ui/button"
 import { useToast } from "@/components/ui/use-toast"
+import { useEffect, useRef } from "react"
 
 export function VersionList() {
   const { versions, selectedVersionId, selectVersion, revertToVersion } = useVersionStore()
   const { toast } = useToast()
+  const containerRef = useRef<HTMLDivElement>(null)
+
+  // Scroll to the bottom when versions change
+  useEffect(() => {
+    if (containerRef.current && versions.length > 0) {
+      containerRef.current.scrollTop = containerRef.current.scrollHeight
+    }
+  }, [versions])
 
   const handleRevert = (id: number) => {
     revertToVersion(id)
@@ -27,7 +36,7 @@ export function VersionList() {
         </p>
       </div>
 
-      <div className="flex-1 overflow-y-auto">
+      <div ref={containerRef} className="flex-1 overflow-y-auto h-80">
         {versions.length === 0 ? (
           <div className="p-4 text-center text-gray-500">
             <p>No versions saved yet.</p>
@@ -35,7 +44,7 @@ export function VersionList() {
           </div>
         ) : (
           <ul className="divide-y divide-gray-200">
-            {versions.map((version) => (
+            {[...versions].reverse().map((version) => (
               <li
                 key={version.id}
                 className={`p-4 hover:bg-gray-50 cursor-pointer transition-colors ${
@@ -47,6 +56,11 @@ export function VersionList() {
                   <div>
                     <p className="font-medium text-gray-900">Version {version.id}</p>
                     <p className="text-sm text-gray-500">{version.timestamp.toLocaleString()}</p>
+                    <pre className="mt-2 text-sm text-gray-700">
+                      {version.patch
+                        ? JSON.stringify(version.patch, null, 2)
+                        : null}
+                    </pre>
                   </div>
 
                   {selectedVersionId === version.id && version.id !== versions[0].id && (
