@@ -22,9 +22,6 @@ export const mastra: Mastra = new Mastra({
   telemetry: {
     serviceName: 'ai', // this must be set to "ai" so that the LangfuseExporter thinks it's an AI SDK trace
     enabled: true,
-    sampling: {
-      type: 'always_on',
-    },
     export: {
       type: 'custom',
       exporter: new LangfuseExporter({
@@ -32,6 +29,8 @@ export const mastra: Mastra = new Mastra({
         secretKey: process.env['LANGFUSE_SECRET_KEY'] || '',
         baseUrl:
           process.env['LANGFUSE_BASE_URL'] || 'https://cloud.langfuse.com',
+        environment: process.env['NEXT_PUBLIC_ENV_NAME'] || 'development',
+        debug: true,
       }),
     },
   },
