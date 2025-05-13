@@ -1,1 +1,1 @@
-export { reviewAgent, generateReview } from './reviewAgent'
+export { reviewAgent } from './reviewAgent'

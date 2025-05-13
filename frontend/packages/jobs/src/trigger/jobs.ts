@@ -1,16 +1,16 @@
 import { logger, task } from '@trigger.dev/sdk/v3'
-import { SCHEMA_OVERRIDE_FILE_PATH } from '../../constants'
-import { processCreateKnowledgeSuggestion } from '../../functions/processCreateKnowledgeSuggestion'
+import { SCHEMA_OVERRIDE_FILE_PATH } from '../constants'
+import { processCreateKnowledgeSuggestion } from '../functions/processCreateKnowledgeSuggestion'
 import {
   DOC_FILES,
   processGenerateDocsSuggestion,
-} from '../../functions/processGenerateDocsSuggestion'
-import { processGenerateSchemaOverride } from '../../functions/processGenerateSchemaOverride'
+} from '../functions/processGenerateDocsSuggestion'
+import { processGenerateSchemaOverride } from '../functions/processGenerateSchemaOverride'
 import type {
   GenerateSchemaOverridePayload,
   OverallReview,
   Review,
-} from '../../types'
+} from '../types'
 import { helloWorldTask } from './helloworld'
 
 export const generateDocsSuggestionTask = task({

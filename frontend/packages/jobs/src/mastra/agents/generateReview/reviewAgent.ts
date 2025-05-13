@@ -1,12 +1,6 @@
 import { openai } from '@ai-sdk/openai'
 import type { Metric } from '@mastra/core'
 import { Agent, type ToolsInput } from '@mastra/core/agent'
-import { logger } from '@trigger.dev/sdk/v3'
-import { toJsonSchema } from '@valibot/to-json-schema'
-import type { JSONSchema7 } from 'json-schema'
-import { parse } from 'valibot'
-import { mastra } from '../../index'
-import { reviewSchema } from './reviewSchema'
 
 const SYSTEM_PROMPT = `You are a database design expert tasked with reviewing database schema changes. Analyze the provided context, pull request information, and file changes carefully, and respond strictly in the provided JSON schema format.
 
@@ -83,23 +77,6 @@ Before finalizing your response, perform these self-checks:
 **Your output must be raw JSON only. Do not include any markdown code blocks or extraneous formatting.****
 `
 
-const USER_PROMPT = `Pull Request Description:
-{prDescription}
-
-Pull Request Comments:
-{prComments}
-
-Documentation Context:
-{docsContent}
-
-Current Database Schema:
-{schema}
-
-File Changes:
-{fileChanges}`
-
-const reviewJsonSchema: JSONSchema7 = toJsonSchema(reviewSchema)
-
 export const reviewAgent: Agent<
   'Migration Review Agent',
   ToolsInput,
@@ -109,56 +86,3 @@ export const reviewAgent: Agent<
   instructions: SYSTEM_PROMPT,
   model: openai('o3-mini-2025-01-31'),
 })
-
-export const generateReview = async () => {
-  logger.log('Generating review...')
-
-  try {
-    // Ensure mastra is properly initialized
-    if (!mastra) {
-      throw new Error('Mastra instance is not initialized')
-    }
-
-    // Check if the agent exists
-    const agent = mastra.getAgent('reviewAgent')
-    if (!agent) {
-      throw new Error('reviewAgent not found in Mastra instance')
-    }
-
-    // Generate the review
-    const response = await agent.generate(
-      [
-        {
-          role: 'user',
-          content: USER_PROMPT,
-        },
-      ],
-      {
-        output: reviewJsonSchema,
-      },
-    )
-
-    logger.log('Review generated successfully')
-
-    const content = response.object
-    const parsedContent = parse(reviewSchema, content)
-
-    return parsedContent
-  } catch (error) {
-    logger.error('Error generating review')
-    // Return a minimal valid review object to prevent further errors
-    return {
-      feedbacks: [
-        {
-          kind: 'Migration Safety' as const,
-          severity: 'WARNING' as const,
-          description: `Error generating review: ${error instanceof Error ? error.message : String(error)}`,
-          suggestion: 'Please try again or contact support.',
-          suggestionSnippets: [],
-        },
-      ],
-      bodyMarkdown:
-        'Error generating review. Please try again or contact support.',
-    }
-  }
-}

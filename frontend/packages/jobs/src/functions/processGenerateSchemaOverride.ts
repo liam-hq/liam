@@ -1,11 +1,11 @@
 import { v4 as uuidv4 } from 'uuid'
 import { createClient } from '../libs/supabase'
-import { generateSchemaOverride } from '../mastra/agents/generateSchemaOverride'
 import type {
   GenerateSchemaOverridePayload,
   SchemaOverrideResult,
 } from '../types'
 import { fetchSchemaInfoWithOverrides } from '../utils/schemaUtils'
+import { generateSchemaOverride } from './generateSchemaOverride'
 
 export const processGenerateSchemaOverride = async (
   payload: GenerateSchemaOverridePayload,

@@ -1,4 +1,1 @@
-export {
-  schemaOverrideAgent,
-  generateSchemaOverride,
-} from './schemaOverrideAgent'
+export { schemaOverrideAgent } from './schemaOverrideAgent'

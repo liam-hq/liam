@@ -1,9 +1,9 @@
 import { logger, task } from '@trigger.dev/sdk/v3'
 import { v4 as uuidv4 } from 'uuid'
-import { createClient } from '../../../../src/libs/supabase'
-import type { Review } from '../../../../src/types'
-import type { GenerateReviewPayload } from '../../../../src/types'
-import { generateReview } from '../../agents/generateReview'
+import { generateReview } from '../../functions/generateReview'
+import { createClient } from '../../libs/supabase'
+import type { Review } from '../../types'
+import type { GenerateReviewPayload } from '../../types'
 // We'll create saveReview.ts next, so this import will work after that
 import { saveReviewTask } from './saveReview'
 
@@ -19,7 +19,7 @@ export type ReviewResponse = {
   name: string
 }
 
-export const processGenerateReview = async (
+const processGenerateReview = async (
   payload: GenerateReviewPayload,
 ): Promise<{ review: Review; traceId: string }> => {
   const supabase = createClient()

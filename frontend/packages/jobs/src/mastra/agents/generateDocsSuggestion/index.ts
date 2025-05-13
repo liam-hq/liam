@@ -1,5 +1,4 @@
 export {
+  DOCS_STRUCTURE_DESCRIPTION,
   docsSuggestionAgent,
-  generateDocsSuggestion,
 } from './docsSuggestionAgent'
-export type { FileContent } from './docsSuggestionSchema'

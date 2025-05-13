@@ -2,10 +2,10 @@ import { getFileContent } from '@liam-hq/github'
 import { logger } from '@trigger.dev/sdk/v3'
 import { v4 as uuidv4 } from 'uuid'
 import { createClient } from '../libs/supabase'
-import { generateDocsSuggestion } from '../mastra/agents/generateDocsSuggestion'
-import type { FileContent } from '../mastra/agents/generateDocsSuggestion'
 import type { Review } from '../types'
 import { fetchSchemaInfoWithOverrides } from '../utils/schemaUtils'
+import type { FileContent } from './docsSuggestionSchema'
+import { generateDocsSuggestion } from './generateDocsSuggestion'
 
 export const DOC_FILES = [
   'schemaPatterns.md',

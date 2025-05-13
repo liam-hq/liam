@@ -1,6 +1,4 @@
 // @ts-nocheck : because of the way Mastra is initialized
-// Import additional modules from Mastra to ensure proper initialization
-import '@mastra/core'
 import { createLogger } from '@mastra/core/logger'
 import { Mastra } from '@mastra/core/mastra'
 
