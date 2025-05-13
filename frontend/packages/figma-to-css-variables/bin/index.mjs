@@ -1,6 +1,13 @@
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
+import dotenv from 'dotenv'
 import { fetchFigmaLocalVariables } from './fetchFigmaLocalVariables.mjs'
 import { runStyleDictionary } from './runStyleDictionary.mjs'
 import { transformVariablesForStyleDictionary } from './transformVariablesForStyleDictionary.mjs'
+
+// Load environment variables from package-specific .env.local file
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
+dotenv.config({ path: path.resolve(__dirname, '../.env.local') })
 
 /**
  * Main function to handle command line arguments and execute corresponding tasks.

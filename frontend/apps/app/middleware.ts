@@ -1,4 +1,4 @@
-import { migrationFlag } from '@/libs'
+import { migrationFlag } from '@/libs/flags'
 import type { NextRequest } from 'next/server'
 import { NextResponse } from 'next/server'
 

@@ -1,0 +1,93 @@
+.container {
+  width: 100%;
+  height: 100%;
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1.5rem;
+  background-color: var(--color-background-secondary);
+  border-radius: 0.75rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.headerContent {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  margin: 0;
+  color: var(--color-text-primary);
+}
+
+.columns {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  height: 100%;
+}
+
+.chatSection {
+  width: 25rem;
+  border-right: solid 1px var(--pane-border);
+}
+
+.tabsRoot {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  height: 100%;
+  min-height: 0;
+}
+
+.tabsList {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  height: 3rem;
+  padding: 0 var(--spacing-2);
+}
+
+.tabsTrigger {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 1.75rem;
+  padding: 0 var(--spacing-2);
+  border-radius: var(--border-radius-base);
+  font-size: var(--font-size-4);
+  border: solid 1px var(--pane-border);
+}
+
+.tabsTrigger[data-state='active'] {
+  background-color: var(--button-background-active);
+}
+
+.tabsTrigger:hover {
+  background-color: var(--button-background-hover);
+}
+
+.tabsContent {
+  min-height: 0;
+}
+
+.erdSection {
+  position: relative;
+  overflow: hidden;
+  height: 100%;
+}
+
+.tablesSection {
+  height: 100%;
+  overflow: auto;
+  padding: var(--spacing-2);
+}
+
+.editorSection {
+  height: 100%;
+  overflow: auto;
+}

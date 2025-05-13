@@ -1,7 +1,7 @@
 import type { PageProps } from '@/app/types'
+import { DocsDetailPage } from '@/components/DocsDetailPage'
 
 import * as v from 'valibot'
-import { DocsDetailPage } from './DocsDetailPage'
 
 const paramsSchema = v.object({
   projectId: v.string(),

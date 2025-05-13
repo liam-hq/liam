@@ -1,5 +1,5 @@
 import { createClient } from '@/libs/db/server'
-import { urlgen } from '@/utils/routes/urlgen'
+import { urlgen } from '@/libs/routes/urlgen'
 import { Button, Library, RoundBadge, TabsList, TabsTrigger } from '@liam-hq/ui'
 import Link from 'next/link'
 

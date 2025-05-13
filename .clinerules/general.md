@@ -90,6 +90,115 @@ Follow these rules when you write code:
   - If data should be fetched on the server, delegate it to a server component.
   - Use client-side fetching only when necessary, ensuring performance and UX considerations.
 
+### Directory Structure Guidelines
+
+> **Goal:** keep routing concerns (`/app`) strictly separated from UI‑logic packages (`/components`) and shareable logic (`/hooks`, `libs`).
+
+```md
+/
+├─ **app**                 # Next.js routing files only
+│  ├─ page.tsx             # thin wrapper → just `<XxxPage />`
+│  ├─ layout.tsx           # global layout, no page logic
+│  └─ api/route.ts         # Route Handlers
+├─ **components**          # UI packages (pages & reusable widgets)
+│  ├─ *XxxPage/*           # one package per screen (not reused)
+│  └─ *SomeWidget/*        # reusable across screens
+│     ├─ index.ts          # public surface (named exports only)
+│     ├─ \*.tsx            # component code
+│     ├─ hooks/            # local, page‑scoped hooks
+│     ├─ stories/          # Story files for Storybook
+│     ├─ services/         # data‑shape mappers, fetch helpers
+│     └─ actions/          # Next 13 Server Actions used by the package
+├─ **hooks**               # cross‑screen custom hooks
+├─ **libs**                # pure utils & external SDK wrappers
+│  └─ utils/               # pure, side‑effect‑free helpers
+```
+
+#### Mandatory rules
+
+1. **Do NOT write page logic in `app/**/page.tsx`.**
+
+   Render the corresponding `components/XXXPage` instead.
+
+   ```tsx
+   // ❌ Anti‑pattern
+   export default function Page() { ...page implementation... }
+
+   // ✅ Required
+   import { TopPage } from "@/components/TopPage";
+   export default function Page() {
+     return <TopPage />;
+   }
+   ```
+
+2. **Choose the target directory by scope:**
+
+| If the code …                          | Place it in …                   |
+| -------------------------------------- | ------------------------------- |
+| Is the main UI for a single route      | `components/XXXPage`            |
+| Is a reusable widget across >1 route   | `components/<WidgetName>`       |
+| Is a custom hook reused across screens | `hooks/`                        |
+| Maps / fetches data for one component  | `components/**/services/`       |
+| Calls Supabase / external SDK globally | `libs/` (add `libs/<service>/`) |
+| Is a pure helper (no side effects)     | `libs/utils/`                   |
+
+3. **`params` / `searchParams` parsing responsibility**
+
+   - `app/**/page.tsx` **MUST** parse and validate all `params` and `searchParams` coming from Next.js App Router.
+   - Use **valibot** (or an equivalent runtime‑safe schema) to coerce‑and‑validate values before passing them to `<XxxPage />`.
+   - Pass only the *typed, cleaned* values as props; any additional data fetching or transformation still belongs inside `components/XXXPage`.
+   - If no parameters exist, the wrapper should simply render the page component as before.
+
+   ```tsx
+   // app/projects/[projectId]/page.tsx
+   import type { PageProps } from '@/app/types'
+   import * as v from 'valibot'
+   import { ProjectPage } from '@/components/ProjectPage'
+
+   const paramsSchema = v.object({
+     projectId: v.string(),          // dynamic route param: /projects/{projectId}
+   })
+
+   const searchSchema = v.object({
+    tab: v.string().optional(),     // optional query param: ?tab=settings
+   })
+
+   export default function Page({ params, searchParams }: PageProps) {
+     const parsedParams = v.safeParse(paramsSchema, params)
+     if (!parsedParams.success) throw new Error("Invalid route parameters")
+
+     const { projectId } = parsedParams.output
+
+      // Validate search parameters (optional)
+      const parsedQuery = v.safeParse(searchSchema, searchParams);
+      const tab = parsedQuery.success ? parsedQuery.output.tab : undefined;
+
+     return <ProjectPage projectId={projectId} tab={tab} />
+   }
+
+4. **Export surface**
+   - Every package under `components/*` **must** expose only its public API via `index.ts`.
+   - Internal files (`hooks`, `services`, etc.) stay **private**—do not export upward.
+
+5. **Dependency direction (enforced by eslint‑plugin‑boundaries)**
+
+    ```txt
+    app → components → hooks → libs(utils)
+    ```
+
+   Reverse imports are blocked.
+
+6. **Server Actions**
+
+   - Page‑specific actions live beside the page in `components/XXXPage/actions`.
+   - Cross‑page actions go to `libs/actions` and import database types from `@liam-hq/db`.
+
+7. **Typed‑CSS‑Modules** paths
+
+   - Keep style files inside the same package; the generator watches `components/**/*.{module.css}`.
+
+Add these rules below the existing Code Implementation Guidelines so that AI/teammates have an explicit, single source of truth for “where to put the file”.
+
 ### Supabase Error Handling Guidelines
 
 - Avoid wrapping standard Supabase.js calls in try-catch blocks unnecessarily:

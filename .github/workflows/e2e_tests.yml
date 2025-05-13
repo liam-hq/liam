@@ -4,13 +4,16 @@ on:
   deployment_status:
 
 jobs:
-  e2e-tests:
+  _e2e-tests:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     strategy:
       matrix:
         browser: [chromium, "Mobile Safari"]
       fail-fast: false
+    permissions:
+      contents: read
+      statuses: write
     defaults:
       run:
         working-directory: "frontend/packages/e2e"
@@ -40,7 +43,7 @@ jobs:
               if (environment_val.include?("Production") && target_url.include?("liam-app-git-main"))
                 "should_run=true"
               # Preview deployment
-              elsif environment_val.include?("Preview") && !target_url.include?("liam-erd-sample") && !target_url.include?("liam-docs")
+              elsif environment_val.include?("Preview") && !target_url.include?("liam-erd-sample") && !target_url.include?("liam-docs") && !target_url.include?("liam-storybook")
                 "should_run=true"
               else
                 "should_run=false"
@@ -94,6 +97,20 @@ jobs:
           name: test-results-${{ matrix.browser }}
           path: frontend/packages/e2e/test-results/
           retention-days: 30
+
+      - name: Post E2E status manually (with gh)
+        if: steps.check.outputs.should_run == 'true' && always()
+        run: |
+          STATE="${{ job.status }}"
+          CONTEXT="E2E Tests / e2e-tests (${{ matrix.browser }})"
+          gh api repos/${{ github.repository }}/statuses/${{ github.sha }} \
+            --method POST \
+            --field state="${STATE}" \
+            --field context="${CONTEXT}" \
+            --field description="E2E test result for ${{ matrix.browser }}: (${STATE})" \
+            --field target_url="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Slack Notification on Failure
         if: ${{ steps.check.outputs.should_run == 'true' && env.ENVIRONMENT == 'Production – liam-app' && failure() }}

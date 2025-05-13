@@ -1,6 +1,6 @@
 import type { PageProps } from '@/app/types'
-import { SchemaPage } from '@/features/schemas/pages/SchemaPage'
-import { branchOrCommitSchema } from '@/utils/routes'
+import { SchemaPage } from '@/components/SchemaPage'
+import { branchOrCommitSchema } from '@/libs/routes'
 
 import * as v from 'valibot'
 

@@ -1,6 +1,6 @@
 /**
  * Do not edit directly, this file was auto-generated.
- * Generated on Thu, 17 Oct 2024 04:57:00 GMT
+ * Generated on Fri, 09 May 2025 07:06:12 GMT
  */
 
 :root {
@@ -17,6 +17,7 @@
   --font-size-14: 32px;
   --font-size-16: 40px;
   --font-size-18: 48px;
+  --font-size-5half: 15px;
   --text-weight-en-light: Light;
   --text-weight-en-regular: Regular;
   --text-weight-en-medium: Medium;
@@ -27,4 +28,5 @@
   --main-font: Inter;
   --message-font: Montserrat;
   --main-font-ja: Hiragino Sans;
+  --code-font: IBM Plex Mono;
 }

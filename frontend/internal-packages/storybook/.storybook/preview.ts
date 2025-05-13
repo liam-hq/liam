@@ -23,7 +23,9 @@ const preview: Preview = {
         { name: 'dark', value: '#333333' },
       ],
     },
+    layout: 'centered',
   },
+  tags: ['autodocs'],
 }
 
 export default preview

@@ -1,7 +1,7 @@
 {
   "name": "@liam-hq/db-structure",
   "license": "Apache-2.0",
-  "version": "0.0.19",
+  "version": "0.0.20",
   "type": "module",
   "publishConfig": {
     "access": "public"
@@ -23,7 +23,7 @@
     "@liam-hq/configs": "workspace:*",
     "@pgsql/types": "15.0.2",
     "@prisma/generator-helper": "6.6.0",
-    "@types/node": "22.15.2",
+    "@types/node": "22.15.3",
     "eslint": "9.25.1",
     "json-refs": "3.0.15",
     "json-schema-to-zod": "2.6.1",

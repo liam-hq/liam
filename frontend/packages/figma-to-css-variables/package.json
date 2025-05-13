@@ -4,6 +4,7 @@
   "version": "0.0.0",
   "main": "bin/index.mjs",
   "dependencies": {
+    "dotenv": "16.5.0",
     "style-dictionary": "4.4.0"
   },
   "devDependencies": {
@@ -15,6 +16,7 @@
     "fmt:biome": "biome check --write --unsafe .",
     "lint": "concurrently \"pnpm:lint:*\"",
     "lint:biome": "biome check .",
-    "sync": "node bin/index.mjs"
+    "sync": "node bin/index.mjs",
+    "sync:ui": "node bin/index.mjs --output '../../packages/ui/src/styles' --filter-modes 'Dark,Mode 1'"
   }
 }

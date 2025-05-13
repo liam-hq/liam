@@ -1,7 +1,7 @@
 'use client'
 
+import { urlgen } from '@/libs/routes'
 import { LiamLogoMark, LiamMigrationLogo } from '@/logos'
-import { urlgen } from '@/utils/routes'
 import { LayoutGrid } from '@liam-hq/ui/src/icons'
 import clsx from 'clsx'
 import { type FC, useCallback, useEffect, useRef, useState } from 'react'

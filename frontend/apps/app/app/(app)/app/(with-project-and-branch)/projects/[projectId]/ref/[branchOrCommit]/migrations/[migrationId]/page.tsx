@@ -1,6 +1,6 @@
 import type { PageProps } from '@/app/types'
-import { MigrationDetailPage } from '@/features/migrations/pages/MigrationDetailPage'
-import { branchOrCommitSchema } from '@/utils/routes'
+import { MigrationDetailPage } from '@/components/MigrationDetailPage'
+import { branchOrCommitSchema } from '@/libs/routes'
 
 import * as v from 'valibot'
 

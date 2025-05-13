@@ -25,8 +25,43 @@ If no specific argument is provided, the script defaults to running all steps in
 
 ## Usage
 
-To run the script, use the following command:
+### Setting up environment variables
+
+To set up the required environment variables:
+
+1. Create a `.env.local` file in the root of this package based on the `.env.local.example` template:
 
 ```sh
-FIGMA_FILE_KEY=FnK... FIGMA_ACCESS_TOKEN=figd_xxx pnpm --filter @liam-hq/figma-to-css-variables sync --output '../../apps/service-site/src/styles' --filter-modes 'Dark,Mode 1'
+cp .env.local.example .env.local
 ```
+
+2. Edit the `.env.local` file and replace the placeholder values with your actual Figma API credentials:
+
+```
+FIGMA_FILE_KEY=your_figma_file_key
+FIGMA_ACCESS_TOKEN=your_figma_access_token
+```
+
+Note: The script will only check for environment variables in the package-specific `.env.local` file.
+
+---
+
+The Figma file key can be found in the URL of your Figma file: `https://www.figma.com/file/YOUR_FILE_KEY/...`
+
+To get a Figma access token, go to Figma > Account Settings > Personal Access Tokens > Create a new personal access token.
+
+### Running the script
+
+To run the script with custom options:
+
+```sh
+pnpm --filter @liam-hq/figma-to-css-variables sync --output '../../apps/service-site/src/styles' --filter-modes 'Dark,Mode 1'
+```
+
+To update the UI package CSS variables (recommended):
+
+```sh
+pnpm --filter @liam-hq/figma-to-css-variables sync:ui
+```
+
+This will update the CSS variables in `frontend/packages/ui/src/styles` with the modes 'Dark' and 'Mode 1'.

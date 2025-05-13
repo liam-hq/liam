@@ -5,7 +5,7 @@
   "main": "src/index.ts",
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
-    "@langchain/core": "0.3.48",
+    "@langchain/core": "0.3.49",
     "@liam-hq/configs": "workspace:*",
     "dotenv": "16.5.0",
     "eslint": "9.25.1",

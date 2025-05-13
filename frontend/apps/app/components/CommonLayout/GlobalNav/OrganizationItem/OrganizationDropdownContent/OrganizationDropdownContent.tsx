@@ -7,7 +7,7 @@ import {
 } from '@/components'
 import { setOrganizationIdCookie } from '@/features/organizations/services/setOrganizationIdCookie'
 import { Plus } from '@/icons'
-import { urlgen } from '@/utils/routes'
+import { urlgen } from '@/libs/routes'
 import { useRouter } from 'next/navigation'
 import { type FC, useCallback } from 'react'
 import type { Organization } from '../../../services/getOrganization'

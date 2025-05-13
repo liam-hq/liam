@@ -1,4 +1,4 @@
-import { urlgen } from '@/utils/routes/urlgen'
+import { urlgen } from '@/libs/routes/urlgen'
 import { TabsList, TabsTrigger } from '@liam-hq/ui'
 import Link from 'next/link'
 import type { FC } from 'react'

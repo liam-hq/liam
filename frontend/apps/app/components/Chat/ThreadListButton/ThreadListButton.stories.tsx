@@ -5,14 +5,10 @@ import { ThreadListButton } from './ThreadListButton'
 // Define the component props type
 type ThreadListButtonProps = ComponentProps<typeof ThreadListButton>
 
-const meta: Meta<typeof ThreadListButton> = {
+const meta = {
   title: 'Components/Chat/ThreadListButton',
   component: ThreadListButton,
-  parameters: {
-    layout: 'centered',
-  },
-  tags: ['autodocs'],
-}
+} satisfies Meta<typeof ThreadListButton>
 
 export default meta
 type Story = StoryObj<ThreadListButtonProps>

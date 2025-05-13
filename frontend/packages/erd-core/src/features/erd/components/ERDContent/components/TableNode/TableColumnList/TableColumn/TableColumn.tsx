@@ -4,6 +4,7 @@ import type {
 } from '@liam-hq/db-structure'
 import { DiamondFillIcon, DiamondIcon, KeyRound, Link } from '@liam-hq/ui'
 import { Handle, Position } from '@xyflow/react'
+import clsx from 'clsx'
 import type { FC } from 'react'
 import styles from './TableColumn.module.css'
 
@@ -12,6 +13,7 @@ type TableColumnProps = {
   handleId: string
   isSource: boolean
   targetCardinality?: CardinalityType | undefined
+  isHighlightedTable?: boolean
 }
 
 export const TableColumn: FC<TableColumnProps> = ({
@@ -19,9 +21,16 @@ export const TableColumn: FC<TableColumnProps> = ({
   handleId,
   isSource,
   targetCardinality,
+  isHighlightedTable,
 }) => {
   return (
-    <li key={column.name} className={styles.columnWrapper}>
+    <li
+      key={column.name}
+      className={clsx(styles.columnWrapper, {
+        [styles.highlightRelatedColumn]:
+          isHighlightedTable && (isSource || !!targetCardinality),
+      })}
+    >
       {column.primary && (
         <KeyRound
           width={16}

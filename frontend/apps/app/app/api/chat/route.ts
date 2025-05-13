@@ -1,4 +1,4 @@
-import { langfuseHandler } from '@/lib/langfuse/langfuseHandler'
+import { langfuseHandler } from '@/libs/langfuse/langfuseHandler'
 import {} from '@langchain/core/messages'
 import { ChatPromptTemplate } from '@langchain/core/prompts'
 import { ChatOpenAI } from '@langchain/openai'

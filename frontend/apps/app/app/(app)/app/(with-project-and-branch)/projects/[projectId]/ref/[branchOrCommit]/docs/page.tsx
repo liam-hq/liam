@@ -1,8 +1,8 @@
 import type { PageProps } from '@/app/types'
-import { branchOrCommitSchema } from '@/utils/routes'
+import { DocsListPage } from '@/components/DocsListPage'
+import { branchOrCommitSchema } from '@/libs/routes'
 
 import * as v from 'valibot'
-import { DocsListPage } from './DocsListPage'
 
 const paramsSchema = v.object({
   projectId: v.string(),

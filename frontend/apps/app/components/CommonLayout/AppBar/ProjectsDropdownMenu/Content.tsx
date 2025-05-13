@@ -9,7 +9,7 @@ import {
   DropdownMenuSeparator,
 } from '@/components'
 import { Plus } from '@/icons'
-import { urlgen } from '@/utils/routes'
+import { urlgen } from '@/libs/routes'
 import { useRouter } from 'next/navigation'
 import { type FC, useCallback } from 'react'
 import styles from './ProjectsDropdownMenu.module.css'

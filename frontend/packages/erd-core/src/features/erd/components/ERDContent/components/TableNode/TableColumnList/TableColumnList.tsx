@@ -33,6 +33,7 @@ export const TableColumnList: FC<TableColumnListProps> = ({ data, filter }) => {
         }
         const handleId = columnHandleId(data.table.name, column.name)
         const isSource = data.sourceColumnName === column.name
+        const targetColumnCardinalities = data.targetColumnCardinalities
 
         return (
           <TableColumn
@@ -40,7 +41,8 @@ export const TableColumnList: FC<TableColumnListProps> = ({ data, filter }) => {
             column={column}
             handleId={handleId}
             isSource={isSource}
-            targetCardinality={data.targetColumnCardinalities?.[column.name]}
+            targetCardinality={targetColumnCardinalities?.[column.name]}
+            isHighlightedTable={data.isHighlighted || data.isActiveHighlighted}
           />
         )
       })}

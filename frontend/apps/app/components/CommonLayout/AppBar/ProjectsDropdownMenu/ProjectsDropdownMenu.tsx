@@ -1,6 +1,6 @@
 import { DropdownMenuRoot, DropdownMenuTrigger } from '@/components'
+import { ProjectIcon } from '@/components/ProjectsPage/components/ProjectsListView/components/ProjectItem/ProjectIcon'
 import { getOrganizationId } from '@/features/organizations/services/getOrganizationId'
-import { ProjectIcon } from '@/features/projects/components/ProjectItem/ProjectIcon'
 import { ChevronsUpDown } from '@/icons'
 import type { FC } from 'react'
 import { Content } from './Content'

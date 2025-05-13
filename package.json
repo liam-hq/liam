@@ -6,12 +6,12 @@
     "@changesets/cli": "2.29.2",
     "@changesets/get-github-info": "0.6.0",
     "@changesets/types": "6.1.0",
-    "@turbo/gen": "2.5.1",
-    "@types/node": "22.15.2",
+    "@turbo/gen": "2.5.3",
+    "@types/node": "22.15.3",
     "concurrently": "9.1.2",
     "knip": "5.50.5",
-    "syncpack": "13.0.3",
-    "turbo": "2.5.1",
+    "syncpack": "13.0.4",
+    "turbo": "2.5.3",
     "typescript": "5.8.3",
     "vercel": "41.6.2"
   },
@@ -21,6 +21,7 @@
     "deploy:jobs": "turbo deploy --filter=@liam-hq/jobs",
     "dev": "turbo dev",
     "fmt": "concurrently \"pnpm:fmt:*\"",
+    "fmt:knip": "knip --fix",
     "fmt:syncpack-fix": "syncpack fix-mismatches",
     "fmt:syncpack-format": "syncpack format",
     "fmt:turbo": "turbo fmt",
@@ -38,7 +39,7 @@
     "vercel:env-pull": "vercel env pull .env",
     "vercel:link": "vercel link"
   },
-  "packageManager": "pnpm@10.8.1+sha512.c50088ba998c67b8ca8c99df8a5e02fd2ae2e2b29aaf238feaa9e124248d3f48f9fb6db2424949ff901cffbb5e0f0cc1ad6aedb602cd29450751d11c35023677",
+  "packageManager": "pnpm@10.10.0+sha512.d615db246fe70f25dcfea6d8d73dee782ce23e2245e3c4f6f888249fb568149318637dca73c2c5c8ef2a4ca0d5657fb9567188bfab47f566d1ee6ce987815c39",
   "pnpm": {
     "onlyBuiltDependencies": [
       "supabase"
