@@ -935,6 +935,73 @@ export type Database = {
           },
         ]
       }
+      schema_versions: {
+        Row: {
+          created_at: string
+          id: string
+          number: number
+          patch: Json | null
+          reverse_patch: Json | null
+          schema_id: string
+          title: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          number: number
+          patch?: Json | null
+          reverse_patch?: Json | null
+          schema_id: string
+          title: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          number?: number
+          patch?: Json | null
+          reverse_patch?: Json | null
+          schema_id?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'schema_versions_schema_id_fkey'
+            columns: ['schema_id']
+            isOneToOne: false
+            referencedRelation: 'schemas'
+            referencedColumns: ['id']
+          },
+        ]
+      }
+      schemas: {
+        Row: {
+          created_at: string
+          id: string
+          organization_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          organization_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          organization_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'schemas_organization_id_fkey'
+            columns: ['organization_id']
+            isOneToOne: false
+            referencedRelation: 'organizations'
+            referencedColumns: ['id']
+          },
+        ]
+      }
       users: {
         Row: {
           email: string

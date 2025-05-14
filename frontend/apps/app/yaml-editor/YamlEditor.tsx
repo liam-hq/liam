@@ -4,7 +4,11 @@ import { useToast } from '@/components/ui/use-toast'
 import { Loader2 } from 'lucide-react'
 import dynamic from 'next/dynamic'
 import { useEffect, useState } from 'react'
-import { useVersionStore } from './versionStore'
+// Import using a different syntax
+import * as schemaVersionStoreModule from './schemaVersionStore'
+
+// Use the imported hook
+const { useSchemaVersionStore } = schemaVersionStoreModule
 
 // Fallback textarea component while Monaco loads or for SSR
 function TextareaEditor({
@@ -37,15 +41,23 @@ const MonacoEditor = dynamic(() => import('./MonacoEditorWrapper'), {
   ),
 })
 
-export function YamlEditor() {
+interface YamlEditorProps {
+  isLoading?: boolean
+}
+
+export function YamlEditor({ isLoading = false }: YamlEditorProps) {
+  // Try to use schema version store first, fall back to regular version store
+  const schemaStore = useSchemaVersionStore()
+  
   const {
     currentYaml,
     updateCurrentYaml,
     saveVersion,
     hasUnsavedChanges,
-    selectedVersionId,
+    selectedVersionNumber: selectedVersionId,
     versions,
-  } = useVersionStore()
+  } = schemaStore
+  
   const [isClient, setIsClient] = useState(false)
   const { toast } = useToast()
 
@@ -54,9 +66,9 @@ export function YamlEditor() {
     setIsClient(true)
   }, [])
 
-  const handleSave = () => {
+  const handleSave = async () => {
     try {
-      saveVersion()
+      await saveVersion()
       toast({
         title: 'Version Saved',
         description: 'Your changes have been saved as a new version',
@@ -80,7 +92,7 @@ export function YamlEditor() {
           {selectedVersionId && (
             <div className="ml-2 flex items-center">
               <span className="version-badge">Version {selectedVersionId}</span>
-              {versions.length > 0 && selectedVersionId === versions[0].id && (
+              {versions.length > 0 && selectedVersionId === versions[0].number && (
                 <span className="latest-badge">latest</span>
               )}
             </div>
@@ -92,8 +104,8 @@ export function YamlEditor() {
               Unsaved changes
             </span>
           )}
-          <button onClick={handleSave} disabled={!isClient}>
-            {!isClient ? (
+          <button onClick={handleSave} disabled={!isClient || isLoading}>
+            {!isClient || isLoading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 Loading...
@@ -106,7 +118,12 @@ export function YamlEditor() {
       </div>
 
       <div className="flex-1 overflow-hidden yaml-editor-scroll">
-        {isClient ? (
+        {isLoading ? (
+          <div className="h-full flex items-center justify-center">
+            <Loader2 className="h-8 w-8 animate-spin" style={{ color: '#858585' }} />
+            <span className="ml-2">Loading schema data...</span>
+          </div>
+        ) : isClient ? (
           <MonacoEditor value={currentYaml} onChange={updateCurrentYaml} />
         ) : (
           <TextareaEditor value={currentYaml} onChange={updateCurrentYaml} />

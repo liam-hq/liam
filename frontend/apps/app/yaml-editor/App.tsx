@@ -6,16 +6,12 @@ import { useEffect } from 'react'
 import { VersionList } from './VersionList'
 import { YamlEditor } from './YamlEditor'
 import styles from './YamlEditor.module.css'
-import { useVersionStore } from './versionStore'
+import { useSchemaVersionStore } from './schemaVersionStore'
 
 export default function App() {
-  const { initializeStore } = useVersionStore()
+  const { initializeStore } = useSchemaVersionStore()
   const { theme } = useTheme()
 
-  useEffect(() => {
-    // Initialize with a sample YAML document
-    initializeStore()
-  }, [initializeStore])
 
   return (
     <div className={styles.containerInContent} data-theme={theme}>

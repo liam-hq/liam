@@ -942,6 +942,31 @@ CREATE TABLE IF NOT EXISTS "public"."schema_file_paths" (
 ALTER TABLE "public"."schema_file_paths" OWNER TO "postgres";
 
 
+CREATE TABLE IF NOT EXISTS "public"."schema_versions" (
+    "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
+    "schema_id" "uuid" NOT NULL,
+    "number" integer NOT NULL,
+    "created_at" timestamp with time zone DEFAULT "now"() NOT NULL,
+    "title" "text" NOT NULL,
+    "patch" "jsonb",
+    "reverse_patch" "jsonb"
+);
+
+
+ALTER TABLE "public"."schema_versions" OWNER TO "postgres";
+
+
+CREATE TABLE IF NOT EXISTS "public"."schemas" (
+    "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
+    "created_at" timestamp with time zone DEFAULT "now"() NOT NULL,
+    "updated_at" timestamp with time zone DEFAULT "now"() NOT NULL,
+    "organization_id" "uuid" NOT NULL
+);
+
+
+ALTER TABLE "public"."schemas" OWNER TO "postgres";
+
+
 CREATE TABLE IF NOT EXISTS "public"."users" (
     "id" "uuid" NOT NULL,
     "name" "text" NOT NULL,
@@ -1077,6 +1102,16 @@ ALTER TABLE ONLY "public"."review_suggestion_snippets"
 
 
 
+ALTER TABLE ONLY "public"."schema_versions"
+    ADD CONSTRAINT "schema_versions_pkey" PRIMARY KEY ("id");
+
+
+
+ALTER TABLE ONLY "public"."schemas"
+    ADD CONSTRAINT "schemas_pkey" PRIMARY KEY ("id");
+
+
+
 ALTER TABLE ONLY "public"."users"
     ADD CONSTRAINT "user_email_key" UNIQUE ("email");
 
@@ -1140,6 +1175,18 @@ CREATE UNIQUE INDEX "schema_file_path_path_project_id_key" ON "public"."schema_f
 
 
 CREATE UNIQUE INDEX "schema_file_path_project_id_key" ON "public"."schema_file_paths" USING "btree" ("project_id");
+
+
+
+CREATE INDEX "schema_versions_number_idx" ON "public"."schema_versions" USING "btree" ("number");
+
+
+
+CREATE INDEX "schema_versions_schema_id_idx" ON "public"."schema_versions" USING "btree" ("schema_id");
+
+
+
+CREATE INDEX "schemas_organization_id_idx" ON "public"."schemas" USING "btree" ("organization_id");
 
 
 
@@ -1418,6 +1465,78 @@ ALTER TABLE ONLY "public"."schema_file_paths"
 
 ALTER TABLE ONLY "public"."schema_file_paths"
     ADD CONSTRAINT "schema_file_paths_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "public"."organizations"("id") ON UPDATE CASCADE ON DELETE RESTRICT;
+
+
+
+ALTER TABLE ONLY "public"."schema_versions"
+    ADD CONSTRAINT "schema_versions_schema_id_fkey" FOREIGN KEY ("schema_id") REFERENCES "public"."schemas"("id") ON DELETE CASCADE;
+
+
+
+ALTER TABLE ONLY "public"."schemas"
+    ADD CONSTRAINT "schemas_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "public"."organizations"("id") ON DELETE CASCADE;
+
+
+
+CREATE POLICY "Users can delete schema versions in their organizations" ON "public"."schema_versions" FOR DELETE USING (("schema_id" IN ( SELECT "schemas"."id"
+   FROM "public"."schemas"
+  WHERE ("schemas"."organization_id" IN ( SELECT "organization_members"."organization_id"
+           FROM "public"."organization_members"
+          WHERE ("organization_members"."user_id" = "auth"."uid"()))))));
+
+
+
+CREATE POLICY "Users can delete schemas in their organizations" ON "public"."schemas" FOR DELETE USING (("organization_id" IN ( SELECT "organization_members"."organization_id"
+   FROM "public"."organization_members"
+  WHERE ("organization_members"."user_id" = "auth"."uid"()))));
+
+
+
+CREATE POLICY "Users can insert schema versions in their organizations" ON "public"."schema_versions" FOR INSERT WITH CHECK (("schema_id" IN ( SELECT "schemas"."id"
+   FROM "public"."schemas"
+  WHERE ("schemas"."organization_id" IN ( SELECT "organization_members"."organization_id"
+           FROM "public"."organization_members"
+          WHERE ("organization_members"."user_id" = "auth"."uid"()))))));
+
+
+
+CREATE POLICY "Users can insert schemas in their organizations" ON "public"."schemas" FOR INSERT WITH CHECK (("organization_id" IN ( SELECT "organization_members"."organization_id"
+   FROM "public"."organization_members"
+  WHERE ("organization_members"."user_id" = "auth"."uid"()))));
+
+
+
+CREATE POLICY "Users can update schema versions in their organizations" ON "public"."schema_versions" FOR UPDATE USING (("schema_id" IN ( SELECT "schemas"."id"
+   FROM "public"."schemas"
+  WHERE ("schemas"."organization_id" IN ( SELECT "organization_members"."organization_id"
+           FROM "public"."organization_members"
+          WHERE ("organization_members"."user_id" = "auth"."uid"())))))) WITH CHECK (("schema_id" IN ( SELECT "schemas"."id"
+   FROM "public"."schemas"
+  WHERE ("schemas"."organization_id" IN ( SELECT "organization_members"."organization_id"
+           FROM "public"."organization_members"
+          WHERE ("organization_members"."user_id" = "auth"."uid"()))))));
+
+
+
+CREATE POLICY "Users can update schemas in their organizations" ON "public"."schemas" FOR UPDATE USING (("organization_id" IN ( SELECT "organization_members"."organization_id"
+   FROM "public"."organization_members"
+  WHERE ("organization_members"."user_id" = "auth"."uid"())))) WITH CHECK (("organization_id" IN ( SELECT "organization_members"."organization_id"
+   FROM "public"."organization_members"
+  WHERE ("organization_members"."user_id" = "auth"."uid"()))));
+
+
+
+CREATE POLICY "Users can view schema versions in their organizations" ON "public"."schema_versions" FOR SELECT USING (("schema_id" IN ( SELECT "schemas"."id"
+   FROM "public"."schemas"
+  WHERE ("schemas"."organization_id" IN ( SELECT "organization_members"."organization_id"
+           FROM "public"."organization_members"
+          WHERE ("organization_members"."user_id" = "auth"."uid"()))))));
+
+
+
+CREATE POLICY "Users can view schemas in their organizations" ON "public"."schemas" FOR SELECT USING (("organization_id" IN ( SELECT "organization_members"."organization_id"
+   FROM "public"."organization_members"
+  WHERE ("organization_members"."user_id" = "auth"."uid"()))));
 
 
 
@@ -1859,6 +1978,12 @@ ALTER TABLE "public"."review_suggestion_snippets" ENABLE ROW LEVEL SECURITY;
 
 
 ALTER TABLE "public"."schema_file_paths" ENABLE ROW LEVEL SECURITY;
+
+
+ALTER TABLE "public"."schema_versions" ENABLE ROW LEVEL SECURITY;
+
+
+ALTER TABLE "public"."schemas" ENABLE ROW LEVEL SECURITY;
 
 
 CREATE POLICY "service_role_can_delete_all_invitations" ON "public"."invitations" FOR DELETE TO "service_role" USING (true);
@@ -2486,6 +2611,18 @@ GRANT ALL ON TABLE "public"."review_suggestion_snippets" TO "service_role";
 GRANT ALL ON TABLE "public"."schema_file_paths" TO "anon";
 GRANT ALL ON TABLE "public"."schema_file_paths" TO "authenticated";
 GRANT ALL ON TABLE "public"."schema_file_paths" TO "service_role";
+
+
+
+GRANT ALL ON TABLE "public"."schema_versions" TO "anon";
+GRANT ALL ON TABLE "public"."schema_versions" TO "authenticated";
+GRANT ALL ON TABLE "public"."schema_versions" TO "service_role";
+
+
+
+GRANT ALL ON TABLE "public"."schemas" TO "anon";
+GRANT ALL ON TABLE "public"."schemas" TO "authenticated";
+GRANT ALL ON TABLE "public"."schemas" TO "service_role";
 
 
 

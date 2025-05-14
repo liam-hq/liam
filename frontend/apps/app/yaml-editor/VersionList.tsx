@@ -1,22 +1,36 @@
 'use client'
 
 import { useToast } from '@/components/ui/use-toast'
+import { Loader2 } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
-import { useVersionStore } from './versionStore'
+// Import using a different syntax
+import * as schemaVersionStoreModule from './schemaVersionStore'
 
-export function VersionList() {
+// Use the imported type and hook
+type VersionId = schemaVersionStoreModule.VersionId
+const { useSchemaVersionStore } = schemaVersionStoreModule
+
+interface VersionListProps {
+  isLoading?: boolean
+}
+
+export function VersionList({ isLoading = false }: VersionListProps) {
+  // Try to use schema version store first, fall back to regular version store
+  const schemaStore = useSchemaVersionStore()
+  
   const {
     versions,
-    selectedVersionId,
+    selectedVersionNumber: selectedVersionId,
     selectVersion,
     revertToVersion,
     undoVersion,
     redoVersion,
     updateVersionTitle,
-  } = useVersionStore()
+  } = schemaStore
+  
   const { toast } = useToast()
   const containerRef = useRef<HTMLDivElement>(null)
-  const [editingTitleId, setEditingTitleId] = useState<number | null>(null)
+  const [editingTitleId, setEditingTitleId] = useState<VersionId | null>(null)
   const [editingTitleValue, setEditingTitleValue] = useState<string>('')
 
   // Scroll to the bottom when versions change
@@ -26,7 +40,7 @@ export function VersionList() {
     }
   }, [versions])
 
-  const handleRevert = (id: number) => {
+  const handleRevert = (id: VersionId) => {
     revertToVersion(id)
     toast({
       title: 'Version Reverted',
@@ -34,7 +48,7 @@ export function VersionList() {
     })
   }
 
-  const handleUndo = (id: number) => {
+  const handleUndo = (id: VersionId) => {
     undoVersion(id)
     toast({
       title: 'Changes Undone',
@@ -42,7 +56,7 @@ export function VersionList() {
     })
   }
 
-  const handleRedo = (id: number) => {
+  const handleRedo = (id: VersionId) => {
     redoVersion(id)
     toast({
       title: 'Changes Redone',
@@ -78,36 +92,36 @@ export function VersionList() {
               <li
                 key={version.id}
                 className={`p-4 cursor-pointer transition-colors ${
-                  selectedVersionId === version.id ? 'border-l-4' : ''
+                  selectedVersionId === version.number ? 'border-l-4' : ''
                 }`}
                 style={{
                   backgroundColor:
-                    selectedVersionId === version.id
+                    selectedVersionId === version.number
                       ? '#37373d'
                       : 'transparent',
                   borderLeftColor:
-                    selectedVersionId === version.id
+                    selectedVersionId === version.number
                       ? '#0e639c'
                       : 'transparent',
                   paddingLeft:
-                    selectedVersionId === version.id ? '12px' : '16px',
+                    selectedVersionId === version.number ? '12px' : '16px',
                   borderBottom: '1px solid #3e3e42',
                 }}
-                onClick={() => selectVersion(version.id)}
+                onClick={() => selectVersion(version.number)}
               >
                 <div className="flex flex-col">
                   <div className="flex justify-between items-center">
                     <div className="flex flex-col">
                       <div className="flex items-center">
                         <span className="version-badge">
-                          Version {version.id}
+                          Version {version.number}
                         </span>
                         {version.id === versions[0].id && (
                           <span className="latest-badge">latest</span>
                         )}
                       </div>
 
-                      {editingTitleId === version.id ? (
+                      {editingTitleId === version.number ? (
                         <div className="mt-1 flex items-center">
                           <input
                             type="text"
@@ -125,7 +139,7 @@ export function VersionList() {
                             onKeyDown={(e) => {
                               if (e.key === 'Enter') {
                                 updateVersionTitle(
-                                  version.id,
+                                  version.number,
                                   editingTitleValue,
                                 )
                                 setEditingTitleId(null)
@@ -140,7 +154,7 @@ export function VersionList() {
                             className="ml-1 px-2 py-1 text-sm"
                             onClick={(e) => {
                               e.stopPropagation()
-                              updateVersionTitle(version.id, editingTitleValue)
+                              updateVersionTitle(version.number, editingTitleValue)
                               setEditingTitleId(null)
                             }}
                           >
@@ -153,7 +167,7 @@ export function VersionList() {
                           style={{ color: '#e0e0e0' }}
                           onClick={(e) => {
                             e.stopPropagation()
-                            setEditingTitleId(version.id)
+                            setEditingTitleId(version.number)
                             setEditingTitleValue(version.title)
                           }}
                         >
@@ -174,7 +188,7 @@ export function VersionList() {
                           }}
                           onClick={(e) => {
                             e.stopPropagation()
-                            handleRevert(version.id)
+                            handleRevert(version.number)
                           }}
                         >
                           Revert to this
@@ -182,7 +196,7 @@ export function VersionList() {
                       )}
 
                       {/* Show "Undo" button for all versions except the first one (Version 1) */}
-                      {version.id !== 1 && (
+                      {version.number !== 1 && (
                         <button
                           className="text-[0.6rem] px-1 py-0.5 h-6"
                           style={{
@@ -192,7 +206,7 @@ export function VersionList() {
                           }}
                           onClick={(e) => {
                             e.stopPropagation()
-                            handleUndo(version.id)
+                            handleUndo(version.number)
                           }}
                         >
                           Undo
@@ -200,7 +214,7 @@ export function VersionList() {
                       )}
 
                       {/* Redo button - hidden for Version 1 */}
-                      {version.id !== 1 && (
+                      {version.number !== 1 && (
                         <button
                           className="text-[0.6rem] px-1 py-0.5 h-6"
                           style={{
@@ -210,7 +224,7 @@ export function VersionList() {
                           }}
                           onClick={(e) => {
                             e.stopPropagation()
-                            handleRedo(version.id)
+                            handleRedo(version.number)
                           }}
                         >
                           Redo
