@@ -1,15 +1,247 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+/* YAML Editor specific styles - Dark Theme */
 
-html,
-body,
-#root {
+/* Main container styles */
+.yamlEditorPage {
+  display: flex;
+  flex-direction: column;
   height: 100%;
+  width: 100%;
+  flex: 1;
+  background-color: #1e1e1e; /* Dark background */
+  color: #e0e0e0; /* Light text */
+  font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
+}
+
+/* Container for the editor */
+.yaml-editor-container {
+  height: 100%;
+  width: 100%;
+  background-color: #1e1e1e;
+  color: #e0e0e0;
+  font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
+  font-size: 14px;
+  line-height: 1.5;
+  resize: none;
+  border: none;
+  outline: none;
+  padding: 0.75rem;
+  white-space: pre;
+  tab-size: 2;
+}
+
+/* Editor content */
+.yaml-editor-content {
+  background-color: #1e1e1e;
+  color: #e0e0e0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+/* Scrolling behavior */
+.yaml-editor-scroll {
+  overflow: auto;
+  height: 100%;
+  flex: 1;
+}
+
+/* Sidebar styling */
+.sidebar {
+  background-color: #252526 !important; /* Slightly lighter than main background */
+  border-right: 1px solid #3e3e42 !important;
+  color: #e0e0e0;
+}
+
+/* Header styling */
+.sidebarHeader {
+  background-color: #252526 !important;
+  border-bottom: 1px solid #3e3e42 !important;
+  padding: 16px !important;
+}
+
+.sidebarTitle {
+  font-size: 16px !important;
+  font-weight: 600 !important;
+  color: #e0e0e0 !important;
+  margin: 0 !important;
+}
+
+/* Editor header */
+.p-4.border-b {
+  background-color: #252526 !important;
+  border-bottom: 1px solid #3e3e42 !important;
+  padding: 16px !important;
+}
+
+/* Version list styling */
+.yaml-editor-content ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.yaml-editor-content ul li {
+  border-bottom: 1px solid #3e3e42;
+  padding: 12px 16px;
+  transition: background-color 0.2s ease;
+}
+
+.yaml-editor-content ul li:hover {
+  background-color: #2a2d2e;
+}
+
+/* Selected version */
+.yaml-editor-content ul li.border-l-4 {
+  border-left: 4px solid #0e639c !important;
+  background-color: #37373d;
+}
+
+/* Version badges */
+.version-badge {
+  background-color: #37373d;
+  color: #e0e0e0;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.latest-badge {
+  background-color: #0e639c;
+  color: #ffffff;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 12px;
+  margin-left: 6px;
+}
+
+/* Button styling */
+button {
+  background-color: #0e639c;
+  color: #ffffff;
+  border: none;
+  border-radius: 4px;
+  padding: 6px 12px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+button:hover {
+  background-color: #1177bb;
+}
+
+button:disabled {
+  background-color: #4d4d4d;
+  cursor: not-allowed;
+}
+
+/* Monaco editor styling */
+.monaco-editor {
+  padding-top: 8px;
+}
+
+/* Monaco editor dark theme */
+.monaco-editor,
+.monaco-editor-background,
+.monaco-editor .margin,
+.monaco-editor .monaco-editor-background {
+  background-color: #1e1e1e !important;
+}
+
+/* Line numbers */
+.monaco-editor .line-numbers {
+  color: #858585 !important;
+}
+
+/* Syntax highlighting for YAML */
+.monaco-editor .mtk1 {
+  color: #d4d4d4 !important;
+} /* Default text */
+.monaco-editor .mtk2 {
+  color: #569cd6 !important;
+} /* Keywords */
+.monaco-editor .mtk3 {
+  color: #9cdcfe !important;
+} /* Variables */
+.monaco-editor .mtk4 {
+  color: #ce9178 !important;
+} /* Strings */
+.monaco-editor .mtk5 {
+  color: #b5cea8 !important;
+} /* Numbers */
+.monaco-editor .mtk6 {
+  color: #4ec9b0 !important;
+} /* Types */
+.monaco-editor .mtk7 {
+  color: #c586c0 !important;
+} /* Control flow */
+.monaco-editor .mtk8 {
+  color: #dcdcaa !important;
+} /* Functions */
+.monaco-editor .mtk9 {
+  color: #d7ba7d !important;
+} /* Constants */
+
+/* Cursor and selection */
+.monaco-editor .cursor {
+  background-color: #aeafad !important;
+  border-color: #aeafad !important;
+}
+
+.monaco-editor .current-line {
+  background-color: #282828 !important;
+}
+
+.monaco-editor .view-overlays .selected-text {
+  background-color: #264f78 !important;
+}
+
+/* Textarea fallback */
+textarea.yaml-editor-container {
+  background-color: #1e1e1e;
+  color: #e0e0e0;
+  font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* Ensure proper integration with the app layout */
+.content .yaml-editor-content {
+  height: 100%;
+  width: 100%;
   margin: 0;
   padding: 0;
 }
 
-.monaco-editor {
-  padding-top: 8px;
+/* Ensure the YAML editor fills the available space */
+.yamlEditorContainer > div {
+  height: 100%;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+/* Editor container */
+.editorContainer {
+  display: flex;
+  flex-direction: row;
+  flex: 1;
+  overflow: hidden;
+  height: 100%;
+  width: 100%;
+}
+
+/* Editor area */
+.editor {
+  width: 75%;
+  overflow: auto;
+  height: 100%;
+  background-color: #1e1e1e;
+}
+
+/* Ensure Monaco editor fits properly */
+.editor .monaco-editor {
+  height: 100% !important;
 }

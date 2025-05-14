@@ -2,7 +2,7 @@ import { create } from "zustand"
 import { compare, type Operation } from "fast-json-patch"
 import * as yaml from "js-yaml"
 
-export interface Version {
+interface Version {
   id: number
   timestamp: Date
   title: string // Title for the version

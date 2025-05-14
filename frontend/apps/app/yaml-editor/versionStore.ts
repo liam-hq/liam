@@ -1,8 +1,8 @@
-import { create } from "zustand"
-import { compare, type Operation } from "fast-json-patch"
-import * as yaml from "js-yaml"
+import { type Operation, compare } from 'fast-json-patch'
+import * as yaml from 'js-yaml'
+import { create } from 'zustand'
 
-export interface Version {
+interface Version {
   id: number
   timestamp: Date
   title: string // Title for the version
@@ -79,12 +79,14 @@ tableGroups:
 
 export const useVersionStore = create<VersionState>((set, get) => ({
   // Initialize with Version1 by default
-  versions: [{
-    id: 1,
-    timestamp: new Date(),
-    title: "change",
-    fullContent: yaml.load(initialYaml) as Record<string, any>,
-  }],
+  versions: [
+    {
+      id: 1,
+      timestamp: new Date(),
+      title: 'change',
+      fullContent: yaml.load(initialYaml) as Record<string, any>,
+    },
+  ],
   currentYaml: initialYaml,
   selectedVersionId: 1,
   hasUnsavedChanges: false,
@@ -94,10 +96,10 @@ export const useVersionStore = create<VersionState>((set, get) => ({
     const initialVersion: Version = {
       id: 1,
       timestamp: new Date(),
-      title: "change",
+      title: 'change',
       fullContent: yaml.load(initialYaml) as Record<string, any>,
-    };
-    
+    }
+
     set({
       versions: [initialVersion],
       currentYaml: initialYaml,
@@ -116,7 +118,7 @@ export const useVersionStore = create<VersionState>((set, get) => ({
       const newVersion: Version = {
         id: newVersionId,
         timestamp: new Date(),
-        title: "change",
+        title: 'change',
         fullContent: currentJson as Record<string, any>,
       }
 
@@ -130,12 +132,15 @@ export const useVersionStore = create<VersionState>((set, get) => ({
       const latestVersion = versions[0]
       const latestJson = getVersionContent(versions, latestVersion.id)
       const patch = compare(latestJson, currentJson as Record<string, any>)
-      const reversePatch = compare(currentJson as Record<string, any>, latestJson)
+      const reversePatch = compare(
+        currentJson as Record<string, any>,
+        latestJson,
+      )
 
       const newVersion: Version = {
         id: newVersionId,
         timestamp: new Date(),
-        title: "change",
+        title: 'change',
         patch,
         reversePatch,
       }
@@ -152,8 +157,15 @@ export const useVersionStore = create<VersionState>((set, get) => ({
     const { versions, hasUnsavedChanges } = get()
 
     if (hasUnsavedChanges) {
-      if (!window.confirm("You have unsaved changes. Are you sure you want to switch versions?")) {
-        return
+      // Check if we're in a browser environment before using window.confirm
+      if (typeof window !== 'undefined') {
+        if (
+          !window.confirm(
+            'You have unsaved changes. Are you sure you want to switch versions?',
+          )
+        ) {
+          return
+        }
       }
     }
 
@@ -195,27 +207,27 @@ export const useVersionStore = create<VersionState>((set, get) => ({
 
   undoVersion: (id: number) => {
     const { versions } = get()
-    
+
     // Find the version to undo
-    const versionIndex = versions.findIndex(v => v.id === id)
+    const versionIndex = versions.findIndex((v) => v.id === id)
     if (versionIndex === -1) return
-    
+
     const versionToUndo = versions[versionIndex]
-    
+
     // If the version doesn't have a reversePatch, we can't undo it
     if (!versionToUndo.reversePatch) return
-    
+
     // Get the latest content
     const latestVersion = versions[0]
     const latestContent = getVersionContent(versions, latestVersion.id)
-    
+
     // Apply the reverse patch to get the undone content
     const undoneContent = JSON.parse(JSON.stringify(latestContent))
-    versionToUndo.reversePatch.forEach(op => {
+    versionToUndo.reversePatch.forEach((op) => {
       try {
         // Handle different operation types
-        if (op.op === "replace") {
-          const path = op.path.split("/").filter((p) => p)
+        if (op.op === 'replace') {
+          const path = op.path.split('/').filter((p) => p)
           let current = undoneContent
           for (let j = 0; j < path.length - 1; j++) {
             if (current[path[j]] === undefined) {
@@ -224,8 +236,8 @@ export const useVersionStore = create<VersionState>((set, get) => ({
             current = current[path[j]]
           }
           current[path[path.length - 1]] = op.value
-        } else if (op.op === "add") {
-          const path = op.path.split("/").filter((p) => p)
+        } else if (op.op === 'add') {
+          const path = op.path.split('/').filter((p) => p)
           let current = undoneContent
           for (let j = 0; j < path.length - 1; j++) {
             if (current[path[j]] === undefined) {
@@ -234,8 +246,8 @@ export const useVersionStore = create<VersionState>((set, get) => ({
             current = current[path[j]]
           }
           current[path[path.length - 1]] = op.value
-        } else if (op.op === "remove") {
-          const path = op.path.split("/").filter((p) => p)
+        } else if (op.op === 'remove') {
+          const path = op.path.split('/').filter((p) => p)
           let current = undoneContent
           for (let j = 0; j < path.length - 1; j++) {
             if (current[path[j]] === undefined) {
@@ -246,15 +258,15 @@ export const useVersionStore = create<VersionState>((set, get) => ({
           delete current[path[path.length - 1]]
         }
       } catch (error) {
-        console.error("Error applying reverse patch operation:", op, error)
+        console.error('Error applying reverse patch operation:', op, error)
       }
     })
-    
+
     // Create a new version with the undone content
     const patch = compare(latestContent, undoneContent)
     const reversePatch = compare(undoneContent, latestContent)
     const newVersionId = versions.length + 1
-    
+
     const newVersion: Version = {
       id: newVersionId,
       timestamp: new Date(),
@@ -262,7 +274,7 @@ export const useVersionStore = create<VersionState>((set, get) => ({
       patch,
       reversePatch,
     }
-    
+
     set({
       versions: [newVersion, ...versions],
       selectedVersionId: newVersionId,
@@ -270,30 +282,30 @@ export const useVersionStore = create<VersionState>((set, get) => ({
       hasUnsavedChanges: false,
     })
   },
-  
+
   redoVersion: (id: number) => {
     const { versions } = get()
-    
+
     // Find the version to redo
-    const versionIndex = versions.findIndex(v => v.id === id)
+    const versionIndex = versions.findIndex((v) => v.id === id)
     if (versionIndex === -1) return
-    
+
     const versionToRedo = versions[versionIndex]
-    
+
     // If the version doesn't have a patch, we can't redo it
     if (!versionToRedo.patch) return
-    
+
     // Get the latest content
     const latestVersion = versions[0]
     const latestContent = getVersionContent(versions, latestVersion.id)
-    
+
     // Apply the forward patch to get the redone content
     const redoneContent = JSON.parse(JSON.stringify(latestContent))
-    versionToRedo.patch.forEach(op => {
+    versionToRedo.patch.forEach((op) => {
       try {
         // Handle different operation types
-        if (op.op === "replace") {
-          const path = op.path.split("/").filter((p) => p)
+        if (op.op === 'replace') {
+          const path = op.path.split('/').filter((p) => p)
           let current = redoneContent
           for (let j = 0; j < path.length - 1; j++) {
             if (current[path[j]] === undefined) {
@@ -302,8 +314,8 @@ export const useVersionStore = create<VersionState>((set, get) => ({
             current = current[path[j]]
           }
           current[path[path.length - 1]] = op.value
-        } else if (op.op === "add") {
-          const path = op.path.split("/").filter((p) => p)
+        } else if (op.op === 'add') {
+          const path = op.path.split('/').filter((p) => p)
           let current = redoneContent
           for (let j = 0; j < path.length - 1; j++) {
             if (current[path[j]] === undefined) {
@@ -312,8 +324,8 @@ export const useVersionStore = create<VersionState>((set, get) => ({
             current = current[path[j]]
           }
           current[path[path.length - 1]] = op.value
-        } else if (op.op === "remove") {
-          const path = op.path.split("/").filter((p) => p)
+        } else if (op.op === 'remove') {
+          const path = op.path.split('/').filter((p) => p)
           let current = redoneContent
           for (let j = 0; j < path.length - 1; j++) {
             if (current[path[j]] === undefined) {
@@ -324,15 +336,15 @@ export const useVersionStore = create<VersionState>((set, get) => ({
           delete current[path[path.length - 1]]
         }
       } catch (error) {
-        console.error("Error applying forward patch operation:", op, error)
+        console.error('Error applying forward patch operation:', op, error)
       }
     })
-    
+
     // Create a new version with the redone content
     const patch = compare(latestContent, redoneContent)
     const reversePatch = compare(redoneContent, latestContent)
     const newVersionId = versions.length + 1
-    
+
     const newVersion: Version = {
       id: newVersionId,
       timestamp: new Date(),
@@ -340,7 +352,7 @@ export const useVersionStore = create<VersionState>((set, get) => ({
       patch,
       reversePatch,
     }
-    
+
     set({
       versions: [newVersion, ...versions],
       selectedVersionId: newVersionId,
@@ -351,18 +363,18 @@ export const useVersionStore = create<VersionState>((set, get) => ({
 
   updateVersionTitle: (id: number, title: string) => {
     const { versions } = get()
-    const versionIndex = versions.findIndex(v => v.id === id)
+    const versionIndex = versions.findIndex((v) => v.id === id)
     if (versionIndex === -1) return
-    
+
     // Create a new versions array with the updated title
     const updatedVersions = [...versions]
     updatedVersions[versionIndex] = {
       ...updatedVersions[versionIndex],
-      title
+      title,
     }
-    
+
     set({
-      versions: updatedVersions
+      versions: updatedVersions,
     })
   },
 
@@ -383,27 +395,33 @@ function getVersionContent(versions: Version[], versionId: number): any {
 
   // Get the selected version
   const selectedVersion = versions[versionIndex]
-  
+
   // If the selected version has fullContent (it's the base version), return it directly
   if (selectedVersion.fullContent) {
     return selectedVersion.fullContent
   }
 
   // Find the base version (the oldest one with full content)
-  const baseVersionIndex = versions.findIndex(v => v.fullContent !== undefined)
+  const baseVersionIndex = versions.findIndex(
+    (v) => v.fullContent !== undefined,
+  )
   if (baseVersionIndex === -1) return null
-  
+
   const baseVersion = versions[baseVersionIndex]
   // Create a deep copy of the base content to avoid modifying the original
   const content = JSON.parse(JSON.stringify(baseVersion.fullContent))
 
   // Sort versions by ID to ensure correct patch application order
   const sortedVersions = [...versions].sort((a, b) => a.id - b.id)
-  
+
   // Find the index of the base version and selected version in the sorted array
-  const sortedBaseIndex = sortedVersions.findIndex(v => v.id === baseVersion.id)
-  const sortedSelectedIndex = sortedVersions.findIndex(v => v.id === selectedVersion.id)
-  
+  const sortedBaseIndex = sortedVersions.findIndex(
+    (v) => v.id === baseVersion.id,
+  )
+  const sortedSelectedIndex = sortedVersions.findIndex(
+    (v) => v.id === selectedVersion.id,
+  )
+
   // Apply patches in order from the base version up to the selected version
   for (let i = sortedBaseIndex + 1; i <= sortedSelectedIndex; i++) {
     const version = sortedVersions[i]
@@ -412,8 +430,8 @@ function getVersionContent(versions: Version[], versionId: number): any {
       version.patch.forEach((op) => {
         try {
           // Handle different operation types
-          if (op.op === "replace") {
-            const path = op.path.split("/").filter((p) => p)
+          if (op.op === 'replace') {
+            const path = op.path.split('/').filter((p) => p)
             let current = content
             for (let j = 0; j < path.length - 1; j++) {
               if (current[path[j]] === undefined) {
@@ -422,8 +440,8 @@ function getVersionContent(versions: Version[], versionId: number): any {
               current = current[path[j]]
             }
             current[path[path.length - 1]] = op.value
-          } else if (op.op === "add") {
-            const path = op.path.split("/").filter((p) => p)
+          } else if (op.op === 'add') {
+            const path = op.path.split('/').filter((p) => p)
             let current = content
             for (let j = 0; j < path.length - 1; j++) {
               if (current[path[j]] === undefined) {
@@ -432,8 +450,8 @@ function getVersionContent(versions: Version[], versionId: number): any {
               current = current[path[j]]
             }
             current[path[path.length - 1]] = op.value
-          } else if (op.op === "remove") {
-            const path = op.path.split("/").filter((p) => p)
+          } else if (op.op === 'remove') {
+            const path = op.path.split('/').filter((p) => p)
             let current = content
             for (let j = 0; j < path.length - 1; j++) {
               if (current[path[j]] === undefined) {
@@ -445,7 +463,7 @@ function getVersionContent(versions: Version[], versionId: number): any {
           }
           // Additional operations like "move", "copy", etc. could be implemented here
         } catch (error) {
-          console.error("Error applying patch operation:", op, error)
+          console.error('Error applying patch operation:', op, error)
         }
       })
     }

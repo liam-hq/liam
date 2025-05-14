@@ -1,13 +1,16 @@
-"use client"
+'use client'
 
-import { useEffect } from "react"
-import { YamlEditor } from "./YamlEditor"
-import { VersionList } from "./VersionList"
-import { useVersionStore } from "./versionStore"
-import { Toaster } from "@/components/ui/toaster"
+import { Toaster } from '@/components/ui/toaster'
+import { useTheme } from 'next-themes'
+import { useEffect } from 'react'
+import { VersionList } from './VersionList'
+import { YamlEditor } from './YamlEditor'
+import styles from './YamlEditor.module.css'
+import { useVersionStore } from './versionStore'
 
 export default function App() {
   const { initializeStore } = useVersionStore()
+  const { theme } = useTheme()
 
   useEffect(() => {
     // Initialize with a sample YAML document
@@ -15,19 +18,18 @@ export default function App() {
   }, [initializeStore])
 
   return (
-    <div className="h-screen flex flex-col overflow-hidden bg-gray-50">
-      <header className="bg-white border-b border-gray-200 py-4 px-6">
-        <h1 className="text-2xl font-bold text-gray-800">YAML Editor with Version History</h1>
-      </header>
-
-      <main className="flex-1 flex flex-row overflow-hidden">
-        <div className="w-1/4 overflow-auto border-r border-gray-200 bg-white">
+    <div className={styles.containerInContent} data-theme={theme}>
+      <div className={styles.editorContainer}>
+        <div className={styles.sidebar}>
+          <div className={styles.sidebarHeader}>
+            <h2 className={styles.sidebarTitle}>Version History</h2>
+          </div>
           <VersionList />
         </div>
-        <div className="w-3/4 overflow-auto">
+        <div className={styles.editor}>
           <YamlEditor />
         </div>
-      </main>
+      </div>
 
       <Toaster />
     </div>

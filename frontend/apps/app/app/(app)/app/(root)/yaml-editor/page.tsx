@@ -1,12 +1,17 @@
-"use client"
+'use client'
 
-import { ThemeProvider } from "@/components/theme-provider"
-import App from "../../../../../yaml-editor/App"
+import { useTheme } from 'next-themes'
+import App from '../../../../../yaml-editor/App'
+import styles from './page.module.css'
 
 export default function YamlEditorPage() {
+  const { theme } = useTheme()
+
   return (
-    <ThemeProvider defaultTheme="light" storageKey="yaml-editor-theme">
-      <App />
-    </ThemeProvider>
+    <div className={styles.yamlEditorPageInContent} data-theme={theme}>
+      <div className={styles.yamlEditorContainer}>
+        <App />
+      </div>
+    </div>
   )
 }
