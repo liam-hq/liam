@@ -103,7 +103,7 @@ export function YamlEditor() {
             <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
           </div>
         )}
-        <div ref={editorRef} className="h-full w-full" style={{ visibility: isEditorReady ? "visible" : "hidden" }} />
+        <div ref={editorRef} className={`h-full w-full ${isEditorReady ? 'visible' : 'invisible'}`} />
       </div>
     </div>
   )

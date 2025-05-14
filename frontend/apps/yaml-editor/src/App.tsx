@@ -15,16 +15,16 @@ export default function App() {
   }, [initializeStore])
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div className="h-screen flex flex-col overflow-hidden bg-gray-50">
       <header className="bg-white border-b border-gray-200 py-4 px-6">
         <h1 className="text-2xl font-bold text-gray-800">YAML Editor with Version History</h1>
       </header>
 
-      <main className="flex-1 grid grid-cols-1 md:grid-cols-4 gap-0">
-        <div className="md:col-span-1 border-r border-gray-200 bg-white">
+      <main className="flex-1 flex flex-row overflow-hidden">
+        <div className="w-1/4 overflow-auto border-r border-gray-200 bg-white">
           <VersionList />
         </div>
-        <div className="md:col-span-3">
+        <div className="w-3/4 overflow-auto">
           <YamlEditor />
         </div>
       </main>
