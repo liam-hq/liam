@@ -14,7 +14,12 @@ if (process.env.VERCEL_ENV === 'production') {
 
 const nextConfig: NextConfig = {
   // Server-only packages that should not be bundled on the client
-  serverExternalPackages: ['@mastra/*'],
+  // This helps prevent issues with packages that use Node.js specific APIs
+  // - @mastra: AI agent framework for LLM interactions, used in backend functions
+  // - @libsql: SQLite database client, used by @mastra for data operations
+  experimental: {
+    serverComponentsExternalPackages: ['@mastra/*', '@libsql/*'],
+  },
   output: 'standalone',
   // NOTE: Exclude Prisma-related packages from the bundle
   // These packages are installed separately in the node_modules/@prisma directory
@@ -23,6 +28,22 @@ const nextConfig: NextConfig = {
     domains: ['avatars.githubusercontent.com'],
   },
   webpack: (config) => {
+    // Handle markdown files by treating them as empty modules
+    config.module.rules.push({
+      test: /\.md$/,
+      use: 'null-loader',
+    })
+
+    // Explicitly exclude problematic markdown files
+    config.resolve = {
+      ...config.resolve,
+      alias: {
+        ...config.resolve?.alias,
+        '@libsql/client/README.md': false,
+        '@libsql/darwin-arm64/README.md': false,
+      },
+    }
+
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     if (Array.isArray(config.externals)) {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
@@ -36,6 +57,10 @@ const nextConfig: NextConfig = {
         '@prisma/internals',
         '@prisma/prisma-schema-wasm',
         '@prisma/schema-files-loader',
+        // libsql related packages
+        'libsql',
+        '@libsql/client',
+        '@libsql/darwin-arm64',
       )
     } else {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
@@ -62,6 +87,14 @@ const nextConfig: NextConfig = {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       config.externals['@prisma/schema-files-loader'] =
         '@prisma/schema-files-loader'
+
+      // libsql related packages
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      config.externals['libsql'] = 'libsql'
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      config.externals['@libsql/client'] = '@libsql/client'
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      config.externals['@libsql/darwin-arm64'] = '@libsql/darwin-arm64'
     }
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
