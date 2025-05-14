@@ -23,7 +23,8 @@
     // - Next.js special files
     "frontend/apps/docs/app/docs/sitemap.ts",
     "frontend/apps/app/next.config.ts",
-    "frontend/apps/docs/next.config.mjs"
+    "frontend/apps/docs/next.config.mjs",
+    "frontend/packages/jobs/instrumentation.ts"
   ],
 
   // TODO: Review ignoreDependencies configuration later
@@ -55,9 +56,10 @@
     "@sentry/esbuild-plugin",
     "@liam-hq/cli",
     "@liam-hq/configs",
-    "@turbo/gen"
+    "@turbo/gen",
+    "@vercel/otel"
   ],
 
   // TODO: Review ignoreBinaries configuration later
-  "ignoreBinaries": ["playwright", "supabase:start", "supabase:gen"]
+  "ignoreBinaries": ["playwright", "supabase:start", "supabase:gen", "mastra"]
 }

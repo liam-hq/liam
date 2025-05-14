@@ -18,7 +18,6 @@
     "@valibot/to-json-schema": "1.0.0",
     "@vercel/otel": "1.12.0",
     "ai": "4.3.15",
-    "langfuse": "3.37.2",
     "langfuse-vercel": "3.37.2",
     "minimatch": "10.0.1",
     "uuid": "11.1.0",
@@ -41,7 +40,7 @@
     "vitest": "3.1.2"
   },
   "scripts": {
-    "build mastra": "mastra build --dif src/mastra",
+    "build mastra": "mastra build --dir src/mastra",
     "deploy": "trigger deploy",
     "dev": "tsc --watch",
     "fmt": "concurrently \"pnpm:fmt:*\"",
