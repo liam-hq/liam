@@ -802,6 +802,10 @@ importers:
       vitest:
         specifier: 3.1.2
         version: 3.1.2(@edge-runtime/vm@3.2.0)(@types/debug@4.1.12)(@types/node@22.15.3)(@vitest/browser@3.1.2)(jiti@2.4.2)(lightningcss@1.29.2)(terser@5.39.0)(tsx@4.19.4)(yaml@2.7.1)
+    optionalDependencies:
+      '@libsql/linux-x64-gnu':
+        specifier: 0.4.7
+        version: 0.4.7
 
   frontend/packages/prompt-test:
     devDependencies:
@@ -826,9 +830,6 @@ importers:
       langfuse-langchain:
         specifier: 3.37.2
         version: 3.37.2(langchain@0.3.24(@langchain/core@0.3.49(openai@4.97.0(ws@8.18.2)(zod@3.24.3)))(cheerio@1.0.0)(handlebars@4.7.8)(openai@4.97.0(ws@8.18.2)(zod@3.24.3))(ws@8.18.2))
-      tsx:
-        specifier: 4.19.4
-        version: 4.19.4
       typescript:
         specifier: 5.8.3
         version: 5.8.3
@@ -7622,6 +7623,9 @@ packages:
 
   header-case@1.0.1:
     resolution: {integrity: sha512-i0q9mkOeSuhXw6bGgiQCCBgY/jlZuV/7dZXyZ9c6LcBrqwvT8eT719E9uxE5LiZftdl+z81Ugbg/VvXV4OJOeQ==}
+
+  help-me@5.0.0:
+    resolution: {integrity: sha512-7xgomUX6ADmcYzFik0HzAxh/73YlKR9bmFzf51CZwR+b6YtzU2m0u49hQCqV6SvlqIqsaxovfwdvbnsw3b/zpg==}
 
   highlight.js@10.7.3:
     resolution: {integrity: sha512-tzcUFauisWKNHaRkN4Wjl/ZA07gENAjFl3J/c480dprkGTg5EQstgaNFqBfUqCq54kZRIEcreTsAgF/m2quD7A==}
@@ -19935,6 +19939,8 @@ snapshots:
     dependencies:
       no-case: 2.3.2
       upper-case: 1.1.3
+
+  help-me@5.0.0: {}
 
   highlight.js@10.7.3: {}
 
