@@ -45,7 +45,8 @@
       "supabase"
     ],
     "overrides": {
-      "node-gtts": "workspace:*"
+      "node-gtts": "workspace:*",
+      "prismjs": "1.30.0"
     }
   },
   "resolutions": {

@@ -14,6 +14,7 @@ export const Default = () => {
   const props: UserMessageProps = {
     content: 'Hello, this is a sample user message.',
     initial: 'U',
+    userName: 'User',
   }
   return <UserMessage {...props} />
 }
@@ -29,6 +30,7 @@ export const WithTimestamp = () => (
   <UserMessage
     content="Message with timestamp."
     initial="U"
+    userName="John Doe"
     timestamp={new Date()}
   />
 )
@@ -37,11 +39,28 @@ export const WithoutInitial = () => (
   <UserMessage content="Message without initial." timestamp={new Date()} />
 )
 
+export const WithDefaultName = () => (
+  <UserMessage
+    content="Message with default 'User Name' when userName is not provided."
+    initial="D"
+    timestamp={new Date()}
+  />
+)
+
 export const WithImageAvatar = () => (
   <UserMessage
     content="Message with image avatar."
     avatarSrc="https://i.pravatar.cc/150?img=3"
     avatarAlt="User avatar"
+    userName="Jane Smith"
     timestamp={new Date()}
+  />
+)
+
+export const WithUserNameOnly = () => (
+  <UserMessage
+    content="Message with user name but no timestamp."
+    initial="U"
+    userName="Alex Johnson"
   />
 )

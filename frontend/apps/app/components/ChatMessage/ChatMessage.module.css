@@ -1,7 +1,6 @@
 .messageContainer {
   display: flex;
   margin-bottom: 12px;
-  max-width: 80%;
 }
 
 .userMessage {
@@ -10,8 +9,8 @@
 }
 
 .botMessage {
-  margin-right: auto;
-  justify-content: flex-start;
+  margin-left: auto;
+  justify-content: flex-end;
 }
 
 .messageContent {

@@ -1,8 +1,9 @@
 'use client'
 
 import { type FC, useState } from 'react'
+import { BEFORE } from '../before'
 import styles from './SchemaEditor.module.css'
-import { useEditor } from './useEditor'
+import { useMergeEditor } from './useMergeEditor'
 
 type Props = {
   initialDoc: string
@@ -11,7 +12,12 @@ type Props = {
 export const SchemaEditor: FC<Props> = ({ initialDoc }) => {
   const [doc, setDoc] = useState<string>(initialDoc)
 
-  const { editor } = useEditor({ doc, setDoc })
+  const { ref } = useMergeEditor({
+    original: JSON.stringify(BEFORE, null, 2),
+    modified: doc,
+    setModified: setDoc,
+    mode: 'unified',
+  })
 
-  return <div ref={editor} className={styles.wrapper} />
+  return <div ref={ref} className={styles.wrapper} />
 }

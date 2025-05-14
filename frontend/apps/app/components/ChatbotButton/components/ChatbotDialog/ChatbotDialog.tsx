@@ -2,6 +2,7 @@
 
 import { ChatInput } from '@/components/ChatInput'
 import { ChatMessage, type ChatMessageProps } from '@/components/ChatMessage'
+import type { Schema } from '@liam-hq/db-structure'
 import {
   ModalContent,
   ModalOverlay,
@@ -11,13 +12,13 @@ import {
 } from '@liam-hq/ui'
 import type { FC } from 'react'
 import { useEffect, useRef, useState } from 'react'
-import type { SchemaData, TableGroupData } from '../../../../app/api/chat/route'
+import type { TableGroupData } from '../../../../app/api/chat/route'
 import styles from './ChatbotDialog.module.css'
 
 interface ChatbotDialogProps {
   isOpen: boolean
   onClose: () => void
-  schemaData: SchemaData
+  schemaData: Schema
   tableGroups?: Record<string, TableGroupData>
 }
 
@@ -180,15 +181,13 @@ export const ChatbotDialog: FC<ChatbotDialogProps> = ({
                 content={message.content}
                 isUser={message.isUser}
                 timestamp={message.timestamp}
+                isGenerating={
+                  isLoading &&
+                  message.id.startsWith('ai-') &&
+                  !message.timestamp
+                }
               />
             ))}
-            {isLoading && (
-              <div className={styles.loadingIndicator}>
-                <div className={styles.loadingDot} />
-                <div className={styles.loadingDot} />
-                <div className={styles.loadingDot} />
-              </div>
-            )}
             <div ref={messagesEndRef} />
           </div>
           <ChatInput onSendMessage={handleSendMessage} isLoading={isLoading} />

@@ -1,7 +1,6 @@
 'use client'
 
 import type { TableGroupData } from '@/app/api/chat/route'
-import { adaptSchemaForChatbot } from '@/features/chats/services'
 import type { Schema } from '@liam-hq/db-structure'
 import { Button } from '@liam-hq/ui'
 import { MessageCircleIcon } from 'lucide-react'
@@ -19,7 +18,6 @@ export const ChatbotButton: FC<ChatbotButtonProps> = ({
   schemaData,
   tableGroups,
 }) => {
-  const adaptedSchema = adaptSchemaForChatbot(schemaData)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
 
   return (
@@ -35,7 +33,7 @@ export const ChatbotButton: FC<ChatbotButtonProps> = ({
       <ChatbotDialog
         isOpen={isDialogOpen}
         onClose={() => setIsDialogOpen(false)}
-        schemaData={adaptedSchema}
+        schemaData={schemaData}
         tableGroups={tableGroups}
       />
     </>

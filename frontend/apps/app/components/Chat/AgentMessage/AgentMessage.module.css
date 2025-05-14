@@ -1,0 +1,524 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  gap: var(--spacing-1);
+}
+
+.avatarContainer {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding: 0;
+  min-height: 24px;
+  gap: var(--spacing-1);
+}
+
+.contentContainer {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  gap: var(--spacing-2);
+}
+
+.messageWrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  width: 100%;
+  max-width: 100%;
+}
+
+.messageContent {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2);
+  width: 100%;
+  max-width: 100%;
+}
+
+.messageText {
+  font-family: var(--main-font);
+  font-weight: 400;
+  font-size: var(--font-size-4);
+  line-height: 1.8em;
+  color: var(--global-body-text);
+  width: 100%;
+  max-width: 100%;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+/* Exclude code blocks from text wrapping */
+.messageText :global(pre),
+.messageText :global(pre code),
+.messageText :global(pre > div) {
+  word-wrap: normal !important;
+  overflow-wrap: normal !important;
+  word-break: normal !important;
+}
+
+/* Headings */
+.messageText :global(h1),
+.messageText :global(h2),
+.messageText :global(h3),
+.messageText :global(h4),
+.messageText :global(h5),
+.messageText :global(h6) {
+  margin-top: 1.5rem;
+  margin-bottom: 1rem;
+  font-weight: 600;
+  line-height: 1.25;
+  color: var(--global-body-text);
+}
+
+/* First element spacing adjustments */
+.messageText :global(*:first-child) {
+  margin-top: 0;
+}
+
+.messageText :global(h1) {
+  margin: 0.67em 0;
+  font-weight: 600;
+  padding-bottom: 0.3em;
+  font-size: 2em;
+  border-bottom: 1px solid var(--global-border);
+}
+
+.messageText :global(h2) {
+  font-weight: 600;
+  padding-bottom: 0.3em;
+  font-size: 1.5em;
+  border-bottom: 1px solid var(--global-border);
+}
+
+.messageText :global(h3) {
+  font-weight: 600;
+  font-size: 1.25em;
+}
+
+.messageText :global(h4) {
+  font-weight: 600;
+  font-size: 1em;
+}
+
+.messageText :global(h5) {
+  font-weight: 600;
+  font-size: 0.875em;
+}
+
+.messageText :global(h6) {
+  font-weight: 600;
+  font-size: 0.85em;
+  color: var(--global-body-text-subtle);
+}
+
+/* Paragraphs */
+.messageText :global(p) {
+  margin-top: 0;
+  margin-bottom: var(--spacing-2);
+}
+
+/* Lists */
+.messageText :global(ul),
+.messageText :global(ol) {
+  margin-top: 0;
+  margin-bottom: var(--spacing-2);
+  padding-left: 2em;
+}
+
+.messageText :global(ul) {
+  list-style-type: disc;
+}
+
+.messageText :global(ol) {
+  list-style-type: decimal;
+}
+
+.messageText :global(ol ol),
+.messageText :global(ul ol) {
+  list-style-type: lower-roman;
+}
+
+.messageText :global(ul ul),
+.messageText :global(ol ul) {
+  list-style-type: circle;
+}
+
+.messageText :global(ul ul ul),
+.messageText :global(ul ol ul),
+.messageText :global(ol ul ul),
+.messageText :global(ol ol ul) {
+  list-style-type: square;
+}
+
+.messageText :global(ul ul ol),
+.messageText :global(ul ol ol),
+.messageText :global(ol ul ol),
+.messageText :global(ol ol ol) {
+  list-style-type: lower-alpha;
+}
+
+.messageText :global(li + li) {
+  margin-top: 0.25em;
+}
+
+/* Code */
+.messageText :global(code),
+.messageText :global(tt) {
+  padding: 0.2em 0.4em;
+  margin: 0;
+  font-size: 85%;
+  white-space: break-spaces;
+  background-color: var(--global-foreground-subtle);
+  border-radius: var(--border-radius-small);
+  font-family: var(--code-font);
+}
+
+/* Inline code within paragraphs and other elements */
+.messageText :global(p > code),
+.messageText :global(li > code),
+.messageText :global(h1 > code),
+.messageText :global(h2 > code),
+.messageText :global(h3 > code),
+.messageText :global(h4 > code),
+.messageText :global(h5 > code),
+.messageText :global(h6 > code),
+.messageText :global(a > code),
+.messageText :global(em > code),
+.messageText :global(strong > code) {
+  display: inline;
+  padding: 0.1em 0.3em;
+  vertical-align: baseline;
+  color: #e3e3e3;
+  background-color: var(--overlay-10);
+  border-radius: 3px;
+  font-family: var(--code-font, monospace);
+  font-size: 85%;
+}
+
+.messageText :global(pre) {
+  margin-bottom: var(--spacing-2);
+  width: 100%;
+  max-width: 100%;
+  position: relative;
+  overflow-x: auto;
+  border-radius: var(--border-radius-base);
+}
+
+/* Add a subtle scrollbar for code blocks that overflow */
+.messageText :global(pre::-webkit-scrollbar) {
+  height: 8px;
+  background-color: transparent;
+}
+
+.messageText :global(pre::-webkit-scrollbar-thumb) {
+  background-color: var(--global-border);
+  border-radius: 4px;
+}
+
+.messageText :global(pre::-webkit-scrollbar-track) {
+  background-color: transparent;
+}
+
+.messageText :global(pre code) {
+  display: inline-block;
+  max-width: 100%;
+  padding: 0;
+  margin: 0;
+  overflow: visible;
+  line-height: inherit;
+  word-wrap: normal !important;
+  word-break: normal !important;
+  white-space: pre !important;
+  background-color: transparent;
+  border: 0;
+  font-size: 12px;
+}
+
+/* Ensure SyntaxHighlighter's container displays properly */
+.messageText :global(pre > div) {
+  white-space: pre !important;
+  overflow-x: auto !important;
+  word-wrap: normal !important;
+  word-break: normal !important;
+}
+
+/* Links */
+.messageText :global(a) {
+  background-color: transparent;
+  color: var(--primary-accent);
+  text-decoration: none;
+}
+
+.messageText :global(a:hover) {
+  text-decoration: underline;
+}
+
+/* Images */
+.messageText :global(img) {
+  border-style: none;
+  max-width: 100%;
+  box-sizing: content-box;
+  border-radius: var(--border-radius-base);
+}
+
+/* Blockquotes */
+.messageText :global(blockquote) {
+  margin: 0 0 var(--spacing-2) 0;
+  padding: 0 var(--spacing-2);
+  color: var(--global-body-text-subtle);
+  border-left: 0.25em solid var(--global-border);
+}
+
+.messageText :global(blockquote) > :global(:first-child) {
+  margin-top: 0;
+}
+
+.messageText :global(blockquote) > :global(:last-child) {
+  margin-bottom: 0;
+}
+
+/* Tables */
+.messageText :global(table) {
+  border-spacing: 0;
+  border-collapse: separate;
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  margin-bottom: var(--spacing-3);
+  border: 1px solid var(--global-border);
+  border-radius: var(--border-radius-base);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* Table scrollbar styling */
+.messageText :global(table::-webkit-scrollbar) {
+  height: 8px;
+  background-color: transparent;
+}
+
+.messageText :global(table::-webkit-scrollbar-thumb) {
+  background-color: var(--global-border);
+  border-radius: 4px;
+}
+
+.messageText :global(table::-webkit-scrollbar-track) {
+  background-color: transparent;
+}
+
+.messageText :global(table th) {
+  font-weight: 600;
+  background-color: var(--global-foreground-subtle);
+  color: var(--global-body-text);
+  text-align: left;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  border-bottom: 2px solid var(--global-border);
+}
+
+.messageText :global(table th),
+.messageText :global(table td) {
+  padding: var(--spacing-1half) var(--spacing-2);
+  border: 1px solid var(--global-border);
+  border-top: none;
+  border-left: none;
+}
+
+.messageText :global(table th:last-child),
+.messageText :global(table td:last-child) {
+  border-right: none;
+}
+
+.messageText :global(table tr:last-child td) {
+  border-bottom: none;
+}
+
+/* Align numeric content to the right */
+.messageText :global(table td:only-child),
+.messageText :global(table td:first-child:last-child) {
+  text-align: left;
+}
+
+.messageText :global(table td:not(:only-child)) {
+  text-align: left;
+}
+
+/* Numeric content detection (approximate) */
+.messageText :global(table td:not(:only-child):not(:first-child)) {
+  text-align: right;
+}
+
+.messageText :global(table tr) {
+  background-color: var(--global-background);
+  transition: background-color 0.15s ease;
+}
+
+.messageText :global(table tr:nth-child(2n)) {
+  background-color: rgba(var(--global-foreground-subtle-rgb, 0, 0, 0), 0.3);
+}
+
+.messageText :global(table tr:hover) {
+  background-color: rgba(var(--primary-accent-rgb, 0, 0, 0), 0.05);
+}
+
+/* Task Lists */
+.messageText :global(.task-list-item) {
+  list-style-type: none;
+}
+
+.messageText :global(.task-list-item + .task-list-item) {
+  margin-top: 0.25rem;
+}
+
+.messageText :global(.task-list-item-checkbox) {
+  margin: 0 0.2em 0.25em -1.4em;
+  vertical-align: middle;
+}
+
+/* Horizontal Rule */
+.messageText :global(hr) {
+  box-sizing: content-box;
+  overflow: hidden;
+  background: transparent;
+  border-bottom: 1px solid var(--global-border);
+  height: 0.25em;
+  padding: 0;
+  margin: var(--spacing-3) 0;
+  background-color: var(--global-border);
+  border: 0;
+}
+
+/* Emphasis */
+.messageText :global(strong) {
+  font-weight: 600;
+}
+
+.messageText :global(em) {
+  font-style: italic;
+}
+
+/* Strikethrough */
+.messageText :global(del) {
+  text-decoration: line-through;
+}
+
+/* Definition Lists */
+.messageText :global(dl) {
+  padding: 0;
+}
+
+.messageText :global(dl dt) {
+  padding: 0;
+  margin-top: var(--spacing-2);
+  font-size: 1em;
+  font-style: italic;
+  font-weight: 600;
+}
+
+.messageText :global(dl dd) {
+  padding: 0 var(--spacing-2);
+  margin-bottom: var(--spacing-2);
+}
+
+/* Special formatting for task list items */
+.messageText :global(ul) :global(li.task-list-item) {
+  list-style-type: none;
+  padding-left: 0;
+}
+
+.messageText :global(ul) :global(li.task-list-item::before) {
+  content: none;
+}
+
+/* Adjustments for GitHub Flavored Markdown */
+.messageText :global(li:has(input[type='checkbox'])) {
+  list-style-type: none;
+}
+
+.messageText :global(li:has(input[type='checkbox'])::before) {
+  content: none;
+}
+
+.messageText :global(ul > li:has(input[type='checkbox'])) {
+  position: relative;
+  padding-left: 1.5em;
+}
+
+.messageText :global(input[type='checkbox']) {
+  margin-right: 0.4em;
+  position: absolute;
+  left: 0;
+  top: 0.25em;
+}
+
+.agentName {
+  font-family: var(--main-font);
+  font-weight: 500;
+  font-size: var(--font-size-3);
+  line-height: 1.6;
+  color: var(--global-body-text);
+  margin-left: var(--spacing-1);
+}
+
+.messageTime {
+  font-family: var(--main-font);
+  font-weight: 400;
+  font-size: var(--font-size-2);
+  line-height: 1.6em;
+  text-align: left;
+  color: var(--overlay-50);
+  margin-left: var(--spacing-1);
+}
+
+.messageWrapper.generatingContainer {
+  min-height: 39px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+}
+
+.generatingText {
+  font-family: var(--main-font);
+  font-weight: 400;
+  font-size: 13px;
+  line-height: 1.8em;
+  color: var(--overlay-60);
+  width: auto;
+  position: relative;
+  display: inline-block;
+}
+
+.generatingText::after {
+  content: '';
+  display: inline-flex;
+  width: 0;
+  animation: dots 1.5s infinite steps(4, end);
+  overflow: hidden;
+  vertical-align: baseline;
+  line-height: 1.8em;
+}
+
+@keyframes dots {
+  0%,
+  20% {
+    content: '';
+    width: 0;
+  }
+  40% {
+    content: '.';
+    width: 1ch;
+  }
+  60% {
+    content: '..';
+    width: 2ch;
+  }
+  80%,
+  100% {
+    content: '...';
+    width: 3ch;
+  }
+}
