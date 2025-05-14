@@ -1,44 +1,11 @@
-import {
-  getFileContent,
-  getIssueComments,
-  getPullRequestDetails,
-} from '@liam-hq/github'
 import { logger, task } from '@trigger.dev/sdk/v3'
 import { v4 as uuidv4 } from 'uuid'
-import { langfuseLangchainHandler } from '../../functions/langfuseLangchainHandler'
+import { generateReview } from '../../functions/generateReview'
 import { createClient } from '../../libs/supabase'
-import { generateReview } from '../../prompts/generateReview/generateReview'
 import type { Review } from '../../types'
-import { fetchSchemaInfoWithOverrides } from '../../utils/schemaUtils'
+import type { GenerateReviewPayload } from '../../types'
+// We'll create saveReview.ts next, so this import will work after that
 import { saveReviewTask } from './saveReview'
-
-export type GenerateReviewPayload = {
-  pullRequestId: string
-  projectId: string
-  repositoryId: string
-  branchName: string
-  owner: string
-  name: string
-  pullRequestNumber: number
-  schemaFile: {
-    filename: string
-    content: string
-  }
-  fileChanges: Array<{
-    filename: string
-    status:
-      | 'added'
-      | 'modified'
-      | 'deleted'
-      | 'removed'
-      | 'renamed'
-      | 'copied'
-      | 'changed'
-      | 'unchanged'
-    changes: number
-    patch: string
-  }>
-}
 
 export type ReviewResponse = {
   review: Review
@@ -52,7 +19,7 @@ export type ReviewResponse = {
   name: string
 }
 
-export const processGenerateReview = async (
+const processGenerateReview = async (
   payload: GenerateReviewPayload,
 ): Promise<{ review: Review; traceId: string }> => {
   const supabase = createClient()
@@ -69,83 +36,9 @@ export const processGenerateReview = async (
     )
   }
 
-  const { data: docPaths, error: docPathsError } = await supabase
-    .from('doc_file_paths')
-    .select('*')
-    .eq('project_id', payload.projectId)
-    .eq('is_review_enabled', true)
-
-  if (docPathsError) {
-    throw new Error(
-      `Error fetching doc paths: ${JSON.stringify(docPathsError)}`,
-    )
-  }
-
-  const docsContentArray = await Promise.all(
-    docPaths.map(async (docPath: { path: string }) => {
-      try {
-        const fileData = await getFileContent(
-          `${payload.owner}/${payload.name}`,
-          docPath.path,
-          payload.branchName,
-          Number(repository.github_installation_identifier),
-        )
-
-        if (!fileData.content) {
-          console.warn(`No content found for ${docPath.path}`)
-          return null
-        }
-
-        return `# ${docPath.path}\n\n${fileData.content}`
-      } catch (error) {
-        console.error(`Error fetching content for ${docPath.path}:`, error)
-        return null
-      }
-    }),
-  )
-
-  const docsContent = docsContentArray.filter(Boolean).join('\n\n---\n\n')
-
   const predefinedRunId = uuidv4()
 
-  const prDetails = await getPullRequestDetails(
-    Number(repository.github_installation_identifier),
-    payload.owner,
-    payload.name,
-    payload.pullRequestNumber,
-  )
-
-  const prComments = await getIssueComments(
-    Number(repository.github_installation_identifier),
-    payload.owner,
-    payload.name,
-    payload.pullRequestNumber,
-  )
-
-  const prDescription = prDetails.body || 'No description provided.'
-
-  const formattedComments = prComments
-    .map((comment) => `${comment.user?.login || 'Anonymous'}: ${comment.body}`)
-    .join('\n\n')
-
-  // Fetch schema information with overrides
-  const { overriddenSchema } = await fetchSchemaInfoWithOverrides(
-    payload.projectId,
-    payload.branchName,
-    `${payload.owner}/${payload.name}`,
-    repository.github_installation_identifier,
-  )
-
-  const callbacks = [langfuseLangchainHandler]
-  const review = await generateReview(
-    docsContent,
-    overriddenSchema,
-    payload.fileChanges,
-    prDescription,
-    formattedComments,
-    callbacks,
-    predefinedRunId,
-  )
+  const review = await generateReview()
 
   return { review: review, traceId: predefinedRunId }
 }

@@ -9,6 +9,6 @@
     "target": "ES2022",
     "moduleResolution": "bundler"
   },
-  "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist"]
+  "include": ["src/**/*", "instrumentation.ts"],
+  "exclude": ["node_modules", "dist", ".mastra"]
 }

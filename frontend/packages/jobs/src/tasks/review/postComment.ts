@@ -7,7 +7,7 @@ import {
 import { logger, task } from '@trigger.dev/sdk/v3'
 import { createClient } from '../../libs/supabase'
 
-export type PostCommentPayload = {
+type PostCommentPayload = {
   reviewComment: string
   projectId: string
   pullRequestId: string
@@ -66,7 +66,7 @@ async function generateERDLink({
   return `\n\nER Diagram:\n- View ERD for ${schemaPath.path}: ${process.env['NEXT_PUBLIC_BASE_URL']}/app/projects/${projectId}/ref/${encodedBranchRef}/schema/${schemaPath.path}`
 }
 
-export async function postComment(
+async function postComment(
   payload: PostCommentPayload,
 ): Promise<{ success: boolean; message: string }> {
   const { reviewComment, pullRequestId, repositoryId, projectId, branchName } =

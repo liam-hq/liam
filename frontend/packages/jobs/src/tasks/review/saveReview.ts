@@ -9,7 +9,7 @@ import { kindToCategory } from '../../utils/categoryUtils'
 import type { ReviewResponse } from './generateReview'
 import { postCommentTask } from './postComment'
 
-export const processSaveReview = async (
+const processSaveReview = async (
   payload: ReviewResponse,
 ): Promise<{ success: boolean; overallReviewId: string }> => {
   const supabase = createClient()

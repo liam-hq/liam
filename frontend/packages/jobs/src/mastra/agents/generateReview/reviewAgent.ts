@@ -1,14 +1,8 @@
-import type { Callbacks } from '@langchain/core/callbacks/manager'
-import { ChatPromptTemplate } from '@langchain/core/prompts'
-import { ChatOpenAI } from '@langchain/openai'
-import type { Schema } from '@liam-hq/db-structure'
-import { toJsonSchema } from '@valibot/to-json-schema'
-import type { JSONSchema7 } from 'json-schema'
-import { parse } from 'valibot'
-import type { GenerateReviewPayload } from '../../types'
-import { reviewSchema } from './reviewSchema'
+import { openai } from '@ai-sdk/openai'
+import type { Metric } from '@mastra/core'
+import { Agent, type ToolsInput } from '@mastra/core/agent'
 
-export const SYSTEM_PROMPT = `You are a database design expert tasked with reviewing database schema changes. Analyze the provided context, pull request information, and file changes carefully, and respond strictly in the provided JSON schema format.
+const SYSTEM_PROMPT = `You are a database design expert tasked with reviewing database schema changes. Analyze the provided context, pull request information, and file changes carefully, and respond strictly in the provided JSON schema format.
 
 When analyzing the changes, consider:
 1. The pull request description, which often contains the rationale behind changes and domain-specific information
@@ -83,59 +77,12 @@ Before finalizing your response, perform these self-checks:
 **Your output must be raw JSON only. Do not include any markdown code blocks or extraneous formatting.****
 `
 
-export const USER_PROMPT = `Pull Request Description:
-{prDescription}
-
-Pull Request Comments:
-{prComments}
-
-Documentation Context:
-{docsContent}
-
-Current Database Schema:
-{schema}
-
-File Changes:
-{fileChanges}`
-
-export const reviewJsonSchema: JSONSchema7 = toJsonSchema(reviewSchema)
-
-const model = new ChatOpenAI({
-  model: 'o3-mini-2025-01-31',
+export const reviewAgent: Agent<
+  'Migration Review Agent',
+  ToolsInput,
+  Record<string, Metric>
+> = new Agent({
+  name: 'Migration Review Agent',
+  instructions: SYSTEM_PROMPT,
+  model: openai('o3-mini-2025-01-31'),
 })
-
-const chatPrompt = ChatPromptTemplate.fromMessages([
-  ['system', SYSTEM_PROMPT],
-  ['human', USER_PROMPT],
-])
-
-export const chain = chatPrompt.pipe(
-  model.withStructuredOutput(reviewJsonSchema),
-)
-
-export const generateReview = async (
-  docsContent: string,
-  schema: Schema,
-  fileChanges: GenerateReviewPayload['fileChanges'],
-  prDescription: string,
-  prComments: string,
-  callbacks: Callbacks,
-  runId: string,
-) => {
-  const response = await chain.invoke(
-    {
-      docsContent,
-      schema: JSON.stringify(schema, null, 2),
-      fileChanges,
-      prDescription,
-      prComments,
-    },
-    {
-      callbacks,
-      runId,
-      tags: ['generateReview'],
-    },
-  )
-  const parsedResponse = parse(reviewSchema, response)
-  return parsedResponse
-}

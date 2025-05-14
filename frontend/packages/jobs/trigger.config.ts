@@ -115,5 +115,5 @@ export default defineConfig({
       },
     })
   },
-  dirs: ['./src/trigger', './src/tasks'],
+  dirs: ['./src/tasks', './src/trigger'],
 })

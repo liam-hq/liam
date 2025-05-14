@@ -1,11 +1,11 @@
 import { getFileContent } from '@liam-hq/github'
+import { logger } from '@trigger.dev/sdk/v3'
 import { v4 as uuidv4 } from 'uuid'
 import { createClient } from '../libs/supabase'
-import type { FileContent } from '../prompts/generateDocsSuggestion/docsSuggestionSchema'
-import { generateDocsSuggestion } from '../prompts/generateDocsSuggestion/generateDocsSuggestion'
 import type { Review } from '../types'
 import { fetchSchemaInfoWithOverrides } from '../utils/schemaUtils'
-import { langfuseLangchainHandler } from './langfuseLangchainHandler'
+import type { FileContent } from './docsSuggestionSchema'
+import { generateDocsSuggestion } from './generateDocsSuggestion'
 
 export const DOC_FILES = [
   'schemaPatterns.md',
@@ -66,7 +66,7 @@ export async function processGenerateDocsSuggestion(payload: {
           : '',
       }
     } catch (error) {
-      console.warn(`Could not fetch file ${filePath}: ${error}`)
+      logger.warn(`Could not fetch file ${filePath}: ${error}`)
       return {
         id: filename,
         title: filename,
@@ -89,7 +89,6 @@ export async function processGenerateDocsSuggestion(payload: {
   }
 
   const predefinedRunId = uuidv4()
-  const callbacks = [langfuseLangchainHandler]
 
   // Fetch schema information with overrides
   const { overriddenSchema } = await fetchSchemaInfoWithOverrides(
@@ -102,7 +101,6 @@ export async function processGenerateDocsSuggestion(payload: {
   const result = await generateDocsSuggestion(
     payload.review,
     formattedDocsContent,
-    callbacks,
     predefinedRunId,
     overriddenSchema,
   )

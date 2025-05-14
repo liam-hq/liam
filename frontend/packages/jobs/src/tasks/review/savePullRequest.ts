@@ -1,3 +1,4 @@
+import '@mastra/core'
 import {
   getFileContent,
   getPullRequestDetails,
@@ -241,7 +242,7 @@ async function createOrUpdateMigrationRecord(
   }
 }
 
-export async function processSavePullRequest(
+async function processSavePullRequest(
   payload: SavePullRequestPayload,
 ): Promise<SavePullRequestResult> {
   const supabase = createClient()
