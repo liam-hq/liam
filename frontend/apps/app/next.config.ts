@@ -13,14 +13,6 @@ if (process.env.VERCEL_ENV === 'production') {
 }
 
 const nextConfig: NextConfig = {
-  // Server-only packages that should not be bundled on the client
-  // This helps prevent issues with packages that use Node.js specific APIs
-  // - @mastra: AI agent framework for LLM interactions, used in backend functions
-  // - @libsql: SQLite database client, used by @mastra for data operations
-  experimental: {
-    serverComponentsExternalPackages: ['@mastra/*', '@libsql/*'],
-  },
-  output: 'standalone',
   // NOTE: Exclude Prisma-related packages from the bundle
   // These packages are installed separately in the node_modules/@prisma directory
   // Excluding them prevents `Error: Cannot find module 'fs'` errors in the build process
@@ -29,15 +21,23 @@ const nextConfig: NextConfig = {
   },
   webpack: (config) => {
     // Handle markdown files by treating them as empty modules
+    // This helps prevent issues with packages that use Node.js specific APIs
+    // - @mastra: AI agent framework for LLM interactions, used in backend functions
+    // - @libsql: SQLite database client, used by @mastra for data operations
+
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     config.module.rules.push({
       test: /\.md$/,
       use: 'null-loader',
     })
 
     // Explicitly exclude problematic markdown files
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment
     config.resolve = {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       ...config.resolve,
       alias: {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         ...config.resolve?.alias,
         '@libsql/client/README.md': false,
         '@libsql/darwin-arm64/README.md': false,
