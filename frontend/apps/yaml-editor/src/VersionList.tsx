@@ -3,12 +3,14 @@
 import { useVersionStore } from "./versionStore"
 import { Button } from "@/components/ui/button"
 import { useToast } from "@/components/ui/use-toast"
-import { useEffect, useRef } from "react"
+import { useEffect, useRef, useState } from "react"
 
 export function VersionList() {
-  const { versions, selectedVersionId, selectVersion, revertToVersion } = useVersionStore()
+  const { versions, selectedVersionId, selectVersion, revertToVersion, undoVersion, redoVersion, updateVersionTitle } = useVersionStore()
   const { toast } = useToast()
   const containerRef = useRef<HTMLDivElement>(null)
+  const [editingTitleId, setEditingTitleId] = useState<number | null>(null)
+  const [editingTitleValue, setEditingTitleValue] = useState<string>("")
 
   // Scroll to the bottom when versions change
   useEffect(() => {
@@ -22,6 +24,22 @@ export function VersionList() {
     toast({
       title: "Version Reverted",
       description: `Successfully reverted to version ${id}`,
+    })
+  }
+  
+  const handleUndo = (id: number) => {
+    undoVersion(id)
+    toast({
+      title: "Changes Undone",
+      description: `Successfully undid changes from version ${id}`,
+    })
+  }
+  
+  const handleRedo = (id: number) => {
+    redoVersion(id)
+    toast({
+      title: "Changes Redone",
+      description: `Successfully redone changes from version ${id}`,
     })
   }
 
@@ -52,28 +70,140 @@ export function VersionList() {
                 }`}
                 onClick={() => selectVersion(version.id)}
               >
-                <div className="flex justify-between items-start">
-                  <div>
-                    <p className="font-medium text-gray-900">Version {version.id}</p>
-                    <p className="text-sm text-gray-500">{version.timestamp.toLocaleString()}</p>
-                    <pre className="mt-2 text-sm text-gray-700">
-                      {version.patch
-                        ? JSON.stringify(version.patch, null, 2)
-                        : null}
-                    </pre>
+                <div className="flex flex-col">
+                  <div className="flex justify-between items-center">
+                    <div className="flex flex-col">
+                      <div className="flex items-center">
+                        <span className="text-xs bg-gray-100 text-gray-700 px-2 py-0.5 rounded-md">
+                          Version {version.id}
+                        </span>
+                        {version.id === versions[0].id && (
+                          <span className="ml-1 text-xs bg-blue-100 text-blue-800 px-1 py-0.5 rounded">
+                            latest
+                          </span>
+                        )}
+                      </div>
+                      
+                      {editingTitleId === version.id ? (
+                        <div className="mt-1 flex items-center">
+                          <input
+                            type="text"
+                            value={editingTitleValue}
+                            onChange={(e) => setEditingTitleValue(e.target.value)}
+                            className="text-sm border border-gray-300 rounded px-2 py-1 w-full"
+                            onClick={(e) => e.stopPropagation()}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') {
+                                updateVersionTitle(version.id, editingTitleValue)
+                                setEditingTitleId(null)
+                                e.stopPropagation()
+                              } else if (e.key === 'Escape') {
+                                setEditingTitleId(null)
+                                e.stopPropagation()
+                              }
+                            }}
+                            autoFocus
+                          />
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="ml-1 h-6 px-2"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              updateVersionTitle(version.id, editingTitleValue)
+                              setEditingTitleId(null)
+                            }}
+                          >
+                            Save
+                          </Button>
+                        </div>
+                      ) : (
+                        <div 
+                          className="mt-1 text-sm text-gray-600 cursor-pointer hover:text-gray-900"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            setEditingTitleId(version.id)
+                            setEditingTitleValue(version.title)
+                          }}
+                        >
+                          {version.title}
+                        </div>
+                      )}
+                    </div>
+                    
+                    <div className="flex space-x-1">
+                      {/* Show "Revert to this" button for all versions except the latest */}
+                      {version.id !== versions[0].id && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="text-[0.6rem] px-1 py-0.5 h-6"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            handleRevert(version.id)
+                          }}
+                        >
+                          Revert to this
+                        </Button>
+                      )}
+                      
+                      {/* Show "Undo" button for all versions except the first one (Version 1) */}
+                      {version.id !== 1 && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="text-[0.6rem] px-1 py-0.5 h-6"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            handleUndo(version.id)
+                          }}
+                        >
+                          Undo
+                        </Button>
+                      )}
+                      
+                      {/* Redo button - hidden for Version 1 */}
+                      {version.id !== 1 && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="text-[0.6rem] px-1 py-0.5 h-6"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            handleRedo(version.id)
+                          }}
+                        >
+                          Redo
+                        </Button>
+                      )}
+                    </div>
                   </div>
-
-                  {selectedVersionId === version.id && version.id !== versions[0].id && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        handleRevert(version.id)
-                      }}
-                    >
-                      Revert to this
-                    </Button>
+                  
+                  {(version.patch || version.reversePatch) && (
+                    <details className="mt-2">
+                      <summary className="text-sm text-gray-500 cursor-pointer hover:text-gray-700">
+                        Patch details
+                      </summary>
+                      <div className="mt-1 p-2 bg-gray-50 rounded">
+                        {version.patch && (
+                          <div>
+                            <h4 className="text-xs font-medium text-gray-700 mb-1">Forward Patch:</h4>
+                            <pre className="text-sm text-gray-700 overflow-auto">
+                              {JSON.stringify(version.patch, null, 2)}
+                            </pre>
+                          </div>
+                        )}
+                        
+                        {version.reversePatch && (
+                          <div className="mt-3">
+                            <h4 className="text-xs font-medium text-gray-700 mb-1">Reverse Patch:</h4>
+                            <pre className="text-sm text-gray-700 overflow-auto">
+                              {JSON.stringify(version.reversePatch, null, 2)}
+                            </pre>
+                          </div>
+                        )}
+                      </div>
+                    </details>
                   )}
                 </div>
               </li>
