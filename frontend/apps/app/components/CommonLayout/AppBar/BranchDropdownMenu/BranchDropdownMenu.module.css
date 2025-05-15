@@ -45,13 +45,3 @@
   height: 0.75rem;
   color: var(--overlay-70);
 }
-
-.content {
-  width: 15rem;
-  max-height: 25rem;
-  overflow-y: scroll;
-}
-
-.radioItem {
-  place-content: start !important;
-}
