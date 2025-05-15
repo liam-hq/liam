@@ -44,18 +44,7 @@
   flex: 1;
 }
 
-.roleLabel {
-  display: flex;
-  align-items: center;
-  padding: var(--spacing-1) var(--spacing-2);
-  font-size: var(--font-size-3);
-  color: var(--global-foreground);
-  white-space: nowrap;
-}
 
-.manageButton {
-  white-space: nowrap;
-}
 
 .moreButton {
   display: flex;
