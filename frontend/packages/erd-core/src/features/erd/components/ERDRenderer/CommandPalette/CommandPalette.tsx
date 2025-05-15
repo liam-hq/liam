@@ -1,5 +1,6 @@
 'use client'
 
+import { useTableSelection } from '@/features/erd/hooks'
 import { useSchemaStore } from '@/stores'
 import { Command } from 'cmdk'
 import { useEffect, useState } from 'react'
@@ -11,6 +12,8 @@ export const CommandPalette = () => {
   const schema = useSchemaStore()
 
   const [tableName, setTableName] = useState<string | null>(null)
+  const { selectTable } = useTableSelection()
+  const table = schema.tables[tableName ?? '']
 
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
@@ -23,8 +26,6 @@ export const CommandPalette = () => {
     document.addEventListener('keydown', down)
     return () => document.removeEventListener('keydown', down)
   })
-
-  const table = schema.tables[tableName ?? '']
 
   return (
     <Command.Dialog
@@ -53,23 +54,35 @@ export const CommandPalette = () => {
         </Command.List>
         <div>
           {table && (
-            <TableNode
-              id=""
-              type="table"
-              data={{
-                table: table,
-                showMode: 'ALL_FIELDS',
-                isActiveHighlighted: false,
-                isHighlighted: false,
-                sourceColumnName: undefined,
-                targetColumnCardinalities: undefined,
-              }}
-              dragging={false}
-              isConnectable={false}
-              positionAbsoluteX={0}
-              positionAbsoluteY={0}
-              zIndex={0}
-            />
+            <>
+              <TableNode
+                id=""
+                type="table"
+                data={{
+                  table: table,
+                  showMode: 'ALL_FIELDS',
+                  isActiveHighlighted: false,
+                  isHighlighted: false,
+                  sourceColumnName: undefined,
+                  targetColumnCardinalities: undefined,
+                }}
+                dragging={false}
+                isConnectable={false}
+                positionAbsoluteX={0}
+                positionAbsoluteY={0}
+                zIndex={0}
+              />
+              <button
+                type="button"
+                onClick={() => {
+                  setOpen(false)
+                  selectTable({ tableId: table.name, displayArea: 'main' })
+                }}
+                style={{ marginTop: 8, border: '1px solid black' }}
+              >
+                go to the table
+              </button>
+            </>
           )}
         </div>
       </div>
