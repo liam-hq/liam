@@ -20,6 +20,8 @@
     "@liam-hq/jobs": "workspace:*",
     "@liam-hq/ui": "workspace:*",
     "@mastra/core": "0.9.3",
+    "@mastra/pg": "0.3.4",
+    "@mastra/rag": "0.1.23",
     "@next/third-parties": "15.3.1",
     "@octokit/auth-app": "7.2.1",
     "@octokit/rest": "21.1.1",

@@ -1,6 +1,6 @@
 import { Mastra } from '@mastra/core'
 import { LangfuseExporter } from 'langfuse-vercel'
-import { databaseSchemaAgent } from './agents/databaseSchemaAgent'
+import { databaseSchemaAgent } from './agents'
 /**
  * Mastra instance with Langfuse tracing integration
  *

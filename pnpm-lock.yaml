@@ -102,6 +102,12 @@ importers:
       '@mastra/core':
         specifier: 0.9.3
         version: 0.9.3(@valibot/to-json-schema@1.0.0(valibot@1.0.0(typescript@5.8.3)))(effect@3.14.19)(openapi-types@12.1.3)(react@18.3.1)(valibot@1.0.0(typescript@5.8.3))(zod@3.23.8)
+      '@mastra/pg':
+        specifier: 0.3.4
+        version: 0.3.4(@valibot/to-json-schema@1.0.0(valibot@1.0.0(typescript@5.8.3)))(effect@3.14.19)(openapi-types@12.1.3)(pg-query-stream@4.8.1(pg@8.14.1))(react@18.3.1)(valibot@1.0.0(typescript@5.8.3))(zod@3.23.8)
+      '@mastra/rag':
+        specifier: 0.1.23
+        version: 0.1.23(@valibot/to-json-schema@1.0.0(valibot@1.0.0(typescript@5.8.3)))(ai@4.3.15(react@18.3.1)(zod@3.23.8))(effect@3.14.19)(openapi-types@12.1.3)(react@18.3.1)(valibot@1.0.0(typescript@5.8.3))
       '@next/third-parties':
         specifier: 15.3.1
         version: 15.3.1(next@15.3.1(@opentelemetry/api@1.9.0)(@playwright/test@1.52.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)
@@ -2683,6 +2689,20 @@ packages:
     engines: {node: '>=20'}
     peerDependencies:
       zod: ^3.24.0
+
+  '@mastra/core@0.9.4':
+    resolution: {integrity: sha512-vkoc2Dgmfo0wwX6DZcc2nUnMmENoW3kSuNYJrDfQzfmS36vR7jBjtv+Y9zdpk9TcHIRCHVHcNub7DG1tnZ40fQ==}
+    engines: {node: '>=20'}
+    peerDependencies:
+      zod: ^3.0.0
+
+  '@mastra/pg@0.3.4':
+    resolution: {integrity: sha512-HPOw7a3yoKuX9CEGTaCaUwrx8vZy80OMPMCvgC/lT9lDTvCM5JUzik/UVSMa9Ysl+fycIJRKedQcPkvDxm/stA==}
+
+  '@mastra/rag@0.1.23':
+    resolution: {integrity: sha512-cxSIM8zPoz9P/uy/BePPY/fLW9wUB2UymL0m6ejJY4ioL+WshZtrujaXxBjEPHzALcchKThW+vXZjpXRF2nz2Q==}
+    peerDependencies:
+      ai: ^4.0.0
 
   '@mdx-js/mdx@3.1.0':
     resolution: {integrity: sha512-/QxEhPAvGwbQmy1Px8F899L5Uc2KZ6JtXwlCgJmjSTBedwOZkByYcBG4GceIGPXRDsmfxhHazuS+hlOShRLeDw==}
@@ -5859,6 +5879,10 @@ packages:
   asn1.js@4.10.1:
     resolution: {integrity: sha512-p32cOF5q0Zqs9uBiONKYLm6BClCoBCM5O9JfeUSlnQLBTxYdTK+pW+nXflm8UkKd2UYlEbYz5qEi0JuZR9ckSw==}
 
+  assert-options@0.8.2:
+    resolution: {integrity: sha512-XaXoMxY0zuwAb0YuZjxIm8FeWvNq0aWNIbrzHhFjme8Smxw4JlPoyrAKQ6808k5UvQdhvnWqHZCphq5mXd4TDA==}
+    engines: {node: '>=10.0.0'}
+
   assert@2.1.0:
     resolution: {integrity: sha512-eLHpSK/Y4nhMJ07gDaAzoX/XAKS8PSaojml3M0DM4JpV1LAi5JOJ/p6H/XWrl8L+DzVEvVCW1z3vWAaB9oTsQw==}
 
@@ -5888,6 +5912,9 @@ packages:
   async-listen@3.0.1:
     resolution: {integrity: sha512-cWMaNwUJnf37C/S5TfCkk/15MwbPRwVYALA2jtjkbHjCmAPiDXyNJy2q3p1KAZzDLHAWyarUWSujUoHR4pEgrA==}
     engines: {node: '>= 14'}
+
+  async-mutex@0.5.0:
+    resolution: {integrity: sha512-1A94B18jkJ3DYq284ohPxoXbfTA5HsQ7/Mf4DEhcyLx3Bz27Rh59iScbB6EPiP+B+joue6YCxcMXSbFC1tZKwA==}
 
   async-sema@3.1.1:
     resolution: {integrity: sha512-tLRNUXati5MFePdAk8dw7Qt7DpxPB60ofAgn8WRhW6a2rcimZnYBP9oxHiv0OHy+Wz7kPMG+t4LGdt31+4EmGg==}
@@ -8970,6 +8997,9 @@ packages:
     resolution: {integrity: sha512-LA4ZjwlnUblHVgq0oBF3Jl/6h/Nvs5fzBLwdEF4nuxnFdsfajde4WfxtJr3CaiH+F6ewcIB/q4jQ4UzPyid+CQ==}
     hasBin: true
 
+  node-html-better-parser@1.4.11:
+    resolution: {integrity: sha512-rXYKBD30q6Iw/Y8o2ueJILB29Z3RrqQQN/U2PDg4Iz2TSZP/KmqdcGp+pl8o5uYZlvIKh+A4UfOK98pKIb3cRw==}
+
   node-plop@0.26.3:
     resolution: {integrity: sha512-Cov028YhBZ5aB7MdMWJEmwyBig43aGL5WT4vdoB28Oitau1zZAcHUn8Sgfk9HM33TqhtLJ9PlM/O0Mv+QpV/4Q==}
     engines: {node: '>=8.9.4'}
@@ -9385,19 +9415,71 @@ packages:
   perfect-debounce@1.0.0:
     resolution: {integrity: sha512-xCy9V055GLEqoFaHoC1SoLIaLmWctgCUaBaWxDZ7/Zx4CTyX7cJQLJOok/orfjZAh9kEYpjJa4d0KcJmCbctZA==}
 
+  pg-cloudflare@1.2.5:
+    resolution: {integrity: sha512-OOX22Vt0vOSRrdoUPKJ8Wi2OpE/o/h9T8X1s4qSkCedbNah9ei2W2765be8iMVxQUsvgT7zIAT2eIa9fs5+vtg==}
+
+  pg-connection-string@2.9.0:
+    resolution: {integrity: sha512-P2DEBKuvh5RClafLngkAuGe9OUlFV7ebu8w1kmaaOgPcpJd1RIFh7otETfI6hAR8YupOLFTY7nuvvIn7PLciUQ==}
+
+  pg-cursor@2.15.0:
+    resolution: {integrity: sha512-sO3SQP9seXoaV7sddeKrPQk3zhnrMchCr71cYjkyNHCC6n3mA5AAyhK5foxy+yBtnBZuPqxzoiVxz3jKyV7D3g==}
+    peerDependencies:
+      pg: ^8
+
   pg-int8@1.0.1:
     resolution: {integrity: sha512-WCtabS6t3c8SkpDBUlb1kjOs7l66xsGdKpIPZsg4wR+B3+u9UAum2odSsF9tnvxg80h4ZxLWMy4pRjOsFIqQpw==}
     engines: {node: '>=4.0.0'}
 
-  pg-protocol@1.9.5:
-    resolution: {integrity: sha512-DYTWtWpfd5FOro3UnAfwvhD8jh59r2ig8bPtc9H8Ds7MscE/9NYruUQWFAOuraRl29jwcT2kyMFQ3MxeaVjUhg==}
+  pg-minify@1.7.0:
+    resolution: {integrity: sha512-kFPxAWAhPMvOqnY7klP3scdU5R7bxpAYOm8vGExuIkcSIwuFkZYl4C4XIPQ8DtXY2NzVmAX1aFHpvFSXQ/qQmA==}
+    engines: {node: '>=14.0.0'}
+
+  pg-pool@3.10.0:
+    resolution: {integrity: sha512-DzZ26On4sQ0KmqnO34muPcmKbhrjmyiO4lCCR0VwEd7MjmiKf5NTg/6+apUEu0NF7ESa37CGzFxH513CoUmWnA==}
+    peerDependencies:
+      pg: '>=8.0'
+
+  pg-promise@11.13.0:
+    resolution: {integrity: sha512-NWCsh1gnELfYRF5hNhfXPcSxuCk9C3FyM9MhmGkVTmepczAC2aXuBkyXhipVlHzp0V/IVzyCZOrlH48Ma3i7YQ==}
+    engines: {node: '>=14.0'}
+    peerDependencies:
+      pg-query-stream: 4.8.1
+
+  pg-protocol@1.10.0:
+    resolution: {integrity: sha512-IpdytjudNuLv8nhlHs/UrVBhU0e78J0oIS/0AVdTbWxSOkFUVdsHC/NrorO6nXsQNDTT1kzDSOMJubBQviX18Q==}
 
   pg-query-emscripten@5.1.0:
     resolution: {integrity: sha512-H1ZWOzLRddmHuE4GZqFjjo55hA9zMiePz/WDDGANA/EnvILCJps9pcRucyGd+MFvapeYOy6TWSYz6DbtBOaxRQ==}
 
+  pg-query-stream@4.8.1:
+    resolution: {integrity: sha512-kZo6C6HSzYFF6mlwl+etDk5QZD9CMdlHUXpof6PkK9+CHHaBLvOd2lZMwErOOpC/ldg4thrAojS8sG1B8PZ9Yw==}
+    peerDependencies:
+      pg: ^8
+
   pg-types@2.2.0:
     resolution: {integrity: sha512-qTAAlrEsl8s4OiEQY69wDvcMIdQN6wdz5ojQiOy6YRMuynxenON0O5oCpJI6lshc6scgAY8qvJ2On/p+CXY0GA==}
     engines: {node: '>=4'}
+
+  pg@8.14.1:
+    resolution: {integrity: sha512-0TdbqfjwIun9Fm/r89oB7RFQ0bLgduAhiIqIXOsyKoiC/L54DbuAAzIEN/9Op0f1Po9X7iCPXGoa/Ah+2aI8Xw==}
+    engines: {node: '>= 8.0.0'}
+    peerDependencies:
+      pg-native: '>=3.0.1'
+    peerDependenciesMeta:
+      pg-native:
+        optional: true
+
+  pg@8.16.0:
+    resolution: {integrity: sha512-7SKfdvP8CTNXjMUzfcVTaI+TDzBEeaUnVwiVGZQD1Hh33Kpev7liQba9uLd4CfN8r9mCVsD0JIpq03+Unpz+kg==}
+    engines: {node: '>= 8.0.0'}
+    peerDependencies:
+      pg-native: '>=3.0.1'
+    peerDependenciesMeta:
+      pg-native:
+        optional: true
+
+  pgpass@1.0.5:
+    resolution: {integrity: sha512-FdW9r/jQZhSeohs1Z3sI1yxFQNFvMcnmfuj4WBMUTxOrAyLMaTcE1aAMBiTlbMNaXvBCQuVi0R7hd8udDSP7ug==}
 
   picocolors@1.0.0:
     resolution: {integrity: sha512-1fygroTLlHu66zi26VoTDv8yRgm0Fccecssto+MhsZ0D/DGW2sm8E8AjW7NU5VVTRt5GxbeZ5qBuJr+HyLYkjQ==}
@@ -10278,6 +10360,10 @@ packages:
 
   spawndamnit@3.0.1:
     resolution: {integrity: sha512-MmnduQUuHCoFckZoWnXsTg7JaiLBJrKFj9UI2MbRPGaJeVpsLcVBu6P/IGZovziM/YBsellCmsprgNA+w0CzVg==}
+
+  spex@3.4.0:
+    resolution: {integrity: sha512-8JeZJ7QlEBnSj1W1fKXgbB2KUPA8k4BxFMf6lZX/c1ZagU/1b9uZWZK0yD6yjfzqAIuTNG4YlRmtMpQiXuohsg==}
+    engines: {node: '>=14.0.0'}
 
   split2@4.2.0:
     resolution: {integrity: sha512-UcjcJOWknrNkF6PLX83qcHM6KHgVKNkV62Y8a5uYDVv9ydGQVwAHMKqHdJje1VTWpljG0WYpCDhrCdAOYH4TWg==}
@@ -11322,6 +11408,9 @@ packages:
     resolution: {integrity: sha512-LKYU1iAXJXUgAXn9URjiu+MWhyUXHsvfp7mcuYm9dSUKK0/CjtrUwFAxD82/mCWbtLsGjFIad0wIsod4zrTAEQ==}
     engines: {node: '>=0.4'}
 
+  xxhash-wasm@1.1.0:
+    resolution: {integrity: sha512-147y/6YNh+tlp6nd/2pWq38i9h6mz/EuQ6njIrmW8D1BS5nCqs0P6DG+m6zTGnNz5I+uhZ0SHxBs9BsPrwcKDA==}
+
   y18n@5.0.8:
     resolution: {integrity: sha512-0pfFzegeDWJHJIAmTLRP2DwHjdF5s7jo9tuztdQxAhINCdvS+3nGINqPd00AphqJR/0LhANUS6/+7SCb98YOfA==}
     engines: {node: '>=10'}
@@ -11391,6 +11480,9 @@ packages:
   zod-error@1.5.0:
     resolution: {integrity: sha512-zzopKZ/skI9iXpqCEPj+iLCKl9b88E43ehcU+sbRoHuwGd9F1IDVGQ70TyO6kmfiRL1g4IXkjsXK+g1gLYl4WQ==}
 
+  zod-from-json-schema@0.0.5:
+    resolution: {integrity: sha512-zYEoo86M1qpA1Pq6329oSyHLS785z/mTwfr9V1Xf/ZLhuuBGaMlDGu/pDVGVUe4H4oa1EFgWZT53DP0U3oT9CQ==}
+
   zod-to-json-schema@3.24.5:
     resolution: {integrity: sha512-/AuWwMP+YqiPbsJx5D6TfgRTc4kTLjsh5SOcd4bLsfUg2RcEXrFMJl1DGgdHy2aCfsIA/cr/1JM0xcB2GZji8g==}
     peerDependencies:
@@ -11449,6 +11541,13 @@ snapshots:
       secure-json-parse: 2.7.0
       zod: 3.23.8
 
+  '@ai-sdk/provider-utils@2.2.8(zod@3.24.3)':
+    dependencies:
+      '@ai-sdk/provider': 1.1.3
+      nanoid: 3.3.11
+      secure-json-parse: 2.7.0
+      zod: 3.24.3
+
   '@ai-sdk/provider@1.1.3':
     dependencies:
       json-schema: 0.4.0
@@ -11463,12 +11562,29 @@ snapshots:
     optionalDependencies:
       zod: 3.23.8
 
+  '@ai-sdk/react@1.2.12(react@18.3.1)(zod@3.24.3)':
+    dependencies:
+      '@ai-sdk/provider-utils': 2.2.8(zod@3.24.3)
+      '@ai-sdk/ui-utils': 1.2.11(zod@3.24.3)
+      react: 18.3.1
+      swr: 2.3.3(react@18.3.1)
+      throttleit: 2.1.0
+    optionalDependencies:
+      zod: 3.24.3
+
   '@ai-sdk/ui-utils@1.2.11(zod@3.23.8)':
     dependencies:
       '@ai-sdk/provider': 1.1.3
       '@ai-sdk/provider-utils': 2.2.8(zod@3.23.8)
       zod: 3.23.8
       zod-to-json-schema: 3.24.5(zod@3.23.8)
+
+  '@ai-sdk/ui-utils@1.2.11(zod@3.24.3)':
+    dependencies:
+      '@ai-sdk/provider': 1.1.3
+      '@ai-sdk/provider-utils': 2.2.8(zod@3.24.3)
+      zod: 3.24.3
+      zod-to-json-schema: 3.24.5(zod@3.24.3)
 
   '@alloc/quick-lru@5.2.0': {}
 
@@ -13726,6 +13842,171 @@ snapshots:
       xstate: 5.19.2
       zod: 3.23.8
       zod-to-json-schema: 3.24.5(zod@3.23.8)
+    transitivePeerDependencies:
+      - '@hono/arktype-validator'
+      - '@hono/effect-validator'
+      - '@hono/typebox-validator'
+      - '@hono/valibot-validator'
+      - '@hono/zod-validator'
+      - '@sinclair/typebox'
+      - '@valibot/to-json-schema'
+      - arktype
+      - aws-crt
+      - bufferutil
+      - effect
+      - encoding
+      - openapi-types
+      - react
+      - supports-color
+      - utf-8-validate
+      - valibot
+      - zod-openapi
+
+  '@mastra/core@0.9.4(@valibot/to-json-schema@1.0.0(valibot@1.0.0(typescript@5.8.3)))(effect@3.14.19)(openapi-types@12.1.3)(react@18.3.1)(valibot@1.0.0(typescript@5.8.3))(zod@3.23.8)':
+    dependencies:
+      '@libsql/client': 0.14.0
+      '@opentelemetry/api': 1.9.0
+      '@opentelemetry/auto-instrumentations-node': 0.56.1(@opentelemetry/api@1.9.0)
+      '@opentelemetry/core': 1.30.1(@opentelemetry/api@1.9.0)
+      '@opentelemetry/exporter-trace-otlp-grpc': 0.57.2(@opentelemetry/api@1.9.0)
+      '@opentelemetry/exporter-trace-otlp-http': 0.57.2(@opentelemetry/api@1.9.0)
+      '@opentelemetry/otlp-exporter-base': 0.57.2(@opentelemetry/api@1.9.0)
+      '@opentelemetry/otlp-transformer': 0.57.2(@opentelemetry/api@1.9.0)
+      '@opentelemetry/resources': 1.30.1(@opentelemetry/api@1.9.0)
+      '@opentelemetry/sdk-metrics': 1.30.1(@opentelemetry/api@1.9.0)
+      '@opentelemetry/sdk-node': 0.57.2(@opentelemetry/api@1.9.0)
+      '@opentelemetry/sdk-trace-base': 1.30.1(@opentelemetry/api@1.9.0)
+      '@opentelemetry/sdk-trace-node': 1.30.1(@opentelemetry/api@1.9.0)
+      '@opentelemetry/semantic-conventions': 1.32.0
+      ai: 4.3.15(react@18.3.1)(zod@3.23.8)
+      cohere-ai: 7.17.1
+      date-fns: 3.6.0
+      dotenv: 16.5.0
+      fastembed: 1.14.4
+      hono: 4.7.9
+      hono-openapi: 0.4.8(@valibot/to-json-schema@1.0.0(valibot@1.0.0(typescript@5.8.3)))(effect@3.14.19)(hono@4.7.9)(openapi-types@12.1.3)(valibot@1.0.0(typescript@5.8.3))(zod@3.23.8)
+      json-schema: 0.4.0
+      json-schema-to-zod: 2.6.1
+      pino: 9.6.0
+      pino-pretty: 13.0.0
+      radash: 12.1.0
+      sift: 17.1.3
+      xstate: 5.19.2
+      zod: 3.23.8
+      zod-from-json-schema: 0.0.5
+      zod-to-json-schema: 3.24.5(zod@3.23.8)
+    transitivePeerDependencies:
+      - '@hono/arktype-validator'
+      - '@hono/effect-validator'
+      - '@hono/typebox-validator'
+      - '@hono/valibot-validator'
+      - '@hono/zod-validator'
+      - '@sinclair/typebox'
+      - '@valibot/to-json-schema'
+      - arktype
+      - aws-crt
+      - bufferutil
+      - effect
+      - encoding
+      - openapi-types
+      - react
+      - supports-color
+      - utf-8-validate
+      - valibot
+      - zod-openapi
+
+  '@mastra/core@0.9.4(@valibot/to-json-schema@1.0.0(valibot@1.0.0(typescript@5.8.3)))(effect@3.14.19)(openapi-types@12.1.3)(react@18.3.1)(valibot@1.0.0(typescript@5.8.3))(zod@3.24.3)':
+    dependencies:
+      '@libsql/client': 0.14.0
+      '@opentelemetry/api': 1.9.0
+      '@opentelemetry/auto-instrumentations-node': 0.56.1(@opentelemetry/api@1.9.0)
+      '@opentelemetry/core': 1.30.1(@opentelemetry/api@1.9.0)
+      '@opentelemetry/exporter-trace-otlp-grpc': 0.57.2(@opentelemetry/api@1.9.0)
+      '@opentelemetry/exporter-trace-otlp-http': 0.57.2(@opentelemetry/api@1.9.0)
+      '@opentelemetry/otlp-exporter-base': 0.57.2(@opentelemetry/api@1.9.0)
+      '@opentelemetry/otlp-transformer': 0.57.2(@opentelemetry/api@1.9.0)
+      '@opentelemetry/resources': 1.30.1(@opentelemetry/api@1.9.0)
+      '@opentelemetry/sdk-metrics': 1.30.1(@opentelemetry/api@1.9.0)
+      '@opentelemetry/sdk-node': 0.57.2(@opentelemetry/api@1.9.0)
+      '@opentelemetry/sdk-trace-base': 1.30.1(@opentelemetry/api@1.9.0)
+      '@opentelemetry/sdk-trace-node': 1.30.1(@opentelemetry/api@1.9.0)
+      '@opentelemetry/semantic-conventions': 1.32.0
+      ai: 4.3.15(react@18.3.1)(zod@3.24.3)
+      cohere-ai: 7.17.1
+      date-fns: 3.6.0
+      dotenv: 16.5.0
+      fastembed: 1.14.4
+      hono: 4.7.9
+      hono-openapi: 0.4.8(@valibot/to-json-schema@1.0.0(valibot@1.0.0(typescript@5.8.3)))(effect@3.14.19)(hono@4.7.9)(openapi-types@12.1.3)(valibot@1.0.0(typescript@5.8.3))(zod@3.24.3)
+      json-schema: 0.4.0
+      json-schema-to-zod: 2.6.1
+      pino: 9.6.0
+      pino-pretty: 13.0.0
+      radash: 12.1.0
+      sift: 17.1.3
+      xstate: 5.19.2
+      zod: 3.24.3
+      zod-from-json-schema: 0.0.5
+      zod-to-json-schema: 3.24.5(zod@3.24.3)
+    transitivePeerDependencies:
+      - '@hono/arktype-validator'
+      - '@hono/effect-validator'
+      - '@hono/typebox-validator'
+      - '@hono/valibot-validator'
+      - '@hono/zod-validator'
+      - '@sinclair/typebox'
+      - '@valibot/to-json-schema'
+      - arktype
+      - aws-crt
+      - bufferutil
+      - effect
+      - encoding
+      - openapi-types
+      - react
+      - supports-color
+      - utf-8-validate
+      - valibot
+      - zod-openapi
+
+  '@mastra/pg@0.3.4(@valibot/to-json-schema@1.0.0(valibot@1.0.0(typescript@5.8.3)))(effect@3.14.19)(openapi-types@12.1.3)(pg-query-stream@4.8.1(pg@8.14.1))(react@18.3.1)(valibot@1.0.0(typescript@5.8.3))(zod@3.23.8)':
+    dependencies:
+      '@mastra/core': 0.9.4(@valibot/to-json-schema@1.0.0(valibot@1.0.0(typescript@5.8.3)))(effect@3.14.19)(openapi-types@12.1.3)(react@18.3.1)(valibot@1.0.0(typescript@5.8.3))(zod@3.23.8)
+      async-mutex: 0.5.0
+      pg: 8.16.0
+      pg-promise: 11.13.0(pg-query-stream@4.8.1(pg@8.14.1))
+      xxhash-wasm: 1.1.0
+    transitivePeerDependencies:
+      - '@hono/arktype-validator'
+      - '@hono/effect-validator'
+      - '@hono/typebox-validator'
+      - '@hono/valibot-validator'
+      - '@hono/zod-validator'
+      - '@sinclair/typebox'
+      - '@valibot/to-json-schema'
+      - arktype
+      - aws-crt
+      - bufferutil
+      - effect
+      - encoding
+      - openapi-types
+      - pg-native
+      - pg-query-stream
+      - react
+      - supports-color
+      - utf-8-validate
+      - valibot
+      - zod
+      - zod-openapi
+
+  '@mastra/rag@0.1.23(@valibot/to-json-schema@1.0.0(valibot@1.0.0(typescript@5.8.3)))(ai@4.3.15(react@18.3.1)(zod@3.23.8))(effect@3.14.19)(openapi-types@12.1.3)(react@18.3.1)(valibot@1.0.0(typescript@5.8.3))':
+    dependencies:
+      '@mastra/core': 0.9.4(@valibot/to-json-schema@1.0.0(valibot@1.0.0(typescript@5.8.3)))(effect@3.14.19)(openapi-types@12.1.3)(react@18.3.1)(valibot@1.0.0(typescript@5.8.3))(zod@3.24.3)
+      '@paralleldrive/cuid2': 2.2.2
+      ai: 4.3.15(react@18.3.1)(zod@3.23.8)
+      js-tiktoken: 1.0.20
+      node-html-better-parser: 1.4.11
+      pathe: 2.0.3
+      zod: 3.24.3
     transitivePeerDependencies:
       - '@hono/arktype-validator'
       - '@hono/effect-validator'
@@ -17155,7 +17436,7 @@ snapshots:
   '@types/pg@8.6.1':
     dependencies:
       '@types/node': 22.15.3
-      pg-protocol: 1.9.5
+      pg-protocol: 1.10.0
       pg-types: 2.2.0
 
   '@types/phoenix@1.6.6': {}
@@ -17714,6 +17995,18 @@ snapshots:
     optionalDependencies:
       react: 18.3.1
 
+  ai@4.3.15(react@18.3.1)(zod@3.24.3):
+    dependencies:
+      '@ai-sdk/provider': 1.1.3
+      '@ai-sdk/provider-utils': 2.2.8(zod@3.24.3)
+      '@ai-sdk/react': 1.2.12(react@18.3.1)(zod@3.24.3)
+      '@ai-sdk/ui-utils': 1.2.11(zod@3.24.3)
+      '@opentelemetry/api': 1.9.0
+      jsondiffpatch: 0.6.0
+      zod: 3.24.3
+    optionalDependencies:
+      react: 18.3.1
+
   ajv-formats@2.1.1(ajv@8.17.1):
     optionalDependencies:
       ajv: 8.17.1
@@ -17817,6 +18110,8 @@ snapshots:
       inherits: 2.0.4
       minimalistic-assert: 1.0.1
 
+  assert-options@0.8.2: {}
+
   assert@2.1.0:
     dependencies:
       call-bind: 1.0.8
@@ -17842,6 +18137,10 @@ snapshots:
   async-listen@3.0.0: {}
 
   async-listen@3.0.1: {}
+
+  async-mutex@0.5.0:
+    dependencies:
+      tslib: 2.8.1
 
   async-sema@3.1.1: {}
 
@@ -19895,6 +20194,17 @@ snapshots:
       valibot: 1.0.0(typescript@5.8.3)
       zod: 3.23.8
 
+  hono-openapi@0.4.8(@valibot/to-json-schema@1.0.0(valibot@1.0.0(typescript@5.8.3)))(effect@3.14.19)(hono@4.7.9)(openapi-types@12.1.3)(valibot@1.0.0(typescript@5.8.3))(zod@3.24.3):
+    dependencies:
+      json-schema-walker: 2.0.0
+      openapi-types: 12.1.3
+    optionalDependencies:
+      '@valibot/to-json-schema': 1.0.0(valibot@1.0.0(typescript@5.8.3))
+      effect: 3.14.19
+      hono: 4.7.9
+      valibot: 1.0.0(typescript@5.8.3)
+      zod: 3.24.3
+
   hono@4.7.9: {}
 
   hosted-git-info@8.1.0:
@@ -21350,6 +21660,10 @@ snapshots:
 
   node-gyp-build@4.8.4: {}
 
+  node-html-better-parser@1.4.11:
+    dependencies:
+      html-entities: 2.6.0
+
   node-plop@0.26.3:
     dependencies:
       '@babel/runtime-corejs3': 7.27.1
@@ -21875,11 +22189,45 @@ snapshots:
 
   perfect-debounce@1.0.0: {}
 
+  pg-cloudflare@1.2.5:
+    optional: true
+
+  pg-connection-string@2.9.0: {}
+
+  pg-cursor@2.15.0(pg@8.14.1):
+    dependencies:
+      pg: 8.14.1
+
   pg-int8@1.0.1: {}
 
-  pg-protocol@1.9.5: {}
+  pg-minify@1.7.0: {}
+
+  pg-pool@3.10.0(pg@8.14.1):
+    dependencies:
+      pg: 8.14.1
+
+  pg-pool@3.10.0(pg@8.16.0):
+    dependencies:
+      pg: 8.16.0
+
+  pg-promise@11.13.0(pg-query-stream@4.8.1(pg@8.14.1)):
+    dependencies:
+      assert-options: 0.8.2
+      pg: 8.14.1
+      pg-minify: 1.7.0
+      pg-query-stream: 4.8.1(pg@8.14.1)
+      spex: 3.4.0
+    transitivePeerDependencies:
+      - pg-native
+
+  pg-protocol@1.10.0: {}
 
   pg-query-emscripten@5.1.0: {}
+
+  pg-query-stream@4.8.1(pg@8.14.1):
+    dependencies:
+      pg: 8.14.1
+      pg-cursor: 2.15.0(pg@8.14.1)
 
   pg-types@2.2.0:
     dependencies:
@@ -21888,6 +22236,30 @@ snapshots:
       postgres-bytea: 1.0.0
       postgres-date: 1.0.7
       postgres-interval: 1.2.0
+
+  pg@8.14.1:
+    dependencies:
+      pg-connection-string: 2.9.0
+      pg-pool: 3.10.0(pg@8.14.1)
+      pg-protocol: 1.10.0
+      pg-types: 2.2.0
+      pgpass: 1.0.5
+    optionalDependencies:
+      pg-cloudflare: 1.2.5
+
+  pg@8.16.0:
+    dependencies:
+      pg-connection-string: 2.9.0
+      pg-pool: 3.10.0(pg@8.16.0)
+      pg-protocol: 1.10.0
+      pg-types: 2.2.0
+      pgpass: 1.0.5
+    optionalDependencies:
+      pg-cloudflare: 1.2.5
+
+  pgpass@1.0.5:
+    dependencies:
+      split2: 4.2.0
 
   picocolors@1.0.0: {}
 
@@ -23001,6 +23373,8 @@ snapshots:
     dependencies:
       cross-spawn: 7.0.6
       signal-exit: 4.1.0
+
+  spex@3.4.0: {}
 
   split2@4.2.0: {}
 
@@ -24123,6 +24497,8 @@ snapshots:
 
   xtend@4.0.2: {}
 
+  xxhash-wasm@1.1.0: {}
+
   y18n@5.0.8: {}
 
   yallist@3.1.1: {}
@@ -24174,6 +24550,10 @@ snapshots:
   yoctocolors@2.1.1: {}
 
   zod-error@1.5.0:
+    dependencies:
+      zod: 3.24.3
+
+  zod-from-json-schema@0.0.5:
     dependencies:
       zod: 3.24.3
 
