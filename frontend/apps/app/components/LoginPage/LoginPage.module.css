@@ -64,28 +64,7 @@
   width: 100%;
 }
 
-.form {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-5);
-}
 
-.formGroup {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-2);
-}
-
-.label {
-  color: var(--global-foreground);
-  font-size: var(--font-size-4);
-}
-
-.passwordHeader {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
 
 .divider {
   display: flex;
@@ -104,28 +83,4 @@
 .divider span {
   padding: 0 var(--spacing-2);
   font-size: var(--font-size-3);
-}
-
-.oauthButton {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--spacing-2);
-  width: 100%;
-  padding: var(--spacing-2) var(--spacing-4);
-  border-radius: var(--border-radius-base);
-  border: 1px solid var(--global-border);
-  background-color: transparent;
-  color: var(--global-foreground);
-  font-size: var(--font-size-4);
-  cursor: pointer;
-  transition: background-color 0.2s;
-}
-
-.oauthButton:hover {
-  background-color: var(--pane-background-hover);
-}
-
-.oauthIcon {
-  margin-right: var(--spacing-2);
 }
