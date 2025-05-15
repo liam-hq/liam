@@ -1,24 +1,4 @@
-.item {
-  display: flex;
-  align-items: center;
-  padding: var(--spacing-2);
-  width: 36px;
-  height: 36px;
-  border-radius: var(--border-radius-md);
-  color: var(--global-foreground);
-  cursor: pointer;
-  transition: background-color var(--default-hover-animation-duration)
-    var(--default-timing-function);
-}
 
-.item:hover {
-  background-color: var(--pane-background-active);
-}
-
-.expandItem {
-  width: auto;
-  gap: var(--spacing-2half);
-}
 
 .iconContainer > svg {
   display: flex;
@@ -38,11 +18,4 @@
 
 .expandLabelArea {
   opacity: 1;
-}
-
-.label {
-  font-size: var(--font-size-4, 0.8125rem);
-  font-weight: 500;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
