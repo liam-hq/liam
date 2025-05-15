@@ -65,20 +65,7 @@
   flex: 1; /* Take up remaining space */
 }
 
-.input {
-  background-color: var(--global-background);
-  color: var(--global-foreground);
-  border: 1px solid var(--global-border);
-  border-radius: var(--border-radius-md);
-  padding: var(--spacing-2) var(--spacing-3);
-  font-size: var(--font-size-4);
-  height: var(--spacing-9);
-  width: 100%;
-}
 
-.input::placeholder {
-  color: var(--overlay-30);
-}
 
 .helperText {
   font-size: var(--font-size-2);
