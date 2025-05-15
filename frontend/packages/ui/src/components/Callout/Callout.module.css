@@ -33,35 +33,6 @@
 }
 
 /* Variants */
-.default {
-  background-color: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: var(--color-gray-300);
-}
-
-.danger {
-  background-color: rgba(247, 80, 73, 0.1);
-  border: 1px solid rgba(247, 80, 73, 0.2);
-  color: var(--color-red-milk-200);
-}
-
-.success {
-  background-color: rgba(29, 237, 131, 0.1);
-  border: 1px solid rgba(29, 237, 131, 0.2);
-  color: var(--color-green-milk-200);
-}
-
-.info {
-  background-color: rgba(20, 188, 255, 0.1);
-  border: 1px solid rgba(20, 188, 255, 0.2);
-  color: var(--color-blue-milk-200);
-}
-
-.warning {
-  background-color: rgba(255, 215, 72, 0.1);
-  border: 1px solid rgba(255, 215, 72, 0.2);
-  color: var(--color-yellow-milk-200);
-}
 
 /* Mobile styles */
 .mobile .text {
