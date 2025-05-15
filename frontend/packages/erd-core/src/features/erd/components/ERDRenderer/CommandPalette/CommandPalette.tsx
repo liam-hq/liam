@@ -1,23 +1,16 @@
 'use client'
-import { ERDContent } from '@/features/erd/components/ERDContent'
-import { VersionProvider } from '@/providers'
-import { versionSchema } from '@/schemas'
-// import { convertSchemaToNodes } from '@/features/erd/utils'
+
 import { useSchemaStore } from '@/stores'
-import { type Node, ReactFlowProvider } from '@xyflow/react'
 import { Command } from 'cmdk'
 import { useEffect, useState } from 'react'
-import * as v from 'valibot'
+import { TableNode } from '../../ERDContent/components/TableNode'
 import styles from './CommandPalette.module.css'
 
 export const CommandPalette = () => {
   const [open, setOpen] = useState(false)
   const schema = useSchemaStore()
-  // const { nodes, edges } = convertSchemaToNodes({
-  //   schema,
-  //   showMode: 'ALL_FIELDS',
-  // })
-  const [nodes, setNodes] = useState<Node[]>([])
+
+  const [tableName, setTableName] = useState<string | null>(null)
 
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
@@ -31,14 +24,7 @@ export const CommandPalette = () => {
     return () => document.removeEventListener('keydown', down)
   })
 
-  const versionData = {
-    version: '0.1.0', // NOTE: no maintained version for ERD Web
-    gitHash: process.env.NEXT_PUBLIC_GIT_HASH,
-    envName: process.env.NEXT_PUBLIC_ENV_NAME,
-    date: process.env.NEXT_PUBLIC_RELEASE_DATE,
-    displayedOn: 'web',
-  }
-  const version = v.parse(versionSchema, versionData)
+  const table = schema.tables[tableName ?? '']
 
   return (
     <Command.Dialog
@@ -57,14 +43,7 @@ export const CommandPalette = () => {
               <Command.Item
                 key={table.name}
                 onSelect={() => {
-                  setNodes(() => [
-                    {
-                      id: table.name,
-                      type: 'table',
-                      data: { table },
-                      position: { x: 0, y: 0 },
-                    },
-                  ])
+                  setTableName(table.name)
                 }}
               >
                 {table.name}
@@ -73,15 +52,25 @@ export const CommandPalette = () => {
           </Command.Group>
         </Command.List>
         <div>
-          <VersionProvider version={version}>
-            <ReactFlowProvider>
-              <ERDContent
-                nodes={nodes}
-                edges={[]}
-                displayArea="relatedTables"
-              />
-            </ReactFlowProvider>
-          </VersionProvider>
+          {table && (
+            <TableNode
+              id=""
+              type="table"
+              data={{
+                table: table,
+                showMode: 'ALL_FIELDS',
+                isActiveHighlighted: false,
+                isHighlighted: false,
+                sourceColumnName: undefined,
+                targetColumnCardinalities: undefined,
+              }}
+              dragging={false}
+              isConnectable={false}
+              positionAbsoluteX={0}
+              positionAbsoluteY={0}
+              zIndex={0}
+            />
+          )}
         </div>
       </div>
     </Command.Dialog>
