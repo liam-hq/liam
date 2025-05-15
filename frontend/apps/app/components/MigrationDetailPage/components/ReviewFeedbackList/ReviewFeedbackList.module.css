@@ -13,25 +13,7 @@
   transition: opacity 0.3s ease;
 }
 
-.severityCRITICAL {
-  border-left-color: var(--color-error, #ff4d4f);
-  background-color: var(--color-error-bg, rgba(255, 77, 79, 0.1));
-}
 
-.severityWARNING {
-  border-left-color: var(--color-warning, #faad14);
-  background-color: var(--color-warning-bg, rgba(250, 173, 20, 0.1));
-}
-
-.severityPOSITIVE {
-  border-left-color: var(--color-success, #52c41a);
-  background-color: var(--color-success-bg, rgba(82, 196, 26, 0.1));
-}
-
-.severityQUESTION {
-  border-left-color: var(--color-info, #1890ff);
-  background-color: var(--color-info-bg, rgba(24, 144, 255, 0.1));
-}
 
 .resolved {
   opacity: 0.7;

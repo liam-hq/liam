@@ -1,49 +1,8 @@
-.feedbackContainer {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  margin-top: 16px;
-  padding: 12px;
-  border-radius: 4px;
-  background-color: #f5f5f5;
-}
-
-.feedbackLabel {
-  font-size: 14px;
-  margin-bottom: 8px;
-}
-
-.buttonContainer {
-  display: flex;
-  gap: 12px;
-}
-
-.feedbackButton {
-  background: none;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  padding: 6px 12px;
-  cursor: pointer;
-  font-size: 16px;
-  transition: all 0.2s ease;
-}
-
-.feedbackButton:hover:not(:disabled) {
-  background-color: #eaeaea;
-}
-
 .feedbackButton.selected {
   background-color: #e6f7ff;
   border-color: #1890ff;
 }
 
-.feedbackButton:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.thankYouMessage {
-  margin-top: 8px;
-  font-size: 14px;
-  color: #52c41a;
+.feedbackButton:hover:not(:disabled) {
+  background-color: #eaeaea;
 }

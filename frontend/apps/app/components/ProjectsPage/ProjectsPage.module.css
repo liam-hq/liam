@@ -25,37 +25,6 @@
   max-width: 1080px;
 }
 
-.projectsContainer {
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-  align-items: flex-start;
-  gap: var(--spacing-5);
-  align-self: stretch;
-  height: 100%;
-}
-
-.projectsHeader {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  gap: var(--spacing-4);
-  width: 100%;
-}
-
-.searchInput {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  gap: var(--spacing-1);
-  padding: var(--spacing-2) var(--spacing-3);
-  background-color: var(--global-background);
-  border: var(--border-width-base) solid var(--global-border);
-  border-radius: var(--border-radius-md);
-  flex: 1;
-  height: 36px;
-}
-
 .searchInput > input {
   background: transparent;
   border: none;
@@ -67,40 +36,4 @@
 
 .searchInput > input::placeholder {
   color: var(--overlay-30);
-}
-
-.searchIcon {
-  color: var(--overlay-50);
-  width: 0.75rem;
-  height: 0.75rem;
-}
-
-/* TODO: Ideally, we want to use the Button from @liam-hq/ui, but since the content is a link, we're implementing a custom version here. */
-.newProjectButton {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: var(--spacing-2) var(--spacing-3);
-  background-color: var(--button-primary);
-  color: var(--button-primary-foreground);
-  border: var(--border-width-base) solid var(--button-primary);
-  border-radius: var(--border-radius-md);
-  font-size: var(--font-size-4);
-  font-weight: 500;
-  text-decoration: none;
-  transition: background-color 0.2s ease;
-  height: 36px;
-}
-
-.newProjectButton:hover {
-  background-color: var(--button-primary-background-hover);
-  border-color: var(--button-primary-background-hover);
-}
-
-.projectsGrid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: var(--spacing-4);
-  align-items: flex-start;
-  width: 100%;
 }
