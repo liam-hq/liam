@@ -31,7 +31,6 @@
     "@xyflow/react": "12.3.5",
     "cheerio": "1.0.0",
     "clsx": "2.1.1",
-    "cmdk": "^1.1.1",
     "codemirror": "6.0.1",
     "date-fns": "4.1.0",
     "diff": "7.0.0",
