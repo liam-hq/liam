@@ -14,23 +14,3 @@
 }
 
 /* Using the color scheme from the Figma design */
-
-.default {
-  background-color: var(--overlay-10);
-  color: var(--overlay-70);
-}
-
-.yellow {
-  background-color: var(--color-gold-alpha-20);
-  color: var(--callout-warning-text);
-}
-
-.green {
-  background-color: var(--callout-success-background);
-  color: var(--primary-accent);
-}
-
-.purple {
-  background-color: var(--color-purple-alpha-20);
-  color: var(--primary-accent);
-}
