@@ -1,16 +1,4 @@
-.badgeContainer {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: var(--spacing-1);
-  background-color: var(--overlay-20);
-  border-radius: var(--borderRadius-base, 0.25rem);
-  font-size: var(--font-size-2, 0.6875rem);
-  font-weight: 500;
-  line-height: 1;
-  color: var(--global-foreground, #fff);
-  font-family: 'IBM Plex Mono', monospace;
-}
+
 
 .chevronIcon {
   width: 0.75rem;
