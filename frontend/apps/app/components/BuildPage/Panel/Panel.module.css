@@ -3,28 +3,7 @@
   height: 100%;
 }
 
-.header {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  padding: 1.5rem;
-  background-color: var(--color-background-secondary);
-  border-radius: 0.75rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-}
 
-.headerContent {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-.title {
-  font-size: 1.75rem;
-  font-weight: 700;
-  margin: 0;
-  color: var(--color-text-primary);
-}
 
 .columns {
   display: grid;
