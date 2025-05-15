@@ -1,0 +1,63 @@
+.memberItem {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-3);
+  padding: var(--spacing-4);
+  background-color: var(--global-muted-background);
+  border: 1px solid var(--global-border);
+  border-radius: var(--border-radius-lg);
+  width: 100%;
+}
+
+.memberBody {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.memberInfo {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  gap: var(--spacing-10);
+}
+
+.nameEmail {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-1);
+}
+
+.name {
+  font-size: var(--font-size-4);
+  font-weight: 400;
+  color: var(--global-foreground);
+}
+
+.email {
+  font-size: var(--font-size-4);
+  font-weight: 400;
+  color: var(--overlay-60);
+}
+
+.spacer {
+  flex: 1;
+}
+
+.roleLabel {
+  display: flex;
+  align-items: center;
+  padding: var(--spacing-1) var(--spacing-2);
+  font-size: var(--font-size-3);
+  color: var(--global-foreground);
+  white-space: nowrap;
+}
+
+.manageButton {
+  white-space: nowrap;
+}
+
+.moreButton {
+  display: flex;
+  align-items: center;
+}

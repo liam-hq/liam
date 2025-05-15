@@ -54,6 +54,7 @@ async function processChunk(
   chunk: string,
   schema: Schema,
   parseErrors: ProcessError[],
+  rawSql: string,
 ): Promise<[number | null, number | null, ProcessError[]]> {
   let readOffset: number | null = null
   let retryOffset: number | null = null
@@ -83,6 +84,7 @@ async function processChunk(
 
   const { value: convertedSchema, errors: conversionErrors } = convertToSchema(
     isLastStatementComplete ? parse_tree.stmts : parse_tree.stmts.slice(0, -1),
+    rawSql,
   )
 
   if (conversionErrors !== null) {
@@ -113,7 +115,7 @@ export const processor: Processor = async (sql: string) => {
   const parseErrors: ProcessError[] = []
 
   const errors = await processSQLInChunks(sql, CHUNK_SIZE, async (chunk) => {
-    return processChunk(chunk, schema, parseErrors)
+    return processChunk(chunk, schema, parseErrors, sql)
   })
 
   return { value: schema, errors: parseErrors.concat(errors) }

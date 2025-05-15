@@ -15,14 +15,9 @@ export type TableNodeData = {
 
 export type TableNodeType = Node<TableNodeData, 'table'>
 
-export type NonRelatedTableGroupNodeType = Node<
-  Record<string, unknown>,
-  'nonRelatedTableGroup'
->
-
 export type DisplayArea = 'main' | 'relatedTables'
 
-export type TableGroupNodeData = {
+type TableGroupNodeData = {
   name: string
 }
 

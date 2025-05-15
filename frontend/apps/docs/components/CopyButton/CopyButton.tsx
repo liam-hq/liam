@@ -8,7 +8,7 @@ interface CopyButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   onCopy: () => void
 }
 
-export function useCopyButton(
+function useCopyButton(
   onCopy: () => void,
 ): [checked: boolean, onClick: MouseEventHandler] {
   const [checked, setChecked] = useState(false)

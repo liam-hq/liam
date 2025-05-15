@@ -15,5 +15,3 @@ export function removeImportWasi(): Plugin {
     },
   }
 }
-
-export default removeImportWasi

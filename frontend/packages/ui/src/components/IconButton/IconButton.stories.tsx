@@ -2,14 +2,10 @@ import type { Meta, StoryObj } from '@storybook/react'
 import { Bell, Heart, Plus, Settings, User } from 'lucide-react'
 import { IconButton } from './IconButton'
 
-const meta: Meta<typeof IconButton> = {
+const meta = {
   title: 'UI/IconButton',
   component: IconButton,
-  parameters: {
-    layout: 'centered',
-  },
-  tags: ['autodocs'],
-}
+} satisfies Meta<typeof IconButton>
 
 export default meta
 type Story = StoryObj<typeof IconButton>

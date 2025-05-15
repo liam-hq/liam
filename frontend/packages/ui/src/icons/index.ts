@@ -21,6 +21,7 @@ export {
   CircleHelp,
   ClipboardList,
   Copy,
+  CornerDownLeft,
   Download,
   Ellipsis,
   Eye,

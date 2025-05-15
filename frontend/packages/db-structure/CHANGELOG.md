@@ -1,5 +1,12 @@
 # @liam-hq/db-structure
 
+## 0.0.20
+
+### Patch Changes
+
+- [#1587](https://github.com/liam-hq/liam/pull/1587) - ✨ Enhance the postgresql parser to support Constraints / Thanks [@tnyo43](https://github.com/tnyo43)!
+- [#1408](https://github.com/liam-hq/liam/pull/1408) - ✨ Enhance the schema.rb parser to support Constraints / Thanks [@tnyo43](https://github.com/tnyo43)!
+
 ## 0.0.19
 
 ### Patch Changes

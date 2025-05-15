@@ -1,0 +1,101 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2);
+  padding: var(--spacing-2);
+}
+
+.inputContainer {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--spacing-2);
+  padding: var(--spacing-2);
+  border: var(--border-width-base) solid var(--global-border);
+  border-radius: var(--border-radius-base);
+  background-color: var(--global-background);
+  transition: border 0.3s var(--default-timing-function), box-shadow 0.3s
+    var(--default-timing-function);
+}
+
+.inputContainer:hover {
+  border-color: #459a72;
+  box-shadow: 0px 0px 20px 0px rgba(29, 237, 131, 0.4);
+}
+
+.inputContainer:focus-within {
+  border-color: #459a72;
+  box-shadow: 0px 0px 20px 0px rgba(29, 237, 131, 0.4);
+}
+
+.error {
+  border-color: #9c5b5a;
+  box-shadow: 0px 0px 20px 0px rgba(247, 80, 73, 0.4);
+}
+
+.error:hover {
+  border-color: #9c5b5a;
+  box-shadow: 0px 0px 20px 0px rgba(247, 80, 73, 0.4);
+}
+
+.error:focus-within {
+  border-color: #9c5b5a;
+  box-shadow: 0px 0px 20px 0px rgba(247, 80, 73, 0.4);
+}
+
+.disabled {
+  background-color: var(--overlay-5);
+  cursor: not-allowed;
+}
+
+.loading {
+  border-color: var(--global-border) !important;
+  box-shadow: none !important;
+}
+
+.loading:hover,
+.loading:focus-within {
+  border-color: var(--global-border) !important;
+  box-shadow: none !important;
+}
+
+.input {
+  flex: 1;
+  font-family: var(--main-font);
+  font-size: var(--font-size-4);
+  line-height: 1.6em;
+  padding: 0;
+  width: 100%;
+  min-height: 24px;
+  max-height: 150px;
+  resize: none;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  background-color: transparent;
+  border: none;
+  outline: none;
+  color: var(--global-foreground);
+}
+
+.input::placeholder {
+  color: var(--overlay-30);
+}
+
+.inputWrapper {
+  display: flex;
+  flex: 1;
+  border: none !important;
+  background-color: transparent !important;
+  padding: 0;
+  width: 100%;
+}
+
+.inputWrapper:hover {
+  border: none !important;
+}
+
+.inputWrapper:focus-within {
+  outline: none !important;
+  border: none !important;
+  box-shadow: none !important;
+}

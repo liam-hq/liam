@@ -10,11 +10,27 @@
   line-height: normal;
   border-bottom: 1px solid var(--node-border);
   position: relative;
+  transition: background-color var(--default-hover-animation-duration)
+    var(--default-timing-function);
 }
 
 .columnWrapper:last-child {
   border-bottom-left-radius: var(--border-radius-md);
   border-bottom-right-radius: var(--border-radius-md);
+}
+
+.columnWrapper:hover {
+  background-color: var(--pane-background-hover);
+}
+
+.columnWrapper.highlightRelatedColumn {
+  background-color: var(--primary-overlay-10);
+  transition: background-color var(--default-hover-animation-duration)
+    var(--default-timing-function);
+}
+
+.columnWrapper.highlightRelatedColumn:hover {
+  background-color: var(--primary-overlay-15);
 }
 
 .primaryKeyIcon {

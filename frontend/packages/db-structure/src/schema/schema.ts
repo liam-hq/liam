@@ -7,13 +7,13 @@ export const columnNameSchema = v.string()
 
 export const tableNameSchema = v.string()
 
-export const indexNameSchema = v.string()
+const indexNameSchema = v.string()
 
-export const relationshipNameSchema = v.string()
+const relationshipNameSchema = v.string()
 
-export const constraintNameSchema = v.string()
+const constraintNameSchema = v.string()
 
-export const columnSchema = v.object({
+const columnSchema = v.object({
   name: columnNameSchema,
   type: v.string(),
   default: v.nullable(v.union([v.string(), v.number(), v.boolean()])),
@@ -86,7 +86,7 @@ const checkConstraintSchema = v.object({
 })
 export type CheckConstraint = v.InferOutput<typeof checkConstraintSchema>
 
-export const constraintSchema = v.union([
+const constraintSchema = v.union([
   primaryKeyConstraintSchema,
   foreignKeyConstraintSchema,
   uniqueConstraintSchema,
@@ -97,7 +97,7 @@ export type Constraint = v.InferOutput<typeof constraintSchema>
 const constraintsSchema = v.record(constraintNameSchema, constraintSchema)
 export type Constraints = v.InferOutput<typeof constraintsSchema>
 
-export const tableSchema = v.object({
+const tableSchema = v.object({
   name: tableNameSchema,
   columns: columnsSchema,
   comment: v.nullable(v.string()),
@@ -109,7 +109,7 @@ export type Table = v.InferOutput<typeof tableSchema>
 const cardinalitySchema = v.picklist(['ONE_TO_ONE', 'ONE_TO_MANY'])
 export type Cardinality = v.InferOutput<typeof cardinalitySchema>
 
-export const relationshipSchema = v.object({
+const relationshipSchema = v.object({
   name: relationshipNameSchema,
   primaryTableName: tableNameSchema,
   primaryColumnName: columnNameSchema,
@@ -140,8 +140,8 @@ export const tableGroupsSchema = v.record(
   tableGroupNameSchema,
   tableGroupSchema,
 )
-export type TableGroups = v.InferOutput<typeof tableGroupsSchema>
 
+// Schema definition for the entire database structure
 export const schemaSchema = v.object({
   tables: tablesSchema,
   relationships: relationshipsSchema,

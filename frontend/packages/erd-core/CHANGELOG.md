@@ -1,5 +1,12 @@
 # @liam-hq/erd-core
 
+## 0.1.8
+
+### Patch Changes
+
+- [#1588](https://github.com/liam-hq/liam/pull/1588) - 💄 When hovering over a table node, columns with relationships are now highlighted / Thanks [@khiroshi-win](https://github.com/khiroshi-win)!
+- [#1581](https://github.com/liam-hq/liam/pull/1581) - 💄 fix the left pane with when mobile device / Thanks [@khiroshi-win](https://github.com/khiroshi-win)!
+
 ## 0.1.7
 
 ### Patch Changes

@@ -1,4 +1,4 @@
-import { OrganizationMembersPage } from '@/features/organizations/pages/OrganizationMembersPage'
+import { OrganizationMembersPage } from '@/components/OrganizationMembersPage'
 import { getOrganizationId } from '@/features/organizations/services/getOrganizationId'
 import { createClient } from '@/libs/db/server'
 

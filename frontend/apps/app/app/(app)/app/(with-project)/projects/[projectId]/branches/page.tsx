@@ -1,5 +1,5 @@
 import type { PageProps } from '@/app/types'
-import { ProjectBranchesListPage } from '@/features/projects/pages/ProjectBranchesListPage/ProjectBranchesListPage'
+import { ProjectBranchesListPage } from '@/components/ProjectBranchesListPage'
 
 import * as v from 'valibot'
 

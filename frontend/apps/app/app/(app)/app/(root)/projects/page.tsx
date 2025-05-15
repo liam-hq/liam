@@ -1,5 +1,5 @@
+import { ProjectsPage } from '@/components/ProjectsPage'
 import { getOrganizationId } from '@/features/organizations/services/getOrganizationId'
-import { ProjectsPage } from '@/features/projects/pages'
 import { createClient } from '@/libs/db/server'
 
 export default async function Page() {

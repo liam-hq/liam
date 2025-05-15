@@ -1,0 +1,86 @@
+.sendButton {
+  min-width: 20px;
+  min-height: 20px;
+  padding: var(--spacing-1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: var(--border-width-base) solid transparent;
+  border-radius: var(--border-radius-base);
+  transition: background-color 0.3s var(--default-timing-function);
+}
+
+.default {
+  background-color: transparent;
+}
+
+.default svg {
+  color: var(--overlay-50);
+  transition: color var(--default-hover-animation-duration)
+    var(--default-timing-function);
+}
+
+.default:hover {
+  background-color: var(--overlay-10);
+}
+
+.default:hover svg {
+  color: var(--global-foreground);
+}
+
+.canSend {
+  background-color: var(--primary-overlay-40);
+}
+
+.canSend svg {
+  color: var(--primary-accent);
+  transition: color var(--default-hover-animation-duration)
+    var(--default-timing-function);
+}
+
+.canSend:hover {
+  background-color: var(--primary-accent);
+}
+
+.canSend:hover svg {
+  color: var(--button-foreground);
+}
+
+/* Styles for the loading/disabled state */
+.sendButton[data-loading='true'] {
+  opacity: 0.7;
+  cursor: not-allowed;
+  background-color: var(--overlay-10);
+}
+
+.sendButton[data-loading='true'] svg {
+  color: var(--overlay-50);
+}
+
+/* Ensure disabled button doesn't change on hover */
+.sendButton[data-loading='true']:hover {
+  background-color: var(--overlay-10);
+}
+
+.sendButton[data-loading='true']:hover svg {
+  color: var(--overlay-50);
+}
+
+/* Style for disabled button (without content) */
+.sendButton:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  background-color: transparent;
+}
+
+.sendButton:disabled svg {
+  color: var(--overlay-50);
+}
+
+.sendButton:disabled:hover {
+  background-color: var(--overlay-10);
+}
+
+.sendButton:disabled:hover svg {
+  color: var(--overlay-50);
+}

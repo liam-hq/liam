@@ -1,5 +1,5 @@
 import type { PageProps } from '@/app/types'
-import { KnowledgeSuggestionsListPage } from '@/features/projects/pages/KnowledgeSuggestionsListPage'
+import { KnowledgeSuggestionsListPage } from '@/components/KnowledgeSuggestionsListPage'
 import { branchOrCommitSchema } from '@/libs/routes'
 
 import * as v from 'valibot'

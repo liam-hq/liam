@@ -1,5 +1,5 @@
+import { ProjectNewPage } from '@/components/ProjectNewPage'
 import { getOrganizationId } from '@/features/organizations/services/getOrganizationId'
-import { ProjectNewPage } from '@/features/projects/pages'
 import { createClient } from '@/libs/db/server'
 import { getInstallations } from '@liam-hq/github'
 

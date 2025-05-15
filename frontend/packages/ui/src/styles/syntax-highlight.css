@@ -1,0 +1,25 @@
+/**
+ * Syntax highlighting variables for code blocks
+ */
+
+:root {
+  /* Base colors for syntax highlighting */
+  --syntax-background: #0d1117;
+  --syntax-text: #f0f6fc;
+  --syntax-comment: #8b949e;
+  --syntax-keyword: #ff7b72;
+  --syntax-string: #a5d6ff;
+  --syntax-attr-name: #7ee787;
+  --syntax-function: #d2a8ff;
+  --syntax-class-name: #ffa657;
+  --syntax-number: #79c0ff;
+  --syntax-operator: #ff7b72;
+  --syntax-punctuation: #f0f6fc;
+
+  /* Container styles */
+  --syntax-border-radius: 6px;
+  --syntax-padding: 16px;
+  --syntax-font-size: 12px;
+  --syntax-margin-bottom: 16px;
+  --syntax-line-height: 1.5;
+}

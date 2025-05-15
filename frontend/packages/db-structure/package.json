@@ -1,7 +1,7 @@
 {
   "name": "@liam-hq/db-structure",
   "license": "Apache-2.0",
-  "version": "0.0.19",
+  "version": "0.0.20",
   "type": "module",
   "publishConfig": {
     "access": "public"
@@ -11,7 +11,7 @@
     "./parser": "./dist/parser.js"
   },
   "dependencies": {
-    "@prisma/internals": "6.6.0",
+    "@prisma/internals": "6.7.0",
     "@ruby/prism": "1.4.0",
     "neverthrow": "8.2.0",
     "pg-query-emscripten": "5.1.0",
@@ -22,8 +22,8 @@
     "@biomejs/biome": "1.9.4",
     "@liam-hq/configs": "workspace:*",
     "@pgsql/types": "15.0.2",
-    "@prisma/generator-helper": "6.6.0",
-    "@types/node": "22.15.2",
+    "@prisma/generator-helper": "6.7.0",
+    "@types/node": "22.15.3",
     "eslint": "9.25.1",
     "json-refs": "3.0.15",
     "json-schema-to-zod": "2.6.1",
