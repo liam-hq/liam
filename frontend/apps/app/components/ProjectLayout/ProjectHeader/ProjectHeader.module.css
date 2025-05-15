@@ -58,7 +58,3 @@
 .knowledgeSuggestionButton:hover {
   background-color: var(--global-muted-background);
 }
-
-.knowledgeSuggestionBadge {
-  margin-left: var(--spacing-1);
-}
