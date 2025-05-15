@@ -1,1 +1,4 @@
 @import url('@liam-hq/ui/src/styles/globals.css');
+
+/* Import YAML Editor styles */
+@import url('../styles/yaml-editor.css');

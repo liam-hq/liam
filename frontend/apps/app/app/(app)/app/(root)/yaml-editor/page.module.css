@@ -1,0 +1,46 @@
+.yamlEditorPage {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  position: relative;
+  flex: 1;
+  background-color: var(--global-background);
+  color: var(--global-foreground);
+}
+
+.yamlEditorContainer {
+  height: 100%;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* Ensure the YAML editor fills the available space */
+.yamlEditorContainer > div {
+  height: 100%;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+/* Dark mode specific styles */
+[data-theme='dark'] .yamlEditorPage {
+  background-color: var(--global-background);
+  color: var(--global-foreground);
+}
+
+/* Ensure proper integration with the app layout */
+.yamlEditorPageInContent {
+  composes: yamlEditorPage;
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+/* Monaco editor styles moved to global CSS */

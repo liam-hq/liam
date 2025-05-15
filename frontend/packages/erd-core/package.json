@@ -22,7 +22,7 @@
     "@biomejs/biome": "1.9.4",
     "@liam-hq/configs": "workspace:*",
     "@liam-hq/db-structure": "workspace:*",
-    "@types/react": "18",
+    "@types/react": "18.2.43",
     "eslint": "9.25.1",
     "typed-css-modules": "0.9.1",
     "typescript": "5.8.3",
