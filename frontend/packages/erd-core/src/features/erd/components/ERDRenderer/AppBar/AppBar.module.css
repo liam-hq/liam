@@ -79,17 +79,4 @@
 
 .iconWrapper:hover {
   background-color: var(--pane-background-active);
-
-  .icon {
-    color: var(--global-foreground);
-  }
-}
-
-.icon {
-  width: 1rem;
-  height: 1rem;
-  color: var(--overlay-70);
-  stroke-width: 1.5px;
-  transition: color var(--default-hover-animation-duration)
-    var(--default-timing-function);
 }
