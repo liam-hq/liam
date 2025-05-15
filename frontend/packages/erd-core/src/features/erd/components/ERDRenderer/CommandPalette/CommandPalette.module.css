@@ -1,6 +1,7 @@
 .content[cmdk-dialog] {
   z-index: 10000;
-  background-color: white;
+  background-color: #232526;
+  color: white;
   border-radius: 6px;
   box-shadow: var(--shadow-6);
   position: fixed;
@@ -9,7 +10,6 @@
   transform: translate(-50%, -50%);
   width: 638px;
   height: 508px;
-  padding: 25px;
   animation: contentShow 150ms cubic-bezier(0.16, 1, 0.3, 1);
   border: 1px solid black;
 }
@@ -23,6 +23,30 @@
   inset: 0;
   animation: overlayShow 150ms cubic-bezier(0.16, 1, 0.3, 1);
   backdrop-filter: blur(8px);
+}
+
+.searchContainer {
+  display: flex;
+  align-items: center;
+  padding: 8px 16px;
+  width: 100%;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.searchContainer > [cmdk-input] {
+  margin: 0 8px;
+  height: 32px;
+  flex-grow: 1;
+}
+
+.escapeSign {
+  border: 1px solid #434536;
+  border-radius: var(--border-radius-smbase);
+  font-size: 10px;
+  width: 34px;
+  height: 21px;
+  text-align: center;
+  line-height: 21px;
 }
 
 .main {

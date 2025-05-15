@@ -2,6 +2,7 @@
 
 import { useTableSelection } from '@/features/erd/hooks'
 import { useSchemaStore } from '@/stores'
+import { Search } from '@liam-hq/ui'
 import { Command } from 'cmdk'
 import { useEffect, useState } from 'react'
 import { TableNode } from '../../ERDContent/components/TableNode'
@@ -34,7 +35,11 @@ export const CommandPalette = () => {
       label="Global Command Menu"
       contentClassName={styles.content}
     >
-      <Command.Input />
+      <div className={styles.searchContainer}>
+        <Search />
+        <Command.Input placeholder="Search" />
+        <span className={styles.escapeSign}>ESC</span>
+      </div>
       <div className={styles.main}>
         <Command.List>
           <Command.Empty>No results found.</Command.Empty>
