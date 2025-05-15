@@ -6,12 +6,6 @@
   margin-bottom: 2rem;
 }
 
-.backLink {
-  display: inline-block;
-  margin-bottom: 1rem;
-  color: var(--primary-accent);
-  text-decoration: none;
-}
 
 .title {
   font-size: var(--font-size-6);

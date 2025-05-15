@@ -7,11 +7,3 @@
   font-weight: 400;
   line-height: 1em;
 }
-
-.new {
-  color: var(--success-accent);
-}
-
-.delete {
-  color: var(--error-accent);
-}
