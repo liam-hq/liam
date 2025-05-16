@@ -1,6 +1,10 @@
 import { Mastra } from '@mastra/core'
 import { LangfuseExporter } from 'langfuse-vercel'
-import { databaseSchemaAgent } from './agents'
+import {
+  databaseSchemaAgent,
+  databaseSchemaAskAgent,
+  databaseSchemaBuildAgent,
+} from './agents'
 /**
  * Mastra instance with Langfuse tracing integration
  *
@@ -11,6 +15,8 @@ import { databaseSchemaAgent } from './agents'
 export const mastra = new Mastra({
   agents: {
     databaseSchemaAgent,
+    databaseSchemaAskAgent,
+    databaseSchemaBuildAgent,
   },
   telemetry: {
     serviceName: 'ai', // Must match ATTR_SERVICE_NAME in instrumentation.ts

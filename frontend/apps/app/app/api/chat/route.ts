@@ -1,4 +1,5 @@
 import { mastra } from '@/lib/mastra'
+import { classifyQuestion } from '@/lib/mastra/agents'
 import {
   processAndStoreSchema,
   querySchemaVectorStore,
@@ -196,8 +197,13 @@ export async function POST(request: Request) {
 
   // Variables for agent selection and relevant schema
   let relevantSchemaText = ''
-  // Always use the same agent, regardless of RAG
-  const agentName = 'databaseSchemaAgent'
+
+  // Determine which agent to use based on the question type
+  const questionType = classifyQuestion(message)
+  const agentName =
+    questionType === 'build'
+      ? 'databaseSchemaBuildAgent'
+      : 'databaseSchemaAskAgent'
 
   // Process RAG if needed
   if (useRAG) {
