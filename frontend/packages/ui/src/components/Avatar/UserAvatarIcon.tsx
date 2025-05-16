@@ -1,7 +1,7 @@
 'use client'
 
 import type { ComponentProps } from 'react'
-import styles from './Avatar.module.css'
+import styles from './UserAvatarIcon.module.css'
 
 type UserAvatarIconProps = {
   className?: string
