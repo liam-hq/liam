@@ -1,5 +1,11 @@
 # @liam-hq/cli
 
+## 0.5.6
+
+### Patch Changes
+
+- [#1590](https://github.com/liam-hq/liam/pull/1590) - update the primsa parser to support the @@map / Thanks [@khiroshi-win](https://github.com/khiroshi-win)!
+
 ## 0.5.5
 
 ### Patch Changes
