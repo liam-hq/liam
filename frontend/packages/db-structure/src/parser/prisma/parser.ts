@@ -64,9 +64,10 @@ function buildFieldRenamingMap(
   for (const model of models) {
     for (const field of model.fields) {
       if (field.dbName) {
-        const fieldConversions = tableFieldRenaming[model.name] ?? {}
+        const tableName = model.dbName || model.name
+        const fieldConversions = tableFieldRenaming[tableName] ?? {}
         fieldConversions[field.name] = field.dbName
-        tableFieldRenaming[model.name] = fieldConversions
+        tableFieldRenaming[tableName] = fieldConversions
       }
     }
   }
@@ -90,7 +91,9 @@ function processModelField(
   if (field.relationName) return { column: null, constraint: null }
 
   const defaultValue = extractDefaultValue(field)
-  const fieldName = tableFieldRenaming[model.name]?.[field.name] ?? field.name
+
+  const fieldName =
+    tableFieldRenaming[model.dbName || model.name]?.[field.name] ?? field.name
 
   const column = {
     name: fieldName,
@@ -159,7 +162,7 @@ function processModel(
   }
 
   return {
-    name: model.name,
+    name: model.dbName || model.name,
     columns,
     comment: model.documentation ?? null,
     indexes: {},
@@ -177,10 +180,21 @@ function processTables(
   const tables: Record<string, Table> = {}
 
   for (const model of models) {
-    tables[model.name] = processModel(model, tableFieldRenaming)
+    tables[model.dbName || model.name] = processModel(model, tableFieldRenaming)
   }
 
   return tables
+}
+
+/**
+ * Get Primary Table Name
+ */
+
+function getPrimaryTableNameByType(
+  fieldType: string,
+  models: readonly DMMF.Model[],
+) {
+  return models.find((model) => model.name === fieldType)?.dbName ?? fieldType
 }
 
 /**
@@ -189,6 +203,7 @@ function processTables(
 function processRelationshipField(
   field: DMMF.Field,
   model: DMMF.Model,
+  models: readonly DMMF.Model[],
   existingRelationships: Record<string, Relationship>,
   tableFieldRenaming: Record<string, Record<string, string>>,
 ): {
@@ -204,6 +219,10 @@ function processRelationshipField(
     field.relationFromFields?.[0] &&
     (field.relationFromFields?.length ?? 0) > 0
 
+  // Get the primary table name
+  const primaryTableName =
+    isTargetField && getPrimaryTableNameByType(field.type, models)
+
   // Get the column names with fallback to empty string
   const primaryColumnName = field.relationToFields?.[0] ?? ''
   const foreignColumnName = field.relationFromFields?.[0] ?? ''
@@ -211,9 +230,9 @@ function processRelationshipField(
   const _relationship: Relationship = isTargetField
     ? {
         name: field.relationName,
-        primaryTableName: field.type,
+        primaryTableName: primaryTableName || field.type,
         primaryColumnName,
-        foreignTableName: model.name,
+        foreignTableName: model.dbName || model.name,
         foreignColumnName,
         cardinality: existingRelationship?.cardinality ?? 'ONE_TO_MANY',
         updateConstraint: 'NO_ACTION',
@@ -289,6 +308,7 @@ function processModelRelationships(
     const { relationship, constraint } = processRelationshipField(
       field,
       model,
+      models,
       relationships,
       tableFieldRenaming,
     )
@@ -348,10 +368,23 @@ function processRelationships(
  */
 function processIndexes(
   indexes: readonly DMMF.Index[],
+  models: readonly DMMF.Model[],
   tables: Record<string, Table>,
   tableFieldRenaming: Record<string, Record<string, string>>,
 ): void {
-  for (const index of indexes) {
+  const updatedIndexes = indexes.map((index) => {
+    const model = models.find((m) => m.name === index.model)
+    return model
+      ? {
+          model: model.dbName ?? model.name,
+          type: index.type,
+          isDefinedOnField: index.isDefinedOnField,
+          fields: index.fields,
+        }
+      : index
+  })
+
+  for (const index of updatedIndexes) {
     const table = tables[index.model]
     if (!table) continue
 
@@ -470,7 +503,12 @@ async function parsePrismaSchema(schemaString: string): Promise<ProcessResult> {
   )
 
   // Process indexes
-  processIndexes(dmmf.datamodel.indexes, tables, tableFieldRenaming)
+  processIndexes(
+    dmmf.datamodel.indexes,
+    dmmf.datamodel.models,
+    tables,
+    tableFieldRenaming,
+  )
 
   // Process many-to-many relationships
   const manyToManyRelationships = processManyToManyRelationships(

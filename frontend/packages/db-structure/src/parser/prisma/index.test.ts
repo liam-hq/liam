@@ -560,6 +560,143 @@ describe(_processor, () => {
       expect(value).toEqual(expectedTables)
     })
 
+    it('@@map', async () => {
+      const { value } = await processor(`
+        model User {
+          id    Int     @id @default(autoincrement()) @map("_id")
+          posts Post[]
+          email String  @unique @map("raw_email_address")
+          role  Role    @default(USER)
+    
+          @@map("users")
+        }
+    
+        model Post {
+          id     Int   @id @default(autoincrement())
+          user   User  @relation(fields: [user_id], references: [id])
+          user_id Int   @map("raw_user_id")
+    
+          @@map("posts")
+        }
+
+        enum Role {
+          USER
+          ADMIN
+        }
+      `)
+
+      const expectedTables = aSchema({
+        tables: {
+          users: aTable({
+            name: 'users',
+            columns: {
+              _id: aColumn({
+                name: '_id',
+                type: 'serial',
+                default: 'autoincrement()',
+                notNull: true,
+                primary: true,
+                unique: true,
+              }),
+              raw_email_address: aColumn({
+                name: 'raw_email_address',
+                type: 'text',
+                notNull: true,
+                unique: true,
+              }),
+              role: aColumn({
+                name: 'role',
+                type: 'Role',
+                notNull: true,
+                default: 'USER',
+              }),
+            },
+            indexes: {
+              users_pkey: anIndex({
+                name: 'users_pkey',
+                columns: ['_id'],
+                unique: true,
+              }),
+              users_raw_email_address_key: anIndex({
+                name: 'users_raw_email_address_key',
+                columns: ['raw_email_address'],
+                unique: true,
+              }),
+            },
+            constraints: {
+              PRIMARY__id: {
+                type: 'PRIMARY KEY',
+                name: 'PRIMARY__id',
+                columnName: '_id',
+              },
+              UNIQUE_raw_email_address: {
+                type: 'UNIQUE',
+                name: 'UNIQUE_raw_email_address',
+                columnName: 'raw_email_address',
+              },
+            },
+          }),
+          posts: aTable({
+            name: 'posts',
+            columns: {
+              id: aColumn({
+                name: 'id',
+                type: 'serial',
+                default: 'autoincrement()',
+                notNull: true,
+                primary: true,
+                unique: true,
+              }),
+              raw_user_id: aColumn({
+                name: 'raw_user_id',
+                type: 'integer',
+                notNull: true,
+                unique: false,
+              }),
+            },
+            indexes: {
+              posts_pkey: anIndex({
+                name: 'posts_pkey',
+                columns: ['id'],
+                unique: true,
+              }),
+            },
+            constraints: {
+              PRIMARY_id: {
+                type: 'PRIMARY KEY',
+                name: 'PRIMARY_id',
+                columnName: 'id',
+              },
+              PostToUser: {
+                type: 'FOREIGN KEY',
+                name: 'PostToUser',
+                columnName: 'raw_user_id',
+                targetTableName: 'users',
+                targetColumnName: '_id',
+                updateConstraint: 'NO_ACTION',
+                deleteConstraint: 'NO_ACTION',
+              },
+            },
+          }),
+        },
+      })
+
+      expectedTables['relationships'] = {
+        PostToUser: aRelationship({
+          name: 'PostToUser',
+          primaryTableName: 'users',
+          primaryColumnName: '_id',
+          foreignTableName: 'posts',
+          foreignColumnName: 'raw_user_id',
+          cardinality: 'ONE_TO_MANY',
+          updateConstraint: 'NO_ACTION',
+          deleteConstraint: 'NO_ACTION',
+        }),
+      }
+
+      expect(value).toEqual(expectedTables)
+    })
+
     it('relationship (implicit many-to-many)', async () => {
       const { value } = await processor(`
         model Post {
