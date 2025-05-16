@@ -17,8 +17,6 @@ runs:
       uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
       with:
         node-version-file: ${{ inputs.working-directory }}/.node-version
-        cache: pnpm
-        cache-dependency-path: ${{ inputs.working-directory }}/pnpm-lock.yaml
     - name: Install dependencies
       shell: bash
       run: pnpm install --frozen-lockfile --prefer-offline
