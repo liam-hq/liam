@@ -7,6 +7,11 @@ function getPgVector(): PgVector {
   if (!pgVectorInstance) {
     pgVectorInstance = new PgVector({
       connectionString: process.env.POSTGRES_URL || '',
+      pgPoolOptions: {
+        ssl: {
+          rejectUnauthorized: false,
+        },
+      },
     })
   }
   return pgVectorInstance
