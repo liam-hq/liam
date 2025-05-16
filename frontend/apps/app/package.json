@@ -39,7 +39,7 @@
     "flags": "4.0.0",
     "langfuse": "3.37.2",
     "langfuse-vercel": "3.37.2",
-    "lucide-react": "0.503.0",
+    "lucide-react": "0.507.0",
     "next": "15.3.1",
     "react": "18.3.1",
     "react-dom": "18",
