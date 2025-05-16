@@ -1,5 +1,11 @@
 # @liam-hq/db-structure
 
+## 0.1.0
+
+### Minor Changes
+
+- [#1590](https://github.com/liam-hq/liam/pull/1590) - update the primsa parser to support the @@map / Thanks [@khiroshi-win](https://github.com/khiroshi-win)!
+
 ## 0.0.20
 
 ### Patch Changes
