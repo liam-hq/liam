@@ -386,6 +386,23 @@ $$;
 ALTER FUNCTION "public"."prevent_delete_last_organization_member"() OWNER TO "postgres";
 
 
+CREATE OR REPLACE FUNCTION "public"."set_chats_organization_id"() RETURNS "trigger"
+    LANGUAGE "plpgsql" SECURITY DEFINER
+    AS $$
+BEGIN
+  NEW.organization_id := (
+    SELECT "organization_id" 
+    FROM "public"."workspaces" 
+    WHERE "id" = NEW.workspace_id
+  );
+  RETURN NEW;
+END;
+$$;
+
+
+ALTER FUNCTION "public"."set_chats_organization_id"() OWNER TO "postgres";
+
+
 CREATE OR REPLACE FUNCTION "public"."set_doc_file_paths_organization_id"() RETURNS "trigger"
     LANGUAGE "plpgsql" SECURITY DEFINER
     AS $$
@@ -469,6 +486,23 @@ $$;
 
 
 ALTER FUNCTION "public"."set_knowledge_suggestions_organization_id"() OWNER TO "postgres";
+
+
+CREATE OR REPLACE FUNCTION "public"."set_messages_organization_id"() RETURNS "trigger"
+    LANGUAGE "plpgsql" SECURITY DEFINER
+    AS $$
+BEGIN
+  NEW.organization_id := (
+    SELECT "organization_id" 
+    FROM "public"."chats" 
+    WHERE "id" = NEW.chat_id
+  );
+  RETURN NEW;
+END;
+$$;
+
+
+ALTER FUNCTION "public"."set_messages_organization_id"() OWNER TO "postgres";
 
 
 CREATE OR REPLACE FUNCTION "public"."set_migration_pull_request_mappings_organization_id"() RETURNS "trigger"
@@ -643,6 +677,23 @@ $$;
 ALTER FUNCTION "public"."set_schema_file_paths_organization_id"() OWNER TO "postgres";
 
 
+CREATE OR REPLACE FUNCTION "public"."set_workspaces_organization_id"() RETURNS "trigger"
+    LANGUAGE "plpgsql" SECURITY DEFINER
+    AS $$
+BEGIN
+  NEW.organization_id := (
+    SELECT "organization_id" 
+    FROM "public"."projects" 
+    WHERE "id" = NEW.project_id
+  );
+  RETURN NEW;
+END;
+$$;
+
+
+ALTER FUNCTION "public"."set_workspaces_organization_id"() OWNER TO "postgres";
+
+
 CREATE OR REPLACE FUNCTION "public"."sync_existing_users"() RETURNS "void"
     LANGUAGE "plpgsql" SECURITY DEFINER
     AS $$
@@ -664,6 +715,28 @@ ALTER FUNCTION "public"."sync_existing_users"() OWNER TO "postgres";
 SET default_tablespace = '';
 
 SET default_table_access_method = "heap";
+
+
+CREATE TABLE IF NOT EXISTS "public"."building_schemas" (
+    "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
+    "workspace_id" "uuid" NOT NULL,
+    "schema" "jsonb" NOT NULL,
+    "created_at" timestamp(3) with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
+
+
+ALTER TABLE "public"."building_schemas" OWNER TO "postgres";
+
+
+CREATE TABLE IF NOT EXISTS "public"."chats" (
+    "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
+    "title" "text" NOT NULL,
+    "workspace_id" "uuid" NOT NULL,
+    "organization_id" "uuid" NOT NULL
+);
+
+
+ALTER TABLE "public"."chats" OWNER TO "postgres";
 
 
 CREATE TABLE IF NOT EXISTS "public"."doc_file_paths" (
@@ -767,6 +840,21 @@ CREATE TABLE IF NOT EXISTS "public"."knowledge_suggestions" (
 
 
 ALTER TABLE "public"."knowledge_suggestions" OWNER TO "postgres";
+
+
+CREATE TABLE IF NOT EXISTS "public"."messages" (
+    "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
+    "chat_id" "uuid" NOT NULL,
+    "user_id" "uuid",
+    "role" "text" NOT NULL,
+    "content" "text" NOT NULL,
+    "created_at" timestamp(3) with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    "updated_at" timestamp(3) with time zone NOT NULL,
+    "organization_id" "uuid" NOT NULL
+);
+
+
+ALTER TABLE "public"."messages" OWNER TO "postgres";
 
 
 CREATE TABLE IF NOT EXISTS "public"."migration_pull_request_mappings" (
@@ -952,6 +1040,32 @@ CREATE TABLE IF NOT EXISTS "public"."users" (
 ALTER TABLE "public"."users" OWNER TO "postgres";
 
 
+CREATE TABLE IF NOT EXISTS "public"."workspaces" (
+    "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
+    "project_id" "uuid" NOT NULL,
+    "organization_id" "uuid" NOT NULL,
+    "created_by_user_id" "uuid" NOT NULL,
+    "parent_workspace_id" "uuid",
+    "name" "text" NOT NULL,
+    "git_sha" "text",
+    "schema_snapshot" "text",
+    "created_at" timestamp(3) with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
+
+
+ALTER TABLE "public"."workspaces" OWNER TO "postgres";
+
+
+ALTER TABLE ONLY "public"."building_schemas"
+    ADD CONSTRAINT "building_schemas_pkey" PRIMARY KEY ("id");
+
+
+
+ALTER TABLE ONLY "public"."chats"
+    ADD CONSTRAINT "chats_pkey" PRIMARY KEY ("id");
+
+
+
 ALTER TABLE ONLY "public"."doc_file_paths"
     ADD CONSTRAINT "github_doc_file_path_pkey" PRIMARY KEY ("id");
 
@@ -999,6 +1113,11 @@ ALTER TABLE ONLY "public"."knowledge_suggestion_doc_mappings"
 
 ALTER TABLE ONLY "public"."knowledge_suggestions"
     ADD CONSTRAINT "knowledge_suggestion_pkey" PRIMARY KEY ("id");
+
+
+
+ALTER TABLE ONLY "public"."messages"
+    ADD CONSTRAINT "messages_pkey" PRIMARY KEY ("id");
 
 
 
@@ -1087,6 +1206,11 @@ ALTER TABLE ONLY "public"."users"
 
 
 
+ALTER TABLE ONLY "public"."workspaces"
+    ADD CONSTRAINT "workspaces_pkey" PRIMARY KEY ("id");
+
+
+
 CREATE UNIQUE INDEX "doc_file_path_path_project_id_key" ON "public"."doc_file_paths" USING "btree" ("path", "project_id");
 
 
@@ -1151,6 +1275,10 @@ COMMENT ON TRIGGER "check_last_organization_member" ON "public"."organization_me
 
 
 
+CREATE OR REPLACE TRIGGER "set_chats_organization_id_trigger" BEFORE INSERT OR UPDATE ON "public"."chats" FOR EACH ROW EXECUTE FUNCTION "public"."set_chats_organization_id"();
+
+
+
 CREATE OR REPLACE TRIGGER "set_doc_file_paths_organization_id_trigger" BEFORE INSERT OR UPDATE ON "public"."doc_file_paths" FOR EACH ROW EXECUTE FUNCTION "public"."set_doc_file_paths_organization_id"();
 
 
@@ -1168,6 +1296,10 @@ CREATE OR REPLACE TRIGGER "set_knowledge_suggestion_doc_mappings_organization_id
 
 
 CREATE OR REPLACE TRIGGER "set_knowledge_suggestions_organization_id_trigger" BEFORE INSERT OR UPDATE ON "public"."knowledge_suggestions" FOR EACH ROW EXECUTE FUNCTION "public"."set_knowledge_suggestions_organization_id"();
+
+
+
+CREATE OR REPLACE TRIGGER "set_messages_organization_id_trigger" BEFORE INSERT OR UPDATE ON "public"."messages" FOR EACH ROW EXECUTE FUNCTION "public"."set_messages_organization_id"();
 
 
 
@@ -1208,6 +1340,25 @@ CREATE OR REPLACE TRIGGER "set_review_suggestion_snippets_organization_id_trigge
 
 
 CREATE OR REPLACE TRIGGER "set_schema_file_paths_organization_id_trigger" BEFORE INSERT OR UPDATE ON "public"."schema_file_paths" FOR EACH ROW EXECUTE FUNCTION "public"."set_schema_file_paths_organization_id"();
+
+
+
+CREATE OR REPLACE TRIGGER "set_workspaces_organization_id_trigger" BEFORE INSERT OR UPDATE ON "public"."workspaces" FOR EACH ROW EXECUTE FUNCTION "public"."set_workspaces_organization_id"();
+
+
+
+ALTER TABLE ONLY "public"."building_schemas"
+    ADD CONSTRAINT "building_schemas_workspace_id_fkey" FOREIGN KEY ("workspace_id") REFERENCES "public"."workspaces"("id") ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+
+ALTER TABLE ONLY "public"."chats"
+    ADD CONSTRAINT "chats_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "public"."organizations"("id") ON UPDATE CASCADE ON DELETE RESTRICT;
+
+
+
+ALTER TABLE ONLY "public"."chats"
+    ADD CONSTRAINT "chats_workspace_id_fkey" FOREIGN KEY ("workspace_id") REFERENCES "public"."workspaces"("id") ON UPDATE CASCADE ON DELETE RESTRICT;
 
 
 
@@ -1278,6 +1429,21 @@ ALTER TABLE ONLY "public"."knowledge_suggestions"
 
 ALTER TABLE ONLY "public"."knowledge_suggestions"
     ADD CONSTRAINT "knowledge_suggestions_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "public"."organizations"("id") ON UPDATE CASCADE ON DELETE RESTRICT;
+
+
+
+ALTER TABLE ONLY "public"."messages"
+    ADD CONSTRAINT "messages_chat_id_fkey" FOREIGN KEY ("chat_id") REFERENCES "public"."chats"("id") ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+
+ALTER TABLE ONLY "public"."messages"
+    ADD CONSTRAINT "messages_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "public"."organizations"("id") ON UPDATE CASCADE ON DELETE RESTRICT;
+
+
+
+ALTER TABLE ONLY "public"."messages"
+    ADD CONSTRAINT "messages_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON UPDATE CASCADE ON DELETE RESTRICT;
 
 
 
@@ -1421,6 +1587,36 @@ ALTER TABLE ONLY "public"."schema_file_paths"
 
 
 
+ALTER TABLE ONLY "public"."workspaces"
+    ADD CONSTRAINT "workspaces_created_by_user_id_fkey" FOREIGN KEY ("created_by_user_id") REFERENCES "public"."users"("id") ON UPDATE CASCADE ON DELETE RESTRICT;
+
+
+
+ALTER TABLE ONLY "public"."workspaces"
+    ADD CONSTRAINT "workspaces_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "public"."organizations"("id") ON UPDATE CASCADE ON DELETE RESTRICT;
+
+
+
+ALTER TABLE ONLY "public"."workspaces"
+    ADD CONSTRAINT "workspaces_parent_workspace_id_fkey" FOREIGN KEY ("parent_workspace_id") REFERENCES "public"."workspaces"("id") ON UPDATE CASCADE ON DELETE RESTRICT;
+
+
+
+ALTER TABLE ONLY "public"."workspaces"
+    ADD CONSTRAINT "workspaces_project_id_fkey" FOREIGN KEY ("project_id") REFERENCES "public"."projects"("id") ON UPDATE CASCADE ON DELETE RESTRICT;
+
+
+
+CREATE POLICY "authenticated_users_can_delete_org_chats" ON "public"."chats" FOR DELETE TO "authenticated" USING (("organization_id" IN ( SELECT "organization_members"."organization_id"
+   FROM "public"."organization_members"
+  WHERE ("organization_members"."user_id" = "auth"."uid"()))));
+
+
+
+COMMENT ON POLICY "authenticated_users_can_delete_org_chats" ON "public"."chats" IS 'Authenticated users can only delete chats in organizations they are members of';
+
+
+
 CREATE POLICY "authenticated_users_can_delete_org_invitations" ON "public"."invitations" FOR DELETE TO "authenticated" USING (("organization_id" IN ( SELECT "organization_members"."organization_id"
    FROM "public"."organization_members"
   WHERE ("organization_members"."user_id" = "auth"."uid"()))));
@@ -1452,6 +1648,37 @@ CREATE POLICY "authenticated_users_can_delete_org_projects" ON "public"."project
 
 
 COMMENT ON POLICY "authenticated_users_can_delete_org_projects" ON "public"."projects" IS 'Authenticated users can only delete projects in organizations they are members of';
+
+
+
+CREATE POLICY "authenticated_users_can_delete_org_workspaces" ON "public"."workspaces" FOR DELETE TO "authenticated" USING (("organization_id" IN ( SELECT "organization_members"."organization_id"
+   FROM "public"."organization_members"
+  WHERE ("organization_members"."user_id" = "auth"."uid"()))));
+
+
+
+COMMENT ON POLICY "authenticated_users_can_delete_org_workspaces" ON "public"."workspaces" IS 'Authenticated users can only delete workspaces in organizations they are members of';
+
+
+
+CREATE POLICY "authenticated_users_can_insert_org_building_schemas" ON "public"."building_schemas" FOR INSERT TO "authenticated" WITH CHECK ((EXISTS ( SELECT 1
+   FROM ("public"."workspaces" "w"
+     JOIN "public"."organization_members" "om" ON (("w"."organization_id" = "om"."organization_id")))
+  WHERE (("w"."id" = "building_schemas"."workspace_id") AND ("om"."user_id" = "auth"."uid"())))));
+
+
+
+COMMENT ON POLICY "authenticated_users_can_insert_org_building_schemas" ON "public"."building_schemas" IS 'Authenticated users can only create building schemas for workspaces in organizations they are members of';
+
+
+
+CREATE POLICY "authenticated_users_can_insert_org_chats" ON "public"."chats" FOR INSERT TO "authenticated" WITH CHECK (("organization_id" IN ( SELECT "organization_members"."organization_id"
+   FROM "public"."organization_members"
+  WHERE ("organization_members"."user_id" = "auth"."uid"()))));
+
+
+
+COMMENT ON POLICY "authenticated_users_can_insert_org_chats" ON "public"."chats" IS 'Authenticated users can only create chats in organizations they are members of';
 
 
 
@@ -1501,6 +1728,16 @@ COMMENT ON POLICY "authenticated_users_can_insert_org_knowledge_suggestions" ON 
 
 
 
+CREATE POLICY "authenticated_users_can_insert_org_messages" ON "public"."messages" FOR INSERT TO "authenticated" WITH CHECK (("organization_id" IN ( SELECT "organization_members"."organization_id"
+   FROM "public"."organization_members"
+  WHERE ("organization_members"."user_id" = "auth"."uid"()))));
+
+
+
+COMMENT ON POLICY "authenticated_users_can_insert_org_messages" ON "public"."messages" IS 'Authenticated users can only create messages in organizations they are members of';
+
+
+
 CREATE POLICY "authenticated_users_can_insert_org_organization_members" ON "public"."organization_members" FOR INSERT TO "authenticated" WITH CHECK ((("user_id" = "auth"."uid"()) OR "public"."is_current_user_org_member"("organization_id")));
 
 
@@ -1539,6 +1776,16 @@ COMMENT ON POLICY "authenticated_users_can_insert_org_schema_file_paths" ON "pub
 
 
 
+CREATE POLICY "authenticated_users_can_insert_org_workspaces" ON "public"."workspaces" FOR INSERT TO "authenticated" WITH CHECK (("organization_id" IN ( SELECT "organization_members"."organization_id"
+   FROM "public"."organization_members"
+  WHERE ("organization_members"."user_id" = "auth"."uid"()))));
+
+
+
+COMMENT ON POLICY "authenticated_users_can_insert_org_workspaces" ON "public"."workspaces" IS 'Authenticated users can only create workspaces in organizations they are members of';
+
+
+
 CREATE POLICY "authenticated_users_can_insert_organizations" ON "public"."organizations" FOR INSERT TO "authenticated" WITH CHECK (true);
 
 
@@ -1554,6 +1801,27 @@ CREATE POLICY "authenticated_users_can_insert_projects" ON "public"."projects" F
 
 
 COMMENT ON POLICY "authenticated_users_can_insert_projects" ON "public"."projects" IS 'Authenticated users can create any project';
+
+
+
+CREATE POLICY "authenticated_users_can_select_org_building_schemas" ON "public"."building_schemas" FOR SELECT TO "authenticated" USING ((EXISTS ( SELECT 1
+   FROM ("public"."workspaces" "w"
+     JOIN "public"."organization_members" "om" ON (("w"."organization_id" = "om"."organization_id")))
+  WHERE (("w"."id" = "building_schemas"."workspace_id") AND ("om"."user_id" = "auth"."uid"())))));
+
+
+
+COMMENT ON POLICY "authenticated_users_can_select_org_building_schemas" ON "public"."building_schemas" IS 'Authenticated users can only view building schemas belonging to workspaces in organizations they are members of';
+
+
+
+CREATE POLICY "authenticated_users_can_select_org_chats" ON "public"."chats" FOR SELECT TO "authenticated" USING (("organization_id" IN ( SELECT "organization_members"."organization_id"
+   FROM "public"."organization_members"
+  WHERE ("organization_members"."user_id" = "auth"."uid"()))));
+
+
+
+COMMENT ON POLICY "authenticated_users_can_select_org_chats" ON "public"."chats" IS 'Authenticated users can only view chats belonging to organizations they are members of';
 
 
 
@@ -1610,6 +1878,16 @@ CREATE POLICY "authenticated_users_can_select_org_knowledge_suggestions" ON "pub
 
 
 COMMENT ON POLICY "authenticated_users_can_select_org_knowledge_suggestions" ON "public"."knowledge_suggestions" IS 'Authenticated users can only view knowledge suggestions belonging to organizations they are members of';
+
+
+
+CREATE POLICY "authenticated_users_can_select_org_messages" ON "public"."messages" FOR SELECT TO "authenticated" USING (("organization_id" IN ( SELECT "organization_members"."organization_id"
+   FROM "public"."organization_members"
+  WHERE ("organization_members"."user_id" = "auth"."uid"()))));
+
+
+
+COMMENT ON POLICY "authenticated_users_can_select_org_messages" ON "public"."messages" IS 'Authenticated users can only view messages belonging to organizations they are members of';
 
 
 
@@ -1735,6 +2013,28 @@ COMMENT ON POLICY "authenticated_users_can_select_org_schema_file_paths" ON "pub
 
 
 
+CREATE POLICY "authenticated_users_can_select_org_workspaces" ON "public"."workspaces" FOR SELECT TO "authenticated" USING (("organization_id" IN ( SELECT "organization_members"."organization_id"
+   FROM "public"."organization_members"
+  WHERE ("organization_members"."user_id" = "auth"."uid"()))));
+
+
+
+COMMENT ON POLICY "authenticated_users_can_select_org_workspaces" ON "public"."workspaces" IS 'Authenticated users can only view workspaces belonging to organizations they are members of';
+
+
+
+CREATE POLICY "authenticated_users_can_update_org_chats" ON "public"."chats" FOR UPDATE TO "authenticated" USING (("organization_id" IN ( SELECT "organization_members"."organization_id"
+   FROM "public"."organization_members"
+  WHERE ("organization_members"."user_id" = "auth"."uid"())))) WITH CHECK (("organization_id" IN ( SELECT "organization_members"."organization_id"
+   FROM "public"."organization_members"
+  WHERE ("organization_members"."user_id" = "auth"."uid"()))));
+
+
+
+COMMENT ON POLICY "authenticated_users_can_update_org_chats" ON "public"."chats" IS 'Authenticated users can only update chats in organizations they are members of';
+
+
+
 CREATE POLICY "authenticated_users_can_update_org_invitations" ON "public"."invitations" FOR UPDATE TO "authenticated" USING (("organization_id" IN ( SELECT "organization_members"."organization_id"
    FROM "public"."organization_members"
   WHERE ("organization_members"."user_id" = "auth"."uid"())))) WITH CHECK (("organization_id" IN ( SELECT "organization_members"."organization_id"
@@ -1752,6 +2052,18 @@ CREATE POLICY "authenticated_users_can_update_org_knowledge_suggestions" ON "pub
 
 
 COMMENT ON POLICY "authenticated_users_can_update_org_knowledge_suggestions" ON "public"."knowledge_suggestions" IS 'Authenticated users can only update knowledge suggestions in organizations they are members of';
+
+
+
+CREATE POLICY "authenticated_users_can_update_org_messages" ON "public"."messages" FOR UPDATE TO "authenticated" USING (("organization_id" IN ( SELECT "organization_members"."organization_id"
+   FROM "public"."organization_members"
+  WHERE ("organization_members"."user_id" = "auth"."uid"())))) WITH CHECK (("organization_id" IN ( SELECT "organization_members"."organization_id"
+   FROM "public"."organization_members"
+  WHERE ("organization_members"."user_id" = "auth"."uid"()))));
+
+
+
+COMMENT ON POLICY "authenticated_users_can_update_org_messages" ON "public"."messages" IS 'Authenticated users can only update messages in organizations they are members of';
 
 
 
@@ -1801,6 +2113,24 @@ COMMENT ON POLICY "authenticated_users_can_update_org_schema_file_paths" ON "pub
 
 
 
+CREATE POLICY "authenticated_users_can_update_org_workspaces" ON "public"."workspaces" FOR UPDATE TO "authenticated" USING (("organization_id" IN ( SELECT "organization_members"."organization_id"
+   FROM "public"."organization_members"
+  WHERE ("organization_members"."user_id" = "auth"."uid"())))) WITH CHECK (("organization_id" IN ( SELECT "organization_members"."organization_id"
+   FROM "public"."organization_members"
+  WHERE ("organization_members"."user_id" = "auth"."uid"()))));
+
+
+
+COMMENT ON POLICY "authenticated_users_can_update_org_workspaces" ON "public"."workspaces" IS 'Authenticated users can only update workspaces in organizations they are members of';
+
+
+
+ALTER TABLE "public"."building_schemas" ENABLE ROW LEVEL SECURITY;
+
+
+ALTER TABLE "public"."chats" ENABLE ROW LEVEL SECURITY;
+
+
 ALTER TABLE "public"."doc_file_paths" ENABLE ROW LEVEL SECURITY;
 
 
@@ -1820,6 +2150,9 @@ ALTER TABLE "public"."knowledge_suggestion_doc_mappings" ENABLE ROW LEVEL SECURI
 
 
 ALTER TABLE "public"."knowledge_suggestions" ENABLE ROW LEVEL SECURITY;
+
+
+ALTER TABLE "public"."messages" ENABLE ROW LEVEL SECURITY;
 
 
 ALTER TABLE "public"."migration_pull_request_mappings" ENABLE ROW LEVEL SECURITY;
@@ -1881,6 +2214,14 @@ COMMENT ON POLICY "service_role_can_delete_all_projects" ON "public"."projects" 
 
 
 
+CREATE POLICY "service_role_can_insert_all_building_schemas" ON "public"."building_schemas" FOR INSERT TO "service_role" WITH CHECK (true);
+
+
+
+CREATE POLICY "service_role_can_insert_all_chats" ON "public"."chats" FOR INSERT TO "service_role" WITH CHECK (true);
+
+
+
 CREATE POLICY "service_role_can_insert_all_github_pull_request_comments" ON "public"."github_pull_request_comments" FOR INSERT TO "service_role" WITH CHECK (true);
 
 
@@ -1898,6 +2239,10 @@ CREATE POLICY "service_role_can_insert_all_knowledge_suggestion_doc_mappings" ON
 
 
 CREATE POLICY "service_role_can_insert_all_knowledge_suggestions" ON "public"."knowledge_suggestions" FOR INSERT TO "service_role" WITH CHECK (true);
+
+
+
+CREATE POLICY "service_role_can_insert_all_messages" ON "public"."messages" FOR INSERT TO "service_role" WITH CHECK (true);
 
 
 
@@ -1941,6 +2286,18 @@ CREATE POLICY "service_role_can_insert_all_review_suggestion_snippets" ON "publi
 
 
 
+CREATE POLICY "service_role_can_insert_all_workspaces" ON "public"."workspaces" FOR INSERT TO "service_role" WITH CHECK (true);
+
+
+
+CREATE POLICY "service_role_can_select_all_building_schemas" ON "public"."building_schemas" FOR SELECT TO "service_role" USING (true);
+
+
+
+CREATE POLICY "service_role_can_select_all_chats" ON "public"."chats" FOR SELECT TO "service_role" USING (true);
+
+
+
 CREATE POLICY "service_role_can_select_all_doc_file_paths" ON "public"."doc_file_paths" FOR SELECT TO "service_role" USING (true);
 
 
@@ -1962,6 +2319,10 @@ CREATE POLICY "service_role_can_select_all_invitations" ON "public"."invitations
 
 
 CREATE POLICY "service_role_can_select_all_knowledge_suggestions" ON "public"."knowledge_suggestions" FOR SELECT TO "service_role" USING (true);
+
+
+
+CREATE POLICY "service_role_can_select_all_messages" ON "public"."messages" FOR SELECT TO "service_role" USING (true);
 
 
 
@@ -2001,11 +2362,23 @@ CREATE POLICY "service_role_can_select_all_schema_file_paths" ON "public"."schem
 
 
 
+CREATE POLICY "service_role_can_select_all_workspaces" ON "public"."workspaces" FOR SELECT TO "service_role" USING (true);
+
+
+
+CREATE POLICY "service_role_can_update_all_chats" ON "public"."chats" FOR UPDATE TO "service_role" USING (true) WITH CHECK (true);
+
+
+
 CREATE POLICY "service_role_can_update_all_invitations" ON "public"."invitations" FOR UPDATE TO "service_role" USING (true) WITH CHECK (true);
 
 
 
 CREATE POLICY "service_role_can_update_all_knowledge_suggestions" ON "public"."knowledge_suggestions" FOR UPDATE TO "service_role" USING (true) WITH CHECK (true);
+
+
+
+CREATE POLICY "service_role_can_update_all_messages" ON "public"."messages" FOR UPDATE TO "service_role" USING (true) WITH CHECK (true);
 
 
 
@@ -2025,6 +2398,10 @@ COMMENT ON POLICY "service_role_can_update_all_projects" ON "public"."projects" 
 
 
 
+CREATE POLICY "service_role_can_update_all_workspaces" ON "public"."workspaces" FOR UPDATE TO "service_role" USING (true) WITH CHECK (true);
+
+
+
 ALTER TABLE "public"."users" ENABLE ROW LEVEL SECURITY;
 
 
@@ -2033,6 +2410,9 @@ CREATE POLICY "users_same_organization_select_policy" ON "public"."users" FOR SE
      JOIN "public"."organization_members" "om2" ON (("om1"."organization_id" = "om2"."organization_id")))
   WHERE (("om1"."user_id" = "users"."id") AND ("om2"."user_id" = "auth"."uid"())))) OR ("id" = "auth"."uid"())));
 
+
+
+ALTER TABLE "public"."workspaces" ENABLE ROW LEVEL SECURITY;
 
 
 
@@ -2258,6 +2638,12 @@ GRANT ALL ON FUNCTION "public"."prevent_delete_last_organization_member"() TO "s
 
 
 
+GRANT ALL ON FUNCTION "public"."set_chats_organization_id"() TO "anon";
+GRANT ALL ON FUNCTION "public"."set_chats_organization_id"() TO "authenticated";
+GRANT ALL ON FUNCTION "public"."set_chats_organization_id"() TO "service_role";
+
+
+
 GRANT ALL ON FUNCTION "public"."set_doc_file_paths_organization_id"() TO "anon";
 GRANT ALL ON FUNCTION "public"."set_doc_file_paths_organization_id"() TO "authenticated";
 GRANT ALL ON FUNCTION "public"."set_doc_file_paths_organization_id"() TO "service_role";
@@ -2285,6 +2671,12 @@ GRANT ALL ON FUNCTION "public"."set_knowledge_suggestion_doc_mappings_organizati
 GRANT ALL ON FUNCTION "public"."set_knowledge_suggestions_organization_id"() TO "anon";
 GRANT ALL ON FUNCTION "public"."set_knowledge_suggestions_organization_id"() TO "authenticated";
 GRANT ALL ON FUNCTION "public"."set_knowledge_suggestions_organization_id"() TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."set_messages_organization_id"() TO "anon";
+GRANT ALL ON FUNCTION "public"."set_messages_organization_id"() TO "authenticated";
+GRANT ALL ON FUNCTION "public"."set_messages_organization_id"() TO "service_role";
 
 
 
@@ -2348,6 +2740,12 @@ GRANT ALL ON FUNCTION "public"."set_schema_file_paths_organization_id"() TO "ser
 
 
 
+GRANT ALL ON FUNCTION "public"."set_workspaces_organization_id"() TO "anon";
+GRANT ALL ON FUNCTION "public"."set_workspaces_organization_id"() TO "authenticated";
+GRANT ALL ON FUNCTION "public"."set_workspaces_organization_id"() TO "service_role";
+
+
+
 GRANT ALL ON FUNCTION "public"."sync_existing_users"() TO "anon";
 GRANT ALL ON FUNCTION "public"."sync_existing_users"() TO "authenticated";
 GRANT ALL ON FUNCTION "public"."sync_existing_users"() TO "service_role";
@@ -2366,6 +2764,18 @@ GRANT ALL ON FUNCTION "public"."sync_existing_users"() TO "service_role";
 
 
 
+
+
+
+GRANT ALL ON TABLE "public"."building_schemas" TO "anon";
+GRANT ALL ON TABLE "public"."building_schemas" TO "authenticated";
+GRANT ALL ON TABLE "public"."building_schemas" TO "service_role";
+
+
+
+GRANT ALL ON TABLE "public"."chats" TO "anon";
+GRANT ALL ON TABLE "public"."chats" TO "authenticated";
+GRANT ALL ON TABLE "public"."chats" TO "service_role";
 
 
 
@@ -2408,6 +2818,12 @@ GRANT ALL ON TABLE "public"."knowledge_suggestion_doc_mappings" TO "service_role
 GRANT ALL ON TABLE "public"."knowledge_suggestions" TO "anon";
 GRANT ALL ON TABLE "public"."knowledge_suggestions" TO "authenticated";
 GRANT ALL ON TABLE "public"."knowledge_suggestions" TO "service_role";
+
+
+
+GRANT ALL ON TABLE "public"."messages" TO "anon";
+GRANT ALL ON TABLE "public"."messages" TO "authenticated";
+GRANT ALL ON TABLE "public"."messages" TO "service_role";
 
 
 
@@ -2492,6 +2908,12 @@ GRANT ALL ON TABLE "public"."schema_file_paths" TO "service_role";
 GRANT ALL ON TABLE "public"."users" TO "anon";
 GRANT ALL ON TABLE "public"."users" TO "authenticated";
 GRANT ALL ON TABLE "public"."users" TO "service_role";
+
+
+
+GRANT ALL ON TABLE "public"."workspaces" TO "anon";
+GRANT ALL ON TABLE "public"."workspaces" TO "authenticated";
+GRANT ALL ON TABLE "public"."workspaces" TO "service_role";
 
 
 

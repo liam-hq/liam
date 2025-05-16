@@ -34,6 +34,71 @@ export type Database = {
   }
   public: {
     Tables: {
+      building_schemas: {
+        Row: {
+          created_at: string
+          id: string
+          schema: Json
+          workspace_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          schema: Json
+          workspace_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          schema?: Json
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'building_schemas_workspace_id_fkey'
+            columns: ['workspace_id']
+            isOneToOne: false
+            referencedRelation: 'workspaces'
+            referencedColumns: ['id']
+          },
+        ]
+      }
+      chats: {
+        Row: {
+          id: string
+          organization_id: string
+          title: string
+          workspace_id: string
+        }
+        Insert: {
+          id?: string
+          organization_id: string
+          title: string
+          workspace_id: string
+        }
+        Update: {
+          id?: string
+          organization_id?: string
+          title?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'chats_organization_id_fkey'
+            columns: ['organization_id']
+            isOneToOne: false
+            referencedRelation: 'organizations'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'chats_workspace_id_fkey'
+            columns: ['workspace_id']
+            isOneToOne: false
+            referencedRelation: 'workspaces'
+            referencedColumns: ['id']
+          },
+        ]
+      }
       doc_file_paths: {
         Row: {
           created_at: string
@@ -360,6 +425,61 @@ export type Database = {
             columns: ['organization_id']
             isOneToOne: false
             referencedRelation: 'organizations'
+            referencedColumns: ['id']
+          },
+        ]
+      }
+      messages: {
+        Row: {
+          chat_id: string
+          content: string
+          created_at: string
+          id: string
+          organization_id: string
+          role: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          chat_id: string
+          content: string
+          created_at?: string
+          id?: string
+          organization_id: string
+          role: string
+          updated_at: string
+          user_id?: string | null
+        }
+        Update: {
+          chat_id?: string
+          content?: string
+          created_at?: string
+          id?: string
+          organization_id?: string
+          role?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'messages_chat_id_fkey'
+            columns: ['chat_id']
+            isOneToOne: false
+            referencedRelation: 'chats'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'messages_organization_id_fkey'
+            columns: ['organization_id']
+            isOneToOne: false
+            referencedRelation: 'organizations'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'messages_user_id_fkey'
+            columns: ['user_id']
+            isOneToOne: false
+            referencedRelation: 'users'
             referencedColumns: ['id']
           },
         ]
@@ -952,6 +1072,71 @@ export type Database = {
           name?: string
         }
         Relationships: []
+      }
+      workspaces: {
+        Row: {
+          created_at: string
+          created_by_user_id: string
+          git_sha: string | null
+          id: string
+          name: string
+          organization_id: string
+          parent_workspace_id: string | null
+          project_id: string
+          schema_snapshot: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by_user_id: string
+          git_sha?: string | null
+          id?: string
+          name: string
+          organization_id: string
+          parent_workspace_id?: string | null
+          project_id: string
+          schema_snapshot?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by_user_id?: string
+          git_sha?: string | null
+          id?: string
+          name?: string
+          organization_id?: string
+          parent_workspace_id?: string | null
+          project_id?: string
+          schema_snapshot?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'workspaces_created_by_user_id_fkey'
+            columns: ['created_by_user_id']
+            isOneToOne: false
+            referencedRelation: 'users'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'workspaces_organization_id_fkey'
+            columns: ['organization_id']
+            isOneToOne: false
+            referencedRelation: 'organizations'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'workspaces_parent_workspace_id_fkey'
+            columns: ['parent_workspace_id']
+            isOneToOne: false
+            referencedRelation: 'workspaces'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'workspaces_project_id_fkey'
+            columns: ['project_id']
+            isOneToOne: false
+            referencedRelation: 'projects'
+            referencedColumns: ['id']
+          },
+        ]
       }
     }
     Views: {
