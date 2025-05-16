@@ -1,1 +1,10 @@
-
+/* stylelint-disable-next-line plugin/no-unused-selectors */
+.version {
+  margin: var(--spacing-2);
+  border-radius: var(--border-radius-full);
+  background: var(--pane-muted-background);
+  padding: var(--spacing-1) var(--spacing-2);
+  color: var(--global-mute-text);
+  font-family: var(--code-font);
+  font-size: var(--font-size-1);
+}

@@ -1,1 +1,47 @@
+/* stylelint-disable-next-line plugin/no-unused-selectors */
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  gap: var(--spacing-5, 20px);
+}
 
+/* stylelint-disable-next-line plugin/no-unused-selectors */
+.message {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--spacing-1, 4px);
+}
+
+/* stylelint-disable-next-line plugin/no-unused-selectors */
+.inner {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2, 8px);
+}
+
+/* stylelint-disable-next-line plugin/no-unused-selectors */
+.silentHere {
+  color: var(--callout-warning-text, #c3b476);
+  font-size: var(--font-size-6);
+  font-weight: 700;
+  line-height: 160%;
+}
+
+/* stylelint-disable-next-line plugin/no-unused-selectors */
+.errorMessage {
+  color: var(--callout-warning-text, #c3b476);
+  font-size: var(--font-size-4);
+  font-weight: 400;
+  line-height: 160%;
+}
+
+/* stylelint-disable-next-line plugin/no-unused-selectors */
+.instruction {
+  color: var(--callout-warning-text, #c3b476);
+  font-size: var(--font-size-4);
+  font-weight: 400;
+  line-height: 160%;
+}

@@ -1,1 +1,5 @@
-
+/* stylelint-disable-next-line plugin/no-unused-selectors */
+.icon {
+  width: 12px;
+  height: 12px;
+}
