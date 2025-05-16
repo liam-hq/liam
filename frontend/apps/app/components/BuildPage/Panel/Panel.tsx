@@ -14,6 +14,7 @@ import styles from './Panel.module.css'
 import { SchemaEditor } from './SchemaEditor'
 import { TablesList } from './TablesList'
 import { AFTER } from './after'
+import { BEFORE } from './before'
 
 type ErrorObject = {
   name: string
@@ -53,7 +54,7 @@ export const Panel: FC<Props> = ({
         <div className={styles.chatSection}>
           <Chat schemaData={schema} />
         </div>
-        <TabsRoot defaultValue="schema" className={styles.tabsRoot}>
+        <TabsRoot defaultValue="tables" className={styles.tabsRoot}>
           <TabsList className={styles.tabsList}>
             <TabsTrigger value="schema" className={styles.tabsTrigger}>
               Schema
@@ -72,7 +73,10 @@ export const Panel: FC<Props> = ({
           </TabsContent>
           <TabsContent value="tables" className={styles.tabsContent}>
             <div className={styles.tablesSection}>
-              <TablesList schema={schema} tableGroups={tableGroups} />
+              <TablesList
+                before={BEFORE as unknown as Schema}
+                after={AFTER as unknown as Schema}
+              />
             </div>
           </TabsContent>
           <TabsContent value="erd" className={styles.tabsContent}>

@@ -6,6 +6,10 @@ export const tableGroupNameSchema = v.string()
 export const columnNameSchema = v.string()
 
 export const tableNameSchema = v.string()
+export type TableName = v.InferOutput<typeof tableNameSchema>
+
+const commentSchema = v.nullable(v.string())
+export type Comment = v.InferOutput<typeof commentSchema>
 
 const indexNameSchema = v.string()
 
@@ -13,7 +17,7 @@ const relationshipNameSchema = v.string()
 
 const constraintNameSchema = v.string()
 
-const columnSchema = v.object({
+export const columnSchema = v.object({
   name: columnNameSchema,
   type: v.string(),
   default: v.nullable(v.union([v.string(), v.number(), v.boolean()])),
@@ -21,7 +25,7 @@ const columnSchema = v.object({
   primary: v.boolean(),
   unique: v.boolean(),
   notNull: v.boolean(),
-  comment: v.nullable(v.string()),
+  comment: commentSchema,
 })
 
 const columnsSchema = v.record(columnNameSchema, columnSchema)
@@ -100,7 +104,7 @@ export type Constraints = v.InferOutput<typeof constraintsSchema>
 const tableSchema = v.object({
   name: tableNameSchema,
   columns: columnsSchema,
-  comment: v.nullable(v.string()),
+  comment: commentSchema,
   indexes: indexesSchema,
   constraints: constraintsSchema,
 })
