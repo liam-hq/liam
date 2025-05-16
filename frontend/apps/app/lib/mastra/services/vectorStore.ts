@@ -2,9 +2,7 @@ import { PgVector } from '@mastra/pg'
 
 // Initialize PgVector with connection string
 const pgVector = new PgVector({
-  connectionString:
-    process.env.POSTGRES_URL_NON_POOLING ||
-    'postgresql://postgres:postgres@127.0.0.1:54322/postgres',
+  connectionString: process.env.POSTGRES_URL || '',
 })
 
 /**
