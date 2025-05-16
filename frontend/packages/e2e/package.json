@@ -2,6 +2,7 @@
   "name": "@liam-hq/e2e",
   "private": true,
   "version": "0.0.0",
+  "type": "module",
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
     "@liam-hq/configs": "workspace:*",
