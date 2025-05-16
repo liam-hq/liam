@@ -1,9 +1,16 @@
 import { PgVector } from '@mastra/pg'
 
-// Initialize PgVector with connection string
-const pgVector = new PgVector({
-  connectionString: process.env.POSTGRES_URL || '',
-})
+// Use lazy initialization
+let pgVectorInstance: PgVector | null = null
+
+function getPgVector(): PgVector {
+  if (!pgVectorInstance) {
+    pgVectorInstance = new PgVector({
+      connectionString: process.env.POSTGRES_URL || '',
+    })
+  }
+  return pgVectorInstance
+}
 
 /**
  * Creates the vector index if it doesn't exist
@@ -12,7 +19,7 @@ export async function ensureVectorIndex(
   indexName: string,
   dimension: number,
 ): Promise<void> {
-  await pgVector.createIndex({
+  await getPgVector().createIndex({
     indexName,
     dimension,
   })
@@ -27,7 +34,7 @@ export async function storeVectors(
   metadata: Record<string, unknown>[],
   ids?: string[],
 ): Promise<void> {
-  await pgVector.upsert({
+  await getPgVector().upsert({
     indexName,
     vectors,
     metadata,
@@ -45,7 +52,7 @@ export async function queryVectors(
 ): Promise<
   Array<{ id: string; score: number; metadata?: Record<string, unknown> }>
 > {
-  const results = await pgVector.query({
+  const results = await getPgVector().query({
     indexName,
     queryVector,
     topK,
