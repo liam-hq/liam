@@ -10,7 +10,7 @@ type Props = ComponentProps<'button'> & {
     | 'solid-danger'
     | 'outline-secondary'
     | 'ghost-secondary'
-  size?: 'sm' | 'md' | 'lg'
+  size?: 'xs' | 'sm' | 'md' | 'lg'
   leftIcon?: ReactNode
   rightIcon?: ReactNode
   isLoading?: boolean | undefined
@@ -51,6 +51,7 @@ export const Button = forwardRef<HTMLButtonElement, Props>(
       .exhaustive()
 
     const sizeClassName = match(size)
+      .with('xs', () => styles.xs)
       .with('sm', () => styles.sm)
       .with('md', () => styles.md)
       .with('lg', () => styles.lg)

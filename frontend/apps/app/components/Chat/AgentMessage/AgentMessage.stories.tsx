@@ -8,6 +8,7 @@ import {
   type MessageOption,
   MessageOptionButtons,
 } from '../MessageOptionButtons'
+import { ProcessIndicator } from '../ProcessIndicator'
 import { AgentMessage } from './AgentMessage'
 
 // Define the component props type
@@ -585,6 +586,89 @@ export const AskWithMultiSelectOptions: Story = {
         ]}
         agentType="ask"
         multiSelect={true}
+      />
+    ),
+  },
+}
+
+export const BuildWithDatabaseOptions: Story = {
+  args: {
+    agent: 'build',
+    state: 'default',
+    message: 'Please select an operation to perform:',
+    time: '12:45',
+    agentName: 'Build Agent',
+    children: (
+      <MessageOptionButtons
+        options={[
+          { id: 'option1', text: 'Create new table' },
+          { id: 'option2', text: 'Modify existing schema' },
+          { id: 'option3', text: 'Generate SQL migration' },
+        ]}
+        agentType="build"
+      />
+    ),
+  },
+}
+
+export const BuildAfterOptionSelected: Story = {
+  args: {
+    agent: 'build',
+    state: 'default',
+    message: 'Creating new table based on your selection...',
+    time: '12:45',
+    agentName: 'Build Agent',
+    children: (
+      <ProcessIndicator
+        status="processing"
+        title="Creating new table"
+        subtitle="Generating table structure based on requirements"
+        progress={35}
+        primaryActionLabel="View Details"
+        secondaryActionLabel="Cancel"
+        initialExpanded={true}
+      />
+    ),
+  },
+}
+
+export const BuildAfterOptionSelectedCollapsed: Story = {
+  args: {
+    agent: 'build',
+    state: 'default',
+    message: 'Updating schema based on your selection...',
+    time: '12:50',
+    agentName: 'Build Agent',
+    children: (
+      <ProcessIndicator
+        status="processing"
+        title="Updating schema"
+        subtitle="Adding foreign key constraints"
+        progress={45}
+        primaryActionLabel="View Details"
+        secondaryActionLabel="Cancel"
+        initialExpanded={false}
+      />
+    ),
+  },
+}
+
+export const BuildAfterOptionSelectedCompleteCollapsed: Story = {
+  args: {
+    agent: 'build',
+    state: 'default',
+    message: 'Schema update completed successfully.',
+    time: '12:55',
+    agentName: 'Build Agent',
+    children: (
+      <ProcessIndicator
+        status="complete"
+        title="Schema Update Complete"
+        subtitle="The schema has been successfully updated."
+        progress={100}
+        primaryActionLabel="View Schema"
+        secondaryActionLabel="Close"
+        initialExpanded={false}
       />
     ),
   },
