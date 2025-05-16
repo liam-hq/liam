@@ -14,3 +14,27 @@
 }
 
 /* Using the color scheme from the Figma design */
+
+/* stylelint-disable-next-line plugin/no-unused-selectors */
+.default {
+  background-color: var(--overlay-10);
+  color: var(--overlay-70);
+}
+
+/* stylelint-disable-next-line plugin/no-unused-selectors */
+.yellow {
+  background-color: var(--color-gold-alpha-20);
+  color: var(--callout-warning-text);
+}
+
+/* stylelint-disable-next-line plugin/no-unused-selectors */
+.green {
+  background-color: var(--callout-success-background);
+  color: var(--primary-accent);
+}
+
+/* stylelint-disable-next-line plugin/no-unused-selectors */
+.purple {
+  background-color: var(--color-purple-alpha-20);
+  color: var(--primary-accent);
+}
