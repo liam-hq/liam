@@ -4,7 +4,6 @@ import {
   querySchemaVectorStore,
 } from '@/lib/mastra/services/schemaProcessor'
 import type { Schema, TableGroup } from '@liam-hq/db-structure'
-import * as Sentry from '@sentry/nextjs'
 import { NextResponse } from 'next/server'
 
 // Export TableGroupData type for compatibility
@@ -165,71 +164,67 @@ function shouldUseRAG(query: string): boolean {
 }
 
 export async function POST(request: Request) {
-  try {
-    const { message, schemaData, history, forceRAG } = await request.json()
+  const { message, schemaData, history, forceRAG } = await request.json()
 
-    if (!message || typeof message !== 'string' || !message.trim()) {
-      return NextResponse.json(
-        { error: 'Message is required' },
-        { status: 400 },
-      )
-    }
+  if (!message || typeof message !== 'string' || !message.trim()) {
+    return NextResponse.json({ error: 'Message is required' }, { status: 400 })
+  }
 
-    if (!schemaData || typeof schemaData !== 'object') {
-      return NextResponse.json(
-        { error: 'Valid schema data is required' },
-        { status: 400 },
-      )
-    }
+  if (!schemaData || typeof schemaData !== 'object') {
+    return NextResponse.json(
+      { error: 'Valid schema data is required' },
+      { status: 400 },
+    )
+  }
 
-    // Format chat history for prompt
-    const formattedChatHistory =
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-      history && history.length > 0
-        ? history
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-            .map((msg: [string, string]) => `${msg[0]}: ${msg[1]}`)
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-            .join('\n')
-        : 'No previous conversation.'
+  // Format chat history for prompt
+  const formattedChatHistory =
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    history && history.length > 0
+      ? history
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+          .map((msg: [string, string]) => `${msg[0]}: ${msg[1]}`)
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+          .join('\n')
+      : 'No previous conversation.'
 
-    // Convert schema to text
-    const schemaText = convertSchemaToText(schemaData)
+  // Convert schema to text
+  const schemaText = convertSchemaToText(schemaData)
 
-    // Determine if RAG should be used based on query or explicit flag
-    const useRAG = forceRAG !== undefined ? forceRAG : shouldUseRAG(message)
+  // Determine if RAG should be used based on query or explicit flag
+  const useRAG = forceRAG !== undefined ? forceRAG : shouldUseRAG(message)
 
-    // Variables for agent selection and relevant schema
-    let relevantSchemaText = ''
-    // Always use the same agent, regardless of RAG
-    const agentName = 'databaseSchemaAgent'
+  // Variables for agent selection and relevant schema
+  let relevantSchemaText = ''
+  // Always use the same agent, regardless of RAG
+  const agentName = 'databaseSchemaAgent'
 
-    // Process RAG if needed
-    if (useRAG) {
-      // Process and store schema in vector database
-      await processAndStoreSchema(schemaText)
+  // Process RAG if needed
+  if (useRAG) {
+    // Process and store schema in vector database
+    await processAndStoreSchema(schemaText)
 
-      // Query the vector store for relevant schema information
-      const relevantSchemaInfo = await querySchemaVectorStore(message)
+    // Query the vector store for relevant schema information
+    const relevantSchemaInfo = await querySchemaVectorStore(message)
 
-      // Extract the text content from the search results
-      relevantSchemaText = relevantSchemaInfo
-        .map((result) => (result.metadata?.text as string) || '')
-        .filter(Boolean)
-        .join('\n\n')
-    }
+    // Extract the text content from the search results
+    relevantSchemaText = relevantSchemaInfo
+      .map((result) => (result.metadata?.text as string) || '')
+      .filter(Boolean)
+      .join('\n\n')
+  }
 
-    // Get the agent from Mastra
-    const agent = mastra.getAgent(agentName)
-    if (!agent) {
-      throw new Error(`${agentName} not found in Mastra instance`)
-    }
+  // Get the agent from Mastra
+  const agent = mastra.getAgent(agentName)
+  if (!agent) {
+    throw new Error(`${agentName} not found in Mastra instance`)
+  }
 
-    // Create a response using the agent
-    const response = await agent.generate([
-      {
-        role: 'system',
-        content: `
+  // Create a response using the agent
+  const response = await agent.generate([
+    {
+      role: 'system',
+      content: `
 Complete Schema Information:
 ${schemaText}
 ${relevantSchemaText ? `\nRelevant Schema Information:\n${relevantSchemaText}` : ''}
@@ -237,24 +232,16 @@ ${relevantSchemaText ? `\nRelevant Schema Information:\n${relevantSchemaText}` :
 Previous conversation:
 ${formattedChatHistory}
 `,
-      },
-      {
-        role: 'user',
-        content: message,
-      },
-    ])
+    },
+    {
+      role: 'user',
+      content: message,
+    },
+  ])
 
-    return new Response(response.text, {
-      headers: {
-        'Content-Type': 'text/plain; charset=utf-8',
-      },
-    })
-  } catch (error) {
-    Sentry.captureException(error)
-    console.error('Error generating response:', error)
-    return NextResponse.json(
-      { error: 'Failed to generate response' },
-      { status: 500 },
-    )
-  }
+  return new Response(response.text, {
+    headers: {
+      'Content-Type': 'text/plain; charset=utf-8',
+    },
+  })
 }
