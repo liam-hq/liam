@@ -40,7 +40,7 @@ jobs:
           fi
       - uses: ./.github/actions/pnpm-setup
         if: steps.determine.outputs.files_changed == 'true'
-      - uses: ruby/setup-ruby@f41e084df884422b269f4c01c3748a9df4431a75 # v1.236.0
+      - uses: ruby/setup-ruby@eaecf785f6a34567a6d97f686bbb7bccc1ac1e5c # v1.237.0
         if: steps.determine.outputs.files_changed == 'true'
         with:
           ruby-version: '3.4'
