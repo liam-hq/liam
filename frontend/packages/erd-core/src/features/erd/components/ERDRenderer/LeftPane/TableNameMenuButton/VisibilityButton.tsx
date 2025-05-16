@@ -1,7 +1,7 @@
 import { toggleLogEvent } from '@/features/gtm/utils'
 import { useCustomReactflow } from '@/features/reactflow/hooks'
 import { useVersion } from '@/providers'
-import { toggleHiddenNodeId } from '@/stores'
+import { toggleHiddenNodeId, updateShowAllNodeMode } from '@/stores'
 import { Eye, EyeClosed, SidebarMenuAction } from '@liam-hq/ui'
 import { type FC, type MouseEvent, useCallback } from 'react'
 import styles from './VisibilityButton.module.css'
@@ -18,6 +18,7 @@ export const VisibilityButton: FC<Props> = ({ tableName, hidden }) => {
   const handleClick = useCallback(
     (event: MouseEvent) => {
       event.stopPropagation()
+      updateShowAllNodeMode(false)
       toggleHiddenNodeId(tableName)
       updateNode(tableName, { hidden: !hidden })
 
