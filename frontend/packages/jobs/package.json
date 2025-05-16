@@ -7,7 +7,7 @@
   },
   "main": "src/index.ts",
   "dependencies": {
-    "@langchain/core": "0.3.49",
+    "@langchain/core": "0.3.51",
     "@langchain/openai": "0.5.7",
     "@liam-hq/db": "workspace:*",
     "@liam-hq/db-structure": "workspace:*",
