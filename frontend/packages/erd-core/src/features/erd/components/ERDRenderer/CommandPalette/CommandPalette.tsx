@@ -72,25 +72,29 @@ export const CommandPalette: FC = () => {
           </Command.Group>
         </Command.List>
         <div>
-          {table && (
-            <TableNode
-              id=""
-              type="table"
-              data={{
-                table: table,
-                showMode: 'ALL_FIELDS',
-                isActiveHighlighted: false,
-                isHighlighted: false,
-                sourceColumnName: undefined,
-                targetColumnCardinalities: undefined,
-              }}
-              dragging={false}
-              isConnectable={false}
-              positionAbsoluteX={0}
-              positionAbsoluteY={0}
-              zIndex={0}
-            />
-          )}
+          <div className={styles.previewContainer}>
+            {table && (
+              <div className={styles.tableNodeContainer}>
+                <TableNode
+                  id=""
+                  type="table"
+                  data={{
+                    table: table,
+                    showMode: 'ALL_FIELDS',
+                    isActiveHighlighted: false,
+                    isHighlighted: false,
+                    sourceColumnName: undefined,
+                    targetColumnCardinalities: undefined,
+                  }}
+                  dragging={false}
+                  isConnectable={false}
+                  positionAbsoluteX={0}
+                  positionAbsoluteY={0}
+                  zIndex={0}
+                />
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </Command.Dialog>

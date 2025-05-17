@@ -88,6 +88,19 @@
   background-color: rgba(255, 255, 255, 0.05);
 }
 
+.previewContainer {
+  padding: 32px;
+  height: 444px;
+}
+
+.tableNodeContainer {
+  padding: 40px 20px;
+  background-color: black;
+  height: 100%;
+  overflow-x: hidden;
+  overflow-y: scroll;
+}
+
 .triggerButtonContainer {
   display: flex;
   height: 29px;
