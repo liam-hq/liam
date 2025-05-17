@@ -5,22 +5,23 @@ import { useSchemaStore } from '@/stores'
 import { Search, Table2 } from '@liam-hq/ui'
 import { Command, useCommandState } from 'cmdk'
 import {
-  type ComponentProps,
-  forwardRef,
+  type FC,
+  type PropsWithChildren,
+  createContext,
   useCallback,
+  useContext,
   useEffect,
   useState,
 } from 'react'
 import { TableNode } from '../../ERDContent/components/TableNode'
 import styles from './CommandPalette.module.css'
 
-export const CommandPalette = () => {
-  const [open, setOpen] = useState(false)
-  const schema = useSchemaStore()
+const commandPaletteContext = createContext({
+  setOpen: (_: boolean | ((_: boolean) => boolean)) => {},
+})
 
-  const [tableName, setTableName] = useState<string | null>(null)
-  const { selectTable } = useTableSelection()
-  const table = schema.tables[tableName ?? '']
+export const CommandPaletteWrapper: FC<PropsWithChildren> = (props) => {
+  const [open, setOpen] = useState(false)
 
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
@@ -34,21 +35,44 @@ export const CommandPalette = () => {
     return () => document.removeEventListener('keydown', down)
   }, [])
 
+  return (
+    <commandPaletteContext.Provider value={{ setOpen }}>
+      <Command.Dialog
+        open={open}
+        onOpenChange={setOpen}
+        label="Global Command Menu"
+        contentClassName={styles.content}
+      >
+        {props.children}
+      </Command.Dialog>
+    </commandPaletteContext.Provider>
+  )
+}
+
+export const CommandPalette = () => {
+  const { setOpen } = useContext(commandPaletteContext)
+  const schema = useSchemaStore()
+
+  const [tableName, setTableName] = useState<string | null>(null)
+  const { selectTable } = useTableSelection()
+  const table = schema.tables[tableName ?? '']
+
   const jumpToERD = useCallback(
     (tableName: string) => {
       setOpen(false)
       selectTable({ tableId: tableName, displayArea: 'main' })
     },
-    [selectTable],
+    [setOpen, selectTable],
   )
 
+  const selectedItem = useCommandState((state) => state.value)
+  useEffect(() => {
+    setTableName(selectedItem)
+    return () => setTableName(null)
+  }, [selectedItem])
+
   return (
-    <Command.Dialog
-      open={open}
-      onOpenChange={setOpen}
-      label="Global Command Menu"
-      contentClassName={styles.content}
-    >
+    <>
       <div className={styles.searchContainer}>
         <Search />
         <Command.Input placeholder="Search" />
@@ -60,20 +84,14 @@ export const CommandPalette = () => {
 
           <Command.Group heading="Suggestions">
             {Object.values(schema.tables).map((table) => (
-              <CustomItem
+              <Command.Item
                 key={table.name}
                 value={table.name}
-                onX={() => {
-                  setTableName(table.name)
-                }}
-                onSelect={() => {
-                  console.log('click', table.name)
-                  jumpToERD(table.name)
-                }}
+                onSelect={() => jumpToERD(table.name)}
               >
                 <Table2 />
                 {table.name}
-              </CustomItem>
+              </Command.Item>
             ))}
           </Command.Group>
         </Command.List>
@@ -99,25 +117,6 @@ export const CommandPalette = () => {
           )}
         </div>
       </div>
-    </Command.Dialog>
+    </>
   )
 }
-
-const CustomItem = forwardRef<
-  HTMLDivElement,
-  ComponentProps<typeof Command.Item>
->((props, forwardedRef) => {
-  const value = props.value
-
-  const selected = useCommandState(
-    (state) => state.value && state.value === value,
-  )
-
-  useEffect(() => {
-    if (!selected) return
-
-    props.onX()
-  }, [selected, props.onX])
-
-  return <Command.Item {...props} ref={forwardedRef} />
-})
