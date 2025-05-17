@@ -7,6 +7,7 @@ import {
   TooltipTrigger,
 } from '@liam-hq/ui'
 import type { FC } from 'react'
+import { CommandPaletteTriggerButton } from '../CommandPalette'
 import styles from './AppBar.module.css'
 import { CopyLinkButton } from './CopyLinkButton'
 import { GithubButton } from './GithubButton'
@@ -43,6 +44,7 @@ export const AppBar: FC = () => {
       <h1 className={styles.title}>Liam ERD</h1>
 
       <div className={styles.rightSide}>
+        <CommandPaletteTriggerButton />
         <div className={styles.iconButtonGroup}>
           <GithubButton />
           <ReleaseNoteButton />

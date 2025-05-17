@@ -1,22 +1,26 @@
 'use client'
 
 import { useTableSelection } from '@/features/erd/hooks'
-import { useSchemaStore } from '@/stores'
+import {
+  updatePaletteOpen,
+  useCommandPaletteStore,
+  useSchemaStore,
+} from '@/stores'
 import { Search, Table2 } from '@liam-hq/ui'
 import { Command } from 'cmdk'
-import { useCallback, useEffect, useState } from 'react'
+import { type FC, useCallback, useEffect, useState } from 'react'
 import { TableNode } from '../../ERDContent/components/TableNode'
 import styles from './CommandPalette.module.css'
 
-export const CommandPalette = () => {
-  const [open, setOpen] = useState(false)
+export const CommandPalette: FC = () => {
   const schema = useSchemaStore()
+  const { open } = useCommandPaletteStore()
 
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
       if (e.key === 'k' && (e.metaKey || e.ctrlKey)) {
         e.preventDefault()
-        setOpen((open) => !open)
+        updatePaletteOpen(true)
       }
     }
 
@@ -30,7 +34,7 @@ export const CommandPalette = () => {
 
   const jumpToERD = useCallback(
     (tableName: string) => {
-      setOpen(false)
+      updatePaletteOpen(false)
       selectTable({ tableId: tableName, displayArea: 'main' })
     },
     [selectTable],
@@ -39,7 +43,7 @@ export const CommandPalette = () => {
   return (
     <Command.Dialog
       open={open}
-      onOpenChange={setOpen}
+      onOpenChange={updatePaletteOpen}
       label="Global Command Menu"
       contentClassName={styles.content}
       value={tableName}
