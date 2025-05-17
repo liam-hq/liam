@@ -58,6 +58,12 @@
   width: 50%;
 }
 
+.main [cmdk-list] {
+  max-height: 444px;
+  overflow-x: hidden;
+  overflow-y: scroll;
+}
+
 .main [cmdk-group-heading] {
   height: 40px;
   line-height: 24px;

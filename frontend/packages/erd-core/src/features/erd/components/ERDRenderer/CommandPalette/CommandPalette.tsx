@@ -3,8 +3,14 @@
 import { useTableSelection } from '@/features/erd/hooks'
 import { useSchemaStore } from '@/stores'
 import { Search, Table2 } from '@liam-hq/ui'
-import { Command } from 'cmdk'
-import { useEffect, useState } from 'react'
+import { Command, useCommandState } from 'cmdk'
+import {
+  type ComponentProps,
+  forwardRef,
+  useCallback,
+  useEffect,
+  useState,
+} from 'react'
 import { TableNode } from '../../ERDContent/components/TableNode'
 import styles from './CommandPalette.module.css'
 
@@ -28,6 +34,14 @@ export const CommandPalette = () => {
     return () => document.removeEventListener('keydown', down)
   }, [])
 
+  const jumpToERD = useCallback(
+    (tableName: string) => {
+      setOpen(false)
+      selectTable({ tableId: tableName, displayArea: 'main' })
+    },
+    [selectTable],
+  )
+
   return (
     <Command.Dialog
       open={open}
@@ -46,52 +60,64 @@ export const CommandPalette = () => {
 
           <Command.Group heading="Suggestions">
             {Object.values(schema.tables).map((table) => (
-              <Command.Item
+              <CustomItem
                 key={table.name}
-                onSelect={() => {
+                value={table.name}
+                onX={() => {
                   setTableName(table.name)
+                }}
+                onSelect={() => {
+                  console.log('click', table.name)
+                  jumpToERD(table.name)
                 }}
               >
                 <Table2 />
                 {table.name}
-              </Command.Item>
+              </CustomItem>
             ))}
           </Command.Group>
         </Command.List>
         <div>
           {table && (
-            <>
-              <TableNode
-                id=""
-                type="table"
-                data={{
-                  table: table,
-                  showMode: 'ALL_FIELDS',
-                  isActiveHighlighted: false,
-                  isHighlighted: false,
-                  sourceColumnName: undefined,
-                  targetColumnCardinalities: undefined,
-                }}
-                dragging={false}
-                isConnectable={false}
-                positionAbsoluteX={0}
-                positionAbsoluteY={0}
-                zIndex={0}
-              />
-              <button
-                type="button"
-                onClick={() => {
-                  setOpen(false)
-                  selectTable({ tableId: table.name, displayArea: 'main' })
-                }}
-                style={{ marginTop: 8, border: '1px solid black' }}
-              >
-                go to the table
-              </button>
-            </>
+            <TableNode
+              id=""
+              type="table"
+              data={{
+                table: table,
+                showMode: 'ALL_FIELDS',
+                isActiveHighlighted: false,
+                isHighlighted: false,
+                sourceColumnName: undefined,
+                targetColumnCardinalities: undefined,
+              }}
+              dragging={false}
+              isConnectable={false}
+              positionAbsoluteX={0}
+              positionAbsoluteY={0}
+              zIndex={0}
+            />
           )}
         </div>
       </div>
     </Command.Dialog>
   )
 }
+
+const CustomItem = forwardRef<
+  HTMLDivElement,
+  ComponentProps<typeof Command.Item>
+>((props, forwardedRef) => {
+  const value = props.value
+
+  const selected = useCommandState(
+    (state) => state.value && state.value === value,
+  )
+
+  useEffect(() => {
+    if (!selected) return
+
+    props.onX()
+  }, [selected, props.onX])
+
+  return <Command.Item {...props} ref={forwardedRef} />
+})
