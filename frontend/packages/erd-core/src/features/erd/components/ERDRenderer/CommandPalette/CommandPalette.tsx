@@ -2,7 +2,7 @@
 
 import { useTableSelection } from '@/features/erd/hooks'
 import { useSchemaStore } from '@/stores'
-import { Search } from '@liam-hq/ui'
+import { Search, Table2 } from '@liam-hq/ui'
 import { Command } from 'cmdk'
 import { useEffect, useState } from 'react'
 import { TableNode } from '../../ERDContent/components/TableNode'
@@ -52,6 +52,7 @@ export const CommandPalette = () => {
                   setTableName(table.name)
                 }}
               >
+                <Table2 />
                 {table.name}
               </Command.Item>
             ))}
