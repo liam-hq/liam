@@ -106,7 +106,8 @@
   height: 29px;
   width: 240px;
   padding: 0 8px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid #383a3b;
+  background-color: #141616;
   align-items: center;
   color: var(--global-mute-text);
 }
