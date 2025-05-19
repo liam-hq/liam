@@ -1,6 +1,9 @@
 import { mastra } from '@/lib/mastra'
+import {
+  processAndStoreSchema,
+  querySchemaVectorStore,
+} from '@/lib/mastra/services/schemaProcessor'
 import type { Schema, TableGroup } from '@liam-hq/db-structure'
-import * as Sentry from '@sentry/nextjs'
 import { NextResponse } from 'next/server'
 
 // Export TableGroupData type for compatibility
@@ -114,8 +117,54 @@ const convertSchemaToText = (schema: Schema): string => {
   return schemaText
 }
 
+/**
+ * Determines if RAG should be used based on the query content
+ *
+ * @param query The user's query
+ * @returns Boolean indicating whether RAG should be used
+ */
+function shouldUseRAG(query: string): boolean {
+  // Simple query patterns that don't need RAG
+  const simplePatterns = [
+    /list all tables/i,
+    /show me the tables/i,
+    /what tables are there/i,
+  ]
+
+  // Don't use RAG for simple patterns
+  if (simplePatterns.some((pattern) => pattern.test(query))) {
+    return false
+  }
+
+  // Use RAG for longer, more complex queries
+  if (query.length > 50) {
+    return true
+  }
+
+  // Keywords that suggest RAG would be beneficial
+  const ragKeywords = [
+    'relationship',
+    'foreign key',
+    'index',
+    'performance',
+    'normalize',
+    'design',
+    'optimize',
+    'best practice',
+    'recommendation',
+  ]
+
+  // Use RAG if query contains relevant keywords
+  if (ragKeywords.some((keyword) => query.toLowerCase().includes(keyword))) {
+    return true
+  }
+
+  // Default to not using RAG for simpler queries
+  return false
+}
+
 export async function POST(request: Request) {
-  const { message, schemaData, history } = await request.json()
+  const { message, schemaData, history, forceRAG } = await request.json()
 
   if (!message || typeof message !== 'string' || !message.trim()) {
     return NextResponse.json({ error: 'Message is required' }, { status: 400 })
@@ -142,41 +191,57 @@ export async function POST(request: Request) {
   // Convert schema to text
   const schemaText = convertSchemaToText(schemaData)
 
-  try {
-    // Get the agent from Mastra
-    const agent = mastra.getAgent('databaseSchemaAgent')
-    if (!agent) {
-      throw new Error('databaseSchemaAgent not found in Mastra instance')
-    }
+  // Determine if RAG should be used based on query or explicit flag
+  const useRAG = forceRAG !== undefined ? forceRAG : shouldUseRAG(message)
 
-    // Create a response using the agent
-    const response = await agent.generate([
-      {
-        role: 'system',
-        content: `
+  // Variables for agent selection and relevant schema
+  let relevantSchemaText = ''
+  // Always use the same agent, regardless of RAG
+  const agentName = 'databaseSchemaAgent'
+
+  // Process RAG if needed
+  if (useRAG) {
+    // Process and store schema in vector database
+    await processAndStoreSchema(schemaText)
+
+    // Query the vector store for relevant schema information
+    const relevantSchemaInfo = await querySchemaVectorStore(message)
+
+    // Extract the text content from the search results
+    relevantSchemaText = relevantSchemaInfo
+      .map((result) => (result.metadata?.text as string) || '')
+      .filter(Boolean)
+      .join('\n\n')
+  }
+
+  // Get the agent from Mastra
+  const agent = mastra.getAgent(agentName)
+  if (!agent) {
+    throw new Error(`${agentName} not found in Mastra instance`)
+  }
+
+  // Create a response using the agent
+  const response = await agent.generate([
+    {
+      role: 'system',
+      content: `
 Complete Schema Information:
 ${schemaText}
+${relevantSchemaText ? `\nRelevant Schema Information:\n${relevantSchemaText}` : ''}
 
 Previous conversation:
 ${formattedChatHistory}
 `,
-      },
-      {
-        role: 'user',
-        content: message,
-      },
-    ])
+    },
+    {
+      role: 'user',
+      content: message,
+    },
+  ])
 
-    return new Response(response.text, {
-      headers: {
-        'Content-Type': 'text/plain; charset=utf-8',
-      },
-    })
-  } catch (error) {
-    Sentry.captureException(error)
-    return NextResponse.json(
-      { error: 'Failed to generate response' },
-      { status: 500 },
-    )
-  }
+  return new Response(response.text, {
+    headers: {
+      'Content-Type': 'text/plain; charset=utf-8',
+    },
+  })
 }
