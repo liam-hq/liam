@@ -9,11 +9,9 @@ function getPgVector(): PgVector {
       connectionString:
         process.env.POSTGRES_URL_NON_POOLING ||
         'postgresql://postgres:postgres@127.0.0.1:54322/postgres',
-      pgPoolOptions: {
-        ssl: {
-          rejectUnauthorized: true,
-          ca: process.env.PG_SSL_CA,
-        },
+      ssl: {
+        rejectUnauthorized: true,
+        ca: process.env.PG_SSL_CA,
       },
     })
   }
