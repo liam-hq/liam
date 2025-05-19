@@ -52,7 +52,9 @@
       "persistent": true
     },
     "gen": {
-      "dependsOn": ["^gen"]
+      "dependsOn": ["^gen"],
+      "env": ["SUPABASE_CA"],
+      "passThroughEnv": ["SUPABASE_CA"]
     },
     "lint": {
       "dependsOn": ["gen", "^build", "^lint"]

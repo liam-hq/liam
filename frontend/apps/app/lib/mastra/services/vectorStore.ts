@@ -10,6 +10,7 @@ function getPostgresConnectionString(): string {
     POSTGRES_HOST,
     POSTGRES_PORT = '5432',
     POSTGRES_DATABASE,
+    POSTGRES_SSLMODE,
   } = process.env
 
   if (
@@ -21,7 +22,7 @@ function getPostgresConnectionString(): string {
     throw new Error('Missing required PostgreSQL environment variables')
   }
 
-  return `postgresql://${encodeURIComponent(POSTGRES_USER)}:${encodeURIComponent(POSTGRES_PASSWORD)}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DATABASE}?sslmode=verify-full`
+  return `postgresql://${encodeURIComponent(POSTGRES_USER)}:${encodeURIComponent(POSTGRES_PASSWORD)}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DATABASE}?sslmode=${POSTGRES_SSLMODE}`
 }
 
 function getPgVector(): PgVector {
@@ -31,7 +32,7 @@ function getPgVector(): PgVector {
       connectionString,
       pgPoolOptions: {
         ssl: {
-          rejectUnauthorized: true,
+          rejectUnauthorized: process.env.POSTGRES_SSLMODE !== 'disable',
         },
       },
     })

@@ -85,6 +85,7 @@ const nextConfig: NextConfig = {
   },
   outputFileTracingIncludes: {
     '/erd/p/\\[\\.\\.\\.slug\\]': ['./prism.wasm'],
+    '/api/chat': ['./supabase-ca-from-env.crt'],
   },
   env: {
     NEXT_PUBLIC_GIT_HASH: gitCommitHash,

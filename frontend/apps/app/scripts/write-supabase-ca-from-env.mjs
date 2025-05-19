@@ -5,16 +5,14 @@
 
 import fs from 'node:fs'
 import path from 'node:path'
+import dotenv from 'dotenv'
+
+dotenv.config({ path: '.env' })
 
 const ca = process.env.SUPABASE_CA
-if (!ca) {
-  // No CA provided; skip writing (OK for local/dev)
-  process.exit(0)
-}
-
 const outPath = path.resolve(
   path.dirname(new URL(import.meta.url).pathname),
   '../supabase-ca-from-env.crt',
 )
-fs.writeFileSync(outPath, ca, { encoding: 'utf-8' })
+fs.writeFileSync(outPath, ca ?? '', { encoding: 'utf-8' })
 console.info(`Wrote CA cert to ${outPath}`)
