@@ -11,7 +11,8 @@ function getPgVector(): PgVector {
         'postgresql://postgres:postgres@127.0.0.1:54322/postgres',
       pgPoolOptions: {
         ssl: {
-          rejectUnauthorized: false,
+          rejectUnauthorized: true,
+          ca: process.env.PG_SSL_CA,
         },
       },
     })
