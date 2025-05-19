@@ -3,15 +3,35 @@ import { PgVector } from '@mastra/pg'
 // Use lazy initialization
 let pgVectorInstance: PgVector | null = null
 
+function getPostgresConnectionString(): string {
+  const {
+    POSTGRES_USER,
+    POSTGRES_PASSWORD,
+    POSTGRES_HOST,
+    POSTGRES_PORT = '5432',
+    POSTGRES_DATABASE,
+  } = process.env
+
+  if (
+    !POSTGRES_USER ||
+    !POSTGRES_PASSWORD ||
+    !POSTGRES_HOST ||
+    !POSTGRES_DATABASE
+  ) {
+    throw new Error('Missing required PostgreSQL environment variables')
+  }
+
+  return `postgresql://${encodeURIComponent(POSTGRES_USER)}:${encodeURIComponent(POSTGRES_PASSWORD)}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DATABASE}?sslmode=verify-full`
+}
+
 function getPgVector(): PgVector {
   if (!pgVectorInstance) {
+    const connectionString = getPostgresConnectionString()
     pgVectorInstance = new PgVector({
-      connectionString:
-        process.env.POSTGRES_URL_NON_POOLING ||
-        'postgresql://postgres:postgres@127.0.0.1:54322/postgres',
+      connectionString,
       pgPoolOptions: {
         ssl: {
-          rejectUnauthorized: false,
+          rejectUnauthorized: true,
         },
       },
     })

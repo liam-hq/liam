@@ -86,6 +86,7 @@
     "lint:eslint": "eslint .",
     "lint:tsc": "tsc --noEmit",
     "postinstall": "cp ../../packages/db-structure/node_modules/@ruby/prism/src/prism.wasm prism.wasm",
+    "prebuild": "node ./scripts/write-supabase-ca-from-env.mjs",
     "start": "next start",
     "test": "vitest --watch=false",
     "test:vitest": "pnpm vitest"
