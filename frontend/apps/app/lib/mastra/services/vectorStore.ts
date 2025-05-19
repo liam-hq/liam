@@ -6,7 +6,9 @@ let pgVectorInstance: PgVector | null = null
 function getPgVector(): PgVector {
   if (!pgVectorInstance) {
     pgVectorInstance = new PgVector({
-      connectionString: process.env.POSTGRES_URL || '',
+      connectionString:
+        process.env.POSTGRES_URL_NON_POOLING ||
+        'postgresql://postgres:postgres@127.0.0.1:54322/postgres',
       pgPoolOptions: {
         ssl: {
           rejectUnauthorized: false,
