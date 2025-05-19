@@ -1,0 +1,29 @@
+.tableSection {
+  display: grid;
+  grid-auto-rows: auto;
+  gap: var(--spacing-3);
+  padding: var(--spacing-4);
+  background-color: var(--pane-background);
+}
+
+.commentSection {
+  min-height: 64px;
+  padding: var(--spacing-2);
+  background-color: var(--pane-muted-background);
+}
+
+.before {
+  grid-area: before;
+}
+
+.after {
+  grid-area: after;
+}
+
+.added {
+  background-color: var(--color-green-alpha-20);
+}
+
+.removed {
+  background-color: var(--color-red-alpha-20);
+}

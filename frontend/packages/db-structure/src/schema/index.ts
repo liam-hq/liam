@@ -1,4 +1,5 @@
 export {
+  columnSchema,
   schemaSchema,
   tableGroupSchema,
   tableGroupsSchema,
@@ -22,6 +23,8 @@ export type {
   ForeignKeyConstraintReferenceOption,
   Cardinality,
   TableGroup,
+  Comment,
+  TableName,
 } from './schema.js'
 export {
   aColumn,

@@ -13,6 +13,7 @@
   "dependencies": {
     "@prisma/internals": "6.7.0",
     "@ruby/prism": "1.4.0",
+    "fast-json-patch": "3.1.1",
     "neverthrow": "8.2.0",
     "pg-query-emscripten": "5.1.0",
     "valibot": "1.0.0",

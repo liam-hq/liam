@@ -1,61 +1,42 @@
-import type { Schema, TableGroup } from '@liam-hq/db-structure'
-import type { FC } from 'react'
+import { SwitchRoot, SwitchThumb } from '@/components'
+import type { Schema } from '@liam-hq/db-structure'
+import { type FC, useState } from 'react'
+import { DiffView } from './DiffView'
+import { SingleView } from './SingleView'
 import styles from './TablesList.module.css'
 
 type Props = {
-  schema: Schema
-  tableGroups: Record<string, TableGroup>
+  before: Schema
+  after: Schema
 }
 
-export const TablesList: FC<Props> = ({ schema, tableGroups }) => {
-  const tables = Object.values(schema.tables)
+export const TablesList: FC<Props> = ({ after, before }) => {
+  const [isDiffView, setIsDiffView] = useState(false)
 
   return (
-    <div className={styles.tablesList}>
-      <div className={styles.tablesContainer}>
-        {tables.map((table) => {
-          const tableGroupNames = Object.entries(tableGroups)
-            .filter(([_, group]) => group.tables.includes(table.name))
-            .map(([_, group]) => group.name)
-
-          return (
-            <div key={table.name} className={styles.tableItem}>
-              <div className={styles.tableName}>{table.name}</div>
-              <div className={styles.tableInfo}>
-                {tableGroupNames.length > 0 && (
-                  <div className={styles.tableGroups}>
-                    {tableGroupNames.map((groupName) => (
-                      <span key={groupName} className={styles.tableGroupTag}>
-                        {groupName}
-                      </span>
-                    ))}
-                  </div>
-                )}
-              </div>
-              {table.comment && (
-                <div className={styles.tableComment}>{table.comment}</div>
-              )}
-              <div className={styles.tableColumns}>
-                {Object.values(table.columns).map((column) => (
-                  <div key={column.name} className={styles.columnItem}>
-                    <span className={styles.columnName}>{column.name}</span>
-                    <span className={styles.columnType}>{column.type}</span>
-                    {column.primary && (
-                      <span className={styles.columnTag}>PK</span>
-                    )}
-                    {column.unique && (
-                      <span className={styles.columnTag}>UQ</span>
-                    )}
-                    {column.notNull && (
-                      <span className={styles.columnTag}>NOT NULL</span>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-          )
-        })}
+    <div className={styles.wrapper}>
+      <div className={styles.switchWrapper}>
+        <label
+          className={styles.switchLabel}
+          htmlFor="diff-mode"
+          style={{ paddingRight: 15 }}
+        >
+          Diff mode
+        </label>
+        <SwitchRoot
+          className={styles.switchRoot}
+          id="diff-mode"
+          checked={isDiffView}
+          onCheckedChange={setIsDiffView}
+        >
+          <SwitchThumb className={styles.switchThumb} />
+        </SwitchRoot>
       </div>
+      {isDiffView ? (
+        <DiffView before={before} after={after} />
+      ) : (
+        <SingleView schema={after} />
+      )}
     </div>
   )
 }
