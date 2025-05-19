@@ -72,6 +72,7 @@ function extractTableName(
     )
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
   const value = nameNode.unescaped.value
 
   return ok(value)
@@ -85,6 +86,7 @@ function extractTableComment(argNodes: Node[]): string | null {
       (elem) =>
         elem instanceof AssocNode &&
         elem.key instanceof SymbolNode &&
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         elem.key.unescaped.value === 'comment',
     )
 
@@ -120,6 +122,7 @@ function extractIdColumnAndConstraint(
       (elem) =>
         elem instanceof AssocNode &&
         elem.key instanceof SymbolNode &&
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         elem.key.unescaped.value === 'id',
     )
 
@@ -129,6 +132,7 @@ function extractIdColumnAndConstraint(
         idAssoc.value instanceof StringNode ||
         idAssoc.value instanceof SymbolNode
       )
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         idColumn.type = idAssoc.value.unescaped.value
 
       return [idColumn, idPrimaryKeyConstraint]
@@ -229,6 +233,7 @@ function extractColumnDetails(node: CallNode): Column {
   const argNodes = node.arguments_?.compactChildNodes() || []
   for (const argNode of argNodes) {
     if (argNode instanceof StringNode) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       column.name = argNode.unescaped.value
     } else if (argNode instanceof KeywordHashNode) {
       extractColumnOptions(argNode, column)
@@ -252,6 +257,7 @@ function extractIndexDetails(node: CallNode): Index {
       const argElemens = argNode.compactChildNodes()
       for (const argElem of argElemens) {
         if (argElem instanceof StringNode) {
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
           index.columns.push(argElem.unescaped.value)
         }
       }
@@ -328,6 +334,7 @@ function extractDefaultValue(
 ): string | number | boolean | null {
   if (value instanceof TrueNode) return true
   if (value instanceof FalseNode) return false
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
   if (value instanceof StringNode) return value.unescaped.value
   if (value instanceof IntegerNode) return value.value
   return null
@@ -347,6 +354,7 @@ function extractRelationshipTableNames(
 
   const [foreignTableName, primaryTableName] = stringNodes.map(
     (node): string => {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       if (node instanceof StringNode) return node.unescaped.value
       return ''
     },
@@ -364,6 +372,7 @@ function extractStringValues(
   const stringNodes = nodes.filter((node) => node instanceof StringNode)
 
   const values = stringNodes.map((node): string => {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     if (node instanceof StringNode) return node.unescaped.value
     return ''
   })
@@ -387,6 +396,7 @@ function extractConstraintName(node: KeywordHashNode): string | null {
       key === 'name' &&
       (value instanceof StringNode || value instanceof SymbolNode)
     ) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       return value.unescaped.value
     }
   }
@@ -467,18 +477,23 @@ function processForeignKeyOption(
   switch (key) {
     case 'column':
       if (value instanceof StringNode || value instanceof SymbolNode) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         relation.foreignColumnName = value.unescaped.value
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         foreignKeyConstraint.columnName = value.unescaped.value
       }
       break
     case 'name':
       if (value instanceof StringNode || value instanceof SymbolNode) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         relation.name = value.unescaped.value
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         foreignKeyConstraint.name = value.unescaped.value
       }
       break
     case 'on_update':
       if (value instanceof SymbolNode) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         const updateConstraint = normalizeConstraintName(value.unescaped.value)
         relation.updateConstraint = updateConstraint
         foreignKeyConstraint.updateConstraint = updateConstraint
@@ -486,6 +501,7 @@ function processForeignKeyOption(
       break
     case 'on_delete':
       if (value instanceof SymbolNode) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         const deleteConstraint = normalizeConstraintName(value.unescaped.value)
         relation.deleteConstraint = deleteConstraint
         foreignKeyConstraint.deleteConstraint = deleteConstraint
