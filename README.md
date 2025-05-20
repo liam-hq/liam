@@ -50,11 +50,39 @@ Insert `liambx.com/erd/p/` into your schema file's URL:
 
 ### For Private Repositories
 
+Follow these steps to set up Liam ERD locally
+
+```bash
+git clone https://github.com/liam-hq/liam.git
+```
+Navigate to the project directory:
+
+```bash
+cd liam
+```
 Run the interactive setup:
 
 ```bash
 npx @liam-hq/cli init
 ```
+Install dependencies:
+
+```bash
+pnpm install
+```
+Start the development server:
+
+```bash
+pnpm run dev
+```
+Alternatively, build for production:
+
+```bash
+pnpm run build
+```
+Open your browser and navigate to:
+
+http://localhost:5173/
 
 <img src="./assets/jack.gif" alt="Jack" width="40"> **If you find this project helpful, please give it a star! ⭐**  
 Your support helps us reach a wider audience and continue development.
