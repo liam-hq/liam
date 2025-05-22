@@ -21,6 +21,7 @@ export const CommandPalette: FC = () => {
       if (e.key === 'k' && (e.metaKey || e.ctrlKey)) {
         e.preventDefault()
         updatePaletteOpen(true)
+        setSuperSelected(false)
       }
     }
 
@@ -30,11 +31,15 @@ export const CommandPalette: FC = () => {
 
   const [tableName, setTableName] = useState<string>('')
   const { selectTable } = useTableSelection()
+  const [superSelected, setSuperSelected] = useState(false)
+  const superSelectedTableName = superSelected ? tableName : undefined
+
   const table = schema.tables[tableName ?? '']
 
   const jumpToERD = useCallback(
     (tableName: string) => {
       updatePaletteOpen(false)
+      setSuperSelected(false)
       selectTable({ tableId: tableName, displayArea: 'main' })
     },
     [selectTable],
@@ -47,7 +52,9 @@ export const CommandPalette: FC = () => {
       label="Global Command Menu"
       contentClassName={styles.content}
       value={tableName}
-      onValueChange={(v) => setTableName(v)}
+      onValueChange={(v) => {
+        if (!superSelected) setTableName(v)
+      }}
     >
       <div className={styles.searchContainer}>
         <Search />
@@ -64,9 +71,30 @@ export const CommandPalette: FC = () => {
                 key={table.name}
                 value={table.name}
                 onSelect={() => jumpToERD(table.name)}
+                data-super-selected={
+                  superSelectedTableName === table.name ? 'true' : undefined
+                }
               >
-                <Table2 />
-                {table.name}
+                {/* biome-ignore lint/a11y/useKeyWithClickEvents: <explanation> */}
+                <div
+                  className={styles.itemInner}
+                  onClick={(event) => {
+                    event.stopPropagation()
+                    if (superSelectedTableName === table.name)
+                      setSuperSelected((state) => !state)
+                    else {
+                      setSuperSelected(true)
+                      setTableName(table.name)
+                    }
+                  }}
+                  onDoubleClick={(event) => {
+                    event.stopPropagation()
+                    jumpToERD(table.name)
+                  }}
+                >
+                  <Table2 />
+                  {table.name}
+                </div>
               </Command.Item>
             ))}
           </Command.Group>

@@ -72,20 +72,26 @@
   font-size: var(--font-size-3);
 }
 
-.main [cmdk-item] {
+.itemInner {
+  width: 100%;
+  height: 100%;
   display: flex;
   padding: 8px;
   gap: 8px;
   overflow: truncate;
 }
 
-.main [cmdk-item] svg {
+.itemInner svg {
   flex-shrink: 0;
   color: white;
 }
 
 .main [cmdk-item][data-selected="true"] {
   background-color: rgba(255, 255, 255, 0.05);
+}
+
+.main [cmdk-item][data-super-selected="true"] {
+  border: 1px solid white;
 }
 
 .previewContainer {
