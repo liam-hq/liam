@@ -21,6 +21,7 @@ export const CommandPalette: FC = () => {
       if (e.key === 'k' && (e.metaKey || e.ctrlKey)) {
         e.preventDefault()
         updatePaletteOpen(true)
+        setTableName(null)
         setSuperSelected(false)
       }
     }
@@ -29,7 +30,7 @@ export const CommandPalette: FC = () => {
     return () => document.removeEventListener('keydown', down)
   }, [])
 
-  const [tableName, setTableName] = useState<string>('')
+  const [tableName, setTableName] = useState<string | null>(null)
   const { selectTable } = useTableSelection()
   const [superSelected, setSuperSelected] = useState(false)
   const superSelectedTableName = superSelected ? tableName : undefined
@@ -51,7 +52,7 @@ export const CommandPalette: FC = () => {
       onOpenChange={updatePaletteOpen}
       label="Global Command Menu"
       contentClassName={styles.content}
-      value={tableName}
+      value={tableName ?? ''}
       onValueChange={(v) => {
         if (!superSelected) setTableName(v)
       }}
