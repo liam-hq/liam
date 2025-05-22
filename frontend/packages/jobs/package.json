@@ -15,7 +15,7 @@
     "@sentry/node": "9.15.0",
     "@trigger.dev/build": "3.3.17",
     "@trigger.dev/sdk": "3.3.17",
-    "@valibot/to-json-schema": "1.0.0",
+    "@valibot/to-json-schema": "1.1.0",
     "langfuse-langchain": "3.37.2",
     "minimatch": "10.0.1",
     "uuid": "11.1.0",

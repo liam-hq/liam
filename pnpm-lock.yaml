@@ -101,7 +101,7 @@ importers:
         version: link:../../packages/ui
       '@mastra/core':
         specifier: 0.9.3
-        version: 0.9.3(@valibot/to-json-schema@1.0.0(valibot@1.0.0(typescript@5.8.3)))(effect@3.14.19)(openapi-types@12.1.3)(react@18.3.1)(valibot@1.0.0(typescript@5.8.3))(zod@3.23.8)
+        version: 0.9.3(@valibot/to-json-schema@1.1.0(valibot@1.0.0(typescript@5.8.3)))(effect@3.14.19)(openapi-types@12.1.3)(react@18.3.1)(valibot@1.0.0(typescript@5.8.3))(zod@3.23.8)
       '@next/third-parties':
         specifier: 15.3.1
         version: 15.3.1(next@15.3.1(@opentelemetry/api@1.9.0)(@playwright/test@1.52.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)
@@ -745,8 +745,8 @@ importers:
         specifier: 3.3.17
         version: 3.3.17(zod@3.24.4)
       '@valibot/to-json-schema':
-        specifier: 1.0.0
-        version: 1.0.0(valibot@1.0.0(typescript@5.8.3))
+        specifier: 1.1.0
+        version: 1.1.0(valibot@1.0.0(typescript@5.8.3))
       langfuse-langchain:
         specifier: 3.37.2
         version: 3.37.2(langchain@0.3.24(@langchain/core@0.3.54(openai@4.97.0(ws@8.18.2)(zod@3.24.4)))(cheerio@1.0.0)(handlebars@4.7.8)(openai@4.97.0(ws@8.18.2)(zod@3.24.4))(ws@8.18.2))
@@ -5487,10 +5487,10 @@ packages:
   '@ungap/structured-clone@1.3.0':
     resolution: {integrity: sha512-WmoN8qaIAo7WTYWbAZuG8PYEhn5fkz7dZrqTBZ7dtt//lL2Gwms1IcnQ5yHqjDfX8Ft5j4YzDM23f87zBfDe9g==}
 
-  '@valibot/to-json-schema@1.0.0':
-    resolution: {integrity: sha512-/9crJgPptVsGCL6X+JPDQyaJwkalSZ/52WuF8DiRUxJgcmpNdzYRfZ+gqMEP8W3CTVfuMWPqqvIgfwJ97f9Etw==}
+  '@valibot/to-json-schema@1.1.0':
+    resolution: {integrity: sha512-vpF5NKL5MmqbVVFzp3Z6CuoaYXJB75QxmW+tJNnng9UVUx9Yx+FVCyEm1kIWr05EzkuPI0b/EbVWIs25UL9mNQ==}
     peerDependencies:
-      valibot: ^1.0.0
+      valibot: ^1.1.0
 
   '@vercel/build-utils@10.5.1':
     resolution: {integrity: sha512-BtqwEmU1AoITpd0KxYrdQOwyKZL8RKba+bWxI8mr3gXPQZWRAE9ok1zF0AXfvMGCstYPHBPNolZGDSfWmY2jqg==}
@@ -13679,7 +13679,7 @@ snapshots:
 
   '@marijn/find-cluster-break@1.0.2': {}
 
-  '@mastra/core@0.9.3(@valibot/to-json-schema@1.0.0(valibot@1.0.0(typescript@5.8.3)))(effect@3.14.19)(openapi-types@12.1.3)(react@18.3.1)(valibot@1.0.0(typescript@5.8.3))(zod@3.23.8)':
+  '@mastra/core@0.9.3(@valibot/to-json-schema@1.1.0(valibot@1.0.0(typescript@5.8.3)))(effect@3.14.19)(openapi-types@12.1.3)(react@18.3.1)(valibot@1.0.0(typescript@5.8.3))(zod@3.23.8)':
     dependencies:
       '@libsql/client': 0.14.0
       '@opentelemetry/api': 1.9.0
@@ -13701,7 +13701,7 @@ snapshots:
       dotenv: 16.5.0
       fastembed: 1.14.4
       hono: 4.7.9
-      hono-openapi: 0.4.8(@valibot/to-json-schema@1.0.0(valibot@1.0.0(typescript@5.8.3)))(effect@3.14.19)(hono@4.7.9)(openapi-types@12.1.3)(valibot@1.0.0(typescript@5.8.3))(zod@3.23.8)
+      hono-openapi: 0.4.8(@valibot/to-json-schema@1.1.0(valibot@1.0.0(typescript@5.8.3)))(effect@3.14.19)(hono@4.7.9)(openapi-types@12.1.3)(valibot@1.0.0(typescript@5.8.3))(zod@3.23.8)
       json-schema: 0.4.0
       json-schema-to-zod: 2.6.1
       pino: 9.6.0
@@ -17307,7 +17307,7 @@ snapshots:
 
   '@ungap/structured-clone@1.3.0': {}
 
-  '@valibot/to-json-schema@1.0.0(valibot@1.0.0(typescript@5.8.3))':
+  '@valibot/to-json-schema@1.1.0(valibot@1.0.0(typescript@5.8.3))':
     dependencies:
       valibot: 1.0.0(typescript@5.8.3)
 
@@ -19877,12 +19877,12 @@ snapshots:
     dependencies:
       react-is: 16.13.1
 
-  hono-openapi@0.4.8(@valibot/to-json-schema@1.0.0(valibot@1.0.0(typescript@5.8.3)))(effect@3.14.19)(hono@4.7.9)(openapi-types@12.1.3)(valibot@1.0.0(typescript@5.8.3))(zod@3.23.8):
+  hono-openapi@0.4.8(@valibot/to-json-schema@1.1.0(valibot@1.0.0(typescript@5.8.3)))(effect@3.14.19)(hono@4.7.9)(openapi-types@12.1.3)(valibot@1.0.0(typescript@5.8.3))(zod@3.23.8):
     dependencies:
       json-schema-walker: 2.0.0
       openapi-types: 12.1.3
     optionalDependencies:
-      '@valibot/to-json-schema': 1.0.0(valibot@1.0.0(typescript@5.8.3))
+      '@valibot/to-json-schema': 1.1.0(valibot@1.0.0(typescript@5.8.3))
       effect: 3.14.19
       hono: 4.7.9
       valibot: 1.0.0(typescript@5.8.3)
