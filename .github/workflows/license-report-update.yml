@@ -23,7 +23,7 @@ jobs:
       pull-requests: write
     steps:
       - name: Create GitHub App Token
-        uses: actions/create-github-app-token@3ff1caaa28b64c9cc276ce0a02e2ff584f3900c5 # v2.0.2
+        uses: actions/create-github-app-token@df432ceedc7162793a195dd1713ff69aefc7379e # v2.0.6
         id: app-token
         with:
           app-id: ${{ vars.LICENSE_CI_TRIGGER_APP_ID }}
@@ -33,7 +33,7 @@ jobs:
         with:
           token: ${{ steps.app-token.outputs.token }}
       - uses: ./.github/actions/pnpm-setup
-      - uses: ruby/setup-ruby@f41e084df884422b269f4c01c3748a9df4431a75 # v1.236.0
+      - uses: ruby/setup-ruby@eaecf785f6a34567a6d97f686bbb7bccc1ac1e5c # v1.237.0
         with:
           ruby-version: '3.4'
       - name: Install License Finder

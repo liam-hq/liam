@@ -52,3 +52,6 @@ prism.wasm
 !.env.local
 
 *storybook.log
+
+# Mastra
+.mastra

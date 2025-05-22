@@ -2,6 +2,7 @@
 import clsx from 'clsx'
 import type { ChangeEvent, FC, FormEvent } from 'react'
 import { useEffect, useRef, useState } from 'react'
+import { ModeToggleSwitch } from '../ModeToggleSwitch/ModeToggleSwitch'
 import { CancelButton } from './CancelButton'
 import styles from './ChatInput.module.css'
 import { SendButton } from './SendButton'
@@ -106,6 +107,7 @@ export const ChatInput: FC<ChatInputProps> = ({
           />
         )}
       </form>
+      <ModeToggleSwitch className={styles.modeToggle} />
     </div>
   )
 }

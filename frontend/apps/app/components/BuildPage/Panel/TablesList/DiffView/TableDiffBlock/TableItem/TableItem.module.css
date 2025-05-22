@@ -1,0 +1,43 @@
+.tableSection {
+  display: grid;
+  grid-auto-rows: auto;
+  gap: var(--spacing-3);
+  padding: var(--spacing-4);
+  background-color: var(--pane-background);
+}
+
+.commentSection {
+  min-height: 64px;
+  padding: var(--spacing-2);
+  background-color: var(--pane-muted-background);
+}
+
+.before {
+  grid-area: before;
+}
+
+.after {
+  grid-area: after;
+}
+
+.divider {
+  border-color: var(--pane-border);
+}
+
+.root {
+  display: grid;
+  grid-auto-rows: auto;
+  gap: var(--spacing-6);
+}
+
+.trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.triggerIcon {
+  width: 1rem;
+  height: 1rem;
+}

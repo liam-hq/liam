@@ -20,6 +20,13 @@
             }
           }
         }
+      },
+      "complexity": {
+        "noExcessiveCognitiveComplexity": {
+          "options": {
+            "maxAllowedComplexity": 20
+          }
+        }
       }
     }
   }

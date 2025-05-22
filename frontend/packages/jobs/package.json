@@ -7,8 +7,8 @@
   },
   "main": "src/index.ts",
   "dependencies": {
-    "@langchain/core": "0.3.49",
-    "@langchain/openai": "0.5.7",
+    "@langchain/core": "0.3.54",
+    "@langchain/openai": "0.5.10",
     "@liam-hq/db": "workspace:*",
     "@liam-hq/db-structure": "workspace:*",
     "@liam-hq/github": "workspace:*",
@@ -25,17 +25,17 @@
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
     "@liam-hq/configs": "workspace:*",
-    "@sentry/esbuild-plugin": "3.3.1",
+    "@sentry/esbuild-plugin": "3.4.0",
     "@types/json-schema": "7.0.15",
-    "@types/node": "22.15.3",
+    "@types/node": "22.15.16",
     "@types/uuid": "10.0.0",
     "dotenv": "16.5.0",
-    "eslint": "9.25.1",
+    "eslint": "9.26.0",
     "glob": "11.0.2",
     "json-schema": "0.4.0",
     "trigger.dev": "3.3.17",
     "typescript": "5.8.3",
-    "vitest": "3.1.2"
+    "vitest": "3.1.3"
   },
   "scripts": {
     "deploy": "trigger deploy",

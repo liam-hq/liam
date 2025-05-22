@@ -17,3 +17,11 @@
       var(--primary-accent-overlay) 100%
     ), var(--pane-background-active);
 }
+
+.active:hover {
+  background: linear-gradient(
+      0deg,
+      var(--primary-accent-overlay-hover) 0%,
+      var(--primary-accent-overlay-hover) 100%
+    ), var(--pane-background-active);
+}

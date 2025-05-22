@@ -17,7 +17,7 @@ const meta = {
     },
     size: {
       control: 'radio',
-      options: ['sm', 'md', 'lg'],
+      options: ['xs', 'sm', 'md', 'lg'],
       description: 'The size of the button',
     },
     isLoading: {
@@ -68,6 +68,13 @@ export const GhostSecondary: Story = {
     variant: 'ghost-secondary',
     children: 'Ghost Button',
     size: 'md',
+  },
+}
+
+export const ExtraSmall: Story = {
+  args: {
+    size: 'xs',
+    children: 'Extra Small Button',
   },
 }
 

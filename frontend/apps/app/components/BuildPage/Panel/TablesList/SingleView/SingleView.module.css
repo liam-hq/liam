@@ -1,0 +1,65 @@
+.tablesList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2);
+}
+
+.tablesContainer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2);
+}
+
+.tableItem {
+  padding: var(--spacing-2);
+  border: 1px solid var(--pane-border);
+  border-radius: var(--border-radius-base);
+  background-color: var(--color-background-secondary);
+}
+
+.tableName {
+  font-weight: bold;
+  font-size: var(--font-size-3);
+  margin-bottom: var(--spacing-1);
+}
+
+.tableComment {
+  margin-top: var(--spacing-1);
+  font-size: var(--font-size-4);
+  color: var(--color-text-secondary);
+  margin-bottom: var(--spacing-2);
+}
+
+.tableColumns {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-1);
+  margin-top: var(--spacing-2);
+  padding-top: var(--spacing-2);
+  border-top: 1px solid var(--pane-border);
+}
+
+.columnItem {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  font-size: var(--font-size-4);
+}
+
+.columnName {
+  font-weight: 500;
+  min-width: 120px;
+}
+
+.columnType {
+  color: var(--color-text-secondary);
+  min-width: 100px;
+}
+
+.columnTag {
+  font-size: var(--font-size-5);
+  padding: 1px 4px;
+  background-color: var(--button-background-active);
+  border-radius: var(--border-radius-base);
+  color: var(--color-text-secondary);
+}

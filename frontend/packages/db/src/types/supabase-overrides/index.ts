@@ -1,10 +1,13 @@
 import type { MergeDeep } from 'type-fest'
 import type { Database as DatabaseGenerated } from '../../../supabase/database.types'
+import type { BuildingSchemasOverride } from './building_schemas'
+import type { DesignSessionsOverride } from './design_sessions'
 import type { DocFilePathsOverride } from './doc_file_paths'
 import type { GithubPullRequestCommentsOverride } from './github_pull_request_comments'
 import type { GithubPullRequestsOverride } from './github_pull_requests'
 import type { KnowledgeSuggestionDocMappingsOverride } from './knowledge_suggestion_doc_mappings'
 import type { KnowledgeSuggestionsOverride } from './knowledge_suggestions'
+import type { MessagesOverride } from './messages'
 import type { MigrationPullRequestMappingsOverride } from './migration_pull_request_mappings'
 import type { MigrationsOverride } from './migrations'
 import type { OverallReviewKnowledgeSuggestionMappingsOverride } from './overall_review_knowledge_suggestion_mappings'
@@ -34,5 +37,8 @@ export type AppDatabaseOverrides = MergeDeep<
     DocFilePathsOverride &
     ProjectRepositoryMappingsOverride &
     MigrationsOverride &
-    GithubPullRequestsOverride
+    GithubPullRequestsOverride &
+    DesignSessionsOverride &
+    MessagesOverride &
+    BuildingSchemasOverride
 >

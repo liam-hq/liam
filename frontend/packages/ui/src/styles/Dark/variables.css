@@ -1,6 +1,6 @@
 /**
  * Do not edit directly, this file was auto-generated.
- * Generated on Fri, 09 May 2025 07:06:12 GMT
+ * Generated on Fri, 16 May 2025 08:20:04 GMT
  */
 
 :root {
@@ -188,9 +188,11 @@
   --primary-hover: #4af19c;
   --primary-color: #1ded83;
   --primary-accent-overlay: rgba(29, 237, 131, 0.1);
+  --primary-accent-overlay-hover: rgba(29, 237, 131, 0.2);
   --primary-on-white-shape: #36c271;
   --primary-on-white-text: #008543;
   --primary-overlay-0: rgba(29, 237, 131, 0);
+  --primary-overlay-5: rgba(29, 237, 131, 0.05);
   --primary-overlay-10: rgba(29, 237, 131, 0.1);
   --primary-overlay-12: rgba(29, 237, 131, 0.12);
   --primary-overlay-15: rgba(29, 237, 131, 0.15);
@@ -224,7 +226,6 @@
   --button-background-active: #5f6366;
   --button-disabled-foreground: #5f6366;
   --button-disabled-background: #2e3031;
-  --button-primary: #1ded83;
   --button-primary-background: #1ded83;
   --button-primary-background-hover: #4af19c;
   --button-danger: #c64427;

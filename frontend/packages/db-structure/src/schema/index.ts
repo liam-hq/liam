@@ -1,9 +1,16 @@
 export {
+  columnSchema,
   schemaSchema,
   tableGroupSchema,
   tableGroupsSchema,
 } from './schema.js'
 export type {
+  ColumnName,
+  ColumnPrimary,
+  ColumnDefault,
+  ColumnCheck,
+  ColumnUnique,
+  ColumnNotNull,
   Column,
   Columns,
   Schema,
@@ -11,6 +18,10 @@ export type {
   Tables,
   Relationship,
   Relationships,
+  IndexName,
+  IndexUnique,
+  IndexColumns,
+  IndexType,
   Index,
   Indexes,
   Constraint,
@@ -22,6 +33,8 @@ export type {
   ForeignKeyConstraintReferenceOption,
   Cardinality,
   TableGroup,
+  Comment,
+  TableName,
 } from './schema.js'
 export {
   aColumn,

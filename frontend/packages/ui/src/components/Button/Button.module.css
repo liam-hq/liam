@@ -9,7 +9,7 @@
 }
 
 .wrapper:focus-visible {
-  outline: 1px solid var(--button-primary);
+  outline: 1px solid var(--button-primary-background);
 }
 
 .icon {
@@ -25,8 +25,8 @@
 }
 
 .solidPrimary {
-  background: var(--button-primary);
-  border: 1px solid var(--button-primary);
+  background: var(--button-primary-background);
+  border: 1px solid var(--button-primary-background);
   transition: background-color var(--default-hover-animation-duration)
     var(--default-timing-function), border-color
     var(--default-hover-animation-duration) var(--default-timing-function);
@@ -71,6 +71,19 @@
 
 .ghostSecondary:hover {
   background-color: var(--overlay-5);
+}
+
+.xs {
+  gap: var(--spacing-1);
+  padding: var(--spacing-1) var(--spacing-1half);
+  font-size: var(--font-size-2);
+  border-radius: var(--border-radius-smbase);
+  line-height: 1.0;
+}
+
+.xs .icon {
+  width: 12px;
+  height: 12px;
 }
 
 .sm {

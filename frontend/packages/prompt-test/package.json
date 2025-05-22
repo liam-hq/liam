@@ -5,11 +5,11 @@
   "main": "src/index.ts",
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
-    "@langchain/core": "0.3.49",
+    "@langchain/core": "0.3.54",
     "@liam-hq/configs": "workspace:*",
     "@liam-hq/jobs": "workspace:*",
     "dotenv": "16.5.0",
-    "eslint": "9.25.1",
+    "eslint": "9.26.0",
     "langfuse": "3.37.2",
     "langfuse-langchain": "3.37.2",
     "tsx": "4.19.4",

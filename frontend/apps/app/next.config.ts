@@ -13,6 +13,9 @@ if (process.env.VERCEL_ENV === 'production') {
 }
 
 const nextConfig: NextConfig = {
+  // Server-only packages that should not be bundled on the client
+  serverExternalPackages: ['@mastra/*'],
+
   // NOTE: Exclude Prisma-related packages from the bundle
   // These packages are installed separately in the node_modules/@prisma directory
   // Excluding them prevents `Error: Cannot find module 'fs'` errors in the build process

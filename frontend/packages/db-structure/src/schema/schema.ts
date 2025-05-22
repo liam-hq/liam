@@ -4,35 +4,67 @@ import * as v from 'valibot'
 export const tableGroupNameSchema = v.string()
 
 export const columnNameSchema = v.string()
+export type ColumnName = v.InferOutput<typeof columnNameSchema>
+
+const columnPrimarySchema = v.boolean()
+export type ColumnPrimary = v.InferOutput<typeof columnPrimarySchema>
+
+const columnDefaultSchema = v.nullable(
+  v.union([v.string(), v.number(), v.boolean()]),
+)
+export type ColumnDefault = v.InferOutput<typeof columnDefaultSchema>
+
+const columnCheckSchema = v.nullable(v.string())
+export type ColumnCheck = v.InferOutput<typeof columnCheckSchema>
+
+const columnUniqueSchema = v.boolean()
+export type ColumnUnique = v.InferOutput<typeof columnUniqueSchema>
+
+const columnNotNullSchema = v.boolean()
+export type ColumnNotNull = v.InferOutput<typeof columnNotNullSchema>
 
 export const tableNameSchema = v.string()
+export type TableName = v.InferOutput<typeof tableNameSchema>
 
-const indexNameSchema = v.string()
+const commentSchema = v.nullable(v.string())
+export type Comment = v.InferOutput<typeof commentSchema>
 
 const relationshipNameSchema = v.string()
 
 const constraintNameSchema = v.string()
 
-const columnSchema = v.object({
+export const columnSchema = v.object({
   name: columnNameSchema,
   type: v.string(),
-  default: v.nullable(v.union([v.string(), v.number(), v.boolean()])),
-  check: v.nullable(v.string()),
-  primary: v.boolean(),
-  unique: v.boolean(),
-  notNull: v.boolean(),
-  comment: v.nullable(v.string()),
+  default: columnDefaultSchema,
+  check: columnCheckSchema,
+  primary: columnPrimarySchema,
+  unique: columnUniqueSchema,
+  notNull: columnNotNullSchema,
+  comment: commentSchema,
 })
 
 const columnsSchema = v.record(columnNameSchema, columnSchema)
 export type Columns = v.InferOutput<typeof columnsSchema>
 export type Column = v.InferOutput<typeof columnSchema>
 
+const indexNameSchema = v.string()
+export type IndexName = v.InferOutput<typeof indexNameSchema>
+
+const indexUniqueSchema = v.boolean()
+export type IndexUnique = v.InferOutput<typeof indexUniqueSchema>
+
+const indexColumnsSchema = v.array(v.string())
+export type IndexColumns = v.InferOutput<typeof indexColumnsSchema>
+
+const indexTypeSchema = v.string()
+export type IndexType = v.InferOutput<typeof indexTypeSchema>
+
 const indexSchema = v.object({
-  name: v.string(),
-  unique: v.boolean(),
-  columns: v.array(v.string()),
-  type: v.string(),
+  name: indexNameSchema,
+  unique: indexUniqueSchema,
+  columns: indexColumnsSchema,
+  type: indexTypeSchema,
 })
 export type Index = v.InferOutput<typeof indexSchema>
 
@@ -100,7 +132,7 @@ export type Constraints = v.InferOutput<typeof constraintsSchema>
 const tableSchema = v.object({
   name: tableNameSchema,
   columns: columnsSchema,
-  comment: v.nullable(v.string()),
+  comment: commentSchema,
   indexes: indexesSchema,
   constraints: constraintsSchema,
 })

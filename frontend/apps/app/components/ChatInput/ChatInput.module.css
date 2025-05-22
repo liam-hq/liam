@@ -99,3 +99,7 @@
   border: none !important;
   box-shadow: none !important;
 }
+
+.modeToggle {
+  align-self: flex-start;
+}

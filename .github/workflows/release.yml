@@ -20,7 +20,7 @@ jobs:
     timeout-minutes: 15
     steps:
       - name: Create GitHub App Token
-        uses: actions/create-github-app-token@3ff1caaa28b64c9cc276ce0a02e2ff584f3900c5 # v2.0.2
+        uses: actions/create-github-app-token@df432ceedc7162793a195dd1713ff69aefc7379e # v2.0.6
         id: app-token
         with:
           app-id: ${{ vars.CHANGESET_CI_TRIGGER_APP_ID }}
@@ -32,7 +32,7 @@ jobs:
       - uses: ./.github/actions/pnpm-setup
       - name: Create Release Pull Request or Publish to npm
         id: changesets-action
-        uses: changesets/action@06245a4e0a36c064a573d4150030f5ec548e4fcc # v1.4.10
+        uses: changesets/action@746c25e23caa47dceb6a48ee85b4cbc5a9f5f293 # v1.5.0
         with:
           publish: pnpm run release
         env:

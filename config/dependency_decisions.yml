@@ -139,3 +139,9 @@
     :why: Compatible with Apache-2.0 license. See https://opensource.org/license/artistic-2-0
     :versions: []
     :when: 2025-05-08 05:24:20.998252000 Z
+- - :approve
+  - "@mastra/core"
+  - :who: Liam @FunamaYukina
+    :why: The license is Elastic-2.0. This is not an OSS license, so to be on the safe side, we'll approve it on a package-by-package basis.
+    :versions: []
+    :when: 2025-05-13 00:30:00.632489000 Z

@@ -1,0 +1,47 @@
+.root {
+  display: flex;
+  flex-direction: row;
+  gap: var(--spacing-1, 4px);
+  background: var(--button-background, #2e3031);
+  border-radius: var(--border-radius-md, 6px);
+  padding: var(--spacing-half, 2px);
+  align-items: center;
+  border: none;
+}
+
+.legend {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  border: 0;
+}
+
+.segment {
+  font-family: var(--main-font, 'Inter', sans-serif);
+  font-weight: 500;
+  font-size: var(--font-size-1, 10px);
+  line-height: 1.21;
+  color: var(--button-secondary-foreground, #fff);
+  background: transparent;
+  border: none;
+  border-radius: var(--border-radius-base, 4px) 0 0
+    var(--border-radius-base, 4px);
+  padding: var(--spacing-half, 2px) var(--spacing-1, 4px);
+  cursor: pointer;
+  transition: background 0.15s;
+  outline: none;
+}
+
+.segment:last-of-type {
+  border-radius: 0 var(--border-radius-base, 4px) var(--border-radius-base, 4px)
+    0;
+}
+
+.active {
+  background: var(--primary-overlay-40, rgba(29, 237, 131, 0.4));
+  color: var(--global-foreground, #fff);
+}

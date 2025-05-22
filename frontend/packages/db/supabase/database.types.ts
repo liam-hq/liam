@@ -34,6 +34,158 @@ export type Database = {
   }
   public: {
     Tables: {
+      building_schema_versions: {
+        Row: {
+          building_schema_id: string
+          created_at: string
+          id: string
+          number: number
+          organization_id: string
+          patch: Json
+          reverse_patch: Json
+        }
+        Insert: {
+          building_schema_id: string
+          created_at?: string
+          id?: string
+          number: number
+          organization_id: string
+          patch: Json
+          reverse_patch: Json
+        }
+        Update: {
+          building_schema_id?: string
+          created_at?: string
+          id?: string
+          number?: number
+          organization_id?: string
+          patch?: Json
+          reverse_patch?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'building_schema_versions_building_schema_id_fkey'
+            columns: ['building_schema_id']
+            isOneToOne: false
+            referencedRelation: 'building_schemas'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'building_schema_versions_organization_id_fkey'
+            columns: ['organization_id']
+            isOneToOne: false
+            referencedRelation: 'organizations'
+            referencedColumns: ['id']
+          },
+        ]
+      }
+      building_schemas: {
+        Row: {
+          created_at: string
+          design_session_id: string
+          id: string
+          organization_id: string
+          schema: Json
+        }
+        Insert: {
+          created_at?: string
+          design_session_id: string
+          id?: string
+          organization_id: string
+          schema: Json
+        }
+        Update: {
+          created_at?: string
+          design_session_id?: string
+          id?: string
+          organization_id?: string
+          schema?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'building_schemas_design_session_id_fkey'
+            columns: ['design_session_id']
+            isOneToOne: true
+            referencedRelation: 'design_sessions'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'building_schemas_organization_id_fkey'
+            columns: ['organization_id']
+            isOneToOne: false
+            referencedRelation: 'organizations'
+            referencedColumns: ['id']
+          },
+        ]
+      }
+      design_sessions: {
+        Row: {
+          created_at: string
+          created_by_user_id: string
+          git_sha: string | null
+          id: string
+          initial_schema_snapshot: Json | null
+          name: string
+          organization_id: string
+          parent_design_session_id: string | null
+          project_id: string
+          schema_file_path: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by_user_id: string
+          git_sha?: string | null
+          id?: string
+          initial_schema_snapshot?: Json | null
+          name: string
+          organization_id: string
+          parent_design_session_id?: string | null
+          project_id: string
+          schema_file_path?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by_user_id?: string
+          git_sha?: string | null
+          id?: string
+          initial_schema_snapshot?: Json | null
+          name?: string
+          organization_id?: string
+          parent_design_session_id?: string | null
+          project_id?: string
+          schema_file_path?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'design_sessions_created_by_user_id_fkey'
+            columns: ['created_by_user_id']
+            isOneToOne: false
+            referencedRelation: 'users'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'design_sessions_organization_id_fkey'
+            columns: ['organization_id']
+            isOneToOne: false
+            referencedRelation: 'organizations'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'design_sessions_parent_design_session_id_fkey'
+            columns: ['parent_design_session_id']
+            isOneToOne: false
+            referencedRelation: 'design_sessions'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'design_sessions_project_id_fkey'
+            columns: ['project_id']
+            isOneToOne: false
+            referencedRelation: 'projects'
+            referencedColumns: ['id']
+          },
+        ]
+      }
       doc_file_paths: {
         Row: {
           created_at: string
@@ -75,6 +227,44 @@ export type Database = {
             columns: ['project_id']
             isOneToOne: false
             referencedRelation: 'projects'
+            referencedColumns: ['id']
+          },
+        ]
+      }
+      documents: {
+        Row: {
+          content: string
+          created_at: string
+          embedding: string | null
+          id: string
+          metadata: Json | null
+          organization_id: string
+          updated_at: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          embedding?: string | null
+          id?: string
+          metadata?: Json | null
+          organization_id: string
+          updated_at: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          embedding?: string | null
+          id?: string
+          metadata?: Json | null
+          organization_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'documents_organization_id_fkey'
+            columns: ['organization_id']
+            isOneToOne: false
+            referencedRelation: 'organizations'
             referencedColumns: ['id']
           },
         ]
@@ -360,6 +550,61 @@ export type Database = {
             columns: ['organization_id']
             isOneToOne: false
             referencedRelation: 'organizations'
+            referencedColumns: ['id']
+          },
+        ]
+      }
+      messages: {
+        Row: {
+          content: string
+          created_at: string
+          design_session_id: string
+          id: string
+          organization_id: string
+          role: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          design_session_id: string
+          id?: string
+          organization_id: string
+          role: string
+          updated_at: string
+          user_id?: string | null
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          design_session_id?: string
+          id?: string
+          organization_id?: string
+          role?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'messages_design_session_id_fkey'
+            columns: ['design_session_id']
+            isOneToOne: false
+            referencedRelation: 'design_sessions'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'messages_organization_id_fkey'
+            columns: ['organization_id']
+            isOneToOne: false
+            referencedRelation: 'organizations'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'messages_user_id_fkey'
+            columns: ['user_id']
+            isOneToOne: false
+            referencedRelation: 'users'
             referencedColumns: ['id']
           },
         ]
@@ -962,9 +1207,45 @@ export type Database = {
         Args: { p_token: string }
         Returns: Json
       }
+      binary_quantize: {
+        Args: { '': string } | { '': unknown }
+        Returns: unknown
+      }
       get_invitation_data: {
         Args: { p_token: string }
         Returns: Json
+      }
+      halfvec_avg: {
+        Args: { '': number[] }
+        Returns: unknown
+      }
+      halfvec_out: {
+        Args: { '': unknown }
+        Returns: unknown
+      }
+      halfvec_send: {
+        Args: { '': unknown }
+        Returns: string
+      }
+      halfvec_typmod_in: {
+        Args: { '': unknown[] }
+        Returns: number
+      }
+      hnsw_bit_support: {
+        Args: { '': unknown }
+        Returns: unknown
+      }
+      hnsw_halfvec_support: {
+        Args: { '': unknown }
+        Returns: unknown
+      }
+      hnsw_sparsevec_support: {
+        Args: { '': unknown }
+        Returns: unknown
+      }
+      hnswhandler: {
+        Args: { '': unknown }
+        Returns: unknown
       }
       invite_organization_member: {
         Args: { p_email: string; p_organization_id: string }
@@ -974,9 +1255,89 @@ export type Database = {
         Args: { _org: string }
         Returns: boolean
       }
+      ivfflat_bit_support: {
+        Args: { '': unknown }
+        Returns: unknown
+      }
+      ivfflat_halfvec_support: {
+        Args: { '': unknown }
+        Returns: unknown
+      }
+      ivfflathandler: {
+        Args: { '': unknown }
+        Returns: unknown
+      }
+      l2_norm: {
+        Args: { '': unknown } | { '': unknown }
+        Returns: number
+      }
+      l2_normalize: {
+        Args: { '': string } | { '': unknown } | { '': unknown }
+        Returns: string
+      }
+      match_documents: {
+        Args: {
+          filter?: Json
+          match_count?: number
+          query_embedding?: string
+          match_threshold?: number
+        }
+        Returns: {
+          id: string
+          content: string
+          metadata: Json
+          similarity: number
+        }[]
+      }
+      sparsevec_out: {
+        Args: { '': unknown }
+        Returns: unknown
+      }
+      sparsevec_send: {
+        Args: { '': unknown }
+        Returns: string
+      }
+      sparsevec_typmod_in: {
+        Args: { '': unknown[] }
+        Returns: number
+      }
       sync_existing_users: {
         Args: Record<PropertyKey, never>
         Returns: undefined
+      }
+      update_building_schema: {
+        Args: {
+          p_schema_id: string
+          p_schema_schema: Json
+          p_schema_version_patch: Json
+          p_schema_version_reverse_patch: Json
+          p_latest_schema_version_number: number
+        }
+        Returns: Json
+      }
+      vector_avg: {
+        Args: { '': number[] }
+        Returns: string
+      }
+      vector_dims: {
+        Args: { '': string } | { '': unknown }
+        Returns: number
+      }
+      vector_norm: {
+        Args: { '': string }
+        Returns: number
+      }
+      vector_out: {
+        Args: { '': string }
+        Returns: unknown
+      }
+      vector_send: {
+        Args: { '': string }
+        Returns: string
+      }
+      vector_typmod_in: {
+        Args: { '': unknown[] }
+        Returns: number
       }
     }
     Enums: {

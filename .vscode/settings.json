@@ -20,6 +20,9 @@
   "[css]": {
     "editor.defaultFormatter": "biomejs.biome"
   },
+  "[jsonc]": {
+    "editor.defaultFormatter": "biomejs.biome"
+  },
   "[mdx]": {
     "editor.formatOnSave": false,
     "editor.codeActionsOnSave": {

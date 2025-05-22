@@ -311,7 +311,6 @@ export const convertToSchema = (
     comment: string | null
   }
 
-  // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: <explanation>
   function processRelationshipsAndConstraints(
     tableName: string,
     columnName: string,

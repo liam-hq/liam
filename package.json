@@ -3,17 +3,17 @@
   "private": true,
   "version": "0.0.1",
   "devDependencies": {
-    "@changesets/cli": "2.29.2",
+    "@changesets/cli": "2.29.3",
     "@changesets/get-github-info": "0.6.0",
     "@changesets/types": "6.1.0",
     "@turbo/gen": "2.5.3",
-    "@types/node": "22.15.3",
+    "@types/node": "22.15.16",
     "concurrently": "9.1.2",
-    "knip": "5.50.5",
+    "knip": "5.52.0",
     "syncpack": "13.0.4",
     "turbo": "2.5.3",
     "typescript": "5.8.3",
-    "vercel": "41.7.0"
+    "vercel": "41.7.3"
   },
   "scripts": {
     "build": "turbo build",
@@ -50,7 +50,7 @@
     }
   },
   "resolutions": {
-    "esbuild": "0.25.3",
+    "esbuild": "0.25.4",
     "path-to-regexp": "8.2.0",
     "undici": "7.8.0"
   }

@@ -65,6 +65,13 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp" WITH SCHEMA "extensions";
 
 
 
+CREATE EXTENSION IF NOT EXISTS "vector" WITH SCHEMA "public";
+
+
+
+
+
+
 CREATE TYPE "public"."category_enum" AS ENUM (
     'MIGRATION_SAFETY',
     'DATA_INTEGRITY',
@@ -368,6 +375,39 @@ $$;
 ALTER FUNCTION "public"."is_current_user_org_member"("_org" "uuid") OWNER TO "postgres";
 
 
+CREATE OR REPLACE FUNCTION "public"."match_documents"("filter" "jsonb" DEFAULT '{}'::"jsonb", "match_count" integer DEFAULT 10, "query_embedding" "public"."vector" DEFAULT NULL::"public"."vector", "match_threshold" double precision DEFAULT 0.3) RETURNS TABLE("id" "uuid", "content" "text", "metadata" "jsonb", "similarity" double precision)
+    LANGUAGE "plpgsql" STABLE
+    AS $$
+begin
+  -- Check which signature is being used based on parameters
+  if query_embedding is null and filter ? 'query_embedding' then
+    -- Extract query_embedding from filter if provided in that format
+    query_embedding := (filter->>'query_embedding')::vector(1536);
+  end if;
+
+  -- Ensure we have a valid query_embedding
+  if query_embedding is null then
+    raise exception 'query_embedding is required';
+  end if;
+
+  -- Return matching documents
+  return query
+  select
+    d.id,
+    d.content,
+    d.metadata,
+    1 - (d.embedding <=> query_embedding) as similarity
+  from documents d
+  where 1 - (d.embedding <=> query_embedding) > match_threshold
+  order by similarity desc
+  limit match_count;
+end;
+$$;
+
+
+ALTER FUNCTION "public"."match_documents"("filter" "jsonb", "match_count" integer, "query_embedding" "public"."vector", "match_threshold" double precision) OWNER TO "postgres";
+
+
 CREATE OR REPLACE FUNCTION "public"."prevent_delete_last_organization_member"() RETURNS "trigger"
     LANGUAGE "plpgsql"
     AS $$
@@ -384,6 +424,57 @@ $$;
 
 
 ALTER FUNCTION "public"."prevent_delete_last_organization_member"() OWNER TO "postgres";
+
+
+CREATE OR REPLACE FUNCTION "public"."set_building_schema_versions_organization_id"() RETURNS "trigger"
+    LANGUAGE "plpgsql" SECURITY DEFINER
+    AS $$
+begin
+  new.organization_id := (
+    select "organization_id" 
+    from "public"."building_schemas"
+    where "id" = new.building_schema_id
+  );
+  return new;
+end;
+$$;
+
+
+ALTER FUNCTION "public"."set_building_schema_versions_organization_id"() OWNER TO "postgres";
+
+
+CREATE OR REPLACE FUNCTION "public"."set_building_schemas_organization_id"() RETURNS "trigger"
+    LANGUAGE "plpgsql" SECURITY DEFINER
+    AS $$
+BEGIN
+  NEW.organization_id := (
+    SELECT "organization_id" 
+    FROM "public"."design_sessions" 
+    WHERE "id" = NEW.design_session_id
+  );
+  RETURN NEW;
+END;
+$$;
+
+
+ALTER FUNCTION "public"."set_building_schemas_organization_id"() OWNER TO "postgres";
+
+
+CREATE OR REPLACE FUNCTION "public"."set_design_sessions_organization_id"() RETURNS "trigger"
+    LANGUAGE "plpgsql" SECURITY DEFINER
+    AS $$
+BEGIN
+  NEW.organization_id := (
+    SELECT "organization_id" 
+    FROM "public"."projects" 
+    WHERE "id" = NEW.project_id
+  );
+  RETURN NEW;
+END;
+$$;
+
+
+ALTER FUNCTION "public"."set_design_sessions_organization_id"() OWNER TO "postgres";
 
 
 CREATE OR REPLACE FUNCTION "public"."set_doc_file_paths_organization_id"() RETURNS "trigger"
@@ -469,6 +560,23 @@ $$;
 
 
 ALTER FUNCTION "public"."set_knowledge_suggestions_organization_id"() OWNER TO "postgres";
+
+
+CREATE OR REPLACE FUNCTION "public"."set_messages_organization_id"() RETURNS "trigger"
+    LANGUAGE "plpgsql" SECURITY DEFINER
+    AS $$
+BEGIN
+  NEW.organization_id := (
+    SELECT "organization_id" 
+    FROM "public"."design_sessions" 
+    WHERE "id" = NEW.design_session_id
+  );
+  RETURN NEW;
+END;
+$$;
+
+
+ALTER FUNCTION "public"."set_messages_organization_id"() OWNER TO "postgres";
 
 
 CREATE OR REPLACE FUNCTION "public"."set_migration_pull_request_mappings_organization_id"() RETURNS "trigger"
@@ -661,9 +769,121 @@ $$;
 
 ALTER FUNCTION "public"."sync_existing_users"() OWNER TO "postgres";
 
+
+CREATE OR REPLACE FUNCTION "public"."update_building_schema"("p_schema_id" "uuid", "p_schema_schema" "jsonb", "p_schema_version_patch" "jsonb", "p_schema_version_reverse_patch" "jsonb", "p_latest_schema_version_number" integer) RETURNS "jsonb"
+    LANGUAGE "plpgsql"
+    AS $$
+declare
+  v_result jsonb;
+  v_organization_id uuid;
+  v_next_version_number integer;
+begin
+  -- Start transaction
+  begin
+    -- 1. Select organization_id from building_schemas
+    select organization_id into v_organization_id
+    from building_schemas
+    where id = p_schema_id;
+    
+    if not found then
+      v_result := jsonb_build_object(
+        'success', false,
+        'error', 'Building schema not found'
+      );
+      return v_result;
+    end if;
+
+    -- Calculate the next version number
+    v_next_version_number := p_latest_schema_version_number + 1;
+    
+    -- 2. Insert into building_schema_versions
+    insert into building_schema_versions (
+      organization_id,
+      building_schema_id,
+      number,
+      patch,
+      reverse_patch,
+      created_at
+    ) values (
+      v_organization_id,
+      p_schema_id,
+      v_next_version_number,
+      p_schema_version_patch,
+      p_schema_version_reverse_patch,
+      now()
+    );
+    
+    -- 3. Update building_schemas with the new schema
+    update building_schemas
+    set schema = p_schema_schema
+    where id = p_schema_id;
+    
+    -- Commit transaction
+    v_result := jsonb_build_object(
+      'success', true,
+      'versionNumber', v_next_version_number
+    );
+    return v_result;
+  exception when others then
+    -- Handle any errors
+    v_result := jsonb_build_object(
+      'success', false,
+      'error', sqlerrm
+    );
+    return v_result;
+  end;
+end;
+$$;
+
+
+ALTER FUNCTION "public"."update_building_schema"("p_schema_id" "uuid", "p_schema_schema" "jsonb", "p_schema_version_patch" "jsonb", "p_schema_version_reverse_patch" "jsonb", "p_latest_schema_version_number" integer) OWNER TO "postgres";
+
 SET default_tablespace = '';
 
 SET default_table_access_method = "heap";
+
+
+CREATE TABLE IF NOT EXISTS "public"."building_schema_versions" (
+    "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
+    "organization_id" "uuid" NOT NULL,
+    "building_schema_id" "uuid" NOT NULL,
+    "number" integer NOT NULL,
+    "created_at" timestamp with time zone DEFAULT "now"() NOT NULL,
+    "patch" "jsonb" NOT NULL,
+    "reverse_patch" "jsonb" NOT NULL
+);
+
+
+ALTER TABLE "public"."building_schema_versions" OWNER TO "postgres";
+
+
+CREATE TABLE IF NOT EXISTS "public"."building_schemas" (
+    "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
+    "design_session_id" "uuid" NOT NULL,
+    "organization_id" "uuid" NOT NULL,
+    "schema" "jsonb" NOT NULL,
+    "created_at" timestamp(3) with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
+
+
+ALTER TABLE "public"."building_schemas" OWNER TO "postgres";
+
+
+CREATE TABLE IF NOT EXISTS "public"."design_sessions" (
+    "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
+    "project_id" "uuid" NOT NULL,
+    "organization_id" "uuid" NOT NULL,
+    "created_by_user_id" "uuid" NOT NULL,
+    "parent_design_session_id" "uuid",
+    "name" "text" NOT NULL,
+    "git_sha" "text",
+    "initial_schema_snapshot" "jsonb",
+    "schema_file_path" "text",
+    "created_at" timestamp(3) with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
+
+
+ALTER TABLE "public"."design_sessions" OWNER TO "postgres";
 
 
 CREATE TABLE IF NOT EXISTS "public"."doc_file_paths" (
@@ -678,6 +898,20 @@ CREATE TABLE IF NOT EXISTS "public"."doc_file_paths" (
 
 
 ALTER TABLE "public"."doc_file_paths" OWNER TO "postgres";
+
+
+CREATE TABLE IF NOT EXISTS "public"."documents" (
+    "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
+    "content" "text" NOT NULL,
+    "metadata" "jsonb",
+    "embedding" "public"."vector"(1536),
+    "created_at" timestamp(3) with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    "updated_at" timestamp(3) with time zone NOT NULL,
+    "organization_id" "uuid" NOT NULL
+);
+
+
+ALTER TABLE "public"."documents" OWNER TO "postgres";
 
 
 CREATE TABLE IF NOT EXISTS "public"."github_pull_request_comments" (
@@ -767,6 +1001,21 @@ CREATE TABLE IF NOT EXISTS "public"."knowledge_suggestions" (
 
 
 ALTER TABLE "public"."knowledge_suggestions" OWNER TO "postgres";
+
+
+CREATE TABLE IF NOT EXISTS "public"."messages" (
+    "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
+    "design_session_id" "uuid" NOT NULL,
+    "user_id" "uuid",
+    "role" "text" NOT NULL,
+    "content" "text" NOT NULL,
+    "created_at" timestamp(3) with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    "updated_at" timestamp(3) with time zone NOT NULL,
+    "organization_id" "uuid" NOT NULL
+);
+
+
+ALTER TABLE "public"."messages" OWNER TO "postgres";
 
 
 CREATE TABLE IF NOT EXISTS "public"."migration_pull_request_mappings" (
@@ -952,6 +1201,31 @@ CREATE TABLE IF NOT EXISTS "public"."users" (
 ALTER TABLE "public"."users" OWNER TO "postgres";
 
 
+ALTER TABLE ONLY "public"."building_schema_versions"
+    ADD CONSTRAINT "building_schema_versions_pkey" PRIMARY KEY ("id");
+
+
+
+ALTER TABLE ONLY "public"."building_schemas"
+    ADD CONSTRAINT "building_schemas_design_session_id_key" UNIQUE ("design_session_id");
+
+
+
+ALTER TABLE ONLY "public"."building_schemas"
+    ADD CONSTRAINT "building_schemas_pkey" PRIMARY KEY ("id");
+
+
+
+ALTER TABLE ONLY "public"."design_sessions"
+    ADD CONSTRAINT "design_sessions_pkey" PRIMARY KEY ("id");
+
+
+
+ALTER TABLE ONLY "public"."documents"
+    ADD CONSTRAINT "documents_pkey" PRIMARY KEY ("id");
+
+
+
 ALTER TABLE ONLY "public"."doc_file_paths"
     ADD CONSTRAINT "github_doc_file_path_pkey" PRIMARY KEY ("id");
 
@@ -999,6 +1273,11 @@ ALTER TABLE ONLY "public"."knowledge_suggestion_doc_mappings"
 
 ALTER TABLE ONLY "public"."knowledge_suggestions"
     ADD CONSTRAINT "knowledge_suggestion_pkey" PRIMARY KEY ("id");
+
+
+
+ALTER TABLE ONLY "public"."messages"
+    ADD CONSTRAINT "messages_pkey" PRIMARY KEY ("id");
 
 
 
@@ -1087,7 +1366,19 @@ ALTER TABLE ONLY "public"."users"
 
 
 
+CREATE INDEX "building_schema_versions_building_schema_id_idx" ON "public"."building_schema_versions" USING "btree" ("building_schema_id");
+
+
+
+CREATE INDEX "building_schema_versions_number_idx" ON "public"."building_schema_versions" USING "btree" ("number");
+
+
+
 CREATE UNIQUE INDEX "doc_file_path_path_project_id_key" ON "public"."doc_file_paths" USING "btree" ("path", "project_id");
+
+
+
+CREATE INDEX "documents_embedding_idx" ON "public"."documents" USING "ivfflat" ("embedding" "public"."vector_cosine_ops") WITH ("lists"='100');
 
 
 
@@ -1151,6 +1442,18 @@ COMMENT ON TRIGGER "check_last_organization_member" ON "public"."organization_me
 
 
 
+CREATE OR REPLACE TRIGGER "set_building_schema_versions_organization_id_trigger" BEFORE INSERT OR UPDATE ON "public"."building_schema_versions" FOR EACH ROW EXECUTE FUNCTION "public"."set_building_schema_versions_organization_id"();
+
+
+
+CREATE OR REPLACE TRIGGER "set_building_schemas_organization_id_trigger" BEFORE INSERT OR UPDATE ON "public"."building_schemas" FOR EACH ROW EXECUTE FUNCTION "public"."set_building_schemas_organization_id"();
+
+
+
+CREATE OR REPLACE TRIGGER "set_design_sessions_organization_id_trigger" BEFORE INSERT OR UPDATE ON "public"."design_sessions" FOR EACH ROW EXECUTE FUNCTION "public"."set_design_sessions_organization_id"();
+
+
+
 CREATE OR REPLACE TRIGGER "set_doc_file_paths_organization_id_trigger" BEFORE INSERT OR UPDATE ON "public"."doc_file_paths" FOR EACH ROW EXECUTE FUNCTION "public"."set_doc_file_paths_organization_id"();
 
 
@@ -1168,6 +1471,10 @@ CREATE OR REPLACE TRIGGER "set_knowledge_suggestion_doc_mappings_organization_id
 
 
 CREATE OR REPLACE TRIGGER "set_knowledge_suggestions_organization_id_trigger" BEFORE INSERT OR UPDATE ON "public"."knowledge_suggestions" FOR EACH ROW EXECUTE FUNCTION "public"."set_knowledge_suggestions_organization_id"();
+
+
+
+CREATE OR REPLACE TRIGGER "set_messages_organization_id_trigger" BEFORE INSERT OR UPDATE ON "public"."messages" FOR EACH ROW EXECUTE FUNCTION "public"."set_messages_organization_id"();
 
 
 
@@ -1211,8 +1518,53 @@ CREATE OR REPLACE TRIGGER "set_schema_file_paths_organization_id_trigger" BEFORE
 
 
 
+ALTER TABLE ONLY "public"."building_schema_versions"
+    ADD CONSTRAINT "building_schema_versions_building_schema_id_fkey" FOREIGN KEY ("building_schema_id") REFERENCES "public"."building_schemas"("id") ON DELETE CASCADE;
+
+
+
+ALTER TABLE ONLY "public"."building_schema_versions"
+    ADD CONSTRAINT "building_schema_versions_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "public"."organizations"("id") ON DELETE CASCADE;
+
+
+
+ALTER TABLE ONLY "public"."building_schemas"
+    ADD CONSTRAINT "building_schemas_design_session_id_fkey" FOREIGN KEY ("design_session_id") REFERENCES "public"."design_sessions"("id") ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+
+ALTER TABLE ONLY "public"."building_schemas"
+    ADD CONSTRAINT "building_schemas_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "public"."organizations"("id") ON UPDATE CASCADE ON DELETE RESTRICT;
+
+
+
+ALTER TABLE ONLY "public"."design_sessions"
+    ADD CONSTRAINT "design_sessions_created_by_user_id_fkey" FOREIGN KEY ("created_by_user_id") REFERENCES "public"."users"("id") ON UPDATE CASCADE ON DELETE RESTRICT;
+
+
+
+ALTER TABLE ONLY "public"."design_sessions"
+    ADD CONSTRAINT "design_sessions_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "public"."organizations"("id") ON UPDATE CASCADE ON DELETE RESTRICT;
+
+
+
+ALTER TABLE ONLY "public"."design_sessions"
+    ADD CONSTRAINT "design_sessions_parent_design_session_id_fkey" FOREIGN KEY ("parent_design_session_id") REFERENCES "public"."design_sessions"("id") ON UPDATE CASCADE ON DELETE RESTRICT;
+
+
+
+ALTER TABLE ONLY "public"."design_sessions"
+    ADD CONSTRAINT "design_sessions_project_id_fkey" FOREIGN KEY ("project_id") REFERENCES "public"."projects"("id") ON UPDATE CASCADE ON DELETE RESTRICT;
+
+
+
 ALTER TABLE ONLY "public"."doc_file_paths"
     ADD CONSTRAINT "doc_file_paths_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "public"."organizations"("id") ON UPDATE CASCADE ON DELETE RESTRICT;
+
+
+
+ALTER TABLE ONLY "public"."documents"
+    ADD CONSTRAINT "documents_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "public"."organizations"("id") ON DELETE CASCADE;
 
 
 
@@ -1278,6 +1630,21 @@ ALTER TABLE ONLY "public"."knowledge_suggestions"
 
 ALTER TABLE ONLY "public"."knowledge_suggestions"
     ADD CONSTRAINT "knowledge_suggestions_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "public"."organizations"("id") ON UPDATE CASCADE ON DELETE RESTRICT;
+
+
+
+ALTER TABLE ONLY "public"."messages"
+    ADD CONSTRAINT "messages_design_session_id_fkey" FOREIGN KEY ("design_session_id") REFERENCES "public"."design_sessions"("id") ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+
+ALTER TABLE ONLY "public"."messages"
+    ADD CONSTRAINT "messages_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "public"."organizations"("id") ON UPDATE CASCADE ON DELETE RESTRICT;
+
+
+
+ALTER TABLE ONLY "public"."messages"
+    ADD CONSTRAINT "messages_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON UPDATE CASCADE ON DELETE RESTRICT;
 
 
 
@@ -1421,6 +1788,42 @@ ALTER TABLE ONLY "public"."schema_file_paths"
 
 
 
+CREATE POLICY "authenticated_users_can_delete_org_building_schema_versions" ON "public"."building_schema_versions" FOR DELETE TO "authenticated" USING (("organization_id" IN ( SELECT "organization_members"."organization_id"
+   FROM "public"."organization_members"
+  WHERE ("organization_members"."user_id" = "auth"."uid"()))));
+
+
+
+CREATE POLICY "authenticated_users_can_delete_org_building_schemas" ON "public"."building_schemas" FOR DELETE TO "authenticated" USING (("organization_id" IN ( SELECT "organization_members"."organization_id"
+   FROM "public"."organization_members"
+  WHERE ("organization_members"."user_id" = "auth"."uid"()))));
+
+
+
+COMMENT ON POLICY "authenticated_users_can_delete_org_building_schemas" ON "public"."building_schemas" IS 'Authenticated users can only delete building schemas in organizations they are members of';
+
+
+
+CREATE POLICY "authenticated_users_can_delete_org_design_sessions" ON "public"."design_sessions" FOR DELETE TO "authenticated" USING (("organization_id" IN ( SELECT "organization_members"."organization_id"
+   FROM "public"."organization_members"
+  WHERE ("organization_members"."user_id" = "auth"."uid"()))));
+
+
+
+COMMENT ON POLICY "authenticated_users_can_delete_org_design_sessions" ON "public"."design_sessions" IS 'Authenticated users can only delete design sessions in organizations they are members of';
+
+
+
+CREATE POLICY "authenticated_users_can_delete_org_documents" ON "public"."documents" FOR DELETE TO "authenticated" USING (("organization_id" IN ( SELECT "organization_members"."organization_id"
+   FROM "public"."organization_members"
+  WHERE ("organization_members"."user_id" = "auth"."uid"()))));
+
+
+
+COMMENT ON POLICY "authenticated_users_can_delete_org_documents" ON "public"."documents" IS 'Authenticated users can only delete documents in organizations they are members of';
+
+
+
 CREATE POLICY "authenticated_users_can_delete_org_invitations" ON "public"."invitations" FOR DELETE TO "authenticated" USING (("organization_id" IN ( SELECT "organization_members"."organization_id"
    FROM "public"."organization_members"
   WHERE ("organization_members"."user_id" = "auth"."uid"()))));
@@ -1455,6 +1858,32 @@ COMMENT ON POLICY "authenticated_users_can_delete_org_projects" ON "public"."pro
 
 
 
+CREATE POLICY "authenticated_users_can_insert_org_building_schema_versions" ON "public"."building_schema_versions" FOR INSERT TO "authenticated" WITH CHECK (("organization_id" IN ( SELECT "organization_members"."organization_id"
+   FROM "public"."organization_members"
+  WHERE ("organization_members"."user_id" = "auth"."uid"()))));
+
+
+
+CREATE POLICY "authenticated_users_can_insert_org_building_schemas" ON "public"."building_schemas" FOR INSERT TO "authenticated" WITH CHECK (("organization_id" IN ( SELECT "organization_members"."organization_id"
+   FROM "public"."organization_members"
+  WHERE ("organization_members"."user_id" = "auth"."uid"()))));
+
+
+
+COMMENT ON POLICY "authenticated_users_can_insert_org_building_schemas" ON "public"."building_schemas" IS 'Authenticated users can only create building schemas in organizations they are members of';
+
+
+
+CREATE POLICY "authenticated_users_can_insert_org_design_sessions" ON "public"."design_sessions" FOR INSERT TO "authenticated" WITH CHECK (("organization_id" IN ( SELECT "organization_members"."organization_id"
+   FROM "public"."organization_members"
+  WHERE ("organization_members"."user_id" = "auth"."uid"()))));
+
+
+
+COMMENT ON POLICY "authenticated_users_can_insert_org_design_sessions" ON "public"."design_sessions" IS 'Authenticated users can only create design sessions in organizations they are members of';
+
+
+
 CREATE POLICY "authenticated_users_can_insert_org_doc_file_paths" ON "public"."doc_file_paths" FOR INSERT TO "authenticated" WITH CHECK (("organization_id" IN ( SELECT "organization_members"."organization_id"
    FROM "public"."organization_members"
   WHERE ("organization_members"."user_id" = "auth"."uid"()))));
@@ -1462,6 +1891,16 @@ CREATE POLICY "authenticated_users_can_insert_org_doc_file_paths" ON "public"."d
 
 
 COMMENT ON POLICY "authenticated_users_can_insert_org_doc_file_paths" ON "public"."doc_file_paths" IS 'Authenticated users can insert doc file paths for their organization';
+
+
+
+CREATE POLICY "authenticated_users_can_insert_org_documents" ON "public"."documents" FOR INSERT TO "authenticated" WITH CHECK (("organization_id" IN ( SELECT "organization_members"."organization_id"
+   FROM "public"."organization_members"
+  WHERE ("organization_members"."user_id" = "auth"."uid"()))));
+
+
+
+COMMENT ON POLICY "authenticated_users_can_insert_org_documents" ON "public"."documents" IS 'Authenticated users can only add documents to organizations they are members of';
 
 
 
@@ -1498,6 +1937,16 @@ CREATE POLICY "authenticated_users_can_insert_org_knowledge_suggestions" ON "pub
 
 
 COMMENT ON POLICY "authenticated_users_can_insert_org_knowledge_suggestions" ON "public"."knowledge_suggestions" IS 'Authenticated users can only create knowledge suggestions in organizations they are members of';
+
+
+
+CREATE POLICY "authenticated_users_can_insert_org_messages" ON "public"."messages" FOR INSERT TO "authenticated" WITH CHECK (("organization_id" IN ( SELECT "organization_members"."organization_id"
+   FROM "public"."organization_members"
+  WHERE ("organization_members"."user_id" = "auth"."uid"()))));
+
+
+
+COMMENT ON POLICY "authenticated_users_can_insert_org_messages" ON "public"."messages" IS 'Authenticated users can only create messages in organizations they are members of';
 
 
 
@@ -1557,6 +2006,32 @@ COMMENT ON POLICY "authenticated_users_can_insert_projects" ON "public"."project
 
 
 
+CREATE POLICY "authenticated_users_can_select_org_building_schema_versions" ON "public"."building_schema_versions" FOR SELECT TO "authenticated" USING (("organization_id" IN ( SELECT "organization_members"."organization_id"
+   FROM "public"."organization_members"
+  WHERE ("organization_members"."user_id" = "auth"."uid"()))));
+
+
+
+CREATE POLICY "authenticated_users_can_select_org_building_schemas" ON "public"."building_schemas" FOR SELECT TO "authenticated" USING (("organization_id" IN ( SELECT "organization_members"."organization_id"
+   FROM "public"."organization_members"
+  WHERE ("organization_members"."user_id" = "auth"."uid"()))));
+
+
+
+COMMENT ON POLICY "authenticated_users_can_select_org_building_schemas" ON "public"."building_schemas" IS 'Authenticated users can only view building schemas belonging to organizations they are members of';
+
+
+
+CREATE POLICY "authenticated_users_can_select_org_design_sessions" ON "public"."design_sessions" FOR SELECT TO "authenticated" USING (("organization_id" IN ( SELECT "organization_members"."organization_id"
+   FROM "public"."organization_members"
+  WHERE ("organization_members"."user_id" = "auth"."uid"()))));
+
+
+
+COMMENT ON POLICY "authenticated_users_can_select_org_design_sessions" ON "public"."design_sessions" IS 'Authenticated users can only view design sessions belonging to organizations they are members of';
+
+
+
 CREATE POLICY "authenticated_users_can_select_org_doc_file_paths" ON "public"."doc_file_paths" FOR SELECT TO "authenticated" USING (("organization_id" IN ( SELECT "organization_members"."organization_id"
    FROM "public"."organization_members"
   WHERE ("organization_members"."user_id" = "auth"."uid"()))));
@@ -1564,6 +2039,16 @@ CREATE POLICY "authenticated_users_can_select_org_doc_file_paths" ON "public"."d
 
 
 COMMENT ON POLICY "authenticated_users_can_select_org_doc_file_paths" ON "public"."doc_file_paths" IS 'Authenticated users can select doc file paths for their organization';
+
+
+
+CREATE POLICY "authenticated_users_can_select_org_documents" ON "public"."documents" FOR SELECT TO "authenticated" USING (("organization_id" IN ( SELECT "organization_members"."organization_id"
+   FROM "public"."organization_members"
+  WHERE ("organization_members"."user_id" = "auth"."uid"()))));
+
+
+
+COMMENT ON POLICY "authenticated_users_can_select_org_documents" ON "public"."documents" IS 'Authenticated users can only view documents in organizations they are members of';
 
 
 
@@ -1610,6 +2095,16 @@ CREATE POLICY "authenticated_users_can_select_org_knowledge_suggestions" ON "pub
 
 
 COMMENT ON POLICY "authenticated_users_can_select_org_knowledge_suggestions" ON "public"."knowledge_suggestions" IS 'Authenticated users can only view knowledge suggestions belonging to organizations they are members of';
+
+
+
+CREATE POLICY "authenticated_users_can_select_org_messages" ON "public"."messages" FOR SELECT TO "authenticated" USING (("organization_id" IN ( SELECT "organization_members"."organization_id"
+   FROM "public"."organization_members"
+  WHERE ("organization_members"."user_id" = "auth"."uid"()))));
+
+
+
+COMMENT ON POLICY "authenticated_users_can_select_org_messages" ON "public"."messages" IS 'Authenticated users can only view messages belonging to organizations they are members of';
 
 
 
@@ -1735,6 +2230,48 @@ COMMENT ON POLICY "authenticated_users_can_select_org_schema_file_paths" ON "pub
 
 
 
+CREATE POLICY "authenticated_users_can_update_org_building_schema_versions" ON "public"."building_schema_versions" FOR UPDATE TO "authenticated" USING (("organization_id" IN ( SELECT "organization_members"."organization_id"
+   FROM "public"."organization_members"
+  WHERE ("organization_members"."user_id" = "auth"."uid"())))) WITH CHECK (("organization_id" IN ( SELECT "organization_members"."organization_id"
+   FROM "public"."organization_members"
+  WHERE ("organization_members"."user_id" = "auth"."uid"()))));
+
+
+
+CREATE POLICY "authenticated_users_can_update_org_building_schemas" ON "public"."building_schemas" FOR UPDATE TO "authenticated" USING (("organization_id" IN ( SELECT "organization_members"."organization_id"
+   FROM "public"."organization_members"
+  WHERE ("organization_members"."user_id" = "auth"."uid"())))) WITH CHECK (("organization_id" IN ( SELECT "organization_members"."organization_id"
+   FROM "public"."organization_members"
+  WHERE ("organization_members"."user_id" = "auth"."uid"()))));
+
+
+
+COMMENT ON POLICY "authenticated_users_can_update_org_building_schemas" ON "public"."building_schemas" IS 'Authenticated users can only update building schemas in organizations they are members of';
+
+
+
+CREATE POLICY "authenticated_users_can_update_org_design_sessions" ON "public"."design_sessions" FOR UPDATE TO "authenticated" USING (("organization_id" IN ( SELECT "organization_members"."organization_id"
+   FROM "public"."organization_members"
+  WHERE ("organization_members"."user_id" = "auth"."uid"())))) WITH CHECK (("organization_id" IN ( SELECT "organization_members"."organization_id"
+   FROM "public"."organization_members"
+  WHERE ("organization_members"."user_id" = "auth"."uid"()))));
+
+
+
+COMMENT ON POLICY "authenticated_users_can_update_org_design_sessions" ON "public"."design_sessions" IS 'Authenticated users can only update design sessions in organizations they are members of';
+
+
+
+CREATE POLICY "authenticated_users_can_update_org_documents" ON "public"."documents" FOR UPDATE TO "authenticated" USING (("organization_id" IN ( SELECT "organization_members"."organization_id"
+   FROM "public"."organization_members"
+  WHERE ("organization_members"."user_id" = "auth"."uid"()))));
+
+
+
+COMMENT ON POLICY "authenticated_users_can_update_org_documents" ON "public"."documents" IS 'Authenticated users can only update documents in organizations they are members of';
+
+
+
 CREATE POLICY "authenticated_users_can_update_org_invitations" ON "public"."invitations" FOR UPDATE TO "authenticated" USING (("organization_id" IN ( SELECT "organization_members"."organization_id"
    FROM "public"."organization_members"
   WHERE ("organization_members"."user_id" = "auth"."uid"())))) WITH CHECK (("organization_id" IN ( SELECT "organization_members"."organization_id"
@@ -1752,6 +2289,18 @@ CREATE POLICY "authenticated_users_can_update_org_knowledge_suggestions" ON "pub
 
 
 COMMENT ON POLICY "authenticated_users_can_update_org_knowledge_suggestions" ON "public"."knowledge_suggestions" IS 'Authenticated users can only update knowledge suggestions in organizations they are members of';
+
+
+
+CREATE POLICY "authenticated_users_can_update_org_messages" ON "public"."messages" FOR UPDATE TO "authenticated" USING (("organization_id" IN ( SELECT "organization_members"."organization_id"
+   FROM "public"."organization_members"
+  WHERE ("organization_members"."user_id" = "auth"."uid"())))) WITH CHECK (("organization_id" IN ( SELECT "organization_members"."organization_id"
+   FROM "public"."organization_members"
+  WHERE ("organization_members"."user_id" = "auth"."uid"()))));
+
+
+
+COMMENT ON POLICY "authenticated_users_can_update_org_messages" ON "public"."messages" IS 'Authenticated users can only update messages in organizations they are members of';
 
 
 
@@ -1801,7 +2350,19 @@ COMMENT ON POLICY "authenticated_users_can_update_org_schema_file_paths" ON "pub
 
 
 
+ALTER TABLE "public"."building_schema_versions" ENABLE ROW LEVEL SECURITY;
+
+
+ALTER TABLE "public"."building_schemas" ENABLE ROW LEVEL SECURITY;
+
+
+ALTER TABLE "public"."design_sessions" ENABLE ROW LEVEL SECURITY;
+
+
 ALTER TABLE "public"."doc_file_paths" ENABLE ROW LEVEL SECURITY;
+
+
+ALTER TABLE "public"."documents" ENABLE ROW LEVEL SECURITY;
 
 
 ALTER TABLE "public"."github_pull_request_comments" ENABLE ROW LEVEL SECURITY;
@@ -1820,6 +2381,9 @@ ALTER TABLE "public"."knowledge_suggestion_doc_mappings" ENABLE ROW LEVEL SECURI
 
 
 ALTER TABLE "public"."knowledge_suggestions" ENABLE ROW LEVEL SECURITY;
+
+
+ALTER TABLE "public"."messages" ENABLE ROW LEVEL SECURITY;
 
 
 ALTER TABLE "public"."migration_pull_request_mappings" ENABLE ROW LEVEL SECURITY;
@@ -1861,6 +2425,14 @@ ALTER TABLE "public"."review_suggestion_snippets" ENABLE ROW LEVEL SECURITY;
 ALTER TABLE "public"."schema_file_paths" ENABLE ROW LEVEL SECURITY;
 
 
+CREATE POLICY "service_role_can_delete_all_building_schemas" ON "public"."building_schemas" FOR DELETE TO "service_role" USING (true);
+
+
+
+CREATE POLICY "service_role_can_delete_all_documents" ON "public"."documents" FOR DELETE TO "service_role" USING (true);
+
+
+
 CREATE POLICY "service_role_can_delete_all_invitations" ON "public"."invitations" FOR DELETE TO "service_role" USING (true);
 
 
@@ -1881,6 +2453,18 @@ COMMENT ON POLICY "service_role_can_delete_all_projects" ON "public"."projects" 
 
 
 
+CREATE POLICY "service_role_can_insert_all_building_schemas" ON "public"."building_schemas" FOR INSERT TO "service_role" WITH CHECK (true);
+
+
+
+CREATE POLICY "service_role_can_insert_all_design_sessions" ON "public"."design_sessions" FOR INSERT TO "service_role" WITH CHECK (true);
+
+
+
+CREATE POLICY "service_role_can_insert_all_documents" ON "public"."documents" FOR INSERT TO "service_role" WITH CHECK (true);
+
+
+
 CREATE POLICY "service_role_can_insert_all_github_pull_request_comments" ON "public"."github_pull_request_comments" FOR INSERT TO "service_role" WITH CHECK (true);
 
 
@@ -1898,6 +2482,10 @@ CREATE POLICY "service_role_can_insert_all_knowledge_suggestion_doc_mappings" ON
 
 
 CREATE POLICY "service_role_can_insert_all_knowledge_suggestions" ON "public"."knowledge_suggestions" FOR INSERT TO "service_role" WITH CHECK (true);
+
+
+
+CREATE POLICY "service_role_can_insert_all_messages" ON "public"."messages" FOR INSERT TO "service_role" WITH CHECK (true);
 
 
 
@@ -1941,7 +2529,19 @@ CREATE POLICY "service_role_can_insert_all_review_suggestion_snippets" ON "publi
 
 
 
+CREATE POLICY "service_role_can_select_all_building_schemas" ON "public"."building_schemas" FOR SELECT TO "service_role" USING (true);
+
+
+
+CREATE POLICY "service_role_can_select_all_design_sessions" ON "public"."design_sessions" FOR SELECT TO "service_role" USING (true);
+
+
+
 CREATE POLICY "service_role_can_select_all_doc_file_paths" ON "public"."doc_file_paths" FOR SELECT TO "service_role" USING (true);
+
+
+
+CREATE POLICY "service_role_can_select_all_documents" ON "public"."documents" FOR SELECT TO "service_role" USING (true);
 
 
 
@@ -1962,6 +2562,10 @@ CREATE POLICY "service_role_can_select_all_invitations" ON "public"."invitations
 
 
 CREATE POLICY "service_role_can_select_all_knowledge_suggestions" ON "public"."knowledge_suggestions" FOR SELECT TO "service_role" USING (true);
+
+
+
+CREATE POLICY "service_role_can_select_all_messages" ON "public"."messages" FOR SELECT TO "service_role" USING (true);
 
 
 
@@ -2001,11 +2605,27 @@ CREATE POLICY "service_role_can_select_all_schema_file_paths" ON "public"."schem
 
 
 
+CREATE POLICY "service_role_can_update_all_building_schemas" ON "public"."building_schemas" FOR UPDATE TO "service_role" USING (true) WITH CHECK (true);
+
+
+
+CREATE POLICY "service_role_can_update_all_design_sessions" ON "public"."design_sessions" FOR UPDATE TO "service_role" USING (true) WITH CHECK (true);
+
+
+
+CREATE POLICY "service_role_can_update_all_documents" ON "public"."documents" FOR UPDATE TO "service_role" USING (true) WITH CHECK (true);
+
+
+
 CREATE POLICY "service_role_can_update_all_invitations" ON "public"."invitations" FOR UPDATE TO "service_role" USING (true) WITH CHECK (true);
 
 
 
 CREATE POLICY "service_role_can_update_all_knowledge_suggestions" ON "public"."knowledge_suggestions" FOR UPDATE TO "service_role" USING (true) WITH CHECK (true);
+
+
+
+CREATE POLICY "service_role_can_update_all_messages" ON "public"."messages" FOR UPDATE TO "service_role" USING (true) WITH CHECK (true);
 
 
 
@@ -2047,6 +2667,272 @@ GRANT USAGE ON SCHEMA "public" TO "postgres";
 GRANT USAGE ON SCHEMA "public" TO "anon";
 GRANT USAGE ON SCHEMA "public" TO "authenticated";
 GRANT USAGE ON SCHEMA "public" TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."halfvec_in"("cstring", "oid", integer) TO "postgres";
+GRANT ALL ON FUNCTION "public"."halfvec_in"("cstring", "oid", integer) TO "anon";
+GRANT ALL ON FUNCTION "public"."halfvec_in"("cstring", "oid", integer) TO "authenticated";
+GRANT ALL ON FUNCTION "public"."halfvec_in"("cstring", "oid", integer) TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."halfvec_out"("public"."halfvec") TO "postgres";
+GRANT ALL ON FUNCTION "public"."halfvec_out"("public"."halfvec") TO "anon";
+GRANT ALL ON FUNCTION "public"."halfvec_out"("public"."halfvec") TO "authenticated";
+GRANT ALL ON FUNCTION "public"."halfvec_out"("public"."halfvec") TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."halfvec_recv"("internal", "oid", integer) TO "postgres";
+GRANT ALL ON FUNCTION "public"."halfvec_recv"("internal", "oid", integer) TO "anon";
+GRANT ALL ON FUNCTION "public"."halfvec_recv"("internal", "oid", integer) TO "authenticated";
+GRANT ALL ON FUNCTION "public"."halfvec_recv"("internal", "oid", integer) TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."halfvec_send"("public"."halfvec") TO "postgres";
+GRANT ALL ON FUNCTION "public"."halfvec_send"("public"."halfvec") TO "anon";
+GRANT ALL ON FUNCTION "public"."halfvec_send"("public"."halfvec") TO "authenticated";
+GRANT ALL ON FUNCTION "public"."halfvec_send"("public"."halfvec") TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."halfvec_typmod_in"("cstring"[]) TO "postgres";
+GRANT ALL ON FUNCTION "public"."halfvec_typmod_in"("cstring"[]) TO "anon";
+GRANT ALL ON FUNCTION "public"."halfvec_typmod_in"("cstring"[]) TO "authenticated";
+GRANT ALL ON FUNCTION "public"."halfvec_typmod_in"("cstring"[]) TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."sparsevec_in"("cstring", "oid", integer) TO "postgres";
+GRANT ALL ON FUNCTION "public"."sparsevec_in"("cstring", "oid", integer) TO "anon";
+GRANT ALL ON FUNCTION "public"."sparsevec_in"("cstring", "oid", integer) TO "authenticated";
+GRANT ALL ON FUNCTION "public"."sparsevec_in"("cstring", "oid", integer) TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."sparsevec_out"("public"."sparsevec") TO "postgres";
+GRANT ALL ON FUNCTION "public"."sparsevec_out"("public"."sparsevec") TO "anon";
+GRANT ALL ON FUNCTION "public"."sparsevec_out"("public"."sparsevec") TO "authenticated";
+GRANT ALL ON FUNCTION "public"."sparsevec_out"("public"."sparsevec") TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."sparsevec_recv"("internal", "oid", integer) TO "postgres";
+GRANT ALL ON FUNCTION "public"."sparsevec_recv"("internal", "oid", integer) TO "anon";
+GRANT ALL ON FUNCTION "public"."sparsevec_recv"("internal", "oid", integer) TO "authenticated";
+GRANT ALL ON FUNCTION "public"."sparsevec_recv"("internal", "oid", integer) TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."sparsevec_send"("public"."sparsevec") TO "postgres";
+GRANT ALL ON FUNCTION "public"."sparsevec_send"("public"."sparsevec") TO "anon";
+GRANT ALL ON FUNCTION "public"."sparsevec_send"("public"."sparsevec") TO "authenticated";
+GRANT ALL ON FUNCTION "public"."sparsevec_send"("public"."sparsevec") TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."sparsevec_typmod_in"("cstring"[]) TO "postgres";
+GRANT ALL ON FUNCTION "public"."sparsevec_typmod_in"("cstring"[]) TO "anon";
+GRANT ALL ON FUNCTION "public"."sparsevec_typmod_in"("cstring"[]) TO "authenticated";
+GRANT ALL ON FUNCTION "public"."sparsevec_typmod_in"("cstring"[]) TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."vector_in"("cstring", "oid", integer) TO "postgres";
+GRANT ALL ON FUNCTION "public"."vector_in"("cstring", "oid", integer) TO "anon";
+GRANT ALL ON FUNCTION "public"."vector_in"("cstring", "oid", integer) TO "authenticated";
+GRANT ALL ON FUNCTION "public"."vector_in"("cstring", "oid", integer) TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."vector_out"("public"."vector") TO "postgres";
+GRANT ALL ON FUNCTION "public"."vector_out"("public"."vector") TO "anon";
+GRANT ALL ON FUNCTION "public"."vector_out"("public"."vector") TO "authenticated";
+GRANT ALL ON FUNCTION "public"."vector_out"("public"."vector") TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."vector_recv"("internal", "oid", integer) TO "postgres";
+GRANT ALL ON FUNCTION "public"."vector_recv"("internal", "oid", integer) TO "anon";
+GRANT ALL ON FUNCTION "public"."vector_recv"("internal", "oid", integer) TO "authenticated";
+GRANT ALL ON FUNCTION "public"."vector_recv"("internal", "oid", integer) TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."vector_send"("public"."vector") TO "postgres";
+GRANT ALL ON FUNCTION "public"."vector_send"("public"."vector") TO "anon";
+GRANT ALL ON FUNCTION "public"."vector_send"("public"."vector") TO "authenticated";
+GRANT ALL ON FUNCTION "public"."vector_send"("public"."vector") TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."vector_typmod_in"("cstring"[]) TO "postgres";
+GRANT ALL ON FUNCTION "public"."vector_typmod_in"("cstring"[]) TO "anon";
+GRANT ALL ON FUNCTION "public"."vector_typmod_in"("cstring"[]) TO "authenticated";
+GRANT ALL ON FUNCTION "public"."vector_typmod_in"("cstring"[]) TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."array_to_halfvec"(real[], integer, boolean) TO "postgres";
+GRANT ALL ON FUNCTION "public"."array_to_halfvec"(real[], integer, boolean) TO "anon";
+GRANT ALL ON FUNCTION "public"."array_to_halfvec"(real[], integer, boolean) TO "authenticated";
+GRANT ALL ON FUNCTION "public"."array_to_halfvec"(real[], integer, boolean) TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."array_to_sparsevec"(real[], integer, boolean) TO "postgres";
+GRANT ALL ON FUNCTION "public"."array_to_sparsevec"(real[], integer, boolean) TO "anon";
+GRANT ALL ON FUNCTION "public"."array_to_sparsevec"(real[], integer, boolean) TO "authenticated";
+GRANT ALL ON FUNCTION "public"."array_to_sparsevec"(real[], integer, boolean) TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."array_to_vector"(real[], integer, boolean) TO "postgres";
+GRANT ALL ON FUNCTION "public"."array_to_vector"(real[], integer, boolean) TO "anon";
+GRANT ALL ON FUNCTION "public"."array_to_vector"(real[], integer, boolean) TO "authenticated";
+GRANT ALL ON FUNCTION "public"."array_to_vector"(real[], integer, boolean) TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."array_to_halfvec"(double precision[], integer, boolean) TO "postgres";
+GRANT ALL ON FUNCTION "public"."array_to_halfvec"(double precision[], integer, boolean) TO "anon";
+GRANT ALL ON FUNCTION "public"."array_to_halfvec"(double precision[], integer, boolean) TO "authenticated";
+GRANT ALL ON FUNCTION "public"."array_to_halfvec"(double precision[], integer, boolean) TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."array_to_sparsevec"(double precision[], integer, boolean) TO "postgres";
+GRANT ALL ON FUNCTION "public"."array_to_sparsevec"(double precision[], integer, boolean) TO "anon";
+GRANT ALL ON FUNCTION "public"."array_to_sparsevec"(double precision[], integer, boolean) TO "authenticated";
+GRANT ALL ON FUNCTION "public"."array_to_sparsevec"(double precision[], integer, boolean) TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."array_to_vector"(double precision[], integer, boolean) TO "postgres";
+GRANT ALL ON FUNCTION "public"."array_to_vector"(double precision[], integer, boolean) TO "anon";
+GRANT ALL ON FUNCTION "public"."array_to_vector"(double precision[], integer, boolean) TO "authenticated";
+GRANT ALL ON FUNCTION "public"."array_to_vector"(double precision[], integer, boolean) TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."array_to_halfvec"(integer[], integer, boolean) TO "postgres";
+GRANT ALL ON FUNCTION "public"."array_to_halfvec"(integer[], integer, boolean) TO "anon";
+GRANT ALL ON FUNCTION "public"."array_to_halfvec"(integer[], integer, boolean) TO "authenticated";
+GRANT ALL ON FUNCTION "public"."array_to_halfvec"(integer[], integer, boolean) TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."array_to_sparsevec"(integer[], integer, boolean) TO "postgres";
+GRANT ALL ON FUNCTION "public"."array_to_sparsevec"(integer[], integer, boolean) TO "anon";
+GRANT ALL ON FUNCTION "public"."array_to_sparsevec"(integer[], integer, boolean) TO "authenticated";
+GRANT ALL ON FUNCTION "public"."array_to_sparsevec"(integer[], integer, boolean) TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."array_to_vector"(integer[], integer, boolean) TO "postgres";
+GRANT ALL ON FUNCTION "public"."array_to_vector"(integer[], integer, boolean) TO "anon";
+GRANT ALL ON FUNCTION "public"."array_to_vector"(integer[], integer, boolean) TO "authenticated";
+GRANT ALL ON FUNCTION "public"."array_to_vector"(integer[], integer, boolean) TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."array_to_halfvec"(numeric[], integer, boolean) TO "postgres";
+GRANT ALL ON FUNCTION "public"."array_to_halfvec"(numeric[], integer, boolean) TO "anon";
+GRANT ALL ON FUNCTION "public"."array_to_halfvec"(numeric[], integer, boolean) TO "authenticated";
+GRANT ALL ON FUNCTION "public"."array_to_halfvec"(numeric[], integer, boolean) TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."array_to_sparsevec"(numeric[], integer, boolean) TO "postgres";
+GRANT ALL ON FUNCTION "public"."array_to_sparsevec"(numeric[], integer, boolean) TO "anon";
+GRANT ALL ON FUNCTION "public"."array_to_sparsevec"(numeric[], integer, boolean) TO "authenticated";
+GRANT ALL ON FUNCTION "public"."array_to_sparsevec"(numeric[], integer, boolean) TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."array_to_vector"(numeric[], integer, boolean) TO "postgres";
+GRANT ALL ON FUNCTION "public"."array_to_vector"(numeric[], integer, boolean) TO "anon";
+GRANT ALL ON FUNCTION "public"."array_to_vector"(numeric[], integer, boolean) TO "authenticated";
+GRANT ALL ON FUNCTION "public"."array_to_vector"(numeric[], integer, boolean) TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."halfvec_to_float4"("public"."halfvec", integer, boolean) TO "postgres";
+GRANT ALL ON FUNCTION "public"."halfvec_to_float4"("public"."halfvec", integer, boolean) TO "anon";
+GRANT ALL ON FUNCTION "public"."halfvec_to_float4"("public"."halfvec", integer, boolean) TO "authenticated";
+GRANT ALL ON FUNCTION "public"."halfvec_to_float4"("public"."halfvec", integer, boolean) TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."halfvec"("public"."halfvec", integer, boolean) TO "postgres";
+GRANT ALL ON FUNCTION "public"."halfvec"("public"."halfvec", integer, boolean) TO "anon";
+GRANT ALL ON FUNCTION "public"."halfvec"("public"."halfvec", integer, boolean) TO "authenticated";
+GRANT ALL ON FUNCTION "public"."halfvec"("public"."halfvec", integer, boolean) TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."halfvec_to_sparsevec"("public"."halfvec", integer, boolean) TO "postgres";
+GRANT ALL ON FUNCTION "public"."halfvec_to_sparsevec"("public"."halfvec", integer, boolean) TO "anon";
+GRANT ALL ON FUNCTION "public"."halfvec_to_sparsevec"("public"."halfvec", integer, boolean) TO "authenticated";
+GRANT ALL ON FUNCTION "public"."halfvec_to_sparsevec"("public"."halfvec", integer, boolean) TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."halfvec_to_vector"("public"."halfvec", integer, boolean) TO "postgres";
+GRANT ALL ON FUNCTION "public"."halfvec_to_vector"("public"."halfvec", integer, boolean) TO "anon";
+GRANT ALL ON FUNCTION "public"."halfvec_to_vector"("public"."halfvec", integer, boolean) TO "authenticated";
+GRANT ALL ON FUNCTION "public"."halfvec_to_vector"("public"."halfvec", integer, boolean) TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."sparsevec_to_halfvec"("public"."sparsevec", integer, boolean) TO "postgres";
+GRANT ALL ON FUNCTION "public"."sparsevec_to_halfvec"("public"."sparsevec", integer, boolean) TO "anon";
+GRANT ALL ON FUNCTION "public"."sparsevec_to_halfvec"("public"."sparsevec", integer, boolean) TO "authenticated";
+GRANT ALL ON FUNCTION "public"."sparsevec_to_halfvec"("public"."sparsevec", integer, boolean) TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."sparsevec"("public"."sparsevec", integer, boolean) TO "postgres";
+GRANT ALL ON FUNCTION "public"."sparsevec"("public"."sparsevec", integer, boolean) TO "anon";
+GRANT ALL ON FUNCTION "public"."sparsevec"("public"."sparsevec", integer, boolean) TO "authenticated";
+GRANT ALL ON FUNCTION "public"."sparsevec"("public"."sparsevec", integer, boolean) TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."sparsevec_to_vector"("public"."sparsevec", integer, boolean) TO "postgres";
+GRANT ALL ON FUNCTION "public"."sparsevec_to_vector"("public"."sparsevec", integer, boolean) TO "anon";
+GRANT ALL ON FUNCTION "public"."sparsevec_to_vector"("public"."sparsevec", integer, boolean) TO "authenticated";
+GRANT ALL ON FUNCTION "public"."sparsevec_to_vector"("public"."sparsevec", integer, boolean) TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."vector_to_float4"("public"."vector", integer, boolean) TO "postgres";
+GRANT ALL ON FUNCTION "public"."vector_to_float4"("public"."vector", integer, boolean) TO "anon";
+GRANT ALL ON FUNCTION "public"."vector_to_float4"("public"."vector", integer, boolean) TO "authenticated";
+GRANT ALL ON FUNCTION "public"."vector_to_float4"("public"."vector", integer, boolean) TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."vector_to_halfvec"("public"."vector", integer, boolean) TO "postgres";
+GRANT ALL ON FUNCTION "public"."vector_to_halfvec"("public"."vector", integer, boolean) TO "anon";
+GRANT ALL ON FUNCTION "public"."vector_to_halfvec"("public"."vector", integer, boolean) TO "authenticated";
+GRANT ALL ON FUNCTION "public"."vector_to_halfvec"("public"."vector", integer, boolean) TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."vector_to_sparsevec"("public"."vector", integer, boolean) TO "postgres";
+GRANT ALL ON FUNCTION "public"."vector_to_sparsevec"("public"."vector", integer, boolean) TO "anon";
+GRANT ALL ON FUNCTION "public"."vector_to_sparsevec"("public"."vector", integer, boolean) TO "authenticated";
+GRANT ALL ON FUNCTION "public"."vector_to_sparsevec"("public"."vector", integer, boolean) TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."vector"("public"."vector", integer, boolean) TO "postgres";
+GRANT ALL ON FUNCTION "public"."vector"("public"."vector", integer, boolean) TO "anon";
+GRANT ALL ON FUNCTION "public"."vector"("public"."vector", integer, boolean) TO "authenticated";
+GRANT ALL ON FUNCTION "public"."vector"("public"."vector", integer, boolean) TO "service_role";
 
 
 
@@ -2229,14 +3115,224 @@ GRANT ALL ON FUNCTION "public"."accept_invitation"("p_token" "uuid") TO "service
 
 
 
+GRANT ALL ON FUNCTION "public"."binary_quantize"("public"."halfvec") TO "postgres";
+GRANT ALL ON FUNCTION "public"."binary_quantize"("public"."halfvec") TO "anon";
+GRANT ALL ON FUNCTION "public"."binary_quantize"("public"."halfvec") TO "authenticated";
+GRANT ALL ON FUNCTION "public"."binary_quantize"("public"."halfvec") TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."binary_quantize"("public"."vector") TO "postgres";
+GRANT ALL ON FUNCTION "public"."binary_quantize"("public"."vector") TO "anon";
+GRANT ALL ON FUNCTION "public"."binary_quantize"("public"."vector") TO "authenticated";
+GRANT ALL ON FUNCTION "public"."binary_quantize"("public"."vector") TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."cosine_distance"("public"."halfvec", "public"."halfvec") TO "postgres";
+GRANT ALL ON FUNCTION "public"."cosine_distance"("public"."halfvec", "public"."halfvec") TO "anon";
+GRANT ALL ON FUNCTION "public"."cosine_distance"("public"."halfvec", "public"."halfvec") TO "authenticated";
+GRANT ALL ON FUNCTION "public"."cosine_distance"("public"."halfvec", "public"."halfvec") TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."cosine_distance"("public"."sparsevec", "public"."sparsevec") TO "postgres";
+GRANT ALL ON FUNCTION "public"."cosine_distance"("public"."sparsevec", "public"."sparsevec") TO "anon";
+GRANT ALL ON FUNCTION "public"."cosine_distance"("public"."sparsevec", "public"."sparsevec") TO "authenticated";
+GRANT ALL ON FUNCTION "public"."cosine_distance"("public"."sparsevec", "public"."sparsevec") TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."cosine_distance"("public"."vector", "public"."vector") TO "postgres";
+GRANT ALL ON FUNCTION "public"."cosine_distance"("public"."vector", "public"."vector") TO "anon";
+GRANT ALL ON FUNCTION "public"."cosine_distance"("public"."vector", "public"."vector") TO "authenticated";
+GRANT ALL ON FUNCTION "public"."cosine_distance"("public"."vector", "public"."vector") TO "service_role";
+
+
+
 GRANT ALL ON FUNCTION "public"."get_invitation_data"("p_token" "uuid") TO "authenticated";
 GRANT ALL ON FUNCTION "public"."get_invitation_data"("p_token" "uuid") TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."halfvec_accum"(double precision[], "public"."halfvec") TO "postgres";
+GRANT ALL ON FUNCTION "public"."halfvec_accum"(double precision[], "public"."halfvec") TO "anon";
+GRANT ALL ON FUNCTION "public"."halfvec_accum"(double precision[], "public"."halfvec") TO "authenticated";
+GRANT ALL ON FUNCTION "public"."halfvec_accum"(double precision[], "public"."halfvec") TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."halfvec_add"("public"."halfvec", "public"."halfvec") TO "postgres";
+GRANT ALL ON FUNCTION "public"."halfvec_add"("public"."halfvec", "public"."halfvec") TO "anon";
+GRANT ALL ON FUNCTION "public"."halfvec_add"("public"."halfvec", "public"."halfvec") TO "authenticated";
+GRANT ALL ON FUNCTION "public"."halfvec_add"("public"."halfvec", "public"."halfvec") TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."halfvec_avg"(double precision[]) TO "postgres";
+GRANT ALL ON FUNCTION "public"."halfvec_avg"(double precision[]) TO "anon";
+GRANT ALL ON FUNCTION "public"."halfvec_avg"(double precision[]) TO "authenticated";
+GRANT ALL ON FUNCTION "public"."halfvec_avg"(double precision[]) TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."halfvec_cmp"("public"."halfvec", "public"."halfvec") TO "postgres";
+GRANT ALL ON FUNCTION "public"."halfvec_cmp"("public"."halfvec", "public"."halfvec") TO "anon";
+GRANT ALL ON FUNCTION "public"."halfvec_cmp"("public"."halfvec", "public"."halfvec") TO "authenticated";
+GRANT ALL ON FUNCTION "public"."halfvec_cmp"("public"."halfvec", "public"."halfvec") TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."halfvec_combine"(double precision[], double precision[]) TO "postgres";
+GRANT ALL ON FUNCTION "public"."halfvec_combine"(double precision[], double precision[]) TO "anon";
+GRANT ALL ON FUNCTION "public"."halfvec_combine"(double precision[], double precision[]) TO "authenticated";
+GRANT ALL ON FUNCTION "public"."halfvec_combine"(double precision[], double precision[]) TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."halfvec_concat"("public"."halfvec", "public"."halfvec") TO "postgres";
+GRANT ALL ON FUNCTION "public"."halfvec_concat"("public"."halfvec", "public"."halfvec") TO "anon";
+GRANT ALL ON FUNCTION "public"."halfvec_concat"("public"."halfvec", "public"."halfvec") TO "authenticated";
+GRANT ALL ON FUNCTION "public"."halfvec_concat"("public"."halfvec", "public"."halfvec") TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."halfvec_eq"("public"."halfvec", "public"."halfvec") TO "postgres";
+GRANT ALL ON FUNCTION "public"."halfvec_eq"("public"."halfvec", "public"."halfvec") TO "anon";
+GRANT ALL ON FUNCTION "public"."halfvec_eq"("public"."halfvec", "public"."halfvec") TO "authenticated";
+GRANT ALL ON FUNCTION "public"."halfvec_eq"("public"."halfvec", "public"."halfvec") TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."halfvec_ge"("public"."halfvec", "public"."halfvec") TO "postgres";
+GRANT ALL ON FUNCTION "public"."halfvec_ge"("public"."halfvec", "public"."halfvec") TO "anon";
+GRANT ALL ON FUNCTION "public"."halfvec_ge"("public"."halfvec", "public"."halfvec") TO "authenticated";
+GRANT ALL ON FUNCTION "public"."halfvec_ge"("public"."halfvec", "public"."halfvec") TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."halfvec_gt"("public"."halfvec", "public"."halfvec") TO "postgres";
+GRANT ALL ON FUNCTION "public"."halfvec_gt"("public"."halfvec", "public"."halfvec") TO "anon";
+GRANT ALL ON FUNCTION "public"."halfvec_gt"("public"."halfvec", "public"."halfvec") TO "authenticated";
+GRANT ALL ON FUNCTION "public"."halfvec_gt"("public"."halfvec", "public"."halfvec") TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."halfvec_l2_squared_distance"("public"."halfvec", "public"."halfvec") TO "postgres";
+GRANT ALL ON FUNCTION "public"."halfvec_l2_squared_distance"("public"."halfvec", "public"."halfvec") TO "anon";
+GRANT ALL ON FUNCTION "public"."halfvec_l2_squared_distance"("public"."halfvec", "public"."halfvec") TO "authenticated";
+GRANT ALL ON FUNCTION "public"."halfvec_l2_squared_distance"("public"."halfvec", "public"."halfvec") TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."halfvec_le"("public"."halfvec", "public"."halfvec") TO "postgres";
+GRANT ALL ON FUNCTION "public"."halfvec_le"("public"."halfvec", "public"."halfvec") TO "anon";
+GRANT ALL ON FUNCTION "public"."halfvec_le"("public"."halfvec", "public"."halfvec") TO "authenticated";
+GRANT ALL ON FUNCTION "public"."halfvec_le"("public"."halfvec", "public"."halfvec") TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."halfvec_lt"("public"."halfvec", "public"."halfvec") TO "postgres";
+GRANT ALL ON FUNCTION "public"."halfvec_lt"("public"."halfvec", "public"."halfvec") TO "anon";
+GRANT ALL ON FUNCTION "public"."halfvec_lt"("public"."halfvec", "public"."halfvec") TO "authenticated";
+GRANT ALL ON FUNCTION "public"."halfvec_lt"("public"."halfvec", "public"."halfvec") TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."halfvec_mul"("public"."halfvec", "public"."halfvec") TO "postgres";
+GRANT ALL ON FUNCTION "public"."halfvec_mul"("public"."halfvec", "public"."halfvec") TO "anon";
+GRANT ALL ON FUNCTION "public"."halfvec_mul"("public"."halfvec", "public"."halfvec") TO "authenticated";
+GRANT ALL ON FUNCTION "public"."halfvec_mul"("public"."halfvec", "public"."halfvec") TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."halfvec_ne"("public"."halfvec", "public"."halfvec") TO "postgres";
+GRANT ALL ON FUNCTION "public"."halfvec_ne"("public"."halfvec", "public"."halfvec") TO "anon";
+GRANT ALL ON FUNCTION "public"."halfvec_ne"("public"."halfvec", "public"."halfvec") TO "authenticated";
+GRANT ALL ON FUNCTION "public"."halfvec_ne"("public"."halfvec", "public"."halfvec") TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."halfvec_negative_inner_product"("public"."halfvec", "public"."halfvec") TO "postgres";
+GRANT ALL ON FUNCTION "public"."halfvec_negative_inner_product"("public"."halfvec", "public"."halfvec") TO "anon";
+GRANT ALL ON FUNCTION "public"."halfvec_negative_inner_product"("public"."halfvec", "public"."halfvec") TO "authenticated";
+GRANT ALL ON FUNCTION "public"."halfvec_negative_inner_product"("public"."halfvec", "public"."halfvec") TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."halfvec_spherical_distance"("public"."halfvec", "public"."halfvec") TO "postgres";
+GRANT ALL ON FUNCTION "public"."halfvec_spherical_distance"("public"."halfvec", "public"."halfvec") TO "anon";
+GRANT ALL ON FUNCTION "public"."halfvec_spherical_distance"("public"."halfvec", "public"."halfvec") TO "authenticated";
+GRANT ALL ON FUNCTION "public"."halfvec_spherical_distance"("public"."halfvec", "public"."halfvec") TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."halfvec_sub"("public"."halfvec", "public"."halfvec") TO "postgres";
+GRANT ALL ON FUNCTION "public"."halfvec_sub"("public"."halfvec", "public"."halfvec") TO "anon";
+GRANT ALL ON FUNCTION "public"."halfvec_sub"("public"."halfvec", "public"."halfvec") TO "authenticated";
+GRANT ALL ON FUNCTION "public"."halfvec_sub"("public"."halfvec", "public"."halfvec") TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."hamming_distance"(bit, bit) TO "postgres";
+GRANT ALL ON FUNCTION "public"."hamming_distance"(bit, bit) TO "anon";
+GRANT ALL ON FUNCTION "public"."hamming_distance"(bit, bit) TO "authenticated";
+GRANT ALL ON FUNCTION "public"."hamming_distance"(bit, bit) TO "service_role";
 
 
 
 GRANT ALL ON FUNCTION "public"."handle_new_user"() TO "anon";
 GRANT ALL ON FUNCTION "public"."handle_new_user"() TO "authenticated";
 GRANT ALL ON FUNCTION "public"."handle_new_user"() TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."hnsw_bit_support"("internal") TO "postgres";
+GRANT ALL ON FUNCTION "public"."hnsw_bit_support"("internal") TO "anon";
+GRANT ALL ON FUNCTION "public"."hnsw_bit_support"("internal") TO "authenticated";
+GRANT ALL ON FUNCTION "public"."hnsw_bit_support"("internal") TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."hnsw_halfvec_support"("internal") TO "postgres";
+GRANT ALL ON FUNCTION "public"."hnsw_halfvec_support"("internal") TO "anon";
+GRANT ALL ON FUNCTION "public"."hnsw_halfvec_support"("internal") TO "authenticated";
+GRANT ALL ON FUNCTION "public"."hnsw_halfvec_support"("internal") TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."hnsw_sparsevec_support"("internal") TO "postgres";
+GRANT ALL ON FUNCTION "public"."hnsw_sparsevec_support"("internal") TO "anon";
+GRANT ALL ON FUNCTION "public"."hnsw_sparsevec_support"("internal") TO "authenticated";
+GRANT ALL ON FUNCTION "public"."hnsw_sparsevec_support"("internal") TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."hnswhandler"("internal") TO "postgres";
+GRANT ALL ON FUNCTION "public"."hnswhandler"("internal") TO "anon";
+GRANT ALL ON FUNCTION "public"."hnswhandler"("internal") TO "authenticated";
+GRANT ALL ON FUNCTION "public"."hnswhandler"("internal") TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."inner_product"("public"."halfvec", "public"."halfvec") TO "postgres";
+GRANT ALL ON FUNCTION "public"."inner_product"("public"."halfvec", "public"."halfvec") TO "anon";
+GRANT ALL ON FUNCTION "public"."inner_product"("public"."halfvec", "public"."halfvec") TO "authenticated";
+GRANT ALL ON FUNCTION "public"."inner_product"("public"."halfvec", "public"."halfvec") TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."inner_product"("public"."sparsevec", "public"."sparsevec") TO "postgres";
+GRANT ALL ON FUNCTION "public"."inner_product"("public"."sparsevec", "public"."sparsevec") TO "anon";
+GRANT ALL ON FUNCTION "public"."inner_product"("public"."sparsevec", "public"."sparsevec") TO "authenticated";
+GRANT ALL ON FUNCTION "public"."inner_product"("public"."sparsevec", "public"."sparsevec") TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."inner_product"("public"."vector", "public"."vector") TO "postgres";
+GRANT ALL ON FUNCTION "public"."inner_product"("public"."vector", "public"."vector") TO "anon";
+GRANT ALL ON FUNCTION "public"."inner_product"("public"."vector", "public"."vector") TO "authenticated";
+GRANT ALL ON FUNCTION "public"."inner_product"("public"."vector", "public"."vector") TO "service_role";
 
 
 
@@ -2252,9 +3348,138 @@ GRANT ALL ON FUNCTION "public"."is_current_user_org_member"("_org" "uuid") TO "s
 
 
 
+GRANT ALL ON FUNCTION "public"."ivfflat_bit_support"("internal") TO "postgres";
+GRANT ALL ON FUNCTION "public"."ivfflat_bit_support"("internal") TO "anon";
+GRANT ALL ON FUNCTION "public"."ivfflat_bit_support"("internal") TO "authenticated";
+GRANT ALL ON FUNCTION "public"."ivfflat_bit_support"("internal") TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."ivfflat_halfvec_support"("internal") TO "postgres";
+GRANT ALL ON FUNCTION "public"."ivfflat_halfvec_support"("internal") TO "anon";
+GRANT ALL ON FUNCTION "public"."ivfflat_halfvec_support"("internal") TO "authenticated";
+GRANT ALL ON FUNCTION "public"."ivfflat_halfvec_support"("internal") TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."ivfflathandler"("internal") TO "postgres";
+GRANT ALL ON FUNCTION "public"."ivfflathandler"("internal") TO "anon";
+GRANT ALL ON FUNCTION "public"."ivfflathandler"("internal") TO "authenticated";
+GRANT ALL ON FUNCTION "public"."ivfflathandler"("internal") TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."jaccard_distance"(bit, bit) TO "postgres";
+GRANT ALL ON FUNCTION "public"."jaccard_distance"(bit, bit) TO "anon";
+GRANT ALL ON FUNCTION "public"."jaccard_distance"(bit, bit) TO "authenticated";
+GRANT ALL ON FUNCTION "public"."jaccard_distance"(bit, bit) TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."l1_distance"("public"."halfvec", "public"."halfvec") TO "postgres";
+GRANT ALL ON FUNCTION "public"."l1_distance"("public"."halfvec", "public"."halfvec") TO "anon";
+GRANT ALL ON FUNCTION "public"."l1_distance"("public"."halfvec", "public"."halfvec") TO "authenticated";
+GRANT ALL ON FUNCTION "public"."l1_distance"("public"."halfvec", "public"."halfvec") TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."l1_distance"("public"."sparsevec", "public"."sparsevec") TO "postgres";
+GRANT ALL ON FUNCTION "public"."l1_distance"("public"."sparsevec", "public"."sparsevec") TO "anon";
+GRANT ALL ON FUNCTION "public"."l1_distance"("public"."sparsevec", "public"."sparsevec") TO "authenticated";
+GRANT ALL ON FUNCTION "public"."l1_distance"("public"."sparsevec", "public"."sparsevec") TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."l1_distance"("public"."vector", "public"."vector") TO "postgres";
+GRANT ALL ON FUNCTION "public"."l1_distance"("public"."vector", "public"."vector") TO "anon";
+GRANT ALL ON FUNCTION "public"."l1_distance"("public"."vector", "public"."vector") TO "authenticated";
+GRANT ALL ON FUNCTION "public"."l1_distance"("public"."vector", "public"."vector") TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."l2_distance"("public"."halfvec", "public"."halfvec") TO "postgres";
+GRANT ALL ON FUNCTION "public"."l2_distance"("public"."halfvec", "public"."halfvec") TO "anon";
+GRANT ALL ON FUNCTION "public"."l2_distance"("public"."halfvec", "public"."halfvec") TO "authenticated";
+GRANT ALL ON FUNCTION "public"."l2_distance"("public"."halfvec", "public"."halfvec") TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."l2_distance"("public"."sparsevec", "public"."sparsevec") TO "postgres";
+GRANT ALL ON FUNCTION "public"."l2_distance"("public"."sparsevec", "public"."sparsevec") TO "anon";
+GRANT ALL ON FUNCTION "public"."l2_distance"("public"."sparsevec", "public"."sparsevec") TO "authenticated";
+GRANT ALL ON FUNCTION "public"."l2_distance"("public"."sparsevec", "public"."sparsevec") TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."l2_distance"("public"."vector", "public"."vector") TO "postgres";
+GRANT ALL ON FUNCTION "public"."l2_distance"("public"."vector", "public"."vector") TO "anon";
+GRANT ALL ON FUNCTION "public"."l2_distance"("public"."vector", "public"."vector") TO "authenticated";
+GRANT ALL ON FUNCTION "public"."l2_distance"("public"."vector", "public"."vector") TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."l2_norm"("public"."halfvec") TO "postgres";
+GRANT ALL ON FUNCTION "public"."l2_norm"("public"."halfvec") TO "anon";
+GRANT ALL ON FUNCTION "public"."l2_norm"("public"."halfvec") TO "authenticated";
+GRANT ALL ON FUNCTION "public"."l2_norm"("public"."halfvec") TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."l2_norm"("public"."sparsevec") TO "postgres";
+GRANT ALL ON FUNCTION "public"."l2_norm"("public"."sparsevec") TO "anon";
+GRANT ALL ON FUNCTION "public"."l2_norm"("public"."sparsevec") TO "authenticated";
+GRANT ALL ON FUNCTION "public"."l2_norm"("public"."sparsevec") TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."l2_normalize"("public"."halfvec") TO "postgres";
+GRANT ALL ON FUNCTION "public"."l2_normalize"("public"."halfvec") TO "anon";
+GRANT ALL ON FUNCTION "public"."l2_normalize"("public"."halfvec") TO "authenticated";
+GRANT ALL ON FUNCTION "public"."l2_normalize"("public"."halfvec") TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."l2_normalize"("public"."sparsevec") TO "postgres";
+GRANT ALL ON FUNCTION "public"."l2_normalize"("public"."sparsevec") TO "anon";
+GRANT ALL ON FUNCTION "public"."l2_normalize"("public"."sparsevec") TO "authenticated";
+GRANT ALL ON FUNCTION "public"."l2_normalize"("public"."sparsevec") TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."l2_normalize"("public"."vector") TO "postgres";
+GRANT ALL ON FUNCTION "public"."l2_normalize"("public"."vector") TO "anon";
+GRANT ALL ON FUNCTION "public"."l2_normalize"("public"."vector") TO "authenticated";
+GRANT ALL ON FUNCTION "public"."l2_normalize"("public"."vector") TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."match_documents"("filter" "jsonb", "match_count" integer, "query_embedding" "public"."vector", "match_threshold" double precision) TO "anon";
+GRANT ALL ON FUNCTION "public"."match_documents"("filter" "jsonb", "match_count" integer, "query_embedding" "public"."vector", "match_threshold" double precision) TO "authenticated";
+GRANT ALL ON FUNCTION "public"."match_documents"("filter" "jsonb", "match_count" integer, "query_embedding" "public"."vector", "match_threshold" double precision) TO "service_role";
+
+
+
 GRANT ALL ON FUNCTION "public"."prevent_delete_last_organization_member"() TO "anon";
 GRANT ALL ON FUNCTION "public"."prevent_delete_last_organization_member"() TO "authenticated";
 GRANT ALL ON FUNCTION "public"."prevent_delete_last_organization_member"() TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."set_building_schema_versions_organization_id"() TO "anon";
+GRANT ALL ON FUNCTION "public"."set_building_schema_versions_organization_id"() TO "authenticated";
+GRANT ALL ON FUNCTION "public"."set_building_schema_versions_organization_id"() TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."set_building_schemas_organization_id"() TO "anon";
+GRANT ALL ON FUNCTION "public"."set_building_schemas_organization_id"() TO "authenticated";
+GRANT ALL ON FUNCTION "public"."set_building_schemas_organization_id"() TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."set_design_sessions_organization_id"() TO "anon";
+GRANT ALL ON FUNCTION "public"."set_design_sessions_organization_id"() TO "authenticated";
+GRANT ALL ON FUNCTION "public"."set_design_sessions_organization_id"() TO "service_role";
 
 
 
@@ -2285,6 +3510,12 @@ GRANT ALL ON FUNCTION "public"."set_knowledge_suggestion_doc_mappings_organizati
 GRANT ALL ON FUNCTION "public"."set_knowledge_suggestions_organization_id"() TO "anon";
 GRANT ALL ON FUNCTION "public"."set_knowledge_suggestions_organization_id"() TO "authenticated";
 GRANT ALL ON FUNCTION "public"."set_knowledge_suggestions_organization_id"() TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."set_messages_organization_id"() TO "anon";
+GRANT ALL ON FUNCTION "public"."set_messages_organization_id"() TO "authenticated";
+GRANT ALL ON FUNCTION "public"."set_messages_organization_id"() TO "service_role";
 
 
 
@@ -2348,12 +3579,231 @@ GRANT ALL ON FUNCTION "public"."set_schema_file_paths_organization_id"() TO "ser
 
 
 
+GRANT ALL ON FUNCTION "public"."sparsevec_cmp"("public"."sparsevec", "public"."sparsevec") TO "postgres";
+GRANT ALL ON FUNCTION "public"."sparsevec_cmp"("public"."sparsevec", "public"."sparsevec") TO "anon";
+GRANT ALL ON FUNCTION "public"."sparsevec_cmp"("public"."sparsevec", "public"."sparsevec") TO "authenticated";
+GRANT ALL ON FUNCTION "public"."sparsevec_cmp"("public"."sparsevec", "public"."sparsevec") TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."sparsevec_eq"("public"."sparsevec", "public"."sparsevec") TO "postgres";
+GRANT ALL ON FUNCTION "public"."sparsevec_eq"("public"."sparsevec", "public"."sparsevec") TO "anon";
+GRANT ALL ON FUNCTION "public"."sparsevec_eq"("public"."sparsevec", "public"."sparsevec") TO "authenticated";
+GRANT ALL ON FUNCTION "public"."sparsevec_eq"("public"."sparsevec", "public"."sparsevec") TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."sparsevec_ge"("public"."sparsevec", "public"."sparsevec") TO "postgres";
+GRANT ALL ON FUNCTION "public"."sparsevec_ge"("public"."sparsevec", "public"."sparsevec") TO "anon";
+GRANT ALL ON FUNCTION "public"."sparsevec_ge"("public"."sparsevec", "public"."sparsevec") TO "authenticated";
+GRANT ALL ON FUNCTION "public"."sparsevec_ge"("public"."sparsevec", "public"."sparsevec") TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."sparsevec_gt"("public"."sparsevec", "public"."sparsevec") TO "postgres";
+GRANT ALL ON FUNCTION "public"."sparsevec_gt"("public"."sparsevec", "public"."sparsevec") TO "anon";
+GRANT ALL ON FUNCTION "public"."sparsevec_gt"("public"."sparsevec", "public"."sparsevec") TO "authenticated";
+GRANT ALL ON FUNCTION "public"."sparsevec_gt"("public"."sparsevec", "public"."sparsevec") TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."sparsevec_l2_squared_distance"("public"."sparsevec", "public"."sparsevec") TO "postgres";
+GRANT ALL ON FUNCTION "public"."sparsevec_l2_squared_distance"("public"."sparsevec", "public"."sparsevec") TO "anon";
+GRANT ALL ON FUNCTION "public"."sparsevec_l2_squared_distance"("public"."sparsevec", "public"."sparsevec") TO "authenticated";
+GRANT ALL ON FUNCTION "public"."sparsevec_l2_squared_distance"("public"."sparsevec", "public"."sparsevec") TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."sparsevec_le"("public"."sparsevec", "public"."sparsevec") TO "postgres";
+GRANT ALL ON FUNCTION "public"."sparsevec_le"("public"."sparsevec", "public"."sparsevec") TO "anon";
+GRANT ALL ON FUNCTION "public"."sparsevec_le"("public"."sparsevec", "public"."sparsevec") TO "authenticated";
+GRANT ALL ON FUNCTION "public"."sparsevec_le"("public"."sparsevec", "public"."sparsevec") TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."sparsevec_lt"("public"."sparsevec", "public"."sparsevec") TO "postgres";
+GRANT ALL ON FUNCTION "public"."sparsevec_lt"("public"."sparsevec", "public"."sparsevec") TO "anon";
+GRANT ALL ON FUNCTION "public"."sparsevec_lt"("public"."sparsevec", "public"."sparsevec") TO "authenticated";
+GRANT ALL ON FUNCTION "public"."sparsevec_lt"("public"."sparsevec", "public"."sparsevec") TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."sparsevec_ne"("public"."sparsevec", "public"."sparsevec") TO "postgres";
+GRANT ALL ON FUNCTION "public"."sparsevec_ne"("public"."sparsevec", "public"."sparsevec") TO "anon";
+GRANT ALL ON FUNCTION "public"."sparsevec_ne"("public"."sparsevec", "public"."sparsevec") TO "authenticated";
+GRANT ALL ON FUNCTION "public"."sparsevec_ne"("public"."sparsevec", "public"."sparsevec") TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."sparsevec_negative_inner_product"("public"."sparsevec", "public"."sparsevec") TO "postgres";
+GRANT ALL ON FUNCTION "public"."sparsevec_negative_inner_product"("public"."sparsevec", "public"."sparsevec") TO "anon";
+GRANT ALL ON FUNCTION "public"."sparsevec_negative_inner_product"("public"."sparsevec", "public"."sparsevec") TO "authenticated";
+GRANT ALL ON FUNCTION "public"."sparsevec_negative_inner_product"("public"."sparsevec", "public"."sparsevec") TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."subvector"("public"."halfvec", integer, integer) TO "postgres";
+GRANT ALL ON FUNCTION "public"."subvector"("public"."halfvec", integer, integer) TO "anon";
+GRANT ALL ON FUNCTION "public"."subvector"("public"."halfvec", integer, integer) TO "authenticated";
+GRANT ALL ON FUNCTION "public"."subvector"("public"."halfvec", integer, integer) TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."subvector"("public"."vector", integer, integer) TO "postgres";
+GRANT ALL ON FUNCTION "public"."subvector"("public"."vector", integer, integer) TO "anon";
+GRANT ALL ON FUNCTION "public"."subvector"("public"."vector", integer, integer) TO "authenticated";
+GRANT ALL ON FUNCTION "public"."subvector"("public"."vector", integer, integer) TO "service_role";
+
+
+
 GRANT ALL ON FUNCTION "public"."sync_existing_users"() TO "anon";
 GRANT ALL ON FUNCTION "public"."sync_existing_users"() TO "authenticated";
 GRANT ALL ON FUNCTION "public"."sync_existing_users"() TO "service_role";
 
 
 
+GRANT ALL ON FUNCTION "public"."update_building_schema"("p_schema_id" "uuid", "p_schema_schema" "jsonb", "p_schema_version_patch" "jsonb", "p_schema_version_reverse_patch" "jsonb", "p_latest_schema_version_number" integer) TO "authenticated";
+GRANT ALL ON FUNCTION "public"."update_building_schema"("p_schema_id" "uuid", "p_schema_schema" "jsonb", "p_schema_version_patch" "jsonb", "p_schema_version_reverse_patch" "jsonb", "p_latest_schema_version_number" integer) TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."vector_accum"(double precision[], "public"."vector") TO "postgres";
+GRANT ALL ON FUNCTION "public"."vector_accum"(double precision[], "public"."vector") TO "anon";
+GRANT ALL ON FUNCTION "public"."vector_accum"(double precision[], "public"."vector") TO "authenticated";
+GRANT ALL ON FUNCTION "public"."vector_accum"(double precision[], "public"."vector") TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."vector_add"("public"."vector", "public"."vector") TO "postgres";
+GRANT ALL ON FUNCTION "public"."vector_add"("public"."vector", "public"."vector") TO "anon";
+GRANT ALL ON FUNCTION "public"."vector_add"("public"."vector", "public"."vector") TO "authenticated";
+GRANT ALL ON FUNCTION "public"."vector_add"("public"."vector", "public"."vector") TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."vector_avg"(double precision[]) TO "postgres";
+GRANT ALL ON FUNCTION "public"."vector_avg"(double precision[]) TO "anon";
+GRANT ALL ON FUNCTION "public"."vector_avg"(double precision[]) TO "authenticated";
+GRANT ALL ON FUNCTION "public"."vector_avg"(double precision[]) TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."vector_cmp"("public"."vector", "public"."vector") TO "postgres";
+GRANT ALL ON FUNCTION "public"."vector_cmp"("public"."vector", "public"."vector") TO "anon";
+GRANT ALL ON FUNCTION "public"."vector_cmp"("public"."vector", "public"."vector") TO "authenticated";
+GRANT ALL ON FUNCTION "public"."vector_cmp"("public"."vector", "public"."vector") TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."vector_combine"(double precision[], double precision[]) TO "postgres";
+GRANT ALL ON FUNCTION "public"."vector_combine"(double precision[], double precision[]) TO "anon";
+GRANT ALL ON FUNCTION "public"."vector_combine"(double precision[], double precision[]) TO "authenticated";
+GRANT ALL ON FUNCTION "public"."vector_combine"(double precision[], double precision[]) TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."vector_concat"("public"."vector", "public"."vector") TO "postgres";
+GRANT ALL ON FUNCTION "public"."vector_concat"("public"."vector", "public"."vector") TO "anon";
+GRANT ALL ON FUNCTION "public"."vector_concat"("public"."vector", "public"."vector") TO "authenticated";
+GRANT ALL ON FUNCTION "public"."vector_concat"("public"."vector", "public"."vector") TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."vector_dims"("public"."halfvec") TO "postgres";
+GRANT ALL ON FUNCTION "public"."vector_dims"("public"."halfvec") TO "anon";
+GRANT ALL ON FUNCTION "public"."vector_dims"("public"."halfvec") TO "authenticated";
+GRANT ALL ON FUNCTION "public"."vector_dims"("public"."halfvec") TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."vector_dims"("public"."vector") TO "postgres";
+GRANT ALL ON FUNCTION "public"."vector_dims"("public"."vector") TO "anon";
+GRANT ALL ON FUNCTION "public"."vector_dims"("public"."vector") TO "authenticated";
+GRANT ALL ON FUNCTION "public"."vector_dims"("public"."vector") TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."vector_eq"("public"."vector", "public"."vector") TO "postgres";
+GRANT ALL ON FUNCTION "public"."vector_eq"("public"."vector", "public"."vector") TO "anon";
+GRANT ALL ON FUNCTION "public"."vector_eq"("public"."vector", "public"."vector") TO "authenticated";
+GRANT ALL ON FUNCTION "public"."vector_eq"("public"."vector", "public"."vector") TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."vector_ge"("public"."vector", "public"."vector") TO "postgres";
+GRANT ALL ON FUNCTION "public"."vector_ge"("public"."vector", "public"."vector") TO "anon";
+GRANT ALL ON FUNCTION "public"."vector_ge"("public"."vector", "public"."vector") TO "authenticated";
+GRANT ALL ON FUNCTION "public"."vector_ge"("public"."vector", "public"."vector") TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."vector_gt"("public"."vector", "public"."vector") TO "postgres";
+GRANT ALL ON FUNCTION "public"."vector_gt"("public"."vector", "public"."vector") TO "anon";
+GRANT ALL ON FUNCTION "public"."vector_gt"("public"."vector", "public"."vector") TO "authenticated";
+GRANT ALL ON FUNCTION "public"."vector_gt"("public"."vector", "public"."vector") TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."vector_l2_squared_distance"("public"."vector", "public"."vector") TO "postgres";
+GRANT ALL ON FUNCTION "public"."vector_l2_squared_distance"("public"."vector", "public"."vector") TO "anon";
+GRANT ALL ON FUNCTION "public"."vector_l2_squared_distance"("public"."vector", "public"."vector") TO "authenticated";
+GRANT ALL ON FUNCTION "public"."vector_l2_squared_distance"("public"."vector", "public"."vector") TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."vector_le"("public"."vector", "public"."vector") TO "postgres";
+GRANT ALL ON FUNCTION "public"."vector_le"("public"."vector", "public"."vector") TO "anon";
+GRANT ALL ON FUNCTION "public"."vector_le"("public"."vector", "public"."vector") TO "authenticated";
+GRANT ALL ON FUNCTION "public"."vector_le"("public"."vector", "public"."vector") TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."vector_lt"("public"."vector", "public"."vector") TO "postgres";
+GRANT ALL ON FUNCTION "public"."vector_lt"("public"."vector", "public"."vector") TO "anon";
+GRANT ALL ON FUNCTION "public"."vector_lt"("public"."vector", "public"."vector") TO "authenticated";
+GRANT ALL ON FUNCTION "public"."vector_lt"("public"."vector", "public"."vector") TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."vector_mul"("public"."vector", "public"."vector") TO "postgres";
+GRANT ALL ON FUNCTION "public"."vector_mul"("public"."vector", "public"."vector") TO "anon";
+GRANT ALL ON FUNCTION "public"."vector_mul"("public"."vector", "public"."vector") TO "authenticated";
+GRANT ALL ON FUNCTION "public"."vector_mul"("public"."vector", "public"."vector") TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."vector_ne"("public"."vector", "public"."vector") TO "postgres";
+GRANT ALL ON FUNCTION "public"."vector_ne"("public"."vector", "public"."vector") TO "anon";
+GRANT ALL ON FUNCTION "public"."vector_ne"("public"."vector", "public"."vector") TO "authenticated";
+GRANT ALL ON FUNCTION "public"."vector_ne"("public"."vector", "public"."vector") TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."vector_negative_inner_product"("public"."vector", "public"."vector") TO "postgres";
+GRANT ALL ON FUNCTION "public"."vector_negative_inner_product"("public"."vector", "public"."vector") TO "anon";
+GRANT ALL ON FUNCTION "public"."vector_negative_inner_product"("public"."vector", "public"."vector") TO "authenticated";
+GRANT ALL ON FUNCTION "public"."vector_negative_inner_product"("public"."vector", "public"."vector") TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."vector_norm"("public"."vector") TO "postgres";
+GRANT ALL ON FUNCTION "public"."vector_norm"("public"."vector") TO "anon";
+GRANT ALL ON FUNCTION "public"."vector_norm"("public"."vector") TO "authenticated";
+GRANT ALL ON FUNCTION "public"."vector_norm"("public"."vector") TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."vector_spherical_distance"("public"."vector", "public"."vector") TO "postgres";
+GRANT ALL ON FUNCTION "public"."vector_spherical_distance"("public"."vector", "public"."vector") TO "anon";
+GRANT ALL ON FUNCTION "public"."vector_spherical_distance"("public"."vector", "public"."vector") TO "authenticated";
+GRANT ALL ON FUNCTION "public"."vector_spherical_distance"("public"."vector", "public"."vector") TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."vector_sub"("public"."vector", "public"."vector") TO "postgres";
+GRANT ALL ON FUNCTION "public"."vector_sub"("public"."vector", "public"."vector") TO "anon";
+GRANT ALL ON FUNCTION "public"."vector_sub"("public"."vector", "public"."vector") TO "authenticated";
+GRANT ALL ON FUNCTION "public"."vector_sub"("public"."vector", "public"."vector") TO "service_role";
 
 
 
@@ -2366,12 +3816,67 @@ GRANT ALL ON FUNCTION "public"."sync_existing_users"() TO "service_role";
 
 
 
+GRANT ALL ON FUNCTION "public"."avg"("public"."halfvec") TO "postgres";
+GRANT ALL ON FUNCTION "public"."avg"("public"."halfvec") TO "anon";
+GRANT ALL ON FUNCTION "public"."avg"("public"."halfvec") TO "authenticated";
+GRANT ALL ON FUNCTION "public"."avg"("public"."halfvec") TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."avg"("public"."vector") TO "postgres";
+GRANT ALL ON FUNCTION "public"."avg"("public"."vector") TO "anon";
+GRANT ALL ON FUNCTION "public"."avg"("public"."vector") TO "authenticated";
+GRANT ALL ON FUNCTION "public"."avg"("public"."vector") TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."sum"("public"."halfvec") TO "postgres";
+GRANT ALL ON FUNCTION "public"."sum"("public"."halfvec") TO "anon";
+GRANT ALL ON FUNCTION "public"."sum"("public"."halfvec") TO "authenticated";
+GRANT ALL ON FUNCTION "public"."sum"("public"."halfvec") TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."sum"("public"."vector") TO "postgres";
+GRANT ALL ON FUNCTION "public"."sum"("public"."vector") TO "anon";
+GRANT ALL ON FUNCTION "public"."sum"("public"."vector") TO "authenticated";
+GRANT ALL ON FUNCTION "public"."sum"("public"."vector") TO "service_role";
+
+
+
+
+
+
+
+
+
+GRANT ALL ON TABLE "public"."building_schema_versions" TO "anon";
+GRANT ALL ON TABLE "public"."building_schema_versions" TO "authenticated";
+GRANT ALL ON TABLE "public"."building_schema_versions" TO "service_role";
+
+
+
+GRANT ALL ON TABLE "public"."building_schemas" TO "anon";
+GRANT ALL ON TABLE "public"."building_schemas" TO "authenticated";
+GRANT ALL ON TABLE "public"."building_schemas" TO "service_role";
+
+
+
+GRANT ALL ON TABLE "public"."design_sessions" TO "anon";
+GRANT ALL ON TABLE "public"."design_sessions" TO "authenticated";
+GRANT ALL ON TABLE "public"."design_sessions" TO "service_role";
 
 
 
 GRANT ALL ON TABLE "public"."doc_file_paths" TO "anon";
 GRANT ALL ON TABLE "public"."doc_file_paths" TO "authenticated";
 GRANT ALL ON TABLE "public"."doc_file_paths" TO "service_role";
+
+
+
+GRANT ALL ON TABLE "public"."documents" TO "anon";
+GRANT ALL ON TABLE "public"."documents" TO "authenticated";
+GRANT ALL ON TABLE "public"."documents" TO "service_role";
 
 
 
@@ -2408,6 +3913,12 @@ GRANT ALL ON TABLE "public"."knowledge_suggestion_doc_mappings" TO "service_role
 GRANT ALL ON TABLE "public"."knowledge_suggestions" TO "anon";
 GRANT ALL ON TABLE "public"."knowledge_suggestions" TO "authenticated";
 GRANT ALL ON TABLE "public"."knowledge_suggestions" TO "service_role";
+
+
+
+GRANT ALL ON TABLE "public"."messages" TO "anon";
+GRANT ALL ON TABLE "public"."messages" TO "authenticated";
+GRANT ALL ON TABLE "public"."messages" TO "service_role";
 
 
 
