@@ -186,7 +186,11 @@ export const Chat: FC<Props> = ({ schemaData, tableGroups }) => {
         )}
         <div ref={messagesEndRef} />
       </div>
-      <ChatInput onSendMessage={handleSendMessage} isLoading={isLoading} />
+      <ChatInput
+        onSendMessage={handleSendMessage}
+        isLoading={isLoading}
+        schema={schemaData}
+      />
     </div>
   )
 }

@@ -24,6 +24,7 @@
     "@octokit/auth-app": "7.2.1",
     "@octokit/rest": "21.1.1",
     "@prisma/client": "6.7.0",
+    "@radix-ui/react-popover": "1.1.13",
     "@sentry/nextjs": "9",
     "@trigger.dev/build": "3.3.17",
     "@trigger.dev/sdk": "3.3.17",

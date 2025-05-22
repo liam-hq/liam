@@ -1,6 +1,31 @@
 import type { Meta } from '@storybook/react'
 import { ChatInput } from './ChatInput'
 
+const dummySchema = {
+  tableGroups: {
+    group1: { name: 'UserGroup' },
+  },
+  tables: {
+    users: {
+      name: 'users',
+      columns: {
+        user_id: { name: 'user_id' },
+        name: { name: 'name' },
+      },
+    },
+    posts: {
+      name: 'posts',
+      columns: {
+        post_id: { name: 'post_id' },
+        user_id: { name: 'user_id' },
+      },
+    },
+  },
+  relationships: {
+    rel1: { name: 'user_posts' },
+  },
+}
+
 const meta = {
   component: ChatInput,
   title: 'Components/Chat/ChatInput',
@@ -14,6 +39,7 @@ export const Default = {
     onSendMessage: () => {},
     isLoading: false,
     error: false,
+    schema: dummySchema,
   },
   parameters: {
     docs: {
@@ -30,6 +56,7 @@ export const Loading = {
     onSendMessage: () => {},
     isLoading: true,
     error: false,
+    schema: dummySchema,
   },
   parameters: {
     docs: {
@@ -48,6 +75,7 @@ export const LoadingWithContent = {
     isLoading: true,
     error: false,
     initialMessage: 'This message is being processed...',
+    schema: dummySchema,
   },
   parameters: {
     docs: {
@@ -66,6 +94,7 @@ export const WithError = {
     isLoading: false,
     error: true,
     initialMessage: 'This message has an error that needs to be fixed.',
+    schema: dummySchema,
   },
   parameters: {
     docs: {
@@ -83,6 +112,7 @@ export const Filled = {
     isLoading: false,
     error: false,
     initialMessage: 'Proposed schema changes for adding a chat function.',
+    schema: dummySchema,
   },
   parameters: {
     docs: {
@@ -102,6 +132,7 @@ export const Interactive = {
     isLoading: false,
     error: false,
     initialMessage: '',
+    schema: dummySchema,
   },
   parameters: {
     docs: {

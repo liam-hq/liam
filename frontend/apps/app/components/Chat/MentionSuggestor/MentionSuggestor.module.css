@@ -1,0 +1,116 @@
+/* Base container styles */
+.suggestor {
+  background: var(--global-background, #141616);
+  border-radius: var(--border-radius-md);
+  margin: 0;
+  padding: var(--spacing-1);
+  min-width: 200px;
+  max-width: 400px;
+  max-height: 260px;
+  overflow-y: auto;
+  box-shadow: 0 4px 20px 0 var(--shadow-context-menu-shadow);
+  font-family: var(--main-font, Inter, sans-serif);
+  font-size: var(--font-size-3, 13px);
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-half);
+  border: var(--border-width-base) solid
+    var(--global-border, rgba(255, 255, 255, 0.05));
+}
+
+/* Basic list item styles */
+.suggestor li {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--spacing-2);
+  padding: var(--spacing-2) var(--spacing-3);
+  border-radius: var(--border-radius-md);
+  background: transparent;
+  cursor: pointer;
+  transition: background 0.15s;
+  color: var(--global-foreground, #fff);
+}
+
+/* Hover state (only when not selected) */
+.suggestor li:hover:not([aria-selected='true']) {
+  background: var(--overlay-5, rgba(255, 255, 255, 0.05));
+}
+
+/* Selected state */
+.suggestor li[aria-selected='true'] {
+  background: var(--primary-accent-overlay);
+}
+
+/* Selected state with hover */
+.suggestor li[aria-selected='true']:hover {
+  background: var(--primary-accent-overlay-hover);
+}
+
+/* Icon */
+.icon {
+  display: flex;
+  align-items: center;
+  color: var(--overlay-50, rgba(255, 255, 255, 0.5));
+  min-width: 20px;
+  min-height: 20px;
+}
+
+/* Label - inherits font family and size from parent */
+.label {
+  font-weight: 400;
+  line-height: 1.6;
+  color: var(--global-foreground, #fff);
+  margin-right: var(--spacing-2);
+}
+
+/* Selected state label */
+.suggestor li[aria-selected='true'] .label {
+  color: var(--primary-accent);
+}
+
+/* Empty state message */
+.emptyMessage {
+  padding: var(--spacing-2) var(--spacing-3);
+  color: var(--overlay-50, #888);
+  font-style: italic;
+  cursor: default;
+  user-select: none;
+}
+
+/* Highlight for matched text */
+.highlight {
+  color: var(--primary-accent);
+}
+
+/* Active class removed - using aria-selected attribute instead */
+
+/* Suggestion item styles */
+.suggestorItem {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--spacing-2);
+  padding: var(--spacing-2) var(--spacing-3);
+  border-radius: var(--border-radius-md);
+  background: transparent;
+  cursor: pointer;
+  transition: background 0.15s;
+  color: var(--global-foreground, #fff);
+}
+
+/* Hover state (only when not selected) */
+.suggestorItem:hover:not([aria-selected='true']) {
+  background: var(--overlay-5, rgba(255, 255, 255, 0.05));
+}
+
+/* Selected state */
+.suggestorItem[aria-selected='true'] {
+  background: var(--primary-accent-overlay);
+}
+
+/* Selected state with hover */
+.suggestorItem[aria-selected='true']:hover {
+  background: var(--primary-accent-overlay-hover);
+}
