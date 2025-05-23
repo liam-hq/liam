@@ -58,9 +58,9 @@ export const ERDRenderer: FC<Props> = ({
   const [isResizing, setIsResizing] = useState(false)
 
   const { showMode } = useUserEditingStore()
-  const schema = useSchemaStore()
+  const { current } = useSchemaStore()
   const { nodes, edges } = convertSchemaToNodes({
-    schema,
+    schema: current,
     showMode,
     tableGroups,
   })

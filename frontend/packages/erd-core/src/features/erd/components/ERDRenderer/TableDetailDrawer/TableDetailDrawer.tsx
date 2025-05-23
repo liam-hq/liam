@@ -12,7 +12,9 @@ const handleClose = () => updateActiveTableName(undefined)
 
 export const TableDetailDrawerRoot: FC<PropsWithChildren> = ({ children }) => {
   const { tableName } = useUserEditingActiveStore()
-  const { tables } = useSchemaStore()
+  const {
+    current: { tables },
+  } = useSchemaStore()
   const open = Object.keys(tables).length > 0 && tableName !== undefined
 
   return (
@@ -32,7 +34,9 @@ export const TableDetailDrawerRoot: FC<PropsWithChildren> = ({ children }) => {
 }
 
 export const TableDetailDrawer: FC = () => {
-  const { tables } = useSchemaStore()
+  const {
+    current: { tables },
+  } = useSchemaStore()
   const { tableName } = useUserEditingActiveStore()
   const table = tables[tableName ?? '']
   const ariaDescribedBy =

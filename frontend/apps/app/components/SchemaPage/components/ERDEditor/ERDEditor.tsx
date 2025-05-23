@@ -41,7 +41,9 @@ export const ERDEditor: FC<Props> = ({
   const [updateMessage, setUpdateMessage] = useState('')
 
   useEffect(() => {
-    initSchemaStore(schema)
+    initSchemaStore({
+      current: schema,
+    })
   }, [schema])
 
   // Handler for commit & push button

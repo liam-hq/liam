@@ -37,7 +37,9 @@ export const ErdViewer: FC<Props> = ({
   const { tableGroups, addTableGroup } = useTableGroups(initialTableGroups)
 
   useEffect(() => {
-    initSchemaStore(schema)
+    initSchemaStore({
+      current: schema,
+    })
     setShowCookieConsent(window === window.parent)
   }, [schema])
 

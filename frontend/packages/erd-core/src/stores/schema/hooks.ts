@@ -1,5 +1,4 @@
-import type { Schema } from '@liam-hq/db-structure'
 import { useSnapshot } from 'valtio'
-import { schemaStore } from './store'
+import { type SchemaStoreType, schemaStore } from './store'
 
-export const useSchemaStore = () => useSnapshot(schemaStore) as Schema
+export const useSchemaStore = () => useSnapshot(schemaStore) as SchemaStoreType
