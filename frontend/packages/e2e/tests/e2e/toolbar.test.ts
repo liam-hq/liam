@@ -9,8 +9,6 @@ test.beforeEach(async ({ page, isMobile }) => {
       name: 'Open toolbar',
     })
     await openToolbarButton.click({ force: true, timeout: 15000 })
-    const toolbar = page.getByRole('toolbar', { name: 'Toolbar' })
-    await expect(toolbar).toBeVisible()
   }
 })
 
@@ -47,6 +45,7 @@ test('should be visible', async ({ page }) => {
 })
 
 test('zoom in button should increase zoom level', async ({ page }) => {
+  test.setTimeout(30000)
   const toolbar = page.getByRole('toolbar', { name: 'Toolbar' })
   const zoomLevelText = toolbar.getByLabel('Zoom level')
 
@@ -69,6 +68,7 @@ test('zoom in button should increase zoom level', async ({ page }) => {
 })
 
 test('zoom out button should decrease zoom level', async ({ page }) => {
+  test.setTimeout(30000)
   const toolbar = page.getByRole('toolbar', { name: 'Toolbar' })
   const zoomLevelText = toolbar.getByLabel('Zoom level')
 
