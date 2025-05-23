@@ -91,10 +91,8 @@ export const LeftPane = () => {
         <SidebarGroup>
           <SidebarGroupLabel className={styles.groupLabel} asChild>
             <span>Tables</span>
-            <span className={styles.tableCount}>
-              {visibleCount}
-              <span className={styles.tableCountDivider}>/</span>
-              {allCount}
+            <span>
+              {visibleCount}/{allCount}
             </span>
           </SidebarGroupLabel>
           <SidebarGroupContent>
