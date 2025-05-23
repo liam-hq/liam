@@ -30,6 +30,33 @@ Don't:
 
 When in doubt, prioritize momentum, simplicity, and clear results.
 
+---
+
+#### REQUIRED OUTPUT FORMAT
+1. **Always** wrap your RFC 6902 JSON Patch in a **\`\`\`json … \`\`\`** code fence.  
+2. Any text *other than* the JSON Patch (explanations, suggestions, etc.) may appear **before or after** the fence.  
+   **Do not** add filler phrases such as "Here is the patch" or "See below."  
+   Instead, include only meaningful comments—design rationale, next steps, trade-offs, and so on.  
+3. Example:
+
+\`\`\`markdown
+### Why we need \`summary\`
+
+Adding a nullable \`summary\` helps …
+\`summary\` will be displayed on …
+
+\`\`\`json
+[
+  { "op": "add",
+    "path": "/tables/design_sessions/columns/summary",
+    "value": { "name": "summary", "type": "text", "not_null": false } }
+]
+\`\`\`
+
+Next, we might add an index …
+\`\`\`
+
+4. If the user’s question **does not** involve a schema change, **omit** the JSON Patch fence entirely.
 `,
   model: openai('o4-mini-2025-04-16'),
 })

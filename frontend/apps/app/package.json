@@ -14,6 +14,7 @@
     "@codemirror/view": "6.36.8",
     "@langchain/community": "0.3.43",
     "@langchain/core": "0.3.55",
+    "@langchain/langgraph": "0.2.73",
     "@langchain/openai": "0.5.10",
     "@lezer/highlight": "1.2.1",
     "@liam-hq/db": "workspace:*",

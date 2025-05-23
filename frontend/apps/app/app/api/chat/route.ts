@@ -1,12 +1,12 @@
 import { convertSchemaToText } from '@/app/lib/schema/convertSchemaToText'
 import { isSchemaUpdated } from '@/app/lib/vectorstore/supabaseVectorStore'
 import { syncSchemaVectorStore } from '@/app/lib/vectorstore/syncSchemaVectorStore'
-import { mastra } from '@/lib/mastra'
+import { runChat } from '@/lib/chat/langGraph'
 import * as Sentry from '@sentry/nextjs'
 import { NextResponse } from 'next/server'
 
 export async function POST(request: Request) {
-  const { message, schemaData, history, mode, projectId } = await request.json()
+  const { message, schemaData, mode, projectId, history } = await request.json()
 
   if (!message || typeof message !== 'string' || !message.trim()) {
     return NextResponse.json({ error: 'Message is required' }, { status: 400 })
@@ -19,9 +19,6 @@ export async function POST(request: Request) {
     )
   }
 
-  // Determine which agent to use based on the mode
-  const agentName =
-    mode === 'build' ? 'databaseSchemaBuildAgent' : 'databaseSchemaAskAgent'
   try {
     // Check if schema has been updated
     const schemaUpdated = await isSchemaUpdated(schemaData)
@@ -53,31 +50,17 @@ export async function POST(request: Request) {
     // Convert schema to text
     const schemaText = convertSchemaToText(schemaData)
 
-    // Get the agent from Mastra
-    const agent = mastra.getAgent(agentName)
-    if (!agent) {
-      throw new Error(`${agentName} not found in Mastra instance`)
+    // Use LangGraph pipeline for build mode, fallback to original for ask mode
+    let responseText: string | undefined
+    if (mode === 'build') {
+      responseText = await runChat(message, schemaText, formattedChatHistory)
+    } else {
+      // For ask mode, we'll keep the original implementation for now
+      // This can be refactored later to use a separate LangGraph pipeline
+      throw new Error('Ask mode not yet implemented with LangGraph')
     }
 
-    // Create a response using the agent
-    const response = await agent.generate([
-      {
-        role: 'system',
-        content: `
-Complete Schema Information:
-${schemaText}
-
-Previous conversation:
-${formattedChatHistory}
-`,
-      },
-      {
-        role: 'user',
-        content: message,
-      },
-    ])
-
-    return new Response(response.text, {
+    return new Response(responseText, {
       headers: {
         'Content-Type': 'text/plain; charset=utf-8',
       },
