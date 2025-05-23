@@ -655,8 +655,8 @@ importers:
         specifier: 1.1.0
         version: 1.1.0(typescript@5.8.3)
       valtio:
-        specifier: 2.1.4
-        version: 2.1.4(@types/react@18.3.22)(react@18.3.1)
+        specifier: 2.1.5
+        version: 2.1.5(@types/react@18.3.22)(react@18.3.1)
     devDependencies:
       '@biomejs/biome':
         specifier: 1.9.4
@@ -11625,8 +11625,8 @@ packages:
     resolution: {integrity: sha512-d7KLgL1LD3U3fgnvWEY1cQXoO/q6EQ1BSz48Sa149V/5zVTAbgmZIpyI8TRi6U9/JNyeYLlTKsEMPtLC27RFUg==}
     engines: {node: ^18.17.0 || >=20.5.0}
 
-  valtio@2.1.4:
-    resolution: {integrity: sha512-O6U79SacltN5E5XOwLNixrGSAc4+TNkQw8AWSqjcpvvRjvFbfMvdbFW98g/VgxKoT8v9kb8WQkD8lvf+Dcme8w==}
+  valtio@2.1.5:
+    resolution: {integrity: sha512-vsh1Ixu5mT0pJFZm+Jspvhga5GzHUTYv0/+Th203pLfh3/wbHwxhu/Z2OkZDXIgHfjnjBns7SN9HNcbDvPmaGw==}
     engines: {node: '>=12.20.0'}
     peerDependencies:
       '@types/react': '>=18.0.0'
@@ -24792,7 +24792,7 @@ snapshots:
 
   validate-npm-package-name@6.0.0: {}
 
-  valtio@2.1.4(@types/react@18.3.22)(react@18.3.1):
+  valtio@2.1.5(@types/react@18.3.22)(react@18.3.1):
     dependencies:
       proxy-compare: 3.0.1
     optionalDependencies:
