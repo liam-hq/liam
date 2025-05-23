@@ -80,3 +80,55 @@
   font-size: var(--font-size-1);
   font-weight: 400;
 }
+
+.textCursor {
+  cursor: pointer;
+}
+
+.tablesHeaderRow {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-1);
+  border: 1px solid var(--global-border);
+  border-radius: var(--border-radius-sm);
+  padding: var(--spacing-1);
+  width: 100%;
+  min-width: 0;
+}
+
+.showAllButton {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-half);
+  background: none;
+  border: none;
+  font: inherit;
+  cursor: pointer;
+  padding: 0 var(--spacing-1);
+  border-radius: var(--border-radius-sm);
+  transition: background 0.15s;
+}
+
+.showAllButton:focus {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.showAllText {
+  font-size: var(--font-size-2);
+  font-weight: 500;
+  margin-left: 0.25rem;
+}
+
+.visibleCount {
+  color: var(--overlay-40);
+  font-size: var(--font-size-1);
+  font-family: var(--code-font);
+  margin-left: var(--spacing-1);
+}
+
+@media (max-width: 600px) {
+  .visibleCount {
+    display: none !important;
+  }
+}

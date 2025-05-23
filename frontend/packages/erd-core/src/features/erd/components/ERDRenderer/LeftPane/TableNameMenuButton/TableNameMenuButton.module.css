@@ -10,6 +10,11 @@
   cursor: pointer;
 }
 
+.icon {
+  width: 12px;
+  height: 12px;
+}
+
 .active {
   background: linear-gradient(
       0deg,

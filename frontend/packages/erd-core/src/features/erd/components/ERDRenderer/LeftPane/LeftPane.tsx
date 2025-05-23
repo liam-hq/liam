@@ -1,14 +1,21 @@
 import { isTableNode } from '@/features/erd/utils'
+import { useCustomReactflow } from '@/features/reactflow/hooks'
 import { useVersion } from '@/providers'
 import {
+  replaceHiddenNodeIds,
+  resetSelectedNodeIds,
+  useUserEditingStore,
+} from '@/stores'
+import {
   BookText,
+  Eye,
+  EyeOff,
   GithubLogo,
   LiamLogoMark,
   Megaphone,
   MessagesSquare,
   Sidebar,
   SidebarContent,
-  SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
@@ -16,15 +23,17 @@ import {
   SidebarMenuItem,
 } from '@liam-hq/ui'
 import { useNodes } from '@xyflow/react'
-import { useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
+import { updateNodesHiddenState } from '../../ERDContent/utils'
 import { CopyLinkButton } from './CopyLinkButton'
 import styles from './LeftPane.module.css'
 import { MenuItemLink, type Props as MenuItemLinkProps } from './MenuItemLink'
-import { TableCounter } from './TableCounter'
 import { TableNameMenuButton } from './TableNameMenuButton'
 
 export const LeftPane = () => {
   const { version } = useVersion()
+  const { selectedNodeIds } = useUserEditingStore()
+  const { setNodes } = useCustomReactflow()
 
   const menuItemLinks = useMemo(
     (): MenuItemLinkProps[] => [
@@ -85,22 +94,75 @@ export const LeftPane = () => {
   const allCount = tableNodes.length
   const visibleCount = tableNodes.filter((node) => !node.hidden).length
 
+  const showOrHideAllNodes = useCallback(() => {
+    resetSelectedNodeIds()
+    const shouldHide = visibleCount === allCount
+    const updatedNodes = updateNodesHiddenState({
+      nodes,
+      hiddenNodeIds: shouldHide ? nodes.map((node) => node.id) : [],
+      shouldHideGroupNodeId: true,
+    })
+    setNodes(updatedNodes)
+    replaceHiddenNodeIds(shouldHide ? nodes.map((node) => node.id) : [])
+  }, [nodes, visibleCount, allCount, setNodes])
+
+  const showSelectedTables = useCallback(() => {
+    if (selectedNodeIds.size > 0) {
+      const hiddenNodeIds = nodes
+        .filter((node) => !selectedNodeIds.has(node.id))
+        .map((node) => node.id)
+      const updatedNodes = updateNodesHiddenState({
+        nodes,
+        hiddenNodeIds: hiddenNodeIds,
+        shouldHideGroupNodeId: true,
+      })
+      setNodes(updatedNodes)
+      replaceHiddenNodeIds(hiddenNodeIds)
+    }
+  }, [nodes, selectedNodeIds, setNodes])
+
   return (
     <Sidebar>
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupLabel className={styles.groupLabel} asChild>
             <span>Tables</span>
-            <span className={styles.tableCount}>
-              {visibleCount}
-              <span className={styles.tableCountDivider}>/</span>
-              {allCount}
+            <span className={styles.tablesHeaderRow}>
+              <button
+                type="button"
+                className={styles.showAllButton}
+                aria-label={
+                  visibleCount === allCount
+                    ? 'Hide All Tables'
+                    : 'Show All Tables'
+                }
+                tabIndex={0}
+                onClick={showOrHideAllNodes}
+                onKeyDown={showOrHideAllNodes}
+              >
+                {visibleCount === allCount ? (
+                  <EyeOff className={styles.icon} />
+                ) : (
+                  <Eye className={styles.icon} />
+                )}
+                <span className={styles.showAllText}>
+                  {visibleCount === allCount ? 'Hide All' : 'Show All'}
+                </span>
+              </button>
+              <span className={styles.visibleCount}>
+                ({visibleCount}/{allCount} visible)
+              </span>
             </span>
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {tableNodes.map((node) => (
-                <TableNameMenuButton key={node.id} node={node} />
+                <TableNameMenuButton
+                  key={node.id}
+                  node={node}
+                  nodes={tableNodes}
+                  showSelectedTables={showSelectedTables}
+                />
               ))}
             </SidebarMenu>
 
@@ -114,21 +176,15 @@ export const LeftPane = () => {
               ))}
               <SidebarMenuItem className={styles.versionWrapper}>
                 <div className={styles.version}>
-                  <span
-                    className={styles.versionText}
-                  >{`${version.version} + ${version.gitHash.slice(0, 7)} (${version.date})`}</span>
+                  <span className={styles.versionText}>{`${
+                    version.version
+                  } + ${version.gitHash.slice(0, 7)} (${version.date})`}</span>
                 </div>
               </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
-
-      <SidebarFooter className={styles.footer}>
-        <div className={styles.tableCounterWrapper}>
-          <TableCounter allCount={allCount} visibleCount={visibleCount} />
-        </div>
-      </SidebarFooter>
     </Sidebar>
   )
 }

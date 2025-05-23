@@ -114,7 +114,7 @@ export const ERDRenderer: FC<Props> = ({
             <ResizablePanel
               collapsible
               defaultSize={open ? defaultPanelSizes[0] : 0}
-              minSize={isMobile ? 40 : 10}
+              minSize={isMobile ? 40 : 15}
               maxSize={isMobile ? 80 : 30}
               ref={leftPanelRef}
               isResizing={isResizing}

@@ -26,6 +26,7 @@ export {
   Ellipsis,
   Eye,
   EyeClosed,
+  EyeOff,
   FileText,
   Fingerprint,
   GitBranch,
