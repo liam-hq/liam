@@ -16,7 +16,9 @@ async function loadSchemaContent() {
     const data = await response.json()
     const result = v.safeParse(schemaSchema, data)
     result.success
-      ? initSchemaStore(result.output)
+      ? initSchemaStore({
+          current: result.output,
+        })
       : console.info(result.issues)
   } catch (error) {
     console.error('Error loading schema content:', error)

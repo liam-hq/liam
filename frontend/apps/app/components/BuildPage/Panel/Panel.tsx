@@ -36,7 +36,9 @@ export const Panel: FC<Props> = ({
   const { tableGroups, addTableGroup } = useTableGroups(initialTableGroups)
 
   useEffect(() => {
-    initSchemaStore(AFTER as unknown as Schema)
+    initSchemaStore({
+      current: AFTER as unknown as Schema,
+    })
   }, [])
 
   const versionData = {

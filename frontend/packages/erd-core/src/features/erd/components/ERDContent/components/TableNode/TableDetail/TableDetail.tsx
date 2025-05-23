@@ -30,8 +30,8 @@ type Props = {
 }
 
 export const TableDetail: FC<Props> = ({ table }) => {
-  const schema = useSchemaStore()
-  const extractedSchema = extractSchemaForTable(table, schema)
+  const { current } = useSchemaStore()
+  const extractedSchema = extractSchemaForTable(table, current)
   const { nodes, edges } = convertSchemaToNodes({
     schema: extractedSchema,
     showMode: 'TABLE_NAME',
