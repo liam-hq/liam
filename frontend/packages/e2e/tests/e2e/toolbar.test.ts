@@ -201,3 +201,410 @@ test.describe('Show Mode', () => {
     })
   }
 })
+
+// -------
+
+test('zoom in button should increase zoom level 2', async ({ page }) => {
+  test.setTimeout(30000)
+  const toolbar = page.getByRole('toolbar', { name: 'Toolbar' })
+  const zoomLevelText = toolbar.getByLabel('Zoom level')
+
+  const zoomLevelBefore = await zoomLevelText.textContent()
+
+  const zoomInButton = toolbar.getByRole('button', { name: 'Zoom in' })
+  const time = new Date()
+  await zoomInButton.click({ timeout: 20000 })
+  console.info(
+    'Time taken to click zoom out button:',
+    new Date().getTime() - time.getTime(),
+  )
+
+  await expect(zoomLevelText).not.toHaveText(zoomLevelBefore)
+
+  const zoomLevelAfter = await zoomLevelText.textContent()
+  expect(Number.parseInt(zoomLevelBefore)).toBeLessThan(
+    Number.parseInt(zoomLevelAfter),
+  )
+})
+
+test('zoom out button should decrease zoom level 2', async ({ page }) => {
+  test.setTimeout(30000)
+  const toolbar = page.getByRole('toolbar', { name: 'Toolbar' })
+  const zoomLevelText = toolbar.getByLabel('Zoom level')
+
+  const zoomLevelBefore = await zoomLevelText.textContent()
+
+  const zoomOutButton = toolbar.getByRole('button', { name: 'Zoom out' })
+  const time = new Date()
+  await zoomOutButton.click({ timeout: 20000 })
+  console.info(
+    'Time taken to click zoom out button:',
+    new Date().getTime() - time.getTime(),
+  )
+  await expect(zoomLevelText).not.toHaveText(zoomLevelBefore)
+
+  const zoomLevelAfter = await zoomLevelText.textContent()
+  expect(Number.parseInt(zoomLevelBefore)).toBeGreaterThan(
+    Number.parseInt(zoomLevelAfter),
+  )
+})
+
+test('zoom in button should increase zoom level 3', async ({ page }) => {
+  test.setTimeout(30000)
+  const toolbar = page.getByRole('toolbar', { name: 'Toolbar' })
+  const zoomLevelText = toolbar.getByLabel('Zoom level')
+
+  const zoomLevelBefore = await zoomLevelText.textContent()
+
+  const zoomInButton = toolbar.getByRole('button', { name: 'Zoom in' })
+  const time = new Date()
+  await zoomInButton.click({ timeout: 20000 })
+  console.info(
+    'Time taken to click zoom out button:',
+    new Date().getTime() - time.getTime(),
+  )
+
+  await expect(zoomLevelText).not.toHaveText(zoomLevelBefore)
+
+  const zoomLevelAfter = await zoomLevelText.textContent()
+  expect(Number.parseInt(zoomLevelBefore)).toBeLessThan(
+    Number.parseInt(zoomLevelAfter),
+  )
+})
+
+test('zoom out button should decrease zoom level 3', async ({ page }) => {
+  test.setTimeout(30000)
+  const toolbar = page.getByRole('toolbar', { name: 'Toolbar' })
+  const zoomLevelText = toolbar.getByLabel('Zoom level')
+
+  const zoomLevelBefore = await zoomLevelText.textContent()
+
+  const zoomOutButton = toolbar.getByRole('button', { name: 'Zoom out' })
+  const time = new Date()
+  await zoomOutButton.click({ timeout: 20000 })
+  console.info(
+    'Time taken to click zoom out button:',
+    new Date().getTime() - time.getTime(),
+  )
+  await expect(zoomLevelText).not.toHaveText(zoomLevelBefore)
+
+  const zoomLevelAfter = await zoomLevelText.textContent()
+  expect(Number.parseInt(zoomLevelBefore)).toBeGreaterThan(
+    Number.parseInt(zoomLevelAfter),
+  )
+})
+
+test('zoom in button should increase zoom level 4', async ({ page }) => {
+  test.setTimeout(30000)
+  const toolbar = page.getByRole('toolbar', { name: 'Toolbar' })
+  const zoomLevelText = toolbar.getByLabel('Zoom level')
+
+  const zoomLevelBefore = await zoomLevelText.textContent()
+
+  const zoomInButton = toolbar.getByRole('button', { name: 'Zoom in' })
+  const time = new Date()
+  await zoomInButton.click({ timeout: 20000 })
+  console.info(
+    'Time taken to click zoom out button:',
+    new Date().getTime() - time.getTime(),
+  )
+
+  await expect(zoomLevelText).not.toHaveText(zoomLevelBefore)
+
+  const zoomLevelAfter = await zoomLevelText.textContent()
+  expect(Number.parseInt(zoomLevelBefore)).toBeLessThan(
+    Number.parseInt(zoomLevelAfter),
+  )
+})
+
+test('zoom out button should decrease zoom level 4', async ({ page }) => {
+  test.setTimeout(30000)
+  const toolbar = page.getByRole('toolbar', { name: 'Toolbar' })
+  const zoomLevelText = toolbar.getByLabel('Zoom level')
+
+  const zoomLevelBefore = await zoomLevelText.textContent()
+
+  const zoomOutButton = toolbar.getByRole('button', { name: 'Zoom out' })
+  const time = new Date()
+  await zoomOutButton.click({ timeout: 20000 })
+  console.info(
+    'Time taken to click zoom out button:',
+    new Date().getTime() - time.getTime(),
+  )
+  await expect(zoomLevelText).not.toHaveText(zoomLevelBefore)
+
+  const zoomLevelAfter = await zoomLevelText.textContent()
+  expect(Number.parseInt(zoomLevelBefore)).toBeGreaterThan(
+    Number.parseInt(zoomLevelAfter),
+  )
+})
+
+test('zoom in button should increase zoom level 5', async ({ page }) => {
+  test.setTimeout(30000)
+  const toolbar = page.getByRole('toolbar', { name: 'Toolbar' })
+  const zoomLevelText = toolbar.getByLabel('Zoom level')
+
+  const zoomLevelBefore = await zoomLevelText.textContent()
+
+  const zoomInButton = toolbar.getByRole('button', { name: 'Zoom in' })
+  const time = new Date()
+  await zoomInButton.click({ timeout: 20000 })
+  console.info(
+    'Time taken to click zoom out button:',
+    new Date().getTime() - time.getTime(),
+  )
+
+  await expect(zoomLevelText).not.toHaveText(zoomLevelBefore)
+
+  const zoomLevelAfter = await zoomLevelText.textContent()
+  expect(Number.parseInt(zoomLevelBefore)).toBeLessThan(
+    Number.parseInt(zoomLevelAfter),
+  )
+})
+
+test('zoom out button should decrease zoom level 5', async ({ page }) => {
+  test.setTimeout(30000)
+  const toolbar = page.getByRole('toolbar', { name: 'Toolbar' })
+  const zoomLevelText = toolbar.getByLabel('Zoom level')
+
+  const zoomLevelBefore = await zoomLevelText.textContent()
+
+  const zoomOutButton = toolbar.getByRole('button', { name: 'Zoom out' })
+  const time = new Date()
+  await zoomOutButton.click({ timeout: 20000 })
+  console.info(
+    'Time taken to click zoom out button:',
+    new Date().getTime() - time.getTime(),
+  )
+  await expect(zoomLevelText).not.toHaveText(zoomLevelBefore)
+
+  const zoomLevelAfter = await zoomLevelText.textContent()
+  expect(Number.parseInt(zoomLevelBefore)).toBeGreaterThan(
+    Number.parseInt(zoomLevelAfter),
+  )
+})
+
+test('zoom in button should increase zoom level 6', async ({ page }) => {
+  test.setTimeout(30000)
+  const toolbar = page.getByRole('toolbar', { name: 'Toolbar' })
+  const zoomLevelText = toolbar.getByLabel('Zoom level')
+
+  const zoomLevelBefore = await zoomLevelText.textContent()
+
+  const zoomInButton = toolbar.getByRole('button', { name: 'Zoom in' })
+  const time = new Date()
+  await zoomInButton.click({ timeout: 20000 })
+  console.info(
+    'Time taken to click zoom out button:',
+    new Date().getTime() - time.getTime(),
+  )
+
+  await expect(zoomLevelText).not.toHaveText(zoomLevelBefore)
+
+  const zoomLevelAfter = await zoomLevelText.textContent()
+  expect(Number.parseInt(zoomLevelBefore)).toBeLessThan(
+    Number.parseInt(zoomLevelAfter),
+  )
+})
+
+test('zoom out button should decrease zoom level 6', async ({ page }) => {
+  test.setTimeout(30000)
+  const toolbar = page.getByRole('toolbar', { name: 'Toolbar' })
+  const zoomLevelText = toolbar.getByLabel('Zoom level')
+
+  const zoomLevelBefore = await zoomLevelText.textContent()
+
+  const zoomOutButton = toolbar.getByRole('button', { name: 'Zoom out' })
+  const time = new Date()
+  await zoomOutButton.click({ timeout: 20000 })
+  console.info(
+    'Time taken to click zoom out button:',
+    new Date().getTime() - time.getTime(),
+  )
+  await expect(zoomLevelText).not.toHaveText(zoomLevelBefore)
+
+  const zoomLevelAfter = await zoomLevelText.textContent()
+  expect(Number.parseInt(zoomLevelBefore)).toBeGreaterThan(
+    Number.parseInt(zoomLevelAfter),
+  )
+})
+
+test('zoom in button should increase zoom level 7', async ({ page }) => {
+  test.setTimeout(30000)
+  const toolbar = page.getByRole('toolbar', { name: 'Toolbar' })
+  const zoomLevelText = toolbar.getByLabel('Zoom level')
+
+  const zoomLevelBefore = await zoomLevelText.textContent()
+
+  const zoomInButton = toolbar.getByRole('button', { name: 'Zoom in' })
+  const time = new Date()
+  await zoomInButton.click({ timeout: 20000 })
+  console.info(
+    'Time taken to click zoom out button:',
+    new Date().getTime() - time.getTime(),
+  )
+
+  await expect(zoomLevelText).not.toHaveText(zoomLevelBefore)
+
+  const zoomLevelAfter = await zoomLevelText.textContent()
+  expect(Number.parseInt(zoomLevelBefore)).toBeLessThan(
+    Number.parseInt(zoomLevelAfter),
+  )
+})
+
+test('zoom out button should decrease zoom level 7', async ({ page }) => {
+  test.setTimeout(30000)
+  const toolbar = page.getByRole('toolbar', { name: 'Toolbar' })
+  const zoomLevelText = toolbar.getByLabel('Zoom level')
+
+  const zoomLevelBefore = await zoomLevelText.textContent()
+
+  const zoomOutButton = toolbar.getByRole('button', { name: 'Zoom out' })
+  const time = new Date()
+  await zoomOutButton.click({ timeout: 20000 })
+  console.info(
+    'Time taken to click zoom out button:',
+    new Date().getTime() - time.getTime(),
+  )
+  await expect(zoomLevelText).not.toHaveText(zoomLevelBefore)
+
+  const zoomLevelAfter = await zoomLevelText.textContent()
+  expect(Number.parseInt(zoomLevelBefore)).toBeGreaterThan(
+    Number.parseInt(zoomLevelAfter),
+  )
+})
+
+test('zoom in button should increase zoom level 8', async ({ page }) => {
+  test.setTimeout(30000)
+  const toolbar = page.getByRole('toolbar', { name: 'Toolbar' })
+  const zoomLevelText = toolbar.getByLabel('Zoom level')
+
+  const zoomLevelBefore = await zoomLevelText.textContent()
+
+  const zoomInButton = toolbar.getByRole('button', { name: 'Zoom in' })
+  const time = new Date()
+  await zoomInButton.click({ timeout: 20000 })
+  console.info(
+    'Time taken to click zoom out button:',
+    new Date().getTime() - time.getTime(),
+  )
+
+  await expect(zoomLevelText).not.toHaveText(zoomLevelBefore)
+
+  const zoomLevelAfter = await zoomLevelText.textContent()
+  expect(Number.parseInt(zoomLevelBefore)).toBeLessThan(
+    Number.parseInt(zoomLevelAfter),
+  )
+})
+
+test('zoom out button should decrease zoom level 8', async ({ page }) => {
+  test.setTimeout(30000)
+  const toolbar = page.getByRole('toolbar', { name: 'Toolbar' })
+  const zoomLevelText = toolbar.getByLabel('Zoom level')
+
+  const zoomLevelBefore = await zoomLevelText.textContent()
+
+  const zoomOutButton = toolbar.getByRole('button', { name: 'Zoom out' })
+  const time = new Date()
+  await zoomOutButton.click({ timeout: 20000 })
+  console.info(
+    'Time taken to click zoom out button:',
+    new Date().getTime() - time.getTime(),
+  )
+  await expect(zoomLevelText).not.toHaveText(zoomLevelBefore)
+
+  const zoomLevelAfter = await zoomLevelText.textContent()
+  expect(Number.parseInt(zoomLevelBefore)).toBeGreaterThan(
+    Number.parseInt(zoomLevelAfter),
+  )
+})
+
+test('zoom in button should increase zoom level 9', async ({ page }) => {
+  test.setTimeout(30000)
+  const toolbar = page.getByRole('toolbar', { name: 'Toolbar' })
+  const zoomLevelText = toolbar.getByLabel('Zoom level')
+
+  const zoomLevelBefore = await zoomLevelText.textContent()
+
+  const zoomInButton = toolbar.getByRole('button', { name: 'Zoom in' })
+  const time = new Date()
+  await zoomInButton.click({ timeout: 20000 })
+  console.info(
+    'Time taken to click zoom out button:',
+    new Date().getTime() - time.getTime(),
+  )
+
+  await expect(zoomLevelText).not.toHaveText(zoomLevelBefore)
+
+  const zoomLevelAfter = await zoomLevelText.textContent()
+  expect(Number.parseInt(zoomLevelBefore)).toBeLessThan(
+    Number.parseInt(zoomLevelAfter),
+  )
+})
+
+test('zoom out button should decrease zoom level 9', async ({ page }) => {
+  test.setTimeout(30000)
+  const toolbar = page.getByRole('toolbar', { name: 'Toolbar' })
+  const zoomLevelText = toolbar.getByLabel('Zoom level')
+
+  const zoomLevelBefore = await zoomLevelText.textContent()
+
+  const zoomOutButton = toolbar.getByRole('button', { name: 'Zoom out' })
+  const time = new Date()
+  await zoomOutButton.click({ timeout: 20000 })
+  console.info(
+    'Time taken to click zoom out button:',
+    new Date().getTime() - time.getTime(),
+  )
+  await expect(zoomLevelText).not.toHaveText(zoomLevelBefore)
+
+  const zoomLevelAfter = await zoomLevelText.textContent()
+  expect(Number.parseInt(zoomLevelBefore)).toBeGreaterThan(
+    Number.parseInt(zoomLevelAfter),
+  )
+})
+
+test('zoom in button should increase zoom level 10', async ({ page }) => {
+  test.setTimeout(30000)
+  const toolbar = page.getByRole('toolbar', { name: 'Toolbar' })
+  const zoomLevelText = toolbar.getByLabel('Zoom level')
+
+  const zoomLevelBefore = await zoomLevelText.textContent()
+
+  const zoomInButton = toolbar.getByRole('button', { name: 'Zoom in' })
+  const time = new Date()
+  await zoomInButton.click({ timeout: 20000 })
+  console.info(
+    'Time taken to click zoom out button:',
+    new Date().getTime() - time.getTime(),
+  )
+
+  await expect(zoomLevelText).not.toHaveText(zoomLevelBefore)
+
+  const zoomLevelAfter = await zoomLevelText.textContent()
+  expect(Number.parseInt(zoomLevelBefore)).toBeLessThan(
+    Number.parseInt(zoomLevelAfter),
+  )
+})
+
+test('zoom out button should decrease zoom level 10', async ({ page }) => {
+  test.setTimeout(30000)
+  const toolbar = page.getByRole('toolbar', { name: 'Toolbar' })
+  const zoomLevelText = toolbar.getByLabel('Zoom level')
+
+  const zoomLevelBefore = await zoomLevelText.textContent()
+
+  const zoomOutButton = toolbar.getByRole('button', { name: 'Zoom out' })
+  const time = new Date()
+  await zoomOutButton.click({ timeout: 20000 })
+  console.info(
+    'Time taken to click zoom out button:',
+    new Date().getTime() - time.getTime(),
+  )
+  await expect(zoomLevelText).not.toHaveText(zoomLevelBefore)
+
+  const zoomLevelAfter = await zoomLevelText.textContent()
+  expect(Number.parseInt(zoomLevelBefore)).toBeGreaterThan(
+    Number.parseInt(zoomLevelAfter),
+  )
+})
