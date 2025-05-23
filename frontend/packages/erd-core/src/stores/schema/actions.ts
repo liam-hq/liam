@@ -1,10 +1,15 @@
-import type { Schema } from '@liam-hq/db-structure'
 import { deepClone } from 'valtio/utils'
-import { schemaStore } from './store'
+import { type SchemaStoreType, schemaStore } from './store'
 
-export const initSchemaStore = (schema: Schema) => {
-  for (const key of Object.keys(schema)) {
+export const initSchemaStore = ({ current, previous }: SchemaStoreType) => {
+  for (const key of Object.keys(current)) {
     // @ts-expect-error ... for (const value of Object.keys(obj)) is not typed
-    schemaStore[key] = deepClone(schema[key])
+    schemaStore.current[key] = deepClone(current[key])
+  }
+
+  if (previous === undefined) return
+  for (const key of Object.keys(previous)) {
+    // @ts-expect-error ... for (const value of Object.keys(obj)) is not typed
+    schemaStore.previous[key] = deepClone(previous[key])
   }
 }
