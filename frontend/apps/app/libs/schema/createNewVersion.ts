@@ -34,7 +34,9 @@ export async function createNewVersion({
 
   const { data: buildingSchema, error } = await supabase
     .from('building_schemas')
-    .select('id, organization_id')
+    .select(`
+      id, organization_id, initial_schema_snapshot
+    `)
     .eq('id', buildingSchemaId)
     .maybeSingle()
 
@@ -66,9 +68,11 @@ export async function createNewVersion({
     })
     .filter((version) => version !== null)
 
-  // Reconstruct the base content (first version)
-  // TODO: Replace with actual base content
-  const baseContent: Record<string, unknown> = {}
+  // Reconstruct the base content (first version) from the initial schema snapshot
+  const baseContent: Record<string, unknown> =
+    typeof buildingSchema.initial_schema_snapshot === 'object'
+      ? JSON.parse(JSON.stringify(buildingSchema.initial_schema_snapshot))
+      : {}
 
   // Apply all patches in order to get the current content
   const currentContent: Record<string, unknown> = { ...baseContent }

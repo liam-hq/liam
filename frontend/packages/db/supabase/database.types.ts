@@ -83,23 +83,32 @@ export type Database = {
         Row: {
           created_at: string
           design_session_id: string
+          git_sha: string | null
           id: string
+          initial_schema_snapshot: Json | null
           organization_id: string
           schema: Json
+          schema_file_path: string | null
         }
         Insert: {
           created_at?: string
           design_session_id: string
+          git_sha?: string | null
           id?: string
+          initial_schema_snapshot?: Json | null
           organization_id: string
           schema: Json
+          schema_file_path?: string | null
         }
         Update: {
           created_at?: string
           design_session_id?: string
+          git_sha?: string | null
           id?: string
+          initial_schema_snapshot?: Json | null
           organization_id?: string
           schema?: Json
+          schema_file_path?: string | null
         }
         Relationships: [
           {
@@ -122,38 +131,29 @@ export type Database = {
         Row: {
           created_at: string
           created_by_user_id: string
-          git_sha: string | null
           id: string
-          initial_schema_snapshot: Json | null
           name: string
           organization_id: string
           parent_design_session_id: string | null
           project_id: string
-          schema_file_path: string | null
         }
         Insert: {
           created_at?: string
           created_by_user_id: string
-          git_sha?: string | null
           id?: string
-          initial_schema_snapshot?: Json | null
           name: string
           organization_id: string
           parent_design_session_id?: string | null
           project_id: string
-          schema_file_path?: string | null
         }
         Update: {
           created_at?: string
           created_by_user_id?: string
-          git_sha?: string | null
           id?: string
-          initial_schema_snapshot?: Json | null
           name?: string
           organization_id?: string
           parent_design_session_id?: string | null
           project_id?: string
-          schema_file_path?: string | null
         }
         Relationships: [
           {

@@ -784,7 +784,7 @@ begin
     select organization_id into v_organization_id
     from building_schemas
     where id = p_schema_id;
-    
+  
     if not found then
       v_result := jsonb_build_object(
         'success', false,
@@ -795,7 +795,7 @@ begin
 
     -- Calculate the next version number
     v_next_version_number := p_latest_schema_version_number + 1;
-    
+
     -- 2. Insert into building_schema_versions
     insert into building_schema_versions (
       organization_id,
@@ -812,12 +812,12 @@ begin
       p_schema_version_reverse_patch,
       now()
     );
-    
+
     -- 3. Update building_schemas with the new schema
     update building_schemas
     set schema = p_schema_schema
     where id = p_schema_id;
-    
+
     -- Commit transaction
     v_result := jsonb_build_object(
       'success', true,
@@ -862,7 +862,10 @@ CREATE TABLE IF NOT EXISTS "public"."building_schemas" (
     "design_session_id" "uuid" NOT NULL,
     "organization_id" "uuid" NOT NULL,
     "schema" "jsonb" NOT NULL,
-    "created_at" timestamp(3) with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
+    "created_at" timestamp(3) with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    "git_sha" "text",
+    "initial_schema_snapshot" "jsonb",
+    "schema_file_path" "text"
 );
 
 
@@ -876,9 +879,6 @@ CREATE TABLE IF NOT EXISTS "public"."design_sessions" (
     "created_by_user_id" "uuid" NOT NULL,
     "parent_design_session_id" "uuid",
     "name" "text" NOT NULL,
-    "git_sha" "text",
-    "initial_schema_snapshot" "jsonb",
-    "schema_file_path" "text",
     "created_at" timestamp(3) with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 
