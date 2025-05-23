@@ -69,7 +69,13 @@ test('zoom out button should decrease zoom level', async ({ page }) => {
   const zoomLevelBefore = await zoomLevelText.textContent()
 
   const zoomOutButton = toolbar.getByRole('button', { name: 'Zoom out' })
-  await zoomOutButton.click()
+  // TODO: log time
+  const time = new Date()
+  await zoomOutButton.click({ timeout: 20000 })
+  console.info(
+    'Time taken to click zoom out button:',
+    new Date().getTime() - time.getTime(),
+  )
   await expect(zoomLevelText).not.toHaveText(zoomLevelBefore)
 
   const zoomLevelAfter = await zoomLevelText.textContent()
