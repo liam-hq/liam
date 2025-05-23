@@ -45,7 +45,7 @@ test('should be visible', async ({ page }) => {
 })
 
 test('zoom in button should increase zoom level', async ({ page }) => {
-  test.setTimeout(30000)
+  test.setTimeout(15000)
   const toolbar = page.getByRole('toolbar', { name: 'Toolbar' })
   const zoomLevelText = toolbar.getByLabel('Zoom level')
 
@@ -53,7 +53,7 @@ test('zoom in button should increase zoom level', async ({ page }) => {
 
   const zoomInButton = toolbar.getByRole('button', { name: 'Zoom in' })
   const time = new Date()
-  await zoomInButton.click({ timeout: 20000 })
+  await zoomInButton.click()
   console.info(
     'Time taken to click zoom out button:',
     new Date().getTime() - time.getTime(),
@@ -68,7 +68,7 @@ test('zoom in button should increase zoom level', async ({ page }) => {
 })
 
 test('zoom out button should decrease zoom level', async ({ page }) => {
-  test.setTimeout(30000)
+  test.setTimeout(15000)
   const toolbar = page.getByRole('toolbar', { name: 'Toolbar' })
   const zoomLevelText = toolbar.getByLabel('Zoom level')
 
@@ -76,7 +76,7 @@ test('zoom out button should decrease zoom level', async ({ page }) => {
 
   const zoomOutButton = toolbar.getByRole('button', { name: 'Zoom out' })
   const time = new Date()
-  await zoomOutButton.click({ timeout: 20000 })
+  await zoomOutButton.click()
   console.info(
     'Time taken to click zoom out button:',
     new Date().getTime() - time.getTime(),
@@ -205,7 +205,7 @@ test.describe('Show Mode', () => {
 // -------
 
 test('zoom in button should increase zoom level 2', async ({ page }) => {
-  test.setTimeout(30000)
+  test.setTimeout(15000)
   const toolbar = page.getByRole('toolbar', { name: 'Toolbar' })
   const zoomLevelText = toolbar.getByLabel('Zoom level')
 
@@ -213,7 +213,7 @@ test('zoom in button should increase zoom level 2', async ({ page }) => {
 
   const zoomInButton = toolbar.getByRole('button', { name: 'Zoom in' })
   const time = new Date()
-  await zoomInButton.click({ timeout: 20000 })
+  await zoomInButton.click()
   console.info(
     'Time taken to click zoom out button:',
     new Date().getTime() - time.getTime(),
@@ -228,7 +228,7 @@ test('zoom in button should increase zoom level 2', async ({ page }) => {
 })
 
 test('zoom out button should decrease zoom level 2', async ({ page }) => {
-  test.setTimeout(30000)
+  test.setTimeout(15000)
   const toolbar = page.getByRole('toolbar', { name: 'Toolbar' })
   const zoomLevelText = toolbar.getByLabel('Zoom level')
 
@@ -236,7 +236,7 @@ test('zoom out button should decrease zoom level 2', async ({ page }) => {
 
   const zoomOutButton = toolbar.getByRole('button', { name: 'Zoom out' })
   const time = new Date()
-  await zoomOutButton.click({ timeout: 20000 })
+  await zoomOutButton.click()
   console.info(
     'Time taken to click zoom out button:',
     new Date().getTime() - time.getTime(),
@@ -250,7 +250,7 @@ test('zoom out button should decrease zoom level 2', async ({ page }) => {
 })
 
 test('zoom in button should increase zoom level 3', async ({ page }) => {
-  test.setTimeout(30000)
+  test.setTimeout(15000)
   const toolbar = page.getByRole('toolbar', { name: 'Toolbar' })
   const zoomLevelText = toolbar.getByLabel('Zoom level')
 
@@ -258,7 +258,7 @@ test('zoom in button should increase zoom level 3', async ({ page }) => {
 
   const zoomInButton = toolbar.getByRole('button', { name: 'Zoom in' })
   const time = new Date()
-  await zoomInButton.click({ timeout: 20000 })
+  await zoomInButton.click()
   console.info(
     'Time taken to click zoom out button:',
     new Date().getTime() - time.getTime(),
@@ -273,7 +273,7 @@ test('zoom in button should increase zoom level 3', async ({ page }) => {
 })
 
 test('zoom out button should decrease zoom level 3', async ({ page }) => {
-  test.setTimeout(30000)
+  test.setTimeout(15000)
   const toolbar = page.getByRole('toolbar', { name: 'Toolbar' })
   const zoomLevelText = toolbar.getByLabel('Zoom level')
 
@@ -281,7 +281,7 @@ test('zoom out button should decrease zoom level 3', async ({ page }) => {
 
   const zoomOutButton = toolbar.getByRole('button', { name: 'Zoom out' })
   const time = new Date()
-  await zoomOutButton.click({ timeout: 20000 })
+  await zoomOutButton.click()
   console.info(
     'Time taken to click zoom out button:',
     new Date().getTime() - time.getTime(),
@@ -295,7 +295,7 @@ test('zoom out button should decrease zoom level 3', async ({ page }) => {
 })
 
 test('zoom in button should increase zoom level 4', async ({ page }) => {
-  test.setTimeout(30000)
+  test.setTimeout(15000)
   const toolbar = page.getByRole('toolbar', { name: 'Toolbar' })
   const zoomLevelText = toolbar.getByLabel('Zoom level')
 
@@ -303,7 +303,7 @@ test('zoom in button should increase zoom level 4', async ({ page }) => {
 
   const zoomInButton = toolbar.getByRole('button', { name: 'Zoom in' })
   const time = new Date()
-  await zoomInButton.click({ timeout: 20000 })
+  await zoomInButton.click()
   console.info(
     'Time taken to click zoom out button:',
     new Date().getTime() - time.getTime(),
@@ -318,7 +318,7 @@ test('zoom in button should increase zoom level 4', async ({ page }) => {
 })
 
 test('zoom out button should decrease zoom level 4', async ({ page }) => {
-  test.setTimeout(30000)
+  test.setTimeout(15000)
   const toolbar = page.getByRole('toolbar', { name: 'Toolbar' })
   const zoomLevelText = toolbar.getByLabel('Zoom level')
 
@@ -326,7 +326,7 @@ test('zoom out button should decrease zoom level 4', async ({ page }) => {
 
   const zoomOutButton = toolbar.getByRole('button', { name: 'Zoom out' })
   const time = new Date()
-  await zoomOutButton.click({ timeout: 20000 })
+  await zoomOutButton.click()
   console.info(
     'Time taken to click zoom out button:',
     new Date().getTime() - time.getTime(),
@@ -340,7 +340,7 @@ test('zoom out button should decrease zoom level 4', async ({ page }) => {
 })
 
 test('zoom in button should increase zoom level 5', async ({ page }) => {
-  test.setTimeout(30000)
+  test.setTimeout(15000)
   const toolbar = page.getByRole('toolbar', { name: 'Toolbar' })
   const zoomLevelText = toolbar.getByLabel('Zoom level')
 
@@ -348,7 +348,7 @@ test('zoom in button should increase zoom level 5', async ({ page }) => {
 
   const zoomInButton = toolbar.getByRole('button', { name: 'Zoom in' })
   const time = new Date()
-  await zoomInButton.click({ timeout: 20000 })
+  await zoomInButton.click()
   console.info(
     'Time taken to click zoom out button:',
     new Date().getTime() - time.getTime(),
@@ -363,7 +363,7 @@ test('zoom in button should increase zoom level 5', async ({ page }) => {
 })
 
 test('zoom out button should decrease zoom level 5', async ({ page }) => {
-  test.setTimeout(30000)
+  test.setTimeout(15000)
   const toolbar = page.getByRole('toolbar', { name: 'Toolbar' })
   const zoomLevelText = toolbar.getByLabel('Zoom level')
 
@@ -371,7 +371,7 @@ test('zoom out button should decrease zoom level 5', async ({ page }) => {
 
   const zoomOutButton = toolbar.getByRole('button', { name: 'Zoom out' })
   const time = new Date()
-  await zoomOutButton.click({ timeout: 20000 })
+  await zoomOutButton.click()
   console.info(
     'Time taken to click zoom out button:',
     new Date().getTime() - time.getTime(),
@@ -385,7 +385,7 @@ test('zoom out button should decrease zoom level 5', async ({ page }) => {
 })
 
 test('zoom in button should increase zoom level 6', async ({ page }) => {
-  test.setTimeout(30000)
+  test.setTimeout(15000)
   const toolbar = page.getByRole('toolbar', { name: 'Toolbar' })
   const zoomLevelText = toolbar.getByLabel('Zoom level')
 
@@ -393,7 +393,7 @@ test('zoom in button should increase zoom level 6', async ({ page }) => {
 
   const zoomInButton = toolbar.getByRole('button', { name: 'Zoom in' })
   const time = new Date()
-  await zoomInButton.click({ timeout: 20000 })
+  await zoomInButton.click()
   console.info(
     'Time taken to click zoom out button:',
     new Date().getTime() - time.getTime(),
@@ -408,7 +408,7 @@ test('zoom in button should increase zoom level 6', async ({ page }) => {
 })
 
 test('zoom out button should decrease zoom level 6', async ({ page }) => {
-  test.setTimeout(30000)
+  test.setTimeout(15000)
   const toolbar = page.getByRole('toolbar', { name: 'Toolbar' })
   const zoomLevelText = toolbar.getByLabel('Zoom level')
 
@@ -416,7 +416,7 @@ test('zoom out button should decrease zoom level 6', async ({ page }) => {
 
   const zoomOutButton = toolbar.getByRole('button', { name: 'Zoom out' })
   const time = new Date()
-  await zoomOutButton.click({ timeout: 20000 })
+  await zoomOutButton.click()
   console.info(
     'Time taken to click zoom out button:',
     new Date().getTime() - time.getTime(),
@@ -430,7 +430,7 @@ test('zoom out button should decrease zoom level 6', async ({ page }) => {
 })
 
 test('zoom in button should increase zoom level 7', async ({ page }) => {
-  test.setTimeout(30000)
+  test.setTimeout(15000)
   const toolbar = page.getByRole('toolbar', { name: 'Toolbar' })
   const zoomLevelText = toolbar.getByLabel('Zoom level')
 
@@ -438,7 +438,7 @@ test('zoom in button should increase zoom level 7', async ({ page }) => {
 
   const zoomInButton = toolbar.getByRole('button', { name: 'Zoom in' })
   const time = new Date()
-  await zoomInButton.click({ timeout: 20000 })
+  await zoomInButton.click()
   console.info(
     'Time taken to click zoom out button:',
     new Date().getTime() - time.getTime(),
@@ -453,7 +453,7 @@ test('zoom in button should increase zoom level 7', async ({ page }) => {
 })
 
 test('zoom out button should decrease zoom level 7', async ({ page }) => {
-  test.setTimeout(30000)
+  test.setTimeout(15000)
   const toolbar = page.getByRole('toolbar', { name: 'Toolbar' })
   const zoomLevelText = toolbar.getByLabel('Zoom level')
 
@@ -461,7 +461,7 @@ test('zoom out button should decrease zoom level 7', async ({ page }) => {
 
   const zoomOutButton = toolbar.getByRole('button', { name: 'Zoom out' })
   const time = new Date()
-  await zoomOutButton.click({ timeout: 20000 })
+  await zoomOutButton.click()
   console.info(
     'Time taken to click zoom out button:',
     new Date().getTime() - time.getTime(),
@@ -475,7 +475,7 @@ test('zoom out button should decrease zoom level 7', async ({ page }) => {
 })
 
 test('zoom in button should increase zoom level 8', async ({ page }) => {
-  test.setTimeout(30000)
+  test.setTimeout(15000)
   const toolbar = page.getByRole('toolbar', { name: 'Toolbar' })
   const zoomLevelText = toolbar.getByLabel('Zoom level')
 
@@ -483,7 +483,7 @@ test('zoom in button should increase zoom level 8', async ({ page }) => {
 
   const zoomInButton = toolbar.getByRole('button', { name: 'Zoom in' })
   const time = new Date()
-  await zoomInButton.click({ timeout: 20000 })
+  await zoomInButton.click()
   console.info(
     'Time taken to click zoom out button:',
     new Date().getTime() - time.getTime(),
@@ -498,7 +498,7 @@ test('zoom in button should increase zoom level 8', async ({ page }) => {
 })
 
 test('zoom out button should decrease zoom level 8', async ({ page }) => {
-  test.setTimeout(30000)
+  test.setTimeout(15000)
   const toolbar = page.getByRole('toolbar', { name: 'Toolbar' })
   const zoomLevelText = toolbar.getByLabel('Zoom level')
 
@@ -506,7 +506,7 @@ test('zoom out button should decrease zoom level 8', async ({ page }) => {
 
   const zoomOutButton = toolbar.getByRole('button', { name: 'Zoom out' })
   const time = new Date()
-  await zoomOutButton.click({ timeout: 20000 })
+  await zoomOutButton.click()
   console.info(
     'Time taken to click zoom out button:',
     new Date().getTime() - time.getTime(),
@@ -520,7 +520,7 @@ test('zoom out button should decrease zoom level 8', async ({ page }) => {
 })
 
 test('zoom in button should increase zoom level 9', async ({ page }) => {
-  test.setTimeout(30000)
+  test.setTimeout(15000)
   const toolbar = page.getByRole('toolbar', { name: 'Toolbar' })
   const zoomLevelText = toolbar.getByLabel('Zoom level')
 
@@ -528,7 +528,7 @@ test('zoom in button should increase zoom level 9', async ({ page }) => {
 
   const zoomInButton = toolbar.getByRole('button', { name: 'Zoom in' })
   const time = new Date()
-  await zoomInButton.click({ timeout: 20000 })
+  await zoomInButton.click()
   console.info(
     'Time taken to click zoom out button:',
     new Date().getTime() - time.getTime(),
@@ -543,7 +543,7 @@ test('zoom in button should increase zoom level 9', async ({ page }) => {
 })
 
 test('zoom out button should decrease zoom level 9', async ({ page }) => {
-  test.setTimeout(30000)
+  test.setTimeout(15000)
   const toolbar = page.getByRole('toolbar', { name: 'Toolbar' })
   const zoomLevelText = toolbar.getByLabel('Zoom level')
 
@@ -551,7 +551,7 @@ test('zoom out button should decrease zoom level 9', async ({ page }) => {
 
   const zoomOutButton = toolbar.getByRole('button', { name: 'Zoom out' })
   const time = new Date()
-  await zoomOutButton.click({ timeout: 20000 })
+  await zoomOutButton.click()
   console.info(
     'Time taken to click zoom out button:',
     new Date().getTime() - time.getTime(),
@@ -565,7 +565,7 @@ test('zoom out button should decrease zoom level 9', async ({ page }) => {
 })
 
 test('zoom in button should increase zoom level 10', async ({ page }) => {
-  test.setTimeout(30000)
+  test.setTimeout(15000)
   const toolbar = page.getByRole('toolbar', { name: 'Toolbar' })
   const zoomLevelText = toolbar.getByLabel('Zoom level')
 
@@ -573,7 +573,7 @@ test('zoom in button should increase zoom level 10', async ({ page }) => {
 
   const zoomInButton = toolbar.getByRole('button', { name: 'Zoom in' })
   const time = new Date()
-  await zoomInButton.click({ timeout: 20000 })
+  await zoomInButton.click()
   console.info(
     'Time taken to click zoom out button:',
     new Date().getTime() - time.getTime(),
@@ -588,7 +588,7 @@ test('zoom in button should increase zoom level 10', async ({ page }) => {
 })
 
 test('zoom out button should decrease zoom level 10', async ({ page }) => {
-  test.setTimeout(30000)
+  test.setTimeout(15000)
   const toolbar = page.getByRole('toolbar', { name: 'Toolbar' })
   const zoomLevelText = toolbar.getByLabel('Zoom level')
 
@@ -596,7 +596,7 @@ test('zoom out button should decrease zoom level 10', async ({ page }) => {
 
   const zoomOutButton = toolbar.getByRole('button', { name: 'Zoom out' })
   const time = new Date()
-  await zoomOutButton.click({ timeout: 20000 })
+  await zoomOutButton.click()
   console.info(
     'Time taken to click zoom out button:',
     new Date().getTime() - time.getTime(),
