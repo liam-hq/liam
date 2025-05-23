@@ -1,12 +1,12 @@
-import { convertSchemaToText } from '@/app/lib/schema/convertSchemaToText'
 import { isSchemaUpdated } from '@/app/lib/vectorstore/supabaseVectorStore'
 import { syncSchemaVectorStore } from '@/app/lib/vectorstore/syncSchemaVectorStore'
 import { mastra } from '@/lib/mastra'
 import * as Sentry from '@sentry/nextjs'
 import { NextResponse } from 'next/server'
+import { dummySchema } from './dummySchema'
 
 export async function POST(request: Request) {
-  const { message, schemaData, history, mode, projectId } = await request.json()
+  const { message, schemaData, mode, projectId } = await request.json()
 
   if (!message || typeof message !== 'string' || !message.trim()) {
     return NextResponse.json({ error: 'Message is required' }, { status: 400 })
@@ -40,18 +40,20 @@ export async function POST(request: Request) {
       }
     }
     // Format chat history for prompt
-    const formattedChatHistory =
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-      history && history.length > 0
-        ? history
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-            .map((msg: [string, string]) => `${msg[0]}: ${msg[1]}`)
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-            .join('\n')
-        : 'No previous conversation.'
+    // const formattedChatHistory =
+    //   // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    //   history && history.length > 0
+    //     ? history
+    //         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    //         .map((msg: [string, string]) => `${msg[0]}: ${msg[1]}`)
+    //         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    //         .join('\n')
+    //     : 'No previous conversation.'
+    const formattedChatHistory = 'No previous conversation.'
 
     // Convert schema to text
-    const schemaText = convertSchemaToText(schemaData)
+    // const schemaText = convertSchemaToText(schemaData)
+    const schemaText = dummySchema
 
     // Get the agent from Mastra
     const agent = mastra.getAgent(agentName)
@@ -74,6 +76,18 @@ ${formattedChatHistory}
       {
         role: 'user',
         content: message,
+      },
+      {
+        role: 'system',
+        content: `
+        If a response should be provided in JSON Patch format, please respond using that format.
+
+When responding, don’t mention the format explicitly—just give the result.
+Avoid mentioning the format in your response.
+
+GOOD: Updated. Here you go.
+NOT GOOD: Here’s a patch that makes...
+`,
       },
     ])
 
