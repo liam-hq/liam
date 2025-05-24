@@ -2,6 +2,7 @@
 
 import { useTableSelection } from '@/features/erd/hooks'
 import {
+  escapeActiveTableName,
   updatePaletteOpen,
   useCommandPaletteStore,
   useSchemaStore,
@@ -29,6 +30,13 @@ export const CommandPalette: FC = () => {
     document.addEventListener('keydown', down)
     return () => document.removeEventListener('keydown', down)
   }, [])
+
+  useEffect(() => {
+    if (!open) return
+
+    const restore = escapeActiveTableName()
+    return restore
+  }, [open])
 
   const [tableName, setTableName] = useState<string | null>(null)
   const { selectTable } = useTableSelection()
