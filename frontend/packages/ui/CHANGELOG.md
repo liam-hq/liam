@@ -1,5 +1,12 @@
 # @liam-hq/ui
 
+## 0.0.17
+
+### Patch Changes
+
+- [#1720](https://github.com/liam-hq/liam/pull/1720) - ➕ add @radix-ui/react-collapsible dependency to UI package / Thanks [@junkisai](https://github.com/junkisai)!
+- [#1670](https://github.com/liam-hq/liam/pull/1670) - ✨ add Switch component from Radix UI / Thanks [@junkisai](https://github.com/junkisai)!
+
 ## 0.0.16
 
 ### Patch Changes

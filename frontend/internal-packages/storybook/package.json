@@ -1,7 +1,7 @@
 {
   "name": "@liam-hq/storybook",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.1.1",
   "dependencies": {
     "@liam-hq/ui": "workspace:*",
     "react": "18.3.1",
