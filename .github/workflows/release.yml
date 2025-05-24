@@ -32,7 +32,7 @@ jobs:
       - uses: ./.github/actions/pnpm-setup
       - name: Create Release Pull Request or Publish to npm
         id: changesets-action
-        uses: changesets/action@746c25e23caa47dceb6a48ee85b4cbc5a9f5f293 # v1.5.0
+        uses: changesets/action@e0538e686673de0265c8a3e2904b8c76beaa43fd # v1.5.2
         with:
           publish: pnpm run release
         env:
