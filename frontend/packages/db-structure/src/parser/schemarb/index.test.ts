@@ -444,6 +444,26 @@ describe(processor, () => {
         }),
       })
     })
+
+    it('check constraint in create_table', async () => {
+      const { value } = await processor(/* Ruby */ `
+        create_table "users" do |t|
+          t.integer "age"
+          t.check_constraint "age between 20 and 100", name: "age_check"
+        end
+      `)
+
+      expect(value.tables['users']?.constraints).toEqual({
+        PRIMARY_id: aPrimaryKeyConstraint({
+          name: 'PRIMARY_id',
+          columnName: 'id',
+        }),
+        age_check: aCheckConstraint({
+          name: 'age_check',
+          detail: 'age between 20 and 100',
+        }),
+      })
+    })
   })
 
   describe('abnormal cases', () => {

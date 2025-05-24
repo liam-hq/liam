@@ -149,6 +149,7 @@ function processCallNode(
   columns: Column[],
   indexes: Index[],
   constraints: Constraint[],
+  errors: ProcessError[],
 ): void {
   // Only process nodes with receiver 't'
   if (
@@ -177,6 +178,18 @@ function processCallNode(
     return
   }
 
+  if (node.name === 'check_constraint') {
+    const argNodes = node.arguments_?.compactChildNodes() ?? []
+    const result = extractCheckConstraint(argNodes)
+    if (result.isErr()) {
+      errors.push(result.error)
+    } else {
+      constraints.push(result.value)
+    }
+
+    return
+  }
+
   // Process column nodes
   const column = extractColumnDetails(node)
   if (column.name) {
@@ -192,10 +205,11 @@ function processStatementNode(
   columns: Column[],
   indexes: Index[],
   constraints: Constraint[],
+  errors: ProcessError[],
 ): void {
   for (const node of statementNode.compactChildNodes()) {
     if (node instanceof CallNode) {
-      processCallNode(node, columns, indexes, constraints)
+      processCallNode(node, columns, indexes, constraints, errors)
     }
   }
 }
@@ -205,19 +219,20 @@ function processStatementNode(
  */
 function extractTableDetails(
   blockNodes: Node[],
-): [Column[], Index[], Constraint[]] {
+): [Column[], Index[], Constraint[], ProcessError[]] {
   const columns: Column[] = []
   const indexes: Index[] = []
   const constraints: Constraint[] = []
+  const errors: ProcessError[] = []
 
   // Process each block node
   for (const blockNode of blockNodes) {
     if (blockNode instanceof StatementsNode) {
-      processStatementNode(blockNode, columns, indexes, constraints)
+      processStatementNode(blockNode, columns, indexes, constraints, errors)
     }
   }
 
-  return [columns, indexes, constraints]
+  return [columns, indexes, constraints, errors]
 }
 
 function extractColumnDetails(node: CallNode): Column {
@@ -398,6 +413,45 @@ function extractConstraintName(node: KeywordHashNode): string | null {
  * Extract check constraint details
  */
 function extractCheckConstraint(
+  argNodes: Node[],
+): Result<CheckConstraint, UnexpectedTokenWarningError> {
+  // Extract string values (table name and constraint detail)
+  const stringValuesResult = extractStringValues(argNodes)
+  if (stringValuesResult.isErr()) {
+    return err(stringValuesResult.error)
+  }
+
+  const stringValues = stringValuesResult.value
+  if (stringValues.length !== 1) {
+    return err(
+      new UnexpectedTokenWarningError(
+        'Check constraint must have one string of its detail',
+      ),
+    )
+  }
+
+  const [detail] = stringValues as [string]
+
+  // Create constraint with detail
+  const constraint = aCheckConstraint({ detail })
+
+  // Extract constraint name from options if present
+  for (const node of argNodes) {
+    if (node instanceof KeywordHashNode) {
+      const name = extractConstraintName(node)
+      if (name) {
+        constraint.name = name
+      }
+    }
+  }
+
+  return ok(constraint)
+}
+
+/**
+ * Extract check constraint details
+ */
+function extractCheckConstraintWithTableName(
   argNodes: Node[],
 ): Result<
   { tableName: string; constraint: CheckConstraint },
@@ -614,12 +668,13 @@ class SchemaFinder extends Visitor {
     }
 
     const blockNodes = node.block?.compactChildNodes() || []
-    const [extractColumns, extractIndexes, extractConstraints] =
+    const [extractColumns, extractIndexes, extractConstraints, extractErrors] =
       extractTableDetails(blockNodes)
 
     columns.push(...extractColumns)
     indexes.push(...extractIndexes)
     constraints.push(...extractConstraints)
+    this.errors.push(...extractErrors)
 
     table.columns = columns.reduce((acc, column) => {
       acc[column.name] = column
@@ -674,7 +729,7 @@ class SchemaFinder extends Visitor {
   handleAddCheckConstraint(node: CallNode): void {
     const argNodes = node.arguments_?.compactChildNodes() || []
 
-    const constraintResult = extractCheckConstraint(argNodes)
+    const constraintResult = extractCheckConstraintWithTableName(argNodes)
     if (constraintResult.isErr()) {
       this.errors.push(constraintResult.error)
       return
