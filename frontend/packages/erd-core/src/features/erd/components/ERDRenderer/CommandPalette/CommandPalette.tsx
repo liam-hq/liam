@@ -8,6 +8,7 @@ import {
   useSchemaStore,
 } from '@/stores'
 import { Search, Table2 } from '@liam-hq/ui'
+import * as Dialog from '@radix-ui/react-dialog'
 import { Command } from 'cmdk'
 import { type FC, useCallback, useEffect, useState } from 'react'
 import { TableNode } from '../../ERDContent/components/TableNode'
@@ -58,13 +59,14 @@ export const CommandPalette: FC = () => {
     <Command.Dialog
       open={open}
       onOpenChange={updatePaletteOpen}
-      label="Global Command Menu"
       contentClassName={styles.content}
       value={tableName ?? ''}
       onValueChange={(v) => {
         if (!superSelected) setTableName(v)
       }}
     >
+      <Dialog.Title hidden>Command Palette</Dialog.Title>
+      <Dialog.Description hidden>find tables</Dialog.Description>
       <div className={styles.searchContainer}>
         <Search />
         <Command.Input placeholder="Search" />

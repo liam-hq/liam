@@ -10,6 +10,7 @@
   "dependencies": {
     "@liam-hq/ui": "workspace:*",
     "@radix-ui/react-toolbar": "1.1.9",
+    "@radix-ui/react-dialog": "1.1.13",
     "@xyflow/react": "12.3.5",
     "clsx": "2.1.1",
     "cmdk": "^1.1.1",
