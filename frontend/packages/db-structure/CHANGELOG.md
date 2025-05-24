@@ -1,5 +1,18 @@
 # @liam-hq/db-structure
 
+## 0.1.0
+
+### Minor Changes
+
+- [#1590](https://github.com/liam-hq/liam/pull/1590) - update the primsa parser to support the @@map / Thanks [@khiroshi-win](https://github.com/khiroshi-win)!
+
+### Patch Changes
+
+- [#1670](https://github.com/liam-hq/liam/pull/1670) - ✨ add schema diff utilities and types / Thanks [@junkisai](https://github.com/junkisai)!
+- [#1707](https://github.com/liam-hq/liam/pull/1707) - ✨ enhance schema diff utilities with column-related diff items / Thanks [@junkisai](https://github.com/junkisai)!
+- [#1720](https://github.com/liam-hq/liam/pull/1720) - ✨ add index-related diff utilities and types / Thanks [@junkisai](https://github.com/junkisai)!
+- [#1731](https://github.com/liam-hq/liam/pull/1731) - ✨ add constraint-related diff utilities and types / Thanks [@junkisai](https://github.com/junkisai)!
+
 ## 0.0.20
 
 ### Patch Changes

@@ -1,5 +1,16 @@
 # @liam-hq/erd-core
 
+## 0.2.0
+
+### Minor Changes
+
+- [#1705](https://github.com/liam-hq/liam/pull/1705) - add the active hover background color to when table name activated in left pane / Thanks [@khiroshi-win](https://github.com/khiroshi-win)!
+
+### Patch Changes
+
+- [#1720](https://github.com/liam-hq/liam/pull/1720) - ➕ add @radix-ui/react-collapsible dependency to UI package / Thanks [@junkisai](https://github.com/junkisai)!
+- [#1670](https://github.com/liam-hq/liam/pull/1670) - ✨ add Switch component from Radix UI / Thanks [@junkisai](https://github.com/junkisai)!
+
 ## 0.1.8
 
 ### Patch Changes
