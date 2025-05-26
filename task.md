@@ -14,6 +14,10 @@
 ---
 
 ## 1 ️⃣  Dependencies
+
+✓ done
+
+
 ```bash
 pnpm add @langchain/core @langchain/openai langgraph
 ````
