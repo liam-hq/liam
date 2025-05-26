@@ -1,12 +1,12 @@
 import { isSchemaUpdated } from '@/app/lib/vectorstore/supabaseVectorStore'
 import { syncSchemaVectorStore } from '@/app/lib/vectorstore/syncSchemaVectorStore'
-import { mastra } from '@/lib/mastra'
+import { runChat } from '@/lib/chat/langGraph'
 import * as Sentry from '@sentry/nextjs'
 import { NextResponse } from 'next/server'
 import { dummySchema } from './dummySchema'
 
 export async function POST(request: Request) {
-  const { message, schemaData, mode, projectId } = await request.json()
+  const { message, schemaData, mode, projectId, history } = await request.json()
 
   if (!message || typeof message !== 'string' || !message.trim()) {
     return NextResponse.json({ error: 'Message is required' }, { status: 400 })
@@ -20,7 +20,7 @@ export async function POST(request: Request) {
   }
 
   // Determine which agent to use based on the mode
-  const agentName =
+  const _agentName =
     mode === 'build' ? 'databaseSchemaBuildAgent' : 'databaseSchemaAskAgent'
   try {
     // Check if schema has been updated
@@ -40,58 +40,31 @@ export async function POST(request: Request) {
       }
     }
     // Format chat history for prompt
-    // const formattedChatHistory =
-    //   // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    //   history && history.length > 0
-    //     ? history
-    //         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    //         .map((msg: [string, string]) => `${msg[0]}: ${msg[1]}`)
-    //         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    //         .join('\n')
-    //     : 'No previous conversation.'
-    const formattedChatHistory = 'No previous conversation.'
+    const formattedChatHistory =
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      history && history.length > 0
+        ? history
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+            .map((msg: [string, string]) => `${msg[0]}: ${msg[1]}`)
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+            .join('\n')
+        : 'No previous conversation.'
 
     // Convert schema to text
     // const schemaText = convertSchemaToText(schemaData)
     const schemaText = dummySchema
 
-    // Get the agent from Mastra
-    const agent = mastra.getAgent(agentName)
-    if (!agent) {
-      throw new Error(`${agentName} not found in Mastra instance`)
+    // Use LangGraph pipeline for build mode, fallback to original for ask mode
+    let responseText: string
+    if (mode === 'build') {
+      responseText = await runChat(message, schemaText, formattedChatHistory)
+    } else {
+      // For ask mode, we'll keep the original implementation for now
+      // This can be refactored later to use a separate LangGraph pipeline
+      throw new Error('Ask mode not yet implemented with LangGraph')
     }
 
-    // Create a response using the agent
-    const response = await agent.generate([
-      {
-        role: 'system',
-        content: `
-Complete Schema Information:
-${schemaText}
-
-Previous conversation:
-${formattedChatHistory}
-`,
-      },
-      {
-        role: 'user',
-        content: message,
-      },
-      {
-        role: 'system',
-        content: `
-        If a response should be provided in JSON Patch format, please respond using that format.
-
-When responding, don’t mention the format explicitly—just give the result.
-Avoid mentioning the format in your response.
-
-GOOD: Updated. Here you go.
-NOT GOOD: Here’s a patch that makes...
-`,
-      },
-    ])
-
-    return new Response(response.text, {
+    return new Response(responseText, {
       headers: {
         'Content-Type': 'text/plain; charset=utf-8',
       },

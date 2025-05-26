@@ -2671,4 +2671,3 @@ export const dummySchema = `
   "tableGroups": {}
 }
 `
-
