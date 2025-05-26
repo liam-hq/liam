@@ -6,7 +6,8 @@ import { NextResponse } from 'next/server'
 import { dummySchema } from './dummySchema'
 
 export async function POST(request: Request) {
-  const { message, schemaData, mode, projectId, history } = await request.json()
+  const { message, schemaData, projectId, history } = await request.json()
+  const mode = 'build' // Default mode, can be 'ask' or 'build'
 
   if (!message || typeof message !== 'string' || !message.trim()) {
     return NextResponse.json({ error: 'Message is required' }, { status: 400 })
