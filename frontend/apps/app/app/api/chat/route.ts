@@ -20,9 +20,6 @@ export async function POST(request: Request) {
     )
   }
 
-  // Determine which agent to use based on the mode
-  const _agentName =
-    mode === 'build' ? 'databaseSchemaBuildAgent' : 'databaseSchemaAskAgent'
   try {
     // Check if schema has been updated
     const schemaUpdated = await isSchemaUpdated(schemaData)
