@@ -1,9 +1,9 @@
+import { convertSchemaToText } from '@/app/lib/schema/convertSchemaToText'
 import { isSchemaUpdated } from '@/app/lib/vectorstore/supabaseVectorStore'
 import { syncSchemaVectorStore } from '@/app/lib/vectorstore/syncSchemaVectorStore'
 import { runChat } from '@/lib/chat/langGraph'
 import * as Sentry from '@sentry/nextjs'
 import { NextResponse } from 'next/server'
-import { dummySchema } from './dummySchema'
 
 export async function POST(request: Request) {
   const { message, schemaData, projectId, history } = await request.json()
@@ -49,8 +49,7 @@ export async function POST(request: Request) {
         : 'No previous conversation.'
 
     // Convert schema to text
-    // const schemaText = convertSchemaToText(schemaData)
-    const schemaText = dummySchema
+    const schemaText = convertSchemaToText(schemaData)
 
     // Use LangGraph pipeline for build mode, fallback to original for ask mode
     let responseText: string
