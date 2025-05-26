@@ -37,11 +37,11 @@ export default async function Page(props: {
       }}
       breadcrumb={{
         enabled: true,
-        component: <Breadcrumb />,
+        component: <Breadcrumb pageTree={source.pageTree} />,
       }}
       footer={{
         enabled: true,
-        component: <FooterNavi />,
+        component: <FooterNavi pageTree={source.pageTree} />,
       }}
     >
       <DocsTitle>{page.data.title}</DocsTitle>

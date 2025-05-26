@@ -1,16 +1,16 @@
 'use client'
 
-import { source } from '@/lib/source'
 import { findNeighbour } from 'fumadocs-core/server'
+import type { PageTree } from 'fumadocs-core/server'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import type { FC } from 'react'
 import { itemLabelStyle, linkStyle } from './FooterNavi.style'
 
-export const FooterNavi: FC = () => {
+export const FooterNavi: FC<{ pageTree: PageTree.Root }> = ({ pageTree }) => {
   const pathname = usePathname()
-  const neighbours = findNeighbour(source.pageTree, pathname)
+  const neighbours = findNeighbour(pageTree, pathname)
 
   return (
     <div className="grid grid-cols-2 gap-4 pb-6">
