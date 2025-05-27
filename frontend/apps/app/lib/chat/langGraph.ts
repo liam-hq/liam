@@ -124,11 +124,11 @@ export const runChat = async (
 
     graph
       .addNode('buildPrompt', buildPrompt)
-      .addNode('draft', draft)
+      .addNode('drafted', draft)
       .addNode('check', check)
       .addNode('remind', remind)
       .addEdge(START, 'buildPrompt')
-      .addEdge('buildPrompt', 'draft')
+      .addEdge('buildPrompt', 'drafted')
       .addEdge('remind', 'check')
 
 
@@ -139,19 +139,19 @@ export const runChat = async (
       return 'remind'
     })
 
-    // 無限ループ防止
-    // if (graph.setMaxRounds) {
-    //   graph.setMaxRounds(4)
-    // }
-
     // ── 実行
     const compiled = graph.compile()
-    const result = await compiled.invoke({
-      userMsg,
-      schemaText,
-      chatHistory,
-      retryCount: 0,
-    })
+    const result = await compiled.invoke(
+      {
+        userMsg,
+        schemaText,
+        chatHistory,
+        retryCount: 0,
+      },
+      {
+        recursionLimit: 4, // 無限ループ防止
+      }
+    )
 
     return result.draft ?? 'No response generated'
   } catch (error) {
