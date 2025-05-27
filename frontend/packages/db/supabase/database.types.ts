@@ -118,6 +118,41 @@ export type Database = {
           },
         ]
       }
+      db_engines: {
+        Row: {
+          created_at: string
+          id: number
+          name: string
+          project_id: string
+          updated_at: string
+          version: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: number
+          name: string
+          project_id: string
+          updated_at?: string
+          version?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: number
+          name?: string
+          project_id?: string
+          updated_at?: string
+          version?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'db_engines_project_id_fkey'
+            columns: ['project_id']
+            isOneToOne: false
+            referencedRelation: 'projects'
+            referencedColumns: ['id']
+          },
+        ]
+      }
       design_sessions: {
         Row: {
           created_at: string
@@ -605,6 +640,44 @@ export type Database = {
             columns: ['user_id']
             isOneToOne: false
             referencedRelation: 'users'
+            referencedColumns: ['id']
+          },
+        ]
+      }
+      migration_files: {
+        Row: {
+          applied_at: string | null
+          content: string
+          created_at: string
+          hash: string
+          id: string
+          project_id: string
+          updated_at: string
+        }
+        Insert: {
+          applied_at?: string | null
+          content: string
+          created_at?: string
+          hash: string
+          id?: string
+          project_id: string
+          updated_at?: string
+        }
+        Update: {
+          applied_at?: string | null
+          content?: string
+          created_at?: string
+          hash?: string
+          id?: string
+          project_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'migration_files_project_id_fkey'
+            columns: ['project_id']
+            isOneToOne: false
+            referencedRelation: 'projects'
             referencedColumns: ['id']
           },
         ]

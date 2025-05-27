@@ -784,7 +784,7 @@ begin
     select organization_id into v_organization_id
     from building_schemas
     where id = p_schema_id;
-    
+  
     if not found then
       v_result := jsonb_build_object(
         'success', false,
@@ -795,7 +795,7 @@ begin
 
     -- Calculate the next version number
     v_next_version_number := p_latest_schema_version_number + 1;
-    
+
     -- 2. Insert into building_schema_versions
     insert into building_schema_versions (
       organization_id,
@@ -812,12 +812,12 @@ begin
       p_schema_version_reverse_patch,
       now()
     );
-    
+
     -- 3. Update building_schemas with the new schema
     update building_schemas
     set schema = p_schema_schema
     where id = p_schema_id;
-    
+
     -- Commit transaction
     v_result := jsonb_build_object(
       'success', true,
@@ -867,6 +867,35 @@ CREATE TABLE IF NOT EXISTS "public"."building_schemas" (
 
 
 ALTER TABLE "public"."building_schemas" OWNER TO "postgres";
+
+
+CREATE TABLE IF NOT EXISTS "public"."db_engines" (
+    "id" integer NOT NULL,
+    "name" "text" NOT NULL,
+    "version" "text",
+    "project_id" "uuid" NOT NULL,
+    "created_at" timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    "updated_at" timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
+
+
+ALTER TABLE "public"."db_engines" OWNER TO "postgres";
+
+
+CREATE SEQUENCE IF NOT EXISTS "public"."db_engines_id_seq"
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE "public"."db_engines_id_seq" OWNER TO "postgres";
+
+
+ALTER SEQUENCE "public"."db_engines_id_seq" OWNED BY "public"."db_engines"."id";
+
 
 
 CREATE TABLE IF NOT EXISTS "public"."design_sessions" (
@@ -1016,6 +1045,20 @@ CREATE TABLE IF NOT EXISTS "public"."messages" (
 
 
 ALTER TABLE "public"."messages" OWNER TO "postgres";
+
+
+CREATE TABLE IF NOT EXISTS "public"."migration_files" (
+    "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
+    "project_id" "uuid" NOT NULL,
+    "content" "text" NOT NULL,
+    "hash" "text" NOT NULL,
+    "applied_at" timestamp with time zone,
+    "created_at" timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    "updated_at" timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
+
+
+ALTER TABLE "public"."migration_files" OWNER TO "postgres";
 
 
 CREATE TABLE IF NOT EXISTS "public"."migration_pull_request_mappings" (
@@ -1201,6 +1244,10 @@ CREATE TABLE IF NOT EXISTS "public"."users" (
 ALTER TABLE "public"."users" OWNER TO "postgres";
 
 
+ALTER TABLE ONLY "public"."db_engines" ALTER COLUMN "id" SET DEFAULT "nextval"('"public"."db_engines_id_seq"'::"regclass");
+
+
+
 ALTER TABLE ONLY "public"."building_schema_versions"
     ADD CONSTRAINT "building_schema_versions_pkey" PRIMARY KEY ("id");
 
@@ -1213,6 +1260,11 @@ ALTER TABLE ONLY "public"."building_schemas"
 
 ALTER TABLE ONLY "public"."building_schemas"
     ADD CONSTRAINT "building_schemas_pkey" PRIMARY KEY ("id");
+
+
+
+ALTER TABLE ONLY "public"."db_engines"
+    ADD CONSTRAINT "db_engines_pkey" PRIMARY KEY ("id");
 
 
 
@@ -1278,6 +1330,11 @@ ALTER TABLE ONLY "public"."knowledge_suggestions"
 
 ALTER TABLE ONLY "public"."messages"
     ADD CONSTRAINT "messages_pkey" PRIMARY KEY ("id");
+
+
+
+ALTER TABLE ONLY "public"."migration_files"
+    ADD CONSTRAINT "migration_files_pkey" PRIMARY KEY ("id");
 
 
 
@@ -1387,6 +1444,18 @@ CREATE UNIQUE INDEX "github_pull_request_repository_id_pull_number_key" ON "publ
 
 
 CREATE UNIQUE INDEX "github_repository_owner_name_key" ON "public"."github_repositories" USING "btree" ("owner", "name");
+
+
+
+CREATE INDEX "idx_db_engines_project_id" ON "public"."db_engines" USING "btree" ("project_id");
+
+
+
+CREATE INDEX "idx_migration_files_hash" ON "public"."migration_files" USING "btree" ("hash");
+
+
+
+CREATE INDEX "idx_migration_files_project_id" ON "public"."migration_files" USING "btree" ("project_id");
 
 
 
@@ -1538,6 +1607,11 @@ ALTER TABLE ONLY "public"."building_schemas"
 
 
 
+ALTER TABLE ONLY "public"."db_engines"
+    ADD CONSTRAINT "db_engines_project_id_fkey" FOREIGN KEY ("project_id") REFERENCES "public"."projects"("id") ON UPDATE CASCADE ON DELETE RESTRICT;
+
+
+
 ALTER TABLE ONLY "public"."design_sessions"
     ADD CONSTRAINT "design_sessions_created_by_user_id_fkey" FOREIGN KEY ("created_by_user_id") REFERENCES "public"."users"("id") ON UPDATE CASCADE ON DELETE RESTRICT;
 
@@ -1645,6 +1719,11 @@ ALTER TABLE ONLY "public"."messages"
 
 ALTER TABLE ONLY "public"."messages"
     ADD CONSTRAINT "messages_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON UPDATE CASCADE ON DELETE RESTRICT;
+
+
+
+ALTER TABLE ONLY "public"."migration_files"
+    ADD CONSTRAINT "migration_files_project_id_fkey" FOREIGN KEY ("project_id") REFERENCES "public"."projects"("id") ON UPDATE CASCADE ON DELETE RESTRICT;
 
 
 
@@ -1804,6 +1883,13 @@ COMMENT ON POLICY "authenticated_users_can_delete_org_building_schemas" ON "publ
 
 
 
+CREATE POLICY "authenticated_users_can_delete_org_db_engines" ON "public"."db_engines" FOR DELETE TO "authenticated" USING (("project_id" IN ( SELECT "p"."id"
+   FROM ("public"."projects" "p"
+     JOIN "public"."organization_members" "om" ON (("p"."organization_id" = "om"."organization_id")))
+  WHERE ("om"."user_id" = "auth"."uid"()))));
+
+
+
 CREATE POLICY "authenticated_users_can_delete_org_design_sessions" ON "public"."design_sessions" FOR DELETE TO "authenticated" USING (("organization_id" IN ( SELECT "organization_members"."organization_id"
    FROM "public"."organization_members"
   WHERE ("organization_members"."user_id" = "auth"."uid"()))));
@@ -1827,6 +1913,13 @@ COMMENT ON POLICY "authenticated_users_can_delete_org_documents" ON "public"."do
 CREATE POLICY "authenticated_users_can_delete_org_invitations" ON "public"."invitations" FOR DELETE TO "authenticated" USING (("organization_id" IN ( SELECT "organization_members"."organization_id"
    FROM "public"."organization_members"
   WHERE ("organization_members"."user_id" = "auth"."uid"()))));
+
+
+
+CREATE POLICY "authenticated_users_can_delete_org_migration_files" ON "public"."migration_files" FOR DELETE TO "authenticated" USING (("project_id" IN ( SELECT "p"."id"
+   FROM ("public"."projects" "p"
+     JOIN "public"."organization_members" "om" ON (("p"."organization_id" = "om"."organization_id")))
+  WHERE ("om"."user_id" = "auth"."uid"()))));
 
 
 
@@ -1871,6 +1964,13 @@ CREATE POLICY "authenticated_users_can_insert_org_building_schemas" ON "public".
 
 
 COMMENT ON POLICY "authenticated_users_can_insert_org_building_schemas" ON "public"."building_schemas" IS 'Authenticated users can only create building schemas in organizations they are members of';
+
+
+
+CREATE POLICY "authenticated_users_can_insert_org_db_engines" ON "public"."db_engines" FOR INSERT TO "authenticated" WITH CHECK (("project_id" IN ( SELECT "p"."id"
+   FROM ("public"."projects" "p"
+     JOIN "public"."organization_members" "om" ON (("p"."organization_id" = "om"."organization_id")))
+  WHERE ("om"."user_id" = "auth"."uid"()))));
 
 
 
@@ -1950,6 +2050,13 @@ COMMENT ON POLICY "authenticated_users_can_insert_org_messages" ON "public"."mes
 
 
 
+CREATE POLICY "authenticated_users_can_insert_org_migration_files" ON "public"."migration_files" FOR INSERT TO "authenticated" WITH CHECK (("project_id" IN ( SELECT "p"."id"
+   FROM ("public"."projects" "p"
+     JOIN "public"."organization_members" "om" ON (("p"."organization_id" = "om"."organization_id")))
+  WHERE ("om"."user_id" = "auth"."uid"()))));
+
+
+
 CREATE POLICY "authenticated_users_can_insert_org_organization_members" ON "public"."organization_members" FOR INSERT TO "authenticated" WITH CHECK ((("user_id" = "auth"."uid"()) OR "public"."is_current_user_org_member"("organization_id")));
 
 
@@ -2019,6 +2126,13 @@ CREATE POLICY "authenticated_users_can_select_org_building_schemas" ON "public".
 
 
 COMMENT ON POLICY "authenticated_users_can_select_org_building_schemas" ON "public"."building_schemas" IS 'Authenticated users can only view building schemas belonging to organizations they are members of';
+
+
+
+CREATE POLICY "authenticated_users_can_select_org_db_engines" ON "public"."db_engines" FOR SELECT TO "authenticated" USING (("project_id" IN ( SELECT "p"."id"
+   FROM ("public"."projects" "p"
+     JOIN "public"."organization_members" "om" ON (("p"."organization_id" = "om"."organization_id")))
+  WHERE ("om"."user_id" = "auth"."uid"()))));
 
 
 
@@ -2105,6 +2219,13 @@ CREATE POLICY "authenticated_users_can_select_org_messages" ON "public"."message
 
 
 COMMENT ON POLICY "authenticated_users_can_select_org_messages" ON "public"."messages" IS 'Authenticated users can only view messages belonging to organizations they are members of';
+
+
+
+CREATE POLICY "authenticated_users_can_select_org_migration_files" ON "public"."migration_files" FOR SELECT TO "authenticated" USING (("project_id" IN ( SELECT "p"."id"
+   FROM ("public"."projects" "p"
+     JOIN "public"."organization_members" "om" ON (("p"."organization_id" = "om"."organization_id")))
+  WHERE ("om"."user_id" = "auth"."uid"()))));
 
 
 
@@ -2250,6 +2371,16 @@ COMMENT ON POLICY "authenticated_users_can_update_org_building_schemas" ON "publ
 
 
 
+CREATE POLICY "authenticated_users_can_update_org_db_engines" ON "public"."db_engines" FOR UPDATE TO "authenticated" USING (("project_id" IN ( SELECT "p"."id"
+   FROM ("public"."projects" "p"
+     JOIN "public"."organization_members" "om" ON (("p"."organization_id" = "om"."organization_id")))
+  WHERE ("om"."user_id" = "auth"."uid"())))) WITH CHECK (("project_id" IN ( SELECT "p"."id"
+   FROM ("public"."projects" "p"
+     JOIN "public"."organization_members" "om" ON (("p"."organization_id" = "om"."organization_id")))
+  WHERE ("om"."user_id" = "auth"."uid"()))));
+
+
+
 CREATE POLICY "authenticated_users_can_update_org_design_sessions" ON "public"."design_sessions" FOR UPDATE TO "authenticated" USING (("organization_id" IN ( SELECT "organization_members"."organization_id"
    FROM "public"."organization_members"
   WHERE ("organization_members"."user_id" = "auth"."uid"())))) WITH CHECK (("organization_id" IN ( SELECT "organization_members"."organization_id"
@@ -2301,6 +2432,16 @@ CREATE POLICY "authenticated_users_can_update_org_messages" ON "public"."message
 
 
 COMMENT ON POLICY "authenticated_users_can_update_org_messages" ON "public"."messages" IS 'Authenticated users can only update messages in organizations they are members of';
+
+
+
+CREATE POLICY "authenticated_users_can_update_org_migration_files" ON "public"."migration_files" FOR UPDATE TO "authenticated" USING (("project_id" IN ( SELECT "p"."id"
+   FROM ("public"."projects" "p"
+     JOIN "public"."organization_members" "om" ON (("p"."organization_id" = "om"."organization_id")))
+  WHERE ("om"."user_id" = "auth"."uid"())))) WITH CHECK (("project_id" IN ( SELECT "p"."id"
+   FROM ("public"."projects" "p"
+     JOIN "public"."organization_members" "om" ON (("p"."organization_id" = "om"."organization_id")))
+  WHERE ("om"."user_id" = "auth"."uid"()))));
 
 
 
@@ -2356,6 +2497,9 @@ ALTER TABLE "public"."building_schema_versions" ENABLE ROW LEVEL SECURITY;
 ALTER TABLE "public"."building_schemas" ENABLE ROW LEVEL SECURITY;
 
 
+ALTER TABLE "public"."db_engines" ENABLE ROW LEVEL SECURITY;
+
+
 ALTER TABLE "public"."design_sessions" ENABLE ROW LEVEL SECURITY;
 
 
@@ -2384,6 +2528,9 @@ ALTER TABLE "public"."knowledge_suggestions" ENABLE ROW LEVEL SECURITY;
 
 
 ALTER TABLE "public"."messages" ENABLE ROW LEVEL SECURITY;
+
+
+ALTER TABLE "public"."migration_files" ENABLE ROW LEVEL SECURITY;
 
 
 ALTER TABLE "public"."migration_pull_request_mappings" ENABLE ROW LEVEL SECURITY;
@@ -2429,6 +2576,10 @@ CREATE POLICY "service_role_can_delete_all_building_schemas" ON "public"."buildi
 
 
 
+CREATE POLICY "service_role_can_delete_all_db_engines" ON "public"."db_engines" FOR DELETE TO "service_role" USING (true);
+
+
+
 CREATE POLICY "service_role_can_delete_all_documents" ON "public"."documents" FOR DELETE TO "service_role" USING (true);
 
 
@@ -2438,6 +2589,10 @@ CREATE POLICY "service_role_can_delete_all_invitations" ON "public"."invitations
 
 
 CREATE POLICY "service_role_can_delete_all_knowledge_suggestions" ON "public"."knowledge_suggestions" FOR DELETE TO "service_role" USING (true);
+
+
+
+CREATE POLICY "service_role_can_delete_all_migration_files" ON "public"."migration_files" FOR DELETE TO "service_role" USING (true);
 
 
 
@@ -2454,6 +2609,10 @@ COMMENT ON POLICY "service_role_can_delete_all_projects" ON "public"."projects" 
 
 
 CREATE POLICY "service_role_can_insert_all_building_schemas" ON "public"."building_schemas" FOR INSERT TO "service_role" WITH CHECK (true);
+
+
+
+CREATE POLICY "service_role_can_insert_all_db_engines" ON "public"."db_engines" FOR INSERT TO "service_role" WITH CHECK (true);
 
 
 
@@ -2486,6 +2645,10 @@ CREATE POLICY "service_role_can_insert_all_knowledge_suggestions" ON "public"."k
 
 
 CREATE POLICY "service_role_can_insert_all_messages" ON "public"."messages" FOR INSERT TO "service_role" WITH CHECK (true);
+
+
+
+CREATE POLICY "service_role_can_insert_all_migration_files" ON "public"."migration_files" FOR INSERT TO "service_role" WITH CHECK (true);
 
 
 
@@ -2533,6 +2696,10 @@ CREATE POLICY "service_role_can_select_all_building_schemas" ON "public"."buildi
 
 
 
+CREATE POLICY "service_role_can_select_all_db_engines" ON "public"."db_engines" FOR SELECT TO "service_role" USING (true);
+
+
+
 CREATE POLICY "service_role_can_select_all_design_sessions" ON "public"."design_sessions" FOR SELECT TO "service_role" USING (true);
 
 
@@ -2566,6 +2733,10 @@ CREATE POLICY "service_role_can_select_all_knowledge_suggestions" ON "public"."k
 
 
 CREATE POLICY "service_role_can_select_all_messages" ON "public"."messages" FOR SELECT TO "service_role" USING (true);
+
+
+
+CREATE POLICY "service_role_can_select_all_migration_files" ON "public"."migration_files" FOR SELECT TO "service_role" USING (true);
 
 
 
@@ -2609,6 +2780,10 @@ CREATE POLICY "service_role_can_update_all_building_schemas" ON "public"."buildi
 
 
 
+CREATE POLICY "service_role_can_update_all_db_engines" ON "public"."db_engines" FOR UPDATE TO "service_role" USING (true) WITH CHECK (true);
+
+
+
 CREATE POLICY "service_role_can_update_all_design_sessions" ON "public"."design_sessions" FOR UPDATE TO "service_role" USING (true) WITH CHECK (true);
 
 
@@ -2626,6 +2801,10 @@ CREATE POLICY "service_role_can_update_all_knowledge_suggestions" ON "public"."k
 
 
 CREATE POLICY "service_role_can_update_all_messages" ON "public"."messages" FOR UPDATE TO "service_role" USING (true) WITH CHECK (true);
+
+
+
+CREATE POLICY "service_role_can_update_all_migration_files" ON "public"."migration_files" FOR UPDATE TO "service_role" USING (true) WITH CHECK (true);
 
 
 
@@ -3862,6 +4041,18 @@ GRANT ALL ON TABLE "public"."building_schemas" TO "service_role";
 
 
 
+GRANT ALL ON TABLE "public"."db_engines" TO "anon";
+GRANT ALL ON TABLE "public"."db_engines" TO "authenticated";
+GRANT ALL ON TABLE "public"."db_engines" TO "service_role";
+
+
+
+GRANT ALL ON SEQUENCE "public"."db_engines_id_seq" TO "anon";
+GRANT ALL ON SEQUENCE "public"."db_engines_id_seq" TO "authenticated";
+GRANT ALL ON SEQUENCE "public"."db_engines_id_seq" TO "service_role";
+
+
+
 GRANT ALL ON TABLE "public"."design_sessions" TO "anon";
 GRANT ALL ON TABLE "public"."design_sessions" TO "authenticated";
 GRANT ALL ON TABLE "public"."design_sessions" TO "service_role";
@@ -3919,6 +4110,12 @@ GRANT ALL ON TABLE "public"."knowledge_suggestions" TO "service_role";
 GRANT ALL ON TABLE "public"."messages" TO "anon";
 GRANT ALL ON TABLE "public"."messages" TO "authenticated";
 GRANT ALL ON TABLE "public"."messages" TO "service_role";
+
+
+
+GRANT ALL ON TABLE "public"."migration_files" TO "anon";
+GRANT ALL ON TABLE "public"."migration_files" TO "authenticated";
+GRANT ALL ON TABLE "public"."migration_files" TO "service_role";
 
 
 
