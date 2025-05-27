@@ -1,4 +1,4 @@
-import { END, StateGraph, Annotation } from '@langchain/langgraph'
+import { START, END, StateGraph, Annotation } from '@langchain/langgraph'
 import { ChatOpenAI } from '@langchain/openai'
 import { mastra } from '@/lib/mastra'
 
@@ -122,40 +122,30 @@ export const runChat = async (
   try {
     const graph = new StateGraph(ChatStateAnnotation)
 
-    graph.addNode('buildPrompt', buildPrompt)
-    graph.addNode('draft', draft)
-    graph.addNode('check', check)
-    graph.addNode('remind', remind)
+    graph
+      .addNode('buildPrompt', buildPrompt)
+      .addNode('draft', draft)
+      .addNode('check', check)
+      .addNode('remind', remind)
+      .addEdge(START, 'buildPrompt')
+      .addEdge('buildPrompt', 'draft')
+      .addEdge('remind', 'check')
 
-    // ── エッジ定義
-    graph.setEntryPoint('buildPrompt')
-    // @ts-ignore
-    graph.addEdge('buildPrompt', 'draft')
-    // @ts-ignore
-    graph.addEdge('draft', 'check')
 
     // 条件分岐エッジ
-    // @ts-ignore
-    graph.addConditionalEdges('check', (s: ChatState) => {
+    .addConditionalEdges('check', (s: ChatState) => {
       if (s.valid) return END
       if ((s.retryCount ?? 0) >= 3) return END // give up
       return 'remind'
     })
 
-    // @ts-ignore
-    graph.addEdge('remind', 'check')
-
     // 無限ループ防止
-    // @ts-ignore
-    if (graph.setMaxRounds) {
-      // @ts-ignore
-      graph.setMaxRounds(4)
-    }
+    // if (graph.setMaxRounds) {
+    //   graph.setMaxRounds(4)
+    // }
 
     // ── 実行
-    // @ts-ignore
     const compiled = graph.compile()
-    // @ts-ignore
     const result = await compiled.invoke({
       userMsg,
       schemaText,
@@ -167,33 +157,33 @@ export const runChat = async (
   } catch (error) {
     console.error('StateGraph execution failed, falling back to manual execution:', error)
     
-    // StateGraphが失敗した場合のフォールバック実装
-    let state: ChatState = {
-      userMsg,
-      schemaText,
-      chatHistory,
-      retryCount: 0,
-    }
+    // // StateGraphが失敗した場合のフォールバック実装
+    // let state: ChatState = {
+    //   userMsg,
+    //   schemaText,
+    //   chatHistory,
+    //   retryCount: 0,
+    // }
 
-    // Manual execution following LangGraph flow
-    const promptResult = await buildPrompt(state)
-    state = { ...state, ...promptResult }
+    // // Manual execution following LangGraph flow
+    // const promptResult = await buildPrompt(state)
+    // state = { ...state, ...promptResult }
 
-    const draftResult = await draft(state)
-    state = { ...state, ...draftResult }
+    // const draftResult = await draft(state)
+    // state = { ...state, ...draftResult }
 
-    let checkResult = await check(state)
-    state = { ...state, ...checkResult }
+    // let checkResult = await check(state)
+    // state = { ...state, ...checkResult }
 
-    while (!state.valid && (state.retryCount ?? 0) < 3) {
-      const remindResult = await remind(state)
-      state = { ...state, ...remindResult }
+    // while (!state.valid && (state.retryCount ?? 0) < 3) {
+    //   const remindResult = await remind(state)
+    //   state = { ...state, ...remindResult }
 
-      checkResult = await check(state)
-      state = { ...state, ...checkResult }
-    }
+    //   checkResult = await check(state)
+    //   state = { ...state, ...checkResult }
+    // }
 
-    return state.draft ?? 'No response generated'
+    // return state.draft ?? 'No response generated'
   }
 }
 
