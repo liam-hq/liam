@@ -158,16 +158,3 @@ export const runChat = async (
     // some fallback logic
   }
 }
-
-/*
- * 実装ノート:
- * 
- * この実装は StateGraph と END を @langchain/langgraph からインポートし、
- * 実際に StateGraph を使用しようと試みています。
- * 
- * TypeScript型定義の互換性問題により @ts-ignore を使用していますが、
- * 実行時には StateGraph の機能を使用します。
- * 
- * StateGraph の実行が失敗した場合、フォールバック実装が同じロジックを
- * 手動で実行し、機能の継続性を保証します。
- */
