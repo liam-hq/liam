@@ -1,6 +1,6 @@
-import { START, END, StateGraph, Annotation } from '@langchain/langgraph'
-import { ChatOpenAI } from '@langchain/openai'
 import { mastra } from '@/lib/mastra'
+import { Annotation, END, START, StateGraph } from '@langchain/langgraph'
+import { ChatOpenAI } from '@langchain/openai'
 
 ////////////////////////////////////////////////////////////////
 // 1. Type definitions for the StateGraph
@@ -131,12 +131,12 @@ export const runChat = async (
       .addEdge('buildPrompt', 'drafted')
       .addEdge('remind', 'check')
 
-    // conditional edges
-    .addConditionalEdges('check', (s: ChatState) => {
-      if (s.valid) return END
-      if ((s.retryCount ?? 0) >= 3) return END // give up
-      return 'remind'
-    })
+      // conditional edges
+      .addConditionalEdges('check', (s: ChatState) => {
+        if (s.valid) return END
+        if ((s.retryCount ?? 0) >= 3) return END // give up
+        return 'remind'
+      })
 
     // execution
     const compiled = graph.compile()
@@ -149,12 +149,15 @@ export const runChat = async (
       },
       {
         recursionLimit: 4, // for avoid deep recursion
-      }
+      },
     )
 
     return result.draft ?? 'No response generated'
   } catch (error) {
-    console.error('StateGraph execution failed, falling back to manual execution:', error)
+    console.error(
+      'StateGraph execution failed, falling back to manual execution:',
+      error,
+    )
     // some fallback logic
   }
 }
