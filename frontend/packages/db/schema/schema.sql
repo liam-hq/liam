@@ -1459,6 +1459,10 @@ CREATE INDEX "idx_migration_files_project_id" ON "public"."migration_files" USIN
 
 
 
+CREATE UNIQUE INDEX "idx_migration_files_project_id_hash_unique" ON "public"."migration_files" USING "btree" ("project_id", "hash");
+
+
+
 CREATE INDEX "idx_project_organization_id" ON "public"."projects" USING "btree" ("organization_id");
 
 

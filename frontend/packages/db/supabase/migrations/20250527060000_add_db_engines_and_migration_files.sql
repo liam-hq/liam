@@ -39,6 +39,9 @@ CREATE INDEX "idx_db_engines_project_id" ON "public"."db_engines" USING btree ("
 CREATE INDEX "idx_migration_files_project_id" ON "public"."migration_files" USING btree ("project_id");
 CREATE INDEX "idx_migration_files_hash" ON "public"."migration_files" USING btree ("hash");
 
+-- Add UNIQUE index on (project_id, hash) to prevent duplicate migration entries for the same project and speed up lookups
+CREATE UNIQUE INDEX "idx_migration_files_project_id_hash_unique" ON "public"."migration_files" USING btree ("project_id", "hash");
+
 -- Enable RLS for db_engines table
 ALTER TABLE "public"."db_engines" ENABLE ROW LEVEL SECURITY;
 
