@@ -460,6 +460,23 @@ $$;
 ALTER FUNCTION "public"."set_building_schemas_organization_id"() OWNER TO "postgres";
 
 
+CREATE OR REPLACE FUNCTION "public"."set_db_engines_organization_id"() RETURNS "trigger"
+    LANGUAGE "plpgsql" SECURITY DEFINER
+    AS $$
+BEGIN
+  NEW.organization_id := (
+    SELECT "organization_id" 
+    FROM "public"."projects" 
+    WHERE "id" = NEW.project_id
+  );
+  RETURN NEW;
+END;
+$$;
+
+
+ALTER FUNCTION "public"."set_db_engines_organization_id"() OWNER TO "postgres";
+
+
 CREATE OR REPLACE FUNCTION "public"."set_design_sessions_organization_id"() RETURNS "trigger"
     LANGUAGE "plpgsql" SECURITY DEFINER
     AS $$
@@ -577,6 +594,23 @@ $$;
 
 
 ALTER FUNCTION "public"."set_messages_organization_id"() OWNER TO "postgres";
+
+
+CREATE OR REPLACE FUNCTION "public"."set_migration_files_organization_id"() RETURNS "trigger"
+    LANGUAGE "plpgsql" SECURITY DEFINER
+    AS $$
+BEGIN
+  NEW.organization_id := (
+    SELECT "organization_id" 
+    FROM "public"."projects" 
+    WHERE "id" = NEW.project_id
+  );
+  RETURN NEW;
+END;
+$$;
+
+
+ALTER FUNCTION "public"."set_migration_files_organization_id"() OWNER TO "postgres";
 
 
 CREATE OR REPLACE FUNCTION "public"."set_migration_pull_request_mappings_organization_id"() RETURNS "trigger"
@@ -874,6 +908,7 @@ CREATE TABLE IF NOT EXISTS "public"."db_engines" (
     "name" "text" NOT NULL,
     "version" "text",
     "project_id" "uuid" NOT NULL,
+    "organization_id" "uuid" NOT NULL,
     "created_at" timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
     "updated_at" timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
@@ -1050,6 +1085,7 @@ ALTER TABLE "public"."messages" OWNER TO "postgres";
 CREATE TABLE IF NOT EXISTS "public"."migration_files" (
     "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
     "project_id" "uuid" NOT NULL,
+    "organization_id" "uuid" NOT NULL,
     "content" "text" NOT NULL,
     "hash" "text" NOT NULL,
     "applied_at" timestamp with time zone,
@@ -1447,11 +1483,19 @@ CREATE UNIQUE INDEX "github_repository_owner_name_key" ON "public"."github_repos
 
 
 
+CREATE INDEX "idx_db_engines_organization_id" ON "public"."db_engines" USING "btree" ("organization_id");
+
+
+
 CREATE INDEX "idx_db_engines_project_id" ON "public"."db_engines" USING "btree" ("project_id");
 
 
 
 CREATE INDEX "idx_migration_files_hash" ON "public"."migration_files" USING "btree" ("hash");
+
+
+
+CREATE INDEX "idx_migration_files_organization_id" ON "public"."migration_files" USING "btree" ("organization_id");
 
 
 
@@ -1523,6 +1567,10 @@ CREATE OR REPLACE TRIGGER "set_building_schemas_organization_id_trigger" BEFORE 
 
 
 
+CREATE OR REPLACE TRIGGER "set_db_engines_organization_id_trigger" BEFORE INSERT OR UPDATE ON "public"."db_engines" FOR EACH ROW EXECUTE FUNCTION "public"."set_db_engines_organization_id"();
+
+
+
 CREATE OR REPLACE TRIGGER "set_design_sessions_organization_id_trigger" BEFORE INSERT OR UPDATE ON "public"."design_sessions" FOR EACH ROW EXECUTE FUNCTION "public"."set_design_sessions_organization_id"();
 
 
@@ -1548,6 +1596,10 @@ CREATE OR REPLACE TRIGGER "set_knowledge_suggestions_organization_id_trigger" BE
 
 
 CREATE OR REPLACE TRIGGER "set_messages_organization_id_trigger" BEFORE INSERT OR UPDATE ON "public"."messages" FOR EACH ROW EXECUTE FUNCTION "public"."set_messages_organization_id"();
+
+
+
+CREATE OR REPLACE TRIGGER "set_migration_files_organization_id_trigger" BEFORE INSERT OR UPDATE ON "public"."migration_files" FOR EACH ROW EXECUTE FUNCTION "public"."set_migration_files_organization_id"();
 
 
 
@@ -1608,6 +1660,11 @@ ALTER TABLE ONLY "public"."building_schemas"
 
 ALTER TABLE ONLY "public"."building_schemas"
     ADD CONSTRAINT "building_schemas_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "public"."organizations"("id") ON UPDATE CASCADE ON DELETE RESTRICT;
+
+
+
+ALTER TABLE ONLY "public"."db_engines"
+    ADD CONSTRAINT "db_engines_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "public"."organizations"("id") ON UPDATE CASCADE ON DELETE RESTRICT;
 
 
 
@@ -1723,6 +1780,11 @@ ALTER TABLE ONLY "public"."messages"
 
 ALTER TABLE ONLY "public"."messages"
     ADD CONSTRAINT "messages_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON UPDATE CASCADE ON DELETE RESTRICT;
+
+
+
+ALTER TABLE ONLY "public"."migration_files"
+    ADD CONSTRAINT "migration_files_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "public"."organizations"("id") ON UPDATE CASCADE ON DELETE RESTRICT;
 
 
 
@@ -1887,10 +1949,9 @@ COMMENT ON POLICY "authenticated_users_can_delete_org_building_schemas" ON "publ
 
 
 
-CREATE POLICY "authenticated_users_can_delete_org_db_engines" ON "public"."db_engines" FOR DELETE TO "authenticated" USING (("project_id" IN ( SELECT "p"."id"
-   FROM ("public"."projects" "p"
-     JOIN "public"."organization_members" "om" ON (("p"."organization_id" = "om"."organization_id")))
-  WHERE ("om"."user_id" = "auth"."uid"()))));
+CREATE POLICY "authenticated_users_can_delete_org_db_engines" ON "public"."db_engines" FOR DELETE TO "authenticated" USING (("organization_id" IN ( SELECT "organization_members"."organization_id"
+   FROM "public"."organization_members"
+  WHERE ("organization_members"."user_id" = "auth"."uid"()))));
 
 
 
@@ -1920,10 +1981,9 @@ CREATE POLICY "authenticated_users_can_delete_org_invitations" ON "public"."invi
 
 
 
-CREATE POLICY "authenticated_users_can_delete_org_migration_files" ON "public"."migration_files" FOR DELETE TO "authenticated" USING (("project_id" IN ( SELECT "p"."id"
-   FROM ("public"."projects" "p"
-     JOIN "public"."organization_members" "om" ON (("p"."organization_id" = "om"."organization_id")))
-  WHERE ("om"."user_id" = "auth"."uid"()))));
+CREATE POLICY "authenticated_users_can_delete_org_migration_files" ON "public"."migration_files" FOR DELETE TO "authenticated" USING (("organization_id" IN ( SELECT "organization_members"."organization_id"
+   FROM "public"."organization_members"
+  WHERE ("organization_members"."user_id" = "auth"."uid"()))));
 
 
 
@@ -1971,10 +2031,9 @@ COMMENT ON POLICY "authenticated_users_can_insert_org_building_schemas" ON "publ
 
 
 
-CREATE POLICY "authenticated_users_can_insert_org_db_engines" ON "public"."db_engines" FOR INSERT TO "authenticated" WITH CHECK (("project_id" IN ( SELECT "p"."id"
-   FROM ("public"."projects" "p"
-     JOIN "public"."organization_members" "om" ON (("p"."organization_id" = "om"."organization_id")))
-  WHERE ("om"."user_id" = "auth"."uid"()))));
+CREATE POLICY "authenticated_users_can_insert_org_db_engines" ON "public"."db_engines" FOR INSERT TO "authenticated" WITH CHECK (("organization_id" IN ( SELECT "organization_members"."organization_id"
+   FROM "public"."organization_members"
+  WHERE ("organization_members"."user_id" = "auth"."uid"()))));
 
 
 
@@ -2054,10 +2113,9 @@ COMMENT ON POLICY "authenticated_users_can_insert_org_messages" ON "public"."mes
 
 
 
-CREATE POLICY "authenticated_users_can_insert_org_migration_files" ON "public"."migration_files" FOR INSERT TO "authenticated" WITH CHECK (("project_id" IN ( SELECT "p"."id"
-   FROM ("public"."projects" "p"
-     JOIN "public"."organization_members" "om" ON (("p"."organization_id" = "om"."organization_id")))
-  WHERE ("om"."user_id" = "auth"."uid"()))));
+CREATE POLICY "authenticated_users_can_insert_org_migration_files" ON "public"."migration_files" FOR INSERT TO "authenticated" WITH CHECK (("organization_id" IN ( SELECT "organization_members"."organization_id"
+   FROM "public"."organization_members"
+  WHERE ("organization_members"."user_id" = "auth"."uid"()))));
 
 
 
@@ -2133,10 +2191,9 @@ COMMENT ON POLICY "authenticated_users_can_select_org_building_schemas" ON "publ
 
 
 
-CREATE POLICY "authenticated_users_can_select_org_db_engines" ON "public"."db_engines" FOR SELECT TO "authenticated" USING (("project_id" IN ( SELECT "p"."id"
-   FROM ("public"."projects" "p"
-     JOIN "public"."organization_members" "om" ON (("p"."organization_id" = "om"."organization_id")))
-  WHERE ("om"."user_id" = "auth"."uid"()))));
+CREATE POLICY "authenticated_users_can_select_org_db_engines" ON "public"."db_engines" FOR SELECT TO "authenticated" USING (("organization_id" IN ( SELECT "organization_members"."organization_id"
+   FROM "public"."organization_members"
+  WHERE ("organization_members"."user_id" = "auth"."uid"()))));
 
 
 
@@ -2226,10 +2283,9 @@ COMMENT ON POLICY "authenticated_users_can_select_org_messages" ON "public"."mes
 
 
 
-CREATE POLICY "authenticated_users_can_select_org_migration_files" ON "public"."migration_files" FOR SELECT TO "authenticated" USING (("project_id" IN ( SELECT "p"."id"
-   FROM ("public"."projects" "p"
-     JOIN "public"."organization_members" "om" ON (("p"."organization_id" = "om"."organization_id")))
-  WHERE ("om"."user_id" = "auth"."uid"()))));
+CREATE POLICY "authenticated_users_can_select_org_migration_files" ON "public"."migration_files" FOR SELECT TO "authenticated" USING (("organization_id" IN ( SELECT "organization_members"."organization_id"
+   FROM "public"."organization_members"
+  WHERE ("organization_members"."user_id" = "auth"."uid"()))));
 
 
 
@@ -2375,13 +2431,11 @@ COMMENT ON POLICY "authenticated_users_can_update_org_building_schemas" ON "publ
 
 
 
-CREATE POLICY "authenticated_users_can_update_org_db_engines" ON "public"."db_engines" FOR UPDATE TO "authenticated" USING (("project_id" IN ( SELECT "p"."id"
-   FROM ("public"."projects" "p"
-     JOIN "public"."organization_members" "om" ON (("p"."organization_id" = "om"."organization_id")))
-  WHERE ("om"."user_id" = "auth"."uid"())))) WITH CHECK (("project_id" IN ( SELECT "p"."id"
-   FROM ("public"."projects" "p"
-     JOIN "public"."organization_members" "om" ON (("p"."organization_id" = "om"."organization_id")))
-  WHERE ("om"."user_id" = "auth"."uid"()))));
+CREATE POLICY "authenticated_users_can_update_org_db_engines" ON "public"."db_engines" FOR UPDATE TO "authenticated" USING (("organization_id" IN ( SELECT "organization_members"."organization_id"
+   FROM "public"."organization_members"
+  WHERE ("organization_members"."user_id" = "auth"."uid"())))) WITH CHECK (("organization_id" IN ( SELECT "organization_members"."organization_id"
+   FROM "public"."organization_members"
+  WHERE ("organization_members"."user_id" = "auth"."uid"()))));
 
 
 
@@ -2439,13 +2493,11 @@ COMMENT ON POLICY "authenticated_users_can_update_org_messages" ON "public"."mes
 
 
 
-CREATE POLICY "authenticated_users_can_update_org_migration_files" ON "public"."migration_files" FOR UPDATE TO "authenticated" USING (("project_id" IN ( SELECT "p"."id"
-   FROM ("public"."projects" "p"
-     JOIN "public"."organization_members" "om" ON (("p"."organization_id" = "om"."organization_id")))
-  WHERE ("om"."user_id" = "auth"."uid"())))) WITH CHECK (("project_id" IN ( SELECT "p"."id"
-   FROM ("public"."projects" "p"
-     JOIN "public"."organization_members" "om" ON (("p"."organization_id" = "om"."organization_id")))
-  WHERE ("om"."user_id" = "auth"."uid"()))));
+CREATE POLICY "authenticated_users_can_update_org_migration_files" ON "public"."migration_files" FOR UPDATE TO "authenticated" USING (("organization_id" IN ( SELECT "organization_members"."organization_id"
+   FROM "public"."organization_members"
+  WHERE ("organization_members"."user_id" = "auth"."uid"())))) WITH CHECK (("organization_id" IN ( SELECT "organization_members"."organization_id"
+   FROM "public"."organization_members"
+  WHERE ("organization_members"."user_id" = "auth"."uid"()))));
 
 
 
@@ -3660,6 +3712,12 @@ GRANT ALL ON FUNCTION "public"."set_building_schemas_organization_id"() TO "serv
 
 
 
+GRANT ALL ON FUNCTION "public"."set_db_engines_organization_id"() TO "anon";
+GRANT ALL ON FUNCTION "public"."set_db_engines_organization_id"() TO "authenticated";
+GRANT ALL ON FUNCTION "public"."set_db_engines_organization_id"() TO "service_role";
+
+
+
 GRANT ALL ON FUNCTION "public"."set_design_sessions_organization_id"() TO "anon";
 GRANT ALL ON FUNCTION "public"."set_design_sessions_organization_id"() TO "authenticated";
 GRANT ALL ON FUNCTION "public"."set_design_sessions_organization_id"() TO "service_role";
@@ -3699,6 +3757,12 @@ GRANT ALL ON FUNCTION "public"."set_knowledge_suggestions_organization_id"() TO 
 GRANT ALL ON FUNCTION "public"."set_messages_organization_id"() TO "anon";
 GRANT ALL ON FUNCTION "public"."set_messages_organization_id"() TO "authenticated";
 GRANT ALL ON FUNCTION "public"."set_messages_organization_id"() TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."set_migration_files_organization_id"() TO "anon";
+GRANT ALL ON FUNCTION "public"."set_migration_files_organization_id"() TO "authenticated";
+GRANT ALL ON FUNCTION "public"."set_migration_files_organization_id"() TO "service_role";
 
 
 

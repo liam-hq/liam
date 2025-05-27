@@ -123,6 +123,7 @@ export type Database = {
           created_at: string
           id: number
           name: string
+          organization_id: string
           project_id: string
           updated_at: string
           version: string | null
@@ -131,6 +132,7 @@ export type Database = {
           created_at?: string
           id?: number
           name: string
+          organization_id: string
           project_id: string
           updated_at?: string
           version?: string | null
@@ -139,11 +141,19 @@ export type Database = {
           created_at?: string
           id?: number
           name?: string
+          organization_id?: string
           project_id?: string
           updated_at?: string
           version?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: 'db_engines_organization_id_fkey'
+            columns: ['organization_id']
+            isOneToOne: false
+            referencedRelation: 'organizations'
+            referencedColumns: ['id']
+          },
           {
             foreignKeyName: 'db_engines_project_id_fkey'
             columns: ['project_id']
@@ -651,6 +661,7 @@ export type Database = {
           created_at: string
           hash: string
           id: string
+          organization_id: string
           project_id: string
           updated_at: string
         }
@@ -660,6 +671,7 @@ export type Database = {
           created_at?: string
           hash: string
           id?: string
+          organization_id: string
           project_id: string
           updated_at?: string
         }
@@ -669,10 +681,18 @@ export type Database = {
           created_at?: string
           hash?: string
           id?: string
+          organization_id?: string
           project_id?: string
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: 'migration_files_organization_id_fkey'
+            columns: ['organization_id']
+            isOneToOne: false
+            referencedRelation: 'organizations'
+            referencedColumns: ['id']
+          },
           {
             foreignKeyName: 'migration_files_project_id_fkey'
             columns: ['project_id']
