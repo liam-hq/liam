@@ -3,7 +3,7 @@ import { ChatOpenAI } from '@langchain/openai'
 import { mastra } from '@/lib/mastra'
 
 ////////////////////////////////////////////////////////////////
-// ❶  型
+// 1. Type definitions for the StateGraph
 ////////////////////////////////////////////////////////////////
 interface ChatState {
   userMsg: string
@@ -17,7 +17,7 @@ interface ChatState {
   retryCount?: number
 }
 
-// StateGraph用のAnnotation定義
+// define the annotations for the StateGraph
 const ChatStateAnnotation = Annotation.Root({
   userMsg: Annotation<string>,
   schemaText: Annotation<string>,
@@ -30,7 +30,7 @@ const ChatStateAnnotation = Annotation.Root({
 })
 
 ////////////////////////////////////////////////////////////////
-// ❷  各ノードの実装  ─ 以前の関数をそのまま流用
+// 2. Implementation of the StateGraph nodes
 ////////////////////////////////////////////////////////////////
 
 const buildPrompt = async (s: ChatState): Promise<Partial<ChatState>> => {
@@ -112,7 +112,7 @@ const remind = async (s: ChatState): Promise<Partial<ChatState>> => {
 }
 
 ////////////////////////////////////////////////////////////////
-// ❸  StateGraph を構築 - TypeScript型エラーを無視してでも使用
+// 3. build StateGraph
 ////////////////////////////////////////////////////////////////
 export const runChat = async (
   userMsg: string,
@@ -131,15 +131,14 @@ export const runChat = async (
       .addEdge('buildPrompt', 'drafted')
       .addEdge('remind', 'check')
 
-
-    // 条件分岐エッジ
+    // conditional edges
     .addConditionalEdges('check', (s: ChatState) => {
       if (s.valid) return END
       if ((s.retryCount ?? 0) >= 3) return END // give up
       return 'remind'
     })
 
-    // ── 実行
+    // execution
     const compiled = graph.compile()
     const result = await compiled.invoke(
       {
@@ -149,41 +148,14 @@ export const runChat = async (
         retryCount: 0,
       },
       {
-        recursionLimit: 4, // 無限ループ防止
+        recursionLimit: 4, // for avoid deep recursion
       }
     )
 
     return result.draft ?? 'No response generated'
   } catch (error) {
     console.error('StateGraph execution failed, falling back to manual execution:', error)
-    
-    // // StateGraphが失敗した場合のフォールバック実装
-    // let state: ChatState = {
-    //   userMsg,
-    //   schemaText,
-    //   chatHistory,
-    //   retryCount: 0,
-    // }
-
-    // // Manual execution following LangGraph flow
-    // const promptResult = await buildPrompt(state)
-    // state = { ...state, ...promptResult }
-
-    // const draftResult = await draft(state)
-    // state = { ...state, ...draftResult }
-
-    // let checkResult = await check(state)
-    // state = { ...state, ...checkResult }
-
-    // while (!state.valid && (state.retryCount ?? 0) < 3) {
-    //   const remindResult = await remind(state)
-    //   state = { ...state, ...remindResult }
-
-    //   checkResult = await check(state)
-    //   state = { ...state, ...checkResult }
-    // }
-
-    // return state.draft ?? 'No response generated'
+    // some fallback logic
   }
 }
 
