@@ -90,6 +90,7 @@ export const ChatbotDialog: FC<ChatbotDialogProps> = ({
           tableGroups,
           history,
           projectId,
+          mode: 'build',
         }),
       })
 
