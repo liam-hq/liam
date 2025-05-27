@@ -1,4 +1,4 @@
-import { END, StateGraph } from '@langchain/langgraph'
+import { END, StateGraph, Annotation } from '@langchain/langgraph'
 import { ChatOpenAI } from '@langchain/openai'
 import { mastra } from '@/lib/mastra'
 
@@ -16,6 +16,18 @@ interface ChatState {
   valid?: boolean
   retryCount?: number
 }
+
+// StateGraph用のAnnotation定義
+const ChatStateAnnotation = Annotation.Root({
+  userMsg: Annotation<string>,
+  schemaText: Annotation<string>,
+  chatHistory: Annotation<string>,
+  sysPrompt: Annotation<string>,
+  draft: Annotation<string>,
+  patch: Annotation<unknown[]>,
+  valid: Annotation<boolean>,
+  retryCount: Annotation<number>,
+})
 
 ////////////////////////////////////////////////////////////////
 // ❷  各ノードの実装  ─ 以前の関数をそのまま流用
@@ -108,21 +120,14 @@ export const runChat = async (
   chatHistory: string,
 ) => {
   try {
-    // @ts-ignore - LangGraphのTypeScript型定義の問題を回避
-    const graph = new StateGraph<ChatState>()
+    const graph = new StateGraph(ChatStateAnnotation)
 
-    // ── ノード登録
-    // @ts-ignore - TypeScript型エラーを無視してStateGraphを使用
     graph.addNode('buildPrompt', buildPrompt)
-    // @ts-ignore
     graph.addNode('draft', draft)
-    // @ts-ignore
     graph.addNode('check', check)
-    // @ts-ignore
     graph.addNode('remind', remind)
 
     // ── エッジ定義
-    // @ts-ignore
     graph.setEntryPoint('buildPrompt')
     // @ts-ignore
     graph.addEdge('buildPrompt', 'draft')
