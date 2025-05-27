@@ -31,14 +31,3 @@ export const replaceHiddenNodeIds = (nodeIds: string[]) => {
   userEditingStore.hiddenNodeIds.clear()
   addHiddenNodeIds(nodeIds)
 }
-
-export const escapeActiveTableName = () => {
-  const currentActiveTableName = userEditingStore.active.tableName
-  userEditingStore.active.tableName = undefined
-  const restore = () => {
-    if (userEditingStore.active.tableName === undefined) {
-      userEditingStore.active.tableName = currentActiveTableName
-    }
-  }
-  return restore
-}
