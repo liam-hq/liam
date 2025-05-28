@@ -12,6 +12,7 @@ type UserEditingStore = {
   hiddenNodeIds: Set<string>
   isPopstateInProgress: boolean
   isTableGroupEditMode: boolean
+  isDiffView: boolean
 }
 
 export const userEditingStore = proxy<UserEditingStore>({
@@ -22,6 +23,7 @@ export const userEditingStore = proxy<UserEditingStore>({
   hiddenNodeIds: proxySet<string>(),
   isPopstateInProgress: false,
   isTableGroupEditMode: false,
+  isDiffView: false,
 })
 
 const pushStateIfNeeded = (url: URL, isPopstateInProgress: boolean) => {

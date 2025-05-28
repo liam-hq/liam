@@ -31,3 +31,7 @@ export const replaceHiddenNodeIds = (nodeIds: string[]) => {
   userEditingStore.hiddenNodeIds.clear()
   addHiddenNodeIds(nodeIds)
 }
+
+export const updateIsDiffView = (isDiffView: boolean) => {
+  userEditingStore.isDiffView = isDiffView
+}
