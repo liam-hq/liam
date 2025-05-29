@@ -1,6 +1,7 @@
 import { includeIgnoreFile } from '@eslint/compat'
 import tseslint from '@typescript-eslint/eslint-plugin'
 import tsParser from '@typescript-eslint/parser'
+import cssModules from 'eslint-plugin-css-modules'
 
 /**
  * Base ESLint configuration with typescript-eslint setup
@@ -24,6 +25,7 @@ export function createBaseConfig(options = {}) {
       ],
       plugins: {
         '@typescript-eslint': tseslint,
+        'css-modules': cssModules,
       },
       languageOptions: {
         parser: tsParser,
@@ -35,6 +37,7 @@ export function createBaseConfig(options = {}) {
       },
       rules: {
         '@typescript-eslint/no-unsafe-member-access': 'error',
+        "css-modules/no-undef-class": ["error", { camelCase: true }],
       },
     },
     {
