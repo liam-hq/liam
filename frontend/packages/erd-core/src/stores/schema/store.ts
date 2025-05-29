@@ -12,4 +12,5 @@ export const schemaStore = proxy<SchemaStore>({
     relationships: {},
     tableGroups: {},
   },
+  diffItems: [],
 })

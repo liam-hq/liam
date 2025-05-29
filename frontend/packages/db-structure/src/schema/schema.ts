@@ -4,35 +4,26 @@ import * as v from 'valibot'
 export const tableGroupNameSchema = v.string()
 
 export const columnNameSchema = v.string()
-export type ColumnName = v.InferOutput<typeof columnNameSchema>
 
-const columnPrimarySchema = v.boolean()
-export type ColumnPrimary = v.InferOutput<typeof columnPrimarySchema>
+export const columnPrimarySchema = v.boolean()
 
-const columnDefaultSchema = v.nullable(
+export const columnDefaultSchema = v.nullable(
   v.union([v.string(), v.number(), v.boolean()]),
 )
-export type ColumnDefault = v.InferOutput<typeof columnDefaultSchema>
 
-const columnCheckSchema = v.nullable(v.string())
-export type ColumnCheck = v.InferOutput<typeof columnCheckSchema>
+export const columnCheckSchema = v.nullable(v.string())
 
-const columnUniqueSchema = v.boolean()
-export type ColumnUnique = v.InferOutput<typeof columnUniqueSchema>
+export const columnUniqueSchema = v.boolean()
 
-const columnNotNullSchema = v.boolean()
-export type ColumnNotNull = v.InferOutput<typeof columnNotNullSchema>
+export const columnNotNullSchema = v.boolean()
 
 export const tableNameSchema = v.string()
-export type TableName = v.InferOutput<typeof tableNameSchema>
 
-const commentSchema = v.nullable(v.string())
-export type Comment = v.InferOutput<typeof commentSchema>
+export const commentSchema = v.nullable(v.string())
 
 const relationshipNameSchema = v.string()
 
-const constraintNameSchema = v.string()
-export type ConstraintName = v.InferOutput<typeof constraintNameSchema>
+export const constraintNameSchema = v.string()
 
 export const columnSchema = v.object({
   name: columnNameSchema,
@@ -49,19 +40,15 @@ const columnsSchema = v.record(columnNameSchema, columnSchema)
 export type Columns = v.InferOutput<typeof columnsSchema>
 export type Column = v.InferOutput<typeof columnSchema>
 
-const indexNameSchema = v.string()
-export type IndexName = v.InferOutput<typeof indexNameSchema>
+export const indexNameSchema = v.string()
 
-const indexUniqueSchema = v.boolean()
-export type IndexUnique = v.InferOutput<typeof indexUniqueSchema>
+export const indexUniqueSchema = v.boolean()
 
-const indexColumnsSchema = v.array(v.string())
-export type IndexColumns = v.InferOutput<typeof indexColumnsSchema>
+export const indexColumnsSchema = v.array(v.string())
 
-const indexTypeSchema = v.string()
-export type IndexType = v.InferOutput<typeof indexTypeSchema>
+export const indexTypeSchema = v.string()
 
-const indexSchema = v.object({
+export const indexSchema = v.object({
   name: indexNameSchema,
   unique: indexUniqueSchema,
   columns: indexColumnsSchema,
@@ -72,7 +59,7 @@ export type Index = v.InferOutput<typeof indexSchema>
 const indexesSchema = v.record(indexNameSchema, indexSchema)
 export type Indexes = v.InferOutput<typeof indexesSchema>
 
-const foreignKeyConstraintReferenceOptionSchema = v.picklist([
+export const foreignKeyConstraintReferenceOptionSchema = v.picklist([
   'CASCADE',
   'RESTRICT',
   'SET_NULL',
@@ -112,10 +99,7 @@ const uniqueConstraintSchema = v.object({
 })
 export type UniqueConstraint = v.InferOutput<typeof uniqueConstraintSchema>
 
-const checkConstraintDetailSchema = v.string()
-export type CheckConstraintDetail = v.InferOutput<
-  typeof checkConstraintDetailSchema
->
+export const checkConstraintDetailSchema = v.string()
 
 const checkConstraintSchema = v.object({
   type: v.literal('CHECK'),
@@ -124,7 +108,7 @@ const checkConstraintSchema = v.object({
 })
 export type CheckConstraint = v.InferOutput<typeof checkConstraintSchema>
 
-const constraintSchema = v.union([
+export const constraintSchema = v.union([
   primaryKeyConstraintSchema,
   foreignKeyConstraintSchema,
   uniqueConstraintSchema,
@@ -135,7 +119,7 @@ export type Constraint = v.InferOutput<typeof constraintSchema>
 const constraintsSchema = v.record(constraintNameSchema, constraintSchema)
 export type Constraints = v.InferOutput<typeof constraintsSchema>
 
-const tableSchema = v.object({
+export const tableSchema = v.object({
   name: tableNameSchema,
   columns: columnsSchema,
   comment: commentSchema,

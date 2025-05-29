@@ -1,6 +1,6 @@
 export { buildSchemaDiff } from './buildSchemaDiff.js'
+export { schemaDiffItemsSchema } from './types.js'
 export type {
-  ChangeStatus,
   SchemaDiffItem,
   TableRelatedDiffItem,
   ColumnRelatedDiffItem,

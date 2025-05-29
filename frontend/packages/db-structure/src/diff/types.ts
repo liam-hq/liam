@@ -1,207 +1,318 @@
-import type {
-  CheckConstraintDetail,
-  Column,
-  ColumnCheck,
-  ColumnDefault,
-  ColumnName,
-  ColumnNotNull,
-  ColumnPrimary,
-  ColumnUnique,
-  Comment,
-  Constraint,
-  ConstraintName,
-  ForeignKeyConstraintReferenceOption,
-  Index,
-  IndexColumns,
-  IndexName,
-  IndexType,
-  IndexUnique,
-  Table,
-  TableName,
+import {
+  type InferOutput,
+  array,
+  literal,
+  object,
+  picklist,
+  string,
+  union,
+} from 'valibot'
+import {
+  checkConstraintDetailSchema,
+  columnCheckSchema,
+  columnDefaultSchema,
+  columnNameSchema,
+  columnNotNullSchema,
+  columnPrimarySchema,
+  columnSchema,
+  columnUniqueSchema,
+  commentSchema,
+  constraintNameSchema,
+  constraintSchema,
+  foreignKeyConstraintReferenceOptionSchema,
+  indexColumnsSchema,
+  indexNameSchema,
+  indexSchema,
+  indexTypeSchema,
+  indexUniqueSchema,
+  tableNameSchema,
+  tableSchema,
 } from '../schema/index.js'
 
-export type ChangeStatus = 'added' | 'removed' | 'modified' | 'unchanged'
+const changeStatusSchema = picklist([
+  'added',
+  'removed',
+  'modified',
+  'unchanged',
+])
+export type ChangeStatus = InferOutput<typeof changeStatusSchema>
 
-type BaseSchemaDiffItem = {
-  status: ChangeStatus
-  tableId: string
-}
+const baseSchemaDiffItemSchema = object({
+  status: changeStatusSchema,
+  tableId: string(),
+})
 
-export type TableDiffItem = BaseSchemaDiffItem & {
-  kind: 'table'
-  data: Table
-}
+const tableDiffItemSchema = object({
+  ...baseSchemaDiffItemSchema.entries,
+  kind: literal('table'),
+  data: tableSchema,
+})
+export type TableDiffItem = InferOutput<typeof tableDiffItemSchema>
 
-export type TableNameDiffItem = BaseSchemaDiffItem & {
-  kind: 'table-name'
-  data: TableName
-}
+const tableNameDiffItemSchema = object({
+  ...baseSchemaDiffItemSchema.entries,
+  kind: literal('table-name'),
+  data: tableNameSchema,
+})
+export type TableNameDiffItem = InferOutput<typeof tableNameDiffItemSchema>
 
-export type TableCommentDiffItem = BaseSchemaDiffItem & {
-  kind: 'table-comment'
-  data: Comment
-}
+const tableCommentDiffItemSchema = object({
+  ...baseSchemaDiffItemSchema.entries,
+  kind: literal('table-comment'),
+  data: commentSchema,
+})
+export type TableCommentDiffItem = InferOutput<
+  typeof tableCommentDiffItemSchema
+>
 
-export type ColumnDiffItem = BaseSchemaDiffItem & {
-  kind: 'column'
-  data: Column
-  columnId: string
-}
+const columnDiffItemSchema = object({
+  ...baseSchemaDiffItemSchema.entries,
+  kind: literal('column'),
+  data: columnSchema,
+  columnId: string(),
+})
+export type ColumnDiffItem = InferOutput<typeof columnDiffItemSchema>
 
-export type ColumnNameDiffItem = BaseSchemaDiffItem & {
-  kind: 'column-name'
-  data: ColumnName
-  columnId: string
-}
+const columnNameDiffItemSchema = object({
+  ...baseSchemaDiffItemSchema.entries,
+  kind: literal('column-name'),
+  data: columnNameSchema,
+  columnId: string(),
+})
+export type ColumnNameDiffItem = InferOutput<typeof columnNameDiffItemSchema>
 
-export type ColumnCommentDiffItem = BaseSchemaDiffItem & {
-  kind: 'column-comment'
-  data: Comment
-  columnId: string
-}
+const columnCommentDiffItemSchema = object({
+  ...baseSchemaDiffItemSchema.entries,
+  kind: literal('column-comment'),
+  data: commentSchema,
+  columnId: string(),
+})
+export type ColumnCommentDiffItem = InferOutput<
+  typeof columnCommentDiffItemSchema
+>
 
-export type ColumnPrimaryDiffItem = BaseSchemaDiffItem & {
-  kind: 'column-primary'
-  data: ColumnPrimary
-  columnId: string
-}
+const columnPrimaryDiffItemSchema = object({
+  ...baseSchemaDiffItemSchema.entries,
+  kind: literal('column-primary'),
+  data: columnPrimarySchema,
+  columnId: string(),
+})
+export type ColumnPrimaryDiffItem = InferOutput<
+  typeof columnPrimaryDiffItemSchema
+>
 
-export type ColumnDefaultDiffItem = BaseSchemaDiffItem & {
-  kind: 'column-default'
-  data: ColumnDefault
-  columnId: string
-}
+const columnDefaultDiffItemSchema = object({
+  ...baseSchemaDiffItemSchema.entries,
+  kind: literal('column-default'),
+  data: columnDefaultSchema,
+  columnId: string(),
+})
+export type ColumnDefaultDiffItem = InferOutput<
+  typeof columnDefaultDiffItemSchema
+>
 
-export type ColumnCheckDiffItem = BaseSchemaDiffItem & {
-  kind: 'column-check'
-  data: ColumnCheck
-  columnId: string
-}
+const columnCheckDiffItemSchema = object({
+  ...baseSchemaDiffItemSchema.entries,
+  kind: literal('column-check'),
+  data: columnCheckSchema,
+  columnId: string(),
+})
+export type ColumnCheckDiffItem = InferOutput<typeof columnCheckDiffItemSchema>
 
-export type ColumnUniqueDiffItem = BaseSchemaDiffItem & {
-  kind: 'column-unique'
-  data: ColumnUnique
-  columnId: string
-}
+const columnUniqueDiffItemSchema = object({
+  ...baseSchemaDiffItemSchema.entries,
+  kind: literal('column-unique'),
+  data: columnUniqueSchema,
+  columnId: string(),
+})
+export type ColumnUniqueDiffItem = InferOutput<
+  typeof columnUniqueDiffItemSchema
+>
 
-export type ColumnNotNullDiffItem = BaseSchemaDiffItem & {
-  kind: 'column-not-null'
-  data: ColumnNotNull
-  columnId: string
-}
+const columnNotNullDiffItemSchema = object({
+  ...baseSchemaDiffItemSchema.entries,
+  kind: literal('column-not-null'),
+  data: columnNotNullSchema,
+  columnId: string(),
+})
+export type ColumnNotNullDiffItem = InferOutput<
+  typeof columnNotNullDiffItemSchema
+>
 
-export type IndexDiffItem = BaseSchemaDiffItem & {
-  kind: 'index'
-  data: Index
-  indexId: string
-}
+const indexDiffItemSchema = object({
+  ...baseSchemaDiffItemSchema.entries,
+  kind: literal('index'),
+  data: indexSchema,
+  indexId: string(),
+})
+export type IndexDiffItem = InferOutput<typeof indexDiffItemSchema>
 
-export type IndexNameDiffItem = BaseSchemaDiffItem & {
-  kind: 'index-name'
-  data: IndexName
-  indexId: string
-}
+const indexNameDiffItemSchema = object({
+  ...baseSchemaDiffItemSchema.entries,
+  kind: literal('index-name'),
+  data: indexNameSchema,
+  indexId: string(),
+})
+export type IndexNameDiffItem = InferOutput<typeof indexNameDiffItemSchema>
 
-export type IndexUniqueDiffItem = BaseSchemaDiffItem & {
-  kind: 'index-unique'
-  data: IndexUnique
-  indexId: string
-}
+const indexUniqueDiffItemSchema = object({
+  ...baseSchemaDiffItemSchema.entries,
+  kind: literal('index-unique'),
+  data: indexUniqueSchema,
+  indexId: string(),
+})
+export type IndexUniqueDiffItem = InferOutput<typeof indexUniqueDiffItemSchema>
 
-export type IndexColumnsDiffItem = BaseSchemaDiffItem & {
-  kind: 'index-columns'
-  data: IndexColumns
-  indexId: string
-}
+const indexColumnsDiffItemSchema = object({
+  ...baseSchemaDiffItemSchema.entries,
+  kind: literal('index-columns'),
+  data: indexColumnsSchema,
+  indexId: string(),
+})
+export type IndexColumnsDiffItem = InferOutput<
+  typeof indexColumnsDiffItemSchema
+>
 
-export type IndexTypeDiffItem = BaseSchemaDiffItem & {
-  kind: 'index-type'
-  data: IndexType
-  indexId: string
-}
+const indexTypeDiffItemSchema = object({
+  ...baseSchemaDiffItemSchema.entries,
+  kind: literal('index-type'),
+  data: indexTypeSchema,
+  indexId: string(),
+})
+export type IndexTypeDiffItem = InferOutput<typeof indexTypeDiffItemSchema>
 
-export type ConstraintDiffItem = BaseSchemaDiffItem & {
-  kind: 'constraint'
-  data: Constraint
-  constraintId: string
-}
+const constraintDiffItemSchema = object({
+  ...baseSchemaDiffItemSchema.entries,
+  kind: literal('constraint'),
+  data: constraintSchema,
+  constraintId: string(),
+})
+export type ConstraintDiffItem = InferOutput<typeof constraintDiffItemSchema>
 
-export type ConstraintNameDiffItem = BaseSchemaDiffItem & {
-  kind: 'constraint-name'
-  data: ConstraintName
-  constraintId: string
-}
+const constraintNameDiffItemSchema = object({
+  ...baseSchemaDiffItemSchema.entries,
+  kind: literal('constraint-name'),
+  data: constraintNameSchema,
+  constraintId: string(),
+})
+export type ConstraintNameDiffItem = InferOutput<
+  typeof constraintNameDiffItemSchema
+>
 
-export type ConstraintColumnNameDiffItem = BaseSchemaDiffItem & {
-  kind: 'constraint-column-name'
-  data: ColumnName
-  constraintId: string
-}
+const constraintColumnNameDiffItemSchema = object({
+  ...baseSchemaDiffItemSchema.entries,
+  kind: literal('constraint-column-name'),
+  data: columnNameSchema,
+  constraintId: string(),
+})
+export type ConstraintColumnNameDiffItem = InferOutput<
+  typeof constraintColumnNameDiffItemSchema
+>
 
-export type ConstraintTargetTableNameDiffItem = BaseSchemaDiffItem & {
-  kind: 'constraint-target-table-name'
-  data: TableName
-  constraintId: string
-}
+const constraintTargetTableNameDiffItemSchema = object({
+  ...baseSchemaDiffItemSchema.entries,
+  kind: literal('constraint-target-table-name'),
+  data: tableNameSchema,
+  constraintId: string(),
+})
+export type ConstraintTargetTableNameDiffItem = InferOutput<
+  typeof constraintTargetTableNameDiffItemSchema
+>
 
-export type ConstraintTargetColumnNameDiffItem = BaseSchemaDiffItem & {
-  kind: 'constraint-target-column-name'
-  data: ColumnName
-  constraintId: string
-}
+const constraintTargetColumnNameDiffItemSchema = object({
+  ...baseSchemaDiffItemSchema.entries,
+  kind: literal('constraint-target-column-name'),
+  data: columnNameSchema,
+  constraintId: string(),
+})
+export type ConstraintTargetColumnNameDiffItem = InferOutput<
+  typeof constraintTargetColumnNameDiffItemSchema
+>
 
-export type ConstraintUpdateConstraintDiffItem = BaseSchemaDiffItem & {
-  kind: 'constraint-update-constraint'
-  data: ForeignKeyConstraintReferenceOption
-  constraintId: string
-}
+const constraintUpdateConstraintDiffItemSchema = object({
+  ...baseSchemaDiffItemSchema.entries,
+  kind: literal('constraint-update-constraint'),
+  data: foreignKeyConstraintReferenceOptionSchema,
+  constraintId: string(),
+})
+export type ConstraintUpdateConstraintDiffItem = InferOutput<
+  typeof constraintUpdateConstraintDiffItemSchema
+>
 
-export type ConstraintDeleteConstraintDiffItem = BaseSchemaDiffItem & {
-  kind: 'constraint-delete-constraint'
-  data: ForeignKeyConstraintReferenceOption
-  constraintId: string
-}
+const constraintDeleteConstraintDiffItemSchema = object({
+  ...baseSchemaDiffItemSchema.entries,
+  kind: literal('constraint-delete-constraint'),
+  data: foreignKeyConstraintReferenceOptionSchema,
+  constraintId: string(),
+})
+export type ConstraintDeleteConstraintDiffItem = InferOutput<
+  typeof constraintDeleteConstraintDiffItemSchema
+>
 
-export type ConstraintDetailDiffItem = BaseSchemaDiffItem & {
-  kind: 'constraint-detail'
-  data: CheckConstraintDetail
-  constraintId: string
-}
+const constraintDetailDiffItemSchema = object({
+  ...baseSchemaDiffItemSchema.entries,
+  kind: literal('constraint-detail'),
+  data: checkConstraintDetailSchema,
+  constraintId: string(),
+})
+export type ConstraintDetailDiffItem = InferOutput<
+  typeof constraintDetailDiffItemSchema
+>
 
-export type TableRelatedDiffItem =
-  | TableDiffItem
-  | TableNameDiffItem
-  | TableCommentDiffItem
+const tableRelatedDiffItemSchema = union([
+  tableDiffItemSchema,
+  tableNameDiffItemSchema,
+  tableCommentDiffItemSchema,
+])
+export type TableRelatedDiffItem = InferOutput<
+  typeof tableRelatedDiffItemSchema
+>
 
-export type ColumnRelatedDiffItem =
-  | ColumnDiffItem
-  | ColumnNameDiffItem
-  | ColumnCommentDiffItem
-  | ColumnPrimaryDiffItem
-  | ColumnDefaultDiffItem
-  | ColumnCheckDiffItem
-  | ColumnUniqueDiffItem
-  | ColumnNotNullDiffItem
+const columnRelatedDiffItemSchema = union([
+  columnDiffItemSchema,
+  columnNameDiffItemSchema,
+  columnCommentDiffItemSchema,
+  columnPrimaryDiffItemSchema,
+  columnDefaultDiffItemSchema,
+  columnCheckDiffItemSchema,
+  columnUniqueDiffItemSchema,
+  columnNotNullDiffItemSchema,
+])
+export type ColumnRelatedDiffItem = InferOutput<
+  typeof columnRelatedDiffItemSchema
+>
 
-export type IndexRelatedDiffItem =
-  | IndexDiffItem
-  | IndexNameDiffItem
-  | IndexUniqueDiffItem
-  | IndexColumnsDiffItem
-  | IndexTypeDiffItem
+const indexRelatedDiffItemSchema = union([
+  indexDiffItemSchema,
+  indexNameDiffItemSchema,
+  indexUniqueDiffItemSchema,
+  indexColumnsDiffItemSchema,
+  indexTypeDiffItemSchema,
+])
+export type IndexRelatedDiffItem = InferOutput<
+  typeof indexRelatedDiffItemSchema
+>
 
-export type ConstraintRelatedDiffItem =
-  | ConstraintDiffItem
-  | ConstraintNameDiffItem
-  | ConstraintColumnNameDiffItem
-  | ConstraintTargetTableNameDiffItem
-  | ConstraintTargetColumnNameDiffItem
-  | ConstraintUpdateConstraintDiffItem
-  | ConstraintDeleteConstraintDiffItem
-  | ConstraintDetailDiffItem
+const constraintRelatedDiffItemSchema = union([
+  constraintDiffItemSchema,
+  constraintNameDiffItemSchema,
+  constraintColumnNameDiffItemSchema,
+  constraintTargetTableNameDiffItemSchema,
+  constraintTargetColumnNameDiffItemSchema,
+  constraintUpdateConstraintDiffItemSchema,
+  constraintDeleteConstraintDiffItemSchema,
+  constraintDetailDiffItemSchema,
+])
+export type ConstraintRelatedDiffItem = InferOutput<
+  typeof constraintRelatedDiffItemSchema
+>
 
-export type SchemaDiffItem =
-  | TableRelatedDiffItem
-  | ColumnRelatedDiffItem
-  | IndexRelatedDiffItem
-  | ConstraintRelatedDiffItem
+const schemaDiffItemSchema = union([
+  tableRelatedDiffItemSchema,
+  columnRelatedDiffItemSchema,
+  indexRelatedDiffItemSchema,
+  constraintRelatedDiffItemSchema,
+])
+export type SchemaDiffItem = InferOutput<typeof schemaDiffItemSchema>
+
+export const schemaDiffItemsSchema = array(schemaDiffItemSchema)
