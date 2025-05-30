@@ -46,7 +46,8 @@
     ],
     "overrides": {
       "node-gtts": "workspace:*",
-      "prismjs": "1.30.0"
+      "prismjs": "1.30.0",
+      "@radix-ui/react-dialog": "1.1.14"
     }
   },
   "resolutions": {
