@@ -54,7 +54,6 @@ export const AgentMessage: FC<AgentMessageProps> = ({
   agent,
   state = 'default',
   message = '',
-  time = '',
   agentName,
   children,
 }) => {
@@ -69,7 +68,6 @@ export const AgentMessage: FC<AgentMessageProps> = ({
         <span className={styles.agentName}>
           {agentName || (isAsk ? 'Ask Agent' : 'Build Agent')}
         </span>
-        {time && <span className={styles.messageTime}>{time}</span>}
       </div>
       <div className={styles.contentContainer}>
         {isGenerating ? (
