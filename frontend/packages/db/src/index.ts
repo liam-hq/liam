@@ -21,3 +21,7 @@ export const createBrowserClient = _createBrowserClient<AppDatabaseOverrides>
 
 // for Jobs
 export const createClient = _createClient<AppDatabaseOverrides>
+
+export * from './types/message-subscriptions'
+export * from './services/message-subscriptions'
+export * from './services/messages'

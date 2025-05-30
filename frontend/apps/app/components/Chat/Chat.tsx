@@ -3,7 +3,7 @@
 import type { TableGroupData } from '@/app/lib/schema/convertSchemaToText'
 import type { Schema } from '@liam-hq/db-structure'
 import type { FC } from 'react'
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { ChatInput } from '../ChatInput'
 import type { Mode } from '../ChatInput/components/ModeToggleSwitch/ModeToggleSwitch'
 import { ChatMessage, type ChatMessageProps } from '../ChatMessage'
@@ -13,6 +13,7 @@ import {
   getCurrentUserId,
   loadMessages,
   saveMessage,
+  setupRealtimeSubscription,
 } from './services'
 
 /**
@@ -65,6 +66,16 @@ export const Chat: FC<Props> = ({
   const [currentMode, setCurrentMode] = useState<Mode>('ask')
   const [isLoadingMessages, setIsLoadingMessages] = useState(true)
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null)
+
+  // Get current user ID on component mount
+  useEffect(() => {
+    const fetchUserId = async () => {
+      const userId = await getCurrentUserId()
+      setCurrentUserId(userId)
+    }
+    fetchUserId()
+  }, [])
 
   // Load existing messages on component mount
   useEffect(() => {
@@ -72,20 +83,95 @@ export const Chat: FC<Props> = ({
       return
     }
     const loadExistingMessages = async () => {
-      const result = await loadMessages({ designSessionId })
-      if (result.success && result.messages) {
-        const chatEntries = result.messages.map((msg) => ({
-          ...convertMessageToChatEntry(msg),
-          dbId: msg.id,
-        }))
-        // Keep the welcome message and add loaded messages
-        setMessages((prev) => [prev[0], ...chatEntries])
+      try {
+        const result = await loadMessages({ designSessionId })
+        if (result.success && result.messages) {
+          const chatEntries = result.messages.map((msg) => ({
+            ...convertMessageToChatEntry(msg),
+            dbId: msg.id,
+          }))
+          // Keep the welcome message and add loaded messages
+          setMessages((prev) => [prev[0], ...chatEntries])
+        }
+      } catch (error) {
+        console.error('Failed to load messages:', error)
+      } finally {
+        setIsLoadingMessages(false)
       }
-      setIsLoadingMessages(false)
     }
 
     loadExistingMessages()
   }, [designSessionId])
+
+  // Handle new messages from realtime subscription
+  const handleNewMessage = useCallback(
+    (newMessage: any) => {
+      // Convert database message to ChatEntry format
+      const chatEntry = {
+        ...convertMessageToChatEntry(newMessage),
+        dbId: newMessage.id,
+      }
+
+      // Check if message already exists to prevent duplicates
+      setMessages((prev) => {
+        const messageExists = prev.some((msg) => msg.dbId === newMessage.id)
+        if (messageExists) {
+          return prev
+        }
+
+        // For user messages from current user, we already add them optimistically
+        // so we should update the existing message with the database ID instead of adding a new one
+        if (chatEntry.isUser && newMessage.user_id === currentUserId) {
+          const updated = prev.map((msg) => {
+            // Find the most recent user message without a dbId and update it
+            if (msg.isUser && !msg.dbId && msg.content === newMessage.content) {
+              return { ...msg, dbId: newMessage.id }
+            }
+            return msg
+          })
+
+          // Check if we actually updated an existing message
+          const wasUpdated = updated.some((msg, index) => msg !== prev[index])
+          if (wasUpdated) {
+            return updated
+          }
+
+          // If no existing message was updated, this might be from another tab
+          // so we should add it as a new message
+        }
+
+        // For AI messages or messages from other users, add them to the chat
+        // Add the new message and scroll to bottom
+        setTimeout(() => {
+          messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+        }, 100)
+
+        return [...prev, chatEntry]
+      })
+    },
+    [currentUserId],
+  )
+
+  const handleRealtimeError = useCallback((error: Error) => {
+    console.error('Realtime subscription error:', error)
+  }, [])
+
+  // Set up realtime subscription for new messages
+  useEffect(() => {
+    if (!designSessionId) {
+      return
+    }
+
+    const subscription = setupRealtimeSubscription(
+      designSessionId,
+      handleNewMessage,
+      handleRealtimeError,
+    )
+
+    return () => {
+      subscription.unsubscribe()
+    }
+  }, [designSessionId, handleNewMessage, handleRealtimeError])
 
   // Scroll to bottom when component mounts or messages change
   useEffect(() => {
@@ -112,23 +198,27 @@ export const Chat: FC<Props> = ({
     setMessages((prev) => [...prev, userMessage])
 
     // Save user message to database
-    if (designSessionId) {
-      const saveResult = await saveMessage({
-        designSessionId,
-        content,
-        role: 'user',
-        userId,
-      })
-      if (saveResult.success && saveResult.message) {
-        // Update the message with the database ID
-        setMessages((prev) =>
-          prev.map((msg) =>
-            msg.id === userMessage.id
-              ? { ...msg, dbId: saveResult.message?.id }
-              : msg,
-          ),
-        )
+    try {
+      if (designSessionId) {
+        const saveResult = await saveMessage({
+          designSessionId,
+          content,
+          role: 'user',
+          userId,
+        })
+        if (saveResult.success && saveResult.message) {
+          // Update the message with the database ID
+          setMessages((prev) =>
+            prev.map((msg) =>
+              msg.id === userMessage.id
+                ? { ...msg, dbId: saveResult.message?.id }
+                : msg,
+            ),
+          )
+        }
       }
+    } catch (error) {
+      console.error('Failed to save user message:', error)
     }
 
     setIsLoading(true)
@@ -186,16 +276,20 @@ export const Chat: FC<Props> = ({
 
         if (done) {
           // Streaming is complete, save to database and add timestamp
-          if (designSessionId) {
-            const saveResult = await saveMessage({
-              designSessionId,
-              content: accumulatedContent,
-              role: 'assistant',
-              userId: null,
-            })
-            if (saveResult.success && saveResult.message) {
-              aiDbId = saveResult.message.id
+          try {
+            if (designSessionId) {
+              const saveResult = await saveMessage({
+                designSessionId,
+                content: accumulatedContent,
+                role: 'assistant',
+                userId: null,
+              })
+              if (saveResult.success && saveResult.message) {
+                aiDbId = saveResult.message.id
+              }
             }
+          } catch (error) {
+            console.error('Failed to save AI message:', error)
           }
 
           // Update message with final content, timestamp, and database ID
