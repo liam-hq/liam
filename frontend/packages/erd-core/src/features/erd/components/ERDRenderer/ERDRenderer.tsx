@@ -91,19 +91,6 @@ export const ERDRenderer: FC<Props> = ({
 
   const setWidth = useCallback(
     (sizes: number[]) => {
-      if (open && sizes[0]) {
-        const panelGroupElement = document.querySelector(
-          `.${styles.mainWrapper}`,
-        )
-        if (panelGroupElement) {
-          const totalWidth = panelGroupElement.getBoundingClientRect().width
-          const leftPanelWidth = (sizes[0] / 100) * totalWidth
-
-          if (leftPanelWidth <= 260) {
-            leftPanelRef.current?.collapse()
-          }
-        }
-      }
       document.cookie = `${PANEL_LAYOUT_COOKIE_NAME}=${JSON.stringify(sizes)}; path=/; max-age=${COOKIE_MAX_AGE}`
     },
     [leftPanelRef, open],
