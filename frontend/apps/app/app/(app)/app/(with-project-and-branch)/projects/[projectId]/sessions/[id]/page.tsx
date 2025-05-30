@@ -26,6 +26,7 @@ export default async function Page({ params }: PageProps) {
     <SessionDetailPage
       projectId={parsedParams.output.projectId}
       schema={schema}
+      designSessionId={parsedParams.output.id}
     />
   )
 }

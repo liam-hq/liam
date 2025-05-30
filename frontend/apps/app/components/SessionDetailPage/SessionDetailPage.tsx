@@ -15,9 +15,14 @@ import styles from './SessionDetailPage.module.css'
 type Props = {
   projectId: string
   schema: Schema
+  designSessionId: string
 }
 
-export const SessionDetailPage: FC<Props> = ({ projectId, schema }) => {
+export const SessionDetailPage: FC<Props> = ({
+  projectId,
+  schema,
+  designSessionId,
+}) => {
   // Update the schema store with the fetched schema
   useEffect(() => {
     if (schema) {
@@ -42,7 +47,11 @@ export const SessionDetailPage: FC<Props> = ({ projectId, schema }) => {
     <div className={styles.container}>
       <div className={styles.columns}>
         <div className={styles.chatSection}>
-          <Chat schemaData={schema} projectId={projectId} />
+          <Chat
+            schemaData={schema}
+            projectId={projectId}
+            designSessionId={designSessionId}
+          />
         </div>
         <TabsRoot defaultValue="erd" className={styles.tabsRoot}>
           <TabsContent value="erd" className={styles.tabsContent}>

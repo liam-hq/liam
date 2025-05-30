@@ -8,6 +8,12 @@ import { ChatInput } from '../ChatInput'
 import type { Mode } from '../ChatInput/components/ModeToggleSwitch/ModeToggleSwitch'
 import { ChatMessage, type ChatMessageProps } from '../ChatMessage'
 import styles from './Chat.module.css'
+import {
+  convertMessageToChatEntry,
+  getCurrentUserId,
+  loadMessages,
+  saveMessage,
+} from './services'
 
 /**
  * Helper function to create a ChatEntry from an existing message and additional properties
@@ -27,15 +33,23 @@ interface ChatEntry extends ChatMessageProps {
   id: string
   /** The type of agent that generated this message (ask or build) */
   agentType?: Mode
+  /** Database message ID for persistence */
+  dbId?: string
 }
 
 interface Props {
   schemaData: Schema
   tableGroups?: Record<string, TableGroupData>
   projectId: string
+  designSessionId?: string
 }
 
-export const Chat: FC<Props> = ({ schemaData, tableGroups, projectId }) => {
+export const Chat: FC<Props> = ({
+  schemaData,
+  tableGroups,
+  projectId,
+  designSessionId,
+}) => {
   const [messages, setMessages] = useState<ChatEntry[]>([
     {
       id: 'welcome',
@@ -49,16 +63,43 @@ export const Chat: FC<Props> = ({ schemaData, tableGroups, projectId }) => {
   ])
   const [isLoading, setIsLoading] = useState(false)
   const [currentMode, setCurrentMode] = useState<Mode>('ask')
+  const [isLoadingMessages, setIsLoadingMessages] = useState(true)
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
-  // Scroll to bottom when component mounts
+  // Load existing messages on component mount
+  useEffect(() => {
+    if (!designSessionId) {
+      return
+    }
+    const loadExistingMessages = async () => {
+      const result = await loadMessages({ designSessionId })
+      if (result.success && result.messages) {
+        const chatEntries = result.messages.map((msg) => ({
+          ...convertMessageToChatEntry(msg),
+          dbId: msg.id,
+        }))
+        // Keep the welcome message and add loaded messages
+        setMessages((prev) => [prev[0], ...chatEntries])
+      }
+      setIsLoadingMessages(false)
+    }
+
+    loadExistingMessages()
+  }, [designSessionId])
+
+  // Scroll to bottom when component mounts or messages change
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [])
 
+  // biome-ignore  lint/complexity/noExcessiveCognitiveComplexity: fix later
   const handleSendMessage = async (content: string, mode: Mode) => {
     // Update the current mode
     setCurrentMode(mode)
+
+    // Get current user ID for persistence
+    const userId = await getCurrentUserId()
+
     // Add user message
     const userMessage: ChatEntry = {
       id: `user-${Date.now()}`,
@@ -69,21 +110,40 @@ export const Chat: FC<Props> = ({ schemaData, tableGroups, projectId }) => {
       agentType: mode, // Store the current mode with the user message as well
     }
     setMessages((prev) => [...prev, userMessage])
+
+    // Save user message to database
+    if (designSessionId) {
+      const saveResult = await saveMessage({
+        designSessionId,
+        content,
+        role: 'user',
+        userId,
+      })
+      if (saveResult.success && saveResult.message) {
+        // Update the message with the database ID
+        setMessages((prev) =>
+          prev.map((msg) =>
+            msg.id === userMessage.id
+              ? { ...msg, dbId: saveResult.message?.id }
+              : msg,
+          ),
+        )
+      }
+    }
+
     setIsLoading(true)
 
     // Create AI message placeholder for streaming (without timestamp)
     const aiMessageId = `ai-${Date.now()}`
-    setMessages((prev) => [
-      ...prev,
-      {
-        id: aiMessageId,
-        content: '',
-        isUser: false,
-        // No timestamp during streaming
-        isGenerating: true, // Mark as generating
-        agentType: mode, // Store the current mode with the message
-      },
-    ])
+    const aiMessage: ChatEntry = {
+      id: aiMessageId,
+      content: '',
+      isUser: false,
+      // No timestamp during streaming
+      isGenerating: true, // Mark as generating
+      agentType: mode, // Store the current mode with the message
+    }
+    setMessages((prev) => [...prev, aiMessage])
 
     try {
       // Format chat history for API
@@ -118,13 +178,27 @@ export const Chat: FC<Props> = ({ schemaData, tableGroups, projectId }) => {
       }
 
       let accumulatedContent = ''
+      let aiDbId: string | undefined
 
       // Read the stream
       while (true) {
         const { done, value } = await reader.read()
 
         if (done) {
-          // Streaming is complete, add timestamp and remove isGenerating
+          // Streaming is complete, save to database and add timestamp
+          if (designSessionId) {
+            const saveResult = await saveMessage({
+              designSessionId,
+              content: accumulatedContent,
+              role: 'assistant',
+              userId: null,
+            })
+            if (saveResult.success && saveResult.message) {
+              aiDbId = saveResult.message.id
+            }
+          }
+
+          // Update message with final content, timestamp, and database ID
           setMessages((prev) =>
             prev.map((msg) =>
               msg.id === aiMessageId
@@ -132,6 +206,7 @@ export const Chat: FC<Props> = ({ schemaData, tableGroups, projectId }) => {
                     content: accumulatedContent,
                     timestamp: new Date(),
                     isGenerating: false, // Remove generating state when complete
+                    dbId: aiDbId,
                   })
                 : msg,
             ),
@@ -202,16 +277,24 @@ export const Chat: FC<Props> = ({ schemaData, tableGroups, projectId }) => {
   return (
     <div className={styles.wrapper}>
       <div className={styles.messagesContainer}>
-        {messages.map((message) => (
-          <ChatMessage
-            key={message.id}
-            content={message.content}
-            isUser={message.isUser}
-            timestamp={message.timestamp}
-            isGenerating={message.isGenerating}
-            agentType={message.agentType || currentMode}
-          />
-        ))}
+        {isLoadingMessages ? (
+          <div className={styles.loadingIndicator}>
+            <div className={styles.loadingDot} />
+            <div className={styles.loadingDot} />
+            <div className={styles.loadingDot} />
+          </div>
+        ) : (
+          messages.map((message) => (
+            <ChatMessage
+              key={message.id}
+              content={message.content}
+              isUser={message.isUser}
+              timestamp={message.timestamp}
+              isGenerating={message.isGenerating}
+              agentType={message.agentType || currentMode}
+            />
+          ))
+        )}
         {isLoading && (
           <div className={styles.loadingIndicator}>
             <div className={styles.loadingDot} />
