@@ -1,0 +1,126 @@
+.content[cmdk-dialog] {
+  z-index: 10000;
+  background-color: #232526;
+  color: white;
+  border-radius: 6px;
+  box-shadow: var(--shadow-6);
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 638px;
+  height: 508px;
+  animation: contentShow 150ms cubic-bezier(0.16, 1, 0.3, 1);
+  border: 1px solid black;
+}
+
+[cmdk-overlay]:has(+ .content) {
+  z-index: 10000;
+  width: 100vw;
+  height: 100vh;
+  background-color: var(--black-a9);
+  position: fixed;
+  inset: 0;
+  animation: overlayShow 150ms cubic-bezier(0.16, 1, 0.3, 1);
+  backdrop-filter: blur(8px);
+}
+
+.searchContainer {
+  display: flex;
+  align-items: center;
+  padding: 8px 16px;
+  width: 100%;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.searchContainer > [cmdk-input] {
+  margin: 0 8px;
+  height: 32px;
+  flex-grow: 1;
+}
+
+.escapeSign {
+  border: 1px solid #434536;
+  border-radius: var(--border-radius-smbase);
+  font-size: 10px;
+  width: 34px;
+  height: 21px;
+  text-align: center;
+  line-height: 21px;
+}
+
+.main {
+  display: flex;
+  padding: 8px;
+}
+
+.main > * {
+  width: 50%;
+}
+
+.main [cmdk-list] {
+  max-height: 444px;
+  overflow-x: hidden;
+  overflow-y: scroll;
+}
+
+.main [cmdk-group-heading] {
+  height: 40px;
+  line-height: 24px;
+  padding: 8px;
+  color: var(--global-mute-text);
+  font-size: var(--font-size-3);
+}
+
+.itemInner {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  padding: 8px;
+  gap: 8px;
+  overflow: truncate;
+}
+
+.itemInner svg {
+  flex-shrink: 0;
+  color: white;
+}
+
+.main [cmdk-item][data-selected="true"] {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.main [cmdk-item][data-super-selected="true"] {
+  border: 1px solid white;
+}
+
+.previewContainer {
+  padding: 32px;
+  height: 444px;
+}
+
+.tableNodeContainer {
+  padding: 40px 20px;
+  background-color: black;
+  height: 100%;
+  overflow-x: hidden;
+  overflow-y: scroll;
+}
+
+.triggerButtonContainer {
+  display: flex;
+  height: 29px;
+  width: 240px;
+  padding: 0 8px;
+  border: 1px solid #383a3b;
+  background-color: #141616;
+  align-items: center;
+  color: var(--global-mute-text);
+}
+
+.triggerButtonContainer .rightSide {
+  display: flex;
+  gap: 4px;
+  margin-left: auto;
+  margin-right: 0;
+}

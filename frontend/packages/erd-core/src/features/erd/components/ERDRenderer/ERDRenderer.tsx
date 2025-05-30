@@ -27,6 +27,7 @@ import { useSchemaStore, useUserEditingStore } from '@/stores'
 import { convertSchemaToNodes } from '../../utils'
 import { ERDContent } from '../ERDContent'
 import { CardinalityMarkers } from './CardinalityMarkers'
+import { CommandPalette } from './CommandPalette'
 import { ErrorDisplay } from './ErrorDisplay'
 import { LeftPane } from './LeftPane'
 import { RelationshipEdgeParticleMarker } from './RelationshipEdgeParticleMarker'
@@ -159,6 +160,7 @@ export const ERDRenderer: FC<Props> = ({
                   </div>
                 )}
               </main>
+              <CommandPalette />
             </ResizablePanel>
           </ResizablePanelGroup>
         </ReactFlowProvider>
