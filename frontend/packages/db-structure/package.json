@@ -25,7 +25,7 @@
     "@liam-hq/configs": "workspace:*",
     "@pgsql/types": "15.0.2",
     "@prisma/generator-helper": "6.7.0",
-    "@types/node": "22.15.17",
+    "@types/node": "22.15.18",
     "eslint": "9.26.0",
     "json-refs": "3.0.15",
     "json-schema-to-zod": "2.6.1",
