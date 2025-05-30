@@ -40,13 +40,9 @@ jobs:
           fi
       - uses: ./.github/actions/pnpm-setup
         if: steps.determine.outputs.files_changed == 'true'
-      - uses: ruby/setup-ruby@84684c07c1965536eb4802c8daf1a77968df0cb1 # v1.239.0
-        if: steps.determine.outputs.files_changed == 'true'
-        with:
-          ruby-version: '3.4'
       - name: Install License Finder
         if: steps.determine.outputs.files_changed == 'true'
-        run: gem install -N license_finder
+        run: sudo gem install -N license_finder
       - name: Run License Finder
         if: steps.determine.outputs.files_changed == 'true'
         run: license_finder
