@@ -124,3 +124,105 @@ export const convertMessageToChatEntry = (message: Message) => {
     agentType: message.role === 'assistant' ? ('ask' as const) : undefined,
   }
 }
+
+/**
+ * Save a message to the database (client-side)
+ */
+const _saveMessage = async (data: {
+  designSessionId: string
+  content: string
+  role: 'user' | 'assistant'
+  userId?: string | null
+}): Promise<{ success: boolean; message?: Message; error?: string }> => {
+  try {
+    const parsedData = v.parse(saveMessageSchema, data)
+    const { designSessionId, content, role, userId } = parsedData
+
+    const supabase = createClient()
+    const now = new Date().toISOString()
+
+    // Get organization_id from design_session
+    const { data: designSession, error: sessionError } = await supabase
+      .from('design_sessions')
+      .select('organization_id')
+      .eq('id', designSessionId)
+      .single()
+
+    if (sessionError || !designSession) {
+      console.error('Failed to get design session:', sessionError)
+      return { success: false, error: 'Design session not found' }
+    }
+
+    const messageData: MessageInsert = {
+      design_session_id: designSessionId,
+      content,
+      role,
+      user_id: userId || null,
+      updated_at: now,
+      organization_id: designSession.organization_id,
+    }
+
+    const { data: message, error } = await supabase
+      .from('messages')
+      .insert(messageData)
+      .select()
+      .single()
+
+    if (error) {
+      console.error('Failed to save message:', JSON.stringify(error, null, 2))
+      return { success: false, error: error.message }
+    }
+
+    return { success: true, message }
+  } catch (error) {
+    console.error('Error saving message:', JSON.stringify(error, null, 2))
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error',
+    }
+  }
+}
+
+/**
+ * Set up realtime subscription for messages in a design session
+ */
+export const setupRealtimeSubscription = (
+  designSessionId: string,
+  onNewMessage: (message: Message) => void,
+  onError?: (error: Error) => void,
+) => {
+  const supabase = createClient()
+
+  const subscription = supabase
+    .channel(`messages:${designSessionId}`)
+    .on(
+      'postgres_changes',
+      {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'messages',
+        filter: `design_session_id=eq.${designSessionId}`,
+      },
+      (payload) => {
+        try {
+          const newMessage = payload.new as Message
+          onNewMessage(newMessage)
+        } catch (error) {
+          console.error('Error processing realtime message:', error)
+          onError?.(error instanceof Error ? error : new Error('Unknown error'))
+        }
+      },
+    )
+    .subscribe((status) => {
+      if (status === 'SUBSCRIBED') {
+      } else if (status === 'CHANNEL_ERROR') {
+        console.error(
+          'Realtime subscription error for session:',
+          designSessionId,
+        )
+        onError?.(new Error('Realtime subscription failed'))
+      }
+    })
+
+  return subscription
+}
