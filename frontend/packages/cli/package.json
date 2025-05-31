@@ -26,7 +26,7 @@
   "dependencies": {
     "@liam-hq/db-structure": "workspace:*",
     "@liam-hq/erd-core": "workspace:*",
-    "@prisma/internals": "6.7.0",
+    "@prisma/internals": "6.8.2",
     "commander": "13.1.0",
     "glob": "11.0.2",
     "inquirer": "12.6.1",
