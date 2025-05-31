@@ -45,13 +45,11 @@
       "supabase"
     ],
     "overrides": {
+      "esbuild": "0.25.4",
       "node-gtts": "workspace:*",
-      "prismjs": "1.30.0"
+      "path-to-regexp": "8.2.0",
+      "prismjs": "1.30.0",
+      "undici": "7.9.0"
     }
-  },
-  "resolutions": {
-    "esbuild": "0.25.4",
-    "path-to-regexp": "8.2.0",
-    "undici": "7.9.0"
   }
 }
