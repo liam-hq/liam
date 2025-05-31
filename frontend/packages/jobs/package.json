@@ -32,7 +32,7 @@
     "@types/node": "22.15.17",
     "@types/uuid": "10.0.0",
     "dotenv": "16.5.0",
-    "eslint": "9.26.0",
+    "eslint": "9.27.0",
     "glob": "11.0.2",
     "json-schema": "0.4.0",
     "trigger.dev": "3.3.17",
