@@ -20,7 +20,7 @@
     "@radix-ui/react-tooltip": "1.2.6",
     "clsx": "2.1.1",
     "destyle.css": "4.0.1",
-    "lucide-react": "0.510.0",
+    "lucide-react": "0.511.0",
     "nanoid": "5.1.5",
     "react": "18.3.1",
     "react-resizable-panels": "3.0.2",

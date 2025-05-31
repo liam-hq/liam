@@ -172,8 +172,8 @@ importers:
         specifier: 3.37.2
         version: 3.37.2(ai@4.3.15(react@18.3.1)(zod@3.23.8))
       lucide-react:
-        specifier: 0.510.0
-        version: 0.510.0(react@18.3.1)
+        specifier: 0.511.0
+        version: 0.511.0(react@18.3.1)
       next:
         specifier: 15.3.2
         version: 15.3.2(@babel/core@7.27.1)(@opentelemetry/api@1.9.0)(@playwright/test@1.52.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -284,8 +284,8 @@ importers:
         specifier: 15.3.1
         version: 15.3.1(@types/react-dom@18.3.7(@types/react@18.3.22))(@types/react@18.3.22)(next@15.3.2(@opentelemetry/api@1.9.0)(@playwright/test@1.52.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(tailwindcss@4.1.8)
       lucide-react:
-        specifier: 0.510.0
-        version: 0.510.0(react@18.3.1)
+        specifier: 0.511.0
+        version: 0.511.0(react@18.3.1)
       next:
         specifier: 15.3.2
         version: 15.3.2(@babel/core@7.27.1)(@opentelemetry/api@1.9.0)(@playwright/test@1.52.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -899,8 +899,8 @@ importers:
         specifier: 4.0.1
         version: 4.0.1
       lucide-react:
-        specifier: 0.510.0
-        version: 0.510.0(react@18.3.1)
+        specifier: 0.511.0
+        version: 0.511.0(react@18.3.1)
       nanoid:
         specifier: 5.1.5
         version: 5.1.5
@@ -9172,8 +9172,8 @@ packages:
     resolution: {integrity: sha512-jumlc0BIUrS3qJGgIkWZsyfAM7NCWiBcCDhnd+3NNM5KbBmLTgHVfWBcg6W+rLUsIpzpERPsvwUP7CckAQSOoA==}
     engines: {node: '>=12'}
 
-  lucide-react@0.510.0:
-    resolution: {integrity: sha512-p8SQRAMVh7NhsAIETokSqDrc5CHnDLbV29mMnzaXx+Vc/hnqQzwI2r0FMWCcoTXnbw2KEjy48xwpGdEL+ck06Q==}
+  lucide-react@0.511.0:
+    resolution: {integrity: sha512-VK5a2ydJ7xm8GvBeKLS9mu1pVK6ucef9780JVUjw6bAjJL/QXnd4Y0p7SPeOUMC27YhzNCZvm5d/QX0Tp3rc0w==}
     peerDependencies:
       react: ^16.5.1 || ^17.0.0 || ^18.0.0 || ^19.0.0
 
@@ -21887,7 +21887,7 @@ snapshots:
 
   lru-cache@7.18.3: {}
 
-  lucide-react@0.510.0(react@18.3.1):
+  lucide-react@0.511.0(react@18.3.1):
     dependencies:
       react: 18.3.1
 
