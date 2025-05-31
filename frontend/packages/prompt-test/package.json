@@ -9,7 +9,7 @@
     "@liam-hq/configs": "workspace:*",
     "@liam-hq/jobs": "workspace:*",
     "dotenv": "16.5.0",
-    "eslint": "9.26.0",
+    "eslint": "9.27.0",
     "langfuse": "3.37.2",
     "langfuse-langchain": "3.37.2",
     "tsx": "4.19.4",
