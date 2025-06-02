@@ -3,6 +3,7 @@
   grid-auto-flow: column;
   align-items: center;
   justify-content: space-between;
+  container-type: inline-size;
 }
 
 .tableCount {
@@ -131,8 +132,8 @@
   margin-left: var(--spacing-1);
 }
 
-@media (max-width: 600px) {
-  .visibleCount {
-    display: none !important;
+@container (max-width: 235px) {
+  .groupLabel .visibleCount {
+    display: none;
   }
 }

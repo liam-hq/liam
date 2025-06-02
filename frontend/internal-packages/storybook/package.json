@@ -8,14 +8,14 @@
     "react-dom": "18"
   },
   "devDependencies": {
-    "@storybook/addon-essentials": "8.6.12",
-    "@storybook/addon-interactions": "8.6.12",
-    "@storybook/addon-links": "8.6.12",
-    "@storybook/nextjs": "8.6.12",
-    "@storybook/react": "8.6.12",
+    "@storybook/addon-essentials": "8.6.14",
+    "@storybook/addon-interactions": "8.6.14",
+    "@storybook/addon-links": "8.6.14",
+    "@storybook/nextjs": "8.6.14",
+    "@storybook/react": "8.6.14",
     "@types/react": "18",
     "@types/react-dom": "18",
-    "storybook": "8.6.12",
+    "storybook": "8.6.14",
     "typescript": "5.8.3"
   },
   "scripts": {

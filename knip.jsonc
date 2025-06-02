@@ -32,7 +32,6 @@
     "@octokit/auth-app",
     "@octokit/rest",
     "@octokit/openapi-types",
-    "@prisma/client",
     "@prisma/internals",
     "@trigger.dev/build",
     "@trigger.dev/sdk",

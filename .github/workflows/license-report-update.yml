@@ -33,11 +33,8 @@ jobs:
         with:
           token: ${{ steps.app-token.outputs.token }}
       - uses: ./.github/actions/pnpm-setup
-      - uses: ruby/setup-ruby@e34163cd15f4bb403dcd72d98e295997e6a55798 # v1.238.0
-        with:
-          ruby-version: '3.4'
       - name: Install License Finder
-        run: gem install -N license_finder
+        run: sudo gem install -N license_finder
       - name: Generate license report
         run: |
           mkdir -p "$(dirname "$LICENSE_REPORT")"

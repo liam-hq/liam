@@ -2,6 +2,7 @@
 
 import { createClient } from '@/libs/db/server'
 import { urlgen } from '@/libs/routes'
+import { analyzeRepositoryTask } from '@liam-hq/jobs'
 import { redirect } from 'next/navigation'
 
 export const addProject = async (formData: FormData) => {
@@ -61,6 +62,21 @@ export const addProject = async (formData: FormData) => {
 
   if (mappingError) {
     throw new Error('Failed to create project-repository mapping')
+  }
+
+  // Trigger repository analysis in the background
+  try {
+    await analyzeRepositoryTask.trigger({
+      projectId: project.id,
+      repositoryId: repository.id,
+      repositoryOwner,
+      repositoryName,
+      installationId: Number(installationId),
+      organizationId,
+    })
+  } catch (error) {
+    // Log the error but don't fail the project creation
+    console.error('Failed to trigger repository analysis:', error)
   }
 
   redirect(urlgen('projects/[projectId]', { projectId: `${project.id}` }))

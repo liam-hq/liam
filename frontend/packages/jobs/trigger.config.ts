@@ -84,7 +84,6 @@ export default defineConfig({
     ],
     external: [
       'uuid',
-      '@prisma/client',
       '@prisma/debug',
       '@prisma/engines',
       '@prisma/engines-version',

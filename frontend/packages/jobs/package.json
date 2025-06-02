@@ -12,7 +12,9 @@
     "@liam-hq/db": "workspace:*",
     "@liam-hq/db-structure": "workspace:*",
     "@liam-hq/github": "workspace:*",
-    "@sentry/node": "9.18.0",
+    "@octokit/auth-app": "7.2.1",
+    "@octokit/rest": "21.1.1",
+    "@sentry/node": "9.19.0",
     "@trigger.dev/build": "3.3.17",
     "@trigger.dev/sdk": "3.3.17",
     "@valibot/to-json-schema": "1.0.0",
@@ -20,7 +22,7 @@
     "minimatch": "10.0.1",
     "uuid": "11.1.0",
     "valibot": "1.1.0",
-    "yaml": "2.7.1"
+    "yaml": "2.8.0"
   },
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
@@ -30,7 +32,7 @@
     "@types/node": "22.15.17",
     "@types/uuid": "10.0.0",
     "dotenv": "16.5.0",
-    "eslint": "9.26.0",
+    "eslint": "9.27.0",
     "glob": "11.0.2",
     "json-schema": "0.4.0",
     "trigger.dev": "3.3.17",

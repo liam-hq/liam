@@ -18,6 +18,7 @@ export {
 export {
   helloWorld,
   generateKnowledgeFromFeedbackTask,
+  analyzeRepositoryTask,
 } from './trigger/jobs'
 
 export * from './prompts'

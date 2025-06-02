@@ -20,7 +20,7 @@
     "@radix-ui/react-tooltip": "1.2.6",
     "clsx": "2.1.1",
     "destyle.css": "4.0.1",
-    "lucide-react": "0.510.0",
+    "lucide-react": "0.511.0",
     "nanoid": "5.1.5",
     "react": "18.3.1",
     "react-resizable-panels": "3.0.2",
@@ -30,9 +30,9 @@
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
     "@liam-hq/configs": "workspace:*",
-    "@storybook/react": "8.6.12",
+    "@storybook/react": "8.6.14",
     "@types/react": "18",
-    "eslint": "9.26.0",
+    "eslint": "9.27.0",
     "typed-css-modules": "0.9.1",
     "typescript": "5.8.3"
   },

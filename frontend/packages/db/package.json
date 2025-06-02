@@ -13,8 +13,8 @@
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
     "@liam-hq/configs": "workspace:*",
-    "eslint": "9.26.0",
-    "supabase": "2.22.16",
+    "eslint": "9.27.0",
+    "supabase": "2.23.1",
     "type-fest": "4.41.0",
     "typescript": "5.8.3"
   },

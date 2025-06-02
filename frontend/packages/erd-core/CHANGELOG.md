@@ -1,5 +1,11 @@
 # @liam-hq/erd-core
 
+## 0.3.0
+
+### Minor Changes
+
+- [#1678](https://github.com/liam-hq/liam/pull/1678) - add the show/hide all feature and multiple table show and hide feature. / Thanks [@khiroshi-win](https://github.com/khiroshi-win)!
+
 ## 0.2.0
 
 ### Minor Changes

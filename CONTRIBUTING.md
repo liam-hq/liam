@@ -73,11 +73,12 @@ To set up a development environment, please follow these steps:
 
 5. Open apps
 
-   | package       | url                   |
-   | ------------- | --------------------- |
-   | @liam-hq/app  | http://localhost:3001 |
-   | @liam-hq/cli  | http://localhost:5173 |
-   | @liam-hq/docs | http://localhost:3002 |
+   | package            | url                   |
+   | ------------------ | --------------------- |
+   | @liam-hq/app       | http://localhost:3001 |
+   | @liam-hq/cli       | http://localhost:5173 |
+   | @liam-hq/docs      | http://localhost:3002 |
+   | @liam-hq/storybook | http://localhost:6006 |
 
 ## Issues and feature requests
 

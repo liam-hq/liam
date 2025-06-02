@@ -11,7 +11,7 @@
     "./parser": "./dist/parser.js"
   },
   "dependencies": {
-    "@prisma/internals": "6.7.0",
+    "@prisma/internals": "6.8.2",
     "@ruby/prism": "1.4.0",
     "fast-json-patch": "3.1.1",
     "neverthrow": "8.2.0",
@@ -24,9 +24,9 @@
     "@biomejs/biome": "1.9.4",
     "@liam-hq/configs": "workspace:*",
     "@pgsql/types": "15.0.2",
-    "@prisma/generator-helper": "6.7.0",
+    "@prisma/generator-helper": "6.8.2",
     "@types/node": "22.15.17",
-    "eslint": "9.26.0",
+    "eslint": "9.27.0",
     "json-refs": "3.0.15",
     "json-schema-to-zod": "2.6.1",
     "typescript": "5.8.3",

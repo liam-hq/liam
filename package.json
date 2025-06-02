@@ -9,11 +9,11 @@
     "@turbo/gen": "2.5.3",
     "@types/node": "22.15.17",
     "concurrently": "9.1.2",
-    "knip": "5.55.1",
+    "knip": "5.56.0",
     "syncpack": "13.0.4",
     "turbo": "2.5.3",
     "typescript": "5.8.3",
-    "vercel": "41.7.6"
+    "vercel": "41.7.8"
   },
   "scripts": {
     "build": "turbo build",
@@ -45,13 +45,11 @@
       "supabase"
     ],
     "overrides": {
+      "esbuild": "0.25.4",
       "node-gtts": "workspace:*",
-      "prismjs": "1.30.0"
+      "path-to-regexp": "8.2.0",
+      "prismjs": "1.30.0",
+      "undici": "7.9.0"
     }
-  },
-  "resolutions": {
-    "esbuild": "0.25.4",
-    "path-to-regexp": "8.2.0",
-    "undici": "7.9.0"
   }
 }

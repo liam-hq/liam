@@ -1,5 +1,4 @@
 import { execSync } from 'node:child_process'
-import { PrismaPlugin } from '@prisma/nextjs-monorepo-workaround-plugin'
 import { withSentryConfig } from '@sentry/nextjs'
 import type { NextConfig } from 'next'
 
@@ -79,7 +78,7 @@ const nextConfig: NextConfig = {
     })
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    config.plugins = [...config.plugins, new PrismaPlugin()]
+    config.plugins = [...config.plugins]
 
     return config
   },
