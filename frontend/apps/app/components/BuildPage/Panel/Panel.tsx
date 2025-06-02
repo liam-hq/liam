@@ -1,20 +1,24 @@
 'use client'
 
-import { TabsContent, TabsList, TabsRoot, TabsTrigger } from '@/components'
+import {
+  TabsContent,
+  TabsList,
+  TabsRoot,
+  TabsTrigger,
+  TooltipContent,
+  TooltipPortal,
+  TooltipProvider,
+  TooltipRoot,
+  TooltipTrigger,
+} from '@/components'
 import { Chat } from '@/components/Chat'
-import { ERDRenderer } from '@/features'
-import { useTableGroups } from '@/hooks'
-import { VersionProvider } from '@/providers'
-import { versionSchema } from '@/schemas'
-import { initSchemaStore } from '@/stores'
-import type { Schema, TableGroup } from '@liam-hq/db-structure'
-import { type FC, useEffect } from 'react'
-import * as v from 'valibot'
+import type { Schema } from '@liam-hq/db-structure'
+import type { FC } from 'react'
+import { BRDContent } from './BRDContent'
+import { DBDesignContent } from './DBDesignContent'
 import styles from './Panel.module.css'
-import { SchemaEditor } from './SchemaEditor'
-import { TablesList } from './TablesList'
-import { AFTER } from './after'
-import { BEFORE } from './before'
+import { Team } from './Team'
+import { TAB_CONFIGS, TAB_VALUES } from './constants'
 
 type ErrorObject = {
   name: string
@@ -25,78 +29,62 @@ type ErrorObject = {
 type Props = {
   schema: Schema
   errors: ErrorObject[]
-  tableGroups: Record<string, TableGroup>
   projectId: string
 }
 
-export const Panel: FC<Props> = ({
-  schema,
-  errors,
-  tableGroups: initialTableGroups = {},
-  projectId,
-}) => {
-  const { tableGroups, addTableGroup } = useTableGroups(initialTableGroups)
-
-  useEffect(() => {
-    initSchemaStore({
-      current: AFTER as unknown as Schema,
-      previous: BEFORE as unknown as Schema,
-    })
-  }, [])
-
-  const versionData = {
-    version: '0.1.0',
-    gitHash: process.env.NEXT_PUBLIC_GIT_HASH,
-    envName: process.env.NEXT_PUBLIC_ENV_NAME,
-    date: process.env.NEXT_PUBLIC_RELEASE_DATE,
-    displayedOn: 'web',
-  }
-  const version = v.parse(versionSchema, versionData)
-
+export const Panel: FC<Props> = ({ schema, errors, projectId }) => {
   return (
     <div className={styles.container}>
       <div className={styles.columns}>
         <div className={styles.chatSection}>
           <Chat schemaData={schema} projectId={projectId} />
         </div>
-        <TabsRoot defaultValue="tables" className={styles.tabsRoot}>
+
+        <TabsRoot
+          defaultValue={TAB_VALUES.DB_DESIGN}
+          className={styles.tabsRoot}
+        >
           <TabsList className={styles.tabsList}>
-            <TabsTrigger value="schema" className={styles.tabsTrigger}>
-              Schema
-            </TabsTrigger>
-            <TabsTrigger value="tables" className={styles.tabsTrigger}>
-              Tables
-            </TabsTrigger>
-            <TabsTrigger value="erd" className={styles.tabsTrigger}>
-              ERD
-            </TabsTrigger>
+            {TAB_CONFIGS.map(({ value, label, icon: Icon }) => (
+              <TabsTrigger key={value} value={value} className={styles.button}>
+                <TooltipProvider>
+                  <TooltipRoot>
+                    <TooltipTrigger asChild>
+                      <Icon />
+                    </TooltipTrigger>
+                    <TooltipPortal>
+                      <TooltipContent side="left" sideOffset={4}>
+                        {label}
+                      </TooltipContent>
+                    </TooltipPortal>
+                  </TooltipRoot>
+                </TooltipProvider>
+              </TabsTrigger>
+            ))}
           </TabsList>
-          <TabsContent value="schema" className={styles.tabsContent}>
-            <div className={styles.editorSection}>
-              <SchemaEditor initialDoc={JSON.stringify(AFTER, null, 2)} />
+          <div className={styles.teamAndPreview}>
+            <Team />
+            <div className={styles.preview}>
+              <TabsContent
+                value={TAB_VALUES.DB_DESIGN}
+                className={styles.tabsContent}
+              >
+                <DBDesignContent schema={schema} errors={errors} />
+              </TabsContent>
+              <TabsContent
+                value={TAB_VALUES.BRD}
+                className={styles.tabsContent}
+              >
+                <BRDContent />
+              </TabsContent>
+              <TabsContent value={TAB_VALUES.QA} className={styles.tabsContent}>
+                QA
+              </TabsContent>
+              <TabsContent value={TAB_VALUES.QE} className={styles.tabsContent}>
+                Query Executor
+              </TabsContent>
             </div>
-          </TabsContent>
-          <TabsContent value="tables" className={styles.tabsContent}>
-            <div className={styles.tablesSection}>
-              <TablesList
-                before={BEFORE as unknown as Schema}
-                after={AFTER as unknown as Schema}
-              />
-            </div>
-          </TabsContent>
-          <TabsContent value="erd" className={styles.tabsContent}>
-            <div className={styles.erdSection}>
-              <VersionProvider version={version}>
-                <ERDRenderer
-                  defaultSidebarOpen={false}
-                  defaultPanelSizes={[20, 80]}
-                  errorObjects={errors}
-                  tableGroups={tableGroups}
-                  onAddTableGroup={addTableGroup}
-                />
-              </VersionProvider>
-            </div>
-          </TabsContent>
+          </div>
         </TabsRoot>
       </div>
     </div>
