@@ -356,3 +356,53 @@ export const getOrganizationInfo = async (
     return null
   }
 }
+
+export const createDeployment = async (
+  installationId: number,
+  owner: string,
+  repo: string,
+  params: {
+    ref: string
+    environment: string
+    description?: string
+  },
+) => {
+  const octokit = await createOctokit(installationId)
+
+  const { data } = await octokit.repos.createDeployment({
+    owner,
+    repo,
+    ref: params.ref,
+    environment: params.environment,
+    ...(params.description ? { description: params.description } : {}),
+    auto_merge: false,
+    required_contexts: [],
+  })
+
+  return data
+}
+
+export const createDeploymentStatus = async (
+  installationId: number,
+  owner: string,
+  repo: string,
+  deploymentId: number,
+  params: {
+    state: 'error' | 'failure' | 'inactive' | 'in_progress' | 'queued' | 'pending' | 'success'
+    environment_url?: string
+    log_url?: string
+  },
+) => {
+  const octokit = await createOctokit(installationId)
+
+  const { data } = await octokit.repos.createDeploymentStatus({
+    owner,
+    repo,
+    deployment_id: deploymentId,
+    state: params.state,
+    ...(params.environment_url ? { environment_url: params.environment_url } : {}),
+    ...(params.log_url ? { log_url: params.log_url } : {}),
+  })
+
+  return data
+}
