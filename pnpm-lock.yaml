@@ -10,6 +10,7 @@ overrides:
   path-to-regexp: 8.2.0
   prismjs: 1.30.0
   undici: 7.9.0
+  request: 2.88.0
 
 importers:
 
@@ -10748,18 +10749,18 @@ packages:
     resolution: {integrity: sha512-TTbAfBBRdWD7aNNOoVOBH4pN/KigV6LyapYNNlAPA8JwbovRti1E88m3sYAwsLi5ryhPKsE9APwnjFTgdUjTpw==}
     engines: {node: '>=0.10.0'}
     peerDependencies:
-      request: ^2.34
+      request: 2.88.0
 
   request-promise-native@1.0.9:
     resolution: {integrity: sha512-wcW+sIUiWnKgNY0dqCpOZkUbF/I+YPi+f09JZIDa39Ec+q82CpSYniDp+ISgTTbKmnpJWASeJBPZmoxH84wt3g==}
     engines: {node: '>=0.12.0'}
     deprecated: request-promise-native has been deprecated because it extends the now deprecated request package, see https://github.com/request/request/issues/3142
     peerDependencies:
-      request: ^2.34
+      request: 2.88.0
 
-  request@2.88.2:
-    resolution: {integrity: sha512-MsvtOrfG9ZcrOwAW+Qi+F6HbD0CWXEh9ou77uOb7FM2WPhwT7smM833PzanhJLsgXjN89Ir6V2PczXNnMpwKhw==}
-    engines: {node: '>= 6'}
+  request@2.88.0:
+    resolution: {integrity: sha512-NAqBSrijGLZdM0WZNsInLJpkJokL72XYjUpnB0iwsRgxh7dB6COrHnTBNwN0E+lHDAJzu7kLAkDeY08z2/A0hg==}
+    engines: {node: '>= 4'}
     deprecated: request has been deprecated, see https://github.com/request/request/issues/3142
 
   require-directory@2.1.1:
@@ -11541,6 +11542,10 @@ packages:
   token-types@4.2.1:
     resolution: {integrity: sha512-6udB24Q737UD/SDsKAHI9FCRP7Bqc9D/MQUV02ORQg5iskjtLJlZJNdN4kKtcdtwCeWIwIHDGaUsTsCCAa8sFQ==}
     engines: {node: '>=10'}
+
+  tough-cookie@2.4.3:
+    resolution: {integrity: sha512-Q5srk/4vDM54WJsJio3XNn6K2sCG+CQ8G5Wz6bZhRZoAe/+TxjWB/GlFAnYEbkYVlON9FMk/fE3h2RLpPXo4lQ==}
+    engines: {node: '>=0.8'}
 
   tough-cookie@2.5.0:
     resolution: {integrity: sha512-nlLsUzgm1kfLXSXfRZMc1KLAugd4hqJHDTvc2hDIwS3mZAfMEuMbc03SujMF+GEcpaX/qboeycw6iO8JwVv2+g==}
@@ -21506,7 +21511,7 @@ snapshots:
       isstream: 0.1.2
       jsonwebtoken: 9.0.2
       mime-types: 2.1.35
-      retry-axios: 2.6.0(axios@1.9.0(debug@4.4.1))
+      retry-axios: 2.6.0(axios@1.9.0)
       tough-cookie: 4.1.4
     transitivePeerDependencies:
       - supports-color
@@ -21854,8 +21859,8 @@ snapshots:
       nwsapi: 2.2.20
       parse5: 5.1.0
       pn: 1.1.0
-      request: 2.88.2
-      request-promise-native: 1.0.9(request@2.88.2)
+      request: 2.88.0
+      request-promise-native: 1.0.9(request@2.88.0)
       saxes: 3.1.11
       symbol-tree: 3.2.4
       tough-cookie: 3.0.1
@@ -24216,21 +24221,21 @@ snapshots:
       lodash: 4.17.21
       strip-ansi: 6.0.1
 
-  request-promise-core@1.1.4(request@2.88.2):
+  request-promise-core@1.1.4(request@2.88.0):
     dependencies:
       lodash: 4.17.21
-      request: 2.88.2
+      request: 2.88.0
     optional: true
 
-  request-promise-native@1.0.9(request@2.88.2):
+  request-promise-native@1.0.9(request@2.88.0):
     dependencies:
-      request: 2.88.2
-      request-promise-core: 1.1.4(request@2.88.2)
+      request: 2.88.0
+      request-promise-core: 1.1.4(request@2.88.0)
       stealthy-require: 1.1.1
       tough-cookie: 2.5.0
     optional: true
 
-  request@2.88.2:
+  request@2.88.0:
     dependencies:
       aws-sign2: 0.7.0
       aws4: 1.13.2
@@ -24249,7 +24254,7 @@ snapshots:
       performance-now: 2.1.0
       qs: 6.5.3
       safe-buffer: 5.2.1
-      tough-cookie: 2.5.0
+      tough-cookie: 2.4.3
       tunnel-agent: 0.6.0
       uuid: 3.4.0
     optional: true
@@ -24311,7 +24316,7 @@ snapshots:
       onetime: 7.0.0
       signal-exit: 4.1.0
 
-  retry-axios@2.6.0(axios@1.9.0(debug@4.4.1)):
+  retry-axios@2.6.0(axios@1.9.0):
     dependencies:
       axios: 1.9.0(debug@4.4.1)
 
@@ -25162,6 +25167,12 @@ snapshots:
     dependencies:
       '@tokenizer/token': 0.3.0
       ieee754: 1.2.1
+
+  tough-cookie@2.4.3:
+    dependencies:
+      psl: 1.15.0
+      punycode: 1.4.1
+    optional: true
 
   tough-cookie@2.5.0:
     dependencies:
