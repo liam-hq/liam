@@ -2,7 +2,7 @@ import { createDeployment, createDeploymentStatus } from '@liam-hq/github'
 import { logger, task } from '@trigger.dev/sdk/v3'
 import { createClient } from '../../libs/supabase'
 
-export type CreateSchemaDeploymentPayload = {
+type CreateSchemaDeploymentPayload = {
   installationId: number
   owner: string
   repo: string
@@ -27,19 +27,41 @@ export const processCreateSchemaDeployment = async (
     return { success: false }
   }
 
+  const { data: project } = await supabase
+    .from('projects')
+    .select('name')
+    .eq('id', payload.projectId)
+    .single()
+
+  if (!project) {
+    logger.warn('No project found', {
+      projectId: payload.projectId,
+    })
+    return { success: false }
+  }
+
   const encodedBranchRef = encodeURIComponent(payload.branchRef)
   const environmentUrl = `${process.env['NEXT_PUBLIC_BASE_URL']}/app/projects/${payload.projectId}/ref/${encodedBranchRef}/schema/${schemaPath.path}`
 
-  const deployment = (await createDeployment(
+  const envName = process.env['NEXT_PUBLIC_ENV_NAME'] || 'Preview'
+  const environment = `Liam DB ${envName} - ${project.name}`
+  const description = 'ER Diagram schema preview for database visualization'
+
+  const deployment = await createDeployment(
     payload.installationId,
     payload.owner,
     payload.repo,
     {
       ref: payload.branchRef,
-      environment: 'Preview – liam-db',
-      description: 'Liam DB schema preview',
+      environment,
+      description,
     },
-  )) as { id: number }
+  )
+
+  if (!deployment.id) {
+    logger.error('Failed to create deployment: no deployment ID returned')
+    return { success: false }
+  }
 
   await createDeploymentStatus(
     payload.installationId,

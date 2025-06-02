@@ -366,7 +366,7 @@ export const createDeployment = async (
     environment: string
     description?: string
   },
-) => {
+): Promise<{ id: number | null }> => {
   const octokit = await createOctokit(installationId)
 
   const { data } = await octokit.repos.createDeployment({
@@ -379,7 +379,7 @@ export const createDeployment = async (
     required_contexts: [],
   })
 
-  return data
+  return { id: 'id' in data ? data.id : null }
 }
 
 export const createDeploymentStatus = async (
@@ -388,7 +388,14 @@ export const createDeploymentStatus = async (
   repo: string,
   deploymentId: number,
   params: {
-    state: 'error' | 'failure' | 'inactive' | 'in_progress' | 'queued' | 'pending' | 'success'
+    state:
+      | 'error'
+      | 'failure'
+      | 'inactive'
+      | 'in_progress'
+      | 'queued'
+      | 'pending'
+      | 'success'
     environment_url?: string
     log_url?: string
   },
@@ -400,7 +407,9 @@ export const createDeploymentStatus = async (
     repo,
     deployment_id: deploymentId,
     state: params.state,
-    ...(params.environment_url ? { environment_url: params.environment_url } : {}),
+    ...(params.environment_url
+      ? { environment_url: params.environment_url }
+      : {}),
     ...(params.log_url ? { log_url: params.log_url } : {}),
   })
 
