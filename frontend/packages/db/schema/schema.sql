@@ -19,7 +19,7 @@ CREATE EXTENSION IF NOT EXISTS "pg_net" WITH SCHEMA "extensions";
 
 
 
-COMMENT ON SCHEMA "public" IS 'standard public schema';
+COMMENT ON SCHEMA "public" IS 'standard public schema test';
 
 
 
