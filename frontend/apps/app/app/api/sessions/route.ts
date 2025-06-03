@@ -240,6 +240,7 @@ const parseSchemaAndCreateBuildingSchema = async (
   organizationId: string,
   schemaData: SchemaData,
 ): Promise<
+  // biome-ignore lint/suspicious/noExplicitAny: todo
   | { success: true; buildingSchema: any }
   | { success: false; response: NextResponse }
 > => {
@@ -306,8 +307,6 @@ export async function POST(request: Request) {
   if (!projectResult.success) {
     return projectResult.response
   }
-
-  const { project } = projectResult
 
   const name = `Design Session - ${new Date().toISOString()}`
 
