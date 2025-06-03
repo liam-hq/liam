@@ -188,6 +188,28 @@ $$;
 ALTER FUNCTION "public"."accept_invitation"("p_token" "uuid") OWNER TO "postgres";
 
 
+CREATE OR REPLACE FUNCTION "public"."get_design_session_subscribers"("p_design_session_id" "uuid") RETURNS TABLE("user_id" "uuid", "user_name" "text", "user_email" "text", "subscribed_at" timestamp with time zone)
+    LANGUAGE "plpgsql" SECURITY DEFINER
+    AS $$
+BEGIN
+  RETURN QUERY
+  SELECT 
+    ms.user_id,
+    u.name as user_name,
+    u.email as user_email,
+    ms.subscribed_at
+  FROM message_subscriptions ms
+  JOIN users u ON ms.user_id = u.id
+  WHERE ms.design_session_id = p_design_session_id
+    AND ms.is_active = true
+  ORDER BY ms.subscribed_at ASC;
+END;
+$$;
+
+
+ALTER FUNCTION "public"."get_design_session_subscribers"("p_design_session_id" "uuid") OWNER TO "postgres";
+
+
 CREATE OR REPLACE FUNCTION "public"."get_invitation_data"("p_token" "uuid") RETURNS "jsonb"
     LANGUAGE "plpgsql" SECURITY DEFINER
     AS $$
@@ -225,6 +247,45 @@ $$;
 
 
 ALTER FUNCTION "public"."get_invitation_data"("p_token" "uuid") OWNER TO "postgres";
+
+
+CREATE OR REPLACE FUNCTION "public"."get_recent_messages"("p_design_session_id" "uuid", "p_limit" integer DEFAULT 50, "p_offset" integer DEFAULT 0) RETURNS TABLE("id" "uuid", "design_session_id" "uuid", "user_id" "uuid", "role" "text", "content" "text", "created_at" timestamp with time zone, "updated_at" timestamp with time zone, "organization_id" "uuid", "user_name" "text", "user_email" "text")
+    LANGUAGE "plpgsql" SECURITY DEFINER
+    AS $$
+BEGIN
+  -- Check if user has access to this design session
+  IF NOT EXISTS (
+    SELECT 1 FROM design_sessions ds
+    JOIN organization_members om ON ds.organization_id = om.organization_id
+    WHERE ds.id = p_design_session_id 
+    AND om.user_id = auth.uid()
+  ) THEN
+    RAISE EXCEPTION 'Access denied to design session';
+  END IF;
+
+  RETURN QUERY
+  SELECT 
+    m.id,
+    m.design_session_id,
+    m.user_id,
+    m.role,
+    m.content,
+    m.created_at,
+    m.updated_at,
+    m.organization_id,
+    u.name as user_name,
+    u.email as user_email
+  FROM messages m
+  LEFT JOIN users u ON m.user_id = u.id
+  WHERE m.design_session_id = p_design_session_id
+  ORDER BY m.created_at DESC
+  LIMIT p_limit
+  OFFSET p_offset;
+END;
+$$;
+
+
+ALTER FUNCTION "public"."get_recent_messages"("p_design_session_id" "uuid", "p_limit" integer, "p_offset" integer) OWNER TO "postgres";
 
 
 CREATE OR REPLACE FUNCTION "public"."handle_new_user"() RETURNS "trigger"
@@ -408,6 +469,32 @@ $$;
 ALTER FUNCTION "public"."match_documents"("filter" "jsonb", "match_count" integer, "query_embedding" "public"."vector", "match_threshold" double precision) OWNER TO "postgres";
 
 
+CREATE OR REPLACE FUNCTION "public"."notify_message_inserted"() RETURNS "trigger"
+    LANGUAGE "plpgsql" SECURITY DEFINER
+    AS $$
+BEGIN
+  -- Perform the notification with message details
+  PERFORM pg_notify(
+    'message_inserted',
+    json_build_object(
+      'id', NEW.id,
+      'design_session_id', NEW.design_session_id,
+      'user_id', NEW.user_id,
+      'role', NEW.role,
+      'content', NEW.content,
+      'created_at', NEW.created_at,
+      'organization_id', NEW.organization_id
+    )::text
+  );
+  
+  RETURN NEW;
+END;
+$$;
+
+
+ALTER FUNCTION "public"."notify_message_inserted"() OWNER TO "postgres";
+
+
 CREATE OR REPLACE FUNCTION "public"."prevent_delete_last_organization_member"() RETURNS "trigger"
     LANGUAGE "plpgsql"
     AS $$
@@ -424,6 +511,59 @@ $$;
 
 
 ALTER FUNCTION "public"."prevent_delete_last_organization_member"() OWNER TO "postgres";
+
+
+CREATE OR REPLACE FUNCTION "public"."send_message"("p_design_session_id" "uuid", "p_role" "text", "p_content" "text", "p_user_id" "uuid" DEFAULT NULL::"uuid") RETURNS "json"
+    LANGUAGE "plpgsql" SECURITY DEFINER
+    AS $$
+DECLARE
+  v_user_id uuid;
+  v_organization_id uuid;
+  v_message_id uuid;
+  v_message_record record;
+BEGIN
+  -- Get current user ID if not provided
+  v_user_id := COALESCE(p_user_id, auth.uid());
+  
+  -- For human messages, ensure user is authenticated
+  IF p_role = 'user' AND v_user_id IS NULL THEN
+    RETURN json_build_object('success', false, 'error', 'User not authenticated');
+  END IF;
+  
+  -- Get organization_id from design_session
+  SELECT organization_id INTO v_organization_id
+  FROM design_sessions
+  WHERE id = p_design_session_id;
+  
+  IF v_organization_id IS NULL THEN
+    RETURN json_build_object('success', false, 'error', 'Design session not found');
+  END IF;
+  
+  -- For authenticated users, check if user is member of the organization
+  IF v_user_id IS NOT NULL AND NOT EXISTS (
+    SELECT 1 FROM organization_members 
+    WHERE user_id = v_user_id AND organization_id = v_organization_id
+  ) THEN
+    RETURN json_build_object('success', false, 'error', 'User not authorized for this organization');
+  END IF;
+  
+  -- Insert the message
+  INSERT INTO messages (design_session_id, user_id, role, content, updated_at)
+  VALUES (p_design_session_id, v_user_id, p_role, p_content, CURRENT_TIMESTAMP)
+  RETURNING * INTO v_message_record;
+  
+  v_message_id := v_message_record.id;
+  
+  RETURN json_build_object(
+    'success', true, 
+    'message_id', v_message_id,
+    'message', 'Message sent successfully'
+  );
+END;
+$$;
+
+
+ALTER FUNCTION "public"."send_message"("p_design_session_id" "uuid", "p_role" "text", "p_content" "text", "p_user_id" "uuid") OWNER TO "postgres";
 
 
 CREATE OR REPLACE FUNCTION "public"."set_building_schema_versions_organization_id"() RETURNS "trigger"
@@ -560,6 +700,23 @@ $$;
 
 
 ALTER FUNCTION "public"."set_knowledge_suggestions_organization_id"() OWNER TO "postgres";
+
+
+CREATE OR REPLACE FUNCTION "public"."set_message_subscriptions_organization_id"() RETURNS "trigger"
+    LANGUAGE "plpgsql" SECURITY DEFINER
+    AS $$
+BEGIN
+  NEW.organization_id := (
+    SELECT "organization_id" 
+    FROM "public"."design_sessions" 
+    WHERE "id" = NEW.design_session_id
+  );
+  RETURN NEW;
+END;
+$$;
+
+
+ALTER FUNCTION "public"."set_message_subscriptions_organization_id"() OWNER TO "postgres";
 
 
 CREATE OR REPLACE FUNCTION "public"."set_messages_organization_id"() RETURNS "trigger"
@@ -751,6 +908,61 @@ $$;
 ALTER FUNCTION "public"."set_schema_file_paths_organization_id"() OWNER TO "postgres";
 
 
+CREATE OR REPLACE FUNCTION "public"."subscribe_to_design_session"("p_design_session_id" "uuid") RETURNS "json"
+    LANGUAGE "plpgsql" SECURITY DEFINER
+    AS $$
+DECLARE
+  v_user_id uuid;
+  v_organization_id uuid;
+  v_subscription_id uuid;
+BEGIN
+  -- Get current user ID
+  v_user_id := auth.uid();
+  
+  IF v_user_id IS NULL THEN
+    RETURN json_build_object('success', false, 'error', 'User not authenticated');
+  END IF;
+  
+  -- Get organization_id from design_session
+  SELECT organization_id INTO v_organization_id
+  FROM design_sessions
+  WHERE id = p_design_session_id;
+  
+  IF v_organization_id IS NULL THEN
+    RETURN json_build_object('success', false, 'error', 'Design session not found');
+  END IF;
+  
+  -- Check if user is member of the organization
+  IF NOT EXISTS (
+    SELECT 1 FROM organization_members 
+    WHERE user_id = v_user_id AND organization_id = v_organization_id
+  ) THEN
+    RETURN json_build_object('success', false, 'error', 'User not authorized for this organization');
+  END IF;
+  
+  -- Insert or update subscription
+  INSERT INTO message_subscriptions (user_id, design_session_id, is_active)
+  VALUES (v_user_id, p_design_session_id, true)
+  ON CONFLICT (user_id, design_session_id)
+  DO UPDATE SET 
+    is_active = true,
+    subscribed_at = CURRENT_TIMESTAMP,
+    unsubscribed_at = NULL,
+    updated_at = CURRENT_TIMESTAMP
+  RETURNING id INTO v_subscription_id;
+  
+  RETURN json_build_object(
+    'success', true, 
+    'subscription_id', v_subscription_id,
+    'message', 'Successfully subscribed to design session'
+  );
+END;
+$$;
+
+
+ALTER FUNCTION "public"."subscribe_to_design_session"("p_design_session_id" "uuid") OWNER TO "postgres";
+
+
 CREATE OR REPLACE FUNCTION "public"."sync_existing_users"() RETURNS "void"
     LANGUAGE "plpgsql" SECURITY DEFINER
     AS $$
@@ -768,6 +980,99 @@ $$;
 
 
 ALTER FUNCTION "public"."sync_existing_users"() OWNER TO "postgres";
+
+
+CREATE OR REPLACE FUNCTION "public"."test_message_realtime"("p_design_session_id" "uuid") RETURNS "json"
+    LANGUAGE "plpgsql" SECURITY DEFINER
+    AS $$
+DECLARE
+  v_user_id uuid;
+  v_organization_id uuid;
+  v_test_message_id uuid;
+BEGIN
+  -- Get current user ID
+  v_user_id := auth.uid();
+  
+  IF v_user_id IS NULL THEN
+    RETURN json_build_object('success', false, 'error', 'User not authenticated');
+  END IF;
+  
+  -- Get organization_id from design_session
+  SELECT organization_id INTO v_organization_id
+  FROM design_sessions
+  WHERE id = p_design_session_id;
+  
+  IF v_organization_id IS NULL THEN
+    RETURN json_build_object('success', false, 'error', 'Design session not found');
+  END IF;
+  
+  -- Check if user is member of the organization
+  IF NOT EXISTS (
+    SELECT 1 FROM organization_members 
+    WHERE user_id = v_user_id AND organization_id = v_organization_id
+  ) THEN
+    RETURN json_build_object('success', false, 'error', 'User not authorized for this organization');
+  END IF;
+  
+  -- Insert a test message
+  INSERT INTO messages (design_session_id, user_id, role, content, updated_at)
+  VALUES (p_design_session_id, v_user_id, 'system', 'Real-time test message', CURRENT_TIMESTAMP)
+  RETURNING id INTO v_test_message_id;
+  
+  -- Delete the test message immediately
+  DELETE FROM messages WHERE id = v_test_message_id;
+  
+  RETURN json_build_object(
+    'success', true,
+    'message', 'Real-time test completed',
+    'test_message_id', v_test_message_id
+  );
+END;
+$$;
+
+
+ALTER FUNCTION "public"."test_message_realtime"("p_design_session_id" "uuid") OWNER TO "postgres";
+
+
+CREATE OR REPLACE FUNCTION "public"."unsubscribe_from_design_session"("p_design_session_id" "uuid") RETURNS "json"
+    LANGUAGE "plpgsql" SECURITY DEFINER
+    AS $$
+DECLARE
+  v_user_id uuid;
+  v_rows_affected integer;
+BEGIN
+  -- Get current user ID
+  v_user_id := auth.uid();
+  
+  IF v_user_id IS NULL THEN
+    RETURN json_build_object('success', false, 'error', 'User not authenticated');
+  END IF;
+  
+  -- Update subscription to inactive
+  UPDATE message_subscriptions 
+  SET 
+    is_active = false,
+    unsubscribed_at = CURRENT_TIMESTAMP,
+    updated_at = CURRENT_TIMESTAMP
+  WHERE user_id = v_user_id 
+    AND design_session_id = p_design_session_id 
+    AND is_active = true;
+  
+  GET DIAGNOSTICS v_rows_affected = ROW_COUNT;
+  
+  IF v_rows_affected = 0 THEN
+    RETURN json_build_object('success', false, 'error', 'No active subscription found');
+  END IF;
+  
+  RETURN json_build_object(
+    'success', true,
+    'message', 'Successfully unsubscribed from design session'
+  );
+END;
+$$;
+
+
+ALTER FUNCTION "public"."unsubscribe_from_design_session"("p_design_session_id" "uuid") OWNER TO "postgres";
 
 
 CREATE OR REPLACE FUNCTION "public"."update_building_schema"("p_schema_id" "uuid", "p_schema_schema" "jsonb", "p_schema_version_patch" "jsonb", "p_schema_version_reverse_patch" "jsonb", "p_latest_schema_version_number" integer) RETURNS "jsonb"
@@ -838,9 +1143,78 @@ $$;
 
 ALTER FUNCTION "public"."update_building_schema"("p_schema_id" "uuid", "p_schema_schema" "jsonb", "p_schema_version_patch" "jsonb", "p_schema_version_reverse_patch" "jsonb", "p_latest_schema_version_number" integer) OWNER TO "postgres";
 
+
+CREATE OR REPLACE FUNCTION "public"."update_message_subscriptions_updated_at"() RETURNS "trigger"
+    LANGUAGE "plpgsql" SECURITY DEFINER
+    AS $$
+BEGIN
+  NEW.updated_at := CURRENT_TIMESTAMP;
+  RETURN NEW;
+END;
+$$;
+
+
+ALTER FUNCTION "public"."update_message_subscriptions_updated_at"() OWNER TO "postgres";
+
 SET default_tablespace = '';
 
 SET default_table_access_method = "heap";
+
+
+CREATE TABLE IF NOT EXISTS "public"."albums" (
+    "id" integer NOT NULL,
+    "artist_id" integer NOT NULL,
+    "title" character varying(255) NOT NULL,
+    "release_date" "date",
+    "cover_url" "text",
+    "created_at" timestamp without time zone DEFAULT CURRENT_TIMESTAMP
+);
+
+
+ALTER TABLE "public"."albums" OWNER TO "postgres";
+
+
+CREATE SEQUENCE IF NOT EXISTS "public"."albums_id_seq"
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE "public"."albums_id_seq" OWNER TO "postgres";
+
+
+ALTER SEQUENCE "public"."albums_id_seq" OWNED BY "public"."albums"."id";
+
+
+
+CREATE TABLE IF NOT EXISTS "public"."artists" (
+    "id" integer NOT NULL,
+    "name" character varying(255) NOT NULL,
+    "bio" "text",
+    "created_at" timestamp without time zone DEFAULT CURRENT_TIMESTAMP
+);
+
+
+ALTER TABLE "public"."artists" OWNER TO "postgres";
+
+
+CREATE SEQUENCE IF NOT EXISTS "public"."artists_id_seq"
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE "public"."artists_id_seq" OWNER TO "postgres";
+
+
+ALTER SEQUENCE "public"."artists_id_seq" OWNED BY "public"."artists"."id";
+
 
 
 CREATE TABLE IF NOT EXISTS "public"."building_schema_versions" (
@@ -1003,6 +1377,22 @@ CREATE TABLE IF NOT EXISTS "public"."knowledge_suggestions" (
 ALTER TABLE "public"."knowledge_suggestions" OWNER TO "postgres";
 
 
+CREATE TABLE IF NOT EXISTS "public"."message_subscriptions" (
+    "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
+    "user_id" "uuid" NOT NULL,
+    "design_session_id" "uuid" NOT NULL,
+    "organization_id" "uuid" NOT NULL,
+    "is_active" boolean DEFAULT true NOT NULL,
+    "subscribed_at" timestamp(3) with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    "unsubscribed_at" timestamp(3) with time zone,
+    "created_at" timestamp(3) with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    "updated_at" timestamp(3) with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
+
+
+ALTER TABLE "public"."message_subscriptions" OWNER TO "postgres";
+
+
 CREATE TABLE IF NOT EXISTS "public"."messages" (
     "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
     "design_session_id" "uuid" NOT NULL,
@@ -1042,6 +1432,18 @@ CREATE TABLE IF NOT EXISTS "public"."migrations" (
 
 
 ALTER TABLE "public"."migrations" OWNER TO "postgres";
+
+
+CREATE TABLE IF NOT EXISTS "public"."music_users" (
+    "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
+    "username" character varying(100) NOT NULL,
+    "email" character varying(255) NOT NULL,
+    "password_hash" character varying(255) NOT NULL,
+    "created_at" timestamp without time zone DEFAULT CURRENT_TIMESTAMP
+);
+
+
+ALTER TABLE "public"."music_users" OWNER TO "postgres";
 
 
 CREATE TABLE IF NOT EXISTS "public"."organization_members" (
@@ -1091,6 +1493,62 @@ CREATE TABLE IF NOT EXISTS "public"."overall_reviews" (
 
 
 ALTER TABLE "public"."overall_reviews" OWNER TO "postgres";
+
+
+CREATE TABLE IF NOT EXISTS "public"."playlist_items" (
+    "id" integer NOT NULL,
+    "playlist_id" integer NOT NULL,
+    "song_id" integer NOT NULL,
+    "position" integer NOT NULL,
+    "added_at" timestamp without time zone DEFAULT CURRENT_TIMESTAMP
+);
+
+
+ALTER TABLE "public"."playlist_items" OWNER TO "postgres";
+
+
+CREATE SEQUENCE IF NOT EXISTS "public"."playlist_items_id_seq"
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE "public"."playlist_items_id_seq" OWNER TO "postgres";
+
+
+ALTER SEQUENCE "public"."playlist_items_id_seq" OWNED BY "public"."playlist_items"."id";
+
+
+
+CREATE TABLE IF NOT EXISTS "public"."playlists" (
+    "id" integer NOT NULL,
+    "user_id" "uuid" NOT NULL,
+    "name" character varying(255) NOT NULL,
+    "description" "text",
+    "created_at" timestamp without time zone DEFAULT CURRENT_TIMESTAMP
+);
+
+
+ALTER TABLE "public"."playlists" OWNER TO "postgres";
+
+
+CREATE SEQUENCE IF NOT EXISTS "public"."playlists_id_seq"
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE "public"."playlists_id_seq" OWNER TO "postgres";
+
+
+ALTER SEQUENCE "public"."playlists_id_seq" OWNED BY "public"."playlists"."id";
+
 
 
 CREATE TABLE IF NOT EXISTS "public"."project_repository_mappings" (
@@ -1191,6 +1649,63 @@ CREATE TABLE IF NOT EXISTS "public"."schema_file_paths" (
 ALTER TABLE "public"."schema_file_paths" OWNER TO "postgres";
 
 
+CREATE TABLE IF NOT EXISTS "public"."songs" (
+    "id" integer NOT NULL,
+    "album_id" integer,
+    "artist_id" integer NOT NULL,
+    "title" character varying(255) NOT NULL,
+    "duration" integer,
+    "audio_url" "text",
+    "created_at" timestamp without time zone DEFAULT CURRENT_TIMESTAMP
+);
+
+
+ALTER TABLE "public"."songs" OWNER TO "postgres";
+
+
+CREATE SEQUENCE IF NOT EXISTS "public"."songs_id_seq"
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE "public"."songs_id_seq" OWNER TO "postgres";
+
+
+ALTER SEQUENCE "public"."songs_id_seq" OWNED BY "public"."songs"."id";
+
+
+
+CREATE TABLE IF NOT EXISTS "public"."user_favorites" (
+    "id" integer NOT NULL,
+    "user_id" "uuid" NOT NULL,
+    "song_id" integer NOT NULL,
+    "added_at" timestamp without time zone DEFAULT CURRENT_TIMESTAMP
+);
+
+
+ALTER TABLE "public"."user_favorites" OWNER TO "postgres";
+
+
+CREATE SEQUENCE IF NOT EXISTS "public"."user_favorites_id_seq"
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE "public"."user_favorites_id_seq" OWNER TO "postgres";
+
+
+ALTER SEQUENCE "public"."user_favorites_id_seq" OWNED BY "public"."user_favorites"."id";
+
+
+
 CREATE TABLE IF NOT EXISTS "public"."users" (
     "id" "uuid" NOT NULL,
     "name" "text" NOT NULL,
@@ -1199,6 +1714,40 @@ CREATE TABLE IF NOT EXISTS "public"."users" (
 
 
 ALTER TABLE "public"."users" OWNER TO "postgres";
+
+
+ALTER TABLE ONLY "public"."albums" ALTER COLUMN "id" SET DEFAULT "nextval"('"public"."albums_id_seq"'::"regclass");
+
+
+
+ALTER TABLE ONLY "public"."artists" ALTER COLUMN "id" SET DEFAULT "nextval"('"public"."artists_id_seq"'::"regclass");
+
+
+
+ALTER TABLE ONLY "public"."playlist_items" ALTER COLUMN "id" SET DEFAULT "nextval"('"public"."playlist_items_id_seq"'::"regclass");
+
+
+
+ALTER TABLE ONLY "public"."playlists" ALTER COLUMN "id" SET DEFAULT "nextval"('"public"."playlists_id_seq"'::"regclass");
+
+
+
+ALTER TABLE ONLY "public"."songs" ALTER COLUMN "id" SET DEFAULT "nextval"('"public"."songs_id_seq"'::"regclass");
+
+
+
+ALTER TABLE ONLY "public"."user_favorites" ALTER COLUMN "id" SET DEFAULT "nextval"('"public"."user_favorites_id_seq"'::"regclass");
+
+
+
+ALTER TABLE ONLY "public"."albums"
+    ADD CONSTRAINT "albums_pkey" PRIMARY KEY ("id");
+
+
+
+ALTER TABLE ONLY "public"."artists"
+    ADD CONSTRAINT "artists_pkey" PRIMARY KEY ("id");
+
 
 
 ALTER TABLE ONLY "public"."building_schema_versions"
@@ -1276,6 +1825,16 @@ ALTER TABLE ONLY "public"."knowledge_suggestions"
 
 
 
+ALTER TABLE ONLY "public"."message_subscriptions"
+    ADD CONSTRAINT "message_subscriptions_pkey" PRIMARY KEY ("id");
+
+
+
+ALTER TABLE ONLY "public"."message_subscriptions"
+    ADD CONSTRAINT "message_subscriptions_user_design_session_unique" UNIQUE ("user_id", "design_session_id");
+
+
+
 ALTER TABLE ONLY "public"."messages"
     ADD CONSTRAINT "messages_pkey" PRIMARY KEY ("id");
 
@@ -1293,6 +1852,21 @@ ALTER TABLE ONLY "public"."migration_pull_request_mappings"
 
 ALTER TABLE ONLY "public"."migration_pull_request_mappings"
     ADD CONSTRAINT "migration_pull_request_mappings_pkey" PRIMARY KEY ("id");
+
+
+
+ALTER TABLE ONLY "public"."music_users"
+    ADD CONSTRAINT "music_users_email_key" UNIQUE ("email");
+
+
+
+ALTER TABLE ONLY "public"."music_users"
+    ADD CONSTRAINT "music_users_pkey" PRIMARY KEY ("id");
+
+
+
+ALTER TABLE ONLY "public"."music_users"
+    ADD CONSTRAINT "music_users_username_key" UNIQUE ("username");
 
 
 
@@ -1318,6 +1892,21 @@ ALTER TABLE ONLY "public"."overall_review_knowledge_suggestion_mappings"
 
 ALTER TABLE ONLY "public"."overall_reviews"
     ADD CONSTRAINT "overall_review_pkey" PRIMARY KEY ("id");
+
+
+
+ALTER TABLE ONLY "public"."playlist_items"
+    ADD CONSTRAINT "playlist_items_pkey" PRIMARY KEY ("id");
+
+
+
+ALTER TABLE ONLY "public"."playlist_items"
+    ADD CONSTRAINT "playlist_items_playlist_id_position_key" UNIQUE ("playlist_id", "position");
+
+
+
+ALTER TABLE ONLY "public"."playlists"
+    ADD CONSTRAINT "playlists_pkey" PRIMARY KEY ("id");
 
 
 
@@ -1356,8 +1945,23 @@ ALTER TABLE ONLY "public"."review_suggestion_snippets"
 
 
 
+ALTER TABLE ONLY "public"."songs"
+    ADD CONSTRAINT "songs_pkey" PRIMARY KEY ("id");
+
+
+
 ALTER TABLE ONLY "public"."users"
     ADD CONSTRAINT "user_email_key" UNIQUE ("email");
+
+
+
+ALTER TABLE ONLY "public"."user_favorites"
+    ADD CONSTRAINT "user_favorites_pkey" PRIMARY KEY ("id");
+
+
+
+ALTER TABLE ONLY "public"."user_favorites"
+    ADD CONSTRAINT "user_favorites_user_id_song_id_key" UNIQUE ("user_id", "song_id");
 
 
 
@@ -1387,6 +1991,38 @@ CREATE UNIQUE INDEX "github_pull_request_repository_id_pull_number_key" ON "publ
 
 
 CREATE UNIQUE INDEX "github_repository_owner_name_key" ON "public"."github_repositories" USING "btree" ("owner", "name");
+
+
+
+CREATE INDEX "idx_message_subscriptions_active_subscriptions" ON "public"."message_subscriptions" USING "btree" ("design_session_id", "is_active") WHERE ("is_active" = true);
+
+
+
+CREATE INDEX "idx_message_subscriptions_design_session_id" ON "public"."message_subscriptions" USING "btree" ("design_session_id");
+
+
+
+CREATE INDEX "idx_message_subscriptions_is_active" ON "public"."message_subscriptions" USING "btree" ("is_active");
+
+
+
+CREATE INDEX "idx_message_subscriptions_organization_id" ON "public"."message_subscriptions" USING "btree" ("organization_id");
+
+
+
+CREATE INDEX "idx_message_subscriptions_user_id" ON "public"."message_subscriptions" USING "btree" ("user_id");
+
+
+
+CREATE INDEX "idx_messages_design_session_created_at" ON "public"."messages" USING "btree" ("design_session_id", "created_at" DESC);
+
+
+
+CREATE INDEX "idx_messages_role_created_at" ON "public"."messages" USING "btree" ("role", "created_at" DESC);
+
+
+
+CREATE INDEX "idx_messages_user_id_created_at" ON "public"."messages" USING "btree" ("user_id", "created_at" DESC) WHERE ("user_id" IS NOT NULL);
 
 
 
@@ -1442,6 +2078,10 @@ COMMENT ON TRIGGER "check_last_organization_member" ON "public"."organization_me
 
 
 
+CREATE OR REPLACE TRIGGER "notify_message_inserted_trigger" AFTER INSERT ON "public"."messages" FOR EACH ROW EXECUTE FUNCTION "public"."notify_message_inserted"();
+
+
+
 CREATE OR REPLACE TRIGGER "set_building_schema_versions_organization_id_trigger" BEFORE INSERT OR UPDATE ON "public"."building_schema_versions" FOR EACH ROW EXECUTE FUNCTION "public"."set_building_schema_versions_organization_id"();
 
 
@@ -1471,6 +2111,10 @@ CREATE OR REPLACE TRIGGER "set_knowledge_suggestion_doc_mappings_organization_id
 
 
 CREATE OR REPLACE TRIGGER "set_knowledge_suggestions_organization_id_trigger" BEFORE INSERT OR UPDATE ON "public"."knowledge_suggestions" FOR EACH ROW EXECUTE FUNCTION "public"."set_knowledge_suggestions_organization_id"();
+
+
+
+CREATE OR REPLACE TRIGGER "set_message_subscriptions_organization_id_trigger" BEFORE INSERT OR UPDATE ON "public"."message_subscriptions" FOR EACH ROW EXECUTE FUNCTION "public"."set_message_subscriptions_organization_id"();
 
 
 
@@ -1515,6 +2159,15 @@ CREATE OR REPLACE TRIGGER "set_review_suggestion_snippets_organization_id_trigge
 
 
 CREATE OR REPLACE TRIGGER "set_schema_file_paths_organization_id_trigger" BEFORE INSERT OR UPDATE ON "public"."schema_file_paths" FOR EACH ROW EXECUTE FUNCTION "public"."set_schema_file_paths_organization_id"();
+
+
+
+CREATE OR REPLACE TRIGGER "update_message_subscriptions_updated_at_trigger" BEFORE UPDATE ON "public"."message_subscriptions" FOR EACH ROW EXECUTE FUNCTION "public"."update_message_subscriptions_updated_at"();
+
+
+
+ALTER TABLE ONLY "public"."albums"
+    ADD CONSTRAINT "albums_artist_id_fkey" FOREIGN KEY ("artist_id") REFERENCES "public"."artists"("id") ON DELETE CASCADE;
 
 
 
@@ -1633,6 +2286,21 @@ ALTER TABLE ONLY "public"."knowledge_suggestions"
 
 
 
+ALTER TABLE ONLY "public"."message_subscriptions"
+    ADD CONSTRAINT "message_subscriptions_design_session_id_fkey" FOREIGN KEY ("design_session_id") REFERENCES "public"."design_sessions"("id") ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+
+ALTER TABLE ONLY "public"."message_subscriptions"
+    ADD CONSTRAINT "message_subscriptions_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "public"."organizations"("id") ON UPDATE CASCADE ON DELETE RESTRICT;
+
+
+
+ALTER TABLE ONLY "public"."message_subscriptions"
+    ADD CONSTRAINT "message_subscriptions_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+
 ALTER TABLE ONLY "public"."messages"
     ADD CONSTRAINT "messages_design_session_id_fkey" FOREIGN KEY ("design_session_id") REFERENCES "public"."design_sessions"("id") ON UPDATE CASCADE ON DELETE CASCADE;
 
@@ -1705,6 +2373,21 @@ ALTER TABLE ONLY "public"."overall_reviews"
 
 ALTER TABLE ONLY "public"."overall_reviews"
     ADD CONSTRAINT "overall_reviews_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "public"."organizations"("id") ON UPDATE CASCADE ON DELETE RESTRICT;
+
+
+
+ALTER TABLE ONLY "public"."playlist_items"
+    ADD CONSTRAINT "playlist_items_playlist_id_fkey" FOREIGN KEY ("playlist_id") REFERENCES "public"."playlists"("id") ON DELETE CASCADE;
+
+
+
+ALTER TABLE ONLY "public"."playlist_items"
+    ADD CONSTRAINT "playlist_items_song_id_fkey" FOREIGN KEY ("song_id") REFERENCES "public"."songs"("id") ON DELETE CASCADE;
+
+
+
+ALTER TABLE ONLY "public"."playlists"
+    ADD CONSTRAINT "playlists_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "public"."music_users"("id") ON DELETE CASCADE;
 
 
 
@@ -1788,6 +2471,26 @@ ALTER TABLE ONLY "public"."schema_file_paths"
 
 
 
+ALTER TABLE ONLY "public"."songs"
+    ADD CONSTRAINT "songs_album_id_fkey" FOREIGN KEY ("album_id") REFERENCES "public"."albums"("id") ON DELETE SET NULL;
+
+
+
+ALTER TABLE ONLY "public"."songs"
+    ADD CONSTRAINT "songs_artist_id_fkey" FOREIGN KEY ("artist_id") REFERENCES "public"."artists"("id") ON DELETE CASCADE;
+
+
+
+ALTER TABLE ONLY "public"."user_favorites"
+    ADD CONSTRAINT "user_favorites_song_id_fkey" FOREIGN KEY ("song_id") REFERENCES "public"."songs"("id") ON DELETE CASCADE;
+
+
+
+ALTER TABLE ONLY "public"."user_favorites"
+    ADD CONSTRAINT "user_favorites_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "public"."music_users"("id") ON DELETE CASCADE;
+
+
+
 CREATE POLICY "authenticated_users_can_delete_org_building_schema_versions" ON "public"."building_schema_versions" FOR DELETE TO "authenticated" USING (("organization_id" IN ( SELECT "organization_members"."organization_id"
    FROM "public"."organization_members"
   WHERE ("organization_members"."user_id" = "auth"."uid"()))));
@@ -1855,6 +2558,16 @@ CREATE POLICY "authenticated_users_can_delete_org_projects" ON "public"."project
 
 
 COMMENT ON POLICY "authenticated_users_can_delete_org_projects" ON "public"."projects" IS 'Authenticated users can only delete projects in organizations they are members of';
+
+
+
+CREATE POLICY "authenticated_users_can_delete_own_message_subscriptions" ON "public"."message_subscriptions" FOR DELETE TO "authenticated" USING ((("user_id" = "auth"."uid"()) AND ("organization_id" IN ( SELECT "organization_members"."organization_id"
+   FROM "public"."organization_members"
+  WHERE ("organization_members"."user_id" = "auth"."uid"())))));
+
+
+
+COMMENT ON POLICY "authenticated_users_can_delete_own_message_subscriptions" ON "public"."message_subscriptions" IS 'Authenticated users can only delete their own message subscriptions in organizations they are members of';
 
 
 
@@ -1996,6 +2709,16 @@ COMMENT ON POLICY "authenticated_users_can_insert_organizations" ON "public"."or
 
 
 
+CREATE POLICY "authenticated_users_can_insert_own_message_subscriptions" ON "public"."message_subscriptions" FOR INSERT TO "authenticated" WITH CHECK ((("user_id" = "auth"."uid"()) AND ("organization_id" IN ( SELECT "organization_members"."organization_id"
+   FROM "public"."organization_members"
+  WHERE ("organization_members"."user_id" = "auth"."uid"())))));
+
+
+
+COMMENT ON POLICY "authenticated_users_can_insert_own_message_subscriptions" ON "public"."message_subscriptions" IS 'Authenticated users can only create their own message subscriptions in organizations they are members of';
+
+
+
 CREATE POLICY "authenticated_users_can_insert_projects" ON "public"."projects" FOR INSERT TO "authenticated" WITH CHECK (("organization_id" IN ( SELECT "organization_members"."organization_id"
    FROM "public"."organization_members"
   WHERE ("organization_members"."user_id" = "auth"."uid"()))));
@@ -2095,6 +2818,16 @@ CREATE POLICY "authenticated_users_can_select_org_knowledge_suggestions" ON "pub
 
 
 COMMENT ON POLICY "authenticated_users_can_select_org_knowledge_suggestions" ON "public"."knowledge_suggestions" IS 'Authenticated users can only view knowledge suggestions belonging to organizations they are members of';
+
+
+
+CREATE POLICY "authenticated_users_can_select_org_message_subscriptions" ON "public"."message_subscriptions" FOR SELECT TO "authenticated" USING (("organization_id" IN ( SELECT "organization_members"."organization_id"
+   FROM "public"."organization_members"
+  WHERE ("organization_members"."user_id" = "auth"."uid"()))));
+
+
+
+COMMENT ON POLICY "authenticated_users_can_select_org_message_subscriptions" ON "public"."message_subscriptions" IS 'Authenticated users can only view message subscriptions belonging to organizations they are members of';
 
 
 
@@ -2350,6 +3083,18 @@ COMMENT ON POLICY "authenticated_users_can_update_org_schema_file_paths" ON "pub
 
 
 
+CREATE POLICY "authenticated_users_can_update_own_message_subscriptions" ON "public"."message_subscriptions" FOR UPDATE TO "authenticated" USING ((("user_id" = "auth"."uid"()) AND ("organization_id" IN ( SELECT "organization_members"."organization_id"
+   FROM "public"."organization_members"
+  WHERE ("organization_members"."user_id" = "auth"."uid"()))))) WITH CHECK ((("user_id" = "auth"."uid"()) AND ("organization_id" IN ( SELECT "organization_members"."organization_id"
+   FROM "public"."organization_members"
+  WHERE ("organization_members"."user_id" = "auth"."uid"())))));
+
+
+
+COMMENT ON POLICY "authenticated_users_can_update_own_message_subscriptions" ON "public"."message_subscriptions" IS 'Authenticated users can only update their own message subscriptions in organizations they are members of';
+
+
+
 ALTER TABLE "public"."building_schema_versions" ENABLE ROW LEVEL SECURITY;
 
 
@@ -2381,6 +3126,9 @@ ALTER TABLE "public"."knowledge_suggestion_doc_mappings" ENABLE ROW LEVEL SECURI
 
 
 ALTER TABLE "public"."knowledge_suggestions" ENABLE ROW LEVEL SECURITY;
+
+
+ALTER TABLE "public"."message_subscriptions" ENABLE ROW LEVEL SECURITY;
 
 
 ALTER TABLE "public"."messages" ENABLE ROW LEVEL SECURITY;
@@ -2441,6 +3189,10 @@ CREATE POLICY "service_role_can_delete_all_knowledge_suggestions" ON "public"."k
 
 
 
+CREATE POLICY "service_role_can_delete_all_message_subscriptions" ON "public"."message_subscriptions" FOR DELETE TO "service_role" USING (true);
+
+
+
 CREATE POLICY "service_role_can_delete_all_organizations" ON "public"."organizations" FOR DELETE TO "service_role" USING (true);
 
 
@@ -2482,6 +3234,10 @@ CREATE POLICY "service_role_can_insert_all_knowledge_suggestion_doc_mappings" ON
 
 
 CREATE POLICY "service_role_can_insert_all_knowledge_suggestions" ON "public"."knowledge_suggestions" FOR INSERT TO "service_role" WITH CHECK (true);
+
+
+
+CREATE POLICY "service_role_can_insert_all_message_subscriptions" ON "public"."message_subscriptions" FOR INSERT TO "service_role" WITH CHECK (true);
 
 
 
@@ -2565,6 +3321,10 @@ CREATE POLICY "service_role_can_select_all_knowledge_suggestions" ON "public"."k
 
 
 
+CREATE POLICY "service_role_can_select_all_message_subscriptions" ON "public"."message_subscriptions" FOR SELECT TO "service_role" USING (true);
+
+
+
 CREATE POLICY "service_role_can_select_all_messages" ON "public"."messages" FOR SELECT TO "service_role" USING (true);
 
 
@@ -2625,6 +3385,10 @@ CREATE POLICY "service_role_can_update_all_knowledge_suggestions" ON "public"."k
 
 
 
+CREATE POLICY "service_role_can_update_all_message_subscriptions" ON "public"."message_subscriptions" FOR UPDATE TO "service_role" USING (true) WITH CHECK (true);
+
+
+
 CREATE POLICY "service_role_can_update_all_messages" ON "public"."messages" FOR UPDATE TO "service_role" USING (true) WITH CHECK (true);
 
 
@@ -2658,6 +3422,14 @@ CREATE POLICY "users_same_organization_select_policy" ON "public"."users" FOR SE
 
 
 ALTER PUBLICATION "supabase_realtime" OWNER TO "postgres";
+
+
+
+
+
+
+ALTER PUBLICATION "supabase_realtime" ADD TABLE ONLY "public"."messages";
+
 
 
 
@@ -3150,8 +3922,20 @@ GRANT ALL ON FUNCTION "public"."cosine_distance"("public"."vector", "public"."ve
 
 
 
+GRANT ALL ON FUNCTION "public"."get_design_session_subscribers"("p_design_session_id" "uuid") TO "anon";
+GRANT ALL ON FUNCTION "public"."get_design_session_subscribers"("p_design_session_id" "uuid") TO "authenticated";
+GRANT ALL ON FUNCTION "public"."get_design_session_subscribers"("p_design_session_id" "uuid") TO "service_role";
+
+
+
 GRANT ALL ON FUNCTION "public"."get_invitation_data"("p_token" "uuid") TO "authenticated";
 GRANT ALL ON FUNCTION "public"."get_invitation_data"("p_token" "uuid") TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."get_recent_messages"("p_design_session_id" "uuid", "p_limit" integer, "p_offset" integer) TO "anon";
+GRANT ALL ON FUNCTION "public"."get_recent_messages"("p_design_session_id" "uuid", "p_limit" integer, "p_offset" integer) TO "authenticated";
+GRANT ALL ON FUNCTION "public"."get_recent_messages"("p_design_session_id" "uuid", "p_limit" integer, "p_offset" integer) TO "service_role";
 
 
 
@@ -3459,9 +4243,21 @@ GRANT ALL ON FUNCTION "public"."match_documents"("filter" "jsonb", "match_count"
 
 
 
+GRANT ALL ON FUNCTION "public"."notify_message_inserted"() TO "anon";
+GRANT ALL ON FUNCTION "public"."notify_message_inserted"() TO "authenticated";
+GRANT ALL ON FUNCTION "public"."notify_message_inserted"() TO "service_role";
+
+
+
 GRANT ALL ON FUNCTION "public"."prevent_delete_last_organization_member"() TO "anon";
 GRANT ALL ON FUNCTION "public"."prevent_delete_last_organization_member"() TO "authenticated";
 GRANT ALL ON FUNCTION "public"."prevent_delete_last_organization_member"() TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."send_message"("p_design_session_id" "uuid", "p_role" "text", "p_content" "text", "p_user_id" "uuid") TO "anon";
+GRANT ALL ON FUNCTION "public"."send_message"("p_design_session_id" "uuid", "p_role" "text", "p_content" "text", "p_user_id" "uuid") TO "authenticated";
+GRANT ALL ON FUNCTION "public"."send_message"("p_design_session_id" "uuid", "p_role" "text", "p_content" "text", "p_user_id" "uuid") TO "service_role";
 
 
 
@@ -3510,6 +4306,12 @@ GRANT ALL ON FUNCTION "public"."set_knowledge_suggestion_doc_mappings_organizati
 GRANT ALL ON FUNCTION "public"."set_knowledge_suggestions_organization_id"() TO "anon";
 GRANT ALL ON FUNCTION "public"."set_knowledge_suggestions_organization_id"() TO "authenticated";
 GRANT ALL ON FUNCTION "public"."set_knowledge_suggestions_organization_id"() TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."set_message_subscriptions_organization_id"() TO "anon";
+GRANT ALL ON FUNCTION "public"."set_message_subscriptions_organization_id"() TO "authenticated";
+GRANT ALL ON FUNCTION "public"."set_message_subscriptions_organization_id"() TO "service_role";
 
 
 
@@ -3642,6 +4444,12 @@ GRANT ALL ON FUNCTION "public"."sparsevec_negative_inner_product"("public"."spar
 
 
 
+GRANT ALL ON FUNCTION "public"."subscribe_to_design_session"("p_design_session_id" "uuid") TO "anon";
+GRANT ALL ON FUNCTION "public"."subscribe_to_design_session"("p_design_session_id" "uuid") TO "authenticated";
+GRANT ALL ON FUNCTION "public"."subscribe_to_design_session"("p_design_session_id" "uuid") TO "service_role";
+
+
+
 GRANT ALL ON FUNCTION "public"."subvector"("public"."halfvec", integer, integer) TO "postgres";
 GRANT ALL ON FUNCTION "public"."subvector"("public"."halfvec", integer, integer) TO "anon";
 GRANT ALL ON FUNCTION "public"."subvector"("public"."halfvec", integer, integer) TO "authenticated";
@@ -3662,8 +4470,26 @@ GRANT ALL ON FUNCTION "public"."sync_existing_users"() TO "service_role";
 
 
 
+GRANT ALL ON FUNCTION "public"."test_message_realtime"("p_design_session_id" "uuid") TO "anon";
+GRANT ALL ON FUNCTION "public"."test_message_realtime"("p_design_session_id" "uuid") TO "authenticated";
+GRANT ALL ON FUNCTION "public"."test_message_realtime"("p_design_session_id" "uuid") TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."unsubscribe_from_design_session"("p_design_session_id" "uuid") TO "anon";
+GRANT ALL ON FUNCTION "public"."unsubscribe_from_design_session"("p_design_session_id" "uuid") TO "authenticated";
+GRANT ALL ON FUNCTION "public"."unsubscribe_from_design_session"("p_design_session_id" "uuid") TO "service_role";
+
+
+
 GRANT ALL ON FUNCTION "public"."update_building_schema"("p_schema_id" "uuid", "p_schema_schema" "jsonb", "p_schema_version_patch" "jsonb", "p_schema_version_reverse_patch" "jsonb", "p_latest_schema_version_number" integer) TO "authenticated";
 GRANT ALL ON FUNCTION "public"."update_building_schema"("p_schema_id" "uuid", "p_schema_schema" "jsonb", "p_schema_version_patch" "jsonb", "p_schema_version_reverse_patch" "jsonb", "p_latest_schema_version_number" integer) TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."update_message_subscriptions_updated_at"() TO "anon";
+GRANT ALL ON FUNCTION "public"."update_message_subscriptions_updated_at"() TO "authenticated";
+GRANT ALL ON FUNCTION "public"."update_message_subscriptions_updated_at"() TO "service_role";
 
 
 
@@ -3850,6 +4676,30 @@ GRANT ALL ON FUNCTION "public"."sum"("public"."vector") TO "service_role";
 
 
 
+GRANT ALL ON TABLE "public"."albums" TO "anon";
+GRANT ALL ON TABLE "public"."albums" TO "authenticated";
+GRANT ALL ON TABLE "public"."albums" TO "service_role";
+
+
+
+GRANT ALL ON SEQUENCE "public"."albums_id_seq" TO "anon";
+GRANT ALL ON SEQUENCE "public"."albums_id_seq" TO "authenticated";
+GRANT ALL ON SEQUENCE "public"."albums_id_seq" TO "service_role";
+
+
+
+GRANT ALL ON TABLE "public"."artists" TO "anon";
+GRANT ALL ON TABLE "public"."artists" TO "authenticated";
+GRANT ALL ON TABLE "public"."artists" TO "service_role";
+
+
+
+GRANT ALL ON SEQUENCE "public"."artists_id_seq" TO "anon";
+GRANT ALL ON SEQUENCE "public"."artists_id_seq" TO "authenticated";
+GRANT ALL ON SEQUENCE "public"."artists_id_seq" TO "service_role";
+
+
+
 GRANT ALL ON TABLE "public"."building_schema_versions" TO "anon";
 GRANT ALL ON TABLE "public"."building_schema_versions" TO "authenticated";
 GRANT ALL ON TABLE "public"."building_schema_versions" TO "service_role";
@@ -3916,6 +4766,12 @@ GRANT ALL ON TABLE "public"."knowledge_suggestions" TO "service_role";
 
 
 
+GRANT ALL ON TABLE "public"."message_subscriptions" TO "anon";
+GRANT ALL ON TABLE "public"."message_subscriptions" TO "authenticated";
+GRANT ALL ON TABLE "public"."message_subscriptions" TO "service_role";
+
+
+
 GRANT ALL ON TABLE "public"."messages" TO "anon";
 GRANT ALL ON TABLE "public"."messages" TO "authenticated";
 GRANT ALL ON TABLE "public"."messages" TO "service_role";
@@ -3931,6 +4787,12 @@ GRANT ALL ON TABLE "public"."migration_pull_request_mappings" TO "service_role";
 GRANT ALL ON TABLE "public"."migrations" TO "anon";
 GRANT ALL ON TABLE "public"."migrations" TO "authenticated";
 GRANT ALL ON TABLE "public"."migrations" TO "service_role";
+
+
+
+GRANT ALL ON TABLE "public"."music_users" TO "anon";
+GRANT ALL ON TABLE "public"."music_users" TO "authenticated";
+GRANT ALL ON TABLE "public"."music_users" TO "service_role";
 
 
 
@@ -3955,6 +4817,30 @@ GRANT ALL ON TABLE "public"."overall_review_knowledge_suggestion_mappings" TO "s
 GRANT ALL ON TABLE "public"."overall_reviews" TO "anon";
 GRANT ALL ON TABLE "public"."overall_reviews" TO "authenticated";
 GRANT ALL ON TABLE "public"."overall_reviews" TO "service_role";
+
+
+
+GRANT ALL ON TABLE "public"."playlist_items" TO "anon";
+GRANT ALL ON TABLE "public"."playlist_items" TO "authenticated";
+GRANT ALL ON TABLE "public"."playlist_items" TO "service_role";
+
+
+
+GRANT ALL ON SEQUENCE "public"."playlist_items_id_seq" TO "anon";
+GRANT ALL ON SEQUENCE "public"."playlist_items_id_seq" TO "authenticated";
+GRANT ALL ON SEQUENCE "public"."playlist_items_id_seq" TO "service_role";
+
+
+
+GRANT ALL ON TABLE "public"."playlists" TO "anon";
+GRANT ALL ON TABLE "public"."playlists" TO "authenticated";
+GRANT ALL ON TABLE "public"."playlists" TO "service_role";
+
+
+
+GRANT ALL ON SEQUENCE "public"."playlists_id_seq" TO "anon";
+GRANT ALL ON SEQUENCE "public"."playlists_id_seq" TO "authenticated";
+GRANT ALL ON SEQUENCE "public"."playlists_id_seq" TO "service_role";
 
 
 
@@ -3997,6 +4883,30 @@ GRANT ALL ON TABLE "public"."review_suggestion_snippets" TO "service_role";
 GRANT ALL ON TABLE "public"."schema_file_paths" TO "anon";
 GRANT ALL ON TABLE "public"."schema_file_paths" TO "authenticated";
 GRANT ALL ON TABLE "public"."schema_file_paths" TO "service_role";
+
+
+
+GRANT ALL ON TABLE "public"."songs" TO "anon";
+GRANT ALL ON TABLE "public"."songs" TO "authenticated";
+GRANT ALL ON TABLE "public"."songs" TO "service_role";
+
+
+
+GRANT ALL ON SEQUENCE "public"."songs_id_seq" TO "anon";
+GRANT ALL ON SEQUENCE "public"."songs_id_seq" TO "authenticated";
+GRANT ALL ON SEQUENCE "public"."songs_id_seq" TO "service_role";
+
+
+
+GRANT ALL ON TABLE "public"."user_favorites" TO "anon";
+GRANT ALL ON TABLE "public"."user_favorites" TO "authenticated";
+GRANT ALL ON TABLE "public"."user_favorites" TO "service_role";
+
+
+
+GRANT ALL ON SEQUENCE "public"."user_favorites_id_seq" TO "anon";
+GRANT ALL ON SEQUENCE "public"."user_favorites_id_seq" TO "authenticated";
+GRANT ALL ON SEQUENCE "public"."user_favorites_id_seq" TO "service_role";
 
 
 

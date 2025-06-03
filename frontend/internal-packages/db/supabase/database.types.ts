@@ -34,6 +34,62 @@ export type Database = {
   }
   public: {
     Tables: {
+      albums: {
+        Row: {
+          artist_id: number
+          cover_url: string | null
+          created_at: string | null
+          id: number
+          release_date: string | null
+          title: string
+        }
+        Insert: {
+          artist_id: number
+          cover_url?: string | null
+          created_at?: string | null
+          id?: number
+          release_date?: string | null
+          title: string
+        }
+        Update: {
+          artist_id?: number
+          cover_url?: string | null
+          created_at?: string | null
+          id?: number
+          release_date?: string | null
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'albums_artist_id_fkey'
+            columns: ['artist_id']
+            isOneToOne: false
+            referencedRelation: 'artists'
+            referencedColumns: ['id']
+          },
+        ]
+      }
+      artists: {
+        Row: {
+          bio: string | null
+          created_at: string | null
+          id: number
+          name: string
+        }
+        Insert: {
+          bio?: string | null
+          created_at?: string | null
+          id?: number
+          name: string
+        }
+        Update: {
+          bio?: string | null
+          created_at?: string | null
+          id?: number
+          name?: string
+        }
+        Relationships: []
+      }
       building_schema_versions: {
         Row: {
           building_schema_id: string
@@ -554,6 +610,64 @@ export type Database = {
           },
         ]
       }
+      message_subscriptions: {
+        Row: {
+          created_at: string
+          design_session_id: string
+          id: string
+          is_active: boolean
+          organization_id: string
+          subscribed_at: string
+          unsubscribed_at: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          design_session_id: string
+          id?: string
+          is_active?: boolean
+          organization_id: string
+          subscribed_at?: string
+          unsubscribed_at?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          design_session_id?: string
+          id?: string
+          is_active?: boolean
+          organization_id?: string
+          subscribed_at?: string
+          unsubscribed_at?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'message_subscriptions_design_session_id_fkey'
+            columns: ['design_session_id']
+            isOneToOne: false
+            referencedRelation: 'design_sessions'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'message_subscriptions_organization_id_fkey'
+            columns: ['organization_id']
+            isOneToOne: false
+            referencedRelation: 'organizations'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'message_subscriptions_user_id_fkey'
+            columns: ['user_id']
+            isOneToOne: false
+            referencedRelation: 'users'
+            referencedColumns: ['id']
+          },
+        ]
+      }
       messages: {
         Row: {
           content: string
@@ -699,6 +813,30 @@ export type Database = {
             referencedColumns: ['id']
           },
         ]
+      }
+      music_users: {
+        Row: {
+          created_at: string | null
+          email: string
+          id: string
+          password_hash: string
+          username: string
+        }
+        Insert: {
+          created_at?: string | null
+          email: string
+          id?: string
+          password_hash: string
+          username: string
+        }
+        Update: {
+          created_at?: string | null
+          email?: string
+          id?: string
+          password_hash?: string
+          username?: string
+        }
+        Relationships: []
       }
       organization_members: {
         Row: {
@@ -847,6 +985,77 @@ export type Database = {
             columns: ['organization_id']
             isOneToOne: false
             referencedRelation: 'organizations'
+            referencedColumns: ['id']
+          },
+        ]
+      }
+      playlist_items: {
+        Row: {
+          added_at: string | null
+          id: number
+          playlist_id: number
+          position: number
+          song_id: number
+        }
+        Insert: {
+          added_at?: string | null
+          id?: number
+          playlist_id: number
+          position: number
+          song_id: number
+        }
+        Update: {
+          added_at?: string | null
+          id?: number
+          playlist_id?: number
+          position?: number
+          song_id?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'playlist_items_playlist_id_fkey'
+            columns: ['playlist_id']
+            isOneToOne: false
+            referencedRelation: 'playlists'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'playlist_items_song_id_fkey'
+            columns: ['song_id']
+            isOneToOne: false
+            referencedRelation: 'songs'
+            referencedColumns: ['id']
+          },
+        ]
+      }
+      playlists: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          id: number
+          name: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          id?: number
+          name: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          id?: number
+          name?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'playlists_user_id_fkey'
+            columns: ['user_id']
+            isOneToOne: false
+            referencedRelation: 'music_users'
             referencedColumns: ['id']
           },
         ]
@@ -1180,6 +1389,87 @@ export type Database = {
           },
         ]
       }
+      songs: {
+        Row: {
+          album_id: number | null
+          artist_id: number
+          audio_url: string | null
+          created_at: string | null
+          duration: number | null
+          id: number
+          title: string
+        }
+        Insert: {
+          album_id?: number | null
+          artist_id: number
+          audio_url?: string | null
+          created_at?: string | null
+          duration?: number | null
+          id?: number
+          title: string
+        }
+        Update: {
+          album_id?: number | null
+          artist_id?: number
+          audio_url?: string | null
+          created_at?: string | null
+          duration?: number | null
+          id?: number
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'songs_album_id_fkey'
+            columns: ['album_id']
+            isOneToOne: false
+            referencedRelation: 'albums'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'songs_artist_id_fkey'
+            columns: ['artist_id']
+            isOneToOne: false
+            referencedRelation: 'artists'
+            referencedColumns: ['id']
+          },
+        ]
+      }
+      user_favorites: {
+        Row: {
+          added_at: string | null
+          id: number
+          song_id: number
+          user_id: string
+        }
+        Insert: {
+          added_at?: string | null
+          id?: number
+          song_id: number
+          user_id: string
+        }
+        Update: {
+          added_at?: string | null
+          id?: number
+          song_id?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'user_favorites_song_id_fkey'
+            columns: ['song_id']
+            isOneToOne: false
+            referencedRelation: 'songs'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'user_favorites_user_id_fkey'
+            columns: ['user_id']
+            isOneToOne: false
+            referencedRelation: 'music_users'
+            referencedColumns: ['id']
+          },
+        ]
+      }
       users: {
         Row: {
           email: string
@@ -1211,9 +1501,37 @@ export type Database = {
         Args: { '': string } | { '': unknown }
         Returns: unknown
       }
+      get_design_session_subscribers: {
+        Args: { p_design_session_id: string }
+        Returns: {
+          user_id: string
+          user_name: string
+          user_email: string
+          subscribed_at: string
+        }[]
+      }
       get_invitation_data: {
         Args: { p_token: string }
         Returns: Json
+      }
+      get_recent_messages: {
+        Args: {
+          p_design_session_id: string
+          p_limit?: number
+          p_offset?: number
+        }
+        Returns: {
+          id: string
+          design_session_id: string
+          user_id: string
+          role: string
+          content: string
+          created_at: string
+          updated_at: string
+          organization_id: string
+          user_name: string
+          user_email: string
+        }[]
       }
       halfvec_avg: {
         Args: { '': number[] }
@@ -1289,6 +1607,15 @@ export type Database = {
           similarity: number
         }[]
       }
+      send_message: {
+        Args: {
+          p_design_session_id: string
+          p_role: string
+          p_content: string
+          p_user_id?: string
+        }
+        Returns: Json
+      }
       sparsevec_out: {
         Args: { '': unknown }
         Returns: unknown
@@ -1301,9 +1628,21 @@ export type Database = {
         Args: { '': unknown[] }
         Returns: number
       }
+      subscribe_to_design_session: {
+        Args: { p_design_session_id: string }
+        Returns: Json
+      }
       sync_existing_users: {
         Args: Record<PropertyKey, never>
         Returns: undefined
+      }
+      test_message_realtime: {
+        Args: { p_design_session_id: string }
+        Returns: Json
+      }
+      unsubscribe_from_design_session: {
+        Args: { p_design_session_id: string }
+        Returns: Json
       }
       update_building_schema: {
         Args: {
