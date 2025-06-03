@@ -1,6 +1,5 @@
 import resolve from '@rollup/plugin-node-resolve'
 import typescript from '@rollup/plugin-typescript'
-import execute from 'rollup-plugin-execute'
 
 // This file is for building the CLI entry point.
 
@@ -19,7 +18,6 @@ export default {
       outputToFilesystem: true,
       tsconfig: './tsconfig.node.json',
     }),
-    execute('chmod +x dist-cli/bin/cli.js'),
   ],
   external: ['commander', 'inquirer', '@prisma/internals', 'glob'],
 }
