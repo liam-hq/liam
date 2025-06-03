@@ -1,7 +1,7 @@
 import * as Sentry from '@sentry/nextjs'
 
 Sentry.init({
-  dsn: process.env.SENTRY_DSN,
+  dsn: process.env.NEXT_PUBLIC_SENTRY_DSN || process.env.SENTRY_DSN,
 
   integrations: [Sentry.replayIntegration()],
 
@@ -14,6 +14,8 @@ Sentry.init({
   debug: false,
 
   environment: process.env.NEXT_PUBLIC_ENV_NAME,
+
+  sendDefaultPii: true,
 })
 
 export const onRouterTransitionStart = Sentry.captureRouterTransitionStart
