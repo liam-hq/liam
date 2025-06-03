@@ -4,7 +4,7 @@ on:
     paths:
       - ".github/workflows/prompt-test.yml"
       - "frontend/packages/jobs/**"
-      - "frontend/packages/prompt-test/**"
+      - "frontend/internal-packages/prompt-test/**"
 
 jobs:
   eval:
@@ -37,10 +37,10 @@ jobs:
 
           rm -f .env .env.local
 
-          url=$(cat frontend/packages/prompt-test/result.json | jq -r .url)
+          url=$(cat frontend/internal-packages/prompt-test/result.json | jq -r .url)
           echo "url=$url" >> $GITHUB_OUTPUT
 
-          datasetRunItemsLength=$(cat frontend/packages/prompt-test/result.json | jq -r .datasetRunItemsLength)
+          datasetRunItemsLength=$(cat frontend/internal-packages/prompt-test/result.json | jq -r .datasetRunItemsLength)
           echo "datasetRunItemsLength=$datasetRunItemsLength" >> $GITHUB_OUTPUT
 
       - name: Post result
@@ -48,7 +48,7 @@ jobs:
         uses: marocchino/sticky-pull-request-comment@67d0dec7b07ed060a405f9b2a64b8ab319fdd7db # v2.9.2
         with:
           message: |
-            frontend/packages/prompt-test result:
+            frontend/internal-packages/prompt-test result:
 
             visit: ${{steps.pnpm-test-prompt.outputs.url}}
 
