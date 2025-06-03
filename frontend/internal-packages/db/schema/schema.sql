@@ -1352,6 +1352,10 @@ CREATE TABLE IF NOT EXISTS "public"."messages" (
 ALTER TABLE "public"."messages" OWNER TO "postgres";
 
 
+COMMENT ON TABLE "public"."messages" IS 'Messages table with realtime enabled for chat functionality';
+
+
+
 CREATE TABLE IF NOT EXISTS "public"."migration_pull_request_mappings" (
     "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
     "migration_id" "uuid" NOT NULL,
@@ -3125,6 +3129,10 @@ ALTER PUBLICATION "supabase_realtime" OWNER TO "postgres";
 
 
 
+
+
+
+ALTER PUBLICATION "supabase_realtime" ADD TABLE ONLY "public"."messages";
 
 
 

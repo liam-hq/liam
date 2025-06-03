@@ -1,0 +1,13 @@
+---- -- Enable realtime for messages table
+---- ALTER PUBLICATION supabase_realtime ADD TABLE messages;
+---- 
+---- -- Ensure RLS is enabled for messages table (required for realtime)
+---- ALTER TABLE messages ENABLE ROW LEVEL SECURITY;
+---- 
+---- -- Grant necessary permissions for realtime
+---- GRANT SELECT ON messages TO anon;
+---- GRANT SELECT ON messages TO authenticated;
+---- 
+---- -- Optional: Add a comment to document this change
+---- COMMENT ON TABLE messages IS 'Messages table with realtime enabled for chat functionality';
+---- -- 
