@@ -23,5 +23,3 @@ export const createBrowserClient = _createBrowserClient<AppDatabaseOverrides>
 export const createClient = _createClient<AppDatabaseOverrides>
 
 export * from './types/message-subscriptions'
-export * from './services/message-subscriptions'
-export * from './services/messages'
