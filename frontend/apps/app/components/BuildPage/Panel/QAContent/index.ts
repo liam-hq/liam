@@ -1,0 +1,1 @@
+export { QAContent } from './QAContent'

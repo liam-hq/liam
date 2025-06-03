@@ -17,6 +17,7 @@ import type { FC } from 'react'
 import { BRDContent } from './BRDContent'
 import { DBDesignContent } from './DBDesignContent'
 import styles from './Panel.module.css'
+import { QAContent } from './QAContent'
 import { Team } from './Team'
 import { TAB_CONFIGS, TAB_VALUES } from './constants'
 
@@ -78,7 +79,7 @@ export const Panel: FC<Props> = ({ schema, errors, projectId }) => {
                 <BRDContent />
               </TabsContent>
               <TabsContent value={TAB_VALUES.QA} className={styles.tabsContent}>
-                QA
+                <QAContent />
               </TabsContent>
               <TabsContent value={TAB_VALUES.QE} className={styles.tabsContent}>
                 Query Executor
