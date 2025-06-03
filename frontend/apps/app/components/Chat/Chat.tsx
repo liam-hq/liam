@@ -40,7 +40,7 @@ interface ChatEntry extends ChatMessageProps {
 interface Props {
   schemaData: Schema
   tableGroups?: Record<string, TableGroupData>
-  projectId: string
+  projectId?: string
   designSessionId?: string
 }
 

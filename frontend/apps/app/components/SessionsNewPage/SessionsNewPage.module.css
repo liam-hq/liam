@@ -1,10 +1,14 @@
 .container {
-  max-width: 800px;
-  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
   padding: var(--spacing-6);
 }
 
 .header {
+  text-align: center;
   margin-bottom: var(--spacing-8);
 }
 
@@ -21,11 +25,83 @@
   margin: 0;
 }
 
-.content {
-  background: var(--global-background-secondary);
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-6);
+  width: 100%;
+  max-width: 400px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2);
+}
+
+.label {
+  font-size: var(--font-size-3);
+  font-weight: 500;
+  color: var(--global-foreground);
+}
+
+.trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-3) var(--spacing-4);
   border: 1px solid var(--global-border);
   border-radius: var(--border-radius-2);
-  padding: var(--spacing-6);
+  background: var(--global-background);
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+
+.trigger:hover {
+  border-color: var(--global-border-hover);
+}
+
+.iconAndName {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+}
+
+.projectIcon {
+  width: 1rem;
+  height: 1rem;
+  color: var(--global-foreground-secondary);
+}
+
+.projectName {
+  font-size: var(--font-size-3);
+  color: var(--global-foreground);
+}
+
+.chevronIcon {
+  width: 1rem;
+  height: 1rem;
+  color: var(--global-foreground-secondary);
+}
+
+.content {
+  min-width: 200px;
+}
+
+.createButton {
+  padding: var(--spacing-3) var(--spacing-6);
+  background: var(--primary-background);
+  color: var(--primary-foreground);
+  border: none;
+  border-radius: var(--border-radius-2);
+  font-size: var(--font-size-3);
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.createButton:hover {
+  background: var(--primary-background-hover);
 }
 
 .loading {
