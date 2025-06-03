@@ -326,6 +326,7 @@ export class MessageSubscriptionService {
    * Subscribe to real-time changes for message subscriptions
    */
   subscribeToChanges(
+    // biome-ignore lint/suspicious/noExplicitAny: todo
     callback: (payload: any) => void,
     filters?: { design_session_id?: string; user_id?: string },
   ) {
@@ -333,6 +334,7 @@ export class MessageSubscriptionService {
     const channel = this.supabase.channel(channelName)
 
     // Subscribe to postgres changes
+    // biome-ignore lint/suspicious/noExplicitAny: todo
     const config: any = {
       event: '*',
       schema: 'public',
@@ -345,6 +347,7 @@ export class MessageSubscriptionService {
       config.filter = `user_id=eq.${filters.user_id}`
     }
 
+    // biome-ignore lint/suspicious/noExplicitAny: todo
     channel.on('postgres_changes' as any, config, callback)
 
     return channel.subscribe()

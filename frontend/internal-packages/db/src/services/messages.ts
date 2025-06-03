@@ -114,6 +114,7 @@ export class MessageService {
    */
   subscribeToMessages(
     designSessionId: string,
+    // biome-ignore lint/suspicious/noExplicitAny: todo
     callback: (payload: any) => void,
   ) {
     const channelName = `messages:${designSessionId}`
@@ -121,6 +122,7 @@ export class MessageService {
     const channel = this.supabase
       .channel(channelName)
       .on(
+        // biome-ignore lint/suspicious/noExplicitAny: todo
         'postgres_changes' as any,
         {
           event: 'INSERT',
@@ -133,6 +135,7 @@ export class MessageService {
         },
       )
       .on(
+        // biome-ignore lint/suspicious/noExplicitAny: todo
         'postgres_changes' as any,
         {
           event: 'UPDATE',
@@ -145,6 +148,7 @@ export class MessageService {
         },
       )
       .on(
+        // biome-ignore lint/suspicious/noExplicitAny: todo
         'postgres_changes' as any,
         {
           event: 'DELETE',
@@ -164,8 +168,10 @@ export class MessageService {
    * Subscribe to PostgreSQL NOTIFY events for messages
    * This provides an additional layer of real-time notifications
    */
+  // biome-ignore lint/suspicious/noExplicitAny: todo
   subscribeToMessageNotifications(callback: (payload: any) => void) {
     const channel = this.supabase.channel('message_notifications').on(
+      // biome-ignore lint/suspicious/noExplicitAny: todo
       'postgres_changes' as any,
       {
         event: '*',
