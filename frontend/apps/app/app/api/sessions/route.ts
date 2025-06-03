@@ -37,7 +37,12 @@ type ProjectWithRepository = {
 const validateRequestAndAuth = async (
   request: Request,
 ): Promise<
-  | { success: true; params: ValidatedRequestParams; user: AuthenticatedUser; organizationId: string }
+  | {
+      success: true
+      params: ValidatedRequestParams
+      user: AuthenticatedUser
+      organizationId: string
+    }
   | { success: false; response: NextResponse }
 > => {
   const requestParams = await request.json()
@@ -241,7 +246,10 @@ const parseSchemaAndCreateBuildingSchema = async (
   const { content, format, gitSha, schemaFilePath } = schemaData
 
   setPrismWasmUrl(path.resolve(process.cwd(), 'prism.wasm'))
-  const schemaString = await parse(content, format as 'schemarb' | 'postgres' | 'prisma' | 'tbls')
+  const schemaString = await parse(
+    content,
+    format as 'schemarb' | 'postgres' | 'prisma' | 'tbls',
+  )
   const schema = JSON.parse(JSON.stringify(schemaString.value))
 
   // Create building schema record
@@ -283,10 +291,18 @@ export async function POST(request: Request) {
     return authResult.response
   }
 
-  const { params: { projectId, parentDesignSessionId }, user, organizationId } = authResult
+  const {
+    params: { projectId, parentDesignSessionId },
+    user,
+    organizationId,
+  } = authResult
   const supabase = await createClient()
 
-  const projectResult = await getProjectWithRepository(supabase, projectId, organizationId)
+  const projectResult = await getProjectWithRepository(
+    supabase,
+    projectId,
+    organizationId,
+  )
   if (!projectResult.success) {
     return projectResult.response
   }
@@ -318,7 +334,11 @@ export async function POST(request: Request) {
     )
   }
 
-  const schemaResult = await fetchSchemaFromGitHub(supabase, projectId, organizationId)
+  const schemaResult = await fetchSchemaFromGitHub(
+    supabase,
+    projectId,
+    organizationId,
+  )
   if (!schemaResult.success) {
     return schemaResult.response
   }
