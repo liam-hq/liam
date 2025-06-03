@@ -27,45 +27,53 @@ export const saveMessage = async (data: {
   role: 'user' | 'assistant'
   userId?: string | null
 }): Promise<{ success: boolean; message?: Message; error?: string }> => {
-  const parsedData = v.parse(saveMessageSchema, data)
-  const { designSessionId, content, role, userId } = parsedData
+  try {
+    const parsedData = v.parse(saveMessageSchema, data)
+    const { designSessionId, content, role, userId } = parsedData
 
-  const supabase = createClient()
-  const now = new Date().toISOString()
+    const supabase = createClient()
+    const now = new Date().toISOString()
 
-  // Get organization_id from design_session
-  const { data: designSession, error: sessionError } = await supabase
-    .from('design_sessions')
-    .select('organization_id')
-    .eq('id', designSessionId)
-    .single()
+    // Get organization_id from design_session
+    const { data: designSession, error: sessionError } = await supabase
+      .from('design_sessions')
+      .select('organization_id')
+      .eq('id', designSessionId)
+      .single()
 
-  if (sessionError || !designSession) {
-    console.error('Failed to get design session:', sessionError)
-    return { success: false, error: 'Design session not found' }
+    if (sessionError || !designSession) {
+      console.error('Failed to get design session:', sessionError)
+      return { success: false, error: 'Design session not found' }
+    }
+
+    const messageData: MessageInsert = {
+      design_session_id: designSessionId,
+      content,
+      role,
+      user_id: userId || null,
+      updated_at: now,
+      organization_id: designSession.organization_id,
+    }
+
+    const { data: message, error } = await supabase
+      .from('messages')
+      .insert(messageData)
+      .select()
+      .single()
+
+    if (error) {
+      console.error('Failed to save message:', JSON.stringify(error, null, 2))
+      return { success: false, error: error.message }
+    }
+
+    return { success: true, message }
+  } catch (error) {
+    console.error('Error saving message:', JSON.stringify(error, null, 2))
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error',
+    }
   }
-
-  const messageData: MessageInsert = {
-    design_session_id: designSessionId,
-    content,
-    role,
-    user_id: userId || null,
-    updated_at: now,
-    organization_id: designSession.organization_id,
-  }
-
-  const { data: message, error } = await supabase
-    .from('messages')
-    .insert(messageData)
-    .select()
-    .single()
-
-  if (error) {
-    console.error('Failed to save message:', JSON.stringify(error, null, 2))
-    return { success: false, error: error.message }
-  }
-
-  return { success: true, message }
 }
 
 /**
@@ -125,63 +133,7 @@ export const convertMessageToChatEntry = (message: Message) => {
   }
 }
 
-/**
- * Save a message to the database (client-side)
- */
-const _saveMessage = async (data: {
-  designSessionId: string
-  content: string
-  role: 'user' | 'assistant'
-  userId?: string | null
-}): Promise<{ success: boolean; message?: Message; error?: string }> => {
-  try {
-    const parsedData = v.parse(saveMessageSchema, data)
-    const { designSessionId, content, role, userId } = parsedData
 
-    const supabase = createClient()
-    const now = new Date().toISOString()
-
-    // Get organization_id from design_session
-    const { data: designSession, error: sessionError } = await supabase
-      .from('design_sessions')
-      .select('organization_id')
-      .eq('id', designSessionId)
-      .single()
-
-    if (sessionError || !designSession) {
-      console.error('Failed to get design session:', sessionError)
-      return { success: false, error: 'Design session not found' }
-    }
-
-    const messageData: MessageInsert = {
-      design_session_id: designSessionId,
-      content,
-      role,
-      user_id: userId || null,
-      updated_at: now,
-      organization_id: designSession.organization_id,
-    }
-
-    const { data: message, error } = await supabase
-      .from('messages')
-      .insert(messageData)
-      .select()
-      .single()
-
-    if (error) {
-      console.error('Failed to save message:', JSON.stringify(error, null, 2))
-      return { success: false, error: error.message }
-    }
-
-    return { success: true, message }
-  } catch (error) {
-    console.error('Error saving message:', JSON.stringify(error, null, 2))
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : 'Unknown error',
-    }
-  }
-}
 
 /**
  * Set up realtime subscription for messages in a design session
@@ -215,6 +167,7 @@ export const setupRealtimeSubscription = (
     )
     .subscribe((status) => {
       if (status === 'SUBSCRIBED') {
+        console.log('Realtime subscription established for session:', designSessionId)
       } else if (status === 'CHANNEL_ERROR') {
         console.error(
           'Realtime subscription error for session:',

@@ -107,6 +107,13 @@ export const Chat: FC<Props> = ({
   // Handle new messages from realtime subscription
   const handleNewMessage = useCallback(
     (newMessage: Tables<'messages'>) => {
+      console.log('=== REALTIME MESSAGE RECEIVED ===');
+      console.log('New message:', newMessage);
+      console.log('Current user ID:', currentUserId);
+      console.log('Message user ID:', newMessage.user_id);
+      console.log('Message role:', newMessage.role);
+      console.log('================================');
+      
       // Convert database message to ChatEntry format
       const chatEntry = {
         ...convertMessageToChatEntry(newMessage),
