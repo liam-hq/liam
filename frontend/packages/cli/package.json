@@ -72,7 +72,6 @@
     "lint:biome": "biome check .",
     "lint:eslint": "echo 'ESLint disabled for cli package' || eslint .",
     "lint:tsc": "tsc --noEmit",
-
     "test": "vitest run"
   },
   "files": [
