@@ -26,6 +26,9 @@ interface ChatState {
   agentName?: AgentName
 }
 
+// Define ResponseChunk type
+type ResponseChunk = { type: 'text' | 'error' | 'custom'; content: string }
+
 // LangGraph-compatible annotations
 const ChatStateAnnotation = Annotation.Root({
   mode: Annotation<'Ask' | 'Build' | undefined>,
@@ -93,7 +96,7 @@ interface WorkflowOptions {
 export function executeChatWorkflow(
   initialState: WorkflowState,
 ): AsyncGenerator<
-  { type: 'text' | 'error'; content: string },
+  { type: 'text' | 'error' | 'custom'; content: string },
   WorkflowState,
   unknown
 >
@@ -101,7 +104,7 @@ export function executeChatWorkflow(
   initialState: WorkflowState,
   options: WorkflowOptions & { streaming: true },
 ): AsyncGenerator<
-  { type: 'text' | 'error'; content: string },
+  { type: 'text' | 'error' | 'custom'; content: string },
   WorkflowState,
   unknown
 >
@@ -115,7 +118,7 @@ export function executeChatWorkflow(
 ):
   | Promise<WorkflowState>
   | AsyncGenerator<
-      { type: 'text' | 'error'; content: string },
+      { type: 'text' | 'error' | 'custom'; content: string },
       WorkflowState,
       unknown
     > {
@@ -124,7 +127,7 @@ export function executeChatWorkflow(
   if (streaming === false) {
     return executeChatWorkflowSyncInternal(initialState, recursionLimit)
   }
-  return executeChatWorkflowStreamingInternal(initialState, recursionLimit)
+  return executeChatWorkflowStreamingInternal(initialState)
 }
 
 /**
@@ -196,107 +199,172 @@ const executeChatWorkflowSyncInternal = async (
   }
 }
 
+// Define success and failure result types
+type ValidationSuccess = { state: WorkflowState; error?: never }
+type ValidationFailure = {
+  error: string
+  finalState: WorkflowState
+  state?: never
+}
+type ValidationResult = ValidationSuccess | ValidationFailure
+
+// Type guard function for error checking
+function isValidationFailure(
+  result: ValidationResult,
+): result is ValidationFailure {
+  return 'error' in result && typeof result.error === 'string'
+}
+
+// Helper function for validation step
+async function runValidationStep(
+  initialState: WorkflowState,
+): Promise<ValidationResult> {
+  const validationResult = await validationNode(initialState)
+
+  if (validationResult.error) {
+    const errorState = {
+      ...initialState,
+      error: validationResult.error,
+    }
+    const finalResult = await finalResponseNode(errorState, {
+      streaming: false,
+    })
+    return { error: validationResult.error, finalState: finalResult }
+  }
+
+  return { state: { ...initialState, ...validationResult } }
+}
+
+// Helper function for answer generation step
+async function runAnswerGenerationStep(
+  state: WorkflowState,
+): Promise<ValidationResult> {
+  const answerResult = await answerGenerationNode(state)
+
+  if (answerResult.error) {
+    const errorState = {
+      ...state,
+      error: answerResult.error,
+    }
+    const finalResult = await finalResponseNode(errorState, {
+      streaming: false,
+    })
+    return { error: answerResult.error, finalState: finalResult }
+  }
+
+  return { state: { ...state, ...answerResult } }
+}
+
+// Helper function to prepare final response
+function prepareFinalResponse(
+  state: WorkflowState,
+  initialState: WorkflowState,
+): {
+  finalState: WorkflowState
+  generator: AsyncGenerator<ResponseChunk, WorkflowState, unknown>
+} {
+  // Prepare final state for streaming
+  const finalState: WorkflowState = {
+    mode: state.mode || initialState.mode,
+    userInput: state.userInput || initialState.userInput,
+    history: state.history || initialState.history || [],
+    schemaData: state.schemaData || initialState.schemaData,
+    projectId: state.projectId || initialState.projectId,
+    generatedAnswer: state.generatedAnswer,
+    // Include processed fields
+    schemaText: state.schemaText,
+    formattedChatHistory: state.formattedChatHistory,
+    agentName: state.agentName,
+  }
+
+  const generator = finalResponseNode(finalState)
+  return { finalState, generator }
+}
+
+// Helper function to get final state
+async function getFinalState(
+  generator: AsyncGenerator<ResponseChunk, WorkflowState, unknown>,
+  finalState: WorkflowState,
+): Promise<WorkflowState> {
+  // Get the final result from the generator
+  const generatorResult = await generator.next()
+  // Type guard to check if value is WorkflowState
+  const value = generatorResult.value
+  const isWorkflowState = (val: unknown): val is WorkflowState => {
+    return (
+      val !== null &&
+      typeof val === 'object' &&
+      'userInput' in val &&
+      'history' in val
+    )
+  }
+
+  return (
+    (isWorkflowState(value) ? value : null) || {
+      ...finalState,
+      finalResponse: finalState.generatedAnswer || 'No response generated',
+      history: [
+        ...finalState.history,
+        `User: ${finalState.userInput}`,
+        `Assistant: ${finalState.generatedAnswer || 'No response generated'}`,
+      ],
+    }
+  )
+}
+
 // Streaming implementation: LangGraph for validation + answerGeneration, streaming for finalResponse
 const executeChatWorkflowStreamingInternal = async function* (
   initialState: WorkflowState,
-  recursionLimit: number,
 ): AsyncGenerator<
-  { type: 'text' | 'error'; content: string },
+  { type: 'text' | 'error' | 'custom'; content: string },
   WorkflowState,
   unknown
 > {
   try {
-    // Step 1 & 2: Use LangGraph for validation and answer generation (synchronously)
-    const graph = new StateGraph(ChatStateAnnotation)
+    // Step 1: Validation
+    yield { type: 'custom', content: '🔍 Checking your input... 🔄' }
+    const validationResult = await runValidationStep(initialState)
 
-    graph
-      .addNode('validateInput', validateInput)
-      .addNode('generateAnswer', generateAnswer)
-      .addEdge(START, 'validateInput')
-      .addEdge('validateInput', 'generateAnswer')
-      .addEdge('generateAnswer', END)
+    if (isValidationFailure(validationResult)) {
+      yield { type: 'custom', content: '🔍 Checking your input... ❌' }
+      yield { type: 'error', content: validationResult.error }
+      return validationResult.finalState
+    }
 
-      // Conditional edges for error handling
-      .addConditionalEdges('validateInput', (state: ChatState) => {
-        if (state.error) return END
-        return 'generateAnswer'
-      })
+    yield { type: 'custom', content: '🔍 Checking your input... ✅' }
 
-    const compiled = graph.compile()
+    // Step 2: Answer Generation
+    yield { type: 'custom', content: '💬 Generating an answer... 🔄' }
+    const answerResult = await runAnswerGenerationStep(validationResult.state)
 
-    // Run validation and answer generation through LangGraph
-    const result = await compiled.invoke(
-      {
-        mode: initialState.mode,
-        userInput: initialState.userInput,
-        history: initialState.history || [],
-        schemaData: initialState.schemaData,
-        projectId: initialState.projectId,
-      },
-      {
-        recursionLimit, // Use configurable recursion limit
-      },
+    if (isValidationFailure(answerResult)) {
+      yield { type: 'custom', content: '💬 Generating an answer... ❌' }
+      yield { type: 'error', content: answerResult.error }
+      return answerResult.finalState
+    }
+
+    yield { type: 'custom', content: '💬 Generating an answer... ✅' }
+
+    // Step 3: Final Response
+    yield { type: 'custom', content: '📦 Formatting the final response... 🔄' }
+
+    // Stream the final response
+    const { finalState, generator } = prepareFinalResponse(
+      answerResult.state,
+      initialState,
     )
 
-    // Check for errors from validation or answer generation
-    if (result.error) {
-      yield { type: 'error', content: result.error }
-      const errorState = {
-        ...initialState,
-        error: result.error,
-      }
-      const finalResult = await finalResponseNode(errorState, {
-        streaming: false,
-      })
-      return finalResult
-    }
-
-    // Step 3: Stream final response using finalResponseNode
-    const finalState: WorkflowState = {
-      mode: result.mode,
-      userInput: result.userInput,
-      history: result.history || [],
-      schemaData: result.schemaData,
-      projectId: result.projectId,
-      generatedAnswer: result.generatedAnswer,
-      // Include processed fields
-      schemaText: result.schemaText,
-      formattedChatHistory: result.formattedChatHistory,
-      agentName: result.agentName,
-    }
-
-    const finalGenerator = finalResponseNode(finalState)
-
-    for await (const chunk of finalGenerator) {
+    for await (const chunk of generator) {
       if (chunk.type === 'text' || chunk.type === 'error') {
         yield chunk
       }
     }
 
-    // Get the final result from the generator
-    const generatorResult = await finalGenerator.next()
-    // Type guard to check if value is WorkflowState
-    const value = generatorResult.value
-    const isWorkflowState = (val: unknown): val is WorkflowState => {
-      return (
-        val !== null &&
-        typeof val === 'object' &&
-        'userInput' in val &&
-        'history' in val
-      )
-    }
+    yield { type: 'custom', content: '📦 Formatting the final response... ✅' }
 
-    return (
-      (isWorkflowState(value) ? value : null) || {
-        ...finalState,
-        finalResponse: finalState.generatedAnswer || 'No response generated',
-        history: [
-          ...finalState.history,
-          `User: ${finalState.userInput}`,
-          `Assistant: ${finalState.generatedAnswer || 'No response generated'}`,
-        ],
-      }
-    )
+    // Get final state from generator
+    const finalResult = await getFinalState(generator, finalState)
+    return finalResult
   } catch (error) {
     console.error(
       'LangGraph streaming execution failed, falling back to error state:',

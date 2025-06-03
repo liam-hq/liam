@@ -1,7 +1,6 @@
-import { convertSchemaToText } from '@/app/lib/schema/convertSchemaToText'
 import { isSchemaUpdated } from '@/app/lib/vectorstore/supabaseVectorStore'
 import { syncSchemaVectorStore } from '@/app/lib/vectorstore/syncSchemaVectorStore'
-import { createPromptVariables, langchain } from '@/lib/langchain'
+import { executeChatWorkflow } from '@/lib/chat/workflow'
 import type { Schema } from '@liam-hq/db-structure'
 
 interface ChatProcessorParams {
@@ -23,7 +22,7 @@ export function processChatMessage(
   params: ChatProcessorParams,
   options?: { streaming?: true },
 ): AsyncGenerator<
-  { type: 'text' | 'error'; content: string },
+  { type: 'text' | 'error' | 'custom'; content: string },
   ChatProcessorResult,
   unknown
 >
@@ -41,7 +40,7 @@ export function processChatMessage(
 ):
   | Promise<ChatProcessorResult>
   | AsyncGenerator<
-      { type: 'text' | 'error'; content: string },
+      { type: 'text' | 'error' | 'custom'; content: string },
       ChatProcessorResult,
       unknown
     > {
@@ -54,55 +53,51 @@ export function processChatMessage(
   return processChatMessageSync(params)
 }
 
-// non-streaming implementation (based on original implementation)
+// non-streaming implementation using workflow
 async function processChatMessageSync(
   params: ChatProcessorParams,
 ): Promise<ChatProcessorResult> {
   const { message, schemaData, history, mode, projectId } = params
 
   try {
-    // Determine which agent to use based on the mode
-    const agentName =
-      mode === 'build' ? 'databaseSchemaBuildAgent' : 'databaseSchemaAskAgent'
-
-    // Check if schema has been updated
-    const schemaUpdated = await isSchemaUpdated(schemaData)
-
-    if (schemaUpdated) {
-      try {
-        // Synchronize vector store
+    // Check if schema has been updated and sync vector store if needed
+    try {
+      const schemaUpdated = await isSchemaUpdated(schemaData)
+      if (schemaUpdated) {
         await syncSchemaVectorStore(schemaData, projectId)
-        // Log success message
-        process.stdout.write('Vector store synchronized successfully.\n')
-      } catch (syncError) {
-        // Log error but continue with chat processing
-        process.stderr.write(
-          `Warning: Failed to synchronize vector store: ${syncError}\n`,
-        )
+      }
+    } catch (error) {
+      console.warn('Vector store sync failed:', error)
+      // Continue processing even if vector store sync fails
+    }
+
+    // Convert history format
+    const formattedHistory = history?.map(([, content]) => content) || []
+
+    // Create workflow state
+    const workflowState = {
+      mode: mode === 'build' ? ('Build' as const) : ('Ask' as const),
+      userInput: message,
+      history: formattedHistory,
+      schemaData,
+      projectId,
+    }
+
+    // Execute workflow without streaming
+    const result = await executeChatWorkflow(workflowState, {
+      streaming: false,
+    })
+
+    if (result.error) {
+      return {
+        text: '',
+        success: false,
+        error: result.error,
       }
     }
 
-    // Convert schema to text
-    const schemaText = convertSchemaToText(schemaData)
-
-    // Get the agent from LangChain
-    const agent = langchain.getAgent(agentName)
-    if (!agent) {
-      throw new Error(`${agentName} not found in LangChain instance`)
-    }
-
-    // Create prompt variables
-    const promptVariables = createPromptVariables(
-      schemaText,
-      message,
-      history || [],
-    )
-
-    // Create a response using the agent
-    const response = await agent.generate(promptVariables)
-
     return {
-      text: response,
+      text: result.finalResponse || result.generatedAnswer || '',
       success: true,
     }
   } catch (error) {
@@ -114,73 +109,66 @@ async function processChatMessageSync(
   }
 }
 
-// streaming implementation
+// streaming implementation using workflow
 async function* processChatMessageStreaming(
   params: ChatProcessorParams,
 ): AsyncGenerator<
-  { type: 'text' | 'error'; content: string },
+  { type: 'text' | 'error' | 'custom'; content: string },
   ChatProcessorResult,
   unknown
 > {
   const { message, schemaData, history, mode, projectId } = params
 
   try {
-    // Determine which agent to use based on the mode
-    const agentName =
-      mode === 'build' ? 'databaseSchemaBuildAgent' : 'databaseSchemaAskAgent'
-
-    // Check if schema has been updated
-    const schemaUpdated = await isSchemaUpdated(schemaData)
-
-    if (schemaUpdated) {
-      try {
-        // Synchronize vector store
+    // Check if schema has been updated and sync vector store if needed
+    try {
+      const schemaUpdated = await isSchemaUpdated(schemaData)
+      if (schemaUpdated) {
         await syncSchemaVectorStore(schemaData, projectId)
-      } catch (syncError) {
-        // Yield error but continue with chat processing
-        yield {
-          type: 'error',
-          content: `Warning: Failed to synchronize vector store: ${syncError}`,
-        }
       }
+    } catch (error) {
+      console.warn('Vector store sync failed:', error)
+      // Continue processing even if vector store sync fails
     }
 
-    // Convert schema to text
-    const schemaText = convertSchemaToText(schemaData)
+    // Convert history format
+    const formattedHistory = history?.map(([, content]) => content) || []
 
-    // Get the agent from LangChain
-    const agent = langchain.getAgent(agentName)
-    if (!agent) {
-      const errorMsg = `${agentName} not found in LangChain instance`
-      yield { type: 'error', content: errorMsg }
-      return {
-        text: '',
-        success: false,
-        error: errorMsg,
-      }
+    // Create workflow state
+    const workflowState = {
+      mode: mode === 'build' ? ('Build' as const) : ('Ask' as const),
+      userInput: message,
+      history: formattedHistory,
+      schemaData,
+      projectId,
     }
 
-    // Create prompt variables
-    const promptVariables = createPromptVariables(
-      schemaText,
-      message,
-      history || [],
-    )
+    // Execute workflow with streaming
+    const stream = executeChatWorkflow(workflowState, { streaming: true })
 
-    // Stream the response using the agent
-    const stream = agent.stream(promptVariables)
+    let finalText = ''
+    let hasError = false
+    let errorMessage = ''
 
     // Process and yield each chunk
-    let fullText = ''
     for await (const chunk of stream) {
-      fullText += chunk
-      yield { type: 'text', content: chunk }
+      if (chunk.type === 'text') {
+        finalText += chunk.content
+        yield chunk
+      } else if (chunk.type === 'custom') {
+        yield chunk
+      } else if (chunk.type === 'error') {
+        hasError = true
+        errorMessage = chunk.content
+        yield chunk
+      }
     }
 
     // Return the complete result
     return {
-      text: fullText,
-      success: true,
+      text: finalText,
+      success: !hasError,
+      error: hasError ? errorMessage : undefined,
     }
   } catch (error) {
     const errorMsg = error instanceof Error ? error.message : 'Unknown error'

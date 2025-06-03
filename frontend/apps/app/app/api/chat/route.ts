@@ -31,11 +31,27 @@ export async function POST(request: Request) {
           projectId,
         })) {
           if (chunk.type === 'text') {
-            // Encode and enqueue the text chunk
-            controller.enqueue(encoder.encode(chunk.content))
+            // Encode and enqueue the text chunk as JSON
+            controller.enqueue(
+              encoder.encode(
+                `${JSON.stringify({ type: 'text', content: chunk.content })}\n`,
+              ),
+            )
+          } else if (chunk.type === 'custom') {
+            // Encode and enqueue the custom progress message as JSON
+            controller.enqueue(
+              encoder.encode(
+                `${JSON.stringify({ type: 'custom', content: chunk.content })}\n`,
+              ),
+            )
           } else if (chunk.type === 'error') {
-            // Handle error by closing the stream
-            controller.error(new Error(chunk.content))
+            // Handle error by sending error message and closing the stream
+            controller.enqueue(
+              encoder.encode(
+                `${JSON.stringify({ type: 'error', content: chunk.content })}\n`,
+              ),
+            )
+            controller.close()
             return
           }
         }

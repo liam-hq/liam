@@ -44,6 +44,21 @@ interface Props {
   designSessionId?: string
 }
 
+// Add type guard for parsed response
+function isResponseChunk(
+  value: unknown,
+): value is { type: string; content: string } {
+  if (typeof value !== 'object' || value === null) return false
+
+  const candidate = value as Record<string, unknown>
+
+  if (!('type' in candidate) || !('content' in candidate)) return false
+
+  return (
+    typeof candidate.type === 'string' && typeof candidate.content === 'string'
+  )
+}
+
 export const Chat: FC<Props> = ({
   schemaData,
   tableGroups,
@@ -64,6 +79,7 @@ export const Chat: FC<Props> = ({
   const [isLoading, setIsLoading] = useState(false)
   const [currentMode, setCurrentMode] = useState<Mode>('ask')
   const [isLoadingMessages, setIsLoadingMessages] = useState(true)
+  const [progressMessages, setProgressMessages] = useState<string[]>([])
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
   // Load existing messages on component mount
@@ -185,6 +201,9 @@ export const Chat: FC<Props> = ({
         const { done, value } = await reader.read()
 
         if (done) {
+          // Clear progress messages when streaming is complete
+          setProgressMessages([])
+
           // Streaming is complete, save to database and add timestamp
           if (designSessionId) {
             const saveResult = await saveMessage({
@@ -214,22 +233,79 @@ export const Chat: FC<Props> = ({
           break
         }
 
-        // Decode the chunk and append to accumulated content
+        // Decode the chunk and process JSON messages
         const chunk = new TextDecoder().decode(value)
-        accumulatedContent += chunk
+        const lines = chunk.split('\n').filter((line) => line.trim())
 
-        // Update the AI message with the accumulated content (without timestamp)
-        // Keep isGenerating: true during streaming
-        setMessages((prev) =>
-          prev.map((msg) =>
-            msg.id === aiMessageId
-              ? createChatEntry(msg, {
-                  content: accumulatedContent,
-                  isGenerating: true,
-                })
-              : msg,
-          ),
-        )
+        for (const line of lines) {
+          try {
+            const parsed = JSON.parse(line)
+
+            // Validate the parsed data has the expected structure
+            if (!isResponseChunk(parsed)) {
+              console.error('Invalid response format:', parsed)
+              continue
+            }
+
+            if (parsed.type === 'text') {
+              // Append text content to accumulated content
+              accumulatedContent += parsed.content
+
+              // Update the AI message with the accumulated content (without timestamp)
+              // Keep isGenerating: true during streaming
+              setMessages((prev) =>
+                prev.map((msg) =>
+                  msg.id === aiMessageId
+                    ? createChatEntry(msg, {
+                        content: accumulatedContent,
+                        isGenerating: true,
+                      })
+                    : msg,
+                ),
+              )
+            } else if (parsed.type === 'custom') {
+              // Update progress messages
+              setProgressMessages((prev) => {
+                const content = parsed.content
+
+                // Extract the base message (without emoji status)
+                const baseMessage = content.replace(/\s+(🔄|✅|❌)$/, '')
+
+                // Find if we already have a message for this step
+                const existingIndex = prev.findIndex(
+                  (msg) => msg.replace(/\s+(🔄|✅|❌)$/, '') === baseMessage,
+                )
+
+                if (existingIndex >= 0) {
+                  // Update existing message
+                  const updated = [...prev]
+                  updated[existingIndex] = content
+                  return updated
+                }
+                // Add new message
+                return [...prev, content]
+              })
+            } else if (parsed.type === 'error') {
+              // Handle error message
+              console.error('Stream error:', parsed.content)
+              setProgressMessages([])
+              throw new Error(parsed.content)
+            }
+          } catch {
+            // If JSON parsing fails, treat as plain text (backward compatibility)
+            accumulatedContent += chunk
+            setMessages((prev) =>
+              prev.map((msg) =>
+                msg.id === aiMessageId
+                  ? createChatEntry(msg, {
+                      content: accumulatedContent,
+                      isGenerating: true,
+                    })
+                  : msg,
+              ),
+            )
+          }
+        }
 
         // Scroll to bottom as content streams in
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -284,16 +360,26 @@ export const Chat: FC<Props> = ({
             <div className={styles.loadingDot} />
           </div>
         ) : (
-          messages.map((message) => (
-            <ChatMessage
-              key={message.id}
-              content={message.content}
-              isUser={message.isUser}
-              timestamp={message.timestamp}
-              isGenerating={message.isGenerating}
-              agentType={message.agentType || currentMode}
-            />
-          ))
+          <>
+            {messages.map((message) => (
+              <ChatMessage
+                key={message.id}
+                content={message.content}
+                isUser={message.isUser}
+                timestamp={message.timestamp}
+                isGenerating={message.isGenerating}
+                agentType={message.agentType || currentMode}
+              />
+            ))}
+            {progressMessages.map((message, index) => (
+              <div
+                key={`progress-${index}-${message.slice(0, 10)}`}
+                className={styles.progressMessage}
+              >
+                {message}
+              </div>
+            ))}
+          </>
         )}
         {isLoading && (
           <div className={styles.loadingIndicator}>

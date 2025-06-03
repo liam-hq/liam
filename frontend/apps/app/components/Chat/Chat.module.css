@@ -37,6 +37,29 @@
   animation-delay: 0.4s;
 }
 
+.progressMessage {
+  padding: 8px 16px;
+  margin: 8px 0;
+  background-color: var(--global-background-subtle);
+  border: 1px solid var(--global-border);
+  border-radius: 8px;
+  color: var(--global-foreground-subtle);
+  font-size: 14px;
+  text-align: center;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 @keyframes pulse {
   0%,
   100% {
