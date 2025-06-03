@@ -7,7 +7,7 @@ on:
       - .github/workflows/trigger_dev_staging.yml
       - frontend/packages/jobs/**
       - frontend/packages/db-structure/**
-      - frontend/packages/github/**
+      - frontend/internal-packages/github/**
       - frontend/packages/db/**
       - turbo.json
 
