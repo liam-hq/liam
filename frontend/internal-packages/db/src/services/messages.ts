@@ -57,62 +57,6 @@ export class MessageService {
   }
 
   /**
-   * Subscribe to real-time message changes for a design session
-   * This method ensures all message types (user, assistant, system) are received
-   */
-  subscribeToMessages(
-    designSessionId: string,
-    // biome-ignore lint/suspicious/noExplicitAny: todo
-    callback: (payload: any) => void,
-  ) {
-    const channelName = `messages:${designSessionId}`
-
-    const channel = this.supabase
-      .channel(channelName)
-      .on(
-        // biome-ignore lint/suspicious/noExplicitAny: todo
-        'postgres_changes' as any,
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'messages',
-          filter: `design_session_id=eq.${designSessionId}`,
-        },
-        (payload) => {
-          callback(payload)
-        },
-      )
-      .on(
-        // biome-ignore lint/suspicious/noExplicitAny: todo
-        'postgres_changes' as any,
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'messages',
-          filter: `design_session_id=eq.${designSessionId}`,
-        },
-        (payload) => {
-          callback(payload)
-        },
-      )
-      .on(
-        // biome-ignore lint/suspicious/noExplicitAny: todo
-        'postgres_changes' as any,
-        {
-          event: 'DELETE',
-          schema: 'public',
-          table: 'messages',
-          filter: `design_session_id=eq.${designSessionId}`,
-        },
-        (payload) => {
-          callback(payload)
-        },
-      )
-
-    return channel.subscribe((_status) => {})
-  }
-
-  /**
    * Subscribe to PostgreSQL NOTIFY events for messages
    * This provides an additional layer of real-time notifications
    */
