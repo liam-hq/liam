@@ -2,7 +2,7 @@ import crypto from 'node:crypto'
 import { createClient } from '@/libs/db/server'
 import { supportedEvents } from '@liam-hq/github'
 import type { GitHubWebhookPayload } from '@liam-hq/github'
-import { savePullRequestTask } from '@liam-hq/jobs'
+import { createSchemaDeploymentTask, savePullRequestTask } from '@liam-hq/jobs'
 import { type NextRequest, NextResponse } from 'next/server'
 import { checkSchemaChanges } from './utils/checkSchemaChanges'
 
@@ -135,6 +135,14 @@ const handlePullRequest = async (
       await savePullRequestTask.trigger({
         prNumber,
         projectId,
+      })
+
+      await createSchemaDeploymentTask.trigger({
+        installationId: data.installation.id,
+        owner: data.repository.owner.login,
+        repo: data.repository.name,
+        projectId,
+        branchRef: pullRequest.head.ref,
       })
 
       return NextResponse.json(

@@ -8,6 +8,7 @@ export { processGenerateReview } from './tasks/review/generateReview'
 export { processSavePullRequest } from './tasks/review/savePullRequest'
 export { processSaveReview } from './tasks/review/saveReview'
 export { postComment } from './tasks/review/postComment'
+export { processCreateSchemaDeployment } from './tasks/github/createSchemaDeployment'
 
 export {
   savePullRequestTask,
@@ -15,6 +16,7 @@ export {
   saveReviewTask,
   postCommentTask,
 } from './tasks/review'
+export { createSchemaDeploymentTask } from './tasks/github'
 export {
   helloWorld,
   generateKnowledgeFromFeedbackTask,
