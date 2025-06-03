@@ -13,16 +13,44 @@ const requestParamsSchema = v.object({
   parentDesignSessionId: v.optional(v.string()),
 })
 
-// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: TODO refactor later
-export async function POST(request: Request) {
+type ValidatedRequestParams = {
+  projectId: string
+  parentDesignSessionId?: string
+}
+
+type AuthenticatedUser = {
+  id: string
+}
+
+type ProjectWithRepository = {
+  id: string
+  project_repository_mappings: {
+    github_repositories: {
+      id: number
+      name: string
+      owner: string
+      github_installation_identifier: string
+    }
+  }[]
+}
+
+const validateRequestAndAuth = async (
+  request: Request,
+): Promise<
+  | { success: true; params: ValidatedRequestParams; user: AuthenticatedUser; organizationId: string }
+  | { success: false; response: NextResponse }
+> => {
   const requestParams = await request.json()
   const parsedRequestParams = v.safeParse(requestParamsSchema, requestParams)
 
   if (!parsedRequestParams.success) {
-    return NextResponse.json(
-      { error: 'Invalid request parameters' },
-      { status: 400 },
-    )
+    return {
+      success: false,
+      response: NextResponse.json(
+        { error: 'Invalid request parameters' },
+        { status: 400 },
+      ),
+    }
   }
 
   const { projectId, parentDesignSessionId } = parsedRequestParams.output
@@ -32,22 +60,43 @@ export async function POST(request: Request) {
   const { data: userData, error: userError } = await supabase.auth.getUser()
 
   if (userError || !userData.user) {
-    return NextResponse.json(
-      { error: 'Authentication required' },
-      { status: 401 },
-    )
+    return {
+      success: false,
+      response: NextResponse.json(
+        { error: 'Authentication required' },
+        { status: 401 },
+      ),
+    }
   }
 
   // Get organization ID
   const organizationId = await getOrganizationId()
   if (!organizationId) {
-    return NextResponse.json(
-      { error: 'Organization not found' },
-      { status: 400 },
-    )
+    return {
+      success: false,
+      response: NextResponse.json(
+        { error: 'Organization not found' },
+        { status: 400 },
+      ),
+    }
   }
 
-  // Verify that the project exists and belongs to the organization
+  return {
+    success: true,
+    params: { projectId, parentDesignSessionId },
+    user: { id: userData.user.id },
+    organizationId,
+  }
+}
+
+const getProjectWithRepository = async (
+  supabase: any,
+  projectId: string,
+  organizationId: string,
+): Promise<
+  | { success: true; project: ProjectWithRepository }
+  | { success: false; response: NextResponse }
+> => {
   const { data: project, error: projectError } = await supabase
     .from('projects')
     .select(`
@@ -64,11 +113,185 @@ export async function POST(request: Request) {
     .single()
 
   if (projectError || !project) {
-    return NextResponse.json(
-      { error: 'Project not found or access denied' },
-      { status: 404 },
-    )
+    return {
+      success: false,
+      response: NextResponse.json(
+        { error: 'Project not found or access denied' },
+        { status: 404 },
+      ),
+    }
   }
+
+  return {
+    success: true,
+    project,
+  }
+}
+
+type SchemaData = {
+  content: string
+  format: string
+  gitSha: string
+  schemaFilePath: string | null
+}
+
+const fetchSchemaFromGitHub = async (
+  supabase: any,
+  projectId: string,
+  organizationId: string,
+): Promise<
+  | { success: true; schemaData: SchemaData }
+  | { success: false; response: NextResponse }
+> => {
+  // Get schema file path from schema_file_paths table
+  const { data: schemaFilePath, error: schemaFilePathError } = await supabase
+    .from('schema_file_paths')
+    .select('path, format')
+    .eq('project_id', projectId)
+    .eq('organization_id', organizationId)
+    .limit(1)
+    .maybeSingle()
+
+  if (schemaFilePathError) {
+    return {
+      success: false,
+      response: NextResponse.json(
+        { error: 'Failed to fetch schema file path' },
+        { status: 500 },
+      ),
+    }
+  }
+
+  // Get repository information for GitHub API call
+  const { data: repositoryMapping, error: repositoryMappingError } =
+    await supabase
+      .from('project_repository_mappings')
+      .select(`
+      github_repositories(
+        id, name, owner, github_installation_identifier
+      )
+    `)
+      .eq('project_id', projectId)
+      .single()
+
+  if (repositoryMappingError || !repositoryMapping) {
+    return {
+      success: false,
+      response: NextResponse.json(
+        { error: 'Failed to fetch repository information' },
+        { status: 500 },
+      ),
+    }
+  }
+
+  const repository = repositoryMapping.github_repositories
+
+  // Get main branch SHA from GitHub API
+  const lastCommit = await getLastCommit(
+    Number(repository.github_installation_identifier),
+    repository.owner,
+    repository.name,
+    'main',
+  )
+  const gitSha = lastCommit?.sha || null
+  if (!gitSha) {
+    return {
+      success: false,
+      response: NextResponse.json({ error: 'error' }, { status: 500 }),
+    }
+  }
+
+  const repositoryFullName = `${repository.owner}/${repository.name}`
+  const { content } = await getFileContent(
+    repositoryFullName,
+    schemaFilePath?.path || 'schema.json',
+    gitSha || 'main',
+    repository.github_installation_identifier,
+  )
+
+  const format = schemaFilePath?.format
+
+  if (!format || !content) {
+    return {
+      success: false,
+      response: NextResponse.json({ error: 'error' }, { status: 500 }),
+    }
+  }
+
+  return {
+    success: true,
+    schemaData: {
+      content,
+      format,
+      gitSha,
+      schemaFilePath: schemaFilePath?.path || null,
+    },
+  }
+}
+
+const parseSchemaAndCreateBuildingSchema = async (
+  supabase: any,
+  designSessionId: string,
+  organizationId: string,
+  schemaData: SchemaData,
+): Promise<
+  | { success: true; buildingSchema: any }
+  | { success: false; response: NextResponse }
+> => {
+  const { content, format, gitSha, schemaFilePath } = schemaData
+
+  setPrismWasmUrl(path.resolve(process.cwd(), 'prism.wasm'))
+  const schemaString = await parse(content, format as 'schemarb' | 'postgres' | 'prisma' | 'tbls')
+  const schema = JSON.parse(JSON.stringify(schemaString.value))
+
+  // Create building schema record
+  const buildingSchemaData: TablesInsert<'building_schemas'> = {
+    design_session_id: designSessionId,
+    organization_id: organizationId,
+    schema,
+    initial_schema_snapshot: schema,
+    schema_file_path: schemaFilePath || null,
+    git_sha: gitSha,
+  }
+
+  const { data: buildingSchema, error: buildingSchemaError } = await supabase
+    .from('building_schemas')
+    .insert(buildingSchemaData)
+    .select()
+    .single()
+
+  if (buildingSchemaError) {
+    console.error('Error creating building schema:', buildingSchemaError)
+    return {
+      success: false,
+      response: NextResponse.json(
+        { error: 'Failed to create building schema' },
+        { status: 500 },
+      ),
+    }
+  }
+
+  return {
+    success: true,
+    buildingSchema,
+  }
+}
+
+export async function POST(request: Request) {
+  const authResult = await validateRequestAndAuth(request)
+  if (!authResult.success) {
+    return authResult.response
+  }
+
+  const { params: { projectId, parentDesignSessionId }, user, organizationId } = authResult
+  const supabase = await createClient()
+
+  const projectResult = await getProjectWithRepository(supabase, projectId, organizationId)
+  if (!projectResult.success) {
+    return projectResult.response
+  }
+
+  const { project } = projectResult
 
   const name = `Design Session - ${new Date().toISOString()}`
 
@@ -77,7 +300,7 @@ export async function POST(request: Request) {
     name,
     project_id: projectId,
     organization_id: organizationId,
-    created_by_user_id: userData.user.id,
+    created_by_user_id: user.id,
     parent_design_session_id: parentDesignSessionId || null,
   }
 
@@ -95,96 +318,22 @@ export async function POST(request: Request) {
     )
   }
 
-  // Get schema file path from schema_file_paths table
-  const { data: schemaFilePath, error: schemaFilePathError } = await supabase
-    .from('schema_file_paths')
-    .select('path, format')
-    .eq('project_id', projectId)
-    .eq('organization_id', organizationId)
-    .limit(1)
-    .maybeSingle()
-
-  if (schemaFilePathError) {
-    return NextResponse.json(
-      { error: 'Failed to fetch schema file path' },
-      { status: 500 },
-    )
+  const schemaResult = await fetchSchemaFromGitHub(supabase, projectId, organizationId)
+  if (!schemaResult.success) {
+    return schemaResult.response
   }
 
-  // Get repository information for GitHub API call
-  const { data: repositoryMapping, error: repositoryMappingError } =
-    await supabase
-      .from('project_repository_mappings')
-      .select(`
-      github_repositories(
-        id, name, owner, github_installation_identifier
-      )
-    `)
-      .eq('project_id', projectId)
-      .single()
-
-  if (repositoryMappingError || !repositoryMapping) {
-    return NextResponse.json(
-      { error: 'Failed to fetch repository information' },
-      { status: 500 },
-    )
-  }
-
-  const repository = repositoryMapping.github_repositories
-
-  // Get main branch SHA from GitHub API
-  const lastCommit = await getLastCommit(
-    Number(repository.github_installation_identifier),
-    repository.owner,
-    repository.name,
-    'main',
+  const buildingSchemaResult = await parseSchemaAndCreateBuildingSchema(
+    supabase,
+    designSession.id,
+    organizationId,
+    schemaResult.schemaData,
   )
-  const gitSha = lastCommit?.sha || null
-  if (!gitSha) {
-    return NextResponse.json({ error: 'error' }, { status: 500 })
+  if (!buildingSchemaResult.success) {
+    return buildingSchemaResult.response
   }
 
-  const repositoryFullName = `${repository.owner}/${repository.name}`
-  const { content } = await getFileContent(
-    repositoryFullName,
-    schemaFilePath?.path || 'schema.json',
-    gitSha || 'main',
-    repository.github_installation_identifier,
-  )
-
-  const format = schemaFilePath?.format
-
-  if (!format || !content) {
-    return NextResponse.json({ error: 'error' }, { status: 500 })
-  }
-
-  setPrismWasmUrl(path.resolve(process.cwd(), 'prism.wasm'))
-  const schemaString = await parse(content, format)
-  const schema = JSON.parse(JSON.stringify(schemaString.value))
-
-  // Create building schema record
-  const buildingSchemaData: TablesInsert<'building_schemas'> = {
-    design_session_id: designSession.id,
-    organization_id: organizationId,
-    schema,
-    initial_schema_snapshot: schema,
-    schema_file_path: schemaFilePath?.path || null,
-    git_sha: gitSha,
-  }
-
-  const { data: buildingSchema, error: buildingSchemaError } = await supabase
-    .from('building_schemas')
-    .insert(buildingSchemaData)
-    .select()
-    .single()
-
-  if (buildingSchemaError) {
-    console.error('Error creating building schema:', buildingSchemaError)
-    return NextResponse.json(
-      { error: 'Failed to create building schema' },
-      { status: 500 },
-    )
-  }
+  const { buildingSchema } = buildingSchemaResult
 
   return NextResponse.json(
     {
