@@ -6,6 +6,7 @@ import type { TablesInsert } from '@liam-hq/db/supabase/database.types'
 import { getLastCommit } from '@liam-hq/github'
 import { getFileContent } from '@liam-hq/github'
 import { NextResponse } from 'next/server'
+
 import * as v from 'valibot'
 
 const requestParamsSchema = v.object({
@@ -26,10 +27,9 @@ type ProjectWithRepository = {
   id: string
   project_repository_mappings: {
     github_repositories: {
-      id: number
       name: string
       owner: string
-      github_installation_identifier: string
+      github_installation_identifier: number
     }
   }[]
 }
@@ -95,7 +95,7 @@ const validateRequestAndAuth = async (
 }
 
 const getProjectWithRepository = async (
-  supabase: any,
+  supabase: Awaited<ReturnType<typeof createClient>>,
   projectId: string,
   organizationId: string,
 ): Promise<
@@ -141,7 +141,7 @@ type SchemaData = {
 }
 
 const fetchSchemaFromGitHub = async (
-  supabase: any,
+  supabase: Awaited<ReturnType<typeof createClient>>,
   projectId: string,
   organizationId: string,
 ): Promise<
@@ -235,7 +235,7 @@ const fetchSchemaFromGitHub = async (
 }
 
 const parseSchemaAndCreateBuildingSchema = async (
-  supabase: any,
+  supabase: Awaited<ReturnType<typeof createClient>>,
   designSessionId: string,
   organizationId: string,
   schemaData: SchemaData,
