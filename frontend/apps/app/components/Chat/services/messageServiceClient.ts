@@ -133,8 +133,6 @@ export const convertMessageToChatEntry = (message: Message) => {
   }
 }
 
-
-
 /**
  * Set up realtime subscription for messages in a design session
  */
@@ -167,7 +165,6 @@ export const setupRealtimeSubscription = (
     )
     .subscribe((status) => {
       if (status === 'SUBSCRIBED') {
-        console.log('Realtime subscription established for session:', designSessionId)
       } else if (status === 'CHANNEL_ERROR') {
         console.error(
           'Realtime subscription error for session:',
