@@ -188,28 +188,6 @@ $$;
 ALTER FUNCTION "public"."accept_invitation"("p_token" "uuid") OWNER TO "postgres";
 
 
-CREATE OR REPLACE FUNCTION "public"."get_design_session_subscribers"("p_design_session_id" "uuid") RETURNS TABLE("user_id" "uuid", "user_name" "text", "user_email" "text", "subscribed_at" timestamp with time zone)
-    LANGUAGE "plpgsql" SECURITY DEFINER
-    AS $$
-BEGIN
-  RETURN QUERY
-  SELECT 
-    ms.user_id,
-    u.name as user_name,
-    u.email as user_email,
-    ms.subscribed_at
-  FROM message_subscriptions ms
-  JOIN users u ON ms.user_id = u.id
-  WHERE ms.design_session_id = p_design_session_id
-    AND ms.is_active = true
-  ORDER BY ms.subscribed_at ASC;
-END;
-$$;
-
-
-ALTER FUNCTION "public"."get_design_session_subscribers"("p_design_session_id" "uuid") OWNER TO "postgres";
-
-
 CREATE OR REPLACE FUNCTION "public"."get_invitation_data"("p_token" "uuid") RETURNS "jsonb"
     LANGUAGE "plpgsql" SECURITY DEFINER
     AS $$
@@ -3471,12 +3449,6 @@ GRANT ALL ON FUNCTION "public"."cosine_distance"("public"."vector", "public"."ve
 GRANT ALL ON FUNCTION "public"."cosine_distance"("public"."vector", "public"."vector") TO "anon";
 GRANT ALL ON FUNCTION "public"."cosine_distance"("public"."vector", "public"."vector") TO "authenticated";
 GRANT ALL ON FUNCTION "public"."cosine_distance"("public"."vector", "public"."vector") TO "service_role";
-
-
-
-GRANT ALL ON FUNCTION "public"."get_design_session_subscribers"("p_design_session_id" "uuid") TO "anon";
-GRANT ALL ON FUNCTION "public"."get_design_session_subscribers"("p_design_session_id" "uuid") TO "authenticated";
-GRANT ALL ON FUNCTION "public"."get_design_session_subscribers"("p_design_session_id" "uuid") TO "service_role";
 
 
 

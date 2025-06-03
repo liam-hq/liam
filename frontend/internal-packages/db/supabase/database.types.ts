@@ -1269,15 +1269,6 @@ export type Database = {
         Args: { '': string } | { '': unknown }
         Returns: unknown
       }
-      get_design_session_subscribers: {
-        Args: { p_design_session_id: string }
-        Returns: {
-          user_id: string
-          user_name: string
-          user_email: string
-          subscribed_at: string
-        }[]
-      }
       get_invitation_data: {
         Args: { p_token: string }
         Returns: Json
