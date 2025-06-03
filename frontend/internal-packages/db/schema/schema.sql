@@ -1161,62 +1161,6 @@ SET default_tablespace = '';
 SET default_table_access_method = "heap";
 
 
-CREATE TABLE IF NOT EXISTS "public"."albums" (
-    "id" integer NOT NULL,
-    "artist_id" integer NOT NULL,
-    "title" character varying(255) NOT NULL,
-    "release_date" "date",
-    "cover_url" "text",
-    "created_at" timestamp without time zone DEFAULT CURRENT_TIMESTAMP
-);
-
-
-ALTER TABLE "public"."albums" OWNER TO "postgres";
-
-
-CREATE SEQUENCE IF NOT EXISTS "public"."albums_id_seq"
-    AS integer
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
-ALTER TABLE "public"."albums_id_seq" OWNER TO "postgres";
-
-
-ALTER SEQUENCE "public"."albums_id_seq" OWNED BY "public"."albums"."id";
-
-
-
-CREATE TABLE IF NOT EXISTS "public"."artists" (
-    "id" integer NOT NULL,
-    "name" character varying(255) NOT NULL,
-    "bio" "text",
-    "created_at" timestamp without time zone DEFAULT CURRENT_TIMESTAMP
-);
-
-
-ALTER TABLE "public"."artists" OWNER TO "postgres";
-
-
-CREATE SEQUENCE IF NOT EXISTS "public"."artists_id_seq"
-    AS integer
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
-ALTER TABLE "public"."artists_id_seq" OWNER TO "postgres";
-
-
-ALTER SEQUENCE "public"."artists_id_seq" OWNED BY "public"."artists"."id";
-
-
-
 CREATE TABLE IF NOT EXISTS "public"."building_schema_versions" (
     "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
     "organization_id" "uuid" NOT NULL,
@@ -1434,18 +1378,6 @@ CREATE TABLE IF NOT EXISTS "public"."migrations" (
 ALTER TABLE "public"."migrations" OWNER TO "postgres";
 
 
-CREATE TABLE IF NOT EXISTS "public"."music_users" (
-    "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
-    "username" character varying(100) NOT NULL,
-    "email" character varying(255) NOT NULL,
-    "password_hash" character varying(255) NOT NULL,
-    "created_at" timestamp without time zone DEFAULT CURRENT_TIMESTAMP
-);
-
-
-ALTER TABLE "public"."music_users" OWNER TO "postgres";
-
-
 CREATE TABLE IF NOT EXISTS "public"."organization_members" (
     "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
     "user_id" "uuid" NOT NULL,
@@ -1493,62 +1425,6 @@ CREATE TABLE IF NOT EXISTS "public"."overall_reviews" (
 
 
 ALTER TABLE "public"."overall_reviews" OWNER TO "postgres";
-
-
-CREATE TABLE IF NOT EXISTS "public"."playlist_items" (
-    "id" integer NOT NULL,
-    "playlist_id" integer NOT NULL,
-    "song_id" integer NOT NULL,
-    "position" integer NOT NULL,
-    "added_at" timestamp without time zone DEFAULT CURRENT_TIMESTAMP
-);
-
-
-ALTER TABLE "public"."playlist_items" OWNER TO "postgres";
-
-
-CREATE SEQUENCE IF NOT EXISTS "public"."playlist_items_id_seq"
-    AS integer
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
-ALTER TABLE "public"."playlist_items_id_seq" OWNER TO "postgres";
-
-
-ALTER SEQUENCE "public"."playlist_items_id_seq" OWNED BY "public"."playlist_items"."id";
-
-
-
-CREATE TABLE IF NOT EXISTS "public"."playlists" (
-    "id" integer NOT NULL,
-    "user_id" "uuid" NOT NULL,
-    "name" character varying(255) NOT NULL,
-    "description" "text",
-    "created_at" timestamp without time zone DEFAULT CURRENT_TIMESTAMP
-);
-
-
-ALTER TABLE "public"."playlists" OWNER TO "postgres";
-
-
-CREATE SEQUENCE IF NOT EXISTS "public"."playlists_id_seq"
-    AS integer
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
-ALTER TABLE "public"."playlists_id_seq" OWNER TO "postgres";
-
-
-ALTER SEQUENCE "public"."playlists_id_seq" OWNED BY "public"."playlists"."id";
-
 
 
 CREATE TABLE IF NOT EXISTS "public"."project_repository_mappings" (
@@ -1649,63 +1525,6 @@ CREATE TABLE IF NOT EXISTS "public"."schema_file_paths" (
 ALTER TABLE "public"."schema_file_paths" OWNER TO "postgres";
 
 
-CREATE TABLE IF NOT EXISTS "public"."songs" (
-    "id" integer NOT NULL,
-    "album_id" integer,
-    "artist_id" integer NOT NULL,
-    "title" character varying(255) NOT NULL,
-    "duration" integer,
-    "audio_url" "text",
-    "created_at" timestamp without time zone DEFAULT CURRENT_TIMESTAMP
-);
-
-
-ALTER TABLE "public"."songs" OWNER TO "postgres";
-
-
-CREATE SEQUENCE IF NOT EXISTS "public"."songs_id_seq"
-    AS integer
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
-ALTER TABLE "public"."songs_id_seq" OWNER TO "postgres";
-
-
-ALTER SEQUENCE "public"."songs_id_seq" OWNED BY "public"."songs"."id";
-
-
-
-CREATE TABLE IF NOT EXISTS "public"."user_favorites" (
-    "id" integer NOT NULL,
-    "user_id" "uuid" NOT NULL,
-    "song_id" integer NOT NULL,
-    "added_at" timestamp without time zone DEFAULT CURRENT_TIMESTAMP
-);
-
-
-ALTER TABLE "public"."user_favorites" OWNER TO "postgres";
-
-
-CREATE SEQUENCE IF NOT EXISTS "public"."user_favorites_id_seq"
-    AS integer
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
-ALTER TABLE "public"."user_favorites_id_seq" OWNER TO "postgres";
-
-
-ALTER SEQUENCE "public"."user_favorites_id_seq" OWNED BY "public"."user_favorites"."id";
-
-
-
 CREATE TABLE IF NOT EXISTS "public"."users" (
     "id" "uuid" NOT NULL,
     "name" "text" NOT NULL,
@@ -1714,40 +1533,6 @@ CREATE TABLE IF NOT EXISTS "public"."users" (
 
 
 ALTER TABLE "public"."users" OWNER TO "postgres";
-
-
-ALTER TABLE ONLY "public"."albums" ALTER COLUMN "id" SET DEFAULT "nextval"('"public"."albums_id_seq"'::"regclass");
-
-
-
-ALTER TABLE ONLY "public"."artists" ALTER COLUMN "id" SET DEFAULT "nextval"('"public"."artists_id_seq"'::"regclass");
-
-
-
-ALTER TABLE ONLY "public"."playlist_items" ALTER COLUMN "id" SET DEFAULT "nextval"('"public"."playlist_items_id_seq"'::"regclass");
-
-
-
-ALTER TABLE ONLY "public"."playlists" ALTER COLUMN "id" SET DEFAULT "nextval"('"public"."playlists_id_seq"'::"regclass");
-
-
-
-ALTER TABLE ONLY "public"."songs" ALTER COLUMN "id" SET DEFAULT "nextval"('"public"."songs_id_seq"'::"regclass");
-
-
-
-ALTER TABLE ONLY "public"."user_favorites" ALTER COLUMN "id" SET DEFAULT "nextval"('"public"."user_favorites_id_seq"'::"regclass");
-
-
-
-ALTER TABLE ONLY "public"."albums"
-    ADD CONSTRAINT "albums_pkey" PRIMARY KEY ("id");
-
-
-
-ALTER TABLE ONLY "public"."artists"
-    ADD CONSTRAINT "artists_pkey" PRIMARY KEY ("id");
-
 
 
 ALTER TABLE ONLY "public"."building_schema_versions"
@@ -1855,21 +1640,6 @@ ALTER TABLE ONLY "public"."migration_pull_request_mappings"
 
 
 
-ALTER TABLE ONLY "public"."music_users"
-    ADD CONSTRAINT "music_users_email_key" UNIQUE ("email");
-
-
-
-ALTER TABLE ONLY "public"."music_users"
-    ADD CONSTRAINT "music_users_pkey" PRIMARY KEY ("id");
-
-
-
-ALTER TABLE ONLY "public"."music_users"
-    ADD CONSTRAINT "music_users_username_key" UNIQUE ("username");
-
-
-
 ALTER TABLE ONLY "public"."organization_members"
     ADD CONSTRAINT "organization_member_pkey" PRIMARY KEY ("id");
 
@@ -1892,21 +1662,6 @@ ALTER TABLE ONLY "public"."overall_review_knowledge_suggestion_mappings"
 
 ALTER TABLE ONLY "public"."overall_reviews"
     ADD CONSTRAINT "overall_review_pkey" PRIMARY KEY ("id");
-
-
-
-ALTER TABLE ONLY "public"."playlist_items"
-    ADD CONSTRAINT "playlist_items_pkey" PRIMARY KEY ("id");
-
-
-
-ALTER TABLE ONLY "public"."playlist_items"
-    ADD CONSTRAINT "playlist_items_playlist_id_position_key" UNIQUE ("playlist_id", "position");
-
-
-
-ALTER TABLE ONLY "public"."playlists"
-    ADD CONSTRAINT "playlists_pkey" PRIMARY KEY ("id");
 
 
 
@@ -1945,23 +1700,8 @@ ALTER TABLE ONLY "public"."review_suggestion_snippets"
 
 
 
-ALTER TABLE ONLY "public"."songs"
-    ADD CONSTRAINT "songs_pkey" PRIMARY KEY ("id");
-
-
-
 ALTER TABLE ONLY "public"."users"
     ADD CONSTRAINT "user_email_key" UNIQUE ("email");
-
-
-
-ALTER TABLE ONLY "public"."user_favorites"
-    ADD CONSTRAINT "user_favorites_pkey" PRIMARY KEY ("id");
-
-
-
-ALTER TABLE ONLY "public"."user_favorites"
-    ADD CONSTRAINT "user_favorites_user_id_song_id_key" UNIQUE ("user_id", "song_id");
 
 
 
@@ -2163,11 +1903,6 @@ CREATE OR REPLACE TRIGGER "set_schema_file_paths_organization_id_trigger" BEFORE
 
 
 CREATE OR REPLACE TRIGGER "update_message_subscriptions_updated_at_trigger" BEFORE UPDATE ON "public"."message_subscriptions" FOR EACH ROW EXECUTE FUNCTION "public"."update_message_subscriptions_updated_at"();
-
-
-
-ALTER TABLE ONLY "public"."albums"
-    ADD CONSTRAINT "albums_artist_id_fkey" FOREIGN KEY ("artist_id") REFERENCES "public"."artists"("id") ON DELETE CASCADE;
 
 
 
@@ -2376,21 +2111,6 @@ ALTER TABLE ONLY "public"."overall_reviews"
 
 
 
-ALTER TABLE ONLY "public"."playlist_items"
-    ADD CONSTRAINT "playlist_items_playlist_id_fkey" FOREIGN KEY ("playlist_id") REFERENCES "public"."playlists"("id") ON DELETE CASCADE;
-
-
-
-ALTER TABLE ONLY "public"."playlist_items"
-    ADD CONSTRAINT "playlist_items_song_id_fkey" FOREIGN KEY ("song_id") REFERENCES "public"."songs"("id") ON DELETE CASCADE;
-
-
-
-ALTER TABLE ONLY "public"."playlists"
-    ADD CONSTRAINT "playlists_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "public"."music_users"("id") ON DELETE CASCADE;
-
-
-
 ALTER TABLE ONLY "public"."projects"
     ADD CONSTRAINT "project_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "public"."organizations"("id") ON UPDATE CASCADE ON DELETE CASCADE;
 
@@ -2468,26 +2188,6 @@ ALTER TABLE ONLY "public"."schema_file_paths"
 
 ALTER TABLE ONLY "public"."schema_file_paths"
     ADD CONSTRAINT "schema_file_paths_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "public"."organizations"("id") ON UPDATE CASCADE ON DELETE RESTRICT;
-
-
-
-ALTER TABLE ONLY "public"."songs"
-    ADD CONSTRAINT "songs_album_id_fkey" FOREIGN KEY ("album_id") REFERENCES "public"."albums"("id") ON DELETE SET NULL;
-
-
-
-ALTER TABLE ONLY "public"."songs"
-    ADD CONSTRAINT "songs_artist_id_fkey" FOREIGN KEY ("artist_id") REFERENCES "public"."artists"("id") ON DELETE CASCADE;
-
-
-
-ALTER TABLE ONLY "public"."user_favorites"
-    ADD CONSTRAINT "user_favorites_song_id_fkey" FOREIGN KEY ("song_id") REFERENCES "public"."songs"("id") ON DELETE CASCADE;
-
-
-
-ALTER TABLE ONLY "public"."user_favorites"
-    ADD CONSTRAINT "user_favorites_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "public"."music_users"("id") ON DELETE CASCADE;
 
 
 
@@ -3422,14 +3122,6 @@ CREATE POLICY "users_same_organization_select_policy" ON "public"."users" FOR SE
 
 
 ALTER PUBLICATION "supabase_realtime" OWNER TO "postgres";
-
-
-
-
-
-
-ALTER PUBLICATION "supabase_realtime" ADD TABLE ONLY "public"."messages";
-
 
 
 
@@ -4676,30 +4368,6 @@ GRANT ALL ON FUNCTION "public"."sum"("public"."vector") TO "service_role";
 
 
 
-GRANT ALL ON TABLE "public"."albums" TO "anon";
-GRANT ALL ON TABLE "public"."albums" TO "authenticated";
-GRANT ALL ON TABLE "public"."albums" TO "service_role";
-
-
-
-GRANT ALL ON SEQUENCE "public"."albums_id_seq" TO "anon";
-GRANT ALL ON SEQUENCE "public"."albums_id_seq" TO "authenticated";
-GRANT ALL ON SEQUENCE "public"."albums_id_seq" TO "service_role";
-
-
-
-GRANT ALL ON TABLE "public"."artists" TO "anon";
-GRANT ALL ON TABLE "public"."artists" TO "authenticated";
-GRANT ALL ON TABLE "public"."artists" TO "service_role";
-
-
-
-GRANT ALL ON SEQUENCE "public"."artists_id_seq" TO "anon";
-GRANT ALL ON SEQUENCE "public"."artists_id_seq" TO "authenticated";
-GRANT ALL ON SEQUENCE "public"."artists_id_seq" TO "service_role";
-
-
-
 GRANT ALL ON TABLE "public"."building_schema_versions" TO "anon";
 GRANT ALL ON TABLE "public"."building_schema_versions" TO "authenticated";
 GRANT ALL ON TABLE "public"."building_schema_versions" TO "service_role";
@@ -4790,12 +4458,6 @@ GRANT ALL ON TABLE "public"."migrations" TO "service_role";
 
 
 
-GRANT ALL ON TABLE "public"."music_users" TO "anon";
-GRANT ALL ON TABLE "public"."music_users" TO "authenticated";
-GRANT ALL ON TABLE "public"."music_users" TO "service_role";
-
-
-
 GRANT ALL ON TABLE "public"."organization_members" TO "anon";
 GRANT ALL ON TABLE "public"."organization_members" TO "authenticated";
 GRANT ALL ON TABLE "public"."organization_members" TO "service_role";
@@ -4817,30 +4479,6 @@ GRANT ALL ON TABLE "public"."overall_review_knowledge_suggestion_mappings" TO "s
 GRANT ALL ON TABLE "public"."overall_reviews" TO "anon";
 GRANT ALL ON TABLE "public"."overall_reviews" TO "authenticated";
 GRANT ALL ON TABLE "public"."overall_reviews" TO "service_role";
-
-
-
-GRANT ALL ON TABLE "public"."playlist_items" TO "anon";
-GRANT ALL ON TABLE "public"."playlist_items" TO "authenticated";
-GRANT ALL ON TABLE "public"."playlist_items" TO "service_role";
-
-
-
-GRANT ALL ON SEQUENCE "public"."playlist_items_id_seq" TO "anon";
-GRANT ALL ON SEQUENCE "public"."playlist_items_id_seq" TO "authenticated";
-GRANT ALL ON SEQUENCE "public"."playlist_items_id_seq" TO "service_role";
-
-
-
-GRANT ALL ON TABLE "public"."playlists" TO "anon";
-GRANT ALL ON TABLE "public"."playlists" TO "authenticated";
-GRANT ALL ON TABLE "public"."playlists" TO "service_role";
-
-
-
-GRANT ALL ON SEQUENCE "public"."playlists_id_seq" TO "anon";
-GRANT ALL ON SEQUENCE "public"."playlists_id_seq" TO "authenticated";
-GRANT ALL ON SEQUENCE "public"."playlists_id_seq" TO "service_role";
 
 
 
@@ -4883,30 +4521,6 @@ GRANT ALL ON TABLE "public"."review_suggestion_snippets" TO "service_role";
 GRANT ALL ON TABLE "public"."schema_file_paths" TO "anon";
 GRANT ALL ON TABLE "public"."schema_file_paths" TO "authenticated";
 GRANT ALL ON TABLE "public"."schema_file_paths" TO "service_role";
-
-
-
-GRANT ALL ON TABLE "public"."songs" TO "anon";
-GRANT ALL ON TABLE "public"."songs" TO "authenticated";
-GRANT ALL ON TABLE "public"."songs" TO "service_role";
-
-
-
-GRANT ALL ON SEQUENCE "public"."songs_id_seq" TO "anon";
-GRANT ALL ON SEQUENCE "public"."songs_id_seq" TO "authenticated";
-GRANT ALL ON SEQUENCE "public"."songs_id_seq" TO "service_role";
-
-
-
-GRANT ALL ON TABLE "public"."user_favorites" TO "anon";
-GRANT ALL ON TABLE "public"."user_favorites" TO "authenticated";
-GRANT ALL ON TABLE "public"."user_favorites" TO "service_role";
-
-
-
-GRANT ALL ON SEQUENCE "public"."user_favorites_id_seq" TO "anon";
-GRANT ALL ON SEQUENCE "public"."user_favorites_id_seq" TO "authenticated";
-GRANT ALL ON SEQUENCE "public"."user_favorites_id_seq" TO "service_role";
 
 
 

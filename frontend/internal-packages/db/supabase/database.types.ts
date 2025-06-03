@@ -34,62 +34,6 @@ export type Database = {
   }
   public: {
     Tables: {
-      albums: {
-        Row: {
-          artist_id: number
-          cover_url: string | null
-          created_at: string | null
-          id: number
-          release_date: string | null
-          title: string
-        }
-        Insert: {
-          artist_id: number
-          cover_url?: string | null
-          created_at?: string | null
-          id?: number
-          release_date?: string | null
-          title: string
-        }
-        Update: {
-          artist_id?: number
-          cover_url?: string | null
-          created_at?: string | null
-          id?: number
-          release_date?: string | null
-          title?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: 'albums_artist_id_fkey'
-            columns: ['artist_id']
-            isOneToOne: false
-            referencedRelation: 'artists'
-            referencedColumns: ['id']
-          },
-        ]
-      }
-      artists: {
-        Row: {
-          bio: string | null
-          created_at: string | null
-          id: number
-          name: string
-        }
-        Insert: {
-          bio?: string | null
-          created_at?: string | null
-          id?: number
-          name: string
-        }
-        Update: {
-          bio?: string | null
-          created_at?: string | null
-          id?: number
-          name?: string
-        }
-        Relationships: []
-      }
       building_schema_versions: {
         Row: {
           building_schema_id: string
@@ -814,30 +758,6 @@ export type Database = {
           },
         ]
       }
-      music_users: {
-        Row: {
-          created_at: string | null
-          email: string
-          id: string
-          password_hash: string
-          username: string
-        }
-        Insert: {
-          created_at?: string | null
-          email: string
-          id?: string
-          password_hash: string
-          username: string
-        }
-        Update: {
-          created_at?: string | null
-          email?: string
-          id?: string
-          password_hash?: string
-          username?: string
-        }
-        Relationships: []
-      }
       organization_members: {
         Row: {
           id: string
@@ -985,77 +905,6 @@ export type Database = {
             columns: ['organization_id']
             isOneToOne: false
             referencedRelation: 'organizations'
-            referencedColumns: ['id']
-          },
-        ]
-      }
-      playlist_items: {
-        Row: {
-          added_at: string | null
-          id: number
-          playlist_id: number
-          position: number
-          song_id: number
-        }
-        Insert: {
-          added_at?: string | null
-          id?: number
-          playlist_id: number
-          position: number
-          song_id: number
-        }
-        Update: {
-          added_at?: string | null
-          id?: number
-          playlist_id?: number
-          position?: number
-          song_id?: number
-        }
-        Relationships: [
-          {
-            foreignKeyName: 'playlist_items_playlist_id_fkey'
-            columns: ['playlist_id']
-            isOneToOne: false
-            referencedRelation: 'playlists'
-            referencedColumns: ['id']
-          },
-          {
-            foreignKeyName: 'playlist_items_song_id_fkey'
-            columns: ['song_id']
-            isOneToOne: false
-            referencedRelation: 'songs'
-            referencedColumns: ['id']
-          },
-        ]
-      }
-      playlists: {
-        Row: {
-          created_at: string | null
-          description: string | null
-          id: number
-          name: string
-          user_id: string
-        }
-        Insert: {
-          created_at?: string | null
-          description?: string | null
-          id?: number
-          name: string
-          user_id: string
-        }
-        Update: {
-          created_at?: string | null
-          description?: string | null
-          id?: number
-          name?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: 'playlists_user_id_fkey'
-            columns: ['user_id']
-            isOneToOne: false
-            referencedRelation: 'music_users'
             referencedColumns: ['id']
           },
         ]
@@ -1389,87 +1238,6 @@ export type Database = {
           },
         ]
       }
-      songs: {
-        Row: {
-          album_id: number | null
-          artist_id: number
-          audio_url: string | null
-          created_at: string | null
-          duration: number | null
-          id: number
-          title: string
-        }
-        Insert: {
-          album_id?: number | null
-          artist_id: number
-          audio_url?: string | null
-          created_at?: string | null
-          duration?: number | null
-          id?: number
-          title: string
-        }
-        Update: {
-          album_id?: number | null
-          artist_id?: number
-          audio_url?: string | null
-          created_at?: string | null
-          duration?: number | null
-          id?: number
-          title?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: 'songs_album_id_fkey'
-            columns: ['album_id']
-            isOneToOne: false
-            referencedRelation: 'albums'
-            referencedColumns: ['id']
-          },
-          {
-            foreignKeyName: 'songs_artist_id_fkey'
-            columns: ['artist_id']
-            isOneToOne: false
-            referencedRelation: 'artists'
-            referencedColumns: ['id']
-          },
-        ]
-      }
-      user_favorites: {
-        Row: {
-          added_at: string | null
-          id: number
-          song_id: number
-          user_id: string
-        }
-        Insert: {
-          added_at?: string | null
-          id?: number
-          song_id: number
-          user_id: string
-        }
-        Update: {
-          added_at?: string | null
-          id?: number
-          song_id?: number
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: 'user_favorites_song_id_fkey'
-            columns: ['song_id']
-            isOneToOne: false
-            referencedRelation: 'songs'
-            referencedColumns: ['id']
-          },
-          {
-            foreignKeyName: 'user_favorites_user_id_fkey'
-            columns: ['user_id']
-            isOneToOne: false
-            referencedRelation: 'music_users'
-            referencedColumns: ['id']
-          },
-        ]
-      }
       users: {
         Row: {
           email: string
@@ -1591,7 +1359,7 @@ export type Database = {
       }
       l2_normalize: {
         Args: { '': string } | { '': unknown } | { '': unknown }
-        Returns: unknown
+        Returns: string
       }
       match_documents: {
         Args: {
