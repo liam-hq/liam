@@ -53,7 +53,7 @@ top-1-chromium-linux.png
 - Place it in the following directory:
 
 ```
-frontend/packages/e2e/tests/vrt/vrt.test.ts-snapshots/
+frontend/internal-packages/e2e/tests/vrt/vrt.test.ts-snapshots/
 ```
 
 - Commit and push the updated snapshot.
