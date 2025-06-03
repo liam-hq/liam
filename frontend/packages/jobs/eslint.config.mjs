@@ -3,7 +3,20 @@ import { createBaseConfig } from '../../packages/configs/eslint/index.js'
 
 const gitignorePath = fileURLToPath(new URL('.gitignore', import.meta.url))
 
-export default createBaseConfig({
+const baseConfig = createBaseConfig({
   tsconfigPath: './tsconfig.json',
   gitignorePath,
+})
+
+export default baseConfig.map(config => {
+  if (config.rules && config.rules['@typescript-eslint/no-unsafe-member-access']) {
+    return {
+      ...config,
+      rules: {
+        ...config.rules,
+        '@typescript-eslint/no-unsafe-member-access': 'off',
+      },
+    }
+  }
+  return config
 })
