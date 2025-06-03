@@ -1385,10 +1385,6 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
-      test_message_realtime: {
-        Args: { p_design_session_id: string }
-        Returns: Json
-      }
       unsubscribe_from_design_session: {
         Args: { p_design_session_id: string }
         Returns: Json

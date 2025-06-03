@@ -943,58 +943,6 @@ $$;
 ALTER FUNCTION "public"."sync_existing_users"() OWNER TO "postgres";
 
 
-CREATE OR REPLACE FUNCTION "public"."test_message_realtime"("p_design_session_id" "uuid") RETURNS "json"
-    LANGUAGE "plpgsql" SECURITY DEFINER
-    AS $$
-DECLARE
-  v_user_id uuid;
-  v_organization_id uuid;
-  v_test_message_id uuid;
-BEGIN
-  -- Get current user ID
-  v_user_id := auth.uid();
-  
-  IF v_user_id IS NULL THEN
-    RETURN json_build_object('success', false, 'error', 'User not authenticated');
-  END IF;
-  
-  -- Get organization_id from design_session
-  SELECT organization_id INTO v_organization_id
-  FROM design_sessions
-  WHERE id = p_design_session_id;
-  
-  IF v_organization_id IS NULL THEN
-    RETURN json_build_object('success', false, 'error', 'Design session not found');
-  END IF;
-  
-  -- Check if user is member of the organization
-  IF NOT EXISTS (
-    SELECT 1 FROM organization_members 
-    WHERE user_id = v_user_id AND organization_id = v_organization_id
-  ) THEN
-    RETURN json_build_object('success', false, 'error', 'User not authorized for this organization');
-  END IF;
-  
-  -- Insert a test message
-  INSERT INTO messages (design_session_id, user_id, role, content, updated_at)
-  VALUES (p_design_session_id, v_user_id, 'system', 'Real-time test message', CURRENT_TIMESTAMP)
-  RETURNING id INTO v_test_message_id;
-  
-  -- Delete the test message immediately
-  DELETE FROM messages WHERE id = v_test_message_id;
-  
-  RETURN json_build_object(
-    'success', true,
-    'message', 'Real-time test completed',
-    'test_message_id', v_test_message_id
-  );
-END;
-$$;
-
-
-ALTER FUNCTION "public"."test_message_realtime"("p_design_session_id" "uuid") OWNER TO "postgres";
-
-
 CREATE OR REPLACE FUNCTION "public"."unsubscribe_from_design_session"("p_design_session_id" "uuid") RETURNS "json"
     LANGUAGE "plpgsql" SECURITY DEFINER
     AS $$
@@ -4122,12 +4070,6 @@ GRANT ALL ON FUNCTION "public"."subvector"("public"."vector", integer, integer) 
 GRANT ALL ON FUNCTION "public"."sync_existing_users"() TO "anon";
 GRANT ALL ON FUNCTION "public"."sync_existing_users"() TO "authenticated";
 GRANT ALL ON FUNCTION "public"."sync_existing_users"() TO "service_role";
-
-
-
-GRANT ALL ON FUNCTION "public"."test_message_realtime"("p_design_session_id" "uuid") TO "anon";
-GRANT ALL ON FUNCTION "public"."test_message_realtime"("p_design_session_id" "uuid") TO "authenticated";
-GRANT ALL ON FUNCTION "public"."test_message_realtime"("p_design_session_id" "uuid") TO "service_role";
 
 
 

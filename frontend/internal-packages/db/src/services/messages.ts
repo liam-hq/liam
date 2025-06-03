@@ -57,28 +57,6 @@ export class MessageService {
   }
 
   /**
-   * Test real-time functionality for messages
-   */
-  async testMessageRealtime(designSessionId: string): Promise<{
-    success: boolean
-    message?: string
-    error?: string
-  }> {
-    const { data, error } = await this.supabase.rpc('test_message_realtime', {
-      p_design_session_id: designSessionId,
-    })
-
-    if (error) {
-      return {
-        success: false,
-        error: error.message,
-      }
-    }
-
-    return data as { success: boolean; message?: string; error?: string }
-  }
-
-  /**
    * Subscribe to real-time message changes for a design session
    * This method ensures all message types (user, assistant, system) are received
    */
