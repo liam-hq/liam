@@ -588,23 +588,6 @@ $$;
 ALTER FUNCTION "public"."set_knowledge_suggestions_organization_id"() OWNER TO "postgres";
 
 
-CREATE OR REPLACE FUNCTION "public"."set_message_subscriptions_organization_id"() RETURNS "trigger"
-    LANGUAGE "plpgsql" SECURITY DEFINER
-    AS $$
-BEGIN
-  NEW.organization_id := (
-    SELECT "organization_id" 
-    FROM "public"."design_sessions" 
-    WHERE "id" = NEW.design_session_id
-  );
-  RETURN NEW;
-END;
-$$;
-
-
-ALTER FUNCTION "public"."set_message_subscriptions_organization_id"() OWNER TO "postgres";
-
-
 CREATE OR REPLACE FUNCTION "public"."set_messages_organization_id"() RETURNS "trigger"
     LANGUAGE "plpgsql" SECURITY DEFINER
     AS $$
@@ -794,61 +777,6 @@ $$;
 ALTER FUNCTION "public"."set_schema_file_paths_organization_id"() OWNER TO "postgres";
 
 
-CREATE OR REPLACE FUNCTION "public"."subscribe_to_design_session"("p_design_session_id" "uuid") RETURNS "json"
-    LANGUAGE "plpgsql" SECURITY DEFINER
-    AS $$
-DECLARE
-  v_user_id uuid;
-  v_organization_id uuid;
-  v_subscription_id uuid;
-BEGIN
-  -- Get current user ID
-  v_user_id := auth.uid();
-  
-  IF v_user_id IS NULL THEN
-    RETURN json_build_object('success', false, 'error', 'User not authenticated');
-  END IF;
-  
-  -- Get organization_id from design_session
-  SELECT organization_id INTO v_organization_id
-  FROM design_sessions
-  WHERE id = p_design_session_id;
-  
-  IF v_organization_id IS NULL THEN
-    RETURN json_build_object('success', false, 'error', 'Design session not found');
-  END IF;
-  
-  -- Check if user is member of the organization
-  IF NOT EXISTS (
-    SELECT 1 FROM organization_members 
-    WHERE user_id = v_user_id AND organization_id = v_organization_id
-  ) THEN
-    RETURN json_build_object('success', false, 'error', 'User not authorized for this organization');
-  END IF;
-  
-  -- Insert or update subscription
-  INSERT INTO message_subscriptions (user_id, design_session_id, is_active)
-  VALUES (v_user_id, p_design_session_id, true)
-  ON CONFLICT (user_id, design_session_id)
-  DO UPDATE SET 
-    is_active = true,
-    subscribed_at = CURRENT_TIMESTAMP,
-    unsubscribed_at = NULL,
-    updated_at = CURRENT_TIMESTAMP
-  RETURNING id INTO v_subscription_id;
-  
-  RETURN json_build_object(
-    'success', true, 
-    'subscription_id', v_subscription_id,
-    'message', 'Successfully subscribed to design session'
-  );
-END;
-$$;
-
-
-ALTER FUNCTION "public"."subscribe_to_design_session"("p_design_session_id" "uuid") OWNER TO "postgres";
-
-
 CREATE OR REPLACE FUNCTION "public"."sync_existing_users"() RETURNS "void"
     LANGUAGE "plpgsql" SECURITY DEFINER
     AS $$
@@ -866,47 +794,6 @@ $$;
 
 
 ALTER FUNCTION "public"."sync_existing_users"() OWNER TO "postgres";
-
-
-CREATE OR REPLACE FUNCTION "public"."unsubscribe_from_design_session"("p_design_session_id" "uuid") RETURNS "json"
-    LANGUAGE "plpgsql" SECURITY DEFINER
-    AS $$
-DECLARE
-  v_user_id uuid;
-  v_rows_affected integer;
-BEGIN
-  -- Get current user ID
-  v_user_id := auth.uid();
-  
-  IF v_user_id IS NULL THEN
-    RETURN json_build_object('success', false, 'error', 'User not authenticated');
-  END IF;
-  
-  -- Update subscription to inactive
-  UPDATE message_subscriptions 
-  SET 
-    is_active = false,
-    unsubscribed_at = CURRENT_TIMESTAMP,
-    updated_at = CURRENT_TIMESTAMP
-  WHERE user_id = v_user_id 
-    AND design_session_id = p_design_session_id 
-    AND is_active = true;
-  
-  GET DIAGNOSTICS v_rows_affected = ROW_COUNT;
-  
-  IF v_rows_affected = 0 THEN
-    RETURN json_build_object('success', false, 'error', 'No active subscription found');
-  END IF;
-  
-  RETURN json_build_object(
-    'success', true,
-    'message', 'Successfully unsubscribed from design session'
-  );
-END;
-$$;
-
-
-ALTER FUNCTION "public"."unsubscribe_from_design_session"("p_design_session_id" "uuid") OWNER TO "postgres";
 
 
 CREATE OR REPLACE FUNCTION "public"."update_building_schema"("p_schema_id" "uuid", "p_schema_schema" "jsonb", "p_schema_version_patch" "jsonb", "p_schema_version_reverse_patch" "jsonb", "p_latest_schema_version_number" integer) RETURNS "jsonb"
@@ -976,19 +863,6 @@ $$;
 
 
 ALTER FUNCTION "public"."update_building_schema"("p_schema_id" "uuid", "p_schema_schema" "jsonb", "p_schema_version_patch" "jsonb", "p_schema_version_reverse_patch" "jsonb", "p_latest_schema_version_number" integer) OWNER TO "postgres";
-
-
-CREATE OR REPLACE FUNCTION "public"."update_message_subscriptions_updated_at"() RETURNS "trigger"
-    LANGUAGE "plpgsql" SECURITY DEFINER
-    AS $$
-BEGIN
-  NEW.updated_at := CURRENT_TIMESTAMP;
-  RETURN NEW;
-END;
-$$;
-
-
-ALTER FUNCTION "public"."update_message_subscriptions_updated_at"() OWNER TO "postgres";
 
 SET default_tablespace = '';
 
@@ -1153,22 +1027,6 @@ CREATE TABLE IF NOT EXISTS "public"."knowledge_suggestions" (
 
 
 ALTER TABLE "public"."knowledge_suggestions" OWNER TO "postgres";
-
-
-CREATE TABLE IF NOT EXISTS "public"."message_subscriptions" (
-    "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
-    "user_id" "uuid" NOT NULL,
-    "design_session_id" "uuid" NOT NULL,
-    "organization_id" "uuid" NOT NULL,
-    "is_active" boolean DEFAULT true NOT NULL,
-    "subscribed_at" timestamp(3) with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    "unsubscribed_at" timestamp(3) with time zone,
-    "created_at" timestamp(3) with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    "updated_at" timestamp(3) with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
-);
-
-
-ALTER TABLE "public"."message_subscriptions" OWNER TO "postgres";
 
 
 CREATE TABLE IF NOT EXISTS "public"."messages" (
@@ -1444,16 +1302,6 @@ ALTER TABLE ONLY "public"."knowledge_suggestions"
 
 
 
-ALTER TABLE ONLY "public"."message_subscriptions"
-    ADD CONSTRAINT "message_subscriptions_pkey" PRIMARY KEY ("id");
-
-
-
-ALTER TABLE ONLY "public"."message_subscriptions"
-    ADD CONSTRAINT "message_subscriptions_user_design_session_unique" UNIQUE ("user_id", "design_session_id");
-
-
-
 ALTER TABLE ONLY "public"."messages"
     ADD CONSTRAINT "messages_pkey" PRIMARY KEY ("id");
 
@@ -1568,26 +1416,6 @@ CREATE UNIQUE INDEX "github_repository_owner_name_key" ON "public"."github_repos
 
 
 
-CREATE INDEX "idx_message_subscriptions_active_subscriptions" ON "public"."message_subscriptions" USING "btree" ("design_session_id", "is_active") WHERE ("is_active" = true);
-
-
-
-CREATE INDEX "idx_message_subscriptions_design_session_id" ON "public"."message_subscriptions" USING "btree" ("design_session_id");
-
-
-
-CREATE INDEX "idx_message_subscriptions_is_active" ON "public"."message_subscriptions" USING "btree" ("is_active");
-
-
-
-CREATE INDEX "idx_message_subscriptions_organization_id" ON "public"."message_subscriptions" USING "btree" ("organization_id");
-
-
-
-CREATE INDEX "idx_message_subscriptions_user_id" ON "public"."message_subscriptions" USING "btree" ("user_id");
-
-
-
 CREATE INDEX "idx_messages_design_session_created_at" ON "public"."messages" USING "btree" ("design_session_id", "created_at" DESC);
 
 
@@ -1688,10 +1516,6 @@ CREATE OR REPLACE TRIGGER "set_knowledge_suggestions_organization_id_trigger" BE
 
 
 
-CREATE OR REPLACE TRIGGER "set_message_subscriptions_organization_id_trigger" BEFORE INSERT OR UPDATE ON "public"."message_subscriptions" FOR EACH ROW EXECUTE FUNCTION "public"."set_message_subscriptions_organization_id"();
-
-
-
 CREATE OR REPLACE TRIGGER "set_messages_organization_id_trigger" BEFORE INSERT OR UPDATE ON "public"."messages" FOR EACH ROW EXECUTE FUNCTION "public"."set_messages_organization_id"();
 
 
@@ -1733,10 +1557,6 @@ CREATE OR REPLACE TRIGGER "set_review_suggestion_snippets_organization_id_trigge
 
 
 CREATE OR REPLACE TRIGGER "set_schema_file_paths_organization_id_trigger" BEFORE INSERT OR UPDATE ON "public"."schema_file_paths" FOR EACH ROW EXECUTE FUNCTION "public"."set_schema_file_paths_organization_id"();
-
-
-
-CREATE OR REPLACE TRIGGER "update_message_subscriptions_updated_at_trigger" BEFORE UPDATE ON "public"."message_subscriptions" FOR EACH ROW EXECUTE FUNCTION "public"."update_message_subscriptions_updated_at"();
 
 
 
@@ -1852,21 +1672,6 @@ ALTER TABLE ONLY "public"."knowledge_suggestions"
 
 ALTER TABLE ONLY "public"."knowledge_suggestions"
     ADD CONSTRAINT "knowledge_suggestions_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "public"."organizations"("id") ON UPDATE CASCADE ON DELETE RESTRICT;
-
-
-
-ALTER TABLE ONLY "public"."message_subscriptions"
-    ADD CONSTRAINT "message_subscriptions_design_session_id_fkey" FOREIGN KEY ("design_session_id") REFERENCES "public"."design_sessions"("id") ON UPDATE CASCADE ON DELETE CASCADE;
-
-
-
-ALTER TABLE ONLY "public"."message_subscriptions"
-    ADD CONSTRAINT "message_subscriptions_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "public"."organizations"("id") ON UPDATE CASCADE ON DELETE RESTRICT;
-
-
-
-ALTER TABLE ONLY "public"."message_subscriptions"
-    ADD CONSTRAINT "message_subscriptions_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON UPDATE CASCADE ON DELETE CASCADE;
 
 
 
@@ -2095,16 +1900,6 @@ COMMENT ON POLICY "authenticated_users_can_delete_org_projects" ON "public"."pro
 
 
 
-CREATE POLICY "authenticated_users_can_delete_own_message_subscriptions" ON "public"."message_subscriptions" FOR DELETE TO "authenticated" USING ((("user_id" = "auth"."uid"()) AND ("organization_id" IN ( SELECT "organization_members"."organization_id"
-   FROM "public"."organization_members"
-  WHERE ("organization_members"."user_id" = "auth"."uid"())))));
-
-
-
-COMMENT ON POLICY "authenticated_users_can_delete_own_message_subscriptions" ON "public"."message_subscriptions" IS 'Authenticated users can only delete their own message subscriptions in organizations they are members of';
-
-
-
 CREATE POLICY "authenticated_users_can_insert_org_building_schema_versions" ON "public"."building_schema_versions" FOR INSERT TO "authenticated" WITH CHECK (("organization_id" IN ( SELECT "organization_members"."organization_id"
    FROM "public"."organization_members"
   WHERE ("organization_members"."user_id" = "auth"."uid"()))));
@@ -2243,16 +2038,6 @@ COMMENT ON POLICY "authenticated_users_can_insert_organizations" ON "public"."or
 
 
 
-CREATE POLICY "authenticated_users_can_insert_own_message_subscriptions" ON "public"."message_subscriptions" FOR INSERT TO "authenticated" WITH CHECK ((("user_id" = "auth"."uid"()) AND ("organization_id" IN ( SELECT "organization_members"."organization_id"
-   FROM "public"."organization_members"
-  WHERE ("organization_members"."user_id" = "auth"."uid"())))));
-
-
-
-COMMENT ON POLICY "authenticated_users_can_insert_own_message_subscriptions" ON "public"."message_subscriptions" IS 'Authenticated users can only create their own message subscriptions in organizations they are members of';
-
-
-
 CREATE POLICY "authenticated_users_can_insert_projects" ON "public"."projects" FOR INSERT TO "authenticated" WITH CHECK (("organization_id" IN ( SELECT "organization_members"."organization_id"
    FROM "public"."organization_members"
   WHERE ("organization_members"."user_id" = "auth"."uid"()))));
@@ -2352,16 +2137,6 @@ CREATE POLICY "authenticated_users_can_select_org_knowledge_suggestions" ON "pub
 
 
 COMMENT ON POLICY "authenticated_users_can_select_org_knowledge_suggestions" ON "public"."knowledge_suggestions" IS 'Authenticated users can only view knowledge suggestions belonging to organizations they are members of';
-
-
-
-CREATE POLICY "authenticated_users_can_select_org_message_subscriptions" ON "public"."message_subscriptions" FOR SELECT TO "authenticated" USING (("organization_id" IN ( SELECT "organization_members"."organization_id"
-   FROM "public"."organization_members"
-  WHERE ("organization_members"."user_id" = "auth"."uid"()))));
-
-
-
-COMMENT ON POLICY "authenticated_users_can_select_org_message_subscriptions" ON "public"."message_subscriptions" IS 'Authenticated users can only view message subscriptions belonging to organizations they are members of';
 
 
 
@@ -2617,18 +2392,6 @@ COMMENT ON POLICY "authenticated_users_can_update_org_schema_file_paths" ON "pub
 
 
 
-CREATE POLICY "authenticated_users_can_update_own_message_subscriptions" ON "public"."message_subscriptions" FOR UPDATE TO "authenticated" USING ((("user_id" = "auth"."uid"()) AND ("organization_id" IN ( SELECT "organization_members"."organization_id"
-   FROM "public"."organization_members"
-  WHERE ("organization_members"."user_id" = "auth"."uid"()))))) WITH CHECK ((("user_id" = "auth"."uid"()) AND ("organization_id" IN ( SELECT "organization_members"."organization_id"
-   FROM "public"."organization_members"
-  WHERE ("organization_members"."user_id" = "auth"."uid"())))));
-
-
-
-COMMENT ON POLICY "authenticated_users_can_update_own_message_subscriptions" ON "public"."message_subscriptions" IS 'Authenticated users can only update their own message subscriptions in organizations they are members of';
-
-
-
 ALTER TABLE "public"."building_schema_versions" ENABLE ROW LEVEL SECURITY;
 
 
@@ -2660,9 +2423,6 @@ ALTER TABLE "public"."knowledge_suggestion_doc_mappings" ENABLE ROW LEVEL SECURI
 
 
 ALTER TABLE "public"."knowledge_suggestions" ENABLE ROW LEVEL SECURITY;
-
-
-ALTER TABLE "public"."message_subscriptions" ENABLE ROW LEVEL SECURITY;
 
 
 ALTER TABLE "public"."messages" ENABLE ROW LEVEL SECURITY;
@@ -2723,10 +2483,6 @@ CREATE POLICY "service_role_can_delete_all_knowledge_suggestions" ON "public"."k
 
 
 
-CREATE POLICY "service_role_can_delete_all_message_subscriptions" ON "public"."message_subscriptions" FOR DELETE TO "service_role" USING (true);
-
-
-
 CREATE POLICY "service_role_can_delete_all_organizations" ON "public"."organizations" FOR DELETE TO "service_role" USING (true);
 
 
@@ -2768,10 +2524,6 @@ CREATE POLICY "service_role_can_insert_all_knowledge_suggestion_doc_mappings" ON
 
 
 CREATE POLICY "service_role_can_insert_all_knowledge_suggestions" ON "public"."knowledge_suggestions" FOR INSERT TO "service_role" WITH CHECK (true);
-
-
-
-CREATE POLICY "service_role_can_insert_all_message_subscriptions" ON "public"."message_subscriptions" FOR INSERT TO "service_role" WITH CHECK (true);
 
 
 
@@ -2855,10 +2607,6 @@ CREATE POLICY "service_role_can_select_all_knowledge_suggestions" ON "public"."k
 
 
 
-CREATE POLICY "service_role_can_select_all_message_subscriptions" ON "public"."message_subscriptions" FOR SELECT TO "service_role" USING (true);
-
-
-
 CREATE POLICY "service_role_can_select_all_messages" ON "public"."messages" FOR SELECT TO "service_role" USING (true);
 
 
@@ -2919,10 +2667,6 @@ CREATE POLICY "service_role_can_update_all_knowledge_suggestions" ON "public"."k
 
 
 
-CREATE POLICY "service_role_can_update_all_message_subscriptions" ON "public"."message_subscriptions" FOR UPDATE TO "service_role" USING (true) WITH CHECK (true);
-
-
-
 CREATE POLICY "service_role_can_update_all_messages" ON "public"."messages" FOR UPDATE TO "service_role" USING (true) WITH CHECK (true);
 
 
@@ -2956,6 +2700,10 @@ CREATE POLICY "users_same_organization_select_policy" ON "public"."users" FOR SE
 
 
 ALTER PUBLICATION "supabase_realtime" OWNER TO "postgres";
+
+
+
+
 
 
 ALTER PUBLICATION "supabase_realtime" ADD TABLE ONLY "public"."messages";
@@ -3821,12 +3569,6 @@ GRANT ALL ON FUNCTION "public"."set_knowledge_suggestions_organization_id"() TO 
 
 
 
-GRANT ALL ON FUNCTION "public"."set_message_subscriptions_organization_id"() TO "anon";
-GRANT ALL ON FUNCTION "public"."set_message_subscriptions_organization_id"() TO "authenticated";
-GRANT ALL ON FUNCTION "public"."set_message_subscriptions_organization_id"() TO "service_role";
-
-
-
 GRANT ALL ON FUNCTION "public"."set_messages_organization_id"() TO "anon";
 GRANT ALL ON FUNCTION "public"."set_messages_organization_id"() TO "authenticated";
 GRANT ALL ON FUNCTION "public"."set_messages_organization_id"() TO "service_role";
@@ -3956,12 +3698,6 @@ GRANT ALL ON FUNCTION "public"."sparsevec_negative_inner_product"("public"."spar
 
 
 
-GRANT ALL ON FUNCTION "public"."subscribe_to_design_session"("p_design_session_id" "uuid") TO "anon";
-GRANT ALL ON FUNCTION "public"."subscribe_to_design_session"("p_design_session_id" "uuid") TO "authenticated";
-GRANT ALL ON FUNCTION "public"."subscribe_to_design_session"("p_design_session_id" "uuid") TO "service_role";
-
-
-
 GRANT ALL ON FUNCTION "public"."subvector"("public"."halfvec", integer, integer) TO "postgres";
 GRANT ALL ON FUNCTION "public"."subvector"("public"."halfvec", integer, integer) TO "anon";
 GRANT ALL ON FUNCTION "public"."subvector"("public"."halfvec", integer, integer) TO "authenticated";
@@ -3982,20 +3718,8 @@ GRANT ALL ON FUNCTION "public"."sync_existing_users"() TO "service_role";
 
 
 
-GRANT ALL ON FUNCTION "public"."unsubscribe_from_design_session"("p_design_session_id" "uuid") TO "anon";
-GRANT ALL ON FUNCTION "public"."unsubscribe_from_design_session"("p_design_session_id" "uuid") TO "authenticated";
-GRANT ALL ON FUNCTION "public"."unsubscribe_from_design_session"("p_design_session_id" "uuid") TO "service_role";
-
-
-
 GRANT ALL ON FUNCTION "public"."update_building_schema"("p_schema_id" "uuid", "p_schema_schema" "jsonb", "p_schema_version_patch" "jsonb", "p_schema_version_reverse_patch" "jsonb", "p_latest_schema_version_number" integer) TO "authenticated";
 GRANT ALL ON FUNCTION "public"."update_building_schema"("p_schema_id" "uuid", "p_schema_schema" "jsonb", "p_schema_version_patch" "jsonb", "p_schema_version_reverse_patch" "jsonb", "p_latest_schema_version_number" integer) TO "service_role";
-
-
-
-GRANT ALL ON FUNCTION "public"."update_message_subscriptions_updated_at"() TO "anon";
-GRANT ALL ON FUNCTION "public"."update_message_subscriptions_updated_at"() TO "authenticated";
-GRANT ALL ON FUNCTION "public"."update_message_subscriptions_updated_at"() TO "service_role";
 
 
 
@@ -4245,12 +3969,6 @@ GRANT ALL ON TABLE "public"."knowledge_suggestion_doc_mappings" TO "service_role
 GRANT ALL ON TABLE "public"."knowledge_suggestions" TO "anon";
 GRANT ALL ON TABLE "public"."knowledge_suggestions" TO "authenticated";
 GRANT ALL ON TABLE "public"."knowledge_suggestions" TO "service_role";
-
-
-
-GRANT ALL ON TABLE "public"."message_subscriptions" TO "anon";
-GRANT ALL ON TABLE "public"."message_subscriptions" TO "authenticated";
-GRANT ALL ON TABLE "public"."message_subscriptions" TO "service_role";
 
 
 

@@ -554,64 +554,6 @@ export type Database = {
           },
         ]
       }
-      message_subscriptions: {
-        Row: {
-          created_at: string
-          design_session_id: string
-          id: string
-          is_active: boolean
-          organization_id: string
-          subscribed_at: string
-          unsubscribed_at: string | null
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          design_session_id: string
-          id?: string
-          is_active?: boolean
-          organization_id: string
-          subscribed_at?: string
-          unsubscribed_at?: string | null
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          design_session_id?: string
-          id?: string
-          is_active?: boolean
-          organization_id?: string
-          subscribed_at?: string
-          unsubscribed_at?: string | null
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: 'message_subscriptions_design_session_id_fkey'
-            columns: ['design_session_id']
-            isOneToOne: false
-            referencedRelation: 'design_sessions'
-            referencedColumns: ['id']
-          },
-          {
-            foreignKeyName: 'message_subscriptions_organization_id_fkey'
-            columns: ['organization_id']
-            isOneToOne: false
-            referencedRelation: 'organizations'
-            referencedColumns: ['id']
-          },
-          {
-            foreignKeyName: 'message_subscriptions_user_id_fkey'
-            columns: ['user_id']
-            isOneToOne: false
-            referencedRelation: 'users'
-            referencedColumns: ['id']
-          },
-        ]
-      }
       messages: {
         Row: {
           content: string
@@ -1359,17 +1301,9 @@ export type Database = {
         Args: { '': unknown[] }
         Returns: number
       }
-      subscribe_to_design_session: {
-        Args: { p_design_session_id: string }
-        Returns: Json
-      }
       sync_existing_users: {
         Args: Record<PropertyKey, never>
         Returns: undefined
-      }
-      unsubscribe_from_design_session: {
-        Args: { p_design_session_id: string }
-        Returns: Json
       }
       update_building_schema: {
         Args: {
