@@ -47,7 +47,6 @@
     "@vitejs/plugin-react": "4.4.1",
     "eslint": "9.27.0",
     "rollup": "4.40.2",
-    "rollup-plugin-execute": "1.1.1",
     "typed-css-modules": "0.9.1",
     "typescript": "5.8.3",
     "vite": "6.3.5",
