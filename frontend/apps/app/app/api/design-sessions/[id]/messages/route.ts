@@ -44,7 +44,7 @@ export async function GET(
   }
 
   const { data: messages, error } = await supabase
-    .from('chat_entries')
+    .from('messages')
     .select('*')
     .eq('design_session_id', parsedParams.output.id)
     .eq('organization_id', organizationId)
@@ -103,27 +103,27 @@ export async function POST(
 
   const { content, role } = parsedRequestParams.output
 
-  const chatEntryData: TablesInsert<'chat_entries'> = {
+  const messageData: TablesInsert<'messages'> = {
     design_session_id: parsedParams.output.id,
     organization_id: organizationId,
     content,
     role,
-    created_by_user_id: userData.user.id,
+    user_id: userData.user.id,
   }
 
-  const { data: chatEntry, error: insertError } = await supabase
-    .from('chat_entries')
-    .insert(chatEntryData)
+  const { data: message, error: insertError } = await supabase
+    .from('messages')
+    .insert(messageData)
     .select()
     .single()
 
   if (insertError) {
-    console.error('Error creating chat entry:', insertError)
+    console.error('Error creating message:', insertError)
     return NextResponse.json(
-      { error: 'Failed to create chat entry' },
+      { error: 'Failed to create message' },
       { status: 500 },
     )
   }
 
-  return NextResponse.json(chatEntry, { status: 201 })
+  return NextResponse.json(message, { status: 201 })
 }

@@ -130,14 +130,16 @@ export const SessionsNewPage: FC<Props> = ({ projectId: initialProjectId }) => {
               <DropdownMenuContent align="start" sideOffset={5} className={styles.content}>
                 <DropdownMenuRadioGroup
                   value={selectedProjectId || ''}
-                  onValueChange={(value) => setSelectedProjectId(value || undefined)}
+                  onValueChange={(value) =>
+                    setSelectedProjectId(value || undefined)
+                  }
                 >
                   <DropdownMenuRadioItem value="" label="No Project" />
                   {projects.map((project) => (
-                    <DropdownMenuRadioItem 
-                      key={project.id} 
-                      value={project.id} 
-                      label={project.name} 
+                    <DropdownMenuRadioItem
+                      key={project.id}
+                      value={project.id}
+                      label={project.name}
                     />
                   ))}
                 </DropdownMenuRadioGroup>
@@ -146,7 +148,7 @@ export const SessionsNewPage: FC<Props> = ({ projectId: initialProjectId }) => {
           </DropdownMenuRoot>
         </div>
         
-        <button 
+        <button
           className={styles.createButton}
           onClick={handleCreateSession}
           type="button"
