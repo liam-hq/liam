@@ -1,2 +1,0 @@
--- This empty .sql file is required because a migration with this filename was already applied in production.
--- It will no longer be needed if the production database is ever reset.
