@@ -1,6 +1,6 @@
 import { getOrganizationId } from '@/features/organizations/services/getOrganizationId'
 import { createClient } from '@/libs/db/server'
-import type { Schema } from '@liam-hq/db-structure'
+
 import { NextResponse } from 'next/server'
 import * as v from 'valibot'
 
