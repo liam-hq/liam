@@ -474,59 +474,6 @@ $$;
 ALTER FUNCTION "public"."prevent_delete_last_organization_member"() OWNER TO "postgres";
 
 
-CREATE OR REPLACE FUNCTION "public"."send_message"("p_design_session_id" "uuid", "p_role" "text", "p_content" "text", "p_user_id" "uuid" DEFAULT NULL::"uuid") RETURNS "json"
-    LANGUAGE "plpgsql" SECURITY DEFINER
-    AS $$
-DECLARE
-  v_user_id uuid;
-  v_organization_id uuid;
-  v_message_id uuid;
-  v_message_record record;
-BEGIN
-  -- Get current user ID if not provided
-  v_user_id := COALESCE(p_user_id, auth.uid());
-  
-  -- For human messages, ensure user is authenticated
-  IF p_role = 'user' AND v_user_id IS NULL THEN
-    RETURN json_build_object('success', false, 'error', 'User not authenticated');
-  END IF;
-  
-  -- Get organization_id from design_session
-  SELECT organization_id INTO v_organization_id
-  FROM design_sessions
-  WHERE id = p_design_session_id;
-  
-  IF v_organization_id IS NULL THEN
-    RETURN json_build_object('success', false, 'error', 'Design session not found');
-  END IF;
-  
-  -- For authenticated users, check if user is member of the organization
-  IF v_user_id IS NOT NULL AND NOT EXISTS (
-    SELECT 1 FROM organization_members 
-    WHERE user_id = v_user_id AND organization_id = v_organization_id
-  ) THEN
-    RETURN json_build_object('success', false, 'error', 'User not authorized for this organization');
-  END IF;
-  
-  -- Insert the message
-  INSERT INTO messages (design_session_id, user_id, role, content, updated_at)
-  VALUES (p_design_session_id, v_user_id, p_role, p_content, CURRENT_TIMESTAMP)
-  RETURNING * INTO v_message_record;
-  
-  v_message_id := v_message_record.id;
-  
-  RETURN json_build_object(
-    'success', true, 
-    'message_id', v_message_id,
-    'message', 'Message sent successfully'
-  );
-END;
-$$;
-
-
-ALTER FUNCTION "public"."send_message"("p_design_session_id" "uuid", "p_role" "text", "p_content" "text", "p_user_id" "uuid") OWNER TO "postgres";
-
-
 CREATE OR REPLACE FUNCTION "public"."set_building_schema_versions_organization_id"() RETURNS "trigger"
     LANGUAGE "plpgsql" SECURITY DEFINER
     AS $$
@@ -3851,12 +3798,6 @@ GRANT ALL ON FUNCTION "public"."notify_message_inserted"() TO "service_role";
 GRANT ALL ON FUNCTION "public"."prevent_delete_last_organization_member"() TO "anon";
 GRANT ALL ON FUNCTION "public"."prevent_delete_last_organization_member"() TO "authenticated";
 GRANT ALL ON FUNCTION "public"."prevent_delete_last_organization_member"() TO "service_role";
-
-
-
-GRANT ALL ON FUNCTION "public"."send_message"("p_design_session_id" "uuid", "p_role" "text", "p_content" "text", "p_user_id" "uuid") TO "anon";
-GRANT ALL ON FUNCTION "public"."send_message"("p_design_session_id" "uuid", "p_role" "text", "p_content" "text", "p_user_id" "uuid") TO "authenticated";
-GRANT ALL ON FUNCTION "public"."send_message"("p_design_session_id" "uuid", "p_role" "text", "p_content" "text", "p_user_id" "uuid") TO "service_role";
 
 
 

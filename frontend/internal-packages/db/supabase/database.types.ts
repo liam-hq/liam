@@ -1356,15 +1356,6 @@ export type Database = {
           similarity: number
         }[]
       }
-      send_message: {
-        Args: {
-          p_design_session_id: string
-          p_role: string
-          p_content: string
-          p_user_id?: string
-        }
-        Returns: Json
-      }
       sparsevec_out: {
         Args: { '': unknown }
         Returns: unknown
