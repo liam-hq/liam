@@ -1185,7 +1185,7 @@ vars:
     patch: "@@ -181,7 +181,7 @@ export const updateFileContent = async (\n   sha:
       string,\n   message: string,\n   installationId: number,\n-  branch = 'tmp-knowledge-suggestion',\n+
       \ branch: string,\n ): Promise<boolean> => {\n   const [owner, repo] = repositoryFullName.split('/')\n "
-  - filename: frontend/packages/jobs/src/functions/processCreateKnowledgeSuggestion.ts
+  - filename: frontend/internal-packages/jobs/src/functions/processCreateKnowledgeSuggestion.ts
     status: modified
     changes: 1
     patch: "@@ -77,6 +77,7 @@ export const processCreateKnowledgeSuggestion = async

@@ -51,7 +51,7 @@ Follow these rules when you write code:
   const data = parse(UserSchema, await response.json());
   ```
 
-- Rule: Use database types from `@liam-hq/db/supabase/database.types` for database entities in `frontend/apps/app/**/*.ts{,x}` and `frontend/packages/jobs/**/*.ts`. This ensures type safety and consistency with the database schema:
+- Rule: Use database types from `@liam-hq/db/supabase/database.types` for database entities in `frontend/apps/app/**/*.ts{,x}` and `frontend/internal-packages/jobs/**/*.ts`. This ensures type safety and consistency with the database schema:
 
   ```typescript
   // Avoid defining database types manually

@@ -1147,7 +1147,7 @@ vars:
        ): Promise<boolean> => {
        const [owner, repo] = repositoryFullName.split('/')
 
-  - filename: frontend/packages/jobs/src/functions/processCreateKnowledgeSuggestion.ts
+  - filename: frontend/internal-packages/jobs/src/functions/processCreateKnowledgeSuggestion.ts
     status: modified
     changes: 1
     patch: |-

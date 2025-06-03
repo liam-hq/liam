@@ -5,7 +5,7 @@ on:
       - staging
     paths:
       - .github/workflows/trigger_dev_staging.yml
-      - frontend/packages/jobs/**
+      - frontend/internal-packages/jobs/**
       - frontend/packages/db-structure/**
       - frontend/packages/github/**
       - frontend/packages/db/**

@@ -3,7 +3,7 @@ on:
   pull_request:
     paths:
       - ".github/workflows/prompt-test.yml"
-      - "frontend/packages/jobs/**"
+      - "frontend/internal-packages/jobs/**"
       - "frontend/packages/prompt-test/**"
 
 jobs:

@@ -20,7 +20,7 @@ const triggerProjectId = process.env.TRIGGER_PROJECT_ID || 'project-id'
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
 
-// Project root directory (3 levels up from trigger.config.ts in frontend/packages/jobs)
+// Project root directory (3 levels up from trigger.config.ts in frontend/internal-packages/jobs)
 const rootDir = resolve(__dirname, '../../..')
 
 // Find Prisma WASM files using glob patterns relative to the project root
