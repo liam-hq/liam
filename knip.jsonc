@@ -55,7 +55,9 @@
     "@sentry/esbuild-plugin",
     "@liam-hq/cli",
     "@liam-hq/configs",
-    "@turbo/gen"
+    "@turbo/gen",
+    "langfuse",
+    "langfuse-vercel"
   ],
 
   // Suppress unresolved import errors for the generated schema, which is ignored
