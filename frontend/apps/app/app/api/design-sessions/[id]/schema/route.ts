@@ -18,10 +18,7 @@ export async function GET(
 ) {
   const parsedParams = v.safeParse(paramsSchema, await params)
   if (!parsedParams.success) {
-    return NextResponse.json(
-      { error: 'Invalid parameters' },
-      { status: 400 },
-    )
+    return NextResponse.json({ error: 'Invalid parameters' }, { status: 400 })
   }
 
   const supabase = await createClient()
@@ -66,10 +63,7 @@ export async function PUT(
 ) {
   const parsedParams = v.safeParse(paramsSchema, await params)
   if (!parsedParams.success) {
-    return NextResponse.json(
-      { error: 'Invalid parameters' },
-      { status: 400 },
-    )
+    return NextResponse.json({ error: 'Invalid parameters' }, { status: 400 })
   }
 
   const requestParams = await request.json()

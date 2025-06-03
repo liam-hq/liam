@@ -118,7 +118,7 @@ export const SessionsNewPage: FC<Props> = ({ projectId: initialProjectId }) => {
           for an empty schema.
         </p>
       </div>
-      
+
       <div className={styles.form}>
         <div className={styles.field}>
           <span className={styles.label}>Project (Optional)</span>
@@ -160,7 +160,7 @@ export const SessionsNewPage: FC<Props> = ({ projectId: initialProjectId }) => {
             </DropdownMenuPortal>
           </DropdownMenuRoot>
         </div>
-        
+
         <button
           className={styles.createButton}
           onClick={handleCreateSession}
