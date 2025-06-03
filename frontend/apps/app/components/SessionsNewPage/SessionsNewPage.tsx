@@ -1,6 +1,13 @@
 'use client'
 
-import { DropdownMenuRoot, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuPortal, DropdownMenuRadioGroup, DropdownMenuRadioItem } from '@/components'
+import {
+  DropdownMenuRoot,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuPortal,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+} from '@/components'
 import { ProjectIcon } from '@/components/ProjectsPage/components/ProjectsListView/components/ProjectItem/ProjectIcon'
 import { ChevronsUpDown } from '@/icons'
 import { useRouter } from 'next/navigation'
@@ -27,7 +34,9 @@ const ApiSessionsCreateSchema = v.object({
 
 export const SessionsNewPage: FC<Props> = ({ projectId: initialProjectId }) => {
   const router = useRouter()
-  const [selectedProjectId, setSelectedProjectId] = useState<string | undefined>(initialProjectId)
+  const [selectedProjectId, setSelectedProjectId] = useState<
+    string | undefined
+  >(initialProjectId)
   const [projects, setProjects] = useState<Project[]>([])
   const [isCreating, setIsCreating] = useState(false)
 
@@ -91,10 +100,9 @@ export const SessionsNewPage: FC<Props> = ({ projectId: initialProjectId }) => {
         <div className={styles.header}>
           <h1 className={styles.title}>Creating Session ...</h1>
           <p className={styles.subtitle}>
-            {selectedProjectId 
+            {selectedProjectId
               ? `Creating a new session for selected project`
-              : 'Creating a new session without project'
-            }
+              : 'Creating a new session without project'}
           </p>
         </div>
       </div>
@@ -106,7 +114,8 @@ export const SessionsNewPage: FC<Props> = ({ projectId: initialProjectId }) => {
       <div className={styles.header}>
         <h1 className={styles.title}>New Design Session</h1>
         <p className={styles.subtitle}>
-          Choose a project to start with its schema, or create without a project for an empty schema.
+          Choose a project to start with its schema, or create without a project
+          for an empty schema.
         </p>
       </div>
       
@@ -118,16 +127,20 @@ export const SessionsNewPage: FC<Props> = ({ projectId: initialProjectId }) => {
               <div className={styles.iconAndName}>
                 <ProjectIcon className={styles.projectIcon} />
                 <span className={styles.projectName}>
-                  {selectedProjectId 
-                    ? projects.find(p => p.id === selectedProjectId)?.name || 'Select Project'
-                    : 'No Project Selected'
-                  }
+                  {selectedProjectId
+                    ? projects.find((p) => p.id === selectedProjectId)?.name ||
+                      'Select Project'
+                    : 'No Project Selected'}
                 </span>
               </div>
               <ChevronsUpDown className={styles.chevronIcon} />
             </DropdownMenuTrigger>
             <DropdownMenuPortal>
-              <DropdownMenuContent align="start" sideOffset={5} className={styles.content}>
+              <DropdownMenuContent
+                align="start"
+                sideOffset={5}
+                className={styles.content}
+              >
                 <DropdownMenuRadioGroup
                   value={selectedProjectId || ''}
                   onValueChange={(value) =>

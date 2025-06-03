@@ -109,6 +109,7 @@ export async function POST(
     content,
     role,
     user_id: userData.user.id,
+    updated_at: new Date().toISOString(),
   }
 
   const { data: message, error: insertError } = await supabase
