@@ -1282,25 +1282,6 @@ export type Database = {
         Args: { p_token: string }
         Returns: Json
       }
-      get_recent_messages: {
-        Args: {
-          p_design_session_id: string
-          p_limit?: number
-          p_offset?: number
-        }
-        Returns: {
-          id: string
-          design_session_id: string
-          user_id: string
-          role: string
-          content: string
-          created_at: string
-          updated_at: string
-          organization_id: string
-          user_name: string
-          user_email: string
-        }[]
-      }
       halfvec_avg: {
         Args: { '': number[] }
         Returns: unknown

@@ -249,45 +249,6 @@ $$;
 ALTER FUNCTION "public"."get_invitation_data"("p_token" "uuid") OWNER TO "postgres";
 
 
-CREATE OR REPLACE FUNCTION "public"."get_recent_messages"("p_design_session_id" "uuid", "p_limit" integer DEFAULT 50, "p_offset" integer DEFAULT 0) RETURNS TABLE("id" "uuid", "design_session_id" "uuid", "user_id" "uuid", "role" "text", "content" "text", "created_at" timestamp with time zone, "updated_at" timestamp with time zone, "organization_id" "uuid", "user_name" "text", "user_email" "text")
-    LANGUAGE "plpgsql" SECURITY DEFINER
-    AS $$
-BEGIN
-  -- Check if user has access to this design session
-  IF NOT EXISTS (
-    SELECT 1 FROM design_sessions ds
-    JOIN organization_members om ON ds.organization_id = om.organization_id
-    WHERE ds.id = p_design_session_id 
-    AND om.user_id = auth.uid()
-  ) THEN
-    RAISE EXCEPTION 'Access denied to design session';
-  END IF;
-
-  RETURN QUERY
-  SELECT 
-    m.id,
-    m.design_session_id,
-    m.user_id,
-    m.role,
-    m.content,
-    m.created_at,
-    m.updated_at,
-    m.organization_id,
-    u.name as user_name,
-    u.email as user_email
-  FROM messages m
-  LEFT JOIN users u ON m.user_id = u.id
-  WHERE m.design_session_id = p_design_session_id
-  ORDER BY m.created_at DESC
-  LIMIT p_limit
-  OFFSET p_offset;
-END;
-$$;
-
-
-ALTER FUNCTION "public"."get_recent_messages"("p_design_session_id" "uuid", "p_limit" integer, "p_offset" integer) OWNER TO "postgres";
-
-
 CREATE OR REPLACE FUNCTION "public"."handle_new_user"() RETURNS "trigger"
     LANGUAGE "plpgsql" SECURITY DEFINER
     SET "search_path" TO ''
@@ -1350,10 +1311,6 @@ CREATE TABLE IF NOT EXISTS "public"."messages" (
 
 
 ALTER TABLE "public"."messages" OWNER TO "postgres";
-
-
-COMMENT ON TABLE "public"."messages" IS 'Messages table with realtime enabled for chat functionality';
-
 
 
 CREATE TABLE IF NOT EXISTS "public"."migration_pull_request_mappings" (
@@ -3634,12 +3591,6 @@ GRANT ALL ON FUNCTION "public"."get_design_session_subscribers"("p_design_sessio
 
 GRANT ALL ON FUNCTION "public"."get_invitation_data"("p_token" "uuid") TO "authenticated";
 GRANT ALL ON FUNCTION "public"."get_invitation_data"("p_token" "uuid") TO "service_role";
-
-
-
-GRANT ALL ON FUNCTION "public"."get_recent_messages"("p_design_session_id" "uuid", "p_limit" integer, "p_offset" integer) TO "anon";
-GRANT ALL ON FUNCTION "public"."get_recent_messages"("p_design_session_id" "uuid", "p_limit" integer, "p_offset" integer) TO "authenticated";
-GRANT ALL ON FUNCTION "public"."get_recent_messages"("p_design_session_id" "uuid", "p_limit" integer, "p_offset" integer) TO "service_role";
 
 
 

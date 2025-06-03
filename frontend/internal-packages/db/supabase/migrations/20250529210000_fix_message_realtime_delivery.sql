@@ -42,57 +42,6 @@ CREATE TRIGGER "notify_message_inserted_trigger"
   FOR EACH ROW
   EXECUTE FUNCTION "public"."notify_message_inserted"();
 
--- Add a function to get recent messages for a design session
-CREATE OR REPLACE FUNCTION "public"."get_recent_messages"(
-  p_design_session_id "uuid",
-  p_limit int DEFAULT 50,
-  p_offset int DEFAULT 0
-) RETURNS TABLE(
-  id uuid,
-  design_session_id uuid,
-  user_id uuid,
-  role text,
-  content text,
-  created_at timestamp with time zone,
-  updated_at timestamp with time zone,
-  organization_id uuid,
-  user_name text,
-  user_email text
-)
-LANGUAGE "plpgsql" SECURITY DEFINER
-AS $$
-BEGIN
-  -- Check if user has access to this design session
-  IF NOT EXISTS (
-    SELECT 1 FROM design_sessions ds
-    JOIN organization_members om ON ds.organization_id = om.organization_id
-    WHERE ds.id = p_design_session_id 
-    AND om.user_id = auth.uid()
-  ) THEN
-    RAISE EXCEPTION 'Access denied to design session';
-  END IF;
-
-  RETURN QUERY
-  SELECT 
-    m.id,
-    m.design_session_id,
-    m.user_id,
-    m.role,
-    m.content,
-    m.created_at,
-    m.updated_at,
-    m.organization_id,
-    u.name as user_name,
-    u.email as user_email
-  FROM messages m
-  LEFT JOIN users u ON m.user_id = u.id
-  WHERE m.design_session_id = p_design_session_id
-  ORDER BY m.created_at DESC
-  LIMIT p_limit
-  OFFSET p_offset;
-END;
-$$;
-
 -- Add a function to send a message (ensures proper real-time delivery)
 CREATE OR REPLACE FUNCTION "public"."send_message"(
   p_design_session_id "uuid",
@@ -203,10 +152,6 @@ $$;
 GRANT ALL ON FUNCTION "public"."notify_message_inserted"() TO "anon";
 GRANT ALL ON FUNCTION "public"."notify_message_inserted"() TO "authenticated";
 GRANT ALL ON FUNCTION "public"."notify_message_inserted"() TO "service_role";
-
-GRANT ALL ON FUNCTION "public"."get_recent_messages"("uuid", int, int) TO "anon";
-GRANT ALL ON FUNCTION "public"."get_recent_messages"("uuid", int, int) TO "authenticated";
-GRANT ALL ON FUNCTION "public"."get_recent_messages"("uuid", int, int) TO "service_role";
 
 GRANT ALL ON FUNCTION "public"."send_message"("uuid", "text", "text", "uuid") TO "anon";
 GRANT ALL ON FUNCTION "public"."send_message"("uuid", "text", "text", "uuid") TO "authenticated";

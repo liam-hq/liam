@@ -57,36 +57,6 @@ export class MessageService {
   }
 
   /**
-   * Get recent messages for a design session
-   */
-  async getRecentMessages(
-    designSessionId: string,
-    limit = 50,
-    offset = 0,
-  ): Promise<{
-    data: MessageWithUser[] | null
-    error: string | null
-  }> {
-    const { data, error } = await this.supabase.rpc('get_recent_messages', {
-      p_design_session_id: designSessionId,
-      p_limit: limit,
-      p_offset: offset,
-    })
-
-    if (error) {
-      return {
-        data: null,
-        error: error.message,
-      }
-    }
-
-    return {
-      data: data as MessageWithUser[],
-      error: null,
-    }
-  }
-
-  /**
    * Test real-time functionality for messages
    */
   async testMessageRealtime(designSessionId: string): Promise<{
