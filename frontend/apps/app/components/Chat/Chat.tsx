@@ -2,6 +2,7 @@
 
 import type { TableGroupData } from '@/app/lib/schema/convertSchemaToText'
 import type { Schema } from '@liam-hq/db-structure'
+import type { Tables } from '@liam-hq/db/supabase/database.types'
 import type { FC } from 'react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { ChatInput } from '../ChatInput'
@@ -105,7 +106,7 @@ export const Chat: FC<Props> = ({
 
   // Handle new messages from realtime subscription
   const handleNewMessage = useCallback(
-    (newMessage: any) => {
+    (newMessage: Tables<'messages'>) => {
       // Convert database message to ChatEntry format
       const chatEntry = {
         ...convertMessageToChatEntry(newMessage),
