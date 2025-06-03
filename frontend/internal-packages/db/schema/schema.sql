@@ -408,32 +408,6 @@ $$;
 ALTER FUNCTION "public"."match_documents"("filter" "jsonb", "match_count" integer, "query_embedding" "public"."vector", "match_threshold" double precision) OWNER TO "postgres";
 
 
-CREATE OR REPLACE FUNCTION "public"."notify_message_inserted"() RETURNS "trigger"
-    LANGUAGE "plpgsql" SECURITY DEFINER
-    AS $$
-BEGIN
-  -- Perform the notification with message details
-  PERFORM pg_notify(
-    'message_inserted',
-    json_build_object(
-      'id', NEW.id,
-      'design_session_id', NEW.design_session_id,
-      'user_id', NEW.user_id,
-      'role', NEW.role,
-      'content', NEW.content,
-      'created_at', NEW.created_at,
-      'organization_id', NEW.organization_id
-    )::text
-  );
-  
-  RETURN NEW;
-END;
-$$;
-
-
-ALTER FUNCTION "public"."notify_message_inserted"() OWNER TO "postgres";
-
-
 CREATE OR REPLACE FUNCTION "public"."prevent_delete_last_organization_member"() RETURNS "trigger"
     LANGUAGE "plpgsql"
     AS $$
@@ -1477,10 +1451,6 @@ CREATE OR REPLACE TRIGGER "check_last_organization_member" BEFORE DELETE ON "pub
 
 
 COMMENT ON TRIGGER "check_last_organization_member" ON "public"."organization_members" IS 'Prevents deletion of the last member of an organization to ensure organizations always have at least one member';
-
-
-
-CREATE OR REPLACE TRIGGER "notify_message_inserted_trigger" AFTER INSERT ON "public"."messages" FOR EACH ROW EXECUTE FUNCTION "public"."notify_message_inserted"();
 
 
 
@@ -3506,12 +3476,6 @@ GRANT ALL ON FUNCTION "public"."l2_normalize"("public"."vector") TO "service_rol
 GRANT ALL ON FUNCTION "public"."match_documents"("filter" "jsonb", "match_count" integer, "query_embedding" "public"."vector", "match_threshold" double precision) TO "anon";
 GRANT ALL ON FUNCTION "public"."match_documents"("filter" "jsonb", "match_count" integer, "query_embedding" "public"."vector", "match_threshold" double precision) TO "authenticated";
 GRANT ALL ON FUNCTION "public"."match_documents"("filter" "jsonb", "match_count" integer, "query_embedding" "public"."vector", "match_threshold" double precision) TO "service_role";
-
-
-
-GRANT ALL ON FUNCTION "public"."notify_message_inserted"() TO "anon";
-GRANT ALL ON FUNCTION "public"."notify_message_inserted"() TO "authenticated";
-GRANT ALL ON FUNCTION "public"."notify_message_inserted"() TO "service_role";
 
 
 
