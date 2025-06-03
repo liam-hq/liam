@@ -5,7 +5,6 @@ import type { Schema } from '@liam-hq/db-structure'
 import * as v from 'valibot'
 
 const paramsSchema = v.object({
-  projectId: v.string(),
   id: v.string(),
 })
 
@@ -20,11 +19,10 @@ export default async function Page({ params }: PageProps) {
     throw new Error('Failed to fetch schema data')
   }
 
-  const schema: Schema = schemaData?.schema as Schema // TODO: use valibot to validate schema
+  const schema: Schema = schemaData?.schema as Schema
 
   return (
     <SessionDetailPage
-      projectId={parsedParams.output.projectId}
       schema={schema}
       designSessionId={parsedParams.output.id}
     />

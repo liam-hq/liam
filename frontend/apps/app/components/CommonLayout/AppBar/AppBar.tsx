@@ -19,7 +19,7 @@ export const AppBar: FC<Props> = async ({
   const { data: authUser } = await getAuthUser()
 
   const avatarUrl = authUser.user?.user_metadata?.avatar_url
-  const newSessionUrl = `/app/projects/${currentProjectId}/sessions/new`
+  const newSessionUrl = '/app/design_sessions/new'
   return (
     <div className={styles.wrapper}>
       <div className={styles.leftSection}>

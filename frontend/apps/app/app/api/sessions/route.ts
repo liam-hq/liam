@@ -78,7 +78,7 @@ export async function POST(request: Request) {
     project_id: projectId,
     organization_id: organizationId,
     created_by_user_id: userData.user.id,
-    parent_design_session_id: parentDesignSessionId || null,
+    parent_design_session_id: parentDesignSessionId ?? null,
   }
 
   const { data: designSession, error: insertError } = await supabase
@@ -95,95 +95,100 @@ export async function POST(request: Request) {
     )
   }
 
-  // Get schema file path from schema_file_paths table
-  const { data: schemaFilePath, error: schemaFilePathError } = await supabase
-    .from('schema_file_paths')
-    .select('path, format')
-    .eq('project_id', projectId)
-    .eq('organization_id', organizationId)
-    .limit(1)
-    .maybeSingle()
-
-  if (schemaFilePathError) {
-    return NextResponse.json(
-      { error: 'Failed to fetch schema file path' },
-      { status: 500 },
-    )
-  }
-
-  // Get repository information for GitHub API call
-  const { data: repositoryMapping, error: repositoryMappingError } =
-    await supabase
-      .from('project_repository_mappings')
-      .select(`
-      github_repositories(
-        id, name, owner, github_installation_identifier
-      )
-    `)
+  let buildingSchema = null
+  if (project) {
+    // Get schema file path from schema_file_paths table
+    const { data: schemaFilePath, error: schemaFilePathError } = await supabase
+      .from('schema_file_paths')
+      .select('path, format')
       .eq('project_id', projectId)
-      .single()
+      .eq('organization_id', organizationId)
+      .limit(1)
+      .maybeSingle()
 
-  if (repositoryMappingError || !repositoryMapping) {
-    return NextResponse.json(
-      { error: 'Failed to fetch repository information' },
-      { status: 500 },
+    if (schemaFilePathError) {
+      return NextResponse.json(
+        { error: 'Failed to fetch schema file path' },
+        { status: 500 },
+      )
+    }
+
+    // Get repository information for GitHub API call
+    const { data: repositoryMapping, error: repositoryMappingError } =
+      await supabase
+        .from('project_repository_mappings')
+        .select(`
+        github_repositories(
+          id, name, owner, github_installation_identifier
+        )
+      `)
+        .eq('project_id', projectId)
+        .single()
+
+    if (repositoryMappingError || !repositoryMapping) {
+      return NextResponse.json(
+        { error: 'Failed to fetch repository information' },
+        { status: 500 },
+      )
+    }
+
+    const repository = repositoryMapping.github_repositories
+
+    // Get main branch SHA from GitHub API
+    const lastCommit = await getLastCommit(
+      Number(repository.github_installation_identifier),
+      repository.owner,
+      repository.name,
+      'main',
     )
-  }
+    const gitSha = lastCommit?.sha || null
+    if (!gitSha) {
+      return NextResponse.json({ error: 'error' }, { status: 500 })
+    }
 
-  const repository = repositoryMapping.github_repositories
-
-  // Get main branch SHA from GitHub API
-  const lastCommit = await getLastCommit(
-    Number(repository.github_installation_identifier),
-    repository.owner,
-    repository.name,
-    'main',
-  )
-  const gitSha = lastCommit?.sha || null
-  if (!gitSha) {
-    return NextResponse.json({ error: 'error' }, { status: 500 })
-  }
-
-  const repositoryFullName = `${repository.owner}/${repository.name}`
-  const { content } = await getFileContent(
-    repositoryFullName,
-    schemaFilePath?.path || 'schema.json',
-    gitSha || 'main',
-    repository.github_installation_identifier,
-  )
-
-  const format = schemaFilePath?.format
-
-  if (!format || !content) {
-    return NextResponse.json({ error: 'error' }, { status: 500 })
-  }
-
-  setPrismWasmUrl(path.resolve(process.cwd(), 'prism.wasm'))
-  const schemaString = await parse(content, format)
-  const schema = JSON.parse(JSON.stringify(schemaString.value))
-
-  // Create building schema record
-  const buildingSchemaData: TablesInsert<'building_schemas'> = {
-    design_session_id: designSession.id,
-    organization_id: organizationId,
-    schema,
-    initial_schema_snapshot: schema,
-    schema_file_path: schemaFilePath?.path || null,
-    git_sha: gitSha,
-  }
-
-  const { data: buildingSchema, error: buildingSchemaError } = await supabase
-    .from('building_schemas')
-    .insert(buildingSchemaData)
-    .select()
-    .single()
-
-  if (buildingSchemaError) {
-    console.error('Error creating building schema:', buildingSchemaError)
-    return NextResponse.json(
-      { error: 'Failed to create building schema' },
-      { status: 500 },
+    const repositoryFullName = `${repository.owner}/${repository.name}`
+    const { content } = await getFileContent(
+      repositoryFullName,
+      schemaFilePath?.path || 'schema.json',
+      gitSha || 'main',
+      repository.github_installation_identifier,
     )
+
+    const format = schemaFilePath?.format
+
+    if (!format || !content) {
+      return NextResponse.json({ error: 'error' }, { status: 500 })
+    }
+
+    setPrismWasmUrl(path.resolve(process.cwd(), 'prism.wasm'))
+    const schemaString = await parse(content, format)
+    const schema = JSON.parse(JSON.stringify(schemaString.value))
+
+    // Create building schema record
+    const buildingSchemaInsertData: TablesInsert<'building_schemas'> = {
+      design_session_id: designSession.id,
+      organization_id: organizationId,
+      schema,
+      initial_schema_snapshot: schema,
+      schema_file_path: schemaFilePath?.path ?? null,
+      git_sha: gitSha,
+    }
+
+    const { data: buildingSchemaData, error: buildingSchemaError } =
+      await supabase
+        .from('building_schemas')
+        .insert(buildingSchemaInsertData)
+        .select()
+        .single()
+
+    if (buildingSchemaError) {
+      console.error('Error creating building schema:', buildingSchemaError)
+      return NextResponse.json(
+        { error: 'Failed to create building schema' },
+        { status: 500 },
+      )
+    }
+    buildingSchema = buildingSchemaData
   }
 
   return NextResponse.json(

@@ -7,7 +7,7 @@ import * as v from 'valibot'
 import styles from './SessionsNewPage.module.css'
 
 type Props = {
-  projectId: string
+  projectId?: string
 }
 
 const ApiSessionsCreateSchema = v.object({
@@ -44,9 +44,7 @@ export const SessionsNewPage: FC<Props> = ({ projectId }) => {
 
     if (result.output.success) {
       // Redirect to the session detail page
-      router.push(
-        `/app/projects/${projectId}/sessions/${result.output.designSession.id}`,
-      )
+      router.push(`/app/design_sessions/${result.output.designSession.id}`)
     } else {
       throw new Error('Session creation failed')
     }
@@ -61,7 +59,9 @@ export const SessionsNewPage: FC<Props> = ({ projectId }) => {
       <div className={styles.header}>
         <h1 className={styles.title}>Creating Session ...</h1>
         <p className={styles.subtitle}>
-          Creating a new session for project: {projectId}
+          {projectId
+            ? `Creating a new session for project: ${projectId}`
+            : 'Creating a new session...'}
         </p>
       </div>
     </div>

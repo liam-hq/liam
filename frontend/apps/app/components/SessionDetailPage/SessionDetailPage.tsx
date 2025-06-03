@@ -13,7 +13,7 @@ import { useEffect } from 'react'
 import * as v from 'valibot'
 import styles from './SessionDetailPage.module.css'
 type Props = {
-  projectId: string
+  projectId?: string
   schema: Schema
   designSessionId: string
 }

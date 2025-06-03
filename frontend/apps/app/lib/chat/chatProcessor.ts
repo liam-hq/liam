@@ -9,7 +9,7 @@ interface ChatProcessorParams {
   schemaData: Schema
   history?: [string, string][]
   mode: 'build' | 'ask'
-  projectId: string
+  projectId?: string
 }
 
 interface ChatProcessorResult {
@@ -31,7 +31,7 @@ export const processChatMessage = async (
     // Check if schema has been updated
     const schemaUpdated = await isSchemaUpdated(schemaData)
 
-    if (schemaUpdated) {
+    if (schemaUpdated && projectId) {
       try {
         // Synchronize vector store
         await syncSchemaVectorStore(schemaData, projectId)
