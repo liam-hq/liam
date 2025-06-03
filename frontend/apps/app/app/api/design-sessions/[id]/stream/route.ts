@@ -40,12 +40,18 @@ export async function POST(
   const { data: userData, error: userError } = await supabase.auth.getUser()
 
   if (userError || !userData.user) {
-    return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
+    return NextResponse.json(
+      { error: 'Authentication required' },
+      { status: 401 },
+    )
   }
 
   const organizationId = await getOrganizationId()
   if (!organizationId) {
-    return NextResponse.json({ error: 'Organization not found' }, { status: 400 })
+    return NextResponse.json(
+      { error: 'Organization not found' },
+      { status: 400 },
+    )
   }
 
   const { data: buildingSchema, error: schemaError } = await supabase
@@ -57,11 +63,14 @@ export async function POST(
 
   if (schemaError) {
     console.error('Error fetching schema:', schemaError)
-    return NextResponse.json({ error: 'Failed to fetch schema' }, { status: 500 })
+    return NextResponse.json(
+      { error: 'Failed to fetch schema' },
+      { status: 500 },
+    )
   }
 
   const schema = buildingSchema.schema as Schema
-  const { messages } = parsedRequestParams.output
+  const { messages: _messages } = parsedRequestParams.output
 
   const encoder = new TextEncoder()
   const stream = new ReadableStream({
@@ -83,7 +92,7 @@ Would you like me to help you with any specific changes to the schema?`
 
       const sendChunk = () => {
         if (index < chunks.length) {
-          const chunk = chunks[index] + ' '
+          const chunk = `${chunks[index]} `
           controller.enqueue(
             encoder.encode(`data: ${JSON.stringify({ content: chunk })}\n\n`),
           )

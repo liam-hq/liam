@@ -13,7 +13,7 @@ const updateRequestSchema = v.object({
 })
 
 export async function GET(
-  request: Request,
+  _request: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
   const parsedParams = v.safeParse(paramsSchema, await params)
