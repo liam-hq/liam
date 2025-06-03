@@ -1,12 +1,12 @@
 'use client'
 
 import {
-  DropdownMenuRoot,
-  DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuPortal,
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
+  DropdownMenuRoot,
+  DropdownMenuTrigger,
 } from '@/components'
 import { ProjectIcon } from '@/components/ProjectsPage/components/ProjectsListView/components/ProjectItem/ProjectIcon'
 import { ChevronsUpDown } from '@/icons'
@@ -101,7 +101,7 @@ export const SessionsNewPage: FC<Props> = ({ projectId: initialProjectId }) => {
           <h1 className={styles.title}>Creating Session ...</h1>
           <p className={styles.subtitle}>
             {selectedProjectId
-              ? `Creating a new session for selected project`
+              ? 'Creating a new session for selected project'
               : 'Creating a new session without project'}
           </p>
         </div>
@@ -121,7 +121,7 @@ export const SessionsNewPage: FC<Props> = ({ projectId: initialProjectId }) => {
       
       <div className={styles.form}>
         <div className={styles.field}>
-          <label className={styles.label}>Project (Optional)</label>
+          <span className={styles.label}>Project (Optional)</span>
           <DropdownMenuRoot>
             <DropdownMenuTrigger className={styles.trigger}>
               <div className={styles.iconAndName}>
