@@ -6,16 +6,14 @@ type SupabaseClient = ReturnType<typeof _createClient>
 function withSentryErrorReporting<T extends object>(client: T): T {
   return new Proxy(client, {
     get(target: T, prop: string | symbol) {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-      const originalMethod = (target as any)[prop]
+      const originalValue = Reflect.get(target, prop)
 
-      if (typeof originalMethod !== 'function') {
-        return originalMethod
+      if (typeof originalValue !== 'function') {
+        return originalValue
       }
 
       return (...args: unknown[]) => {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-        const result = originalMethod.apply(target, args)
+        const result = Reflect.apply(originalValue, target, args)
 
         if (
           result &&
