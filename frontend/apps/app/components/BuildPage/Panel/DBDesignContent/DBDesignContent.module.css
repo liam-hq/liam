@@ -1,0 +1,68 @@
+.wrapper {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  height: 100%;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-5);
+  height: 40px;
+  padding: 0 var(--spacing-4);
+}
+
+.title {
+  font-size: var(--font-size-4);
+}
+
+.tabsList {
+  display: flex;
+  border-bottom: solid 1px var(--pane-border);
+}
+
+.tabsTrigger {
+  min-width: 100px;
+  height: 32px;
+  padding: var(--spacing-half) var(--spacing-2);
+  background-color: var(--button-background);
+  font-size: var(--font-size-5);
+  color: var(--overlay-50);
+}
+
+.tabsTrigger:not(:last-of-type) {
+  border-right: solid 1px var(--pane-border);
+}
+
+.tabsTrigger:hover {
+  background-color: var(--button-background-hover);
+  color: var(--overlay-100);
+}
+
+.tabsTrigger[data-state='active'] {
+  background-color: var(--button-background-active);
+  border-top: solid 1px var(--primary-accent);
+  color: var(--overlay-100);
+}
+
+.tablesSection {
+  overflow: auto;
+  min-height: 0;
+  height: 100%;
+  padding: var(--spacing-3) var(--spacing-5);
+}
+
+.erdSection {
+  overflow: hidden;
+  position: relative;
+  min-height: 0;
+  height: 100%;
+  padding: var(--spacing-3) var(--spacing-5);
+  background-color: var(--pane-background);
+}
+
+.schemaSection {
+  min-height: 0;
+  height: 100%;
+  overflow: auto;
+}

@@ -1,0 +1,29 @@
+.wrapper {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-3);
+  padding: var(--spacing-2);
+  border-radius: var(--border-radius-md);
+  background-color: var(--pane-background);
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  height: 52px;
+  padding: var(--spacing-2) var(--spacing-4);
+  border: solid 1px var(--pane-border);
+  border-radius: var(--border-radius-md);
+  background-color: var(--pane-muted-background);
+}
+
+.icon {
+  width: 2rem;
+  height: 2rem;
+}
+
+.text {
+  font-size: var(--font-size-4);
+  color: var(--overlay-100);
+}

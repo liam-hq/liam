@@ -28,7 +28,7 @@ TabsTrigger.displayName = 'TabsTrigger'
 export const TabsContent = forwardRef<
   HTMLDivElement,
   ComponentProps<typeof Content>
->((props, ref) => {
-  return <Content {...props} ref={ref} />
+>(({ className, ...props }, ref) => {
+  return <Content {...props} ref={ref} className={className} />
 })
 TabsContent.displayName = 'TabsContent'
