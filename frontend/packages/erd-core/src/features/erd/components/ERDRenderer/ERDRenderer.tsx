@@ -1,5 +1,5 @@
 import '@xyflow/react/dist/style.css'
-import type { TableGroup } from '@liam-hq/db-structure'
+import type { Table, TableGroup } from '@liam-hq/db-structure'
 import {
   type ImperativePanelHandle,
   ResizableHandle,
@@ -15,6 +15,7 @@ import {
   type FC,
   createRef,
   useCallback,
+  useEffect,
   useState,
 } from 'react'
 import { AppBar } from './AppBar'
@@ -23,7 +24,7 @@ import '@/styles/globals.css'
 import { toggleLogEvent } from '@/features/gtm/utils'
 import { useIsTouchDevice } from '@/hooks'
 import { useVersion } from '@/providers'
-import { useSchemaStore, useUserEditingStore } from '@/stores'
+import { updateIsDiffView, useSchemaStore, useUserEditingStore } from '@/stores'
 import { convertSchemaToNodes } from '../../utils'
 import { ERDContent } from '../ERDContent'
 import { CardinalityMarkers } from './CardinalityMarkers'
@@ -38,6 +39,7 @@ type Props = {
   errorObjects?: ComponentProps<typeof ErrorDisplay>['errors']
   defaultPanelSizes?: number[]
   withAppBar?: boolean
+  isDiffView?: boolean
   tableGroups?: Record<string, TableGroup>
   onAddTableGroup?: ((params: TableGroup) => void) | undefined
 }
@@ -51,6 +53,7 @@ export const ERDRenderer: FC<Props> = ({
   errorObjects = [],
   defaultPanelSizes = [20, 80],
   withAppBar = false,
+  isDiffView = false,
   tableGroups = {},
   onAddTableGroup,
 }) => {
@@ -58,9 +61,30 @@ export const ERDRenderer: FC<Props> = ({
   const [isResizing, setIsResizing] = useState(false)
 
   const { showMode } = useUserEditingStore()
-  const { current } = useSchemaStore()
+  const { current, previous } = useSchemaStore()
+  const schema =
+    isDiffView && previous
+      ? {
+          tables: Object.keys({ ...previous.tables, ...current.tables }).reduce(
+            (acc, key) => {
+              acc[key] = {
+                ...(previous.tables[key] || {}),
+                ...(current.tables[key] || {}),
+              }
+              return acc
+            },
+            {} as Record<string, Table>,
+          ),
+          relationships: {
+            ...previous.relationships,
+            ...current.relationships,
+          },
+          tableGroups: { ...previous.tableGroups, ...current.tableGroups },
+        }
+      : current
+
   const { nodes, edges } = convertSchemaToNodes({
-    schema: current,
+    schema,
     showMode,
     tableGroups,
   })
@@ -94,6 +118,10 @@ export const ERDRenderer: FC<Props> = ({
   }, [])
 
   const isMobile = useIsTouchDevice()
+
+  useEffect(() => {
+    updateIsDiffView(isDiffView)
+  }, [isDiffView])
 
   return (
     <SidebarProvider

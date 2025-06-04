@@ -2,64 +2,29 @@
 
 import { TabsContent, TabsList, TabsRoot, TabsTrigger } from '@/components'
 import { Chat } from '@/components/Chat'
-import { ERDRenderer } from '@/features'
-import { useTableGroups } from '@/hooks'
-import { VersionProvider } from '@/providers'
-import { versionSchema } from '@/schemas'
-import { initSchemaStore } from '@/stores'
-import type { Schema, TableGroup } from '@liam-hq/db-structure'
-import { type FC, useEffect } from 'react'
-import * as v from 'valibot'
+import type { Schema } from '@liam-hq/db-structure'
+import type { FC } from 'react'
+import { ERD, type ErrorObject } from './ERD'
 import styles from './Panel.module.css'
 import { SchemaEditor } from './SchemaEditor'
 import { TablesList } from './TablesList'
 import { AFTER } from './after'
 import { BEFORE } from './before'
 
-type ErrorObject = {
-  name: string
-  message: string
-  instruction?: string
-}
-
 type Props = {
   schema: Schema
   errors: ErrorObject[]
-  tableGroups: Record<string, TableGroup>
   projectId: string
 }
 
-export const Panel: FC<Props> = ({
-  schema,
-  errors,
-  tableGroups: initialTableGroups = {},
-  projectId,
-}) => {
-  const { tableGroups, addTableGroup } = useTableGroups(initialTableGroups)
-
-  useEffect(() => {
-    initSchemaStore({
-      current: AFTER as unknown as Schema,
-      previous: BEFORE as unknown as Schema,
-    })
-  }, [])
-
-  const versionData = {
-    version: '0.1.0',
-    gitHash: process.env.NEXT_PUBLIC_GIT_HASH,
-    envName: process.env.NEXT_PUBLIC_ENV_NAME,
-    date: process.env.NEXT_PUBLIC_RELEASE_DATE,
-    displayedOn: 'web',
-  }
-  const version = v.parse(versionSchema, versionData)
-
+export const Panel: FC<Props> = ({ schema, errors, projectId }) => {
   return (
     <div className={styles.container}>
       <div className={styles.columns}>
         <div className={styles.chatSection}>
           <Chat schemaData={schema} projectId={projectId} />
         </div>
-        <TabsRoot defaultValue="tables" className={styles.tabsRoot}>
+        <TabsRoot defaultValue="erd" className={styles.tabsRoot}>
           <TabsList className={styles.tabsList}>
             <TabsTrigger value="schema" className={styles.tabsTrigger}>
               Schema
@@ -85,17 +50,11 @@ export const Panel: FC<Props> = ({
             </div>
           </TabsContent>
           <TabsContent value="erd" className={styles.tabsContent}>
-            <div className={styles.erdSection}>
-              <VersionProvider version={version}>
-                <ERDRenderer
-                  defaultSidebarOpen={false}
-                  defaultPanelSizes={[20, 80]}
-                  errorObjects={errors}
-                  tableGroups={tableGroups}
-                  onAddTableGroup={addTableGroup}
-                />
-              </VersionProvider>
-            </div>
+            <ERD
+              currentSchema={AFTER as unknown as Schema}
+              previousSchema={BEFORE as unknown as Schema}
+              errors={errors}
+            />
           </TabsContent>
         </TabsRoot>
       </div>

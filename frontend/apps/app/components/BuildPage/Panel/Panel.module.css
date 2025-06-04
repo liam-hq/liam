@@ -75,12 +75,6 @@
   min-height: 0;
 }
 
-.erdSection {
-  position: relative;
-  overflow: hidden;
-  height: 100%;
-}
-
 .tablesSection {
   height: 100%;
   overflow: auto;
