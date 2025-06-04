@@ -62,6 +62,7 @@ export const AgentMessage: FC<AgentMessageProps> = ({
   agent,
   state = 'default',
   message = '',
+  time = '',
   agentName,
   children,
   progressMessages,
@@ -69,7 +70,6 @@ export const AgentMessage: FC<AgentMessageProps> = ({
 }) => {
   const isGenerating = state === 'generating'
   const isAsk = agent === 'ask'
-  const _isBuild = agent === 'build'
 
   return (
     <div className={styles.container}>
@@ -78,6 +78,7 @@ export const AgentMessage: FC<AgentMessageProps> = ({
         <span className={styles.agentName}>
           {agentName || (isAsk ? 'Ask Agent' : 'Build Agent')}
         </span>
+        {time && <span className={styles.messageTime}>{time}</span>}
       </div>
       <div className={styles.contentContainer}>
         {/* Show progress messages if available */}
