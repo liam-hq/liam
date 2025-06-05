@@ -29,10 +29,10 @@ export default async function NewProjectPage() {
     throw new Error('Session not found')
   }
 
-  let installations: { installations: Installation[] }
+  let installations: Installation[]
   try {
     const result = await getInstallations(data.session)
-    installations = result
+    installations = result.installations
   } catch (error) {
     if (
       error instanceof Error &&
