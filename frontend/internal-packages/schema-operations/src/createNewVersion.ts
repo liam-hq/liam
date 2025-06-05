@@ -61,7 +61,7 @@ export function applyPatchOperations(
         for (let i = 0; i < pathParts.length - 1; i++) {
           const part = pathParts[i]
           if (part && isSafeKey(part) && !(part in current)) {
-            current[part] = {}
+            current[part] = Object.create(null)
           }
           if (part && isSafeKey(part)) {
             const nextValue = current[part]
@@ -78,6 +78,8 @@ export function applyPatchOperations(
         const lastPart = pathParts[pathParts.length - 1]
         if (lastPart && isSafeKey(lastPart)) {
           current[lastPart] = operation.value
+        } else {
+          console.warn(`Unsafe key detected, skipping operation: ${lastPart}`)
         }
       }
       // Add other operations as needed
@@ -138,7 +140,10 @@ export async function createNewVersion(
         }
 
         // Then validate the patch content
-        const patchParsed = v.safeParse(operationsSchema, versionParsed.output.patch)
+        const patchParsed = v.safeParse(
+          operationsSchema,
+          versionParsed.output.patch,
+        )
         if (patchParsed.success) {
           return patchParsed.output
         }
