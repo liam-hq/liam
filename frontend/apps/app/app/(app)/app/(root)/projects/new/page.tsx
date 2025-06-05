@@ -2,6 +2,7 @@ import { ProjectNewPage } from '@/components/ProjectNewPage'
 import { getOrganizationId } from '@/features/organizations/services/getOrganizationId'
 import { createClient } from '@/libs/db/server'
 import { getInstallations } from '@liam-hq/github'
+import type { Installation } from '@liam-hq/github'
 import { redirect } from 'next/navigation'
 
 export default async function NewProjectPage() {
@@ -28,10 +29,10 @@ export default async function NewProjectPage() {
     throw new Error('Session not found')
   }
 
-  let installations: any
+  let installations: { installations: Installation[] }
   try {
     const result = await getInstallations(data.session)
-    installations = result.installations
+    installations = result
   } catch (error) {
     if (
       error instanceof Error &&
