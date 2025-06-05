@@ -57,6 +57,12 @@ export const InstallationSelector: FC<Props> = ({
       setRepositories(res.repositories)
     } catch (error) {
       console.error('Error fetching repositories:', error)
+      if (
+        error instanceof Error &&
+        error.message.includes('authentication failed')
+      ) {
+        window.location.href = '/auth/login'
+      }
     } finally {
       setLoading(false)
     }
