@@ -28,7 +28,7 @@ export default async function NewProjectPage() {
     throw new Error('Session not found')
   }
 
-  let installations
+  let installations: any
   try {
     const result = await getInstallations(data.session)
     installations = result.installations
