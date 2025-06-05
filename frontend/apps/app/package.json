@@ -11,6 +11,7 @@
     "@codemirror/merge": "6.10.1",
     "@codemirror/state": "6.5.2",
     "@codemirror/view": "6.36.8",
+    "@electric-sql/pglite": "0.3.2",
     "@langchain/community": "0.3.43",
     "@langchain/core": "0.3.56",
     "@langchain/langgraph": "0.3.0",

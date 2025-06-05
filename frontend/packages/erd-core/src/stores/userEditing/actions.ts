@@ -14,6 +14,41 @@ export const resetSelectedNodeIds = () => {
   userEditingStore.selectedNodeIds.clear()
 }
 
+const handleShiftSelection = (
+  nodeId: string,
+  nodeIds: string[],
+  selectedIds: Set<string>,
+) => {
+  if (selectedIds.size === 0) {
+    selectedIds.add(nodeId)
+  } else {
+    const lastSelectedId = Array.from(selectedIds).pop()
+    if (!lastSelectedId) return
+    const lastIndex = nodeIds.indexOf(lastSelectedId)
+    const currentIndex = nodeIds.indexOf(nodeId)
+
+    if (lastIndex === -1 || currentIndex === -1) return
+
+    const start = Math.min(lastIndex, currentIndex)
+    const end = Math.max(lastIndex, currentIndex)
+
+    for (let i = start; i <= end; i++) {
+      const id = nodeIds[i]
+      if (typeof id === 'string') {
+        selectedIds.add(id)
+      }
+    }
+  }
+}
+
+const handleCtrlSelection = (nodeId: string, selectedIds: Set<string>) => {
+  selectedIds.has(nodeId) ? selectedIds.delete(nodeId) : selectedIds.add(nodeId)
+}
+
+const handleSingleSelection = (nodeId: string) => {
+  userEditingStore.selectedNodeIds = new Set([nodeId])
+}
+
 export const updateSelectedNodeIds = (
   nodeId: string,
   isMultiSelect: 'ctrl' | 'shift' | 'single',
@@ -23,32 +58,11 @@ export const updateSelectedNodeIds = (
   const selectedIds = userEditingStore.selectedNodeIds
 
   if (isMultiSelect === 'shift') {
-    if (selectedIds.size === 0) {
-      selectedIds.add(nodeId)
-    } else {
-      const lastSelectedId = Array.from(selectedIds).pop()
-      if (!lastSelectedId) return
-      const lastIndex = nodeIds.indexOf(lastSelectedId)
-      const currentIndex = nodeIds.indexOf(nodeId)
-
-      if (lastIndex === -1 || currentIndex === -1) return
-
-      const start = Math.min(lastIndex, currentIndex)
-      const end = Math.max(lastIndex, currentIndex)
-
-      for (let i = start; i <= end; i++) {
-        const id = nodeIds[i]
-        if (typeof id === 'string') {
-          selectedIds.add(id)
-        }
-      }
-    }
+    handleShiftSelection(nodeId, nodeIds, selectedIds)
   } else if (isMultiSelect === 'ctrl') {
-    selectedIds.has(nodeId)
-      ? selectedIds.delete(nodeId)
-      : selectedIds.add(nodeId)
+    handleCtrlSelection(nodeId, selectedIds)
   } else {
-    userEditingStore.selectedNodeIds = new Set([nodeId])
+    handleSingleSelection(nodeId)
   }
 }
 

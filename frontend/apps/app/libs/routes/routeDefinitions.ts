@@ -9,6 +9,7 @@ export type RouteDefinitions = {
   'settings/members': string
   'settings/billing': string
   'settings/projects': string
+  'design_sessions/new': string
   'invitations/tokens/[token]': (params: {
     token: string
   }) => string
@@ -25,6 +26,7 @@ export type RouteDefinitions = {
     branchOrCommit: string
     schemaFilePath: string
   }) => string
+  'design_sessions/[id]': (params: { id: string }) => string
 }
 
 export const routeDefinitions: RouteDefinitions = {
@@ -37,6 +39,7 @@ export const routeDefinitions: RouteDefinitions = {
   'settings/members': '/app/settings/members',
   'settings/billing': '/app/settings/billing',
   'settings/projects': '/app/settings/projects',
+  'design_sessions/new': '/app/design_sessions/new',
   'invitations/tokens/[token]': ({ token }) => {
     return `/app/invitations/tokens/${token}`
   },
@@ -64,5 +67,8 @@ export const routeDefinitions: RouteDefinitions = {
   }) => {
     const encodedBranchOrCommit = encodeURIComponent(branchOrCommit)
     return `/app/projects/${projectId}/ref/${encodedBranchOrCommit}/schema`
+  },
+  'design_sessions/[id]': ({ id }) => {
+    return `/app/design_sessions/${id}`
   },
 } as const

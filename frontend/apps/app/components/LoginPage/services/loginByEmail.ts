@@ -10,7 +10,9 @@ export async function loginByEmail(formData: FormData) {
   // Get the returnTo path from the form data
   // This will be set by the login page which reads from the cookie
   const formReturnTo = formData.get('returnTo')
-  const returnTo = formReturnTo ? formReturnTo.toString() : '/app'
+  const returnTo = formReturnTo
+    ? formReturnTo.toString()
+    : '/app/design_sessions/new'
 
   // type-casting here for convenience
   // in practice, you should validate your inputs

@@ -46,7 +46,6 @@
     ],
     "overrides": {
       "esbuild": "0.25.4",
-      "node-gtts": "workspace:*",
       "path-to-regexp": "8.2.0",
       "prismjs": "1.30.0",
       "undici": "7.9.0"

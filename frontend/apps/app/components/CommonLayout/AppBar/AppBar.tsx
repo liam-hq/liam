@@ -1,5 +1,4 @@
 import { AvatarWithImage } from '@/components'
-import { NewThreadButton } from '@/components/Chat/NewThreadButton/NewThreadButton'
 import { ChevronRight } from '@/icons'
 import type { FC } from 'react'
 import styles from './AppBar.module.css'
@@ -19,7 +18,6 @@ export const AppBar: FC<Props> = async ({
   const { data: authUser } = await getAuthUser()
 
   const avatarUrl = authUser.user?.user_metadata?.avatar_url
-  const newSessionUrl = `/app/projects/${currentProjectId}/sessions/new`
   return (
     <div className={styles.wrapper}>
       <div className={styles.leftSection}>
@@ -36,11 +34,6 @@ export const AppBar: FC<Props> = async ({
               </>
             )}
           </div>
-        )}
-        {currentProjectId && (
-          <a href={newSessionUrl} className={styles.newSessionButton}>
-            <NewThreadButton size="sm" tooltipContent="New Session" />
-          </a>
         )}
       </div>
       <div className={styles.rightSection}>

@@ -35,11 +35,3 @@
   height: 0.75rem;
   color: var(--overlay-70);
 }
-
-.newSessionButton {
-  color: var(--global-foreground, #fff);
-  font-family: var(--main-font, Inter);
-  font-size: var(--font-size-1);
-  font-style: normal;
-  line-height: normal;
-}
