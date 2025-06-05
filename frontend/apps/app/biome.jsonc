@@ -1,3 +1,10 @@
 {
-  "extends": ["../../internal-packages/configs/biome.jsonc"]
+  "extends": ["../../internal-packages/configs/biome.jsonc"],
+  "linter": {
+    "rules": {
+      "suspicious": {
+        "noExplicitAny": "off"
+      }
+    }
+  }
 }
