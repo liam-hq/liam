@@ -26,12 +26,14 @@ type Props = {
   schema: Schema
   errors: ErrorObject[]
   tableGroups: Record<string, TableGroup>
+  buildingSchemaId: string
 }
 
 export const Panel: FC<Props> = ({
   schema,
   errors,
   tableGroups: initialTableGroups = {},
+  buildingSchemaId,
 }) => {
   const { tableGroups, addTableGroup } = useTableGroups(initialTableGroups)
 
@@ -55,7 +57,7 @@ export const Panel: FC<Props> = ({
     <div className={styles.container}>
       <div className={styles.columns}>
         <div className={styles.chatSection}>
-          <Chat schemaData={schema} />
+          <Chat schemaData={schema} buildingSchemaId={buildingSchemaId} />
         </div>
         <TabsRoot defaultValue="tables" className={styles.tabsRoot}>
           <TabsList className={styles.tabsList}>

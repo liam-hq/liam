@@ -5,7 +5,7 @@ async function query(designSessionId: string) {
 
   return await supabase
     .from('building_schemas')
-    .select('schema')
+    .select('id, schema')
     .eq('design_session_id', designSessionId)
     .single()
 }

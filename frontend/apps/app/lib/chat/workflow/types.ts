@@ -20,6 +20,12 @@ export type WorkflowState = {
   schemaText?: string
   formattedChatHistory?: string
   agentName?: AgentName
+
+  // Schema update fields
+  buildingSchemaId: string
+  latestVersionNumber?: number
+  organizationId?: string
+  userId?: string
 }
 
 /**

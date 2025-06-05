@@ -29,6 +29,10 @@ const workflowStateSchema = v.object({
   schemaText: v.optional(v.string()),
   formattedChatHistory: v.optional(v.string()),
   agentName: agentNameSchema,
+  buildingSchemaId: v.string(),
+  latestVersionNumber: v.optional(v.number()),
+  organizationId: v.optional(v.string()),
+  userId: v.optional(v.string()),
 })
 
 /**
@@ -46,6 +50,10 @@ const langGraphResultSchema = v.object({
   schemaText: v.optional(v.unknown()),
   formattedChatHistory: v.optional(v.unknown()),
   agentName: v.optional(v.unknown()),
+  buildingSchemaId: v.optional(v.unknown()),
+  latestVersionNumber: v.optional(v.unknown()),
+  organizationId: v.optional(v.unknown()),
+  userId: v.optional(v.unknown()),
 })
 
 /**
@@ -83,6 +91,13 @@ export const prepareFinalState = (
     schemaText: currentState.schemaText,
     formattedChatHistory: currentState.formattedChatHistory,
     agentName: currentState.agentName,
+    // Include schema update fields
+    buildingSchemaId:
+      currentState.buildingSchemaId || initialState.buildingSchemaId,
+    latestVersionNumber:
+      currentState.latestVersionNumber || initialState.latestVersionNumber,
+    organizationId: currentState.organizationId || initialState.organizationId,
+    userId: currentState.userId || initialState.userId,
   }
 }
 
@@ -227,6 +242,15 @@ export const fromLangGraphResult = (
       validatedResult.formattedChatHistory,
     ),
     agentName: parseAgentName(validatedResult.agentName),
+    // Schema update fields - buildingSchemaId is required, provide fallback
+    buildingSchemaId:
+      parseOptionalString(validatedResult.buildingSchemaId) || 'unknown',
+    latestVersionNumber:
+      typeof validatedResult.latestVersionNumber === 'number'
+        ? validatedResult.latestVersionNumber
+        : undefined,
+    organizationId: parseOptionalString(validatedResult.organizationId),
+    userId: parseOptionalString(validatedResult.userId),
   }
 
   // Final validation to ensure the result matches WorkflowState schema

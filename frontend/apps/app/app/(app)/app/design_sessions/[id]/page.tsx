@@ -30,6 +30,14 @@ export default async function Page({ params }: PageProps) {
   }
 
   const schema: Schema = schemaResult.data?.schema as Schema // TODO: use valibot to validate schema
+  const buildingSchemaId = schemaResult.data?.id
+
+  // buildingSchemaId is required - this should never happen given 1:1 relationship
+  if (!buildingSchemaId) {
+    throw new Error(
+      'Building schema ID not found for design session. Data integrity issue.',
+    )
+  }
 
   return (
     <SessionDetailPage
@@ -37,6 +45,7 @@ export default async function Page({ params }: PageProps) {
       designSession={{
         id: designSessionId,
         organizationId: designSessionData.organization_id,
+        buildingSchemaId,
       }}
     />
   )

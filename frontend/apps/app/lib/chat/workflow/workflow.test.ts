@@ -107,6 +107,7 @@ describe('Chat Workflow', () => {
         history: [],
         schemaData: mockSchemaData,
         projectId: 'test-project-id',
+        buildingSchemaId: 'test-building-schema-id',
       }
 
       const result = await executeChatWorkflow(askState, { streaming: false })
@@ -125,6 +126,7 @@ describe('Chat Workflow', () => {
         history: ['Previous message 1', 'Previous message 2'],
         schemaData: mockSchemaData,
         projectId: 'test-project-id',
+        buildingSchemaId: 'test-building-schema-id',
       }
 
       const result = await executeChatWorkflow(askState, { streaming: false })
@@ -148,6 +150,7 @@ describe('Chat Workflow', () => {
         history: [],
         schemaData: mockSchemaData,
         projectId: 'test-project-id',
+        buildingSchemaId: 'test-building-schema-id',
       }
 
       const result = await executeChatWorkflow(buildState, { streaming: false })
@@ -166,6 +169,7 @@ describe('Chat Workflow', () => {
         history: [],
         schemaData: mockSchemaData,
         projectId: 'test-project-id',
+        buildingSchemaId: 'test-building-schema-id',
       }
 
       const result = await executeChatWorkflow(buildState, { streaming: false })
@@ -184,6 +188,7 @@ describe('Chat Workflow', () => {
         history: [],
         schemaData: mockSchemaData,
         projectId: 'test-project-id',
+        buildingSchemaId: 'test-building-schema-id',
       }
 
       const result = await executeChatWorkflow(invalidState, {
@@ -201,6 +206,7 @@ describe('Chat Workflow', () => {
         userInput: 'What is the database structure?',
         history: [],
         projectId: 'test-project-id',
+        buildingSchemaId: 'test-building-schema-id',
       }
 
       const result = await executeChatWorkflow(noSchemaState, {
@@ -222,6 +228,7 @@ describe('Chat Workflow', () => {
         history: [],
         schemaData: mockSchemaData,
         projectId: 'test-project-id',
+        buildingSchemaId: 'test-building-schema-id',
       }
 
       const result = await executeChatWorkflow(errorState, {
@@ -249,6 +256,7 @@ describe('Chat Workflow', () => {
         history: [],
         schemaData: mockSchemaData,
         projectId: 'test-project-id',
+        buildingSchemaId: 'test-building-schema-id',
       }
 
       const result = await executeChatWorkflow(errorState, {
@@ -271,6 +279,7 @@ describe('Chat Workflow', () => {
         history: [],
         schemaData: mockSchemaData,
         projectId: 'test-project-id',
+        buildingSchemaId: 'test-building-schema-id',
       }
 
       const result = await executeChatWorkflow(emptyInputState, {
@@ -291,6 +300,7 @@ describe('Chat Workflow', () => {
         history: ['Previous message 1', 'Previous message 2'],
         schemaData: mockSchemaData,
         projectId: 'test-project-123',
+        buildingSchemaId: 'test-building-schema-id',
       }
 
       const result = await executeChatWorkflow(initialState, {
@@ -313,6 +323,7 @@ describe('Chat Workflow', () => {
         history: [],
         schemaData: mockSchemaData,
         projectId: 'test-project',
+        buildingSchemaId: 'test-building-schema-id',
       }
 
       await executeChatWorkflow(askState, { streaming: false })
@@ -327,6 +338,7 @@ describe('Chat Workflow', () => {
         history: [],
         schemaData: mockSchemaData,
         projectId: 'test-project',
+        buildingSchemaId: 'test-building-schema-id',
       }
 
       await executeChatWorkflow(buildState, { streaming: false })
@@ -344,6 +356,7 @@ describe('Chat Workflow', () => {
           history: [],
           schemaData: mockSchemaData,
           projectId: 'test-project',
+          buildingSchemaId: 'test-building-schema-id',
         },
         {
           mode: 'Build',
@@ -351,6 +364,7 @@ describe('Chat Workflow', () => {
           history: [],
           schemaData: mockSchemaData,
           projectId: 'test-project',
+          buildingSchemaId: 'test-building-schema-id',
         },
         {
           mode: 'Ask',
@@ -358,6 +372,7 @@ describe('Chat Workflow', () => {
           history: [],
           schemaData: mockSchemaData,
           projectId: 'test-project',
+          buildingSchemaId: 'test-building-schema-id',
         },
       ]
 
@@ -408,6 +423,7 @@ describe('Chat Workflow', () => {
             history: [],
             schemaData: mockSchemaData,
             projectId: 'consistency-test',
+            buildingSchemaId: 'test-building-schema-id',
           },
           { streaming: false },
         )

@@ -49,9 +49,42 @@ async function getGithubRepositoryInfo(projectId: string) {
   return repository
 }
 
+async function getBuildingSchemaId(projectId: string) {
+  const supabase = await createClient()
+
+  // First, get design_session from project
+  const { data: designSession, error: sessionError } = await supabase
+    .from('design_sessions')
+    .select('id')
+    .eq('project_id', projectId)
+    .single()
+
+  if (sessionError || !designSession) {
+    throw new Error('Design session not found for project')
+  }
+
+  // Then get building_schema from design_session
+  const { data: buildingSchema, error: schemaError } = await supabase
+    .from('building_schemas')
+    .select('id')
+    .eq('design_session_id', designSession.id)
+    .single()
+
+  if (schemaError || !buildingSchema) {
+    throw new Error('Building schema not found for design session')
+  }
+
+  return buildingSchema.id
+}
+
 export async function BuildPage({ projectId, branchOrCommit }: Props) {
-  const githubSchemaFilePath = await getGithubSchemaFilePath(projectId)
-  const repository = await getGithubRepositoryInfo(projectId)
+  const [githubSchemaFilePath, repository, buildingSchemaId] =
+    await Promise.all([
+      getGithubSchemaFilePath(projectId),
+      getGithubRepositoryInfo(projectId),
+      getBuildingSchemaId(projectId),
+    ])
+
   const repositoryFullName = `${repository.owner}/${repository.name}`
 
   const { content } = await getFileContent(
@@ -70,5 +103,12 @@ export async function BuildPage({ projectId, branchOrCommit }: Props) {
     throw new Error('Schema could not be parsed')
   }
 
-  return <Panel schema={schema} errors={errors || []} tableGroups={{}} />
+  return (
+    <Panel
+      schema={schema}
+      errors={errors || []}
+      tableGroups={{}}
+      buildingSchemaId={buildingSchemaId}
+    />
+  )
 }
