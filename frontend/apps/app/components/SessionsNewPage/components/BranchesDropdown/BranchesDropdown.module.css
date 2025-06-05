@@ -1,0 +1,67 @@
+.trigger {
+  display: flex;
+  width: 100%;
+  height: 44px;
+  padding: var(--spacing-3) var(--spacing-4);
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--spacing-3);
+  border-radius: var(--border-radius-md);
+  border: 1px solid var(--global-border);
+  background: var(--global-background);
+  cursor: pointer;
+  transition: border-color 0.2s ease;
+}
+
+.trigger:hover {
+  border-color: var(--overlay-30);
+}
+
+.trigger[data-state='open'] {
+  border-color: var(--button-primary-background);
+}
+
+.nameAndTag {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  flex: 1;
+  min-width: 0;
+}
+
+.name {
+  font-size: var(--font-size-4);
+  font-weight: 500;
+  color: var(--global-foreground);
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.tag {
+  padding: 2px var(--spacing-2);
+  border-radius: var(--border-radius-sm);
+  background: var(--warning-background);
+  color: var(--warning-foreground);
+  font-size: var(--font-size-1);
+  font-weight: 500;
+  flex-shrink: 0;
+}
+
+.chevronIcon {
+  width: 16px;
+  height: 16px;
+  color: var(--overlay-30);
+  flex-shrink: 0;
+}
+
+.content {
+  width: var(--radix-dropdown-menu-trigger-width);
+  max-width: 400px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.radioItem {
+  font-size: var(--font-size-4);
+}

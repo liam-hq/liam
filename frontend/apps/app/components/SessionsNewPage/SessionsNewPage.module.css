@@ -24,6 +24,15 @@
   gap: var(--spacing-7, 28px);
 }
 
+.projectSelectionContainer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-4);
+  width: 100%;
+  max-width: 600px;
+  margin-bottom: var(--spacing-8);
+}
+
 .formContainer {
   width: 1080px;
   background-color: var(--callout-default-background);

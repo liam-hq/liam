@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation'
 import type { ChangeEvent, FC, FormEvent } from 'react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import * as v from 'valibot'
+import { ProjectsDropdown } from './components/ProjectsDropdown'
+import { BranchesDropdown } from './components/BranchesDropdown'
 import styles from './SessionsNewPage.module.css'
 
 const ApiSessionsCreateSchema = v.object({
@@ -17,6 +19,7 @@ const ApiSessionsCreateSchema = v.object({
 export const SessionsNewPage: FC = () => {
   const router = useRouter()
   const textareaRef = useRef<HTMLTextAreaElement>(null)
+  const formRef = useRef<HTMLFormElement>(null)
   const [instructions, setInstructions] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -32,13 +35,29 @@ export const SessionsNewPage: FC = () => {
     textarea.style.height = `${textarea.scrollHeight}px`
   }
 
-  const createSession = useCallback(async () => {
+  const createSession = useCallback(async (formData: FormData) => {
+    const requestBody: {
+      projectId?: string
+      gitSha?: string
+    } = {}
+
+    const projectId = formData.get('projectId') as string
+    const gitSha = formData.get('gitSha') as string
+
+    if (projectId) {
+      requestBody.projectId = projectId
+    }
+
+    if (gitSha) {
+      requestBody.gitSha = gitSha
+    }
+
     const response = await fetch('/api/sessions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({}),
+      body: JSON.stringify(requestBody),
     })
 
     if (!response.ok) {
@@ -71,7 +90,8 @@ export const SessionsNewPage: FC = () => {
     setError(null)
 
     try {
-      const session = await createSession()
+      const formData = new FormData(e.currentTarget as HTMLFormElement)
+      const session = await createSession(formData)
 
       router.push(`/app/design_sessions/${session.id}`)
     } catch (err) {
@@ -93,7 +113,11 @@ export const SessionsNewPage: FC = () => {
       <div className={styles.wrapper}>
         <h1 className={styles.title}>What can I help you Database Design?</h1>
         <div className={styles.formContainer}>
-          <form onSubmit={handleSubmit}>
+          <form ref={formRef} onSubmit={handleSubmit}>
+            <div className={styles.projectSelectionContainer}>
+              <ProjectsDropdown />
+              <BranchesDropdown />
+            </div>
             <div className={styles.formContent}>
               <div className={styles.formGroup}>
                 <div className={styles.inputWrapper}>

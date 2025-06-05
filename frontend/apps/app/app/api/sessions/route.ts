@@ -12,6 +12,7 @@ import * as v from 'valibot'
 const requestParamsSchema = v.object({
   projectId: v.optional(v.string()),
   parentDesignSessionId: v.optional(v.string()),
+  gitSha: v.optional(v.string()),
 })
 
 // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: TODO refactor later
@@ -26,7 +27,11 @@ export async function POST(request: Request) {
     )
   }
 
-  const { projectId, parentDesignSessionId } = parsedRequestParams.output
+  const {
+    projectId,
+    parentDesignSessionId,
+    gitSha: requestGitSha,
+  } = parsedRequestParams.output
 
   // Get Supabase client and current user
   const supabase = await createClient()
@@ -148,16 +153,20 @@ export async function POST(request: Request) {
 
     const repository = repositoryMapping.github_repositories
 
-    // Get main branch SHA from GitHub API
-    const lastCommit = await getLastCommit(
-      Number(repository.github_installation_identifier),
-      repository.owner,
-      repository.name,
-      'main',
-    )
-    gitSha = lastCommit?.sha || null
-    if (!gitSha) {
-      return NextResponse.json({ error: 'error' }, { status: 500 })
+    // Use provided gitSha or fall back to getting main branch SHA from GitHub API
+    if (requestGitSha) {
+      gitSha = requestGitSha
+    } else {
+      const lastCommit = await getLastCommit(
+        Number(repository.github_installation_identifier),
+        repository.owner,
+        repository.name,
+        'main',
+      )
+      gitSha = lastCommit?.sha || null
+      if (!gitSha) {
+        return NextResponse.json({ error: 'error' }, { status: 500 })
+      }
     }
 
     const repositoryFullName = `${repository.owner}/${repository.name}`
