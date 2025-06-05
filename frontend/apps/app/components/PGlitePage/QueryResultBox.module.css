@@ -1,0 +1,83 @@
+.queryResultBox {
+  margin-bottom: 10px;
+  border-radius: var(--border-radius-2);
+  border: 1px solid var(--global-border);
+  overflow: hidden;
+}
+
+.resultHeader {
+  display: flex;
+  align-items: center;
+  padding: 10px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.successHeader {
+  background-color: var(--success-background);
+  border-bottom: 1px solid var(--success-border);
+}
+
+.errorHeader {
+  background-color: var(--error-background);
+  border-bottom: 1px solid var(--error-border);
+}
+
+.statusIndicator {
+  margin-right: 10px;
+  font-size: 16px;
+}
+
+.sqlPreview {
+  flex-grow: 1;
+  font-family: var(--code-font);
+  font-size: var(--font-size-2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.statusMessage {
+  margin: 0 10px;
+  font-weight: 500;
+}
+
+.expandIcon {
+  font-size: 12px;
+}
+
+.resultDetails {
+  padding: 10px;
+  background-color: var(--global-background-secondary);
+}
+
+.sqlCommand {
+  font-family: var(--code-font);
+  background-color: var(--global-background-secondary);
+  padding: 5px;
+  border-radius: var(--border-radius-1);
+  margin-bottom: 8px;
+}
+
+.resultPre {
+  background-color: var(--global-background-secondary);
+  padding: 15px;
+  border-radius: var(--border-radius-2);
+  overflow-x: auto;
+  border: 1px solid var(--global-border);
+  font-family: var(--code-font);
+}
+
+.error {
+  background-color: var(--error-background);
+  border: 1px solid var(--error-border);
+}
+
+.metadataContainer {
+  margin-top: 10px;
+  padding: 8px;
+  border-top: 1px solid var(--global-border);
+  font-family: var(--main-font);
+  font-size: var(--font-size-2);
+  color: var(--global-foreground-secondary);
+}

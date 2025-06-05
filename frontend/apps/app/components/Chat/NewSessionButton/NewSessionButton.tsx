@@ -11,8 +11,8 @@ type Props = Omit<
   variant?: ComponentProps<typeof IconButton>['variant']
 }
 
-export const NewThreadButton: FC<Props> = ({
-  tooltipContent = 'New Thread',
+export const NewSessionButton: FC<Props> = ({
+  tooltipContent = 'New Session',
   className,
   variant = 'hoverBackground',
   ...props

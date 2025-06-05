@@ -1,45 +1,124 @@
 .container {
-  max-width: 800px;
-  margin: 0 auto;
-  padding: var(--spacing-6);
-}
-
-.header {
-  margin-bottom: var(--spacing-8);
+  display: flex;
+  padding: var(--spacing-20, 80px) var(--spacing-4, 16px);
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-20, 80px);
+  font-family: var(--main-font);
 }
 
 .title {
-  font-size: var(--font-size-8);
+  font-size: var(--font-size-10);
   font-weight: 600;
   color: var(--global-foreground);
-  margin: 0 0 var(--spacing-2) 0;
-}
-
-.subtitle {
-  font-size: var(--font-size-4);
-  color: var(--global-foreground-secondary);
-  margin: 0;
-}
-
-.content {
-  background: var(--global-background-secondary);
-  border: 1px solid var(--global-border);
-  border-radius: var(--border-radius-2);
-  padding: var(--spacing-6);
-}
-
-.loading {
-  color: var(--global-foreground-secondary);
-  font-size: var(--font-size-4);
   text-align: center;
+  margin: 0 0 var(--spacing-4) 0;
+  width: 100%;
+}
+
+.wrapper {
+  display: flex;
+  width: 1080px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--spacing-7, 28px);
+}
+
+.formContainer {
+  width: 1080px;
+  background-color: var(--callout-default-background);
+  border: 1px solid var(--global-border);
+  border-radius: var(--border-radius-md);
+  overflow: hidden;
+}
+
+.formContent {
+  padding: var(--spacing-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-8);
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-3);
+}
+
+.heading {
+  display: flex;
+  height: 36px;
+  align-items: center;
+}
+
+.label {
+  font-size: var(--font-size-5);
+  font-weight: 500;
+  color: var(--global-foreground);
+  min-width: var(--spacing-30);
+}
+
+.inputWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2);
+}
+
+.textarea {
+  background-color: var(--global-background);
+  color: var(--global-foreground);
+  border: 1px solid var(--global-border);
+  border-radius: var(--border-radius-md);
   padding: var(--spacing-4);
+  font-size: var(--font-size-4);
+  font-family: inherit;
+  line-height: 1.5;
+  min-height: 120px;
+  width: 100%;
+  resize: none;
+  overflow: hidden;
+}
+
+.textarea:focus {
+  outline: none;
+  border-color: var(--button-primary-background);
+}
+
+.textarea:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.textarea::placeholder {
+  color: var(--overlay-30);
+}
+
+.helperText {
+  font-size: var(--font-size-2);
+  color: var(--global-mute-text);
+}
+
+.divider {
+  height: 1px;
+  background-color: var(--global-border);
+  width: 100%;
+}
+
+.buttonContainer {
+  padding: var(--spacing-4) var(--spacing-8) var(--spacing-5);
+  display: flex;
+  justify-content: flex-end;
+}
+
+.buttonCustom {
+  min-width: var(--spacing-40);
+  height: var(--spacing-9);
+  font-size: var(--font-size-4);
+  font-weight: 500;
 }
 
 .error {
-  background: var(--destructive-background);
-  border: 1px solid var(--destructive-border);
-  color: var(--destructive-foreground);
-  padding: var(--spacing-3);
-  border-radius: var(--border-radius-1);
+  color: var(--danger-default);
   font-size: var(--font-size-3);
+  margin-top: var(--spacing-2);
 }

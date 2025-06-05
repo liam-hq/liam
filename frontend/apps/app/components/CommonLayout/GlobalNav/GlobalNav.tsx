@@ -1,24 +1,15 @@
 'use client'
 
-import { urlgen } from '@/libs/routes'
 import { LiamLogoMark, LiamMigrationLogo } from '@/logos'
-import { LayoutGrid } from '@liam-hq/ui/src/icons'
 import clsx from 'clsx'
 import { type FC, useCallback, useEffect, useRef, useState } from 'react'
 import type { Organization } from '../services/getOrganization'
 import type { OrganizationsByUserId } from '../services/getOrganizationsByUserId'
 import styles from './GlobalNav.module.css'
 import itemStyles from './Item.module.css'
-import { LinkItem, type LinkItemProps } from './LinkItem'
+import { NewSessionButton } from './NewSessionButton'
 import { OrganizationItem } from './OrganizationItem'
-
-const items: LinkItemProps[] = [
-  {
-    icon: <LayoutGrid />,
-    label: 'Projects',
-    href: urlgen('projects'),
-  },
-]
+import { RecentsSection } from './RecentsSection'
 
 type Props = {
   currentOrganization: Organization | null
@@ -124,15 +115,8 @@ export const GlobalNav: FC<Props> = ({
             />
           )}
 
-          {items.map((item) => (
-            <LinkItem
-              key={item.label}
-              icon={item.icon}
-              label={item.label}
-              href={item.href}
-              isExpanded={isExpanded}
-            />
-          ))}
+          <NewSessionButton isExpanded={isExpanded} />
+          <RecentsSection isExpanded={isExpanded} />
         </div>
       </nav>
     </div>

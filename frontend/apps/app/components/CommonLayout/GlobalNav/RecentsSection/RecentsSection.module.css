@@ -1,0 +1,68 @@
+.recentsCollapsed {
+  cursor: default;
+}
+
+.recentsSection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-1);
+}
+
+.recentsHeader {
+  display: flex;
+  align-items: center;
+  padding: var(--spacing-2);
+  gap: var(--spacing-2half);
+}
+
+.recentsTitle {
+  font-weight: 600;
+  color: var(--global-foreground);
+}
+
+.sessionsList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-1);
+  padding-left: var(--spacing-6);
+}
+
+.sessionItem {
+  display: flex;
+  flex-direction: column;
+  padding: var(--spacing-1half) var(--spacing-2);
+  border-radius: var(--border-radius-sm);
+  text-decoration: none;
+  transition: background-color var(--default-hover-animation-duration)
+    var(--default-timing-function);
+}
+
+.sessionItem:hover {
+  background-color: var(--pane-background-active);
+}
+
+.sessionName {
+  font-size: var(--font-size-4);
+  font-weight: 500;
+  color: var(--global-foreground);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sessionDate {
+  font-size: var(--font-size-3);
+  color: var(--overlay-60);
+  margin-top: var(--spacing-half);
+}
+
+.loadingState,
+.emptyState {
+  padding: var(--spacing-2) var(--spacing-6);
+}
+
+.loadingText,
+.emptyText {
+  font-size: var(--font-size-4);
+  color: var(--overlay-60);
+}

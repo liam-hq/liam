@@ -1,7 +1,7 @@
 import type { PageProps } from '@/app/types'
 import { SessionDetailPage } from '@/components/SessionDetailPage'
 import { fetchSchemaData } from '@/components/SessionDetailPage/services/fetchSchemaData'
-import type { Schema } from '@liam-hq/db-structure'
+import { schemaSchema } from '@liam-hq/db-structure'
 import * as v from 'valibot'
 import { fetchDesignSessionData } from './services/fetchDesignSessionData'
 
@@ -29,7 +29,12 @@ export default async function Page({ params }: PageProps) {
     throw new Error('Failed to fetch schema data')
   }
 
-  const schema: Schema = schemaResult.data?.schema as Schema // TODO: use valibot to validate schema
+  const schemaParseResult = v.safeParse(schemaSchema, schemaResult.data?.schema)
+  if (!schemaParseResult.success) {
+    throw new Error('Invalid schema data')
+  }
+
+  const schema = schemaParseResult.output
 
   return (
     <SessionDetailPage

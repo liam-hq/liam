@@ -1,0 +1,14 @@
+.newSessionButton {
+  background-color: var(--button-primary-background);
+  color: var(--button-primary-foreground);
+  border: var(--border-width-base) solid var(--button-primary-background);
+}
+
+.newSessionButton:hover {
+  background-color: var(--button-primary-background-hover);
+  border-color: var(--button-primary-background-hover);
+}
+
+.newSessionButton .icon {
+  color: var(--button-primary-foreground);
+}

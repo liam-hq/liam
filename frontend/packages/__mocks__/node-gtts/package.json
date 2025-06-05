@@ -1,6 +1,0 @@
-{
-  "name": "node-gtts",
-  "description": "This is an empty mock implementation of node-gtts, provided solely to satisfy the peer dependency requirement of `promptfoo`. Since `node-gtts` is only optionally required by promptfoo, this empty implementation is sufficient. The official node-gtts 2.0.2 depends on request ^2.81.0, which is affected by a GitHub security advisory. For details, see https://github.com/thiennq/node-gtts/blob/a12c8f86eff17a5672a4a87416ff6e060487175d/package.json#L36 and https://github.com/advisories/GHSA-p8p7-x288-28g6",
-  "private": true,
-  "version": "2.0.2"
-}

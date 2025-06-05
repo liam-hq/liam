@@ -1,0 +1,70 @@
+.dmlSection {
+  margin-bottom: 1.5rem;
+  padding: 1.25rem;
+  border-radius: var(--border-radius-2);
+  border: 1px solid var(--global-border);
+  background-color: var(--global-background-tertiary);
+}
+
+.dmlHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.dmlTitle {
+  font-size: var(--font-size-3);
+  font-weight: 600;
+  color: #000;
+  margin: 0;
+}
+
+.sqlTextarea {
+  width: 100%;
+  font-family: var(--code-font);
+  padding: 0.75rem;
+  border-radius: var(--border-radius-2);
+  border: 1px solid var(--global-border);
+  background-color: var(--global-background);
+  color: var(--global-foreground);
+  resize: vertical;
+  margin-bottom: 0.75rem;
+}
+
+.actionButton {
+  padding: 0.5rem 1rem;
+  border-radius: var(--border-radius-2);
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s, border-color 0.2s;
+}
+
+.primaryButton {
+  background-color: var(--primary-accent);
+  color: var(--primary-accent-foreground);
+  border: 1px solid var(--primary-accent);
+}
+
+.primaryButton:hover {
+  background-color: var(--primary-accent-hover);
+  border-color: var(--primary-accent-hover);
+}
+
+.dangerButton {
+  background-color: var(--error-background);
+  color: var(--error-foreground);
+  border: 1px solid var(--error-border);
+}
+
+.dangerButton:hover {
+  background-color: var(--error-background-hover);
+  border-color: var(--error-border-hover);
+}
+
+.buttonGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}

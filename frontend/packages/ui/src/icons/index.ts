@@ -10,6 +10,7 @@ export * from './CardinalityZeroOrOneRightIcon'
 export * from './CardinalityZeroOrOneLeftIcon'
 
 export {
+  ArrowRight,
   BookMarked,
   BookText,
   Building,

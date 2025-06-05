@@ -28,25 +28,14 @@ To set up a development environment, please follow these steps:
 
    **For maintainers (Vercel team members only):**
 
-   First, link your local project to the Vercel project:
+   Link your local project to the Vercel project and pull environment variables:
 
    ```sh
    pnpm vercel:link
-   ```
-
-   Follow the prompts to:
-
-   - Confirm setup for the current directory
-   - Select the "ROUTE06 Core" scope
-   - Link to the existing "liam-app" project
-
-   Once linked, you can pull the latest environment variables from Vercel:
-
-   ```sh
    pnpm vercel:env-pull
    ```
 
-   This will download the environment variables from Vercel and write them to the specified file. After updating environment variables on Vercel (through the dashboard or CLI), you'll need to run this command again to get the updated values.
+
 
    Next, create a `.env.local` file at the root directory and set values for the following keys:
 

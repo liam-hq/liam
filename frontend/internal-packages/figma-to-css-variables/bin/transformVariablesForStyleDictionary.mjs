@@ -64,6 +64,85 @@ function tokenTypeFromVariable(variable) {
 }
 
 /**
+ * Creates a nested object structure based on the variable name path.
+ * @param {Object} fileContents
+ * @param {string} filePath
+ * @param {string} variableName
+ * @returns {Object}
+ */
+function createNestedObjectPath(fileContents, filePath, variableName) {
+  if (!fileContents[filePath]) {
+    fileContents[filePath] = {}
+  }
+
+  let obj = fileContents[filePath]
+  for (const groupName of variableName.split('/')) {
+    obj[groupName] = obj[groupName] || {}
+    obj = obj[groupName]
+  }
+  return obj
+}
+
+/**
+ * Creates a token object from a variable.
+ * @param {Object} variable
+ * @param {string} modeId
+ * @param {Object[]} localVariables
+ * @returns {Object}
+ */
+function createTokenFromVariable(variable, modeId, localVariables) {
+  return {
+    type: tokenTypeFromVariable(variable),
+    value: tokenValueFromVariable(variable, modeId, localVariables),
+    description: variable.description || '',
+    extensions: {
+      'com.figma': {
+        hiddenFromPublishing: variable.hiddenFromPublishing,
+        scopes: variable.scopes,
+        codeSyntax: variable.codeSyntax,
+      },
+    },
+  }
+}
+
+/**
+ * Processes a single variable for all its modes.
+ * @param {Object} variable
+ * @param {Object} collection
+ * @param {Object} fileContents
+ * @param {string} transformedDir
+ * @param {Object[]} localVariables
+ */
+function processVariableForAllModes(
+  variable,
+  collection,
+  fileContents,
+  transformedDir,
+  localVariables,
+) {
+  for (const mode of collection.modes) {
+    const fileName = `${mode.name}/${collection.name}.json`
+    const filePath = path.join(transformedDir, fileName)
+
+    const obj = createNestedObjectPath(fileContents, filePath, variable.name)
+    const token = createTokenFromVariable(variable, mode.modeId, localVariables)
+    Object.assign(obj, token)
+  }
+}
+
+/**
+ * Writes all file contents to disk.
+ * @param {Object} fileContents
+ */
+async function writeFileContents(fileContents) {
+  for (const [filePath, content] of Object.entries(fileContents)) {
+    const dir = path.dirname(filePath)
+    await mkdir(dir, { recursive: true })
+    await fs.writeFile(filePath, JSON.stringify(content, null, 2))
+  }
+}
+
+/**
  * Transforms Figma local variables into Style Dictionary format.
  * @returns {Promise<void>}
  */
@@ -84,43 +163,16 @@ export async function transformVariablesForStyleDictionary() {
 
     const collection = localVariableCollections[variable.variableCollectionId]
     if (collection) {
-      for (const mode of collection.modes) {
-        const fileName = `${mode.name}/${collection.name}.json`
-        const filePath = path.join(transformedDir, fileName)
-
-        if (!fileContents[filePath]) {
-          fileContents[filePath] = {}
-        }
-
-        let obj = fileContents[filePath]
-        for (const groupName of variable.name.split('/')) {
-          obj[groupName] = obj[groupName] || {}
-          obj = obj[groupName]
-        }
-
-        const token = {
-          type: tokenTypeFromVariable(variable),
-          value: tokenValueFromVariable(variable, mode.modeId, localVariables),
-          description: variable.description || '',
-          extensions: {
-            'com.figma': {
-              hiddenFromPublishing: variable.hiddenFromPublishing,
-              scopes: variable.scopes,
-              codeSyntax: variable.codeSyntax,
-            },
-          },
-        }
-
-        Object.assign(obj, token)
-      }
+      processVariableForAllModes(
+        variable,
+        collection,
+        fileContents,
+        transformedDir,
+        localVariables,
+      )
     }
   }
 
-  for (const [filePath, content] of Object.entries(fileContents)) {
-    const dir = path.dirname(filePath)
-    await mkdir(dir, { recursive: true })
-    await fs.writeFile(filePath, JSON.stringify(content, null, 2))
-  }
-
+  await writeFileContents(fileContents)
   console.info('Variables transformed and saved to tmp/transformed-variables/')
 }
