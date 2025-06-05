@@ -85,6 +85,7 @@ const nextConfig: NextConfig = {
   env: {
     NEXT_PUBLIC_GIT_HASH: gitCommitHash,
     NEXT_PUBLIC_RELEASE_DATE: releaseDate,
+    NEXT_PUBLIC_ENV_NAME: process.env.NODE_ENV || 'development',
   },
   // TODO: consider using .env.preview or the Preview environment variable setting in Vercel
   // https://github.com/liam-hq/liam/pull/422#discussion_r1906531394
