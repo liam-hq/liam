@@ -1,0 +1,32 @@
+{
+  "name": "@liam-hq/schema-operations",
+  "private": true,
+  "version": "0.1.0",
+  "publishConfig": {
+    "access": "restricted"
+  },
+  "main": "src/index.ts",
+  "dependencies": {
+    "@liam-hq/db": "workspace:*",
+    "fast-json-patch": "3.1.1",
+    "valibot": "1.1.0"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "1.9.4",
+    "@liam-hq/configs": "workspace:*",
+    "@types/node": "22.15.19",
+    "eslint": "9.27.0",
+    "typescript": "5.8.3",
+    "vitest": "3.1.3"
+  },
+  "scripts": {
+    "fmt": "concurrently \"pnpm:fmt:*\"",
+    "fmt:biome": "biome check --write --unsafe .",
+    "fmt:eslint": "eslint --fix .",
+    "lint": "concurrently \"pnpm:lint:*\"",
+    "lint:biome": "biome check .",
+    "lint:eslint": "eslint .",
+    "lint:tsc": "tsc --noEmit",
+    "test": "vitest --watch=false --passWithNoTests"
+  }
+}
