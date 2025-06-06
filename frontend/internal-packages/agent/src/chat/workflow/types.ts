@@ -34,31 +34,3 @@ export interface WorkflowOptions {
   streaming?: boolean
   recursionLimit?: number
 }
-
-type WorkflowStepSuccess = {
-  state: WorkflowState
-  error?: never
-}
-
-type WorkflowStepFailure = {
-  error: string
-  finalState: WorkflowState
-  state?: never
-}
-
-export type WorkflowStepResult = WorkflowStepSuccess | WorkflowStepFailure
-
-export const isWorkflowStepFailure = (
-  result: WorkflowStepResult,
-): result is WorkflowStepFailure => {
-  return 'error' in result && typeof result.error === 'string'
-}
-
-export const isWorkflowState = (val: unknown): val is WorkflowState => {
-  return (
-    val !== null &&
-    typeof val === 'object' &&
-    'userInput' in val &&
-    'history' in val
-  )
-}

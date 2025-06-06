@@ -44,17 +44,6 @@ const langGraphResultSchema = v.object({
   userId: v.optional(v.unknown()),
 })
 
-export const mergeStates = (
-  baseState: WorkflowState,
-  updates: Partial<WorkflowState>,
-): WorkflowState => {
-  return {
-    ...baseState,
-    ...updates,
-    history: updates.history || baseState.history || [],
-  }
-}
-
 export const prepareFinalState = (
   currentState: WorkflowState,
   initialState: WorkflowState,

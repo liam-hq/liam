@@ -6,10 +6,3 @@ export const WORKFLOW_ERROR_MESSAGES = {
   EXECUTION_FAILED: 'Workflow execution failed',
   STREAMING_FAILED: 'Streaming workflow failed',
 } as const
-
-export const WORKFLOW_PROGRESS_MESSAGES = {
-  VALIDATING_INPUT: 'Validating input...',
-  GENERATING_ANSWER: 'Generating answer...',
-  FORMATTING_RESPONSE: 'Formatting response...',
-  COMPLETED: 'Completed successfully',
-} as const
