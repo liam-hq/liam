@@ -1,8 +1,8 @@
 'use client'
 
 import { urlgen } from '@/libs/routes'
-import { Plus } from '@liam-hq/ui/src/icons'
 import clsx from 'clsx'
+import { MessageCircleIcon } from 'lucide-react'
 import Link from 'next/link'
 import type { FC } from 'react'
 import itemStyles from '../Item.module.css'
@@ -23,7 +23,7 @@ export const NewSessionButton: FC<Props> = ({ isExpanded = false }) => {
       )}
     >
       <div className={itemStyles.iconContainer}>
-        <Plus className={styles.icon} />
+        <MessageCircleIcon className={styles.icon} />
       </div>
       <div
         className={clsx(

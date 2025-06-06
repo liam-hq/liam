@@ -1,7 +1,7 @@
 'use client'
 
 import { urlgen } from '@/libs/routes'
-import { MessagesSquare } from '@liam-hq/ui/src/icons'
+
 import clsx from 'clsx'
 import Link from 'next/link'
 import { type FC, useEffect, useState } from 'react'
@@ -36,8 +36,8 @@ export const RecentsSection: FC<Props> = ({ isExpanded = false }) => {
   if (!isExpanded) {
     return (
       <div className={clsx(itemStyles.item, styles.recentsCollapsed)}>
-        <div className={itemStyles.iconContainer}>
-          <MessagesSquare />
+        <div className={itemStyles.labelArea}>
+          <span className={itemStyles.label}>Recents</span>
         </div>
       </div>
     )
@@ -46,9 +46,6 @@ export const RecentsSection: FC<Props> = ({ isExpanded = false }) => {
   return (
     <div className={styles.recentsSection}>
       <div className={styles.recentsHeader}>
-        <div className={itemStyles.iconContainer}>
-          <MessagesSquare />
-        </div>
         <div
           className={clsx(
             itemStyles.labelArea,

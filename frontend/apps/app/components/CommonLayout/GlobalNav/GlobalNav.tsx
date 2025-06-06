@@ -1,12 +1,14 @@
 'use client'
 
 import { LiamLogoMark, LiamMigrationLogo } from '@/logos'
+import { LayoutGrid, Settings } from '@liam-hq/ui/src/icons'
 import clsx from 'clsx'
 import { type FC, useCallback, useEffect, useRef, useState } from 'react'
 import type { Organization } from '../services/getOrganization'
 import type { OrganizationsByUserId } from '../services/getOrganizationsByUserId'
 import styles from './GlobalNav.module.css'
 import itemStyles from './Item.module.css'
+import { LinkItem } from './LinkItem'
 import { NewSessionButton } from './NewSessionButton'
 import { OrganizationItem } from './OrganizationItem'
 import { RecentsSection } from './RecentsSection'
@@ -115,8 +117,24 @@ export const GlobalNav: FC<Props> = ({
             />
           )}
 
+          <LinkItem
+            href="/app/projects"
+            icon={<LayoutGrid />}
+            label="Projects"
+            isExpanded={isExpanded}
+          />
+
           <NewSessionButton isExpanded={isExpanded} />
           <RecentsSection isExpanded={isExpanded} />
+        </div>
+
+        <div className={styles.footerSection}>
+          <LinkItem
+            href="/app/settings/general"
+            icon={<Settings />}
+            label="Settings"
+            isExpanded={isExpanded}
+          />
         </div>
       </nav>
     </div>
