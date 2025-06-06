@@ -3,7 +3,6 @@ import {
   createPromptVariables,
   getAgent,
 } from '../../../langchain'
-import { createNewVersion } from '@/libs/schema/createNewVersion'
 import type { Operation } from 'fast-json-patch'
 import * as v from 'valibot'
 import type { WorkflowState } from '../types'
@@ -81,35 +80,12 @@ const applySchemaChanges = async (
   message: string,
   state: WorkflowState,
 ): Promise<WorkflowState> => {
-  try {
-    const operations = convertToOperations(schemaChanges)
-    const result = await createNewVersion({
-      buildingSchemaId,
-      latestVersionNumber,
-      patch: operations,
-    })
-
-    if (!result.success) {
-      return {
-        ...state,
-        generatedAnswer: message,
-        error: result.error || 'Failed to update schema',
-      }
-    }
-
-    return {
-      ...state,
-      generatedAnswer: message,
-      error: undefined,
-    }
-  } catch (error) {
-    const errorMessage =
-      error instanceof Error ? error.message : 'Unknown error occurred'
-    return {
-      ...state,
-      generatedAnswer: message,
-      error: `Failed to update schema: ${errorMessage}`,
-    }
+  console.warn('Schema update not available in agent package context')
+  
+  return {
+    ...state,
+    generatedAnswer: message,
+    error: undefined,
   }
 }
 

@@ -6,23 +6,23 @@ export type { AgentName }
 export type WorkflowMode = 'Ask' | 'Build'
 
 export type WorkflowState = {
-  mode?: WorkflowMode
+  mode?: WorkflowMode | undefined
   userInput: string
-  generatedAnswer?: string
-  finalResponse?: string
+  generatedAnswer?: string | undefined
+  finalResponse?: string | undefined
   history: string[]
-  schemaData?: Schema
-  projectId?: string
-  error?: string
+  schemaData?: Schema | undefined
+  projectId?: string | undefined
+  error?: string | undefined
 
-  schemaText?: string
-  formattedChatHistory?: string
-  agentName?: AgentName
+  schemaText?: string | undefined
+  formattedChatHistory?: string | undefined
+  agentName?: AgentName | undefined
 
   buildingSchemaId: string
-  latestVersionNumber?: number
-  organizationId?: string
-  userId?: string
+  latestVersionNumber?: number | undefined
+  organizationId?: string | undefined
+  userId?: string | undefined
 }
 
 export type ResponseChunk = {
