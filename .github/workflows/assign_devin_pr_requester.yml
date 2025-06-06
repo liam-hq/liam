@@ -1,0 +1,57 @@
+name: Assign Devin PR Requester
+
+on:
+  pull_request:
+    types: [opened]
+
+jobs:
+  assign-devin-pr-requester:
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.user.login == 'app/devin-ai-integration'
+    permissions:
+      pull-requests: write
+    steps:
+      - name: Extract requester and assign
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const prBody = context.payload.pull_request.body || '';
+            const prNumber = context.payload.pull_request.number;
+            
+            const requesterMatch = prBody.match(/Requested by[:\s]+([^\s\n]+@[^\s\n]+)/i);
+            
+            if (!requesterMatch) {
+              console.log('No "Requested by" field found in PR description');
+              return;
+            }
+            
+            const requesterEmail = requesterMatch[1];
+            console.log(`Found requester email: ${requesterEmail}`);
+            
+            const potentialUsername = requesterEmail.split('@')[0];
+            
+            try {
+              await github.rest.users.getByUsername({
+                username: potentialUsername
+              });
+              
+              await github.rest.issues.addAssignees({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: prNumber,
+                assignees: [potentialUsername]
+              });
+              
+              console.log(`Successfully assigned ${potentialUsername} to PR #${prNumber}`);
+              
+            } catch (error) {
+              console.log(`Could not assign ${potentialUsername}: ${error.message}`);
+              console.log(`Requester email ${requesterEmail} could not be mapped to a GitHub user`);
+              
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: prNumber,
+                body: `⚠️ Could not automatically assign requester \`${requesterEmail}\` to this PR. Please assign manually if needed.`
+              });
+            }
