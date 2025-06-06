@@ -12,7 +12,6 @@
     "@codemirror/state": "6.5.2",
     "@codemirror/view": "6.36.8",
     "@electric-sql/pglite": "0.3.2",
-
     "@lezer/highlight": "1.2.1",
     "@liam-hq/agent": "workspace:*",
     "@liam-hq/db": "workspace:*",

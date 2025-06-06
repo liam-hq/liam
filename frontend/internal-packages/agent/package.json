@@ -10,7 +10,6 @@
     "@langchain/openai": "0.5.10",
     "@liam-hq/db": "workspace:*",
     "@liam-hq/db-structure": "workspace:*",
-
     "langfuse-langchain": "3.37.2",
     "valibot": "1.1.0"
   },
