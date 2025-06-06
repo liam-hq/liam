@@ -1,10 +1,10 @@
 import crypto from 'node:crypto'
-import { convertSchemaToText } from './convertSchemaToText'
 import { SupabaseVectorStore as LangchainSupabaseVectorStore } from '@langchain/community/vectorstores/supabase'
 import { Document } from '@langchain/core/documents'
 import { OpenAIEmbeddings } from '@langchain/openai'
 import { createClient } from '@liam-hq/db'
 import type { Schema } from '@liam-hq/db-structure'
+import { convertSchemaToText } from './convertSchemaToText'
 
 function generateSchemaHash(schema: Schema): string {
   const sortedSchema = JSON.stringify(schema, Object.keys(schema).sort())
@@ -49,7 +49,7 @@ async function createDocumentFromSchema(
 }
 
 class SupabaseVectorStore extends LangchainSupabaseVectorStore {
-  async addDocuments(documents: Document[]): Promise<string[]> {
+  override async addDocuments(documents: Document[]): Promise<string[]> {
     const docsWithUpdatedAt = documents.map((doc) => {
       const now = new Date().toISOString()
       return {
@@ -75,7 +75,7 @@ class SupabaseVectorStore extends LangchainSupabaseVectorStore {
       const metadata = metadatas[i]
       const text = texts[i]
 
-      if (!metadata.updated_at) {
+      if (metadata && !metadata.updated_at) {
         metadata.updated_at = new Date().toISOString()
       }
 
@@ -131,7 +131,7 @@ export async function createSupabaseVectorStore(
 }
 
 function validateOpenAIKey(): string {
-  const openAIApiKey = process.env.OPENAI_API_KEY
+  const openAIApiKey = process.env['OPENAI_API_KEY']
 
   if (!openAIApiKey) {
     throw new Error(
@@ -144,8 +144,8 @@ function validateOpenAIKey(): string {
 
 function createSupabaseClient() {
   return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL ?? '',
-    process.env.SUPABASE_SERVICE_ROLE_KEY ?? '',
+    process.env['NEXT_PUBLIC_SUPABASE_URL'] ?? '',
+    process.env['SUPABASE_SERVICE_ROLE_KEY'] ?? '',
   )
 }
 
@@ -199,6 +199,7 @@ async function processBatch({
   if (isFirstBatch) {
     try {
       const vectorStore = new SupabaseVectorStore(embeddings, {
+        // biome-ignore lint/suspicious/noExplicitAny: Required for LangChain type compatibility
         client: supabaseClient as any,
         tableName: 'documents',
         queryName: 'match_documents',
@@ -259,7 +260,7 @@ async function getStoredSchemaHash(): Promise<string | null> {
     )
 
     if (metadataDocs && metadataDocs.length > 0) {
-      const metadata = metadataDocs[0].metadata as SchemaMetadata
+      const metadata = metadataDocs[0]?.metadata as SchemaMetadata
       if (metadata?.schemaHash) {
         const hash = metadata.schemaHash
         process.stdout.write(
@@ -282,7 +283,7 @@ async function getStoredSchemaHash(): Promise<string | null> {
     )
 
     if (contentDocs && contentDocs.length > 0) {
-      const metadata = contentDocs[0].metadata as SchemaMetadata
+      const metadata = contentDocs[0]?.metadata as SchemaMetadata
       if (metadata?.schemaHash) {
         const hash = metadata.schemaHash
         process.stdout.write(`Found stored hash in content document: ${hash}\n`)

@@ -1,4 +1,4 @@
-import { describe, expect, it, vi, beforeEach } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { executeChatWorkflow } from './index'
 import type { WorkflowState } from './types'
 
@@ -18,35 +18,17 @@ vi.mock('../../vectorstore/convertSchemaToText', () => ({
 }))
 
 describe('Chat Workflow', () => {
-  let mockGetAgent: any
-
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.clearAllMocks()
 
-    const langchainModule = require('../../langchain')
-    mockGetAgent = vi.mocked(langchainModule.getAgent)
-
-    const mockSchema = {
-      tables: {
-        users: {
-          name: 'users',
-          columns: {
-            id: { name: 'id', type: 'uuid', notNull: true, primary: true },
-            name: { name: 'name', type: 'text', notNull: true, primary: false },
-          },
-          comment: null,
-          indexes: {},
-          constraints: {},
-        },
-      },
-      relationships: {},
-      tableGroups: {},
-    }
+    const langchainModule = await import('../../langchain')
+    const mockGetAgent = vi.mocked(langchainModule.getAgent)
 
     const mockAgent = {
       generate: vi.fn().mockResolvedValue('Mocked agent response'),
       stream: vi.fn(),
-    }
+      // biome-ignore lint/suspicious/noExplicitAny: Required for test mocking
+    } as any
 
     mockGetAgent.mockReturnValue(mockAgent)
   })

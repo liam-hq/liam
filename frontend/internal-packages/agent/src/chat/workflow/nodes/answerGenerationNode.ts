@@ -3,7 +3,7 @@ import {
   createPromptVariables,
   getAgent,
 } from '../../../langchain'
-import type { Operation } from 'fast-json-patch'
+
 import * as v from 'valibot'
 import type { WorkflowState } from '../types'
 
@@ -54,34 +54,12 @@ const parseStructuredResponse = (
   }
 }
 
-const convertToOperations = (
-  schemaChanges: BuildAgentResponse['schemaChanges'],
-): Operation[] => {
-  return schemaChanges.map((change): Operation => {
-    const baseOperation = {
-      op: change.op,
-      path: change.path,
-    }
-
-    const operation = {
-      ...baseOperation,
-      ...(change.value !== undefined && { value: change.value }),
-      ...(change.from !== undefined && { from: change.from }),
-    }
-
-    return operation as Operation
-  })
-}
-
 const applySchemaChanges = async (
-  schemaChanges: BuildAgentResponse['schemaChanges'],
-  buildingSchemaId: string,
-  latestVersionNumber: number,
   message: string,
   state: WorkflowState,
 ): Promise<WorkflowState> => {
   console.warn('Schema update not available in agent package context')
-  
+
   return {
     ...state,
     generatedAnswer: message,
@@ -93,33 +71,7 @@ const handleSchemaChanges = async (
   parsedResponse: BuildAgentResponse,
   state: WorkflowState,
 ): Promise<WorkflowState> => {
-  if (parsedResponse.schemaChanges.length === 0) {
-    return {
-      ...state,
-      generatedAnswer: parsedResponse.message,
-      error: undefined,
-    }
-  }
-
-  const buildingSchemaId = state.buildingSchemaId
-  const latestVersionNumber = state.latestVersionNumber || 0
-
-  if (!buildingSchemaId) {
-    console.warn('Missing buildingSchemaId for schema update')
-    return {
-      ...state,
-      generatedAnswer: parsedResponse.message,
-      error: undefined,
-    }
-  }
-
-  return await applySchemaChanges(
-    parsedResponse.schemaChanges,
-    buildingSchemaId,
-    latestVersionNumber,
-    parsedResponse.message,
-    state,
-  )
+  return await applySchemaChanges(parsedResponse.message, state)
 }
 
 const handleBuildAgentResponse = async (
