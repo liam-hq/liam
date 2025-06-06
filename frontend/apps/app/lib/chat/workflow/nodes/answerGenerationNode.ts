@@ -4,6 +4,7 @@ import {
   getAgent,
 } from '@/lib/langchain'
 import { createNewVersion } from '@/libs/schema/createNewVersion'
+import { operationsSchema } from '@/libs/schema/operationsSchema'
 import type { Operation } from 'fast-json-patch'
 import * as v from 'valibot'
 import type { WorkflowState } from '../types'
@@ -15,18 +16,10 @@ interface PreparedAnswerGeneration {
   formattedChatHistory: string
 }
 
-// Define schema for JSON Patch operations (RFC 6902)
-const jsonPatchOperationSchema = v.object({
-  op: v.picklist(['add', 'remove', 'replace', 'move', 'copy', 'test']),
-  path: v.string(),
-  value: v.optional(v.unknown()),
-  from: v.optional(v.string()),
-})
-
 // Define schema for BuildAgent response validation
 const buildAgentResponseSchema = v.object({
   message: v.string(),
-  schemaChanges: v.array(jsonPatchOperationSchema),
+  schemaChanges: operationsSchema,
 })
 
 type BuildAgentResponse = v.InferOutput<typeof buildAgentResponseSchema>
@@ -72,23 +65,7 @@ const convertToOperations = (
   schemaChanges: BuildAgentResponse['schemaChanges'],
 ): Operation[] => {
   return schemaChanges.map((change): Operation => {
-    // Create base operation object
-    const baseOperation = {
-      op: change.op,
-      path: change.path,
-    }
-
-    // Add optional properties if they exist
-    const operation = {
-      ...baseOperation,
-      ...(change.value !== undefined && { value: change.value }),
-      ...(change.from !== undefined && { from: change.from }),
-    }
-
-    // Type assertion is safe here because:
-    // 1. valibot has already validated the structure
-    // 2. We're following JSON Patch RFC 6902 specification
-    return operation as Operation
+    return change
   })
 }
 
