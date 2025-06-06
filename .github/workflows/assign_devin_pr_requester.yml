@@ -18,7 +18,7 @@ jobs:
             const prBody = context.payload.pull_request.body || '';
             const prNumber = context.payload.pull_request.number;
             
-            const requesterMatch = prBody.match(/Requested by[:\s]+([^\s\n]+@[^\s\n]+)/i);
+            const requesterMatch = prBody.match(/##\s*Requested by[:\s]*\n?\s*([^\s\n]+@[^\s\n]+)/i);
             
             if (!requesterMatch) {
               console.log('No "Requested by" field found in PR description');
@@ -28,7 +28,16 @@ jobs:
             const requesterEmail = requesterMatch[1];
             console.log(`Found requester email: ${requesterEmail}`);
             
-            const potentialUsername = requesterEmail.split('@')[0];
+            // Map known email addresses to GitHub usernames
+            const emailToUsernameMap = {
+              'hirotaka.miyagi@route06.co.jp': 'MH4GF'
+            };
+            
+            let potentialUsername = emailToUsernameMap[requesterEmail];
+            if (!potentialUsername) {
+              // Fallback to extracting username from email
+              potentialUsername = requesterEmail.split('@')[0];
+            }
             
             try {
               await github.rest.users.getByUsername({
