@@ -9,7 +9,6 @@ export type {
 export { getAgent, createPromptVariables } from './langchain'
 export type {
   AgentName,
-  BasePromptVariables,
   ChatAgent,
 } from './langchain/utils/types'
 

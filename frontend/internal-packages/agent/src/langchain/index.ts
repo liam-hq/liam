@@ -31,4 +31,4 @@ export const createPromptVariables = (
   }
 }
 
-export type { AgentName, BasePromptVariables }
+export type { AgentName }
