@@ -1395,7 +1395,7 @@ CREATE UNIQUE INDEX "github_pull_request_repository_id_pull_number_key" ON "publ
 
 
 
-CREATE UNIQUE INDEX "github_repository_owner_name_key" ON "public"."github_repositories" USING "btree" ("owner", "name");
+CREATE UNIQUE INDEX "github_repository_owner_name_organization_id_key" ON "public"."github_repositories" USING "btree" ("owner", "name", "organization_id");
 
 
 
