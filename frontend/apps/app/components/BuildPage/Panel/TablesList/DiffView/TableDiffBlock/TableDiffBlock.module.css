@@ -1,6 +1,0 @@
-.beforeAndAfter {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  grid-template-areas: 'before after';
-  align-items: start;
-}
