@@ -1,39 +1,43 @@
 import { createClient } from '@/libs/db/client'
-import { schemaSchema } from '@liam-hq/db-structure'
 import * as v from 'valibot'
 
-// Schema for validating realtime building_schemas payload
 const realtimeBuildingSchemaSchema = v.object({
-  id: v.string(),
   design_session_id: v.pipe(v.string(), v.uuid()),
-  schema: schemaSchema,
-  organization_id: v.pipe(v.string(), v.uuid()),
-  created_at: v.string(),
-  git_sha: v.nullable(v.string()),
-  initial_schema_snapshot: v.optional(v.nullable(schemaSchema)), // optional field
-  schema_file_path: v.nullable(v.string()),
 })
-type RealtimeBuildingSchema = v.InferOutput<typeof realtimeBuildingSchemaSchema>
 
 /**
- * Fetch building schema data from client-side
+ * Client-side version of fetchSchemaData with patch application
+ * @param designSessionId The design session ID
+ * @returns Schema data with applied patches or null if not found
  */
-export async function loadBuildingSchema(designSessionId: string) {
+export async function fetchSchemaDataClient(designSessionId: string) {
   const supabase = createClient()
 
-  return await supabase
+  const { data: buildingSchema, error: buildingSchemaError } = await supabase
     .from('building_schemas')
     .select('schema')
     .eq('design_session_id', designSessionId)
     .single()
+
+  if (buildingSchemaError || !buildingSchema) {
+    return { data: null, error: buildingSchemaError }
+  }
+
+  return {
+    data: {
+      schema: buildingSchema.schema,
+    },
+    error: null,
+  }
 }
 
 /**
  * Set up realtime subscription for building_schemas in a design session
+ * Now only triggers updates, actual data fetching is done via server action
  */
 export const setupBuildingSchemaRealtimeSubscription = (
   designSessionId: string,
-  onSchemaUpdate: (buildingSchema: RealtimeBuildingSchema) => void,
+  onSchemaUpdate: (designSessionId: string) => void,
   onError?: (error: Error) => void,
 ) => {
   const supabase = createClient()
@@ -50,16 +54,22 @@ export const setupBuildingSchemaRealtimeSubscription = (
       },
       (payload) => {
         try {
-          const validatedSchema = v.parse(
+          const updatedBuildingSchema = v.parse(
             realtimeBuildingSchemaSchema,
             payload.new,
           )
-          onSchemaUpdate(validatedSchema)
+          // Only validate that we have a valid design_session_id
+          if (updatedBuildingSchema.design_session_id === designSessionId) {
+            // NOTE: The payload contains the correct updated schema (structurally correct),
+            // but the JSON key order often differs from the DB order, so we intentionally
+            // use the regular PostgREST client to re-fetch the data
+            onSchemaUpdate(designSessionId)
+          }
         } catch (error) {
           onError?.(
             error instanceof Error
               ? error
-              : new Error('Invalid schema format or validation failed'),
+              : new Error('Realtime update processing failed'),
           )
         }
       },
