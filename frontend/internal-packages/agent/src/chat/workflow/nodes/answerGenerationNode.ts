@@ -1,0 +1,162 @@
+import {
+  type AgentName,
+  createPromptVariables,
+  getAgent,
+} from '../../../langchain'
+
+import * as v from 'valibot'
+import type { WorkflowState } from '../types'
+
+interface PreparedAnswerGeneration {
+  agent: ReturnType<typeof getAgent>
+  agentName: AgentName
+  schemaText: string
+  formattedChatHistory: string
+}
+
+const jsonPatchOperationSchema = v.object({
+  op: v.picklist(['add', 'remove', 'replace', 'move', 'copy', 'test']),
+  path: v.string(),
+  value: v.optional(v.unknown()),
+  from: v.optional(v.string()),
+})
+
+const buildAgentResponseSchema = v.object({
+  message: v.string(),
+  schemaChanges: v.array(jsonPatchOperationSchema),
+})
+
+type BuildAgentResponse = v.InferOutput<typeof buildAgentResponseSchema>
+
+const parseStructuredResponse = (
+  response: string,
+): BuildAgentResponse | null => {
+  try {
+    const parsed: unknown = JSON.parse(response)
+
+    const validationResult = v.safeParse(buildAgentResponseSchema, parsed)
+
+    if (validationResult.success) {
+      return {
+        message: validationResult.output.message,
+        schemaChanges: validationResult.output.schemaChanges,
+      }
+    }
+
+    console.warn(
+      'BuildAgent response validation failed:',
+      validationResult.issues,
+    )
+    return null
+  } catch (error) {
+    console.warn('Failed to parse BuildAgent response as JSON:', error)
+    return null
+  }
+}
+
+const applySchemaChanges = async (
+  message: string,
+  state: WorkflowState,
+): Promise<WorkflowState> => {
+  console.warn('Schema update not available in agent package context')
+
+  return {
+    ...state,
+    generatedAnswer: message,
+    error: undefined,
+  }
+}
+
+const handleSchemaChanges = async (
+  parsedResponse: BuildAgentResponse,
+  state: WorkflowState,
+): Promise<WorkflowState> => {
+  return await applySchemaChanges(parsedResponse.message, state)
+}
+
+const handleBuildAgentResponse = async (
+  response: string,
+  state: WorkflowState,
+): Promise<WorkflowState> => {
+  const parsedResponse = parseStructuredResponse(response)
+
+  if (!parsedResponse) {
+    console.warn(
+      'Failed to parse buildAgent response as structured JSON, using raw response',
+    )
+    return {
+      ...state,
+      generatedAnswer: response,
+      error: undefined,
+    }
+  }
+
+  return await handleSchemaChanges(parsedResponse, state)
+}
+
+async function prepareAnswerGeneration(
+  state: WorkflowState,
+): Promise<PreparedAnswerGeneration | { error: string }> {
+  if (!state.agentName || !state.schemaText || !state.formattedChatHistory) {
+    return { error: 'Required processed data is missing from validation step' }
+  }
+
+  const agentName = state.agentName
+  const formattedChatHistory = state.formattedChatHistory
+  const schemaText = state.schemaText
+
+  const agent = getAgent(agentName)
+
+  return {
+    agent,
+    agentName,
+    schemaText,
+    formattedChatHistory,
+  }
+}
+
+export async function answerGenerationNode(
+  state: WorkflowState,
+): Promise<WorkflowState> {
+  try {
+    const prepared = await prepareAnswerGeneration(state)
+
+    if ('error' in prepared) {
+      return {
+        ...state,
+        error: prepared.error,
+      }
+    }
+
+    const { agent, agentName, schemaText, formattedChatHistory } = prepared
+
+    const historyArray: [string, string][] = formattedChatHistory
+      ? [['Assistant', formattedChatHistory]]
+      : []
+
+    const promptVariables = createPromptVariables(
+      schemaText,
+      state.userInput,
+      historyArray,
+    )
+
+    const response = await agent.generate(promptVariables)
+
+    if (agentName === 'databaseSchemaBuildAgent') {
+      return await handleBuildAgentResponse(response, state)
+    }
+
+    return {
+      ...state,
+      generatedAnswer: response,
+      error: undefined,
+    }
+  } catch (error) {
+    const errorMsg =
+      error instanceof Error ? error.message : 'Failed to generate answer'
+    return {
+      ...state,
+      error: errorMsg,
+    }
+  }
+}
