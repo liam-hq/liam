@@ -7,7 +7,7 @@ on:
 jobs:
   assign-devin-pr-requester:
     runs-on: ubuntu-latest
-    if: github.event.pull_request.user.login == 'app/devin-ai-integration'
+    if: github.event.pull_request.user.login == 'devin-ai-integration[bot]'
     permissions:
       pull-requests: write
     steps:
