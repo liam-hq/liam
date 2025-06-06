@@ -40,7 +40,7 @@ export async function POST(request: Request) {
           buildingSchemaId,
           latestVersionNumber,
         })
-        
+
         for await (const chunk of generator) {
           if (chunk.type === 'text') {
             // Encode and enqueue the text chunk as JSON

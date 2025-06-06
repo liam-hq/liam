@@ -1,8 +1,8 @@
 'use client'
 
-import type { TableGroupData } from '@liam-hq/agent'
 import { ChatInput } from '@/components/ChatInput'
 import { ChatMessage, type ChatMessageProps } from '@/components/ChatMessage'
+import type { TableGroupData } from '@liam-hq/agent'
 import type { Schema } from '@liam-hq/db-structure'
 import {
   ModalContent,
