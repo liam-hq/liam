@@ -1,17 +1,13 @@
 import type { Schema, TableGroup } from '@liam-hq/db-structure'
 
-// Export TableGroupData type for compatibility
 export type TableGroupData = TableGroup
 
-// Convert table data to text document
 const tableToDocument = (
   tableName: string,
   tableData: Schema['tables'][string],
 ): string => {
-  // Table description
   const tableDescription = `Table: ${tableName}\nDescription: ${tableData.comment || 'No description'}\n`
 
-  // Columns information
   let columnsText = 'Columns:\n'
   if (tableData.columns) {
     for (const [columnName, columnData] of Object.entries(tableData.columns)) {
@@ -22,7 +18,6 @@ const tableToDocument = (
     }
   }
 
-  // Primary key information
   let primaryKeyText = ''
   const primaryKeyColumns = Object.entries(tableData.columns || {})
     .filter(([_, column]) => column.primary)
@@ -32,11 +27,9 @@ const tableToDocument = (
     primaryKeyText = `Primary Key: ${primaryKeyColumns.join(', ')}\n`
   }
 
-  // Combine all information
   return `${tableDescription}${columnsText}${primaryKeyText}`
 }
 
-// Convert relationship data to text document
 const relationshipToDocument = (
   relationshipName: string,
   relationshipData: Schema['relationships'][string],
@@ -49,7 +42,6 @@ To Column: ${relationshipData.foreignColumnName}
 Type: ${relationshipData.cardinality || 'unknown'}\n`
 }
 
-// Convert table groups to text document
 const tableGroupsToText = (
   tableGroups: Schema['tableGroups'] | undefined,
 ): string => {
@@ -74,11 +66,9 @@ const tableGroupsToText = (
   return tableGroupsText
 }
 
-// Convert schema data to text format
 export const convertSchemaToText = (schema: Schema): string => {
   let schemaText = 'FULL DATABASE SCHEMA:\n\n'
 
-  // Process tables
   if (schema.tables) {
     schemaText += 'TABLES:\n\n'
     for (const [tableName, tableData] of Object.entries(schema.tables)) {
@@ -87,7 +77,6 @@ export const convertSchemaToText = (schema: Schema): string => {
     }
   }
 
-  // Process relationships
   if (schema.relationships) {
     schemaText += 'RELATIONSHIPS:\n\n'
     for (const [relationshipName, relationshipData] of Object.entries(
@@ -101,7 +90,6 @@ export const convertSchemaToText = (schema: Schema): string => {
     }
   }
 
-  // Process table groups
   if (schema.tableGroups && Object.keys(schema.tableGroups).length > 0) {
     schemaText += 'TABLE GROUPS:\n\n'
     const tableGroupsText = tableGroupsToText(schema.tableGroups)

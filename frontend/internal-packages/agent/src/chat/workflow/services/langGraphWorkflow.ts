@@ -13,9 +13,6 @@ import {
   toLangGraphState,
 } from './stateManager'
 
-/**
- * ChatState definition for LangGraph
- */
 interface ChatState {
   mode?: WorkflowMode
   userInput: string
@@ -27,7 +24,6 @@ interface ChatState {
   buildingSchemaId: string
   error?: string
 
-  // Intermediate data for workflow
   schemaText?: string
   formattedChatHistory?: string
   agentName?: AgentName
@@ -35,9 +31,6 @@ interface ChatState {
 
 const DEFAULT_RECURSION_LIMIT = 10
 
-/**
- * Create LangGraph-compatible annotations
- */
 const createAnnotations = () => {
   return Annotation.Root({
     mode: Annotation<WorkflowMode | undefined>,
@@ -50,28 +43,20 @@ const createAnnotations = () => {
     buildingSchemaId: Annotation<string>,
     error: Annotation<string>,
 
-    // Additional fields for workflow processing
     schemaText: Annotation<string>,
     formattedChatHistory: Annotation<string>,
     agentName: Annotation<AgentName>,
   })
 }
 
-/**
- * Wrap validationNode to match LangGraph node format
- */
 const validateInput = async (state: ChatState): Promise<Partial<ChatState>> => {
   return validationNode(state)
 }
 
-/**
- * Wrap answerGenerationNode for non-streaming execution
- */
 const generateAnswer = async (
   state: ChatState,
 ): Promise<Partial<ChatState>> => {
   try {
-    // Use synchronous execution (streaming is now handled by finalResponseNode)
     const result = await answerGenerationNode(state)
     return {
       generatedAnswer: result.generatedAnswer,
@@ -87,9 +72,6 @@ const generateAnswer = async (
   }
 }
 
-/**
- * Wrap finalResponseNode for non-streaming execution
- */
 const formatFinalResponse = async (
   state: ChatState,
 ): Promise<Partial<ChatState>> => {
@@ -97,9 +79,6 @@ const formatFinalResponse = async (
   return result
 }
 
-/**
- * Create and configure the LangGraph workflow
- */
 const createGraph = () => {
   const ChatStateAnnotation = createAnnotations()
   const graph = new StateGraph(ChatStateAnnotation)
@@ -111,22 +90,17 @@ const createGraph = () => {
     .addEdge(START, 'validateInput')
     .addEdge('formatFinalResponse', END)
 
-    // Conditional edges - simplified to prevent loops
     .addConditionalEdges('validateInput', (state: ChatState) => {
       if (state.error) return 'formatFinalResponse'
       return 'generateAnswer'
     })
     .addConditionalEdges('generateAnswer', () => {
-      // Always go to formatFinalResponse regardless of error state
       return 'formatFinalResponse'
     })
 
   return graph.compile()
 }
 
-/**
- * Execute non-streaming workflow using LangGraph
- */
 const executeLangGraphWorkflow = async (
   initialState: WorkflowState,
   recursionLimit: number = DEFAULT_RECURSION_LIMIT,
@@ -142,7 +116,6 @@ const executeLangGraphWorkflow = async (
   } catch (error) {
     console.error(WORKFLOW_ERROR_MESSAGES.LANGGRAPH_FAILED, error)
 
-    // Even with LangGraph execution failure, go through finalResponseNode to ensure proper response
     const errorMessage =
       error instanceof Error
         ? error.message
@@ -153,5 +126,4 @@ const executeLangGraphWorkflow = async (
   }
 }
 
-// Export for backward compatibility
 export { executeLangGraphWorkflow as LangGraphWorkflow }

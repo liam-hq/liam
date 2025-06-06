@@ -1,4 +1,4 @@
-import { processChatMessage } from '@/lib/chat/chatProcessor'
+import { processChatMessage } from '@liam-hq/agent'
 import { NextResponse } from 'next/server'
 
 export async function POST(request: Request) {
@@ -31,15 +31,17 @@ export async function POST(request: Request) {
 
       try {
         // Process the chat message with streaming
-        for await (const chunk of processChatMessage({
-          message,
+        const generator = await processChatMessage({
+          userInput: message,
           schemaData,
           history,
           mode,
           organizationId,
           buildingSchemaId,
           latestVersionNumber,
-        })) {
+        })
+        
+        for await (const chunk of generator) {
           if (chunk.type === 'text') {
             // Encode and enqueue the text chunk as JSON
             controller.enqueue(

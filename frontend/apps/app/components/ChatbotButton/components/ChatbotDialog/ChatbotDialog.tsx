@@ -1,6 +1,6 @@
 'use client'
 
-import type { TableGroupData } from '@/app/lib/schema/convertSchemaToText'
+import type { TableGroupData } from '@liam-hq/agent'
 import { ChatInput } from '@/components/ChatInput'
 import { ChatMessage, type ChatMessageProps } from '@/components/ChatMessage'
 import type { Schema } from '@liam-hq/db-structure'

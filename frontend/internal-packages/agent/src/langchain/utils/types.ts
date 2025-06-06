@@ -9,5 +9,4 @@ export interface ChatAgent {
   stream(variables: BasePromptVariables): AsyncGenerator<string>
 }
 
-// Agent name type definition - centralized for reuse across the application
 export type AgentName = 'databaseSchemaAskAgent' | 'databaseSchemaBuildAgent'

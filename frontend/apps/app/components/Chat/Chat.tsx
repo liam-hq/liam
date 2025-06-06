@@ -1,6 +1,6 @@
 'use client'
 
-import type { TableGroupData } from '@/app/lib/schema/convertSchemaToText'
+import type { TableGroupData } from '@liam-hq/agent'
 import type { Schema } from '@liam-hq/db-structure'
 import type { Tables } from '@liam-hq/db/supabase/database.types'
 import type { FC } from 'react'

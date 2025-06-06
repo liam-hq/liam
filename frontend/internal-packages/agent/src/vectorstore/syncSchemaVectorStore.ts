@@ -4,10 +4,6 @@ import {
   isSchemaUpdated,
 } from './supabaseVectorStore'
 
-/**
- * Validates required environment variables
- * @returns True if all required environment variables are set
- */
 function validateEnvironmentVariables(): boolean {
   const requiredVars = [
     'NEXT_PUBLIC_SUPABASE_URL',
@@ -34,30 +30,19 @@ function validateEnvironmentVariables(): boolean {
   return true
 }
 
-/**
- * Synchronizes schema data with vector store
- * Can be called directly from API routes
- * @param schemaData The schema data to synchronize
- * @param organizationId Organization ID for vector store
- * @param forceUpdate Force update even if schema hasn't changed
- * @returns True if synchronization was performed, false otherwise
- */
 export async function syncSchemaVectorStore(
   schemaData: Schema,
   organizationId: string,
   forceUpdate = false,
 ): Promise<boolean> {
   try {
-    // Validate environment variables
     if (!validateEnvironmentVariables()) {
       throw new Error('Required environment variables are missing')
     }
 
-    // Check if schema has been updated
     const needsUpdate = forceUpdate || (await isSchemaUpdated(schemaData))
 
     if (needsUpdate) {
-      // Initialize or update vector store
       await createSupabaseVectorStore(schemaData, organizationId)
       return true
     }

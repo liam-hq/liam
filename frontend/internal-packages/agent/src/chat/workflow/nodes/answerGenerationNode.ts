@@ -2,7 +2,7 @@ import {
   type AgentName,
   createPromptVariables,
   getAgent,
-} from '@/lib/langchain'
+} from '../../../langchain'
 import { createNewVersion } from '@/libs/schema/createNewVersion'
 import type { Operation } from 'fast-json-patch'
 import * as v from 'valibot'
@@ -15,7 +15,6 @@ interface PreparedAnswerGeneration {
   formattedChatHistory: string
 }
 
-// Define schema for JSON Patch operations (RFC 6902)
 const jsonPatchOperationSchema = v.object({
   op: v.picklist(['add', 'remove', 'replace', 'move', 'copy', 'test']),
   path: v.string(),
@@ -23,7 +22,6 @@ const jsonPatchOperationSchema = v.object({
   from: v.optional(v.string()),
 })
 
-// Define schema for BuildAgent response validation
 const buildAgentResponseSchema = v.object({
   message: v.string(),
   schemaChanges: v.array(jsonPatchOperationSchema),
@@ -31,17 +29,12 @@ const buildAgentResponseSchema = v.object({
 
 type BuildAgentResponse = v.InferOutput<typeof buildAgentResponseSchema>
 
-/**
- * Parse structured response from buildAgent using valibot for type safety
- */
 const parseStructuredResponse = (
   response: string,
 ): BuildAgentResponse | null => {
   try {
-    // Try to parse as JSON first
     const parsed: unknown = JSON.parse(response)
 
-    // Use valibot to validate and parse the structure
     const validationResult = v.safeParse(buildAgentResponseSchema, parsed)
 
     if (validationResult.success) {
@@ -51,50 +44,36 @@ const parseStructuredResponse = (
       }
     }
 
-    // Log validation issues for debugging
     console.warn(
       'BuildAgent response validation failed:',
       validationResult.issues,
     )
     return null
   } catch (error) {
-    // If JSON parsing fails, log the error and return null
     console.warn('Failed to parse BuildAgent response as JSON:', error)
     return null
   }
 }
 
-/**
- * Convert validated schema changes to Operation[] format
- * Using type assertion after valibot validation ensures runtime safety
- */
 const convertToOperations = (
   schemaChanges: BuildAgentResponse['schemaChanges'],
 ): Operation[] => {
   return schemaChanges.map((change): Operation => {
-    // Create base operation object
     const baseOperation = {
       op: change.op,
       path: change.path,
     }
 
-    // Add optional properties if they exist
     const operation = {
       ...baseOperation,
       ...(change.value !== undefined && { value: change.value }),
       ...(change.from !== undefined && { from: change.from }),
     }
 
-    // Type assertion is safe here because:
-    // 1. valibot has already validated the structure
-    // 2. We're following JSON Patch RFC 6902 specification
     return operation as Operation
   })
 }
 
-/**
- * Apply schema changes and return updated state
- */
 const applySchemaChanges = async (
   schemaChanges: BuildAgentResponse['schemaChanges'],
   buildingSchemaId: string,
@@ -134,9 +113,6 @@ const applySchemaChanges = async (
   }
 }
 
-/**
- * Handle schema changes if they exist
- */
 const handleSchemaChanges = async (
   parsedResponse: BuildAgentResponse,
   state: WorkflowState,
@@ -170,9 +146,6 @@ const handleSchemaChanges = async (
   )
 }
 
-/**
- * Handle buildAgent response processing
- */
 const handleBuildAgentResponse = async (
   response: string,
   state: WorkflowState,
@@ -196,8 +169,6 @@ const handleBuildAgentResponse = async (
 async function prepareAnswerGeneration(
   state: WorkflowState,
 ): Promise<PreparedAnswerGeneration | { error: string }> {
-  // Since validationNode has already validated required fields,
-  // we can trust that the processed data is available
   if (!state.agentName || !state.schemaText || !state.formattedChatHistory) {
     return { error: 'Required processed data is missing from validation step' }
   }
@@ -206,7 +177,6 @@ async function prepareAnswerGeneration(
   const formattedChatHistory = state.formattedChatHistory
   const schemaText = state.schemaText
 
-  // Get the agent from LangChain
   const agent = getAgent(agentName)
 
   return {
@@ -217,10 +187,6 @@ async function prepareAnswerGeneration(
   }
 }
 
-/**
- * Answer generation node - synchronous execution only
- * Streaming is now handled by finalResponseNode
- */
 export async function answerGenerationNode(
   state: WorkflowState,
 ): Promise<WorkflowState> {
@@ -236,22 +202,18 @@ export async function answerGenerationNode(
 
     const { agent, agentName, schemaText, formattedChatHistory } = prepared
 
-    // Convert formatted chat history to array format if needed
     const historyArray: [string, string][] = formattedChatHistory
       ? [['Assistant', formattedChatHistory]]
       : []
 
-    // Create prompt variables with correct format
     const promptVariables = createPromptVariables(
       schemaText,
       state.userInput,
       historyArray,
     )
 
-    // Use agent's generate method with prompt variables
     const response = await agent.generate(promptVariables)
 
-    // If this is the buildAgent, handle structured response and schema updates
     if (agentName === 'databaseSchemaBuildAgent') {
       return await handleBuildAgentResponse(response, state)
     }

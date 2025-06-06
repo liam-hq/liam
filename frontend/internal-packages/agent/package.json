@@ -3,7 +3,17 @@
   "private": true,
   "version": "0.1.0",
   "main": "src/index.ts",
-  "dependencies": {},
+  "dependencies": {
+    "@langchain/community": "0.3.43",
+    "@langchain/core": "0.3.56",
+    "@langchain/langgraph": "0.3.0",
+    "@langchain/openai": "0.5.10",
+    "@liam-hq/db": "workspace:*",
+    "@liam-hq/db-structure": "workspace:*",
+    "fast-json-patch": "3.1.1",
+    "valibot": "1.1.0",
+    "langfuse-langchain": "3.37.2"
+  },
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
     "@liam-hq/configs": "workspace:*",

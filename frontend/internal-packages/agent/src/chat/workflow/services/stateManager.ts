@@ -2,21 +2,12 @@ import { schemaSchema } from '@liam-hq/db-structure'
 import * as v from 'valibot'
 import type { WorkflowState } from '../types'
 
-/**
- * Valibot schema for WorkflowMode
- */
 const workflowModeSchema = v.optional(v.picklist(['Ask', 'Build']))
 
-/**
- * Valibot schema for AgentName
- */
 const agentNameSchema = v.optional(
   v.picklist(['databaseSchemaAskAgent', 'databaseSchemaBuildAgent']),
 )
 
-/**
- * Valibot schema for WorkflowState
- */
 const workflowStateSchema = v.object({
   mode: workflowModeSchema,
   userInput: v.string(),
@@ -35,9 +26,6 @@ const workflowStateSchema = v.object({
   userId: v.optional(v.string()),
 })
 
-/**
- * Schema for validating LangGraph result
- */
 const langGraphResultSchema = v.object({
   mode: v.optional(v.unknown()),
   userInput: v.unknown(),
@@ -56,9 +44,6 @@ const langGraphResultSchema = v.object({
   userId: v.optional(v.unknown()),
 })
 
-/**
- * Merge workflow states with proper fallbacks
- */
 export const mergeStates = (
   baseState: WorkflowState,
   updates: Partial<WorkflowState>,
@@ -66,14 +51,10 @@ export const mergeStates = (
   return {
     ...baseState,
     ...updates,
-    // Ensure arrays are properly handled
     history: updates.history || baseState.history || [],
   }
 }
 
-/**
- * Prepare final state for streaming
- */
 export const prepareFinalState = (
   currentState: WorkflowState,
   initialState: WorkflowState,
@@ -87,11 +68,9 @@ export const prepareFinalState = (
     generatedAnswer: currentState.generatedAnswer,
     finalResponse: currentState.finalResponse,
     error: currentState.error,
-    // Include processed fields
     schemaText: currentState.schemaText,
     formattedChatHistory: currentState.formattedChatHistory,
     agentName: currentState.agentName,
-    // Include schema update fields
     buildingSchemaId:
       currentState.buildingSchemaId || initialState.buildingSchemaId,
     latestVersionNumber:
@@ -101,9 +80,6 @@ export const prepareFinalState = (
   }
 }
 
-/**
- * Create error state with proper fallbacks
- */
 export const createErrorState = (
   baseState: WorkflowState,
   errorMessage: string,
@@ -114,9 +90,6 @@ export const createErrorState = (
   }
 }
 
-/**
- * Create fallback final state when generator fails
- */
 export const createFallbackFinalState = (
   finalState: WorkflowState,
 ): WorkflowState => {
@@ -133,9 +106,6 @@ export const createFallbackFinalState = (
   }
 }
 
-/**
- * Convert WorkflowState to LangGraph compatible format
- */
 export const toLangGraphState = (state: WorkflowState) => {
   return {
     mode: state.mode,
@@ -152,17 +122,11 @@ export const toLangGraphState = (state: WorkflowState) => {
   }
 }
 
-/**
- * Helper function to safely parse string values
- */
 const parseOptionalString = (value: unknown): string | undefined => {
   if (typeof value === 'string') return value
   return undefined
 }
 
-/**
- * Helper function to safely parse string arrays
- */
 const parseStringArray = (value: unknown): string[] => {
   if (Array.isArray(value) && value.every((item) => typeof item === 'string')) {
     return value
@@ -170,17 +134,11 @@ const parseStringArray = (value: unknown): string[] => {
   return []
 }
 
-/**
- * Helper function to safely parse WorkflowMode
- */
 const parseWorkflowMode = (value: unknown): WorkflowState['mode'] => {
   if (value === 'Ask' || value === 'Build') return value
   return undefined
 }
 
-/**
- * Helper function to safely parse AgentName
- */
 const parseAgentName = (value: unknown): WorkflowState['agentName'] => {
   if (
     value === 'databaseSchemaAskAgent' ||
@@ -191,9 +149,6 @@ const parseAgentName = (value: unknown): WorkflowState['agentName'] => {
   return undefined
 }
 
-/**
- * Helper function to safely parse Schema
- */
 const parseSchema = (value: unknown): WorkflowState['schemaData'] => {
   if (!value || typeof value !== 'object') return undefined
 
@@ -205,13 +160,9 @@ const parseSchema = (value: unknown): WorkflowState['schemaData'] => {
   }
 }
 
-/**
- * Convert LangGraph result back to WorkflowState without type casting
- */
 export const fromLangGraphResult = (
   result: Record<string, unknown>,
 ): WorkflowState => {
-  // First validate the basic structure
   const parseResult = v.safeParse(langGraphResultSchema, result)
   if (!parseResult.success) {
     throw new Error(
@@ -221,13 +172,11 @@ export const fromLangGraphResult = (
 
   const validatedResult = parseResult.output
 
-  // Extract userInput (required field)
   const userInput =
     typeof validatedResult.userInput === 'string'
       ? validatedResult.userInput
       : ''
 
-  // Build the WorkflowState with proper type validation
   const workflowState: WorkflowState = {
     mode: parseWorkflowMode(validatedResult.mode),
     userInput,
@@ -242,7 +191,6 @@ export const fromLangGraphResult = (
       validatedResult.formattedChatHistory,
     ),
     agentName: parseAgentName(validatedResult.agentName),
-    // Schema update fields - buildingSchemaId is required, provide fallback
     buildingSchemaId:
       parseOptionalString(validatedResult.buildingSchemaId) || 'unknown',
     latestVersionNumber:
@@ -253,7 +201,6 @@ export const fromLangGraphResult = (
     userId: parseOptionalString(validatedResult.userId),
   }
 
-  // Final validation to ensure the result matches WorkflowState schema
   const finalParseResult = v.safeParse(workflowStateSchema, workflowState)
   if (!finalParseResult.success) {
     throw new Error(
