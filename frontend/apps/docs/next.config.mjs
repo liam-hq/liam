@@ -12,7 +12,10 @@ if (process.env.VERCEL_ENV === 'production') {
 /** @type {import('next').NextConfig} */
 const config = {
   reactStrictMode: true,
-  assetPrefix: process.env.ASSET_PREFIX || '',
+  assetPrefix:
+    process.env.NEXT_PUBLIC_ENV_NAME === 'production'
+      ? process.env.ASSET_PREFIX
+      : undefined,
 }
 
 export default withSentryConfig(withMDX(config), {
