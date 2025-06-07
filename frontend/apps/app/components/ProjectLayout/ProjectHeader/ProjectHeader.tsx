@@ -86,6 +86,15 @@ export const ProjectHeader: FC<ProjectHeaderProps> = async ({
                 },
               )
               break
+            case 'sessions':
+              href = urlgen(
+                'projects/[projectId]/ref/[branchOrCommit]/sessions',
+                {
+                  projectId,
+                  branchOrCommit,
+                },
+              )
+              break
           }
 
           return (
