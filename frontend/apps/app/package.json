@@ -15,7 +15,7 @@
     "@langchain/community": "0.3.43",
     "@langchain/core": "0.3.56",
     "@langchain/langgraph": "0.3.0",
-    "@langchain/openai": "0.5.10",
+    "@langchain/openai": "0.5.11",
     "@lezer/highlight": "1.2.1",
     "@liam-hq/db": "workspace:*",
     "@liam-hq/db-structure": "workspace:*",

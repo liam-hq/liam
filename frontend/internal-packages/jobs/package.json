@@ -8,7 +8,7 @@
   "main": "src/index.ts",
   "dependencies": {
     "@langchain/core": "0.3.56",
-    "@langchain/openai": "0.5.10",
+    "@langchain/openai": "0.5.11",
     "@liam-hq/db": "workspace:*",
     "@liam-hq/github": "workspace:*",
     "@octokit/auth-app": "7.2.1",
