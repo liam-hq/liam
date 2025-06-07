@@ -5,6 +5,7 @@ const config: StorybookConfig = {
   stories: [
     '../../../apps/app/components/**/*.stories.@(js|jsx|ts|tsx)',
     '../../../packages/ui/src/**/*.stories.@(js|jsx|ts|tsx)',
+    '../../../packages/erd-core/src/**/*.stories.@(js|jsx|ts|tsx)',
   ],
   addons: [
     '@storybook/addon-links',
