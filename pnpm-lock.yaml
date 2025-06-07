@@ -108,6 +108,9 @@ importers:
       '@liam-hq/jobs':
         specifier: workspace:*
         version: link:../../internal-packages/jobs
+      '@liam-hq/pglite-server':
+        specifier: workspace:*
+        version: link:../../packages/pglite-server
       '@liam-hq/ui':
         specifier: workspace:*
         version: link:../../packages/ui
@@ -809,6 +812,28 @@ importers:
       vitest:
         specifier: 3.1.4
         version: 3.1.4(@edge-runtime/vm@3.2.0)(@types/debug@4.1.12)(@types/node@22.15.21)(jiti@2.4.2)(lightningcss@1.30.1)(terser@5.40.0)(tsx@4.19.4)(yaml@2.8.0)
+
+  frontend/packages/pglite-server:
+    dependencies:
+      '@electric-sql/pglite':
+        specifier: 0.3.2
+        version: 0.3.2
+      valibot:
+        specifier: 1.1.0
+        version: 1.1.0(typescript@5.8.3)
+    devDependencies:
+      '@biomejs/biome':
+        specifier: 1.9.4
+        version: 1.9.4
+      '@liam-hq/configs':
+        specifier: workspace:*
+        version: link:../../internal-packages/configs
+      eslint:
+        specifier: 9.27.0
+        version: 9.27.0(jiti@2.4.2)
+      typescript:
+        specifier: 5.8.3
+        version: 5.8.3
 
   frontend/packages/ui:
     dependencies:

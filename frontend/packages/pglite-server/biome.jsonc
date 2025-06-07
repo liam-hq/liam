@@ -1,0 +1,6 @@
+{
+  "extends": ["../../internal-packages/configs/biome.jsonc"],
+  "files": {
+    "ignore": ["dist/**"]
+  }
+}

@@ -20,6 +20,17 @@ const nextConfig: NextConfig = {
   },
   webpack: (config) => {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    config.resolve = config.resolve || {}
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    config.resolve.fallback = {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      ...config.resolve.fallback,
+      fs: false,
+      path: false,
+      crypto: false,
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     if (Array.isArray(config.externals)) {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       config.externals.push(

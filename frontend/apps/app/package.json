@@ -22,6 +22,7 @@
     "@liam-hq/erd-core": "workspace:*",
     "@liam-hq/github": "workspace:*",
     "@liam-hq/jobs": "workspace:*",
+    "@liam-hq/pglite-server": "workspace:*",
     "@liam-hq/ui": "workspace:*",
     "@next/third-parties": "15.3.2",
     "@octokit/auth-app": "7.2.1",
