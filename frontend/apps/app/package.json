@@ -31,7 +31,7 @@
     "@trigger.dev/sdk": "3.3.17",
     "@types/react-syntax-highlighter": "15.5.13",
     "@vercel/otel": "1.12.0",
-    "ai": "4.3.15",
+    "ai": "4.3.16",
     "cheerio": "1.0.0",
     "clsx": "2.1.1",
     "codemirror": "6.0.1",
