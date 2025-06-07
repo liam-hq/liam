@@ -190,8 +190,8 @@ importers:
         specifier: 4.5.1
         version: 4.5.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       ts-pattern:
-        specifier: 5.7.0
-        version: 5.7.0
+        specifier: 5.7.1
+        version: 5.7.1
       valibot:
         specifier: 1.1.0
         version: 1.1.0(typescript@5.8.3)
@@ -290,8 +290,8 @@ importers:
         specifier: 1.0.0
         version: 1.0.0(tailwindcss@4.1.8)
       ts-pattern:
-        specifier: 5.7.0
-        version: 5.7.0
+        specifier: 5.7.1
+        version: 5.7.1
     devDependencies:
       '@biomejs/biome':
         specifier: 1.9.4
@@ -709,8 +709,8 @@ importers:
         specifier: 5.1.0
         version: 5.1.0
       ts-pattern:
-        specifier: 5.7.0
-        version: 5.7.0
+        specifier: 5.7.1
+        version: 5.7.1
       valibot:
         specifier: 1.1.0
         version: 1.1.0(typescript@5.8.3)
@@ -776,8 +776,8 @@ importers:
         specifier: 18.3.1
         version: 18.3.1
       ts-pattern:
-        specifier: 5.7.0
-        version: 5.7.0
+        specifier: 5.7.1
+        version: 5.7.1
       valibot:
         specifier: 1.1.0
         version: 1.1.0(typescript@5.8.3)
@@ -864,8 +864,8 @@ importers:
         specifier: 3.0.2
         version: 3.0.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       ts-pattern:
-        specifier: 5.7.0
-        version: 5.7.0
+        specifier: 5.7.1
+        version: 5.7.1
       vaul:
         specifier: 1.1.2
         version: 1.1.2(@types/react-dom@18.3.7(@types/react@18.3.23))(@types/react@18.3.23)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -10817,8 +10817,8 @@ packages:
       '@swc/wasm':
         optional: true
 
-  ts-pattern@5.7.0:
-    resolution: {integrity: sha512-0/FvIG4g3kNkYgbNwBBW5pZBkfpeYQnH+2AA3xmjkCAit/DSDPKmgwC3fKof4oYUq6gupClVOJlFl+939VRBMg==}
+  ts-pattern@5.7.1:
+    resolution: {integrity: sha512-EGs8PguQqAAUIcQfK4E9xdXxB6s2GK4sJfT/vcc9V1ELIvC4LH/zXu2t/5fajtv6oiRCxdv7BgtVK3vWgROxag==}
 
   ts-pnp@1.2.0:
     resolution: {integrity: sha512-csd+vJOb/gkzvcCHgTGSChYpy5f1/XKNsmvBGO4JXS+z1v2HobugDz4s1IeFXM3wZB44uczs+eazB5Q/ccdhQw==}
@@ -23421,7 +23421,7 @@ snapshots:
       v8-compile-cache-lib: 3.0.1
       yn: 3.1.1
 
-  ts-pattern@5.7.0: {}
+  ts-pattern@5.7.1: {}
 
   ts-pnp@1.2.0(typescript@5.8.3):
     optionalDependencies:
