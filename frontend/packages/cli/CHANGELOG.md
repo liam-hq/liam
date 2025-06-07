@@ -1,5 +1,11 @@
 # @liam-hq/cli
 
+## 0.5.8
+
+### Patch Changes
+
+- [#1786](https://github.com/liam-hq/liam/pull/1786) - show the tooltip for truncated table name in table node / Thanks [@khiroshi-win](https://github.com/khiroshi-win)!
+
 ## 0.5.7
 
 ### Patch Changes
