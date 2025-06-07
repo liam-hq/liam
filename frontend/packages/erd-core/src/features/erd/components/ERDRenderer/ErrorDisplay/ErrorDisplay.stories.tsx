@@ -8,6 +8,7 @@ type ErrorDisplayProps = ComponentProps<typeof ErrorDisplay>
 const meta = {
   title: 'erd-core/ERDRender/ErrorDisplay',
   component: ErrorDisplay,
+  tags: ['test'],
 } satisfies Meta<typeof ErrorDisplay>
 
 export default meta

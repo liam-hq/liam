@@ -9,6 +9,7 @@ type CommandPaletteProps = ComponentProps<typeof CommandPalette>
 const meta = {
   title: 'erd-core/ERDRender/CommandPalette',
   component: CommandPalette,
+  tags: ['test'],
   play: async ({ canvasElement }) => {
     const bodyElement = canvasElement.parentElement?.parentElement
     if (!bodyElement) return
