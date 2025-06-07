@@ -7,7 +7,7 @@
     "@octokit/auth-app": "7.2.1",
     "@octokit/openapi-types": "25.0.0",
     "@octokit/rest": "21.1.1",
-    "@supabase/supabase-js": "2.49.4"
+    "@supabase/supabase-js": "2.49.8"
   },
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
