@@ -624,8 +624,8 @@ importers:
         specifier: 11.0.2
         version: 11.0.2
       inquirer:
-        specifier: 12.6.1
-        version: 12.6.1(@types/node@22.15.21)
+        specifier: 12.6.2
+        version: 12.6.2(@types/node@22.15.21)
       react:
         specifier: 18.3.1
         version: 18.3.1
@@ -7966,8 +7966,8 @@ packages:
   inline-style-parser@0.2.4:
     resolution: {integrity: sha512-0aO8FkhNZlj/ZIbNi7Lxxr12obT7cL1moPfE4tg1LkX7LlLfC6DeX4l2ZEud1ukP9jNQyNnfzQVqwbwmAATY4Q==}
 
-  inquirer@12.6.1:
-    resolution: {integrity: sha512-MGFnzHVS3l3oM3cy+LWkyR7UUtVEn3D5U41CZbEY34szToWoJAvaVtCTz1mxsEzZFk/HXWyCArn0HDgloTXMDw==}
+  inquirer@12.6.2:
+    resolution: {integrity: sha512-bPQV0oGJTy3cKqgtY+PI8qpn1ig1yalY400I9fzg/YZcK1bpTZvpQJcPiJ0s+u0edOQlMv7NW/hguocx0/2CMg==}
     engines: {node: '>=18'}
     peerDependencies:
       '@types/node': '>=18'
@@ -20001,7 +20001,7 @@ snapshots:
 
   inline-style-parser@0.2.4: {}
 
-  inquirer@12.6.1(@types/node@22.15.21):
+  inquirer@12.6.2(@types/node@22.15.21):
     dependencies:
       '@inquirer/core': 10.1.13(@types/node@22.15.21)
       '@inquirer/prompts': 7.5.3(@types/node@22.15.21)
