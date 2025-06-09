@@ -1,6 +1,8 @@
 import { createClient } from '@/libs/db/server'
 import { parse } from '@liam-hq/db-structure/parser'
 import { getFileContent } from '@liam-hq/github'
+import styles from './BuildPage.module.css'
+import { Header } from './Header'
 import { Panel } from './Panel'
 
 type Props = {
@@ -70,5 +72,10 @@ export async function BuildPage({ projectId, branchOrCommit }: Props) {
     throw new Error('Schema could not be parsed')
   }
 
-  return <Panel schema={schema} errors={errors || []} />
+  return (
+    <div className={styles.wrapper}>
+      <Header />
+      <Panel schema={schema} errors={errors || []} />
+    </div>
+  )
 }

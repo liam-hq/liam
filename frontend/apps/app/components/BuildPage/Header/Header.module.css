@@ -1,0 +1,8 @@
+.wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--spacing-2);
+  padding: var(--spacing-2) var(--spacing-6);
+  border-bottom: 1px solid var(--global-border);
+}

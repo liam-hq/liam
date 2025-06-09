@@ -1,7 +1,5 @@
 import type { LayoutProps } from '@/app/types'
-import {} from '@/components'
 import { CommonLayout } from '@/components/CommonLayout'
-import { ProjectLayout } from '@/components/ProjectLayout'
 import { branchOrCommitSchema } from '@/libs/routes'
 import * as v from 'valibot'
 
@@ -21,9 +19,7 @@ export default async function Layout({ params, children }: LayoutProps) {
 
   return (
     <CommonLayout projectId={projectId} branchOrCommit={branchOrCommit}>
-      <ProjectLayout projectId={projectId} branchOrCommit={branchOrCommit}>
-        {children}
-      </ProjectLayout>
+      {children}
     </CommonLayout>
   )
 }

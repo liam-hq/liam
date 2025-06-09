@@ -11,7 +11,7 @@
 .tabsRoot {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-3);
+  gap: var(--spacing-2);
   min-height: 0;
   height: 460px;
   padding: var(--spacing-3);
@@ -50,14 +50,16 @@
   overflow-y: scroll;
 }
 
-.brdSection {
-  min-height: 0;
-}
-
 .brdList {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-6);
+}
+
+.brdSection {
+  border-radius: var(--border-radius-base);
+  border: solid 1px var(--global-border);
+  overflow: hidden;
 }
 
 .sectionTitle {
@@ -69,9 +71,7 @@
   align-items: center;
   gap: var(--spacing-2);
   padding: var(--spacing-4);
-  border: var(--border-width-base) solid var(--global-border);
-  border-top-left-radius: var(--border-radius-lg);
-  border-top-right-radius: var(--border-radius-lg);
+  border-bottom: solid 1px var(--global-border);
   background: var(--pane-background);
   transition: all 0.2s ease;
 }
@@ -90,14 +90,11 @@
   flex-direction: column;
   gap: var(--spacing-6);
   padding: var(--spacing-4);
-  border-left: solid 1px var(--pane-border);
-  border-right: solid 1px var(--pane-border);
-  border-bottom: solid 1px var(--pane-border);
 }
 
 .overviewSection {
   background: var(--global-muted-background);
-  border-radius: var(--border-radius-lg);
+  border-radius: var(--border-radius-md);
   padding: var(--spacing-6);
   border-left: var(--spacing-1) solid var(--primary-accent);
 }
@@ -125,28 +122,22 @@
   gap: var(--spacing-3);
 }
 
-.usecaseContent {
-  padding: var(--spacing-6);
-  background: var(--pane-muted-background);
-  border: var(--border-width-base) solid var(--global-border);
-  border-top: none;
-  border-radius: 0 0 var(--border-radius-lg) var(--border-radius-lg);
+.usecaseSection {
+  border-radius: var(--border-radius-md);
+  border: solid 1px var(--global-border);
+  overflow: hidden;
 }
 
 .usecaseTitle {
   font-size: var(--font-size-4);
   font-weight: 600;
-  margin-bottom: 0;
   color: var(--global-foreground);
   display: flex;
   align-items: center;
   gap: var(--spacing-2);
   padding: var(--spacing-4);
   background: var(--pane-background);
-  border: var(--border-width-base) solid var(--global-border);
-  border-top-left-radius: var(--border-radius-lg);
-  border-top-right-radius: var(--border-radius-lg);
-  transition: all 0.2s ease;
+  border-bottom: solid 1px var(--global-border);
 }
 
 .usecaseId {
@@ -156,6 +147,11 @@
   font-size: var(--font-size-2);
   font-weight: 500;
   color: var(--severity-question-100);
+}
+
+.usecaseContent {
+  padding: var(--spacing-6);
+  background: var(--pane-muted-background);
 }
 
 .stepList {
@@ -193,8 +189,8 @@
 
 .codeBlock {
   background: var(--pane-muted-background);
-  border: var(--border-width-base) solid var(--global-border);
-  border-radius: var(--border-radius-lg);
+  border: solid 1px var(--global-border);
+  border-radius: var(--border-radius-base);
   margin: var(--spacing-4) 0;
   overflow: hidden;
 }

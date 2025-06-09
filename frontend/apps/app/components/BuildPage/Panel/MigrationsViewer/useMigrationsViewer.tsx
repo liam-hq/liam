@@ -7,11 +7,99 @@ import {
   syntaxHighlighting,
 } from '@codemirror/language'
 import { lintGutter } from '@codemirror/lint'
-import { EditorState, type Extension } from '@codemirror/state'
-import { drawSelection, lineNumbers } from '@codemirror/view'
+import {
+  EditorState,
+  type Extension,
+  StateEffect,
+  StateField,
+} from '@codemirror/state'
+import {
+  Decoration,
+  type DecorationSet,
+  WidgetType,
+  drawSelection,
+  lineNumbers,
+} from '@codemirror/view'
 import { tags } from '@lezer/highlight'
 import { EditorView } from 'codemirror'
 import { useEffect, useRef, useState } from 'react'
+import type { ReviewComment } from './types'
+
+class CommentWidget extends WidgetType {
+  constructor(readonly comment: ReviewComment) {
+    super()
+  }
+
+  toDOM() {
+    const wrap = document.createElement('div')
+    wrap.className = `cm-comment-widget severity-${this.comment.severity.toLowerCase()}`
+    wrap.textContent = this.comment.message
+    return wrap
+  }
+
+  ignoreEvent() {
+    return false
+  }
+}
+
+const setCommentsEffect = StateEffect.define<ReviewComment[]>()
+
+const commentStateField = StateField.define<DecorationSet>({
+  create() {
+    // 空のDecorationSetを返す
+    return Decoration.none
+  },
+  update(decorations, tr) {
+    // 先にEffectの有無をチェックする
+    for (const effect of tr.effects) {
+      if (effect.is(setCommentsEffect)) {
+        const comments = effect.value
+        if (comments.length === 0) {
+          return Decoration.none
+        }
+
+        const newDecorations = comments.flatMap((comment) => {
+          if (comment.toLine > tr.state.doc.lines) {
+            return []
+          }
+          const lineDecorations = []
+          for (let i = comment.fromLine; i <= comment.toLine; i++) {
+            if (i > tr.state.doc.lines) continue
+            const line = tr.state.doc.line(i)
+            lineDecorations.push(
+              Decoration.line({
+                attributes: {
+                  class: `cm-highlighted-line severity-bg-${comment.severity.toLowerCase()}`,
+                },
+              }).range(line.from),
+            )
+          }
+          const widgetLine = tr.state.doc.line(comment.toLine)
+          const widgetDecoration = Decoration.widget({
+            widget: new CommentWidget(comment),
+            side: 1,
+          }).range(widgetLine.to)
+
+          return [...lineDecorations, widgetDecoration]
+        })
+
+        return Decoration.set(newDecorations, true)
+      }
+    }
+
+    // Effectがなければ、既存のデコレーションをドキュメントの変更に追従させて返す
+    if (tr.docChanged) {
+      return decorations.map(tr.changes)
+    }
+
+    // 何も変更がなければそのまま返す
+    return decorations
+  },
+  provide(field) {
+    // StateFieldが直接DecorationSetを持っているので、そのまま渡す
+    return EditorView.decorations.from(field)
+  },
+})
 
 const customCursorTheme = EditorView.theme({
   '.cm-gutters': {
@@ -29,6 +117,41 @@ const customCursorTheme = EditorView.theme({
     animation: 'slow-blink 1s steps(2,start) infinite',
   },
   '@keyframes slow-blink': { to: { visibility: 'hidden' } },
+
+  '.cm-highlighted-line': {
+    // 共通のハイライトスタイル
+  },
+  '.severity-bg-high': {
+    backgroundColor: 'rgba(239, 68, 68, 0.1)',
+  },
+  '.severity-bg-medium': {
+    backgroundColor: 'rgba(245, 158, 11, 0.1)',
+  },
+  '.severity-bg-low': {
+    backgroundColor: 'rgba(99, 241, 120, 0.1)',
+  },
+  '.cm-comment-widget': {
+    padding: '8px 12px',
+    marginLeft: '30px',
+    borderLeft: '3px solid',
+    marginTop: '4px',
+    borderRadius: '0 4px 4px 0',
+  },
+  '.severity-high': {
+    backgroundColor: '#fee2e2',
+    borderColor: '#ef4444',
+    color: '#333',
+  },
+  '.severity-medium': {
+    backgroundColor: '#fffbe6',
+    borderColor: '#f59e0b',
+    color: '#333',
+  },
+  '.severity-low': {
+    backgroundColor: '#eefff4',
+    borderColor: '#63f187',
+    color: '#333',
+  },
 })
 
 const myHighlightStyle = HighlightStyle.define([
@@ -71,13 +194,18 @@ const baseExtensions: Extension[] = [
   lintGutter(),
   syntaxHighlighting(myHighlightStyle),
   customCursorTheme,
+  commentStateField,
 ]
 
 type Props = {
   initialDoc: string
+  reviewComments?: ReviewComment[]
 }
 
-export const useMigrationsViewer = ({ initialDoc }: Props) => {
+export const useMigrationsViewer = ({
+  initialDoc,
+  reviewComments = [],
+}: Props) => {
   const ref = useRef<HTMLDivElement>(null)
   const [container, setContainer] = useState<HTMLDivElement>()
   const [view, setView] = useState<EditorView>()
@@ -101,6 +229,13 @@ export const useMigrationsViewer = ({ initialDoc }: Props) => {
       setView(viewCurrent)
     }
   }, [view, initialDoc, container])
+
+  useEffect(() => {
+    if (!view) return
+
+    const effect = setCommentsEffect.of(reviewComments)
+    view.dispatch({ effects: [effect] })
+  }, [reviewComments, view])
 
   return {
     ref,
