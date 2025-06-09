@@ -37,14 +37,10 @@
       "automerge": true
     },
     {
-      "description": "Automerge dependencies only used by internal packages",
+      "description": "Automerge external dependencies only used by internal packages",
       "matchPackageNames": [
         "@modelcontextprotocol/sdk",
-        "style-dictionary",
-        "@liam-hq/agent",
-        "@liam-hq/mcp-server",
-        "@liam-hq/figma-to-css-variables",
-        "@liam-hq/e2e"
+        "style-dictionary"
       ],
       "matchPaths": ["frontend/internal-packages/**"],
       "automerge": true
