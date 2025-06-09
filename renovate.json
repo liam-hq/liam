@@ -40,13 +40,12 @@
       "description": "Automerge dependencies only used by internal packages",
       "matchPackageNames": [
         "@modelcontextprotocol/sdk",
-        "style-dictionary"
+        "style-dictionary",
+        "@liam-hq/agent",
+        "@liam-hq/mcp-server",
+        "@liam-hq/figma-to-css-variables",
+        "@liam-hq/e2e"
       ],
-      "matchPaths": ["frontend/internal-packages/**"],
-      "automerge": true
-    },
-    {
-      "description": "Automerge all dependencies for internal packages",
       "matchPaths": ["frontend/internal-packages/**"],
       "automerge": true
     }
