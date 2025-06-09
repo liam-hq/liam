@@ -44,6 +44,11 @@
       ],
       "matchPaths": ["frontend/internal-packages/**"],
       "automerge": true
+    },
+    {
+      "description": "Automerge all dependencies for internal packages",
+      "matchPaths": ["frontend/internal-packages/**"],
+      "automerge": true
     }
   ]
 }
