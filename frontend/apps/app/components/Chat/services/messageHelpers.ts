@@ -1,5 +1,11 @@
-import { PROGRESS_EMOJI_PATTERN } from '../constants/chatConstants'
+import type { WorkflowStepProgress } from '../../../lib/chat/workflow/constants/progressMessages'
 import type { ChatEntry, ResponseChunk } from '../types/chatTypes'
+
+export interface WorkflowProgressState {
+  VALIDATION: WorkflowStepProgress | null
+  ANSWER_GENERATION: WorkflowStepProgress | null
+  FINAL_RESPONSE: WorkflowStepProgress | null
+}
 
 /**
  * Helper function to create a ChatEntry from an existing message and additional properties
@@ -47,41 +53,23 @@ export const formatChatHistory = (
 }
 
 /**
- * Update progress messages with new content
- * Ensures proper ordering and prevents premature completion status
+ * Update workflow progress with new step data
  */
-export const updateProgressMessages = (
-  prev: string[],
-  content: string,
-): string[] => {
-  // Extract the base message (without emoji status)
-  const baseMessage = content.replace(PROGRESS_EMOJI_PATTERN, '')
-
-  // Find if we already have a message for this step
-  const existingIndex = prev.findIndex(
-    (msg) => msg.replace(PROGRESS_EMOJI_PATTERN, '') === baseMessage,
-  )
-
-  if (existingIndex >= 0) {
-    // Update existing message
-    const updated = [...prev]
-    updated[existingIndex] = content
-
-    // If this is a completion (✅), ensure all previous steps are also completed
-    if (content.includes('✅')) {
-      for (let i = 0; i < existingIndex; i++) {
-        const prevMessage = updated[i]
-        const prevBaseMessage = prevMessage.replace(PROGRESS_EMOJI_PATTERN, '')
-        // Only update if it's still in progress (🔄)
-        if (prevMessage.includes('🔄')) {
-          updated[i] = `${prevBaseMessage} ✅`
-        }
-      }
-    }
-
-    return updated
+export const updateWorkflowProgress = (
+  prev: WorkflowProgressState,
+  stepProgress: WorkflowStepProgress,
+): WorkflowProgressState => {
+  return {
+    ...prev,
+    [stepProgress.id]: stepProgress,
   }
-
-  // Add new message
-  return [...prev, content]
 }
+
+/**
+ * Reset workflow progress to initial state
+ */
+export const resetWorkflowProgress = (): WorkflowProgressState => ({
+  VALIDATION: null,
+  ANSWER_GENERATION: null,
+  FINAL_RESPONSE: null,
+})

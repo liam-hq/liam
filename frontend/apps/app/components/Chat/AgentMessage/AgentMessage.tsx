@@ -5,8 +5,11 @@ import type { ComponentPropsWithoutRef, FC, ReactNode } from 'react'
 import ReactMarkdown from 'react-markdown'
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
 import remarkGfm from 'remark-gfm'
+import { WORKFLOW_STEPS } from '../../../lib/chat/workflow/constants/progressMessages'
 import { AskAgent } from '../AgentAvatar/AskAgent'
 import { BuildAgent } from '../AgentAvatar/BuildAgent'
+import { ProcessIndicator } from '../ProcessIndicator'
+import type { WorkflowProgressState } from '../services/messageHelpers'
 import styles from './AgentMessage.module.css'
 
 export type AgentType = 'ask' | 'build'
@@ -49,11 +52,11 @@ type AgentMessageProps = {
    */
   children?: ReactNode
   /**
-   * Progress messages to display above the main message
+   * Workflow progress to display above the main message
    */
-  progressMessages?: string[]
+  workflowProgress?: WorkflowProgressState
   /**
-   * Whether to show progress messages
+   * Whether to show workflow progress
    */
   showProgress?: boolean
 }
@@ -64,7 +67,7 @@ export const AgentMessage: FC<AgentMessageProps> = ({
   message = '',
   agentName,
   children,
-  progressMessages,
+  workflowProgress,
   showProgress,
 }) => {
   const isGenerating = state === 'generating'
@@ -80,17 +83,30 @@ export const AgentMessage: FC<AgentMessageProps> = ({
         </span>
       </div>
       <div className={styles.contentContainer}>
-        {/* Show progress messages if available */}
-        {showProgress && progressMessages && progressMessages.length > 0 && (
+        {/* Show workflow progress if available */}
+        {showProgress && workflowProgress && (
           <div className={styles.progressContainer}>
-            {progressMessages.map((message, index) => (
-              <div
-                key={`progress-${index}-${message.slice(0, 10)}`}
-                className={styles.progressMessage}
-              >
-                {message}
-              </div>
-            ))}
+            {Object.entries(WORKFLOW_STEPS).map(([stepId, stepConfig]) => {
+              const stepProgress =
+                workflowProgress[stepId as keyof WorkflowProgressState]
+
+              if (!stepProgress) return null
+
+              return (
+                <ProcessIndicator
+                  key={stepId}
+                  title={stepConfig.title}
+                  subtitle={stepConfig.subtitle}
+                  status={
+                    stepProgress.status === 'error'
+                      ? 'processing'
+                      : stepProgress.status
+                  }
+                  progress={stepProgress.progress}
+                  initialExpanded={true}
+                />
+              )
+            })}
           </div>
         )}
 

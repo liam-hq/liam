@@ -1,3 +1,4 @@
+import type { WorkflowStepProgress } from '../../../lib/chat/workflow/constants/progressMessages'
 import type { Mode } from '../../ChatInput/components/ModeToggleSwitch/ModeToggleSwitch'
 import type { ChatMessageProps } from '../../ChatMessage'
 
@@ -17,6 +18,6 @@ export interface ChatEntry extends ChatMessageProps {
  * Type guard for streaming response chunks
  */
 export interface ResponseChunk {
-  type: string
-  content: string
+  type: 'text' | 'error' | 'progress'
+  content: string | WorkflowStepProgress
 }

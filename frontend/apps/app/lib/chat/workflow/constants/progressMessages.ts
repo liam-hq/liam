@@ -1,23 +1,32 @@
 /**
- * Progress messages for workflow steps
+ * Progress data for workflow steps using ProcessIndicator
  */
-export const PROGRESS_MESSAGES = {
+export const WORKFLOW_STEPS = {
   VALIDATION: {
-    START: '🔍 Checking your input... 🔄',
-    SUCCESS: '🔍 Checking your input... ✅',
-    ERROR: '🔍 Checking your input... ❌',
+    id: 'validation',
+    title: 'Checking your input...',
+    subtitle: 'Validating request parameters and schema',
   },
   ANSWER_GENERATION: {
-    START: '💬 Generating an answer... 🔄',
-    SUCCESS: '💬 Generating an answer... ✅',
-    ERROR: '💬 Generating an answer... ❌',
+    id: 'answer_generation',
+    title: 'Generating an answer...',
+    subtitle: 'Processing your request with AI',
   },
   FINAL_RESPONSE: {
-    START: '📦 Formatting the final response... 🔄',
-    SUCCESS: '📦 Formatting the final response... ✅',
-    ERROR: '📦 Formatting the final response... ❌',
+    id: 'final_response',
+    title: 'Formatting the final response...',
+    subtitle: 'Preparing the response for display',
   },
 } as const
+
+type WorkflowStepId = keyof typeof WORKFLOW_STEPS
+type WorkflowStepStatus = 'processing' | 'complete' | 'error'
+
+export interface WorkflowStepProgress {
+  id: WorkflowStepId
+  status: WorkflowStepStatus
+  progress?: number
+}
 
 /**
  * Default error messages for workflow

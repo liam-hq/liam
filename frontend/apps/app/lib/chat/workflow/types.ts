@@ -1,5 +1,6 @@
 import type { AgentName } from '@/lib/langchain'
 import type { Schema } from '@liam-hq/db-structure'
+import type { WorkflowStepProgress } from './constants/progressMessages'
 
 // Re-export AgentName for use within workflow modules
 export type { AgentName }
@@ -32,8 +33,8 @@ export type WorkflowState = {
  * Response chunk type for streaming
  */
 export type ResponseChunk = {
-  type: 'text' | 'error' | 'custom'
-  content: string
+  type: 'text' | 'error' | 'progress'
+  content: string | WorkflowStepProgress
 }
 
 /**
