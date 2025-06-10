@@ -203,6 +203,16 @@ export const Chat: FC<Props> = ({ schemaData, tableGroups, designSession }) => {
               setProgressMessages((prev) =>
                 updateProgressMessages(prev, parsed.content),
               )
+            } else if (parsed.type === 'heartbeat') {
+              // Handle heartbeat messages to maintain connection
+              // TODO: Remove this heartbeat handling once ProcessIndicator provides a better solution
+              // Update progress messages with heartbeat content
+              setProgressMessages((prev) => {
+                const filtered = prev.filter(
+                  (msg) => !msg.includes('Processing...'),
+                )
+                return [...filtered, parsed.content]
+              })
             } else if (parsed.type === 'error') {
               // Handle error message
               console.error('Stream error:', parsed.content)
