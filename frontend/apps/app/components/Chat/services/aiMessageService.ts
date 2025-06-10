@@ -135,9 +135,7 @@ const processStreamLine = (
       // TODO: Remove this heartbeat handling once ProcessIndicator provides a better solution
       // Update progress messages with heartbeat content
       setProgressMessages((prev) => {
-        const filtered = prev.filter(
-          (msg) => !msg.includes('Processing...'),
-        )
+        const filtered = prev.filter((msg) => !msg.includes('Processing...'))
         return [...filtered, parsed.content]
       })
     } else if (parsed.type === 'error') {
