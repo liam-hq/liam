@@ -1,6 +1,7 @@
 import { isSchemaUpdated } from '@/app/lib/vectorstore/supabaseVectorStore'
 import { syncSchemaVectorStore } from '@/app/lib/vectorstore/syncSchemaVectorStore'
 import { executeChatWorkflow } from '@/lib/chat/workflow'
+import type { WorkflowStepProgress } from '@/lib/chat/workflow/constants/progressMessages'
 import type { Schema } from '@liam-hq/db-structure'
 
 interface ChatProcessorParams {
@@ -24,7 +25,10 @@ export function processChatMessage(
   params: ChatProcessorParams,
   options?: { streaming?: true },
 ): AsyncGenerator<
-  { type: 'text' | 'error' | 'custom'; content: string },
+  {
+    type: 'text' | 'error' | 'progress'
+    content: string | WorkflowStepProgress
+  },
   ChatProcessorResult,
   unknown
 >
@@ -42,7 +46,10 @@ export function processChatMessage(
 ):
   | Promise<ChatProcessorResult>
   | AsyncGenerator<
-      { type: 'text' | 'error' | 'custom'; content: string },
+      {
+        type: 'text' | 'error' | 'progress'
+        content: string | WorkflowStepProgress
+      },
       ChatProcessorResult,
       unknown
     > {
@@ -144,12 +151,18 @@ async function handleVectorStoreSync(
  */
 async function* processStreamingChunks(
   stream: AsyncGenerator<
-    { type: 'text' | 'error' | 'custom'; content: string },
+    {
+      type: 'text' | 'error' | 'progress'
+      content: string | WorkflowStepProgress
+    },
     unknown,
     unknown
   >,
 ): AsyncGenerator<
-  { type: 'text' | 'error' | 'custom'; content: string },
+  {
+    type: 'text' | 'error' | 'progress'
+    content: string | WorkflowStepProgress
+  },
   { finalText: string; hasError: boolean; errorMessage: string },
   unknown
 > {
@@ -159,13 +172,13 @@ async function* processStreamingChunks(
 
   for await (const chunk of stream) {
     if (chunk.type === 'text') {
-      finalText += chunk.content
+      finalText += chunk.content as string
       yield chunk
-    } else if (chunk.type === 'custom') {
+    } else if (chunk.type === 'progress') {
       yield chunk
     } else if (chunk.type === 'error') {
       hasError = true
-      errorMessage = chunk.content
+      errorMessage = chunk.content as string
       yield chunk
     }
   }
@@ -177,7 +190,10 @@ async function* processStreamingChunks(
 async function* processChatMessageStreaming(
   params: ChatProcessorParams,
 ): AsyncGenerator<
-  { type: 'text' | 'error' | 'custom'; content: string },
+  {
+    type: 'text' | 'error' | 'progress'
+    content: string | WorkflowStepProgress
+  },
   ChatProcessorResult,
   unknown
 > {

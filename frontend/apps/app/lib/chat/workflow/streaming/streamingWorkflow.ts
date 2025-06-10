@@ -1,6 +1,6 @@
 import {
-  PROGRESS_MESSAGES,
   WORKFLOW_ERROR_MESSAGES,
+  type WorkflowStepProgress,
 } from '../constants/progressMessages'
 import { finalResponseNode } from '../nodes'
 import { createErrorState } from '../services/stateManager'
@@ -20,38 +20,68 @@ export const executeStreamingWorkflow = async function* (
 ): AsyncGenerator<ResponseChunk, WorkflowState, unknown> {
   try {
     // Step 1: Validation
-    yield { type: 'custom', content: PROGRESS_MESSAGES.VALIDATION.START }
+    yield {
+      type: 'progress',
+      content: {
+        id: 'VALIDATION',
+        status: 'processing',
+      } as WorkflowStepProgress,
+    }
     const validationResult = await executeValidation(initialState)
 
     // Import type guard
     const { isWorkflowStepFailure } = await import('../types')
 
     if (isWorkflowStepFailure(validationResult)) {
-      yield { type: 'custom', content: PROGRESS_MESSAGES.VALIDATION.ERROR }
+      yield {
+        type: 'progress',
+        content: {
+          id: 'VALIDATION',
+          status: 'error',
+        } as WorkflowStepProgress,
+      }
       yield { type: 'error', content: validationResult.error }
       return validationResult.finalState
     }
 
-    yield { type: 'custom', content: PROGRESS_MESSAGES.VALIDATION.SUCCESS }
+    yield {
+      type: 'progress',
+      content: {
+        id: 'VALIDATION',
+        status: 'complete',
+      } as WorkflowStepProgress,
+    }
 
     // Step 2: Answer Generation (preparation only)
     yield {
-      type: 'custom',
-      content: PROGRESS_MESSAGES.ANSWER_GENERATION.START,
+      type: 'progress',
+      content: {
+        id: 'ANSWER_GENERATION',
+        status: 'processing',
+      } as WorkflowStepProgress,
     }
     const answerResult = await executeAnswerGeneration(validationResult.state)
 
     if (isWorkflowStepFailure(answerResult)) {
       yield {
-        type: 'custom',
-        content: PROGRESS_MESSAGES.ANSWER_GENERATION.ERROR,
+        type: 'progress',
+        content: {
+          id: 'ANSWER_GENERATION',
+          status: 'error',
+        } as WorkflowStepProgress,
       }
       yield { type: 'error', content: answerResult.error }
       return answerResult.finalState
     }
 
     // Step 3: Final Response (actual AI generation happens here)
-    yield { type: 'custom', content: PROGRESS_MESSAGES.FINAL_RESPONSE.START }
+    yield {
+      type: 'progress',
+      content: {
+        id: 'FINAL_RESPONSE',
+        status: 'processing',
+      } as WorkflowStepProgress,
+    }
 
     // Stream the final response
     const { finalState, generator } = prepareFinalResponseGenerator(
@@ -66,8 +96,11 @@ export const executeStreamingWorkflow = async function* (
         // Mark answer generation as complete when we start getting actual content
         if (!hasStreamedContent) {
           yield {
-            type: 'custom',
-            content: PROGRESS_MESSAGES.ANSWER_GENERATION.SUCCESS,
+            type: 'progress',
+            content: {
+              id: 'ANSWER_GENERATION',
+              status: 'complete',
+            } as WorkflowStepProgress,
           }
           hasStreamedContent = true
         }
@@ -77,8 +110,11 @@ export const executeStreamingWorkflow = async function* (
 
     // Mark formatting as complete only after all streaming is done
     yield {
-      type: 'custom',
-      content: PROGRESS_MESSAGES.FINAL_RESPONSE.SUCCESS,
+      type: 'progress',
+      content: {
+        id: 'FINAL_RESPONSE',
+        status: 'complete',
+      } as WorkflowStepProgress,
     }
 
     // Get final state from generator

@@ -550,30 +550,7 @@
 .progressContainer {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-1);
-  margin-bottom: var(--spacing-2);
+  gap: var(--spacing-2);
+  margin-bottom: var(--spacing-3);
   width: 100%;
-}
-
-.progressMessage {
-  padding: var(--spacing-2) var(--spacing-3);
-  background-color: var(--global-background-subtle);
-  border: 1px solid var(--global-border);
-  border-radius: var(--border-radius-small);
-  color: var(--global-foreground-subtle);
-  font-size: var(--font-size-3);
-  text-align: center;
-  animation: fadeIn 0.3s ease-in-out;
-  width: 100%;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
 }

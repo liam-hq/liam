@@ -5,6 +5,7 @@ import type { Schema } from '@liam-hq/db-structure'
 import type { Tables } from '@liam-hq/db/supabase/database.types'
 import type { FC } from 'react'
 import { useCallback, useEffect, useRef, useState } from 'react'
+import type { WorkflowStepProgress } from '../../lib/chat/workflow/constants/progressMessages'
 import { ChatInput } from '../ChatInput'
 import type { Mode } from '../ChatInput/components/ModeToggleSwitch/ModeToggleSwitch'
 import { ChatMessage } from '../ChatMessage'
@@ -18,11 +19,13 @@ import {
   setupRealtimeSubscription,
 } from './services'
 import {
+  type WorkflowProgressState,
   createChatEntry,
   formatChatHistory,
   generateMessageId,
   isResponseChunk,
-  updateProgressMessages,
+  resetWorkflowProgress,
+  updateWorkflowProgress,
 } from './services/messageHelpers'
 import type { ChatEntry } from './types/chatTypes'
 
@@ -47,7 +50,8 @@ export const Chat: FC<Props> = ({
   const [isLoading, setIsLoading] = useState(false)
   const [currentMode, setCurrentMode] = useState<Mode>('ask')
   const [isLoadingMessages, setIsLoadingMessages] = useState(true)
-  const [progressMessages, setProgressMessages] = useState<string[]>([])
+  const [workflowProgress, setWorkflowProgress] =
+    useState<WorkflowProgressState>(resetWorkflowProgress())
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const [currentUserId, setCurrentUserId] = useState<string | null>(null)
 
@@ -338,16 +342,19 @@ export const Chat: FC<Props> = ({
               setTimeout(() => {
                 messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
               }, 10)
-            } else if (parsed.type === 'custom') {
-              // Update progress messages
-              setProgressMessages((prev) =>
-                updateProgressMessages(prev, parsed.content),
+            } else if (parsed.type === 'progress') {
+              // Update workflow progress
+              setWorkflowProgress((prev) =>
+                updateWorkflowProgress(
+                  prev,
+                  parsed.content as WorkflowStepProgress,
+                ),
               )
             } else if (parsed.type === 'error') {
               // Handle error message
               console.error('Stream error:', parsed.content)
-              setProgressMessages([])
-              throw new Error(parsed.content)
+              setWorkflowProgress(resetWorkflowProgress())
+              throw new Error(parsed.content as string)
             }
           } catch {
             // If JSON parsing fails, treat as plain text (backward compatibility)
@@ -370,8 +377,8 @@ export const Chat: FC<Props> = ({
       }
     } catch (error) {
       console.error('Error sending message:', error)
-      // Clear progress messages and streaming state on error
-      setProgressMessages([])
+      // Clear workflow progress and streaming state on error
+      setWorkflowProgress(resetWorkflowProgress())
 
       // Update error in the AI message or add a new error message
       setMessages((prev) => {
@@ -424,11 +431,13 @@ export const Chat: FC<Props> = ({
           <>
             {/* Display all messages */}
             {messages.map((message, index) => {
-              // Check if this is the last AI message and has progress messages
+              // Check if this is the last AI message and has workflow progress
               const isLastAIMessage =
                 !message.isUser && index === messages.length - 1
-              const shouldShowProgress =
-                progressMessages.length > 0 && isLastAIMessage
+              const hasWorkflowProgress = Object.values(workflowProgress).some(
+                (step) => step !== null,
+              )
+              const shouldShowProgress = hasWorkflowProgress && isLastAIMessage
 
               return (
                 <ChatMessage
@@ -438,8 +447,8 @@ export const Chat: FC<Props> = ({
                   timestamp={message.timestamp}
                   isGenerating={message.isGenerating}
                   agentType={message.agentType || currentMode}
-                  progressMessages={
-                    shouldShowProgress ? progressMessages : undefined
+                  workflowProgress={
+                    shouldShowProgress ? workflowProgress : undefined
                   }
                   showProgress={shouldShowProgress}
                 />

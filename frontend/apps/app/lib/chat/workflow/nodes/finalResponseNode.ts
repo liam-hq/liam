@@ -31,7 +31,7 @@ export function finalResponseNode(
   state: WorkflowState,
   options?: { streaming?: true },
 ): AsyncGenerator<
-  { type: 'text' | 'error' | 'custom'; content: string },
+  { type: 'text' | 'error' | 'progress'; content: string },
   WorkflowState,
   unknown
 >
@@ -41,7 +41,7 @@ export function finalResponseNode(
 ):
   | Promise<WorkflowState>
   | AsyncGenerator<
-      { type: 'text' | 'error' | 'custom'; content: string },
+      { type: 'text' | 'error' | 'progress'; content: string },
       WorkflowState,
       unknown
     > {
@@ -113,7 +113,7 @@ const finalResponseNodeSync = async (
 const finalResponseNodeStreaming = async function* (
   state: WorkflowState,
 ): AsyncGenerator<
-  { type: 'text' | 'error' | 'custom'; content: string },
+  { type: 'text' | 'error' | 'progress'; content: string },
   WorkflowState,
   unknown
 > {

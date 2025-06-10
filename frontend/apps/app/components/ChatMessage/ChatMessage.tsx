@@ -3,6 +3,7 @@
 import { AgentMessage } from '@/components/Chat/AgentMessage'
 import type { AgentType } from '@/components/Chat/AgentMessage'
 import { UserMessage } from '@/components/Chat/UserMessage'
+import type { WorkflowProgressState } from '@/components/Chat/services/messageHelpers'
 import { syntaxCodeTagProps, syntaxCustomStyle, syntaxTheme } from '@liam-hq/ui'
 import type React from 'react'
 import type { FC, ReactNode } from 'react'
@@ -43,11 +44,11 @@ export interface ChatMessageProps {
    */
   children?: ReactNode
   /**
-   * Progress messages to display above the main message
+   * Workflow progress to display above the main message
    */
-  progressMessages?: string[]
+  workflowProgress?: WorkflowProgressState
   /**
-   * Whether to show progress messages
+   * Whether to show workflow progress
    */
   showProgress?: boolean
 }
@@ -62,7 +63,7 @@ export const ChatMessage: FC<ChatMessageProps> = ({
   agentType = 'build',
   isGenerating = false,
   children,
-  progressMessages,
+  workflowProgress,
   showProgress,
 }) => {
   // Only format and display timestamp if it exists
@@ -123,7 +124,7 @@ export const ChatMessage: FC<ChatMessageProps> = ({
           state={isGenerating ? 'generating' : 'default'}
           message={markdownContent}
           time={formattedTime || ''}
-          progressMessages={progressMessages}
+          workflowProgress={workflowProgress}
           showProgress={showProgress}
         >
           {children}

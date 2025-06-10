@@ -47,11 +47,11 @@ export async function POST(request: Request) {
                 `${JSON.stringify({ type: 'text', content: chunk.content })}\n`,
               ),
             )
-          } else if (chunk.type === 'custom') {
-            // Encode and enqueue the custom progress message as JSON
+          } else if (chunk.type === 'progress') {
+            // Encode and enqueue the progress data as JSON
             controller.enqueue(
               encoder.encode(
-                `${JSON.stringify({ type: 'custom', content: chunk.content })}\n`,
+                `${JSON.stringify({ type: 'progress', content: chunk.content })}\n`,
               ),
             )
           } else if (chunk.type === 'error') {
