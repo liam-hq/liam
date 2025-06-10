@@ -7,16 +7,10 @@ import { ChatInput } from '../ChatInput'
 import type { Mode } from '../ChatInput/components/ModeToggleSwitch/ModeToggleSwitch'
 import { ChatMessage } from '../ChatMessage'
 import styles from './Chat.module.css'
-import { ERROR_MESSAGES } from './constants/chatConstants'
 import { type Message, useRealtimeMessages } from './hooks/useRealtimeMessages'
 import { getCurrentUserId, saveMessage } from './services'
-import {
-  createChatEntry,
-  formatChatHistory,
-  generateMessageId,
-  isResponseChunk,
-  updateProgressMessages,
-} from './services/messageHelpers'
+import { createAndStreamAIMessage } from './services/aiMessageService'
+import { generateMessageId } from './services/messageHelpers'
 import type { ChatEntry } from './types/chatTypes'
 
 type DesignSession = {
@@ -59,7 +53,6 @@ export const Chat: FC<Props> = ({ schemaData, tableGroups, designSession }) => {
   }, [])
 
   // TODO: Add rate limiting - Implement rate limiting for message sending to prevent spam
-  // biome-ignore  lint/complexity/noExcessiveCognitiveComplexity: fix later
   const handleSendMessage = async (content: string, mode: Mode) => {
     // Update the current mode and agent type
     setCurrentMode(mode)
@@ -93,179 +86,26 @@ export const Chat: FC<Props> = ({ schemaData, tableGroups, designSession }) => {
 
     setIsLoading(true)
 
-    // Create AI message placeholder for streaming (without timestamp)
-    const aiMessageId = generateMessageId('ai')
-    const aiMessage: ChatEntry = {
-      id: aiMessageId,
-      content: '',
-      isUser: false,
-      // No timestamp during streaming
-      isGenerating: true, // Mark as generating
-      agentType: mode, // Store the current mode with the message
-    }
-    addOrUpdateMessage(aiMessage)
+    // Create and stream AI message
+    const result = await createAndStreamAIMessage({
+      message: content,
+      schemaData,
+      tableGroups,
+      messages,
+      mode,
+      designSession,
+      addOrUpdateMessage,
+      setProgressMessages,
+    })
 
-    try {
-      // Format chat history for API
-      const history = formatChatHistory(messages)
-
-      // Call API with streaming response
-      const response = await fetch('/api/chat', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          message: content,
-          schemaData,
-          tableGroups,
-          history,
-          mode,
-          organizationId: designSession.organizationId,
-          buildingSchemaId: designSession.buildingSchemaId,
-          latestVersionNumber: designSession.latestVersionNumber || 0,
-        }),
-      })
-
-      if (!response.ok) {
-        throw new Error(ERROR_MESSAGES.FETCH_FAILED)
-      }
-
-      // Process the streaming response
-      const reader = response.body?.getReader()
-      if (!reader) {
-        throw new Error(ERROR_MESSAGES.RESPONSE_NOT_READABLE)
-      }
-
-      let accumulatedContent = ''
-      let aiDbId: string | undefined
-
-      // Read the stream
-      while (true) {
-        const { done, value } = await reader.read()
-
-        if (done) {
-          // Streaming is complete, save to database and add timestamp
-          const saveResult = await saveMessage({
-            designSessionId: designSession.id,
-            content: accumulatedContent,
-            role: 'assistant',
-            userId: null,
-          })
-          if (saveResult.success && saveResult.message) {
-            aiDbId = saveResult.message.id
-          }
-
-          // Update message with final content, timestamp, and database ID
-          const finalAiMessage = createChatEntry(aiMessage, {
-            content: accumulatedContent,
-            timestamp: new Date(),
-            isGenerating: false, // Remove generating state when complete
-            dbId: aiDbId,
-          })
-          addOrUpdateMessage(finalAiMessage)
-          break
-        }
-
-        // Decode the chunk and process JSON messages
-        const chunk = new TextDecoder().decode(value)
-        const lines = chunk.split('\n').filter((line) => line.trim())
-
-        for (const line of lines) {
-          try {
-            const parsed = JSON.parse(line)
-
-            // Validate the parsed data has the expected structure
-            if (!isResponseChunk(parsed)) {
-              console.error('Invalid response format:', parsed)
-              continue
-            }
-
-            if (parsed.type === 'text') {
-              // Append text content to accumulated content
-              accumulatedContent += parsed.content
-
-              // Update the AI message with the accumulated content (without timestamp)
-              // Keep isGenerating: true during streaming
-              const streamingAiMessage = createChatEntry(aiMessage, {
-                content: accumulatedContent,
-                isGenerating: true,
-              })
-              addOrUpdateMessage(streamingAiMessage)
-
-              // Force immediate update for smoother streaming experience
-              // Using a small timeout to allow React to batch updates
-              setTimeout(() => {
-                messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-              }, 10)
-            } else if (parsed.type === 'custom') {
-              // Update progress messages
-              setProgressMessages((prev) =>
-                updateProgressMessages(prev, parsed.content),
-              )
-            } else if (parsed.type === 'heartbeat') {
-              // Handle heartbeat messages to maintain connection
-              // TODO: Remove this heartbeat handling once ProcessIndicator provides a better solution
-              // Update progress messages with heartbeat content
-              setProgressMessages((prev) => {
-                const filtered = prev.filter(
-                  (msg) => !msg.includes('Processing...'),
-                )
-                return [...filtered, parsed.content]
-              })
-            } else if (parsed.type === 'error') {
-              // Handle error message
-              console.error('Stream error:', parsed.content)
-              setProgressMessages([])
-              throw new Error(parsed.content)
-            }
-          } catch {
-            // If JSON parsing fails, treat as plain text (backward compatibility)
-            accumulatedContent += chunk
-            const backwardCompatMessage = createChatEntry(aiMessage, {
-              content: accumulatedContent,
-              isGenerating: true,
-            })
-            addOrUpdateMessage(backwardCompatMessage)
-          }
-        }
-
-        // Scroll to bottom as content streams in
+    if (result.success) {
+      // Scroll to bottom after successful completion
+      setTimeout(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-      }
-    } catch (error) {
-      console.error('Error sending message:', error)
-      // Clear progress messages and streaming state on error
-      setProgressMessages([])
-
-      // Update error in the AI message or add a new error message
-      // Check if we already added an AI message that we can update
-      const existingAiMessage = messages.find((msg) => msg.id.startsWith('ai-'))
-
-      if (existingAiMessage && existingAiMessage.content === '') {
-        // Update the existing empty message with error, add timestamp, and remove generating state
-        const errorAiMessage = createChatEntry(existingAiMessage, {
-          content: ERROR_MESSAGES.GENERAL,
-          timestamp: new Date(),
-          isGenerating: false, // Remove generating state on error
-          agentType: currentMode, // Ensure the agent type is set for error messages
-        })
-        addOrUpdateMessage(errorAiMessage)
-      } else {
-        // Create a new error message with timestamp
-        const errorMessage: ChatEntry = {
-          id: generateMessageId('error'),
-          content: ERROR_MESSAGES.GENERAL,
-          isUser: false,
-          timestamp: new Date(),
-          isGenerating: false, // Ensure error message is not in generating state
-          agentType: currentMode, // Use the current mode for error messages
-        }
-        addOrUpdateMessage(errorMessage)
-      }
-    } finally {
-      setIsLoading(false)
+      }, 10)
     }
+
+    setIsLoading(false)
   }
 
   return (
