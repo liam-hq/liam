@@ -11,6 +11,7 @@ import { schemaSchema } from '@liam-hq/db-structure'
 import type { FC } from 'react'
 import { useCallback, useEffect, useState } from 'react'
 import * as v from 'valibot'
+import { SessionBreadcrumb } from './SessionBreadcrumb/SessionBreadcrumb'
 import styles from './SessionDetailPage.module.css'
 import {
   fetchSchemaDataClient,
@@ -23,6 +24,7 @@ type Props = {
     organizationId: string
     buildingSchemaId: string
     latestVersionNumber: number
+    name: string
   }
 }
 
@@ -135,6 +137,7 @@ export const SessionDetailPage: FC<Props> = ({ designSession }) => {
 
   return (
     <div className={styles.container}>
+      <SessionBreadcrumb sessionName={designSession.name} />
       <div className={styles.columns}>
         <div className={styles.chatSection}>
           <Chat

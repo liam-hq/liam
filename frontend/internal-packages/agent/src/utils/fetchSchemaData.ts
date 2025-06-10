@@ -7,6 +7,7 @@ import { operationsSchema } from './operationsSchema'
 
 interface DesignSessionData {
   organization_id: string
+  name: string
 }
 
 /**
@@ -21,7 +22,7 @@ export async function fetchDesignSessionData(
 
   const { data, error } = await supabase
     .from('design_sessions')
-    .select('organization_id')
+    .select('organization_id, name')
     .eq('id', designSessionId)
     .single()
 

@@ -44,6 +44,7 @@ export default async function Page({ params }: PageProps) {
         organizationId: designSessionData.organization_id,
         buildingSchemaId,
         latestVersionNumber,
+        name: designSessionData.name,
       }}
     />
   )
