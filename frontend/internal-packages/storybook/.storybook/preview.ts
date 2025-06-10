@@ -20,10 +20,16 @@ const preview: Preview = {
       default: 'dark',
       values: [
         { name: 'light', value: '#f8f8f8' },
-        { name: 'dark', value: '#333333' },
+        { name: 'dark', value: 'var(--global-background, #141616)' },
       ],
     },
     layout: 'centered',
+    docs: {
+      story: {
+        inline: false,
+        iframeHeight: 600,
+      },
+    },
   },
   tags: ['autodocs'],
 }
