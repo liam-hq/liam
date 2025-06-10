@@ -1,0 +1,32 @@
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-1);
+  padding: var(--spacing-3) var(--spacing-3half);
+  background-color: var(--global-muted-background);
+  border-radius: var(--border-radius-base);
+  margin-bottom: var(--spacing-3);
+}
+
+.breadcrumbLink {
+  font-size: var(--font-size-4);
+  font-weight: 500;
+  color: var(--global-foreground-muted);
+  text-decoration: none;
+}
+
+.breadcrumbLink:hover {
+  color: var(--global-foreground);
+}
+
+.chevronRight {
+  width: 0.75rem;
+  height: 0.75rem;
+  color: var(--overlay-70);
+}
+
+.currentPage {
+  font-size: var(--font-size-4);
+  font-weight: 500;
+  color: var(--global-foreground);
+}
