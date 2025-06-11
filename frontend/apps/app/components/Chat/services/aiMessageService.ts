@@ -44,8 +44,8 @@ const createAIMessagePlaceholder = (
   const aiMessageId = generateMessageId('ai')
   const aiMessage: ChatEntry = {
     id: aiMessageId,
+    role: 'assistant',
     content: '',
-    isUser: false,
     // No timestamp during streaming
     isGenerating: true, // Mark as generating
   }
@@ -145,46 +145,101 @@ const processStreamLine = (
 }
 
 /**
- * Handles errors and updates AI message with error content
+ * Generates appropriate error message based on error type
  */
-const handleStreamingError = (
+const getErrorDisplayMessage = (error: unknown): string => {
+  if (error instanceof Error) {
+    if (error.message.includes('fetch') || error.message.includes('Failed to get response')) {
+      return 'ネットワークエラーが発生しました。接続を確認して再試行してください。'
+    }
+    if (error.message.includes('Response body is not readable')) {
+      return 'サーバーからの応答を読み取れませんでした。再試行してください。'
+    }
+    if (error.message.includes('API')) {
+      return 'サーバーエラーが発生しました。しばらく時間を置いて再試行してください。'
+    }
+    return `エラーが発生しました: ${error.message}`
+  }
+  return ERROR_MESSAGES.GENERAL
+}
+
+/**
+ * Handles errors and creates appropriate error message
+ */
+const handleStreamingError = async (
   error: unknown,
+  designSession: DesignSession,
   messages: ChatEntry[],
   addOrUpdateMessage: (message: ChatEntry, userId?: string | null) => void,
   setProgressMessages: (updater: (prev: string[]) => string[]) => void,
-): CreateAIMessageResult => {
+): Promise<CreateAIMessageResult> => {
   console.error('Error in createAndStreamAIMessage:', error)
 
   // Clear progress messages and streaming state on error
   setProgressMessages(() => [])
 
-  // Update error in the AI message or add a new error message
-  // Check if we already added an AI message that we can update
-  const existingAiMessage = messages.find((msg) => msg.id.startsWith('ai-'))
+  // Generate appropriate error message
+  const errorContent = getErrorDisplayMessage(error)
 
-  if (existingAiMessage && existingAiMessage.content === '') {
-    // Update the existing empty message with error, add timestamp, and remove generating state
-    const errorAiMessage = createChatEntry(existingAiMessage, {
-      content: ERROR_MESSAGES.GENERAL,
+  // Check if we have an existing AI message that we can replace with error
+  const existingAiMessage = messages.find((msg) => 
+    msg.id.startsWith('ai-') && msg.isGenerating && msg.content === ''
+  )
+
+  if (existingAiMessage) {
+    // Replace the generating AI message with an error message
+    const errorMessage = createChatEntry(existingAiMessage, {
+      role: 'error',
+      content: errorContent,
       timestamp: new Date(),
-      isGenerating: false, // Remove generating state on error
+      isGenerating: false,
     })
-    addOrUpdateMessage(errorAiMessage)
+    addOrUpdateMessage(errorMessage)
+
+    // Save error message to database
+    const saveResult = await saveMessage({
+      designSessionId: designSession.id,
+      content: errorContent,
+      role: 'error',
+      userId: null,
+    })
+
+    if (saveResult.success && saveResult.message) {
+      const finalErrorMessage = createChatEntry(errorMessage, {
+        dbId: saveResult.message.id,
+      })
+      addOrUpdateMessage(finalErrorMessage)
+    }
   } else {
-    // Create a new error message with timestamp
+    // Create a new error message
     const errorMessage: ChatEntry = {
       id: generateMessageId('error'),
-      content: ERROR_MESSAGES.GENERAL,
-      isUser: false,
+      role: 'error',
+      content: errorContent,
       timestamp: new Date(),
-      isGenerating: false, // Ensure error message is not in generating state
+      isGenerating: false,
     }
     addOrUpdateMessage(errorMessage)
+
+    // Save error message to database
+    const saveResult = await saveMessage({
+      designSessionId: designSession.id,
+      content: errorContent,
+      role: 'error',
+      userId: null,
+    })
+
+    if (saveResult.success && saveResult.message) {
+      const finalErrorMessage = createChatEntry(errorMessage, {
+        dbId: saveResult.message.id,
+      })
+      addOrUpdateMessage(finalErrorMessage)
+    }
   }
 
   return {
     success: false,
-    error: error instanceof Error ? error.message : ERROR_MESSAGES.GENERAL,
+    error: errorContent,
   }
 }
 
@@ -270,8 +325,9 @@ export const createAndStreamAIMessage = async ({
       // Note: Scroll handling should be done by the caller component
     }
   } catch (error) {
-    return handleStreamingError(
+    return await handleStreamingError(
       error,
+      designSession,
       messages,
       addOrUpdateMessage,
       setProgressMessages,

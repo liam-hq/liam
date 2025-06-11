@@ -10,7 +10,7 @@ type MessageInsert = TablesInsert<'messages'>
 const saveMessageSchema = v.object({
   designSessionId: v.pipe(v.string(), v.uuid()),
   content: v.pipe(v.string(), v.minLength(1)),
-  role: v.picklist(['user', 'assistant']),
+  role: v.picklist(['user', 'assistant', 'error']),
   userId: v.optional(v.nullable(v.pipe(v.string(), v.uuid()))),
 })
 
@@ -19,7 +19,7 @@ const realtimeMessageSchema = v.object({
   id: v.string(),
   design_session_id: v.pipe(v.string(), v.uuid()),
   content: v.string(),
-  role: v.picklist(['user', 'assistant']),
+  role: v.picklist(['user', 'assistant', 'error']),
   user_id: v.nullable(v.string()),
   created_at: v.string(),
   updated_at: v.string(),
@@ -32,7 +32,7 @@ const realtimeMessageSchema = v.object({
 export const saveMessage = async (data: {
   designSessionId: string
   content: string
-  role: 'user' | 'assistant'
+  role: 'user' | 'assistant' | 'error'
   userId?: string | null
 }): Promise<{ success: boolean; message?: Message; error?: string }> => {
   const parsedData = v.parse(saveMessageSchema, data)
@@ -100,8 +100,9 @@ export const getCurrentUserId = async (): Promise<string | null> => {
 export const convertMessageToChatEntry = (message: Message) => {
   return {
     id: message.id,
+    dbId: message.id,
+    role: message.role,
     content: message.content,
-    isUser: message.role === 'user',
     timestamp: new Date(message.created_at),
     isGenerating: false,
   }
