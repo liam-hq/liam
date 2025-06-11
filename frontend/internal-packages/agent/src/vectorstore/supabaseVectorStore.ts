@@ -154,27 +154,21 @@ export async function createSupabaseVectorStore(
   schema: Schema,
   organizationId?: string,
 ) {
-  try {
-    const openAIApiKey = validateOpenAIKey()
+  const openAIApiKey = validateOpenAIKey()
 
-    // Initialize OpenAI embeddings
-    const embeddings = new OpenAIEmbeddings({ openAIApiKey })
-    const supabaseClient = createSupabaseClient()
+  // Initialize OpenAI embeddings
+  const embeddings = new OpenAIEmbeddings({ openAIApiKey })
+  const supabaseClient = createSupabaseClient()
 
-    // Convert schema to documents with organization_id if provided
-    const docs = await createDocumentFromSchema(schema, organizationId)
+  // Convert schema to documents with organization_id if provided
+  const docs = await createDocumentFromSchema(schema, organizationId)
 
-    // Process documents in batches
-    return await processBatchesAndCreateVectorStore(
-      docs,
-      embeddings,
-      supabaseClient,
-    )
-  } catch (error) {
-    // Log the error
-    process.stderr.write(`Error in implementation: ${error}\n`)
-    throw error
-  }
+  // Process documents in batches
+  return await processBatchesAndCreateVectorStore(
+    docs,
+    embeddings,
+    supabaseClient,
+  )
 }
 
 /**
@@ -225,20 +219,15 @@ async function processBatchesAndCreateVectorStore(
   for (let i = 0; i < totalDocs; i += BATCH_SIZE) {
     const end = Math.min(i + BATCH_SIZE, totalDocs)
     const batch = docs.slice(i, end)
-    const batchNumber = Math.floor(i / BATCH_SIZE) + 1
 
-    try {
-      // Process batch and update vector store reference if needed
-      vectorStore = await processBatch({
-        batch,
-        vectorStore,
-        embeddings,
-        supabaseClient,
-        isFirstBatch: i === 0,
-      })
-    } catch (batchError) {
-      logBatchError(batchError, batchNumber)
-    }
+    // Process batch and update vector store reference if needed
+    vectorStore = await processBatch({
+      batch,
+      vectorStore,
+      embeddings,
+      supabaseClient,
+      isFirstBatch: i === 0,
+    })
   }
 
   if (!vectorStore) {
@@ -268,23 +257,18 @@ async function processBatch({
 
   // Create or reuse the vector store instance
   if (isFirstBatch) {
-    try {
-      // Create the vector store instance directly instead of using fromDocuments
-      const vectorStore = new SupabaseVectorStore(embeddings, {
-        // biome-ignore lint/suspicious/noExplicitAny: Type mismatch between our Supabase client and LangChain's expected client
-        client: supabaseClient as any,
-        tableName: 'documents',
-        queryName: 'match_documents',
-      })
+    // Create the vector store instance directly instead of using fromDocuments
+    const vectorStore = new SupabaseVectorStore(embeddings, {
+      // biome-ignore lint/suspicious/noExplicitAny: Type mismatch between our Supabase client and LangChain's expected client
+      client: supabaseClient as any,
+      tableName: 'documents',
+      queryName: 'match_documents',
+    })
 
-      // Manually add documents to ensure updated_at is set
-      await vectorStore.addDocuments(batch)
+    // Manually add documents to ensure updated_at is set
+    await vectorStore.addDocuments(batch)
 
-      return vectorStore
-    } catch (error) {
-      process.stderr.write(`Error creating vector store: ${error}\n`)
-      throw error
-    }
+    return vectorStore
   }
 
   if (vectorStore) {
@@ -294,21 +278,6 @@ async function processBatch({
   }
 
   return vectorStore
-}
-
-/**
- * Log batch processing errors
- */
-function logBatchError(batchError: unknown, batchNumber: number) {
-  process.stderr.write(`Error processing batch ${batchNumber}: ${batchError}\n`)
-
-  // Log more details about the error
-  if (batchError instanceof Error) {
-    process.stderr.write(`Error details: ${batchError.message}\n`)
-    if (batchError.stack) {
-      process.stderr.write(`Stack trace: ${batchError.stack}\n`)
-    }
-  }
 }
 
 // Define a type for schema metadata
@@ -327,67 +296,70 @@ interface SchemaMetadata {
  * @returns The stored schema hash or null if not found
  */
 async function getStoredSchemaHash(): Promise<string | null> {
-  try {
-    // Create Supabase client directly for more reliable querying
-    const supabaseClient = createSupabaseClient()
+  // Create Supabase client directly for more reliable querying
+  const supabaseClient = createSupabaseClient()
 
-    // Query for schema_metadata documents directly using metadata
-    const { data: metadataDocs } = await supabaseClient
-      .from('documents')
-      .select('metadata')
-      .eq('metadata->>source', 'schema_metadata')
-      .eq('metadata->>type', 'metadata')
-      .order('created_at', { ascending: false })
-      .limit(1)
+  // Query for schema_metadata documents directly using metadata
+  const { data: metadataDocs, error: metadataError } = await supabaseClient
+    .from('documents')
+    .select('metadata')
+    .eq('metadata->>source', 'schema_metadata')
+    .eq('metadata->>type', 'metadata')
+    .order('created_at', { ascending: false })
+    .limit(1)
 
-    // Log query results for debugging
-    process.stdout.write(
-      `Found ${metadataDocs?.length || 0} metadata documents\n`,
+  if (metadataError) {
+    process.stderr.write(
+      `Error querying metadata documents: ${metadataError}\n`,
     )
-
-    // Check if we found a metadata document with a hash
-    if (metadataDocs && metadataDocs.length > 0) {
-      // Type assertion for metadata
-      const metadata = metadataDocs[0]?.metadata as SchemaMetadata
-      if (metadata?.schemaHash) {
-        const hash = metadata.schemaHash
-        process.stdout.write(
-          `Found stored hash in metadata document: ${hash}\n`,
-        )
-        return hash
-      }
-    }
-
-    // If no metadata document found, try content documents as fallback
-    const { data: contentDocs } = await supabaseClient
-      .from('documents')
-      .select('metadata')
-      .eq('metadata->>source', 'schema')
-      .eq('metadata->>type', 'content')
-      .order('created_at', { ascending: false })
-      .limit(1)
-
-    process.stdout.write(
-      `Found ${contentDocs?.length || 0} content documents\n`,
-    )
-
-    // Check if we found a content document with a hash
-    if (contentDocs && contentDocs.length > 0) {
-      // Type assertion for metadata
-      const metadata = contentDocs[0]?.metadata as SchemaMetadata
-      if (metadata?.schemaHash) {
-        const hash = metadata.schemaHash
-        process.stdout.write(`Found stored hash in content document: ${hash}\n`)
-        return hash
-      }
-    }
-
-    process.stdout.write('No stored schema hash found\n')
-    return null
-  } catch (error) {
-    process.stderr.write(`Error getting stored schema hash: ${error}\n`)
     return null
   }
+
+  // Log query results for debugging
+  process.stdout.write(
+    `Found ${metadataDocs?.length || 0} metadata documents\n`,
+  )
+
+  // Check if we found a metadata document with a hash
+  if (metadataDocs && metadataDocs.length > 0) {
+    // Type assertion for metadata
+    const metadata = metadataDocs[0]?.metadata as SchemaMetadata
+    if (metadata?.schemaHash) {
+      const hash = metadata.schemaHash
+      process.stdout.write(`Found stored hash in metadata document: ${hash}\n`)
+      return hash
+    }
+  }
+
+  // If no metadata document found, try content documents as fallback
+  const { data: contentDocs, error: contentError } = await supabaseClient
+    .from('documents')
+    .select('metadata')
+    .eq('metadata->>source', 'schema')
+    .eq('metadata->>type', 'content')
+    .order('created_at', { ascending: false })
+    .limit(1)
+
+  if (contentError) {
+    process.stderr.write(`Error querying content documents: ${contentError}\n`)
+    return null
+  }
+
+  process.stdout.write(`Found ${contentDocs?.length || 0} content documents\n`)
+
+  // Check if we found a content document with a hash
+  if (contentDocs && contentDocs.length > 0) {
+    // Type assertion for metadata
+    const metadata = contentDocs[0]?.metadata as SchemaMetadata
+    if (metadata?.schemaHash) {
+      const hash = metadata.schemaHash
+      process.stdout.write(`Found stored hash in content document: ${hash}\n`)
+      return hash
+    }
+  }
+
+  process.stdout.write('No stored schema hash found\n')
+  return null
 }
 
 /**
@@ -396,23 +368,17 @@ async function getStoredSchemaHash(): Promise<string | null> {
  * @returns True if schema has been updated or doesn't exist, false otherwise
  */
 export async function isSchemaUpdated(schema: Schema): Promise<boolean> {
-  try {
-    // Calculate hash for current schema
-    const currentHash = generateSchemaHash(schema)
+  // Calculate hash for current schema
+  const currentHash = generateSchemaHash(schema)
 
-    // Get stored hash
-    const storedHash = await getStoredSchemaHash()
+  // Get stored hash
+  const storedHash = await getStoredSchemaHash()
 
-    // If no stored hash exists, consider it as updated
-    if (!storedHash) {
-      return true
-    }
-
-    // Compare hashes
-    return currentHash !== storedHash
-  } catch (error) {
-    // If there's any error in the process, assume the schema needs updating
-    process.stderr.write(`Error checking if schema is updated: ${error}\n`)
+  // If no stored hash exists, consider it as updated
+  if (!storedHash) {
     return true
   }
+
+  // Compare hashes
+  return currentHash !== storedHash
 }

@@ -1,17 +1,8 @@
 import { DatabaseSchemaBuildAgent } from './agents'
 import type { AgentName, BasePromptVariables } from './utils/types'
 
-// Create agent instances with error handling
-const createAgentSafely = <T>(AgentClass: new () => T): T | null => {
-  try {
-    return new AgentClass()
-  } catch (error) {
-    console.error('Failed to create agent:', error)
-    return null
-  }
-}
-
-const databaseSchemaBuildAgent = createAgentSafely(DatabaseSchemaBuildAgent)
+// Create agent instances
+const databaseSchemaBuildAgent = new DatabaseSchemaBuildAgent()
 
 // Agent registry for compatibility with existing code
 const agents = {

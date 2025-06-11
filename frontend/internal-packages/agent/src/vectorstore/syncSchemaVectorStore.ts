@@ -47,24 +47,19 @@ export async function syncSchemaVectorStore(
   organizationId: string,
   forceUpdate = false,
 ): Promise<boolean> {
-  try {
-    // Validate environment variables
-    if (!validateEnvironmentVariables()) {
-      throw new Error('Required environment variables are missing')
-    }
-
-    // Check if schema has been updated
-    const needsUpdate = forceUpdate || (await isSchemaUpdated(schemaData))
-
-    if (needsUpdate) {
-      // Initialize or update vector store
-      await createSupabaseVectorStore(schemaData, organizationId)
-      return true
-    }
-
-    return false
-  } catch (error) {
-    process.stderr.write(`Error synchronizing vector store: ${error}\n`)
-    throw error
+  // Validate environment variables
+  if (!validateEnvironmentVariables()) {
+    throw new Error('Required environment variables are missing')
   }
+
+  // Check if schema has been updated
+  const needsUpdate = forceUpdate || (await isSchemaUpdated(schemaData))
+
+  if (needsUpdate) {
+    // Initialize or update vector store
+    await createSupabaseVectorStore(schemaData, organizationId)
+    return true
+  }
+
+  return false
 }
