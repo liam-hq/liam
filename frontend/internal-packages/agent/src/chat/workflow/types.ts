@@ -26,13 +26,16 @@ export type WorkflowState = {
   latestVersionNumber?: number | undefined
   organizationId?: string | undefined
   userId?: string | undefined
+
+  // Trigger.dev job tracking
+  triggerJobId?: string | undefined
 }
 
 /**
  * Response chunk type for streaming
  */
 export type ResponseChunk = {
-  type: 'text' | 'error' | 'custom'
+  type: 'text' | 'error' | 'custom' | 'trigger_job_id'
   content: string
 }
 
@@ -42,16 +45,4 @@ export type ResponseChunk = {
 export interface WorkflowOptions {
   streaming?: boolean
   recursionLimit?: number
-}
-
-/**
- * Type guard for WorkflowState
- */
-export const isWorkflowState = (val: unknown): val is WorkflowState => {
-  return (
-    val !== null &&
-    typeof val === 'object' &&
-    'userInput' in val &&
-    'history' in val
-  )
 }
