@@ -27,7 +27,7 @@ export function processChatMessage(
   params: ChatProcessorParams,
   options?: { streaming?: true },
 ): AsyncGenerator<
-  { type: 'text' | 'error' | 'custom'; content: string },
+  { type: 'text' | 'error' | 'custom' | 'trigger_job_id'; content: string },
   ChatProcessorResult,
   unknown
 >
@@ -45,7 +45,7 @@ export function processChatMessage(
 ):
   | Promise<ChatProcessorResult>
   | AsyncGenerator<
-      { type: 'text' | 'error' | 'custom'; content: string },
+      { type: 'text' | 'error' | 'custom' | 'trigger_job_id'; content: string },
       ChatProcessorResult,
       unknown
     > {
@@ -116,12 +116,12 @@ async function processChatMessageSync(
  */
 async function* processStreamingChunks(
   stream: AsyncGenerator<
-    { type: 'text' | 'error' | 'custom'; content: string },
+    { type: 'text' | 'error' | 'custom' | 'trigger_job_id'; content: string },
     unknown,
     unknown
   >,
 ): AsyncGenerator<
-  { type: 'text' | 'error' | 'custom'; content: string },
+  { type: 'text' | 'error' | 'custom' | 'trigger_job_id'; content: string },
   { finalText: string; hasError: boolean; errorMessage: string },
   unknown
 > {
@@ -133,7 +133,7 @@ async function* processStreamingChunks(
     if (chunk.type === 'text') {
       finalText += chunk.content
       yield chunk
-    } else if (chunk.type === 'custom') {
+    } else if (chunk.type === 'custom' || chunk.type === 'trigger_job_id') {
       yield chunk
     } else if (chunk.type === 'error') {
       hasError = true
@@ -149,7 +149,7 @@ async function* processStreamingChunks(
 async function* processChatMessageStreaming(
   params: ChatProcessorParams,
 ): AsyncGenerator<
-  { type: 'text' | 'error' | 'custom'; content: string },
+  { type: 'text' | 'error' | 'custom' | 'trigger_job_id'; content: string },
   ChatProcessorResult,
   unknown
 > {

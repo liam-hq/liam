@@ -1,92 +1,159 @@
-import { END, START, StateGraph } from '@langchain/langgraph'
 import {
   PROGRESS_MESSAGES,
   WORKFLOW_ERROR_MESSAGES,
 } from '../constants/progressMessages'
 import { finalResponseNode } from '../nodes'
-import {
-  type ChatState,
-  DEFAULT_RECURSION_LIMIT,
-  createAnnotations,
-  generateAnswer,
-  validateInput,
-} from '../shared/langGraphUtils'
-import {
-  createErrorState,
-  fromLangGraphResult,
-  toLangGraphState,
-} from '../shared/stateManager'
+import { validateInput } from '../shared/langGraphUtils'
+import type { ChatState } from '../shared/langGraphUtils'
+import { createErrorState, toLangGraphState } from '../shared/stateManager'
 import type { ResponseChunk, WorkflowState } from '../types'
-import {
-  extractFinalState,
-  prepareFinalResponseGenerator,
-} from './workflowSteps'
+import type { BackgroundJobStatus } from './backgroundJobService'
+import { triggerService } from './triggerService'
 
 /**
- * Create and configure the LangGraph workflow for validation and answer generation
+ * Makes a single API call to check job status
  */
-const createPartialGraph = () => {
-  const ChatStateAnnotation = createAnnotations()
-  const graph = new StateGraph(ChatStateAnnotation)
+const checkJobStatus = async (jobId: string): Promise<BackgroundJobStatus> => {
+  const baseUrl = process.env['NEXT_PUBLIC_APP_URL'] || 'http://localhost:3001'
+  const response = await fetch(`${baseUrl}/api/jobs/${jobId}`)
 
-  graph
-    .addNode('validateInput', validateInput)
-    .addNode('generateAnswer', generateAnswer)
-    .addEdge(START, 'validateInput')
-    .addEdge('generateAnswer', END)
+  if (!response.ok) {
+    if (response.status === 404) {
+      throw new Error(`Job ${jobId} not found`)
+    }
+    throw new Error(`API request failed: ${response.status}`)
+  }
 
-    // Conditional edges
-    .addConditionalEdges('validateInput', (state: ChatState) => {
-      if (state.error) return END
-      return 'generateAnswer'
-    })
-
-  return graph.compile()
+  return await response.json()
 }
 
 /**
- * Execute validation and answer generation using LangGraph
+ * Handles errors during job status polling
  */
-const executeLangGraphSteps = async (
-  initialState: WorkflowState,
-  recursionLimit: number = DEFAULT_RECURSION_LIMIT,
-): Promise<WorkflowState> => {
-  try {
-    const compiled = createPartialGraph()
-    const langGraphState = toLangGraphState(initialState)
+const handlePollingError = async (
+  error: unknown,
+  pollIntervalMs: number,
+): Promise<boolean> => {
+  // If it's a timeout error, re-throw it
+  if (error instanceof Error && error.message.includes('not found')) {
+    throw error
+  }
 
-    const result = await compiled.invoke(langGraphState, { recursionLimit })
-    return fromLangGraphResult(result)
-  } catch (error) {
-    console.error('LangGraph execution failed:', error)
-    const errorMessage =
-      error instanceof Error ? error.message : 'LangGraph execution failed'
+  // For other errors, continue polling after delay
+  await new Promise((resolve) => setTimeout(resolve, pollIntervalMs))
+  return true // Continue polling
+}
 
-    return {
-      ...initialState,
-      error: errorMessage,
+/**
+ * Poll job status via API endpoint instead of in-memory service
+ */
+const pollJobStatusViaAPI = async (
+  jobId: string,
+  timeoutMs = 180000, // 3 minutes
+  pollIntervalMs = 3000, // 3 seconds
+): Promise<BackgroundJobStatus> => {
+  const startTime = Date.now()
+
+  while (Date.now() - startTime < timeoutMs) {
+    try {
+      const jobStatus = await checkJobStatus(jobId)
+
+      if (jobStatus.status === 'completed' || jobStatus.status === 'failed') {
+        return jobStatus
+      }
+
+      // Wait before next poll
+      await new Promise((resolve) => setTimeout(resolve, pollIntervalMs))
+    } catch (error) {
+      const shouldContinue = await handlePollingError(error, pollIntervalMs)
+      if (!shouldContinue) {
+        throw error
+      }
     }
+  }
+
+  throw new Error(`Job ${jobId} timed out after ${timeoutMs}ms`)
+}
+
+/**
+ * Handles validation logic and returns result
+ */
+const performValidation = async (
+  initialState: WorkflowState,
+): Promise<{ validationResult: Partial<ChatState>; error?: string }> => {
+  const langGraphState = toLangGraphState(initialState)
+  const validationResult = await validateInput(langGraphState)
+
+  if (validationResult.error) {
+    return { validationResult, error: validationResult.error }
+  }
+
+  return { validationResult }
+}
+
+/**
+ * Handles trigger job setup and returns job information
+ */
+const setupTriggerJob = async (
+  initialState: WorkflowState,
+  validationResult: Partial<ChatState>,
+  designSessionId?: string,
+): Promise<{
+  jobId: string
+  triggerJobId?: string
+  publicAccessToken?: string
+}> => {
+  const sessionId = designSessionId || `session_${Date.now()}`
+
+  return await triggerService.triggerAnswerGeneration(
+    { ...initialState, ...validationResult },
+    sessionId,
+  )
+}
+
+/**
+ * Handles final response streaming
+ */
+const streamFinalResponse = async function* (
+  finalState: WorkflowState,
+): AsyncGenerator<ResponseChunk, void, unknown> {
+  yield { type: 'custom', content: PROGRESS_MESSAGES.FINAL_RESPONSE.START }
+
+  const finalResponseGenerator = finalResponseNode(finalState, {
+    streaming: true,
+  })
+
+  for await (const chunk of finalResponseGenerator) {
+    if (chunk.type === 'text') {
+      yield chunk
+    }
+  }
+
+  yield {
+    type: 'custom',
+    content: PROGRESS_MESSAGES.FINAL_RESPONSE.SUCCESS,
   }
 }
 
 /**
- * Execute streaming workflow with partial LangGraph integration
+ * Execute streaming workflow with background job for answer generation
  */
 export const executeStreamingWorkflow = async function* (
   initialState: WorkflowState,
+  designSessionId?: string,
 ): AsyncGenerator<ResponseChunk, WorkflowState, unknown> {
   try {
-    // Step 1-2: Use LangGraph for validation and answer generation
+    // Step 1: Input validation
     yield { type: 'custom', content: PROGRESS_MESSAGES.VALIDATION.START }
 
-    const langGraphResult = await executeLangGraphSteps(initialState)
+    const { validationResult, error: validationError } =
+      await performValidation(initialState)
 
-    if (langGraphResult.error) {
+    if (validationError) {
       yield { type: 'custom', content: PROGRESS_MESSAGES.VALIDATION.ERROR }
-      yield { type: 'error', content: langGraphResult.error }
+      yield { type: 'error', content: validationError }
 
-      // Generate error response
-      const errorState = createErrorState(initialState, langGraphResult.error)
+      const errorState = createErrorState(initialState, validationError)
       const finalResult = await finalResponseNode(errorState, {
         streaming: false,
       })
@@ -94,43 +161,109 @@ export const executeStreamingWorkflow = async function* (
     }
 
     yield { type: 'custom', content: PROGRESS_MESSAGES.VALIDATION.SUCCESS }
-    yield {
-      type: 'custom',
-      content: PROGRESS_MESSAGES.ANSWER_GENERATION.SUCCESS,
-    }
 
-    // Step 3: Manual streaming for final response
-    yield { type: 'custom', content: PROGRESS_MESSAGES.FINAL_RESPONSE.START }
+    // Step 2: Trigger background job for answer generation
+    yield { type: 'custom', content: PROGRESS_MESSAGES.ANSWER_GENERATION.START }
 
-    // Stream the final response manually
-    const { finalState, generator } = prepareFinalResponseGenerator(
-      langGraphResult,
+    const { jobId, triggerJobId, publicAccessToken } = await setupTriggerJob(
       initialState,
+      validationResult,
+      designSessionId,
     )
 
-    let hasStreamedContent = false
+    yield { type: 'custom', content: `Background job started: ${jobId}` }
 
-    for await (const chunk of generator) {
-      if (chunk.type === 'text' || chunk.type === 'error') {
-        if (!hasStreamedContent) {
-          hasStreamedContent = true
+    if (triggerJobId) {
+      yield { type: 'custom', content: `Trigger.dev job ID: ${triggerJobId}` }
+      yield { type: 'custom', content: `TRIGGER_JOB_ID:${triggerJobId}` }
+
+      if (publicAccessToken) {
+        yield {
+          type: 'custom',
+          content: `PUBLIC_ACCESS_TOKEN:${publicAccessToken}`,
         }
-        yield chunk
+      }
+
+      yield { type: 'custom', content: 'Processing your request...' }
+      yield {
+        type: 'custom',
+        content: 'Monitoring job with Trigger.dev React Hooks...',
+      }
+
+      // Return early - client will handle the rest
+      return {
+        ...initialState,
+        ...validationResult,
+        triggerJobId,
+        generatedAnswer: undefined,
       }
     }
 
-    // Mark formatting as complete only after all streaming is done
-    yield {
-      type: 'custom',
-      content: PROGRESS_MESSAGES.FINAL_RESPONSE.SUCCESS,
+    yield { type: 'custom', content: 'Processing your request...' }
+
+    // Step 3: Fallback polling and completion
+    try {
+      const jobResult = await pollJobStatusViaAPI(jobId, 180000, 3000)
+
+      if (jobResult.status === 'failed') {
+        yield {
+          type: 'custom',
+          content: PROGRESS_MESSAGES.ANSWER_GENERATION.ERROR,
+        }
+        yield {
+          type: 'error',
+          content: jobResult.error || 'Answer generation failed',
+        }
+
+        const errorState = createErrorState(
+          initialState,
+          jobResult.error || 'Answer generation failed',
+        )
+        const finalResult = await finalResponseNode(errorState, {
+          streaming: false,
+        })
+        return finalResult
+      }
+
+      yield {
+        type: 'custom',
+        content: PROGRESS_MESSAGES.ANSWER_GENERATION.SUCCESS,
+      }
+
+      // Create final state with generated answer
+      const finalState: WorkflowState = {
+        ...initialState,
+        ...validationResult,
+        generatedAnswer: jobResult.generatedAnswer,
+      }
+
+      // Stream the final response
+      for await (const chunk of streamFinalResponse(finalState)) {
+        yield chunk
+      }
+
+      // Get the final result
+      const finalResult = await finalResponseNode(finalState, {
+        streaming: false,
+      })
+
+      return finalResult
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : 'Job processing failed'
+      yield {
+        type: 'custom',
+        content: PROGRESS_MESSAGES.ANSWER_GENERATION.ERROR,
+      }
+      yield { type: 'error', content: errorMessage }
+
+      const errorState = createErrorState(initialState, errorMessage)
+      const finalResult = await finalResponseNode(errorState, {
+        streaming: false,
+      })
+      return finalResult
     }
-
-    // Get final state from generator
-    const finalResult = await extractFinalState(generator, finalState)
-    return finalResult
   } catch (error) {
-    console.error(WORKFLOW_ERROR_MESSAGES.LANGGRAPH_FAILED, error)
-
     const errorMessage =
       error instanceof Error
         ? error.message
@@ -138,7 +271,6 @@ export const executeStreamingWorkflow = async function* (
 
     yield { type: 'error', content: errorMessage }
 
-    // Even with catch error, go through finalResponseNode to ensure proper response
     const errorState = createErrorState(initialState, errorMessage)
     const finalResult = await finalResponseNode(errorState, {
       streaming: false,
