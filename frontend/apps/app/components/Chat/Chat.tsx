@@ -94,17 +94,86 @@ export const Chat: FC<Props> = ({ schemaData, tableGroups, designSession }) => {
         setTimeout(() => {
           messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
         }, 10)
+      } else {
+        // Handle failed job result
+        const errorMessage = {
+          ...currentAiMessage,
+          content:
+            'Sorry, I encountered an error while generating your answer. Please try again.',
+          timestamp: new Date(),
+          isGenerating: false,
+        }
+
+        // Save error message to database
+        const saveResult = await saveMessage({
+          designSessionId: designSession.id,
+          content: errorMessage.content,
+          role: 'assistant',
+          userId: null,
+        })
+
+        if (saveResult.success && saveResult.message) {
+          errorMessage.dbId = saveResult.message.id
+        }
+
+        addOrUpdateMessage(errorMessage)
+
+        // Clear states after error handling
+        setCurrentAiMessage(undefined)
+        setTriggerJobId(undefined)
+        setIsLoading(false)
+
+        // Scroll to bottom
+        setTimeout(() => {
+          messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+        }, 10)
       }
     },
     [currentAiMessage, triggerJobId, designSession.id, addOrUpdateMessage],
   )
 
-  const handleJobError = useCallback(async (_error: string) => {
-    // For now, just log the error and let the system continue
-    // The streamingWorkflow already has fallback polling built-in
-    // Don't update UI or clear states - let the fallback polling handle completion
-    // The job will complete via file-based polling in the background
-  }, [])
+  const handleJobError = useCallback(
+    async (_error: string) => {
+      // Clear progress messages
+      setProgressMessages(() => [])
+
+      if (currentAiMessage) {
+        // Update the AI message with an error message
+        const errorMessage = {
+          ...currentAiMessage,
+          content:
+            'Sorry, I encountered an error while processing your request. Please try again.',
+          timestamp: new Date(),
+          isGenerating: false,
+        }
+
+        // Save error message to database
+        const saveResult = await saveMessage({
+          designSessionId: designSession.id,
+          content: errorMessage.content,
+          role: 'assistant',
+          userId: null,
+        })
+
+        if (saveResult.success && saveResult.message) {
+          errorMessage.dbId = saveResult.message.id
+        }
+
+        addOrUpdateMessage(errorMessage)
+      }
+
+      // Clear states after error handling
+      setCurrentAiMessage(undefined)
+      setTriggerJobId(undefined)
+      setIsLoading(false)
+
+      // Scroll to bottom
+      setTimeout(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+      }, 10)
+    },
+    [currentAiMessage, designSession.id, addOrUpdateMessage],
+  )
 
   // Use Trigger.dev job monitoring with authentication
   const { isMonitoring: _isMonitoring, jobStatus: _jobStatus } =
@@ -146,6 +215,11 @@ export const Chat: FC<Props> = ({ schemaData, tableGroups, designSession }) => {
       designSession,
       addOrUpdateMessage,
       setProgressMessages,
+      onTriggerJobDetected: (triggerJobId, aiMessage) => {
+        setTriggerJobId(triggerJobId)
+        setCurrentAiMessage(aiMessage)
+        // Keep loading state - will be cleared when job completes
+      },
     })
 
     if (result.success) {
@@ -212,7 +286,6 @@ export const Chat: FC<Props> = ({ schemaData, tableGroups, designSession }) => {
     }
 
     setIsLoading(false)
-    await startAIResponse(content)
   }
 
   return (

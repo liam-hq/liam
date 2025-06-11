@@ -88,6 +88,59 @@ const callChatAPI = async (
 }
 
 /**
+ * Extracts job ID from token scopes
+ */
+const extractJobIdFromScopes = (scopes: unknown[]): string | undefined => {
+  for (const scope of scopes) {
+    if (typeof scope === 'string' && scope.includes('run_')) {
+      const runIdMatch = scope.match(/run_[a-zA-Z0-9]+/)
+      if (runIdMatch) {
+        return runIdMatch[0]
+      }
+    }
+  }
+  return undefined
+}
+
+/**
+ * Type guard to check if the payload has scopes
+ */
+const hasScopes = (payload: unknown): payload is { scopes: unknown[] } => {
+  return (
+    typeof payload === 'object' &&
+    payload !== null &&
+    'scopes' in payload &&
+    Array.isArray((payload as { scopes: unknown }).scopes)
+  )
+}
+
+/**
+ * Extracts job ID from PUBLIC_ACCESS_TOKEN
+ */
+const extractJobIdFromToken = (
+  publicAccessToken: string,
+): string | undefined => {
+  try {
+    const tokenParts = publicAccessToken.split('.')
+    if (tokenParts.length < 2) {
+      return undefined
+    }
+
+    const payload = tokenParts[1]
+    const decodedPayload = atob(payload)
+    const tokenPayload: unknown = JSON.parse(decodedPayload)
+
+    // Look for job/run ID in the token scopes
+    if (hasScopes(tokenPayload)) {
+      return extractJobIdFromScopes(tokenPayload.scopes)
+    }
+  } catch (_error) {
+    // Ignore token decode errors
+  }
+  return undefined
+}
+
+/**
  * Processes a single line from the streaming response
  */
 const processStreamLine = (
@@ -136,6 +189,13 @@ const processStreamLine = (
           'PUBLIC_ACCESS_TOKEN:',
           '',
         )
+
+        // Try to extract job ID from the token
+        const triggerJobId = extractJobIdFromToken(publicAccessToken)
+        if (triggerJobId) {
+          return { content: accumulatedContent, triggerJobId }
+        }
+
         return { content: accumulatedContent, publicAccessToken }
       }
 
@@ -292,6 +352,13 @@ const processStreamingResponse = async (
     const { done, value } = await reader.read()
 
     if (done) {
+      // Check if we have a triggerJobId and callback after stream completion
+      if (triggerJobId && onTriggerJobDetected) {
+        onTriggerJobDetected(triggerJobId, aiMessage)
+        // Return early - the parent will handle the rest via React Hooks
+        return { success: true, finalMessage: aiMessage }
+      }
+
       return handleStreamCompletion(
         accumulatedContent,
         aiMessage,
