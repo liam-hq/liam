@@ -6,7 +6,6 @@ interface ChatProcessorParams {
   message: string
   schemaData: Schema
   history?: [string, string][]
-  mode: 'build' | 'ask'
   organizationId?: string
   buildingSchemaId: string
   latestVersionNumber?: number
@@ -66,7 +65,6 @@ async function processChatMessageSync(
     message,
     schemaData,
     history,
-    mode,
     organizationId,
     buildingSchemaId,
     latestVersionNumber = 0,
@@ -78,7 +76,6 @@ async function processChatMessageSync(
 
     // Create workflow state
     const workflowState: WorkflowState = {
-      mode: mode === 'build' ? ('Build' as const) : ('Ask' as const),
       userInput: message,
       history: formattedHistory,
       schemaData,
@@ -157,7 +154,6 @@ async function* processChatMessageStreaming(
     message,
     schemaData,
     history,
-    mode,
     organizationId,
     buildingSchemaId,
     latestVersionNumber = 0,
@@ -169,7 +165,6 @@ async function* processChatMessageStreaming(
 
     // Create workflow state
     const workflowState: WorkflowState = {
-      mode: mode === 'build' ? ('Build' as const) : ('Ask' as const),
       userInput: message,
       history: formattedHistory,
       schemaData,

@@ -1,0 +1,27 @@
+.wrapper {
+  border-radius: var(--border-radius-base);
+  border: solid 1px var(--global-border);
+  background: var(--pane-muted-background);
+  overflow: hidden;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-2) var(--spacing-4);
+  border-bottom: var(--border-width-base) solid var(--global-border);
+  background-color: var(--node-accent-background);
+}
+
+.name {
+  font-size: var(--font-size-2);
+  color: var(--global-mute-text);
+}
+
+.loadingSpinner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-1);
+}

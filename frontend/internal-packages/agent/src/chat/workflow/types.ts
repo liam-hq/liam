@@ -4,10 +4,7 @@ import type { AgentName } from '../../langchain'
 // Re-export AgentName for use within workflow modules
 export type { AgentName }
 
-export type WorkflowMode = 'Ask' | 'Build'
-
 export type WorkflowState = {
-  mode?: WorkflowMode | undefined
   userInput: string
   generatedAnswer?: string | undefined
   finalResponse?: string | undefined

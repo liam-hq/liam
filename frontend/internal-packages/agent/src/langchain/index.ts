@@ -1,4 +1,4 @@
-import { DatabaseSchemaAskAgent, DatabaseSchemaBuildAgent } from './agents'
+import { DatabaseSchemaBuildAgent } from './agents'
 import type { AgentName, BasePromptVariables } from './utils/types'
 
 // Create agent instances with error handling
@@ -11,12 +11,10 @@ const createAgentSafely = <T>(AgentClass: new () => T): T | null => {
   }
 }
 
-const databaseSchemaAskAgent = createAgentSafely(DatabaseSchemaAskAgent)
 const databaseSchemaBuildAgent = createAgentSafely(DatabaseSchemaBuildAgent)
 
 // Agent registry for compatibility with existing code
 const agents = {
-  databaseSchemaAskAgent,
   databaseSchemaBuildAgent,
 } as const
 

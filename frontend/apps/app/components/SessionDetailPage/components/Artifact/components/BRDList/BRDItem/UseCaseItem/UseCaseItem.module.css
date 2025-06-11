@@ -1,0 +1,74 @@
+.wrapper {
+  border-radius: var(--border-radius-md);
+  border: solid 1px var(--global-border);
+  overflow: hidden;
+}
+
+.title {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  padding: var(--spacing-4);
+  background-color: var(--pane-background);
+  border-bottom: solid 1px var(--global-border);
+  font-size: var(--font-size-4);
+  font-weight: 600;
+  color: var(--global-foreground);
+}
+
+.id {
+  padding: var(--spacing-1) var(--spacing-2);
+  border-radius: var(--border-radius-base);
+  background-color: var(--severity-question-20);
+  font-size: var(--font-size-2);
+  font-weight: 500;
+  color: var(--severity-question-100);
+}
+
+.body {
+  padding: var(--spacing-4);
+}
+
+.stepList {
+  color: var(--global-foreground);
+}
+
+.stepItem {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-4);
+  padding: var(--spacing-3) 0;
+}
+
+.orderAndDescription {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--spacing-3);
+}
+
+.stepOrder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: var(--border-radius-full);
+  background: var(--severity-question-20);
+  font-size: var(--font-size-2);
+  font-weight: 600;
+  color: var(--severity-question-100);
+}
+
+.stepDescription {
+  font-size: var(--font-size-5);
+  line-height: 1.5rem;
+  white-space: pre-line;
+  color: var(--global-body-text);
+}
+
+.dmlBlockList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-3);
+  padding-left: 2.25rem;
+}

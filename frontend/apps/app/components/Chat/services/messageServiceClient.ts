@@ -104,7 +104,6 @@ export const convertMessageToChatEntry = (message: Message) => {
     isUser: message.role === 'user',
     timestamp: new Date(message.created_at),
     isGenerating: false,
-    agentType: message.role === 'assistant' ? ('ask' as const) : undefined,
   }
 }
 

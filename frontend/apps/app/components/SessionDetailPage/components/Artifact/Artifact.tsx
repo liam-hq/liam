@@ -2,10 +2,11 @@ import { TabsContent, TabsList, TabsRoot, TabsTrigger } from '@/components'
 import type { Schema } from '@liam-hq/db-structure'
 import type { FC } from 'react'
 import styles from './Artifact.module.css'
+import { BRDList } from './components/BRDList'
 import { ERD } from './components/ERD'
 import { Header } from './components/Header'
 import { MigrationsViewer } from './components/MigrationsViewer'
-import { MIGRATIONS_DOC, REVIEW_COMMENTS } from './mock'
+import { BRD_LIST, MIGRATIONS_DOC, REVIEW_COMMENTS } from './mock'
 
 type Props = {
   schema: Schema
@@ -13,7 +14,7 @@ type Props = {
 
 export const Artifact: FC<Props> = ({ schema }) => {
   return (
-    <div>
+    <div className={styles.wrapper}>
       <Header />
       <div className={styles.body}>
         <TabsRoot defaultValue="erd" className={styles.tabsRoot}>
@@ -35,6 +36,7 @@ export const Artifact: FC<Props> = ({ schema }) => {
             />
           </TabsContent>
         </TabsRoot>
+        <BRDList items={BRD_LIST} />
       </div>
     </div>
   )

@@ -1,7 +1,6 @@
 'use client'
 
 import { AgentMessage } from '@/components/Chat/AgentMessage'
-import type { AgentType } from '@/components/Chat/AgentMessage'
 import { UserMessage } from '@/components/Chat/UserMessage'
 import { syntaxCodeTagProps, syntaxCustomStyle, syntaxTheme } from '@liam-hq/ui'
 import type React from 'react'
@@ -29,11 +28,6 @@ export interface ChatMessageProps {
   avatarAlt?: string
   initial?: string
   /**
-   * The type of agent to display for bot messages
-   * @default 'build'
-   */
-  agentType?: AgentType
-  /**
    * Whether the bot is generating a response
    * @default false
    */
@@ -59,7 +53,6 @@ export const ChatMessage: FC<ChatMessageProps> = ({
   avatarSrc,
   avatarAlt,
   initial,
-  agentType = 'build',
   isGenerating = false,
   children,
   progressMessages,
@@ -119,7 +112,6 @@ export const ChatMessage: FC<ChatMessageProps> = ({
         />
       ) : (
         <AgentMessage
-          agent={agentType}
           state={isGenerating ? 'generating' : 'default'}
           message={markdownContent}
           time={formattedTime || ''}

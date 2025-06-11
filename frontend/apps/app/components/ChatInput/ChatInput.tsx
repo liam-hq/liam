@@ -17,7 +17,6 @@ import {
   MentionSuggestor,
   type MentionSuggestorHandle,
 } from './components/MentionSuggestor'
-import { type Mode, ModeToggleSwitch } from './components/ModeToggleSwitch'
 import { SendButton } from './components/SendButton'
 import { handleNormalKey } from './utils/handleNormalKey'
 import { insertMentionAtCursor } from './utils/insertMention'
@@ -28,8 +27,7 @@ type Props = {
   error?: boolean
   initialMessage?: string
   schema: Schema
-  initialMode?: Mode
-  onSendMessage: (message: string, mode: Mode) => void
+  onSendMessage: (message: string) => void
   onCancel?: () => void
 }
 
@@ -38,7 +36,6 @@ export const ChatInput: FC<Props> = ({
   error = false,
   initialMessage = '',
   schema,
-  initialMode = 'ask',
   onSendMessage,
   onCancel,
 }) => {
@@ -49,7 +46,6 @@ export const ChatInput: FC<Props> = ({
 
   const [message, setMessage] = useState(initialMessage)
   const [cursorPos, setCursorPos] = useState(0)
-  const [mode, setMode] = useState<Mode>(initialMode)
   const [isMentionSuggestorOpen, setIsMentionSuggestorOpen] = useState(false)
   const [isImeComposing, setIsImeComposing] = useState(false)
 
@@ -106,7 +102,7 @@ export const ChatInput: FC<Props> = ({
       onCancel?.()
     } else if (hasContent) {
       // If not loading and has content, send message
-      onSendMessage(message, mode)
+      onSendMessage(message)
       setMessage('')
       setTimeout(() => {
         const textarea = textareaRef.current
@@ -169,7 +165,7 @@ export const ChatInput: FC<Props> = ({
               <textarea
                 ref={textareaRef}
                 value={message}
-                placeholder="Ask anything, @ to mention schema tables"
+                placeholder="Build or ask anything, @ to mention schema tables"
                 disabled={isLoading}
                 className={styles.input}
                 rows={1}
@@ -221,11 +217,6 @@ export const ChatInput: FC<Props> = ({
           />
         )}
       </form>
-      <ModeToggleSwitch
-        className={styles.modeToggle}
-        value={mode}
-        onChange={setMode}
-      />
     </div>
   )
 }

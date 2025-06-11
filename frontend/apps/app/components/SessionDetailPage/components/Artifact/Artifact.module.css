@@ -1,3 +1,10 @@
+.wrapper {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  height: 100%;
+  min-height: 0;
+}
+
 .body {
   display: grid;
   grid-template-rows: auto 1fr;

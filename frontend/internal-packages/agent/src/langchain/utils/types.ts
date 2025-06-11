@@ -10,4 +10,4 @@ export interface ChatAgent {
 }
 
 // Agent name type definition - centralized for reuse across the application
-export type AgentName = 'databaseSchemaAskAgent' | 'databaseSchemaBuildAgent'
+export type AgentName = 'databaseSchemaBuildAgent'

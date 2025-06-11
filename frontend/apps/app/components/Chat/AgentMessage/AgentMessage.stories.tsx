@@ -36,7 +36,6 @@ type Story = StoryObj<AgentMessageProps>
 
 export const BuildDefault: Story = {
   args: {
-    agent: 'build',
     state: 'default',
     message:
       'We would like to make a proposal for the implementation of a chat UI. First, please allow me to check the current structure of the schema page.',
@@ -45,20 +44,8 @@ export const BuildDefault: Story = {
   },
 }
 
-export const AskDefault: Story = {
-  args: {
-    agent: 'ask',
-    state: 'default',
-    message:
-      'We would like to make a proposal for the implementation of a chat UI. First, please allow me to check the current structure of the schema page.',
-    time: '12:10',
-    agentName: 'Ask Agent',
-  },
-}
-
 export const BuildWithCustomName: Story = {
   args: {
-    agent: 'build',
     state: 'default',
     message: 'This is a message from a build agent with a custom name.',
     time: '12:20',
@@ -66,26 +53,8 @@ export const BuildWithCustomName: Story = {
   },
 }
 
-export const AskWithCustomName: Story = {
-  args: {
-    agent: 'ask',
-    state: 'default',
-    message: 'This is a message from an ask agent with a custom name.',
-    time: '12:20',
-    agentName: 'Custom Ask Agent',
-  },
-}
-
 export const BuildGenerating: Story = {
   args: {
-    agent: 'build',
-    state: 'generating',
-  },
-}
-
-export const AskGenerating: Story = {
-  args: {
-    agent: 'ask',
     state: 'generating',
   },
 }
@@ -444,45 +413,6 @@ model Attachment {
 
 export const BuildWithMarkdown: Story = {
   args: {
-    agent: 'build',
-    state: 'default',
-    message: (
-      <ReactMarkdown
-        remarkPlugins={[remarkGfm]}
-        components={{
-          code(props: CodeProps) {
-            const { children, className, ...rest } = props
-            const match = /language-(\w+)/.exec(className || '')
-            const isInline = !match && !className
-
-            return !isInline && match ? (
-              <SyntaxHighlighter
-                style={syntaxTheme}
-                language={match[1]}
-                PreTag="div"
-                customStyle={syntaxCustomStyle}
-                codeTagProps={syntaxCodeTagProps}
-              >
-                {String(children).replace(/\n$/, '')}
-              </SyntaxHighlighter>
-            ) : (
-              <code className={className} {...rest}>
-                {children}
-              </code>
-            )
-          },
-        }}
-      >
-        {markdownContent}
-      </ReactMarkdown>
-    ),
-    time: '12:15',
-  },
-}
-
-export const AskWithMarkdown: Story = {
-  args: {
-    agent: 'ask',
     state: 'default',
     message: (
       <ReactMarkdown
@@ -527,31 +457,16 @@ const sampleOptions: MessageOption[] = [
 
 export const BuildWithOptions: Story = {
   args: {
-    agent: 'build',
     state: 'default',
     message: 'Please select from the following options:',
     time: '12:30',
     agentName: 'Build Agent',
-    children: (
-      <MessageOptionButtons options={sampleOptions} agentType="build" />
-    ),
-  },
-}
-
-export const AskWithOptions: Story = {
-  args: {
-    agent: 'ask',
-    state: 'default',
-    message: 'Please select from the following options:',
-    time: '12:30',
-    agentName: 'Ask Agent',
-    children: <MessageOptionButtons options={sampleOptions} agentType="ask" />,
+    children: <MessageOptionButtons options={sampleOptions} />,
   },
 }
 
 export const BuildWithMultiSelectOptions: Story = {
   args: {
-    agent: 'build',
     state: 'default',
     message: 'Please select multiple options that apply:',
     time: '12:35',
@@ -563,28 +478,6 @@ export const BuildWithMultiSelectOptions: Story = {
           { id: 'option2', text: 'Option 2: API implementation' },
           { id: 'option3', text: 'Option 3: UI components' },
         ]}
-        agentType="build"
-        multiSelect={true}
-      />
-    ),
-  },
-}
-
-export const AskWithMultiSelectOptions: Story = {
-  args: {
-    agent: 'ask',
-    state: 'default',
-    message: 'Please select multiple options that apply:',
-    time: '12:35',
-    agentName: 'Ask Agent',
-    children: (
-      <MessageOptionButtons
-        options={[
-          { id: 'option1', text: 'Option 1: Performance optimization' },
-          { id: 'option2', text: 'Option 2: Security measures' },
-          { id: 'option3', text: 'Option 3: Accessibility improvements' },
-        ]}
-        agentType="ask"
         multiSelect={true}
       />
     ),
@@ -593,7 +486,6 @@ export const AskWithMultiSelectOptions: Story = {
 
 export const BuildWithDatabaseOptions: Story = {
   args: {
-    agent: 'build',
     state: 'default',
     message: 'Please select an operation to perform:',
     time: '12:45',
@@ -605,7 +497,6 @@ export const BuildWithDatabaseOptions: Story = {
           { id: 'option2', text: 'Modify existing schema' },
           { id: 'option3', text: 'Generate SQL migration' },
         ]}
-        agentType="build"
       />
     ),
   },
@@ -613,7 +504,6 @@ export const BuildWithDatabaseOptions: Story = {
 
 export const BuildAfterOptionSelected: Story = {
   args: {
-    agent: 'build',
     state: 'default',
     message: 'Creating new table based on your selection...',
     time: '12:45',
@@ -634,7 +524,6 @@ export const BuildAfterOptionSelected: Story = {
 
 export const BuildAfterOptionSelectedCollapsed: Story = {
   args: {
-    agent: 'build',
     state: 'default',
     message: 'Updating schema based on your selection...',
     time: '12:50',
@@ -655,7 +544,6 @@ export const BuildAfterOptionSelectedCollapsed: Story = {
 
 export const BuildAfterOptionSelectedCompleteCollapsed: Story = {
   args: {
-    agent: 'build',
     state: 'default',
     message: 'Schema update completed successfully.',
     time: '12:55',

@@ -44,9 +44,9 @@
     "@liam-hq/cli", // Used by erd-sample build script
     "@liam-hq/configs", // Used by tsconfig and biome configuration files
     "@turbo/gen", // Required for `turbo gen` command in npm scripts
-    "@langchain/community" // Temporarily unused due to disabled vectorstore functionality
+    "@langchain/community", // Temporarily unused due to disabled vectorstore functionality
+    "@biomejs/biome" // Referenced in settings.json to enable Biome's "format on save" in VSCode
   ],
-
 
   // TODO: Review ignoreBinaries configuration later
   "ignoreBinaries": ["playwright"]

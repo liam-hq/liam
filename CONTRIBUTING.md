@@ -16,7 +16,20 @@ To set up a development environment, please follow these steps:
    git clone https://github.com/liam-hq/liam
    ```
 
-2. Install npm package
+2. Run the setup script
+
+   ```sh
+   ./scripts/setup-local-dev.sh
+   ```
+
+   This script will:
+   - Install dependencies with pnpm
+   - Create .env file from template
+   - Start Supabase database
+   - Configure Supabase authentication keys
+   - Display next steps and test credentials
+
+   Alternatively, you can run the setup steps manually:
 
    ```sh
    corepack enable
@@ -25,6 +38,15 @@ To set up a development environment, please follow these steps:
    ```
 
 3. Set up environment variables
+
+   Copy the template environment file to create your local environment file:
+
+   ```sh
+   cp .env.template .env
+   ```
+
+   **Required for basic local development:**
+   - Supabase keys will be automatically configured when you start the database (see step 4)
 
    **For maintainers (Vercel team members only):**
 
@@ -42,19 +64,7 @@ To set up a development environment, please follow these steps:
    - `OPENAI_API_KEY`
    - `TRIGGER_SECRET_KEY`
 
-   **For other contributors:**
-
-   Copy the template environment file to create your local environment file:
-
-   ```sh
-   cp .env.template .env
-   ```
-
-   Then edit the `.env` file and fill in the necessary values for the environment variables you need for your development work.
-
-   These environment variables provide access to Supabase, GitHub App, Trigger.dev, and other service credentials needed for development.
-
-4. Development
+4. Start the development server
 
    ```sh
    pnpm dev
@@ -69,9 +79,43 @@ To set up a development environment, please follow these steps:
    | @liam-hq/docs      | http://localhost:3002 |
    | @liam-hq/storybook | http://localhost:6006 |
 
+   **Test login credentials:**
+   - Login path: http://localhost:3001/app/login
+   - Email: `test@example.com`
+   - Password: `liampassword1234`
+
 ## Issues and feature requests
 
 You've found a bug in the source code, a mistake in the documentation or maybe you'd like a new feature? Take a look at [GitHub Discussions](https://github.com/liam-hq/liam/discussions) to see if it's already being discussed. You can help us by [submitting an issue on GitHub](https://github.com/liam-hq/liam/issues). Before you create an issue, make sure to search the issue archive -- your issue may have already been addressed!
+
+## Troubleshooting
+
+### Common Setup Issues
+
+**GitHub API Errors in Console**
+If you see errors like `[@octokit/auth-app] appId option is required`, this is expected when GitHub environment variables are not configured. These errors don't affect core functionality - you can still use authentication, view projects, and access ER diagrams.
+
+**Login Page Redirects**
+If `/app/login` redirects unexpectedly:
+1. Ensure Supabase is running: `pnpm --filter @liam-hq/db supabase:status`
+2. Check that Supabase keys are configured in `.env`
+3. Restart the development server: `pnpm dev`
+
+**Database Connection Issues**
+If you encounter database connection problems:
+1. Stop Supabase: `pnpm --filter @liam-hq/db supabase:stop`
+2. Start Supabase: `pnpm --filter @liam-hq/db supabase:start`
+3. Re-run key extraction scripts:
+   ```sh
+   ./scripts/extract-supabase-anon-key.sh
+   ./scripts/extract-supabase-service-key.sh
+   ```
+
+**Missing Dependencies**
+If you encounter missing dependency errors:
+1. Ensure you have the correct Node.js version (check `.nvmrc`)
+2. Clear node_modules and reinstall: `rm -rf node_modules && pnpm install`
+3. Enable corepack: `corepack enable && corepack prepare`
 
 Please try to create bug reports that are:
 

@@ -5,11 +5,9 @@ import type { ComponentPropsWithoutRef, FC, ReactNode } from 'react'
 import ReactMarkdown from 'react-markdown'
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
 import remarkGfm from 'remark-gfm'
-import { AskAgent } from '../AgentAvatar/AskAgent'
 import { BuildAgent } from '../AgentAvatar/BuildAgent'
 import styles from './AgentMessage.module.css'
 
-export type AgentType = 'ask' | 'build'
 type AgentMessageState = 'default' | 'generating'
 
 // Define CodeProps interface for markdown code blocks
@@ -24,10 +22,6 @@ type CodeProps = ComponentPropsWithoutRef<'code'> & {
 const emptyStyle = {}
 
 type AgentMessageProps = {
-  /**
-   * The type of agent
-   */
-  agent: AgentType
   /**
    * The state of the message
    */
@@ -59,7 +53,6 @@ type AgentMessageProps = {
 }
 
 export const AgentMessage: FC<AgentMessageProps> = ({
-  agent,
   state = 'default',
   message = '',
   agentName,
@@ -68,16 +61,12 @@ export const AgentMessage: FC<AgentMessageProps> = ({
   showProgress,
 }) => {
   const isGenerating = state === 'generating'
-  const isAsk = agent === 'ask'
-  const _isBuild = agent === 'build'
 
   return (
     <div className={styles.container}>
       <div className={styles.avatarContainer}>
-        {isAsk ? <AskAgent /> : <BuildAgent />}
-        <span className={styles.agentName}>
-          {agentName || (isAsk ? 'Ask Agent' : 'Build Agent')}
-        </span>
+        <BuildAgent />
+        <span className={styles.agentName}>{agentName || 'Build Agent'}</span>
       </div>
       <div className={styles.contentContainer}>
         {/* Show progress messages if available */}
