@@ -17,6 +17,6 @@ export interface ChatEntry extends ChatMessageProps {
  * Type guard for streaming response chunks
  */
 export interface ResponseChunk {
-  type: string
+  type: 'text' | 'error' | 'custom' | 'trigger_job_id'
   content: string
 }

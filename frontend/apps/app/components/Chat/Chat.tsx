@@ -2,12 +2,14 @@
 
 import type { Schema, TableGroup } from '@liam-hq/db-structure'
 import type { FC } from 'react'
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { ChatInput } from '../ChatInput'
 import type { Mode } from '../ChatInput/components/ModeToggleSwitch/ModeToggleSwitch'
 import { ChatMessage } from '../ChatMessage'
 import styles from './Chat.module.css'
+import type { TriggerJobResult } from './hooks/types'
 import { type Message, useRealtimeMessages } from './hooks/useRealtimeMessages'
+import { useTriggerJobMonitorWithAuth } from './hooks/useTriggerJobMonitorWithAuth'
 import { getCurrentUserId, saveMessage } from './services'
 import { createAndStreamAIMessage } from './services/aiMessageService'
 import { generateMessageId } from './services/messageHelpers'
@@ -36,6 +38,10 @@ export const Chat: FC<Props> = ({ schemaData, tableGroups, designSession }) => {
   const [isLoading, setIsLoading] = useState(false)
   const [currentMode, setCurrentMode] = useState<Mode>('ask')
   const [progressMessages, setProgressMessages] = useState<string[]>([])
+  const [triggerJobId, setTriggerJobId] = useState<string | undefined>()
+  const [currentAiMessage, setCurrentAiMessage] = useState<
+    ChatEntry | undefined
+  >()
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
   // Get current user ID on component mount
@@ -46,6 +52,61 @@ export const Chat: FC<Props> = ({ schemaData, tableGroups, designSession }) => {
     }
     fetchUserId()
   }, [])
+
+  // Job completion handlers (memoized to prevent infinite loops)
+  const handleJobComplete = useCallback(
+    async (result: TriggerJobResult) => {
+      setProgressMessages(() => [])
+
+      if (currentAiMessage && result.success && result.generatedAnswer) {
+        // Update the AI message with the generated answer
+        const updatedMessage = {
+          ...currentAiMessage,
+          content: result.generatedAnswer,
+          timestamp: new Date(),
+          isGenerating: false,
+        }
+
+        // Save to database
+        const saveResult = await saveMessage({
+          designSessionId: designSession.id,
+          content: result.generatedAnswer,
+          role: 'assistant',
+          userId: null,
+        })
+
+        if (saveResult.success && saveResult.message) {
+          updatedMessage.dbId = saveResult.message.id
+        }
+
+        addOrUpdateMessage(updatedMessage)
+        setCurrentAiMessage(undefined)
+        setTriggerJobId(undefined)
+        setIsLoading(false)
+
+        // Scroll to bottom
+        setTimeout(() => {
+          messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+        }, 10)
+      }
+    },
+    [currentAiMessage, designSession.id, addOrUpdateMessage],
+  )
+
+  const handleJobError = useCallback(async (_error: string) => {
+    // For now, just log the error and let the system continue
+    // The streamingWorkflow already has fallback polling built-in
+    // Don't update UI or clear states - let the fallback polling handle completion
+    // The job will complete via file-based polling in the background
+  }, [])
+
+  // Use Trigger.dev job monitoring with authentication
+  const { isMonitoring: _isMonitoring, jobStatus: _jobStatus } =
+    useTriggerJobMonitorWithAuth({
+      triggerJobId,
+      onJobComplete: handleJobComplete,
+      onJobError: handleJobError,
+    })
 
   // Scroll to bottom when component mounts or messages change
   useEffect(() => {
@@ -96,6 +157,11 @@ export const Chat: FC<Props> = ({ schemaData, tableGroups, designSession }) => {
       designSession,
       addOrUpdateMessage,
       setProgressMessages,
+      onTriggerJobDetected: (triggerJobId, aiMessage) => {
+        setTriggerJobId(triggerJobId)
+        setCurrentAiMessage(aiMessage)
+        // Keep loading state - will be cleared when job completes
+      },
     })
 
     if (result.success) {

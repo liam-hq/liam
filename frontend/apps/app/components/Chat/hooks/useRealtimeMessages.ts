@@ -32,6 +32,63 @@ type UseRealtimeMessagesFunc = (
   ) => void
 }
 
+/**
+ * Check if a message already exists by dbId to prevent duplicates
+ */
+const checkMessageExists = (messages: ChatEntry[], dbId: string): boolean => {
+  return messages.some((msg) => msg.dbId === dbId)
+}
+
+/**
+ * Find and update an existing message by its temporary ID
+ */
+const updateExistingMessage = (
+  messages: ChatEntry[],
+  newChatEntry: ChatEntry,
+): ChatEntry[] | null => {
+  const existingMessageIndex = messages.findIndex(
+    (msg) => msg.id === newChatEntry.id,
+  )
+
+  if (existingMessageIndex >= 0) {
+    const updated = [...messages]
+    updated[existingMessageIndex] = newChatEntry
+    return updated
+  }
+
+  return null
+}
+
+/**
+ * Handle optimistic updates for user messages
+ */
+const handleOptimisticUpdate = (
+  messages: ChatEntry[],
+  newChatEntry: ChatEntry,
+  messageUserId: string | null | undefined,
+  currentUserId: string | null | undefined,
+): ChatEntry[] | null => {
+  if (
+    !newChatEntry.isUser ||
+    messageUserId !== currentUserId ||
+    !newChatEntry.dbId
+  ) {
+    return null
+  }
+
+  const updated = messages.map((msg) => {
+    // Find the most recent user message without a dbId and update it
+    if (msg.isUser && !msg.dbId && msg.content === newChatEntry.content) {
+      return { ...msg, dbId: newChatEntry.dbId }
+    }
+    return msg
+  })
+
+  // Check if we actually updated an existing message
+  const wasUpdated = updated.some((msg, index) => msg !== messages[index])
+  return wasUpdated ? updated : null
+}
+
 export const useRealtimeMessages: UseRealtimeMessagesFunc = (
   designSession,
   currentUserId,
@@ -52,54 +109,25 @@ export const useRealtimeMessages: UseRealtimeMessagesFunc = (
     (newChatEntry: ChatEntry, messageUserId?: string | null) => {
       setMessages((prev) => {
         // Check if message already exists by dbId to prevent duplicates
-        if (newChatEntry.dbId) {
-          const messageExists = prev.some(
-            (msg) => msg.dbId === newChatEntry.dbId,
-          )
-          if (messageExists) {
-            return prev
-          }
+        if (newChatEntry.dbId && checkMessageExists(prev, newChatEntry.dbId)) {
+          return prev
         }
 
-        // Check if we need to update an existing message by its temporary ID
-        // This handles streaming updates and other in-place updates
-        const existingMessageIndex = prev.findIndex(
-          (msg) => msg.id === newChatEntry.id,
+        // Try to update existing message by its temporary ID
+        const updatedMessages = updateExistingMessage(prev, newChatEntry)
+        if (updatedMessages) {
+          return updatedMessages
+        }
+
+        // Try to handle optimistic updates for user messages
+        const optimisticUpdate = handleOptimisticUpdate(
+          prev,
+          newChatEntry,
+          messageUserId,
+          currentUserId,
         )
-
-        if (existingMessageIndex >= 0) {
-          // Update existing message in place
-          const updated = [...prev]
-          updated[existingMessageIndex] = newChatEntry
-          return updated
-        }
-
-        // Handle optimistic updates for user messages
-        if (
-          newChatEntry.isUser &&
-          messageUserId === currentUserId &&
-          newChatEntry.dbId
-        ) {
-          const updated = prev.map((msg) => {
-            // Find the most recent user message without a dbId and update it
-            if (
-              msg.isUser &&
-              !msg.dbId &&
-              msg.content === newChatEntry.content
-            ) {
-              return { ...msg, dbId: newChatEntry.dbId }
-            }
-            return msg
-          })
-
-          // Check if we actually updated an existing message
-          const wasUpdated = updated.some((msg, index) => msg !== prev[index])
-          if (wasUpdated) {
-            return updated
-          }
-
-          // If no existing message was updated, this might be from another tab
-          // so we should add it as a new message
+        if (optimisticUpdate) {
+          return optimisticUpdate
         }
 
         // For new messages (AI messages from realtime or messages from other users), add them to the chat
