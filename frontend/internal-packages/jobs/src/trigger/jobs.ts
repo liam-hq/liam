@@ -1,5 +1,9 @@
 import { logger, task } from '@trigger.dev/sdk/v3'
 import {
+  type AnswerGenerationPayload,
+  processAnswerGeneration,
+} from '../functions/processAnswerGeneration'
+import {
   type RepositoryAnalysisPayload,
   processRepositoryAnalysis,
 } from '../functions/processRepositoryAnalysis'
@@ -23,5 +27,38 @@ export const analyzeRepositoryTask = task({
     }
 
     return result
+  },
+})
+
+export const generateAnswerTask = task({
+  id: 'generate-answer',
+  run: async (payload: AnswerGenerationPayload) => {
+    logger.log('Executing answer generation task:', {
+      jobId: payload.jobId,
+      designSessionId: payload.designSessionId,
+      mode: payload.mode,
+    })
+
+    try {
+      // Execute the actual processing
+      const result = await processAnswerGeneration(payload)
+
+      logger.log('Answer generation task completed:', {
+        jobId: result.jobId,
+        success: result.success,
+        hasAnswer: !!result.generatedAnswer,
+        hasError: !!result.error,
+      })
+
+      return result
+    } catch (error) {
+      logger.error('Answer generation task failed:', {
+        jobId: payload.jobId,
+        error: error instanceof Error ? error.message : 'Unknown error',
+      })
+
+      // Re-throw the error
+      throw error
+    }
   },
 })
