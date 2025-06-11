@@ -21,6 +21,8 @@
     "frontend/apps/app/scripts/install-prisma-internals.mjs",
     // - Script file which is read from trigger.config.ts
     "frontend/internal-packages/jobs/src/trigger/jobs.ts",
+    // - Function file with types used via type inference in jobs.ts
+    "frontend/internal-packages/jobs/src/functions/processAnswerGeneration.ts",
     // - Next.js special files
     "frontend/apps/docs/app/docs/sitemap.ts",
     "frontend/apps/app/next.config.ts",

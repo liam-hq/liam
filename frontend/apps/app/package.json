@@ -22,6 +22,8 @@
     "@liam-hq/ui": "workspace:*",
     "@next/third-parties": "15.3.2",
     "@sentry/nextjs": "9",
+    "@trigger.dev/react-hooks": "3.3.17",
+    "@trigger.dev/sdk": "3.3.17",
     "@types/react-syntax-highlighter": "15.5.13",
     "@vercel/otel": "1.12.0",
     "cheerio": "1.0.0",
