@@ -87,7 +87,6 @@ describe('Chat Workflow', () => {
   const createBaseState = (
     overrides: Partial<WorkflowState> = {},
   ): WorkflowState => ({
-    mode: 'Ask',
     userInput: 'Test input',
     history: [],
     schemaData: mockSchemaData,
@@ -98,13 +97,9 @@ describe('Chat Workflow', () => {
   })
 
   // Helper function to execute workflow and assert common expectations
-  const executeAndAssertSuccess = async (
-    state: WorkflowState,
-    expectedMode: 'Ask' | 'Build',
-  ) => {
+  const executeAndAssertSuccess = async (state: WorkflowState) => {
     const result = await executeChatWorkflow(state, { streaming: false })
 
-    expect(result.mode).toBe(expectedMode)
     expect(result.error).toBeUndefined()
     expect(result.finalResponse).toBe('Mocked agent response')
     expect(typeof result.finalResponse).toBe('string')
@@ -147,44 +142,13 @@ describe('Chat Workflow', () => {
     })
   })
 
-  describe('Ask Mode', () => {
-    it('should execute successfully with valid Ask mode state', async () => {
-      const state = createBaseState({
-        mode: 'Ask',
-        userInput: 'What is the users table structure?',
-      })
-
-      await executeAndAssertSuccess(state, 'Ask')
-    })
-
-    it('should handle Ask mode with history', async () => {
-      const state = createBaseState({
-        mode: 'Ask',
-        userInput: 'What is the users table structure?',
-        history: ['Previous message 1', 'Previous message 2'],
-      })
-
-      const result = await executeChatWorkflow(state, { streaming: false })
-
-      expect(result.mode).toBe('Ask')
-      expect(result.error).toBeUndefined()
-      // History should be updated with new conversation
-      expect(result.history).toHaveLength(4) // 2 original + 2 new (user + assistant)
-      expect(result.history).toContain(
-        'User: What is the users table structure?',
-      )
-      expect(result.history).toContain('Assistant: Mocked agent response')
-    })
-  })
-
   describe('Build Mode', () => {
     it('should execute successfully with valid Build mode state', async () => {
       const state = createBaseState({
-        mode: 'Build',
         userInput: 'Add a created_at timestamp column to the users table',
       })
 
-      await executeAndAssertSuccess(state, 'Build')
+      await executeAndAssertSuccess(state)
     })
 
     it('should handle Build mode with structured JSON response and schema changes', async () => {
@@ -207,7 +171,6 @@ describe('Chat Workflow', () => {
       mockAgent.generate.mockResolvedValue(structuredResponse)
 
       const state = createBaseState({
-        mode: 'Build',
         userInput: 'Add a created_at timestamp column to the users table',
         buildingSchemaId: 'test-building-schema-id',
         latestVersionNumber: 1,
@@ -215,7 +178,6 @@ describe('Chat Workflow', () => {
 
       const result = await executeChatWorkflow(state, { streaming: false })
 
-      expect(result.mode).toBe('Build')
       expect(result.error).toBeUndefined()
       expect(result.finalResponse).toBe(
         'Added created_at column to users table',
@@ -242,13 +204,11 @@ describe('Chat Workflow', () => {
       mockAgent.generate.mockResolvedValue('Invalid JSON response')
 
       const state = createBaseState({
-        mode: 'Build',
         userInput: 'Add a created_at timestamp column to the users table',
       })
 
       const result = await executeChatWorkflow(state, { streaming: false })
 
-      expect(result.mode).toBe('Build')
       expect(result.error).toBeUndefined()
       expect(result.finalResponse).toBe('Invalid JSON response')
       expect(mockCreateNewVersion).not.toHaveBeenCalled()
@@ -263,13 +223,11 @@ describe('Chat Workflow', () => {
       mockAgent.generate.mockResolvedValue(malformedResponse)
 
       const state = createBaseState({
-        mode: 'Build',
         userInput: 'Add a created_at timestamp column to the users table',
       })
 
       const result = await executeChatWorkflow(state, { streaming: false })
 
-      expect(result.mode).toBe('Build')
       expect(result.error).toBeUndefined()
       expect(result.finalResponse).toBe(malformedResponse)
       expect(mockCreateNewVersion).not.toHaveBeenCalled()
@@ -294,7 +252,6 @@ describe('Chat Workflow', () => {
       })
 
       const state = createBaseState({
-        mode: 'Build',
         userInput: 'Add a created_at timestamp column to the users table',
         buildingSchemaId: 'test-building-schema-id',
         latestVersionNumber: 1,
@@ -302,7 +259,6 @@ describe('Chat Workflow', () => {
 
       const result = await executeChatWorkflow(state, { streaming: false })
 
-      expect(result.mode).toBe('Build')
       expect(result.error).toBe('Database constraint violation')
       expect(result.finalResponse).toBe(
         'Sorry, an error occurred during processing: Database constraint violation',
@@ -325,7 +281,6 @@ describe('Chat Workflow', () => {
       mockCreateNewVersion.mockRejectedValue(new Error('Network error'))
 
       const state = createBaseState({
-        mode: 'Build',
         userInput: 'Add a created_at timestamp column to the users table',
         buildingSchemaId: 'test-building-schema-id',
         latestVersionNumber: 1,
@@ -333,7 +288,6 @@ describe('Chat Workflow', () => {
 
       const result = await executeChatWorkflow(state, { streaming: false })
 
-      expect(result.mode).toBe('Build')
       expect(result.error).toBe('Failed to update schema: Network error')
       expect(result.finalResponse).toBe(
         'Sorry, an error occurred during processing: Failed to update schema: Network error',
@@ -355,7 +309,6 @@ describe('Chat Workflow', () => {
       mockAgent.generate.mockResolvedValue(structuredResponse)
 
       const state = createBaseState({
-        mode: 'Build',
         userInput: 'Add a created_at timestamp column to the users table',
         buildingSchemaId: undefined,
       })
@@ -364,7 +317,6 @@ describe('Chat Workflow', () => {
         streaming: false,
       })
 
-      expect(result.mode).toBe('Build')
       expect(result.error).toBeUndefined()
       expect(result.finalResponse).toBe('Attempted to add created_at column')
       expect(mockCreateNewVersion).not.toHaveBeenCalled()
@@ -372,34 +324,16 @@ describe('Chat Workflow', () => {
 
     it('should handle complex schema modifications', async () => {
       const state = createBaseState({
-        mode: 'Build',
         userInput: 'Create a new posts table with foreign key to users',
       })
 
-      await executeAndAssertSuccess(state, 'Build')
+      await executeAndAssertSuccess(state)
     })
   })
 
   describe('Error Handling', () => {
-    it('should handle missing mode gracefully', async () => {
-      const testState = createBaseState({
-        userInput: 'What is the users table structure?',
-      })
-      // Remove mode property by creating a new object without it
-      const { mode, ...stateWithoutMode } = testState
-      const invalidState = stateWithoutMode as WorkflowState
-
-      const result = await executeChatWorkflow(invalidState, {
-        streaming: false,
-      })
-
-      expect(result).toBeDefined()
-      expect(result.error).toBe('Mode must be selected in UI before processing')
-    })
-
     it('should handle missing schema data gracefully', async () => {
       const testState = createBaseState({
-        mode: 'Ask',
         userInput: 'What is the database structure?',
       })
       // Remove schemaData property by creating a new object without it
@@ -429,7 +363,7 @@ describe('Chat Workflow', () => {
     it('should handle missing agent', async () => {
       mockGetAgent.mockImplementation(() => {
         throw new Error(
-          'databaseSchemaAskAgent not found in LangChain instance',
+          'databaseSchemaBuildAgent not found in LangChain instance',
         )
       })
       const state = createBaseState()
@@ -437,10 +371,10 @@ describe('Chat Workflow', () => {
       const result = await executeChatWorkflow(state, { streaming: false })
 
       expect(result.error).toBe(
-        'databaseSchemaAskAgent not found in LangChain instance',
+        'databaseSchemaBuildAgent not found in LangChain instance',
       )
       expect(result.finalResponse).toBe(
-        'Sorry, an error occurred during processing: databaseSchemaAskAgent not found in LangChain instance',
+        'Sorry, an error occurred during processing: databaseSchemaBuildAgent not found in LangChain instance',
       )
     })
 
@@ -475,20 +409,13 @@ describe('Chat Workflow', () => {
   })
 
   describe('Agent Selection', () => {
-    const agentTestCases = [
-      { mode: 'Ask' as const, expectedAgent: 'databaseSchemaAskAgent' },
-      { mode: 'Build' as const, expectedAgent: 'databaseSchemaBuildAgent' },
-    ]
+    it('should use databaseSchemaBuildAgent for Build mode', async () => {
+      const state = createBaseState({})
 
-    for (const { mode, expectedAgent } of agentTestCases) {
-      it(`should use ${expectedAgent} for ${mode} mode`, async () => {
-        const state = createBaseState({ mode })
+      await executeChatWorkflow(state, { streaming: false })
 
-        await executeChatWorkflow(state, { streaming: false })
-
-        expect(mockGetAgent).toHaveBeenCalledWith(expectedAgent)
-      })
-    }
+      expect(mockGetAgent).toHaveBeenCalledWith('databaseSchemaBuildAgent')
+    })
   })
 
   describe('Workflow Integration', () => {
@@ -513,9 +440,9 @@ describe('Chat Workflow', () => {
 
     it('should handle multiple sequential workflow executions', async () => {
       const stateOverrides = [
-        { mode: 'Ask' as const, userInput: 'First question' },
-        { mode: 'Build' as const, userInput: 'First modification' },
-        { mode: 'Ask' as const, userInput: 'Follow-up question' },
+        { userInput: 'First modification' },
+        { userInput: 'Second modification' },
+        { userInput: 'Third modification' },
       ]
 
       const results = await executeSequentialWorkflows(stateOverrides)
@@ -523,7 +450,6 @@ describe('Chat Workflow', () => {
       expect(results).toHaveLength(3)
       for (const [index, result] of results.entries()) {
         expect(result).toBeDefined()
-        expect(result.mode).toBe(stateOverrides?.[index]?.mode)
         expect(result.userInput).toBe(stateOverrides?.[index]?.userInput)
         expect(result.finalResponse).toBe('Mocked agent response')
       }

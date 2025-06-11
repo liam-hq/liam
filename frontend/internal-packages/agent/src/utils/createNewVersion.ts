@@ -1,3 +1,4 @@
+import { schemaSchema } from '@liam-hq/db-structure'
 import { type Operation, compare } from 'fast-json-patch'
 import * as v from 'valibot'
 import { createClient } from '../db/server'
@@ -87,6 +88,18 @@ export async function createNewVersion({
   // Now apply the new patch to get the new content
   const newContent = JSON.parse(JSON.stringify(currentContent))
   applyPatchOperations(newContent, patch)
+
+  // Validate the new schema structure before proceeding
+  const validationResult = v.safeParse(schemaSchema, newContent)
+  if (!validationResult.success) {
+    const errorMessages = validationResult.issues
+      .map((issue) => `${issue.path?.join('.')} ${issue.message}`)
+      .join(', ')
+    return {
+      success: false,
+      error: `Invalid schema after applying changes: ${errorMessages}`,
+    }
+  }
 
   // Calculate reverse patch from new content to current content
   const reversePatch = compare(newContent, currentContent)

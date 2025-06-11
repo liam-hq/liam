@@ -3,22 +3,14 @@ import * as v from 'valibot'
 import type { WorkflowState } from '../types'
 
 /**
- * Valibot schema for WorkflowMode
- */
-const workflowModeSchema = v.optional(v.picklist(['Ask', 'Build']))
-
-/**
  * Valibot schema for AgentName
  */
-const agentNameSchema = v.optional(
-  v.picklist(['databaseSchemaAskAgent', 'databaseSchemaBuildAgent']),
-)
+const agentNameSchema = v.optional(v.picklist(['databaseSchemaBuildAgent']))
 
 /**
  * Valibot schema for WorkflowState
  */
 const workflowStateSchema = v.object({
-  mode: workflowModeSchema,
   userInput: v.string(),
   generatedAnswer: v.optional(v.string()),
   finalResponse: v.optional(v.string()),
@@ -39,7 +31,6 @@ const workflowStateSchema = v.object({
  * Schema for validating LangGraph result
  */
 const langGraphResultSchema = v.object({
-  mode: v.optional(v.unknown()),
   userInput: v.unknown(),
   generatedAnswer: v.optional(v.unknown()),
   finalResponse: v.optional(v.unknown()),
@@ -74,7 +65,6 @@ export const createErrorState = (
  */
 export const toLangGraphState = (state: WorkflowState) => {
   return {
-    mode: state.mode,
     userInput: state.userInput,
     generatedAnswer: state.generatedAnswer,
     finalResponse: state.finalResponse,
@@ -111,21 +101,10 @@ const parseStringArray = (value: unknown): string[] => {
 }
 
 /**
- * Helper function to safely parse WorkflowMode
- */
-const parseWorkflowMode = (value: unknown): WorkflowState['mode'] => {
-  if (value === 'Ask' || value === 'Build') return value
-  return undefined
-}
-
-/**
  * Helper function to safely parse AgentName
  */
 const parseAgentName = (value: unknown): WorkflowState['agentName'] => {
-  if (
-    value === 'databaseSchemaAskAgent' ||
-    value === 'databaseSchemaBuildAgent'
-  ) {
+  if (value === 'databaseSchemaBuildAgent') {
     return value
   }
   return undefined
@@ -169,7 +148,6 @@ export const fromLangGraphResult = (
 
   // Build the WorkflowState with proper type validation
   const workflowState: WorkflowState = {
-    mode: parseWorkflowMode(validatedResult.mode),
     userInput,
     generatedAnswer: parseOptionalString(validatedResult.generatedAnswer),
     finalResponse: parseOptionalString(validatedResult.finalResponse),

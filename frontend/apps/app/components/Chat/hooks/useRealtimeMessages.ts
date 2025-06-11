@@ -1,11 +1,56 @@
 import type { Tables } from '@liam-hq/db/supabase/database.types'
 import { useCallback, useEffect, useState } from 'react'
-import { WELCOME_MESSAGE } from '../constants/chatConstants'
 import {
   convertMessageToChatEntry,
   setupRealtimeSubscription,
 } from '../services'
 import type { ChatEntry } from '../types/chatTypes'
+
+const isDuplicateMessage = (
+  messages: ChatEntry[],
+  newEntry: ChatEntry,
+): boolean => {
+  if (!newEntry.dbId) return false
+  return messages.some((msg) => msg.dbId === newEntry.dbId)
+}
+
+const findExistingMessageIndex = (
+  messages: ChatEntry[],
+  newEntry: ChatEntry,
+): number => {
+  return messages.findIndex((msg) => msg.id === newEntry.id)
+}
+
+const updateExistingMessage = (
+  messages: ChatEntry[],
+  index: number,
+  newEntry: ChatEntry,
+): ChatEntry[] => {
+  const updated = [...messages]
+  updated[index] = newEntry
+  return updated
+}
+
+const handleOptimisticUserUpdate = (
+  messages: ChatEntry[],
+  newEntry: ChatEntry,
+  messageUserId: string | null | undefined,
+  currentUserId: string | null | undefined,
+): ChatEntry[] | null => {
+  if (!newEntry.isUser || messageUserId !== currentUserId || !newEntry.dbId) {
+    return null
+  }
+
+  const updated = messages.map((msg) => {
+    if (msg.isUser && !msg.dbId && msg.content === newEntry.content) {
+      return { ...msg, dbId: newEntry.dbId }
+    }
+    return msg
+  })
+
+  const wasUpdated = updated.some((msg, index) => msg !== messages[index])
+  return wasUpdated ? updated : null
+}
 
 export type Message = {
   id: string
@@ -28,79 +73,19 @@ type UseRealtimeMessagesFunc = (
   messages: ChatEntry[]
   addOrUpdateMessage: (
     newChatEntry: ChatEntry,
-    messageUserId?: string | null,
+    messageUserId?: string | null | undefined,
   ) => void
-}
-
-/**
- * Check if a message already exists by dbId to prevent duplicates
- */
-const checkMessageExists = (messages: ChatEntry[], dbId: string): boolean => {
-  return messages.some((msg) => msg.dbId === dbId)
-}
-
-/**
- * Find and update an existing message by its temporary ID
- */
-const updateExistingMessage = (
-  messages: ChatEntry[],
-  newChatEntry: ChatEntry,
-): ChatEntry[] | null => {
-  const existingMessageIndex = messages.findIndex(
-    (msg) => msg.id === newChatEntry.id,
-  )
-
-  if (existingMessageIndex >= 0) {
-    const updated = [...messages]
-    updated[existingMessageIndex] = newChatEntry
-    return updated
-  }
-
-  return null
-}
-
-/**
- * Handle optimistic updates for user messages
- */
-const handleOptimisticUpdate = (
-  messages: ChatEntry[],
-  newChatEntry: ChatEntry,
-  messageUserId: string | null | undefined,
-  currentUserId: string | null | undefined,
-): ChatEntry[] | null => {
-  if (
-    !newChatEntry.isUser ||
-    messageUserId !== currentUserId ||
-    !newChatEntry.dbId
-  ) {
-    return null
-  }
-
-  const updated = messages.map((msg) => {
-    // Find the most recent user message without a dbId and update it
-    if (msg.isUser && !msg.dbId && msg.content === newChatEntry.content) {
-      return { ...msg, dbId: newChatEntry.dbId }
-    }
-    return msg
-  })
-
-  // Check if we actually updated an existing message
-  const wasUpdated = updated.some((msg, index) => msg !== messages[index])
-  return wasUpdated ? updated : null
 }
 
 export const useRealtimeMessages: UseRealtimeMessagesFunc = (
   designSession,
   currentUserId,
 ) => {
-  // Initialize messages with welcome message and existing messages
-  const initialMessages = [
-    WELCOME_MESSAGE,
-    ...designSession.messages.map((msg) => ({
-      ...convertMessageToChatEntry(msg),
-      dbId: msg.id,
-    })),
-  ]
+  // Initialize messages with existing messages (no welcome message)
+  const initialMessages = designSession.messages.map((msg) => ({
+    ...convertMessageToChatEntry(msg),
+    dbId: msg.id,
+  }))
 
   const [messages, setMessages] = useState<ChatEntry[]>(initialMessages)
 
@@ -109,21 +94,25 @@ export const useRealtimeMessages: UseRealtimeMessagesFunc = (
     (newChatEntry: ChatEntry, messageUserId?: string | null) => {
       setMessages((prev) => {
         // Check if message already exists by dbId to prevent duplicates
-        if (newChatEntry.dbId && checkMessageExists(prev, newChatEntry.dbId)) {
+        if (isDuplicateMessage(prev, newChatEntry)) {
           return prev
         }
 
-        // Try to update existing message by its temporary ID
-        const updatedMessages = updateExistingMessage(prev, newChatEntry)
-        if (updatedMessages) {
-          return updatedMessages
-        }
-
-        // Try to handle optimistic updates for user messages
-        const optimisticUpdate = handleOptimisticUpdate(
+        // Check if we need to update an existing message by its temporary ID
+        // This handles streaming updates and other in-place updates
+        const existingMessageIndex = findExistingMessageIndex(
           prev,
           newChatEntry,
-          messageUserId,
+        )
+        if (existingMessageIndex >= 0) {
+          return updateExistingMessage(prev, existingMessageIndex, newChatEntry)
+        }
+
+        // Handle optimistic updates for user messages
+        const optimisticUpdate = handleOptimisticUserUpdate(
+          prev,
+          newChatEntry,
+          messageUserId ?? null,
           currentUserId,
         )
         if (optimisticUpdate) {
@@ -149,7 +138,7 @@ export const useRealtimeMessages: UseRealtimeMessagesFunc = (
       // TODO: Implement efficient duplicate checking - Use Set/Map for O(1) duplicate checking instead of O(n) array.some()
       // TODO: Implement smart auto-scroll - Consider user's scroll position and only auto-scroll when user is at bottom
 
-      addOrUpdateMessage(chatEntry, newMessage.user_id)
+      addOrUpdateMessage(chatEntry, newMessage.user_id ?? null)
     },
     [addOrUpdateMessage],
   )

@@ -26,10 +26,9 @@ IMPORTANT: You must ALWAYS respond with a valid JSON object in the following for
   "message": "Your energetic response message here",
   "schemaChanges": [
     {{
-      "op": "add|remove|replace|move|copy|test",
+      "op": "add|remove|replace",
       "path": "/path/to/schema/element",
-      "value": "new value (for add/replace operations)",
-      "from": "/source/path (for move/copy operations)"
+      "value": "new value (for add/replace operations)"
     }}
   ]
 }}

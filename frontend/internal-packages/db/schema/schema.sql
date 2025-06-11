@@ -93,6 +93,15 @@ CREATE TYPE "public"."knowledge_type" AS ENUM (
 ALTER TYPE "public"."knowledge_type" OWNER TO "postgres";
 
 
+CREATE TYPE "public"."message_role_enum" AS ENUM (
+    'user',
+    'assistant'
+);
+
+
+ALTER TYPE "public"."message_role_enum" OWNER TO "postgres";
+
+
 CREATE TYPE "public"."schema_format_enum" AS ENUM (
     'schemarb',
     'postgres',
@@ -1095,7 +1104,7 @@ CREATE TABLE IF NOT EXISTS "public"."messages" (
     "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
     "design_session_id" "uuid" NOT NULL,
     "user_id" "uuid",
-    "role" "text" NOT NULL,
+    "role" "public"."message_role_enum" NOT NULL,
     "content" "text" NOT NULL,
     "created_at" timestamp(3) with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
     "updated_at" timestamp(3) with time zone NOT NULL,

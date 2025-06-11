@@ -35,7 +35,7 @@
       "mode": "auto"
     }
   ],
-  "biome.lspBin": "./frontend/internal-packages/configs/node_modules/.bin/biome",
+  "biome.lsp.bin": "./frontend/internal-packages/configs/node_modules/.bin/biome",
   "cSpell.enabled": true,
   "cSpell.words": ["biomejs"],
   "cSpell.allowCompoundWords": true,

@@ -26,7 +26,11 @@
     // - Next.js special files
     "frontend/apps/docs/app/docs/sitemap.ts",
     "frontend/apps/app/next.config.ts",
-    "frontend/apps/docs/next.config.mjs"
+    "frontend/apps/docs/next.config.mjs",
+    // - Temporarily unused vectorstore files (will be re-enabled later)
+    "frontend/internal-packages/agent/src/vectorstore/index.ts",
+    "frontend/internal-packages/agent/src/vectorstore/supabaseVectorStore.ts",
+    "frontend/internal-packages/agent/src/vectorstore/syncSchemaVectorStore.ts"
   ],
 
   // Dependencies to ignore when analyzing
@@ -39,9 +43,10 @@
     "@vitest/coverage-v8", // Used by CLI package vite.config.ts
     "@liam-hq/cli", // Used by erd-sample build script
     "@liam-hq/configs", // Used by tsconfig and biome configuration files
-    "@turbo/gen" // Required for `turbo gen` command in npm scripts
+    "@turbo/gen", // Required for `turbo gen` command in npm scripts
+    "@langchain/community", // Temporarily unused due to disabled vectorstore functionality
+    "@biomejs/biome" // Referenced in settings.json to enable Biome's "format on save" in VSCode
   ],
-
 
   // TODO: Review ignoreBinaries configuration later
   "ignoreBinaries": ["playwright"]

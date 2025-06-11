@@ -4,13 +4,6 @@ import type { WorkflowState } from '../types'
 export const validationNode = async (
   state: WorkflowState,
 ): Promise<WorkflowState> => {
-  if (!state.mode) {
-    return {
-      ...state,
-      error: 'Mode must be selected in UI before processing',
-    }
-  }
-
   if (!state.schemaData) {
     return {
       ...state,
@@ -18,11 +11,8 @@ export const validationNode = async (
     }
   }
 
-  // Determine which agent to use based on the mode
-  const agentName =
-    state.mode === 'Build'
-      ? ('databaseSchemaBuildAgent' as const)
-      : ('databaseSchemaAskAgent' as const)
+  // Always use Build agent
+  const agentName = 'databaseSchemaBuildAgent' as const
 
   // Convert schema to text
   const schemaText = convertSchemaToText(state.schemaData)

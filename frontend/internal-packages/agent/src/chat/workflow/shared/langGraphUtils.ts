@@ -2,13 +2,12 @@ import { Annotation } from '@langchain/langgraph'
 import type { Schema } from '@liam-hq/db-structure'
 import { WORKFLOW_ERROR_MESSAGES } from '../constants/progressMessages'
 import { answerGenerationNode, validationNode } from '../nodes'
-import type { AgentName, WorkflowMode } from '../types'
+import type { AgentName } from '../types'
 
 /**
  * ChatState definition for LangGraph (shared between streaming and non-streaming)
  */
 export interface ChatState {
-  mode?: WorkflowMode | undefined
   userInput: string
   generatedAnswer?: string | undefined
   finalResponse?: string | undefined
@@ -34,7 +33,6 @@ export const DEFAULT_RECURSION_LIMIT = 10
  */
 export const createAnnotations = () => {
   return Annotation.Root({
-    mode: Annotation<WorkflowMode | undefined>,
     userInput: Annotation<string>,
     generatedAnswer: Annotation<string | undefined>,
     finalResponse: Annotation<string | undefined>,

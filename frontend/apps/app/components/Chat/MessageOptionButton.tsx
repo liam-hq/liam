@@ -5,17 +5,11 @@ import type { FC, KeyboardEvent, MouseEvent } from 'react'
 import { useCallback } from 'react'
 import styles from './MessageOptionButton.module.css'
 
-import type { AgentType } from './AgentMessage/AgentMessage'
-
 export interface MessageOptionButtonProps {
   /**
    * The text content to display in the button
    */
   text: string
-  /**
-   * The agent type that determines the color theme
-   */
-  agentType: AgentType
   /**
    * Whether the button is selected
    */
@@ -35,7 +29,6 @@ export interface MessageOptionButtonProps {
  */
 export const MessageOptionButton: FC<MessageOptionButtonProps> = ({
   text,
-  agentType,
   isSelected = false,
   isDisabled = false,
   onClick,
@@ -64,11 +57,9 @@ export const MessageOptionButton: FC<MessageOptionButtonProps> = ({
     [isDisabled, onClick],
   )
 
-  const agentClass =
-    agentType === 'build' ? styles.optionButtonBuild : styles.optionButtonAsk
+  const agentClass = styles.optionButtonBuild
   const selectedClass = isSelected ? styles.optionButtonSelected : ''
-  const checkIconClass =
-    agentType === 'build' ? styles.checkIconBuild : styles.checkIconAsk
+  const checkIconClass = styles.checkIconBuild
 
   return (
     <div className={styles.optionWrapper}>
