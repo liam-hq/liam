@@ -48,35 +48,6 @@ const langGraphResultSchema = v.object({
 })
 
 /**
- * Prepare final state for streaming
- */
-export const prepareFinalState = (
-  currentState: WorkflowState,
-  initialState: WorkflowState,
-): WorkflowState => {
-  return {
-    userInput: currentState.userInput || initialState.userInput,
-    history: currentState.history || initialState.history || [],
-    schemaData: currentState.schemaData || initialState.schemaData,
-    projectId: currentState.projectId || initialState.projectId,
-    generatedAnswer: currentState.generatedAnswer,
-    finalResponse: currentState.finalResponse,
-    error: currentState.error,
-    // Include processed fields
-    schemaText: currentState.schemaText,
-    formattedChatHistory: currentState.formattedChatHistory,
-    agentName: currentState.agentName,
-    // Include schema update fields
-    buildingSchemaId:
-      currentState.buildingSchemaId || initialState.buildingSchemaId,
-    latestVersionNumber:
-      currentState.latestVersionNumber || initialState.latestVersionNumber,
-    organizationId: currentState.organizationId || initialState.organizationId,
-    userId: currentState.userId || initialState.userId,
-  }
-}
-
-/**
  * Create error state with proper fallbacks
  */
 export const createErrorState = (

@@ -32,6 +32,7 @@ export const useTriggerJobMonitor = ({
   const [isMonitoring, setIsMonitoring] = useState(false)
   const [jobStatus, setJobStatus] = useState<string | undefined>()
   const [error, setError] = useState<string | undefined>()
+  const [currentJobId, setCurrentJobId] = useState<string | undefined>()
 
   // Use Trigger.dev React Hook with valid access token
   const { run, error: triggerError } = useRealtimeRun(triggerJobId || '', {
@@ -42,12 +43,20 @@ export const useTriggerJobMonitor = ({
   useEffect(() => {
     if (!triggerJobId) {
       setIsMonitoring(false)
+      setJobStatus(undefined)
+      setError(undefined)
+      setCurrentJobId(undefined)
       return
     }
 
-    setIsMonitoring(true)
-    setJobStatus('monitoring')
-  }, [triggerJobId])
+    // Only reset states if this is a new job
+    if (triggerJobId !== currentJobId) {
+      setCurrentJobId(triggerJobId)
+      setIsMonitoring(true)
+      setJobStatus('monitoring')
+      setError(undefined)
+    }
+  }, [triggerJobId, currentJobId])
 
   useEffect(() => {
     if (triggerError) {
@@ -59,6 +68,11 @@ export const useTriggerJobMonitor = ({
 
   useEffect(() => {
     if (!run) return
+
+    // Only process run updates for the current job
+    if (run.id !== currentJobId) {
+      return
+    }
 
     setJobStatus(run.status)
 
@@ -73,7 +87,7 @@ export const useTriggerJobMonitor = ({
       setError(run.error?.message || 'Job execution failed')
       onJobError(run.error?.message || 'Job execution failed')
     }
-  }, [run, onJobComplete, onJobError])
+  }, [run, onJobComplete, onJobError, currentJobId])
 
   return {
     isMonitoring,
