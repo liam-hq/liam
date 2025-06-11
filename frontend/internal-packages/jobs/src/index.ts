@@ -1,1 +1,2 @@
-export { analyzeRepositoryTask } from './trigger/jobs'
+export { analyzeRepositoryTask, generateAnswerTask } from './trigger/jobs'
+export type { AnswerGenerationPayload } from './functions/processAnswerGeneration'

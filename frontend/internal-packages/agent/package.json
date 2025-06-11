@@ -10,6 +10,7 @@
     "@langchain/openai": "0.5.11",
     "@liam-hq/db": "workspace:*",
     "@liam-hq/db-structure": "workspace:*",
+    "@liam-hq/jobs": "workspace:*",
     "fast-json-patch": "3.1.1",
     "langfuse-langchain": "3.37.2",
     "next": "15.3.2",

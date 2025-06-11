@@ -1,4 +1,4 @@
-import type { AnswerGenerationPayload } from '../../../../../jobs/src/functions/processAnswerGeneration'
+import type { AnswerGenerationPayload } from '@liam-hq/jobs'
 import type { WorkflowState } from '../types'
 
 /**
@@ -56,6 +56,7 @@ class TriggerService {
       }
 
       // Import Trigger.dev task directly
+      // TODO: Use @liam-hq/jobs package import after pnpm install
       const { generateAnswerTask } = await import(
         '../../../../../jobs/src/trigger/jobs'
       )

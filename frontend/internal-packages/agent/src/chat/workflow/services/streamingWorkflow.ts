@@ -45,9 +45,17 @@ const handlePollingError = async (
 }
 
 /**
- * Poll job status via API endpoint instead of in-memory service
+ * Monitor job status via API endpoint as fallback mechanism
+ *
+ * This function serves as a fallback when Trigger.dev React hooks are not available:
+ * - When Trigger.dev authentication fails
+ * - During service outages or connectivity issues
+ * - In development environments without Trigger.dev setup
+ * - As a safety net for system reliability
+ *
+ * Primary monitoring is handled by React hooks (useTriggerJobMonitor) for real-time updates.
  */
-const pollJobStatusViaAPI = async (
+const monitorJobStatusAsFallback = async (
   jobId: string,
   timeoutMs = 180000, // 3 minutes
   pollIntervalMs = 3000, // 3 seconds
@@ -190,7 +198,7 @@ export const executeStreamingWorkflow = async function* (
         content: 'Monitoring job with Trigger.dev React Hooks...',
       }
 
-      // Return early - client will handle the rest
+      // Return early - client-side React hooks will handle real-time monitoring
       return {
         ...initialState,
         ...validationResult,
@@ -202,8 +210,10 @@ export const executeStreamingWorkflow = async function* (
     yield { type: 'custom', content: 'Processing your request...' }
 
     // Step 3: Fallback polling and completion
+    // This path is executed when Trigger.dev is not available (auth failure, service outage, etc.)
+    // Uses API polling as a backup mechanism to ensure system reliability
     try {
-      const jobResult = await pollJobStatusViaAPI(jobId, 180000, 3000)
+      const jobResult = await monitorJobStatusAsFallback(jobId, 180000, 3000)
 
       if (jobResult.status === 'failed') {
         yield {
