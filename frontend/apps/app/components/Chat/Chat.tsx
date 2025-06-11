@@ -56,10 +56,15 @@ export const Chat: FC<Props> = ({ schemaData, tableGroups, designSession }) => {
   // Job completion handlers (memoized to prevent infinite loops)
   const handleJobComplete = useCallback(
     async (result: TriggerJobResult) => {
+      // Prevent duplicate processing - check if this job was already processed
+      if (!currentAiMessage || !triggerJobId) {
+        return
+      }
+
       setProgressMessages(() => [])
 
-      if (currentAiMessage && result.success && result.generatedAnswer) {
-        // Update the AI message with the generated answer
+      if (result.success && result.generatedAnswer) {
+        // Update with final message
         const updatedMessage = {
           ...currentAiMessage,
           content: result.generatedAnswer,
@@ -80,6 +85,8 @@ export const Chat: FC<Props> = ({ schemaData, tableGroups, designSession }) => {
         }
 
         addOrUpdateMessage(updatedMessage)
+
+        // Clear states after successful processing
         setCurrentAiMessage(undefined)
         setTriggerJobId(undefined)
         setIsLoading(false)
@@ -90,7 +97,7 @@ export const Chat: FC<Props> = ({ schemaData, tableGroups, designSession }) => {
         }, 10)
       }
     },
-    [currentAiMessage, designSession.id, addOrUpdateMessage],
+    [currentAiMessage, triggerJobId, designSession.id, addOrUpdateMessage],
   )
 
   const handleJobError = useCallback(async (_error: string) => {

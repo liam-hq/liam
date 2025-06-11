@@ -29,12 +29,10 @@ export const processAnswerGeneration = async (
     logger.log('Starting answer generation process', {
       jobId: payload.jobId,
       userInput: `${payload.userInput.substring(0, 100)}...`,
-      mode: payload.mode,
     })
 
     // Create state object for answerGenerationNode
     const state = {
-      mode: payload.mode,
       userInput: payload.userInput,
       history: payload.history,
       schemaData: payload.schemaData,

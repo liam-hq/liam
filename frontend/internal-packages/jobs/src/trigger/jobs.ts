@@ -36,7 +36,6 @@ export const generateAnswerTask = task({
     logger.log('Executing answer generation task:', {
       jobId: payload.jobId,
       designSessionId: payload.designSessionId,
-      mode: payload.mode,
     })
 
     try {

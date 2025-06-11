@@ -38,11 +38,11 @@ export const useTriggerJobMonitorWithAuth = ({
 
   // Always call useTriggerJobMonitor, but with safe defaults when auth is not available
   const { isMonitoring, jobStatus, error } = useTriggerJobMonitor({
-    triggerJobId: hasValidAuth ? triggerJobId : undefined,
+    triggerJobId: triggerJobId, // Always pass triggerJobId, let useTriggerJobMonitor handle it
     accessToken: accessToken || 'dummy-token', // Provide dummy token to satisfy hook requirements
     baseURL,
-    onJobComplete: hasValidAuth ? onJobComplete : () => {},
-    onJobError: hasValidAuth ? onJobError : () => {},
+    onJobComplete: onJobComplete, // Always pass the callback
+    onJobError: onJobError, // Always pass the callback
   })
 
   return {

@@ -21,7 +21,6 @@ class TriggerService {
 
     // Prepare payload for Trigger.dev
     const payload: AnswerGenerationPayload = {
-      mode: state.mode,
       userInput: state.userInput,
       history: state.history,
       schemaData: state.schemaData,

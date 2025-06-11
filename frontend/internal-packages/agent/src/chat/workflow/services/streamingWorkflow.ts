@@ -7,7 +7,7 @@ import { validateInput } from '../shared/langGraphUtils'
 import type { ChatState } from '../shared/langGraphUtils'
 import { createErrorState, toLangGraphState } from '../shared/stateManager'
 import type { ResponseChunk, WorkflowState } from '../types'
-import type { BackgroundJobStatus } from './backgroundJobService'
+import type { BackgroundJobStatus } from '../types'
 import { triggerService } from './triggerService'
 
 /**

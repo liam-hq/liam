@@ -311,6 +311,7 @@ const processStreamingResponse = async (
 
     // Decode the chunk and process JSON messages
     const chunk = new TextDecoder().decode(value)
+
     const result = processStreamChunk(
       chunk,
       accumulatedContent,

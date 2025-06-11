@@ -40,6 +40,18 @@ export type ResponseChunk = {
 }
 
 /**
+ * Background job status interface
+ */
+export interface BackgroundJobStatus {
+  jobId: string
+  status: 'pending' | 'processing' | 'completed' | 'failed'
+  generatedAnswer?: string
+  error?: string
+  createdAt: string
+  completedAt?: string
+}
+
+/**
  * Workflow execution options
  */
 export interface WorkflowOptions {
