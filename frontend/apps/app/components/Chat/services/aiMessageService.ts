@@ -265,131 +265,40 @@ const handleStreamingError = (
 }
 
 /**
- * Handles stream completion and saves the final message
- */
-const handleStreamCompletion = async (
-  accumulatedContent: string,
-  aiMessage: ChatEntry,
-  designSession: DesignSession,
-  addOrUpdateMessage: (message: ChatEntry, userId?: string | null) => void,
-): Promise<CreateAIMessageResult> => {
-  // Streaming is complete, save to database only if content is not empty
-  let aiDbId: string | undefined
-
-  if (accumulatedContent.trim().length > 0) {
-    const saveResult = await saveMessage({
-      designSessionId: designSession.id,
-      content: accumulatedContent,
-      role: 'assistant',
-      userId: null,
-    })
-    if (saveResult.success && saveResult.message) {
-      aiDbId = saveResult.message.id
-    }
-  }
-
-  // Update message with final content, timestamp, and database ID
-  const finalAiMessage = createChatEntry(aiMessage, {
-    content: accumulatedContent,
-    timestamp: new Date(),
-    isGenerating: false, // Remove generating state when complete
-    dbId: aiDbId, // Will be undefined if not saved
-  })
-  addOrUpdateMessage(finalAiMessage)
-
-  return { success: true, finalMessage: finalAiMessage }
-}
-
-/**
- * Processes a chunk of streaming data and updates accumulated content
- */
-const processStreamChunk = (
-  chunk: string,
-  accumulatedContent: string,
-  aiMessage: ChatEntry,
-  addOrUpdateMessage: (message: ChatEntry, userId?: string | null) => void,
-  setProgressMessages: (updater: (prev: string[]) => string[]) => void,
-): { content: string; triggerJobId?: string } => {
-  const lines = chunk.split('\n').filter((line) => line.trim())
-  let newAccumulatedContent = accumulatedContent
-  let triggerJobId: string | undefined
-
-  for (const line of lines) {
-    const result = processStreamLine(
-      line,
-      newAccumulatedContent,
-      aiMessage,
-      addOrUpdateMessage,
-      setProgressMessages,
-    )
-    newAccumulatedContent = result.content
-
-    // Accumulate triggerJobId
-    if (result.triggerJobId) {
-      triggerJobId = result.triggerJobId
-    }
-  }
-
-  return { content: newAccumulatedContent, triggerJobId }
-}
-
-/**
- * Processes the streaming response from the API
+ * Processes the streaming response from the chat API
  */
 const processStreamingResponse = async (
   reader: ReadableStreamDefaultReader<Uint8Array>,
   aiMessage: ChatEntry,
-  designSession: DesignSession,
   addOrUpdateMessage: (message: ChatEntry, userId?: string | null) => void,
   setProgressMessages: (updater: (prev: string[]) => string[]) => void,
   onTriggerJobDetected?: (triggerJobId: string, aiMessage: ChatEntry) => void,
-): Promise<CreateAIMessageResult> => {
+): Promise<string> => {
   let accumulatedContent = ''
-  let triggerJobId: string | undefined
 
-  // Read the stream
   while (true) {
     const { done, value } = await reader.read()
 
     if (done) {
-      // Check if we have a triggerJobId and callback after stream completion
-      if (triggerJobId && onTriggerJobDetected) {
-        onTriggerJobDetected(triggerJobId, aiMessage)
-        // Return early - the parent will handle the rest via React Hooks
-        return { success: true, finalMessage: aiMessage }
-      }
-
-      return handleStreamCompletion(
-        accumulatedContent,
-        aiMessage,
-        designSession,
-        addOrUpdateMessage,
-      )
+      return accumulatedContent
     }
 
     // Decode the chunk and process JSON messages
     const chunk = new TextDecoder().decode(value)
+    const lines = chunk.split('\n').filter((line) => line.trim())
 
-    const result = processStreamChunk(
-      chunk,
-      accumulatedContent,
-      aiMessage,
-      addOrUpdateMessage,
-      setProgressMessages,
-    )
-
-    accumulatedContent = result.content
-
-    // Handle trigger job detection
-    if (result.triggerJobId) {
-      triggerJobId = result.triggerJobId
-    }
-
-    // Only trigger callback and return early when we have triggerJobId
-    if (triggerJobId && onTriggerJobDetected) {
-      onTriggerJobDetected(triggerJobId, aiMessage)
-      // Return early - the parent will handle the rest via React Hooks
-      return { success: true, finalMessage: aiMessage }
+    for (const line of lines) {
+      const result = processStreamLine(
+        line,
+        accumulatedContent,
+        aiMessage,
+        addOrUpdateMessage,
+        setProgressMessages,
+      )
+      accumulatedContent = result.content
+      if (result.triggerJobId) {
+        onTriggerJobDetected?.(result.triggerJobId, aiMessage)
+      }
     }
   }
 }
@@ -429,14 +338,38 @@ export const createAndStreamAIMessage = async ({
       throw new Error(ERROR_MESSAGES.RESPONSE_NOT_READABLE)
     }
 
-    return await processStreamingResponse(
+    const accumulatedContent = await processStreamingResponse(
       reader,
       aiMessage,
-      designSession,
       addOrUpdateMessage,
       setProgressMessages,
       onTriggerJobDetected,
     )
+
+    // Streaming is complete, save to database only if content is not empty
+    let aiDbId: string | undefined
+    if (accumulatedContent.trim().length > 0) {
+      const saveResult = await saveMessage({
+        designSessionId: designSession.id,
+        content: accumulatedContent,
+        role: 'assistant',
+        userId: null,
+      })
+      if (saveResult.success && saveResult.message) {
+        aiDbId = saveResult.message.id
+      }
+    }
+
+    // Update message with final content, timestamp, and database ID
+    const finalAiMessage = createChatEntry(aiMessage, {
+      content: accumulatedContent,
+      timestamp: new Date(),
+      isGenerating: false, // Remove generating state when complete
+      dbId: aiDbId, // Will be undefined if not saved
+    })
+    addOrUpdateMessage(finalAiMessage)
+
+    return { success: true, finalMessage: finalAiMessage }
   } catch (error) {
     return handleStreamingError(
       error,

@@ -52,6 +52,52 @@ export const Chat: FC<Props> = ({ schemaData, tableGroups, designSession }) => {
     fetchUserId()
   }, [])
 
+  // Helper function to simulate streaming display of text
+  const streamText = useCallback(
+    async (text: string, targetMessage: ChatEntry) => {
+      const words = text.split(/(\s+)/) // Split by whitespace but keep the whitespace
+      let accumulatedText = ''
+
+      for (let i = 0; i < words.length; i++) {
+        accumulatedText += words[i]
+
+        // Update the message with accumulated text
+        const streamingMessage = {
+          ...targetMessage,
+          content: accumulatedText,
+          isGenerating: true,
+        }
+        addOrUpdateMessage(streamingMessage)
+
+        // Add delay between words for streaming effect
+        await new Promise((resolve) => setTimeout(resolve, 50))
+      }
+
+      // Final update with complete text and remove generating state
+      const finalMessage = {
+        ...targetMessage,
+        content: text,
+        timestamp: new Date(),
+        isGenerating: false,
+      }
+
+      // Save to database
+      const saveResult = await saveMessage({
+        designSessionId: designSession.id,
+        content: text,
+        role: 'assistant',
+        userId: null,
+      })
+
+      if (saveResult.success && saveResult.message) {
+        finalMessage.dbId = saveResult.message.id
+      }
+
+      addOrUpdateMessage(finalMessage)
+    },
+    [addOrUpdateMessage, designSession.id],
+  )
+
   // Job completion handlers (memoized to prevent infinite loops)
   const handleJobComplete = useCallback(
     async (result: TriggerJobResult) => {
@@ -63,27 +109,8 @@ export const Chat: FC<Props> = ({ schemaData, tableGroups, designSession }) => {
       setProgressMessages(() => [])
 
       if (result.success && result.generatedAnswer) {
-        // Update with final message
-        const updatedMessage = {
-          ...currentAiMessage,
-          content: result.generatedAnswer,
-          timestamp: new Date(),
-          isGenerating: false,
-        }
-
-        // Save to database
-        const saveResult = await saveMessage({
-          designSessionId: designSession.id,
-          content: result.generatedAnswer,
-          role: 'assistant',
-          userId: null,
-        })
-
-        if (saveResult.success && saveResult.message) {
-          updatedMessage.dbId = saveResult.message.id
-        }
-
-        addOrUpdateMessage(updatedMessage)
+        // Stream the generated answer
+        await streamText(result.generatedAnswer, currentAiMessage)
 
         // Clear states after successful processing
         setCurrentAiMessage(undefined)
@@ -96,27 +123,9 @@ export const Chat: FC<Props> = ({ schemaData, tableGroups, designSession }) => {
         }, 10)
       } else {
         // Handle failed job result
-        const errorMessage = {
-          ...currentAiMessage,
-          content:
-            'Sorry, I encountered an error while generating your answer. Please try again.',
-          timestamp: new Date(),
-          isGenerating: false,
-        }
-
-        // Save error message to database
-        const saveResult = await saveMessage({
-          designSessionId: designSession.id,
-          content: errorMessage.content,
-          role: 'assistant',
-          userId: null,
-        })
-
-        if (saveResult.success && saveResult.message) {
-          errorMessage.dbId = saveResult.message.id
-        }
-
-        addOrUpdateMessage(errorMessage)
+        const errorText =
+          'Sorry, I encountered an error while generating your answer. Please try again.'
+        await streamText(errorText, currentAiMessage)
 
         // Clear states after error handling
         setCurrentAiMessage(undefined)
@@ -129,7 +138,7 @@ export const Chat: FC<Props> = ({ schemaData, tableGroups, designSession }) => {
         }, 10)
       }
     },
-    [currentAiMessage, triggerJobId, designSession.id, addOrUpdateMessage],
+    [currentAiMessage, triggerJobId, streamText],
   )
 
   const handleJobError = useCallback(
