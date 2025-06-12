@@ -1,5 +1,6 @@
 'use client'
 
+import { Search } from '@liam-hq/ui'
 import { DialogDescription, DialogTitle } from '@radix-ui/react-dialog'
 import { Command } from 'cmdk'
 import { type FC, useEffect, useState } from 'react'
@@ -32,7 +33,13 @@ export const CommandPalette: FC = () => {
         A search-based interface that allows quick access to various commands
         and features within the application.
       </DialogDescription>
-      Coming Soon...
+      <div className={styles.searchContainer}>
+        <div className={styles.searchFormWithIcon}>
+          <Search className={styles.searchIcon} />
+          <Command.Input placeholder="Search" />
+        </div>
+        <span className={styles.escapeSign}>ESC</span>
+      </div>
     </Command.Dialog>
   )
 }

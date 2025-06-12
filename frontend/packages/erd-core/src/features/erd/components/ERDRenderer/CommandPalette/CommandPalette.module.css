@@ -45,3 +45,39 @@
     transform: translate(-50%, -50%) scale(1);
   }
 }
+
+.searchContainer {
+  display: flex;
+  align-items: center;
+  padding: var(--spacing-2) var(--spacing-4);
+  gap: var(--spacing-4);
+  width: 100%;
+  border-bottom: 1px solid var(--overlay-5);
+}
+
+.searchFormWithIcon {
+  display: flex;
+  flex-grow: 1;
+  padding: var(--spacing-2) 0;
+  gap: var(--spacing-2);
+}
+
+.searchFormWithIcon [cmdk-input] {
+  width: 100%;
+}
+
+.searchIcon {
+  width: 16px;
+  height: 16px;
+  color: var(--overlay-60);
+}
+
+.escapeSign {
+  border: 1px solid #434536;
+  border-radius: var(--border-radius-smbase);
+  font-size: 10px;
+  width: 34px;
+  height: 21px;
+  text-align: center;
+  line-height: 21px;
+}
