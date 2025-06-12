@@ -18,6 +18,15 @@ export async function GET() {
     }
 
     // Create a public token for client-side monitoring
+    // SECURITY CONCERN: Current scope configuration has potential security implications:
+    // - Token allows reading job details including input/output data for 'generate-answer' tasks
+    // - No user/session-specific restrictions - could potentially access other users' jobs
+    // - Token is exposed to client-side and could be intercepted
+    // TODO: Consider implementing:
+    //   1. User/session-specific scope restrictions
+    //   2. Shorter token expiration times
+    //   3. IP-based restrictions
+    //   4. More granular permissions (e.g., job status only, not full job data)
     const publicToken = await auth.createPublicToken({
       scopes: {
         read: {
