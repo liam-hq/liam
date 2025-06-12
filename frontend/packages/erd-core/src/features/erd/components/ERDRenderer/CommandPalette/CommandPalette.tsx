@@ -3,13 +3,18 @@
 import { useSchema } from '@/stores'
 import { Search, Table2 } from '@liam-hq/ui'
 import { DialogDescription, DialogTitle } from '@radix-ui/react-dialog'
+import { ReactFlowProvider } from '@xyflow/react'
 import { Command } from 'cmdk'
 import { type FC, useEffect, useState } from 'react'
+import { TableNode } from '../../ERDContent/components'
 import styles from './CommandPalette.module.css'
 
 export const CommandPalette: FC = () => {
   const [open, setOpen] = useState(false)
+
   const schema = useSchema()
+  const [tableName, setTableName] = useState<string | null>(null)
+  const table = schema.current.tables[tableName ?? 'account_aliases']
 
   // Toggle the menu when ⌘K is pressed
   useEffect(() => {
@@ -29,6 +34,8 @@ export const CommandPalette: FC = () => {
       open={open}
       onOpenChange={setOpen}
       contentClassName={styles.content}
+      value={tableName ?? ''}
+      onValueChange={(v) => setTableName(v)}
     >
       <DialogTitle hidden>Command Palette</DialogTitle>
       <DialogDescription hidden>
@@ -53,6 +60,34 @@ export const CommandPalette: FC = () => {
             ))}
           </Command.Group>
         </Command.List>
+        <div className={styles.previewContainer}>
+          <div className={styles.previewBackground}>
+            {table && (
+              <div className={styles.tableNodeContainer}>
+                <ReactFlowProvider>
+                  <TableNode
+                    id=""
+                    type="table"
+                    data={{
+                      table: table,
+                      isActiveHighlighted: false,
+                      isHighlighted: false,
+                      isTooltipVisible: false,
+                      sourceColumnName: undefined,
+                      targetColumnCardinalities: undefined,
+                      showMode: 'ALL_FIELDS',
+                    }}
+                    dragging={false}
+                    isConnectable={false}
+                    positionAbsoluteX={0}
+                    positionAbsoluteY={0}
+                    zIndex={0}
+                  />
+                </ReactFlowProvider>
+              </div>
+            )}
+          </div>
+        </div>
       </div>
     </Command.Dialog>
   )

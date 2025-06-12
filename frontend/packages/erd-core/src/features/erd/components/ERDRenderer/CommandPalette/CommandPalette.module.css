@@ -82,13 +82,16 @@
 }
 
 .main {
+  display: flex;
   padding: var(--spacing-2);
   height: 459px;
 }
 
 .main [cmdk-list] {
+  overflow-x: hidden;
   overflow-y: scroll;
   height: 100%;
+  width: 300px;
 }
 
 .main [cmdk-group-heading] {
@@ -104,6 +107,7 @@
 }
 
 .main [cmdk-item] .itemIcon {
+  flex-shrink: 0;
   margin-right: var(--spacing-2);
   width: 16px;
   height: 16px;
@@ -116,4 +120,23 @@
 
 .main [cmdk-item][data-selected="true"] .itemIcon {
   color: var(--global-foreground);
+}
+
+.previewContainer {
+  display: flex;
+  flex-direction: column;
+  padding: var(--spacing-10) var(--spacing-8) var(--spacing-10) var(--spacing-5);
+  flex: 1;
+}
+
+.previewBackground {
+  padding: var(--spacing-10) var(--spacing-12);
+  background-color: var(--global-background);
+  height: 100%;
+  overflow: hidden;
+}
+
+/* property items of TableNode */
+.tableNodeContainer ul {
+  overflow: hidden;
 }
