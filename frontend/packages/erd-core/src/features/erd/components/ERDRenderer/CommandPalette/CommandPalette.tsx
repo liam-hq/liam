@@ -51,6 +51,7 @@ export const CommandPalette: FC = () => {
       </div>
       <div className={styles.main}>
         <Command.List>
+          <Command.Empty>No results found.</Command.Empty>
           <Command.Group heading="Suggestions">
             {Object.values(schema.current.tables).map((table) => (
               <Command.Item key={table.name} value={table.name}>

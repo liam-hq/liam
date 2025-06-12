@@ -140,3 +140,21 @@
 .tableNodeContainer ul {
   overflow: hidden;
 }
+
+/* Empty search result display */
+.main [cmdk-list]:has([cmdk-empty]) {
+  width: 100%;
+  overflow: auto;
+  position: relative;
+}
+
+.main [cmdk-list] [cmdk-empty] {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50px);
+}
+
+.main [cmdk-list]:has([cmdk-empty]) + .previewContainer {
+  display: none;
+}
