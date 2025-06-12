@@ -96,8 +96,8 @@ export const Chat: FC<Props> = ({ schemaData, tableGroups, designSession }) => {
     // Add user message
     const userMessage: ChatEntry = {
       id: generateMessageId('user'),
+      role: 'user',
       content,
-      isUser: true,
       timestamp: new Date(),
       isGenerating: false, // Explicitly set to false for consistency
     }
@@ -122,6 +122,18 @@ export const Chat: FC<Props> = ({ schemaData, tableGroups, designSession }) => {
     await startAIResponse(content)
   }
 
+  // Handle retry functionality for error messages
+  const handleRetry = async (errorMessage: ChatEntry) => {
+    // Find the last user message to retry
+    const lastUserMessage = messages
+      .filter((msg) => msg.role === 'user')
+      .pop()
+    
+    if (lastUserMessage && !isLoading) {
+      await startAIResponse(lastUserMessage.content)
+    }
+  }
+
   return (
     <div className={styles.wrapper}>
       <div className={styles.messagesContainer}>
@@ -129,21 +141,19 @@ export const Chat: FC<Props> = ({ schemaData, tableGroups, designSession }) => {
         {messages.map((message, index) => {
           // Check if this is the last AI message and has progress messages
           const isLastAIMessage =
-            !message.isUser && index === messages.length - 1
+            message.role === 'assistant' && index === messages.length - 1
           const shouldShowProgress =
             progressMessages.length > 0 && isLastAIMessage
 
           return (
             <ChatMessage
               key={message.id}
-              content={message.content}
-              isUser={message.isUser}
-              timestamp={message.timestamp}
-              isGenerating={message.isGenerating}
+              message={message}
               progressMessages={
                 shouldShowProgress ? progressMessages : undefined
               }
               showProgress={shouldShowProgress}
+              onRetry={handleRetry}
             />
           )
         })}

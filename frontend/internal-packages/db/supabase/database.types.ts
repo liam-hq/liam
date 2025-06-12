@@ -1359,7 +1359,7 @@ export type Database = {
         | 'PROJECT_RULES_CONSISTENCY'
         | 'SECURITY_OR_SCALABILITY'
       knowledge_type: 'SCHEMA' | 'DOCS'
-      message_role_enum: 'user' | 'assistant'
+      message_role_enum: 'user' | 'assistant' | 'error'
       schema_format_enum: 'schemarb' | 'postgres' | 'prisma' | 'tbls'
       severity_enum: 'CRITICAL' | 'WARNING' | 'POSITIVE' | 'QUESTION'
     }
@@ -1488,7 +1488,7 @@ export const Constants = {
         'SECURITY_OR_SCALABILITY',
       ],
       knowledge_type: ['SCHEMA', 'DOCS'],
-      message_role_enum: ['user', 'assistant'],
+      message_role_enum: ['user', 'assistant', 'error'],
       schema_format_enum: ['schemarb', 'postgres', 'prisma', 'tbls'],
       severity_enum: ['CRITICAL', 'WARNING', 'POSITIVE', 'QUESTION'],
     },

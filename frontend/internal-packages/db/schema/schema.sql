@@ -95,7 +95,8 @@ ALTER TYPE "public"."knowledge_type" OWNER TO "postgres";
 
 CREATE TYPE "public"."message_role_enum" AS ENUM (
     'user',
-    'assistant'
+    'assistant',
+    'error'
 );
 
 
@@ -1495,6 +1496,10 @@ CREATE INDEX "idx_messages_design_session_created_at" ON "public"."messages" USI
 
 
 
+CREATE INDEX "idx_messages_role" ON "public"."messages" USING "btree" ("role");
+
+
+
 CREATE INDEX "idx_messages_role_created_at" ON "public"."messages" USING "btree" ("role", "created_at" DESC);
 
 
@@ -2771,6 +2776,10 @@ CREATE POLICY "users_same_organization_select_policy" ON "public"."users" FOR SE
 
 
 ALTER PUBLICATION "supabase_realtime" OWNER TO "postgres";
+
+
+
+
 
 
 ALTER PUBLICATION "supabase_realtime" ADD TABLE ONLY "public"."building_schemas";

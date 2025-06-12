@@ -1,7 +1,9 @@
 'use client'
 
 import { AgentMessage } from '@/components/Chat/AgentMessage'
+import { ErrorMessage } from '@/components/Chat/ErrorMessage'
 import { UserMessage } from '@/components/Chat/UserMessage'
+import type { ChatEntry } from '@/components/Chat/types/chatTypes'
 import { syntaxCodeTagProps, syntaxCustomStyle, syntaxTheme } from '@liam-hq/ui'
 import type React from 'react'
 import type { FC, ReactNode } from 'react'
@@ -21,17 +23,8 @@ interface CodeProps extends React.HTMLAttributes<HTMLElement> {
 }
 
 export interface ChatMessageProps {
-  content: string
-  isUser: boolean
-  timestamp?: Date
-  avatarSrc?: string
-  avatarAlt?: string
-  initial?: string
-  /**
-   * Whether the bot is generating a response
-   * @default false
-   */
-  isGenerating?: boolean
+  /** Message entry with role information */
+  message: ChatEntry
   /**
    * Optional children to render below the message content
    */
@@ -44,30 +37,39 @@ export interface ChatMessageProps {
    * Whether to show progress messages
    */
   showProgress?: boolean
+  /**
+   * Retry callback for error messages
+   */
+  onRetry?: (message: ChatEntry) => void
 }
 
 export const ChatMessage: FC<ChatMessageProps> = ({
-  content,
-  isUser,
-  timestamp,
-  avatarSrc,
-  avatarAlt,
-  initial,
-  isGenerating = false,
+  message,
   children,
   progressMessages,
   showProgress,
+  onRetry,
 }) => {
+  // Handle error messages
+  if (message.role === 'error') {
+    return (
+      <ErrorMessage
+        message={message}
+        onRetry={onRetry ? () => onRetry(message) : undefined}
+      />
+    )
+  }
+
   // Only format and display timestamp if it exists
-  const formattedTime = timestamp
-    ? timestamp.toLocaleTimeString([], {
+  const formattedTime = message.timestamp
+    ? message.timestamp.toLocaleTimeString([], {
         hour: '2-digit',
         minute: '2-digit',
       })
     : null
 
   // For bot messages, we'll render the markdown content with syntax highlighting
-  const markdownContent = !isUser ? (
+  const markdownContent = message.role === 'assistant' ? (
     <ReactMarkdown
       remarkPlugins={[remarkGfm]}
       components={{
@@ -96,23 +98,23 @@ export const ChatMessage: FC<ChatMessageProps> = ({
         },
       }}
     >
-      {content}
+      {message.content}
     </ReactMarkdown>
   ) : null
 
   return (
     <div className={styles.messageContainer}>
-      {isUser ? (
+      {message.role === 'user' ? (
         <UserMessage
-          content={content}
-          timestamp={timestamp}
-          avatarSrc={avatarSrc}
-          avatarAlt={avatarAlt}
-          initial={initial}
+          content={message.content}
+          timestamp={message.timestamp}
+          avatarSrc={message.avatarSrc}
+          avatarAlt={message.avatarAlt}
+          initial={message.initial}
         />
       ) : (
         <AgentMessage
-          state={isGenerating ? 'generating' : 'default'}
+          state={message.isGenerating ? 'generating' : 'default'}
           message={markdownContent}
           time={formattedTime || ''}
           progressMessages={progressMessages}

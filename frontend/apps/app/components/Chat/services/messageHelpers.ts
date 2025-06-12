@@ -42,8 +42,8 @@ export const formatChatHistory = (
   messages: ChatEntry[],
 ): [string, string][] => {
   return messages
-    .filter((msg) => msg.id !== 'welcome')
-    .map((msg) => [msg.isUser ? 'Human' : 'AI', msg.content])
+    .filter((msg) => msg.id !== 'welcome' && msg.role !== 'error') // Exclude error messages from history
+    .map((msg) => [msg.role === 'user' ? 'Human' : 'AI', msg.content])
 }
 
 /**
