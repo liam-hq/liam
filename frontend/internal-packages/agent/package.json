@@ -4,7 +4,7 @@
   "version": "0.1.0",
   "main": "src/index.ts",
   "dependencies": {
-    "@langchain/community": "0.3.43",
+    "@langchain/community": "0.3.45",
     "@langchain/core": "0.3.57",
     "@langchain/langgraph": "0.3.0",
     "@langchain/openai": "0.5.11",

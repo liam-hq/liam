@@ -59,18 +59,7 @@ export async function fetchDesignSessionData(
 
   return {
     organization_id: data.organization_id,
-    // FIXME: This typecast is necessary because the database type of the role is text type.
-    // If the role can be defined in an enum, supabase can generate the type, which will be modified later.
-    messages: (data.messages || []) as Array<{
-      id: string
-      content: string
-      role: 'user' | 'assistant'
-      user_id: string | null
-      created_at: string
-      updated_at: string
-      organization_id: string
-      design_session_id: string
-    }>,
+    messages: data.messages || [],
   }
 }
 
