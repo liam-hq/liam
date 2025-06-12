@@ -4,7 +4,6 @@
   left: 50%;
   transform: translate(-50%, -50%);
   width: 638px;
-  height: 508px;
   border-radius: var(--border-radius-lg);
   box-shadow: 0px 4px 20px 0px var(--shadow-basic-shadow, #000);
   animation: contentShow 150ms cubic-bezier(0.16, 1, 0.3, 1);
@@ -80,4 +79,41 @@
   height: 21px;
   text-align: center;
   line-height: 21px;
+}
+
+.main {
+  padding: var(--spacing-2);
+  height: 459px;
+}
+
+.main [cmdk-list] {
+  overflow-y: scroll;
+  height: 100%;
+}
+
+.main [cmdk-group-heading] {
+  padding: var(--spacing-3) var(--spacing-2);
+  color: var(--global-mute-text);
+}
+
+.main [cmdk-item] {
+  display: flex;
+  padding: var(--spacing-2);
+  align-items: center;
+  line-height: 24px;
+}
+
+.main [cmdk-item] .itemIcon {
+  margin-right: var(--spacing-2);
+  width: 16px;
+  height: 16px;
+  color: var(--overlay-40);
+}
+
+.main [cmdk-item][data-selected="true"] {
+  background: var(--overlay-5);
+}
+
+.main [cmdk-item][data-selected="true"] .itemIcon {
+  color: var(--global-foreground);
 }

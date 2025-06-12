@@ -1,6 +1,7 @@
 'use client'
 
-import { Search } from '@liam-hq/ui'
+import { useSchema } from '@/stores'
+import { Search, Table2 } from '@liam-hq/ui'
 import { DialogDescription, DialogTitle } from '@radix-ui/react-dialog'
 import { Command } from 'cmdk'
 import { type FC, useEffect, useState } from 'react'
@@ -8,6 +9,7 @@ import styles from './CommandPalette.module.css'
 
 export const CommandPalette: FC = () => {
   const [open, setOpen] = useState(false)
+  const schema = useSchema()
 
   // Toggle the menu when ⌘K is pressed
   useEffect(() => {
@@ -39,6 +41,18 @@ export const CommandPalette: FC = () => {
           <Command.Input placeholder="Search" />
         </div>
         <span className={styles.escapeSign}>ESC</span>
+      </div>
+      <div className={styles.main}>
+        <Command.List>
+          <Command.Group heading="Suggestions">
+            {Object.values(schema.current.tables).map((table) => (
+              <Command.Item key={table.name} value={table.name}>
+                <Table2 className={styles.itemIcon} />
+                {table.name}
+              </Command.Item>
+            ))}
+          </Command.Group>
+        </Command.List>
       </div>
     </Command.Dialog>
   )
