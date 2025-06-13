@@ -4,7 +4,7 @@ import { sentryEsbuildPlugin } from '@sentry/esbuild-plugin'
 import * as Sentry from '@sentry/node'
 import { esbuildPlugin } from '@trigger.dev/build/extensions'
 import { additionalFiles } from '@trigger.dev/build/extensions/core'
-import { defineConfig } from '@trigger.dev/sdk/v3'
+import { defineConfig } from '@trigger.dev/sdk'
 import * as dotenv from 'dotenv'
 import { globSync } from 'glob'
 
