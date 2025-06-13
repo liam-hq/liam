@@ -33,9 +33,6 @@ interface SendChatMessageResult {
  */
 const ChatAPIResponseSchema = object({
   success: optional(boolean()),
-  jobId: optional(string()),
-  status: optional(string()),
-  message: optional(string()),
   text: optional(string()),
   error: optional(string()),
 })

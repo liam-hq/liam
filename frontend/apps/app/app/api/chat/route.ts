@@ -32,15 +32,12 @@ export async function POST(request: Request) {
 
   try {
     // Trigger the chat processing job
-    const handle = await processChatTask.trigger({
+    await processChatTask.trigger({
       ...validationResult.output,
     })
 
     return NextResponse.json({
       success: true,
-      jobId: handle.id,
-      status: 'processing',
-      message: 'Chat processing started',
     })
   } catch (error) {
     console.error('Failed to trigger chat processing job:', error)
