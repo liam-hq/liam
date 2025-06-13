@@ -10,18 +10,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       
-      - name: Use Node.js 20.x
-        uses: actions/setup-node@v4
-        with:
-          node-version: "20.x"
-          
-      - name: Install pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 10.11.0
-          
-      - name: Install dependencies
-        run: pnpm install
+      - uses: ./.github/actions/pnpm-setup
         
       - name: Deploy preview branch
         run: npx trigger.dev@v4-beta deploy --env preview
