@@ -30,20 +30,12 @@ export async function POST(request: Request) {
     )
   }
 
-  try {
-    // Trigger the chat processing job
-    await processChatTask.trigger({
-      ...validationResult.output,
-    })
+  // Trigger the chat processing job
+  await processChatTask.trigger({
+    ...validationResult.output,
+  })
 
-    return NextResponse.json({
-      success: true,
-    })
-  } catch (error) {
-    console.error('Failed to trigger chat processing job:', error)
-    return NextResponse.json(
-      { error: 'Failed to start processing' },
-      { status: 500 },
-    )
-  }
+  return NextResponse.json({
+    success: true,
+  })
 }
