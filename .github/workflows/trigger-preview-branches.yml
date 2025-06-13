@@ -13,7 +13,8 @@ jobs:
       - uses: ./.github/actions/pnpm-setup
         
       - name: Deploy preview branch
-        run: npx trigger.dev@v4-beta deploy --env preview
+        run: pnpm deploy:jobs -- --env preview
+        working-directory: frontend/internal-packages/jobs
         env:
           TRIGGER_ACCESS_TOKEN: ${{ secrets.TRIGGER_ACCESS_TOKEN }}
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
