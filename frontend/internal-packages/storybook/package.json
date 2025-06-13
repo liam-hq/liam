@@ -4,8 +4,8 @@
   "version": "0.1.0",
   "dependencies": {
     "@liam-hq/ui": "workspace:*",
-    "react": "18.3.1",
-    "react-dom": "18"
+    "react": "19.1.0",
+    "react-dom": "19.1.0"
   },
   "devDependencies": {
     "@storybook/addon-essentials": "8.6.14",
@@ -13,8 +13,8 @@
     "@storybook/addon-links": "8.6.14",
     "@storybook/nextjs": "8.6.14",
     "@storybook/react": "8.6.14",
-    "@types/react": "18",
-    "@types/react-dom": "18",
+    "@types/react": "19.0.0",
+    "@types/react-dom": "19.0.0",
     "storybook": "8.6.14",
     "typescript": "5.8.3"
   },
