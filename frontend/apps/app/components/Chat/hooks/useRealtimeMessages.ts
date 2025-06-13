@@ -1,4 +1,4 @@
-import type { Tables } from '@liam-hq/db/supabase/database.types'
+import type { Database, Tables } from '@liam-hq/db/supabase/database.types'
 import { useCallback, useEffect, useState } from 'react'
 import {
   convertMessageToChatEntry,
@@ -55,12 +55,13 @@ const handleOptimisticUserUpdate = (
 export type Message = {
   id: string
   content: string
-  role: 'user' | 'assistant'
+  role: Database['public']['Enums']['message_role_enum']
   user_id: string | null
   created_at: string
   updated_at: string
   organization_id: string
   design_session_id: string
+  building_schema_version_id: string | null
 }
 
 type UseRealtimeMessagesFunc = (

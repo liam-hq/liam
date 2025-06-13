@@ -1,3 +1,4 @@
+import type { Database, Tables } from '@liam-hq/db/supabase/database.types'
 import type { Operation } from 'fast-json-patch'
 
 export interface SchemaData {
@@ -11,12 +12,13 @@ export interface DesignSessionData {
   messages: Array<{
     id: string
     content: string
-    role: 'user' | 'assistant'
+    role: Database['public']['Enums']['message_role_enum']
     user_id: string | null
     created_at: string
     updated_at: string
     organization_id: string
     design_session_id: string
+    building_schema_version_id: string | null
   }>
 }
 
@@ -42,21 +44,16 @@ export type CreateMessageParams = {
   | {
       role: 'assistant'
     }
+  | {
+      role: 'schema_version'
+      buildingSchemaVersionId: string
+    }
 )
 
 export type MessageResult =
   | {
       success: true
-      message: {
-        id: string
-        content: string
-        role: 'user' | 'assistant'
-        user_id: string | null
-        created_at: string
-        updated_at: string
-        organization_id: string
-        design_session_id: string
-      }
+      message: Tables<'messages'>
     }
   | {
       success: false

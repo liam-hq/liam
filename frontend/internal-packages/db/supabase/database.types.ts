@@ -556,6 +556,7 @@ export type Database = {
       }
       messages: {
         Row: {
+          building_schema_version_id: string | null
           content: string
           created_at: string
           design_session_id: string
@@ -566,6 +567,7 @@ export type Database = {
           user_id: string | null
         }
         Insert: {
+          building_schema_version_id?: string | null
           content: string
           created_at?: string
           design_session_id: string
@@ -576,6 +578,7 @@ export type Database = {
           user_id?: string | null
         }
         Update: {
+          building_schema_version_id?: string | null
           content?: string
           created_at?: string
           design_session_id?: string
@@ -586,6 +589,13 @@ export type Database = {
           user_id?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: 'messages_building_schema_version_id_fkey'
+            columns: ['building_schema_version_id']
+            isOneToOne: false
+            referencedRelation: 'building_schema_versions'
+            referencedColumns: ['id']
+          },
           {
             foreignKeyName: 'messages_design_session_id_fkey'
             columns: ['design_session_id']
@@ -1317,13 +1327,22 @@ export type Database = {
         Returns: undefined
       }
       update_building_schema: {
-        Args: {
-          p_schema_id: string
-          p_schema_schema: Json
-          p_schema_version_patch: Json
-          p_schema_version_reverse_patch: Json
-          p_latest_schema_version_number: number
-        }
+        Args:
+          | {
+              p_schema_id: string
+              p_schema_schema: Json
+              p_schema_version_patch: Json
+              p_schema_version_reverse_patch: Json
+              p_latest_schema_version_number: number
+            }
+          | {
+              p_schema_id: string
+              p_schema_schema: Json
+              p_schema_version_patch: Json
+              p_schema_version_reverse_patch: Json
+              p_latest_schema_version_number: number
+              p_message_content: string
+            }
         Returns: Json
       }
       vector_avg: {
@@ -1359,7 +1378,7 @@ export type Database = {
         | 'PROJECT_RULES_CONSISTENCY'
         | 'SECURITY_OR_SCALABILITY'
       knowledge_type: 'SCHEMA' | 'DOCS'
-      message_role_enum: 'user' | 'assistant'
+      message_role_enum: 'user' | 'assistant' | 'schema_version'
       schema_format_enum: 'schemarb' | 'postgres' | 'prisma' | 'tbls'
       severity_enum: 'CRITICAL' | 'WARNING' | 'POSITIVE' | 'QUESTION'
     }
@@ -1488,7 +1507,7 @@ export const Constants = {
         'SECURITY_OR_SCALABILITY',
       ],
       knowledge_type: ['SCHEMA', 'DOCS'],
-      message_role_enum: ['user', 'assistant'],
+      message_role_enum: ['user', 'assistant', 'schema_version'],
       schema_format_enum: ['schemarb', 'postgres', 'prisma', 'tbls'],
       severity_enum: ['CRITICAL', 'WARNING', 'POSITIVE', 'QUESTION'],
     },

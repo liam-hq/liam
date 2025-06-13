@@ -11,11 +11,12 @@ const realtimeMessageSchema = v.object({
   id: v.string(),
   design_session_id: v.pipe(v.string(), v.uuid()),
   content: v.string(),
-  role: v.picklist(['user', 'assistant']),
+  role: v.picklist(['user', 'assistant', 'schema_version']),
   user_id: v.nullable(v.string()),
   created_at: v.string(),
   updated_at: v.string(),
   organization_id: v.pipe(v.string(), v.uuid()),
+  building_schema_version_id: v.nullable(v.string()),
 })
 
 /**

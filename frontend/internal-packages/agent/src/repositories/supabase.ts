@@ -51,7 +51,8 @@ export class SupabaseSchemaRepository implements SchemaRepository {
           created_at,
           updated_at,
           organization_id,
-          design_session_id
+          design_session_id,
+          building_schema_version_id
         )
       `)
       .eq('id', designSessionId)
@@ -171,10 +172,17 @@ export class SupabaseSchemaRepository implements SchemaRepository {
   async createVersion(params: CreateVersionParams): Promise<VersionResult> {
     const { buildingSchemaId, latestVersionNumber, patch } = params
 
+    // Generate message content based on patch operations
+    const patchCount = patch.length
+    const messageContent =
+      patchCount === 1
+        ? 'Schema updated with 1 change'
+        : `Schema updated with ${patchCount} changes`
+
     const { data: buildingSchema, error } = await this.client
       .from('building_schemas')
       .select(`
-        id, organization_id, initial_schema_snapshot
+        id, organization_id, initial_schema_snapshot, design_session_id
       `)
       .eq('id', buildingSchemaId)
       .maybeSingle()
@@ -270,17 +278,19 @@ export class SupabaseSchemaRepository implements SchemaRepository {
       }
     }
 
+    const rpcParams = {
+      p_schema_id: buildingSchemaId,
+      p_schema_schema: newContent,
+      p_schema_version_patch: JSON.parse(JSON.stringify(patch)),
+      p_schema_version_reverse_patch: JSON.parse(JSON.stringify(reversePatch)),
+      p_latest_schema_version_number: actualLatestVersionNumber,
+      p_design_session_id: buildingSchema.design_session_id,
+      p_message_content: messageContent,
+    }
+
     const { data, error: rpcError } = await this.client.rpc(
       'update_building_schema',
-      {
-        p_schema_id: buildingSchemaId,
-        p_schema_schema: newContent,
-        p_schema_version_patch: JSON.parse(JSON.stringify(patch)),
-        p_schema_version_reverse_patch: JSON.parse(
-          JSON.stringify(reversePatch),
-        ),
-        p_latest_schema_version_number: actualLatestVersionNumber,
-      },
+      rpcParams,
     )
 
     const parsedResult = v.safeParse(updateBuildingSchemaResultSchema, data)
@@ -312,6 +322,8 @@ export class SupabaseSchemaRepository implements SchemaRepository {
   async createMessage(params: CreateMessageParams): Promise<MessageResult> {
     const { designSessionId, content, role } = params
     const userId = role === 'user' ? params.userId : null
+    const buildingSchemaVersionId =
+      role === 'schema_version' ? params.buildingSchemaVersionId : null
 
     const now = new Date().toISOString()
 
@@ -322,6 +334,7 @@ export class SupabaseSchemaRepository implements SchemaRepository {
         content,
         role,
         user_id: userId,
+        building_schema_version_id: buildingSchemaVersionId,
         updated_at: now,
       })
       .select()
