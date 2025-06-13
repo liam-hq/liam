@@ -55,6 +55,7 @@ export const ShowModeMenu: FC = () => {
             size="sm"
             variant="ghost-secondary"
             rightIcon={<ChevronDown />}
+            data-testid="show-mode"
             aria-label="Show mode"
           >
             {OPTION_LIST.find((opt) => opt.value === showMode)?.label}

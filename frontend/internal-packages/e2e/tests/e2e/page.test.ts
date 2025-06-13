@@ -13,7 +13,7 @@ test('Copy link button copies current URL to clipboard', async ({
 
   await page.goto('/')
 
-  const copyButton = page.getByRole('button', { name: 'Copy Link' })
+  const copyButton = page.getByTestId('copy-link')
   await copyButton.click()
 
   const clipboardContent = await page.evaluate(() =>
@@ -25,16 +25,12 @@ test('Copy link button copies current URL to clipboard', async ({
 test('Table node should be highlighted when clicked', async ({ page }) => {
   await page.goto('/')
 
-  const tableNode = page.getByRole('button', {
-    name: 'accounts table',
-    exact: true,
-  })
+  const tableNode = page.getByTestId('rf__node-accounts').first()
 
   await tableNode.click()
 
-  await expect(
-    tableNode.locator('div[class^="TableNode_wrapper"]'),
-  ).toHaveAttribute('data-erd', 'table-node-highlighted')
+  const highlighted = tableNode.locator('[data-erd="table-node-highlighted"]')
+  await expect(highlighted).toBeVisible()
 })
 
 test('Edge animation should be triggered when table node is clicked', async ({
@@ -42,10 +38,7 @@ test('Edge animation should be triggered when table node is clicked', async ({
 }) => {
   await page.goto('/')
 
-  const tableNode = page.getByRole('button', {
-    name: 'account_aliases table',
-    exact: true,
-  })
+  const tableNode = page.getByTestId('rf__node-account_aliases')
 
   const edge = page.getByRole('img', {
     name: 'Edge from accounts to account_aliases',
@@ -65,14 +58,11 @@ test('Cardinality should be highlighted when table node is clicked', async ({
 }) => {
   await page.goto('/')
 
-  const tableNode = page.getByRole('button', {
-    name: 'account_aliases table',
-    exact: true,
-  })
+  const tableNode = page.getByTestId('rf__node-account_aliases')
 
-  const edge = page.getByRole('img', {
-    name: 'Edge from accounts to account_aliases',
-  })
+  const edge = page.getByTestId(
+    'rf__edge-accounts_id_to_account_aliases_account_id',
+  )
 
   const cardinalityBefore = edge.locator('path').first()
   await expect(cardinalityBefore).toHaveAttribute(

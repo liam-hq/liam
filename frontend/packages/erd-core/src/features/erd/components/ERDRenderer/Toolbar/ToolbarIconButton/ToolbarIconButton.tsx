@@ -33,6 +33,7 @@ export const ToolbarIconButton: FC<ToolbarIconButtonProps> = ({
         onClick={onClick}
         size={size}
         aria-label={label}
+        data-testid={`toolbar-icon-button-${label}`}
       >
         {children}
       </IconButton>

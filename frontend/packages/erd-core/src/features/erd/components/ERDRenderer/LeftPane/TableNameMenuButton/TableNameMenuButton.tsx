@@ -130,6 +130,7 @@ export const TableNameMenuButton: FC<Props> = ({
           onClick={handleTableSelection}
           onKeyDown={handleKeyDown}
           aria-label={`Menu button for ${name}`}
+          data-testid={`table-name-menu-button-${nodeId}`}
         >
           <ContextMenu
             TriggerElement={
