@@ -1,7 +1,7 @@
 import { toolbarActionLogEvent } from '@/features/gtm/utils'
 import { useCustomReactflow } from '@/features/reactflow/hooks'
 import { useVersion } from '@/providers'
-import { useUserEditingStore } from '@/stores'
+import { useUserEditing } from '@/stores'
 import { type IconButton, Scan } from '@liam-hq/ui'
 import {
   type ComponentProps,
@@ -21,7 +21,7 @@ export const FitviewButton: FC<FitviewButtonProps> = ({
   size = 'md',
 }) => {
   const { fitView } = useCustomReactflow()
-  const { showMode } = useUserEditingStore()
+  const { showMode } = useUserEditing()
   const { version } = useVersion()
 
   const handleClick = useCallback(() => {

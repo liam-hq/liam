@@ -1,16 +1,7 @@
 import type { DisplayArea } from '@/features/erd/types'
 import { computeAutoLayout, highlightNodesAndEdges } from '@/features/erd/utils'
 import { useCustomReactflow } from '@/features/reactflow/hooks'
-import {
-  addHiddenNodeIds,
-  updateActiveTableName,
-  updateShowMode,
-} from '@/stores'
-import {
-  getActiveTableNameFromUrl,
-  getHiddenNodeIdsFromUrl,
-  getShowModeFromUrl,
-} from '@/utils'
+import { useUserEditing } from '@/stores'
 import type { Node } from '@xyflow/react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useERDContentContext } from '../ERDContentContext'
@@ -22,51 +13,43 @@ type Params = {
 }
 
 export const useInitialAutoLayout = ({ nodes, displayArea }: Params) => {
-  const [initializeComplete, setInitializeComplete] = useState(false)
-
-  const tableNodesInitialized = useMemo(
-    () =>
-      nodes
-        .filter((node) => node.type === 'table')
-        .some((node) => node.measured),
-    [nodes],
-  )
+  const { activeTableName, hiddenNodeIds } = useUserEditing()
   const { getEdges, setNodes, setEdges, fitView } = useCustomReactflow()
   const {
     actions: { setLoading },
   } = useERDContentContext()
+
+  const [initializeComplete, setInitializeComplete] = useState(false)
+
+  const tableNodesInitialized = useMemo(() => {
+    return nodes
+      .filter((node) => node.type === 'table')
+      .some((node) => node.measured)
+  }, [nodes])
 
   const initialize = useCallback(async () => {
     if (initializeComplete) {
       return
     }
 
-    const activeTableName = getActiveTableNameFromUrl()
-    updateActiveTableName(activeTableName)
-
-    const hiddenNodeIds: string[] = []
-    if (displayArea === 'main') {
-      hiddenNodeIds.push(...(await getHiddenNodeIdsFromUrl()))
-      addHiddenNodeIds(hiddenNodeIds)
-
-      const showMode = getShowModeFromUrl()
-      updateShowMode(showMode)
-    }
-
     if (tableNodesInitialized) {
       setLoading(true)
-      const updatedNodes = updateNodesHiddenState({
-        nodes,
-        hiddenNodeIds,
-        shouldHideGroupNodeId: !hasNonRelatedChildNodes(nodes),
-      })
 
+      const updateNodes =
+        displayArea === 'main'
+          ? updateNodesHiddenState({
+              nodes,
+              hiddenNodeIds,
+              shouldHideGroupNodeId: !hasNonRelatedChildNodes(nodes),
+            })
+          : nodes
       const { nodes: highlightedNodes, edges: highlightedEdges } =
-        highlightNodesAndEdges(updatedNodes, getEdges(), {
-          activeTableName,
+        highlightNodesAndEdges(updateNodes, getEdges(), {
+          activeTableName: activeTableName ?? undefined,
         })
       const { nodes: layoutedNodes, edges: layoutedEdges } =
         await computeAutoLayout(highlightedNodes, highlightedEdges)
+
       setNodes(layoutedNodes)
       setEdges(layoutedEdges)
 
@@ -80,15 +63,17 @@ export const useInitialAutoLayout = ({ nodes, displayArea }: Params) => {
       setLoading(false)
     }
   }, [
-    nodes,
+    initializeComplete,
+    tableNodesInitialized,
+    activeTableName,
     displayArea,
+    hiddenNodeIds,
+    nodes,
     getEdges,
     setNodes,
     setEdges,
     setLoading,
     fitView,
-    initializeComplete,
-    tableNodesInitialized,
   ])
 
   useEffect(() => {

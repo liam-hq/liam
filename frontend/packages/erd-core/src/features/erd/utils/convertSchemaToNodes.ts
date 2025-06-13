@@ -63,35 +63,50 @@ export const convertSchemaToNodes = ({
     }
   }
 
-  const nodes: Node[] = [
-    {
-      id: NON_RELATED_TABLE_GROUP_NODE_ID,
-      type: 'nonRelatedTableGroup',
-      data: {},
-      position: { x: 0, y: 0 },
-    },
-    ...groupNodes,
-    ...tables.map((table) => {
-      const groupId = tableToGroupMap.get(table.name)
+  // Create table nodes and check if any need NON_RELATED_TABLE_GROUP_NODE_ID as parent
+  let hasNonRelatedTables = false
+  const tableNodes = tables.map((table) => {
+    const groupId = tableToGroupMap.get(table.name)
+    const isNonRelatedTable =
+      !tablesWithRelationships.has(table.name) && !groupId
 
-      return {
-        id: table.name,
-        type: 'table',
-        data: {
-          table,
-          sourceColumnName: sourceColumns.get(table.name),
-          targetColumnCardinalities: tableColumnCardinalities.get(table.name),
-        },
-        position: { x: 0, y: 0 },
-        ariaLabel: `${table.name} table`,
-        zIndex: zIndex.nodeDefault,
-        ...(!tablesWithRelationships.has(table.name) && !groupId
-          ? { parentId: NON_RELATED_TABLE_GROUP_NODE_ID }
-          : groupId
-            ? { parentId: groupId }
-            : {}),
-      }
-    }),
+    if (isNonRelatedTable) {
+      hasNonRelatedTables = true
+    }
+
+    return {
+      id: table.name,
+      type: 'table',
+      data: {
+        table,
+        sourceColumnName: sourceColumns.get(table.name),
+        targetColumnCardinalities: tableColumnCardinalities.get(table.name),
+      },
+      position: { x: 0, y: 0 },
+      ariaLabel: `${table.name} table`,
+      zIndex: zIndex.nodeDefault,
+      ...(isNonRelatedTable
+        ? { parentId: NON_RELATED_TABLE_GROUP_NODE_ID }
+        : groupId
+          ? { parentId: groupId }
+          : {}),
+    }
+  })
+
+  // Only include NON_RELATED_TABLE_GROUP_NODE_ID if there are tables that need it
+  const nodes: Node[] = [
+    ...(hasNonRelatedTables
+      ? [
+          {
+            id: NON_RELATED_TABLE_GROUP_NODE_ID,
+            type: 'nonRelatedTableGroup',
+            data: {},
+            position: { x: 0, y: 0 },
+          },
+        ]
+      : []),
+    ...groupNodes,
+    ...tableNodes,
   ]
 
   const edges: Edge[] = relationships.map((rel) => ({

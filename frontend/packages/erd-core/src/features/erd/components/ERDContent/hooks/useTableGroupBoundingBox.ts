@@ -1,7 +1,7 @@
 'use client'
 
 import { useCustomReactflow } from '@/features/reactflow/hooks'
-import { useUserEditingStore } from '@/stores'
+import { useUserEditing } from '@/stores'
 import type { TableGroup } from '@liam-hq/db-structure'
 import type { Node } from '@xyflow/react'
 import { type MouseEvent, useCallback, useRef, useState } from 'react'
@@ -26,7 +26,7 @@ export const useTableGroupBoundingBox = ({
   const [currentBox, setCurrentBox] = useState<Box | null>(null)
 
   const { screenToFlowPosition } = useCustomReactflow()
-  const { isTableGroupEditMode } = useUserEditingStore()
+  const { isTableGroupEditMode } = useUserEditing()
 
   const handleMouseDown = useCallback(
     (event: MouseEvent) => {

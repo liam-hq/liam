@@ -1,3 +1,4 @@
+import { NuqsAdapter } from 'nuqs/adapters/react'
 import '@xyflow/react/dist/style.css'
 import type { TableGroup } from '@liam-hq/db-structure'
 import {
@@ -24,8 +25,9 @@ import '@/styles/globals.css'
 import { toggleLogEvent } from '@/features/gtm/utils'
 import { useIsTouchDevice } from '@/hooks'
 import { useVersion } from '@/providers'
-import { SchemaProvider, useSchema, useUserEditingStore } from '@/stores'
+import { SchemaProvider, useSchema } from '@/stores'
 import type { SchemaStore } from '@/stores/schema/schema'
+import { UserEditingProvider, useUserEditing } from '@/stores/userEditing'
 import { convertSchemaToNodes, createHash } from '../../utils'
 import { ERDContent } from '../ERDContent'
 import { CardinalityMarkers } from './CardinalityMarkers'
@@ -55,9 +57,13 @@ const COOKIE_MAX_AGE = 60 * 60 * 24 * 7
 
 export const ERDRenderer: FC<Props> = ({ schema, ...innerProps }) => {
   return (
-    <SchemaProvider schema={schema}>
-      <ERDRendererInner {...innerProps} />
-    </SchemaProvider>
+    <NuqsAdapter>
+      <UserEditingProvider>
+        <SchemaProvider schema={schema}>
+          <ERDRendererInner {...innerProps} />
+        </SchemaProvider>
+      </UserEditingProvider>
+    </NuqsAdapter>
   )
 }
 
@@ -72,7 +78,7 @@ const ERDRendererInner: FC<InnerProps> = ({
   const [open, setOpen] = useState(defaultSidebarOpen)
   const [isResizing, setIsResizing] = useState(false)
 
-  const { showMode } = useUserEditingStore()
+  const { showMode } = useUserEditing()
   const { current } = useSchema()
   const schemaKey = useMemo(() => {
     const str = JSON.stringify(current)

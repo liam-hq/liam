@@ -1,6 +1,6 @@
 import type { TableNodeData } from '@/features/erd/types'
 import { useCustomReactflow } from '@/features/reactflow/hooks'
-import { useUserEditingStore } from '@/stores'
+import { useUserEditing } from '@/stores'
 import { Table2 } from '@liam-hq/ui'
 import { Handle, Position } from '@xyflow/react'
 import clsx from 'clsx'
@@ -13,7 +13,7 @@ type Props = {
 
 export const TableHeader: FC<Props> = ({ data }) => {
   const name = data.table.name
-  const { showMode: _showMode } = useUserEditingStore()
+  const { showMode: _showMode } = useUserEditing()
   const showMode = data.showMode ?? _showMode
 
   const isTarget = data.targetColumnCardinalities !== undefined

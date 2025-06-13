@@ -1,4 +1,4 @@
-import { useUserEditingActiveStore } from '@/stores'
+import { useUserEditing } from '@/stores'
 import { GotoIcon, IconButton, Waypoints as WaypointsIcon } from '@liam-hq/ui'
 import { type Edge, type Node, ReactFlowProvider } from '@xyflow/react'
 import { type FC, type MouseEvent, useCallback } from 'react'
@@ -13,7 +13,7 @@ type Props = {
 }
 
 export const RelatedTables: FC<Props> = ({ nodes, edges, onOpenMainPane }) => {
-  const { tableName } = useUserEditingActiveStore()
+  const { activeTableName } = useUserEditing()
 
   const handleClick = useCallback(
     async (event: MouseEvent) => {
@@ -45,7 +45,7 @@ export const RelatedTables: FC<Props> = ({ nodes, edges, onOpenMainPane }) => {
         <div className={styles.contentWrapper}>
           <ReactFlowProvider>
             <ERDContent
-              key={tableName}
+              key={activeTableName}
               nodes={nodes}
               edges={edges}
               displayArea="relatedTables"
