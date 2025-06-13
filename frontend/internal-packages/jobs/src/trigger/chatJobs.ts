@@ -14,28 +14,23 @@ export const processChatTask = task({
       messageLength: payload.message.length,
     })
 
-    try {
-      // Create fresh repositories in job to avoid serialization issues
-      // When repositories are passed from API Route to Job, class instances lose their methods
-      // during JSON serialization/deserialization, causing "createMessage is not a function" errors
-      const supabaseClient = createClient()
-      const repositories = createSupabaseRepositories(supabaseClient)
+    // Create fresh repositories in job to avoid serialization issues
+    // When repositories are passed from API Route to Job, class instances lose their methods
+    // during JSON serialization/deserialization, causing "createMessage is not a function" errors
+    const supabaseClient = createClient()
+    const repositories = createSupabaseRepositories(supabaseClient)
 
-      const chatParams: ChatProcessorParams = {
-        ...payload,
-        repositories,
-      }
-
-      const result = await processChatMessage(chatParams)
-
-      logger.log('Chat processing completed:', {
-        success: result.success,
-      })
-
-      return result
-    } catch (error) {
-      logger.error('Chat processing failed:', { error })
-      throw error
+    const chatParams: ChatProcessorParams = {
+      ...payload,
+      repositories,
     }
+
+    const result = await processChatMessage(chatParams)
+
+    logger.log('Chat processing completed:', {
+      success: result.success,
+    })
+
+    return result
   },
 })
