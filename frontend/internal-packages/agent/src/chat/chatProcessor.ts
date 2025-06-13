@@ -43,57 +43,50 @@ export const processChatMessage = async (
     userId,
   } = params
 
-  try {
-    // Save user message to database
-    const saveResult = await repositories.schema.createMessage({
-      designSessionId,
-      content: message,
-      role: 'user',
-      userId,
-    })
+  // Save user message to database
+  const saveResult = await repositories.schema.createMessage({
+    designSessionId,
+    content: message,
+    role: 'user',
+    userId,
+  })
 
-    if (!saveResult.success) {
-      console.error('Failed to save user message:', saveResult.error)
-      return {
-        success: false,
-        error: saveResult.error,
-      }
-    }
-
-    // Convert history format
-    const formattedHistory = history.map(([, content]) => content)
-
-    // Create workflow state
-    const workflowState: WorkflowState = {
-      userInput: message,
-      history: formattedHistory,
-      schemaData,
-      organizationId,
-      buildingSchemaId,
-      latestVersionNumber,
-      repositories,
-      designSessionId,
-      userId,
-    }
-
-    // Execute workflow
-    const result = await executeChatWorkflow(workflowState)
-
-    if (result.error) {
-      return {
-        success: false,
-        error: result.error,
-      }
-    }
-
-    return {
-      text: result.finalResponse || result.generatedAnswer || '',
-      success: true,
-    }
-  } catch (error) {
+  if (!saveResult.success) {
+    console.error('Failed to save user message:', saveResult.error)
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Unknown error',
+      error: saveResult.error,
     }
+  }
+
+  // Convert history format
+  const formattedHistory = history.map(([, content]) => content)
+
+  // Create workflow state
+  const workflowState: WorkflowState = {
+    userInput: message,
+    history: formattedHistory,
+    schemaData,
+    organizationId,
+    buildingSchemaId,
+    latestVersionNumber,
+    repositories,
+    designSessionId,
+    userId,
+  }
+
+  // Execute workflow
+  const result = await executeChatWorkflow(workflowState)
+
+  if (result.error) {
+    return {
+      success: false,
+      error: result.error,
+    }
+  }
+
+  return {
+    text: result.finalResponse || result.generatedAnswer || '',
+    success: true,
   }
 }
