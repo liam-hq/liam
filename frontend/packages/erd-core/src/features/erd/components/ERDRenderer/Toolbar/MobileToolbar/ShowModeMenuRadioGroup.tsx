@@ -1,7 +1,7 @@
 import { toolbarActionLogEvent } from '@/features/gtm/utils'
 import { useVersion } from '@/providers'
 import { type ShowMode, showModeSchema } from '@/schemas/showMode'
-import { updateShowMode, useUserEditingStore } from '@/stores'
+import { useUserEditing } from '@/stores'
 import { RadioGroup, RadioGroupItem } from '@liam-hq/ui'
 import { type FC, useCallback } from 'react'
 import { safeParse } from 'valibot'
@@ -14,7 +14,7 @@ const OPTION_LIST: { value: ShowMode; label: string }[] = [
 ]
 
 export const ShowModeMenuRadioGroup: FC = () => {
-  const { showMode } = useUserEditingStore()
+  const { showMode, setShowMode } = useUserEditing()
 
   const { version } = useVersion()
   const handleChangeValue = useCallback(
@@ -22,7 +22,7 @@ export const ShowModeMenuRadioGroup: FC = () => {
       const parsed = safeParse(showModeSchema, value)
 
       if (parsed.success) {
-        updateShowMode(parsed.output)
+        setShowMode(parsed.output)
 
         toolbarActionLogEvent({
           element: 'changeShowMode',
@@ -34,7 +34,7 @@ export const ShowModeMenuRadioGroup: FC = () => {
         })
       }
     },
-    [version],
+    [version, setShowMode],
   )
 
   return (

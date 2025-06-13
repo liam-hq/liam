@@ -2,11 +2,7 @@ import { computeAutoLayout, convertSchemaToNodes } from '@/features/erd/utils'
 import { clickLogEvent, openRelatedTablesLogEvent } from '@/features/gtm/utils'
 import { useCustomReactflow } from '@/features/reactflow/hooks'
 import { useVersion } from '@/providers'
-import {
-  replaceHiddenNodeIds,
-  updateActiveTableName,
-  useSchema,
-} from '@/stores'
+import { useSchema, useUserEditing } from '@/stores'
 import type { Table } from '@liam-hq/db-structure'
 import {
   DrawerClose,
@@ -30,6 +26,7 @@ type Props = {
 }
 
 export const TableDetail: FC<Props> = ({ table }) => {
+  const { setActiveTableName, setHiddenNodeIds } = useUserEditing()
   const { current } = useSchema()
   const extractedSchema = extractSchemaForTable(table, current)
   const { nodes, edges } = convertSchemaToNodes({
@@ -63,8 +60,8 @@ export const TableDetail: FC<Props> = ({ table }) => {
       shouldHideGroupNodeId: !hasNonRelatedChildNodes(nodes),
     })
 
-    replaceHiddenNodeIds(hiddenNodeIds)
-    updateActiveTableName(undefined)
+    setHiddenNodeIds(hiddenNodeIds)
+    setActiveTableName(null)
 
     const { nodes: layoutedNodes, edges: layoutedEdges } =
       await computeAutoLayout(updatedNodes, getEdges())
@@ -79,7 +76,18 @@ export const TableDetail: FC<Props> = ({ table }) => {
       ver: version.version,
       appEnv: version.envName,
     })
-  }, [nodes, table, version, getNodes, getEdges, setNodes, setEdges, fitView])
+  }, [
+    nodes,
+    table,
+    version,
+    setActiveTableName,
+    setHiddenNodeIds,
+    getNodes,
+    getEdges,
+    setNodes,
+    setEdges,
+    fitView,
+  ])
 
   return (
     <section className={styles.wrapper}>

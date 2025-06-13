@@ -44,7 +44,12 @@ export const CopyLinkButton: FC = () => {
     <TooltipProvider>
       <TooltipRoot>
         <TooltipTrigger asChild>
-          <Button variant="solid-primary" size="md" onClick={handleCopyUrl}>
+          <Button
+            data-testid="copy-link"
+            variant="solid-primary"
+            size="md"
+            onClick={handleCopyUrl}
+          >
             Copy Link
           </Button>
         </TooltipTrigger>

@@ -4,10 +4,7 @@ const expectUserTableColumnInAccountsTableVisibility = async (
   page: Page,
   visibility: 'visible' | 'hidden',
 ) => {
-  const accountsTable = page.getByRole('button', {
-    name: 'accounts table',
-    exact: true,
-  })
+  const accountsTable = page.getByTestId('rf__node-accounts')
   const userNameColumn = accountsTable.getByText('username')
 
   if (visibility === 'visible') {
@@ -32,7 +29,7 @@ test.describe('Navigation and URL Parameters', () => {
       page,
     }) => {
       // Initial state
-      const showModeButton = page.getByRole('button', { name: 'Show Mode' })
+      const showModeButton = page.getByTestId('show-mode')
 
       // Change to ALL_FIELDS
       await showModeButton.click()
@@ -66,19 +63,17 @@ test.describe('Navigation and URL Parameters', () => {
       page,
     }) => {
       // Initial state - select accounts table
-      const accountsTable = page.getByRole('button', {
-        name: 'accounts table',
-        exact: true,
-      })
+      const accountsTable = page.getByTestId('rf__node-accounts').first()
       await accountsTable.click()
+
       await expect(page).toHaveURL(/.*active=accounts/)
-      await expect(accountsTable).toBeVisible()
+      const highlighted = accountsTable.locator(
+        '[data-erd="table-node-highlighted"]',
+      )
+      await expect(highlighted).toBeVisible()
 
       // Select users table
-      const usersTable = page.getByRole('button', {
-        name: 'users table',
-        exact: true,
-      })
+      const usersTable = page.getByTestId('rf__node-users').first()
       await usersTable.click()
       await expect(page).toHaveURL(/.*active=users/)
 
@@ -96,21 +91,16 @@ test.describe('Navigation and URL Parameters', () => {
       page,
     }) => {
       // Initial state
-      const accountsTable = page.getByRole('button', {
-        name: 'accounts table',
-        exact: true,
-      })
+      const accountsTable = page.getByTestId('rf__node-accounts').first()
       await expect(accountsTable).toBeVisible()
 
       // Hide the accounts table
+      await page.getByTestId('toggle-sidebar-icon-button').click()
       await page
-        .getByRole('button', { name: 'Toggle Sidebar Icon Button' })
-        .click()
-      await page
-        .getByRole('button', { name: 'Menu button for accounts', exact: true })
+        .getByTestId('table-name-menu-button-accounts')
         .getByLabel('Hide Table')
         .click()
-      await expect(page).toHaveURL(/.*hidden=eJxLTE7OL80rKQYADrsDYQ/)
+      await expect(page).toHaveURL(/.*hidden=IYYxHsFcDsBcGcg/)
       await expect(accountsTable).not.toBeVisible()
 
       // Go back to initial state
@@ -120,7 +110,7 @@ test.describe('Navigation and URL Parameters', () => {
 
       // Go forward to hidden state
       await page.goForward()
-      await expect(page).toHaveURL(/.*hidden=eJxLTE7OL80rKQYADrsDYQ/)
+      await expect(page).toHaveURL(/.*hidden=IYYxHsFcDsBcGcg/)
       await expect(accountsTable).not.toBeVisible()
     })
   })

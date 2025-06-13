@@ -1,8 +1,7 @@
-import { userEditingStore } from '@/stores/userEditing/store'
+import { useUserEditing } from '@/stores'
 import { Group, IconButton } from '@liam-hq/ui'
 import { ToolbarToggleGroup, ToolbarToggleItem } from '@radix-ui/react-toolbar'
 import { type ComponentProps, type FC, useCallback } from 'react'
-import { useSnapshot } from 'valtio'
 import styles from './GroupButton.module.css'
 
 const GROUP_VALUE = 'group'
@@ -12,11 +11,14 @@ interface GroupButtonProps {
 }
 
 export const GroupButton: FC<GroupButtonProps> = ({ size = 'md' }) => {
-  const { isTableGroupEditMode } = useSnapshot(userEditingStore)
+  const { isTableGroupEditMode, setIsTableGroupEditMode } = useUserEditing()
 
-  const handleChangeValue = useCallback((value: string) => {
-    userEditingStore.isTableGroupEditMode = value === GROUP_VALUE
-  }, [])
+  const handleChangeValue = useCallback(
+    (value: string) => {
+      setIsTableGroupEditMode(value === GROUP_VALUE)
+    },
+    [setIsTableGroupEditMode],
+  )
 
   return (
     <ToolbarToggleGroup

@@ -1,21 +1,19 @@
-import {
-  updateActiveTableName,
-  useSchema,
-  useUserEditingActiveStore,
-} from '@/stores'
+import { useSchema, useUserEditing } from '@/stores'
 import { DrawerContent, DrawerPortal, DrawerRoot } from '@liam-hq/ui'
-import type { FC, PropsWithChildren } from 'react'
+import { type FC, type PropsWithChildren, useCallback } from 'react'
 import { TableDetail } from '../../ERDContent/components/TableNode/TableDetail'
 import styles from './TableDetailDrawer.module.css'
 
-const handleClose = () => updateActiveTableName(undefined)
-
 export const TableDetailDrawerRoot: FC<PropsWithChildren> = ({ children }) => {
-  const { tableName } = useUserEditingActiveStore()
+  const { activeTableName, setActiveTableName } = useUserEditing()
   const {
     current: { tables },
   } = useSchema()
-  const open = Object.keys(tables).length > 0 && tableName !== undefined
+  const open = Object.keys(tables).length > 0 && activeTableName !== undefined
+
+  const handleClose = useCallback(() => {
+    setActiveTableName(null)
+  }, [setActiveTableName])
 
   return (
     <DrawerRoot
@@ -37,8 +35,8 @@ export const TableDetailDrawer: FC = () => {
   const {
     current: { tables },
   } = useSchema()
-  const { tableName } = useUserEditingActiveStore()
-  const table = tables[tableName ?? '']
+  const { activeTableName } = useUserEditing()
+  const table = tables[activeTableName ?? '']
   const ariaDescribedBy =
     table?.comment == null
       ? {

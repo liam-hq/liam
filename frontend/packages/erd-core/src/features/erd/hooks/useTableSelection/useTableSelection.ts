@@ -1,5 +1,5 @@
 import { useCustomReactflow } from '@/features/reactflow/hooks'
-import { updateActiveTableName } from '@/stores'
+import { useUserEditing } from '@/stores'
 import { useCallback } from 'react'
 import type { DisplayArea } from '../../types'
 import { highlightNodesAndEdges } from '../../utils'
@@ -10,12 +10,13 @@ type SelectTableParams = {
 }
 
 export const useTableSelection = () => {
+  const { setActiveTableName } = useUserEditing()
   const { getNodes, getEdges, setNodes, setEdges, fitView } =
     useCustomReactflow()
 
   const selectTable = useCallback(
-    ({ tableId, displayArea }: SelectTableParams) => {
-      updateActiveTableName(tableId)
+    async ({ tableId, displayArea }: SelectTableParams) => {
+      setActiveTableName(tableId)
 
       const { nodes, edges } = highlightNodesAndEdges(getNodes(), getEdges(), {
         activeTableName: tableId,
@@ -25,25 +26,25 @@ export const useTableSelection = () => {
       setEdges(edges)
 
       if (displayArea === 'main') {
-        fitView({
+        await fitView({
           maxZoom: 1,
           duration: 300,
           nodes: [{ id: tableId }],
         })
       }
     },
-    [getNodes, getEdges, setNodes, setEdges, fitView],
+    [getNodes, getEdges, setNodes, setEdges, fitView, setActiveTableName],
   )
 
   const deselectTable = useCallback(() => {
-    updateActiveTableName(undefined)
+    setActiveTableName(null)
 
     const { nodes, edges } = highlightNodesAndEdges(getNodes(), getEdges(), {
       activeTableName: undefined,
     })
     setNodes(nodes)
     setEdges(edges)
-  }, [getNodes, getEdges, setNodes, setEdges])
+  }, [setActiveTableName, getNodes, getEdges, setNodes, setEdges])
 
   return {
     selectTable,

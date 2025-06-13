@@ -5,9 +5,7 @@ test.beforeEach(async ({ page, isMobile }) => {
   await expect(page.getByRole('status', { name: 'Loading' })).toBeHidden()
 
   if (isMobile) {
-    const openToolbarButton = page.getByRole('button', {
-      name: 'Open toolbar',
-    })
+    const openToolbarButton = page.getByTestId('open-toolbar-button')
     await openToolbarButton.click({ force: true })
   }
 })
@@ -39,20 +37,26 @@ const showModeTests: ShowModeTest[] = [
     ],
   },
 ]
-test('should be visible', async ({ page }) => {
-  const toolbar = page.getByRole('toolbar', { name: 'Toolbar' })
+test('should be visible', async ({ page, isMobile }) => {
+  const toolbars = page.getByTestId('toolbar')
+  const toolbar = isMobile ? toolbars.first() : toolbars.nth(1)
   await expect(toolbar).toBeVisible()
 })
 
-test('zoom in button should increase zoom level', async ({ page }) => {
+test('zoom in button should increase zoom level', async ({
+  page,
+  isMobile,
+}) => {
   test.setTimeout(15000)
-  const toolbar = page.getByRole('toolbar', { name: 'Toolbar' })
+  const toolbars = page.getByTestId('toolbar')
+  const toolbar = isMobile ? toolbars.first() : toolbars.nth(1)
   const zoomLevelText = toolbar.getByLabel('Zoom level')
 
   const zoomLevelBefore = await zoomLevelText.textContent()
 
-  const zoomInButton = toolbar.getByRole('button', { name: 'Zoom in' })
+  const zoomInButton = toolbar.getByTestId('toolbar-icon-button-Zoom in')
   await zoomInButton.click()
+
   await expect(zoomLevelText).not.toHaveText(zoomLevelBefore)
 
   const zoomLevelAfter = await zoomLevelText.textContent()
@@ -61,15 +65,25 @@ test('zoom in button should increase zoom level', async ({ page }) => {
   )
 })
 
-test('zoom out button should decrease zoom level', async ({ page }) => {
+test('zoom out button should decrease zoom level', async ({
+  page,
+  isMobile,
+}) => {
   test.setTimeout(15000)
-  const toolbar = page.getByRole('toolbar', { name: 'Toolbar' })
+  const toolbars = page.getByTestId('toolbar')
+  const toolbar = isMobile ? toolbars.first() : toolbars.nth(1)
+
+  // Make sure to increase the zoom level beforehand
+  const zoomInButton = toolbar.getByTestId('toolbar-icon-button-Zoom in')
+  await zoomInButton.click()
+
   const zoomLevelText = toolbar.getByLabel('Zoom level')
 
   const zoomLevelBefore = await zoomLevelText.textContent()
 
-  const zoomOutButton = toolbar.getByRole('button', { name: 'Zoom out' })
+  const zoomOutButton = toolbar.getByTestId('toolbar-icon-button-Zoom out')
   await zoomOutButton.click()
+
   await expect(zoomLevelText).not.toHaveText(zoomLevelBefore)
 
   const zoomLevelAfter = await zoomLevelText.textContent()
@@ -86,13 +100,11 @@ test('tidyup button should make the table nodes tidy', async ({
   // skip because can't move the table node on mobile by mouse
   if (isMobile) test.skip()
 
-  const toolbar = page.getByRole('toolbar', { name: 'Toolbar' })
-  const tidyUpButton = toolbar.getByRole('button', { name: 'Tidy Up' })
+  const toolbars = page.getByTestId('toolbar')
+  const toolbar = isMobile ? toolbars.first() : toolbars.nth(1)
+  const tidyUpButton = toolbar.getByTestId('toolbar-icon-button-Tidy up')
 
-  const tableNode = page.getByRole('button', {
-    name: 'accounts table',
-    exact: true,
-  })
+  const tableNode = page.getByTestId('rf__node-accounts')
 
   const initialTableNodePosition = await tableNode.boundingBox()
 
@@ -138,16 +150,14 @@ test('fitview button should make the table nodes fit the viewport', async ({
   // TODO: Fix this test for mobile as it's flaky
   if (isMobile) test.skip()
 
-  const toolbar = page.getByRole('toolbar', { name: 'Toolbar' })
-  const fitViewButton = toolbar.getByRole('button', { name: 'Zoom to Fit' })
+  const toolbars = page.getByTestId('toolbar')
+  const toolbar = isMobile ? toolbars.first() : toolbars.nth(1)
+  const fitViewButton = toolbar.getByTestId('toolbar-icon-button-Zoom to fit')
 
-  const tableNode = page.getByRole('button', {
-    name: 'accounts table',
-    exact: true,
-  })
+  const tableNode = page.getByTestId('rf__node-accounts')
   await expect(tableNode).toBeInViewport()
 
-  const zoomInButton = toolbar.getByRole('button', { name: 'Zoom in' })
+  const zoomInButton = toolbar.getByTestId('toolbar-icon-button-Zoom in')
 
   // Zoom in to ensure the table is out of viewport
   for (let i = 0; i < 10; i++) {
@@ -166,9 +176,7 @@ test.describe('Show Mode', () => {
     // TODO: Mobile test is flaky, so fix it later
     if (isMobile) test.skip()
 
-    const showModeButton = page.getByRole('button', {
-      name: 'Show mode',
-    })
+    const showModeButton = page.getByTestId('show-mode')
     await showModeButton.click()
   })
 

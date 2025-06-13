@@ -1,7 +1,7 @@
 import { toolbarActionLogEvent } from '@/features/gtm/utils'
 import { useVersion } from '@/providers'
 import { type ShowMode, showModeSchema } from '@/schemas/showMode'
-import { updateShowMode, useUserEditingStore } from '@/stores'
+import { useUserEditing } from '@/stores'
 import {
   Button,
   ChevronDown,
@@ -23,7 +23,7 @@ const OPTION_LIST: { value: ShowMode; label: string }[] = [
 ]
 
 export const ShowModeMenu: FC = () => {
-  const { showMode } = useUserEditingStore()
+  const { showMode, setShowMode } = useUserEditing()
 
   const { version } = useVersion()
   const handleChangeValue = useCallback(
@@ -31,7 +31,7 @@ export const ShowModeMenu: FC = () => {
       const parsed = safeParse(showModeSchema, value)
 
       if (parsed.success) {
-        updateShowMode(parsed.output)
+        setShowMode(parsed.output)
 
         toolbarActionLogEvent({
           element: 'changeShowMode',
@@ -43,7 +43,7 @@ export const ShowModeMenu: FC = () => {
         })
       }
     },
-    [version],
+    [version, setShowMode],
   )
 
   return (
@@ -55,6 +55,7 @@ export const ShowModeMenu: FC = () => {
             size="sm"
             variant="ghost-secondary"
             rightIcon={<ChevronDown />}
+            data-testid="show-mode"
             aria-label="Show mode"
           >
             {OPTION_LIST.find((opt) => opt.value === showMode)?.label}

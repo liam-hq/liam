@@ -4,7 +4,7 @@ import { selectTableLogEvent } from '@/features/gtm/utils'
 import { repositionTableLogEvent } from '@/features/gtm/utils/repositionTableLogEvent'
 import { MAX_ZOOM, MIN_ZOOM } from '@/features/reactflow/constants'
 import { useVersion } from '@/providers'
-import { useUserEditingActiveStore, useUserEditingStore } from '@/stores'
+import { useUserEditing } from '@/stores'
 import type { TableGroup } from '@liam-hq/db-structure'
 import {
   Background,
@@ -30,7 +30,7 @@ import {
   TableGroupNode,
   TableNode,
 } from './components'
-import { useInitialAutoLayout, usePopStateListener } from './hooks'
+import { useInitialAutoLayout, useQueryParamsChanged } from './hooks'
 import { useTableGroupBoundingBox } from './hooks/useTableGroupBoundingBox'
 
 const nodeTypes = {
@@ -70,8 +70,7 @@ export const ERDContentInner: FC<Props> = ({
   const {
     state: { loading },
   } = useERDContentContext()
-  const { isTableGroupEditMode } = useUserEditingStore()
-  const { tableName: activeTableName } = useUserEditingActiveStore()
+  const { activeTableName, isTableGroupEditMode } = useUserEditing()
 
   const { selectTable, deselectTable } = useTableSelection()
 
@@ -79,7 +78,9 @@ export const ERDContentInner: FC<Props> = ({
     nodes,
     displayArea,
   })
-  usePopStateListener({ displayArea })
+  useQueryParamsChanged({
+    displayArea,
+  })
 
   const {
     containerRef,
@@ -120,7 +121,7 @@ export const ERDContentInner: FC<Props> = ({
     (_, { id }) => {
       const { nodes: updatedNodes, edges: updatedEdges } =
         highlightNodesAndEdges(nodes, edges, {
-          activeTableName,
+          activeTableName: activeTableName ?? undefined,
           hoverTableName: id,
         })
 
@@ -135,7 +136,7 @@ export const ERDContentInner: FC<Props> = ({
       nodes,
       edges,
       {
-        activeTableName,
+        activeTableName: activeTableName ?? undefined,
         hoverTableName: undefined,
       },
     )

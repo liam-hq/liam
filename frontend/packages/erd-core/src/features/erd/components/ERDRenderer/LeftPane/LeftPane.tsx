@@ -1,11 +1,7 @@
 import { isTableNode } from '@/features/erd/utils'
 import { useCustomReactflow } from '@/features/reactflow/hooks'
 import { useVersion } from '@/providers'
-import {
-  replaceHiddenNodeIds,
-  resetSelectedNodeIds,
-  useUserEditingStore,
-} from '@/stores'
+import { useUserEditing } from '@/stores'
 import {
   BookText,
   Eye,
@@ -32,7 +28,8 @@ import { TableNameMenuButton } from './TableNameMenuButton'
 
 export const LeftPane = () => {
   const { version } = useVersion()
-  const { selectedNodeIds } = useUserEditingStore()
+  const { selectedNodeIds, setHiddenNodeIds, resetSelectedNodeIds } =
+    useUserEditing()
   const { setNodes } = useCustomReactflow()
 
   const menuItemLinks = useMemo(
@@ -103,8 +100,15 @@ export const LeftPane = () => {
       shouldHideGroupNodeId: true,
     })
     setNodes(updatedNodes)
-    replaceHiddenNodeIds(shouldHide ? nodes.map((node) => node.id) : [])
-  }, [nodes, visibleCount, allCount, setNodes])
+    setHiddenNodeIds(shouldHide ? nodes.map((node) => node.id) : null)
+  }, [
+    nodes,
+    visibleCount,
+    allCount,
+    setNodes,
+    setHiddenNodeIds,
+    resetSelectedNodeIds,
+  ])
 
   const showSelectedTables = useCallback(() => {
     if (selectedNodeIds.size > 0) {
@@ -113,13 +117,13 @@ export const LeftPane = () => {
         .map((node) => node.id)
       const updatedNodes = updateNodesHiddenState({
         nodes,
-        hiddenNodeIds: hiddenNodeIds,
+        hiddenNodeIds,
         shouldHideGroupNodeId: true,
       })
       setNodes(updatedNodes)
-      replaceHiddenNodeIds(hiddenNodeIds)
+      setHiddenNodeIds(hiddenNodeIds)
     }
-  }, [nodes, selectedNodeIds, setNodes])
+  }, [nodes, selectedNodeIds, setNodes, setHiddenNodeIds])
 
   return (
     <Sidebar>

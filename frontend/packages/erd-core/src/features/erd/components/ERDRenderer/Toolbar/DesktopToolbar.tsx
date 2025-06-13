@@ -15,7 +15,11 @@ export const DesktopToolbar: FC<DesktopToolbarProps> = ({
   withGroupButton = false,
 }) => {
   return (
-    <ToolbarPrimitive.Root className={styles.root} aria-label="Toolbar">
+    <ToolbarPrimitive.Root
+      className={styles.root}
+      aria-label="Toolbar"
+      data-testid="toolbar"
+    >
       <ZoomControls />
       <ToolbarPrimitive.Separator className={styles.separator} />
       <div className={styles.buttons}>

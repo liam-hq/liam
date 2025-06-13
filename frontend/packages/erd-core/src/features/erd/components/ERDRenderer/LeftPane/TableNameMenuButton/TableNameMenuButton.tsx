@@ -2,7 +2,7 @@ import { useTableSelection } from '@/features/erd/hooks'
 import type { TableNodeType } from '@/features/erd/types'
 import { selectTableLogEvent } from '@/features/gtm/utils'
 import { useVersion } from '@/providers'
-import { updateSelectedNodeIds, useUserEditingStore } from '@/stores'
+import { useUserEditing } from '@/stores'
 import {
   ContextMenu,
   Eye,
@@ -37,7 +37,7 @@ export const TableNameMenuButton: FC<Props> = ({
   const nodeId = node.id
   const name = node.data.table.name
   const { selectTable } = useTableSelection()
-  const { selectedNodeIds } = useUserEditingStore()
+  const { selectedNodeIds, updateSelectedNodeIds } = useUserEditing()
   const { version } = useVersion()
   const textRef = useRef<HTMLSpanElement>(null)
   const [isTruncated, setIsTruncated] = useState(false)
@@ -92,7 +92,7 @@ export const TableNameMenuButton: FC<Props> = ({
         appEnv: version.envName,
       })
     },
-    [nodeId, name, nodes, selectTable, version],
+    [nodeId, name, nodes, selectTable, version, updateSelectedNodeIds],
   )
 
   const handleKeyDown = useCallback(
@@ -130,6 +130,7 @@ export const TableNameMenuButton: FC<Props> = ({
           onClick={handleTableSelection}
           onKeyDown={handleKeyDown}
           aria-label={`Menu button for ${name}`}
+          data-testid={`table-name-menu-button-${nodeId}`}
         >
           <ContextMenu
             TriggerElement={

@@ -1,5 +1,5 @@
 import type { TableNodeType } from '@/features/erd/types'
-import { useUserEditingStore } from '@/stores'
+import { useUserEditing } from '@/stores'
 import {
   TooltipContent,
   TooltipPortal,
@@ -17,7 +17,7 @@ import styles from './TableNode.module.css'
 type Props = NodeProps<TableNodeType>
 
 export const TableNode: FC<Props> = ({ data }) => {
-  const { showMode: _showMode } = useUserEditingStore()
+  const { showMode: _showMode } = useUserEditing()
   const showMode = data.showMode ?? _showMode
   const name = data?.table?.name
 
