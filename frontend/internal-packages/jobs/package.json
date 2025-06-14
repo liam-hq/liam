@@ -21,7 +21,7 @@
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
     "@liam-hq/configs": "workspace:*",
-    "@sentry/esbuild-plugin": "3.4.0",
+    "@sentry/esbuild-plugin": "3.5.0",
     "@types/node": "22.15.29",
     "dotenv": "16.5.0",
     "eslint": "9.27.0",
