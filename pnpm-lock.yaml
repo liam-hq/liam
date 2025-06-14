@@ -315,8 +315,8 @@ importers:
         specifier: 3.1.1
         version: 3.1.1
       langfuse-langchain:
-        specifier: 3.37.2
-        version: 3.37.2(langchain@0.3.27(@langchain/core@0.3.57(openai@4.104.0(ws@8.18.2)(zod@3.24.4)))(axios@1.9.0(debug@4.4.1))(cheerio@1.0.0)(handlebars@4.7.8)(openai@4.104.0(ws@8.18.2)(zod@3.24.4))(ws@8.18.2))
+        specifier: 3.37.3
+        version: 3.37.3(langchain@0.3.27(@langchain/core@0.3.57(openai@4.104.0(ws@8.18.2)(zod@3.24.4)))(axios@1.9.0(debug@4.4.1))(cheerio@1.0.0)(handlebars@4.7.8)(openai@4.104.0(ws@8.18.2)(zod@3.24.4))(ws@8.18.2))
       ts-pattern:
         specifier: 5.7.1
         version: 5.7.1
@@ -8114,8 +8114,8 @@ packages:
     resolution: {integrity: sha512-yqXkQ1/8V9TxF8q6oULWPQ4cYZlUs1egN6JfGuhJSWb5x2Ymgt4Qh9of/Kz//CTM7IZgzZqvrlnx0VXhNKDITg==}
     engines: {node: '>=18'}
 
-  langfuse-langchain@3.37.2:
-    resolution: {integrity: sha512-hVxoDitHXzlZ4Hrb6IpSOvd2dZSK1iOlK1KWBZsOAHAr451GGdGYm1WFLpk5T2CIt2yl1iXYAzk/NvUwU6C/uA==}
+  langfuse-langchain@3.37.3:
+    resolution: {integrity: sha512-IE4y6Im1AOEfaHdGcbQBsvfNMNnnBncMVj9Rk/jehRKn5A8Y/V8eOS7LTN95jD8fqpkjQ/OWrjRhqDk6dx0ZYw==}
     engines: {node: '>=18'}
     peerDependencies:
       langchain: '>=0.0.157 <0.4.0'
@@ -19309,7 +19309,7 @@ snapshots:
     dependencies:
       mustache: 4.2.0
 
-  langfuse-langchain@3.37.2(langchain@0.3.27(@langchain/core@0.3.57(openai@4.104.0(ws@8.18.2)(zod@3.24.4)))(axios@1.9.0(debug@4.4.1))(cheerio@1.0.0)(handlebars@4.7.8)(openai@4.104.0(ws@8.18.2)(zod@3.24.4))(ws@8.18.2)):
+  langfuse-langchain@3.37.3(langchain@0.3.27(@langchain/core@0.3.57(openai@4.104.0(ws@8.18.2)(zod@3.24.4)))(axios@1.9.0(debug@4.4.1))(cheerio@1.0.0)(handlebars@4.7.8)(openai@4.104.0(ws@8.18.2)(zod@3.24.4))(ws@8.18.2)):
     dependencies:
       langchain: 0.3.27(@langchain/core@0.3.57(openai@4.104.0(ws@8.18.2)(zod@3.24.4)))(axios@1.9.0(debug@4.4.1))(cheerio@1.0.0)(handlebars@4.7.8)(openai@4.104.0(ws@8.18.2)(zod@3.24.4))(ws@8.18.2)
       langfuse: 3.37.4
