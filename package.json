@@ -46,7 +46,7 @@
     ],
     "overrides": {
       "@radix-ui/react-dialog": "1.1.13",
-      "esbuild": "0.25.4",
+      "esbuild": "0.25.5",
       "path-to-regexp": "8.2.0",
       "prismjs": "1.30.0",
       "undici": "7.9.0"
