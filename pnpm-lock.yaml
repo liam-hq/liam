@@ -133,8 +133,8 @@ importers:
         specifier: 4.0.1
         version: 4.0.1(@opentelemetry/api@1.9.0)(next@15.3.2(@opentelemetry/api@1.9.0)(@playwright/test@1.52.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       langfuse-vercel:
-        specifier: 3.37.2
-        version: 3.37.2(ai@4.3.16(react@18.3.1)(zod@3.25.56))
+        specifier: 3.37.3
+        version: 3.37.3(ai@4.3.16(react@18.3.1)(zod@3.25.56))
       lucide-react:
         specifier: 0.511.0
         version: 0.511.0(react@18.3.1)
@@ -8120,8 +8120,8 @@ packages:
     peerDependencies:
       langchain: '>=0.0.157 <0.4.0'
 
-  langfuse-vercel@3.37.2:
-    resolution: {integrity: sha512-27ZTdti+1U3Q2iXOitj149ZmBhpc+2FMnZW69/IzJSKKzijpH+es5cFvXnYQRF4es1MmsTViwc7Qtyw9rUiuZw==}
+  langfuse-vercel@3.37.3:
+    resolution: {integrity: sha512-1KUwJaoACN4nZC8U5p2Yn1EV/gekL5ky3CGqPpXigFQcMGQ0YA7YAYUOiGOZ+pPJzRMZ8WQ2ghsowqysWw58FA==}
     engines: {node: '>=18'}
     peerDependencies:
       ai: '>=3.2.44'
@@ -19315,7 +19315,7 @@ snapshots:
       langfuse: 3.37.4
       langfuse-core: 3.37.4
 
-  langfuse-vercel@3.37.2(ai@4.3.16(react@18.3.1)(zod@3.25.56)):
+  langfuse-vercel@3.37.3(ai@4.3.16(react@18.3.1)(zod@3.25.56)):
     dependencies:
       ai: 4.3.16(react@18.3.1)(zod@3.25.56)
       langfuse: 3.37.4
