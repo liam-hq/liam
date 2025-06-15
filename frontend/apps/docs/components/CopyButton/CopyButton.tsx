@@ -13,8 +13,7 @@ function useCopyButton(
 ): [checked: boolean, onClick: MouseEventHandler] {
   const [checked, setChecked] = useState(false)
   const timeoutRef = useRef<number | null>(null)
-  const callbackRef = useRef(onCopy)
-  callbackRef.current = onCopy
+  const callbackRef = useRef<typeof onCopy>(onCopy)
 
   const onClick: MouseEventHandler = useCallback(() => {
     if (timeoutRef.current) window.clearTimeout(timeoutRef.current)

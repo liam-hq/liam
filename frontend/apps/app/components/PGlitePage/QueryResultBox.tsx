@@ -13,7 +13,7 @@ export const QueryResultBox = ({ result }: { result: SqlResult }) => {
       <button
         type="button"
         className={`${styles.resultHeader} ${result.success ? styles.successHeader : styles.errorHeader}`}
-        onClick={() => setIsExpanded(!isExpanded)}
+        onClick={() => setIsExpanded((isExpanded) => !isExpanded)}
         aria-expanded={isExpanded}
         aria-label={`${result.success ? 'Successful' : 'Failed'} query details ${isExpanded ? 'close' : 'open'}`}
       >

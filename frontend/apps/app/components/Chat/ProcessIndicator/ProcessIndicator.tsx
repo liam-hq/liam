@@ -8,8 +8,7 @@ import {
   IconButton,
   Spinner,
 } from '@liam-hq/ui'
-import type { FC, ReactNode } from 'react'
-import { useState } from 'react'
+import { type FC, type ReactNode, useState } from 'react'
 import styles from './ProcessIndicator.module.css'
 
 export type ProcessStatus = 'processing' | 'complete'
@@ -87,7 +86,7 @@ export const ProcessIndicator: FC<ProcessIndicatorProps> = ({
 
   // Toggle expanded/collapsed state
   const handleToggle = () => {
-    setIsExpanded(!isExpanded)
+    setIsExpanded((isExpanded) => !isExpanded)
   }
 
   // Limit progress to 0-100 range
