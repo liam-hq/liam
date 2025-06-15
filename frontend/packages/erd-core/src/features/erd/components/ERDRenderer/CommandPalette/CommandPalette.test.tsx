@@ -3,6 +3,7 @@ import type { SchemaStore } from '@/stores/schema/schema'
 import { aTable } from '@liam-hq/db-structure'
 import { cleanup, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { ReactFlowProvider } from '@xyflow/react'
 import type { ReactNode } from 'react'
 import { afterEach, describe, expect, it } from 'vitest'
 import { CommandPalette } from './CommandPalette'
@@ -25,7 +26,9 @@ const schema: SchemaStore = {
 }
 
 const wrapper = ({ children }: { children: ReactNode }) => (
-  <SchemaProvider schema={schema}>{children}</SchemaProvider>
+  <ReactFlowProvider>
+    <SchemaProvider schema={schema}>{children}</SchemaProvider>
+  </ReactFlowProvider>
 )
 
 const prepareCommandPalette = async () => {

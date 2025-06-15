@@ -1,5 +1,6 @@
 'use client'
 
+import { useTableSelection } from '@/features/erd/hooks'
 import { useSchema } from '@/stores'
 import { Search, Table2 } from '@liam-hq/ui'
 import { DialogDescription, DialogTitle } from '@radix-ui/react-dialog'
@@ -15,6 +16,7 @@ export const CommandPalette: FC = () => {
   const schema = useSchema()
   const [tableName, setTableName] = useState<string | null>(null)
   const table = schema.current.tables[tableName ?? '']
+  const { selectTable } = useTableSelection()
 
   // Toggle the menu when ⌘K is pressed
   useEffect(() => {
@@ -68,26 +70,24 @@ export const CommandPalette: FC = () => {
           <div className={styles.previewBackground}>
             {table && (
               <div className={styles.tableNodeContainer}>
-                <ReactFlowProvider>
-                  <TableNode
-                    id=""
-                    type="table"
-                    data={{
-                      table: table,
-                      isActiveHighlighted: false,
-                      isHighlighted: false,
-                      isTooltipVisible: false,
-                      sourceColumnName: undefined,
-                      targetColumnCardinalities: undefined,
-                      showMode: 'ALL_FIELDS',
-                    }}
-                    dragging={false}
-                    isConnectable={false}
-                    positionAbsoluteX={0}
-                    positionAbsoluteY={0}
-                    zIndex={0}
-                  />
-                </ReactFlowProvider>
+                <TableNode
+                  id=""
+                  type="table"
+                  data={{
+                    table: table,
+                    isActiveHighlighted: false,
+                    isHighlighted: false,
+                    isTooltipVisible: false,
+                    sourceColumnName: undefined,
+                    targetColumnCardinalities: undefined,
+                    showMode: 'ALL_FIELDS',
+                  }}
+                  dragging={false}
+                  isConnectable={false}
+                  positionAbsoluteX={0}
+                  positionAbsoluteY={0}
+                  zIndex={0}
+                />
               </div>
             )}
           </div>
