@@ -12,7 +12,7 @@
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
     "@liam-hq/configs": "workspace:*",
-    "eslint": "9.27.0",
+    "eslint": "9.28.0",
     "typescript": "5.8.3"
   },
   "scripts": {
