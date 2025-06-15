@@ -139,11 +139,6 @@
   scrollbar-color: var(--overlay-20) transparent;
 }
 
-/* property items of TableNode */
-.tableNodeContainer ul {
-  overflow: hidden;
-}
-
 /* Empty search result display */
 .main [cmdk-list]:has([cmdk-empty]) {
   width: 100%;
