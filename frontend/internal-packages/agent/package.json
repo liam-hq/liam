@@ -19,7 +19,7 @@
     "@biomejs/biome": "1.9.4",
     "@liam-hq/configs": "workspace:*",
     "@types/node": "22.15.29",
-    "eslint": "9.27.0",
+    "eslint": "9.28.0",
     "typescript": "5.8.3",
     "vitest": "3.1.4"
   },
