@@ -12,6 +12,7 @@
   position: relative;
   transition: background-color var(--default-hover-animation-duration)
     var(--default-timing-function);
+  overflow-x: hidden;
 }
 
 .columnWrapper:last-child {
