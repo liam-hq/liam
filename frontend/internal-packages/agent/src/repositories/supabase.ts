@@ -11,6 +11,7 @@ import type {
   MessageResult,
   SchemaData,
   SchemaRepository,
+  ValidationRepository,
   VersionResult,
 } from './types'
 
@@ -28,6 +29,54 @@ const updateBuildingSchemaResultSchema = v.union([
 /**
  * Supabase implementation of SchemaRepository
  */
+export class SupabaseValidationRepository implements ValidationRepository {
+  private client: SupabaseClientType
+
+  constructor(client: SupabaseClientType) {
+    this.client = client
+  }
+
+  async createValidationQuery(params: {
+    designSessionId: string
+    queryString: string
+  }): Promise<{ success: boolean; id?: string; error?: string }> {
+    const { data, error } = await this.client
+      .from('validation_queries')
+      .insert({
+        design_session_id: params.designSessionId,
+        query_string: params.queryString,
+      })
+      .select('id')
+      .single()
+
+    if (error) {
+      return { success: false, error: error.message }
+    }
+
+    return { success: true, id: data.id }
+  }
+
+  async createValidationResult(params: {
+    validationQueryId: string
+    resultSet: string | null
+    status: 'success' | 'failure'
+    errorMessage?: string | null
+  }): Promise<{ success: boolean; error?: string }> {
+    const { error } = await this.client.from('validation_results').insert({
+      validation_query_id: params.validationQueryId,
+      result_set: params.resultSet,
+      status: params.status,
+      error_message: params.errorMessage || null,
+    })
+
+    if (error) {
+      return { success: false, error: error.message }
+    }
+
+    return { success: true }
+  }
+}
+
 export class SupabaseSchemaRepository implements SchemaRepository {
   private client: SupabaseClientType
 

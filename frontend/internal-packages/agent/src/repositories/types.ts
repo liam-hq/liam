@@ -91,6 +91,21 @@ export interface SchemaRepository {
 /**
  * Repository container for dependency injection
  */
+export interface ValidationRepository {
+  createValidationQuery(params: {
+    designSessionId: string
+    queryString: string
+  }): Promise<{ success: boolean; id?: string; error?: string }>
+
+  createValidationResult(params: {
+    validationQueryId: string
+    resultSet: string | null
+    status: 'success' | 'failure'
+    errorMessage?: string | null
+  }): Promise<{ success: boolean; error?: string }>
+}
+
 export interface Repositories {
   schema: SchemaRepository
+  validation: ValidationRepository
 }

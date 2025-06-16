@@ -19,6 +19,16 @@ export type WorkflowState = {
   // Message saving fields
   designSessionId: string
 
+  brd?: string[]
+  useCases?: string[]
+  validationQueries?: string[]
+  validationResults?: Array<{
+    query: string
+    success: boolean
+    resultSet?: string
+    errorMessage?: string
+  }>
+
   // Repository dependencies for data access
   repositories: Repositories
 }

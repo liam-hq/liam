@@ -119,6 +119,12 @@ describe('Chat Workflow', () => {
 
     mockRepositories = {
       schema: mockSchemaRepository,
+      validation: {
+        createValidationQuery: vi
+          .fn()
+          .mockResolvedValue({ success: true, id: 'test-id' }),
+        createValidationResult: vi.fn().mockResolvedValue({ success: true }),
+      },
     }
 
     // Create mock schema data

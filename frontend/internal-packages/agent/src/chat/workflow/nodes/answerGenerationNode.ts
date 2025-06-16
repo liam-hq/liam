@@ -158,10 +158,14 @@ export async function answerGenerationNode(
         ? state.history.map((content) => `User: ${content}`).join('\n')
         : 'No previous conversation.'
 
+    const brdContext = state.brd
+      ? `\n\nBusiness Requirements:\n${state.brd.join('\n')}`
+      : ''
+
     // Create prompt variables directly
     const promptVariables: BasePromptVariables = {
       schema_text: schemaText,
-      chat_history: formattedChatHistory,
+      chat_history: formattedChatHistory + brdContext,
       user_message: state.userInput,
     }
 

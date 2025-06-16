@@ -1,11 +1,31 @@
 import { END, START, StateGraph } from '@langchain/langgraph'
 import { WORKFLOW_ERROR_MESSAGES } from '../constants/progressMessages'
-import { answerGenerationNode, finalResponseNode } from '../nodes'
+import {
+  analyzeRequirementsNode,
+  answerGenerationNode,
+  finalResponseNode,
+  reviewDeliverablesNode,
+  validateSchemaNode,
+} from '../nodes'
 import {
   DEFAULT_RECURSION_LIMIT,
   createAnnotations,
 } from '../shared/langGraphUtils'
 import type { WorkflowState } from '../types'
+
+function shouldReturnToDesignSchema(state: any): string {
+  if ((state as WorkflowState).error) {
+    return 'designSchema'
+  }
+  return 'reviewDeliverables'
+}
+
+function shouldReturnToDesignSchemaFromReview(state: any): string {
+  if ((state as WorkflowState).error) {
+    return 'designSchema'
+  }
+  return 'formatFinalResponse'
+}
 
 /**
  * Create and configure the LangGraph workflow
@@ -15,16 +35,27 @@ const createGraph = () => {
   const graph = new StateGraph(ChatStateAnnotation)
 
   graph
-    .addNode('generateAnswer', answerGenerationNode)
+    .addNode('analyzeRequirements', analyzeRequirementsNode)
+    .addNode('designSchema', answerGenerationNode)
+    .addNode('validateSchema', validateSchemaNode)
+    .addNode('reviewDeliverables', reviewDeliverablesNode)
     .addNode('formatFinalResponse', finalResponseNode)
-    .addEdge(START, 'generateAnswer')
-    .addEdge('formatFinalResponse', END)
-
-    // Conditional edges - simplified to prevent loops
-    .addConditionalEdges('generateAnswer', () => {
-      // Always go to formatFinalResponse regardless of error state
-      return 'formatFinalResponse'
+    .addEdge(START, 'analyzeRequirements')
+    .addEdge('analyzeRequirements', 'designSchema')
+    .addEdge('designSchema', 'validateSchema')
+    .addConditionalEdges('validateSchema', shouldReturnToDesignSchema, {
+      designSchema: 'designSchema',
+      reviewDeliverables: 'reviewDeliverables',
     })
+    .addConditionalEdges(
+      'reviewDeliverables',
+      shouldReturnToDesignSchemaFromReview,
+      {
+        designSchema: 'designSchema',
+        formatFinalResponse: 'formatFinalResponse',
+      },
+    )
+    .addEdge('formatFinalResponse', END)
 
   return graph.compile()
 }
@@ -43,11 +74,10 @@ export const executeWorkflow = async (
       recursionLimit,
     })
 
-    return result
+    return result as WorkflowState
   } catch (error) {
     console.error(WORKFLOW_ERROR_MESSAGES.LANGGRAPH_FAILED, error)
 
-    // Even with LangGraph execution failure, go through finalResponseNode to ensure proper response
     const errorMessage =
       error instanceof Error
         ? error.message

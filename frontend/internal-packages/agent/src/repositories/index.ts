@@ -1,5 +1,6 @@
 export type {
   SchemaRepository,
+  ValidationRepository,
   Repositories,
   SchemaData,
   DesignSessionData,
@@ -7,6 +8,9 @@ export type {
   VersionResult,
 } from './types'
 
-export { SupabaseSchemaRepository } from './supabase'
+export {
+  SupabaseSchemaRepository,
+  SupabaseValidationRepository,
+} from './supabase'
 
 export { createSupabaseRepositories } from './factory'

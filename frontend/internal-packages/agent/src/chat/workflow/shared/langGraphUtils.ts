@@ -22,7 +22,19 @@ export const createAnnotations = () => {
     designSessionId: Annotation<string>,
     error: Annotation<string | undefined>,
 
-    // Repository dependencies for data access
+    brd: Annotation<string[] | undefined>,
+    useCases: Annotation<string[] | undefined>,
+    validationQueries: Annotation<string[] | undefined>,
+    validationResults: Annotation<
+      | Array<{
+          query: string
+          success: boolean
+          resultSet?: string
+          errorMessage?: string
+        }>
+      | undefined
+    >,
+
     repositories: Annotation<Repositories>,
   })
 }

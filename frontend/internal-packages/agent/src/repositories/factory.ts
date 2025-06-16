@@ -1,5 +1,8 @@
 import type { SupabaseClientType } from '@liam-hq/db'
-import { SupabaseSchemaRepository } from './supabase'
+import {
+  SupabaseSchemaRepository,
+  SupabaseValidationRepository,
+} from './supabase'
 import type { Repositories } from './types'
 
 /**
@@ -10,5 +13,6 @@ export function createSupabaseRepositories(
 ): Repositories {
   return {
     schema: new SupabaseSchemaRepository(client),
+    validation: new SupabaseValidationRepository(client),
   }
 }

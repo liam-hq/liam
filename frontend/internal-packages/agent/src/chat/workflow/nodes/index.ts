@@ -1,2 +1,5 @@
 export { answerGenerationNode } from './answerGenerationNode'
 export { finalResponseNode } from './finalResponseNode'
+export { analyzeRequirementsNode } from './analyzeRequirementsNode'
+export { validateSchemaNode } from './validateSchemaNode'
+export { reviewDeliverablesNode } from './reviewDeliverablesNode'
