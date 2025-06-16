@@ -29,6 +29,8 @@ export type WorkflowState = {
     errorMessage?: string
   }>
 
+  retryCount?: number
+
   // Repository dependencies for data access
   repositories: Repositories
 }

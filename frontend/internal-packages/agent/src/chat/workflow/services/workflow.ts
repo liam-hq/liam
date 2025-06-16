@@ -34,16 +34,27 @@ const createGraph = () => {
 
     // Conditional edges for validation results
     .addConditionalEdges('validateSchema', (state) => {
-      // success → reviewDeliverables
-      // dml error or test fail → designSchema
+      const stateWithRetry = state as WorkflowState & { retryCount?: number }
+      const retryCount = stateWithRetry.retryCount || 0
+      if (retryCount >= 3) {
+        return 'finalizeArtifacts'
+      }
       return state.error ? 'designSchema' : 'reviewDeliverables'
     })
 
     // Conditional edges for review results
     .addConditionalEdges('reviewDeliverables', (state) => {
-      // OK → finalizeArtifacts
-      // NG or issues found → analyzeRequirements
-      return state.error ? 'analyzeRequirements' : 'finalizeArtifacts'
+      const stateWithRetry = state as WorkflowState & { retryCount?: number }
+      const retryCount = stateWithRetry.retryCount || 0
+      if (retryCount >= 2) {
+        return 'finalizeArtifacts'
+      }
+      if (state.error) {
+        ;(stateWithRetry as WorkflowState & { retryCount: number }).retryCount =
+          retryCount + 1
+        return 'analyzeRequirements'
+      }
+      return 'finalizeArtifacts'
     })
 
   return graph.compile()
