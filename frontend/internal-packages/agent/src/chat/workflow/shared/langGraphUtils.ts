@@ -35,6 +35,8 @@ export const createAnnotations = () => {
       | undefined
     >,
 
+    retryCount: Annotation<number | undefined>,
+
     repositories: Annotation<Repositories>,
   })
 }
