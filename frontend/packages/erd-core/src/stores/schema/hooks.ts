@@ -1,16 +1,9 @@
-import { safeParse } from 'valibot'
-import { useSnapshot } from 'valtio'
-import { schemaStoreSchema } from './schema'
-import { schemaStore } from './store'
+import { useContext } from 'react'
+import { SchemaContext } from './context'
 
-export const useSchemaStore = () => {
-  const snapshot = useSnapshot(schemaStore)
+export const useSchema = () => {
+  const schema = useContext(SchemaContext)
+  if (!schema) throw new Error('useSchema must be used within SchemaProvider')
 
-  const result = safeParse(schemaStoreSchema, snapshot)
-
-  if (!result.success) {
-    throw new Error('Invalid schema store')
-  }
-
-  return result.output
+  return schema
 }

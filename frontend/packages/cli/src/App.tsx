@@ -1,11 +1,13 @@
-import { schemaSchema } from '@liam-hq/db-structure'
-import {
-  ERDRenderer,
-  VersionProvider,
-  initSchemaStore,
-  versionSchema,
-} from '@liam-hq/erd-core'
+import { type Schema, schemaSchema } from '@liam-hq/db-structure'
+import { ERDRenderer, VersionProvider, versionSchema } from '@liam-hq/erd-core'
+import { useEffect, useState } from 'react'
 import * as v from 'valibot'
+
+const emptySchema: Schema = {
+  tables: {},
+  relationships: {},
+  tableGroups: {},
+}
 
 async function loadSchemaContent() {
   try {
@@ -15,17 +17,16 @@ async function loadSchemaContent() {
     }
     const data = await response.json()
     const result = v.safeParse(schemaSchema, data)
-    result.success
-      ? initSchemaStore({
-          current: result.output,
-        })
-      : console.info(result.issues)
+
+    if (result.success) {
+      return result.output
+    }
+
+    console.info(result.issues)
   } catch (error) {
     console.error('Error loading schema content:', error)
   }
 }
-
-loadSchemaContent()
 
 const versionData = {
   version: import.meta.env.VITE_CLI_VERSION_VERSION,
@@ -71,12 +72,18 @@ function getSidebarSettingsFromCookie(): {
 }
 
 function App() {
+  const [schema, setSchema] = useState<Schema>(emptySchema)
   const { isOpen: defaultSidebarOpen, panelSizes } =
     getSidebarSettingsFromCookie()
+
+  useEffect(() => {
+    loadSchemaContent().then((val) => setSchema(val ?? emptySchema))
+  }, [])
 
   return (
     <VersionProvider version={version}>
       <ERDRenderer
+        schema={{ current: schema }}
         withAppBar
         defaultSidebarOpen={defaultSidebarOpen}
         defaultPanelSizes={panelSizes}

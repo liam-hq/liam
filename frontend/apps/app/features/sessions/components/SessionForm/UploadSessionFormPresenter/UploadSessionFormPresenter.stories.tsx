@@ -1,0 +1,53 @@
+import type { Meta, StoryObj } from '@storybook/react'
+import { UploadSessionFormPresenter } from './UploadSessionFormPresenter'
+
+type UploadSessionFormPresenterProps = {
+  formError?: string
+  isPending: boolean
+  formAction: (formData: FormData) => void
+}
+
+const meta: Meta<UploadSessionFormPresenterProps> = {
+  title: 'Features/Sessions/UploadSessionFormPresenter',
+  component: UploadSessionFormPresenter,
+  parameters: {
+    layout: 'padded',
+    viewport: {
+      defaultViewport: 'responsive',
+    },
+  },
+  tags: ['autodocs'],
+}
+
+export default meta
+type Story = StoryObj<UploadSessionFormPresenterProps>
+
+export const Default: Story = {
+  args: {
+    isPending: false,
+    formAction: () => {},
+  },
+}
+
+export const WithError: Story = {
+  args: {
+    formError: 'Please select a valid file.',
+    isPending: false,
+    formAction: () => {},
+  },
+}
+
+export const Pending: Story = {
+  args: {
+    isPending: true,
+    formAction: () => {},
+  },
+}
+
+export const PendingWithError: Story = {
+  args: {
+    formError: 'Upload failed. Please try again.',
+    isPending: true,
+    formAction: () => {},
+  },
+}

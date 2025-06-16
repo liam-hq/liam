@@ -5,60 +5,47 @@
   "entry": [
     "frontend/packages/cli/bin/cli.ts",
     "frontend/apps/app/instrumentation-client.ts",
-    "frontend/apps/docs/instrumentation-client.ts"
+    "frontend/apps/docs/instrumentation-client.ts",
+    "frontend/internal-packages/jobs/trigger.config.ts"
   ],
 
   // Files to ignore when analyzing
   "ignore": [
     // - config files
     "frontend/turbo/generators/config.ts",
-    "frontend/packages/jobs/trigger.config.ts",
+    "frontend/internal-packages/jobs/trigger.config.ts",
     "frontend/apps/docs/source.config.ts",
     // - Generated files may contain unused exports
-    "frontend/packages/db/supabase/database.types.ts",
+    "frontend/internal-packages/db/supabase/database.types.ts",
     // - Script for workaround
     "frontend/apps/app/scripts/install-prisma-internals.mjs",
     // - Script file which is read from trigger.config.ts
-    "frontend/packages/jobs/src/trigger/jobs.ts",
+    "frontend/internal-packages/jobs/src/trigger/jobs.ts",
     // - Next.js special files
     "frontend/apps/docs/app/docs/sitemap.ts",
     "frontend/apps/app/next.config.ts",
-    "frontend/apps/docs/next.config.mjs"
+    "frontend/apps/docs/next.config.mjs",
+    // - Temporarily unused vectorstore files (will be re-enabled later)
+    "frontend/internal-packages/agent/src/vectorstore/index.ts",
+    "frontend/internal-packages/agent/src/vectorstore/supabaseVectorStore.ts",
+    "frontend/internal-packages/agent/src/vectorstore/syncSchemaVectorStore.ts"
   ],
 
-  // TODO: Review ignoreDependencies configuration later
   // Dependencies to ignore when analyzing
   "ignoreDependencies": [
-    "@octokit/auth-app",
-    "@octokit/rest",
-    "@octokit/openapi-types",
-    "@prisma/internals",
-    "@trigger.dev/build",
-    "@trigger.dev/sdk",
-    "langfuse",
-    "langfuse-langchain",
-    "@langchain/core",
-    "zod",
-    "ts-pattern",
-    "minimatch",
-    "destyle.css",
-    "json-refs",
-    "json-schema-to-zod",
-    "glob",
-    "@vitest/coverage-v8",
-    "@types/gtag.js",
-    "esbuild",
-    "@types/mdx",
-    "postcss",
-    "@types/glob",
-    "@biomejs/biome",
-    "@sentry/node",
-    "@sentry/esbuild-plugin",
-    "@liam-hq/cli",
-    "@liam-hq/configs",
-    "@turbo/gen"
+    "@prisma/internals", // Used by CLI package for schema parsing
+    "zod", // Used by db-structure package
+    "destyle.css", // Used by CSS imports in ui package
+    "json-refs", // Used by db-structure npm scripts
+    "json-schema-to-zod", // Used by db-structure npm scripts
+    "@vitest/coverage-v8", // Used by CLI package vite.config.ts
+    "@liam-hq/cli", // Used by erd-sample build script
+    "@liam-hq/configs", // Used by tsconfig and biome configuration files
+    "@turbo/gen", // Required for `turbo gen` command in npm scripts
+    "@langchain/community", // Temporarily unused due to disabled vectorstore functionality
+    "@biomejs/biome" // Referenced in settings.json to enable Biome's "format on save" in VSCode
   ],
 
   // TODO: Review ignoreBinaries configuration later
-  "ignoreBinaries": ["playwright", "supabase:start", "supabase:gen"]
+  "ignoreBinaries": ["playwright"]
 }

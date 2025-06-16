@@ -45,7 +45,11 @@ export const TableNode: FC<Props> = ({ data }) => {
         </TooltipTrigger>
 
         <TooltipPortal>
-          <TooltipContent side={'top'} sideOffset={4}>
+          <TooltipContent
+            side={'top'}
+            sideOffset={4}
+            hidden={!data.isTooltipVisible}
+          >
             {name}
           </TooltipContent>
         </TooltipPortal>

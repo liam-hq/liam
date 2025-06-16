@@ -2,7 +2,6 @@
 
 import type { FC, MouseEvent } from 'react'
 import { useCallback, useEffect, useState } from 'react'
-import type { AgentType } from './AgentMessage/AgentMessage'
 import { MessageOptionButton } from './MessageOptionButton'
 import styles from './MessageOptionButton.module.css'
 
@@ -27,10 +26,6 @@ interface MessageOptionButtonsProps {
    */
   options: MessageOption[]
   /**
-   * The agent type that determines the color theme
-   */
-  agentType: AgentType
-  /**
    * The ID of the selected option
    */
   selectedOptionId?: string
@@ -49,7 +44,6 @@ interface MessageOptionButtonsProps {
  */
 export const MessageOptionButtons: FC<MessageOptionButtonsProps> = ({
   options,
-  agentType,
   selectedOptionId,
   multiSelect = false,
   onSelect,
@@ -111,7 +105,6 @@ export const MessageOptionButtons: FC<MessageOptionButtonsProps> = ({
           <MessageOptionButton
             key={option.id}
             text={option.text}
-            agentType={agentType}
             isSelected={isSelected}
             isDisabled={isDisabled}
             onClick={isDisabled ? undefined : handleOptionClick(option.id)}

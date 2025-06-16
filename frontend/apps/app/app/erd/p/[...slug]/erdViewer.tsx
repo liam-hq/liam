@@ -2,12 +2,7 @@
 
 import { CookieConsent } from '@/components/CookieConsent'
 import type { Schema } from '@liam-hq/db-structure'
-import {
-  ERDRenderer,
-  VersionProvider,
-  initSchemaStore,
-  versionSchema,
-} from '@liam-hq/erd-core'
+import { ERDRenderer, VersionProvider, versionSchema } from '@liam-hq/erd-core'
 import { useEffect, useState } from 'react'
 import * as v from 'valibot'
 
@@ -33,11 +28,8 @@ export default function ERDViewer({
   const [isShowCookieConsent, setShowCookieConsent] = useState(false)
 
   useEffect(() => {
-    initSchemaStore({
-      current: schema,
-    })
     setShowCookieConsent(window === window.parent)
-  }, [schema])
+  }, [])
 
   const versionData = {
     version: '0.1.0', // NOTE: no maintained version for ERD Web
@@ -52,6 +44,7 @@ export default function ERDViewer({
     <div style={{ height: '100dvh' }}>
       <VersionProvider version={version}>
         <ERDRenderer
+          schema={{ current: schema }}
           withAppBar
           defaultSidebarOpen={defaultSidebarOpen}
           defaultPanelSizes={defaultPanelSizes}

@@ -1,0 +1,29 @@
+.content {
+  z-index: var(--z-index-tooltip);
+  padding: var(--spacing-half) var(--spacing-1);
+  font-size: var(--font-size-1);
+  color: var(--tooltip-foreground);
+  background-color: var(--tooltip-background);
+  border-radius: var(--border-radius-sm);
+  animation-duration: 150ms;
+  animation-timing-function: var(--default-timing-function);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.content[data-state='delayed-open'] {
+  animation-name: fadeIn;
+}
+
+.arrow {
+  fill: var(--tooltip-background);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}

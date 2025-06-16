@@ -7,14 +7,19 @@ import {
   DropdownMenuRoot,
   DropdownMenuTrigger,
 } from '@/components'
-import { createClient } from '@/libs/db/client'
-import { getRepositoriesByInstallationId } from '@liam-hq/github'
 import type { Installation, Repository } from '@liam-hq/github'
-import { type FC, useCallback, useEffect, useState } from 'react'
+import {
+  type FC,
+  useActionState,
+  useCallback,
+  useState,
+  useTransition,
+} from 'react'
 import { P, match } from 'ts-pattern'
 import { RepositoryItem } from '../RepositoryItem'
 import styles from './InstallationSelector.module.css'
 import { addProject } from './actions/addProject'
+import { getRepositories } from './actions/getRepositories'
 
 type Props = {
   installations: Installation[]
@@ -27,43 +32,21 @@ export const InstallationSelector: FC<Props> = ({
 }) => {
   const [selectedInstallation, setSelectedInstallation] =
     useState<Installation | null>(null)
-  const [repositories, setRepositories] = useState<Repository[]>([])
-  const [loading, setLoading] = useState(false)
   const [isAddingProject, setIsAddingProject] = useState(false)
+  const [, startTransition] = useTransition()
+
+  const [repositoriesState, repositoriesAction, isRepositoriesLoading] =
+    useActionState(getRepositories, { repositories: [], loading: false })
 
   const githubAppUrl = process.env.NEXT_PUBLIC_GITHUB_APP_URL
 
-  useEffect(() => {
-    if (selectedInstallation) {
-      fetchRepositories(selectedInstallation.id)
-    }
-  }, [selectedInstallation])
-
-  const fetchRepositories = async (installationId: number) => {
-    setLoading(true)
-    try {
-      const supabase = await createClient()
-      const { data } = await supabase.auth.getSession()
-      const session = data.session
-
-      if (session === null) {
-        throw new Error('')
-      }
-
-      const res = await getRepositoriesByInstallationId(
-        data.session,
-        installationId,
-      )
-      setRepositories(res.repositories)
-    } catch (error) {
-      console.error('Error fetching repositories:', error)
-    } finally {
-      setLoading(false)
-    }
-  }
-
   const handleSelectInstallation = (installation: Installation) => {
     setSelectedInstallation(installation)
+    startTransition(() => {
+      const formData = new FormData()
+      formData.append('installationId', installation.id.toString())
+      repositoriesAction(formData)
+    })
   }
 
   const handleClick = useCallback(
@@ -83,7 +66,6 @@ export const InstallationSelector: FC<Props> = ({
         formData.set('organizationId', organizationId.toString())
 
         await addProject(formData)
-        // This point is not reached because a redirect occurs on success
       } catch (error) {
         console.error('Error adding project:', error)
         setIsAddingProject(false)
@@ -133,12 +115,12 @@ export const InstallationSelector: FC<Props> = ({
         </DropdownMenuRoot>
       </div>
 
-      {loading && <div>Loading repositories...</div>}
+      {isRepositoriesLoading && <div>Loading repositories...</div>}
 
-      {!loading && repositories.length > 0 && (
+      {!isRepositoriesLoading && repositoriesState.repositories.length > 0 && (
         <div className={styles.repositoriesList}>
           <h3>Repositories</h3>
-          {repositories.map((repo) => (
+          {repositoriesState.repositories.map((repo) => (
             <RepositoryItem
               key={repo.id}
               name={repo.name}
@@ -149,9 +131,15 @@ export const InstallationSelector: FC<Props> = ({
         </div>
       )}
 
-      {!loading && selectedInstallation && repositories.length === 0 && (
-        <div>No repositories found</div>
-      )}
+      {!isRepositoriesLoading &&
+        selectedInstallation &&
+        repositoriesState.repositories.length === 0 &&
+        repositoriesState.error && <div>Error: {repositoriesState.error}</div>}
+
+      {!isRepositoriesLoading &&
+        selectedInstallation &&
+        repositoriesState.repositories.length === 0 &&
+        !repositoriesState.error && <div>No repositories found</div>}
     </>
   )
 }

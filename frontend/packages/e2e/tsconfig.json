@@ -1,7 +1,0 @@
-{
-  "extends": "@liam-hq/configs/tsconfig/base.json",
-  "compilerOptions": {
-    "baseUrl": "."
-  },
-  "include": ["tests/**/*", "playwright.config.ts", "global-setup.ts"]
-}

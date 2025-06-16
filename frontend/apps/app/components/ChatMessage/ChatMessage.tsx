@@ -1,7 +1,6 @@
 'use client'
 
 import { AgentMessage } from '@/components/Chat/AgentMessage'
-import type { AgentType } from '@/components/Chat/AgentMessage'
 import { UserMessage } from '@/components/Chat/UserMessage'
 import { syntaxCodeTagProps, syntaxCustomStyle, syntaxTheme } from '@liam-hq/ui'
 import type React from 'react'
@@ -29,15 +28,22 @@ export interface ChatMessageProps {
   avatarAlt?: string
   initial?: string
   /**
-   * The type of agent to display for bot messages
-   * @default 'build'
-   */
-  agentType?: AgentType
-  /**
    * Whether the bot is generating a response
    * @default false
    */
   isGenerating?: boolean
+  /**
+   * Optional children to render below the message content
+   */
+  children?: ReactNode
+  /**
+   * Progress messages to display above the main message
+   */
+  progressMessages?: string[]
+  /**
+   * Whether to show progress messages
+   */
+  showProgress?: boolean
 }
 
 export const ChatMessage: FC<ChatMessageProps> = ({
@@ -47,8 +53,10 @@ export const ChatMessage: FC<ChatMessageProps> = ({
   avatarSrc,
   avatarAlt,
   initial,
-  agentType = 'build',
   isGenerating = false,
+  children,
+  progressMessages,
+  showProgress,
 }) => {
   // Only format and display timestamp if it exists
   const formattedTime = timestamp
@@ -104,12 +112,13 @@ export const ChatMessage: FC<ChatMessageProps> = ({
         />
       ) : (
         <AgentMessage
-          agent={agentType}
           state={isGenerating ? 'generating' : 'default'}
           message={markdownContent}
           time={formattedTime || ''}
+          progressMessages={progressMessages}
+          showProgress={showProgress}
         >
-          {/* We're not using children for now, but could be used for additional components */}
+          {children}
         </AgentMessage>
       )}
     </div>

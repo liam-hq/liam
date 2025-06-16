@@ -10,7 +10,7 @@ As an open source product, we will only provide security patches for the latest 
 
 If you discover a security vulnerability, please report it to us in the following manner:
 
-1. **Email us** at oss@liambx.com. Please do not create a public GitHub issue.
+1. **Email us** at oss@route06.co.jp _(Temporary contact address from 2025/06/10 to 2025/06/18 while we migrate our internal infrastructure. The usual contact is oss@liambx.com.)_ Please do not create a public GitHub issue.
 2. Include as much detail as possible, including steps to reproduce the vulnerability, potential impact, and any other relevant information.
 3. We will acknowledge your email within 3 business days and work with you to understand the issue and address it promptly.
 
@@ -44,6 +44,7 @@ To ensure the security of our project, we are committed the following best pract
 
 ## Contact
 
-For any other security-related inquiries, please contact us at oss@liambx.com.
+For any other security-related inquiries, please contact us at
+oss@route06.co.jp _(Temporary contact address from 2025/06/10 to 2025/06/18 while we migrate our internal infrastructure. The usual contact is oss@liambx.com.)_
 
 Thank you for helping us keep our project secure!

@@ -5,7 +5,7 @@ Our project uses Supabase Branching for database migration management. This syst
 ## Deployment System
 
 - Supabase Branching automatically runs migrations when PRs merge to main.
-- Migrations in `frontend/packages/db/supabase/migrations` run sequentially by timestamp.
+- Migrations in `frontend/internal-packages/db/supabase/migrations` run sequentially by timestamp.
 
 ## Key Constraints
 
@@ -34,7 +34,7 @@ This project uses the migrations provided by the Supabase CLI.
 
 ### Creating a migration file
 
-Given the context of the user's message, create a database migration file inside the folder `frontend/packages/db/supabase/migrations/`.
+Given the context of the user's message, create a database migration file inside the folder `frontend/internal-packages/db/supabase/migrations/`.
 
 The file MUST following this naming convention:
 
@@ -105,7 +105,7 @@ After applying migrations, always run:
 
 1. Run the combined command to update both schema SQL file and TypeScript types:
    ```sh
-   cd frontend/packages/db && pnpm supabase:gen
+   cd frontend/internal-packages/db && pnpm supabase:gen
    ```
 
 2. Test affected functionality to ensure backward compatibility with the previous app version.

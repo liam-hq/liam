@@ -1,0 +1,28 @@
+{
+  "name": "@liam-hq/pglite-server",
+  "private": true,
+  "version": "0.0.0",
+  "publishConfig": {
+    "access": "restricted"
+  },
+  "main": "src/index.ts",
+  "dependencies": {
+    "@electric-sql/pglite": "0.3.2"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "1.9.4",
+    "@liam-hq/configs": "workspace:*",
+    "eslint": "9.27.0",
+    "typescript": "5.8.3"
+  },
+  "scripts": {
+    "build": "tsc",
+    "fmt": "concurrently \"pnpm:fmt:*\"",
+    "fmt:biome": "biome check --write --unsafe .",
+    "fmt:eslint": "eslint --fix .",
+    "lint": "concurrently \"pnpm:lint:*\"",
+    "lint:biome": "biome check .",
+    "lint:eslint": "eslint .",
+    "lint:tsc": "tsc --noEmit"
+  }
+}

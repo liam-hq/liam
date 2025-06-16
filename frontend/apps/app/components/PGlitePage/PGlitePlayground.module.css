@@ -1,0 +1,90 @@
+.container {
+  font-family: var(--main-font);
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+  line-height: 1.6;
+}
+
+.title {
+  color: var(--global-foreground);
+  border-bottom: 2px solid var(--global-border);
+  padding-bottom: 10px;
+  margin-bottom: 20px;
+}
+
+.status {
+  padding: 10px;
+  margin: 10px 0;
+  border-radius: var(--border-radius-2);
+}
+
+.loading {
+  background-color: var(--warning-background);
+  border: 1px solid var(--warning-border);
+}
+
+.success {
+  background-color: var(--success-background);
+  border: 1px solid var(--success-border);
+}
+
+.error {
+  background-color: var(--error-background);
+  border: 1px solid var(--error-border);
+}
+
+.divider {
+  height: 1px;
+  background-color: var(--global-border);
+  margin: 2rem 0;
+  width: 100%;
+}
+
+.playgroundSection {
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+  border-radius: var(--border-radius-2);
+  background-color: var(--global-background-secondary);
+  border: 1px solid var(--global-border);
+}
+
+.sectionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--global-border);
+}
+
+.sectionTitle {
+  font-size: var(--font-size-4);
+  font-weight: 600;
+  color: #000;
+  margin: 0;
+}
+
+.description {
+  margin-bottom: 1rem;
+  color: var(--global-foreground-secondary);
+  font-size: var(--font-size-3);
+}
+
+.actionButton {
+  padding: 0.5rem 1rem;
+  border-radius: var(--border-radius-2);
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s, border-color 0.2s;
+}
+
+.secondaryButton {
+  background-color: var(--global-background-secondary);
+  color: #000;
+  border: 1px solid var(--global-border);
+}
+
+.secondaryButton:hover {
+  background-color: var(--global-background-tertiary);
+}

@@ -12,7 +12,7 @@
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
     "@liam-hq/configs": "workspace:*",
-    "@types/node": "22.15.17",
+    "@types/node": "22.15.29",
     "concurrently": "9.1.2",
     "tsx": "4.19.4",
     "typescript": "5.8.3"

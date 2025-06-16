@@ -60,7 +60,7 @@ representative at an online or offline event.
 
 Instances of abusive, harassing, or otherwise unacceptable behavior may be
 reported to the community leaders responsible for enforcement at
-oss@liambx.com.
+oss@route06.co.jp _(Temporary contact address from 2025/06/10 to 2025/06/18 while we migrate our internal infrastructure. The usual contact is oss@liambx.com.)_
 All complaints will be reviewed and investigated promptly and fairly.
 
 All community leaders are obligated to respect the privacy and security of the

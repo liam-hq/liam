@@ -1,5 +1,6 @@
 export * from './computeAutoLayout'
 export * from './columnHandleId'
 export * from './convertSchemaToNodes'
+export * from './createHash'
 export * from './highlightNodesAndEdges'
 export * from './isTableNode'

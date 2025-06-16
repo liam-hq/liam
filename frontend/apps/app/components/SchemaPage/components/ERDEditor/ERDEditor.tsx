@@ -5,15 +5,8 @@ import { ERDRenderer } from '@/features'
 import { useTableGroups } from '@/hooks'
 import { VersionProvider } from '@/providers'
 import { versionSchema } from '@/schemas'
-import { initSchemaStore } from '@/stores'
 import type { Schema, TableGroup } from '@liam-hq/db-structure'
-import {
-  type ComponentProps,
-  type FC,
-  useCallback,
-  useEffect,
-  useState,
-} from 'react'
+import { type ComponentProps, type FC, useCallback, useState } from 'react'
 import { parse } from 'valibot'
 import styles from './ERDEditor.module.css'
 
@@ -39,12 +32,6 @@ export const ERDEditor: FC<Props> = ({
   const { tableGroups, addTableGroup } = useTableGroups(initialTableGroups)
   const [isUpdating, setIsUpdating] = useState(false)
   const [updateMessage, setUpdateMessage] = useState('')
-
-  useEffect(() => {
-    initSchemaStore({
-      current: schema,
-    })
-  }, [schema])
 
   // Handler for commit & push button
   const handleCommitAndPush = useCallback(async () => {
@@ -97,6 +84,7 @@ export const ERDEditor: FC<Props> = ({
     <div className={styles.wrapper}>
       <VersionProvider version={version}>
         <ERDRenderer
+          schema={{ current: schema }}
           defaultSidebarOpen={defaultSidebarOpen}
           defaultPanelSizes={defaultPanelSizes}
           errorObjects={errorObjects}

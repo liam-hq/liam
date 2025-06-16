@@ -2,7 +2,6 @@ import crypto from 'node:crypto'
 import { createClient } from '@/libs/db/server'
 import { supportedEvents } from '@liam-hq/github'
 import type { GitHubWebhookPayload } from '@liam-hq/github'
-import { savePullRequestTask } from '@liam-hq/jobs'
 import { type NextRequest, NextResponse } from 'next/server'
 import { checkSchemaChanges } from './utils/checkSchemaChanges'
 
@@ -130,26 +129,10 @@ const handlePullRequest = async (
       )
     }
 
-    // Trigger pull request task
-    try {
-      await savePullRequestTask.trigger({
-        prNumber,
-        projectId,
-      })
-
-      return NextResponse.json(
-        { message: 'Pull request processing initiated' },
-        { status: 200 },
-      )
-    } catch (error) {
-      console.error('Error triggering pull request task:', error)
-      return NextResponse.json(
-        {
-          error: `Failed to trigger pull request task: ${(error as Error).message}`,
-        },
-        { status: 500 },
-      )
-    }
+    return NextResponse.json(
+      { message: 'Pull request processing initiated' },
+      { status: 200 },
+    )
   }
 
   return NextResponse.json(

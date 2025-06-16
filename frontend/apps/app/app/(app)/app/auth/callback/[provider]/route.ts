@@ -1,3 +1,4 @@
+import { ensureUserHasOrganization } from '@/components/LoginPage/services/ensureUserHasOrganization'
 import { createClient } from '@/libs/db/server'
 import { NextResponse } from 'next/server'
 
@@ -11,6 +12,8 @@ export async function GET(request: Request) {
     const supabase = await createClient()
     const { error } = await supabase.auth.exchangeCodeForSession(code)
     if (!error) {
+      await ensureUserHasOrganization()
+
       const forwardedHost = request.headers.get('x-forwarded-host')
       const isLocalEnv = process.env.NODE_ENV === 'development'
       if (isLocalEnv) {

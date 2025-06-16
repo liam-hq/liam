@@ -16,5 +16,6 @@
   --z-index-toast: 3000;
   --z-index-overlay: 3100;
   --z-index-toolbar-opened: 3200;
+  --z-index-command-palette: 3300;
   --z-index-cookie-consent: 4000;
 }

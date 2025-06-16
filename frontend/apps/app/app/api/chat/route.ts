@@ -1,40 +1,41 @@
-import { processChatMessage } from '@/lib/chat/chatProcessor'
+import { schemaSchema } from '@liam-hq/db-structure'
+import { processChatTask } from '@liam-hq/jobs'
 import { NextResponse } from 'next/server'
+import * as v from 'valibot'
+
+const chatRequestSchema = v.object({
+  message: v.pipe(v.string(), v.minLength(1, 'Message is required')),
+  schemaData: schemaSchema,
+  history: v.array(v.tuple([v.string(), v.string()])),
+  organizationId: v.string(),
+  buildingSchemaId: v.string(),
+  latestVersionNumber: v.number(),
+  designSessionId: v.pipe(v.string(), v.uuid('Invalid design session ID')),
+  userId: v.pipe(v.string(), v.uuid('Invalid user ID')),
+})
 
 export async function POST(request: Request) {
-  const { message, schemaData, history, mode, projectId } = await request.json()
+  const requestBody = await request.json()
 
-  // Input validation
-  if (!message || typeof message !== 'string' || !message.trim()) {
-    return NextResponse.json({ error: 'Message is required' }, { status: 400 })
-  }
+  // Input validation using Valibot safeParse
+  const validationResult = v.safeParse(chatRequestSchema, requestBody)
 
-  if (!schemaData || typeof schemaData !== 'object') {
+  if (!validationResult.success) {
+    const errorMessage = validationResult.issues
+      .map((issue) => issue.message)
+      .join(', ')
     return NextResponse.json(
-      { error: 'Valid schema data is required' },
+      { error: `Validation error: ${errorMessage}` },
       { status: 400 },
     )
   }
 
-  // Process the chat message
-  const result = await processChatMessage({
-    message,
-    schemaData,
-    history,
-    mode,
-    projectId,
+  // Trigger the chat processing job
+  await processChatTask.trigger({
+    ...validationResult.output,
   })
 
-  if (!result.success) {
-    return NextResponse.json(
-      { error: 'Failed to generate response', details: result.error },
-      { status: 500 },
-    )
-  }
-
-  return new Response(result.text, {
-    headers: {
-      'Content-Type': 'text/plain; charset=utf-8',
-    },
+  return NextResponse.json({
+    success: true,
   })
 }

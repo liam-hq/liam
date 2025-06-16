@@ -28,6 +28,16 @@
   white-space: nowrap;
 }
 
+@media (min-width: 767px) {
+  .name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    flex: 1;
+    min-width: 0;
+  }
+}
+
 .handle {
   top: auto;
   opacity: 0;

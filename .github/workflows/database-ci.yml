@@ -4,7 +4,7 @@ on:
   pull_request:
     paths:
       - ".github/workflows/database-ci.yml"
-      - "frontend/packages/db/**"
+      - "frontend/internal-packages/db/**"
   merge_group:
   workflow_dispatch:
 
@@ -26,7 +26,7 @@ jobs:
         run: supabase start
       - name: Setup supabase testing
         run: |
-          psql -v ON_ERROR_STOP=1 -U postgres -d postgres -h localhost -p 54322 -f frontend/packages/db/supabase/setup-testing.sql
+          psql -v ON_ERROR_STOP=1 -U postgres -d postgres -h localhost -p 54322 -f frontend/internal-packages/db/supabase/setup-testing.sql
         env:
           PGPASSWORD: postgres
       - name: Run Tests

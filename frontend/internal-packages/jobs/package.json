@@ -1,0 +1,47 @@
+{
+  "name": "@liam-hq/jobs",
+  "private": true,
+  "version": "0.1.0",
+  "publishConfig": {
+    "access": "restricted"
+  },
+  "main": "src/index.ts",
+  "dependencies": {
+    "@langchain/core": "0.3.57",
+    "@langchain/openai": "0.5.11",
+    "@liam-hq/agent": "workspace:*",
+    "@liam-hq/db": "workspace:*",
+    "@liam-hq/github": "workspace:*",
+    "@octokit/auth-app": "7.2.1",
+    "@octokit/rest": "21.1.1",
+    "@sentry/node": "9.19.0",
+    "@trigger.dev/build": "3.3.17",
+    "@trigger.dev/sdk": "3.3.17"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "1.9.4",
+    "@liam-hq/configs": "workspace:*",
+    "@sentry/esbuild-plugin": "3.4.0",
+    "@types/node": "22.15.29",
+    "dotenv": "16.5.0",
+    "eslint": "9.27.0",
+    "glob": "11.0.2",
+    "trigger.dev": "3.3.17",
+    "typescript": "5.8.3",
+    "vitest": "3.1.4"
+  },
+  "scripts": {
+    "deploy": "trigger deploy",
+    "dev": "tsc --watch",
+    "fmt": "concurrently \"pnpm:fmt:*\"",
+    "fmt:biome": "biome check --write --unsafe .",
+    "fmt:eslint": "eslint --fix .",
+    "lint": "concurrently \"pnpm:lint:*\"",
+    "lint:biome": "biome check .",
+    "lint:eslint": "eslint .",
+    "lint:tsc": "tsc --noEmit",
+    "postinstall": "cp ../../packages/db-structure/node_modules/@ruby/prism/src/prism.wasm prism.wasm",
+    "test": "vitest --watch=false --passWithNoTests",
+    "trigger:dev": "trigger dev"
+  }
+}

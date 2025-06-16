@@ -5,10 +5,10 @@ on:
       - main
     paths:
       - .github/workflows/trigger_dev_production.yml
-      - frontend/packages/jobs/**
+      - frontend/internal-packages/jobs/**
       - frontend/packages/db-structure/**
       - frontend/packages/github/**
-      - frontend/packages/db/**
+      - frontend/internal-packages/db/**
       - turbo.json
 
 concurrency:

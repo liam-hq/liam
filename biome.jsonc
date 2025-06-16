@@ -1,5 +1,5 @@
 {
-  "extends": ["./frontend/packages/configs/biome.jsonc"],
+  "extends": ["./frontend/internal-packages/configs/biome.jsonc"],
   "linter": {
     "rules": {
       "correctness": {

@@ -10,6 +10,7 @@ export * from './CardinalityZeroOrOneRightIcon'
 export * from './CardinalityZeroOrOneLeftIcon'
 
 export {
+  ArrowRight,
   BookMarked,
   BookText,
   Building,
@@ -50,6 +51,7 @@ export {
   Search,
   Table2,
   Ungroup,
+  Upload,
   Users,
   Waypoints,
   XIcon,

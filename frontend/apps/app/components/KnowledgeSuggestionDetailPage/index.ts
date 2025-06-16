@@ -1,1 +1,0 @@
-export { KnowledgeSuggestionDetailPage } from './KnowledgeSuggestionDetailPage'

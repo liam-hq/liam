@@ -1,0 +1,98 @@
+.container {
+  width: 100%;
+  max-width: 782px;
+  margin: 0 auto;
+  background-color: var(--callout-default-background);
+  border: 1px solid var(--global-border);
+  border-radius: var(--border-radius-md);
+  overflow: hidden;
+}
+
+.formContent {
+  padding: var(--spacing-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-8);
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-3);
+}
+
+.divider {
+  height: 1px;
+  background-color: var(--global-border);
+  width: 100%;
+}
+
+.buttonContainer {
+  padding: var(--spacing-4) var(--spacing-8) var(--spacing-5);
+  display: flex;
+  justify-content: flex-end;
+}
+
+.buttonCustom {
+  min-width: var(--spacing-40);
+  height: var(--spacing-9);
+  font-size: var(--font-size-4);
+  font-weight: 500;
+}
+
+.error {
+  color: var(--danger-default);
+  font-size: var(--font-size-3);
+  margin-top: var(--spacing-2);
+}
+
+/* Drop zone styles */
+.dropZone {
+  border: 2px dashed var(--global-border);
+  border-radius: var(--border-radius-md);
+  padding: var(--spacing-10);
+  text-align: center;
+  background-color: var(--global-background);
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.dropZone:hover,
+.dropZoneActive {
+  border-color: var(--button-primary-background);
+  background-color: var(--overlay-5);
+}
+
+.dropZoneContent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-4);
+}
+
+.dropZoneText {
+  font-size: var(--font-size-5);
+  color: var(--global-foreground);
+  margin: 0;
+}
+
+.dropZoneSubtext {
+  font-size: var(--font-size-3);
+  color: var(--global-mute-text);
+  margin: 0;
+}
+
+.selectFileButton {
+  min-width: var(--spacing-30);
+}
+
+.selectedFile {
+  font-size: var(--font-size-3);
+  color: var(--button-primary-background);
+  margin: 0;
+  font-weight: 500;
+}
+
+.hiddenFileInput {
+  display: none;
+}

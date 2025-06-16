@@ -65,7 +65,7 @@ jobs:
       - name: Check for diff in generated types and schema.sql
         env:
           # check two files.
-          GENERATED_FILES: "frontend/packages/db/supabase/database.types.ts frontend/packages/db/schema/schema.sql"
+          GENERATED_FILES: "frontend/internal-packages/db/supabase/database.types.ts frontend/internal-packages/db/schema/schema.sql"
         run: |
           if ! git diff HEAD --ignore-space-at-eol --exit-code ${{ env.GENERATED_FILES }}; then
             echo "Generated types and schema.sql differ from committed files."

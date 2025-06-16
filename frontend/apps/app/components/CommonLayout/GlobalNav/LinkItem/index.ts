@@ -1,1 +1,1 @@
-export * from './LinkItem'
+export { LinkItem } from './LinkItem'

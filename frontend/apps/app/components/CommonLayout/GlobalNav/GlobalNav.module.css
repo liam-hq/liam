@@ -19,7 +19,8 @@
   box-shadow: none;
 }
 
-.globalNavExpanded {
+.globalNav:hover,
+.globalNav:has([data-radix-menu-content][data-state='open']) {
   width: 11rem;
   box-shadow: 4px 0 16px rgba(0, 0, 0, 0.2);
 }
@@ -47,4 +48,12 @@
   gap: 8px;
   padding: var(--spacing-1, 0.25rem) var(--spacing-2, 0.5rem);
   flex-grow: 1;
+}
+
+.footerSection {
+  display: flex;
+  flex-direction: column;
+  padding: var(--spacing-1, 0.25rem) var(--spacing-2, 0.5rem)
+    var(--spacing-2, 0.5rem);
+  margin-top: auto;
 }

@@ -1,0 +1,39 @@
+/* Mode buttons */
+.modeButtons {
+  display: flex;
+  gap: var(--spacing-6);
+  justify-content: center;
+}
+
+.modeButton {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  padding: var(--spacing-2) var(--spacing-3) var(--spacing-2)
+    var(--spacing-2half);
+  background-color: transparent;
+  border: none;
+  border-radius: var(--border-radius-full);
+  color: var(--overlay-70);
+  font-family: var(--main-font);
+  font-size: var(--font-size-4);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.modeButton:hover {
+  background-color: var(--overlay-10);
+  color: var(--global-foreground);
+}
+
+.modeButtonActive {
+  background-color: var(--overlay-10);
+  color: var(--global-foreground);
+}
+
+.modeButtonIcon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}

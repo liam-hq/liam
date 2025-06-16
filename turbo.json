@@ -1,5 +1,6 @@
 {
   "$schema": "https://turbo.build/schema.json",
+  "concurrency": "15",
   "tasks": {
     "@liam-hq/storybook#build": {
       "dependsOn": ["^build"],
@@ -19,7 +20,8 @@
         "NEXT_PUBLIC_ENV_NAME",
         "TRIGGER_ACCESS_TOKEN",
         "TRIGGER_PROJECT_ID"
-      ]
+      ],
+      "outputLogs": "errors-only"
     },
     "@liam-hq/jobs#deploy": {
       "dependsOn": ["^build"],
@@ -52,12 +54,16 @@
       "persistent": true
     },
     "gen": {
-      "dependsOn": ["^gen"]
+      "dependsOn": ["^gen"],
+      "outputLogs": "errors-only"
     },
     "lint": {
-      "dependsOn": ["gen", "^build", "^lint"]
+      "dependsOn": ["gen", "^build", "^lint"],
+      "outputLogs": "errors-only"
     },
-    "fmt": {},
+    "fmt": {
+      "outputLogs": "errors-only"
+    },
     "test": {
       "dependsOn": ["^build", "gen"],
       "outputs": []

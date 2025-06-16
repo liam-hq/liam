@@ -481,44 +481,99 @@
   justify-content: flex-start;
 }
 
-.generatingText {
-  font-family: var(--main-font);
-  font-weight: 400;
-  font-size: 13px;
-  line-height: 1.8em;
-  color: var(--overlay-60);
-  width: auto;
+.generatingContainer {
   position: relative;
-  display: inline-block;
+  border-radius: 0.5rem;
+}
+
+.generatingContainer::after {
+  content: '';
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+  width: 10px;
+  height: 10px;
+  background-color: var(--primary-blue-500);
+  border-radius: 50%;
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(0.8);
+    opacity: 0.5;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(0.8);
+    opacity: 0.5;
+  }
+}
+
+.generatingText {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 .generatingText::after {
-  content: '';
-  display: inline-flex;
-  width: 0;
-  animation: dots 1.5s infinite steps(4, end);
-  overflow: hidden;
-  vertical-align: baseline;
-  line-height: 1.8em;
+  content: '...';
+  animation: ellipsis 1.5s infinite;
+  width: 1.5em;
+  text-align: left;
+  display: inline-block;
 }
 
-@keyframes dots {
-  0%,
-  20% {
+@keyframes ellipsis {
+  0% {
     content: '';
-    width: 0;
   }
-  40% {
+  25% {
     content: '.';
-    width: 1ch;
   }
-  60% {
+  50% {
     content: '..';
-    width: 2ch;
   }
-  80%,
-  100% {
+  75% {
     content: '...';
-    width: 3ch;
+  }
+  100% {
+    content: '';
+  }
+}
+
+.progressContainer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-1);
+  margin-bottom: var(--spacing-2);
+  width: 100%;
+}
+
+.progressMessage {
+  padding: var(--spacing-2) var(--spacing-3);
+  background-color: var(--global-background-subtle);
+  border: 1px solid var(--global-border);
+  border-radius: var(--border-radius-small);
+  color: var(--global-foreground-subtle);
+  font-size: var(--font-size-3);
+  text-align: center;
+  animation: fadeIn 0.3s ease-in-out;
+  width: 100%;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }

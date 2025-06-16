@@ -6,7 +6,7 @@ import { getFileContent } from '@liam-hq/github'
 import * as Sentry from '@sentry/nextjs'
 import { cookies } from 'next/headers'
 import type { ComponentProps, FC } from 'react'
-import { ChatbotButton } from '../ChatbotButton'
+
 import styles from './SchemaPage.module.css'
 import { ERDEditor } from './components/ERDEditor'
 import { OverrideEditor } from './components/OverrideEditor'
@@ -178,11 +178,6 @@ export const SchemaPage: FC<Props> = async ({
       <TabsContent value={SCHEMA_TAB.EDITOR} className={styles.tabsContent}>
         <OverrideEditor />
       </TabsContent>
-      <ChatbotButton
-        schemaData={contentProps.schema}
-        tableGroups={contentProps.tableGroups}
-        projectId={projectId}
-      />
     </TabsRoot>
   )
 }

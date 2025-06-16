@@ -1,0 +1,163 @@
+.content[cmdk-dialog] {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 638px;
+  border-radius: var(--border-radius-lg);
+  box-shadow: 0px 4px 20px 0px var(--shadow-basic-shadow, #000);
+  animation: contentShow 150ms cubic-bezier(0.16, 1, 0.3, 1);
+  background-color: var(--pane-background);
+  color: var(--global-foreground);
+  border: 1px solid var(--global-border);
+  z-index: var(--z-index-command-palette);
+}
+
+[cmdk-overlay]:has(+ .content) {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  backdrop-filter: blur(8px);
+  animation: overlayShow 150ms cubic-bezier(0.16, 1, 0.3, 1);
+  z-index: var(--z-index-command-palette);
+}
+
+@keyframes overlayShow {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes contentShow {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -48%) scale(0.96);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+.searchContainer {
+  display: flex;
+  align-items: center;
+  padding: var(--spacing-2) var(--spacing-4);
+  gap: var(--spacing-4);
+  width: 100%;
+  border-bottom: 1px solid var(--overlay-5);
+}
+
+.searchFormWithIcon {
+  display: flex;
+  flex-grow: 1;
+  padding: var(--spacing-2) 0;
+  gap: var(--spacing-2);
+}
+
+.searchFormWithIcon [cmdk-input] {
+  width: 100%;
+}
+
+.searchIcon {
+  width: 16px;
+  height: 16px;
+  color: var(--overlay-60);
+}
+
+.escapeSign {
+  border: 1px solid #434536;
+  border-radius: var(--border-radius-smbase);
+  font-size: 10px;
+  width: 34px;
+  height: 21px;
+  text-align: center;
+  line-height: 21px;
+}
+
+.main {
+  display: flex;
+  padding: var(--spacing-2);
+  height: 459px;
+}
+
+.main [cmdk-list] {
+  overflow-x: hidden;
+  overflow-y: scroll;
+  height: 100%;
+  width: 300px;
+  scrollbar-color: var(--overlay-20) transparent;
+}
+
+.main [cmdk-group-heading] {
+  padding: var(--spacing-3) var(--spacing-2);
+  color: var(--global-mute-text);
+}
+
+.main [cmdk-item] {
+  display: flex;
+  padding: var(--spacing-2);
+  align-items: center;
+  line-height: 24px;
+}
+
+.main [cmdk-item] .itemIcon {
+  flex-shrink: 0;
+  margin-right: var(--spacing-2);
+  width: 16px;
+  height: 16px;
+  color: var(--overlay-40);
+}
+
+.main [cmdk-item][data-selected='true'] {
+  background: var(--overlay-5);
+}
+
+.main [cmdk-item][data-selected='true'] .itemIcon {
+  color: var(--global-foreground);
+}
+
+.previewContainer {
+  display: flex;
+  flex-direction: column;
+  padding: var(--spacing-10) var(--spacing-8) var(--spacing-10) var(--spacing-5);
+  flex: 1;
+}
+
+.previewBackground {
+  padding: var(--spacing-10) var(--spacing-12);
+  background-color: var(--global-background);
+  height: 100%;
+  overflow-x: hidden;
+  overflow-y: scroll;
+  scrollbar-color: var(--overlay-20) transparent;
+}
+
+/* property items of TableNode */
+.tableNodeContainer ul {
+  overflow: hidden;
+}
+
+/* Empty search result display */
+.main [cmdk-list]:has([cmdk-empty]) {
+  width: 100%;
+  overflow: auto;
+  position: relative;
+}
+
+.main [cmdk-list] [cmdk-empty] {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50px);
+}
+
+.main [cmdk-list]:has([cmdk-empty]) + .previewContainer {
+  display: none;
+}

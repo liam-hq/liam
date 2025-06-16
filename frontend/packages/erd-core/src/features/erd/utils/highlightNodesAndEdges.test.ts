@@ -12,6 +12,7 @@ const aTableData = (
   table: aTable({ name }),
   isActiveHighlighted: false,
   isHighlighted: false,
+  isTooltipVisible: false,
   sourceColumnName: undefined,
   ...override,
 })

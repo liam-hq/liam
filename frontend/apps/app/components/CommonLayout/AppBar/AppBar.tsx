@@ -18,7 +18,6 @@ export const AppBar: FC<Props> = async ({
   const { data: authUser } = await getAuthUser()
 
   const avatarUrl = authUser.user?.user_metadata?.avatar_url
-
   return (
     <div className={styles.wrapper}>
       <div className={styles.leftSection}>

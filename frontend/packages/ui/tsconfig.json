@@ -1,7 +1,4 @@
 {
   "extends": "@liam-hq/configs/tsconfig/base.json",
-  "compilerOptions": {
-    "baseUrl": "."
-  },
   "include": ["src/**/*"]
 }

@@ -1,7 +1,0 @@
-.active {
-  background-color: var(--pane-background-active);
-}
-
-.activeIcon > svg {
-  color: var(--global-foreground);
-}

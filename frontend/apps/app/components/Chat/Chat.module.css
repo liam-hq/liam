@@ -4,14 +4,36 @@
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  min-height: 0; /* Allow flex items to shrink */
 }
 
 .messagesContainer {
   flex: 1;
   overflow-y: auto;
+  overflow-x: hidden; /* Prevent horizontal scrolling */
   padding: 16px;
   display: flex;
   flex-direction: column;
+  min-height: 0; /* Allow the container to shrink */
+  scroll-behavior: smooth; /* Smooth scrolling */
+}
+
+/* Custom scrollbar styling for better UX */
+.messagesContainer::-webkit-scrollbar {
+  width: 6px;
+}
+
+.messagesContainer::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.messagesContainer::-webkit-scrollbar-thumb {
+  background-color: var(--global-border-subtle);
+  border-radius: 3px;
+}
+
+.messagesContainer::-webkit-scrollbar-thumb:hover {
+  background-color: var(--global-border);
 }
 
 .loadingIndicator {

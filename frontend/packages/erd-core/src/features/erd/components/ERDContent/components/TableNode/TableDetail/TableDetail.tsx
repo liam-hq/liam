@@ -5,7 +5,7 @@ import { useVersion } from '@/providers'
 import {
   replaceHiddenNodeIds,
   updateActiveTableName,
-  useSchemaStore,
+  useSchema,
 } from '@/stores'
 import type { Table } from '@liam-hq/db-structure'
 import {
@@ -30,7 +30,7 @@ type Props = {
 }
 
 export const TableDetail: FC<Props> = ({ table }) => {
-  const { current } = useSchemaStore()
+  const { current } = useSchema()
   const extractedSchema = extractSchemaForTable(table, current)
   const { nodes, edges } = convertSchemaToNodes({
     schema: extractedSchema,

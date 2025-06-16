@@ -57,11 +57,11 @@ Recent schema enhancements include:
 
 ### Supabase Migration Workflow
 
-The migration workflow follows Supabase's recommended practices. All Supabase migration commands must be run from the `frontend/packages/db` directory:
+The migration workflow follows Supabase's recommended practices. All Supabase migration commands must be run from the `frontend/internal-packages/db` directory:
 
 1. **Creating a new migration**:
    ```bash
-   cd frontend/packages/db && pnpm supabase:migration:new <migration_name>
+   cd frontend/internal-packages/db && pnpm supabase:migration:new <migration_name>
    ```
    This creates a new migration file in `supabase/migrations` directory.
 
@@ -70,20 +70,20 @@ The migration workflow follows Supabase's recommended practices. All Supabase mi
 
 3. **Applying migrations**:
    ```bash
-   cd frontend/packages/db && pnpm supabase:migration:up
+   cd frontend/internal-packages/db && pnpm supabase:migration:up
    ```
    This applies any pending migrations to the database.
 
 4. **Diffing changes from the Dashboard**:
    If changes are made through the Dashboard UI, they can be captured as migrations:
    ```bash
-   cd frontend/packages/db && pnpm supabase:migration -f <migration_name>
+   cd frontend/internal-packages/db && pnpm supabase:migration -f <migration_name>
    ```
    This generates a migration file with the changes detected between the local database and the schema definition.
 
 5. **Resetting the database**:
    ```bash
-   cd frontend/packages/db && pnpm supabase:reset
+   cd frontend/internal-packages/db && pnpm supabase:reset
    ```
    This resets the database to a clean state, reapplies all migrations, and seeds the database.
 
@@ -95,7 +95,7 @@ Seed data can be defined in `supabase/seed.sql`. This file is executed when rese
 
 After schema changes, regenerate TypeScript types and SQL schema:
 ```bash
-cd frontend/packages/db && pnpm supabase:gen
+cd frontend/internal-packages/db && pnpm supabase:gen
 ```
 This ensures type safety when working with Supabase queries, and generates the SQL schema for the database.
 

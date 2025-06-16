@@ -1,6 +1,6 @@
 import {
   updateActiveTableName,
-  useSchemaStore,
+  useSchema,
   useUserEditingActiveStore,
 } from '@/stores'
 import { DrawerContent, DrawerPortal, DrawerRoot } from '@liam-hq/ui'
@@ -14,7 +14,7 @@ export const TableDetailDrawerRoot: FC<PropsWithChildren> = ({ children }) => {
   const { tableName } = useUserEditingActiveStore()
   const {
     current: { tables },
-  } = useSchemaStore()
+  } = useSchema()
   const open = Object.keys(tables).length > 0 && tableName !== undefined
 
   return (
@@ -36,7 +36,7 @@ export const TableDetailDrawerRoot: FC<PropsWithChildren> = ({ children }) => {
 export const TableDetailDrawer: FC = () => {
   const {
     current: { tables },
-  } = useSchemaStore()
+  } = useSchema()
   const { tableName } = useUserEditingActiveStore()
   const table = tables[tableName ?? '']
   const ariaDescribedBy =

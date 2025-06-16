@@ -1,0 +1,74 @@
+.playgroundSection {
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+  border-radius: var(--border-radius-2);
+  background-color: var(--global-background-secondary);
+  border: 1px solid var(--global-border);
+}
+
+.sectionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--global-border);
+}
+
+.sectionTitle {
+  font-size: var(--font-size-4);
+  font-weight: 600;
+  color: #000;
+  margin: 0;
+}
+
+.description {
+  margin-bottom: 1rem;
+  color: var(--global-foreground-secondary);
+  font-size: var(--font-size-3);
+}
+
+.codeHighlight {
+  background-color: var(--global-background-tertiary);
+  padding: 0.2rem 0.4rem;
+  border-radius: var(--border-radius-1);
+  font-family: var(--code-font);
+}
+
+.sqlTextarea {
+  width: 100%;
+  font-family: var(--code-font);
+  padding: 0.75rem;
+  border-radius: var(--border-radius-2);
+  border: 1px solid var(--global-border);
+  background-color: var(--global-background);
+  color: var(--global-foreground);
+  resize: vertical;
+  margin-bottom: 0.75rem;
+}
+
+.actionButton {
+  padding: 0.5rem 1rem;
+  border-radius: var(--border-radius-2);
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s, border-color 0.2s;
+}
+
+.primaryButton {
+  background-color: var(--primary-accent);
+  color: var(--primary-accent-foreground);
+  border: 1px solid var(--primary-accent);
+}
+
+.primaryButton:hover {
+  background-color: var(--primary-accent-hover);
+  border-color: var(--primary-accent-hover);
+}
+
+.buttonGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}

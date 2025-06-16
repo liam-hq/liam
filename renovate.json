@@ -35,6 +35,15 @@
         "devDependencies"
       ],
       "automerge": true
+    },
+    {
+      "description": "Automerge dependencies only used by internal packages",
+      "matchPackageNames": [
+        "@modelcontextprotocol/sdk",
+        "style-dictionary"
+      ],
+      "matchPaths": ["frontend/internal-packages/**"],
+      "automerge": true
     }
   ]
 }

@@ -26,12 +26,14 @@ const getDefaultTabFromPath = async (): Promise<
 type Props = PropsWithChildren & {
   projectId: string
   branchOrCommit?: string
+  projectHeader?: boolean
 }
 
 export const ProjectLayout: FC<Props> = async ({
   children,
   projectId,
   branchOrCommit,
+  projectHeader = true,
 }) => {
   const defaultTabFromPath = await getDefaultTabFromPath()
 
@@ -40,23 +42,16 @@ export const ProjectLayout: FC<Props> = async ({
       defaultValue={defaultTabFromPath || PROJECT_TAB.PROJECT}
       className={styles.container}
     >
-      <ProjectHeader projectId={projectId} branchOrCommit={branchOrCommit} />
+      {projectHeader && (
+        <ProjectHeader projectId={projectId} branchOrCommit={branchOrCommit} />
+      )}
       <TabsContent value={PROJECT_TAB.PROJECT} className={styles.tabContent}>
         {children}
       </TabsContent>
       <TabsContent value={PROJECT_TAB.SCHEMA} className={styles.tabContent}>
         {children}
       </TabsContent>
-      <TabsContent value={PROJECT_TAB.MIGRATIONS} className={styles.tabContent}>
-        {children}
-      </TabsContent>
-      <TabsContent value={PROJECT_TAB.DOCS} className={styles.tabContent}>
-        {children}
-      </TabsContent>
-      <TabsContent value={PROJECT_TAB.RULE} className={styles.tabContent}>
-        {children}
-      </TabsContent>
-      <TabsContent value={PROJECT_TAB.SETTINGS} className={styles.tabContent}>
+      <TabsContent value={PROJECT_TAB.SESSIONS} className={styles.tabContent}>
         {children}
       </TabsContent>
     </TabsRoot>
