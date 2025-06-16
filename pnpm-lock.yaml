@@ -311,6 +311,9 @@ importers:
       '@liam-hq/db-structure':
         specifier: workspace:*
         version: link:../../packages/db-structure
+      '@liam-hq/pglite-server':
+        specifier: workspace:*
+        version: link:../../packages/pglite-server
       fast-json-patch:
         specifier: 3.1.1
         version: 3.1.1
