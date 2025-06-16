@@ -1,6 +1,11 @@
 import { Button } from '@liam-hq/ui'
-import type { ChangeEvent, DragEvent, FC } from 'react'
-import { useRef, useState } from 'react'
+import {
+  type ChangeEvent,
+  type DragEvent,
+  type FC,
+  useRef,
+  useState,
+} from 'react'
 import styles from './UploadSessionFormPresenter.module.css'
 
 type Props = {

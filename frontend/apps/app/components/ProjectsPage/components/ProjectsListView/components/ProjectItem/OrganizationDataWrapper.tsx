@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useTransition } from 'react'
 import { fetchOrganizationData } from './OrganizationData'
 import { OrganizationIcon } from './OrganizationIcon'
 import { ProjectIcon } from './ProjectIcon'
@@ -18,16 +18,13 @@ export function OrganizationDataWrapper({
   repo,
 }: OrganizationDataWrapperProps) {
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
+  const [isLoading, startTransition] = useTransition()
 
   useEffect(() => {
-    async function loadData() {
+    startTransition(async () => {
       const data = await fetchOrganizationData(installationId, owner, repo)
       setAvatarUrl(data)
-      setIsLoading(false)
-    }
-
-    loadData()
+    })
   }, [installationId, owner, repo])
 
   if (isLoading) {

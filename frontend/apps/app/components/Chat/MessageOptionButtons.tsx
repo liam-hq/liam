@@ -1,7 +1,12 @@
 'use client'
 
-import type { FC, MouseEvent } from 'react'
-import { useCallback, useEffect, useState } from 'react'
+import {
+  type FC,
+  type MouseEvent,
+  useCallback,
+  useEffect,
+  useState,
+} from 'react'
 import { MessageOptionButton } from './MessageOptionButton'
 import styles from './MessageOptionButton.module.css'
 

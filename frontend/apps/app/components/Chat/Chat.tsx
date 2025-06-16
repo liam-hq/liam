@@ -1,8 +1,7 @@
 'use client'
 
 import type { Schema, TableGroup } from '@liam-hq/db-structure'
-import type { FC } from 'react'
-import { useEffect, useRef, useState } from 'react'
+import { type FC, useEffect, useRef, useState, useTransition } from 'react'
 import { ChatInput } from '../ChatInput'
 import { ChatMessage } from '../ChatMessage'
 import styles from './Chat.module.css'
@@ -32,7 +31,7 @@ export const Chat: FC<Props> = ({ schemaData, tableGroups, designSession }) => {
     designSession,
     currentUserId,
   )
-  const [isLoading, setIsLoading] = useState(false)
+  const [isLoading, startTransition] = useTransition()
   const [progressMessages, setProgressMessages] = useState<string[]>([])
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const autoStartExecuted = useRef(false)
@@ -57,7 +56,9 @@ export const Chat: FC<Props> = ({ schemaData, tableGroups, designSession }) => {
     ) {
       const initialMessage = designSession.messages[0]
       autoStartExecuted.current = true
-      startAIResponse(initialMessage.content)
+      startTransition(() => {
+        startAIResponse(initialMessage.content)
+      })
     }
   }, [currentUserId, designSession.messages, isLoading])
 
@@ -69,8 +70,6 @@ export const Chat: FC<Props> = ({ schemaData, tableGroups, designSession }) => {
   // Start AI response without saving user message (for auto-start scenarios)
   const startAIResponse = async (content: string) => {
     if (!currentUserId) return
-
-    setIsLoading(true)
 
     // Send chat message to API
     const result = await sendChatMessage({
@@ -89,8 +88,6 @@ export const Chat: FC<Props> = ({ schemaData, tableGroups, designSession }) => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
       }, 10)
     }
-
-    setIsLoading(false)
   }
 
   // TODO: Add rate limiting - Implement rate limiting for message sending to prevent spam
@@ -99,13 +96,15 @@ export const Chat: FC<Props> = ({ schemaData, tableGroups, designSession }) => {
     const userMessage: ChatEntry = {
       id: generateMessageId('user'),
       content,
-      isUser: true,
+      role: 'user',
       timestamp: new Date(),
       isGenerating: false, // Explicitly set to false for consistency
     }
     addOrUpdateMessage(userMessage)
 
-    await startAIResponse(content)
+    startTransition(() => {
+      startAIResponse(content)
+    })
   }
 
   return (
@@ -115,7 +114,7 @@ export const Chat: FC<Props> = ({ schemaData, tableGroups, designSession }) => {
         {messages.map((message, index) => {
           // Check if this is the last AI message and has progress messages
           const isLastAIMessage =
-            !message.isUser && index === messages.length - 1
+            message.role !== 'user' && index === messages.length - 1
           const shouldShowProgress =
             progressMessages.length > 0 && isLastAIMessage
 
@@ -123,7 +122,7 @@ export const Chat: FC<Props> = ({ schemaData, tableGroups, designSession }) => {
             <ChatMessage
               key={message.id}
               content={message.content}
-              isUser={message.isUser}
+              role={message.role}
               timestamp={message.timestamp}
               isGenerating={message.isGenerating}
               progressMessages={

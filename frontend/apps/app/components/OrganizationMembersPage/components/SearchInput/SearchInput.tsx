@@ -1,8 +1,7 @@
 'use client'
 
 import { Search } from '@liam-hq/ui'
-import type { ChangeEvent, FC, FormEvent } from 'react'
-import { useState } from 'react'
+import { type ChangeEvent, type FC, type FormEvent, useState } from 'react'
 import styles from './SearchInput.module.css'
 
 interface SearchInputProps {

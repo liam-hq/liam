@@ -1,8 +1,14 @@
 import clsx from 'clsx'
 import { Check, Copy } from 'lucide-react'
-import type { ButtonHTMLAttributes, ReactElement } from 'react'
 
-import { type MouseEventHandler, useCallback, useRef, useState } from 'react'
+import {
+  type ButtonHTMLAttributes,
+  type MouseEventHandler,
+  type ReactElement,
+  useCallback,
+  useRef,
+  useState,
+} from 'react'
 
 interface CopyButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   onCopy: () => void

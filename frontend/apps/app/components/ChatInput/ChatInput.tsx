@@ -8,8 +8,17 @@ import {
   PopoverRoot,
 } from '@liam-hq/ui'
 import clsx from 'clsx'
-import type { ChangeEvent, FC, FormEvent, KeyboardEvent } from 'react'
-import { useCallback, useEffect, useId, useRef, useState } from 'react'
+import {
+  type ChangeEvent,
+  type FC,
+  type FormEvent,
+  type KeyboardEvent,
+  useCallback,
+  useEffect,
+  useId,
+  useRef,
+  useState,
+} from 'react'
 import styles from './ChatInput.module.css'
 import { CancelButton } from './components/CancelButton'
 import {

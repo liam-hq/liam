@@ -37,12 +37,16 @@ const handleOptimisticUserUpdate = (
   messageUserId: string | null | undefined,
   currentUserId: string | null | undefined,
 ): ChatEntry[] | null => {
-  if (!newEntry.isUser || messageUserId !== currentUserId || !newEntry.dbId) {
+  if (
+    newEntry.role !== 'user' ||
+    messageUserId !== currentUserId ||
+    !newEntry.dbId
+  ) {
     return null
   }
 
   const updated = messages.map((msg) => {
-    if (msg.isUser && !msg.dbId && msg.content === newEntry.content) {
+    if (msg.role === 'user' && !msg.dbId && msg.content === newEntry.content) {
       return { ...msg, dbId: newEntry.dbId }
     }
     return msg

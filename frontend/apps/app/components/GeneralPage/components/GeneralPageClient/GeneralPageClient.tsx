@@ -3,8 +3,7 @@
 import { urlgen } from '@/libs/routes'
 import { Button, Input, useToast } from '@liam-hq/ui'
 import { useRouter } from 'next/navigation'
-import { useEffect } from 'react'
-import { useActionState } from 'react'
+import { useActionState, useEffect } from 'react'
 import styles from '../../GeneralPage.module.css'
 import {
   deleteOrganizationAction,

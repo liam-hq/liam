@@ -9,8 +9,7 @@ import {
   DropdownMenuRoot,
   DropdownMenuTrigger,
 } from '@liam-hq/ui'
-import type { FC } from 'react'
-import { useState } from 'react'
+import { type FC, useState } from 'react'
 
 type Version = {
   id: string

@@ -11,8 +11,7 @@ import {
   ModalTitle,
   useToast,
 } from '@liam-hq/ui'
-import { useState } from 'react'
-import type { FC } from 'react'
+import { type FC, useTransition } from 'react'
 import { removeInvitation } from './actions/removeInvitation'
 
 interface DeleteInvitationModalProps {
@@ -30,41 +29,39 @@ export const DeleteInvitationModal: FC<DeleteInvitationModalProps> = ({
   organizationId,
   email,
 }) => {
-  const [loading, setLoading] = useState(false)
+  const [loading, startTransition] = useTransition()
   const toast = useToast()
 
   const handleDelete = async () => {
-    setLoading(true)
+    startTransition(async () => {
+      // Create FormData
+      const formData = new FormData()
+      formData.append('invitationId', invitationId)
+      formData.append('organizationId', organizationId)
 
-    // Create FormData
-    const formData = new FormData()
-    formData.append('invitationId', invitationId)
-    formData.append('organizationId', organizationId)
+      // Call the server action
+      const result = await removeInvitation(formData)
 
-    // Call the server action
-    const result = await removeInvitation(formData)
+      if (!result.success) {
+        toast({
+          title: '❌ Cancellation failed',
+          description:
+            result.error || 'Failed to cancel invitation. Please try again.',
+          status: 'error',
+        })
+        return
+      }
 
-    if (!result.success) {
+      // Success
       toast({
-        title: '❌ Cancellation failed',
-        description:
-          result.error || 'Failed to cancel invitation. Please try again.',
-        status: 'error',
+        title: '✅ Invitation canceled',
+        description: `The invitation to ${email} has been canceled.`,
+        status: 'success',
       })
-      setLoading(false)
-      return
-    }
 
-    // Success
-    toast({
-      title: '✅ Invitation canceled',
-      description: `The invitation to ${email} has been canceled.`,
-      status: 'success',
+      // Close modal
+      onClose()
     })
-
-    // Close modal
-    onClose()
-    setLoading(false)
   }
 
   return (

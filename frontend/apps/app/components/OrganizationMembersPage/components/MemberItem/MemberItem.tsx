@@ -11,8 +11,7 @@ import {
   IconButton,
   getAvatarUserFromColor,
 } from '@liam-hq/ui'
-import { useState } from 'react'
-import type { FC } from 'react'
+import { type FC, useState } from 'react'
 import { DeleteMemberModal } from '../DeleteMemberModal'
 import styles from './MemberItem.module.css'
 

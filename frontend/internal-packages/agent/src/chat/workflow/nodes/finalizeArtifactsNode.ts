@@ -1,11 +1,12 @@
 import type { WorkflowState } from '../types'
 
 /**
- * Final response node - creates the final response for the user
+ * Finalize Artifacts Node - Generate & Save Artifacts
+ * Performed by dbAgentArtifactGen
  */
-export const finalResponseNode = async (
+export async function finalizeArtifactsNode(
   state: WorkflowState,
-): Promise<WorkflowState> => {
+): Promise<WorkflowState> {
   let finalResponse: string
   let errorToReturn: string | undefined
 

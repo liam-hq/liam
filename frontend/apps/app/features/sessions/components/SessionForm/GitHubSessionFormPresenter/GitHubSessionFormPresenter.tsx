@@ -8,8 +8,7 @@ import {
   ArrowTooltipTrigger,
   Button,
 } from '@liam-hq/ui'
-import type { ChangeEvent, FC } from 'react'
-import { useEffect, useRef } from 'react'
+import { type ChangeEvent, type FC, useEffect, useRef } from 'react'
 import styles from './GitHubSessionFormPresenter.module.css'
 
 type Branch = {

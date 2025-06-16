@@ -1,8 +1,10 @@
 'use client'
 
 import type { Schema } from '@liam-hq/db-structure'
-import type { KeyboardEvent, MouseEvent, Ref } from 'react'
 import {
+  type KeyboardEvent,
+  type MouseEvent,
+  type Ref,
   useCallback,
   useEffect,
   useImperativeHandle,

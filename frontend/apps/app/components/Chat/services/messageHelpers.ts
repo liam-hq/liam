@@ -15,5 +15,5 @@ export const formatChatHistory = (
 ): [string, string][] => {
   return messages
     .filter((msg) => msg.id !== 'welcome')
-    .map((msg) => [msg.isUser ? 'Human' : 'AI', msg.content])
+    .map((msg) => [msg.role === 'user' ? 'Human' : 'AI', msg.content])
 }

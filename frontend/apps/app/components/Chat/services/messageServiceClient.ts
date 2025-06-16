@@ -44,7 +44,7 @@ export const convertMessageToChatEntry = (message: Message) => {
   return {
     id: message.id,
     content: message.content,
-    isUser: message.role === 'user',
+    role: message.role,
     timestamp: new Date(message.created_at),
     isGenerating: false,
   }

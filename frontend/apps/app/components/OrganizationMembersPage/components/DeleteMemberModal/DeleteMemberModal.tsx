@@ -11,8 +11,7 @@ import {
   ModalTitle,
   useToast,
 } from '@liam-hq/ui'
-import { useState } from 'react'
-import type { FC } from 'react'
+import { type FC, useTransition } from 'react'
 import { removeMember } from './actions/removeMember'
 
 interface DeleteMemberModalProps {
@@ -34,44 +33,42 @@ export const DeleteMemberModal: FC<DeleteMemberModalProps> = ({
   isSelf,
   onSuccess,
 }) => {
-  const [loading, setLoading] = useState(false)
+  const [loading, startTransition] = useTransition()
   const toast = useToast()
 
   const handleDelete = async () => {
-    setLoading(true)
+    startTransition(async () => {
+      // Create FormData
+      const formData = new FormData()
+      formData.append('memberId', memberId)
+      formData.append('organizationId', organizationId)
 
-    // Create FormData
-    const formData = new FormData()
-    formData.append('memberId', memberId)
-    formData.append('organizationId', organizationId)
+      // Call the server action
+      const result = await removeMember(formData)
 
-    // Call the server action
-    const result = await removeMember(formData)
+      if (!result.success) {
+        toast({
+          title: '❌ Deletion failed',
+          description:
+            result.error || 'Failed to remove member. Please try again.',
+          status: 'error',
+        })
+        return
+      }
 
-    if (!result.success) {
+      // Success
       toast({
-        title: '❌ Deletion failed',
-        description:
-          result.error || 'Failed to remove member. Please try again.',
-        status: 'error',
+        title: '✅ Member removed',
+        description: isSelf
+          ? 'You have left the organization.'
+          : `${memberName} has been removed from the organization.`,
+        status: 'success',
       })
-      setLoading(false)
-      return
-    }
 
-    // Success
-    toast({
-      title: '✅ Member removed',
-      description: isSelf
-        ? 'You have left the organization.'
-        : `${memberName} has been removed from the organization.`,
-      status: 'success',
+      // Close modal and trigger success callback
+      onClose()
+      if (onSuccess) onSuccess()
     })
-
-    // Close modal and trigger success callback
-    onClose()
-    if (onSuccess) onSuccess()
-    setLoading(false)
   }
 
   return (

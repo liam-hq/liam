@@ -1,19 +1,24 @@
 import { ChevronDown, ChevronUp, IconButton } from '@liam-hq/ui'
-import type React from 'react'
-import { type MouseEvent, useState } from 'react'
+import {
+  type FC,
+  type KeyboardEvent,
+  type MouseEvent,
+  type ReactNode,
+  useState,
+} from 'react'
 import styles from './CollapsibleHeader.module.css'
 
 type CollapsibleHeaderProps = {
   title: string
-  icon: React.ReactNode
-  children: React.ReactNode
+  icon: ReactNode
+  children: ReactNode
   isContentVisible: boolean
   stickyTopHeight: number
   contentMaxHeight: number
-  additionalButtons?: React.ReactNode
+  additionalButtons?: ReactNode
 }
 
-export const CollapsibleHeader: React.FC<CollapsibleHeaderProps> = ({
+export const CollapsibleHeader: FC<CollapsibleHeaderProps> = ({
   title,
   icon,
   children,
@@ -24,14 +29,12 @@ export const CollapsibleHeader: React.FC<CollapsibleHeaderProps> = ({
 }) => {
   const [isClosed, setIsClosed] = useState(!isContentVisible)
 
-  const handleClose = (
-    event: MouseEvent | React.KeyboardEvent<HTMLDivElement>,
-  ) => {
+  const handleClose = (event: MouseEvent | KeyboardEvent<HTMLDivElement>) => {
     event.stopPropagation()
     setIsClosed(!isClosed)
   }
 
-  const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+  const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
     if (event.key === 'Enter' || event.key === ' ') {
       setIsClosed(!isClosed)
     }

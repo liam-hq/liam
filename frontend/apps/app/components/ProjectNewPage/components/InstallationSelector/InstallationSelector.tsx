@@ -32,7 +32,7 @@ export const InstallationSelector: FC<Props> = ({
 }) => {
   const [selectedInstallation, setSelectedInstallation] =
     useState<Installation | null>(null)
-  const [isAddingProject, setIsAddingProject] = useState(false)
+  const [isAddingProject, startAddingProjectTransition] = useTransition()
   const [, startTransition] = useTransition()
 
   const [repositoriesState, repositoriesAction, isRepositoriesLoading] =
@@ -51,25 +51,24 @@ export const InstallationSelector: FC<Props> = ({
 
   const handleClick = useCallback(
     async (repository: Repository) => {
-      try {
-        setIsAddingProject(true)
+      startAddingProjectTransition(async () => {
+        try {
+          const formData = new FormData()
+          formData.set('projectName', repository.name)
+          formData.set('repositoryName', repository.name)
+          formData.set('repositoryOwner', repository.owner.login)
+          formData.set('repositoryIdentifier', repository.id.toString())
+          formData.set(
+            'installationId',
+            selectedInstallation?.id.toString() || '',
+          )
+          formData.set('organizationId', organizationId.toString())
 
-        const formData = new FormData()
-        formData.set('projectName', repository.name)
-        formData.set('repositoryName', repository.name)
-        formData.set('repositoryOwner', repository.owner.login)
-        formData.set('repositoryIdentifier', repository.id.toString())
-        formData.set(
-          'installationId',
-          selectedInstallation?.id.toString() || '',
-        )
-        formData.set('organizationId', organizationId.toString())
-
-        await addProject(formData)
-      } catch (error) {
-        console.error('Error adding project:', error)
-        setIsAddingProject(false)
-      }
+          await addProject(formData)
+        } catch (error) {
+          console.error('Error adding project:', error)
+        }
+      })
     },
     [selectedInstallation, organizationId],
   )

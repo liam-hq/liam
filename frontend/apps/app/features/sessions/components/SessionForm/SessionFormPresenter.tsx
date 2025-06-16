@@ -1,6 +1,5 @@
 import type { Projects } from '@/components/CommonLayout/AppBar/ProjectsDropdownMenu/services/getProjects'
-import type { FC } from 'react'
-import { useState } from 'react'
+import { type FC, useState } from 'react'
 import { GitHubSessionFormPresenter } from './GitHubSessionFormPresenter'
 import styles from './SessionFormPresenter.module.css'
 import { type SessionMode, SessionModeSelector } from './SessionModeSelector'

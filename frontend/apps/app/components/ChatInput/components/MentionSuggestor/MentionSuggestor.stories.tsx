@@ -1,6 +1,5 @@
 import type { Meta } from '@storybook/react'
-import type { KeyboardEvent } from 'react'
-import { useRef, useState } from 'react'
+import { type KeyboardEvent, useRef, useState } from 'react'
 import { MentionSuggestor } from './MentionSuggestor'
 
 const meta: Meta<typeof MentionSuggestor> = {

@@ -9,8 +9,7 @@ import {
   DropdownMenuRoot,
   DropdownMenuTrigger,
 } from '@liam-hq/ui/src/components/DropdownMenu/DropdownMenu'
-import type { FC } from 'react'
-import { useState } from 'react'
+import { type FC, useState } from 'react'
 import styles from './SortDropdown.module.css'
 
 export type SortOption = 'activity' | 'name'

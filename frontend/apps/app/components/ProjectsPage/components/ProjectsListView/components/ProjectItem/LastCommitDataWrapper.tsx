@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useTransition } from 'react'
 import { fetchLastCommitData } from '../../../../services/fetchLastCommitData'
 
 interface LastCommitDataWrapperProps {
@@ -22,7 +22,7 @@ export function LastCommitDataWrapper({
   defaultDate,
 }: LastCommitDataWrapperProps) {
   const [commitInfo, setCommitInfo] = useState<CommitInfo | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
+  const [isLoading, startTransition] = useTransition()
 
   // Date formatting function
   const formatDate = (dateString: string) => {
@@ -35,13 +35,10 @@ export function LastCommitDataWrapper({
   }
 
   useEffect(() => {
-    async function loadData() {
+    startTransition(async () => {
       const data = await fetchLastCommitData(installationId, owner, repo)
       setCommitInfo(data)
-      setIsLoading(false)
-    }
-
-    loadData()
+    })
   }, [installationId, owner, repo])
 
   if (isLoading) {

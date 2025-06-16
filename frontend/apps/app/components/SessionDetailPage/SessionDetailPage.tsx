@@ -2,8 +2,14 @@
 import { Chat } from '@/components/Chat'
 import type { Schema } from '@liam-hq/db-structure'
 import { schemaSchema } from '@liam-hq/db-structure'
-import type { ComponentProps, FC } from 'react'
-import { useCallback, useEffect, useState } from 'react'
+import {
+  type ComponentProps,
+  type FC,
+  useCallback,
+  useEffect,
+  useState,
+  useTransition,
+} from 'react'
 import * as v from 'valibot'
 import styles from './SessionDetailPage.module.css'
 import { Artifact } from './components/Artifact'
@@ -18,31 +24,30 @@ type Props = {
 
 export const SessionDetailPage: FC<Props> = ({ designSession }) => {
   const [schema, setSchema] = useState<Schema | null>(null)
-  const [isLoadingSchema, setIsLoadingSchema] = useState(true)
+  const [isLoadingSchema, startTransition] = useTransition()
   const designSessionId = designSession.id
 
   // Load initial schema data
   useEffect(() => {
     const loadInitialSchema = async () => {
-      try {
-        setIsLoadingSchema(true)
-        const { data: schemaData, error } =
-          await fetchSchemaDataClient(designSessionId)
+      startTransition(async () => {
+        try {
+          const { data: schemaData, error } =
+            await fetchSchemaDataClient(designSessionId)
 
-        if (error) {
-          console.error('Failed to fetch initial schema:', error)
-          return
-        }
+          if (error) {
+            console.error('Failed to fetch initial schema:', error)
+            return
+          }
 
-        if (schemaData.schema) {
-          const schema = v.parse(schemaSchema, schemaData.schema)
-          setSchema(schema)
+          if (schemaData.schema) {
+            const schema = v.parse(schemaSchema, schemaData.schema)
+            setSchema(schema)
+          }
+        } catch (error) {
+          console.error('Error loading initial schema:', error)
         }
-      } catch (error) {
-        console.error('Error loading initial schema:', error)
-      } finally {
-        setIsLoadingSchema(false)
-      }
+      })
     }
 
     if (designSessionId) {

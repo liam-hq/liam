@@ -2,8 +2,8 @@ import { END, START, StateGraph } from '@langchain/langgraph'
 import { WORKFLOW_ERROR_MESSAGES } from '../constants/progressMessages'
 import {
   analyzeRequirementsNode,
-  answerGenerationNode,
-  finalResponseNode,
+  designSchemaNode,
+  finalizeArtifactsNode,
   reviewDeliverablesNode,
   validateSchemaNode,
 } from '../nodes'
@@ -12,20 +12,6 @@ import {
   createAnnotations,
 } from '../shared/langGraphUtils'
 import type { WorkflowState } from '../types'
-
-function shouldReturnToDesignSchema(state: any): string {
-  if ((state as WorkflowState).error) {
-    return 'designSchema'
-  }
-  return 'reviewDeliverables'
-}
-
-function shouldReturnToDesignSchemaFromReview(state: any): string {
-  if ((state as WorkflowState).error) {
-    return 'designSchema'
-  }
-  return 'formatFinalResponse'
-}
 
 /**
  * Create and configure the LangGraph workflow
@@ -36,26 +22,29 @@ const createGraph = () => {
 
   graph
     .addNode('analyzeRequirements', analyzeRequirementsNode)
-    .addNode('designSchema', answerGenerationNode)
+    .addNode('designSchema', designSchemaNode)
     .addNode('validateSchema', validateSchemaNode)
     .addNode('reviewDeliverables', reviewDeliverablesNode)
-    .addNode('formatFinalResponse', finalResponseNode)
+    .addNode('finalizeArtifacts', finalizeArtifactsNode)
+
     .addEdge(START, 'analyzeRequirements')
     .addEdge('analyzeRequirements', 'designSchema')
     .addEdge('designSchema', 'validateSchema')
-    .addConditionalEdges('validateSchema', shouldReturnToDesignSchema, {
-      designSchema: 'designSchema',
-      reviewDeliverables: 'reviewDeliverables',
+    .addEdge('finalizeArtifacts', END)
+
+    // Conditional edges for validation results
+    .addConditionalEdges('validateSchema', (state) => {
+      // success → reviewDeliverables
+      // dml error or test fail → designSchema
+      return state.error ? 'designSchema' : 'reviewDeliverables'
     })
-    .addConditionalEdges(
-      'reviewDeliverables',
-      shouldReturnToDesignSchemaFromReview,
-      {
-        designSchema: 'designSchema',
-        formatFinalResponse: 'formatFinalResponse',
-      },
-    )
-    .addEdge('formatFinalResponse', END)
+
+    // Conditional edges for review results
+    .addConditionalEdges('reviewDeliverables', (state) => {
+      // OK → finalizeArtifacts
+      // NG or issues found → analyzeRequirements
+      return state.error ? 'analyzeRequirements' : 'finalizeArtifacts'
+    })
 
   return graph.compile()
 }
@@ -78,12 +67,13 @@ export const executeWorkflow = async (
   } catch (error) {
     console.error(WORKFLOW_ERROR_MESSAGES.LANGGRAPH_FAILED, error)
 
+    // Even with LangGraph execution failure, go through finalizeArtifactsNode to ensure proper response
     const errorMessage =
       error instanceof Error
         ? error.message
         : WORKFLOW_ERROR_MESSAGES.EXECUTION_FAILED
 
     const errorState = { ...initialState, error: errorMessage }
-    return await finalResponseNode(errorState)
+    return await finalizeArtifactsNode(errorState)
   }
 }

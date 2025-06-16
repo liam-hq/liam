@@ -2,7 +2,7 @@
 
 import { LiamLogoMark } from '@/logos'
 import { Button } from '@liam-hq/ui'
-import { useState } from 'react'
+import { useState, useTransition } from 'react'
 import styles from './InvitationCard.module.css'
 import { acceptInvitation } from './actions/acceptInvitation'
 
@@ -20,23 +20,24 @@ export function InvitationCard({
   token,
   currentUser,
 }: InvitationCardProps) {
-  const [isLoading, setIsLoading] = useState(false)
+  const [isLoading, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
 
   const handleAccept = async (formData: FormData) => {
-    setIsLoading(true)
-    setError(null)
+    startTransition(async () => {
+      setError(null)
 
-    // The server action will handle the redirect on success
-    const result = await acceptInvitation(formData)
+      // The server action will handle the redirect on success
+      const result = await acceptInvitation(formData)
 
-    // If we get a result back, it means there was an error
-    // (on success, the action redirects)
-    if (result && !result.success) {
-      setError(result.error || 'Failed to accept invitation. Please try again.')
-    }
-
-    setIsLoading(false)
+      // If we get a result back, it means there was an error
+      // (on success, the action redirects)
+      if (result && !result.success) {
+        setError(
+          result.error || 'Failed to accept invitation. Please try again.',
+        )
+      }
+    })
   }
 
   return (

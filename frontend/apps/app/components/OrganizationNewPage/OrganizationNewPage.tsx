@@ -4,13 +4,13 @@ import { setOrganizationIdCookie } from '@/features/organizations/services/setOr
 import { urlgen } from '@/libs/routes'
 import { Button, Input } from '@liam-hq/ui'
 import { useRouter } from 'next/navigation'
-import { type FC, type FormEvent, useState } from 'react'
+import { type FC, type FormEvent, useState, useTransition } from 'react'
 import styles from './OrganizationNewPage.module.css'
 import { createOrganization } from './actions/createOrganizations'
 
 export const OrganizationNewPage: FC = () => {
   const [name, setName] = useState('')
-  const [loading, setLoading] = useState(false)
+  const [loading, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
   const router = useRouter()
 
@@ -24,21 +24,21 @@ export const OrganizationNewPage: FC = () => {
       return
     }
 
-    setLoading(true)
-    setError(null)
+    startTransition(async () => {
+      setError(null)
 
-    const result = await createOrganization(name)
+      const result = await createOrganization(name)
 
-    if (result.success) {
-      // Set the organization ID cookie
-      await setOrganizationIdCookie(result.organizationId)
-      router.push(urlgen('projects/new'))
-    } else {
-      setError(
-        result.error || 'Failed to create organization. Please try again.',
-      )
-      setLoading(false)
-    }
+      if (result.success) {
+        // Set the organization ID cookie
+        await setOrganizationIdCookie(result.organizationId)
+        router.push(urlgen('projects/new'))
+      } else {
+        setError(
+          result.error || 'Failed to create organization. Please try again.',
+        )
+      }
+    })
   }
 
   return (

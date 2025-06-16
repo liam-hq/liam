@@ -12,8 +12,14 @@ import {
   ModalTitle,
   useToast,
 } from '@liam-hq/ui'
-import { useRef, useState } from 'react'
-import type { ChangeEvent, FC, FormEvent } from 'react'
+import {
+  type ChangeEvent,
+  type FC,
+  type FormEvent,
+  useRef,
+  useState,
+  useTransition,
+} from 'react'
 import styles from './InviteMemberModal.module.css'
 import { inviteMember } from './actions/inviteMember'
 
@@ -29,7 +35,7 @@ export const InviteMemberModal: FC<InviteMemberModalProps> = ({
   organizationId,
 }) => {
   const [email, setEmail] = useState('')
-  const [loading, setLoading] = useState(false)
+  const [loading, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
   const toast = useToast()
@@ -65,44 +71,42 @@ export const InviteMemberModal: FC<InviteMemberModalProps> = ({
       return
     }
 
-    setLoading(true)
+    startTransition(async () => {
+      // Create FormData from the form
+      const formData = new FormData()
+      formData.append('email', email)
+      formData.append('organizationId', organizationId)
 
-    // Create FormData from the form
-    const formData = new FormData()
-    formData.append('email', email)
-    formData.append('organizationId', organizationId)
+      // Call the server action
+      const result = await inviteMember(formData)
 
-    // Call the server action
-    const result = await inviteMember(formData)
+      if (!result.success) {
+        setError(result.error || 'Failed to send invitation. Please try again.')
 
-    if (!result.success) {
-      setError(result.error || 'Failed to send invitation. Please try again.')
+        // Show error toast
+        toast({
+          title: '❌ Invitation failed',
+          description: `We couldn't send an invite to ${email}. Please try again.`,
+          status: 'error',
+        })
 
-      // Show error toast
+        return
+      }
+
+      // Success
+      setSuccess(true)
+      setEmail('')
+
+      // Show success toast
       toast({
-        title: '❌ Invitation failed',
-        description: `We couldn't send an invite to ${email}. Please try again.`,
-        status: 'error',
+        title: '✅ Member invited successfully',
+        description: `An invitation email has been sent to ${email}.`,
+        status: 'success',
       })
 
-      setLoading(false)
-      return
-    }
-
-    // Success
-    setSuccess(true)
-    setEmail('')
-
-    // Show success toast
-    toast({
-      title: '✅ Member invited successfully',
-      description: `An invitation email has been sent to ${email}.`,
-      status: 'success',
+      // Close modal
+      onClose()
     })
-
-    // Close modal
-    onClose()
-    setLoading(false)
   }
 
   return (

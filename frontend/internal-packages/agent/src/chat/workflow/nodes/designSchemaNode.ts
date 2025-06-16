@@ -5,7 +5,7 @@ import { convertSchemaToText } from '../../../utils/convertSchemaToText'
 import { operationsSchema } from '../../../utils/operationsSchema'
 import type { WorkflowState } from '../types'
 
-interface PreparedAnswerGeneration {
+interface PreparedSchemaDesign {
   agent: DatabaseSchemaBuildAgent
   schemaText: string
 }
@@ -129,9 +129,9 @@ const handleBuildAgentResponse = async (
   return await handleSchemaChanges(parsedResponse, state)
 }
 
-async function prepareAnswerGeneration(
+async function prepareSchemaDesign(
   state: WorkflowState,
-): Promise<PreparedAnswerGeneration> {
+): Promise<PreparedSchemaDesign> {
   const schemaText = convertSchemaToText(state.schemaData)
 
   // Create the agent instance
@@ -144,31 +144,32 @@ async function prepareAnswerGeneration(
 }
 
 /**
- * Answer generation node - synchronous execution only
+ * Design Schema Node - DB Design & DDL Execution
+ * Performed by dbAgent
  */
-export async function answerGenerationNode(
+export async function designSchemaNode(
   state: WorkflowState,
 ): Promise<WorkflowState> {
+  const { agent, schemaText } = await prepareSchemaDesign(state)
+
+  // Format chat history for prompt
+  const formattedChatHistory =
+    state.history.length > 0
+      ? state.history.map((content) => `User: ${content}`).join('\n')
+      : 'No previous conversation.'
+
+  const brdContext = state.brd
+    ? `\n\nBusiness Requirements:\n${state.brd.join('\n')}`
+    : ''
+
+  // Create prompt variables directly
+  const promptVariables: BasePromptVariables = {
+    schema_text: schemaText,
+    chat_history: formattedChatHistory + brdContext,
+    user_message: state.userInput,
+  }
+
   try {
-    const { agent, schemaText } = await prepareAnswerGeneration(state)
-
-    // Format chat history for prompt
-    const formattedChatHistory =
-      state.history.length > 0
-        ? state.history.map((content) => `User: ${content}`).join('\n')
-        : 'No previous conversation.'
-
-    const brdContext = state.brd
-      ? `\n\nBusiness Requirements:\n${state.brd.join('\n')}`
-      : ''
-
-    // Create prompt variables directly
-    const promptVariables: BasePromptVariables = {
-      schema_text: schemaText,
-      chat_history: formattedChatHistory + brdContext,
-      user_message: state.userInput,
-    }
-
     // Use agent's generate method with prompt variables
     const response = await agent.generate(promptVariables)
     return await handleBuildAgentResponse(response, state)

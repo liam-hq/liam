@@ -8,8 +8,7 @@ import {
   IconButton,
   Spinner,
 } from '@liam-hq/ui'
-import type { FC, ReactNode } from 'react'
-import { useState } from 'react'
+import { type FC, type ReactNode, useState } from 'react'
 import styles from './ProcessIndicator.module.css'
 
 export type ProcessStatus = 'processing' | 'complete'

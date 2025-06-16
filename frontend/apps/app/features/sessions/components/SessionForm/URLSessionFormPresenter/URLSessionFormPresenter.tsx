@@ -1,6 +1,5 @@
 import { Button } from '@liam-hq/ui'
-import type { FC } from 'react'
-import { useState } from 'react'
+import { type FC, useState } from 'react'
 import styles from './URLSessionFormPresenter.module.css'
 
 type Props = {

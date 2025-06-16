@@ -29,9 +29,13 @@ function handlePMAgentResponse(response: string): { brd: string[] } | null {
   }
 }
 
-export const analyzeRequirementsNode = async (
+/**
+ * Analyze Requirements Node - Requirements Organization
+ * Performed by pmAgent
+ */
+export async function analyzeRequirementsNode(
   state: WorkflowState,
-): Promise<WorkflowState> => {
+): Promise<WorkflowState> {
   try {
     const pmAgent = new PMAgent()
     const schemaText = convertSchemaToText(state.schemaData)
