@@ -144,7 +144,7 @@ export const useRealtimeMessages: UseRealtimeMessagesFunc = (
 
   // Handle new messages from realtime subscription
   const handleNewMessage = useCallback(
-    (newMessage: Tables<'messages'>) => {
+    (newMessage: Tables<'timeline_items'>) => {
       // Convert database message to ChatEntry format
       const chatEntry = {
         ...convertMessageToChatEntry(newMessage),

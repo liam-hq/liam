@@ -13,7 +13,7 @@ type SchemaVersionMessage = {
 }
 
 // TODO: Modify to use what is inferred from the valibot schema
-type Message = Tables<'messages'> | SchemaVersionMessage
+type Message = Tables<'timeline_items'> | SchemaVersionMessage
 
 // TODO: Make sure to use it when storing data and as an inferential type
 const realtimeMessageSchema = v.object({
@@ -97,7 +97,7 @@ export const setupRealtimeSubscription = (
       {
         event: 'INSERT',
         schema: 'public',
-        table: 'messages',
+        table: 'timeline_items',
         filter: `design_session_id=eq.${designSessionId}`,
       },
       (payload) => {

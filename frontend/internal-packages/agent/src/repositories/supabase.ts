@@ -37,12 +37,12 @@ export class SupabaseSchemaRepository implements SchemaRepository {
   async getDesignSession(
     designSessionId: string,
   ): Promise<DesignSessionData | null> {
-    // Fetch design session with messages
+    // Fetch design session with timeline_items
     const { data, error } = await this.client
       .from('design_sessions')
       .select(`
         organization_id,
-        messages (
+        timeline_items (
           id,
           content,
           role,
@@ -55,7 +55,10 @@ export class SupabaseSchemaRepository implements SchemaRepository {
         )
       `)
       .eq('id', designSessionId)
-      .order('created_at', { ascending: true, referencedTable: 'messages' })
+      .order('created_at', {
+        ascending: true,
+        referencedTable: 'timeline_items',
+      })
       .single()
 
     if (error || !data) {
@@ -68,7 +71,7 @@ export class SupabaseSchemaRepository implements SchemaRepository {
 
     return {
       organization_id: data.organization_id,
-      messages: data.messages || [],
+      messages: data.timeline_items || [],
     }
   }
 
@@ -326,7 +329,7 @@ export class SupabaseSchemaRepository implements SchemaRepository {
     const now = new Date().toISOString()
 
     const { data: message, error } = await this.client
-      .from('messages')
+      .from('timeline_items')
       .insert({
         design_session_id: designSessionId,
         content,

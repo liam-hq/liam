@@ -190,7 +190,7 @@ async function saveInitialMessage(
 ): Promise<CreateSessionState | { success: true }> {
   const now = new Date().toISOString()
 
-  const messageData: TablesInsert<'messages'> = {
+  const messageData: TablesInsert<'timeline_items'> = {
     design_session_id: designSessionId,
     content,
     role: 'user',
@@ -200,7 +200,7 @@ async function saveInitialMessage(
   }
 
   const { error } = await supabase
-    .from('messages')
+    .from('timeline_items')
     .insert(messageData)
     .select()
     .single()

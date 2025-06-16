@@ -848,6 +848,23 @@ $$;
 ALTER FUNCTION "public"."set_schema_file_paths_organization_id"() OWNER TO "postgres";
 
 
+CREATE OR REPLACE FUNCTION "public"."set_timeline_items_organization_id"() RETURNS "trigger"
+    LANGUAGE "plpgsql" SECURITY DEFINER
+    AS $$
+BEGIN
+  NEW.organization_id := (
+    SELECT "organization_id" 
+    FROM "public"."design_sessions" 
+    WHERE "id" = NEW.design_session_id
+  );
+  RETURN NEW;
+END;
+$$;
+
+
+ALTER FUNCTION "public"."set_timeline_items_organization_id"() OWNER TO "postgres";
+
+
 CREATE OR REPLACE FUNCTION "public"."sync_existing_users"() RETURNS "void"
     LANGUAGE "plpgsql" SECURITY DEFINER
     AS $$
@@ -1122,22 +1139,6 @@ CREATE TABLE IF NOT EXISTS "public"."knowledge_suggestions" (
 ALTER TABLE "public"."knowledge_suggestions" OWNER TO "postgres";
 
 
-CREATE TABLE IF NOT EXISTS "public"."messages" (
-    "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
-    "design_session_id" "uuid" NOT NULL,
-    "user_id" "uuid",
-    "role" "public"."message_role_enum" NOT NULL,
-    "content" "text" NOT NULL,
-    "created_at" timestamp(3) with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    "updated_at" timestamp(3) with time zone NOT NULL,
-    "organization_id" "uuid" NOT NULL,
-    "building_schema_version_id" "uuid"
-);
-
-
-ALTER TABLE "public"."messages" OWNER TO "postgres";
-
-
 CREATE TABLE IF NOT EXISTS "public"."migration_pull_request_mappings" (
     "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
     "migration_id" "uuid" NOT NULL,
@@ -1311,6 +1312,22 @@ CREATE TABLE IF NOT EXISTS "public"."schema_file_paths" (
 ALTER TABLE "public"."schema_file_paths" OWNER TO "postgres";
 
 
+CREATE TABLE IF NOT EXISTS "public"."timeline_items" (
+    "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
+    "design_session_id" "uuid" NOT NULL,
+    "user_id" "uuid",
+    "role" "public"."message_role_enum" NOT NULL,
+    "content" "text" NOT NULL,
+    "created_at" timestamp(3) with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    "updated_at" timestamp(3) with time zone NOT NULL,
+    "organization_id" "uuid" NOT NULL,
+    "building_schema_version_id" "uuid"
+);
+
+
+ALTER TABLE "public"."timeline_items" OWNER TO "postgres";
+
+
 CREATE TABLE IF NOT EXISTS "public"."users" (
     "id" "uuid" NOT NULL,
     "name" "text" NOT NULL,
@@ -1396,11 +1413,6 @@ ALTER TABLE ONLY "public"."knowledge_suggestions"
 
 
 
-ALTER TABLE ONLY "public"."messages"
-    ADD CONSTRAINT "messages_pkey" PRIMARY KEY ("id");
-
-
-
 ALTER TABLE ONLY "public"."migrations"
     ADD CONSTRAINT "migration_pkey" PRIMARY KEY ("id");
 
@@ -1476,6 +1488,11 @@ ALTER TABLE ONLY "public"."review_suggestion_snippets"
 
 
 
+ALTER TABLE ONLY "public"."timeline_items"
+    ADD CONSTRAINT "timeline_items_pkey" PRIMARY KEY ("id");
+
+
+
 ALTER TABLE ONLY "public"."users"
     ADD CONSTRAINT "user_email_key" UNIQUE ("email");
 
@@ -1514,23 +1531,23 @@ CREATE INDEX "idx_building_schemas_design_session_created" ON "public"."building
 
 
 
-CREATE INDEX "idx_messages_design_session_created_at" ON "public"."messages" USING "btree" ("design_session_id", "created_at" DESC);
-
-
-
-CREATE INDEX "idx_messages_role_created_at" ON "public"."messages" USING "btree" ("role", "created_at" DESC);
-
-
-
-CREATE INDEX "idx_messages_user_id_created_at" ON "public"."messages" USING "btree" ("user_id", "created_at" DESC) WHERE ("user_id" IS NOT NULL);
-
-
-
 CREATE INDEX "idx_project_organization_id" ON "public"."projects" USING "btree" ("organization_id");
 
 
 
 CREATE INDEX "idx_review_feedback_comment_review_feedback_id" ON "public"."review_feedback_comments" USING "btree" ("review_feedback_id");
+
+
+
+CREATE INDEX "idx_timeline_items_design_session_created_at" ON "public"."timeline_items" USING "btree" ("design_session_id", "created_at" DESC);
+
+
+
+CREATE INDEX "idx_timeline_items_role_created_at" ON "public"."timeline_items" USING "btree" ("role", "created_at" DESC);
+
+
+
+CREATE INDEX "idx_timeline_items_user_id_created_at" ON "public"."timeline_items" USING "btree" ("user_id", "created_at" DESC) WHERE ("user_id" IS NOT NULL);
 
 
 
@@ -1543,14 +1560,6 @@ CREATE INDEX "invitations_organization_id_idx" ON "public"."invitations" USING "
 
 
 CREATE UNIQUE INDEX "knowledge_suggestion_doc_mapping_unique_mapping" ON "public"."knowledge_suggestion_doc_mappings" USING "btree" ("knowledge_suggestion_id", "doc_file_path_id");
-
-
-
-CREATE INDEX "messages_building_schema_version_id_idx" ON "public"."messages" USING "btree" ("building_schema_version_id");
-
-
-
-CREATE INDEX "messages_schema_version_role_idx" ON "public"."messages" USING "btree" ("design_session_id", "created_at") WHERE ("role" = 'schema_version'::"public"."message_role_enum");
 
 
 
@@ -1575,6 +1584,14 @@ CREATE UNIQUE INDEX "schema_file_path_path_project_id_key" ON "public"."schema_f
 
 
 CREATE UNIQUE INDEX "schema_file_path_project_id_key" ON "public"."schema_file_paths" USING "btree" ("project_id");
+
+
+
+CREATE INDEX "timeline_items_building_schema_version_id_idx" ON "public"."timeline_items" USING "btree" ("building_schema_version_id");
+
+
+
+CREATE INDEX "timeline_items_schema_version_role_idx" ON "public"."timeline_items" USING "btree" ("design_session_id", "created_at") WHERE ("role" = 'schema_version'::"public"."message_role_enum");
 
 
 
@@ -1618,10 +1635,6 @@ CREATE OR REPLACE TRIGGER "set_knowledge_suggestions_organization_id_trigger" BE
 
 
 
-CREATE OR REPLACE TRIGGER "set_messages_organization_id_trigger" BEFORE INSERT OR UPDATE ON "public"."messages" FOR EACH ROW EXECUTE FUNCTION "public"."set_messages_organization_id"();
-
-
-
 CREATE OR REPLACE TRIGGER "set_migration_pull_request_mappings_organization_id_trigger" BEFORE INSERT OR UPDATE ON "public"."migration_pull_request_mappings" FOR EACH ROW EXECUTE FUNCTION "public"."set_migration_pull_request_mappings_organization_id"();
 
 
@@ -1659,6 +1672,10 @@ CREATE OR REPLACE TRIGGER "set_review_suggestion_snippets_organization_id_trigge
 
 
 CREATE OR REPLACE TRIGGER "set_schema_file_paths_organization_id_trigger" BEFORE INSERT OR UPDATE ON "public"."schema_file_paths" FOR EACH ROW EXECUTE FUNCTION "public"."set_schema_file_paths_organization_id"();
+
+
+
+CREATE OR REPLACE TRIGGER "set_timeline_items_organization_id_trigger" BEFORE INSERT OR UPDATE ON "public"."timeline_items" FOR EACH ROW EXECUTE FUNCTION "public"."set_timeline_items_organization_id"();
 
 
 
@@ -1777,23 +1794,8 @@ ALTER TABLE ONLY "public"."knowledge_suggestions"
 
 
 
-ALTER TABLE ONLY "public"."messages"
+ALTER TABLE ONLY "public"."timeline_items"
     ADD CONSTRAINT "messages_building_schema_version_id_fkey" FOREIGN KEY ("building_schema_version_id") REFERENCES "public"."building_schema_versions"("id") ON DELETE CASCADE;
-
-
-
-ALTER TABLE ONLY "public"."messages"
-    ADD CONSTRAINT "messages_design_session_id_fkey" FOREIGN KEY ("design_session_id") REFERENCES "public"."design_sessions"("id") ON UPDATE CASCADE ON DELETE CASCADE;
-
-
-
-ALTER TABLE ONLY "public"."messages"
-    ADD CONSTRAINT "messages_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "public"."organizations"("id") ON UPDATE CASCADE ON DELETE RESTRICT;
-
-
-
-ALTER TABLE ONLY "public"."messages"
-    ADD CONSTRAINT "messages_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON UPDATE CASCADE ON DELETE RESTRICT;
 
 
 
@@ -1934,6 +1936,21 @@ ALTER TABLE ONLY "public"."schema_file_paths"
 
 ALTER TABLE ONLY "public"."schema_file_paths"
     ADD CONSTRAINT "schema_file_paths_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "public"."organizations"("id") ON UPDATE CASCADE ON DELETE RESTRICT;
+
+
+
+ALTER TABLE ONLY "public"."timeline_items"
+    ADD CONSTRAINT "timeline_items_design_session_id_fkey" FOREIGN KEY ("design_session_id") REFERENCES "public"."design_sessions"("id") ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+
+ALTER TABLE ONLY "public"."timeline_items"
+    ADD CONSTRAINT "timeline_items_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "public"."organizations"("id") ON UPDATE CASCADE ON DELETE RESTRICT;
+
+
+
+ALTER TABLE ONLY "public"."timeline_items"
+    ADD CONSTRAINT "timeline_items_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON UPDATE CASCADE ON DELETE RESTRICT;
 
 
 
@@ -2089,16 +2106,6 @@ COMMENT ON POLICY "authenticated_users_can_insert_org_knowledge_suggestions" ON 
 
 
 
-CREATE POLICY "authenticated_users_can_insert_org_messages" ON "public"."messages" FOR INSERT TO "authenticated" WITH CHECK (("organization_id" IN ( SELECT "organization_members"."organization_id"
-   FROM "public"."organization_members"
-  WHERE ("organization_members"."user_id" = "auth"."uid"()))));
-
-
-
-COMMENT ON POLICY "authenticated_users_can_insert_org_messages" ON "public"."messages" IS 'Authenticated users can only create messages in organizations they are members of';
-
-
-
 CREATE POLICY "authenticated_users_can_insert_org_organization_members" ON "public"."organization_members" FOR INSERT TO "authenticated" WITH CHECK ((("user_id" = "auth"."uid"()) OR "public"."is_current_user_org_member"("organization_id")));
 
 
@@ -2134,6 +2141,16 @@ CREATE POLICY "authenticated_users_can_insert_org_schema_file_paths" ON "public"
 
 
 COMMENT ON POLICY "authenticated_users_can_insert_org_schema_file_paths" ON "public"."schema_file_paths" IS 'Authenticated users can only create schema file paths in organizations they are members of';
+
+
+
+CREATE POLICY "authenticated_users_can_insert_org_timeline_items" ON "public"."timeline_items" FOR INSERT TO "authenticated" WITH CHECK (("organization_id" IN ( SELECT "organization_members"."organization_id"
+   FROM "public"."organization_members"
+  WHERE ("organization_members"."user_id" = "auth"."uid"()))));
+
+
+
+COMMENT ON POLICY "authenticated_users_can_insert_org_timeline_items" ON "public"."timeline_items" IS 'Authenticated users can only create timeline items in organizations they are members of';
 
 
 
@@ -2244,16 +2261,6 @@ CREATE POLICY "authenticated_users_can_select_org_knowledge_suggestions" ON "pub
 
 
 COMMENT ON POLICY "authenticated_users_can_select_org_knowledge_suggestions" ON "public"."knowledge_suggestions" IS 'Authenticated users can only view knowledge suggestions belonging to organizations they are members of';
-
-
-
-CREATE POLICY "authenticated_users_can_select_org_messages" ON "public"."messages" FOR SELECT TO "authenticated" USING (("organization_id" IN ( SELECT "organization_members"."organization_id"
-   FROM "public"."organization_members"
-  WHERE ("organization_members"."user_id" = "auth"."uid"()))));
-
-
-
-COMMENT ON POLICY "authenticated_users_can_select_org_messages" ON "public"."messages" IS 'Authenticated users can only view messages belonging to organizations they are members of';
 
 
 
@@ -2379,6 +2386,16 @@ COMMENT ON POLICY "authenticated_users_can_select_org_schema_file_paths" ON "pub
 
 
 
+CREATE POLICY "authenticated_users_can_select_org_timeline_items" ON "public"."timeline_items" FOR SELECT TO "authenticated" USING (("organization_id" IN ( SELECT "organization_members"."organization_id"
+   FROM "public"."organization_members"
+  WHERE ("organization_members"."user_id" = "auth"."uid"()))));
+
+
+
+COMMENT ON POLICY "authenticated_users_can_select_org_timeline_items" ON "public"."timeline_items" IS 'Authenticated users can only view timeline items belonging to organizations they are members of';
+
+
+
 CREATE POLICY "authenticated_users_can_update_org_building_schema_versions" ON "public"."building_schema_versions" FOR UPDATE TO "authenticated" USING (("organization_id" IN ( SELECT "organization_members"."organization_id"
    FROM "public"."organization_members"
   WHERE ("organization_members"."user_id" = "auth"."uid"())))) WITH CHECK (("organization_id" IN ( SELECT "organization_members"."organization_id"
@@ -2441,18 +2458,6 @@ COMMENT ON POLICY "authenticated_users_can_update_org_knowledge_suggestions" ON 
 
 
 
-CREATE POLICY "authenticated_users_can_update_org_messages" ON "public"."messages" FOR UPDATE TO "authenticated" USING (("organization_id" IN ( SELECT "organization_members"."organization_id"
-   FROM "public"."organization_members"
-  WHERE ("organization_members"."user_id" = "auth"."uid"())))) WITH CHECK (("organization_id" IN ( SELECT "organization_members"."organization_id"
-   FROM "public"."organization_members"
-  WHERE ("organization_members"."user_id" = "auth"."uid"()))));
-
-
-
-COMMENT ON POLICY "authenticated_users_can_update_org_messages" ON "public"."messages" IS 'Authenticated users can only update messages in organizations they are members of';
-
-
-
 CREATE POLICY "authenticated_users_can_update_org_organizations" ON "public"."organizations" FOR UPDATE TO "authenticated" USING (("id" IN ( SELECT "organization_members"."organization_id"
    FROM "public"."organization_members"
   WHERE ("organization_members"."user_id" = "auth"."uid"()))));
@@ -2499,6 +2504,18 @@ COMMENT ON POLICY "authenticated_users_can_update_org_schema_file_paths" ON "pub
 
 
 
+CREATE POLICY "authenticated_users_can_update_org_timeline_items" ON "public"."timeline_items" FOR UPDATE TO "authenticated" USING (("organization_id" IN ( SELECT "organization_members"."organization_id"
+   FROM "public"."organization_members"
+  WHERE ("organization_members"."user_id" = "auth"."uid"())))) WITH CHECK (("organization_id" IN ( SELECT "organization_members"."organization_id"
+   FROM "public"."organization_members"
+  WHERE ("organization_members"."user_id" = "auth"."uid"()))));
+
+
+
+COMMENT ON POLICY "authenticated_users_can_update_org_timeline_items" ON "public"."timeline_items" IS 'Authenticated users can only update timeline items in organizations they are members of';
+
+
+
 ALTER TABLE "public"."building_schema_versions" ENABLE ROW LEVEL SECURITY;
 
 
@@ -2530,9 +2547,6 @@ ALTER TABLE "public"."knowledge_suggestion_doc_mappings" ENABLE ROW LEVEL SECURI
 
 
 ALTER TABLE "public"."knowledge_suggestions" ENABLE ROW LEVEL SECURITY;
-
-
-ALTER TABLE "public"."messages" ENABLE ROW LEVEL SECURITY;
 
 
 ALTER TABLE "public"."migration_pull_request_mappings" ENABLE ROW LEVEL SECURITY;
@@ -2634,10 +2648,6 @@ CREATE POLICY "service_role_can_insert_all_knowledge_suggestions" ON "public"."k
 
 
 
-CREATE POLICY "service_role_can_insert_all_messages" ON "public"."messages" FOR INSERT TO "service_role" WITH CHECK (true);
-
-
-
 CREATE POLICY "service_role_can_insert_all_migration_pull_request_mappings" ON "public"."migration_pull_request_mappings" FOR INSERT TO "service_role" WITH CHECK (true);
 
 
@@ -2678,6 +2688,10 @@ CREATE POLICY "service_role_can_insert_all_review_suggestion_snippets" ON "publi
 
 
 
+CREATE POLICY "service_role_can_insert_all_timeline_items" ON "public"."timeline_items" FOR INSERT TO "service_role" WITH CHECK (true);
+
+
+
 CREATE POLICY "service_role_can_select_all_building_schemas" ON "public"."building_schemas" FOR SELECT TO "service_role" USING (true);
 
 
@@ -2711,10 +2725,6 @@ CREATE POLICY "service_role_can_select_all_invitations" ON "public"."invitations
 
 
 CREATE POLICY "service_role_can_select_all_knowledge_suggestions" ON "public"."knowledge_suggestions" FOR SELECT TO "service_role" USING (true);
-
-
-
-CREATE POLICY "service_role_can_select_all_messages" ON "public"."messages" FOR SELECT TO "service_role" USING (true);
 
 
 
@@ -2754,6 +2764,10 @@ CREATE POLICY "service_role_can_select_all_schema_file_paths" ON "public"."schem
 
 
 
+CREATE POLICY "service_role_can_select_all_timeline_items" ON "public"."timeline_items" FOR SELECT TO "service_role" USING (true);
+
+
+
 CREATE POLICY "service_role_can_update_all_building_schemas" ON "public"."building_schemas" FOR UPDATE TO "service_role" USING (true) WITH CHECK (true);
 
 
@@ -2774,10 +2788,6 @@ CREATE POLICY "service_role_can_update_all_knowledge_suggestions" ON "public"."k
 
 
 
-CREATE POLICY "service_role_can_update_all_messages" ON "public"."messages" FOR UPDATE TO "service_role" USING (true) WITH CHECK (true);
-
-
-
 CREATE POLICY "service_role_can_update_all_migrations" ON "public"."migrations" FOR UPDATE TO "service_role" USING (true) WITH CHECK (true);
 
 
@@ -2792,6 +2802,13 @@ CREATE POLICY "service_role_can_update_all_projects" ON "public"."projects" FOR 
 
 COMMENT ON POLICY "service_role_can_update_all_projects" ON "public"."projects" IS 'Service role can update any project (for jobs)';
 
+
+
+CREATE POLICY "service_role_can_update_all_timeline_items" ON "public"."timeline_items" FOR UPDATE TO "service_role" USING (true) WITH CHECK (true);
+
+
+
+ALTER TABLE "public"."timeline_items" ENABLE ROW LEVEL SECURITY;
 
 
 ALTER TABLE "public"."users" ENABLE ROW LEVEL SECURITY;
@@ -2813,7 +2830,7 @@ ALTER PUBLICATION "supabase_realtime" ADD TABLE ONLY "public"."building_schemas"
 
 
 
-ALTER PUBLICATION "supabase_realtime" ADD TABLE ONLY "public"."messages";
+ALTER PUBLICATION "supabase_realtime" ADD TABLE ONLY "public"."timeline_items";
 
 
 
@@ -3741,6 +3758,12 @@ GRANT ALL ON FUNCTION "public"."set_schema_file_paths_organization_id"() TO "ser
 
 
 
+GRANT ALL ON FUNCTION "public"."set_timeline_items_organization_id"() TO "anon";
+GRANT ALL ON FUNCTION "public"."set_timeline_items_organization_id"() TO "authenticated";
+GRANT ALL ON FUNCTION "public"."set_timeline_items_organization_id"() TO "service_role";
+
+
+
 GRANT ALL ON FUNCTION "public"."sparsevec_cmp"("public"."sparsevec", "public"."sparsevec") TO "postgres";
 GRANT ALL ON FUNCTION "public"."sparsevec_cmp"("public"."sparsevec", "public"."sparsevec") TO "anon";
 GRANT ALL ON FUNCTION "public"."sparsevec_cmp"("public"."sparsevec", "public"."sparsevec") TO "authenticated";
@@ -4079,12 +4102,6 @@ GRANT ALL ON TABLE "public"."knowledge_suggestions" TO "service_role";
 
 
 
-GRANT ALL ON TABLE "public"."messages" TO "anon";
-GRANT ALL ON TABLE "public"."messages" TO "authenticated";
-GRANT ALL ON TABLE "public"."messages" TO "service_role";
-
-
-
 GRANT ALL ON TABLE "public"."migration_pull_request_mappings" TO "anon";
 GRANT ALL ON TABLE "public"."migration_pull_request_mappings" TO "authenticated";
 GRANT ALL ON TABLE "public"."migration_pull_request_mappings" TO "service_role";
@@ -4160,6 +4177,12 @@ GRANT ALL ON TABLE "public"."review_suggestion_snippets" TO "service_role";
 GRANT ALL ON TABLE "public"."schema_file_paths" TO "anon";
 GRANT ALL ON TABLE "public"."schema_file_paths" TO "authenticated";
 GRANT ALL ON TABLE "public"."schema_file_paths" TO "service_role";
+
+
+
+GRANT ALL ON TABLE "public"."timeline_items" TO "anon";
+GRANT ALL ON TABLE "public"."timeline_items" TO "authenticated";
+GRANT ALL ON TABLE "public"."timeline_items" TO "service_role";
 
 
 

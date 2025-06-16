@@ -147,7 +147,7 @@ describe('Chat Workflow', () => {
       message: {
         id: 'test-message-id',
         content: 'Test message content',
-        role: 'assistant',
+        role: 'assistant' as const,
         user_id: null,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
