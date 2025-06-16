@@ -36,6 +36,7 @@
     "test:e2e": "turbo test:e2e",
     "test:prompt": "turbo test:prompt",
     "test:turbo": "turbo test",
+    "validate-ssl": "node scripts/validate-ssl-config.js",
     "vercel:env-pull": "vercel env pull .env",
     "vercel:link": "vercel link -p liam-app -S \"liambx\" -y"
   },

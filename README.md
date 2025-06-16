@@ -93,3 +93,30 @@ Refer to our [contribution guidelines](./CONTRIBUTING.md) and [Code of Conduct f
 Liam ERD is licensed under the [Apache License Version 2.0](LICENSE).
 
 Licenses for third-party packages can be found in [docs/packages-license.md](docs/packages-license.md).
+
+## Development
+
+1. Development
+
+   ```sh
+   cp .env.template .env
+   pnpm dev
+   ```
+
+2. Open apps
+
+   | package            | url                   |
+   | ------------------ | --------------------- |
+   | @liam-hq/app       | http://localhost:3001 |
+   | @liam-hq/cli       | http://localhost:5173 |
+   | @liam-hq/docs      | http://localhost:3002 |
+   | @liam-hq/storybook | http://localhost:6006 |
+
+### SSL Certificate Configuration
+
+If you encounter SSL certificate warnings during development, please refer to [docs/SSL_CERTIFICATE_SETUP.md](./docs/SSL_CERTIFICATE_SETUP.md) for detailed configuration guidance.
+
+You can also run the SSL configuration validator:
+```sh
+pnpm validate-ssl
+```
