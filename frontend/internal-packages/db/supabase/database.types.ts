@@ -1208,6 +1208,99 @@ export type Database = {
         }
         Relationships: []
       }
+      validation_queries: {
+        Row: {
+          created_at: string
+          design_session_id: string
+          id: string
+          organization_id: string
+          query_string: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          design_session_id: string
+          id?: string
+          organization_id: string
+          query_string: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          design_session_id?: string
+          id?: string
+          organization_id?: string
+          query_string?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'validation_queries_design_session_id_fkey'
+            columns: ['design_session_id']
+            isOneToOne: false
+            referencedRelation: 'design_sessions'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'validation_queries_organization_id_fkey'
+            columns: ['organization_id']
+            isOneToOne: false
+            referencedRelation: 'organizations'
+            referencedColumns: ['id']
+          },
+        ]
+      }
+      validation_results: {
+        Row: {
+          created_at: string
+          error_message: string | null
+          executed_at: string
+          id: string
+          organization_id: string
+          result_set: string | null
+          status: string
+          updated_at: string
+          validation_query_id: string
+        }
+        Insert: {
+          created_at?: string
+          error_message?: string | null
+          executed_at?: string
+          id?: string
+          organization_id: string
+          result_set?: string | null
+          status: string
+          updated_at?: string
+          validation_query_id: string
+        }
+        Update: {
+          created_at?: string
+          error_message?: string | null
+          executed_at?: string
+          id?: string
+          organization_id?: string
+          result_set?: string | null
+          status?: string
+          updated_at?: string
+          validation_query_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'validation_results_organization_id_fkey'
+            columns: ['organization_id']
+            isOneToOne: false
+            referencedRelation: 'organizations'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'validation_results_validation_query_id_fkey'
+            columns: ['validation_query_id']
+            isOneToOne: false
+            referencedRelation: 'validation_queries'
+            referencedColumns: ['id']
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -1294,7 +1387,7 @@ export type Database = {
       }
       l2_normalize: {
         Args: { '': string } | { '': unknown } | { '': unknown }
-        Returns: string
+        Returns: unknown
       }
       match_documents: {
         Args: {

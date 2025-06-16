@@ -18,6 +18,8 @@ import type { ReviewFeedbackKnowledgeSuggestionMappingsOverride } from './review
 import type { ReviewFeedbacksOverride } from './review_feedbacks'
 import type { ReviewSuggestionSnippetsOverride } from './review_suggestion_snippets'
 import type { SchemaFilePathsOverride } from './schema_file_paths'
+import type { ValidationQueriesOverride } from './validation_queries'
+import type { ValidationResultsOverride } from './validation_results'
 
 export type AppDatabaseOverrides = MergeDeep<
   DatabaseGenerated,
@@ -40,5 +42,7 @@ export type AppDatabaseOverrides = MergeDeep<
     GithubPullRequestsOverride &
     DesignSessionsOverride &
     MessagesOverride &
-    BuildingSchemasOverride
+    BuildingSchemasOverride &
+    ValidationQueriesOverride &
+    ValidationResultsOverride
 >
