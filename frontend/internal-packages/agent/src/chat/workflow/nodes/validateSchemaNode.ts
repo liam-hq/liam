@@ -140,12 +140,14 @@ export async function validateSchemaNode(
       error: hasFailures
         ? 'Schema validation failed - some queries could not execute successfully'
         : undefined,
+      retryCount: state.retryCount || 0,
     }
   } catch (error) {
     console.error('Error in validateSchemaNode:', error)
     return {
       ...state,
       error: `Failed to validate schema: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      retryCount: state.retryCount || 0,
     }
   }
 }

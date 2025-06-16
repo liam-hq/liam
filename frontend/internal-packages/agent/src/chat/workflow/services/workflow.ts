@@ -39,7 +39,6 @@ const createGraph = () => {
         return 'finalizeArtifacts'
       }
       if (state.error) {
-        state.retryCount = retryCount + 1
         return 'designSchema'
       }
       return 'reviewDeliverables'
@@ -52,7 +51,6 @@ const createGraph = () => {
         return 'finalizeArtifacts'
       }
       if (state.error) {
-        state.retryCount = retryCount + 1
         return 'analyzeRequirements'
       }
       return 'finalizeArtifacts'

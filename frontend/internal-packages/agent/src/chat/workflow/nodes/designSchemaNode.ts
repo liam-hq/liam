@@ -150,6 +150,10 @@ async function prepareSchemaDesign(
 export async function designSchemaNode(
   state: WorkflowState,
 ): Promise<WorkflowState> {
+  const retryCount = state.error
+    ? (state.retryCount || 0) + 1
+    : state.retryCount || 0
+
   const { agent, schemaText } = await prepareSchemaDesign(state)
 
   // Format chat history for prompt
@@ -172,13 +176,18 @@ export async function designSchemaNode(
   try {
     // Use agent's generate method with prompt variables
     const response = await agent.generate(promptVariables)
-    return await handleBuildAgentResponse(response, state)
+    const result = await handleBuildAgentResponse(response, state)
+    return {
+      ...result,
+      retryCount,
+    }
   } catch (error) {
     const errorMsg =
       error instanceof Error ? error.message : 'Failed to generate answer'
     return {
       ...state,
       error: errorMsg,
+      retryCount,
     }
   }
 }

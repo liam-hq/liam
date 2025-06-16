@@ -36,6 +36,10 @@ function handlePMAgentResponse(response: string): { brd: string[] } | null {
 export async function analyzeRequirementsNode(
   state: WorkflowState,
 ): Promise<WorkflowState> {
+  const retryCount = state.error
+    ? (state.retryCount || 0) + 1
+    : state.retryCount || 0
+
   try {
     const pmAgent = new PMAgent()
     const schemaText = convertSchemaToText(state.schemaData)
@@ -60,12 +64,14 @@ export async function analyzeRequirementsNode(
       ...state,
       brd: parsedResponse.brd,
       error: undefined,
+      retryCount,
     }
   } catch (error) {
     console.error('Error in analyzeRequirementsNode:', error)
     return {
       ...state,
       error: `Failed to analyze requirements: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      retryCount,
     }
   }
 }
