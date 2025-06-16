@@ -22,7 +22,9 @@ function handlePMAgentReviewResponse(response: string): {
       return {
         evaluation: validationResult.output.evaluation,
         satisfied: validationResult.output.satisfied,
-        issues: validationResult.output.issues,
+        ...(validationResult.output.issues && {
+          issues: validationResult.output.issues,
+        }),
       }
     }
 
@@ -58,10 +60,11 @@ export async function reviewDeliverablesNode(
     const chatHistory = state.history.join('\n')
     const brdRequirements = state.brd.join('\n')
     const validationSummary = state.validationResults
-      .map((result, index) => 
-        `Query ${index + 1}: ${result.success ? 'SUCCESS' : 'FAILED'}${
-          result.errorMessage ? ` - ${result.errorMessage}` : ''
-        }`
+      .map(
+        (result, index) =>
+          `Query ${index + 1}: ${result.success ? 'SUCCESS' : 'FAILED'}${
+            result.errorMessage ? ` - ${result.errorMessage}` : ''
+          }`,
       )
       .join('\n')
 
@@ -70,7 +73,7 @@ export async function reviewDeliverablesNode(
       chat_history: chatHistory,
       user_message: state.userInput,
       brd_requirements: brdRequirements,
-      validation_summary: validationSummary,
+      validation_results: validationSummary,
     })
 
     const parsedResponse = handlePMAgentReviewResponse(response)
@@ -84,8 +87,10 @@ export async function reviewDeliverablesNode(
 
     return {
       ...state,
-      reviewEvaluation: parsedResponse.evaluation,
-      error: parsedResponse.satisfied ? undefined : 'Requirements not fully satisfied',
+      generatedAnswer: parsedResponse.evaluation,
+      error: parsedResponse.satisfied
+        ? undefined
+        : 'Requirements not fully satisfied',
     }
   } catch (error) {
     console.error('Error in reviewDeliverablesNode:', error)

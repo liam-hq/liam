@@ -45,10 +45,11 @@ async function processValidationQuery(
   errorMessage?: string
 }> {
   try {
-    const queryResult = await state.repositories.validation.createValidationQuery({
-      designSessionId: state.designSessionId,
-      queryString: query,
-    })
+    const queryResult =
+      await state.repositories.validation.createValidationQuery({
+        designSessionId: state.designSessionId,
+        queryString: query,
+      })
 
     if (!queryResult.success || !queryResult.id) {
       console.error('Failed to save validation query:', queryResult.error)
@@ -58,11 +59,13 @@ async function processValidationQuery(
     const sessionId = `validation_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
     const results = await executeQuery(sessionId, query)
 
-    const success = Array.isArray(results) && 
-      results.every((result: unknown) => 
-        Boolean((result as { success?: boolean }).success) === true
+    const success =
+      Array.isArray(results) &&
+      results.every(
+        (result: unknown) =>
+          Boolean((result as { success?: boolean }).success) === true,
       )
-    
+
     const resultSet = JSON.stringify(results)
     const errorMessage = success ? null : getErrorMessage(results)
 
@@ -75,19 +78,19 @@ async function processValidationQuery(
 
     if (success) {
       return { query, success, resultSet }
-    } else {
-      return { query, success, ...(errorMessage && { errorMessage }) }
     }
+    return { query, success, ...(errorMessage && { errorMessage }) }
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+    const errorMessage =
+      error instanceof Error ? error.message : 'Unknown error'
     return { query, success: false, errorMessage }
   }
 }
 
 function getErrorMessage(results: unknown): string {
   if (Array.isArray(results)) {
-    const failedResult = results.find((r: unknown) => 
-      !(r as { success?: boolean }).success
+    const failedResult = results.find(
+      (r: unknown) => !(r as { success?: boolean }).success,
     ) as { error?: string }
     return failedResult?.error || 'Unknown error'
   }
@@ -125,10 +128,10 @@ export async function validateSchemaNode(
     }
 
     const validationResults = await Promise.all(
-      dmlQueries.map(query => processValidationQuery(query, state))
+      dmlQueries.map((query) => processValidationQuery(query, state)),
     )
 
-    const hasFailures = validationResults.some(result => !result.success)
+    const hasFailures = validationResults.some((result) => !result.success)
 
     return {
       ...state,
