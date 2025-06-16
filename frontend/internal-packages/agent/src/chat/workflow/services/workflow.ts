@@ -29,8 +29,16 @@ const createGraph = () => {
 
     .addEdge(START, 'analyzeRequirements')
     .addEdge('analyzeRequirements', 'designSchema')
-    .addEdge('designSchema', 'validateSchema')
     .addEdge('finalizeArtifacts', END)
+
+    // Conditional edges for design schema results
+    .addConditionalEdges('designSchema', (state) => {
+      const retryCount = state.retryCount || 0
+      if (state.error && retryCount < 3) {
+        return 'designSchema' // Retry the same node
+      }
+      return 'validateSchema' // Continue to next node
+    })
 
     // Conditional edges for validation results
     .addConditionalEdges('validateSchema', (state) => {

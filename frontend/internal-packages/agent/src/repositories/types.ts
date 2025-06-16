@@ -105,7 +105,19 @@ export interface ValidationRepository {
   }): Promise<{ success: boolean; error?: string }>
 }
 
+/**
+ * Progress message repository interface for real-time updates
+ */
+export interface ProgressRepository {
+  sendProgressMessage(params: {
+    designSessionId: string
+    message: string
+    timestamp?: Date
+  }): Promise<{ success: boolean; error?: string }>
+}
+
 export interface Repositories {
   schema: SchemaRepository
   validation: ValidationRepository
+  progress: ProgressRepository
 }

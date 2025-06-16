@@ -138,6 +138,8 @@ export const useRealtimeMessages: UseRealtimeMessagesFunc = (
       const chatEntry = {
         ...convertMessageToChatEntry(newMessage),
         dbId: newMessage.id,
+        // Mark progress messages (messages with emoji icons) as progress messages
+        isProgress: /^[🔍📋⚡✅❌⏳🚀⚠️🎉🔗💥]/.test(newMessage.content),
       }
 
       // TODO: Implement efficient duplicate checking - Use Set/Map for O(1) duplicate checking instead of O(n) array.some()

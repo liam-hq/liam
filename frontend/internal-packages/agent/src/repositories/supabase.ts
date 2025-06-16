@@ -9,6 +9,7 @@ import type {
   CreateVersionParams,
   DesignSessionData,
   MessageResult,
+  ProgressRepository,
   SchemaData,
   SchemaRepository,
   ValidationRepository,
@@ -27,7 +28,49 @@ const updateBuildingSchemaResultSchema = v.union([
 ])
 
 /**
- * Supabase implementation of SchemaRepository
+ * Supabase implementation of ProgressRepository
+ */
+export class SupabaseProgressRepository implements ProgressRepository {
+  private client: SupabaseClientType
+
+  constructor(client: SupabaseClientType) {
+    this.client = client
+  }
+
+  async sendProgressMessage(params: {
+    designSessionId: string
+    message: string
+    timestamp?: Date
+  }): Promise<{ success: boolean; error?: string }> {
+    try {
+      // プログレスメッセージをassistantメッセージとして一時的に保存
+      // isGenerating=trueでリアルタイムに更新される
+      const { error } = await this.client
+        .from('messages')
+        .insert({
+          design_session_id: params.designSessionId,
+          content: params.message,
+          role: 'assistant',
+          user_id: null,
+          updated_at: (params.timestamp || new Date()).toISOString(),
+        })
+
+      if (error) {
+        return { success: false, error: error.message }
+      }
+
+      return { success: true }
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      }
+    }
+  }
+}
+
+/**
+ * Supabase implementation of ValidationRepository
  */
 export class SupabaseValidationRepository implements ValidationRepository {
   private client: SupabaseClientType

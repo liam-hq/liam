@@ -62,6 +62,16 @@ export const processChatMessage = async (
   // Convert history format
   const formattedHistory = history.map(([, content]) => content)
 
+  // Create progress callback for real-time updates
+  const onProgress = (progressMessage: string) => {
+    repositories.progress.sendProgressMessage({
+      designSessionId,
+      message: progressMessage,
+    }).catch((error) => {
+      console.error('Failed to send progress message:', error)
+    })
+  }
+
   // Create workflow state
   const workflowState: WorkflowState = {
     userInput: message,
@@ -73,6 +83,7 @@ export const processChatMessage = async (
     repositories,
     designSessionId,
     userId,
+    onProgress,
   }
 
   // Execute workflow

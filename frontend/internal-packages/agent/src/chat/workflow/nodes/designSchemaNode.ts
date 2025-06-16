@@ -44,9 +44,9 @@ const parseStructuredResponse = (
       validationResult.issues,
     )
     return null
-  } catch (error) {
+  } catch (parseError) {
     // If JSON parsing fails, log the error and return null
-    console.warn('Failed to parse BuildAgent response as JSON:', error)
+    console.warn('Failed to parse BuildAgent response as JSON:', parseError)
     return null
   }
 }
@@ -61,17 +61,20 @@ const applySchemaChanges = async (
   message: string,
   state: WorkflowState,
 ): Promise<WorkflowState> => {
-  const result = await state.repositories.schema.createVersion({
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+  const versionResult = await state.repositories.schema.createVersion({
     buildingSchemaId,
     latestVersionNumber,
     patch: schemaChanges,
   })
 
-  if (!result.success) {
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+  if (!versionResult.success) {
     return {
       ...state,
       generatedAnswer: message,
-      error: result.error || 'Failed to update schema',
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      error: versionResult.error || 'Failed to update schema',
     }
   }
 
@@ -154,6 +157,11 @@ export async function designSchemaNode(
     ? (state.retryCount || 0) + 1
     : state.retryCount || 0
 
+  // Log retry attempt if this is a retry
+  if (retryCount > 0) {
+    console.error(`DesignSchema retry attempt ${retryCount}/3`)
+  }
+
   const { agent, schemaText } = await prepareSchemaDesign(state)
 
   // Format chat history for prompt
@@ -163,7 +171,8 @@ export async function designSchemaNode(
       : 'No previous conversation.'
 
   const brdContext = state.brd
-    ? `\n\nBusiness Requirements:\n${state.brd.join('\n')}`
+    ? // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      `\n\nBusiness Requirements:\n${state.brd.join('\n')}`
     : ''
 
   // Create prompt variables directly
@@ -177,13 +186,24 @@ export async function designSchemaNode(
     // Use agent's generate method with prompt variables
     const response = await agent.generate(promptVariables)
     const result = await handleBuildAgentResponse(response, state)
+
+    // Clear error on successful execution
     return {
       ...result,
       retryCount,
+      error: undefined,
     }
-  } catch (error) {
+  } catch (generateError) {
     const errorMsg =
-      error instanceof Error ? error.message : 'Failed to generate answer'
+      generateError instanceof Error
+        ? generateError.message
+        : 'Failed to generate answer'
+
+    console.error(
+      `DesignSchema node failed (attempt ${retryCount + 1}/3):`,
+      errorMsg,
+    )
+
     return {
       ...state,
       error: errorMsg,

@@ -18,15 +18,12 @@ CRITICAL OUTPUT REQUIREMENTS:
 - Separate different use cases into individual array items
 
 Example output:
-{"brd": ["ユーザー登録機能を実装する", "ログイン画面でメールアドレスとパスワードによる認証を行う", "管理者のみが商品情報を編集できる権限制御を設ける"]}
-
-Previous conversation:
-{chat_history}
-
-User input:
-{user_message}`
+{"brd": ["ユーザー登録機能を実装する", "ログイン画面でメールアドレスとパスワードによる認証を行う", "管理者のみが商品情報を編集できる権限制御を設ける"]}`
 
 export const pmAgentPrompt = ChatPromptTemplate.fromMessages([
   ['system', pmAgentSystemPrompt],
-  ['human', '{user_message}'],
+  [
+    'human',
+    'Previous conversation:\n{chat_history}\n\nUser input:\n{user_message}',
+  ],
 ])

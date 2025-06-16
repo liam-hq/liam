@@ -1,7 +1,7 @@
 'use client'
 
 import type { Schema, TableGroup } from '@liam-hq/db-structure'
-import { type FC, useEffect, useRef, useState, useTransition } from 'react'
+import React, { type FC, useEffect, useRef, useState, useTransition } from 'react'
 import { ChatInput } from '../ChatInput'
 import { ChatMessage } from '../ChatMessage'
 import styles from './Chat.module.css'
@@ -32,9 +32,28 @@ export const Chat: FC<Props> = ({ schemaData, tableGroups, designSession }) => {
     currentUserId,
   )
   const [isLoading, startTransition] = useTransition()
-  const [progressMessages, setProgressMessages] = useState<string[]>([])
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const autoStartExecuted = useRef(false)
+
+  // Extract progress messages from recent messages and filter them out from the main message list
+  const { regularMessages, latestProgressMessages } = React.useMemo(() => {
+    const progressMsgs: string[] = []
+    const regularMsgs: ChatEntry[] = []
+    
+    // Find progress messages and separate them from regular messages
+    for (const message of messages) {
+      if (message.isProgress && message.role !== 'user') {
+        progressMsgs.push(message.content)
+      } else if (!message.isProgress) {
+        regularMsgs.push(message)
+      }
+    }
+    
+    return {
+      regularMessages: regularMsgs,
+      latestProgressMessages: progressMsgs.slice(-10), // Keep last 10 progress messages
+    }
+  }, [messages])
 
   // Get current user ID on component mount
   useEffect(() => {
@@ -76,9 +95,8 @@ export const Chat: FC<Props> = ({ schemaData, tableGroups, designSession }) => {
       message: content,
       schemaData,
       tableGroups,
-      messages,
+      messages: regularMessages,
       designSession,
-      setProgressMessages,
       currentUserId,
     })
 
@@ -110,13 +128,13 @@ export const Chat: FC<Props> = ({ schemaData, tableGroups, designSession }) => {
   return (
     <div className={styles.wrapper}>
       <div className={styles.messagesContainer}>
-        {/* Display all messages */}
-        {messages.map((message, index) => {
+        {/* Display all regular messages */}
+        {regularMessages.map((message, index) => {
           // Check if this is the last AI message and has progress messages
           const isLastAIMessage =
-            message.role !== 'user' && index === messages.length - 1
+            message.role !== 'user' && index === regularMessages.length - 1
           const shouldShowProgress =
-            progressMessages.length > 0 && isLastAIMessage
+            latestProgressMessages.length > 0 && isLastAIMessage
 
           return (
             <ChatMessage
@@ -126,7 +144,7 @@ export const Chat: FC<Props> = ({ schemaData, tableGroups, designSession }) => {
               timestamp={message.timestamp}
               isGenerating={message.isGenerating}
               progressMessages={
-                shouldShowProgress ? progressMessages : undefined
+                shouldShowProgress ? latestProgressMessages : undefined
               }
               showProgress={shouldShowProgress}
             />

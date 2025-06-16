@@ -33,6 +33,9 @@ export type WorkflowState = {
 
   // Repository dependencies for data access
   repositories: Repositories
+
+  // Progress callback for real-time updates
+  onProgress?: (message: string) => void
 }
 
 /**

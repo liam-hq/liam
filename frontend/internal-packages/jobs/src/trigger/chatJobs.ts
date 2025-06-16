@@ -11,6 +11,7 @@ export const processChatTask = task({
   run: async (payload: ChatJobPayload) => {
     logger.log('Starting chat processing job:', {
       buildingSchemaId: payload.buildingSchemaId,
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       messageLength: payload.message.length,
     })
 
@@ -29,7 +30,16 @@ export const processChatTask = task({
 
     logger.log('Chat processing completed:', {
       success: result.success,
+      hasError: !result.success && 'error' in result,
     })
+
+    // Log additional details if processing failed
+    if (!result.success && 'error' in result) {
+      logger.error('Chat processing failed:', {
+        error: result.error,
+        buildingSchemaId: payload.buildingSchemaId,
+      })
+    }
 
     return result
   },

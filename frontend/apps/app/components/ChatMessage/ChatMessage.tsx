@@ -44,6 +44,11 @@ export interface ChatMessageProps {
    * Whether to show progress messages
    */
   showProgress?: boolean
+  /**
+   * Whether this message is a progress message
+   * @default false
+   */
+  isProgress?: boolean
 }
 
 export const ChatMessage: FC<ChatMessageProps> = ({
@@ -57,6 +62,7 @@ export const ChatMessage: FC<ChatMessageProps> = ({
   children,
   progressMessages,
   showProgress,
+  isProgress = false,
 }) => {
   // Only format and display timestamp if it exists
   const formattedTime = timestamp
