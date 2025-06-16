@@ -45,7 +45,7 @@ export class SupabaseSchemaRepository implements SchemaRepository {
         timeline_items (
           id,
           content,
-          role,
+          item_type,
           user_id,
           created_at,
           updated_at,
@@ -321,10 +321,10 @@ export class SupabaseSchemaRepository implements SchemaRepository {
   }
 
   async createMessage(params: CreateMessageParams): Promise<MessageResult> {
-    const { designSessionId, content, role } = params
-    const userId = role === 'user' ? params.userId : null
+    const { designSessionId, content, role: itemType } = params
+    const userId = itemType === 'user' ? params.userId : null
     const buildingSchemaVersionId =
-      role === 'schema_version' ? params.buildingSchemaVersionId : null
+      itemType === 'schema_version' ? params.buildingSchemaVersionId : null
 
     const now = new Date().toISOString()
 
@@ -333,7 +333,7 @@ export class SupabaseSchemaRepository implements SchemaRepository {
       .insert({
         design_session_id: designSessionId,
         content,
-        role,
+        item_type: itemType,
         user_id: userId,
         building_schema_version_id: buildingSchemaVersionId,
         updated_at: now,

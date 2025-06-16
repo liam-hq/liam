@@ -93,16 +93,6 @@ CREATE TYPE "public"."knowledge_type" AS ENUM (
 ALTER TYPE "public"."knowledge_type" OWNER TO "postgres";
 
 
-CREATE TYPE "public"."message_role_enum" AS ENUM (
-    'user',
-    'assistant',
-    'schema_version'
-);
-
-
-ALTER TYPE "public"."message_role_enum" OWNER TO "postgres";
-
-
 CREATE TYPE "public"."schema_format_enum" AS ENUM (
     'schemarb',
     'postgres',
@@ -123,6 +113,16 @@ CREATE TYPE "public"."severity_enum" AS ENUM (
 
 
 ALTER TYPE "public"."severity_enum" OWNER TO "postgres";
+
+
+CREATE TYPE "public"."timeline_item_type_enum" AS ENUM (
+    'user',
+    'assistant',
+    'schema_version'
+);
+
+
+ALTER TYPE "public"."timeline_item_type_enum" OWNER TO "postgres";
 
 
 CREATE OR REPLACE FUNCTION "public"."accept_invitation"("p_token" "uuid") RETURNS "jsonb"
@@ -1316,7 +1316,7 @@ CREATE TABLE IF NOT EXISTS "public"."timeline_items" (
     "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
     "design_session_id" "uuid" NOT NULL,
     "user_id" "uuid",
-    "role" "public"."message_role_enum" NOT NULL,
+    "item_type" "public"."timeline_item_type_enum" NOT NULL,
     "content" "text" NOT NULL,
     "created_at" timestamp(3) with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
     "updated_at" timestamp(3) with time zone NOT NULL,
@@ -1543,7 +1543,7 @@ CREATE INDEX "idx_timeline_items_design_session_created_at" ON "public"."timelin
 
 
 
-CREATE INDEX "idx_timeline_items_role_created_at" ON "public"."timeline_items" USING "btree" ("role", "created_at" DESC);
+CREATE INDEX "idx_timeline_items_item_type_created_at" ON "public"."timeline_items" USING "btree" ("item_type", "created_at" DESC);
 
 
 
@@ -1591,7 +1591,7 @@ CREATE INDEX "timeline_items_building_schema_version_id_idx" ON "public"."timeli
 
 
 
-CREATE INDEX "timeline_items_schema_version_role_idx" ON "public"."timeline_items" USING "btree" ("design_session_id", "created_at") WHERE ("role" = 'schema_version'::"public"."message_role_enum");
+CREATE INDEX "timeline_items_schema_version_item_type_idx" ON "public"."timeline_items" USING "btree" ("design_session_id", "created_at") WHERE ("item_type" = 'schema_version'::"public"."timeline_item_type_enum");
 
 
 

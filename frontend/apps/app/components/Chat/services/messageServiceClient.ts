@@ -20,7 +20,7 @@ const realtimeMessageSchema = v.object({
   id: v.string(),
   design_session_id: v.pipe(v.string(), v.uuid()),
   content: v.string(),
-  role: v.picklist(['user', 'assistant', 'schema_version']),
+  item_type: v.picklist(['user', 'assistant', 'schema_version']),
   user_id: v.nullable(v.string()),
   created_at: v.string(),
   updated_at: v.string(),
@@ -74,7 +74,7 @@ export const convertMessageToChatEntry = (message: Message): ChatEntry => {
   return {
     id: message.id,
     content: message.content,
-    role: message.role,
+    role: message.item_type,
     timestamp: new Date(message.created_at),
     isGenerating: false,
   }

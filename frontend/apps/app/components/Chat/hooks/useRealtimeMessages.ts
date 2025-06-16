@@ -61,7 +61,7 @@ export type Message =
   | {
       id: string
       content: string
-      role: Database['public']['Enums']['message_role_enum']
+      item_type: Database['public']['Enums']['timeline_item_type_enum']
       user_id: string | null
       created_at: string
       updated_at: string

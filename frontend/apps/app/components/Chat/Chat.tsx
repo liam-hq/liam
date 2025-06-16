@@ -52,7 +52,7 @@ export const Chat: FC<Props> = ({ schemaData, tableGroups, designSession }) => {
     // Only auto-start if there's exactly one message and it's from user
     if (
       designSession.messages.length === 1 &&
-      designSession.messages[0].role === 'user'
+      designSession.messages[0].item_type === 'user'
     ) {
       const initialMessage = designSession.messages[0]
       autoStartExecuted.current = true

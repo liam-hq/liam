@@ -193,7 +193,7 @@ async function saveInitialMessage(
   const messageData: TablesInsert<'timeline_items'> = {
     design_session_id: designSessionId,
     content,
-    role: 'user',
+    item_type: 'user',
     user_id: userId,
     updated_at: now,
     organization_id: organizationId,

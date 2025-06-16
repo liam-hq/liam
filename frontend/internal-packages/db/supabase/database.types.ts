@@ -1132,8 +1132,8 @@ export type Database = {
           created_at: string
           design_session_id: string
           id: string
+          item_type: Database['public']['Enums']['timeline_item_type_enum']
           organization_id: string
-          role: Database['public']['Enums']['message_role_enum']
           updated_at: string
           user_id: string | null
         }
@@ -1143,8 +1143,8 @@ export type Database = {
           created_at?: string
           design_session_id: string
           id?: string
+          item_type: Database['public']['Enums']['timeline_item_type_enum']
           organization_id: string
-          role: Database['public']['Enums']['message_role_enum']
           updated_at: string
           user_id?: string | null
         }
@@ -1154,8 +1154,8 @@ export type Database = {
           created_at?: string
           design_session_id?: string
           id?: string
+          item_type?: Database['public']['Enums']['timeline_item_type_enum']
           organization_id?: string
-          role?: Database['public']['Enums']['message_role_enum']
           updated_at?: string
           user_id?: string | null
         }
@@ -1370,9 +1370,9 @@ export type Database = {
         | 'PROJECT_RULES_CONSISTENCY'
         | 'SECURITY_OR_SCALABILITY'
       knowledge_type: 'SCHEMA' | 'DOCS'
-      message_role_enum: 'user' | 'assistant' | 'schema_version'
       schema_format_enum: 'schemarb' | 'postgres' | 'prisma' | 'tbls'
       severity_enum: 'CRITICAL' | 'WARNING' | 'POSITIVE' | 'QUESTION'
+      timeline_item_type_enum: 'user' | 'assistant' | 'schema_version'
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1499,9 +1499,9 @@ export const Constants = {
         'SECURITY_OR_SCALABILITY',
       ],
       knowledge_type: ['SCHEMA', 'DOCS'],
-      message_role_enum: ['user', 'assistant', 'schema_version'],
       schema_format_enum: ['schemarb', 'postgres', 'prisma', 'tbls'],
       severity_enum: ['CRITICAL', 'WARNING', 'POSITIVE', 'QUESTION'],
+      timeline_item_type_enum: ['user', 'assistant', 'schema_version'],
     },
   },
 } as const
