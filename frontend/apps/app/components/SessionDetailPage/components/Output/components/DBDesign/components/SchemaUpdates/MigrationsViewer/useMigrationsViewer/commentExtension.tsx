@@ -12,7 +12,10 @@ import type { ReviewComment } from './types'
 
 // Widget that displays comments as DOM elements
 class CommentWidget extends WidgetType {
-  constructor(readonly comment: ReviewComment) {
+  constructor(
+    readonly comment: ReviewComment,
+    readonly onQuickFix: (comment: string) => void,
+  ) {
     super()
   }
 
@@ -20,7 +23,11 @@ class CommentWidget extends WidgetType {
     const container = document.createElement('div')
     const root = createRoot(container)
     root.render(
-      <Comment comment={this.comment.message} level={this.comment.severity} />,
+      <Comment
+        comment={this.comment.message}
+        level={this.comment.severity}
+        onQuickFix={this.onQuickFix}
+      />,
     )
 
     return container
@@ -49,29 +56,37 @@ const createLineDecorations = (comment: ReviewComment, doc: Text) => {
 }
 
 // Helper function to create widget decoration for a comment
-const createWidgetDecoration = (comment: ReviewComment, doc: Text) => {
+const createWidgetDecoration = (
+  comment: ReviewComment,
+  doc: Text,
+  onQuickFix: (comment: string) => void,
+) => {
   const widgetLine = doc.line(comment.toLine)
   return Decoration.widget({
-    widget: new CommentWidget(comment),
+    widget: new CommentWidget(comment, onQuickFix),
     side: 1,
   }).range(widgetLine.to)
 }
 
 // Helper function to create all decorations for a comment
-const createCommentDecorations = (comment: ReviewComment, doc: Text) => {
+const createCommentDecorations = (
+  comment: ReviewComment,
+  doc: Text,
+  onQuickFix: (comment: string) => void,
+) => {
   if (comment.toLine > doc.lines) {
     return []
   }
 
   const lineDecorations = createLineDecorations(comment, doc)
-  const widgetDecoration = createWidgetDecoration(comment, doc)
+  const widgetDecoration = createWidgetDecoration(comment, doc, onQuickFix)
 
   return [...lineDecorations, widgetDecoration]
 }
 
 export const setCommentsEffect = StateEffect.define<ReviewComment[]>()
 
-export const commentStateField = () => {
+export const commentStateField = (onQuickFix: (comment: string) => void) => {
   return StateField.define<DecorationSet>({
     create() {
       return Decoration.none
@@ -85,7 +100,7 @@ export const commentStateField = () => {
           }
 
           const newDecorations = comments.flatMap((comment) =>
-            createCommentDecorations(comment, tr.state.doc),
+            createCommentDecorations(comment, tr.state.doc, onQuickFix),
           )
 
           return Decoration.set(newDecorations, true)

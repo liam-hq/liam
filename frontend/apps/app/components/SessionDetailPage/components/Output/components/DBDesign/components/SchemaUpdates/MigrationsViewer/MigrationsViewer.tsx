@@ -4,19 +4,22 @@ import { type ReviewComment, useMigrationsViewer } from './useMigrationsViewer'
 
 type Props = {
   doc: string
-  reviewComments: ReviewComment[]
+  comments: ReviewComment[]
   showComments: boolean
+  onQuickFix?: (comment: string) => void
 }
 
 export const MigrationsViewer: FC<Props> = ({
   doc,
-  reviewComments,
+  comments,
   showComments,
+  onQuickFix,
 }) => {
   const { ref } = useMigrationsViewer({
     doc,
-    reviewComments,
+    comments,
     showComments,
+    onQuickFix,
   })
 
   return <div ref={ref} className={styles.wrapper} />

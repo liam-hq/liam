@@ -25,7 +25,21 @@ type Props = {
 export const SessionDetailPage: FC<Props> = ({ designSession }) => {
   const [schema, setSchema] = useState<Schema | null>(null)
   const [isLoadingSchema, startTransition] = useTransition()
+  const [quickFixMessage, setQuickFixMessage] = useState<string>('')
   const designSessionId = designSession.id
+
+  const handleQuickFix = useCallback((comment: string) => {
+    const fixMessage = `以下のQA Agentからの指摘を修正してください：
+
+"${comment}"
+
+この問題を解決するための具体的な修正案を提案してください。`
+    setQuickFixMessage(fixMessage)
+  }, [])
+
+  const handleMessageSent = useCallback(() => {
+    setQuickFixMessage('')
+  }, [])
 
   // Load initial schema data
   useEffect(() => {
@@ -116,10 +130,15 @@ export const SessionDetailPage: FC<Props> = ({ designSession }) => {
     <div className={styles.container}>
       <div className={styles.columns}>
         <div className={styles.chatSection}>
-          <Chat schemaData={schema} designSession={designSession} />
+          <Chat
+            schemaData={schema}
+            designSession={designSession}
+            initialMessage={quickFixMessage}
+            onSendMessage={handleMessageSent}
+          />
         </div>
         <div className={styles.outputSection}>
-          <Output schema={schema} />
+          <Output schema={schema} onQuickFix={handleQuickFix} />
         </div>
       </div>
     </div>

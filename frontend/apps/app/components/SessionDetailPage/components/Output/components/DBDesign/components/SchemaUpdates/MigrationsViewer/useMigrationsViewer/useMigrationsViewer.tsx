@@ -23,14 +23,16 @@ const baseExtensions: Extension[] = [
 
 type Props = {
   doc: string
-  reviewComments?: ReviewComment[]
+  comments?: ReviewComment[]
   showComments?: boolean
+  onQuickFix?: (comment: string) => void
 }
 
 export const useMigrationsViewer = ({
   doc,
-  reviewComments = [],
+  comments = [],
   showComments = false,
+  onQuickFix,
 }: Props) => {
   const ref = useRef<HTMLDivElement>(null)
   const [container, setContainer] = useState<HTMLDivElement>()
@@ -50,9 +52,10 @@ export const useMigrationsViewer = ({
         setView(undefined)
       }
 
-      const extensions = showComments
-        ? [...baseExtensions, commentStateField()]
-        : baseExtensions
+      const extensions =
+        showComments && onQuickFix
+          ? [...baseExtensions, commentStateField(onQuickFix)]
+          : baseExtensions
 
       const state = EditorState.create({
         doc,
@@ -64,19 +67,19 @@ export const useMigrationsViewer = ({
       })
       setView(viewCurrent)
 
-      if (showComments && reviewComments.length > 0) {
-        const commentEffect = setCommentsEffect.of(reviewComments)
+      if (showComments && comments.length > 0) {
+        const commentEffect = setCommentsEffect.of(comments)
         viewCurrent.dispatch({ effects: [commentEffect] })
       }
     }
-  }, [doc, container, showComments, reviewComments])
+  }, [doc, container, showComments, comments])
 
   useEffect(() => {
     if (!view || !showComments) return
 
-    const effect = setCommentsEffect.of(reviewComments)
+    const effect = setCommentsEffect.of(comments)
     view.dispatch({ effects: [effect] })
-  }, [reviewComments, view, showComments])
+  }, [comments, view, showComments])
 
   useEffect(() => {
     return () => {

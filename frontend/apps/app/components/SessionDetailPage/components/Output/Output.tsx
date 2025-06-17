@@ -198,15 +198,16 @@ severity:Low
 type Props = {
   schema: Schema
   artifactContent?: string
+  onQuickFix?: (comment: string) => void
 }
 
-export const Output: FC<Props> = ({ schema, artifactContent }) => {
+export const Output: FC<Props> = ({ schema, artifactContent, onQuickFix }) => {
   return (
     <TabsRoot defaultValue={DEFAULT_OUTPUT_TAB} className={styles.wrapper}>
       <Header />
       <div className={styles.body}>
         <TabsContent value={OUTPUT_TABS.DB_DESIGN}>
-          <DBDesign schema={schema} />
+          <DBDesign schema={schema} onQuickFix={onQuickFix} />
         </TabsContent>
         <TabsContent value={OUTPUT_TABS.ARTIFACT}>
           <Artifact content={artifactContent || sampleContent} />

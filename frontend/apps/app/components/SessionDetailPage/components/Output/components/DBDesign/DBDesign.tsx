@@ -7,13 +7,14 @@ import {} from './components/SchemaUpdates/mock'
 
 type Props = {
   schema: Schema
+  onQuickFix?: (comment: string) => void
 }
 
-export const DBDesign: FC<Props> = ({ schema }) => {
+export const DBDesign: FC<Props> = ({ schema, onQuickFix }) => {
   return (
     <div className={styles.wrapper}>
       <ERD schema={schema} />
-      <SchemaUpdates />
+      <SchemaUpdates onQuickFix={onQuickFix} />
     </div>
   )
 }

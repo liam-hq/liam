@@ -3,9 +3,6 @@
 }
 
 .container {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  gap: var(--spacing-1half);
   padding: var(--spacing-4);
   border-radius: var(--border-radius-md);
   border: solid 1px var(--pane-border);
@@ -15,13 +12,8 @@
 .content {
   display: grid;
   grid-template-rows: auto 1fr;
+  place-items: flex-start;
   gap: var(--spacing-4);
-}
-
-.head {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-1half);
 }
 
 .commenter {
