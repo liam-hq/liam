@@ -1,6 +1,6 @@
 import { TabsContent, TabsList, TabsRoot, TabsTrigger } from '@/components'
-import type { Schema } from '@liam-hq/db-structure'
 import type { FC } from 'react'
+import { useSchema } from '../../providers/SchemaProvider'
 import styles from './Artifact.module.css'
 import { BRDList } from './components/BRDList'
 import { ERD } from './components/ERD'
@@ -8,11 +8,16 @@ import { Header } from './components/Header'
 import { MigrationsViewer } from './components/MigrationsViewer'
 import { BRD_LIST, MIGRATIONS_DOC, REVIEW_COMMENTS } from './mock'
 
-type Props = {
-  schema: Schema
-}
+export const Artifact: FC = () => {
+  const { schema, isLoadingSchema } = useSchema()
 
-export const Artifact: FC<Props> = ({ schema }) => {
+  if (isLoadingSchema) {
+    return <div>Loading schema...</div>
+  }
+
+  if (!schema) {
+    return <div>No schema available</div>
+  }
   return (
     <div className={styles.wrapper}>
       <Header />

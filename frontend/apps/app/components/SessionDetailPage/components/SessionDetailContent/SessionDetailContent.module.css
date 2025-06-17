@@ -1,0 +1,25 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background-color: var(--color-surface-default);
+  gap: var(--spacing-12);
+  padding: var(--spacing-32) var(--spacing-12) var(--spacing-24);
+}
+
+.columns {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-template-rows: 1fr;
+  gap: var(--spacing-32);
+  flex: 1;
+  overflow: hidden;
+}
+
+.chatSection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-32);
+  padding: 0 var(--spacing-32);
+  overflow-y: auto;
+}
