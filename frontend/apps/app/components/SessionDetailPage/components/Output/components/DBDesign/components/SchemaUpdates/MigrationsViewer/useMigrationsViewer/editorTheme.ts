@@ -10,6 +10,10 @@ export const customTheme = EditorView.theme({
   },
   '.cm-lineNumbers': { color: 'var(--overlay-20)' },
   '.cm-foldGutter': { color: 'var(--overlay-50)' },
+  '.cm-content': {
+    flex: 1,
+    background: 'var(--global-background)',
+  },
   '.cm-selectionBackground': {
     background:
       'linear-gradient(0deg, var(--color-green-alpha-20, rgba(29,237,131,.20)) 0%, var(--color-green-alpha-20, rgba(29,237,131,.20)) 100%), var(--global-background,#141616) !important',
@@ -19,42 +23,9 @@ export const customTheme = EditorView.theme({
     animation: 'slow-blink 1s steps(2,start) infinite',
   },
   '@keyframes slow-blink': { to: { visibility: 'hidden' } },
-
-  // Styles for review comments
-  '.severity-bg-high': {
-    backgroundColor: 'rgba(239, 68, 68, 0.1)',
-  },
-  '.severity-bg-medium': {
-    backgroundColor: 'rgba(245, 158, 11, 0.1)',
-  },
-  '.severity-bg-low': {
-    backgroundColor: 'rgba(99, 241, 120, 0.1)',
-  },
-  '.cm-comment-widget': {
-    padding: '8px 12px',
-    marginLeft: '30px',
-    borderLeft: '3px solid',
-    marginTop: '4px',
-    borderRadius: '0 4px 4px 0',
-  },
-  '.severity-high': {
-    backgroundColor: '#fee2e2',
-    borderColor: '#ef4444',
-    color: '#333',
-  },
-  '.severity-medium': {
-    backgroundColor: '#fffbe6',
-    borderColor: '#f59e0b',
-    color: '#333',
-  },
-  '.severity-low': {
-    backgroundColor: '#eefff4',
-    borderColor: '#63f187',
-    color: '#333',
-  },
 })
 
-// SQLシンタックスハイライトのスタイル
+// SQL syntax highlighting styles
 export const sqlHighlightStyle = HighlightStyle.define([
   // DDL Keywords (CREATE, ALTER, DROP, TABLE, etc.)
   { tag: tags.keyword, color: '#FF6B9D', fontWeight: 'bold' },

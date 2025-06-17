@@ -6,6 +6,8 @@ import {
   EditorView,
   WidgetType,
 } from '@codemirror/view'
+import { createRoot } from 'react-dom/client'
+import { Comment } from './Comment'
 import type { ReviewComment } from './types'
 
 // Widget that displays comments as DOM elements
@@ -15,10 +17,13 @@ class CommentWidget extends WidgetType {
   }
 
   toDOM() {
-    const wrap = document.createElement('div')
-    wrap.className = `cm-comment-widget severity-${this.comment.severity.toLowerCase()}`
-    wrap.textContent = this.comment.message
-    return wrap
+    const container = document.createElement('div')
+    const root = createRoot(container)
+    root.render(
+      <Comment comment={this.comment.message} level={this.comment.severity} />,
+    )
+
+    return container
   }
 
   ignoreEvent() {
