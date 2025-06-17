@@ -3,6 +3,7 @@
 import { sql } from '@codemirror/lang-sql'
 import { foldGutter, syntaxHighlighting } from '@codemirror/language'
 import { lintGutter } from '@codemirror/lint'
+import { unifiedMergeView } from '@codemirror/merge'
 import { EditorState, type Extension } from '@codemirror/state'
 import { drawSelection, lineNumbers } from '@codemirror/view'
 import { EditorView } from 'codemirror'
@@ -23,6 +24,8 @@ const baseExtensions: Extension[] = [
 
 type Props = {
   doc: string
+  prevDoc?: string
+  showDiff?: boolean
   comments?: ReviewComment[]
   showComments?: boolean
   onQuickFix?: (comment: string) => void
@@ -30,6 +33,8 @@ type Props = {
 
 export const useMigrationsViewer = ({
   doc,
+  prevDoc,
+  showDiff = false,
   comments = [],
   showComments = false,
   onQuickFix,
@@ -44,35 +49,82 @@ export const useMigrationsViewer = ({
     }
   }, [])
 
+  const buildExtensions = (
+    showComments: boolean,
+    onQuickFix?: (comment: string) => void,
+    showDiff?: boolean,
+    prevDoc?: string,
+  ): Extension[] => {
+    const extensions = [...baseExtensions]
+
+    if (showComments && onQuickFix) {
+      extensions.push(commentStateField(onQuickFix))
+    }
+
+    if (showDiff && prevDoc) {
+      extensions.push(
+        ...unifiedMergeView({
+          original: prevDoc,
+          highlightChanges: true,
+          gutter: true,
+          mergeControls: false,
+          syntaxHighlightDeletions: true,
+          allowInlineDiffs: true,
+        }),
+      )
+    }
+
+    return extensions
+  }
+
+  const createEditorView = (
+    doc: string,
+    extensions: Extension[],
+    container: HTMLDivElement,
+  ): EditorView => {
+    const state = EditorState.create({
+      doc,
+      extensions,
+    })
+
+    return new EditorView({
+      state,
+      parent: container,
+    })
+  }
+
+  const applyComments = (
+    view: EditorView,
+    showComments: boolean,
+    comments: ReviewComment[],
+  ): void => {
+    if (showComments && comments.length > 0) {
+      const commentEffect = setCommentsEffect.of(comments)
+      view.dispatch({ effects: [commentEffect] })
+    }
+  }
+
   // biome-ignore lint/correctness/useExhaustiveDependencies: including view in the dependency array causes an infinite loop
   useEffect(() => {
-    if (container) {
-      if (view) {
-        view.destroy()
-        setView(undefined)
-      }
+    if (!container) return
 
-      const extensions =
-        showComments && onQuickFix
-          ? [...baseExtensions, commentStateField(onQuickFix)]
-          : baseExtensions
-
-      const state = EditorState.create({
-        doc,
-        extensions,
-      })
-      const viewCurrent = new EditorView({
-        state,
-        parent: container,
-      })
-      setView(viewCurrent)
-
-      if (showComments && comments.length > 0) {
-        const commentEffect = setCommentsEffect.of(comments)
-        viewCurrent.dispatch({ effects: [commentEffect] })
-      }
+    // Clean up existing view
+    if (view) {
+      view.destroy()
+      setView(undefined)
     }
-  }, [doc, container, showComments, comments])
+
+    const extensions = buildExtensions(
+      showComments,
+      onQuickFix,
+      showDiff,
+      prevDoc,
+    )
+    const viewCurrent = createEditorView(doc, extensions, container)
+    setView(viewCurrent)
+
+    applyComments(viewCurrent, showComments, comments)
+  }, [doc, prevDoc, showDiff, container, showComments, comments])
 
   useEffect(() => {
     if (!view || !showComments) return

@@ -8,6 +8,7 @@
     "@codemirror/lang-yaml": "6.1.2",
     "@codemirror/language": "6.11.0",
     "@codemirror/lint": "6.8.5",
+    "@codemirror/merge": "6.10.2",
     "@codemirror/state": "6.5.2",
     "@codemirror/view": "6.36.8",
     "@electric-sql/pglite": "0.3.2",

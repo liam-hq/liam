@@ -10,12 +10,14 @@ import styles from './SchemaUpdates.module.css'
 
 type Props = {
   schemaUpdatesDoc: string
+  prevSchemaUpdatesDoc?: string
   comments: ReviewComment[]
   onQuickFix?: (comment: string) => void
 }
 
 export const SchemaUpdates: FC<Props> = ({
   schemaUpdatesDoc,
+  prevSchemaUpdatesDoc,
   comments,
   onQuickFix,
 }) => {
@@ -45,6 +47,8 @@ export const SchemaUpdates: FC<Props> = ({
       </div>
       <MigrationsViewer
         doc={schemaUpdatesDoc}
+        prevDoc={prevSchemaUpdatesDoc}
+        showDiff={showDiffView}
         comments={comments}
         showComments={showReviewComments}
         onQuickFix={onQuickFix}

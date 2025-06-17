@@ -8,6 +8,7 @@ import type { ReviewComment } from './components/SchemaUpdates/MigrationsViewer/
 type Props = {
   schema: Schema
   schemaUpdatesDoc: string
+  prevSchemaUpdatesDoc?: string
   comments: ReviewComment[]
   onQuickFix?: (comment: string) => void
 }
@@ -15,6 +16,7 @@ type Props = {
 export const DBDesign: FC<Props> = ({
   schema,
   schemaUpdatesDoc,
+  prevSchemaUpdatesDoc,
   comments,
   onQuickFix,
 }) => {
@@ -23,6 +25,7 @@ export const DBDesign: FC<Props> = ({
       <ERD schema={schema} />
       <SchemaUpdates
         schemaUpdatesDoc={schemaUpdatesDoc}
+        prevSchemaUpdatesDoc={prevSchemaUpdatesDoc}
         comments={comments}
         onQuickFix={onQuickFix}
       />

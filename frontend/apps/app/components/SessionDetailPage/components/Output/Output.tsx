@@ -20,6 +20,18 @@ const OutputContent: FC<OutputContentProps> = ({ onQuickFix }) => {
   const { state, versionData } = useOutputUI()
   const currentVersionData = versionData[state.selectedVersion]
 
+  // Get previous version's schemaUpdatesDoc
+  const versionKeys = Object.keys(versionData)
+    .map(Number)
+    .sort((a, b) => a - b)
+  const currentVersionIndex = versionKeys.indexOf(state.selectedVersion)
+  const prevVersionKey =
+    currentVersionIndex > 0 ? versionKeys[currentVersionIndex - 1] : null
+  const prevSchemaUpdatesDoc =
+    prevVersionKey !== null
+      ? versionData[prevVersionKey].schemaUpdatesDoc
+      : undefined
+
   return (
     <TabsRoot defaultValue={DEFAULT_OUTPUT_TAB} className={styles.wrapper}>
       <Header />
@@ -28,6 +40,7 @@ const OutputContent: FC<OutputContentProps> = ({ onQuickFix }) => {
           <DBDesign
             schema={currentVersionData.schema}
             schemaUpdatesDoc={currentVersionData.schemaUpdatesDoc}
+            prevSchemaUpdatesDoc={prevSchemaUpdatesDoc}
             comments={currentVersionData.comments}
             onQuickFix={onQuickFix}
           />
