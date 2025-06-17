@@ -120,3 +120,5 @@ export const processor: Processor = async (sql: string) => {
 
   return { value: schema, errors: parseErrors.concat(errors) }
 }
+
+export { deparser } from './deparser.js'
