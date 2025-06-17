@@ -26,6 +26,8 @@ type UserEditingContextValue = {
   setIsPopstateInProgress: (isPopstateInProgress: boolean) => void
   isTableGroupEditMode: boolean
   setIsTableGroupEditMode: (isGroupEditMode: boolean) => void
+  showDiff: boolean
+  setShowDiff: (showDiff: boolean) => void
 }
 
 export const UserEditingContext = createContext<UserEditingContextValue | null>(

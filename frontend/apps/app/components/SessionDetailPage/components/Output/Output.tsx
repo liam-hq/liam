@@ -27,6 +27,8 @@ const OutputContent: FC<OutputContentProps> = ({ onQuickFix }) => {
   const currentVersionIndex = versionKeys.indexOf(state.selectedVersion)
   const prevVersionKey =
     currentVersionIndex > 0 ? versionKeys[currentVersionIndex - 1] : null
+  const prevSchema =
+    prevVersionKey !== null ? versionData[prevVersionKey].schema : undefined
   const prevSchemaUpdatesDoc =
     prevVersionKey !== null
       ? versionData[prevVersionKey].schemaUpdatesDoc
@@ -39,6 +41,7 @@ const OutputContent: FC<OutputContentProps> = ({ onQuickFix }) => {
         <TabsContent value={OUTPUT_TABS.DB_DESIGN}>
           <DBDesign
             schema={currentVersionData.schema}
+            prevSchema={prevSchema}
             schemaUpdatesDoc={currentVersionData.schemaUpdatesDoc}
             prevSchemaUpdatesDoc={prevSchemaUpdatesDoc}
             comments={currentVersionData.comments}

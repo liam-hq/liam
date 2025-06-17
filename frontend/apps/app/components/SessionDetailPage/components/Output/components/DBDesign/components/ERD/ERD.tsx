@@ -7,7 +7,7 @@ import { versionSchema } from '@/schemas'
 import type { Schema } from '@liam-hq/db-structure'
 import clsx from 'clsx'
 import { FileDiff } from 'lucide-react'
-import { type FC, useState } from 'react'
+import { type FC, useMemo, useState } from 'react'
 import { parse } from 'valibot'
 import styles from './ERD.module.css'
 
@@ -21,25 +21,36 @@ const version = parse(versionSchema, {
 
 type Props = {
   schema: Schema
+  prevSchema?: Schema
 }
 
-export const ERD: FC<Props> = ({ schema }) => {
-  const [isShowDiffView, setIsShowDiffView] = useState(false)
+export const ERD: FC<Props> = ({ schema, prevSchema }) => {
+  const [showDiff, setShowDiff] = useState(false)
+
+  const disabled = useMemo(() => {
+    return !prevSchema
+  }, [prevSchema])
 
   return (
     <section className={styles.section}>
       <div className={styles.head}>
         <h2 className={styles.sectionTitle}>ER Diagram</h2>
         <IconButton
-          icon={<FileDiff className={clsx(isShowDiffView && styles.active)} />}
+          disabled={disabled}
+          icon={
+            <FileDiff
+              className={clsx(showDiff && !disabled && styles.active)}
+            />
+          }
           tooltipContent="Diff View"
-          onClick={() => setIsShowDiffView((prev) => !prev)}
+          onClick={() => setShowDiff((prev) => !prev)}
         />
       </div>
       <div className={styles.erdWrapper}>
         <VersionProvider version={version}>
           <ERDRenderer
-            schema={{ current: schema }}
+            showDiff={showDiff}
+            schema={{ current: schema, previous: prevSchema }}
             defaultSidebarOpen={false}
             defaultPanelSizes={[20, 80]}
           />

@@ -7,6 +7,7 @@ import type { ReviewComment } from './components/SchemaUpdates/MigrationsViewer/
 
 type Props = {
   schema: Schema
+  prevSchema?: Schema
   schemaUpdatesDoc: string
   prevSchemaUpdatesDoc?: string
   comments: ReviewComment[]
@@ -15,6 +16,7 @@ type Props = {
 
 export const DBDesign: FC<Props> = ({
   schema,
+  prevSchema,
   schemaUpdatesDoc,
   prevSchemaUpdatesDoc,
   comments,
@@ -22,7 +24,7 @@ export const DBDesign: FC<Props> = ({
 }) => {
   return (
     <div className={styles.wrapper}>
-      <ERD schema={schema} />
+      <ERD schema={schema} prevSchema={prevSchema} />
       <SchemaUpdates
         schemaUpdatesDoc={schemaUpdatesDoc}
         prevSchemaUpdatesDoc={prevSchemaUpdatesDoc}

@@ -3,7 +3,7 @@
 import { IconButton } from '@/components'
 import clsx from 'clsx'
 import { FileDiff, MessageSquareCode } from 'lucide-react'
-import { type FC, useState } from 'react'
+import { type FC, useMemo, useState } from 'react'
 import { MigrationsViewer } from './MigrationsViewer'
 import type { ReviewComment } from './MigrationsViewer/useMigrationsViewer'
 import styles from './SchemaUpdates.module.css'
@@ -21,8 +21,12 @@ export const SchemaUpdates: FC<Props> = ({
   comments,
   onQuickFix,
 }) => {
-  const [showDiffView, setShowDiffView] = useState(false)
+  const [showDiff, setShowDiff] = useState(false)
   const [showReviewComments, setShowReviewComments] = useState(false)
+
+  const disabledShowDiff = useMemo(() => {
+    return !prevSchemaUpdatesDoc
+  }, [prevSchemaUpdatesDoc])
 
   return (
     <section className={styles.section}>
@@ -30,9 +34,14 @@ export const SchemaUpdates: FC<Props> = ({
         <h2 className={styles.sectionTitle}>Schema Updates</h2>
         <div className={styles.controls}>
           <IconButton
-            icon={<FileDiff className={clsx(showDiffView && styles.active)} />}
+            disabled={disabledShowDiff}
+            icon={
+              <FileDiff
+                className={clsx(showDiff && !disabledShowDiff && styles.active)}
+              />
+            }
             tooltipContent="Diff View"
-            onClick={() => setShowDiffView((prev) => !prev)}
+            onClick={() => setShowDiff((prev) => !prev)}
           />
           <IconButton
             icon={
@@ -48,7 +57,7 @@ export const SchemaUpdates: FC<Props> = ({
       <MigrationsViewer
         doc={schemaUpdatesDoc}
         prevDoc={prevSchemaUpdatesDoc}
-        showDiff={showDiffView}
+        showDiff={showDiff}
         comments={comments}
         showComments={showReviewComments}
         onQuickFix={onQuickFix}

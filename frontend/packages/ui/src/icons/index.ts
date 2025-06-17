@@ -23,6 +23,7 @@ export {
   ClipboardList,
   Copy,
   CornerDownLeft,
+  Dot,
   Download,
   Ellipsis,
   Eye,
