@@ -35,12 +35,9 @@ describe('PostgreSQL deparser', () => {
 
     const { value: statements } = deparser(schema)
 
-    expect(statements).toContain(expect.stringMatching(/CREATE TABLE users \(/))
-    expect(statements.join('\n')).toMatch(/id BIGSERIAL NOT NULL/)
+    expect(statements.join('\n')).toMatch(/CREATE TABLE users \(/)
+    expect(statements.join('\n')).toMatch(/id BIGSERIAL PRIMARY KEY/)
     expect(statements.join('\n')).toMatch(/name VARCHAR\(255\) NOT NULL/)
-    expect(statements.join('\n')).toMatch(
-      /CONSTRAINT PRIMARY_id PRIMARY KEY \(id\)/,
-    )
   })
 
   it('should generate columns with default values', () => {

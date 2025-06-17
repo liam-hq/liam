@@ -89,7 +89,11 @@ function generateColumnDefinition(column: Column): string {
     }
   }
 
-  if (column.notNull) {
+  if (column.primary) {
+    definition += ' PRIMARY KEY'
+  }
+
+  if (column.notNull && !column.primary) {
     definition += ' NOT NULL'
   }
 
@@ -109,11 +113,7 @@ function generateInlineConstraints(
   const inlineConstraints: string[] = []
 
   for (const constraint of Object.values(constraints)) {
-    if (constraint.type === 'PRIMARY KEY') {
-      inlineConstraints.push(
-        `CONSTRAINT ${constraint.name} PRIMARY KEY (${constraint.columnName})`,
-      )
-    } else if (constraint.type === 'CHECK') {
+    if (constraint.type === 'CHECK') {
       inlineConstraints.push(
         `CONSTRAINT ${constraint.name} ${constraint.detail}`,
       )
