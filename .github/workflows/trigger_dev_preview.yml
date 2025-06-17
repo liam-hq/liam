@@ -1,4 +1,5 @@
 name: trigger_dev_preview
+# Debug comment: Testing workflow trigger - 2025-06-17
 on:
   pull_request:
     types: [opened, synchronize, reopened, closed]
