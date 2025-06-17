@@ -8,7 +8,7 @@ const meta: Meta<typeof MentionSuggestor> = {
 }
 export default meta
 
-const schema = {
+const _schema = {
   tables: {
     users: {
       name: 'users',
@@ -171,7 +171,6 @@ export const SchemaMention = {
         />
         <MentionSuggestor
           id="mention-suggestor"
-          schema={schema}
           input={input}
           cursorPos={cursorPos}
           enabled={/@[\w-]*$/.test(input.slice(0, cursorPos))}
@@ -225,7 +224,6 @@ export const LimitedItems = {
         />
         <MentionSuggestor
           id="mention-suggestor"
-          schema={schema}
           input={input}
           cursorPos={cursorPos}
           enabled={/@[\w-]*$/.test(input.slice(0, cursorPos))}

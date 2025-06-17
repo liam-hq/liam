@@ -1,6 +1,5 @@
 'use client'
 
-import type { Schema } from '@liam-hq/db-structure'
 import {
   PopoverAnchor,
   PopoverContent,
@@ -35,7 +34,6 @@ type Props = {
   isLoading: boolean
   error?: boolean
   initialMessage?: string
-  schema: Schema
   onSendMessage: (message: string) => void
   onCancel?: () => void
 }
@@ -44,7 +42,6 @@ export const ChatInput: FC<Props> = ({
   isLoading,
   error = false,
   initialMessage = '',
-  schema,
   onSendMessage,
   onCancel,
 }) => {
@@ -202,7 +199,6 @@ export const ChatInput: FC<Props> = ({
                   ref={mentionSuggestorRef}
                   enabled={isMentionSuggestorOpen}
                   id={mentionSuggestorId}
-                  schema={schema}
                   input={message}
                   cursorPos={cursorPos}
                   onSelect={handleMentionSelect}

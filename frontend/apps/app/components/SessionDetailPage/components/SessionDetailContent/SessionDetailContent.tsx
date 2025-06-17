@@ -1,7 +1,5 @@
-'use client'
 import { Chat } from '@/components/Chat'
 import type { FC } from 'react'
-import { useSchema } from '../../providers/SchemaProvider'
 import { Artifact } from '../Artifact'
 import styles from './SessionDetailContent.module.css'
 
@@ -28,13 +26,11 @@ type Props = {
 }
 
 export const SessionDetailContent: FC<Props> = ({ designSession }) => {
-  const { schema } = useSchema()
-
   return (
     <div className={styles.container}>
       <div className={styles.columns}>
         <div className={styles.chatSection}>
-          <Chat schemaData={schema} designSession={designSession} />
+          <Chat designSession={designSession} />
         </div>
         <Artifact />
       </div>

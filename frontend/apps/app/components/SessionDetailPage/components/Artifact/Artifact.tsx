@@ -1,3 +1,4 @@
+'use client'
 import { TabsContent, TabsList, TabsRoot, TabsTrigger } from '@/components'
 import type { FC } from 'react'
 import { useSchema } from '../../providers/SchemaProvider'

@@ -1,6 +1,5 @@
 'use client'
 
-import type { Schema } from '@liam-hq/db-structure'
 import {
   type KeyboardEvent,
   type MouseEvent,
@@ -11,6 +10,7 @@ import {
   useRef,
   useState,
 } from 'react'
+import { useSchema } from '../../../SessionDetailPage/providers/SchemaProvider'
 import type { MentionItem } from '../../types'
 import styles from './MentionSuggestor.module.css'
 import { HighlightedLabel } from './components/HighlightedLabel'
@@ -27,7 +27,6 @@ export type MentionSuggestorHandle = {
 type Props = {
   enabled: boolean
   id: string
-  schema: Schema
   input: string
   cursorPos: number
   maxMatches?: number
@@ -39,7 +38,6 @@ type Props = {
 export const MentionSuggestor = ({
   enabled,
   id,
-  schema,
   input,
   cursorPos,
   maxMatches,
@@ -47,6 +45,7 @@ export const MentionSuggestor = ({
   onClose,
   ref,
 }: Props) => {
+  const { schema } = useSchema()
   const containerRef = useRef<HTMLDivElement>(null)
   const [highlightedIndex, setHighlightedIndex] = useState(0)
 

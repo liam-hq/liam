@@ -1,6 +1,6 @@
 'use client'
 
-import type { Schema, TableGroup } from '@liam-hq/db-structure'
+import type { TableGroup } from '@liam-hq/db-structure'
 import { type FC, useEffect, useRef, useState, useTransition } from 'react'
 import { ChatInput } from '../ChatInput'
 import { ChatMessage } from '../ChatMessage'
@@ -20,12 +20,11 @@ type DesignSession = {
 }
 
 interface Props {
-  schemaData: Schema
   tableGroups?: Record<string, TableGroup>
   designSession: DesignSession
 }
 
-export const Chat: FC<Props> = ({ schemaData, tableGroups, designSession }) => {
+export const Chat: FC<Props> = ({ tableGroups, designSession }) => {
   const [currentUserId, setCurrentUserId] = useState<string | null>(null)
   const { messages, addOrUpdateMessage } = useRealtimeMessages(
     designSession,
@@ -137,11 +136,7 @@ export const Chat: FC<Props> = ({ schemaData, tableGroups, designSession }) => {
         )}
         <div ref={messagesEndRef} />
       </div>
-      <ChatInput
-        onSendMessage={handleSendMessage}
-        isLoading={isLoading}
-        schema={schemaData}
-      />
+      <ChatInput onSendMessage={handleSendMessage} isLoading={isLoading} />
     </div>
   )
 }
