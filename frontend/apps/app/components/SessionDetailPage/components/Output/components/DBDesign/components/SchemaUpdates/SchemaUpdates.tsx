@@ -5,14 +5,20 @@ import clsx from 'clsx'
 import { FileDiff, MessageSquareCode } from 'lucide-react'
 import { type FC, useState } from 'react'
 import { MigrationsViewer } from './MigrationsViewer'
+import type { ReviewComment } from './MigrationsViewer/useMigrationsViewer'
 import styles from './SchemaUpdates.module.css'
-import { MIGRATIONS_DOC, REVIEW_COMMENTS } from './mock'
 
 type Props = {
+  schemaUpdatesDoc: string
+  comments: ReviewComment[]
   onQuickFix?: (comment: string) => void
 }
 
-export const SchemaUpdates: FC<Props> = ({ onQuickFix }) => {
+export const SchemaUpdates: FC<Props> = ({
+  schemaUpdatesDoc,
+  comments,
+  onQuickFix,
+}) => {
   const [showDiffView, setShowDiffView] = useState(false)
   const [showReviewComments, setShowReviewComments] = useState(false)
 
@@ -38,8 +44,8 @@ export const SchemaUpdates: FC<Props> = ({ onQuickFix }) => {
         </div>
       </div>
       <MigrationsViewer
-        doc={MIGRATIONS_DOC}
-        comments={REVIEW_COMMENTS}
+        doc={schemaUpdatesDoc}
+        comments={comments}
         showComments={showReviewComments}
         onQuickFix={onQuickFix}
       />

@@ -9,25 +9,17 @@ import {
   DropdownMenuRoot,
   DropdownMenuTrigger,
 } from '@liam-hq/ui'
-import { type FC, useState } from 'react'
-
-type Version = {
-  id: string
-  label: string
-}
-
-const versions: Version[] = [
-  { id: 'v0', label: 'v0' },
-  { id: 'v1', label: 'v1' },
-  { id: 'v2', label: 'v2' },
-]
+import type { FC } from 'react'
+import { useOutputUI } from '../../hooks/useOutputUI'
+import { AVAILABLE_VERSIONS } from '../../mock/versionData'
 
 export const VersionDropdown: FC = () => {
-  const [selectedVersion, setSelectedVersion] = useState<Version>(versions[0])
+  const { state, actions } = useOutputUI()
+  const { selectedVersion } = state
+  const { setSelectedVersion } = actions
 
-  const handleVersionSelect = (version: Version) => {
+  const handleVersionSelect = (version: number) => {
     setSelectedVersion(version)
-    // TODO: Implement version switching functionality
   }
 
   return (
@@ -38,17 +30,17 @@ export const VersionDropdown: FC = () => {
           size="sm"
           rightIcon={<ChevronDown size={16} />}
         >
-          {selectedVersion.label}
+          v{selectedVersion}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuPortal>
         <DropdownMenuContent align="end" sideOffset={8}>
-          {versions.map((version) => (
+          {AVAILABLE_VERSIONS.map((version) => (
             <DropdownMenuItem
-              key={version.id}
+              key={version}
               onSelect={() => handleVersionSelect(version)}
             >
-              {version.label}
+              v{version}
             </DropdownMenuItem>
           ))}
         </DropdownMenuContent>

@@ -138,7 +138,7 @@ export const SessionDetailPage: FC<Props> = ({ designSession }) => {
           />
         </div>
         <div className={styles.outputSection}>
-          <Output schema={schema} onQuickFix={handleQuickFix} />
+          <Output onQuickFix={handleQuickFix} />
         </div>
       </div>
     </div>
