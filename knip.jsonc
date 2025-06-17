@@ -28,7 +28,9 @@
     // - Temporarily unused vectorstore files (will be re-enabled later)
     "frontend/internal-packages/agent/src/vectorstore/index.ts",
     "frontend/internal-packages/agent/src/vectorstore/supabaseVectorStore.ts",
-    "frontend/internal-packages/agent/src/vectorstore/syncSchemaVectorStore.ts"
+    "frontend/internal-packages/agent/src/vectorstore/syncSchemaVectorStore.ts",
+    // - New deparser export intended for external consumption
+    "frontend/packages/db-structure/src/parser/sql/postgresql/index.ts"
   ],
 
   // Dependencies to ignore when analyzing
