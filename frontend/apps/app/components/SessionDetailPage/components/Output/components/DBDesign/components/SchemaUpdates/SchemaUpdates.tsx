@@ -35,7 +35,11 @@ export const SchemaUpdates: FC = () => {
           />
         </div>
       </div>
-      <MigrationsViewer doc={MIGRATIONS_DOC} reviewComments={REVIEW_COMMENTS} />
+      <MigrationsViewer
+        doc={MIGRATIONS_DOC}
+        reviewComments={REVIEW_COMMENTS}
+        showComments={isShowMigrationReview}
+      />
     </section>
   )
 }
