@@ -62,4 +62,5 @@ export {
   Settings,
   ChevronRight,
   ArrowUpRight,
+  Sparkle,
 } from 'lucide-react'

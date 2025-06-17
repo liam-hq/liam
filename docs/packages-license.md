@@ -2,9 +2,9 @@
 
 
 ## Summary
-* 1408 MIT
-* 214 Apache 2.0
-* 85 ISC
+* 1402 MIT
+* 139 Apache 2.0
+* 84 ISC
 * 36 New BSD
 * 24 Simplified BSD
 * 9 Mozilla Public License 2.0
@@ -120,369 +120,6 @@
 
 
 
-<a name="@aws-crypto/crc32"></a>
-### @aws-crypto/crc32 v3.0.0
-#### 
-
-##### Paths
-* /home/runner/work/liam/liam
-
-<a href="http://www.apache.org/licenses/LICENSE-2.0.txt">Apache 2.0</a> permitted
-
-
-
-<a name="@aws-crypto/sha256-browser"></a>
-### @aws-crypto/sha256-browser v5.2.0
-#### 
-
-##### Paths
-* /home/runner/work/liam/liam
-
-<a href="http://www.apache.org/licenses/LICENSE-2.0.txt">Apache 2.0</a> permitted
-
-
-
-<a name="@aws-crypto/sha256-js"></a>
-### @aws-crypto/sha256-js v5.2.0
-#### 
-
-##### Paths
-* /home/runner/work/liam/liam
-
-<a href="http://www.apache.org/licenses/LICENSE-2.0.txt">Apache 2.0</a> permitted
-
-
-
-<a name="@aws-crypto/supports-web-crypto"></a>
-### @aws-crypto/supports-web-crypto v5.2.0
-#### 
-
-##### Paths
-* /home/runner/work/liam/liam
-
-<a href="http://www.apache.org/licenses/LICENSE-2.0.txt">Apache 2.0</a> permitted
-
-
-
-<a name="@aws-crypto/util"></a>
-### @aws-crypto/util v3.0.0
-#### 
-
-##### Paths
-* /home/runner/work/liam/liam
-
-<a href="http://www.apache.org/licenses/LICENSE-2.0.txt">Apache 2.0</a> permitted
-
-
-
-<a name="@aws-sdk/client-cognito-identity"></a>
-### @aws-sdk/client-cognito-identity v3.821.0
-#### 
-
-##### Paths
-* /home/runner/work/liam/liam
-
-<a href="http://www.apache.org/licenses/LICENSE-2.0.txt">Apache 2.0</a> permitted
-
-
-
-<a name="@aws-sdk/client-sagemaker"></a>
-### @aws-sdk/client-sagemaker v3.821.0
-#### 
-
-##### Paths
-* /home/runner/work/liam/liam
-
-<a href="http://www.apache.org/licenses/LICENSE-2.0.txt">Apache 2.0</a> permitted
-
-
-
-<a name="@aws-sdk/client-sso"></a>
-### @aws-sdk/client-sso v3.821.0
-#### 
-
-##### Paths
-* /home/runner/work/liam/liam
-
-<a href="http://www.apache.org/licenses/LICENSE-2.0.txt">Apache 2.0</a> permitted
-
-
-
-<a name="@aws-sdk/core"></a>
-### @aws-sdk/core v3.821.0
-#### 
-
-##### Paths
-* /home/runner/work/liam/liam
-
-<a href="http://www.apache.org/licenses/LICENSE-2.0.txt">Apache 2.0</a> permitted
-
-
-
-<a name="@aws-sdk/credential-provider-cognito-identity"></a>
-### @aws-sdk/credential-provider-cognito-identity v3.821.0
-#### 
-
-##### Paths
-* /home/runner/work/liam/liam
-
-<a href="http://www.apache.org/licenses/LICENSE-2.0.txt">Apache 2.0</a> permitted
-
-
-
-<a name="@aws-sdk/credential-provider-env"></a>
-### @aws-sdk/credential-provider-env v3.821.0
-#### 
-
-##### Paths
-* /home/runner/work/liam/liam
-
-<a href="http://www.apache.org/licenses/LICENSE-2.0.txt">Apache 2.0</a> permitted
-
-
-
-<a name="@aws-sdk/credential-provider-http"></a>
-### @aws-sdk/credential-provider-http v3.821.0
-#### 
-
-##### Paths
-* /home/runner/work/liam/liam
-
-<a href="http://www.apache.org/licenses/LICENSE-2.0.txt">Apache 2.0</a> permitted
-
-
-
-<a name="@aws-sdk/credential-provider-ini"></a>
-### @aws-sdk/credential-provider-ini v3.821.0
-#### 
-
-##### Paths
-* /home/runner/work/liam/liam
-
-<a href="http://www.apache.org/licenses/LICENSE-2.0.txt">Apache 2.0</a> permitted
-
-
-
-<a name="@aws-sdk/credential-provider-node"></a>
-### @aws-sdk/credential-provider-node v3.821.0
-#### 
-
-##### Paths
-* /home/runner/work/liam/liam
-
-<a href="http://www.apache.org/licenses/LICENSE-2.0.txt">Apache 2.0</a> permitted
-
-
-
-<a name="@aws-sdk/credential-provider-process"></a>
-### @aws-sdk/credential-provider-process v3.821.0
-#### 
-
-##### Paths
-* /home/runner/work/liam/liam
-
-<a href="http://www.apache.org/licenses/LICENSE-2.0.txt">Apache 2.0</a> permitted
-
-
-
-<a name="@aws-sdk/credential-provider-sso"></a>
-### @aws-sdk/credential-provider-sso v3.821.0
-#### 
-
-##### Paths
-* /home/runner/work/liam/liam
-
-<a href="http://www.apache.org/licenses/LICENSE-2.0.txt">Apache 2.0</a> permitted
-
-
-
-<a name="@aws-sdk/credential-provider-web-identity"></a>
-### @aws-sdk/credential-provider-web-identity v3.821.0
-#### 
-
-##### Paths
-* /home/runner/work/liam/liam
-
-<a href="http://www.apache.org/licenses/LICENSE-2.0.txt">Apache 2.0</a> permitted
-
-
-
-<a name="@aws-sdk/credential-providers"></a>
-### @aws-sdk/credential-providers v3.821.0
-#### 
-
-##### Paths
-* /home/runner/work/liam/liam
-
-<a href="http://www.apache.org/licenses/LICENSE-2.0.txt">Apache 2.0</a> permitted
-
-
-
-<a name="@aws-sdk/middleware-host-header"></a>
-### @aws-sdk/middleware-host-header v3.821.0
-#### 
-
-##### Paths
-* /home/runner/work/liam/liam
-
-<a href="http://www.apache.org/licenses/LICENSE-2.0.txt">Apache 2.0</a> permitted
-
-
-
-<a name="@aws-sdk/middleware-logger"></a>
-### @aws-sdk/middleware-logger v3.821.0
-#### 
-
-##### Paths
-* /home/runner/work/liam/liam
-
-<a href="http://www.apache.org/licenses/LICENSE-2.0.txt">Apache 2.0</a> permitted
-
-
-
-<a name="@aws-sdk/middleware-recursion-detection"></a>
-### @aws-sdk/middleware-recursion-detection v3.821.0
-#### 
-
-##### Paths
-* /home/runner/work/liam/liam
-
-<a href="http://www.apache.org/licenses/LICENSE-2.0.txt">Apache 2.0</a> permitted
-
-
-
-<a name="@aws-sdk/middleware-user-agent"></a>
-### @aws-sdk/middleware-user-agent v3.821.0
-#### 
-
-##### Paths
-* /home/runner/work/liam/liam
-
-<a href="http://www.apache.org/licenses/LICENSE-2.0.txt">Apache 2.0</a> permitted
-
-
-
-<a name="@aws-sdk/nested-clients"></a>
-### @aws-sdk/nested-clients v3.821.0
-#### 
-
-##### Paths
-* /home/runner/work/liam/liam
-
-<a href="http://www.apache.org/licenses/LICENSE-2.0.txt">Apache 2.0</a> permitted
-
-
-
-<a name="@aws-sdk/protocol-http"></a>
-### @aws-sdk/protocol-http v3.374.0
-#### 
-
-##### Paths
-* /home/runner/work/liam/liam
-
-<a href="http://www.apache.org/licenses/LICENSE-2.0.txt">Apache 2.0</a> permitted
-
-
-
-<a name="@aws-sdk/region-config-resolver"></a>
-### @aws-sdk/region-config-resolver v3.821.0
-#### 
-
-##### Paths
-* /home/runner/work/liam/liam
-
-<a href="http://www.apache.org/licenses/LICENSE-2.0.txt">Apache 2.0</a> permitted
-
-
-
-<a name="@aws-sdk/signature-v4"></a>
-### @aws-sdk/signature-v4 v3.374.0
-#### 
-
-##### Paths
-* /home/runner/work/liam/liam
-
-<a href="http://www.apache.org/licenses/LICENSE-2.0.txt">Apache 2.0</a> permitted
-
-
-
-<a name="@aws-sdk/token-providers"></a>
-### @aws-sdk/token-providers v3.821.0
-#### 
-
-##### Paths
-* /home/runner/work/liam/liam
-
-<a href="http://www.apache.org/licenses/LICENSE-2.0.txt">Apache 2.0</a> permitted
-
-
-
-<a name="@aws-sdk/types"></a>
-### @aws-sdk/types v3.821.0
-#### 
-
-##### Paths
-* /home/runner/work/liam/liam
-
-<a href="http://www.apache.org/licenses/LICENSE-2.0.txt">Apache 2.0</a> permitted
-
-
-
-<a name="@aws-sdk/util-endpoints"></a>
-### @aws-sdk/util-endpoints v3.821.0
-#### 
-
-##### Paths
-* /home/runner/work/liam/liam
-
-<a href="http://www.apache.org/licenses/LICENSE-2.0.txt">Apache 2.0</a> permitted
-
-
-
-<a name="@aws-sdk/util-locate-window"></a>
-### @aws-sdk/util-locate-window v3.804.0
-#### 
-
-##### Paths
-* /home/runner/work/liam/liam
-
-<a href="http://www.apache.org/licenses/LICENSE-2.0.txt">Apache 2.0</a> permitted
-
-
-
-<a name="@aws-sdk/util-user-agent-browser"></a>
-### @aws-sdk/util-user-agent-browser v3.821.0
-#### 
-
-##### Paths
-* /home/runner/work/liam/liam
-
-<a href="http://www.apache.org/licenses/LICENSE-2.0.txt">Apache 2.0</a> permitted
-
-
-
-<a name="@aws-sdk/util-user-agent-node"></a>
-### @aws-sdk/util-user-agent-node v3.821.0
-#### 
-
-##### Paths
-* /home/runner/work/liam/liam
-
-<a href="http://www.apache.org/licenses/LICENSE-2.0.txt">Apache 2.0</a> permitted
-
-
-
-<a name="@aws-sdk/util-utf8-browser"></a>
-### @aws-sdk/util-utf8-browser v3.259.0
-#### 
-
-##### Paths
-* /home/runner/work/liam/liam
-
-<a href="http://www.apache.org/licenses/LICENSE-2.0.txt">Apache 2.0</a> permitted
-
-
-
 <a name="@babel/code-frame"></a>
 ### @babel/code-frame v7.27.1
 #### 
@@ -495,7 +132,7 @@
 
 
 <a name="@babel/compat-data"></a>
-### @babel/compat-data v7.27.3
+### @babel/compat-data v7.27.5
 #### 
 
 ##### Paths
@@ -517,7 +154,7 @@
 
 
 <a name="@babel/generator"></a>
-### @babel/generator v7.27.3
+### @babel/generator v7.27.5
 #### 
 
 ##### Paths
@@ -715,7 +352,7 @@
 
 
 <a name="@babel/helpers"></a>
-### @babel/helpers v7.27.4
+### @babel/helpers v7.27.6
 #### 
 
 ##### Paths
@@ -726,7 +363,7 @@
 
 
 <a name="@babel/parser"></a>
-### @babel/parser v7.27.4
+### @babel/parser v7.27.5
 #### 
 
 ##### Paths
@@ -924,7 +561,7 @@
 
 
 <a name="@babel/plugin-transform-block-scoping"></a>
-### @babel/plugin-transform-block-scoping v7.27.3
+### @babel/plugin-transform-block-scoping v7.27.5
 #### 
 
 ##### Paths
@@ -1364,7 +1001,7 @@
 
 
 <a name="@babel/plugin-transform-regenerator"></a>
-### @babel/plugin-transform-regenerator v7.27.4
+### @babel/plugin-transform-regenerator v7.27.5
 #### 
 
 ##### Paths
@@ -1562,7 +1199,7 @@
 
 
 <a name="@babel/runtime"></a>
-### @babel/runtime v7.27.4
+### @babel/runtime v7.27.6
 #### 
 
 ##### Paths
@@ -1573,7 +1210,7 @@
 
 
 <a name="@babel/runtime-corejs3"></a>
-### @babel/runtime-corejs3 v7.27.4
+### @babel/runtime-corejs3 v7.27.6
 #### 
 
 ##### Paths
@@ -1606,7 +1243,7 @@
 
 
 <a name="@babel/types"></a>
-### @babel/types v7.27.3
+### @babel/types v7.27.6
 #### 
 
 ##### Paths
@@ -1961,8 +1598,8 @@ Unknown manually approved
 
 
 
-<a name="@codemirror/lang-json"></a>
-### @codemirror/lang-json v6.0.1
+<a name="@codemirror/lang-sql"></a>
+### @codemirror/lang-sql v6.9.0
 #### 
 
 ##### Paths
@@ -1996,17 +1633,6 @@ Unknown manually approved
 
 <a name="@codemirror/lint"></a>
 ### @codemirror/lint v6.8.5
-#### 
-
-##### Paths
-* /home/runner/work/liam/liam
-
-<a href="http://opensource.org/licenses/mit-license">MIT</a> permitted
-
-
-
-<a name="@codemirror/merge"></a>
-### @codemirror/merge v6.10.1
 #### 
 
 ##### Paths
@@ -2380,6 +2006,17 @@ Apache-2 manually approved
 * /home/runner/work/liam/liam
 
 <a href="http://www.apache.org/licenses/LICENSE-2.0.txt">Apache 2.0</a> permitted
+
+
+
+<a name="@graphql-typed-document-node/core"></a>
+### @graphql-typed-document-node/core v3.2.0
+#### 
+
+##### Paths
+* /home/runner/work/liam/liam
+
+<a href="http://opensource.org/licenses/mit-license">MIT</a> permitted
 
 
 
@@ -2802,7 +2439,7 @@ LGPL-3.0-or-later permitted
 
 
 <a name="@langchain/community"></a>
-### @langchain/community v0.3.43
+### @langchain/community v0.3.45
 #### 
 
 ##### Paths
@@ -2813,7 +2450,7 @@ LGPL-3.0-or-later permitted
 
 
 <a name="@langchain/core"></a>
-### @langchain/core v0.3.56
+### @langchain/core v0.3.57
 #### 
 
 ##### Paths
@@ -2846,7 +2483,7 @@ LGPL-3.0-or-later permitted
 
 
 <a name="@langchain/langgraph-sdk"></a>
-### @langchain/langgraph-sdk v0.0.81
+### @langchain/langgraph-sdk v0.0.83
 #### 
 
 ##### Paths
@@ -2857,7 +2494,7 @@ LGPL-3.0-or-later permitted
 
 
 <a name="@langchain/openai"></a>
-### @langchain/openai v0.5.10
+### @langchain/openai v0.5.11
 #### 
 
 ##### Paths
@@ -2869,6 +2506,17 @@ LGPL-3.0-or-later permitted
 
 <a name="@langchain/textsplitters"></a>
 ### @langchain/textsplitters v0.1.0
+#### 
+
+##### Paths
+* /home/runner/work/liam/liam
+
+<a href="http://opensource.org/licenses/mit-license">MIT</a> permitted
+
+
+
+<a name="@langchain/weaviate"></a>
+### @langchain/weaviate v0.2.0
 #### 
 
 ##### Paths
@@ -2900,17 +2548,6 @@ LGPL-3.0-or-later permitted
 
 
 
-<a name="@lezer/json"></a>
-### @lezer/json v1.0.3
-#### 
-
-##### Paths
-* /home/runner/work/liam/liam
-
-<a href="http://opensource.org/licenses/mit-license">MIT</a> permitted
-
-
-
 <a name="@lezer/lr"></a>
 ### @lezer/lr v1.4.2
 #### 
@@ -2924,83 +2561,6 @@ LGPL-3.0-or-later permitted
 
 <a name="@lezer/yaml"></a>
 ### @lezer/yaml v1.0.3
-#### 
-
-##### Paths
-* /home/runner/work/liam/liam
-
-<a href="http://opensource.org/licenses/mit-license">MIT</a> permitted
-
-
-
-<a name="@libsql/client"></a>
-### @libsql/client v0.14.0
-#### 
-
-##### Paths
-* /home/runner/work/liam/liam
-
-<a href="http://opensource.org/licenses/mit-license">MIT</a> permitted
-
-
-
-<a name="@libsql/core"></a>
-### @libsql/core v0.14.0
-#### 
-
-##### Paths
-* /home/runner/work/liam/liam
-
-<a href="http://opensource.org/licenses/mit-license">MIT</a> permitted
-
-
-
-<a name="@libsql/hrana-client"></a>
-### @libsql/hrana-client v0.7.0
-#### 
-
-##### Paths
-* /home/runner/work/liam/liam
-
-<a href="http://opensource.org/licenses/mit-license">MIT</a> permitted
-
-
-
-<a name="@libsql/isomorphic-fetch"></a>
-### @libsql/isomorphic-fetch v0.3.1
-#### 
-
-##### Paths
-* /home/runner/work/liam/liam
-
-<a href="http://opensource.org/licenses/mit-license">MIT</a> permitted
-
-
-
-<a name="@libsql/isomorphic-ws"></a>
-### @libsql/isomorphic-ws v0.1.5
-#### 
-
-##### Paths
-* /home/runner/work/liam/liam
-
-<a href="http://opensource.org/licenses/mit-license">MIT</a> permitted
-
-
-
-<a name="@libsql/linux-x64-gnu"></a>
-### @libsql/linux-x64-gnu v0.4.7
-#### 
-
-##### Paths
-* /home/runner/work/liam/liam
-
-<a href="http://opensource.org/licenses/mit-license">MIT</a> permitted
-
-
-
-<a name="@libsql/linux-x64-musl"></a>
-### @libsql/linux-x64-musl v0.4.7
 #### 
 
 ##### Paths
@@ -3078,17 +2638,6 @@ LGPL-3.0-or-later permitted
 
 <a name="@modelcontextprotocol/sdk"></a>
 ### @modelcontextprotocol/sdk v1.11.4
-#### 
-
-##### Paths
-* /home/runner/work/liam/liam
-
-<a href="http://opensource.org/licenses/mit-license">MIT</a> permitted
-
-
-
-<a name="@neon-rs/load"></a>
-### @neon-rs/load v0.0.4
 #### 
 
 ##### Paths
@@ -4914,7 +4463,7 @@ LGPL-3.0-or-later permitted
 
 
 <a name="@sentry-internal/browser-utils"></a>
-### @sentry-internal/browser-utils v9.24.0
+### @sentry-internal/browser-utils v9.27.0
 #### 
 
 ##### Paths
@@ -4925,7 +4474,7 @@ LGPL-3.0-or-later permitted
 
 
 <a name="@sentry-internal/feedback"></a>
-### @sentry-internal/feedback v9.24.0
+### @sentry-internal/feedback v9.27.0
 #### 
 
 ##### Paths
@@ -4936,7 +4485,7 @@ LGPL-3.0-or-later permitted
 
 
 <a name="@sentry-internal/replay"></a>
-### @sentry-internal/replay v9.24.0
+### @sentry-internal/replay v9.27.0
 #### 
 
 ##### Paths
@@ -4947,7 +4496,7 @@ LGPL-3.0-or-later permitted
 
 
 <a name="@sentry-internal/replay-canvas"></a>
-### @sentry-internal/replay-canvas v9.24.0
+### @sentry-internal/replay-canvas v9.27.0
 #### 
 
 ##### Paths
@@ -4969,7 +4518,7 @@ LGPL-3.0-or-later permitted
 
 
 <a name="@sentry/browser"></a>
-### @sentry/browser v9.24.0
+### @sentry/browser v9.27.0
 #### 
 
 ##### Paths
@@ -5035,7 +4584,7 @@ LGPL-3.0-or-later permitted
 
 
 <a name="@sentry/nextjs"></a>
-### @sentry/nextjs v9.24.0
+### @sentry/nextjs v9.27.0
 #### 
 
 ##### Paths
@@ -5068,7 +4617,7 @@ LGPL-3.0-or-later permitted
 
 
 <a name="@sentry/react"></a>
-### @sentry/react v9.24.0
+### @sentry/react v9.27.0
 #### 
 
 ##### Paths
@@ -5079,7 +4628,7 @@ LGPL-3.0-or-later permitted
 
 
 <a name="@sentry/vercel-edge"></a>
-### @sentry/vercel-edge v9.24.0
+### @sentry/vercel-edge v9.27.0
 #### 
 
 ##### Paths
@@ -5101,7 +4650,7 @@ LGPL-3.0-or-later permitted
 
 
 <a name="@shikijs/core"></a>
-### @shikijs/core v3.4.2
+### @shikijs/core v3.6.0
 #### 
 
 ##### Paths
@@ -5112,7 +4661,7 @@ LGPL-3.0-or-later permitted
 
 
 <a name="@shikijs/engine-javascript"></a>
-### @shikijs/engine-javascript v3.4.2
+### @shikijs/engine-javascript v3.6.0
 #### 
 
 ##### Paths
@@ -5123,7 +4672,7 @@ LGPL-3.0-or-later permitted
 
 
 <a name="@shikijs/engine-oniguruma"></a>
-### @shikijs/engine-oniguruma v3.4.2
+### @shikijs/engine-oniguruma v3.6.0
 #### 
 
 ##### Paths
@@ -5134,7 +4683,7 @@ LGPL-3.0-or-later permitted
 
 
 <a name="@shikijs/langs"></a>
-### @shikijs/langs v3.4.2
+### @shikijs/langs v3.6.0
 #### 
 
 ##### Paths
@@ -5145,7 +4694,7 @@ LGPL-3.0-or-later permitted
 
 
 <a name="@shikijs/rehype"></a>
-### @shikijs/rehype v3.4.2
+### @shikijs/rehype v3.6.0
 #### 
 
 ##### Paths
@@ -5156,7 +4705,7 @@ LGPL-3.0-or-later permitted
 
 
 <a name="@shikijs/themes"></a>
-### @shikijs/themes v3.4.2
+### @shikijs/themes v3.6.0
 #### 
 
 ##### Paths
@@ -5167,7 +4716,7 @@ LGPL-3.0-or-later permitted
 
 
 <a name="@shikijs/transformers"></a>
-### @shikijs/transformers v3.4.2
+### @shikijs/transformers v3.6.0
 #### 
 
 ##### Paths
@@ -5178,7 +4727,7 @@ LGPL-3.0-or-later permitted
 
 
 <a name="@shikijs/types"></a>
-### @shikijs/types v3.4.2
+### @shikijs/types v3.6.0
 #### 
 
 ##### Paths
@@ -5218,457 +4767,6 @@ LGPL-3.0-or-later permitted
 * /home/runner/work/liam/liam
 
 <a href="http://opensource.org/licenses/mit-license">MIT</a> permitted
-
-
-
-<a name="@smithy/abort-controller"></a>
-### @smithy/abort-controller v4.0.4
-#### 
-
-##### Paths
-* /home/runner/work/liam/liam
-
-<a href="http://www.apache.org/licenses/LICENSE-2.0.txt">Apache 2.0</a> permitted
-
-
-
-<a name="@smithy/config-resolver"></a>
-### @smithy/config-resolver v4.1.4
-#### 
-
-##### Paths
-* /home/runner/work/liam/liam
-
-<a href="http://www.apache.org/licenses/LICENSE-2.0.txt">Apache 2.0</a> permitted
-
-
-
-<a name="@smithy/core"></a>
-### @smithy/core v3.5.1
-#### 
-
-##### Paths
-* /home/runner/work/liam/liam
-
-<a href="http://www.apache.org/licenses/LICENSE-2.0.txt">Apache 2.0</a> permitted
-
-
-
-<a name="@smithy/credential-provider-imds"></a>
-### @smithy/credential-provider-imds v4.0.6
-#### 
-
-##### Paths
-* /home/runner/work/liam/liam
-
-<a href="http://www.apache.org/licenses/LICENSE-2.0.txt">Apache 2.0</a> permitted
-
-
-
-<a name="@smithy/eventstream-codec"></a>
-### @smithy/eventstream-codec v1.1.0
-#### 
-
-##### Paths
-* /home/runner/work/liam/liam
-
-<a href="http://www.apache.org/licenses/LICENSE-2.0.txt">Apache 2.0</a> permitted
-
-
-
-<a name="@smithy/fetch-http-handler"></a>
-### @smithy/fetch-http-handler v5.0.4
-#### 
-
-##### Paths
-* /home/runner/work/liam/liam
-
-<a href="http://www.apache.org/licenses/LICENSE-2.0.txt">Apache 2.0</a> permitted
-
-
-
-<a name="@smithy/hash-node"></a>
-### @smithy/hash-node v4.0.4
-#### 
-
-##### Paths
-* /home/runner/work/liam/liam
-
-<a href="http://www.apache.org/licenses/LICENSE-2.0.txt">Apache 2.0</a> permitted
-
-
-
-<a name="@smithy/invalid-dependency"></a>
-### @smithy/invalid-dependency v4.0.4
-#### 
-
-##### Paths
-* /home/runner/work/liam/liam
-
-<a href="http://www.apache.org/licenses/LICENSE-2.0.txt">Apache 2.0</a> permitted
-
-
-
-<a name="@smithy/is-array-buffer"></a>
-### @smithy/is-array-buffer v1.1.0
-#### 
-
-##### Paths
-* /home/runner/work/liam/liam
-
-<a href="http://www.apache.org/licenses/LICENSE-2.0.txt">Apache 2.0</a> permitted
-
-
-
-<a name="@smithy/middleware-content-length"></a>
-### @smithy/middleware-content-length v4.0.4
-#### 
-
-##### Paths
-* /home/runner/work/liam/liam
-
-<a href="http://www.apache.org/licenses/LICENSE-2.0.txt">Apache 2.0</a> permitted
-
-
-
-<a name="@smithy/middleware-endpoint"></a>
-### @smithy/middleware-endpoint v4.1.9
-#### 
-
-##### Paths
-* /home/runner/work/liam/liam
-
-<a href="http://www.apache.org/licenses/LICENSE-2.0.txt">Apache 2.0</a> permitted
-
-
-
-<a name="@smithy/middleware-retry"></a>
-### @smithy/middleware-retry v4.1.10
-#### 
-
-##### Paths
-* /home/runner/work/liam/liam
-
-<a href="http://www.apache.org/licenses/LICENSE-2.0.txt">Apache 2.0</a> permitted
-
-
-
-<a name="@smithy/middleware-serde"></a>
-### @smithy/middleware-serde v4.0.8
-#### 
-
-##### Paths
-* /home/runner/work/liam/liam
-
-<a href="http://www.apache.org/licenses/LICENSE-2.0.txt">Apache 2.0</a> permitted
-
-
-
-<a name="@smithy/middleware-stack"></a>
-### @smithy/middleware-stack v4.0.4
-#### 
-
-##### Paths
-* /home/runner/work/liam/liam
-
-<a href="http://www.apache.org/licenses/LICENSE-2.0.txt">Apache 2.0</a> permitted
-
-
-
-<a name="@smithy/node-config-provider"></a>
-### @smithy/node-config-provider v4.1.3
-#### 
-
-##### Paths
-* /home/runner/work/liam/liam
-
-<a href="http://www.apache.org/licenses/LICENSE-2.0.txt">Apache 2.0</a> permitted
-
-
-
-<a name="@smithy/node-http-handler"></a>
-### @smithy/node-http-handler v4.0.6
-#### 
-
-##### Paths
-* /home/runner/work/liam/liam
-
-<a href="http://www.apache.org/licenses/LICENSE-2.0.txt">Apache 2.0</a> permitted
-
-
-
-<a name="@smithy/property-provider"></a>
-### @smithy/property-provider v4.0.4
-#### 
-
-##### Paths
-* /home/runner/work/liam/liam
-
-<a href="http://www.apache.org/licenses/LICENSE-2.0.txt">Apache 2.0</a> permitted
-
-
-
-<a name="@smithy/protocol-http"></a>
-### @smithy/protocol-http v1.2.0
-#### 
-
-##### Paths
-* /home/runner/work/liam/liam
-
-<a href="http://www.apache.org/licenses/LICENSE-2.0.txt">Apache 2.0</a> permitted
-
-
-
-<a name="@smithy/querystring-builder"></a>
-### @smithy/querystring-builder v4.0.4
-#### 
-
-##### Paths
-* /home/runner/work/liam/liam
-
-<a href="http://www.apache.org/licenses/LICENSE-2.0.txt">Apache 2.0</a> permitted
-
-
-
-<a name="@smithy/querystring-parser"></a>
-### @smithy/querystring-parser v4.0.4
-#### 
-
-##### Paths
-* /home/runner/work/liam/liam
-
-<a href="http://www.apache.org/licenses/LICENSE-2.0.txt">Apache 2.0</a> permitted
-
-
-
-<a name="@smithy/service-error-classification"></a>
-### @smithy/service-error-classification v4.0.5
-#### 
-
-##### Paths
-* /home/runner/work/liam/liam
-
-<a href="http://www.apache.org/licenses/LICENSE-2.0.txt">Apache 2.0</a> permitted
-
-
-
-<a name="@smithy/shared-ini-file-loader"></a>
-### @smithy/shared-ini-file-loader v4.0.4
-#### 
-
-##### Paths
-* /home/runner/work/liam/liam
-
-<a href="http://www.apache.org/licenses/LICENSE-2.0.txt">Apache 2.0</a> permitted
-
-
-
-<a name="@smithy/signature-v4"></a>
-### @smithy/signature-v4 v1.1.0
-#### 
-
-##### Paths
-* /home/runner/work/liam/liam
-
-<a href="http://www.apache.org/licenses/LICENSE-2.0.txt">Apache 2.0</a> permitted
-
-
-
-<a name="@smithy/smithy-client"></a>
-### @smithy/smithy-client v4.4.1
-#### 
-
-##### Paths
-* /home/runner/work/liam/liam
-
-<a href="http://www.apache.org/licenses/LICENSE-2.0.txt">Apache 2.0</a> permitted
-
-
-
-<a name="@smithy/types"></a>
-### @smithy/types v1.2.0
-#### 
-
-##### Paths
-* /home/runner/work/liam/liam
-
-<a href="http://www.apache.org/licenses/LICENSE-2.0.txt">Apache 2.0</a> permitted
-
-
-
-<a name="@smithy/url-parser"></a>
-### @smithy/url-parser v4.0.4
-#### 
-
-##### Paths
-* /home/runner/work/liam/liam
-
-<a href="http://www.apache.org/licenses/LICENSE-2.0.txt">Apache 2.0</a> permitted
-
-
-
-<a name="@smithy/util-base64"></a>
-### @smithy/util-base64 v4.0.0
-#### 
-
-##### Paths
-* /home/runner/work/liam/liam
-
-<a href="http://www.apache.org/licenses/LICENSE-2.0.txt">Apache 2.0</a> permitted
-
-
-
-<a name="@smithy/util-body-length-browser"></a>
-### @smithy/util-body-length-browser v4.0.0
-#### 
-
-##### Paths
-* /home/runner/work/liam/liam
-
-<a href="http://www.apache.org/licenses/LICENSE-2.0.txt">Apache 2.0</a> permitted
-
-
-
-<a name="@smithy/util-body-length-node"></a>
-### @smithy/util-body-length-node v4.0.0
-#### 
-
-##### Paths
-* /home/runner/work/liam/liam
-
-<a href="http://www.apache.org/licenses/LICENSE-2.0.txt">Apache 2.0</a> permitted
-
-
-
-<a name="@smithy/util-buffer-from"></a>
-### @smithy/util-buffer-from v1.1.0
-#### 
-
-##### Paths
-* /home/runner/work/liam/liam
-
-<a href="http://www.apache.org/licenses/LICENSE-2.0.txt">Apache 2.0</a> permitted
-
-
-
-<a name="@smithy/util-config-provider"></a>
-### @smithy/util-config-provider v4.0.0
-#### 
-
-##### Paths
-* /home/runner/work/liam/liam
-
-<a href="http://www.apache.org/licenses/LICENSE-2.0.txt">Apache 2.0</a> permitted
-
-
-
-<a name="@smithy/util-defaults-mode-browser"></a>
-### @smithy/util-defaults-mode-browser v4.0.17
-#### 
-
-##### Paths
-* /home/runner/work/liam/liam
-
-<a href="http://www.apache.org/licenses/LICENSE-2.0.txt">Apache 2.0</a> permitted
-
-
-
-<a name="@smithy/util-defaults-mode-node"></a>
-### @smithy/util-defaults-mode-node v4.0.17
-#### 
-
-##### Paths
-* /home/runner/work/liam/liam
-
-<a href="http://www.apache.org/licenses/LICENSE-2.0.txt">Apache 2.0</a> permitted
-
-
-
-<a name="@smithy/util-endpoints"></a>
-### @smithy/util-endpoints v3.0.6
-#### 
-
-##### Paths
-* /home/runner/work/liam/liam
-
-<a href="http://www.apache.org/licenses/LICENSE-2.0.txt">Apache 2.0</a> permitted
-
-
-
-<a name="@smithy/util-hex-encoding"></a>
-### @smithy/util-hex-encoding v1.1.0
-#### 
-
-##### Paths
-* /home/runner/work/liam/liam
-
-<a href="http://www.apache.org/licenses/LICENSE-2.0.txt">Apache 2.0</a> permitted
-
-
-
-<a name="@smithy/util-middleware"></a>
-### @smithy/util-middleware v1.1.0
-#### 
-
-##### Paths
-* /home/runner/work/liam/liam
-
-<a href="http://www.apache.org/licenses/LICENSE-2.0.txt">Apache 2.0</a> permitted
-
-
-
-<a name="@smithy/util-retry"></a>
-### @smithy/util-retry v4.0.5
-#### 
-
-##### Paths
-* /home/runner/work/liam/liam
-
-<a href="http://www.apache.org/licenses/LICENSE-2.0.txt">Apache 2.0</a> permitted
-
-
-
-<a name="@smithy/util-stream"></a>
-### @smithy/util-stream v4.2.2
-#### 
-
-##### Paths
-* /home/runner/work/liam/liam
-
-<a href="http://www.apache.org/licenses/LICENSE-2.0.txt">Apache 2.0</a> permitted
-
-
-
-<a name="@smithy/util-uri-escape"></a>
-### @smithy/util-uri-escape v1.1.0
-#### 
-
-##### Paths
-* /home/runner/work/liam/liam
-
-<a href="http://www.apache.org/licenses/LICENSE-2.0.txt">Apache 2.0</a> permitted
-
-
-
-<a name="@smithy/util-utf8"></a>
-### @smithy/util-utf8 v1.1.0
-#### 
-
-##### Paths
-* /home/runner/work/liam/liam
-
-<a href="http://www.apache.org/licenses/LICENSE-2.0.txt">Apache 2.0</a> permitted
-
-
-
-<a name="@smithy/util-waiter"></a>
-### @smithy/util-waiter v4.0.5
-#### 
-
-##### Paths
-* /home/runner/work/liam/liam
-
-<a href="http://www.apache.org/licenses/LICENSE-2.0.txt">Apache 2.0</a> permitted
 
 
 
@@ -6102,7 +5200,7 @@ LGPL-3.0-or-later permitted
 
 
 <a name="@supabase/supabase-js"></a>
-### @supabase/supabase-js v2.49.4
+### @supabase/supabase-js v2.49.8
 #### 
 
 ##### Paths
@@ -6202,6 +5300,17 @@ LGPL-3.0-or-later permitted
 
 <a name="@testing-library/jest-dom"></a>
 ### @testing-library/jest-dom v6.5.0
+#### 
+
+##### Paths
+* /home/runner/work/liam/liam
+
+<a href="http://opensource.org/licenses/mit-license">MIT</a> permitted
+
+
+
+<a name="@testing-library/react"></a>
+### @testing-library/react v16.3.0
 #### 
 
 ##### Paths
@@ -6355,7 +5464,7 @@ LGPL-3.0-or-later permitted
 
 
 <a name="@turbo/gen"></a>
-### @turbo/gen v2.5.3
+### @turbo/gen v2.5.4
 #### 
 
 ##### Paths
@@ -6366,7 +5475,7 @@ LGPL-3.0-or-later permitted
 
 
 <a name="@turbo/workspaces"></a>
-### @turbo/workspaces v2.5.3
+### @turbo/workspaces v2.5.4
 #### 
 
 ##### Paths
@@ -6587,17 +5696,6 @@ LGPL-3.0-or-later permitted
 
 <a name="@types/glob"></a>
 ### @types/glob v7.2.0
-#### 
-
-##### Paths
-* /home/runner/work/liam/liam
-
-<a href="http://opensource.org/licenses/mit-license">MIT</a> permitted
-
-
-
-<a name="@types/gtag.js"></a>
-### @types/gtag.js v0.0.20
 #### 
 
 ##### Paths
@@ -7568,6 +6666,17 @@ Unknown manually approved
 
 
 
+<a name="abort-controller-x"></a>
+### abort-controller-x v0.4.3
+#### 
+
+##### Paths
+* /home/runner/work/liam/liam
+
+<a href="http://opensource.org/licenses/mit-license">MIT</a> permitted
+
+
+
 <a name="accepts"></a>
 ### accepts v2.0.0
 #### 
@@ -7580,7 +6689,7 @@ Unknown manually approved
 
 
 <a name="acorn"></a>
-### acorn v8.14.1
+### acorn v8.15.0
 #### 
 
 ##### Paths
@@ -7668,7 +6777,7 @@ Unknown manually approved
 
 
 <a name="ai"></a>
-### ai v4.3.15
+### ai v4.3.16
 #### 
 
 ##### Paths
@@ -8210,17 +7319,6 @@ Python-2.0 manually approved
 
 
 
-<a name="bowser"></a>
-### bowser v2.11.0
-#### 
-
-##### Paths
-* /home/runner/work/liam/liam
-
-<a href="http://opensource.org/licenses/mit-license">MIT</a> permitted
-
-
-
 <a name="brace-expansion"></a>
 ### brace-expansion v1.1.11
 #### 
@@ -8530,7 +7628,7 @@ Python-2.0 manually approved
 
 
 <a name="caniuse-lite"></a>
-### caniuse-lite v1.0.30001720
+### caniuse-lite v1.0.30001721
 #### 
 
 ##### Paths
@@ -8958,17 +8056,6 @@ BlueOak-1.0.0 permitted
 
 
 
-<a name="cohere-ai"></a>
-### cohere-ai v7.17.1
-#### 
-
-##### Paths
-* /home/runner/work/liam/liam
-
-<a href="http://opensource.org/licenses/mit-license">MIT</a> permitted
-
-
-
 <a name="collapse-white-space"></a>
 ### collapse-white-space v2.1.0
 #### 
@@ -9168,7 +8255,7 @@ BlueOak-1.0.0 permitted
 
 
 <a name="console-table-printer"></a>
-### console-table-printer v2.14.1
+### console-table-printer v2.14.2
 #### 
 
 ##### Paths
@@ -9241,17 +8328,6 @@ BlueOak-1.0.0 permitted
 * /home/runner/work/liam/liam
 
 <a href="http://opensource.org/licenses/mit-license">MIT</a> permitted
-
-
-
-<a name="convict"></a>
-### convict v6.2.4
-#### 
-
-##### Paths
-* /home/runner/work/liam/liam
-
-<a href="http://www.apache.org/licenses/LICENSE-2.0.txt">Apache 2.0</a> permitted
 
 
 
@@ -9411,6 +8487,17 @@ BlueOak-1.0.0 permitted
 
 <a name="cronstrue"></a>
 ### cronstrue v2.61.0
+#### 
+
+##### Paths
+* /home/runner/work/liam/liam
+
+<a href="http://opensource.org/licenses/mit-license">MIT</a> permitted
+
+
+
+<a name="cross-fetch"></a>
+### cross-fetch v3.2.0
 #### 
 
 ##### Paths
@@ -9905,7 +8992,7 @@ BlueOak-1.0.0 permitted
 
 
 <a name="detect-libc"></a>
-### detect-libc v2.0.2
+### detect-libc v2.0.4
 #### 
 
 ##### Paths
@@ -10158,7 +9245,7 @@ Artistic-2.0 permitted
 
 
 <a name="effect"></a>
-### effect v3.16.3
+### effect v3.16.5
 #### 
 
 ##### Paths
@@ -10169,7 +9256,7 @@ Artistic-2.0 permitted
 
 
 <a name="electron-to-chromium"></a>
-### electron-to-chromium v1.5.162
+### electron-to-chromium v1.5.165
 #### 
 
 ##### Paths
@@ -10235,7 +9322,7 @@ Artistic-2.0 permitted
 
 
 <a name="encoding-sniffer"></a>
-### encoding-sniffer v0.2.0
+### encoding-sniffer v0.2.1
 #### 
 
 ##### Paths
@@ -11015,17 +10102,6 @@ Artistic-2.0 permitted
 
 
 
-<a name="fast-xml-parser"></a>
-### fast-xml-parser v4.4.1
-#### 
-
-##### Paths
-* /home/runner/work/liam/liam
-
-<a href="http://opensource.org/licenses/mit-license">MIT</a> permitted
-
-
-
 <a name="fastq"></a>
 ### fastq v1.19.1
 #### 
@@ -11203,7 +10279,7 @@ Artistic-2.0 permitted
 
 
 <a name="flags"></a>
-### flags v4.0.0
+### flags v4.0.1
 #### 
 
 ##### Paths
@@ -11445,7 +10521,7 @@ Artistic-2.0 permitted
 
 
 <a name="fumadocs-core"></a>
-### fumadocs-core v15.3.1
+### fumadocs-core v15.4.1
 #### 
 
 ##### Paths
@@ -11467,7 +10543,7 @@ Artistic-2.0 permitted
 
 
 <a name="fumadocs-mdx"></a>
-### fumadocs-mdx v11.6.3
+### fumadocs-mdx v11.6.6
 #### 
 
 ##### Paths
@@ -11478,7 +10554,7 @@ Artistic-2.0 permitted
 
 
 <a name="fumadocs-ui"></a>
-### fumadocs-ui v15.3.1
+### fumadocs-ui v15.4.1
 #### 
 
 ##### Paths
@@ -11752,6 +10828,28 @@ Artistic-2.0 permitted
 
 
 
+<a name="graphql"></a>
+### graphql v16.11.0
+#### 
+
+##### Paths
+* /home/runner/work/liam/liam
+
+<a href="http://opensource.org/licenses/mit-license">MIT</a> permitted
+
+
+
+<a name="graphql-request"></a>
+### graphql-request v6.1.0
+#### 
+
+##### Paths
+* /home/runner/work/liam/liam
+
+<a href="http://opensource.org/licenses/mit-license">MIT</a> permitted
+
+
+
 <a name="gray-matter"></a>
 ### gray-matter v4.0.3
 #### 
@@ -11765,6 +10863,17 @@ Artistic-2.0 permitted
 
 <a name="handlebars"></a>
 ### handlebars v4.7.8
+#### 
+
+##### Paths
+* /home/runner/work/liam/liam
+
+<a href="http://opensource.org/licenses/mit-license">MIT</a> permitted
+
+
+
+<a name="happy-dom"></a>
+### happy-dom v17.6.3
 #### 
 
 ##### Paths
@@ -12149,7 +11258,7 @@ Artistic-2.0 permitted
 
 
 <a name="humanize-duration"></a>
-### humanize-duration v3.32.2
+### humanize-duration v3.33.0
 #### 
 
 ##### Paths
@@ -12885,17 +11994,6 @@ BlueOak-1.0.0 permitted
 
 
 
-<a name="js-base64"></a>
-### js-base64 v3.7.2
-#### 
-
-##### Paths
-* /home/runner/work/liam/liam
-
-<a href="http://opensource.org/licenses/BSD-3-Clause">New BSD</a> permitted
-
-
-
 <a name="js-tiktoken"></a>
 ### js-tiktoken v1.0.20
 #### 
@@ -13231,7 +12329,7 @@ Public Domain manually approved
 
 
 <a name="langfuse"></a>
-### langfuse v3.37.2
+### langfuse v3.37.4
 #### 
 
 ##### Paths
@@ -13242,7 +12340,7 @@ Public Domain manually approved
 
 
 <a name="langfuse-core"></a>
-### langfuse-core v3.37.3
+### langfuse-core v3.37.4
 #### 
 
 ##### Paths
@@ -13298,17 +12396,6 @@ Public Domain manually approved
 
 <a name="levn"></a>
 ### levn v0.4.1
-#### 
-
-##### Paths
-* /home/runner/work/liam/liam
-
-<a href="http://opensource.org/licenses/mit-license">MIT</a> permitted
-
-
-
-<a name="libsql"></a>
-### libsql v0.4.7
 #### 
 
 ##### Paths
@@ -13408,17 +12495,6 @@ Public Domain manually approved
 
 <a name="lodash.camelcase"></a>
 ### lodash.camelcase v4.3.0
-#### 
-
-##### Paths
-* /home/runner/work/liam/liam
-
-<a href="http://opensource.org/licenses/mit-license">MIT</a> permitted
-
-
-
-<a name="lodash.clonedeep"></a>
-### lodash.clonedeep v4.5.0
 #### 
 
 ##### Paths
@@ -14761,6 +13837,39 @@ Public Domain manually approved
 
 <a name="next-themes"></a>
 ### next-themes v0.4.6
+#### 
+
+##### Paths
+* /home/runner/work/liam/liam
+
+<a href="http://opensource.org/licenses/mit-license">MIT</a> permitted
+
+
+
+<a name="nice-grpc"></a>
+### nice-grpc v2.1.12
+#### 
+
+##### Paths
+* /home/runner/work/liam/liam
+
+<a href="http://opensource.org/licenses/mit-license">MIT</a> permitted
+
+
+
+<a name="nice-grpc-client-middleware-retry"></a>
+### nice-grpc-client-middleware-retry v3.1.11
+#### 
+
+##### Paths
+* /home/runner/work/liam/liam
+
+<a href="http://opensource.org/licenses/mit-license">MIT</a> permitted
+
+
+
+<a name="nice-grpc-common"></a>
+### nice-grpc-common v2.0.2
 #### 
 
 ##### Paths
@@ -16156,17 +15265,6 @@ BlueOak-1.0.0 permitted
 
 
 
-<a name="promise-limit"></a>
-### promise-limit v2.7.0
-#### 
-
-##### Paths
-* /home/runner/work/liam/liam
-
-<a href="http://en.wikipedia.org/wiki/ISC_license">ISC</a> permitted
-
-
-
 <a name="promisepipe"></a>
 ### promisepipe v3.0.0
 #### 
@@ -16300,7 +15398,7 @@ BlueOak-1.0.0 permitted
 
 
 <a name="qs"></a>
-### qs v6.11.2
+### qs v6.14.0
 #### 
 
 ##### Paths
@@ -17444,7 +16542,7 @@ BlueOak-1.0.0 permitted
 
 
 <a name="shiki"></a>
-### shiki v3.4.2
+### shiki v3.6.0
 #### 
 
 ##### Paths
@@ -17986,17 +17084,6 @@ Unknown manually approved
 
 
 
-<a name="strnum"></a>
-### strnum v1.1.2
-#### 
-
-##### Paths
-* /home/runner/work/liam/liam
-
-<a href="http://opensource.org/licenses/mit-license">MIT</a> permitted
-
-
-
 <a name="strtok3"></a>
 ### strtok3 v6.3.0
 #### 
@@ -18251,7 +17338,7 @@ Unknown manually approved
 
 
 <a name="terser"></a>
-### terser v5.40.0
+### terser v5.41.0
 #### 
 
 ##### Paths
@@ -18613,6 +17700,17 @@ Unknown manually approved
 
 
 
+<a name="ts-error"></a>
+### ts-error v1.0.6
+#### 
+
+##### Paths
+* /home/runner/work/liam/liam
+
+<a href="http://opensource.org/licenses/mit-license">MIT</a> permitted
+
+
+
 <a name="ts-morph"></a>
 ### ts-morph v12.0.0
 #### 
@@ -18636,7 +17734,7 @@ Unknown manually approved
 
 
 <a name="ts-pattern"></a>
-### ts-pattern v5.7.0
+### ts-pattern v5.7.1
 #### 
 
 ##### Paths
@@ -18746,7 +17844,7 @@ Unknown manually approved
 
 
 <a name="turbo"></a>
-### turbo v2.5.3
+### turbo v2.5.4
 #### 
 
 ##### Paths
@@ -18757,7 +17855,7 @@ Unknown manually approved
 
 
 <a name="turbo-linux-64"></a>
-### turbo-linux-64 v2.5.3
+### turbo-linux-64 v2.5.4
 #### 
 
 ##### Paths
@@ -19152,17 +18250,6 @@ Unknown manually approved
 
 
 
-<a name="url-join"></a>
-### url-join v4.0.1
-#### 
-
-##### Paths
-* /home/runner/work/liam/liam
-
-<a href="http://opensource.org/licenses/mit-license">MIT</a> permitted
-
-
-
 <a name="url-parse"></a>
 ### url-parse v1.5.10
 #### 
@@ -19449,6 +18536,17 @@ Unknown manually approved
 
 
 
+<a name="weaviate-client"></a>
+### weaviate-client v3.6.1
+#### 
+
+##### Paths
+* /home/runner/work/liam/liam
+
+<a href="http://opensource.org/licenses/BSD-3-Clause">New BSD</a> permitted
+
+
+
 <a name="web-streams-polyfill"></a>
 ### web-streams-polyfill v3.3.3
 #### 
@@ -19549,7 +18647,7 @@ Unknown manually approved
 
 
 <a name="whatwg-mimetype"></a>
-### whatwg-mimetype v4.0.0
+### whatwg-mimetype v3.0.0
 #### 
 
 ##### Paths
@@ -19769,7 +18867,7 @@ BlueOak-1.0.0 permitted
 
 
 <a name="yargs-parser"></a>
-### yargs-parser v20.2.9
+### yargs-parser v21.1.1
 #### 
 
 ##### Paths

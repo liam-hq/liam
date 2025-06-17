@@ -46,6 +46,7 @@
     ],
     "overrides": {
       "@radix-ui/react-dialog": "1.1.13",
+      "cookie": "^0.7.0",
       "esbuild": "0.25.4",
       "path-to-regexp": "8.2.0",
       "prismjs": "1.30.0",

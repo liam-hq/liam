@@ -15,7 +15,7 @@
     "@tsconfig/strictest": "2.0.5",
     "@typescript-eslint/eslint-plugin": "8.32.1",
     "@typescript-eslint/parser": "8.32.1",
-    "eslint": "9.27.0"
+    "eslint": "9.28.0"
   },
   "files": [
     "eslint",

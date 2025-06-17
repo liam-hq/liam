@@ -28,7 +28,7 @@
     "@testing-library/user-event": "14.6.1",
     "@types/react": "19.0.0",
     "@vitejs/plugin-react": "4.4.1",
-    "eslint": "9.27.0",
+    "eslint": "9.28.0",
     "happy-dom": "17.6.3",
     "typed-css-modules": "0.9.1",
     "typescript": "5.8.3",

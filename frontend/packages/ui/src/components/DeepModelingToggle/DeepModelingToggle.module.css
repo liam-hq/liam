@@ -1,0 +1,125 @@
+.wrapper {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  height: calc(20px + var(--spacing-1half) * 2);
+  padding: var(--spacing-1half);
+  font-family: 'Inter', sans-serif;
+  font-size: var(--font-size-3);
+  font-weight: 400;
+  line-height: 1.0;
+  border-radius: var(--border-radius-full);
+  border: none;
+  cursor: pointer;
+  overflow: hidden;
+  transition: background-color var(--default-animation-duration)
+    var(--default-timing-function), color var(--default-animation-duration)
+    var(--default-timing-function);
+}
+
+.active {
+  background-color: var(--color-green-alpha-20);
+  color: var(--color-green-400);
+}
+
+.active:hover {
+  background-color: var(--color-green-alpha-40);
+}
+
+.inactive {
+  background-color: var(--color-white-alpha-5);
+  color: var(--color-white-alpha-50);
+}
+
+.inactive:hover {
+  background-color: var(--color-white-alpha-10);
+  color: var(--color-white-alpha-70);
+}
+
+.thumb {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 9999px;
+  padding: 4px;
+  transition: left var(--default-animation-duration)
+    var(--default-timing-function), background-color
+    var(--default-animation-duration) var(--default-timing-function);
+  z-index: 2;
+}
+
+.thumbActive {
+  left: var(--spacing-1half);
+  background-color: var(--color-green-400);
+}
+
+.thumbInactive {
+  left: calc(100% - 20px - var(--spacing-1half));
+  background-color: var(--color-white-alpha-5);
+}
+
+.inactive:hover .thumbInactive {
+  background-color: var(--color-white-alpha-10);
+}
+
+.icon {
+  width: 12px;
+  height: 12px;
+}
+
+.thumbActive .icon {
+  color: var(--color-gray-1000);
+  animation: sparkleRotate 0.5s ease-out;
+}
+
+.thumbInactive .icon {
+  color: var(--color-white-alpha-50);
+}
+
+.inactive:hover .thumbInactive .icon {
+  color: var(--color-white-alpha-70);
+}
+
+.label {
+  position: relative;
+  white-space: nowrap;
+  transition: opacity var(--default-animation-duration)
+    var(--default-timing-function), padding var(--default-animation-duration)
+    var(--default-timing-function);
+  z-index: 1;
+}
+
+.active .label {
+  padding-left: calc(20px + var(--spacing-2));
+  padding-right: var(--spacing-1half);
+}
+
+.inactive .label {
+  padding-left: var(--spacing-1half);
+  padding-right: calc(20px + var(--spacing-2));
+}
+
+/* Hide label during transition */
+.transitioning .label {
+  opacity: 0;
+  transition-duration: 100ms;
+}
+
+@keyframes sparkleRotate {
+  0% {
+    transform: rotate(0deg) scale(0.8);
+    opacity: 0.8;
+  }
+  50% {
+    transform: rotate(180deg) scale(1.1);
+  }
+  100% {
+    transform: rotate(360deg) scale(1);
+    opacity: 1;
+  }
+}

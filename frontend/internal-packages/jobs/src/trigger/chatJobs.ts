@@ -1,6 +1,6 @@
 import { createSupabaseRepositories, processChatMessage } from '@liam-hq/agent'
 import type { ChatProcessorParams } from '@liam-hq/agent'
-import { logger, task } from '@trigger.dev/sdk/v3'
+import { logger, task } from '@trigger.dev/sdk'
 import { createClient } from '../libs/supabase'
 
 // Define type excluding repositories

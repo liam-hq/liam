@@ -71,6 +71,8 @@
   padding: var(--spacing-4) var(--spacing-8) var(--spacing-5);
   display: flex;
   justify-content: flex-end;
+  align-items: center;
+  gap: var(--spacing-3);
 }
 
 .buttonCustom {
