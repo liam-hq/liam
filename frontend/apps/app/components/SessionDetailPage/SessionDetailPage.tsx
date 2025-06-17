@@ -12,7 +12,7 @@ import {
 } from 'react'
 import * as v from 'valibot'
 import styles from './SessionDetailPage.module.css'
-import { Artifact } from './components/Artifact'
+import { Output } from './components/Output'
 import {
   fetchSchemaDataClient,
   setupBuildingSchemaRealtimeSubscription,
@@ -118,7 +118,9 @@ export const SessionDetailPage: FC<Props> = ({ designSession }) => {
         <div className={styles.chatSection}>
           <Chat schemaData={schema} designSession={designSession} />
         </div>
-        <Artifact schema={schema} />
+        <div className={styles.outputSection}>
+          <Output schema={schema} />
+        </div>
       </div>
     </div>
   )

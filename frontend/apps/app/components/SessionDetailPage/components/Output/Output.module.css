@@ -1,0 +1,16 @@
+.wrapper {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  height: 100%;
+  border-radius: var(--border-radius-lg);
+  background-color: var(--pane-background);
+  border: solid 1px var(--pane-border);
+  box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.04), 0 8px 8px -8px
+    rgba(0, 0, 0, 0.04);
+}
+
+.body {
+  /* padding: var(--spacing-3) var(--spacing-2); */
+  padding-bottom: var(--spacing-3);
+  overflow-y: scroll;
+}

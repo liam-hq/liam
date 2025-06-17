@@ -7,7 +7,7 @@ import { EditorState, type Extension } from '@codemirror/state'
 import { drawSelection, lineNumbers } from '@codemirror/view'
 import { EditorView } from 'codemirror'
 import { useEffect, useRef, useState } from 'react'
-import { commentStateField, setCommentsEffect } from './commentExtension'
+import { setCommentsEffect } from './commentExtension'
 import { customTheme, sqlHighlightStyle } from './editorTheme'
 import type { ReviewComment } from './types'
 
@@ -17,7 +17,7 @@ const baseExtensions: Extension[] = [
   drawSelection(),
   sql(),
   lintGutter(),
-  commentStateField(),
+  // commentStateField(),
   syntaxHighlighting(sqlHighlightStyle),
   customTheme,
 ]

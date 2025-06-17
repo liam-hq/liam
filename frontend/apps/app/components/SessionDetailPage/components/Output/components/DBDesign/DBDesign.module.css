@@ -1,0 +1,23 @@
+.wrapper {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  gap: var(--spacing-7);
+  height: 100%;
+  min-height: 0;
+  padding: var(--spacing-4) var(--spacing-3);
+}
+
+.section {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  gap: var(--spacing-3);
+}
+
+.erdWrapper {
+  height: 480px;
+}
+
+.sectionTitle {
+  font-size: var(--font-size-7);
+  font-weight: 600;
+}
