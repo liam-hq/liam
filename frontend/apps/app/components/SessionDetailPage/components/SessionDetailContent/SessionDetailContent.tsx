@@ -28,17 +28,7 @@ type Props = {
 }
 
 export const SessionDetailContent: FC<Props> = ({ designSession }) => {
-  const { schema, isLoadingSchema } = useSchema()
-
-  // Show loading state while schema is being fetched
-  if (isLoadingSchema) {
-    return <div>Loading schema...</div>
-  }
-
-  // Show error state if no schema is available
-  if (!schema) {
-    return <div>Failed to load schema</div>
-  }
+  const { schema } = useSchema()
 
   return (
     <div className={styles.container}>

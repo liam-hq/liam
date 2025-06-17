@@ -9,7 +9,6 @@ import {
   useContext,
   useEffect,
   useState,
-  useTransition,
 } from 'react'
 import * as v from 'valibot'
 import {
@@ -18,8 +17,7 @@ import {
 } from '../services/buildingSchemaServiceClient'
 
 type SchemaContextValue = {
-  schema: Schema | null
-  isLoadingSchema: boolean
+  schema: Schema
 }
 
 const SchemaContext = createContext<SchemaContextValue | undefined>(undefined)
@@ -27,42 +25,15 @@ const SchemaContext = createContext<SchemaContextValue | undefined>(undefined)
 type SchemaProviderProps = {
   children: ReactNode
   designSessionId: string
+  initialSchema: Schema
 }
 
 export const SchemaProvider: FC<SchemaProviderProps> = ({
   children,
   designSessionId,
+  initialSchema,
 }) => {
-  const [schema, setSchema] = useState<Schema | null>(null)
-  const [isLoadingSchema, startTransition] = useTransition()
-
-  // Load initial schema data
-  useEffect(() => {
-    const loadInitialSchema = async () => {
-      startTransition(async () => {
-        try {
-          const { data: schemaData, error } =
-            await fetchSchemaDataClient(designSessionId)
-
-          if (error) {
-            console.error('Failed to fetch initial schema:', error)
-            return
-          }
-
-          if (schemaData.schema) {
-            const schema = v.parse(schemaSchema, schemaData.schema)
-            setSchema(schema)
-          }
-        } catch (error) {
-          console.error('Error loading initial schema:', error)
-        }
-      })
-    }
-
-    if (designSessionId) {
-      loadInitialSchema()
-    }
-  }, [designSessionId])
+  const [schema, setSchema] = useState<Schema>(initialSchema)
 
   // Handle schema updates from realtime subscription
   const handleSchemaUpdate = useCallback(
@@ -112,7 +83,7 @@ export const SchemaProvider: FC<SchemaProviderProps> = ({
   }, [designSessionId, handleSchemaUpdate, handleRealtimeError])
 
   return (
-    <SchemaContext.Provider value={{ schema, isLoadingSchema }}>
+    <SchemaContext.Provider value={{ schema }}>
       {children}
     </SchemaContext.Provider>
   )

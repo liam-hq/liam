@@ -9,15 +9,7 @@ import { MigrationsViewer } from './components/MigrationsViewer'
 import { BRD_LIST, MIGRATIONS_DOC, REVIEW_COMMENTS } from './mock'
 
 export const Artifact: FC = () => {
-  const { schema, isLoadingSchema } = useSchema()
-
-  if (isLoadingSchema) {
-    return <div>Loading schema...</div>
-  }
-
-  if (!schema) {
-    return <div>No schema available</div>
-  }
+  const { schema } = useSchema()
   return (
     <div className={styles.wrapper}>
       <Header />

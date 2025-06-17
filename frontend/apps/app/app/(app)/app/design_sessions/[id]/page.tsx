@@ -32,12 +32,17 @@ export default async function Page({ params }: PageProps) {
 
   const buildingSchemaId = schemaResult.data?.id
   const latestVersionNumber = schemaResult.data?.latestVersionNumber ?? 0
+  const schema = schemaResult.data?.schema
 
   // buildingSchemaId is required - this should never happen given 1:1 relationship
   if (!buildingSchemaId) {
     throw new Error(
       'Building schema ID not found for design session. Data integrity issue.',
     )
+  }
+
+  if (!schema) {
+    throw new Error('Schema not found for design session')
   }
 
   return (
@@ -49,6 +54,7 @@ export default async function Page({ params }: PageProps) {
         buildingSchemaId,
         latestVersionNumber,
       }}
+      initialSchema={schema}
     />
   )
 }

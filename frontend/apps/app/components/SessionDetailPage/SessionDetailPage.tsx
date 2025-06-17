@@ -1,3 +1,4 @@
+import type { Schema } from '@liam-hq/db-structure'
 import type { FC } from 'react'
 import { SessionDetailContent } from './components/SessionDetailContent'
 import { SchemaProvider } from './providers/SchemaProvider'
@@ -22,11 +23,18 @@ type DesignSession = {
 
 type Props = {
   designSession: DesignSession
+  initialSchema: Schema
 }
 
-export const SessionDetailPage: FC<Props> = ({ designSession }) => {
+export const SessionDetailPage: FC<Props> = ({
+  designSession,
+  initialSchema,
+}) => {
   return (
-    <SchemaProvider designSessionId={designSession.id}>
+    <SchemaProvider
+      designSessionId={designSession.id}
+      initialSchema={initialSchema}
+    >
       <SessionDetailContent designSession={designSession} />
     </SchemaProvider>
   )
