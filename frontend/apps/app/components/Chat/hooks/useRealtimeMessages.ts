@@ -6,37 +6,71 @@ import {
 } from '../services'
 import type { ChatEntry } from '../types/chatTypes'
 
+interface MessageCache {
+  messageIds: Set<string>
+  userContentMap: Map<string, ChatEntry[]>
+}
+
+const createMessageCache = (messages: ChatEntry[]): MessageCache => {
+  const messageIds = new Set<string>()
+  const userContentMap = new Map<string, ChatEntry[]>()
+
+  for (const msg of messages) {
+    messageIds.add(msg.id)
+
+    if (msg.role === 'user') {
+      const existing = userContentMap.get(msg.content) || []
+      existing.push(msg)
+      userContentMap.set(msg.content, existing)
+    }
+  }
+
+  return { messageIds, userContentMap }
+}
+
+const checkTimestampDuplicate = (
+  existingMsg: ChatEntry,
+  newEntry: ChatEntry,
+): boolean => {
+  const hasTimestamp = (
+    msg: ChatEntry,
+  ): msg is ChatEntry & { timestamp: Date } =>
+    'timestamp' in msg && msg.timestamp instanceof Date
+
+  const existingHasTimestamp = hasTimestamp(existingMsg)
+  const newHasTimestamp = hasTimestamp(newEntry)
+
+  // If both have timestamps, check if they're within reasonable range (5 seconds)
+  if (existingHasTimestamp && newHasTimestamp) {
+    const timeDiff = Math.abs(
+      newEntry.timestamp.getTime() - existingMsg.timestamp.getTime(),
+    )
+    return timeDiff < 5000
+  }
+
+  // If either doesn't have timestamp, consider it a duplicate by content alone
+  return true
+}
+
 const isDuplicateMessage = (
   messages: ChatEntry[],
   newEntry: ChatEntry,
+  cache?: MessageCache,
 ): boolean => {
-  // Check by message ID
-  const duplicateById = messages.some((msg) => msg.id === newEntry.id)
-  if (duplicateById) {
+  const messageCache = cache || createMessageCache(messages)
+
+  // Check by message ID - O(1) lookup
+  if (messageCache.messageIds.has(newEntry.id)) {
     return true
   }
 
   // For user messages, check by content and role with timestamp tolerance
   if (newEntry.role === 'user') {
-    const contentDuplicate = messages.some((msg) => {
-      if (msg.role !== 'user' || msg.content !== newEntry.content) {
-        return false
-      }
-
-      // If both have timestamps, check if they're within reasonable range (5 seconds)
-      if (msg.timestamp && newEntry.timestamp) {
-        const timeDiff = Math.abs(
-          newEntry.timestamp.getTime() - msg.timestamp.getTime(),
-        )
-        return timeDiff < 5000 // 5 seconds tolerance
-      }
-
-      // If either doesn't have timestamp, consider it a duplicate by content alone
-      return true
-    })
-
-    if (contentDuplicate) {
-      return true
+    const existingMessages = messageCache.userContentMap.get(newEntry.content)
+    if (existingMessages) {
+      return existingMessages.some((msg) =>
+        checkTimestampDuplicate(msg, newEntry),
+      )
     }
   }
 
@@ -137,8 +171,10 @@ export const useRealtimeMessages: UseRealtimeMessagesFunc = (
   const addOrUpdateMessage = useCallback(
     (newChatEntry: ChatEntry, messageUserId?: string | null) => {
       setMessages((prev) => {
+        const messageCache = createMessageCache(prev)
+
         // Check if message already exists to prevent duplicates
-        if (isDuplicateMessage(prev, newChatEntry)) {
+        if (isDuplicateMessage(prev, newChatEntry, messageCache)) {
           return prev
         }
 
@@ -176,7 +212,6 @@ export const useRealtimeMessages: UseRealtimeMessagesFunc = (
       // Convert database message to ChatEntry format
       const chatEntry = convertMessageToChatEntry(newMessage)
 
-      // TODO: Implement efficient duplicate checking - Use Set/Map for O(1) duplicate checking instead of O(n) array.some()
       // TODO: Implement smart auto-scroll - Consider user's scroll position and only auto-scroll when user is at bottom
 
       addOrUpdateMessage(chatEntry, newMessage.user_id ?? null)
