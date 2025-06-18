@@ -5,43 +5,7 @@ import {
   setupRealtimeSubscription,
 } from '../services'
 import type { ChatEntry } from '../types/chatTypes'
-
-const isDuplicateMessage = (
-  messages: ChatEntry[],
-  newEntry: ChatEntry,
-): boolean => {
-  // Check by message ID
-  const duplicateById = messages.some((msg) => msg.id === newEntry.id)
-  if (duplicateById) {
-    return true
-  }
-
-  // For user messages, check by content and role with timestamp tolerance
-  if (newEntry.role === 'user') {
-    const contentDuplicate = messages.some((msg) => {
-      if (msg.role !== 'user' || msg.content !== newEntry.content) {
-        return false
-      }
-
-      // If both have timestamps, check if they're within reasonable range (5 seconds)
-      if (msg.timestamp && newEntry.timestamp) {
-        const timeDiff = Math.abs(
-          newEntry.timestamp.getTime() - msg.timestamp.getTime(),
-        )
-        return timeDiff < 5000 // 5 seconds tolerance
-      }
-
-      // If either doesn't have timestamp, consider it a duplicate by content alone
-      return true
-    })
-
-    if (contentDuplicate) {
-      return true
-    }
-  }
-
-  return false
-}
+import { isDuplicateMessage } from '../utils/isDuplicateMessage'
 
 const findExistingMessageIndex = (
   messages: ChatEntry[],
