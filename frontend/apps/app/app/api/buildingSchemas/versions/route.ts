@@ -1,7 +1,7 @@
-import { createNewVersion } from '@/utils/agentSupabaseHelper'
 import { operationsSchema } from '@liam-hq/db-structure'
 import { type NextRequest, NextResponse } from 'next/server'
 import * as v from 'valibot'
+import { createNewVersion } from '@/utils/agentSupabaseHelper'
 
 const requestParamsSchema = v.object({
   latestVersionNumber: v.number(),

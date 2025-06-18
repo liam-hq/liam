@@ -1,8 +1,7 @@
-import { migrationFlag } from '@/libs/flags'
+import { createServerClient } from '@liam-hq/db'
 import type { NextRequest } from 'next/server'
 import { NextResponse } from 'next/server'
-
-import { createServerClient } from '@liam-hq/db'
+import { migrationFlag } from '@/libs/flags'
 
 export async function updateSession(request: NextRequest) {
   // Skip middleware if path doesn't start with /app

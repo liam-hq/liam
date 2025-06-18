@@ -1,7 +1,7 @@
-import { TabsContent, TabsRoot } from '@/components'
 import { headers } from 'next/headers'
 import type { FC, PropsWithChildren } from 'react'
 import { safeParse } from 'valibot'
+import { TabsContent, TabsRoot } from '@/components'
 import { ProjectHeader } from './ProjectHeader'
 import {
   PROJECT_TAB,

@@ -1,2 +1,2 @@
-export { SessionModeSelector } from './SessionModeSelector'
 export type { SessionMode } from './SessionModeSelector'
+export { SessionModeSelector } from './SessionModeSelector'

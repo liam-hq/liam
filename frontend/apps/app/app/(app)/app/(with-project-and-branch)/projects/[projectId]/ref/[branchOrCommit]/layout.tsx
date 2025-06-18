@@ -1,9 +1,8 @@
+import * as v from 'valibot'
 import type { LayoutProps } from '@/app/types'
-import {} from '@/components'
 import { CommonLayout } from '@/components/CommonLayout'
 import { ProjectLayout } from '@/components/ProjectLayout'
 import { branchOrCommitSchema } from '@/libs/routes'
-import * as v from 'valibot'
 
 const paramsSchema = v.object({
   projectId: v.string(),

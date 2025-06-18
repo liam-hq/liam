@@ -1,2 +1,2 @@
-export * from './useMigrationsViewer'
 export * from './types'
+export * from './useMigrationsViewer'

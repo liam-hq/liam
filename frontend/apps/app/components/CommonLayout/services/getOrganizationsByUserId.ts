@@ -1,5 +1,5 @@
-import { createClient } from '@/libs/db/server'
 import type { QueryData } from '@liam-hq/db'
+import { createClient } from '@/libs/db/server'
 
 export async function getOrganizationsByUserId(userId: string) {
   const supabase = await createClient()

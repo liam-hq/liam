@@ -1,12 +1,11 @@
-export type {
-  SchemaRepository,
-  Repositories,
-  SchemaData,
-  DesignSessionData,
-  CreateVersionParams,
-  VersionResult,
-} from './types'
+export { createSupabaseRepositories } from './factory'
 
 export { SupabaseSchemaRepository } from './supabase'
-
-export { createSupabaseRepositories } from './factory'
+export type {
+  CreateVersionParams,
+  DesignSessionData,
+  Repositories,
+  SchemaData,
+  SchemaRepository,
+  VersionResult,
+} from './types'

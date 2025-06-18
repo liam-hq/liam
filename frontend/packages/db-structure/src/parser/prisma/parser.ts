@@ -10,7 +10,7 @@ import type {
   Table,
   TableGroup,
 } from '../../schema/index.js'
-import type { ProcessResult, Processor } from '../types.js'
+import type { Processor, ProcessResult } from '../types.js'
 import { convertToPostgresColumnType } from './convertToPostgresColumnType.js'
 
 // NOTE: Workaround for CommonJS module import issue with @prisma/internals

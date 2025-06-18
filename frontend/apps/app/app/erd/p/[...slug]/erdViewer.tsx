@@ -1,10 +1,10 @@
 'use client'
 
-import { CookieConsent } from '@/components/CookieConsent'
 import type { Schema } from '@liam-hq/db-structure'
 import { ERDRenderer, VersionProvider, versionSchema } from '@liam-hq/erd-core'
 import { useEffect, useState } from 'react'
 import * as v from 'valibot'
+import { CookieConsent } from '@/components/CookieConsent'
 
 type ErrorObject = {
   name: string

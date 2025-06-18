@@ -1,14 +1,14 @@
 'use client'
 
-import { AgentMessage } from '@/components/Chat/AgentMessage'
-import { UserMessage } from '@/components/Chat/UserMessage'
-import { VersionMessage } from '@/components/Chat/VersionMessage'
 import type { Database } from '@liam-hq/db'
 import { syntaxCodeTagProps, syntaxCustomStyle, syntaxTheme } from '@liam-hq/ui'
 import type { CSSProperties, FC, HTMLAttributes, ReactNode } from 'react'
 import ReactMarkdown from 'react-markdown'
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
 import remarkGfm from 'remark-gfm'
+import { AgentMessage } from '@/components/Chat/AgentMessage'
+import { UserMessage } from '@/components/Chat/UserMessage'
+import { VersionMessage } from '@/components/Chat/VersionMessage'
 import styles from './ChatMessage.module.css'
 
 // Define CodeProps interface

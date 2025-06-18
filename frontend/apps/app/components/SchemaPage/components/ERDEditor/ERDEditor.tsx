@@ -1,13 +1,13 @@
 'use client'
 
+import type { Schema, TableGroup } from '@liam-hq/db-structure'
+import { type ComponentProps, type FC, useCallback, useState } from 'react'
+import { parse } from 'valibot'
 import { Button } from '@/components'
 import { ERDRenderer } from '@/features'
 import { useTableGroups } from '@/hooks'
 import { VersionProvider } from '@/providers'
 import { versionSchema } from '@/schemas'
-import type { Schema, TableGroup } from '@liam-hq/db-structure'
-import { type ComponentProps, type FC, useCallback, useState } from 'react'
-import { parse } from 'valibot'
 import styles from './ERDEditor.module.css'
 
 type Props = {

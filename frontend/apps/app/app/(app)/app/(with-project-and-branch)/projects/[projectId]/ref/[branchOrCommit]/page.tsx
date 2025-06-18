@@ -1,8 +1,7 @@
+import * as v from 'valibot'
 import type { PageProps } from '@/app/types'
 import { BranchDetailPage } from '@/components/BranchDetailPage'
 import { branchOrCommitSchema } from '@/libs/routes'
-
-import * as v from 'valibot'
 
 const paramsSchema = v.object({
   projectId: v.string(),

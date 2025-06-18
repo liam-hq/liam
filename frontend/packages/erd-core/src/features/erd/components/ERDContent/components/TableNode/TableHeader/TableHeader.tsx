@@ -1,10 +1,10 @@
-import type { TableNodeData } from '@/features/erd/types'
-import { useCustomReactflow } from '@/features/reactflow/hooks'
-import { useUserEditing } from '@/stores'
 import { Table2 } from '@liam-hq/ui'
 import { Handle, Position } from '@xyflow/react'
 import clsx from 'clsx'
 import type { FC, MouseEvent } from 'react'
+import type { TableNodeData } from '@/features/erd/types'
+import { useCustomReactflow } from '@/features/reactflow/hooks'
+import { useUserEditing } from '@/stores'
 import styles from './TableHeader.module.css'
 
 type Props = {

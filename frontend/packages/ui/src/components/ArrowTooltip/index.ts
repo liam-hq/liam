@@ -1,7 +1,7 @@
 export {
   ArrowTooltipContent,
-  ArrowTooltipProvider,
   ArrowTooltipPortal,
+  ArrowTooltipProvider,
   ArrowTooltipRoot,
   ArrowTooltipTrigger,
 } from './ArrowTooltip'

@@ -1,5 +1,5 @@
-import type { Projects } from '@/components/CommonLayout/AppBar/ProjectsDropdownMenu/services/getProjects'
 import type { Meta, StoryObj } from '@storybook/react'
+import type { Projects } from '@/components/CommonLayout/AppBar/ProjectsDropdownMenu/services/getProjects'
 import { GitHubSessionFormPresenter } from './GitHubSessionFormPresenter'
 
 type Branch = {

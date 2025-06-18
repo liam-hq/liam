@@ -1,6 +1,6 @@
+import type { FC } from 'react'
 import { DropdownMenuRoot, DropdownMenuTrigger } from '@/components'
 import { ChevronsUpDown } from '@/icons'
-import type { FC } from 'react'
 import styles from './BranchDropdownMenu.module.css'
 import { Content } from './Content'
 import { type Branch, getBranches } from './services/getBranches'

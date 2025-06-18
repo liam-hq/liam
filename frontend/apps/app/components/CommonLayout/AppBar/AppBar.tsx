@@ -1,6 +1,6 @@
+import type { FC } from 'react'
 import { AvatarWithImage } from '@/components'
 import { ChevronRight } from '@/icons'
-import type { FC } from 'react'
 import styles from './AppBar.module.css'
 import { BranchDropdownMenu } from './BranchDropdownMenu'
 import { ProjectsDropdownMenu } from './ProjectsDropdownMenu'

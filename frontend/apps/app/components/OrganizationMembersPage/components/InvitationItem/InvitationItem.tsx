@@ -8,8 +8,8 @@ import {
   DropdownMenuRoot,
   DropdownMenuTrigger,
   Ellipsis,
-  IconButton,
   getAvatarUserFromColor,
+  IconButton,
 } from '@liam-hq/ui'
 import { type FC, useState } from 'react'
 import { DeleteInvitationModal } from '../DeleteInvitationModal'

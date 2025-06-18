@@ -1,12 +1,11 @@
+import type { Cardinality, Schema, TableGroup } from '@liam-hq/db-structure'
+import type { Edge, Node } from '@xyflow/react'
 import {
   NON_RELATED_TABLE_GROUP_NODE_ID,
   zIndex,
 } from '@/features/erd/constants'
 import { columnHandleId } from '@/features/erd/utils'
 import type { ShowMode } from '@/schemas/showMode'
-import type { Cardinality, Schema } from '@liam-hq/db-structure'
-import type { TableGroup } from '@liam-hq/db-structure'
-import type { Edge, Node } from '@xyflow/react'
 
 type Params = {
   schema: Schema

@@ -13,7 +13,7 @@ import {
   TrueNode,
   Visitor,
 } from '@ruby/prism'
-import { type Result, err, ok } from 'neverthrow'
+import { err, ok, type Result } from 'neverthrow'
 import type {
   CheckConstraint,
   Column,
@@ -35,16 +35,16 @@ import {
   aCheckConstraint,
   aColumn,
   aForeignKeyConstraint,
+  anIndex,
   aRelationship,
   aTable,
-  anIndex,
 } from '../../schema/index.js'
 import {
   type ProcessError,
   UnexpectedTokenWarningError,
   WarningError,
 } from '../errors.js'
-import type { ProcessResult, Processor } from '../types.js'
+import type { Processor, ProcessResult } from '../types.js'
 import {
   defaultRelationshipName,
   handleOneToOneRelationships,

@@ -1,7 +1,7 @@
-import type { Projects } from '@/components/CommonLayout/AppBar/ProjectsDropdownMenu/services/getProjects'
 import { ArrowTooltipProvider } from '@liam-hq/ui'
 import type { ChangeEvent, FC } from 'react'
 import { useEffect, useRef } from 'react'
+import type { Projects } from '@/components/CommonLayout/AppBar/ProjectsDropdownMenu/services/getProjects'
 import { SessionFormActions } from '../SessionFormActions'
 import styles from './GitHubSessionFormPresenter.module.css'
 

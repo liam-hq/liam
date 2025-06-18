@@ -1,6 +1,6 @@
+import { NextResponse } from 'next/server'
 import { ensureUserHasOrganization } from '@/components/LoginPage/services/ensureUserHasOrganization'
 import { createClient } from '@/libs/db/server'
-import { NextResponse } from 'next/server'
 
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url)

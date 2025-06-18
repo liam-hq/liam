@@ -1,5 +1,5 @@
 import type { Operation } from 'fast-json-patch'
-import { P, match } from 'ts-pattern'
+import { match, P } from 'ts-pattern'
 import type { Schema } from '../../schema/index.js'
 import { PATH_PATTERNS } from '../constants.js'
 import type { ConstraintColumnNameDiffItem } from '../types.js'

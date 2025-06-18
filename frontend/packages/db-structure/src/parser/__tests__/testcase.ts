@@ -1,8 +1,8 @@
 import {
-  type Schema,
-  type Table,
   aColumn,
   anIndex,
+  type Schema,
+  type Table,
 } from '../../schema/index.js'
 
 export const createParserTestCases = (

@@ -1,7 +1,7 @@
 import { configure } from '@trigger.dev/sdk'
 
-export { analyzeRepositoryTask } from './trigger/jobs'
 export { processChatTask } from './trigger/chatJobs'
+export { analyzeRepositoryTask } from './trigger/jobs'
 
 if (
   process.env['NEXT_PUBLIC_ENV_NAME'] === 'preview' &&

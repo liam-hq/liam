@@ -1,5 +1,5 @@
 import { execSync } from 'node:child_process'
-import { type Plugin, loadEnv } from 'vite'
+import { loadEnv, type Plugin } from 'vite'
 
 /**
  * This Vite plugin initializes and sets the following environment variables for the client-side environment:

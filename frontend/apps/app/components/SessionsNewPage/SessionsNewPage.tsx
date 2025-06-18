@@ -1,5 +1,5 @@
-import { SessionFormContainer } from '@/features/sessions/components/SessionForm'
 import type { FC } from 'react'
+import { SessionFormContainer } from '@/features/sessions/components/SessionForm'
 import styles from './SessionsNewPage.module.css'
 
 export const SessionsNewPage: FC = () => {

@@ -1,6 +1,6 @@
+import { useCallback } from 'react'
 import { useCustomReactflow } from '@/features/reactflow/hooks'
 import { useUserEditing } from '@/stores'
-import { useCallback } from 'react'
 import type { DisplayArea } from '../../types'
 import { highlightNodesAndEdges } from '../../utils'
 

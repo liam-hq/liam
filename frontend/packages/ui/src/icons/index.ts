@@ -1,22 +1,14 @@
-export * from './ErdIcon'
-export * from './InfoIcon'
-export * from './FacebookIcon'
-export * from './DiamondIcon'
-export * from './DiamondFillIcon'
-export * from './GotoIcon'
-export * from './TidyUpIcon'
-export * from './CardinalityZeroOrManyLeftIcon'
-export * from './CardinalityZeroOrOneRightIcon'
-export * from './CardinalityZeroOrOneLeftIcon'
-
 export {
+  AlertTriangle,
   ArrowRight,
+  ArrowUpRight,
   BookMarked,
   BookText,
   Building,
   Check,
   ChevronDown,
   ChevronLeft,
+  ChevronRight,
   ChevronsUpDown,
   ChevronUp,
   CircleHelp,
@@ -34,34 +26,41 @@ export {
   GitPullRequestArrow,
   Group,
   Hash,
+  Info,
   KeyRound,
+  LayoutGrid,
   Library,
   Link,
   List,
   Lock,
-  Menu,
   Megaphone,
-  MessagesSquare,
+  Menu,
   MessageSquareText,
+  MessagesSquare,
+  Mic,
   Minus,
   PanelLeft,
   Plus,
   Rows3,
   Scan,
   Search,
+  Settings,
+  Sparkle,
   Table2,
   Ungroup,
   Upload,
   Users,
   Waypoints,
-  XIcon,
-  AlertTriangle,
-  Info,
   XCircle,
-  LayoutGrid,
-  Settings,
-  ChevronRight,
-  ArrowUpRight,
-  Sparkle,
-  Mic,
+  XIcon,
 } from 'lucide-react'
+export * from './CardinalityZeroOrManyLeftIcon'
+export * from './CardinalityZeroOrOneLeftIcon'
+export * from './CardinalityZeroOrOneRightIcon'
+export * from './DiamondFillIcon'
+export * from './DiamondIcon'
+export * from './ErdIcon'
+export * from './FacebookIcon'
+export * from './GotoIcon'
+export * from './InfoIcon'
+export * from './TidyUpIcon'

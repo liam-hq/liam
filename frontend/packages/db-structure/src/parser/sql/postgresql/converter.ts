@@ -9,7 +9,7 @@ import type {
   String as PgString,
   RawStmt,
 } from '@pgsql/types'
-import { type Result, err, ok } from 'neverthrow'
+import { err, ok, type Result } from 'neverthrow'
 import type {
   CheckConstraint,
   Columns,

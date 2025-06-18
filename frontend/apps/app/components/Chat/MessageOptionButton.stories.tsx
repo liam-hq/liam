@@ -1,6 +1,6 @@
 import type { Meta } from '@storybook/react'
-import { MessageOptionButton } from './MessageOptionButton'
 import type { MessageOptionButtonProps } from './MessageOptionButton'
+import { MessageOptionButton } from './MessageOptionButton'
 import { MessageOptionButtons } from './MessageOptionButtons'
 
 // Define the meta for the component

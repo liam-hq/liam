@@ -1,14 +1,14 @@
 'use client'
 
-import {
-  PGlitePlayground,
-  type PGlitePlaygroundHandle,
-} from '@/components/PGlitePage'
 /**
  * This is a sample implementation page. PGlitePlayground and PGlitePlaygroundHandle need to be referenced somewhere
  * to avoid being flagged as unused by knip. Please remove this page when it is used with AI Agent.
  */
 import { useEffect, useRef } from 'react'
+import {
+  PGlitePlayground,
+  type PGlitePlaygroundHandle,
+} from '@/components/PGlitePage'
 
 export default function Page() {
   const playgroundRef = useRef<PGlitePlaygroundHandle>(null)

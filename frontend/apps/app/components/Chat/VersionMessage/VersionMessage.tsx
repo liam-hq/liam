@@ -1,11 +1,11 @@
 'use client'
 
-import { createClient } from '@/libs/db/client'
 import type { Json, Tables } from '@liam-hq/db'
 import { operationsSchema } from '@liam-hq/db-structure'
 import { Check, ChevronDown } from '@liam-hq/ui'
 import { type FC, useEffect, useState, useTransition } from 'react'
 import * as v from 'valibot'
+import { createClient } from '@/libs/db/client'
 import styles from './VersionMessage.module.css'
 
 /**

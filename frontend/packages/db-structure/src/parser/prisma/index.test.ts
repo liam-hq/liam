@@ -2,10 +2,10 @@ import { describe, expect, it } from 'vitest'
 import type { Table } from '../../schema/index.js'
 import {
   aColumn,
+  anIndex,
   aRelationship,
   aSchema,
   aTable,
-  anIndex,
 } from '../../schema/index.js'
 import { createParserTestCases } from '../__tests__/index.js'
 import { processor as _processor } from './index.js'

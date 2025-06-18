@@ -1,5 +1,5 @@
 import { cpSync, existsSync, mkdirSync } from 'node:fs'
-import path, { dirname, resolve, relative } from 'node:path'
+import path, { dirname, relative, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import type { SupportedFormat } from '@liam-hq/db-structure/parser'
 import { blueBright } from 'yoctocolors'

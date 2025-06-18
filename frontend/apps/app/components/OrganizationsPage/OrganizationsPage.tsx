@@ -1,9 +1,9 @@
-import { urlgen } from '@/libs/routes'
 import Link from 'next/link'
 import type { FC, ReactNode } from 'react'
+import { urlgen } from '@/libs/routes'
+import { getOrganizations } from './getOrganizations'
 import styles from './OrganizationsPage.module.css'
 import { OrganizationsPageClient } from './OrganizationsPageClient'
-import { getOrganizations } from './getOrganizations'
 
 export const OrganizationsPage: FC<{
   children?: ReactNode

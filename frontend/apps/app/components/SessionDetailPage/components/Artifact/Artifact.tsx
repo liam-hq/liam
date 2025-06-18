@@ -1,6 +1,6 @@
-import { TabsContent, TabsList, TabsRoot, TabsTrigger } from '@/components'
 import type { Schema } from '@liam-hq/db-structure'
 import type { FC } from 'react'
+import { TabsContent, TabsList, TabsRoot, TabsTrigger } from '@/components'
 import styles from './Artifact.module.css'
 import { BRDList } from './components/BRDList'
 import { ERD } from './components/ERD'

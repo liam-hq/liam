@@ -1,5 +1,5 @@
-import type { Projects } from '@/components/CommonLayout/AppBar/ProjectsDropdownMenu/services/getProjects'
 import type { Meta } from '@storybook/react'
+import type { Projects } from '@/components/CommonLayout/AppBar/ProjectsDropdownMenu/services/getProjects'
 import { SessionFormPresenter } from './SessionFormPresenter'
 
 const mockProjects: Projects = [

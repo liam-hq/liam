@@ -1,12 +1,5 @@
 'use client'
 
-import {
-  Button,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuRoot,
-  DropdownMenuTrigger,
-} from '@/components'
 import type { Installation, Repository } from '@liam-hq/github'
 import {
   type FC,
@@ -15,11 +8,18 @@ import {
   useState,
   useTransition,
 } from 'react'
-import { P, match } from 'ts-pattern'
+import { match, P } from 'ts-pattern'
+import {
+  Button,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuRoot,
+  DropdownMenuTrigger,
+} from '@/components'
 import { RepositoryItem } from '../RepositoryItem'
-import styles from './InstallationSelector.module.css'
 import { addProject } from './actions/addProject'
 import { getRepositories } from './actions/getRepositories'
+import styles from './InstallationSelector.module.css'
 
 type Props = {
   installations: Installation[]

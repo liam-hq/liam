@@ -1,5 +1,5 @@
-import { createClient } from '@/libs/db/server'
 import type { FC } from 'react'
+import { createClient } from '@/libs/db/server'
 import { ClientSearchWrapper } from './components/ClientSearchWrapper'
 import {
   getOrganizationInvites,

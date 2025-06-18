@@ -1,7 +1,7 @@
 'use server'
 
-import { createClient } from '@/libs/db/server'
 import { revalidatePath } from 'next/cache'
+import { createClient } from '@/libs/db/server'
 
 /**
  * Update organization name

@@ -1,6 +1,6 @@
 import type { FC } from 'react'
-import styles from './HighlightedLabel.module.css'
 import { getHighlightedParts } from './getHighlightedParts'
+import styles from './HighlightedLabel.module.css'
 
 type Props = {
   label: string

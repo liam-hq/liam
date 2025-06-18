@@ -1,5 +1,5 @@
-import { StateEffect, StateField } from '@codemirror/state'
 import type { Text } from '@codemirror/state'
+import { StateEffect, StateField } from '@codemirror/state'
 import {
   Decoration,
   type DecorationSet,

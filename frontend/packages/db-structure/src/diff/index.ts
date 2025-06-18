@@ -1,9 +1,9 @@
 export { buildSchemaDiff } from './buildSchemaDiff.js'
-export { schemaDiffItemsSchema } from './types.js'
 export type {
+  ColumnRelatedDiffItem,
+  ConstraintRelatedDiffItem,
+  IndexRelatedDiffItem,
   SchemaDiffItem,
   TableRelatedDiffItem,
-  ColumnRelatedDiffItem,
-  IndexRelatedDiffItem,
-  ConstraintRelatedDiffItem,
 } from './types.js'
+export { schemaDiffItemsSchema } from './types.js'

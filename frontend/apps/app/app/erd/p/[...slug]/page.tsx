@@ -1,9 +1,8 @@
 import path from 'node:path'
-import type { PageProps } from '@/app/types'
 import {
-  type SupportedFormat,
   detectFormat,
   parse,
+  type SupportedFormat,
   setPrismWasmUrl,
   supportedFormatSchema,
 } from '@liam-hq/db-structure/parser'
@@ -11,8 +10,8 @@ import * as Sentry from '@sentry/nextjs'
 import { load } from 'cheerio'
 import type { Metadata } from 'next'
 import { cookies } from 'next/headers'
-
 import * as v from 'valibot'
+import type { PageProps } from '@/app/types'
 import ERDViewer from './erdViewer'
 
 const paramsSchema = v.object({

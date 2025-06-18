@@ -1,10 +1,10 @@
-import { SCHEMA_OVERRIDE_FILE_PATH } from '@/features/schemas/constants'
-import { createClient } from '@/libs/db/server'
 import { schemaOverrideSchema, tableGroupsSchema } from '@liam-hq/db-structure'
 import { createOrUpdateFileContent, getFileContent } from '@liam-hq/github'
 import { type NextRequest, NextResponse } from 'next/server'
 import * as v from 'valibot'
 import { parse as parseYaml } from 'yaml'
+import { SCHEMA_OVERRIDE_FILE_PATH } from '@/features/schemas/constants'
+import { createClient } from '@/libs/db/server'
 
 const requestParamsSchema = v.object({
   tableGroups: tableGroupsSchema,

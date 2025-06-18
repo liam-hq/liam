@@ -1,10 +1,10 @@
+import * as v from 'valibot'
 import type { PageProps } from '@/app/types'
 import { SessionDetailPage } from '@/components/SessionDetailPage'
 import {
   fetchDesignSessionData,
   fetchSchemaData,
 } from '@/utils/agentSupabaseHelper'
-import * as v from 'valibot'
 
 const paramsSchema = v.object({
   id: v.string(),

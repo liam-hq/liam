@@ -1,7 +1,7 @@
+import type { FC } from 'react'
 import { TabsList, TabsTrigger } from '@/components'
 import { DiffCounts } from '@/components/DiffCount/DiffCounts'
 import { SchemaLink } from '@/components/SchemaLink'
-import type { FC } from 'react'
 import { SCHEMA_TABS } from '../../constants'
 import styles from './SchemaHeader.module.css'
 

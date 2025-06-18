@@ -1,5 +1,5 @@
-import { DiffCount } from '@/components/DiffCount'
 import type { FC } from 'react'
+import { DiffCount } from '@/components/DiffCount'
 import styles from './DiffCounts.module.css'
 
 interface DiffCountsProps {

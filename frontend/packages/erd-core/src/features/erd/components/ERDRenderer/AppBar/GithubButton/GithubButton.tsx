@@ -1,11 +1,11 @@
 import {
+  GithubLogo,
   TooltipContent,
   TooltipPortal,
   TooltipProvider,
   TooltipRoot,
   TooltipTrigger,
 } from '@liam-hq/ui'
-import { GithubLogo } from '@liam-hq/ui'
 import type { FC } from 'react'
 import styles from './GithubButton.module.css'
 

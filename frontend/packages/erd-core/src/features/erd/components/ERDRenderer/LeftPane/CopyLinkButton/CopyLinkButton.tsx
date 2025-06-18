@@ -1,7 +1,7 @@
-import { clickLogEvent } from '@/features/gtm/utils'
-import { useVersion } from '@/providers'
 import { Copy, SidebarMenuButton, SidebarMenuItem, useToast } from '@liam-hq/ui'
 import { type FC, useCallback } from 'react'
+import { clickLogEvent } from '@/features/gtm/utils'
+import { useVersion } from '@/providers'
 import styles from './CopyLinkButton.module.css'
 
 export const CopyLinkButton: FC = () => {

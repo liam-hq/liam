@@ -3,11 +3,11 @@
 import { Slot } from '@radix-ui/react-slot'
 import clsx from 'clsx'
 import {
-  type CSSProperties,
   type ComponentProps,
+  type CSSProperties,
+  createContext,
   type ElementRef,
   type Ref,
-  createContext,
   useCallback,
   useContext,
   useEffect,

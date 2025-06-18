@@ -1,5 +1,3 @@
-import type { TableNodeType } from '@/features/erd/types'
-import { useUserEditing } from '@/stores'
 import {
   TooltipContent,
   TooltipPortal,
@@ -10,6 +8,8 @@ import {
 import type { NodeProps } from '@xyflow/react'
 import clsx from 'clsx'
 import type { FC } from 'react'
+import type { TableNodeType } from '@/features/erd/types'
+import { useUserEditing } from '@/stores'
 import { TableColumnList } from './TableColumnList'
 import { TableHeader } from './TableHeader'
 import styles from './TableNode.module.css'

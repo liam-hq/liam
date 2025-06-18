@@ -1,8 +1,8 @@
 export {
+  detectFormat,
+  ProcessError,
   parse,
   type SupportedFormat,
-  supportedFormatSchema,
-  detectFormat,
   setPrismWasmUrl,
-  ProcessError,
+  supportedFormatSchema,
 } from './parser/index.js'

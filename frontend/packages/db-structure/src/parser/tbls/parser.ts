@@ -8,8 +8,8 @@ import type {
   TableGroup,
   Tables,
 } from '../../schema/index.js'
-import { aColumn, aRelationship, aTable, anIndex } from '../../schema/index.js'
-import type { ProcessResult, Processor } from '../types.js'
+import { aColumn, anIndex, aRelationship, aTable } from '../../schema/index.js'
+import type { Processor, ProcessResult } from '../types.js'
 import { defaultRelationshipName } from '../utils/index.js'
 import schema from './schema.generated.js'
 

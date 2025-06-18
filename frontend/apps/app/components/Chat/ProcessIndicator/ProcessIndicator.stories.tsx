@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react'
-import { ProcessIndicator } from './ProcessIndicator'
 import type { ProcessIndicatorProps } from './ProcessIndicator'
+import { ProcessIndicator } from './ProcessIndicator'
 
 const meta: Meta<ProcessIndicatorProps> = {
   title: 'Components/Chat/ProcessIndicator',

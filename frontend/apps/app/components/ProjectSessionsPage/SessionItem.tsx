@@ -1,7 +1,7 @@
-import { urlgen } from '@/libs/routes'
 import { MessagesSquare } from '@liam-hq/ui'
 import Link from 'next/link'
 import type { FC } from 'react'
+import { urlgen } from '@/libs/routes'
 import styles from './SessionItem.module.css'
 import type { ProjectSession } from './services/fetchProjectSessions'
 

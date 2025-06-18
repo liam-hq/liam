@@ -1,8 +1,8 @@
 'use client'
 
+import type { FC } from 'react'
 import { DropdownMenuRoot, DropdownMenuTrigger } from '@/components'
 import { Building, ChevronsUpDown } from '@/icons'
-import type { FC } from 'react'
 import type { Organization } from '../../services/getOrganization'
 import type { OrganizationsByUserId } from '../../services/getOrganizationsByUserId'
 import itemStyles from '../Item.module.css'

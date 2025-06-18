@@ -1,7 +1,7 @@
+import { getInstallations } from '@liam-hq/github'
 import { ProjectNewPage } from '@/components/ProjectNewPage'
 import { getOrganizationId } from '@/features/organizations/services/getOrganizationId'
 import { createClient } from '@/libs/db/server'
-import { getInstallations } from '@liam-hq/github'
 
 export default async function NewProjectPage() {
   const organizationId = await getOrganizationId()

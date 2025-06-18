@@ -1,7 +1,7 @@
 import { logger, task } from '@trigger.dev/sdk'
 import {
-  type RepositoryAnalysisPayload,
   processRepositoryAnalysis,
+  type RepositoryAnalysisPayload,
 } from '../functions/processRepositoryAnalysis'
 
 export const analyzeRepositoryTask = task({

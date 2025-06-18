@@ -1,10 +1,10 @@
 import * as v from 'valibot'
 import {
+  columnNameSchema,
   type Schema,
+  schemaSchema,
   type Table,
   type TableGroup,
-  columnNameSchema,
-  schemaSchema,
   tableGroupNameSchema,
   tableGroupSchema,
   tableNameSchema,

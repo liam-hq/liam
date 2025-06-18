@@ -1,8 +1,8 @@
-import { createClient } from '@/libs/db/server'
 import {
   type CreateVersionParams,
   createSupabaseRepositories,
 } from '@liam-hq/agent'
+import { createClient } from '@/libs/db/server'
 
 async function createRepositories() {
   const client = await createClient()

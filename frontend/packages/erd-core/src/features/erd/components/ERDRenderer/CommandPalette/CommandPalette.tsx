@@ -1,11 +1,11 @@
 'use client'
 
-import { useSchema } from '@/stores'
 import { Search, Table2 } from '@liam-hq/ui'
 import { DialogDescription, DialogTitle } from '@radix-ui/react-dialog'
 import { ReactFlowProvider } from '@xyflow/react'
 import { Command } from 'cmdk'
 import { type FC, useEffect, useState } from 'react'
+import { useSchema } from '@/stores'
 import { TableNode } from '../../ERDContent/components'
 import styles from './CommandPalette.module.css'
 

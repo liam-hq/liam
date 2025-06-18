@@ -1,11 +1,11 @@
-import { SchemaProvider, UserEditingProvider } from '@/stores'
-import type { SchemaStore } from '@/stores/schema/schema'
 import { aTable } from '@liam-hq/db-structure'
 import { cleanup, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { NuqsAdapter } from 'nuqs/adapters/react'
 import type { ReactNode } from 'react'
 import { afterEach, describe, expect, it } from 'vitest'
+import { SchemaProvider, UserEditingProvider } from '@/stores'
+import type { SchemaStore } from '@/stores/schema/schema'
 import { CommandPalette } from './CommandPalette'
 
 afterEach(() => {

@@ -1,7 +1,3 @@
-import { toolbarActionLogEvent } from '@/features/gtm/utils'
-import { useVersion } from '@/providers'
-import { type ShowMode, showModeSchema } from '@/schemas/showMode'
-import { useUserEditing } from '@/stores'
 import {
   Button,
   ChevronDown,
@@ -14,6 +10,10 @@ import {
 } from '@liam-hq/ui'
 import { type FC, useCallback } from 'react'
 import { safeParse } from 'valibot'
+import { toolbarActionLogEvent } from '@/features/gtm/utils'
+import { useVersion } from '@/providers'
+import { type ShowMode, showModeSchema } from '@/schemas/showMode'
+import { useUserEditing } from '@/stores'
 import styles from './ShowModeMenu.module.css'
 
 const OPTION_LIST: { value: ShowMode; label: string }[] = [

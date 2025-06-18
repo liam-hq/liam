@@ -1,5 +1,7 @@
 'use client'
 
+import { useRouter } from 'next/navigation'
+import { type FC, useCallback } from 'react'
 import {
   DropdownMenuContent,
   DropdownMenuPortal,
@@ -7,8 +9,6 @@ import {
   DropdownMenuRadioItem,
 } from '@/components'
 import { urlgen } from '@/libs/routes'
-import { useRouter } from 'next/navigation'
-import { type FC, useCallback } from 'react'
 import styles from './BranchDropdownMenu.module.css'
 import type { Branch } from './services/getBranches'
 

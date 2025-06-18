@@ -1,2 +1,2 @@
-export * from './MentionSuggestor'
 export * from '../../types'
+export * from './MentionSuggestor'

@@ -1,20 +1,19 @@
 'use client'
 
-import { defaultKeymap } from '@codemirror/commands'
-import { history, historyKeymap } from '@codemirror/commands'
+import { defaultKeymap, history, historyKeymap } from '@codemirror/commands'
 import { yaml } from '@codemirror/lang-yaml'
 import {
-  HighlightStyle,
   foldGutter,
+  HighlightStyle,
   syntaxHighlighting,
 } from '@codemirror/language'
-import { type Diagnostic, lintGutter, linter } from '@codemirror/lint'
+import { type Diagnostic, linter, lintGutter } from '@codemirror/lint'
 import { EditorState, type Extension } from '@codemirror/state'
 import {
-  type ViewUpdate,
   drawSelection,
   keymap,
   lineNumbers,
+  type ViewUpdate,
 } from '@codemirror/view'
 import { tags } from '@lezer/highlight'
 import { EditorView } from 'codemirror'

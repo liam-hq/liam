@@ -1,6 +1,6 @@
-import { SessionFormContainer } from '@/features/sessions/components/SessionForm'
 import { MessagesSquare } from '@liam-hq/ui'
 import type { FC } from 'react'
+import { SessionFormContainer } from '@/features/sessions/components/SessionForm'
 import styles from './ProjectSessionsPage.module.css'
 import { SessionItem } from './SessionItem'
 import { fetchProjectSessions } from './services/fetchProjectSessions'

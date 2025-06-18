@@ -1,12 +1,12 @@
-import { SCHEMA_OVERRIDE_FILE_PATH } from '@/features/schemas/constants'
 import {
-  type Schema,
   overrideSchema,
+  type Schema,
   schemaOverrideSchema,
 } from '@liam-hq/db-structure'
 import { getFileContent } from '@liam-hq/github'
 import { safeParse } from 'valibot'
 import { parse as parseYaml } from 'yaml'
+import { SCHEMA_OVERRIDE_FILE_PATH } from '@/features/schemas/constants'
 
 export const safeApplySchemaOverride = async (
   repositoryFullName: string,

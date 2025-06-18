@@ -1,8 +1,8 @@
 'use server'
 
 import {
-  type Repository,
   getRepositoriesByInstallationId,
+  type Repository,
 } from '@liam-hq/github'
 import * as v from 'valibot'
 

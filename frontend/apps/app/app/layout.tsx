@@ -2,10 +2,9 @@ import type { Metadata } from 'next'
 import { Inter, Montserrat } from 'next/font/google'
 import type React from 'react'
 import './globals.css'
-import { GTMConsent, GtagScript } from '@/libs/gtm'
-import { GTM_ID } from '@/libs/gtm'
 import { ToastProvider } from '@liam-hq/ui'
 import { GoogleTagManager } from '@next/third-parties/google'
+import { GTM_ID, GTMConsent, GtagScript } from '@/libs/gtm'
 
 const inter = Inter({
   subsets: ['latin'],

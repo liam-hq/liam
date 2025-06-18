@@ -1,10 +1,10 @@
-import type { Projects } from '@/components/CommonLayout/AppBar/ProjectsDropdownMenu/services/getProjects'
 import { type FC, useState } from 'react'
+import type { Projects } from '@/components/CommonLayout/AppBar/ProjectsDropdownMenu/services/getProjects'
 import { GitHubSessionFormPresenter } from './GitHubSessionFormPresenter'
 import styles from './SessionFormPresenter.module.css'
 import { type SessionMode, SessionModeSelector } from './SessionModeSelector'
-import { URLSessionFormPresenter } from './URLSessionFormPresenter'
 import { UploadSessionFormPresenter } from './UploadSessionFormPresenter'
+import { URLSessionFormPresenter } from './URLSessionFormPresenter'
 
 type Branch = {
   name: string

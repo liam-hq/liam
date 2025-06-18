@@ -1,5 +1,5 @@
-import { createClient } from '@/libs/db/server'
 import { NextResponse } from 'next/server'
+import { createClient } from '@/libs/db/server'
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)

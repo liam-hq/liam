@@ -1,9 +1,8 @@
-import { createClient } from '@/libs/db/server'
-import { urlgen } from '@/libs/routes/urlgen'
 import { TabsList, TabsTrigger } from '@liam-hq/ui'
 import Link from 'next/link'
-
 import type { FC } from 'react'
+import { createClient } from '@/libs/db/server'
+import { urlgen } from '@/libs/routes/urlgen'
 import styles from './ProjectHeader.module.css'
 import { PROJECT_TABS } from './projectConstants'
 

@@ -1,9 +1,9 @@
-import { urlgen } from '@/libs/routes'
 import clsx from 'clsx'
 import Link from 'next/link'
+import { urlgen } from '@/libs/routes'
 import itemStyles from '../Item.module.css'
-import { fetchRecentSessions } from '../services/fetchRecentSessions'
 import type { RecentSession } from '../services/fetchRecentSessions'
+import { fetchRecentSessions } from '../services/fetchRecentSessions'
 import styles from './RecentsSection.module.css'
 
 export const RecentsSection = async () => {

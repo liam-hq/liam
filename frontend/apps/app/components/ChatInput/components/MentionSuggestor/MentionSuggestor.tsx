@@ -12,9 +12,9 @@ import {
   useState,
 } from 'react'
 import type { MentionItem } from '../../types'
-import styles from './MentionSuggestor.module.css'
 import { HighlightedLabel } from './components/HighlightedLabel'
 import { MentionIcon } from './components/MentionIcon'
+import styles from './MentionSuggestor.module.css'
 import { extractActiveMention } from './utils/extractActiveMention'
 import { matchSchemaCandidates } from './utils/matchSchemaCandidates'
 

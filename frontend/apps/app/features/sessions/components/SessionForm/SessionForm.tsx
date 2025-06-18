@@ -1,7 +1,7 @@
 'use client'
 
-import type { Projects } from '@/components/CommonLayout/AppBar/ProjectsDropdownMenu/services/getProjects'
 import { type FC, useActionState, useEffect, useTransition } from 'react'
+import type { Projects } from '@/components/CommonLayout/AppBar/ProjectsDropdownMenu/services/getProjects'
 import { createSession } from '../../actions/createSession'
 import { getBranches } from '../../actions/getBranches'
 import { SessionFormPresenter } from './SessionFormPresenter'

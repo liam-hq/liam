@@ -1,5 +1,5 @@
-import { createClient } from '@/libs/db/server'
 import { describe, expect, it } from 'vitest'
+import { createClient } from '@/libs/db/server'
 import { getProjects } from './getProjects'
 
 describe('getProjects', () => {

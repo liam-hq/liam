@@ -1,7 +1,7 @@
 'use client'
 
-import { setOrganizationIdCookie } from '@/features/organizations/services/setOrganizationIdCookie'
 import { type FC, useEffect } from 'react'
+import { setOrganizationIdCookie } from '@/features/organizations/services/setOrganizationIdCookie'
 
 type Props = {
   orgId: string

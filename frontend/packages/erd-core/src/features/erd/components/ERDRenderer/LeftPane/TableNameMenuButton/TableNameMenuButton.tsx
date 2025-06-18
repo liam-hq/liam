@@ -1,8 +1,3 @@
-import { useTableSelection } from '@/features/erd/hooks'
-import type { TableNodeType } from '@/features/erd/types'
-import { selectTableLogEvent } from '@/features/gtm/utils'
-import { useVersion } from '@/providers'
-import { useUserEditing } from '@/stores'
 import {
   ContextMenu,
   Eye,
@@ -20,6 +15,11 @@ import {
   useRef,
   useState,
 } from 'react'
+import { useTableSelection } from '@/features/erd/hooks'
+import type { TableNodeType } from '@/features/erd/types'
+import { selectTableLogEvent } from '@/features/gtm/utils'
+import { useVersion } from '@/providers'
+import { useUserEditing } from '@/stores'
 import styles from './TableNameMenuButton.module.css'
 import { VisibilityButton } from './VisibilityButton'
 

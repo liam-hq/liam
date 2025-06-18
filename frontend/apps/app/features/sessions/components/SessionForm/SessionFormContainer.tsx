@@ -1,6 +1,6 @@
+import type { FC } from 'react'
 import { getProjects } from '@/components/CommonLayout/AppBar/ProjectsDropdownMenu/services/getProjects'
 import { getOrganizationId } from '@/features/organizations/services/getOrganizationId'
-import type { FC } from 'react'
 import { SessionForm } from './SessionForm'
 
 type Props = {

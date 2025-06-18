@@ -1,6 +1,6 @@
-import { LiamLogoMark, LiamMigrationLogo } from '@/logos'
 import { LayoutGrid, Settings } from '@liam-hq/ui/src/icons'
 import type { FC } from 'react'
+import { LiamLogoMark, LiamMigrationLogo } from '@/logos'
 import type { Organization } from '../services/getOrganization'
 import type { OrganizationsByUserId } from '../services/getOrganizationsByUserId'
 import styles from './GlobalNav.module.css'

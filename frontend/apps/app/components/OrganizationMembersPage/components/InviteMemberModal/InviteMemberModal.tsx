@@ -20,8 +20,8 @@ import {
   useState,
   useTransition,
 } from 'react'
-import styles from './InviteMemberModal.module.css'
 import { inviteMember } from './actions/inviteMember'
+import styles from './InviteMemberModal.module.css'
 
 interface InviteMemberModalProps {
   isOpen: boolean

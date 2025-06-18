@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { type SchemaOverride, overrideSchema } from './overrideSchema.js'
+import { overrideSchema, type SchemaOverride } from './overrideSchema.js'
 import type { Schema } from './schema.js'
 
 describe('overrideSchema', () => {

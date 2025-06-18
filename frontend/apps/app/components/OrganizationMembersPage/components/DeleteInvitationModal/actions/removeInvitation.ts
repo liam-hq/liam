@@ -1,8 +1,8 @@
 'use server'
 
-import { createClient } from '@/libs/db/server'
 import { revalidatePath } from 'next/cache'
 import { object, safeParse, string } from 'valibot'
+import { createClient } from '@/libs/db/server'
 
 const RemoveInvitationSchema = object({
   invitationId: string(),

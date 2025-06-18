@@ -1,7 +1,7 @@
 import type { Meta } from '@storybook/react'
 import { useEffect, useState } from 'react'
-import { ProcessIndicator } from './ProcessIndicator'
 import type { ProcessStatus } from './ProcessIndicator'
+import { ProcessIndicator } from './ProcessIndicator'
 
 /**
  * A component that animates the progress indicator

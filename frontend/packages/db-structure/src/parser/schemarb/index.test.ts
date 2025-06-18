@@ -4,16 +4,15 @@ import {
   aCheckConstraint,
   aColumn,
   aForeignKeyConstraint,
+  anIndex,
   aPrimaryKeyConstraint,
   aRelationship,
   aSchema,
   aTable,
   aUniqueConstraint,
-  anIndex,
 } from '../../schema/index.js'
-import { UnsupportedTokenError, processor } from './index.js'
-
 import { createParserTestCases } from '../__tests__/index.js'
+import { processor, UnsupportedTokenError } from './index.js'
 
 describe(processor, () => {
   const userTable = (override?: Partial<Table>) =>

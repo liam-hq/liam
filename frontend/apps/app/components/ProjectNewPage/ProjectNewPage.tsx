@@ -1,7 +1,7 @@
 import type { Installation } from '@liam-hq/github'
 import type { FC } from 'react'
-import styles from './ProjectNewPage.module.css'
 import { InstallationSelector } from './components/InstallationSelector'
+import styles from './ProjectNewPage.module.css'
 
 type Props = {
   installations: Installation[]

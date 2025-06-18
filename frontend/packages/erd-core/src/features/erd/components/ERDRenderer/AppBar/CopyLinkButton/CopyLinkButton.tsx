@@ -1,5 +1,3 @@
-import { clickLogEvent } from '@/features/gtm/utils'
-import { useVersion } from '@/providers'
 import {
   Button,
   TooltipContent,
@@ -10,6 +8,8 @@ import {
   useToast,
 } from '@liam-hq/ui'
 import { type FC, useCallback } from 'react'
+import { clickLogEvent } from '@/features/gtm/utils'
+import { useVersion } from '@/providers'
 
 export const CopyLinkButton: FC = () => {
   const toast = useToast()

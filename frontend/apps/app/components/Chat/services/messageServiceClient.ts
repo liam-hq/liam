@@ -1,8 +1,8 @@
 'use client'
 
-import { createClient } from '@/libs/db/client'
 import type { Tables } from '@liam-hq/db/supabase/database.types'
 import * as v from 'valibot'
+import { createClient } from '@/libs/db/client'
 import type { ChatEntry } from '../types/chatTypes'
 
 type SchemaVersionMessage = {

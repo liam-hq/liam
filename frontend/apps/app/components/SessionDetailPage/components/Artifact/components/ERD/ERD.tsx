@@ -1,9 +1,9 @@
-import { ERDRenderer } from '@/features'
-import { VersionProvider } from '@/providers'
-import { versionSchema } from '@/schemas'
 import type { Schema } from '@liam-hq/db-structure'
 import type { FC } from 'react'
 import { parse } from 'valibot'
+import { ERDRenderer } from '@/features'
+import { VersionProvider } from '@/providers'
+import { versionSchema } from '@/schemas'
 
 const version = parse(versionSchema, {
   version: '0.1.0',

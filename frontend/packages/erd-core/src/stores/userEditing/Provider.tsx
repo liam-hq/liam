@@ -1,7 +1,5 @@
 'use client'
 
-import type { TableNodeType } from '@/features/erd/types'
-import type { ShowMode } from '@/schemas'
 import {
   compressToEncodedURIComponent,
   decompressFromEncodedURIComponent,
@@ -13,6 +11,8 @@ import {
   useQueryState,
 } from 'nuqs'
 import { type FC, type PropsWithChildren, useCallback, useState } from 'react'
+import type { TableNodeType } from '@/features/erd/types'
+import type { ShowMode } from '@/schemas'
 import { UserEditingContext } from './context'
 
 const parseAsCompressedStringArray = createParser({

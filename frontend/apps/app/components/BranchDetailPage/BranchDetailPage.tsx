@@ -1,6 +1,6 @@
+import Link from 'next/link'
 import { createClient } from '@/libs/db/server'
 import { urlgen } from '@/libs/routes'
-import Link from 'next/link'
 import styles from './BranchDetailPage.module.css'
 
 type Props = {

@@ -1,2 +1,2 @@
-export * from './urlgen'
 export * from './paramsSchema'
+export * from './urlgen'

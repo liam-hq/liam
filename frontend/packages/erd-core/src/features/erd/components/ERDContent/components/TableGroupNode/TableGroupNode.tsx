@@ -1,8 +1,8 @@
-import type { TableGroupNodeType } from '@/features/erd/types'
 import { IconButton, MessageSquareText } from '@liam-hq/ui'
 import type { NodeProps } from '@xyflow/react'
 import clsx from 'clsx'
 import type { FC } from 'react'
+import type { TableGroupNodeType } from '@/features/erd/types'
 import styles from './TableGroupNode.module.css'
 
 type Props = NodeProps<TableGroupNodeType>

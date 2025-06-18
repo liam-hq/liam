@@ -1,10 +1,10 @@
 'use client'
 
-import { Button, Spinner } from '@/components'
 import { type FC, useState } from 'react'
 import { Light as SyntaxHighlighter } from 'react-syntax-highlighter'
 import sql from 'react-syntax-highlighter/dist/esm/languages/hljs/sql'
 import { atomOneDark as base } from 'react-syntax-highlighter/dist/esm/styles/hljs'
+import { Button, Spinner } from '@/components'
 import type { DMLBlock } from '../../../types'
 import styles from './ExecutableDMLBlock.module.css'
 

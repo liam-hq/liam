@@ -1,7 +1,7 @@
-import { useUserEditing } from '@/stores'
 import { Group, IconButton } from '@liam-hq/ui'
 import { ToolbarToggleGroup, ToolbarToggleItem } from '@radix-ui/react-toolbar'
 import { type ComponentProps, type FC, useCallback } from 'react'
+import { useUserEditing } from '@/stores'
 import styles from './GroupButton.module.css'
 
 const GROUP_VALUE = 'group'

@@ -1,7 +1,7 @@
 'use client'
 
-import { Button, Input } from '@/components'
 import { type ChangeEvent, type FC, useCallback, useState } from 'react'
+import { Button, Input } from '@/components'
 import styles from './LoginPage.module.css'
 import { loginByEmail } from './services/loginByEmail'
 

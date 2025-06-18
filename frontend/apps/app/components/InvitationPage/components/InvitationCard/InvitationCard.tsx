@@ -1,10 +1,10 @@
 'use client'
 
-import { LiamLogoMark } from '@/logos'
 import { Button } from '@liam-hq/ui'
 import { useState, useTransition } from 'react'
-import styles from './InvitationCard.module.css'
+import { LiamLogoMark } from '@/logos'
 import { acceptInvitation } from './actions/acceptInvitation'
+import styles from './InvitationCard.module.css'
 
 interface InvitationCardProps {
   organizationName: string | null

@@ -1,10 +1,3 @@
-import { useTableSelection } from '@/features/erd/hooks'
-import type { DisplayArea } from '@/features/erd/types'
-import { selectTableLogEvent } from '@/features/gtm/utils'
-import { repositionTableLogEvent } from '@/features/gtm/utils/repositionTableLogEvent'
-import { MAX_ZOOM, MIN_ZOOM } from '@/features/reactflow/constants'
-import { useVersion } from '@/providers'
-import { useUserEditing } from '@/stores'
 import type { TableGroup } from '@liam-hq/db-structure'
 import {
   Background,
@@ -19,9 +12,14 @@ import {
 } from '@xyflow/react'
 import clsx from 'clsx'
 import { type FC, useCallback } from 'react'
+import { useTableSelection } from '@/features/erd/hooks'
+import type { DisplayArea } from '@/features/erd/types'
+import { selectTableLogEvent } from '@/features/gtm/utils'
+import { repositionTableLogEvent } from '@/features/gtm/utils/repositionTableLogEvent'
+import { MAX_ZOOM, MIN_ZOOM } from '@/features/reactflow/constants'
+import { useVersion } from '@/providers'
+import { useUserEditing } from '@/stores'
 import { highlightNodesAndEdges, isTableNode } from '../../utils'
-import styles from './ERDContent.module.css'
-import { ERDContentProvider, useERDContentContext } from './ERDContentContext'
 import {
   NonRelatedTableGroupNode,
   RelationshipEdge,
@@ -30,6 +28,8 @@ import {
   TableGroupNode,
   TableNode,
 } from './components'
+import styles from './ERDContent.module.css'
+import { ERDContentProvider, useERDContentContext } from './ERDContentContext'
 import { useInitialAutoLayout, useQueryParamsChanged } from './hooks'
 import { useTableGroupBoundingBox } from './hooks/useTableGroupBoundingBox'
 

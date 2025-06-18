@@ -1,6 +1,5 @@
-import { getOrganizationId } from '@/features/organizations/services/getOrganizationId'
-
 import type { ReactNode } from 'react'
+import { getOrganizationId } from '@/features/organizations/services/getOrganizationId'
 import { AppBar } from './AppBar'
 import styles from './CommonLayout.module.css'
 import { GlobalNav } from './GlobalNav'

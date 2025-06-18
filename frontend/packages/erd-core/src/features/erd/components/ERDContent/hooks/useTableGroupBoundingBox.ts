@@ -1,10 +1,10 @@
 'use client'
 
-import { useCustomReactflow } from '@/features/reactflow/hooks'
-import { useUserEditing } from '@/stores'
 import type { TableGroup } from '@liam-hq/db-structure'
 import type { Node } from '@xyflow/react'
 import { type MouseEvent, useCallback, useRef, useState } from 'react'
+import { useCustomReactflow } from '@/features/reactflow/hooks'
+import { useUserEditing } from '@/stores'
 
 type Box = {
   x: number

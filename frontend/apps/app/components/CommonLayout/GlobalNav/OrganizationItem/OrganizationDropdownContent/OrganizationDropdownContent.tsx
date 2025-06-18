@@ -1,3 +1,5 @@
+import { useRouter } from 'next/navigation'
+import { type FC, useCallback } from 'react'
 import {
   DropdownMenuContent,
   DropdownMenuItem,
@@ -8,8 +10,6 @@ import {
 import { setOrganizationIdCookie } from '@/features/organizations/services/setOrganizationIdCookie'
 import { Plus } from '@/icons'
 import { urlgen } from '@/libs/routes'
-import { useRouter } from 'next/navigation'
-import { type FC, useCallback } from 'react'
 import type { Organization } from '../../../services/getOrganization'
 import type { OrganizationsByUserId } from '../../../services/getOrganizationsByUserId'
 import styles from './OrganizationDropdownContent.module.css'
