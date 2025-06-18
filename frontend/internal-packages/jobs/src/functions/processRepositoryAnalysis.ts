@@ -302,12 +302,11 @@ const insertDocumentToSupabase = async (
   metadata: RepositoryDocumentMetadata,
   vector: number[],
 ): Promise<boolean> => {
-  // @ts-ignore - Type inconsistencies with Supabase schema definitions
   const { error } = await supabase.from('documents').insert([
     {
       content: documentContent,
-      metadata,
-      embedding: vector,
+      metadata: JSON.stringify(metadata),
+      embedding: JSON.stringify(vector),
       updated_at: metadata.updated_at,
       organization_id: metadata.organization_id || '',
     },
