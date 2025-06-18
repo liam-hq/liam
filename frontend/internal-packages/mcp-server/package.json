@@ -23,6 +23,6 @@
     "fmt:biome": "biome check --write --unsafe .",
     "lint": "concurrently \"pnpm:lint:*\"",
     "lint:biome": "biome check .",
-    "lint:tsc": "tsc --noEmit"
+    "lint:tsc": "tsgo --noEmit"
   }
 }

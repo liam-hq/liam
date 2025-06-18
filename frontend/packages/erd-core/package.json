@@ -46,7 +46,7 @@
     "lint": "concurrently \"pnpm:lint:*\"",
     "lint:biome": "biome check .",
     "lint:eslint": "eslint .",
-    "lint:tsc": "tsc --noEmit",
+    "lint:tsc": "tsgo --noEmit",
     "test": "vitest --watch=false"
   }
 }

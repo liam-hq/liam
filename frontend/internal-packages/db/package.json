@@ -26,7 +26,7 @@
     "lint": "concurrently \"pnpm:lint:*\"",
     "lint:biome": "biome check .",
     "lint:eslint": "eslint .",
-    "lint:tsc": "tsc --noEmit",
+    "lint:tsc": "tsgo --noEmit",
     "supabase:gen": "concurrently \"pnpm:supabase:gen:*\"",
     "supabase:gen:schema_sql": "pnpm supabase db dump --local > ./schema/schema.sql",
     "supabase:gen:types": "supabase gen types typescript --local > supabase/database.types.ts && biome check --write --unsafe supabase/database.types.ts",

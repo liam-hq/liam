@@ -70,7 +70,7 @@
     "lint": "concurrently \"pnpm:lint:*\"",
     "lint:biome": "biome check .",
     "lint:eslint": "echo 'ESLint disabled for cli package' || eslint .",
-    "lint:tsc": "tsc --noEmit",
+    "lint:tsc": "tsgo --noEmit",
     "test": "vitest run"
   },
   "files": [

@@ -39,7 +39,7 @@
     "lint": "concurrently \"pnpm:lint:*\"",
     "lint:biome": "biome check .",
     "lint:eslint": "eslint .",
-    "lint:tsc": "tsc --noEmit",
+    "lint:tsc": "tsgo --noEmit",
     "postinstall": "cp ../../packages/db-structure/node_modules/@ruby/prism/src/prism.wasm prism.wasm",
     "test": "vitest --watch=false --passWithNoTests",
     "trigger:dev": "trigger dev"

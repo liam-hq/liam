@@ -8,6 +8,7 @@
     "@changesets/types": "6.1.0",
     "@turbo/gen": "2.5.4",
     "@types/node": "22.15.29",
+    "@typescript/native-preview": "7.0.0-dev.20250617.1",
     "concurrently": "9.1.2",
     "knip": "5.56.0",
     "syncpack": "13.0.4",
