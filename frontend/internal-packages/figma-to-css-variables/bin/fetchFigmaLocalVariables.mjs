@@ -32,5 +32,4 @@ export async function fetchFigmaLocalVariables() {
     'tmp/local-variables.json',
     JSON.stringify(data.meta, null, 2),
   )
-  console.info('Local variables fetched and saved to tmp/local-variables.json')
 }

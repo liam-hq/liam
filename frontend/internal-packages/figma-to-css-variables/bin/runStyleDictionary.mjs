@@ -109,9 +109,5 @@ export async function runStyleDictionary(
       const styleDictionary = new StyleDictionary(config)
       await styleDictionary.buildAllPlatforms()
     }
-
-    console.info('Style Dictionary build complete.')
-  } catch (error) {
-    console.error(`Error during Style Dictionary generation: ${error.message}`)
-  }
+  } catch (_error) {}
 }

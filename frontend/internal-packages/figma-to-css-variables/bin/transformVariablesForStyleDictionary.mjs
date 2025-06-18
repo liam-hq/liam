@@ -174,5 +174,4 @@ export async function transformVariablesForStyleDictionary() {
   }
 
   await writeFileContents(fileContents)
-  console.info('Variables transformed and saved to tmp/transformed-variables/')
 }
