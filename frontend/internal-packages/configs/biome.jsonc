@@ -19,7 +19,7 @@
         "noUnusedImports": "error"
       },
       "suspicious": {
-        "noConsole": { "level": "error", "options": { "allow": ["log"] } }
+        "noConsole": { "level": "error", "options": { "allow": ["error", "warn"] } }
       },
       "complexity": {
         "useLiteralKeys": "off",
