@@ -31,16 +31,19 @@
   justify-content: center;
 }
 
+/* biome-ignore lint/style/noDescendingSpecificity: TODO: Review CSS selector order and specificity hierarchy */
 .icon.sm > svg {
   width: 0.75rem;
   height: 0.75rem;
 }
 
+/* biome-ignore lint/style/noDescendingSpecificity: TODO: Review CSS selector order and specificity hierarchy */
 .icon.md > svg {
   width: 1rem;
   height: 1rem;
 }
 
+/* biome-ignore lint/style/noDescendingSpecificity: TODO: Review CSS selector order and specificity hierarchy */
 .icon > svg {
   color: var(--overlay-70);
   transition: color var(--default-hover-animation-duration)

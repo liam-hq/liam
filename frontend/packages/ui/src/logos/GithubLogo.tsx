@@ -14,6 +14,7 @@ export const GithubLogo: FC<Props> = (props) => {
       {...props}
     >
       <g>
+        {/* biome-ignore lint/nursery/useUniqueElementIds: TODO: Migrate to useId() for unique IDs */}
         <mask
           id="mask0_90_18926"
           maskUnits="userSpaceOnUse"

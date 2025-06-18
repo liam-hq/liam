@@ -20,6 +20,7 @@ export const FacebookIcon: FC<Props> = (props) => {
         />
       </g>
       <defs>
+        {/* biome-ignore lint/nursery/useUniqueElementIds: TODO: Migrate to useId() for unique IDs */}
         <clipPath id="clip0_152_9126">
           <rect width="16" height="16" fill="currentColor" />
         </clipPath>
