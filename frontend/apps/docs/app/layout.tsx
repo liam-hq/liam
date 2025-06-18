@@ -1,20 +1,20 @@
 'use client'
 
-import { Banner } from '@/components'
 import { add, getTime, isAfter } from 'date-fns'
+import { Banner } from '@/components'
 import './global.css'
-import {
-  GTMConsent,
-  GTM_CONSENT_MODE_KEY,
-  GTM_ID,
-  GtagScript,
-  updateConsent,
-} from '@/lib/gtm'
 import { CookieConsent } from '@liam-hq/ui'
 import { GoogleTagManager } from '@next/third-parties/google'
 import { RootProvider } from 'fumadocs-ui/provider'
 import { Inter } from 'next/font/google'
 import { type ReactNode, useCallback, useEffect, useState } from 'react'
+import {
+  GTM_CONSENT_MODE_KEY,
+  GTM_ID,
+  GTMConsent,
+  GtagScript,
+  updateConsent,
+} from '@/lib/gtm'
 
 const COOKIE_CONSENT_EXPIRE_KEY = 'cookieConsentExpire'
 

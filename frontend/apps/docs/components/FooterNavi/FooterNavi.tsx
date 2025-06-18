@@ -1,7 +1,7 @@
 'use client'
 
-import { findNeighbour } from 'fumadocs-core/server'
 import type { PageTree } from 'fumadocs-core/server'
+import { findNeighbour } from 'fumadocs-core/server'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
