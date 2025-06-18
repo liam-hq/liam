@@ -1,21 +1,17 @@
 {
   "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
-  "organizeImports": {
-    "enabled": true
-  },
+  "assist": { "actions": { "source": { "organizeImports": "on" } } },
   "formatter": {
     "enabled": true,
     "indentStyle": "space",
     "lineWidth": 80,
-    "ignore": ["package.json"] // some rules conflict with syncpack
+    "includes": ["**", "!**/package.json"] // some rules conflict with syncpack
   },
   "linter": {
     "enabled": true,
     "rules": {
       "recommended": true,
       "nursery": {
-        "noCommonJs": "error",
-        "useImportRestrictions": "off"
       },
       "correctness": {
         "noUndeclaredDependencies": "error",
@@ -24,15 +20,28 @@
         "noUnusedImports": "error"
       },
       "suspicious": {
-        "noConsoleLog": "error"
+        "noConsole": { "level": "error", "options": { "allow": ["log"] } }
       },
       "complexity": {
         "useLiteralKeys": "off",
         // FIXME: Change to "error" once all cognitive complexity issues are resolved
         "noExcessiveCognitiveComplexity": "warn"
+      },
+      "style": {
+        "noParameterAssign": "error",
+        "useAsConstAssertion": "error",
+        "useDefaultParameterLast": "error",
+        "useEnumInitializers": "error",
+        "useSelfClosingElements": "error",
+        "useSingleVarDeclarator": "error",
+        "noUnusedTemplateLiteral": "error",
+        "useNumberNamespace": "error",
+        "noInferrableTypes": "error",
+        "noUselessElse": "error",
+        "noCommonJs": "error"
       }
     },
-    "ignore": []
+    "includes": ["**"]
   },
   "vcs": {
     "enabled": true,

@@ -1,9 +1,7 @@
 {
   "extends": ["../../internal-packages/configs/biome.jsonc"],
   "files": {
-    "ignore": [
-      "src/parser/schemarb/parser.js" // Because it's generated
-    ]
+    "includes": ["**", "!**/src/parser/schemarb/parser.js"]
   },
   "linter": {
     "rules": {
@@ -13,11 +11,7 @@
           "level": "error",
           "fix": "safe",
           "options": {
-            "suggestedExtensions": {
-              "ts": {
-                "module": "js"
-              }
-            }
+            "forceJsExtensions": true
           }
         }
       },
@@ -27,6 +21,18 @@
             "maxAllowedComplexity": 20
           }
         }
+      },
+      "style": {
+        "noParameterAssign": "error",
+        "useAsConstAssertion": "error",
+        "useDefaultParameterLast": "error",
+        "useEnumInitializers": "error",
+        "useSelfClosingElements": "error",
+        "useSingleVarDeclarator": "error",
+        "noUnusedTemplateLiteral": "error",
+        "useNumberNamespace": "error",
+        "noInferrableTypes": "error",
+        "noUselessElse": "error"
       }
     }
   }

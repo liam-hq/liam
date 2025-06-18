@@ -7,13 +7,21 @@
           "level": "error",
           "fix": "safe",
           "options": {
-            "suggestedExtensions": {
-              "ts": {
-                "module": "js"
-              }
-            }
+            "forceJsExtensions": true
           }
         }
+      },
+      "style": {
+        "noParameterAssign": "error",
+        "useAsConstAssertion": "error",
+        "useDefaultParameterLast": "error",
+        "useEnumInitializers": "error",
+        "useSelfClosingElements": "error",
+        "useSingleVarDeclarator": "error",
+        "noUnusedTemplateLiteral": "error",
+        "useNumberNamespace": "error",
+        "noInferrableTypes": "error",
+        "noUselessElse": "error"
       }
     }
   }

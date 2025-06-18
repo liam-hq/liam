@@ -21,7 +21,7 @@
     "ts-pattern": "5.7.1"
   },
   "devDependencies": {
-    "@biomejs/biome": "1.9.4",
+    "@biomejs/biome": "2.0.0",
     "@liam-hq/configs": "workspace:*",
     "@tailwindcss/postcss": "4.1.8",
     "@types/node": "22.15.29",

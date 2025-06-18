@@ -36,7 +36,7 @@
     "yoctocolors": "2.1.1"
   },
   "devDependencies": {
-    "@biomejs/biome": "1.9.4",
+    "@biomejs/biome": "2.0.0",
     "@liam-hq/configs": "workspace:*",
     "@rollup/plugin-node-resolve": "16.0.1",
     "@rollup/plugin-typescript": "12.1.2",
