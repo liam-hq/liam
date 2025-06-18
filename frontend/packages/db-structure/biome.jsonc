@@ -1,9 +1,8 @@
 {
   "extends": ["../../internal-packages/configs/biome.jsonc"],
   "files": {
-    "ignore": [
-      "src/parser/schemarb/parser.js" // Because it's generated
-    ]
+    "includes": ["**"],
+    "ignoreUnknown": false
   },
   "linter": {
     "rules": {
@@ -13,11 +12,7 @@
           "level": "error",
           "fix": "safe",
           "options": {
-            "suggestedExtensions": {
-              "ts": {
-                "module": "js"
-              }
-            }
+            "forceJsExtensions": true
           }
         }
       },
