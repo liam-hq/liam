@@ -10,7 +10,7 @@
     "./tsconfig": "./tsconfig"
   },
   "devDependencies": {
-    "@biomejs/biome": "1.9.4",
+    "@biomejs/biome": "2.0.0",
     "@eslint/compat": "1.2.9",
     "@tsconfig/strictest": "2.0.5",
     "@typescript-eslint/eslint-plugin": "8.32.1",

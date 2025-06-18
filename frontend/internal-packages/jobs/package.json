@@ -19,7 +19,7 @@
     "@trigger.dev/sdk": "4.0.0-v4-beta.21"
   },
   "devDependencies": {
-    "@biomejs/biome": "1.9.4",
+    "@biomejs/biome": "2.0.0",
     "@liam-hq/configs": "workspace:*",
     "@sentry/esbuild-plugin": "3.4.0",
     "@types/node": "22.15.29",
