@@ -7,14 +7,15 @@
   font-family: 'Inter', sans-serif;
   font-size: var(--font-size-3);
   font-weight: 400;
-  line-height: 1.0;
+  line-height: 1;
   border-radius: var(--border-radius-full);
   border: none;
   cursor: pointer;
   overflow: hidden;
-  transition: background-color var(--default-animation-duration)
-    var(--default-timing-function), color var(--default-animation-duration)
-    var(--default-timing-function);
+  transition:
+    background-color var(--default-animation-duration)
+    var(--default-timing-function),
+    color var(--default-animation-duration) var(--default-timing-function);
 }
 
 .active {
@@ -47,9 +48,10 @@
   height: 20px;
   border-radius: 9999px;
   padding: 4px;
-  transition: left var(--default-animation-duration)
-    var(--default-timing-function), background-color
-    var(--default-animation-duration) var(--default-timing-function);
+  transition:
+    left var(--default-animation-duration) var(--default-timing-function),
+    background-color var(--default-animation-duration)
+    var(--default-timing-function);
   z-index: 2;
 }
 
@@ -88,9 +90,9 @@
 .label {
   position: relative;
   white-space: nowrap;
-  transition: opacity var(--default-animation-duration)
-    var(--default-timing-function), padding var(--default-animation-duration)
-    var(--default-timing-function);
+  transition:
+    opacity var(--default-animation-duration) var(--default-timing-function),
+    padding var(--default-animation-duration) var(--default-timing-function);
   z-index: 1;
 }
 

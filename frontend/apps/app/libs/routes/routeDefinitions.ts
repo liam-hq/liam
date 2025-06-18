@@ -10,9 +10,7 @@ export type RouteDefinitions = {
   'settings/billing': string
   'settings/projects': string
   'design_sessions/new': string
-  'invitations/tokens/[token]': (params: {
-    token: string
-  }) => string
+  'invitations/tokens/[token]': (params: { token: string }) => string
   'projects/[projectId]/ref/[branchOrCommit]': (params: {
     projectId: string
     branchOrCommit: string

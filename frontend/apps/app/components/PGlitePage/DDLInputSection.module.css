@@ -52,7 +52,9 @@
   border-radius: var(--border-radius-2);
   font-weight: 500;
   cursor: pointer;
-  transition: background-color 0.2s, border-color 0.2s;
+  transition:
+    background-color 0.2s,
+    border-color 0.2s;
 }
 
 .primaryButton {

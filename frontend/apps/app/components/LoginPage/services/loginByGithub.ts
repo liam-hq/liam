@@ -9,7 +9,10 @@ type OAuthProvider = 'github'
 function getAuthCallbackUrl({
   next = '/app/design_sessions/new',
   provider,
-}: { next?: string; provider: OAuthProvider }): string {
+}: {
+  next?: string
+  provider: OAuthProvider
+}): string {
   let url = process.env.SITE_URL
     ? `https://${process.env.SITE_URL}`
     : process.env.VERCEL_BRANCH_URL

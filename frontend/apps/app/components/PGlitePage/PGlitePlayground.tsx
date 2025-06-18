@@ -90,7 +90,9 @@ export interface PGlitePlaygroundHandle {
 
 export const PGlitePlayground = ({
   ref,
-}: { ref: Ref<PGlitePlaygroundHandle> }) => {
+}: {
+  ref: Ref<PGlitePlaygroundHandle>
+}) => {
   const [sessionId] = useState<string>(() => crypto.randomUUID())
   const [isConnected, setIsConnected] = useState<boolean>(false)
 

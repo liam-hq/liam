@@ -10,11 +10,10 @@ import { processSQLInChunks } from './processSQLInChunks.js'
 /**
  * Handles parse errors and returns offset information
  */
-function handleParseError(parseError: { message: string; cursorpos: number }): [
-  number | null,
-  number | null,
-  ProcessError[],
-] {
+function handleParseError(parseError: {
+  message: string
+  cursorpos: number
+}): [number | null, number | null, ProcessError[]] {
   const errors: ProcessError[] = [
     new UnexpectedTokenWarningError(parseError.message),
   ]

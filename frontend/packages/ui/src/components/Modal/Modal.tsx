@@ -12,9 +12,9 @@ export const ModalPortal = Dialog.Portal
 export const ModalOverlay = ({
   ref,
   ...props
-}: { ref?: Ref<HTMLDivElement> }) => (
-  <Dialog.Overlay ref={ref} className={styles.dialogOverlay} {...props} />
-)
+}: {
+  ref?: Ref<HTMLDivElement>
+}) => <Dialog.Overlay ref={ref} className={styles.dialogOverlay} {...props} />
 ModalOverlay.displayName = 'ModalOverlay'
 
 export const ModalContent = ({

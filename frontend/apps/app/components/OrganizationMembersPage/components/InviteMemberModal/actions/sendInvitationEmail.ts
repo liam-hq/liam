@@ -5,7 +5,10 @@ import { createClient } from '@/libs/db/server'
 const InvitationEmail = ({
   organizationName,
   invitationLink,
-}: { organizationName: string; invitationLink: string }) => {
+}: {
+  organizationName: string
+  invitationLink: string
+}) => {
   return `
     <!DOCTYPE html>
     <html>

@@ -27,9 +27,11 @@
 .solidPrimary {
   background: var(--button-primary-background);
   border: 1px solid var(--button-primary-background);
-  transition: background-color var(--default-hover-animation-duration)
-    var(--default-timing-function), border-color
-    var(--default-hover-animation-duration) var(--default-timing-function);
+  transition:
+    background-color var(--default-hover-animation-duration)
+    var(--default-timing-function),
+    border-color var(--default-hover-animation-duration)
+    var(--default-timing-function);
 }
 
 .solidPrimary:hover {
@@ -41,9 +43,11 @@
   color: var(--button-danger-foreground);
   background: var(--button-danger);
   border: 1px solid var(--button-danger);
-  transition: background-color var(--default-hover-animation-duration)
-    var(--default-timing-function), border-color
-    var(--default-hover-animation-duration) var(--default-timing-function);
+  transition:
+    background-color var(--default-hover-animation-duration)
+    var(--default-timing-function),
+    border-color var(--default-hover-animation-duration)
+    var(--default-timing-function);
 }
 
 .solidDanger:hover {
@@ -78,7 +82,7 @@
   padding: var(--spacing-1) var(--spacing-1half);
   font-size: var(--font-size-2);
   border-radius: var(--border-radius-smbase);
-  line-height: 1.0;
+  line-height: 1;
 }
 
 .xs .icon {

@@ -60,16 +60,16 @@
 }
 
 .messageText :global(h1) {
-  margin: .67em 0;
+  margin: 0.67em 0;
   font-weight: 600;
-  padding-bottom: .3em;
+  padding-bottom: 0.3em;
   font-size: 2em;
   border-bottom: 1px solid rgba(61, 68, 77, 0.7);
 }
 
 .messageText :global(h2) {
   font-weight: 600;
-  padding-bottom: .3em;
+  padding-bottom: 0.3em;
   font-size: 1.5em;
   border-bottom: 1px solid rgba(61, 68, 77, 0.7);
 }
@@ -86,12 +86,12 @@
 
 .messageText :global(h5) {
   font-weight: 600;
-  font-size: .875em;
+  font-size: 0.875em;
 }
 
 .messageText :global(h6) {
   font-weight: 600;
-  font-size: .85em;
+  font-size: 0.85em;
   color: #9198a1;
 }
 
@@ -142,19 +142,24 @@
 }
 
 .messageText :global(li + li) {
-  margin-top: .25em;
+  margin-top: 0.25em;
 }
 
 /* Code */
 .messageText :global(code),
 .messageText :global(tt) {
-  padding: .2em .4em;
+  padding: 0.2em 0.4em;
   margin: 0;
   font-size: 85%;
   white-space: break-spaces;
   background-color: rgba(101, 108, 118, 0.2);
   border-radius: 6px;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, Liberation Mono,
+  font-family:
+    ui-monospace,
+    SFMono-Regular,
+    Menlo,
+    Consolas,
+    Liberation Mono,
     monospace;
 }
 
@@ -208,7 +213,7 @@
   margin: 0;
   padding: 0 1em;
   color: #9198a1;
-  border-left: .25em solid #3d444d;
+  border-left: 0.25em solid #3d444d;
 }
 
 .messageText :global(blockquote) > :global(:first-child) {
@@ -258,7 +263,7 @@
 }
 
 .messageText :global(.task-list-item-checkbox) {
-  margin: 0 .2em .25em -1.4em;
+  margin: 0 0.2em 0.25em -1.4em;
   vertical-align: middle;
 }
 
@@ -268,7 +273,7 @@
   overflow: hidden;
   background: transparent;
   border-bottom: 1px solid rgba(61, 68, 77, 0.7);
-  height: .25em;
+  height: 0.25em;
   padding: 0;
   margin: 1.5rem 0;
   background-color: #3d444d;

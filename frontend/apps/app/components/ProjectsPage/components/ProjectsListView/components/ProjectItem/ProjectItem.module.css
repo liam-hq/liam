@@ -6,7 +6,9 @@
   border: var(--border-width-base) solid var(--global-border);
   border-radius: var(--border-radius-md);
   gap: var(--spacing-5);
-  transition: border-color 0.2s ease, transform 0.2s ease;
+  transition:
+    border-color 0.2s ease,
+    transform 0.2s ease;
   text-decoration: none;
   width: 100%;
 }

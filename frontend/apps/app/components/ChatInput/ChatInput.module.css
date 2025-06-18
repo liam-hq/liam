@@ -13,8 +13,9 @@
   border: var(--border-width-base) solid var(--global-border);
   border-radius: var(--border-radius-base);
   background-color: var(--global-background);
-  transition: border 0.3s var(--default-timing-function), box-shadow 0.3s
-    var(--default-timing-function);
+  transition:
+    border 0.3s var(--default-timing-function),
+    box-shadow 0.3s var(--default-timing-function);
 }
 
 .inputContainer:hover {

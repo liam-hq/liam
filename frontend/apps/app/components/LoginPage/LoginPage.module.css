@@ -29,11 +29,12 @@
     linear-gradient(
       179deg,
       var(--primary-gradation-overlay-start, rgba(29, 237, 131, 0.12)) 0.79%,
-      var(--primary-gradation-overlay-end, rgba(29, 237, 131, 0.0)) 99.35%
+      var(--primary-gradation-overlay-end, rgba(29, 237, 131, 0)) 99.35%
     )
   );
-  box-shadow: 0px 0px 20px 0px rgba(29, 237, 131, 0.4), 0px 4px 80px 0px
-    rgba(29, 237, 131, 0.1) inset;
+  box-shadow:
+    0px 0px 20px 0px rgba(29, 237, 131, 0.4),
+    0px 4px 80px 0px rgba(29, 237, 131, 0.1) inset;
   backdrop-filter: blur(2.5px);
 }
 
