@@ -34,7 +34,6 @@ export const ERD: FC<Props> = ({ schema, prevSchema }) => {
   return (
     <section className={styles.section}>
       <div className={styles.head}>
-        <h2 className={styles.sectionTitle}>ER Diagram</h2>
         <IconButton
           disabled={disabled}
           icon={

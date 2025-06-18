@@ -31,7 +31,6 @@ export const SchemaUpdates: FC<Props> = ({
   return (
     <section className={styles.section}>
       <div className={styles.head}>
-        <h2 className={styles.sectionTitle}>Schema Updates</h2>
         <div className={styles.controls}>
           <IconButton
             disabled={disabledShowDiff}

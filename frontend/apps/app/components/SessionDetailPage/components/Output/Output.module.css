@@ -14,3 +14,9 @@
   padding-bottom: var(--spacing-3);
   overflow-y: scroll;
 }
+
+.section {
+  height: 100%;
+  min-height: 0;
+  padding: var(--spacing-4) var(--spacing-3);
+}

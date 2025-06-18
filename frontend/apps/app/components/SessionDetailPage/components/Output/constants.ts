@@ -1,5 +1,6 @@
 export const OUTPUT_TABS = {
-  DB_DESIGN: 'db-design',
+  ERD: 'erd',
+  SCHEMA_UPDATES: 'schema-updates',
   ARTIFACT: 'artifact',
 } as const
 
@@ -11,8 +12,9 @@ type OutputTab = {
 }
 
 export const OUTPUT_TABS_LIST: OutputTab[] = [
-  { value: OUTPUT_TABS.DB_DESIGN, label: 'DB Design' },
+  { value: OUTPUT_TABS.ERD, label: 'ERD' },
+  { value: OUTPUT_TABS.SCHEMA_UPDATES, label: 'Schema Updates' },
   { value: OUTPUT_TABS.ARTIFACT, label: 'Artifact' },
 ]
 
-export const DEFAULT_OUTPUT_TAB = OUTPUT_TABS.DB_DESIGN
+export const DEFAULT_OUTPUT_TAB = OUTPUT_TABS.ERD

@@ -2,7 +2,8 @@ import { TabsContent, TabsRoot } from '@/components'
 import type { FC } from 'react'
 import styles from './Output.module.css'
 import { Artifact } from './components/Artifact'
-import { DBDesign } from './components/DBDesign'
+import { ERD } from './components/DBDesign/components/ERD'
+import { SchemaUpdates } from './components/DBDesign/components/SchemaUpdates'
 import { Header } from './components/Header'
 import { DEFAULT_OUTPUT_TAB, OUTPUT_TABS } from './constants'
 import { useOutputUI } from './hooks/useOutputUI'
@@ -38,15 +39,20 @@ const OutputContent: FC<OutputContentProps> = ({ onQuickFix }) => {
     <TabsRoot defaultValue={DEFAULT_OUTPUT_TAB} className={styles.wrapper}>
       <Header />
       <div className={styles.body}>
-        <TabsContent value={OUTPUT_TABS.DB_DESIGN}>
-          <DBDesign
-            schema={currentVersionData.schema}
-            prevSchema={prevSchema}
-            schemaUpdatesDoc={currentVersionData.schemaUpdatesDoc}
-            prevSchemaUpdatesDoc={prevSchemaUpdatesDoc}
-            comments={currentVersionData.comments}
-            onQuickFix={onQuickFix}
-          />
+        <TabsContent value={OUTPUT_TABS.ERD}>
+          <div className={styles.section}>
+            <ERD schema={currentVersionData.schema} prevSchema={prevSchema} />
+          </div>
+        </TabsContent>
+        <TabsContent value={OUTPUT_TABS.SCHEMA_UPDATES}>
+          <div className={styles.section}>
+            <SchemaUpdates
+              schemaUpdatesDoc={currentVersionData.schemaUpdatesDoc}
+              prevSchemaUpdatesDoc={prevSchemaUpdatesDoc}
+              comments={currentVersionData.comments}
+              onQuickFix={onQuickFix}
+            />
+          </div>
         </TabsContent>
         <TabsContent value={OUTPUT_TABS.ARTIFACT}>
           <Artifact content={currentVersionData.artifactContent} />
