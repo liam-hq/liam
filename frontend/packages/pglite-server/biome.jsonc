@@ -1,6 +1,18 @@
 {
   "extends": ["../../internal-packages/configs/biome.jsonc"],
   "files": {
-    "ignore": ["dist/**"]
-  }
+    "includes": ["**"],
+    "ignoreUnknown": true
+  },
+  "overrides": [
+    {
+      "includes": ["dist/**"],
+      "linter": {
+        "enabled": false
+      },
+      "formatter": {
+        "enabled": false
+      }
+    }
+  ]
 }

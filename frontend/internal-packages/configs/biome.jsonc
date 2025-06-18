@@ -1,64 +1,67 @@
 {
-  "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
-  "assist": { "actions": { "source": { "organizeImports": "on" } } },
-  "formatter": {
-    "enabled": true,
-    "indentStyle": "space",
-    "lineWidth": 80,
-    "includes": ["**", "!**/package.json"] // some rules conflict with syncpack
-  },
-  "linter": {
-    "enabled": true,
-    "rules": {
-      "recommended": true,
-      "nursery": {},
-      "correctness": {
-        "noUndeclaredDependencies": "error",
-        "noUnusedVariables": "error",
-        "noUndeclaredVariables": "error",
-        "noUnusedImports": "error"
-      },
-      "suspicious": {
-        "noConsole": { "level": "error", "options": { "allow": ["info", "error", "warn"] } }
-      },
-      "complexity": {
-        "useLiteralKeys": "off",
-        // FIXME: Change to "error" once all cognitive complexity issues are resolved
-        "noExcessiveCognitiveComplexity": "warn"
-      },
-      "style": {
-        "noParameterAssign": "error",
-        "useAsConstAssertion": "error",
-        "useDefaultParameterLast": "error",
-        "useEnumInitializers": "error",
-        "useSelfClosingElements": "error",
-        "useSingleVarDeclarator": "error",
-        "noUnusedTemplateLiteral": "error",
-        "useNumberNamespace": "error",
-        "noInferrableTypes": "error",
-        "noUselessElse": "error",
-        "noCommonJs": "error"
-      }
-    },
-    "includes": ["**"]
-  },
-  "vcs": {
-    "enabled": true,
-    "clientKind": "git",
-    "useIgnoreFile": true
-  },
-  "javascript": {
-    "formatter": {
-      "quoteStyle": "single",
-      "semicolons": "asNeeded"
-    }
-  },
-  "css": {
-    "parser": {
-      "cssModules": true
-    },
-    "formatter": {
-      "quoteStyle": "single"
-    }
-  }
+	"$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
+	"assist": { "actions": { "source": { "organizeImports": "on" } } },
+	"formatter": {
+		"enabled": true,
+		"indentStyle": "space",
+		"lineWidth": 80,
+		"includes": ["**", "!**/package.json"] // some rules conflict with syncpack
+	},
+	"linter": {
+		"enabled": true,
+		"rules": {
+			"recommended": true,
+			"nursery": {},
+			"correctness": {
+				"noUndeclaredDependencies": "error",
+				"noUnusedVariables": "error",
+				"noUndeclaredVariables": "error",
+				"noUnusedImports": "error"
+			},
+			"suspicious": {
+				"noConsole": {
+					"level": "error",
+					"options": { "allow": ["info", "error", "warn"] }
+				}
+			},
+			"complexity": {
+				"useLiteralKeys": "off",
+				// FIXME: Change to "error" once all cognitive complexity issues are resolved
+				"noExcessiveCognitiveComplexity": "warn"
+			},
+			"style": {
+				"noParameterAssign": "error",
+				"useAsConstAssertion": "error",
+				"useDefaultParameterLast": "error",
+				"useEnumInitializers": "error",
+				"useSelfClosingElements": "error",
+				"useSingleVarDeclarator": "error",
+				"noUnusedTemplateLiteral": "error",
+				"useNumberNamespace": "error",
+				"noInferrableTypes": "error",
+				"noUselessElse": "error",
+				"noCommonJs": "error"
+			}
+		},
+		"includes": ["**"]
+	},
+	"vcs": {
+		"enabled": true,
+		"clientKind": "git",
+		"useIgnoreFile": true
+	},
+	"javascript": {
+		"formatter": {
+			"quoteStyle": "single",
+			"semicolons": "asNeeded"
+		}
+	},
+	"css": {
+		"parser": {
+			"cssModules": true
+		},
+		"formatter": {
+			"quoteStyle": "single"
+		}
+	}
 }

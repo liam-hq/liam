@@ -3,17 +3,7 @@
   "linter": {
     "rules": {
       "correctness": {
-        "useImportExtensions": {
-          "level": "error",
-          "fix": "safe",
-          "options": {
-            "suggestedExtensions": {
-              "ts": {
-                "module": "js"
-              }
-            }
-          }
-        }
+        "useImportExtensions": "error"
       }
     }
   }

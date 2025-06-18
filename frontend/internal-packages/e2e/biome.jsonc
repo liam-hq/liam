@@ -1,8 +1,20 @@
 {
   "extends": ["../../internal-packages/configs/biome.jsonc"],
   "files": {
-    "ignore": ["test-results"]
+    "includes": ["**"],
+    "ignoreUnknown": true
   },
+  "overrides": [
+    {
+      "includes": ["test-results/**"],
+      "linter": {
+        "enabled": false
+      },
+      "formatter": {
+        "enabled": false
+      }
+    }
+  ],
   "linter": {
     "rules": {}
   }
