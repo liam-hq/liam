@@ -54,6 +54,7 @@ jobs:
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
       - uses: ./.github/actions/pnpm-setup
+      - run: pnpm --filter @liam-hq/db supabase:stop || true
       - run: pnpm --filter @liam-hq/db supabase:start
       - run: cp .env.template .env
       - name: Make scripts executable
