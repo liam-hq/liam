@@ -112,6 +112,7 @@ export const ChatInput: FC<Props> = ({
     } else if (hasContent) {
       // If not loading and has content, send message
       onSendMessage(message)
+
       setMessage('')
       setTimeout(() => {
         const textarea = textareaRef.current
@@ -144,14 +145,27 @@ export const ChatInput: FC<Props> = ({
     setIsMentionSuggestorOpen(false)
   }, [])
 
-  // Adjust height on initial render
-  useEffect(() => {
+  const handleAdjustTextareaHeight = useCallback(() => {
     const textarea = textareaRef.current
     if (textarea) {
       textarea.style.height = 'auto'
       textarea.style.height = `${textarea.scrollHeight}px`
     }
   }, [])
+
+  useEffect(() => {
+    if (initialMessage) {
+      setMessage(initialMessage)
+      setTimeout(() => {
+        handleAdjustTextareaHeight()
+      }, 0)
+    }
+  }, [initialMessage, handleAdjustTextareaHeight])
+
+  // Adjust height on initial render
+  useEffect(() => {
+    handleAdjustTextareaHeight()
+  }, [handleAdjustTextareaHeight])
 
   return (
     <div className={styles.container}>

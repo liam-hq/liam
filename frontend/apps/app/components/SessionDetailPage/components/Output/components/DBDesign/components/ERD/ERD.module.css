@@ -1,0 +1,26 @@
+.section {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  gap: var(--spacing-3);
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: var(--spacing-1half);
+  border-bottom: solid 1px var(--pane-border);
+}
+
+.sectionTitle {
+  font-size: var(--font-size-7);
+  font-weight: 600;
+}
+
+.active {
+  color: var(--primary-accent) !important;
+}
+
+.erdWrapper {
+  height: 480px;
+}

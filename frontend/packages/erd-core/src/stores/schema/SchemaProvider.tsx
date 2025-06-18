@@ -1,13 +1,26 @@
+import { buildSchemaDiff } from '@liam-hq/db-structure'
 import type { FC, PropsWithChildren } from 'react'
+import { useMemo } from 'react'
 import { SchemaContext } from './context'
-import type { SchemaStore } from './schema'
+import type { SchemaContextValue, SchemaProviderValue } from './schema'
 
-type Props = PropsWithChildren & {
-  schema: SchemaStore
-}
+type Props = PropsWithChildren & SchemaProviderValue
 
-export const SchemaProvider: FC<Props> = ({ children, schema }) => {
+export const SchemaProvider: FC<Props> = ({ children, current, previous }) => {
+  const computedSchema: SchemaContextValue = useMemo(() => {
+    const diffItems =
+      current && previous ? buildSchemaDiff(previous, current) : undefined
+
+    return {
+      current,
+      previous,
+      diffItems,
+    }
+  }, [current, previous])
+
   return (
-    <SchemaContext.Provider value={schema}>{children}</SchemaContext.Provider>
+    <SchemaContext.Provider value={computedSchema}>
+      {children}
+    </SchemaContext.Provider>
   )
 }

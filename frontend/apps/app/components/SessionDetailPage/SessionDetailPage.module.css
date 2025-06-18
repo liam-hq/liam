@@ -16,19 +16,7 @@
   overflow: hidden;
 }
 
-.tabsRoot {
-  display: grid;
-  grid-template-rows: auto 1fr;
-  height: 100%;
+.outputSection {
   min-height: 0;
-}
-
-.tabsContent {
-  min-height: 0;
-}
-
-.erdSection {
-  position: relative;
-  overflow: hidden;
-  height: 100%;
+  padding: var(--spacing-2);
 }

@@ -1,5 +1,5 @@
 import { SchemaProvider, UserEditingProvider } from '@/stores'
-import type { SchemaStore } from '@/stores/schema/schema'
+import type { SchemaProviderValue } from '@/stores/schema/schema'
 import { aTable } from '@liam-hq/db-structure'
 import { cleanup, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
@@ -12,7 +12,7 @@ afterEach(() => {
   cleanup()
 })
 
-const schema: SchemaStore = {
+const schema: SchemaProviderValue = {
   current: {
     tables: {
       users: aTable({ name: 'users' }),
@@ -28,7 +28,7 @@ const schema: SchemaStore = {
 const wrapper = ({ children }: { children: ReactNode }) => (
   <NuqsAdapter>
     <UserEditingProvider>
-      <SchemaProvider schema={schema}>{children}</SchemaProvider>
+      <SchemaProvider {...schema}>{children}</SchemaProvider>
     </UserEditingProvider>
   </NuqsAdapter>
 )

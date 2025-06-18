@@ -1,4 +1,4 @@
 import { createContext } from 'react'
-import type { SchemaStore } from './schema'
+import type { SchemaContextValue } from './schema'
 
-export const SchemaContext = createContext<SchemaStore | null>(null)
+export const SchemaContext = createContext<SchemaContextValue | null>(null)

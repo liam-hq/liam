@@ -23,9 +23,17 @@ interface Props {
   schemaData: Schema
   tableGroups?: Record<string, TableGroup>
   designSession: DesignSession
+  initialMessage?: string
+  onSendMessage: (message: string) => void
 }
 
-export const Chat: FC<Props> = ({ schemaData, tableGroups, designSession }) => {
+export const Chat: FC<Props> = ({
+  schemaData,
+  tableGroups,
+  designSession,
+  initialMessage,
+  onSendMessage,
+}) => {
   const [currentUserId, setCurrentUserId] = useState<string | null>(null)
   const { messages, addOrUpdateMessage } = useRealtimeMessages(
     designSession,
@@ -100,6 +108,7 @@ export const Chat: FC<Props> = ({ schemaData, tableGroups, designSession }) => {
       isGenerating: false, // Explicitly set to false for consistency
     }
     addOrUpdateMessage(userMessage)
+    onSendMessage(content)
 
     startTransition(() => {
       startAIResponse(content)
@@ -141,6 +150,7 @@ export const Chat: FC<Props> = ({ schemaData, tableGroups, designSession }) => {
         onSendMessage={handleSendMessage}
         isLoading={isLoading}
         schema={schemaData}
+        initialMessage={initialMessage}
       />
     </div>
   )
