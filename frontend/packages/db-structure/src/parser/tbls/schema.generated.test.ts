@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import mysqlSchema from './input/mysql/schema.json'
 import postgresqlSchema from './input/postgresql/schema.json'
-import schema from './schema.generated'
+import schema from './schema.generated.js'
 
 describe('tbls schema validation', () => {
   it('validates correct schema structure', () => {
