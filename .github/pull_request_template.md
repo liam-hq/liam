@@ -13,11 +13,13 @@
 
 ## What was done
 <!-- This section will be filled by PR-Agent when the Pull Request is opened -->
+<!-- For Devin-created PRs, this will be automatically populated by the pr-agent workflow -->
 
 pr_agent:summary
 
 ## Detailed Changes
 <!-- This section will be filled by PR-Agent when the Pull Request is opened -->
+<!-- For Devin-created PRs, this will include detailed code analysis and walkthrough -->
 
 pr_agent:walkthrough
 

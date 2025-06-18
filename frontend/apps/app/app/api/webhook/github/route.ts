@@ -68,6 +68,26 @@ const getProjectInfo = async (
   return { projectId: projectRepositoryMapping.project_id }
 }
 
+// Handle pr-agent integration for Devin PRs
+const handleDevinPrAgent = async (
+  data: GitHubWebhookPayload,
+  _action: string,
+): Promise<void> => {
+  const pullRequest = data.pull_request
+  if (!pullRequest) return
+
+  const isDevinPr =
+    pullRequest.title?.includes('devin') ||
+    pullRequest.title?.includes('Devin') ||
+    false // Will be enhanced when we have access to proper PR body/user data
+
+  if (!isDevinPr) return
+
+  console.info(
+    `Devin PR detected: #${pullRequest.number}, pr-agent workflow will be triggered by GitHub Actions`,
+  )
+}
+
 // Handle pull request events
 const handlePullRequest = async (
   data: GitHubWebhookPayload,
@@ -101,6 +121,9 @@ const handlePullRequest = async (
 
   // Handle supported actions
   if (['opened', 'synchronize', 'reopened'].includes(action)) {
+    // Handle pr-agent for Devin PRs
+    await handleDevinPrAgent(data, action)
+
     // Perform pre-check
     try {
       const checkResult = await checkSchemaChanges({
