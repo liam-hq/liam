@@ -230,6 +230,7 @@ export const MrJack: FC = () => {
         fill="#1DED83"
       />
       <defs>
+        {/* biome-ignore lint/nursery/useUniqueElementIds: TODO: Review and use dynamic ID generation with useId() hook */}
         <filter
           id="filter0_i_2102_166864"
           x="63.1392"
@@ -265,6 +266,7 @@ export const MrJack: FC = () => {
             result="effect1_innerShadow_2102_166864"
           />
         </filter>
+        {/* biome-ignore lint/nursery/useUniqueElementIds: TODO: Review and use dynamic ID generation with useId() hook */}
         <filter
           id="filter1_i_2102_166864"
           x="63.2413"
@@ -300,6 +302,7 @@ export const MrJack: FC = () => {
             result="effect1_innerShadow_2102_166864"
           />
         </filter>
+        {/* biome-ignore lint/nursery/useUniqueElementIds: TODO: Review and use dynamic ID generation with useId() hook */}
         <filter
           id="filter2_i_2102_166864"
           x="76.4841"
@@ -335,6 +338,7 @@ export const MrJack: FC = () => {
             result="effect1_innerShadow_2102_166864"
           />
         </filter>
+        {/* biome-ignore lint/nursery/useUniqueElementIds: TODO: Review and use dynamic ID generation with useId() hook */}
         <filter
           id="filter3_i_2102_166864"
           x="75.1866"

@@ -68,6 +68,7 @@ export const CommandPalette: FC = () => {
           <div className={styles.previewBackground}>
             {table && (
               <ReactFlowProvider>
+                {/* biome-ignore lint/nursery/useUniqueElementIds: TODO: Review and use dynamic ID generation with useId() hook */}
                 <TableNode
                   id=""
                   type="table"

@@ -11,6 +11,7 @@ export const RelationshipEdgeParticleMarker: FC = () => {
       className={styles.wrapper}
     >
       <defs>
+        {/* biome-ignore lint/nursery/useUniqueElementIds: TODO: Review and use dynamic ID generation with useId() hook */}
         <radialGradient
           id="myGradient"
           cx="50%"

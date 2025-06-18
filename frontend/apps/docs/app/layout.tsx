@@ -78,6 +78,7 @@ export default function Layout({ children }: { children: ReactNode }) {
             },
           }}
         >
+          {/* biome-ignore lint/nursery/useUniqueElementIds: TODO: Review and use dynamic ID generation with useId() hook */}
           <Banner
             id="liam-erd-introduction"
             variant="dark"

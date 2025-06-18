@@ -52,6 +52,7 @@ export const LiamLogo: FC<Props> = (props) => {
         />
       </g>
       <defs>
+        {/* biome-ignore lint/nursery/useUniqueElementIds: TODO: Review and use dynamic ID generation with useId() hook */}
         <clipPath id="clip0_3660_19645">
           <rect
             width="99.1323"
