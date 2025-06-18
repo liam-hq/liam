@@ -1,4 +1,4 @@
-// biome-ignore lint/nursery/noCommonJs: As the PostCSS configuration format cannot be changed.
+// biome-ignore lint/style/noCommonJs: As the PostCSS configuration format cannot be changed.
 module.exports = {
   plugins: {
     '@tailwindcss/postcss': {},

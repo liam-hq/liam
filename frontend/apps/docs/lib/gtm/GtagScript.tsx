@@ -6,7 +6,7 @@ export const GtagScript: FC = () => {
     <Script
       id="gtag"
       strategy="afterInteractive"
-      // biome-ignore lint/security/noDangerouslySetInnerHtml: <explanation>
+      // biome-ignore lint/security/noDangerouslySetInnerHtml: Required for GTM initialization script
       dangerouslySetInnerHTML={{
         __html: `window.dataLayer = window.dataLayer || [];
         function gtag(){dataLayer.push(arguments);}`,

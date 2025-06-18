@@ -56,7 +56,7 @@ export const Banner: FC<Props> = ({
         <>
           <style>{`.${globalKey} #${id} { display: none; }`}</style>
           <script
-            // biome-ignore lint/security/noDangerouslySetInnerHtml: <explanation>
+            // biome-ignore lint/security/noDangerouslySetInnerHtml: Required for localStorage-based banner state
             dangerouslySetInnerHTML={{
               __html: `if (localStorage.getItem('${globalKey}') === 'true') document.documentElement.classList.add('${globalKey}');`,
             }}
