@@ -7,7 +7,7 @@ import { CookieConsent } from '@liam-hq/ui'
 import { GoogleTagManager } from '@next/third-parties/google'
 import { RootProvider } from 'fumadocs-ui/provider'
 import { Inter } from 'next/font/google'
-import { type ReactNode, useCallback, useEffect, useState } from 'react'
+import { type ReactNode, useCallback, useEffect, useId, useState } from 'react'
 import {
   GTM_CONSENT_MODE_KEY,
   GTM_ID,
@@ -24,6 +24,7 @@ const inter = Inter({
 
 export default function Layout({ children }: { children: ReactNode }) {
   const [open, setOpen] = useState(false)
+  const bannerId = useId()
 
   const handleClickAccept = useCallback(() => {
     const now = new Date()
@@ -79,7 +80,7 @@ export default function Layout({ children }: { children: ReactNode }) {
           }}
         >
           <Banner
-            id="liam-erd-introduction"
+            id={bannerId}
             variant="dark"
             link="https://liambx.com/blog/liam-erd-introduction"
           >

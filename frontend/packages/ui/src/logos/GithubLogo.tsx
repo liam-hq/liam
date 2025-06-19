@@ -1,8 +1,9 @@
-import type { ComponentPropsWithoutRef, FC } from 'react'
+import { type ComponentPropsWithoutRef, type FC, useId } from 'react'
 
 type Props = ComponentPropsWithoutRef<'svg'>
 
 export const GithubLogo: FC<Props> = (props) => {
+  const maskId = useId()
   return (
     <svg
       role="img"
@@ -15,7 +16,7 @@ export const GithubLogo: FC<Props> = (props) => {
     >
       <g>
         <mask
-          id="mask0_90_18926"
+          id={maskId}
           maskUnits="userSpaceOnUse"
           x="0"
           y="0"

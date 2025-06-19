@@ -41,7 +41,7 @@
 
 .dd {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   padding: var(--spacing-1) var(--spacing-2);
   color: var(--global-foreground);
   font-family: var(--code-font);
@@ -50,7 +50,6 @@
   font-weight: 400;
   line-height: normal;
   gap: var(--spacing-1);
-  align-items: flex-start;
 }
 
 .row {
