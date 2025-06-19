@@ -1,9 +1,9 @@
 'use client'
 
-import { useUserEditing } from '@/stores'
 import type { TableGroup } from '@liam-hq/db-structure'
 import { type Node, useReactFlow } from '@xyflow/react'
 import { type MouseEvent, useCallback, useRef, useState } from 'react'
+import { useUserEditing } from '@/stores'
 
 type Box = {
   x: number

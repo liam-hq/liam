@@ -1,8 +1,9 @@
-import { useUserEditing } from '@/stores'
 import { useReactFlow } from '@xyflow/react'
 import { useCallback } from 'react'
+import { useUserEditing } from '@/stores'
 import type { DisplayArea } from '../../types'
 import { highlightNodesAndEdges } from '../../utils'
+
 type SelectTableParams = {
   tableId: string
   displayArea: DisplayArea

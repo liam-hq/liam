@@ -1,8 +1,8 @@
+import { type Node, useReactFlow } from '@xyflow/react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import type { DisplayArea } from '@/features/erd/types'
 import { computeAutoLayout, highlightNodesAndEdges } from '@/features/erd/utils'
 import { useUserEditing } from '@/stores'
-import { type Node, useReactFlow } from '@xyflow/react'
-import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useERDContentContext } from '../ERDContentContext'
 import { hasNonRelatedChildNodes, updateNodesHiddenState } from '../utils'
 

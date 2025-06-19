@@ -1,9 +1,10 @@
-import type { TableNodeData } from '@/features/erd/types'
-import { useUserEditing } from '@/stores'
 import { Table2 } from '@liam-hq/ui'
 import { Handle, Position, useReactFlow } from '@xyflow/react'
 import clsx from 'clsx'
 import type { FC, MouseEvent } from 'react'
+import type { TableNodeData } from '@/features/erd/types'
+import { useUserEditing } from '@/stores'
+
 import styles from './TableHeader.module.css'
 
 type Props = {

@@ -1,6 +1,3 @@
-import { toolbarActionLogEvent } from '@/features/gtm/utils'
-import { useVersion } from '@/providers'
-import { useUserEditing } from '@/stores'
 import { type IconButton, Scan } from '@liam-hq/ui'
 import { useReactFlow } from '@xyflow/react'
 import {
@@ -9,6 +6,9 @@ import {
   type ReactNode,
   useCallback,
 } from 'react'
+import { toolbarActionLogEvent } from '@/features/gtm/utils'
+import { useVersion } from '@/providers'
+import { useUserEditing } from '@/stores'
 import { ToolbarIconButton } from '../ToolbarIconButton'
 
 interface FitviewButtonProps {

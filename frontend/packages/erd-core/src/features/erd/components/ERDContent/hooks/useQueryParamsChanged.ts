@@ -1,10 +1,11 @@
+import { useReactFlow } from '@xyflow/react'
+import { useCallback, useEffect } from 'react'
 import type { DisplayArea } from '@/features/erd/types'
 import { computeAutoLayout, highlightNodesAndEdges } from '@/features/erd/utils'
 import { useUserEditing } from '@/stores'
-import { useReactFlow } from '@xyflow/react'
-import { useCallback, useEffect } from 'react'
 import { hasNonRelatedChildNodes, updateNodesHiddenState } from '../utils'
 import { usePopStateListener } from './usePopStateListener'
+
 type Params = {
   displayArea: DisplayArea
 }

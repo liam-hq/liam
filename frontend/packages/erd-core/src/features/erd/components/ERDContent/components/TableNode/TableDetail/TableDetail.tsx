@@ -1,7 +1,3 @@
-import { computeAutoLayout, convertSchemaToNodes } from '@/features/erd/utils'
-import { clickLogEvent, openRelatedTablesLogEvent } from '@/features/gtm/utils'
-import { useVersion } from '@/providers'
-import { useSchema, useUserEditing } from '@/stores'
 import type { Table } from '@liam-hq/db-structure'
 import {
   DrawerClose,
@@ -12,14 +8,18 @@ import {
 } from '@liam-hq/ui'
 import { useReactFlow } from '@xyflow/react'
 import { type FC, useCallback } from 'react'
+import { computeAutoLayout, convertSchemaToNodes } from '@/features/erd/utils'
+import { clickLogEvent, openRelatedTablesLogEvent } from '@/features/gtm/utils'
+import { useVersion } from '@/providers'
+import { useSchema, useUserEditing } from '@/stores'
 import { hasNonRelatedChildNodes, updateNodesHiddenState } from '../../../utils'
 import { Columns } from './Columns'
 import { Comment } from './Comment'
 import { Constraints } from './Constraints'
+import { extractSchemaForTable } from './extractSchemaForTable'
 import { Indexes } from './Indexes'
 import { RelatedTables } from './RelatedTables'
 import styles from './TableDetail.module.css'
-import { extractSchemaForTable } from './extractSchemaForTable'
 
 type Props = {
   table: Table
