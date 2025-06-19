@@ -1,6 +1,6 @@
 'use client'
 
-import { type ChangeEvent, type FC, useCallback, useState } from 'react'
+import { type ChangeEvent, type FC, useCallback, useId, useState } from 'react'
 import { Button, Input } from '@/components'
 import styles from './LoginPage.module.css'
 import { loginByEmail } from './services/loginByEmail'
@@ -12,6 +12,8 @@ type Props = {
 export const EmailForm: FC<Props> = ({ returnTo }) => {
   const [email, setEmail] = useState<string>('')
   const [password, setPassword] = useState<string>('')
+  const emailId = useId()
+  const passwordId = useId()
 
   const handleChangeEmail = useCallback((e: ChangeEvent<HTMLInputElement>) => {
     setEmail(e.target.value)
@@ -28,11 +30,11 @@ export const EmailForm: FC<Props> = ({ returnTo }) => {
     <form className={styles.form}>
       <input type="hidden" name="returnTo" value={returnTo} />
       <div className={styles.formGroup}>
-        <label htmlFor="email" className={styles.label}>
+        <label htmlFor={emailId} className={styles.label}>
           Email
         </label>
         <Input
-          id="email"
+          id={emailId}
           name="email"
           type="email"
           placeholder="Enter your email"
@@ -44,12 +46,12 @@ export const EmailForm: FC<Props> = ({ returnTo }) => {
 
       <div className={styles.formGroup}>
         <div className={styles.passwordHeader}>
-          <label htmlFor="password" className={styles.label}>
+          <label htmlFor={passwordId} className={styles.label}>
             Password
           </label>
         </div>
         <Input
-          id="password"
+          id={passwordId}
           name="password"
           type="password"
           placeholder="Enter your password"

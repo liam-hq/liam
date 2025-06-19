@@ -2,7 +2,7 @@
 
 import { Button, Input } from '@liam-hq/ui'
 import { useRouter } from 'next/navigation'
-import { type FC, type FormEvent, useState, useTransition } from 'react'
+import { type FC, type FormEvent, useId, useState, useTransition } from 'react'
 import { setOrganizationIdCookie } from '@/features/organizations/services/setOrganizationIdCookie'
 import { urlgen } from '@/libs/routes'
 import { createOrganization } from './actions/createOrganizations'
@@ -13,6 +13,7 @@ export const OrganizationNewPage: FC = () => {
   const [loading, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
   const router = useRouter()
+  const nameId = useId()
 
   // Computed value instead of state
   const isFormValid = name.trim().length > 0
@@ -50,13 +51,13 @@ export const OrganizationNewPage: FC = () => {
             <div className={styles.formContent}>
               <div className={styles.formGroup}>
                 <div className={styles.heading}>
-                  <label htmlFor="name" className={styles.label}>
+                  <label htmlFor={nameId} className={styles.label}>
                     Organization Name
                   </label>
                 </div>
                 <div className={styles.inputWrapper}>
                   <Input
-                    id="name"
+                    id={nameId}
                     type="text"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
