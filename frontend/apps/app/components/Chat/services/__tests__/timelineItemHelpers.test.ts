@@ -8,13 +8,16 @@ import {
 
 describe('timelineItemHelpers', () => {
   describe('generateTimelineItemId', () => {
-    it('should generate unique ID with prefix', async () => {
+    it('should generate unique ID with prefix', () => {
       const id1 = generateTimelineItemId('test')
-      await new Promise((resolve) => setTimeout(resolve, 1))
       const id2 = generateTimelineItemId('test')
 
-      expect(id1).toMatch(/^test-\d+$/)
-      expect(id2).toMatch(/^test-\d+$/)
+      expect(id1).toMatch(
+        /^test-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/,
+      )
+      expect(id2).toMatch(
+        /^test-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/,
+      )
       expect(id1).not.toBe(id2)
     })
   })
