@@ -1,5 +1,5 @@
 import Script from 'next/script'
-import { useId, type FC } from 'react'
+import { type FC, useId } from 'react'
 
 export const GtagScript: FC = () => {
   const gtagId = useId()

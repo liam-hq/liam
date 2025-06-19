@@ -1,4 +1,4 @@
-import { useId, type FC } from 'react'
+import { type FC, useId } from 'react'
 import type { IconProps } from './types'
 
 export const PostgresIcon: FC<IconProps> = ({ size = 16 }) => {

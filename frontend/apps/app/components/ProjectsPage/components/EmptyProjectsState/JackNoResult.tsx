@@ -1,4 +1,4 @@
-import { useId, type ComponentPropsWithoutRef, type FC } from 'react'
+import { type ComponentPropsWithoutRef, type FC, useId } from 'react'
 
 type Props = ComponentPropsWithoutRef<'svg'>
 

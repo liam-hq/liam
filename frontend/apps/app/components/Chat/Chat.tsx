@@ -1,7 +1,7 @@
 'use client'
 
 import type { Schema, TableGroup } from '@liam-hq/db-structure'
-import { type FC, useEffect, useRef, useState, useTransition } from 'react'
+import { type FC, useCallback, useEffect, useRef, useState, useTransition } from 'react'
 import { ChatInput } from '../ChatInput'
 import { TimelineItem } from '../TimelineItem'
 import styles from './Chat.module.css'
@@ -49,7 +49,7 @@ export const Chat: FC<Props> = ({ schemaData, tableGroups, designSession }) => {
   }, [])
 
   // Start AI response without saving user message (for auto-start scenarios)
-  const startAIResponse = async (content: string) => {
+  const startAIResponse = useCallback(async (content: string) => {
     if (!currentUserId) return
 
     // Send chat message to API
@@ -68,7 +68,7 @@ export const Chat: FC<Props> = ({ schemaData, tableGroups, designSession }) => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
       }, 10)
     }
-  }
+  }, [currentUserId, tableGroups, timelineItems, designSession, setProgressMessages])
 
   // Auto-start AI response for initial user message
   useEffect(() => {
@@ -85,7 +85,12 @@ export const Chat: FC<Props> = ({ schemaData, tableGroups, designSession }) => {
         startAIResponse(initialTimelineItem.content)
       })
     }
-  }, [currentUserId, designSession.timelineItems, isLoading, startAIResponse, startTransition])
+  }, [
+    currentUserId,
+    designSession.timelineItems,
+    isLoading,
+    startAIResponse,
+  ])
 
   // Scroll to bottom when component mounts or messages change
   useEffect(() => {
