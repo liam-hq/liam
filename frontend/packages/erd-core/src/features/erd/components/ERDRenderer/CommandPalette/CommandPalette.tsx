@@ -85,6 +85,10 @@ export const CommandPalette: FC = () => {
                   positionAbsoluteX={0}
                   positionAbsoluteY={0}
                   zIndex={0}
+                  selected={false}
+                  draggable={false}
+                  selectable={false}
+                  deletable={false}
                 />
               </ReactFlowProvider>
             )}
