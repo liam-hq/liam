@@ -17,6 +17,8 @@ export const CommandPalette: FC = () => {
   const table = schema.current.tables[tableName ?? '']
   const { selectTable } = useTableSelection()
 
+  const [focusedTableName, setFocusedTableName] = useState<string | null>(null)
+
   const goToERD = useCallback(
     (tableName: string) => {
       selectTable({ tableId: tableName, displayArea: 'main' })
@@ -44,7 +46,10 @@ export const CommandPalette: FC = () => {
       onOpenChange={setOpen}
       contentClassName={styles.content}
       value={tableName ?? ''}
-      onValueChange={(v) => setTableName(v)}
+      onValueChange={(v) => {
+        if (focusedTableName) return
+        setTableName(v)
+      }}
     >
       <DialogTitle hidden>Command Palette</DialogTitle>
       <DialogDescription hidden>
@@ -71,6 +76,9 @@ export const CommandPalette: FC = () => {
                 <div
                   onClick={(event) => {
                     event.stopPropagation()
+                    setFocusedTableName(
+                      table.name === focusedTableName ? null : table.name,
+                    )
                   }}
                   onDoubleClick={() => goToERD(table.name)}
                 >
