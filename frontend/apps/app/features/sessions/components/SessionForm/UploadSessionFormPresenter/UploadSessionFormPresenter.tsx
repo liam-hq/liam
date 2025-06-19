@@ -59,13 +59,13 @@ export const UploadSessionFormPresenter: FC<Props> = ({
       <form action={formAction}>
         <div className={styles.formContent}>
           <div className={styles.formGroup}>
-            {/* biome-ignore lint/a11y/useSemanticElements: div required for drag-and-drop functionality */}
             <div
               className={`${styles.dropZone} ${dragActive ? styles.dropZoneActive : ''}`}
               onDragEnter={handleDrag}
               onDragLeave={handleDrag}
               onDragOver={handleDrag}
               onDrop={handleDrop}
+              {/* biome-ignore lint/a11y/useSemanticElements: div required for drag-and-drop functionality */}
               role="button"
               tabIndex={0}
             >
