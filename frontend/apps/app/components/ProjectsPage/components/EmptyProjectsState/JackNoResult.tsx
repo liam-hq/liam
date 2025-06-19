@@ -1,8 +1,11 @@
-import type { ComponentPropsWithoutRef, FC } from 'react'
+import { useId, type ComponentPropsWithoutRef, type FC } from 'react'
 
 type Props = ComponentPropsWithoutRef<'svg'>
 
 export const JackNoResult: FC<Props> = (props) => {
+  const maskId = useId()
+  const filterId = useId()
+  const clipPathId = useId()
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -47,13 +50,13 @@ export const JackNoResult: FC<Props> = (props) => {
           strokeLinecap="round"
           strokeLinejoin="round"
         />
-        <mask id="path-7-inside-1_1261_71067" fill="white">
+        <mask id={maskId} fill="white">
           <path d="M19.29 41.8201C23.74 42.2501 24.65 39.4101 26.69 40.1101C26.86 40.1701 27.02 40.2801 27.13 40.4201C30.06 43.8801 26.15 50.0201 22.95 52.0601" />
         </mask>
         <path
           d="M26.69 40.1101L27.0229 39.1671L27.0146 39.1642L26.69 40.1101ZM27.13 40.4201L26.3437 41.0379L26.3551 41.0523L26.3669 41.0663L27.13 40.4201ZM19.1939 42.8155C21.6871 43.0564 23.2314 42.3666 24.374 41.741C24.9675 41.416 25.2944 41.2085 25.6416 41.0819C25.9145 40.9824 26.1145 40.9699 26.3655 41.056L27.0146 39.1642C26.2456 38.9003 25.5668 38.9803 24.9563 39.203C24.42 39.3986 23.8588 39.7429 23.4135 39.9867C22.4786 40.4986 21.343 41.0138 19.3862 40.8247L19.1939 42.8155ZM26.3572 41.0531C26.3559 41.0526 26.356 41.0526 26.3569 41.0531C26.3579 41.0535 26.3587 41.0541 26.3591 41.0543C26.3595 41.0546 26.3585 41.054 26.3562 41.0519C26.354 41.0498 26.3496 41.0453 26.3437 41.0379L27.9164 39.8023C27.6796 39.5009 27.3567 39.2849 27.0229 39.1671L26.3572 41.0531ZM26.3669 41.0663C27.4537 42.3498 27.3825 44.262 26.4286 46.3584C25.488 48.4256 23.8312 50.3124 22.4125 51.2169L23.4876 52.9033C25.2689 51.7678 27.1671 49.5646 28.249 47.1867C29.3176 44.8382 29.7363 41.9504 27.8932 39.7739L26.3669 41.0663Z"
           fill="#1DED83"
-          mask="url(#path-7-inside-1_1261_71067)"
+          mask={`url(#${maskId})`}
         />
         <path
           d="M103.62 39.7501L77.6201 22.3701"
@@ -115,7 +118,7 @@ export const JackNoResult: FC<Props> = (props) => {
       </g>
       <defs>
         <filter
-          id="filter0_i_1261_71067"
+          id={filterId}
           x="0.483398"
           y="0.507812"
           width="73.0537"
@@ -149,7 +152,7 @@ export const JackNoResult: FC<Props> = (props) => {
             result="effect1_innerShadow_1261_71067"
           />
         </filter>
-        <clipPath id="clip0_1261_71067">
+        <clipPath id={clipPathId}>
           <rect width="107.29" height="97.55" fill="white" />
         </clipPath>
       </defs>
