@@ -48,28 +48,6 @@ export const Chat: FC<Props> = ({ schemaData, tableGroups, designSession }) => {
     fetchUserId()
   }, [])
 
-  // Auto-start AI response for initial user message
-  useEffect(() => {
-    if (!currentUserId || autoStartExecuted.current || isLoading) return
-
-    // Only auto-start if there's exactly one timeline item and it's from user
-    if (
-      designSession.timelineItems.length === 1 &&
-      designSession.timelineItems[0].type === 'user'
-    ) {
-      const initialTimelineItem = designSession.timelineItems[0]
-      autoStartExecuted.current = true
-      startTransition(() => {
-        startAIResponse(initialTimelineItem.content)
-      })
-    }
-  }, [currentUserId, designSession.timelineItems, isLoading])
-
-  // Scroll to bottom when component mounts or messages change
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [])
-
   // Start AI response without saving user message (for auto-start scenarios)
   const startAIResponse = async (content: string) => {
     if (!currentUserId) return
@@ -91,6 +69,28 @@ export const Chat: FC<Props> = ({ schemaData, tableGroups, designSession }) => {
       }, 10)
     }
   }
+
+  // Auto-start AI response for initial user message
+  useEffect(() => {
+    if (!currentUserId || autoStartExecuted.current || isLoading) return
+
+    // Only auto-start if there's exactly one timeline item and it's from user
+    if (
+      designSession.timelineItems.length === 1 &&
+      designSession.timelineItems[0].type === 'user'
+    ) {
+      const initialTimelineItem = designSession.timelineItems[0]
+      autoStartExecuted.current = true
+      startTransition(() => {
+        startAIResponse(initialTimelineItem.content)
+      })
+    }
+  }, [currentUserId, designSession.timelineItems, isLoading, startAIResponse])
+
+  // Scroll to bottom when component mounts or messages change
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [])
 
   // TODO: Add rate limiting - Implement rate limiting for message sending to prevent spam
   const handleSendMessage = async (content: string) => {
