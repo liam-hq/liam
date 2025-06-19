@@ -59,7 +59,6 @@ export const MicButton: FC<MicButtonProps> = ({
     <ArrowTooltipProvider>
       <ArrowTooltipRoot>
         <ArrowTooltipTrigger asChild>
-          {/* biome-ignore lint/a11y/useSemanticElements: div required for tooltip trigger wrapper */}
           <div
             className={clsx(styles.container, className)}
             onMouseEnter={handleMouseEnter}
