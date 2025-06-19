@@ -1,5 +1,5 @@
 {
-  "buildCommand": "mkdir -p public && mkdir -p .storybook/public && pnpm build",
+  "buildCommand": "cd ../../.. && pnpm build --filter @liam-hq/storybook",
   "outputDirectory": "storybook-static",
   "framework": "storybook",
   "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
