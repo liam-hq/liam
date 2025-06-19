@@ -1,7 +1,8 @@
-import type { FC } from 'react'
+import { type FC, useId } from 'react'
 import styles from './RelationshipEdgeParticleMarker.module.css'
 
 export const RelationshipEdgeParticleMarker: FC = () => {
+  const gradientId = useId()
   return (
     <svg
       width="0"
@@ -12,7 +13,7 @@ export const RelationshipEdgeParticleMarker: FC = () => {
     >
       <defs>
         <radialGradient
-          id="myGradient"
+          id={gradientId}
           cx="50%"
           cy="50%"
           r="50%"

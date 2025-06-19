@@ -1,5 +1,5 @@
 import { Button } from '@liam-hq/ui'
-import { type FC, useState } from 'react'
+import { type FC, useId, useState } from 'react'
 import { SessionFormActions } from '../SessionFormActions'
 import styles from './URLSessionFormPresenter.module.css'
 
@@ -15,18 +15,19 @@ export const URLSessionFormPresenter: FC<Props> = ({
   formAction,
 }) => {
   const [urlPath, setUrlPath] = useState('')
+  const schemaUrlId = useId()
 
   return (
     <div className={styles.container}>
       <form action={formAction}>
         <div className={styles.formContent}>
           <div className={styles.formGroup}>
-            <label htmlFor="schemaUrl" className={styles.label}>
+            <label htmlFor={schemaUrlId} className={styles.label}>
               Enter schema file path (e.g., db/schema.rb)
             </label>
             <div className={styles.urlInputWrapper}>
               <input
-                id="schemaUrl"
+                id={schemaUrlId}
                 name="schemaUrl"
                 type="text"
                 value={urlPath}

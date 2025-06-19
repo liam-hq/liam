@@ -4,13 +4,14 @@ import { Search, Table2 } from '@liam-hq/ui'
 import { DialogDescription, DialogTitle } from '@radix-ui/react-dialog'
 import { ReactFlowProvider } from '@xyflow/react'
 import { Command } from 'cmdk'
-import { type FC, useEffect, useState } from 'react'
+import { type FC, useEffect, useId, useState } from 'react'
 import { useSchema } from '@/stores'
 import { TableNode } from '../../ERDContent/components'
 import styles from './CommandPalette.module.css'
 
 export const CommandPalette: FC = () => {
   const [open, setOpen] = useState(false)
+  const tableNodeId = useId()
 
   const schema = useSchema()
   const [tableName, setTableName] = useState<string | null>(null)
@@ -69,7 +70,7 @@ export const CommandPalette: FC = () => {
             {table && (
               <ReactFlowProvider>
                 <TableNode
-                  id=""
+                  id={tableNodeId}
                   type="table"
                   data={{
                     table: table,

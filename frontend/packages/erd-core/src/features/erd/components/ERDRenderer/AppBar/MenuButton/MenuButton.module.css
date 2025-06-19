@@ -5,9 +5,6 @@
   padding: var(--spacing-1);
   margin: 0 var(--spacing-2);
   border-radius: var(--border-radius-base);
-  &:hover .icon {
-    color: var(--global-foreground);
-  }
 }
 
 .wrapper:focus-visible {
@@ -20,4 +17,8 @@
   color: var(--link-default);
   transition: color var(--default-hover-animation-duration)
     var(--default-timing-function);
+}
+
+.wrapper:hover .icon {
+  color: var(--global-foreground);
 }

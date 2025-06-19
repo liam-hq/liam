@@ -37,14 +37,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <>
-        <GoogleTagManager
-          gtmId={GTM_ID}
-          dataLayer={{ appEnv: process.env.NEXT_PUBLIC_ENV_NAME ?? '' }}
-        />
-        <GtagScript />
-        <GTMConsent />
-      </>
+      <GoogleTagManager
+        gtmId={GTM_ID}
+        dataLayer={{ appEnv: process.env.NEXT_PUBLIC_ENV_NAME ?? '' }}
+      />
+      <GtagScript />
+      <GTMConsent />
       <body className={`${inter.className} ${montserrat.variable}`}>
         <ToastProvider>{children}</ToastProvider>
       </body>

@@ -1,8 +1,9 @@
-import type { ComponentPropsWithoutRef, FC } from 'react'
+import { type ComponentPropsWithoutRef, type FC, useId } from 'react'
 
 type Props = ComponentPropsWithoutRef<'svg'>
 
 export const LiamLogo: FC<Props> = (props) => {
+  const clipId = useId()
   return (
     <svg
       role="img"
@@ -52,7 +53,7 @@ export const LiamLogo: FC<Props> = (props) => {
         />
       </g>
       <defs>
-        <clipPath id="clip0_3660_19645">
+        <clipPath id={clipId}>
           <rect
             width="99.1323"
             height="30.37"

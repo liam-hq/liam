@@ -1,6 +1,6 @@
 import { ArrowTooltipProvider } from '@liam-hq/ui'
 import type { ChangeEvent, FC } from 'react'
-import { useEffect, useRef } from 'react'
+import { useEffect, useId, useRef } from 'react'
 import type { Projects } from '@/components/CommonLayout/AppBar/ProjectsDropdownMenu/services/getProjects'
 import { SessionFormActions } from '../SessionFormActions'
 import styles from './GitHubSessionFormPresenter.module.css'
@@ -35,6 +35,9 @@ export const GitHubSessionFormPresenter: FC<Props> = ({
   formAction,
 }) => {
   const textareaRef = useRef<HTMLTextAreaElement>(null)
+  const projectId = useId()
+  const branchId = useId()
+  const initialMessageId = useId()
 
   const handleTextareaChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
     const textarea = e.target
@@ -56,11 +59,11 @@ export const GitHubSessionFormPresenter: FC<Props> = ({
         <form action={formAction}>
           <div className={styles.formContent}>
             <div className={styles.formGroup}>
-              <label htmlFor="project" className={styles.label}>
+              <label htmlFor={projectId} className={styles.label}>
                 Project (Optional)
               </label>
               <select
-                id="project"
+                id={projectId}
                 name="projectId"
                 defaultValue={defaultProjectId || ''}
                 onChange={(e) => onProjectChange(e.target.value)}
@@ -78,11 +81,11 @@ export const GitHubSessionFormPresenter: FC<Props> = ({
 
             {branches.length > 0 && (
               <div className={styles.formGroup}>
-                <label htmlFor="branch" className={styles.label}>
+                <label htmlFor={branchId} className={styles.label}>
                   Branch
                 </label>
                 <select
-                  id="branch"
+                  id={branchId}
                   name="gitSha"
                   disabled={isPending || isBranchesLoading}
                   className={styles.select}
@@ -105,12 +108,12 @@ export const GitHubSessionFormPresenter: FC<Props> = ({
             )}
 
             <div className={styles.formGroup}>
-              <label htmlFor="initialMessage" className={styles.label}>
+              <label htmlFor={initialMessageId} className={styles.label}>
                 Initial message *
               </label>
               <div className={styles.inputWrapper}>
                 <textarea
-                  id="initialMessage"
+                  id={initialMessageId}
                   name="initialMessage"
                   ref={textareaRef}
                   onChange={handleTextareaChange}
