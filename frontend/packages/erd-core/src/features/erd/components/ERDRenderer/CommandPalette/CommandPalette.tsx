@@ -72,8 +72,10 @@ export const CommandPalette: FC = () => {
                 key={table.name}
                 value={table.name}
                 onSelect={() => goToERD(table.name)}
+                data-focused={focusedTableName === table.name}
               >
                 <div
+                  className={styles.itemInner}
                   onClick={(event) => {
                     event.stopPropagation()
                     setFocusedTableName(

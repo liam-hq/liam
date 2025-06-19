@@ -100,14 +100,14 @@
   color: var(--global-mute-text);
 }
 
-.main [cmdk-item] {
+.main [cmdk-item] .itemInner {
   display: flex;
   padding: var(--spacing-2);
   align-items: center;
   line-height: 24px;
 }
 
-.main [cmdk-item] .itemIcon {
+.main [cmdk-item] .itemInner .itemIcon {
   flex-shrink: 0;
   margin-right: var(--spacing-2);
   width: 16px;
@@ -115,11 +115,13 @@
   color: var(--overlay-40);
 }
 
-.main [cmdk-item][data-selected='true'] {
+.main [cmdk-item][data-selected='true'] .itemInner,
+.main [cmdk-item][data-focused='true'] .itemInner {
   background: var(--overlay-5);
 }
 
-.main [cmdk-item][data-selected='true'] .itemIcon {
+.main [cmdk-item][data-selected='true'] .itemInner .itemIcon,
+.main [cmdk-item][data-focused='true'] .itemInner .itemIcon {
   color: var(--global-foreground);
 }
 
