@@ -1,7 +1,7 @@
 import { Eye, EyeClosed, SidebarMenuAction } from '@liam-hq/ui'
+import { useReactFlow } from '@xyflow/react'
 import { type FC, type MouseEvent, useCallback } from 'react'
 import { toggleLogEvent } from '@/features/gtm/utils'
-import { useReactFlow } from '@xyflow/react'
 import { useVersion } from '@/providers'
 import { useUserEditing } from '@/stores'
 import styles from './VisibilityButton.module.css'
