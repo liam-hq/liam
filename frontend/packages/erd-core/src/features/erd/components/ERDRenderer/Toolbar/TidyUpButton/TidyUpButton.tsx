@@ -1,3 +1,7 @@
+import { computeAutoLayout } from '@/features/erd/utils'
+import { toolbarActionLogEvent } from '@/features/gtm/utils'
+import { useVersion } from '@/providers'
+import { useUserEditing } from '@/stores'
 import { type IconButton, TidyUpIcon } from '@liam-hq/ui'
 import { useReactFlow } from '@xyflow/react'
 import {
@@ -6,11 +10,6 @@ import {
   type ReactNode,
   useCallback,
 } from 'react'
-import { computeAutoLayout } from '@/features/erd/utils'
-import { toolbarActionLogEvent } from '@/features/gtm/utils'
-import { useCustomReactflow } from '@/features/reactflow/hooks'
-import { useVersion } from '@/providers'
-import { useUserEditing } from '@/stores'
 import { ToolbarIconButton } from '../ToolbarIconButton'
 
 interface TidyUpButtonProps {
@@ -22,8 +21,7 @@ export const TidyUpButton: FC<TidyUpButtonProps> = ({
   children = '',
   size = 'md',
 }) => {
-  const { getNodes, getEdges, setNodes } = useReactFlow()
-  const { fitView } = useCustomReactflow()
+  const { getNodes, getEdges, setNodes, fitView } = useReactFlow()
   const { showMode } = useUserEditing()
   const { version } = useVersion()
 

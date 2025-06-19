@@ -1,16 +1,15 @@
-import { Minus, Plus } from '@liam-hq/ui'
-import { useStore } from '@xyflow/react'
-import { type FC, useCallback } from 'react'
 import { toolbarActionLogEvent } from '@/features/gtm/utils'
-import { useCustomReactflow } from '@/features/reactflow/hooks'
 import { useVersion } from '@/providers'
 import { useUserEditing } from '@/stores'
+import { Minus, Plus } from '@liam-hq/ui'
+import { useReactFlow, useStore } from '@xyflow/react'
+import { type FC, useCallback } from 'react'
 import { ToolbarIconButton } from '../ToolbarIconButton'
 import styles from './ZoomControls.module.css'
 
 export const ZoomControls: FC = () => {
   const zoomLevel = useStore((store) => store.transform[2])
-  const { zoomIn, zoomOut } = useCustomReactflow()
+  const { zoomIn, zoomOut } = useReactFlow()
   const { showMode } = useUserEditing()
   const { version } = useVersion()
 

@@ -1,3 +1,7 @@
+import { computeAutoLayout, convertSchemaToNodes } from '@/features/erd/utils'
+import { clickLogEvent, openRelatedTablesLogEvent } from '@/features/gtm/utils'
+import { useVersion } from '@/providers'
+import { useSchema, useUserEditing } from '@/stores'
 import type { Table } from '@liam-hq/db-structure'
 import {
   DrawerClose,
@@ -6,20 +10,16 @@ import {
   Table2 as Table2Icon,
   XIcon,
 } from '@liam-hq/ui'
+import { useReactFlow } from '@xyflow/react'
 import { type FC, useCallback } from 'react'
-import { computeAutoLayout, convertSchemaToNodes } from '@/features/erd/utils'
-import { clickLogEvent, openRelatedTablesLogEvent } from '@/features/gtm/utils'
-import { useCustomReactflow } from '@/features/reactflow/hooks'
-import { useVersion } from '@/providers'
-import { useSchema, useUserEditing } from '@/stores'
 import { hasNonRelatedChildNodes, updateNodesHiddenState } from '../../../utils'
 import { Columns } from './Columns'
 import { Comment } from './Comment'
 import { Constraints } from './Constraints'
-import { extractSchemaForTable } from './extractSchemaForTable'
 import { Indexes } from './Indexes'
 import { RelatedTables } from './RelatedTables'
 import styles from './TableDetail.module.css'
+import { extractSchemaForTable } from './extractSchemaForTable'
 
 type Props = {
   table: Table
@@ -34,8 +34,7 @@ export const TableDetail: FC<Props> = ({ table }) => {
     showMode: 'TABLE_NAME',
   })
 
-  const { getNodes, getEdges, setNodes, setEdges, fitView } =
-    useCustomReactflow()
+  const { getNodes, getEdges, setNodes, setEdges, fitView } = useReactFlow()
   const { version } = useVersion()
 
   const handleDrawerClose = () => {

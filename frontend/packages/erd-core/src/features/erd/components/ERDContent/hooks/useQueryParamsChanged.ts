@@ -1,11 +1,10 @@
-import { useCallback, useEffect } from 'react'
 import type { DisplayArea } from '@/features/erd/types'
 import { computeAutoLayout, highlightNodesAndEdges } from '@/features/erd/utils'
-import { useCustomReactflow } from '@/features/reactflow/hooks'
 import { useUserEditing } from '@/stores'
+import { useReactFlow } from '@xyflow/react'
+import { useCallback, useEffect } from 'react'
 import { hasNonRelatedChildNodes, updateNodesHiddenState } from '../utils'
 import { usePopStateListener } from './usePopStateListener'
-
 type Params = {
   displayArea: DisplayArea
 }
@@ -13,8 +12,7 @@ type Params = {
 export const useQueryParamsChanged = ({ displayArea }: Params) => {
   usePopStateListener()
 
-  const { getNodes, getEdges, setNodes, setEdges, fitView } =
-    useCustomReactflow()
+  const { getNodes, getEdges, setNodes, setEdges, fitView } = useReactFlow()
   const { activeTableName, hiddenNodeIds, showMode, isPopstateInProgress } =
     useUserEditing()
 

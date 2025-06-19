@@ -1,9 +1,8 @@
-import { useCallback } from 'react'
-import { useCustomReactflow } from '@/features/reactflow/hooks'
 import { useUserEditing } from '@/stores'
+import { useReactFlow } from '@xyflow/react'
+import { useCallback } from 'react'
 import type { DisplayArea } from '../../types'
 import { highlightNodesAndEdges } from '../../utils'
-
 type SelectTableParams = {
   tableId: string
   displayArea: DisplayArea
@@ -11,8 +10,7 @@ type SelectTableParams = {
 
 export const useTableSelection = () => {
   const { setActiveTableName } = useUserEditing()
-  const { getNodes, getEdges, setNodes, setEdges, fitView } =
-    useCustomReactflow()
+  const { getNodes, getEdges, setNodes, setEdges, fitView } = useReactFlow()
 
   const selectTable = useCallback(
     async ({ tableId, displayArea }: SelectTableParams) => {
