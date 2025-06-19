@@ -113,17 +113,17 @@ test('tidyup button should make the table nodes tidy', async ({
   await page.mouse.move(
     initialTableNodePosition.x + initialTableNodePosition.width / 2,
     initialTableNodePosition.y + initialTableNodePosition.height / 2,
-    { steps: 10 }
+    { steps: 10 },
   )
   await page.mouse.down()
-  
+
   await page.mouse.move(
     initialTableNodePosition.x + 300,
     initialTableNodePosition.y + 300,
     { steps: 20 },
   )
   await page.mouse.up()
-  
+
   await page.waitForTimeout(1500)
 
   const movedTableNodePosition = await tableNode.boundingBox()
