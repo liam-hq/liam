@@ -38,7 +38,8 @@
       },
       "a11y": {
         "useAriaPropsSupportedByRole": "error",
-        "noStaticElementInteractions": "error"
+        "noStaticElementInteractions": "error",
+        "useSemanticElements": "warn"
       },
       "complexity": {
         "useLiteralKeys": "off",
