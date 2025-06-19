@@ -1,10 +1,11 @@
 import Script from 'next/script'
-import type { FC } from 'react'
+import { useId, type FC } from 'react'
 
 export const GtagScript: FC = () => {
+  const gtagId = useId()
   return (
     <Script
-      id="gtag"
+      id={gtagId}
       strategy="afterInteractive"
       // biome-ignore lint/security/noDangerouslySetInnerHtml: GTM script injection
       dangerouslySetInnerHTML={{
