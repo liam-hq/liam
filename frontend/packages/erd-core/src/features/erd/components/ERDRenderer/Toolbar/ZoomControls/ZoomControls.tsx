@@ -48,9 +48,9 @@ export const ZoomControls: FC = () => {
         label="Zoom out"
         icon={<Minus />}
       />
-      <span className={styles.zoomLevelText} aria-label="Zoom level">
+      <output className={styles.zoomLevelText}>
         {Math.floor(zoomLevel * 100)}%
-      </span>
+      </output>
       <ToolbarIconButton
         onClick={handleClickZoomIn}
         tooltipContent="Zoom In"

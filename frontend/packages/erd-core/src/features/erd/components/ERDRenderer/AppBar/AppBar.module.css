@@ -77,14 +77,6 @@
   outline: 1px solid var(--primary-color);
 }
 
-.iconWrapper:hover {
-  background-color: var(--pane-background-active);
-
-  .icon {
-    color: var(--global-foreground);
-  }
-}
-
 .icon {
   width: 1rem;
   height: 1rem;
@@ -92,4 +84,12 @@
   stroke-width: 1.5px;
   transition: color var(--default-hover-animation-duration)
     var(--default-timing-function);
+}
+
+.iconWrapper:hover {
+  background-color: var(--pane-background-active);
+
+  .icon {
+    color: var(--global-foreground);
+  }
 }

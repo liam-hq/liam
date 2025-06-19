@@ -53,7 +53,6 @@ type Props = InnerProps & {
 
 const SIDEBAR_COOKIE_NAME = 'sidebar:state'
 const PANEL_LAYOUT_COOKIE_NAME = 'panels:layout'
-const COOKIE_MAX_AGE = 60 * 60 * 24 * 7
 
 export const ERDRenderer: FC<Props> = ({ schema, ...innerProps }) => {
   return (
@@ -110,13 +109,13 @@ const ERDRendererInner: FC<InnerProps> = ({
         ? leftPanelRef.current?.collapse()
         : leftPanelRef.current?.expand()
 
-      document.cookie = `${SIDEBAR_COOKIE_NAME}=${nextPanelState}; path=/; max-age=${COOKIE_MAX_AGE}`
+      localStorage.setItem(SIDEBAR_COOKIE_NAME, String(nextPanelState))
     },
     [version, leftPanelRef],
   )
 
   const setWidth = useCallback((sizes: number[]) => {
-    document.cookie = `${PANEL_LAYOUT_COOKIE_NAME}=${JSON.stringify(sizes)}; path=/; max-age=${COOKIE_MAX_AGE}`
+    localStorage.setItem(PANEL_LAYOUT_COOKIE_NAME, JSON.stringify(sizes))
   }, [])
 
   const isMobile = useIsTouchDevice()

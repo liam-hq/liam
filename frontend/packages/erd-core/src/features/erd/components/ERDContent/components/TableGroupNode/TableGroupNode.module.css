@@ -1,7 +1,3 @@
-:global([data-loading='true']) .wrapper {
-  opacity: 0;
-}
-
 .wrapper {
   position: relative;
   width: 100%;
@@ -12,6 +8,10 @@
   border-radius: var(--border-radius-base);
   transition: background-color var(--default-hover-animation-duration)
     var(--default-timing-function);
+}
+
+:global([data-loading='true']) .wrapper {
+  opacity: 0;
 }
 
 .wrapper:hover {

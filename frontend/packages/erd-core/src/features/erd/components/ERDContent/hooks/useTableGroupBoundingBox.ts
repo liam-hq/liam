@@ -92,7 +92,7 @@ export const useTableGroupBoundingBox = ({
     if (nodesInBox.length > 0) {
       const timestamp = new Date()
         .toISOString()
-        .replace(/[-:\.]/g, '')
+        .replace(/[-:.]/g, '')
         .substring(0, 14)
       const name = `Group_${timestamp}`
 

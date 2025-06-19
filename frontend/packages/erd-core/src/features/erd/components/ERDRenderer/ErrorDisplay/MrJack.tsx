@@ -1,8 +1,13 @@
-import type { FC } from 'react'
+import { type FC, useId } from 'react'
 
 // type Props = ComponentPropsWithoutRef<'svg'>
 
 export const MrJack: FC = () => {
+  const filter0Id = useId()
+  const filter1Id = useId()
+  const filter2Id = useId()
+  const filter3Id = useId()
+
   return (
     <svg
       role="img"
@@ -231,7 +236,7 @@ export const MrJack: FC = () => {
       />
       <defs>
         <filter
-          id="filter0_i_2102_166864"
+          id={filter0Id}
           x="63.1392"
           y="81.5054"
           width="6.88232"
@@ -266,7 +271,7 @@ export const MrJack: FC = () => {
           />
         </filter>
         <filter
-          id="filter1_i_2102_166864"
+          id={filter1Id}
           x="63.2413"
           y="109.263"
           width="4.58167"
@@ -301,7 +306,7 @@ export const MrJack: FC = () => {
           />
         </filter>
         <filter
-          id="filter2_i_2102_166864"
+          id={filter2Id}
           x="76.4841"
           y="100.462"
           width="3.46118"
@@ -336,7 +341,7 @@ export const MrJack: FC = () => {
           />
         </filter>
         <filter
-          id="filter3_i_2102_166864"
+          id={filter3Id}
           x="75.1866"
           y="1"
           width="70.3878"

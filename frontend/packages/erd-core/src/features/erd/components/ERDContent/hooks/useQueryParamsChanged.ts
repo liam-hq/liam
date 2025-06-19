@@ -15,7 +15,7 @@ export const useQueryParamsChanged = ({ displayArea }: Params) => {
 
   const { getNodes, getEdges, setNodes, setEdges, fitView } =
     useCustomReactflow()
-  const { activeTableName, hiddenNodeIds, showMode, isPopstateInProgress } =
+  const { activeTableName, hiddenNodeIds, isPopstateInProgress } =
     useUserEditing()
 
   const handleChangeQueryParams = useCallback(async () => {
@@ -59,5 +59,5 @@ export const useQueryParamsChanged = ({ displayArea }: Params) => {
 
   useEffect(() => {
     handleChangeQueryParams()
-  }, [activeTableName, hiddenNodeIds, showMode, handleChangeQueryParams])
+  }, [handleChangeQueryParams])
 }
