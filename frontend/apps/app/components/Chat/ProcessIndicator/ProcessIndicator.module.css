@@ -16,15 +16,15 @@
   overflow: hidden;
 }
 
-.collapsed .header {
-  margin-bottom: 0;
-}
-
 .header {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   gap: var(--spacing-3);
+}
+
+.collapsed .header {
+  margin-bottom: 0;
 }
 
 .iconContainer {

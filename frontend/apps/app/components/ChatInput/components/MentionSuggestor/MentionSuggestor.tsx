@@ -148,8 +148,8 @@ export const MentionSuggestor = ({
             key={item.id}
             type="button"
             className={styles.suggestorItem}
-            aria-selected={highlightedIndex === i}
             data-index={i}
+            data-highlighted={highlightedIndex === i}
             onMouseDown={handleItemMouseDown}
             onMouseEnter={handleItemMouseEnter}
           >

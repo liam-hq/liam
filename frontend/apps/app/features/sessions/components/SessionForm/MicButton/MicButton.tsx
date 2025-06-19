@@ -63,6 +63,8 @@ export const MicButton: FC<MicButtonProps> = ({
             className={clsx(styles.container, className)}
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}
+            role="button"
+            tabIndex={-1}
           >
             <button
               ref={ref}

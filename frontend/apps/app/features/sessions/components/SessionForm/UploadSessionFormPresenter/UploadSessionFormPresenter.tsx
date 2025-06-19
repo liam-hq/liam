@@ -65,6 +65,8 @@ export const UploadSessionFormPresenter: FC<Props> = ({
               onDragLeave={handleDrag}
               onDragOver={handleDrag}
               onDrop={handleDrop}
+              role="button"
+              tabIndex={0}
             >
               <div className={styles.dropZoneContent}>
                 <p className={styles.dropZoneText}>
