@@ -1,0 +1,18 @@
+language js
+
+or {
+  `"$text"` where {
+    $text <: r"[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FFF\uAC00-\uD7AF\u0400-\u04FF\u0590-\u05FF\u0600-\u06FF\u0750-\u077F]+",
+    register_diagnostic(
+      span = $text,
+      message = "Non-English text detected in string literal. Only English is allowed."
+    )
+  },
+  `'$text'` where {
+    $text <: r"[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FFF\uAC00-\uD7AF\u0400-\u04FF\u0590-\u05FF\u0600-\u06FF\u0750-\u077F]+",
+    register_diagnostic(
+      span = $text,
+      message = "Non-English text detected in string literal. Only English is allowed."
+    )
+  }
+}

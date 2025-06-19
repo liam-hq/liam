@@ -78,6 +78,7 @@
     },
     "includes": ["**"]
   },
+  "plugins": ["./biome-plugins/no-non-english-text.grit"],
   "vcs": {
     "enabled": true,
     "clientKind": "git",
