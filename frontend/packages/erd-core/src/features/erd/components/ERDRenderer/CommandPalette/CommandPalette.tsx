@@ -68,8 +68,15 @@ export const CommandPalette: FC = () => {
                 value={table.name}
                 onSelect={() => goToERD(table.name)}
               >
-                <Table2 className={styles.itemIcon} />
-                {table.name}
+                <div
+                  onClick={(event) => {
+                    event.stopPropagation()
+                  }}
+                  onDoubleClick={() => goToERD(table.name)}
+                >
+                  <Table2 className={styles.itemIcon} />
+                  {table.name}
+                </div>
               </Command.Item>
             ))}
           </Command.Group>
