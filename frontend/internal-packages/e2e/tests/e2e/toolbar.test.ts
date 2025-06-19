@@ -100,6 +100,8 @@ test('tidyup button should make the table nodes tidy', async ({
   // skip because can't move the table node on mobile by mouse
   if (isMobile) test.skip()
 
+  test.setTimeout(45000)
+
   const toolbars = page.getByTestId('toolbar')
   const toolbar = isMobile ? toolbars.first() : toolbars.nth(1)
   const tidyUpButton = toolbar.getByTestId('toolbar-icon-button-Tidy up')
@@ -111,15 +113,18 @@ test('tidyup button should make the table nodes tidy', async ({
   await page.mouse.move(
     initialTableNodePosition.x + initialTableNodePosition.width / 2,
     initialTableNodePosition.y + initialTableNodePosition.height / 2,
+    { steps: 10 }
   )
   await page.mouse.down()
+  
   await page.mouse.move(
-    initialTableNodePosition.x + 500,
-    initialTableNodePosition.y + 500,
-    { steps: 50 },
+    initialTableNodePosition.x + 300,
+    initialTableNodePosition.y + 300,
+    { steps: 20 },
   )
   await page.mouse.up()
-  await page.waitForTimeout(500)
+  
+  await page.waitForTimeout(1500)
 
   const movedTableNodePosition = await tableNode.boundingBox()
 

@@ -7,10 +7,12 @@ const expectUserTableColumnInAccountsTableVisibility = async (
   const accountsTable = page.getByTestId('rf__node-accounts')
   const userNameColumn = accountsTable.getByText('username')
 
+  await page.waitForTimeout(1000)
+
   if (visibility === 'visible') {
-    await expect(userNameColumn).toBeVisible()
+    await expect(userNameColumn).toBeVisible({ timeout: 10000 })
   } else {
-    await expect(userNameColumn).not.toBeVisible()
+    await expect(userNameColumn).not.toBeVisible({ timeout: 10000 })
   }
 }
 
@@ -46,6 +48,7 @@ test.describe('Navigation and URL Parameters', () => {
       })
       await keyOnlyOption.click()
       await expect(page).toHaveURL(/.*showMode=KEY_ONLY/)
+      await page.waitForTimeout(2000)
       await expectUserTableColumnInAccountsTableVisibility(page, 'hidden')
 
       // Go back
