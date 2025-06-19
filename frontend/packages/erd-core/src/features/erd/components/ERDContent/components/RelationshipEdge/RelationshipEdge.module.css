@@ -9,6 +9,6 @@
   opacity: 0;
 }
 
-.hovered {
+.edge.hovered {
   stroke: var(--node-layout);
 }
