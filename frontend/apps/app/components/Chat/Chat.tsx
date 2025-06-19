@@ -85,7 +85,7 @@ export const Chat: FC<Props> = ({ schemaData, tableGroups, designSession }) => {
         startAIResponse(initialTimelineItem.content)
       })
     }
-  }, [currentUserId, designSession.timelineItems, isLoading, startAIResponse])
+  }, [currentUserId, designSession.timelineItems, isLoading, startAIResponse, startTransition])
 
   // Scroll to bottom when component mounts or messages change
   useEffect(() => {
