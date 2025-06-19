@@ -1,8 +1,7 @@
 import type { DisplayArea } from '@/features/erd/types'
 import { computeAutoLayout, highlightNodesAndEdges } from '@/features/erd/utils'
-import { useCustomReactflow } from '@/features/reactflow/hooks'
 import { useUserEditing } from '@/stores'
-import type { Node } from '@xyflow/react'
+import { type Node, useReactFlow } from '@xyflow/react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useERDContentContext } from '../ERDContentContext'
 import { hasNonRelatedChildNodes, updateNodesHiddenState } from '../utils'
@@ -14,7 +13,7 @@ type Params = {
 
 export const useInitialAutoLayout = ({ nodes, displayArea }: Params) => {
   const { activeTableName, hiddenNodeIds } = useUserEditing()
-  const { getEdges, setNodes, setEdges, fitView } = useCustomReactflow()
+  const { getEdges, setNodes, setEdges, fitView } = useReactFlow()
   const {
     actions: { setLoading },
   } = useERDContentContext()

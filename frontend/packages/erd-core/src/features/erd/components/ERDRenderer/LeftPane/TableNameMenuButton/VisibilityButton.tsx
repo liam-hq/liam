@@ -1,5 +1,5 @@
 import { toggleLogEvent } from '@/features/gtm/utils'
-import { useCustomReactflow } from '@/features/reactflow/hooks'
+import { useReactFlow } from '@xyflow/react'
 import { useVersion } from '@/providers'
 import { useUserEditing } from '@/stores'
 import { Eye, EyeClosed, SidebarMenuAction } from '@liam-hq/ui'
@@ -13,7 +13,7 @@ type Props = {
 
 export const VisibilityButton: FC<Props> = ({ tableName, hidden }) => {
   const { toggleHiddenNodeId } = useUserEditing()
-  const { updateNode } = useCustomReactflow()
+  const { updateNode } = useReactFlow()
   const { version } = useVersion()
 
   const handleClick = useCallback(

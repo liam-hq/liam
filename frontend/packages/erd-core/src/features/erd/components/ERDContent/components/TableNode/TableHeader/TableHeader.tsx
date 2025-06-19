@@ -1,8 +1,7 @@
 import type { TableNodeData } from '@/features/erd/types'
-import { useCustomReactflow } from '@/features/reactflow/hooks'
 import { useUserEditing } from '@/stores'
 import { Table2 } from '@liam-hq/ui'
-import { Handle, Position } from '@xyflow/react'
+import { Handle, Position, useReactFlow } from '@xyflow/react'
 import clsx from 'clsx'
 import type { FC, MouseEvent } from 'react'
 import styles from './TableHeader.module.css'
@@ -19,7 +18,7 @@ export const TableHeader: FC<Props> = ({ data }) => {
   const isTarget = data.targetColumnCardinalities !== undefined
   const isSource = data.sourceColumnName !== undefined
 
-  const { updateNode } = useCustomReactflow()
+  const { updateNode } = useReactFlow()
 
   const handleHoverEvent = (event: MouseEvent<HTMLSpanElement>) => {
     // Get computed styles to check if text is truncated

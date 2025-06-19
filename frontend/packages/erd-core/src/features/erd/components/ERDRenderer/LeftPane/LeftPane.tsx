@@ -1,5 +1,4 @@
 import { isTableNode } from '@/features/erd/utils'
-import { useCustomReactflow } from '@/features/reactflow/hooks'
 import { useVersion } from '@/providers'
 import { useUserEditing } from '@/stores'
 import {
@@ -18,7 +17,7 @@ import {
   SidebarMenu,
   SidebarMenuItem,
 } from '@liam-hq/ui'
-import { useNodes } from '@xyflow/react'
+import { useNodes, useReactFlow } from '@xyflow/react'
 import { useCallback, useMemo } from 'react'
 import { updateNodesHiddenState } from '../../ERDContent/utils'
 import { CopyLinkButton } from './CopyLinkButton'
@@ -30,7 +29,7 @@ export const LeftPane = () => {
   const { version } = useVersion()
   const { selectedNodeIds, setHiddenNodeIds, resetSelectedNodeIds } =
     useUserEditing()
-  const { setNodes } = useCustomReactflow()
+  const { setNodes } = useReactFlow()
 
   const menuItemLinks = useMemo(
     (): MenuItemLinkProps[] => [
@@ -179,9 +178,8 @@ export const LeftPane = () => {
               ))}
               <SidebarMenuItem className={styles.versionWrapper}>
                 <div className={styles.version}>
-                  <span className={styles.versionText}>{`${
-                    version.version
-                  } + ${version.gitHash.slice(0, 7)} (${version.date})`}</span>
+                  <span className={styles.versionText}>{`${version.version
+                    } + ${version.gitHash.slice(0, 7)} (${version.date})`}</span>
                 </div>
               </SidebarMenuItem>
             </SidebarMenu>
