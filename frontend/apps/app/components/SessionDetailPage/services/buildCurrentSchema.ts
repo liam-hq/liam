@@ -37,7 +37,6 @@ export async function buildCurrentSchema({
   designSessionId,
   latestVersionNumber,
 }: Params) {
-  const supabase = createClient()
   const buildingSchema = await getBuildingSchema(designSessionId)
 
   const previousVersions = await getPreviousVersions(
@@ -66,7 +65,7 @@ export async function buildCurrentSchema({
         tableGroups: {},
       }
 
-  const currentSchema: Schema = { ...baseSchema }
+  const currentSchema: Schema = structuredClone(baseSchema)
   for (const operations of operationsArray) {
     applyPatchOperations(currentSchema, operations)
   }
