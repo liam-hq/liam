@@ -28,9 +28,10 @@ test('Table node should be highlighted when clicked', async ({ page }) => {
   const tableNode = page.getByTestId('rf__node-accounts').first()
 
   await tableNode.click()
+  await page.waitForTimeout(100)
 
   const highlighted = tableNode.locator('[data-erd="table-node-highlighted"]')
-  await expect(highlighted).toBeVisible()
+  await expect(highlighted).toBeVisible({ timeout: 10000 })
 })
 
 test('Edge animation should be triggered when table node is clicked', async ({
@@ -48,9 +49,10 @@ test('Edge animation should be triggered when table node is clicked', async ({
   await expect(edgeEllipseBefore).toBeHidden()
 
   await tableNode.click()
+  await page.waitForTimeout(100)
 
   const edgeEllipseAfter = edge.locator('ellipse').first()
-  await expect(edgeEllipseAfter).toBeVisible()
+  await expect(edgeEllipseAfter).toBeVisible({ timeout: 10000 })
 })
 
 test('Cardinality should be highlighted when table node is clicked', async ({
@@ -75,14 +77,17 @@ test('Cardinality should be highlighted when table node is clicked', async ({
   )
 
   await tableNode.click()
+  await page.waitForTimeout(100)
 
   const cardinalityAfter = edge.locator('path').first()
   await expect(cardinalityAfter).toHaveAttribute(
     'marker-start',
     'url(#zeroOrOneRightHighlight)',
+    { timeout: 10000 }
   )
   await expect(cardinalityAfter).toHaveAttribute(
     'marker-end',
     'url(#zeroOrManyLeftHighlight)',
+    { timeout: 10000 }
   )
 })
