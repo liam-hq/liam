@@ -6,21 +6,20 @@ import type { Operation } from './index.js'
 
 const isTablePath = createPathValidator(PATH_PATTERNS.TABLE_BASE)
 
+const tablePathSchema = v.custom<`/tables/${string}`>(
+  isTablePath,
+  'Path must match the pattern /tables/{tableName}',
+)
+
 const addTableOperationSchema = v.object({
   op: v.literal('add'),
-  path: v.custom<`/tables/${string}`>(
-    isTablePath,
-    'Path must match the pattern /tables/{tableName}',
-  ),
+  path: tablePathSchema,
   value: tableSchema,
 })
 
 const removeTableOperationSchema = v.object({
   op: v.literal('remove'),
-  path: v.custom<`/tables/${string}`>(
-    isTablePath,
-    'Path must match the pattern /tables/{tableName}',
-  ),
+  path: tablePathSchema,
 })
 
 export type AddTableOperation = v.InferOutput<typeof addTableOperationSchema>
