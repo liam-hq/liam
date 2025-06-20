@@ -5,8 +5,11 @@ import { ReactFlowProvider } from '@xyflow/react'
 import { NuqsTestingAdapter } from 'nuqs/adapters/testing'
 import { type FC, type ReactNode, useContext } from 'react'
 import { afterEach, describe, expect, it } from 'vitest'
-import { SchemaProvider, UserEditingProvider } from '@/stores'
-import type { SchemaStore } from '@/stores/schema/schema'
+import {
+  SchemaProvider,
+  type SchemaProviderValue,
+  UserEditingProvider,
+} from '@/stores'
 import { UserEditingContext } from '@/stores/userEditing/context'
 import { CommandPalette } from './CommandPalette'
 
@@ -14,7 +17,7 @@ afterEach(() => {
   cleanup()
 })
 
-const schema: SchemaStore = {
+const schema: SchemaProviderValue = {
   current: {
     tables: {
       users: aTable({ name: 'users' }),
@@ -43,7 +46,7 @@ const wrapper = ({ children }: { children: ReactNode }) => (
     <ReactFlowProvider>
       <UserEditingProvider>
         <ActiveTableNameDisplay />
-        <SchemaProvider schema={schema}>{children}</SchemaProvider>
+        <SchemaProvider {...schema}>{children}</SchemaProvider>
       </UserEditingProvider>
     </ReactFlowProvider>
   </NuqsTestingAdapter>
