@@ -20,22 +20,26 @@ import {
 import styles from './SessionDetailPage.module.css'
 import { buildCurrentSchema } from './services/buildCurrentSchema'
 import { getBuildingSchema } from './services/buildingSchema/client/getBuldingSchema'
+import { buildPrevSchema } from './services/buildPrevSchema/client/buildPrevSchema'
 import { getLatestVersion } from './services/latestVersion/client/getLatestVersion'
 import type { Version } from './types'
 
 type Props = {
   designSession: ComponentProps<typeof Chat>['designSession']
   initialSchema: Schema | null
+  initialPrevSchema: Schema | null
   initialCurrentVersion: Version | null
 }
 
 export const SessionDetailPageClient: FC<Props> = ({
   designSession,
   initialSchema,
+  initialPrevSchema,
   initialCurrentVersion,
 }) => {
   const designSessionId = designSession.id
 
+  const [prevSchema, setPrevSchema] = useState<Schema | null>(initialPrevSchema)
   const [currentSchema, setCurrentSchema] = useState<Schema | null>(
     initialSchema,
   )
@@ -60,6 +64,12 @@ Please suggest a specific solution to resolve this problem.`
     })
     setCurrentSchema(schema)
 
+    const prevSchema = await buildPrevSchema({
+      currentSchema: schema,
+      currentVersionId: version.id,
+    })
+    setPrevSchema(prevSchema)
+
     setCurrentVersion(version)
   }, [])
 
@@ -68,10 +78,18 @@ Please suggest a specific solution to resolve this problem.`
     startTransition(async () => {
       const buildingSchema = await getBuildingSchema(designSessionId)
       const parsedSchema = safeParse(schemaSchema, buildingSchema?.schema)
-      setCurrentSchema(parsedSchema.success ? parsedSchema.output : null)
+      const currentSchema = parsedSchema.success ? parsedSchema.output : null
+      setCurrentSchema(currentSchema)
 
       const latestVersion = await getLatestVersion(buildingSchema?.id ?? '')
       setCurrentVersion(latestVersion)
+
+      if (currentSchema === null || latestVersion === null) return
+      const prevSchema = await buildPrevSchema({
+        currentSchema,
+        currentVersionId: latestVersion.id,
+      })
+      setPrevSchema(prevSchema)
     })
   }, [designSessionId])
 
@@ -96,6 +114,7 @@ Please suggest a specific solution to resolve this problem.`
         <div className={styles.outputSection}>
           <Output
             schema={currentSchema}
+            prevSchema={prevSchema}
             schemaUpdatesDoc={SCHEMA_UPDATES_DOC}
             schemaUpdatesReviewComments={SCHEMA_UPDATES_REVIEW_COMMENTS}
             onQuickFix={handleQuickFix}
