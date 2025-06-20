@@ -25,8 +25,7 @@ import '@/styles/globals.css'
 import { toggleLogEvent } from '@/features/gtm/utils'
 import { useIsTouchDevice } from '@/hooks'
 import { useVersion } from '@/providers'
-import { SchemaProvider, useSchema } from '@/stores'
-import type { SchemaStore } from '@/stores/schema/schema'
+import { SchemaProvider, type SchemaProviderValue, useSchema } from '@/stores'
 import { UserEditingProvider, useUserEditing } from '@/stores/userEditing'
 import { convertSchemaToNodes, createHash } from '../../utils'
 import { ERDContent } from '../ERDContent'
@@ -48,18 +47,19 @@ type InnerProps = {
 }
 
 type Props = InnerProps & {
-  schema: SchemaStore
+  schema: SchemaProviderValue
+  showDiff?: boolean
 }
 
 const SIDEBAR_COOKIE_NAME = 'sidebar:state'
 const PANEL_LAYOUT_COOKIE_NAME = 'panels:layout'
 const COOKIE_MAX_AGE = 60 * 60 * 24 * 7
 
-export const ERDRenderer: FC<Props> = ({ schema, ...innerProps }) => {
+export const ERDRenderer: FC<Props> = ({ schema, showDiff, ...innerProps }) => {
   return (
     <NuqsAdapter>
-      <UserEditingProvider>
-        <SchemaProvider schema={schema}>
+      <UserEditingProvider showDiff={showDiff}>
+        <SchemaProvider {...schema}>
           <ERDRendererInner {...innerProps} />
         </SchemaProvider>
       </UserEditingProvider>

@@ -1,4 +1,3 @@
-'use client'
 import type { Schema } from '@liam-hq/db-structure'
 import type { FC } from 'react'
 import { parse } from 'valibot'
@@ -17,7 +16,7 @@ const version = parse(versionSchema, {
 
 type Props = {
   schema: Schema
-  prevSchema?: Schema
+  prevSchema: Schema | undefined
 }
 
 export const ERD: FC<Props> = ({ schema, prevSchema }) => {
@@ -25,6 +24,7 @@ export const ERD: FC<Props> = ({ schema, prevSchema }) => {
     <div className={styles.wrapper}>
       <VersionProvider version={version}>
         <ERDRenderer
+          showDiff
           schema={{ current: schema, previous: prevSchema }}
           defaultSidebarOpen={false}
           defaultPanelSizes={[20, 80]}

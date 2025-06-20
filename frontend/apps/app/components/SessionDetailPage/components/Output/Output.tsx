@@ -11,6 +11,7 @@ import styles from './Output.module.css'
 
 type Props = {
   schema: Schema
+  prevSchema: Schema | null
   schemaUpdatesDoc: string
   schemaUpdatesReviewComments: ReviewComment[]
   onQuickFix?: (comment: string) => void
@@ -22,6 +23,7 @@ type Props = {
 
 export const Output: FC<Props> = ({
   schema,
+  prevSchema,
   schemaUpdatesDoc,
   schemaUpdatesReviewComments,
   onQuickFix,
@@ -38,7 +40,7 @@ export const Output: FC<Props> = ({
         onCurrentVersionChange={onCurrentVersionChange}
       />
       <TabsContent value={OUTPUT_TABS.ERD} className={styles.tabsContent}>
-        <ERD schema={schema} />
+        <ERD schema={schema} prevSchema={prevSchema ?? undefined} />
       </TabsContent>
       <TabsContent
         value={OUTPUT_TABS.SCHEMA_UPDATES}
