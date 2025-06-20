@@ -1,4 +1,4 @@
-import type { Operation } from '../operation/operationsSchema.js'
+import type { Operation } from '../operation/schema/index.js'
 import type { Schema } from '../schema/index.js'
 
 type DeparserError = {
