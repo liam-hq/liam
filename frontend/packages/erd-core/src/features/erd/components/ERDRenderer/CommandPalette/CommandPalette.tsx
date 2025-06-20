@@ -80,30 +80,28 @@ export const CommandPalette: FC = () => {
         >
           <div className={styles.previewBackground}>
             {table && (
-              <ReactFlowProvider>
-                <TableNode
-                  id=""
-                  type="table"
-                  data={{
-                    table: table,
-                    isActiveHighlighted: false,
-                    isHighlighted: false,
-                    isTooltipVisible: false,
-                    sourceColumnName: undefined,
-                    targetColumnCardinalities: undefined,
-                    showMode: 'ALL_FIELDS',
-                  }}
-                  dragging={false}
-                  isConnectable={false}
-                  positionAbsoluteX={0}
-                  positionAbsoluteY={0}
-                  zIndex={0}
-                  selected={false}
-                  draggable={false}
-                  selectable={false}
-                  deletable={false}
-                />
-              </ReactFlowProvider>
+              <TableNode
+                id=""
+                type="table"
+                data={{
+                  table: table,
+                  isActiveHighlighted: false,
+                  isHighlighted: false,
+                  isTooltipVisible: false,
+                  sourceColumnName: undefined,
+                  targetColumnCardinalities: undefined,
+                  showMode: 'ALL_FIELDS',
+                }}
+                dragging={false}
+                isConnectable={false}
+                positionAbsoluteX={0}
+                positionAbsoluteY={0}
+                zIndex={0}
+                selected={false}
+                draggable={false}
+                selectable={false}
+                deletable={false}
+              />
             )}
           </div>
         </div>
