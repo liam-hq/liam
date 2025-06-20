@@ -187,8 +187,8 @@ const ERDRendererInner: FC<InnerProps> = ({
               </main>
             </ResizablePanel>
           </ResizablePanelGroup>
+          <CommandPalette />
         </ReactFlowProvider>
-        <CommandPalette />
       </ToastProvider>
     </SidebarProvider>
   )

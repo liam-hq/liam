@@ -1,11 +1,13 @@
 import { aTable } from '@liam-hq/db-structure'
 import { cleanup, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { NuqsAdapter } from 'nuqs/adapters/react'
-import type { ReactNode } from 'react'
+import { ReactFlowProvider } from '@xyflow/react'
+import { NuqsTestingAdapter } from 'nuqs/adapters/testing'
+import { type FC, type ReactNode, useContext } from 'react'
 import { afterEach, describe, expect, it } from 'vitest'
 import { SchemaProvider, UserEditingProvider } from '@/stores'
 import type { SchemaStore } from '@/stores/schema/schema'
+import { UserEditingContext } from '@/stores/userEditing/context'
 import { CommandPalette } from './CommandPalette'
 
 afterEach(() => {
@@ -25,12 +27,26 @@ const schema: SchemaStore = {
   },
 }
 
+const ActiveTableNameDisplay: FC = () => {
+  const userEditing = useContext(UserEditingContext)
+
+  return (
+    // The currently active table name is displayed via Context. This component is used in tests for assertions only.
+    <div data-testid="test-active-table-name-display">
+      {userEditing?.activeTableName}
+    </div>
+  )
+}
+
 const wrapper = ({ children }: { children: ReactNode }) => (
-  <NuqsAdapter>
-    <UserEditingProvider>
-      <SchemaProvider schema={schema}>{children}</SchemaProvider>
-    </UserEditingProvider>
-  </NuqsAdapter>
+  <NuqsTestingAdapter>
+    <ReactFlowProvider>
+      <UserEditingProvider>
+        <ActiveTableNameDisplay />
+        <SchemaProvider schema={schema}>{children}</SchemaProvider>
+      </UserEditingProvider>
+    </ReactFlowProvider>
+  </NuqsTestingAdapter>
 )
 
 const prepareCommandPalette = async () => {
@@ -45,7 +61,15 @@ const prepareCommandPalette = async () => {
   const searchCombobox = within(dialog).getByRole('combobox')
   const preview = within(dialog).getByTestId('CommandPalettePreview')
 
-  return { user, elements: { dialog, searchCombobox, preview } }
+  const activeTableNameDisplay = screen.getByTestId(
+    'test-active-table-name-display',
+  )
+
+  return {
+    user,
+    elements: { dialog, searchCombobox, preview },
+    testElements: { activeTableNameDisplay },
+  }
 }
 
 it('displays nothing by default', () => {
@@ -153,5 +177,40 @@ describe('preview with option interactions', () => {
 
     await user.keyboard('{ArrowUp}')
     expect(within(preview).getByText('posts')).toBeInTheDocument()
+  })
+})
+
+describe('go to ERD with option select', () => {
+  it('go to the table of clicked option and close dialog', async () => {
+    const {
+      user,
+      elements: { dialog },
+      testElements: { activeTableNameDisplay },
+    } = await prepareCommandPalette()
+
+    expect(activeTableNameDisplay).toBeEmptyDOMElement()
+
+    await user.click(within(dialog).getByRole('option', { name: 'follows' }))
+
+    expect(dialog).not.toBeInTheDocument()
+    expect(activeTableNameDisplay).toHaveTextContent(/^follows$/)
+  })
+
+  it('go to the table of selected option by typing Enter key and close dialog', async () => {
+    const {
+      user,
+      elements: { dialog, preview },
+      testElements: { activeTableNameDisplay },
+    } = await prepareCommandPalette()
+
+    expect(activeTableNameDisplay).toBeEmptyDOMElement()
+
+    // select "posts" option by typing Enter key
+    await user.keyboard('{ArrowDown}')
+    expect(within(preview).getByText('posts')).toBeInTheDocument()
+    await user.keyboard('{Enter}')
+
+    expect(dialog).not.toBeInTheDocument()
+    expect(activeTableNameDisplay).toHaveTextContent(/^posts$/)
   })
 })
