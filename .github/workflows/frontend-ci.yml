@@ -50,6 +50,7 @@ jobs:
           key: ${{ runner.os }}-turbo-${{ hashFiles('**/pnpm-lock.yaml') }}
           restore-keys: |
             ${{ runner.os }}-turbo-
+      - run: pnpm turbo run gen
       - run: pnpm lint
 
   frontend-test-unit:
