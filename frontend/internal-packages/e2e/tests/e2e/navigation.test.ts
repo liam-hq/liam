@@ -72,32 +72,32 @@ test.describe('Navigation and URL Parameters', () => {
       await expectUserTableColumnInAccountsTableVisibility(page, 'hidden')
     })
 
-    // test('should handle back/forward navigation with table selection', async ({
-    //   page,
-    // }) => {
-    //   // Initial state - select accounts table
-    //   const accountsTable = page.getByTestId('rf__node-accounts').first()
-    //   await accountsTable.click()
+    test('should handle back/forward navigation with table selection', async ({
+      page,
+    }) => {
+      // Initial state - select accounts table
+      const accountsTable = page.getByTestId('rf__node-accounts').first()
+      await accountsTable.click()
 
-    //   await expect(page).toHaveURL(/.*active=accounts/)
-    //   const highlighted = accountsTable.locator(
-    //     '[data-erd="table-node-highlighted"]',
-    //   )
-    //   await expect(highlighted).toBeVisible()
+      await expect(page).toHaveURL(/.*active=accounts/)
+      const highlighted = accountsTable.locator(
+        '[data-erd="table-node-highlighted"]',
+      )
+      await expect(highlighted).toBeVisible()
 
-    //   // Select users table
-    //   const usersTable = page.getByTestId('rf__node-users').first()
-    //   await usersTable.click()
-    //   await expect(page).toHaveURL(/.*active=users/)
+      // Select users table
+      const usersTable = page.getByTestId('rf__node-users').first()
+      await usersTable.click()
+      await expect(page).toHaveURL(/.*active=users/)
 
-    //   // Go back to accounts table selection
-    //   await page.goBack()
-    //   await expect(page).toHaveURL(/.*active=accounts/)
+      // Go back to accounts table selection
+      await page.goBack()
+      await expect(page).toHaveURL(/.*active=accounts/)
 
-    //   // Go forward to users table selection
-    //   await page.goForward()
-    //   await expect(page).toHaveURL(/.*active=users/)
-    // })
+      // Go forward to users table selection
+      await page.goForward()
+      await expect(page).toHaveURL(/.*active=users/)
+    })
 
     // FIXME: Browser back on hidden table is not working properly
     test('should handle back/forward navigation with table hiding', async ({
