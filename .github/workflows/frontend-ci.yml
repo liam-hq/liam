@@ -94,6 +94,13 @@ jobs:
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
       - uses: ./.github/actions/pnpm-setup
+      - name: Install Supabase CLI
+        run: |
+          LATEST_VERSION=$(curl -s https://api.github.com/repos/supabase/cli/releases/latest | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
+          curl -fsSL "https://github.com/supabase/cli/releases/download/${LATEST_VERSION}/supabase_linux_amd64.tar.gz" -o supabase.tar.gz
+          tar -xzf supabase.tar.gz
+          sudo mv supabase /usr/local/bin/
+          supabase --version
       - name: Setup Turbo Cache
         uses: actions/cache@v4
         with:
