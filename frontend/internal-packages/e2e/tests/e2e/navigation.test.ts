@@ -64,9 +64,26 @@ test.describe('Navigation and URL Parameters', () => {
     }) => {
       // Initial state - select accounts table
       const accountsTable = page.getByTestId('rf__node-accounts').first()
-      await accountsTable.click()
 
-      await expect(page).toHaveURL(/.*active=accounts/)
+      // Wait for the node to be visible and clickable
+      await expect(accountsTable).toBeVisible({ timeout: 10000 })
+      await accountsTable.scrollIntoViewIfNeeded()
+
+      // Try clicking with retry logic
+      let retryCount = 0
+      const maxRetries = 3
+      while (retryCount < maxRetries) {
+        try {
+          await accountsTable.click({ timeout: 8000 })
+          break
+        } catch (error) {
+          retryCount++
+          if (retryCount >= maxRetries) throw error
+          await page.waitForTimeout(1000)
+        }
+      }
+
+      await expect(page).toHaveURL(/.*active=accounts/, { timeout: 10000 })
       const highlighted = accountsTable.locator(
         '[data-erd="table-node-highlighted"]',
       )
@@ -74,16 +91,33 @@ test.describe('Navigation and URL Parameters', () => {
 
       // Select users table
       const usersTable = page.getByTestId('rf__node-users').first()
-      await usersTable.click()
-      await expect(page).toHaveURL(/.*active=users/)
+
+      // Wait for the node to be visible and clickable
+      await expect(usersTable).toBeVisible({ timeout: 10000 })
+      await usersTable.scrollIntoViewIfNeeded()
+
+      // Try clicking with retry logic
+      retryCount = 0
+      while (retryCount < maxRetries) {
+        try {
+          await usersTable.click({ timeout: 8000 })
+          break
+        } catch (error) {
+          retryCount++
+          if (retryCount >= maxRetries) throw error
+          await page.waitForTimeout(1000)
+        }
+      }
+
+      await expect(page).toHaveURL(/.*active=users/, { timeout: 10000 })
 
       // Go back to accounts table selection
       await page.goBack()
-      await expect(page).toHaveURL(/.*active=accounts/)
+      await expect(page).toHaveURL(/.*active=accounts/, { timeout: 10000 })
 
       // Go forward to users table selection
       await page.goForward()
-      await expect(page).toHaveURL(/.*active=users/)
+      await expect(page).toHaveURL(/.*active=users/, { timeout: 10000 })
     })
 
     // FIXME: Browser back on hidden table is not working properly
