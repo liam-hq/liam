@@ -1,25 +1,12 @@
 'use client'
 
 import type { Database } from '@liam-hq/db'
-import { syntaxCodeTagProps, syntaxCustomStyle, syntaxTheme } from '@liam-hq/ui'
-import type { CSSProperties, FC, HTMLAttributes, ReactNode } from 'react'
-import ReactMarkdown from 'react-markdown'
-import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
-import remarkGfm from 'remark-gfm'
+import type { FC, ReactNode } from 'react'
 import { AgentMessage } from '@/components/Chat/AgentMessage'
 import { UserMessage } from '@/components/Chat/UserMessage'
 import { VersionMessage } from '@/components/Chat/VersionMessage'
+import { MarkdownContent } from '@/components/MarkdownContent'
 import styles from './TimelineItem.module.css'
-
-// Define CodeProps interface
-interface CodeProps extends HTMLAttributes<HTMLElement> {
-  node?: unknown
-  inline?: boolean
-  className?: string
-  children?: ReactNode
-  // Additional props that might be passed by react-markdown
-  style?: CSSProperties
-}
 
 // TODO: Modify to use what is inferred from the valibot schema
 export type TimelineItemProps =
@@ -91,38 +78,7 @@ export const TimelineItem: FC<TimelineItemProps> = (props) => {
 
   // For bot messages, we'll render the markdown content with syntax highlighting
   const markdownContent =
-    role !== 'user' ? (
-      <ReactMarkdown
-        remarkPlugins={[remarkGfm]}
-        components={{
-          code(props: CodeProps) {
-            const { children, className, node, ...rest } = props
-            const match = /language-(\w+)/.exec(className || '')
-            const isInline = !match && !className
-
-            return !isInline && match ? (
-              <SyntaxHighlighter
-                // @ts-expect-error - syntaxTheme has a complex type structure that's compatible at runtime
-                style={syntaxTheme}
-                language={match[1]}
-                PreTag="div"
-                customStyle={syntaxCustomStyle}
-                codeTagProps={syntaxCodeTagProps}
-                {...rest}
-              >
-                {String(children).replace(/\n$/, '')}
-              </SyntaxHighlighter>
-            ) : (
-              <code className={className} {...rest}>
-                {children}
-              </code>
-            )
-          },
-        }}
-      >
-        {content}
-      </ReactMarkdown>
-    ) : null
+    role !== 'user' ? <MarkdownContent content={content} /> : null
 
   return (
     <div className={styles.messageContainer}>

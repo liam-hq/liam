@@ -90,6 +90,11 @@ For database migration and type generation workflows, see [`docs/migrationOpsCon
 - Avoid `as` keyword - use type predicates or `instanceof` checks
 - Use early returns for readability
 
+### Code Editing
+- When modifying existing code, write the ideal state without worrying about backward compatibility
+- Don't maintain redundant code for the sake of compatibility
+- Focus on clean, optimal implementation
+
 ### Component Patterns
 - Use named exports only (no default exports)
 - Event handlers should be prefixed with "handle" (e.g., `handleClick`)

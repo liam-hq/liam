@@ -15,21 +15,15 @@ describe('applyPatchOperations', () => {
       expect(target).toEqual({ name: 'John' })
     })
 
-    it('should add a value to a nested path that does not exist yet', () => {
+    it('should throw an error when adding to a nested path that does not exist', () => {
       const target = {}
       const operations: Operation[] = [
         { op: 'add', path: '/user/profile/name', value: 'John' },
       ]
 
-      applyPatchOperations(target, operations)
-
-      expect(target).toEqual({
-        user: {
-          profile: {
-            name: 'John',
-          },
-        },
-      })
+      expect(() => {
+        applyPatchOperations(target, operations)
+      }).toThrow()
     })
 
     it('should replace a value at an existing path', () => {
@@ -48,7 +42,6 @@ describe('applyPatchOperations', () => {
       const operations: Operation[] = [
         { op: 'add', path: '/name', value: 'John' },
         { op: 'add', path: '/age', value: 30 },
-        { op: 'add', path: '/address/city', value: 'New York' },
       ]
 
       applyPatchOperations(target, operations)
@@ -56,9 +49,6 @@ describe('applyPatchOperations', () => {
       expect(target).toEqual({
         name: 'John',
         age: 30,
-        address: {
-          city: 'New York',
-        },
       })
     })
   })
@@ -75,21 +65,15 @@ describe('applyPatchOperations', () => {
       expect(target).toEqual({ name: 'John' })
     })
 
-    it('should add a value at a path that does not exist yet', () => {
+    it('should throw an error when replacing at a path that does not exist', () => {
       const target = {}
       const operations: Operation[] = [
         { op: 'replace', path: '/user/profile/name', value: 'John' },
       ]
 
-      applyPatchOperations(target, operations)
-
-      expect(target).toEqual({
-        user: {
-          profile: {
-            name: 'John',
-          },
-        },
-      })
+      expect(() => {
+        applyPatchOperations(target, operations)
+      }).toThrow()
     })
   })
 
@@ -103,18 +87,16 @@ describe('applyPatchOperations', () => {
       expect(target).toEqual({ age: 30 })
     })
 
-    it('should not throw when removing a value that does not exist', () => {
+    it('should throw an error when removing a value that does not exist', () => {
       const target = { name: 'John' }
       const operations: Operation[] = [{ op: 'remove', path: '/age' }]
 
       expect(() => {
         applyPatchOperations(target, operations)
-      }).not.toThrow()
-
-      expect(target).toEqual({ name: 'John' })
+      }).toThrow()
     })
 
-    it('should not throw when removing a value at a path that does not exist', () => {
+    it('should throw an error when removing a value at a path that does not exist', () => {
       const target = { user: { name: 'John' } }
       const operations: Operation[] = [
         { op: 'remove', path: '/user/profile/age' },
@@ -122,9 +104,7 @@ describe('applyPatchOperations', () => {
 
       expect(() => {
         applyPatchOperations(target, operations)
-      }).not.toThrow()
-
-      expect(target).toEqual({ user: { name: 'John' } })
+      }).toThrow()
     })
 
     it('should handle nested remove operations', () => {
@@ -163,7 +143,7 @@ describe('applyPatchOperations', () => {
       applyPatchOperations(target, operations)
 
       expect(target).toEqual({
-        'special~1path': 'value with ~',
+        'special/path': 'value with ~',
         'with spaces': 'value with spaces',
       })
     })

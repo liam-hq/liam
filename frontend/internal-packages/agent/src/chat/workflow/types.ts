@@ -11,6 +11,8 @@ export type WorkflowState = {
   projectId?: string | undefined
   error?: string | undefined
 
+  ddlStatements?: string | undefined
+
   // Schema update fields
   buildingSchemaId: string
   latestVersionNumber?: number | undefined
