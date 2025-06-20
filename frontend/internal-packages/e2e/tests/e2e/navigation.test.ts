@@ -22,6 +22,19 @@ test.describe('Navigation and URL Parameters', () => {
     }
 
     await page.goto('/')
+
+    // Debug: Check if ReactFlow is loaded
+    try {
+      await expect(page.locator('.react-flow')).toBeVisible({ timeout: 5000 })
+    } catch (error) {
+      throw new Error(`ReactFlow not visible: ${error}`)
+    }
+
+    // Debug: Check if any nodes are present
+    const nodeCount = await page.getByTestId(/rf__node-/).count()
+    if (nodeCount === 0) {
+      throw new Error(`No ReactFlow nodes found. Count: ${nodeCount}`)
+    }
   })
 
   test.describe('Browser History', () => {
