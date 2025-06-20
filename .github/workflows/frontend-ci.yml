@@ -89,7 +89,7 @@ jobs:
           --health-timeout 5s
           --health-retries 5
         ports:
-          - 5432:5432
+          - 54322:5432
 
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
@@ -111,7 +111,7 @@ jobs:
       - run: cp .env.template .env
       - name: Setup database connection
         run: |
-          echo "DATABASE_URL=postgresql://postgres:postgres@localhost:5432/postgres" >> .env
+          echo "DATABASE_URL=postgresql://postgres:postgres@localhost:54322/postgres" >> .env
           echo "SUPABASE_URL=http://localhost:54321" >> .env
           echo "SUPABASE_ANON_KEY=test-anon-key" >> .env
           echo "SUPABASE_SERVICE_ROLE_KEY=test-service-key" >> .env
