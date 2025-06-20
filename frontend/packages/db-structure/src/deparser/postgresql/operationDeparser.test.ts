@@ -174,5 +174,19 @@ describe('postgresqlOperationDeparser', () => {
         "ALTER TABLE products ADD COLUMN price decimal(10,2) NOT NULL DEFAULT 0;"
       `)
     })
+
+    it('should generate DROP COLUMN statement from remove operation', () => {
+      const operation: Operation = {
+        op: 'remove',
+        path: '/tables/users/columns/age',
+      }
+
+      const result = postgresqlOperationDeparser(operation)
+
+      expect(result.errors).toHaveLength(0)
+      expect(result.value).toMatchInlineSnapshot(`
+        "ALTER TABLE users DROP COLUMN age;"
+      `)
+    })
   })
 })

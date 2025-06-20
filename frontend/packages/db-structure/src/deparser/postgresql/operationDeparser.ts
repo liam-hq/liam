@@ -1,5 +1,11 @@
-import type { AddColumnOperation } from '../../operation/schema/column.js'
-import { isAddColumnOperation } from '../../operation/schema/column.js'
+import type {
+  AddColumnOperation,
+  RemoveColumnOperation,
+} from '../../operation/schema/column.js'
+import {
+  isAddColumnOperation,
+  isRemoveColumnOperation,
+} from '../../operation/schema/column.js'
 import type { Operation } from '../../operation/schema/index.js'
 import type {
   AddTableOperation,
@@ -13,6 +19,7 @@ import type { OperationDeparser } from '../type.js'
 import {
   generateAddColumnStatement,
   generateCreateTableStatement,
+  generateRemoveColumnStatement,
   generateRemoveTableStatement,
 } from './utils.js'
 
@@ -67,6 +74,20 @@ function generateAddColumnFromOperation(operation: AddColumnOperation): string {
 }
 
 /**
+ * Generate DROP COLUMN DDL from column removal operation
+ */
+function generateRemoveColumnFromOperation(
+  operation: RemoveColumnOperation,
+): string {
+  const pathInfo = extractTableAndColumnNameFromPath(operation.path)
+  if (!pathInfo) {
+    throw new Error(`Invalid column path: ${operation.path}`)
+  }
+
+  return generateRemoveColumnStatement(pathInfo.tableName, pathInfo.columnName)
+}
+
+/**
  * Generate DROP TABLE DDL from table removal operation
  */
 function generateRemoveTableFromOperation(
@@ -97,6 +118,11 @@ export const postgresqlOperationDeparser: OperationDeparser = (
 
   if (isAddColumnOperation(operation)) {
     const value = generateAddColumnFromOperation(operation)
+    return { value, errors }
+  }
+
+  if (isRemoveColumnOperation(operation)) {
+    const value = generateRemoveColumnFromOperation(operation)
     return { value, errors }
   }
 

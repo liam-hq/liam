@@ -116,6 +116,16 @@ function generateColumnComments(tableName: string, table: Table): string {
 }
 
 /**
+ * Generate DROP COLUMN statement for a column
+ */
+export function generateRemoveColumnStatement(
+  tableName: string,
+  columnName: string,
+): string {
+  return `ALTER TABLE ${tableName} DROP COLUMN ${columnName};`
+}
+
+/**
  * Generate DROP TABLE statement
  */
 export function generateRemoveTableStatement(tableName: string): string {

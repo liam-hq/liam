@@ -24,5 +24,27 @@ export const isAddColumnOperation = (
   return v.safeParse(addColumnOperationSchema, operation).success
 }
 
+// Remove column operation
+const removeColumnOperationSchema = v.object({
+  op: v.literal('remove'),
+  path: v.custom<`/tables/${string}/columns/${string}`>(
+    isColumnPath,
+    'Path must match the pattern /tables/{tableName}/columns/{columnName}',
+  ),
+})
+
+export type RemoveColumnOperation = v.InferOutput<
+  typeof removeColumnOperationSchema
+>
+
+export const isRemoveColumnOperation = (
+  operation: Operation,
+): operation is RemoveColumnOperation => {
+  return v.safeParse(removeColumnOperationSchema, operation).success
+}
+
 // Export all column operations
-export const columnOperations = [addColumnOperationSchema]
+export const columnOperations = [
+  addColumnOperationSchema,
+  removeColumnOperationSchema,
+]
