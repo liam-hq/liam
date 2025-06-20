@@ -1,3 +1,16 @@
+/**
+ * Word Overlap Matching Script
+ * 
+ * This script performs lexical similarity matching between reference and candidate names
+ * based on word overlap and string similarity. It uses multiple techniques:
+ * - Word tokenization and stop word removal
+ * - Exact word overlap detection between tokenized names
+ * - Longest Common Substring (LCS) calculation for character-level similarity
+ * 
+ * The script is designed to find matches between names that share common words or
+ * have high character-level similarity, making it effective for matching variations
+ * of the same concept (e.g., "user_profile" vs "UserProfile" or "customer_data" vs "customer_info").
+ */
 type Mapping = Record<string, string>
 
 /**
