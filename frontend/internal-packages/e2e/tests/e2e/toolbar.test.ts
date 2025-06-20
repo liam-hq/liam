@@ -143,14 +143,12 @@ test('tidyup button should make the table nodes tidy', async ({
     throw new Error('Could not get final table node position')
   }
 
-  // After tidy up, the node should move from the dragged position
-  // (not necessarily back to the original position)
-  expect(
-    Math.abs(finalTableNodePosition.x - initialTableNodePosition.x),
-  ).toBeGreaterThan(0)
-  expect(
-    Math.abs(finalTableNodePosition.y - initialTableNodePosition.y),
-  ).toBeGreaterThan(0)
+  expect(Math.abs(finalTableNodePosition.x - initialTableNodePosition.x)).toBe(
+    0,
+  )
+  expect(Math.abs(finalTableNodePosition.y - initialTableNodePosition.y)).toBe(
+    0,
+  )
 })
 
 test('fitview button should make the table nodes fit the viewport', async ({
