@@ -18,6 +18,7 @@ import {
   SCHEMA_UPDATES_REVIEW_COMMENTS,
 } from './mock'
 import styles from './SessionDetailPage.module.css'
+import { buildCurrentSchema } from './services/buildCurrentSchema'
 import { getBuildingSchema } from './services/buildingSchema/client/getBuldingSchema'
 import { getLatestVersion } from './services/latestVersion/client/getLatestVersion'
 import type { Version } from './types'
@@ -38,7 +39,9 @@ export const SessionDetailPageClient: FC<Props> = ({
   const [currentSchema, setCurrentSchema] = useState<Schema | null>(
     initialSchema,
   )
-  const [, setCurrentVersion] = useState<Version | null>(initialCurrentVersion)
+  const [currentVersion, setCurrentVersion] = useState<Version | null>(
+    initialCurrentVersion,
+  )
   const [, setQuickFixMessage] = useState<string>('')
 
   const handleQuickFix = useCallback((comment: string) => {
@@ -48,6 +51,16 @@ export const SessionDetailPageClient: FC<Props> = ({
 
 Please suggest a specific solution to resolve this problem.`
     setQuickFixMessage(fixMessage)
+  }, [])
+
+  const handleChangeCurrentVersion = useCallback(async (version: Version) => {
+    const schema = await buildCurrentSchema({
+      designSessionId,
+      latestVersionNumber: version.number,
+    })
+    setCurrentSchema(schema)
+
+    setCurrentVersion(version)
   }, [])
 
   const [isRefetching, startTransition] = useTransition()
@@ -87,6 +100,9 @@ Please suggest a specific solution to resolve this problem.`
             schemaUpdatesReviewComments={SCHEMA_UPDATES_REVIEW_COMMENTS}
             onQuickFix={handleQuickFix}
             artifactDoc={ARTIFACT_DOC}
+            designSessionId={designSessionId}
+            currentVersion={currentVersion}
+            onCurrentVersionChange={handleChangeCurrentVersion}
           />
         </div>
       </div>

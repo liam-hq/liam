@@ -9,4 +9,7 @@ export type ReviewComment = {
 
 export type Version = Pick<Tables<'building_schema_versions'>, 'id' | 'number'>
 
-export type BuildingSchema = Pick<Tables<'building_schemas'>, 'id' | 'schema'>
+export type BuildingSchema = Pick<
+  Tables<'building_schemas'>,
+  'id' | 'schema' | 'initial_schema_snapshot'
+>
