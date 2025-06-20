@@ -13,6 +13,8 @@ export default defineConfig({
     baseURL: process.env['URL'] || 'http://localhost:5173',
     trace: 'on-first-retry',
     storageState: 'storageState.json',
+    actionTimeout: 8000,
+    navigationTimeout: 8000,
   },
 
   projects: [
