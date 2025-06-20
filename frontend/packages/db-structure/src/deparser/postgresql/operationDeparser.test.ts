@@ -189,4 +189,86 @@ describe('postgresqlOperationDeparser', () => {
       `)
     })
   })
+
+  describe('index operations', () => {
+    it('should generate CREATE INDEX statement from add operation', () => {
+      const operation: Operation = {
+        op: 'add',
+        path: '/tables/users/indexes/idx_users_email',
+        value: {
+          name: 'idx_users_email',
+          unique: false,
+          columns: ['email'],
+          type: 'BTREE',
+        },
+      }
+
+      const result = postgresqlOperationDeparser(operation)
+
+      expect(result.errors).toHaveLength(0)
+      expect(result.value).toMatchInlineSnapshot(`
+        "CREATE INDEX idx_users_email ON users USING BTREE (email);"
+      `)
+    })
+
+    it('should generate CREATE UNIQUE INDEX statement', () => {
+      const operation: Operation = {
+        op: 'add',
+        path: '/tables/users/indexes/idx_users_username_unique',
+        value: {
+          name: 'idx_users_username_unique',
+          unique: true,
+          columns: ['username'],
+          type: 'BTREE',
+        },
+      }
+
+      const result = postgresqlOperationDeparser(operation)
+
+      expect(result.errors).toHaveLength(0)
+      expect(result.value).toMatchInlineSnapshot(`
+        "CREATE UNIQUE INDEX idx_users_username_unique ON users USING BTREE (username);"
+      `)
+    })
+
+    it('should generate CREATE INDEX with multiple columns', () => {
+      const operation: Operation = {
+        op: 'add',
+        path: '/tables/orders/indexes/idx_orders_user_date',
+        value: {
+          name: 'idx_orders_user_date',
+          unique: false,
+          columns: ['user_id', 'created_at'],
+          type: 'BTREE',
+        },
+      }
+
+      const result = postgresqlOperationDeparser(operation)
+
+      expect(result.errors).toHaveLength(0)
+      expect(result.value).toMatchInlineSnapshot(`
+        "CREATE INDEX idx_orders_user_date ON orders USING BTREE (user_id, created_at);"
+      `)
+    })
+
+    it('should generate CREATE INDEX without index type', () => {
+      const operation: Operation = {
+        op: 'add',
+        path: '/tables/products/indexes/idx_products_category',
+        value: {
+          name: 'idx_products_category',
+          unique: false,
+          columns: ['category_id'],
+          type: '',
+        },
+      }
+
+      const result = postgresqlOperationDeparser(operation)
+
+      expect(result.errors).toHaveLength(0)
+      expect(result.value).toMatchInlineSnapshot(`
+        "CREATE INDEX idx_products_category ON products (category_id);"
+      `)
+    })
+  })
 })

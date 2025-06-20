@@ -7,6 +7,8 @@ import {
   isRemoveColumnOperation,
 } from '../../operation/schema/column.js'
 import type { Operation } from '../../operation/schema/index.js'
+import type { AddIndexOperation } from '../../operation/schema/index-operations.js'
+import { isAddIndexOperation } from '../../operation/schema/index-operations.js'
 import type {
   AddTableOperation,
   RemoveTableOperation,
@@ -18,6 +20,7 @@ import {
 import type { OperationDeparser } from '../type.js'
 import {
   generateAddColumnStatement,
+  generateCreateIndexStatement,
   generateCreateTableStatement,
   generateRemoveColumnStatement,
   generateRemoveTableStatement,
@@ -44,6 +47,22 @@ function extractTableAndColumnNameFromPath(
   return {
     tableName: match[1],
     columnName: match[2],
+  }
+}
+
+/**
+ * Extract table name and index name from index operation path
+ */
+function extractTableAndIndexNameFromPath(
+  path: string,
+): { tableName: string; indexName: string } | null {
+  const match = path.match(/^\/tables\/([^/]+)\/indexes\/([^/]+)$/)
+  if (!match || !match[1] || !match[2]) {
+    return null
+  }
+  return {
+    tableName: match[1],
+    indexName: match[2],
   }
 }
 
@@ -101,6 +120,20 @@ function generateRemoveTableFromOperation(
   return generateRemoveTableStatement(tableName)
 }
 
+/**
+ * Generate CREATE INDEX DDL from index creation operation
+ */
+function generateCreateIndexFromOperation(
+  operation: AddIndexOperation,
+): string {
+  const pathInfo = extractTableAndIndexNameFromPath(operation.path)
+  if (!pathInfo) {
+    throw new Error(`Invalid index path: ${operation.path}`)
+  }
+
+  return generateCreateIndexStatement(pathInfo.tableName, operation.value)
+}
+
 export const postgresqlOperationDeparser: OperationDeparser = (
   operation: Operation,
 ) => {
@@ -123,6 +156,11 @@ export const postgresqlOperationDeparser: OperationDeparser = (
 
   if (isRemoveColumnOperation(operation)) {
     const value = generateRemoveColumnFromOperation(operation)
+    return { value, errors }
+  }
+
+  if (isAddIndexOperation(operation)) {
+    const value = generateCreateIndexFromOperation(operation)
     return { value, errors }
   }
 

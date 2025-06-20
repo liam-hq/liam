@@ -1,4 +1,4 @@
-import type { Column, Table } from '../../schema/index.js'
+import type { Column, Index, Table } from '../../schema/index.js'
 
 /**
  * Generate column definition as DDL string
@@ -130,4 +130,18 @@ export function generateRemoveColumnStatement(
  */
 export function generateRemoveTableStatement(tableName: string): string {
   return `DROP TABLE ${tableName};`
+}
+
+/**
+ * Generate CREATE INDEX statement for an index
+ */
+export function generateCreateIndexStatement(
+  tableName: string,
+  index: Index,
+): string {
+  const uniqueKeyword = index.unique ? ' UNIQUE' : ''
+  const indexMethod = index.type ? ` USING ${index.type}` : ''
+  const columnList = index.columns.join(', ')
+
+  return `CREATE${uniqueKeyword} INDEX ${index.name} ON ${tableName}${indexMethod} (${columnList});`
 }
