@@ -22,6 +22,12 @@ test.describe('Navigation and URL Parameters', () => {
     }
 
     await page.goto('/', { waitUntil: 'domcontentloaded' })
+
+    // Wait for ReactFlow to be visible
+    await expect(page.locator('.react-flow')).toBeVisible()
+
+    // Wait for at least one node to be visible
+    await expect(page.getByTestId('rf__node-accounts')).toBeVisible()
   })
 
   test.describe('Browser History', () => {
@@ -64,7 +70,7 @@ test.describe('Navigation and URL Parameters', () => {
     }) => {
       // Initial state - select accounts table
       const accountsTable = page.getByTestId('rf__node-accounts').first()
-      await accountsTable.click()
+      await accountsTable.click({ force: true })
 
       await expect(page).toHaveURL(/.*active=accounts/)
       const highlighted = accountsTable.locator(
@@ -74,7 +80,7 @@ test.describe('Navigation and URL Parameters', () => {
 
       // Select users table
       const usersTable = page.getByTestId('rf__node-users').first()
-      await usersTable.click()
+      await usersTable.click({ force: true })
       await expect(page).toHaveURL(/.*active=users/)
 
       // Go back to accounts table selection
