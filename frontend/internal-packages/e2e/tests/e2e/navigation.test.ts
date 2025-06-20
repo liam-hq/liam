@@ -64,15 +64,9 @@ test.describe('Navigation and URL Parameters', () => {
     }) => {
       // Initial state - select accounts table
       const accountsTable = page.getByTestId('rf__node-accounts').first()
+      await accountsTable.click()
 
-      // Wait for the node to be visible and clickable
-      await expect(accountsTable).toBeVisible({ timeout: 5000 })
-      await accountsTable.scrollIntoViewIfNeeded()
-
-      // Click with shorter timeout
-      await accountsTable.click({ timeout: 5000 })
-
-      await expect(page).toHaveURL(/.*active=accounts/, { timeout: 5000 })
+      await expect(page).toHaveURL(/.*active=accounts/)
       const highlighted = accountsTable.locator(
         '[data-erd="table-node-highlighted"]',
       )
@@ -80,23 +74,16 @@ test.describe('Navigation and URL Parameters', () => {
 
       // Select users table
       const usersTable = page.getByTestId('rf__node-users').first()
-
-      // Wait for the node to be visible and clickable
-      await expect(usersTable).toBeVisible({ timeout: 5000 })
-      await usersTable.scrollIntoViewIfNeeded()
-
-      // Click with shorter timeout
-      await usersTable.click({ timeout: 5000 })
-
-      await expect(page).toHaveURL(/.*active=users/, { timeout: 5000 })
+      await usersTable.click()
+      await expect(page).toHaveURL(/.*active=users/)
 
       // Go back to accounts table selection
       await page.goBack()
-      await expect(page).toHaveURL(/.*active=accounts/, { timeout: 5000 })
+      await expect(page).toHaveURL(/.*active=accounts/)
 
       // Go forward to users table selection
       await page.goForward()
-      await expect(page).toHaveURL(/.*active=users/, { timeout: 5000 })
+      await expect(page).toHaveURL(/.*active=users/)
     })
 
     // FIXME: Browser back on hidden table is not working properly
