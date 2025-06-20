@@ -57,11 +57,11 @@ test('zoom in button should increase zoom level', async ({
   const zoomInButton = toolbar.getByTestId('toolbar-icon-button-Zoom in')
   await zoomInButton.click()
 
-  await expect(zoomLevelText).not.toHaveText(zoomLevelBefore)
+  await expect(zoomLevelText).not.toHaveText(zoomLevelBefore ?? '')
 
   const zoomLevelAfter = await zoomLevelText.textContent()
-  expect(Number.parseInt(zoomLevelBefore)).toBeLessThan(
-    Number.parseInt(zoomLevelAfter),
+  expect(Number.parseInt(zoomLevelBefore ?? '0')).toBeLessThan(
+    Number.parseInt(zoomLevelAfter ?? '0'),
   )
 })
 
@@ -84,11 +84,11 @@ test('zoom out button should decrease zoom level', async ({
   const zoomOutButton = toolbar.getByTestId('toolbar-icon-button-Zoom out')
   await zoomOutButton.click()
 
-  await expect(zoomLevelText).not.toHaveText(zoomLevelBefore)
+  await expect(zoomLevelText).not.toHaveText(zoomLevelBefore ?? '')
 
   const zoomLevelAfter = await zoomLevelText.textContent()
-  expect(Number.parseInt(zoomLevelBefore)).toBeGreaterThan(
-    Number.parseInt(zoomLevelAfter),
+  expect(Number.parseInt(zoomLevelBefore ?? '0')).toBeGreaterThan(
+    Number.parseInt(zoomLevelAfter ?? '0'),
   )
 })
 
@@ -107,7 +107,9 @@ test('tidyup button should make the table nodes tidy', async ({
   const tableNode = page.getByTestId('rf__node-accounts')
 
   const initialTableNodePosition = await tableNode.boundingBox()
-
+  if (!initialTableNodePosition) {
+    throw new Error('Could not get table node position')
+  }
   await page.mouse.move(
     initialTableNodePosition.x + initialTableNodePosition.width / 2,
     initialTableNodePosition.y + initialTableNodePosition.height / 2,
@@ -122,6 +124,9 @@ test('tidyup button should make the table nodes tidy', async ({
   await page.waitForTimeout(500)
 
   const movedTableNodePosition = await tableNode.boundingBox()
+  if (!movedTableNodePosition) {
+    throw new Error('Could not get moved table node position')
+  }
 
   expect(
     Math.abs(movedTableNodePosition.x - initialTableNodePosition.x),
@@ -134,6 +139,9 @@ test('tidyup button should make the table nodes tidy', async ({
   await page.waitForTimeout(500)
 
   const finalTableNodePosition = await tableNode.boundingBox()
+  if (!finalTableNodePosition) {
+    throw new Error('Could not get final table node position')
+  }
 
   expect(Math.abs(finalTableNodePosition.x - initialTableNodePosition.x)).toBe(
     0,

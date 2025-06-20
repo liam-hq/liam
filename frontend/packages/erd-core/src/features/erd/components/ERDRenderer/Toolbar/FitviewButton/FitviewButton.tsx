@@ -1,4 +1,5 @@
 import { type IconButton, Scan } from '@liam-hq/ui'
+import { useReactFlow } from '@xyflow/react'
 import {
   type ComponentProps,
   type FC,
@@ -6,7 +7,6 @@ import {
   useCallback,
 } from 'react'
 import { toolbarActionLogEvent } from '@/features/gtm/utils'
-import { useCustomReactflow } from '@/features/reactflow/hooks'
 import { useVersion } from '@/providers'
 import { useUserEditing } from '@/stores'
 import { ToolbarIconButton } from '../ToolbarIconButton'
@@ -20,7 +20,7 @@ export const FitviewButton: FC<FitviewButtonProps> = ({
   children = '',
   size = 'md',
 }) => {
-  const { fitView } = useCustomReactflow()
+  const { fitView } = useReactFlow()
   const { showMode } = useUserEditing()
   const { version } = useVersion()
 
