@@ -1,3 +1,5 @@
+export { postgresqlSchemaDeparser } from './deparser/postgresql/index.js'
+export type { SchemaDeparser } from './deparser/type.js'
 export type {
   ColumnRelatedDiffItem,
   ConstraintRelatedDiffItem,

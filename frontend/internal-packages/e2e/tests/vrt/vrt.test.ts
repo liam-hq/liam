@@ -1,12 +1,22 @@
 import type { Page } from '@playwright/test'
 import { expect, test } from '@playwright/test'
 
-const screenshot = async (page: Page, targetPage: TargetPage) => {
-  await page.goto(targetPage.path)
+const waitForPageReady = async (page: Page) => {
+  await page.waitForLoadState('domcontentloaded')
+  await page.waitForLoadState('load')
+  await page.waitForLoadState('networkidle')
+  await page.evaluate(() => document.fonts.ready)
   await expect(page.getByRole('status', { name: 'Loading' })).toBeHidden()
+}
 
-  // Turn off the Vercel Toolbar in the Preview environment.
-  await page.keyboard.press('ControlOrMeta+.')
+const screenshot = async (page: Page, targetPage: TargetPage) => {
+  // Disable Vercel Toolbar for automation
+  await page.setExtraHTTPHeaders({
+    'x-vercel-skip-toolbar': '1',
+  })
+
+  await page.goto(targetPage.path)
+  await waitForPageReady(page)
 
   await expect(page).toHaveScreenshot({ fullPage: true })
 }
