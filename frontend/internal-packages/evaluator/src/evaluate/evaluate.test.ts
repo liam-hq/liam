@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import type { Schemas } from './evaluate'
+import type { Schema } from '../../../../packages/db-structure/src/schema/schema'
 import { evaluate } from './evaluate'
 
 // Increase timeout due to model initialization
@@ -9,251 +9,539 @@ describe('evaluate', () => {
   it(
     'simple case: full match',
     async () => {
-      const reference: Schemas = {
-        User: {
-          Attributes: ['id', 'name'],
-          'Primary key': ['id'],
+      const reference: Schema = {
+        tables: {
+          user: {
+            name: 'user',
+            columns: {
+              id: {
+                name: 'id',
+                type: 'INTEGER',
+                default: null,
+                check: null,
+                primary: true,
+                unique: false,
+                notNull: true,
+                comment: null,
+              },
+              name: {
+                name: 'name',
+                type: 'VARCHAR(100)',
+                default: null,
+                check: null,
+                primary: false,
+                unique: false,
+                notNull: true,
+                comment: null,
+              },
+            },
+            comment: null,
+            indexes: {},
+            constraints: {
+              pk_user: {
+                type: 'PRIMARY KEY',
+                name: 'pk_user',
+                columnName: 'id',
+              },
+            },
+          },
+          post: {
+            name: 'post',
+            columns: {
+              id: {
+                name: 'id',
+                type: 'INTEGER',
+                default: null,
+                check: null,
+                primary: true,
+                unique: false,
+                notNull: true,
+                comment: null,
+              },
+              user_id: {
+                name: 'user_id',
+                type: 'INTEGER',
+                default: null,
+                check: null,
+                primary: false,
+                unique: false,
+                notNull: true,
+                comment: null,
+              },
+              content: {
+                name: 'content',
+                type: 'TEXT',
+                default: null,
+                check: null,
+                primary: false,
+                unique: false,
+                notNull: true,
+                comment: null,
+              },
+            },
+            comment: null,
+            indexes: {},
+            constraints: {
+              pk_post: {
+                type: 'PRIMARY KEY',
+                name: 'pk_post',
+                columnName: 'id',
+              },
+              fk_post_user: {
+                type: 'FOREIGN KEY',
+                name: 'fk_post_user',
+                columnName: 'user_id',
+                targetTableName: 'user',
+                targetColumnName: 'id',
+                updateConstraint: 'CASCADE',
+                deleteConstraint: 'CASCADE',
+              },
+            },
+          },
         },
-        Post: {
-          Attributes: ['id', 'user_id', 'content'],
-          'Primary key': ['id'],
-          'Foreign key': { user_id: { ref: 'User', key: 'id' } },
+        relationships: {
+          user_post: {
+            name: 'user_post',
+            primaryTableName: 'user',
+            primaryColumnName: 'id',
+            foreignTableName: 'post',
+            foreignColumnName: 'user_id',
+            cardinality: 'ONE_TO_MANY',
+            updateConstraint: 'CASCADE',
+            deleteConstraint: 'CASCADE',
+          },
         },
+        tableGroups: {},
       }
-      const predict: Schemas = {
-        User: {
-          Attributes: ['id', 'name'],
-          'Primary key': ['id'],
+
+      const predict: Schema = {
+        tables: {
+          user: {
+            name: 'user',
+            columns: {
+              id: {
+                name: 'id',
+                type: 'INTEGER',
+                default: null,
+                check: null,
+                primary: true,
+                unique: false,
+                notNull: true,
+                comment: null,
+              },
+              name: {
+                name: 'name',
+                type: 'VARCHAR(100)',
+                default: null,
+                check: null,
+                primary: false,
+                unique: false,
+                notNull: true,
+                comment: null,
+              },
+            },
+            comment: null,
+            indexes: {},
+            constraints: {
+              pk_user: {
+                type: 'PRIMARY KEY',
+                name: 'pk_user',
+                columnName: 'id',
+              },
+            },
+          },
+          post: {
+            name: 'post',
+            columns: {
+              id: {
+                name: 'id',
+                type: 'INTEGER',
+                default: null,
+                check: null,
+                primary: true,
+                unique: false,
+                notNull: true,
+                comment: null,
+              },
+              user_id: {
+                name: 'user_id',
+                type: 'INTEGER',
+                default: null,
+                check: null,
+                primary: false,
+                unique: false,
+                notNull: true,
+                comment: null,
+              },
+              content: {
+                name: 'content',
+                type: 'TEXT',
+                default: null,
+                check: null,
+                primary: false,
+                unique: false,
+                notNull: true,
+                comment: null,
+              },
+            },
+            comment: null,
+            indexes: {},
+            constraints: {
+              pk_post: {
+                type: 'PRIMARY KEY',
+                name: 'pk_post',
+                columnName: 'id',
+              },
+              fk_post_user: {
+                type: 'FOREIGN KEY',
+                name: 'fk_post_user',
+                columnName: 'user_id',
+                targetTableName: 'user',
+                targetColumnName: 'id',
+                updateConstraint: 'CASCADE',
+                deleteConstraint: 'CASCADE',
+              },
+            },
+          },
         },
-        Post: {
-          Attributes: ['id', 'user_id', 'content'],
-          'Primary key': ['id'],
-          'Foreign key': { user_id: { ref: 'User', key: 'id' } },
+        relationships: {
+          user_post: {
+            name: 'user_post',
+            primaryTableName: 'user',
+            primaryColumnName: 'id',
+            foreignTableName: 'post',
+            foreignColumnName: 'user_id',
+            cardinality: 'ONE_TO_MANY',
+            updateConstraint: 'CASCADE',
+            deleteConstraint: 'CASCADE',
+          },
         },
+        tableGroups: {},
       }
 
       const result = await evaluate(reference, predict)
 
-      expect(result.schemaF1).toBe(1)
-      expect(result.schemaAllcorrect).toBe(1)
-      expect(result.attributeF1Avg).toBeCloseTo(1)
+      expect(result.tableF1).toBe(1)
+      expect(result.tableAllcorrect).toBe(1)
+      expect(result.columnF1Avg).toBeCloseTo(1)
       expect(result.primaryKeyAvg).toBeCloseTo(1)
       expect(result.foreignKeyAvg).toBeCloseTo(1)
+      expect(result.relationshipF1).toBe(1)
       expect(result.schemaAllcorrectFull).toBe(1)
     },
     TIMEOUT,
   )
 
   it(
-    'partial match: missing one schema',
+    'partial match: similar table names',
     async () => {
-      const reference: Schemas = {
-        User: {
-          Attributes: ['id', 'name'],
-          'Primary key': ['id'],
+      const reference: Schema = {
+        tables: {
+          user_account: {
+            name: 'user_account',
+            columns: {
+              id: {
+                name: 'id',
+                type: 'INTEGER',
+                default: null,
+                check: null,
+                primary: true,
+                unique: false,
+                notNull: true,
+                comment: null,
+              },
+              email: {
+                name: 'email',
+                type: 'VARCHAR(255)',
+                default: null,
+                check: null,
+                primary: false,
+                unique: true,
+                notNull: true,
+                comment: null,
+              },
+            },
+            comment: null,
+            indexes: {},
+            constraints: {
+              pk_user_account: {
+                type: 'PRIMARY KEY',
+                name: 'pk_user_account',
+                columnName: 'id',
+              },
+            },
+          },
+          blog_post: {
+            name: 'blog_post',
+            columns: {
+              post_id: {
+                name: 'post_id',
+                type: 'INTEGER',
+                default: null,
+                check: null,
+                primary: true,
+                unique: false,
+                notNull: true,
+                comment: null,
+              },
+              title: {
+                name: 'title',
+                type: 'VARCHAR(200)',
+                default: null,
+                check: null,
+                primary: false,
+                unique: false,
+                notNull: true,
+                comment: null,
+              },
+            },
+            comment: null,
+            indexes: {},
+            constraints: {
+              pk_blog_post: {
+                type: 'PRIMARY KEY',
+                name: 'pk_blog_post',
+                columnName: 'post_id',
+              },
+            },
+          },
         },
-        Post: {
-          Attributes: ['id', 'user_id', 'content'],
-          'Primary key': ['id'],
-          'Foreign key': { user_id: { ref: 'User', key: 'id' } },
-        },
+        relationships: {},
+        tableGroups: {},
       }
-      const predict: Schemas = {
-        User: {
-          Attributes: ['id', 'name'],
-          'Primary key': ['id'],
+
+      const predict: Schema = {
+        tables: {
+          user: {
+            name: 'user',
+            columns: {
+              user_id: {
+                name: 'user_id',
+                type: 'INTEGER',
+                default: null,
+                check: null,
+                primary: true,
+                unique: false,
+                notNull: true,
+                comment: null,
+              },
+              email_address: {
+                name: 'email_address',
+                type: 'VARCHAR(255)',
+                default: null,
+                check: null,
+                primary: false,
+                unique: true,
+                notNull: true,
+                comment: null,
+              },
+            },
+            comment: null,
+            indexes: {},
+            constraints: {
+              pk_user: {
+                type: 'PRIMARY KEY',
+                name: 'pk_user',
+                columnName: 'user_id',
+              },
+            },
+          },
+          post: {
+            name: 'post',
+            columns: {
+              id: {
+                name: 'id',
+                type: 'INTEGER',
+                default: null,
+                check: null,
+                primary: true,
+                unique: false,
+                notNull: true,
+                comment: null,
+              },
+              post_title: {
+                name: 'post_title',
+                type: 'VARCHAR(200)',
+                default: null,
+                check: null,
+                primary: false,
+                unique: false,
+                notNull: true,
+                comment: null,
+              },
+            },
+            comment: null,
+            indexes: {},
+            constraints: {
+              pk_post: {
+                type: 'PRIMARY KEY',
+                name: 'pk_post',
+                columnName: 'id',
+              },
+            },
+          },
         },
+        relationships: {},
+        tableGroups: {},
       }
 
       const result = await evaluate(reference, predict)
 
-      expect(result.schemaF1).toBeLessThan(1)
-      expect(result.schemaAllcorrect).toBe(0)
-      expect(result.attributeF1Avg).toBeLessThan(1)
-      expect(result.primaryKeyAvg).toBeLessThan(1)
-      expect(result.foreignKeyAvg).toBeLessThan(1)
-      expect(result.schemaAllcorrectFull).toBe(0)
-    },
-    TIMEOUT,
-  )
+      // Tables should match due to semantic similarity (user_account -> user, blog_post -> post)
+      expect(result.tableF1).toBeCloseTo(1, 1)
+      expect(result.tableAllcorrect).toBe(1)
 
-  it(
-    'attribute mismatch',
-    async () => {
-      const reference: Schemas = {
-        User: {
-          Attributes: ['id', 'name', 'email'],
-          'Primary key': ['id'],
-        },
-      }
-      const predict: Schemas = {
-        User: {
-          Attributes: ['id', 'username'],
-          'Primary key': ['id'],
-        },
-      }
+      // Columns should partially match (email -> email_address, title -> post_title)
+      expect(result.columnF1Avg).toBeGreaterThan(0.4)
+      expect(result.columnF1Avg).toBeLessThan(0.8)
+      expect(result.columnAllcorrectAvg).toBeCloseTo(0.5, 1)
 
-      const result = await evaluate(reference, predict)
-
-      expect(result.attributeF1Avg).toBeLessThan(1)
-      expect(result.attributeAllcorrectAvg).toBe(0)
-      expect(result.schemaF1).toBe(1)
-      expect(result.schemaAllcorrectFull).toBe(0)
-    },
-    TIMEOUT,
-  )
-
-  // larger test cases
-  it(
-    'insurance company (real-world partial match case)',
-    async () => {
-      // --- reference
-      const reference: Schemas = {
-        'Insurance Agent': {
-          Attributes: ['Agent ID', 'Name', 'Hire Date', 'Contact Phone'],
-          'Primary key': ['Agent ID'],
-          'Foreign key': {},
-        },
-        Customer: {
-          Attributes: [
-            'Customer ID',
-            'Name',
-            'ID Card Number',
-            'Contact Phone',
-          ],
-          'Primary key': ['Customer ID'],
-          'Foreign key': {},
-        },
-        'Insurance Policy': {
-          Attributes: [
-            'Policy ID',
-            'Agent ID',
-            'Customer ID',
-            'Insurance Type',
-            'Insured Amount',
-            'Insurance Term',
-            'Premium',
-          ],
-          'Primary key': ['Policy ID'],
-          'Foreign key': {
-            'Agent ID': { 'Insurance Agent': 'Agent ID' },
-            'Customer ID': { Customer: 'Customer ID' },
-          },
-        },
-        'Payment Record': {
-          Attributes: [
-            'Policy ID',
-            'Payment Amount',
-            'Payment Date',
-            'Payment Method',
-          ],
-          'Primary key': ['Policy ID'],
-          'Foreign key': { 'Policy ID': { 'Insurance Policy': 'Policy ID' } },
-        },
-        'Claim Record': {
-          Attributes: ['Policy ID', 'Claim Amount', 'Claim Date'],
-          'Primary key': ['Policy ID'],
-          'Foreign key': { 'Policy ID': { 'Payment Record': 'Policy ID' } },
-        },
-        'Medical Record': {
-          Attributes: ['Customer ID', 'Visit Time', 'Visit Cost'],
-          'Primary key': ['Customer ID', 'Visit Time'],
-          'Foreign key': { 'Customer ID': { Customer: 'Customer ID' } },
-        },
-      }
-
-      // --- candidate
-      const candidate: Schemas = {
-        'Insurance Agent': {
-          Attributes: ['Agent ID', 'Name', 'Hire Date', 'Contact Phone'],
-          'Primary key': ['Agent ID'],
-          'Foreign key': {},
-        },
-        Customer: {
-          Attributes: [
-            'Customer ID',
-            'Agent ID',
-            'Name',
-            'ID Card Number',
-            'Contact Phone',
-          ],
-          'Primary key': ['Customer ID'],
-          'Foreign key': {
-            'Agent ID': { 'Insurance Agent': 'Agent ID' },
-          },
-        },
-        Policy: {
-          Attributes: [
-            'Policy ID',
-            'Agent ID',
-            'Customer ID',
-            'Insurance Type',
-            'Insured Amount',
-            'Insurance Term',
-            'Premium',
-          ],
-          'Primary key': ['Policy ID'],
-          'Foreign key': {
-            'Agent ID': { 'Insurance Agent': 'Agent ID' },
-            'Customer ID': { Customer: 'Customer ID' },
-          },
-        },
-        Payment: {
-          Attributes: [
-            'ID',
-            'Policy ID',
-            'Payment Amount',
-            'Payment Date',
-            'Payment Method',
-          ],
-          'Primary key': ['ID'],
-          'Foreign key': { 'Policy ID': { Policy: 'Policy ID' } },
-        },
-        'Claim Record': {
-          Attributes: [
-            'ID',
-            'Status',
-            'Policy ID',
-            'Claim Amount',
-            'Claim Date',
-          ],
-          'Primary key': ['ID'],
-          'Foreign key': { 'Policy ID': { Policy: 'Policy ID' } },
-        },
-        'Medical Record': {
-          Attributes: [
-            'ID',
-            'Hospital',
-            'Customer ID',
-            'Description',
-            'Record Date',
-          ],
-          'Primary key': ['ID'],
-          'Foreign key': { 'Customer ID': { Customer: 'Customer ID' } },
-        },
-      }
-
-      const result = await evaluate(reference, candidate)
-
-      // Check the specific contents of schema mapping/attribute mapping
-      expect(result.schemaMapping).toMatchObject({
-        'Insurance Agent': 'Insurance Agent',
-        Customer: 'Customer',
-        'Claim Record': 'Claim Record',
-        'Medical Record': 'Medical Record',
-        // Approximation OK
-        'Payment Record': 'Payment',
-        // Approximation OK
-        'Insurance Policy': 'Policy',
-      })
-
-      // Assert representative value
-      expect(result.schemaF1).toBe(1)
-      expect(result.schemaAllcorrect).toBe(1)
-      expect(result.attributeF1Avg).toBeCloseTo(0.79, 1)
-      expect(result.attributeAllcorrectAvg).toBeCloseTo(0.33, 1)
+      // Primary keys should partially match (different column names)
       expect(result.primaryKeyAvg).toBeCloseTo(0.5, 1)
-      expect(result.foreignKeyAvg).toBeCloseTo(0.83, 1)
+      expect(result.schemaAllcorrectFull).toBe(0)
+    },
+    TIMEOUT,
+  )
+
+  it(
+    'mixed similarity: some exact, some partial matches',
+    async () => {
+      const reference: Schema = {
+        tables: {
+          customer: {
+            name: 'customer',
+            columns: {
+              customer_id: {
+                name: 'customer_id',
+                type: 'INTEGER',
+                default: null,
+                check: null,
+                primary: true,
+                unique: false,
+                notNull: true,
+                comment: null,
+              },
+              first_name: {
+                name: 'first_name',
+                type: 'VARCHAR(50)',
+                default: null,
+                check: null,
+                primary: false,
+                unique: false,
+                notNull: true,
+                comment: null,
+              },
+              last_name: {
+                name: 'last_name',
+                type: 'VARCHAR(50)',
+                default: null,
+                check: null,
+                primary: false,
+                unique: false,
+                notNull: true,
+                comment: null,
+              },
+              email: {
+                name: 'email',
+                type: 'VARCHAR(255)',
+                default: null,
+                check: null,
+                primary: false,
+                unique: true,
+                notNull: true,
+                comment: null,
+              },
+            },
+            comment: null,
+            indexes: {},
+            constraints: {
+              pk_customer: {
+                type: 'PRIMARY KEY',
+                name: 'pk_customer',
+                columnName: 'customer_id',
+              },
+            },
+          },
+        },
+        relationships: {},
+        tableGroups: {},
+      }
+
+      const predict: Schema = {
+        tables: {
+          customer: {
+            name: 'customer',
+            columns: {
+              id: {
+                name: 'id',
+                type: 'INTEGER',
+                default: null,
+                check: null,
+                primary: true,
+                unique: false,
+                notNull: true,
+                comment: null,
+              },
+              first_name: {
+                name: 'first_name',
+                type: 'VARCHAR(50)',
+                default: null,
+                check: null,
+                primary: false,
+                unique: false,
+                notNull: true,
+                comment: null,
+              },
+              surname: {
+                name: 'surname',
+                type: 'VARCHAR(50)',
+                default: null,
+                check: null,
+                primary: false,
+                unique: false,
+                notNull: true,
+                comment: null,
+              },
+              email_address: {
+                name: 'email_address',
+                type: 'VARCHAR(255)',
+                default: null,
+                check: null,
+                primary: false,
+                unique: true,
+                notNull: true,
+                comment: null,
+              },
+            },
+            comment: null,
+            indexes: {},
+            constraints: {
+              pk_customer: {
+                type: 'PRIMARY KEY',
+                name: 'pk_customer',
+                columnName: 'id',
+              },
+            },
+          },
+        },
+        relationships: {},
+        tableGroups: {},
+      }
+
+      const result = await evaluate(reference, predict)
+
+      // Perfect table match
+      expect(result.tableF1).toBe(1)
+      expect(result.tableAllcorrect).toBe(1)
+
+      // Partial column matches: first_name (exact), last_name->surname (similar), email->email_address (similar)
+      // customer_id->id (partial), so 3/4 should match
+      expect(result.columnF1Avg).toBeGreaterThan(0.6)
+      expect(result.columnF1Avg).toBeLessThan(0.9)
+      expect(result.columnAllcorrectAvg).toBe(0)
+
+      // Primary key mismatch (customer_id vs id)
+      expect(result.primaryKeyAvg).toBe(1)
       expect(result.schemaAllcorrectFull).toBe(0)
     },
     TIMEOUT,

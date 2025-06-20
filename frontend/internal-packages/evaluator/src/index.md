@@ -67,19 +67,32 @@ The evaluator produces the following key metrics:
 
 ## Input Schema Format
 
-The evaluator processes JSON schemas with the following structure:
+The evaluator processes database schemas using the structured format defined in `@liam-hq/db-structure/schema`. The schema follows a comprehensive structure that includes tables, relationships, and table groups:
 
-```json
-{
-  "SchemaName": {
-    "Attributes": ["attribute1", "attribute2", "attribute3"],
-    "Primary key": ["primary_key_field"],
-    "Foreign key": {
-      "foreign_key_field": {
-        "ReferencedSchema": "referenced_field"
-      }
-    }
-  }
+```typescript
+type Schema = {
+  tables: Record<string, Table>
+  relationships: Record<string, Relationship>
+  tableGroups: Record<string, TableGroup>
+}
+
+type Table = {
+  name: string
+  columns: Record<string, Column>
+  comment: string | null
+  indexes: Record<string, Index>
+  constraints: Record<string, Constraint>
+}
+
+type Column = {
+  name: string
+  type: string
+  default: string | number | boolean | null
+  check: string | null
+  primary: boolean
+  unique: boolean
+  notNull: boolean
+  comment: string | null
 }
 ```
 
@@ -89,63 +102,159 @@ Here's a complete example from an insurance company database schema:
 
 ```json
 {
-  "Insurance Agent": {
-    "Attributes": ["Agent ID", "Name", "Hire Date", "Contact Phone"],
-    "Primary key": ["Agent ID"],
-    "Foreign key": {}
-  },
-  "Customer": {
-    "Attributes": ["Customer ID", "Name", "ID Card Number", "Contact Phone"],
-    "Primary key": ["Customer ID"],
-    "Foreign key": {}
-  },
-  "Insurance Policy": {
-    "Attributes": [
-      "Policy ID",
-      "Agent ID", 
-      "Customer ID",
-      "Insurance Type",
-      "Insured Amount",
-      "Insurance Term",
-      "Premium"
-    ],
-    "Primary key": ["Policy ID"],
-    "Foreign key": {
-      "Agent ID": {"Insurance Agent": "Agent ID"},
-      "Customer ID": {"Customer": "Customer ID"}
+  "tables": {
+    "insurance_agent": {
+      "name": "insurance_agent",
+      "columns": {
+        "agent_id": {
+          "name": "agent_id",
+          "type": "VARCHAR(50)",
+          "default": null,
+          "check": null,
+          "primary": true,
+          "unique": false,
+          "notNull": true,
+          "comment": "Unique identifier for insurance agent"
+        },
+        "name": {
+          "name": "name",
+          "type": "VARCHAR(100)",
+          "default": null,
+          "check": null,
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "comment": "Agent full name"
+        },
+        "hire_date": {
+          "name": "hire_date",
+          "type": "DATE",
+          "default": null,
+          "check": null,
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "comment": "Date when agent was hired"
+        },
+        "contact_phone": {
+          "name": "contact_phone",
+          "type": "VARCHAR(20)",
+          "default": null,
+          "check": null,
+          "primary": false,
+          "unique": false,
+          "notNull": false,
+          "comment": "Agent contact phone number"
+        }
+      },
+      "comment": "Insurance agents information",
+      "indexes": {},
+      "constraints": {
+        "pk_insurance_agent": {
+          "type": "PRIMARY KEY",
+          "name": "pk_insurance_agent",
+          "columnName": "agent_id"
+        }
+      }
+    },
+    "customer": {
+      "name": "customer",
+      "columns": {
+        "customer_id": {
+          "name": "customer_id",
+          "type": "VARCHAR(50)",
+          "default": null,
+          "check": null,
+          "primary": true,
+          "unique": false,
+          "notNull": true,
+          "comment": "Unique identifier for customer"
+        },
+        "name": {
+          "name": "name",
+          "type": "VARCHAR(100)",
+          "default": null,
+          "check": null,
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "comment": "Customer full name"
+        },
+        "id_card_number": {
+          "name": "id_card_number",
+          "type": "VARCHAR(20)",
+          "default": null,
+          "check": null,
+          "primary": false,
+          "unique": true,
+          "notNull": true,
+          "comment": "Customer ID card number"
+        },
+        "contact_phone": {
+          "name": "contact_phone",
+          "type": "VARCHAR(20)",
+          "default": null,
+          "check": null,
+          "primary": false,
+          "unique": false,
+          "notNull": false,
+          "comment": "Customer contact phone"
+        }
+      },
+      "comment": "Customer information",
+      "indexes": {},
+      "constraints": {
+        "pk_customer": {
+          "type": "PRIMARY KEY",
+          "name": "pk_customer",
+          "columnName": "customer_id"
+        },
+        "uk_customer_id_card": {
+          "type": "UNIQUE",
+          "name": "uk_customer_id_card",
+          "columnName": "id_card_number"
+        }
+      }
     }
   },
-  "Payment Record": {
-    "Attributes": [
-      "Policy ID",
-      "Payment Amount",
-      "Payment Date", 
-      "Payment Method"
-    ],
-    "Primary key": ["Policy ID"],
-    "Foreign key": {"Policy ID": {"Insurance Policy": "Policy ID"}}
+  "relationships": {
+    "agent_policy_relationship": {
+      "name": "agent_policy_relationship",
+      "primaryTableName": "insurance_agent",
+      "primaryColumnName": "agent_id",
+      "foreignTableName": "insurance_policy",
+      "foreignColumnName": "agent_id",
+      "cardinality": "ONE_TO_MANY",
+      "updateConstraint": "CASCADE",
+      "deleteConstraint": "RESTRICT"
+    }
   },
-  "Claim Record": {
-    "Attributes": ["Policy ID", "Claim Amount", "Claim Date"],
-    "Primary key": ["Policy ID"],
-    "Foreign key": {"Policy ID": {"Payment Record": "Policy ID"}}
-  },
-  "Medical Record": {
-    "Attributes": ["Customer ID", "Visit Time", "Visit Cost"],
-    "Primary key": ["Customer ID", "Visit Time"],
-    "Foreign key": {"Customer ID": {"Customer": "Customer ID"}}
+  "tableGroups": {
+    "core_entities": {
+      "name": "core_entities",
+      "tables": ["insurance_agent", "customer"],
+      "comment": "Core business entities"
+    }
   }
 }
 ```
 
 ### Schema Structure Explanation
 
-- **Schema Names**: Top-level keys represent table/entity names (e.g., "Insurance Agent", "Customer")
-- **Attributes**: Array of column/field names within each schema
-- **Primary Key**: Array of fields that form the primary key (supports composite keys)
-- **Foreign Key**: Object mapping foreign key fields to their referenced schema and field
-  - Format: `"foreign_field": {"ReferencedSchema": "referenced_field"}`
-  - Empty object `{}` indicates no foreign key relationships
+- **Tables**: Record of table definitions with detailed column specifications
+  - **Columns**: Detailed column definitions including type, constraints, and metadata
+  - **Constraints**: Primary key, foreign key, unique, and check constraints
+  - **Indexes**: Database indexes for performance optimization
+  - **Comments**: Documentation for tables and columns
+
+- **Relationships**: Explicit relationship definitions between tables
+  - **Cardinality**: ONE_TO_ONE or ONE_TO_MANY relationships
+  - **Constraints**: Update and delete cascade behaviors
+  - **References**: Clear mapping between primary and foreign tables/columns
+
+- **Table Groups**: Logical grouping of related tables
+  - **Organization**: Groups tables by business domain or functionality
+  - **Documentation**: Comments explaining the purpose of each group
 
 ## Usage Workflow
 
