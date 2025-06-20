@@ -83,11 +83,11 @@ test('Cardinality should be highlighted when table node is clicked', async ({
   await expect(cardinalityAfter).toHaveAttribute(
     'marker-start',
     'url(#zeroOrOneRightHighlight)',
-    { timeout: 10000 }
+    { timeout: 10000 },
   )
   await expect(cardinalityAfter).toHaveAttribute(
     'marker-end',
     'url(#zeroOrManyLeftHighlight)',
-    { timeout: 10000 }
+    { timeout: 10000 },
   )
 })
