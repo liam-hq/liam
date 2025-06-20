@@ -114,3 +114,10 @@ function generateColumnComments(tableName: string, table: Table): string {
 
   return comments.join('\n')
 }
+
+/**
+ * Generate DROP TABLE statement
+ */
+export function generateRemoveTableStatement(tableName: string): string {
+  return `DROP TABLE ${tableName};`
+}

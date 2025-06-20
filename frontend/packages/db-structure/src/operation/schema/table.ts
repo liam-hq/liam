@@ -15,7 +15,18 @@ const addTableOperationSchema = v.object({
   value: tableSchema,
 })
 
+const removeTableOperationSchema = v.object({
+  op: v.literal('remove'),
+  path: v.custom<`/tables/${string}`>(
+    isTablePath,
+    'Path must match the pattern /tables/{tableName}',
+  ),
+})
+
 export type AddTableOperation = v.InferOutput<typeof addTableOperationSchema>
+export type RemoveTableOperation = v.InferOutput<
+  typeof removeTableOperationSchema
+>
 
 export const isAddTableOperation = (
   operation: Operation,
@@ -23,4 +34,13 @@ export const isAddTableOperation = (
   return v.safeParse(addTableOperationSchema, operation).success
 }
 
-export const tableOperations = [addTableOperationSchema]
+export const isRemoveTableOperation = (
+  operation: Operation,
+): operation is RemoveTableOperation => {
+  return v.safeParse(removeTableOperationSchema, operation).success
+}
+
+export const tableOperations = [
+  addTableOperationSchema,
+  removeTableOperationSchema,
+]

@@ -109,7 +109,7 @@ describe('postgresqlOperationDeparser', () => {
       `)
     })
 
-    it('should return error for unsupported DROP TABLE operation', () => {
+    it('should generate DROP TABLE statement from remove operation', () => {
       const operation: Operation = {
         op: 'remove',
         path: '/tables/users',
@@ -117,9 +117,10 @@ describe('postgresqlOperationDeparser', () => {
 
       const result = postgresqlOperationDeparser(operation)
 
-      expect(result.errors).toHaveLength(1)
-      expect(result.errors[0]?.message).toContain('Unsupported operation')
-      expect(result.value).toBe('')
+      expect(result.errors).toHaveLength(0)
+      expect(result.value).toMatchInlineSnapshot(`
+        "DROP TABLE users;"
+      `)
     })
   })
 
