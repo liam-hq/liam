@@ -25,12 +25,12 @@
     "@liam-hq/configs": "workspace:*",
     "@pgsql/types": "15.0.2",
     "@prisma/generator-helper": "6.8.2",
-    "@types/node": "22.15.29",
+    "@types/node": "22.15.30",
     "eslint": "9.28.0",
     "json-refs": "3.0.15",
     "json-schema-to-zod": "2.6.1",
     "typescript": "5.8.3",
-    "vitest": "3.1.4"
+    "vitest": "3.2.2"
   },
   "scripts": {
     "build": "tsc && pnpm run cp:prism",

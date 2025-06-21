@@ -40,9 +40,9 @@
     "@liam-hq/configs": "workspace:*",
     "@rollup/plugin-node-resolve": "16.0.1",
     "@rollup/plugin-typescript": "12.1.2",
-    "@types/node": "22.15.29",
-    "@types/react": "19.0.0",
-    "@types/react-dom": "19.0.0",
+    "@types/node": "22.15.30",
+    "@types/react": "19.1.6",
+    "@types/react-dom": "19.1.6",
     "@vitejs/plugin-react": "4.5.0",
     "eslint": "9.28.0",
     "rollup": "4.40.2",
@@ -51,7 +51,7 @@
     "typescript": "5.8.3",
     "vite": "6.3.5",
     "vite-tsconfig-paths": "5.1.4",
-    "vitest": "3.1.4"
+    "vitest": "3.2.2"
   },
   "scripts": {
     "build": "concurrently \"pnpm:build:*\"",

@@ -6,7 +6,7 @@
     "@biomejs/biome": "2.0.0",
     "@liam-hq/configs": "workspace:*",
     "@playwright/test": "1.52.0",
-    "@types/node": "22.15.29",
+    "@types/node": "22.15.30",
     "eslint": "9.28.0",
     "typescript": "5.8.3"
   },

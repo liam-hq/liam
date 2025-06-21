@@ -12,10 +12,10 @@
   "devDependencies": {
     "@biomejs/biome": "2.0.0",
     "@liam-hq/configs": "workspace:*",
-    "@types/node": "22.15.29",
+    "@types/node": "22.15.30",
     "eslint": "9.28.0",
     "typescript": "5.8.3",
-    "vitest": "3.1.4"
+    "vitest": "3.2.2"
   },
   "scripts": {
     "build": "tsc",
