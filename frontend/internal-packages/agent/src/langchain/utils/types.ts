@@ -4,6 +4,6 @@ export interface BasePromptVariables {
   user_message: string
 }
 
-export interface ChatAgent {
-  generate(variables: BasePromptVariables): Promise<string>
+export interface ChatAgent<T = string> {
+  generate(variables: BasePromptVariables): Promise<T>
 }

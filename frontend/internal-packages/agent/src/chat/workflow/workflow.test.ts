@@ -144,12 +144,10 @@ describe('Chat Workflow', () => {
 
     // Mock agent
     mockAgent = {
-      generate: vi.fn().mockResolvedValue(
-        JSON.stringify({
-          message: 'Mocked agent response',
-          schemaChanges: [],
-        }),
-      ),
+      generate: vi.fn().mockResolvedValue({
+        message: 'Mocked agent response',
+        schemaChanges: [],
+      }),
     }
 
     // Mock PM agent
@@ -203,7 +201,7 @@ describe('Chat Workflow', () => {
     })
 
     it('should handle Build mode with structured JSON response and schema changes', async () => {
-      const structuredResponse = JSON.stringify({
+      const structuredResponse = {
         message: 'Added created_at column to users table',
         schemaChanges: [
           {
@@ -217,7 +215,7 @@ describe('Chat Workflow', () => {
             },
           },
         ],
-      })
+      }
 
       mockAgent.generate.mockResolvedValue(structuredResponse)
 
@@ -252,7 +250,10 @@ describe('Chat Workflow', () => {
     })
 
     it('should handle Build mode with invalid JSON response gracefully', async () => {
-      mockAgent.generate.mockResolvedValue('Invalid JSON response')
+      mockAgent.generate.mockResolvedValue({
+        message: 'Invalid JSON response',
+        schemaChanges: [],
+      })
 
       const state = createBaseState({
         userInput: 'Add a created_at timestamp column to the users table',
@@ -265,27 +266,8 @@ describe('Chat Workflow', () => {
       expect(mockSchemaRepository.createVersion).not.toHaveBeenCalled()
     })
 
-    it('should handle Build mode with malformed structured response', async () => {
-      const malformedResponse = JSON.stringify({
-        message: 'Response without schemaChanges',
-        // Missing schemaChanges property
-      })
-
-      mockAgent.generate.mockResolvedValue(malformedResponse)
-
-      const state = createBaseState({
-        userInput: 'Add a created_at timestamp column to the users table',
-      })
-
-      const result = await executeChatWorkflow(state)
-
-      expect(result.error).toBeUndefined()
-      expect(result.finalResponse).toBe(malformedResponse)
-      expect(mockSchemaRepository.createVersion).not.toHaveBeenCalled()
-    })
-
     it('should handle schema update failure', async () => {
-      const structuredResponse = JSON.stringify({
+      const structuredResponse = {
         message: 'Attempted to add created_at column',
         schemaChanges: [
           {
@@ -294,7 +276,7 @@ describe('Chat Workflow', () => {
             value: { name: 'created_at', type: 'timestamp' },
           },
         ],
-      })
+      }
 
       mockAgent.generate.mockResolvedValue(structuredResponse)
       vi.mocked(mockSchemaRepository.createVersion).mockResolvedValue({
@@ -320,7 +302,7 @@ describe('Chat Workflow', () => {
     })
 
     it('should handle schema update exception', async () => {
-      const structuredResponse = JSON.stringify({
+      const structuredResponse = {
         message: 'Attempted to add created_at column',
         schemaChanges: [
           {
@@ -329,7 +311,7 @@ describe('Chat Workflow', () => {
             value: { name: 'created_at', type: 'timestamp' },
           },
         ],
-      })
+      }
 
       mockAgent.generate.mockResolvedValue(structuredResponse)
       vi.mocked(mockSchemaRepository.createVersion).mockRejectedValue(
