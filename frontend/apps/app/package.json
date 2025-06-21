@@ -31,7 +31,7 @@
     "date-fns": "4.1.0",
     "dotenv": "16.5.0",
     "flags": "4.0.1",
-    "langfuse-vercel": "3.37.3",
+    "langfuse-vercel": "3.37.4",
     "lucide-react": "0.511.0",
     "next": "15.3.3",
     "react": "19.1.0",
