@@ -256,8 +256,8 @@ function processRelationshipField(
     columnName: relationship.foreignColumnName,
     targetTableName: relationship.primaryTableName,
     targetColumnName: relationship.primaryColumnName,
-    updateConstraint: relationship.updateConstraint,
-    deleteConstraint: relationship.deleteConstraint,
+    updateConstraint: 'NO_ACTION',
+    deleteConstraint: 'NO_ACTION',
   }
 
   return { relationship, constraint }

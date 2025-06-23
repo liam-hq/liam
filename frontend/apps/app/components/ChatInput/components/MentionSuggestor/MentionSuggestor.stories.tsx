@@ -85,8 +85,6 @@ const schema = {
       foreignTableName: 'posts',
       foreignColumnName: 'user_id',
       cardinality: 'ONE_TO_MANY' as const,
-      updateConstraint: 'NO_ACTION' as const,
-      deleteConstraint: 'NO_ACTION' as const,
     },
   },
   tableGroups: {
