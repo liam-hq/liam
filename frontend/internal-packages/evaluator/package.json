@@ -4,7 +4,7 @@
   "version": "0.1.0",
   "main": "src/index.ts",
   "dependencies": {
-    "@huggingface/transformers": "3.5.2"
+    "@huggingface/transformers": "3.3.3"
   },
   "devDependencies": {
     "@biomejs/biome": "2.0.0",

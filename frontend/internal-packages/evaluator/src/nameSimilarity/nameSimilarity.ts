@@ -1,11 +1,11 @@
 /**
  * Semantic Name Similarity Matching Script
- * 
+ *
  * This script performs semantic similarity matching between reference and candidate names
  * using machine learning embeddings. It utilizes the Hugging Face Transformers library
  * with the 'all-MiniLM-L6-v2' model to generate text embeddings and calculate cosine
  * similarity scores.
- * 
+ *
  * The script finds the best semantic matches between reference names (e.g., schema names,
  * attribute names) and candidate names based on their contextual meaning rather than
  * just lexical similarity, making it effective for matching synonymous or semantically

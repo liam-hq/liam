@@ -1,13 +1,13 @@
 /**
  * Database Schema Evaluation Script
- * 
+ *
  * This script evaluates the accuracy of predicted database schemas against reference schemas.
  * It performs comprehensive matching and scoring across multiple dimensions:
  * - Schema name mapping using word overlap and semantic similarity
  * - Attribute name matching within each schema
  * - Primary key validation
  * - Foreign key validation
- * 
+ *
  * The evaluation produces metrics including F1 scores, precision/recall, and all-correct rates
  * to assess the quality of schema prediction models or tools.
  */
