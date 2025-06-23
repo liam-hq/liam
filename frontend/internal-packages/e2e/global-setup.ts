@@ -1,6 +1,10 @@
 import { chromium, type FullConfig } from '@playwright/test'
 
 async function globalSetup(config: FullConfig) {
+  if( config.projects[0] === undefined ) {
+    throw new Error('No project found')
+  }
+
   const { baseURL, storageState } = config.projects[0].use
   const browser = await chromium.launch()
   const page = await browser.newPage()

@@ -11,7 +11,11 @@ test('Copy link button copies current URL to clipboard', async ({
 }) => {
   if (isMobile) test.skip()
 
-  await page.goto('/')
+  await page.goto('/', { waitUntil: 'domcontentloaded' })
+  const loading = page.getByRole('status', { name: 'Loading' })
+  if( await loading.count() > 0 ) {
+    await expect(loading).toBeHidden({ timeout: 5000 })
+  }
 
   const copyButton = page.getByTestId('copy-link')
   await copyButton.click()
@@ -36,7 +40,11 @@ test('Table node should be highlighted when clicked', async ({ page }) => {
 test('Edge animation should be triggered when table node is clicked', async ({
   page,
 }) => {
-  await page.goto('/')
+  await page.goto('/', { waitUntil: 'domcontentloaded' })
+  const loading = page.getByRole('status', { name: 'Loading' })
+  if( await loading.count() > 0 ) {
+    await expect(loading).toBeHidden({ timeout: 5000 })
+  }
 
   const tableNode = page.getByTestId('rf__node-account_aliases')
 
@@ -56,7 +64,11 @@ test('Edge animation should be triggered when table node is clicked', async ({
 test('Cardinality should be highlighted when table node is clicked', async ({
   page,
 }) => {
-  await page.goto('/')
+  await page.goto('/', { waitUntil: 'domcontentloaded' })
+  const loading = page.getByRole('status', { name: 'Loading' })
+  if( await loading.count() > 0 ) {
+    await expect(loading).toBeHidden({ timeout: 5000 })
+  }
 
   const tableNode = page.getByTestId('rf__node-account_aliases')
 

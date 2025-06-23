@@ -21,7 +21,7 @@ test.describe('Navigation and URL Parameters', () => {
       test.skip()
     }
 
-    await page.goto('/')
+    await page.goto('/', { waitUntil: 'domcontentloaded' })
   })
 
   test.describe('Browser History', () => {
@@ -59,31 +59,24 @@ test.describe('Navigation and URL Parameters', () => {
       await expectUserTableColumnInAccountsTableVisibility(page, 'hidden')
     })
 
-    test('should handle back/forward navigation with table selection', async ({
-      page,
-    }) => {
-      // Initial state - select accounts table
+    test('should handle back/forward navigation with table selection quickly', async ({ page }) => {
       const accountsTable = page.getByTestId('rf__node-accounts').first()
       await accountsTable.click()
-
-      await expect(page).toHaveURL(/.*active=accounts/)
-      const highlighted = accountsTable.locator(
-        '[data-erd="table-node-highlighted"]',
-      )
-      await expect(highlighted).toBeVisible()
-
-      // Select users table
+      await expect(page).toHaveURL(/.*active=accounts/, { timeout: 3000 })
+    
+      const highlighted = accountsTable.locator('[data-erd="table-node-highlighted"]').first()
+      await expect(highlighted).toBeVisible({ timeout: 2000 })
+    
       const usersTable = page.getByTestId('rf__node-users').first()
+      await usersTable.scrollIntoViewIfNeeded()
       await usersTable.click()
-      await expect(page).toHaveURL(/.*active=users/)
-
-      // Go back to accounts table selection
+      await expect(page).toHaveURL(/.*active=users/, { timeout: 3000 })
+    
       await page.goBack()
-      await expect(page).toHaveURL(/.*active=accounts/)
-
-      // Go forward to users table selection
+      await expect(page).toHaveURL(/.*active=accounts/, { timeout: 3000 })
+    
       await page.goForward()
-      await expect(page).toHaveURL(/.*active=users/)
+      await expect(page).toHaveURL(/.*active=users/, { timeout: 3000 })
     })
 
     // FIXME: Browser back on hidden table is not working properly
