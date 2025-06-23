@@ -1,9 +1,4 @@
 'use client'
-
-import {
-  compressToEncodedURIComponent,
-  decompressFromEncodedURIComponent,
-} from 'lz-string'
 import {
   createParser,
   parseAsString,
@@ -15,21 +10,15 @@ import type { TableNodeType } from '@/features/erd/types'
 import type { ShowMode } from '@/schemas'
 import { UserEditingContext } from './context'
 
-const parseAsCompressedStringArray = createParser({
+const parseAsStringArray = createParser({
   parse: (value: string): string[] => {
-    const decompressed = decompressFromEncodedURIComponent(value)
-
-    if (!decompressed) return []
-    return decompressed.split(',').filter(Boolean)
+    if (!value) return []
+    return value.split(',').filter(Boolean)
   },
 
   serialize: (value: string[]): string => {
     if (value.length === 0) return ''
-
-    const joined = value.join(',')
-    const compressed = compressToEncodedURIComponent(joined)
-
-    return compressed
+    return value.join(',')
   },
 })
 
@@ -50,7 +39,7 @@ export const UserEditingProvider: FC<PropsWithChildren> = ({ children }) => {
 
   const [hiddenNodeIds, setHiddenNodeIds] = useQueryState(
     'hidden',
-    parseAsCompressedStringArray.withDefault([]).withOptions({
+    parseAsStringArray.withDefault([]).withOptions({
       history: 'push',
     }),
   )
