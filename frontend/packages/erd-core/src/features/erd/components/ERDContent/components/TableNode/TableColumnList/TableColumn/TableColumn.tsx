@@ -1,12 +1,11 @@
-import type {
-  Cardinality as CardinalityType,
-  Column,
-} from '@liam-hq/db-structure'
+import type { Column } from '@liam-hq/db-structure'
 import { DiamondFillIcon, DiamondIcon, KeyRound, Link } from '@liam-hq/ui'
 import { Handle, Position } from '@xyflow/react'
 import clsx from 'clsx'
 import type { FC } from 'react'
 import styles from './TableColumn.module.css'
+
+type CardinalityType = 'ONE_TO_ONE' | 'ONE_TO_MANY'
 
 type TableColumnProps = {
   column: Column

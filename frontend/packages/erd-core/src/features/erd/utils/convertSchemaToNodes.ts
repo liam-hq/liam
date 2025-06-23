@@ -1,11 +1,15 @@
-import type { Cardinality, Schema, TableGroup } from '@liam-hq/db-structure'
+import type { Schema, TableGroup } from '@liam-hq/db-structure'
 import type { Edge, Node } from '@xyflow/react'
+
+type Cardinality = 'ONE_TO_ONE' | 'ONE_TO_MANY'
+
 import {
   NON_RELATED_TABLE_GROUP_NODE_ID,
   zIndex,
 } from '@/features/erd/constants'
 import { columnHandleId } from '@/features/erd/utils'
 import type { ShowMode } from '@/schemas/showMode'
+import { constraintsToRelationships } from './constraintsToRelationships'
 
 type Params = {
   schema: Schema
@@ -22,7 +26,7 @@ export const convertSchemaToNodes = ({
   edges: Edge[]
 } => {
   const tables = Object.values(schema.tables)
-  const relationships = Object.values(schema.relationships)
+  const relationships = constraintsToRelationships(schema.tables)
 
   const tablesWithRelationships = new Set<string>()
   const sourceColumns = new Map<string, string>()

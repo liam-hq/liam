@@ -1,6 +1,8 @@
-import type { Cardinality, Table } from '@liam-hq/db-structure'
+import type { Table } from '@liam-hq/db-structure'
 import type { Node } from '@xyflow/react'
 import type { ShowMode } from '@/schemas/showMode/types'
+
+type Cardinality = 'ONE_TO_ONE' | 'ONE_TO_MANY'
 
 export type TableNodeData = {
   table: Table

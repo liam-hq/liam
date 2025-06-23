@@ -23,7 +23,6 @@ const schema: SchemaStore = {
       user_settings: aTable({ name: 'user_settings' }),
     },
     tableGroups: {},
-    relationships: {},
   },
 }
 

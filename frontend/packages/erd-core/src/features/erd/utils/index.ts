@@ -1,5 +1,6 @@
 export * from './columnHandleId'
 export * from './computeAutoLayout'
+export * from './constraintsToRelationships'
 export * from './convertSchemaToNodes'
 export * from './createHash'
 export * from './highlightNodesAndEdges'

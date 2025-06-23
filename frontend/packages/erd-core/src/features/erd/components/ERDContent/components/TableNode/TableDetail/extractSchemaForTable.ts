@@ -1,12 +1,9 @@
-import type {
-  Relationships,
-  Schema,
-  Table,
-  Tables,
-} from '@liam-hq/db-structure'
+import type { Schema, Table, Tables } from '@liam-hq/db-structure'
+import { constraintsToRelationships } from '../../../../../utils'
 
 export const extractSchemaForTable = (table: Table, schema: Schema): Schema => {
-  const relatedRelationshipsArray = Object.values(schema.relationships).filter(
+  const relationships = constraintsToRelationships(schema.tables)
+  const relatedRelationshipsArray = relationships.filter(
     (relationship) =>
       relationship.primaryTableName === table.name ||
       relationship.foreignTableName === table.name,
@@ -17,18 +14,12 @@ export const extractSchemaForTable = (table: Table, schema: Schema): Schema => {
       tables: {
         [table.name]: table,
       },
-      relationships: {},
       tableGroups: {},
     }
   }
 
-  const relatedRelationships: Relationships = {}
-  for (const relationship of relatedRelationshipsArray) {
-    relatedRelationships[relationship.name] = relationship
-  }
-
   const relatedTableNames = new Set<string>()
-  for (const relationship of Object.values(relatedRelationships)) {
+  for (const relationship of relatedRelationshipsArray) {
     relatedTableNames.add(relationship.primaryTableName)
     relatedTableNames.add(relationship.foreignTableName)
   }
@@ -44,7 +35,6 @@ export const extractSchemaForTable = (table: Table, schema: Schema): Schema => {
 
   return {
     tables: relatedTables,
-    relationships: relatedRelationships,
     tableGroups: {},
   }
 }
