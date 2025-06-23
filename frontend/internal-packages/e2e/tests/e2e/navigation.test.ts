@@ -59,7 +59,7 @@ test.describe('Navigation and URL Parameters', () => {
       await expectUserTableColumnInAccountsTableVisibility(page, 'hidden')
     })
 
-    test('should handle back/forward navigation with table selection quickly', async ({ page }) => {
+    test('should handle back/forward navigation with table selection', async ({ page }) => {
       const accountsTable = page.getByTestId('rf__node-accounts').first()
       await accountsTable.click()
       await expect(page).toHaveURL(/.*active=accounts/, { timeout: 3000 })
