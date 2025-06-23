@@ -27,7 +27,7 @@ jobs:
         with:
           key: docker-${{ runner.os }}-${{ hashFiles('.github/workflows/database-ci.yml') }}
       - name: Supabase Start
-        run: supabase start -x=gotrue,realtime,storage-api,imgproxy,kong,mailpit,postgrest,postgres-meta,studio,edge-runtime,logflare,vector,supavisor
+        run: supabase start -x=realtime,storage-api,imgproxy,kong,mailpit,postgrest,postgres-meta,studio,edge-runtime,logflare,vector,supavisor
       - name: Setup supabase testing
         run: |
           psql -v ON_ERROR_STOP=1 -U postgres -d postgres -h localhost -p 54322 -f frontend/internal-packages/db/supabase/setup-testing.sql
