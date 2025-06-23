@@ -22,7 +22,6 @@ describe('buildTableDiffItem', () => {
         constraints: {},
       },
     },
-    relationships: {},
     tableGroups: {},
   }
 

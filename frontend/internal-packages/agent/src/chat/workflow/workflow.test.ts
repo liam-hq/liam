@@ -72,7 +72,6 @@ describe('Chat Workflow', () => {
         constraints: {},
       },
     },
-    relationships: {},
     tableGroups: {},
   })
 

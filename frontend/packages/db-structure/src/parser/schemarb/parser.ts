@@ -25,7 +25,6 @@ import type {
   Index,
   Indexes,
   PrimaryKeyConstraint,
-  Relationship,
   Schema,
   Table,
   Tables,
@@ -36,7 +35,6 @@ import {
   aColumn,
   aForeignKeyConstraint,
   anIndex,
-  aRelationship,
   aTable,
 } from '../../schema/index.js'
 import {
@@ -45,10 +43,6 @@ import {
   WarningError,
 } from '../errors.js'
 import type { Processor, ProcessResult } from '../types.js'
-import {
-  defaultRelationshipName,
-  handleOneToOneRelationships,
-} from '../utils/index.js'
 import { convertColumnType } from './convertColumnType.js'
 import { loadPrism } from './loadPrism.js'
 import { singularize } from './singularize.js'
@@ -348,14 +342,14 @@ function extractDefaultValue(
   return null
 }
 
-function extractRelationshipTableNames(
+function extractForeignKeyTableNames(
   argNodes: Node[],
 ): Result<[string, string], UnexpectedTokenWarningError> {
   const stringNodes = argNodes.filter((node) => node instanceof StringNode)
   if (stringNodes.length !== 2) {
     return err(
       new UnexpectedTokenWarningError(
-        'Foreign key relationship must have two table names',
+        'Foreign key constraint must have two table names',
       ),
     )
   }
@@ -510,38 +504,33 @@ function normalizeConstraintName(
 }
 
 /**
- * Process a single option for a foreign key
+ * Process a single option for a foreign key constraint
  */
 function processForeignKeyOption(
   key: string,
   value: Node,
-  relation: Relationship,
   foreignKeyConstraint: ForeignKeyConstraint,
 ): void {
   switch (key) {
     case 'column':
       if (value instanceof StringNode || value instanceof SymbolNode) {
-        relation.foreignColumnName = value.unescaped.value
         foreignKeyConstraint.columnName = value.unescaped.value
       }
       break
     case 'name':
       if (value instanceof StringNode || value instanceof SymbolNode) {
-        relation.name = value.unescaped.value
         foreignKeyConstraint.name = value.unescaped.value
       }
       break
     case 'on_update':
       if (value instanceof SymbolNode) {
         const updateConstraint = normalizeConstraintName(value.unescaped.value)
-        relation.updateConstraint = updateConstraint
         foreignKeyConstraint.updateConstraint = updateConstraint
       }
       break
     case 'on_delete':
       if (value instanceof SymbolNode) {
         const deleteConstraint = normalizeConstraintName(value.unescaped.value)
-        relation.deleteConstraint = deleteConstraint
         foreignKeyConstraint.deleteConstraint = deleteConstraint
       }
       break
@@ -553,7 +542,6 @@ function processForeignKeyOption(
  */
 function processKeywordHashNode(
   hashNode: KeywordHashNode,
-  relation: Relationship,
   foreignKeyConstraint: ForeignKeyConstraint,
 ): void {
   for (const argElement of hashNode.elements) {
@@ -564,35 +552,26 @@ function processKeywordHashNode(
     const key = argElement.key.unescaped.value
     const value = argElement.value
 
-    processForeignKeyOption(key, value, relation, foreignKeyConstraint)
+    processForeignKeyOption(key, value, foreignKeyConstraint)
   }
 }
 
 /**
- * Set default values for foreign key options
+ * Set default values for foreign key constraint
  */
 function setDefaultForeignKeyValues(
-  relation: Relationship,
+  primaryTableName: string,
+  foreignTableName: string,
   foreignKeyConstraint: ForeignKeyConstraint,
 ): void {
   // ref: https://api.rubyonrails.org/classes/ActiveRecord/ConnectionAdapters/SchemaStatements.html#method-i-add_foreign_key
-  if (relation.foreignColumnName === '') {
-    const columnName = `${singularize(relation.primaryTableName)}_id`
-    relation.foreignColumnName = columnName
+  if (foreignKeyConstraint.columnName === '') {
+    const columnName = `${singularize(primaryTableName)}_id`
     foreignKeyConstraint.columnName = columnName
   }
 
-  if (relation.name === '') {
-    relation.name = defaultRelationshipName(
-      relation.primaryTableName,
-      relation.primaryColumnName,
-      relation.foreignTableName,
-      relation.foreignColumnName,
-    )
-  }
-
   if (foreignKeyConstraint.name === '') {
-    foreignKeyConstraint.name = `fk_${relation.foreignTableName}_${relation.foreignColumnName}`
+    foreignKeyConstraint.name = `fk_${foreignTableName}_${foreignKeyConstraint.columnName}`
   }
 }
 
@@ -601,23 +580,27 @@ function setDefaultForeignKeyValues(
  */
 function extractForeignKeyOptions(
   argNodes: Node[],
-  relation: Relationship,
+  primaryTableName: string,
+  foreignTableName: string,
   foreignKeyConstraint: ForeignKeyConstraint,
 ): void {
   // Process options from keyword hash nodes
   for (const argNode of argNodes) {
     if (argNode instanceof KeywordHashNode) {
-      processKeywordHashNode(argNode, relation, foreignKeyConstraint)
+      processKeywordHashNode(argNode, foreignKeyConstraint)
     }
   }
 
   // Set default values for any unspecified options
-  setDefaultForeignKeyValues(relation, foreignKeyConstraint)
+  setDefaultForeignKeyValues(
+    primaryTableName,
+    foreignTableName,
+    foreignKeyConstraint,
+  )
 }
 
 class SchemaFinder extends Visitor {
   private tables: Table[] = []
-  private relationships: Relationship[] = []
   private errors: ProcessError[] = []
 
   getSchema(): Schema {
@@ -626,16 +609,8 @@ class SchemaFinder extends Visitor {
         acc[table.name] = table
         return acc
       }, {} as Tables),
-      relationships: this.relationships.reduce(
-        (acc, relationship) => {
-          acc[relationship.name] = relationship
-          return acc
-        },
-        {} as Record<string, Relationship>,
-      ),
       tableGroups: {},
     }
-    handleOneToOneRelationships(schema.tables, schema.relationships)
     return schema
   }
 
@@ -697,27 +672,25 @@ class SchemaFinder extends Visitor {
   handleAddForeignKey(node: CallNode): void {
     const argNodes = node.arguments_?.compactChildNodes() || []
 
-    const namesResult = extractRelationshipTableNames(argNodes)
+    const namesResult = extractForeignKeyTableNames(argNodes)
     if (namesResult.isErr()) {
       this.errors.push(namesResult.error)
       return
     }
     const [primaryTableName, foreignTableName] = namesResult.value
 
-    const relationship = aRelationship({
-      primaryTableName: primaryTableName,
-      // TODO: This is a guess, we should add a way to specify the primary column name
-      primaryColumnName: 'id',
-      foreignTableName: foreignTableName,
-    })
     const foreignKeyConstraint = aForeignKeyConstraint({
       targetTableName: primaryTableName,
       targetColumnName: 'id',
     })
 
-    extractForeignKeyOptions(argNodes, relationship, foreignKeyConstraint)
+    extractForeignKeyOptions(
+      argNodes,
+      primaryTableName,
+      foreignTableName,
+      foreignKeyConstraint,
+    )
 
-    this.relationships.push(relationship)
     const foreignTable = this.tables.find(
       (table) => table.name === foreignTableName,
     )

@@ -34,7 +34,6 @@ describe('buildColumnCommentDiffItem', () => {
         constraints: {},
       },
     },
-    relationships: {},
     tableGroups: {},
   }
 

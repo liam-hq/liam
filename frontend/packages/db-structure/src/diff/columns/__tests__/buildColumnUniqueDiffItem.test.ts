@@ -34,7 +34,6 @@ describe('buildColumnUniqueDiffItem', () => {
         constraints: {},
       },
     },
-    relationships: {},
     tableGroups: {},
   }
 

@@ -15,9 +15,7 @@ export { applyPatchOperations, operationsSchema } from './operation/index.js'
 export type { ProcessError } from './parser.js'
 export {
   aColumn,
-  aRelationship,
   aTable,
-  type Cardinality,
   type CheckConstraint,
   type Column,
   type Columns,
@@ -29,7 +27,6 @@ export {
   type Indexes,
   overrideSchema,
   type PrimaryKeyConstraint,
-  type Relationships,
   type Schema,
   type SchemaOverride,
   schemaOverrideSchema,

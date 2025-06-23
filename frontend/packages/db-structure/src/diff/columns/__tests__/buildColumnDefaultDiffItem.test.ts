@@ -34,7 +34,6 @@ describe('buildColumnDefaultDiffItem', () => {
         constraints: {},
       },
     },
-    relationships: {},
     tableGroups: {},
   }
 

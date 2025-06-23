@@ -6,7 +6,6 @@ import type {
   ForeignKeyConstraint,
   ForeignKeyConstraintReferenceOption,
   Index,
-  Relationship,
   Table,
   TableGroup,
 } from '../../schema/index.js'
@@ -16,29 +15,6 @@ import { convertToPostgresColumnType } from './convertToPostgresColumnType.js'
 // NOTE: Workaround for CommonJS module import issue with @prisma/internals
 // CommonJS module can not support all module.exports as named exports
 const { getDMMF } = pkg
-
-const getFieldRenamedRelationship = (
-  relationship: Relationship,
-  tableFieldsRenaming: Record<string, Record<string, string>>,
-) => {
-  const mappedPrimaryColumnName =
-    tableFieldsRenaming[relationship.primaryTableName]?.[
-      relationship.primaryColumnName
-    ]
-  if (mappedPrimaryColumnName) {
-    relationship.primaryColumnName = mappedPrimaryColumnName
-  }
-
-  const mappedForeignColumnName =
-    tableFieldsRenaming[relationship.foreignTableName]?.[
-      relationship.foreignColumnName
-    ]
-  if (mappedForeignColumnName) {
-    relationship.foreignColumnName = mappedForeignColumnName
-  }
-
-  return relationship
-}
 
 const getFieldRenamedIndex = (
   index: DMMF.Index,
@@ -198,77 +174,54 @@ function getPrimaryTableNameByType(
 }
 
 /**
- * Process a relationship field
+ * Process a relationship field and create only the foreign key constraint
  */
 function processRelationshipField(
   field: DMMF.Field,
   model: DMMF.Model,
   models: readonly DMMF.Model[],
-  existingRelationships: Record<string, Relationship>,
   tableFieldRenaming: Record<string, Record<string, string>>,
-): {
-  relationship: Relationship | null
-  constraint: ForeignKeyConstraint | null
-} {
-  if (!field.relationName) return { relationship: null, constraint: null }
+): ForeignKeyConstraint | null {
+  if (!field.relationName) return null
 
-  const existingRelationship = existingRelationships[field.relationName]
   const isTargetField =
     field.relationToFields?.[0] &&
     (field.relationToFields?.length ?? 0) > 0 &&
     field.relationFromFields?.[0] &&
     (field.relationFromFields?.length ?? 0) > 0
 
+  if (!isTargetField) return null
+
   // Get the primary table name
-  const primaryTableName =
-    isTargetField && getPrimaryTableNameByType(field.type, models)
+  const primaryTableName = getPrimaryTableNameByType(field.type, models)
 
   // Get the column names with fallback to empty string
   const primaryColumnName = field.relationToFields?.[0] ?? ''
   const foreignColumnName = field.relationFromFields?.[0] ?? ''
 
-  const _relationship: Relationship = isTargetField
-    ? {
-        name: field.relationName,
-        primaryTableName: primaryTableName || field.type,
-        primaryColumnName,
-        foreignTableName: model.dbName || model.name,
-        foreignColumnName,
-        cardinality: existingRelationship?.cardinality ?? 'ONE_TO_MANY',
-        updateConstraint: 'NO_ACTION',
-        deleteConstraint: normalizeConstraintName(field.relationOnDelete ?? ''),
-      }
-    : {
-        name: field.relationName,
-        primaryTableName: existingRelationship?.primaryTableName ?? '',
-        primaryColumnName: existingRelationship?.primaryColumnName ?? '',
-        foreignTableName: existingRelationship?.foreignTableName ?? '',
-        foreignColumnName: existingRelationship?.foreignColumnName ?? '',
-        cardinality: field.isList ? 'ONE_TO_MANY' : 'ONE_TO_ONE',
-        updateConstraint: 'NO_ACTION',
-        deleteConstraint: 'NO_ACTION',
-      }
-
-  const relationship = getFieldRenamedRelationship(
-    _relationship,
-    tableFieldRenaming,
-  )
+  // Apply field renaming
+  const tableName = model.dbName || model.name
+  const mappedForeignColumnName =
+    tableFieldRenaming[tableName]?.[foreignColumnName] ?? foreignColumnName
+  const mappedPrimaryColumnName =
+    tableFieldRenaming[primaryTableName]?.[primaryColumnName] ??
+    primaryColumnName
 
   const constraint: ForeignKeyConstraint = {
     type: 'FOREIGN KEY',
-    name: relationship.name,
-    columnName: relationship.foreignColumnName,
-    targetTableName: relationship.primaryTableName,
-    targetColumnName: relationship.primaryColumnName,
-    updateConstraint: relationship.updateConstraint,
-    deleteConstraint: relationship.deleteConstraint,
+    name: field.relationName,
+    columnName: mappedForeignColumnName,
+    targetTableName: primaryTableName || field.type,
+    targetColumnName: mappedPrimaryColumnName,
+    updateConstraint: 'NO_ACTION',
+    deleteConstraint: normalizeConstraintName(field.relationOnDelete ?? ''),
   }
 
-  return { relationship, constraint }
+  return constraint
 }
 
 /**
- * Process a single model's relationships
+ * Process a single model's relationships and add constraints to tables
  */
 function processModelRelationships(
   model: DMMF.Model,
@@ -282,12 +235,7 @@ function processModelRelationships(
     field1: DMMF.Field
     field2: DMMF.Field
   }>,
-  existingRelationships: Record<string, Relationship>,
-): Record<string, Relationship> {
-  const relationships: Record<string, Relationship> = {
-    ...existingRelationships,
-  }
-
+): void {
   for (const field of model.fields) {
     if (!field.relationName) continue
 
@@ -304,34 +252,27 @@ function processModelRelationships(
       continue
     }
 
-    // Process regular relationship
-    const { relationship, constraint } = processRelationshipField(
+    // Process regular relationship and get constraint
+    const constraint = processRelationshipField(
       field,
       model,
       models,
-      relationships,
       tableFieldRenaming,
     )
 
-    // Add relationship to collection
-    if (relationship) {
-      relationships[relationship.name] = relationship
-    }
-
     // Add constraint to table
-    if (constraint && relationship) {
-      const table = tables[relationship.foreignTableName]
+    if (constraint) {
+      const tableName = model.dbName || model.name
+      const table = tables[tableName]
       if (table) {
         table.constraints[constraint.name] = constraint
       }
     }
   }
-
-  return relationships
 }
 
 /**
- * Process relationships for all models
+ * Process relationships for all models and add constraints to tables
  */
 function processRelationships(
   models: readonly DMMF.Model[],
@@ -344,23 +285,18 @@ function processRelationships(
     field1: DMMF.Field
     field2: DMMF.Field
   }>,
-): Record<string, Relationship> {
-  let relationships: Record<string, Relationship> = {}
-
+): void {
   // Process each model's relationships
   for (const model of models) {
-    relationships = processModelRelationships(
+    processModelRelationships(
       model,
       models,
       tables,
       tableFieldRenaming,
       processedManyToManyRelations,
       manyToManyRelations,
-      relationships,
     )
   }
-
-  return relationships
 }
 
 /**
@@ -398,7 +334,7 @@ function processIndexes(
 }
 
 /**
- * Process many-to-many relationships
+ * Process many-to-many relationships by creating join tables with constraints
  */
 function processManyToManyRelationships(
   manyToManyRelations: Array<{
@@ -409,9 +345,7 @@ function processManyToManyRelationships(
   }>,
   tables: Record<string, Table>,
   models: readonly DMMF.Model[],
-): Record<string, Relationship> {
-  const relationships: Record<string, Relationship> = {}
-
+): void {
   for (const relation of manyToManyRelations) {
     const table_A = tables[relation.model1]
     const table_B = tables[relation.model2]
@@ -446,28 +380,18 @@ function processManyToManyRelationships(
         relation.model2,
       )
 
-      // Create join table
+      // Create join table with constraints
       tables[joinTableName] = createManyToManyJoinTable(
         joinTableName,
         model1PrimaryKeyColumnType,
         model2PrimaryKeyColumnType,
-      )
-
-      // Add relationships for the join table
-      const joinTableRelationships = createManyToManyRelationships(
-        joinTableName,
         relation.model1,
         model1PrimaryKeyInfo.name,
         relation.model2,
         model2PrimaryKeyInfo.name,
       )
-
-      // Add the relationships to the global relationships object
-      Object.assign(relationships, joinTableRelationships)
     }
   }
-
-  return relationships
 }
 
 /**
@@ -493,8 +417,8 @@ async function parsePrismaSchema(schemaString: string): Promise<ProcessResult> {
   // Process models and create tables
   const tables = processTables(dmmf.datamodel.models, tableFieldRenaming)
 
-  // Process relationships
-  const relationships = processRelationships(
+  // Process relationships and add constraints to tables
+  processRelationships(
     dmmf.datamodel.models,
     tables,
     tableFieldRenaming,
@@ -511,19 +435,15 @@ async function parsePrismaSchema(schemaString: string): Promise<ProcessResult> {
   )
 
   // Process many-to-many relationships
-  const manyToManyRelationships = processManyToManyRelationships(
+  processManyToManyRelationships(
     manyToManyRelations,
     tables,
     dmmf.datamodel.models,
   )
 
-  // Merge relationships
-  Object.assign(relationships, manyToManyRelationships)
-
   return {
     value: {
       tables,
-      relationships,
       tableGroups,
     },
     errors: errors,
@@ -608,16 +528,39 @@ function createManyToManyJoinTableName(model1: string, model2: string): string {
 }
 
 /**
- * Creates a join table for a many-to-many relationship
+ * Creates a join table for a many-to-many relationship with foreign key constraints
  */
 function createManyToManyJoinTable(
   joinTableName: string,
   table_A_ColumnType: string,
   table_B_ColumnType: string,
+  model1Name: string,
+  model1PrimaryKeyName: string,
+  model2Name: string,
+  model2PrimaryKeyName: string,
 ): Table {
   return {
     name: joinTableName,
-    constraints: {},
+    constraints: {
+      [`${joinTableName}_A_fkey`]: {
+        type: 'FOREIGN KEY',
+        name: `${joinTableName}_A_fkey`,
+        columnName: 'A',
+        targetTableName: model1Name,
+        targetColumnName: model1PrimaryKeyName,
+        updateConstraint: 'CASCADE',
+        deleteConstraint: 'CASCADE',
+      },
+      [`${joinTableName}_B_fkey`]: {
+        type: 'FOREIGN KEY',
+        name: `${joinTableName}_B_fkey`,
+        columnName: 'B',
+        targetTableName: model2Name,
+        targetColumnName: model2PrimaryKeyName,
+        updateConstraint: 'CASCADE',
+        deleteConstraint: 'CASCADE',
+      },
+    },
     columns: {
       A: {
         name: 'A',
@@ -654,40 +597,6 @@ function createManyToManyJoinTable(
         columns: ['B'],
         type: '',
       },
-    },
-  }
-}
-
-/**
- * Creates relationships for a many-to-many join table
- */
-function createManyToManyRelationships(
-  joinTableName: string,
-  model1: string,
-  primaryColumnNameOfA: string,
-  model2: string,
-  primaryColumnNameOfB: string,
-): Record<string, Relationship> {
-  return {
-    [`${joinTableName}_A_fkey`]: {
-      name: `${joinTableName}_A_fkey`,
-      primaryTableName: model1,
-      primaryColumnName: primaryColumnNameOfA,
-      foreignTableName: joinTableName,
-      foreignColumnName: 'A',
-      cardinality: 'ONE_TO_MANY',
-      updateConstraint: 'CASCADE',
-      deleteConstraint: 'CASCADE',
-    },
-    [`${joinTableName}_B_fkey`]: {
-      name: `${joinTableName}_B_fkey`,
-      primaryTableName: model2,
-      primaryColumnName: primaryColumnNameOfB,
-      foreignTableName: joinTableName,
-      foreignColumnName: 'B',
-      cardinality: 'ONE_TO_MANY',
-      updateConstraint: 'CASCADE',
-      deleteConstraint: 'CASCADE',
     },
   }
 }

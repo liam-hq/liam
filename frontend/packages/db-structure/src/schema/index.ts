@@ -4,7 +4,6 @@ export {
   aForeignKeyConstraint,
   anIndex,
   aPrimaryKeyConstraint,
-  aRelationship,
   aSchema,
   aTable,
   aUniqueConstraint,
@@ -15,7 +14,6 @@ export {
   schemaOverrideSchema,
 } from './overrideSchema.js'
 export type {
-  Cardinality,
   CheckConstraint,
   Column,
   Columns,
@@ -26,8 +24,6 @@ export type {
   Index,
   Indexes,
   PrimaryKeyConstraint,
-  Relationship,
-  Relationships,
   Schema,
   Table,
   TableGroup,

@@ -42,9 +42,6 @@ describe('overrideSchema', () => {
         constraints: {},
       },
     },
-    relationships: {
-      // Empty initially
-    },
     tableGroups: {},
   }
 
@@ -206,7 +203,6 @@ describe('overrideSchema', () => {
             constraints: {},
           },
         },
-        relationships: {},
         tableGroups: {},
       }
 

@@ -34,7 +34,6 @@ describe('buildColumnCheckDiffItem', () => {
         constraints: {},
       },
     },
-    relationships: {},
     tableGroups: {},
   }
 

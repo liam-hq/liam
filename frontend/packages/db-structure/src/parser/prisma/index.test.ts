@@ -1,12 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { Table } from '../../schema/index.js'
-import {
-  aColumn,
-  anIndex,
-  aRelationship,
-  aSchema,
-  aTable,
-} from '../../schema/index.js'
+import { aColumn, anIndex, aSchema, aTable } from '../../schema/index.js'
 import { createParserTestCases } from '../__tests__/index.js'
 import { processor as _processor } from './index.js'
 
@@ -236,7 +230,6 @@ describe(_processor, () => {
     })
 
     it('relationship (one-to-many)', async () => {
-      const keyName = 'postsTousers'
       const { value } = await processor(`
         model users {
           id   BigInt    @id @default(autoincrement())
@@ -250,9 +243,6 @@ describe(_processor, () => {
         }
       `)
 
-      expect(value.relationships).toEqual(
-        parserTestCases['foreign key (one-to-many)'](keyName),
-      )
       expect(value.tables['posts']?.constraints['postsTousers']).toEqual({
         type: 'FOREIGN KEY',
         name: 'postsTousers',
@@ -265,7 +255,6 @@ describe(_processor, () => {
     })
 
     it('relationship (one-to-one)', async () => {
-      const keyName = 'postsTousers'
       const { value } = await processor(`
         model users {
           id   BigInt    @id @default(autoincrement())
@@ -279,9 +268,6 @@ describe(_processor, () => {
         }
       `)
 
-      expect(value.relationships).toEqual(
-        parserTestCases['foreign key (one-to-one)'](keyName),
-      )
       expect(value.tables['posts']?.constraints['postsTousers']).toEqual({
         type: 'FOREIGN KEY',
         name: 'postsTousers',
@@ -318,18 +304,6 @@ describe(_processor, () => {
           }
         `)
 
-          expect(value.relationships).toEqual({
-            postsTousers: {
-              name: 'postsTousers',
-              primaryTableName: 'users',
-              primaryColumnName: 'id',
-              foreignTableName: 'posts',
-              foreignColumnName: 'user_id',
-              cardinality: 'ONE_TO_MANY',
-              updateConstraint: 'NO_ACTION',
-              deleteConstraint: expectedAction,
-            },
-          })
           expect(value.tables['posts']?.constraints['postsTousers']).toEqual({
             type: 'FOREIGN KEY',
             name: 'postsTousers',
@@ -547,15 +521,6 @@ describe(_processor, () => {
           }),
         },
       })
-      expectedTables['relationships'] = {
-        postsTousers: aRelationship({
-          name: 'postsTousers',
-          foreignColumnName: 'raw_user_id',
-          foreignTableName: 'posts',
-          primaryColumnName: '_id',
-          primaryTableName: 'users',
-        }),
-      }
 
       expect(value).toEqual(expectedTables)
     })
@@ -681,19 +646,6 @@ describe(_processor, () => {
         },
       })
 
-      expectedTables['relationships'] = {
-        PostToUser: aRelationship({
-          name: 'PostToUser',
-          primaryTableName: 'users',
-          primaryColumnName: '_id',
-          foreignTableName: 'posts',
-          foreignColumnName: 'raw_user_id',
-          cardinality: 'ONE_TO_MANY',
-          updateConstraint: 'NO_ACTION',
-          deleteConstraint: 'NO_ACTION',
-        }),
-      }
-
       expect(value).toEqual(expectedTables)
     })
 
@@ -803,28 +755,26 @@ describe(_processor, () => {
                 unique: false,
               }),
             },
-          }),
-        },
-        relationships: {
-          _CategoryToPost_A_fkey: aRelationship({
-            name: '_CategoryToPost_A_fkey',
-            primaryTableName: 'Category',
-            primaryColumnName: 'id',
-            foreignTableName: '_CategoryToPost',
-            foreignColumnName: 'A',
-            cardinality: 'ONE_TO_MANY',
-            updateConstraint: 'CASCADE',
-            deleteConstraint: 'CASCADE',
-          }),
-          _CategoryToPost_B_fkey: aRelationship({
-            name: '_CategoryToPost_B_fkey',
-            primaryTableName: 'Post',
-            primaryColumnName: 'id',
-            foreignTableName: '_CategoryToPost',
-            foreignColumnName: 'B',
-            cardinality: 'ONE_TO_MANY',
-            updateConstraint: 'CASCADE',
-            deleteConstraint: 'CASCADE',
+            constraints: {
+              _CategoryToPost_A_fkey: {
+                type: 'FOREIGN KEY',
+                name: '_CategoryToPost_A_fkey',
+                columnName: 'A',
+                targetTableName: 'Category',
+                targetColumnName: 'id',
+                updateConstraint: 'CASCADE',
+                deleteConstraint: 'CASCADE',
+              },
+              _CategoryToPost_B_fkey: {
+                type: 'FOREIGN KEY',
+                name: '_CategoryToPost_B_fkey',
+                columnName: 'B',
+                targetTableName: 'Post',
+                targetColumnName: 'id',
+                updateConstraint: 'CASCADE',
+                deleteConstraint: 'CASCADE',
+              },
+            },
           }),
         },
       })

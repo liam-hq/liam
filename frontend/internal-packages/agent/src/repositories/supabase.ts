@@ -175,7 +175,7 @@ export class SupabaseSchemaRepository implements SchemaRepository {
     const validationResult = v.safeParse(schemaSchema, currentSchema)
     if (!validationResult.success) {
       console.warn('Schema validation failed, using fallback schema')
-      return { tables: {}, relationships: {}, tableGroups: {} }
+      return { tables: {}, tableGroups: {} }
     }
 
     return validationResult.output
