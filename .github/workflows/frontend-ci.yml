@@ -55,10 +55,6 @@ jobs:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
       - uses: ./.github/actions/pnpm-setup
       - run: pnpm --filter @liam-hq/db supabase:start
-      - name: Install system deps
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y protobuf-compiler libprotobuf-dev
       - run: cp .env.template .env
       - name: Make scripts executable
         run: chmod +x ./scripts/extract-supabase-anon-key.sh ./scripts/extract-supabase-service-key.sh
