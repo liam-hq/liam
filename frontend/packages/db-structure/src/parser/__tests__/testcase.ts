@@ -123,8 +123,6 @@ export const createParserTestCases = (
       foreignTableName: 'posts',
       foreignColumnName: 'user_id',
       cardinality: 'ONE_TO_MANY',
-      updateConstraint: 'NO_ACTION',
-      deleteConstraint: 'NO_ACTION',
     },
   }),
   'foreign key (one-to-one)': (name: string) => ({
@@ -135,8 +133,6 @@ export const createParserTestCases = (
       foreignTableName: 'posts',
       foreignColumnName: 'user_id',
       cardinality: 'ONE_TO_ONE',
-      updateConstraint: 'NO_ACTION',
-      deleteConstraint: 'NO_ACTION',
     },
   }),
   'foreign key with action': {
@@ -147,8 +143,6 @@ export const createParserTestCases = (
       foreignTableName: 'posts',
       foreignColumnName: 'user_id',
       cardinality: 'ONE_TO_MANY',
-      updateConstraint: 'RESTRICT',
-      deleteConstraint: 'CASCADE',
     },
   },
 })

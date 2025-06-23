@@ -534,14 +534,12 @@ function processForeignKeyOption(
     case 'on_update':
       if (value instanceof SymbolNode) {
         const updateConstraint = normalizeConstraintName(value.unescaped.value)
-        relation.updateConstraint = updateConstraint
         foreignKeyConstraint.updateConstraint = updateConstraint
       }
       break
     case 'on_delete':
       if (value instanceof SymbolNode) {
         const deleteConstraint = normalizeConstraintName(value.unescaped.value)
-        relation.deleteConstraint = deleteConstraint
         foreignKeyConstraint.deleteConstraint = deleteConstraint
       }
       break

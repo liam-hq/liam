@@ -138,8 +138,6 @@ const relationshipSchema = v.object({
   foreignTableName: tableNameSchema,
   foreignColumnName: columnNameSchema,
   cardinality: cardinalitySchema,
-  updateConstraint: foreignKeyConstraintReferenceOptionSchema,
-  deleteConstraint: foreignKeyConstraintReferenceOptionSchema,
 })
 export type Relationship = v.InferOutput<typeof relationshipSchema>
 

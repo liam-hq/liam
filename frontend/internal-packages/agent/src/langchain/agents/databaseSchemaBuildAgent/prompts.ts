@@ -121,21 +121,12 @@ Example with Relationships:
         "primaryColumnName": "id",
         "foreignTableName": "posts",
         "foreignColumnName": "user_id",
-        "cardinality": "ONE_TO_MANY",
-        "updateConstraint": "NO_ACTION",
-        "deleteConstraint": "SET_NULL"
+        "cardinality": "ONE_TO_MANY"
       }}
     }}
   ]
 }}
 
-Additional Constraint Examples:
-- For cascading deletes: "deleteConstraint": "CASCADE"
-- For restricting deletes: "deleteConstraint": "RESTRICT"
-- For setting null on delete: "deleteConstraint": "SET_NULL"
-- For setting default on delete: "deleteConstraint": "SET_DEFAULT"
-- For no action on delete: "deleteConstraint": "NO_ACTION"
-- Same options apply to "updateConstraint"
 
 Complete Schema Information:
 {schema_text}

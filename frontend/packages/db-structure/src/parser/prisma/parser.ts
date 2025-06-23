@@ -235,8 +235,6 @@ function processRelationshipField(
         foreignTableName: model.dbName || model.name,
         foreignColumnName,
         cardinality: existingRelationship?.cardinality ?? 'ONE_TO_MANY',
-        updateConstraint: 'NO_ACTION',
-        deleteConstraint: normalizeConstraintName(field.relationOnDelete ?? ''),
       }
     : {
         name: field.relationName,
@@ -245,8 +243,6 @@ function processRelationshipField(
         foreignTableName: existingRelationship?.foreignTableName ?? '',
         foreignColumnName: existingRelationship?.foreignColumnName ?? '',
         cardinality: field.isList ? 'ONE_TO_MANY' : 'ONE_TO_ONE',
-        updateConstraint: 'NO_ACTION',
-        deleteConstraint: 'NO_ACTION',
       }
 
   const relationship = getFieldRenamedRelationship(
@@ -676,8 +672,6 @@ function createManyToManyRelationships(
       foreignTableName: joinTableName,
       foreignColumnName: 'A',
       cardinality: 'ONE_TO_MANY',
-      updateConstraint: 'CASCADE',
-      deleteConstraint: 'CASCADE',
     },
     [`${joinTableName}_B_fkey`]: {
       name: `${joinTableName}_B_fkey`,
@@ -686,8 +680,6 @@ function createManyToManyRelationships(
       foreignTableName: joinTableName,
       foreignColumnName: 'B',
       cardinality: 'ONE_TO_MANY',
-      updateConstraint: 'CASCADE',
-      deleteConstraint: 'CASCADE',
     },
   }
 }

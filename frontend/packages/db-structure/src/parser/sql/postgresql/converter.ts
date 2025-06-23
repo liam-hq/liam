@@ -150,8 +150,6 @@ const constraintToRelationshipAndForeignKeyConstraint = (
     foreignTableName,
     foreignColumnName,
     cardinality,
-    updateConstraint,
-    deleteConstraint,
   }
   const foreignKeyConstraint: ForeignKeyConstraint = {
     type: 'FOREIGN KEY',

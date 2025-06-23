@@ -458,8 +458,6 @@ function processRelationships(
       relation.columns[0],
     )
 
-    const actions = extractForeignKeyActions(relation.def)
-
     relationships[name] = aRelationship({
       name,
       primaryTableName: relation.parent_table,
@@ -467,8 +465,6 @@ function processRelationships(
       foreignTableName: relation.table,
       foreignColumnName: relation.columns[0],
       cardinality: extractCardinality(relation.cardinality ?? ''),
-      deleteConstraint: actions.deleteConstraint,
-      updateConstraint: actions.updateConstraint,
     })
   }
 
