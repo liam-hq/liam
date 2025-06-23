@@ -102,6 +102,19 @@ export const useRealtimeTimelineItems: UseRealtimeTimelineItemsFunc = (
   const addOrUpdateTimelineItem = useCallback(
     (newChatEntry: TimelineItemEntry, timelineItemUserId?: string | null) => {
       setTimelineItems((prev) => {
+        // Handle optimistic updates for user timeline items FIRST
+        // This ensures that when a persisted user message comes back from the database,
+        // it properly replaces the optimistic message instead of being treated as a duplicate
+        const optimisticUpdate = handleOptimisticUserUpdate(
+          prev,
+          newChatEntry,
+          timelineItemUserId ?? null,
+          currentUserId,
+        )
+        if (optimisticUpdate) {
+          return optimisticUpdate
+        }
+
         // Check if timeline item already exists to prevent duplicates
         if (isDuplicateTimelineItem(prev, newChatEntry)) {
           return prev
@@ -119,17 +132,6 @@ export const useRealtimeTimelineItems: UseRealtimeTimelineItemsFunc = (
             existingTimelineItemIndex,
             newChatEntry,
           )
-        }
-
-        // Handle optimistic updates for user timeline items
-        const optimisticUpdate = handleOptimisticUserUpdate(
-          prev,
-          newChatEntry,
-          timelineItemUserId ?? null,
-          currentUserId,
-        )
-        if (optimisticUpdate) {
-          return optimisticUpdate
         }
 
         // For new timeline items (AI timeline items from realtime or timeline items from other users), add them to the chat
