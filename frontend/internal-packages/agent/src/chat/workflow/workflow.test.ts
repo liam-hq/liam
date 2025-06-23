@@ -5,9 +5,10 @@ import type { NodeLogger } from '../../utils/nodeLogger'
 import { executeChatWorkflow } from './index'
 import type { WorkflowState } from './types'
 
-// Mock the DatabaseSchemaBuildAgent
+// Mock the agents
 vi.mock('../../langchain/agents', () => ({
   DatabaseSchemaBuildAgent: vi.fn(),
+  PMAgent: vi.fn(),
 }))
 
 // Mock the schema converter
@@ -20,7 +21,11 @@ describe('Chat Workflow', () => {
   let mockAgent: {
     generate: ReturnType<typeof vi.fn>
   }
+  let mockPMAgent: {
+    analyzeRequirements: ReturnType<typeof vi.fn>
+  }
   let MockDatabaseSchemaBuildAgent: ReturnType<typeof vi.fn>
+  let MockPMAgent: ReturnType<typeof vi.fn>
   let mockRepositories: Repositories
   let mockSchemaRepository: SchemaRepository
   let mockLogger: NodeLogger
@@ -85,6 +90,7 @@ describe('Chat Workflow', () => {
     designSessionId: 'test-design-session-id',
     repositories: mockRepositories,
     logger: mockLogger,
+    retryCount: {},
     ...overrides,
   })
 
@@ -110,6 +116,7 @@ describe('Chat Workflow', () => {
     MockDatabaseSchemaBuildAgent = vi.mocked(
       agentsModule.DatabaseSchemaBuildAgent,
     )
+    MockPMAgent = vi.mocked(agentsModule.PMAgent)
 
     // Create mock repositories
     mockSchemaRepository = {
@@ -145,8 +152,24 @@ describe('Chat Workflow', () => {
       ),
     }
 
-    // Setup DatabaseSchemaBuildAgent mock
+    // Mock PM agent
+    mockPMAgent = {
+      analyzeRequirements: vi.fn().mockResolvedValue(
+        JSON.stringify({
+          businessRequirement: 'Mocked BRD',
+          functionalRequirements: {
+            'Test Category': ['Mocked functional requirement'],
+          },
+          nonFunctionalRequirements: {
+            Performance: ['Mocked non-functional requirement'],
+          },
+        }),
+      ),
+    }
+
+    // Setup agent mocks
     MockDatabaseSchemaBuildAgent.mockImplementation(() => mockAgent)
+    MockPMAgent.mockImplementation(() => mockPMAgent)
 
     // Setup createVersion mock
     vi.mocked(mockSchemaRepository.createVersion).mockResolvedValue({

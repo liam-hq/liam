@@ -84,6 +84,7 @@ export const processChatMessage = async (
     designSessionId,
     userId,
     logger,
+    retryCount: {},
   }
 
   // Execute workflow

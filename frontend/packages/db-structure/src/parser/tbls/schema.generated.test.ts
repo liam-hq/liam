@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest'
 import mysqlSchema from './input/mysql/schema.json'
 import postgresqlSchema from './input/postgresql/schema.json'
 // TODO: Check later - add import extension
-// biome-ignore lint/correctness/useImportExtensions: generated file import
 import schema from './schema.generated'
 
 describe('tbls schema validation', () => {

@@ -57,6 +57,11 @@
       "dependsOn": ["^gen"],
       "outputLogs": "errors-only"
     },
+    "@liam-hq/db-structure#gen": {
+      "dependsOn": ["^gen"],
+      "outputs": ["src/parser/tbls/schema.generated.ts"],
+      "outputLogs": "errors-only"
+    },
     "lint": {
       "dependsOn": ["gen", "^build", "^lint"],
       "outputLogs": "errors-only"

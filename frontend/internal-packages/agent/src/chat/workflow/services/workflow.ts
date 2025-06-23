@@ -18,6 +18,23 @@ import {
 import type { WorkflowState } from '../types'
 
 /**
+ * Determines if a node should retry based on error state and retry count
+ */
+const shouldRetry = (
+  state: WorkflowState,
+  nodeName: string,
+  maxRetries = 3,
+): 'retry' | 'continue' => {
+  const retryCount = state.retryCount[nodeName] ?? 0
+
+  if (state.error && retryCount < maxRetries) {
+    return 'retry'
+  }
+
+  return 'continue'
+}
+
+/**
  * Create and configure the LangGraph workflow
  */
 const createGraph = () => {
@@ -36,13 +53,17 @@ const createGraph = () => {
     .addNode('finalizeArtifacts', finalizeArtifactsNode)
 
     .addEdge(START, 'analyzeRequirements')
-    .addEdge('analyzeRequirements', 'designSchema')
     .addEdge('designSchema', 'generateDDL')
     .addEdge('generateDDL', 'executeDDL')
     .addEdge('executeDDL', 'generateUsecase')
     .addEdge('generateUsecase', 'prepareDML')
     .addEdge('prepareDML', 'validateSchema')
     .addEdge('finalizeArtifacts', END)
+
+    .addConditionalEdges('analyzeRequirements', (state) => {
+      const retryResult = shouldRetry(state, 'analyzeRequirements')
+      return retryResult === 'retry' ? 'analyzeRequirements' : 'designSchema'
+    })
 
     // Conditional edges for validation results
     .addConditionalEdges('validateSchema', (state) => {

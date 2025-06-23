@@ -1,5 +1,6 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "buildCommand": "cd ../../../ && pnpm build --filter @liam-hq/erd-sample && pnpm --filter @liam-hq/erd-sample update_dist_content",
-  "outputDirectory": "dist"
+  "outputDirectory": "dist",
+  "ignoreCommand": "if [[ \"$VERCEL_GIT_COMMIT_REF\" == gh-readonly-queue/* ]] ; then exit 0; else exit 1; fi"
 }

@@ -1,6 +1,6 @@
 import type { Operation } from 'fast-json-patch'
+import { PATH_PATTERNS } from '../../operation/constants.js'
 import type { Schema } from '../../schema/index.js'
-import { PATH_PATTERNS } from '../constants.js'
 import type { ColumnDefaultDiffItem } from '../types.js'
 import { getChangeStatus } from '../utils/getChangeStatus.js'
 

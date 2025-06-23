@@ -1,6 +1,7 @@
 import { includeIgnoreFile } from '@eslint/compat'
 import tseslint from '@typescript-eslint/eslint-plugin'
 import tsParser from '@typescript-eslint/parser'
+import { requireUseServerPlugin } from './require-use-server-plugin.js'
 import { noNonEnglishPlugin } from './no-non-english-plugin.js'
 
 /**
@@ -25,6 +26,7 @@ export function createBaseConfig(options = {}) {
       ],
       plugins: {
         '@typescript-eslint': tseslint,
+        'require-use-server': requireUseServerPlugin,
         'no-non-english': noNonEnglishPlugin,
       },
       languageOptions: {
@@ -37,6 +39,7 @@ export function createBaseConfig(options = {}) {
       },
       rules: {
         '@typescript-eslint/no-unsafe-member-access': 'error',
+        'require-use-server/require-use-server': 'error',
         'no-non-english/no-non-english-characters': 'error',
       },
     },

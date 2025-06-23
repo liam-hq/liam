@@ -1,4 +1,6 @@
 import * as v from 'valibot'
+import { columnOperations } from './column.js'
+import { tableOperations } from './table.js'
 
 const addOperationSchema = v.object({
   op: v.literal('add'),
@@ -36,6 +38,8 @@ const testOperationSchema = v.object({
 })
 
 const operationSchema = v.union([
+  ...tableOperations,
+  ...columnOperations,
   addOperationSchema,
   removeOperationSchema,
   replaceOperationSchema,
@@ -43,5 +47,6 @@ const operationSchema = v.union([
   copyOperationSchema,
   testOperationSchema,
 ])
+export type Operation = v.InferOutput<typeof operationSchema>
 
 export const operationsSchema = v.array(operationSchema)

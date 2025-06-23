@@ -4,12 +4,20 @@ import type { NodeLogger } from '../../utils/nodeLogger'
 
 export type WorkflowState = {
   userInput: string
+  analyzedRequirements?:
+    | {
+        businessRequirement: string
+        functionalRequirements: Record<string, string[]>
+        nonFunctionalRequirements: Record<string, string[]>
+      }
+    | undefined
   generatedAnswer?: string | undefined
   finalResponse?: string | undefined
   formattedHistory: string
   schemaData: Schema
   projectId?: string | undefined
   error?: string | undefined
+  retryCount: Record<string, number>
 
   ddlStatements?: string | undefined
 

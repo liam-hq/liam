@@ -1,5 +1,5 @@
 import type { Operation } from 'fast-json-patch'
-import type { PATH_PATTERNS } from '../constants.js'
+import type { PATH_PATTERNS } from '../../operation/constants.js'
 import type { ChangeStatus } from '../types.js'
 
 type PathPatternValue = (typeof PATH_PATTERNS)[keyof typeof PATH_PATTERNS]

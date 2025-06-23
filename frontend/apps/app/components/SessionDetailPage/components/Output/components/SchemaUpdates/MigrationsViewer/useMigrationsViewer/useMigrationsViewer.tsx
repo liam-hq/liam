@@ -104,7 +104,6 @@ export const useMigrationsViewer = ({
     }
   }
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: including view in the dependency array causes an infinite loop
   useEffect(() => {
     if (!container) return
 

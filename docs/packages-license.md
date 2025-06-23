@@ -2,8 +2,8 @@
 
 
 ## Summary
-* 1402 MIT
-* 139 Apache 2.0
+* 1422 MIT
+* 140 Apache 2.0
 * 84 ISC
 * 36 New BSD
 * 24 Simplified BSD
@@ -111,6 +111,17 @@
 
 <a name="@anthropic-ai/sdk"></a>
 ### @anthropic-ai/sdk v0.27.3
+#### 
+
+##### Paths
+* /home/runner/work/liam/liam
+
+<a href="http://opensource.org/licenses/mit-license">MIT</a> permitted
+
+
+
+<a name="@arr/every"></a>
+### @arr/every v1.0.1
 #### 
 
 ##### Paths
@@ -1254,7 +1265,7 @@
 
 
 <a name="@biomejs/biome"></a>
-### @biomejs/biome v1.9.4
+### @biomejs/biome v2.0.0
 #### 
 
 ##### Paths
@@ -1265,7 +1276,7 @@ MIT OR Apache-2.0 permitted
 
 
 <a name="@biomejs/cli-linux-x64"></a>
-### @biomejs/cli-linux-x64 v1.9.4
+### @biomejs/cli-linux-x64 v2.0.0
 #### 
 
 ##### Paths
@@ -1276,7 +1287,7 @@ MIT OR Apache-2.0 permitted
 
 
 <a name="@biomejs/cli-linux-x64-musl"></a>
-### @biomejs/cli-linux-x64-musl v1.9.4
+### @biomejs/cli-linux-x64-musl v2.0.0
 #### 
 
 ##### Paths
@@ -1303,6 +1314,17 @@ Unknown manually approved
 
 <a name="@browserbasehq/stagehand"></a>
 ### @browserbasehq/stagehand v1.14.0
+#### 
+
+##### Paths
+* /home/runner/work/liam/liam
+
+<a href="http://opensource.org/licenses/mit-license">MIT</a> permitted
+
+
+
+<a name="@bugsnag/cuid"></a>
+### @bugsnag/cuid v3.2.1
 #### 
 
 ##### Paths
@@ -1642,6 +1664,17 @@ Unknown manually approved
 
 
 
+<a name="@codemirror/merge"></a>
+### @codemirror/merge v6.10.2
+#### 
+
+##### Paths
+* /home/runner/work/liam/liam
+
+<a href="http://opensource.org/licenses/mit-license">MIT</a> permitted
+
+
+
 <a name="@codemirror/search"></a>
 ### @codemirror/search v6.5.11
 #### 
@@ -1812,7 +1845,7 @@ Apache-2 manually approved
 
 
 <a name="@esbuild/linux-x64"></a>
-### @esbuild/linux-x64 v0.25.4
+### @esbuild/linux-x64 v0.25.5
 #### 
 
 ##### Paths
@@ -1900,7 +1933,7 @@ Apache-2 manually approved
 
 
 <a name="@eslint/js"></a>
-### @eslint/js v9.27.0
+### @eslint/js v9.28.0
 #### 
 
 ##### Paths
@@ -2648,7 +2681,7 @@ LGPL-3.0-or-later permitted
 
 
 <a name="@next/env"></a>
-### @next/env v15.3.2
+### @next/env v15.3.3
 #### 
 
 ##### Paths
@@ -2659,7 +2692,7 @@ LGPL-3.0-or-later permitted
 
 
 <a name="@next/swc-linux-x64-gnu"></a>
-### @next/swc-linux-x64-gnu v15.3.2
+### @next/swc-linux-x64-gnu v15.3.3
 #### 
 
 ##### Paths
@@ -2670,7 +2703,7 @@ LGPL-3.0-or-later permitted
 
 
 <a name="@next/swc-linux-x64-musl"></a>
-### @next/swc-linux-x64-musl v15.3.2
+### @next/swc-linux-x64-musl v15.3.3
 #### 
 
 ##### Paths
@@ -2681,7 +2714,7 @@ LGPL-3.0-or-later permitted
 
 
 <a name="@next/third-parties"></a>
-### @next/third-parties v15.3.2
+### @next/third-parties v15.3.3
 #### 
 
 ##### Paths
@@ -3571,6 +3604,17 @@ LGPL-3.0-or-later permitted
 
 
 
+<a name="@polka/url"></a>
+### @polka/url v0.5.0
+#### 
+
+##### Paths
+* /home/runner/work/liam/liam
+
+<a href="http://opensource.org/licenses/mit-license">MIT</a> permitted
+
+
+
 <a name="@prisma/config"></a>
 ### @prisma/config v6.8.2
 #### 
@@ -3880,7 +3924,7 @@ LGPL-3.0-or-later permitted
 
 
 <a name="@radix-ui/react-arrow"></a>
-### @radix-ui/react-arrow v1.1.6
+### @radix-ui/react-arrow v1.1.7
 #### 
 
 ##### Paths
@@ -3891,7 +3935,7 @@ LGPL-3.0-or-later permitted
 
 
 <a name="@radix-ui/react-collapsible"></a>
-### @radix-ui/react-collapsible v1.1.10
+### @radix-ui/react-collapsible v1.1.11
 #### 
 
 ##### Paths
@@ -3902,7 +3946,7 @@ LGPL-3.0-or-later permitted
 
 
 <a name="@radix-ui/react-collection"></a>
-### @radix-ui/react-collection v1.1.6
+### @radix-ui/react-collection v1.1.7
 #### 
 
 ##### Paths
@@ -3935,7 +3979,7 @@ LGPL-3.0-or-later permitted
 
 
 <a name="@radix-ui/react-context-menu"></a>
-### @radix-ui/react-context-menu v2.2.14
+### @radix-ui/react-context-menu v2.2.15
 #### 
 
 ##### Paths
@@ -3946,7 +3990,7 @@ LGPL-3.0-or-later permitted
 
 
 <a name="@radix-ui/react-dialog"></a>
-### @radix-ui/react-dialog v1.1.13
+### @radix-ui/react-dialog v1.1.14
 #### 
 
 ##### Paths
@@ -3968,7 +4012,7 @@ LGPL-3.0-or-later permitted
 
 
 <a name="@radix-ui/react-dismissable-layer"></a>
-### @radix-ui/react-dismissable-layer v1.1.9
+### @radix-ui/react-dismissable-layer v1.1.10
 #### 
 
 ##### Paths
@@ -3979,7 +4023,7 @@ LGPL-3.0-or-later permitted
 
 
 <a name="@radix-ui/react-dropdown-menu"></a>
-### @radix-ui/react-dropdown-menu v2.1.14
+### @radix-ui/react-dropdown-menu v2.1.15
 #### 
 
 ##### Paths
@@ -4001,7 +4045,7 @@ LGPL-3.0-or-later permitted
 
 
 <a name="@radix-ui/react-focus-scope"></a>
-### @radix-ui/react-focus-scope v1.1.6
+### @radix-ui/react-focus-scope v1.1.7
 #### 
 
 ##### Paths
@@ -4023,7 +4067,7 @@ LGPL-3.0-or-later permitted
 
 
 <a name="@radix-ui/react-menu"></a>
-### @radix-ui/react-menu v2.1.14
+### @radix-ui/react-menu v2.1.15
 #### 
 
 ##### Paths
@@ -4045,7 +4089,7 @@ LGPL-3.0-or-later permitted
 
 
 <a name="@radix-ui/react-popover"></a>
-### @radix-ui/react-popover v1.1.13
+### @radix-ui/react-popover v1.1.14
 #### 
 
 ##### Paths
@@ -4056,7 +4100,7 @@ LGPL-3.0-or-later permitted
 
 
 <a name="@radix-ui/react-popper"></a>
-### @radix-ui/react-popper v1.2.6
+### @radix-ui/react-popper v1.2.7
 #### 
 
 ##### Paths
@@ -4067,7 +4111,7 @@ LGPL-3.0-or-later permitted
 
 
 <a name="@radix-ui/react-portal"></a>
-### @radix-ui/react-portal v1.1.8
+### @radix-ui/react-portal v1.1.9
 #### 
 
 ##### Paths
@@ -4089,7 +4133,7 @@ LGPL-3.0-or-later permitted
 
 
 <a name="@radix-ui/react-primitive"></a>
-### @radix-ui/react-primitive v2.1.2
+### @radix-ui/react-primitive v2.1.3
 #### 
 
 ##### Paths
@@ -4100,7 +4144,7 @@ LGPL-3.0-or-later permitted
 
 
 <a name="@radix-ui/react-radio-group"></a>
-### @radix-ui/react-radio-group v1.3.6
+### @radix-ui/react-radio-group v1.3.7
 #### 
 
 ##### Paths
@@ -4111,7 +4155,7 @@ LGPL-3.0-or-later permitted
 
 
 <a name="@radix-ui/react-roving-focus"></a>
-### @radix-ui/react-roving-focus v1.1.9
+### @radix-ui/react-roving-focus v1.1.10
 #### 
 
 ##### Paths
@@ -4133,7 +4177,7 @@ LGPL-3.0-or-later permitted
 
 
 <a name="@radix-ui/react-separator"></a>
-### @radix-ui/react-separator v1.1.6
+### @radix-ui/react-separator v1.1.7
 #### 
 
 ##### Paths
@@ -4144,7 +4188,7 @@ LGPL-3.0-or-later permitted
 
 
 <a name="@radix-ui/react-slot"></a>
-### @radix-ui/react-slot v1.2.2
+### @radix-ui/react-slot v1.2.3
 #### 
 
 ##### Paths
@@ -4155,7 +4199,7 @@ LGPL-3.0-or-later permitted
 
 
 <a name="@radix-ui/react-switch"></a>
-### @radix-ui/react-switch v1.2.4
+### @radix-ui/react-switch v1.2.5
 #### 
 
 ##### Paths
@@ -4166,7 +4210,7 @@ LGPL-3.0-or-later permitted
 
 
 <a name="@radix-ui/react-tabs"></a>
-### @radix-ui/react-tabs v1.1.11
+### @radix-ui/react-tabs v1.1.12
 #### 
 
 ##### Paths
@@ -4177,7 +4221,7 @@ LGPL-3.0-or-later permitted
 
 
 <a name="@radix-ui/react-toast"></a>
-### @radix-ui/react-toast v1.2.13
+### @radix-ui/react-toast v1.2.14
 #### 
 
 ##### Paths
@@ -4188,7 +4232,7 @@ LGPL-3.0-or-later permitted
 
 
 <a name="@radix-ui/react-toggle"></a>
-### @radix-ui/react-toggle v1.1.8
+### @radix-ui/react-toggle v1.1.9
 #### 
 
 ##### Paths
@@ -4199,7 +4243,7 @@ LGPL-3.0-or-later permitted
 
 
 <a name="@radix-ui/react-toggle-group"></a>
-### @radix-ui/react-toggle-group v1.1.9
+### @radix-ui/react-toggle-group v1.1.10
 #### 
 
 ##### Paths
@@ -4210,7 +4254,7 @@ LGPL-3.0-or-later permitted
 
 
 <a name="@radix-ui/react-toolbar"></a>
-### @radix-ui/react-toolbar v1.1.9
+### @radix-ui/react-toolbar v1.1.10
 #### 
 
 ##### Paths
@@ -4221,7 +4265,7 @@ LGPL-3.0-or-later permitted
 
 
 <a name="@radix-ui/react-tooltip"></a>
-### @radix-ui/react-tooltip v1.2.6
+### @radix-ui/react-tooltip v1.2.7
 #### 
 
 ##### Paths
@@ -4320,7 +4364,7 @@ LGPL-3.0-or-later permitted
 
 
 <a name="@radix-ui/react-visually-hidden"></a>
-### @radix-ui/react-visually-hidden v1.2.2
+### @radix-ui/react-visually-hidden v1.2.3
 #### 
 
 ##### Paths
@@ -4365,6 +4409,17 @@ LGPL-3.0-or-later permitted
 
 <a name="@rive-app/react-canvas"></a>
 ### @rive-app/react-canvas v4.20.1
+#### 
+
+##### Paths
+* /home/runner/work/liam/liam
+
+<a href="http://opensource.org/licenses/mit-license">MIT</a> permitted
+
+
+
+<a name="@rolldown/pluginutils"></a>
+### @rolldown/pluginutils v1.0.0-beta.9
 #### 
 
 ##### Paths
@@ -4507,7 +4562,7 @@ LGPL-3.0-or-later permitted
 
 
 <a name="@sentry/babel-plugin-component-annotate"></a>
-### @sentry/babel-plugin-component-annotate v3.4.0
+### @sentry/babel-plugin-component-annotate v3.5.0
 #### 
 
 ##### Paths
@@ -4529,7 +4584,7 @@ LGPL-3.0-or-later permitted
 
 
 <a name="@sentry/bundler-plugin-core"></a>
-### @sentry/bundler-plugin-core v3.4.0
+### @sentry/bundler-plugin-core v3.5.0
 #### 
 
 ##### Paths
@@ -4573,7 +4628,7 @@ LGPL-3.0-or-later permitted
 
 
 <a name="@sentry/esbuild-plugin"></a>
-### @sentry/esbuild-plugin v3.4.0
+### @sentry/esbuild-plugin v3.5.0
 #### 
 
 ##### Paths
@@ -5365,7 +5420,7 @@ LGPL-3.0-or-later permitted
 
 
 <a name="@trigger.dev/build"></a>
-### @trigger.dev/build v3.3.17
+### @trigger.dev/build v4.0.0-v4-beta.21
 #### 
 
 ##### Paths
@@ -5376,7 +5431,7 @@ LGPL-3.0-or-later permitted
 
 
 <a name="@trigger.dev/core"></a>
-### @trigger.dev/core v3.3.17
+### @trigger.dev/core v4.0.0-v4-beta.21
 #### 
 
 ##### Paths
@@ -5387,7 +5442,7 @@ LGPL-3.0-or-later permitted
 
 
 <a name="@trigger.dev/sdk"></a>
-### @trigger.dev/sdk v3.3.17
+### @trigger.dev/sdk v4.0.0-v4-beta.21
 #### 
 
 ##### Paths
@@ -5542,6 +5597,28 @@ LGPL-3.0-or-later permitted
 
 <a name="@types/connect"></a>
 ### @types/connect v3.4.38
+#### 
+
+##### Paths
+* /home/runner/work/liam/liam
+
+<a href="http://opensource.org/licenses/mit-license">MIT</a> permitted
+
+
+
+<a name="@types/cookie"></a>
+### @types/cookie v0.4.1
+#### 
+
+##### Paths
+* /home/runner/work/liam/liam
+
+<a href="http://opensource.org/licenses/mit-license">MIT</a> permitted
+
+
+
+<a name="@types/cors"></a>
+### @types/cors v2.8.19
 #### 
 
 ##### Paths
@@ -5870,19 +5947,8 @@ LGPL-3.0-or-later permitted
 
 
 
-<a name="@types/prop-types"></a>
-### @types/prop-types v15.7.14
-#### 
-
-##### Paths
-* /home/runner/work/liam/liam
-
-<a href="http://opensource.org/licenses/mit-license">MIT</a> permitted
-
-
-
 <a name="@types/react"></a>
-### @types/react v18.3.23
+### @types/react v19.0.0
 #### 
 
 ##### Paths
@@ -5893,7 +5959,7 @@ LGPL-3.0-or-later permitted
 
 
 <a name="@types/react-dom"></a>
-### @types/react-dom v18.3.7
+### @types/react-dom v19.0.0
 #### 
 
 ##### Paths
@@ -6326,7 +6392,7 @@ Unknown manually approved
 
 
 <a name="@vitejs/plugin-react"></a>
-### @vitejs/plugin-react v4.4.1
+### @vitejs/plugin-react v4.5.0
 #### 
 
 ##### Paths
@@ -6678,7 +6744,7 @@ Unknown manually approved
 
 
 <a name="accepts"></a>
-### accepts v2.0.0
+### accepts v1.3.8
 #### 
 
 ##### Paths
@@ -7187,6 +7253,17 @@ Python-2.0 manually approved
 
 
 
+<a name="base64id"></a>
+### base64id v2.0.0
+#### 
+
+##### Paths
+* /home/runner/work/liam/liam
+
+<a href="http://opensource.org/licenses/mit-license">MIT</a> permitted
+
+
+
 <a name="basic-ftp"></a>
 ### basic-ftp v5.0.5
 #### 
@@ -7266,6 +7343,17 @@ Python-2.0 manually approved
 
 <a name="bindings"></a>
 ### bindings v1.5.0
+#### 
+
+##### Paths
+* /home/runner/work/liam/liam
+
+<a href="http://opensource.org/licenses/mit-license">MIT</a> permitted
+
+
+
+<a name="bintrees"></a>
+### bintrees v1.0.2
 #### 
 
 ##### Paths
@@ -9354,6 +9442,17 @@ Artistic-2.0 permitted
 
 
 
+<a name="engine.io"></a>
+### engine.io v6.5.5
+#### 
+
+##### Paths
+* /home/runner/work/liam/liam
+
+<a href="http://opensource.org/licenses/mit-license">MIT</a> permitted
+
+
+
 <a name="engine.io-client"></a>
 ### engine.io-client v6.5.4
 #### 
@@ -9411,6 +9510,17 @@ Artistic-2.0 permitted
 
 <a name="env-paths"></a>
 ### env-paths v2.2.1
+#### 
+
+##### Paths
+* /home/runner/work/liam/liam
+
+<a href="http://opensource.org/licenses/mit-license">MIT</a> permitted
+
+
+
+<a name="environment"></a>
+### environment v1.1.0
 #### 
 
 ##### Paths
@@ -9520,7 +9630,7 @@ Artistic-2.0 permitted
 
 
 <a name="esbuild"></a>
-### esbuild v0.25.4
+### esbuild v0.25.5
 #### 
 
 ##### Paths
@@ -9586,7 +9696,7 @@ Artistic-2.0 permitted
 
 
 <a name="eslint"></a>
-### eslint v9.27.0
+### eslint v9.28.0
 #### 
 
 ##### Paths
@@ -10521,7 +10631,7 @@ Artistic-2.0 permitted
 
 
 <a name="fumadocs-core"></a>
-### fumadocs-core v15.4.1
+### fumadocs-core v15.5.0
 #### 
 
 ##### Paths
@@ -10554,7 +10664,7 @@ Artistic-2.0 permitted
 
 
 <a name="fumadocs-ui"></a>
-### fumadocs-ui v15.4.1
+### fumadocs-ui v15.5.0
 #### 
 
 ##### Paths
@@ -10687,6 +10797,17 @@ Artistic-2.0 permitted
 
 <a name="giget"></a>
 ### giget v1.2.5
+#### 
+
+##### Paths
+* /home/runner/work/liam/liam
+
+<a href="http://opensource.org/licenses/mit-license">MIT</a> permitted
+
+
+
+<a name="git-last-commit"></a>
+### git-last-commit v1.0.1
 #### 
 
 ##### Paths
@@ -10960,8 +11081,30 @@ Artistic-2.0 permitted
 
 
 
+<a name="hast-util-from-parse5"></a>
+### hast-util-from-parse5 v8.0.3
+#### 
+
+##### Paths
+* /home/runner/work/liam/liam
+
+<a href="http://opensource.org/licenses/mit-license">MIT</a> permitted
+
+
+
 <a name="hast-util-parse-selector"></a>
 ### hast-util-parse-selector v2.2.5
+#### 
+
+##### Paths
+* /home/runner/work/liam/liam
+
+<a href="http://opensource.org/licenses/mit-license">MIT</a> permitted
+
+
+
+<a name="hast-util-raw"></a>
+### hast-util-raw v9.1.0
 #### 
 
 ##### Paths
@@ -10995,6 +11138,17 @@ Artistic-2.0 permitted
 
 <a name="hast-util-to-jsx-runtime"></a>
 ### hast-util-to-jsx-runtime v2.3.6
+#### 
+
+##### Paths
+* /home/runner/work/liam/liam
+
+<a href="http://opensource.org/licenses/mit-license">MIT</a> permitted
+
+
+
+<a name="hast-util-to-parse5"></a>
+### hast-util-to-parse5 v8.0.0
 #### 
 
 ##### Paths
@@ -12351,7 +12505,7 @@ Public Domain manually approved
 
 
 <a name="langfuse-langchain"></a>
-### langfuse-langchain v3.37.2
+### langfuse-langchain v3.37.4
 #### 
 
 ##### Paths
@@ -12362,7 +12516,7 @@ Public Domain manually approved
 
 
 <a name="langfuse-vercel"></a>
-### langfuse-vercel v3.37.2
+### langfuse-vercel v3.37.3
 #### 
 
 ##### Paths
@@ -12658,17 +12812,6 @@ Public Domain manually approved
 
 
 
-<a name="loose-envify"></a>
-### loose-envify v1.4.0
-#### 
-
-##### Paths
-* /home/runner/work/liam/liam
-
-<a href="http://opensource.org/licenses/mit-license">MIT</a> permitted
-
-
-
 <a name="loupe"></a>
 ### loupe v3.1.3
 #### 
@@ -12814,6 +12957,17 @@ Public Domain manually approved
 
 <a name="markdown-table"></a>
 ### markdown-table v3.0.4
+#### 
+
+##### Paths
+* /home/runner/work/liam/liam
+
+<a href="http://opensource.org/licenses/mit-license">MIT</a> permitted
+
+
+
+<a name="matchit"></a>
+### matchit v1.1.0
 #### 
 
 ##### Paths
@@ -13670,6 +13824,17 @@ Public Domain manually approved
 
 
 
+<a name="mitt"></a>
+### mitt v3.0.1
+#### 
+
+##### Paths
+* /home/runner/work/liam/liam
+
+<a href="http://opensource.org/licenses/mit-license">MIT</a> permitted
+
+
+
 <a name="mkdirp"></a>
 ### mkdirp v0.5.6
 #### 
@@ -13748,7 +13913,7 @@ Public Domain manually approved
 
 
 <a name="nanoid"></a>
-### nanoid v3.3.11
+### nanoid v3.3.8
 #### 
 
 ##### Paths
@@ -13781,7 +13946,7 @@ Public Domain manually approved
 
 
 <a name="negotiator"></a>
-### negotiator v1.0.0
+### negotiator v0.6.3
 #### 
 
 ##### Paths
@@ -13825,7 +13990,7 @@ Public Domain manually approved
 
 
 <a name="next"></a>
-### next v15.3.2
+### next v15.3.3
 #### 
 
 ##### Paths
@@ -14055,8 +14220,19 @@ Public Domain manually approved
 
 
 
+<a name="nuqs"></a>
+### nuqs v2.4.3
+#### 
+
+##### Paths
+* /home/runner/work/liam/liam
+
+<a href="http://opensource.org/licenses/mit-license">MIT</a> permitted
+
+
+
 <a name="nypm"></a>
-### nypm v0.3.12
+### nypm v0.5.4
 #### 
 
 ##### Paths
@@ -15012,6 +15188,17 @@ BlueOak-1.0.0 permitted
 
 
 
+<a name="polka"></a>
+### polka v0.5.2
+#### 
+
+##### Paths
+* /home/runner/work/liam/liam
+
+<a href="http://opensource.org/licenses/mit-license">MIT</a> permitted
+
+
+
 <a name="possible-typed-array-names"></a>
 ### possible-typed-array-names v1.1.0
 #### 
@@ -15265,6 +15452,17 @@ BlueOak-1.0.0 permitted
 
 
 
+<a name="prom-client"></a>
+### prom-client v15.1.3
+#### 
+
+##### Paths
+* /home/runner/work/liam/liam
+
+<a href="http://www.apache.org/licenses/LICENSE-2.0.txt">Apache 2.0</a> permitted
+
+
+
 <a name="promisepipe"></a>
 ### promisepipe v3.0.0
 #### 
@@ -15322,17 +15520,6 @@ BlueOak-1.0.0 permitted
 
 <a name="proxy-agent"></a>
 ### proxy-agent v6.5.0
-#### 
-
-##### Paths
-* /home/runner/work/liam/liam
-
-<a href="http://opensource.org/licenses/mit-license">MIT</a> permitted
-
-
-
-<a name="proxy-compare"></a>
-### proxy-compare v3.0.1
 #### 
 
 ##### Paths
@@ -15530,7 +15717,7 @@ BlueOak-1.0.0 permitted
 
 
 <a name="react"></a>
-### react v18.3.1
+### react v19.1.0
 #### 
 
 ##### Paths
@@ -15563,7 +15750,7 @@ BlueOak-1.0.0 permitted
 
 
 <a name="react-dom"></a>
-### react-dom v18.3.1
+### react-dom v19.1.0
 #### 
 
 ##### Paths
@@ -15933,6 +16120,17 @@ BlueOak-1.0.0 permitted
 * /home/runner/work/liam/liam
 
 <a href="http://opensource.org/licenses/bsd-license">Simplified BSD</a> permitted
+
+
+
+<a name="rehype-raw"></a>
+### rehype-raw v7.0.0
+#### 
+
+##### Paths
+* /home/runner/work/liam/liam
+
+<a href="http://opensource.org/licenses/mit-license">MIT</a> permitted
 
 
 
@@ -16333,7 +16531,7 @@ BlueOak-1.0.0 permitted
 
 
 <a name="scheduler"></a>
-### scheduler v0.23.2
+### scheduler v0.26.0
 #### 
 
 ##### Paths
@@ -16708,6 +16906,28 @@ BlueOak-1.0.0 permitted
 
 <a name="snake-case"></a>
 ### snake-case v2.1.0
+#### 
+
+##### Paths
+* /home/runner/work/liam/liam
+
+<a href="http://opensource.org/licenses/mit-license">MIT</a> permitted
+
+
+
+<a name="socket.io"></a>
+### socket.io v4.7.4
+#### 
+
+##### Paths
+* /home/runner/work/liam/liam
+
+<a href="http://opensource.org/licenses/mit-license">MIT</a> permitted
+
+
+
+<a name="socket.io-adapter"></a>
+### socket.io-adapter v2.5.5
 #### 
 
 ##### Paths
@@ -17205,17 +17425,6 @@ Unknown manually approved
 
 
 
-<a name="supports-hyperlinks"></a>
-### supports-hyperlinks v2.3.0
-#### 
-
-##### Paths
-* /home/runner/work/liam/liam
-
-<a href="http://opensource.org/licenses/mit-license">MIT</a> permitted
-
-
-
 <a name="supports-preserve-symlinks-flag"></a>
 ### supports-preserve-symlinks-flag v1.0.0
 #### 
@@ -17315,8 +17524,8 @@ Unknown manually approved
 
 
 
-<a name="term-size"></a>
-### term-size v2.2.1
+<a name="tdigest"></a>
+### tdigest v0.1.2
 #### 
 
 ##### Paths
@@ -17326,8 +17535,8 @@ Unknown manually approved
 
 
 
-<a name="terminal-link"></a>
-### terminal-link v3.0.0
+<a name="term-size"></a>
+### term-size v2.2.1
 #### 
 
 ##### Paths
@@ -17646,7 +17855,7 @@ Unknown manually approved
 
 
 <a name="trigger.dev"></a>
-### trigger.dev v3.3.17
+### trigger.dev v4.0.0-v4-beta.21
 #### 
 
 ##### Paths
@@ -17669,6 +17878,17 @@ Unknown manually approved
 
 <a name="trough"></a>
 ### trough v2.2.0
+#### 
+
+##### Paths
+* /home/runner/work/liam/liam
+
+<a href="http://opensource.org/licenses/mit-license">MIT</a> permitted
+
+
+
+<a name="trouter"></a>
+### trouter v2.0.1
 #### 
 
 ##### Paths
@@ -18371,17 +18591,6 @@ Unknown manually approved
 
 
 
-<a name="valtio"></a>
-### valtio v2.1.5
-#### 
-
-##### Paths
-* /home/runner/work/liam/liam
-
-<a href="http://opensource.org/licenses/mit-license">MIT</a> permitted
-
-
-
 <a name="vary"></a>
 ### vary v1.1.2
 #### 
@@ -18417,6 +18626,17 @@ Unknown manually approved
 
 <a name="vfile"></a>
 ### vfile v6.0.3
+#### 
+
+##### Paths
+* /home/runner/work/liam/liam
+
+<a href="http://opensource.org/licenses/mit-license">MIT</a> permitted
+
+
+
+<a name="vfile-location"></a>
+### vfile-location v5.0.3
 #### 
 
 ##### Paths
@@ -18544,6 +18764,17 @@ Unknown manually approved
 * /home/runner/work/liam/liam
 
 <a href="http://opensource.org/licenses/BSD-3-Clause">New BSD</a> permitted
+
+
+
+<a name="web-namespaces"></a>
+### web-namespaces v2.0.1
+#### 
+
+##### Paths
+* /home/runner/work/liam/liam
+
+<a href="http://opensource.org/licenses/mit-license">MIT</a> permitted
 
 
 
