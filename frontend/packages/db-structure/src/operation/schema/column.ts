@@ -1,15 +1,9 @@
 import * as v from 'valibot'
 import { columnSchema } from '../../schema/index.js'
 import { PATH_PATTERNS } from '../constants.js'
-import { createPathValidator } from '../pathValidators.js'
 import type { Operation } from './index.js'
 
-const isColumnPath = createPathValidator(PATH_PATTERNS.COLUMN_BASE)
-
-const columnPathSchema = v.custom<`/tables/${string}/columns/${string}`>(
-  isColumnPath,
-  'Path must match the pattern /tables/{tableName}/columns/{columnName}',
-)
+const columnPathSchema = v.pipe(v.string(), v.regex(PATH_PATTERNS.COLUMN_BASE))
 
 // Add column operation
 const addColumnOperationSchema = v.object({

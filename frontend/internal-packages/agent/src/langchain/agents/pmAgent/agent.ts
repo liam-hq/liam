@@ -1,4 +1,5 @@
 import { ChatOpenAI } from '@langchain/openai'
+import { toJsonSchema } from '@valibot/to-json-schema'
 import * as v from 'valibot'
 import { createLangfuseHandler } from '../../utils/telemetry'
 import type { BasePromptVariables, ChatAgent } from '../../utils/types'
@@ -15,46 +16,69 @@ export const requirementsAnalysisSchema = v.object({
   nonFunctionalRequirements: v.record(v.string(), v.array(v.string())),
 })
 
-export class PMAgent implements ChatAgent {
-  private model: ChatOpenAI
+// TODO: Add review schema
+const reviewResponseSchema = v.object({
+  review: v.string(),
+})
+
+type AnalysisResponse = v.InferOutput<typeof requirementsAnalysisSchema>
+type ReviewResponse = v.InferOutput<typeof reviewResponseSchema>
+
+// Union type for all possible responses
+type PMAgentResponse = AnalysisResponse | ReviewResponse
+
+export class PMAgent implements ChatAgent<PMAgentResponse> {
+  private analysisModel: ReturnType<ChatOpenAI['withStructuredOutput']>
+  private reviewModel: ReturnType<ChatOpenAI['withStructuredOutput']>
 
   constructor() {
-    this.model = new ChatOpenAI({
+    const baseModel = new ChatOpenAI({
       model: 'o3',
       callbacks: [createLangfuseHandler()],
     })
+
+    // Convert valibot schemas to JSON Schema and bind to models
+    const analysisJsonSchema = toJsonSchema(requirementsAnalysisSchema)
+    const reviewJsonSchema = toJsonSchema(reviewResponseSchema)
+
+    this.analysisModel = baseModel.withStructuredOutput(analysisJsonSchema)
+    this.reviewModel = baseModel.withStructuredOutput(reviewJsonSchema)
   }
 
-  async generate(variables: BasePromptVariables): Promise<string> {
+  async generate(variables: BasePromptVariables): Promise<PMAgentResponse> {
     // Default to analysis mode for backward compatibility
-    return this.generateWithMode(variables, PMAgentMode.ANALYSIS)
+    const formattedPrompt = await pmAnalysisPrompt.format(variables)
+    const rawResponse = await this.analysisModel.invoke(formattedPrompt)
+    return v.parse(requirementsAnalysisSchema, rawResponse)
   }
 
   async generateWithMode(
     variables: PMAgentVariables,
     mode: PMAgentMode,
-  ): Promise<string> {
-    const prompt =
-      mode === PMAgentMode.ANALYSIS ? pmAnalysisPrompt : pmReviewPrompt
-
-    const formattedPrompt = await prompt.format(variables)
-    const response = await this.model.invoke(formattedPrompt)
-    return response.content as string
+  ): Promise<PMAgentResponse> {
+    if (mode === PMAgentMode.ANALYSIS) {
+      const formattedPrompt = await pmAnalysisPrompt.format(variables)
+      const rawResponse = await this.analysisModel.invoke(formattedPrompt)
+      return v.parse(requirementsAnalysisSchema, rawResponse)
+    }
+    const formattedPrompt = await pmReviewPrompt.format(variables)
+    const rawResponse = await this.reviewModel.invoke(formattedPrompt)
+    return v.parse(reviewResponseSchema, rawResponse)
   }
 
   // Convenience methods
   async analyzeRequirements(
     variables: BasePromptVariables,
   ): Promise<v.InferOutput<typeof requirementsAnalysisSchema>> {
-    const response = await this.generateWithMode(
-      variables,
-      PMAgentMode.ANALYSIS,
-    )
-    const parsedResponse = JSON.parse(response)
-    return v.parse(requirementsAnalysisSchema, parsedResponse)
+    const formattedPrompt = await pmAnalysisPrompt.format(variables)
+    const rawResponse = await this.analysisModel.invoke(formattedPrompt)
+    return v.parse(requirementsAnalysisSchema, rawResponse)
   }
 
   async reviewDeliverables(variables: PMAgentVariables): Promise<string> {
-    return this.generateWithMode(variables, PMAgentMode.REVIEW)
+    const formattedPrompt = await pmReviewPrompt.format(variables)
+    const rawResponse = await this.reviewModel.invoke(formattedPrompt)
+    const response = v.parse(reviewResponseSchema, rawResponse)
+    return response.review
   }
 }

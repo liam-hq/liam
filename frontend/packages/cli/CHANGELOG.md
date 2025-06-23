@@ -1,5 +1,13 @@
 # @liam-hq/cli
 
+## 0.5.8
+
+### Patch Changes
+
+- [#2064](https://github.com/liam-hq/liam/pull/2064) - Fix CLI error handling for non-existent input files / Thanks [@devin-ai-integration](https://github.com/apps/devin-ai-integration)!
+- [#1786](https://github.com/liam-hq/liam/pull/1786) - show the tooltip for truncated table name in table node / Thanks [@khiroshi-win](https://github.com/khiroshi-win)!
+- [#2052](https://github.com/liam-hq/liam/pull/2052) - 🐛 fix(TableDetail): hide `DrawerContent` component when table is not set when table is not selected / Thanks [@tnyo43](https://github.com/tnyo43)!
+
 ## 0.5.7
 
 ### Patch Changes

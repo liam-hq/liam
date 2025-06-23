@@ -5,7 +5,7 @@ import type { Column, Index, Table } from '../../schema/index.js'
  * Generate column definition as DDL string
  */
 function generateColumnDefinition(column: Column, table?: Table): string {
-  let definition = `${column.name} ${column.type}`
+  let definition = `${escapeIdentifier(column.name)} ${column.type}`
 
   // Add constraints (following PostgreSQL common order)
   if (column.primary) {
@@ -58,6 +58,15 @@ function escapeString(str: string): string {
 }
 
 /**
+ * Escape SQL identifiers (table names, column names) for PostgreSQL
+ * Wraps identifier in double quotes and escapes internal double quotes
+ */
+function escapeIdentifier(identifier: string): string {
+  // Escape double quotes by doubling them and wrap in double quotes
+  return `"${identifier.replace(/"/g, '""')}"`
+}
+
+/**
  * Generate ADD COLUMN statement for a column
  */
 export function generateAddColumnStatement(
@@ -66,11 +75,11 @@ export function generateAddColumnStatement(
   table?: Table,
 ): string {
   const columnDefinition = generateColumnDefinition(column, table)
-  let ddl = `ALTER TABLE ${tableName} ADD COLUMN ${columnDefinition};`
+  let ddl = `ALTER TABLE ${escapeIdentifier(tableName)} ADD COLUMN ${columnDefinition};`
 
   // Add column comment if exists
   if (column.comment) {
-    ddl += `\n\nCOMMENT ON COLUMN ${tableName}.${column.name} IS '${escapeString(column.comment)}';`
+    ddl += `\n\nCOMMENT ON COLUMN ${escapeIdentifier(tableName)}.${escapeIdentifier(column.name)} IS '${escapeString(column.comment)}';`
   }
 
   return ddl
@@ -88,11 +97,11 @@ export function generateCreateTableStatement(table: Table): string {
     .join(',\n  ')
 
   // Basic CREATE TABLE statement
-  let ddl = `CREATE TABLE ${tableName} (\n  ${columnDefinitions}\n);`
+  let ddl = `CREATE TABLE ${escapeIdentifier(tableName)} (\n  ${columnDefinitions}\n);`
 
   // Add table comment
   if (table.comment) {
-    ddl += `\n\nCOMMENT ON TABLE ${tableName} IS '${escapeString(table.comment)}';`
+    ddl += `\n\nCOMMENT ON TABLE ${escapeIdentifier(tableName)} IS '${escapeString(table.comment)}';`
   }
 
   // Add column comments
@@ -113,7 +122,7 @@ function generateColumnComments(tableName: string, table: Table): string {
   for (const column of Object.values(table.columns) as Column[]) {
     if (column.comment) {
       comments.push(
-        `COMMENT ON COLUMN ${tableName}.${column.name} IS '${escapeString(column.comment)}';`,
+        `COMMENT ON COLUMN ${escapeIdentifier(tableName)}.${escapeIdentifier(column.name)} IS '${escapeString(column.comment)}';`,
       )
     }
   }
@@ -128,14 +137,14 @@ export function generateRemoveColumnStatement(
   tableName: string,
   columnName: string,
 ): string {
-  return `ALTER TABLE ${tableName} DROP COLUMN ${columnName};`
+  return `ALTER TABLE ${escapeIdentifier(tableName)} DROP COLUMN ${escapeIdentifier(columnName)};`
 }
 
 /**
  * Generate DROP TABLE statement
  */
 export function generateRemoveTableStatement(tableName: string): string {
-  return `DROP TABLE ${tableName};`
+  return `DROP TABLE ${escapeIdentifier(tableName)};`
 }
 
 /**

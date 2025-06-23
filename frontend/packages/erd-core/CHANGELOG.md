@@ -1,5 +1,15 @@
 # @liam-hq/erd-core
 
+## 0.4.0
+
+### Minor Changes
+
+- [#1786](https://github.com/liam-hq/liam/pull/1786) - show the tooltip for truncated table name in table node / Thanks [@khiroshi-win](https://github.com/khiroshi-win)!
+
+### Patch Changes
+
+- [#2052](https://github.com/liam-hq/liam/pull/2052) - 🐛 fix(TableDetail): hide `DrawerContent` component when table is not set when table is not selected / Thanks [@tnyo43](https://github.com/tnyo43)!
+
 ## 0.3.0
 
 ### Minor Changes

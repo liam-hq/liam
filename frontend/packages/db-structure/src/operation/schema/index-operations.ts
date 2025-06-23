@@ -1,15 +1,9 @@
 import * as v from 'valibot'
 import { indexSchema } from '../../schema/index.js'
 import { PATH_PATTERNS } from '../constants.js'
-import { createPathValidator } from '../pathValidators.js'
 import type { Operation } from './index.js'
 
-const isIndexPath = createPathValidator(PATH_PATTERNS.INDEX_BASE)
-
-const indexPathSchema = v.custom<`/tables/${string}/indexes/${string}`>(
-  isIndexPath,
-  'Path must match the pattern /tables/{tableName}/indexes/{indexName}',
-)
+const indexPathSchema = v.pipe(v.string(), v.regex(PATH_PATTERNS.INDEX_BASE))
 
 // Add index operation
 const addIndexOperationSchema = v.object({
