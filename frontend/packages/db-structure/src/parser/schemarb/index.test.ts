@@ -26,7 +26,6 @@ describe(processor, () => {
               type: 'bigserial',
               notNull: true,
               primary: true,
-              unique: true,
             }),
             ...override?.columns,
           },
@@ -173,7 +172,6 @@ describe(processor, () => {
             type: 'bigint',
             notNull: true,
             primary: true,
-            unique: true,
           }),
         },
       })
@@ -237,7 +235,6 @@ describe(processor, () => {
                 type: 'bigserial',
                 primary: true,
                 notNull: true,
-                unique: true,
               }),
               email: aColumn({
                 name: 'email',
@@ -247,8 +244,8 @@ describe(processor, () => {
             indexes: {
               index_users_on_email: anIndex({
                 name: 'index_users_on_email',
-                columns: ['email'],
                 unique: true,
+                columns: ['email'],
               }),
             },
             constraints: {

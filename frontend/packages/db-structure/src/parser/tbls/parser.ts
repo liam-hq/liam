@@ -76,39 +76,6 @@ function normalizeConstraintName(
 }
 
 /**
- * Extract unique column names from constraints
- */
-function extractUniqueColumnNames(
-  constraints:
-    | Array<{
-        type: string
-        name: string
-        columns?: string[]
-        def: string
-        referenced_table?: string
-        referenced_columns?: string[]
-      }>
-    | undefined,
-): Set<string> {
-  const uniqueColumns: string[] = []
-
-  if (constraints) {
-    const uniqueConstraints = constraints.filter(
-      (constraint) =>
-        constraint.type === 'UNIQUE' && constraint.columns?.length === 1,
-    )
-
-    for (const constraint of uniqueConstraints) {
-      if (constraint.columns?.[0]) {
-        uniqueColumns.push(constraint.columns[0])
-      }
-    }
-  }
-
-  return new Set(uniqueColumns)
-}
-
-/**
  * Extract primary key column names from constraints
  */
 function extractPrimaryKeyColumnNames(
@@ -151,7 +118,6 @@ function processColumns(
     default?: string | null
     comment?: string | null
   }>,
-  uniqueColumnNames: Set<string>,
   primaryKeyColumnNames: Set<string>,
 ): Columns {
   const columns: Columns = {}
@@ -166,7 +132,6 @@ function processColumns(
       default: defaultValue,
       primary: primaryKeyColumnNames.has(tblsColumn.name),
       comment: tblsColumn.comment ?? null,
-      unique: uniqueColumnNames.has(tblsColumn.name),
     })
   }
 
@@ -398,17 +363,12 @@ function processTable(tblsTable: {
   comment?: string | null
 }): [string, Tables[string]] {
   // Extract column metadata
-  const uniqueColumnNames = extractUniqueColumnNames(tblsTable.constraints)
   const primaryKeyColumnNames = extractPrimaryKeyColumnNames(
     tblsTable.constraints,
   )
 
   // Process table components
-  const columns = processColumns(
-    tblsTable.columns,
-    uniqueColumnNames,
-    primaryKeyColumnNames,
-  )
+  const columns = processColumns(tblsTable.columns, primaryKeyColumnNames)
   const constraints = processConstraints(tblsTable.constraints)
   const indexes = processIndexes(tblsTable.indexes)
 

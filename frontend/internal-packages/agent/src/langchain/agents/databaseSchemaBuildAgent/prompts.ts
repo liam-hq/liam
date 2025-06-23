@@ -52,7 +52,7 @@ Schema Change Rules:
 Schema Structure Reference:
 - Tables: /tables/TABLE_NAME
 - Columns: /tables/TABLE_NAME/columns/COLUMN_NAME
-- Column properties: type, notNull, primary, unique, default, comment, check
+- Column properties: type, notNull, primary, default, comment, check
 - Table properties: name, columns, comment, indexes, constraints (ALL REQUIRED)
 - Relationships: /relationships/RELATIONSHIP_NAME (at schema root level, NOT inside tables)
 - Table Groups: /tableGroups/GROUP_NAME
@@ -66,7 +66,7 @@ IMPORTANT Table Structure Rules:
 CRITICAL Validation Rules:
 - Foreign key constraint actions MUST use these EXACT values: "CASCADE", "RESTRICT", "SET_NULL", "SET_DEFAULT", "NO_ACTION"
 - Cardinality MUST be one of: "ONE_TO_ONE", "ONE_TO_MANY"
-- Column properties MUST be: name (string), type (string), notNull (boolean), primary (boolean), unique (boolean), default (string|number|boolean|null), comment (string|null), check (string|null)
+- Column properties MUST be: name (string), type (string), notNull (boolean), primary (boolean), default (string|number|boolean|null), comment (string|null), check (string|null)
 - All boolean values must be true/false, not strings
 - Use "SET_NULL" not "SET NULL" (underscore, not space)
 - Use "NO_ACTION" not "NO ACTION" (underscore, not space)
@@ -81,9 +81,9 @@ Example Response:
       "value": {{
         "name": "users",
         "columns": {{
-          "id": {{"name": "id", "type": "uuid", "notNull": true, "primary": true, "default": "gen_random_uuid()", "comment": "Unique identifier for each user", "check": null, "unique": false}},
-          "name": {{"name": "name", "type": "text", "notNull": true, "primary": false, "default": null, "comment": "Name of the user", "check": null, "unique": false}},
-          "email": {{"name": "email", "type": "text", "notNull": true, "primary": false, "default": null, "comment": "User email required for login", "check": null, "unique": true}}
+          "id": {{"name": "id", "type": "uuid", "notNull": true, "primary": true, "default": "gen_random_uuid()", "comment": "Unique identifier for each user", "check": null}},
+          "name": {{"name": "name", "type": "text", "notNull": true, "primary": false, "default": null, "comment": "Name of the user", "check": null}},
+          "email": {{"name": "email", "type": "text", "notNull": true, "primary": false, "default": null, "comment": "User email required for login", "check": null}}
         }},
         "comment": null,
         "indexes": {{}},
@@ -103,9 +103,9 @@ Example with Relationships:
       "value": {{
         "name": "posts",
         "columns": {{
-          "id": {{"name": "id", "type": "uuid", "notNull": true, "primary": true, "default": "gen_random_uuid()", "comment": "Primary key for posts", "check": null, "unique": false}},
-          "title": {{"name": "title", "type": "text", "notNull": true, "primary": false, "default": null, "comment": "Post title", "check": null, "unique": false}},
-          "user_id": {{"name": "user_id", "type": "uuid", "notNull": true, "primary": false, "default": null, "comment": "References the user who created the post", "check": null, "unique": false}}
+          "id": {{"name": "id", "type": "uuid", "notNull": true, "primary": true, "default": "gen_random_uuid()", "comment": "Primary key for posts", "check": null}},
+          "title": {{"name": "title", "type": "text", "notNull": true, "primary": false, "default": null, "comment": "Post title", "check": null}},
+          "user_id": {{"name": "user_id", "type": "uuid", "notNull": true, "primary": false, "default": null, "comment": "References the user who created the post", "check": null}}
         }},
         "comment": null,
         "indexes": {{}},

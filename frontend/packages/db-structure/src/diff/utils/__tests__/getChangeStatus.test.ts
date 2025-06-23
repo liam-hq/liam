@@ -27,7 +27,6 @@ describe('getChangeStatus', () => {
           default: null,
           check: null,
           primary: false,
-          unique: false,
           notNull: false,
           comment: 'Project description',
         },

@@ -43,7 +43,6 @@ export {
   columnNotNullSchema,
   columnPrimarySchema,
   columnSchema,
-  columnUniqueSchema,
   commentSchema,
   constraintNameSchema,
   constraintSchema,

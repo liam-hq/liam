@@ -21,7 +21,6 @@ describe('buildColumnNameDiffItem', () => {
     primary: false,
     notNull: false,
     comment: null,
-    unique: false,
   }
 
   const createMockSchema = (

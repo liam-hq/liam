@@ -26,7 +26,6 @@ describe('buildColumnPrimaryDiffItem', () => {
             primary: false,
             notNull: false,
             comment: null,
-            unique: false,
           },
         },
         comment: null,

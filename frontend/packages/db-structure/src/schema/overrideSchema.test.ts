@@ -16,7 +16,6 @@ describe('overrideSchema', () => {
             default: null,
             check: null,
             primary: true,
-            unique: true,
             notNull: true,
             comment: 'Primary key',
           },
@@ -26,7 +25,6 @@ describe('overrideSchema', () => {
             default: null,
             check: null,
             primary: false,
-            unique: true,
             notNull: true,
             comment: 'Unique username',
           },
@@ -34,7 +32,7 @@ describe('overrideSchema', () => {
         indexes: {
           users_username_idx: {
             name: 'users_username_idx',
-            unique: true,
+            unique: false,
             columns: ['username'],
             type: '',
           },
@@ -177,7 +175,6 @@ describe('overrideSchema', () => {
                 default: null,
                 check: null,
                 primary: true,
-                unique: true,
                 notNull: true,
                 comment: 'Primary key',
               },
@@ -187,7 +184,7 @@ describe('overrideSchema', () => {
                 default: null,
                 check: null,
                 primary: false,
-                unique: false,
+
                 notNull: true,
                 comment: 'Foreign key to users',
               },
@@ -197,7 +194,7 @@ describe('overrideSchema', () => {
                 default: null,
                 check: null,
                 primary: false,
-                unique: false,
+
                 notNull: true,
                 comment: 'Post title',
               },

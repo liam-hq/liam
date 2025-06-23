@@ -23,7 +23,6 @@ describe(_processor, () => {
               default: 'autoincrement()',
               notNull: true,
               primary: true,
-              unique: true,
             }),
             ...override?.columns,
           },
@@ -203,7 +202,6 @@ describe(_processor, () => {
             name: 'mention',
             type: 'text',
             notNull: false,
-            unique: true,
           }),
         },
         indexes: {
@@ -390,7 +388,6 @@ describe(_processor, () => {
             name: 'email',
             type: 'text',
             notNull: true,
-            unique: true,
           }),
         },
         indexes: {
@@ -426,7 +423,6 @@ describe(_processor, () => {
             name: 'email',
             type: 'text',
             notNull: true,
-            unique: false,
           }),
         },
         constraints: {
@@ -468,25 +464,23 @@ describe(_processor, () => {
                 default: 'autoincrement()',
                 notNull: true,
                 primary: true,
-                unique: true,
               }),
               raw_email_address: aColumn({
                 name: 'raw_email_address',
                 type: 'text',
                 notNull: true,
-                unique: true,
               }),
             },
             indexes: {
               users_pkey: anIndex({
                 name: 'users_pkey',
-                columns: ['_id'],
                 unique: true,
+                columns: ['_id'],
               }),
               users_raw_email_address_key: {
                 name: 'users_raw_email_address_key',
-                columns: ['raw_email_address'],
                 unique: true,
+                columns: ['raw_email_address'],
                 type: '',
               },
             },
@@ -512,13 +506,11 @@ describe(_processor, () => {
                 default: 'autoincrement()',
                 notNull: true,
                 primary: true,
-                unique: true,
               }),
               raw_user_id: aColumn({
                 name: 'raw_user_id',
                 type: 'bigint',
                 notNull: true,
-                unique: false,
               }),
             },
             indexes: {
@@ -596,13 +588,11 @@ describe(_processor, () => {
                 default: 'autoincrement()',
                 notNull: true,
                 primary: true,
-                unique: true,
               }),
               raw_email_address: aColumn({
                 name: 'raw_email_address',
                 type: 'text',
                 notNull: true,
-                unique: true,
               }),
               role: aColumn({
                 name: 'role',
@@ -614,13 +604,13 @@ describe(_processor, () => {
             indexes: {
               users_pkey: anIndex({
                 name: 'users_pkey',
-                columns: ['_id'],
                 unique: true,
+                columns: ['_id'],
               }),
               users_raw_email_address_key: anIndex({
                 name: 'users_raw_email_address_key',
-                columns: ['raw_email_address'],
                 unique: true,
+                columns: ['raw_email_address'],
               }),
             },
             constraints: {
@@ -645,20 +635,18 @@ describe(_processor, () => {
                 default: 'autoincrement()',
                 notNull: true,
                 primary: true,
-                unique: true,
               }),
               raw_user_id: aColumn({
                 name: 'raw_user_id',
                 type: 'integer',
                 notNull: true,
-                unique: false,
               }),
             },
             indexes: {
               posts_pkey: anIndex({
                 name: 'posts_pkey',
-                columns: ['id'],
                 unique: true,
+                columns: ['id'],
               }),
             },
             constraints: {
@@ -722,7 +710,6 @@ describe(_processor, () => {
                 default: 'autoincrement()',
                 notNull: true,
                 primary: true,
-                unique: true,
               }),
               title: aColumn({
                 name: 'title',
@@ -733,8 +720,8 @@ describe(_processor, () => {
             indexes: {
               Post_pkey: anIndex({
                 name: 'Post_pkey',
-                columns: ['id'],
                 unique: true,
+                columns: ['id'],
               }),
             },
             constraints: {
@@ -754,7 +741,6 @@ describe(_processor, () => {
                 default: 'autoincrement()',
                 notNull: true,
                 primary: true,
-                unique: true,
               }),
               name: aColumn({
                 name: 'name',
@@ -765,8 +751,8 @@ describe(_processor, () => {
             indexes: {
               Category_pkey: anIndex({
                 name: 'Category_pkey',
-                columns: ['id'],
                 unique: true,
+                columns: ['id'],
               }),
             },
             constraints: {
@@ -794,13 +780,13 @@ describe(_processor, () => {
             indexes: {
               _CategoryToPost_AB_pkey: anIndex({
                 name: '_CategoryToPost_AB_pkey',
-                columns: ['A', 'B'],
                 unique: true,
+                columns: ['A', 'B'],
               }),
               _CategoryToPost_B_index: anIndex({
                 name: '_CategoryToPost_B_index',
-                columns: ['B'],
                 unique: false,
+                columns: ['B'],
               }),
             },
           }),

@@ -1,6 +1,7 @@
 import {
   aColumn,
   anIndex,
+  aUniqueConstraint,
   type Schema,
   type Table,
 } from '../../schema/index.js'
@@ -79,7 +80,12 @@ export const createParserTestCases = (
       mention: aColumn({
         name: 'mention',
         type: 'text',
-        unique: true,
+      }),
+    },
+    constraints: {
+      UNIQUE_mention: aUniqueConstraint({
+        name: 'UNIQUE_mention',
+        columnName: 'mention',
       }),
     },
   }),
@@ -93,8 +99,8 @@ export const createParserTestCases = (
       indexes: {
         [indexName]: anIndex({
           name: indexName,
-          type,
           unique: false,
+          type,
           columns: ['id', 'email'],
         }),
       },
@@ -109,8 +115,8 @@ export const createParserTestCases = (
       indexes: {
         index_users_on_email: anIndex({
           name: 'index_users_on_email',
-          type,
           unique: true,
+          type,
           columns: ['email'],
         }),
       },

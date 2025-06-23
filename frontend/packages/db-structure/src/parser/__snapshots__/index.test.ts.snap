@@ -26,7 +26,6 @@ exports[`parse > should parse postgresql to JSON correctly 1`] = `
           "notNull": true,
           "primary": true,
           "type": "serial",
-          "unique": true,
         },
         "user_id": {
           "check": null,
@@ -36,7 +35,6 @@ exports[`parse > should parse postgresql to JSON correctly 1`] = `
           "notNull": false,
           "primary": false,
           "type": "int4",
-          "unique": false,
         },
       },
       "comment": null,
@@ -69,7 +67,6 @@ exports[`parse > should parse postgresql to JSON correctly 1`] = `
           "notNull": false,
           "primary": false,
           "type": "timestamp",
-          "unique": false,
         },
         "email": {
           "check": null,
@@ -79,7 +76,6 @@ exports[`parse > should parse postgresql to JSON correctly 1`] = `
           "notNull": true,
           "primary": false,
           "type": "varchar",
-          "unique": true,
         },
         "id": {
           "check": null,
@@ -89,7 +85,6 @@ exports[`parse > should parse postgresql to JSON correctly 1`] = `
           "notNull": true,
           "primary": true,
           "type": "serial",
-          "unique": true,
         },
         "username": {
           "check": null,
@@ -99,7 +94,6 @@ exports[`parse > should parse postgresql to JSON correctly 1`] = `
           "notNull": true,
           "primary": false,
           "type": "varchar",
-          "unique": true,
         },
       },
       "comment": "store our users.",
@@ -181,7 +175,7 @@ exports[`parse > should parse schema.rb to JSON correctly 1`] = `
       "updateConstraint": "RESTRICT",
     },
     "fk_project_assignments_user_id": {
-      "cardinality": "ONE_TO_MANY",
+      "cardinality": "ONE_TO_ONE",
       "deleteConstraint": "CASCADE",
       "foreignColumnName": "user_id",
       "foreignTableName": "project_assignments",
@@ -251,7 +245,7 @@ exports[`parse > should parse schema.rb to JSON correctly 1`] = `
       "updateConstraint": "RESTRICT",
     },
     "fk_user_roles_user_id": {
-      "cardinality": "ONE_TO_MANY",
+      "cardinality": "ONE_TO_ONE",
       "deleteConstraint": "CASCADE",
       "foreignColumnName": "user_id",
       "foreignTableName": "user_roles",
@@ -293,7 +287,6 @@ exports[`parse > should parse schema.rb to JSON correctly 1`] = `
           "notNull": true,
           "primary": false,
           "type": "text",
-          "unique": false,
         },
         "created_at": {
           "check": null,
@@ -303,7 +296,6 @@ exports[`parse > should parse schema.rb to JSON correctly 1`] = `
           "notNull": true,
           "primary": false,
           "type": "timestamp",
-          "unique": false,
         },
         "id": {
           "check": null,
@@ -313,7 +305,6 @@ exports[`parse > should parse schema.rb to JSON correctly 1`] = `
           "notNull": true,
           "primary": true,
           "type": "uuid",
-          "unique": true,
         },
         "task_id": {
           "check": null,
@@ -323,7 +314,6 @@ exports[`parse > should parse schema.rb to JSON correctly 1`] = `
           "notNull": true,
           "primary": false,
           "type": "uuid",
-          "unique": false,
         },
         "user_id": {
           "check": null,
@@ -333,7 +323,6 @@ exports[`parse > should parse schema.rb to JSON correctly 1`] = `
           "notNull": true,
           "primary": false,
           "type": "uuid",
-          "unique": false,
         },
       },
       "comment": "Stores comments on tasks, enabling discussions or updates.",
@@ -392,7 +381,6 @@ exports[`parse > should parse schema.rb to JSON correctly 1`] = `
           "notNull": true,
           "primary": false,
           "type": "varchar",
-          "unique": false,
         },
         "id": {
           "check": null,
@@ -402,7 +390,6 @@ exports[`parse > should parse schema.rb to JSON correctly 1`] = `
           "notNull": true,
           "primary": true,
           "type": "uuid",
-          "unique": true,
         },
         "name": {
           "check": null,
@@ -412,7 +399,6 @@ exports[`parse > should parse schema.rb to JSON correctly 1`] = `
           "notNull": true,
           "primary": false,
           "type": "varchar",
-          "unique": false,
         },
       },
       "comment": "Represents organizations using the system. Each company is a top-level entity that owns departments, users, and projects.",
@@ -436,7 +422,6 @@ exports[`parse > should parse schema.rb to JSON correctly 1`] = `
           "notNull": true,
           "primary": false,
           "type": "uuid",
-          "unique": false,
         },
         "id": {
           "check": null,
@@ -446,7 +431,6 @@ exports[`parse > should parse schema.rb to JSON correctly 1`] = `
           "notNull": true,
           "primary": true,
           "type": "uuid",
-          "unique": true,
         },
         "name": {
           "check": null,
@@ -456,7 +440,6 @@ exports[`parse > should parse schema.rb to JSON correctly 1`] = `
           "notNull": true,
           "primary": false,
           "type": "varchar",
-          "unique": false,
         },
       },
       "comment": "Represents departments within a company, organizing users into functional groups.",
@@ -498,7 +481,6 @@ exports[`parse > should parse schema.rb to JSON correctly 1`] = `
           "notNull": true,
           "primary": true,
           "type": "uuid",
-          "unique": true,
         },
         "project_id": {
           "check": null,
@@ -508,7 +490,6 @@ exports[`parse > should parse schema.rb to JSON correctly 1`] = `
           "notNull": true,
           "primary": false,
           "type": "uuid",
-          "unique": false,
         },
         "user_id": {
           "check": null,
@@ -518,7 +499,6 @@ exports[`parse > should parse schema.rb to JSON correctly 1`] = `
           "notNull": true,
           "primary": false,
           "type": "uuid",
-          "unique": false,
         },
       },
       "comment": "Associates users with projects they are assigned to work on.",
@@ -575,7 +555,6 @@ exports[`parse > should parse schema.rb to JSON correctly 1`] = `
           "notNull": true,
           "primary": false,
           "type": "uuid",
-          "unique": false,
         },
         "description": {
           "check": null,
@@ -585,7 +564,6 @@ exports[`parse > should parse schema.rb to JSON correctly 1`] = `
           "notNull": false,
           "primary": false,
           "type": "text",
-          "unique": false,
         },
         "id": {
           "check": null,
@@ -595,7 +573,6 @@ exports[`parse > should parse schema.rb to JSON correctly 1`] = `
           "notNull": true,
           "primary": true,
           "type": "uuid",
-          "unique": true,
         },
         "name": {
           "check": null,
@@ -605,7 +582,6 @@ exports[`parse > should parse schema.rb to JSON correctly 1`] = `
           "notNull": true,
           "primary": false,
           "type": "varchar",
-          "unique": false,
         },
       },
       "comment": "Represents projects managed within a company. Projects are linked to tasks and users.",
@@ -647,7 +623,6 @@ exports[`parse > should parse schema.rb to JSON correctly 1`] = `
           "notNull": false,
           "primary": false,
           "type": "varchar",
-          "unique": false,
         },
         "id": {
           "check": null,
@@ -657,7 +632,6 @@ exports[`parse > should parse schema.rb to JSON correctly 1`] = `
           "notNull": true,
           "primary": true,
           "type": "uuid",
-          "unique": true,
         },
         "name": {
           "check": null,
@@ -667,7 +641,6 @@ exports[`parse > should parse schema.rb to JSON correctly 1`] = `
           "notNull": true,
           "primary": false,
           "type": "varchar",
-          "unique": false,
         },
       },
       "comment": "Defines roles that can be assigned to users, such as 'Admin' or 'Manager'.",
@@ -691,7 +664,6 @@ exports[`parse > should parse schema.rb to JSON correctly 1`] = `
           "notNull": true,
           "primary": false,
           "type": "uuid",
-          "unique": false,
         },
         "description": {
           "check": null,
@@ -701,7 +673,6 @@ exports[`parse > should parse schema.rb to JSON correctly 1`] = `
           "notNull": false,
           "primary": false,
           "type": "text",
-          "unique": false,
         },
         "due_date": {
           "check": null,
@@ -711,7 +682,6 @@ exports[`parse > should parse schema.rb to JSON correctly 1`] = `
           "notNull": false,
           "primary": false,
           "type": "timestamp",
-          "unique": false,
         },
         "id": {
           "check": null,
@@ -721,7 +691,6 @@ exports[`parse > should parse schema.rb to JSON correctly 1`] = `
           "notNull": true,
           "primary": true,
           "type": "uuid",
-          "unique": true,
         },
         "project_id": {
           "check": null,
@@ -731,7 +700,6 @@ exports[`parse > should parse schema.rb to JSON correctly 1`] = `
           "notNull": true,
           "primary": false,
           "type": "uuid",
-          "unique": false,
         },
         "status": {
           "check": null,
@@ -741,7 +709,6 @@ exports[`parse > should parse schema.rb to JSON correctly 1`] = `
           "notNull": false,
           "primary": false,
           "type": "integer",
-          "unique": false,
         },
         "title": {
           "check": null,
@@ -751,7 +718,6 @@ exports[`parse > should parse schema.rb to JSON correctly 1`] = `
           "notNull": true,
           "primary": false,
           "type": "varchar",
-          "unique": false,
         },
       },
       "comment": "Represents tasks within a project, assigned to users with deadlines and statuses.",
@@ -810,7 +776,6 @@ exports[`parse > should parse schema.rb to JSON correctly 1`] = `
           "notNull": true,
           "primary": false,
           "type": "integer",
-          "unique": false,
         },
         "end_time": {
           "check": null,
@@ -820,7 +785,6 @@ exports[`parse > should parse schema.rb to JSON correctly 1`] = `
           "notNull": false,
           "primary": false,
           "type": "timestamp",
-          "unique": false,
         },
         "id": {
           "check": null,
@@ -830,7 +794,6 @@ exports[`parse > should parse schema.rb to JSON correctly 1`] = `
           "notNull": true,
           "primary": true,
           "type": "uuid",
-          "unique": true,
         },
         "start_time": {
           "check": null,
@@ -840,7 +803,6 @@ exports[`parse > should parse schema.rb to JSON correctly 1`] = `
           "notNull": true,
           "primary": false,
           "type": "timestamp",
-          "unique": false,
         },
         "task_id": {
           "check": null,
@@ -850,7 +812,6 @@ exports[`parse > should parse schema.rb to JSON correctly 1`] = `
           "notNull": true,
           "primary": false,
           "type": "uuid",
-          "unique": false,
         },
         "user_id": {
           "check": null,
@@ -860,7 +821,6 @@ exports[`parse > should parse schema.rb to JSON correctly 1`] = `
           "notNull": true,
           "primary": false,
           "type": "uuid",
-          "unique": false,
         },
       },
       "comment": "Tracks time spent by users on tasks for reporting or billing purposes.",
@@ -919,7 +879,6 @@ exports[`parse > should parse schema.rb to JSON correctly 1`] = `
           "notNull": true,
           "primary": true,
           "type": "uuid",
-          "unique": true,
         },
         "role_id": {
           "check": null,
@@ -929,7 +888,6 @@ exports[`parse > should parse schema.rb to JSON correctly 1`] = `
           "notNull": true,
           "primary": false,
           "type": "uuid",
-          "unique": false,
         },
         "user_id": {
           "check": null,
@@ -939,7 +897,6 @@ exports[`parse > should parse schema.rb to JSON correctly 1`] = `
           "notNull": true,
           "primary": false,
           "type": "uuid",
-          "unique": false,
         },
       },
       "comment": "Associates users with roles to define their permissions within the company.",
@@ -996,7 +953,6 @@ exports[`parse > should parse schema.rb to JSON correctly 1`] = `
           "notNull": false,
           "primary": false,
           "type": "integer",
-          "unique": false,
         },
         "company_id": {
           "check": null,
@@ -1006,7 +962,6 @@ exports[`parse > should parse schema.rb to JSON correctly 1`] = `
           "notNull": true,
           "primary": false,
           "type": "uuid",
-          "unique": false,
         },
         "created_at": {
           "check": null,
@@ -1016,7 +971,6 @@ exports[`parse > should parse schema.rb to JSON correctly 1`] = `
           "notNull": true,
           "primary": false,
           "type": "timestamp",
-          "unique": false,
         },
         "department_id": {
           "check": null,
@@ -1026,7 +980,6 @@ exports[`parse > should parse schema.rb to JSON correctly 1`] = `
           "notNull": true,
           "primary": false,
           "type": "uuid",
-          "unique": false,
         },
         "id": {
           "check": null,
@@ -1036,7 +989,6 @@ exports[`parse > should parse schema.rb to JSON correctly 1`] = `
           "notNull": true,
           "primary": true,
           "type": "uuid",
-          "unique": true,
         },
         "is_deleted": {
           "check": null,
@@ -1046,7 +998,6 @@ exports[`parse > should parse schema.rb to JSON correctly 1`] = `
           "notNull": false,
           "primary": false,
           "type": "boolean",
-          "unique": false,
         },
         "name": {
           "check": null,
@@ -1056,7 +1007,6 @@ exports[`parse > should parse schema.rb to JSON correctly 1`] = `
           "notNull": false,
           "primary": false,
           "type": "varchar",
-          "unique": false,
         },
         "user_name": {
           "check": null,
@@ -1066,7 +1016,6 @@ exports[`parse > should parse schema.rb to JSON correctly 1`] = `
           "notNull": true,
           "primary": false,
           "type": "varchar",
-          "unique": false,
         },
       },
       "comment": "Represents employees or members of a company, who are assigned roles and tasks.",

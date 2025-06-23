@@ -15,7 +15,6 @@ describe(processor, () => {
               type: 'int',
               notNull: true,
               primary: false,
-              unique: false,
             }),
             ...override?.columns,
           },
@@ -114,7 +113,6 @@ describe(processor, () => {
           email: aColumn({
             name: 'email',
             type: 'text',
-            unique: false,
           }),
         },
       })
@@ -161,7 +159,6 @@ describe(processor, () => {
           email: aColumn({
             name: 'email',
             type: 'text',
-            unique: true,
           }),
         },
         constraints: {
@@ -214,7 +211,6 @@ describe(processor, () => {
           email: aColumn({
             name: 'email',
             type: 'text',
-            unique: false,
           }),
         },
         indexes: {
@@ -222,7 +218,6 @@ describe(processor, () => {
             name: 'users_email_idx',
             columns: ['email'],
             type: 'btree',
-            unique: false,
           }),
         },
       })
@@ -492,7 +487,6 @@ describe(processor, () => {
                 type: 'int',
                 notNull: true,
                 primary: false,
-                unique: false,
               }),
             },
             comment: 'store our users.',
@@ -531,7 +525,7 @@ describe(processor, () => {
             type: 'int',
             notNull: true,
             primary: false,
-            unique: false,
+
             comment: 'this is description',
           }),
         },

@@ -107,7 +107,6 @@ function extractIdColumnAndConstraint(
     type: '',
     notNull: true,
     primary: true,
-    unique: true,
   })
   const idPrimaryKeyConstraint: PrimaryKeyConstraint = {
     type: 'PRIMARY KEY',
@@ -191,7 +190,7 @@ function processCallNode(
   }
 
   // Process column nodes
-  const column = extractColumnDetails(node)
+  const column = extractColumnDetails(node, constraints)
   if (column.name) {
     columns.push(column)
   }
@@ -235,7 +234,10 @@ function extractTableDetails(
   return [columns, indexes, constraints, errors]
 }
 
-function extractColumnDetails(node: CallNode): Column {
+function extractColumnDetails(
+  node: CallNode,
+  constraints: Constraint[],
+): Column {
   const column = aColumn({
     name: '',
     type: convertColumnType(node.name),
@@ -246,7 +248,10 @@ function extractColumnDetails(node: CallNode): Column {
     if (argNode instanceof StringNode) {
       column.name = argNode.unescaped.value
     } else if (argNode instanceof KeywordHashNode) {
-      extractColumnOptions(argNode, column)
+      const uniqueConstraint = extractColumnOptions(argNode, column)
+      if (uniqueConstraint) {
+        constraints.push(uniqueConstraint)
+      }
     }
   }
 
@@ -256,7 +261,6 @@ function extractColumnDetails(node: CallNode): Column {
 function extractIndexDetails(node: CallNode): Index {
   const index = anIndex({
     name: '',
-    unique: false,
     columns: [],
     type: '',
   })
@@ -278,7 +282,12 @@ function extractIndexDetails(node: CallNode): Index {
   return index
 }
 
-function extractColumnOptions(hashNode: KeywordHashNode, column: Column): void {
+function extractColumnOptions(
+  hashNode: KeywordHashNode,
+  column: Column,
+): UniqueConstraint | null {
+  let uniqueConstraint: UniqueConstraint | null = null
+
   for (const argElement of hashNode.elements) {
     if (!(argElement instanceof AssocNode)) continue
     // @ts-expect-error: unescaped is defined as string but it is actually object
@@ -301,7 +310,13 @@ function extractColumnOptions(hashNode: KeywordHashNode, column: Column): void {
         }
         break
       case 'unique':
-        column.unique = value instanceof TrueNode
+        if (value instanceof TrueNode) {
+          uniqueConstraint = {
+            type: 'UNIQUE',
+            name: `UNIQUE_${column.name}`,
+            columnName: column.name,
+          }
+        }
         break
       case 'comment':
         // @ts-expect-error: unescaped is defined as string but it is actually object
@@ -310,6 +325,8 @@ function extractColumnOptions(hashNode: KeywordHashNode, column: Column): void {
         break
     }
   }
+
+  return uniqueConstraint
 }
 
 function extractIndexOptions(hashNode: KeywordHashNode, index: Index): void {

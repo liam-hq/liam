@@ -306,7 +306,6 @@ export const convertToSchema = (
     default: string | number | boolean | null
     check: string | null
     primary: boolean
-    unique: boolean
     notNull: boolean
     comment: string | null
   }
@@ -383,7 +382,7 @@ export const convertToSchema = (
             default: null,
             check: null,
             primary: false,
-            unique: false,
+
             notNull: false,
             comment: null,
           },
@@ -408,7 +407,6 @@ export const convertToSchema = (
       default: extractDefaultValueFromConstraints(colDef.constraints) || null,
       check: null, // TODO
       primary: isPrimaryKey(colDef.constraints),
-      unique: isUnique(colDef.constraints),
       notNull: isNotNull(colDef.constraints),
       comment: null, // TODO
     }

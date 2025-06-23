@@ -1,9 +1,10 @@
+import { hasUniqueConstraint } from '../../parser/utils/index.js'
 import type { Column, Index, Table } from '../../schema/index.js'
 
 /**
  * Generate column definition as DDL string
  */
-function generateColumnDefinition(column: Column): string {
+function generateColumnDefinition(column: Column, table?: Table): string {
   let definition = `${column.name} ${column.type}`
 
   // Add constraints (following PostgreSQL common order)
@@ -11,7 +12,11 @@ function generateColumnDefinition(column: Column): string {
     definition += ' PRIMARY KEY'
   }
 
-  if (column.unique && !column.primary) {
+  if (
+    table &&
+    hasUniqueConstraint(table.constraints, column.name) &&
+    !column.primary
+  ) {
     definition += ' UNIQUE'
   }
 
@@ -58,8 +63,9 @@ function escapeString(str: string): string {
 export function generateAddColumnStatement(
   tableName: string,
   column: Column,
+  table?: Table,
 ): string {
-  const columnDefinition = generateColumnDefinition(column)
+  const columnDefinition = generateColumnDefinition(column, table)
   let ddl = `ALTER TABLE ${tableName} ADD COLUMN ${columnDefinition};`
 
   // Add column comment if exists
@@ -78,7 +84,7 @@ export function generateCreateTableStatement(table: Table): string {
 
   // Generate column definitions
   const columnDefinitions = (Object.values(table.columns) as Column[])
-    .map((column) => generateColumnDefinition(column))
+    .map((column) => generateColumnDefinition(column, table))
     .join(',\n  ')
 
   // Basic CREATE TABLE statement

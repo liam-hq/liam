@@ -1,5 +1,6 @@
 import {
   array,
+  boolean,
   type InferOutput,
   literal,
   object,
@@ -15,7 +16,6 @@ import {
   columnNotNullSchema,
   columnPrimarySchema,
   columnSchema,
-  columnUniqueSchema,
   commentSchema,
   constraintNameSchema,
   constraintSchema,
@@ -119,10 +119,12 @@ const columnCheckDiffItemSchema = object({
 })
 export type ColumnCheckDiffItem = InferOutput<typeof columnCheckDiffItemSchema>
 
+// TODO: This schema is deprecated since column.unique field has been removed.
+// Unique constraints are now tracked through the constraints diff system.
 const columnUniqueDiffItemSchema = object({
   ...baseSchemaDiffItemSchema.entries,
   kind: literal('column-unique'),
-  data: columnUniqueSchema,
+  data: boolean(),
   columnId: string(),
 })
 export type ColumnUniqueDiffItem = InferOutput<
