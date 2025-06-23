@@ -62,7 +62,6 @@ export async function buildCurrentSchema({
     ? parsedInitialSchema.output
     : {
         tables: {},
-        relationships: {},
         tableGroups: {},
       }
 

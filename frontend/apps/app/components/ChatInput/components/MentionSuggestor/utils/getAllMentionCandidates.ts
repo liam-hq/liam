@@ -1,11 +1,11 @@
 import type {
   Column,
-  Relationships,
   Schema,
   Table,
   TableGroups,
   Tables,
 } from '@liam-hq/db-structure'
+import { constraintsToRelationships } from '@liam-hq/erd-core'
 import type { MentionItem } from '../../../types'
 
 // Function to generate table group candidates
@@ -32,29 +32,23 @@ const getTableCandidates = (tables?: Tables): MentionItem[] => {
 const getColumnProperties = (
   table: Table,
   column: Column,
-  relationships?: Relationships,
+  relationships: ReturnType<typeof constraintsToRelationships>,
 ): {
   isSource: boolean | undefined
   targetCardinality: string | undefined
   columnType: 'primary' | 'foreign' | 'notNull' | 'nullable'
 } => {
   // isSource: whether this column is the source (primary key side) of a relationship
-  const isSource =
-    relationships &&
-    Object.values(relationships).some(
-      (r) =>
-        r.primaryTableName === table.name &&
-        r.primaryColumnName === column.name,
-    )
+  const isSource = relationships.some(
+    (r) =>
+      r.primaryTableName === table.name && r.primaryColumnName === column.name,
+  )
 
   // targetCardinality: whether this column is the target (foreign key side) of a relationship
-  const targetCardinality =
-    relationships &&
-    Object.values(relationships).find(
-      (r) =>
-        r.foreignTableName === table.name &&
-        r.foreignColumnName === column.name,
-    )?.cardinality
+  const targetCardinality = relationships.find(
+    (r) =>
+      r.foreignTableName === table.name && r.foreignColumnName === column.name,
+  )?.cardinality
 
   // Explicitly set the column type
   const columnType = column.primary
@@ -70,8 +64,8 @@ const getColumnProperties = (
 
 // Function to generate column candidates
 const getColumnCandidates = (
-  tables?: Record<string, Table>,
-  relationships?: Relationships,
+  tables: Record<string, Table> | undefined,
+  relationships: ReturnType<typeof constraintsToRelationships>,
 ): MentionItem[] => {
   if (!tables) return []
 
@@ -94,10 +88,9 @@ const getColumnCandidates = (
 
 // Function to generate relationship candidates
 const getRelationshipCandidates = (
-  relationships?: Relationships,
+  relationships: ReturnType<typeof constraintsToRelationships>,
 ): MentionItem[] => {
-  if (!relationships) return []
-  return Object.values(relationships).map((r) => ({
+  return relationships.map((r) => ({
     id: `relation:${r.name}`,
     label: r.name,
     type: 'relation',
@@ -106,10 +99,11 @@ const getRelationshipCandidates = (
 
 // Function to combine all candidates
 export const getAllMentionCandidates = (schema: Schema): MentionItem[] => {
+  const relationships = constraintsToRelationships(schema.tables)
   return [
     ...getTableGroupCandidates(schema?.tableGroups),
     ...getTableCandidates(schema?.tables),
-    ...getColumnCandidates(schema?.tables, schema?.relationships),
-    ...getRelationshipCandidates(schema?.relationships),
+    ...getColumnCandidates(schema?.tables, relationships),
+    ...getRelationshipCandidates(relationships),
   ]
 }
