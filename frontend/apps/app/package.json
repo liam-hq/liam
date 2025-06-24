@@ -3,9 +3,9 @@
   "private": true,
   "version": "0.1.0",
   "dependencies": {
-    "@codemirror/commands": "6.8.1",
+
     "@codemirror/lang-sql": "6.9.0",
-    "@codemirror/lang-yaml": "6.1.2",
+
     "@codemirror/language": "6.11.1",
     "@codemirror/lint": "6.8.5",
     "@codemirror/merge": "6.10.2",
@@ -42,8 +42,7 @@
     "remark-gfm": "4.0.1",
     "resend": "4.5.2",
     "ts-pattern": "5.7.1",
-    "valibot": "1.1.0",
-    "yaml": "2.8.0"
+    "valibot": "1.1.0"
   },
   "devDependencies": {
     "@biomejs/biome": "2.0.0",
