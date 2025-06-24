@@ -1,4 +1,5 @@
 import { expect, type Page, test } from '@playwright/test'
+import { DEFAULT_TEST_URL } from '../../playwright.config'
 
 const expectUserTableColumnInAccountsTableVisibility = async (
   page: Page,
@@ -21,7 +22,7 @@ test.describe('Navigation and URL Parameters', () => {
       test.skip()
     }
 
-    await page.goto('/')
+    await page.goto(DEFAULT_TEST_URL)
   })
 
   test.describe('Browser History', () => {

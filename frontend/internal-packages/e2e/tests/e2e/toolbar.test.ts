@@ -1,7 +1,8 @@
 import { expect, test } from '@playwright/test'
+import { DEFAULT_TEST_URL } from '../../playwright.config'
 
 test.beforeEach(async ({ page, isMobile }) => {
-  await page.goto('/')
+  await page.goto(DEFAULT_TEST_URL)
   await expect(page.getByRole('status', { name: 'Loading' })).toBeHidden()
 
   if (isMobile) {

@@ -1,5 +1,6 @@
 import type { Page } from '@playwright/test'
 import { expect, test } from '@playwright/test'
+import { DEFAULT_TEST_URL } from '../../playwright.config'
 
 const waitForPageReady = async (page: Page) => {
   await page.waitForLoadState('domcontentloaded')
@@ -28,7 +29,7 @@ interface TargetPage {
 
 const targetPage: TargetPage = {
   name: 'top',
-  path: '/',
+  path: DEFAULT_TEST_URL,
 }
 
 test(targetPage.name, async ({ page }) => {

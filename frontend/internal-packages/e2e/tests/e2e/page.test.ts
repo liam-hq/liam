@@ -1,7 +1,8 @@
 import { expect, test } from '@playwright/test'
+import { DEFAULT_TEST_URL } from '../../playwright.config'
 
 test('Page has title', async ({ page }) => {
-  await page.goto('/')
+  await page.goto(DEFAULT_TEST_URL)
   await expect(page).toHaveTitle(/Liam ERD/)
 })
 
@@ -11,7 +12,7 @@ test('Copy link button copies current URL to clipboard', async ({
 }) => {
   if (isMobile) test.skip()
 
-  await page.goto('/')
+  await page.goto(DEFAULT_TEST_URL)
 
   const copyButton = page.getByTestId('copy-link')
   await copyButton.click()
@@ -23,7 +24,7 @@ test('Copy link button copies current URL to clipboard', async ({
 })
 
 test('Table node should be highlighted when clicked', async ({ page }) => {
-  await page.goto('/')
+  await page.goto(DEFAULT_TEST_URL)
 
   const tableNode = page.getByTestId('rf__node-accounts').first()
 
@@ -36,7 +37,7 @@ test('Table node should be highlighted when clicked', async ({ page }) => {
 test('Edge animation should be triggered when table node is clicked', async ({
   page,
 }) => {
-  await page.goto('/')
+  await page.goto(DEFAULT_TEST_URL)
 
   const tableNode = page.getByTestId('rf__node-account_aliases')
 
@@ -56,7 +57,7 @@ test('Edge animation should be triggered when table node is clicked', async ({
 test('Cardinality should be highlighted when table node is clicked', async ({
   page,
 }) => {
-  await page.goto('/')
+  await page.goto(DEFAULT_TEST_URL)
 
   const tableNode = page.getByTestId('rf__node-account_aliases')
 

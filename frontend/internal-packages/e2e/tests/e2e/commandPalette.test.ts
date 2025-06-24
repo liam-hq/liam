@@ -1,11 +1,12 @@
 import { expect, test } from '@playwright/test'
+import { DEFAULT_TEST_URL } from '../../playwright.config'
 
 test.beforeEach(async ({ page, isMobile }) => {
   if (isMobile) {
     test.skip()
   }
 
-  await page.goto('/')
+  await page.goto(DEFAULT_TEST_URL)
 })
 
 test('go to table in ERD by CommandPalette', async ({ page }) => {
