@@ -3,6 +3,7 @@ import { PMAnalysisAgent } from '../../../langchain/agents'
 import type { requirementsAnalysisSchema } from '../../../langchain/agents/pmAnalysisAgent/agent'
 import type { BasePromptVariables } from '../../../langchain/utils/types'
 import { convertSchemaToText } from '../../../utils/convertSchemaToText'
+import { incrementRetryCount } from '../shared/retryUtils'
 import type { WorkflowState } from '../types'
 
 const NODE_NAME = 'analyzeRequirements'
@@ -45,8 +46,6 @@ export async function analyzeRequirementsNode(
     user_message: state.userInput,
   }
 
-  const retryCount = state.retryCount[NODE_NAME] ?? 0
-
   try {
     const analysisResult =
       await pmAnalysisAgent.analyzeRequirements(promptVariables)
@@ -70,13 +69,6 @@ export async function analyzeRequirementsNode(
     state.logger.error(`[${NODE_NAME}] Failed: ${errorMessage}`)
 
     // Increment retry count and set error
-    return {
-      ...state,
-      error: errorMessage,
-      retryCount: {
-        ...state.retryCount,
-        [NODE_NAME]: retryCount + 1,
-      },
-    }
+    return incrementRetryCount(state, NODE_NAME, errorMessage)
   }
 }

@@ -1,3 +1,4 @@
+import { incrementRetryCount } from '../shared/retryUtils'
 import type { WorkflowState } from '../types'
 
 const NODE_NAME = 'prepareDML'
@@ -10,8 +11,6 @@ export async function prepareDMLNode(
   state: WorkflowState,
 ): Promise<WorkflowState> {
   state.logger.log(`[${NODE_NAME}] Started`)
-
-  const retryCount = state.retryCount[NODE_NAME] ?? 0
 
   try {
     // TODO: Implement DML preparation logic here
@@ -28,13 +27,6 @@ export async function prepareDMLNode(
     state.logger.error(`[${NODE_NAME}] Failed: ${errorMessage}`)
 
     // Increment retry count and set error
-    return {
-      ...state,
-      error: errorMessage,
-      retryCount: {
-        ...state.retryCount,
-        [NODE_NAME]: retryCount + 1,
-      },
-    }
+    return incrementRetryCount(state, NODE_NAME, errorMessage)
   }
 }

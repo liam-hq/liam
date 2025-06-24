@@ -1,3 +1,4 @@
+import { incrementRetryCount } from '../shared/retryUtils'
 import type { WorkflowState } from '../types'
 
 const NODE_NAME = 'finalizeArtifacts'
@@ -10,8 +11,6 @@ export async function finalizeArtifactsNode(
   state: WorkflowState,
 ): Promise<WorkflowState> {
   state.logger.log(`[${NODE_NAME}] Started`)
-
-  const retryCount = state.retryCount[NODE_NAME] ?? 0
 
   try {
     let finalResponse: string
@@ -79,13 +78,8 @@ export async function finalizeArtifactsNode(
 
     // For database failures, provide a fallback response and increment retry count
     return {
-      ...state,
+      ...incrementRetryCount(state, NODE_NAME, errorMessage),
       finalResponse: 'Sorry, an error occurred during processing.',
-      error: errorMessage,
-      retryCount: {
-        ...state.retryCount,
-        [NODE_NAME]: retryCount + 1,
-      },
     }
   }
 }

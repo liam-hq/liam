@@ -1,3 +1,4 @@
+import { incrementRetryCount } from '../shared/retryUtils'
 import type { WorkflowState } from '../types'
 
 const NODE_NAME = 'reviewDeliverables'
@@ -10,8 +11,6 @@ export async function reviewDeliverablesNode(
   state: WorkflowState,
 ): Promise<WorkflowState> {
   state.logger.log(`[${NODE_NAME}] Started`)
-
-  const retryCount = state.retryCount[NODE_NAME] ?? 0
 
   try {
     // TODO: Implement deliverables review logic
@@ -29,13 +28,6 @@ export async function reviewDeliverablesNode(
     state.logger.error(`[${NODE_NAME}] Failed: ${errorMessage}`)
 
     // Increment retry count and set error
-    return {
-      ...state,
-      error: errorMessage,
-      retryCount: {
-        ...state.retryCount,
-        [NODE_NAME]: retryCount + 1,
-      },
-    }
+    return incrementRetryCount(state, NODE_NAME, errorMessage)
   }
 }

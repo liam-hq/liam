@@ -2,6 +2,7 @@ import { QAGenerateUsecaseAgent } from '../../../langchain/agents'
 import type { Usecase } from '../../../langchain/agents/qaGenerateUsecaseAgent/agent'
 import type { BasePromptVariables } from '../../../langchain/utils/types'
 import { convertSchemaToText } from '../../../utils/convertSchemaToText'
+import { incrementRetryCount } from '../shared/retryUtils'
 import type { WorkflowState } from '../types'
 
 const NODE_NAME = 'generateUsecase'
@@ -88,8 +89,6 @@ export async function generateUsecaseNode(
     user_message: requirementsText,
   }
 
-  const retryCount = state.retryCount[NODE_NAME] ?? 0
-
   try {
     const result = await qaAgent.generate(promptVariables)
 
@@ -107,14 +106,7 @@ export async function generateUsecaseNode(
     const errorMessage = error instanceof Error ? error.message : String(error)
     state.logger.error(`[${NODE_NAME}] Failed: ${errorMessage}`)
 
-    // Increment retry count and set error
-    return {
-      ...state,
-      error: errorMessage,
-      retryCount: {
-        ...state.retryCount,
-        [NODE_NAME]: retryCount + 1,
-      },
-    }
+    // Increment retry count and set error using helper
+    return incrementRetryCount(state, NODE_NAME, errorMessage)
   }
 }

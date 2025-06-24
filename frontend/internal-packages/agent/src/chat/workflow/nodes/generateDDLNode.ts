@@ -1,6 +1,7 @@
 import { QADDLGenerationAgent } from '../../../langchain/agents'
 import type { BasePromptVariables } from '../../../langchain/utils/types'
 import { convertSchemaToText } from '../../../utils/convertSchemaToText'
+import { incrementRetryCount } from '../shared/retryUtils'
 import type { WorkflowState } from '../types'
 
 const NODE_NAME = 'generateDDL'
@@ -37,8 +38,6 @@ export async function generateDDLNode(
 ): Promise<WorkflowState> {
   state.logger.log(`[${NODE_NAME}] Started`)
 
-  const retryCount = state.retryCount[NODE_NAME] ?? 0
-
   try {
     const { agent, schemaText } = await prepareDDLGeneration(state)
 
@@ -63,13 +62,6 @@ export async function generateDDLNode(
     state.logger.error(`[${NODE_NAME}] Failed: ${errorMessage}`)
 
     // Increment retry count and set error
-    return {
-      ...state,
-      error: errorMessage,
-      retryCount: {
-        ...state.retryCount,
-        [NODE_NAME]: retryCount + 1,
-      },
-    }
+    return incrementRetryCount(state, NODE_NAME, errorMessage)
   }
 }
