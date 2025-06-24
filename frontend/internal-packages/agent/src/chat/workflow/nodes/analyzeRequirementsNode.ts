@@ -5,7 +5,7 @@ import type { BasePromptVariables } from '../../../langchain/utils/types'
 import { convertSchemaToText } from '../../../utils/convertSchemaToText'
 import type { WorkflowState } from '../types'
 
-const NODE_NAME = 'analyzeRequirementsNode'
+const NODE_NAME = 'analyzeRequirements'
 
 type AnalysisResult = v.InferOutput<typeof requirementsAnalysisSchema>
 

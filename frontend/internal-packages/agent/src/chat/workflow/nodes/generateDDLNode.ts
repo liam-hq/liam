@@ -3,7 +3,7 @@ import type { BasePromptVariables } from '../../../langchain/utils/types'
 import { convertSchemaToText } from '../../../utils/convertSchemaToText'
 import type { WorkflowState } from '../types'
 
-const NODE_NAME = 'generateDDLNode'
+const NODE_NAME = 'generateDDL'
 
 interface PreparedDDLGeneration {
   agent: QADDLGenerationAgent
@@ -35,9 +35,11 @@ async function prepareDDLGeneration(
 export async function generateDDLNode(
   state: WorkflowState,
 ): Promise<WorkflowState> {
-  try {
-    state.logger.log(`[${NODE_NAME}] Started`)
+  state.logger.log(`[${NODE_NAME}] Started`)
 
+  const retryCount = state.retryCount[NODE_NAME] ?? 0
+
+  try {
     const { agent, schemaText } = await prepareDDLGeneration(state)
 
     const promptVariables: BasePromptVariables = {
@@ -54,13 +56,20 @@ export async function generateDDLNode(
     return {
       ...state,
       ddlStatements,
+      error: undefined, // Clear error on success
     }
   } catch (error) {
-    state.logger.log(`[${NODE_NAME}] Failed: ${error}`)
+    const errorMessage = error instanceof Error ? error.message : String(error)
+    state.logger.error(`[${NODE_NAME}] Failed: ${errorMessage}`)
 
+    // Increment retry count and set error
     return {
       ...state,
-      ddlStatements: 'DDL generation failed due to an unexpected error.',
+      error: errorMessage,
+      retryCount: {
+        ...state.retryCount,
+        [NODE_NAME]: retryCount + 1,
+      },
     }
   }
 }

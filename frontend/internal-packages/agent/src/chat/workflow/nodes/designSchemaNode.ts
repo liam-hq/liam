@@ -4,7 +4,7 @@ import type { BasePromptVariables } from '../../../langchain/utils/types'
 import { convertSchemaToText } from '../../../utils/convertSchemaToText'
 import type { WorkflowState } from '../types'
 
-const NODE_NAME = 'designSchemaNode'
+const NODE_NAME = 'designSchema'
 
 interface PreparedSchemaDesign {
   agent: DatabaseSchemaBuildAgent
@@ -20,6 +20,7 @@ const applySchemaChanges = async (
   latestVersionNumber: number,
   message: string,
   state: WorkflowState,
+  retryCount: number,
 ): Promise<WorkflowState> => {
   const result = await state.repositories.schema.createVersion({
     buildingSchemaId,
@@ -35,6 +36,10 @@ const applySchemaChanges = async (
       ...state,
       generatedAnswer: message,
       error: result.error || 'Failed to update schema',
+      retryCount: {
+        ...state.retryCount,
+        [NODE_NAME]: retryCount + 1,
+      },
     }
   }
 
@@ -51,6 +56,7 @@ const applySchemaChanges = async (
 const handleSchemaChanges = async (
   parsedResponse: BuildAgentResponse,
   state: WorkflowState,
+  retryCount: number,
 ): Promise<WorkflowState> => {
   if (parsedResponse.schemaChanges.length === 0) {
     return {
@@ -68,6 +74,7 @@ const handleSchemaChanges = async (
     latestVersionNumber,
     parsedResponse.message,
     state,
+    retryCount,
   )
 }
 
@@ -94,19 +101,36 @@ export async function designSchemaNode(
 ): Promise<WorkflowState> {
   state.logger.log(`[${NODE_NAME}] Started`)
 
-  const { agent, schemaText } = await prepareSchemaDesign(state)
+  const retryCount = state.retryCount[NODE_NAME] ?? 0
 
-  // Create prompt variables directly
-  const promptVariables: BasePromptVariables = {
-    schema_text: schemaText,
-    chat_history: state.formattedHistory,
-    user_message: state.userInput,
+  try {
+    const { agent, schemaText } = await prepareSchemaDesign(state)
+
+    // Create prompt variables directly
+    const promptVariables: BasePromptVariables = {
+      schema_text: schemaText,
+      chat_history: state.formattedHistory,
+      user_message: state.userInput,
+    }
+
+    // Use agent's generate method with prompt variables
+    const response = await agent.generate(promptVariables)
+    const result = await handleSchemaChanges(response, state, retryCount)
+
+    state.logger.log(`[${NODE_NAME}] Completed`)
+    return result
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error)
+    state.logger.error(`[${NODE_NAME}] Failed: ${errorMessage}`)
+
+    // Increment retry count and set error
+    return {
+      ...state,
+      error: errorMessage,
+      retryCount: {
+        ...state.retryCount,
+        [NODE_NAME]: retryCount + 1,
+      },
+    }
   }
-
-  // Use agent's generate method with prompt variables
-  const response = await agent.generate(promptVariables)
-  const result = await handleSchemaChanges(response, state)
-
-  state.logger.log(`[${NODE_NAME}] Completed`)
-  return result
 }

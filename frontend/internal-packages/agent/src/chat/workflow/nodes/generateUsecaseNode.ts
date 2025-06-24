@@ -4,7 +4,7 @@ import type { BasePromptVariables } from '../../../langchain/utils/types'
 import { convertSchemaToText } from '../../../utils/convertSchemaToText'
 import type { WorkflowState } from '../types'
 
-const NODE_NAME = 'generateUsecaseNode'
+const NODE_NAME = 'generateUsecase'
 
 /**
  * Log usecase generation results for debugging/monitoring purposes

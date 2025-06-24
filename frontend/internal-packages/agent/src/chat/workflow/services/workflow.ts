@@ -18,20 +18,28 @@ import {
 import type { WorkflowState } from '../types'
 
 /**
- * Determines if a node should retry based on error state and retry count
+ * Determines the next node or END based on retry logic and error state
  */
-const shouldRetry = (
+const getNextNodeOrEnd = (
   state: WorkflowState,
   nodeName: string,
+  nextNode: string,
   maxRetries = 3,
-): 'retry' | 'continue' => {
+): string => {
   const retryCount = state.retryCount[nodeName] ?? 0
 
+  // If there's an error and retry count hasn't exceeded max, retry the same node
   if (state.error && retryCount < maxRetries) {
-    return 'retry'
+    return nodeName
   }
 
-  return 'continue'
+  // If retry is exhausted but there's still an error, go to END
+  if (state.error) {
+    return END
+  }
+
+  // Normal flow: proceed to next node
+  return nextNode
 }
 
 /**
@@ -60,23 +68,34 @@ const createGraph = () => {
     .addEdge('prepareDML', 'validateSchema')
     .addEdge('finalizeArtifacts', END)
 
+    // Conditional edges with retry logic - each node will retry up to maxRetries times on error
+    // If maxRetries is exceeded and error persists, workflow goes to END
     .addConditionalEdges('analyzeRequirements', (state) => {
-      const retryResult = shouldRetry(state, 'analyzeRequirements')
-      return retryResult === 'retry' ? 'analyzeRequirements' : 'designSchema'
+      return getNextNodeOrEnd(state, 'analyzeRequirements', 'designSchema')
     })
-
-    // Conditional edges for validation results
+    .addConditionalEdges('designSchema', (state) => {
+      return getNextNodeOrEnd(state, 'designSchema', 'generateDDL')
+    })
+    .addConditionalEdges('generateDDL', (state) => {
+      return getNextNodeOrEnd(state, 'generateDDL', 'executeDDL')
+    })
+    .addConditionalEdges('executeDDL', (state) => {
+      return getNextNodeOrEnd(state, 'executeDDL', 'generateUsecase')
+    })
+    .addConditionalEdges('generateUsecase', (state) => {
+      return getNextNodeOrEnd(state, 'generateUsecase', 'prepareDML')
+    })
+    .addConditionalEdges('prepareDML', (state) => {
+      return getNextNodeOrEnd(state, 'prepareDML', 'validateSchema')
+    })
     .addConditionalEdges('validateSchema', (state) => {
-      // success → reviewDeliverables
-      // dml error or test fail → designSchema
-      return state.error ? 'designSchema' : 'reviewDeliverables'
+      return getNextNodeOrEnd(state, 'validateSchema', 'reviewDeliverables')
     })
-
-    // Conditional edges for review results
     .addConditionalEdges('reviewDeliverables', (state) => {
-      // OK → finalizeArtifacts
-      // NG or issues found → analyzeRequirements
-      return state.error ? 'analyzeRequirements' : 'finalizeArtifacts'
+      return getNextNodeOrEnd(state, 'reviewDeliverables', 'finalizeArtifacts')
+    })
+    .addConditionalEdges('finalizeArtifacts', (state) => {
+      return getNextNodeOrEnd(state, 'finalizeArtifacts', END)
     })
 
   return graph.compile()

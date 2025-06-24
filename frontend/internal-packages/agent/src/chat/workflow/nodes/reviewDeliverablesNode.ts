@@ -1,6 +1,6 @@
 import type { WorkflowState } from '../types'
 
-const NODE_NAME = 'reviewDeliverablesNode'
+const NODE_NAME = 'reviewDeliverables'
 
 /**
  * Review Deliverables Node - Final Requirements & Deliverables Confirmation
@@ -11,14 +11,31 @@ export async function reviewDeliverablesNode(
 ): Promise<WorkflowState> {
   state.logger.log(`[${NODE_NAME}] Started`)
 
-  // TODO: Implement deliverables review logic
-  // This node should perform final confirmation of requirements and deliverables
+  const retryCount = state.retryCount[NODE_NAME] ?? 0
 
-  state.logger.log(`[${NODE_NAME}] Completed`)
+  try {
+    // TODO: Implement deliverables review logic
+    // This node should perform final confirmation of requirements and deliverables
+    // For now, this is a stub that just passes through the state
 
-  // For now, pass through the state unchanged (assuming review passes)
-  // Future implementation will review deliverables and confirm requirements
-  return {
-    ...state,
+    state.logger.log(`[${NODE_NAME}] Completed`)
+
+    return {
+      ...state,
+      error: undefined, // Clear error on success
+    }
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error)
+    state.logger.error(`[${NODE_NAME}] Failed: ${errorMessage}`)
+
+    // Increment retry count and set error
+    return {
+      ...state,
+      error: errorMessage,
+      retryCount: {
+        ...state.retryCount,
+        [NODE_NAME]: retryCount + 1,
+      },
+    }
   }
 }
