@@ -10,11 +10,6 @@ export {
   aUniqueConstraint,
 } from './factories.js'
 export { mergeSchemas } from './mergeSchema.js'
-export type { SchemaOverride } from './overrideSchema.js'
-export {
-  overrideSchema,
-  schemaOverrideSchema,
-} from './overrideSchema.js'
 export type {
   Cardinality,
   CheckConstraint,
