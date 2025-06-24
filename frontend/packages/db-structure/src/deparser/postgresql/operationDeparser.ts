@@ -9,6 +9,14 @@ import {
   isRemoveColumnOperation,
   isRenameColumnOperation,
 } from '../../operation/schema/column.js'
+import type {
+  AddConstraintOperation,
+  RemoveConstraintOperation,
+} from '../../operation/schema/constraint.js'
+import {
+  isAddConstraintOperation,
+  isRemoveConstraintOperation,
+} from '../../operation/schema/constraint.js'
 import type { Operation } from '../../operation/schema/index.js'
 import type {
   AddIndexOperation,
@@ -21,20 +29,25 @@ import {
 import type {
   AddTableOperation,
   RemoveTableOperation,
+  ReplaceTableNameOperation,
 } from '../../operation/schema/table.js'
 import {
   isAddTableOperation,
   isRemoveTableOperation,
+  isReplaceTableNameOperation,
 } from '../../operation/schema/table.js'
 import type { OperationDeparser } from '../type.js'
 import {
   generateAddColumnStatement,
+  generateAddConstraintStatement,
   generateCreateIndexStatement,
   generateCreateTableStatement,
   generateRemoveColumnStatement,
+  generateRemoveConstraintStatement,
   generateRemoveIndexStatement,
   generateRemoveTableStatement,
   generateRenameColumnStatement,
+  generateRenameTableStatement,
 } from './utils.js'
 
 /**
@@ -42,6 +55,14 @@ import {
  */
 function extractTableNameFromPath(path: string): string | null {
   const match = path.match(PATH_PATTERNS.TABLE_BASE)
+  return match?.[1] || null
+}
+
+/**
+ * Extract table name from table name operation path
+ */
+function extractTableNameFromNamePath(path: string): string | null {
+  const match = path.match(PATH_PATTERNS.TABLE_NAME)
   return match?.[1] || null
 }
 
@@ -90,6 +111,22 @@ function extractTableAndIndexNameFromPath(
   return {
     tableName: match[1],
     indexName: match[2],
+  }
+}
+
+/**
+ * Extract table name and constraint name from constraint operation path
+ */
+function extractTableAndConstraintNameFromPath(
+  path: string,
+): { tableName: string; constraintName: string } | null {
+  const match = path.match(PATH_PATTERNS.CONSTRAINT_BASE)
+  if (!match || !match[1] || !match[2]) {
+    return null
+  }
+  return {
+    tableName: match[1],
+    constraintName: match[2],
   }
 }
 
@@ -166,6 +203,20 @@ function generateRemoveTableFromOperation(
 }
 
 /**
+ * Generate RENAME TABLE DDL from table rename operation
+ */
+function generateRenameTableFromOperation(
+  operation: ReplaceTableNameOperation,
+): string {
+  const tableName = extractTableNameFromNamePath(operation.path)
+  if (!tableName) {
+    throw new Error(`Invalid table name path: ${operation.path}`)
+  }
+
+  return generateRenameTableStatement(tableName, operation.value)
+}
+
+/**
  * Generate CREATE INDEX DDL from index creation operation
  */
 function generateCreateIndexFromOperation(
@@ -193,6 +244,37 @@ function generateRemoveIndexFromOperation(
   return generateRemoveIndexStatement(pathInfo.indexName)
 }
 
+/**
+ * Generate ADD CONSTRAINT DDL from constraint creation operation
+ */
+function generateAddConstraintFromOperation(
+  operation: AddConstraintOperation,
+): string {
+  const pathInfo = extractTableAndConstraintNameFromPath(operation.path)
+  if (!pathInfo) {
+    throw new Error(`Invalid constraint path: ${operation.path}`)
+  }
+
+  return generateAddConstraintStatement(pathInfo.tableName, operation.value)
+}
+
+/**
+ * Generate DROP CONSTRAINT DDL from constraint removal operation
+ */
+function generateRemoveConstraintFromOperation(
+  operation: RemoveConstraintOperation,
+): string {
+  const pathInfo = extractTableAndConstraintNameFromPath(operation.path)
+  if (!pathInfo) {
+    throw new Error(`Invalid constraint path: ${operation.path}`)
+  }
+
+  return generateRemoveConstraintStatement(
+    pathInfo.tableName,
+    pathInfo.constraintName,
+  )
+}
+
 export const postgresqlOperationDeparser: OperationDeparser = (
   operation: Operation,
 ) => {
@@ -205,6 +287,11 @@ export const postgresqlOperationDeparser: OperationDeparser = (
 
   if (isRemoveTableOperation(operation)) {
     const value = generateRemoveTableFromOperation(operation)
+    return { value, errors }
+  }
+
+  if (isReplaceTableNameOperation(operation)) {
+    const value = generateRenameTableFromOperation(operation)
     return { value, errors }
   }
 
@@ -230,6 +317,16 @@ export const postgresqlOperationDeparser: OperationDeparser = (
 
   if (isRemoveIndexOperation(operation)) {
     const value = generateRemoveIndexFromOperation(operation)
+    return { value, errors }
+  }
+
+  if (isAddConstraintOperation(operation)) {
+    const value = generateAddConstraintFromOperation(operation)
+    return { value, errors }
+  }
+
+  if (isRemoveConstraintOperation(operation)) {
+    const value = generateRemoveConstraintFromOperation(operation)
     return { value, errors }
   }
 

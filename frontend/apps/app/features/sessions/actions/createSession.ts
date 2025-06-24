@@ -144,7 +144,7 @@ async function processSchema(
 > {
   if (!project) {
     return {
-      schema: { tables: {}, relationships: {}, tableGroups: {} },
+      schema: { tables: {}, relationships: {} },
       schemaFilePath: null,
     }
   }

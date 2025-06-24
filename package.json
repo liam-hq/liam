@@ -39,7 +39,7 @@
     "vercel:env-pull": "vercel env pull .env",
     "vercel:link": "vercel link -p liam-app -S \"liambx\" -y"
   },
-  "packageManager": "pnpm@10.11.0+sha512.6540583f41cc5f628eb3d9773ecee802f4f9ef9923cc45b69890fb47991d4b092964694ec3a4f738a420c918a333062c8b925d312f42e4f0c263eb603551f977",
+  "packageManager": "pnpm@10.12.1+sha512.f0dda8580f0ee9481c5c79a1d927b9164f2c478e90992ad268bbb2465a736984391d6333d2c327913578b2804af33474ca554ba29c04a8b13060a717675ae3ac",
   "pnpm": {
     "onlyBuiltDependencies": [
       "supabase"

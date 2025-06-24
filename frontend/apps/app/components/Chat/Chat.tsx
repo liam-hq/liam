@@ -1,6 +1,6 @@
 'use client'
 
-import type { Schema, TableGroup } from '@liam-hq/db-structure'
+import type { Schema } from '@liam-hq/db-structure'
 import { type FC, useEffect, useRef, useState, useTransition } from 'react'
 import { ChatInput } from '../ChatInput'
 import { TimelineItem } from '../TimelineItem'
@@ -24,18 +24,16 @@ type DesignSession = {
 
 interface Props {
   schemaData: Schema
-  tableGroups?: Record<string, TableGroup>
   designSession: DesignSession
 }
 
-export const Chat: FC<Props> = ({ schemaData, tableGroups, designSession }) => {
+export const Chat: FC<Props> = ({ schemaData, designSession }) => {
   const [currentUserId, setCurrentUserId] = useState<string | null>(null)
   const { timelineItems, addOrUpdateTimelineItem } = useRealtimeTimelineItems(
     designSession,
     currentUserId,
   )
   const [isLoading, startTransition] = useTransition()
-  const [progressMessages, setProgressMessages] = useState<string[]>([])
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const autoStartExecuted = useRef(false)
 
@@ -77,10 +75,8 @@ export const Chat: FC<Props> = ({ schemaData, tableGroups, designSession }) => {
     // Send chat message to API
     const result = await sendChatMessage({
       message: content,
-      tableGroups,
       timelineItems,
       designSession,
-      setProgressMessages,
       currentUserId,
     })
 
@@ -113,24 +109,9 @@ export const Chat: FC<Props> = ({ schemaData, tableGroups, designSession }) => {
     <div className={styles.wrapper}>
       <div className={styles.messagesContainer}>
         {/* Display all timeline items */}
-        {timelineItems.map((timelineItem, index) => {
-          // Check if this is the last AI timeline item and has progress messages
-          const isLastAITimelineItem =
-            timelineItem.role !== 'user' && index === timelineItems.length - 1
-          const shouldShowProgress =
-            progressMessages.length > 0 && isLastAITimelineItem
-
-          return (
-            <TimelineItem
-              key={timelineItem.id}
-              {...timelineItem}
-              progressMessages={
-                shouldShowProgress ? progressMessages : undefined
-              }
-              showProgress={shouldShowProgress}
-            />
-          )
-        })}
+        {timelineItems.map((timelineItem) => (
+          <TimelineItem key={timelineItem.id} {...timelineItem} />
+        ))}
         {isLoading && (
           <div className={styles.loadingIndicator}>
             <div className={styles.loadingDot} />

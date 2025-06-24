@@ -66,7 +66,7 @@ const handleSchemaChanges = async (
   }
 
   const buildingSchemaId = state.buildingSchemaId
-  const latestVersionNumber = state.latestVersionNumber || 0
+  const latestVersionNumber = state.latestVersionNumber
 
   return await applySchemaChanges(
     parsedResponse.schemaChanges,

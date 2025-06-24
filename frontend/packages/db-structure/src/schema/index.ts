@@ -31,8 +31,6 @@ export type {
   Relationships,
   Schema,
   Table,
-  TableGroup,
-  TableGroups,
   Tables,
   UniqueConstraint,
 } from './schema.js'
@@ -55,8 +53,6 @@ export {
   indexTypeSchema,
   indexUniqueSchema,
   schemaSchema,
-  tableGroupSchema,
-  tableGroupsSchema,
   tableNameSchema,
   tableSchema,
 } from './schema.js'

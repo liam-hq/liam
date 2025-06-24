@@ -25,7 +25,7 @@ export type WorkflowState = {
 
   // Schema update fields
   buildingSchemaId: string
-  latestVersionNumber?: number | undefined
+  latestVersionNumber: number
   organizationId?: string | undefined
   userId: string
 

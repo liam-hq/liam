@@ -42,14 +42,6 @@ type AgentMessageProps = {
    * Optional children to render below the message
    */
   children?: ReactNode
-  /**
-   * Progress messages to display above the main message
-   */
-  progressMessages?: string[]
-  /**
-   * Whether to show progress messages
-   */
-  showProgress?: boolean
 }
 
 export const AgentMessage: FC<AgentMessageProps> = ({
@@ -57,8 +49,6 @@ export const AgentMessage: FC<AgentMessageProps> = ({
   message = '',
   agentName,
   children,
-  progressMessages,
-  showProgress,
 }) => {
   const isGenerating = state === 'generating'
 
@@ -69,20 +59,6 @@ export const AgentMessage: FC<AgentMessageProps> = ({
         <span className={styles.agentName}>{agentName || 'Build Agent'}</span>
       </div>
       <div className={styles.contentContainer}>
-        {/* Show progress messages if available */}
-        {showProgress && progressMessages && progressMessages.length > 0 && (
-          <div className={styles.progressContainer}>
-            {progressMessages.map((message, index) => (
-              <div
-                key={`progress-${index}-${message.slice(0, 10)}`}
-                className={styles.progressMessage}
-              >
-                {message}
-              </div>
-            ))}
-          </div>
-        )}
-
         {isGenerating &&
         (!message || (typeof message === 'string' && message.trim() === '')) ? (
           <div

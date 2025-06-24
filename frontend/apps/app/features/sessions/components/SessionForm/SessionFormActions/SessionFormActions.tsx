@@ -32,11 +32,15 @@ export const SessionFormActions: FC<Props> = ({
       <DeepModelingToggle
         isActive={isDeepModelingActive}
         onClick={() => setIsDeepModelingActive((prev) => !prev)}
+        disabled={isPending}
       >
         Deep Modeling
       </DeepModelingToggle>
-      <MicButton onClick={onMicClick || (() => {})} />
-      <AttachButton onClick={onAttachClick || (() => {})} />
+      <MicButton onClick={onMicClick || (() => {})} disabled={isPending} />
+      <AttachButton
+        onClick={onAttachClick || (() => {})}
+        disabled={isPending}
+      />
       <ActionButton
         hasContent={hasContent}
         isPending={isPending}

@@ -28,6 +28,7 @@ export const DeepModelingToggle: FC<Props> = ({
   const [isTransitioning, setIsTransitioning] = useState(false)
 
   const handleClick = (e: MouseEvent<HTMLButtonElement>) => {
+    if (props.disabled) return
     setIsTransitioning(true)
     setTimeout(() => setIsTransitioning(false), 300)
     onClick?.(e)
@@ -41,6 +42,7 @@ export const DeepModelingToggle: FC<Props> = ({
         styles.wrapper,
         isActive ? styles.active : styles.inactive,
         isTransitioning && styles.transitioning,
+        props.disabled && styles.disabled,
         className,
       )}
       onClick={handleClick}

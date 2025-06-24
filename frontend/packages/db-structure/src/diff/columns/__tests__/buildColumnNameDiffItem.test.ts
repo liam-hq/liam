@@ -31,7 +31,6 @@ describe('buildColumnNameDiffItem', () => {
     const schema: Schema = {
       tables: {},
       relationships: {},
-      tableGroups: {},
     }
 
     schema.tables[mockTableId] = {

@@ -10,7 +10,7 @@ export interface ChatProcessorParams {
   history: [string, string][]
   organizationId?: string
   buildingSchemaId: string
-  latestVersionNumber?: number
+  latestVersionNumber: number
   repositories: Repositories
   designSessionId: string
   userId: string

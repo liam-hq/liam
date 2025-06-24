@@ -1,0 +1,73 @@
+.trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-2);
+  padding: var(--spacing-1half) var(--spacing-2);
+  min-width: fit-content;
+  height: 32px;
+  background-color: transparent;
+  color: var(--global-foreground);
+  border-radius: var(--border-radius-md);
+  font-size: var(--font-size-4);
+  font-family: inherit;
+  line-height: 1;
+  cursor: pointer;
+  transition: background-color var(--default-hover-animation-duration)
+    var(--default-timing-function);
+}
+
+.trigger:hover {
+  background-color: var(--pane-background-active);
+}
+
+.trigger:focus-visible {
+  outline: 1px solid var(--overlay-30);
+  outline-offset: 1px;
+}
+
+.trigger:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.trigger:disabled:hover {
+  background-color: var(--pane-background);
+}
+
+.iconAndName {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-1half);
+  flex-shrink: 0;
+}
+
+.branchIcon {
+  width: 1rem;
+  height: 1rem;
+  color: var(--overlay-50);
+  flex-shrink: 0;
+}
+
+.branchName {
+  color: var(--global-foreground);
+  font-family: inherit;
+  font-size: var(--font-size-4);
+  font-style: normal;
+  font-weight: 400;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.chevronIcon {
+  width: 12px;
+  height: 12px;
+  color: var(--overlay-70);
+  flex-shrink: 0;
+}
+
+.content {
+  min-width: 200px;
+  max-width: 300px;
+  border-radius: var(--border-radius-md);
+}

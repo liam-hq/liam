@@ -633,7 +633,6 @@ class SchemaFinder extends Visitor {
         },
         {} as Record<string, Relationship>,
       ),
-      tableGroups: {},
     }
     handleOneToOneRelationships(schema.tables, schema.relationships)
     return schema

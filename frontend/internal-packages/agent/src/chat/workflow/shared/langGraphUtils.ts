@@ -57,7 +57,7 @@ export const createAnnotations = () => {
       reducer: (_, newValue) => newValue,
       default: () => '',
     }),
-    latestVersionNumber: Annotation<number | undefined>({
+    latestVersionNumber: Annotation<number>({
       reducer: (_, newValue) => newValue,
     }),
     organizationId: Annotation<string | undefined>({

@@ -30,7 +30,11 @@ export const AttachButton = ({
           <button
             ref={ref}
             type="button"
-            className={clsx(styles.button, className)}
+            className={clsx(
+              styles.button,
+              props.disabled && styles.disabled,
+              className,
+            )}
             {...props}
           >
             <Paperclip className={styles.icon} />

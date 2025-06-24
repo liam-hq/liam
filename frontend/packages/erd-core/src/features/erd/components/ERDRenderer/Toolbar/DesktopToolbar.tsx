@@ -2,18 +2,11 @@ import * as ToolbarPrimitive from '@radix-ui/react-toolbar'
 import type { FC } from 'react'
 import styles from './DesktopToolbar.module.css'
 import { FitviewButton } from './FitviewButton'
-import { GroupButton } from './GroupButton'
 import { ShowModeMenu } from './ShowModeMenu'
 import { TidyUpButton } from './TidyUpButton'
 import { ZoomControls } from './ZoomControls'
 
-type DesktopToolbarProps = {
-  withGroupButton?: boolean
-}
-
-export const DesktopToolbar: FC<DesktopToolbarProps> = ({
-  withGroupButton = false,
-}) => {
+export const DesktopToolbar: FC = () => {
   return (
     <ToolbarPrimitive.Root
       className={styles.root}
@@ -25,7 +18,6 @@ export const DesktopToolbar: FC<DesktopToolbarProps> = ({
       <div className={styles.buttons}>
         <FitviewButton />
         <TidyUpButton />
-        {withGroupButton && <GroupButton />}
         {/* TODO: enable once implemented */}
         {/* <ViewControlButton /> */}
       </div>

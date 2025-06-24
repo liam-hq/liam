@@ -26,14 +26,6 @@ export type TimelineItemProps =
        * Optional children to render below the message content
        */
       children?: ReactNode
-      /**
-       * Progress messages to display above the main message
-       */
-      progressMessages?: string[]
-      /**
-       * Whether to show progress messages
-       */
-      showProgress?: boolean
     }
   | {
       id: string
@@ -64,8 +56,6 @@ export const TimelineItem: FC<TimelineItemProps> = (props) => {
     initial,
     isGenerating = false,
     children,
-    progressMessages,
-    showProgress,
   } = props
 
   // Only format and display timestamp if it exists
@@ -95,8 +85,6 @@ export const TimelineItem: FC<TimelineItemProps> = (props) => {
           state={isGenerating ? 'generating' : 'default'}
           message={markdownContent}
           time={formattedTime || ''}
-          progressMessages={progressMessages}
-          showProgress={showProgress}
         >
           {children}
         </AgentMessage>

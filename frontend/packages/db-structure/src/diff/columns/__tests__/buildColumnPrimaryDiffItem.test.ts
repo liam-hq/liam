@@ -35,7 +35,6 @@ describe('buildColumnPrimaryDiffItem', () => {
       },
     },
     relationships: {},
-    tableGroups: {},
   }
 
   const beforeSchema: Schema = structuredClone(baseSchema)

@@ -1,26 +1,12 @@
 import { Ellipsis } from '@liam-hq/ui'
 import * as ToolbarPrimitive from '@radix-ui/react-toolbar'
 import clsx from 'clsx'
-import {
-  type ComponentProps,
-  type FC,
-  useEffect,
-  useRef,
-  useState,
-} from 'react'
+import { type FC, useEffect, useRef, useState } from 'react'
 import styles from './MobileToolbar.module.css'
 import { OpenedMobileToolbar } from './OpenedMobileToolbar'
 import { ShowModeMenu } from './ShowModeMenu'
 
-type MobileToolbarProps = {
-  withGroupButton?: ComponentProps<
-    typeof OpenedMobileToolbar
-  >['withGroupButton']
-}
-
-export const MobileToolbar: FC<MobileToolbarProps> = ({
-  withGroupButton = false,
-}) => {
+export const MobileToolbar: FC = () => {
   const [isOpen, setIsOpen] = useState(false)
   const [isShowModeMenu, setIsShowModeMenu] = useState(false)
   const toolbarRef = useRef<HTMLDivElement>(null)
@@ -99,7 +85,6 @@ export const MobileToolbar: FC<MobileToolbarProps> = ({
             )}
           >
             <OpenedMobileToolbar
-              withGroupButton={withGroupButton}
               toggleOpenClose={toggleOpenClose}
               toggleShowModeMenu={toggleShowModeMenu}
             />

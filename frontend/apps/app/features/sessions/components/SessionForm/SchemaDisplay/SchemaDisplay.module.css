@@ -1,0 +1,33 @@
+.container {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-1half);
+  padding: var(--spacing-1half) var(--spacing-2);
+  min-width: 160px;
+  width: auto;
+  height: 32px;
+  background-color: transparent;
+  color: var(--global-foreground);
+  border-radius: var(--border-radius-md);
+  font-size: var(--font-size-4);
+  font-family: inherit;
+  line-height: 1;
+  cursor: default;
+}
+
+.icon {
+  width: 1rem;
+  height: 1rem;
+  color: var(--overlay-50);
+  flex-shrink: 0;
+}
+
+.schemaName {
+  color: var(--global-foreground);
+  font-family: inherit;
+  font-size: var(--font-size-4);
+  font-style: normal;
+  font-weight: 400;
+  line-height: 1.2;
+  white-space: nowrap;
+}

@@ -45,7 +45,6 @@ describe('overrideSchema', () => {
     relationships: {
       // Empty initially
     },
-    tableGroups: {},
   }
 
   describe('Overriding existing tables', () => {
@@ -60,7 +59,7 @@ describe('overrideSchema', () => {
         },
       }
 
-      const { schema } = overrideSchema(originalSchema, override)
+      const schema = overrideSchema(originalSchema, override)
 
       expect(schema.tables['users']?.comment).toBe(
         'Updated user accounts table',
@@ -106,7 +105,7 @@ describe('overrideSchema', () => {
         },
       }
 
-      const { schema } = overrideSchema(originalSchema, override)
+      const schema = overrideSchema(originalSchema, override)
 
       expect(schema.tables['users']?.columns['id']?.comment).toBe(
         'Updated primary key comment',
@@ -133,31 +132,6 @@ describe('overrideSchema', () => {
 
       expect(() => overrideSchema(originalSchema, override)).toThrowError(
         'Cannot override non-existent column nonexistent in table users',
-      )
-    })
-  })
-
-  describe('Table groups', () => {
-    it('should handle table groups', () => {
-      const override: SchemaOverride = {
-        overrides: {
-          tableGroups: {
-            auth: {
-              name: 'Authentication',
-              tables: ['users'],
-              comment: 'Tables related to authentication',
-            },
-          },
-        },
-      }
-
-      const { tableGroups } = overrideSchema(originalSchema, override)
-
-      expect(tableGroups['auth']).toBeDefined()
-      expect(tableGroups['auth']?.name).toBe('Authentication')
-      expect(tableGroups['auth']?.tables).toContain('users')
-      expect(tableGroups['auth']?.comment).toBe(
-        'Tables related to authentication',
       )
     })
   })
@@ -207,7 +181,6 @@ describe('overrideSchema', () => {
           },
         },
         relationships: {},
-        tableGroups: {},
       }
 
       const override: SchemaOverride = {
@@ -230,25 +203,10 @@ describe('overrideSchema', () => {
               },
             },
           },
-          tableGroups: {
-            content: {
-              name: 'Content',
-              tables: ['posts'],
-              comment: 'Content-related tables',
-            },
-            users: {
-              name: 'Users',
-              tables: ['users'],
-              comment: 'User-related tables',
-            },
-          },
         },
       }
 
-      const { schema, tableGroups } = overrideSchema(
-        schemaWithPostsForTest,
-        override,
-      )
+      const schema = overrideSchema(schemaWithPostsForTest, override)
 
       expect(schema.tables['users']?.comment).toBe(
         'User accounts with enhanced permissions',
@@ -261,11 +219,6 @@ describe('overrideSchema', () => {
       expect(schema.tables['posts']?.columns['title']?.comment).toBe(
         'Post headline',
       )
-
-      expect(tableGroups['content']).toBeDefined()
-      expect(tableGroups['users']).toBeDefined()
-      expect(tableGroups['content']?.tables).toContain('posts')
-      expect(tableGroups['users']?.tables).toContain('users')
     })
   })
 })

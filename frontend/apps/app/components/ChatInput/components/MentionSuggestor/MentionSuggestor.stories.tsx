@@ -89,13 +89,6 @@ const schema = {
       deleteConstraint: 'NO_ACTION' as const,
     },
   },
-  tableGroups: {
-    group1: {
-      name: 'group1',
-      tables: ['users', 'posts'],
-      comment: null,
-    },
-  },
 }
 
 /**

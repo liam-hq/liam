@@ -1,18 +1,16 @@
 'use client'
 
-import type { Schema, TableGroup } from '@liam-hq/db-structure'
+import type { Schema } from '@liam-hq/db-structure'
 import { type ComponentProps, type FC, useCallback, useState } from 'react'
 import { parse } from 'valibot'
 import { Button } from '@/components'
 import { ERDRenderer } from '@/features'
-import { useTableGroups } from '@/hooks'
 import { VersionProvider } from '@/providers'
 import { versionSchema } from '@/schemas'
 import styles from './ERDEditor.module.css'
 
 type Props = {
   schema: Schema
-  tableGroups?: Record<string, TableGroup>
   errorObjects: ComponentProps<typeof ERDRenderer>['errorObjects']
   defaultSidebarOpen: boolean
   defaultPanelSizes?: number[]
@@ -22,14 +20,12 @@ type Props = {
 
 export const ERDEditor: FC<Props> = ({
   schema,
-  tableGroups: initialTableGroups = {},
   errorObjects,
   defaultSidebarOpen,
   defaultPanelSizes = [20, 80],
   projectId,
   branchOrCommit,
 }) => {
-  const { tableGroups, addTableGroup } = useTableGroups(initialTableGroups)
   const [isUpdating, setIsUpdating] = useState(false)
   const [updateMessage, setUpdateMessage] = useState('')
 
@@ -49,7 +45,6 @@ export const ERDEditor: FC<Props> = ({
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          tableGroups,
           projectId,
           branchOrCommit,
         }),
@@ -67,7 +62,7 @@ export const ERDEditor: FC<Props> = ({
     } finally {
       setIsUpdating(false)
     }
-  }, [projectId, branchOrCommit, tableGroups])
+  }, [projectId, branchOrCommit])
 
   const versionData = {
     version: '0.1.0', // NOTE: no maintained version for ERD Web
@@ -88,8 +83,6 @@ export const ERDEditor: FC<Props> = ({
           defaultSidebarOpen={defaultSidebarOpen}
           defaultPanelSizes={defaultPanelSizes}
           errorObjects={errorObjects}
-          tableGroups={tableGroups}
-          onAddTableGroup={addTableGroup}
         />
         {canUpdateFile && (
           <div

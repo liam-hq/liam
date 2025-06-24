@@ -88,6 +88,5 @@ export function mergeSchemas(before: Schema, after: Schema): Schema {
       before.relationships,
       after.relationships,
     ),
-    tableGroups: after.tableGroups,
   }
 }

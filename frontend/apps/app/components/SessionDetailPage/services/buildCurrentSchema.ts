@@ -62,7 +62,6 @@ export async function buildCurrentSchema({
     : {
         tables: {},
         relationships: {},
-        tableGroups: {},
       }
 
   const currentSchema: Schema = structuredClone(baseSchema)

@@ -1,4 +1,4 @@
-import type { Column, Index, Table } from '../../schema/index.js'
+import type { Column, Constraint, Index, Table } from '../../schema/index.js'
 
 /**
  * Generate column definition as DDL string
@@ -153,6 +153,16 @@ export function generateRemoveTableStatement(tableName: string): string {
 }
 
 /**
+ * Generate RENAME TABLE statement
+ */
+export function generateRenameTableStatement(
+  oldTableName: string,
+  newTableName: string,
+): string {
+  return `ALTER TABLE ${escapeIdentifier(oldTableName)} RENAME TO ${escapeIdentifier(newTableName)};`
+}
+
+/**
  * Generate CREATE INDEX statement for an index
  */
 export function generateCreateIndexStatement(
@@ -173,4 +183,42 @@ export function generateCreateIndexStatement(
  */
 export function generateRemoveIndexStatement(indexName: string): string {
   return `DROP INDEX ${escapeIdentifier(indexName)};`
+}
+
+/**
+ * Generate ADD CONSTRAINT statement for a constraint
+ */
+export function generateAddConstraintStatement(
+  tableName: string,
+  constraint: Constraint,
+): string {
+  const constraintName = escapeIdentifier(constraint.name)
+  const tableNameEscaped = escapeIdentifier(tableName)
+
+  switch (constraint.type) {
+    case 'PRIMARY KEY':
+      return `ALTER TABLE ${tableNameEscaped} ADD CONSTRAINT ${constraintName} PRIMARY KEY (${escapeIdentifier(constraint.columnName)});`
+
+    case 'FOREIGN KEY':
+      return `ALTER TABLE ${tableNameEscaped} ADD CONSTRAINT ${constraintName} FOREIGN KEY (${escapeIdentifier(constraint.columnName)}) REFERENCES ${escapeIdentifier(constraint.targetTableName)} (${escapeIdentifier(constraint.targetColumnName)}) ON UPDATE ${constraint.updateConstraint} ON DELETE ${constraint.deleteConstraint};`
+
+    case 'UNIQUE':
+      return `ALTER TABLE ${tableNameEscaped} ADD CONSTRAINT ${constraintName} UNIQUE (${escapeIdentifier(constraint.columnName)});`
+
+    case 'CHECK':
+      return `ALTER TABLE ${tableNameEscaped} ADD CONSTRAINT ${constraintName} CHECK (${constraint.detail});`
+
+    default:
+      return constraint satisfies never
+  }
+}
+
+/**
+ * Generate DROP CONSTRAINT statement
+ */
+export function generateRemoveConstraintStatement(
+  tableName: string,
+  constraintName: string,
+): string {
+  return `ALTER TABLE ${escapeIdentifier(tableName)} DROP CONSTRAINT ${escapeIdentifier(constraintName)};`
 }

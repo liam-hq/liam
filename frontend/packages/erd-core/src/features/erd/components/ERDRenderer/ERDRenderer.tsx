@@ -1,6 +1,5 @@
 import { NuqsAdapter } from 'nuqs/adapters/react'
 import '@xyflow/react/dist/style.css'
-import type { TableGroup } from '@liam-hq/db-structure'
 import {
   type ImperativePanelHandle,
   ResizableHandle,
@@ -47,8 +46,6 @@ type InnerProps = {
   errorObjects?: ComponentProps<typeof ErrorDisplay>['errors']
   defaultPanelSizes?: number[]
   withAppBar?: boolean
-  tableGroups?: Record<string, TableGroup>
-  onAddTableGroup?: ((params: TableGroup) => void) | undefined
 }
 
 type Props = InnerProps & {
@@ -77,8 +74,6 @@ const ERDRendererInner: FC<InnerProps> = ({
   errorObjects = [],
   defaultPanelSizes = [20, 80],
   withAppBar = false,
-  tableGroups = {},
-  onAddTableGroup,
 }) => {
   const [open, setOpen] = useState(defaultSidebarOpen)
   const [isResizing, setIsResizing] = useState(false)
@@ -98,7 +93,6 @@ const ERDRendererInner: FC<InnerProps> = ({
   const { nodes, edges } = convertSchemaToNodes({
     schema,
     showMode,
-    tableGroups,
   })
 
   const leftPanelRef = createRef<ImperativePanelHandle>()
@@ -189,7 +183,6 @@ const ERDRendererInner: FC<InnerProps> = ({
                         nodes={nodes}
                         edges={edges}
                         displayArea="main"
-                        onAddTableGroup={onAddTableGroup}
                       />
                       <TableDetailDrawer />
                     </>
@@ -197,7 +190,7 @@ const ERDRendererInner: FC<InnerProps> = ({
                 </TableDetailDrawerRoot>
                 {errorObjects.length === 0 && (
                   <div className={styles.toolbarWrapper}>
-                    <Toolbar withGroupButton={!!onAddTableGroup} />
+                    <Toolbar />
                   </div>
                 )}
               </main>

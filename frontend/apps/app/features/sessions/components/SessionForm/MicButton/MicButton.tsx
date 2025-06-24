@@ -19,6 +19,7 @@ type MicButtonProps = {
   className?: string
   'aria-label'?: string
   ref?: Ref<HTMLButtonElement>
+  disabled?: boolean
 }
 
 export const MicButton: FC<MicButtonProps> = ({
@@ -27,6 +28,7 @@ export const MicButton: FC<MicButtonProps> = ({
   className,
   'aria-label': ariaLabel = 'Voice Input',
   ref,
+  disabled = false,
 }) => {
   const [isActive, setIsActive] = useState(false)
   const [isHovering, setIsHovering] = useState(false)
@@ -43,15 +45,18 @@ export const MicButton: FC<MicButtonProps> = ({
         : 'default')
 
   const handleClick: MouseEventHandler<HTMLButtonElement> = (e) => {
+    if (disabled) return
     setIsActive(!isActive)
     onClick?.(e)
   }
 
   const handleMouseEnter = () => {
+    if (disabled) return
     setIsHovering(true)
   }
 
   const handleMouseLeave = () => {
+    if (disabled) return
     setIsHovering(false)
   }
 
@@ -66,10 +71,15 @@ export const MicButton: FC<MicButtonProps> = ({
           >
             <button
               ref={ref}
-              className={clsx(styles.button, styles[`state-${state}`])}
+              className={clsx(
+                styles.button,
+                styles[`state-${state}`],
+                disabled && styles.disabled,
+              )}
               onClick={handleClick}
               aria-label={ariaLabel}
               type="button"
+              disabled={disabled}
             >
               <div className={styles.iconWrapper}>
                 <Mic className={styles.icon} size={16} />

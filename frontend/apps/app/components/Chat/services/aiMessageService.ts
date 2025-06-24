@@ -1,6 +1,5 @@
 'use client'
 
-import type { TableGroup } from '@liam-hq/db-structure'
 import { boolean, object, optional, parse, string } from 'valibot'
 import { ERROR_MESSAGES } from '../constants/chatConstants'
 import type { TimelineItemEntry } from '../types/chatTypes'
@@ -15,10 +14,8 @@ type DesignSession = {
 
 interface SendChatMessageParams {
   message: string
-  tableGroups?: Record<string, TableGroup>
   timelineItems: TimelineItemEntry[]
   designSession: DesignSession
-  setProgressMessages: (updater: (prev: string[]) => string[]) => void
   currentUserId: string
 }
 
@@ -41,7 +38,6 @@ const ChatAPIResponseSchema = object({
  */
 const callChatAPI = async (
   message: string,
-  tableGroups: Record<string, TableGroup> | undefined,
   history: [string, string][],
   designSession: DesignSession,
   currentUserId: string,
@@ -53,7 +49,6 @@ const callChatAPI = async (
     },
     body: JSON.stringify({
       message,
-      tableGroups,
       history,
       organizationId: designSession.organizationId,
       buildingSchemaId: designSession.buildingSchemaId,
@@ -71,16 +66,10 @@ const callChatAPI = async (
 }
 
 /**
- * Handles errors by clearing progress messages
+ * Handles errors
  */
-const handleChatError = (
-  error: unknown,
-  setProgressMessages: (updater: (prev: string[]) => string[]) => void,
-): SendChatMessageResult => {
+const handleChatError = (error: unknown): SendChatMessageResult => {
   console.error('Error in sendChatMessage:', error)
-
-  // Clear progress messages on error
-  setProgressMessages(() => [])
 
   return {
     success: false,
@@ -94,10 +83,8 @@ const handleChatError = (
  */
 export const sendChatMessage = async ({
   message,
-  tableGroups,
   timelineItems,
   designSession,
-  setProgressMessages,
   currentUserId,
 }: SendChatMessageParams): Promise<SendChatMessageResult> => {
   try {
@@ -107,7 +94,6 @@ export const sendChatMessage = async ({
     // Call API
     const response = await callChatAPI(
       message,
-      tableGroups,
       history,
       designSession,
       currentUserId,
@@ -121,11 +107,8 @@ export const sendChatMessage = async ({
       throw new Error(data.error || ERROR_MESSAGES.GENERAL)
     }
 
-    // Clear progress messages on success
-    setProgressMessages(() => [])
-
     return { success: true }
   } catch (error) {
-    return handleChatError(error, setProgressMessages)
+    return handleChatError(error)
   }
 }

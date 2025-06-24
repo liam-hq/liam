@@ -12,7 +12,7 @@ import { clickLogEvent, openRelatedTablesLogEvent } from '@/features/gtm/utils'
 import { useCustomReactflow } from '@/features/reactflow/hooks'
 import { useVersion } from '@/providers'
 import { useSchema, useUserEditing } from '@/stores'
-import { hasNonRelatedChildNodes, updateNodesHiddenState } from '../../../utils'
+import { updateNodesHiddenState } from '../../../utils'
 import { Columns } from './Columns'
 import { Comment } from './Comment'
 import { Constraints } from './Constraints'
@@ -57,7 +57,7 @@ export const TableDetail: FC<Props> = ({ table }) => {
     const updatedNodes = updateNodesHiddenState({
       nodes: mainPaneNodes,
       hiddenNodeIds,
-      shouldHideGroupNodeId: !hasNonRelatedChildNodes(nodes),
+      shouldHideGroupNodeId: true,
     })
 
     setHiddenNodeIds(hiddenNodeIds)

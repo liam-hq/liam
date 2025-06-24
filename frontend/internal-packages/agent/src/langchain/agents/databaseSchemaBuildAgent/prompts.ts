@@ -55,7 +55,6 @@ Schema Structure Reference:
 - Column properties: type, notNull, primary, unique, default, comment, check
 - Table properties: name, columns, comment, indexes, constraints (ALL REQUIRED)
 - Relationships: /relationships/RELATIONSHIP_NAME (at schema root level, NOT inside tables)
-- Table Groups: /tableGroups/GROUP_NAME
 
 IMPORTANT Table Structure Rules:
 - Every table MUST include: name, columns, comment, indexes, constraints

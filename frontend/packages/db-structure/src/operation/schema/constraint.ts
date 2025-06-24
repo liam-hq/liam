@@ -1,0 +1,45 @@
+import * as v from 'valibot'
+import { constraintSchema } from '../../schema/index.js'
+import { PATH_PATTERNS } from '../constants.js'
+import type { Operation } from './index.js'
+
+const constraintPathSchema = v.pipe(
+  v.string(),
+  v.regex(PATH_PATTERNS.CONSTRAINT_BASE),
+)
+
+const addConstraintOperationSchema = v.object({
+  op: v.literal('add'),
+  path: constraintPathSchema,
+  value: constraintSchema,
+})
+
+export type AddConstraintOperation = v.InferOutput<
+  typeof addConstraintOperationSchema
+>
+
+export const isAddConstraintOperation = (
+  operation: Operation,
+): operation is AddConstraintOperation => {
+  return v.safeParse(addConstraintOperationSchema, operation).success
+}
+
+const removeConstraintOperationSchema = v.object({
+  op: v.literal('remove'),
+  path: constraintPathSchema,
+})
+
+export type RemoveConstraintOperation = v.InferOutput<
+  typeof removeConstraintOperationSchema
+>
+
+export const isRemoveConstraintOperation = (
+  operation: Operation,
+): operation is RemoveConstraintOperation => {
+  return v.safeParse(removeConstraintOperationSchema, operation).success
+}
+
+export const constraintOperations = [
+  addConstraintOperationSchema,
+  removeConstraintOperationSchema,
+]

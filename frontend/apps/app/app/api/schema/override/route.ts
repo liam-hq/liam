@@ -1,4 +1,4 @@
-import { schemaOverrideSchema, tableGroupsSchema } from '@liam-hq/db-structure'
+import { schemaOverrideSchema } from '@liam-hq/db-structure'
 import { createOrUpdateFileContent, getFileContent } from '@liam-hq/github'
 import { type NextRequest, NextResponse } from 'next/server'
 import * as v from 'valibot'
@@ -7,7 +7,6 @@ import { SCHEMA_OVERRIDE_FILE_PATH } from '@/features/schemas/constants'
 import { createClient } from '@/libs/db/server'
 
 const requestParamsSchema = v.object({
-  tableGroups: tableGroupsSchema,
   projectId: v.string(),
   branchOrCommit: v.string(),
 })
@@ -24,8 +23,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const { tableGroups, projectId, branchOrCommit } =
-      parsedRequestParams.output
+    const { projectId, branchOrCommit } = parsedRequestParams.output
 
     const supabase = await createClient()
     const { data: project } = await supabase
@@ -63,9 +61,7 @@ export async function POST(request: NextRequest) {
       Number(repository.github_installation_identifier),
     )
 
-    const rawSchemaOverride = content
-      ? parseYaml(content)
-      : { overrides: { tableGroups: {} } }
+    const rawSchemaOverride = content ? parseYaml(content) : { overrides: {} }
 
     const validationResult = v.safeParse(
       schemaOverrideSchema,
@@ -80,7 +76,6 @@ export async function POST(request: NextRequest) {
     }
 
     const schemaOverride = validationResult.output
-    schemaOverride.overrides.tableGroups = tableGroups
 
     const { success } = await createOrUpdateFileContent(
       repositoryFullName,

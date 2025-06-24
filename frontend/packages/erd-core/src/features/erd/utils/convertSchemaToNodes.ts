@@ -1,4 +1,4 @@
-import type { Cardinality, Schema, TableGroup } from '@liam-hq/db-structure'
+import type { Cardinality, Schema } from '@liam-hq/db-structure'
 import type { Edge, Node } from '@xyflow/react'
 import {
   NON_RELATED_TABLE_GROUP_NODE_ID,
@@ -10,13 +10,11 @@ import type { ShowMode } from '@/schemas/showMode'
 type Params = {
   schema: Schema
   showMode: ShowMode
-  tableGroups?: Record<string, TableGroup>
 }
 
 export const convertSchemaToNodes = ({
   schema,
   showMode,
-  tableGroups = {},
 }: Params): {
   nodes: Node[]
   edges: Edge[]
@@ -43,31 +41,10 @@ export const convertSchemaToNodes = ({
     })
   }
 
-  // Create table group nodes
-  const groupNodes: Node[] = Object.values(tableGroups).map((group) => ({
-    id: `group-${group.name}`,
-    type: 'tableGroup',
-    data: {
-      name: group.name,
-      comment: group.comment,
-    },
-    position: { x: 0, y: 0 },
-  }))
-
-  // Create mapping of tables to their groups
-  const tableToGroupMap = new Map<string, string>()
-  for (const group of Object.values(tableGroups)) {
-    for (const tableName of group.tables) {
-      tableToGroupMap.set(tableName, `group-${group.name}`)
-    }
-  }
-
   // Create table nodes and check if any need NON_RELATED_TABLE_GROUP_NODE_ID as parent
   let hasNonRelatedTables = false
   const tableNodes = tables.map((table) => {
-    const groupId = tableToGroupMap.get(table.name)
-    const isNonRelatedTable =
-      !tablesWithRelationships.has(table.name) && !groupId
+    const isNonRelatedTable = !tablesWithRelationships.has(table.name)
 
     if (isNonRelatedTable) {
       hasNonRelatedTables = true
@@ -86,9 +63,7 @@ export const convertSchemaToNodes = ({
       zIndex: zIndex.nodeDefault,
       ...(isNonRelatedTable
         ? { parentId: NON_RELATED_TABLE_GROUP_NODE_ID }
-        : groupId
-          ? { parentId: groupId }
-          : {}),
+        : {}),
     }
   })
 
@@ -104,7 +79,6 @@ export const convertSchemaToNodes = ({
           },
         ]
       : []),
-    ...groupNodes,
     ...tableNodes,
   ]
 
