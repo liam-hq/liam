@@ -4,6 +4,10 @@ import { PATH_PATTERNS } from '../constants.js'
 import type { Operation } from './index.js'
 
 const tablePathSchema = v.pipe(v.string(), v.regex(PATH_PATTERNS.TABLE_BASE))
+const tableNamePathSchema = v.pipe(
+  v.string(),
+  v.regex(PATH_PATTERNS.TABLE_NAME),
+)
 
 const addTableOperationSchema = v.object({
   op: v.literal('add'),
@@ -16,9 +20,18 @@ const removeTableOperationSchema = v.object({
   path: tablePathSchema,
 })
 
+const replaceTableNameOperationSchema = v.object({
+  op: v.literal('replace'),
+  path: tableNamePathSchema,
+  value: v.string(),
+})
+
 export type AddTableOperation = v.InferOutput<typeof addTableOperationSchema>
 export type RemoveTableOperation = v.InferOutput<
   typeof removeTableOperationSchema
+>
+export type ReplaceTableNameOperation = v.InferOutput<
+  typeof replaceTableNameOperationSchema
 >
 
 export const isAddTableOperation = (
@@ -33,7 +46,14 @@ export const isRemoveTableOperation = (
   return v.safeParse(removeTableOperationSchema, operation).success
 }
 
+export const isReplaceTableNameOperation = (
+  operation: Operation,
+): operation is ReplaceTableNameOperation => {
+  return v.safeParse(replaceTableNameOperationSchema, operation).success
+}
+
 export const tableOperations = [
   addTableOperationSchema,
   removeTableOperationSchema,
+  replaceTableNameOperationSchema,
 ]

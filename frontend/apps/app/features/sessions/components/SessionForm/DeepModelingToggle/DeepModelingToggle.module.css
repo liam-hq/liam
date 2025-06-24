@@ -19,12 +19,12 @@
 }
 
 .active {
-  background-color: var(--color-green-alpha-20);
-  color: var(--color-green-400);
+  background-color: var(--primary-overlay-20);
+  color: var(--primary-color);
 }
 
 .active:hover {
-  background-color: var(--color-green-alpha-40);
+  background-color: var(--primary-overlay-40);
 }
 
 .inactive {
@@ -57,7 +57,7 @@
 
 .thumbActive {
   left: var(--spacing-1half);
-  background-color: var(--color-green-400);
+  background-color: var(--primary-color);
 }
 
 .thumbInactive {
@@ -124,4 +124,19 @@
     transform: rotate(360deg) scale(1);
     opacity: 1;
   }
+}
+
+.disabled {
+  opacity: var(--opacity-disabled);
+  cursor: not-allowed;
+}
+
+.disabled:hover {
+  background-color: var(--color-white-alpha-5);
+  color: var(--color-white-alpha-50);
+}
+
+.disabled.active:hover {
+  background-color: var(--primary-overlay-20);
+  color: var(--primary-color);
 }

@@ -2,14 +2,12 @@ import { ArrowTooltipProvider } from '@liam-hq/ui'
 import type { ChangeEvent, FC } from 'react'
 import { useEffect, useRef, useState } from 'react'
 import type { Projects } from '@/components/CommonLayout/AppBar/ProjectsDropdownMenu/services/getProjects'
+import type { Branch } from '../BranchesDropdown'
+import { BranchesDropdown } from '../BranchesDropdown'
+import { ProjectsDropdown } from '../ProjectsDropdown'
+import { SchemaDisplay } from '../SchemaDisplay'
 import { SessionFormActions } from '../SessionFormActions'
 import styles from './GitHubSessionFormPresenter.module.css'
-
-type Branch = {
-  name: string
-  sha: string
-  protected: boolean
-}
 
 type Props = {
   projects: Projects
@@ -36,6 +34,10 @@ export const GitHubSessionFormPresenter: FC<Props> = ({
 }) => {
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const [hasContent, setHasContent] = useState(false)
+  const [selectedProjectId, setSelectedProjectId] = useState(
+    defaultProjectId || '',
+  )
+  const [selectedBranchSha, setSelectedBranchSha] = useState('')
 
   const handleTextareaChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
     const textarea = e.target
@@ -52,64 +54,23 @@ export const GitHubSessionFormPresenter: FC<Props> = ({
     }
   }, [])
 
+  // Reset hasContent when form submission completes
+  useEffect(() => {
+    if (!isPending && textareaRef.current) {
+      setHasContent(textareaRef.current.value.trim().length > 0)
+    }
+  }, [isPending])
+
+  const hasError = !!formError || !!branchesError
+
   return (
     <ArrowTooltipProvider>
-      <div className={styles.container}>
+      <div
+        className={`${styles.container} ${isPending ? styles.pending : ''} ${hasError ? styles.error : ''}`}
+      >
         <form action={formAction}>
           <div className={styles.formContent}>
             <div className={styles.formGroup}>
-              <label htmlFor="project" className={styles.label}>
-                Project (Optional)
-              </label>
-              <select
-                id="project"
-                name="projectId"
-                defaultValue={defaultProjectId || ''}
-                onChange={(e) => onProjectChange(e.target.value)}
-                disabled={isPending}
-                className={styles.select}
-              >
-                <option value="">Select a project...</option>
-                {projects.map((project) => (
-                  <option key={project.id} value={project.id}>
-                    {project.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {branches.length > 0 && (
-              <div className={styles.formGroup}>
-                <label htmlFor="branch" className={styles.label}>
-                  Branch
-                </label>
-                <select
-                  id="branch"
-                  name="gitSha"
-                  disabled={isPending || isBranchesLoading}
-                  className={styles.select}
-                >
-                  <option value="">Select a branch...</option>
-                  {branches.map((branch) => (
-                    <option key={branch.sha} value={branch.sha}>
-                      {branch.name}
-                      {branch.protected && ' (production)'}
-                    </option>
-                  ))}
-                </select>
-                {isBranchesLoading && (
-                  <p className={styles.loading}>Loading branches...</p>
-                )}
-                {branchesError && (
-                  <p className={styles.error}>{branchesError}</p>
-                )}
-              </div>
-            )}
-
-            <div className={styles.formGroup}>
-              <label htmlFor="initialMessage" className={styles.label}>
-                Initial message *
-              </label>
               <div className={styles.inputWrapper}>
                 <textarea
                   id="initialMessage"
@@ -123,11 +84,42 @@ export const GitHubSessionFormPresenter: FC<Props> = ({
                   aria-label="Initial message for database design"
                 />
                 {formError && <p className={styles.error}>{formError}</p>}
+                {branchesError && (
+                  <p className={styles.error}>{branchesError}</p>
+                )}
               </div>
             </div>
           </div>
-          <div className={styles.divider} />
           <div className={styles.buttonContainer}>
+            <div className={styles.dropdowns}>
+              <input type="hidden" name="projectId" value={selectedProjectId} />
+              <ProjectsDropdown
+                projects={projects}
+                selectedProjectId={selectedProjectId}
+                onProjectChange={(projectId) => {
+                  setSelectedProjectId(projectId)
+                  onProjectChange(projectId)
+                }}
+                disabled={isPending}
+              />
+              {branches.length > 0 && (
+                <>
+                  <input
+                    type="hidden"
+                    name="gitSha"
+                    value={selectedBranchSha}
+                  />
+                  <BranchesDropdown
+                    branches={branches}
+                    selectedBranchSha={selectedBranchSha}
+                    onBranchChange={setSelectedBranchSha}
+                    disabled={isPending}
+                    isLoading={isBranchesLoading}
+                  />
+                  <SchemaDisplay schemaName="database.sql" />
+                </>
+              )}
+            </div>
             <SessionFormActions
               isPending={isPending}
               hasContent={hasContent}

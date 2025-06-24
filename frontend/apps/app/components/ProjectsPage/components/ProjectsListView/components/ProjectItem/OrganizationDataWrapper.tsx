@@ -1,9 +1,9 @@
 'use client'
 
 import { useEffect, useState, useTransition } from 'react'
+import { ProjectIcon } from '@/components/ProjectIcon'
 import { fetchOrganizationData } from './OrganizationData'
 import { OrganizationIcon } from './OrganizationIcon'
-import { ProjectIcon } from './ProjectIcon'
 import styles from './ProjectItem.module.css'
 
 interface OrganizationDataWrapperProps {

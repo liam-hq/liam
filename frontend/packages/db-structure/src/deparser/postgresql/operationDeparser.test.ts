@@ -122,6 +122,21 @@ describe('postgresqlOperationDeparser', () => {
         "DROP TABLE \"users\";"
       `)
     })
+
+    it('should generate RENAME TABLE statement from replace operation', () => {
+      const operation: Operation = {
+        op: 'replace',
+        path: '/tables/users/name',
+        value: 'user_accounts',
+      }
+
+      const result = postgresqlOperationDeparser(operation)
+
+      expect(result.errors).toHaveLength(0)
+      expect(result.value).toMatchInlineSnapshot(`
+        "ALTER TABLE \"users\" RENAME TO \"user_accounts\";"
+      `)
+    })
   })
 
   describe('column operations', () => {
@@ -326,6 +341,130 @@ describe('postgresqlOperationDeparser', () => {
       expect(result.errors).toHaveLength(0)
       expect(result.value).toMatchInlineSnapshot(`
         "DROP INDEX \"idx_user_profiles_email_unique\";"
+      `)
+    })
+  })
+
+  describe('constraint operations', () => {
+    it('should generate ADD CONSTRAINT PRIMARY KEY statement', () => {
+      const operation: Operation = {
+        op: 'add',
+        path: '/tables/users/constraints/pk_users_id',
+        value: {
+          type: 'PRIMARY KEY',
+          name: 'pk_users_id',
+          columnName: 'id',
+        },
+      }
+
+      const result = postgresqlOperationDeparser(operation)
+
+      expect(result.errors).toHaveLength(0)
+      expect(result.value).toMatchInlineSnapshot(`
+        "ALTER TABLE \"users\" ADD CONSTRAINT \"pk_users_id\" PRIMARY KEY (\"id\");"
+      `)
+    })
+
+    it('should generate ADD CONSTRAINT FOREIGN KEY statement', () => {
+      const operation: Operation = {
+        op: 'add',
+        path: '/tables/orders/constraints/fk_orders_user_id',
+        value: {
+          type: 'FOREIGN KEY',
+          name: 'fk_orders_user_id',
+          columnName: 'user_id',
+          targetTableName: 'users',
+          targetColumnName: 'id',
+          updateConstraint: 'CASCADE',
+          deleteConstraint: 'SET_NULL',
+        },
+      }
+
+      const result = postgresqlOperationDeparser(operation)
+
+      expect(result.errors).toHaveLength(0)
+      expect(result.value).toMatchInlineSnapshot(`
+        "ALTER TABLE \"orders\" ADD CONSTRAINT \"fk_orders_user_id\" FOREIGN KEY (\"user_id\") REFERENCES \"users\" (\"id\") ON UPDATE CASCADE ON DELETE SET_NULL;"
+      `)
+    })
+
+    it('should generate ADD CONSTRAINT UNIQUE statement', () => {
+      const operation: Operation = {
+        op: 'add',
+        path: '/tables/users/constraints/uk_users_email',
+        value: {
+          type: 'UNIQUE',
+          name: 'uk_users_email',
+          columnName: 'email',
+        },
+      }
+
+      const result = postgresqlOperationDeparser(operation)
+
+      expect(result.errors).toHaveLength(0)
+      expect(result.value).toMatchInlineSnapshot(`
+        "ALTER TABLE \"users\" ADD CONSTRAINT \"uk_users_email\" UNIQUE (\"email\");"
+      `)
+    })
+
+    it('should generate ADD CONSTRAINT CHECK statement', () => {
+      const operation: Operation = {
+        op: 'add',
+        path: '/tables/products/constraints/ck_products_price_positive',
+        value: {
+          type: 'CHECK',
+          name: 'ck_products_price_positive',
+          detail: 'price > 0',
+        },
+      }
+
+      const result = postgresqlOperationDeparser(operation)
+
+      expect(result.errors).toHaveLength(0)
+      expect(result.value).toMatchInlineSnapshot(`
+        "ALTER TABLE \"products\" ADD CONSTRAINT \"ck_products_price_positive\" CHECK (price > 0);"
+      `)
+    })
+
+    it('should generate DROP CONSTRAINT statement', () => {
+      const operation: Operation = {
+        op: 'remove',
+        path: '/tables/users/constraints/pk_users_id',
+      }
+
+      const result = postgresqlOperationDeparser(operation)
+
+      expect(result.errors).toHaveLength(0)
+      expect(result.value).toMatchInlineSnapshot(`
+        "ALTER TABLE \"users\" DROP CONSTRAINT \"pk_users_id\";"
+      `)
+    })
+
+    it('should generate DROP CONSTRAINT for complex constraint name', () => {
+      const operation: Operation = {
+        op: 'remove',
+        path: '/tables/orders/constraints/fk_orders_user_id',
+      }
+
+      const result = postgresqlOperationDeparser(operation)
+
+      expect(result.errors).toHaveLength(0)
+      expect(result.value).toMatchInlineSnapshot(`
+        "ALTER TABLE \"orders\" DROP CONSTRAINT \"fk_orders_user_id\";"
+      `)
+    })
+
+    it('should generate DROP CONSTRAINT for table with complex name', () => {
+      const operation: Operation = {
+        op: 'remove',
+        path: '/tables/user_profiles/constraints/uk_user_profiles_email',
+      }
+
+      const result = postgresqlOperationDeparser(operation)
+
+      expect(result.errors).toHaveLength(0)
+      expect(result.value).toMatchInlineSnapshot(`
+        "ALTER TABLE \"user_profiles\" DROP CONSTRAINT \"uk_user_profiles_email\";"
       `)
     })
   })

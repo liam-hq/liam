@@ -19,7 +19,6 @@ import type {
   ForeignKeyConstraintReferenceOption,
   Relationship,
   Table,
-  TableGroup,
 } from '../../../schema/index.js'
 import { type ProcessError, UnexpectedTokenWarningError } from '../../errors.js'
 import type { ProcessResult } from '../../types.js'
@@ -216,7 +215,6 @@ export const convertToSchema = (
 ): ProcessResult => {
   const tables: Record<string, Table> = {}
   const relationships: Record<string, Relationship> = {}
-  const tableGroups: Record<string, TableGroup> = {}
   const errors: ProcessError[] = []
 
   function isCreateStmt(stmt: Node): stmt is { CreateStmt: CreateStmt } {
@@ -812,7 +810,6 @@ export const convertToSchema = (
     value: {
       tables,
       relationships,
-      tableGroups,
     },
     errors,
   }

@@ -3,20 +3,9 @@ import type {
   Relationships,
   Schema,
   Table,
-  TableGroups,
   Tables,
 } from '@liam-hq/db-structure'
 import type { MentionItem } from '../../../types'
-
-// Function to generate table group candidates
-const getTableGroupCandidates = (tableGroups?: TableGroups): MentionItem[] => {
-  if (!tableGroups) return []
-  return Object.values(tableGroups).map((g) => ({
-    id: `group:${g.name}`,
-    label: g.name,
-    type: 'group',
-  }))
-}
 
 // Function to generate table candidates
 const getTableCandidates = (tables?: Tables): MentionItem[] => {
@@ -107,7 +96,6 @@ const getRelationshipCandidates = (
 // Function to combine all candidates
 export const getAllMentionCandidates = (schema: Schema): MentionItem[] => {
   return [
-    ...getTableGroupCandidates(schema?.tableGroups),
     ...getTableCandidates(schema?.tables),
     ...getColumnCandidates(schema?.tables, schema?.relationships),
     ...getRelationshipCandidates(schema?.relationships),

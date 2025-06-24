@@ -18,7 +18,6 @@ export const extractSchemaForTable = (table: Table, schema: Schema): Schema => {
         [table.name]: table,
       },
       relationships: {},
-      tableGroups: {},
     }
   }
 
@@ -45,6 +44,5 @@ export const extractSchemaForTable = (table: Table, schema: Schema): Schema => {
   return {
     tables: relatedTables,
     relationships: relatedRelationships,
-    tableGroups: {},
   }
 }

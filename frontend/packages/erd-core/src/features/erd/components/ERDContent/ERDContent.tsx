@@ -1,4 +1,3 @@
-import type { TableGroup } from '@liam-hq/db-structure'
 import {
   Background,
   BackgroundVariant,
@@ -10,7 +9,6 @@ import {
   useEdgesState,
   useNodesState,
 } from '@xyflow/react'
-import clsx from 'clsx'
 import { type FC, useCallback } from 'react'
 import { useTableSelection } from '@/features/erd/hooks'
 import type { DisplayArea } from '@/features/erd/types'
@@ -24,19 +22,15 @@ import {
   NonRelatedTableGroupNode,
   RelationshipEdge,
   Spinner,
-  TableGroupBoundingBox,
-  TableGroupNode,
   TableNode,
 } from './components'
 import styles from './ERDContent.module.css'
 import { ERDContentProvider, useERDContentContext } from './ERDContentContext'
 import { useInitialAutoLayout, useQueryParamsChanged } from './hooks'
-import { useTableGroupBoundingBox } from './hooks/useTableGroupBoundingBox'
 
 const nodeTypes = {
   table: TableNode,
   nonRelatedTableGroup: NonRelatedTableGroupNode,
-  tableGroup: TableGroupNode,
 }
 
 const edgeTypes = {
@@ -47,14 +41,12 @@ type Props = {
   nodes: Node[]
   edges: Edge[]
   displayArea: DisplayArea
-  onAddTableGroup?: ((props: TableGroup) => void) | undefined
 }
 
 export const ERDContentInner: FC<Props> = ({
   nodes: _nodes,
   edges: _edges,
   displayArea,
-  onAddTableGroup,
 }) => {
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>(
     displayArea === 'relatedTables'
@@ -70,7 +62,7 @@ export const ERDContentInner: FC<Props> = ({
   const {
     state: { loading },
   } = useERDContentContext()
-  const { activeTableName, isTableGroupEditMode } = useUserEditing()
+  const { activeTableName } = useUserEditing()
 
   const { selectTable, deselectTable } = useTableSelection()
 
@@ -80,17 +72,6 @@ export const ERDContentInner: FC<Props> = ({
   })
   useQueryParamsChanged({
     displayArea,
-  })
-
-  const {
-    containerRef,
-    currentBox,
-    handleMouseDown,
-    handleMouseMove,
-    handleMouseUp,
-  } = useTableGroupBoundingBox({
-    nodes,
-    onAddTableGroup,
   })
 
   const { version } = useVersion()
@@ -166,16 +147,9 @@ export const ERDContentInner: FC<Props> = ({
   const panOnDrag = [1, 2]
 
   return (
-    <div
-      className={clsx(
-        styles.wrapper,
-        isTableGroupEditMode && styles.groupEditMode,
-      )}
-      data-loading={loading}
-    >
+    <div className={styles.wrapper} data-loading={loading}>
       {loading && <Spinner className={styles.loading} />}
       <ReactFlow
-        ref={containerRef}
         colorMode="dark"
         nodes={nodes}
         edges={edges}
@@ -192,9 +166,6 @@ export const ERDContentInner: FC<Props> = ({
         onNodeMouseEnter={handleMouseEnterNode}
         onNodeMouseLeave={handleMouseLeaveNode}
         onNodeDragStop={handleDragStopNode}
-        onMouseDown={handleMouseDown}
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
         panOnScroll
         panOnDrag={panOnDrag}
         deleteKeyCode={null} // Turn off because it does not want to be deleted
@@ -207,14 +178,6 @@ export const ERDContentInner: FC<Props> = ({
           size={1}
           gap={16}
         />
-        {currentBox && (
-          <TableGroupBoundingBox
-            left={Math.min(currentBox.x, currentBox.x + currentBox.width)}
-            top={Math.min(currentBox.y, currentBox.y + currentBox.height)}
-            width={Math.abs(currentBox.width)}
-            height={Math.abs(currentBox.height)}
-          />
-        )}
       </ReactFlow>
     </div>
   )

@@ -36,10 +36,6 @@ export {
   schemaOverrideSchema,
   schemaSchema,
   type Table,
-  type TableGroup,
-  type TableGroups,
   type Tables,
-  tableGroupSchema,
-  tableGroupsSchema,
   type UniqueConstraint,
 } from './schema/index.js'

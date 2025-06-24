@@ -23,7 +23,6 @@ describe('buildTableDiffItem', () => {
       },
     },
     relationships: {},
-    tableGroups: {},
   }
 
   // Base test schema with existence checks

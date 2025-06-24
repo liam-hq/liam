@@ -23,7 +23,7 @@ export const safeApplySchemaOverride = async (
 
   if (overrideContent === null) {
     return {
-      result: { schema: schema, tableGroups: {} },
+      result: schema,
       error: null,
     }
   }

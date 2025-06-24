@@ -417,7 +417,7 @@ describe(processor, () => {
         CREATEe TABLE posts ();
       `)
 
-      const value = { tables: {}, relationships: {}, tableGroups: {} }
+      const value = { tables: {}, relationships: {} }
       const errors = [
         new UnexpectedTokenWarningError('syntax error at or near "CREATEe"'),
       ]

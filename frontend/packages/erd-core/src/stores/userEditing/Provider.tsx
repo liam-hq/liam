@@ -70,7 +70,6 @@ export const UserEditingProvider: FC<Props> = ({
 
   const [selectedNodeIds, setSelectedNodeIds] = useState<Set<string>>(new Set())
   const [isPopstateInProgress, setIsPopstateInProgress] = useState(false)
-  const [isTableGroupEditMode, setIsTableGroupEditMode] = useState(false)
   const [showDiff, setShowDiff] = useState(initialShowDiff)
 
   useEffect(() => {
@@ -212,8 +211,6 @@ export const UserEditingProvider: FC<Props> = ({
         resetSelectedNodeIds,
         isPopstateInProgress,
         setIsPopstateInProgress,
-        isTableGroupEditMode,
-        setIsTableGroupEditMode,
         showDiff,
         setShowDiff,
       }}

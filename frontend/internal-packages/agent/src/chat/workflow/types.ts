@@ -1,4 +1,5 @@
 import type { Schema } from '@liam-hq/db-structure'
+import type { Usecase } from '../../langchain/agents/qaGenerateUsecaseAgent/agent'
 import type { Repositories } from '../../repositories'
 import type { NodeLogger } from '../../utils/nodeLogger'
 
@@ -11,6 +12,7 @@ export type WorkflowState = {
         nonFunctionalRequirements: Record<string, string[]>
       }
     | undefined
+  generatedUsecases?: Usecase[] | undefined
   generatedAnswer?: string | undefined
   finalResponse?: string | undefined
   formattedHistory: string
@@ -23,7 +25,7 @@ export type WorkflowState = {
 
   // Schema update fields
   buildingSchemaId: string
-  latestVersionNumber?: number | undefined
+  latestVersionNumber: number
   organizationId?: string | undefined
   userId: string
 

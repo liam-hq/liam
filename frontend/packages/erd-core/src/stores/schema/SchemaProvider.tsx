@@ -22,7 +22,6 @@ export const SchemaProvider: FC<Props> = ({ children, current, previous }) => {
     const emptySchema: Schema = {
       tables: {},
       relationships: {},
-      tableGroups: {},
     }
     const diffItems = buildSchemaDiff(previous ?? emptySchema, current)
     const merged = previous ? mergeSchemas(previous, current) : current

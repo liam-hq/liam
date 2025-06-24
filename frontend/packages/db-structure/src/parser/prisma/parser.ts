@@ -8,7 +8,6 @@ import type {
   Index,
   Relationship,
   Table,
-  TableGroup,
 } from '../../schema/index.js'
 import type { Processor, ProcessResult } from '../types.js'
 import { convertToPostgresColumnType } from './convertToPostgresColumnType.js'
@@ -475,7 +474,6 @@ function processManyToManyRelationships(
  */
 async function parsePrismaSchema(schemaString: string): Promise<ProcessResult> {
   const dmmf = await getDMMF({ datamodel: schemaString })
-  const tableGroups: Record<string, TableGroup> = {}
   const errors: Error[] = []
 
   // Track many-to-many relationships for later processing
@@ -524,7 +522,6 @@ async function parsePrismaSchema(schemaString: string): Promise<ProcessResult> {
     value: {
       tables,
       relationships,
-      tableGroups,
     },
     errors: errors,
   }

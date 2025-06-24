@@ -111,5 +111,4 @@ const tables = (override?: Tables): Tables => {
 export const aSchema = (override?: Partial<Schema>): Schema => ({
   tables: tables(override?.tables),
   relationships: override?.relationships || {},
-  tableGroups: override?.tableGroups || {},
 })

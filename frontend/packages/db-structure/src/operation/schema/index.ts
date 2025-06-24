@@ -1,5 +1,6 @@
 import * as v from 'valibot'
 import { columnOperations } from './column.js'
+import { constraintOperations } from './constraint.js'
 import { indexOperations } from './index-operations.js'
 import { tableOperations } from './table.js'
 
@@ -42,6 +43,7 @@ const operationSchema = v.union([
   ...tableOperations,
   ...columnOperations,
   ...indexOperations,
+  ...constraintOperations,
   addOperationSchema,
   removeOperationSchema,
   replaceOperationSchema,

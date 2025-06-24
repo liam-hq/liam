@@ -7,19 +7,16 @@ import { useVersion } from '@/providers'
 import type { ShowMode } from '@/schemas/showMode'
 import { useUserEditing } from '@/stores'
 import { FitviewButton } from '../FitviewButton'
-import { GroupButton } from '../GroupButton'
 import { TidyUpButton } from '../TidyUpButton'
 import { ToolbarIconButton } from '../ToolbarIconButton'
 import styles from './OpenedMobileToolbar.module.css'
 
 type Props = {
-  withGroupButton?: boolean
   toggleOpenClose: () => void
   toggleShowModeMenu: () => void
 }
 
 export const OpenedMobileToolbar: FC<Props> = ({
-  withGroupButton = false,
   toggleOpenClose,
   toggleShowModeMenu,
 }) => {
@@ -91,7 +88,6 @@ export const OpenedMobileToolbar: FC<Props> = ({
 
         <FitviewButton size="sm">Zoom to Fit</FitviewButton>
         <TidyUpButton size="sm">Tidy up</TidyUpButton>
-        {withGroupButton && <GroupButton size="sm" />}
       </div>
       <hr className={styles.divider} />
 

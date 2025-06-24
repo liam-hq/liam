@@ -1,6 +1,6 @@
 'use client'
 
-import type { Schema, TableGroup } from '@liam-hq/db-structure'
+import type { Schema } from '@liam-hq/db-structure'
 import { type FC, useEffect, useRef, useState, useTransition } from 'react'
 import { ChatInput } from '../ChatInput'
 import { TimelineItem } from '../TimelineItem'
@@ -24,11 +24,10 @@ type DesignSession = {
 
 interface Props {
   schemaData: Schema
-  tableGroups?: Record<string, TableGroup>
   designSession: DesignSession
 }
 
-export const Chat: FC<Props> = ({ schemaData, tableGroups, designSession }) => {
+export const Chat: FC<Props> = ({ schemaData, designSession }) => {
   const [currentUserId, setCurrentUserId] = useState<string | null>(null)
   const { timelineItems, addOrUpdateTimelineItem } = useRealtimeTimelineItems(
     designSession,
@@ -77,7 +76,6 @@ export const Chat: FC<Props> = ({ schemaData, tableGroups, designSession }) => {
     // Send chat message to API
     const result = await sendChatMessage({
       message: content,
-      tableGroups,
       timelineItems,
       designSession,
       setProgressMessages,

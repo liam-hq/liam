@@ -26,7 +26,7 @@ async function getERDEditorContent({
   branchOrCommit,
   schemaFilePath,
 }: Params): Promise<Response> {
-  const blankSchema = { tables: {}, relationships: {}, tableGroups: {} }
+  const blankSchema = { tables: {}, relationships: {} }
   const supabase = await createClient()
 
   const { data: project } = await supabase
@@ -121,10 +121,7 @@ async function getERDEditorContent({
     }
   }
 
-  const { schema: overriddenSchema, tableGroups } = result || {
-    schema,
-    tableGroups: {},
-  }
+  const overriddenSchema = result || schema
   const cookieStore = await cookies()
   const defaultSidebarOpen = cookieStore.get('sidebar:state')?.value === 'true'
   const layoutCookie = cookieStore.get('panels:layout')
@@ -139,7 +136,6 @@ async function getERDEditorContent({
 
   return {
     schema: overriddenSchema,
-    tableGroups,
     defaultSidebarOpen,
     defaultPanelSizes,
     errorObjects: errors.map((error) => ({

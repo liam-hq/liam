@@ -1,0 +1,21 @@
+{
+  "name": "@liam-hq/schema-bench",
+  "private": true,
+  "version": "0.1.0",
+  "main": "src/index.ts",
+  "dependencies": {
+    "@huggingface/transformers": "3.3.3"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.0.0",
+    "@liam-hq/configs": "workspace:*",
+    "eslint": "9.28.0",
+    "vitest": "3.2.2"
+  },
+  "scripts": {
+    "fmt": "concurrently \"pnpm:fmt:*\"",
+    "fmt:biome": "biome check --write --unsafe .",
+    "fmt:eslint": "eslint --fix .",
+    "test": "vitest --watch=false --passWithNoTests"
+  }
+}

@@ -1,0 +1,51 @@
+.code {
+  font-family: 'IBM Plex Mono', monospace;
+  font-weight: 500;
+  border-radius: var(--border-radius-base);
+  display: inline-block;
+  text-align: center;
+  white-space: nowrap;
+  line-height: 1;
+}
+
+/* Sizes */
+.sm {
+  font-size: var(--font-size-2);
+  padding: 4px;
+}
+
+.md {
+  font-size: var(--font-size-3);
+  padding: 6px;
+}
+
+.lg {
+  font-size: var(--font-size-4);
+  padding: 8px;
+}
+
+/* Style: Outline */
+.outline.default {
+  background-color: var(--overlay-10);
+  color: var(--global-mute-text);
+  border: 1px solid var(--overlay-20);
+}
+
+.outline.primary {
+  background-color: var(--primary-overlay-10);
+  color: var(--primary-color);
+  border: 1px solid var(--primary-overlay-20);
+}
+
+/* Style: Fill */
+.fill.default {
+  background-color: var(--overlay-20);
+  color: var(--global-foreground);
+  border: none;
+}
+
+.fill.primary {
+  background-color: var(--primary-overlay-20);
+  color: var(--primary-color);
+  border: none;
+}

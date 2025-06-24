@@ -1,8 +1,6 @@
 import * as v from 'valibot'
 
 // Export these schema definitions
-export const tableGroupNameSchema = v.string()
-
 export const columnNameSchema = v.string()
 
 export const columnPrimarySchema = v.boolean()
@@ -149,26 +147,10 @@ export type Tables = v.InferOutput<typeof tablesSchema>
 const relationshipsSchema = v.record(relationshipNameSchema, relationshipSchema)
 export type Relationships = v.InferOutput<typeof relationshipsSchema>
 
-// Schema for table group
-export const tableGroupSchema = v.object({
-  name: v.string(),
-  tables: v.array(tableNameSchema),
-  comment: v.optional(v.nullable(v.string()), ''),
-})
-
-export type TableGroup = v.InferOutput<typeof tableGroupSchema>
-
-export const tableGroupsSchema = v.record(
-  tableGroupNameSchema,
-  tableGroupSchema,
-)
-export type TableGroups = v.InferOutput<typeof tableGroupsSchema>
-
 // Schema definition for the entire database structure
 export const schemaSchema = v.object({
   tables: tablesSchema,
   relationships: relationshipsSchema,
-  tableGroups: tableGroupsSchema,
 })
 
 export type Schema = v.InferOutput<typeof schemaSchema>

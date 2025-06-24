@@ -43,7 +43,6 @@ describe('mergeSchemas', () => {
   const createSchema = (overrides: Partial<Schema> = {}): Schema => ({
     tables: {},
     relationships: {},
-    tableGroups: {},
     ...overrides,
   })
 
@@ -196,41 +195,6 @@ describe('mergeSchemas', () => {
     })
   })
 
-  describe('table groups merging', () => {
-    it('should use table groups from after schema', () => {
-      const beforeSchema = createSchema({
-        tableGroups: {
-          group1: {
-            name: 'group1',
-            tables: ['users'],
-            comment: 'Old group',
-          },
-        },
-      })
-
-      const afterSchema = createSchema({
-        tableGroups: {
-          group1: {
-            name: 'group1',
-            tables: ['users', 'posts'],
-            comment: 'New group',
-          },
-          group2: {
-            name: 'group2',
-            tables: ['categories'],
-            comment: null,
-          },
-        },
-      })
-
-      const result = mergeSchemas(beforeSchema, afterSchema)
-
-      expect(result.tableGroups['group1']?.tables).toEqual(['users', 'posts'])
-      expect(result.tableGroups['group1']?.comment).toBe('New group')
-      expect(result.tableGroups).toHaveProperty('group2')
-    })
-  })
-
   describe('edge cases', () => {
     it('should handle empty schemas', () => {
       const beforeSchema = createSchema()
@@ -240,7 +204,6 @@ describe('mergeSchemas', () => {
 
       expect(result.tables).toEqual({})
       expect(result.relationships).toEqual({})
-      expect(result.tableGroups).toEqual({})
     })
 
     it('should handle schema with only before data', () => {
@@ -271,20 +234,12 @@ describe('mergeSchemas', () => {
         relationships: {
           rel1: createRelationship({ name: 'rel1' }),
         },
-        tableGroups: {
-          group1: {
-            name: 'group1',
-            tables: ['users'],
-            comment: null,
-          },
-        },
       })
 
       const result = mergeSchemas(beforeSchema, afterSchema)
 
       expect(result.tables).toHaveProperty('users')
       expect(result.relationships).toHaveProperty('rel1')
-      expect(result.tableGroups).toHaveProperty('group1')
     })
   })
 

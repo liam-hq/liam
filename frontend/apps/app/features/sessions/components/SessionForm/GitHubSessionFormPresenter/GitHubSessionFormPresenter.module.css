@@ -1,9 +1,22 @@
 .container {
   width: 100%;
-  background-color: var(--callout-default-background);
-  border: 1px solid var(--global-border);
-  border-radius: var(--border-radius-md);
+  border: 1px solid var(--pane-border);
+  border-radius: var(--border-radius-xl);
   overflow: hidden;
+  background-color: var(--global-background);
+  transition:
+    box-shadow 0.3s ease,
+    border-color 0.3s ease;
+}
+
+.container.pending {
+  border-color: var(--primary-overlay-40);
+  box-shadow: 0px 0px 40px 0px var(--primary-overlay-40);
+}
+
+.container.error {
+  border-color: var(--danger-overlay-40);
+  box-shadow: 0px 0px 20px 0px var(--severity-critical-40);
 }
 
 .formContent {
@@ -33,18 +46,24 @@
 }
 
 .textarea {
-  background-color: var(--global-background);
   color: var(--global-foreground);
-  border: 1px solid var(--global-border);
   border-radius: var(--border-radius-md);
-  padding: var(--spacing-4);
-  font-size: var(--font-size-4);
+  font-size: var(--font-size-6);
   font-family: inherit;
-  line-height: 1.5;
+  line-height: 1.6;
   min-height: 120px;
   width: 100%;
   resize: none;
   overflow: hidden;
+}
+
+.textarea::placeholder {
+  color: var(--overlay-30);
+  transition: color 0.2s var(--default-timing-function);
+}
+
+.textarea:hover::placeholder {
+  color: var(--overlay-50);
 }
 
 .textarea:focus {
@@ -61,18 +80,36 @@
   color: var(--overlay-30);
 }
 
-.divider {
-  height: 1px;
-  background-color: var(--global-border);
-  width: 100%;
-}
-
 .buttonContainer {
-  padding: var(--spacing-4) var(--spacing-8) var(--spacing-5);
+  padding: var(--spacing-4);
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
   align-items: center;
   gap: var(--spacing-3);
+}
+
+.dropdowns {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  flex: 1;
+  overflow-x: auto;
+  padding: 2px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--overlay-20) transparent;
+}
+
+.dropdowns::-webkit-scrollbar {
+  height: 4px;
+}
+
+.dropdowns::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.dropdowns::-webkit-scrollbar-thumb {
+  background-color: var(--overlay-20);
+  border-radius: 2px;
 }
 
 .buttonCustom {
@@ -83,31 +120,9 @@
 }
 
 .error {
-  color: var(--danger-default);
-  font-size: var(--font-size-3);
+  color: var(--danger-high-contrast-text);
+  font-size: var(--font-size-5);
   margin-top: var(--spacing-2);
-}
-
-.select {
-  background-color: var(--global-background);
-  color: var(--global-foreground);
-  border: 1px solid var(--global-border);
-  border-radius: var(--border-radius-md);
-  padding: var(--spacing-3) var(--spacing-4);
-  font-size: var(--font-size-4);
-  font-family: inherit;
-  line-height: 1.5;
-  width: 100%;
-}
-
-.select:focus {
-  outline: none;
-  border-color: var(--button-primary-background);
-}
-
-.select:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
 }
 
 .loading {

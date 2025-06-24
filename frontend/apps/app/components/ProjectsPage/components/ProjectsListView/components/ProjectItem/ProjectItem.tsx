@@ -2,10 +2,10 @@ import type { Tables } from '@liam-hq/db/supabase/database.types'
 import { GithubLogo } from '@liam-hq/ui'
 import Link from 'next/link'
 import type { FC } from 'react'
+import { ProjectIcon } from '@/components/ProjectIcon'
 import { urlgen } from '@/libs/routes'
 import { LastCommitDataWrapper } from './LastCommitDataWrapper'
 import { OrganizationDataWrapper } from './OrganizationDataWrapper'
-import { ProjectIcon } from './ProjectIcon'
 import styles from './ProjectItem.module.css'
 
 type ProjectWithRepositories = Tables<'projects'> & {

@@ -2,14 +2,6 @@ name: trigger_dev_preview
 on:
   pull_request:
     types: [opened, synchronize, reopened, closed]
-    paths:
-      - .github/workflows/trigger_dev_preview.yml
-      - frontend/internal-packages/jobs/**
-      - frontend/packages/db-structure/**
-      - frontend/packages/github/**
-      - frontend/internal-packages/db/**
-      - frontend/internal-packages/agent/**
-      - turbo.json
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}

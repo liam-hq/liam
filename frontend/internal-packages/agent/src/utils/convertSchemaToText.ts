@@ -46,31 +46,6 @@ To Column: ${relationshipData.foreignColumnName}
 Type: ${relationshipData.cardinality || 'unknown'}\n`
 }
 
-// Convert table groups to text document
-const tableGroupsToText = (
-  tableGroups: Schema['tableGroups'] | undefined,
-): string => {
-  if (!tableGroups) return ''
-
-  let tableGroupsText = ''
-
-  for (const [groupId, groupData] of Object.entries(tableGroups)) {
-    tableGroupsText += `Group ID: ${groupId}\n`
-
-    if (groupData.name) {
-      tableGroupsText += `Name: ${String(groupData.name)}\n`
-    }
-
-    if (groupData.tables && Array.isArray(groupData.tables)) {
-      tableGroupsText += `Tables: ${groupData.tables.join(', ')}\n`
-    }
-
-    tableGroupsText += '\n'
-  }
-
-  return tableGroupsText
-}
-
 // Convert schema data to text format
 export const convertSchemaToText = (schema: Schema): string => {
   let schemaText = 'FULL DATABASE SCHEMA:\n\n'
@@ -96,13 +71,6 @@ export const convertSchemaToText = (schema: Schema): string => {
       )
       schemaText = `${schemaText}${relationshipDoc}\n\n`
     }
-  }
-
-  // Process table groups
-  if (schema.tableGroups && Object.keys(schema.tableGroups).length > 0) {
-    schemaText += 'TABLE GROUPS:\n\n'
-    const tableGroupsText = tableGroupsToText(schema.tableGroups)
-    schemaText = `${schemaText}${tableGroupsText}\n`
   }
 
   return schemaText

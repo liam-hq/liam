@@ -35,7 +35,6 @@ describe('buildColumnCommentDiffItem', () => {
       },
     },
     relationships: {},
-    tableGroups: {},
   }
 
   const beforeSchema: Schema = structuredClone(baseSchema)

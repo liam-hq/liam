@@ -12,7 +12,6 @@ import * as v from 'valibot'
 const emptySchema: Schema = {
   tables: {},
   relationships: {},
-  tableGroups: {},
 }
 
 async function loadSchemaContent() {

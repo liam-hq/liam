@@ -58,3 +58,17 @@
 .button.state-active-hover .icon {
   color: var(--primary-color);
 }
+
+.button.disabled {
+  opacity: var(--opacity-disabled);
+  cursor: not-allowed;
+  background-color: transparent;
+}
+
+.button.disabled:hover {
+  background-color: transparent;
+}
+
+.button.disabled .icon {
+  color: var(--overlay-30);
+}
