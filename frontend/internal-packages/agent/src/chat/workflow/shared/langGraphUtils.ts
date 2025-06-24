@@ -4,14 +4,30 @@ import type { Usecase } from '../../../langchain/agents/qaGenerateUsecaseAgent/a
 import type { Repositories } from '../../../repositories'
 import type { NodeLogger } from '../../../utils/nodeLogger'
 
-export const DEFAULT_RECURSION_LIMIT = 10
+/**
+ * Default recursion limit for LangGraph workflow execution.
+ * This value limits the total number of state transitions (edges) in the graph.
+ *
+ * The workflow has 9 nodes with a maximum of 3 retries per node:
+ * - Normal execution: 10 transitions (START → 9 nodes → END)
+ * - With retries: up to 37 transitions (10 normal + 27 retry transitions)
+ *
+ * Setting this to 40 ensures:
+ * - Complete workflow execution under normal conditions
+ * - Sufficient headroom for error handling and retries
+ * - Protection against infinite loops
+ */
+export const DEFAULT_RECURSION_LIMIT = 40
 
 /**
  * Create LangGraph-compatible annotations (shared)
  */
 export const createAnnotations = () => {
   return Annotation.Root({
-    userInput: Annotation<string>,
+    userInput: Annotation<string>({
+      reducer: (_, newValue: string) => newValue,
+      default: () => '',
+    }),
     analyzedRequirements: Annotation<
       | {
           businessRequirement: string
@@ -19,25 +35,56 @@ export const createAnnotations = () => {
           nonFunctionalRequirements: Record<string, string[]>
         }
       | undefined
-    >,
-    generatedUsecases: Annotation<Usecase[] | undefined>,
-    generatedAnswer: Annotation<string | undefined>,
-    finalResponse: Annotation<string | undefined>,
-    formattedHistory: Annotation<string>,
-    schemaData: Annotation<Schema>,
-    projectId: Annotation<string | undefined>,
-    buildingSchemaId: Annotation<string>,
-    latestVersionNumber: Annotation<number | undefined>,
-    organizationId: Annotation<string | undefined>,
-    userId: Annotation<string>,
-    designSessionId: Annotation<string>,
-    error: Annotation<string | undefined>,
-    retryCount: Annotation<Record<string, number>>,
+    >({ reducer: (_, newValue) => newValue }),
+    generatedUsecases: Annotation<Usecase[] | undefined>({
+      reducer: (_, newValue) => newValue,
+    }),
+    generatedAnswer: Annotation<string | undefined>({
+      reducer: (_, newValue) => newValue,
+    }),
+    finalResponse: Annotation<string | undefined>({
+      reducer: (_, newValue) => newValue,
+    }),
+    formattedHistory: Annotation<string>({
+      reducer: (_, newValue) => newValue,
+      default: () => '',
+    }),
+    schemaData: Annotation<Schema>({ reducer: (_, newValue) => newValue }),
+    projectId: Annotation<string | undefined>({
+      reducer: (_, newValue) => newValue,
+    }),
+    buildingSchemaId: Annotation<string>({
+      reducer: (_, newValue) => newValue,
+      default: () => '',
+    }),
+    latestVersionNumber: Annotation<number | undefined>({
+      reducer: (_, newValue) => newValue,
+    }),
+    organizationId: Annotation<string | undefined>({
+      reducer: (_, newValue) => newValue,
+    }),
+    userId: Annotation<string>({
+      reducer: (_, newValue) => newValue,
+      default: () => '',
+    }),
+    designSessionId: Annotation<string>({
+      reducer: (_, newValue) => newValue,
+      default: () => '',
+    }),
+    error: Annotation<string | undefined>({
+      reducer: (_, newValue) => newValue,
+    }),
+    retryCount: Annotation<Record<string, number>>({
+      reducer: (existing, newValue) => ({ ...existing, ...newValue }),
+      default: () => ({}),
+    }),
 
     // Repository dependencies for data access
-    repositories: Annotation<Repositories>,
+    repositories: Annotation<Repositories>({
+      reducer: (_, newValue) => newValue,
+    }),
 
     // Logging functionality
-    logger: Annotation<NodeLogger>,
+    logger: Annotation<NodeLogger>({ reducer: (_, newValue) => newValue }),
   })
 }
