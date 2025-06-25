@@ -1,7 +1,7 @@
 import type { Operation } from 'fast-json-patch'
 import { describe, expect, it } from 'vitest'
 import { PATH_PATTERNS } from '../../../operation/constants.js'
-import { getChangeStatus } from '../getChangeStatus.js'
+import { getChangeStatus } from './getChangeStatus.js'
 
 describe('getChangeStatus', () => {
   const tableId = 'users'

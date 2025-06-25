@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from 'vitest'
 import { PATH_PATTERNS } from '../../../operation/constants.js'
 import type { Schema } from '../../../schema/index.js'
 import { getChangeStatus } from '../../utils/getChangeStatus.js'
-import { buildColumnCheckDiffItem } from '../buildColumnCheckDiffItem.js'
+import { buildColumnCheckDiffItem } from './buildColumnCheckDiffItem.js'
 
 vi.mock('../../utils/getChangeStatus.ts', () => ({
   getChangeStatus: vi.fn(),

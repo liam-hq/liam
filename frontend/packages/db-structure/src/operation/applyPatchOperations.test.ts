@@ -1,6 +1,6 @@
 import type { Operation } from 'fast-json-patch'
 import { describe, expect, it } from 'vitest'
-import { applyPatchOperations } from '../applyPatchOperations.js'
+import { applyPatchOperations } from './applyPatchOperations.js'
 
 describe('applyPatchOperations', () => {
   describe('add operation', () => {

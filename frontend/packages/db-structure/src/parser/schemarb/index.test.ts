@@ -11,7 +11,7 @@ import {
   aTable,
   aUniqueConstraint,
 } from '../../schema/index.js'
-import { createParserTestCases } from '../index.js'
+import { createParserTestCases } from '../__tests__/testcase.js'
 import { processor, UnsupportedTokenError } from './index.js'
 
 describe(processor, () => {
