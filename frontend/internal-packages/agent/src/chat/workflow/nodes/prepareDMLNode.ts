@@ -58,13 +58,15 @@ export async function prepareDMLNode(
   try {
     state.logger.log(`[${NODE_NAME}] Started`)
 
-    const { agent, schemaText, useCasesText } = await prepareDMLGeneration(state)
+    const { agent, schemaText, useCasesText } =
+      await prepareDMLGeneration(state)
 
     const promptVariables: DMLGenerationVariables = {
       schema_text: schemaText,
       use_cases: useCasesText,
       chat_history: state.formattedHistory,
-      user_message: 'Generate INSERT statements for testing the schema with realistic data based on the use cases',
+      user_message:
+        'Generate INSERT statements for testing the schema with realistic data based on the use cases',
     }
 
     const dmlStatements = await agent.generate(promptVariables)
