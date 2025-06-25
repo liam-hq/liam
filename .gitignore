@@ -6,6 +6,7 @@ node_modules
 prism.wasm
 .cursor/mcp.json
 dist/
+coverage/
 
 # Claude local settings
 .claude/settings.local.json
