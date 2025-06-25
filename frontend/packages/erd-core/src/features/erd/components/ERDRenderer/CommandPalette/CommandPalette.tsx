@@ -3,7 +3,7 @@
 import { Search, Table2 } from '@liam-hq/ui'
 import { DialogDescription, DialogTitle } from '@radix-ui/react-dialog'
 import { Command } from 'cmdk'
-import { type FC, useCallback, useEffect, useState } from 'react'
+import { type FC, useCallback, useEffect, useId, useState } from 'react'
 import { useTableSelection } from '@/features/erd/hooks'
 import { useSchema } from '@/stores'
 import { TableNode } from '../../ERDContent/components'
@@ -11,6 +11,7 @@ import styles from './CommandPalette.module.css'
 
 export const CommandPalette: FC = () => {
   const [open, setOpen] = useState(false)
+  const tableNodeId = useId()
 
   const schema = useSchema()
   const [tableName, setTableName] = useState<string | null>(null)
@@ -100,7 +101,7 @@ export const CommandPalette: FC = () => {
           <div className={styles.previewBackground}>
             {table && (
               <TableNode
-                id=""
+                id={tableNodeId}
                 type="table"
                 data={{
                   table: table,

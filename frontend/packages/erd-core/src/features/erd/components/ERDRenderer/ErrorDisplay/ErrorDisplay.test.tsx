@@ -43,7 +43,7 @@ describe('non-network error', () => {
     const { container } = render(<ErrorDisplay errors={[otherError]} />)
 
     expect(container).toHaveTextContent(
-      /OtherError: \[error message\]It seems some SQL statements couldn\’t make it through the parser\’s orbit/,
+      /OtherError: \[error message\]It seems some SQL statements couldn't make it through the parser's orbit/,
     )
     expect(
       screen.getByRole('link', {

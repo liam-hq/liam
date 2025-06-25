@@ -93,7 +93,11 @@ export const TableHeader: FC<Props> = ({ data }) => {
       >
         <Table2 className={styles.tableIcon} />
 
-        <span className={styles.name} onMouseEnter={handleHoverEvent}>
+        <span
+          className={styles.name}
+          onMouseEnter={handleHoverEvent}
+          role="button"
+        >
           {name}
         </span>
 

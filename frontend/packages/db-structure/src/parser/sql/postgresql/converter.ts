@@ -182,7 +182,7 @@ const constraintToCheckConstraint = (
 
   let openParenthesesCount = 0
   const startLocation = rawSql.indexOf('(', constraint.location)
-  let endLocation: number | undefined = undefined
+  let endLocation: number | undefined
   for (let i = startLocation; i < rawSql.length; i++) {
     if (rawSql[i] === '(') {
       openParenthesesCount++
