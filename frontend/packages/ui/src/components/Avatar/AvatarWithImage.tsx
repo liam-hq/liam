@@ -55,7 +55,6 @@ export const AvatarWithImage = ({
       type="button"
       {...props}
     >
-      {/* biome-ignore lint/performance/noImgElement: This is in a shared UI library that should remain framework-agnostic */}
       <img
         src={src}
         alt={alt}

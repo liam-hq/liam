@@ -1,4 +1,11 @@
 {
   "extends": "//",
-  "root": false
+  "root": false,
+  "linter": {
+    "rules": {
+      "performance": {
+        "noImgElement": "off"
+      }
+    }
+  }
 }
