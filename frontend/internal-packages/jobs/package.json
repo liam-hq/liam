@@ -23,6 +23,7 @@
     "@liam-hq/configs": "workspace:*",
     "@sentry/esbuild-plugin": "3.5.0",
     "@types/node": "22.15.30",
+    "@vitest/coverage-v8": "3.2.2",
     "dotenv": "16.5.0",
     "eslint": "9.28.0",
     "glob": "11.0.2",
@@ -42,6 +43,7 @@
     "lint:tsc": "tsc --noEmit",
     "postinstall": "cp ../../packages/db-structure/node_modules/@ruby/prism/src/prism.wasm prism.wasm",
     "test": "vitest --watch=false --passWithNoTests",
+    "test:coverage": "vitest --watch=false --coverage --passWithNoTests",
     "trigger:dev": "trigger dev"
   }
 }

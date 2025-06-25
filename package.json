@@ -33,6 +33,7 @@
     "prebuild": "pnpm create-env-files",
     "prelint": "pnpm create-env-files",
     "release": "pnpm build && pnpm changeset publish",
+    "test:coverage": "turbo test:coverage",
     "test:e2e": "turbo test:e2e",
     "test:prompt": "turbo test:prompt",
     "test:turbo": "turbo test",

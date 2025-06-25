@@ -6,10 +6,21 @@ import { defineConfig } from 'vitest/config'
 export default defineConfig({
   plugins: react(),
   test: {
+    globals: true,
     alias: {
       '@': path.resolve(__dirname, './src'),
     },
     environment: 'happy-dom',
     setupFiles: ['@testing-library/jest-dom/vitest'],
+    coverage: {
+      reporter: ['text', 'json', 'html'],
+      reportsDirectory: 'coverage',
+      thresholds: {
+        lines: 80,
+        functions: 80,
+        branches: 80,
+        statements: 80
+      }
+    }
   },
 })

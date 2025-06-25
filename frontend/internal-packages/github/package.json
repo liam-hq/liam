@@ -13,6 +13,7 @@
     "@biomejs/biome": "2.0.0",
     "@liam-hq/configs": "workspace:*",
     "@types/node": "22.15.30",
+    "@vitest/coverage-v8": "3.2.2",
     "eslint": "9.28.0",
     "typescript": "5.8.3",
     "vitest": "3.2.2"
@@ -27,6 +28,7 @@
     "lint:biome": "biome check .",
     "lint:eslint": "eslint .",
     "lint:tsc": "tsc --noEmit",
-    "test": "vitest --watch=false"
+    "test": "vitest --watch=false",
+    "test:coverage": "vitest --watch=false --coverage"
   }
 }
