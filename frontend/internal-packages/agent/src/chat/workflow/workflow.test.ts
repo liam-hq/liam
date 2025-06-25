@@ -9,6 +9,7 @@ import type { WorkflowState } from './types'
 vi.mock('../../langchain/agents', () => ({
   DatabaseSchemaBuildAgent: vi.fn(),
   QAGenerateUsecaseAgent: vi.fn(),
+  QADMLValidationAgent: vi.fn(),
   PMAnalysisAgent: vi.fn(),
 }))
 
@@ -38,6 +39,7 @@ describe('Chat Workflow', () => {
   }
   let MockDatabaseSchemaBuildAgent: ReturnType<typeof vi.fn>
   let MockQAGenerateUsecaseAgent: ReturnType<typeof vi.fn>
+  let MockQADMLValidationAgent: ReturnType<typeof vi.fn>
   let MockPMAnalysisAgent: ReturnType<typeof vi.fn>
   let mockRepositories: Repositories
   let mockSchemaRepository: SchemaRepository
@@ -130,6 +132,7 @@ describe('Chat Workflow', () => {
     )
     MockPMAnalysisAgent = vi.mocked(agentsModule.PMAnalysisAgent)
     MockQAGenerateUsecaseAgent = vi.mocked(agentsModule.QAGenerateUsecaseAgent)
+    MockQADMLValidationAgent = vi.mocked(agentsModule.QADMLValidationAgent)
 
     // Create mock repositories
     mockSchemaRepository = {
@@ -188,6 +191,18 @@ describe('Chat Workflow', () => {
             requirement: 'Mocked functional requirement',
             title: 'Mocked Use Case',
             description: 'Mocked use case description',
+          },
+        ],
+      }),
+    }))
+
+    MockQADMLValidationAgent.mockImplementation(() => ({
+      generate: vi.fn().mockResolvedValue({
+        statements: [
+          {
+            sql: 'INSERT INTO users (email, name) VALUES (\'test@example.com\', \'Test User\');',
+            description: 'Insert test user data',
+            expectedResult: 'success',
           },
         ],
       }),

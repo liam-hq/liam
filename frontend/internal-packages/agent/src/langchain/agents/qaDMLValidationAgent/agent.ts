@@ -15,8 +15,8 @@ const generateDMLResponseSchema = v.object({
   statements: v.array(dmlStatementSchema),
 })
 
-export type DMLStatement = v.InferOutput<typeof dmlStatementSchema>
-export type GenerateDMLResponse = v.InferOutput<
+type DMLStatement = v.InferOutput<typeof dmlStatementSchema>
+type GenerateDMLResponse = v.InferOutput<
   typeof generateDMLResponseSchema
 >
 
