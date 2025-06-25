@@ -16,7 +16,9 @@ const generateDMLResponseSchema = v.object({
 })
 
 export type DMLStatement = v.InferOutput<typeof dmlStatementSchema>
-export type GenerateDMLResponse = v.InferOutput<typeof generateDMLResponseSchema>
+export type GenerateDMLResponse = v.InferOutput<
+  typeof generateDMLResponseSchema
+>
 
 export class QADMLValidationAgent
   implements ChatAgent<BasePromptVariables, GenerateDMLResponse>

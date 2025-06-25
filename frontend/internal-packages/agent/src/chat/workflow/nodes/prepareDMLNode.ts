@@ -1,6 +1,6 @@
 import { QADMLValidationAgent } from '../../../langchain/agents'
-import { convertSchemaToText } from '../../../utils/convertSchemaToText'
 import type { BasePromptVariables } from '../../../langchain/utils/types'
+import { convertSchemaToText } from '../../../utils/convertSchemaToText'
 import type { WorkflowState } from '../types'
 
 const NODE_NAME = 'prepareDMLNode'
@@ -66,7 +66,9 @@ export async function prepareDMLNode(
       .map((stmt) => `-- ${stmt.description}\n${stmt.sql}`)
       .join('\n\n')
 
-    state.logger.log(`[${NODE_NAME}] Generated ${result.statements.length} DML statements`)
+    state.logger.log(
+      `[${NODE_NAME}] Generated ${result.statements.length} DML statements`,
+    )
     state.logger.log(`[${NODE_NAME}] Completed`)
 
     return {

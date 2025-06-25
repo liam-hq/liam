@@ -41,15 +41,19 @@ export async function validateSchemaNode(
       const validationError = `DML validation failed: ${errorMessages}`
       state.logger.error(`[${NODE_NAME}] ${validationError}`)
       state.logger.log(`[${NODE_NAME}] Completed with errors`)
-      
+
       return {
         ...state,
         error: validationError,
       }
     }
 
-    const successfulResults = results.filter((result: SqlResult) => result.success)
-    state.logger.log(`[${NODE_NAME}] Successfully executed ${successfulResults.length} DML statements`)
+    const successfulResults = results.filter(
+      (result: SqlResult) => result.success,
+    )
+    state.logger.log(
+      `[${NODE_NAME}] Successfully executed ${successfulResults.length} DML statements`,
+    )
     state.logger.log(`[${NODE_NAME}] Schema validation passed`)
     state.logger.log(`[${NODE_NAME}] Completed`)
 
