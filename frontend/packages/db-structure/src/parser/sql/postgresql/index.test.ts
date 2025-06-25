@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import type { Table } from '../../../schema/index.js'
 import { aColumn, aSchema, aTable } from '../../../schema/index.js'
-import { createParserTestCases } from '../../__tests__/index.js'
+import { createParserTestCases } from '../index.js'
 import { UnexpectedTokenWarningError } from '../../errors.js'
 import { processor } from './index.js'
 

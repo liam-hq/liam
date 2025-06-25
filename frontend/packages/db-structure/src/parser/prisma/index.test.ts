@@ -7,7 +7,7 @@ import {
   aSchema,
   aTable,
 } from '../../schema/index.js'
-import { createParserTestCases } from '../__tests__/index.js'
+import { createParserTestCases } from '../index.js'
 import { processor as _processor } from './index.js'
 
 describe(_processor, () => {
