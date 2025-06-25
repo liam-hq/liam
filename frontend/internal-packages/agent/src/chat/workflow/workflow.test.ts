@@ -200,7 +200,7 @@ describe('Chat Workflow', () => {
       generate: vi.fn().mockResolvedValue({
         statements: [
           {
-            sql: 'INSERT INTO users (email, name) VALUES (\'test@example.com\', \'Test User\');',
+            sql: "INSERT INTO users (email, name) VALUES ('test@example.com', 'Test User');",
             description: 'Insert test user data',
             expectedResult: 'success',
           },
