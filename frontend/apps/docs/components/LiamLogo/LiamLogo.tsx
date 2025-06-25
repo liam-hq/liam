@@ -1,8 +1,10 @@
 import type { ComponentPropsWithoutRef, FC } from 'react'
+import { useId } from 'react'
 
 type Props = ComponentPropsWithoutRef<'svg'>
 
 export const LiamLogo: FC<Props> = (props) => {
+  const clipPathId = useId()
   return (
     <svg
       role="img"
@@ -25,7 +27,7 @@ export const LiamLogo: FC<Props> = (props) => {
         d="M109.061 15.5944H117.528V18.1976H109.061V15.5944ZM109.305 22.893H118.914V25.5449H106.142V8.51477H118.574V11.1666H109.305V22.893Z"
         fill="currentColor"
       />
-      <g clipPath="url(#clip0_3660_19645)">
+      <g clipPath={`url(#${clipPathId})`}>
         <path
           d="M37.2192 8.07196H40.4978V22.7822H49.7283V25.5243H37.2192V8.07196Z"
           fill="currentColor"
@@ -52,7 +54,7 @@ export const LiamLogo: FC<Props> = (props) => {
         />
       </g>
       <defs>
-        <clipPath id="clip0_3660_19645">
+        <clipPath id={clipPathId}>
           <rect
             width="99.1323"
             height="30.37"

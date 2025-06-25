@@ -9,14 +9,6 @@
     var(--default-timing-function);
 }
 
-.iconWrapper:hover {
-  background-color: var(--pane-background-active);
-
-  .icon > svg {
-    color: var(--global-foreground);
-  }
-}
-
 .iconWrapper.hoverBackground:hover {
   background-color: var(--overlay-10);
 }
@@ -31,6 +23,12 @@
   justify-content: center;
 }
 
+.icon > svg {
+  color: var(--overlay-70);
+  transition: color var(--default-hover-animation-duration)
+    var(--default-timing-function);
+}
+
 .icon.sm > svg {
   width: 0.75rem;
   height: 0.75rem;
@@ -41,8 +39,10 @@
   height: 1rem;
 }
 
-.icon > svg {
-  color: var(--overlay-70);
-  transition: color var(--default-hover-animation-duration)
-    var(--default-timing-function);
+.iconWrapper:hover {
+  background-color: var(--pane-background-active);
+
+  .icon > svg {
+    color: var(--global-foreground);
+  }
 }
