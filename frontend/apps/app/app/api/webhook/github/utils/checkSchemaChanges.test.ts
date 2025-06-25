@@ -1,6 +1,6 @@
 import { getPullRequestFiles } from '@liam-hq/github'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { checkSchemaChanges } from '../checkSchemaChanges'
+import { checkSchemaChanges } from './checkSchemaChanges'
 
 // Only mock the GitHub API calls, not Supabase
 vi.mock('@liam-hq/github', () => ({

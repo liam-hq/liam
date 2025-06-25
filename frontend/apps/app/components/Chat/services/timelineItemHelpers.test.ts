@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest'
-import type { TimelineItemEntry } from '../../types/chatTypes'
+import type { TimelineItemEntry } from '../types/chatTypes'
 import {
   formatTimelineItemHistory,
   isDuplicateTimelineItem,
-} from '../timelineItemHelpers'
+} from './timelineItemHelpers'
 
 describe('timelineItemHelpers', () => {
   describe('formatTimelineItemHistory', () => {
