@@ -61,7 +61,7 @@ export const sendInvitationEmail = async ({
     } as const
   }
 
-  let baseUrl: string | undefined = undefined
+  let baseUrl: string | undefined
   switch (process.env.NEXT_PUBLIC_ENV_NAME) {
     case 'production':
       baseUrl = process.env.NEXT_PUBLIC_BASE_URL // NEXT_PUBLIC_BASE_URL includes "https://"

@@ -18,49 +18,35 @@
     "rules": {
       "recommended": true,
       "nursery": {
-        // TODO: Re-enable useUniqueElementIds after fixing hardcoded IDs across codebase
-        "useUniqueElementIds": "off"
+        "useUniqueElementIds": "error"
       },
       "correctness": {
         "noUndeclaredDependencies": "error",
         "noUndeclaredVariables": "error",
-        // TODO: Re-enable noUnusedImports after fixing unused imports
-        "noUnusedImports": "off",
-        // TODO: Re-enable noUnusedVariables after fixing unused variables
-        "noUnusedVariables": "off",
-        // TODO: Re-enable useExhaustiveDependencies after fixing hook dependencies
-        "useExhaustiveDependencies": "off",
-        // TODO: Re-enable useImportExtensions after fixing import extensions
-        "useImportExtensions": "off"
+        "noUnusedImports": "error",
+        "noUnusedVariables": "error",
+        "useExhaustiveDependencies": "error",
+        "useImportExtensions": "error"
       },
       "performance": {
-        // TODO: Re-enable noImgElement after replacing img with Next.js Image
-        "noImgElement": "off"
+        "noImgElement": "error"
       },
       "suspicious": {
         "noConsole": { "level": "error", "options": { "allow": ["warn", "error", "info", "debug"] } },
-        // TODO: Re-enable noDuplicateProperties after fixing duplicate property issues
-        "noDuplicateProperties": "off",
+        "noDuplicateProperties": "error",
         "noDocumentCookie": "error"
       },
       "a11y": {
-        // TODO: Re-enable useAriaPropsSupportedByRole after fixing accessibility issues
-        "useAriaPropsSupportedByRole": "off",
-        // TODO: Re-enable noStaticElementInteractions after adding proper roles
-        "noStaticElementInteractions": "off"
+        "useAriaPropsSupportedByRole": "error",
+        "noStaticElementInteractions": "error"
       },
       "complexity": {
         "useLiteralKeys": "off",
-        // FIXME: Change to "error" once all cognitive complexity issues are resolved
-        "noExcessiveCognitiveComplexity": "warn",
-        // TODO: Re-enable noUselessEscapeInRegex after fixing regex escape issues
-        "noUselessEscapeInRegex": "off",
-        // TODO: Re-enable noUselessUndefinedInitialization after fixing undefined initialization issues
-        "noUselessUndefinedInitialization": "off",
-        // TODO: Re-enable useDateNow after replacing new Date().getTime() with Date.now()
-        "useDateNow": "off",
-        // TODO: Re-enable noUselessFragments after removing unnecessary fragments
-        "noUselessFragments": "off"
+        "noExcessiveCognitiveComplexity": "error",
+        "noUselessEscapeInRegex": "error",
+        "noUselessUndefinedInitialization": "error",
+        "useDateNow": "error",
+        "noUselessFragments": "error"
       },
       "style": {
         "noParameterAssign": "error",
@@ -74,8 +60,7 @@
         "noInferrableTypes": "error",
         "noUselessElse": "error",
         "noCommonJs": "error",
-        // TODO: Re-enable noDescendingSpecificity after fixing CSS specificity issues
-        "noDescendingSpecificity": "off"
+        "noDescendingSpecificity": "error"
       }
     },
     "includes": ["**"]

@@ -347,7 +347,6 @@
 .body :global(hr) {
   box-sizing: content-box;
   overflow: hidden;
-  background: transparent;
   border-bottom: 1px solid var(--global-border);
   height: 0.25em;
   padding: 0;
