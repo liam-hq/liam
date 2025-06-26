@@ -12,7 +12,6 @@ export const postgresqlSchemaDeparser: SchemaDeparser = (schema: Schema) => {
     ddlStatements.push(createTableDDL)
   }
 
-
   // Combine all DDL statements
   const combinedDDL = ddlStatements.join('\n\n')
 
