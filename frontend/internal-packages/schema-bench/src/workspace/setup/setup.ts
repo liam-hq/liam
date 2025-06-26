@@ -74,7 +74,9 @@ const validateWorkspace = (workspacePath: string): void => {
   }
 }
 
-export const setupWorkspace = async (config: WorkspaceConfig): Promise<void> => {
+export const setupWorkspace = async (
+  config: WorkspaceConfig,
+): Promise<void> => {
   if (fs.existsSync(config.workspacePath) && !config.overwrite) {
     return
   }

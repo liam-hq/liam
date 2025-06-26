@@ -2,11 +2,7 @@ import * as fs from 'node:fs'
 import * as path from 'node:path'
 import type { Schema } from '@liam-hq/db-structure'
 import { evaluate } from '../../evaluate/evaluate.ts'
-import type {
-  CaseData,
-  EvaluationConfig,
-  EvaluationResult,
-} from '../types'
+import type { CaseData, EvaluationConfig, EvaluationResult } from '../types'
 
 const loadOutputData = (workspacePath: string): Map<string, Schema> => {
   const outputDir = path.join(workspacePath, 'execution', 'output')
@@ -256,7 +252,9 @@ const prepareCasesToEvaluate = (
   return prepareCasesForAllCases(outputData, referenceData)
 }
 
-export const evaluateSchema = async (config: EvaluationConfig): Promise<void> => {
+export const evaluateSchema = async (
+  config: EvaluationConfig,
+): Promise<void> => {
   validateDirectories(config)
 
   const outputData = loadOutputData(config.workspacePath)
