@@ -11,5 +11,17 @@ export default defineConfig({
     },
     environment: 'happy-dom',
     setupFiles: ['@testing-library/jest-dom/vitest'],
+    coverage: {
+      provider: 'istanbul',
+      reporter: ['text', 'text-summary', 'json-summary', 'json'],
+      exclude: [
+        '**/node_modules/**',
+        '**/dist/**',
+        '**/*.test.ts',
+        '**/*.test.tsx',
+        '**/*.spec.ts',
+        '**/*.spec.tsx',
+      ],
+    },
   },
 })
