@@ -48,7 +48,6 @@ export const postgresqlSchemaDeparser: SchemaDeparser = (schema: Schema) => {
 
   // Add foreign key constraints at the end
   ddlStatements.push(...foreignKeyStatements)
-
   // Combine all DDL statements
   const combinedDDL = ddlStatements.join('\n\n')
 
