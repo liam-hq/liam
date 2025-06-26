@@ -75,7 +75,7 @@ describe('evaluateSchema', () => {
     mockEvaluate.mockResolvedValue(mockEvaluateResult)
 
     // Create temporary directory for testing
-    tempDir = fs.mkdtempSync(path.join(process.cwd(), 'test-evaluation-'))
+    tempDir = fs.mkdtempSync(path.join(require('node:os').tmpdir(), 'test-evaluation-'))
     
     // Create workspace structure
     const outputDir = path.join(tempDir, 'execution', 'output')

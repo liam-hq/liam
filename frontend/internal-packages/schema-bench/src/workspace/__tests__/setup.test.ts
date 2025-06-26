@@ -16,8 +16,8 @@ describe('setupWorkspace', () => {
 
   beforeEach(() => {
     // Create temporary directories for testing
-    tempDir = fs.mkdtempSync(path.join(process.cwd(), 'test-workspace-'))
-    defaultDataDir = fs.mkdtempSync(path.join(process.cwd(), 'test-default-'))
+    tempDir = fs.mkdtempSync(path.join(require('node:os').tmpdir(), 'test-workspace-'))
+    defaultDataDir = fs.mkdtempSync(path.join(require('node:os').tmpdir(), 'test-default-'))
     
     // Create default data structure
     const inputDir = path.join(defaultDataDir, 'execution', 'input')
@@ -145,7 +145,7 @@ describe('setupWorkspace', () => {
 
     it('should handle missing default data directories gracefully', async () => {
       const workspacePath = path.join(tempDir, 'workspace')
-      const emptyDefaultDir = fs.mkdtempSync(path.join(process.cwd(), 'test-empty-'))
+      const emptyDefaultDir = fs.mkdtempSync(path.join(require('node:os').tmpdir(), 'test-empty-'))
       
       const config: WorkspaceConfig = {
         workspacePath,
