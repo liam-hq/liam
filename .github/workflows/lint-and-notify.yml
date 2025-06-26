@@ -1,0 +1,50 @@
+name: Daily Lint Check
+
+on:
+  schedule:
+    - cron: '0 0 * * *' # JST09:00 (UTC00:00)
+  workflow_dispatch:
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      issues: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install Dependencies
+        run: pnpm install
+
+      - name: Run Linter with Full Output
+        run: pnpm turbo lint --output-logs=full > lint-result.txt 2>&1
+
+      - name: Check for Warnings
+        id: lint_check
+        run: |
+          grep -i 'warning\|warn' lint-result.txt > warnings.txt || true
+          echo "has_warning=$(test -s warnings.txt && echo true || echo false)" >> $GITHUB_OUTPUT
+
+      - name: Post to Issue (if warning exists)
+        if: steps.lint_check.outputs.has_warning == 'true'
+        run: |
+          gh issue create \
+            --title "Daily Lint Warning Report - $(date '+%Y-%m-%d')" \
+            --body "$(cat warnings.txt | head -n 30)\n\n@Claude Please review the following lint warnings and suggest code changes to fix them. If there are any unused variables or imports, feel free to propose their removal." \
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
