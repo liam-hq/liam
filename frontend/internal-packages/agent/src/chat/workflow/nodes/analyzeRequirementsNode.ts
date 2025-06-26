@@ -8,23 +8,6 @@ const NODE_NAME = 'analyzeRequirementsNode'
 
 type AnalysisResult = v.InferOutput<typeof requirementsAnalysisSchema>
 
-/**
- * Log analysis results for debugging/monitoring purposes
- * TODO: Remove this function once the feature is stable and monitoring is no longer needed
- */
-const logAnalysisResult = (
-  logger: WorkflowState['logger'],
-  result: AnalysisResult,
-): void => {
-  logger.log(`[${NODE_NAME}] Analysis Result:`)
-  logger.log(`[${NODE_NAME}] BRD: ${result.businessRequirement}`)
-  logger.log(
-    `[${NODE_NAME}] Functional Requirements: ${JSON.stringify(result.functionalRequirements)}`,
-  )
-  logger.log(
-    `[${NODE_NAME}] Non-Functional Requirements: ${JSON.stringify(result.nonFunctionalRequirements)}`,
-  )
-}
 
 /**
  * Analyze Requirements Node - Requirements Organization
@@ -47,9 +30,6 @@ export async function analyzeRequirementsNode(
   try {
     const analysisResult =
       await pmAnalysisAgent.analyzeRequirements(promptVariables)
-
-    // Log the analysis result for debugging/monitoring purposes
-    logAnalysisResult(state.logger, analysisResult)
 
     state.logger.log(`[${NODE_NAME}] Completed`)
 

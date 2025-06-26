@@ -5,22 +5,6 @@ import type { WorkflowState } from '../types'
 
 const NODE_NAME = 'generateUsecaseNode'
 
-/**
- * Log usecase generation results for debugging/monitoring purposes
- * TODO: Remove this function once the feature is stable and monitoring is no longer needed
- */
-const logUsecaseResults = (
-  logger: WorkflowState['logger'],
-  usecases: Usecase[],
-): void => {
-  logger.log(`[${NODE_NAME}] Generated ${usecases.length} use cases`)
-
-  usecases.forEach((usecase, index) => {
-    logger.log(
-      `[${NODE_NAME}] Usecase ${index + 1} (${usecase.requirementType}): ${JSON.stringify(usecase)}`,
-    )
-  })
-}
 
 /**
  * Format analyzed requirements into a structured text for AI processing
@@ -89,9 +73,6 @@ export async function generateUsecaseNode(
 
   try {
     const result = await qaAgent.generate(promptVariables)
-
-    // Log the usecase results for debugging/monitoring purposes
-    logUsecaseResults(state.logger, result.usecases)
 
     state.logger.log(`[${NODE_NAME}] Completed`)
 

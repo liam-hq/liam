@@ -57,10 +57,8 @@
         "noUselessEscapeInRegex": "off",
         // TODO: Re-enable noUselessUndefinedInitialization after fixing undefined initialization issues
         "noUselessUndefinedInitialization": "off",
-        // TODO: Re-enable useDateNow after replacing new Date().getTime() with Date.now()
-        "useDateNow": "off",
-        // TODO: Re-enable noUselessFragments after removing unnecessary fragments
-        "noUselessFragments": "off"
+        "useDateNow": "error",
+        "noUselessFragments": "error"
       },
       "style": {
         "noParameterAssign": "error",

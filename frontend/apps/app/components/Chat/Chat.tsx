@@ -37,6 +37,9 @@ export const Chat: FC<Props> = ({ schemaData, designSession }) => {
   const { autoStartExecuted, setAutoStartExecuted } = useAutoStartExecuted(
     designSession.id,
   )
+  const [messageCount, setMessageCount] = useState(0)
+  const [lastMessageTime, setLastMessageTime] = useState(0)
+  const [rateLimitExceeded, setRateLimitExceeded] = useState(false)
 
   // Get current user ID on component mount
   useEffect(() => {
@@ -95,15 +98,29 @@ export const Chat: FC<Props> = ({ schemaData, designSession }) => {
     }
   }
 
-  // TODO: Add rate limiting - Implement rate limiting for message sending to prevent spam
   const handleSendMessage = async (content: string) => {
-    // Add user message
+    const now = Date.now()
+    const timeWindow = 60000
+    const maxMessages = 5
+
+    if (now - lastMessageTime < timeWindow) {
+      if (messageCount >= maxMessages) {
+        setRateLimitExceeded(true)
+        setTimeout(() => setRateLimitExceeded(false), 3000)
+        return
+      }
+      setMessageCount(messageCount + 1)
+    } else {
+      setMessageCount(1)
+      setLastMessageTime(now)
+    }
+
     const userMessage: TimelineItemEntry = {
       id: generateTimelineItemId('user'),
       content,
       role: 'user',
       timestamp: new Date(),
-      isGenerating: false, // Explicitly set to false for consistency
+      isGenerating: false,
     }
     addOrUpdateTimelineItem(userMessage)
 
@@ -133,6 +150,11 @@ export const Chat: FC<Props> = ({ schemaData, designSession }) => {
         isLoading={isLoading}
         schema={schemaData}
       />
+      {rateLimitExceeded && (
+        <div className={styles.rateLimitMessage}>
+          Rate limit exceeded. Please wait before sending another message.
+        </div>
+      )}
     </div>
   )
 }

@@ -59,6 +59,19 @@
   animation-delay: 0.4s;
 }
 
+.rateLimitMessage {
+  position: fixed;
+  bottom: 1rem;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: var(--color-error);
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 0.25rem;
+  font-size: 0.875rem;
+  z-index: 1000;
+}
+
 @keyframes pulse {
   0%,
   100% {

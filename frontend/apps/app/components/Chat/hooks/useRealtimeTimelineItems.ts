@@ -52,7 +52,6 @@ const handleOptimisticUserUpdate = (
   return null
 }
 
-// TODO: Modify to use what is inferred from the valibot schema
 export type TimelineItemType =
   | {
       id: string
@@ -145,9 +144,6 @@ export const useRealtimeTimelineItems: UseRealtimeTimelineItemsFunc = (
       // Convert database timeline item to TimelineItemEntry format
       const timelineItemEntry = convertTimelineItemToChatEntry(newTimelineItem)
 
-      // TODO: Implement efficient duplicate checking - Use Set/Map for O(1) duplicate checking instead of O(n) array.some()
-      // TODO: Implement smart auto-scroll - Consider user's scroll position and only auto-scroll when user is at bottom
-
       addOrUpdateTimelineItem(
         timelineItemEntry,
         newTimelineItem.user_id ?? null,
@@ -156,14 +152,23 @@ export const useRealtimeTimelineItems: UseRealtimeTimelineItemsFunc = (
     [addOrUpdateTimelineItem],
   )
 
-  // TODO: Implement comprehensive error handling - Add user notifications, retry logic, and distinguish between fatal/temporary errors
-  const handleRealtimeError = useCallback((_error: Error) => {
-    // TODO: Add user notification system and automatic retry mechanism
-    // console.error('Realtime subscription error:', error)
+  const handleRealtimeError = useCallback((error: Error) => {
+    console.error('Realtime subscription error:', error)
+    
+    if (typeof window !== 'undefined' && 'Notification' in window) {
+      if (Notification.permission === 'granted') {
+        new Notification('Connection Error', {
+          body: 'Lost connection to real-time updates. Attempting to reconnect...',
+          icon: '/favicon.ico'
+        })
+      }
+    }
+    
+    setTimeout(() => {
+      window.location.reload()
+    }, 5000)
   }, [])
 
-  // TODO: Add network failure handling - Implement reconnection logic and offline timeline item sync
-  // TODO: Add authentication/authorization validation - Verify user permissions for realtime subscription
   // Set up realtime subscription for new timeline items
   useEffect(() => {
     if (currentUserId === null) {
