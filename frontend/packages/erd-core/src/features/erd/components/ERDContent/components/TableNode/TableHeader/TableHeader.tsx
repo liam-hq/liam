@@ -93,13 +93,13 @@ export const TableHeader: FC<Props> = ({ data }) => {
       >
         <Table2 className={styles.tableIcon} />
 
-        <span
+        <button
+          type="button"
           className={styles.name}
           onMouseEnter={handleHoverEvent}
-          role="button"
         >
           {name}
-        </span>
+        </button>
 
         {showMode === 'TABLE_NAME' && (
           <>

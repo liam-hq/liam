@@ -75,8 +75,8 @@ export const CommandPalette: FC = () => {
                 onSelect={() => goToERD(table.name)}
                 data-focused={focusedTableName === table.name}
               >
-                {/** biome-ignore lint/a11y/useKeyWithClickEvents: Keyboard interaction is implemented in the parent Command.Item component's onSelect handler. */}
-                <div
+                <button
+                  type="button"
                   className={styles.itemInner}
                   onClick={(event) => {
                     event.stopPropagation()
@@ -89,7 +89,7 @@ export const CommandPalette: FC = () => {
                 >
                   <Table2 className={styles.itemIcon} />
                   {table.name}
-                </div>
+                </button>
               </Command.Item>
             ))}
           </Command.Group>

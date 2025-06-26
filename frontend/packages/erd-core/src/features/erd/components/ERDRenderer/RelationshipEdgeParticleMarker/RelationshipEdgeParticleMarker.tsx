@@ -4,7 +4,6 @@ import styles from './RelationshipEdgeParticleMarker.module.css'
 
 export const RelationshipEdgeParticleMarker: FC = () => {
   const gradientId = useId()
-  
   return (
     <svg
       width="0"

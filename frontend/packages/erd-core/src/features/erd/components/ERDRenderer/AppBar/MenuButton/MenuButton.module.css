@@ -1,3 +1,11 @@
+.icon {
+  width: 1.25rem;
+  height: 1.25rem;
+  color: var(--link-default);
+  transition: color var(--default-hover-animation-duration)
+    var(--default-timing-function);
+}
+
 .wrapper {
   display: grid;
   align-items: center;
@@ -12,12 +20,4 @@
 
 .wrapper:focus-visible {
   outline: 1px solid var(--primary-color);
-}
-
-.icon {
-  width: 1.25rem;
-  height: 1.25rem;
-  color: var(--link-default);
-  transition: color var(--default-hover-animation-duration)
-    var(--default-timing-function);
 }
