@@ -25,8 +25,7 @@
         "noUndeclaredDependencies": "error",
         "noUndeclaredVariables": "error",
         "noUnusedImports": "error",
-        // TODO: Re-enable noUnusedVariables after fixing unused variables
-        "noUnusedVariables": "off",
+        "noUnusedVariables": "error",
         // TODO: Re-enable useExhaustiveDependencies after fixing hook dependencies
         "useExhaustiveDependencies": "off",
         // TODO: Re-enable useImportExtensions after fixing import extensions
