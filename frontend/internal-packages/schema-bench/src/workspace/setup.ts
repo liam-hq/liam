@@ -1,7 +1,7 @@
 import * as fs from 'node:fs'
 import * as path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import type { WorkspaceConfig, FileSystemAdapter } from './types'
+import type { FileSystemAdapter, WorkspaceConfig } from './types'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -30,7 +30,10 @@ export class WorkspaceSetup {
     }
   }
 
-  private copyDefaultData(defaultDataPath: string, workspacePath: string): void {
+  private copyDefaultData(
+    defaultDataPath: string,
+    workspacePath: string,
+  ): void {
     const inputSourceDir = path.join(defaultDataPath, 'execution', 'input')
     const referenceSourceDir = path.join(
       defaultDataPath,
@@ -38,7 +41,11 @@ export class WorkspaceSetup {
       'reference',
     )
     const inputTargetDir = path.join(workspacePath, 'execution', 'input')
-    const referenceTargetDir = path.join(workspacePath, 'execution', 'reference')
+    const referenceTargetDir = path.join(
+      workspacePath,
+      'execution',
+      'reference',
+    )
 
     if (this.fs.existsSync(inputSourceDir)) {
       const inputFiles = this.fs.readdirSync(inputSourceDir)
@@ -104,7 +111,9 @@ const createNodeFsAdapter = (): FileSystemAdapter => ({
   writeFileSync: fs.writeFileSync,
 })
 
-export const setupWorkspace = async (config: WorkspaceConfig): Promise<void> => {
+export const setupWorkspace = async (
+  config: WorkspaceConfig,
+): Promise<void> => {
   const workspaceSetup = new WorkspaceSetup(createNodeFsAdapter())
   return workspaceSetup.setupWorkspace(config)
 }

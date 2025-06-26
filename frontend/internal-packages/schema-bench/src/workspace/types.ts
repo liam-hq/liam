@@ -3,7 +3,10 @@ import type { Schema } from '@liam-hq/db-structure'
 export interface FileSystemAdapter {
   existsSync: (path: string) => boolean
   mkdirSync: (path: string, options?: { recursive?: boolean }) => void
-  rmSync: (path: string, options?: { recursive?: boolean; force?: boolean }) => void
+  rmSync: (
+    path: string,
+    options?: { recursive?: boolean; force?: boolean },
+  ) => void
   readdirSync: (path: string) => string[]
   copyFileSync: (src: string, dest: string) => void
   readFileSync: (path: string, encoding: 'utf-8') => string

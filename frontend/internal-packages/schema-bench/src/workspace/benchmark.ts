@@ -2,7 +2,12 @@ import * as fs from 'node:fs'
 import * as path from 'node:path'
 import type { Schema } from '@liam-hq/db-structure'
 import { evaluate } from '../evaluate/evaluate.ts'
-import type { BenchmarkConfig, BenchmarkResult, CaseData, FileSystemAdapter } from './types'
+import type {
+  BenchmarkConfig,
+  BenchmarkResult,
+  CaseData,
+  FileSystemAdapter,
+} from './types'
 
 export class BenchmarkRunner {
   fs: FileSystemAdapter
@@ -70,7 +75,10 @@ export class BenchmarkRunner {
   }
 
   private async runEvaluation(caseData: CaseData): Promise<BenchmarkResult> {
-    const result = await evaluate(caseData.referenceSchema, caseData.outputSchema)
+    const result = await evaluate(
+      caseData.referenceSchema,
+      caseData.outputSchema,
+    )
 
     const benchmarkResult: BenchmarkResult = {
       timestamp: new Date().toISOString(),
@@ -119,8 +127,10 @@ export class BenchmarkRunner {
             results.reduce((sum, r) => sum + r.metrics.tableAllCorrectRate, 0) /
             results.length,
           columnF1ScoreAverage:
-            results.reduce((sum, r) => sum + r.metrics.columnF1ScoreAverage, 0) /
-            results.length,
+            results.reduce(
+              (sum, r) => sum + r.metrics.columnF1ScoreAverage,
+              0,
+            ) / results.length,
           columnAllCorrectRateAverage:
             results.reduce(
               (sum, r) => sum + r.metrics.columnAllCorrectRateAverage,
@@ -143,8 +153,10 @@ export class BenchmarkRunner {
               0,
             ) / results.length,
           overallSchemaAccuracy:
-            results.reduce((sum, r) => sum + r.metrics.overallSchemaAccuracy, 0) /
-            results.length,
+            results.reduce(
+              (sum, r) => sum + r.metrics.overallSchemaAccuracy,
+              0,
+            ) / results.length,
         },
         cases: results.map((r) => ({
           caseId: r.caseId,
@@ -155,7 +167,10 @@ export class BenchmarkRunner {
       const summaryFilename = `summary_results_${summaryResult.timestamp.replace(/[:.]/g, '-')}.json`
       const summaryFilePath = path.join(evaluationDir, summaryFilename)
 
-      this.fs.writeFileSync(summaryFilePath, JSON.stringify(summaryResult, null, 2))
+      this.fs.writeFileSync(
+        summaryFilePath,
+        JSON.stringify(summaryResult, null, 2),
+      )
     }
   }
 
@@ -184,12 +199,16 @@ export class BenchmarkRunner {
   async runBenchmark(config: BenchmarkConfig): Promise<void> {
     // Check directories exist first
     const outputDir = path.join(config.workspacePath, 'execution', 'output')
-    const referenceDir = path.join(config.workspacePath, 'execution', 'reference')
-    
+    const referenceDir = path.join(
+      config.workspacePath,
+      'execution',
+      'reference',
+    )
+
     if (!this.fs.existsSync(outputDir)) {
       throw new Error(`Output directory does not exist: ${outputDir}`)
     }
-    
+
     if (!this.fs.existsSync(referenceDir)) {
       throw new Error(`Reference directory does not exist: ${referenceDir}`)
     }

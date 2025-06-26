@@ -1,7 +1,14 @@
-import { describe, it, expect, vi, beforeEach, type MockedFunction } from 'vitest'
 import type { Schema } from '@liam-hq/db-structure'
-import type { FileSystemAdapter, BenchmarkConfig } from '../types'
+import {
+  beforeEach,
+  describe,
+  expect,
+  it,
+  type MockedFunction,
+  vi,
+} from 'vitest'
 import { BenchmarkRunner } from '../benchmark'
+import type { BenchmarkConfig, FileSystemAdapter } from '../types'
 
 // Mock the evaluate function
 vi.mock('../../evaluate/evaluate.ts', () => ({
@@ -90,7 +97,7 @@ describe('BenchmarkRunner', () => {
         .mockReturnValueOnce(['case1.json', 'case2.json']) // output files
         .mockReturnValueOnce(['case1.json', 'case2.json']) // reference files
       ;(mockFs.readFileSync as MockedFunction<any>).mockReturnValue(
-        JSON.stringify(mockSchema)
+        JSON.stringify(mockSchema),
       )
 
       await benchmarkRunner.runBenchmark(config)
@@ -110,7 +117,7 @@ describe('BenchmarkRunner', () => {
         .mockReturnValueOnce(['case1.json', 'case2.json']) // output files
         .mockReturnValueOnce(['case1.json', 'case2.json']) // reference files
       ;(mockFs.readFileSync as MockedFunction<any>).mockReturnValue(
-        JSON.stringify(mockSchema)
+        JSON.stringify(mockSchema),
       )
 
       await benchmarkRunner.runBenchmark(configWithCase)
@@ -123,7 +130,7 @@ describe('BenchmarkRunner', () => {
       ;(mockFs.existsSync as MockedFunction<any>).mockReturnValue(false)
 
       await expect(benchmarkRunner.runBenchmark(config)).rejects.toThrow(
-        'Output directory does not exist'
+        'Output directory does not exist',
       )
     })
 
@@ -131,11 +138,12 @@ describe('BenchmarkRunner', () => {
       ;(mockFs.existsSync as MockedFunction<any>)
         .mockReturnValueOnce(true) // output dir exists
         .mockReturnValueOnce(false) // reference dir doesn't exist
-      ;(mockFs.readdirSync as MockedFunction<any>)
-        .mockReturnValueOnce(['case1.json']) // output files
+      ;(mockFs.readdirSync as MockedFunction<any>).mockReturnValueOnce([
+        'case1.json',
+      ]) // output files
 
       await expect(benchmarkRunner.runBenchmark(config)).rejects.toThrow(
-        'Reference directory does not exist'
+        'Reference directory does not exist',
       )
     })
 
@@ -146,12 +154,12 @@ describe('BenchmarkRunner', () => {
         .mockReturnValueOnce(['case1.json']) // output files
         .mockReturnValueOnce(['case1.json']) // reference files
       ;(mockFs.readFileSync as MockedFunction<any>).mockReturnValue(
-        JSON.stringify(mockSchema)
+        JSON.stringify(mockSchema),
       )
 
-      await expect(benchmarkRunner.runBenchmark(configWithCase)).rejects.toThrow(
-        'Output schema not found for case: nonexistent'
-      )
+      await expect(
+        benchmarkRunner.runBenchmark(configWithCase),
+      ).rejects.toThrow('Output schema not found for case: nonexistent')
     })
 
     it('should throw error if specific case reference schema not found', async () => {
@@ -161,12 +169,12 @@ describe('BenchmarkRunner', () => {
         .mockReturnValueOnce(['case1.json']) // output files
         .mockReturnValueOnce(['case2.json']) // reference files (different case)
       ;(mockFs.readFileSync as MockedFunction<any>).mockReturnValue(
-        JSON.stringify(mockSchema)
+        JSON.stringify(mockSchema),
       )
 
-      await expect(benchmarkRunner.runBenchmark(configWithCase)).rejects.toThrow(
-        'Reference schema not found for case: case1'
-      )
+      await expect(
+        benchmarkRunner.runBenchmark(configWithCase),
+      ).rejects.toThrow('Reference schema not found for case: case1')
     })
 
     it('should create summary when multiple results exist', async () => {
@@ -175,7 +183,7 @@ describe('BenchmarkRunner', () => {
         .mockReturnValueOnce(['case1.json', 'case2.json']) // output files
         .mockReturnValueOnce(['case1.json', 'case2.json']) // reference files
       ;(mockFs.readFileSync as MockedFunction<any>).mockReturnValue(
-        JSON.stringify(mockSchema)
+        JSON.stringify(mockSchema),
       )
 
       await benchmarkRunner.runBenchmark(config)
@@ -189,7 +197,9 @@ describe('BenchmarkRunner', () => {
       ;(mockFs.readdirSync as MockedFunction<any>)
         .mockReturnValueOnce(['case1.json']) // output files
         .mockReturnValueOnce(['case1.json']) // reference files
-      ;(mockFs.readFileSync as MockedFunction<any>).mockReturnValue('invalid json')
+      ;(mockFs.readFileSync as MockedFunction<any>).mockReturnValue(
+        'invalid json',
+      )
 
       await expect(benchmarkRunner.runBenchmark(config)).rejects.toThrow()
     })

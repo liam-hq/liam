@@ -1,6 +1,13 @@
-import { describe, it, expect, vi, beforeEach, type MockedFunction } from 'vitest'
-import type { FileSystemAdapter, WorkspaceConfig } from '../types'
+import {
+  beforeEach,
+  describe,
+  expect,
+  it,
+  type MockedFunction,
+  vi,
+} from 'vitest'
 import { WorkspaceSetup } from '../setup'
+import type { FileSystemAdapter, WorkspaceConfig } from '../types'
 
 describe('WorkspaceSetup', () => {
   let mockFs: FileSystemAdapter
@@ -59,7 +66,9 @@ describe('WorkspaceSetup', () => {
       await workspaceSetup.setupWorkspace(config)
 
       // Check that mkdirSync was called for the workspace directory
-      expect(mockFs.mkdirSync).toHaveBeenCalledWith('/test/workspace', { recursive: true })
+      expect(mockFs.mkdirSync).toHaveBeenCalledWith('/test/workspace', {
+        recursive: true,
+      })
       // Only one call is made because recursive: true creates all subdirectories
       expect(mockFs.mkdirSync).toHaveBeenCalledTimes(1)
     })
@@ -98,11 +107,11 @@ describe('WorkspaceSetup', () => {
 
       expect(mockFs.copyFileSync).toHaveBeenCalledWith(
         '/test/default/execution/input/input1.json',
-        '/test/workspace/execution/input/input1.json'
+        '/test/workspace/execution/input/input1.json',
       )
       expect(mockFs.copyFileSync).toHaveBeenCalledWith(
         '/test/default/execution/reference/ref1.json',
-        '/test/workspace/execution/reference/ref1.json'
+        '/test/workspace/execution/reference/ref1.json',
       )
     })
 
@@ -114,7 +123,7 @@ describe('WorkspaceSetup', () => {
         .mockReturnValueOnce(false) // required directory missing
 
       await expect(workspaceSetup.setupWorkspace(config)).rejects.toThrow(
-        'Required directory does not exist'
+        'Required directory does not exist',
       )
     })
   })
