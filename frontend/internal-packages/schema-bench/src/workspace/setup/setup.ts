@@ -1,12 +1,15 @@
 import * as fs from 'node:fs'
 import * as path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import type { WorkspaceConfig } from './types'
+import type { FileSystemAdapter, WorkspaceConfig } from '../types'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
-const createWorkspaceDirectories = (workspacePath: string): void => {
+const createWorkspaceDirectories = (
+  fs: FileSystemAdapter,
+  workspacePath: string,
+): void => {
   const directories = [
     workspacePath,
     path.join(workspacePath, 'execution'),
@@ -19,12 +22,12 @@ const createWorkspaceDirectories = (workspacePath: string): void => {
   for (const dir of directories) {
     if (!fs.existsSync(dir)) {
       fs.mkdirSync(dir, { recursive: true })
-    } else {
     }
   }
 }
 
 const copyDefaultData = (
+  fs: FileSystemAdapter,
   defaultDataPath: string,
   workspacePath: string,
 ): void => {
@@ -44,7 +47,6 @@ const copyDefaultData = (
       const targetPath = path.join(inputTargetDir, file)
       if (!fs.existsSync(targetPath)) {
         fs.copyFileSync(sourcePath, targetPath)
-      } else {
       }
     }
   }
@@ -56,13 +58,15 @@ const copyDefaultData = (
       const targetPath = path.join(referenceTargetDir, file)
       if (!fs.existsSync(targetPath)) {
         fs.copyFileSync(sourcePath, targetPath)
-      } else {
       }
     }
   }
 }
 
-const validateWorkspace = (workspacePath: string): void => {
+const validateWorkspace = (
+  fs: FileSystemAdapter,
+  workspacePath: string,
+): void => {
   const requiredDirectories = [
     path.join(workspacePath, 'execution', 'input'),
     path.join(workspacePath, 'execution', 'reference'),
@@ -77,43 +81,31 @@ const validateWorkspace = (workspacePath: string): void => {
   }
 }
 
-export const setupWorkspace = async (
-  config: WorkspaceConfig,
-): Promise<void> => {
-  if (fs.existsSync(config.workspacePath) && !config.overwrite) {
-    return
+export const createSetupWorkspace =
+  (fs: FileSystemAdapter) =>
+  async (config: WorkspaceConfig): Promise<void> => {
+    if (fs.existsSync(config.workspacePath) && !config.overwrite) {
+      return
+    }
+
+    if (fs.existsSync(config.workspacePath) && config.overwrite) {
+      fs.rmSync(config.workspacePath, { recursive: true, force: true })
+    }
+
+    createWorkspaceDirectories(fs, config.workspacePath)
+    copyDefaultData(fs, config.defaultDataPath, config.workspacePath)
+    validateWorkspace(fs, config.workspacePath)
   }
 
-  if (fs.existsSync(config.workspacePath) && config.overwrite) {
-    fs.rmSync(config.workspacePath, { recursive: true, force: true })
-  }
+// Node.js fs adapter for production use
+const createNodeFsAdapter = (): FileSystemAdapter => ({
+  existsSync: fs.existsSync,
+  mkdirSync: fs.mkdirSync,
+  rmSync: fs.rmSync,
+  readdirSync: fs.readdirSync,
+  copyFileSync: fs.copyFileSync,
+  readFileSync: fs.readFileSync,
+  writeFileSync: fs.writeFileSync,
+})
 
-  createWorkspaceDirectories(config.workspacePath)
-  copyDefaultData(config.defaultDataPath, config.workspacePath)
-  validateWorkspace(config.workspacePath)
-}
-
-const main = async (): Promise<void> => {
-  const initCwd = process.env.INIT_CWD || process.cwd()
-  const workspacePath = path.resolve(initCwd, 'benchmark-workspace')
-  const defaultDataPath = path.resolve(
-    __dirname,
-    '../../benchmark-workspace-default',
-  )
-  const overwrite = process.argv.includes('--overwrite')
-
-  const config: WorkspaceConfig = {
-    workspacePath,
-    defaultDataPath,
-    overwrite,
-  }
-
-  try {
-    await setupWorkspace(config)
-  } catch (error) {
-    console.error('❌ Workspace setup failed:', error)
-    process.exit(1)
-  }
-}
-
-main()
+export const setupWorkspace = createSetupWorkspace(createNodeFsAdapter())

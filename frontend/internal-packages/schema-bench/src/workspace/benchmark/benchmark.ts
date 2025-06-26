@@ -1,10 +1,18 @@
 import * as fs from 'node:fs'
 import * as path from 'node:path'
 import type { Schema } from '@liam-hq/db-structure'
-import { evaluate } from '../evaluate/evaluate.ts'
-import type { BenchmarkConfig, BenchmarkResult, CaseData } from './types'
+import { evaluate } from '../../evaluate/evaluate.ts'
+import type {
+  BenchmarkConfig,
+  BenchmarkResult,
+  CaseData,
+  FileSystemAdapter,
+} from '../types'
 
-const loadOutputData = (workspacePath: string): Map<string, Schema> => {
+const loadOutputData = (
+  fs: FileSystemAdapter,
+  workspacePath: string,
+): Map<string, Schema> => {
   const outputDir = path.join(workspacePath, 'execution', 'output')
   const outputData = new Map<string, Schema>()
 
@@ -33,7 +41,10 @@ const loadOutputData = (workspacePath: string): Map<string, Schema> => {
   return outputData
 }
 
-const loadReferenceData = (workspacePath: string): Map<string, Schema> => {
+const loadReferenceData = (
+  fs: FileSystemAdapter,
+  workspacePath: string,
+): Map<string, Schema> => {
   const referenceDir = path.join(workspacePath, 'execution', 'reference')
   const referenceData = new Map<string, Schema>()
 
@@ -87,6 +98,7 @@ const runEvaluation = async (caseData: CaseData): Promise<BenchmarkResult> => {
 }
 
 const saveResults = (
+  fs: FileSystemAdapter,
   results: BenchmarkResult[],
   workspacePath: string,
 ): void => {
@@ -160,6 +172,7 @@ const displaySummary = (results: BenchmarkResult[]): void => {
     return
   }
   for (const result of results) {
+    // Display individual results if needed
   }
 
   if (results.length > 1) {
@@ -172,92 +185,88 @@ const displaySummary = (results: BenchmarkResult[]): void => {
     const avgColumnF1 =
       results.reduce((sum, r) => sum + r.metrics.columnF1ScoreAverage, 0) /
       results.length
+    // Display summary if needed
   }
 }
 
-export const runBenchmark = async (config: BenchmarkConfig): Promise<void> => {
-  const outputData = loadOutputData(config.workspacePath)
-  const referenceData = loadReferenceData(config.workspacePath)
+export const createRunBenchmark =
+  (fs: FileSystemAdapter) =>
+  async (config: BenchmarkConfig): Promise<void> => {
+    // Check directories exist first
+    const outputDir = path.join(config.workspacePath, 'execution', 'output')
+    const referenceDir = path.join(
+      config.workspacePath,
+      'execution',
+      'reference',
+    )
 
-  const casesToEvaluate: CaseData[] = []
-
-  if (config.caseId) {
-    const outputSchema = outputData.get(config.caseId)
-    const referenceSchema = referenceData.get(config.caseId)
-
-    if (!outputSchema) {
-      throw new Error(`Output schema not found for case: ${config.caseId}`)
-    }
-    if (!referenceSchema) {
-      throw new Error(`Reference schema not found for case: ${config.caseId}`)
+    if (!fs.existsSync(outputDir)) {
+      throw new Error(`Output directory does not exist: ${outputDir}`)
     }
 
-    casesToEvaluate.push({
-      caseId: config.caseId,
-      outputSchema,
-      referenceSchema,
-    })
-  } else {
-    for (const [caseId, outputSchema] of outputData) {
-      const referenceSchema = referenceData.get(caseId)
-      if (referenceSchema) {
-        casesToEvaluate.push({
-          caseId,
-          outputSchema,
-          referenceSchema,
-        })
-      } else {
-        console.warn(`⚠️  No reference schema found for case: ${caseId}`)
+    if (!fs.existsSync(referenceDir)) {
+      throw new Error(`Reference directory does not exist: ${referenceDir}`)
+    }
+
+    const outputData = loadOutputData(fs, config.workspacePath)
+    const referenceData = loadReferenceData(fs, config.workspacePath)
+
+    const casesToEvaluate: CaseData[] = []
+
+    if (config.caseId) {
+      const outputSchema = outputData.get(config.caseId)
+      const referenceSchema = referenceData.get(config.caseId)
+
+      if (!outputSchema) {
+        throw new Error(`Output schema not found for case: ${config.caseId}`)
+      }
+      if (!referenceSchema) {
+        throw new Error(`Reference schema not found for case: ${config.caseId}`)
+      }
+
+      casesToEvaluate.push({
+        caseId: config.caseId,
+        outputSchema,
+        referenceSchema,
+      })
+    } else {
+      for (const [caseId, outputSchema] of outputData) {
+        const referenceSchema = referenceData.get(caseId)
+        if (referenceSchema) {
+          casesToEvaluate.push({
+            caseId,
+            outputSchema,
+            referenceSchema,
+          })
+        } else {
+          console.warn(`⚠️  No reference schema found for case: ${caseId}`)
+        }
       }
     }
-  }
 
-  if (casesToEvaluate.length === 0) {
-    throw new Error(
-      'No cases to evaluate. Make sure output and reference schemas exist.',
-    )
-  }
-
-  const results = await Promise.all(
-    casesToEvaluate.map((caseData) => runEvaluation(caseData)),
-  )
-
-  saveResults(results, config.workspacePath)
-  displaySummary(results)
-}
-
-const main = async (): Promise<void> => {
-  const initCwd = process.env.INIT_CWD || process.cwd()
-  const workspacePath = path.resolve(initCwd, 'benchmark-workspace')
-  const args = process.argv.slice(2)
-
-  let caseId: string | undefined
-  const caseArg = args.find((arg) => arg.startsWith('--case='))
-  if (caseArg) {
-    caseId = caseArg.split('=')[1]
-  }
-
-  const casesArg = args.find((arg) => arg.startsWith('--cases='))
-  if (casesArg && !caseId) {
-    const cases = casesArg.split('=')[1].split(',')
-    if (cases.length === 1) {
-      caseId = cases[0]
-    } else {
+    if (casesToEvaluate.length === 0) {
+      throw new Error(
+        'No cases to evaluate. Make sure output and reference schemas exist.',
+      )
     }
+
+    const results = await Promise.all(
+      casesToEvaluate.map((caseData) => runEvaluation(caseData)),
+    )
+
+    saveResults(fs, results, config.workspacePath)
+    displaySummary(results)
   }
 
-  const config: BenchmarkConfig = {
-    workspacePath,
-    caseId,
-    outputFormat: 'json',
-  }
+// Node.js fs adapter for production use
+const createNodeFsAdapter = (): FileSystemAdapter => ({
+  existsSync: fs.existsSync,
+  mkdirSync: fs.mkdirSync,
+  rmSync: fs.rmSync,
+  readdirSync: fs.readdirSync,
+  copyFileSync: fs.copyFileSync,
+  readFileSync: fs.readFileSync,
+  writeFileSync: fs.writeFileSync,
+})
 
-  try {
-    await runBenchmark(config)
-  } catch (error) {
-    console.error('❌ Benchmark evaluation failed:', error)
-    process.exit(1)
-  }
-}
-
-main()
+export const runBenchmark = createRunBenchmark(createNodeFsAdapter())

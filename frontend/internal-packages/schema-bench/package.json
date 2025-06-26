@@ -20,8 +20,8 @@
     "fmt": "concurrently \"pnpm:fmt:*\"",
     "fmt:biome": "biome check --write --unsafe .",
     "fmt:eslint": "eslint --fix .",
-    "run-benchmark": "node --experimental-strip-types src/workspace/benchmark.ts",
-    "setup-workspace": "node --experimental-strip-types src/workspace/setup.ts",
+    "run-benchmark": "node --experimental-strip-types src/workspace/benchmark/index.ts",
+    "setup-workspace": "node --experimental-strip-types src/workspace/setup/index.ts",
     "test": "vitest --watch=false --passWithNoTests"
   }
 }
