@@ -9,14 +9,14 @@ jobs:
     timeout-minutes: 10
     strategy:
       matrix:
-        browser: [chromium, "Mobile Safari"]
+        browser: [chromium, 'Mobile Safari']
       fail-fast: false
     permissions:
       contents: read
       statuses: write
     defaults:
       run:
-        working-directory: "frontend/internal-packages/e2e"
+        working-directory: 'frontend/internal-packages/e2e'
     env:
       CI: true
       URL: ${{ github.event.deployment_status.target_url }}
@@ -43,7 +43,7 @@ jobs:
               if (environment_val.include?("Production") && target_url.include?("liam-app-git-main"))
                 "should_run=true"
               # Preview deployment
-              elsif environment_val.include?("Preview") && !target_url.include?("liam-erd-sample") && !target_url.include?("liam-docs") && !target_url.include?("liam-storybook")
+              elsif environment_val.include?("Preview") && !target_url.include?("liam-docs") && !target_url.include?("liam-storybook")
                 "should_run=true"
               else
                 "should_run=false"
@@ -118,7 +118,7 @@ jobs:
         env:
           INCOMING_WEBHOOK_URL: ${{ secrets.SLACK_CLI_CI_WEBHOOK_URL }}
         with:
-          text: "E2E Test Failure"
+          text: 'E2E Test Failure'
           attachments: |
             [
               {
