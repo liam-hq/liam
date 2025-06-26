@@ -42,6 +42,7 @@
     "lint:tsc": "tsc --noEmit",
     "postinstall": "bash setup.sh",
     "test": "vitest --watch=false --passWithNoTests",
+    "test:coverage": "vitest run --coverage.enabled true",
     "trigger:dev": "trigger dev"
   }
 }

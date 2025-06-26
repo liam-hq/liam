@@ -1,0 +1,210 @@
+name: "PR Coverage Report"
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  pr-coverage:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0
+
+      - uses: ./.github/actions/pnpm-setup
+
+      - name: Get Changed Files
+        id: changed-files
+        run: |
+          BASE_BRANCH="${{ github.event.pull_request.base.ref }}"
+          HEAD_BRANCH="${{ github.event.pull_request.head.ref }}"
+          
+          echo "Base branch: $BASE_BRANCH"
+          echo "Head branch: $HEAD_BRANCH"
+          
+          CHANGED_FILES=$(git diff --name-only origin/$BASE_BRANCH...HEAD -- 'frontend/**/*.ts' 'frontend/**/*.tsx' 'frontend/**/*.js' 'frontend/**/*.jsx' | grep -v '\.test\.' | grep -v '\.spec\.' || true)
+          
+          if [ -z "$CHANGED_FILES" ]; then
+            echo "No relevant frontend files changed"
+            echo "has_changed_files=false" >> $GITHUB_OUTPUT
+          else
+            echo "Changed files:"
+            echo "$CHANGED_FILES"
+            echo "$CHANGED_FILES" > changed_files.txt
+            echo "has_changed_files=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Run Tests with Coverage for Changed Files
+        if: steps.changed-files.outputs.has_changed_files == 'true'
+        run: |
+          mkdir -p coverage_results
+          
+          CHANGED_FILES=$(cat changed_files.txt)
+          
+          echo "Running tests with coverage for changed files"
+          
+          pnpm test:coverage
+          
+          find . -name "coverage-summary.json" -path "*/coverage/*" | while read file; do
+            package_name=$(echo $file | sed 's|./frontend/||' | sed 's|/coverage/coverage-summary.json||')
+            cp "$file" "coverage_results/coverage-summary-${package_name//\//-}.json"
+          done
+          
+          find . -name "coverage-final.json" -path "*/coverage/*" | while read file; do
+            package_name=$(echo $file | sed 's|./frontend/||' | sed 's|/coverage/coverage-final.json||')
+            cp "$file" "coverage_results/coverage-final-${package_name//\//-}.json"
+          done
+          
+          if ls coverage_results/*.json 1> /dev/null 2>&1; then
+            echo "Coverage reports generated successfully"
+            echo "no_coverage=false" >> $GITHUB_ENV
+          else
+            echo "No coverage reports generated"
+            echo "no_coverage=true" >> $GITHUB_ENV
+          fi
+
+      - name: Generate Coverage Report
+        if: steps.changed-files.outputs.has_changed_files == 'true' && env.no_coverage == 'false'
+        id: report
+        run: |
+          REPO_URL="https://github.com/${{ github.repository }}"
+          COMMIT_SHA="${{ github.event.pull_request.head.sha }}"
+          
+          CHANGED_FILES=$(cat changed_files.txt)
+          
+          echo "report<<EOF" >> $GITHUB_OUTPUT
+          echo "## 📊 Coverage Report for Changed Files" >> $GITHUB_OUTPUT
+          echo "" >> $GITHUB_OUTPUT
+          echo "<table>" >> $GITHUB_OUTPUT
+          echo "<thead>" >> $GITHUB_OUTPUT
+          echo "<tr>" >> $GITHUB_OUTPUT
+          echo "<th align=\"left\">File</th>" >> $GITHUB_OUTPUT
+          echo "<th align=\"right\">Stmts</th>" >> $GITHUB_OUTPUT
+          echo "<th align=\"right\">Branches</th>" >> $GITHUB_OUTPUT
+          echo "<th align=\"right\">Functions</th>" >> $GITHUB_OUTPUT
+          echo "<th align=\"right\">Lines</th>" >> $GITHUB_OUTPUT
+          echo "<th align=\"left\">Uncovered Lines</th>" >> $GITHUB_OUTPUT
+          echo "</tr>" >> $GITHUB_OUTPUT
+          echo "</thead>" >> $GITHUB_OUTPUT
+          echo "<tbody>" >> $GITHUB_OUTPUT
+          
+          for summary_file in coverage_results/coverage-summary-*.json; do
+            if [ -f "$summary_file" ]; then
+              final_file="${summary_file/summary/final}"
+              
+              if [ -f "$final_file" ]; then
+                for file in $CHANGED_FILES; do
+                  if [[ "$file" == *".test."* ]] || [[ "$file" == *".spec."* ]]; then
+                    continue
+                  fi
+                  
+                  abs_path="$(pwd)/$file"
+                  
+                  file_coverage=$(jq -r ".\"$abs_path\"" "$final_file" 2>/dev/null || echo "null")
+                  
+                  if [ "$file_coverage" != "null" ]; then
+                    stmts=$(echo "$file_coverage" | jq -r '.s.pct // 0')
+                    branches=$(echo "$file_coverage" | jq -r '.b.pct // 0')
+                    functions=$(echo "$file_coverage" | jq -r '.f.pct // 0')
+                    lines=$(echo "$file_coverage" | jq -r '.l.pct // 0')
+                    
+                    uncovered_lines=""
+                    line_coverage=$(echo "$file_coverage" | jq -r '.l.hits')
+                    if [ "$line_coverage" != "null" ]; then
+                      uncovered_lines=$(echo "$line_coverage" | jq -r 'to_entries | map(select(.value == 0) | .key) | join(", ")' 2>/dev/null || echo "")
+                    fi
+                    
+                    encoded_file=$(echo "$file" | sed 's/\[/%5B/g' | sed 's/\]/%5D/g')
+                    file_url="$REPO_URL/blob/$COMMIT_SHA/$encoded_file"
+                    
+                    echo "<tr>" >> $GITHUB_OUTPUT
+                    echo "<td><a href=\"$file_url\">$file</a></td>" >> $GITHUB_OUTPUT
+                    echo "<td align=\"right\">$stmts%</td>" >> $GITHUB_OUTPUT
+                    echo "<td align=\"right\">$branches%</td>" >> $GITHUB_OUTPUT
+                    echo "<td align=\"right\">$functions%</td>" >> $GITHUB_OUTPUT
+                    echo "<td align=\"right\">$lines%</td>" >> $GITHUB_OUTPUT
+                    
+                    if [ -n "$uncovered_lines" ]; then
+                      echo "<td><a href=\"$file_url\">$uncovered_lines</a></td>" >> $GITHUB_OUTPUT
+                    else
+                      echo "<td>-</td>" >> $GITHUB_OUTPUT
+                    fi
+                    echo "</tr>" >> $GITHUB_OUTPUT
+                  fi
+                done
+              fi
+            fi
+          done
+          
+          echo "</tbody>" >> $GITHUB_OUTPUT
+          echo "</table>" >> $GITHUB_OUTPUT
+          echo "" >> $GITHUB_OUTPUT
+          echo "**Coverage Target:** 80% for Statements, Branches, Functions, and Lines" >> $GITHUB_OUTPUT
+          echo "" >> $GITHUB_OUTPUT
+          echo "*Generated by [PR Coverage Workflow]($REPO_URL/actions/runs/${{ github.run_id }})*" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Comment PR
+        if: steps.changed-files.outputs.has_changed_files == 'true' && env.no_coverage == 'false'
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const report = `${{ steps.report.outputs.report }}`;
+            
+            const comments = await github.rest.issues.listComments({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+            });
+            
+            const existingComment = comments.data.find(comment => 
+              comment.body.includes('📊 Coverage Report for Changed Files')
+            );
+            
+            if (existingComment) {
+              await github.rest.issues.updateComment({
+                comment_id: existingComment.id,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: report
+              });
+            } else {
+              await github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: report
+              });
+            }
+
+      - name: No Coverage Comment
+        if: steps.changed-files.outputs.has_changed_files == 'true' && env.no_coverage == 'true'
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const report = `## 📊 Coverage Report for Changed Files
+            
+            No coverage data was generated for the changed files in this PR.
+            This might be because:
+            - The changed files don't have corresponding test files
+            - The tests didn't run successfully
+            - The files are not included in coverage collection
+            
+            *Generated by [PR Coverage Workflow](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})*`;
+            
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: report
+            });

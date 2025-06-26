@@ -73,6 +73,7 @@
     "postinstall": "cp ../../packages/db-structure/node_modules/@ruby/prism/src/prism.wasm prism.wasm",
     "start": "next start",
     "test": "vitest --watch=false",
+    "test:coverage": "vitest run --coverage.enabled true",
     "test:vitest": "pnpm vitest"
   }
 }
