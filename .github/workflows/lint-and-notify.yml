@@ -43,8 +43,13 @@ jobs:
       - name: Post to Issue (if warning exists)
         if: steps.lint_check.outputs.has_warning == 'true'
         run: |
+          WARNING_COUNT=$(grep -i 'warning\|warn' warnings.txt | wc -l)
+          
+          # Read template and replace WARNING_COUNT placeholder
+          ISSUE_BODY=$(sed "s/WARNING_COUNT/$WARNING_COUNT/g" .github/workflows/templates/lint-and-notify.md)
+          
           gh issue create \
             --title "Daily Lint Warning Report - $(date '+%Y-%m-%d')" \
-            --body "$(cat warnings.txt | head -n 30)\n\n@Claude Please review the following lint warnings and suggest code changes to fix them. If there are any unused variables or imports, feel free to propose their removal." \
+            --body "$ISSUE_BODY"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
