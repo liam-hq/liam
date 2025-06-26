@@ -117,6 +117,8 @@ export const GitHubSessionFormPresenter: FC<Props> = ({
           hasError && styles.error,
           dragActive && styles.dragActive,
         )}
+        role="region"
+        aria-label="GitHub session form with file drop zone"
         onDragEnter={handleDrag}
         onDragLeave={handleDrag}
         onDragOver={handleDrag}

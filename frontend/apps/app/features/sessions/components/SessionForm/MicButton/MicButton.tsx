@@ -66,6 +66,7 @@ export const MicButton: FC<MicButtonProps> = ({
         <ArrowTooltipTrigger asChild>
           <div
             className={clsx(styles.container, className)}
+            role="presentation"
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}
           >

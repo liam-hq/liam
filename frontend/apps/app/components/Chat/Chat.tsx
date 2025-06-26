@@ -1,7 +1,14 @@
 'use client'
 
 import type { Schema } from '@liam-hq/db-structure'
-import { type FC, useEffect, useRef, useState, useTransition } from 'react'
+import {
+  type FC,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  useTransition,
+} from 'react'
 import { ChatInput } from '../ChatInput'
 import { TimelineItem } from '../TimelineItem'
 import styles from './Chat.module.css'
@@ -47,6 +54,29 @@ export const Chat: FC<Props> = ({ schemaData, designSession }) => {
     fetchUserId()
   }, [])
 
+  // Start AI response without saving user message (for auto-start scenarios)
+  const startAIResponse = useCallback(
+    async (content: string) => {
+      if (!currentUserId) return
+
+      // Send chat message to API
+      const result = await sendChatMessage({
+        message: content,
+        timelineItems: realtimeTimelineItems,
+        designSession,
+        currentUserId,
+      })
+
+      if (result.success) {
+        // Scroll to bottom after successful completion
+        setTimeout(() => {
+          messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+        }, 10)
+      }
+    },
+    [currentUserId, realtimeTimelineItems, designSession],
+  )
+
   // Auto-start AI response for initial user message
   useEffect(() => {
     if (!currentUserId || autoStartExecuted || isLoading) return
@@ -68,32 +98,13 @@ export const Chat: FC<Props> = ({ schemaData, designSession }) => {
     realtimeTimelineItems,
     autoStartExecuted,
     setAutoStartExecuted,
+    startAIResponse,
   ])
 
   // Scroll to bottom when component mounts or messages change
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [])
-
-  // Start AI response without saving user message (for auto-start scenarios)
-  const startAIResponse = async (content: string) => {
-    if (!currentUserId) return
-
-    // Send chat message to API
-    const result = await sendChatMessage({
-      message: content,
-      timelineItems: realtimeTimelineItems,
-      designSession,
-      currentUserId,
-    })
-
-    if (result.success) {
-      // Scroll to bottom after successful completion
-      setTimeout(() => {
-        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-      }, 10)
-    }
-  }
 
   // TODO: Add rate limiting - Implement rate limiting for message sending to prevent spam
   const handleSendMessage = async (content: string) => {
