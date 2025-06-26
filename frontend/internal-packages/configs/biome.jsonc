@@ -24,8 +24,7 @@
       "correctness": {
         "noUndeclaredDependencies": "error",
         "noUndeclaredVariables": "error",
-        // TODO: Re-enable noUnusedImports after fixing unused imports
-        "noUnusedImports": "off",
+        "noUnusedImports": "error",
         // TODO: Re-enable noUnusedVariables after fixing unused variables
         "noUnusedVariables": "off",
         // TODO: Re-enable useExhaustiveDependencies after fixing hook dependencies
