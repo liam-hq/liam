@@ -195,10 +195,11 @@ export function generateAddConstraintStatement(
     case 'PRIMARY KEY':
       return `ALTER TABLE ${tableNameEscaped} ADD CONSTRAINT ${constraintName} PRIMARY KEY (${escapeIdentifier(constraint.columnName)});`
 
-    case 'FOREIGN KEY':
+    case 'FOREIGN KEY': {
       const updateAction = constraint.updateConstraint.replace(/_/g, ' ')
       const deleteAction = constraint.deleteConstraint.replace(/_/g, ' ')
       return `ALTER TABLE ${tableNameEscaped} ADD CONSTRAINT ${constraintName} FOREIGN KEY (${escapeIdentifier(constraint.columnName)}) REFERENCES ${escapeIdentifier(constraint.targetTableName)} (${escapeIdentifier(constraint.targetColumnName)}) ON UPDATE ${updateAction} ON DELETE ${deleteAction};`
+    }
 
     case 'UNIQUE':
       return `ALTER TABLE ${tableNameEscaped} ADD CONSTRAINT ${constraintName} UNIQUE (${escapeIdentifier(constraint.columnName)});`
