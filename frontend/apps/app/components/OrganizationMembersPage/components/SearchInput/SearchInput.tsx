@@ -42,9 +42,7 @@ export const SearchInput: FC<SearchInputProps> = ({
           placeholder={placeholder}
           disabled={loading}
         />
-        {
-          loading && <span className={styles.loading}>Loading...</span>
-        }
+        {loading && <span className={styles.loading}>Loading...</span>}
       </div>
     </form>
   )

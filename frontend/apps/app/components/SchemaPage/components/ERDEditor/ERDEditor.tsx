@@ -14,8 +14,6 @@ type Props = {
   errorObjects: ComponentProps<typeof ERDRenderer>['errorObjects']
   defaultSidebarOpen: boolean
   defaultPanelSizes?: number[]
-  projectId?: string
-  branchOrCommit?: string
 }
 
 export const ERDEditor: FC<Props> = ({

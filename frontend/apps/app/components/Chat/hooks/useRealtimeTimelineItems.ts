@@ -151,7 +151,6 @@ export const useRealtimeTimelineItems: UseRealtimeTimelineItemsFunc = (
       // Convert database timeline item to TimelineItemEntry format
       const timelineItemEntry = convertTimelineItemToChatEntry(newTimelineItem)
 
-
       addOrUpdateTimelineItem(
         timelineItemEntry,
         newTimelineItem.user_id ?? null,
