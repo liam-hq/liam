@@ -28,7 +28,6 @@ export const Content: FC<ContentProps> = ({
   const handleChangeBranch = useCallback(
     (branchOrCommit: string) => {
       router.push(
-        // TODO: Replace the current path's :branchOrCommit with the selected branchOrCommit and navigate to that path
         urlgen('projects/[projectId]/ref/[branchOrCommit]', {
           projectId: currentProjectId,
           branchOrCommit,

@@ -18,8 +18,6 @@ export async function reviewDeliverablesNode(
       getWorkflowNodeProgress('reviewDeliverables'),
     )
   }
-
-  // TODO: Implement deliverables review logic
   // This node should perform final confirmation of requirements and deliverables
 
   state.logger.log(`[${NODE_NAME}] Completed`)

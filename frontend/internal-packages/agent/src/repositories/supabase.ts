@@ -149,8 +149,6 @@ export class SupabaseSchemaRepository implements SchemaRepository {
     return { data: { versions: versions || [] }, error: null }
   }
 
-  // TODO: Set response type to `{ success: true, data: Schema } | { success: false, error: unknown }`
-  // to be able to return errors
   private buildCurrentSchema(
     buildingSchema: { initial_schema_snapshot: unknown },
     versions: Array<{ number: number; patch: unknown }>,

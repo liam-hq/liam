@@ -45,7 +45,6 @@
   line-height: 160%;
 }
 
-/* TODO: Ideally, we want to use the Button from @liam-hq/ui, but since the content is a link, we're implementing a custom version here. */
 .createButton {
   display: flex;
   justify-content: center;

@@ -90,7 +90,6 @@ jobs:
         env:
           URL: ${{ env.URL }}
 
-      # FIXME: This step is not working well. All environments seem to be Preview.
       - name: Upload test results
         if: ${{ steps.check.outputs.should_run == 'true' && failure() }}
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2

@@ -8,7 +8,6 @@ const NODE_NAME = 'generateUsecaseNode'
 
 /**
  * Log usecase generation results for debugging/monitoring purposes
- * TODO: Remove this function once the feature is stable and monitoring is no longer needed
  */
 const logUsecaseResults = (
   logger: WorkflowState['logger'],

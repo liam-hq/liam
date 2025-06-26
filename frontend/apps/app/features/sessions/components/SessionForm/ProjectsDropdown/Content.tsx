@@ -55,7 +55,7 @@ export const Content: FC<Props> = ({
               value={id}
               label={name}
               showIcon={true}
-              isRepository={false} // TODO: Check if project has repository
+              isRepository={false}
             />
           ))}
         </DropdownMenuRadioGroup>

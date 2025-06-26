@@ -10,7 +10,7 @@ const outDir = 'dist-cli/html'
 export default defineConfig({
   base: './',
   build: {
-    chunkSizeWarningLimit: 5000, // TODO: Reduce this value if possible
+    chunkSizeWarningLimit: 5000,
     emptyOutDir: true,
     outDir,
     rollupOptions: {

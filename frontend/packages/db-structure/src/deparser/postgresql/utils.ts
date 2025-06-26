@@ -198,7 +198,7 @@ export function generateAddConstraintStatement(
       return `ALTER TABLE ${tableNameEscaped} ADD CONSTRAINT ${constraintName} PRIMARY KEY (${escapeIdentifier(constraint.columnName)});`
 
     case 'FOREIGN KEY':
-      // TODO: Consider changing the internal representation of foreign key constraints
+      // Consider changing the internal representation of foreign key constraints
       // from underscore format (SET_NULL, SET_DEFAULT, NO_ACTION) to space format
       // (SET NULL, SET DEFAULT, NO ACTION) to match PostgreSQL syntax directly.
       // This would be a breaking change requiring updates to all parsers and tests.

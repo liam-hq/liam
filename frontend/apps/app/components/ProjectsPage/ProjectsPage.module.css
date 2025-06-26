@@ -75,7 +75,6 @@
   height: 0.75rem;
 }
 
-/* TODO: Ideally, we want to use the Button from @liam-hq/ui, but since the content is a link, we're implementing a custom version here. */
 .newProjectButton {
   display: flex;
   align-items: center;

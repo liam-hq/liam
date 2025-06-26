@@ -8,7 +8,6 @@ import { UserMessage } from '@/components/Chat/UserMessage'
 import { VersionMessage } from '@/components/Chat/VersionMessage'
 import styles from './TimelineItem.module.css'
 
-// TODO: Modify to use what is inferred from the valibot schema
 export type TimelineItemProps =
   | {
       content: string

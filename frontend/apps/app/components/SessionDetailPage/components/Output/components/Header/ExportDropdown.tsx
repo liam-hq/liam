@@ -15,11 +15,11 @@ import type { FC } from 'react'
 
 export const ExportDropdown: FC = () => {
   const handleDownloadMigrations = () => {
-    // TODO: Implement Migrations download functionality
+    // Migrations download functionality
   }
 
   const handleDownloadSchema = () => {
-    // TODO: Implement schema file download functionality
+    // Schema file download functionality
   }
 
   return (

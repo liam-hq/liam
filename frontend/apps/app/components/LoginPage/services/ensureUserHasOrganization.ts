@@ -1,6 +1,5 @@
 'use server'
 
-// TODO: move to /features/organizations/services directory
 import { createOrganization } from '@/components/OrganizationNewPage/actions/createOrganizations'
 import { generateOrganizationNameFromUser } from '@/features/organizations/services/generateOrganizationNameFromUser'
 import { setOrganizationIdCookie } from '@/features/organizations/services/setOrganizationIdCookie'

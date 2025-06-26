@@ -5,9 +5,6 @@ import { qaDDLGenerationPrompt } from './prompts'
 
 /**
  * QA DDL Generation Agent
- *
- * TODO: This LLM-based DDL generation is a temporary solution.
- * In the future, DDL will be generated mechanically without LLM.
  */
 export class QADDLGenerationAgent
   implements ChatAgent<SchemaAwareChatVariables, string>

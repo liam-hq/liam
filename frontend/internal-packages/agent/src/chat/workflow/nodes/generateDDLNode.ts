@@ -29,9 +29,6 @@ async function prepareDDLGeneration(
 /**
  * Generate DDL Node - QA Agent generates DDL
  * Performed by qaAgent
- *
- * TODO: DDL generation using LLM is a temporary solution.
- * In the future, DDL will be generated mechanically without LLM.
  */
 export async function generateDDLNode(
   state: WorkflowState,

@@ -56,7 +56,7 @@ async function getProject(projectId: string) {
 
 export const ProjectHeader: FC<ProjectHeaderProps> = async ({
   projectId,
-  branchOrCommit = 'main', // TODO: get default branch from API(using currentOrganization)
+  branchOrCommit = 'main',
 }) => {
   const project = await getProject(projectId)
 

@@ -11,7 +11,6 @@ type AnalysisResult = v.InferOutput<typeof requirementsAnalysisSchema>
 
 /**
  * Log analysis results for debugging/monitoring purposes
- * TODO: Remove this function once the feature is stable and monitoring is no longer needed
  */
 const logAnalysisResult = (
   logger: WorkflowState['logger'],

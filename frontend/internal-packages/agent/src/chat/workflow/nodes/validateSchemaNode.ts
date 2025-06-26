@@ -18,8 +18,6 @@ export async function validateSchemaNode(
       getWorkflowNodeProgress('validateSchema'),
     )
   }
-
-  // TODO: Implement DML execution and validation logic
   // This node should execute DML and validate the schema
 
   state.logger.log(`[${NODE_NAME}] Completed`)

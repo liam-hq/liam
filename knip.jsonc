@@ -40,7 +40,6 @@
     "@biomejs/biome" // Referenced in settings.json to enable Biome's "format on save" in VSCode
   ],
 
-  // TODO: Review ignoreBinaries configuration later
   "ignoreBinaries": ["playwright"],
 
   // Workspace-specific configurations

@@ -30,7 +30,6 @@ export const Content: FC<Props> = ({ currentProject, projects }) => {
 
   const handleChangeProject = useCallback(
     (projectId: string) => {
-      // TODO: Replace the current path's :projectId with the selected project and navigate to that path
       router.push(
         urlgen('projects/[projectId]', {
           projectId,
