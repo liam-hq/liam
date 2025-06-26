@@ -6,13 +6,9 @@ import type {
   CaseData,
   EvaluationConfig,
   EvaluationResult,
-  FileSystemAdapter,
 } from '../types'
 
-const loadOutputData = (
-  fs: FileSystemAdapter,
-  workspacePath: string,
-): Map<string, Schema> => {
+const loadOutputData = (workspacePath: string): Map<string, Schema> => {
   const outputDir = path.join(workspacePath, 'execution', 'output')
   const outputData = new Map<string, Schema>()
 
@@ -41,10 +37,7 @@ const loadOutputData = (
   return outputData
 }
 
-const loadReferenceData = (
-  fs: FileSystemAdapter,
-  workspacePath: string,
-): Map<string, Schema> => {
+const loadReferenceData = (workspacePath: string): Map<string, Schema> => {
   const referenceDir = path.join(workspacePath, 'execution', 'reference')
   const referenceData = new Map<string, Schema>()
 
@@ -98,7 +91,6 @@ const runEvaluation = async (caseData: CaseData): Promise<EvaluationResult> => {
 }
 
 const saveResults = (
-  fs: FileSystemAdapter,
   results: EvaluationResult[],
   workspacePath: string,
 ): void => {
@@ -189,10 +181,7 @@ const displaySummary = (results: EvaluationResult[]): void => {
   }
 }
 
-const validateDirectories = (
-  fs: FileSystemAdapter,
-  config: EvaluationConfig,
-): void => {
+const validateDirectories = (config: EvaluationConfig): void => {
   const outputDir = path.join(config.workspacePath, 'execution', 'output')
   const referenceDir = path.join(config.workspacePath, 'execution', 'reference')
 
@@ -267,43 +256,28 @@ const prepareCasesToEvaluate = (
   return prepareCasesForAllCases(outputData, referenceData)
 }
 
-export const createEvaluateSchema =
-  (fs: FileSystemAdapter) =>
-  async (config: EvaluationConfig): Promise<void> => {
-    validateDirectories(fs, config)
+export const evaluateSchema = async (config: EvaluationConfig): Promise<void> => {
+  validateDirectories(config)
 
-    const outputData = loadOutputData(fs, config.workspacePath)
-    const referenceData = loadReferenceData(fs, config.workspacePath)
+  const outputData = loadOutputData(config.workspacePath)
+  const referenceData = loadReferenceData(config.workspacePath)
 
-    const casesToEvaluate = prepareCasesToEvaluate(
-      config,
-      outputData,
-      referenceData,
+  const casesToEvaluate = prepareCasesToEvaluate(
+    config,
+    outputData,
+    referenceData,
+  )
+
+  if (casesToEvaluate.length === 0) {
+    throw new Error(
+      'No cases to evaluate. Make sure output and reference schemas exist.',
     )
-
-    if (casesToEvaluate.length === 0) {
-      throw new Error(
-        'No cases to evaluate. Make sure output and reference schemas exist.',
-      )
-    }
-
-    const results = await Promise.all(
-      casesToEvaluate.map((caseData) => runEvaluation(caseData)),
-    )
-
-    saveResults(fs, results, config.workspacePath)
-    displaySummary(results)
   }
 
-// Node.js fs adapter for production use
-const createNodeFsAdapter = (): FileSystemAdapter => ({
-  existsSync: fs.existsSync,
-  mkdirSync: fs.mkdirSync,
-  rmSync: fs.rmSync,
-  readdirSync: fs.readdirSync,
-  copyFileSync: fs.copyFileSync,
-  readFileSync: fs.readFileSync,
-  writeFileSync: fs.writeFileSync,
-})
+  const results = await Promise.all(
+    casesToEvaluate.map((caseData) => runEvaluation(caseData)),
+  )
 
-export const evaluateSchema = createEvaluateSchema(createNodeFsAdapter())
+  saveResults(results, config.workspacePath)
+  displaySummary(results)
+}

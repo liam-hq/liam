@@ -1,109 +1,167 @@
+import * as fs from 'node:fs'
+import * as path from 'node:path'
 import {
+  afterEach,
   beforeEach,
   describe,
   expect,
   it,
-  type MockedFunction,
-  vi,
 } from 'vitest'
-import { createSetupWorkspace } from '../setup/setup.ts'
-import type { FileSystemAdapter, WorkspaceConfig } from '../types'
+import { setupWorkspace } from '../setup/setup.ts'
+import type { WorkspaceConfig } from '../types'
 
 describe('setupWorkspace', () => {
-  let mockFs: FileSystemAdapter
-  let setupWorkspace: ReturnType<typeof createSetupWorkspace>
+  let tempDir: string
+  let defaultDataDir: string
 
   beforeEach(() => {
-    mockFs = {
-      existsSync: vi.fn(),
-      mkdirSync: vi.fn(),
-      rmSync: vi.fn(),
-      readdirSync: vi.fn(),
-      copyFileSync: vi.fn(),
-      readFileSync: vi.fn(),
-      writeFileSync: vi.fn(),
+    // Create temporary directories for testing
+    tempDir = fs.mkdtempSync(path.join(process.cwd(), 'test-workspace-'))
+    defaultDataDir = fs.mkdtempSync(path.join(process.cwd(), 'test-default-'))
+    
+    // Create default data structure
+    const inputDir = path.join(defaultDataDir, 'execution', 'input')
+    const referenceDir = path.join(defaultDataDir, 'execution', 'reference')
+    fs.mkdirSync(inputDir, { recursive: true })
+    fs.mkdirSync(referenceDir, { recursive: true })
+    
+    // Create sample files
+    fs.writeFileSync(path.join(inputDir, 'test.json'), '{"test": "data"}')
+    fs.writeFileSync(path.join(referenceDir, 'test.json'), '{"reference": "data"}')
+  })
+
+  afterEach(() => {
+    // Clean up temporary directories
+    if (fs.existsSync(tempDir)) {
+      fs.rmSync(tempDir, { recursive: true, force: true })
     }
-    setupWorkspace = createSetupWorkspace(mockFs)
+    if (fs.existsSync(defaultDataDir)) {
+      fs.rmSync(defaultDataDir, { recursive: true, force: true })
+    }
   })
 
   describe('setupWorkspace', () => {
-    const config: WorkspaceConfig = {
-      workspacePath: '/test/workspace',
-      defaultDataPath: '/test/default',
-      overwrite: false,
-    }
-
     it('should skip setup if workspace exists and overwrite is false', async () => {
-      ;(
-        mockFs.existsSync as MockedFunction<typeof mockFs.existsSync>
-      ).mockReturnValue(true)
+      const workspacePath = path.join(tempDir, 'workspace')
+      fs.mkdirSync(workspacePath)
+      
+      const config: WorkspaceConfig = {
+        workspacePath,
+        defaultDataPath: defaultDataDir,
+        overwrite: false,
+      }
 
       await setupWorkspace(config)
 
-      expect(mockFs.rmSync).not.toHaveBeenCalled()
-      expect(mockFs.mkdirSync).not.toHaveBeenCalled()
+      // Should not create subdirectories since overwrite is false
+      expect(fs.existsSync(path.join(workspacePath, 'execution'))).toBe(false)
     })
 
     it('should remove existing workspace if overwrite is true', async () => {
-      const configWithOverwrite = { ...config, overwrite: true }
-      ;(
-        mockFs.existsSync as MockedFunction<typeof mockFs.existsSync>
-      ).mockReturnValue(true)
-      ;(
-        mockFs.readdirSync as MockedFunction<typeof mockFs.readdirSync>
-      ).mockReturnValue([])
+      const workspacePath = path.join(tempDir, 'workspace')
+      fs.mkdirSync(workspacePath)
+      fs.writeFileSync(path.join(workspacePath, 'existing.txt'), 'existing content')
+      
+      const config: WorkspaceConfig = {
+        workspacePath,
+        defaultDataPath: defaultDataDir,
+        overwrite: true,
+      }
 
-      await setupWorkspace(configWithOverwrite)
+      await setupWorkspace(config)
 
-      expect(mockFs.rmSync).toHaveBeenCalledWith('/test/workspace', {
-        recursive: true,
-        force: true,
-      })
+      // Should have removed existing file and created new structure
+      expect(fs.existsSync(path.join(workspacePath, 'existing.txt'))).toBe(false)
+      expect(fs.existsSync(path.join(workspacePath, 'execution'))).toBe(true)
     })
 
     it('should create required directories', async () => {
-      ;(mockFs.existsSync as MockedFunction<typeof mockFs.existsSync>)
-        .mockReturnValueOnce(false) // workspace doesn't exist
-        .mockReturnValueOnce(false) // input source dir doesn't exist
-        .mockReturnValueOnce(false) // reference source dir doesn't exist
-        .mockReturnValue(true) // all required directories exist after creation
-      ;(
-        mockFs.readdirSync as MockedFunction<typeof mockFs.readdirSync>
-      ).mockReturnValue([])
+      const workspacePath = path.join(tempDir, 'workspace')
+      
+      const config: WorkspaceConfig = {
+        workspacePath,
+        defaultDataPath: defaultDataDir,
+        overwrite: false,
+      }
 
       await setupWorkspace(config)
 
-      // Check that mkdirSync was called for the workspace directory
-      expect(mockFs.mkdirSync).toHaveBeenCalledWith('/test/workspace', {
-        recursive: true,
-      })
-      // Only one call is made because recursive: true creates all subdirectories
-      expect(mockFs.mkdirSync).toHaveBeenCalledTimes(1)
+      // Check that all required directories are created
+      expect(fs.existsSync(workspacePath)).toBe(true)
+      expect(fs.existsSync(path.join(workspacePath, 'execution'))).toBe(true)
+      expect(fs.existsSync(path.join(workspacePath, 'execution', 'input'))).toBe(true)
+      expect(fs.existsSync(path.join(workspacePath, 'execution', 'reference'))).toBe(true)
+      expect(fs.existsSync(path.join(workspacePath, 'execution', 'output'))).toBe(true)
+      expect(fs.existsSync(path.join(workspacePath, 'evaluation'))).toBe(true)
     })
 
-    it('should handle file copying when source directories exist', async () => {
-      // Mock to simulate workspace already exists and we're just testing copy functionality
-      ;(
-        mockFs.existsSync as MockedFunction<typeof mockFs.existsSync>
-      ).mockReturnValueOnce(true) // workspace exists, so setup is skipped
+    it('should copy default data files', async () => {
+      const workspacePath = path.join(tempDir, 'workspace')
+      
+      const config: WorkspaceConfig = {
+        workspacePath,
+        defaultDataPath: defaultDataDir,
+        overwrite: false,
+      }
 
       await setupWorkspace(config)
 
-      // Since workspace exists and overwrite is false, no operations should be performed
-      expect(mockFs.copyFileSync).not.toHaveBeenCalled()
-      expect(mockFs.mkdirSync).not.toHaveBeenCalled()
+      // Check that files were copied
+      const inputFile = path.join(workspacePath, 'execution', 'input', 'test.json')
+      const referenceFile = path.join(workspacePath, 'execution', 'reference', 'test.json')
+      
+      expect(fs.existsSync(inputFile)).toBe(true)
+      expect(fs.existsSync(referenceFile)).toBe(true)
+      
+      // Check file contents
+      const inputContent = fs.readFileSync(inputFile, 'utf-8')
+      const referenceContent = fs.readFileSync(referenceFile, 'utf-8')
+      
+      expect(inputContent).toBe('{"test": "data"}')
+      expect(referenceContent).toBe('{"reference": "data"}')
     })
 
-    it('should throw error if required directories are missing after setup', async () => {
-      ;(mockFs.existsSync as MockedFunction<typeof mockFs.existsSync>)
-        .mockReturnValueOnce(false) // workspace doesn't exist
-        .mockReturnValueOnce(false) // input source dir doesn't exist
-        .mockReturnValueOnce(false) // reference source dir doesn't exist
-        .mockReturnValueOnce(false) // required directory missing
+    it('should not overwrite existing files when copying', async () => {
+      const workspacePath = path.join(tempDir, 'workspace')
+      
+      // Create workspace with existing file
+      const inputDir = path.join(workspacePath, 'execution', 'input')
+      fs.mkdirSync(inputDir, { recursive: true })
+      fs.writeFileSync(path.join(inputDir, 'test.json'), '{"existing": "content"}')
+      
+      const config: WorkspaceConfig = {
+        workspacePath,
+        defaultDataPath: defaultDataDir,
+        overwrite: false,
+      }
 
-      await expect(setupWorkspace(config)).rejects.toThrow(
-        'Required directory does not exist',
-      )
+      await setupWorkspace(config)
+
+      // Check that existing file was not overwritten
+      const inputFile = path.join(workspacePath, 'execution', 'input', 'test.json')
+      const content = fs.readFileSync(inputFile, 'utf-8')
+      expect(content).toBe('{"existing": "content"}')
+    })
+
+    it('should handle missing default data directories gracefully', async () => {
+      const workspacePath = path.join(tempDir, 'workspace')
+      const emptyDefaultDir = fs.mkdtempSync(path.join(process.cwd(), 'test-empty-'))
+      
+      const config: WorkspaceConfig = {
+        workspacePath,
+        defaultDataPath: emptyDefaultDir,
+        overwrite: false,
+      }
+
+      await setupWorkspace(config)
+
+      // Should still create workspace structure even without default data
+      expect(fs.existsSync(workspacePath)).toBe(true)
+      expect(fs.existsSync(path.join(workspacePath, 'execution', 'input'))).toBe(true)
+      expect(fs.existsSync(path.join(workspacePath, 'execution', 'reference'))).toBe(true)
+      
+      // Clean up
+      fs.rmSync(emptyDefaultDir, { recursive: true, force: true })
     })
   })
 })

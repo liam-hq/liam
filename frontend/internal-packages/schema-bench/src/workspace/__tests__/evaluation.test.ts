@@ -1,5 +1,8 @@
+import * as fs from 'node:fs'
+import * as path from 'node:path'
 import type { Schema } from '@liam-hq/db-structure'
 import {
+  afterEach,
   beforeEach,
   describe,
   expect,
@@ -8,8 +11,8 @@ import {
   vi,
 } from 'vitest'
 import type { evaluate } from '../../evaluate/evaluate.ts'
-import { createEvaluateSchema } from '../evaluation/evaluation.ts'
-import type { EvaluationConfig, FileSystemAdapter } from '../types'
+import { evaluateSchema } from '../evaluation/evaluation.ts'
+import type { EvaluationConfig } from '../types'
 
 // Mock the evaluate function
 vi.mock('../../evaluate/evaluate.ts', () => ({
@@ -17,9 +20,8 @@ vi.mock('../../evaluate/evaluate.ts', () => ({
 }))
 
 describe('evaluateSchema', () => {
-  let mockFs: FileSystemAdapter
   let mockEvaluate: MockedFunction<typeof evaluate>
-  let evaluateSchema: ReturnType<typeof createEvaluateSchema>
+  let tempDir: string
 
   const mockSchema: Schema = {
     tables: {
@@ -72,147 +74,186 @@ describe('evaluateSchema', () => {
     mockEvaluate.mockClear()
     mockEvaluate.mockResolvedValue(mockEvaluateResult)
 
-    mockFs = {
-      existsSync: vi.fn(),
-      mkdirSync: vi.fn(),
-      rmSync: vi.fn(),
-      readdirSync: vi.fn(),
-      copyFileSync: vi.fn(),
-      readFileSync: vi.fn(),
-      writeFileSync: vi.fn(),
-    }
-    evaluateSchema = createEvaluateSchema(mockFs)
+    // Create temporary directory for testing
+    tempDir = fs.mkdtempSync(path.join(process.cwd(), 'test-evaluation-'))
+    
+    // Create workspace structure
+    const outputDir = path.join(tempDir, 'execution', 'output')
+    const referenceDir = path.join(tempDir, 'execution', 'reference')
+    const evaluationDir = path.join(tempDir, 'evaluation')
+    
+    fs.mkdirSync(outputDir, { recursive: true })
+    fs.mkdirSync(referenceDir, { recursive: true })
+    fs.mkdirSync(evaluationDir, { recursive: true })
   })
 
-  describe('evaluateSchema', () => {
-    const config: EvaluationConfig = {
-      workspacePath: '/test/workspace',
-      outputFormat: 'json',
+  afterEach(() => {
+    // Clean up temporary directory
+    if (fs.existsSync(tempDir)) {
+      fs.rmSync(tempDir, { recursive: true, force: true })
     }
+  })
+
+  const createTestFiles = (cases: string[]) => {
+    const outputDir = path.join(tempDir, 'execution', 'output')
+    const referenceDir = path.join(tempDir, 'execution', 'reference')
+    
+    for (const caseId of cases) {
+      fs.writeFileSync(
+        path.join(outputDir, `${caseId}.json`),
+        JSON.stringify(mockSchema)
+      )
+      fs.writeFileSync(
+        path.join(referenceDir, `${caseId}.json`),
+        JSON.stringify(mockSchema)
+      )
+    }
+  }
+
+  describe('evaluateSchema', () => {
+    const getConfig = (overrides: Partial<EvaluationConfig> = {}): EvaluationConfig => ({
+      workspacePath: tempDir,
+      outputFormat: 'json',
+      ...overrides,
+    })
 
     it('should load output and reference data and run evaluation', async () => {
-      ;(
-        mockFs.existsSync as MockedFunction<typeof mockFs.existsSync>
-      ).mockReturnValue(true)
-      ;(mockFs.readdirSync as MockedFunction<typeof mockFs.readdirSync>)
-        .mockReturnValueOnce(['case1.json', 'case2.json']) // output files
-        .mockReturnValueOnce(['case1.json', 'case2.json']) // reference files
-      ;(
-        mockFs.readFileSync as MockedFunction<typeof mockFs.readFileSync>
-      ).mockReturnValue(JSON.stringify(mockSchema))
-
+      createTestFiles(['case1', 'case2'])
+      
+      const config = getConfig()
       await evaluateSchema(config)
 
-      expect(mockFs.readFileSync).toHaveBeenCalledTimes(4) // 2 output + 2 reference
       expect(mockEvaluate).toHaveBeenCalledTimes(2)
-      expect(mockFs.writeFileSync).toHaveBeenCalled()
+      expect(mockEvaluate).toHaveBeenCalledWith(mockSchema, mockSchema)
+      
+      // Check that result files were created
+      const evaluationDir = path.join(tempDir, 'evaluation')
+      const files = fs.readdirSync(evaluationDir)
+      expect(files.length).toBeGreaterThan(0)
     })
 
     it('should run evaluation for specific case when caseId is provided', async () => {
-      const configWithCase = { ...config, caseId: 'case1' }
-      ;(mockFs.existsSync as MockedFunction<typeof mockFs.existsSync>)
-        .mockReturnValueOnce(true) // output dir exists
-        .mockReturnValueOnce(true) // reference dir exists
-        .mockReturnValue(true) // evaluation dir exists
-      ;(mockFs.readdirSync as MockedFunction<typeof mockFs.readdirSync>)
-        .mockReturnValueOnce(['case1.json', 'case2.json']) // output files
-        .mockReturnValueOnce(['case1.json', 'case2.json']) // reference files
-      ;(
-        mockFs.readFileSync as MockedFunction<typeof mockFs.readFileSync>
-      ).mockReturnValue(JSON.stringify(mockSchema))
-
-      await evaluateSchema(configWithCase)
+      createTestFiles(['case1', 'case2'])
+      
+      const config = getConfig({ caseId: 'case1' })
+      await evaluateSchema(config)
 
       expect(mockEvaluate).toHaveBeenCalledTimes(1)
       expect(mockEvaluate).toHaveBeenCalledWith(mockSchema, mockSchema)
     })
 
     it('should throw error if output directory does not exist', async () => {
-      ;(
-        mockFs.existsSync as MockedFunction<typeof mockFs.existsSync>
-      ).mockReturnValue(false)
-
+      // Remove output directory
+      fs.rmSync(path.join(tempDir, 'execution', 'output'), { recursive: true, force: true })
+      
+      const config = getConfig()
       await expect(evaluateSchema(config)).rejects.toThrow(
-        'Output directory does not exist',
+        'Output directory does not exist'
       )
     })
 
     it('should throw error if reference directory does not exist', async () => {
-      ;(mockFs.existsSync as MockedFunction<typeof mockFs.existsSync>)
-        .mockReturnValueOnce(true) // output dir exists
-        .mockReturnValueOnce(false) // reference dir doesn't exist
-      ;(
-        mockFs.readdirSync as MockedFunction<typeof mockFs.readdirSync>
-      ).mockReturnValueOnce(['case1.json']) // output files
-
+      // Remove reference directory
+      fs.rmSync(path.join(tempDir, 'execution', 'reference'), { recursive: true, force: true })
+      
+      const config = getConfig()
       await expect(evaluateSchema(config)).rejects.toThrow(
-        'Reference directory does not exist',
+        'Reference directory does not exist'
       )
     })
 
     it('should throw error if specific case output schema not found', async () => {
-      const configWithCase = { ...config, caseId: 'nonexistent' }
-      ;(
-        mockFs.existsSync as MockedFunction<typeof mockFs.existsSync>
-      ).mockReturnValue(true)
-      ;(mockFs.readdirSync as MockedFunction<typeof mockFs.readdirSync>)
-        .mockReturnValueOnce(['case1.json']) // output files
-        .mockReturnValueOnce(['case1.json']) // reference files
-      ;(
-        mockFs.readFileSync as MockedFunction<typeof mockFs.readFileSync>
-      ).mockReturnValue(JSON.stringify(mockSchema))
-
-      await expect(evaluateSchema(configWithCase)).rejects.toThrow(
-        'Output schema not found for case: nonexistent',
+      createTestFiles(['case1'])
+      
+      const config = getConfig({ caseId: 'nonexistent' })
+      await expect(evaluateSchema(config)).rejects.toThrow(
+        'Output schema not found for case: nonexistent'
       )
     })
 
     it('should throw error if specific case reference schema not found', async () => {
-      const configWithCase = { ...config, caseId: 'case1' }
-      ;(
-        mockFs.existsSync as MockedFunction<typeof mockFs.existsSync>
-      ).mockReturnValue(true)
-      ;(mockFs.readdirSync as MockedFunction<typeof mockFs.readdirSync>)
-        .mockReturnValueOnce(['case1.json']) // output files
-        .mockReturnValueOnce(['case2.json']) // reference files (different case)
-      ;(
-        mockFs.readFileSync as MockedFunction<typeof mockFs.readFileSync>
-      ).mockReturnValue(JSON.stringify(mockSchema))
-
-      await expect(evaluateSchema(configWithCase)).rejects.toThrow(
-        'Reference schema not found for case: case1',
+      // Create only output file, not reference file
+      const outputDir = path.join(tempDir, 'execution', 'output')
+      fs.writeFileSync(
+        path.join(outputDir, 'case1.json'),
+        JSON.stringify(mockSchema)
+      )
+      
+      const config = getConfig({ caseId: 'case1' })
+      await expect(evaluateSchema(config)).rejects.toThrow(
+        'Reference schema not found for case: case1'
       )
     })
 
     it('should create summary when multiple results exist', async () => {
-      ;(
-        mockFs.existsSync as MockedFunction<typeof mockFs.existsSync>
-      ).mockReturnValue(true)
-      ;(mockFs.readdirSync as MockedFunction<typeof mockFs.readdirSync>)
-        .mockReturnValueOnce(['case1.json', 'case2.json']) // output files
-        .mockReturnValueOnce(['case1.json', 'case2.json']) // reference files
-      ;(
-        mockFs.readFileSync as MockedFunction<typeof mockFs.readFileSync>
-      ).mockReturnValue(JSON.stringify(mockSchema))
-
+      createTestFiles(['case1', 'case2'])
+      
+      const config = getConfig()
       await evaluateSchema(config)
 
-      // Should write individual results + summary
-      expect(mockFs.writeFileSync).toHaveBeenCalledTimes(3) // 2 individual + 1 summary
+      // Check that summary file was created
+      const evaluationDir = path.join(tempDir, 'evaluation')
+      const files = fs.readdirSync(evaluationDir)
+      const summaryFiles = files.filter(file => file.startsWith('summary_results_'))
+      expect(summaryFiles.length).toBe(1)
     })
 
     it('should handle JSON parsing errors gracefully', async () => {
-      ;(
-        mockFs.existsSync as MockedFunction<typeof mockFs.existsSync>
-      ).mockReturnValue(true)
-      ;(mockFs.readdirSync as MockedFunction<typeof mockFs.readdirSync>)
-        .mockReturnValueOnce(['case1.json']) // output files
-        .mockReturnValueOnce(['case1.json']) // reference files
-      ;(
-        mockFs.readFileSync as MockedFunction<typeof mockFs.readFileSync>
-      ).mockReturnValue('invalid json')
-
+      // Create invalid JSON file
+      const outputDir = path.join(tempDir, 'execution', 'output')
+      const referenceDir = path.join(tempDir, 'execution', 'reference')
+      
+      fs.writeFileSync(path.join(outputDir, 'case1.json'), 'invalid json')
+      fs.writeFileSync(path.join(referenceDir, 'case1.json'), JSON.stringify(mockSchema))
+      
+      const config = getConfig()
       await expect(evaluateSchema(config)).rejects.toThrow()
+    })
+
+    it('should handle empty directories', async () => {
+      const config = getConfig()
+      await expect(evaluateSchema(config)).rejects.toThrow(
+        'No cases to evaluate. Make sure output and reference schemas exist.'
+      )
+    })
+
+    it('should warn about missing reference schemas for some cases', async () => {
+      // Create output file but no corresponding reference file
+      const outputDir = path.join(tempDir, 'execution', 'output')
+      const referenceDir = path.join(tempDir, 'execution', 'reference')
+      
+      fs.writeFileSync(path.join(outputDir, 'case1.json'), JSON.stringify(mockSchema))
+      fs.writeFileSync(path.join(outputDir, 'case2.json'), JSON.stringify(mockSchema))
+      fs.writeFileSync(path.join(referenceDir, 'case1.json'), JSON.stringify(mockSchema))
+      // case2 reference file is missing
+      
+      const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
+      
+      const config = getConfig()
+      await evaluateSchema(config)
+
+      expect(consoleSpy).toHaveBeenCalledWith('⚠️  No reference schema found for case: case2')
+      expect(mockEvaluate).toHaveBeenCalledTimes(1) // Only case1 should be evaluated
+      
+      consoleSpy.mockRestore()
+    })
+
+    it('should create individual result files with correct naming', async () => {
+      createTestFiles(['case1'])
+      
+      const config = getConfig()
+      await evaluateSchema(config)
+
+      const evaluationDir = path.join(tempDir, 'evaluation')
+      const files = fs.readdirSync(evaluationDir)
+      const resultFiles = files.filter(file => file.includes('case1_results_'))
+      expect(resultFiles.length).toBe(1)
+      
+      // Check file content
+      const resultFile = path.join(evaluationDir, resultFiles[0])
+      const content = JSON.parse(fs.readFileSync(resultFile, 'utf-8'))
+      expect(content.caseId).toBe('case1')
+      expect(content.metrics).toBeDefined()
     })
   })
 })

@@ -1,15 +1,12 @@
 import * as fs from 'node:fs'
 import * as path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import type { FileSystemAdapter, WorkspaceConfig } from '../types'
+import type { WorkspaceConfig } from '../types'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
-const createWorkspaceDirectories = (
-  fs: FileSystemAdapter,
-  workspacePath: string,
-): void => {
+const createWorkspaceDirectories = (workspacePath: string): void => {
   const directories = [
     workspacePath,
     path.join(workspacePath, 'execution'),
@@ -27,7 +24,6 @@ const createWorkspaceDirectories = (
 }
 
 const copyDefaultData = (
-  fs: FileSystemAdapter,
   defaultDataPath: string,
   workspacePath: string,
 ): void => {
@@ -63,10 +59,7 @@ const copyDefaultData = (
   }
 }
 
-const validateWorkspace = (
-  fs: FileSystemAdapter,
-  workspacePath: string,
-): void => {
+const validateWorkspace = (workspacePath: string): void => {
   const requiredDirectories = [
     path.join(workspacePath, 'execution', 'input'),
     path.join(workspacePath, 'execution', 'reference'),
@@ -81,31 +74,16 @@ const validateWorkspace = (
   }
 }
 
-export const createSetupWorkspace =
-  (fs: FileSystemAdapter) =>
-  async (config: WorkspaceConfig): Promise<void> => {
-    if (fs.existsSync(config.workspacePath) && !config.overwrite) {
-      return
-    }
-
-    if (fs.existsSync(config.workspacePath) && config.overwrite) {
-      fs.rmSync(config.workspacePath, { recursive: true, force: true })
-    }
-
-    createWorkspaceDirectories(fs, config.workspacePath)
-    copyDefaultData(fs, config.defaultDataPath, config.workspacePath)
-    validateWorkspace(fs, config.workspacePath)
+export const setupWorkspace = async (config: WorkspaceConfig): Promise<void> => {
+  if (fs.existsSync(config.workspacePath) && !config.overwrite) {
+    return
   }
 
-// Node.js fs adapter for production use
-const createNodeFsAdapter = (): FileSystemAdapter => ({
-  existsSync: fs.existsSync,
-  mkdirSync: fs.mkdirSync,
-  rmSync: fs.rmSync,
-  readdirSync: fs.readdirSync,
-  copyFileSync: fs.copyFileSync,
-  readFileSync: fs.readFileSync,
-  writeFileSync: fs.writeFileSync,
-})
+  if (fs.existsSync(config.workspacePath) && config.overwrite) {
+    fs.rmSync(config.workspacePath, { recursive: true, force: true })
+  }
 
-export const setupWorkspace = createSetupWorkspace(createNodeFsAdapter())
+  createWorkspaceDirectories(config.workspacePath)
+  copyDefaultData(config.defaultDataPath, config.workspacePath)
+  validateWorkspace(config.workspacePath)
+}
