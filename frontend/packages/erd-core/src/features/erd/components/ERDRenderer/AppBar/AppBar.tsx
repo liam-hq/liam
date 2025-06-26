@@ -48,7 +48,6 @@ export const AppBar: FC = () => {
           <ReleaseNoteButton />
           <HelpButton />
         </div>
-        {/* TODO: enable once implemented */}
         {/* <ExportButton /> */}
         <CopyLinkButton />
       </div>

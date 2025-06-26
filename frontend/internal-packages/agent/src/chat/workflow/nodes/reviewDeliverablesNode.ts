@@ -11,7 +11,6 @@ export async function reviewDeliverablesNode(
 ): Promise<WorkflowState> {
   state.logger.log(`[${NODE_NAME}] Started`)
 
-  // TODO: Implement deliverables review logic
   // This node should perform final confirmation of requirements and deliverables
 
   state.logger.log(`[${NODE_NAME}] Completed`)

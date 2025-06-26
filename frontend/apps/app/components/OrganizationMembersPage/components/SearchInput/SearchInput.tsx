@@ -43,7 +43,6 @@ export const SearchInput: FC<SearchInputProps> = ({
           disabled={loading}
         />
         {
-          // TODO: Add loading indicator
           loading && <span className={styles.loading}>Loading...</span>
         }
       </div>

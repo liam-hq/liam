@@ -12,7 +12,6 @@ export const postgresqlSchemaDeparser: SchemaDeparser = (schema: Schema) => {
     ddlStatements.push(createTableDDL)
   }
 
-  // TODO: Generate indexes, constraints, and relationships in the future
 
   // Combine all DDL statements
   const combinedDDL = ddlStatements.join('\n\n')

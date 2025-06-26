@@ -7,7 +7,6 @@ import { usecaseGenerationPrompt } from './prompts'
 
 // Single usecase schema
 const usecaseSchema = v.object({
-  // TODO: Replace with IDs (UUID) when DB is implemented
   requirementType: v.picklist(['functional', 'non-functional']), // Type of requirement
   requirementCategory: v.string(), // Category of the requirement
   requirement: v.string(), // Content/text of the specific requirement

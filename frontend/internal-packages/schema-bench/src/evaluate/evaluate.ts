@@ -151,7 +151,6 @@ const validatePrimaryKeys = (
   )
 }
 
-// TODO: Implement constraint validation logic. Now it only checks if the number of constraints matches.
 const validateConstraints = (
   referenceTable: Schema['tables'][string],
   predictTable: Schema['tables'][string],

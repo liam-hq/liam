@@ -186,8 +186,6 @@ function processCallNode(
   const column = extractColumnDetails(node)
   if (column.name) {
     columns.push(column)
-    // TODO: Rails syntax like `t.text "mention", index: { unique: true }` should be supported
-    // to create unique indexes. Currently, only `t.index` method calls create indexes.
   }
 }
 
