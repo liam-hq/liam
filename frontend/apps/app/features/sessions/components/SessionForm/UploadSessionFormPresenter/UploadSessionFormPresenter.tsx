@@ -59,8 +59,9 @@ export const UploadSessionFormPresenter: FC<Props> = ({
       <form action={formAction}>
         <div className={styles.formContent}>
           <div className={styles.formGroup}>
-            <div
+            <section
               className={`${styles.dropZone} ${dragActive ? styles.dropZoneActive : ''}`}
+              aria-label="File drop zone"
               onDragEnter={handleDrag}
               onDragLeave={handleDrag}
               onDragOver={handleDrag}
@@ -95,7 +96,7 @@ export const UploadSessionFormPresenter: FC<Props> = ({
                 accept=".sql,.rb,.prisma,.json,.yaml,.yml"
                 className={styles.hiddenFileInput}
               />
-            </div>
+            </section>
             {formError && <p className={styles.error}>{formError}</p>}
           </div>
         </div>

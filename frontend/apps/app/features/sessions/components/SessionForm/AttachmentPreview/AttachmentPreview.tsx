@@ -14,7 +14,13 @@ type Props = {
 export const AttachmentPreview: FC<Props> = ({ src, alt, onRemove }) => {
   return (
     <div className={styles.container}>
-      <Image src={src} alt={alt} className={styles.image} width={200} height={200} />
+      <Image
+        src={src}
+        alt={alt}
+        className={styles.image}
+        width={200}
+        height={200}
+      />
       <button
         type="button"
         className={styles.removeButton}

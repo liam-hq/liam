@@ -1,7 +1,7 @@
 import { ArrowTooltipProvider } from '@liam-hq/ui'
 import clsx from 'clsx'
 import type { ChangeEvent, DragEvent, FC } from 'react'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useId, useRef, useState } from 'react'
 import type { Projects } from '@/components/CommonLayout/AppBar/ProjectsDropdownMenu/services/getProjects'
 import { AttachmentPreview } from '../AttachmentPreview'
 import type { Branch } from '../BranchesDropdown'
@@ -35,6 +35,7 @@ export const GitHubSessionFormPresenter: FC<Props> = ({
   formAction,
 }) => {
   const textareaRef = useRef<HTMLTextAreaElement>(null)
+  const initialMessageId = useId()
   const [hasContent, setHasContent] = useState(false)
   const [selectedProjectId, setSelectedProjectId] = useState(
     defaultProjectId || '',
@@ -138,7 +139,7 @@ export const GitHubSessionFormPresenter: FC<Props> = ({
             <div className={styles.formGroup}>
               <div className={styles.inputWrapper}>
                 <textarea
-                  id="initialMessage"
+                  id={initialMessageId}
                   name="initialMessage"
                   ref={textareaRef}
                   onChange={handleTextareaChange}
