@@ -13,12 +13,9 @@ const main = async (): Promise<void> => {
     __dirname,
     '../../../benchmark-workspace-default',
   )
-  const overwrite = process.argv.includes('--overwrite')
-
   const config: WorkspaceConfig = {
     workspacePath,
     defaultDataPath,
-    overwrite,
   }
 
   try {

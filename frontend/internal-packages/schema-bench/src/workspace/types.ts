@@ -3,7 +3,6 @@ import type { Schema } from '@liam-hq/db-structure'
 export interface WorkspaceConfig {
   workspacePath: string
   defaultDataPath: string
-  overwrite: boolean
 }
 
 export interface EvaluationConfig {

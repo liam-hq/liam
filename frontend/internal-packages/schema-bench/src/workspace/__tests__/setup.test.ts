@@ -39,23 +39,7 @@ describe('setupWorkspace', () => {
   })
 
   describe('setupWorkspace', () => {
-    it('should skip setup if workspace exists and overwrite is false', async () => {
-      const workspacePath = path.join(tempDir, 'workspace')
-      fs.mkdirSync(workspacePath)
-
-      const config: WorkspaceConfig = {
-        workspacePath,
-        defaultDataPath: defaultDataDir,
-        overwrite: false,
-      }
-
-      await setupWorkspace(config)
-
-      // Should not create subdirectories since overwrite is false
-      expect(fs.existsSync(path.join(workspacePath, 'execution'))).toBe(false)
-    })
-
-    it('should remove existing workspace if overwrite is true', async () => {
+    it('should remove existing workspace', async () => {
       const workspacePath = path.join(tempDir, 'workspace')
       fs.mkdirSync(workspacePath)
       fs.writeFileSync(
@@ -66,7 +50,6 @@ describe('setupWorkspace', () => {
       const config: WorkspaceConfig = {
         workspacePath,
         defaultDataPath: defaultDataDir,
-        overwrite: true,
       }
 
       await setupWorkspace(config)
@@ -84,7 +67,6 @@ describe('setupWorkspace', () => {
       const config: WorkspaceConfig = {
         workspacePath,
         defaultDataPath: defaultDataDir,
-        overwrite: false,
       }
 
       await setupWorkspace(config)
@@ -110,7 +92,6 @@ describe('setupWorkspace', () => {
       const config: WorkspaceConfig = {
         workspacePath,
         defaultDataPath: defaultDataDir,
-        overwrite: false,
       }
 
       await setupWorkspace(config)
@@ -140,36 +121,6 @@ describe('setupWorkspace', () => {
       expect(referenceContent).toBe('{"reference": "data"}')
     })
 
-    it('should not overwrite existing files when copying', async () => {
-      const workspacePath = path.join(tempDir, 'workspace')
-
-      // Create workspace with existing file
-      const inputDir = path.join(workspacePath, 'execution', 'input')
-      fs.mkdirSync(inputDir, { recursive: true })
-      fs.writeFileSync(
-        path.join(inputDir, 'test.json'),
-        '{"existing": "content"}',
-      )
-
-      const config: WorkspaceConfig = {
-        workspacePath,
-        defaultDataPath: defaultDataDir,
-        overwrite: false,
-      }
-
-      await setupWorkspace(config)
-
-      // Check that existing file was not overwritten
-      const inputFile = path.join(
-        workspacePath,
-        'execution',
-        'input',
-        'test.json',
-      )
-      const content = fs.readFileSync(inputFile, 'utf-8')
-      expect(content).toBe('{"existing": "content"}')
-    })
-
     it('should handle missing default data directories gracefully', async () => {
       const workspacePath = path.join(tempDir, 'workspace')
       const emptyDefaultDir = fs.mkdtempSync(
@@ -179,7 +130,6 @@ describe('setupWorkspace', () => {
       const config: WorkspaceConfig = {
         workspacePath,
         defaultDataPath: emptyDefaultDir,
-        overwrite: false,
       }
 
       await setupWorkspace(config)
