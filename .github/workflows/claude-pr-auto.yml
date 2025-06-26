@@ -1,0 +1,45 @@
+name: Create PR for Claude Fixes
+
+on:
+  push:
+    branches:
+      - 'claude/**'
+
+jobs:
+  create-pr:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Extract Issue Number
+        id: extract_issue
+        run: |
+          BRANCH_NAME="${{ github.ref_name }}"
+          # Extract issue number using sed for better cross-platform compatibility
+          ISSUE_NUMBER=$(echo "$BRANCH_NAME" | sed -n 's/.*issue-\([0-9]\+\).*/\1/p')
+          if [ -z "$ISSUE_NUMBER" ]; then
+            echo "No issue number found in branch name: $BRANCH_NAME"
+            echo "issue_number=" >> "$GITHUB_OUTPUT"
+          else
+            echo "Found issue number: $ISSUE_NUMBER"
+            echo "issue_number=$ISSUE_NUMBER" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@271a8d0340265f705b14b6d32b9829c1cb33d45e # v7.0.8
+        with:
+          commit-message: "fix: apply Claude's suggestions"
+          branch: ${{ github.ref_name }}
+          title: "fix: apply Claude's suggestions for #${{ steps.extract_issue.outputs.issue_number }}"
+          body: |
+            This PR was created automatically from a push by Claude to the `${{ github.ref_name }}` branch.
+            ${{ steps.extract_issue.outputs.issue_number && format('\nResolves #{0}', steps.extract_issue.outputs.issue_number) || '' }}
+            
+            🤖 Generated with [Claude Code](https://claude.ai/code)
+          draft: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
