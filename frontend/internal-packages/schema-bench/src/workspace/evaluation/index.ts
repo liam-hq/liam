@@ -36,6 +36,3 @@ const main = async (): Promise<void> => {
 }
 
 main()
-
-// Re-export for external use
-export * from './evaluation.ts'
