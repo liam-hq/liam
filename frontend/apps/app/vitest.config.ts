@@ -11,5 +11,8 @@ export default defineConfig({
     },
     setupFiles: ['./vitest.setup.ts'],
     env: dotenv.config({ path: '.env' }).parsed,
+    coverage: {
+      reporter: ['text', 'json', 'html'],
+    },
   },
 })

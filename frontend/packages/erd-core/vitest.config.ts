@@ -11,5 +11,8 @@ export default defineConfig({
     },
     environment: 'happy-dom',
     setupFiles: ['@testing-library/jest-dom/vitest'],
+    coverage: {
+      reporter: ['text', 'json', 'html'],
+    },
   },
 })
