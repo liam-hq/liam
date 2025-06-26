@@ -189,60 +189,97 @@ const displaySummary = (results: BenchmarkResult[]): void => {
   }
 }
 
-export const createRunBenchmark =
-  (fs: FileSystemAdapter) =>
-  async (config: BenchmarkConfig): Promise<void> => {
-    // Check directories exist first
-    const outputDir = path.join(config.workspacePath, 'execution', 'output')
-    const referenceDir = path.join(
-      config.workspacePath,
-      'execution',
-      'reference',
-    )
+const validateDirectories = (
+  fs: FileSystemAdapter,
+  config: BenchmarkConfig,
+): void => {
+  const outputDir = path.join(config.workspacePath, 'execution', 'output')
+  const referenceDir = path.join(config.workspacePath, 'execution', 'reference')
 
-    if (!fs.existsSync(outputDir)) {
-      throw new Error(`Output directory does not exist: ${outputDir}`)
-    }
+  if (!fs.existsSync(outputDir)) {
+    throw new Error(`Output directory does not exist: ${outputDir}`)
+  }
 
-    if (!fs.existsSync(referenceDir)) {
-      throw new Error(`Reference directory does not exist: ${referenceDir}`)
-    }
+  if (!fs.existsSync(referenceDir)) {
+    throw new Error(`Reference directory does not exist: ${referenceDir}`)
+  }
+}
 
-    const outputData = loadOutputData(fs, config.workspacePath)
-    const referenceData = loadReferenceData(fs, config.workspacePath)
+const prepareCasesForSpecificCase = (
+  config: BenchmarkConfig,
+  outputData: Map<string, Schema>,
+  referenceData: Map<string, Schema>,
+): CaseData[] => {
+  const caseId = config.caseId
+  if (!caseId) {
+    throw new Error('Case ID is required for specific case evaluation')
+  }
 
-    const casesToEvaluate: CaseData[] = []
+  const outputSchema = outputData.get(caseId)
+  const referenceSchema = referenceData.get(caseId)
 
-    if (config.caseId) {
-      const outputSchema = outputData.get(config.caseId)
-      const referenceSchema = referenceData.get(config.caseId)
+  if (!outputSchema) {
+    throw new Error(`Output schema not found for case: ${caseId}`)
+  }
+  if (!referenceSchema) {
+    throw new Error(`Reference schema not found for case: ${caseId}`)
+  }
 
-      if (!outputSchema) {
-        throw new Error(`Output schema not found for case: ${config.caseId}`)
-      }
-      if (!referenceSchema) {
-        throw new Error(`Reference schema not found for case: ${config.caseId}`)
-      }
+  return [
+    {
+      caseId,
+      outputSchema,
+      referenceSchema,
+    },
+  ]
+}
 
+const prepareCasesForAllCases = (
+  outputData: Map<string, Schema>,
+  referenceData: Map<string, Schema>,
+): CaseData[] => {
+  const casesToEvaluate: CaseData[] = []
+
+  for (const [caseId, outputSchema] of outputData) {
+    const referenceSchema = referenceData.get(caseId)
+    if (referenceSchema) {
       casesToEvaluate.push({
-        caseId: config.caseId,
+        caseId,
         outputSchema,
         referenceSchema,
       })
     } else {
-      for (const [caseId, outputSchema] of outputData) {
-        const referenceSchema = referenceData.get(caseId)
-        if (referenceSchema) {
-          casesToEvaluate.push({
-            caseId,
-            outputSchema,
-            referenceSchema,
-          })
-        } else {
-          console.warn(`⚠️  No reference schema found for case: ${caseId}`)
-        }
-      }
+      console.warn(`⚠️  No reference schema found for case: ${caseId}`)
     }
+  }
+
+  return casesToEvaluate
+}
+
+const prepareCasesToEvaluate = (
+  config: BenchmarkConfig,
+  outputData: Map<string, Schema>,
+  referenceData: Map<string, Schema>,
+): CaseData[] => {
+  if (config.caseId) {
+    return prepareCasesForSpecificCase(config, outputData, referenceData)
+  }
+  return prepareCasesForAllCases(outputData, referenceData)
+}
+
+export const createRunBenchmark =
+  (fs: FileSystemAdapter) =>
+  async (config: BenchmarkConfig): Promise<void> => {
+    validateDirectories(fs, config)
+
+    const outputData = loadOutputData(fs, config.workspacePath)
+    const referenceData = loadReferenceData(fs, config.workspacePath)
+
+    const casesToEvaluate = prepareCasesToEvaluate(
+      config,
+      outputData,
+      referenceData,
+    )
 
     if (casesToEvaluate.length === 0) {
       throw new Error(

@@ -163,64 +163,58 @@ const validateConstraints = (
   return referenceConstraintCount === predictConstraintCount
 }
 
+type ForeignKeyInfo = {
+  name: string
+  constraint: ForeignKeyConstraint
+  tableName: string
+}
+
+const extractForeignKeys = (tables: Schema['tables']): ForeignKeyInfo[] => {
+  const foreignKeys: ForeignKeyInfo[] = []
+
+  for (const [tableName, table] of Object.entries(tables)) {
+    for (const [constraintName, constraint] of Object.entries(
+      table.constraints,
+    )) {
+      const result = v.safeParse(foreignKeyConstraintSchema, constraint)
+      if (result.success && result.output) {
+        foreignKeys.push({
+          name: constraintName,
+          constraint: result.output,
+          tableName,
+        })
+      }
+    }
+  }
+
+  return foreignKeys
+}
+
+const areForeignKeysMatching = (
+  refFk: ForeignKeyInfo,
+  predFk: ForeignKeyInfo,
+): boolean => {
+  return (
+    refFk.tableName === predFk.tableName &&
+    refFk.constraint.columnName === predFk.constraint.columnName &&
+    refFk.constraint.targetTableName === predFk.constraint.targetTableName &&
+    refFk.constraint.targetColumnName === predFk.constraint.targetColumnName
+  )
+}
+
 const createForeignKeyMapping = (
   referenceTables: Schema['tables'],
   predictTables: Schema['tables'],
 ): Mapping => {
   const foreignKeyMapping: Mapping = {}
 
-  // Extract foreign key constraints from reference schema
-  const referenceForeignKeys: Array<{
-    name: string
-    constraint: ForeignKeyConstraint
-    tableName: string
-  }> = []
-  for (const [tableName, table] of Object.entries(referenceTables)) {
-    for (const [constraintName, constraint] of Object.entries(
-      table.constraints,
-    )) {
-      const result = v.safeParse(foreignKeyConstraintSchema, constraint)
-      if (result.success && result.output) {
-        referenceForeignKeys.push({
-          name: constraintName,
-          constraint: result.output,
-          tableName,
-        })
-      }
-    }
-  }
-
-  // Extract foreign key constraints from predict schema
-  const predictForeignKeys: Array<{
-    name: string
-    constraint: ForeignKeyConstraint
-    tableName: string
-  }> = []
-  for (const [tableName, table] of Object.entries(predictTables)) {
-    for (const [constraintName, constraint] of Object.entries(
-      table.constraints,
-    )) {
-      const result = v.safeParse(foreignKeyConstraintSchema, constraint)
-      if (result.success && result.output) {
-        predictForeignKeys.push({
-          name: constraintName,
-          constraint: result.output,
-          tableName,
-        })
-      }
-    }
-  }
+  const referenceForeignKeys = extractForeignKeys(referenceTables)
+  const predictForeignKeys = extractForeignKeys(predictTables)
 
   // Match foreign keys based on table names and column references
   for (const refFk of referenceForeignKeys) {
     for (const predFk of predictForeignKeys) {
-      if (
-        refFk.tableName === predFk.tableName &&
-        refFk.constraint.columnName === predFk.constraint.columnName &&
-        refFk.constraint.targetTableName ===
-          predFk.constraint.targetTableName &&
-        refFk.constraint.targetColumnName === predFk.constraint.targetColumnName
-      ) {
+      if (areForeignKeysMatching(refFk, predFk)) {
         foreignKeyMapping[refFk.name] = predFk.name
         break
       }
