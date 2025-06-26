@@ -1,9 +1,9 @@
 name: Daily Lint Check
 
 on:
-  schedule:
-    - cron: '0 0 * * *' # JST09:00 (UTC00:00)
-  workflow_dispatch:
+  push:
+    branches:
+      - add-daily-lint-check-workflow-test-2
 
 jobs:
   lint:
