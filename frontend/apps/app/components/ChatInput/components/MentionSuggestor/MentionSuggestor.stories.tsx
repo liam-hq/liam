@@ -1,5 +1,5 @@
 import type { Meta } from '@storybook/react'
-import { type KeyboardEvent, useRef, useState } from 'react'
+import { type KeyboardEvent, useId, useRef, useState } from 'react'
 import { MentionSuggestor } from './MentionSuggestor'
 
 const meta: Meta<typeof MentionSuggestor> = {
@@ -142,6 +142,7 @@ export const SchemaMention = {
     const [cursorPos, setcursorPos] = useState(0)
     const [selected, setSelected] = useState<string | null>(null)
     const textareaRef = useRef<HTMLTextAreaElement>(null)
+    const mentionSuggestorId = useId()
 
     return (
       <div style={{ width: 400, margin: 32 }}>
@@ -163,7 +164,7 @@ export const SchemaMention = {
           style={{ width: '100%', fontSize: 16, marginBottom: 8 }}
         />
         <MentionSuggestor
-          id="mention-suggestor"
+          id={mentionSuggestorId}
           schema={schema}
           input={input}
           cursorPos={cursorPos}
@@ -196,6 +197,7 @@ export const LimitedItems = {
     const [cursorPos, setcursorPos] = useState(0)
     const [selected, setSelected] = useState<string | null>(null)
     const textareaRef = useRef<HTMLTextAreaElement>(null)
+    const mentionSuggestorId = useId()
 
     return (
       <div style={{ width: 400, margin: 32 }}>
@@ -217,7 +219,7 @@ export const LimitedItems = {
           style={{ width: '100%', fontSize: 16, marginBottom: 8 }}
         />
         <MentionSuggestor
-          id="mention-suggestor"
+          id={mentionSuggestorId}
           schema={schema}
           input={input}
           cursorPos={cursorPos}

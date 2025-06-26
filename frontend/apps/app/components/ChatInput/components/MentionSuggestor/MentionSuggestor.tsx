@@ -117,7 +117,7 @@ export const MentionSuggestor = ({
   // Reset the highlighted index when the query changes
   useEffect(() => {
     setHighlightedIndex(0)
-  }, [query])
+  }, [input, cursorPos])
 
   // Scroll to make the highlighted item enabled when it changes
   useEffect(() => {
@@ -126,7 +126,7 @@ export const MentionSuggestor = ({
     // Use a small timeout to wait for DOM updates
     const timeoutId = setTimeout(() => {
       const active = containerRef.current?.querySelector(
-        '[aria-selected="true"]',
+        '[data-highlighted="true"]',
       )
       if (active) (active as HTMLElement).scrollIntoView({ block: 'nearest' })
     }, 0)
@@ -148,7 +148,7 @@ export const MentionSuggestor = ({
             key={item.id}
             type="button"
             className={styles.suggestorItem}
-            aria-selected={highlightedIndex === i}
+            data-highlighted={highlightedIndex === i}
             data-index={i}
             onMouseDown={handleItemMouseDown}
             onMouseEnter={handleItemMouseEnter}

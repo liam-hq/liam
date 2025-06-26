@@ -110,14 +110,13 @@ export const GitHubSessionFormPresenter: FC<Props> = ({
 
   return (
     <ArrowTooltipProvider>
-      <div
+      <section
         className={clsx(
           styles.container,
           isPending && styles.pending,
           hasError && styles.error,
           dragActive && styles.dragActive,
         )}
-        role="region"
         aria-label="GitHub session form with file drop zone"
         onDragEnter={handleDrag}
         onDragLeave={handleDrag}
@@ -196,7 +195,7 @@ export const GitHubSessionFormPresenter: FC<Props> = ({
             />
           </div>
         </form>
-      </div>
+      </section>
     </ArrowTooltipProvider>
   )
 }
