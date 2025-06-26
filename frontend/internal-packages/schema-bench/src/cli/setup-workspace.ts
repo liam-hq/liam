@@ -1,12 +1,12 @@
 import * as path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import type { WorkspaceConfig } from '../types'
-import { setupWorkspace } from './setup.ts'
+import type { WorkspaceConfig } from '../workspace/types'
+import { setupWorkspace } from '../workspace/setup/setup.ts'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
-const main = async (): Promise<void> => {
+const runSetupWorkspace = async (): Promise<void> => {
   const initCwd = process.env.INIT_CWD || process.cwd()
   const workspacePath = path.resolve(initCwd, 'benchmark-workspace')
   const defaultDataPath = path.resolve(
@@ -26,4 +26,4 @@ const main = async (): Promise<void> => {
   }
 }
 
-main()
+runSetupWorkspace()

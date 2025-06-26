@@ -1,8 +1,8 @@
 import * as path from 'node:path'
-import type { EvaluationConfig } from '../types'
-import { evaluateSchema } from './evaluation.ts'
+import type { EvaluationConfig } from '../workspace/types'
+import { evaluateSchema } from '../workspace/evaluation/evaluation.ts'
 
-const main = async (): Promise<void> => {
+const runEvaluateSchema = async (): Promise<void> => {
   const initCwd = process.env.INIT_CWD || process.cwd()
   const workspacePath = path.resolve(initCwd, 'benchmark-workspace')
   const args = process.argv.slice(2)
@@ -35,4 +35,4 @@ const main = async (): Promise<void> => {
   }
 }
 
-main()
+runEvaluateSchema()
