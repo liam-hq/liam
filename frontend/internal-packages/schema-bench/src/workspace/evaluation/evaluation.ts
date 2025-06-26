@@ -3,9 +3,9 @@ import * as path from 'node:path'
 import type { Schema } from '@liam-hq/db-structure'
 import { evaluate } from '../../evaluate/evaluate.ts'
 import type {
-  BenchmarkConfig,
-  BenchmarkResult,
   CaseData,
+  EvaluationConfig,
+  EvaluationResult,
   FileSystemAdapter,
 } from '../types'
 
@@ -73,10 +73,10 @@ const loadReferenceData = (
   return referenceData
 }
 
-const runEvaluation = async (caseData: CaseData): Promise<BenchmarkResult> => {
+const runEvaluation = async (caseData: CaseData): Promise<EvaluationResult> => {
   const result = await evaluate(caseData.referenceSchema, caseData.outputSchema)
 
-  const benchmarkResult: BenchmarkResult = {
+  const evaluationResult: EvaluationResult = {
     timestamp: new Date().toISOString(),
     caseId: caseData.caseId,
     metrics: {
@@ -94,12 +94,12 @@ const runEvaluation = async (caseData: CaseData): Promise<BenchmarkResult> => {
     columnMappings: result.columnMappings,
   }
 
-  return benchmarkResult
+  return evaluationResult
 }
 
 const saveResults = (
   fs: FileSystemAdapter,
-  results: BenchmarkResult[],
+  results: EvaluationResult[],
   workspacePath: string,
 ): void => {
   const evaluationDir = path.join(workspacePath, 'evaluation')
@@ -167,7 +167,7 @@ const saveResults = (
   }
 }
 
-const displaySummary = (results: BenchmarkResult[]): void => {
+const displaySummary = (results: EvaluationResult[]): void => {
   if (results.length === 0) {
     return
   }
@@ -191,7 +191,7 @@ const displaySummary = (results: BenchmarkResult[]): void => {
 
 const validateDirectories = (
   fs: FileSystemAdapter,
-  config: BenchmarkConfig,
+  config: EvaluationConfig,
 ): void => {
   const outputDir = path.join(config.workspacePath, 'execution', 'output')
   const referenceDir = path.join(config.workspacePath, 'execution', 'reference')
@@ -206,7 +206,7 @@ const validateDirectories = (
 }
 
 const prepareCasesForSpecificCase = (
-  config: BenchmarkConfig,
+  config: EvaluationConfig,
   outputData: Map<string, Schema>,
   referenceData: Map<string, Schema>,
 ): CaseData[] => {
@@ -257,7 +257,7 @@ const prepareCasesForAllCases = (
 }
 
 const prepareCasesToEvaluate = (
-  config: BenchmarkConfig,
+  config: EvaluationConfig,
   outputData: Map<string, Schema>,
   referenceData: Map<string, Schema>,
 ): CaseData[] => {
@@ -267,9 +267,9 @@ const prepareCasesToEvaluate = (
   return prepareCasesForAllCases(outputData, referenceData)
 }
 
-export const createRunBenchmark =
+export const createEvaluateSchema =
   (fs: FileSystemAdapter) =>
-  async (config: BenchmarkConfig): Promise<void> => {
+  async (config: EvaluationConfig): Promise<void> => {
     validateDirectories(fs, config)
 
     const outputData = loadOutputData(fs, config.workspacePath)
@@ -306,4 +306,4 @@ const createNodeFsAdapter = (): FileSystemAdapter => ({
   writeFileSync: fs.writeFileSync,
 })
 
-export const runBenchmark = createRunBenchmark(createNodeFsAdapter())
+export const evaluateSchema = createEvaluateSchema(createNodeFsAdapter())

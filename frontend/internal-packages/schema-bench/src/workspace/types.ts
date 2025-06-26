@@ -19,13 +19,13 @@ export interface WorkspaceConfig {
   overwrite: boolean
 }
 
-export interface BenchmarkConfig {
+export interface EvaluationConfig {
   workspacePath: string
   caseId?: string
   outputFormat: 'json' | 'summary'
 }
 
-export interface BenchmarkResult {
+export interface EvaluationResult {
   timestamp: string
   caseId: string
   metrics: {

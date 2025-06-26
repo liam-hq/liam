@@ -8,18 +8,18 @@ import {
   vi,
 } from 'vitest'
 import type { evaluate } from '../../evaluate/evaluate.ts'
-import { createRunBenchmark } from '../benchmark/benchmark.ts'
-import type { BenchmarkConfig, FileSystemAdapter } from '../types'
+import { createEvaluateSchema } from '../evaluation/evaluation.ts'
+import type { EvaluationConfig, FileSystemAdapter } from '../types'
 
 // Mock the evaluate function
 vi.mock('../../evaluate/evaluate.ts', () => ({
   evaluate: vi.fn(),
 }))
 
-describe('runBenchmark', () => {
+describe('evaluateSchema', () => {
   let mockFs: FileSystemAdapter
   let mockEvaluate: MockedFunction<typeof evaluate>
-  let runBenchmark: ReturnType<typeof createRunBenchmark>
+  let evaluateSchema: ReturnType<typeof createEvaluateSchema>
 
   const mockSchema: Schema = {
     tables: {
@@ -81,11 +81,11 @@ describe('runBenchmark', () => {
       readFileSync: vi.fn(),
       writeFileSync: vi.fn(),
     }
-    runBenchmark = createRunBenchmark(mockFs)
+    evaluateSchema = createEvaluateSchema(mockFs)
   })
 
-  describe('runBenchmark', () => {
-    const config: BenchmarkConfig = {
+  describe('evaluateSchema', () => {
+    const config: EvaluationConfig = {
       workspacePath: '/test/workspace',
       outputFormat: 'json',
     }
@@ -101,7 +101,7 @@ describe('runBenchmark', () => {
         mockFs.readFileSync as MockedFunction<typeof mockFs.readFileSync>
       ).mockReturnValue(JSON.stringify(mockSchema))
 
-      await runBenchmark(config)
+      await evaluateSchema(config)
 
       expect(mockFs.readFileSync).toHaveBeenCalledTimes(4) // 2 output + 2 reference
       expect(mockEvaluate).toHaveBeenCalledTimes(2)
@@ -121,7 +121,7 @@ describe('runBenchmark', () => {
         mockFs.readFileSync as MockedFunction<typeof mockFs.readFileSync>
       ).mockReturnValue(JSON.stringify(mockSchema))
 
-      await runBenchmark(configWithCase)
+      await evaluateSchema(configWithCase)
 
       expect(mockEvaluate).toHaveBeenCalledTimes(1)
       expect(mockEvaluate).toHaveBeenCalledWith(mockSchema, mockSchema)
@@ -132,7 +132,7 @@ describe('runBenchmark', () => {
         mockFs.existsSync as MockedFunction<typeof mockFs.existsSync>
       ).mockReturnValue(false)
 
-      await expect(runBenchmark(config)).rejects.toThrow(
+      await expect(evaluateSchema(config)).rejects.toThrow(
         'Output directory does not exist',
       )
     })
@@ -145,7 +145,7 @@ describe('runBenchmark', () => {
         mockFs.readdirSync as MockedFunction<typeof mockFs.readdirSync>
       ).mockReturnValueOnce(['case1.json']) // output files
 
-      await expect(runBenchmark(config)).rejects.toThrow(
+      await expect(evaluateSchema(config)).rejects.toThrow(
         'Reference directory does not exist',
       )
     })
@@ -162,7 +162,7 @@ describe('runBenchmark', () => {
         mockFs.readFileSync as MockedFunction<typeof mockFs.readFileSync>
       ).mockReturnValue(JSON.stringify(mockSchema))
 
-      await expect(runBenchmark(configWithCase)).rejects.toThrow(
+      await expect(evaluateSchema(configWithCase)).rejects.toThrow(
         'Output schema not found for case: nonexistent',
       )
     })
@@ -179,7 +179,7 @@ describe('runBenchmark', () => {
         mockFs.readFileSync as MockedFunction<typeof mockFs.readFileSync>
       ).mockReturnValue(JSON.stringify(mockSchema))
 
-      await expect(runBenchmark(configWithCase)).rejects.toThrow(
+      await expect(evaluateSchema(configWithCase)).rejects.toThrow(
         'Reference schema not found for case: case1',
       )
     })
@@ -195,7 +195,7 @@ describe('runBenchmark', () => {
         mockFs.readFileSync as MockedFunction<typeof mockFs.readFileSync>
       ).mockReturnValue(JSON.stringify(mockSchema))
 
-      await runBenchmark(config)
+      await evaluateSchema(config)
 
       // Should write individual results + summary
       expect(mockFs.writeFileSync).toHaveBeenCalledTimes(3) // 2 individual + 1 summary
@@ -212,7 +212,7 @@ describe('runBenchmark', () => {
         mockFs.readFileSync as MockedFunction<typeof mockFs.readFileSync>
       ).mockReturnValue('invalid json')
 
-      await expect(runBenchmark(config)).rejects.toThrow()
+      await expect(evaluateSchema(config)).rejects.toThrow()
     })
   })
 })

@@ -1,6 +1,6 @@
 import * as path from 'node:path'
-import type { BenchmarkConfig } from '../types'
-import { runBenchmark } from './benchmark.ts'
+import type { EvaluationConfig } from '../types'
+import { evaluateSchema } from './evaluation.ts'
 
 const main = async (): Promise<void> => {
   const initCwd = process.env.INIT_CWD || process.cwd()
@@ -21,16 +21,16 @@ const main = async (): Promise<void> => {
     }
   }
 
-  const config: BenchmarkConfig = {
+  const config: EvaluationConfig = {
     workspacePath,
     caseId,
     outputFormat: 'json',
   }
 
   try {
-    await runBenchmark(config)
+    await evaluateSchema(config)
   } catch (error) {
-    console.error('❌ Benchmark evaluation failed:', error)
+    console.error('❌ Schema evaluation failed:', error)
     process.exit(1)
   }
 }
@@ -38,4 +38,4 @@ const main = async (): Promise<void> => {
 main()
 
 // Re-export for external use
-export * from './benchmark.ts'
+export * from './evaluation.ts'
