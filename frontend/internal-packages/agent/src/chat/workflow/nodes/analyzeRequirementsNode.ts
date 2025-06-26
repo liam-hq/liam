@@ -1,13 +1,8 @@
-import type * as v from 'valibot'
 import { PMAnalysisAgent } from '../../../langchain/agents'
-import type { requirementsAnalysisSchema } from '../../../langchain/agents/pmAnalysisAgent/agent'
 import type { BasePromptVariables } from '../../../langchain/utils/types'
 import type { WorkflowState } from '../types'
 
 const NODE_NAME = 'analyzeRequirementsNode'
-
-type AnalysisResult = v.InferOutput<typeof requirementsAnalysisSchema>
-
 
 /**
  * Analyze Requirements Node - Requirements Organization

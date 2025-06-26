@@ -98,14 +98,14 @@ export class SupabaseSchemaRepository implements SchemaRepository {
 
     const { versions } = versionsResult.data
     const schemaResult = this.buildCurrentSchema(buildingSchema, versions)
-    
+
     if (!schemaResult.success) {
       return {
         data: null,
         error: { message: schemaResult.error },
       }
     }
-    
+
     const latestVersionNumber = this.getLatestVersionNumber(versions)
 
     return {
@@ -182,7 +182,10 @@ export class SupabaseSchemaRepository implements SchemaRepository {
       const errorMessages = validationResult.issues
         .map((issue) => `${issue.path?.join('.')} ${issue.message}`)
         .join(', ')
-      return { success: false, error: `Schema validation failed: ${errorMessages}` }
+      return {
+        success: false,
+        error: `Schema validation failed: ${errorMessages}`,
+      }
     }
 
     return { success: true, data: validationResult.output }

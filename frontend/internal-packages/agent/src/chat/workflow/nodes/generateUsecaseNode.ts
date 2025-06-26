@@ -1,10 +1,8 @@
 import { QAGenerateUsecaseAgent } from '../../../langchain/agents'
-import type { Usecase } from '../../../langchain/agents/qaGenerateUsecaseAgent/agent'
 import type { BasePromptVariables } from '../../../langchain/utils/types'
 import type { WorkflowState } from '../types'
 
 const NODE_NAME = 'generateUsecaseNode'
-
 
 /**
  * Format analyzed requirements into a structured text for AI processing
