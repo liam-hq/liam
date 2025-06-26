@@ -154,16 +154,16 @@ export const useRealtimeTimelineItems: UseRealtimeTimelineItemsFunc = (
 
   const handleRealtimeError = useCallback((error: Error) => {
     console.error('Realtime subscription error:', error)
-    
+
     if (typeof window !== 'undefined' && 'Notification' in window) {
       if (Notification.permission === 'granted') {
         new Notification('Connection Error', {
           body: 'Lost connection to real-time updates. Attempting to reconnect...',
-          icon: '/favicon.ico'
+          icon: '/favicon.ico',
         })
       }
     }
-    
+
     setTimeout(() => {
       window.location.reload()
     }, 5000)
