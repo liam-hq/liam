@@ -1,7 +1,9 @@
 name: Daily Lint Check
 
 on:
-  workflow_dispatch:
+  push:
+    branches:
+      - add-daily-lint-check-workflow-test
 
 jobs:
   lint:
