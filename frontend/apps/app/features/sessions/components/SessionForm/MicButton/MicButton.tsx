@@ -64,9 +64,8 @@ export const MicButton: FC<MicButtonProps> = ({
     <ArrowTooltipProvider>
       <ArrowTooltipRoot>
         <ArrowTooltipTrigger asChild>
-          <div
+          <fieldset
             className={clsx(styles.container, className)}
-            role="group"
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}
           >
@@ -86,7 +85,7 @@ export const MicButton: FC<MicButtonProps> = ({
                 <Mic className={styles.icon} size={16} />
               </div>
             </button>
-          </div>
+          </fieldset>
         </ArrowTooltipTrigger>
         <ArrowTooltipPortal>
           <ArrowTooltipContent side="top" align="center">

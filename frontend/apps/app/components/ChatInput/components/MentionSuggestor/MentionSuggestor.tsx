@@ -117,7 +117,7 @@ export const MentionSuggestor = ({
   // Reset the highlighted index when the query changes
   useEffect(() => {
     setHighlightedIndex(0)
-  }, [input, cursorPos])
+  }, [query])
 
   // Scroll to make the highlighted item enabled when it changes
   useEffect(() => {
