@@ -2,7 +2,7 @@
 
 import { Button, Input, useToast } from '@liam-hq/ui'
 import { useRouter } from 'next/navigation'
-import { useActionState, useEffect } from 'react'
+import { useActionState, useEffect, useId } from 'react'
 import { urlgen } from '@/libs/routes'
 import styles from '../../GeneralPage.module.css'
 import {
@@ -18,6 +18,7 @@ export function GeneralPageClient({
 }) {
   const toast = useToast()
   const router = useRouter()
+  const formId = useId()
 
   // Use useActionState for update action
   const [updateState, updateAction] = useActionState(updateOrganizationAction, {
@@ -98,7 +99,7 @@ export function GeneralPageClient({
         </div>
         <div className={styles.divider} />
         <div className={styles.cardFooter}>
-          <form id="updateOrgForm" action={updateAction}>
+          <form id={formId} action={updateAction}>
             <input
               type="hidden"
               name="organizationId"
