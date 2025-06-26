@@ -18,7 +18,6 @@ export const DesktopToolbar: FC = () => {
       <div className={styles.buttons}>
         <FitviewButton />
         <TidyUpButton />
-        {/* TODO: enable once implemented */}
         {/* <ViewControlButton /> */}
       </div>
       <ToolbarPrimitive.Separator className={styles.separator} />

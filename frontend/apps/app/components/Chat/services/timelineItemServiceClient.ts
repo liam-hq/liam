@@ -12,10 +12,8 @@ type SchemaVersionTimelineItem = {
   building_schema_version_id: string
 }
 
-// TODO: Modify to use what is inferred from the valibot schema
 type TimelineItem = Tables<'timeline_items'> | SchemaVersionTimelineItem
 
-// TODO: Make sure to use it when storing data and as an inferential type
 const realtimeTimelineItemSchema = v.object({
   id: v.string(),
   design_session_id: v.pipe(v.string(), v.uuid()),

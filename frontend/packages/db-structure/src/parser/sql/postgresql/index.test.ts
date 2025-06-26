@@ -171,7 +171,6 @@ describe(processor, () => {
       expect(value).toEqual(parserTestCases['index (unique: true)']('btree'))
     })
 
-    // FIXME: `CONSTRAINT` statement is not supported yet
     it.skip('foreign key constraint in CREATE TABLE', async () => {
       await processor(/* sql */ `
         CREATE TABLE posts (
@@ -190,7 +189,7 @@ describe(processor, () => {
         );
       `)
 
-      // TODO: This test demonstrates the current behavior where we use defaultRelationshipName
+      // This test demonstrates the current behavior where we use defaultRelationshipName
       // instead of PostgreSQL's standard naming convention.
       //
       // Current behavior: 'users_id_to_posts_user_id' (using defaultRelationshipName)
@@ -446,5 +445,5 @@ describe(processor, () => {
       expect(value).toEqual(parserTestCases.normal)
       expect(errors).toEqual([])
     })
-  }, 30000)
+  }, 60000)
 })

@@ -95,7 +95,6 @@ export const Chat: FC<Props> = ({ schemaData, designSession }) => {
     }
   }
 
-  // TODO: Add rate limiting - Implement rate limiting for message sending to prevent spam
   const handleSendMessage = async (content: string) => {
     // Add user message
     const userMessage: TimelineItemEntry = {

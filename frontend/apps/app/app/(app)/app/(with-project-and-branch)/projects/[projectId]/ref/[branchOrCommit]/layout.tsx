@@ -13,7 +13,6 @@ const paramsSchema = v.object({
 export default async function Layout({ params, children }: LayoutProps) {
   const parsedParams = v.safeParse(paramsSchema, await params)
   if (!parsedParams.success) {
-    // TODO: Reconsider the display when parse fails
     return children
   }
 

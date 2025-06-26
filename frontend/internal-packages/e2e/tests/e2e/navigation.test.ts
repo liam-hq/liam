@@ -17,7 +17,6 @@ const expectUserTableColumnInAccountsTableVisibility = async (
 
 test.describe('Navigation and URL Parameters', () => {
   test.beforeEach(async ({ page, isMobile }) => {
-    // TODO: Implement this test on mobile
     if (isMobile) {
       test.skip()
     }
@@ -87,7 +86,6 @@ test.describe('Navigation and URL Parameters', () => {
       await expect(page).toHaveURL(/.*active=users/)
     })
 
-    // FIXME: Browser back on hidden table is not working properly
     test('should handle back/forward navigation with table hiding', async ({
       page,
     }) => {

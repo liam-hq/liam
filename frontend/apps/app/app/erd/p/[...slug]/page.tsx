@@ -172,7 +172,6 @@ export default async function Page({
   }
   if (format === undefined) {
     // Strictly speaking, this is not always a network error, but the error name is temporarily set as "NetworkError" for display purposes.
-    // TODO: Update the error name to something more appropriate.
     return (
       <ERDViewer
         schema={blankSchema}

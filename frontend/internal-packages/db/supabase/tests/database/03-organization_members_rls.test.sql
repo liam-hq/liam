@@ -135,7 +135,6 @@ SELECT ok(
 RESET ROLE;
 
 -- Test 5: RLS - Non-member can add themselves as a new member
--- TODO: Security concern - This RLS policy allows any authenticated user to add themselves to any organization without invitation.
 -- This could pose a security risk in a production environment. Consider updating the RLS policy to only allow:
 -- 1. Users who have received an invitation via the invitation system
 -- 2. Or users explicitly approved by existing organization members

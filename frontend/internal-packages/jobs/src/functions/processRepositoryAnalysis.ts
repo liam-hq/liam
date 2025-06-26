@@ -534,8 +534,6 @@ const processAndSaveDocuments = async (
 }
 
 /**
- * FIXME: Duplicate data prevention needed
- *
  * Current implementation allows duplicate documents to be saved if this function
  * runs multiple times for the same repository. This can happen due to:
  * - Job failures and retries

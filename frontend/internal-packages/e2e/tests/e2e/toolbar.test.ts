@@ -97,7 +97,6 @@ test('tidyup button should make the table nodes tidy', async ({
   page,
   isMobile,
 }) => {
-  // TODO: Activate the test for mobile
   // skip because can't move the table node on mobile by mouse
   if (isMobile) test.skip()
 
@@ -148,7 +147,6 @@ test('fitview button should make the table nodes fit the viewport', async ({
   page,
   isMobile,
 }) => {
-  // TODO: Fix this test for mobile as it's flaky
   if (isMobile) test.skip()
 
   const toolbars = page.getByTestId('toolbar')
@@ -174,7 +172,6 @@ test('fitview button should make the table nodes fit the viewport', async ({
 
 test.describe('Show Mode', () => {
   test.beforeEach(async ({ page, isMobile }) => {
-    // TODO: Mobile test is flaky, so fix it later
     if (isMobile) test.skip()
 
     const showModeButton = page.getByTestId('show-mode')

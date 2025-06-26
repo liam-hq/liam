@@ -124,8 +124,6 @@ async function getERDEditorContent({
       name: error.name,
       message: error.message,
     })),
-    projectId,
-    branchOrCommit,
   }
 }
 
