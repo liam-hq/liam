@@ -1,4 +1,7 @@
-import { compare } from 'fast-json-patch'
+import pkg from 'fast-json-patch'
+
+const { compare } = pkg
+
 import type { Schema } from '../schema/index.js'
 import { buildColumnCheckDiffItem } from './columns/buildColumnCheckDiffItem.js'
 import { buildColumnCommentDiffItem } from './columns/buildColumnCommentDiffItem.js'
