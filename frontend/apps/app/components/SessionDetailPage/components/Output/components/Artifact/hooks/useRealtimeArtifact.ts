@@ -8,7 +8,7 @@ import { createClient } from '@/libs/db/client'
 const artifactDataSchema = v.object({
   id: v.pipe(v.string(), v.uuid()),
   design_session_id: v.pipe(v.string(), v.uuid()),
-  artifact: v.unknown(),
+  artifact: artifactSchema,
   created_at: v.string(),
   updated_at: v.string(),
   organization_id: v.pipe(v.string(), v.uuid()),
@@ -48,13 +48,13 @@ export function useRealtimeArtifact(designSessionId: string) {
       return
     }
 
-    // Validate artifact content
-    const artifactContent = v.safeParse(artifactSchema, data.artifact)
-    if (artifactContent.success) {
-      setArtifact(artifactContent.output)
+    // Validate artifact data
+    const artifactData = v.safeParse(artifactDataSchema, data)
+    if (artifactData.success) {
+      setArtifact(artifactData.output.artifact)
     } else {
-      console.error('Invalid artifact schema:', artifactContent.issues)
-      handleError(new Error('Invalid artifact schema'))
+      console.error('Invalid artifact data schema:', artifactData.issues)
+      handleError(new Error('Invalid artifact data schema'))
     }
 
     setLoading(false)
@@ -87,16 +87,7 @@ export function useRealtimeArtifact(designSessionId: string) {
             }
 
             const validatedData = v.parse(artifactDataSchema, payload.new)
-            const artifactContent = v.safeParse(
-              artifactSchema,
-              validatedData.artifact,
-            )
-
-            if (artifactContent.success) {
-              setArtifact(artifactContent.output)
-            } else {
-              throw new Error('Invalid artifact schema in realtime update')
-            }
+            setArtifact(validatedData.artifact)
           } catch (error) {
             handleError(error)
           }
