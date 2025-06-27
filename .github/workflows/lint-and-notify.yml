@@ -37,16 +37,18 @@ jobs:
       - name: Check for Warnings
         id: lint_check
         run: |
-          grep -i 'warning\|warn' lint-result.txt > warnings.txt || true
-          echo "has_warning=$(test -s warnings.txt && echo true || echo false)" >> $GITHUB_OUTPUT
+          # Check for any warnings from various linters
+          if grep -qiE '(warning|warn|Found [0-9]+ warnings?|\[[0-9]+:[0-9]+\].*warning|error TS[0-9]+)' lint-result.txt; then
+            echo "has_warning=true" >> $GITHUB_OUTPUT
+          else
+            echo "has_warning=false" >> $GITHUB_OUTPUT
+          fi
 
       - name: Post to Issue (if warning exists)
         if: steps.lint_check.outputs.has_warning == 'true'
         run: |
-          WARNING_COUNT=$(grep -i 'warning\|warn' warnings.txt | wc -l)
-          
-          # Read template and replace WARNING_COUNT placeholder
-          ISSUE_BODY=$(sed "s/WARNING_COUNT/$WARNING_COUNT/g" .github/workflows/templates/lint-and-notify.md)
+          # Read template (no placeholders to replace for "some warnings")
+          ISSUE_BODY=$(cat .github/workflows/templates/lint-and-notify.md)
           
           gh issue create \
             --title "Daily Lint Warning Report - $(date '+%Y-%m-%d')" \

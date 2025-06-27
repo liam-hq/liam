@@ -1,6 +1,6 @@
-### 🚨 WARNING_COUNT Lint Warnings Detected
+### 🚨 Lint Warnings Detected
 
-This workflow detected WARNING_COUNT warnings from `pnpm turbo lint --output-logs=full`.
+This workflow detected some warnings from `pnpm turbo lint --output-logs=full`.
 
 Please run the following command in this branch to view and fix the warnings:
 
