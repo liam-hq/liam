@@ -20,6 +20,7 @@ export interface DesignSessionData {
     organization_id: string
     design_session_id: string
     building_schema_version_id: string | null
+    progress: number | null
   }>
 }
 
@@ -52,7 +53,16 @@ export type CreateTimelineItemParams = {
   | {
       type: 'error'
     }
+  | {
+      type: 'progress'
+      progress: number
+    }
 )
+
+export interface UpdateTimelineItemParams {
+  content?: string
+  progress?: number
+}
 
 export type TimelineItemResult =
   | {
@@ -91,6 +101,14 @@ export interface SchemaRepository {
    */
   createTimelineItem(
     params: CreateTimelineItemParams,
+  ): Promise<TimelineItemResult>
+
+  /**
+   * Update an existing timeline item
+   */
+  updateTimelineItem(
+    id: string,
+    updates: UpdateTimelineItemParams,
   ): Promise<TimelineItemResult>
 }
 

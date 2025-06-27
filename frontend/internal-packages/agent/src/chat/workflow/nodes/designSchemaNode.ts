@@ -2,6 +2,7 @@ import { DatabaseSchemaBuildAgent } from '../../../langchain/agents'
 import type { BuildAgentResponse } from '../../../langchain/agents/databaseSchemaBuildAgent/agent'
 import type { SchemaAwareChatVariables } from '../../../langchain/utils/types'
 import { convertSchemaToText } from '../../../utils/convertSchemaToText'
+import { getWorkflowNodeProgress } from '../shared/getWorkflowNodeProgress'
 import type { WorkflowState } from '../types'
 
 const NODE_NAME = 'designSchemaNode'
@@ -93,6 +94,13 @@ export async function designSchemaNode(
   state: WorkflowState,
 ): Promise<WorkflowState> {
   state.logger.log(`[${NODE_NAME}] Started`)
+
+  if (state.onNodeProgress) {
+    await state.onNodeProgress(
+      'designSchema',
+      getWorkflowNodeProgress('designSchema'),
+    )
+  }
 
   const { agent, schemaText } = await prepareSchemaDesign(state)
 

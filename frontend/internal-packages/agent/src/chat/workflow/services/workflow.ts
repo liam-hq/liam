@@ -1,5 +1,5 @@
 import { END, START, StateGraph } from '@langchain/langgraph'
-import { WORKFLOW_ERROR_MESSAGES } from '../constants/progressMessages'
+import { WORKFLOW_ERROR_MESSAGES } from '../constants'
 import {
   analyzeRequirementsNode,
   designSchemaNode,

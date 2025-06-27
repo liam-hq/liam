@@ -3,6 +3,7 @@
 import type { Database } from '@liam-hq/db'
 import type { FC, ReactNode } from 'react'
 import { AgentMessage } from '@/components/Chat/AgentMessage'
+import { ProcessIndicator } from '@/components/Chat/ProcessIndicator'
 import { UserMessage } from '@/components/Chat/UserMessage'
 import { VersionMessage } from '@/components/Chat/VersionMessage'
 import styles from './TimelineItem.module.css'
@@ -32,6 +33,11 @@ export type TimelineItemProps =
       content: string
       building_schema_version_id: string
     }
+  | {
+      role: 'progress'
+      content: string
+      progress: number
+    }
 
 export const TimelineItem: FC<TimelineItemProps> = (props) => {
   // Handle schema_version role separately
@@ -42,6 +48,20 @@ export const TimelineItem: FC<TimelineItemProps> = (props) => {
           buildingSchemaVersionId={props.building_schema_version_id}
         />
       </div>
+    )
+  }
+
+  // Handle progress role separately
+  if (props.role === 'progress' && 'progress' in props) {
+    const progress = props.progress
+    return (
+      <ProcessIndicator
+        initialExpanded
+        title="Processing AI Message"
+        subtitle={props.content}
+        progress={progress}
+        status={progress >= 100 ? 'complete' : 'processing'}
+      />
     )
   }
 

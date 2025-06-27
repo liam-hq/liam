@@ -3,7 +3,6 @@
   flex-direction: column;
   width: 100%;
   gap: var(--spacing-1);
-  margin-bottom: var(--spacing-3);
 }
 
 .avatarContainer {

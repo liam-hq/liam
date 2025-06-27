@@ -1,6 +1,7 @@
 import { QADDLGenerationAgent } from '../../../langchain/agents'
 import type { SchemaAwareChatVariables } from '../../../langchain/utils/types'
 import { convertSchemaToText } from '../../../utils/convertSchemaToText'
+import { getWorkflowNodeProgress } from '../shared/getWorkflowNodeProgress'
 import type { WorkflowState } from '../types'
 
 const NODE_NAME = 'generateDDLNode'
@@ -37,6 +38,13 @@ export async function generateDDLNode(
 ): Promise<WorkflowState> {
   try {
     state.logger.log(`[${NODE_NAME}] Started`)
+
+    if (state.onNodeProgress) {
+      await state.onNodeProgress(
+        'generateDDL',
+        getWorkflowNodeProgress('generateDDL'),
+      )
+    }
 
     const { agent, schemaText } = await prepareDDLGeneration(state)
 

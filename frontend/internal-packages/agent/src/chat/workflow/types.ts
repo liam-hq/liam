@@ -37,6 +37,11 @@ export type WorkflowState = {
 
   // Logging functionality
   logger: NodeLogger
+
+  // Progress callback for node execution
+  onNodeProgress?:
+    | ((nodeName: string, progress: number) => Promise<void>)
+    | undefined
 }
 
 /**

@@ -1,3 +1,4 @@
+import { getWorkflowNodeProgress } from '../shared/getWorkflowNodeProgress'
 import type { WorkflowState } from '../types'
 
 const NODE_NAME = 'validateSchemaNode'
@@ -10,6 +11,13 @@ export async function validateSchemaNode(
   state: WorkflowState,
 ): Promise<WorkflowState> {
   state.logger.log(`[${NODE_NAME}] Started`)
+
+  if (state.onNodeProgress) {
+    await state.onNodeProgress(
+      'validateSchema',
+      getWorkflowNodeProgress('validateSchema'),
+    )
+  }
 
   // TODO: Implement DML execution and validation logic
   // This node should execute DML and validate the schema

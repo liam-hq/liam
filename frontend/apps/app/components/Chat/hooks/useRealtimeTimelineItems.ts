@@ -64,12 +64,19 @@ export type TimelineItemType =
       organization_id: string
       design_session_id: string
       building_schema_version_id: string | null
+      progress: number | null
     }
   | {
       id: string
       type: 'schema_version'
       content: string
       building_schema_version_id: string
+    }
+  | {
+      id: string
+      type: 'progress'
+      content: string
+      progress: number
     }
 
 type UseRealtimeTimelineItemsFunc = (
@@ -102,11 +109,6 @@ export const useRealtimeTimelineItems: UseRealtimeTimelineItemsFunc = (
   const addOrUpdateTimelineItem = useCallback(
     (newChatEntry: TimelineItemEntry, timelineItemUserId?: string | null) => {
       setTimelineItems((prev) => {
-        // Check if timeline item already exists to prevent duplicates
-        if (isDuplicateTimelineItem(prev, newChatEntry)) {
-          return prev
-        }
-
         // Check if we need to update an existing timeline item by its temporary ID
         // This handles streaming updates and other in-place updates
         const existingTimelineItemIndex = findExistingTimelineItemIndex(
@@ -119,6 +121,11 @@ export const useRealtimeTimelineItems: UseRealtimeTimelineItemsFunc = (
             existingTimelineItemIndex,
             newChatEntry,
           )
+        }
+
+        // Check if timeline item already exists to prevent duplicates
+        if (isDuplicateTimelineItem(prev, newChatEntry)) {
+          return prev
         }
 
         // Handle optimistic updates for user timeline items
