@@ -3,7 +3,6 @@ import tseslint from '@typescript-eslint/eslint-plugin'
 import tsParser from '@typescript-eslint/parser'
 import { requireUseServerPlugin } from './require-use-server-plugin.js'
 import { noNonEnglishPlugin } from './no-non-english-plugin.js'
-import { noUnescapedCurlyInTemplatePlugin } from './no-unescaped-curly-in-template-plugin.js'
 
 /**
  * Base ESLint configuration with typescript-eslint setup
@@ -29,7 +28,6 @@ export function createBaseConfig(options = {}) {
         '@typescript-eslint': tseslint,
         'require-use-server': requireUseServerPlugin,
         'no-non-english': noNonEnglishPlugin,
-        'no-unescaped-curly-in-template': noUnescapedCurlyInTemplatePlugin,
       },
       languageOptions: {
         parser: tsParser,
@@ -43,7 +41,6 @@ export function createBaseConfig(options = {}) {
         '@typescript-eslint/no-unsafe-member-access': 'error',
         'require-use-server/require-use-server': 'error',
         'no-non-english/no-non-english-characters': 'error',
-        'no-unescaped-curly-in-template/no-unescaped-curly-in-template': 'error',
       },
     },
     {
