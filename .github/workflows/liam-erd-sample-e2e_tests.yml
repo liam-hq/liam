@@ -42,26 +42,26 @@ jobs:
             if event_name == "deployment_status" && event_state == "success"
               # Preview deployment
               if (environment_val.include?("Preview") && target_url.include?("liam-erd-sample"))
-                "should_run=true"
+                "true"
               # Production deployment and Preview deployment
               elsif (environment_val.include?("Production") && !target_url.include?("liam-app-git-main")) && (environment_val.include?("Preview") && !target_url.include?("liam-docs") && !target_url.include?("liam-storybook"))
-                "should_run=true"
+                "true"
               else
-                "should_run=false"
+                "false"
               end
             else
-              "should_run=false"
+              "false"
             end
 
           # Same as 'echo "should_run=xxxx" >> $GITHUB_OUTPUT'
           output_file = ENV.fetch("GITHUB_OUTPUT")
           File.open(output_file, "a") do |file|
-            file.puts result
+            file.puts "should_run=#{result}"
           end
 
       - name: Setup pnpm
         if: steps.check.outputs.should_run == 'true'
-        uses: actions/pnpm-setup
+        uses: ./.github/actions/pnpm-setup
 
       - name: Cache Playwright browsers
         if: steps.check.outputs.should_run == 'true'
