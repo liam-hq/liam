@@ -326,7 +326,7 @@ importers:
         version: 3.1.1
       langfuse-langchain:
         specifier: 3.37.4
-        version: 3.37.4(langchain@0.3.29(@langchain/core@0.3.57(openai@4.104.0(ws@8.18.2)(zod@3.24.4)))(axios@1.10.0(debug@4.4.1))(cheerio@1.0.0)(handlebars@4.7.8)(openai@4.104.0(ws@8.18.2)(zod@3.24.4))(ws@8.18.2))
+        version: 3.37.4(langchain@0.3.29(@langchain/core@0.3.57(openai@4.104.0(ws@8.18.2)(zod@3.24.4)))(axios@1.10.0)(cheerio@1.0.0)(handlebars@4.7.8)(openai@4.104.0(ws@8.18.2)(zod@3.24.4))(ws@8.18.2))
       valibot:
         specifier: 1.1.0
         version: 1.1.0(typescript@5.8.3)
@@ -570,6 +570,9 @@ importers:
       '@liam-hq/db-structure':
         specifier: workspace:*
         version: link:../../packages/db-structure
+      neverthrow:
+        specifier: 8.2.0
+        version: 8.2.0
       valibot:
         specifier: 1.1.0
         version: 1.1.0(typescript@5.8.3)
@@ -13059,7 +13062,7 @@ snapshots:
       flat: 5.0.2
       ibm-cloud-sdk-core: 5.4.0
       js-yaml: 4.1.0
-      langchain: 0.3.29(@langchain/core@0.3.57(openai@4.104.0(ws@8.18.2)(zod@3.24.4)))(axios@1.10.0(debug@4.4.1))(cheerio@1.0.0)(handlebars@4.7.8)(openai@4.104.0(ws@8.18.2)(zod@3.24.4))(ws@8.18.2)
+      langchain: 0.3.29(@langchain/core@0.3.57(openai@4.104.0(ws@8.18.2)(zod@3.24.4)))(axios@1.10.0)(cheerio@1.0.0)(handlebars@4.7.8)(openai@4.104.0(ws@8.18.2)(zod@3.24.4))(ws@8.18.2)
       langsmith: 0.3.33(openai@4.104.0(ws@8.18.2)(zod@3.24.4))
       openai: 4.104.0(ws@8.18.2)(zod@3.24.4)
       uuid: 10.0.0
@@ -13276,7 +13279,7 @@ snapshots:
       cross-spawn: 7.0.6
       eventsource: 3.0.7
       express: 5.1.0(supports-color@10.0.0)
-      express-rate-limit: 7.5.1(express@5.1.0(supports-color@10.0.0))
+      express-rate-limit: 7.5.1(express@5.1.0)
       pkce-challenge: 5.0.0
       raw-body: 3.0.0
       zod: 3.24.4
@@ -17951,7 +17954,7 @@ snapshots:
 
   expr-eval@2.0.2: {}
 
-  express-rate-limit@7.5.1(express@5.1.0(supports-color@10.0.0)):
+  express-rate-limit@7.5.1(express@5.1.0):
     dependencies:
       express: 5.1.0(supports-color@10.0.0)
 
@@ -18857,7 +18860,7 @@ snapshots:
       isstream: 0.1.2
       jsonwebtoken: 9.0.2
       mime-types: 2.1.35
-      retry-axios: 2.6.0(axios@1.10.0(debug@4.4.1))
+      retry-axios: 2.6.0(axios@1.10.0)
       tough-cookie: 4.1.4
     transitivePeerDependencies:
       - supports-color
@@ -19300,7 +19303,7 @@ snapshots:
       zod: 3.24.4
       zod-validation-error: 3.5.2(zod@3.24.4)
 
-  langchain@0.3.29(@langchain/core@0.3.57(openai@4.104.0(ws@8.18.2)(zod@3.24.4)))(axios@1.10.0(debug@4.4.1))(cheerio@1.0.0)(handlebars@4.7.8)(openai@4.104.0(ws@8.18.2)(zod@3.24.4))(ws@8.18.2):
+  langchain@0.3.29(@langchain/core@0.3.57(openai@4.104.0(ws@8.18.2)(zod@3.24.4)))(axios@1.10.0)(cheerio@1.0.0)(handlebars@4.7.8)(openai@4.104.0(ws@8.18.2)(zod@3.24.4))(ws@8.18.2):
     dependencies:
       '@langchain/core': 0.3.57(openai@4.104.0(ws@8.18.2)(zod@3.24.4))
       '@langchain/openai': 0.5.12(@langchain/core@0.3.57(openai@4.104.0(ws@8.18.2)(zod@3.24.4)))(ws@8.18.2)
@@ -19327,9 +19330,9 @@ snapshots:
     dependencies:
       mustache: 4.2.0
 
-  langfuse-langchain@3.37.4(langchain@0.3.29(@langchain/core@0.3.57(openai@4.104.0(ws@8.18.2)(zod@3.24.4)))(axios@1.10.0(debug@4.4.1))(cheerio@1.0.0)(handlebars@4.7.8)(openai@4.104.0(ws@8.18.2)(zod@3.24.4))(ws@8.18.2)):
+  langfuse-langchain@3.37.4(langchain@0.3.29(@langchain/core@0.3.57(openai@4.104.0(ws@8.18.2)(zod@3.24.4)))(axios@1.10.0)(cheerio@1.0.0)(handlebars@4.7.8)(openai@4.104.0(ws@8.18.2)(zod@3.24.4))(ws@8.18.2)):
     dependencies:
-      langchain: 0.3.29(@langchain/core@0.3.57(openai@4.104.0(ws@8.18.2)(zod@3.24.4)))(axios@1.10.0(debug@4.4.1))(cheerio@1.0.0)(handlebars@4.7.8)(openai@4.104.0(ws@8.18.2)(zod@3.24.4))(ws@8.18.2)
+      langchain: 0.3.29(@langchain/core@0.3.57(openai@4.104.0(ws@8.18.2)(zod@3.24.4)))(axios@1.10.0)(cheerio@1.0.0)(handlebars@4.7.8)(openai@4.104.0(ws@8.18.2)(zod@3.24.4))(ws@8.18.2)
       langfuse: 3.37.4
       langfuse-core: 3.37.4
 
@@ -21463,7 +21466,7 @@ snapshots:
       onetime: 7.0.0
       signal-exit: 4.1.0
 
-  retry-axios@2.6.0(axios@1.10.0(debug@4.4.1)):
+  retry-axios@2.6.0(axios@1.10.0):
     dependencies:
       axios: 1.10.0(debug@4.4.1)
 

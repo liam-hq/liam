@@ -7,6 +7,7 @@
   "dependencies": {
     "@huggingface/transformers": "3.3.3",
     "@liam-hq/db-structure": "workspace:*",
+    "neverthrow": "8.2.0",
     "valibot": "1.1.0"
   },
   "devDependencies": {
