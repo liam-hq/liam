@@ -66,12 +66,11 @@ The evaluator produces the following key metrics:
 
 ## Input Schema Format
 
-The evaluator processes database schemas using the structured format defined in `@liam-hq/db-structure/schema`. The schema follows a comprehensive structure that includes tables, relationships, and table groups:
+The evaluator processes database schemas using the structured format defined in `@liam-hq/db-structure/schema`. The schema follows a comprehensive structure that includes tables and table groups:
 
 ```typescript
 type Schema = {
   tables: Record<string, Table>
-  relationships: Record<string, Relationship>
   tableGroups: Record<string, TableGroup>
 }
 

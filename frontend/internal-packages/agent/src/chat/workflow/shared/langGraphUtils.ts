@@ -4,7 +4,24 @@ import type { Usecase } from '../../../langchain/agents/qaGenerateUsecaseAgent/a
 import type { Repositories } from '../../../repositories'
 import type { NodeLogger } from '../../../utils/nodeLogger'
 
-export const DEFAULT_RECURSION_LIMIT = 10
+/**
+ * Default recursion limit for LangGraph workflow execution.
+ * This value limits the total number of state transitions (edges) in the graph.
+ *
+ * Important: Node retries do NOT count toward this limit. The limit only
+ * applies to transitions between nodes.
+ *
+ * The workflow has 9 nodes:
+ * - Normal execution: 10 transitions (START → 9 nodes → END)
+ * - With error loops: May have additional transitions when errors occur
+ *   (e.g., validateSchema → designSchema, reviewDeliverables → analyzeRequirements)
+ *
+ * Setting this to 20 ensures:
+ * - Complete workflow execution under normal conditions
+ * - Sufficient headroom for error handling loops
+ * - Protection against infinite loops
+ */
+export const DEFAULT_RECURSION_LIMIT = 20
 
 /**
  * Create LangGraph-compatible annotations (shared)
@@ -41,5 +58,10 @@ export const createAnnotations = () => {
 
     // Logging functionality
     logger: Annotation<NodeLogger>,
+
+    // Progress callback for node execution
+    onNodeProgress: Annotation<
+      ((nodeName: string, progress: number) => Promise<void>) | undefined
+    >,
   })
 }

@@ -79,8 +79,14 @@ export const createParserTestCases = (
       mention: aColumn({
         name: 'mention',
         type: 'text',
-        unique: true,
       }),
+    },
+    constraints: {
+      UNIQUE_mention: {
+        type: 'UNIQUE',
+        name: 'UNIQUE_mention',
+        columnName: 'mention',
+      },
     },
   }),
   'index (unique: false)': (indexName: string, type: string) =>

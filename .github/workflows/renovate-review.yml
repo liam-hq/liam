@@ -1,0 +1,69 @@
+name: Renovate PR Auto Review
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+jobs:
+  renovate-review:
+    # Only run for Renovate PRs
+    if: github.actor == 'renovate[bot]' || github.actor == 'renovate-bot'
+    permissions:
+      contents: read
+      pull-requests: write
+      id-token: write
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0  # Need full history for accurate diff analysis
+          persist-credentials: false
+
+      - name: Auto review Renovate PR
+        uses: anthropics/claude-code-action@9dd49689e4f1e4dc231c5694c3753c1e1157b4d7 # beta
+        with:
+          direct_prompt: |
+            Review this Renovate PR for dependency updates. Analyze regression risks by examining:
+
+            ## 1. Impact Analysis
+            - Search for ALL files using the updated libraries (imports/requires)
+            - List specific usage locations with file paths and line numbers
+            - Identify critical features using these dependencies
+            - Check for dynamic imports or lazy loading patterns
+
+            ## 2. Version Change Analysis
+            - Compare current vs new version changes
+            - Identify BREAKING CHANGES explicitly
+            - List removed, modified, or deprecated APIs
+            - Check for security fixes included
+            - Review migration guides if available
+
+            ## 3. Test Coverage Assessment
+            - Verify test coverage for code using updated libraries through:
+              - Unit tests (.test.ts, .spec.ts files)
+              - Integration tests
+              - E2E tests (if applicable to the affected functionality)
+              - Static analysis (TypeScript type checking, ESLint rules)
+            - List relevant test files covering the usage
+            - Confirm CI test results are passing
+            - Identify any untested areas of concern
+
+            ## 4. Compatibility Verification
+            - Check TypeScript type definition changes
+            - Verify peerDependencies requirements are met
+            - Ensure no conflicts with other dependencies
+            - Check for Node.js/runtime version requirements
+
+            ## 5. Final Verdict
+            Provide ONE clear recommendation:
+            - ✅ **APPROVE**: Low regression risk, safe to merge
+            - ⚠️ **APPROVE WITH CAUTION**: Minor concerns, verify after merge
+            - ❌ **REQUEST CHANGES**: Breaking changes require code updates
+
+            State specific reasons for your verdict and list any pre-merge verification steps.
+            Note: This codebase uses TypeScript, React, Next.js, and pnpm workspaces.
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          allowed_tools: "mcp__github__create_pending_pull_request_review,mcp__github__add_pull_request_review_comment_to_pending_review,mcp__github__submit_pending_pull_request_review,mcp__github__get_pull_request_diff,mcp__github__get_pull_request"

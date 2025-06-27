@@ -3,7 +3,7 @@
   "concurrency": "15",
   "tasks": {
     "@liam-hq/storybook#build": {
-      "dependsOn": ["^build"],
+      "dependsOn": ["^build", "@liam-hq/db-structure#build"],
       "outputs": ["storybook-static"]
     },
     "build": {
@@ -75,10 +75,6 @@
     },
     "test:e2e": {
       "dependsOn": ["^build"]
-    },
-    "test:prompt": {
-      "dependsOn": ["^build"],
-      "outputs": []
     }
   }
 }

@@ -14,6 +14,7 @@ import type {
   SchemaData,
   SchemaRepository,
   TimelineItemResult,
+  UpdateTimelineItemParams,
   VersionResult,
 } from './types'
 
@@ -56,7 +57,8 @@ export class SupabaseSchemaRepository implements SchemaRepository {
           updated_at,
           organization_id,
           design_session_id,
-          building_schema_version_id
+          building_schema_version_id,
+          progress
         )
       `)
       .eq('id', designSessionId)
@@ -157,7 +159,7 @@ export class SupabaseSchemaRepository implements SchemaRepository {
       typeof buildingSchema.initial_schema_snapshot === 'object' &&
       buildingSchema.initial_schema_snapshot !== null
         ? JSON.parse(JSON.stringify(buildingSchema.initial_schema_snapshot))
-        : { tables: {}, relationships: {} }
+        : { tables: {} }
 
     for (const version of versions) {
       const patchParsed = v.safeParse(operationsSchema, version.patch)
@@ -175,7 +177,7 @@ export class SupabaseSchemaRepository implements SchemaRepository {
     const validationResult = v.safeParse(schemaSchema, currentSchema)
     if (!validationResult.success) {
       console.warn('Schema validation failed, using fallback schema')
-      return { tables: {}, relationships: {} }
+      return { tables: {} }
     }
 
     return validationResult.output
@@ -343,6 +345,7 @@ export class SupabaseSchemaRepository implements SchemaRepository {
       'buildingSchemaVersionId' in params
         ? params.buildingSchemaVersionId
         : null
+    const progress = 'progress' in params ? params.progress : null
 
     const now = new Date().toISOString()
 
@@ -354,6 +357,7 @@ export class SupabaseSchemaRepository implements SchemaRepository {
         type,
         user_id: userId,
         building_schema_version_id: buildingSchemaVersionId,
+        progress,
         updated_at: now,
       })
       .select()
@@ -362,6 +366,39 @@ export class SupabaseSchemaRepository implements SchemaRepository {
     if (error) {
       console.error(
         'Failed to save timeline item:',
+        JSON.stringify(error, null, 2),
+      )
+      return {
+        success: false,
+        error: error.message,
+      }
+    }
+
+    return {
+      success: true,
+      timelineItem,
+    }
+  }
+
+  async updateTimelineItem(
+    id: string,
+    updates: UpdateTimelineItemParams,
+  ): Promise<TimelineItemResult> {
+    const now = new Date().toISOString()
+
+    const { data: timelineItem, error } = await this.client
+      .from('timeline_items')
+      .update({
+        ...updates,
+        updated_at: now,
+      })
+      .eq('id', id)
+      .select()
+      .single()
+
+    if (error) {
+      console.error(
+        'Failed to update timeline item:',
         JSON.stringify(error, null, 2),
       )
       return {

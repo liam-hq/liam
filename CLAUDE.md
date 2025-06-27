@@ -21,7 +21,7 @@ pnpm lint
 pnpm fmt
 
 # Run tests
-pnpm test:turbo
+pnpm test
 pnpm test:e2e
 
 # Generate code and CSS type definitions

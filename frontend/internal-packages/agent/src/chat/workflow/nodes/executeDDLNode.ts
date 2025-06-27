@@ -1,5 +1,6 @@
 import { executeQuery } from '@liam-hq/pglite-server'
 import type { SqlResult } from '@liam-hq/pglite-server/src/types'
+import { getWorkflowNodeProgress } from '../shared/getWorkflowNodeProgress'
 import type { WorkflowState } from '../types'
 
 const NODE_NAME = 'executeDDLNode'
@@ -12,6 +13,13 @@ export async function executeDDLNode(
   state: WorkflowState,
 ): Promise<WorkflowState> {
   state.logger.log(`[${NODE_NAME}] Started`)
+
+  if (state.onNodeProgress) {
+    await state.onNodeProgress(
+      'executeDDL',
+      getWorkflowNodeProgress('executeDDL'),
+    )
+  }
 
   if (!state.ddlStatements || !state.ddlStatements.trim()) {
     state.logger.log(`[${NODE_NAME}] No DDL statements to execute`)

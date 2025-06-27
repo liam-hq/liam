@@ -1,4 +1,6 @@
-import { applyPatch, type Operation } from 'fast-json-patch'
+import pkg, { type Operation } from 'fast-json-patch'
+
+const { applyPatch } = pkg // see https://github.com/Starcounter-Jack/JSON-Patch/issues/310
 
 export function applyPatchOperations<T extends Record<string, unknown>>(
   target: T,

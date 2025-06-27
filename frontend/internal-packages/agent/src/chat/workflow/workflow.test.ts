@@ -56,8 +56,6 @@ describe('Chat Workflow', () => {
             type: 'integer',
             default: null,
             check: null,
-            primary: true,
-            unique: false,
             notNull: true,
             comment: null,
           },
@@ -66,8 +64,6 @@ describe('Chat Workflow', () => {
             type: 'varchar',
             default: null,
             check: null,
-            primary: false,
-            unique: false,
             notNull: true,
             comment: null,
           },
@@ -76,18 +72,21 @@ describe('Chat Workflow', () => {
             type: 'varchar',
             default: null,
             check: null,
-            primary: false,
-            unique: false,
             notNull: false,
             comment: null,
           },
         },
         comment: null,
         indexes: {},
-        constraints: {},
+        constraints: {
+          users_pkey: {
+            type: 'PRIMARY KEY',
+            name: 'users_pkey',
+            columnName: 'id',
+          },
+        },
       },
     },
-    relationships: {},
   })
 
   // Helper function to create base workflow state
@@ -140,6 +139,7 @@ describe('Chat Workflow', () => {
       getDesignSession: vi.fn(),
       createVersion: vi.fn(),
       createTimelineItem: vi.fn(),
+      updateTimelineItem: vi.fn(),
     } as SchemaRepository
 
     mockRepositories = {
@@ -226,6 +226,7 @@ describe('Chat Workflow', () => {
         organization_id: 'test-org-id',
         design_session_id: 'test-design-session-id',
         building_schema_version_id: null,
+        progress: null,
       },
     })
   })
@@ -305,7 +306,7 @@ describe('Chat Workflow', () => {
       expect(mockSchemaRepository.createVersion).not.toHaveBeenCalled()
     })
 
-    it.skip('should handle schema update failure', async () => {
+    it('should handle schema update failure', async () => {
       const structuredResponse = {
         message: 'Attempted to add created_at column',
         schemaChanges: [

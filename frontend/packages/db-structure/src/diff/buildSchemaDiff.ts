@@ -1,4 +1,7 @@
-import { compare } from 'fast-json-patch'
+import pkg from 'fast-json-patch'
+
+const { compare } = pkg // see https://github.com/Starcounter-Jack/JSON-Patch/issues/310
+
 import type { Schema } from '../schema/index.js'
 import { buildColumnCheckDiffItem } from './columns/buildColumnCheckDiffItem.js'
 import { buildColumnCommentDiffItem } from './columns/buildColumnCommentDiffItem.js'
@@ -6,8 +9,6 @@ import { buildColumnDefaultDiffItem } from './columns/buildColumnDefaultDiffItem
 import { buildColumnDiffItem } from './columns/buildColumnDiffItem.js'
 import { buildColumnNameDiffItem } from './columns/buildColumnNameDiffItem.js'
 import { buildColumnNotNullDiffItem } from './columns/buildColumnNotNullDiffItem.js'
-import { buildColumnPrimaryDiffItem } from './columns/buildColumnPrimaryDiffItem.js'
-import { buildColumnUniqueDiffItem } from './columns/buildColumnUniqueDiffItem.js'
 import { buildConstraintColumnNameDiffItem } from './constraints/buildConstraintColumnNameDiffItem.js'
 import { buildConstraintDeleteConstraintDiffItem } from './constraints/buildConstraintDeleteConstraintDiffItem.js'
 import { buildConstraintDetailDiffItem } from './constraints/buildConstraintDetailDiffItem.js'
@@ -110,17 +111,6 @@ function buildColumnRelatedDiffItems(
     items.push(columnCommentDiffItem)
   }
 
-  const columnPrimaryDiffItem = buildColumnPrimaryDiffItem(
-    tableId,
-    columnId,
-    before,
-    after,
-    operations,
-  )
-  if (columnPrimaryDiffItem) {
-    items.push(columnPrimaryDiffItem)
-  }
-
   const columnDefaultDiffItem = buildColumnDefaultDiffItem(
     tableId,
     columnId,
@@ -141,17 +131,6 @@ function buildColumnRelatedDiffItems(
   )
   if (columnCheckDiffItem) {
     items.push(columnCheckDiffItem)
-  }
-
-  const columnUniqueDiffItem = buildColumnUniqueDiffItem(
-    tableId,
-    columnId,
-    before,
-    after,
-    operations,
-  )
-  if (columnUniqueDiffItem) {
-    items.push(columnUniqueDiffItem)
   }
 
   const columnNotNullDiffItem = buildColumnNotNullDiffItem(

@@ -119,7 +119,8 @@ CREATE TYPE "public"."timeline_item_type_enum" AS ENUM (
     'user',
     'assistant',
     'schema_version',
-    'error'
+    'error',
+    'progress'
 );
 
 
@@ -1339,11 +1340,17 @@ CREATE TABLE IF NOT EXISTS "public"."timeline_items" (
     "updated_at" timestamp(3) with time zone NOT NULL,
     "organization_id" "uuid" NOT NULL,
     "building_schema_version_id" "uuid",
-    "type" "public"."timeline_item_type_enum" NOT NULL
+    "type" "public"."timeline_item_type_enum" NOT NULL,
+    "progress" integer,
+    CONSTRAINT "timeline_items_progress_check" CHECK (((("type" = 'progress'::"public"."timeline_item_type_enum") AND ("progress" IS NOT NULL) AND ("progress" >= 0) AND ("progress" <= 100)) OR (("type" <> 'progress'::"public"."timeline_item_type_enum") AND ("progress" IS NULL))))
 );
 
 
 ALTER TABLE "public"."timeline_items" OWNER TO "postgres";
+
+
+COMMENT ON COLUMN "public"."timeline_items"."progress" IS 'Progress percentage (0-100) for progress type timeline items. Only set when type is progress.';
+
 
 
 CREATE TABLE IF NOT EXISTS "public"."users" (

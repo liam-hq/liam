@@ -1,4 +1,8 @@
-import type { Column } from '@liam-hq/db-structure'
+import {
+  type Column,
+  type Constraints,
+  isPrimaryKey,
+} from '@liam-hq/db-structure'
 import {
   DiamondFillIcon,
   DiamondIcon,
@@ -14,9 +18,10 @@ import styles from './ColumnsItem.module.css'
 
 type Props = {
   column: Column
+  constraints: Constraints
 }
 
-export const ColumnsItem: FC<Props> = ({ column }) => {
+export const ColumnsItem: FC<Props> = ({ column, constraints }) => {
   return (
     <div className={styles.wrapper}>
       <h3 className={styles.heading}>{column.name}</h3>
@@ -32,7 +37,7 @@ export const ColumnsItem: FC<Props> = ({ column }) => {
             <GridTableDd>{column.default}</GridTableDd>
           </GridTableItem>
         )}
-        {column.primary && (
+        {isPrimaryKey(column.name, constraints) && (
           <GridTableItem>
             <GridTableRow>
               <KeyRound className={styles.primaryKeyIcon} />

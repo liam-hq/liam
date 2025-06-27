@@ -1,0 +1,6 @@
+.container {
+  display: flex;
+  gap: var(--spacing-2);
+  flex-wrap: wrap;
+  padding-bottom: var(--spacing-3);
+}

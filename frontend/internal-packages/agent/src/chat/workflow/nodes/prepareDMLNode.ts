@@ -1,6 +1,7 @@
 import { QADMLValidationAgent } from '../../../langchain/agents'
 import type { BasePromptVariables } from '../../../langchain/utils/types'
 import { convertSchemaToText } from '../../../utils/convertSchemaToText'
+import { getWorkflowNodeProgress } from '../shared/getWorkflowNodeProgress'
 import type { WorkflowState } from '../types'
 
 const NODE_NAME = 'prepareDMLNode'
@@ -37,6 +38,13 @@ export async function prepareDMLNode(
   state: WorkflowState,
 ): Promise<WorkflowState> {
   state.logger.log(`[${NODE_NAME}] Started`)
+
+  if (state.onNodeProgress) {
+    await state.onNodeProgress(
+      'prepareDML',
+      getWorkflowNodeProgress('prepareDML'),
+    )
+  }
 
   if (!state.generatedUsecases || state.generatedUsecases.length === 0) {
     const errorMessage = 'No generated use cases found. Cannot prepare DML.'

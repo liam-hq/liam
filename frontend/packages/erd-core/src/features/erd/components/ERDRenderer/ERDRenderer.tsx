@@ -1,4 +1,3 @@
-import { NuqsAdapter } from 'nuqs/adapters/react'
 import '@xyflow/react/dist/style.css'
 import {
   type ImperativePanelHandle,
@@ -24,8 +23,8 @@ import '@/styles/globals.css'
 import { toggleLogEvent } from '@/features/gtm/utils'
 import { useIsTouchDevice } from '@/hooks'
 import { useVersion } from '@/providers'
-import { SchemaProvider, type SchemaProviderValue, useSchema } from '@/stores'
-import { UserEditingProvider, useUserEditing } from '@/stores/userEditing'
+import { useSchema } from '@/stores'
+import { useUserEditing } from '@/stores/userEditing'
 import {
   convertSchemaToNodes,
   createHash,
@@ -41,35 +40,18 @@ import { RelationshipEdgeParticleMarker } from './RelationshipEdgeParticleMarker
 import { TableDetailDrawer, TableDetailDrawerRoot } from './TableDetailDrawer'
 import { Toolbar } from './Toolbar'
 
-type InnerProps = {
+type Props = {
   defaultSidebarOpen?: boolean | undefined
   errorObjects?: ComponentProps<typeof ErrorDisplay>['errors']
   defaultPanelSizes?: number[]
   withAppBar?: boolean
 }
 
-type Props = InnerProps & {
-  schema: SchemaProviderValue
-  showDiff?: boolean
-}
-
 const SIDEBAR_COOKIE_NAME = 'sidebar:state'
 const PANEL_LAYOUT_COOKIE_NAME = 'panels:layout'
 const COOKIE_MAX_AGE = 60 * 60 * 24 * 7
 
-export const ERDRenderer: FC<Props> = ({ schema, showDiff, ...innerProps }) => {
-  return (
-    <NuqsAdapter>
-      <UserEditingProvider showDiff={showDiff}>
-        <SchemaProvider {...schema}>
-          <ERDRendererInner {...innerProps} />
-        </SchemaProvider>
-      </UserEditingProvider>
-    </NuqsAdapter>
-  )
-}
-
-const ERDRendererInner: FC<InnerProps> = ({
+export const ERDRenderer: FC<Props> = ({
   defaultSidebarOpen = false,
   errorObjects = [],
   defaultPanelSizes = [20, 80],

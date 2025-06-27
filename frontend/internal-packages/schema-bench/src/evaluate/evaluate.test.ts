@@ -90,7 +90,6 @@ describe('evaluate', () => {
             },
           },
         },
-        relationships: {},
       }
 
       const predict: Schema = {
@@ -174,7 +173,6 @@ describe('evaluate', () => {
             },
           },
         },
-        relationships: {},
       }
 
       const result = await evaluate(reference, predict)
@@ -264,7 +262,6 @@ describe('evaluate', () => {
             },
           },
         },
-        relationships: {},
       }
 
       const predict: Schema = {
@@ -338,7 +335,6 @@ describe('evaluate', () => {
             },
           },
         },
-        relationships: {},
       }
 
       const result = await evaluate(reference, predict)
@@ -420,7 +416,6 @@ describe('evaluate', () => {
             },
           },
         },
-        relationships: {},
       }
 
       const predict: Schema = {
@@ -480,7 +475,6 @@ describe('evaluate', () => {
             },
           },
         },
-        relationships: {},
       }
 
       const result = await evaluate(reference, predict)
@@ -576,18 +570,6 @@ describe('evaluate', () => {
             },
           },
         },
-        relationships: {
-          fk_posts_user_id: {
-            name: 'fk_posts_user_id',
-            primaryTableName: 'users',
-            primaryColumnName: 'id',
-            foreignTableName: 'posts',
-            foreignColumnName: 'user_id',
-            cardinality: 'ONE_TO_MANY',
-            updateConstraint: 'NO_ACTION',
-            deleteConstraint: 'NO_ACTION',
-          },
-        },
       }
 
       const predict: Schema = {
@@ -658,18 +640,6 @@ describe('evaluate', () => {
                 deleteConstraint: 'NO_ACTION',
               },
             },
-          },
-        },
-        relationships: {
-          fk_posts_user_id: {
-            name: 'fk_posts_user_id',
-            primaryTableName: 'users',
-            primaryColumnName: 'id',
-            foreignTableName: 'posts',
-            foreignColumnName: 'user_id',
-            cardinality: 'ONE_TO_MANY',
-            updateConstraint: 'NO_ACTION',
-            deleteConstraint: 'NO_ACTION',
           },
         },
       }
@@ -743,19 +713,16 @@ describe('evaluate', () => {
                 name: 'pk_posts',
                 columnName: 'id',
               },
+              users_id_to_posts_user_id: {
+                type: 'FOREIGN KEY',
+                name: 'users_id_to_posts_user_id',
+                columnName: 'user_id',
+                targetTableName: 'users',
+                targetColumnName: 'id',
+                updateConstraint: 'NO_ACTION',
+                deleteConstraint: 'NO_ACTION',
+              },
             },
-          },
-        },
-        relationships: {
-          users_id_to_posts_user_id: {
-            name: 'users_id_to_posts_user_id',
-            primaryTableName: 'users',
-            primaryColumnName: 'id',
-            foreignTableName: 'posts',
-            foreignColumnName: 'user_id',
-            cardinality: 'ONE_TO_MANY',
-            updateConstraint: 'NO_ACTION',
-            deleteConstraint: 'NO_ACTION',
           },
         },
       }
@@ -818,19 +785,16 @@ describe('evaluate', () => {
                 name: 'pk_posts',
                 columnName: 'id',
               },
+              fk_posts_user_id: {
+                type: 'FOREIGN KEY',
+                name: 'fk_posts_user_id',
+                columnName: 'user_id',
+                targetTableName: 'users',
+                targetColumnName: 'id',
+                updateConstraint: 'NO_ACTION',
+                deleteConstraint: 'NO_ACTION',
+              },
             },
-          },
-        },
-        relationships: {
-          fk_posts_user_id: {
-            name: 'fk_posts_user_id',
-            primaryTableName: 'users',
-            primaryColumnName: 'id',
-            foreignTableName: 'posts',
-            foreignColumnName: 'user_id',
-            cardinality: 'ONE_TO_MANY',
-            updateConstraint: 'NO_ACTION',
-            deleteConstraint: 'NO_ACTION',
           },
         },
       }
@@ -938,29 +902,25 @@ describe('evaluate', () => {
                 name: 'pk_posts',
                 columnName: 'id',
               },
+              fk_posts_user_id: {
+                type: 'FOREIGN KEY',
+                name: 'fk_posts_user_id',
+                columnName: 'user_id',
+                targetTableName: 'users',
+                targetColumnName: 'id',
+                updateConstraint: 'NO_ACTION',
+                deleteConstraint: 'NO_ACTION',
+              },
+              fk_posts_category_id: {
+                type: 'FOREIGN KEY',
+                name: 'fk_posts_category_id',
+                columnName: 'category_id',
+                targetTableName: 'categories',
+                targetColumnName: 'id',
+                updateConstraint: 'NO_ACTION',
+                deleteConstraint: 'NO_ACTION',
+              },
             },
-          },
-        },
-        relationships: {
-          fk_posts_user_id: {
-            name: 'fk_posts_user_id',
-            primaryTableName: 'users',
-            primaryColumnName: 'id',
-            foreignTableName: 'posts',
-            foreignColumnName: 'user_id',
-            cardinality: 'ONE_TO_MANY',
-            updateConstraint: 'NO_ACTION',
-            deleteConstraint: 'NO_ACTION',
-          },
-          fk_posts_category_id: {
-            name: 'fk_posts_category_id',
-            primaryTableName: 'categories',
-            primaryColumnName: 'id',
-            foreignTableName: 'posts',
-            foreignColumnName: 'category_id',
-            cardinality: 'ONE_TO_MANY',
-            updateConstraint: 'NO_ACTION',
-            deleteConstraint: 'NO_ACTION',
           },
         },
       }
@@ -1057,19 +1017,16 @@ describe('evaluate', () => {
                 name: 'pk_posts',
                 columnName: 'id',
               },
+              fk_posts_user_id: {
+                type: 'FOREIGN KEY',
+                name: 'fk_posts_user_id',
+                columnName: 'user_id',
+                targetTableName: 'users',
+                targetColumnName: 'id',
+                updateConstraint: 'NO_ACTION',
+                deleteConstraint: 'NO_ACTION',
+              },
             },
-          },
-        },
-        relationships: {
-          fk_posts_user_id: {
-            name: 'fk_posts_user_id',
-            primaryTableName: 'users',
-            primaryColumnName: 'id',
-            foreignTableName: 'posts',
-            foreignColumnName: 'user_id',
-            cardinality: 'ONE_TO_MANY',
-            updateConstraint: 'NO_ACTION',
-            deleteConstraint: 'NO_ACTION',
           },
         },
       }
@@ -1143,19 +1100,16 @@ describe('evaluate', () => {
                 name: 'pk_posts',
                 columnName: 'id',
               },
+              users_id_to_posts_user_id: {
+                type: 'FOREIGN KEY',
+                name: 'users_id_to_posts_user_id',
+                columnName: 'user_id',
+                targetTableName: 'users',
+                targetColumnName: 'id',
+                updateConstraint: 'NO_ACTION',
+                deleteConstraint: 'NO_ACTION',
+              },
             },
-          },
-        },
-        relationships: {
-          users_id_to_posts_user_id: {
-            name: 'users_id_to_posts_user_id',
-            primaryTableName: 'users',
-            primaryColumnName: 'id',
-            foreignTableName: 'posts',
-            foreignColumnName: 'user_id',
-            cardinality: 'ONE_TO_MANY',
-            updateConstraint: 'NO_ACTION',
-            deleteConstraint: 'NO_ACTION',
           },
         },
       }
@@ -1218,19 +1172,16 @@ describe('evaluate', () => {
                 name: 'pk_posts',
                 columnName: 'id',
               },
+              fk_posts_author_id: {
+                type: 'FOREIGN KEY',
+                name: 'fk_posts_author_id',
+                columnName: 'author_id',
+                targetTableName: 'users',
+                targetColumnName: 'id',
+                updateConstraint: 'NO_ACTION',
+                deleteConstraint: 'NO_ACTION',
+              },
             },
-          },
-        },
-        relationships: {
-          fk_posts_author_id: {
-            name: 'fk_posts_author_id',
-            primaryTableName: 'users',
-            primaryColumnName: 'id',
-            foreignTableName: 'posts',
-            foreignColumnName: 'author_id',
-            cardinality: 'ONE_TO_MANY',
-            updateConstraint: 'NO_ACTION',
-            deleteConstraint: 'NO_ACTION',
           },
         },
       }

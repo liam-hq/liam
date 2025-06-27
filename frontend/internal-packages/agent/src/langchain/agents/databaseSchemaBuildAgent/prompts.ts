@@ -54,19 +54,17 @@ Schema Structure Reference:
 - Columns: /tables/TABLE_NAME/columns/COLUMN_NAME
 - Column properties: type, notNull, primary, unique, default, comment, check
 - Table properties: name, columns, comment, indexes, constraints (ALL REQUIRED)
-- Relationships: /relationships/RELATIONSHIP_NAME (at schema root level, NOT inside tables)
 
 IMPORTANT Table Structure Rules:
 - Every table MUST include: name, columns, comment, indexes, constraints
 - Use empty objects {{}} for indexes and constraints if none are needed
 - Use null for comment if no comment is provided
-- Relationships belong at schema root level (/relationships/), not inside tables
 
 CRITICAL Validation Rules:
-- Foreign key constraint actions MUST use these EXACT values: "CASCADE", "RESTRICT", "SET_NULL", "SET_DEFAULT", "NO_ACTION"
-- Cardinality MUST be one of: "ONE_TO_ONE", "ONE_TO_MANY"
 - Column properties MUST be: name (string), type (string), notNull (boolean), primary (boolean), unique (boolean), default (string|number|boolean|null), comment (string|null), check (string|null)
 - All boolean values must be true/false, not strings
+- Constraint types: "PRIMARY KEY", "FOREIGN KEY", "UNIQUE", "CHECK"
+- Foreign key constraint actions MUST use these EXACT values: "CASCADE", "RESTRICT", "SET_NULL", "SET_DEFAULT", "NO_ACTION"
 - Use "SET_NULL" not "SET NULL" (underscore, not space)
 - Use "NO_ACTION" not "NO ACTION" (underscore, not space)
 
@@ -92,7 +90,7 @@ Example Response:
   ]
 }}
 
-Example with Relationships:
+Example with Foreign Key Constraint:
 {{
   "message": "Added! Created the 'posts' table and linked it to users. Now you can track user posts!",
   "schemaChanges": [
@@ -108,21 +106,17 @@ Example with Relationships:
         }},
         "comment": null,
         "indexes": {{}},
-        "constraints": {{}}
-      }}
-    }},
-    {{
-      "op": "add",
-      "path": "/relationships/posts_user_fk",
-      "value": {{
-        "name": "posts_user_fk",
-        "primaryTableName": "users",
-        "primaryColumnName": "id",
-        "foreignTableName": "posts",
-        "foreignColumnName": "user_id",
-        "cardinality": "ONE_TO_MANY",
-        "updateConstraint": "NO_ACTION",
-        "deleteConstraint": "SET_NULL"
+        "constraints": {{
+          "posts_user_fk": {{
+            "type": "FOREIGN KEY",
+            "name": "posts_user_fk",
+            "columnName": "user_id",
+            "targetTableName": "users",
+            "targetColumnName": "id",
+            "updateConstraint": "NO_ACTION",
+            "deleteConstraint": "CASCADE"
+          }}
+        }}
       }}
     }}
   ]

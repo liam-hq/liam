@@ -18,9 +18,6 @@ const dummySchema = {
       },
     },
   },
-  relationships: {
-    rel1: { name: 'user_posts' },
-  },
 }
 
 const meta = {

@@ -141,7 +141,18 @@ function generateCreateTableFromOperation(
     throw new Error(`Invalid table path: ${operation.path}`)
   }
 
-  return generateCreateTableStatement(operation.value)
+  const table = operation.value
+  const ddlStatements: string[] = []
+
+  // 1. Generate CREATE TABLE statement (includes comments)
+  ddlStatements.push(generateCreateTableStatement(table))
+
+  // 2. Generate ADD CONSTRAINT statements
+  for (const constraint of Object.values(table.constraints)) {
+    ddlStatements.push(generateAddConstraintStatement(table.name, constraint))
+  }
+
+  return ddlStatements.join('\n\n')
 }
 
 /**

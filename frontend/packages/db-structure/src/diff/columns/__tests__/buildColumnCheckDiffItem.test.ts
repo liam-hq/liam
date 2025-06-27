@@ -23,10 +23,8 @@ describe('buildColumnCheckDiffItem', () => {
             type: 'text',
             default: null,
             check: null,
-            primary: false,
             notNull: false,
             comment: null,
-            unique: false,
           },
         },
         comment: null,
@@ -34,7 +32,6 @@ describe('buildColumnCheckDiffItem', () => {
         constraints: {},
       },
     },
-    relationships: {},
   }
 
   const beforeSchema: Schema = structuredClone(baseSchema)

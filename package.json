@@ -33,9 +33,8 @@
     "prebuild": "pnpm create-env-files",
     "prelint": "pnpm create-env-files",
     "release": "pnpm build && pnpm changeset publish",
+    "test": "turbo test",
     "test:e2e": "turbo test:e2e",
-    "test:prompt": "turbo test:prompt",
-    "test:turbo": "turbo test",
     "vercel:env-pull": "vercel env pull .env",
     "vercel:link": "vercel link -p liam-app -S \"liambx\" -y"
   },

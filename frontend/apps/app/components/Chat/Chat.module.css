@@ -11,9 +11,10 @@
   flex: 1;
   overflow-y: auto;
   overflow-x: hidden; /* Prevent horizontal scrolling */
-  padding: 16px;
+  padding: var(--spacing-4);
   display: flex;
   flex-direction: column;
+  gap: var(--spacing-5);
   min-height: 0; /* Allow the container to shrink */
   scroll-behavior: smooth; /* Smooth scrolling */
 }

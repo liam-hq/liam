@@ -28,10 +28,13 @@ jobs:
         with:
           app-id: ${{ vars.LICENSE_CI_TRIGGER_APP_ID }}
           private-key: ${{ secrets.LICENSE_CI_TRIGGER_APP_PRIVATE_KEY }}
+          permission-contents: write
+          permission-pull-requests: write
       - name: Checkout code
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           token: ${{ steps.app-token.outputs.token }}
+          persist-credentials: false
       - uses: ./.github/actions/pnpm-setup
       - name: Install License Finder
         run: sudo gem install -N license_finder

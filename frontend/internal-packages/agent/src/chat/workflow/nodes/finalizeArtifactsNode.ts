@@ -1,3 +1,4 @@
+import { getWorkflowNodeProgress } from '../shared/getWorkflowNodeProgress'
 import type { WorkflowState } from '../types'
 
 const NODE_NAME = 'finalizeArtifactsNode'
@@ -10,6 +11,13 @@ export async function finalizeArtifactsNode(
   state: WorkflowState,
 ): Promise<WorkflowState> {
   state.logger.log(`[${NODE_NAME}] Started`)
+
+  if (state.onNodeProgress) {
+    await state.onNodeProgress(
+      'finalizeArtifacts',
+      getWorkflowNodeProgress('finalizeArtifacts'),
+    )
+  }
 
   let finalResponse: string
   let errorToReturn: string | undefined
