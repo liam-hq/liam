@@ -17,8 +17,7 @@ export const CopyLinkButton: FC = () => {
           status: 'success',
         })
       })
-      .catch((err) => {
-        console.error(err)
+      .catch(() => {
         toast({
           title: 'URL copy failed',
           status: 'error',

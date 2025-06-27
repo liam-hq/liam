@@ -1,4 +1,5 @@
 import type { Meta } from '@storybook/react'
+import { action } from '@storybook/addon-actions'
 import { CancelButton } from './CancelButton'
 
 const meta = {
@@ -130,9 +131,7 @@ export const Loading = {
 export const Interactive = {
   args: {
     hasContent: true,
-    onClick: () => {
-      alert('Cancel button clicked')
-    },
+    onClick: action('Cancel button clicked'),
     disabled: false,
   },
   parameters: {

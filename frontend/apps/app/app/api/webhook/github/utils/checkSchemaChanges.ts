@@ -33,9 +33,6 @@ export const checkSchemaChanges = async (
     .single()
 
   if (error) {
-    console.warn(
-      `No schema path found for project ${projectId}: ${JSON.stringify(error)}`,
-    )
     return { shouldContinue: false }
   }
 

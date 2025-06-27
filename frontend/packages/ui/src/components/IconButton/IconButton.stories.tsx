@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react'
+import { action } from '@storybook/addon-actions'
 import { Bell, Heart, Plus, Settings, User } from 'lucide-react'
 import { IconButton } from './IconButton'
 
@@ -81,9 +82,7 @@ export const WithClickHandler: Story = {
   args: {
     icon: <Plus />,
     tooltipContent: 'Click me',
-    onClick: () => {
-      alert('IconButton clicked!')
-    },
+    onClick: action('IconButton clicked'),
   },
 }
 

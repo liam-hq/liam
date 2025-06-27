@@ -27,8 +27,6 @@ async function loadSchemaContent() {
     if (result.success) {
       return result.output
     }
-
-    console.info(result.issues)
   } catch (error) {
     console.error('Error loading schema content:', error)
   }

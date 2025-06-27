@@ -1,4 +1,5 @@
 import type { Meta } from '@storybook/react'
+import { action } from '@storybook/addon-actions'
 import { useState } from 'react'
 import { SendButton } from './SendButton'
 
@@ -71,7 +72,7 @@ export const Interactive = () => {
 
       <SendButton
         hasContent={hasContent}
-        onClick={() => alert('Button clicked!')}
+        onClick={action('Button clicked')}
         disabled={false}
       />
 
