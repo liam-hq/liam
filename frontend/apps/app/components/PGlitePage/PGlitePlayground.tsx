@@ -37,7 +37,7 @@ import type { DDLState, DMLSection, SqlResult } from './utils/types'
  *
  *     // Get results from the first DML section
  *     const result = ref.current?.getDMLResults(0);
- *     console.log(result);
+ *     // Process the results as needed
  *   };
  *
  *   return (
