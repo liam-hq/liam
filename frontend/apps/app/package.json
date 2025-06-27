@@ -12,6 +12,7 @@
     "@electric-sql/pglite": "0.3.3",
     "@lezer/highlight": "1.2.1",
     "@liam-hq/agent": "workspace:*",
+    "@liam-hq/artifact": "workspace:*",
     "@liam-hq/db": "workspace:*",
     "@liam-hq/db-structure": "workspace:*",
     "@liam-hq/erd-core": "workspace:*",

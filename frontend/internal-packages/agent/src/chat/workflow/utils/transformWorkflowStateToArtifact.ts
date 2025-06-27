@@ -2,7 +2,7 @@ import type {
   Artifact,
   FunctionalRequirement,
   NonFunctionalRequirement,
-} from '@liam-hq/db-structure'
+} from '@liam-hq/artifact'
 import type { Usecase } from '../../../langchain/agents/qaGenerateUsecaseAgent/agent'
 import type { WorkflowState } from '../types'
 

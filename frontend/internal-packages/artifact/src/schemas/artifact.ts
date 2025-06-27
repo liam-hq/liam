@@ -77,7 +77,7 @@ export type Artifact = v.InferOutput<typeof artifactSchema>
  * Usage Examples:
  *
  * // Validate artifact data
- * import { artifactSchema, type Artifact } from '@liam-hq/db-structure'
+ * import { artifactSchema, type Artifact } from '@liam-hq/artifact'
  * import * as v from 'valibot'
  *
  * const artifactData = {

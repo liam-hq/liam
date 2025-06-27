@@ -2,7 +2,7 @@ import type {
   Artifact,
   FunctionalRequirement,
   NonFunctionalRequirement,
-} from '@liam-hq/db-structure'
+} from '@liam-hq/artifact'
 
 /**
  * Convert Artifact data structure to Markdown format

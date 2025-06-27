@@ -1,9 +1,10 @@
+import type { Artifact } from '@liam-hq/artifact'
+import { artifactSchema } from '@liam-hq/artifact'
 import type { SupabaseClientType } from '@liam-hq/db'
 import type { Json } from '@liam-hq/db/supabase/database.types'
-import type { Artifact, Schema } from '@liam-hq/db-structure'
+import type { Schema } from '@liam-hq/db-structure'
 import {
   applyPatchOperations,
-  artifactSchema,
   operationsSchema,
   schemaSchema,
 } from '@liam-hq/db-structure'
