@@ -1,4 +1,4 @@
-name: E2E Tests
+name: E2E Tests for lima-erd-sample
 
 on:
   deployment_status:
@@ -40,13 +40,11 @@ jobs:
 
           result =
             if event_name == "deployment_status" && event_state == "success"
-              # Production deployment
-              puts "environment_val: #{environment_val}"
-              puts "target_url: #{target_url}"
-              if (environment_val.include?("Production") && (target_url.include?("liam-app-git-main") || target_url.include?("liam-erd-sample")))
-                "should_run=true"
               # Preview deployment
-              elsif environment_val.include?("Preview") && !target_url.include?("liam-docs") && !target_url.include?("liam-storybook")
+              if (environment_val.include?("Preview") && target_url.include?("liam-erd-sample"))
+                "should_run=true"
+              # Production deployment and Preview deployment
+              elsif environment_val.include?("Production") && !target_url.include?("liam-app-git-main") && (environment_val.include?("Preview") && !target_url.include?("liam-docs") && !target_url.include?("liam-storybook"))
                 "should_run=true"
               else
                 "should_run=false"
@@ -85,7 +83,7 @@ jobs:
         run: pnpm exec playwright install-deps webkit
 
       # This workflow is triggered for all deployments (liam-app, liam-erd-sample, liam-docs),
-      # and E2E tests are executed for liam-app and liam-erd-sample deployments.
+      # but E2E tests are only executed for liam-erd-sample deployments.
       - name: Run e2e tests
         if: steps.check.outputs.should_run == 'true'
         run: pnpm exec playwright test --project="${{ matrix.browser }}"
