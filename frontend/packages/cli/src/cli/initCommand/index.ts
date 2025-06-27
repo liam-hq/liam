@@ -10,6 +10,7 @@ import {
   DocsUrl,
   RepositoryUrl,
 } from '../urls.js'
+import { banner } from '../banner.js'
 
 const initCommand = new Command('init').description(
   'guide you interactively through the setup',
@@ -336,6 +337,7 @@ ${setupSteps}
  * Main action function for the init command
  */
 initCommand.action(async () => {
+  console.log(banner)
   // Display welcome message
   displayWelcomeMessage()
 
