@@ -1,12 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { Table } from '../../schema/index.js'
-import {
-  aColumn,
-  anIndex,
-  aRelationship,
-  aSchema,
-  aTable,
-} from '../../schema/index.js'
+import { aColumn, anIndex, aSchema, aTable } from '../../schema/index.js'
 import { createParserTestCases } from '../__tests__/index.js'
 import { processor as _processor } from './index.js'
 
@@ -22,16 +16,14 @@ describe(_processor, () => {
               type: 'bigserial',
               default: 'autoincrement()',
               notNull: true,
-              primary: true,
-              unique: true,
             }),
             ...override?.columns,
           },
           indexes: {
             users_pkey: anIndex({
               name: 'users_pkey',
-              unique: true,
               columns: ['id'],
+              unique: true,
             }),
             ...override?.indexes,
           },
@@ -203,24 +195,23 @@ describe(_processor, () => {
             name: 'mention',
             type: 'text',
             notNull: false,
-            unique: true,
           }),
         },
         indexes: {
           users_pkey: anIndex({
             name: 'users_pkey',
-            unique: true,
             columns: ['id'],
+            unique: true,
           }),
           users_id_mention_key: anIndex({
             name: 'users_id_mention_key',
-            unique: true,
             columns: ['id', 'mention'],
+            unique: true,
           }),
           users_mention_key: anIndex({
             name: 'users_mention_key',
-            unique: true,
             columns: ['mention'],
+            unique: true,
           }),
         },
         constraints: {
@@ -235,8 +226,7 @@ describe(_processor, () => {
       expect(value).toEqual(expected)
     })
 
-    it('relationship (one-to-many)', async () => {
-      const keyName = 'postsTousers'
+    it('foreign key constraint (one-to-many)', async () => {
       const { value } = await processor(`
         model users {
           id   BigInt    @id @default(autoincrement())
@@ -250,9 +240,6 @@ describe(_processor, () => {
         }
       `)
 
-      expect(value.relationships).toEqual(
-        parserTestCases['foreign key (one-to-many)'](keyName),
-      )
       expect(value.tables['posts']?.constraints['postsTousers']).toEqual({
         type: 'FOREIGN KEY',
         name: 'postsTousers',
@@ -264,8 +251,7 @@ describe(_processor, () => {
       })
     })
 
-    it('relationship (one-to-one)', async () => {
-      const keyName = 'postsTousers'
+    it('foreign key constraint (one-to-one)', async () => {
       const { value } = await processor(`
         model users {
           id   BigInt    @id @default(autoincrement())
@@ -279,9 +265,6 @@ describe(_processor, () => {
         }
       `)
 
-      expect(value.relationships).toEqual(
-        parserTestCases['foreign key (one-to-one)'](keyName),
-      )
       expect(value.tables['posts']?.constraints['postsTousers']).toEqual({
         type: 'FOREIGN KEY',
         name: 'postsTousers',
@@ -318,18 +301,6 @@ describe(_processor, () => {
           }
         `)
 
-          expect(value.relationships).toEqual({
-            postsTousers: {
-              name: 'postsTousers',
-              primaryTableName: 'users',
-              primaryColumnName: 'id',
-              foreignTableName: 'posts',
-              foreignColumnName: 'user_id',
-              cardinality: 'ONE_TO_MANY',
-              updateConstraint: 'NO_ACTION',
-              deleteConstraint: expectedAction,
-            },
-          })
           expect(value.tables['posts']?.constraints['postsTousers']).toEqual({
             type: 'FOREIGN KEY',
             name: 'postsTousers',
@@ -390,14 +361,13 @@ describe(_processor, () => {
             name: 'email',
             type: 'text',
             notNull: true,
-            unique: true,
           }),
         },
         indexes: {
           users_email_key: anIndex({
             name: 'users_email_key',
-            unique: true,
             columns: ['email'],
+            unique: true,
           }),
         },
         constraints: {
@@ -426,7 +396,6 @@ describe(_processor, () => {
             name: 'email',
             type: 'text',
             notNull: true,
-            unique: false,
           }),
         },
         constraints: {
@@ -467,14 +436,11 @@ describe(_processor, () => {
                 type: 'bigserial',
                 default: 'autoincrement()',
                 notNull: true,
-                primary: true,
-                unique: true,
               }),
               raw_email_address: aColumn({
                 name: 'raw_email_address',
                 type: 'text',
                 notNull: true,
-                unique: true,
               }),
             },
             indexes: {
@@ -483,12 +449,11 @@ describe(_processor, () => {
                 columns: ['_id'],
                 unique: true,
               }),
-              users_raw_email_address_key: {
+              users_raw_email_address_key: anIndex({
                 name: 'users_raw_email_address_key',
                 columns: ['raw_email_address'],
                 unique: true,
-                type: '',
-              },
+              }),
             },
             constraints: {
               PRIMARY__id: {
@@ -511,21 +476,18 @@ describe(_processor, () => {
                 type: 'bigserial',
                 default: 'autoincrement()',
                 notNull: true,
-                primary: true,
-                unique: true,
               }),
               raw_user_id: aColumn({
                 name: 'raw_user_id',
                 type: 'bigint',
                 notNull: true,
-                unique: false,
               }),
             },
             indexes: {
               posts_pkey: anIndex({
                 name: 'posts_pkey',
-                unique: true,
                 columns: ['id'],
+                unique: true,
               }),
             },
             constraints: {
@@ -547,16 +509,6 @@ describe(_processor, () => {
           }),
         },
       })
-      expectedTables['relationships'] = {
-        postsTousers: aRelationship({
-          name: 'postsTousers',
-          foreignColumnName: 'raw_user_id',
-          foreignTableName: 'posts',
-          primaryColumnName: '_id',
-          primaryTableName: 'users',
-        }),
-      }
-
       expect(value).toEqual(expectedTables)
     })
 
@@ -567,15 +519,15 @@ describe(_processor, () => {
           posts Post[]
           email String  @unique @map("raw_email_address")
           role  Role    @default(USER)
-    
+
           @@map("users")
         }
-    
+
         model Post {
           id     Int   @id @default(autoincrement())
           user   User  @relation(fields: [user_id], references: [id])
           user_id Int   @map("raw_user_id")
-    
+
           @@map("posts")
         }
 
@@ -595,14 +547,11 @@ describe(_processor, () => {
                 type: 'serial',
                 default: 'autoincrement()',
                 notNull: true,
-                primary: true,
-                unique: true,
               }),
               raw_email_address: aColumn({
                 name: 'raw_email_address',
                 type: 'text',
                 notNull: true,
-                unique: true,
               }),
               role: aColumn({
                 name: 'role',
@@ -644,14 +593,11 @@ describe(_processor, () => {
                 type: 'serial',
                 default: 'autoincrement()',
                 notNull: true,
-                primary: true,
-                unique: true,
               }),
               raw_user_id: aColumn({
                 name: 'raw_user_id',
                 type: 'integer',
                 notNull: true,
-                unique: false,
               }),
             },
             indexes: {
@@ -681,23 +627,10 @@ describe(_processor, () => {
         },
       })
 
-      expectedTables['relationships'] = {
-        PostToUser: aRelationship({
-          name: 'PostToUser',
-          primaryTableName: 'users',
-          primaryColumnName: '_id',
-          foreignTableName: 'posts',
-          foreignColumnName: 'raw_user_id',
-          cardinality: 'ONE_TO_MANY',
-          updateConstraint: 'NO_ACTION',
-          deleteConstraint: 'NO_ACTION',
-        }),
-      }
-
       expect(value).toEqual(expectedTables)
     })
 
-    it('relationship (implicit many-to-many)', async () => {
+    it('implicit many-to-many relationship with join table', async () => {
       const { value } = await processor(`
         model Post {
           id         Int        @id @default(autoincrement())
@@ -721,8 +654,6 @@ describe(_processor, () => {
                 type: 'serial',
                 default: 'autoincrement()',
                 notNull: true,
-                primary: true,
-                unique: true,
               }),
               title: aColumn({
                 name: 'title',
@@ -753,8 +684,6 @@ describe(_processor, () => {
                 type: 'serial',
                 default: 'autoincrement()',
                 notNull: true,
-                primary: true,
-                unique: true,
               }),
               name: aColumn({
                 name: 'name',
@@ -803,28 +732,26 @@ describe(_processor, () => {
                 unique: false,
               }),
             },
-          }),
-        },
-        relationships: {
-          _CategoryToPost_A_fkey: aRelationship({
-            name: '_CategoryToPost_A_fkey',
-            primaryTableName: 'Category',
-            primaryColumnName: 'id',
-            foreignTableName: '_CategoryToPost',
-            foreignColumnName: 'A',
-            cardinality: 'ONE_TO_MANY',
-            updateConstraint: 'CASCADE',
-            deleteConstraint: 'CASCADE',
-          }),
-          _CategoryToPost_B_fkey: aRelationship({
-            name: '_CategoryToPost_B_fkey',
-            primaryTableName: 'Post',
-            primaryColumnName: 'id',
-            foreignTableName: '_CategoryToPost',
-            foreignColumnName: 'B',
-            cardinality: 'ONE_TO_MANY',
-            updateConstraint: 'CASCADE',
-            deleteConstraint: 'CASCADE',
+            constraints: {
+              _CategoryToPost_A_fkey: {
+                type: 'FOREIGN KEY',
+                name: '_CategoryToPost_A_fkey',
+                columnName: 'A',
+                targetTableName: 'Category',
+                targetColumnName: 'id',
+                updateConstraint: 'CASCADE',
+                deleteConstraint: 'CASCADE',
+              },
+              _CategoryToPost_B_fkey: {
+                type: 'FOREIGN KEY',
+                name: '_CategoryToPost_B_fkey',
+                columnName: 'B',
+                targetTableName: 'Post',
+                targetColumnName: 'id',
+                updateConstraint: 'CASCADE',
+                deleteConstraint: 'CASCADE',
+              },
+            },
           }),
         },
       })

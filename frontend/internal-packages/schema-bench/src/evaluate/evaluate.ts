@@ -11,9 +11,15 @@
  * The evaluation produces metrics including F1 scores, precision/recall, and all-correct rates
  * to assess the quality of schema prediction models or tools.
  */
-import type { PrimaryKeyConstraint, Schema, ForeignKeyConstraint } from '@liam-hq/db-structure'
-import { nameSimilarity } from '../nameSimilarity'
-import { wordOverlapMatch } from '../wordOverlapMatch'
+import type {
+  ForeignKeyConstraint,
+  PrimaryKeyConstraint,
+  Schema,
+} from '@liam-hq/db-structure'
+import { foreignKeyConstraintSchema } from '@liam-hq/db-structure'
+import * as v from 'valibot'
+import { nameSimilarity } from '../nameSimilarity/nameSimilarity.ts'
+import { wordOverlapMatch } from '../wordOverlapMatch/wordOverlapMatch.ts'
 
 // Small epsilon value for numerical comparisons
 const EPSILON = 1e-5
@@ -158,45 +164,99 @@ const validateConstraints = (
 }
 
 const createForeignKeyMapping = (
-  referenceRelationships: Schema['relationships'],
-  predictRelationships: Schema['relationships'],
+  referenceTables: Schema['tables'],
+  predictTables: Schema['tables'],
 ): Mapping => {
   const foreignKeyMapping: Mapping = {}
-  
-  for (const [refName, refRel] of Object.entries(referenceRelationships)) {
-    for (const [predName, predRel] of Object.entries(predictRelationships)) {
+
+  // Extract foreign key constraints from reference schema
+  const referenceForeignKeys: Array<{
+    name: string
+    constraint: ForeignKeyConstraint
+    tableName: string
+  }> = []
+  for (const [tableName, table] of Object.entries(referenceTables)) {
+    for (const [constraintName, constraint] of Object.entries(
+      table.constraints,
+    )) {
+      const result = v.safeParse(foreignKeyConstraintSchema, constraint)
+      if (result.success && result.output) {
+        referenceForeignKeys.push({
+          name: constraintName,
+          constraint: result.output,
+          tableName,
+        })
+      }
+    }
+  }
+
+  // Extract foreign key constraints from predict schema
+  const predictForeignKeys: Array<{
+    name: string
+    constraint: ForeignKeyConstraint
+    tableName: string
+  }> = []
+  for (const [tableName, table] of Object.entries(predictTables)) {
+    for (const [constraintName, constraint] of Object.entries(
+      table.constraints,
+    )) {
+      const result = v.safeParse(foreignKeyConstraintSchema, constraint)
+      if (result.success && result.output) {
+        predictForeignKeys.push({
+          name: constraintName,
+          constraint: result.output,
+          tableName,
+        })
+      }
+    }
+  }
+
+  // Match foreign keys based on table names and column references
+  for (const refFk of referenceForeignKeys) {
+    for (const predFk of predictForeignKeys) {
       if (
-        refRel.primaryTableName === predRel.primaryTableName &&
-        refRel.primaryColumnName === predRel.primaryColumnName &&
-        refRel.foreignTableName === predRel.foreignTableName &&
-        refRel.foreignColumnName === predRel.foreignColumnName
+        refFk.tableName === predFk.tableName &&
+        refFk.constraint.columnName === predFk.constraint.columnName &&
+        refFk.constraint.targetTableName ===
+          predFk.constraint.targetTableName &&
+        refFk.constraint.targetColumnName === predFk.constraint.targetColumnName
       ) {
-        foreignKeyMapping[refName] = predName
+        foreignKeyMapping[refFk.name] = predFk.name
         break
       }
     }
   }
-  
+
   return foreignKeyMapping
 }
 
 const calculateForeignKeyMetrics = (
-  referenceRelationships: Schema['relationships'],
-  predictRelationships: Schema['relationships'],
+  referenceTables: Schema['tables'],
+  predictTables: Schema['tables'],
   foreignKeyMapping: Mapping,
 ) => {
-  const referenceCount = Object.keys(referenceRelationships).length
-  const predictCount = Object.keys(predictRelationships).length
+  // Count foreign key constraints
+  const referenceCount = Object.values(referenceTables)
+    .flatMap((table) => Object.values(table.constraints))
+    .filter((constraint) => constraint.type === 'FOREIGN KEY').length
+
+  const predictCount = Object.values(predictTables)
+    .flatMap((table) => Object.values(table.constraints))
+    .filter((constraint) => constraint.type === 'FOREIGN KEY').length
+
   const matchedCount = Object.keys(foreignKeyMapping).length
-  
-  const foreignKeyPrecision = predictCount === 0 ? 0 : matchedCount / predictCount
-  const foreignKeyRecall = referenceCount === 0 ? 0 : matchedCount / referenceCount
+
+  const foreignKeyPrecision =
+    predictCount === 0 ? 0 : matchedCount / predictCount
+  const foreignKeyRecall =
+    referenceCount === 0 ? 0 : matchedCount / referenceCount
   const foreignKeyF1 =
     foreignKeyPrecision + foreignKeyRecall === 0
       ? 0
-      : (2 * foreignKeyPrecision * foreignKeyRecall) / (foreignKeyPrecision + foreignKeyRecall)
+      : (2 * foreignKeyPrecision * foreignKeyRecall) /
+        (foreignKeyPrecision + foreignKeyRecall)
   const foreignKeyAllCorrect = Math.abs(foreignKeyF1 - 1) < EPSILON ? 1 : 0
-  
+
   return { foreignKeyF1, foreignKeyAllCorrect }
 }
 
@@ -269,13 +329,13 @@ export const evaluate = async (
   }
 
   const foreignKeyMapping = createForeignKeyMapping(
-    reference.relationships,
-    predict.relationships,
+    reference.tables,
+    predict.tables,
   )
-  
+
   const { foreignKeyF1, foreignKeyAllCorrect } = calculateForeignKeyMetrics(
-    reference.relationships,
-    predict.relationships,
+    reference.tables,
+    predict.tables,
     foreignKeyMapping,
   )
 

@@ -21,7 +21,6 @@ export const SchemaProvider: FC<Props> = ({ children, current, previous }) => {
   const computedSchema: SchemaContextValue = useMemo(() => {
     const emptySchema: Schema = {
       tables: {},
-      relationships: {},
     }
     const diffItems = buildSchemaDiff(previous ?? emptySchema, current)
     const merged = previous ? mergeSchemas(previous, current) : current

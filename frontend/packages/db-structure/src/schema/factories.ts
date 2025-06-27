@@ -4,7 +4,6 @@ import type {
   ForeignKeyConstraint,
   Index,
   PrimaryKeyConstraint,
-  Relationship,
   Schema,
   Table,
   Tables,
@@ -17,8 +16,6 @@ export const aColumn = (override?: Partial<Column>): Column => ({
   default: null,
   check: null,
   comment: null,
-  primary: false,
-  unique: false,
   notNull: false,
   ...override,
 })
@@ -86,20 +83,6 @@ export const aCheckConstraint = (
   ...override,
 })
 
-export const aRelationship = (
-  override?: Partial<Relationship>,
-): Relationship => ({
-  name: '',
-  primaryTableName: '',
-  primaryColumnName: '',
-  foreignTableName: '',
-  foreignColumnName: '',
-  cardinality: 'ONE_TO_MANY',
-  updateConstraint: 'NO_ACTION',
-  deleteConstraint: 'NO_ACTION',
-  ...override,
-})
-
 const tables = (override?: Tables): Tables => {
   return (
     override ?? {
@@ -110,5 +93,4 @@ const tables = (override?: Tables): Tables => {
 
 export const aSchema = (override?: Partial<Schema>): Schema => ({
   tables: tables(override?.tables),
-  relationships: override?.relationships || {},
 })

@@ -7,6 +7,9 @@ on:
 jobs:
   notify_slack:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
     if: github.event.check_suite.app.name == 'Supabase' && github.event.check_suite.conclusion == 'failure' && github.event.check_suite.head_branch == 'main'
     steps:
       - name: Slack Notification for Supabase Failure

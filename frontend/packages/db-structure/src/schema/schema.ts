@@ -3,23 +3,17 @@ import * as v from 'valibot'
 // Export these schema definitions
 export const columnNameSchema = v.string()
 
-export const columnPrimarySchema = v.boolean()
-
 export const columnDefaultSchema = v.nullable(
   v.union([v.string(), v.number(), v.boolean()]),
 )
 
 export const columnCheckSchema = v.nullable(v.string())
 
-export const columnUniqueSchema = v.boolean()
-
 export const columnNotNullSchema = v.boolean()
 
 export const tableNameSchema = v.string()
 
 export const commentSchema = v.nullable(v.string())
-
-const relationshipNameSchema = v.string()
 
 export const constraintNameSchema = v.string()
 
@@ -28,8 +22,6 @@ export const columnSchema = v.object({
   type: v.string(),
   default: columnDefaultSchema,
   check: columnCheckSchema,
-  primary: columnPrimarySchema,
-  unique: columnUniqueSchema,
   notNull: columnNotNullSchema,
   comment: commentSchema,
 })
@@ -126,40 +118,12 @@ export const tableSchema = v.object({
 })
 export type Table = v.InferOutput<typeof tableSchema>
 
-const cardinalitySchema = v.picklist(['ONE_TO_ONE', 'ONE_TO_MANY'])
-export type Cardinality = v.InferOutput<typeof cardinalitySchema>
-
-const relationshipSchema = v.object({
-  name: relationshipNameSchema,
-  primaryTableName: tableNameSchema,
-  primaryColumnName: columnNameSchema,
-  foreignTableName: tableNameSchema,
-  foreignColumnName: columnNameSchema,
-  cardinality: cardinalitySchema,
-  updateConstraint: foreignKeyConstraintReferenceOptionSchema,
-  deleteConstraint: foreignKeyConstraintReferenceOptionSchema,
-})
-export type Relationship = v.InferOutput<typeof relationshipSchema>
-
 const tablesSchema = v.record(tableNameSchema, tableSchema)
 export type Tables = v.InferOutput<typeof tablesSchema>
-
-/**
- * @deprecated Use constraintsToRelationships() to derive relationships from constraints instead
- */
-const relationshipsSchema = v.record(relationshipNameSchema, relationshipSchema)
-/**
- * @deprecated Use constraintsToRelationships() to derive relationships from constraints instead
- */
-export type Relationships = v.InferOutput<typeof relationshipsSchema>
 
 // Schema definition for the entire database structure
 export const schemaSchema = v.object({
   tables: tablesSchema,
-  /**
-   * @deprecated Use constraintsToRelationships() to derive relationships from constraints instead
-   */
-  relationships: relationshipsSchema,
 })
 
 export type Schema = v.InferOutput<typeof schemaSchema>

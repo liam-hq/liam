@@ -6,7 +6,10 @@
   "publishConfig": {
     "access": "public"
   },
-  "main": "src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./nextjs": "./src/nextjs/index.ts"
+  },
   "dependencies": {
     "@liam-hq/ui": "workspace:*",
     "@radix-ui/react-dialog": "1.1.14",

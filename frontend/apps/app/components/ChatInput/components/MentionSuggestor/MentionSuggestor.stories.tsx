@@ -77,18 +77,6 @@ const schema = {
       indexes: {},
     },
   },
-  relationships: {
-    rel1: {
-      name: 'rel1',
-      primaryTableName: 'users',
-      primaryColumnName: 'id',
-      foreignTableName: 'posts',
-      foreignColumnName: 'user_id',
-      cardinality: 'ONE_TO_MANY' as const,
-      updateConstraint: 'NO_ACTION' as const,
-      deleteConstraint: 'NO_ACTION' as const,
-    },
-  },
 }
 
 /**

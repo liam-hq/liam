@@ -1,4 +1,4 @@
-import type { Columns, Relationships, Schema, Table, Tables } from './schema.js'
+import type { Columns, Schema, Table, Tables } from './schema.js'
 
 const getRemovedColumns = (
   beforeColumns: Columns,
@@ -61,32 +61,8 @@ const mergeTables = (beforeTables: Tables, afterTables: Tables): Tables => {
   return mergedTables
 }
 
-const mergeRelationships = (
-  beforeRelationships: Relationships,
-  afterRelationships: Relationships,
-): Relationships => {
-  const mergedRelationships: Relationships = {}
-  const allRelationshipNames = new Set<string>([
-    ...Object.keys(beforeRelationships),
-    ...Object.keys(afterRelationships),
-  ])
-
-  allRelationshipNames.forEach((relName) => {
-    const afterRel = afterRelationships[relName]
-    if (afterRel) {
-      mergedRelationships[relName] = { ...afterRel }
-    }
-  })
-
-  return mergedRelationships
-}
-
 export function mergeSchemas(before: Schema, after: Schema): Schema {
   return {
     tables: mergeTables(before.tables, after.tables),
-    relationships: mergeRelationships(
-      before.relationships,
-      after.relationships,
-    ),
   }
 }

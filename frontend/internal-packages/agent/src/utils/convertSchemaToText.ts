@@ -1,4 +1,4 @@
-import type { Schema } from '@liam-hq/db-structure'
+import { isPrimaryKey, type Schema } from '@liam-hq/db-structure'
 
 // Convert table data to text document
 const tableToDocument = (
@@ -22,7 +22,7 @@ const tableToDocument = (
   // Primary key information
   let primaryKeyText = ''
   const primaryKeyColumns = Object.entries(tableData.columns || {})
-    .filter(([_, column]) => column.primary)
+    .filter(([name]) => isPrimaryKey(name, tableData.constraints || {}))
     .map(([name]) => name)
 
   if (primaryKeyColumns.length > 0) {

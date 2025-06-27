@@ -15,10 +15,4 @@ export const mergeSchemas = (target: Schema, source: Schema) => {
       },
     }
   }
-
-  for (const [relationshipName, relationship] of Object.entries(
-    source.relationships,
-  )) {
-    target.relationships[relationshipName] = relationship
-  }
 }

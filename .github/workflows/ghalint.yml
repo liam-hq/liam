@@ -64,19 +64,4 @@ jobs:
           fi
           
       - name: Run ghalint
-        run: |
-          # Run ghalint and filter for only action_ref_should_be_full_length_commit_sha policy
-          set +e  # Don't exit on error immediately
-          
-          # Run ghalint and capture output
-          ghalint run 2>&1 | tee ghalint_output.txt
-          
-          # Check for action_ref_should_be_full_length_commit_sha errors
-          echo "=== Checking for action_ref_should_be_full_length_commit_sha violations ==="
-          if grep "action_ref_should_be_full_length_commit_sha" ghalint_output.txt; then
-            echo "❌ Found action_ref_should_be_full_length_commit_sha violations!"
-            exit 1
-          else
-            echo "✅ No action_ref_should_be_full_length_commit_sha violations found"
-            exit 0
-          fi
+        run: ghalint run

@@ -1,4 +1,4 @@
-import type { Column } from '@liam-hq/db-structure'
+import { type Column, isPrimaryKey, type Table } from '@liam-hq/db-structure'
 import type { FC } from 'react'
 import type { TableNodeData } from '@/features/erd/types'
 import { columnHandleId } from '@/features/erd/utils'
@@ -11,12 +11,14 @@ type TableColumnListProps = {
 
 const shouldDisplayColumn = (
   column: Column,
+  table: Table,
   filter: 'KEY_ONLY' | undefined,
   targetColumnCardinalities: TableNodeData['targetColumnCardinalities'],
 ): boolean => {
   if (filter === 'KEY_ONLY') {
     return (
-      column.primary || targetColumnCardinalities?.[column.name] !== undefined
+      isPrimaryKey(column.name, table.constraints) ||
+      targetColumnCardinalities?.[column.name] !== undefined
     )
   }
   return true
@@ -27,7 +29,12 @@ export const TableColumnList: FC<TableColumnListProps> = ({ data, filter }) => {
     <ul>
       {Object.values(data.table.columns).map((column) => {
         if (
-          !shouldDisplayColumn(column, filter, data.targetColumnCardinalities)
+          !shouldDisplayColumn(
+            column,
+            data.table,
+            filter,
+            data.targetColumnCardinalities,
+          )
         ) {
           return null
         }

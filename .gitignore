@@ -8,6 +8,7 @@ pglite.data
 pglite.wasm
 .cursor/mcp.json
 dist/
+benchmark-workspace/
 
 # Claude local settings
 .claude/settings.local.json

@@ -101,7 +101,6 @@ async function processChunk(
 export const processor: Processor = async (sql: string) => {
   const schema: Schema = {
     tables: {},
-    relationships: {},
   }
 
   // Number of lines to process in a single chunk.

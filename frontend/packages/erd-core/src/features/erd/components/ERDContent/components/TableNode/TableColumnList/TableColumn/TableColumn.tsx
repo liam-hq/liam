@@ -1,7 +1,8 @@
-import type {
-  Cardinality as CardinalityType,
-  Column,
-  Table,
+import {
+  type Cardinality as CardinalityType,
+  type Column,
+  isPrimaryKey,
+  type Table,
 } from '@liam-hq/db-structure'
 import { DiamondFillIcon, DiamondIcon, KeyRound, Link } from '@liam-hq/ui'
 import { Handle, Position } from '@xyflow/react'
@@ -24,17 +25,19 @@ type TableColumnProps = {
 }
 
 type ColumnIconProps = {
+  table: Table
   column: Column
   isSource: boolean
   targetCardinality?: CardinalityType | undefined
 }
 
 const ColumnIcon: FC<ColumnIconProps> = ({
+  table,
   column,
   isSource,
   targetCardinality,
 }) => {
-  if (column.primary) {
+  if (isPrimaryKey(column.name, table.constraints)) {
     return (
       <KeyRound
         width={16}
@@ -133,6 +136,7 @@ export const TableColumn: FC<TableColumnProps> = ({
         )}
       >
         <ColumnIcon
+          table={table}
           column={column}
           isSource={isSource}
           targetCardinality={targetCardinality}

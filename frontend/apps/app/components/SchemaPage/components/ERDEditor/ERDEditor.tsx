@@ -1,6 +1,7 @@
 'use client'
 
 import type { Schema } from '@liam-hq/db-structure'
+import { ERDRendererProvider } from '@liam-hq/erd-core/nextjs'
 import type { ComponentProps, FC } from 'react'
 import { parse } from 'valibot'
 import { ERDRenderer } from '@/features'
@@ -37,12 +38,13 @@ export const ERDEditor: FC<Props> = ({
   return (
     <div className={styles.wrapper}>
       <VersionProvider version={version}>
-        <ERDRenderer
-          schema={{ current: schema }}
-          defaultSidebarOpen={defaultSidebarOpen}
-          defaultPanelSizes={defaultPanelSizes}
-          errorObjects={errorObjects}
-        />
+        <ERDRendererProvider schema={{ current: schema }}>
+          <ERDRenderer
+            defaultSidebarOpen={defaultSidebarOpen}
+            defaultPanelSizes={defaultPanelSizes}
+            errorObjects={errorObjects}
+          />
+        </ERDRendererProvider>
       </VersionProvider>
     </div>
   )

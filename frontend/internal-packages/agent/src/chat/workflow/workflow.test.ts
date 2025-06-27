@@ -54,8 +54,6 @@ describe('Chat Workflow', () => {
             type: 'integer',
             default: null,
             check: null,
-            primary: true,
-            unique: false,
             notNull: true,
             comment: null,
           },
@@ -64,8 +62,6 @@ describe('Chat Workflow', () => {
             type: 'varchar',
             default: null,
             check: null,
-            primary: false,
-            unique: false,
             notNull: true,
             comment: null,
           },
@@ -74,18 +70,21 @@ describe('Chat Workflow', () => {
             type: 'varchar',
             default: null,
             check: null,
-            primary: false,
-            unique: false,
             notNull: false,
             comment: null,
           },
         },
         comment: null,
         indexes: {},
-        constraints: {},
+        constraints: {
+          users_pkey: {
+            type: 'PRIMARY KEY',
+            name: 'users_pkey',
+            columnName: 'id',
+          },
+        },
       },
     },
-    relationships: {},
   })
 
   // Helper function to create base workflow state
@@ -290,7 +289,7 @@ describe('Chat Workflow', () => {
       expect(mockSchemaRepository.createVersion).not.toHaveBeenCalled()
     })
 
-    it.skip('should handle schema update failure', async () => {
+    it('should handle schema update failure', async () => {
       const structuredResponse = {
         message: 'Attempted to add created_at column',
         schemaChanges: [

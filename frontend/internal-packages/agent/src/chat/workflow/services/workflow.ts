@@ -9,6 +9,7 @@ import {
   generateUsecaseNode,
   prepareDMLNode,
   reviewDeliverablesNode,
+  saveUserMessageNode,
   validateSchemaNode,
 } from '../nodes'
 import {
@@ -18,20 +19,10 @@ import {
 import type { WorkflowState } from '../types'
 
 /**
- * Determines if a node should retry based on error state and retry count
+ * Retry policy configuration for all nodes
  */
-const shouldRetry = (
-  state: WorkflowState,
-  nodeName: string,
-  maxRetries = 3,
-): 'retry' | 'continue' => {
-  const retryCount = state.retryCount[nodeName] ?? 0
-
-  if (state.error && retryCount < maxRetries) {
-    return 'retry'
-  }
-
-  return 'continue'
+const RETRY_POLICY = {
+  maxAttempts: 3,
 }
 
 /**
@@ -42,27 +33,53 @@ const createGraph = () => {
   const graph = new StateGraph(ChatStateAnnotation)
 
   graph
-    .addNode('analyzeRequirements', analyzeRequirementsNode)
-    .addNode('designSchema', designSchemaNode)
-    .addNode('generateDDL', generateDDLNode)
-    .addNode('executeDDL', executeDDLNode)
-    .addNode('generateUsecase', generateUsecaseNode)
-    .addNode('prepareDML', prepareDMLNode)
-    .addNode('validateSchema', validateSchemaNode)
-    .addNode('reviewDeliverables', reviewDeliverablesNode)
-    .addNode('finalizeArtifacts', finalizeArtifactsNode)
+    .addNode('saveUserMessage', saveUserMessageNode, {
+      retryPolicy: RETRY_POLICY,
+    })
+    .addNode('analyzeRequirements', analyzeRequirementsNode, {
+      retryPolicy: RETRY_POLICY,
+    })
+    .addNode('designSchema', designSchemaNode, {
+      retryPolicy: RETRY_POLICY,
+    })
+    .addNode('generateDDL', generateDDLNode, {
+      retryPolicy: RETRY_POLICY,
+    })
+    .addNode('executeDDL', executeDDLNode, {
+      retryPolicy: RETRY_POLICY,
+    })
+    .addNode('generateUsecase', generateUsecaseNode, {
+      retryPolicy: RETRY_POLICY,
+    })
+    .addNode('prepareDML', prepareDMLNode, {
+      retryPolicy: RETRY_POLICY,
+    })
+    .addNode('validateSchema', validateSchemaNode, {
+      retryPolicy: RETRY_POLICY,
+    })
+    .addNode('reviewDeliverables', reviewDeliverablesNode, {
+      retryPolicy: RETRY_POLICY,
+    })
+    .addNode('finalizeArtifacts', finalizeArtifactsNode, {
+      retryPolicy: RETRY_POLICY,
+    })
 
-    .addEdge(START, 'analyzeRequirements')
-    .addEdge('designSchema', 'generateDDL')
+    .addEdge(START, 'saveUserMessage')
+    .addEdge('analyzeRequirements', 'designSchema')
     .addEdge('generateDDL', 'executeDDL')
     .addEdge('executeDDL', 'generateUsecase')
     .addEdge('generateUsecase', 'prepareDML')
     .addEdge('prepareDML', 'validateSchema')
     .addEdge('finalizeArtifacts', END)
 
-    .addConditionalEdges('analyzeRequirements', (state) => {
-      const retryResult = shouldRetry(state, 'analyzeRequirements')
-      return retryResult === 'retry' ? 'analyzeRequirements' : 'designSchema'
+    // Conditional edge for saveUserMessage - skip to finalizeArtifacts if error
+    .addConditionalEdges('saveUserMessage', (state) => {
+      return state.error ? 'finalizeArtifacts' : 'analyzeRequirements'
+    })
+
+    // Conditional edge for designSchema - skip to finalizeArtifacts if error
+    .addConditionalEdges('designSchema', (state) => {
+      return state.error ? 'finalizeArtifacts' : 'generateDDL'
     })
 
     // Conditional edges for validation results

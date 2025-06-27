@@ -1,0 +1,83 @@
+{
+  "tables": {
+    "user": {
+      "name": "user",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "INTEGER",
+          "default": null,
+          "check": null,
+          "primary": true,
+          "unique": false,
+          "notNull": true,
+          "comment": null
+        },
+        "name": {
+          "name": "name",
+          "type": "VARCHAR(100)",
+          "default": null,
+          "check": null,
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "comment": null
+        }
+      },
+      "comment": null,
+      "indexes": {},
+      "constraints": {
+        "pk_user": {
+          "type": "PRIMARY KEY",
+          "name": "pk_user",
+          "columnName": "id"
+        }
+      }
+    },
+    "post": {
+      "name": "post",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "INTEGER",
+          "default": null,
+          "check": null,
+          "primary": true,
+          "unique": false,
+          "notNull": true,
+          "comment": null
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "INTEGER",
+          "default": null,
+          "check": null,
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "comment": null
+        },
+        "content": {
+          "name": "content",
+          "type": "TEXT",
+          "default": null,
+          "check": null,
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "comment": null
+        }
+      },
+      "comment": null,
+      "indexes": {},
+      "constraints": {
+        "pk_post": {
+          "type": "PRIMARY KEY",
+          "name": "pk_post",
+          "columnName": "id"
+        }
+      }
+    }
+  },
+  "relationships": {}
+}
