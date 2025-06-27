@@ -1,4 +1,4 @@
-name: E2E Tests for lima-app
+name: E2E Tests for liam-app
 
 on:
   deployment_status:
@@ -83,7 +83,7 @@ jobs:
         run: pnpm exec playwright install-deps webkit
 
       # This workflow is triggered for all deployments (liam-app, liam-erd-sample, liam-docs),
-      # and E2E tests are executed for liam-app and liam-erd-sample deployments.
+      # but E2E tests are only executed for liam-app deployments.
       - name: Run e2e tests
         if: steps.check.outputs.should_run == 'true'
         run: pnpm exec playwright test --project="${{ matrix.browser }}"
