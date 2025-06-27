@@ -1,7 +1,7 @@
 import * as fs from 'node:fs'
 import * as path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import type { WorkspaceConfig } from './types'
+import type { WorkspaceConfig } from '../types'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -19,7 +19,6 @@ const createWorkspaceDirectories = (workspacePath: string): void => {
   for (const dir of directories) {
     if (!fs.existsSync(dir)) {
       fs.mkdirSync(dir, { recursive: true })
-    } else {
     }
   }
 }
@@ -44,7 +43,6 @@ const copyDefaultData = (
       const targetPath = path.join(inputTargetDir, file)
       if (!fs.existsSync(targetPath)) {
         fs.copyFileSync(sourcePath, targetPath)
-      } else {
       }
     }
   }
@@ -56,7 +54,6 @@ const copyDefaultData = (
       const targetPath = path.join(referenceTargetDir, file)
       if (!fs.existsSync(targetPath)) {
         fs.copyFileSync(sourcePath, targetPath)
-      } else {
       }
     }
   }
@@ -80,11 +77,7 @@ const validateWorkspace = (workspacePath: string): void => {
 export const setupWorkspace = async (
   config: WorkspaceConfig,
 ): Promise<void> => {
-  if (fs.existsSync(config.workspacePath) && !config.overwrite) {
-    return
-  }
-
-  if (fs.existsSync(config.workspacePath) && config.overwrite) {
+  if (fs.existsSync(config.workspacePath)) {
     fs.rmSync(config.workspacePath, { recursive: true, force: true })
   }
 
@@ -92,28 +85,3 @@ export const setupWorkspace = async (
   copyDefaultData(config.defaultDataPath, config.workspacePath)
   validateWorkspace(config.workspacePath)
 }
-
-const main = async (): Promise<void> => {
-  const initCwd = process.env.INIT_CWD || process.cwd()
-  const workspacePath = path.resolve(initCwd, 'benchmark-workspace')
-  const defaultDataPath = path.resolve(
-    __dirname,
-    '../../benchmark-workspace-default',
-  )
-  const overwrite = process.argv.includes('--overwrite')
-
-  const config: WorkspaceConfig = {
-    workspacePath,
-    defaultDataPath,
-    overwrite,
-  }
-
-  try {
-    await setupWorkspace(config)
-  } catch (error) {
-    console.error('❌ Workspace setup failed:', error)
-    process.exit(1)
-  }
-}
-
-main()

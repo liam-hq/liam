@@ -1,8 +1,8 @@
 import * as fs from 'node:fs'
 import * as path from 'node:path'
 import type { Schema } from '@liam-hq/db-structure'
-import { evaluate } from '../evaluate/evaluate.ts'
-import type { BenchmarkConfig, BenchmarkResult, CaseData } from './types'
+import { evaluate } from '../../evaluate/evaluate.ts'
+import type { CaseData, EvaluationConfig, EvaluationResult } from '../types'
 
 const loadOutputData = (workspacePath: string): Map<string, Schema> => {
   const outputDir = path.join(workspacePath, 'execution', 'output')
@@ -62,10 +62,10 @@ const loadReferenceData = (workspacePath: string): Map<string, Schema> => {
   return referenceData
 }
 
-const runEvaluation = async (caseData: CaseData): Promise<BenchmarkResult> => {
+const runEvaluation = async (caseData: CaseData): Promise<EvaluationResult> => {
   const result = await evaluate(caseData.referenceSchema, caseData.outputSchema)
 
-  const benchmarkResult: BenchmarkResult = {
+  const evaluationResult: EvaluationResult = {
     timestamp: new Date().toISOString(),
     caseId: caseData.caseId,
     metrics: {
@@ -83,11 +83,11 @@ const runEvaluation = async (caseData: CaseData): Promise<BenchmarkResult> => {
     columnMappings: result.columnMappings,
   }
 
-  return benchmarkResult
+  return evaluationResult
 }
 
 const saveResults = (
-  results: BenchmarkResult[],
+  results: EvaluationResult[],
   workspacePath: string,
 ): void => {
   const evaluationDir = path.join(workspacePath, 'evaluation')
@@ -155,11 +155,12 @@ const saveResults = (
   }
 }
 
-const displaySummary = (results: BenchmarkResult[]): void => {
+const displaySummary = (results: EvaluationResult[]): void => {
   if (results.length === 0) {
     return
   }
   for (const result of results) {
+    // Display individual results if needed
   }
 
   if (results.length > 1) {
@@ -172,45 +173,98 @@ const displaySummary = (results: BenchmarkResult[]): void => {
     const avgColumnF1 =
       results.reduce((sum, r) => sum + r.metrics.columnF1ScoreAverage, 0) /
       results.length
+    // Display summary if needed
   }
 }
 
-export const runBenchmark = async (config: BenchmarkConfig): Promise<void> => {
+const validateDirectories = (config: EvaluationConfig): void => {
+  const outputDir = path.join(config.workspacePath, 'execution', 'output')
+  const referenceDir = path.join(config.workspacePath, 'execution', 'reference')
+
+  if (!fs.existsSync(outputDir)) {
+    throw new Error(`Output directory does not exist: ${outputDir}`)
+  }
+
+  if (!fs.existsSync(referenceDir)) {
+    throw new Error(`Reference directory does not exist: ${referenceDir}`)
+  }
+}
+
+const prepareCasesForSpecificCase = (
+  config: EvaluationConfig,
+  outputData: Map<string, Schema>,
+  referenceData: Map<string, Schema>,
+): CaseData[] => {
+  const caseId = config.caseId
+  if (!caseId) {
+    throw new Error('Case ID is required for specific case evaluation')
+  }
+
+  const outputSchema = outputData.get(caseId)
+  const referenceSchema = referenceData.get(caseId)
+
+  if (!outputSchema) {
+    throw new Error(`Output schema not found for case: ${caseId}`)
+  }
+  if (!referenceSchema) {
+    throw new Error(`Reference schema not found for case: ${caseId}`)
+  }
+
+  return [
+    {
+      caseId,
+      outputSchema,
+      referenceSchema,
+    },
+  ]
+}
+
+const prepareCasesForAllCases = (
+  outputData: Map<string, Schema>,
+  referenceData: Map<string, Schema>,
+): CaseData[] => {
+  const casesToEvaluate: CaseData[] = []
+
+  for (const [caseId, outputSchema] of outputData) {
+    const referenceSchema = referenceData.get(caseId)
+    if (referenceSchema) {
+      casesToEvaluate.push({
+        caseId,
+        outputSchema,
+        referenceSchema,
+      })
+    } else {
+      console.warn(`⚠️  No reference schema found for case: ${caseId}`)
+    }
+  }
+
+  return casesToEvaluate
+}
+
+const prepareCasesToEvaluate = (
+  config: EvaluationConfig,
+  outputData: Map<string, Schema>,
+  referenceData: Map<string, Schema>,
+): CaseData[] => {
+  if (config.caseId) {
+    return prepareCasesForSpecificCase(config, outputData, referenceData)
+  }
+  return prepareCasesForAllCases(outputData, referenceData)
+}
+
+export const evaluateSchema = async (
+  config: EvaluationConfig,
+): Promise<void> => {
+  validateDirectories(config)
+
   const outputData = loadOutputData(config.workspacePath)
   const referenceData = loadReferenceData(config.workspacePath)
 
-  const casesToEvaluate: CaseData[] = []
-
-  if (config.caseId) {
-    const outputSchema = outputData.get(config.caseId)
-    const referenceSchema = referenceData.get(config.caseId)
-
-    if (!outputSchema) {
-      throw new Error(`Output schema not found for case: ${config.caseId}`)
-    }
-    if (!referenceSchema) {
-      throw new Error(`Reference schema not found for case: ${config.caseId}`)
-    }
-
-    casesToEvaluate.push({
-      caseId: config.caseId,
-      outputSchema,
-      referenceSchema,
-    })
-  } else {
-    for (const [caseId, outputSchema] of outputData) {
-      const referenceSchema = referenceData.get(caseId)
-      if (referenceSchema) {
-        casesToEvaluate.push({
-          caseId,
-          outputSchema,
-          referenceSchema,
-        })
-      } else {
-        console.warn(`⚠️  No reference schema found for case: ${caseId}`)
-      }
-    }
-  }
+  const casesToEvaluate = prepareCasesToEvaluate(
+    config,
+    outputData,
+    referenceData,
+  )
 
   if (casesToEvaluate.length === 0) {
     throw new Error(
@@ -225,39 +279,3 @@ export const runBenchmark = async (config: BenchmarkConfig): Promise<void> => {
   saveResults(results, config.workspacePath)
   displaySummary(results)
 }
-
-const main = async (): Promise<void> => {
-  const initCwd = process.env.INIT_CWD || process.cwd()
-  const workspacePath = path.resolve(initCwd, 'benchmark-workspace')
-  const args = process.argv.slice(2)
-
-  let caseId: string | undefined
-  const caseArg = args.find((arg) => arg.startsWith('--case='))
-  if (caseArg) {
-    caseId = caseArg.split('=')[1]
-  }
-
-  const casesArg = args.find((arg) => arg.startsWith('--cases='))
-  if (casesArg && !caseId) {
-    const cases = casesArg.split('=')[1].split(',')
-    if (cases.length === 1) {
-      caseId = cases[0]
-    } else {
-    }
-  }
-
-  const config: BenchmarkConfig = {
-    workspacePath,
-    caseId,
-    outputFormat: 'json',
-  }
-
-  try {
-    await runBenchmark(config)
-  } catch (error) {
-    console.error('❌ Benchmark evaluation failed:', error)
-    process.exit(1)
-  }
-}
-
-main()

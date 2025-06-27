@@ -407,6 +407,89 @@ export const convertToSchema = (
   }
 
   /**
+   * Process table-level constraint
+   */
+  function processTableLevelConstraint(
+    constraint: PgConstraint,
+    tableName: string,
+  ): {
+    constraints: Constraint[]
+    errors: ProcessError[]
+  } {
+    const constraints: Constraint[] = []
+    const errors: ProcessError[] = []
+
+    if (constraint.contype === 'CONSTR_PRIMARY') {
+      // Handle table-level primary key constraint
+      const columnNames =
+        constraint.keys
+          ?.filter(isStringNode)
+          .map((node) => node.String.sval)
+          .filter((name): name is string => name !== undefined) || []
+
+      for (const columnName of columnNames) {
+        const constraintName = constraint.conname ?? `PRIMARY_${columnName}`
+        constraints.push({
+          name: constraintName,
+          type: 'PRIMARY KEY',
+          columnName,
+        })
+      }
+    } else if (constraint.contype === 'CONSTR_FOREIGN') {
+      // Handle table-level foreign key constraint
+      const foreignColumnName =
+        constraint.fk_attrs?.[0] && isStringNode(constraint.fk_attrs[0])
+          ? constraint.fk_attrs[0].String.sval
+          : undefined
+
+      if (foreignColumnName) {
+        const relResult = constraintToForeignKeyConstraint(
+          tableName,
+          foreignColumnName,
+          constraint,
+        )
+
+        if (relResult.isErr()) {
+          errors.push(relResult.error)
+        } else {
+          constraints.push(relResult.value)
+        }
+      }
+    } else if (constraint.contype === 'CONSTR_CHECK') {
+      // Handle table-level check constraint
+      const relResult = constraintToCheckConstraint(
+        undefined,
+        constraint,
+        rawSql,
+      )
+
+      if (relResult.isErr()) {
+        errors.push(relResult.error)
+      } else {
+        constraints.push(relResult.value)
+      }
+    } else if (constraint.contype === 'CONSTR_UNIQUE') {
+      // Handle table-level unique constraint
+      const columnNames =
+        constraint.keys
+          ?.filter(isStringNode)
+          .map((node) => node.String.sval)
+          .filter((name): name is string => name !== undefined) || []
+
+      for (const columnName of columnNames) {
+        const constraintName = constraint.conname ?? `UNIQUE_${columnName}`
+        constraints.push({
+          name: constraintName,
+          type: 'UNIQUE',
+          columnName,
+        })
+      }
+    }
+
+    return { constraints, errors }
+  }
+
+  /**
    * Process table elements
    */
   function processTableElements(
@@ -421,9 +504,10 @@ export const convertToSchema = (
     const constraints: Constraints = {}
     const tableErrors: ProcessError[] = []
 
-    // Process each column definition
+    // Process each table element
     for (const elt of tableElts) {
       if ('ColumnDef' in elt) {
+        // Handle column definitions
         const {
           column,
           constraints: columnConstraints,
@@ -438,6 +522,15 @@ export const convertToSchema = (
           constraints[constraint.name] = constraint
         }
         tableErrors.push(...colErrors)
+      } else if (isConstraintNode(elt)) {
+        // Handle table-level constraints
+        const { constraints: tableLevelConstraints, errors: constraintErrors } =
+          processTableLevelConstraint(elt.Constraint, tableName)
+
+        for (const constraint of tableLevelConstraints) {
+          constraints[constraint.name] = constraint
+        }
+        tableErrors.push(...constraintErrors)
       }
     }
 

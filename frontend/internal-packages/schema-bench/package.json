@@ -16,12 +16,11 @@
     "vitest": "3.2.2"
   },
   "scripts": {
-    "benchmark": "pnpm setup-workspace && pnpm run-benchmark",
+    "evaluate-schema": "node --experimental-strip-types src/cli/evaluate-schema.ts",
     "fmt": "concurrently \"pnpm:fmt:*\"",
     "fmt:biome": "biome check --write --unsafe .",
     "fmt:eslint": "eslint --fix .",
-    "run-benchmark": "node --experimental-strip-types src/workspace/benchmark.ts",
-    "setup-workspace": "node --experimental-strip-types src/workspace/setup.ts",
+    "setup-workspace": "node --experimental-strip-types src/cli/setup-workspace.ts",
     "test": "vitest --watch=false --passWithNoTests"
   }
 }

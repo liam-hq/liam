@@ -19,6 +19,7 @@
     "@liam-hq/figma-to-css-variables",
     "@liam-hq/db",
     "@liam-hq/jobs",
-    "@liam-hq/storybook"
+    "@liam-hq/storybook",
+    "@liam-hq/schema-bench"
   ]
 }

@@ -171,15 +171,90 @@ describe(processor, () => {
       expect(value).toEqual(parserTestCases['index (unique: true)']('btree'))
     })
 
-    // FIXME: `CONSTRAINT` statement is not supported yet
-    it.skip('foreign key constraint in CREATE TABLE', async () => {
-      await processor(/* sql */ `
+    it('table-level primary key constraint with named constraint', async () => {
+      const { value } = await processor(/* sql */ `
+        CREATE TABLE bar (
+          bar_id int,
+          name text NOT NULL,
+          CONSTRAINT bar_primary_key PRIMARY KEY (bar_id)
+        );
+      `)
+
+      expect(value.tables['bar']?.constraints).toEqual({
+        bar_primary_key: {
+          name: 'bar_primary_key',
+          type: 'PRIMARY KEY',
+          columnName: 'bar_id',
+        },
+      })
+    })
+
+    it('table-level primary key constraint without named constraint', async () => {
+      const { value } = await processor(/* sql */ `
+        CREATE TABLE foo_bar (
+          foo_id int,
+          bar_id int,
+          PRIMARY KEY (foo_id, bar_id)
+        );
+      `)
+
+      expect(value.tables['foo_bar']?.constraints).toEqual({
+        PRIMARY_foo_id: {
+          name: 'PRIMARY_foo_id',
+          type: 'PRIMARY KEY',
+          columnName: 'foo_id',
+        },
+        PRIMARY_bar_id: {
+          name: 'PRIMARY_bar_id',
+          type: 'PRIMARY KEY',
+          columnName: 'bar_id',
+        },
+      })
+    })
+
+    it('table-level single column primary key constraint', async () => {
+      const { value } = await processor(/* sql */ `
+        CREATE TABLE baz (
+          baz_id int,
+          name text,
+          PRIMARY KEY (baz_id)
+        );
+      `)
+
+      expect(value.tables['baz']?.constraints).toEqual({
+        PRIMARY_baz_id: {
+          name: 'PRIMARY_baz_id',
+          type: 'PRIMARY KEY',
+          columnName: 'baz_id',
+        },
+      })
+    })
+
+    it('foreign key constraint in CREATE TABLE', async () => {
+      const { value } = await processor(/* sql */ `
         CREATE TABLE posts (
           id BIGSERIAL PRIMARY KEY,
           user_id INT,
           CONSTRAINT fk_posts_user_id FOREIGN KEY (user_id) REFERENCES users(id)
         );
       `)
+
+      expect(value.tables['posts']?.constraints).toEqual({
+        PRIMARY_id: {
+          name: 'PRIMARY_id',
+          type: 'PRIMARY KEY',
+          columnName: 'id',
+        },
+        fk_posts_user_id: {
+          name: 'fk_posts_user_id',
+          type: 'FOREIGN KEY',
+          columnName: 'user_id',
+          targetTableName: 'users',
+          targetColumnName: 'id',
+          updateConstraint: 'NO_ACTION',
+          deleteConstraint: 'NO_ACTION',
+        },
+      })
     })
 
     it('foreign key with omit key name', async () => {
