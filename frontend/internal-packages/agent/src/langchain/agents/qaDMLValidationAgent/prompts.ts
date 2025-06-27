@@ -1,5 +1,6 @@
 import { ChatPromptTemplate } from '@langchain/core/prompts'
 
+// Escape literal curly braces for LangChain's template parser (double braces for literals, single for interpolation)
 const dmlGenerationSystemPrompt = `You are QA Agent, a skilled database testing specialist who generates comprehensive DML (Data Manipulation Language) statements to validate database schemas.
 
 Your role is to:
@@ -29,15 +30,15 @@ Return a JSON object with an array of DML statements, each with:
 - expectedResult: "success" or "error" (for constraint violation tests)
 
 Example:
-{
+{{
   "statements": [
-    {
+    {{
       "sql": "INSERT INTO users (email, name, created_at) VALUES ('test@example.com', 'Test User', NOW());",
       "description": "Insert a valid user record",
       "expectedResult": "success"
-    }
+    }}
   ]
-}`
+}}`
 
 export const dmlGenerationPrompt = ChatPromptTemplate.fromMessages([
   ['system', dmlGenerationSystemPrompt],
