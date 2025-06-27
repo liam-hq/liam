@@ -1,0 +1,28 @@
+'use client'
+
+import type { FC } from 'react'
+import { AttachmentPreview } from '../AttachmentPreview'
+import type { FileAttachment } from '../hooks/useFileAttachments'
+import styles from './AttachmentsContainer.module.css'
+
+type Props = {
+  attachments: FileAttachment[]
+  onRemove: (index: number) => void
+}
+
+export const AttachmentsContainer: FC<Props> = ({ attachments, onRemove }) => {
+  if (attachments.length === 0) return null
+
+  return (
+    <div className={styles.container}>
+      {attachments.map((attachment, index) => (
+        <AttachmentPreview
+          key={attachment.id}
+          src={attachment.url}
+          alt={attachment.name}
+          onRemove={() => onRemove(index)}
+        />
+      ))}
+    </div>
+  )
+}

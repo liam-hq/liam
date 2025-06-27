@@ -1,0 +1,86 @@
+.trigger {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-1);
+  padding: var(--spacing-1) var(--spacing-2);
+  background-color: var(--global-background);
+  border: 1px solid var(--global-border);
+  border-radius: var(--border-radius-base);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 127px;
+}
+
+.trigger:hover {
+  background-color: var(--pane-background-hover);
+}
+
+.trigger:focus {
+  outline: none;
+  border-color: var(--primary-accent);
+}
+
+.label {
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--global-foreground);
+  flex: 1;
+  text-align: left;
+}
+
+.chevron {
+  color: var(--global-foreground);
+  transition: transform 0.2s ease;
+}
+
+.chevronOpen {
+  transform: rotate(180deg);
+}
+
+.dropdown {
+  min-width: 127px;
+  background-color: var(--global-background);
+  border: 1px solid var(--global-border);
+  border-radius: var(--border-radius-md);
+  box-shadow: 0px 4px 20px 0px var(--shadow-context-menu-shadow);
+  padding: var(--spacing-1);
+}
+
+.menuItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: var(--spacing-2);
+  border-radius: var(--border-radius-base);
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.menuItem:hover {
+  background-color: var(--dropdown-background-hover);
+}
+
+.menuItemSelected {
+  background-color: var(--dropdown-background-active);
+}
+
+.menuContent {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+}
+
+.menuLabel {
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--global-foreground);
+  white-space: nowrap;
+}
+
+.checkIcon {
+  color: var(--primary-color);
+  flex-shrink: 0;
+}

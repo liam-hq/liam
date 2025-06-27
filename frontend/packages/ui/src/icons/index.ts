@@ -22,6 +22,8 @@ export {
   Eye,
   EyeClosed,
   EyeOff,
+  FileCode,
+  FileJson,
   FileText,
   Fingerprint,
   GitBranch,

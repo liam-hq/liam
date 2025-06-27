@@ -29,7 +29,7 @@ export const ActionButton: FC<ActionButtonProps> = ({
   return (
     <div className={styles.buttonContainer}>
       <ArrowTooltipProvider>
-        <ArrowTooltipRoot open={hasContent && !isPending ? undefined : false}>
+        <ArrowTooltipRoot>
           <ArrowTooltipTrigger asChild>
             <button
               type={isPending ? 'button' : 'submit'}

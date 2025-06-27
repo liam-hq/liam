@@ -2,20 +2,41 @@
   width: 100%;
   max-width: 782px;
   margin: 0 auto;
-  background-color: var(--callout-default-background);
-  border: 1px solid var(--global-border);
-  border-radius: var(--border-radius-md);
+  background-color: var(--global-background);
+  border: 1px solid var(--pane-border);
+  border-radius: var(--border-radius-xl);
   overflow: hidden;
-}
-
-.formContent {
-  padding: var(--spacing-5);
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-8);
+  transition:
+    box-shadow 0.3s ease,
+    border-color 0.3s ease;
 }
 
-.formGroup {
+.container.pending {
+  border-color: var(--primary-overlay-40);
+  box-shadow: 0px 0px 40px 0px var(--primary-overlay-40);
+}
+
+.container.error {
+  border-color: var(--danger-overlay-40);
+  box-shadow: 0px 0px 20px 0px var(--severity-critical-40);
+}
+
+.container.dragActive {
+  border-color: var(--primary-color);
+  box-shadow: 0px 0px 20px 0px var(--primary-overlay-20);
+  background-color: var(--primary-overlay-5);
+}
+
+.uploadSection {
+  background-color: var(--overlay-5);
+  flex-shrink: 0;
+  order: 2;
+}
+
+.uploadContainer {
+  padding: var(--spacing-4);
   display: flex;
   flex-direction: column;
   gap: var(--spacing-3);
@@ -23,74 +44,220 @@
 
 .divider {
   height: 1px;
-  background-color: var(--global-border);
+  background-color: var(--pane-border);
   width: 100%;
+  order: 1;
+}
+
+.inputSection {
+  order: 0;
+  flex-shrink: 0;
+  padding: var(--spacing-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2);
+  transition: all var(--default-animation-duration)
+    var(--default-timing-function);
+}
+
+.inputSection.dragActive {
+  background-color: var(--primary-overlay-5);
+  border-color: var(--primary-color);
+}
+
+.textareaWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2);
+}
+
+.textarea {
+  width: 100%;
+  min-height: 132px;
+  padding: 0;
+  background: transparent;
+  border: none;
+  color: var(--global-foreground);
+  font-size: var(--font-size-6);
+  font-family: inherit;
+  line-height: 1.6;
+  resize: none;
+  overflow: hidden;
+}
+
+.textarea::placeholder {
+  color: var(--overlay-30);
+  transition: color 0.2s var(--default-timing-function);
+}
+
+.textarea:hover::placeholder {
+  color: var(--overlay-50);
+}
+
+.textarea:focus {
+  outline: none;
+}
+
+.textarea:disabled {
+  opacity: var(--opacity-60);
+  cursor: not-allowed;
 }
 
 .buttonContainer {
-  padding: var(--spacing-4) var(--spacing-8) var(--spacing-5);
   display: flex;
   justify-content: flex-end;
+  align-items: center;
+  gap: var(--spacing-2);
 }
 
 .buttonCustom {
   min-width: var(--spacing-40);
   height: var(--spacing-9);
   font-size: var(--font-size-4);
-  font-weight: 500;
+  font-weight: var(--font-weight-medium);
 }
 
 .error {
-  color: var(--danger-default);
-  font-size: var(--font-size-3);
+  color: var(--danger-high-contrast-text);
+  font-size: var(--font-size-5);
   margin-top: var(--spacing-2);
 }
 
-/* Drop zone styles */
-.dropZone {
-  border: 2px dashed var(--global-border);
-  border-radius: var(--border-radius-md);
-  padding: var(--spacing-10);
-  text-align: center;
-  background-color: var(--global-background);
-  transition: all 0.2s ease;
-  cursor: pointer;
-}
-
-.dropZone:hover,
-.dropZoneActive {
-  border-color: var(--button-primary-background);
-  background-color: var(--overlay-5);
-}
-
-.dropZoneContent {
+/* Valid schema styles */
+.validSchemaContainer {
   display: flex;
   flex-direction: column;
+  gap: var(--spacing-3);
+  width: 100%;
+}
+
+.validSchemaMessage {
+  display: flex;
   align-items: center;
-  gap: var(--spacing-4);
+  gap: var(--spacing-3);
+  padding: 0 var(--spacing-1);
 }
 
-.dropZoneText {
-  font-size: var(--font-size-5);
-  color: var(--global-foreground);
-  margin: 0;
+.fetchStatus {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-1half);
 }
 
-.dropZoneSubtext {
-  font-size: var(--font-size-3);
-  color: var(--global-mute-text);
-  margin: 0;
-}
-
-.selectFileButton {
-  min-width: var(--spacing-30);
-}
-
-.selectedFile {
-  font-size: var(--font-size-3);
+.checkIcon {
   color: var(--button-primary-background);
-  margin: 0;
-  font-weight: 500;
+  width: var(--spacing-3);
+  height: var(--spacing-3);
+}
+
+.validSchemaText {
+  font-size: var(--font-size-2);
+  color: var(--button-primary-background);
+  font-weight: var(--font-weight-regular);
+  white-space: nowrap;
+}
+
+.invalidIcon {
+  color: var(--severity-warning-100);
+  width: var(--spacing-3);
+  height: var(--spacing-3);
+}
+
+.invalidSchemaText {
+  font-size: var(--font-size-2);
+  color: var(--severity-warning-100);
+  font-weight: var(--font-weight-regular);
+  white-space: nowrap;
+}
+
+.detectedText {
+  font-size: var(--font-size-2);
+  color: var(--global-mute-text);
+  line-height: 1.6;
+}
+
+.formatName {
+  color: var(--global-foreground);
+}
+
+.matchFiles {
+  background-color: var(--overlay-5);
+  border-radius: var(--border-radius-md);
+  padding: var(--spacing-2);
+  width: 100%;
+}
+
+.matchFileItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.uploadedFile {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-1half);
+  background-color: var(--overlay-5);
+  border-radius: var(--border-radius-base);
+  padding: var(--spacing-1half);
+  position: relative;
+}
+
+.fileName {
+  font-size: var(--font-size-3);
+  color: var(--global-foreground);
+  font-weight: var(--font-weight-regular);
+}
+
+.removeButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  padding: var(--spacing-half);
+  background-color: var(--overlay-70);
+  border-radius: var(--border-radius-full);
+  border: none;
+  cursor: pointer;
+  color: var(--button-foreground);
+  transition: background-color var(--default-animation-duration)
+    var(--default-timing-function);
+}
+
+.removeButton:hover {
+  background-color: var(--overlay-100);
+}
+
+.formatSelect {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-1);
+  padding: var(--spacing-1) var(--spacing-2);
+  background-color: var(--global-background);
+  border: 1px solid var(--pane-border);
+  border-radius: var(--border-radius-base);
+  min-width: 127px;
+  cursor: pointer;
+  transition: border-color var(--default-animation-duration)
+    var(--default-timing-function);
+}
+
+.formatSelect:hover {
+  border-color: var(--pane-border-hover);
+}
+
+.formatText {
+  font-size: var(--font-size-3);
+  color: var(--global-foreground);
+  flex: 1;
+}
+
+.chevronIcon {
+  width: var(--spacing-3);
+  height: var(--spacing-3);
+  color: var(--overlay-50);
 }
 
 .hiddenFileInput {

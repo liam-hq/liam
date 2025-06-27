@@ -105,7 +105,6 @@ export const convertTimelineItemToChatEntry = (
     content: timelineItem.content,
     role: timelineItem.type,
     timestamp: new Date(timelineItem.created_at),
-    isGenerating: false,
   }
 }
 

@@ -1,0 +1,190 @@
+/* Drop zone styles */
+.dropZone {
+  border: 1px dashed var(--overlay-20);
+  border-radius: var(--border-radius-lg);
+  padding: var(--spacing-10) var(--spacing-4);
+  text-align: center;
+  background-color: transparent;
+  transition: all var(--default-animation-duration)
+    var(--default-timing-function);
+  cursor: inherit;
+  min-height: 300px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.dropZone:hover,
+.dropZone:focus-visible {
+  background-color: var(--overlay-5);
+}
+
+.dropZoneActive {
+  border-color: var(--button-primary-background);
+  background-color: var(--overlay-5);
+}
+
+.dropZoneDisabled {
+  opacity: var(--opacity-60);
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.dropZoneContent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.dropZoneText {
+  font-size: var(--font-size-6);
+  font-weight: var(--font-weight-medium);
+  color: var(--global-foreground);
+  margin: 0 0 var(--spacing-2) 0;
+  line-height: 1.6;
+}
+
+.dropZoneSubtext {
+  font-size: var(--font-size-5);
+  color: var(--overlay-60);
+  margin: 0 0 var(--spacing-4) 0;
+  line-height: 1.6;
+}
+
+.selectFileButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: var(--spacing-8);
+  padding: 0 var(--spacing-3);
+  font-size: var(--font-size-4);
+  font-weight: 500;
+  line-height: normal;
+  border-radius: var(--border-radius-md);
+  cursor: pointer;
+  transition:
+    background-color var(--default-hover-animation-duration)
+    var(--default-timing-function),
+    border-color var(--default-hover-animation-duration)
+    var(--default-timing-function);
+  /* Solid Primary style (default) */
+  background-color: var(--button-primary-background);
+  color: var(--button-primary-foreground);
+  border: 1px solid var(--button-primary-background);
+}
+
+.selectFileButton:hover:not(.selectFileButtonDisabled) {
+  background-color: var(--button-primary-background-hover);
+  border-color: var(--button-primary-background-hover);
+}
+
+.selectFileButtonOutline {
+  background-color: transparent;
+  color: var(--button-secondary-foreground);
+  border: 1px solid var(--button-border);
+}
+
+.selectFileButtonOutline:hover:not(.selectFileButtonDisabled) {
+  background-color: var(--button-background-hover);
+}
+
+.selectFileButtonDisabled {
+  color: var(--button-disabled-foreground);
+  background-color: var(--button-disabled-background);
+  border: 1px solid var(--button-border);
+  cursor: not-allowed;
+}
+
+/* Icon container styles */
+.iconContainer {
+  position: relative;
+  margin-bottom: var(--spacing-4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 134px;
+  height: 93px;
+  transition: all var(--default-animation-duration)
+    var(--default-timing-function);
+}
+
+/* Extension tags styles */
+.extensionTags {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.extensionTag {
+  position: absolute;
+  background-color: var(--primary-overlay-20);
+  color: var(--button-primary-background);
+  font-size: var(--font-size-2);
+  font-weight: 600;
+  font-family: var(--code-font);
+  padding: 0 var(--spacing-1);
+  border-radius: var(--border-radius-sm);
+  letter-spacing: -0.55px;
+  white-space: nowrap;
+  opacity: 0;
+  transform: scale(0.8);
+  transition: all var(--default-animation-duration)
+    var(--default-timing-function);
+  line-height: 21px;
+  height: 21px;
+  display: flex;
+  align-items: center;
+}
+
+.dropZone:hover .extensionTag,
+.dropZone:focus-visible .extensionTag {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.extensionTag:nth-child(1) {
+  /* .sql */
+  top: 25px;
+  right: -3px;
+  transform: scale(0.8);
+  transition-delay: 0.05s;
+}
+
+.dropZone:hover .extensionTag:nth-child(1),
+.dropZone:focus-visible .extensionTag:nth-child(1) {
+  transform: scale(1);
+}
+
+.extensionTag:nth-child(2) {
+  /* .rb */
+  top: 0px;
+  left: 17px;
+  transition-delay: 0.1s;
+}
+
+.extensionTag:nth-child(3) {
+  /* .prisma */
+  top: -4px;
+  left: 55px;
+  transition-delay: 0.15s;
+}
+
+.extensionTag:nth-child(4) {
+  /* .json */
+  top: 27px;
+  left: -15px;
+  transition-delay: 0.2s;
+}
+
+.extensionTag:nth-child(5) {
+  /* .yaml */
+  top: 32px;
+  left: 0;
+  transition-delay: 0.25s;
+}

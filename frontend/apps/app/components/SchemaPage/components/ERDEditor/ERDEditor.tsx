@@ -23,8 +23,6 @@ export const ERDEditor: FC<Props> = ({
   errorObjects,
   defaultSidebarOpen,
   defaultPanelSizes = [20, 80],
-  projectId,
-  branchOrCommit,
 }) => {
   const versionData = {
     version: '0.1.0', // NOTE: no maintained version for ERD Web

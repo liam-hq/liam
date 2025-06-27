@@ -76,7 +76,6 @@ export const Chat: FC<Props> = ({ schemaData, designSession }) => {
       content,
       role: 'user',
       timestamp: new Date(),
-      isGenerating: false, // Explicitly set to false for consistency
     }
     addOrUpdateTimelineItem(userMessage)
 
