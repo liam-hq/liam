@@ -17,8 +17,6 @@ jobs:
     defaults:
       run:
         working-directory: 'frontend/internal-packages/e2e'
-    outputs:
-      erd_sample_should_run: ${{ steps.check.outputs.erd_sample_should_run }}
     env:
       CI: true
       URL: ${{ github.event.deployment_status.target_url }}
@@ -46,7 +44,7 @@ jobs:
               if (environment_val.include?("Preview") && target_url.include?("liam-erd-sample"))
                 "true"
               # Production deployment and Preview deployment
-              elsif (environment_val.include?("Production") && !target_url.include?("liam-app-git-main")) && (environment_val.include?("Preview") && !target_url.include?("liam-docs") && !target_url.include?("liam-storybook"))
+              elsif environment_val.include?("Production") && !target_url.include?("liam-app-git-main") && !target_url.include?("liam-docs") && !target_url.include?("liam-storybook")
                 "true"
               else
                 "false"
