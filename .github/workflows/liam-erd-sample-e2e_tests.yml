@@ -44,7 +44,7 @@ jobs:
               if (environment_val.include?("Preview") && target_url.include?("liam-erd-sample"))
                 "should_run=true"
               # Production deployment and Preview deployment
-              elsif environment_val.include?("Production") && !target_url.include?("liam-app-git-main") && (environment_val.include?("Preview") && !target_url.include?("liam-docs") && !target_url.include?("liam-storybook"))
+              elsif (environment_val.include?("Production") && !target_url.include?("liam-app-git-main")) && (environment_val.include?("Preview") && !target_url.include?("liam-docs") && !target_url.include?("liam-storybook"))
                 "should_run=true"
               else
                 "should_run=false"
@@ -114,7 +114,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Slack Notification on Failure
-        if: ${{ steps.check.outputs.should_run == 'true' && env.ENVIRONMENT == 'Production – liam-app' && failure() }}
+        if: ${{ steps.check.outputs.should_run == 'true' && env.ENVIRONMENT == 'Preview – liam-erd-sample' && failure() }}
         uses: tokorom/action-slack-incoming-webhook@d57bf1eb618f3dae9509afefa70d5774ad3d42bf # v1.3.0
         env:
           INCOMING_WEBHOOK_URL: ${{ secrets.SLACK_CLI_CI_WEBHOOK_URL }}
