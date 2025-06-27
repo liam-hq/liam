@@ -41,7 +41,9 @@ jobs:
           result =
             if event_name == "deployment_status" && event_state == "success"
               # Production deployment
-              if (environment_val.include?("Production") && target_url.include?("liam-app-git-main") || target_url.include?("liam-erd-sample"))
+              puts "environment_val: #{environment_val}"
+              puts "target_url: #{target_url}"
+              if (environment_val.include?("Production") && (target_url.include?("liam-app-git-main") || target_url.include?("liam-erd-sample")))
                 "should_run=true"
               # Preview deployment
               elsif environment_val.include?("Preview") && !target_url.include?("liam-docs") && !target_url.include?("liam-storybook")
