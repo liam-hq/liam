@@ -17,6 +17,8 @@ jobs:
     defaults:
       run:
         working-directory: 'frontend/internal-packages/e2e'
+    outputs:
+      erd_sample_should_run: ${{ steps.check.outputs.erd_sample_should_run }}
     env:
       CI: true
       URL: ${{ github.event.deployment_status.target_url }}
@@ -53,15 +55,13 @@ jobs:
               "false"
             end
 
-
           # Same as 'echo "erd_sample_should_run=xxxx" >> $GITHUB_OUTPUT'
-          File.open(ENV["GITHUB_OUTPUT"], "a") do |file|
+          output_file = ENV.fetch("GITHUB_OUTPUT")
+          File.open(output_file, "a") do |file|
             file.puts "erd_sample_should_run=#{result}"
           end
 
       - name: Setup pnpm
-        run: |
-          echo "erd_sample_should_run=${{ steps.check.outputs.erd_sample_should_run }}" >> $GITHUB_OUTPUT
         if: steps.check.outputs.erd_sample_should_run == 'true'
         uses: ./.github/actions/pnpm-setup
 
