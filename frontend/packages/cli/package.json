@@ -28,7 +28,7 @@
     "@liam-hq/erd-core": "workspace:*",
     "@prisma/internals": "6.8.2",
     "commander": "13.1.0",
-    "glob": "11.0.2",
+    "glob": "11.0.3",
     "inquirer": "12.6.3",
     "react": "19.1.0",
     "react-dom": "19.1.0",
