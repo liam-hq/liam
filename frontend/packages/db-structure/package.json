@@ -26,6 +26,7 @@
     "@pgsql/types": "15.0.2",
     "@prisma/generator-helper": "6.8.2",
     "@types/node": "22.15.30",
+    "@vitest/coverage-v8": "^3.2.2",
     "eslint": "9.28.0",
     "json-refs": "3.0.15",
     "json-schema-to-zod": "2.6.1",
@@ -45,7 +46,8 @@
     "lint:biome": "biome check .",
     "lint:eslint": "eslint .",
     "lint:tsc": "tsc --noEmit",
-    "test": "vitest --watch=false"
+    "test": "vitest --watch=false",
+    "test:coverage": "vitest --coverage --watch=false"
   },
   "types": "dist/index.d.ts"
 }
