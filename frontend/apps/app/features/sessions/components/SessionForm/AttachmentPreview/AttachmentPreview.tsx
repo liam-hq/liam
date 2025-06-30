@@ -1,6 +1,6 @@
 'use client'
 
-import { X } from '@liam-hq/ui'
+import { RemoveButton } from '@liam-hq/ui'
 import type { FC } from 'react'
 import styles from './AttachmentPreview.module.css'
 
@@ -14,14 +14,13 @@ export const AttachmentPreview: FC<Props> = ({ src, alt, onRemove }) => {
   return (
     <div className={styles.container}>
       <img src={src} alt={alt} className={styles.image} />
-      <button
-        type="button"
-        className={styles.removeButton}
+      <RemoveButton
         onClick={onRemove}
+        variant="solid"
+        size="sm"
+        className={styles.removeButton}
         aria-label="Remove attachment"
-      >
-        <X className={styles.removeIcon} />
-      </button>
+      />
     </div>
   )
 }

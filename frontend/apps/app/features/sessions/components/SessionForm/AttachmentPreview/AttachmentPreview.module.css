@@ -27,26 +27,4 @@
   position: absolute;
   top: var(--spacing-2);
   right: var(--spacing-2);
-  width: 14px;
-  height: 14px;
-  border-radius: var(--border-radius-full);
-  background-color: var(--overlay-70);
-  border: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  padding: var(--spacing-half);
-  transition: background-color var(--default-animation-duration)
-    var(--default-timing-function);
-}
-
-.removeButton:hover {
-  background-color: var(--overlay-100);
-}
-
-.removeIcon {
-  width: 10px;
-  height: 10px;
-  color: var(--button-foreground);
 }
