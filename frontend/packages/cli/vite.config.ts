@@ -2,7 +2,7 @@ import { rmSync } from 'node:fs'
 import react from '@vitejs/plugin-react'
 import tsconfigPaths from 'vite-tsconfig-paths'
 import { defineConfig } from 'vitest/config'
-import { removeImportWasi, setEnvPlugin } from './vite-plugins/index.js'
+import { removeImportWasi, removeNodeImports, setEnvPlugin } from './vite-plugins/index.js'
 
 const outDir = 'dist-cli/html'
 
@@ -26,7 +26,7 @@ export default defineConfig({
       ],
     },
   },
-  plugins: [react(), tsconfigPaths(), removeImportWasi(), setEnvPlugin()],
+  plugins: [react(), tsconfigPaths(), removeImportWasi(), removeNodeImports(), setEnvPlugin()],
   test: {
     globals: true,
     environment: 'node',
