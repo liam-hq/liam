@@ -44,13 +44,17 @@ runs:
     - name: Install Playwright browsers
       if: steps.playwright-cache.outputs.cache-hit != 'true'
       run: pnpm exec playwright install --with-deps
+      shell: bash
 
     - name: Install system dependencies for WebKit
       if: steps.playwright-cache.outputs.cache-hit == 'true'
       run: pnpm exec playwright install-deps webkit
+      shell: bash
 
     - name: Run e2e tests
       run: pnpm exec playwright test --project=${{ env.BROWSER }}
+      shell: bash
+      working-directory: frontend/internal-packages/e2e/
       env:
         URL: ${{ inputs.url }}
 
