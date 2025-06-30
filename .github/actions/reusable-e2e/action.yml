@@ -19,16 +19,9 @@ inputs:
   url:
     required: true
     type: string
-  working-directory:
-    required: true
-    type: string
 
 runs:
   using: composite
-  defaults:
-    run:
-      working-directory: ${{ inputs.working-directory }}
-
   env:
     CI: true
     URL: ${{ inputs.url }}
@@ -72,7 +65,7 @@ runs:
       uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
       with:
         name: test-results-${{ env.BROWSER }}-${{ github.run_id }}-${{ github.job }}
-        path: ${{ inputs.working-directory }}/test-results/
+        path: frontend/internal-packages/e2e/test-results/
         retention-days: 30
 
     - name: Post E2E status manually (with gh)

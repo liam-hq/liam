@@ -33,7 +33,6 @@ jobs:
           ref: ${{ github.event.deployment.sha }}
           test-project: liam-app
           url: ${{ github.event.deployment_status.target_url }}
-          working-directory: frontend/internal-packages/e2e
 
       - name: liam-erd-sample-e2e_tests
         if: github.event.deployment_status.state == 'success' &&
@@ -41,9 +40,8 @@ jobs:
         uses: ./.github/actions/reusable-e2e
         with:
           browser: ${{ matrix.browser }}
-          working-directory: frontend/internal-packages/e2e
-          test-project: liam-erd-sample
-          environment: ${{ github.event.deployment.environment }}
-          url: ${{ github.event.deployment_status.target_url }}
-          ref: ${{ github.event.deployment.sha }}
           deployment-target: liam-erd-sample
+          environment: ${{ github.event.deployment.environment }}
+          ref: ${{ github.event.deployment.sha }}
+          test-project: liam-erd-sample
+          url: ${{ github.event.deployment_status.target_url }}
