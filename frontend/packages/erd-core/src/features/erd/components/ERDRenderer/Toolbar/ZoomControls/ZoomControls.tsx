@@ -1,5 +1,5 @@
 import { Minus, Plus } from '@liam-hq/ui'
-import { useStore, useReactFlow } from '@xyflow/react'
+import { useReactFlow, useStore } from '@xyflow/react'
 import { type FC, useCallback } from 'react'
 import { toolbarActionLogEvent } from '@/features/gtm/utils'
 import { useVersion } from '@/providers'

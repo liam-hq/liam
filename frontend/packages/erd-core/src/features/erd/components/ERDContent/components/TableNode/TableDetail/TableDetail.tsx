@@ -67,7 +67,7 @@ export const TableDetail: FC<Props> = ({ table }) => {
     setNodes(layoutedNodes)
     setEdges(layoutedEdges)
     requestAnimationFrame(() => {
-      fitView();
+      fitView()
     })
 
     openRelatedTablesLogEvent({
