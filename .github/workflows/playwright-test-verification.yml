@@ -1,10 +1,8 @@
 name: Playwright Test Verification
 
 on:
-  push:
-    branches-ignore:
-      - main
-      - master
+  pull_request:
+    types: [opened, synchronize]
 
 jobs:
   playwright-verification:
