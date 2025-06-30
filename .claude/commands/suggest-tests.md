@@ -17,22 +17,30 @@ You are a specialized test coverage analyzer. Your goal is to review code change
   - Deleted code that might affect tests
   - Dependencies and imports that might need testing
 
-### 2. Search for Existing Test Coverage
+### 2. Analyze Code Usage and Dependencies
+For each changed file, conduct thorough usage analysis:
+- **Where is this code used?** Search for all imports and references
+- **Who depends on this?** Identify all consumer components/modules
+- **What features rely on this?** Map to user-facing functionality
+- **What could break?** Assess potential impact radius
+- **How critical is this code?** Determine business importance
+
+### 3. Search for Existing Test Coverage
 For each changed file:
 - Look for corresponding test files (*.test.ts, *.test.tsx)
 - Check if tests exist for the modified functionality
 - Identify gaps in current test coverage
 - Note any tests that might need updates due to changes
 
-### 3. Identify Testing Requirements
-Based on the changes, determine what types of tests are needed:
+### 4. Identify Testing Requirements
+Based on the usage analysis and changes, determine what types of tests are needed:
 - **Unit Tests**: For individual functions, methods, or components
 - **Integration Tests**: For features that interact with multiple modules
 - **E2E Tests**: For user-facing features or critical user flows
 - **Edge Cases**: Error handling, boundary conditions, null/undefined handling
 - **Type Safety**: TypeScript type coverage for new interfaces/types
 
-### 4. Generate Test Suggestions
+### 5. Generate Test Suggestions
 
 Create a comprehensive test plan with the following structure:
 
@@ -53,6 +61,12 @@ For each file that needs test coverage:
 **Changes Made:**
 - Brief description of what changed
 
+**Usage Analysis:**
+- **Direct consumers**: List all files/components that import this
+- **Indirect impact**: Features and flows affected by changes
+- **User-facing features**: How changes affect end users
+- **Critical paths**: Business-critical functionality that depends on this
+
 **Current Test Coverage:**
 - ✅ Existing tests in `path/to/file.test.ts` (if any)
 - ❌ No tests found (if applicable)
@@ -63,175 +77,167 @@ For each file that needs test coverage:
    - **Type**: Unit/Integration/E2E
    - **Priority**: 🔴 High / 🟡 Medium / 🟢 Low
    - **What to test**: Specific functionality to verify
-   - **Test cases**:
-     - [ ] Normal case: [description]
-     - [ ] Edge case: [description]
-     - [ ] Error case: [description]
+   - **Why this matters**: Business impact if this fails
    
-   **Implementation Instructions for AI Agent:**
-   ```typescript
-   // File: path/to/file.test.ts
-   // Task: Create a new test file or add to existing test file
-   // Framework: Vitest
-   // Testing approach: [Unit/Integration/E2E]
+   **Testing Perspectives for AI Agent:**
+   ```
+   Test Design Principles:
+   - Focus on observable behavior from the consumer's perspective
+   - Test the contract this code provides to its users
+   - Verify one behavior per test for clarity
    
-   import { describe, it, expect, vi } from 'vitest';
-   import { functionName } from './file';
+   Mock Strategy:
+   - Identify external boundaries (APIs, DB, File system)
+   - Use real objects for internal collaborators
+   - Consider if this should be a sociable or solitary test
+   - Only mock what's necessary for test isolation
    
-   describe('functionName', () => {
-     it('should handle normal case', () => {
-       // Setup: Create test data and mocks
-       const mockDependency = vi.fn().mockReturnValue('expected');
-       const input = 'test input';
-       
-       // Execute: Call the function under test
-       const result = functionName(input);
-       
-       // Assert: Verify the expected behavior
-       expect(result).toBe('expected output');
-       expect(mockDependency).toHaveBeenCalledWith(input);
-     });
-     
-     it('should handle edge case', () => {
-       // Test implementation for edge case
-     });
-     
-     it('should handle error case', () => {
-       // Test implementation for error case
+   Test Scenarios by Priority:
+   1. Happy path: The primary use case that delivers value
+   2. Edge cases: Boundary values, empty inputs, null handling
+   3. Error cases: How the code handles and reports failures
+   4. Integration: How this code interacts with its collaborators
+   
+   Test Structure:
+   - Arrange: Minimal setup for the scenario
+   - Act: Single action being tested
+   - Assert: Verify the observable outcome
+   - Use descriptive test names that explain the behavior
+   ```
+
+### Test Quality Guidelines
+
+**Writing Maintainable Tests:**
+```
+1. Test Structure
+   - Clear Arrange-Act-Assert pattern
+   - Descriptive test names that read like specifications
+   - Each test verifies ONE behavior
+   - Tests should be DAMP (Descriptive And Meaningful Phrases)
+
+2. Test Independence
+   - No shared state between tests
+   - Each test sets up its own data
+   - Tests can run in any order
+   - Clean up is automatic (use beforeEach/afterEach sparingly)
+
+3. Assertion Quality
+   - Assert on behavior, not implementation
+   - Use specific matchers (toBe vs toEqual)
+   - Include meaningful error messages
+   - Prefer positive assertions when possible
+```
+
+**Example Test Naming:**
+```
+❌ Bad: "test user creation"
+❌ Bad: "should work"
+✅ Good: "should create a new user with valid email"
+✅ Good: "should reject user creation when email is already taken"
+```
+
+## Testing Philosophy for AI Agents
+
+**Test Behavior, Not Implementation:**
+
+1. **What Makes a Good Test**
+   - **Test public interfaces**: Focus on what consumers of the code can observe
+   - **Test contracts, not internals**: Verify the promises the code makes
+   - **Avoid implementation details**: Tests shouldn't break when refactoring
+   - **One behavior per test**: Each test should verify one specific behavior
+
+2. **Mock Strategy - "Mock Only at Boundaries"**
+   ```
+   ✅ Good reasons to mock:
+   - External APIs and services
+   - File system operations
+   - Database connections
+   - Time-dependent operations
+   
+   ❌ Avoid mocking:
+   - Business logic classes
+   - Internal modules
+   - Pure functions
+   - Data transformers
+   ```
+
+3. **Test Types and When to Use Them**
+   
+   **Sociable Unit Tests (Preferred)**
+   - Test a unit with its real collaborators
+   - Mock only external boundaries
+   - Faster feedback on integration issues
+   - More confidence in refactoring
+   
+   **Solitary Unit Tests**
+   - Use when testing complex algorithms
+   - When collaborators are expensive (DB, API)
+   - For error scenarios hard to reproduce
+   
+   **Integration Tests**
+   - Test across module boundaries
+   - Verify data flow through the system
+   - Use real implementations where possible
+
+4. **Test Independence Principles**
+   - **Isolated**: Each test runs independently
+   - **Repeatable**: Same result every time
+   - **Self-contained**: Test creates its own data
+   - **Order-independent**: Tests can run in any order
+
+5. **Risk-Based Test Priority**
+   ```
+   High Priority (🔴):
+   - Core business logic that affects users
+   - Data integrity and persistence
+   - Security boundaries
+   - Money/payment related code
+   
+   Medium Priority (🟡):
+   - User interactions and workflows
+   - Integration points between modules
+   - Error handling paths
+   
+   Low Priority (🟢):
+   - Simple getters/setters
+   - Pure UI styling
+   - Configuration constants
+   ```
+
+6. **Test Naming and Structure**
+   ```
+   describe('Component/Module name', () => {
+     describe('when [context]', () => {
+       it('should [expected behavior]', () => {
+         // Arrange: Set up test data
+         // Act: Execute the behavior
+         // Assert: Verify the outcome
+       });
      });
    });
    ```
 
-### Testing Implementation Checklist
-
-**For AI Coding Agent Implementation:**
-```
-Task: Implement the following tests based on the analysis above
-Priority Order: Start with 🔴 High priority tests, then 🟡 Medium, then 🟢 Low
-
-Step 1: Create/Update Test Files
-- [ ] Create new test file at `path/to/file.test.ts` if it doesn't exist
-- [ ] Import necessary testing utilities (vitest, testing-library, etc.)
-- [ ] Set up test structure with describe blocks
-
-Step 2: Implement Test Cases
-- [ ] Implement normal case tests with proper setup, execution, and assertions
-- [ ] Implement edge case tests (null, undefined, empty arrays, etc.)
-- [ ] Implement error case tests with proper error mocking
-- [ ] Add type safety tests for TypeScript interfaces
-
-Step 3: Mock Dependencies
-- [ ] Mock external dependencies using vi.mock()
-- [ ] Create mock data that matches production data structure
-- [ ] Set up test fixtures for complex data scenarios
-
-Step 4: Verify Test Quality
-- [ ] Run tests locally with `pnpm test`
-- [ ] Ensure all tests pass
-- [ ] Check test coverage meets requirements
-- [ ] Verify no console errors or warnings
-```
-
-### Additional Implementation Guidelines
-
-**For React Component Tests:**
-```typescript
-// Use Testing Library patterns
-import { render, screen, userEvent } from '@testing-library/react';
-import { ComponentName } from './ComponentName';
-
-// Wrap with necessary providers
-const renderWithProviders = (ui: React.ReactElement) => {
-  return render(
-    <Providers>{ui}</Providers>
-  );
-};
-
-// Test user interactions
-await userEvent.click(screen.getByRole('button'));
-```
-
-**For API/Backend Tests:**
-```typescript
-// Mock HTTP requests and database calls
-vi.mock('./database', () => ({
-  query: vi.fn().mockResolvedValue({ rows: [] })
-}));
-
-// Test error scenarios
-expect(() => functionName()).rejects.toThrow('Expected error');
-```
-
-**For E2E Tests (Playwright):**
-```typescript
-// File: tests/e2e/feature.test.ts
-import { test, expect } from '@playwright/test';
-
-test('feature should work end-to-end', async ({ page }) => {
-  await page.goto('/path');
-  await page.click('button[data-testid="action"]');
-  await expect(page.locator('.result')).toBeVisible();
-});
-```
-
-## Important Guidelines for AI Agent Implementation
-
-1. **Code Generation Requirements:**
-   - Generate complete, runnable test code (not just snippets)
-   - Include all necessary imports and setup
-   - Follow the exact file structure of the project
-   - Use the testing framework already in the project (Vitest)
-
-2. **Test Priority Guidelines:**
-   - 🔴 High: Tests for core business logic, data mutations, error handling
-   - 🟡 Medium: Tests for UI interactions, integration points
-   - 🟢 Low: Tests for pure functions, simple utilities
-
-3. **Mock Strategy:**
-   ```typescript
-   // Always mock external dependencies
-   vi.mock('@external/package');
+7. **What to Test vs What Not to Test**
+   ```
+   ✅ Test:
+   - Business rules and logic
+   - Edge cases and error conditions
+   - Integration points
+   - Public API contracts
    
-   // Mock internal modules when needed
-   vi.mock('../services/api', () => ({
-     fetchData: vi.fn()
-   }));
-   
-   // Use vi.spyOn for partial mocks
-   vi.spyOn(object, 'method').mockImplementation(() => {});
+   ❌ Don't test:
+   - Framework code
+   - Third-party libraries
+   - Simple getters/setters
+   - Private implementation details
    ```
 
-4. **Test File Naming:**
-   - Unit tests: `filename.test.ts` (co-located with source)
-   - Integration tests: `__tests__/feature.integration.test.ts`
-   - E2E tests: `tests/e2e/feature.test.ts`
-
-5. **Common Testing Patterns:**
-   ```typescript
-   // Async testing
-   it('should handle async operations', async () => {
-     const result = await asyncFunction();
-     expect(result).toBeDefined();
-   });
-   
-   // Error testing
-   it('should throw on invalid input', () => {
-     expect(() => functionName(null)).toThrow('Expected error message');
-   });
-   
-   // React component testing
-   it('should render correctly', () => {
-     render(<Component prop="value" />);
-     expect(screen.getByText('Expected text')).toBeInTheDocument();
-   });
-   ```
-
-6. **Project-Specific Context:**
-   - This is a monorepo using pnpm workspaces
-   - Vitest for unit testing with happy-dom for React
-   - Playwright for E2E tests
-   - TypeScript strict mode is enabled
-   - Follow existing test patterns in the codebase
+## Project Context
+- This is a monorepo using pnpm workspaces
+- Vitest for unit testing with happy-dom for React
+- Playwright for E2E tests
+- TypeScript strict mode is enabled
+- Follow existing test patterns in the codebase
 
 ## Usage
 - In a PR context: The command will automatically analyze the PR diff
