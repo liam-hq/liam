@@ -1,261 +1,141 @@
 import { describe, expect, it } from 'vitest'
-import {
-  aCheckConstraint,
-  aColumn,
-  aForeignKeyConstraint,
-  anIndex,
-  aPrimaryKeyConstraint,
-  aSchema,
-  aTable,
-  aUniqueConstraint,
-} from '../../schema/factories.js'
 import { postgresqlSchemaDeparser } from './schemaDeparser.js'
 import { expectGeneratedSQLToBeParseable } from './testUtils.js'
+import { SQL_SNAPSHOTS } from './__fixtures__/sql-snapshots.js'
+import {
+  SCHEMA_BUILDERS,
+  createBasicColumn,
+  createCheckConstraint,
+  createForeignKeyConstraint,
+  createIndex,
+  createPrimaryKeyConstraint,
+  createSchemaWithTable,
+  createSchemaWithTables,
+  createTableWithColumns,
+  createUniqueConstraint,
+} from './__fixtures__/schema-builders.js'
 
 describe('postgresqlSchemaDeparser', () => {
   it('should generate basic CREATE TABLE statement', async () => {
-    const schema = aSchema({
-      tables: {
-        users: aTable({
-          name: 'users',
-          columns: {
-            id: aColumn({
-              name: 'id',
-              type: 'bigint',
-              notNull: true,
-            }),
-            email: aColumn({
-              name: 'email',
-              type: 'varchar(255)',
-              notNull: true,
-            }),
-          },
-          constraints: {
-            users_pkey: aPrimaryKeyConstraint({
-              name: 'users_pkey',
-              columnName: 'id',
-            }),
-          },
-        }),
+    const table = createTableWithColumns('users', {
+      id: createBasicColumn('id', 'bigint', { notNull: true }),
+      email: createBasicColumn('email', 'varchar(255)', { notNull: true }),
+    }, {
+      constraints: {
+        users_pkey: createPrimaryKeyConstraint('users_pkey', 'id'),
       },
     })
+    const schema = createSchemaWithTable('users', table)
 
     const result = postgresqlSchemaDeparser(schema)
 
     expect(result.errors).toHaveLength(0)
-    expect(result.value).toMatchInlineSnapshot(`
-      "CREATE TABLE "users" (
-        "id" bigint NOT NULL,
-        "email" varchar(255) NOT NULL
-      );
-      
-      ALTER TABLE "users" ADD CONSTRAINT "users_pkey" PRIMARY KEY ("id");"
-    `)
+    expect(result.value).toBe(SQL_SNAPSHOTS.basicCreateTable)
 
     await expectGeneratedSQLToBeParseable(result.value)
   })
 
   it('should generate CREATE TABLE with comments', async () => {
-    const schema = aSchema({
-      tables: {
-        products: aTable({
-          name: 'products',
-          comment: 'Product table',
-          columns: {
-            id: aColumn({
-              name: 'id',
-              type: 'bigint',
-              notNull: true,
-              comment: 'Product ID',
-            }),
-          },
-          constraints: {
-            products_pkey: aPrimaryKeyConstraint({
-              name: 'products_pkey',
-              columnName: 'id',
-            }),
-          },
-        }),
+    const table = createTableWithColumns('products', {
+      id: createBasicColumn('id', 'bigint', {
+        notNull: true,
+        comment: 'Product ID',
+      }),
+    }, {
+      comment: 'Product table',
+      constraints: {
+        products_pkey: createPrimaryKeyConstraint('products_pkey', 'id'),
       },
     })
+    const schema = createSchemaWithTable('products', table)
 
     const result = postgresqlSchemaDeparser(schema)
 
     expect(result.errors).toHaveLength(0)
-    expect(result.value).toMatchInlineSnapshot(`
-      "CREATE TABLE "products" (
-        "id" bigint NOT NULL
-      );
-
-      COMMENT ON TABLE "products" IS 'Product table';
-      COMMENT ON COLUMN "products"."id" IS 'Product ID';
-      
-      ALTER TABLE "products" ADD CONSTRAINT "products_pkey" PRIMARY KEY ("id");"
-    `)
+    expect(result.value).toBe(SQL_SNAPSHOTS.createTableWithComments)
 
     await expectGeneratedSQLToBeParseable(result.value)
   })
 
   it('should generate CREATE TABLE with default values', async () => {
-    const schema = aSchema({
-      tables: {
-        settings: aTable({
-          name: 'settings',
-          columns: {
-            id: aColumn({
-              name: 'id',
-              type: 'bigint',
-              notNull: true,
-            }),
-            enabled: aColumn({
-              name: 'enabled',
-              type: 'boolean',
-              notNull: true,
-              default: true,
-            }),
-            count: aColumn({ name: 'count', type: 'integer', default: 0 }),
-            title: aColumn({
-              name: 'title',
-              type: 'varchar(50)',
-              default: 'Default Title',
-            }),
-          },
-          constraints: {
-            settings_pkey: aPrimaryKeyConstraint({
-              name: 'settings_pkey',
-              columnName: 'id',
-            }),
-          },
-        }),
+    const table = createTableWithColumns('settings', {
+      id: createBasicColumn('id', 'bigint', { notNull: true }),
+      enabled: createBasicColumn('enabled', 'boolean', {
+        notNull: true,
+        default: true,
+      }),
+      count: createBasicColumn('count', 'integer', { default: 0 }),
+      title: createBasicColumn('title', 'varchar(50)', {
+        default: 'Default Title',
+      }),
+    }, {
+      constraints: {
+        settings_pkey: createPrimaryKeyConstraint('settings_pkey', 'id'),
       },
     })
+    const schema = createSchemaWithTable('settings', table)
 
     const result = postgresqlSchemaDeparser(schema)
 
     expect(result.errors).toHaveLength(0)
-    expect(result.value).toMatchInlineSnapshot(`
-      "CREATE TABLE "settings" (
-        "id" bigint NOT NULL,
-        "enabled" boolean NOT NULL DEFAULT TRUE,
-        "count" integer DEFAULT 0,
-        "title" varchar(50) DEFAULT 'Default Title'
-      );
-      
-      ALTER TABLE "settings" ADD CONSTRAINT "settings_pkey" PRIMARY KEY ("id");"
-    `)
+    expect(result.value).toBe(SQL_SNAPSHOTS.createTableWithDefaults)
 
     await expectGeneratedSQLToBeParseable(result.value)
   })
 
   it('should handle string escaping in comments', async () => {
-    const schema = aSchema({
-      tables: {
-        test: aTable({
-          name: 'test',
-          comment: "Table with 'quotes' in comment",
-          columns: {
-            id: aColumn({
-              name: 'id',
-              type: 'bigint',
-              notNull: true,
-              comment: "Column with 'quotes' in comment",
-            }),
-          },
-          constraints: {
-            test_pkey: aPrimaryKeyConstraint({
-              name: 'test_pkey',
-              columnName: 'id',
-            }),
-          },
-        }),
+    const table = createTableWithColumns('test', {
+      id: createBasicColumn('id', 'bigint', {
+        notNull: true,
+        comment: "Column with 'quotes' in comment",
+      }),
+    }, {
+      comment: "Table with 'quotes' in comment",
+      constraints: {
+        test_pkey: createPrimaryKeyConstraint('test_pkey', 'id'),
       },
     })
+    const schema = createSchemaWithTable('test', table)
 
     const result = postgresqlSchemaDeparser(schema)
 
     expect(result.errors).toHaveLength(0)
-    expect(result.value).toMatchInlineSnapshot(
-      `
-      "CREATE TABLE "test" (
-        "id" bigint NOT NULL
-      );
-
-      COMMENT ON TABLE "test" IS 'Table with ''quotes'' in comment';
-      COMMENT ON COLUMN "test"."id" IS 'Column with ''quotes'' in comment';
-      
-      ALTER TABLE "test" ADD CONSTRAINT "test_pkey" PRIMARY KEY ("id");"
-    `,
-    )
+    expect(result.value).toBe(SQL_SNAPSHOTS.stringEscapingInComments)
 
     await expectGeneratedSQLToBeParseable(result.value)
   })
 
   it('should handle multiple tables', async () => {
-    const schema = aSchema({
-      tables: {
-        users: aTable({
-          name: 'users',
-          columns: {
-            id: aColumn({
-              name: 'id',
-              type: 'bigint',
-              notNull: true,
-            }),
-          },
-          constraints: {
-            users_pkey: aPrimaryKeyConstraint({
-              name: 'users_pkey',
-              columnName: 'id',
-            }),
-          },
-        }),
-        products: aTable({
-          name: 'products',
-          columns: {
-            id: aColumn({
-              name: 'id',
-              type: 'bigint',
-              notNull: true,
-            }),
-            name: aColumn({
-              name: 'name',
-              type: 'varchar(100)',
-              notNull: true,
-            }),
-          },
-          constraints: {
-            products_pkey: aPrimaryKeyConstraint({
-              name: 'products_pkey',
-              columnName: 'id',
-            }),
-          },
-        }),
+    const usersTable = createTableWithColumns('users', {
+      id: createBasicColumn('id', 'bigint', { notNull: true }),
+    }, {
+      constraints: {
+        users_pkey: createPrimaryKeyConstraint('users_pkey', 'id'),
       },
+    })
+    const productsTable = createTableWithColumns('products', {
+      id: createBasicColumn('id', 'bigint', { notNull: true }),
+      name: createBasicColumn('name', 'varchar(100)', { notNull: true }),
+    }, {
+      constraints: {
+        products_pkey: createPrimaryKeyConstraint('products_pkey', 'id'),
+      },
+    })
+    const schema = createSchemaWithTables({
+      users: usersTable,
+      products: productsTable,
     })
 
     const result = postgresqlSchemaDeparser(schema)
 
     expect(result.errors).toHaveLength(0)
-    expect(result.value).toMatchInlineSnapshot(`
-      "CREATE TABLE "users" (
-        "id" bigint NOT NULL
-      );
-
-      CREATE TABLE "products" (
-        "id" bigint NOT NULL,
-        "name" varchar(100) NOT NULL
-      );
-      
-      ALTER TABLE "users" ADD CONSTRAINT "users_pkey" PRIMARY KEY ("id");
-      
-      ALTER TABLE "products" ADD CONSTRAINT "products_pkey" PRIMARY KEY ("id");"
-    `)
+    expect(result.value).toBe(SQL_SNAPSHOTS.multipleTables)
 
     await expectGeneratedSQLToBeParseable(result.value)
   })
 
   it('should handle empty schema', async () => {
-    const schema = aSchema({ tables: {} })
+    const schema = createSchemaWithTables({})
 
     const result = postgresqlSchemaDeparser(schema)
 
@@ -267,175 +147,95 @@ describe('postgresqlSchemaDeparser', () => {
 
   describe('index generation', () => {
     it('should generate CREATE INDEX statements', async () => {
-      const schema = aSchema({
-        tables: {
-          users: aTable({
-            name: 'users',
-            columns: {
-              id: aColumn({
-                name: 'id',
-                type: 'bigint',
-                notNull: true,
-              }),
-              email: aColumn({
-                name: 'email',
-                type: 'varchar(255)',
-                notNull: true,
-              }),
-            },
-            indexes: {
-              idx_users_email: anIndex({
-                name: 'idx_users_email',
-                columns: ['email'],
-                type: 'BTREE',
-              }),
-            },
+      const table = createTableWithColumns('users', {
+        id: createBasicColumn('id', 'bigint', { notNull: true }),
+        email: createBasicColumn('email', 'varchar(255)', { notNull: true }),
+      }, {
+        indexes: {
+          idx_users_email: createIndex('idx_users_email', ['email'], {
+            type: 'BTREE',
           }),
         },
       })
+      const schema = createSchemaWithTable('users', table)
 
       const result = postgresqlSchemaDeparser(schema)
 
       expect(result.errors).toHaveLength(0)
-      expect(result.value).toMatchInlineSnapshot(`
-        "CREATE TABLE \"users\" (
-          \"id\" bigint NOT NULL,
-          \"email\" varchar(255) NOT NULL
-        );
-
-        CREATE INDEX \"idx_users_email\" ON \"users\" USING BTREE (\"email\");"
-      `)
+      expect(result.value).toBe(SQL_SNAPSHOTS.createIndexStatements)
 
       await expectGeneratedSQLToBeParseable(result.value)
     })
 
     it('should generate UNIQUE INDEX statements', async () => {
-      const schema = aSchema({
-        tables: {
-          users: aTable({
-            name: 'users',
-            columns: {
-              id: aColumn({
-                name: 'id',
-                type: 'bigint',
-                notNull: true,
-              }),
-              username: aColumn({
-                name: 'username',
-                type: 'varchar(50)',
-                notNull: true,
-              }),
-            },
-            indexes: {
-              idx_users_username_unique: anIndex({
-                name: 'idx_users_username_unique',
-                unique: true,
-                columns: ['username'],
-                type: 'BTREE',
-              }),
-            },
-          }),
+      const table = createTableWithColumns('users', {
+        id: createBasicColumn('id', 'bigint', { notNull: true }),
+        username: createBasicColumn('username', 'varchar(50)', {
+          notNull: true,
+        }),
+      }, {
+        indexes: {
+          idx_users_username_unique: createIndex(
+            'idx_users_username_unique',
+            ['username'],
+            { unique: true, type: 'BTREE' },
+          ),
         },
       })
+      const schema = createSchemaWithTable('users', table)
 
       const result = postgresqlSchemaDeparser(schema)
 
       expect(result.errors).toHaveLength(0)
-      expect(result.value).toMatchInlineSnapshot(`
-        "CREATE TABLE \"users\" (
-          \"id\" bigint NOT NULL,
-          \"username\" varchar(50) NOT NULL
-        );
-
-        CREATE UNIQUE INDEX \"idx_users_username_unique\" ON \"users\" USING BTREE (\"username\");"
-      `)
+      expect(result.value).toBe(SQL_SNAPSHOTS.uniqueIndexStatements)
 
       await expectGeneratedSQLToBeParseable(result.value)
     })
 
     it('should generate composite INDEX statements', async () => {
-      const schema = aSchema({
-        tables: {
-          orders: aTable({
-            name: 'orders',
-            columns: {
-              id: aColumn({
-                name: 'id',
-                type: 'bigint',
-                notNull: true,
-              }),
-              user_id: aColumn({
-                name: 'user_id',
-                type: 'bigint',
-                notNull: true,
-              }),
-              created_at: aColumn({
-                name: 'created_at',
-                type: 'timestamp',
-                notNull: true,
-              }),
-            },
-            indexes: {
-              idx_orders_user_date: anIndex({
-                name: 'idx_orders_user_date',
-                columns: ['user_id', 'created_at'],
-                type: 'BTREE',
-              }),
-            },
-          }),
+      const table = createTableWithColumns('orders', {
+        id: createBasicColumn('id', 'bigint', { notNull: true }),
+        user_id: createBasicColumn('user_id', 'bigint', { notNull: true }),
+        created_at: createBasicColumn('created_at', 'timestamp', {
+          notNull: true,
+        }),
+      }, {
+        indexes: {
+          idx_orders_user_date: createIndex(
+            'idx_orders_user_date',
+            ['user_id', 'created_at'],
+            { type: 'BTREE' },
+          ),
         },
       })
+      const schema = createSchemaWithTable('orders', table)
 
       const result = postgresqlSchemaDeparser(schema)
 
       expect(result.errors).toHaveLength(0)
-      expect(result.value).toMatchInlineSnapshot(`
-        "CREATE TABLE \"orders\" (
-          \"id\" bigint NOT NULL,
-          \"user_id\" bigint NOT NULL,
-          \"created_at\" timestamp NOT NULL
-        );
-
-        CREATE INDEX \"idx_orders_user_date\" ON \"orders\" USING BTREE (\"user_id\", \"created_at\");"
-      `)
+      expect(result.value).toBe(SQL_SNAPSHOTS.compositeIndexStatements)
 
       await expectGeneratedSQLToBeParseable(result.value)
     })
 
     it('should handle indexes without type specified', async () => {
-      const schema = aSchema({
-        tables: {
-          products: aTable({
-            name: 'products',
-            columns: {
-              id: aColumn({
-                name: 'id',
-                type: 'bigint',
-                notNull: true,
-              }),
-              category_id: aColumn({ name: 'category_id', type: 'bigint' }),
-            },
-            indexes: {
-              idx_products_category: anIndex({
-                name: 'idx_products_category',
-                columns: ['category_id'],
-              }),
-            },
-          }),
+      const table = createTableWithColumns('products', {
+        id: createBasicColumn('id', 'bigint', { notNull: true }),
+        category_id: createBasicColumn('category_id', 'bigint'),
+      }, {
+        indexes: {
+          idx_products_category: createIndex(
+            'idx_products_category',
+            ['category_id'],
+          ),
         },
       })
+      const schema = createSchemaWithTable('products', table)
 
       const result = postgresqlSchemaDeparser(schema)
 
       expect(result.errors).toHaveLength(0)
-      expect(result.value).toMatchInlineSnapshot(`
-        "CREATE TABLE \"products\" (
-          \"id\" bigint NOT NULL,
-          \"category_id\" bigint
-        );
-
-        CREATE INDEX \"idx_products_category\" ON \"products\" (\"category_id\");"
-      `)
+      expect(result.value).toBe(SQL_SNAPSHOTS.indexWithoutType)
 
       await expectGeneratedSQLToBeParseable(result.value)
     })
@@ -443,177 +243,94 @@ describe('postgresqlSchemaDeparser', () => {
 
   describe('constraint generation', () => {
     it('should generate PRIMARY KEY constraints', async () => {
-      const schema = aSchema({
-        tables: {
-          users: aTable({
-            name: 'users',
-            columns: {
-              id: aColumn({ name: 'id', type: 'bigint', notNull: true }),
-            },
-            constraints: {
-              pk_users_id: aPrimaryKeyConstraint({
-                name: 'pk_users_id',
-                columnName: 'id',
-              }),
-            },
-          }),
+      const table = createTableWithColumns('users', {
+        id: createBasicColumn('id', 'bigint', { notNull: true }),
+      }, {
+        constraints: {
+          pk_users_id: createPrimaryKeyConstraint('pk_users_id', 'id'),
         },
       })
+      const schema = createSchemaWithTable('users', table)
 
       const result = postgresqlSchemaDeparser(schema)
 
       expect(result.errors).toHaveLength(0)
-      expect(result.value).toMatchInlineSnapshot(`
-        "CREATE TABLE \"users\" (
-          \"id\" bigint NOT NULL
-        );
-
-        ALTER TABLE \"users\" ADD CONSTRAINT \"pk_users_id\" PRIMARY KEY (\"id\");"
-      `)
+      expect(result.value).toBe(SQL_SNAPSHOTS.primaryKeyConstraints)
 
       await expectGeneratedSQLToBeParseable(result.value)
     })
 
     it('should generate FOREIGN KEY constraints', async () => {
-      const schema = aSchema({
-        tables: {
-          users: aTable({
-            name: 'users',
-            columns: {
-              id: aColumn({
-                name: 'id',
-                type: 'bigint',
-                notNull: true,
-              }),
+      const usersTable = createTableWithColumns('users', {
+        id: createBasicColumn('id', 'bigint', { notNull: true }),
+      })
+      const ordersTable = createTableWithColumns('orders', {
+        id: createBasicColumn('id', 'bigint', { notNull: true }),
+        user_id: createBasicColumn('user_id', 'bigint', { notNull: true }),
+      }, {
+        constraints: {
+          fk_orders_user_id: createForeignKeyConstraint(
+            'fk_orders_user_id',
+            'user_id',
+            'users',
+            'id',
+            {
+              updateConstraint: 'CASCADE',
+              deleteConstraint: 'SET_NULL',
             },
-          }),
-          orders: aTable({
-            name: 'orders',
-            columns: {
-              id: aColumn({
-                name: 'id',
-                type: 'bigint',
-                notNull: true,
-              }),
-              user_id: aColumn({
-                name: 'user_id',
-                type: 'bigint',
-                notNull: true,
-              }),
-            },
-            constraints: {
-              fk_orders_user_id: aForeignKeyConstraint({
-                name: 'fk_orders_user_id',
-                columnName: 'user_id',
-                targetTableName: 'users',
-                targetColumnName: 'id',
-                updateConstraint: 'CASCADE',
-                deleteConstraint: 'SET_NULL',
-              }),
-            },
-          }),
+          ),
         },
+      })
+      const schema = createSchemaWithTables({
+        users: usersTable,
+        orders: ordersTable,
       })
 
       const result = postgresqlSchemaDeparser(schema)
 
       expect(result.errors).toHaveLength(0)
-      expect(result.value).toMatchInlineSnapshot(`
-        "CREATE TABLE \"users\" (
-          \"id\" bigint NOT NULL
-        );
-
-        CREATE TABLE \"orders\" (
-          \"id\" bigint NOT NULL,
-          \"user_id\" bigint NOT NULL
-        );
-
-        ALTER TABLE \"orders\" ADD CONSTRAINT \"fk_orders_user_id\" FOREIGN KEY (\"user_id\") REFERENCES \"users\" (\"id\") ON UPDATE CASCADE ON DELETE SET NULL;"
-      `)
+      expect(result.value).toBe(SQL_SNAPSHOTS.foreignKeyConstraints)
 
       await expectGeneratedSQLToBeParseable(result.value)
     })
 
     it('should generate UNIQUE constraints', async () => {
-      const schema = aSchema({
-        tables: {
-          users: aTable({
-            name: 'users',
-            columns: {
-              id: aColumn({
-                name: 'id',
-                type: 'bigint',
-                notNull: true,
-              }),
-              email: aColumn({
-                name: 'email',
-                type: 'varchar(255)',
-                notNull: true,
-              }),
-            },
-            constraints: {
-              uk_users_email: aUniqueConstraint({
-                name: 'uk_users_email',
-                columnName: 'email',
-              }),
-            },
-          }),
+      const table = createTableWithColumns('users', {
+        id: createBasicColumn('id', 'bigint', { notNull: true }),
+        email: createBasicColumn('email', 'varchar(255)', { notNull: true }),
+      }, {
+        constraints: {
+          uk_users_email: createUniqueConstraint('uk_users_email', 'email'),
         },
       })
+      const schema = createSchemaWithTable('users', table)
 
       const result = postgresqlSchemaDeparser(schema)
 
       expect(result.errors).toHaveLength(0)
-      expect(result.value).toMatchInlineSnapshot(`
-        "CREATE TABLE \"users\" (
-          \"id\" bigint NOT NULL,
-          \"email\" varchar(255) NOT NULL
-        );
-
-        ALTER TABLE \"users\" ADD CONSTRAINT \"uk_users_email\" UNIQUE (\"email\");"
-      `)
+      expect(result.value).toBe(SQL_SNAPSHOTS.uniqueConstraints)
 
       await expectGeneratedSQLToBeParseable(result.value)
     })
 
     it('should generate CHECK constraints', async () => {
-      const schema = aSchema({
-        tables: {
-          products: aTable({
-            name: 'products',
-            columns: {
-              id: aColumn({
-                name: 'id',
-                type: 'bigint',
-                notNull: true,
-              }),
-              price: aColumn({
-                name: 'price',
-                type: 'decimal(10,2)',
-                notNull: true,
-              }),
-            },
-            constraints: {
-              ck_products_price_positive: aCheckConstraint({
-                name: 'ck_products_price_positive',
-                detail: 'price > 0',
-              }),
-            },
-          }),
+      const table = createTableWithColumns('products', {
+        id: createBasicColumn('id', 'bigint', { notNull: true }),
+        price: createBasicColumn('price', 'decimal(10,2)', { notNull: true }),
+      }, {
+        constraints: {
+          ck_products_price_positive: createCheckConstraint(
+            'ck_products_price_positive',
+            'price > 0',
+          ),
         },
       })
+      const schema = createSchemaWithTable('products', table)
 
       const result = postgresqlSchemaDeparser(schema)
 
       expect(result.errors).toHaveLength(0)
-      expect(result.value).toMatchInlineSnapshot(`
-        "CREATE TABLE \"products\" (
-          \"id\" bigint NOT NULL,
-          \"price\" decimal(10,2) NOT NULL
-        );
-
-        ALTER TABLE \"products\" ADD CONSTRAINT \"ck_products_price_positive\" CHECK (price > 0);"
-      `)
+      expect(result.value).toBe(SQL_SNAPSHOTS.checkConstraints)
 
       await expectGeneratedSQLToBeParseable(result.value)
     })
@@ -621,252 +338,151 @@ describe('postgresqlSchemaDeparser', () => {
 
   describe('complex schemas', () => {
     it('should handle schema with multiple tables, indexes, and constraints', async () => {
-      const schema = aSchema({
-        tables: {
-          users: aTable({
-            name: 'users',
-            comment: 'Users table',
-            columns: {
-              id: aColumn({
-                name: 'id',
-                type: 'bigint',
-                notNull: true,
-                comment: 'User ID',
-              }),
-              email: aColumn({
-                name: 'email',
-                type: 'varchar(255)',
-                notNull: true,
-              }),
-              created_at: aColumn({
-                name: 'created_at',
-                type: 'timestamp',
-                notNull: true,
-                default: 'CURRENT_TIMESTAMP',
-              }),
-            },
-            indexes: {
-              idx_users_email: anIndex({
-                name: 'idx_users_email',
-                unique: true,
-                columns: ['email'],
-                type: 'BTREE',
-              }),
-            },
-          }),
-          products: aTable({
-            name: 'products',
-            columns: {
-              id: aColumn({
-                name: 'id',
-                type: 'bigint',
-                notNull: true,
-              }),
-              name: aColumn({
-                name: 'name',
-                type: 'varchar(100)',
-                notNull: true,
-              }),
-              price: aColumn({
-                name: 'price',
-                type: 'decimal(10,2)',
-                notNull: true,
-                default: 0,
-              }),
-            },
-            indexes: {
-              idx_products_name: anIndex({
-                name: 'idx_products_name',
-                columns: ['name'],
-              }),
-            },
-            constraints: {
-              ck_products_price: aCheckConstraint({
-                name: 'ck_products_price',
-                detail: 'price >= 0',
-              }),
-            },
-          }),
-          orders: aTable({
-            name: 'orders',
-            columns: {
-              id: aColumn({
-                name: 'id',
-                type: 'bigint',
-                notNull: true,
-              }),
-              user_id: aColumn({
-                name: 'user_id',
-                type: 'bigint',
-                notNull: true,
-              }),
-              product_id: aColumn({
-                name: 'product_id',
-                type: 'bigint',
-                notNull: true,
-              }),
-              quantity: aColumn({
-                name: 'quantity',
-                type: 'integer',
-                notNull: true,
-                default: 1,
-              }),
-            },
-            indexes: {
-              idx_orders_user_product: anIndex({
-                name: 'idx_orders_user_product',
-                columns: ['user_id', 'product_id'],
-                type: 'BTREE',
-              }),
-            },
-            constraints: {
-              fk_orders_user: aForeignKeyConstraint({
-                name: 'fk_orders_user',
-                columnName: 'user_id',
-                targetTableName: 'users',
-                targetColumnName: 'id',
-                updateConstraint: 'CASCADE',
-                deleteConstraint: 'CASCADE',
-              }),
-              fk_orders_product: aForeignKeyConstraint({
-                name: 'fk_orders_product',
-                columnName: 'product_id',
-                targetTableName: 'products',
-                targetColumnName: 'id',
-                updateConstraint: 'CASCADE',
-                deleteConstraint: 'RESTRICT',
-              }),
-            },
+      const usersTable = createTableWithColumns('users', {
+        id: createBasicColumn('id', 'bigint', {
+          notNull: true,
+          comment: 'User ID',
+        }),
+        email: createBasicColumn('email', 'varchar(255)', { notNull: true }),
+        created_at: createBasicColumn('created_at', 'timestamp', {
+          notNull: true,
+          default: 'CURRENT_TIMESTAMP',
+        }),
+      }, {
+        comment: 'Users table',
+        indexes: {
+          idx_users_email: createIndex('idx_users_email', ['email'], {
+            unique: true,
+            type: 'BTREE',
           }),
         },
+      })
+
+      const productsTable = createTableWithColumns('products', {
+        id: createBasicColumn('id', 'bigint', { notNull: true }),
+        name: createBasicColumn('name', 'varchar(100)', { notNull: true }),
+        price: createBasicColumn('price', 'decimal(10,2)', {
+          notNull: true,
+          default: 0,
+        }),
+      }, {
+        indexes: {
+          idx_products_name: createIndex('idx_products_name', ['name']),
+        },
+        constraints: {
+          ck_products_price: createCheckConstraint(
+            'ck_products_price',
+            'price >= 0',
+          ),
+        },
+      })
+
+      const ordersTable = createTableWithColumns('orders', {
+        id: createBasicColumn('id', 'bigint', { notNull: true }),
+        user_id: createBasicColumn('user_id', 'bigint', { notNull: true }),
+        product_id: createBasicColumn('product_id', 'bigint', {
+          notNull: true,
+        }),
+        quantity: createBasicColumn('quantity', 'integer', {
+          notNull: true,
+          default: 1,
+        }),
+      }, {
+        indexes: {
+          idx_orders_user_product: createIndex(
+            'idx_orders_user_product',
+            ['user_id', 'product_id'],
+            { type: 'BTREE' },
+          ),
+        },
+        constraints: {
+          fk_orders_user: createForeignKeyConstraint(
+            'fk_orders_user',
+            'user_id',
+            'users',
+            'id',
+            {
+              updateConstraint: 'CASCADE',
+              deleteConstraint: 'CASCADE',
+            },
+          ),
+          fk_orders_product: createForeignKeyConstraint(
+            'fk_orders_product',
+            'product_id',
+            'products',
+            'id',
+            {
+              updateConstraint: 'CASCADE',
+              deleteConstraint: 'RESTRICT',
+            },
+          ),
+        },
+      })
+
+      const schema = createSchemaWithTables({
+        users: usersTable,
+        products: productsTable,
+        orders: ordersTable,
       })
 
       const result = postgresqlSchemaDeparser(schema)
 
       expect(result.errors).toHaveLength(0)
-      expect(result.value).toMatchInlineSnapshot(`
-        "CREATE TABLE \"users\" (
-          \"id\" bigint NOT NULL,
-          \"email\" varchar(255) NOT NULL,
-          \"created_at\" timestamp NOT NULL DEFAULT 'CURRENT_TIMESTAMP'
-        );
-
-        COMMENT ON TABLE \"users\" IS 'Users table';
-        COMMENT ON COLUMN \"users\".\"id\" IS 'User ID';
-
-        CREATE TABLE \"products\" (
-          \"id\" bigint NOT NULL,
-          \"name\" varchar(100) NOT NULL,
-          \"price\" decimal(10,2) NOT NULL DEFAULT 0
-        );
-
-        CREATE TABLE \"orders\" (
-          \"id\" bigint NOT NULL,
-          \"user_id\" bigint NOT NULL,
-          \"product_id\" bigint NOT NULL,
-          \"quantity\" integer NOT NULL DEFAULT 1
-        );
-
-        CREATE UNIQUE INDEX \"idx_users_email\" ON \"users\" USING BTREE (\"email\");
-
-        CREATE INDEX \"idx_products_name\" ON \"products\" (\"name\");
-
-        CREATE INDEX \"idx_orders_user_product\" ON \"orders\" USING BTREE (\"user_id\", \"product_id\");
-
-        ALTER TABLE \"products\" ADD CONSTRAINT \"ck_products_price\" CHECK (price >= 0);
-
-        ALTER TABLE \"orders\" ADD CONSTRAINT \"fk_orders_user\" FOREIGN KEY (\"user_id\") REFERENCES \"users\" (\"id\") ON UPDATE CASCADE ON DELETE CASCADE;
-
-        ALTER TABLE \"orders\" ADD CONSTRAINT \"fk_orders_product\" FOREIGN KEY (\"product_id\") REFERENCES \"products\" (\"id\") ON UPDATE CASCADE ON DELETE RESTRICT;"
-      `)
+      expect(result.value).toBe(SQL_SNAPSHOTS.complexSchema)
 
       await expectGeneratedSQLToBeParseable(result.value)
     })
 
     it('should handle circular foreign key references', async () => {
-      const schema = aSchema({
-        tables: {
-          departments: aTable({
-            name: 'departments',
-            columns: {
-              id: aColumn({
-                name: 'id',
-                type: 'bigint',
-
-                notNull: true,
-              }),
-              name: aColumn({
-                name: 'name',
-                type: 'varchar(100)',
-                notNull: true,
-              }),
-              manager_id: aColumn({ name: 'manager_id', type: 'bigint' }),
+      const departmentsTable = createTableWithColumns('departments', {
+        id: createBasicColumn('id', 'bigint', { notNull: true }),
+        name: createBasicColumn('name', 'varchar(100)', { notNull: true }),
+        manager_id: createBasicColumn('manager_id', 'bigint'),
+      }, {
+        constraints: {
+          fk_departments_manager: createForeignKeyConstraint(
+            'fk_departments_manager',
+            'manager_id',
+            'employees',
+            'id',
+            {
+              updateConstraint: 'CASCADE',
+              deleteConstraint: 'SET_NULL',
             },
-            constraints: {
-              fk_departments_manager: aForeignKeyConstraint({
-                name: 'fk_departments_manager',
-                columnName: 'manager_id',
-                targetTableName: 'employees',
-                targetColumnName: 'id',
-                updateConstraint: 'CASCADE',
-                deleteConstraint: 'SET_NULL',
-              }),
-            },
-          }),
-          employees: aTable({
-            name: 'employees',
-            columns: {
-              id: aColumn({
-                name: 'id',
-                type: 'bigint',
-
-                notNull: true,
-              }),
-              name: aColumn({
-                name: 'name',
-                type: 'varchar(100)',
-                notNull: true,
-              }),
-              department_id: aColumn({
-                name: 'department_id',
-                type: 'bigint',
-                notNull: true,
-              }),
-            },
-            constraints: {
-              fk_employees_department: aForeignKeyConstraint({
-                name: 'fk_employees_department',
-                columnName: 'department_id',
-                targetTableName: 'departments',
-                targetColumnName: 'id',
-                updateConstraint: 'CASCADE',
-                deleteConstraint: 'RESTRICT',
-              }),
-            },
-          }),
+          ),
         },
+      })
+
+      const employeesTable = createTableWithColumns('employees', {
+        id: createBasicColumn('id', 'bigint', { notNull: true }),
+        name: createBasicColumn('name', 'varchar(100)', { notNull: true }),
+        department_id: createBasicColumn('department_id', 'bigint', {
+          notNull: true,
+        }),
+      }, {
+        constraints: {
+          fk_employees_department: createForeignKeyConstraint(
+            'fk_employees_department',
+            'department_id',
+            'departments',
+            'id',
+            {
+              updateConstraint: 'CASCADE',
+              deleteConstraint: 'RESTRICT',
+            },
+          ),
+        },
+      })
+
+      const schema = createSchemaWithTables({
+        departments: departmentsTable,
+        employees: employeesTable,
       })
 
       const result = postgresqlSchemaDeparser(schema)
 
       expect(result.errors).toHaveLength(0)
-      expect(result.value).toMatchInlineSnapshot(`
-        "CREATE TABLE \"departments\" (
-          \"id\" bigint NOT NULL,
-          \"name\" varchar(100) NOT NULL,
-          \"manager_id\" bigint
-        );
-
-        CREATE TABLE \"employees\" (
-          \"id\" bigint NOT NULL,
-          \"name\" varchar(100) NOT NULL,
-          \"department_id\" bigint NOT NULL
-        );
-
-        ALTER TABLE \"departments\" ADD CONSTRAINT \"fk_departments_manager\" FOREIGN KEY (\"manager_id\") REFERENCES \"employees\" (\"id\") ON UPDATE CASCADE ON DELETE SET NULL;
-
-        ALTER TABLE \"employees\" ADD CONSTRAINT \"fk_employees_department\" FOREIGN KEY (\"department_id\") REFERENCES \"departments\" (\"id\") ON UPDATE CASCADE ON DELETE RESTRICT;"
-      `)
+      expect(result.value).toBe(SQL_SNAPSHOTS.circularForeignKeys)
 
       await expectGeneratedSQLToBeParseable(result.value)
     })
@@ -874,25 +490,15 @@ describe('postgresqlSchemaDeparser', () => {
 
   describe('error handling', () => {
     it('should handle empty table name', async () => {
-      const schema = aSchema({
-        tables: {
-          '': aTable({
-            name: '',
-            columns: {
-              id: aColumn({
-                name: 'id',
-                type: 'bigint',
-
-                notNull: true,
-              }),
-            },
-          }),
-        },
+      const table = createTableWithColumns('', {
+        id: createBasicColumn('id', 'bigint', { notNull: true }),
+      })
+      const schema = createSchemaWithTables({
+        '': table,
       })
 
       const result = postgresqlSchemaDeparser(schema)
 
-      // Empty table names are technically valid in PostgreSQL when escaped
       expect(result.errors).toHaveLength(0)
       expect(result.value).toContain('CREATE TABLE ""')
     })
