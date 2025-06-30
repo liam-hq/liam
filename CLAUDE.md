@@ -117,6 +117,22 @@ For database migration and type generation workflows, see [`docs/migrationOpsCon
 - Generate CSS type definitions with `pnpm gen:css`
 - Watch mode available with `pnpm dev:css`
 
+## Testing Guidelines
+
+### Test Strategy Reference
+When writing tests for any package in the monorepo, always refer to:
+1. **Root SPEC.md** (`/SPEC.md`) - Overall platform testing strategy and priorities
+2. **Package-specific SPEC.md** - Individual package testing requirements (e.g., `frontend/packages/db-structure/SPEC.md`)
+3. Follow the priority structure defined in SPEC.md:
+   - **High Priority (Must Have)**: Critical functionality and security
+   - **Medium Priority (Should Have)**: Integration and error handling
+   - **Low Priority (Nice to Have)**: Performance optimization and advanced features
+
+### Test Coverage Requirements
+- Maintain test coverage standards defined in each package's SPEC.md
+- Ensure new features include appropriate test coverage based on their priority level
+- Reference existing test patterns and structure within each package
+
 ## Pull Requests
 When creating pull requests, refer to @.github/pull_request_template.md for the required information and format.
 
