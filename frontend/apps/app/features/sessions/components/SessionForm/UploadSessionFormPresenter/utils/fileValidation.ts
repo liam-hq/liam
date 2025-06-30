@@ -13,30 +13,19 @@ const getFileExtension = (fileName: string): string => {
   return ''
 }
 
+type FileExtension = 'sql' | 'rb' | 'prisma' | 'json'
+
 export const getFileFormat = (fileName: string): FormatType => {
   const extension = getFileExtension(fileName)
 
-  const formatMap: Record<string, FormatType> = {
+  const formatMap: Record<FileExtension, FormatType> = {
     sql: 'postgres',
     rb: 'schemarb',
     prisma: 'prisma',
     json: 'tbls',
   }
 
-  return formatMap[extension] || 'postgres'
-}
-
-export const getDisplayFormat = (fileName: string): string => {
-  const extension = getFileExtension(fileName)
-
-  const displayMap: Record<string, string> = {
-    sql: 'postgresql',
-    rb: 'ruby',
-    prisma: 'prisma',
-    json: 'tbls',
-  }
-
-  return displayMap[extension] || 'postgresql'
+  return formatMap[extension as FileExtension] || 'postgres'
 }
 
 // All file extensions that are accepted for upload
@@ -46,7 +35,6 @@ const ACCEPTED_FILE_EXTENSIONS = [
   'prisma',
   'json', // tbls format
 ] as const
-type AcceptedExtension = (typeof ACCEPTED_FILE_EXTENSIONS)[number]
 
 export const isValidFileExtension = (fileName: string): boolean => {
   const extension = getFileExtension(fileName)

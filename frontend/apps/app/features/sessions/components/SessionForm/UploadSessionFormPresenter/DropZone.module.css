@@ -64,15 +64,15 @@
   line-height: normal;
   border-radius: var(--border-radius-md);
   cursor: pointer;
+  /* Solid Primary style (default) */
+  background-color: var(--button-primary-background);
+  color: var(--button-primary-foreground);
+  border: 1px solid var(--button-primary-background);
   transition:
     background-color var(--default-hover-animation-duration)
     var(--default-timing-function),
     border-color var(--default-hover-animation-duration)
     var(--default-timing-function);
-  /* Solid Primary style (default) */
-  background-color: var(--button-primary-background);
-  color: var(--button-primary-foreground);
-  border: 1px solid var(--button-primary-background);
 }
 
 .selectFileButton:hover:not(.selectFileButtonDisabled) {
@@ -88,6 +88,7 @@
 
 .selectFileButtonOutline:hover:not(.selectFileButtonDisabled) {
   background-color: var(--button-background-hover);
+  border-color: var(--button-border);
 }
 
 .selectFileButtonDisabled {

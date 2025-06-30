@@ -7,11 +7,12 @@ import {
 } from '../../../../../components/FormatIcon/FormatIcon'
 import { AttachmentsContainer } from '../AttachmentsContainer'
 import { FormatSelectDropdown } from '../FormatSelectDropdown'
+import { useAutoResizeTextarea } from '../hooks/useAutoResizeTextarea'
 import { useFileAttachments } from '../hooks/useFileAttachments'
 import { useFileDragAndDrop } from '../hooks/useFileDragAndDrop'
+import { SchemaInfoSection, type SchemaStatus } from '../SchemaInfoSection'
 import { SessionFormActions } from '../SessionFormActions'
 import { DropZone } from './DropZone'
-import { SchemaFileSection } from './SchemaFileSection'
 import styles from './UploadSessionFormPresenter.module.css'
 import { getFileFormat, isValidFileExtension } from './utils/fileValidation'
 
@@ -24,15 +25,21 @@ type Props = {
 // Helper function to handle file processing
 const processFile = (
   file: File,
-  setIsValidSchema: (valid: boolean) => void,
+  setSchemaStatus: (status: SchemaStatus) => void,
   setSelectedFile: (file: File) => void,
-  setSelectedFormat: (format: FormatType) => void,
+  setDetectedFormat: (format: FormatType | null) => void,
+  setSelectedFormat: (format: FormatType | null) => void,
 ) => {
   const isValid = isValidFileExtension(file.name)
-  setIsValidSchema(isValid)
+  setSchemaStatus(isValid ? 'valid' : 'invalid')
   setSelectedFile(file)
   if (isValid) {
-    setSelectedFormat(getFileFormat(file.name))
+    const format = getFileFormat(file.name)
+    setDetectedFormat(format)
+    setSelectedFormat(format)
+  } else {
+    setDetectedFormat(null)
+    setSelectedFormat(null)
   }
 }
 
@@ -43,9 +50,10 @@ export const UploadSessionFormPresenter: FC<Props> = ({
 }) => {
   const [isHovered, setIsHovered] = useState(false)
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const [detectedFormat, setDetectedFormat] = useState<FormatType | null>(null)
   const [selectedFormat, setSelectedFormat] = useState<FormatType | null>(null)
   const [textContent, setTextContent] = useState('')
-  const [isValidSchema, setIsValidSchema] = useState(true)
+  const [schemaStatus, setSchemaStatus] = useState<SchemaStatus>('idle')
   const fileInputRef = useRef<HTMLInputElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
@@ -61,7 +69,13 @@ export const UploadSessionFormPresenter: FC<Props> = ({
   const handleSchemaFileDrop = (files: FileList) => {
     const file = files[0]
     if (file) {
-      processFile(file, setIsValidSchema, setSelectedFile, setSelectedFormat)
+      processFile(
+        file,
+        setSchemaStatus,
+        setSelectedFile,
+        setDetectedFormat,
+        setSelectedFormat,
+      )
     }
   }
 
@@ -81,7 +95,13 @@ export const UploadSessionFormPresenter: FC<Props> = ({
   const handleSchemaFileSelect = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
-      processFile(file, setIsValidSchema, setSelectedFile, setSelectedFormat)
+      processFile(
+        file,
+        setSchemaStatus,
+        setSelectedFile,
+        setDetectedFormat,
+        setSelectedFormat,
+      )
     }
   }
 
@@ -89,25 +109,24 @@ export const UploadSessionFormPresenter: FC<Props> = ({
     fileInputRef.current?.click()
   }
 
-  const handleTextareaChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
-    const textarea = e.target
-    textarea.style.height = 'auto'
-    textarea.style.height = `${textarea.scrollHeight}px`
-    setTextContent(textarea.value)
-  }
+  // Use auto-resize hook for textarea
+  const { handleChange } = useAutoResizeTextarea(textareaRef, textContent)
+
+  const handleTextareaChange = handleChange((e) => {
+    setTextContent(e.target.value)
+  })
 
   const handleReset = () => {
     setSelectedFile(null)
+    setDetectedFormat(null)
     setSelectedFormat(null)
     setTextContent('')
-    setIsValidSchema(true)
+    setSchemaStatus('idle')
     clearAttachments()
     if (fileInputRef.current) {
       fileInputRef.current.value = ''
     }
-    if (textareaRef.current) {
-      textareaRef.current.style.height = 'auto'
-    }
+    // The auto-resize hook will handle the height adjustment
   }
 
   return (
@@ -120,7 +139,7 @@ export const UploadSessionFormPresenter: FC<Props> = ({
       )}
     >
       <form action={formAction}>
-        {selectedFile && isValidSchema && selectedFormat && (
+        {selectedFile && schemaStatus === 'valid' && selectedFormat && (
           <input type="hidden" name="schemaFormat" value={selectedFormat} />
         )}
         <div className={styles.uploadSection}>
@@ -137,7 +156,7 @@ export const UploadSessionFormPresenter: FC<Props> = ({
               onMouseEnter={() => !isPending && setIsHovered(true)}
               onMouseLeave={() => setIsHovered(false)}
               hasSelectedFile={!!selectedFile}
-              isValidSchema={isValidSchema}
+              isValidSchema={schemaStatus !== 'invalid'}
             />
             <input
               ref={fileInputRef}
@@ -148,16 +167,26 @@ export const UploadSessionFormPresenter: FC<Props> = ({
               className={styles.hiddenFileInput}
               disabled={isPending}
             />
-            {selectedFile && selectedFormat && (
-              <SchemaFileSection
-                selectedFile={selectedFile}
-                isValidSchema={isValidSchema}
-                selectedFormat={selectedFormat}
+            {selectedFile && (
+              <SchemaInfoSection
+                status={schemaStatus}
+                schemaName={selectedFile.name}
+                detectedFormat={detectedFormat || 'postgres'}
+                selectedFormat={selectedFormat || detectedFormat || 'postgres'}
+                errorMessage={
+                  schemaStatus === 'invalid'
+                    ? 'Unsupported file type. Please upload .sql, .rb, .prisma, .json, or .yaml files.'
+                    : undefined
+                }
                 onFormatChange={setSelectedFormat}
-                onRemoveFile={() => {
+                onRemove={() => {
                   setSelectedFile(null)
-                  setIsValidSchema(true)
+                  setSchemaStatus('idle')
+                  setDetectedFormat(null)
                   setSelectedFormat(null)
+                  if (fileInputRef.current) {
+                    fileInputRef.current.value = ''
+                  }
                 }}
               />
             )}

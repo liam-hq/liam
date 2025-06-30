@@ -1,0 +1,33 @@
+.schemaLink {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-1);
+  text-decoration: none;
+  transition: all var(--default-animation-duration)
+    var(--default-timing-function);
+  cursor: pointer;
+}
+
+.schemaLink:hover .schemaName {
+  color: var(--global-foreground);
+}
+
+.schemaLink:hover .arrowIcon {
+  color: var(--global-foreground);
+}
+
+.schemaName {
+  font-size: var(--font-size-3);
+  color: var(--overlay-70);
+  font-weight: var(--font-weight-regular);
+  transition: color var(--default-animation-duration)
+    var(--default-timing-function);
+}
+
+.arrowIcon {
+  width: 12px;
+  height: 12px;
+  color: var(--overlay-70);
+  transition: color var(--default-animation-duration)
+    var(--default-timing-function);
+}
