@@ -10,7 +10,7 @@
     "clsx": "2.1.1",
     "date-fns": "4.1.0",
     "fumadocs-core": "15.5.1",
-    "fumadocs-docgen": "2.0.0",
+    "fumadocs-docgen": "2.0.1",
     "fumadocs-mdx": "11.6.7",
     "fumadocs-ui": "15.5.1",
     "lucide-react": "0.511.0",
