@@ -35,7 +35,8 @@
         "@modelcontextprotocol/sdk",
         "style-dictionary",
         "/^langfuse$/",
-        "/^langfuse-langchain$/"
+        "/^langfuse-langchain$/",
+        "/^@langchain/"
       ],
       "matchPaths": ["frontend/internal-packages/**"],
       "automerge": true
