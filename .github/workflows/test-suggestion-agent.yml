@@ -36,7 +36,7 @@ jobs:
         uses: ./.github/actions/pnpm-setup
 
       - name: Analyze PR and Suggest Tests
-        uses: anthropics/claude-code-action@9dd49689e4f1e4dc231c5694c3753c1e1157b4d7 # beta
+        uses: anthropics/claude-code-action@8c08381496931f68f7918d3788c75ec258f2698b # beta
         with:
           direct_prompt: |
             /suggest-tests This will analyze the PR changes and provide comprehensive test coverage suggestions.
