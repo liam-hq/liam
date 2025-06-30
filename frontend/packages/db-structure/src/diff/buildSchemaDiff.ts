@@ -9,6 +9,7 @@ import { buildColumnDefaultDiffItem } from './columns/buildColumnDefaultDiffItem
 import { buildColumnDiffItem } from './columns/buildColumnDiffItem.js'
 import { buildColumnNameDiffItem } from './columns/buildColumnNameDiffItem.js'
 import { buildColumnNotNullDiffItem } from './columns/buildColumnNotNullDiffItem.js'
+import { buildColumnTypeDiffItem } from './columns/buildColumnTypeDiffItem.js'
 import { buildConstraintColumnNameDiffItem } from './constraints/buildConstraintColumnNameDiffItem.js'
 import { buildConstraintDeleteConstraintDiffItem } from './constraints/buildConstraintDeleteConstraintDiffItem.js'
 import { buildConstraintDetailDiffItem } from './constraints/buildConstraintDetailDiffItem.js'
@@ -142,6 +143,17 @@ function buildColumnRelatedDiffItems(
   )
   if (columnNotNullDiffItem) {
     items.push(columnNotNullDiffItem)
+  }
+
+  const columnTypeDiffItem = buildColumnTypeDiffItem(
+    tableId,
+    columnId,
+    before,
+    after,
+    operations,
+  )
+  if (columnTypeDiffItem) {
+    items.push(columnTypeDiffItem)
   }
 
   return items

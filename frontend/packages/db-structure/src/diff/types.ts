@@ -117,6 +117,14 @@ export type ColumnNotNullDiffItem = InferOutput<
   typeof columnNotNullDiffItemSchema
 >
 
+const columnTypeDiffItemSchema = object({
+  ...baseSchemaDiffItemSchema.entries,
+  kind: literal('column-type'),
+  data: string(),
+  columnId: string(),
+})
+export type ColumnTypeDiffItem = InferOutput<typeof columnTypeDiffItemSchema>
+
 const indexDiffItemSchema = object({
   ...baseSchemaDiffItemSchema.entries,
   kind: literal('index'),
@@ -253,6 +261,7 @@ export const columnRelatedDiffItemSchema = union([
   columnDefaultDiffItemSchema,
   columnCheckDiffItemSchema,
   columnNotNullDiffItemSchema,
+  columnTypeDiffItemSchema,
 ])
 export type ColumnRelatedDiffItem = InferOutput<
   typeof columnRelatedDiffItemSchema

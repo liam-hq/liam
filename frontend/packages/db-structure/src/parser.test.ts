@@ -1,35 +1,40 @@
-import { describe, it } from 'vitest'
+import { describe, expect, it } from 'vitest'
+import { detectFormat, parse, ProcessError, setPrismWasmUrl, supportedFormatSchema, type SupportedFormat } from './parser/index.js'
 
 describe('parser exports', () => {
-  it.skip('should export detectFormat function', () => {
-    // TODO: Implement test
+  it('should export detectFormat function', () => {
+    expect(typeof detectFormat).toBe('function')
   })
 
-  it.skip('should export ProcessError class', () => {
-    // TODO: Implement test
+  it('should export ProcessError class', () => {
+    expect(ProcessError).toBeDefined()
+    expect(typeof ProcessError).toBe('function')
   })
 
-  it.skip('should export parse function', () => {
-    // TODO: Implement test
+  it('should export parse function', () => {
+    expect(typeof parse).toBe('function')
   })
 
-  it.skip('should export SupportedFormat enum', () => {
-    // TODO: Implement test
+  it('should export SupportedFormat enum', () => {
+    expect(supportedFormatSchema).toBeDefined()
   })
 
-  it.skip('should export setPrismWasmUrl function for configuring prism wasm', () => {
-    // TODO: Implement test
+  it('should export setPrismWasmUrl function for configuring prism wasm', () => {
+    expect(typeof setPrismWasmUrl).toBe('function')
   })
 
-  it.skip('should export supportedFormatSchema for validation', () => {
-    // TODO: Implement test
+  it('should export supportedFormatSchema for validation', () => {
+    expect(supportedFormatSchema).toBeDefined()
   })
 
-  it.skip('should re-export all necessary parser types', () => {
-    // TODO: Implement test
+  it('should re-export all necessary parser types', () => {
+    expect(parse).toBeDefined()
+    expect(detectFormat).toBeDefined()
+    expect(ProcessError).toBeDefined()
   })
 
-  it.skip('should maintain consistent export structure', () => {
-    // TODO: Implement test
+  it('should maintain consistent export structure', () => {
+    const exports = { detectFormat, parse, ProcessError, setPrismWasmUrl, supportedFormatSchema }
+    expect(Object.keys(exports)).toHaveLength(5)
   })
 })

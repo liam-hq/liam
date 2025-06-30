@@ -1,239 +1,245 @@
-import { describe, it } from 'vitest'
+import { describe, expect, it } from 'vitest'
+import { convertColumnType } from './convertColumnType.js'
 
 describe('convertColumnType', () => {
   describe('mapped types', () => {
-    it.skip('should convert string to varchar', () => {
-      // TODO: Implement test
+    it('should convert string to varchar', () => {
+      expect(convertColumnType('string')).toBe('varchar')
     })
 
-    it.skip('should convert text to text', () => {
-      // TODO: Implement test
+    it('should convert text to text', () => {
+      expect(convertColumnType('text')).toBe('text')
     })
 
-    it.skip('should convert integer to integer', () => {
-      // TODO: Implement test
+    it('should convert integer to integer', () => {
+      expect(convertColumnType('integer')).toBe('integer')
     })
 
-    it.skip('should convert bigint to bigint', () => {
-      // TODO: Implement test
+    it('should convert bigint to bigint', () => {
+      expect(convertColumnType('bigint')).toBe('bigint')
     })
 
-    it.skip('should convert float to float', () => {
-      // TODO: Implement test
+    it('should convert float to float', () => {
+      expect(convertColumnType('float')).toBe('float')
     })
 
-    it.skip('should convert decimal to decimal', () => {
-      // TODO: Implement test
+    it('should convert decimal to decimal', () => {
+      expect(convertColumnType('decimal')).toBe('decimal')
     })
 
-    it.skip('should convert datetime to timestamp', () => {
-      // TODO: Implement test
+    it('should convert datetime to timestamp', () => {
+      expect(convertColumnType('datetime')).toBe('timestamp')
     })
 
-    it.skip('should convert timestamp to timestamp', () => {
-      // TODO: Implement test
+    it('should convert timestamp to timestamp', () => {
+      expect(convertColumnType('timestamp')).toBe('timestamp')
     })
 
-    it.skip('should convert timestamptz to timestamptz', () => {
-      // TODO: Implement test
+    it('should convert timestamptz to timestamptz', () => {
+      expect(convertColumnType('timestamptz')).toBe('timestamptz')
     })
 
-    it.skip('should convert time to time', () => {
-      // TODO: Implement test
+    it('should convert time to time', () => {
+      expect(convertColumnType('time')).toBe('time')
     })
 
-    it.skip('should convert date to date', () => {
-      // TODO: Implement test
+    it('should convert date to date', () => {
+      expect(convertColumnType('date')).toBe('date')
     })
 
-    it.skip('should convert binary to bytea', () => {
-      // TODO: Implement test
+    it('should convert binary to bytea', () => {
+      expect(convertColumnType('binary')).toBe('bytea')
     })
 
-    it.skip('should convert boolean to boolean', () => {
-      // TODO: Implement test
+    it('should convert boolean to boolean', () => {
+      expect(convertColumnType('boolean')).toBe('boolean')
     })
 
-    it.skip('should convert json to json', () => {
-      // TODO: Implement test
+    it('should convert json to json', () => {
+      expect(convertColumnType('json')).toBe('json')
     })
 
-    it.skip('should convert jsonb to jsonb', () => {
-      // TODO: Implement test
+    it('should convert jsonb to jsonb', () => {
+      expect(convertColumnType('jsonb')).toBe('jsonb')
     })
 
-    it.skip('should convert uuid to uuid', () => {
-      // TODO: Implement test
+    it('should convert uuid to uuid', () => {
+      expect(convertColumnType('uuid')).toBe('uuid')
     })
   })
 
   describe('range types', () => {
-    it.skip('should convert daterange to daterange', () => {
-      // TODO: Implement test
+    it('should convert daterange to daterange', () => {
+      expect(convertColumnType('daterange')).toBe('daterange')
     })
 
-    it.skip('should convert numrange to numrange', () => {
-      // TODO: Implement test
+    it('should convert numrange to numrange', () => {
+      expect(convertColumnType('numrange')).toBe('numrange')
     })
 
-    it.skip('should convert tsrange to tsrange', () => {
-      // TODO: Implement test
+    it('should convert tsrange to tsrange', () => {
+      expect(convertColumnType('tsrange')).toBe('tsrange')
     })
 
-    it.skip('should convert tstzrange to tstzrange', () => {
-      // TODO: Implement test
+    it('should convert tstzrange to tstzrange', () => {
+      expect(convertColumnType('tstzrange')).toBe('tstzrange')
     })
 
-    it.skip('should convert int4range to int4range', () => {
-      // TODO: Implement test
+    it('should convert int4range to int4range', () => {
+      expect(convertColumnType('int4range')).toBe('int4range')
     })
 
-    it.skip('should convert int8range to int8range', () => {
-      // TODO: Implement test
+    it('should convert int8range to int8range', () => {
+      expect(convertColumnType('int8range')).toBe('int8range')
     })
   })
 
   describe('PostgreSQL specific types', () => {
-    it.skip('should convert xml to xml', () => {
-      // TODO: Implement test
+    it('should convert xml to xml', () => {
+      expect(convertColumnType('xml')).toBe('xml')
     })
 
-    it.skip('should convert tsvector to tsvector', () => {
-      // TODO: Implement test
+    it('should convert tsvector to tsvector', () => {
+      expect(convertColumnType('tsvector')).toBe('tsvector')
     })
 
-    it.skip('should convert hstore to hstore', () => {
-      // TODO: Implement test
+    it('should convert hstore to hstore', () => {
+      expect(convertColumnType('hstore')).toBe('hstore')
     })
 
-    it.skip('should convert inet to inet', () => {
-      // TODO: Implement test
+    it('should convert inet to inet', () => {
+      expect(convertColumnType('inet')).toBe('inet')
     })
 
-    it.skip('should convert cidr to cidr', () => {
-      // TODO: Implement test
+    it('should convert cidr to cidr', () => {
+      expect(convertColumnType('cidr')).toBe('cidr')
     })
 
-    it.skip('should convert macaddr to macaddr', () => {
-      // TODO: Implement test
+    it('should convert macaddr to macaddr', () => {
+      expect(convertColumnType('macaddr')).toBe('macaddr')
     })
 
-    it.skip('should convert ltree to ltree', () => {
-      // TODO: Implement test
+    it('should convert ltree to ltree', () => {
+      expect(convertColumnType('ltree')).toBe('ltree')
     })
 
-    it.skip('should convert citext to citext', () => {
-      // TODO: Implement test
+    it('should convert citext to citext', () => {
+      expect(convertColumnType('citext')).toBe('citext')
     })
 
-    it.skip('should convert money to money', () => {
-      // TODO: Implement test
+    it('should convert money to money', () => {
+      expect(convertColumnType('money')).toBe('money')
     })
 
-    it.skip('should convert interval to interval', () => {
-      // TODO: Implement test
+    it('should convert interval to interval', () => {
+      expect(convertColumnType('interval')).toBe('interval')
     })
 
-    it.skip('should convert oid to oid', () => {
-      // TODO: Implement test
+    it('should convert oid to oid', () => {
+      expect(convertColumnType('oid')).toBe('oid')
     })
   })
 
   describe('geometric types', () => {
-    it.skip('should convert point to point', () => {
-      // TODO: Implement test
+    it('should convert point to point', () => {
+      expect(convertColumnType('point')).toBe('point')
     })
 
-    it.skip('should convert line to line', () => {
-      // TODO: Implement test
+    it('should convert line to line', () => {
+      expect(convertColumnType('line')).toBe('line')
     })
 
-    it.skip('should convert lseg to lseg', () => {
-      // TODO: Implement test
+    it('should convert lseg to lseg', () => {
+      expect(convertColumnType('lseg')).toBe('lseg')
     })
 
-    it.skip('should convert box to box', () => {
-      // TODO: Implement test
+    it('should convert box to box', () => {
+      expect(convertColumnType('box')).toBe('box')
     })
 
-    it.skip('should convert path to path', () => {
-      // TODO: Implement test
+    it('should convert path to path', () => {
+      expect(convertColumnType('path')).toBe('path')
     })
 
-    it.skip('should convert polygon to polygon', () => {
-      // TODO: Implement test
+    it('should convert polygon to polygon', () => {
+      expect(convertColumnType('polygon')).toBe('polygon')
     })
 
-    it.skip('should convert circle to circle', () => {
-      // TODO: Implement test
+    it('should convert circle to circle', () => {
+      expect(convertColumnType('circle')).toBe('circle')
     })
   })
 
   describe('bit types', () => {
-    it.skip('should convert bit to bit', () => {
-      // TODO: Implement test
+    it('should convert bit to bit', () => {
+      expect(convertColumnType('bit')).toBe('bit')
     })
 
-    it.skip('should convert bit_varying to bit varying', () => {
-      // TODO: Implement test
+    it('should convert bit_varying to bit varying', () => {
+      expect(convertColumnType('bit_varying')).toBe('bit varying')
     })
   })
 
   describe('unmapped types', () => {
-    it.skip('should return unmapped type as-is', () => {
-      // TODO: Implement test
+    it('should return unmapped type as-is', () => {
+      expect(convertColumnType('custom_type')).toBe('custom_type')
     })
 
-    it.skip('should handle custom types by returning them unchanged', () => {
-      // TODO: Implement test
+    it('should handle custom types by returning them unchanged', () => {
+      expect(convertColumnType('my_enum')).toBe('my_enum')
     })
 
-    it.skip('should handle array types by returning them unchanged', () => {
-      // TODO: Implement test
+    it('should handle array types by returning them unchanged', () => {
+      expect(convertColumnType('text[]')).toBe('text[]')
     })
 
-    it.skip('should handle composite types by returning them unchanged', () => {
-      // TODO: Implement test
+    it('should handle composite types by returning them unchanged', () => {
+      expect(convertColumnType('address_type')).toBe('address_type')
     })
 
-    it.skip('should handle types with modifiers by returning them unchanged', () => {
-      // TODO: Implement test
+    it('should handle types with modifiers by returning them unchanged', () => {
+      expect(convertColumnType('varchar(255)')).toBe('varchar(255)')
     })
   })
 
   describe('edge cases', () => {
-    it.skip('should handle empty string input', () => {
-      // TODO: Implement test
+    it('should handle empty string input', () => {
+      expect(convertColumnType('')).toBe('')
     })
 
-    it.skip('should handle null/undefined gracefully', () => {
-      // TODO: Implement test
+    it('should handle null/undefined gracefully', () => {
+      expect(convertColumnType(null as any)).toBe(null)
+      expect(convertColumnType(undefined as any)).toBe(undefined)
     })
 
-    it.skip('should handle type names with different casing', () => {
-      // TODO: Implement test
+    it('should handle type names with different casing', () => {
+      expect(convertColumnType('STRING')).toBe('STRING')
+      expect(convertColumnType('String')).toBe('String')
     })
 
-    it.skip('should handle type names with spaces', () => {
-      // TODO: Implement test
+    it('should handle type names with spaces', () => {
+      expect(convertColumnType('custom type')).toBe('custom type')
     })
 
-    it.skip('should handle type names with special characters', () => {
-      // TODO: Implement test
+    it('should handle type names with special characters', () => {
+      expect(convertColumnType('type-with_special.chars')).toBe('type-with_special.chars')
     })
 
-    it.skip('should handle numeric type names', () => {
-      // TODO: Implement test
+    it('should handle numeric type names', () => {
+      expect(convertColumnType('123')).toBe('123')
     })
   })
 
   describe('Rails/PostgreSQL compatibility', () => {
-    it.skip('should align with Rails PostgreSQL adapter mappings', () => {
-      // TODO: Implement test
+    it('should align with Rails PostgreSQL adapter mappings', () => {
+      expect(convertColumnType('string')).toBe('varchar')
+      expect(convertColumnType('datetime')).toBe('timestamp')
+      expect(convertColumnType('binary')).toBe('bytea')
     })
 
-    it.skip('should handle types that Rails maps differently', () => {
-      // TODO: Implement test
+    it('should handle types that Rails maps differently', () => {
+      expect(convertColumnType('bit_varying')).toBe('bit varying')
+      expect(convertColumnType('datetime')).toBe('timestamp')
     })
   })
 })

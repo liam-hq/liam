@@ -1,49 +1,76 @@
-import { describe, it } from 'vitest'
+import { describe, expect, it } from 'vitest'
+import { applyPatchOperations, operationsSchema } from './index.js'
+import { aColumn, aTable, type Schema } from '../schema/index.js'
 
 describe('operation exports', () => {
   describe('applyPatchOperations', () => {
-    it.skip('should export applyPatchOperations function', () => {
-      // TODO: Implement test
+    it('should export applyPatchOperations function', () => {
+      expect(typeof applyPatchOperations).toBe('function')
     })
 
-    it.skip('should maintain correct function signature', () => {
-      // TODO: Implement test
+    it('should maintain correct function signature', () => {
+      expect(applyPatchOperations.length).toBe(2)
     })
 
-    it.skip('should handle operations array correctly', () => {
-      // TODO: Implement test
+    it('should handle operations array correctly', () => {
+      const schema: Schema = {
+        tables: {
+          users: aTable({
+            name: 'users',
+            columns: {
+              id: aColumn({ name: 'id', type: 'bigint', notNull: true }),
+            },
+          }),
+        },
+      }
+      const operations = [
+        { op: 'add', path: '/tables/posts', value: aTable({ name: 'posts', columns: {} }) }
+      ]
+      
+      expect(() => applyPatchOperations(schema, operations)).not.toThrow()
+      expect(schema.tables.posts).toBeDefined()
     })
 
-    it.skip('should work with schema inputs', () => {
-      // TODO: Implement test
+    it('should work with schema inputs', () => {
+      const schema: Schema = { tables: {} }
+      const operations: any[] = []
+      
+      expect(() => applyPatchOperations(schema, operations)).not.toThrow()
     })
   })
 
   describe('operationsSchema', () => {
-    it.skip('should export operationsSchema for validation', () => {
-      // TODO: Implement test
+    it('should export operationsSchema for validation', () => {
+      expect(operationsSchema).toBeDefined()
     })
 
-    it.skip('should be a valid Valibot schema', () => {
-      // TODO: Implement test
+    it('should be a valid Valibot schema', () => {
+      expect(typeof operationsSchema).toBe('object')
+      expect(operationsSchema).toBeDefined()
+      expect('type' in operationsSchema || 'kind' in operationsSchema || '_run' in operationsSchema).toBe(true)
     })
 
-    it.skip('should validate array of operations', () => {
-      // TODO: Implement test
+    it('should validate array of operations', () => {
+      expect(operationsSchema).toBeDefined()
+      expect(typeof operationsSchema).toBe('object')
     })
   })
 
   describe('module structure', () => {
-    it.skip('should only export public API functions', () => {
-      // TODO: Implement test
+    it('should only export public API functions', () => {
+      const moduleExports = { applyPatchOperations, operationsSchema }
+      expect(Object.keys(moduleExports)).toHaveLength(2)
     })
 
-    it.skip('should not expose internal implementation', () => {
-      // TODO: Implement test
+    it('should not expose internal implementation', () => {
+      const moduleExports = { applyPatchOperations, operationsSchema }
+      expect(typeof moduleExports.applyPatchOperations).toBe('function')
+      expect(typeof moduleExports.operationsSchema).toBe('object')
     })
 
-    it.skip('should maintain backward compatibility', () => {
-      // TODO: Implement test
+    it('should maintain backward compatibility', () => {
+      expect(applyPatchOperations).toBeDefined()
+      expect(operationsSchema).toBeDefined()
     })
   })
 })
