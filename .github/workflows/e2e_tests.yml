@@ -30,6 +30,7 @@ jobs:
           browser: ${{ matrix.browser }}
           deployment-target: liam-app
           environment: ${{ github.event.deployment.environment }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           ref: ${{ github.event.deployment.sha }}
           test-project: liam-app
           url: ${{ github.event.deployment_status.target_url }}
@@ -42,6 +43,7 @@ jobs:
           browser: ${{ matrix.browser }}
           deployment-target: liam-erd-sample
           environment: ${{ github.event.deployment.environment }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           ref: ${{ github.event.deployment.sha }}
           test-project: liam-erd-sample
           url: ${{ github.event.deployment_status.target_url }}

@@ -10,6 +10,9 @@ inputs:
   environment:
     required: true
     type: string
+  github-token:
+    required: true
+    type: string
   ref:
     required: true
     type: string
@@ -77,8 +80,9 @@ runs:
           --field context="${CONTEXT}" \
           --field description="E2E test result for $ENVIRONMENT: (${STATE})" \
           --field target_url="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+      shell: bash
       env:
-        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GH_TOKEN: ${{ inputs.github_token }}
         BROWSER: ${{ inputs.browser }}
         ENVIRONMENT: ${{ inputs.environment }}
 
@@ -96,7 +100,7 @@ runs:
                 "fields": [
                   {
                     "title": "Browser",
-                    "value": ${{ inputs.environment }}
+                    "value": ${{ inputs.browser }}
                   },
                   {
                     "title": "Result",
