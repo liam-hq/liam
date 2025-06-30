@@ -32,6 +32,7 @@ runs:
     CI: true
     URL: ${{ inputs.url }}
     ENVIRONMENT: ${{ inputs.environment }}
+    BROWSER: ${{ inputs.browser }}
 
   steps:
     - name: Checkout repository
@@ -61,7 +62,7 @@ runs:
       run: pnpm exec playwright install-deps webkit
 
     - name: Run e2e tests
-      run: pnpm exec playwright test --project="${{ matrix.browser }}"
+      run: pnpm exec playwright test --project=${{ env.BROWSER }}
       env:
         URL: ${{ env.URL }}
 
@@ -69,7 +70,7 @@ runs:
       if: failure()
       uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
       with:
-        name: test-results-${{ matrix.browser }}-${{ github.run_id }}-${{ github.job }}
+        name: test-results-${{ env.BROWSER }}-${{ github.run_id }}-${{ github.job }}
         path: ${{ inputs.working-directory }}/test-results/
         retention-days: 30
 
@@ -77,15 +78,17 @@ runs:
       if: always()
       run: |
         STATE="${{ job.status }}"
-        CONTEXT="E2E Tests / e2e-tests (${{ matrix.browser }})"
+        CONTEXT="E2E Tests / e2e-tests ($BROWSER)"
         gh api repos/${{ github.repository }}/statuses/${{ github.sha }} \
           --method POST \
           --field state="${STATE}" \
           --field context="${CONTEXT}" \
-          --field description="E2E test result for ${{ matrix.browser }}: (${STATE})" \
+          --field description="E2E test result for $ENVIRONMENT: (${STATE})" \
           --field target_url="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
       env:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        BROWSER: ${{ env.BROWSER }}
+        ENVIRONMENT: ${{ env.ENVIRONMENT }}
 
     - name: Slack Notification on Failure
       if: ${{ contains(env.ENVIRONMENT, inputs.deployment-target) && failure() }}
@@ -101,7 +104,7 @@ runs:
                 "fields": [
                   {
                     "title": "Browser",
-                    "value": "${{ matrix.browser }}"
+                    "value": ${{ env.ENVIRONMENT }}
                   },
                   {
                     "title": "Result",
