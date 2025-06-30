@@ -52,6 +52,7 @@ export const createAnnotations = () => {
     retryCount: Annotation<Record<string, number>>,
 
     ddlStatements: Annotation<string | undefined>,
+    dmlStatements: Annotation<string | undefined>,
 
     // Repository dependencies for data access
     repositories: Annotation<Repositories>,
