@@ -15,7 +15,7 @@
   },
   "license": "Apache-2.0",
   "private": false,
-  "version": "0.5.8",
+  "version": "0.5.9",
   "type": "module",
   "publishConfig": {
     "access": "public"
@@ -43,7 +43,7 @@
     "@types/node": "22.15.30",
     "@types/react": "19.1.6",
     "@types/react-dom": "19.1.6",
-    "@vitejs/plugin-react": "4.5.1",
+    "@vitejs/plugin-react": "4.5.2",
     "eslint": "9.28.0",
     "rollup": "4.40.2",
     "rollup-plugin-execute": "1.1.1",

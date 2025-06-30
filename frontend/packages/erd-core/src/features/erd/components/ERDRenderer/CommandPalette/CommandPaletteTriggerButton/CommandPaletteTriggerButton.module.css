@@ -1,0 +1,51 @@
+.container {
+  display: inline-flex;
+  height: 30px;
+  width: 240px;
+  padding: var(--spacing-0) var(--spacing-2);
+  gap: var(--spacing-1);
+  border: 1px solid var(--pane-border);
+  border-radius: var(--border-radius-base);
+  color: var(--overlay-30);
+  background-color: var(--global-background);
+  align-items: center;
+  transition:
+    color var(--default-hover-animation-duration) var(--default-timing-function),
+    border-color var(--default-hover-animation-duration)
+    var(--default-timing-function);
+}
+
+.container:hover {
+  color: var(--overlay-50);
+  border-color: var(--pane-border-hover);
+  transition:
+    color var(--default-hover-animation-duration) var(--default-timing-function),
+    border-color var(--default-hover-animation-duration)
+    var(--default-timing-function);
+}
+
+.container:focus-visible {
+  outline: 1px solid var(--button-primary-background);
+}
+
+.searchIcon {
+  height: 12px;
+  width: 12px;
+  color: var(--overlay-50);
+}
+
+.text {
+  font-size: var(--font-size-3);
+  flex-grow: 1;
+}
+
+.keyIcon {
+  display: inline-flex;
+  height: 21px;
+  width: 21px;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--font-size-2);
+  color: var(--global-mute-text);
+  background-color: var(--overlay-5);
+}

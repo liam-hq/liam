@@ -1,5 +1,14 @@
 # @liam-hq/cli
 
+## 0.5.9
+
+### Patch Changes
+
+- [#2164](https://github.com/liam-hq/liam/pull/2164) - 🐛 fix(nextjs) hydration error with Next.js NuqsAdapter / Thanks [@tnyo43](https://github.com/tnyo43)!
+- [#2164](https://github.com/liam-hq/liam/pull/2164) - 🐛 fix(nextjs) hydration error with Next.js NuqsAdapter / Thanks [@tnyo43](https://github.com/tnyo43)!
+- [#2156](https://github.com/liam-hq/liam/pull/2156) - 🐛 Fix ONE_TO_ONE relationships incorrectly showing as ONE_TO_MANY when using `--format=schemarb` with UNIQUE constraints / Thanks [@MH4GF](https://github.com/MH4GF)!
+- [#2258](https://github.com/liam-hq/liam/pull/2258) - feat: add support for table-level primary key constraints in PostgreSQL parser / Thanks [@MH4GF](https://github.com/MH4GF)!
+
 ## 0.5.8
 
 ### Patch Changes

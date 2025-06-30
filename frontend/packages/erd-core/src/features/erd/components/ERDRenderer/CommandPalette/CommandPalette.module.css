@@ -71,16 +71,6 @@
   color: var(--overlay-60);
 }
 
-.escapeSign {
-  border: 1px solid #434536;
-  border-radius: var(--border-radius-smbase);
-  font-size: 10px;
-  width: 34px;
-  height: 21px;
-  text-align: center;
-  line-height: 21px;
-}
-
 .main {
   display: flex;
   padding: var(--spacing-2);

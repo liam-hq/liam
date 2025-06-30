@@ -23,13 +23,13 @@
   "devDependencies": {
     "@biomejs/biome": "2.0.0",
     "@liam-hq/configs": "workspace:*",
-    "@tailwindcss/postcss": "4.1.8",
+    "@tailwindcss/postcss": "4.1.10",
     "@types/node": "22.15.30",
     "@types/react": "19.1.6",
     "@types/react-dom": "19.1.6",
     "eslint": "9.28.0",
-    "postcss": "8.5.4",
-    "tailwindcss": "4.1.8",
+    "postcss": "8.5.5",
+    "tailwindcss": "4.1.10",
     "typescript": "5.8.3"
   },
   "scripts": {
