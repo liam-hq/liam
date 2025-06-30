@@ -22,7 +22,7 @@ test.describe('Navigation and URL Parameters', () => {
       test.skip()
     }
 
-    await page.goto(DEFAULT_TEST_URL)
+    await page.goto(DEFAULT_TEST_URL, { waitUntil: 'domcontentloaded' })
   })
 
   test.describe('Browser History', () => {
