@@ -9,3 +9,4 @@
 !/tests/vrt/vrt.test.ts-snapshots/top-1-Mobile-Safari-linux.png
 
 storageState.json
+.env

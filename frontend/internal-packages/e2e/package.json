@@ -2,11 +2,15 @@
   "name": "@liam-hq/e2e",
   "private": true,
   "version": "0.0.0",
+  "dependencies": {
+    "flags": "4.0.1"
+  },
   "devDependencies": {
     "@biomejs/biome": "2.0.0",
     "@liam-hq/configs": "workspace:*",
     "@playwright/test": "1.52.0",
     "@types/node": "22.15.30",
+    "dotenv": "16.5.0",
     "eslint": "9.28.0",
     "typescript": "5.8.3"
   },
@@ -17,6 +21,8 @@
     "lint": "concurrently \"pnpm:lint:*\"",
     "lint:biome": "biome check .",
     "lint:eslint": "eslint .",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "test:e2e:app": "playwright test --config=playwright.app.config.ts",
+    "test:e2e:vercel": "playwright test --config=playwright.vercel.config.ts"
   }
 }

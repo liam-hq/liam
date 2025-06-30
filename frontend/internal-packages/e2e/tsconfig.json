@@ -1,4 +1,11 @@
 {
   "extends": "@liam-hq/configs/tsconfig/base.json",
-  "include": ["tests/**/*", "playwright.config.ts", "global-setup.ts"]
+  "include": [
+    "tests/**/*",
+    "utils/**/*",
+    "playwright.config.ts",
+    "playwright.*.config.ts",
+    "global-setup.ts",
+    "default_test_url.ts"
+  ]
 }
