@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest'
-import { detectFormat, parse, ProcessError, setPrismWasmUrl, supportedFormatSchema, type SupportedFormat } from './parser/index.js'
+import {
+  detectFormat,
+  ProcessError,
+  parse,
+  setPrismWasmUrl,
+  supportedFormatSchema,
+} from './parser/index.js'
 
 describe('parser exports', () => {
   it('should export detectFormat function', () => {
@@ -34,7 +40,13 @@ describe('parser exports', () => {
   })
 
   it('should maintain consistent export structure', () => {
-    const exports = { detectFormat, parse, ProcessError, setPrismWasmUrl, supportedFormatSchema }
+    const exports = {
+      detectFormat,
+      parse,
+      ProcessError,
+      setPrismWasmUrl,
+      supportedFormatSchema,
+    }
     expect(Object.keys(exports)).toHaveLength(5)
   })
 })

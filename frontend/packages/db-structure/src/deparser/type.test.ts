@@ -1,7 +1,10 @@
 import { describe, expect, it } from 'vitest'
-import type { SchemaDeparser, OperationDeparser } from './type.js'
 import { aColumn, aTable, type Schema } from '../schema/index.js'
-import { postgresqlSchemaDeparser, postgresqlOperationDeparser } from './postgresql/index.js'
+import {
+  postgresqlOperationDeparser,
+  postgresqlSchemaDeparser,
+} from './postgresql/index.js'
+import type { OperationDeparser, SchemaDeparser } from './type.js'
 
 describe('deparser types', () => {
   describe('SchemaDeparser type', () => {
@@ -49,7 +52,11 @@ describe('deparser types', () => {
     })
 
     it('should handle valid operation input correctly', () => {
-      const operation = { op: 'add', path: '/tables/test', value: aTable({ name: 'test', columns: {} }) }
+      const operation = {
+        op: 'add',
+        path: '/tables/test',
+        value: aTable({ name: 'test', columns: {} }),
+      }
       const deparser: OperationDeparser = postgresqlOperationDeparser
       const result = deparser(operation as any)
       expect(result).toBeDefined()
@@ -57,14 +64,22 @@ describe('deparser types', () => {
     })
 
     it('should return SQL string in result value', () => {
-      const operation = { op: 'add', path: '/tables/test', value: aTable({ name: 'test', columns: {} }) }
+      const operation = {
+        op: 'add',
+        path: '/tables/test',
+        value: aTable({ name: 'test', columns: {} }),
+      }
       const deparser: OperationDeparser = postgresqlOperationDeparser
       const result = deparser(operation as any)
       expect(typeof result.value).toBe('string')
     })
 
     it('should include errors array in result', () => {
-      const operation = { op: 'add', path: '/tables/test', value: aTable({ name: 'test', columns: {} }) }
+      const operation = {
+        op: 'add',
+        path: '/tables/test',
+        value: aTable({ name: 'test', columns: {} }),
+      }
       const deparser: OperationDeparser = postgresqlOperationDeparser
       const result = deparser(operation as any)
       expect(Array.isArray(result.errors)).toBe(true)
@@ -111,7 +126,11 @@ describe('deparser types', () => {
 
     it('should ensure OperationDeparser implementations match expected signature', () => {
       const deparser: OperationDeparser = postgresqlOperationDeparser
-      const operation = { op: 'add', path: '/tables/test', value: aTable({ name: 'test', columns: {} }) }
+      const operation = {
+        op: 'add',
+        path: '/tables/test',
+        value: aTable({ name: 'test', columns: {} }),
+      }
       const result = deparser(operation as any)
       expect(result).toHaveProperty('value')
       expect(result).toHaveProperty('errors')
@@ -120,7 +139,7 @@ describe('deparser types', () => {
     it('should maintain type safety between deparser and result types', () => {
       const schemaDeparser: SchemaDeparser = postgresqlSchemaDeparser
       const operationDeparser: OperationDeparser = postgresqlOperationDeparser
-      
+
       expect(typeof schemaDeparser).toBe('function')
       expect(typeof operationDeparser).toBe('function')
     })

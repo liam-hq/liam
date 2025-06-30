@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { applyPatchOperations, operationsSchema } from './index.js'
 import { aColumn, aTable, type Schema } from '../schema/index.js'
+import { applyPatchOperations, operationsSchema } from './index.js'
 
 describe('operation exports', () => {
   describe('applyPatchOperations', () => {
@@ -24,17 +24,21 @@ describe('operation exports', () => {
         },
       }
       const operations = [
-        { op: 'add', path: '/tables/posts', value: aTable({ name: 'posts', columns: {} }) }
+        {
+          op: 'add' as const,
+          path: '/tables/posts',
+          value: aTable({ name: 'posts', columns: {} }),
+        },
       ]
-      
+
       expect(() => applyPatchOperations(schema, operations)).not.toThrow()
-      expect(schema.tables.posts).toBeDefined()
+      expect(schema.tables['posts']).toBeDefined()
     })
 
     it('should work with schema inputs', () => {
       const schema: Schema = { tables: {} }
       const operations: any[] = []
-      
+
       expect(() => applyPatchOperations(schema, operations)).not.toThrow()
     })
   })
@@ -47,7 +51,11 @@ describe('operation exports', () => {
     it('should be a valid Valibot schema', () => {
       expect(typeof operationsSchema).toBe('object')
       expect(operationsSchema).toBeDefined()
-      expect('type' in operationsSchema || 'kind' in operationsSchema || '_run' in operationsSchema).toBe(true)
+      expect(
+        'type' in operationsSchema ||
+          'kind' in operationsSchema ||
+          '_run' in operationsSchema,
+      ).toBe(true)
     })
 
     it('should validate array of operations', () => {

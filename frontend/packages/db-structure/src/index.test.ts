@@ -1,39 +1,23 @@
 import { describe, expect, it } from 'vitest'
 import {
+  aColumn,
+  applyPatchOperations,
+  aTable,
+  buildSchemaDiff,
+  type ChangeStatus,
+  columnRelatedDiffItemSchema,
+  columnSchema,
+  constraintsToRelationships,
+  foreignKeyConstraintSchema,
+  isPrimaryKey,
+  mergeSchemas,
+  operationsSchema,
+  ProcessError,
   postgresqlOperationDeparser,
   postgresqlSchemaDeparser,
-  buildSchemaDiff,
-  columnRelatedDiffItemSchema,
   schemaDiffItemsSchema,
-  tableRelatedDiffItemSchema,
-  applyPatchOperations,
-  operationsSchema,
-  aColumn,
-  aTable,
-  columnSchema,
-  foreignKeyConstraintSchema,
-  mergeSchemas,
   schemaSchema,
-  constraintsToRelationships,
-  isPrimaryKey,
-  type ChangeStatus,
-  type CheckConstraint,
-  type Column,
-  type Columns,
-  type Constraint,
-  type Constraints,
-  type ForeignKeyConstraint,
-  type Index,
-  type Indexes,
-  type PrimaryKeyConstraint,
-  type Schema,
-  type Table,
-  type Tables,
-  type UniqueConstraint,
-  type Cardinality,
-  type Relationship,
-  type Relationships,
-  type ProcessError,
+  tableRelatedDiffItemSchema,
 } from './index.js'
 
 describe('index exports', () => {
@@ -77,10 +61,9 @@ describe('index exports', () => {
 
   describe('schema exports', () => {
     it('should export all schema types', () => {
-      expect(typeof {} as Schema).toBe('object')
-      expect(typeof {} as Table).toBe('object')
-      expect(typeof {} as Column).toBe('object')
-      expect(typeof {} as Constraint).toBe('object')
+      expect(schemaSchema).toBeDefined()
+      expect(columnSchema).toBeDefined()
+      expect(foreignKeyConstraintSchema).toBeDefined()
     })
 
     it('should export schema builder functions', () => {
@@ -106,7 +89,8 @@ describe('index exports', () => {
     })
 
     it('should export ProcessError class', () => {
-      expect(typeof {} as ProcessError).toBe('object')
+      expect(ProcessError).toBeDefined()
+      expect(typeof ProcessError).toBe('function')
     })
 
     it('should export supported format types and schemas', () => {
@@ -133,17 +117,23 @@ describe('index exports', () => {
       constraintsToRelationships,
       isPrimaryKey,
     }
-    expect(Object.keys(moduleExports).every(key => typeof moduleExports[key as keyof typeof moduleExports] === 'function')).toBe(true)
+    expect(
+      Object.keys(moduleExports).every(
+        (key) =>
+          typeof moduleExports[key as keyof typeof moduleExports] ===
+          'function',
+      ),
+    ).toBe(true)
   })
 
   it('should maintain stable public API', () => {
     const coreExports = [
       'postgresqlOperationDeparser',
-      'postgresqlSchemaDeparser', 
+      'postgresqlSchemaDeparser',
       'buildSchemaDiff',
       'applyPatchOperations',
       'constraintsToRelationships',
-      'isPrimaryKey'
+      'isPrimaryKey',
     ]
     const actualExports = {
       postgresqlOperationDeparser,
@@ -153,6 +143,10 @@ describe('index exports', () => {
       constraintsToRelationships,
       isPrimaryKey,
     }
-    expect(coreExports.every(exportName => actualExports[exportName as keyof typeof actualExports])).toBe(true)
+    expect(
+      coreExports.every(
+        (exportName) => actualExports[exportName as keyof typeof actualExports],
+      ),
+    ).toBe(true)
   })
 })

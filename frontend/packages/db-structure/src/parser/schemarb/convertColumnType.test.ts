@@ -222,7 +222,9 @@ describe('convertColumnType', () => {
     })
 
     it('should handle type names with special characters', () => {
-      expect(convertColumnType('type-with_special.chars')).toBe('type-with_special.chars')
+      expect(convertColumnType('type-with_special.chars')).toBe(
+        'type-with_special.chars',
+      )
     })
 
     it('should handle numeric type names', () => {

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { buildSchemaDiff } from './buildSchemaDiff.js'
 import { aColumn, aTable, type Schema } from '../schema/index.js'
+import { buildSchemaDiff } from './buildSchemaDiff.js'
 
 describe('buildSchemaDiff', () => {
   describe('basic functionality', () => {
@@ -15,7 +15,7 @@ describe('buildSchemaDiff', () => {
           }),
         },
       }
-      
+
       const result = buildSchemaDiff(schema, schema)
       expect(result).toEqual([])
     })
@@ -32,10 +32,12 @@ describe('buildSchemaDiff', () => {
           }),
         },
       }
-      
+
       const result = buildSchemaDiff(before, after)
       expect(result.length).toBeGreaterThan(0)
-      expect(result.some(item => item.kind === 'table' && item.status === 'added')).toBe(true)
+      expect(
+        result.some((item) => item.kind === 'table' && item.status === 'added'),
+      ).toBe(true)
     })
 
     it('should detect removed tables', () => {
@@ -50,10 +52,14 @@ describe('buildSchemaDiff', () => {
         },
       }
       const after: Schema = { tables: {} }
-      
+
       const result = buildSchemaDiff(before, after)
       expect(result.length).toBeGreaterThan(0)
-      expect(result.some(item => item.kind === 'table' && item.status === 'removed')).toBe(true)
+      expect(
+        result.some(
+          (item) => item.kind === 'table' && item.status === 'removed',
+        ),
+      ).toBe(true)
     })
 
     it('should detect modified tables', () => {
@@ -78,10 +84,14 @@ describe('buildSchemaDiff', () => {
           }),
         },
       }
-      
+
       const result = buildSchemaDiff(before, after)
       expect(result.length).toBeGreaterThan(0)
-      expect(result.some(item => item.kind === 'column' && item.status === 'added')).toBe(true)
+      expect(
+        result.some(
+          (item) => item.kind === 'column' && item.status === 'added',
+        ),
+      ).toBe(true)
     })
   })
 
@@ -97,7 +107,7 @@ describe('buildSchemaDiff', () => {
           people: aTable({ name: 'people', columns: {} }),
         },
       }
-      
+
       const result = buildSchemaDiff(before, after)
       expect(result.length).toBeGreaterThan(0)
     })
@@ -113,9 +123,9 @@ describe('buildSchemaDiff', () => {
           users: aTable({ name: 'users', columns: {}, comment: 'New comment' }),
         },
       }
-      
+
       const result = buildSchemaDiff(before, after)
-      expect(result.some(item => item.kind === 'table-comment')).toBe(true)
+      expect(result.some((item) => item.kind === 'table-comment')).toBe(true)
     })
 
     it('should detect multiple table changes in single diff', () => {
@@ -131,7 +141,7 @@ describe('buildSchemaDiff', () => {
           articles: aTable({ name: 'articles', columns: {} }),
         },
       }
-      
+
       const result = buildSchemaDiff(before, after)
       expect(result.length).toBeGreaterThan(1)
     })
@@ -160,9 +170,13 @@ describe('buildSchemaDiff', () => {
           }),
         },
       }
-      
+
       const result = buildSchemaDiff(before, after)
-      expect(result.some(item => item.kind === 'column' && item.status === 'added')).toBe(true)
+      expect(
+        result.some(
+          (item) => item.kind === 'column' && item.status === 'added',
+        ),
+      ).toBe(true)
     })
 
     it('should detect removed columns', () => {
@@ -187,9 +201,13 @@ describe('buildSchemaDiff', () => {
           }),
         },
       }
-      
+
       const result = buildSchemaDiff(before, after)
-      expect(result.some(item => item.kind === 'column' && item.status === 'removed')).toBe(true)
+      expect(
+        result.some(
+          (item) => item.kind === 'column' && item.status === 'removed',
+        ),
+      ).toBe(true)
     })
 
     it('should detect column name changes', () => {
@@ -198,7 +216,11 @@ describe('buildSchemaDiff', () => {
           users: aTable({
             name: 'users',
             columns: {
-              user_name: aColumn({ name: 'user_name', type: 'varchar', notNull: false }),
+              user_name: aColumn({
+                name: 'user_name',
+                type: 'varchar',
+                notNull: false,
+              }),
             },
           }),
         },
@@ -213,7 +235,7 @@ describe('buildSchemaDiff', () => {
           }),
         },
       }
-      
+
       const result = buildSchemaDiff(before, after)
       expect(result.length).toBeGreaterThan(0)
     })
@@ -239,7 +261,7 @@ describe('buildSchemaDiff', () => {
           }),
         },
       }
-      
+
       const result = buildSchemaDiff(before, after)
       expect(result.length).toBeGreaterThan(0)
     })
@@ -250,7 +272,12 @@ describe('buildSchemaDiff', () => {
           users: aTable({
             name: 'users',
             columns: {
-              status: aColumn({ name: 'status', type: 'varchar', notNull: false, default: 'active' }),
+              status: aColumn({
+                name: 'status',
+                type: 'varchar',
+                notNull: false,
+                default: 'active',
+              }),
             },
           }),
         },
@@ -260,14 +287,19 @@ describe('buildSchemaDiff', () => {
           users: aTable({
             name: 'users',
             columns: {
-              status: aColumn({ name: 'status', type: 'varchar', notNull: false, default: 'pending' }),
+              status: aColumn({
+                name: 'status',
+                type: 'varchar',
+                notNull: false,
+                default: 'pending',
+              }),
             },
           }),
         },
       }
-      
+
       const result = buildSchemaDiff(before, after)
-      expect(result.some(item => item.kind === 'column-default')).toBe(true)
+      expect(result.some((item) => item.kind === 'column-default')).toBe(true)
     })
 
     it('should detect column nullable changes', () => {
@@ -276,7 +308,11 @@ describe('buildSchemaDiff', () => {
           users: aTable({
             name: 'users',
             columns: {
-              email: aColumn({ name: 'email', type: 'varchar', notNull: false }),
+              email: aColumn({
+                name: 'email',
+                type: 'varchar',
+                notNull: false,
+              }),
             },
           }),
         },
@@ -291,9 +327,9 @@ describe('buildSchemaDiff', () => {
           }),
         },
       }
-      
+
       const result = buildSchemaDiff(before, after)
-      expect(result.some(item => item.kind === 'column-not-null')).toBe(true)
+      expect(result.some((item) => item.kind === 'column-not-null')).toBe(true)
     })
 
     it('should detect column comment changes', () => {
@@ -302,7 +338,12 @@ describe('buildSchemaDiff', () => {
           users: aTable({
             name: 'users',
             columns: {
-              email: aColumn({ name: 'email', type: 'varchar', notNull: false, comment: 'Old comment' }),
+              email: aColumn({
+                name: 'email',
+                type: 'varchar',
+                notNull: false,
+                comment: 'Old comment',
+              }),
             },
           }),
         },
@@ -312,14 +353,19 @@ describe('buildSchemaDiff', () => {
           users: aTable({
             name: 'users',
             columns: {
-              email: aColumn({ name: 'email', type: 'varchar', notNull: false, comment: 'New comment' }),
+              email: aColumn({
+                name: 'email',
+                type: 'varchar',
+                notNull: false,
+                comment: 'New comment',
+              }),
             },
           }),
         },
       }
-      
+
       const result = buildSchemaDiff(before, after)
-      expect(result.some(item => item.kind === 'column-comment')).toBe(true)
+      expect(result.some((item) => item.kind === 'column-comment')).toBe(true)
     })
 
     it('should detect column check constraint changes', () => {
@@ -328,7 +374,12 @@ describe('buildSchemaDiff', () => {
           users: aTable({
             name: 'users',
             columns: {
-              age: aColumn({ name: 'age', type: 'integer', notNull: false, check: 'age >= 0' }),
+              age: aColumn({
+                name: 'age',
+                type: 'integer',
+                notNull: false,
+                check: 'age >= 0',
+              }),
             },
           }),
         },
@@ -338,14 +389,19 @@ describe('buildSchemaDiff', () => {
           users: aTable({
             name: 'users',
             columns: {
-              age: aColumn({ name: 'age', type: 'integer', notNull: false, check: 'age >= 18' }),
+              age: aColumn({
+                name: 'age',
+                type: 'integer',
+                notNull: false,
+                check: 'age >= 18',
+              }),
             },
           }),
         },
       }
-      
+
       const result = buildSchemaDiff(before, after)
-      expect(result.some(item => item.kind === 'column-check')).toBe(true)
+      expect(result.some((item) => item.kind === 'column-check')).toBe(true)
     })
   })
 
@@ -356,7 +412,11 @@ describe('buildSchemaDiff', () => {
           users: aTable({
             name: 'users',
             columns: {
-              email: aColumn({ name: 'email', type: 'varchar', notNull: false }),
+              email: aColumn({
+                name: 'email',
+                type: 'varchar',
+                notNull: false,
+              }),
             },
           }),
         },
@@ -366,21 +426,28 @@ describe('buildSchemaDiff', () => {
           users: aTable({
             name: 'users',
             columns: {
-              email: aColumn({ name: 'email', type: 'varchar', notNull: false }),
+              email: aColumn({
+                name: 'email',
+                type: 'varchar',
+                notNull: false,
+              }),
             },
             indexes: {
               idx_email: {
                 name: 'idx_email',
                 columns: ['email'],
                 unique: false,
+                type: 'btree',
               },
             },
           }),
         },
       }
-      
+
       const result = buildSchemaDiff(before, after)
-      expect(result.some(item => item.kind === 'index' && item.status === 'added')).toBe(true)
+      expect(
+        result.some((item) => item.kind === 'index' && item.status === 'added'),
+      ).toBe(true)
     })
 
     it('should detect removed indexes', () => {
@@ -389,13 +456,18 @@ describe('buildSchemaDiff', () => {
           users: aTable({
             name: 'users',
             columns: {
-              email: aColumn({ name: 'email', type: 'varchar', notNull: false }),
+              email: aColumn({
+                name: 'email',
+                type: 'varchar',
+                notNull: false,
+              }),
             },
             indexes: {
               idx_email: {
                 name: 'idx_email',
                 columns: ['email'],
                 unique: false,
+                type: 'btree',
               },
             },
           }),
@@ -406,14 +478,22 @@ describe('buildSchemaDiff', () => {
           users: aTable({
             name: 'users',
             columns: {
-              email: aColumn({ name: 'email', type: 'varchar', notNull: false }),
+              email: aColumn({
+                name: 'email',
+                type: 'varchar',
+                notNull: false,
+              }),
             },
           }),
         },
       }
-      
+
       const result = buildSchemaDiff(before, after)
-      expect(result.some(item => item.kind === 'index' && item.status === 'removed')).toBe(true)
+      expect(
+        result.some(
+          (item) => item.kind === 'index' && item.status === 'removed',
+        ),
+      ).toBe(true)
     })
 
     it('should detect index name changes', () => {
@@ -422,13 +502,18 @@ describe('buildSchemaDiff', () => {
           users: aTable({
             name: 'users',
             columns: {
-              email: aColumn({ name: 'email', type: 'varchar', notNull: false }),
+              email: aColumn({
+                name: 'email',
+                type: 'varchar',
+                notNull: false,
+              }),
             },
             indexes: {
               idx_email: {
                 name: 'idx_email',
                 columns: ['email'],
                 unique: false,
+                type: 'btree',
               },
             },
           }),
@@ -439,19 +524,24 @@ describe('buildSchemaDiff', () => {
           users: aTable({
             name: 'users',
             columns: {
-              email: aColumn({ name: 'email', type: 'varchar', notNull: false }),
+              email: aColumn({
+                name: 'email',
+                type: 'varchar',
+                notNull: false,
+              }),
             },
             indexes: {
               idx_user_email: {
                 name: 'idx_user_email',
                 columns: ['email'],
                 unique: false,
+                type: 'btree',
               },
             },
           }),
         },
       }
-      
+
       const result = buildSchemaDiff(before, after)
       expect(result.length).toBeGreaterThan(0)
     })
@@ -462,13 +552,18 @@ describe('buildSchemaDiff', () => {
           users: aTable({
             name: 'users',
             columns: {
-              email: aColumn({ name: 'email', type: 'varchar', notNull: false }),
+              email: aColumn({
+                name: 'email',
+                type: 'varchar',
+                notNull: false,
+              }),
             },
             indexes: {
               idx_email: {
                 name: 'idx_email',
                 columns: ['email'],
                 unique: false,
+                type: 'btree',
               },
             },
           }),
@@ -479,21 +574,26 @@ describe('buildSchemaDiff', () => {
           users: aTable({
             name: 'users',
             columns: {
-              email: aColumn({ name: 'email', type: 'varchar', notNull: false }),
+              email: aColumn({
+                name: 'email',
+                type: 'varchar',
+                notNull: false,
+              }),
             },
             indexes: {
               idx_email: {
                 name: 'idx_email',
                 columns: ['email'],
                 unique: true,
+                type: 'btree',
               },
             },
           }),
         },
       }
-      
+
       const result = buildSchemaDiff(before, after)
-      expect(result.some(item => item.kind === 'index-unique')).toBe(true)
+      expect(result.some((item) => item.kind === 'index-unique')).toBe(true)
     })
 
     it('should detect index columns changes', () => {
@@ -502,7 +602,11 @@ describe('buildSchemaDiff', () => {
           users: aTable({
             name: 'users',
             columns: {
-              email: aColumn({ name: 'email', type: 'varchar', notNull: false }),
+              email: aColumn({
+                name: 'email',
+                type: 'varchar',
+                notNull: false,
+              }),
               name: aColumn({ name: 'name', type: 'varchar', notNull: false }),
             },
             indexes: {
@@ -510,6 +614,7 @@ describe('buildSchemaDiff', () => {
                 name: 'idx_user',
                 columns: ['email'],
                 unique: false,
+                type: 'btree',
               },
             },
           }),
@@ -520,7 +625,11 @@ describe('buildSchemaDiff', () => {
           users: aTable({
             name: 'users',
             columns: {
-              email: aColumn({ name: 'email', type: 'varchar', notNull: false }),
+              email: aColumn({
+                name: 'email',
+                type: 'varchar',
+                notNull: false,
+              }),
               name: aColumn({ name: 'name', type: 'varchar', notNull: false }),
             },
             indexes: {
@@ -528,14 +637,17 @@ describe('buildSchemaDiff', () => {
                 name: 'idx_user',
                 columns: ['name'],
                 unique: false,
+                type: 'btree',
               },
             },
           }),
         },
       }
-      
+
       const result = buildSchemaDiff(before, after)
-      const indexColumnsItems = result.filter(item => item.kind === 'index-columns')
+      const indexColumnsItems = result.filter(
+        (item) => item.kind === 'index-columns',
+      )
       expect(indexColumnsItems.length).toBeGreaterThan(0)
     })
   })
@@ -569,9 +681,13 @@ describe('buildSchemaDiff', () => {
           }),
         },
       }
-      
+
       const result = buildSchemaDiff(before, after)
-      expect(result.some(item => item.kind === 'constraint' && item.status === 'added')).toBe(true)
+      expect(
+        result.some(
+          (item) => item.kind === 'constraint' && item.status === 'added',
+        ),
+      ).toBe(true)
     })
 
     it('should detect removed constraints', () => {
@@ -602,9 +718,13 @@ describe('buildSchemaDiff', () => {
           }),
         },
       }
-      
+
       const result = buildSchemaDiff(before, after)
-      expect(result.some(item => item.kind === 'constraint' && item.status === 'removed')).toBe(true)
+      expect(
+        result.some(
+          (item) => item.kind === 'constraint' && item.status === 'removed',
+        ),
+      ).toBe(true)
     })
 
     it('should detect primary key constraint changes', () => {
@@ -644,9 +764,11 @@ describe('buildSchemaDiff', () => {
           }),
         },
       }
-      
+
       const result = buildSchemaDiff(before, after)
-      expect(result.some(item => item.kind === 'constraint-column-name')).toBe(true)
+      expect(
+        result.some((item) => item.kind === 'constraint-column-name'),
+      ).toBe(true)
     })
 
     it('should detect foreign key constraint changes', () => {
@@ -655,7 +777,11 @@ describe('buildSchemaDiff', () => {
           posts: aTable({
             name: 'posts',
             columns: {
-              user_id: aColumn({ name: 'user_id', type: 'bigint', notNull: true }),
+              user_id: aColumn({
+                name: 'user_id',
+                type: 'bigint',
+                notNull: true,
+              }),
             },
             constraints: {
               fk_posts_user: {
@@ -664,6 +790,8 @@ describe('buildSchemaDiff', () => {
                 columnName: 'user_id',
                 targetTableName: 'users',
                 targetColumnName: 'id',
+                updateConstraint: 'CASCADE',
+                deleteConstraint: 'CASCADE',
               },
             },
           }),
@@ -674,7 +802,11 @@ describe('buildSchemaDiff', () => {
           posts: aTable({
             name: 'posts',
             columns: {
-              user_id: aColumn({ name: 'user_id', type: 'bigint', notNull: true }),
+              user_id: aColumn({
+                name: 'user_id',
+                type: 'bigint',
+                notNull: true,
+              }),
             },
             constraints: {
               fk_posts_user: {
@@ -683,14 +815,18 @@ describe('buildSchemaDiff', () => {
                 columnName: 'user_id',
                 targetTableName: 'people',
                 targetColumnName: 'id',
+                updateConstraint: 'CASCADE',
+                deleteConstraint: 'CASCADE',
               },
             },
           }),
         },
       }
-      
+
       const result = buildSchemaDiff(before, after)
-      expect(result.some(item => item.kind === 'constraint-target-table-name')).toBe(true)
+      expect(
+        result.some((item) => item.kind === 'constraint-target-table-name'),
+      ).toBe(true)
     })
 
     it('should detect check constraint changes', () => {
@@ -728,9 +864,11 @@ describe('buildSchemaDiff', () => {
           }),
         },
       }
-      
+
       const result = buildSchemaDiff(before, after)
-      expect(result.some(item => item.kind === 'constraint-detail')).toBe(true)
+      expect(result.some((item) => item.kind === 'constraint-detail')).toBe(
+        true,
+      )
     })
 
     it('should detect unique constraint changes', () => {
@@ -739,7 +877,11 @@ describe('buildSchemaDiff', () => {
           users: aTable({
             name: 'users',
             columns: {
-              email: aColumn({ name: 'email', type: 'varchar', notNull: false }),
+              email: aColumn({
+                name: 'email',
+                type: 'varchar',
+                notNull: false,
+              }),
             },
             constraints: {
               uk_email: {
@@ -756,7 +898,11 @@ describe('buildSchemaDiff', () => {
           users: aTable({
             name: 'users',
             columns: {
-              email: aColumn({ name: 'email', type: 'varchar', notNull: false }),
+              email: aColumn({
+                name: 'email',
+                type: 'varchar',
+                notNull: false,
+              }),
             },
             constraints: {
               uk_user_email: {
@@ -768,7 +914,7 @@ describe('buildSchemaDiff', () => {
           }),
         },
       }
-      
+
       const result = buildSchemaDiff(before, after)
       expect(result.length).toBeGreaterThan(0)
     })
@@ -799,6 +945,7 @@ describe('buildSchemaDiff', () => {
                 name: 'idx_name',
                 columns: ['name'],
                 unique: false,
+                type: 'btree',
               },
             },
           }),
@@ -810,7 +957,7 @@ describe('buildSchemaDiff', () => {
           }),
         },
       }
-      
+
       const result = buildSchemaDiff(before, after)
       expect(result.length).toBeGreaterThan(2)
     })
@@ -827,7 +974,7 @@ describe('buildSchemaDiff', () => {
           }),
         },
       }
-      
+
       const result = buildSchemaDiff(before, after)
       expect(Array.isArray(result)).toBe(true)
       expect(result.length).toBeGreaterThan(0)
@@ -845,9 +992,9 @@ describe('buildSchemaDiff', () => {
           }),
         },
       }
-      
+
       const result = buildSchemaDiff(before, after)
-      expect(result.some(item => item.status === 'added')).toBe(true)
+      expect(result.some((item) => item.status === 'added')).toBe(true)
     })
 
     it('should handle empty after schema', () => {
@@ -862,9 +1009,9 @@ describe('buildSchemaDiff', () => {
         },
       }
       const after: Schema = { tables: {} }
-      
+
       const result = buildSchemaDiff(before, after)
-      expect(result.some(item => item.status === 'removed')).toBe(true)
+      expect(result.some((item) => item.status === 'removed')).toBe(true)
     })
 
     it('should handle schemas with circular references', () => {
@@ -888,7 +1035,7 @@ describe('buildSchemaDiff', () => {
           }),
         },
       }
-      
+
       const result = buildSchemaDiff(before, after)
       expect(Array.isArray(result)).toBe(true)
     })
@@ -906,7 +1053,11 @@ describe('buildSchemaDiff', () => {
           'user-table_123': aTable({
             name: 'user-table_123',
             columns: {
-              'user-id': aColumn({ name: 'user-id', type: 'bigint', notNull: true }),
+              'user-id': aColumn({
+                name: 'user-id',
+                type: 'bigint',
+                notNull: true,
+              }),
             },
           }),
         },
@@ -916,18 +1067,22 @@ describe('buildSchemaDiff', () => {
           'user-table_123': aTable({
             name: 'user-table_123',
             columns: {
-              'user-id': aColumn({ name: 'user-id', type: 'bigint', notNull: true }),
+              'user-id': aColumn({
+                name: 'user-id',
+                type: 'bigint',
+                notNull: true,
+              }),
             },
           }),
         },
       }
-      
+
       const result = buildSchemaDiff(before, after)
       expect(Array.isArray(result)).toBe(true)
     })
 
     it('should handle very large schemas efficiently', () => {
-      const tables: any = {}
+      const tables: Record<string, any> = {}
       for (let i = 0; i < 10; i++) {
         tables[`table_${i}`] = aTable({
           name: `table_${i}`,
@@ -936,7 +1091,7 @@ describe('buildSchemaDiff', () => {
           },
         })
       }
-      
+
       const schema: Schema = { tables }
       const result = buildSchemaDiff(schema, schema)
       expect(result).toEqual([])
@@ -964,9 +1119,9 @@ describe('buildSchemaDiff', () => {
           }),
         },
       }
-      
+
       const result = buildSchemaDiff(before, after)
-      result.forEach(item => {
+      result.forEach((item) => {
         expect(item).toHaveProperty('kind')
         expect(item).toHaveProperty('status')
       })
@@ -986,9 +1141,9 @@ describe('buildSchemaDiff', () => {
           }),
         },
       }
-      
+
       const result = buildSchemaDiff(before, after)
-      result.forEach(item => {
+      result.forEach((item) => {
         expect(item).toHaveProperty('tableId')
       })
     })
@@ -1005,9 +1160,9 @@ describe('buildSchemaDiff', () => {
           }),
         },
       }
-      
+
       const result = buildSchemaDiff(before, after)
-      result.forEach(item => {
+      result.forEach((item) => {
         expect(item).toHaveProperty('status')
         expect(['added', 'removed', 'modified']).toContain(item.status)
       })
@@ -1019,7 +1174,12 @@ describe('buildSchemaDiff', () => {
           users: aTable({
             name: 'users',
             columns: {
-              name: aColumn({ name: 'name', type: 'varchar', notNull: false, default: 'old' }),
+              name: aColumn({
+                name: 'name',
+                type: 'varchar',
+                notNull: false,
+                default: 'old',
+              }),
             },
           }),
         },
@@ -1029,16 +1189,21 @@ describe('buildSchemaDiff', () => {
           users: aTable({
             name: 'users',
             columns: {
-              name: aColumn({ name: 'name', type: 'varchar', notNull: false, default: 'new' }),
+              name: aColumn({
+                name: 'name',
+                type: 'varchar',
+                notNull: false,
+                default: 'new',
+              }),
             },
           }),
         },
       }
-      
+
       const result = buildSchemaDiff(before, after)
-      const modifiedItems = result.filter(item => item.status === 'modified')
+      const modifiedItems = result.filter((item) => item.status === 'modified')
       expect(modifiedItems.length).toBeGreaterThan(0)
-      modifiedItems.forEach(item => {
+      modifiedItems.forEach((item) => {
         expect(item).toHaveProperty('data')
         expect(item).toHaveProperty('status')
         expect(item.status).toBe('modified')
@@ -1059,9 +1224,9 @@ describe('buildSchemaDiff', () => {
           }),
         },
       }
-      
+
       const result = buildSchemaDiff(before, after)
-      result.forEach(item => {
+      result.forEach((item) => {
         expect(item).toHaveProperty('kind')
         expect(item).toHaveProperty('status')
         expect(item).toHaveProperty('tableId')

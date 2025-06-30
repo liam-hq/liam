@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { isPrimaryKey } from './isPrimaryKey.js'
 import type { Constraints } from '../schema/index.js'
+import { isPrimaryKey } from './isPrimaryKey.js'
 
 describe('isPrimaryKey', () => {
   describe('positive cases', () => {
@@ -73,6 +73,8 @@ describe('isPrimaryKey', () => {
           columnName: 'user_id',
           targetTableName: 'users',
           targetColumnName: 'id',
+          updateConstraint: 'CASCADE',
+          deleteConstraint: 'CASCADE',
         },
       }
       expect(isPrimaryKey('user_id', constraints)).toBe(false)
@@ -184,6 +186,8 @@ describe('isPrimaryKey', () => {
           columnName: 'user_id',
           targetTableName: 'users',
           targetColumnName: 'id',
+          updateConstraint: 'CASCADE',
+          deleteConstraint: 'CASCADE',
         },
       }
       expect(isPrimaryKey('id', constraints)).toBe(true)
