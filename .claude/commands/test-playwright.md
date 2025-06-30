@@ -11,9 +11,11 @@ You need to test: $ARGUMENTS
 1. **Analyze the test target**
    - If $ARGUMENTS is a number (e.g., "2237"), treat it as a PR number and run `gh pr view $ARGUMENTS` to understand what was fixed
    - If $ARGUMENTS is descriptive text, use it as the test scenario description
+   - If $ARGUMENTS mentions analyzing git changes, read the diff file if provided
 
 2. **Set up the test environment**
-   - Navigate to http://localhost:3001 using Playwright MCP
+   - IMPORTANT: Always navigate to http://localhost:3001 (not Vercel or other deployments)
+   - Verify the application is running by checking the page loads successfully
    - If authentication is required, use these credentials:
      - Email: test@example.com
      - Password: liampassword1234
@@ -23,11 +25,13 @@ You need to test: $ARGUMENTS
    - Based on the test target, perform the necessary actions
    - Use `mcp__playwright__browser_snapshot` to understand page state before interactions
    - Take screenshots at important moments for documentation
+   - Focus on testing functionality, not just navigation
 
 4. **Verify results**
    - Confirm the expected behavior is working
    - Document any issues found
    - Provide a clear summary of the test results
+   - Include specific error messages if tests fail
 
 ## Example Test Flows
 
