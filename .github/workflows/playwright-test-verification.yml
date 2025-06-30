@@ -26,9 +26,6 @@ jobs:
       - name: Setup pnpm
         uses: ./.github/actions/pnpm-setup
 
-      - name: Install Playwright system dependencies
-        run: pnpm --filter @liam-hq/e2e exec playwright install-deps
-
       - name: Start Supabase
         run: pnpm --filter @liam-hq/db supabase:start
 
