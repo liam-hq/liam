@@ -4,42 +4,43 @@ on:
   deployment_status:
 
 jobs:
-  runs-on: ubuntu-latest
-  timeout-minutes: 10
-  strategy:
-    matrix:
-      browser: [chromium, 'Mobile Safari']
-    fail-fast: false
+  e2e-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      matrix:
+        browser: [chromium, 'Mobile Safari']
+      fail-fast: false
 
-  permissions:
-    contents: read
-    statuses: write
+    permissions:
+      contents: read
+      statuses: write
 
-  steps:
-    - name: liam-app-e2e_tests
-      if: github.event.deployment_status.state == 'success' &&
-        contains(github.event.deployment.environment, 'Production') &&
-        contains(github.event.deployment.environment, 'liam-app') &&
-        contains(github.event.deployment_status.target_url, 'liam-app-git-main')
-      uses: ./.github/actions/reusable-e2e
-      with:
-        browser: ${{ matrix.browser }}
-        deployment-target: liam-app
-        environment: ${{ github.event.deployment.environment }}
-        ref: ${{ github.event.deployment.sha }}
-        test-project: liam-app
-        url: ${{ github.event.deployment_status.target_url }}
-        working-directory: frontend/internal-packages/e2e
+    steps:
+      - name: liam-app-e2e_tests
+        if: github.event.deployment_status.state == 'success' &&
+          contains(github.event.deployment.environment, 'Production') &&
+          contains(github.event.deployment.environment, 'liam-app') &&
+          contains(github.event.deployment_status.target_url, 'liam-app-git-main')
+        uses: ./.github/actions/reusable-e2e
+        with:
+          browser: ${{ matrix.browser }}
+          deployment-target: liam-app
+          environment: ${{ github.event.deployment.environment }}
+          ref: ${{ github.event.deployment.sha }}
+          test-project: liam-app
+          url: ${{ github.event.deployment_status.target_url }}
+          working-directory: frontend/internal-packages/e2e
 
-    - name: liam-erd-sample-e2e_tests
-      if: github.event.deployment_status.state == 'success' &&
-        contains(github.event.deployment_status.target_url, 'liam-erd-sample')
-      uses: ./.github/actions/reusable-e2e
-      with:
-        browser: ${{ matrix.browser }}
-        working-directory: frontend/internal-packages/e2e
-        test-project: liam-erd-sample
-        environment: ${{ github.event.deployment.environment }}
-        url: ${{ github.event.deployment_status.target_url }}
-        ref: ${{ github.event.deployment.sha }}
-        deployment-target: liam-erd-sample
+      - name: liam-erd-sample-e2e_tests
+        if: github.event.deployment_status.state == 'success' &&
+          contains(github.event.deployment_status.target_url, 'liam-erd-sample')
+        uses: ./.github/actions/reusable-e2e
+        with:
+          browser: ${{ matrix.browser }}
+          working-directory: frontend/internal-packages/e2e
+          test-project: liam-erd-sample
+          environment: ${{ github.event.deployment.environment }}
+          url: ${{ github.event.deployment_status.target_url }}
+          ref: ${{ github.event.deployment.sha }}
+          deployment-target: liam-erd-sample
