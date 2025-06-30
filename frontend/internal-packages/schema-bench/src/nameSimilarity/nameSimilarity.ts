@@ -17,7 +17,7 @@ import {
 } from '@huggingface/transformers'
 
 function cosineSimilarity(vecA: number[], vecB: number[]): number {
-  const dot = vecA.reduce((sum, a, i) => sum + a * vecB[i], 0)
+  const dot = vecA.reduce((sum, a, i) => sum + a * (vecB[i] ?? 0), 0)
   const normA = Math.sqrt(vecA.reduce((sum, a) => sum + a * a, 0))
   const normB = Math.sqrt(vecB.reduce((sum, b) => sum + b * b, 0))
   if (normA === 0 || normB === 0) {
@@ -90,6 +90,7 @@ export async function nameSimilarity(
 
   for (let i = 0; i < references.length; i++) {
     const reference_name = references[i]
+    if (!reference_name) continue
 
     if (shouldSkipReference(reference_name, mapping)) continue
 
