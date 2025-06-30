@@ -20,6 +20,24 @@ export {
 export { applyPatchOperations, operationsSchema } from './operation/index.js'
 export type { ProcessError } from './parser.js'
 export {
+  type Artifact,
+  artifactSchema,
+  type DmlExecutionLog,
+  type DmlOperation,
+  dmlExecutionLogSchema,
+  dmlOperationSchema,
+  type FunctionalRequirement,
+  functionalRequirementSchema,
+  type NonFunctionalRequirement,
+  nonFunctionalRequirementSchema,
+  type Requirement,
+  type RequirementAnalysis,
+  requirementAnalysisSchema,
+  requirementSchema,
+  type UseCase,
+  useCaseSchema,
+} from './schema/artifact.js'
+export {
   aColumn,
   aTable,
   type CheckConstraint,
