@@ -143,8 +143,8 @@ export const ViewErrorsCollapsible: FC<Props> = ({
               <p>&nbsp;</p>
               <p>Suggestion:</p>
               <ul className={styles.suggestionList}>
-                {error.suggestions.map((suggestion, index) => (
-                  <li key={`suggestion-${index}`}>{suggestion}</li>
+                {error.suggestions.map((suggestion) => (
+                  <li key={suggestion}>{suggestion}</li>
                 ))}
               </ul>
             </>
@@ -167,8 +167,8 @@ export const ViewErrorsCollapsible: FC<Props> = ({
           {error.details && error.details.length > 0 && (
             <>
               <p>&nbsp;</p>
-              {error.details.map((detail, index) => (
-                <p key={`generic-detail-${index}`}>{detail}</p>
+              {error.details.map((detail) => (
+                <p key={detail}>{detail}</p>
               ))}
             </>
           )}

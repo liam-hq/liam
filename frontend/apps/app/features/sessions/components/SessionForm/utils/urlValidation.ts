@@ -5,13 +5,12 @@ const parseAllowedDomains = (): string[] => {
   const envDomains = process.env.NEXT_PUBLIC_ALLOWED_DOMAINS || ''
   if (!envDomains) {
     // Default allowed domains if env var is not set
-    return [
-      'raw.githubusercontent.com',
-      'github.com',
-      'gitlab.com',
-    ]
+    return ['raw.githubusercontent.com', 'github.com', 'gitlab.com']
   }
-  return envDomains.split(',').map((domain) => domain.trim()).filter(Boolean)
+  return envDomains
+    .split(',')
+    .map((domain) => domain.trim())
+    .filter(Boolean)
 }
 
 export const isValidSchemaUrl = (url: string): boolean => {
