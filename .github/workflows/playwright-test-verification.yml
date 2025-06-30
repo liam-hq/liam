@@ -1,0 +1,64 @@
+name: Playwright Test Verification
+
+on:
+  push:
+    branches-ignore:
+      - main
+      - master
+
+jobs:
+  playwright-verification:
+    permissions:
+      contents: read
+      pull-requests: write
+      id-token: write
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0  # Need full history for accurate diff analysis
+          persist-credentials: false
+
+      - name: Setup pnpm
+        uses: ./.github/actions/pnpm-setup
+
+      - name: Start Supabase
+        run: pnpm --filter @liam-hq/db supabase:start
+
+      - name: Setup environment
+        run: |
+          cp .env.template .env
+          chmod +x ./scripts/extract-supabase-anon-key.sh ./scripts/extract-supabase-service-key.sh
+          ./scripts/extract-supabase-anon-key.sh
+          ./scripts/extract-supabase-service-key.sh
+
+      - name: Start Trigger.dev
+        run: |
+          pnpm --filter @liam-hq/jobs trigger:dev &
+          sleep 10  # Wait for Trigger.dev to start
+
+      - name: Start application
+        run: |
+          pnpm dev --filter @liam-hq/app &
+          sleep 30  # Wait for application to start
+          curl --retry 10 --retry-delay 5 --retry-connrefused http://localhost:3001 || exit 1
+
+      - name: Get changed files
+        id: changed-files
+        run: |
+          echo "Changed files:"
+          git diff --name-only HEAD~1 HEAD || git diff --name-only $(git rev-list --max-parents=0 HEAD) HEAD
+          
+          # Store the diff for Claude to analyze
+          git diff HEAD~1 HEAD > /tmp/git-diff.txt || git diff $(git rev-list --max-parents=0 HEAD) HEAD > /tmp/git-diff.txt
+
+      - name: Run Playwright test verification
+        uses: anthropics/claude-code-action@91c510a769db0f9b79df0efbdded0c29c033f846 # beta
+        with:
+          direct_prompt: |
+            /test-playwright analyze git changes and test affected features based on the diff in /tmp/git-diff.txt
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          allowed_tools: "mcp__playwright__browser_navigate,mcp__playwright__browser_snapshot,mcp__playwright__browser_click,mcp__playwright__browser_type,mcp__playwright__browser_press_key,mcp__playwright__browser_take_screenshot,mcp__playwright__browser_wait_for,mcp__playwright__browser_close,mcp__playwright__browser_console_messages,mcp__playwright__browser_network_requests,Bash,Read,Grep,Glob"
