@@ -1,22 +1,25 @@
 name: E2E Test Runner
 
 inputs:
-  working-directory:
+  browser:
     required: true
     type: string
-  test-project:
+  deployment-target:
     required: true
     type: string
   environment:
     required: true
     type: string
-  url:
-    required: true
-    type: string
   ref:
     required: true
     type: string
-  deployment-target:
+  test-project:
+    required: true
+    type: string
+  url:
+    required: true
+    type: string
+  working-directory:
     required: true
     type: string
 
