@@ -23,21 +23,10 @@ jobs:
           fetch-depth: 0  # Need full history for accurate diff analysis
           persist-credentials: false
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
+      - name: Setup pnpm
+        uses: ./.github/actions/pnpm-setup
 
-      - name: Install pnpm
-        uses: pnpm/action-setup@v2
-        with:
-          version: 8
-          run_install: false
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Install Playwright dependencies
+      - name: Install Playwright system dependencies
         run: pnpm --filter @liam-hq/e2e exec playwright install-deps
 
       - name: Start Supabase
