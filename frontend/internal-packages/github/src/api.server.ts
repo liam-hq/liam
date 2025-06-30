@@ -366,3 +366,38 @@ export const getOrganizationInfo = async (
     return null
   }
 }
+
+/**
+ * Gets repository information including stars and forks count
+ * @returns Repository stats or null
+ */
+export const getRepositoryStats = async (
+  installationId: number,
+  owner: string,
+  repo: string,
+): Promise<{
+  stars: number
+  forks: number
+  language: string | null
+} | null> => {
+  const octokit = await createOctokit(installationId)
+
+  try {
+    const { data } = await octokit.repos.get({
+      owner,
+      repo,
+    })
+
+    return {
+      stars: data.stargazers_count || 0,
+      forks: data.forks_count || 0,
+      language: data.language || null,
+    }
+  } catch (error) {
+    console.error(
+      `Error fetching repository stats for ${owner}/${repo}:`,
+      error,
+    )
+    return null
+  }
+}

@@ -1,12 +1,16 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { getPullRequestDetails } from './api.server'
+import { getPullRequestDetails, getRepositoryStats } from './api.server'
 
 // Mock Octokit
 const mockGet = vi.fn()
+const mockReposGet = vi.fn()
 vi.mock('@octokit/rest', () => ({
   Octokit: vi.fn().mockImplementation(() => ({
     pulls: {
       get: mockGet,
+    },
+    repos: {
+      get: mockReposGet,
     },
   })),
 }))
@@ -51,5 +55,52 @@ describe('getPullRequestDetails', () => {
     await expect(
       getPullRequestDetails(123, 'owner', 'repo', 1),
     ).rejects.toThrow(errorMessage)
+  })
+})
+
+describe('getRepositoryStats', () => {
+  const mockRepositoryData = {
+    stargazers_count: 100,
+    forks_count: 25,
+    language: 'TypeScript',
+  }
+
+  beforeEach(() => {
+    vi.clearAllMocks()
+    mockReposGet.mockResolvedValue({ data: mockRepositoryData })
+  })
+
+  it('should fetch repository stats successfully', async () => {
+    const result = await getRepositoryStats(123, 'owner', 'repo')
+
+    expect(result).toEqual({
+      stars: 100,
+      forks: 25,
+      language: 'TypeScript',
+    })
+    expect(mockReposGet).toHaveBeenCalledWith({
+      owner: 'owner',
+      repo: 'repo',
+    })
+  })
+
+  it('should handle missing stats gracefully', async () => {
+    mockReposGet.mockResolvedValue({ data: {} })
+
+    const result = await getRepositoryStats(123, 'owner', 'repo')
+
+    expect(result).toEqual({
+      stars: 0,
+      forks: 0,
+      language: null,
+    })
+  })
+
+  it('should return null when API call fails', async () => {
+    mockReposGet.mockRejectedValue(new Error('API call failed'))
+
+    const result = await getRepositoryStats(123, 'owner', 'repo')
+
+    expect(result).toBeNull()
   })
 })
