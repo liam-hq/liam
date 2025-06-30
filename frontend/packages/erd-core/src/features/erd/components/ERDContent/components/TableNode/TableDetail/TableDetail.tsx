@@ -6,10 +6,10 @@ import {
   Table2 as Table2Icon,
   XIcon,
 } from '@liam-hq/ui'
+import { useReactFlow } from '@xyflow/react'
 import { type FC, useCallback } from 'react'
 import { computeAutoLayout, convertSchemaToNodes } from '@/features/erd/utils'
 import { clickLogEvent, openRelatedTablesLogEvent } from '@/features/gtm/utils'
-import { useCustomReactflow } from '@/features/reactflow/hooks'
 import { useVersion } from '@/providers'
 import { useSchema, useUserEditing } from '@/stores'
 import { updateNodesHiddenState } from '../../../utils'
@@ -34,8 +34,7 @@ export const TableDetail: FC<Props> = ({ table }) => {
     showMode: 'TABLE_NAME',
   })
 
-  const { getNodes, getEdges, setNodes, setEdges, fitView } =
-    useCustomReactflow()
+  const { getNodes, getEdges, setNodes, setEdges, fitView } = useReactFlow()
   const { version } = useVersion()
 
   const handleDrawerClose = () => {
@@ -67,7 +66,9 @@ export const TableDetail: FC<Props> = ({ table }) => {
       await computeAutoLayout(updatedNodes, getEdges())
     setNodes(layoutedNodes)
     setEdges(layoutedEdges)
-    fitView()
+    requestAnimationFrame(() => {
+      fitView();
+    })
 
     openRelatedTablesLogEvent({
       tableId: table.name,

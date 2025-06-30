@@ -1,12 +1,11 @@
 import { Table2 } from '@liam-hq/ui'
-import { Handle, Position } from '@xyflow/react'
+import { Handle, Position, useReactFlow } from '@xyflow/react'
 import clsx from 'clsx'
 import { type FC, type MouseEvent, useMemo } from 'react'
 import { match } from 'ts-pattern'
 import { DiffIcon } from '@/features/diff/components/DiffIcon'
 import diffStyles from '@/features/diff/styles/Diff.module.css'
 import type { TableNodeData } from '@/features/erd/types'
-import { useCustomReactflow } from '@/features/reactflow/hooks'
 import { useSchema, useUserEditing } from '@/stores'
 import { getChangeStatus } from './getChangeStatus'
 import styles from './TableHeader.module.css'
@@ -42,7 +41,7 @@ export const TableHeader: FC<Props> = ({ data }) => {
       .otherwise(() => undefined)
   }, [showDiff, changeStatus])
 
-  const { updateNode } = useCustomReactflow()
+  const { updateNode } = useReactFlow()
 
   const handleHoverEvent = (event: MouseEvent<HTMLSpanElement>) => {
     // Get computed styles to check if text is truncated
