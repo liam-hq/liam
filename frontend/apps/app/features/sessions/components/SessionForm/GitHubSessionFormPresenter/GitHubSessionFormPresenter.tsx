@@ -3,9 +3,10 @@ import clsx from 'clsx'
 import type { ChangeEvent, DragEvent, FC } from 'react'
 import { useEffect, useRef, useState } from 'react'
 import type { Projects } from '@/components/CommonLayout/AppBar/ProjectsDropdownMenu/services/getProjects'
-import { AttachmentPreview } from '../AttachmentPreview'
+import { AttachmentsContainer } from '../AttachmentsContainer'
 import type { Branch } from '../BranchesDropdown'
 import { BranchesDropdown } from '../BranchesDropdown'
+import { useFileAttachments } from '../hooks/useFileAttachments'
 import { ProjectsDropdown } from '../ProjectsDropdown'
 import { SchemaDisplay } from '../SchemaDisplay'
 import { SessionFormActions } from '../SessionFormActions'
@@ -40,19 +41,9 @@ export const GitHubSessionFormPresenter: FC<Props> = ({
     defaultProjectId || '',
   )
   const [selectedBranchSha, setSelectedBranchSha] = useState('')
-  const [attachments, setAttachments] = useState<
-    { id: string; url: string; name: string }[]
-  >([])
+  const { attachments, handleFileSelect, handleRemoveAttachment } =
+    useFileAttachments()
   const [dragActive, setDragActive] = useState(false)
-
-  const handleFileSelect = (files: FileList) => {
-    const newAttachments = Array.from(files).map((file) => ({
-      id: `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
-      url: URL.createObjectURL(file),
-      name: file.name,
-    }))
-    setAttachments((prev) => [...prev, ...newAttachments])
-  }
 
   const handleDrag = (e: DragEvent) => {
     e.preventDefault()
@@ -72,15 +63,6 @@ export const GitHubSessionFormPresenter: FC<Props> = ({
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
       handleFileSelect(e.dataTransfer.files)
     }
-  }
-
-  const handleRemoveAttachment = (index: number) => {
-    setAttachments((prev) => {
-      const updated = [...prev]
-      URL.revokeObjectURL(updated[index].url)
-      updated.splice(index, 1)
-      return updated
-    })
   }
 
   const handleTextareaChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
@@ -123,18 +105,10 @@ export const GitHubSessionFormPresenter: FC<Props> = ({
       >
         <form action={formAction}>
           <div className={styles.formContent}>
-            {attachments.length > 0 && (
-              <div className={styles.attachmentsContainer}>
-                {attachments.map((attachment, index) => (
-                  <AttachmentPreview
-                    key={attachment.id}
-                    src={attachment.url}
-                    alt={attachment.name}
-                    onRemove={() => handleRemoveAttachment(index)}
-                  />
-                ))}
-              </div>
-            )}
+            <AttachmentsContainer
+              attachments={attachments}
+              onRemove={handleRemoveAttachment}
+            />
             <div className={styles.formGroup}>
               <div className={styles.inputWrapper}>
                 <textarea
