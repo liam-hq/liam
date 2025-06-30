@@ -365,6 +365,119 @@ describe(processor, () => {
         }),
       })
     })
+
+    it('inline index (index: true)', async () => {
+      const { value } = await processor(/* Ruby */ `
+        create_table "users" do |t|
+          t.string "username", index: true
+        end
+      `)
+
+      expect(value.tables['users']?.indexes).toEqual({
+        index_username: anIndex({
+          name: 'index_username',
+          columns: ['username'],
+          unique: false,
+        }),
+      })
+    })
+
+    it('inline index (index: { unique: true })', async () => {
+      const { value } = await processor(/* Ruby */ `
+        create_table "users" do |t|
+          t.text "mention", index: { unique: true }
+        end
+      `)
+
+      expect(value.tables['users']?.indexes).toEqual({
+        unique_mention: anIndex({
+          name: 'unique_mention',
+          columns: ['mention'],
+          unique: true,
+        }),
+      })
+      expect(value.tables['users']?.constraints).toEqual({
+        PRIMARY_id: aPrimaryKeyConstraint({
+          name: 'PRIMARY_id',
+          columnName: 'id',
+        }),
+        UNIQUE_mention: aUniqueConstraint({
+          name: 'UNIQUE_mention',
+          columnName: 'mention',
+        }),
+      })
+    })
+
+    it('inline index with custom name', async () => {
+      const { value } = await processor(/* Ruby */ `
+        create_table "users" do |t|
+          t.string "slug", index: { unique: true, name: "index_users_on_slug" }
+        end
+      `)
+
+      expect(value.tables['users']?.indexes).toEqual({
+        index_users_on_slug: anIndex({
+          name: 'index_users_on_slug',
+          columns: ['slug'],
+          unique: true,
+        }),
+      })
+      expect(value.tables['users']?.constraints).toEqual({
+        PRIMARY_id: aPrimaryKeyConstraint({
+          name: 'PRIMARY_id',
+          columnName: 'id',
+        }),
+        UNIQUE_slug: aUniqueConstraint({
+          name: 'UNIQUE_slug',
+          columnName: 'slug',
+        }),
+      })
+    })
+
+    it('inline index with using option', async () => {
+      const { value } = await processor(/* Ruby */ `
+        create_table "users" do |t|
+          t.string "email", index: { using: "gin" }
+        end
+      `)
+
+      expect(value.tables['users']?.indexes).toEqual({
+        index_email: anIndex({
+          name: 'index_email',
+          columns: ['email'],
+          unique: false,
+          type: 'gin',
+        }),
+      })
+    })
+
+    it('multiple inline indexes', async () => {
+      const { value } = await processor(/* Ruby */ `
+        create_table "users" do |t|
+          t.string "username", index: true
+          t.string "email", index: { unique: true }
+          t.text "bio", index: { name: "custom_bio_index" }
+        end
+      `)
+
+      expect(value.tables['users']?.indexes).toEqual({
+        index_username: anIndex({
+          name: 'index_username',
+          columns: ['username'],
+          unique: false,
+        }),
+        unique_email: anIndex({
+          name: 'unique_email',
+          columns: ['email'],
+          unique: true,
+        }),
+        custom_bio_index: anIndex({
+          name: 'custom_bio_index',
+          columns: ['bio'],
+          unique: false,
+        }),
+      })
+    })
   })
 
   describe('abnormal cases', () => {
