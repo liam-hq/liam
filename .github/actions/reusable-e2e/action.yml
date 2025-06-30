@@ -22,12 +22,6 @@ inputs:
 
 runs:
   using: composite
-  env:
-    CI: true
-    URL: ${{ inputs.url }}
-    ENVIRONMENT: ${{ inputs.environment }}
-    BROWSER: ${{ inputs.browser }}
-
   steps:
     - name: Checkout repository
       uses: actions/checkout@v4
@@ -58,7 +52,7 @@ runs:
     - name: Run e2e tests
       run: pnpm exec playwright test --project=${{ env.BROWSER }}
       env:
-        URL: ${{ env.URL }}
+        URL: ${{ inputs.url }}
 
     - name: Upload test results
       if: failure()
@@ -81,11 +75,11 @@ runs:
           --field target_url="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
       env:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        BROWSER: ${{ env.BROWSER }}
-        ENVIRONMENT: ${{ env.ENVIRONMENT }}
+        BROWSER: ${{ inputs.browser }}
+        ENVIRONMENT: ${{ inputs.environment }}
 
     - name: Slack Notification on Failure
-      if: ${{ contains(env.ENVIRONMENT, inputs.deployment-target) && failure() }}
+      if: ${{ contains(inputs.environment, inputs.deployment-target) && failure() }}
         uses: tokorom/action-slack-incoming-webhook@d57bf1eb618f3dae9509afefa70d5774ad3d42bf # v1.3.0
         env:
           INCOMING_WEBHOOK_URL: ${{ secrets.SLACK_CLI_CI_WEBHOOK_URL }}
@@ -98,7 +92,7 @@ runs:
                 "fields": [
                   {
                     "title": "Browser",
-                    "value": ${{ env.ENVIRONMENT }}
+                    "value": ${{ inputs.environment }}
                   },
                   {
                     "title": "Result",
