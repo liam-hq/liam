@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "playwright": {
+      "command": "/Users/mh4gf/.asdf/shims/npx",
+      "args": ["-y", "@playwright/mcp@latest", "--config", "/Users/mh4gf/ghq/github.com/liam-hq/liam-worktree/poc-monkey-agent/frontend/internal-packages/e2e/playwright-mcp.config.json"]
+    }
+  }
+}

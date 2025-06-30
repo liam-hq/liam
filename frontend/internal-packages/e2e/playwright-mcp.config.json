@@ -1,0 +1,6 @@
+{
+  "baseURL": "https://liam-erd-web.vercel.app",
+  "browser": "chromium",
+  "headless": false,
+  "viewport-size": "1280,720"
+}
