@@ -17,6 +17,9 @@ jobs:
       statuses: write
 
     steps:
+      - name: Checkout repo for local action resolution
+        uses: actions/checkout@v4
+
       - name: liam-app-e2e_tests
         if: github.event.deployment_status.state == 'success' &&
           contains(github.event.deployment.environment, 'Production') &&
