@@ -1,4 +1,4 @@
-name: E2E Tests for liam-app
+name: E2E Tests for liam-erd-sample
 
 on:
   deployment_status:
@@ -11,7 +11,7 @@ jobs:
   e2e-tests:
     if: >
       github.event.deployment_status.state == 'success' &&
-      contains(github.event.deployment_status.target_url, 'liam-app')
+      contains(github.event.deployment_status.target_url, 'liam-erd-sample')
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
@@ -65,14 +65,14 @@ jobs:
           name: test-results-${{ matrix.browser }}
           path: frontend/internal-packages/e2e/test-results/
 
-      - name: Post E2E status manually (with gh)
+      - name: Post test status
         if: always()
         run: |
           gh api repos/${{ github.repository }}/statuses/${{ github.sha }} \
             --method POST \
             --field state="${{ job.status }}" \
-            --field context="E2E Tests / liam-app / ${{ matrix.browser }}" \
-            --field description="liam-app E2E test result: ${{ job.status }}" \
+            --field context="E2E Tests / liam-erd-sample / ${{ matrix.browser }}"
+            --field description="liam-erd-sample E2E test result: ${{ job.status }}"
             --field target_url="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
