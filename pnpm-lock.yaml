@@ -33,7 +33,7 @@ importers:
         version: 22.15.30
       '@vitest/coverage-v8':
         specifier: 3.2.4
-        version: 3.2.4(vitest@3.2.2(@edge-runtime/vm@3.2.0)(@types/debug@4.1.12)(@types/node@22.15.30)(happy-dom@17.6.3)(jiti@2.4.2)(jsdom@25.0.1)(lightningcss@1.30.1)(terser@5.43.1)(tsx@4.19.4)(yaml@2.8.0))
+        version: 3.2.4(vitest@3.2.2(@edge-runtime/vm@3.2.0)(@types/debug@4.1.12)(@types/node@22.15.30)(happy-dom@17.6.3)(jiti@2.4.2)(jsdom@26.0.0)(lightningcss@1.30.1)(terser@5.43.1)(tsx@4.19.4)(yaml@2.8.0))
       concurrently:
         specifier: 9.1.2
         version: 9.1.2
@@ -54,7 +54,7 @@ importers:
         version: 41.7.8(rollup@4.40.2)
       vitest:
         specifier: 3.2.2
-        version: 3.2.2(@edge-runtime/vm@3.2.0)(@types/debug@4.1.12)(@types/node@22.15.30)(happy-dom@17.6.3)(jiti@2.4.2)(jsdom@25.0.1)(lightningcss@1.30.1)(terser@5.43.1)(tsx@4.19.4)(yaml@2.8.0)
+        version: 3.2.2(@edge-runtime/vm@3.2.0)(@types/debug@4.1.12)(@types/node@22.15.30)(happy-dom@17.6.3)(jiti@2.4.2)(jsdom@26.0.0)(lightningcss@1.30.1)(terser@5.43.1)(tsx@4.19.4)(yaml@2.8.0)
 
   frontend/apps/app:
     dependencies:
@@ -111,16 +111,16 @@ importers:
         version: 15.3.3(next@15.3.3(@opentelemetry/api@1.9.0)(@playwright/test@1.52.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react@19.1.0)
       '@sentry/nextjs':
         specifier: '9'
-        version: 9.30.0(@opentelemetry/context-async-hooks@1.30.1(@opentelemetry/api@1.9.0))(@opentelemetry/core@1.30.1(@opentelemetry/api@1.9.0))(@opentelemetry/instrumentation@0.57.2(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-trace-base@1.30.1(@opentelemetry/api@1.9.0))(next@15.3.3(@opentelemetry/api@1.9.0)(@playwright/test@1.52.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react@19.1.0)(webpack@5.99.9(esbuild@0.25.5))
+        version: 9.30.0(@opentelemetry/context-async-hooks@1.30.1(@opentelemetry/api@1.9.0))(@opentelemetry/core@1.30.1(@opentelemetry/api@1.9.0))(@opentelemetry/instrumentation@0.57.2(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-trace-base@1.30.1(@opentelemetry/api@1.9.0))(next@15.3.3(@opentelemetry/api@1.9.0)(@playwright/test@1.52.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react@19.1.0)(webpack@5.99.9)
       '@trigger.dev/sdk':
         specifier: 4.0.0-v4-beta.21
-        version: 4.0.0-v4-beta.21(ai@4.3.16(react@19.1.0)(zod@3.23.8))(zod@3.23.8)
+        version: 4.0.0-v4-beta.21(ai@4.3.16(react@19.1.0)(zod@3.25.67))(zod@3.25.67)
       '@types/react-syntax-highlighter':
         specifier: 15.5.13
         version: 15.5.13
       '@vercel/otel':
         specifier: 1.12.0
-        version: 1.12.0(@opentelemetry/api@1.9.0)(@opentelemetry/instrumentation@0.57.2(@opentelemetry/api@1.9.0))(@opentelemetry/resources@1.30.1(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-metrics@1.25.1(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-trace-base@1.30.1(@opentelemetry/api@1.9.0))
+        version: 1.12.0(@opentelemetry/api@1.9.0)(@opentelemetry/resources@1.30.1(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-metrics@1.25.1(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-trace-base@1.30.1(@opentelemetry/api@1.9.0))
       cheerio:
         specifier: 1.0.0
         version: 1.0.0
@@ -141,7 +141,7 @@ importers:
         version: 4.0.1(@opentelemetry/api@1.9.0)(next@15.3.3(@opentelemetry/api@1.9.0)(@playwright/test@1.52.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       langfuse-vercel:
         specifier: 3.37.4
-        version: 3.37.4(ai@4.3.16(react@19.1.0)(zod@3.23.8))
+        version: 3.37.4(ai@4.3.16(react@19.1.0)(zod@3.25.67))
       lucide-react:
         specifier: 0.511.0
         version: 0.511.0(react@19.1.0)
@@ -211,7 +211,7 @@ importers:
         version: 5.8.3
       vitest:
         specifier: 3.2.2
-        version: 3.2.2(@edge-runtime/vm@3.2.0)(@types/debug@4.1.12)(@types/node@22.15.30)(happy-dom@17.6.3)(jiti@2.4.2)(jsdom@25.0.1)(lightningcss@1.30.1)(terser@5.43.1)(tsx@4.19.4)(yaml@2.8.0)
+        version: 3.2.2(@edge-runtime/vm@3.2.0)(@types/debug@4.1.12)(@types/node@22.15.30)(happy-dom@17.6.3)(jiti@2.4.2)(jsdom@26.0.0)(lightningcss@1.30.1)(terser@5.43.1)(tsx@4.19.4)(yaml@2.8.0)
 
   frontend/apps/docs:
     dependencies:
@@ -305,7 +305,7 @@ importers:
     dependencies:
       '@langchain/community':
         specifier: 0.3.45
-        version: 0.3.45(@browserbasehq/sdk@2.6.0)(@browserbasehq/stagehand@1.14.0(@playwright/test@1.52.0)(deepmerge@4.3.1)(dotenv@16.5.0)(openai@5.8.2(ws@8.18.2)(zod@3.24.4))(zod@3.24.4))(@huggingface/transformers@3.3.3)(@ibm-cloud/watsonx-ai@1.6.8)(@langchain/core@0.3.57(openai@5.8.2(ws@8.18.2)(zod@3.24.4)))(@supabase/supabase-js@2.49.8)(axios@1.10.0)(cheerio@1.0.0)(handlebars@4.7.8)(html-to-text@9.0.5)(ibm-cloud-sdk-core@5.4.0)(ignore@5.3.2)(jsdom@25.0.1)(jsonwebtoken@9.0.2)(lodash@4.17.21)(openai@5.8.2(ws@8.18.2)(zod@3.24.4))(playwright@1.52.0)(weaviate-client@3.6.2)(ws@8.18.2)
+        version: 0.3.45(@browserbasehq/sdk@2.6.0)(@browserbasehq/stagehand@1.14.0(@playwright/test@1.52.0)(deepmerge@4.3.1)(dotenv@16.5.0)(openai@5.8.2(ws@8.18.2)(zod@3.24.4))(zod@3.24.4))(@huggingface/transformers@3.3.3)(@ibm-cloud/watsonx-ai@1.6.8)(@langchain/core@0.3.57(openai@5.8.2(ws@8.18.2)(zod@3.24.4)))(@supabase/supabase-js@2.49.8)(axios@1.10.0)(cheerio@1.0.0)(handlebars@4.7.8)(html-to-text@9.0.5)(ibm-cloud-sdk-core@5.4.0)(ignore@5.3.2)(jsdom@26.0.0)(jsonwebtoken@9.0.2)(lodash@4.17.21)(openai@5.8.2(ws@8.18.2)(zod@3.24.4))(playwright@1.52.0)(weaviate-client@3.6.2)(ws@8.18.2)
       '@langchain/core':
         specifier: 0.3.57
         version: 0.3.57(openai@5.8.2(ws@8.18.2)(zod@3.24.4))
@@ -354,7 +354,7 @@ importers:
         version: 5.8.3
       vitest:
         specifier: 3.2.2
-        version: 3.2.2(@edge-runtime/vm@3.2.0)(@types/debug@4.1.12)(@types/node@22.15.30)(happy-dom@17.6.3)(jiti@2.4.2)(jsdom@25.0.1)(lightningcss@1.30.1)(terser@5.43.1)(tsx@4.19.4)(yaml@2.8.0)
+        version: 3.2.2(@edge-runtime/vm@3.2.0)(@types/debug@4.1.12)(@types/node@22.15.30)(happy-dom@17.6.3)(jiti@2.4.2)(jsdom@26.0.0)(lightningcss@1.30.1)(terser@5.43.1)(tsx@4.19.4)(yaml@2.8.0)
 
   frontend/internal-packages/configs:
     devDependencies:
@@ -474,7 +474,7 @@ importers:
         version: 5.8.3
       vitest:
         specifier: 3.2.2
-        version: 3.2.2(@edge-runtime/vm@3.2.0)(@types/debug@4.1.12)(@types/node@22.15.30)(happy-dom@17.6.3)(jiti@2.4.2)(jsdom@25.0.1)(lightningcss@1.30.1)(terser@5.43.1)(tsx@4.19.4)(yaml@2.8.0)
+        version: 3.2.2(@edge-runtime/vm@3.2.0)(@types/debug@4.1.12)(@types/node@22.15.30)(happy-dom@17.6.3)(jiti@2.4.2)(jsdom@26.0.0)(lightningcss@1.30.1)(terser@5.43.1)(tsx@4.19.4)(yaml@2.8.0)
 
   frontend/internal-packages/jobs:
     dependencies:
@@ -538,7 +538,7 @@ importers:
         version: 5.8.3
       vitest:
         specifier: 3.2.2
-        version: 3.2.2(@edge-runtime/vm@3.2.0)(@types/debug@4.1.12)(@types/node@22.15.30)(happy-dom@17.6.3)(jiti@2.4.2)(jsdom@25.0.1)(lightningcss@1.30.1)(terser@5.43.1)(tsx@4.19.4)(yaml@2.8.0)
+        version: 3.2.2(@edge-runtime/vm@3.2.0)(@types/debug@4.1.12)(@types/node@22.15.30)(happy-dom@17.6.3)(jiti@2.4.2)(jsdom@26.0.0)(lightningcss@1.30.1)(terser@5.43.1)(tsx@4.19.4)(yaml@2.8.0)
 
   frontend/internal-packages/mcp-server:
     dependencies:
@@ -591,7 +591,7 @@ importers:
         version: 9.28.0(jiti@2.4.2)
       vitest:
         specifier: 3.2.2
-        version: 3.2.2(@edge-runtime/vm@3.2.0)(@types/debug@4.1.12)(@types/node@22.15.30)(happy-dom@17.6.3)(jiti@2.4.2)(jsdom@25.0.1)(lightningcss@1.30.1)(terser@5.43.1)(tsx@4.19.4)(yaml@2.8.0)
+        version: 3.2.2(@edge-runtime/vm@3.2.0)(@types/debug@4.1.12)(@types/node@22.15.30)(happy-dom@17.6.3)(jiti@2.4.2)(jsdom@26.0.0)(lightningcss@1.30.1)(terser@5.43.1)(tsx@4.19.4)(yaml@2.8.0)
 
   frontend/internal-packages/storybook:
     dependencies:
@@ -616,7 +616,7 @@ importers:
         version: 8.6.14(react@19.1.0)(storybook@8.6.14(prettier@3.6.0))
       '@storybook/nextjs':
         specifier: 8.6.14
-        version: 8.6.14(next@15.3.3(@babel/core@7.27.4)(@opentelemetry/api@1.9.0)(@playwright/test@1.52.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(storybook@8.6.14(prettier@3.6.0))(type-fest@4.41.0)(typescript@5.8.3)(webpack-hot-middleware@2.26.1)(webpack@5.99.9)
+        version: 8.6.14(esbuild@0.25.5)(next@15.3.3(@babel/core@7.27.4)(@opentelemetry/api@1.9.0)(@playwright/test@1.52.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(storybook@8.6.14(prettier@3.6.0))(type-fest@4.41.0)(typescript@5.8.3)(webpack-hot-middleware@2.26.1)(webpack@5.99.9(esbuild@0.25.5))
       '@storybook/react':
         specifier: 8.6.14
         version: 8.6.14(@storybook/test@8.6.14(storybook@8.6.14(prettier@3.6.0)))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(storybook@8.6.14(prettier@3.6.0))(typescript@5.8.3)
@@ -638,15 +638,6 @@ importers:
       '@liam-hq/ui':
         specifier: workspace:*
         version: link:../../packages/ui
-      commander:
-        specifier: 13.1.0
-        version: 13.1.0
-      dotenv:
-        specifier: 16.5.0
-        version: 16.5.0
-      openai:
-        specifier: 5.8.2
-        version: 5.8.2(ws@8.18.2)(zod@3.25.67)
       react:
         specifier: 19.1.0
         version: 19.1.0
@@ -660,8 +651,8 @@ importers:
         specifier: 15.6.1
         version: 15.6.1(react@19.1.0)
       remark-gfm:
-        specifier: 4.0.0
-        version: 4.0.0
+        specifier: 4.0.1
+        version: 4.0.1
     devDependencies:
       '@biomejs/biome':
         specifier: 2.0.0
@@ -684,9 +675,6 @@ importers:
       '@vitejs/plugin-react':
         specifier: 4.5.2
         version: 4.5.2(vite@6.3.5(@types/node@22.15.30)(jiti@2.4.2)(lightningcss@1.30.1)(terser@5.43.1)(tsx@4.19.4)(yaml@2.8.0))
-      eslint:
-        specifier: 9.28.0
-        version: 9.28.0(jiti@2.4.2)
       tsx:
         specifier: 4.19.4
         version: 4.19.4
@@ -783,7 +771,7 @@ importers:
         version: 5.1.4(typescript@5.8.3)(vite@6.3.5(@types/node@22.15.30)(jiti@2.4.2)(lightningcss@1.30.1)(terser@5.43.1)(tsx@4.19.4)(yaml@2.8.0))
       vitest:
         specifier: 3.2.2
-        version: 3.2.2(@edge-runtime/vm@3.2.0)(@types/debug@4.1.12)(@types/node@22.15.30)(happy-dom@17.6.3)(jiti@2.4.2)(jsdom@25.0.1)(lightningcss@1.30.1)(terser@5.43.1)(tsx@4.19.4)(yaml@2.8.0)
+        version: 3.2.2(@edge-runtime/vm@3.2.0)(@types/debug@4.1.12)(@types/node@22.15.30)(happy-dom@17.6.3)(jiti@2.4.2)(jsdom@26.0.0)(lightningcss@1.30.1)(terser@5.43.1)(tsx@4.19.4)(yaml@2.8.0)
 
   frontend/packages/db-structure:
     dependencies:
@@ -841,7 +829,7 @@ importers:
         version: 5.8.3
       vitest:
         specifier: 3.2.2
-        version: 3.2.2(@edge-runtime/vm@3.2.0)(@types/debug@4.1.12)(@types/node@22.15.30)(happy-dom@17.6.3)(jiti@2.4.2)(jsdom@25.0.1)(lightningcss@1.30.1)(terser@5.43.1)(tsx@4.19.4)(yaml@2.8.0)
+        version: 3.2.2(@edge-runtime/vm@3.2.0)(@types/debug@4.1.12)(@types/node@22.15.30)(happy-dom@17.6.3)(jiti@2.4.2)(jsdom@26.0.0)(lightningcss@1.30.1)(terser@5.43.1)(tsx@4.19.4)(yaml@2.8.0)
 
   frontend/packages/erd-core:
     dependencies:
@@ -868,7 +856,7 @@ importers:
         version: 0.10.0
       nuqs:
         specifier: 2.4.3
-        version: 2.4.3(next@15.3.3(@babel/core@7.27.4)(@opentelemetry/api@1.9.0)(@playwright/test@1.52.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react@19.1.0)
+        version: 2.4.3(next@15.3.3(@opentelemetry/api@1.9.0)(@playwright/test@1.52.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react@19.1.0)
       pako:
         specifier: 2.1.0
         version: 2.1.0
@@ -923,7 +911,7 @@ importers:
         version: 5.8.3
       vitest:
         specifier: 3.2.2
-        version: 3.2.2(@edge-runtime/vm@3.2.0)(@types/debug@4.1.12)(@types/node@22.15.30)(happy-dom@17.6.3)(jiti@2.4.2)(jsdom@25.0.1)(lightningcss@1.30.1)(terser@5.43.1)(tsx@4.19.4)(yaml@2.8.0)
+        version: 3.2.2(@edge-runtime/vm@3.2.0)(@types/debug@4.1.12)(@types/node@22.15.30)(happy-dom@17.6.3)(jiti@2.4.2)(jsdom@26.0.0)(lightningcss@1.30.1)(terser@5.43.1)(tsx@4.19.4)(yaml@2.8.0)
 
   frontend/packages/pglite-server:
     dependencies:
@@ -1013,18 +1001,36 @@ importers:
       '@storybook/react':
         specifier: 8.6.14
         version: 8.6.14(@storybook/test@8.6.14(storybook@8.6.14(prettier@3.6.0)))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(storybook@8.6.14(prettier@3.6.0))(typescript@5.8.3)
+      '@testing-library/jest-dom':
+        specifier: 6.6.3
+        version: 6.6.3
+      '@testing-library/react':
+        specifier: 16.3.0
+        version: 16.3.0(@testing-library/dom@10.4.0)(@types/react-dom@19.1.6(@types/react@19.1.6))(@types/react@19.1.6)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      '@testing-library/user-event':
+        specifier: 14.6.1
+        version: 14.6.1(@testing-library/dom@10.4.0)
       '@types/react':
         specifier: 19.1.6
         version: 19.1.6
+      '@vitejs/plugin-react':
+        specifier: 4.5.2
+        version: 4.5.2(vite@6.3.5(@types/node@22.15.30)(jiti@2.4.2)(lightningcss@1.30.1)(terser@5.43.1)(tsx@4.19.4)(yaml@2.8.0))
       eslint:
         specifier: 9.28.0
         version: 9.28.0(jiti@2.4.2)
+      happy-dom:
+        specifier: 17.6.3
+        version: 17.6.3
       typed-css-modules:
         specifier: 0.9.1
         version: 0.9.1
       typescript:
         specifier: 5.8.3
         version: 5.8.3
+      vitest:
+        specifier: 3.2.2
+        version: 3.2.2(@edge-runtime/vm@3.2.0)(@types/debug@4.1.12)(@types/node@22.15.30)(happy-dom@17.6.3)(jiti@2.4.2)(jsdom@26.0.0)(lightningcss@1.30.1)(terser@5.43.1)(tsx@4.19.4)(yaml@2.8.0)
 
 packages:
 
@@ -8097,11 +8103,11 @@ packages:
     resolution: {integrity: sha512-Hicd6JK5Njt2QB6XYFS7ok9e37O8AYk3jTcppG4YVQnYjOemymvTcmc7OWsmq/Qqj5TdRFO5/x/tIPmBeRtGHg==}
     engines: {node: '>=12.0.0'}
 
-  jsdom@25.0.1:
-    resolution: {integrity: sha512-8i7LzZj7BF8uplX+ZyOlIz86V6TAsSs+np6m1kpW9u0JWi4z/1t+FzcK1aek+ybTnAC4KhBL4uXCNT0wcUIeCw==}
+  jsdom@26.0.0:
+    resolution: {integrity: sha512-BZYDGVAIriBWTpIxYzrXjv3E/4u8+/pSG5bQdIYCbNCGOvsPkDQfTVLAIXAf9ETdCpduCVTkDe2NNZ8NIwUVzw==}
     engines: {node: '>=18'}
     peerDependencies:
-      canvas: ^2.11.2
+      canvas: ^3.0.0
     peerDependenciesMeta:
       canvas:
         optional: true
@@ -9930,9 +9936,6 @@ packages:
     resolution: {integrity: sha512-G08Dxvm4iDN3MLM0EsP62EDV9IuhXPR6blNz6Utcp7zyV3tr4HVNINt6MpaRWbxoOHT3Q7YN2P+jaHX8vUbgog==}
     engines: {node: '>= 0.10'}
 
-  remark-gfm@4.0.0:
-    resolution: {integrity: sha512-U92vJgBPkbw4Zfu/IiW2oTZLSL3Zpv+uI7My2eq8JxKgqraFdU8YUGicEJCEgSbeaG+QDFqIcwwfMTOEelPxuA==}
-
   remark-gfm@4.0.1:
     resolution: {integrity: sha512-1quofZ2RQ9EWdeN34S79+KExV1764+wCUGop5CPL1WGdD0ocPpu91lzPGbwWMECpEpd42kJGQwzRfyov9j4yNg==}
 
@@ -10051,9 +10054,6 @@ packages:
   router@2.2.0:
     resolution: {integrity: sha512-nLTrUKm2UyiL7rlhapu/Zl45FwNgkZGaCpZbIHajDYgwlJCOzLSk+cIPAnsEqV955GjILJnKbdQC1nVPz+gAYQ==}
     engines: {node: '>= 18'}
-
-  rrweb-cssom@0.7.1:
-    resolution: {integrity: sha512-TrEMa7JGdVm0UThDJSx7ddw5nVm3UJS9o9CCIZ72B1vSyEZoziDqBYP3XIoi/12lKrJR8rE3jeFHMok2F/Mnsg==}
 
   rrweb-cssom@0.8.0:
     resolution: {integrity: sha512-guoltQEx+9aMf2gDZ0s62EcV8lsXR+0w8915TC3ITdn2YueuNjdAYh/levpU9nFaoChh9RUS5ZdQMrKfVEN9tw==}
@@ -11562,6 +11562,14 @@ snapshots:
       nanoid: 3.3.11
       secure-json-parse: 2.7.0
       zod: 3.23.8
+    optional: true
+
+  '@ai-sdk/provider-utils@2.2.8(zod@3.25.67)':
+    dependencies:
+      '@ai-sdk/provider': 1.1.3
+      nanoid: 3.3.11
+      secure-json-parse: 2.7.0
+      zod: 3.25.67
 
   '@ai-sdk/provider@1.1.3':
     dependencies:
@@ -11576,6 +11584,17 @@ snapshots:
       throttleit: 2.1.0
     optionalDependencies:
       zod: 3.23.8
+    optional: true
+
+  '@ai-sdk/react@1.2.12(react@19.1.0)(zod@3.25.67)':
+    dependencies:
+      '@ai-sdk/provider-utils': 2.2.8(zod@3.25.67)
+      '@ai-sdk/ui-utils': 1.2.11(zod@3.25.67)
+      react: 19.1.0
+      swr: 2.3.3(react@19.1.0)
+      throttleit: 2.1.0
+    optionalDependencies:
+      zod: 3.25.67
 
   '@ai-sdk/ui-utils@1.2.11(zod@3.23.8)':
     dependencies:
@@ -11583,6 +11602,14 @@ snapshots:
       '@ai-sdk/provider-utils': 2.2.8(zod@3.23.8)
       zod: 3.23.8
       zod-to-json-schema: 3.24.5(zod@3.23.8)
+    optional: true
+
+  '@ai-sdk/ui-utils@1.2.11(zod@3.25.67)':
+    dependencies:
+      '@ai-sdk/provider': 1.1.3
+      '@ai-sdk/provider-utils': 2.2.8(zod@3.25.67)
+      zod: 3.25.67
+      zod-to-json-schema: 3.24.5(zod@3.25.67)
 
   '@alloc/quick-lru@5.2.0': {}
 
@@ -13330,7 +13357,7 @@ snapshots:
     dependencies:
       tslib: 2.8.1
 
-  '@langchain/community@0.3.45(@browserbasehq/sdk@2.6.0)(@browserbasehq/stagehand@1.14.0(@playwright/test@1.52.0)(deepmerge@4.3.1)(dotenv@16.5.0)(openai@5.8.2(ws@8.18.2)(zod@3.24.4))(zod@3.24.4))(@huggingface/transformers@3.3.3)(@ibm-cloud/watsonx-ai@1.6.8)(@langchain/core@0.3.57(openai@5.8.2(ws@8.18.2)(zod@3.24.4)))(@supabase/supabase-js@2.49.8)(axios@1.10.0)(cheerio@1.0.0)(handlebars@4.7.8)(html-to-text@9.0.5)(ibm-cloud-sdk-core@5.4.0)(ignore@5.3.2)(jsdom@25.0.1)(jsonwebtoken@9.0.2)(lodash@4.17.21)(openai@5.8.2(ws@8.18.2)(zod@3.24.4))(playwright@1.52.0)(weaviate-client@3.6.2)(ws@8.18.2)':
+  '@langchain/community@0.3.45(@browserbasehq/sdk@2.6.0)(@browserbasehq/stagehand@1.14.0(@playwright/test@1.52.0)(deepmerge@4.3.1)(dotenv@16.5.0)(openai@5.8.2(ws@8.18.2)(zod@3.24.4))(zod@3.24.4))(@huggingface/transformers@3.3.3)(@ibm-cloud/watsonx-ai@1.6.8)(@langchain/core@0.3.57(openai@5.8.2(ws@8.18.2)(zod@3.24.4)))(@supabase/supabase-js@2.49.8)(axios@1.10.0)(cheerio@1.0.0)(handlebars@4.7.8)(html-to-text@9.0.5)(ibm-cloud-sdk-core@5.4.0)(ignore@5.3.2)(jsdom@26.0.0)(jsonwebtoken@9.0.2)(lodash@4.17.21)(openai@5.8.2(ws@8.18.2)(zod@3.24.4))(playwright@1.52.0)(weaviate-client@3.6.2)(ws@8.18.2)':
     dependencies:
       '@browserbasehq/stagehand': 1.14.0(@playwright/test@1.52.0)(deepmerge@4.3.1)(dotenv@16.5.0)(openai@5.8.2(ws@8.18.2)(zod@3.24.4))(zod@3.24.4)
       '@ibm-cloud/watsonx-ai': 1.6.8
@@ -13355,7 +13382,7 @@ snapshots:
       cheerio: 1.0.0
       html-to-text: 9.0.5
       ignore: 5.3.2
-      jsdom: 25.0.1
+      jsdom: 26.0.0
       jsonwebtoken: 9.0.2
       lodash: 4.17.21
       playwright: 1.52.0
@@ -13560,7 +13587,7 @@ snapshots:
       cross-spawn: 7.0.6
       eventsource: 3.0.7
       express: 5.1.0(supports-color@10.0.0)
-      express-rate-limit: 7.5.1(express@5.1.0)
+      express-rate-limit: 7.5.1(express@5.1.0(supports-color@10.0.0))
       pkce-challenge: 5.0.0
       raw-body: 3.0.0
       zod: 3.24.4
@@ -14236,7 +14263,7 @@ snapshots:
     dependencies:
       playwright: 1.52.0
 
-  '@pmmmwh/react-refresh-webpack-plugin@0.5.16(react-refresh@0.14.2)(type-fest@4.41.0)(webpack-hot-middleware@2.26.1)(webpack@5.99.9)':
+  '@pmmmwh/react-refresh-webpack-plugin@0.5.16(react-refresh@0.14.2)(type-fest@4.41.0)(webpack-hot-middleware@2.26.1)(webpack@5.99.9(esbuild@0.25.5))':
     dependencies:
       ansi-html: 0.0.9
       core-js-pure: 3.43.0
@@ -14246,7 +14273,7 @@ snapshots:
       react-refresh: 0.14.2
       schema-utils: 4.3.2
       source-map: 0.7.4
-      webpack: 5.99.9
+      webpack: 5.99.9(esbuild@0.25.5)
     optionalDependencies:
       type-fest: 4.41.0
       webpack-hot-middleware: 2.26.1
@@ -15173,33 +15200,6 @@ snapshots:
       - encoding
       - supports-color
 
-  '@sentry/nextjs@9.30.0(@opentelemetry/context-async-hooks@1.30.1(@opentelemetry/api@1.9.0))(@opentelemetry/core@1.30.1(@opentelemetry/api@1.9.0))(@opentelemetry/instrumentation@0.57.2(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-trace-base@1.30.1(@opentelemetry/api@1.9.0))(next@15.3.3(@opentelemetry/api@1.9.0)(@playwright/test@1.52.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react@19.1.0)(webpack@5.99.9(esbuild@0.25.5))':
-    dependencies:
-      '@opentelemetry/api': 1.9.0
-      '@opentelemetry/semantic-conventions': 1.34.0
-      '@rollup/plugin-commonjs': 28.0.1(rollup@4.35.0)
-      '@sentry-internal/browser-utils': 9.30.0
-      '@sentry/core': 9.30.0
-      '@sentry/node': 9.30.0
-      '@sentry/opentelemetry': 9.30.0(@opentelemetry/api@1.9.0)(@opentelemetry/context-async-hooks@1.30.1(@opentelemetry/api@1.9.0))(@opentelemetry/core@1.30.1(@opentelemetry/api@1.9.0))(@opentelemetry/instrumentation@0.57.2(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-trace-base@1.30.1(@opentelemetry/api@1.9.0))(@opentelemetry/semantic-conventions@1.34.0)
-      '@sentry/react': 9.30.0(react@19.1.0)
-      '@sentry/vercel-edge': 9.30.0
-      '@sentry/webpack-plugin': 3.5.0(webpack@5.99.9(esbuild@0.25.5))
-      chalk: 3.0.0
-      next: 15.3.3(@babel/core@7.27.4)(@opentelemetry/api@1.9.0)(@playwright/test@1.52.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
-      resolve: 1.22.8
-      rollup: 4.35.0
-      stacktrace-parser: 0.1.11
-    transitivePeerDependencies:
-      - '@opentelemetry/context-async-hooks'
-      - '@opentelemetry/core'
-      - '@opentelemetry/instrumentation'
-      - '@opentelemetry/sdk-trace-base'
-      - encoding
-      - react
-      - supports-color
-      - webpack
-
   '@sentry/nextjs@9.30.0(@opentelemetry/context-async-hooks@1.30.1(@opentelemetry/api@1.9.0))(@opentelemetry/core@1.30.1(@opentelemetry/api@1.9.0))(@opentelemetry/instrumentation@0.57.2(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-trace-base@1.30.1(@opentelemetry/api@1.9.0))(next@15.3.3(@opentelemetry/api@1.9.0)(@playwright/test@1.52.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react@19.1.0)(webpack@5.99.9)':
     dependencies:
       '@opentelemetry/api': 1.9.0
@@ -15336,16 +15336,6 @@ snapshots:
     dependencies:
       '@opentelemetry/api': 1.9.0
       '@sentry/core': 9.30.0
-
-  '@sentry/webpack-plugin@3.5.0(webpack@5.99.9(esbuild@0.25.5))':
-    dependencies:
-      '@sentry/bundler-plugin-core': 3.5.0
-      unplugin: 1.0.1
-      uuid: 9.0.1
-      webpack: 5.99.9(esbuild@0.25.5)
-    transitivePeerDependencies:
-      - encoding
-      - supports-color
 
   '@sentry/webpack-plugin@3.5.0(webpack@5.99.9)':
     dependencies:
@@ -15516,7 +15506,7 @@ snapshots:
       react: 19.1.0
       react-dom: 19.1.0(react@19.1.0)
 
-  '@storybook/builder-webpack5@8.6.14(storybook@8.6.14(prettier@3.6.0))(typescript@5.8.3)':
+  '@storybook/builder-webpack5@8.6.14(esbuild@0.25.5)(storybook@8.6.14(prettier@3.6.0))(typescript@5.8.3)':
     dependencies:
       '@storybook/core-webpack': 8.6.14(storybook@8.6.14(prettier@3.6.0))
       '@types/semver': 7.7.0
@@ -15524,23 +15514,23 @@ snapshots:
       case-sensitive-paths-webpack-plugin: 2.4.0
       cjs-module-lexer: 1.4.3
       constants-browserify: 1.0.0
-      css-loader: 6.11.0(webpack@5.99.9)
+      css-loader: 6.11.0(webpack@5.99.9(esbuild@0.25.5))
       es-module-lexer: 1.7.0
-      fork-ts-checker-webpack-plugin: 8.0.0(typescript@5.8.3)(webpack@5.99.9)
-      html-webpack-plugin: 5.6.3(webpack@5.99.9)
+      fork-ts-checker-webpack-plugin: 8.0.0(typescript@5.8.3)(webpack@5.99.9(esbuild@0.25.5))
+      html-webpack-plugin: 5.6.3(webpack@5.99.9(esbuild@0.25.5))
       magic-string: 0.30.17
       path-browserify: 1.0.1
       process: 0.11.10
       semver: 7.7.2
       storybook: 8.6.14(prettier@3.6.0)
-      style-loader: 3.3.4(webpack@5.99.9)
-      terser-webpack-plugin: 5.3.14(webpack@5.99.9)
+      style-loader: 3.3.4(webpack@5.99.9(esbuild@0.25.5))
+      terser-webpack-plugin: 5.3.14(esbuild@0.25.5)(webpack@5.99.9(esbuild@0.25.5))
       ts-dedent: 2.2.0
       url: 0.11.4
       util: 0.12.5
       util-deprecate: 1.0.2
-      webpack: 5.99.9
-      webpack-dev-middleware: 6.1.3(webpack@5.99.9)
+      webpack: 5.99.9(esbuild@0.25.5)
+      webpack-dev-middleware: 6.1.3(webpack@5.99.9(esbuild@0.25.5))
       webpack-hot-middleware: 2.26.1
       webpack-virtual-modules: 0.6.2
     optionalDependencies:
@@ -15604,7 +15594,7 @@ snapshots:
     dependencies:
       storybook: 8.6.14(prettier@3.6.0)
 
-  '@storybook/nextjs@8.6.14(next@15.3.3(@babel/core@7.27.4)(@opentelemetry/api@1.9.0)(@playwright/test@1.52.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(storybook@8.6.14(prettier@3.6.0))(type-fest@4.41.0)(typescript@5.8.3)(webpack-hot-middleware@2.26.1)(webpack@5.99.9)':
+  '@storybook/nextjs@8.6.14(esbuild@0.25.5)(next@15.3.3(@babel/core@7.27.4)(@opentelemetry/api@1.9.0)(@playwright/test@1.52.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(storybook@8.6.14(prettier@3.6.0))(type-fest@4.41.0)(typescript@5.8.3)(webpack-hot-middleware@2.26.1)(webpack@5.99.9(esbuild@0.25.5))':
     dependencies:
       '@babel/core': 7.27.4
       '@babel/plugin-syntax-bigint': 7.8.3(@babel/core@7.27.4)
@@ -15619,30 +15609,30 @@ snapshots:
       '@babel/preset-react': 7.27.1(@babel/core@7.27.4)
       '@babel/preset-typescript': 7.27.1(@babel/core@7.27.4)
       '@babel/runtime': 7.27.6
-      '@pmmmwh/react-refresh-webpack-plugin': 0.5.16(react-refresh@0.14.2)(type-fest@4.41.0)(webpack-hot-middleware@2.26.1)(webpack@5.99.9)
-      '@storybook/builder-webpack5': 8.6.14(storybook@8.6.14(prettier@3.6.0))(typescript@5.8.3)
-      '@storybook/preset-react-webpack': 8.6.14(@storybook/test@8.6.14(storybook@8.6.14(prettier@3.6.0)))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(storybook@8.6.14(prettier@3.6.0))(typescript@5.8.3)
+      '@pmmmwh/react-refresh-webpack-plugin': 0.5.16(react-refresh@0.14.2)(type-fest@4.41.0)(webpack-hot-middleware@2.26.1)(webpack@5.99.9(esbuild@0.25.5))
+      '@storybook/builder-webpack5': 8.6.14(esbuild@0.25.5)(storybook@8.6.14(prettier@3.6.0))(typescript@5.8.3)
+      '@storybook/preset-react-webpack': 8.6.14(@storybook/test@8.6.14(storybook@8.6.14(prettier@3.6.0)))(esbuild@0.25.5)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(storybook@8.6.14(prettier@3.6.0))(typescript@5.8.3)
       '@storybook/react': 8.6.14(@storybook/test@8.6.14(storybook@8.6.14(prettier@3.6.0)))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(storybook@8.6.14(prettier@3.6.0))(typescript@5.8.3)
       '@storybook/test': 8.6.14(storybook@8.6.14(prettier@3.6.0))
       '@types/semver': 7.7.0
-      babel-loader: 9.2.1(@babel/core@7.27.4)(webpack@5.99.9)
-      css-loader: 6.11.0(webpack@5.99.9)
+      babel-loader: 9.2.1(@babel/core@7.27.4)(webpack@5.99.9(esbuild@0.25.5))
+      css-loader: 6.11.0(webpack@5.99.9(esbuild@0.25.5))
       find-up: 5.0.0
       image-size: 1.2.1
       loader-utils: 3.3.1
       next: 15.3.3(@babel/core@7.27.4)(@opentelemetry/api@1.9.0)(@playwright/test@1.52.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
-      node-polyfill-webpack-plugin: 2.0.1(webpack@5.99.9)
+      node-polyfill-webpack-plugin: 2.0.1(webpack@5.99.9(esbuild@0.25.5))
       pnp-webpack-plugin: 1.7.0(typescript@5.8.3)
       postcss: 8.5.5
-      postcss-loader: 8.1.1(postcss@8.5.5)(typescript@5.8.3)(webpack@5.99.9)
+      postcss-loader: 8.1.1(postcss@8.5.5)(typescript@5.8.3)(webpack@5.99.9(esbuild@0.25.5))
       react: 19.1.0
       react-dom: 19.1.0(react@19.1.0)
       react-refresh: 0.14.2
       resolve-url-loader: 5.0.0
-      sass-loader: 14.2.1(webpack@5.99.9)
+      sass-loader: 14.2.1(webpack@5.99.9(esbuild@0.25.5))
       semver: 7.7.2
       storybook: 8.6.14(prettier@3.6.0)
-      style-loader: 3.3.4(webpack@5.99.9)
+      style-loader: 3.3.4(webpack@5.99.9(esbuild@0.25.5))
       styled-jsx: 5.1.7(@babel/core@7.27.4)(react@19.1.0)
       ts-dedent: 2.2.0
       tsconfig-paths: 4.2.0
@@ -15650,7 +15640,7 @@ snapshots:
     optionalDependencies:
       sharp: 0.33.5
       typescript: 5.8.3
-      webpack: 5.99.9
+      webpack: 5.99.9(esbuild@0.25.5)
     transitivePeerDependencies:
       - '@rspack/core'
       - '@swc/core'
@@ -15669,11 +15659,11 @@ snapshots:
       - webpack-hot-middleware
       - webpack-plugin-serve
 
-  '@storybook/preset-react-webpack@8.6.14(@storybook/test@8.6.14(storybook@8.6.14(prettier@3.6.0)))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(storybook@8.6.14(prettier@3.6.0))(typescript@5.8.3)':
+  '@storybook/preset-react-webpack@8.6.14(@storybook/test@8.6.14(storybook@8.6.14(prettier@3.6.0)))(esbuild@0.25.5)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(storybook@8.6.14(prettier@3.6.0))(typescript@5.8.3)':
     dependencies:
       '@storybook/core-webpack': 8.6.14(storybook@8.6.14(prettier@3.6.0))
       '@storybook/react': 8.6.14(@storybook/test@8.6.14(storybook@8.6.14(prettier@3.6.0)))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(storybook@8.6.14(prettier@3.6.0))(typescript@5.8.3)
-      '@storybook/react-docgen-typescript-plugin': 1.0.6--canary.9.0c3f3b7.0(typescript@5.8.3)(webpack@5.99.9)
+      '@storybook/react-docgen-typescript-plugin': 1.0.6--canary.9.0c3f3b7.0(typescript@5.8.3)(webpack@5.99.9(esbuild@0.25.5))
       '@types/semver': 7.7.0
       find-up: 5.0.0
       magic-string: 0.30.17
@@ -15684,7 +15674,7 @@ snapshots:
       semver: 7.7.2
       storybook: 8.6.14(prettier@3.6.0)
       tsconfig-paths: 4.2.0
-      webpack: 5.99.9
+      webpack: 5.99.9(esbuild@0.25.5)
     optionalDependencies:
       typescript: 5.8.3
     transitivePeerDependencies:
@@ -15699,7 +15689,7 @@ snapshots:
     dependencies:
       storybook: 8.6.14(prettier@3.6.0)
 
-  '@storybook/react-docgen-typescript-plugin@1.0.6--canary.9.0c3f3b7.0(typescript@5.8.3)(webpack@5.99.9)':
+  '@storybook/react-docgen-typescript-plugin@1.0.6--canary.9.0c3f3b7.0(typescript@5.8.3)(webpack@5.99.9(esbuild@0.25.5))':
     dependencies:
       debug: 4.4.1(supports-color@10.0.0)
       endent: 2.1.0
@@ -15709,7 +15699,7 @@ snapshots:
       react-docgen-typescript: 2.4.0(typescript@5.8.3)
       tslib: 2.8.1
       typescript: 5.8.3
-      webpack: 5.99.9
+      webpack: 5.99.9(esbuild@0.25.5)
     transitivePeerDependencies:
       - supports-color
 
@@ -15998,6 +15988,29 @@ snapshots:
       zod: 3.23.8
     optionalDependencies:
       ai: 4.3.16(react@19.1.0)(zod@3.23.8)
+    transitivePeerDependencies:
+      - bufferutil
+      - supports-color
+      - utf-8-validate
+
+  '@trigger.dev/sdk@4.0.0-v4-beta.21(ai@4.3.16(react@19.1.0)(zod@3.25.67))(zod@3.25.67)':
+    dependencies:
+      '@opentelemetry/api': 1.9.0
+      '@opentelemetry/api-logs': 0.52.1
+      '@opentelemetry/semantic-conventions': 1.25.1
+      '@trigger.dev/core': 4.0.0-v4-beta.21(supports-color@10.0.0)
+      chalk: 5.4.1
+      cronstrue: 2.61.0
+      debug: 4.4.1(supports-color@10.0.0)
+      evt: 2.5.9
+      slug: 6.1.0
+      ulid: 2.4.0
+      uncrypto: 0.1.3
+      uuid: 9.0.1
+      ws: 8.18.2
+      zod: 3.25.67
+    optionalDependencies:
+      ai: 4.3.16(react@19.1.0)(zod@3.25.67)
     transitivePeerDependencies:
       - bufferutil
       - supports-color
@@ -16466,10 +16479,9 @@ snapshots:
       - rollup
       - supports-color
 
-  '@vercel/otel@1.12.0(@opentelemetry/api@1.9.0)(@opentelemetry/instrumentation@0.57.2(@opentelemetry/api@1.9.0))(@opentelemetry/resources@1.30.1(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-metrics@1.25.1(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-trace-base@1.30.1(@opentelemetry/api@1.9.0))':
+  '@vercel/otel@1.12.0(@opentelemetry/api@1.9.0)(@opentelemetry/resources@1.30.1(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-metrics@1.25.1(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-trace-base@1.30.1(@opentelemetry/api@1.9.0))':
     dependencies:
       '@opentelemetry/api': 1.9.0
-      '@opentelemetry/instrumentation': 0.57.2(@opentelemetry/api@1.9.0)
       '@opentelemetry/resources': 1.30.1(@opentelemetry/api@1.9.0)
       '@opentelemetry/sdk-metrics': 1.25.1(@opentelemetry/api@1.9.0)
       '@opentelemetry/sdk-trace-base': 1.30.1(@opentelemetry/api@1.9.0)
@@ -16527,7 +16539,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@vitest/coverage-v8@3.2.4(vitest@3.2.2(@edge-runtime/vm@3.2.0)(@types/debug@4.1.12)(@types/node@22.15.30)(happy-dom@17.6.3)(jiti@2.4.2)(jsdom@25.0.1)(lightningcss@1.30.1)(terser@5.43.1)(tsx@4.19.4)(yaml@2.8.0))':
+  '@vitest/coverage-v8@3.2.4(vitest@3.2.2(@edge-runtime/vm@3.2.0)(@types/debug@4.1.12)(@types/node@22.15.30)(happy-dom@17.6.3)(jiti@2.4.2)(jsdom@26.0.0)(lightningcss@1.30.1)(terser@5.43.1)(tsx@4.19.4)(yaml@2.8.0))':
     dependencies:
       '@ampproject/remapping': 2.3.0
       '@bcoe/v8-coverage': 1.0.2
@@ -16542,7 +16554,7 @@ snapshots:
       std-env: 3.9.0
       test-exclude: 7.0.1
       tinyrainbow: 2.0.0
-      vitest: 3.2.2(@edge-runtime/vm@3.2.0)(@types/debug@4.1.12)(@types/node@22.15.30)(happy-dom@17.6.3)(jiti@2.4.2)(jsdom@25.0.1)(lightningcss@1.30.1)(terser@5.43.1)(tsx@4.19.4)(yaml@2.8.0)
+      vitest: 3.2.2(@edge-runtime/vm@3.2.0)(@types/debug@4.1.12)(@types/node@22.15.30)(happy-dom@17.6.3)(jiti@2.4.2)(jsdom@26.0.0)(lightningcss@1.30.1)(terser@5.43.1)(tsx@4.19.4)(yaml@2.8.0)
     transitivePeerDependencies:
       - supports-color
 
@@ -16793,6 +16805,19 @@ snapshots:
       zod: 3.23.8
     optionalDependencies:
       react: 19.1.0
+    optional: true
+
+  ai@4.3.16(react@19.1.0)(zod@3.25.67):
+    dependencies:
+      '@ai-sdk/provider': 1.1.3
+      '@ai-sdk/provider-utils': 2.2.8(zod@3.25.67)
+      '@ai-sdk/react': 1.2.12(react@19.1.0)(zod@3.25.67)
+      '@ai-sdk/ui-utils': 1.2.11(zod@3.25.67)
+      '@opentelemetry/api': 1.9.0
+      jsondiffpatch: 0.6.0
+      zod: 3.25.67
+    optionalDependencies:
+      react: 19.1.0
 
   ajv-formats@2.1.1(ajv@8.17.1):
     optionalDependencies:
@@ -16947,12 +16972,12 @@ snapshots:
     transitivePeerDependencies:
       - debug
 
-  babel-loader@9.2.1(@babel/core@7.27.4)(webpack@5.99.9):
+  babel-loader@9.2.1(@babel/core@7.27.4)(webpack@5.99.9(esbuild@0.25.5)):
     dependencies:
       '@babel/core': 7.27.4
       find-cache-dir: 4.0.0
       schema-utils: 4.3.2
-      webpack: 5.99.9
+      webpack: 5.99.9(esbuild@0.25.5)
 
   babel-plugin-polyfill-corejs2@0.4.13(@babel/core@7.27.4):
     dependencies:
@@ -17607,7 +17632,7 @@ snapshots:
       randombytes: 2.1.0
       randomfill: 1.0.4
 
-  css-loader@6.11.0(webpack@5.99.9):
+  css-loader@6.11.0(webpack@5.99.9(esbuild@0.25.5)):
     dependencies:
       icss-utils: 5.1.0(postcss@8.5.5)
       postcss: 8.5.5
@@ -17618,7 +17643,7 @@ snapshots:
       postcss-value-parser: 4.2.0
       semver: 7.7.2
     optionalDependencies:
-      webpack: 5.99.9
+      webpack: 5.99.9(esbuild@0.25.5)
 
   css-select@4.3.0:
     dependencies:
@@ -18275,7 +18300,7 @@ snapshots:
 
   expr-eval@2.0.2: {}
 
-  express-rate-limit@7.5.1(express@5.1.0):
+  express-rate-limit@7.5.1(express@5.1.0(supports-color@10.0.0)):
     dependencies:
       express: 5.1.0(supports-color@10.0.0)
 
@@ -18485,7 +18510,7 @@ snapshots:
       cross-spawn: 7.0.6
       signal-exit: 4.1.0
 
-  fork-ts-checker-webpack-plugin@8.0.0(typescript@5.8.3)(webpack@5.99.9):
+  fork-ts-checker-webpack-plugin@8.0.0(typescript@5.8.3)(webpack@5.99.9(esbuild@0.25.5)):
     dependencies:
       '@babel/code-frame': 7.27.1
       chalk: 4.1.2
@@ -18500,7 +18525,7 @@ snapshots:
       semver: 7.7.2
       tapable: 2.2.2
       typescript: 5.8.3
-      webpack: 5.99.9
+      webpack: 5.99.9(esbuild@0.25.5)
 
   form-data-encoder@1.7.2: {}
 
@@ -19084,7 +19109,7 @@ snapshots:
 
   html-void-elements@3.0.0: {}
 
-  html-webpack-plugin@5.6.3(webpack@5.99.9):
+  html-webpack-plugin@5.6.3(webpack@5.99.9(esbuild@0.25.5)):
     dependencies:
       '@types/html-minifier-terser': 6.1.0
       html-minifier-terser: 6.1.0
@@ -19092,7 +19117,7 @@ snapshots:
       pretty-error: 4.0.0
       tapable: 2.2.2
     optionalDependencies:
-      webpack: 5.99.9
+      webpack: 5.99.9(esbuild@0.25.5)
 
   htmlparser2@6.1.0:
     dependencies:
@@ -19533,7 +19558,7 @@ snapshots:
 
   jsdoc-type-pratt-parser@4.1.0: {}
 
-  jsdom@25.0.1:
+  jsdom@26.0.0:
     dependencies:
       cssstyle: 4.6.0
       data-urls: 5.0.0
@@ -19545,7 +19570,7 @@ snapshots:
       is-potential-custom-element-name: 1.0.1
       nwsapi: 2.2.20
       parse5: 7.3.0
-      rrweb-cssom: 0.7.1
+      rrweb-cssom: 0.8.0
       saxes: 6.0.0
       symbol-tree: 3.2.4
       tough-cookie: 5.1.2
@@ -19719,9 +19744,9 @@ snapshots:
       langfuse: 3.37.4
       langfuse-core: 3.37.4
 
-  langfuse-vercel@3.37.4(ai@4.3.16(react@19.1.0)(zod@3.23.8)):
+  langfuse-vercel@3.37.4(ai@4.3.16(react@19.1.0)(zod@3.25.67)):
     dependencies:
-      ai: 4.3.16(react@19.1.0)(zod@3.23.8)
+      ai: 4.3.16(react@19.1.0)(zod@3.25.67)
       langfuse: 3.37.4
       langfuse-core: 3.37.4
 
@@ -20636,7 +20661,7 @@ snapshots:
       mkdirp: 0.5.6
       resolve: 1.22.10
 
-  node-polyfill-webpack-plugin@2.0.1(webpack@5.99.9):
+  node-polyfill-webpack-plugin@2.0.1(webpack@5.99.9(esbuild@0.25.5)):
     dependencies:
       assert: 2.1.0
       browserify-zlib: 0.2.0
@@ -20663,7 +20688,7 @@ snapshots:
       url: 0.11.4
       util: 0.12.5
       vm-browserify: 1.1.2
-      webpack: 5.99.9
+      webpack: 5.99.9(esbuild@0.25.5)
 
   node-releases@2.0.19: {}
 
@@ -20696,7 +20721,7 @@ snapshots:
     dependencies:
       boolbase: 1.0.0
 
-  nuqs@2.4.3(next@15.3.3(@babel/core@7.27.4)(@opentelemetry/api@1.9.0)(@playwright/test@1.52.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react@19.1.0):
+  nuqs@2.4.3(next@15.3.3(@opentelemetry/api@1.9.0)(@playwright/test@1.52.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react@19.1.0):
     dependencies:
       mitt: 3.0.1
       react: 19.1.0
@@ -20834,11 +20859,6 @@ snapshots:
     optionalDependencies:
       ws: 8.18.2
       zod: 3.24.4
-
-  openai@5.8.2(ws@8.18.2)(zod@3.25.67):
-    optionalDependencies:
-      ws: 8.18.2
-      zod: 3.25.67
 
   openapi-types@12.1.3: {}
 
@@ -21264,14 +21284,14 @@ snapshots:
 
   possible-typed-array-names@1.1.0: {}
 
-  postcss-loader@8.1.1(postcss@8.5.5)(typescript@5.8.3)(webpack@5.99.9):
+  postcss-loader@8.1.1(postcss@8.5.5)(typescript@5.8.3)(webpack@5.99.9(esbuild@0.25.5)):
     dependencies:
       cosmiconfig: 9.0.0(typescript@5.8.3)
       jiti: 1.21.7
       postcss: 8.5.5
       semver: 7.7.2
     optionalDependencies:
-      webpack: 5.99.9
+      webpack: 5.99.9(esbuild@0.25.5)
     transitivePeerDependencies:
       - typescript
 
@@ -21741,17 +21761,6 @@ snapshots:
 
   relateurl@0.2.7: {}
 
-  remark-gfm@4.0.0:
-    dependencies:
-      '@types/mdast': 4.0.4
-      mdast-util-gfm: 3.1.0
-      micromark-extension-gfm: 3.0.0
-      remark-parse: 11.0.0
-      remark-stringify: 11.0.0
-      unified: 11.0.5
-    transitivePeerDependencies:
-      - supports-color
-
   remark-gfm@4.0.1:
     dependencies:
       '@types/mdast': 4.0.4
@@ -21956,9 +21965,6 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  rrweb-cssom@0.7.1:
-    optional: true
-
   rrweb-cssom@0.8.0:
     optional: true
 
@@ -21996,11 +22002,11 @@ snapshots:
 
   safer-buffer@2.1.2: {}
 
-  sass-loader@14.2.1(webpack@5.99.9):
+  sass-loader@14.2.1(webpack@5.99.9(esbuild@0.25.5)):
     dependencies:
       neo-async: 2.6.2
     optionalDependencies:
-      webpack: 5.99.9
+      webpack: 5.99.9(esbuild@0.25.5)
 
   saxes@6.0.0:
     dependencies:
@@ -22457,9 +22463,9 @@ snapshots:
       prettier: 3.6.0
       tinycolor2: 1.6.0
 
-  style-loader@3.3.4(webpack@5.99.9):
+  style-loader@3.3.4(webpack@5.99.9(esbuild@0.25.5)):
     dependencies:
-      webpack: 5.99.9
+      webpack: 5.99.9(esbuild@0.25.5)
 
   style-mod@4.1.2: {}
 
@@ -23260,7 +23266,7 @@ snapshots:
       tsx: 4.19.4
       yaml: 2.8.0
 
-  vitest@3.2.2(@edge-runtime/vm@3.2.0)(@types/debug@4.1.12)(@types/node@22.15.30)(happy-dom@17.6.3)(jiti@2.4.2)(jsdom@25.0.1)(lightningcss@1.30.1)(terser@5.43.1)(tsx@4.19.4)(yaml@2.8.0):
+  vitest@3.2.2(@edge-runtime/vm@3.2.0)(@types/debug@4.1.12)(@types/node@22.15.30)(happy-dom@17.6.3)(jiti@2.4.2)(jsdom@26.0.0)(lightningcss@1.30.1)(terser@5.43.1)(tsx@4.19.4)(yaml@2.8.0):
     dependencies:
       '@types/chai': 5.2.2
       '@vitest/expect': 3.2.2
@@ -23290,7 +23296,7 @@ snapshots:
       '@types/debug': 4.1.12
       '@types/node': 22.15.30
       happy-dom: 17.6.3
-      jsdom: 25.0.1
+      jsdom: 26.0.0
     transitivePeerDependencies:
       - jiti
       - less
@@ -23350,7 +23356,7 @@ snapshots:
 
   webidl-conversions@7.0.0: {}
 
-  webpack-dev-middleware@6.1.3(webpack@5.99.9):
+  webpack-dev-middleware@6.1.3(webpack@5.99.9(esbuild@0.25.5)):
     dependencies:
       colorette: 2.0.20
       memfs: 3.5.3
@@ -23358,7 +23364,7 @@ snapshots:
       range-parser: 1.2.1
       schema-utils: 4.3.2
     optionalDependencies:
-      webpack: 5.99.9
+      webpack: 5.99.9(esbuild@0.25.5)
 
   webpack-hot-middleware@2.26.1:
     dependencies:
@@ -23590,10 +23596,15 @@ snapshots:
   zod-to-json-schema@3.24.5(zod@3.23.8):
     dependencies:
       zod: 3.23.8
+    optional: true
 
   zod-to-json-schema@3.24.5(zod@3.24.4):
     dependencies:
       zod: 3.24.4
+
+  zod-to-json-schema@3.24.5(zod@3.25.67):
+    dependencies:
+      zod: 3.25.67
 
   zod-validation-error@1.5.0(zod@3.23.8):
     dependencies:
