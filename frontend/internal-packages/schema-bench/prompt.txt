@@ -1,0 +1,8 @@
+@/frontend/internal-packages/schema-bench/src/workspace/evaluation/evaluation.ts 挙動を変えずに、以下のlintとtestが通るようにリファクタリングして
+
+- $ pnpm --filter @liam-hq/schema-bench test
+- $ pnpm --filter @liam-hq/schema-bench lint
+
+fmtには、以下を使って。
+
+- $ pnpm --filter @liam-hq/schema-bench fmt
