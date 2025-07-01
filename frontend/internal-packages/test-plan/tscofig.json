@@ -1,0 +1,17 @@
+{
+  "extends": "@liam-hq/configs/tsconfig/base.json",
+  "compilerOptions": {
+    "outDir": "dist",
+    "declaration": true,
+    "target": "ES2022",
+    "moduleResolution": "node",
+    "jsx": "react-jsx",
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "types": ["vite/client"]
+  },
+  "include": ["src/**/*", "vite.config.ts"],
+  "exclude": ["node_modules", "dist"]
+}
