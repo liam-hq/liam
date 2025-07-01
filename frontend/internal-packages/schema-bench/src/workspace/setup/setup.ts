@@ -29,6 +29,19 @@ const createWorkspaceDirectories = (workspacePath: string): SetupResult => {
   }
 }
 
+const copyFilesFromDirectory = (sourceDir: string, targetDir: string): void => {
+  if (fs.existsSync(sourceDir)) {
+    const files = fs.readdirSync(sourceDir)
+    for (const file of files) {
+      const sourcePath = path.join(sourceDir, file)
+      const targetPath = path.join(targetDir, file)
+      if (!fs.existsSync(targetPath)) {
+        fs.copyFileSync(sourcePath, targetPath)
+      }
+    }
+  }
+}
+
 const copyDefaultData = (
   defaultDataPath: string,
   workspacePath: string,
@@ -43,27 +56,8 @@ const copyDefaultData = (
   const referenceTargetDir = path.join(workspacePath, 'execution', 'reference')
 
   try {
-    if (fs.existsSync(inputSourceDir)) {
-      const inputFiles = fs.readdirSync(inputSourceDir)
-      for (const file of inputFiles) {
-        const sourcePath = path.join(inputSourceDir, file)
-        const targetPath = path.join(inputTargetDir, file)
-        if (!fs.existsSync(targetPath)) {
-          fs.copyFileSync(sourcePath, targetPath)
-        }
-      }
-    }
-
-    if (fs.existsSync(referenceSourceDir)) {
-      const referenceFiles = fs.readdirSync(referenceSourceDir)
-      for (const file of referenceFiles) {
-        const sourcePath = path.join(referenceSourceDir, file)
-        const targetPath = path.join(referenceTargetDir, file)
-        if (!fs.existsSync(targetPath)) {
-          fs.copyFileSync(sourcePath, targetPath)
-        }
-      }
-    }
+    copyFilesFromDirectory(inputSourceDir, inputTargetDir)
+    copyFilesFromDirectory(referenceSourceDir, referenceTargetDir)
 
     return ok(undefined)
   } catch (error) {
@@ -92,22 +86,31 @@ const validateWorkspace = (workspacePath: string): SetupResult => {
   return ok(undefined)
 }
 
-export const setupWorkspace = async (
-  config: WorkspaceConfig,
-): Promise<SetupResult> => {
+const removeExistingWorkspace = (workspacePath: string): SetupResult => {
   try {
-    if (fs.existsSync(config.workspacePath)) {
-      fs.rmSync(config.workspacePath, { recursive: true, force: true })
+    if (fs.existsSync(workspacePath)) {
+      fs.rmSync(workspacePath, { recursive: true, force: true })
     }
+    return ok(undefined)
   } catch (error) {
     return err({
       type: 'FILE_WRITE_ERROR',
-      path: config.workspacePath,
+      path: workspacePath,
       cause:
         error instanceof Error
           ? error.message
           : 'Failed to remove existing workspace',
     })
+  }
+}
+
+export const setupWorkspace = async (
+  config: WorkspaceConfig,
+): Promise<SetupResult> => {
+  // Remove existing workspace
+  const removeResult = removeExistingWorkspace(config.workspacePath)
+  if (removeResult.isErr()) {
+    return removeResult
   }
 
   // Create directories
