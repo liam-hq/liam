@@ -39,7 +39,6 @@ jobs:
         working-directory: frontend/internal-packages/e2e/
 
       - name: Install system dependencies for WebKit
-        if: steps.playwright-cache.outputs.cache-hit == 'true'
         run: pnpm exec playwright install-deps webkit
         shell: bash
         working-directory: frontend/internal-packages/e2e/
