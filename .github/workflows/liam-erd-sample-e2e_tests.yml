@@ -23,8 +23,8 @@ jobs:
         working-directory: 'frontend/internal-packages/e2e'
     env:
       CI: true
-      URL: ${{ github.event.deployment_status.target_url }} => ${{ env.FIXED_TARGET_URL }}
-      ENVIRONMENT: ${{ github.event.deployment.environment }} => ${{ env.FIXED_ENVIRONMENT_VAL }}
+      URL: ${{ github.event.deployment_status.target_url }}
+      ENVIRONMENT: ${{ github.event.deployment.environment }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
@@ -37,10 +37,10 @@ jobs:
         shell: ruby {0}
         working-directory: ${{ github.workspace }}
         run: |
-          event_name      = "${{ github.event_name }} => ${{ env.FIXED_EVENT_NAME }}"
-          event_state     = "${{ github.event.deployment_status.state }} => ${{ env.FIXED_EVENT_STATE }}"
-          environment_val = "${{ github.event.deployment.environment }} => ${{ env.FIXED_ENVIRONMENT_VAL }}"
-          target_url      = "${{ github.event.deployment_status.target_url }} => ${{ env.FIXED_TARGET_URL }}"
+          event_name      = "${{ github.event_name }}"
+          event_state     = "${{ github.event.deployment_status.state }}"
+          environment_val = "${{ github.event.deployment.environment }}"
+          target_url      = "${{ github.event.deployment_status.target_url }}"
 
           File.open(ENV.fetch("GITHUB_ENV"), "a") do |file|
             file.puts "FIXED_EVENT_NAME=#{event_name}"
@@ -78,20 +78,10 @@ jobs:
           puts "Should Run: #{result}"
 
           # Same as 'echo "should_run=xxxx" >> $GITHUB_OUTPUT'
-          if result == "should_run=true"
-            output_file = ENV.fetch("GITHUB_OUTPUT")
-            File.open(output_file, "a") do |file|
-              file.puts result
-            end
-
-          if target_url.include?("liam-erd-sample")
-            output_file = ENV.fetch("GITHUB_ENV")
-            File.open(output_file, "a") do |file|
-              file.puts "FIXED_EVENT_NAME=#{event_name}"
-              file.puts "FIXED_EVENT_STATE=#{event_state}"
-              file.puts "FIXED_ENVIRONMENT_VAL=#{environment_val}"
-              file.puts "FIXED_TARGET_URL=#{target_url}"
-            end
+          output_file = ENV.fetch("GITHUB_OUTPUT")
+          File.open(output_file, "a") do |file|
+            file.puts result
+          end
 
       - name: Setup pnpm
         if: steps.check.outputs.should_run == 'true'
