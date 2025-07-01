@@ -36,13 +36,13 @@ jobs:
         if: steps.playwright-cache.outputs.cache-hit != 'true'
         run: pnpm exec playwright install --with-deps
         shell: bash
-        working-directory: frontend/internal-packages/e2e/test-results/
+        path: frontend/internal-packages/e2e/test-results/
 
       - name: Install system dependencies for WebKit
         if: steps.playwright-cache.outputs.cache-hit == 'true'
         run: pnpm exec playwright install-deps webkit
         shell: bash
-        working-directory: frontend/internal-packages/e2e/test-results/
+        path: frontend/internal-packages/e2e/test-results/
 
       - name: liam-app-e2e_tests
         if: github.event.deployment_status.state == 'success' &&
