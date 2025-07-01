@@ -65,14 +65,16 @@ jobs:
           name: test-results-${{ matrix.browser }}
           path: frontend/internal-packages/e2e/test-results/
 
-      - name: Post test status
+      - name: Post E2E status manually (with gh)
         if: always()
         run: |
+          STATE="${{ job.status }}"
+          CONTEXT="E2E Tests / e2e-tests (${{ matrix.browser }})"
           gh api repos/${{ github.repository }}/statuses/${{ github.sha }} \
             --method POST \
-            --field state="${{ job.status }}" \
-            --field context="E2E Tests / liam-erd-sample / ${{ matrix.browser }}"
-            --field description="liam-erd-sample E2E test result: ${{ job.status }}"
+            --field state="${STATE}" \
+            --field context="${CONTEXT}" \
+            --field description="E2E test result for ${{ matrix.browser }}: (${STATE})" \
             --field target_url="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
