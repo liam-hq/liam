@@ -51,10 +51,8 @@ jobs:
           echo "Deployment SHA: ${{ github.event.deployment.sha }}"
 
       - name: liam-app-e2e_tests
-        if: (github.event.deployment_status.state == 'success' &&
-          contains(github.event.deployment.environment, 'Production') &&
-          contains(github.event.deployment_status.target_url, 'liam-app-git-main')) ||
-          (!contains(github.event.deployment_status.target_url, 'liam-docs') && !contains(github.event.deployment_status.target_url, 'liam-erd-sample') && !contains(github.event.deployment_status.target_url, 'liam-storybook'))
+        if: github.event.deployment_status.state == 'success' &&
+          contains(github.event.deployment_status.target_url, 'liam-app')
         uses: ./.github/actions/reusable-e2e
         with:
           browser: ${{ matrix.browser }}
@@ -66,10 +64,8 @@ jobs:
           url: ${{ github.event.deployment_status.target_url }}
 
       - name: liam-erd-sample-e2e_tests
-        if: (github.event.deployment_status.state == 'success' &&
-          contains(github.event.deployment.environment, 'Preview') &&
-          contains(github.event.deployment_status.target_url, 'liam-erd-sample')) ||
-          (!contains(github.event.deployment_status.target_url, 'liam-docs') && !contains(github.event.deployment_status.target_url, 'liam-app') && !contains(github.event.deployment_status.target_url, 'liam-storybook'))
+        if: github.event.deployment_status.state == 'success' &&
+          contains(github.event.deployment_status.target_url, 'liam-erd-sample')
         uses: ./.github/actions/reusable-e2e
         with:
           browser: ${{ matrix.browser }}
