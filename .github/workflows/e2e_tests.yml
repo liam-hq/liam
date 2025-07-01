@@ -20,9 +20,13 @@ jobs:
       contents: read
       statuses: write
 
+    defaults:
+      run:
+        working-directory: 'frontend/internal-packages/e2e'
+
     steps:
-      - name: Checkout repo for local action resolution
-        uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
       - name: liam-app-e2e_tests
         id: check
