@@ -4,7 +4,7 @@ on:
   deployment_status:
 
 concurrency:
-  group: liam-erd-sample-e2e-tests
+  group: liam-erd-sample-e2e-tests-${{ github.event.deployment_status.target_url }}
   cancel-in-progress: false
 
 jobs:
@@ -69,6 +69,7 @@ jobs:
           puts "Environment: #{environment_val}"
           puts "Target URL: #{target_url}"
           puts "Should Run: #{result}"
+          puts "Concurrency Group: liam-erd-sample-e2e-tests-#{target_url}"
 
           # Same as 'echo "should_run=xxxx" >> $GITHUB_OUTPUT'
           output_file = ENV.fetch("GITHUB_OUTPUT")
