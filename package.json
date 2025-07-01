@@ -36,7 +36,6 @@
     "prelint": "pnpm create-env-files",
     "release": "pnpm build && pnpm changeset publish",
     "test": "turbo test",
-    "test:vitest": "vitest run",
     "test:coverage": "vitest --coverage",
     "test:coverage:ui": "vitest --coverage --ui",
     "test:e2e": "turbo test:e2e",

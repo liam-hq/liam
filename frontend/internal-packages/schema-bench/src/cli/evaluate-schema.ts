@@ -1,6 +1,7 @@
 import * as path from 'node:path'
 import { evaluateSchema } from '../workspace/evaluation/evaluation.ts'
 import type { EvaluationConfig } from '../workspace/types'
+
 // Right now, the script processes process.argv directly and lives in this package since it’s still rough and only meant for internal (Liam team) use.
 // In the future, once things are more stable, we’d like to move this feature to the CLI package and rely on something like commander for argument parsing.
 const runEvaluateSchema = async (): Promise<void> => {
