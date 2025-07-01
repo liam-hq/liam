@@ -3,12 +3,12 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { exit } from 'node:process'
 import inquirer from 'inquirer'
-import { initCommand } from './index.js'
+import { runInitAction } from './index.js'
 
 describe('InitCommand', () => {
   let consoleInfoSpy: any
   let consoleErrorSpy: any
-  let exitSpy: any
+  let mockExit: any
   let inquirerPromptSpy: any
   let fsMkdirSyncSpy: any
   let fsWriteFileSyncSpy: any
@@ -16,7 +16,9 @@ describe('InitCommand', () => {
   beforeEach(() => {
     consoleInfoSpy = vi.spyOn(console, 'info').mockImplementation(() => {})
     consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
-    exitSpy = vi.spyOn(process, 'exit').mockImplementation(() => undefined as never)
+    mockExit = vi.fn().mockImplementation(() => {
+      throw new Error('Exit called')
+    })
     inquirerPromptSpy = vi.spyOn(inquirer, 'prompt')
     fsMkdirSyncSpy = vi.spyOn(fs, 'mkdirSync').mockImplementation(() => undefined)
     fsWriteFileSyncSpy = vi.spyOn(fs, 'writeFileSync').mockImplementation(() => {})
@@ -33,7 +35,7 @@ describe('InitCommand', () => {
       .mockResolvedValueOnce({ dumpFilePath: 'my-schema.sql' })
       .mockResolvedValueOnce({ addGhActions: false })
 
-    await initCommand.parseAsync(['node', 'test', 'init'])
+    await runInitAction(mockExit)
 
     expect(inquirerPromptSpy).toHaveBeenCalledTimes(4)
     expect(consoleInfoSpy).toHaveBeenCalledWith(expect.stringContaining('Welcome to the @liam-hq/cli setup process'))
@@ -48,7 +50,7 @@ describe('InitCommand', () => {
       .mockResolvedValueOnce({ schemaFilePath: 'custom/schema.rb' })
       .mockResolvedValueOnce({ addGhActions: false })
 
-    await initCommand.parseAsync(['node', 'test', 'init'])
+    await runInitAction(mockExit)
 
     expect(inquirerPromptSpy).toHaveBeenCalledTimes(3)
     expect(consoleInfoSpy).toHaveBeenCalledWith(expect.stringContaining('Welcome to the @liam-hq/cli setup process'))
@@ -65,7 +67,7 @@ describe('InitCommand', () => {
       .mockResolvedValueOnce({ dumpFilePath: 'schema.sql' })
       .mockResolvedValueOnce({ addGhActions: true })
 
-    await initCommand.parseAsync(['node', 'test', 'init'])
+    await runInitAction(mockExit)
 
     expect(fsMkdirSyncSpy).toHaveBeenCalledWith(
       path.join(process.cwd(), '.github', 'workflows'),
@@ -83,10 +85,10 @@ describe('InitCommand', () => {
     inquirerPromptSpy
       .mockResolvedValueOnce({ dbOrOrm: 'Others' })
 
-    await initCommand.parseAsync(['node', 'test', 'init'])
+    await expect(runInitAction(mockExit)).rejects.toThrow('Exit called')
 
     expect(consoleInfoSpy).toHaveBeenCalledWith(expect.stringContaining("Sorry we don't support them yet"))
-    expect(exitSpy).toHaveBeenCalledWith(0)
+    expect(mockExit).toHaveBeenCalledWith(0)
   })
 
   it('test_github_actions_creation_filesystem_error', async () => {
@@ -101,7 +103,7 @@ describe('InitCommand', () => {
       throw error
     })
 
-    await initCommand.parseAsync(['node', 'test', 'init'])
+    await runInitAction(mockExit)
 
     expect(consoleErrorSpy).toHaveBeenCalledWith(expect.stringContaining('Failed to create GitHub Actions workflow file'))
     expect(consoleErrorSpy).toHaveBeenCalledWith(expect.stringContaining('Permission denied'))
@@ -112,9 +114,9 @@ describe('InitCommand', () => {
       .mockResolvedValueOnce({ dbOrOrm: 'Drizzle' })
       .mockResolvedValueOnce({ usePostgres: false })
 
-    await initCommand.parseAsync(['node', 'test', 'init'])
+    await expect(runInitAction(mockExit)).rejects.toThrow('Exit called')
 
     expect(consoleInfoSpy).toHaveBeenCalledWith(expect.stringContaining("Sorry we don't support them yet"))
-    expect(exitSpy).toHaveBeenCalledWith(0)
+    expect(mockExit).toHaveBeenCalledWith(0)
   })
 })

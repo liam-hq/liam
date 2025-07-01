@@ -11,9 +11,9 @@ import {
   RepositoryUrl,
 } from '../urls.js'
 
-const initCommand = new Command('init').description(
-  'guide you interactively through the setup',
-)
+interface InitCommandDeps {
+  exit: (code?: number) => never
+}
 
 // Map user-friendly selections to the correct --format value
 const formatMap: Record<string, string> = {
@@ -191,7 +191,7 @@ const handleRailsOrPrismaPrompts = async (dbOrOrm: string): Promise<string> => {
 /**
  * Display unsupported technology message and exit
  */
-const displayUnsupportedMessage = () => {
+const displayUnsupportedMessage = (exitFn: (code?: number) => never) => {
   console.info(`
 💔 ${yocto.yellowBright("For other DBs or ORMs, Sorry we don't support them yet")} 💔
 
@@ -200,7 +200,7 @@ Visit ${yocto.yellowBright(DbOrmDiscussionUrl)} to suggest support for your data
 For more details about Liam ERD usage and advanced configurations, check out:
 ${yocto.blueBright(DocsUrl)}
 `)
-  exit(0)
+  exitFn(0)
 }
 
 /**
@@ -333,9 +333,9 @@ ${setupSteps}
 }
 
 /**
- * Main action function for the init command
+ * Main action function for the init command - extracted for testing
  */
-initCommand.action(async () => {
+export const runInitAction = async (exitFn: (code?: number) => never = exit) => {
   // Display welcome message
   displayWelcomeMessage()
 
@@ -382,7 +382,7 @@ initCommand.action(async () => {
   }
 
   if (cannotSupportNow) {
-    displayUnsupportedMessage()
+    displayUnsupportedMessage(exitFn)
   }
 
   // Step 3: Ask if the user wants GitHub Actions
@@ -411,9 +411,21 @@ ${yocto.blueBright(DocsUrl)}
   generateGitHubActions(addGhActions, dbOrOrm, inputFilePath, selectedFormat)
 
   console.info(
-    yocto.greenBright(`
-✅ Setup complete! Enjoy using Liam ERD to visualize your database schema!`),
+    yocto.greenBright(`\n✅ Setup complete! Enjoy using Liam ERD to visualize your database schema!`),
   )
-})
+}
 
-export { initCommand }
+const createInitCommand = (deps: InitCommandDeps = { exit }) => {
+  const initCommand = new Command('init').description(
+    'guide you interactively through the setup',
+  )
+
+  initCommand.action(() => runInitAction(deps.exit))
+
+  return initCommand
+}
+
+// Default export with process.exit
+const initCommand = createInitCommand()
+
+export { initCommand, createInitCommand }
