@@ -36,11 +36,6 @@ runs:
       if: inputs.should-run == 'true'
       uses: ./.github/actions/pnpm-setup
 
-    - name: Install dependencies
-      if: inputs.should-run == 'true'
-      run: pnpm install
-      shell: bash
-
     - name: Cache Playwright browsers
       if: inputs.should-run == 'true'
       id: playwright-cache
@@ -54,20 +49,20 @@ runs:
     - name: Install Playwright browsers
       if: ${{ inputs.should-run == 'true' && steps.playwright-cache.outputs.cache-hit != 'true' }}
       run: pnpm exec playwright install --with-deps
-      shell: bash
+      shell: bash {0}
 
     - name: Install system dependencies for WebKit
       # Some WebKit dependencies seem to lay outside the cache and will need to be installed separately
       if: ${{ inputs.should-run == 'true' && steps.playwright-cache.outputs.cache-hit == 'true' }}
       run: pnpm exec playwright install-deps webkit
-      shell: bash
+      shell: bash {0}
 
     # This workflow is triggered for all deployments (liam-app, liam-erd-sample, liam-docs),
     # but E2E tests are executed only for liam-app deployments now.
     - name: Run e2e tests
       if: inputs.should-run == 'true'
       run: pnpm exec playwright test --project="${{ inputs.browser }}"
-      shell: bash
+      shell: bash {0}
       env:
         URL: ${{ inputs.url }}
 
@@ -91,12 +86,12 @@ runs:
           --field context="${CONTEXT}" \
           --field description="E2E test result for ${{ inputs.browser }}: (${STATE})" \
           --field target_url="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-      shell: bash
+      shell: bash {0}
       env:
         GH_TOKEN: ${{ inputs.github-token }}
 
     - name: Slack Notification on Failure
-      if: ${{ inputs.should-run == 'true' && failure() }}
+      if: ${{ inputs.should-run == 'true' && contains(inputs.environment, inputs['deployment-target']) && failure() }}
       uses: tokorom/action-slack-incoming-webhook@d57bf1eb618f3dae9509afefa70d5774ad3d42bf # v1.3.0
       env:
         INCOMING_WEBHOOK_URL: ${{ inputs.slack-webhook-url }}
