@@ -1,9 +1,9 @@
 ---
-name: test-coverage-proposals
-description: Create test case proposals with it.skip for improving test coverage
+name: plan-regression-tests
+description: Plan regression tests for existing code with it.skip statements
 ---
 
-# Test Coverage Proposals Command
+# Plan Regression Tests Command
 
 Create `it.skip` test proposals for existing code. Document current behavior, not ideal behavior.
 
