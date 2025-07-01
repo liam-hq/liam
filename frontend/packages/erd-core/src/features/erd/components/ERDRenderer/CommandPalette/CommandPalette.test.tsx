@@ -281,6 +281,7 @@ describe('focus on options by single click', () => {
     expect(within(preview).getByText('follows')).toBeInTheDocument()
 
     // focuses on "posts" option and displays a preview of the "posts" table
+    // TODO: It should keep focus on the combobox element when any option is clicked. This test should pass with `user.keyboard('posts')` as well instead of `user.type(searchCombobox, 'posts')`
     await user.type(searchCombobox, 'posts')
     expect(within(preview).getByText('posts')).toBeInTheDocument()
   })

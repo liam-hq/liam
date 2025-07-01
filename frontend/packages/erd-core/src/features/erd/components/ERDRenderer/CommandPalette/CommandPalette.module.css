@@ -57,15 +57,22 @@
 .searchFormWithIcon {
   display: flex;
   flex-grow: 1;
-  padding: var(--spacing-2) 0;
-  gap: var(--spacing-2);
+  position: relative;
+  align-items: center;
 }
 
 .searchFormWithIcon [cmdk-input] {
+  padding: var(--spacing-2) 0 var(--spacing-2) var(--spacing-6);
   width: 100%;
+  border-radius: var(--border-radius-smbase);
+}
+
+.searchFormWithIcon [cmdk-input]:focus-visible {
+  outline: 1px solid var(--button-primary-background);
 }
 
 .searchIcon {
+  position: absolute;
   width: 16px;
   height: 16px;
   color: var(--overlay-60);
