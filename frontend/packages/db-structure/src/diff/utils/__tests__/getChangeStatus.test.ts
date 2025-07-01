@@ -138,5 +138,4 @@ describe('getChangeStatus', () => {
     })
     expect(tableCommentResult).toBe('modified')
   })
-
 })
