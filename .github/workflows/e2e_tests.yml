@@ -67,6 +67,7 @@ jobs:
           environment: ${{ github.event.deployment.environment }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
           should-run: ${{ steps.check-liam-app.outputs.should_run }}
+          slack-webhook-url: ${{ secrets.SLACK_CLI_CI_WEBHOOK_URL }}
           ref: ${{ github.event.deployment.sha }}
           test-project: liam-app
           url: ${{ github.event.deployment_status.target_url }}
@@ -109,6 +110,7 @@ jobs:
           environment: ${{ github.event.deployment.environment }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
           should-run: ${{ steps.check-liam-erd.outputs.should_run }}
+          slack-webhook-url: ${{ secrets.SLACK_CLI_CI_WEBHOOK_URL }}
           ref: ${{ github.event.deployment.sha }}
           test-project: liam-erd-sample
           url: ${{ github.event.deployment_status.target_url }}

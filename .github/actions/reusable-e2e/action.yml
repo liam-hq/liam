@@ -19,6 +19,9 @@ inputs:
   should-run:
     required: true
     type: string
+  slack-webhook-url:
+    required: true
+    type: string
   test-project:
     required: true
     type: string
@@ -46,17 +49,20 @@ runs:
     - name: Install Playwright browsers
       if: ${{ inputs.should-run == 'true' && steps.playwright-cache.outputs.cache-hit != 'true' }}
       run: pnpm exec playwright install --with-deps
+      shell: bash
 
     - name: Install system dependencies for WebKit
       # Some WebKit dependencies seem to lay outside the cache and will need to be installed separately
       if: ${{ inputs.should-run == 'true' && steps.playwright-cache.outputs.cache-hit == 'true' }}
       run: pnpm exec playwright install-deps webkit
+      shell: bash
 
     # This workflow is triggered for all deployments (liam-app, liam-erd-sample, liam-docs),
     # but E2E tests are executed only for liam-app deployments now.
     - name: Run e2e tests
       if: inputs.should-run == 'true'
       run: pnpm exec playwright test --project="${{ inputs.browser }}"
+      shell: bash
       env:
         URL: ${{ inputs.url }}
 
@@ -80,6 +86,7 @@ runs:
           --field context="${CONTEXT}" \
           --field description="E2E test result for ${{ inputs.browser }}: (${STATE})" \
           --field target_url="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+      shell: bash
       env:
         GH_TOKEN: ${{ inputs.github-token }}
 
@@ -87,7 +94,7 @@ runs:
       if: ${{ inputs.should-run == 'true' && contains(inputs.environment, inputs.test-project) && failure() }}
       uses: tokorom/action-slack-incoming-webhook@d57bf1eb618f3dae9509afefa70d5774ad3d42bf # v1.3.0
       env:
-        INCOMING_WEBHOOK_URL: ${{ secrets.SLACK_CLI_CI_WEBHOOK_URL }}
+        INCOMING_WEBHOOK_URL: ${{ inputs.slack-webhook-url }}
       with:
         text: 'E2E Test Failure'
         attachments: |
