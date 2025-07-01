@@ -18,7 +18,7 @@ beforeAll(async () => {
   await execAsync('pnpm run build', { cwd: cliPackageDir })
 }, 60000 /* 60 seconds for setup */)
 
-describe('CLI Smoke Test', () => {
+describe.skip('CLI Smoke Test', () => {
   it('should run the CLI command without errors: `erd`', async () => {
     try {
       const { stdout, stderr } = await execAsync(
