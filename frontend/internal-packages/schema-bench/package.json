@@ -21,6 +21,10 @@
     "fmt": "concurrently \"pnpm:fmt:*\"",
     "fmt:biome": "biome check --write --unsafe .",
     "fmt:eslint": "eslint --fix .",
+    "lint": "concurrently \"pnpm:lint:*\"",
+    "lint:biome": "biome check .",
+    "lint:eslint": "eslint .",
+    "lint:tsc": "tsc --noEmit",
     "setup-workspace": "node --experimental-strip-types src/cli/setup-workspace.ts",
     "test": "vitest --watch=false --passWithNoTests"
   }

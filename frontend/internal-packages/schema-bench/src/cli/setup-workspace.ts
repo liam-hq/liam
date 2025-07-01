@@ -31,7 +31,7 @@ const formatError = (error: WorkspaceError): string => {
 }
 
 const runSetupWorkspace = async (): Promise<void> => {
-  const initCwd = process.env.INIT_CWD || process.cwd()
+  const initCwd = process.env['INIT_CWD'] || process.cwd()
   const workspacePath = path.resolve(initCwd, 'benchmark-workspace')
   const defaultDataPath = path.resolve(
     __dirname,

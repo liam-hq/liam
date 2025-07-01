@@ -306,7 +306,11 @@ describe('evaluateSchema', () => {
       expect(resultFiles.length).toBe(1)
 
       // Check file content
-      const resultFile = path.join(evaluationDir, resultFiles[0])
+      const firstResultFile = resultFiles[0]
+      if (!firstResultFile) {
+        throw new Error('No result files found')
+      }
+      const resultFile = path.join(evaluationDir, firstResultFile)
       const content = JSON.parse(fs.readFileSync(resultFile, 'utf-8')) as {
         caseId: string
         metrics: unknown

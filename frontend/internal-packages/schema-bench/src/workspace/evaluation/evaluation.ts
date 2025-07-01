@@ -247,22 +247,6 @@ const displaySummary = (results: EvaluationResult[]): void => {
   if (results.length === 0) {
     return
   }
-  for (const result of results) {
-    // Display individual results if needed
-  }
-
-  if (results.length > 1) {
-    const avgOverall =
-      results.reduce((sum, r) => sum + r.metrics.overallSchemaAccuracy, 0) /
-      results.length
-    const avgTableF1 =
-      results.reduce((sum, r) => sum + r.metrics.tableF1Score, 0) /
-      results.length
-    const avgColumnF1 =
-      results.reduce((sum, r) => sum + r.metrics.columnF1ScoreAverage, 0) /
-      results.length
-    // Display summary if needed
-  }
 }
 
 const validateDirectories = (
