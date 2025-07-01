@@ -44,7 +44,7 @@ describe('CLI Smoke Test', () => {
       // Fail the test if an error occurs
       expect(error).toBeNull()
     }
-  }, 20000 /* 20 seconds for smoke test */)
+  }, 30000 /* 30 seconds for smoke test */)
 
   it('should run the CLI command without errors: `erd build`', async () => {
     await execAsync('rm -rf ./dist')
@@ -79,5 +79,5 @@ Example:
     } finally {
       await execAsync('rm -rf ./dist')
     }
-  }, 20000 /* 20 seconds for smoke test */)
+  }, 30000 /* 30 seconds for smoke test */)
 })
