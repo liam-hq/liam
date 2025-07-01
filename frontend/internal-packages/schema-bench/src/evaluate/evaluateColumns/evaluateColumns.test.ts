@@ -2,9 +2,9 @@ import type { Schema } from '@liam-hq/db-structure'
 import { describe, expect, it, vi } from 'vitest'
 import { nameSimilarity } from '../../nameSimilarity/nameSimilarity'
 import { wordOverlapMatch } from '../../wordOverlapMatch/wordOverlapMatch'
-import { evaluateColumns } from './evaluateColumns'
 import { validateConstraints } from '../validateConstraints/validateConstraints'
 import { validatePrimaryKeys } from '../validatePrimaryKeys/validatePrimaryKeys'
+import { evaluateColumns } from './evaluateColumns'
 
 vi.mock('../../nameSimilarity/nameSimilarity')
 vi.mock('../../wordOverlapMatch/wordOverlapMatch')

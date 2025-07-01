@@ -432,4 +432,4 @@ const createInitCommand = (deps: InitCommandDeps = { exit }) => {
 // Default export with process.exit
 const initCommand = createInitCommand()
 
-export { initCommand,  }
+export { initCommand }

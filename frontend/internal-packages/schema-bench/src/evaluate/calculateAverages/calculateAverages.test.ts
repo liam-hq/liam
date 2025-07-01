@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { calculateAverages } from './calculateAverages'
 import type { AverageCalculationParams } from '../types'
+import { calculateAverages } from './calculateAverages'
 
 describe('calculateAverages', () => {
   it('should calculate averages correctly with normal values', () => {
