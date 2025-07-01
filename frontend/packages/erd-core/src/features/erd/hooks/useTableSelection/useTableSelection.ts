@@ -1,5 +1,5 @@
+import { useReactFlow } from '@xyflow/react'
 import { useCallback } from 'react'
-import { useCustomReactflow } from '@/features/reactflow/hooks'
 import { useUserEditing } from '@/stores'
 import type { DisplayArea } from '../../types'
 import { highlightNodesAndEdges } from '../../utils'
@@ -11,8 +11,7 @@ type SelectTableParams = {
 
 export const useTableSelection = () => {
   const { setActiveTableName } = useUserEditing()
-  const { getNodes, getEdges, setNodes, setEdges, fitView } =
-    useCustomReactflow()
+  const { getNodes, getEdges, setNodes, setEdges, fitView } = useReactFlow()
 
   const selectTable = useCallback(
     async ({ tableId, displayArea }: SelectTableParams) => {
@@ -26,10 +25,12 @@ export const useTableSelection = () => {
       setEdges(edges)
 
       if (displayArea === 'main') {
-        await fitView({
-          maxZoom: 1,
-          duration: 300,
-          nodes: [{ id: tableId }],
+        requestAnimationFrame(() => {
+          fitView({
+            maxZoom: 1,
+            duration: 300,
+            nodes: [{ id: tableId }],
+          })
         })
       }
     },

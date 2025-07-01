@@ -14,10 +14,9 @@ import {
   SidebarMenu,
   SidebarMenuItem,
 } from '@liam-hq/ui'
-import { useNodes } from '@xyflow/react'
+import { useNodes, useReactFlow } from '@xyflow/react'
 import { useCallback, useMemo } from 'react'
 import { isTableNode } from '@/features/erd/utils'
-import { useCustomReactflow } from '@/features/reactflow/hooks'
 import { useVersion } from '@/providers'
 import { useUserEditing } from '@/stores'
 import { updateNodesHiddenState } from '../../ERDContent/utils'
@@ -30,7 +29,7 @@ export const LeftPane = () => {
   const { version } = useVersion()
   const { selectedNodeIds, setHiddenNodeIds, resetSelectedNodeIds } =
     useUserEditing()
-  const { setNodes } = useCustomReactflow()
+  const { setNodes } = useReactFlow()
 
   const menuItemLinks = useMemo(
     (): MenuItemLinkProps[] => [
