@@ -1,10 +1,10 @@
-name: E2E Tests for liam-app
+name: E2E Tests
 
 on:
   deployment_status:
 
 concurrency:
-  group: liam-app-e2e-tests-${{ github.event.deployment_status.target_url }}-${{ github.event.deployment.sha }}
+  group: e2e-tests-${{ github.event.deployment_status.target_url }}
   cancel-in-progress: false
 
 jobs:
@@ -48,13 +48,17 @@ jobs:
             file.puts "FIXED_TARGET_URL=#{target_url}"
           end
 
-          result =
+          e2e_projects = ["liam-app", "liam-erd-sample"]
+
+          should_run =
             if event_name == "deployment_status" && event_state == "success"
-              # Production deployment
-              if (environment_val.include?("Production") && target_url.include?("liam-app-git-main"))
-                "should_run=true"
-              # Preview deployment
-              elsif environment_val.include?("Preview") && !target_url.include?("liam-erd-sample") && !target_url.include?("liam-docs") && !target_url.include?("liam-storybook")
+              is_production = environment_val.include?("Production")
+              is_preview    = environment_val.include?("Preview")
+
+              # Check if target_url includes any of the E2E-enabled projects
+              matches_project = e2e_projects.any? { |name| target_url.include?(name) }
+
+              if (is_production && matches_project) || (is_preview && matches_project)
                 "should_run=true"
               else
                 "should_run=false"
