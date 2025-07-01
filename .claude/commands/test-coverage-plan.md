@@ -9,6 +9,10 @@ You are tasked with improving test coverage for packages in this monorepo. Your 
 
 Arguments received: $ARGUMENTS
 
+## Important References
+
+Review our test strategy and philosophy: @docs/test-strategy.md
+
 ## Process:
 
 1. Parse the arguments to extract:
@@ -31,20 +35,12 @@ Arguments received: $ARGUMENTS
 ## Guidelines:
 
 - Focus on files with 0% coverage first
-- Write descriptive test case names that clearly explain what is being tested
+- Follow test philosophy and naming patterns from @docs/test-strategy.md
 - Group related test cases using `describe` blocks
 - Add `// TODO: Implement test` comments in the test body
 - Do NOT implement the actual test logic, only the test structure and names
-- Follow the existing test patterns in the codebase
-- Use appropriate testing utilities based on the package (vitest for most packages)
+- Prefer sociable unit tests (testing with real collaborators) as outlined in our test strategy
 - Apply any custom instructions provided in the arguments
-
-## Test Case Naming Patterns:
-
-- "should [expected behavior] when [condition]"
-- "should handle [edge case/error scenario]"
-- "should return [expected value] for [input scenario]"
-- "should throw [error type] when [invalid condition]"
 
 ## Example Output:
 
@@ -77,14 +73,10 @@ Most packages in this monorepo aim for 80% coverage threshold. Files below this 
 
 ## Approach Strategy:
 
+Following the phased approach from @docs/test-strategy.md:
 1. **Phase 1**: Create test case proposals with `it.skip`
 2. **Phase 2**: Human review of proposed test cases
 3. **Phase 3**: Implementation of approved test cases
-
-This phased approach ensures:
-- Test cases are relevant and valuable
-- No unnecessary or redundant tests are implemented
-- Clear understanding of testing goals before implementation
 
 ## Usage Examples:
 
