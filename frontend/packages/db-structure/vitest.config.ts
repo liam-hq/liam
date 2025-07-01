@@ -13,6 +13,10 @@ export default defineConfig({
         '**/mockData/**',
         '**/__tests__/**',
         '**/test/**',
+        '**/index.ts',
+        // TODO: Add ESLint rule to ensure index.ts files only contain exports
+        // This would enforce that index.ts files remain pure export files
+        // and prevent logic from being added to them
       ],
       include: ['src/**/*.{ts,tsx}'],
       all: true,
