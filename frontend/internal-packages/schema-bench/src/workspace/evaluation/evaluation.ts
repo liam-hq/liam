@@ -86,6 +86,91 @@ const runEvaluation = async (caseData: CaseData): Promise<EvaluationResult> => {
   return evaluationResult
 }
 
+const calculateTableMetrics = (
+  results: EvaluationResult[],
+  resultsLength: number,
+) => ({
+  tableF1Score:
+    results.reduce((sum, r) => sum + r.metrics.tableF1Score, 0) / resultsLength,
+  tableAllCorrectRate:
+    results.reduce((sum, r) => sum + r.metrics.tableAllCorrectRate, 0) /
+    resultsLength,
+})
+
+const calculateColumnMetrics = (
+  results: EvaluationResult[],
+  resultsLength: number,
+) => ({
+  columnF1ScoreAverage:
+    results.reduce((sum, r) => sum + r.metrics.columnF1ScoreAverage, 0) /
+    resultsLength,
+  columnAllCorrectRateAverage:
+    results.reduce((sum, r) => sum + r.metrics.columnAllCorrectRateAverage, 0) /
+    resultsLength,
+})
+
+const calculateKeyAndConstraintMetrics = (
+  results: EvaluationResult[],
+  resultsLength: number,
+) => ({
+  primaryKeyAccuracyAverage:
+    results.reduce((sum, r) => sum + r.metrics.primaryKeyAccuracyAverage, 0) /
+    resultsLength,
+  constraintAccuracy:
+    results.reduce((sum, r) => sum + r.metrics.constraintAccuracy, 0) /
+    resultsLength,
+  foreignKeyF1Score:
+    results.reduce((sum, r) => sum + r.metrics.foreignKeyF1Score, 0) /
+    resultsLength,
+  foreignKeyAllCorrectRate:
+    results.reduce((sum, r) => sum + r.metrics.foreignKeyAllCorrectRate, 0) /
+    resultsLength,
+})
+
+const calculateAverageMetrics = (results: EvaluationResult[]) => {
+  const resultsLength = results.length
+  return {
+    ...calculateTableMetrics(results, resultsLength),
+    ...calculateColumnMetrics(results, resultsLength),
+    ...calculateKeyAndConstraintMetrics(results, resultsLength),
+    overallSchemaAccuracy:
+      results.reduce((sum, r) => sum + r.metrics.overallSchemaAccuracy, 0) /
+      resultsLength,
+  }
+}
+
+const saveSummaryResult = (
+  results: EvaluationResult[],
+  evaluationDir: string,
+): void => {
+  const summaryResult = {
+    timestamp: new Date().toISOString(),
+    totalCases: results.length,
+    averageMetrics: calculateAverageMetrics(results),
+    cases: results.map((r) => ({
+      caseId: r.caseId,
+      overallSchemaAccuracy: r.metrics.overallSchemaAccuracy,
+    })),
+  }
+
+  const summaryFilename = `summary_results_${summaryResult.timestamp.replace(/[:.]/g, '-')}.json`
+  const summaryFilePath = path.join(evaluationDir, summaryFilename)
+
+  fs.writeFileSync(summaryFilePath, JSON.stringify(summaryResult, null, 2))
+}
+
+const saveIndividualResults = (
+  results: EvaluationResult[],
+  evaluationDir: string,
+): void => {
+  for (const result of results) {
+    const filename = `${result.caseId}_results_${result.timestamp.replace(/[:.]/g, '-')}.json`
+    const filePath = path.join(evaluationDir, filename)
+
+    fs.writeFileSync(filePath, JSON.stringify(result, null, 2))
+  }
+}
+
 const saveResults = (
   results: EvaluationResult[],
   workspacePath: string,
@@ -96,68 +181,10 @@ const saveResults = (
     fs.mkdirSync(evaluationDir, { recursive: true })
   }
 
-  for (const result of results) {
-    const filename = `${result.caseId}_results_${result.timestamp.replace(/[:.]/g, '-')}.json`
-    const filePath = path.join(evaluationDir, filename)
-
-    fs.writeFileSync(filePath, JSON.stringify(result, null, 2))
-  }
+  saveIndividualResults(results, evaluationDir)
 
   if (results.length > 1) {
-    const summaryResult = {
-      timestamp: new Date().toISOString(),
-      totalCases: results.length,
-      averageMetrics: {
-        tableF1Score:
-          results.reduce((sum, r) => sum + r.metrics.tableF1Score, 0) /
-          results.length,
-        tableAllCorrectRate:
-          results.reduce((sum, r) => sum + r.metrics.tableAllCorrectRate, 0) /
-          results.length,
-        columnF1ScoreAverage:
-          results.reduce((sum, r) => sum + r.metrics.columnF1ScoreAverage, 0) /
-          results.length,
-        columnAllCorrectRateAverage:
-          results.reduce(
-            (sum, r) => sum + r.metrics.columnAllCorrectRateAverage,
-            0,
-          ) / results.length,
-        primaryKeyAccuracyAverage:
-          results.reduce(
-            (sum, r) => sum + r.metrics.primaryKeyAccuracyAverage,
-            0,
-          ) / results.length,
-        constraintAccuracy:
-          results.reduce((sum, r) => sum + r.metrics.constraintAccuracy, 0) /
-          results.length,
-        foreignKeyF1Score:
-          results.reduce((sum, r) => sum + r.metrics.foreignKeyF1Score, 0) /
-          results.length,
-        foreignKeyAllCorrectRate:
-          results.reduce(
-            (sum, r) => sum + r.metrics.foreignKeyAllCorrectRate,
-            0,
-          ) / results.length,
-        overallSchemaAccuracy:
-          results.reduce((sum, r) => sum + r.metrics.overallSchemaAccuracy, 0) /
-          results.length,
-      },
-      cases: results.map((r) => ({
-        caseId: r.caseId,
-        overallSchemaAccuracy: r.metrics.overallSchemaAccuracy,
-      })),
-    }
-
-    const summaryFilename = `summary_results_${summaryResult.timestamp.replace(/[:.]/g, '-')}.json`
-    const summaryFilePath = path.join(evaluationDir, summaryFilename)
-
-    fs.writeFileSync(summaryFilePath, JSON.stringify(summaryResult, null, 2))
-  }
-}
-
-const displaySummary = (results: EvaluationResult[]): void => {
-  if (results.length === 0) {
-    return
+    saveSummaryResult(results, evaluationDir)
   }
 }
 
@@ -261,5 +288,4 @@ export const evaluateSchema = async (
   )
 
   saveResults(results, config.workspacePath)
-  displaySummary(results)
 }
