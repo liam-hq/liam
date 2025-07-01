@@ -11,7 +11,7 @@ import {
   type MockedFunction,
   vi,
 } from 'vitest'
-import type { evaluate } from '../../evaluate/evaluate/evaluate.ts'
+import type { evaluate } from '../../evaluate/evaluate.ts'
 import { evaluateSchema } from '../evaluation/evaluation.ts'
 import type { EvaluationConfig } from '../types'
 
@@ -68,7 +68,7 @@ describe('evaluateSchema', () => {
   }
 
   beforeEach(async () => {
-    const { evaluate } = await import('../../evaluate/evaluate/evaluate.ts')
+    const { evaluate } = await import('../../evaluate/evaluate.ts')
     mockEvaluate = evaluate as MockedFunction<typeof evaluate>
     mockEvaluate.mockClear()
     mockEvaluate.mockResolvedValue(mockEvaluateResult)
