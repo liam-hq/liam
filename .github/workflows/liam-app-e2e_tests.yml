@@ -50,7 +50,7 @@ jobs:
 
           e2e_projects = ["liam-app", "liam-erd-sample"]
 
-          should_run =
+          result =
             if event_name == "deployment_status" && event_state == "success"
               is_production = environment_val.include?("Production")
               is_preview    = environment_val.include?("Preview")
@@ -73,7 +73,6 @@ jobs:
           puts "Environment: #{environment_val}"
           puts "Target URL: #{target_url}"
           puts "Should Run: #{result}"
-          puts "Concurrency Group: liam-app-e2e-tests-#{target_url}"
 
           # Same as 'echo "should_run=xxxx" >> $GITHUB_OUTPUT'
           output_file = ENV.fetch("GITHUB_OUTPUT")
