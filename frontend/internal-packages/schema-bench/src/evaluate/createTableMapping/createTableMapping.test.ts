@@ -1,10 +1,10 @@
 import { describe, expect, it, vi } from 'vitest'
-import { nameSimilarity } from '../nameSimilarity/nameSimilarity'
-import { wordOverlapMatch } from '../wordOverlapMatch/wordOverlapMatch'
+import { nameSimilarity } from '../../nameSimilarity/nameSimilarity'
+import { wordOverlapMatch } from '../../wordOverlapMatch/wordOverlapMatch'
 import { createTableMapping } from './createTableMapping'
 
-vi.mock('../nameSimilarity/nameSimilarity')
-vi.mock('../wordOverlapMatch/wordOverlapMatch')
+vi.mock('../../nameSimilarity/nameSimilarity')
+vi.mock('../../wordOverlapMatch/wordOverlapMatch')
 
 describe('createTableMapping', () => {
   it('should create table mapping for matching table names', async () => {

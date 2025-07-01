@@ -1,6 +1,6 @@
-import { nameSimilarity } from '../nameSimilarity/nameSimilarity.ts'
-import { wordOverlapMatch } from '../wordOverlapMatch/wordOverlapMatch.ts'
-import type { Mapping } from './types.ts'
+import { nameSimilarity } from '../../nameSimilarity/nameSimilarity.ts'
+import { wordOverlapMatch } from '../../wordOverlapMatch/wordOverlapMatch.ts'
+import type { Mapping } from '../types.ts'
 
 export const createTableMapping = async (
   referenceTableNames: string[],

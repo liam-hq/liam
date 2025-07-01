@@ -1,15 +1,15 @@
 import type { Schema } from '@liam-hq/db-structure'
 import { describe, expect, it, vi } from 'vitest'
-import { nameSimilarity } from '../nameSimilarity/nameSimilarity'
-import { wordOverlapMatch } from '../wordOverlapMatch/wordOverlapMatch'
+import { nameSimilarity } from '../../nameSimilarity/nameSimilarity'
+import { wordOverlapMatch } from '../../wordOverlapMatch/wordOverlapMatch'
 import { evaluateColumns } from './evaluateColumns'
-import { validateConstraints } from './validateConstraints'
-import { validatePrimaryKeys } from './validatePrimaryKeys'
+import { validateConstraints } from '../validateConstraints/validateConstraints'
+import { validatePrimaryKeys } from '../validatePrimaryKeys/validatePrimaryKeys'
 
-vi.mock('../nameSimilarity/nameSimilarity')
-vi.mock('../wordOverlapMatch/wordOverlapMatch')
-vi.mock('./validateConstraints')
-vi.mock('./validatePrimaryKeys')
+vi.mock('../../nameSimilarity/nameSimilarity')
+vi.mock('../../wordOverlapMatch/wordOverlapMatch')
+vi.mock('../validateConstraints/validateConstraints')
+vi.mock('../validatePrimaryKeys/validatePrimaryKeys')
 
 describe('evaluateColumns', () => {
   it('should evaluate columns with perfect match', async () => {

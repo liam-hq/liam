@@ -1,8 +1,8 @@
 import type { ForeignKeyConstraint, Schema } from '@liam-hq/db-structure'
 import { foreignKeyConstraintSchema } from '@liam-hq/db-structure'
 import * as v from 'valibot'
-import type { Mapping } from './types.ts'
-import { EPSILON } from './types.ts'
+import type { Mapping } from '../types.ts'
+import { EPSILON } from '../types.ts'
 
 type ForeignKeyInfo = {
   name: string

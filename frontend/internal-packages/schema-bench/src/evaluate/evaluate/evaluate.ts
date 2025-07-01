@@ -12,17 +12,17 @@
  * to assess the quality of schema prediction models or tools.
  */
 import type { Schema } from '@liam-hq/db-structure'
-import { calculateAverages } from './calculateAverages.ts'
-import { calculateTableMetrics } from './calculateTableMetrics.ts'
-import { createTableMapping } from './createTableMapping.ts'
-import { evaluateColumns } from './evaluateColumns.ts'
-import { evaluateForeignKeys } from './evaluateForeignKeys.ts'
+import { calculateAverages } from '../calculateAverages/calculateAverages.ts'
+import { calculateTableMetrics } from '../calculateTableMetrics/calculateTableMetrics.ts'
+import { createTableMapping } from '../createTableMapping/createTableMapping.ts'
+import { evaluateColumns } from '../evaluateColumns/evaluateColumns.ts'
+import { evaluateForeignKeys } from '../evaluateForeignKeys/evaluateForeignKeys.ts'
 import type {
   ColumnEvaluationResult,
   EvaluateResult,
   Mapping,
-} from './types.ts'
-import { ALL_CORRECT_THRESHOLD } from './types.ts'
+} from '../types.ts'
+import { ALL_CORRECT_THRESHOLD } from '../types.ts'
 
 type EvaluationData = {
   tableMapping: Mapping

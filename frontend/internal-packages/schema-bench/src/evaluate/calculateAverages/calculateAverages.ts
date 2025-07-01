@@ -1,4 +1,4 @@
-import type { AverageCalculationParams } from './types.ts'
+import type { AverageCalculationParams } from '../types.ts'
 
 export const calculateAverages = ({
   totalColumnF1Score,

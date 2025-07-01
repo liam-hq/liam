@@ -1,4 +1,4 @@
-import type { Mapping } from './types.ts'
+import type { Mapping } from '../types.ts'
 
 export const calculateTableMetrics = (
   referenceTableNames: string[],

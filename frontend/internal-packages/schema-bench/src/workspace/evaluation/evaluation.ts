@@ -2,7 +2,7 @@ import * as fs from 'node:fs'
 import * as path from 'node:path'
 import type { Schema } from '@liam-hq/db-structure'
 import { err, ok, ResultAsync } from 'neverthrow'
-import { evaluate } from '../../evaluate/evaluate.ts'
+import { evaluate } from '../../evaluate/evaluate/evaluate.ts'
 import type {
   CaseData,
   EvaluationConfig,

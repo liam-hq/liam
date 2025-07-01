@@ -1,18 +1,18 @@
 import type { Schema } from '@liam-hq/db-structure'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { calculateAverages } from './calculateAverages'
-import { calculateTableMetrics } from './calculateTableMetrics'
-import { createTableMapping } from './createTableMapping'
+import { calculateAverages } from '../calculateAverages/calculateAverages'
+import { calculateTableMetrics } from '../calculateTableMetrics/calculateTableMetrics'
+import { createTableMapping } from '../createTableMapping/createTableMapping'
 import { evaluate } from './evaluate'
-import { evaluateColumns } from './evaluateColumns'
-import { evaluateForeignKeys } from './evaluateForeignKeys'
-import { ALL_CORRECT_THRESHOLD } from './types'
+import { evaluateColumns } from '../evaluateColumns/evaluateColumns'
+import { evaluateForeignKeys } from '../evaluateForeignKeys/evaluateForeignKeys'
+import { ALL_CORRECT_THRESHOLD } from '../types'
 
-vi.mock('./createTableMapping')
-vi.mock('./calculateTableMetrics')
-vi.mock('./evaluateColumns')
-vi.mock('./evaluateForeignKeys')
-vi.mock('./calculateAverages')
+vi.mock('../createTableMapping/createTableMapping')
+vi.mock('../calculateTableMetrics/calculateTableMetrics')
+vi.mock('../evaluateColumns/evaluateColumns')
+vi.mock('../evaluateForeignKeys/evaluateForeignKeys')
+vi.mock('../calculateAverages/calculateAverages')
 
 describe('evaluate', () => {
   beforeEach(() => {

@@ -1,10 +1,10 @@
 import type { Schema } from '@liam-hq/db-structure'
-import { nameSimilarity } from '../nameSimilarity/nameSimilarity.ts'
-import { wordOverlapMatch } from '../wordOverlapMatch/wordOverlapMatch.ts'
-import type { ColumnEvaluationResult, Mapping } from './types.ts'
-import { EPSILON } from './types.ts'
-import { validateConstraints } from './validateConstraints.ts'
-import { validatePrimaryKeys } from './validatePrimaryKeys.ts'
+import { nameSimilarity } from '../../nameSimilarity/nameSimilarity.ts'
+import { wordOverlapMatch } from '../../wordOverlapMatch/wordOverlapMatch.ts'
+import type { ColumnEvaluationResult, Mapping } from '../types.ts'
+import { EPSILON } from '../types.ts'
+import { validateConstraints } from '../validateConstraints/validateConstraints.ts'
+import { validatePrimaryKeys } from '../validatePrimaryKeys/validatePrimaryKeys.ts'
 
 const createColumnMapping = async (
   referenceColumnNames: string[],

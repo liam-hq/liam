@@ -1,5 +1,5 @@
 import type { PrimaryKeyConstraint, Schema } from '@liam-hq/db-structure'
-import type { Mapping } from './types.ts'
+import type { Mapping } from '../types.ts'
 
 export const validatePrimaryKeys = (
   referenceTable: Schema['tables'][string],
