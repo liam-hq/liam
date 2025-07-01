@@ -43,11 +43,12 @@ jobs:
           target_url      = "${{ github.event.deployment_status.target_url }}"
 
           if target_url.include?("liam-erd-sample")
-          File.open(ENV.fetch("GITHUB_ENV"), "a") do |file|
-            file.puts "FIXED_EVENT_NAME=#{event_name}"
-            file.puts "FIXED_EVENT_STATE=#{event_state}"
-            file.puts "FIXED_ENVIRONMENT=#{environment_val}"
-            file.puts "FIXED_TARGET_URL=#{target_url}"
+            File.open(ENV.fetch("GITHUB_ENV"), "a") do |file|
+              file.puts "FIXED_EVENT_NAME=#{event_name}"
+              file.puts "FIXED_EVENT_STATE=#{event_state}"
+              file.puts "FIXED_ENVIRONMENT=#{environment_val}"
+              file.puts "FIXED_TARGET_URL=#{target_url}"
+            end
           end
 
           result =
