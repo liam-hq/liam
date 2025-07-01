@@ -1,5 +1,16 @@
 # @liam-hq/cli
 
+## 0.5.10
+
+### Patch Changes
+
+- [#2235](https://github.com/liam-hq/liam/pull/2235) - ✨ Add support for Rails inline index syntax in schema.rb parser / Thanks [@MH4GF](https://github.com/MH4GF)!
+
+- Support inline index declarations on columns: `t.string "name", index: true`
+- Handle unique inline indexes: `t.text "mention", index: { unique: true }`
+- Parse custom index names: `t.string "slug", index: { name: "custom_name" }`
+- Support index types: `t.string "email", index: { using: "gin" }`
+
 ## 0.5.9
 
 ### Patch Changes
