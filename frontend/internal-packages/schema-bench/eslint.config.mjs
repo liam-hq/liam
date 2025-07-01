@@ -12,20 +12,21 @@ export default [
   ...baseConfig,
   {
     files: ['src/workspace/**/*.ts', '**/*.tsx'],
+    ignores: ['**/*.test.ts'],
     rules: {
-      complexity: ['warn', { max: 10 }],
+      complexity: ['error', { max: 10 }],
       'max-lines': [
-        'warn',
+        'error',
         { max: 300, skipBlankLines: true, skipComments: true },
       ],
       'max-lines-per-function': [
-        'warn',
+        'error',
         { max: 50, skipBlankLines: true, skipComments: true, IIFEs: true },
       ],
-      'max-depth': ['warn', 4],
-      'max-params': ['warn', 4],
-      'max-statements': ['warn', 20],
-      'max-nested-callbacks': ['warn', 3],
+      'max-depth': ['error', 4],
+      'max-params': ['error', 4],
+      'max-statements': ['error', 20],
+      'max-nested-callbacks': ['error', 3],
     },
   },
 ]
