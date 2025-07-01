@@ -12,10 +12,11 @@
  * to assess the quality of schema prediction models or tools.
  */
 import type { Schema } from '@liam-hq/db-structure'
-import { calculateAverages } from './calculations.ts'
-import { evaluateColumns } from './columnMapping.ts'
-import { evaluateForeignKeys } from './foreignKeyEvaluation.ts'
-import { calculateTableMetrics, createTableMapping } from './tableMapping.ts'
+import { calculateAverages } from './calculateAverages.ts'
+import { calculateTableMetrics } from './calculateTableMetrics.ts'
+import { createTableMapping } from './createTableMapping.ts'
+import { evaluateColumns } from './evaluateColumns.ts'
+import { evaluateForeignKeys } from './evaluateForeignKeys.ts'
 import type {
   ColumnEvaluationResult,
   EvaluateResult,
