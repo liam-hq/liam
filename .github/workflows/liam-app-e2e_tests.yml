@@ -3,6 +3,10 @@ name: E2E Tests for liam-app
 on:
   deployment_status:
 
+concurrency:
+  group: liam-app-e2e-tests
+  cancel-in-progress: false
+
 jobs:
   liam-app-e2e-tests:
     runs-on: ubuntu-latest
