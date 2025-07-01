@@ -36,6 +36,11 @@ runs:
       if: inputs.should-run == 'true'
       uses: ./.github/actions/pnpm-setup
 
+    - name: Install dependencies
+      if: inputs.should-run == 'true'
+      run: pnpm install
+      shell: bash
+
     - name: Cache Playwright browsers
       if: inputs.should-run == 'true'
       id: playwright-cache
