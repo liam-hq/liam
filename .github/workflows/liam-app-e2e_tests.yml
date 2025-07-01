@@ -1,0 +1,142 @@
+name: E2E Tests for liam-app
+
+on:
+  deployment_status:
+
+jobs:
+  liam-app-e2e-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      matrix:
+        browser: [chromium, 'Mobile Safari']
+      fail-fast: false
+    permissions:
+      contents: read
+      statuses: write
+    defaults:
+      run:
+        working-directory: 'frontend/internal-packages/e2e'
+    env:
+      CI: true
+      URL: ${{ github.event.deployment_status.target_url }}
+      ENVIRONMENT: ${{ github.event.deployment.environment }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ github.event.deployment.sha }}
+          persist-credentials: false
+
+      - name: Check deployment conditions
+        id: check
+        shell: ruby {0}
+        working-directory: ${{ github.workspace }}
+        run: |
+          event_name      = "${{ github.event_name }}"
+          event_state     = "${{ github.event.deployment_status.state }}"
+          environment_val = "${{ github.event.deployment.environment }}"
+          target_url      = "${{ github.event.deployment_status.target_url }}"
+
+          result =
+            if event_name == "deployment_status" && event_state == "success"
+              # Production deployment
+              if (environment_val.include?("Production") && target_url.include?("liam-app-git-main"))
+                "should_run=true"
+              # Preview deployment
+              elsif environment_val.include?("Preview") && !target_url.include?("liam-erd-sample") && !target_url.include?("liam-docs") && !target_url.include?("liam-storybook")
+                "should_run=true"
+              else
+                "should_run=false"
+              end
+            else
+              "should_run=false"
+            end
+
+          # Same as 'echo "should_run=xxxx" >> $GITHUB_OUTPUT'
+          output_file = ENV.fetch("GITHUB_OUTPUT")
+          File.open(output_file, "a") do |file|
+            file.puts result
+          end
+
+      - name: Setup pnpm
+        if: steps.check.outputs.should_run == 'true'
+        uses: ./.github/actions/pnpm-setup
+
+      - name: Cache Playwright browsers
+        if: steps.check.outputs.should_run == 'true'
+        id: playwright-cache
+        uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml', '**/playwright.config.ts') }}
+          restore-keys: |
+            playwright-${{ runner.os }}-
+
+      - name: Install Playwright browsers
+        if: ${{ steps.check.outputs.should_run == 'true' && steps.playwright-cache.outputs.cache-hit != 'true' }}
+        run: pnpm exec playwright install --with-deps
+
+      - name: Install system dependencies for WebKit
+        # Some WebKit dependencies seem to lay outside the cache and will need to be installed separately
+        if: ${{ steps.check.outputs.should_run == 'true' && steps.playwright-cache.outputs.cache-hit == 'true' }}
+        run: pnpm exec playwright install-deps webkit
+
+      # This workflow is triggered for all deployments (liam-app, liam-erd-sample, liam-docs),
+      # but E2E tests are executed only for liam-app deployments now.
+      - name: Run e2e tests
+        if: steps.check.outputs.should_run == 'true'
+        run: pnpm exec playwright test --project="${{ matrix.browser }}"
+        env:
+          URL: ${{ env.URL }}
+
+      # FIXME: This step is not working well. All environments seem to be Preview.
+      - name: Upload test results
+        if: ${{ steps.check.outputs.should_run == 'true' && failure() }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: test-results-${{ matrix.browser }}-${{ github.run_id }}-${{ github.job }}
+          path: frontend/internal-packages/e2e/test-results/
+          retention-days: 30
+
+      - name: Post E2E status manually (with gh)
+        if: steps.check.outputs.should_run == 'true' && always()
+        run: |
+          STATE="${{ job.status }}"
+          CONTEXT="E2E Tests / e2e-tests (${{ matrix.browser }})"
+          gh api repos/${{ github.repository }}/statuses/${{ github.sha }} \
+            --method POST \
+            --field state="${STATE}" \
+            --field context="${CONTEXT}" \
+            --field description="E2E test result for ${{ matrix.browser }}: (${STATE})" \
+            --field target_url="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Slack Notification on Failure
+        if: ${{ steps.check.outputs.should_run == 'true' && env.ENVIRONMENT == 'Production – liam-app' && failure() }}
+        uses: tokorom/action-slack-incoming-webhook@d57bf1eb618f3dae9509afefa70d5774ad3d42bf # v1.3.0
+        env:
+          INCOMING_WEBHOOK_URL: ${{ secrets.SLACK_CLI_CI_WEBHOOK_URL }}
+        with:
+          text: 'E2E Test Failure'
+          attachments: |
+            [
+              {
+                "color": "bad",
+                "fields": [
+                  {
+                    "title": "Browser",
+                    "value": "${{ matrix.browser }}"
+                  },
+                  {
+                    "title": "Result",
+                    "value": "failure"
+                  },
+                  {
+                    "title": "Job URL",
+                    "value": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+                  }
+                ]
+              }
+            ]
