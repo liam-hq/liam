@@ -241,7 +241,14 @@ describe('evaluateColumns', () => {
         products: {
           name: 'products',
           columns: {
-            id: { name: 'id', type: 'integer', comment: null },
+            id: {
+              name: 'id',
+              type: 'integer',
+              default: null,
+              check: null,
+              notNull: false,
+              comment: null,
+            },
           },
           comment: null,
           indexes: {},
@@ -273,7 +280,14 @@ describe('evaluateColumns', () => {
         users: {
           name: 'users',
           columns: {
-            id: { name: 'id', type: 'integer', comment: null },
+            id: {
+              name: 'id',
+              type: 'integer',
+              default: null,
+              check: null,
+              notNull: false,
+              comment: null,
+            },
           },
           comment: null,
           indexes: {},
@@ -282,8 +296,22 @@ describe('evaluateColumns', () => {
         orders: {
           name: 'orders',
           columns: {
-            id: { name: 'id', type: 'integer', comment: null },
-            user_id: { name: 'user_id', type: 'integer', comment: null },
+            id: {
+              name: 'id',
+              type: 'integer',
+              default: null,
+              check: null,
+              notNull: false,
+              comment: null,
+            },
+            user_id: {
+              name: 'user_id',
+              type: 'integer',
+              default: null,
+              check: null,
+              notNull: false,
+              comment: null,
+            },
           },
           comment: null,
           indexes: {},
@@ -297,7 +325,14 @@ describe('evaluateColumns', () => {
         users: {
           name: 'users',
           columns: {
-            id: { name: 'id', type: 'integer', comment: null },
+            id: {
+              name: 'id',
+              type: 'integer',
+              default: null,
+              check: null,
+              notNull: false,
+              comment: null,
+            },
           },
           comment: null,
           indexes: {},
@@ -306,8 +341,22 @@ describe('evaluateColumns', () => {
         orders: {
           name: 'orders',
           columns: {
-            id: { name: 'id', type: 'integer', comment: null },
-            user_id: { name: 'user_id', type: 'integer', comment: null },
+            id: {
+              name: 'id',
+              type: 'integer',
+              default: null,
+              check: null,
+              notNull: false,
+              comment: null,
+            },
+            user_id: {
+              name: 'user_id',
+              type: 'integer',
+              default: null,
+              check: null,
+              notNull: false,
+              comment: null,
+            },
           },
           comment: null,
           indexes: {},
