@@ -40,10 +40,17 @@ jobs:
 
           result =
             if event_name == "deployment_status" && event_state == "success"
-              if (environment_val.include?("Preview") && target_url.include?("liam-erd-sample"))
+              # Primary check: URL contains liam-erd-sample
+              if target_url.include?("liam-erd-sample")
                 "should_run=true"
-
-              elsif environment_val.include?("Preview") && !target_url.include?("liam-app") && !target_url.include?("liam-docs") && !target_url.include?("liam-storybook")
+              # Fallback check: Environment contains liam-erd-sample (in case URL is wrong)
+              elsif environment_val.include?("liam-erd-sample")
+                "should_run=true"
+              # Additional check: Preview environment but not other apps
+              elsif environment_val.include?("Preview") && 
+                    !target_url.include?("liam-app") && 
+                    !target_url.include?("liam-docs") && 
+                    !target_url.include?("liam-storybook")
                 "should_run=true"
               else
                 "should_run=false"
@@ -51,6 +58,13 @@ jobs:
             else
               "should_run=false"
             end
+
+          # Debug output
+          puts "Event Name: #{event_name}"
+          puts "Event State: #{event_state}"
+          puts "Environment: #{environment_val}"
+          puts "Target URL: #{target_url}"
+          puts "Should Run: #{result}"
 
           # Same as 'echo "should_run=xxxx" >> $GITHUB_OUTPUT'
           output_file = ENV.fetch("GITHUB_OUTPUT")
