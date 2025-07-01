@@ -17,8 +17,11 @@ jobs:
       statuses: write
 
     steps:
-      - name: Checkout repo for local action resolution
+      - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.deployment.sha }}
+          persist-credentials: false
 
       - name: Setup pnpm
         uses: ./.github/actions/pnpm-setup
@@ -51,27 +54,29 @@ jobs:
           echo "Deployment SHA: ${{ github.event.deployment.sha }}"
 
       - name: liam-app-e2e_tests
-        if: github.event.deployment_status.state == 'success' &&
-          contains(github.event.deployment_status.target_url, 'liam-app')
+        if: (github.event.deployment_status.state == 'success' &&
+          contains(github.event.deployment.environment, 'Production') &&
+          contains(github.event.deployment_status.target_url, 'liam-app-git-main')) ||
+          (!contains(github.event.deployment_status.target_url, 'liam-docs') && !contains(github.event.deployment_status.target_url, 'liam-erd-sample') && !contains(github.event.deployment_status.target_url, 'liam-storybook'))
         uses: ./.github/actions/reusable-e2e
         with:
           browser: ${{ matrix.browser }}
           deployment-target: liam-app
           environment: ${{ github.event.deployment.environment }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          ref: ${{ github.event.deployment.sha }}
           test-project: liam-app
           url: ${{ github.event.deployment_status.target_url }}
 
       - name: liam-erd-sample-e2e_tests
-        if: github.event.deployment_status.state == 'success' &&
-          contains(github.event.deployment_status.target_url, 'liam-erd-sample')
+        if: (github.event.deployment_status.state == 'success' &&
+          contains(github.event.deployment.environment, 'Preview') &&
+          contains(github.event.deployment_status.target_url, 'liam-erd-sample')) ||
+          (!contains(github.event.deployment_status.target_url, 'liam-docs') && !contains(github.event.deployment_status.target_url, 'liam-app') && !contains(github.event.deployment_status.target_url, 'liam-storybook'))
         uses: ./.github/actions/reusable-e2e
         with:
           browser: ${{ matrix.browser }}
           deployment-target: liam-erd-sample
           environment: ${{ github.event.deployment.environment }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          ref: ${{ github.event.deployment.sha }}
           test-project: liam-erd-sample
           url: ${{ github.event.deployment_status.target_url }}

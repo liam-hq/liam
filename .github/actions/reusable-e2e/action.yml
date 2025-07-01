@@ -26,12 +26,6 @@ inputs:
 runs:
   using: composite
   steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
-      with:
-        ref: ${{ inputs.ref }}
-        persist-credentials: false
-
     - name: Run e2e tests
       run: pnpm exec playwright test --project=${{ env.BROWSER }}
       shell: bash
