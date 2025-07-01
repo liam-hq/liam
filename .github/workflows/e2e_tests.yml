@@ -28,7 +28,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
-      - name: liam-app-e2e_tests
+      - name: Check if liam-app-e2e_tests should run
         id: check
         shell: ruby {0}
         working-directory: ${{ github.workspace }}
@@ -59,6 +59,7 @@ jobs:
             file.puts result
           end
 
+      - name: Run liam-app-e2e_tests
         uses: ./.github/actions/reusable-e2e
         with:
           browser: ${{ matrix.browser }}
@@ -70,7 +71,7 @@ jobs:
           test-project: liam-app
           url: ${{ github.event.deployment_status.target_url }}
 
-      - name: liam-erd-sample-e2e_tests
+      - name: Check if liam-erd-sample-e2e_tests should run
         id: check
         shell: ruby {0}
         working-directory: ${{ github.workspace }}
@@ -99,6 +100,8 @@ jobs:
           File.open(output_file, "a") do |file|
             file.puts result
           end
+
+      - name: Run liam-erd-sample-e2e_tests
         uses: ./.github/actions/reusable-e2e
         with:
           browser: ${{ matrix.browser }}
