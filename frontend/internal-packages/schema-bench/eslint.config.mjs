@@ -21,7 +21,7 @@ export default [
       ],
       'max-lines-per-function': [
         'error',
-        { max: 50, skipBlankLines: true, skipComments: true, IIFEs: true },
+        { max: 30, skipBlankLines: true, skipComments: true, IIFEs: true },
       ],
       'max-depth': ['error', 4],
       'max-params': ['error', 4],
