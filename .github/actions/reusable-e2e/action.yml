@@ -89,31 +89,3 @@ runs:
       shell: bash {0}
       env:
         GH_TOKEN: ${{ inputs.github-token }}
-
-    - name: Slack Notification on Failure
-      if: ${{ inputs.should-run == 'true' && contains(inputs.environment, inputs['deployment-target']) && failure() }}
-      uses: tokorom/action-slack-incoming-webhook@d57bf1eb618f3dae9509afefa70d5774ad3d42bf # v1.3.0
-      env:
-        INCOMING_WEBHOOK_URL: ${{ inputs.slack-webhook-url }}
-      with:
-        text: 'E2E Test Failure'
-        attachments: |
-          [
-            {
-              "color": "bad",
-              "fields": [
-                {
-                  "title": "Browser",
-                  "value": "${{ inputs.browser }}"
-                },
-                {
-                  "title": "Result",
-                  "value": "failure"
-                },
-                {
-                  "title": "Job URL",
-                  "value": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-                }
-              ]
-            }
-          ]

@@ -59,6 +59,34 @@ jobs:
             file.puts result
           end
 
+      - name: Slack Notification on Failure
+        if: ${{ should_run == 'true' && github.event.deployment.environment == 'Preview – liam-app' && failure() }}
+        uses: tokorom/action-slack-incoming-webhook@d57bf1eb618f3dae9509afefa70d5774ad3d42bf # v1.3.0
+        env:
+          INCOMING_WEBHOOK_URL: ${{ inputs.slack-webhook-url }}
+        with:
+          text: 'E2E Test Failure'
+          attachments: |
+            [
+              {
+                "color": "bad",
+                "fields": [
+                  {
+                    "title": "Browser",
+                    "value": "${{ inputs.browser }}"
+                  },
+                  {
+                    "title": "Result",
+                    "value": "failure"
+                  },
+                  {
+                    "title": "Job URL",
+                    "value": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+                  }
+                ]
+              }
+            ]
+
       - name: Run liam-app-e2e_tests
         uses: ./.github/actions/reusable-e2e
         with:
@@ -114,3 +142,31 @@ jobs:
           ref: ${{ github.event.deployment.sha }}
           test-project: liam-erd-sample
           url: ${{ github.event.deployment_status.target_url }}
+
+      - name: Slack Notification on Failure
+        if: ${{ should_run == 'true' && github.event.deployment.environment == 'Preview – liam-erd-sample' && failure() }}
+        uses: tokorom/action-slack-incoming-webhook@d57bf1eb618f3dae9509afefa70d5774ad3d42bf # v1.3.0
+        env:
+          INCOMING_WEBHOOK_URL: ${{ inputs.slack-webhook-url }}
+        with:
+          text: 'E2E Test Failure'
+          attachments: |
+            [
+              {
+                "color": "bad",
+                "fields": [
+                  {
+                    "title": "Browser",
+                    "value": "${{ inputs.browser }}"
+                  },
+                  {
+                    "title": "Result",
+                    "value": "failure"
+                  },
+                  {
+                    "title": "Job URL",
+                    "value": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+                  }
+                ]
+              }
+            ]
