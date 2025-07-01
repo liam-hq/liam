@@ -18,30 +18,30 @@ export const analyzeCommand = new Command('analyze')
 
       mkdirSync(outputDir, { recursive: true })
 
-      console.log('🔍 Running test coverage...')
+      console.info('🔍 Running test coverage...')
       await execAsync('pnpm test:coverage', {
         cwd: rootDir,
       })
 
       const sourcePath = join(rootDir, 'coverage/coverage-final.json')
       copyFileSync(sourcePath, coverageFile)
-      console.log('✅ Coverage data saved to dist/coverage.json\n')
+      console.info('✅ Coverage data saved to dist/coverage.json\n')
 
-      console.log('📊 Analyzing coverage data...')
+      console.info('📊 Analyzing coverage data...')
       const coverageData = JSON.parse(readFileSync(coverageFile, 'utf-8'))
 
-      console.log('🤖 AI分析レポートを生成中...')
+      console.info('🤖 Generating AI analysis report...')
       const analyzer = new TestStrategyAnalyzer()
       const detailedReport = await analyzer.generateDetailedReport(coverageData)
 
-      console.log('\n' + '='.repeat(80))
-      console.log('📊 FRONTEND テストバランス分析レポート')
-      console.log('='.repeat(80))
-      console.log(detailedReport)
+      console.info(`\n${'='.repeat(80)}`)
+      console.info('📊 FRONTEND Test Balance Analysis Report')
+      console.info('='.repeat(80))
+      console.info(detailedReport)
 
       const reportFile = join(outputDir, 'frontend-test-balance-report.md')
       writeFileSync(reportFile, detailedReport, 'utf-8')
-      console.log(`\n📄 詳細レポート保存: ${reportFile}`)
+      console.info(`\n📄 Detailed report saved: ${reportFile}`)
     } catch (error) {
       console.error('Failed to run coverage:', error)
       process.exit(1)
