@@ -18,6 +18,22 @@ Create test case proposals (`it.skip`) for existing code lacking coverage. Docum
 2. **Write test names** → Use `it.skip` only
 3. **Focus on protection** → What would break users if changed?
 
+## What Makes a Good Regression Test Target?
+
+Per Khorikkov's "observable behavior" principle:
+
+✅ **High Value**: Code with observable behavior that consumers rely on
+- Business logic and algorithms
+- Data transformations
+- State management
+- Public API contracts
+
+❌ **Low Value**: Code without meaningful runtime behavior
+- Re-exports (module organization only)
+- Type definitions (compile-time only)
+- Simple constants (no computation)
+- Pure configuration (static data)
+
 ## Priority
 
 🔴 **Critical**: Frequently used, complex logic, scheduled for refactoring  
