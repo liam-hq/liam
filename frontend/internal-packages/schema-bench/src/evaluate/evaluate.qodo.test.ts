@@ -22,14 +22,38 @@ describe('evaluate', () => {
   it('testSuccessfulSchemaEvaluationWithMatchingElements', async () => {
     const referenceSchema: Schema = {
       tables: {
-        users: { name: 'users', columns: [], relations: [] },
-        orders: { name: 'orders', columns: [], relations: [] },
+        users: {
+          name: 'users',
+          columns: {},
+          comment: null,
+          indexes: {},
+          constraints: {},
+        },
+        orders: {
+          name: 'orders',
+          columns: {},
+          comment: null,
+          indexes: {},
+          constraints: {},
+        },
       },
     }
     const predictedSchema: Schema = {
       tables: {
-        users: { name: 'users', columns: [], relations: [] },
-        orders: { name: 'orders', columns: [], relations: [] },
+        users: {
+          name: 'users',
+          columns: {},
+          comment: null,
+          indexes: {},
+          constraints: {},
+        },
+        orders: {
+          name: 'orders',
+          columns: {},
+          comment: null,
+          indexes: {},
+          constraints: {},
+        },
       },
     }
 
@@ -73,10 +97,26 @@ describe('evaluate', () => {
 
   it('testOverallSchemaAccuracyCalculationAboveThreshold', async () => {
     const referenceSchema: Schema = {
-      tables: { users: { name: 'users', columns: [], relations: [] } },
+      tables: {
+        users: {
+          name: 'users',
+          columns: {},
+          comment: null,
+          indexes: {},
+          constraints: {},
+        },
+      },
     }
     const predictedSchema: Schema = {
-      tables: { users: { name: 'users', columns: [], relations: [] } },
+      tables: {
+        users: {
+          name: 'users',
+          columns: {},
+          comment: null,
+          indexes: {},
+          constraints: {},
+        },
+      },
     }
 
     const mockTableMapping = { users: 'users' }
@@ -114,10 +154,26 @@ describe('evaluate', () => {
 
   it('testMetricsAggregationIntoEvaluateResult', async () => {
     const referenceSchema: Schema = {
-      tables: { users: { name: 'users', columns: [], relations: [] } },
+      tables: {
+        users: {
+          name: 'users',
+          columns: {},
+          comment: null,
+          indexes: {},
+          constraints: {},
+        },
+      },
     }
     const predictedSchema: Schema = {
-      tables: { users: { name: 'users', columns: [], relations: [] } },
+      tables: {
+        users: {
+          name: 'users',
+          columns: {},
+          comment: null,
+          indexes: {},
+          constraints: {},
+        },
+      },
     }
 
     const mockTableMapping = { users: 'users' }
@@ -163,7 +219,15 @@ describe('evaluate', () => {
   it('testEvaluationWithEmptyReferenceSchema', async () => {
     const referenceSchema: Schema = { tables: {} }
     const predictedSchema: Schema = {
-      tables: { users: { name: 'users', columns: [], relations: [] } },
+      tables: {
+        users: {
+          name: 'users',
+          columns: {},
+          comment: null,
+          indexes: {},
+          constraints: {},
+        },
+      },
     }
 
     const mockTableMapping = {}
@@ -203,7 +267,15 @@ describe('evaluate', () => {
 
   it('testEvaluationWithEmptyPredictedSchema', async () => {
     const referenceSchema: Schema = {
-      tables: { users: { name: 'users', columns: [], relations: [] } },
+      tables: {
+        users: {
+          name: 'users',
+          columns: {},
+          comment: null,
+          indexes: {},
+          constraints: {},
+        },
+      },
     }
     const predictedSchema: Schema = { tables: {} }
 
@@ -243,10 +315,26 @@ describe('evaluate', () => {
 
   it('testOverallSchemaAccuracyBelowThreshold', async () => {
     const referenceSchema: Schema = {
-      tables: { users: { name: 'users', columns: [], relations: [] } },
+      tables: {
+        users: {
+          name: 'users',
+          columns: {},
+          comment: null,
+          indexes: {},
+          constraints: {},
+        },
+      },
     }
     const predictedSchema: Schema = {
-      tables: { users: { name: 'users', columns: [], relations: [] } },
+      tables: {
+        users: {
+          name: 'users',
+          columns: {},
+          comment: null,
+          indexes: {},
+          constraints: {},
+        },
+      },
     }
 
     const mockTableMapping = { users: 'users' }
