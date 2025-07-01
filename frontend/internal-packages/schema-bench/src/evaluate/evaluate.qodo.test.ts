@@ -1,11 +1,11 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
 import type { Schema } from '@liam-hq/db-structure'
-import { evaluate } from './evaluate'
-import { createTableMapping } from './createTableMapping'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { calculateAverages } from './calculateAverages'
 import { calculateTableMetrics } from './calculateTableMetrics'
+import { createTableMapping } from './createTableMapping'
+import { evaluate } from './evaluate'
 import { evaluateColumns } from './evaluateColumns'
 import { evaluateForeignKeys } from './evaluateForeignKeys'
-import { calculateAverages } from './calculateAverages'
 import { ALL_CORRECT_THRESHOLD } from './types'
 
 vi.mock('./createTableMapping')
@@ -23,14 +23,14 @@ describe('evaluate', () => {
     const referenceSchema: Schema = {
       tables: {
         users: { name: 'users', columns: [], relations: [] },
-        orders: { name: 'orders', columns: [], relations: [] }
-      }
+        orders: { name: 'orders', columns: [], relations: [] },
+      },
     }
     const predictedSchema: Schema = {
       tables: {
         users: { name: 'users', columns: [], relations: [] },
-        orders: { name: 'orders', columns: [], relations: [] }
-      }
+        orders: { name: 'orders', columns: [], relations: [] },
+      },
     }
 
     const mockTableMapping = { users: 'users', orders: 'orders' }
@@ -40,14 +40,14 @@ describe('evaluate', () => {
       totalColumnAllCorrectCount: 2,
       totalPrimaryKeyCorrectCount: 2,
       totalConstraintCorrectCount: 2,
-      allColumnMappings: { users: {}, orders: {} }
+      allColumnMappings: { users: {}, orders: {} },
     }
     const mockForeignKeyData = { foreignKeyF1: 1.0, foreignKeyAllCorrect: 1 }
     const mockAverages = {
       columnF1ScoreAverage: 1.0,
       columnAllCorrectRateAverage: 1.0,
       primaryKeyAccuracyAverage: 1.0,
-      constraintAccuracy: 1.0
+      constraintAccuracy: 1.0,
     }
 
     vi.mocked(createTableMapping).mockResolvedValue(mockTableMapping)
@@ -72,8 +72,12 @@ describe('evaluate', () => {
   })
 
   it('testOverallSchemaAccuracyCalculationAboveThreshold', async () => {
-    const referenceSchema: Schema = { tables: { users: { name: 'users', columns: [], relations: [] } } }
-    const predictedSchema: Schema = { tables: { users: { name: 'users', columns: [], relations: [] } } }
+    const referenceSchema: Schema = {
+      tables: { users: { name: 'users', columns: [], relations: [] } },
+    }
+    const predictedSchema: Schema = {
+      tables: { users: { name: 'users', columns: [], relations: [] } },
+    }
 
     const mockTableMapping = { users: 'users' }
     const mockTableMetrics = { tableF1: 1.0, tableAllcorrect: 1 }
@@ -82,14 +86,14 @@ describe('evaluate', () => {
       totalColumnAllCorrectCount: 1,
       totalPrimaryKeyCorrectCount: 1,
       totalConstraintCorrectCount: 1,
-      allColumnMappings: {}
+      allColumnMappings: {},
     }
     const mockForeignKeyData = { foreignKeyF1: 1.0, foreignKeyAllCorrect: 1 }
     const mockAverages = {
       columnF1ScoreAverage: 1.0,
       columnAllCorrectRateAverage: 1.0,
       primaryKeyAccuracyAverage: 1.0,
-      constraintAccuracy: 1.0
+      constraintAccuracy: 1.0,
     }
 
     vi.mocked(createTableMapping).mockResolvedValue(mockTableMapping)
@@ -100,14 +104,21 @@ describe('evaluate', () => {
 
     const result = await evaluate(referenceSchema, predictedSchema)
 
-    const accuracySum = mockAverages.primaryKeyAccuracyAverage + mockAverages.columnAllCorrectRateAverage + mockTableMetrics.tableAllcorrect
+    const accuracySum =
+      mockAverages.primaryKeyAccuracyAverage +
+      mockAverages.columnAllCorrectRateAverage +
+      mockTableMetrics.tableAllcorrect
     expect(accuracySum).toBeGreaterThan(ALL_CORRECT_THRESHOLD)
     expect(result.overallSchemaAccuracy).toBe(1)
   })
 
   it('testMetricsAggregationIntoEvaluateResult', async () => {
-    const referenceSchema: Schema = { tables: { users: { name: 'users', columns: [], relations: [] } } }
-    const predictedSchema: Schema = { tables: { users: { name: 'users', columns: [], relations: [] } } }
+    const referenceSchema: Schema = {
+      tables: { users: { name: 'users', columns: [], relations: [] } },
+    }
+    const predictedSchema: Schema = {
+      tables: { users: { name: 'users', columns: [], relations: [] } },
+    }
 
     const mockTableMapping = { users: 'users' }
     const mockTableMetrics = { tableF1: 0.8, tableAllcorrect: 0 }
@@ -116,14 +127,14 @@ describe('evaluate', () => {
       totalColumnAllCorrectCount: 0,
       totalPrimaryKeyCorrectCount: 1,
       totalConstraintCorrectCount: 0,
-      allColumnMappings: { users: { col1: 'col1' } }
+      allColumnMappings: { users: { col1: 'col1' } },
     }
     const mockForeignKeyData = { foreignKeyF1: 0.9, foreignKeyAllCorrect: 1 }
     const mockAverages = {
       columnF1ScoreAverage: 0.7,
       columnAllCorrectRateAverage: 0.0,
       primaryKeyAccuracyAverage: 1.0,
-      constraintAccuracy: 0.0
+      constraintAccuracy: 0.0,
     }
 
     vi.mocked(createTableMapping).mockResolvedValue(mockTableMapping)
@@ -145,13 +156,15 @@ describe('evaluate', () => {
       constraintAccuracy: mockAverages.constraintAccuracy,
       foreignKeyF1Score: mockForeignKeyData.foreignKeyF1,
       foreignKeyAllCorrectRate: mockForeignKeyData.foreignKeyAllCorrect,
-      overallSchemaAccuracy: 0
+      overallSchemaAccuracy: 0,
     })
   })
 
   it('testEvaluationWithEmptyReferenceSchema', async () => {
     const referenceSchema: Schema = { tables: {} }
-    const predictedSchema: Schema = { tables: { users: { name: 'users', columns: [], relations: [] } } }
+    const predictedSchema: Schema = {
+      tables: { users: { name: 'users', columns: [], relations: [] } },
+    }
 
     const mockTableMapping = {}
     const mockTableMetrics = { tableF1: 0, tableAllcorrect: 0 }
@@ -160,14 +173,14 @@ describe('evaluate', () => {
       totalColumnAllCorrectCount: 0,
       totalPrimaryKeyCorrectCount: 0,
       totalConstraintCorrectCount: 0,
-      allColumnMappings: {}
+      allColumnMappings: {},
     }
     const mockForeignKeyData = { foreignKeyF1: 0, foreignKeyAllCorrect: 0 }
     const mockAverages = {
       columnF1ScoreAverage: 0,
       columnAllCorrectRateAverage: 0,
       primaryKeyAccuracyAverage: 0,
-      constraintAccuracy: 0
+      constraintAccuracy: 0,
     }
 
     vi.mocked(createTableMapping).mockResolvedValue(mockTableMapping)
@@ -183,13 +196,15 @@ describe('evaluate', () => {
       totalColumnAllCorrectCount: 0,
       totalPrimaryKeyCorrectCount: 0,
       totalConstraintCorrectCount: 0,
-      totalTableCount: 0
+      totalTableCount: 0,
     })
     expect(result.overallSchemaAccuracy).toBe(0)
   })
 
   it('testEvaluationWithEmptyPredictedSchema', async () => {
-    const referenceSchema: Schema = { tables: { users: { name: 'users', columns: [], relations: [] } } }
+    const referenceSchema: Schema = {
+      tables: { users: { name: 'users', columns: [], relations: [] } },
+    }
     const predictedSchema: Schema = { tables: {} }
 
     const mockTableMapping = {}
@@ -199,14 +214,14 @@ describe('evaluate', () => {
       totalColumnAllCorrectCount: 0,
       totalPrimaryKeyCorrectCount: 0,
       totalConstraintCorrectCount: 0,
-      allColumnMappings: {}
+      allColumnMappings: {},
     }
     const mockForeignKeyData = { foreignKeyF1: 0, foreignKeyAllCorrect: 0 }
     const mockAverages = {
       columnF1ScoreAverage: 0,
       columnAllCorrectRateAverage: 0,
       primaryKeyAccuracyAverage: 0,
-      constraintAccuracy: 0
+      constraintAccuracy: 0,
     }
 
     vi.mocked(createTableMapping).mockResolvedValue(mockTableMapping)
@@ -217,14 +232,22 @@ describe('evaluate', () => {
 
     const result = await evaluate(referenceSchema, predictedSchema)
 
-    expect(calculateTableMetrics).toHaveBeenCalledWith(['users'], [], mockTableMapping)
+    expect(calculateTableMetrics).toHaveBeenCalledWith(
+      ['users'],
+      [],
+      mockTableMapping,
+    )
     expect(result.tableF1Score).toBe(0)
     expect(result.overallSchemaAccuracy).toBe(0)
   })
 
   it('testOverallSchemaAccuracyBelowThreshold', async () => {
-    const referenceSchema: Schema = { tables: { users: { name: 'users', columns: [], relations: [] } } }
-    const predictedSchema: Schema = { tables: { users: { name: 'users', columns: [], relations: [] } } }
+    const referenceSchema: Schema = {
+      tables: { users: { name: 'users', columns: [], relations: [] } },
+    }
+    const predictedSchema: Schema = {
+      tables: { users: { name: 'users', columns: [], relations: [] } },
+    }
 
     const mockTableMapping = { users: 'users' }
     const mockTableMetrics = { tableF1: 0.5, tableAllcorrect: 0 }
@@ -233,14 +256,14 @@ describe('evaluate', () => {
       totalColumnAllCorrectCount: 0,
       totalPrimaryKeyCorrectCount: 0,
       totalConstraintCorrectCount: 0,
-      allColumnMappings: {}
+      allColumnMappings: {},
     }
     const mockForeignKeyData = { foreignKeyF1: 0.5, foreignKeyAllCorrect: 0 }
     const mockAverages = {
       columnF1ScoreAverage: 0.5,
       columnAllCorrectRateAverage: 0.0,
       primaryKeyAccuracyAverage: 0.0,
-      constraintAccuracy: 0.0
+      constraintAccuracy: 0.0,
     }
 
     vi.mocked(createTableMapping).mockResolvedValue(mockTableMapping)
@@ -251,7 +274,10 @@ describe('evaluate', () => {
 
     const result = await evaluate(referenceSchema, predictedSchema)
 
-    const accuracySum = mockAverages.primaryKeyAccuracyAverage + mockAverages.columnAllCorrectRateAverage + mockTableMetrics.tableAllcorrect
+    const accuracySum =
+      mockAverages.primaryKeyAccuracyAverage +
+      mockAverages.columnAllCorrectRateAverage +
+      mockTableMetrics.tableAllcorrect
     expect(accuracySum).toBeLessThanOrEqual(ALL_CORRECT_THRESHOLD)
     expect(result.overallSchemaAccuracy).toBe(0)
   })
