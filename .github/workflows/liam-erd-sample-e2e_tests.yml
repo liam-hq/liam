@@ -42,6 +42,13 @@ jobs:
           environment_val = "${{ github.event.deployment.environment }} => ${{ env.FIXED_ENVIRONMENT_VAL }}"
           target_url      = "${{ github.event.deployment_status.target_url }} => ${{ env.FIXED_TARGET_URL }}"
 
+          File.open(ENV.fetch("GITHUB_ENV"), "a") do |file|
+            file.puts "FIXED_EVENT_NAME=#{event_name}"
+            file.puts "FIXED_EVENT_STATE=#{event_state}"
+            file.puts "FIXED_ENVIRONMENT=#{environment_val}"
+            file.puts "FIXED_TARGET_URL=#{target_url}"
+          end
+
           result =
             if event_name == "deployment_status" && event_state == "success"
               # Primary check: URL contains liam-erd-sample
@@ -115,7 +122,8 @@ jobs:
         if: steps.check.outputs.should_run == 'true'
         run: pnpm exec playwright test --project="${{ matrix.browser }}"
         env:
-          URL: ${{ env.URL }}
+          URL: ${{ env.FIXED_TARGET_URL }}
+          ENVIRONMENT: ${{ env.FIXED_ENVIRONMENT }}
 
       # FIXME: This step is not working well. All environments seem to be Preview.
       - name: Upload test results
