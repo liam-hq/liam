@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "shell": {
+      "command": "uvx",
+      "args": [
+        "mcp-shell-server"
+      ],
+      "env": {
+        "ALLOW_COMMANDS": "ls,cat,pwd,find,mkdir,rm,cp,mv,head,tail,grep,diff,git,npx,yarn,pnpm,node,jest,mocha,jasmine,pytest,unittest,nose2,go,gotest,cargo,rustc,mvn,gradle,dotnet,make,cmake"
+      }
+    }
+  }
+}

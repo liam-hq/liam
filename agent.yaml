@@ -1,0 +1,165 @@
+version: "1.0"
+commands:
+  generate_unit_tests:
+    description: "Generate comprehensive unit tests for a given source file, creating or updating test files as needed."
+    
+    instructions: |
+      Your role is to analyze source code and generate comprehensive, well-structured unit tests that provide appropriate coverage without being excessive or redundant.
+      You can assume the following:
+      - This monorepo project uses pnpm and vitest.
+      - You can run tests with pnpm --filter=<package-name> exec vitest.
+      - Example: When you know a test file like src/diff/indexes/buildIndexColumnsDiffItem.test.ts exists:
+          - pnpm --filter=@liam-hq/db-structure exec vitest src/diff/indexes/buildIndexColumnsDiffItem.test.ts --watch=false --coverage --coverage.reporter=text-lcov --coverage.include="**/buildIndexColumnsDiffItem.ts"
+      - Example: When there is no test file or the location is unknown:
+          - pnpm --filter=@liam-hq/db-structure exec vitest --watch=false --coverage --coverage.reporter=text-lcov --coverage.include="**/buildIndexColumnsDiffItem.ts"
+      - For example, tests for "something.ts" should be generated as "something.test.ts" in the same directory
+      - **Important** Do not add new `__tests__` directory or something like that, just generate the test file in the same directory as the source file.
+      
+      Follow these steps:
+      
+      1. PREPARATION PHASE
+        - Read and analyze the provided source file to understand its structure, functions, classes, and behaviors.
+        - If a test file is provided, read it to understand existing test coverage and patterns.
+        - Identify the project's testing framework and conventions by examining existing test files or package.json/dependencies.
+      
+      2. ANALYSIS PHASE
+        - Map out all public functions, methods, and classes that need testing.
+        - Identify edge cases, error conditions, and boundary values for each function.
+        - Determine what constitutes appropriate test coverage - focus on business logic, public APIs, and critical paths.
+        - Analyze existing tests (if any) to avoid duplication and maintain consistency.
+      
+      3. PLANNING PHASE
+        - Plan test cases that cover:
+          * Happy path scenarios
+          * Edge cases and boundary conditions
+          * Error handling and invalid inputs
+          * Integration points and dependencies
+        - Determine appropriate test structure and organization.
+        - Identify any mocking or setup requirements.
+      
+      4. IMPLEMENTATION PHASE
+        - **Important(again)** Do not add new `__tests__` directory or something like that, just generate the test file in the same directory as the source file.
+        - Generate or update test code following the project's testing conventions.
+        - Ensure tests are:
+          * Well-named and descriptive
+          * Independent and isolated
+          * Fast and reliable
+          * Following AAA pattern (Arrange, Act, Assert) where applicable
+        - Include appropriate setup and teardown if needed.
+        - Add comments for complex test scenarios.
+        - **Important** Do not use `any` type in tests. that causes lint errors. If you cannot write the test because of the type, give up that test case.
+        - Lint the test file using the provided *lint_command*.
+        - If the linting failed, fix the issues.
+        - Format the generated test file using the provided *fmt_command*.
+      
+      5. VALIDATION PHASE
+        - **Important(again)** Do not add new `__tests__` directory or something like that, just generate the test file in the same directory as the source file.
+        - Review generated tests for completeness and quality.
+        - Ensure tests follow best practices and project conventions.
+        - DRY the fixtures and avoid duplication.
+        - **Important** Verify that test coverage is appropriate - neither insufficient nor excessive.
+      
+      6. FMT AND LINT PHASE
+        - **Important(again)** Do not add new `__tests__` directory or something like that, just generate the test file in the same directory as the source file.
+        - Again, Lint the test file using the provided *lint_command*.
+        - If the linting failed, fix the issues.
+        - Again, Format the generated test file using the provided *fmt_command*.
+        - Again, Do not use `any` type in tests. that causes lint errors. If you cannot write the test because of the type, give up that test case.
+      
+      7. COMPLETION PHASE
+        - **Important(again)** Do not add new `__tests__` directory or something like that, just generate the test file in the same directory as the source file.
+        - Provide recommendations for running the tests.
+    
+    arguments:
+      - name: "source_file"
+        type: "string"
+        required: true
+        description: "Path to the source file for which to generate unit tests"
+      - name: "test_file"
+        type: "string"
+        required: false
+        description: "Path to existing test file to update (optional, will be inferred if not provided. For example, tests for \"something.ts\" should be generated as \"something.test.ts\" in the same directory)"
+      - name: "fmt_command"
+        type: "string"
+        required: false
+        default: "pnpm fmt"
+        description: "Command to format the generated test file (default: pnpm fmt)"
+      - name: "lint_command"
+        type: "string"
+        required: false
+        default: "pnpm lint"
+        description: "Command to lint (default: pnpm lint)"
+      - name: "test_framework"
+        type: "string"
+        required: false
+        default: "vitest"
+        description: "Testing framework to use (optional, will be inferred from project if not specified)"
+      - name: "coverage_level"
+        type: "string"
+        required: false
+        default: "minimal"
+        description: "Level of test coverage: 'minimal(C0)', 'balanced(C1, branch coverage)', or 'comprehensive' (default: balanced)"
+      - name: "include_integration_tests"
+        type: "boolean"
+        required: false
+        default: false
+        description: "Whether to include integration tests along with unit tests (default: false)"
+      - name: "mock_dependencies"
+        type: "boolean"
+        required: false
+        default: true
+        description: "Whether to mock external dependencies in tests (default: true)"
+    
+    mcpServers: |
+      {
+        "mcpServers": {
+          "shell": {
+            "command": "uvx",
+            "args": [
+              "mcp-shell-server"
+            ],
+            "env": {
+              "ALLOW_COMMANDS": "ls,cat,pwd,find,mkdir,rm,cp,mv,head,tail,grep,diff,git,npx,yarn,pnpm,node,jest,mocha,jasmine,pytest,unittest,nose2,go,gotest,cargo,rustc,mvn,gradle,dotnet,make,cmake"
+            }
+          }
+        }
+      }
+    
+    available_tools: ["filesystem", "shell"]
+    execution_strategy: "act"
+    
+    output_schema: |
+      {
+         "properties": {
+             "summary": {
+                 "description": "Summary of the generated unit tests and their coverage scope",
+                 "title": "Test Generation Summary",
+                 "type": "string"
+             },
+             "test_file_path": {
+                 "description": "Path to the generated or updated test file",
+                 "title": "Test File Path",
+                 "type": "string"
+             },
+             "tests_generated": {
+                 "description": "List of test cases that were generated",
+                 "title": "Generated Test Cases",
+                 "type": "array",
+                 "items": { "type": "string" }
+             },
+             "recommendations": {
+                 "description": "Recommendations for running tests and further improvements",
+                 "title": "Recommendations",
+                 "type": "array",
+                 "items": { "type": "string" }
+             },
+             "success": {
+                 "description": "Whether the test generation completed successfully",
+                 "title": "Success",
+                 "type": "boolean"
+             }
+         },
+         "required": ["summary", "test_file_path", "tests_generated", "recommendations", "success"]
+      }
+    
+    exit_expression: "success"
