@@ -62,12 +62,19 @@ jobs:
               "should_run=false"
             end
 
+          # Determine which project this deployment is for
+          detected_project = e2e_projects.find { |name| target_url.include?(name) } || "unknown"
+
           # Debug output
           puts "Event Name: #{event_name}"
           puts "Event State: #{event_state}"
           puts "Environment: #{environment_val}"
           puts "Target URL: #{target_url}"
+          puts "Detected Project: #{detected_project}"
+          puts "Is Production: #{environment_val.include?('Production')}"
+          puts "Is Preview: #{environment_val.include?('Preview')}"
           puts "Should Run: #{result}"
+          puts "Concurrency Group: e2e-tests-#{target_url}"
 
           # Same as 'echo "should_run=xxxx" >> $GITHUB_OUTPUT'
           output_file = ENV.fetch("GITHUB_OUTPUT")
@@ -104,7 +111,7 @@ jobs:
         if: steps.check.outputs.should_run == 'true'
         run: pnpm exec playwright test --project="${{ matrix.browser }}"
         env:
-          URL: ${{ env.URL}}
+          URL: ${{ env.URL }}
 
       # FIXME: This step is not working well. All environments seem to be Preview.
       - name: Upload test results
@@ -124,7 +131,7 @@ jobs:
             --method POST \
             --field state="${STATE}" \
             --field context="${CONTEXT}" \
-            --field description="E2E test result for ${{ matrix.browser }}: (${STATE})" \
+            --field description="E2E test result for ${{ matrix.browser }} on ${{ env.URL }}: (${STATE})" \
             --field target_url="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
