@@ -20,6 +20,25 @@ jobs:
       - name: Checkout repo for local action resolution
         uses: actions/checkout@v4
 
+      - name: Cache Playwright browsers
+        id: playwright-cache
+        uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml', '**/playwright.config.ts') }}
+          restore-keys: |
+            playwright-${{ runner.os }}-
+
+      - name: Install Playwright browsers
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
+        run: pnpm exec playwright install --with-deps
+        shell: bash
+
+      - name: Install system dependencies for WebKit
+        if: steps.playwright-cache.outputs.cache-hit == 'true'
+        run: pnpm exec playwright install-deps webkit
+        shell: bash
+
       - name: liam-app-e2e_tests
         if: github.event.deployment_status.state == 'success' &&
           contains(github.event.deployment.environment, 'Production') &&
