@@ -4,8 +4,8 @@ on:
   deployment_status:
 
 concurrency:
-  group: e2e-${{ github.event.deployment.environment }}-${{ github.event.deployment.sha }}
-  cancel-in-progress: true
+  group: e2e-tests-${{ github.event.deployment.environment }}-${{ github.event.deployment.sha }}
+  cancel-in-progress: false
 
 jobs:
   _e2e-tests:
@@ -25,6 +25,7 @@ jobs:
       CI: true
       URL: ${{ github.event.deployment_status.target_url }}
       ENVIRONMENT: ${{ github.event.deployment.environment }}
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
@@ -42,30 +43,67 @@ jobs:
           environment_val = "${{ github.event.deployment.environment }}"
           target_url      = "${{ github.event.deployment_status.target_url }}"
 
+          # Debug output to prevent silent failures
+          puts "=== E2E DEPLOYMENT CHECK ==="
+          puts "Event Name: #{event_name}"
+          puts "Event State: #{event_state}"
+          puts "Environment: #{environment_val}"
+          puts "Target URL: #{target_url}"
+          puts "================================"
+
           result =
             if event_name == "deployment_status" && event_state == "success"
-              # Production deployment
-              if (environment_val.include?("Production") && target_url.include?("liam-app-git-main"))
+              if environment_val.include?("Preview / liam-app") && target_url.include?("liam-app")
+                puts "✅ MATCH: Preview liam-app deployment"
                 "should_run=true"
-              # Preview deployment
-              elsif environment_val.include?("Preview") &&
-                (
-                  target_url.include?("liam-app") ||
-                  target_url.include?("liam-erd-sample")
-                )
+              elsif environment_val.include?("Preview / liam-erd-sample") && target_url.include?("liam-erd-sample")
+                puts "✅ MATCH: Preview liam-erd-sample deployment"
+                "should_run=true"
+              elsif environment_val.include?("Production") && target_url.include?("liam-app-git-main")
+                puts "✅ MATCH: Production liam-app deployment"
                 "should_run=true"
               else
+                puts "❌ NO MATCH: Environment='#{environment_val}', URL='#{target_url}'"
+                puts "   Expected: Preview/liam-app, Preview/liam-erd-sample, or Production with liam-app-git-main"
                 "should_run=false"
               end
             else
+              puts "❌ INVALID EVENT: Name='#{event_name}', State='#{event_state}'"
+              puts "   Expected: deployment_status event with success state"
               "should_run=false"
             end
 
-          # Same as 'echo "should_run=xxxx" >> $GITHUB_OUTPUT'
+          puts "Final Result: #{result}"
+          puts "================================"
+
           output_file = ENV.fetch("GITHUB_OUTPUT")
           File.open(output_file, "a") do |file|
             file.puts result
           end
+
+      - name: E2E Test Decision
+        run: |
+          echo "🔍 E2E TEST DECISION ANALYSIS"
+          echo "================================"
+          echo "Event Name: ${{ github.event_name }}"
+          echo "Event State: ${{ github.event.deployment_status.state }}"
+          echo "Environment: ${{ github.event.deployment.environment }}"
+          echo "Target URL: ${{ github.event.deployment_status.target_url }}"
+          echo "Should Run: ${{ steps.check.outputs.should_run }}"
+          echo "================================"
+
+          if [ "${{ steps.check.outputs.should_run }}" = "true" ]; then
+            echo "✅ E2E TESTS WILL RUN"
+            echo "   This deployment matches E2E test criteria"
+          else
+            echo "❌ E2E TESTS WILL NOT RUN"
+            echo "   This deployment does not match E2E test criteria"
+            echo "   Expected environments:"
+            echo "   - Preview / liam-app"
+            echo "   - Preview / liam-erd-sample" 
+            echo "   - Production (with liam-app-git-main URL)"
+          fi
+          echo "================================"
 
       - name: Setup pnpm
         if: steps.check.outputs.should_run == 'true'
@@ -86,19 +124,15 @@ jobs:
         run: pnpm exec playwright install --with-deps
 
       - name: Install system dependencies for WebKit
-        # Some WebKit dependencies seem to lay outside the cache and will need to be installed separately
         if: ${{ steps.check.outputs.should_run == 'true' && steps.playwright-cache.outputs.cache-hit == 'true' }}
         run: pnpm exec playwright install-deps webkit
 
-      # This workflow is triggered for all deployments (liam-app, liam-erd-sample, liam-docs),
-      # but E2E tests are executed only for liam-app deployments now.
       - name: Run e2e tests
         if: steps.check.outputs.should_run == 'true'
         run: pnpm exec playwright test --project="${{ matrix.browser }}"
         env:
           URL: ${{ env.URL }}
 
-      # FIXME: This step is not working well. All environments seem to be Preview.
       - name: Upload test results
         if: ${{ steps.check.outputs.should_run == 'true' && failure() }}
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
@@ -120,3 +154,29 @@ jobs:
             --field target_url="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: E2E Test Completion Summary
+        if: always()
+        run: |
+          echo "🎯 E2E TEST COMPLETION SUMMARY"
+          echo "================================"
+          echo "Job Status: ${{ job.status }}"
+          echo "Should Run: ${{ steps.check.outputs.should_run }}"
+          echo "Target URL: ${{ github.event.deployment_status.target_url }}"
+          echo "Environment: ${{ github.event.deployment.environment }}"
+          echo "================================"
+
+          if [ "${{ steps.check.outputs.should_run }}" = "true" ]; then
+            if [ "${{ job.status }}" = "success" ]; then
+              echo "✅ E2E TESTS COMPLETED SUCCESSFULLY"
+            elif [ "${{ job.status }}" = "failure" ]; then
+              echo "❌ E2E TESTS FAILED"
+              echo "   Check the logs above for test failures"
+            else
+              echo "⚠️  E2E TESTS COMPLETED WITH UNKNOWN STATUS: ${{ job.status }}"
+            fi
+          else
+            echo "⏭️  E2E TESTS SKIPPED (as expected)"
+            echo "   This deployment does not require E2E testing"
+          fi
+          echo "================================"
