@@ -51,13 +51,8 @@ jobs:
 
           result =
             if event_name == "deployment_status" && event_state == "success"
-              # Primary check: URL contains liam-erd-sample
-              if target_url.include?("liam-erd-sample")
+              if environment_val.include?("Preview") && target_url.include?("liam-erd-sample")
                 "should_run=true"
-              # Fallback check: Environment contains liam-erd-sample (in case URL is wrong)
-              elsif environment_val.include?("liam-erd-sample")
-                "should_run=true"
-              # Additional check: Preview environment but not other apps
               elsif environment_val.include?("Preview") && 
                     !target_url.include?("liam-app") && 
                     !target_url.include?("liam-docs") && 
