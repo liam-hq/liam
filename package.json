@@ -36,8 +36,7 @@
     "prelint": "pnpm create-env-files",
     "release": "pnpm build && pnpm changeset publish",
     "test": "turbo test",
-    "test:coverage": "vitest --coverage",
-    "test:coverage:ui": "vitest --coverage --ui",
+    "test:coverage": "vitest --coverage --coverage.reporter=json",
     "test:e2e": "turbo test:e2e",
     "vercel:env-pull": "vercel env pull .env",
     "vercel:link": "vercel link -p liam-app -S \"liambx\" -y"
