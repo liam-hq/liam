@@ -1,2 +1,3 @@
 [typescript]
 testingFramework = "Vitest"
+mockingFramework = "Vitest mocks"
