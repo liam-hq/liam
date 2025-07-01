@@ -1,0 +1,56 @@
+name: Claude Review for Test Code
+
+on:
+  # pull_request:
+  #   types: [opened, synchronize]
+  push:
+    branches:
+      - feat/comprehensive-authentication-test-coverage
+
+jobs:
+  claude-test-review:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+      id-token: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Claude test review
+        uses: anthropics/claude-code-action@91c510a769db0f9b79df0efbdded0c29c033f846 # beta
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          allowed_tools: "mcp__github__add_issue_comment"
+          direct_prompt: |
+            You are a senior test reviewer for a monorepo project.
+
+            Each pull request may change one or more test files within different packages.
+            Each package may contain its own SPEC.md that defines the requirements and test strategy for that feature.
+            There is also a root-level SPEC.md that contains general guidance and fallback requirements.
+
+            Please follow this logic when reviewing test code:
+
+            1. For each changed test file:
+               - Try to locate the nearest SPEC.md file in the same package or directory
+               - If not found, fall back to the root-level SPEC.md
+
+            2. Evaluate whether the test code:
+               - Matches the requirements and scenarios described in the SPEC
+               - Covers both success and failure cases
+               - Avoids unnecessary mocking and includes meaningful assertions
+               - Follows the test strategy and naming conventions if defined
+
+            3. If no SPEC.md is available, acknowledge the lack of specification and suggest minimal checks based on test structure
+
+            Your output should:
+            - Group feedback by test file
+            - Clearly identify good coverage, missing cases, or low-quality assertions
+            - Suggest improvements concisely
