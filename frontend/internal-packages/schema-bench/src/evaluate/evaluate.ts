@@ -147,7 +147,8 @@ const validatePrimaryKeys = (
   }
 
   return referencePKs.every(
-    (k: string) => columnMapping[k] && predictPKs.includes(columnMapping[k]),
+    (refPK: string) =>
+      columnMapping[refPK] && predictPKs.includes(columnMapping[refPK]),
   )
 }
 
@@ -254,27 +255,54 @@ const calculateForeignKeyMetrics = (
   return { foreignKeyF1, foreignKeyAllCorrect }
 }
 
-export const evaluate = async (
+type ColumnEvaluationResult = {
+  totalColumnF1Score: number
+  totalColumnAllCorrectCount: number
+  totalPrimaryKeyCorrectCount: number
+  totalConstraintCorrectCount: number
+  allColumnMappings: Record<string, Mapping>
+}
+
+const evaluateTablePair = async (
+  referenceTable: Schema['tables'][string],
+  predictTable: Schema['tables'][string],
+) => {
+  const referenceColumnNames = Object.keys(referenceTable.columns)
+  const predictColumnNames = Object.keys(predictTable.columns)
+
+  const columnMapping = await createColumnMapping(
+    referenceColumnNames,
+    predictColumnNames,
+  )
+
+  const { columnF1, columnAllcorrect } = calculateColumnMetrics(
+    referenceColumnNames,
+    predictColumnNames,
+    columnMapping,
+  )
+
+  const isPrimaryKeyCorrect = validatePrimaryKeys(
+    referenceTable,
+    predictTable,
+    columnMapping,
+  )
+
+  const isConstraintCorrect = validateConstraints(referenceTable, predictTable)
+
+  return {
+    columnMapping,
+    columnF1,
+    columnAllcorrect,
+    isPrimaryKeyCorrect,
+    isConstraintCorrect,
+  }
+}
+
+const evaluateColumns = async (
   reference: Schema,
   predict: Schema,
-): Promise<EvaluateResult> => {
-  const referenceTableNames = Object.keys(reference.tables)
-  const predictTableNames = Object.keys(predict.tables)
-
-  // 1. Table name mapping
-  const tableMapping = await createTableMapping(
-    referenceTableNames,
-    predictTableNames,
-  )
-
-  // 2. Table-level Precision/Recall/F1/Allcorrect
-  const { tableF1, tableAllcorrect } = calculateTableMetrics(
-    referenceTableNames,
-    predictTableNames,
-    tableMapping,
-  )
-
-  // 3. Column-level evaluation for each matched table
+  tableMapping: Mapping,
+): Promise<ColumnEvaluationResult> => {
   let totalColumnF1Score = 0
   let totalColumnAllCorrectCount = 0
   let totalPrimaryKeyCorrectCount = 0
@@ -288,53 +316,39 @@ export const evaluate = async (
     const predictTable = predict.tables[predictTableName]
     if (!predictTable) continue
 
-    const referenceColumnNames = Object.keys(referenceTable.columns)
-    const predictColumnNames = Object.keys(predictTable.columns)
+    const result = await evaluateTablePair(referenceTable, predictTable)
 
-    const columnMapping = await createColumnMapping(
-      referenceColumnNames,
-      predictColumnNames,
-    )
-    allColumnMappings[tableName] = columnMapping
-
-    const { columnF1, columnAllcorrect } = calculateColumnMetrics(
-      referenceColumnNames,
-      predictColumnNames,
-      columnMapping,
-    )
-
-    totalColumnF1Score += columnF1
-    totalColumnAllCorrectCount += columnAllcorrect
-
-    // Primary key validation
-    const isPrimaryKeyCorrect = validatePrimaryKeys(
-      referenceTable,
-      predictTable,
-      columnMapping,
-    )
-    totalPrimaryKeyCorrectCount += isPrimaryKeyCorrect ? 1 : 0
-
-    // Constraint validation
-    const isConstraintCorrect = validateConstraints(
-      referenceTable,
-      predictTable,
-    )
-    totalConstraintCorrectCount += isConstraintCorrect ? 1 : 0
+    allColumnMappings[tableName] = result.columnMapping
+    totalColumnF1Score += result.columnF1
+    totalColumnAllCorrectCount += result.columnAllcorrect
+    totalPrimaryKeyCorrectCount += result.isPrimaryKeyCorrect ? 1 : 0
+    totalConstraintCorrectCount += result.isConstraintCorrect ? 1 : 0
   }
 
-  const foreignKeyMapping = createForeignKeyMapping(
-    reference.tables,
-    predict.tables,
-  )
+  return {
+    totalColumnF1Score,
+    totalColumnAllCorrectCount,
+    totalPrimaryKeyCorrectCount,
+    totalConstraintCorrectCount,
+    allColumnMappings,
+  }
+}
 
-  const { foreignKeyF1, foreignKeyAllCorrect } = calculateForeignKeyMetrics(
-    reference.tables,
-    predict.tables,
-    foreignKeyMapping,
-  )
+type AverageCalculationParams = {
+  totalColumnF1Score: number
+  totalColumnAllCorrectCount: number
+  totalPrimaryKeyCorrectCount: number
+  totalConstraintCorrectCount: number
+  totalTableCount: number
+}
 
-  // Calculate averages
-  const totalTableCount = referenceTableNames.length
+const calculateAverages = ({
+  totalColumnF1Score,
+  totalColumnAllCorrectCount,
+  totalPrimaryKeyCorrectCount,
+  totalConstraintCorrectCount,
+  totalTableCount,
+}: AverageCalculationParams) => {
   const columnF1ScoreAverage = totalTableCount
     ? totalColumnF1Score / totalTableCount
     : 0
@@ -347,6 +361,70 @@ export const evaluate = async (
   const constraintAccuracy = totalTableCount
     ? totalConstraintCorrectCount / totalTableCount
     : 0
+
+  return {
+    columnF1ScoreAverage,
+    columnAllCorrectRateAverage,
+    primaryKeyAccuracyAverage,
+    constraintAccuracy,
+  }
+}
+
+export const evaluate = async (
+  reference: Schema,
+  predict: Schema,
+): Promise<EvaluateResult> => {
+  const referenceTableNames = Object.keys(reference.tables)
+  const predictTableNames = Object.keys(predict.tables)
+
+  // 1. Table name mapping
+  const tableMapping = await createTableMapping(
+    referenceTableNames,
+    predictTableNames,
+  )
+
+  // 2. Table-level metrics
+  const { tableF1, tableAllcorrect } = calculateTableMetrics(
+    referenceTableNames,
+    predictTableNames,
+    tableMapping,
+  )
+
+  // 3. Column-level evaluation
+  const {
+    totalColumnF1Score,
+    totalColumnAllCorrectCount,
+    totalPrimaryKeyCorrectCount,
+    totalConstraintCorrectCount,
+    allColumnMappings,
+  } = await evaluateColumns(reference, predict, tableMapping)
+
+  // 4. Foreign key evaluation
+  const foreignKeyMapping = createForeignKeyMapping(
+    reference.tables,
+    predict.tables,
+  )
+
+  const { foreignKeyF1, foreignKeyAllCorrect } = calculateForeignKeyMetrics(
+    reference.tables,
+    predict.tables,
+    foreignKeyMapping,
+  )
+
+  // 5. Calculate averages
+  const totalTableCount = referenceTableNames.length
+  const {
+    columnF1ScoreAverage,
+    columnAllCorrectRateAverage,
+    primaryKeyAccuracyAverage,
+    constraintAccuracy,
+  } = calculateAverages({
+    totalColumnF1Score,
+    totalColumnAllCorrectCount,
+    totalPrimaryKeyCorrectCount,
+    totalConstraintCorrectCount,
+    totalTableCount,
+  })
 
   const overallSchemaAccuracy =
     primaryKeyAccuracyAverage + columnAllCorrectRateAverage + tableAllcorrect >

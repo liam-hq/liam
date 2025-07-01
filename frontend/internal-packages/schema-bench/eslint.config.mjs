@@ -11,7 +11,7 @@ const baseConfig = createBaseConfig({
 export default [
   ...baseConfig,
   {
-    files: ['src/workspace/**/*.ts', '**/*.tsx'],
+    files: ['**/*.ts', '**/*.tsx'],
     ignores: ['**/*.test.ts'],
     rules: {
       complexity: ['error', { max: 10 }],
