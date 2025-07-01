@@ -1,15 +1,23 @@
 import { getPullRequestFiles } from '@liam-hq/github'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { createClient } from '@/libs/db/server'
 import { checkSchemaChanges } from '../checkSchemaChanges'
 
-// Only mock the GitHub API calls, not Supabase
+// Mock external dependencies at I/O boundaries
 vi.mock('@liam-hq/github', () => ({
   getPullRequestFiles: vi.fn(),
+}))
+
+vi.mock('@/libs/db/server', () => ({
+  createClient: vi.fn(),
 }))
 
 vi.mock('@/src/trigger/jobs', () => ({
   savePullRequestTask: { trigger: vi.fn() },
 }))
+
+const mockGetPullRequestFiles = vi.mocked(getPullRequestFiles)
+const mockCreateClient = vi.mocked(createClient)
 
 describe('checkSchemaChanges', () => {
   const mockSchemaParams = {
@@ -21,13 +29,29 @@ describe('checkSchemaChanges', () => {
     installationId: 1,
   }
 
+  const mockSingle = vi.fn()
+  const mockSupabase = {
+    from: vi.fn(() => ({
+      select: vi.fn(() => ({
+        eq: vi.fn(() => ({
+          single: mockSingle,
+        })),
+      })),
+    })),
+  }
+
   beforeEach(() => {
     vi.clearAllMocks()
+    // Mock the Supabase client with minimal interface needed for testing
+    // Using unknown intermediate cast as suggested by TypeScript for intentional mock typing
+    mockCreateClient.mockResolvedValue(
+      mockSupabase as unknown as Awaited<ReturnType<typeof createClient>>,
+    )
   })
 
   it('should return false if project has no schema file paths', async () => {
-    // Setup GitHub API mock to return some files
-    vi.mocked(getPullRequestFiles).mockResolvedValue([
+    // Given: PR files exist but no schema paths in database
+    mockGetPullRequestFiles.mockResolvedValue([
       {
         filename: 'dummy.sql',
         status: 'added',
@@ -39,13 +63,23 @@ describe('checkSchemaChanges', () => {
       },
     ])
 
+    // Mock database to return no schema paths (error)
+    mockSingle.mockResolvedValue({
+      data: null,
+      error: { message: 'No schema path found' },
+    })
+
+    // When: checking for schema changes
     const result = await checkSchemaChanges(mockSchemaParams)
+
+    // Then: should not continue processing
     expect(result).toEqual({ shouldContinue: false })
+    expect(mockSupabase.from).toHaveBeenCalledWith('schema_file_paths')
   })
 
   it('should return false if no files match the schema paths', async () => {
-    // Setup GitHub API mock to return non-matching files
-    vi.mocked(getPullRequestFiles).mockResolvedValue([
+    // Given: PR files don't match schema path
+    mockGetPullRequestFiles.mockResolvedValue([
       {
         filename: 'src/index.js',
         status: 'modified',
@@ -61,91 +95,63 @@ describe('checkSchemaChanges', () => {
         additions: 5,
         deletions: 1,
         changes: 6,
+        patch: 'Updated documentation',
+        fileType: 'text',
+      },
+    ])
+
+    // Mock database to return schema path that doesn't match PR files
+    mockSingle.mockResolvedValue({
+      data: { path: 'migrations/schema.sql' },
+      error: null,
+    })
+
+    // When: checking for schema changes
+    const result = await checkSchemaChanges(mockSchemaParams)
+
+    // Then: should not continue processing
+    expect(result).toEqual({ shouldContinue: false })
+  })
+
+  it('should return true if schema file changes are detected', async () => {
+    // Given: PR files include file matching schema path
+    mockGetPullRequestFiles.mockResolvedValue([
+      {
+        filename: 'migrations/2024_update.sql',
+        status: 'added',
+        additions: 20,
+        deletions: 0,
+        changes: 20,
+        patch: 'CREATE TABLE test (id INT);',
+        fileType: 'text',
+      },
+      {
+        filename: 'src/index.js',
+        status: 'modified',
+        additions: 10,
+        deletions: 2,
+        changes: 12,
         patch: 'console.log("Hello, world!");',
         fileType: 'text',
       },
     ])
 
+    // Mock database to return matching schema path
+    mockSingle.mockResolvedValue({
+      data: { path: 'migrations/2024_update.sql' },
+      error: null,
+    })
+
+    // When: checking for schema changes
     const result = await checkSchemaChanges(mockSchemaParams)
-    expect(result).toEqual({ shouldContinue: false })
-  })
 
-  it.skip('should return true if schema file changes are detected', async () => {
-    // Get the Supabase client
-    const { createClient } = await import('@/libs/db/server')
-    const supabase = await createClient()
-
-    // Create a test project
-    const now = new Date().toISOString()
-    const { data: project, error: projectError } = await supabase
-      .from('projects')
-      .insert({
-        name: 'Test Project for Schema Changes Test',
-        updated_at: now,
-      })
-      .select()
-      .single()
-
-    if (projectError || !project) {
-      console.error('Failed to create test project:', projectError)
-      throw projectError
-    }
-
-    try {
-      // Create a test schema path for the project
-      const { data: schemaPath, error: schemaPathError } = await supabase
-        .from('schema_file_paths')
-        .insert({
-          path: 'migrations/2024_update.sql',
-          project_id: project.id,
-          format: 'postgres',
-          updated_at: now,
-        })
-        .select()
-        .single()
-
-      if (schemaPathError || !schemaPath) {
-        console.error('Failed to create test schema path:', schemaPathError)
-        throw schemaPathError
-      }
-
-      // Mock the GitHub API to return SQL files
-      vi.mocked(getPullRequestFiles).mockResolvedValue([
-        {
-          filename: 'migrations/2024_update.sql',
-          status: 'added',
-          additions: 20,
-          deletions: 0,
-          changes: 20,
-          patch: 'CREATE TABLE test (id INT);',
-          fileType: 'text',
-        },
-        {
-          filename: 'src/index.js',
-          status: 'modified',
-          additions: 10,
-          deletions: 2,
-          changes: 12,
-          patch: 'console.log("Hello, world!");',
-          fileType: 'text',
-        },
-      ])
-
-      // Use the real project ID in the test params
-      const testParams = {
-        ...mockSchemaParams,
-        projectId: project.id,
-      }
-
-      // Call the actual function with real database records
-      const result = await checkSchemaChanges(testParams)
-      expect(result).toEqual({ shouldContinue: true })
-
-      // Clean up the schema path
-      await supabase.from('schema_file_paths').delete().eq('id', schemaPath.id)
-    } finally {
-      // Clean up the project
-      await supabase.from('projects').delete().eq('id', project.id)
-    }
+    // Then: should continue processing
+    expect(result).toEqual({ shouldContinue: true })
+    expect(mockGetPullRequestFiles).toHaveBeenCalledWith(
+      mockSchemaParams.installationId,
+      mockSchemaParams.owner,
+      mockSchemaParams.name,
+      mockSchemaParams.pullRequestNumber,
+    )
   })
 })
