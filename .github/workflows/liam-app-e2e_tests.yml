@@ -4,7 +4,7 @@ on:
   deployment_status:
 
 concurrency:
-  group: liam-app-e2e-tests-${{ github.event.deployment_status.target_url }}
+  group: liam-app-e2e-tests-${{ github.event.deployment_status.target_url }}-${{ github.event.deployment.sha }}
   cancel-in-progress: false
 
 jobs:

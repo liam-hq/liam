@@ -4,7 +4,7 @@ on:
   deployment_status:
 
 concurrency:
-  group: liam-erd-sample-e2e-tests-${{ github.event.deployment_status.target_url }}
+  group: liam-erd-sample-e2e-tests-${{ github.event.deployment_status.target_url }}-${{ github.event.deployment.sha }}
   cancel-in-progress: false
 
 jobs:
@@ -49,8 +49,10 @@ jobs:
 
           result =
             if event_name == "deployment_status" && event_state == "success"
-              if environment_val.include?("Preview") && target_url.include?("liam-erd-sample")
+              # Primary check: URL contains liam-erd-sample
+              if target_url.include?("liam-erd-sample")
                 "should_run=true"
+              # Fallback check: Preview environment but not other apps
               elsif environment_val.include?("Preview") && 
                     !target_url.include?("liam-app") && 
                     !target_url.include?("liam-docs") && 
