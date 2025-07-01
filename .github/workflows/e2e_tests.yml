@@ -43,6 +43,13 @@ jobs:
         shell: bash
         working-directory: frontend/internal-packages/e2e/
 
+      - name: Debug deployment event
+        run: |
+          echo "Deployment Status State: ${{ github.event.deployment_status.state }}"
+          echo "Deployment Environment: ${{ github.event.deployment.environment }}"
+          echo "Target URL: ${{ github.event.deployment_status.target_url }}"
+          echo "Deployment SHA: ${{ github.event.deployment.sha }}"
+
       - name: liam-app-e2e_tests
         if: github.event.deployment_status.state == 'success' &&
           contains(github.event.deployment.environment, 'Production') &&
