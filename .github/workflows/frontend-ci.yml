@@ -77,6 +77,13 @@ jobs:
       - run: ./scripts/extract-supabase-anon-key.sh
       - run: ./scripts/extract-supabase-service-key.sh
       - run: npx turbo run test --affected
+      - name: Generate coverage report
+        run: pnpm test:coverage
+      - name: Upload coverage to artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage/
       - run: pnpm --filter @liam-hq/db supabase:gen
       - name: Check for diff in generated types and schema.sql
         env:
