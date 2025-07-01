@@ -91,7 +91,7 @@ runs:
         GH_TOKEN: ${{ inputs.github-token }}
 
     - name: Slack Notification on Failure
-      if: ${{ inputs.should-run == 'true' && contains(inputs.environment, inputs['deployment-target']) && failure() }}
+      if: ${{ inputs.should-run == 'true' && failure() }}
       uses: tokorom/action-slack-incoming-webhook@d57bf1eb618f3dae9509afefa70d5774ad3d42bf # v1.3.0
       env:
         INCOMING_WEBHOOK_URL: ${{ inputs.slack-webhook-url }}
