@@ -9,6 +9,7 @@ pglite.wasm
 .cursor/mcp.json
 dist/
 benchmark-workspace/
+coverage/
 
 # Claude local settings
 .claude/settings.local.json
