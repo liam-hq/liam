@@ -1,8 +1,8 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import fs from 'node:fs'
 import path from 'node:path'
 import { exit } from 'node:process'
 import inquirer from 'inquirer'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { runInitAction } from './index.js'
 
 describe('InitCommand', () => {
@@ -20,8 +20,12 @@ describe('InitCommand', () => {
       throw new Error('Exit called')
     })
     inquirerPromptSpy = vi.spyOn(inquirer, 'prompt')
-    fsMkdirSyncSpy = vi.spyOn(fs, 'mkdirSync').mockImplementation(() => undefined)
-    fsWriteFileSyncSpy = vi.spyOn(fs, 'writeFileSync').mockImplementation(() => {})
+    fsMkdirSyncSpy = vi
+      .spyOn(fs, 'mkdirSync')
+      .mockImplementation(() => undefined)
+    fsWriteFileSyncSpy = vi
+      .spyOn(fs, 'writeFileSync')
+      .mockImplementation(() => {})
   })
 
   afterEach(() => {
@@ -38,10 +42,18 @@ describe('InitCommand', () => {
     await runInitAction(mockExit)
 
     expect(inquirerPromptSpy).toHaveBeenCalledTimes(4)
-    expect(consoleInfoSpy).toHaveBeenCalledWith(expect.stringContaining('Welcome to the @liam-hq/cli setup process'))
-    expect(consoleInfoSpy).toHaveBeenCalledWith(expect.stringContaining('Next Steps'))
-    expect(consoleInfoSpy).toHaveBeenCalledWith(expect.stringContaining('my-schema.sql'))
-    expect(consoleInfoSpy).toHaveBeenCalledWith(expect.stringContaining('Setup complete'))
+    expect(consoleInfoSpy).toHaveBeenCalledWith(
+      expect.stringContaining('Welcome to the @liam-hq/cli setup process'),
+    )
+    expect(consoleInfoSpy).toHaveBeenCalledWith(
+      expect.stringContaining('Next Steps'),
+    )
+    expect(consoleInfoSpy).toHaveBeenCalledWith(
+      expect.stringContaining('my-schema.sql'),
+    )
+    expect(consoleInfoSpy).toHaveBeenCalledWith(
+      expect.stringContaining('Setup complete'),
+    )
   })
 
   it('test_rails_schema_setup_success', async () => {
@@ -53,11 +65,21 @@ describe('InitCommand', () => {
     await runInitAction(mockExit)
 
     expect(inquirerPromptSpy).toHaveBeenCalledTimes(3)
-    expect(consoleInfoSpy).toHaveBeenCalledWith(expect.stringContaining('Welcome to the @liam-hq/cli setup process'))
-    expect(consoleInfoSpy).toHaveBeenCalledWith(expect.stringContaining('Next Steps'))
-    expect(consoleInfoSpy).toHaveBeenCalledWith(expect.stringContaining('custom/schema.rb'))
-    expect(consoleInfoSpy).toHaveBeenCalledWith(expect.stringContaining('--format schemarb'))
-    expect(consoleInfoSpy).toHaveBeenCalledWith(expect.stringContaining('Setup complete'))
+    expect(consoleInfoSpy).toHaveBeenCalledWith(
+      expect.stringContaining('Welcome to the @liam-hq/cli setup process'),
+    )
+    expect(consoleInfoSpy).toHaveBeenCalledWith(
+      expect.stringContaining('Next Steps'),
+    )
+    expect(consoleInfoSpy).toHaveBeenCalledWith(
+      expect.stringContaining('custom/schema.rb'),
+    )
+    expect(consoleInfoSpy).toHaveBeenCalledWith(
+      expect.stringContaining('--format schemarb'),
+    )
+    expect(consoleInfoSpy).toHaveBeenCalledWith(
+      expect.stringContaining('Setup complete'),
+    )
   })
 
   it('test_github_actions_workflow_generation_success', async () => {
@@ -71,23 +93,26 @@ describe('InitCommand', () => {
 
     expect(fsMkdirSyncSpy).toHaveBeenCalledWith(
       path.join(process.cwd(), '.github', 'workflows'),
-      { recursive: true }
+      { recursive: true },
     )
     expect(fsWriteFileSyncSpy).toHaveBeenCalledWith(
       path.join(process.cwd(), '.github', 'workflows', 'erd.yml'),
       expect.stringContaining('name: ERD Build'),
-      'utf-8'
+      'utf-8',
     )
-    expect(consoleInfoSpy).toHaveBeenCalledWith(expect.stringContaining('Created GitHub Actions workflow'))
+    expect(consoleInfoSpy).toHaveBeenCalledWith(
+      expect.stringContaining('Created GitHub Actions workflow'),
+    )
   })
 
   it('test_unsupported_technology_selection_exits', async () => {
-    inquirerPromptSpy
-      .mockResolvedValueOnce({ dbOrOrm: 'Others' })
+    inquirerPromptSpy.mockResolvedValueOnce({ dbOrOrm: 'Others' })
 
     await expect(runInitAction(mockExit)).rejects.toThrow('Exit called')
 
-    expect(consoleInfoSpy).toHaveBeenCalledWith(expect.stringContaining("Sorry we don't support them yet"))
+    expect(consoleInfoSpy).toHaveBeenCalledWith(
+      expect.stringContaining("Sorry we don't support them yet"),
+    )
     expect(mockExit).toHaveBeenCalledWith(0)
   })
 
@@ -105,8 +130,12 @@ describe('InitCommand', () => {
 
     await runInitAction(mockExit)
 
-    expect(consoleErrorSpy).toHaveBeenCalledWith(expect.stringContaining('Failed to create GitHub Actions workflow file'))
-    expect(consoleErrorSpy).toHaveBeenCalledWith(expect.stringContaining('Permission denied'))
+    expect(consoleErrorSpy).toHaveBeenCalledWith(
+      expect.stringContaining('Failed to create GitHub Actions workflow file'),
+    )
+    expect(consoleErrorSpy).toHaveBeenCalledWith(
+      expect.stringContaining('Permission denied'),
+    )
   })
 
   it('test_drizzle_non_postgres_unsupported', async () => {
@@ -116,7 +145,9 @@ describe('InitCommand', () => {
 
     await expect(runInitAction(mockExit)).rejects.toThrow('Exit called')
 
-    expect(consoleInfoSpy).toHaveBeenCalledWith(expect.stringContaining("Sorry we don't support them yet"))
+    expect(consoleInfoSpy).toHaveBeenCalledWith(
+      expect.stringContaining("Sorry we don't support them yet"),
+    )
     expect(mockExit).toHaveBeenCalledWith(0)
   })
 })

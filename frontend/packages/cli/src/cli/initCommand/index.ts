@@ -335,7 +335,9 @@ ${setupSteps}
 /**
  * Main action function for the init command - extracted for testing
  */
-export const runInitAction = async (exitFn: (code?: number) => never = exit) => {
+export const runInitAction = async (
+  exitFn: (code?: number) => never = exit,
+) => {
   // Display welcome message
   displayWelcomeMessage()
 
@@ -411,7 +413,9 @@ ${yocto.blueBright(DocsUrl)}
   generateGitHubActions(addGhActions, dbOrOrm, inputFilePath, selectedFormat)
 
   console.info(
-    yocto.greenBright(`\n✅ Setup complete! Enjoy using Liam ERD to visualize your database schema!`),
+    yocto.greenBright(
+      '\n✅ Setup complete! Enjoy using Liam ERD to visualize your database schema!',
+    ),
   )
 }
 
@@ -428,4 +432,4 @@ const createInitCommand = (deps: InitCommandDeps = { exit }) => {
 // Default export with process.exit
 const initCommand = createInitCommand()
 
-export { initCommand, createInitCommand }
+export { initCommand,  }

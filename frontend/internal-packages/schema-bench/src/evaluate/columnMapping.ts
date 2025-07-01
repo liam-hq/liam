@@ -8,7 +8,7 @@ import {
 import type { ColumnEvaluationResult, Mapping } from './types.ts'
 import { EPSILON } from './types.ts'
 
-export const createColumnMapping = async (
+const createColumnMapping = async (
   referenceColumnNames: string[],
   predictColumnNames: string[],
 ): Promise<Mapping> => {
@@ -26,7 +26,7 @@ export const createColumnMapping = async (
   return columnMapping
 }
 
-export const calculateColumnMetrics = (
+const calculateColumnMetrics = (
   referenceColumnNames: string[],
   predictColumnNames: string[],
   columnMapping: Mapping,

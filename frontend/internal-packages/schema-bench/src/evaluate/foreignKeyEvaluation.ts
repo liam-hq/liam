@@ -65,7 +65,7 @@ const createForeignKeyMapping = (
   return foreignKeyMapping
 }
 
-export const calculateForeignKeyMetrics = (
+const calculateForeignKeyMetrics = (
   referenceTables: Schema['tables'],
   predictTables: Schema['tables'],
   foreignKeyMapping: Mapping,
