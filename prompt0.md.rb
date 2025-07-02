@@ -1,8 +1,22 @@
 #!/usr/bin/env ruby
 
-source_path = ARGV[1]
+source_path = ARGV[0]
 unless source_path
   puts 'one argument <source_path> needed'
+  abort
+end
+if source_path.start_with?('/')
+  puts 'do not specify absolute path'
+  abort
+end
+if !source_path.include?('frontend/')
+  puts 'not supported other than frotnend directory for now'
+  abort
+end
+
+package_dir = source_path.split('frontend/')[1].split('/')[1]
+if !package_dir
+  puts 'unexpected. abort'
   abort
 end
 
@@ -17,7 +31,7 @@ puts <<~EOF
   
   また、つぎに示すtestコマンド、lintコマンド、fmtコマンドも通るようにして。
   
-  $ pnpm --filter @liam-hq/schema-bench test
-  $ HEAVY_LINT=1 pnpm --filter @liam-hq/schema-bench lint
-  $ pnpm --filter @liam-hq/schema-bench fmt
+  $ pnpm --filter @liam-hq/#{package_dir} test
+  $ HEAVY_LINT=1 pnpm --filter @liam-hq/#{package_dir} lint
+  $ pnpm --filter @liam-hq/#{package_dir} fmt
 EOF
