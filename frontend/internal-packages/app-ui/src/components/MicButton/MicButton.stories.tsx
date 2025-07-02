@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/react'
+import type { Meta, StoryObj } from '@storybook/nextjs'
 import { expect, userEvent, within } from '@storybook/test'
 import { useState } from 'react'
 import { MicButton } from './MicButton'
@@ -54,7 +54,7 @@ export const Disabled: Story = {
 }
 
 export const WithPlayFunction: Story = {
-  play: async ({ canvasElement }) => {
+  play: async ({ canvasElement }: { canvasElement: HTMLElement }) => {
     const canvas = within(canvasElement)
     const button = canvas.getByRole('button', { name: 'Voice Input' })
 
@@ -89,7 +89,7 @@ export const DisabledInteraction: Story = {
   args: {
     disabled: true,
   },
-  play: async ({ canvasElement }) => {
+  play: async ({ canvasElement }: { canvasElement: HTMLElement }) => {
     const canvas = within(canvasElement)
     const button = canvas.getByRole('button', { name: 'Voice Input' })
 
@@ -122,7 +122,7 @@ export const WithClickHandler: Story = {
       </div>
     )
   },
-  play: async ({ canvasElement }) => {
+  play: async ({ canvasElement }: { canvasElement: HTMLElement }) => {
     const canvas = within(canvasElement)
     const button = canvas.getByRole('button', { name: 'Voice Input' })
     const counter = canvas.getByText(/Clicked: \d+ times/)

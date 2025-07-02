@@ -35,6 +35,7 @@
 - [ ] ActionButton.stories.tsxの動的インポートエラー解決
 - [ ] Next.js Image コンポーネントのモック改善
 - [ ] @liam-hq/db-structure パッケージの解決エラー修正
+- [ ] pnpm --filter @liam-hq/storybook test:coverage の失敗を修正
 
 ## フェーズ1: パッケージセットアップ ✅
 - [x] コンポーネントの分析と移行対象の特定
@@ -62,7 +63,9 @@
 - [x] CancelButton → 汎用キャンセルボタン（app-uiに移植完了）
   - [x] play関数によるインタラクションテスト追加
   - [x] カバレッジ100%達成
-- [ ] SendButton → 汎用送信ボタン（テスト込み）
+- [x] SendButton → 汎用送信ボタン（app-uiに移植完了）
+  - [x] play関数によるインタラクションテスト追加
+  - [ ] カバレッジ100%達成（Storybook Vitest Addon導入後に計測）
 - [ ] NewSessionButton → 汎用「新規作成」ボタン（テスト込み）
 - [ ] ThreadListButton → 汎用リストトグルボタン（テスト込み）
 
