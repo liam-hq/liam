@@ -45,6 +45,7 @@
 - [x] gen:cssスクリプトの追加（CSS Modules用）
 - [ ] vitest + testing-libraryで作成したテストを削除（Storybook Vitestに移行）
 - [x] css.d.tsファイルをコミットしないよう.gitignoreに追加
+- [ ] app-uiパッケージのpackage.jsonからbuildコマンドを削除（内部パッケージのため不要）
 
 ## フェーズ2: コンポーネント移行（テストと並行実施）
 
