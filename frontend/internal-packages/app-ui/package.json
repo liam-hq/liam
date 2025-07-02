@@ -5,6 +5,8 @@
 	"type": "module",
 	"main": "src/index.ts",
 	"dependencies": {
+		"@liam-hq/ui": "workspace:*",
+		"clsx": "2.1.1",
 		"react": "19.1.0"
 	},
 	"devDependencies": {

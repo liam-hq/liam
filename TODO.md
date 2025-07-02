@@ -23,6 +23,7 @@
 - [x] package.jsonの設定
 - [x] TypeScript設定
 - [x] ビルド・テストスクリプトの設定
+- [ ] gen:cssスクリプトの追加（CSS Modules用）
 
 ## フェーズ2: コンポーネント移行（並列作業可能）
 
