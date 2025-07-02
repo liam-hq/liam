@@ -13,6 +13,29 @@ import { noNonEnglishPlugin } from './no-non-english-plugin.js'
 export function createBaseConfig(options = {}) {
   const { tsconfigPath = './tsconfig.json', gitignorePath } = options
 
+  const heavyRules = [
+    {
+      files: ['src/workspace/**/*.ts', '**/*.tsx'],
+      ignores: ['**/*.test.ts'],
+      rules: {
+        complexity: ['error', { max: 10 }],
+        'max-lines': [
+          'error',
+          { max: 300, skipBlankLines: true, skipComments: true },
+        ],
+        'max-lines-per-function': [
+          'error',
+          { max: 40, skipBlankLines: true, skipComments: true, IIFEs: true },
+        ],
+        'max-depth': ['error', 4],
+        'max-params': ['error', 4],
+        'max-statements': ['error', 20],
+        'max-nested-callbacks': ['error', 3],
+      },
+    },
+  ]
+  const additionalRules = process.env['HEAVY_LINT'] ? heavyRules : []
+
   return [
     includeIgnoreFile(gitignorePath),
     {
@@ -60,5 +83,6 @@ export function createBaseConfig(options = {}) {
         'no-non-english/no-non-english-characters': 'error',
       },
     },
+    ...additionalRules,
   ]
 }
