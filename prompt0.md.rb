@@ -21,6 +21,15 @@ if !package_dir
 end
 
 puts <<~EOF
+  <before-step0>
+  ソースファイルのディレクトリのファイル ( #{source_path} ) のそれぞれについて(1つの場合もある)、テストが十分かどうか確認してほしい。テストファイルは同じディレクトリに拡張子.test.tsで存在する。(例: something.ts について something.test.tsが存在する) もしくは、存在しない場合もある。
+
+  テストが存在し、十分である場合は before-step1に進む。
+  存在しない場合は、step0に進む。
+
+  </before-step0>
+
+  <step0>
   ソースファイルのディレクトリのファイル ( #{source_path} ) のそれぞれについて(1つの場合もある)、テストがなければ拡充してほしい。
   **重要** テストファイルは、__tests__ディレクトリのようなものは新たに作らず、ソースファイルと同じディレクトリに.test.tsの拡張子で追加すること。
   例: something.ts について something.test.tsを追加する
@@ -34,4 +43,8 @@ puts <<~EOF
   $ pnpm --filter @liam-hq/#{package_dir} test
   $ HEAVY_LINT=1 pnpm --filter @liam-hq/#{package_dir} lint
   $ pnpm --filter @liam-hq/#{package_dir} fmt
+
+  最後に、完了したら、git commitし、適切なコミットメッセージをつけて。コミットメッセージのどこかに、"refactor:step0" を含んで。
+  finishに進んで。
+  </step0>
 EOF
