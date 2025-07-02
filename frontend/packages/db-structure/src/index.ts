@@ -21,7 +21,10 @@ export { applyPatchOperations, operationsSchema } from './operation/index.js'
 export type { ProcessError } from './parser.js'
 export {
   aColumn,
+  aForeignKeyConstraint,
+  aSchema,
   aTable,
+  aUniqueConstraint,
   type CheckConstraint,
   type Column,
   type Columns,
