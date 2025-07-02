@@ -1,5 +1,6 @@
 'use client'
 
+import { CancelButton } from '@liam-hq/app-ui'
 import type { Schema } from '@liam-hq/db-structure'
 import {
   PopoverAnchor,
@@ -20,7 +21,6 @@ import {
   useState,
 } from 'react'
 import styles from './ChatInput.module.css'
-import { CancelButton } from './components/CancelButton'
 import {
   type MentionItem,
   MentionSuggestor,
