@@ -53,10 +53,10 @@ jobs:
 
           result =
             if event_name == "deployment_status" && event_state == "success"
-              if environment_val.include?("Preview") && target_url.include?("liam-app")
+              if (environment_val.include?("Preview / liam-app")) && target_url.include?("liam-app")
                 puts "✅ MATCH: Preview liam-app deployment"
                 "should_run=true"
-              elsif environment_val.include?("Preview") && target_url.include?("liam-erd-sample")
+              elsif (environment_val.include?("Preview / liam-erd-sample")) && target_url.include?("liam-erd-sample")
                 puts "✅ MATCH: Preview liam-erd-sample deployment"
                 "should_run=true"
               elsif environment_val.include?("Production") && target_url.include?("liam-app-git-main")
