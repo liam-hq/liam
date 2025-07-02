@@ -7,6 +7,6 @@
 また、つぎに示すtestコマンド、lintコマンド、fmtコマンドも通るようにして。
 
 $ pnpm --filter @liam-hq/schema-bench test
-$ pnpm --filter @liam-hq/schema-bench lint
+$ HEAVY_LINT=1 pnpm --filter @liam-hq/schema-bench lint
 $ pnpm --filter @liam-hq/schema-bench fmt
 

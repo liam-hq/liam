@@ -7,7 +7,7 @@ lintは厳し目の設定にしてあるので注意。
 ファイル分割等の仕様については、 @/directory-refactoring-guide.md を参考にして。
 
 $ pnpm --filter @liam-hq/schema-bench test
-$ pnpm --filter @liam-hq/schema-bench lint
+$ HEAVY_LINT=1 pnpm --filter @liam-hq/schema-bench lint
 
 fmtには、以下を使って。
 
