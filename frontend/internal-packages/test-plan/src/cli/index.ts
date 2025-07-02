@@ -1,4 +1,4 @@
 #!/usr/bin/env node
-import { analyzeCommand } from './analyzeCommand.js'
+import { analyzeCommand } from './analyzeCommand'
 
 analyzeCommand.parse(process.argv)

@@ -18,11 +18,14 @@ export class TestStrategyAnalyzer {
     this.client = new OpenAI({ apiKey })
   }
 
-  async generateDetailedReport(coverageData: any): Promise<string> {
-    const prompt = this.createDetailedAnalysisPrompt(coverageData)
+  async generateDetailedReport(
+    coverageData: any,
+    projectSpec?: string,
+  ): Promise<string> {
+    const prompt = this.createDetailedAnalysisPrompt(coverageData, projectSpec)
 
     const response = await this.client.chat.completions.create({
-      model: 'gpt-4o',
+      model: 'gpt-4.1',
       messages: [
         {
           role: 'system',
@@ -35,12 +38,15 @@ export class TestStrategyAnalyzer {
 3. **技術的正確性**: TypeScript/React/Vitestの知識を活用
 4. **視覚的**: ASCII図表やプログレスバーを使用
 5. **日本語**: 分かりやすい日本語で記述
+6. **プロジェクト文脈**: projectSpecの情報を最大限活用
 
 特に以下の点に注意してください：
 - 具体的なファイルパスを含める
 - 実装可能なコード例を提供
 - テストピラミッドの現状と理想を比較
-- ROI（投資対効果）を考慮した提案`,
+- ROI（投資対効果）を考慮した提案
+- Liam ERD・Liam DBサービスの特性を考慮したテスト戦略
+- パッケージ責任範囲に基づく具体的な提案`,
         },
         {
           role: 'user',
@@ -54,16 +60,21 @@ export class TestStrategyAnalyzer {
     return response.choices[0]?.message?.content || 'No analysis generated'
   }
 
-  private createDetailedAnalysisPrompt(coverageData: any): string {
+  private createDetailedAnalysisPrompt(
+    coverageData: any,
+    projectSpec?: string,
+  ): string {
     const summary = this.summarizeCoverageData(coverageData)
+    const projectContext = projectSpec
 
     return `
 # Frontend テストバランス分析依頼
 
+${projectContext}
+
 ## プロジェクト概要
 - **プロジェクト**: Frontend TypeScript/React monorepo
-- **主要技術**: React, Next.js, TypeScript, Vitest, Playwright, Zustand
-- **アーキテクチャ**: ERD可視化ツール（スキーマ解析・表示）
+- **主要技術**: React, Next.js, TypeScript, Vitest, Playwright
 - **分析対象**: /frontend ディレクトリ配下
 - **総ファイル数**: ${summary.totalFiles}
 
@@ -90,9 +101,17 @@ ${summary.lowCoverageFiles
 ${Object.entries(summary.packageBreakdown)
   .map(
     ([pkg, data]: [string, any]) =>
-      `- **${pkg}**: ${data.files}ファイル, 平均${data.coverage.toFixed(1)}%カバレッジ`,
+      `- **${pkg}**: ${data.files}ファイル, 平均${data.coverage.toFixed(1)}%カバレッジ
+  - ステートメント: ${data.statements.covered}/${data.statements.total} (${data.statements.total > 0 ? ((data.statements.covered / data.statements.total) * 100).toFixed(1) : 0}%)
+  - ブランチ: ${data.branches.covered}/${data.branches.total} (${data.branches.total > 0 ? ((data.branches.covered / data.branches.total) * 100).toFixed(1) : 0}%)
+  - 関数: ${data.functions.covered}/${data.functions.total} (${data.functions.total > 0 ? ((data.functions.covered / data.functions.total) * 100).toFixed(1) : 0}%)`,
   )
-  .join('\n')}
+  .join('\n\n')}
+
+## 詳細カバレッジ統計
+- **総ステートメント**: ${summary.coveredStatements}/${summary.totalStatements} (${summary.statementCoverage.toFixed(2)}%)
+- **総ブランチ**: ${summary.coveredBranches}/${summary.totalBranches} (${summary.branchCoverage.toFixed(2)}%)
+- **総関数**: ${summary.coveredFunctions}/${summary.totalFunctions} (${summary.functionCoverage.toFixed(2)}%)
 
 ## テストファイル推測分析
 ${this.analyzeTestFilesFromCoverage(coverageData)}
@@ -102,25 +121,37 @@ ${this.analyzeTestFilesFromCoverage(coverageData)}
 
 ## 出力要件
 
-### 🎯 機能別テスト戦略提案の形式
+### テストピラミッド現状と理想比較
 
-各実装提案について、以下の形式で出力してください：
+ユニットテスト、インテグレーションテスト、E2Eテストの現在のバランスと理想状態を比較
 
-#### 🔥 優先度 High
+---
+
+### 📊 カバレッジレポート
+
+- **現在のカバレッジ状況**: 対象ファイルの現在のカバレッジ率
+- **目標カバレッジ**: 実装後に達成すべきカバレッジ率
+
+#### パッケージ別カバレッジ分析
+
+- 各パッケージの現在と目標カバレッジ
+- 現在のカバレッジ率やSPECなどから判断される優先度整理と提案
+
+---
+
+### 優先度別テスト実装提案
+
+優先度（High, Middle, Low）ごとに各実装提案について、以下の形式で出力してください：
+
+---
+
+#### 優先度 XXX
 
 **1. [ファイル名] - [理由]**
 
-実装例:
+対象コード:
 \`\`\`typescript
-// 例: convertSchemaToNodes のテスト
-describe('convertSchemaToNodes', () => {
-  it('should convert basic schema to nodes and edges', () => {
-    const schema = { tables: { users: { columns: {...} } } }
-    const result = convertSchemaToNodes({ schema, showMode: 'ALL_FIELDS' })
-    expect(result.nodes).toHaveLength(1)
-    expect(result.edges).toHaveLength(0)
-  })
-})
+
 \`\`\`
 
 🤖 **AI実装依頼プロンプト**:
@@ -140,47 +171,22 @@ describe('convertSchemaToNodes', () => {
 **実装してほしいテストケース**:
 1. [テストケース1の詳細]
 2. [テストケース2の詳細]
-3. [テストケース3の詳細]
+3. [エラーケースのテスト]
+4. [境界値テスト]
 
 **期待する出力**:
 - テストファイル: \`path/to/target/file.test.ts\`
 - 実行可能なテストコード
-- モックが必要な場合は適切なモック実装
 
 **参考情報**:
 - [技術的な背景情報]
 - [関連する型定義やインターフェース]
 \`\`\`
 
----
-
-**2. [次のファイル名] - [理由]**
-
-実装例:
-\`\`\`typescript
-// 次の実装例
-\`\`\`
-
-🤖 **AI実装依頼プロンプト**:
-\`\`\`text
-// 次のプロンプト
-\`\`\`
-
----
-
-この形式で、各優先度レベル（High/Medium/Low）について、実装例とAI依頼プロンプトをセットで提供してください。
-
-**重要な要求事項**:
-- 実装例は実際に動作するコードスニペット
-- AI依頼プロンプトは完全に独立してコピー可能
-- 具体的なファイルパスと技術要件を含める
-- 各プロンプトは即座に他のAIアシスタントに依頼できる完成度
-
 `
   }
 
   private summarizeCoverageData(coverageData: any) {
-    // 前回実装したsummarizeCoverageDataメソッドと同じ
     const files = Object.keys(coverageData)
     let totalStatements = 0
     let coveredStatements = 0
@@ -190,50 +196,122 @@ describe('convertSchemaToNodes', () => {
     let coveredFunctions = 0
 
     const uncoveredFiles: string[] = []
-    const lowCoverageFiles: Array<{ file: string; coverage: number }> = []
+    const lowCoverageFiles: Array<{
+      file: string
+      coverage: number
+      statements: { total: number; covered: number }
+      branches: { total: number; covered: number }
+      functions: { total: number; covered: number }
+    }> = []
     const packageBreakdown: Record<
       string,
-      { files: number; coverage: number }
+      {
+        files: number
+        coverage: number
+        statements: { total: number; covered: number }
+        branches: { total: number; covered: number }
+        functions: { total: number; covered: number }
+      }
     > = {}
 
     for (const [filePath, fileData] of Object.entries(coverageData)) {
       const data = fileData as any
+      let fileStatements = 0
+      let fileCoveredStatements = 0
+      let fileBranches = 0
+      let fileCoveredBranches = 0
+      let fileFunctions = 0
+      let fileCoveredFunctions = 0
 
       if (data.s) {
         const statements = Object.values(data.s) as number[]
-        totalStatements += statements.length
-        const covered = statements.filter((count) => count > 0).length
-        coveredStatements += covered
+        fileStatements = statements.length
+        fileCoveredStatements = statements.filter((count) => count > 0).length
+        totalStatements += fileStatements
+        coveredStatements += fileCoveredStatements
 
         const fileCoverage =
-          statements.length > 0 ? (covered / statements.length) * 100 : 0
+          fileStatements > 0
+            ? (fileCoveredStatements / fileStatements) * 100
+            : 0
 
         if (fileCoverage === 0) {
           uncoveredFiles.push(filePath)
         } else if (fileCoverage < 50) {
-          lowCoverageFiles.push({ file: filePath, coverage: fileCoverage })
+          // 詳細なカバレッジ情報を収集
+          if (data.b) {
+            const branches = Object.values(data.b) as number[][]
+            fileBranches = branches.length
+            fileCoveredBranches = branches.filter((branch) =>
+              branch.some((count) => count > 0),
+            ).length
+          }
+
+          if (data.f) {
+            const functions = Object.values(data.f) as number[]
+            fileFunctions = functions.length
+            fileCoveredFunctions = functions.filter((count) => count > 0).length
+          }
+
+          lowCoverageFiles.push({
+            file: filePath,
+            coverage: fileCoverage,
+            statements: {
+              total: fileStatements,
+              covered: fileCoveredStatements,
+            },
+            branches: { total: fileBranches, covered: fileCoveredBranches },
+            functions: { total: fileFunctions, covered: fileCoveredFunctions },
+          })
         }
       }
 
       if (data.b) {
         const branches = Object.values(data.b) as number[][]
-        totalBranches += branches.length
-        coveredBranches += branches.filter((branch) =>
+        fileBranches = branches.length
+        fileCoveredBranches = branches.filter((branch) =>
           branch.some((count) => count > 0),
         ).length
+        totalBranches += fileBranches
+        coveredBranches += fileCoveredBranches
       }
 
       if (data.f) {
         const functions = Object.values(data.f) as number[]
-        totalFunctions += functions.length
-        coveredFunctions += functions.filter((count) => count > 0).length
+        fileFunctions = functions.length
+        fileCoveredFunctions = functions.filter((count) => count > 0).length
+        totalFunctions += fileFunctions
+        coveredFunctions += fileCoveredFunctions
       }
 
       const packageName = this.extractPackageName(filePath)
       if (!packageBreakdown[packageName]) {
-        packageBreakdown[packageName] = { files: 0, coverage: 0 }
+        packageBreakdown[packageName] = {
+          files: 0,
+          coverage: 0,
+          statements: { total: 0, covered: 0 },
+          branches: { total: 0, covered: 0 },
+          functions: { total: 0, covered: 0 },
+        }
       }
       packageBreakdown[packageName].files++
+      packageBreakdown[packageName].statements.total += fileStatements
+      packageBreakdown[packageName].statements.covered += fileCoveredStatements
+      packageBreakdown[packageName].branches.total += fileBranches
+      packageBreakdown[packageName].branches.covered += fileCoveredBranches
+      packageBreakdown[packageName].functions.total += fileFunctions
+      packageBreakdown[packageName].functions.covered += fileCoveredFunctions
+    }
+
+    // パッケージ別カバレッジ率を計算
+    for (const pkg of Object.keys(packageBreakdown)) {
+      const pkgData = packageBreakdown[pkg]
+      if (pkgData) {
+        pkgData.coverage =
+          pkgData.statements.total > 0
+            ? (pkgData.statements.covered / pkgData.statements.total) * 100
+            : 0
+      }
     }
 
     return {
@@ -251,6 +329,12 @@ describe('convertSchemaToNodes', () => {
         (a, b) => a.coverage - b.coverage,
       ),
       packageBreakdown,
+      totalStatements,
+      coveredStatements,
+      totalBranches,
+      coveredBranches,
+      totalFunctions,
+      coveredFunctions,
     }
   }
 
