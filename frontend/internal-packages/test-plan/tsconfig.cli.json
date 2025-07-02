@@ -4,7 +4,7 @@
     "target": "ES2022",
     "lib": ["ES2023"],
     "module": "ESNext",
-    "moduleResolution": "Node",
+    "moduleResolution": "bundler",
     "outDir": "./dist",
     "rootDir": "./src",
     "declaration": true,

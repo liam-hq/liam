@@ -29,7 +29,7 @@
     "vite-tsconfig-paths": "5.1.4"
   },
   "scripts": {
-    "analyze": "pnpm build:cli && node dist/cli/index.js",
+    "analyze": "tsx src/cli/index.ts",
     "build": "pnpm analyze && vite build && cp dist/frontend-test-balance-report.md dist/",
     "build:cli": "tsc --project tsconfig.cli.json",
     "dev": "pnpm analyze && cp dist/frontend-test-balance-report.md public/ && concurrently \"pnpm:dev:*\"",
