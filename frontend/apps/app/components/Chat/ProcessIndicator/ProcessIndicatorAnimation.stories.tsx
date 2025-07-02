@@ -1,4 +1,4 @@
-import type { Meta } from '@storybook/react'
+import type { Meta } from '@storybook/nextjs'
 import { useEffect, useState } from 'react'
 import type { ProcessStatus } from './ProcessIndicator'
 import { ProcessIndicator } from './ProcessIndicator'

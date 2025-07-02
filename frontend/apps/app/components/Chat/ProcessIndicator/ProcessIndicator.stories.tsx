@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/react'
+import type { Meta, StoryObj } from '@storybook/nextjs'
 import type { ProcessIndicatorProps } from './ProcessIndicator'
 import { ProcessIndicator } from './ProcessIndicator'
 

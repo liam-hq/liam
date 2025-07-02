@@ -1,4 +1,4 @@
-import type { Meta } from '@storybook/react'
+import type { Meta } from '@storybook/nextjs'
 import { UserMessage, type UserMessageProps } from '.'
 
 export default {

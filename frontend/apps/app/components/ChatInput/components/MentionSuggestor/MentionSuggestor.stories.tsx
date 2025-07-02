@@ -1,4 +1,4 @@
-import type { Meta } from '@storybook/react'
+import type { Meta } from '@storybook/nextjs'
 import { type KeyboardEvent, useRef, useState } from 'react'
 import { MentionSuggestor } from './MentionSuggestor'
 

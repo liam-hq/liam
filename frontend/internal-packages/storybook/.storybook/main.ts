@@ -1,5 +1,8 @@
-import path from 'node:path'
+import { createRequire } from "node:module";
+import path, { dirname, join } from 'node:path';
 import type { StorybookConfig } from '@storybook/nextjs'
+
+const require = createRequire(import.meta.url);
 
 const config: StorybookConfig = {
   stories: [
@@ -8,19 +11,16 @@ const config: StorybookConfig = {
     '../../../packages/ui/src/**/*.stories.@(js|jsx|ts|tsx)',
     '../../app-ui/src/**/*.stories.@(js|jsx|ts|tsx)',
   ],
-  addons: [
-    '@storybook/addon-links',
-    '@storybook/addon-essentials',
-    '@storybook/addon-interactions',
-  ],
+
+  addons: [getAbsolutePath("@storybook/addon-links"), getAbsolutePath("@storybook/addon-docs")],
+
   framework: {
-    name: '@storybook/nextjs',
+    name: getAbsolutePath("@storybook/nextjs"),
     options: {},
   },
-  docs: {
-    autodocs: 'tag',
-  },
+
   staticDirs: ['../public', './public', '../../../apps/app/public'],
+
   webpackFinal: async (config) => {
     if (config.resolve) {
       config.resolve.alias = {
@@ -31,7 +31,11 @@ const config: StorybookConfig = {
       }
     }
     return config
-  },
+  }
 }
 
 export default config
+
+function getAbsolutePath(value: string): any {
+  return dirname(require.resolve(join(value, "package.json")));
+}

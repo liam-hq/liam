@@ -1,4 +1,4 @@
-import type { Preview } from '@storybook/react'
+import type { Preview } from '@storybook/nextjs'
 import '@liam-hq/ui/src/styles/globals.css'
 import { getLangfuseWeb } from './langfuseWeb.mock'
 
