@@ -1,1 +1,0 @@
-export { MicButton } from './MicButton'
