@@ -15,7 +15,7 @@ export function createBaseConfig(options = {}) {
 
   const heavyRules = [
     {
-      files: ['src/workspace/**/*.ts', '**/*.tsx'],
+      files: ['**/*.ts', '**/*.tsx'],
       ignores: ['**/*.test.ts'],
       rules: {
         complexity: ['error', { max: 10 }],
