@@ -38,6 +38,8 @@
 - [x] TypeScript設定
 - [x] ビルド・テストスクリプトの設定
 - [x] gen:cssスクリプトの追加（CSS Modules用）
+- [ ] vitest + testing-libraryで作成したテストを削除（Storybook Vitestに移行）
+- [ ] css.d.tsファイルをコミットしないよう.gitignoreに追加
 
 ## フェーズ2: コンポーネント移行（テストと並行実施）
 
