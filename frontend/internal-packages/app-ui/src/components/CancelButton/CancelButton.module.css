@@ -1,0 +1,59 @@
+.cancelButton {
+  min-width: 20px;
+  min-height: 20px;
+  padding: var(--spacing-1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: var(--border-width-base) solid transparent;
+  border-radius: var(--border-radius-base);
+  transition: background-color 0.3s var(--default-timing-function);
+}
+
+.default {
+  background-color: var(--danger-overlay-40);
+}
+
+.default svg {
+  color: var(--danger-high-contrast-text);
+  transition: color var(--default-hover-animation-duration)
+    var(--default-timing-function);
+}
+
+.default:hover {
+  background-color: var(--danger-default);
+}
+
+.default:hover svg {
+  color: var(--button-foreground);
+}
+
+.canCancel {
+  background-color: var(--danger-overlay-40);
+  border-color: transparent;
+}
+
+.canCancel svg {
+  color: var(--danger-high-contrast-text);
+  transition: color var(--default-hover-animation-duration)
+    var(--default-timing-function);
+}
+
+.canCancel:hover {
+  background-color: var(--danger-default);
+  border-color: transparent;
+}
+
+.canCancel:hover svg {
+  color: var(--button-foreground);
+}
+
+.cancelButton[data-loading='true'] {
+  opacity: 0.7;
+  cursor: not-allowed;
+  background-color: var(--overlay-10);
+}
+
+.cancelButton[data-loading='true'] svg {
+  color: var(--overlay-50);
+}
