@@ -1,0 +1,40 @@
+{
+  "name": "@liam-hq/app-ui",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "main": "src/index.ts",
+  "dependencies": {
+    "@liam-hq/ui": "workspace:*",
+    "clsx": "2.1.1",
+    "react": "19.1.0"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.0.0",
+    "@liam-hq/configs": "workspace:*",
+    "@testing-library/jest-dom": "6.6.3",
+    "@testing-library/react": "16.3.0",
+    "@types/node": "22.15.30",
+    "@types/react": "19.1.6",
+    "eslint": "9.28.0",
+    "jsdom": "26.0.0",
+    "react-dom": "19.1.0",
+    "typescript": "5.8.3",
+    "vitest": "3.2.2"
+  },
+  "peerDependencies": {
+    "react": "19.1.0"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "fmt": "concurrently \"pnpm:fmt:*\"",
+    "fmt:biome": "biome check --write --unsafe .",
+    "fmt:eslint": "eslint --fix .",
+    "lint": "concurrently \"pnpm:lint:*\"",
+    "lint:biome": "biome check .",
+    "lint:eslint": "eslint .",
+    "lint:tsc": "tsc --noEmit",
+    "test": "vitest --watch=false"
+  }
+}
