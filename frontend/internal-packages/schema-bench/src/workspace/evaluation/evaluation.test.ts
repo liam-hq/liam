@@ -1,322 +1,184 @@
-import * as fs from 'node:fs'
-import * as os from 'node:os'
-import * as path from 'node:path'
-import type { Schema } from '@liam-hq/db-structure'
-import {
-  afterEach,
-  beforeEach,
-  describe,
-  expect,
-  it,
-  type MockedFunction,
-  vi,
-} from 'vitest'
-import type { evaluate } from '../../evaluate/evaluate.ts'
-import { evaluateSchema } from '../evaluation/evaluation.ts'
-import type { EvaluationConfig } from '../types'
+import { err, ok } from 'neverthrow'
+import { describe, expect, it, vi } from 'vitest'
+import type { CaseData, EvaluationConfig, EvaluationResult } from '../types'
+import { evaluateSchema } from './evaluation'
 
-// Mock the evaluate function
-vi.mock('../../evaluate/evaluate.ts', () => ({
-  evaluate: vi.fn(),
-}))
+vi.mock('./orchestrator/orchestrator')
+vi.mock('./resultSaver/resultSaver')
 
 describe('evaluateSchema', () => {
-  let mockEvaluate: MockedFunction<typeof evaluate>
-  let tempDir: string
+  const mockConfig: EvaluationConfig = {
+    workspacePath: '/test/workspace',
+    outputFormat: 'json',
+  }
 
-  const mockSchema: Schema = {
-    tables: {
-      users: {
-        name: 'users',
-        comment: '',
-        columns: {
-          id: {
-            name: 'id',
-            type: 'integer',
-            default: '',
-            check: '',
-            notNull: true,
-            comment: '',
-          },
-          name: {
-            name: 'name',
-            type: 'varchar',
-            default: '',
-            check: '',
-            notNull: false,
-            comment: '',
+  const mockCases: CaseData[] = [
+    {
+      caseId: 'case1',
+      outputSchema: {
+        tables: {
+          users: {
+            name: 'users',
+            columns: {
+              id: {
+                name: 'id',
+                type: 'integer',
+                default: null,
+                check: null,
+                notNull: true,
+                comment: null,
+              },
+            },
+            comment: null,
+            indexes: {},
+            constraints: {},
           },
         },
-        indexes: {},
-        constraints: {},
+      },
+      referenceSchema: {
+        tables: {
+          users: {
+            name: 'users',
+            columns: {
+              id: {
+                name: 'id',
+                type: 'integer',
+                default: null,
+                check: null,
+                notNull: true,
+                comment: null,
+              },
+            },
+            comment: null,
+            indexes: {},
+            constraints: {},
+          },
+        },
       },
     },
-  }
+  ]
 
-  const mockEvaluateResult = {
-    tableF1Score: 0.9,
-    tableAllCorrectRate: 0.8,
-    columnF1ScoreAverage: 0.85,
-    columnAllCorrectRateAverage: 0.75,
-    primaryKeyAccuracyAverage: 0.95,
-    constraintAccuracy: 0.88,
-    foreignKeyF1Score: 0.92,
-    foreignKeyAllCorrectRate: 0.87,
-    overallSchemaAccuracy: 0.89,
-    tableMapping: { users: 'users' },
-    columnMappings: { users: { id: 'id', name: 'name' } },
-  }
+  const mockResults: EvaluationResult[] = [
+    {
+      caseId: 'case1',
+      timestamp: '2024-01-01T00:00:00Z',
+      metrics: {
+        tableF1Score: 0.9,
+        tableAllCorrectRate: 0.8,
+        columnF1ScoreAverage: 0.85,
+        columnAllCorrectRateAverage: 0.75,
+        primaryKeyAccuracyAverage: 0.95,
+        constraintAccuracy: 0.88,
+        foreignKeyF1Score: 0.92,
+        foreignKeyAllCorrectRate: 0.87,
+        overallSchemaAccuracy: 0.89,
+      },
+      tableMapping: { users: 'users' },
+      columnMappings: { users: { id: 'id' } },
+    },
+  ]
 
-  beforeEach(async () => {
-    const { evaluate } = await import('../../evaluate/evaluate.ts')
-    mockEvaluate = evaluate as MockedFunction<typeof evaluate>
-    mockEvaluate.mockClear()
-    mockEvaluate.mockResolvedValue(mockEvaluateResult)
+  it('should evaluate schemas successfully', async () => {
+    const { loadAndPrepareCases, runAllEvaluations } = await import(
+      './orchestrator/orchestrator'
+    )
+    const { displaySummary, saveResults } = await import(
+      './resultSaver/resultSaver'
+    )
 
-    // Create temporary directory for testing
-    tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'test-evaluation-'))
+    vi.mocked(loadAndPrepareCases).mockReturnValue(
+      ok({
+        cases: mockCases,
+        workspacePath: mockConfig.workspacePath,
+      }),
+    )
+    vi.mocked(runAllEvaluations).mockResolvedValue(ok(mockResults))
+    vi.mocked(saveResults).mockReturnValue(ok(undefined))
+    vi.mocked(displaySummary).mockImplementation(() => {})
 
-    // Create workspace structure
-    const outputDir = path.join(tempDir, 'execution', 'output')
-    const referenceDir = path.join(tempDir, 'execution', 'reference')
-    const evaluationDir = path.join(tempDir, 'evaluation')
+    const result = await evaluateSchema(mockConfig)
 
-    fs.mkdirSync(outputDir, { recursive: true })
-    fs.mkdirSync(referenceDir, { recursive: true })
-    fs.mkdirSync(evaluationDir, { recursive: true })
+    expect(result.isOk()).toBe(true)
+    expect(result._unsafeUnwrap()).toEqual(mockResults)
+    expect(loadAndPrepareCases).toHaveBeenCalledWith(mockConfig)
+    expect(runAllEvaluations).toHaveBeenCalledWith(mockCases)
+    expect(saveResults).toHaveBeenCalledWith(mockResults, '/test/workspace')
+    expect(displaySummary).toHaveBeenCalledWith(mockResults)
   })
 
-  afterEach(() => {
-    // Clean up temporary directory
-    if (fs.existsSync(tempDir)) {
-      fs.rmSync(tempDir, { recursive: true, force: true })
-    }
+  it('should return error when loadAndPrepareCases fails', async () => {
+    const { loadAndPrepareCases } = await import('./orchestrator/orchestrator')
+
+    vi.mocked(loadAndPrepareCases).mockReturnValue(
+      err({ type: 'DIRECTORY_NOT_FOUND', path: '/test' }),
+    )
+
+    const result = await evaluateSchema(mockConfig)
+
+    expect(result.isErr()).toBe(true)
+    expect(result._unsafeUnwrapErr()).toEqual({
+      type: 'DIRECTORY_NOT_FOUND',
+      path: '/test',
+    })
   })
 
-  const createTestFiles = (cases: string[]) => {
-    const outputDir = path.join(tempDir, 'execution', 'output')
-    const referenceDir = path.join(tempDir, 'execution', 'reference')
+  it('should return error when runAllEvaluations fails', async () => {
+    const { loadAndPrepareCases, runAllEvaluations } = await import(
+      './orchestrator/orchestrator'
+    )
 
-    for (const caseId of cases) {
-      fs.writeFileSync(
-        path.join(outputDir, `${caseId}.json`),
-        JSON.stringify(mockSchema),
-      )
-      fs.writeFileSync(
-        path.join(referenceDir, `${caseId}.json`),
-        JSON.stringify(mockSchema),
-      )
-    }
-  }
+    vi.mocked(loadAndPrepareCases).mockReturnValue(
+      ok({
+        cases: mockCases,
+        workspacePath: mockConfig.workspacePath,
+      }),
+    )
+    vi.mocked(runAllEvaluations).mockResolvedValue(
+      err({
+        type: 'EVALUATION_ERROR',
+        caseId: 'case1',
+        cause: 'Failed to evaluate',
+      }),
+    )
 
-  describe('evaluateSchema', () => {
-    const getConfig = (
-      overrides: Partial<EvaluationConfig> = {},
-    ): EvaluationConfig => ({
-      workspacePath: tempDir,
-      outputFormat: 'json',
-      ...overrides,
+    const result = await evaluateSchema(mockConfig)
+
+    expect(result.isErr()).toBe(true)
+    expect(result._unsafeUnwrapErr()).toEqual({
+      type: 'EVALUATION_ERROR',
+      caseId: 'case1',
+      cause: 'Failed to evaluate',
     })
+  })
 
-    it('should load output and reference data and run evaluation', async () => {
-      createTestFiles(['case1', 'case2'])
+  it('should return error when saveResults fails', async () => {
+    const { loadAndPrepareCases, runAllEvaluations } = await import(
+      './orchestrator/orchestrator'
+    )
+    const { saveResults } = await import('./resultSaver/resultSaver')
 
-      const config = getConfig()
-      const result = await evaluateSchema(config)
+    vi.mocked(loadAndPrepareCases).mockReturnValue(
+      ok({
+        cases: mockCases,
+        workspacePath: mockConfig.workspacePath,
+      }),
+    )
+    vi.mocked(runAllEvaluations).mockResolvedValue(ok(mockResults))
+    vi.mocked(saveResults).mockReturnValue(
+      err({
+        type: 'FILE_WRITE_ERROR',
+        path: '/test/evaluation',
+        cause: 'Permission denied',
+      }),
+    )
 
-      expect(result.isOk()).toBe(true)
-      if (result.isOk()) {
-        expect(mockEvaluate).toHaveBeenCalledTimes(2)
-        expect(mockEvaluate).toHaveBeenCalledWith(mockSchema, mockSchema)
+    const result = await evaluateSchema(mockConfig)
 
-        // Check that result files were created
-        const evaluationDir = path.join(tempDir, 'evaluation')
-        const files = fs.readdirSync(evaluationDir)
-        expect(files.length).toBeGreaterThan(0)
-      }
-    })
-
-    it('should run evaluation for specific case when caseId is provided', async () => {
-      createTestFiles(['case1', 'case2'])
-
-      const config = getConfig({ caseId: 'case1' })
-      const result = await evaluateSchema(config)
-
-      expect(result.isOk()).toBe(true)
-      if (result.isOk()) {
-        expect(mockEvaluate).toHaveBeenCalledTimes(1)
-        expect(mockEvaluate).toHaveBeenCalledWith(mockSchema, mockSchema)
-      }
-    })
-
-    it('should throw error if output directory does not exist', async () => {
-      // Remove output directory
-      fs.rmSync(path.join(tempDir, 'execution', 'output'), {
-        recursive: true,
-        force: true,
-      })
-
-      const config = getConfig()
-      const result = await evaluateSchema(config)
-
-      expect(result.isErr()).toBe(true)
-      if (result.isErr()) {
-        expect(result.error.type).toBe('DIRECTORY_NOT_FOUND')
-      }
-    })
-
-    it('should throw error if reference directory does not exist', async () => {
-      // Remove reference directory
-      fs.rmSync(path.join(tempDir, 'execution', 'reference'), {
-        recursive: true,
-        force: true,
-      })
-
-      const config = getConfig()
-      const result = await evaluateSchema(config)
-
-      expect(result.isErr()).toBe(true)
-      if (result.isErr()) {
-        expect(result.error.type).toBe('DIRECTORY_NOT_FOUND')
-      }
-    })
-
-    it('should throw error if specific case output schema not found', async () => {
-      createTestFiles(['case1'])
-
-      const config = getConfig({ caseId: 'nonexistent' })
-      const result = await evaluateSchema(config)
-
-      expect(result.isErr()).toBe(true)
-      if (result.isErr()) {
-        expect(result.error.type).toBe('SCHEMA_NOT_FOUND')
-      }
-    })
-
-    it('should throw error if specific case reference schema not found', async () => {
-      // Create only output file, not reference file
-      const outputDir = path.join(tempDir, 'execution', 'output')
-      fs.writeFileSync(
-        path.join(outputDir, 'case1.json'),
-        JSON.stringify(mockSchema),
-      )
-
-      const config = getConfig({ caseId: 'case1' })
-      const result = await evaluateSchema(config)
-
-      expect(result.isErr()).toBe(true)
-      if (result.isErr()) {
-        expect(result.error.type).toBe('SCHEMA_NOT_FOUND')
-      }
-    })
-
-    it('should create summary when multiple results exist', async () => {
-      createTestFiles(['case1', 'case2'])
-
-      const config = getConfig()
-      const result = await evaluateSchema(config)
-
-      expect(result.isOk()).toBe(true)
-
-      // Check that summary file was created
-      const evaluationDir = path.join(tempDir, 'evaluation')
-      const files = fs.readdirSync(evaluationDir)
-      const summaryFiles = files.filter((file) =>
-        file.startsWith('summary_results_'),
-      )
-      expect(summaryFiles.length).toBe(1)
-    })
-
-    it('should handle JSON parsing errors gracefully', async () => {
-      // Create invalid JSON file
-      const outputDir = path.join(tempDir, 'execution', 'output')
-      const referenceDir = path.join(tempDir, 'execution', 'reference')
-
-      fs.writeFileSync(path.join(outputDir, 'case1.json'), 'invalid json')
-      fs.writeFileSync(
-        path.join(referenceDir, 'case1.json'),
-        JSON.stringify(mockSchema),
-      )
-
-      const config = getConfig()
-      const result = await evaluateSchema(config)
-
-      expect(result.isErr()).toBe(true)
-      if (result.isErr()) {
-        expect(result.error.type).toBe('JSON_PARSE_ERROR')
-      }
-    })
-
-    it('should handle empty directories', async () => {
-      const config = getConfig()
-      const result = await evaluateSchema(config)
-
-      expect(result.isErr()).toBe(true)
-      if (result.isErr()) {
-        expect(result.error.type).toBe('VALIDATION_ERROR')
-      }
-    })
-
-    it('should warn about missing reference schemas for some cases', async () => {
-      // Create output file but no corresponding reference file
-      const outputDir = path.join(tempDir, 'execution', 'output')
-      const referenceDir = path.join(tempDir, 'execution', 'reference')
-
-      fs.writeFileSync(
-        path.join(outputDir, 'case1.json'),
-        JSON.stringify(mockSchema),
-      )
-      fs.writeFileSync(
-        path.join(outputDir, 'case2.json'),
-        JSON.stringify(mockSchema),
-      )
-      fs.writeFileSync(
-        path.join(referenceDir, 'case1.json'),
-        JSON.stringify(mockSchema),
-      )
-      // case2 reference file is missing
-
-      const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
-
-      const config = getConfig()
-      const result = await evaluateSchema(config)
-
-      expect(result.isOk()).toBe(true)
-      expect(consoleSpy).toHaveBeenCalledWith(
-        '⚠️  No reference schema found for case: case2',
-      )
-      expect(mockEvaluate).toHaveBeenCalledTimes(1) // Only case1 should be evaluated
-
-      consoleSpy.mockRestore()
-    })
-
-    it('should create individual result files with correct naming', async () => {
-      createTestFiles(['case1'])
-
-      const config = getConfig()
-      const result = await evaluateSchema(config)
-
-      expect(result.isOk()).toBe(true)
-
-      const evaluationDir = path.join(tempDir, 'evaluation')
-      const files = fs.readdirSync(evaluationDir)
-      const resultFiles = files.filter((file) =>
-        file.includes('case1_results_'),
-      )
-      expect(resultFiles.length).toBe(1)
-
-      // Check file content
-      const firstResultFile = resultFiles[0]
-      if (!firstResultFile) {
-        throw new Error('No result files found')
-      }
-      const resultFile = path.join(evaluationDir, firstResultFile)
-      const content = JSON.parse(fs.readFileSync(resultFile, 'utf-8')) as {
-        caseId: string
-        metrics: unknown
-      }
-      expect(content.caseId).toBe('case1')
-      expect(content.metrics).toBeDefined()
+    expect(result.isErr()).toBe(true)
+    expect(result._unsafeUnwrapErr()).toEqual({
+      type: 'FILE_WRITE_ERROR',
+      path: '/test/evaluation',
+      cause: 'Permission denied',
     })
   })
 })
