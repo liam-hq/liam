@@ -1,4 +1,4 @@
-declare module '@storybook/react' {
+declare module '@storybook/nextjs' {
   import type { ComponentType, ElementType, FC } from 'react'
 
   export interface Meta<TProps> {

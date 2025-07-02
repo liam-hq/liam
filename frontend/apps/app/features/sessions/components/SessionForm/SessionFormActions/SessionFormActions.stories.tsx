@@ -1,4 +1,4 @@
-import type { Meta } from '@storybook/react'
+import type { Meta } from '@storybook/nextjs'
 import { useState } from 'react'
 import { SessionFormActions } from './SessionFormActions'
 
