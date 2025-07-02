@@ -1,12 +1,12 @@
 {
-	"extends": "@liam-hq/configs/tsconfig/base.json",
-	"compilerOptions": {
-		"outDir": "dist",
-		"declaration": true,
-		"target": "ES2022",
-		"moduleResolution": "node",
-		"jsx": "react-jsx"
-	},
-	"include": ["src/**/*", "vitest.setup.ts"],
-	"exclude": ["node_modules", "dist"]
+  "extends": "@liam-hq/configs/tsconfig/base.json",
+  "compilerOptions": {
+    "outDir": "dist",
+    "declaration": true,
+    "target": "ES2022",
+    "moduleResolution": "node",
+    "jsx": "react-jsx"
+  },
+  "include": ["src/**/*", "vitest.setup.ts"],
+  "exclude": ["node_modules", "dist"]
 }
