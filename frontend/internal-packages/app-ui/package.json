@@ -13,6 +13,8 @@
 		"@biomejs/biome": "2.0.0",
 		"@liam-hq/configs": "workspace:*",
 		"@storybook/nextjs": "9.0.15",
+		"@storybook/react": "9.0.15",
+		"@storybook/test": "^8.6.14",
 		"@testing-library/jest-dom": "6.6.3",
 		"@testing-library/react": "16.3.0",
 		"@types/node": "22.15.30",
@@ -22,7 +24,7 @@
 		"react-dom": "19.1.0",
 		"typed-css-modules": "0.9.1",
 		"typescript": "5.8.3",
-		"vitest": "3.2.2"
+		"vitest": "3.2.4"
 	},
 	"peerDependencies": {
 		"react": "19.1.0"
