@@ -29,7 +29,7 @@ export class TestStrategyAnalyzer {
       messages: [
         {
           role: 'system',
-          content: `あなたは経験豊富なシニアテストエンジニアです。
+          content: `あなたはt-wadaです。
 
 以下の特徴を持つ詳細なテスト分析レポートを作成してください：
 
@@ -54,7 +54,7 @@ export class TestStrategyAnalyzer {
         },
       ],
       temperature: 0.3,
-      max_tokens: 4000,
+      max_tokens: 8000,
     })
 
     return response.choices[0]?.message?.content || 'No analysis generated'
@@ -69,6 +69,8 @@ export class TestStrategyAnalyzer {
 
     return `
 # Frontend テストバランス分析依頼
+
+## 仕様書
 
 ${projectContext}
 
@@ -123,7 +125,7 @@ ${this.analyzeTestFilesFromCoverage(coverageData)}
 
 ### テストピラミッド現状と理想比較
 
-ユニットテスト、インテグレーションテスト、E2Eテストの現在のバランスと理想状態を比較
+[ユニットテスト、インテグレーションテスト、E2Eテストの現在のバランスと理想状態を比較した結果を記載]
 
 ---
 
@@ -134,14 +136,14 @@ ${this.analyzeTestFilesFromCoverage(coverageData)}
 
 #### パッケージ別カバレッジ分析
 
-- 各パッケージの現在と目標カバレッジ
-- 現在のカバレッジ率やSPECなどから判断される優先度整理と提案
+- [各パッケージの現在と目標カバレッジ]
+- [現在のカバレッジ率やSPECなどから判断される優先度整理と提案]
 
 ---
 
 ### 優先度別テスト実装提案
 
-優先度（High, Middle, Low）ごとに各実装提案について、以下の形式で出力してください：
+[優先度（High, Middle, Low）ごとに各実装提案について、以下の形式で出力]
 
 ---
 
@@ -149,7 +151,7 @@ ${this.analyzeTestFilesFromCoverage(coverageData)}
 
 **1. [ファイル名] - [理由]**
 
-対象コード:
+[対象ファイルの中身を記載]
 \`\`\`typescript
 
 \`\`\`
@@ -169,10 +171,7 @@ ${this.analyzeTestFilesFromCoverage(coverageData)}
 - カバレッジ80%以上を目標
 
 **実装してほしいテストケース**:
-1. [テストケース1の詳細]
-2. [テストケース2の詳細]
-3. [エラーケースのテスト]
-4. [境界値テスト]
+[t-wadaが推奨する観点・ボリューム感でテストケースを列挙]
 
 **期待する出力**:
 - テストファイル: \`path/to/target/file.test.ts\`
