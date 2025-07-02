@@ -3,9 +3,7 @@ name: Claude Review for Test Code
 on:
   # pull_request:
   #   types: [opened, synchronize]
-  push:
-    branches:
-      - feat/comprehensive-authentication-test-coverage
+  workflow_dispatch:
 
 jobs:
   claude-test-review:
