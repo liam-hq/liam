@@ -12,7 +12,11 @@ const config: StorybookConfig = {
     '../../app-ui/src/**/*.stories.@(js|jsx|ts|tsx)',
   ],
 
-  addons: [getAbsolutePath("@storybook/addon-links"), getAbsolutePath("@storybook/addon-docs")],
+  addons: [
+    getAbsolutePath("@storybook/addon-links"),
+    getAbsolutePath("@storybook/addon-docs"),
+    getAbsolutePath("@storybook/addon-vitest"),
+  ],
 
   framework: {
     name: getAbsolutePath("@storybook/nextjs"),
