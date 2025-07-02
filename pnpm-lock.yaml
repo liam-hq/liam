@@ -298,8 +298,8 @@ importers:
   frontend/internal-packages/agent:
     dependencies:
       '@langchain/community':
-        specifier: 0.3.45
-        version: 0.3.45(@browserbasehq/sdk@2.6.0)(@browserbasehq/stagehand@1.14.0(@playwright/test@1.52.0)(deepmerge@4.3.1)(dotenv@16.5.0)(openai@4.104.0(ws@8.18.2)(zod@3.24.4))(zod@3.24.4))(@huggingface/transformers@3.3.3)(@ibm-cloud/watsonx-ai@1.6.8)(@langchain/core@0.3.59(openai@4.104.0(ws@8.18.2)(zod@3.24.4)))(@supabase/supabase-js@2.49.8)(axios@1.10.0)(cheerio@1.0.0)(handlebars@4.7.8)(html-to-text@9.0.5)(ibm-cloud-sdk-core@5.4.0)(ignore@5.3.2)(jsonwebtoken@9.0.2)(lodash@4.17.21)(openai@4.104.0(ws@8.18.2)(zod@3.24.4))(playwright@1.52.0)(weaviate-client@3.6.2)(ws@8.18.2)
+        specifier: 0.3.46
+        version: 0.3.46(@browserbasehq/sdk@2.6.0)(@browserbasehq/stagehand@1.14.0(@playwright/test@1.52.0)(deepmerge@4.3.1)(dotenv@16.5.0)(openai@4.104.0(ws@8.18.2)(zod@3.24.4))(zod@3.24.4))(@huggingface/transformers@3.3.3)(@ibm-cloud/watsonx-ai@1.6.8)(@langchain/core@0.3.59(openai@4.104.0(ws@8.18.2)(zod@3.24.4)))(@supabase/supabase-js@2.49.8)(axios@1.10.0)(cheerio@1.0.0)(handlebars@4.7.8)(html-to-text@9.0.5)(ibm-cloud-sdk-core@5.4.0)(ignore@5.3.2)(jsonwebtoken@9.0.2)(lodash@4.17.21)(openai@4.104.0(ws@8.18.2)(zod@3.24.4))(playwright@1.52.0)(weaviate-client@3.6.2)(ws@8.18.2)
       '@langchain/core':
         specifier: 0.3.59
         version: 0.3.59(openai@4.104.0(ws@8.18.2)(zod@3.24.4))
@@ -326,7 +326,7 @@ importers:
         version: 3.1.1
       langfuse-langchain:
         specifier: 3.37.4
-        version: 3.37.4(langchain@0.3.29(@langchain/core@0.3.59(openai@4.104.0(ws@8.18.2)(zod@3.24.4)))(axios@1.10.0)(cheerio@1.0.0)(handlebars@4.7.8)(openai@4.104.0(ws@8.18.2)(zod@3.24.4))(ws@8.18.2))
+        version: 3.37.4(langchain@0.3.29(@langchain/core@0.3.59(openai@4.104.0(ws@8.18.2)(zod@3.24.4)))(axios@1.10.0(debug@4.4.1))(cheerio@1.0.0)(handlebars@4.7.8)(openai@4.104.0(ws@8.18.2)(zod@3.24.4))(ws@8.18.2))
       valibot:
         specifier: 1.1.0
         version: 1.1.0(typescript@5.8.3)
@@ -2524,8 +2524,8 @@ packages:
     peerDependencies:
       tslib: '2'
 
-  '@langchain/community@0.3.45':
-    resolution: {integrity: sha512-KkAGmnP+w5tozLYsj/kGKwyfuPnCcA6MyDXfNF7oDo7L1TxhUgdEKhvNsY7ooLXz6Xh/LV5Kqp2B8U0jfYCQKQ==}
+  '@langchain/community@0.3.46':
+    resolution: {integrity: sha512-loix9LkoNcn1gQlVCopmrJW9TmgZb+YpZw7nkFzXT6ozR8ZDh1XlFq1ymR5gTFtdNzF0neK2oJtE9iEl1lm7Dw==}
     engines: {node: '>=18'}
     peerDependencies:
       '@arcjet/redact': ^v1.0.0-alpha.23
@@ -2560,7 +2560,7 @@ packages:
       '@huggingface/transformers': ^3.2.3
       '@ibm-cloud/watsonx-ai': '*'
       '@lancedb/lancedb': ^0.12.0
-      '@langchain/core': '>=0.2.21 <0.4.0'
+      '@langchain/core': '>=0.3.58 <0.4.0'
       '@layerup/layerup-security': ^1.5.12
       '@libsql/client': ^0.14.0
       '@mendable/firecrawl-js': ^1.4.3
@@ -6328,6 +6328,7 @@ packages:
 
   cronstrue@2.61.0:
     resolution: {integrity: sha512-ootN5bvXbIQI9rW94+QsXN5eROtXWwew6NkdGxIRpS/UFWRggL0G5Al7a9GTBFEsuvVhJ2K3CntIIVt7L2ILhA==}
+    deprecated: Non-backwards compatible Breaking changes
     hasBin: true
 
   cross-fetch@3.2.0:
@@ -13051,7 +13052,7 @@ snapshots:
     dependencies:
       tslib: 2.8.1
 
-  '@langchain/community@0.3.45(@browserbasehq/sdk@2.6.0)(@browserbasehq/stagehand@1.14.0(@playwright/test@1.52.0)(deepmerge@4.3.1)(dotenv@16.5.0)(openai@4.104.0(ws@8.18.2)(zod@3.24.4))(zod@3.24.4))(@huggingface/transformers@3.3.3)(@ibm-cloud/watsonx-ai@1.6.8)(@langchain/core@0.3.59(openai@4.104.0(ws@8.18.2)(zod@3.24.4)))(@supabase/supabase-js@2.49.8)(axios@1.10.0)(cheerio@1.0.0)(handlebars@4.7.8)(html-to-text@9.0.5)(ibm-cloud-sdk-core@5.4.0)(ignore@5.3.2)(jsonwebtoken@9.0.2)(lodash@4.17.21)(openai@4.104.0(ws@8.18.2)(zod@3.24.4))(playwright@1.52.0)(weaviate-client@3.6.2)(ws@8.18.2)':
+  '@langchain/community@0.3.46(@browserbasehq/sdk@2.6.0)(@browserbasehq/stagehand@1.14.0(@playwright/test@1.52.0)(deepmerge@4.3.1)(dotenv@16.5.0)(openai@4.104.0(ws@8.18.2)(zod@3.24.4))(zod@3.24.4))(@huggingface/transformers@3.3.3)(@ibm-cloud/watsonx-ai@1.6.8)(@langchain/core@0.3.59(openai@4.104.0(ws@8.18.2)(zod@3.24.4)))(@supabase/supabase-js@2.49.8)(axios@1.10.0)(cheerio@1.0.0)(handlebars@4.7.8)(html-to-text@9.0.5)(ibm-cloud-sdk-core@5.4.0)(ignore@5.3.2)(jsonwebtoken@9.0.2)(lodash@4.17.21)(openai@4.104.0(ws@8.18.2)(zod@3.24.4))(playwright@1.52.0)(weaviate-client@3.6.2)(ws@8.18.2)':
     dependencies:
       '@browserbasehq/stagehand': 1.14.0(@playwright/test@1.52.0)(deepmerge@4.3.1)(dotenv@16.5.0)(openai@4.104.0(ws@8.18.2)(zod@3.24.4))(zod@3.24.4)
       '@ibm-cloud/watsonx-ai': 1.6.8
@@ -13063,12 +13064,11 @@ snapshots:
       flat: 5.0.2
       ibm-cloud-sdk-core: 5.4.0
       js-yaml: 4.1.0
-      langchain: 0.3.29(@langchain/core@0.3.59(openai@4.104.0(ws@8.18.2)(zod@3.24.4)))(axios@1.10.0)(cheerio@1.0.0)(handlebars@4.7.8)(openai@4.104.0(ws@8.18.2)(zod@3.24.4))(ws@8.18.2)
+      langchain: 0.3.29(@langchain/core@0.3.59(openai@4.104.0(ws@8.18.2)(zod@3.24.4)))(axios@1.10.0(debug@4.4.1))(cheerio@1.0.0)(handlebars@4.7.8)(openai@4.104.0(ws@8.18.2)(zod@3.24.4))(ws@8.18.2)
       langsmith: 0.3.33(openai@4.104.0(ws@8.18.2)(zod@3.24.4))
       openai: 4.104.0(ws@8.18.2)(zod@3.24.4)
       uuid: 10.0.0
-      zod: 3.24.4
-      zod-to-json-schema: 3.24.5(zod@3.24.4)
+      zod: 3.25.67
     optionalDependencies:
       '@browserbasehq/sdk': 2.6.0
       '@huggingface/transformers': 3.3.3
@@ -18861,7 +18861,7 @@ snapshots:
       isstream: 0.1.2
       jsonwebtoken: 9.0.2
       mime-types: 2.1.35
-      retry-axios: 2.6.0(axios@1.10.0)
+      retry-axios: 2.6.0(axios@1.10.0(debug@4.4.1))
       tough-cookie: 4.1.4
     transitivePeerDependencies:
       - supports-color
@@ -19308,7 +19308,7 @@ snapshots:
       zod: 3.24.4
       zod-validation-error: 3.5.2(zod@3.24.4)
 
-  langchain@0.3.29(@langchain/core@0.3.59(openai@4.104.0(ws@8.18.2)(zod@3.24.4)))(axios@1.10.0)(cheerio@1.0.0)(handlebars@4.7.8)(openai@4.104.0(ws@8.18.2)(zod@3.24.4))(ws@8.18.2):
+  langchain@0.3.29(@langchain/core@0.3.59(openai@4.104.0(ws@8.18.2)(zod@3.24.4)))(axios@1.10.0(debug@4.4.1))(cheerio@1.0.0)(handlebars@4.7.8)(openai@4.104.0(ws@8.18.2)(zod@3.24.4))(ws@8.18.2):
     dependencies:
       '@langchain/core': 0.3.59(openai@4.104.0(ws@8.18.2)(zod@3.24.4))
       '@langchain/openai': 0.5.12(@langchain/core@0.3.59(openai@4.104.0(ws@8.18.2)(zod@3.24.4)))(ws@8.18.2)
@@ -19335,9 +19335,9 @@ snapshots:
     dependencies:
       mustache: 4.2.0
 
-  langfuse-langchain@3.37.4(langchain@0.3.29(@langchain/core@0.3.59(openai@4.104.0(ws@8.18.2)(zod@3.24.4)))(axios@1.10.0)(cheerio@1.0.0)(handlebars@4.7.8)(openai@4.104.0(ws@8.18.2)(zod@3.24.4))(ws@8.18.2)):
+  langfuse-langchain@3.37.4(langchain@0.3.29(@langchain/core@0.3.59(openai@4.104.0(ws@8.18.2)(zod@3.24.4)))(axios@1.10.0(debug@4.4.1))(cheerio@1.0.0)(handlebars@4.7.8)(openai@4.104.0(ws@8.18.2)(zod@3.24.4))(ws@8.18.2)):
     dependencies:
-      langchain: 0.3.29(@langchain/core@0.3.59(openai@4.104.0(ws@8.18.2)(zod@3.24.4)))(axios@1.10.0)(cheerio@1.0.0)(handlebars@4.7.8)(openai@4.104.0(ws@8.18.2)(zod@3.24.4))(ws@8.18.2)
+      langchain: 0.3.29(@langchain/core@0.3.59(openai@4.104.0(ws@8.18.2)(zod@3.24.4)))(axios@1.10.0(debug@4.4.1))(cheerio@1.0.0)(handlebars@4.7.8)(openai@4.104.0(ws@8.18.2)(zod@3.24.4))(ws@8.18.2)
       langfuse: 3.37.4
       langfuse-core: 3.37.4
 
@@ -21498,7 +21498,7 @@ snapshots:
       onetime: 7.0.0
       signal-exit: 4.1.0
 
-  retry-axios@2.6.0(axios@1.10.0):
+  retry-axios@2.6.0(axios@1.10.0(debug@4.4.1)):
     dependencies:
       axios: 1.10.0(debug@4.4.1)
 
