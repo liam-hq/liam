@@ -45,7 +45,7 @@
 - [x] gen:cssスクリプトの追加（CSS Modules用）
 - [ ] vitest + testing-libraryで作成したテストを削除（Storybook Vitestに移行）
 - [x] css.d.tsファイルをコミットしないよう.gitignoreに追加
-- [ ] app-uiパッケージのpackage.jsonからbuildコマンドを削除（内部パッケージのため不要）
+- [x] app-uiパッケージのpackage.jsonからbuildコマンドを削除（内部パッケージのため不要）
 
 ## フェーズ2: コンポーネント移行（テストと並行実施）
 
@@ -57,7 +57,9 @@
   - [ ] play関数によるインタラクションテスト追加
   - [ ] カバレッジ100%達成
 - [ ] MicButton → 汎用マイクボタン（テスト込み）
-- [ ] CancelButton → 汎用キャンセルボタン（テスト込み）
+- [x] CancelButton → 汎用キャンセルボタン（app-uiに移植完了）
+  - [x] play関数によるインタラクションテスト追加
+  - [x] カバレッジ100%達成
 - [ ] SendButton → 汎用送信ボタン（テスト込み）
 - [ ] NewSessionButton → 汎用「新規作成」ボタン（テスト込み）
 - [ ] ThreadListButton → 汎用リストトグルボタン（テスト込み）
