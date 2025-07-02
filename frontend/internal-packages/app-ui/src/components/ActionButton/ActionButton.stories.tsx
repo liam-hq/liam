@@ -1,4 +1,5 @@
-import type { Meta } from '@storybook/nextjs'
+import type { Meta, StoryObj } from '@storybook/nextjs'
+import { expect, fn, userEvent, within } from '@storybook/test'
 import { useState } from 'react'
 import { ActionButton } from './ActionButton'
 
@@ -13,30 +14,64 @@ const meta = {
 
 export default meta
 
-export const Default = {
+type Story = StoryObj<typeof meta>
+
+export const Default: Story = {
   args: {
     hasContent: false,
     isPending: false,
-    onSubmit: () => {},
-    onCancel: () => {},
+    onSubmit: fn(),
+    onCancel: fn(),
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+
+    // The button should be disabled when there's no content
+    const button = canvas.getByRole('button')
+    await expect(button).toBeDisabled()
+    await expect(button).toHaveAttribute('aria-label', 'Send')
   },
 }
 
-export const WithContent = {
+export const WithContent: Story = {
   args: {
     hasContent: true,
     isPending: false,
-    onSubmit: () => {},
-    onCancel: () => {},
+    onSubmit: fn(),
+    onCancel: fn(),
+  },
+  play: async ({ canvasElement, args }) => {
+    const canvas = within(canvasElement)
+
+    // The button should be enabled when there's content
+    const button = canvas.getByRole('button')
+    await expect(button).toBeEnabled()
+    await expect(button).toHaveAttribute('aria-label', 'Send')
+
+    // Test click interaction
+    await userEvent.click(button)
+    await expect(args.onSubmit).toHaveBeenCalled()
   },
 }
 
-export const Pending = {
+export const Pending: Story = {
   args: {
     hasContent: true,
     isPending: true,
-    onSubmit: () => {},
-    onCancel: () => {},
+    onSubmit: fn(),
+    onCancel: fn(),
+  },
+  play: async ({ canvasElement, args }) => {
+    const canvas = within(canvasElement)
+
+    // The button should show "Stop" when pending
+    const button = canvas.getByRole('button')
+    await expect(button).toBeEnabled()
+    await expect(button).toHaveAttribute('aria-label', 'Stop')
+
+    // Test click interaction calls onCancel when pending
+    await userEvent.click(button)
+    await expect(args.onCancel).toHaveBeenCalled()
   },
 }
 
