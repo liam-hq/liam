@@ -12,7 +12,7 @@ import clsx from 'clsx'
 import type { FC, MouseEvent } from 'react'
 import styles from './SendButton.module.css'
 
-interface SendButtonProps {
+export interface SendButtonProps {
   hasContent: boolean
   onClick: (e: MouseEvent<HTMLButtonElement>) => void
   disabled?: boolean
@@ -25,7 +25,7 @@ export const SendButton: FC<SendButtonProps> = ({
 }) => {
   return (
     <TooltipProvider>
-      <TooltipRoot open={hasContent && !disabled ? undefined : false}>
+      <TooltipRoot open={(hasContent && !disabled) || false}>
         <TooltipTrigger asChild>
           <Button
             type="submit"

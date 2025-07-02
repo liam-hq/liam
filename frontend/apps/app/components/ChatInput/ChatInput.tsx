@@ -1,5 +1,6 @@
 'use client'
 
+import { SendButton } from '@liam-hq/app-ui'
 import type { Schema } from '@liam-hq/db-structure'
 import {
   PopoverAnchor,
@@ -26,7 +27,6 @@ import {
   MentionSuggestor,
   type MentionSuggestorHandle,
 } from './components/MentionSuggestor'
-import { SendButton } from './components/SendButton'
 import { handleNormalKey } from './utils/handleNormalKey'
 import { insertMentionAtCursor } from './utils/insertMention'
 import { isRegularKey } from './utils/isRegularKey'
