@@ -2,6 +2,8 @@ import * as fs from 'node:fs'
 import * as path from 'node:path'
 import { err, ok } from 'neverthrow'
 import type { SetupResult, WorkspaceConfig } from '../types'
+import { copyInputData, copyReferenceData } from './fileCopier/fileCopier'
+import { cleanExistingWorkspace } from './workspaceManager/workspaceManager'
 
 const createWorkspaceDirectories = (workspacePath: string): SetupResult => {
   const directories = [
@@ -33,46 +35,17 @@ const copyDefaultData = (
   defaultDataPath: string,
   workspacePath: string,
 ): SetupResult => {
-  const inputSourceDir = path.join(defaultDataPath, 'execution', 'input')
-  const referenceSourceDir = path.join(
-    defaultDataPath,
-    'execution',
-    'reference',
-  )
-  const inputTargetDir = path.join(workspacePath, 'execution', 'input')
-  const referenceTargetDir = path.join(workspacePath, 'execution', 'reference')
-
-  try {
-    if (fs.existsSync(inputSourceDir)) {
-      const inputFiles = fs.readdirSync(inputSourceDir)
-      for (const file of inputFiles) {
-        const sourcePath = path.join(inputSourceDir, file)
-        const targetPath = path.join(inputTargetDir, file)
-        if (!fs.existsSync(targetPath)) {
-          fs.copyFileSync(sourcePath, targetPath)
-        }
-      }
-    }
-
-    if (fs.existsSync(referenceSourceDir)) {
-      const referenceFiles = fs.readdirSync(referenceSourceDir)
-      for (const file of referenceFiles) {
-        const sourcePath = path.join(referenceSourceDir, file)
-        const targetPath = path.join(referenceTargetDir, file)
-        if (!fs.existsSync(targetPath)) {
-          fs.copyFileSync(sourcePath, targetPath)
-        }
-      }
-    }
-
-    return ok(undefined)
-  } catch (error) {
-    return err({
-      type: 'FILE_READ_ERROR',
-      path: defaultDataPath,
-      cause: error instanceof Error ? error.message : 'Unknown error',
-    })
+  const inputResult = copyInputData(defaultDataPath, workspacePath)
+  if (inputResult.isErr()) {
+    return inputResult
   }
+
+  const referenceResult = copyReferenceData(defaultDataPath, workspacePath)
+  if (referenceResult.isErr()) {
+    return referenceResult
+  }
+
+  return ok(undefined)
 }
 
 const validateWorkspace = (workspacePath: string): SetupResult => {
@@ -95,28 +68,16 @@ const validateWorkspace = (workspacePath: string): SetupResult => {
 export const setupWorkspace = async (
   config: WorkspaceConfig,
 ): Promise<SetupResult> => {
-  try {
-    if (fs.existsSync(config.workspacePath)) {
-      fs.rmSync(config.workspacePath, { recursive: true, force: true })
-    }
-  } catch (error) {
-    return err({
-      type: 'FILE_WRITE_ERROR',
-      path: config.workspacePath,
-      cause:
-        error instanceof Error
-          ? error.message
-          : 'Failed to remove existing workspace',
-    })
+  const cleanResult = cleanExistingWorkspace(config.workspacePath)
+  if (cleanResult.isErr()) {
+    return cleanResult
   }
 
-  // Create directories
   const createResult = createWorkspaceDirectories(config.workspacePath)
   if (createResult.isErr()) {
     return createResult
   }
 
-  // Copy default data
   const copyResult = copyDefaultData(
     config.defaultDataPath,
     config.workspacePath,
@@ -125,7 +86,6 @@ export const setupWorkspace = async (
     return copyResult
   }
 
-  // Validate workspace
   const validateResult = validateWorkspace(config.workspacePath)
   if (validateResult.isErr()) {
     return validateResult
