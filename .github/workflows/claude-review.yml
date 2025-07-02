@@ -35,38 +35,58 @@ jobs:
             - Each package may contain its own SPEC.md with requirements and test strategy.
             - If no local SPEC.md is found, use the root-level SPEC.md as a fallback.
 
-            🏌️‍♂️ Scoring Rules (per test file):
-            - 🟢 Birdie (-1): Concise test set that covers key success and failure paths with minimal redundancy.
-            - ⚪️ Par (0): Reasonable coverage aligned with SPEC, includes core cases, no major issues.
-            - 🟠 Bogey (+1): Redundant, over-mocked, or unclear tests; some disconnect with SPEC.
-            - 🔴 OB (+2): Missing critical scenarios, ignores SPEC, lacks meaningful assertions.
+            🏌️‍♂️ Review Style:
+            For each test file, generate a golf-style scorecard. Include:
 
-            ✅ Evaluation Criteria:
-            - 📄 SPEC Alignment: Are tests matching the requirements and scenarios?
-            - 📚 Case Coverage: Are both success and failure paths tested?
-            - 🧪 Mocking Strategy: Are only true I/O boundaries mocked? Is mocking excessive?
-            - 🎯 Assertion Quality: Are the assertions meaningful and tied to outcomes?
+            1. 🕳️ Hole #: Use the relative path of the test file.
+            2. 📝 Par Score: Expected complexity/coverage based on SPEC.md (e.g. Par 3).
+            3. 🧪 Actual Score: Number of assertions / setup complexity / clarity.
+            4. 📊 Score Result:
+               - 🎯 **Hole-in-One (1)**: Perfect. Minimal yet fully covering. Beautiful shot!
+               - 🦅 **Eagle (-2)**: Better than expected. Covered edge cases elegantly.
+               - 🐦 **Birdie (-1)**: Lean and well-targeted tests. Great work!
+               - 🏌️ **Par (0)**: Solid and complete, meets expectations.
+               - 🌲 **Bogey (+1)**: Some clutter or gaps. Could use refining.
+               - 💣 **Double Bogey (+2)**: Redundant or overly complex. Needs cleanup.
+               - 🌀 **Triple Bogey (+3+)**: Ouch. Off-course. Lacks purpose or structure.
 
-            📋 Output Format (in Markdown):
+            5. 💬 Commentary: One-liner feedback or golf-style remark per hole.
+            6. 🎮 Bonus: Grant playful bonuses or penalties based on structure, creativity, or style.
+            7. 🏅 Achievement Unlocked: Fun titles for test-writing feats.
 
-            ### 🧪 `<test file path>`
+            ---
 
-            **🏌️‍♂️ Score**: 🟢 Birdie / ⚪️ Par / 🟠 Bogey / 🔴 OB
+            ### Review Summary Table (per hole):
 
-            | Category             | Status | Notes |
-            |----------------------|--------|-------|
-            | 📄 SPEC Alignment     | ✅ / ⚠️ / ❌ | ... |
-            | 📚 Case Coverage      | ✅ / ⚠️ / ❌ | ... |
-            | 🧪 Mocking Strategy   | ✅ / ⚠️ / ❌ | ... |
-            | 🎯 Assertion Quality  | ✅ / ⚠️ / ❌ | ... |
+            | Category             | Status         | Notes                     |
+            |----------------------|----------------|---------------------------|
+            | 📄 SPEC Alignment     | ✅ / ⚠️ / ❌    | Brief comment on spec conformance |
+            | 📚 Case Coverage      | ✅ / ⚠️ / ❌    | Coverage completeness or gaps       |
+            | 🧪 Mocking Strategy   | ✅ / ⚠️ / ❌    | Appropriateness and clarity of mocks|
+            | 🎯 Assertion Quality  | ✅ / ⚠️ / ❌    | Strength and relevance of assertions|
 
-            💬 **Comments**:  
-            - Include brief and constructive feedback.
-            - Use fun, golf-inspired language like:
-              - “Great approach shot on edge cases!”
-              - “Watch out for the sand trap of over-mocking.”
-              - “Nice par, but a birdie is within reach!”
+            ---
 
-            ➕ If there is no SPEC.md available, acknowledge that and base your evaluation on general good testing principles.
+            🎯 Example Output:
 
-            📦 Review every changed test file separately.
+            🕳️ Hole 1: packages/auth/__tests__/token.spec.ts  
+            📝 Par 3 | 🧪 Score: 1  
+            🦅 Eagle! (-2)  
+            💬 “Snuck in an edge-case with finesse. Smooth swing!”  
+            🎮 Bonus: Used parameterized tests 🎲 → -1 bonus stroke!  
+            🏅 Achievement Unlocked: “Spec Whisperer” 🧙 - Followed SPEC.md to perfection.
+
+            | Category             | Status | Notes                             |
+            |----------------------|--------|----------------------------------|
+            | 📄 SPEC Alignment     | ✅     | Matches local SPEC.md perfectly  |
+            | 📚 Case Coverage      | ✅     | Covers all key edge cases        |
+            | 🧪 Mocking Strategy   | ⚠️     | Some mocks could be simplified   |
+            | 🎯 Assertion Quality  | ✅     | Assertions are clear and concise |
+
+            ---
+
+            📉 Final Scorecard  
+            ────────────────────────────  
+            Total Holes Played: 3  
+            Final Score: -2 (Under Par!)  
+            🏅 Overall Title: “🏌️‍♂️ Code Caddie Supreme”
