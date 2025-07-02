@@ -12,8 +12,8 @@ import {
   vi,
 } from 'vitest'
 import type { evaluate } from '../../evaluate/evaluate.ts'
-import { evaluateSchema } from '../evaluation/evaluation.ts'
 import type { EvaluationConfig } from '../types'
+import { evaluateSchema } from './evaluation.ts'
 
 // Mock the evaluate function
 vi.mock('../../evaluate/evaluate.ts', () => ({
