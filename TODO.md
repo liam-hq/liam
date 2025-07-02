@@ -29,12 +29,6 @@
 - [x] Vitest workspace設定（Storybookテスト専用）
 - [x] ブラウザモードでのテスト実行環境構築
 - [x] カバレッジレポート設定（100%目標）
-- [ ] CI/CDでのカバレッジチェック設定
-
-### テスト戦略
-- [x] play関数によるインタラクションテスト方針策定（ActionButtonに実装例追加）
-- [ ] テストタグ戦略の策定（include/exclude/skip）
-- [ ] 既存コンポーネントへのテスト追加計画
 
 ### 既知の課題
 - [ ] MicButton.stories.tsxの動的インポートエラー解決
