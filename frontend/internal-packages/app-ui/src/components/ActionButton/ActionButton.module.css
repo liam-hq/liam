@@ -1,124 +1,124 @@
 .buttonContainer {
-  display: inline-block;
+	display: inline-block;
 }
 
 .actionButton {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--spacing-2);
-  padding: var(--spacing-2);
-  border: var(--border-width-base) solid transparent;
-  border-radius: var(--border-radius-base);
-  color: var(--global-foreground);
-  font-family: var(--font-family);
-  font-size: var(--font-size-4);
-  font-weight: 500;
-  line-height: 1;
-  cursor: pointer;
-  transition:
-    background-color 0.3s var(--default-timing-function),
-    width 0.3s var(--default-timing-function);
-  min-width: 32px;
-  overflow: hidden;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: var(--spacing-2);
+	padding: var(--spacing-2);
+	border: var(--border-width-base) solid transparent;
+	border-radius: var(--border-radius-base);
+	color: var(--global-foreground);
+	font-family: var(--font-family);
+	font-size: var(--font-size-4);
+	font-weight: 500;
+	line-height: 1;
+	cursor: pointer;
+	transition:
+		background-color 0.3s var(--default-timing-function),
+		width 0.3s var(--default-timing-function);
+	min-width: 32px;
+	overflow: hidden;
 }
 
 .isPending {
-  width: auto;
-  background-color: var(--overlay-10);
+	width: auto;
+	background-color: var(--overlay-10);
 }
 
 .isPending:hover {
-  background-color: var(--overlay-20);
+	background-color: var(--overlay-20);
 }
 
 .default {
-  background-color: var(--overlay-5);
+	background-color: var(--overlay-5);
 }
 
 .default:hover {
-  background-color: var(--overlay-10);
+	background-color: var(--overlay-10);
 }
 
 .canSend {
-  background-color: var(--primary-overlay-40);
+	background-color: var(--primary-overlay-40);
 }
 
 .canSend:hover {
-  background-color: var(--primary-accent);
+	background-color: var(--primary-accent);
 }
 
 .actionButton:disabled {
-  opacity: 0.7;
-  cursor: not-allowed;
-  background-color: var(--overlay-5);
+	opacity: 0.7;
+	cursor: not-allowed;
+	background-color: var(--overlay-5);
 }
 
 .actionButton:disabled:hover {
-  background-color: var(--overlay-5);
+	background-color: var(--overlay-5);
 }
 
 .iconWrapper {
-  position: relative;
-  width: 16px;
-  height: 16px;
-  flex-shrink: 0;
+	position: relative;
+	width: 16px;
+	height: 16px;
+	flex-shrink: 0;
 }
 
 .sendIcon,
 .cancelIcon {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 16px;
-  height: 16px;
-  transition: opacity 0.3s var(--default-timing-function);
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 16px;
+	height: 16px;
+	transition: opacity 0.3s var(--default-timing-function);
 }
 
 .sendIcon {
-  color: var(--overlay-50);
+	color: var(--overlay-50);
 }
 
 .default:hover .sendIcon {
-  color: var(--global-foreground);
+	color: var(--global-foreground);
 }
 
 .canSend .sendIcon {
-  color: var(--primary-accent);
+	color: var(--primary-accent);
 }
 
 .canSend:hover .sendIcon {
-  color: var(--button-primary-foreground);
+	color: var(--button-primary-foreground);
 }
 
 .actionButton:disabled .sendIcon {
-  color: var(--overlay-50);
+	color: var(--overlay-50);
 }
 
 .actionButton:disabled:hover .sendIcon {
-  color: var(--global-foreground);
+	color: var(--global-foreground);
 }
 
 .sendIconHidden {
-  opacity: 0;
+	opacity: 0;
 }
 
 .cancelIcon {
-  color: var(--global-foreground);
-  opacity: 1;
+	color: var(--global-foreground);
+	opacity: 1;
 }
 
 .cancelIconHidden {
-  opacity: 0;
+	opacity: 0;
 }
 
 .text {
-  white-space: nowrap;
-  color: var(--global-foreground);
-  font-size: var(--font-size-4);
-  font-weight: 500;
+	white-space: nowrap;
+	color: var(--global-foreground);
+	font-size: var(--font-size-4);
+	font-weight: 500;
 }
 
 .textHidden {
-  display: none;
+	display: none;
 }

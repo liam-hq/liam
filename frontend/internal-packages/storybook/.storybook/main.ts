@@ -6,6 +6,7 @@ const config: StorybookConfig = {
     '../../../apps/app/features/**/*.stories.@(js|jsx|ts|tsx)',
     '../../../apps/app/components/**/*.stories.@(js|jsx|ts|tsx)',
     '../../../packages/ui/src/**/*.stories.@(js|jsx|ts|tsx)',
+    '../../app-ui/src/**/*.stories.@(js|jsx|ts|tsx)',
   ],
   addons: [
     '@storybook/addon-links',

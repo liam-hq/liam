@@ -28,7 +28,7 @@
 ## フェーズ2: コンポーネント移行（並列作業可能）
 
 ### ボタンコンポーネントの汎用化と移行
-- [ ] ActionButton → 汎用アクションボタン
+- [x] ActionButton → 汎用アクションボタン（app-uiに移植完了）
 - [ ] AttachButton → 汎用添付ボタン
 - [ ] MicButton → 汎用マイクボタン
 - [ ] CancelButton → 汎用キャンセルボタン
