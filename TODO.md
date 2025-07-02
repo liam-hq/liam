@@ -29,7 +29,7 @@
 
 ### ボタンコンポーネントの汎用化と移行
 - [x] ActionButton → 汎用アクションボタン（app-uiに移植完了）
-- [ ] AttachButton → 汎用添付ボタン
+- [x] AttachButton → 汎用添付ボタン（app-uiに移植完了）
 - [ ] MicButton → 汎用マイクボタン
 - [ ] CancelButton → 汎用キャンセルボタン
 - [ ] SendButton → 汎用送信ボタン
