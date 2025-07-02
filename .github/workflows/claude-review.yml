@@ -29,6 +29,7 @@ jobs:
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           allowed_tools: "mcp__github__add_issue_comment"
+          github_token: ${{ secrets.GITHUB_TOKEN }}
           direct_prompt: |
             You are a senior test reviewer for a monorepo project.
 
