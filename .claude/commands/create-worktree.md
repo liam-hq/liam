@@ -11,7 +11,10 @@ app-uiブランチから新しいgit worktreeを作成してください：
    git worktree add ../[ディレクトリ名] app-ui -b feat/[ブランチ名]
    ```
 3. 作成したworktreeの情報を表示
-4. 移動方法を案内
+4. 移動コマンドをクリップボードにコピー：
+   ```bash
+   echo "cd ../[ディレクトリ名]" | pbcopy
+   ```
 
 ### Arguments
 $ARGUMENTS
