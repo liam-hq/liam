@@ -7,6 +7,7 @@
 	"dependencies": {
 		"@liam-hq/ui": "workspace:*",
 		"clsx": "2.1.1",
+		"lucide-react": "0.511.0",
 		"react": "19.1.0"
 	},
 	"devDependencies": {
@@ -29,7 +30,6 @@
 		"react": "19.1.0"
 	},
 	"scripts": {
-		"build": "tsc",
 		"dev": "tsc --watch",
 		"fmt": "concurrently \"pnpm:fmt:*\"",
 		"fmt:biome": "biome check --write --unsafe .",
