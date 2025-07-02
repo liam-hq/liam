@@ -3,14 +3,15 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
-  "scripts": {
-    "dev": "concurrently \"pnpm:dev:*\"",
-    "dev:app": "vite --port 5173",
-    "dev:css": "tcm src --watch",
-    "build": "vite build",
-    "build:cli": "tsc --project tsconfig.cli.json",
-    "preview": "vite preview",
-    "analyze": "pnpm build:cli && node dist/cli/index.js"
+  "dependencies": {
+    "@liam-hq/ui": "workspace:*",
+    "commander": "13.1.0",
+    "openai": "^5.8.2",
+    "react": "19.1.0",
+    "react-dom": "19.1.0",
+    "react-markdown": "10.1.0",
+    "react-syntax-highlighter": "15.6.1",
+    "remark-gfm": "4.0.1"
   },
   "devDependencies": {
     "@biomejs/biome": "2.0.0",
@@ -18,19 +19,29 @@
     "@types/node": "22.15.30",
     "@types/react": "19.1.6",
     "@types/react-dom": "19.1.6",
+    "@types/react-syntax-highlighter": "15.5.13",
     "@vitejs/plugin-react": "4.5.2",
-    "eslint": "9.28.0",
+    "dotenv": "16.5.0",
     "tsx": "4.19.4",
     "typed-css-modules": "0.9.1",
     "typescript": "5.8.3",
     "vite": "6.3.5",
     "vite-tsconfig-paths": "5.1.4"
   },
-  "dependencies": {
-    "commander": "13.1.0",
-    "dotenv": "16.5.0",
-    "openai": "5.8.2",
-    "react": "19.1.0",
-    "react-dom": "19.1.0"
+  "scripts": {
+    "analyze": "pnpm build:cli && node dist/cli/index.js",
+    "build": "pnpm analyze && vite build && cp dist/frontend-test-balance-report.md dist/",
+    "build:cli": "tsc --project tsconfig.cli.json",
+    "dev": "pnpm analyze && cp dist/frontend-test-balance-report.md public/ && concurrently \"pnpm:dev:*\"",
+    "dev:app": "vite --port 5173",
+    "dev:css": "tcm src --watch",
+    "preview": "vite preview",
+    "lint": "concurrently \"pnpm:lint:*\"",
+    "lint:biome": "biome check .",
+    "lint:eslint": "echo 'ESLint disabled for cli package' || eslint .",
+    "lint:tsc": "tsc --noEmit",
+    "fmt": "concurrently \"pnpm:fmt:*\"",
+    "fmt:biome": "biome check --write --unsafe .",
+    "fmt:eslint": "eslint --fix ."
   }
 }

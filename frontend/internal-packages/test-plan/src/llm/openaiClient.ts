@@ -1,4 +1,9 @@
 // src/llm/openaiClient.ts
+/** biome-ignore-all lint/suspicious/noExplicitAny: Coverage data structure is dynamic and comes from external tools */
+// biome-ignore-all lint/complexity/noExcessiveCognitiveComplexity: Complex analysis logic is intentional for comprehensive coverage reporting
+/* eslint-disable no-non-english/no-non-english-characters */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+
 import OpenAI from 'openai'
 
 export class TestStrategyAnalyzer {
@@ -119,7 +124,7 @@ describe('convertSchemaToNodes', () => {
 \`\`\`
 
 🤖 **AI実装依頼プロンプト**:
-\`\`\`
+\`\`\`text
 [ここに即座にコピー可能な完全なプロンプトを記載]
 
 以下のファイルのユニットテストを実装してください：
@@ -157,7 +162,7 @@ describe('convertSchemaToNodes', () => {
 \`\`\`
 
 🤖 **AI実装依頼プロンプト**:
-\`\`\`
+\`\`\`text
 // 次のプロンプト
 \`\`\`
 

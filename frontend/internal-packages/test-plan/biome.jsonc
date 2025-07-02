@@ -1,4 +1,17 @@
 {
   "extends": "//",
-  "root": false
+  "root": false,
+  "linter": {
+    "rules": {
+      "correctness": {
+        "useImportExtensions": {
+          "level": "error",
+          "fix": "safe",
+          "options": {
+            "forceJsExtensions": true
+          }
+        }
+      }
+    }
+  }
 }

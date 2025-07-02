@@ -1,31 +1,48 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { MarkdownContent } from './components/MarkdownContent'
 
 export const App = () => {
-  const [count, setCount] = useState(0)
+  const [reportContent, setReportContent] = useState<string>('')
+  const [error, setError] = useState<string>('')
+
+  const loadReport = async () => {
+    setError('')
+    try {
+      // Direct access to public/frontend-test-balance-report.md
+      const response = await fetch('./frontend-test-balance-report.md')
+      if (!response.ok) {
+        throw new Error(`Report file not found: ${response.statusText}`)
+      }
+      const content = await response.text()
+      setReportContent(content)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load report')
+    }
+  }
+
+  // Initial load
+  useEffect(() => {
+    loadReport()
+  }, [])
 
   return (
-    <div style={{ padding: '2rem', textAlign: 'center' }}>
-      <h1>Test Plan</h1>
-      <div style={{ margin: '2rem 0' }}>
-        <button
-          type="button"
-          onClick={() => setCount((count) => count + 1)}
+    <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+      {error && (
+        <div
           style={{
-            padding: '0.5rem 1rem',
-            fontSize: '1rem',
-            backgroundColor: '#646cff',
-            color: 'white',
-            border: 'none',
+            padding: '1rem',
+            backgroundColor: '#f8d7da',
+            color: '#721c24',
+            border: '1px solid #f5c6cb',
             borderRadius: '4px',
-            cursor: 'pointer',
+            marginBottom: '1rem',
           }}
         >
-          count is {count}
-        </button>
-      </div>
-      <p style={{ color: '#888' }}>
-        Edit <code>src/App.tsx</code> and save to test HMR
-      </p>
+          {error}
+        </div>
+      )}
+
+      {reportContent && <MarkdownContent content={reportContent} />}
     </div>
   )
 }

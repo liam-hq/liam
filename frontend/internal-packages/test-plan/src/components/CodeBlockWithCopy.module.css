@@ -1,0 +1,56 @@
+.container {
+  position: relative;
+}
+
+.copyButton {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  padding: 4px 8px;
+  background-color: rgba(255, 255, 255, 0.9);
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #374151;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  z-index: 10;
+}
+
+.copyButton:hover {
+  background-color: rgba(255, 255, 255, 1);
+  border-color: #9ca3af;
+  transform: translateY(-1px);
+}
+
+.copyButton:active {
+  transform: translateY(0);
+}
+
+.copyText {
+  display: inline-block;
+}
+
+.copiedText {
+  display: inline-block;
+  color: #059669;
+}
+
+/* ダークモード対応 */
+@media (prefers-color-scheme: dark) {
+  .copyButton {
+    background-color: rgba(31, 41, 55, 0.9);
+    border-color: #4b5563;
+    color: #d1d5db;
+  }
+
+  .copyButton:hover {
+    background-color: rgba(31, 41, 55, 1);
+    border-color: #6b7280;
+  }
+
+  .copiedText {
+    color: #10b981;
+  }
+}
