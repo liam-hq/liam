@@ -1,9 +1,8 @@
 'use client'
 
-import { ActionButton } from '@liam-hq/app-ui'
+import { ActionButton, AttachButton } from '@liam-hq/app-ui'
 import type { FC } from 'react'
 import { useState } from 'react'
-import { AttachButton } from '../AttachButton'
 import { DeepModelingToggle } from '../DeepModelingToggle'
 import { MicButton } from '../MicButton'
 import styles from './SessionFormActions.module.css'

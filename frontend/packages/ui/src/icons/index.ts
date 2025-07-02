@@ -45,6 +45,7 @@ export {
   Mic,
   Minus,
   PanelLeft,
+  Paperclip,
   Pause,
   Plus,
   Rows3,
