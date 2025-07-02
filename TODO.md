@@ -19,6 +19,11 @@
 
 ## フェーズ0: テストインフラ構築（最優先）
 
+### Storybook v9へのアップグレード
+- [ ] Storybookを現在のv8からv9へアップグレード
+- [ ] 依存関係の更新と互換性確認
+- [ ] 既存のStoryファイルの動作確認
+
 ### Storybook Vitest Addon導入
 - [ ] @storybook/addon-vitestのインストールと設定
 - [ ] Vitest workspace設定（Storybookテスト専用）
