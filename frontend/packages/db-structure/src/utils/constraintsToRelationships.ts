@@ -1,5 +1,5 @@
 import * as v from 'valibot'
-import type { Tables } from '../schema/index.js'
+import type { Constraint, Tables } from '../schema/index.js'
 import { foreignKeyConstraintSchema } from '../schema/index.js'
 
 // Define types locally since they're no longer exported from schema
@@ -27,7 +27,7 @@ export const constraintsToRelationships = (tables: Tables): Relationships => {
   const relationships: Relationships = {}
 
   for (const table of Object.values(tables)) {
-    for (const constraint of Object.values(table.constraints)) {
+    for (const constraint of Object.values(table.constraints) as Constraint[]) {
       const result = v.safeParse(foreignKeyConstraintSchema, constraint)
       if (!result.success) {
         continue
@@ -70,7 +70,7 @@ const determineCardinality = (
   }
 
   // Check for UNIQUE constraint in table constraints
-  for (const constraint of Object.values(table.constraints)) {
+  for (const constraint of Object.values(table.constraints) as Constraint[]) {
     if (constraint.type === 'UNIQUE' && constraint.columnName === columnName) {
       return 'ONE_TO_ONE'
     }

@@ -1,4 +1,4 @@
-import type { Index, Schema, Table } from '../../schema/index.js'
+import type { Constraint, Index, Schema, Table } from '../../schema/index.js'
 import type { SchemaDeparser } from '../type.js'
 import {
   generateAddConstraintStatement,
@@ -30,7 +30,7 @@ export const postgresqlSchemaDeparser: SchemaDeparser = (schema: Schema) => {
   const foreignKeyStatements: string[] = []
 
   for (const table of Object.values(schema.tables) as Table[]) {
-    const constraints = Object.values(table.constraints)
+    const constraints = Object.values(table.constraints) as Constraint[]
     for (const constraint of constraints) {
       const addConstraintDDL = generateAddConstraintStatement(
         table.name,

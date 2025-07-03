@@ -2,7 +2,7 @@ import pkg from 'fast-json-patch'
 
 const { compare } = pkg // see https://github.com/Starcounter-Jack/JSON-Patch/issues/310
 
-import type { Schema } from '../schema/index.js'
+import type { Schema, Table } from '../schema/index.js'
 import { buildColumnCheckDiffItem } from './columns/buildColumnCheckDiffItem.js'
 import { buildColumnCommentDiffItem } from './columns/buildColumnCommentDiffItem.js'
 import { buildColumnDefaultDiffItem } from './columns/buildColumnDefaultDiffItem.js'
@@ -324,7 +324,7 @@ export function buildSchemaDiff(
 ): SchemaDiffItem[] {
   const items: SchemaDiffItem[] = []
   const operations = compare(before, after)
-  const allTables = Object.values({ ...before.tables, ...after.tables })
+  const allTables = Object.values({ ...before.tables, ...after.tables }) as Table[]
 
   for (const table of allTables) {
     const tableId = table.name

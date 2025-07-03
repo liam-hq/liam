@@ -4,6 +4,7 @@ import type {
   RemoveColumnOperation,
   RenameColumnOperation,
 } from '../../operation/schema/column.js'
+import type { Constraint } from '../../schema/index.js'
 import {
   isAddColumnOperation,
   isRemoveColumnOperation,
@@ -148,7 +149,7 @@ function generateCreateTableFromOperation(
   ddlStatements.push(generateCreateTableStatement(table))
 
   // 2. Generate ADD CONSTRAINT statements
-  for (const constraint of Object.values(table.constraints)) {
+  for (const constraint of Object.values(table.constraints) as Constraint[]) {
     ddlStatements.push(generateAddConstraintStatement(table.name, constraint))
   }
 
@@ -345,7 +346,7 @@ export const postgresqlOperationDeparser: OperationDeparser = (
     value: '',
     errors: [
       {
-        message: `Unsupported operation: ${operation.op} at path ${operation.path}`,
+        message: `Unsupported operation: ${(operation as any).op} at path ${(operation as any).path}`,
       },
     ],
   }
