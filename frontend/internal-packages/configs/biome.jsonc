@@ -45,9 +45,7 @@
       },
       "a11y": {
         // TODO: Re-enable useAriaPropsSupportedByRole after fixing accessibility issues
-        "useAriaPropsSupportedByRole": "off",
-        // TODO: Re-enable noStaticElementInteractions after adding proper roles
-        "noStaticElementInteractions": "off"
+        "useAriaPropsSupportedByRole": "off"
       },
       "complexity": {
         "useLiteralKeys": "off",
