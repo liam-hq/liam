@@ -211,7 +211,9 @@ export function generateAddConstraintStatement(
       return `ALTER TABLE ${tableNameEscaped} ADD CONSTRAINT ${constraintName} CHECK (${constraint.detail});`
 
     default:
-      throw new Error(`Unsupported constraint type: ${(constraint as any).type}`)
+      throw new Error(
+        `Unsupported constraint type: ${(constraint as { type: string }).type}`,
+      )
   }
 }
 

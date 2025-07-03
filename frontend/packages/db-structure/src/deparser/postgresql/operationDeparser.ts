@@ -4,7 +4,6 @@ import type {
   RemoveColumnOperation,
   RenameColumnOperation,
 } from '../../operation/schema/column.js'
-import type { Constraint } from '../../schema/index.js'
 import {
   isAddColumnOperation,
   isRemoveColumnOperation,
@@ -37,6 +36,7 @@ import {
   isRemoveTableOperation,
   isReplaceTableNameOperation,
 } from '../../operation/schema/table.js'
+import type { Constraint } from '../../schema/index.js'
 import type { OperationDeparser } from '../type.js'
 import {
   generateAddColumnStatement,
@@ -346,7 +346,7 @@ export const postgresqlOperationDeparser: OperationDeparser = (
     value: '',
     errors: [
       {
-        message: `Unsupported operation: ${(operation as any).op} at path ${(operation as any).path}`,
+        message: `Unsupported operation: ${(operation as { op: string }).op} at path ${(operation as { path: string }).path}`,
       },
     ],
   }

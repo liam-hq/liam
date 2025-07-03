@@ -324,7 +324,10 @@ export function buildSchemaDiff(
 ): SchemaDiffItem[] {
   const items: SchemaDiffItem[] = []
   const operations = compare(before, after)
-  const allTables = Object.values({ ...before.tables, ...after.tables }) as Table[]
+  const allTables = Object.values({
+    ...before.tables,
+    ...after.tables,
+  }) as Table[]
 
   for (const table of allTables) {
     const tableId = table.name
