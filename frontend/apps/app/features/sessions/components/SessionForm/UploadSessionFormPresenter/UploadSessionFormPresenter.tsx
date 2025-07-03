@@ -1,12 +1,7 @@
-import { Button } from '@liam-hq/ui'
 import clsx from 'clsx'
 import { type ChangeEvent, type FC, useRef, useState } from 'react'
-import {
-  FormatIcon,
-  type FormatType,
-} from '../../../../../components/FormatIcon/FormatIcon'
+import { type FormatType } from '../../../../../components/FormatIcon/FormatIcon'
 import { AttachmentsContainer } from '../AttachmentsContainer'
-import { FormatSelectDropdown } from '../FormatSelectDropdown'
 import { useFileAttachments } from '../hooks/useFileAttachments'
 import { useFileDragAndDrop } from '../hooks/useFileDragAndDrop'
 import { SessionFormActions } from '../SessionFormActions'
