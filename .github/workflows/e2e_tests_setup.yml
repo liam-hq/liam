@@ -1,0 +1,40 @@
+name: E2E Tests Setup
+
+on:
+  pull_request:
+  merge_group:
+jobs:
+  setup-for-e2e-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      statuses: write
+    defaults:
+      run:
+        working-directory: 'frontend/internal-packages/e2e'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+
+      - name: Setup pnpm
+        uses: ./.github/actions/pnpm-setup
+
+      - name: Cache Playwright browsers
+        id: playwright-cache
+        uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml', '**/playwright.config.ts') }}
+          restore-keys: |
+            playwright-${{ runner.os }}-
+
+      - name: Install Playwright browsers
+        run: pnpm exec playwright install --with-deps
+
+      - name: Install system dependencies for WebKit
+        # Some WebKit dependencies seem to lay outside the cache and will need to be installed separately
+        run: pnpm exec playwright install-deps webkit
