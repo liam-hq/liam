@@ -1,4 +1,4 @@
-name: E2E Tests (liam-app)
+name: E2E Tests
 
 on:
   deployment_status:
@@ -14,7 +14,8 @@ jobs:
       run:
         working-directory: 'frontend/internal-packages/e2e'
     outputs:
-      should_run: ${{ steps.check.outputs.should_run }}
+      should_run_liam_app_test: ${{ steps.check.outputs.should_run_liam_app_test }}
+      should_run_liam_erd_sample_test: ${{ steps.check.outputs.should_run_liam_erd_sample_test }}
       target_url: ${{ github.event.deployment_status.target_url }}
       environment: ${{ github.event.deployment.environment }}
     steps:
@@ -38,36 +39,34 @@ jobs:
             if event_name == "deployment_status" && event_state == "success"
               # Production deployment
               if (environment_val.include?("Production") && target_url.include?("liam-app-git-main"))
-                "should_run_liam_production_app_test=true"
+                "should_run_liam_app_test=true"
               # Preview deployment
               elsif environment_val.include?("Preview") && !target_url.include?("liam-erd-sample") && !target_url.include?("liam-docs") && !target_url.include?("liam-storybook")
-                "should_run_liam_preview_app_test=true"
+                "should_run_liam_app_test=true"
               # liam-erd-sample deployment
               elsif environment_val.include?("Preview") && target_url.include?("liam-erd-sample")
-                "should_run_liam_erd_sample_preview_test=true"
+                "should_run_liam_erd_sample_test=true"
               else
-                "should_run_liam_production_app_test=false"
-                "should_run_liam_preview_app_test=false"
-                "should_run_liam_erd_sample_preview_test=false"
+                "should_run_liam_app_test=false"
+                "should_run_liam_erd_sample_test=false"
               end
             else
-              "should_run_liam_production_app_test=false"
-              "should_run_liam_preview_app_test=false"
-              "should_run_liam_erd_sample_preview_test=false"
+              "should_run_liam_app_test=false"
+              "should_run_liam_erd_sample_test=false"
             end
 
-          # Same as 'echo "should_run=xxxx" >> $GITHUB_OUTPUT'
+          # Same as 'echo "should_run_liam_production_app_test=xxxx" >> $GITHUB_OUTPUT'
           output_file = ENV.fetch("GITHUB_OUTPUT")
           File.open(output_file, "a") do |file|
             file.puts result
           end
 
       - name: Setup pnpm
-        if: steps.check.outputs.should_run_liam_production_app_test == 'true' || steps.check.outputs.should_run_liam_preview_app_test == 'true' || steps.check.outputs.should_run_liam_erd_sample_preview_test == 'true'
+        if: steps.check.outputs.should_run_liam_app_test == 'true' || steps.check.outputs.should_run_liam_erd_sample_test == 'true'
         uses: ./.github/actions/pnpm-setup
 
       - name: Cache Playwright browsers
-        if: steps.check.outputs.should_run_liam_production_app_test == 'true' || steps.check.outputs.should_run_liam_preview_app_test == 'true' || steps.check.outputs.should_run_liam_erd_sample_preview_test == 'true'
+        if: steps.check.outputs.should_run_liam_app_test == 'true' || steps.check.outputs.should_run_liam_erd_sample_test == 'true'
         id: playwright-cache
         uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
         with:
@@ -77,17 +76,17 @@ jobs:
             playwright-${{ runner.os }}-
 
       - name: Install Playwright browsers
-        if: ${{ (steps.check.outputs.should_run_liam_production_app_test == 'true' || steps.check.outputs.should_run_liam_preview_app_test == 'true' || steps.check.outputs.should_run_liam_erd_sample_preview_test == 'true') && steps.playwright-cache.outputs.cache-hit != 'true' }}
+        if: ${{ (steps.check.outputs.should_run_liam_app_test == 'true' || steps.check.outputs.should_run_liam_erd_sample_test == 'true') && steps.playwright-cache.outputs.cache-hit != 'true' }}
         run: pnpm exec playwright install --with-deps
 
       - name: Install system dependencies for WebKit
         # Some WebKit dependencies seem to lay outside the cache and will need to be installed separately
-        if: ${{ (steps.check.outputs.should_run_liam_production_app_test == 'true' || steps.check.outputs.should_run_liam_preview_app_test == 'true' || steps.check.outputs.should_run_liam_erd_sample_preview_test == 'true') && steps.playwright-cache.outputs.cache-hit == 'true' }}
+        if: ${{ (steps.check.outputs.should_run_liam_app_test == 'true' || steps.check.outputs.should_run_liam_erd_sample_test == 'true') && steps.playwright-cache.outputs.cache-hit == 'true' }}
         run: pnpm exec playwright install-deps webkit
 
   _e2e-tests:
     needs: _check-deployment
-    if: needs._check-deployment.outputs.should_run == 'true'
+    if: needs._check-deployment.outputs.should_run_liam_app_test == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     strategy:
@@ -108,14 +107,14 @@ jobs:
       # This workflow is triggered for all deployments (liam-app, liam-erd-sample, liam-docs),
       # but E2E tests are executed only for liam-app deployments now.
       - name: Run e2e tests
-        if: needs._check-deployment.outputs.should_run == 'true'
+        if: needs._check-deployment.outputs.should_run_liam_app_test == 'true'
         run: pnpm exec playwright test --project="${{ matrix.browser }}"
         env:
           URL: ${{ env.URL }}
 
       # FIXME: This step is not working well. All environments seem to be Preview.
       - name: Upload test results
-        if: needs._check-deployment.outputs.should_run == 'true' && failure()
+        if: needs._check-deployment.outputs.should_run_liam_app_test == 'true' && failure()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: test-results-${{ matrix.browser }}-${{ github.run_id }}-${{ github.job }}
@@ -123,7 +122,7 @@ jobs:
           retention-days: 30
 
       - name: Post E2E status manually (with gh)
-        if: needs._check-deployment.outputs.should_run == 'true' && always()
+        if: needs._check-deployment.outputs.should_run_liam_app_test == 'true' && always()
         run: |
           STATE="${{ job.status }}"
           CONTEXT="E2E Tests / e2e-tests (${{ matrix.browser }})"
@@ -137,7 +136,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Slack Notification on Failure
-        if: needs._check-deployment.outputs.should_run == 'true' && env.ENVIRONMENT == 'Production – liam-app' && failure()
+        if: needs._check-deployment.outputs.should_run_liam_app_test == 'true' && env.ENVIRONMENT == 'Production – liam-app' && failure()
         uses: tokorom/action-slack-incoming-webhook@d57bf1eb618f3dae9509afefa70d5774ad3d42bf # v1.3.0
         env:
           INCOMING_WEBHOOK_URL: ${{ secrets.SLACK_CLI_CI_WEBHOOK_URL }}
