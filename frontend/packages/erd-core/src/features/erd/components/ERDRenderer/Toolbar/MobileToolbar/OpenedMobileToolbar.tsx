@@ -61,9 +61,9 @@ export const OpenedMobileToolbar: FC<Props> = ({
     <div className={styles.wrapper}>
       <div className={styles.zoomLevelText}>
         <div className={styles.zoom}>Zoom</div>
-        <div className={styles.zoomPercent} aria-label="Zoom level">
+        <output className={styles.zoomPercent} aria-label="Zoom level">
           {Math.floor(zoomLevel * 100)}%
-        </div>
+        </output>
       </div>
       <hr className={styles.divider} />
       <div className={styles.buttonGroup}>
