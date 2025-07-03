@@ -231,7 +231,7 @@ describe(processor, () => {
     })
 
     it.skip('foreign key constraint in CREATE TABLE', async () => {
-      await processor(/* sql */ `
+      const { value } = await processor(/* sql */ `
         CREATE TABLE posts (
           id BIGSERIAL PRIMARY KEY,
           user_id INT,
