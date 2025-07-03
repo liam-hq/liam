@@ -74,8 +74,7 @@
         "noInferrableTypes": "error",
         "noUselessElse": "error",
         "noCommonJs": "error",
-        // TODO: Re-enable noDescendingSpecificity after fixing CSS specificity issues
-        "noDescendingSpecificity": "off"
+        "noDescendingSpecificity": "error"
       }
     },
     "includes": ["**"]
