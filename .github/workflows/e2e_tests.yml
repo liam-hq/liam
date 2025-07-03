@@ -27,20 +27,18 @@ jobs:
             if event_name == "deployment_status" && event_state == "success"
               # Production deployment
               if (environment_val.include?("Production") && target_url.include?("liam-app-git-main"))
-                "should_run_liam_app_test=true"
-              # Preview deployment
+                "should_run_liam_app_test=true\nshould_run_liam_erd_sample_test=false"
+              # Preview deployment for liam-app
               elsif environment_val.include?("Preview") && !target_url.include?("liam-erd-sample") && !target_url.include?("liam-docs") && !target_url.include?("liam-storybook")
-                "should_run_liam_app_test=true"
+                "should_run_liam_app_test=true\nshould_run_liam_erd_sample_test=false"
               # liam-erd-sample deployment
               elsif environment_val.include?("Preview") && target_url.include?("liam-erd-sample")
-                "should_run_liam_erd_sample_test=true"
+                "should_run_liam_app_test=false\nshould_run_liam_erd_sample_test=true"
               else
-                "should_run_liam_app_test=false"
-                "should_run_liam_erd_sample_test=false"
+                "should_run_liam_app_test=false\nshould_run_liam_erd_sample_test=false"
               end
             else
-              "should_run_liam_app_test=false"
-              "should_run_liam_erd_sample_test=false"
+              "should_run_liam_app_test=false\nshould_run_liam_erd_sample_test=false"
             end
 
           # Same as 'echo "should_run_liam_production_app_test=xxxx" >> $GITHUB_OUTPUT'
