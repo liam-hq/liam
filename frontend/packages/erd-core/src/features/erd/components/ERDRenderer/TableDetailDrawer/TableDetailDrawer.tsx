@@ -37,12 +37,7 @@ export const TableDetailDrawer: FC = () => {
   } = useSchema()
   const { activeTableName } = useUserEditing()
   const table = tables[activeTableName ?? '']
-  const ariaDescribedBy =
-    table?.comment == null
-      ? {
-          'aria-describedby': undefined,
-        }
-      : {}
+  const ariaDescribedBy = table?.comment == null ? {} : {}
 
   return (
     <DrawerPortal>
