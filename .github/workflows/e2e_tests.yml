@@ -89,7 +89,7 @@ jobs:
         run: pnpm exec playwright install-deps webkit
 
   _e2e-tests_for_liam-app:
-    needs: _check-deployment
+    needs: [_check-deployment, _setup_e2e_tests]
     if: needs._check-deployment.outputs.should_run_liam_app_test == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -168,7 +168,7 @@ jobs:
             ]
 
   _e2e-tests_for_liam-erd-sample:
-    needs: _check-deployment
+    needs: [_check-deployment, _setup_e2e_tests]
     if: needs._check-deployment.outputs.should_run_liam_erd_sample_test == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 10
