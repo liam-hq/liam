@@ -171,6 +171,29 @@ function getPrimaryTableNameByType(
 }
 
 /**
+ * Check if a field has valid relationship configuration
+ */
+function hasValidRelationshipConfig(field: DMMF.Field): boolean {
+  return !!(
+    field.relationToFields?.[0] &&
+    (field.relationToFields?.length ?? 0) > 0 &&
+    field.relationFromFields?.[0] &&
+    (field.relationFromFields?.length ?? 0) > 0
+  )
+}
+
+/**
+ * Apply field renaming to column names
+ */
+function applyFieldRenaming(
+  tableName: string,
+  columnName: string,
+  tableFieldRenaming: Record<string, Record<string, string>>,
+): string {
+  return tableFieldRenaming[tableName]?.[columnName] || columnName
+}
+
+/**
  * Process a relationship field and create foreign key constraint
  */
 function processRelationshipField(
@@ -179,33 +202,29 @@ function processRelationshipField(
   models: readonly DMMF.Model[],
   tableFieldRenaming: Record<string, Record<string, string>>,
 ): ForeignKeyConstraint | null {
-  if (!field.relationName) return null
+  if (!field.relationName || !hasValidRelationshipConfig(field)) {
+    return null
+  }
 
-  const isTargetField =
-    field.relationToFields?.[0] &&
-    (field.relationToFields?.length ?? 0) > 0 &&
-    field.relationFromFields?.[0] &&
-    (field.relationFromFields?.length ?? 0) > 0
-
-  if (!isTargetField) return null
-
-  // Get the primary table name
+  // Get table and column names
   const primaryTableName = getPrimaryTableNameByType(field.type, models)
-
-  // Get the column names
   const primaryColumnName = field.relationToFields?.[0] ?? ''
   const foreignColumnName = field.relationFromFields?.[0] ?? ''
+  const foreignTableName = model.dbName || model.name
 
   // Apply field renaming
-  const foreignTableName = model.dbName || model.name
-  const mappedPrimaryColumnName =
-    tableFieldRenaming[primaryTableName]?.[primaryColumnName] ||
-    primaryColumnName
-  const mappedForeignColumnName =
-    tableFieldRenaming[foreignTableName]?.[foreignColumnName] ||
-    foreignColumnName
+  const mappedPrimaryColumnName = applyFieldRenaming(
+    primaryTableName,
+    primaryColumnName,
+    tableFieldRenaming,
+  )
+  const mappedForeignColumnName = applyFieldRenaming(
+    foreignTableName,
+    foreignColumnName,
+    tableFieldRenaming,
+  )
 
-  const constraint: ForeignKeyConstraint = {
+  return {
     type: 'FOREIGN KEY',
     name: field.relationName,
     columnName: mappedForeignColumnName,
@@ -214,8 +233,6 @@ function processRelationshipField(
     updateConstraint: 'NO_ACTION',
     deleteConstraint: normalizeConstraintName(field.relationOnDelete ?? ''),
   }
-
-  return constraint
 }
 
 /**

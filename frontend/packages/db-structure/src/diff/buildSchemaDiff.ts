@@ -318,76 +318,131 @@ function buildConstraintRelatedDiffItems(
   return items
 }
 
-export function buildSchemaDiff(
+function getAllEntityIds<T>(
+  beforeEntities: Record<string, T>,
+  afterEntities: Record<string, T>,
+): Set<string> {
+  return new Set([
+    ...Object.keys(beforeEntities),
+    ...Object.keys(afterEntities),
+  ])
+}
+
+function processTableColumns(
+  tableId: string,
   before: Schema,
   after: Schema,
-): SchemaDiffItem[] {
-  const items: SchemaDiffItem[] = []
-  const operations = compare(before, after)
-  const allTables = Object.values({ ...before.tables, ...after.tables })
-
-  for (const table of allTables) {
-    const tableId = table.name
-
-    const tableDiffItems = buildTableRelatedDiffItems(
+  operations: ReturnType<typeof compare>,
+): ColumnRelatedDiffItem[] {
+  const beforeColumns = before.tables[tableId]?.columns || {}
+  const afterColumns = after.tables[tableId]?.columns || {}
+  const allColumnIds = getAllEntityIds(beforeColumns, afterColumns)
+  
+  const items: ColumnRelatedDiffItem[] = []
+  for (const columnId of allColumnIds) {
+    const columnDiffItems = buildColumnRelatedDiffItems(
       tableId,
+      columnId,
       before,
       after,
       operations,
     )
-    items.push(...tableDiffItems)
+    items.push(...columnDiffItems)
+  }
+  return items
+}
 
-    const beforeColumns = before.tables[tableId]?.columns || {}
-    const afterColumns = after.tables[tableId]?.columns || {}
-    const allColumnIds = new Set([
-      ...Object.keys(beforeColumns),
-      ...Object.keys(afterColumns),
-    ])
-    for (const columnId of allColumnIds) {
-      const columnDiffItems = buildColumnRelatedDiffItems(
-        tableId,
-        columnId,
-        before,
-        after,
-        operations,
-      )
-      items.push(...columnDiffItems)
-    }
+function processTableIndexes(
+  tableId: string,
+  before: Schema,
+  after: Schema,
+  operations: ReturnType<typeof compare>,
+): IndexRelatedDiffItem[] {
+  const beforeIndexes = before.tables[tableId]?.indexes || {}
+  const afterIndexes = after.tables[tableId]?.indexes || {}
+  const allIndexIds = getAllEntityIds(beforeIndexes, afterIndexes)
+  
+  const items: IndexRelatedDiffItem[] = []
+  for (const indexId of allIndexIds) {
+    const indexDiffItems = buildIndexRelatedDiffItems(
+      tableId,
+      indexId,
+      before,
+      after,
+      operations,
+    )
+    items.push(...indexDiffItems)
+  }
+  return items
+}
 
-    const beforeIndexes = before.tables[tableId]?.indexes || {}
-    const afterIndexes = after.tables[tableId]?.indexes || {}
-    const allIndexIds = new Set([
-      ...Object.keys(beforeIndexes),
-      ...Object.keys(afterIndexes),
-    ])
-    for (const indexId of allIndexIds) {
-      const indexDiffItems = buildIndexRelatedDiffItems(
-        tableId,
-        indexId,
-        before,
-        after,
-        operations,
-      )
-      items.push(...indexDiffItems)
-    }
+function processTableConstraints(
+  tableId: string,
+  before: Schema,
+  after: Schema,
+  operations: ReturnType<typeof compare>,
+): ConstraintRelatedDiffItem[] {
+  const beforeConstraints = before.tables[tableId]?.constraints || {}
+  const afterConstraints = after.tables[tableId]?.constraints || {}
+  const allConstraintIds = getAllEntityIds(beforeConstraints, afterConstraints)
+  
+  const items: ConstraintRelatedDiffItem[] = []
+  for (const constraintId of allConstraintIds) {
+    const constraintDiffItems = buildConstraintRelatedDiffItems(
+      tableId,
+      constraintId,
+      before,
+      after,
+      operations,
+    )
+    items.push(...constraintDiffItems)
+  }
+  return items
+}
 
-    const beforeConstraints = before.tables[tableId]?.constraints || {}
-    const afterConstraints = after.tables[tableId]?.constraints || {}
-    const allConstraintIds = new Set([
-      ...Object.keys(beforeConstraints),
-      ...Object.keys(afterConstraints),
-    ])
+function processTable(
+  tableId: string,
+  before: Schema,
+  after: Schema,
+  operations: ReturnType<typeof compare>,
+): SchemaDiffItem[] {
+  const items: SchemaDiffItem[] = []
 
-    for (const constraintId of allConstraintIds) {
-      const constraintDiffItems = buildConstraintRelatedDiffItems(
-        tableId,
-        constraintId,
-        before,
-        after,
-        operations,
-      )
-      items.push(...constraintDiffItems)
-    }
+  // Process table-level changes
+  const tableDiffItems = buildTableRelatedDiffItems(
+    tableId,
+    before,
+    after,
+    operations,
+  )
+  items.push(...tableDiffItems)
+
+  // Process columns
+  const columnItems = processTableColumns(tableId, before, after, operations)
+  items.push(...columnItems)
+
+  // Process indexes
+  const indexItems = processTableIndexes(tableId, before, after, operations)
+  items.push(...indexItems)
+
+  // Process constraints
+  const constraintItems = processTableConstraints(tableId, before, after, operations)
+  items.push(...constraintItems)
+
+  return items
+}
+
+export function buildSchemaDiff(
+  before: Schema,
+  after: Schema,
+): SchemaDiffItem[] {
+  const operations = compare(before, after)
+  const allTables = Object.values({ ...before.tables, ...after.tables })
+  const items: SchemaDiffItem[] = []
+
+  for (const table of allTables) {
+    const tableItems = processTable(table.name, before, after, operations)
+    items.push(...tableItems)
   }
 
   return items

@@ -51,8 +51,7 @@
       },
       "complexity": {
         "useLiteralKeys": "off",
-        // FIXME: Change to "error" once all cognitive complexity issues are resolved
-        "noExcessiveCognitiveComplexity": "warn",
+        "noExcessiveCognitiveComplexity": "error",
         // TODO: Re-enable noUselessEscapeInRegex after fixing regex escape issues
         "noUselessEscapeInRegex": "off",
         // TODO: Re-enable noUselessUndefinedInitialization after fixing undefined initialization issues
