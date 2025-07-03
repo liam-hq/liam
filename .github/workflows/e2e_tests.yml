@@ -51,6 +51,7 @@ jobs:
 
   _e2e-tests:
     needs: _check-deployment
+    if: needs._check-deployment.outputs.should_run_liam_app_test == 'true' || needs._check-deployment.outputs.should_run_liam_erd_sample_test == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     strategy:
@@ -81,6 +82,16 @@ jobs:
       LIAM_ERD_SAMPLE_URL: ${{ needs._check-deployment.outputs.liam_erd_sample_url }}
       LIAM_ERD_SAMPLE_ENVIRONMENT: ${{ needs._check-deployment.outputs.liam_erd_sample_environment }}
     steps:
+      - name: Debug matrix values
+        run: |
+          echo "Matrix app: ${{ matrix.app }}"
+          echo "Matrix should_run: ${{ matrix.should_run }}"
+          echo "Matrix browser: ${{ matrix.browser }}"
+          echo "LIAM_APP_URL: ${{ env.LIAM_APP_URL }}"
+          echo "LIAM_APP_ENVIRONMENT: ${{ env.LIAM_APP_ENVIRONMENT }}"
+          echo "LIAM_ERD_SAMPLE_URL: ${{ env.LIAM_ERD_SAMPLE_URL }}"
+          echo "LIAM_ERD_SAMPLE_ENVIRONMENT: ${{ env.LIAM_ERD_SAMPLE_ENVIRONMENT }}"
+
       - name: Checkout repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
