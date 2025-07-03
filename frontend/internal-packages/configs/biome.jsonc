@@ -34,8 +34,6 @@
         "useImportExtensions": "off"
       },
       "performance": {
-        // TODO: Re-enable noImgElement after replacing img with Next.js Image
-        "noImgElement": "off"
       },
       "suspicious": {
         "noConsole": { "level": "error", "options": { "allow": ["warn", "error", "info", "debug"] } },
