@@ -46,7 +46,6 @@ const ACCEPTED_FILE_EXTENSIONS = [
   'prisma',
   'json', // tbls format
 ] as const
-type AcceptedExtension = (typeof ACCEPTED_FILE_EXTENSIONS)[number]
 
 export const isValidFileExtension = (fileName: string): boolean => {
   const extension = getFileExtension(fileName)
