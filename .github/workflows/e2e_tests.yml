@@ -30,9 +30,9 @@ jobs:
               # Production deployment
               if (environment_val.include?("Production") && target_url.include?("liam-app-git-main"))
                 "should_run_liam_app_test=true\nshould_run_liam_erd_sample_test=false\nliam_app_url=#{target_url}\nliam_app_environment=#{environment_val}\nliam_erd_sample_url=\nliam_erd_sample_environment="
-              # Preview deployment for liam-app
+              # Preview deployment for liam-app - run tests for both apps
               elsif environment_val.include?("Preview") && !target_url.include?("liam-erd-sample") && !target_url.include?("liam-docs") && !target_url.include?("liam-storybook")
-                "should_run_liam_app_test=true\nshould_run_liam_erd_sample_test=false\nliam_app_url=#{target_url}\nliam_app_environment=#{environment_val}\nliam_erd_sample_url=\nliam_erd_sample_environment="
+                "should_run_liam_app_test=true\nshould_run_liam_erd_sample_test=true\nliam_app_url=#{target_url}\nliam_app_environment=#{environment_val}\nliam_erd_sample_url=\nliam_erd_sample_environment="
               # liam-erd-sample deployment
               elsif environment_val.include?("Preview") && target_url.include?("liam-erd-sample")
                 "should_run_liam_app_test=false\nshould_run_liam_erd_sample_test=true\nliam_app_url=\nliam_app_environment=\nliam_erd_sample_url=#{target_url}\nliam_erd_sample_environment=#{environment_val}"
