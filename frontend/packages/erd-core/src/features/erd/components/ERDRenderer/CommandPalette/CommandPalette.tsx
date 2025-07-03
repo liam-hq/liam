@@ -31,7 +31,7 @@ export const CommandPalette: FC = () => {
       selectTable({ tableId: tableName, displayArea: 'main' })
       setOpen(false)
     },
-    [selectTable],
+    [selectTable, setOpen],
   )
 
   // Toggle the menu when ⌘K is pressed
@@ -45,7 +45,7 @@ export const CommandPalette: FC = () => {
 
     document.addEventListener('keydown', down)
     return () => document.removeEventListener('keydown', down)
-  }, [])
+  }, [toggleOpen])
 
   return (
     <Command.Dialog
