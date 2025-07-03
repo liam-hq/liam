@@ -6,7 +6,13 @@ on:
 jobs:
   _check-deployment:
     runs-on: ubuntu-latest
-    timeout-minutes: 2
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      statuses: write
+    defaults:
+      run:
+        working-directory: 'frontend/internal-packages/e2e'
     outputs:
       should_run: ${{ steps.check.outputs.should_run }}
       target_url: ${{ github.event.deployment_status.target_url }}
@@ -32,15 +38,22 @@ jobs:
             if event_name == "deployment_status" && event_state == "success"
               # Production deployment
               if (environment_val.include?("Production") && target_url.include?("liam-app-git-main"))
-                "should_run=true"
+                "should_run_liam_production_app_test=true"
               # Preview deployment
               elsif environment_val.include?("Preview") && !target_url.include?("liam-erd-sample") && !target_url.include?("liam-docs") && !target_url.include?("liam-storybook")
-                "should_run=true"
+                "should_run_liam_preview_app_test=true"
+              # liam-erd-sample deployment
+              elsif environment_val.include?("Preview") && target_url.include?("liam-erd-sample")
+                "should_run_liam_erd_sample_preview_test=true"
               else
-                "should_run=false"
+                "should_run_liam_production_app_test=false"
+                "should_run_liam_preview_app_test=false"
+                "should_run_liam_erd_sample_preview_test=false"
               end
             else
-              "should_run=false"
+              "should_run_liam_production_app_test=false"
+              "should_run_liam_preview_app_test=false"
+              "should_run_liam_erd_sample_preview_test=false"
             end
 
           # Same as 'echo "should_run=xxxx" >> $GITHUB_OUTPUT'
@@ -50,11 +63,11 @@ jobs:
           end
 
       - name: Setup pnpm
-        if: steps.check.outputs.should_run == 'true'
+        if: steps.check.outputs.should_run_liam_production_app_test == 'true' || steps.check.outputs.should_run_liam_preview_app_test == 'true' || steps.check.outputs.should_run_liam_erd_sample_preview_test == 'true'
         uses: ./.github/actions/pnpm-setup
 
       - name: Cache Playwright browsers
-        if: steps.check.outputs.should_run == 'true'
+        if: steps.check.outputs.should_run_liam_production_app_test == 'true' || steps.check.outputs.should_run_liam_preview_app_test == 'true' || steps.check.outputs.should_run_liam_erd_sample_preview_test == 'true'
         id: playwright-cache
         uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
         with:
@@ -64,12 +77,12 @@ jobs:
             playwright-${{ runner.os }}-
 
       - name: Install Playwright browsers
-        if: ${{ steps.check.outputs.should_run == 'true' && steps.playwright-cache.outputs.cache-hit != 'true' }}
+        if: ${{ (steps.check.outputs.should_run_liam_production_app_test == 'true' || steps.check.outputs.should_run_liam_preview_app_test == 'true' || steps.check.outputs.should_run_liam_erd_sample_preview_test == 'true') && steps.playwright-cache.outputs.cache-hit != 'true' }}
         run: pnpm exec playwright install --with-deps
 
       - name: Install system dependencies for WebKit
         # Some WebKit dependencies seem to lay outside the cache and will need to be installed separately
-        if: ${{ steps.check.outputs.should_run == 'true' && steps.playwright-cache.outputs.cache-hit == 'true' }}
+        if: ${{ (steps.check.outputs.should_run_liam_production_app_test == 'true' || steps.check.outputs.should_run_liam_preview_app_test == 'true' || steps.check.outputs.should_run_liam_erd_sample_preview_test == 'true') && steps.playwright-cache.outputs.cache-hit == 'true' }}
         run: pnpm exec playwright install-deps webkit
 
   _e2e-tests:
