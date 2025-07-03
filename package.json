@@ -8,12 +8,15 @@
     "@changesets/types": "6.1.0",
     "@turbo/gen": "2.5.4",
     "@types/node": "22.15.30",
+    "@vitest/coverage-v8": "3.2.4",
     "concurrently": "9.1.2",
     "knip": "5.60.2",
+    "lefthook": "1.9.1",
     "syncpack": "13.0.4",
     "turbo": "2.5.4",
     "typescript": "5.8.3",
-    "vercel": "41.7.8"
+    "vercel": "41.7.8",
+    "vitest": "3.2.2"
   },
   "scripts": {
     "build": "turbo build",
@@ -32,8 +35,10 @@
     "lint:turbo": "turbo lint",
     "prebuild": "pnpm create-env-files",
     "prelint": "pnpm create-env-files",
+    "prepare": "lefthook install",
     "release": "pnpm build && pnpm changeset publish",
     "test": "turbo test",
+    "test:coverage": "vitest --coverage",
     "test:e2e": "turbo test:e2e",
     "vercel:env-pull": "vercel env pull .env",
     "vercel:link": "vercel link -p liam-app -S \"liambx\" -y"

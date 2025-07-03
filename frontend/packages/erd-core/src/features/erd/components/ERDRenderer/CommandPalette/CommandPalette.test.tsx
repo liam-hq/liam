@@ -12,6 +12,8 @@ import {
 } from '@/stores'
 import { UserEditingContext } from '@/stores/userEditing/context'
 import { CommandPalette } from './CommandPalette'
+import { CommandPaletteProvider } from './CommandPaletteProvider'
+import { CommandPaletteTriggerButton } from './CommandPaletteTriggerButton'
 
 afterEach(() => {
   cleanup()
@@ -44,7 +46,9 @@ const wrapper = ({ children }: { children: ReactNode }) => (
     <ReactFlowProvider>
       <UserEditingProvider>
         <ActiveTableNameDisplay />
-        <SchemaProvider {...schema}>{children}</SchemaProvider>
+        <SchemaProvider {...schema}>
+          <CommandPaletteProvider>{children}</CommandPaletteProvider>
+        </SchemaProvider>
       </UserEditingProvider>
     </ReactFlowProvider>
   </NuqsTestingAdapter>
@@ -102,6 +106,41 @@ describe('dialog opening interactions', () => {
     expect(
       screen.getByRole('dialog', { name: 'Command Palette' }),
     ).toBeInTheDocument()
+  })
+
+  it('opens the dialog with clicking the trigger button', async () => {
+    const user = userEvent.setup()
+
+    render(
+      <>
+        <CommandPaletteTriggerButton />
+        <CommandPalette />
+      </>,
+      { wrapper },
+    )
+
+    await user.click(
+      screen.getByRole('button', {
+        name: 'Open command palette to search features',
+      }),
+    )
+
+    expect(
+      screen.getByRole('dialog', { name: 'Command Palette' }),
+    ).toBeInTheDocument()
+  })
+})
+
+describe('dialog closing interaction', () => {
+  it('closes dialog by clicking ESC button', async () => {
+    const {
+      user,
+      elements: { dialog },
+    } = await prepareCommandPalette()
+
+    await user.click(within(dialog).getByRole('button', { name: 'ESC' }))
+
+    expect(dialog).not.toBeInTheDocument()
   })
 })
 
@@ -224,6 +263,26 @@ describe('focus on options by single click', () => {
     // focuses on "posts" option and displays a preview of the "posts" table
     await user.click(postsOption.firstChild as Element)
     await user.hover(usersOption)
+    expect(within(preview).getByText('posts')).toBeInTheDocument()
+  })
+
+  it('removes focus when combobox value is updated', async () => {
+    const {
+      user,
+      elements: { dialog, searchCombobox, preview },
+    } = await prepareCommandPalette()
+
+    const followsOption = within(dialog).getByRole('option', {
+      name: 'follows',
+    })
+
+    // focuses on "follows" option and displays a preview of the "follows" table
+    await user.click(followsOption.firstChild as Element)
+    expect(within(preview).getByText('follows')).toBeInTheDocument()
+
+    // focuses on "posts" option and displays a preview of the "posts" table
+    // TODO: It should keep focus on the combobox element when any option is clicked. This test should pass with `user.keyboard('posts')` as well instead of `user.type(searchCombobox, 'posts')`
+    await user.type(searchCombobox, 'posts')
     expect(within(preview).getByText('posts')).toBeInTheDocument()
   })
 })

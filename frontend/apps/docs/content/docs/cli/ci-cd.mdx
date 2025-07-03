@@ -6,16 +6,16 @@ import { File, Folder, Files } from "fumadocs-ui/components/files";
 
 ## Overview
 
-By integrating Liam ERD into your CI/CD pipeline, you can **automatically generate ER diagrams on every commit and host their latest versions**.  
+By integrating Liam ERD into your CI/CD pipeline, you can **automatically generate ER diagrams on every commit and host their latest versions**.
 This ensures that your entire team and all stakeholders can consistently access the most up-to-date schema.
 
 ### Why is Hosting the Latest ER Diagram Important?
 
-- **Streamlined Onboarding**  
+- **Streamlined Onboarding**
   When new or cross-functional team members need to understand the schema, there’s no need to dig through source code or spreadsheets. The information is consistently available and always current.
-- **Improved Communication**  
+- **Improved Communication**
   Visual representations of the data structure make it easier to discuss, clarify, and align on database design among developers, product managers, customer support, data analysts, and more.
-- **Drawbacks of Manual Updates**  
+- **Drawbacks of Manual Updates**
   Manually maintaining ER diagrams can lead to oversights, typos, and inconsistent documentation, making it **difficult to stay up to date**. By automatically generating and hosting ER diagrams via CI/CD, you reduce human errors and management overhead, guaranteeing **accurate information at all times**.
 
 ## Example: GitHub Actions + Static Hosting
@@ -40,7 +40,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
+
       # 1. Install the Liam ERD CLI
       - name: Install Liam ERD CLI
         run: npm install -g @liam-hq/cli
@@ -52,7 +52,7 @@ jobs:
 
       # 3. Publish the build artifacts (dist folder) to a static hosting service
       #    Here, we show an example using GitHub Pages.
-      # NOTE: To keep your GitHub Pages site private, 
+      # NOTE: To keep your GitHub Pages site private,
       # your organization must be on GitHub Enterprise Cloud.
       - name: Deploy to GitHub Pages
         uses: actions-gh-pages/action@v2
@@ -82,11 +82,11 @@ When you run `npx @liam-hq/cli erd build` or `liam erd build`, a `./dist` direct
   </Folder>
 </Files>
 
-The `schema.json` file contains the parsed schema data in JSON format, which `index.html` reads to render the ER diagram.  
+The `schema.json` file contains the parsed schema data in JSON format, which `index.html` reads to render the ER diagram.
 
 Additional notes:
 
-- You can place these files under a subdirectory if needed.  
+- You can place these files under a subdirectory if needed.
 - This output is similar to a typical Vite-built SPA. Refer to [Deploying a Static Site (Vite official documentation)](https://vite.dev/guide/static-deploy.html) for more details on deployment to common hosting providers.
 
 ## Using the `init` Command
@@ -98,7 +98,7 @@ The `init` command in the [Liam ERD CLI](/docs/cli) provides an interactive way 
 
 If you’re new to Liam ERD or unsure about configurations, simply run:
 
-```bash
+```npm
 npx @liam-hq/cli init
 ```
 
@@ -106,7 +106,7 @@ Follow the on-screen prompts to set up Liam ERD quickly.
 
 ## Example: Prisma + GitHub Actions + Cloudflare Pages
 
-Below is a more advanced example using `schema.prisma` with GitHub Actions to generate and deploy ER diagrams to Cloudflare Pages.  
+Below is a more advanced example using `schema.prisma` with GitHub Actions to generate and deploy ER diagrams to Cloudflare Pages.
 Cloudflare Pages supports simple access restrictions via Cloudflare Access, enabling you to limit diagram visibility to internal team members only.
 
 ```yaml

@@ -1,5 +1,11 @@
 # @liam-hq/erd-core
 
+## 0.4.1
+
+### Patch Changes
+
+- [#2164](https://github.com/liam-hq/liam/pull/2164) - 🐛 fix(nextjs) hydration error with Next.js NuqsAdapter / Thanks [@tnyo43](https://github.com/tnyo43)!
+
 ## 0.4.0
 
 ### Minor Changes

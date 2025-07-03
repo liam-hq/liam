@@ -7,7 +7,7 @@
   },
   "main": "src/index.ts",
   "dependencies": {
-    "@langchain/core": "0.3.57",
+    "@langchain/core": "0.3.59",
     "@langchain/openai": "0.5.12",
     "@liam-hq/agent": "workspace:*",
     "@liam-hq/db": "workspace:*",
@@ -25,7 +25,7 @@
     "@types/node": "22.15.30",
     "dotenv": "16.5.0",
     "eslint": "9.28.0",
-    "glob": "11.0.2",
+    "glob": "11.0.3",
     "trigger.dev": "4.0.0-v4-beta.21",
     "typescript": "5.8.3",
     "vitest": "3.2.2"

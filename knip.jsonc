@@ -1,6 +1,10 @@
 {
   "$schema": "https://unpkg.com/knip@5/schema.json",
 
+  // Disable lefthook plugin to avoid git worktree errors
+  // This is a workaround for: https://github.com/webpro-nl/knip/issues/990
+  "lefthook": false,
+
   // Files to ignore when analyzing
   "ignore": [
     // - config files
@@ -29,7 +33,6 @@
     "destyle.css", // Used by CSS imports in ui package
     "json-refs", // Used by db-structure npm scripts
     "json-schema-to-zod", // Used by db-structure npm scripts
-    "@vitest/coverage-v8", // Used by CLI package vite.config.ts
     "@liam-hq/cli", // Used by erd-sample build script
     "@liam-hq/configs", // Used by tsconfig and biome configuration files
     "@turbo/gen", // Required for `turbo gen` command in npm scripts

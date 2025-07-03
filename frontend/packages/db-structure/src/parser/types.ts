@@ -6,4 +6,7 @@ export type ProcessResult = {
   errors: ProcessError[]
 }
 
-export type Processor = (str: string) => Promise<ProcessResult>
+export type Processor = (
+  str: string,
+  chunkSize?: number,
+) => Promise<ProcessResult>

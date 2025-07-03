@@ -1,7 +1,7 @@
 {
   "name": "@liam-hq/erd-core",
   "license": "Apache-2.0",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "type": "module",
   "publishConfig": {
     "access": "public"
@@ -33,7 +33,7 @@
     "@testing-library/user-event": "14.6.1",
     "@types/pako": "2.0.3",
     "@types/react": "19.1.6",
-    "@vitejs/plugin-react": "4.5.1",
+    "@vitejs/plugin-react": "4.5.2",
     "eslint": "9.28.0",
     "happy-dom": "17.6.3",
     "typed-css-modules": "0.9.1",

@@ -1,16 +1,23 @@
 'use client'
 
-import { Search, Table2 } from '@liam-hq/ui'
-import { DialogDescription, DialogTitle } from '@radix-ui/react-dialog'
+import { Button, Search, Table2 } from '@liam-hq/ui'
+import {
+  DialogClose,
+  DialogDescription,
+  DialogTitle,
+} from '@radix-ui/react-dialog'
 import { Command } from 'cmdk'
-import { type FC, useCallback, useEffect, useState } from 'react'
+import { type FC, useCallback, useEffect, useRef, useState } from 'react'
 import { useTableSelection } from '@/features/erd/hooks'
 import { useSchema } from '@/stores'
 import { TableNode } from '../../ERDContent/components'
 import styles from './CommandPalette.module.css'
+import { useCommandPalette } from './CommandPaletteProvider'
 
 export const CommandPalette: FC = () => {
-  const [open, setOpen] = useState(false)
+  const closeButtonRef = useRef<HTMLButtonElement>(null)
+
+  const { open, setOpen, toggleOpen } = useCommandPalette()
 
   const schema = useSchema()
   const [tableName, setTableName] = useState<string | null>(null)
@@ -32,7 +39,7 @@ export const CommandPalette: FC = () => {
     const down = (event: KeyboardEvent) => {
       if (event.key === 'k' && (event.metaKey || event.ctrlKey)) {
         event.preventDefault()
-        setOpen((open) => !open)
+        toggleOpen()
       }
     }
 
@@ -59,9 +66,20 @@ export const CommandPalette: FC = () => {
       <div className={styles.searchContainer}>
         <div className={styles.searchFormWithIcon}>
           <Search className={styles.searchIcon} />
-          <Command.Input placeholder="Search" />
+          <Command.Input
+            placeholder="Search"
+            onValueChange={() => setFocusedTableName(null)}
+            onBlur={(event) => {
+              if (event.relatedTarget === closeButtonRef.current) return
+              event.target.focus()
+            }}
+          />
         </div>
-        <span className={styles.escapeSign}>ESC</span>
+        <DialogClose asChild>
+          <Button size="xs" variant="outline-secondary" ref={closeButtonRef}>
+            ESC
+          </Button>
+        </DialogClose>
       </div>
       <div className={styles.main}>
         <Command.List>
@@ -87,7 +105,7 @@ export const CommandPalette: FC = () => {
                   onDoubleClick={() => goToERD(table.name)}
                 >
                   <Table2 className={styles.itemIcon} />
-                  {table.name}
+                  <span className={styles.itemText}>{table.name}</span>
                 </div>
               </Command.Item>
             ))}

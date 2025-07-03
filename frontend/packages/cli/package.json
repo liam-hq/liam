@@ -15,7 +15,7 @@
   },
   "license": "Apache-2.0",
   "private": false,
-  "version": "0.5.8",
+  "version": "0.5.10",
   "type": "module",
   "publishConfig": {
     "access": "public"
@@ -28,7 +28,7 @@
     "@liam-hq/erd-core": "workspace:*",
     "@prisma/internals": "6.8.2",
     "commander": "13.1.0",
-    "glob": "11.0.2",
+    "glob": "11.0.3",
     "inquirer": "12.6.3",
     "react": "19.1.0",
     "react-dom": "19.1.0",
@@ -43,7 +43,7 @@
     "@types/node": "22.15.30",
     "@types/react": "19.1.6",
     "@types/react-dom": "19.1.6",
-    "@vitejs/plugin-react": "4.5.1",
+    "@vitejs/plugin-react": "4.5.2",
     "eslint": "9.28.0",
     "rollup": "4.40.2",
     "rollup-plugin-execute": "1.1.1",

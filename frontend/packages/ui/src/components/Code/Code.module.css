@@ -41,11 +41,11 @@
 .fill.default {
   background-color: var(--overlay-20);
   color: var(--global-foreground);
-  border: none;
+  border: 1px solid transparent;
 }
 
 .fill.primary {
   background-color: var(--primary-overlay-20);
   color: var(--primary-color);
-  border: none;
+  border: 1px solid transparent;
 }

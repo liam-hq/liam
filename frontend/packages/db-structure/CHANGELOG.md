@@ -1,5 +1,27 @@
 # @liam-hq/db-structure
 
+## 0.3.0
+
+### Minor Changes
+
+- [#2235](https://github.com/liam-hq/liam/pull/2235) - ✨ Add support for Rails inline index syntax in schema.rb parser / Thanks [@MH4GF](https://github.com/MH4GF)!
+
+- Support inline index declarations on columns: `t.string "name", index: true`
+- Handle unique inline indexes: `t.text "mention", index: { unique: true }`
+- Parse custom index names: `t.string "slug", index: { name: "custom_name" }`
+- Support index types: `t.string "email", index: { using: "gin" }`
+
+## 0.2.0
+
+### Minor Changes
+
+- [#2258](https://github.com/liam-hq/liam/pull/2258) - feat: add support for table-level primary key constraints in PostgreSQL parser / Thanks [@MH4GF](https://github.com/MH4GF)!
+
+### Patch Changes
+
+- [#2164](https://github.com/liam-hq/liam/pull/2164) - 🐛 fix(nextjs) hydration error with Next.js NuqsAdapter / Thanks [@tnyo43](https://github.com/tnyo43)!
+- [#2156](https://github.com/liam-hq/liam/pull/2156) - 🐛 Fix ONE_TO_ONE relationships incorrectly showing as ONE_TO_MANY when using `--format=schemarb` with UNIQUE constraints / Thanks [@MH4GF](https://github.com/MH4GF)!
+
 ## 0.1.0
 
 ### Minor Changes
