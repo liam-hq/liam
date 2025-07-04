@@ -486,6 +486,12 @@ describe('postgresqlSchemaDeparser', () => {
                 notNull: true,
               }),
             },
+            constraints: {
+              users_pkey: aPrimaryKeyConstraint({
+                name: 'users_pkey',
+                columnName: 'id',
+              }),
+            },
           }),
           orders: aTable({
             name: 'orders',
@@ -527,6 +533,8 @@ describe('postgresqlSchemaDeparser', () => {
           \"id\" bigint NOT NULL,
           \"user_id\" bigint NOT NULL
         );
+
+        ALTER TABLE \"users\" ADD CONSTRAINT \"users_pkey\" PRIMARY KEY (\"id\");
 
         ALTER TABLE \"orders\" ADD CONSTRAINT \"fk_orders_user_id\" FOREIGN KEY (\"user_id\") REFERENCES \"users\" (\"id\") ON UPDATE CASCADE ON DELETE SET NULL;"
       `)
@@ -614,6 +622,77 @@ describe('postgresqlSchemaDeparser', () => {
 
         ALTER TABLE \"products\" ADD CONSTRAINT \"ck_products_price_positive\" CHECK (price > 0);"
       `)
+
+      await expectGeneratedSQLToBeParseable(result.value)
+    })
+
+    it('should generate constraints in correct order (PRIMARY KEY before FOREIGN KEY)', async () => {
+      const schema = aSchema({
+        tables: {
+          users: aTable({
+            name: 'users',
+            columns: {
+              id: aColumn({
+                name: 'id',
+                type: 'bigint',
+                notNull: true,
+              }),
+            },
+            constraints: {
+              users_pkey: aPrimaryKeyConstraint({
+                name: 'users_pkey',
+                columnName: 'id',
+              }),
+            },
+          }),
+          todos: aTable({
+            name: 'todos',
+            columns: {
+              id: aColumn({
+                name: 'id',
+                type: 'bigint',
+                notNull: true,
+              }),
+              user_id: aColumn({
+                name: 'user_id',
+                type: 'bigint',
+                notNull: true,
+              }),
+            },
+            constraints: {
+              todos_pkey: aPrimaryKeyConstraint({
+                name: 'todos_pkey',
+                columnName: 'id',
+              }),
+              todos_user_fk: aForeignKeyConstraint({
+                name: 'todos_user_fk',
+                columnName: 'user_id',
+                targetTableName: 'users',
+                targetColumnName: 'id',
+                updateConstraint: 'NO_ACTION',
+                deleteConstraint: 'CASCADE',
+              }),
+            },
+          }),
+        },
+      })
+
+      const result = postgresqlSchemaDeparser(schema)
+
+      expect(result.errors).toHaveLength(0)
+
+      // Verify the DDL contains the primary key constraint for users before the foreign key constraint
+      const ddl = result.value
+      const usersPkeyIndex = ddl.indexOf(
+        'ALTER TABLE "users" ADD CONSTRAINT "users_pkey" PRIMARY KEY ("id");',
+      )
+      const todosFkIndex = ddl.indexOf(
+        'ALTER TABLE "todos" ADD CONSTRAINT "todos_user_fk" FOREIGN KEY ("user_id") REFERENCES "users" ("id") ON UPDATE NO ACTION ON DELETE CASCADE;',
+      )
+
+      expect(usersPkeyIndex).toBeGreaterThan(-1)
+      expect(todosFkIndex).toBeGreaterThan(-1)
+      expect(usersPkeyIndex).toBeLessThan(todosFkIndex)
 
       await expectGeneratedSQLToBeParseable(result.value)
     })

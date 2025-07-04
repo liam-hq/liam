@@ -1,0 +1,137 @@
+{
+  "tables": {
+    "users": {
+      "name": "users",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "check": null,
+          "comment": null,
+          "default": "gen_random_uuid()",
+          "notNull": true
+        },
+        "name": {
+          "name": "name", 
+          "type": "text",
+          "check": null,
+          "comment": null,
+          "default": null,
+          "notNull": true
+        },
+        "email": {
+          "name": "email",
+          "type": "text", 
+          "check": null,
+          "comment": null,
+          "default": null,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "check": null,
+          "comment": null, 
+          "default": "now()",
+          "notNull": true
+        },
+        "password_hash": {
+          "name": "password_hash",
+          "type": "text",
+          "check": null,
+          "comment": null,
+          "default": null,
+          "notNull": true
+        }
+      },
+      "comment": null,
+      "indexes": {},
+      "constraints": {
+        "users_pkey": {
+          "name": "users_pkey",
+          "type": "PRIMARY KEY",
+          "columnName": "id"
+        }
+      }
+    },
+    "todos": {
+      "name": "todos",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "check": null,
+          "comment": null,
+          "default": "gen_random_uuid()",
+          "notNull": true
+        },
+        "title": {
+          "name": "title",
+          "type": "text",
+          "check": null,
+          "comment": null,
+          "default": null,
+          "notNull": true
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "uuid",
+          "check": null,
+          "comment": null,
+          "default": null,
+          "notNull": true
+        },
+        "due_date": {
+          "name": "due_date",
+          "type": "timestamp",
+          "check": null,
+          "comment": null,
+          "default": null,
+          "notNull": false
+        },
+        "completed": {
+          "name": "completed",
+          "type": "boolean",
+          "check": null,
+          "comment": null,
+          "default": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "check": null,
+          "comment": null,
+          "default": "now()",
+          "notNull": true
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "check": null,
+          "comment": null,
+          "default": null,
+          "notNull": false
+        }
+      },
+      "comment": null,
+      "indexes": {},
+      "constraints": {
+        "todos_pkey": {
+          "name": "todos_pkey",
+          "type": "PRIMARY KEY",
+          "columnName": "id"
+        },
+        "todos_user_fk": {
+          "name": "todos_user_fk",
+          "type": "FOREIGN KEY",
+          "columnName": "user_id",
+          "targetTableName": "users",
+          "deleteConstraint": "CASCADE",
+          "targetColumnName": "id",
+          "updateConstraint": "NO_ACTION"
+        }
+      }
+    }
+  }
+}

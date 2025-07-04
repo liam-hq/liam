@@ -1,4 +1,4 @@
-import type { Index, Schema, Table } from '../../schema/index.js'
+import type { Schema, Table } from '../../schema/index.js'
 import type { SchemaDeparser } from '../type.js'
 import {
   generateAddConstraintStatement,
@@ -18,7 +18,7 @@ export const postgresqlSchemaDeparser: SchemaDeparser = (schema: Schema) => {
 
   // 2. Generate CREATE INDEX statements for all tables
   for (const table of Object.values(schema.tables) as Table[]) {
-    const indexes = Object.values(table.indexes) as Index[]
+    const indexes = table.indexes ? Object.values(table.indexes) : []
     for (const index of indexes) {
       const createIndexDDL = generateCreateIndexStatement(table.name, index)
       ddlStatements.push(createIndexDDL)
@@ -26,23 +26,45 @@ export const postgresqlSchemaDeparser: SchemaDeparser = (schema: Schema) => {
   }
 
   // 3. Generate ADD CONSTRAINT statements for all tables
-  // Note: Foreign key constraints are added last to ensure referenced tables exist
+  // Note: Constraints are processed in a specific order to ensure proper dependencies:
+  // 1. PRIMARY KEY constraints first (required for foreign key references)
+  // 2. UNIQUE constraints second
+  // 3. CHECK constraints third
+  // 4. FOREIGN KEY constraints last (to ensure referenced tables/columns exist)
   const foreignKeyStatements: string[] = []
+  const constraintOrder = ['PRIMARY KEY', 'UNIQUE', 'CHECK'] as const
 
   for (const table of Object.values(schema.tables) as Table[]) {
-    const constraints = Object.values(table.constraints)
-    for (const constraint of constraints) {
+    const constraints = table.constraints
+      ? Object.values(table.constraints)
+      : []
+
+    // Process constraints in the specified order
+    for (const constraintType of constraintOrder) {
+      const constraintsOfType = constraints.filter(
+        (constraint) => constraint.type === constraintType,
+      )
+
+      for (const constraint of constraintsOfType) {
+        const addConstraintDDL = generateAddConstraintStatement(
+          table.name,
+          constraint,
+        )
+        ddlStatements.push(addConstraintDDL)
+      }
+    }
+
+    // Collect foreign key constraints to add them last
+    const foreignKeyConstraints = constraints.filter(
+      (constraint) => constraint.type === 'FOREIGN KEY',
+    )
+
+    for (const constraint of foreignKeyConstraints) {
       const addConstraintDDL = generateAddConstraintStatement(
         table.name,
         constraint,
       )
-
-      // Separate foreign key constraints to add them last
-      if (constraint.type === 'FOREIGN KEY') {
-        foreignKeyStatements.push(addConstraintDDL)
-      } else {
-        ddlStatements.push(addConstraintDDL)
-      }
+      foreignKeyStatements.push(addConstraintDDL)
     }
   }
 
