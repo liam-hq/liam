@@ -1,0 +1,50 @@
+import { render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
+import { describe, expect, it, vi } from 'vitest'
+import { CardinalityZeroOrManyLeftIcon } from '../CardinalityZeroOrManyLeftIcon'
+
+describe('CardinalityZeroOrManyLeftIcon', () => {
+  it('renders without crashing', () => {
+    render(<CardinalityZeroOrManyLeftIcon />)
+    expect(screen.getByRole('img')).toBeInTheDocument()
+  })
+
+  it('applies custom color through style prop', () => {
+    render(<CardinalityZeroOrManyLeftIcon style={{ color: 'red' }} />)
+    const svg = screen.getByRole('img')
+    expect(svg).toHaveStyle({ color: 'red' })
+  })
+
+  it('applies custom width and height', () => {
+    render(<CardinalityZeroOrManyLeftIcon width={32} height={32} />)
+    const svg = screen.getByRole('img')
+    expect(svg).toHaveAttribute('width', '32')
+    expect(svg).toHaveAttribute('height', '32')
+  })
+
+  it('applies custom className', () => {
+    render(<CardinalityZeroOrManyLeftIcon className="custom-icon" />)
+    const svg = screen.getByRole('img')
+    expect(svg).toHaveClass('custom-icon')
+  })
+
+  it('applies custom data attributes', () => {
+    render(
+      <CardinalityZeroOrManyLeftIcon data-testid="cardinality-zero-or-many-left-icon" />,
+    )
+    const svg = screen.getByRole('img')
+    expect(svg).toHaveAttribute(
+      'data-testid',
+      'cardinality-zero-or-many-left-icon',
+    )
+  })
+
+  it('applies custom onClick handler', async () => {
+    const user = userEvent.setup()
+    const handleClick = vi.fn()
+    render(<CardinalityZeroOrManyLeftIcon onClick={handleClick} />)
+    const svg = screen.getByRole('img')
+    await user.click(svg)
+    expect(handleClick).toHaveBeenCalledTimes(1)
+  })
+})
