@@ -4,6 +4,7 @@ export const supportedFormatSchema = v.picklist([
   'schemarb',
   'postgres',
   'prisma',
+  'drizzle',
   'tbls',
 ])
 

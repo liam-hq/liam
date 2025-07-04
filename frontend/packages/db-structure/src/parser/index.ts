@@ -1,3 +1,4 @@
+import { processor as drizzleProcessor } from './drizzle/index.js'
 import { processor as prismaProcessor } from './prisma/index.js'
 import { processor as schemarbProcessor } from './schemarb/index.js'
 import { processor as postgresqlProcessor } from './sql/index.js'
@@ -24,6 +25,8 @@ export const parse = (
       return postgresqlProcessor(str)
     case 'prisma':
       return prismaProcessor(str)
+    case 'drizzle':
+      return drizzleProcessor(str)
     case 'tbls':
       return tblsProcessor(str)
   }

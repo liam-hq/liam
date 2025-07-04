@@ -12,8 +12,8 @@ if (process.env.VERCEL_ENV === 'production') {
 }
 
 const nextConfig: NextConfig = {
-  // NOTE: Exclude Prisma-related packages from the bundle
-  // These packages are installed separately in the node_modules/@prisma directory
+  // NOTE: Exclude Prisma and SWC-related packages from the bundle
+  // These packages are installed separately in the node_modules directory
   // Excluding them prevents `Error: Cannot find module 'fs'` errors in the build process
   images: {
     remotePatterns: [
@@ -78,6 +78,45 @@ const nextConfig: NextConfig = {
         })
       },
     })
+
+    // Handle native binary files (.node) for @swc/core
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    config.module.rules.push({
+      test: /\.node$/,
+      use: 'ignore-loader',
+    })
+
+    // Provide fallback for @swc/wasm to prevent build errors
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    config.resolve.fallback = {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      ...config.resolve.fallback,
+      '@swc/wasm': false,
+    }
+
+    // Handle @swc/core for server-side only
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    config.externals = [
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      ...(Array.isArray(config.externals)
+        ? // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+          config.externals
+        : // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+          [config.externals]),
+      (
+        { request }: { request?: string },
+        callback: (err?: Error | null, result?: string) => void,
+      ) => {
+        // Only externalize @swc/core in development, allow bundling in production
+        if (
+          (request === '@swc/core' || request === '@swc/wasm') &&
+          process.env.NODE_ENV === 'development'
+        ) {
+          return callback(null, `commonjs ${request}`)
+        }
+        callback()
+      },
+    ]
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     config.plugins = [...config.plugins]
