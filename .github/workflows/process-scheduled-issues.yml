@@ -1,0 +1,89 @@
+name: PR Scheduler
+on:
+  schedule:
+    - cron: '0 22 * * 0-4'  # Run at 22:00 Sunday to Thursday
+  workflow_dispatch:  # Manual execution available
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  schedule-prs:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - name: Generate GitHub App Token
+        uses: actions/create-github-app-token@df432ceedc7162793a195dd1713ff69aefc7379e # v2.0.6
+        id: app-token
+        with:
+          app-id: ${{ secrets.AUTO_DEV_APP_ID }}
+          private-key: ${{ secrets.AUTO_DEV_APP_PRIVATE_KEY }}
+          permission-contents: read
+          permission-issues: write
+
+      - name: Find and process scheduled issues
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
+        with:
+          github-token: ${{ steps.app-token.outputs.token }}
+          script: |
+            const now = new Date();
+            const dayOfWeek = now.getDay(); // 0=Sunday, 1=Monday, ..., 6=Saturday
+
+            // Execute only Sunday to Thursday (0=Sunday to 4=Thursday)
+            if (dayOfWeek < 0 || dayOfWeek > 4) {
+              console.log(`Today is ${['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][dayOfWeek]}`);
+              console.log('Skipping execution - only runs Sunday through Thursday');
+              return;
+            }
+
+            console.log(`Today is ${['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][dayOfWeek]} - proceeding with execution`);
+
+            const issues = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'scheduled-task',
+              sort: 'created',  // Sort by creation date
+              direction: 'asc'  // Ascending order (oldest first)
+            });
+
+            console.log(`Found ${issues.data.length} scheduled issues`);
+
+            let processedCount = 0;
+            const maxProcessPerRun = 5; // Maximum 5 issues per run
+
+            for (const issue of issues.data) {
+              if (processedCount >= maxProcessPerRun) {
+                console.log(`Reached maximum limit of ${maxProcessPerRun} issues per run`);
+                break;
+              }
+
+              console.log(`Processing issue #${issue.number}: "${issue.title}"`);
+
+              await github.rest.issues.addLabels({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issue.number,
+                labels: ['claude-create-pr']
+              });
+
+              try {
+                await github.rest.issues.removeLabel({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: issue.number,
+                  name: 'scheduled-task'
+                });
+                console.log(`Removed 'scheduled-task' label from issue #${issue.number}`);
+              } catch (error) {
+                console.log(`Could not remove label from issue #${issue.number}: ${error.message}`);
+              }
+
+              processedCount++;
+            }
+
+            console.log(`Processed ${processedCount} issues in this run`);
