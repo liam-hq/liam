@@ -24,12 +24,18 @@ import { isCompositePrimaryKey, isDrizzleIndex } from './types.js'
  * Parse pgTable call with comment method chain
  */
 export const parsePgTableWithComment = (
-  commentCallExpr: CallExpression,
+  commentCallExpr: unknown,
 ): DrizzleTableDefinition | null => {
+  // Type guard for CallExpression
+  if (typeof commentCallExpr !== 'object' || commentCallExpr === null) {
+    return null
+  }
+
+  const expr = commentCallExpr as CallExpression
   // Extract the comment from the call arguments
   let comment: string | null = null
-  if (commentCallExpr.arguments.length > 0) {
-    const commentArg = commentCallExpr.arguments[0]
+  if (expr.arguments.length > 0) {
+    const commentArg = expr.arguments[0]
     const commentExpr = getArgumentExpression(commentArg)
     if (commentExpr && isStringLiteral(commentExpr)) {
       comment = commentExpr.value
@@ -37,8 +43,8 @@ export const parsePgTableWithComment = (
   }
 
   // Get the pgTable call from the object of the member expression
-  if (commentCallExpr.callee.type === 'MemberExpression') {
-    const pgTableCall = commentCallExpr.callee.object
+  if (expr.callee.type === 'MemberExpression') {
+    const pgTableCall = expr.callee.object
     if (pgTableCall.type === 'CallExpression' && isPgTableCall(pgTableCall)) {
       const table = parsePgTableCall(pgTableCall)
       if (table && comment) {
@@ -55,12 +61,22 @@ export const parsePgTableWithComment = (
  * Parse pgTable call expression
  */
 export const parsePgTableCall = (
-  callExpr: CallExpression,
+  callExpr: unknown,
 ): DrizzleTableDefinition | null => {
-  if (callExpr.arguments.length < 2) return null
+  // Type guard for CallExpression
+  if (
+    typeof callExpr !== 'object' ||
+    callExpr === null ||
+    !('arguments' in callExpr)
+  ) {
+    return null
+  }
 
-  const tableNameArg = callExpr.arguments[0]
-  const columnsArg = callExpr.arguments[1]
+  const expr = callExpr as CallExpression
+  if (expr.arguments.length < 2) return null
+
+  const tableNameArg = expr.arguments[0]
+  const columnsArg = expr.arguments[1]
 
   if (!tableNameArg || !columnsArg) return null
 
@@ -94,8 +110,8 @@ export const parsePgTableCall = (
   }
 
   // Parse indexes and composite primary key from third argument if present
-  if (callExpr.arguments.length > 2) {
-    const thirdArg = callExpr.arguments[2]
+  if (expr.arguments.length > 2) {
+    const thirdArg = expr.arguments[2]
     const thirdArgExpr = getArgumentExpression(thirdArg)
     if (thirdArgExpr && thirdArgExpr.type === 'ArrowFunctionExpression') {
       // Parse arrow function like (table) => ({ nameIdx: index(...), pk: primaryKey(...) })

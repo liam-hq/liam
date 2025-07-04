@@ -6,9 +6,7 @@ import type {
   Argument,
   CallExpression,
   Expression,
-  Import,
   ObjectExpression,
-  Super,
 } from '@swc/core'
 import { getPropertyValue, hasProperty, isObject } from './types.js'
 
@@ -102,11 +100,9 @@ export const isIdentifier = (
 /**
  * Check if a node is an identifier with a specific name
  */
-const isIdentifierWithName = (
-  node: Expression | Super | Import,
-  name: string,
-): boolean => {
-  return isIdentifier(node) && node.value === name
+const isIdentifierWithName = (node: unknown, name: string): boolean => {
+  if (!isIdentifier(node)) return false
+  return (node as { value: string }).value === name
 }
 
 /**
@@ -132,8 +128,18 @@ export const isMemberExpression = (
 /**
  * Check if a call expression is a pgTable call
  */
-export const isPgTableCall = (callExpr: CallExpression): boolean => {
-  return isIdentifierWithName(callExpr.callee, 'pgTable')
+export const isPgTableCall = (
+  callExpr: unknown,
+): callExpr is CallExpression => {
+  if (
+    typeof callExpr === 'object' &&
+    callExpr !== null &&
+    'callee' in callExpr
+  ) {
+    const expr = callExpr as { callee: unknown }
+    return isIdentifierWithName(expr.callee, 'pgTable')
+  }
+  return false
 }
 
 /**

@@ -15,12 +15,22 @@ import type { DrizzleEnumDefinition } from './types.js'
  * Parse pgEnum call expression
  */
 export const parsePgEnumCall = (
-  callExpr: CallExpression,
+  callExpr: unknown,
 ): DrizzleEnumDefinition | null => {
-  if (callExpr.arguments.length < 2) return null
+  // Type guard for CallExpression
+  if (
+    typeof callExpr !== 'object' ||
+    callExpr === null ||
+    !('arguments' in callExpr)
+  ) {
+    return null
+  }
 
-  const enumNameArg = callExpr.arguments[0]
-  const valuesArg = callExpr.arguments[1]
+  const expr = callExpr as CallExpression
+  if (expr.arguments.length < 2) return null
+
+  const enumNameArg = expr.arguments[0]
+  const valuesArg = expr.arguments[1]
 
   if (!enumNameArg || !valuesArg) return null
 

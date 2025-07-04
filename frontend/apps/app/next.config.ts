@@ -37,8 +37,6 @@ const nextConfig: NextConfig = {
         '@prisma/internals',
         '@prisma/prisma-schema-wasm',
         '@prisma/schema-files-loader',
-        '@swc/core',
-        '@swc/wasm',
       )
     } else {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
@@ -65,10 +63,6 @@ const nextConfig: NextConfig = {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       config.externals['@prisma/schema-files-loader'] =
         '@prisma/schema-files-loader'
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-      config.externals['@swc/core'] = '@swc/core'
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-      config.externals['@swc/wasm'] = '@swc/wasm'
     }
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
@@ -84,6 +78,42 @@ const nextConfig: NextConfig = {
         })
       },
     })
+
+    // Handle native binary files (.node) for @swc/core
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    config.module.rules.push({
+      test: /\.node$/,
+      use: 'ignore-loader',
+    })
+
+    // Provide fallback for @swc/wasm to prevent build errors
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    config.resolve.fallback = {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      ...config.resolve.fallback,
+      '@swc/wasm': false,
+    }
+
+    // Handle @swc/core for server-side only
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    config.externals = [
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      ...(Array.isArray(config.externals)
+        ? // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+          config.externals
+        : // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+          [config.externals]),
+      (
+        { request }: { request?: string },
+        callback: (err?: Error | null, result?: string) => void,
+      ) => {
+        // Only externalize @swc/core on server-side
+        if (request === '@swc/core' || request === '@swc/wasm') {
+          return callback(null, `commonjs ${request}`)
+        }
+        callback()
+      },
+    ]
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     config.plugins = [...config.plugins]

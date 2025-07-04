@@ -15,16 +15,26 @@ import { getPropertyValue, hasProperty } from './types.js'
  * Parse relations call expression
  */
 export const parseRelationsCall = (
-  callExpr: CallExpression,
+  callExpr: unknown,
 ): DrizzleRelationDefinition[] => {
+  // Type guard for CallExpression
+  if (
+    typeof callExpr !== 'object' ||
+    callExpr === null ||
+    !('arguments' in callExpr)
+  ) {
+    return []
+  }
+
+  const expr = callExpr as CallExpression
   const relations: DrizzleRelationDefinition[] = []
 
-  if (callExpr.arguments.length < 2) {
+  if (expr.arguments.length < 2) {
     return relations
   }
 
   // First argument should be the table reference
-  const tableArg = callExpr.arguments[0]
+  const tableArg = expr.arguments[0]
   let fromTableName = ''
 
   // Handle ExpressionOrSpread structure
@@ -40,7 +50,7 @@ export const parseRelationsCall = (
   }
 
   // Second argument should be the arrow function with relations definition
-  const relationsFnArg = callExpr.arguments[1]
+  const relationsFnArg = expr.arguments[1]
   const relationsFn = hasProperty(relationsFnArg, 'expression')
     ? getPropertyValue(relationsFnArg, 'expression')
     : relationsFnArg
