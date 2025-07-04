@@ -107,8 +107,11 @@ const nextConfig: NextConfig = {
         { request }: { request?: string },
         callback: (err?: Error | null, result?: string) => void,
       ) => {
-        // Only externalize @swc/core on server-side
-        if (request === '@swc/core' || request === '@swc/wasm') {
+        // Only externalize @swc/core in development, allow bundling in production
+        if (
+          (request === '@swc/core' || request === '@swc/wasm') &&
+          process.env.NODE_ENV === 'development'
+        ) {
           return callback(null, `commonjs ${request}`)
         }
         callback()
