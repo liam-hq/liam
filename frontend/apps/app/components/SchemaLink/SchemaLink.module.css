@@ -11,10 +11,6 @@
   border: none;
 }
 
-.schemaLink:hover .schemaName {
-  color: var(--global-foreground, #ffffff);
-}
-
 .schemaName {
   font-family: var(--main-font, Inter);
   font-size: var(--font-size-3, 0.75rem);
@@ -23,6 +19,10 @@
   line-height: 1.6em;
   transition: color var(--default-hover-animation-duration, 0.2s)
     var(--default-timing-function, ease);
+}
+
+.schemaLink:hover .schemaName {
+  color: var(--global-foreground, #ffffff);
 }
 
 .iconContainer {
