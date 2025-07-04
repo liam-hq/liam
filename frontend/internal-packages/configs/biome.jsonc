@@ -44,6 +44,7 @@
         "noDocumentCookie": "error"
       },
       "a11y": {
+        "noStaticElementInteractions": "error",
         // TODO: Re-enable useAriaPropsSupportedByRole after fixing accessibility issues
         "useAriaPropsSupportedByRole": "off"
       },
