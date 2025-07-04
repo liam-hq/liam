@@ -1,5 +1,5 @@
 import { DatabaseSchemaBuildAgent } from '../../../langchain/agents'
-import type { BuildAgentResponse } from '../../../langchain/agents/databaseSchemaBuildAgent/agent'
+import type { UpdateSchemaVersionInput } from '../../../langchain/tools'
 import type { SchemaAwareChatVariables } from '../../../langchain/utils/types'
 import { convertSchemaToText } from '../../../utils/convertSchemaToText'
 import { getWorkflowNodeProgress } from '../shared/getWorkflowNodeProgress'
@@ -16,16 +16,14 @@ interface PreparedSchemaDesign {
  * Apply schema changes and return updated state
  */
 const applySchemaChanges = async (
-  schemaChanges: BuildAgentResponse['schemaChanges'],
-  buildingSchemaId: string,
-  latestVersionNumber: number,
+  toolInput: UpdateSchemaVersionInput,
   message: string,
   state: WorkflowState,
 ): Promise<WorkflowState> => {
   const result = await state.repositories.schema.createVersion({
-    buildingSchemaId,
-    latestVersionNumber,
-    patch: schemaChanges,
+    buildingSchemaId: state.buildingSchemaId,
+    latestVersionNumber: state.latestVersionNumber,
+    patch: toolInput.patch,
   })
 
   if (!result.success) {
@@ -47,29 +45,53 @@ const applySchemaChanges = async (
 }
 
 /**
- * Handle schema changes if they exist
+ * Handle tool calls from the agent response
  */
-const handleSchemaChanges = async (
-  parsedResponse: BuildAgentResponse,
+const handleToolCalls = async (
+  agentMessages: Awaited<ReturnType<DatabaseSchemaBuildAgent['generate']>>,
   state: WorkflowState,
 ): Promise<WorkflowState> => {
-  if (parsedResponse.schemaChanges.length === 0) {
-    return {
-      ...state,
-      generatedAnswer: parsedResponse.message,
+  const lastMessage = agentMessages[agentMessages.length - 1]
+
+  // Check if the last message has tool calls
+  if (
+    lastMessage &&
+    'tool_calls' in lastMessage &&
+    lastMessage.tool_calls &&
+    Array.isArray(lastMessage.tool_calls) &&
+    lastMessage.tool_calls.length > 0
+  ) {
+    const toolCall = lastMessage.tool_calls[0]
+
+    // Handle the update_schema_version tool call
+    if (
+      toolCall &&
+      typeof toolCall === 'object' &&
+      'name' in toolCall &&
+      'args' in toolCall &&
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      toolCall.name === 'update_schema_version'
+    ) {
+      // Handle tool args - could be string or object depending on tool type
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      const rawArgs = toolCall.args
+      const toolInput =
+        typeof rawArgs === 'string'
+          ? (JSON.parse(rawArgs) as UpdateSchemaVersionInput)
+          : (rawArgs as UpdateSchemaVersionInput)
+      const message = lastMessage.content as string
+
+      return await applySchemaChanges(toolInput, message, state)
     }
   }
 
-  const buildingSchemaId = state.buildingSchemaId
-  const latestVersionNumber = state.latestVersionNumber
-
-  return await applySchemaChanges(
-    parsedResponse.schemaChanges,
-    buildingSchemaId,
-    latestVersionNumber,
-    parsedResponse.message,
-    state,
-  )
+  // No tool calls, just return the message
+  const messageContent =
+    (lastMessage?.content as string) || 'No response from agent'
+  return {
+    ...state,
+    generatedAnswer: messageContent,
+  }
 }
 
 async function prepareSchemaDesign(
@@ -116,8 +138,8 @@ export async function designSchemaNode(
   }
 
   // Use agent's generate method with prompt variables
-  const response = await agent.generate(promptVariables)
-  const result = await handleSchemaChanges(response, state)
+  const agentMessages = await agent.generate(promptVariables)
+  const result = await handleToolCalls(agentMessages, state)
 
   state.logger.log(`[${NODE_NAME}] Completed`)
   return result
