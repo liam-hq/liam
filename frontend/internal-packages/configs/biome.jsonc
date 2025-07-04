@@ -53,8 +53,6 @@
         "useLiteralKeys": "off",
         // FIXME: Change to "error" once all cognitive complexity issues are resolved
         "noExcessiveCognitiveComplexity": "warn",
-        // TODO: Re-enable noUselessEscapeInRegex after fixing regex escape issues
-        "noUselessEscapeInRegex": "off",
         // TODO: Re-enable noUselessUndefinedInitialization after fixing undefined initialization issues
         "noUselessUndefinedInitialization": "off",
         // TODO: Re-enable useDateNow after replacing new Date().getTime() with Date.now()
