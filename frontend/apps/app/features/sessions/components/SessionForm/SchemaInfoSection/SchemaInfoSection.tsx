@@ -179,3 +179,5 @@ export const SchemaInfoSection: FC<Props> = ({
     </div>
   )
 }
+
+export type { SchemaStatus }
