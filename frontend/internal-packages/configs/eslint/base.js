@@ -61,12 +61,6 @@ export function createBaseConfig(options = {}) {
       },
     },
     {
-      files: ['**/DropdownMenu/DropdownMenu.tsx', '**/parser.ts'],
-      rules: {
-        'no-restricted-syntax': 'off',
-      },
-    },
-    {
       files: ['**/trigger.config.ts', '**/vitest.config.ts'],
       plugins: {
         '@typescript-eslint': tseslint,

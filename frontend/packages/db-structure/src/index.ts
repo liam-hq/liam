@@ -18,7 +18,14 @@ export {
   tableRelatedDiffItemSchema,
 } from './diff/index.js'
 export { applyPatchOperations, operationsSchema } from './operation/index.js'
-export type { ProcessError } from './parser.js'
+export {
+  detectFormat,
+  ProcessError,
+  parse,
+  type SupportedFormat,
+  setPrismWasmUrl,
+  supportedFormatSchema,
+} from './parser/index.js'
 export {
   aColumn,
   aForeignKeyConstraint,
