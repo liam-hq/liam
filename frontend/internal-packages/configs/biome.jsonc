@@ -54,8 +54,7 @@
         "noExcessiveCognitiveComplexity": "warn",
         // TODO: Re-enable noUselessEscapeInRegex after fixing regex escape issues
         "noUselessEscapeInRegex": "off",
-        // TODO: Re-enable noUselessUndefinedInitialization after fixing undefined initialization issues
-        "noUselessUndefinedInitialization": "off",
+        "noUselessUndefinedInitialization": "error",
         "useDateNow": "error",
         "noUselessFragments": "error"
       },
