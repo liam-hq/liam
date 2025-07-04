@@ -27,7 +27,11 @@ function generateColumnDefinition(
  */
 function formatDefaultValue(value: string | number | boolean): string {
   if (typeof value === 'string') {
-    // Wrap strings in single quotes
+    // Check if it's a PostgreSQL function call (e.g., gen_random_uuid(), now(), current_timestamp())
+    if (isPostgreSQLFunction(value)) {
+      return value // Don't quote function calls
+    }
+    // Wrap string literals in single quotes
     return `'${value.replace(/'/g, "''")}'` // SQL escape
   }
 
@@ -38,6 +42,34 @@ function formatDefaultValue(value: string | number | boolean): string {
 
   // Numbers as-is
   return value.toString()
+}
+
+/**
+ * Check if a string represents a PostgreSQL function call
+ */
+function isPostgreSQLFunction(value: string): boolean {
+  const trimmedValue = value.trim()
+
+  // Match PostgreSQL function patterns:
+  // - Function name: starts with letter or underscore, followed by letters, numbers, underscores
+  // - Optional whitespace before opening parenthesis
+  // - Must have opening parenthesis (function calls always have parentheses)
+  // Examples: gen_random_uuid(), now(), current_timestamp(), extract(epoch from now())
+  const functionPattern = /^[a-zA-Z_][a-zA-Z0-9_]*\s*\(/
+
+  // PostgreSQL functions that can be used without parentheses
+  // (The regex pattern above handles functions with parentheses)
+  const commonFunctions = ['current_timestamp', 'current_date', 'current_time']
+
+  // Check if it matches the general function pattern
+  if (functionPattern.test(trimmedValue)) {
+    return true
+  }
+
+  // Check for common functions that might have specific patterns
+  return commonFunctions.some((func) =>
+    trimmedValue.toLowerCase().startsWith(func.toLowerCase()),
+  )
 }
 
 /**

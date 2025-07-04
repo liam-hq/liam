@@ -1,37 +1,12 @@
-import { QADDLGenerationAgent } from '../../../langchain/agents'
-import type { SchemaAwareChatVariables } from '../../../langchain/utils/types'
-import { convertSchemaToText } from '../../../utils/convertSchemaToText'
+import { postgresqlSchemaDeparser } from '@liam-hq/db-structure'
 import { getWorkflowNodeProgress } from '../shared/getWorkflowNodeProgress'
 import type { WorkflowState } from '../types'
 
 const NODE_NAME = 'generateDDLNode'
 
-interface PreparedDDLGeneration {
-  agent: QADDLGenerationAgent
-  schemaText: string
-}
-
 /**
- * Prepare QA DDL generation
- */
-async function prepareDDLGeneration(
-  state: WorkflowState,
-): Promise<PreparedDDLGeneration> {
-  const schemaText = convertSchemaToText(state.schemaData)
-  const agent = new QADDLGenerationAgent()
-
-  return {
-    agent,
-    schemaText,
-  }
-}
-
-/**
- * Generate DDL Node - QA Agent generates DDL
- * Performed by qaAgent
- *
- * TODO: DDL generation using LLM is a temporary solution.
- * In the future, DDL will be generated mechanically without LLM.
+ * Generate DDL Node - Uses existing schema deparser for DDL generation
+ * Generates DDL mechanically without LLM
  */
 export async function generateDDLNode(
   state: WorkflowState,
@@ -50,17 +25,18 @@ export async function generateDDLNode(
       )
     }
 
-    const { agent, schemaText } = await prepareDDLGeneration(state)
+    const result = postgresqlSchemaDeparser(state.schemaData)
+    const ddlStatements = result.value
 
-    const promptVariables: SchemaAwareChatVariables = {
-      schema_text: schemaText,
-      chat_history: state.formattedHistory,
-      user_message:
-        'Generate DDL statements from the existing schema for validation and testing',
-    }
+    // Log detailed information about what was generated
+    // TODO: Remove this detailed logging once the feature is stable and working properly
+    const tableCount = Object.keys(state.schemaData.tables).length
+    const ddlLength = ddlStatements.length
 
-    const ddlStatements = await agent.generate(promptVariables)
-
+    state.logger.log(
+      `[${NODE_NAME}] Generated DDL for ${tableCount} tables (${ddlLength} characters)`,
+    )
+    state.logger.debug(`[${NODE_NAME}] Generated DDL:`, { ddlStatements })
     state.logger.log(`[${NODE_NAME}] Completed`)
 
     return {
