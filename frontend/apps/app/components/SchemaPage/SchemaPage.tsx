@@ -1,5 +1,5 @@
 import path from 'node:path'
-import { parse, setPrismWasmUrl } from '@liam-hq/db-structure/parser'
+import { parse, setPrismWasmUrl } from '@liam-hq/db-structure'
 import { getFileContent } from '@liam-hq/github'
 import * as Sentry from '@sentry/nextjs'
 import { cookies } from 'next/headers'

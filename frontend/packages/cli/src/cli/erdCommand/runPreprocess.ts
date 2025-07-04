@@ -5,7 +5,7 @@ import {
   parse,
   type SupportedFormat,
   supportedFormatSchema,
-} from '@liam-hq/db-structure/parser'
+} from '@liam-hq/db-structure'
 import * as v from 'valibot'
 import {
   ArgumentError,

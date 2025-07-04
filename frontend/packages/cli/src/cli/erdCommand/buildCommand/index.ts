@@ -1,7 +1,7 @@
 import { cpSync, existsSync, mkdirSync } from 'node:fs'
 import path, { dirname, relative, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import type { SupportedFormat } from '@liam-hq/db-structure/parser'
+import type { SupportedFormat } from '@liam-hq/db-structure'
 import { blueBright } from 'yoctocolors'
 import { type CliError, FileSystemError } from '../../errors.js'
 import { runPreprocess } from '../runPreprocess.js'

@@ -5,7 +5,7 @@ import {
   type SupportedFormat,
   setPrismWasmUrl,
   supportedFormatSchema,
-} from '@liam-hq/db-structure/parser'
+} from '@liam-hq/db-structure'
 import * as Sentry from '@sentry/nextjs'
 import { load } from 'cheerio'
 import type { Metadata } from 'next'
