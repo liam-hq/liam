@@ -1,0 +1,91 @@
+name: E2E Test Runner
+
+inputs:
+  browser:
+    required: true
+    type: string
+  deployment-target:
+    required: true
+    type: string
+  environment:
+    required: true
+    type: string
+  github-token:
+    required: true
+    type: string
+  ref:
+    required: true
+    type: string
+  should-run:
+    required: true
+    type: string
+  slack-webhook-url:
+    required: true
+    type: string
+  test-project:
+    required: true
+    type: string
+  url:
+    required: true
+    type: string
+
+runs:
+  using: composite
+  steps:
+    - name: Setup pnpm
+      if: inputs.should-run == 'true'
+      uses: ./.github/actions/pnpm-setup
+
+    - name: Cache Playwright browsers
+      if: inputs.should-run == 'true'
+      id: playwright-cache
+      uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
+      with:
+        path: ~/.cache/ms-playwright
+        key: playwright-${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml', '**/playwright.config.ts') }}
+        restore-keys: |
+          playwright-${{ runner.os }}-
+
+    - name: Install Playwright browsers
+      if: ${{ inputs.should-run == 'true' && steps.playwright-cache.outputs.cache-hit != 'true' }}
+      run: pnpm exec playwright install --with-deps
+      shell: bash {0}
+
+    - name: Install system dependencies for WebKit
+      # Some WebKit dependencies seem to lay outside the cache and will need to be installed separately
+      if: ${{ inputs.should-run == 'true' && steps.playwright-cache.outputs.cache-hit == 'true' }}
+      run: pnpm exec playwright install-deps webkit
+      shell: bash {0}
+
+    # This workflow is triggered for all deployments (liam-app, liam-erd-sample, liam-docs),
+    # but E2E tests are executed only for liam-app deployments now.
+    - name: Run e2e tests
+      if: inputs.should-run == 'true'
+      run: pnpm exec playwright test --project="${{ inputs.browser }}"
+      shell: bash {0}
+      env:
+        URL: ${{ inputs.url }}
+
+    # FIXME: This step is not working well. All environments seem to be Preview.
+    - name: Upload test results
+      if: ${{ inputs.should-run == 'true' && failure() }}
+      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+      with:
+        name: test-results-${{ inputs.browser }}-${{ github.run_id }}-${{ github.job }}
+        path: frontend/internal-packages/e2e/test-results/
+        retention-days: 30
+
+    - name: Post E2E status manually (with gh)
+      if: inputs.should-run == 'true' && always()
+      run: |
+        STATE="${{ job.status }}"
+        CONTEXT="E2E Tests / e2e-tests (${{ inputs.browser }})"
+        gh api repos/${{ github.repository }}/statuses/${{ github.sha }} \
+          --method POST \
+          --field state="${STATE}" \
+          --field context="${CONTEXT}" \
+          --field description="E2E test result for ${{ inputs.browser }}: (${STATE})" \
+          --field target_url="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+      shell: bash {0}
+      env:
+        GH_TOKEN: ${{ inputs.github-token }}
