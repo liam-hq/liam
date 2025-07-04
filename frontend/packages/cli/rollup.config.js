@@ -1,3 +1,4 @@
+import commonjs from '@rollup/plugin-commonjs'
 import resolve from '@rollup/plugin-node-resolve'
 import typescript from '@rollup/plugin-typescript'
 import execute from 'rollup-plugin-execute'
@@ -20,6 +21,7 @@ export default {
       tsconfig: './tsconfig.node.json',
     }),
     execute('chmod +x dist-cli/bin/cli.js'),
+    commonjs(),
   ],
-  external: ['commander', 'inquirer', '@prisma/internals', 'glob'],
+  external: ['commander', 'inquirer', '@prisma/internals', 'glob', 'ink'],
 }

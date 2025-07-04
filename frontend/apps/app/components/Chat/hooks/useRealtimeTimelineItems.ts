@@ -27,10 +27,8 @@ const updateExistingTimelineItem = (
 const handleOptimisticUserUpdate = (
   timelineItems: TimelineItemEntry[],
   newEntry: TimelineItemEntry,
-  timelineItemUserId: string | null | undefined,
-  currentUserId: string | null | undefined,
 ): TimelineItemEntry[] | null => {
-  if (newEntry.role !== 'user' || timelineItemUserId !== currentUserId) {
+  if (newEntry.role !== 'user') {
     return null
   }
 
@@ -79,23 +77,16 @@ export type TimelineItemType =
       progress: number
     }
 
-type UseRealtimeTimelineItemsFunc = (
-  designSession: {
-    id: string
-    timelineItems: TimelineItemType[]
-  },
-  currentUserId?: string | null,
-) => {
+type UseRealtimeTimelineItemsFunc = (designSession: {
+  id: string
+  timelineItems: TimelineItemType[]
+}) => {
   timelineItems: TimelineItemEntry[]
-  addOrUpdateTimelineItem: (
-    newChatEntry: TimelineItemEntry,
-    timelineItemUserId?: string | null | undefined,
-  ) => void
+  addOrUpdateTimelineItem: (newChatEntry: TimelineItemEntry) => void
 }
 
 export const useRealtimeTimelineItems: UseRealtimeTimelineItemsFunc = (
   designSession,
-  currentUserId,
 ) => {
   // Initialize timeline items with existing timeline items (no welcome message)
   const initialTimelineItems = designSession.timelineItems.map((item) => {
@@ -107,7 +98,7 @@ export const useRealtimeTimelineItems: UseRealtimeTimelineItemsFunc = (
 
   // Add or update timeline item with duplicate checking and optimistic update handling
   const addOrUpdateTimelineItem = useCallback(
-    (newChatEntry: TimelineItemEntry, timelineItemUserId?: string | null) => {
+    (newChatEntry: TimelineItemEntry) => {
       setTimelineItems((prev) => {
         // Check if we need to update an existing timeline item by its temporary ID
         // This handles streaming updates and other in-place updates
@@ -129,12 +120,7 @@ export const useRealtimeTimelineItems: UseRealtimeTimelineItemsFunc = (
         }
 
         // Handle optimistic updates for user timeline items
-        const optimisticUpdate = handleOptimisticUserUpdate(
-          prev,
-          newChatEntry,
-          timelineItemUserId ?? null,
-          currentUserId,
-        )
+        const optimisticUpdate = handleOptimisticUserUpdate(prev, newChatEntry)
         if (optimisticUpdate) {
           return optimisticUpdate
         }
@@ -143,7 +129,7 @@ export const useRealtimeTimelineItems: UseRealtimeTimelineItemsFunc = (
         return [...prev, newChatEntry]
       })
     },
-    [currentUserId],
+    [],
   )
 
   // Handle new timeline items from realtime subscription
@@ -155,10 +141,7 @@ export const useRealtimeTimelineItems: UseRealtimeTimelineItemsFunc = (
       // TODO: Implement efficient duplicate checking - Use Set/Map for O(1) duplicate checking instead of O(n) array.some()
       // TODO: Implement smart auto-scroll - Consider user's scroll position and only auto-scroll when user is at bottom
 
-      addOrUpdateTimelineItem(
-        timelineItemEntry,
-        newTimelineItem.user_id ?? null,
-      )
+      addOrUpdateTimelineItem(timelineItemEntry)
     },
     [addOrUpdateTimelineItem],
   )
@@ -173,10 +156,6 @@ export const useRealtimeTimelineItems: UseRealtimeTimelineItemsFunc = (
   // TODO: Add authentication/authorization validation - Verify user permissions for realtime subscription
   // Set up realtime subscription for new timeline items
   useEffect(() => {
-    if (currentUserId === null) {
-      return
-    }
-
     const subscription = setupRealtimeSubscription(
       designSession.id,
       handleNewTimelineItem,
@@ -186,12 +165,7 @@ export const useRealtimeTimelineItems: UseRealtimeTimelineItemsFunc = (
     return () => {
       subscription.unsubscribe()
     }
-  }, [
-    designSession.id,
-    currentUserId,
-    handleNewTimelineItem,
-    handleRealtimeError,
-  ])
+  }, [designSession.id, handleNewTimelineItem, handleRealtimeError])
 
   return {
     timelineItems,

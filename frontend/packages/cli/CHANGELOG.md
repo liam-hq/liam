@@ -1,5 +1,16 @@
 # @liam-hq/cli
 
+## 0.6.0
+
+### Minor Changes
+
+- [#2355](https://github.com/liam-hq/liam/pull/2355) - Add Oh-My-Logo style banner with gradient ASCII art to CLI / Thanks [@hoshinotsuyoshi](https://github.com/hoshinotsuyoshi)!
+
+- Display colorful "LIAM ERD" banner on CLI startup using Ink v6 and ink-gradient
+- Show adaptive ASCII art that adjusts to terminal width (full vs. compact version)
+- Banner automatically appears when running the `init` command
+- Inspired by [oh-my-logo](https://github.com/shinshin86/oh-my-logo) project
+
 ## 0.5.10
 
 ### Patch Changes

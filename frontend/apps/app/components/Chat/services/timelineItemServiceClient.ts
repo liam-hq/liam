@@ -40,24 +40,6 @@ const realtimeTimelineItemSchema = v.object({
 })
 
 /**
- * Get current user ID from Supabase auth
- */
-export const getCurrentUserId = async (): Promise<string | null> => {
-  const supabase = createClient()
-  const {
-    data: { user },
-    error,
-  } = await supabase.auth.getUser()
-
-  if (error) {
-    console.error('Failed to get current user:', error)
-    return null
-  }
-
-  return user?.id || null
-}
-
-/**
  * Convert database timeline item to TimelineItemEntry format
  */
 function isSchemaVersionTimelineItem(

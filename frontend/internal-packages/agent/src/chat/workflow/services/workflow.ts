@@ -2,6 +2,7 @@ import { END, START, StateGraph } from '@langchain/langgraph'
 import { WORKFLOW_ERROR_MESSAGES } from '../constants'
 import {
   analyzeRequirementsNode,
+  createProgressMessageNode,
   designSchemaNode,
   executeDDLNode,
   finalizeArtifactsNode,
@@ -36,6 +37,9 @@ const createGraph = () => {
     .addNode('saveUserMessage', saveUserMessageNode, {
       retryPolicy: RETRY_POLICY,
     })
+    .addNode('createProgressMessage', createProgressMessageNode, {
+      retryPolicy: RETRY_POLICY,
+    })
     .addNode('analyzeRequirements', analyzeRequirementsNode, {
       retryPolicy: RETRY_POLICY,
     })
@@ -65,6 +69,7 @@ const createGraph = () => {
     })
 
     .addEdge(START, 'saveUserMessage')
+    .addEdge('createProgressMessage', 'analyzeRequirements')
     .addEdge('analyzeRequirements', 'designSchema')
     .addEdge('generateDDL', 'executeDDL')
     .addEdge('executeDDL', 'generateUsecase')
@@ -74,7 +79,7 @@ const createGraph = () => {
 
     // Conditional edge for saveUserMessage - skip to finalizeArtifacts if error
     .addConditionalEdges('saveUserMessage', (state) => {
-      return state.error ? 'finalizeArtifacts' : 'analyzeRequirements'
+      return state.error ? 'finalizeArtifacts' : 'createProgressMessage'
     })
 
     // Conditional edge for designSchema - skip to finalizeArtifacts if error

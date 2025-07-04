@@ -1,8 +1,10 @@
 import * as fs from 'node:fs'
 import * as path from 'node:path'
-import type { Schema } from '@liam-hq/db-structure'
-import { err, ok, ResultAsync } from 'neverthrow'
+import { type Schema, schemaSchema } from '@liam-hq/db-structure'
+import { err, ok, Result, ResultAsync } from 'neverthrow'
+import * as v from 'valibot'
 import { evaluate } from '../../evaluate/evaluate.ts'
+import { formatError } from '../../shared/formatError.ts'
 import type {
   CaseData,
   EvaluationConfig,
@@ -11,88 +13,160 @@ import type {
   WorkspaceResult,
 } from '../types'
 
+// Safe wrapper functions using Result.fromThrowable
+const safeReadDirSync = (dirPath: string) =>
+  Result.fromThrowable(
+    () => fs.readdirSync(dirPath, { encoding: 'utf8' }),
+    (error): WorkspaceError => ({
+      type: 'FILE_READ_ERROR',
+      path: dirPath,
+      cause: error instanceof Error ? error.message : 'Unknown error',
+    }),
+  )()
+
+const safeReadFileSync = (filePath: string, encoding: BufferEncoding) =>
+  Result.fromThrowable(
+    () => fs.readFileSync(filePath, encoding),
+    (error): WorkspaceError => ({
+      type: 'FILE_READ_ERROR',
+      path: filePath,
+      cause: error instanceof Error ? error.message : 'Unknown error',
+    }),
+  )()
+
+const safeJsonParse = (content: string, filePath: string) =>
+  Result.fromThrowable(
+    () => JSON.parse(content),
+    (error): WorkspaceError => ({
+      type: 'JSON_PARSE_ERROR',
+      path: filePath,
+      cause: error instanceof Error ? error.message : 'Unknown error',
+    }),
+  )()
+
+// Helper function to process a single schema file
+const processSchemaFile = (
+  file: string,
+  baseDir: string,
+): Result<{ caseId: string; schema: Schema }, WorkspaceError> => {
+  const caseId = path.basename(file, '.json')
+  const filePath = path.join(baseDir, file)
+
+  const contentResult = safeReadFileSync(filePath, 'utf-8')
+  if (contentResult.isErr()) {
+    return err(contentResult.error)
+  }
+
+  const parseResult = safeJsonParse(contentResult.value, filePath)
+  if (parseResult.isErr()) {
+    return err(parseResult.error)
+  }
+
+  const validationResult = v.safeParse(schemaSchema, parseResult.value)
+  if (!validationResult.success) {
+    return err({
+      type: 'JSON_PARSE_ERROR',
+      path: filePath,
+      cause: `Invalid schema format: ${validationResult.issues[0]?.message || 'Unknown validation error'}`,
+    })
+  }
+
+  return ok({ caseId, schema: validationResult.output })
+}
+
+// Helper function to handle failed files and determine error response
+const handleProcessingResults = (
+  results: Array<{
+    file: string
+    result: Result<{ caseId: string; schema: Schema }, WorkspaceError>
+  }>,
+  dirPath: string,
+): WorkspaceResult<Map<string, Schema>> => {
+  const dataMap = new Map<string, Schema>()
+  const failedFiles: Array<{ file: string; error: WorkspaceError }> = []
+
+  for (const { file, result } of results) {
+    if (result.isOk()) {
+      dataMap.set(result.value.caseId, result.value.schema)
+    } else {
+      failedFiles.push({ file, error: result.error })
+    }
+  }
+
+  // Log warnings for failed files
+  if (failedFiles.length > 0) {
+    console.warn(`⚠️  Failed to load ${failedFiles.length} file(s):`)
+    for (const failed of failedFiles) {
+      console.warn(`   - ${failed.file}: ${formatError(failed.error)}`)
+    }
+  }
+
+  // If all files failed, return error
+  if (dataMap.size === 0 && results.length > 0) {
+    if (
+      failedFiles.length > 0 &&
+      failedFiles.every((f) => f.error.type === failedFiles[0]?.error.type)
+    ) {
+      const firstError = failedFiles[0]?.error
+      if (firstError) {
+        return err(firstError)
+      }
+    }
+    return err({
+      type: 'VALIDATION_ERROR',
+      message: `Failed to load any files from ${dirPath}`,
+    })
+  }
+
+  return ok(dataMap)
+}
+
 const loadOutputData = (
   workspacePath: string,
 ): WorkspaceResult<Map<string, Schema>> => {
   const outputDir = path.join(workspacePath, 'execution', 'output')
-  const outputData = new Map<string, Schema>()
 
   if (!fs.existsSync(outputDir)) {
     return err({ type: 'DIRECTORY_NOT_FOUND', path: outputDir })
   }
 
-  try {
-    const files = fs
-      .readdirSync(outputDir)
-      .filter((file) => file.endsWith('.json'))
-
-    for (const file of files) {
-      const caseId = path.basename(file, '.json')
-      const filePath = path.join(outputDir, file)
-
-      try {
-        const content = fs.readFileSync(filePath, 'utf-8')
-        const schema = JSON.parse(content) as Schema
-        outputData.set(caseId, schema)
-      } catch (error) {
-        return err({
-          type: 'JSON_PARSE_ERROR',
-          path: filePath,
-          cause: error instanceof Error ? error.message : 'Unknown error',
-        })
-      }
-    }
-
-    return ok(outputData)
-  } catch (error) {
-    return err({
-      type: 'FILE_READ_ERROR',
-      path: outputDir,
-      cause: error instanceof Error ? error.message : 'Unknown error',
-    })
+  const filesResult = safeReadDirSync(outputDir).map((files) =>
+    files.filter((file) => file.endsWith('.json')),
+  )
+  if (filesResult.isErr()) {
+    return err(filesResult.error)
   }
+
+  const results = filesResult.value.map((file) => ({
+    file,
+    result: processSchemaFile(file, outputDir),
+  }))
+
+  return handleProcessingResults(results, outputDir)
 }
 
 const loadReferenceData = (
   workspacePath: string,
 ): WorkspaceResult<Map<string, Schema>> => {
   const referenceDir = path.join(workspacePath, 'execution', 'reference')
-  const referenceData = new Map<string, Schema>()
 
   if (!fs.existsSync(referenceDir)) {
     return err({ type: 'DIRECTORY_NOT_FOUND', path: referenceDir })
   }
 
-  try {
-    const files = fs
-      .readdirSync(referenceDir)
-      .filter((file) => file.endsWith('.json'))
-
-    for (const file of files) {
-      const caseId = path.basename(file, '.json')
-      const filePath = path.join(referenceDir, file)
-
-      try {
-        const content = fs.readFileSync(filePath, 'utf-8')
-        const schema = JSON.parse(content) as Schema
-        referenceData.set(caseId, schema)
-      } catch (error) {
-        return err({
-          type: 'JSON_PARSE_ERROR',
-          path: filePath,
-          cause: error instanceof Error ? error.message : 'Unknown error',
-        })
-      }
-    }
-
-    return ok(referenceData)
-  } catch (error) {
-    return err({
-      type: 'FILE_READ_ERROR',
-      path: referenceDir,
-      cause: error instanceof Error ? error.message : 'Unknown error',
-    })
+  const filesResult = safeReadDirSync(referenceDir).map((files) =>
+    files.filter((file) => file.endsWith('.json')),
+  )
+  if (filesResult.isErr()) {
+    return err(filesResult.error)
   }
+
+  const results = filesResult.value.map((file) => ({
+    file,
+    result: processSchemaFile(file, referenceDir),
+  }))
+
+  return handleProcessingResults(results, referenceDir)
 }
 
 const runEvaluation = (
@@ -166,14 +240,17 @@ const saveIndividualResults = (
     const filename = `${result.caseId}_results_${result.timestamp.replace(/[:.]/g, '-')}.json`
     const filePath = path.join(evaluationDir, filename)
 
-    try {
-      fs.writeFileSync(filePath, JSON.stringify(result, null, 2))
-    } catch (error) {
-      return err({
+    const writeResult = Result.fromThrowable(
+      () => fs.writeFileSync(filePath, JSON.stringify(result, null, 2)),
+      (error): WorkspaceError => ({
         type: 'FILE_WRITE_ERROR',
         path: filePath,
         cause: error instanceof Error ? error.message : 'Unknown error',
-      })
+      }),
+    )()
+
+    if (writeResult.isErr()) {
+      return err(writeResult.error)
     }
   }
   return ok(undefined)
@@ -196,16 +273,20 @@ const saveSummaryResult = (
   const summaryFilename = `summary_results_${summaryResult.timestamp.replace(/[:.]/g, '-')}.json`
   const summaryFilePath = path.join(evaluationDir, summaryFilename)
 
-  try {
-    fs.writeFileSync(summaryFilePath, JSON.stringify(summaryResult, null, 2))
-    return ok(undefined)
-  } catch (error) {
-    return err({
+  const writeResult = Result.fromThrowable(
+    () =>
+      fs.writeFileSync(summaryFilePath, JSON.stringify(summaryResult, null, 2)),
+    (error): WorkspaceError => ({
       type: 'FILE_WRITE_ERROR',
       path: summaryFilePath,
       cause: error instanceof Error ? error.message : 'Unknown error',
-    })
+    }),
+  )()
+
+  if (writeResult.isErr()) {
+    return err(writeResult.error)
   }
+  return ok(undefined)
 }
 
 const saveResults = (
@@ -214,16 +295,19 @@ const saveResults = (
 ): WorkspaceResult<void> => {
   const evaluationDir = path.join(workspacePath, 'evaluation')
 
-  try {
-    if (!fs.existsSync(evaluationDir)) {
-      fs.mkdirSync(evaluationDir, { recursive: true })
+  if (!fs.existsSync(evaluationDir)) {
+    const mkdirResult = Result.fromThrowable(
+      () => fs.mkdirSync(evaluationDir, { recursive: true }),
+      (error): WorkspaceError => ({
+        type: 'FILE_WRITE_ERROR',
+        path: evaluationDir,
+        cause: error instanceof Error ? error.message : 'Unknown error',
+      }),
+    )()
+
+    if (mkdirResult.isErr()) {
+      return err(mkdirResult.error)
     }
-  } catch (error) {
-    return err({
-      type: 'FILE_WRITE_ERROR',
-      path: evaluationDir,
-      cause: error instanceof Error ? error.message : 'Unknown error',
-    })
   }
 
   // Save individual results
@@ -370,16 +454,46 @@ export const evaluateSchema = async (
     })
   }
 
-  // Run evaluations
-  const evaluationResults = await ResultAsync.combine(
-    casesToEvaluate.map((caseData) => runEvaluation(caseData)),
-  )
+  // Run evaluations with partial failure handling
+  const evaluationPromises = casesToEvaluate.map(async (caseData) => {
+    const result = await runEvaluation(caseData)
+    return { caseData, result }
+  })
 
-  if (evaluationResults.isErr()) {
-    return err(evaluationResults.error)
+  const evaluationOutcomes = await Promise.all(evaluationPromises)
+
+  const successfulResults: EvaluationResult[] = []
+  const failedCases: Array<{ caseId: string; error: WorkspaceError }> = []
+
+  for (const outcome of evaluationOutcomes) {
+    if (outcome.result.isOk()) {
+      successfulResults.push(outcome.result.value)
+    } else {
+      failedCases.push({
+        caseId: outcome.caseData.caseId,
+        error: outcome.result.error,
+      })
+    }
   }
 
-  const results = evaluationResults.value
+  // If all evaluations failed, return error
+  if (successfulResults.length === 0) {
+    return err({
+      type: 'EVALUATION_ERROR',
+      caseId: failedCases.map((failed) => failed.caseId).join(', '),
+      cause: `All ${failedCases.length} evaluation(s) failed`,
+    })
+  }
+
+  // Log warnings for failed cases but continue with successful ones
+  if (failedCases.length > 0) {
+    console.warn(`⚠️  ${failedCases.length} case(s) failed evaluation:`)
+    for (const failed of failedCases) {
+      console.warn(`   - ${failed.caseId}: ${formatError(failed.error)}`)
+    }
+  }
+
+  const results = successfulResults
 
   // Save results
   const saveResult = saveResults(results, config.workspacePath)

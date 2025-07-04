@@ -15,7 +15,7 @@
   },
   "license": "Apache-2.0",
   "private": false,
-  "version": "0.5.10",
+  "version": "0.6.0",
   "type": "module",
   "publishConfig": {
     "access": "public"
@@ -29,6 +29,8 @@
     "@prisma/internals": "6.8.2",
     "commander": "13.1.0",
     "glob": "11.0.3",
+    "ink": "6.0.1",
+    "ink-gradient": "3.0.0",
     "inquirer": "12.6.3",
     "react": "19.1.0",
     "react-dom": "19.1.0",
@@ -38,6 +40,7 @@
   "devDependencies": {
     "@biomejs/biome": "2.0.0",
     "@liam-hq/configs": "workspace:*",
+    "@rollup/plugin-commonjs": "28.0.6",
     "@rollup/plugin-node-resolve": "16.0.1",
     "@rollup/plugin-typescript": "12.1.2",
     "@types/node": "22.15.30",

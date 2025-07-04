@@ -12,10 +12,14 @@ export async function reviewDeliverablesNode(
 ): Promise<WorkflowState> {
   state.logger.log(`[${NODE_NAME}] Started`)
 
-  if (state.onNodeProgress) {
-    await state.onNodeProgress(
-      'reviewDeliverables',
-      getWorkflowNodeProgress('reviewDeliverables'),
+  // Update progress message if available
+  if (state.progressTimelineItemId) {
+    await state.repositories.schema.updateTimelineItem(
+      state.progressTimelineItemId,
+      {
+        content: 'Processing: reviewDeliverables',
+        progress: getWorkflowNodeProgress('reviewDeliverables'),
+      },
     )
   }
 

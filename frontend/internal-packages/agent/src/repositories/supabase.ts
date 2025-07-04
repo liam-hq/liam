@@ -1,4 +1,7 @@
+import type { Artifact } from '@liam-hq/artifact'
+import { artifactSchema } from '@liam-hq/artifact'
 import type { SupabaseClientType } from '@liam-hq/db'
+import type { Json } from '@liam-hq/db/supabase/database.types'
 import type { Schema } from '@liam-hq/db-structure'
 import {
   applyPatchOperations,
@@ -8,12 +11,15 @@ import {
 import { compare } from 'fast-json-patch'
 import * as v from 'valibot'
 import type {
+  ArtifactResult,
+  CreateArtifactParams,
   CreateTimelineItemParams,
   CreateVersionParams,
   DesignSessionData,
   SchemaData,
   SchemaRepository,
   TimelineItemResult,
+  UpdateArtifactParams,
   UpdateTimelineItemParams,
   VersionResult,
 } from './types'
@@ -29,6 +35,13 @@ const updateBuildingSchemaResultSchema = v.union([
     error: v.nullable(v.string()),
   }),
 ])
+
+/**
+ * Convert Artifact to Json safely without type casting
+ */
+const artifactToJson = (artifact: Artifact): Json => {
+  return JSON.parse(JSON.stringify(artifact))
+}
 
 /**
  * Supabase implementation of SchemaRepository
@@ -410,6 +423,116 @@ export class SupabaseSchemaRepository implements SchemaRepository {
     return {
       success: true,
       timelineItem,
+    }
+  }
+
+  async createArtifact(params: CreateArtifactParams): Promise<ArtifactResult> {
+    const { designSessionId, artifact } = params
+
+    // Validate artifact data
+    const validationResult = v.safeParse(artifactSchema, artifact)
+    if (!validationResult.success) {
+      const errorMessages = validationResult.issues
+        .map((issue) => `${issue.path?.join('.')} ${issue.message}`)
+        .join(', ')
+      return {
+        success: false,
+        error: `Invalid artifact data: ${errorMessages}`,
+      }
+    }
+
+    const { data: artifactData, error } = await this.client
+      .from('artifacts')
+      .insert({
+        design_session_id: designSessionId,
+        artifact: artifactToJson(artifact),
+      })
+      .select()
+      .single()
+
+    if (error) {
+      console.error(
+        'Failed to create artifact:',
+        JSON.stringify(error, null, 2),
+      )
+      return {
+        success: false,
+        error: error.message,
+      }
+    }
+
+    return {
+      success: true,
+      artifact: artifactData,
+    }
+  }
+
+  async updateArtifact(params: UpdateArtifactParams): Promise<ArtifactResult> {
+    const { designSessionId, artifact } = params
+
+    // Validate artifact data
+    const validationResult = v.safeParse(artifactSchema, artifact)
+    if (!validationResult.success) {
+      const errorMessages = validationResult.issues
+        .map((issue) => `${issue.path?.join('.')} ${issue.message}`)
+        .join(', ')
+      return {
+        success: false,
+        error: `Invalid artifact data: ${errorMessages}`,
+      }
+    }
+
+    const { data: artifactData, error } = await this.client
+      .from('artifacts')
+      .update({
+        artifact: artifactToJson(artifact),
+      })
+      .eq('design_session_id', designSessionId)
+      .select()
+      .single()
+
+    if (error) {
+      console.error(
+        'Failed to update artifact:',
+        JSON.stringify(error, null, 2),
+      )
+      return {
+        success: false,
+        error: error.message,
+      }
+    }
+
+    return {
+      success: true,
+      artifact: artifactData,
+    }
+  }
+
+  async getArtifact(designSessionId: string): Promise<ArtifactResult> {
+    const { data: artifactData, error } = await this.client
+      .from('artifacts')
+      .select('*')
+      .eq('design_session_id', designSessionId)
+      .maybeSingle()
+
+    if (error) {
+      console.error('Failed to get artifact:', JSON.stringify(error, null, 2))
+      return {
+        success: false,
+        error: error.message,
+      }
+    }
+
+    if (!artifactData) {
+      return {
+        success: false,
+        error: 'Artifact not found',
+      }
+    }
+
+    return {
+      success: true,
+      artifact: artifactData,
     }
   }
 }

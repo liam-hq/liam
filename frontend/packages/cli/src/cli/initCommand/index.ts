@@ -4,6 +4,7 @@ import { exit } from 'node:process'
 import { Command } from 'commander'
 import inquirer from 'inquirer'
 import * as yocto from 'yoctocolors'
+import { generateBanner } from '../banner.js'
 import {
   DbOrmDiscussionUrl,
   DiscussionUrl,
@@ -336,6 +337,7 @@ ${setupSteps}
  * Main action function for the init command
  */
 initCommand.action(async () => {
+  await generateBanner()
   // Display welcome message
   displayWelcomeMessage()
 
