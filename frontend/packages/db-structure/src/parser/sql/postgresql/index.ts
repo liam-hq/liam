@@ -5,7 +5,7 @@ import type { Processor } from '../../types.js'
 import { convertToSchema } from './converter.js'
 import { mergeSchemas } from './mergeSchemas.js'
 import { parse } from './parser.js'
-import { processSQLInChunks } from './processSQLInChunks.js'
+import { processSQLInChunks } from './processSqlInChunks.js'
 
 /**
  * Handles parse errors and returns offset information

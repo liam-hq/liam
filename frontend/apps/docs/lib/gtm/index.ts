@@ -1,4 +1,4 @@
 export * from './constants'
-export * from './GTMConsent'
 export * from './GtagScript'
+export * from './gtmConsent'
 export * from './updateConsent'

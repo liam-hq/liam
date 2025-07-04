@@ -1,6 +1,7 @@
 import { includeIgnoreFile } from '@eslint/compat'
 import tseslint from '@typescript-eslint/eslint-plugin'
 import tsParser from '@typescript-eslint/parser'
+import unicorn from 'eslint-plugin-unicorn'
 import { requireUseServerPlugin } from './require-use-server-plugin.js'
 import { noNonEnglishPlugin } from './no-non-english-plugin.js'
 
@@ -26,6 +27,7 @@ export function createBaseConfig(options = {}) {
       ],
       plugins: {
         '@typescript-eslint': tseslint,
+        'unicorn': unicorn,
         'require-use-server': requireUseServerPlugin,
         'no-non-english': noNonEnglishPlugin,
       },
@@ -41,6 +43,24 @@ export function createBaseConfig(options = {}) {
         '@typescript-eslint/no-unsafe-member-access': 'error',
         'require-use-server/require-use-server': 'error',
         'no-non-english/no-non-english-characters': 'error',
+        'unicorn/filename-case': ['error', {
+          cases: {
+            camelCase: true,
+            pascalCase: true
+          },
+          ignore: [
+            '^global-error\\.(tsx?)$',
+            '^instrumentation-client\\.(ts)$',
+            '\\.(css\\.d\\.ts)$',
+            '^.*\\.(test|spec)\\.(ts|tsx|js|jsx)$',
+            '^.*\\.config\\.(ts|tsx|js|jsx|mjs)$',
+            '^.*\\.setup\\.(ts|tsx|js|jsx)$',
+            '^\\..*',
+            'README\\.md$',
+            '^.*\\.(sql|sh|md|json|yaml|yml|toml|lock)$',
+            '^.*_.*\\.ts$'
+          ]
+        }],
         'no-restricted-exports': ['error', {
           'restrictedNamedExports': ['*']
         }],

@@ -1,1 +1,1 @@
-export * from './ERD'
+export * from './Erd'

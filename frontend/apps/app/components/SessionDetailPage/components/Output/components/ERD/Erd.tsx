@@ -1,5 +1,5 @@
 import type { Schema } from '@liam-hq/db-structure'
-import { ERDRendererProvider } from '@liam-hq/erd-core/nextjs'
+import { ErdRendererProvider } from '@liam-hq/erd-core/nextjs'
 import { type FC, useMemo } from 'react'
 import { parse } from 'valibot'
 import { ERDRenderer } from '@/features'
@@ -28,7 +28,7 @@ export const ERD: FC<Props> = ({ schema, prevSchema }) => {
   return (
     <div className={styles.wrapper}>
       <VersionProvider version={version}>
-        <ERDRendererProvider
+        <ErdRendererProvider
           schema={{ current: schema, previous: prevSchema }}
           showDiff
         >
@@ -37,7 +37,7 @@ export const ERD: FC<Props> = ({ schema, prevSchema }) => {
             defaultSidebarOpen={false}
             defaultPanelSizes={[20, 80]}
           />
-        </ERDRendererProvider>
+        </ErdRendererProvider>
       </VersionProvider>
     </div>
   )

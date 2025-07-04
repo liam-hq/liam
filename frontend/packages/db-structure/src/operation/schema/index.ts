@@ -1,7 +1,7 @@
 import * as v from 'valibot'
 import { columnOperations } from './column.js'
 import { constraintOperations } from './constraint.js'
-import { indexOperations } from './index-operations.js'
+import { indexOperations } from './indexOperations.js'
 import { tableOperations } from './table.js'
 
 const addOperationSchema = v.object({

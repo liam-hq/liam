@@ -3,13 +3,13 @@ import type { SqlResult } from '@liam-hq/pglite-server/src/types'
 import { getWorkflowNodeProgress } from '../shared/getWorkflowNodeProgress'
 import type { WorkflowState } from '../types'
 
-const NODE_NAME = 'executeDDLNode'
+const NODE_NAME = 'executeDdlNode'
 
 /**
  * Execute DDL Node - Agent executes DDL
  * Performed by agent
  */
-export async function executeDDLNode(
+export async function executeDdlNode(
   state: WorkflowState,
 ): Promise<WorkflowState> {
   state.logger.log(`[${NODE_NAME}] Started`)

@@ -25,7 +25,7 @@ import {
   TableNode,
 } from './components'
 import styles from './ERDContent.module.css'
-import { ERDContentProvider, useERDContentContext } from './ERDContentContext'
+import { ErdContentProvider, useErdContentContext } from './ErdContentContext'
 import { useInitialAutoLayout, useQueryParamsChanged } from './hooks'
 
 const nodeTypes = {
@@ -61,7 +61,7 @@ export const ERDContentInner: FC<Props> = ({
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>(_edges)
   const {
     state: { loading },
-  } = useERDContentContext()
+  } = useErdContentContext()
   const { activeTableName } = useUserEditing()
 
   const { selectTable, deselectTable } = useTableSelection()
@@ -185,8 +185,8 @@ export const ERDContentInner: FC<Props> = ({
 
 export const ERDContent: FC<Props> = (props) => {
   return (
-    <ERDContentProvider>
+    <ErdContentProvider>
       <ERDContentInner {...props} />
-    </ERDContentProvider>
+    </ErdContentProvider>
   )
 }

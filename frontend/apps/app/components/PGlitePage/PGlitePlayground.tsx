@@ -8,8 +8,8 @@ import {
   useImperativeHandle,
   useState,
 } from 'react'
-import { DDLInputSection } from './DDLInputSection'
-import { DMLInputSection } from './DMLInputSection'
+import { DDLInputSection } from './DdlInputSection'
+import { DMLInputSection } from './DmlInputSection'
 import styles from './PGlitePlayground.module.css'
 import type { DDLState, DMLSection, SqlResult } from './utils/types'
 

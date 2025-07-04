@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 import { UnexpectedTokenWarningError } from '../../errors.js'
-import { processSQLInChunks } from './processSQLInChunks.js'
+import { processSQLInChunks } from './processSqlInChunks.js'
 
 describe(processSQLInChunks, () => {
   describe('processSQLInChunks', () => {

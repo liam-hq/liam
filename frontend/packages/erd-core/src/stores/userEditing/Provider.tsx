@@ -15,13 +15,13 @@ import {
 } from 'react'
 import type { TableNodeType } from '@/features/erd/types'
 import type { ShowMode } from '@/schemas'
-import { compressToEncodedURIComponent } from '@/utils/compressToEncodedURIComponent'
-import { decompressFromEncodedURIComponent } from '@/utils/decompressFromEncodedURIComponent'
+import { compressToEncodedUriComponent } from '@/utils/compressToEncodedUriComponent'
+import { decompressFromEncodedUriComponent } from '@/utils/decompressFromEncodedUriComponent'
 import { UserEditingContext } from './context'
 
 const parseAsCompressedStringArray = createParser({
   parse: (value: string): string[] => {
-    const decompressed = decompressFromEncodedURIComponent(value)
+    const decompressed = decompressFromEncodedUriComponent(value)
 
     if (!decompressed) return []
     return decompressed.split(',').filter(Boolean)
@@ -31,7 +31,7 @@ const parseAsCompressedStringArray = createParser({
     if (value.length === 0) return ''
 
     const joined = value.join(',')
-    const compressed = compressToEncodedURIComponent(joined)
+    const compressed = compressToEncodedUriComponent(joined)
 
     return compressed
   },

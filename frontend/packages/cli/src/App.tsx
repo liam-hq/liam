@@ -1,7 +1,7 @@
 import { type Schema, schemaSchema } from '@liam-hq/db-structure'
 import {
   ERDRenderer,
-  ERDRendererProvider,
+  ErdRendererProvider,
   getCookie,
   getCookieJson,
   VersionProvider,
@@ -75,13 +75,13 @@ function App() {
 
   return (
     <VersionProvider version={version}>
-      <ERDRendererProvider schema={{ current: schema }}>
+      <ErdRendererProvider schema={{ current: schema }}>
         <ERDRenderer
           withAppBar
           defaultSidebarOpen={defaultSidebarOpen}
           defaultPanelSizes={panelSizes}
         />
-      </ERDRendererProvider>
+      </ErdRendererProvider>
     </VersionProvider>
   )
 }

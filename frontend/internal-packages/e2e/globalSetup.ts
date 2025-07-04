@@ -1,5 +1,5 @@
 import { chromium, type FullConfig } from '@playwright/test'
-import { DEFAULT_TEST_URL } from './default_test_url'
+import { DEFAULT_TEST_URL } from './defaultTestUrl'
 
 async function globalSetup(config: FullConfig) {
   const { baseURL, storageState } = config.projects[0].use

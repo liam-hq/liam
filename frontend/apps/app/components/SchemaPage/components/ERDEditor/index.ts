@@ -1,1 +1,1 @@
-export * from './ERDEditor'
+export * from './ErdEditor'

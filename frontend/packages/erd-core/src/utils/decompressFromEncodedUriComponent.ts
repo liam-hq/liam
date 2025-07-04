@@ -27,7 +27,7 @@ function base64ToBytes(base64: string): Uint8Array {
 /**
  * Restore original string from URL-safe encoded string (synchronous)
  */
-export function decompressFromEncodedURIComponent(input: string): string {
+export function decompressFromEncodedUriComponent(input: string): string {
   const base64 = urlSafeToBase64(input)
   const compressedBytes = base64ToBytes(base64)
   const decompressedBytes = pako.inflate(compressedBytes)

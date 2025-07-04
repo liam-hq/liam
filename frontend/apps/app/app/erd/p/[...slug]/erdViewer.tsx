@@ -2,7 +2,7 @@
 
 import type { Schema } from '@liam-hq/db-structure'
 import { ERDRenderer, VersionProvider, versionSchema } from '@liam-hq/erd-core'
-import { ERDRendererProvider } from '@liam-hq/erd-core/nextjs'
+import { ErdRendererProvider } from '@liam-hq/erd-core/nextjs'
 import { useEffect, useState } from 'react'
 import * as v from 'valibot'
 import { CookieConsent } from '@/components/CookieConsent'
@@ -44,14 +44,14 @@ export default function ERDViewer({
   return (
     <div style={{ height: '100dvh' }}>
       <VersionProvider version={version}>
-        <ERDRendererProvider schema={{ current: schema }}>
+        <ErdRendererProvider schema={{ current: schema }}>
           <ERDRenderer
             withAppBar
             defaultSidebarOpen={defaultSidebarOpen}
             defaultPanelSizes={defaultPanelSizes}
             errorObjects={errorObjects}
           />
-        </ERDRendererProvider>
+        </ErdRendererProvider>
       </VersionProvider>
       {isShowCookieConsent && <CookieConsent />}
     </div>

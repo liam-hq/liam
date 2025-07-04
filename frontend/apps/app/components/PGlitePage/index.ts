@@ -1,4 +1,4 @@
-export * from './DDLInputSection'
-export * from './DMLInputSection'
+export * from './DdlInputSection'
+export * from './DmlInputSection'
 export * from './PGlitePlayground'
 export * from './QueryResultBox'
