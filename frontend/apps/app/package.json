@@ -27,7 +27,7 @@
     "@vercel/otel": "1.12.0",
     "cheerio": "1.0.0",
     "clsx": "2.1.1",
-    "codemirror": "6.0.1",
+    "codemirror": "6.0.2",
     "date-fns": "4.1.0",
     "dotenv": "16.5.0",
     "flags": "4.0.1",
