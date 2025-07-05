@@ -1,5 +1,6 @@
 import { END, START, StateGraph } from '@langchain/langgraph'
-import { WORKFLOW_ERROR_MESSAGES } from '../constants'
+import type { Schema } from '@liam-hq/db-structure'
+import { WORKFLOW_ERROR_MESSAGES } from './chat/workflow/constants'
 import {
   analyzeRequirementsNode,
   createProgressMessageNode,
@@ -12,12 +13,47 @@ import {
   reviewDeliverablesNode,
   saveUserMessageNode,
   validateSchemaNode,
-} from '../nodes'
+} from './chat/workflow/nodes'
 import {
   createAnnotations,
   DEFAULT_RECURSION_LIMIT,
-} from '../shared/langGraphUtils'
-import type { WorkflowState } from '../types'
+} from './chat/workflow/shared/langGraphUtils'
+import type { WorkflowState } from './chat/workflow/types'
+import type { Repositories } from './repositories'
+import type { NodeLogger } from './utils/nodeLogger'
+
+export interface DeepModelingParams {
+  userInput: string
+  schemaData: Schema
+  history: [string, string][]
+  organizationId?: string
+  buildingSchemaId: string
+  latestVersionNumber: number
+  repositories: Repositories
+  designSessionId: string
+  userId: string
+  logger: NodeLogger
+  recursionLimit?: number
+}
+
+export type DeepModelingResult =
+  | {
+      text: string
+      success: true
+    }
+  | {
+      success: false
+      error: string | undefined
+    }
+
+/**
+ * Format chat history array into a string
+ * @param history - Array of formatted chat history strings
+ * @returns Formatted chat history string or default message if empty
+ */
+const formatChatHistory = (history: string[]): string => {
+  return history.length > 0 ? history.join('\n') : 'No previous conversation.'
+}
 
 /**
  * Retry policy configuration for all nodes
@@ -105,22 +141,66 @@ const createGraph = () => {
 }
 
 /**
- * Execute workflow using LangGraph
+ * Execute Deep Modeling workflow
  */
-export const executeWorkflow = async (
-  initialState: WorkflowState,
-  recursionLimit: number = DEFAULT_RECURSION_LIMIT,
-): Promise<WorkflowState> => {
+export const deepModeling = async (
+  params: DeepModelingParams,
+): Promise<DeepModelingResult> => {
+  const {
+    userInput,
+    schemaData,
+    history,
+    organizationId,
+    buildingSchemaId,
+    latestVersionNumber = 0,
+    repositories,
+    designSessionId,
+    userId,
+    logger,
+    recursionLimit = DEFAULT_RECURSION_LIMIT,
+  } = params
+
+  // Convert history format with role prefix
+  const historyArray = history.map(([role, content]) => {
+    const prefix = role === 'assistant' ? 'Assistant' : 'User'
+    return `${prefix}: ${content}`
+  })
+
+  // Create workflow state
+  const workflowState: WorkflowState = {
+    userInput: userInput,
+    formattedHistory: formatChatHistory(historyArray),
+    schemaData,
+    organizationId,
+    buildingSchemaId,
+    latestVersionNumber,
+    repositories,
+    designSessionId,
+    userId,
+    logger,
+    retryCount: {},
+  }
+
   try {
     const compiled = createGraph()
 
-    const result = await compiled.invoke(initialState, {
+    const result = await compiled.invoke(workflowState, {
       recursionLimit,
     })
 
-    return result
+    if (result.error) {
+      return {
+        success: false,
+        error: result.error,
+      }
+    }
+
+    return {
+      text: result.finalResponse || result.generatedAnswer || '',
+      success: true,
+    }
   } catch (error) {
-    console.error(WORKFLOW_ERROR_MESSAGES.LANGGRAPH_FAILED, error)
+    logger.error(WORKFLOW_ERROR_MESSAGES.LANGGRAPH_FAILED, { error })
 
     // Even with LangGraph execution failure, go through finalizeArtifactsNode to ensure proper response
     const errorMessage =
@@ -128,7 +208,12 @@ export const executeWorkflow = async (
         ? error.message
         : WORKFLOW_ERROR_MESSAGES.EXECUTION_FAILED
 
-    const errorState = { ...initialState, error: errorMessage }
-    return await finalizeArtifactsNode(errorState)
+    const errorState = { ...workflowState, error: errorMessage }
+    const finalizedResult = await finalizeArtifactsNode(errorState)
+
+    return {
+      success: false,
+      error: finalizedResult.error,
+    }
   }
 }
