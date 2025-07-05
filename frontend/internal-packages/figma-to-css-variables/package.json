@@ -8,7 +8,7 @@
     "style-dictionary": "4.4.0"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.0.0",
+    "@biomejs/biome": "2.0.4",
     "@liam-hq/configs": "workspace:*"
   },
   "scripts": {

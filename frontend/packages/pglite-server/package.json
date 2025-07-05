@@ -10,9 +10,9 @@
     "@electric-sql/pglite": "0.3.3"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.0.0",
+    "@biomejs/biome": "2.0.4",
     "@liam-hq/configs": "workspace:*",
-    "eslint": "9.28.0",
+    "eslint": "9.29.0",
     "typescript": "5.8.3"
   },
   "scripts": {
