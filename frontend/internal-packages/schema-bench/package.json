@@ -5,7 +5,7 @@
   "type": "module",
   "main": "src/index.ts",
   "dependencies": {
-    "@huggingface/transformers": "3.3.3",
+    "@huggingface/transformers": "3.5.2",
     "@liam-hq/db-structure": "workspace:*",
     "neverthrow": "8.2.0",
     "valibot": "1.1.0"
