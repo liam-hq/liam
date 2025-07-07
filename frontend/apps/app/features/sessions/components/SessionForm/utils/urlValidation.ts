@@ -21,12 +21,19 @@ const parseAllowedDomains = (): string[] => {
 
 export const isValidSchemaUrl = (url: string): boolean => {
   // Check if it's a valid URL
-  let parsedUrl: URL
-  try {
-    parsedUrl = new URL(url)
-  } catch {
-    return false
+  // replace the old ternary-based URL.canParse check with a simple if/else and early returns
+  if (typeof URL.canParse === 'function') {
+    if (!URL.canParse(url)) {
+      return false
+    }
+  } else {
+    try {
+      new URL(url)
+    } catch {
+      return false
+    }
   }
+  const parsedUrl = new URL(url)
 
   // Check domain whitelist with stricter validation
   const allowedDomains = parseAllowedDomains()
@@ -78,14 +85,9 @@ export const isValidSchemaUrl = (url: string): boolean => {
 
 export const getFormatFromUrl = (url: string): FormatType => {
   // Parse URL to extract pathname without query params and fragments
-  let pathname: string
-  try {
-    const urlObj = new URL(url)
-    pathname = urlObj.pathname
-  } catch {
-    // Fallback for invalid URLs
-    pathname = url.split('?')[0].split('#')[0]
-  }
+  const pathname = URL.canParse(url)
+    ? new URL(url).pathname
+    : url.split('?')[0].split('#')[0]
 
   // Extract extension from pathname
   const extension = pathname.split('.').pop()?.toLowerCase()
@@ -105,147 +107,121 @@ export const getFormatFromUrl = (url: string): FormatType => {
 }
 
 export const getFileNameFromUrl = (url: string): string => {
-  try {
-    const urlObj = new URL(url)
-    const pathname = urlObj.pathname
-    const fileName = pathname.split('/').pop() || 'schema'
-    return fileName
-  } catch {
+  if (!URL.canParse(url)) {
     return 'schema'
   }
+  const urlObj = new URL(url)
+  const pathname = urlObj.pathname
+  const fileName = pathname.split('/').pop() || 'schema'
+  return fileName
 }
 
-// Enhanced function for fetching schema from URL with security improvements
-export const fetchSchemaFromUrl = async (
-  url: string,
-): Promise<{
-  success: boolean
-  content?: string
-  error?: string
-}> => {
-  // Step 1: Validate URL format and protocol
-  let parsedUrl: URL
-  try {
-    parsedUrl = new URL(url)
-  } catch {
+const isAllowedDevPort = (port: string): boolean => {
+  const allowedPorts = ['3000', '3001', '4000', '5000', '8000', '8080', '8081']
+  return allowedPorts.includes(port) || port === '80'
+}
+
+const isSensitiveLocalPath = (pathname: string): boolean => {
+  const suspiciousPaths = ['/admin', '/api', '/config', '/.env', '/secret']
+  return suspiciousPaths.some((path) => pathname.toLowerCase().startsWith(path))
+}
+
+// Validate URL format
+const validateUrlFormat = (url: string): { valid: boolean; error?: string } => {
+  if (!URL.canParse(url)) {
     return {
-      success: false,
+      valid: false,
       error: 'Invalid URL format. Please provide a valid URL.',
     }
   }
+  return { valid: true }
+}
 
-  // Step 2: Validate protocol
-  const hostname = parsedUrl.hostname.toLowerCase()
-  const isLocalhost = hostname === 'localhost' || hostname === '127.0.0.1'
-
-  // Allow HTTP only for localhost in development
-  const allowedProtocols = ['https:']
-  if (process.env.NODE_ENV === 'development' && isLocalhost) {
-    allowedProtocols.push('http:')
-  }
+// Validate protocol
+const validateProtocol = (
+  parsedUrl: URL,
+  isDev: boolean,
+  isLocalhost: boolean,
+): { valid: boolean; error?: string } => {
+  const allowedProtocols: ReadonlyArray<string> =
+    isDev && isLocalhost ? ['https:', 'http:'] : ['https:']
 
   if (!allowedProtocols.includes(parsedUrl.protocol)) {
     const protocolError =
-      process.env.NODE_ENV === 'development' && parsedUrl.protocol === 'http:'
-        ? `HTTP is only allowed for localhost in development. Use HTTPS for ${hostname}.`
+      isDev && parsedUrl.protocol === 'http:'
+        ? `HTTP is only allowed for localhost in development. Use HTTPS for ${parsedUrl.hostname}.`
         : `Unsupported protocol: ${parsedUrl.protocol}. Only HTTPS is allowed.`
+    return { valid: false, error: protocolError }
+  }
+  return { valid: true }
+}
 
+// Validate localhost in development
+const validateLocalhostDev = (
+  parsedUrl: URL,
+): { valid: boolean; error?: string } => {
+  const port = parsedUrl.port || '80'
+  if (!isAllowedDevPort(port)) {
     return {
-      success: false,
-      error: protocolError,
+      valid: false,
+      error: `Localhost port ${port} is not allowed. Use common development ports.`,
     }
   }
 
-  // Step 3: Validate domain whitelist
-  const allowedDomains = parseAllowedDomains()
-
-  // In development, apply special validation for localhost
-  if (process.env.NODE_ENV === 'development') {
-    if (isLocalhost) {
-      // Additional checks for localhost URLs
-      // 1. Ensure the port is within expected range (e.g., common dev server ports)
-      const port = parsedUrl.port || '80'
-      const allowedPorts = [
-        '3000',
-        '3001',
-        '4000',
-        '5000',
-        '8000',
-        '8080',
-        '8081',
-      ]
-
-      if (!allowedPorts.includes(port) && port !== '80') {
-        return {
-          success: false,
-          error: `Localhost port ${port} is not allowed. Use common development ports.`,
-        }
-      }
-
-      // 2. Additional path validation for localhost
-      const suspiciousLocalPaths = [
-        '/admin',
-        '/api',
-        '/config',
-        '/.env',
-        '/secret',
-      ]
-      if (
-        suspiciousLocalPaths.some((path) =>
-          parsedUrl.pathname.toLowerCase().startsWith(path),
-        )
-      ) {
-        return {
-          success: false,
-          error: 'Access to sensitive localhost paths is not allowed.',
-        }
-      }
+  if (isSensitiveLocalPath(parsedUrl.pathname)) {
+    return {
+      valid: false,
+      error: 'Access to sensitive localhost paths is not allowed.',
     }
   }
+  return { valid: true }
+}
 
-  // Check if domain is in the allowed list with look-alike protection
-  const isDomainAllowed = allowedDomains.some((domain) => {
+// Check if domain is allowed
+const isDomainAllowed = (
+  hostname: string,
+  allowedDomains: string[],
+): boolean => {
+  return allowedDomains.some((domain) => {
     if (hostname === domain) return true
-
     if (hostname.endsWith(`.${domain}`)) {
       const beforeDomain = hostname.slice(0, -(domain.length + 1))
       if (beforeDomain.endsWith('-')) return false // Block evil-github.com
       return true
     }
-
     return false
   })
+}
 
-  // In development, also allow localhost with the additional checks above
+// Validate domain
+const validateDomain = (
+  hostname: string,
+  allowedDomains: string[],
+  isDev: boolean,
+): { valid: boolean; error?: string } => {
+  const isAllowed = isDomainAllowed(hostname, allowedDomains)
   const isLocalhostAllowed =
-    process.env.NODE_ENV === 'development' &&
-    (hostname === 'localhost' || hostname === '127.0.0.1')
+    isDev && ['localhost', '127.0.0.1'].includes(hostname)
 
-  if (!isDomainAllowed && !isLocalhostAllowed) {
+  if (!isAllowed && !isLocalhostAllowed) {
     return {
-      success: false,
+      valid: false,
       error: `Domain not allowed: ${hostname}. Please use a trusted source.`,
     }
   }
+  return { valid: true }
+}
 
-  // Step 4: Validate file extension
-  if (!isValidSchemaUrl(url)) {
-    return {
-      success: false,
-      error: 'Invalid file type. Supported formats: .sql, .rb, .prisma, .json',
-    }
-  }
-
-  // Step 5: Sanitize URL by removing unnecessary parts
-  const sanitizedUrl = `${parsedUrl.protocol}//${parsedUrl.host}${parsedUrl.pathname}`
+// Fetch content from URL with timeout
+const fetchWithTimeout = async (
+  url: string,
+  timeoutMs = 10000,
+): Promise<Response> => {
+  const controller = new AbortController()
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs)
 
   try {
-    // Create AbortController for timeout
-    const controller = new AbortController()
-    const timeoutId = setTimeout(() => controller.abort(), 10000) // 10 seconds timeout
-
-    // In production, make a secure API call to fetch the schema
-    const response = await fetch(sanitizedUrl, {
+    const response = await fetch(url, {
       method: 'GET',
       headers: {
         Accept: 'text/plain',
@@ -253,42 +229,43 @@ export const fetchSchemaFromUrl = async (
       },
       signal: controller.signal,
     })
-
     clearTimeout(timeoutId)
+    return response
+  } catch (error) {
+    clearTimeout(timeoutId)
+    throw error
+  }
+}
 
-    if (!response.ok) {
-      return {
-        success: false,
-        error: `Failed to fetch schema: HTTP ${response.status}`,
-      }
+// Read response body with size limit
+const readResponseWithSizeLimit = async (
+  response: Response,
+  maxSize: number,
+): Promise<{ success: boolean; content?: string; error?: string }> => {
+  // Check content length header
+  const contentLength = response.headers.get('content-length')
+  if (contentLength && Number.parseInt(contentLength) > maxSize) {
+    return {
+      success: false,
+      error: 'File too large. Maximum allowed size is 5MB.',
     }
+  }
 
-    // Check content length to prevent memory exhaustion
-    const contentLength = response.headers.get('content-length')
-    const maxSize = 5 * 1024 * 1024 // 5MB limit
-
-    if (contentLength && Number.parseInt(contentLength) > maxSize) {
-      return {
-        success: false,
-        error: 'File too large. Maximum allowed size is 5MB.',
-      }
+  // Stream reading with size limit
+  const reader = response.body?.getReader()
+  if (!reader) {
+    return {
+      success: false,
+      error: 'Unable to read response stream',
     }
+  }
 
-    // Stream reading with size limit for safety
-    const reader = response.body?.getReader()
-    if (!reader) {
-      return {
-        success: false,
-        error: 'Unable to read response stream',
-      }
-    }
+  const chunks: Uint8Array[] = []
+  let totalSize = 0
 
-    const chunks: Uint8Array[] = []
-    let totalSize = 0
-
+  try {
     while (true) {
       const { done, value } = await reader.read()
-
       if (done) break
 
       if (value) {
@@ -303,7 +280,7 @@ export const fetchSchemaFromUrl = async (
       }
     }
 
-    // Combine all chunks into a single Uint8Array
+    // Combine chunks and decode
     const totalLength = chunks.reduce((acc, chunk) => acc + chunk.length, 0)
     const result = new Uint8Array(totalLength)
     let offset = 0
@@ -313,11 +290,77 @@ export const fetchSchemaFromUrl = async (
     }
 
     const content = new TextDecoder().decode(result)
+    return { success: true, content }
+  } finally {
+    reader.releaseLock()
+  }
+}
 
-    return {
-      success: true,
-      content,
+// Enhanced function for fetching schema from URL with security improvements
+export const fetchSchemaFromUrl = async (
+  url: string,
+): Promise<{
+  success: boolean
+  content?: string
+  error?: string
+}> => {
+  // Step 1: Validate URL format
+  const urlValidation = validateUrlFormat(url)
+  if (!urlValidation.valid) {
+    return { success: false, error: urlValidation.error }
+  }
+
+  const parsedUrl = new URL(url)
+  const hostname = parsedUrl.hostname.toLowerCase()
+  const isDev = process.env.NODE_ENV === 'development'
+  const isLocalhost = ['localhost', '127.0.0.1'].includes(hostname)
+
+  // Step 2: Validate protocol
+  const protocolValidation = validateProtocol(parsedUrl, isDev, isLocalhost)
+  if (!protocolValidation.valid) {
+    return { success: false, error: protocolValidation.error }
+  }
+
+  // Step 3: Validate localhost in development
+  if (isDev && isLocalhost) {
+    const localhostValidation = validateLocalhostDev(parsedUrl)
+    if (!localhostValidation.valid) {
+      return { success: false, error: localhostValidation.error }
     }
+  }
+
+  // Step 4: Validate domain whitelist
+  const allowedDomains = parseAllowedDomains()
+  const domainValidation = validateDomain(hostname, allowedDomains, isDev)
+  if (!domainValidation.valid) {
+    return { success: false, error: domainValidation.error }
+  }
+
+  // Step 5: Validate file extension
+  if (!isValidSchemaUrl(url)) {
+    return {
+      success: false,
+      error: 'Invalid file type. Supported formats: .sql, .rb, .prisma, .json',
+    }
+  }
+
+  // Step 6: Sanitize URL by removing unnecessary parts
+  const sanitizedUrl = `${parsedUrl.protocol}//${parsedUrl.host}${parsedUrl.pathname}`
+
+  try {
+    // Fetch with timeout
+    const response = await fetchWithTimeout(sanitizedUrl)
+
+    if (!response.ok) {
+      return {
+        success: false,
+        error: `Failed to fetch schema: HTTP ${response.status}`,
+      }
+    }
+
+    // Read response with size limit
+    const maxSize = 5 * 1024 * 1024 // 5MB limit
+    return await readResponseWithSizeLimit(response, maxSize)
   } catch (error) {
     // Handle timeout specifically
     if (error instanceof Error && error.name === 'AbortError') {

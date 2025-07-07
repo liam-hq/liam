@@ -20,7 +20,6 @@ const isValidFileExtensionType = (
 ): extension is FileExtension => {
   return ['sql', 'rb', 'prisma', 'json'].includes(extension)
 }
-
 export const getFileFormat = (fileName: string): FormatType => {
   const extension = getFileExtension(fileName)
 
@@ -48,17 +47,4 @@ const ACCEPTED_FILE_EXTENSIONS = [
 export const isValidFileExtension = (fileName: string): boolean => {
   const extension = getFileExtension(fileName)
   return ACCEPTED_FILE_EXTENSIONS.some((ext) => ext === extension)
-}
-
-export const getDisplayFormat = (fileName: string): string => {
-  const format = getFileFormat(fileName)
-
-  const displayMap: Record<FormatType, string> = {
-    postgres: 'PostgreSQL',
-    schemarb: 'schema.rb',
-    prisma: 'Prisma',
-    tbls: 'tbls (JSON)',
-  }
-
-  return displayMap[format] || 'PostgreSQL'
 }
