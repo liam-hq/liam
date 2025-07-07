@@ -50,9 +50,34 @@ export async function executeDdlNode(
       .join('; ')
 
     state.logger.log(`[${NODE_NAME}] DDL execution failed: ${errorMessages}`)
+
+    // Check if this is the first failure or if we've already retried
+    const currentRetryCount = state.retryCount['ddlExecutionRetry'] || 0
+
+    if (currentRetryCount === 0) {
+      // First failure - set up retry with designSchemaNode
+      state.logger.log(`[${NODE_NAME}] Scheduling retry via designSchemaNode`)
+      state.logger.log(`[${NODE_NAME}] Completed`)
+      return {
+        ...state,
+        shouldRetryWithDesignSchema: true,
+        ddlExecutionFailureReason: errorMessages,
+        retryCount: {
+          ...state.retryCount,
+          ddlExecutionRetry: 1,
+        },
+      }
+    }
+
+    // Already retried - mark as permanently failed
+    state.logger.log(
+      `[${NODE_NAME}] DDL execution failed after retry, marking as failed`,
+    )
     state.logger.log(`[${NODE_NAME}] Completed`)
     return {
       ...state,
+      ddlExecutionFailed: true,
+      ddlExecutionFailureReason: errorMessages,
     }
   }
 

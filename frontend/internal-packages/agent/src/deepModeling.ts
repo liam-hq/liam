@@ -108,7 +108,6 @@ const createGraph = () => {
     .addEdge('createProgressMessage', 'analyzeRequirements')
     .addEdge('analyzeRequirements', 'designSchema')
     .addEdge('generateDDL', 'executeDDL')
-    .addEdge('executeDDL', 'generateUsecase')
     .addEdge('generateUsecase', 'prepareDML')
     .addEdge('prepareDML', 'validateSchema')
     .addEdge('finalizeArtifacts', END)
@@ -121,6 +120,17 @@ const createGraph = () => {
     // Conditional edge for designSchema - skip to finalizeArtifacts if error
     .addConditionalEdges('designSchema', (state) => {
       return state.error ? 'finalizeArtifacts' : 'generateDDL'
+    })
+
+    // Conditional edge for executeDDL - retry with designSchema if DDL execution fails
+    .addConditionalEdges('executeDDL', (state) => {
+      if (state.shouldRetryWithDesignSchema) {
+        return 'designSchema'
+      }
+      if (state.ddlExecutionFailed) {
+        return 'finalizeArtifacts'
+      }
+      return 'generateUsecase'
     })
 
     // Conditional edges for validation results
