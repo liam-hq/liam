@@ -221,7 +221,7 @@ describe('convertSchemaToNodes', () => {
               }),
               profiles_user_id_unique: aUniqueConstraint({
                 name: 'profiles_user_id_unique',
-                columnName: 'user_id',
+                columnNames: ['user_id'],
               }),
             },
           }),

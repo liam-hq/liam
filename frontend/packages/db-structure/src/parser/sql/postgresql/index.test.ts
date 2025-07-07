@@ -28,7 +28,7 @@ describe(processor, () => {
             PRIMARY_id: {
               name: 'PRIMARY_id',
               type: 'PRIMARY KEY',
-              columnName: 'id',
+              columnNames: ['id'],
             },
           },
         }),
@@ -135,7 +135,7 @@ describe(processor, () => {
             UNIQUE_mention: {
               name: 'UNIQUE_mention',
               type: 'UNIQUE',
-              columnName: 'mention',
+              columnNames: ['mention'],
             },
           },
         }),
@@ -184,7 +184,7 @@ describe(processor, () => {
         bar_primary_key: {
           name: 'bar_primary_key',
           type: 'PRIMARY KEY',
-          columnName: 'bar_id',
+          columnNames: ['bar_id'],
         },
       })
     })
@@ -199,15 +199,10 @@ describe(processor, () => {
       `)
 
       expect(value.tables['foo_bar']?.constraints).toEqual({
-        PRIMARY_foo_id: {
-          name: 'PRIMARY_foo_id',
+        foo_bar_pkey: {
+          name: 'foo_bar_pkey',
           type: 'PRIMARY KEY',
-          columnName: 'foo_id',
-        },
-        PRIMARY_bar_id: {
-          name: 'PRIMARY_bar_id',
-          type: 'PRIMARY KEY',
-          columnName: 'bar_id',
+          columnNames: ['foo_id', 'bar_id'],
         },
       })
     })
@@ -222,10 +217,10 @@ describe(processor, () => {
       `)
 
       expect(value.tables['baz']?.constraints).toEqual({
-        PRIMARY_baz_id: {
-          name: 'PRIMARY_baz_id',
+        baz_pkey: {
+          name: 'baz_pkey',
           type: 'PRIMARY KEY',
-          columnName: 'baz_id',
+          columnNames: ['baz_id'],
         },
       })
     })
@@ -243,7 +238,7 @@ describe(processor, () => {
         PRIMARY_id: {
           name: 'PRIMARY_id',
           type: 'PRIMARY KEY',
-          columnName: 'id',
+          columnNames: ['id'],
         },
         fk_posts_user_id: {
           name: 'fk_posts_user_id',
@@ -280,7 +275,7 @@ describe(processor, () => {
         PRIMARY_id: {
           name: 'PRIMARY_id',
           type: 'PRIMARY KEY',
-          columnName: 'id',
+          columnNames: ['id'],
         },
         users_id_to_posts_user_id: {
           name: 'users_id_to_posts_user_id',
@@ -306,12 +301,12 @@ describe(processor, () => {
         PRIMARY_id: {
           name: 'PRIMARY_id',
           type: 'PRIMARY KEY',
-          columnName: 'id',
+          columnNames: ['id'],
         },
         UNIQUE_user_id: {
           name: 'UNIQUE_user_id',
           type: 'UNIQUE',
-          columnName: 'user_id',
+          columnNames: ['user_id'],
         },
         users_id_to_posts_user_id: {
           name: 'users_id_to_posts_user_id',
@@ -338,12 +333,30 @@ describe(processor, () => {
         PRIMARY_id: {
           name: 'PRIMARY_id',
           type: 'PRIMARY KEY',
-          columnName: 'id',
+          columnNames: ['id'],
         },
         CHECK_price: {
           name: 'CHECK_price',
           type: 'CHECK',
           detail: 'CHECK (price > 0)',
+        },
+      })
+    })
+
+    it('table-level unique constraint', async () => {
+      const { value } = await processor(/* sql */ `
+        CREATE TABLE user_roles (
+          user_id INT NOT NULL,
+          role_id INT NOT NULL,
+          CONSTRAINT unique_user_role UNIQUE (user_id, role_id)
+        );
+      `)
+
+      expect(value.tables['user_roles']?.constraints).toEqual({
+        unique_user_role: {
+          name: 'unique_user_role',
+          type: 'UNIQUE',
+          columnNames: ['user_id', 'role_id'],
         },
       })
     })
@@ -366,7 +379,7 @@ describe(processor, () => {
         PRIMARY_id: {
           name: 'PRIMARY_id',
           type: 'PRIMARY KEY',
-          columnName: 'id',
+          columnNames: ['id'],
         },
         fk_posts_user_id: {
           name: 'fk_posts_user_id',
@@ -395,12 +408,12 @@ describe(processor, () => {
         PRIMARY_id: {
           name: 'PRIMARY_id',
           type: 'PRIMARY KEY',
-          columnName: 'id',
+          columnNames: ['id'],
         },
         UNIQUE_user_id: {
           name: 'UNIQUE_user_id',
           type: 'UNIQUE',
-          columnName: 'user_id',
+          columnNames: ['user_id'],
         },
         users_id_to_posts_user_id: {
           name: 'users_id_to_posts_user_id',
@@ -429,7 +442,7 @@ describe(processor, () => {
         PRIMARY_id: {
           name: 'PRIMARY_id',
           type: 'PRIMARY KEY',
-          columnName: 'id',
+          columnNames: ['id'],
         },
         fk_posts_user_id: {
           name: 'fk_posts_user_id',
@@ -459,7 +472,7 @@ describe(processor, () => {
         PRIMARY_id: {
           name: 'PRIMARY_id',
           type: 'PRIMARY KEY',
-          columnName: 'id',
+          columnNames: ['id'],
         },
         price_check_is_positive: {
           name: 'price_check_is_positive',
@@ -576,7 +589,7 @@ describe(processor, () => {
         PRIMARY_view_id: {
           name: 'PRIMARY_view_id',
           type: 'PRIMARY KEY',
-          columnName: 'view_id',
+          columnNames: ['view_id'],
         },
         fk_page_view_user: {
           name: 'fk_page_view_user',
@@ -593,7 +606,7 @@ describe(processor, () => {
         PRIMARY_product_id: {
           name: 'PRIMARY_product_id',
           type: 'PRIMARY KEY',
-          columnName: 'product_id',
+          columnNames: ['product_id'],
         },
         fk_product_creator: {
           name: 'fk_product_creator',

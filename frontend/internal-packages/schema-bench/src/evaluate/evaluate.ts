@@ -137,10 +137,10 @@ const validatePrimaryKeys = (
 ): boolean => {
   const referencePKs = Object.values(referenceTable.constraints)
     .filter((c): c is PrimaryKeyConstraint => c.type === 'PRIMARY KEY')
-    .map((c) => c.columnName)
+    .flatMap((c) => c.columnNames)
   const predictPKs = Object.values(predictTable.constraints)
     .filter((c): c is PrimaryKeyConstraint => c.type === 'PRIMARY KEY')
-    .map((c) => c.columnName)
+    .flatMap((c) => c.columnNames)
 
   if (referencePKs.length !== predictPKs.length) {
     return false

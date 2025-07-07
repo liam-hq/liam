@@ -103,7 +103,7 @@ describe('constraintsToRelationships', () => {
           uk_user_id: {
             type: 'UNIQUE',
             name: 'uk_user_id',
-            columnName: 'user_id',
+            columnNames: ['user_id'],
           },
         },
       }),
@@ -153,7 +153,7 @@ describe('constraintsToRelationships', () => {
           uk_user_id: {
             type: 'UNIQUE',
             name: 'uk_user_id',
-            columnName: 'user_id',
+            columnNames: ['user_id'],
           },
         },
       }),
@@ -261,12 +261,12 @@ describe('constraintsToRelationships', () => {
           pk_users: {
             type: 'PRIMARY KEY',
             name: 'pk_users',
-            columnName: 'id',
+            columnNames: ['id'],
           },
           uk_email: {
             type: 'UNIQUE',
             name: 'uk_email',
-            columnName: 'email',
+            columnNames: ['email'],
           },
           chk_age: {
             type: 'CHECK',

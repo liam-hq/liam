@@ -85,7 +85,7 @@ export const createParserTestCases = (
       UNIQUE_mention: {
         type: 'UNIQUE',
         name: 'UNIQUE_mention',
-        columnName: 'mention',
+        columnNames: ['mention'],
       },
     },
   }),

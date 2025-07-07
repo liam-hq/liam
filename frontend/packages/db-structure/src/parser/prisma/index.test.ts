@@ -31,7 +31,7 @@ describe(_processor, () => {
             PRIMARY_id: {
               type: 'PRIMARY KEY',
               name: 'PRIMARY_id',
-              columnName: 'id',
+              columnNames: ['id'],
             },
             ...override?.constraints,
           },
@@ -218,7 +218,7 @@ describe(_processor, () => {
           UNIQUE_mention: {
             type: 'UNIQUE',
             name: 'UNIQUE_mention',
-            columnName: 'mention',
+            columnNames: ['mention'],
           },
         },
       })
@@ -374,7 +374,7 @@ describe(_processor, () => {
           UNIQUE_email: {
             type: 'UNIQUE',
             name: 'UNIQUE_email',
-            columnName: 'email',
+            columnNames: ['email'],
           },
         },
       })
@@ -401,7 +401,7 @@ describe(_processor, () => {
         constraints: {
           PRIMARY_id: {
             type: 'PRIMARY KEY',
-            columnName: 'id',
+            columnNames: ['id'],
             name: 'PRIMARY_id',
           },
         },
@@ -459,12 +459,12 @@ describe(_processor, () => {
               PRIMARY__id: {
                 type: 'PRIMARY KEY',
                 name: 'PRIMARY__id',
-                columnName: '_id',
+                columnNames: ['_id'],
               },
               UNIQUE_raw_email_address: {
                 type: 'UNIQUE',
                 name: 'UNIQUE_raw_email_address',
-                columnName: 'raw_email_address',
+                columnNames: ['raw_email_address'],
               },
             },
           }),
@@ -494,7 +494,7 @@ describe(_processor, () => {
               PRIMARY_id: {
                 type: 'PRIMARY KEY',
                 name: 'PRIMARY_id',
-                columnName: 'id',
+                columnNames: ['id'],
               },
               postsTousers: {
                 type: 'FOREIGN KEY',
@@ -576,12 +576,12 @@ describe(_processor, () => {
               PRIMARY__id: {
                 type: 'PRIMARY KEY',
                 name: 'PRIMARY__id',
-                columnName: '_id',
+                columnNames: ['_id'],
               },
               UNIQUE_raw_email_address: {
                 type: 'UNIQUE',
                 name: 'UNIQUE_raw_email_address',
-                columnName: 'raw_email_address',
+                columnNames: ['raw_email_address'],
               },
             },
           }),
@@ -611,7 +611,7 @@ describe(_processor, () => {
               PRIMARY_id: {
                 type: 'PRIMARY KEY',
                 name: 'PRIMARY_id',
-                columnName: 'id',
+                columnNames: ['id'],
               },
               PostToUser: {
                 type: 'FOREIGN KEY',
@@ -672,7 +672,7 @@ describe(_processor, () => {
               PRIMARY_id: {
                 type: 'PRIMARY KEY',
                 name: 'PRIMARY_id',
-                columnName: 'id',
+                columnNames: ['id'],
               },
             },
           }),
@@ -702,7 +702,7 @@ describe(_processor, () => {
               PRIMARY_id: {
                 type: 'PRIMARY KEY',
                 name: 'PRIMARY_id',
-                columnName: 'id',
+                columnNames: ['id'],
               },
             },
           }),

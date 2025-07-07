@@ -31,7 +31,7 @@ describe(_processor, () => {
             PRIMARY_id: {
               type: 'PRIMARY KEY',
               name: 'PRIMARY_id',
-              columnName: 'id',
+              columnNames: ['id'],
             },
             ...override?.constraints,
           },
@@ -187,7 +187,7 @@ describe(_processor, () => {
           UNIQUE_email: {
             type: 'UNIQUE',
             name: 'UNIQUE_email',
-            columnName: 'email',
+            columnNames: ['email'],
           },
         },
       })
@@ -292,7 +292,7 @@ describe(_processor, () => {
       expect(value.tables['profiles']?.constraints['UNIQUE_user_id']).toEqual({
         type: 'UNIQUE',
         name: 'UNIQUE_user_id',
-        columnName: 'user_id',
+        columnNames: ['user_id'],
       })
 
       // Note: inline .unique() creates constraint only, not index
@@ -413,7 +413,7 @@ describe(_processor, () => {
       expect(value.tables['user_tags']?.constraints['user_tags_pkey']).toEqual({
         type: 'PRIMARY KEY',
         name: 'user_tags_pkey',
-        columnName: 'user_id,tag_id',
+        columnNames: ['user_id', 'tag_id'],
       })
 
       // Verify composite primary key index
@@ -432,7 +432,7 @@ describe(_processor, () => {
       expect(value.tables['tags']?.constraints['UNIQUE_name']).toEqual({
         type: 'UNIQUE',
         name: 'UNIQUE_name',
-        columnName: 'name',
+        columnNames: ['name'],
       })
     })
 
@@ -651,7 +651,7 @@ describe(_processor, () => {
       ).toEqual({
         type: 'UNIQUE',
         name: 'UNIQUE_user_id',
-        columnName: 'user_id',
+        columnNames: ['user_id'],
       })
     })
 

@@ -35,7 +35,7 @@ describe('postgresqlOperationDeparser', () => {
             users_pkey: {
               type: 'PRIMARY KEY',
               name: 'users_pkey',
-              columnName: 'id',
+              columnNames: ['id'],
             },
           },
         },
@@ -98,7 +98,7 @@ describe('postgresqlOperationDeparser', () => {
             settings_pkey: {
               type: 'PRIMARY KEY',
               name: 'settings_pkey',
-              columnName: 'id',
+              columnNames: ['id'],
             },
           },
         },
@@ -388,7 +388,7 @@ describe('postgresqlOperationDeparser', () => {
         value: {
           type: 'PRIMARY KEY',
           name: 'pk_users_id',
-          columnName: 'id',
+          columnNames: ['id'],
         },
       }
 
@@ -441,7 +441,7 @@ describe('postgresqlOperationDeparser', () => {
         value: {
           type: 'UNIQUE',
           name: 'uk_users_email',
-          columnName: 'email',
+          columnNames: ['email'],
         },
       }
 

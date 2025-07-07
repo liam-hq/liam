@@ -73,7 +73,7 @@ const convertToTable = (
       constraints[constraintName] = {
         type: 'PRIMARY KEY',
         name: constraintName,
-        columnName: columnDef.name,
+        columnNames: [columnDef.name],
       }
 
       // Add primary key index
@@ -92,7 +92,7 @@ const convertToTable = (
       constraints[constraintName] = {
         type: 'UNIQUE',
         name: constraintName,
-        columnName: columnDef.name,
+        columnNames: [columnDef.name],
       }
     }
 
@@ -131,7 +131,7 @@ const convertToTable = (
     constraints[constraintName] = {
       type: 'PRIMARY KEY',
       name: constraintName,
-      columnName: actualColumnNames.join(','), // Multiple columns for composite key
+      columnNames: actualColumnNames,
     }
 
     // Add composite primary key index

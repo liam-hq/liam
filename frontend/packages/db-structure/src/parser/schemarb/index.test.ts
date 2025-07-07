@@ -35,7 +35,7 @@ describe(processor, () => {
             PRIMARY_id: {
               type: 'PRIMARY KEY',
               name: 'PRIMARY_id',
-              columnName: 'id',
+              columnNames: ['id'],
             },
             ...override?.constraints,
           },
@@ -237,11 +237,11 @@ describe(processor, () => {
             constraints: {
               PRIMARY_id: aPrimaryKeyConstraint({
                 name: 'PRIMARY_id',
-                columnName: 'id',
+                columnNames: ['id'],
               }),
               UNIQUE_email: aUniqueConstraint({
                 name: 'UNIQUE_email',
-                columnName: 'email',
+                columnNames: ['email'],
               }),
             },
           }),
@@ -264,7 +264,7 @@ describe(processor, () => {
       expect(value.tables['posts']?.constraints).toEqual({
         PRIMARY_id: aPrimaryKeyConstraint({
           name: 'PRIMARY_id',
-          columnName: 'id',
+          columnNames: ['id'],
         }),
         fk_posts_user_id: aForeignKeyConstraint({
           name: 'fk_posts_user_id',
@@ -287,7 +287,7 @@ describe(processor, () => {
       expect(value.tables['posts']?.constraints).toEqual({
         PRIMARY_id: aPrimaryKeyConstraint({
           name: 'PRIMARY_id',
-          columnName: 'id',
+          columnNames: ['id'],
         }),
         fk_posts_user_id: aForeignKeyConstraint({
           name: 'fk_posts_user_id',
@@ -311,7 +311,7 @@ describe(processor, () => {
         PRIMARY_id: aPrimaryKeyConstraint({
           type: 'PRIMARY KEY',
           name: 'PRIMARY_id',
-          columnName: 'id',
+          columnNames: ['id'],
         }),
         fk_posts_user_id: aForeignKeyConstraint({
           type: 'FOREIGN KEY',
@@ -337,7 +337,7 @@ describe(processor, () => {
       expect(value.tables['users']?.constraints).toEqual({
         PRIMARY_id: aPrimaryKeyConstraint({
           name: 'PRIMARY_id',
-          columnName: 'id',
+          columnNames: ['id'],
         }),
         age_range_check: aCheckConstraint({
           name: 'age_range_check',
@@ -357,7 +357,7 @@ describe(processor, () => {
       expect(value.tables['users']?.constraints).toEqual({
         PRIMARY_id: aPrimaryKeyConstraint({
           name: 'PRIMARY_id',
-          columnName: 'id',
+          columnNames: ['id'],
         }),
         age_check: aCheckConstraint({
           name: 'age_check',
@@ -399,11 +399,11 @@ describe(processor, () => {
       expect(value.tables['users']?.constraints).toEqual({
         PRIMARY_id: aPrimaryKeyConstraint({
           name: 'PRIMARY_id',
-          columnName: 'id',
+          columnNames: ['id'],
         }),
         UNIQUE_mention: aUniqueConstraint({
           name: 'UNIQUE_mention',
-          columnName: 'mention',
+          columnNames: ['mention'],
         }),
       })
     })
@@ -425,11 +425,11 @@ describe(processor, () => {
       expect(value.tables['users']?.constraints).toEqual({
         PRIMARY_id: aPrimaryKeyConstraint({
           name: 'PRIMARY_id',
-          columnName: 'id',
+          columnNames: ['id'],
         }),
         UNIQUE_slug: aUniqueConstraint({
           name: 'UNIQUE_slug',
-          columnName: 'slug',
+          columnNames: ['slug'],
         }),
       })
     })

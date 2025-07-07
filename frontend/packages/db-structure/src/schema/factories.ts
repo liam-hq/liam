@@ -48,7 +48,7 @@ export const aPrimaryKeyConstraint = (
 ): PrimaryKeyConstraint => ({
   type: 'PRIMARY KEY',
   name: '',
-  columnName: '',
+  columnNames: [],
   ...override,
 })
 
@@ -70,7 +70,7 @@ export const aUniqueConstraint = (
 ): UniqueConstraint => ({
   type: 'UNIQUE',
   name: '',
-  columnName: '',
+  columnNames: [],
   ...override,
 })
 
