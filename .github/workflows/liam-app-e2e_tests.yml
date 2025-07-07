@@ -105,7 +105,7 @@ jobs:
         if: steps.check.outputs.should_run == 'true' && always()
         run: |
           STATE="${{ job.status }}"
-          CONTEXT="E2E Tests / e2e-tests (${{ matrix.browser }})"
+          CONTEXT="E2E Tests / liam-app (${{ matrix.browser }})"
           gh api repos/${{ github.repository }}/statuses/${{ github.sha }} \
             --method POST \
             --field state="${STATE}" \
