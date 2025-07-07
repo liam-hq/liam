@@ -41,10 +41,3 @@ export type WorkflowState = {
   // Progress timeline item ID for tracking
   progressTimelineItemId?: string | undefined
 }
-
-/**
- * Workflow execution options
- */
-export interface WorkflowOptions {
-  recursionLimit?: number
-}

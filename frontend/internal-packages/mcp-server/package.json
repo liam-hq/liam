@@ -14,7 +14,7 @@
     "@liam-hq/configs": "workspace:*",
     "@types/node": "22.15.30",
     "concurrently": "9.1.2",
-    "tsx": "4.19.4",
+    "tsx": "4.20.3",
     "typescript": "5.8.3"
   },
   "scripts": {
