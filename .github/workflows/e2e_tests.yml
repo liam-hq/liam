@@ -1,12 +1,10 @@
-name: E2E Tests for liam-erd-sample
+name: E2E Tests
 
 on:
   deployment_status:
 
 jobs:
-  liam-erd-sample-e2e-tests:
-    environment:
-      name: Preview-liam-erd-sample
+  _e2e-tests:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     strategy:
@@ -43,10 +41,10 @@ jobs:
           result =
             if event_name == "deployment_status" && event_state == "success"
               # Production deployment
-              if (environment_val.include?("Preview") && target_url.include?("liam-erd-sample"))
+              if (environment_val.include?("Production") && target_url.include?("liam-app-git-main"))
                 "should_run=true"
               # Preview deployment
-              elsif environment_val.include?("Preview") && !target_url.include?("liam-app") && !target_url.include?("liam-docs") && !target_url.include?("liam-storybook")
+              elsif environment_val.include?("Preview") && !target_url.include?("liam-erd-sample") && !target_url.include?("liam-docs") && !target_url.include?("liam-storybook")
                 "should_run=true"
               else
                 "should_run=false"
@@ -105,7 +103,7 @@ jobs:
         if: steps.check.outputs.should_run == 'true' && always()
         run: |
           STATE="${{ job.status }}"
-          CONTEXT="E2E Tests / liam-erd-sample (${{ matrix.browser }})"
+          CONTEXT="E2E Tests / e2e-tests (${{ matrix.browser }})"
           gh api repos/${{ github.repository }}/statuses/${{ github.sha }} \
             --method POST \
             --field state="${STATE}" \
