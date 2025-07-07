@@ -5,6 +5,8 @@ on:
 
 jobs:
   liam-erd-sample-e2e-tests:
+    environment:
+      name: Preview-liam-erd-sample
     runs-on: ubuntu-latest
     timeout-minutes: 10
     strategy:
