@@ -1,1 +1,1 @@
-export * from './ERDRendererProvider'
+export * from './ErdRendererProvider'

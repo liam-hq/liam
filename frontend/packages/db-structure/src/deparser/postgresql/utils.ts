@@ -57,24 +57,9 @@ function isPostgreSQLFunction(value: string): boolean {
   // Examples: gen_random_uuid(), now(), current_timestamp(), extract(epoch from now())
   const functionPattern = /^[a-zA-Z_][a-zA-Z0-9_]*\s*\(/
 
-  // Additional common PostgreSQL functions that should not be quoted
-  const commonFunctions = [
-    'now()',
-    'current_timestamp',
-    'current_date',
-    'current_time',
-    'gen_random_uuid()',
-    'uuid_generate_v4()',
-    'uuid_generate_v1()',
-    'extract(',
-    'age(',
-    'date_part(',
-    'date_trunc(',
-    'random()',
-    'floor(',
-    'ceil(',
-    'round(',
-  ]
+  // PostgreSQL functions that can be used without parentheses
+  // (The regex pattern above handles functions with parentheses)
+  const commonFunctions = ['current_timestamp', 'current_date', 'current_time']
 
   // Check if it matches the general function pattern
   if (functionPattern.test(trimmedValue)) {

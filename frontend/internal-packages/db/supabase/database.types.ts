@@ -34,6 +34,48 @@ export type Database = {
   }
   public: {
     Tables: {
+      artifacts: {
+        Row: {
+          artifact: Json | null
+          created_at: string
+          design_session_id: string
+          id: string
+          organization_id: string
+          updated_at: string
+        }
+        Insert: {
+          artifact?: Json | null
+          created_at?: string
+          design_session_id: string
+          id?: string
+          organization_id: string
+          updated_at?: string
+        }
+        Update: {
+          artifact?: Json | null
+          created_at?: string
+          design_session_id?: string
+          id?: string
+          organization_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'artifacts_design_session_id_fkey'
+            columns: ['design_session_id']
+            isOneToOne: true
+            referencedRelation: 'design_sessions'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'artifacts_organization_id_fkey'
+            columns: ['organization_id']
+            isOneToOne: false
+            referencedRelation: 'organizations'
+            referencedColumns: ['id']
+          },
+        ]
+      }
       building_schema_versions: {
         Row: {
           building_schema_id: string

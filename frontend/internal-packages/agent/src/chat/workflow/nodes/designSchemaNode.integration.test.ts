@@ -2,7 +2,7 @@ import type { Schema } from '@liam-hq/db-structure'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { WorkflowState } from '../types'
 import { designSchemaNode } from './designSchemaNode'
-import { generateDDLNode } from './generateDDLNode'
+import { executeDdlNode } from './executeDdlNode'
 
 // Mock the database schema build agent
 vi.mock('../../../langchain/agents', () => ({
@@ -11,7 +11,12 @@ vi.mock('../../../langchain/agents', () => ({
   })),
 }))
 
-describe('designSchemaNode -> generateDDLNode integration', () => {
+// Mock executeQuery for DDL execution
+vi.mock('@liam-hq/pglite-server', () => ({
+  executeQuery: vi.fn(),
+}))
+
+describe('designSchemaNode -> executeDdlNode integration', () => {
   const mockLogger = {
     log: vi.fn(),
     debug: vi.fn(),
@@ -30,7 +35,6 @@ describe('designSchemaNode -> generateDDLNode integration', () => {
     userInput: 'Add a users table with id and name fields',
     schemaData,
     logger: mockLogger,
-    onNodeProgress: undefined,
     formattedHistory: '',
     retryCount: {},
     buildingSchemaId: 'test-schema',
@@ -45,7 +49,7 @@ describe('designSchemaNode -> generateDDLNode integration', () => {
     vi.clearAllMocks()
   })
 
-  it('should update schemaData and pass it to generateDDLNode', async () => {
+  it('should update schemaData and execute DDL in executeDdlNode', async () => {
     // Mock empty initial schema
     const initialSchema: Schema = { tables: {} }
 
@@ -97,6 +101,34 @@ describe('designSchemaNode -> generateDDLNode integration', () => {
     // Mock successful repository operation
     mockRepository.schema.createVersion.mockResolvedValue({
       success: true,
+      newSchema: {
+        tables: {
+          users: {
+            name: 'users',
+            comment: null,
+            columns: {
+              id: {
+                name: 'id',
+                type: 'INTEGER',
+                default: null,
+                check: null,
+                notNull: true,
+                comment: null,
+              },
+              name: {
+                name: 'name',
+                type: 'VARCHAR',
+                default: null,
+                check: null,
+                notNull: true,
+                comment: null,
+              },
+            },
+            constraints: {},
+            indexes: {},
+          },
+        },
+      },
     })
 
     const initialState = createMockState(initialSchema)
@@ -118,34 +150,55 @@ describe('designSchemaNode -> generateDDLNode integration', () => {
       '[designSchemaNode] Applied 1 schema changes successfully (1 tables)',
     )
 
-    // Step 2: Generate DDL (should now work with updated schema)
-    const afterDDL = await generateDDLNode(afterDesign)
+    // Mock successful DDL execution
+    const { executeQuery } = await import('@liam-hq/pglite-server')
+    vi.mocked(executeQuery).mockResolvedValue([
+      {
+        success: true,
+        sql: 'CREATE TABLE "users"...',
+        result: {},
+        id: 'test-result-id',
+        metadata: {
+          executionTime: 10,
+          timestamp: new Date().toISOString(),
+          affectedRows: 0,
+        },
+      },
+    ])
 
-    // Verify DDL generation worked
+    // Step 2: Execute DDL (should generate DDL and execute it)
+    const afterDDL = await executeDdlNode(afterDesign)
+
+    // Verify DDL generation and execution worked
     expect(afterDDL.ddlStatements).toContain('CREATE TABLE "users"')
     expect(afterDDL.ddlStatements).toContain('"id" INTEGER NOT NULL')
     expect(afterDDL.ddlStatements).toContain('"name" VARCHAR NOT NULL')
-
-    // Verify detailed logs
-    expect(mockLogger.log).toHaveBeenCalledWith(
-      '[generateDDLNode] Generated DDL for 1 tables (76 characters)',
+    expect(executeQuery).toHaveBeenCalledWith(
+      'test-session',
+      expect.stringContaining('CREATE TABLE "users"'),
     )
   })
 
-  it('should handle JSON patch operation errors gracefully', async () => {
+  it('should handle schema validation errors gracefully', async () => {
     const initialSchema: Schema = { tables: {} }
 
-    // Mock AI agent response with invalid JSON patch operation
+    // Mock AI agent response with changes
     const { DatabaseSchemaBuildAgent } = await import(
       '../../../langchain/agents'
     )
     const mockGenerate = vi.fn().mockResolvedValue({
-      message: 'Invalid patch operation',
+      message: 'Schema validation will fail',
       schemaChanges: [
         {
-          op: 'replace',
-          path: '/tables/nonexistent/name', // This path doesn't exist, will cause error
-          value: 'newname',
+          op: 'add',
+          path: '/tables/test',
+          value: {
+            name: 'test',
+            comment: null,
+            columns: {},
+            constraints: {},
+            indexes: {},
+          },
         },
       ],
     })
@@ -157,26 +210,26 @@ describe('designSchemaNode -> generateDDLNode integration', () => {
         }) as never,
     )
 
-    // Mock successful repository operation (but patch application will fail)
+    // Mock repository operation that returns validation error
     mockRepository.schema.createVersion.mockResolvedValue({
-      success: true,
+      success: false,
+      error: 'Invalid schema after applying changes: validation failed',
     })
 
     const initialState = createMockState(initialSchema)
 
-    // Step 1: Design schema (should fail during patch application)
+    // Step 1: Design schema (should fail during validation)
     const result = await designSchemaNode(initialState)
 
     // Verify error handling
     expect(result.error).toBe(
-      'Failed to apply schema changes to workflow state',
+      'Invalid schema after applying changes: validation failed',
     )
     expect(result.schemaData).toEqual(initialSchema) // Should remain unchanged
     expect(mockLogger.error).toHaveBeenCalledWith(
-      'Failed to apply patch operations to schema data:',
+      'Schema update failed:',
       expect.objectContaining({
-        error: expect.any(String),
-        operations: expect.any(Array),
+        error: 'Invalid schema after applying changes: validation failed',
       }),
     )
   })

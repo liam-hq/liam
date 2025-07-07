@@ -1,4 +1,3 @@
-import { applyPatchOperations } from '@liam-hq/db-structure'
 import { DatabaseSchemaBuildAgent } from '../../../langchain/agents'
 import type { BuildAgentResponse } from '../../../langchain/agents/databaseSchemaBuildAgent/agent'
 import type { SchemaAwareChatVariables } from '../../../langchain/utils/types'
@@ -40,41 +39,14 @@ const applySchemaChanges = async (
     }
   }
 
-  // Apply the same patch operations to the workflow state's schema data
-  let updatedSchemaData = state.schemaData
-  try {
-    // Create a deep copy to avoid mutating the original schema
-    updatedSchemaData = JSON.parse(JSON.stringify(state.schemaData))
-
-    state.logger.debug(
-      `[${NODE_NAME}] Applying ${schemaChanges.length} patch operations`,
-      {
-        originalTableCount: Object.keys(state.schemaData.tables).length,
-        operations: schemaChanges,
-      },
-    )
-
-    applyPatchOperations(updatedSchemaData, schemaChanges)
-
-    const newTableCount = Object.keys(updatedSchemaData.tables).length
-    state.logger.log(
-      `[${NODE_NAME}] Applied ${schemaChanges.length} schema changes successfully (${newTableCount} tables)`,
-    )
-  } catch (error) {
-    state.logger.error('Failed to apply patch operations to schema data:', {
-      error: error instanceof Error ? error.message : String(error),
-      operations: schemaChanges,
-    })
-    return {
-      ...state,
-      generatedAnswer: message,
-      error: 'Failed to apply schema changes to workflow state',
-    }
-  }
+  const newTableCount = Object.keys(result.newSchema.tables).length
+  state.logger.log(
+    `[${NODE_NAME}] Applied ${schemaChanges.length} schema changes successfully (${newTableCount} tables)`,
+  )
 
   return {
     ...state,
-    schemaData: updatedSchemaData,
+    schemaData: result.newSchema,
     generatedAnswer: message,
     error: undefined,
   }
@@ -133,10 +105,14 @@ export async function designSchemaNode(
 ): Promise<WorkflowState> {
   state.logger.log(`[${NODE_NAME}] Started`)
 
-  if (state.onNodeProgress) {
-    await state.onNodeProgress(
-      'designSchema',
-      getWorkflowNodeProgress('designSchema'),
+  // Update progress message if available
+  if (state.progressTimelineItemId) {
+    await state.repositories.schema.updateTimelineItem(
+      state.progressTimelineItemId,
+      {
+        content: 'Processing: designSchema',
+        progress: getWorkflowNodeProgress('designSchema'),
+      },
     )
   }
 

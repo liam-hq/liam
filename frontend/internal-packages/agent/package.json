@@ -4,10 +4,11 @@
   "version": "0.1.0",
   "main": "src/index.ts",
   "dependencies": {
-    "@langchain/community": "0.3.45",
-    "@langchain/core": "0.3.59",
+    "@langchain/community": "0.3.47",
+    "@langchain/core": "0.3.61",
     "@langchain/langgraph": "0.3.1",
-    "@langchain/openai": "0.5.12",
+    "@langchain/openai": "0.5.15",
+    "@liam-hq/artifact": "workspace:*",
     "@liam-hq/db": "workspace:*",
     "@liam-hq/db-structure": "workspace:*",
     "@liam-hq/pglite-server": "workspace:*",
@@ -17,12 +18,12 @@
     "valibot": "1.1.0"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.0.0",
+    "@biomejs/biome": "2.0.4",
     "@liam-hq/configs": "workspace:*",
-    "@types/node": "22.15.30",
-    "eslint": "9.28.0",
+    "@types/node": "22.15.32",
+    "eslint": "9.29.0",
     "typescript": "5.8.3",
-    "vitest": "3.2.2"
+    "vitest": "3.2.4"
   },
   "scripts": {
     "dev": "tsc --watch",

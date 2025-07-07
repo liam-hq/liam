@@ -1,19 +1,13 @@
 .removeButton {
-  display: inline-flex;
+  border-radius: var(--border-radius-full);
+  border: none;
+  display: flex;
   align-items: center;
   justify-content: center;
-  width: 24px;
-  height: 24px;
-  padding: 0;
-  background-color: transparent;
-  border: none;
-  border-radius: var(--border-radius-sm);
   cursor: pointer;
-  transition: background-color 0.2s ease;
-}
-
-.removeButton:hover:not(:disabled) {
-  background-color: var(--overlay-10);
+  padding: 0;
+  transition: all var(--default-animation-duration)
+    var(--default-timing-function);
 }
 
 .removeButton:disabled {
@@ -21,8 +15,54 @@
   opacity: 0.5;
 }
 
-.icon {
-  width: 16px;
-  height: 16px;
-  color: var(--global-mute-text);
+/* Size variants */
+.sm {
+  width: 14px;
+  height: 14px;
+}
+
+.md {
+  width: 20px;
+  height: 20px;
+}
+
+/* Transparent variant */
+.transparent {
+  background-color: var(--overlay-10);
+}
+
+.transparent:hover:not(:disabled) {
+  background-color: var(--overlay-20);
+}
+
+.transparent:hover:not(:disabled) .removeIcon {
+  color: var(--global-foreground);
+}
+
+.transparent .removeIcon {
+  color: var(--overlay-50);
+}
+
+/* Solid variant */
+.solid {
+  background-color: var(--overlay-70);
+}
+
+.solid:hover:not(:disabled) {
+  background-color: var(--overlay-100);
+}
+
+.solid .removeIcon {
+  color: var(--button-foreground);
+}
+
+/* Icon sizing */
+.sm .removeIcon {
+  width: 10px;
+  height: 10px;
+}
+
+.md .removeIcon {
+  width: 14px;
+  height: 14px;
 }

@@ -7,8 +7,8 @@
   },
   "main": "src/index.ts",
   "dependencies": {
-    "@langchain/core": "0.3.59",
-    "@langchain/openai": "0.5.12",
+    "@langchain/core": "0.3.61",
+    "@langchain/openai": "0.5.15",
     "@liam-hq/agent": "workspace:*",
     "@liam-hq/db": "workspace:*",
     "@liam-hq/github": "workspace:*",
@@ -19,16 +19,16 @@
     "@trigger.dev/sdk": "4.0.0-v4-beta.21"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.0.0",
+    "@biomejs/biome": "2.0.4",
     "@liam-hq/configs": "workspace:*",
     "@sentry/esbuild-plugin": "3.5.0",
-    "@types/node": "22.15.30",
+    "@types/node": "22.15.32",
     "dotenv": "16.5.0",
-    "eslint": "9.28.0",
+    "eslint": "9.29.0",
     "glob": "11.0.3",
     "trigger.dev": "4.0.0-v4-beta.21",
     "typescript": "5.8.3",
-    "vitest": "3.2.2"
+    "vitest": "3.2.4"
   },
   "scripts": {
     "deploy": "trigger deploy",

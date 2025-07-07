@@ -1,2 +1,2 @@
-export { ERDRendererProvider } from './ERDRendererProvider'
+export { ErdRendererProvider } from './ErdRendererProvider'
 export * from './versionProvider'

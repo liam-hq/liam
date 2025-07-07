@@ -1,25 +1,26 @@
 import type { MergeDeep } from 'type-fest'
 import type { Database as DatabaseGenerated } from '../../../supabase/database.types'
-import type { BuildingSchemasOverride } from './building_schemas'
-import type { DesignSessionsOverride } from './design_sessions'
-import type { DocFilePathsOverride } from './doc_file_paths'
-import type { GithubPullRequestCommentsOverride } from './github_pull_request_comments'
-import type { GithubPullRequestsOverride } from './github_pull_requests'
-import type { KnowledgeSuggestionDocMappingsOverride } from './knowledge_suggestion_doc_mappings'
-import type { KnowledgeSuggestionsOverride } from './knowledge_suggestions'
-import type { MigrationPullRequestMappingsOverride } from './migration_pull_request_mappings'
+import type { ArtifactsOverride } from './artifacts'
+import type { BuildingSchemasOverride } from './buildingSchemas'
+import type { DesignSessionsOverride } from './designSessions'
+import type { DocFilePathsOverride } from './docFilePaths'
+import type { GithubPullRequestCommentsOverride } from './githubPullRequestComments'
+import type { GithubPullRequestsOverride } from './githubPullRequests'
+import type { KnowledgeSuggestionDocMappingsOverride } from './knowledgeSuggestionDocMappings'
+import type { KnowledgeSuggestionsOverride } from './knowledgeSuggestions'
+import type { MigrationPullRequestMappingsOverride } from './migrationPullRequestMappings'
 import type { MigrationsOverride } from './migrations'
-import type { OverallReviewKnowledgeSuggestionMappingsOverride } from './overall_review_knowledge_suggestion_mappings'
-import type { OverallReviewsOverride } from './overall_reviews'
-import type { ProjectRepositoryMappingsOverride } from './project_repository_mappings'
-import type { ReviewFeedbackCommentsOverride } from './review_feedback_comments'
-import type { ReviewFeedbackKnowledgeSuggestionMappingsOverride } from './review_feedback_knowledge_suggestion_mappings'
-import type { ReviewFeedbacksOverride } from './review_feedbacks'
-import type { ReviewSuggestionSnippetsOverride } from './review_suggestion_snippets'
-import type { SchemaFilePathsOverride } from './schema_file_paths'
-import type { TimelineItemsOverride } from './timeline_items'
-import type { ValidationQueriesOverride } from './validation_queries'
-import type { ValidationResultsOverride } from './validation_results'
+import type { OverallReviewKnowledgeSuggestionMappingsOverride } from './overallReviewKnowledgeSuggestionMappings'
+import type { OverallReviewsOverride } from './overallReviews'
+import type { ProjectRepositoryMappingsOverride } from './projectRepositoryMappings'
+import type { ReviewFeedbackCommentsOverride } from './reviewFeedbackComments'
+import type { ReviewFeedbackKnowledgeSuggestionMappingsOverride } from './reviewFeedbackKnowledgeSuggestionMappings'
+import type { ReviewFeedbacksOverride } from './reviewFeedbacks'
+import type { ReviewSuggestionSnippetsOverride } from './reviewSuggestionSnippets'
+import type { SchemaFilePathsOverride } from './schemaFilePaths'
+import type { TimelineItemsOverride } from './timelineItems'
+import type { ValidationQueriesOverride } from './validationQueries'
+import type { ValidationResultsOverride } from './validationResults'
 
 export type AppDatabaseOverrides = MergeDeep<
   DatabaseGenerated,
@@ -45,5 +46,5 @@ export type AppDatabaseOverrides = MergeDeep<
     ValidationQueriesOverride &
     ValidationResultsOverride &
     TimelineItemsOverride &
-    BuildingSchemasOverride
+    ArtifactsOverride
 >
