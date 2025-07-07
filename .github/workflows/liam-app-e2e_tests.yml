@@ -5,8 +5,6 @@ on:
 
 jobs:
   liam-app-e2e-tests:
-    environment:
-      name: Preview-liam-app
     runs-on: ubuntu-latest
     timeout-minutes: 10
     strategy:
