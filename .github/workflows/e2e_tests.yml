@@ -52,9 +52,9 @@ jobs:
 
           result =
             if event_name == "deployment_status" && event_state == "success"
-              if (environment_val.include?("Preview / liam-app")) && target_url.include?("liam-app")
+              if (environment_val.include?("Preview")) && target_url.include?("liam-app")
                 "should_run=true"
-              elsif (environment_val.include?("Preview / liam-erd-sample")) && target_url.include?("liam-erd-sample")
+              elsif (environment_val.include?("Preview")) && target_url.include?("liam-erd-sample")
                 "should_run=true"
               elsif environment_val.include?("Production") && target_url.include?("liam-app-git-main")
                 "should_run=true"
@@ -96,7 +96,7 @@ jobs:
         if: steps.check.outputs.should_run == 'true'
         run: pnpm exec playwright test --project="${{ matrix.browser }}"
         env:
-          URL: ${{ env.URL }}
+          URL: ${{ steps.snapshot.outputs.target_url }}
 
       - name: Upload test results
         if: ${{ steps.check.outputs.should_run == 'true' && failure() }}
