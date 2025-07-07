@@ -7,7 +7,7 @@ import {
   DialogTitle,
 } from '@radix-ui/react-dialog'
 import { Command } from 'cmdk'
-import { type FC, useCallback, useEffect, useRef, useState } from 'react'
+import { type FC, useCallback, useEffect, useState } from 'react'
 import { useTableSelection } from '@/features/erd/hooks'
 import { useSchema } from '@/stores'
 import { TableNode } from '../../ERDContent/components'
@@ -15,8 +15,6 @@ import styles from './CommandPalette.module.css'
 import { useCommandPalette } from './CommandPaletteProvider'
 
 export const CommandPalette: FC = () => {
-  const closeButtonRef = useRef<HTMLButtonElement>(null)
-
   const { open, setOpen, toggleOpen } = useCommandPalette()
 
   const schema = useSchema()
@@ -69,14 +67,11 @@ export const CommandPalette: FC = () => {
           <Command.Input
             placeholder="Search"
             onValueChange={() => setFocusedTableName(null)}
-            onBlur={(event) => {
-              if (event.relatedTarget === closeButtonRef.current) return
-              event.target.focus()
-            }}
+            onBlur={(event) => event.target.focus()}
           />
         </div>
         <DialogClose asChild>
-          <Button size="xs" variant="outline-secondary" ref={closeButtonRef}>
+          <Button size="xs" variant="outline-secondary">
             ESC
           </Button>
         </DialogClose>
