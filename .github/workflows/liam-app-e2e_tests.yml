@@ -1,4 +1,4 @@
-name: E2E Tests
+name: E2E Tests for liam-app
 
 on:
   deployment_status:
