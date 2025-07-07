@@ -1,80 +1,105 @@
 .container {
   width: 100%;
-  max-width: 782px;
-  margin: 0 auto;
-  background-color: var(--callout-default-background);
-  border: 1px solid var(--global-border);
-  border-radius: var(--border-radius-md);
+  background-color: var(--global-background);
+  border: 1px solid var(--pane-border);
+  border-radius: var(--border-radius-xl);
   overflow: hidden;
-}
-
-.formContent {
-  padding: var(--spacing-5);
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-8);
 }
 
-.formGroup {
+.container.pending {
+  opacity: 0.7;
+}
+
+.container.dragActive {
+  border-color: var(--primary-color);
+  box-shadow: 0px 0px 20px 0px var(--primary-overlay-20);
+  background-color: var(--primary-overlay-5);
+}
+
+/* Form uses flex layout for better compatibility and accessibility */
+.form {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-3);
-}
-
-.label {
-  font-size: var(--font-size-5);
-  font-weight: 500;
-  color: var(--global-foreground);
-  min-width: var(--spacing-30);
-}
-
-.divider {
-  height: 1px;
-  background-color: var(--global-border);
   width: 100%;
 }
 
-.buttonContainer {
-  padding: var(--spacing-4) var(--spacing-8) var(--spacing-5);
+.inputSection {
+  order: 0;
+  flex-shrink: 0;
+  padding: var(--spacing-4);
   display: flex;
-  justify-content: flex-end;
+  flex-direction: column;
+  gap: var(--spacing-2);
+  transition:
+    background-color var(--default-animation-duration)
+    var(--default-timing-function),
+    border-color var(--default-animation-duration)
+    var(--default-timing-function);
 }
 
-.buttonCustom {
-  min-width: var(--spacing-40);
-  height: var(--spacing-9);
-  font-size: var(--font-size-4);
-  font-weight: 500;
+.inputSection:first-of-type {
+  background-color: var(--overlay-5);
+  border-bottom: 1px solid var(--pane-border);
+  gap: var(--spacing-3);
+}
+
+.inputSection.dragActive {
+  background-color: var(--primary-overlay-5);
+  border-color: var(--primary-color);
+}
+
+.buttonContainer {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: var(--spacing-2);
 }
 
 .error {
-  color: var(--danger-default);
+  color: var(--danger-high-contrast-text);
   font-size: var(--font-size-3);
   margin-top: var(--spacing-2);
 }
+
+.textareaWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2);
+}
+
+/* Removed custom fetch button styles - using Button component from @liam-hq/ui */
 
 /* URL input styles */
 .urlInputWrapper {
   display: flex;
   gap: var(--spacing-3);
-  align-items: flex-end;
+  align-items: center;
 }
 
 .urlInput {
-  flex: 1;
+  width: 100%;
   background-color: var(--global-background);
   color: var(--global-foreground);
   border: 1px solid var(--global-border);
   border-radius: var(--border-radius-md);
-  padding: var(--spacing-3) var(--spacing-4);
+  padding: var(--spacing-2) var(--spacing-3);
+  padding-right: calc(var(--spacing-3) + 14px + var(--spacing-2));
   font-size: var(--font-size-4);
   font-family: inherit;
   line-height: 1.5;
+  transition: border-color 0.2s ease;
+  height: 36px;
+}
+
+.urlInput:hover {
+  border-color: var(--overlay-30);
 }
 
 .urlInput:focus {
   outline: none;
-  border-color: var(--button-primary-background);
+  border-color: var(--pane-border-hover);
 }
 
 .urlInput:disabled {
@@ -84,11 +109,58 @@
 
 .urlInput::placeholder {
   color: var(--overlay-30);
+  transition: color 0.2s var(--default-timing-function);
 }
 
-.fetchButton {
-  min-width: var(--spacing-30);
-  height: var(--spacing-9);
-  font-size: var(--font-size-4);
-  font-weight: 500;
+.urlInput:hover::placeholder {
+  color: var(--overlay-50);
+}
+
+/* Removed duplicate fetchButton style */
+
+.textarea {
+  width: 100%;
+  min-height: 132px;
+  padding: 0;
+  background: transparent;
+  border: none;
+  color: var(--global-foreground);
+  font-size: var(--font-size-6);
+  font-family: inherit;
+  line-height: 1.6;
+  resize: none;
+  overflow: hidden;
+}
+
+.textarea:disabled {
+  opacity: var(--opacity-60);
+  cursor: not-allowed;
+}
+
+.textarea:focus {
+  outline: none;
+}
+
+.textarea::placeholder {
+  color: var(--overlay-30);
+  transition: color 0.2s var(--default-timing-function);
+}
+
+.textarea:hover::placeholder {
+  color: var(--overlay-50);
+}
+
+/* Input container for positioning */
+.inputContainer {
+  position: relative;
+  flex: 1;
+}
+
+/* Clear button positioning */
+.clearButton {
+  position: absolute;
+  right: var(--spacing-3);
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 1;
 }

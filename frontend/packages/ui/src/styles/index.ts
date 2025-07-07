@@ -3,4 +3,4 @@
  */
 
 // Export syntax highlighting theme
-export * from './syntax-theme'
+export * from './syntaxTheme'

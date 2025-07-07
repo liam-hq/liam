@@ -1,10 +1,13 @@
-import type { ChatProcessorParams, NodeLogger } from '@liam-hq/agent'
-import { createSupabaseRepositories, processChatMessage } from '@liam-hq/agent'
+import type { DeepModelingParams, NodeLogger } from '@liam-hq/agent'
+import { createSupabaseRepositories, deepModeling } from '@liam-hq/agent'
 import { logger, task } from '@trigger.dev/sdk'
 import { createClient } from '../libs/supabase'
 
-// Define type excluding repositories and schemaData
-type ChatJobPayload = Omit<ChatProcessorParams, 'repositories' | 'schemaData'>
+// Define type excluding repositories, schemaData, and logger
+type DeepModelingPayload = Omit<
+  DeepModelingParams,
+  'repositories' | 'schemaData' | 'logger'
+>
 
 function createWorkflowLogger(): NodeLogger {
   return {
@@ -26,12 +29,12 @@ function createWorkflowLogger(): NodeLogger {
   }
 }
 
-export const processChatTask = task({
-  id: 'process-chat-message',
-  run: async (payload: ChatJobPayload) => {
-    logger.log('Starting chat processing job:', {
+export const deepModelingWorkflowTask = task({
+  id: 'deep-modeling-workflow',
+  run: async (payload: DeepModelingPayload) => {
+    logger.log('Starting Deep Modeling workflow:', {
       buildingSchemaId: payload.buildingSchemaId,
-      messageLength: payload.message.length,
+      messageLength: payload.userInput.length,
       timestamp: new Date().toISOString(),
     })
 
@@ -48,17 +51,18 @@ export const processChatTask = task({
       throw new Error(`Failed to fetch schema data: ${schemaResult.error}`)
     }
 
-    const chatParams: ChatProcessorParams = {
+    const workflowLogger = createWorkflowLogger()
+
+    const deepModelingParams: DeepModelingParams = {
       ...payload,
       repositories,
       schemaData: schemaResult.data.schema,
+      logger: workflowLogger,
     }
 
-    const workflowLogger = createWorkflowLogger()
+    const result = await deepModeling(deepModelingParams)
 
-    const result = await processChatMessage(chatParams, workflowLogger)
-
-    logger.log('Chat processing completed:', {
+    logger.log('Deep Modeling workflow completed:', {
       success: result.success,
     })
 

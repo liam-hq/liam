@@ -1,1 +1,1 @@
-export * from './ERDContent'
+export * from './ErdContent'

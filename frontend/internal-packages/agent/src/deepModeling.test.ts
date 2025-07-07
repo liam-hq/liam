@@ -1,19 +1,18 @@
 import type { Schema } from '@liam-hq/db-structure'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import type { Repositories, SchemaRepository } from '../../repositories'
-import type { NodeLogger } from '../../utils/nodeLogger'
-import { executeChatWorkflow } from './index'
-import type { WorkflowState } from './types'
+import { type DeepModelingParams, deepModeling } from './deepModeling'
+import type { Repositories, SchemaRepository } from './repositories'
+import type { NodeLogger } from './utils/nodeLogger'
 
 // Mock the agents
-vi.mock('../../langchain/agents', () => ({
+vi.mock('./langchain/agents', () => ({
   DatabaseSchemaBuildAgent: vi.fn(),
   QAGenerateUsecaseAgent: vi.fn(),
   PMAnalysisAgent: vi.fn(),
 }))
 
 // Mock the schema converter
-vi.mock('../../../utils/convertSchemaToText', () => ({
+vi.mock('./utils/convertSchemaToText', () => ({
   convertSchemaToText: vi.fn(() => 'Mocked schema text'),
 }))
 
@@ -87,31 +86,32 @@ describe('Chat Workflow', () => {
     },
   })
 
-  // Helper function to create base workflow state
-  const createBaseState = (
-    overrides: Partial<WorkflowState> = {},
-  ): WorkflowState => ({
+  // Helper function to create base workflow params
+  const createBaseParams = (
+    overrides: Partial<DeepModelingParams> = {},
+  ): DeepModelingParams => ({
     userInput: 'Test input',
-    formattedHistory: 'No previous conversation.',
+    history: [],
     schemaData: mockSchemaData,
-    projectId: 'test-project-id',
+    organizationId: 'test-org-id',
     buildingSchemaId: 'test-building-schema-id',
     latestVersionNumber: 1,
     userId: 'test-user-id',
     designSessionId: 'test-design-session-id',
     repositories: mockRepositories,
     logger: mockLogger,
-    retryCount: {},
     ...overrides,
   })
 
   // Helper function to execute workflow and assert common expectations
-  const executeAndAssertSuccess = async (state: WorkflowState) => {
-    const result = await executeChatWorkflow(state)
+  const executeAndAssertSuccess = async (params: DeepModelingParams) => {
+    const result = await deepModeling(params)
 
-    expect(result.error).toBeUndefined()
-    expect(result.finalResponse).toBe('Mocked agent response')
-    expect(typeof result.finalResponse).toBe('string')
+    expect(result.success).toBe(true)
+    if (result.success) {
+      expect(result.text).toBe('Mocked agent response')
+      expect(typeof result.text).toBe('string')
+    }
     expect(mockAgent.generate).toHaveBeenCalledOnce()
 
     return result
@@ -122,7 +122,7 @@ describe('Chat Workflow', () => {
     vi.clearAllMocks()
 
     // Get the mocked modules
-    const agentsModule = await import('../../langchain/agents')
+    const agentsModule = await import('./langchain/agents')
 
     MockDatabaseSchemaBuildAgent = vi.mocked(
       agentsModule.DatabaseSchemaBuildAgent,
@@ -255,11 +255,11 @@ describe('Chat Workflow', () => {
 
   describe('Build Mode', () => {
     it('should execute successfully with valid Build mode state', async () => {
-      const state = createBaseState({
+      const params = createBaseParams({
         userInput: 'Add a created_at timestamp column to the users table',
       })
 
-      await executeAndAssertSuccess(state)
+      await executeAndAssertSuccess(params)
     })
 
     it('should handle Build mode with structured JSON response and schema changes', async () => {
@@ -281,18 +281,18 @@ describe('Chat Workflow', () => {
 
       mockAgent.generate.mockResolvedValue(structuredResponse)
 
-      const state = createBaseState({
+      const params = createBaseParams({
         userInput: 'Add a created_at timestamp column to the users table',
         buildingSchemaId: 'test-building-schema-id',
         latestVersionNumber: 1,
       })
 
-      const result = await executeChatWorkflow(state)
+      const result = await deepModeling(params)
 
-      expect(result.error).toBeUndefined()
-      expect(result.finalResponse).toBe(
-        'Added created_at column to users table',
-      )
+      expect(result.success).toBe(true)
+      if (result.success) {
+        expect(result.text).toBe('Added created_at column to users table')
+      }
       expect(mockSchemaRepository.createVersion).toHaveBeenCalledWith({
         buildingSchemaId: 'test-building-schema-id',
         latestVersionNumber: 1,
@@ -317,14 +317,16 @@ describe('Chat Workflow', () => {
         schemaChanges: [],
       })
 
-      const state = createBaseState({
+      const params = createBaseParams({
         userInput: 'Add a created_at timestamp column to the users table',
       })
 
-      const result = await executeChatWorkflow(state)
+      const result = await deepModeling(params)
 
-      expect(result.error).toBeUndefined()
-      expect(result.finalResponse).toBe('Invalid JSON response')
+      expect(result.success).toBe(true)
+      if (result.success) {
+        expect(result.text).toBe('Invalid JSON response')
+      }
       expect(mockSchemaRepository.createVersion).not.toHaveBeenCalled()
     })
 
@@ -346,21 +348,22 @@ describe('Chat Workflow', () => {
         error: 'Database constraint violation',
       })
 
-      const state = createBaseState({
+      const params = createBaseParams({
         userInput: 'Add a created_at timestamp column to the users table',
         buildingSchemaId: 'test-building-schema-id',
         latestVersionNumber: 1,
+        recursionLimit: 20,
       })
 
-      const result = await executeChatWorkflow(state, { recursionLimit: 20 })
+      const result = await deepModeling(params)
 
       // The test should handle either the expected error or recursion limit error
-      expect(result.error).toMatch(
-        /Database constraint violation|Recursion limit/,
-      )
-      expect(result.finalResponse).toMatch(
-        /Sorry, an error occurred during processing/,
-      )
+      expect(result.success).toBe(false)
+      if (!result.success) {
+        expect(result.error).toMatch(
+          /Database constraint violation|Recursion limit/,
+        )
+      }
     })
 
     it('should handle schema update exception', async () => {
@@ -380,89 +383,89 @@ describe('Chat Workflow', () => {
         new Error('Network error'),
       )
 
-      const state = createBaseState({
+      const params = createBaseParams({
         userInput: 'Add a created_at timestamp column to the users table',
         buildingSchemaId: 'test-building-schema-id',
         latestVersionNumber: 1,
       })
 
-      const result = await executeChatWorkflow(state)
+      const result = await deepModeling(params)
 
-      expect(result.error).toBe('Network error')
-      expect(result.finalResponse).toBe(
-        'Sorry, an error occurred during processing: Network error',
-      )
+      expect(result.success).toBe(false)
+      if (!result.success) {
+        expect(result.error).toBe('Network error')
+      }
     })
 
     it('should handle complex schema modifications', async () => {
-      const state = createBaseState({
+      const params = createBaseParams({
         userInput: 'Create a new posts table with foreign key to users',
       })
 
-      await executeAndAssertSuccess(state)
+      await executeAndAssertSuccess(params)
     })
   })
 
   describe('Error Handling', () => {
     it('should handle agent generation errors', async () => {
       mockAgent.generate.mockRejectedValue(new Error('Agent generation failed'))
-      const state = createBaseState()
+      const params = createBaseParams()
 
-      const result = await executeChatWorkflow(state)
+      const result = await deepModeling(params)
 
-      expect(result.error).toBe('Agent generation failed')
-      expect(result.finalResponse).toBe(
-        'Sorry, an error occurred during processing: Agent generation failed',
-      )
+      expect(result.success).toBe(false)
+      if (!result.success) {
+        expect(result.error).toBe('Agent generation failed')
+      }
     })
 
     it('should handle agent creation failure', async () => {
       MockDatabaseSchemaBuildAgent.mockImplementation(() => {
         throw new Error('Failed to create DatabaseSchemaBuildAgent')
       })
-      const state = createBaseState()
+      const params = createBaseParams()
 
-      const result = await executeChatWorkflow(state)
+      const result = await deepModeling(params)
 
-      expect(result.error).toBe('Failed to create DatabaseSchemaBuildAgent')
-      expect(result.finalResponse).toBe(
-        'Sorry, an error occurred during processing: Failed to create DatabaseSchemaBuildAgent',
-      )
+      expect(result.success).toBe(false)
+      if (!result.success) {
+        expect(result.error).toBe('Failed to create DatabaseSchemaBuildAgent')
+      }
     })
 
     it('should handle empty user input', async () => {
-      const state = createBaseState({ userInput: '' })
+      const params = createBaseParams({ userInput: '' })
 
-      const result = await executeChatWorkflow(state)
+      const result = await deepModeling(params)
 
       expect(result).toBeDefined()
-      expect(result.userInput).toBe('')
-      expect(result.finalResponse).toBe('Mocked agent response')
+      expect(result.success).toBe(true)
+      if (result.success) {
+        expect(result.text).toBe('Mocked agent response')
+      }
     })
   })
 
   describe('State Management', () => {
     it('should preserve state properties through workflow execution', async () => {
-      const initialState = createBaseState({
+      const initialParams = createBaseParams({
         userInput: 'Test state management',
-        formattedHistory: 'Previous message 1\nPrevious message 2',
-        projectId: 'test-project-123',
       })
 
-      const result = await executeChatWorkflow(initialState, {})
+      const result = await deepModeling(initialParams)
 
-      expect(result.userInput).toBe(initialState.userInput)
-      expect(result.projectId).toBe(initialState.projectId)
-      expect(result.schemaData).toEqual(initialState.schemaData)
-      expect(result.formattedHistory).toBe(initialState.formattedHistory)
+      expect(result.success).toBe(true)
+      if (result.success) {
+        expect(result.text).toBe('Mocked agent response')
+      }
     })
   })
 
   describe('Agent Selection', () => {
     it('should instantiate DatabaseSchemaBuildAgent', async () => {
-      const state = createBaseState({})
+      const params = createBaseParams({})
 
-      await executeChatWorkflow(state)
+      await deepModeling(params)
 
       expect(MockDatabaseSchemaBuildAgent).toHaveBeenCalledOnce()
     })
@@ -471,31 +474,33 @@ describe('Chat Workflow', () => {
   describe('Workflow Integration', () => {
     // Helper function to execute multiple workflows sequentially
     const executeSequentialWorkflows = async (
-      states: Partial<WorkflowState>[],
+      inputs: { userInput: string }[],
     ) => {
       const results = []
-      for (const stateOverride of states) {
-        const state = createBaseState(stateOverride)
-        const result = await executeChatWorkflow(state)
+      for (const input of inputs) {
+        const params = createBaseParams(input)
+        const result = await deepModeling(params)
         results.push(result)
       }
       return results
     }
 
     it('should handle multiple sequential workflow executions', async () => {
-      const stateOverrides = [
+      const inputs = [
         { userInput: 'First modification' },
         { userInput: 'Second modification' },
         { userInput: 'Third modification' },
       ]
 
-      const results = await executeSequentialWorkflows(stateOverrides)
+      const results = await executeSequentialWorkflows(inputs)
 
       expect(results).toHaveLength(3)
-      for (const [index, result] of results.entries()) {
+      for (const result of results) {
         expect(result).toBeDefined()
-        expect(result.userInput).toBe(stateOverrides?.[index]?.userInput)
-        expect(result.finalResponse).toBe('Mocked agent response')
+        expect(result.success).toBe(true)
+        if (result.success) {
+          expect(result.text).toBe('Mocked agent response')
+        }
       }
     })
 
@@ -508,13 +513,15 @@ describe('Chat Workflow', () => {
         'Multi-line\ninput\nwith\nbreaks',
       ]
 
-      const stateOverrides = testInputs.map((userInput) => ({ userInput }))
-      const results = await executeSequentialWorkflows(stateOverrides)
+      const inputs = testInputs.map((userInput) => ({ userInput }))
+      const results = await executeSequentialWorkflows(inputs)
 
-      for (const [index, result] of results.entries()) {
+      for (const result of results) {
         expect(result).toBeDefined()
-        expect(result.userInput).toBe(testInputs[index])
-        expect(result.finalResponse).toBe('Mocked agent response')
+        expect(result.success).toBe(true)
+        if (result.success) {
+          expect(result.text).toBe('Mocked agent response')
+        }
       }
     })
   })

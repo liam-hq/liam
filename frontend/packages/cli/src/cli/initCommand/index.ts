@@ -264,7 +264,9 @@ const displayNextSteps = (
   console.info(
     `\n${stepNum}) Start your favorite httpd for serving dist. e.g.:`,
   )
-  console.info(yocto.blueBright('   $ npx http-server dist'))
+  console.info(yocto.blueBright('   $ npx serve dist/'))
+  console.info(yocto.blueBright('   or'))
+  console.info(yocto.blueBright('   $ npx http-server -c-1 dist/'))
 }
 
 /**
