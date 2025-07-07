@@ -742,6 +742,13 @@ export const convertToSchema = (
   }
 
   /**
+   * Find table in current chunk or main schema
+   */
+  function findTable(tableName: string): Table | undefined {
+    return tables[tableName] ?? mainSchema.tables[tableName]
+  }
+
+  /**
    * Process a foreign key constraint
    */
   function processForeignKeyConstraint(
@@ -767,12 +774,7 @@ export const convertToSchema = (
     }
 
     const foreignKeyConstraint = relResult.value
-    let table = tables[foreignTableName]
-
-    // If table not found in current chunk, look in main schema
-    if (!table) {
-      table = mainSchema.tables[foreignTableName]
-    }
+    const table = findTable(foreignTableName)
 
     if (table) {
       table.constraints[foreignKeyConstraint.name] = foreignKeyConstraint
@@ -800,12 +802,7 @@ export const convertToSchema = (
       return
     }
 
-    let table = tables[foreignTableName]
-
-    // If table not found in current chunk, look in main schema
-    if (!table) {
-      table = mainSchema.tables[foreignTableName]
-    }
+    const table = findTable(foreignTableName)
 
     if (table) {
       table.constraints[relResult.value.name] = relResult.value
@@ -819,12 +816,7 @@ export const convertToSchema = (
     foreignTableName: string,
     constraint: PgConstraint,
   ): void {
-    let table = tables[foreignTableName]
-
-    // If table not found in current chunk, look in main schema
-    if (!table) {
-      table = mainSchema.tables[foreignTableName]
-    }
+    const table = findTable(foreignTableName)
 
     if (!table) return
 
@@ -852,12 +844,7 @@ export const convertToSchema = (
     foreignTableName: string,
     constraint: PgConstraint,
   ): void {
-    let table = tables[foreignTableName]
-
-    // If table not found in current chunk, look in main schema
-    if (!table) {
-      table = mainSchema.tables[foreignTableName]
-    }
+    const table = findTable(foreignTableName)
 
     if (!table) return
 
