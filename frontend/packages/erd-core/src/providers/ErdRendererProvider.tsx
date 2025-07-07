@@ -8,7 +8,7 @@ type Props = {
   showDiff?: boolean
 }
 
-export const ERDRendererProvider: FC<PropsWithChildren<Props>> = ({
+export const ErdRendererProvider: FC<PropsWithChildren<Props>> = ({
   schema,
   showDiff,
   children,

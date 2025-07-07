@@ -17,7 +17,7 @@
     "vitest": "3.2.4"
   },
   "scripts": {
-    "evaluate-schema": "node --experimental-strip-types src/cli/evaluate-schema.ts",
+    "evaluateSchema": "node --experimental-strip-types src/cli/evaluateSchema.ts",
     "fmt": "concurrently \"pnpm:fmt:*\"",
     "fmt:biome": "biome check --write --unsafe .",
     "fmt:eslint": "eslint --fix .",
@@ -25,7 +25,7 @@
     "lint:biome": "biome check .",
     "lint:eslint": "eslint .",
     "lint:tsc": "tsc --noEmit",
-    "setup-workspace": "node --experimental-strip-types src/cli/setup-workspace.ts",
+    "setupWorkspace": "node --experimental-strip-types src/cli/setupWorkspace.ts",
     "test": "vitest --watch=false --passWithNoTests"
   }
 }

@@ -21,11 +21,11 @@ import type { Operation } from '../../operation/schema/index.js'
 import type {
   AddIndexOperation,
   RemoveIndexOperation,
-} from '../../operation/schema/index-operations.js'
+} from '../../operation/schema/indexOperations.js'
 import {
   isAddIndexOperation,
   isRemoveIndexOperation,
-} from '../../operation/schema/index-operations.js'
+} from '../../operation/schema/indexOperations.js'
 import type {
   AddTableOperation,
   RemoveTableOperation,

@@ -5,11 +5,11 @@ import {
   analyzeRequirementsNode,
   createProgressMessageNode,
   designSchemaNode,
-  executeDDLNode,
+  executeDdlNode,
   finalizeArtifactsNode,
-  generateDDLNode,
+  generateDdlNode,
   generateUsecaseNode,
-  prepareDMLNode,
+  prepareDmlNode,
   reviewDeliverablesNode,
   saveUserMessageNode,
   validateSchemaNode,
@@ -82,16 +82,16 @@ const createGraph = () => {
     .addNode('designSchema', designSchemaNode, {
       retryPolicy: RETRY_POLICY,
     })
-    .addNode('generateDDL', generateDDLNode, {
+    .addNode('generateDDL', generateDdlNode, {
       retryPolicy: RETRY_POLICY,
     })
-    .addNode('executeDDL', executeDDLNode, {
+    .addNode('executeDDL', executeDdlNode, {
       retryPolicy: RETRY_POLICY,
     })
     .addNode('generateUsecase', generateUsecaseNode, {
       retryPolicy: RETRY_POLICY,
     })
-    .addNode('prepareDML', prepareDMLNode, {
+    .addNode('prepareDML', prepareDmlNode, {
       retryPolicy: RETRY_POLICY,
     })
     .addNode('validateSchema', validateSchemaNode, {

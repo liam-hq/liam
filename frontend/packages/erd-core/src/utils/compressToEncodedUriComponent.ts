@@ -21,7 +21,7 @@ function base64ToUrlSafe(base64: string): string {
 /**
  * Compress string using Deflate and return as URL-safe encoded string (synchronous)
  */
-export function compressToEncodedURIComponent(input: string): string {
+export function compressToEncodedUriComponent(input: string): string {
   const textEncoder = new TextEncoder()
   const inputBytes = textEncoder.encode(input)
   const compressedBytes = pako.deflate(inputBytes)
