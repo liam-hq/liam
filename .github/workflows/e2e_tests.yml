@@ -50,67 +50,25 @@ jobs:
           environment_val = "${{ steps.snapshot.outputs.env_val }}"
           target_url      = "${{ steps.snapshot.outputs.target_url }}"
 
-          # Debug output to prevent silent failures
-          puts "=== E2E DEPLOYMENT CHECK ==="
-          puts "Event Name: #{event_name}"
-          puts "Event State: #{event_state}"
-          puts "Environment: #{environment_val}"
-          puts "Target URL: #{target_url}"
-          puts "================================"
-
           result =
             if event_name == "deployment_status" && event_state == "success"
               if (environment_val.include?("Preview / liam-app")) && target_url.include?("liam-app")
-                puts "✅ MATCH: Preview liam-app deployment"
                 "should_run=true"
               elsif (environment_val.include?("Preview / liam-erd-sample")) && target_url.include?("liam-erd-sample")
-                puts "✅ MATCH: Preview liam-erd-sample deployment"
                 "should_run=true"
               elsif environment_val.include?("Production") && target_url.include?("liam-app-git-main")
-                puts "✅ MATCH: Production liam-app deployment"
                 "should_run=true"
               else
-                puts "❌ NO MATCH: Environment='#{environment_val}', URL='#{target_url}'"
-                puts "   Expected: Preview/liam-app, Preview/liam-erd-sample, or Production with liam-app-git-main"
                 "should_run=false"
               end
             else
-              puts "❌ INVALID EVENT: Name='#{event_name}', State='#{event_state}'"
-              puts "   Expected: deployment_status event with success state"
               "should_run=false"
             end
-
-          puts "Final Result: #{result}"
-          puts "================================"
 
           output_file = ENV.fetch("GITHUB_OUTPUT")
           File.open(output_file, "a") do |file|
             file.puts result
           end
-
-      - name: E2E Test Decision
-        run: |
-          echo "🔍 E2E TEST DECISION ANALYSIS"
-          echo "================================"
-          echo "Event Name: ${{ github.event_name }}"
-          echo "Event State: ${{ github.event.deployment_status.state }}"
-          echo "Environment: ${{ github.event.deployment.environment }}"
-          echo "Target URL: ${{ github.event.deployment_status.target_url }}"
-          echo "Should Run: ${{ steps.check.outputs.should_run }}"
-          echo "================================"
-
-          if [ "${{ steps.check.outputs.should_run }}" = "true" ]; then
-            echo "✅ E2E TESTS WILL RUN"
-            echo "   This deployment matches E2E test criteria"
-          else
-            echo "❌ E2E TESTS WILL NOT RUN"
-            echo "   This deployment does not match E2E test criteria"
-            echo "   Expected environments:"
-            echo "   - Preview / liam-app"
-            echo "   - Preview / liam-erd-sample" 
-            echo "   - Production (with liam-app-git-main URL)"
-          fi
-          echo "================================"
 
       - name: Setup pnpm
         if: steps.check.outputs.should_run == 'true'
@@ -161,29 +119,3 @@ jobs:
             --field target_url="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: E2E Test Completion Summary
-        if: always()
-        run: |
-          echo "🎯 E2E TEST COMPLETION SUMMARY"
-          echo "================================"
-          echo "Job Status: ${{ job.status }}"
-          echo "Should Run: ${{ steps.check.outputs.should_run }}"
-          echo "Target URL: ${{ github.event.deployment_status.target_url }}"
-          echo "Environment: ${{ github.event.deployment.environment }}"
-          echo "================================"
-
-          if [ "${{ steps.check.outputs.should_run }}" = "true" ]; then
-            if [ "${{ job.status }}" = "success" ]; then
-              echo "✅ E2E TESTS COMPLETED SUCCESSFULLY"
-            elif [ "${{ job.status }}" = "failure" ]; then
-              echo "❌ E2E TESTS FAILED"
-              echo "   Check the logs above for test failures"
-            else
-              echo "⚠️  E2E TESTS COMPLETED WITH UNKNOWN STATUS: ${{ job.status }}"
-            fi
-          else
-            echo "⏭️  E2E TESTS SKIPPED (as expected)"
-            echo "   This deployment does not require E2E testing"
-          fi
-          echo "================================"
