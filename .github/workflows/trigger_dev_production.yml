@@ -46,7 +46,7 @@ jobs:
         env:
           INCOMING_WEBHOOK_URL: ${{ secrets.SLACK_CLI_CI_WEBHOOK_URL }}
         with:
-          text: "Deploy to trigger.dev production Failure"
+          text: 'Deploy to trigger.dev production Failure'
           attachments: |
             [
               {
