@@ -1,10 +1,12 @@
-name: E2E Tests
+name: E2E Tests for liam-app
 
 on:
   deployment_status:
 
 jobs:
-  _e2e-tests:
+  liam-app-e2e-tests:
+    environment:
+      name: Preview-liam-app
     runs-on: ubuntu-latest
     timeout-minutes: 10
     strategy:

@@ -1,10 +1,12 @@
-name: E2E Tests
+name: E2E Tests for liam-erd-sample
 
 on:
   deployment_status:
 
 jobs:
-  _e2e-tests:
+  liam-erd-sample-e2e-tests:
+    environment:
+      name: Preview-liam-erd-sample
     runs-on: ubuntu-latest
     timeout-minutes: 10
     strategy:
