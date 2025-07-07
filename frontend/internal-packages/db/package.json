@@ -11,9 +11,9 @@
     "@supabase/supabase-js": "2.49.8"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.0.0",
+    "@biomejs/biome": "2.0.4",
     "@liam-hq/configs": "workspace:*",
-    "eslint": "9.28.0",
+    "eslint": "9.29.0",
     "supabase": "2.28.1",
     "type-fest": "4.41.0",
     "typescript": "5.8.3"

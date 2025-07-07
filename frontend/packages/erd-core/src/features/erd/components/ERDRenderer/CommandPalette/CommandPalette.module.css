@@ -11,6 +11,7 @@
   color: var(--global-foreground);
   border: 1px solid var(--global-border);
   z-index: var(--z-index-command-palette);
+  font-family: var(--main-font);
 }
 
 [cmdk-overlay]:has(+ .content) {
