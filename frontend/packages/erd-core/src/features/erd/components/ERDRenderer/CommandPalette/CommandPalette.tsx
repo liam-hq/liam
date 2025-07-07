@@ -105,7 +105,7 @@ export const CommandPalette: FC = () => {
                   onDoubleClick={() => goToERD(table.name)}
                 >
                   <Table2 className={styles.itemIcon} />
-                  {table.name}
+                  <span className={styles.itemText}>{table.name}</span>
                 </div>
               </Command.Item>
             ))}

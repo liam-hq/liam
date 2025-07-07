@@ -24,7 +24,6 @@
   border-radius: var(--border-radius-md);
   cursor: pointer;
   transition: all 0.2s ease;
-  display: flex;
   align-items: center;
   gap: var(--spacing-1half);
 }

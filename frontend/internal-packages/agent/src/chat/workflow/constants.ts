@@ -13,6 +13,7 @@ export const WORKFLOW_ERROR_MESSAGES = {
  * how much of the overall workflow has been completed when that node finishes
  */
 export const WORKFLOW_NODE_PROGRESS = {
+  createProgressMessage: 10,
   analyzeRequirements: 20,
   designSchema: 30,
   generateDDL: 40,

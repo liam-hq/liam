@@ -1,7 +1,77 @@
 import { getWorkflowNodeProgress } from '../shared/getWorkflowNodeProgress'
 import type { WorkflowState } from '../types'
+import {
+  createOrUpdateArtifact,
+  transformWorkflowStateToArtifact,
+} from '../utils/transformWorkflowStateToArtifact'
 
 const NODE_NAME = 'finalizeArtifactsNode'
+
+/**
+ * Save artifacts if workflow state contains artifact data
+ */
+async function saveArtifacts(state: WorkflowState): Promise<void> {
+  if (!state.analyzedRequirements && !state.generatedUsecases) {
+    state.logger.log(`[${NODE_NAME}] No artifact data available to save`)
+    return
+  }
+
+  state.logger.log(`[${NODE_NAME}] Saving artifacts`)
+  const artifact = transformWorkflowStateToArtifact(state)
+  const artifactResult = await createOrUpdateArtifact(state, artifact)
+
+  if (artifactResult.success) {
+    state.logger.log(`[${NODE_NAME}] Artifacts saved successfully`)
+  } else {
+    state.logger.log(
+      `[${NODE_NAME}] Failed to save artifacts: ${artifactResult.error}`,
+    )
+  }
+}
+
+/**
+ * Save timeline item to database
+ */
+async function saveTimelineItem(
+  state: WorkflowState,
+  content: string,
+  type: 'error' | 'assistant',
+): Promise<void> {
+  const saveResult = await state.repositories.schema.createTimelineItem({
+    designSessionId: state.designSessionId,
+    content,
+    type,
+  })
+
+  if (!saveResult.success) {
+    console.error(`Failed to save ${type} timeline item:`, saveResult.error)
+  }
+}
+
+/**
+ * Generate final response and determine error state
+ */
+async function generateFinalResponse(state: WorkflowState): Promise<{
+  finalResponse: string
+  errorToReturn: string | undefined
+}> {
+  if (state.error) {
+    const finalResponse = `Sorry, an error occurred during processing: ${state.error}`
+    await saveTimelineItem(state, finalResponse, 'error')
+    return { finalResponse, errorToReturn: state.error }
+  }
+
+  if (state.generatedAnswer) {
+    await saveTimelineItem(state, state.generatedAnswer, 'assistant')
+    return { finalResponse: state.generatedAnswer, errorToReturn: undefined }
+  }
+
+  // Fallback case
+  const finalResponse =
+    'Sorry, we could not generate an answer. Please try again.'
+  await saveTimelineItem(state, finalResponse, 'error')
+  return { finalResponse, errorToReturn: 'No generated answer available' }
+}
 
 /**
  * Finalize Artifacts Node - Generate & Save Artifacts
@@ -12,66 +82,19 @@ export async function finalizeArtifactsNode(
 ): Promise<WorkflowState> {
   state.logger.log(`[${NODE_NAME}] Started`)
 
-  if (state.onNodeProgress) {
-    await state.onNodeProgress(
-      'finalizeArtifacts',
-      getWorkflowNodeProgress('finalizeArtifacts'),
+  // Update progress message if available
+  if (state.progressTimelineItemId) {
+    await state.repositories.schema.updateTimelineItem(
+      state.progressTimelineItemId,
+      {
+        content: 'Processing: finalizeArtifacts',
+        progress: getWorkflowNodeProgress('finalizeArtifacts'),
+      },
     )
   }
 
-  let finalResponse: string
-  let errorToReturn: string | undefined
-
-  // Handle different scenarios for final response
-  if (state.error) {
-    // If there's an error, create an error response for the user
-    finalResponse = `Sorry, an error occurred during processing: ${state.error}`
-    errorToReturn = state.error
-
-    // Save error timeline item to database
-    const saveResult = await state.repositories.schema.createTimelineItem({
-      designSessionId: state.designSessionId,
-      content: finalResponse,
-      type: 'error',
-    })
-
-    if (!saveResult.success) {
-      console.error('Failed to save error message:', saveResult.error)
-      // Continue processing even if message saving fails
-    }
-  } else if (state.generatedAnswer) {
-    // Normal case: use the generated answer
-    finalResponse = state.generatedAnswer
-    errorToReturn = undefined
-
-    // Save AI timeline item to database
-    const saveResult = await state.repositories.schema.createTimelineItem({
-      designSessionId: state.designSessionId,
-      content: finalResponse,
-      type: 'assistant',
-    })
-
-    if (!saveResult.success) {
-      console.error('Failed to save AI timeline item:', saveResult.error)
-      // Continue processing even if timeline item saving fails
-    }
-  } else {
-    // Fallback case: no generated answer and no specific error
-    finalResponse = 'Sorry, we could not generate an answer. Please try again.'
-    errorToReturn = 'No generated answer available'
-
-    // Save fallback timeline item to database
-    const saveResult = await state.repositories.schema.createTimelineItem({
-      designSessionId: state.designSessionId,
-      content: finalResponse,
-      type: 'error',
-    })
-
-    if (!saveResult.success) {
-      console.error('Failed to save fallback message:', saveResult.error)
-      // Continue processing even if message saving fails
-    }
-  }
+  await saveArtifacts(state)
+  const { finalResponse, errorToReturn } = await generateFinalResponse(state)
 
   state.logger.log(`[${NODE_NAME}] Completed`)
 

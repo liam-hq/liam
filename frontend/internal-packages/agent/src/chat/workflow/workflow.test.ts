@@ -136,6 +136,9 @@ describe('Chat Workflow', () => {
       getDesignSession: vi.fn(),
       createVersion: vi.fn(),
       createTimelineItem: vi.fn(),
+      createArtifact: vi.fn(),
+      updateArtifact: vi.fn(),
+      getArtifact: vi.fn(),
       updateTimelineItem: vi.fn(),
     } as SchemaRepository
 
@@ -212,6 +215,40 @@ describe('Chat Workflow', () => {
         design_session_id: 'test-design-session-id',
         building_schema_version_id: null,
         progress: null,
+      },
+    })
+
+    // Setup artifact-related mocks
+    vi.mocked(mockSchemaRepository.getArtifact).mockResolvedValue({
+      success: false,
+      error: 'Artifact not found',
+    })
+
+    vi.mocked(mockSchemaRepository.createArtifact).mockResolvedValue({
+      success: true,
+      artifact: {
+        id: 'test-artifact-id',
+        design_session_id: 'test-design-session-id',
+        organization_id: 'test-org-id',
+        artifact: {
+          requirement_analysis: { business_requirement: '', requirements: [] },
+        },
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      },
+    })
+
+    vi.mocked(mockSchemaRepository.updateArtifact).mockResolvedValue({
+      success: true,
+      artifact: {
+        id: 'test-artifact-id',
+        design_session_id: 'test-design-session-id',
+        organization_id: 'test-org-id',
+        artifact: {
+          requirement_analysis: { business_requirement: '', requirements: [] },
+        },
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
       },
     })
   })

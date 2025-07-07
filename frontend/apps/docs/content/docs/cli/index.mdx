@@ -8,7 +8,7 @@ import { Tab, Tabs } from 'fumadocs-ui/components/tabs'; // For package-install 
 
 The fastest way to get started with Liam ERD is using the interactive setup command:
 
-```package-install
+```npm
 npx @liam-hq/cli init
 ```
 
@@ -20,7 +20,7 @@ For more control over the ERD generation process, you can use the `erd` command 
 
 Generate an ERD from your schema file using the following command:
 
-```package-install
+```npm
 npx @liam-hq/cli erd build --input <path|url>
 ```
 
@@ -28,7 +28,7 @@ This command processes your schema file and generates interactive ERD visualizat
 
 Once the ERD is generated, you can view it by serving the files using a local HTTP server:
 
-```package-install
+```npm
 npx http-server dist  # or your custom output directory
 ```
 
@@ -46,11 +46,11 @@ You can use any hosting service of your choice to serve the generated files.
 
 You can directly specify URLs to schema files stored in public GitHub repositories. Using raw URLs allows you to generate ERDs directly from remote schema files.
 
-```package-install
+```npm
 npx @liam-hq/cli erd build --input https://github.com/user/repo/blob/main/examples/schema.sql --format postgres
 ```
 
-```package-install
+```npm
 npx @liam-hq/cli erd build --input https://raw.githubusercontent.com/user/repo/main/examples/schema.sql --format postgres
 ```
 
@@ -61,7 +61,7 @@ The command generates a simple web application using [Vite](https://vite.dev/), 
 
 To view the generated ERD, serve the output directory using any HTTP server:
 
-```package-install
+```npm
 npx http-server dist  # or your custom output directory
 ```
 

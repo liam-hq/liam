@@ -95,23 +95,24 @@ async function processChunk(
   return [retryOffset, readOffset, errors]
 }
 
+// Number of lines to process in a single chunk.
+// While a chunk size of around 1000 might work, running it on db/structure.sql
+// from https://gitlab.com/gitlab-org/gitlab-foss resulted in a memory error.
+// Keep this in mind when considering any adjustments.
+const CHUNK_SIZE = 500
+
 /**
  * Processes SQL statements and constructs a schema.
  */
-export const processor: Processor = async (sql: string) => {
-  const schema: Schema = {
-    tables: {},
-  }
-
-  // Number of lines to process in a single chunk.
-  // While a chunk size of around 1000 might work, running it on db/structure.sql
-  // from https://gitlab.com/gitlab-org/gitlab-foss resulted in a memory error.
-  // Keep this in mind when considering any adjustments.
-  const CHUNK_SIZE = 500
+export const processor: Processor = async (
+  sql: string,
+  chunkSize = CHUNK_SIZE,
+) => {
+  const schema: Schema = { tables: {} }
 
   const parseErrors: ProcessError[] = []
 
-  const errors = await processSQLInChunks(sql, CHUNK_SIZE, async (chunk) => {
+  const errors = await processSQLInChunks(sql, chunkSize, async (chunk) => {
     return processChunk(chunk, schema, parseErrors, sql)
   })
 

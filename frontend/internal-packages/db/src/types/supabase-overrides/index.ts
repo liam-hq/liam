@@ -1,5 +1,6 @@
 import type { MergeDeep } from 'type-fest'
 import type { Database as DatabaseGenerated } from '../../../supabase/database.types'
+import type { ArtifactsOverride } from './artifacts'
 import type { BuildingSchemasOverride } from './building_schemas'
 import type { DesignSessionsOverride } from './design_sessions'
 import type { DocFilePathsOverride } from './doc_file_paths'
@@ -45,5 +46,5 @@ export type AppDatabaseOverrides = MergeDeep<
     ValidationQueriesOverride &
     ValidationResultsOverride &
     TimelineItemsOverride &
-    BuildingSchemasOverride
+    ArtifactsOverride
 >

@@ -52,7 +52,8 @@ describe('setupWorkspace', () => {
         defaultDataPath: defaultDataDir,
       }
 
-      await setupWorkspace(config)
+      const result = await setupWorkspace(config)
+      expect(result.isOk()).toBe(true)
 
       // Should have removed existing file and created new structure
       expect(fs.existsSync(path.join(workspacePath, 'existing.txt'))).toBe(
@@ -69,7 +70,8 @@ describe('setupWorkspace', () => {
         defaultDataPath: defaultDataDir,
       }
 
-      await setupWorkspace(config)
+      const result = await setupWorkspace(config)
+      expect(result.isOk()).toBe(true)
 
       // Check that all required directories are created
       expect(fs.existsSync(workspacePath)).toBe(true)
@@ -94,7 +96,8 @@ describe('setupWorkspace', () => {
         defaultDataPath: defaultDataDir,
       }
 
-      await setupWorkspace(config)
+      const result = await setupWorkspace(config)
+      expect(result.isOk()).toBe(true)
 
       // Check that files were copied
       const inputFile = path.join(
@@ -132,7 +135,8 @@ describe('setupWorkspace', () => {
         defaultDataPath: emptyDefaultDir,
       }
 
-      await setupWorkspace(config)
+      const result = await setupWorkspace(config)
+      expect(result.isOk()).toBe(true)
 
       // Should still create workspace structure even without default data
       expect(fs.existsSync(workspacePath)).toBe(true)

@@ -39,10 +39,14 @@ export async function generateDDLNode(
   try {
     state.logger.log(`[${NODE_NAME}] Started`)
 
-    if (state.onNodeProgress) {
-      await state.onNodeProgress(
-        'generateDDL',
-        getWorkflowNodeProgress('generateDDL'),
+    // Update progress message if available
+    if (state.progressTimelineItemId) {
+      await state.repositories.schema.updateTimelineItem(
+        state.progressTimelineItemId,
+        {
+          content: 'Processing: generateDDL',
+          progress: getWorkflowNodeProgress('generateDDL'),
+        },
       )
     }
 

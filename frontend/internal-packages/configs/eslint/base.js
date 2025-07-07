@@ -41,6 +41,29 @@ export function createBaseConfig(options = {}) {
         '@typescript-eslint/no-unsafe-member-access': 'error',
         'require-use-server/require-use-server': 'error',
         'no-non-english/no-non-english-characters': 'error',
+        'no-restricted-exports': ['error', {
+          'restrictedNamedExports': ['*']
+        }],
+        'no-restricted-syntax': [
+          'error',
+          {
+            'selector': 'ExportNamedDeclaration[source]',
+            'message': 'Re-exports are not allowed except in index.ts files'
+          }
+        ],
+      },
+    },
+    {
+      files: ['index.ts', '**/index.ts'],
+      rules: {
+        'no-restricted-exports': 'off',
+        'no-restricted-syntax': 'off',
+      },
+    },
+    {
+      files: ['**/DropdownMenu/DropdownMenu.tsx', '**/parser.ts'],
+      rules: {
+        'no-restricted-syntax': 'off',
       },
     },
     {

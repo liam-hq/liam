@@ -8,10 +8,14 @@ import type { WorkflowState } from '../types'
 export async function prepareDMLNode(
   state: WorkflowState,
 ): Promise<WorkflowState> {
-  if (state.onNodeProgress) {
-    await state.onNodeProgress(
-      'prepareDML',
-      getWorkflowNodeProgress('prepareDML'),
+  // Update progress message if available
+  if (state.progressTimelineItemId) {
+    await state.repositories.schema.updateTimelineItem(
+      state.progressTimelineItemId,
+      {
+        content: 'Processing: prepareDML',
+        progress: getWorkflowNodeProgress('prepareDML'),
+      },
     )
   }
 

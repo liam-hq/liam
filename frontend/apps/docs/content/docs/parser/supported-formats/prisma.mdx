@@ -12,7 +12,7 @@ When a Prisma project manages migrations using the Prisma CLI, the latest schema
 
 When using Liam CLI, specify `--format prisma` and `--input path/to/schema.prisma` as follows:
 
-```package-install
+```npm
 npx @liam-hq/cli erd build --format prisma --input prisma/schema.prisma
 ```
 
@@ -24,7 +24,7 @@ If you use the [prismaSchemaFolder](https://www.prisma.io/docs/orm/prisma-schema
 
 For example, if you have multiple `.prisma` files in the `prisma/schema/` directory, use the following command:
 
-```package-install
+```npm
 npx @liam-hq/cli erd build --format prisma --input "prisma/schema/*.prisma"
 ```
 

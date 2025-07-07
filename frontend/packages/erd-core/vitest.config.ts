@@ -1,11 +1,11 @@
-// biome-ignore lint/correctness/noNodejsModules: Because this file is a config file
 import * as path from 'node:path'
 import react from '@vitejs/plugin-react'
-import { defineConfig } from 'vitest/config'
+import { defineProject } from 'vitest/config'
 
-export default defineConfig({
+export default defineProject({
   plugins: react(),
   test: {
+    globals: true,
     alias: {
       '@': path.resolve(__dirname, './src'),
     },

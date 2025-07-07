@@ -1,0 +1,27 @@
+{
+  "name": "@liam-hq/artifact",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "publishConfig": {
+    "access": "restricted"
+  },
+  "main": "src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "valibot": "1.1.0"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.0.0",
+    "@liam-hq/configs": "workspace:*",
+    "@types/node": "22.15.30",
+    "typescript": "5.8.3"
+  },
+  "scripts": {
+    "lint": "biome check .",
+    "lint:fix": "biome check --write .",
+    "lint:tsc": "tsc --noEmit"
+  }
+}

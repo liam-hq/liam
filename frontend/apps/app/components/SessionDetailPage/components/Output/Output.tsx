@@ -2,7 +2,7 @@ import type { Schema } from '@liam-hq/db-structure'
 import type { FC } from 'react'
 import { TabsContent, TabsRoot } from '@/components'
 import type { ReviewComment, Version } from '../../types'
-import { Artifact } from './components/Artifact'
+import { ArtifactContainer } from './components/Artifact/ArtifactContainer'
 import { ERD } from './components/ERD'
 import { Header } from './components/Header'
 import { SchemaUpdates } from './components/SchemaUpdates'
@@ -15,7 +15,6 @@ type Props = {
   schemaUpdatesDoc: string
   schemaUpdatesReviewComments: ReviewComment[]
   onQuickFix?: (comment: string) => void
-  artifactDoc: string
   designSessionId: string
   currentVersion: Version | null
   onCurrentVersionChange: (version: Version) => void
@@ -27,7 +26,6 @@ export const Output: FC<Props> = ({
   schemaUpdatesDoc,
   schemaUpdatesReviewComments,
   onQuickFix,
-  artifactDoc,
   designSessionId,
   currentVersion,
   onCurrentVersionChange,
@@ -53,7 +51,7 @@ export const Output: FC<Props> = ({
         />
       </TabsContent>
       <TabsContent value={OUTPUT_TABS.ARTIFACT} className={styles.tabsContent}>
-        <Artifact doc={artifactDoc} />
+        <ArtifactContainer designSessionId={designSessionId} />
       </TabsContent>
     </TabsRoot>
   )

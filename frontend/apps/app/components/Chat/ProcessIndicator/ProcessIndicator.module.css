@@ -7,22 +7,16 @@
   padding: var(--spacing-3);
   gap: var(--spacing-3);
   width: 100%;
-  min-width: 300px; /* Ensures minimum width */
-  max-width: 402px;
   transition:
     opacity 0.3s ease,
     background-color 0.3s ease,
-    border-color 0.3s ease; /* More specific transitions */
-  overflow: hidden;
-}
-
-.collapsed .header {
-  margin-bottom: 0;
+    border-color 0.3s ease;
+  overflow: visible;
 }
 
 .header {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
   gap: var(--spacing-3);
 }
@@ -31,8 +25,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: var(--spacing-8);
-  height: var(--spacing-8);
+  width: 32px;
+  height: 32px;
   border-radius: var(--border-radius-full);
   padding: var(--spacing-2);
 }
@@ -53,8 +47,8 @@
   flex-direction: column;
   justify-content: center;
   gap: var(--spacing-1);
-  min-width: 0; /* Allows text truncation to work properly */
-  width: 100%; /* Takes available space */
+  min-width: 0;
+  width: 100%;
 }
 
 .title {
@@ -96,11 +90,11 @@
 }
 
 .progressBar {
-  height: var(--spacing-1);
   background-color: var(--overlay-10);
   border-radius: var(--border-radius-sm);
   overflow: hidden;
   width: 100%;
+  height: 4px;
 }
 
 .progressFill {
@@ -116,7 +110,7 @@
   font-weight: 400;
   line-height: 1.15em;
   color: var(--primary-accent);
-  min-width: 40px; /* Fixed width for percentage text (0-100%) */
+  min-width: 40px;
   text-align: left;
 }
 

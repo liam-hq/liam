@@ -62,10 +62,14 @@ export async function generateUsecaseNode(
 ): Promise<WorkflowState> {
   state.logger.log(`[${NODE_NAME}] Started`)
 
-  if (state.onNodeProgress) {
-    await state.onNodeProgress(
-      'generateUsecase',
-      getWorkflowNodeProgress('generateUsecase'),
+  // Update progress message if available
+  if (state.progressTimelineItemId) {
+    await state.repositories.schema.updateTimelineItem(
+      state.progressTimelineItemId,
+      {
+        content: 'Processing: generateUsecase',
+        progress: getWorkflowNodeProgress('generateUsecase'),
+      },
     )
   }
 

@@ -32,7 +32,6 @@ export type ChatProcessorResult =
 export const processChatMessage = async (
   params: ChatProcessorParams,
   logger: NodeLogger,
-  onNodeProgress?: (nodeName: string, progress: number) => Promise<void>,
 ): Promise<ChatProcessorResult> => {
   const {
     message,
@@ -70,7 +69,6 @@ export const processChatMessage = async (
     userId,
     logger,
     retryCount: {},
-    onNodeProgress,
   }
 
   // Execute workflow

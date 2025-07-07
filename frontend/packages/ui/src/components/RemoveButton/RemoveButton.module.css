@@ -1,0 +1,68 @@
+.removeButton {
+  border-radius: var(--border-radius-full);
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  transition: all var(--default-animation-duration)
+    var(--default-timing-function);
+}
+
+.removeButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+/* Size variants */
+.sm {
+  width: 14px;
+  height: 14px;
+}
+
+.md {
+  width: 20px;
+  height: 20px;
+}
+
+/* Transparent variant */
+.transparent {
+  background-color: var(--overlay-10);
+}
+
+.transparent:hover:not(:disabled) {
+  background-color: var(--overlay-20);
+}
+
+.transparent:hover:not(:disabled) .removeIcon {
+  color: var(--global-foreground);
+}
+
+.transparent .removeIcon {
+  color: var(--overlay-50);
+}
+
+/* Solid variant */
+.solid {
+  background-color: var(--overlay-70);
+}
+
+.solid:hover:not(:disabled) {
+  background-color: var(--overlay-100);
+}
+
+.solid .removeIcon {
+  color: var(--button-foreground);
+}
+
+/* Icon sizing */
+.sm .removeIcon {
+  width: 10px;
+  height: 10px;
+}
+
+.md .removeIcon {
+  width: 14px;
+  height: 14px;
+}

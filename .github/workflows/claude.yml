@@ -38,7 +38,16 @@ jobs:
         uses: ./.github/actions/pnpm-setup
 
       - name: Run Claude PR Action
-        uses: anthropics/claude-code-action@91c510a769db0f9b79df0efbdded0c29c033f846 # beta
+        uses: anthropics/claude-code-action@6364776f60df0aeb83d4efda5906d68d8cc72137 # beta
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
-          allowed_tools: "Bash(pnpm fmt:*),Bash(pnpm install),Bash(pnpm lint:*),Bash(pnpm test:*),mcp__github__create_issue,mcp__github__add_issue_comment"
+          custom_instructions: |
+            You have also been granted tools for editing files and running pnpm commands (fmt, install, lint, test) for testing your changes: pnpm fmt, pnpm install, pnpm lint, pnpm test.
+          allowed_tools: |
+            Bash(pnpm fmt:*),
+            Bash(pnpm install),
+            Bash(pnpm lint:*),
+            Bash(pnpm test:*),
+            mcp__github__create_issue,
+            mcp__github__add_issue_comment,
+            mcp__github__create_pull_request

@@ -95,10 +95,14 @@ export async function designSchemaNode(
 ): Promise<WorkflowState> {
   state.logger.log(`[${NODE_NAME}] Started`)
 
-  if (state.onNodeProgress) {
-    await state.onNodeProgress(
-      'designSchema',
-      getWorkflowNodeProgress('designSchema'),
+  // Update progress message if available
+  if (state.progressTimelineItemId) {
+    await state.repositories.schema.updateTimelineItem(
+      state.progressTimelineItemId,
+      {
+        content: 'Processing: designSchema',
+        progress: getWorkflowNodeProgress('designSchema'),
+      },
     )
   }
 
