@@ -30,8 +30,15 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
-          ref: ${{ github.event.deployment.sha }}
+          ref: ${{ steps.snapshot.outputs.sha }}
           persist-credentials: false
+
+      - name: Snapshot deployment context to avoid race conditions
+        id: snapshot
+        run: |
+          echo "env_val=${{ github.event.deployment.environment }}" >> $GITHUB_OUTPUT
+          echo "target_url=${{ github.event.deployment_status.target_url }}" >> $GITHUB_OUTPUT
+          echo "sha=${{ github.event.deployment.sha }}" >> $GITHUB_OUTPUT
 
       - name: Check deployment conditions
         id: check
@@ -40,8 +47,8 @@ jobs:
         run: |
           event_name      = "${{ github.event_name }}"
           event_state     = "${{ github.event.deployment_status.state }}"
-          environment_val = "${{ github.event.deployment.environment }}"
-          target_url      = "${{ github.event.deployment_status.target_url }}"
+          environment_val = "${{ steps.snapshot.outputs.env_val }}"
+          target_url      = "${{ steps.snapshot.outputs.target_url }}"
 
           # Debug output to prevent silent failures
           puts "=== E2E DEPLOYMENT CHECK ==="
@@ -146,7 +153,7 @@ jobs:
         run: |
           STATE="${{ job.status }}"
           CONTEXT="E2E Tests / e2e-tests (${{ matrix.browser }})"
-          gh api repos/${{ github.repository }}/statuses/${{ github.sha }} \
+          gh api repos/${{ github.repository }}/statuses/${{ steps.snapshot.outputs.sha }} \
             --method POST \
             --field state="${STATE}" \
             --field context="${CONTEXT}" \
