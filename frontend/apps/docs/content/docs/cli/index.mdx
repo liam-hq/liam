@@ -29,10 +29,10 @@ This command processes your schema file and generates interactive ERD visualizat
 Once the ERD is generated, you can view it by serving the files using a local HTTP server:
 
 ```npm
-npx http-server dist  # or your custom output directory
+npx serve dist/  # or your custom output directory
 ```
 
-The server will start and provide you with a local URL (typically http://localhost:8080) where you can view your ERD in a web browser.
+The server will start and provide you with a local URL (typically http://localhost:3000) where you can view your ERD in a web browser.
 
 You can use any hosting service of your choice to serve the generated files.
 
@@ -62,7 +62,7 @@ The command generates a simple web application using [Vite](https://vite.dev/), 
 To view the generated ERD, serve the output directory using any HTTP server:
 
 ```npm
-npx http-server dist  # or your custom output directory
+npx serve dist/  # or your custom output directory
 ```
 
 ## Sample Projects
