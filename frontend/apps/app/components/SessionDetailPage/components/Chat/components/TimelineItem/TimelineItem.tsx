@@ -13,9 +13,11 @@ export const TimelineItem: FC<Props> = (props) => {
   // Handle schema_version role separately
   if ('building_schema_version_id' in props) {
     return (
-      <VersionMessage
-        buildingSchemaVersionId={props.building_schema_version_id}
-      />
+      <AgentMessage state="default">
+        <VersionMessage
+          buildingSchemaVersionId={props.building_schema_version_id}
+        />
+      </AgentMessage>
     )
   }
 
@@ -23,13 +25,15 @@ export const TimelineItem: FC<Props> = (props) => {
   if (props.role === 'progress' && 'progress' in props) {
     const progress = props.progress
     return (
-      <ProcessIndicator
-        initialExpanded
-        title="Processing AI Message"
-        subtitle={props.content}
-        progress={progress}
-        status={progress >= 100 ? 'complete' : 'processing'}
-      />
+      <AgentMessage state="default" message={props.content}>
+        <ProcessIndicator
+          initialExpanded
+          title="Processing AI Message"
+          subtitle={props.content}
+          progress={progress}
+          status={progress >= 100 ? 'complete' : 'processing'}
+        />
+      </AgentMessage>
     )
   }
 
