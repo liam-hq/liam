@@ -3,14 +3,17 @@ name: Claude PR Creator
 on:
   issues:
     types: [labeled]
+  push:  # for testing - REMOVE BEFORE MERGE
+    branches:
+      - 'feat/test-automated-workflows'
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event.issue.number }}
+  group: ${{ github.workflow }}-${{ github.event.issue.number || github.sha }}
   cancel-in-progress: true
 
 jobs:
   claude-pr-creator:
-    if: contains(github.event.label.name, 'claude-create-pr')
+    if: contains(github.event.label.name, 'claude-create-pr') || github.event_name == 'push'
     runs-on: ubuntu-latest
     timeout-minutes: 30
     permissions:
@@ -23,6 +26,23 @@ jobs:
           # Checkout using GitHub App Token
           token: ${{ secrets.GITHUB_TOKEN }}
           persist-credentials: false
+
+      # Fetch actual issue details for push events
+      - name: Get Issue Details
+        if: github.event_name == 'push'
+        id: issue
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const issue = await github.rest.issues.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: 2343
+            });
+            core.setOutput('number', issue.data.number);
+            core.setOutput('title', issue.data.title);
+            core.setOutput('body', issue.data.body);
 
       - name: Generate GitHub App Token
         uses: actions/create-github-app-token@df432ceedc7162793a195dd1713ff69aefc7379e # v2.0.6
@@ -38,9 +58,9 @@ jobs:
         uses: anthropics/claude-code-action@91c510a769db0f9b79df0efbdded0c29c033f846 # beta
         id: claude-code
         env:
-          ISSUE_NUMBER: ${{ github.event.issue.number }}
-          ISSUE_TITLE: ${{ github.event.issue.title }}
-          ISSUE_BODY: ${{ github.event.issue.body }}
+          ISSUE_NUMBER: ${{ github.event.issue.number || steps.issue.outputs.number }}
+          ISSUE_TITLE: ${{ github.event.issue.title || steps.issue.outputs.title }}
+          ISSUE_BODY: ${{ github.event.issue.body || steps.issue.outputs.body }}
         with:
           github-token: ${{ steps.app-token.outputs.token }}
           anthropic-api-key: ${{ secrets.ANTHROPIC_API_KEY }}
@@ -58,9 +78,9 @@ jobs:
       - name: Create Pull Request
         uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
         env:
-          ISSUE_NUMBER: ${{ github.event.issue.number }}
-          ISSUE_TITLE: ${{ github.event.issue.title }}
-          ISSUE_BODY: ${{ github.event.issue.body }}
+          ISSUE_NUMBER: ${{ github.event.issue.number || steps.issue.outputs.number }}
+          ISSUE_TITLE: ${{ github.event.issue.title || steps.issue.outputs.title }}
+          ISSUE_BODY: ${{ github.event.issue.body || steps.issue.outputs.body }}
         with:
           github-token: ${{ steps.app-token.outputs.token }}
           script: |
