@@ -22,6 +22,7 @@ export type WorkflowState = {
   retryCount: Record<string, number>
 
   ddlStatements?: string | undefined
+  dmlStatements?: string | undefined
 
   // Schema update fields
   buildingSchemaId: string
