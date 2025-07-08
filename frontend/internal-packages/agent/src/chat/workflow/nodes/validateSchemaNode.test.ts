@@ -54,9 +54,6 @@ describe('validateSchemaNode', () => {
       (message: string, metadata?: Record<string, unknown>) => void
     >
   }
-  let mockOnNodeProgress: MockedFunction<
-    (nodeName: string, progress: number) => Promise<void>
-  >
   let baseState: WorkflowState
 
   beforeEach(() => {
@@ -71,19 +68,29 @@ describe('validateSchemaNode', () => {
       error: vi.fn(),
     }
 
-    // Mock progress callback
-    mockOnNodeProgress = vi.fn()
-
     // Base state
     baseState = {
       userInput: 'test input',
       formattedHistory: 'test history',
-      schemaData: {} as WorkflowState['schemaData'],
+      schemaData: {
+        tables: {},
+      } satisfies WorkflowState['schemaData'] as WorkflowState['schemaData'],
       buildingSchemaId: 'schema-123',
       latestVersionNumber: 1,
       userId: 'user-123',
       designSessionId: 'session-123',
-      repositories: {} as WorkflowState['repositories'],
+      repositories: {
+        schema: {
+          getSchema: vi.fn(),
+          getDesignSession: vi.fn(),
+          createVersion: vi.fn(),
+          createTimelineItem: vi.fn(),
+          updateTimelineItem: vi.fn(),
+          createArtifact: vi.fn(),
+          updateArtifact: vi.fn(),
+          getArtifact: vi.fn(),
+        },
+      } satisfies WorkflowState['repositories'] as WorkflowState['repositories'],
       logger: mockLogger,
       retryCount: {},
       dmlStatements: `
@@ -93,7 +100,6 @@ describe('validateSchemaNode', () => {
         -- Update user name
         UPDATE users SET name = 'Updated User' WHERE email = 'test@example.com';
       `,
-      onNodeProgress: mockOnNodeProgress,
     }
 
     // Mock utility functions
@@ -125,46 +131,6 @@ describe('validateSchemaNode', () => {
         ...baseState,
         error: undefined,
       })
-    })
-
-    it('should call node progress callback with correct parameters', async () => {
-      const mockResults: SqlResult[] = [
-        createMockSqlResult({
-          id: 'result-1',
-          sql: "INSERT INTO users (email, name) VALUES ('test@example.com', 'Test User');",
-          success: true,
-          result: { rowCount: 1 },
-        }),
-      ]
-
-      vi.mocked(executeQuery).mockResolvedValue(mockResults)
-
-      await validateSchemaNode(baseState)
-
-      expect(mockOnNodeProgress).toHaveBeenCalledWith('validateSchema', 75)
-    })
-
-    it('should work without node progress callback', async () => {
-      const mockResults: SqlResult[] = [
-        createMockSqlResult({
-          id: 'result-1',
-          sql: "INSERT INTO users (email, name) VALUES ('test@example.com', 'Test User');",
-          success: true,
-          result: { rowCount: 1 },
-        }),
-      ]
-
-      vi.mocked(executeQuery).mockResolvedValue(mockResults)
-
-      const stateWithoutProgress = {
-        ...baseState,
-        onNodeProgress: undefined,
-      }
-
-      const result = await validateSchemaNode(stateWithoutProgress)
-
-      expect(result.error).toBeUndefined()
-      expect(mockOnNodeProgress).not.toHaveBeenCalled()
     })
 
     it('should handle empty DML statements gracefully', async () => {
@@ -382,27 +348,6 @@ describe('validateSchemaNode', () => {
         `[validateSchemaNode] DML execution failed: ${errorMessage}`,
       )
     })
-
-    it('should handle progress callback failure gracefully', async () => {
-      const mockResults: SqlResult[] = [
-        createMockSqlResult({
-          id: 'result-1',
-          sql: "INSERT INTO users (email, name) VALUES ('test@example.com', 'Test User');",
-          success: true,
-          result: { rowCount: 1 },
-        }),
-      ]
-
-      vi.mocked(executeQuery).mockResolvedValue(mockResults)
-      mockOnNodeProgress.mockImplementation(() => {
-        throw new Error('Progress callback error')
-      })
-
-      // The function should continue despite progress callback error
-      await expect(validateSchemaNode(baseState)).rejects.toThrow(
-        'Progress callback error',
-      )
-    })
   })
 
   describe('Edge cases', () => {
@@ -585,7 +530,12 @@ describe('validateSchemaNode', () => {
 
       vi.mocked(executeQuery).mockResolvedValue(mockResults)
 
-      await validateSchemaNode(baseState)
+      const stateWithProgressId = {
+        ...baseState,
+        progressTimelineItemId: 'progress-123',
+      }
+
+      await validateSchemaNode(stateWithProgressId)
 
       expect(getWorkflowNodeProgress).toHaveBeenCalledWith('validateSchema')
     })
