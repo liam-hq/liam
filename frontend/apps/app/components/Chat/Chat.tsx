@@ -9,7 +9,6 @@ import {
   type TimelineItemType,
   useRealtimeTimelineItems,
 } from './hooks/useRealtimeTimelineItems'
-import { getCurrentUserId } from './services'
 import { sendChatMessage } from './services/aiMessageService'
 import { generateTimelineItemId } from './services/timelineItemHelpers'
 import type { TimelineItemEntry } from './types/chatTypes'
@@ -28,20 +27,10 @@ interface Props {
 }
 
 export const Chat: FC<Props> = ({ schemaData, designSession }) => {
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null)
   const { timelineItems: realtimeTimelineItems, addOrUpdateTimelineItem } =
-    useRealtimeTimelineItems(designSession, currentUserId)
+    useRealtimeTimelineItems(designSession)
   const [isLoading, startTransition] = useTransition()
   const messagesEndRef = useRef<HTMLDivElement>(null)
-
-  // Get current user ID on component mount
-  useEffect(() => {
-    const fetchUserId = async () => {
-      const userId = await getCurrentUserId()
-      setCurrentUserId(userId)
-    }
-    fetchUserId()
-  }, [])
 
   // Scroll to bottom when component mounts or messages change
   useEffect(() => {
@@ -50,14 +39,11 @@ export const Chat: FC<Props> = ({ schemaData, designSession }) => {
 
   // Start AI response without saving user message (for auto-start scenarios)
   const startAIResponse = async (content: string) => {
-    if (!currentUserId) return
-
     // Send chat message to API
     const result = await sendChatMessage({
-      message: content,
+      userInput: content,
       timelineItems: realtimeTimelineItems,
       designSession,
-      currentUserId,
     })
 
     if (result.success) {

@@ -98,7 +98,7 @@ export const ProcessIndicator: FC<ProcessIndicatorProps> = ({
 
   return (
     <div
-      className={`${styles.container} ${!isExpanded ? styles.collapsed : ''}`}
+      className={styles.container}
       aria-live={effectiveStatus === 'processing' ? 'polite' : 'off'}
     >
       <div className={styles.header}>

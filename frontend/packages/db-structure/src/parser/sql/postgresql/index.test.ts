@@ -485,26 +485,36 @@ describe(processor, () => {
     })
   })
 
-  describe('Long "create table" statement (exceeds 500 lines, surpassing CHUNK_SIZE)', () => {
+  describe('Long "create table" statement (surpassing CHUNK_SIZE). regression test for liam-hq/liam#874', () => {
+    // Use smaller chunkSize for faster testing
+    const testChunkSize = 10
+
     it('parses without errors', async () => {
-      const _500Lines = '\n'.repeat(500)
-      const { value, errors } = await processor(/* sql */ `
+      const linePaddingForTest = '\n'.repeat(testChunkSize)
+      const { value, errors } = await processor(
+        /* sql */ `
         CREATE TABLE users (
           id BIGSERIAL PRIMARY KEY,
           name VARCHAR(255) NOT NULL
-          ${_500Lines}
+          ${linePaddingForTest}
         );
-      `)
+      `,
+        testChunkSize,
+      )
 
       expect(value).toEqual(parserTestCases.normal)
       expect(errors).toEqual([])
     })
-  }, 30000)
+  })
 
-  describe('Long "create function" statement (exceeds 500 lines, surpassing CHUNK_SIZE)', () => {
+  describe('Long "create function" statement (surpassing CHUNK_SIZE). regression test for liam-hq/liam#874', () => {
+    // Use smaller chunkSize for faster testing
+    const testChunkSize = 10
+
     it('parses without errors', async () => {
-      const _500Lines = '\n'.repeat(500)
-      const { value, errors } = await processor(/* sql */ `
+      const linePaddingForTest = '\n'.repeat(testChunkSize)
+      const { value, errors } = await processor(
+        /* sql */ `
         CREATE TABLE users (
           id BIGSERIAL PRIMARY KEY,
           name VARCHAR(255) NOT NULL
@@ -514,12 +524,14 @@ describe(processor, () => {
         RETURNS void AS $$
         BEGIN
             RAISE NOTICE 'Stored procedure called with parameter: %', p_id;
-            ${_500Lines}
+            ${linePaddingForTest}
         END;
         $$ LANGUAGE plpgsql;
-      `)
+      `,
+        testChunkSize,
+      )
       expect(value).toEqual(parserTestCases.normal)
       expect(errors).toEqual([])
     })
-  }, 30000)
+  })
 })

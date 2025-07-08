@@ -7,20 +7,25 @@
   "dependencies": {
     "@huggingface/transformers": "3.3.3",
     "@liam-hq/db-structure": "workspace:*",
+    "neverthrow": "8.2.0",
     "valibot": "1.1.0"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.0.0",
+    "@biomejs/biome": "2.0.4",
     "@liam-hq/configs": "workspace:*",
-    "eslint": "9.28.0",
-    "vitest": "3.2.2"
+    "eslint": "9.29.0",
+    "vitest": "3.2.4"
   },
   "scripts": {
-    "evaluate-schema": "node --experimental-strip-types src/cli/evaluate-schema.ts",
+    "evaluateSchema": "node --experimental-strip-types src/cli/evaluateSchema.ts",
     "fmt": "concurrently \"pnpm:fmt:*\"",
     "fmt:biome": "biome check --write --unsafe .",
     "fmt:eslint": "eslint --fix .",
-    "setup-workspace": "node --experimental-strip-types src/cli/setup-workspace.ts",
+    "lint": "concurrently \"pnpm:lint:*\"",
+    "lint:biome": "biome check .",
+    "lint:eslint": "eslint .",
+    "lint:tsc": "tsc --noEmit",
+    "setupWorkspace": "node --experimental-strip-types src/cli/setupWorkspace.ts",
     "test": "vitest --watch=false --passWithNoTests"
   }
 }

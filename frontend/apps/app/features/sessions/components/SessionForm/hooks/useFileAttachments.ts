@@ -19,12 +19,13 @@ export const useFileAttachments = () => {
     setAttachments((prev) => [...prev, ...newAttachments])
   }, [])
 
-  const handleRemoveAttachment = useCallback((index: number) => {
+  const handleRemoveAttachment = useCallback((id: string) => {
     setAttachments((prev) => {
-      const updated = [...prev]
-      URL.revokeObjectURL(updated[index].url)
-      updated.splice(index, 1)
-      return updated
+      const attachmentToRemove = prev.find((attachment) => attachment.id === id)
+      if (attachmentToRemove) {
+        URL.revokeObjectURL(attachmentToRemove.url)
+      }
+      return prev.filter((attachment) => attachment.id !== id)
     })
   }, [])
 

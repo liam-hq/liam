@@ -22,8 +22,6 @@ export const CommandPalette: FC = () => {
   const table = schema.current.tables[tableName ?? '']
   const { selectTable } = useTableSelection()
 
-  const [focusedTableName, setFocusedTableName] = useState<string | null>(null)
-
   const goToERD = useCallback(
     (tableName: string) => {
       selectTable({ tableId: tableName, displayArea: 'main' })
@@ -45,16 +43,31 @@ export const CommandPalette: FC = () => {
     return () => document.removeEventListener('keydown', down)
   }, [])
 
+  // Select option by pressing [Enter] key (with/without ⌘ key)
+  useEffect(() => {
+    const down = (event: KeyboardEvent) => {
+      if (!open || !tableName) return
+
+      if (event.key === 'Enter') {
+        if (event.metaKey || event.ctrlKey) {
+          window.open(`?active=${tableName}`)
+        } else {
+          goToERD(tableName)
+        }
+      }
+    }
+
+    document.addEventListener('keydown', down)
+    return () => document.removeEventListener('keydown', down)
+  }, [open, tableName])
+
   return (
     <Command.Dialog
       open={open}
       onOpenChange={setOpen}
       contentClassName={styles.content}
       value={tableName ?? ''}
-      onValueChange={(v) => {
-        if (focusedTableName) return
-        setTableName(v)
-      }}
+      onValueChange={(v) => setTableName(v)}
     >
       <DialogTitle hidden>Command Palette</DialogTitle>
       <DialogDescription hidden>
@@ -66,11 +79,15 @@ export const CommandPalette: FC = () => {
           <Search className={styles.searchIcon} />
           <Command.Input
             placeholder="Search"
-            onValueChange={() => setFocusedTableName(null)}
+            onBlur={(event) => event.target.focus()}
           />
         </div>
         <DialogClose asChild>
-          <Button size="xs" variant="outline-secondary">
+          <Button
+            size="xs"
+            variant="outline-secondary"
+            className={styles.escButton}
+          >
             ESC
           </Button>
         </DialogClose>
@@ -78,29 +95,24 @@ export const CommandPalette: FC = () => {
       <div className={styles.main}>
         <Command.List>
           <Command.Empty>No results found.</Command.Empty>
-          <Command.Group heading="Suggestions">
+          <Command.Group heading="Tables">
             {Object.values(schema.current.tables).map((table) => (
-              <Command.Item
-                key={table.name}
-                value={table.name}
-                onSelect={() => goToERD(table.name)}
-                data-focused={focusedTableName === table.name}
-              >
-                {/** biome-ignore lint/a11y/useKeyWithClickEvents: Keyboard interaction is implemented in the parent Command.Item component's onSelect handler. */}
-                <div
-                  className={styles.itemInner}
+              <Command.Item key={table.name} value={table.name} asChild>
+                <a
+                  href={`?active=${table.name}`}
                   onClick={(event) => {
-                    event.stopPropagation()
-                    setTableName(table.name)
-                    setFocusedTableName((prev) =>
-                      prev === table.name ? null : table.name,
-                    )
+                    // Do not call preventDefault to allow the default link behavior when ⌘ key is pressed
+                    if (event.ctrlKey || event.metaKey) {
+                      return
+                    }
+
+                    event.preventDefault()
+                    goToERD(table.name)
                   }}
-                  onDoubleClick={() => goToERD(table.name)}
                 >
                   <Table2 className={styles.itemIcon} />
-                  {table.name}
-                </div>
+                  <span className={styles.itemText}>{table.name}</span>
+                </a>
               </Command.Item>
             ))}
           </Command.Group>

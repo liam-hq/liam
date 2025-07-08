@@ -38,15 +38,6 @@ export type WorkflowState = {
   // Logging functionality
   logger: NodeLogger
 
-  // Progress callback for node execution
-  onNodeProgress?:
-    | ((nodeName: string, progress: number) => Promise<void>)
-    | undefined
-}
-
-/**
- * Workflow execution options
- */
-export interface WorkflowOptions {
-  recursionLimit?: number
+  // Progress timeline item ID for tracking
+  progressTimelineItemId?: string | undefined
 }

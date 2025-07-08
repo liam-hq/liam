@@ -1,0 +1,11 @@
+pre-commit:
+  parallel: true
+  commands:
+    lint:
+      glob: "*.{js,jsx,ts,tsx,json,md,mdx,yml,yaml}"
+      run: pnpm lint
+      stage_fixed: true
+      skip:
+        - merge
+        - rebase
+      fail_text: "Lint failed. For AI Agents: Please fix all linting errors before committing."

@@ -1,0 +1,165 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-3);
+  width: 100%;
+}
+
+.statusMessage {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-3);
+  padding: 0 var(--spacing-1);
+}
+
+.statusIndicator {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-1half);
+}
+
+.spinner {
+  display: flex;
+  align-items: center;
+  width: 12px;
+  height: 12px;
+  color: var(--overlay-50);
+}
+
+.checkIcon {
+  color: var(--button-primary-background);
+  width: var(--spacing-3);
+  height: var(--spacing-3);
+}
+
+.invalidIcon {
+  color: var(--severity-warning-100);
+  width: var(--spacing-3);
+  height: var(--spacing-3);
+}
+
+.validatingText {
+  font-size: var(--font-size-3);
+  color: var(--overlay-50);
+  font-weight: var(--font-weight-medium);
+}
+
+.validText {
+  font-size: var(--font-size-2);
+  color: var(--button-primary-background);
+  font-weight: var(--font-weight-regular);
+  white-space: nowrap;
+}
+
+.invalidText {
+  font-size: var(--font-size-2);
+  color: var(--severity-warning-100);
+  font-weight: var(--font-weight-regular);
+  white-space: nowrap;
+}
+
+.detectedText {
+  font-size: var(--font-size-3);
+  color: var(--overlay-50);
+}
+
+.formatName {
+  color: var(--global-foreground);
+  font-weight: var(--font-weight-medium);
+}
+
+.errorText {
+  font-size: var(--font-size-3);
+  color: var(--overlay-50);
+}
+
+.schemaInfo {
+  background-color: var(--overlay-5);
+  border-radius: var(--border-radius-md);
+  padding: var(--spacing-2);
+  width: 100%;
+}
+
+.schemaItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-2);
+  width: 100%;
+}
+
+.schemaFile {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-1half);
+  background-color: var(--overlay-5);
+  border: 1px solid var(--overlay-5);
+  border-radius: var(--border-radius-base);
+  padding: var(--spacing-1half);
+  padding-right: calc(var(--spacing-1half) + 14px + var(--spacing-1half)); /* RemoveButton幅 + gap */
+  position: relative;
+}
+
+.fileName {
+  font-size: var(--font-size-3);
+  color: var(--global-foreground);
+  font-weight: var(--font-weight-regular);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+}
+
+.removeButton {
+  position: absolute;
+  right: var(--spacing-1half);
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+/* Simple variant styles - for URL presenter */
+.simpleSchemaInfo {
+  background-color: var(--overlay-5);
+  border-radius: var(--border-radius-md);
+  padding: var(--spacing-2) var(--spacing-2) var(--spacing-2) var(--spacing-3);
+  width: 100%;
+}
+
+.simpleSchemaItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.errorActions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2);
+  align-items: flex-start;
+}
+
+.troubleshootingLink {
+  display: inline-flex;
+  align-items: center;
+  padding: 0;
+  background: none;
+  border: none;
+  font-size: var(--font-size-3);
+  color: var(--callout-warning-link);
+  cursor: pointer;
+  text-decoration: underline;
+  transition: color var(--default-animation-duration)
+    var(--default-timing-function);
+}
+
+.troubleshootingLink:hover {
+  color: var(--callout-warning-link);
+  opacity: 0.8;
+}
+
+.troubleshootingLink:focus-visible {
+  outline: 2px solid var(--callout-warning-link);
+  outline-offset: 2px;
+  border-radius: 2px;
+}

@@ -41,7 +41,6 @@
 
 .dd {
   display: flex;
-  align-items: center;
   padding: var(--spacing-1) var(--spacing-2);
   color: var(--global-foreground);
   font-family: var(--code-font);

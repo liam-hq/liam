@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test'
-import { DEFAULT_TEST_URL } from '../../default_test_url'
+import { DEFAULT_TEST_URL } from '../../defaultTestUrl'
 
 test.beforeEach(async ({ page, isMobile }) => {
   await page.goto(DEFAULT_TEST_URL)

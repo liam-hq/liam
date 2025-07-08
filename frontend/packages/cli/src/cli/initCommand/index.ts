@@ -4,6 +4,7 @@ import { exit } from 'node:process'
 import { Command } from 'commander'
 import inquirer from 'inquirer'
 import * as yocto from 'yoctocolors'
+import { generateBanner } from '../banner.js'
 import {
   DbOrmDiscussionUrl,
   DiscussionUrl,
@@ -263,7 +264,9 @@ const displayNextSteps = (
   console.info(
     `\n${stepNum}) Start your favorite httpd for serving dist. e.g.:`,
   )
-  console.info(yocto.blueBright('   $ npx http-server dist'))
+  console.info(yocto.blueBright('   $ npx serve dist/'))
+  console.info(yocto.blueBright('   or'))
+  console.info(yocto.blueBright('   $ npx http-server -c-1 dist/'))
 }
 
 /**
@@ -336,6 +339,7 @@ ${setupSteps}
  * Main action function for the init command
  */
 initCommand.action(async () => {
+  await generateBanner()
   // Display welcome message
   displayWelcomeMessage()
 

@@ -3,6 +3,7 @@ import {
   AssocNode,
   CallNode,
   FalseNode,
+  HashNode,
   IntegerNode,
   KeywordHashNode,
   LocalVariableReadNode,
@@ -183,11 +184,31 @@ function processCallNode(
   }
 
   // Process column nodes
-  const column = extractColumnDetails(node)
-  if (column.name) {
-    columns.push(column)
-    // TODO: Rails syntax like `t.text "mention", index: { unique: true }` should be supported
-    // to create unique indexes. Currently, only `t.index` method calls create indexes.
+  const result = extractColumnDetails(node)
+  if (result.column.name) {
+    columns.push(result.column)
+
+    // Handle inline index creation
+    if (result.index) {
+      const index = result.index
+      // Generate default index name if not provided
+      if (!index.name) {
+        const prefix = index.unique ? 'unique_' : 'index_'
+        index.name = `${prefix}${result.column.name}`
+      }
+
+      indexes.push(index)
+
+      // Add unique constraint if index is unique
+      if (index.unique && result.column.name) {
+        const uniqueConstraint: UniqueConstraint = {
+          type: 'UNIQUE',
+          name: `UNIQUE_${result.column.name}`,
+          columnName: result.column.name,
+        }
+        constraints.push(uniqueConstraint)
+      }
+    }
   }
 }
 
@@ -229,22 +250,31 @@ function extractTableDetails(
   return [columns, indexes, constraints, errors]
 }
 
-function extractColumnDetails(node: CallNode): Column {
+function extractColumnDetails(node: CallNode): {
+  column: Column
+  index: Index | null
+} {
   const column = aColumn({
     name: '',
     type: convertColumnType(node.name),
   })
+  let index: Index | null = null
 
   const argNodes = node.arguments_?.compactChildNodes() || []
   for (const argNode of argNodes) {
     if (argNode instanceof StringNode) {
       column.name = argNode.unescaped.value
     } else if (argNode instanceof KeywordHashNode) {
-      extractColumnOptions(argNode, column)
+      index = extractColumnOptions(argNode, column)
     }
   }
 
-  return column
+  // Set index column name if index was created
+  if (index && column.name) {
+    index.columns = [column.name]
+  }
+
+  return { column, index }
 }
 
 function extractIndexDetails(node: CallNode): Index {
@@ -272,7 +302,12 @@ function extractIndexDetails(node: CallNode): Index {
   return index
 }
 
-function extractColumnOptions(hashNode: KeywordHashNode, column: Column): void {
+function extractColumnOptions(
+  hashNode: KeywordHashNode,
+  column: Column,
+): Index | null {
+  let index: Index | null = null
+
   for (const argElement of hashNode.elements) {
     if (!(argElement instanceof AssocNode)) continue
     // @ts-expect-error: unescaped is defined as string but it is actually object
@@ -302,8 +337,70 @@ function extractColumnOptions(hashNode: KeywordHashNode, column: Column): void {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         column.comment = value.unescaped.value
         break
+      case 'index':
+        // Handle inline index syntax
+        index = extractInlineIndexOptions(value, column.name)
+        break
     }
   }
+
+  return index
+}
+
+/**
+ * Extract inline index options from column definition
+ */
+function extractInlineIndexOptions(
+  value: Node,
+  columnName: string,
+): Index | null {
+  const index = anIndex({
+    name: '',
+    unique: false,
+    columns: [columnName],
+    type: '',
+  })
+
+  if (value instanceof TrueNode) {
+    // Simple index: index: true
+    return index
+  }
+
+  if (value instanceof KeywordHashNode || value instanceof HashNode) {
+    // Hash options: index: { unique: true, name: "custom_name" }
+    for (const argElement of value.elements) {
+      if (!(argElement instanceof AssocNode)) continue
+      // @ts-expect-error: unescaped is defined as string but it is actually object
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      const key = argElement.key.unescaped.value
+      const optionValue = argElement.value
+
+      switch (key) {
+        case 'unique':
+          index.unique = optionValue instanceof TrueNode
+          break
+        case 'name':
+          if (
+            optionValue instanceof StringNode ||
+            optionValue instanceof SymbolNode
+          ) {
+            index.name = optionValue.unescaped.value
+          }
+          break
+        case 'using':
+          if (
+            optionValue instanceof StringNode ||
+            optionValue instanceof SymbolNode
+          ) {
+            index.type = optionValue.unescaped.value
+          }
+          break
+      }
+    }
+    return index
+  }
+
+  return null
 }
 
 function extractIndexOptions(hashNode: KeywordHashNode, index: Index): void {

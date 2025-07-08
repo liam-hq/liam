@@ -13,10 +13,9 @@ type DesignSession = {
 }
 
 interface SendChatMessageParams {
-  message: string
+  userInput: string
   timelineItems: TimelineItemEntry[]
   designSession: DesignSession
-  currentUserId: string
 }
 
 interface SendChatMessageResult {
@@ -37,10 +36,9 @@ const ChatAPIResponseSchema = object({
  * Calls the /api/chat endpoint with the given parameters
  */
 const callChatAPI = async (
-  message: string,
+  userInput: string,
   history: [string, string][],
   designSession: DesignSession,
-  currentUserId: string,
 ): Promise<Response> => {
   const response = await fetch('/api/chat', {
     method: 'POST',
@@ -48,13 +46,12 @@ const callChatAPI = async (
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      message,
+      userInput,
       history,
       organizationId: designSession.organizationId,
       buildingSchemaId: designSession.buildingSchemaId,
       latestVersionNumber: designSession.latestVersionNumber || 0,
       designSessionId: designSession.id,
-      userId: currentUserId,
     }),
   })
 
@@ -82,22 +79,16 @@ const handleChatError = (error: unknown): SendChatMessageResult => {
  * Messages are saved server-side and received via Supabase Realtime
  */
 export const sendChatMessage = async ({
-  message,
+  userInput,
   timelineItems,
   designSession,
-  currentUserId,
 }: SendChatMessageParams): Promise<SendChatMessageResult> => {
   try {
     // Format timeline item history for API
     const history = formatTimelineItemHistory(timelineItems)
 
     // Call API
-    const response = await callChatAPI(
-      message,
-      history,
-      designSession,
-      currentUserId,
-    )
+    const response = await callChatAPI(userInput, history, designSession)
 
     // Parse JSON response with type safety
     const rawData = await response.json()

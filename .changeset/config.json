@@ -20,6 +20,7 @@
     "@liam-hq/db",
     "@liam-hq/jobs",
     "@liam-hq/storybook",
-    "@liam-hq/schema-bench"
+    "@liam-hq/schema-bench",
+    "@liam-hq/artifact"
   ]
 }

@@ -4,7 +4,7 @@ import userEvent from '@testing-library/user-event'
 import { ReactFlowProvider } from '@xyflow/react'
 import { NuqsTestingAdapter } from 'nuqs/adapters/testing'
 import { type FC, type ReactNode, useContext } from 'react'
-import { afterEach, describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import {
   SchemaProvider,
   type SchemaProviderValue,
@@ -220,72 +220,6 @@ describe('preview with option interactions', () => {
   })
 })
 
-describe('focus on options by single click', () => {
-  it('toggles option focus on single click', async () => {
-    const {
-      user,
-      elements: { dialog, preview },
-    } = await prepareCommandPalette()
-
-    const followsOption = within(dialog).getByRole('option', {
-      name: 'follows',
-    })
-    const usersOption = within(dialog).getByRole('option', { name: 'users' })
-
-    // focuses on "follows" option and displays a preview of the "follows" table
-    await user.click(followsOption.firstChild as Element)
-    await user.hover(usersOption)
-    expect(within(preview).getByText('follows')).toBeInTheDocument()
-
-    // removes focus from "follows" option and displays a preview of the hovered option
-    await user.click(followsOption.firstChild as Element)
-    await user.hover(usersOption)
-    expect(within(preview).getByText('users')).toBeInTheDocument()
-  })
-
-  it('updates the focus when another option is clicked', async () => {
-    const {
-      user,
-      elements: { dialog, preview },
-    } = await prepareCommandPalette()
-
-    const followsOption = within(dialog).getByRole('option', {
-      name: 'follows',
-    })
-    const postsOption = within(dialog).getByRole('option', { name: 'posts' })
-    const usersOption = within(dialog).getByRole('option', { name: 'users' })
-
-    // focuses on "follows" option and displays a preview of the "follows" table
-    await user.click(followsOption.firstChild as Element)
-    await user.hover(usersOption)
-    expect(within(preview).getByText('follows')).toBeInTheDocument()
-
-    // focuses on "posts" option and displays a preview of the "posts" table
-    await user.click(postsOption.firstChild as Element)
-    await user.hover(usersOption)
-    expect(within(preview).getByText('posts')).toBeInTheDocument()
-  })
-
-  it('removes focus when combobox value is updated', async () => {
-    const {
-      user,
-      elements: { dialog, searchCombobox, preview },
-    } = await prepareCommandPalette()
-
-    const followsOption = within(dialog).getByRole('option', {
-      name: 'follows',
-    })
-
-    // focuses on "follows" option and displays a preview of the "follows" table
-    await user.click(followsOption.firstChild as Element)
-    expect(within(preview).getByText('follows')).toBeInTheDocument()
-
-    // focuses on "posts" option and displays a preview of the "posts" table
-    await user.type(searchCombobox, 'posts')
-    expect(within(preview).getByText('posts')).toBeInTheDocument()
-  })
-})
-
 describe('go to ERD with option select', () => {
   it('go to the table of clicked option and close dialog', async () => {
     const {
@@ -299,7 +233,7 @@ describe('go to ERD with option select', () => {
     const followsOption = within(dialog).getByRole('option', {
       name: 'follows',
     })
-    await user.dblClick(followsOption.firstChild as Element)
+    await user.click(followsOption.firstChild as Element)
 
     expect(dialog).not.toBeInTheDocument()
     expect(activeTableNameDisplay).toHaveTextContent(/^follows$/)
@@ -321,5 +255,26 @@ describe('go to ERD with option select', () => {
 
     expect(dialog).not.toBeInTheDocument()
     expect(activeTableNameDisplay).toHaveTextContent(/^posts$/)
+  })
+})
+
+describe('opens table in a new tab when selecting option with ⌘ key', () => {
+  // It's impossible to check this behavior with vitest
+  it.skip('opens the table of selected option by ⌘+click')
+
+  it('opens the table of selected option by ⌘+Enter', async () => {
+    const spyWindowOpen = vi.spyOn(window, 'open')
+
+    const {
+      user,
+      elements: { preview },
+    } = await prepareCommandPalette()
+
+    // select "posts" option by typing ⌘+Enter
+    await user.keyboard('{ArrowDown}')
+    expect(within(preview).getByText('posts')).toBeInTheDocument()
+    await user.keyboard('{Meta>}{Enter}{/Meta}')
+
+    expect(spyWindowOpen).toHaveBeenCalledWith('?active=posts')
   })
 })
