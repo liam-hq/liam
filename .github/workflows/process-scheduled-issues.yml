@@ -23,7 +23,7 @@ jobs:
         uses: actions/create-github-app-token@df432ceedc7162793a195dd1713ff69aefc7379e # v2.0.6
         id: app-token
         with:
-          app-id: ${{ secretsLIAM_CODE_ASSISTANT_APP_ID }}
+          app-id: ${{ secrets.LIAM_CODE_ASSISTANT_APP_ID }}
           private-key: ${{ secrets.LIAM_CODE_ASSISTANT_PRIVATE_KEY }}
           permission-contents: read
           permission-issues: write
