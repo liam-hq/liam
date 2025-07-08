@@ -6,7 +6,6 @@ import { AgentMessage } from './components/AgentMessage'
 import { ProcessIndicator } from './components/ProcessIndicator'
 import { UserMessage } from './components/UserMessage'
 import { VersionMessage } from './components/VersionMessage'
-import styles from './TimelineItem.module.css'
 
 type Props = TimelineItemProps
 
@@ -14,11 +13,9 @@ export const TimelineItem: FC<Props> = (props) => {
   // Handle schema_version role separately
   if ('building_schema_version_id' in props) {
     return (
-      <div className={styles.messageContainer}>
-        <VersionMessage
-          buildingSchemaVersionId={props.building_schema_version_id}
-        />
-      </div>
+      <VersionMessage
+        buildingSchemaVersionId={props.building_schema_version_id}
+      />
     )
   }
 
@@ -48,25 +45,17 @@ export const TimelineItem: FC<Props> = (props) => {
       })
     : null
 
-  return (
-    <div className={styles.messageContainer}>
-      {role === 'user' ? (
-        <UserMessage
-          content={content}
-          timestamp={timestamp}
-          avatarSrc={avatarSrc}
-          avatarAlt={avatarAlt}
-          initial={initial}
-        />
-      ) : (
-        <AgentMessage
-          state="default"
-          message={content}
-          time={formattedTime || ''}
-        >
-          {children}
-        </AgentMessage>
-      )}
-    </div>
+  return role === 'user' ? (
+    <UserMessage
+      content={content}
+      timestamp={timestamp}
+      avatarSrc={avatarSrc}
+      avatarAlt={avatarAlt}
+      initial={initial}
+    />
+  ) : (
+    <AgentMessage state="default" message={content} time={formattedTime || ''}>
+      {children}
+    </AgentMessage>
   )
 }
