@@ -18,7 +18,7 @@ export const postgresqlSchemaDeparser: SchemaDeparser = (schema: Schema) => {
 
   // 2. Generate CREATE INDEX statements for all tables
   for (const table of Object.values(schema.tables) as Table[]) {
-    const indexes = table.indexes ? Object.values(table.indexes) : []
+    const indexes = Object.values(table.indexes)
     for (const index of indexes) {
       const createIndexDDL = generateCreateIndexStatement(table.name, index)
       ddlStatements.push(createIndexDDL)
