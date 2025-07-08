@@ -3,6 +3,9 @@ on:
   schedule:
     - cron: '0 22 * * 0-4'  # Run at 22:00 Sunday to Thursday
   workflow_dispatch:  # Manual execution available
+  push:
+    branches:
+      - 'feat/test-automated-workflows'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
