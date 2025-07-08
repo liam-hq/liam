@@ -1,6 +1,6 @@
 import { configure } from '@trigger.dev/sdk'
 
-export { processChatTask } from './trigger/chatJobs'
+export { deepModelingWorkflowTask } from './trigger/deepModelingWorkflowTask'
 export { analyzeRepositoryTask } from './trigger/jobs'
 
 if (

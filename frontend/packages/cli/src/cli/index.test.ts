@@ -51,7 +51,7 @@ describe('program', () => {
     expect(formatOption).toBeDefined()
     expect(formatOption?.flags).toBe('--format <format>')
     expect(formatOption?.description).toBe(
-      'Format of the input file (schemarb|postgres|prisma|tbls)',
+      'Format of the input file (schemarb|postgres|prisma|drizzle|tbls)',
     )
   })
 

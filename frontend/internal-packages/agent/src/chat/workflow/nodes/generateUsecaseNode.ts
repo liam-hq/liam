@@ -1,3 +1,4 @@
+import { ResultAsync } from 'neverthrow'
 import { QAGenerateUsecaseAgent } from '../../../langchain/agents'
 import type { Usecase } from '../../../langchain/agents/qaGenerateUsecaseAgent/agent'
 import type { BasePromptVariables } from '../../../langchain/utils/types'
@@ -62,10 +63,14 @@ export async function generateUsecaseNode(
 ): Promise<WorkflowState> {
   state.logger.log(`[${NODE_NAME}] Started`)
 
-  if (state.onNodeProgress) {
-    await state.onNodeProgress(
-      'generateUsecase',
-      getWorkflowNodeProgress('generateUsecase'),
+  // Update progress message if available
+  if (state.progressTimelineItemId) {
+    await state.repositories.schema.updateTimelineItem(
+      state.progressTimelineItemId,
+      {
+        content: 'Processing: generateUsecase',
+        progress: getWorkflowNodeProgress('generateUsecase'),
+      },
     )
   }
 
@@ -95,24 +100,15 @@ export async function generateUsecaseNode(
 
   const retryCount = state.retryCount[NODE_NAME] ?? 0
 
-  try {
-    const result = await qaAgent.generate(promptVariables)
+  const usecaseResult = await ResultAsync.fromPromise(
+    qaAgent.generate(promptVariables),
+    (error) => (error instanceof Error ? error.message : String(error)),
+  )
 
-    // Log the usecase results for debugging/monitoring purposes
-    logUsecaseResults(state.logger, result.usecases)
-
-    state.logger.log(`[${NODE_NAME}] Completed`)
-
-    return {
-      ...state,
-      generatedUsecases: result.usecases,
-      error: undefined, // Clear error on success
-    }
-  } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : String(error)
+  if (usecaseResult.isErr()) {
+    const errorMessage = usecaseResult.error
     state.logger.error(`[${NODE_NAME}] Failed: ${errorMessage}`)
 
-    // Increment retry count and set error
     return {
       ...state,
       error: errorMessage,
@@ -121,5 +117,15 @@ export async function generateUsecaseNode(
         [NODE_NAME]: retryCount + 1,
       },
     }
+  }
+
+  const result = usecaseResult.value
+  logUsecaseResults(state.logger, result.usecases)
+  state.logger.log(`[${NODE_NAME}] Completed`)
+
+  return {
+    ...state,
+    generatedUsecases: result.usecases,
+    error: undefined,
   }
 }

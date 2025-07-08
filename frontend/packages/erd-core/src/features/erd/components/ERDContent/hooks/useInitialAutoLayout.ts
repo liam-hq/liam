@@ -4,7 +4,7 @@ import type { DisplayArea } from '@/features/erd/types'
 import { computeAutoLayout, highlightNodesAndEdges } from '@/features/erd/utils'
 import { useCustomReactflow } from '@/features/reactflow/hooks'
 import { useUserEditing } from '@/stores'
-import { useERDContentContext } from '../ERDContentContext'
+import { useErdContentContext } from '../ErdContentContext'
 import { hasNonRelatedChildNodes, updateNodesHiddenState } from '../utils'
 
 type Params = {
@@ -17,7 +17,7 @@ export const useInitialAutoLayout = ({ nodes, displayArea }: Params) => {
   const { getEdges, setNodes, setEdges, fitView } = useCustomReactflow()
   const {
     actions: { setLoading },
-  } = useERDContentContext()
+  } = useErdContentContext()
 
   const [initializeComplete, setInitializeComplete] = useState(false)
 

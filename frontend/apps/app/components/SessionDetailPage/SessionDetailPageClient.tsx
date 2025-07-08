@@ -9,14 +9,10 @@ import {
   useTransition,
 } from 'react'
 import { safeParse } from 'valibot'
-import { Chat } from '../Chat'
+import { Chat } from './components/Chat'
 import { Output } from './components/Output'
 import { useRealtimeBuildlingSchema } from './hooks/useRealtimeBuildlingSchema'
-import {
-  ARTIFACT_DOC,
-  SCHEMA_UPDATES_DOC,
-  SCHEMA_UPDATES_REVIEW_COMMENTS,
-} from './mock'
+import { SCHEMA_UPDATES_DOC, SCHEMA_UPDATES_REVIEW_COMMENTS } from './mock'
 import styles from './SessionDetailPage.module.css'
 import { buildCurrentSchema } from './services/buildCurrentSchema'
 import { getBuildingSchema } from './services/buildingSchema/client/getBuldingSchema'
@@ -118,7 +114,6 @@ Please suggest a specific solution to resolve this problem.`
             schemaUpdatesDoc={SCHEMA_UPDATES_DOC}
             schemaUpdatesReviewComments={SCHEMA_UPDATES_REVIEW_COMMENTS}
             onQuickFix={handleQuickFix}
-            artifactDoc={ARTIFACT_DOC}
             designSessionId={designSessionId}
             currentVersion={currentVersion}
             onCurrentVersionChange={handleChangeCurrentVersion}

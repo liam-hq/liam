@@ -5,7 +5,7 @@ import type { Processor } from '../../types.js'
 import { convertToSchema } from './converter.js'
 import { mergeSchemas } from './mergeSchemas.js'
 import { parse } from './parser.js'
-import { processSQLInChunks } from './processSQLInChunks.js'
+import { processSQLInChunks } from './processSqlInChunks.js'
 
 /**
  * Handles parse errors and returns offset information
@@ -84,6 +84,7 @@ async function processChunk(
   const { value: convertedSchema, errors: conversionErrors } = convertToSchema(
     isLastStatementComplete ? parse_tree.stmts : parse_tree.stmts.slice(0, -1),
     rawSql,
+    schema,
   )
 
   if (conversionErrors !== null) {

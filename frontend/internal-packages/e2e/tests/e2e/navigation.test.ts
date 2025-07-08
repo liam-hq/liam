@@ -1,5 +1,5 @@
 import { expect, type Page, test } from '@playwright/test'
-import { DEFAULT_TEST_URL } from '../../default_test_url'
+import { DEFAULT_TEST_URL } from '../../defaultTestUrl'
 
 const expectUserTableColumnInAccountsTableVisibility = async (
   page: Page,

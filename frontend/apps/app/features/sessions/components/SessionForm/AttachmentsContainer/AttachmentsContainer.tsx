@@ -7,7 +7,7 @@ import styles from './AttachmentsContainer.module.css'
 
 type Props = {
   attachments: FileAttachment[]
-  onRemove: (index: number) => void
+  onRemove: (id: string) => void
 }
 
 export const AttachmentsContainer: FC<Props> = ({ attachments, onRemove }) => {
@@ -15,12 +15,12 @@ export const AttachmentsContainer: FC<Props> = ({ attachments, onRemove }) => {
 
   return (
     <div className={styles.container}>
-      {attachments.map((attachment, index) => (
+      {attachments.map((attachment) => (
         <AttachmentPreview
           key={attachment.id}
           src={attachment.url}
           alt={attachment.name}
-          onRemove={() => onRemove(index)}
+          onRemove={() => onRemove(attachment.id)}
         />
       ))}
     </div>

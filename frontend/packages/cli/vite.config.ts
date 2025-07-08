@@ -1,4 +1,5 @@
-import { rmSync } from 'node:fs'
+import { rmSync, writeFileSync } from 'node:fs'
+import { join } from 'node:path'
 import react from '@vitejs/plugin-react'
 import tsconfigPaths from 'vite-tsconfig-paths'
 import { defineConfig } from 'vitest/config'
@@ -21,6 +22,29 @@ export default defineConfig({
           name: 'exclude-schema-json',
           closeBundle() {
             rmSync(`${outDir}/schema.json`, { force: true })
+          },
+        },
+        {
+          // Generate serve.json for the serve package
+          name: 'generate-serve-json',
+          closeBundle() {
+            const serveConfig = {
+              headers: [
+                {
+                  source: '**/*.@(html|json)',
+                  headers: [
+                    {
+                      key: 'Cache-Control',
+                      value: 'no-cache',
+                    },
+                  ],
+                },
+              ],
+            }
+            writeFileSync(
+              join(outDir, 'serve.json'),
+              JSON.stringify(serveConfig, null, 2),
+            )
           },
         },
       ],

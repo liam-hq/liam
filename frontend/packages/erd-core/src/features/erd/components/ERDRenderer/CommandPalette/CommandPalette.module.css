@@ -11,6 +11,7 @@
   color: var(--global-foreground);
   border: 1px solid var(--global-border);
   z-index: var(--z-index-command-palette);
+  font-family: var(--main-font);
 }
 
 [cmdk-overlay]:has(+ .content) {
@@ -68,7 +69,7 @@
 }
 
 .searchFormWithIcon [cmdk-input]:focus-visible {
-  outline: 1px solid var(--button-primary-background);
+  outline: none;
 }
 
 .searchIcon {
@@ -76,6 +77,10 @@
   width: 16px;
   height: 16px;
   color: var(--overlay-60);
+}
+
+.escButton {
+  min-width: auto;
 }
 
 .main {
@@ -96,21 +101,21 @@
   color: var(--global-mute-text);
 }
 
-.main [cmdk-item] .itemInner {
+.main [cmdk-item] {
   display: flex;
   padding: var(--spacing-2);
   align-items: center;
   line-height: 24px;
 }
 
-.main [cmdk-item] .itemInner .itemText {
+.main [cmdk-item] .itemText {
   font-size: var(--font-size-5);
   overflow-x: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.main [cmdk-item] .itemInner .itemIcon {
+.main [cmdk-item] .itemIcon {
   flex-shrink: 0;
   margin-right: var(--spacing-2);
   width: 16px;
@@ -118,13 +123,11 @@
   color: var(--overlay-40);
 }
 
-.main [cmdk-item][data-selected='true'] .itemInner,
-.main [cmdk-item][data-focused='true'] .itemInner {
+.main [cmdk-item][data-selected='true'] {
   background: var(--overlay-5);
 }
 
-.main [cmdk-item][data-selected='true'] .itemInner .itemIcon,
-.main [cmdk-item][data-focused='true'] .itemInner .itemIcon {
+.main [cmdk-item][data-selected='true'] .itemIcon {
   color: var(--global-foreground);
 }
 

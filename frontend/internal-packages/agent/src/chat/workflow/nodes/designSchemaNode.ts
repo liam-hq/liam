@@ -39,8 +39,14 @@ const applySchemaChanges = async (
     }
   }
 
+  const newTableCount = Object.keys(result.newSchema.tables).length
+  state.logger.log(
+    `[${NODE_NAME}] Applied ${schemaChanges.length} schema changes successfully (${newTableCount} tables)`,
+  )
+
   return {
     ...state,
+    schemaData: result.newSchema,
     generatedAnswer: message,
     error: undefined,
   }
@@ -77,6 +83,10 @@ async function prepareSchemaDesign(
 ): Promise<PreparedSchemaDesign> {
   const schemaText = convertSchemaToText(state.schemaData)
 
+  // Log current schema state for debugging
+  const tableCount = Object.keys(state.schemaData.tables).length
+  state.logger.log(`[${NODE_NAME}] Current schema has ${tableCount} tables`)
+
   // Create the agent instance
   const agent = new DatabaseSchemaBuildAgent()
 
@@ -95,10 +105,14 @@ export async function designSchemaNode(
 ): Promise<WorkflowState> {
   state.logger.log(`[${NODE_NAME}] Started`)
 
-  if (state.onNodeProgress) {
-    await state.onNodeProgress(
-      'designSchema',
-      getWorkflowNodeProgress('designSchema'),
+  // Update progress message if available
+  if (state.progressTimelineItemId) {
+    await state.repositories.schema.updateTimelineItem(
+      state.progressTimelineItemId,
+      {
+        content: 'Processing: designSchema',
+        progress: getWorkflowNodeProgress('designSchema'),
+      },
     )
   }
 

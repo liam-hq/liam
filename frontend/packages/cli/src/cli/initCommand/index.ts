@@ -4,6 +4,7 @@ import { exit } from 'node:process'
 import { Command } from 'commander'
 import inquirer from 'inquirer'
 import * as yocto from 'yoctocolors'
+import { generateBanner } from '../banner.js'
 import {
   DbOrmDiscussionUrl,
   DiscussionUrl,
@@ -20,7 +21,7 @@ const formatMap: Record<string, string> = {
   PostgreSQL: 'postgres',
   'Ruby on Rails (schema.rb)': 'schemarb',
   'Prisma (schema.prisma)': 'prisma',
-  Drizzle: 'postgres', // Drizzle also uses --format postgres
+  'Drizzle (schema.ts) [Experimental]': 'drizzle',
   'MySQL (via tbls)': 'tbls',
   'SQLite (via tbls)': 'tbls',
   'BigQuery (via tbls)': 'tbls',
@@ -96,26 +97,24 @@ const handleDrizzlePrompts = async (): Promise<{
   inputFilePath: string
   cannotSupportNow: boolean
 }> => {
-  const { usePostgres } = await inquirer.prompt<{ usePostgres: boolean }>([
+  const { schemaFilePath } = await inquirer.prompt<{
+    schemaFilePath: string
+  }>([
     {
-      type: 'confirm',
-      name: 'usePostgres',
-      message: 'Using PostgreSQL?',
-      default: false,
+      type: 'input',
+      name: 'schemaFilePath',
+      message: 'What is the path to your Drizzle schema file?',
+      default: 'src/db/schema.ts',
     },
   ])
 
-  if (usePostgres) {
-    // Show Drizzle-specific guidance
-    console.info(`
+  console.info(`
 ${yocto.yellow(
-  `For Drizzle, please run your DB migrations, then use 'pg_dump --schema-only' to generate a dump file. You can then use it with --format postgres.`,
+  'Note: Drizzle support is experimental. Please let us know if you encounter any issues.',
 )}
 `)
-    return { inputFilePath: '', cannotSupportNow: false }
-  }
 
-  return { inputFilePath: '', cannotSupportNow: true }
+  return { inputFilePath: schemaFilePath, cannotSupportNow: false }
 }
 
 /**
@@ -225,18 +224,6 @@ const displayNextSteps = (
         '   $ npx @liam-hq/cli erd build --input schema.json --format tbls',
       ),
     )
-  } else if (dbOrOrm === 'Drizzle' && !inputFilePath) {
-    // If user is using Drizzle but didn't specify any input file,
-    // advise them to eventually produce a dump file.
-    console.info(
-      `${stepNum}) After you generate a dump file via pg_dump --schema-only, run:`,
-    )
-    stepNum++
-    console.info(
-      yocto.blueBright(
-        '   $ npx @liam-hq/cli erd build --input <schema.sql> --format postgres',
-      ),
-    )
   } else if (inputFilePath) {
     console.info(
       `${stepNum}) Build your ERD from the specified file using the following command:`,
@@ -263,7 +250,9 @@ const displayNextSteps = (
   console.info(
     `\n${stepNum}) Start your favorite httpd for serving dist. e.g.:`,
   )
-  console.info(yocto.blueBright('   $ npx http-server dist'))
+  console.info(yocto.blueBright('   $ npx serve dist/'))
+  console.info(yocto.blueBright('   or'))
+  console.info(yocto.blueBright('   $ npx http-server -c-1 dist/'))
 }
 
 /**
@@ -336,6 +325,7 @@ ${setupSteps}
  * Main action function for the init command
  */
 initCommand.action(async () => {
+  await generateBanner()
   // Display welcome message
   displayWelcomeMessage()
 
@@ -349,7 +339,7 @@ initCommand.action(async () => {
         'PostgreSQL',
         'Ruby on Rails (schema.rb)',
         'Prisma (schema.prisma)',
-        'Drizzle',
+        'Drizzle (schema.ts) [Experimental]',
         'tbls',
         'MySQL (via tbls)',
         'SQLite (via tbls)',
@@ -366,7 +356,7 @@ initCommand.action(async () => {
 
   if (dbOrOrm === 'PostgreSQL') {
     inputFilePath = await handlePostgresPrompts()
-  } else if (dbOrOrm === 'Drizzle') {
+  } else if (dbOrOrm === 'Drizzle (schema.ts) [Experimental]') {
     const result = await handleDrizzlePrompts()
     inputFilePath = result.inputFilePath
     cannotSupportNow = result.cannotSupportNow

@@ -1,5 +1,22 @@
 # @liam-hq/db-structure
 
+## 0.4.1
+
+### Patch Changes
+
+- [#2299](https://github.com/liam-hq/liam/pull/2299) - ✨ [Experimental]Add Drizzle ORM schema parser support / Thanks [@FunamaYukina](https://github.com/FunamaYukina)!
+
+## 0.4.0
+
+### Minor Changes
+
+- [#2396](https://github.com/liam-hq/liam/pull/2396) - 🐛 Fix PostgreSQL parser foreign key resolution in chunked processing / Thanks [@MH4GF](https://github.com/MH4GF)!
+
+- Fix foreign key constraint resolution when processing large schema files in chunks
+- Ensure table lookup context is preserved across chunk boundaries
+- Add comprehensive test coverage for chunked processing scenarios
+- Improve table lookup logic in PostgreSQL converter
+
 ## 0.3.0
 
 ### Minor Changes

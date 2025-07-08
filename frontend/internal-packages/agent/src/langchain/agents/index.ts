@@ -1,5 +1,3 @@
 export { DatabaseSchemaBuildAgent } from './databaseSchemaBuildAgent'
 export { PMAnalysisAgent } from './pmAnalysisAgent'
-export { QADDLGenerationAgent } from './qaDDLGenerationAgent'
-export { QADMLValidationAgent } from './qaDMLValidationAgent'
 export { QAGenerateUsecaseAgent } from './qaGenerateUsecaseAgent'

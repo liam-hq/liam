@@ -1,3 +1,4 @@
+import type { Artifact } from '@liam-hq/artifact'
 import type { Database, Tables } from '@liam-hq/db/supabase/database.types'
 import type { Schema } from '@liam-hq/db-structure'
 import type { Operation } from 'fast-json-patch'
@@ -30,10 +31,9 @@ export interface CreateVersionParams {
   patch: Operation[]
 }
 
-export interface VersionResult {
-  success: boolean
-  error?: string | null
-}
+export type VersionResult =
+  | { success: true; newSchema: Schema }
+  | { success: false; error?: string | null }
 
 export type CreateTimelineItemParams = {
   designSessionId: string
@@ -68,6 +68,26 @@ export type TimelineItemResult =
   | {
       success: true
       timelineItem: Tables<'timeline_items'>
+    }
+  | {
+      success: false
+      error: string
+    }
+
+export interface CreateArtifactParams {
+  designSessionId: string
+  artifact: Artifact
+}
+
+export interface UpdateArtifactParams {
+  designSessionId: string
+  artifact: Artifact
+}
+
+export type ArtifactResult =
+  | {
+      success: true
+      artifact: Tables<'artifacts'>
     }
   | {
       success: false
@@ -110,6 +130,21 @@ export interface SchemaRepository {
     id: string,
     updates: UpdateTimelineItemParams,
   ): Promise<TimelineItemResult>
+
+  /**
+   * Create a new artifact for a design session
+   */
+  createArtifact(params: CreateArtifactParams): Promise<ArtifactResult>
+
+  /**
+   * Update an existing artifact for a design session
+   */
+  updateArtifact(params: UpdateArtifactParams): Promise<ArtifactResult>
+
+  /**
+   * Get artifact for a design session
+   */
+  getArtifact(designSessionId: string): Promise<ArtifactResult>
 }
 
 /**

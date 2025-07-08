@@ -49,7 +49,11 @@ export const FormatSelectDropdown: FC<FormatSelectDropdownProps> = ({
         </button>
       </DropdownMenuTrigger>
 
-      <DropdownMenuContent className={styles.dropdown} align="start">
+      <DropdownMenuContent
+        className={styles.dropdown}
+        align="start"
+        sideOffset={2}
+      >
         {formatOptions.map((option) => (
           <DropdownMenuItem
             key={option.format}

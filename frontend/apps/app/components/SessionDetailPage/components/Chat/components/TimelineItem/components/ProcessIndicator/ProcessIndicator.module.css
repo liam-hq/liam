@@ -1,0 +1,121 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  background-color: var(--agent-build-5);
+  border: var(--border-width-base) solid var(--agent-build-5);
+  border-radius: var(--border-radius-base);
+  padding: var(--spacing-3);
+  gap: var(--spacing-3);
+  width: 100%;
+  transition:
+    opacity 0.3s ease,
+    background-color 0.3s ease,
+    border-color 0.3s ease;
+  overflow: visible;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-3);
+}
+
+.iconContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--border-radius-full);
+  padding: var(--spacing-2);
+}
+
+.processingIcon {
+  background-color: var(--overlay-10);
+  color: var(--global-foreground);
+}
+
+.completeIcon {
+  background-color: var(--primary-accent);
+  color: var(--global-background);
+}
+
+.titleContainer {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--spacing-1);
+  min-width: 0;
+  width: 100%;
+}
+
+.title {
+  font-family: var(--main-font), sans-serif;
+  font-size: var(--font-size-3);
+  font-weight: 600;
+  line-height: 1.15em;
+  color: var(--global-body-text);
+}
+
+.subtitle {
+  font-family: var(--main-font), sans-serif;
+  font-size: var(--font-size-2);
+  font-weight: 400;
+  line-height: 1.15em;
+  color: var(--global-mute-text);
+}
+
+.progressContainer {
+  animation: fadeIn 0.3s ease;
+  width: 100%;
+}
+
+.actionsRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.progressBar {
+  background-color: var(--overlay-10);
+  border-radius: var(--border-radius-sm);
+  overflow: hidden;
+  width: 100%;
+  height: 4px;
+}
+
+.progressFill {
+  height: 100%;
+  background-color: var(--primary-accent);
+  border-radius: var(--border-radius-sm);
+  transition: width 0.3s ease;
+}
+
+.progressText {
+  font-family: var(--code-font), monospace;
+  font-size: var(--font-size-2);
+  font-weight: 400;
+  line-height: 1.15em;
+  color: var(--primary-accent);
+  min-width: 40px;
+  text-align: left;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+}

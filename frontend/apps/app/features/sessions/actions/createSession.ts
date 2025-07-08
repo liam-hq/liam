@@ -7,7 +7,7 @@ import type { TablesInsert } from '@liam-hq/db/supabase/database.types'
 import type { Schema } from '@liam-hq/db-structure'
 import { parse, setPrismWasmUrl } from '@liam-hq/db-structure/parser'
 import { getFileContent } from '@liam-hq/github'
-import { processChatTask } from '@liam-hq/jobs'
+import { deepModelingWorkflowTask } from '@liam-hq/jobs'
 import { idempotencyKeys } from '@trigger.dev/sdk'
 import { redirect } from 'next/navigation'
 import * as v from 'valibot'
@@ -261,7 +261,7 @@ export async function createSession(
   // Trigger the chat processing job for the initial message
   const history: [string, string][] = []
   const chatPayload = {
-    message: initialMessage,
+    userInput: initialMessage,
     history,
     organizationId,
     buildingSchemaId: buildingSchema.id,
@@ -281,7 +281,7 @@ export async function createSession(
 
   // Trigger the chat processing job with idempotency key
   try {
-    await processChatTask.trigger(chatPayload, {
+    await deepModelingWorkflowTask.trigger(chatPayload, {
       idempotencyKey,
     })
   } catch (error) {

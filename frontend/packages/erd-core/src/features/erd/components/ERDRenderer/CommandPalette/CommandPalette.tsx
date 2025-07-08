@@ -7,7 +7,7 @@ import {
   DialogTitle,
 } from '@radix-ui/react-dialog'
 import { Command } from 'cmdk'
-import { type FC, useCallback, useEffect, useRef, useState } from 'react'
+import { type FC, useCallback, useEffect, useState } from 'react'
 import { useTableSelection } from '@/features/erd/hooks'
 import { useSchema } from '@/stores'
 import { TableNode } from '../../ERDContent/components'
@@ -15,16 +15,12 @@ import styles from './CommandPalette.module.css'
 import { useCommandPalette } from './CommandPaletteProvider'
 
 export const CommandPalette: FC = () => {
-  const closeButtonRef = useRef<HTMLButtonElement>(null)
-
   const { open, setOpen, toggleOpen } = useCommandPalette()
 
   const schema = useSchema()
   const [tableName, setTableName] = useState<string | null>(null)
   const table = schema.current.tables[tableName ?? '']
   const { selectTable } = useTableSelection()
-
-  const [focusedTableName, setFocusedTableName] = useState<string | null>(null)
 
   const goToERD = useCallback(
     (tableName: string) => {
@@ -47,16 +43,31 @@ export const CommandPalette: FC = () => {
     return () => document.removeEventListener('keydown', down)
   }, [])
 
+  // Select option by pressing [Enter] key (with/without ⌘ key)
+  useEffect(() => {
+    const down = (event: KeyboardEvent) => {
+      if (!open || !tableName) return
+
+      if (event.key === 'Enter') {
+        if (event.metaKey || event.ctrlKey) {
+          window.open(`?active=${tableName}`)
+        } else {
+          goToERD(tableName)
+        }
+      }
+    }
+
+    document.addEventListener('keydown', down)
+    return () => document.removeEventListener('keydown', down)
+  }, [open, tableName])
+
   return (
     <Command.Dialog
       open={open}
       onOpenChange={setOpen}
       contentClassName={styles.content}
       value={tableName ?? ''}
-      onValueChange={(v) => {
-        if (focusedTableName) return
-        setTableName(v)
-      }}
+      onValueChange={(v) => setTableName(v)}
     >
       <DialogTitle hidden>Command Palette</DialogTitle>
       <DialogDescription hidden>
@@ -68,15 +79,15 @@ export const CommandPalette: FC = () => {
           <Search className={styles.searchIcon} />
           <Command.Input
             placeholder="Search"
-            onValueChange={() => setFocusedTableName(null)}
-            onBlur={(event) => {
-              if (event.relatedTarget === closeButtonRef.current) return
-              event.target.focus()
-            }}
+            onBlur={(event) => event.target.focus()}
           />
         </div>
         <DialogClose asChild>
-          <Button size="xs" variant="outline-secondary" ref={closeButtonRef}>
+          <Button
+            size="xs"
+            variant="outline-secondary"
+            className={styles.escButton}
+          >
             ESC
           </Button>
         </DialogClose>
@@ -84,29 +95,24 @@ export const CommandPalette: FC = () => {
       <div className={styles.main}>
         <Command.List>
           <Command.Empty>No results found.</Command.Empty>
-          <Command.Group heading="Suggestions">
+          <Command.Group heading="Tables">
             {Object.values(schema.current.tables).map((table) => (
-              <Command.Item
-                key={table.name}
-                value={table.name}
-                onSelect={() => goToERD(table.name)}
-                data-focused={focusedTableName === table.name}
-              >
-                {/** biome-ignore lint/a11y/useKeyWithClickEvents: Keyboard interaction is implemented in the parent Command.Item component's onSelect handler. */}
-                <div
-                  className={styles.itemInner}
+              <Command.Item key={table.name} value={table.name} asChild>
+                <a
+                  href={`?active=${table.name}`}
                   onClick={(event) => {
-                    event.stopPropagation()
-                    setTableName(table.name)
-                    setFocusedTableName((prev) =>
-                      prev === table.name ? null : table.name,
-                    )
+                    // Do not call preventDefault to allow the default link behavior when ⌘ key is pressed
+                    if (event.ctrlKey || event.metaKey) {
+                      return
+                    }
+
+                    event.preventDefault()
+                    goToERD(table.name)
                   }}
-                  onDoubleClick={() => goToERD(table.name)}
                 >
                   <Table2 className={styles.itemIcon} />
                   <span className={styles.itemText}>{table.name}</span>
-                </div>
+                </a>
               </Command.Item>
             ))}
           </Command.Group>
