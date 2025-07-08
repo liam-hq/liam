@@ -63,7 +63,7 @@ export const deepModelingWorkflowTask = task({
     const result = await deepModeling(deepModelingParams)
 
     logger.log('Deep Modeling workflow completed:', {
-      success: result.success,
+      success: result.isOk(),
     })
 
     return result

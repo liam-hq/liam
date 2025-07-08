@@ -17,6 +17,7 @@ import type {
   Constraints,
   ForeignKeyConstraint,
   ForeignKeyConstraintReferenceOption,
+  Schema,
   Table,
 } from '../../../schema/index.js'
 import { type ProcessError, UnexpectedTokenWarningError } from '../../errors.js'
@@ -194,6 +195,7 @@ const constraintToCheckConstraint = (
 export const convertToSchema = (
   stmts: RawStmt[],
   rawSql: string,
+  mainSchema: Schema,
 ): ProcessResult => {
   const tables: Record<string, Table> = {}
   const errors: ProcessError[] = []
@@ -740,6 +742,13 @@ export const convertToSchema = (
   }
 
   /**
+   * Find table in current chunk or main schema
+   */
+  function findTable(tableName: string): Table | undefined {
+    return tables[tableName] ?? mainSchema.tables[tableName]
+  }
+
+  /**
    * Process a foreign key constraint
    */
   function processForeignKeyConstraint(
@@ -765,9 +774,17 @@ export const convertToSchema = (
     }
 
     const foreignKeyConstraint = relResult.value
-    const table = tables[foreignTableName]
+    const table = findTable(foreignTableName)
+
     if (table) {
       table.constraints[foreignKeyConstraint.name] = foreignKeyConstraint
+    } else {
+      // Table not found - this could be the cause of missing foreign keys
+      errors.push(
+        new UnexpectedTokenWarningError(
+          `Table "${foreignTableName}" not found when processing foreign key constraint "${foreignKeyConstraint.name}"`,
+        ),
+      )
     }
   }
 
@@ -785,9 +802,66 @@ export const convertToSchema = (
       return
     }
 
-    const table = tables[foreignTableName]
+    const table = findTable(foreignTableName)
+
     if (table) {
       table.constraints[relResult.value.name] = relResult.value
+    }
+  }
+
+  /**
+   * Process a primary key constraint from ALTER TABLE
+   */
+  function processPrimaryKeyConstraint(
+    foreignTableName: string,
+    constraint: PgConstraint,
+  ): void {
+    const table = findTable(foreignTableName)
+
+    if (!table) return
+
+    // Handle primary key constraint from ALTER TABLE
+    const columnNames =
+      constraint.keys
+        ?.filter(isStringNode)
+        .map((node) => node.String.sval)
+        .filter((name): name is string => name !== undefined) || []
+
+    for (const columnName of columnNames) {
+      const constraintName = constraint.conname ?? `PRIMARY_${columnName}`
+      table.constraints[constraintName] = {
+        name: constraintName,
+        type: 'PRIMARY KEY',
+        columnName,
+      }
+    }
+  }
+
+  /**
+   * Process a unique constraint from ALTER TABLE
+   */
+  function processUniqueConstraint(
+    foreignTableName: string,
+    constraint: PgConstraint,
+  ): void {
+    const table = findTable(foreignTableName)
+
+    if (!table) return
+
+    // Handle unique constraint from ALTER TABLE
+    const columnNames =
+      constraint.keys
+        ?.filter(isStringNode)
+        .map((node) => node.String.sval)
+        .filter((name): name is string => name !== undefined) || []
+
+    for (const columnName of columnNames) {
+      const constraintName = constraint.conname ?? `UNIQUE_${columnName}`
+      table.constraints[constraintName] = {
+        name: constraintName,
+        type: 'UNIQUE',
+        columnName,
+      }
     }
   }
 
@@ -821,6 +895,10 @@ export const convertToSchema = (
       processForeignKeyConstraint(foreignTableName, constraint.Constraint)
     } else if (constraint.Constraint.contype === 'CONSTR_CHECK') {
       processCheckConstraint(foreignTableName, constraint.Constraint)
+    } else if (constraint.Constraint.contype === 'CONSTR_PRIMARY') {
+      processPrimaryKeyConstraint(foreignTableName, constraint.Constraint)
+    } else if (constraint.Constraint.contype === 'CONSTR_UNIQUE') {
+      processUniqueConstraint(foreignTableName, constraint.Constraint)
     }
   }
 

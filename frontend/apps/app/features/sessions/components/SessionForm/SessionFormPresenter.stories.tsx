@@ -1,4 +1,4 @@
-import type { Meta } from '@storybook/react'
+import type { Meta, StoryObj } from '@storybook/react'
 import type { Projects } from '@/components/CommonLayout/AppBar/ProjectsDropdownMenu/services/getProjects'
 import { SessionFormPresenter } from './SessionFormPresenter'
 
@@ -37,27 +37,22 @@ const mockBranches = [
 
 const meta = {
   component: SessionFormPresenter,
-  title: 'Features/Sessions/SessionFormPresenter',
   parameters: {
     layout: 'padded',
   },
 } satisfies Meta<typeof SessionFormPresenter>
 
 export default meta
+type Story = StoryObj<typeof meta>
 
-// Default state with projects and no branches
-export const Default = {
-  render: () => {
-    return (
-      <SessionFormPresenter
-        projects={mockProjects}
-        branches={[]}
-        isBranchesLoading={false}
-        isPending={false}
-        onProjectChange={() => {}}
-        formAction={() => {}}
-      />
-    )
+export const Default: Story = {
+  args: {
+    projects: mockProjects,
+    branches: [],
+    isBranchesLoading: false,
+    isPending: false,
+    onProjectChange: () => {},
+    formAction: () => {},
   },
   parameters: {
     docs: {
@@ -69,19 +64,15 @@ export const Default = {
 }
 
 // With default project and branches loaded
-export const WithBranches = {
-  render: () => {
-    return (
-      <SessionFormPresenter
-        projects={mockProjects}
-        defaultProjectId="1"
-        branches={mockBranches}
-        isBranchesLoading={false}
-        isPending={false}
-        onProjectChange={() => {}}
-        formAction={() => {}}
-      />
-    )
+export const WithBranches: Story = {
+  args: {
+    projects: mockProjects,
+    defaultProjectId: '1',
+    branches: mockBranches,
+    isBranchesLoading: false,
+    isPending: false,
+    onProjectChange: () => {},
+    formAction: () => {},
   },
   parameters: {
     docs: {
@@ -93,19 +84,15 @@ export const WithBranches = {
 }
 
 // Loading branches state
-export const LoadingBranches = {
-  render: () => {
-    return (
-      <SessionFormPresenter
-        projects={mockProjects}
-        defaultProjectId="1"
-        branches={[]}
-        isBranchesLoading={true}
-        isPending={false}
-        onProjectChange={() => {}}
-        formAction={() => {}}
-      />
-    )
+export const LoadingBranches: Story = {
+  args: {
+    projects: mockProjects,
+    defaultProjectId: '1',
+    branches: [],
+    isBranchesLoading: true,
+    isPending: false,
+    onProjectChange: () => {},
+    formAction: () => {},
   },
   parameters: {
     docs: {
@@ -117,20 +104,16 @@ export const LoadingBranches = {
 }
 
 // With branches error
-export const WithBranchesError = {
-  render: () => {
-    return (
-      <SessionFormPresenter
-        projects={mockProjects}
-        defaultProjectId="1"
-        branches={[]}
-        isBranchesLoading={false}
-        branchesError="Failed to load branches"
-        isPending={false}
-        onProjectChange={() => {}}
-        formAction={() => {}}
-      />
-    )
+export const WithBranchesError: Story = {
+  args: {
+    projects: mockProjects,
+    defaultProjectId: '1',
+    branches: [],
+    isBranchesLoading: false,
+    branchesError: 'Failed to load branches',
+    isPending: false,
+    onProjectChange: () => {},
+    formAction: () => {},
   },
   parameters: {
     docs: {
@@ -142,19 +125,15 @@ export const WithBranchesError = {
 }
 
 // Form submission pending
-export const Pending = {
-  render: () => {
-    return (
-      <SessionFormPresenter
-        projects={mockProjects}
-        defaultProjectId="1"
-        branches={mockBranches}
-        isBranchesLoading={false}
-        isPending={true}
-        onProjectChange={() => {}}
-        formAction={() => {}}
-      />
-    )
+export const Pending: Story = {
+  args: {
+    projects: mockProjects,
+    defaultProjectId: '1',
+    branches: mockBranches,
+    isBranchesLoading: false,
+    isPending: true,
+    onProjectChange: () => {},
+    formAction: () => {},
   },
   parameters: {
     docs: {
@@ -166,20 +145,16 @@ export const Pending = {
 }
 
 // With form error
-export const WithFormError = {
-  render: () => {
-    return (
-      <SessionFormPresenter
-        projects={mockProjects}
-        defaultProjectId="1"
-        branches={mockBranches}
-        isBranchesLoading={false}
-        formError="Please provide an initial message"
-        isPending={false}
-        onProjectChange={() => {}}
-        formAction={() => {}}
-      />
-    )
+export const WithFormError: Story = {
+  args: {
+    projects: mockProjects,
+    defaultProjectId: '1',
+    branches: mockBranches,
+    isBranchesLoading: false,
+    formError: 'Please provide an initial message',
+    isPending: false,
+    onProjectChange: () => {},
+    formAction: () => {},
   },
   parameters: {
     docs: {
@@ -191,18 +166,14 @@ export const WithFormError = {
 }
 
 // No projects available
-export const NoProjects = {
-  render: () => {
-    return (
-      <SessionFormPresenter
-        projects={[]}
-        branches={[]}
-        isBranchesLoading={false}
-        isPending={false}
-        onProjectChange={() => {}}
-        formAction={() => {}}
-      />
-    )
+export const NoProject: Story = {
+  args: {
+    projects: [],
+    branches: [],
+    isBranchesLoading: false,
+    isPending: false,
+    onProjectChange: () => {},
+    formAction: () => {},
   },
   parameters: {
     docs: {

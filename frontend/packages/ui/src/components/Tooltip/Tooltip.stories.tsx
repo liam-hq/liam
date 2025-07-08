@@ -8,7 +8,6 @@ import {
   TooltipTrigger,
 } from './Tooltip'
 
-// Demo component to showcase the Tooltip
 interface TooltipDemoProps {
   content: ReactNode
   side?: 'top' | 'right' | 'bottom' | 'left'
@@ -48,7 +47,6 @@ const TooltipDemo = ({
 }
 
 const meta = {
-  title: 'UI/Tooltip',
   component: TooltipDemo,
 } satisfies Meta<typeof TooltipDemo>
 

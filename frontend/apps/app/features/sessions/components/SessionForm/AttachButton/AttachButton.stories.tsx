@@ -2,7 +2,6 @@ import type { Meta, StoryObj } from '@storybook/react'
 import { AttachButton } from './AttachButton'
 
 const meta = {
-  title: 'Features/Sessions/AttachButton',
   component: AttachButton,
   parameters: {
     layout: 'centered',

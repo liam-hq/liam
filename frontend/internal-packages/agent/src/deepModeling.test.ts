@@ -113,10 +113,10 @@ describe('Chat Workflow', () => {
   const executeAndAssertSuccess = async (params: DeepModelingParams) => {
     const result = await deepModeling(params)
 
-    expect(result.success).toBe(true)
-    if (result.success) {
-      expect(result.text).toBe('Mocked agent response')
-      expect(typeof result.text).toBe('string')
+    expect(result.isOk()).toBe(true)
+    if (result.isOk()) {
+      expect(result.value.text).toBe('Mocked agent response')
+      expect(typeof result.value.text).toBe('string')
     }
     expect(mockAgent.generate).toHaveBeenCalledOnce()
 
@@ -296,9 +296,9 @@ describe('Chat Workflow', () => {
 
       const result = await deepModeling(params)
 
-      expect(result.success).toBe(true)
-      if (result.success) {
-        expect(result.text).toBe('Added created_at column to users table')
+      expect(result.isOk()).toBe(true)
+      if (result.isOk()) {
+        expect(result.value.text).toBe('Added created_at column to users table')
       }
       expect(mockSchemaRepository.createVersion).toHaveBeenCalledWith({
         buildingSchemaId: 'test-building-schema-id',
@@ -330,9 +330,9 @@ describe('Chat Workflow', () => {
 
       const result = await deepModeling(params)
 
-      expect(result.success).toBe(true)
-      if (result.success) {
-        expect(result.text).toBe('Invalid JSON response')
+      expect(result.isOk()).toBe(true)
+      if (result.isOk()) {
+        expect(result.value.text).toBe('Invalid JSON response')
       }
       expect(mockSchemaRepository.createVersion).not.toHaveBeenCalled()
     })
@@ -365,9 +365,9 @@ describe('Chat Workflow', () => {
       const result = await deepModeling(params)
 
       // The test should handle either the expected error or recursion limit error
-      expect(result.success).toBe(false)
-      if (!result.success) {
-        expect(result.error).toMatch(
+      expect(result.isErr()).toBe(true)
+      if (result.isErr()) {
+        expect(result.error.message).toMatch(
           /Database constraint violation|Recursion limit/,
         )
       }
@@ -398,9 +398,9 @@ describe('Chat Workflow', () => {
 
       const result = await deepModeling(params)
 
-      expect(result.success).toBe(false)
-      if (!result.success) {
-        expect(result.error).toBe('Network error')
+      expect(result.isErr()).toBe(true)
+      if (result.isErr()) {
+        expect(result.error.message).toBe('Network error')
       }
     })
 
@@ -420,9 +420,9 @@ describe('Chat Workflow', () => {
 
       const result = await deepModeling(params)
 
-      expect(result.success).toBe(false)
-      if (!result.success) {
-        expect(result.error).toBe('Agent generation failed')
+      expect(result.isErr()).toBe(true)
+      if (result.isErr()) {
+        expect(result.error.message).toBe('Agent generation failed')
       }
     })
 
@@ -434,9 +434,11 @@ describe('Chat Workflow', () => {
 
       const result = await deepModeling(params)
 
-      expect(result.success).toBe(false)
-      if (!result.success) {
-        expect(result.error).toBe('Failed to create DatabaseSchemaBuildAgent')
+      expect(result.isErr()).toBe(true)
+      if (result.isErr()) {
+        expect(result.error.message).toBe(
+          'Failed to create DatabaseSchemaBuildAgent',
+        )
       }
     })
 
@@ -446,9 +448,9 @@ describe('Chat Workflow', () => {
       const result = await deepModeling(params)
 
       expect(result).toBeDefined()
-      expect(result.success).toBe(true)
-      if (result.success) {
-        expect(result.text).toBe('Mocked agent response')
+      expect(result.isOk()).toBe(true)
+      if (result.isOk()) {
+        expect(result.value.text).toBe('Mocked agent response')
       }
     })
   })
@@ -461,9 +463,9 @@ describe('Chat Workflow', () => {
 
       const result = await deepModeling(initialParams)
 
-      expect(result.success).toBe(true)
-      if (result.success) {
-        expect(result.text).toBe('Mocked agent response')
+      expect(result.isOk()).toBe(true)
+      if (result.isOk()) {
+        expect(result.value.text).toBe('Mocked agent response')
       }
     })
   })
@@ -504,9 +506,9 @@ describe('Chat Workflow', () => {
       expect(results).toHaveLength(3)
       for (const result of results) {
         expect(result).toBeDefined()
-        expect(result.success).toBe(true)
-        if (result.success) {
-          expect(result.text).toBe('Mocked agent response')
+        expect(result.isOk()).toBe(true)
+        if (result.isOk()) {
+          expect(result.value.text).toBe('Mocked agent response')
         }
       }
     })
@@ -525,9 +527,9 @@ describe('Chat Workflow', () => {
 
       for (const result of results) {
         expect(result).toBeDefined()
-        expect(result.success).toBe(true)
-        if (result.success) {
-          expect(result.text).toBe('Mocked agent response')
+        expect(result.isOk()).toBe(true)
+        if (result.isOk()) {
+          expect(result.value.text).toBe('Mocked agent response')
         }
       }
     })

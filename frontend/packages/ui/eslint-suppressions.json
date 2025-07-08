@@ -1,0 +1,7 @@
+{
+  "src/components/Sidebar/Sidebar.tsx": {
+    "@typescript-eslint/consistent-type-assertions": {
+      "count": 1
+    }
+  }
+}

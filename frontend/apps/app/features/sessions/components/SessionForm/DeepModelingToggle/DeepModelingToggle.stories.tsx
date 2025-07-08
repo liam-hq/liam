@@ -1,9 +1,8 @@
-import type { Meta } from '@storybook/react'
+import type { Meta, StoryObj } from '@storybook/react'
 import { useState } from 'react'
 import { DeepModelingToggle } from './DeepModelingToggle'
 
 const meta = {
-  title: 'Features/Sessions/DeepModelingToggle',
   component: DeepModelingToggle,
   parameters: {
     layout: 'centered',
@@ -12,30 +11,38 @@ const meta = {
 } satisfies Meta<typeof DeepModelingToggle>
 
 export default meta
+type Story = StoryObj<typeof meta>
 
-export const Default = {
+export const Default: Story = {
   args: {
     isActive: false,
     children: 'Deep Modeling',
   },
 }
 
-export const Active = {
+export const Active: Story = {
   args: {
     isActive: true,
     children: 'Deep Modeling',
   },
 }
 
-export const Interactive = () => {
-  const [isActive, setIsActive] = useState(false)
+export const Interactive: Story = {
+  args: {
+    isActive: false,
+    children: 'Deep Modeling',
+  },
+  render: (args) => {
+    const [isActive, setIsActive] = useState(args.isActive)
 
-  return (
-    <DeepModelingToggle
-      isActive={isActive}
-      onClick={() => setIsActive(!isActive)}
-    >
-      Deep Modeling
-    </DeepModelingToggle>
-  )
+    return (
+      <DeepModelingToggle
+        {...args}
+        isActive={isActive}
+        onClick={() => setIsActive(!isActive)}
+      >
+        {args.children}
+      </DeepModelingToggle>
+    )
+  },
 }

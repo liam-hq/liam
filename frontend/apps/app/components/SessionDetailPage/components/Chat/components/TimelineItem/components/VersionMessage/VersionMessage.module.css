@@ -1,0 +1,94 @@
+.container {
+  background: var(--pane-background);
+  border: 1px solid var(--pane-border);
+  border-radius: 4px;
+  overflow: hidden;
+  width: 100%;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  padding: 6px 8px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  background: transparent;
+  border: none;
+  width: 100%;
+  text-align: left;
+}
+
+.header:hover {
+  background: var(--pane-background-hover);
+}
+
+.chevron {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  margin-right: 6px;
+  color: var(--global-mute-text);
+  transition: transform 0.2s ease;
+  transform: rotate(-90deg);
+}
+
+.chevron svg {
+  width: 12px;
+  height: 12px;
+}
+
+.chevron.expanded {
+  transform: rotate(0deg);
+}
+
+.versionNumber {
+  background: transparent;
+  color: var(--global-foreground);
+  font-size: 12px;
+  font-weight: 600;
+  margin-right: auto;
+}
+
+.content {
+  padding: 8px 12px;
+  border-top: 1px solid var(--pane-border);
+  display: none;
+}
+
+.content.expanded {
+  display: block;
+}
+
+.operationList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.operationItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.operationIcon {
+  width: 16px;
+  height: 16px;
+  color: var(--primary-accent);
+  flex-shrink: 0;
+}
+
+.operationName {
+  color: var(--global-foreground);
+  font-size: 12px;
+  font-family: monospace;
+  flex: 1;
+}
+
+.operationStatus {
+  color: var(--global-mute-text);
+  font-size: 12px;
+  font-weight: 500;
+}

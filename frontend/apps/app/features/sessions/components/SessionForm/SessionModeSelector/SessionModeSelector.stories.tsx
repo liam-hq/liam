@@ -2,36 +2,16 @@ import type { Meta, StoryObj } from '@storybook/react'
 import { useState } from 'react'
 import { type SessionMode, SessionModeSelector } from './SessionModeSelector'
 
-type SessionModeSelectorProps = {
-  selectedMode: SessionMode
-  onModeChange: (mode: SessionMode) => void
-}
-
-const meta: Meta<SessionModeSelectorProps> = {
-  title: 'Features/Sessions/SessionModeSelector',
+const meta = {
   component: SessionModeSelector,
   parameters: {
     layout: 'centered',
   },
   tags: ['autodocs'],
-}
+} satisfies Meta<typeof SessionModeSelector>
 
 export default meta
-type Story = StoryObj<SessionModeSelectorProps>
-
-// Interactive story with state management
-const InteractiveTemplate = (args: { selectedMode: SessionMode }) => {
-  const [selectedMode, setSelectedMode] = useState<SessionMode>(
-    args.selectedMode,
-  )
-
-  return (
-    <SessionModeSelector
-      selectedMode={selectedMode}
-      onModeChange={setSelectedMode}
-    />
-  )
-}
+type Story = StoryObj<typeof meta>
 
 export const Default: Story = {
   args: {
@@ -61,8 +41,24 @@ export const URLSelected: Story = {
   },
 }
 
-export const Interactive = {
-  render: () => <InteractiveTemplate selectedMode="github" />,
+export const Interactive: Story = {
+  args: {
+    selectedMode: 'github',
+    onModeChange: () => {},
+  },
+  render: (args) => {
+    const [selectedMode, setSelectedMode] = useState<SessionMode>(
+      args.selectedMode,
+    )
+
+    return (
+      <SessionModeSelector
+        {...args}
+        selectedMode={selectedMode}
+        onModeChange={setSelectedMode}
+      />
+    )
+  },
   parameters: {
     docs: {
       description: {

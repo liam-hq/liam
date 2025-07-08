@@ -22,6 +22,8 @@
     "@liam-hq/ui": "workspace:*",
     "@next/third-parties": "15.3.4",
     "@sentry/nextjs": "9",
+    "@swc/core": "1.12.9",
+    "@swc/wasm": "1.12.9",
     "@trigger.dev/sdk": "4.0.0-v4-beta.21",
     "@types/react-syntax-highlighter": "15.5.13",
     "@vercel/otel": "1.12.0",

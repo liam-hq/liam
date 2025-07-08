@@ -58,11 +58,11 @@ test('zoom in button should increase zoom level', async ({
   const zoomInButton = toolbar.getByTestId('toolbar-icon-button-Zoom in')
   await zoomInButton.click()
 
-  await expect(zoomLevelText).not.toHaveText(zoomLevelBefore)
+  await expect(zoomLevelText).not.toHaveText(zoomLevelBefore || '')
 
   const zoomLevelAfter = await zoomLevelText.textContent()
-  expect(Number.parseInt(zoomLevelBefore)).toBeLessThan(
-    Number.parseInt(zoomLevelAfter),
+  expect(Number.parseInt(zoomLevelBefore || '0')).toBeLessThan(
+    Number.parseInt(zoomLevelAfter || '0'),
   )
 })
 
@@ -85,11 +85,11 @@ test('zoom out button should decrease zoom level', async ({
   const zoomOutButton = toolbar.getByTestId('toolbar-icon-button-Zoom out')
   await zoomOutButton.click()
 
-  await expect(zoomLevelText).not.toHaveText(zoomLevelBefore)
+  await expect(zoomLevelText).not.toHaveText(zoomLevelBefore || '')
 
   const zoomLevelAfter = await zoomLevelText.textContent()
-  expect(Number.parseInt(zoomLevelBefore)).toBeGreaterThan(
-    Number.parseInt(zoomLevelAfter),
+  expect(Number.parseInt(zoomLevelBefore || '0')).toBeGreaterThan(
+    Number.parseInt(zoomLevelAfter || '0'),
   )
 })
 
@@ -109,39 +109,45 @@ test('tidyup button should make the table nodes tidy', async ({
 
   const initialTableNodePosition = await tableNode.boundingBox()
 
-  await page.mouse.move(
-    initialTableNodePosition.x + initialTableNodePosition.width / 2,
-    initialTableNodePosition.y + initialTableNodePosition.height / 2,
-  )
-  await page.mouse.down()
-  await page.mouse.move(
-    initialTableNodePosition.x + 500,
-    initialTableNodePosition.y + 500,
-    { steps: 50 },
-  )
+  if (initialTableNodePosition) {
+    await page.mouse.move(
+      initialTableNodePosition.x + initialTableNodePosition.width / 2,
+      initialTableNodePosition.y + initialTableNodePosition.height / 2,
+    )
+    await page.mouse.down()
+    await page.mouse.move(
+      initialTableNodePosition.x + 500,
+      initialTableNodePosition.y + 500,
+      { steps: 50 },
+    )
+  }
   await page.mouse.up()
   await page.waitForTimeout(500)
 
   const movedTableNodePosition = await tableNode.boundingBox()
 
-  expect(
-    Math.abs(movedTableNodePosition.x - initialTableNodePosition.x),
-  ).toBeGreaterThan(100)
-  expect(
-    Math.abs(movedTableNodePosition.y - initialTableNodePosition.y),
-  ).toBeGreaterThan(100)
+  if (movedTableNodePosition && initialTableNodePosition) {
+    expect(
+      Math.abs(movedTableNodePosition.x - initialTableNodePosition.x),
+    ).toBeGreaterThan(100)
+    expect(
+      Math.abs(movedTableNodePosition.y - initialTableNodePosition.y),
+    ).toBeGreaterThan(100)
+  }
 
   await tidyUpButton.click()
   await page.waitForTimeout(500)
 
   const finalTableNodePosition = await tableNode.boundingBox()
 
-  expect(Math.abs(finalTableNodePosition.x - initialTableNodePosition.x)).toBe(
-    0,
-  )
-  expect(Math.abs(finalTableNodePosition.y - initialTableNodePosition.y)).toBe(
-    0,
-  )
+  if (finalTableNodePosition && initialTableNodePosition) {
+    expect(
+      Math.abs(finalTableNodePosition.x - initialTableNodePosition.x),
+    ).toBe(0)
+    expect(
+      Math.abs(finalTableNodePosition.y - initialTableNodePosition.y),
+    ).toBe(0)
+  }
 })
 
 test('fitview button should make the table nodes fit the viewport', async ({

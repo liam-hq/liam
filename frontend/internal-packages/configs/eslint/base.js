@@ -41,6 +41,10 @@ export function createBaseConfig(options = {}) {
       },
       rules: {
         '@typescript-eslint/no-unsafe-member-access': 'error',
+        '@typescript-eslint/consistent-type-assertions': ['error', {
+          assertionStyle: 'as',
+          objectLiteralTypeAssertions: 'never'
+        }],
         'require-use-server/require-use-server': 'error',
         'no-non-english/no-non-english-characters': 'error',
         'unicorn/filename-case': ['error', {

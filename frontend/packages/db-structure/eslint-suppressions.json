@@ -1,0 +1,7 @@
+{
+  "src/parser/schemarb/parser.ts": {
+    "@typescript-eslint/consistent-type-assertions": {
+      "count": 4
+    }
+  }
+}

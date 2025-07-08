@@ -16,6 +16,7 @@
     "fast-json-patch": "3.1.1",
     "langfuse-langchain": "3.37.4",
     "langsmith": "0.3.29",
+    "neverthrow": "8.2.0",
     "valibot": "1.1.0"
   },
   "devDependencies": {

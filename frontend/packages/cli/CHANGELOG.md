@@ -1,5 +1,31 @@
 # @liam-hq/cli
 
+## 0.6.2
+
+### Patch Changes
+
+- [#2299](https://github.com/liam-hq/liam/pull/2299) - ✨ [Experimental]Add Drizzle ORM schema parser support / Thanks [@FunamaYukina](https://github.com/FunamaYukina)!
+- [#2299](https://github.com/liam-hq/liam/pull/2299) - ✨ [Experimental]Add Drizzle ORM schema parser support / Thanks [@FunamaYukina](https://github.com/FunamaYukina)!
+
+## 0.6.1
+
+### Patch Changes
+
+- [#2399](https://github.com/liam-hq/liam/pull/2399) - Improve static file serving experience with better cache control / Thanks [@hoshinotsuyoshi](https://github.com/hoshinotsuyoshi)!
+
+- Add cache-disabling flag (`-c-1`) to all `http-server` command examples to prevent browsers from caching ERD files
+- Recommend `npx serve` as the primary static file server over `http-server` for better user experience
+- Auto-generate `serve.json` configuration file in build output that sets `Cache-Control: no-cache` headers for HTML and JSON files when using the `serve` package
+
+These changes ensure users always see the latest ERD visualization after regeneration without manual cache clearing.
+
+- [#2396](https://github.com/liam-hq/liam/pull/2396) - 🐛 Fix PostgreSQL parser foreign key resolution in chunked processing / Thanks [@MH4GF](https://github.com/MH4GF)!
+
+- Fix foreign key constraint resolution when processing large schema files in chunks
+- Ensure table lookup context is preserved across chunk boundaries
+- Add comprehensive test coverage for chunked processing scenarios
+- Improve table lookup logic in PostgreSQL converter
+
 ## 0.6.0
 
 ### Minor Changes

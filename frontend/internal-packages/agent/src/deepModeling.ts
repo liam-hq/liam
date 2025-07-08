@@ -1,5 +1,7 @@
 import { END, START, StateGraph } from '@langchain/langgraph'
 import type { Schema } from '@liam-hq/db-structure'
+import type { Result } from 'neverthrow'
+import { err, ok } from 'neverthrow'
 import { WORKFLOW_ERROR_MESSAGES } from './chat/workflow/constants'
 import {
   analyzeRequirementsNode,
@@ -35,15 +37,12 @@ export interface DeepModelingParams {
   recursionLimit?: number
 }
 
-export type DeepModelingResult =
-  | {
-      text: string
-      success: true
-    }
-  | {
-      success: false
-      error: string | undefined
-    }
+export type DeepModelingResult = Result<
+  {
+    text: string
+  },
+  Error
+>
 
 /**
  * Format chat history array into a string
@@ -118,6 +117,17 @@ const createGraph = () => {
       return state.error ? 'finalizeArtifacts' : 'executeDDL'
     })
 
+    // Conditional edge for executeDDL - retry with designSchema if DDL execution fails
+    .addConditionalEdges('executeDDL', (state) => {
+      if (state.shouldRetryWithDesignSchema) {
+        return 'designSchema'
+      }
+      if (state.ddlExecutionFailed) {
+        return 'finalizeArtifacts'
+      }
+      return 'generateUsecase'
+    })
+
     // Conditional edges for validation results
     .addConditionalEdges('validateSchema', (state) => {
       // success → reviewDeliverables
@@ -178,37 +188,27 @@ export const deepModeling = async (
 
   try {
     const compiled = createGraph()
-
     const result = await compiled.invoke(workflowState, {
       recursionLimit,
     })
 
     if (result.error) {
-      return {
-        success: false,
-        error: result.error,
-      }
+      return err(new Error(result.error))
     }
 
-    return {
+    return ok({
       text: result.finalResponse || result.generatedAnswer || '',
-      success: true,
-    }
+    })
   } catch (error) {
     logger.error(WORKFLOW_ERROR_MESSAGES.LANGGRAPH_FAILED, { error })
 
-    // Even with LangGraph execution failure, go through finalizeArtifactsNode to ensure proper response
     const errorMessage =
       error instanceof Error
         ? error.message
         : WORKFLOW_ERROR_MESSAGES.EXECUTION_FAILED
-
     const errorState = { ...workflowState, error: errorMessage }
     const finalizedResult = await finalizeArtifactsNode(errorState)
 
-    return {
-      success: false,
-      error: finalizedResult.error,
-    }
+    return err(new Error(finalizedResult.error || errorMessage))
   }
 }

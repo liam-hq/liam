@@ -84,6 +84,7 @@ async function processChunk(
   const { value: convertedSchema, errors: conversionErrors } = convertToSchema(
     isLastStatementComplete ? parse_tree.stmts : parse_tree.stmts.slice(0, -1),
     rawSql,
+    schema,
   )
 
   if (conversionErrors !== null) {

@@ -118,17 +118,36 @@ export async function designSchemaNode(
 
   const { agent, schemaText } = await prepareSchemaDesign(state)
 
+  // Check if this is a retry after DDL execution failure
+  let userMessage = state.userInput
+  if (state.shouldRetryWithDesignSchema && state.ddlExecutionFailureReason) {
+    userMessage = `The following DDL execution failed: ${state.ddlExecutionFailureReason}
+
+Original request: ${state.userInput}
+
+Please fix this issue by analyzing the schema and adding any missing constraints, primary keys, or other required schema elements to resolve the DDL execution error.`
+
+    state.logger.log(`[${NODE_NAME}] Retrying after DDL execution failure`)
+  }
+
   // Create prompt variables directly
   const promptVariables: SchemaAwareChatVariables = {
     schema_text: schemaText,
     chat_history: state.formattedHistory,
-    user_message: state.userInput,
+    user_message: userMessage,
   }
 
   // Use agent's generate method with prompt variables
   const response = await agent.generate(promptVariables)
   const result = await handleSchemaChanges(response, state)
 
+  // Clear retry flags after processing
+  const finalResult = {
+    ...result,
+    shouldRetryWithDesignSchema: undefined,
+    ddlExecutionFailureReason: undefined,
+  }
+
   state.logger.log(`[${NODE_NAME}] Completed`)
-  return result
+  return finalResult
 }

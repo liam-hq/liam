@@ -199,6 +199,11 @@
   --primary-overlay-20: rgba(29, 237, 131, 0.2);
   --primary-overlay-35: rgba(29, 237, 131, 0.35);
   --primary-overlay-40: rgba(29, 237, 131, 0.4);
+  --primary-overlay-50: rgba(29, 237, 131, 0.5);
+  --primary-overlay-60: rgba(29, 237, 131, 0.6);
+  --primary-overlay-70: rgba(29, 237, 131, 0.7);
+  --primary-overlay-80: rgba(29, 237, 131, 0.8);
+  --primary-overlay-90: rgba(29, 237, 131, 0.9);
   --primary-overlay-100: #1ded83;
   --primary-gradation-overlay-start: rgba(29, 237, 131, 0.12);
   --primary-gradation-overlay-end: rgba(29, 237, 131, 0);
