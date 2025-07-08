@@ -1,4 +1,9 @@
 {
   "extends": "@liam-hq/configs/tsconfig/base.json",
-  "include": ["tests/**/*", "playwright.config.ts", "globalSetup.ts"]
+  "include": [
+    "tests/**/*",
+    "playwright.config.ts",
+    "globalSetup.ts",
+    "env.d.ts"
+  ]
 }

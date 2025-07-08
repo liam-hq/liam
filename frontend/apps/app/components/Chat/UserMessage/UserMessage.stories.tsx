@@ -1,13 +1,15 @@
 import type { Meta } from '@storybook/react'
 import { UserMessage, type UserMessageProps } from '.'
 
-export default {
+const meta: Meta<typeof UserMessage> = {
   title: 'components/Chat/UserMessage',
   component: UserMessage,
   parameters: {
     layout: 'centered',
   },
-} as Meta<typeof UserMessage>
+}
+
+export default meta
 
 // Define stories with render functions
 export const Default = () => {

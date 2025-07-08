@@ -31,10 +31,9 @@ export interface CreateVersionParams {
   patch: Operation[]
 }
 
-export interface VersionResult {
-  success: boolean
-  error?: string | null
-}
+export type VersionResult =
+  | { success: true; newSchema: Schema }
+  | { success: false; error?: string | null }
 
 export type CreateTimelineItemParams = {
   designSessionId: string

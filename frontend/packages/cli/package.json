@@ -15,7 +15,7 @@
   },
   "license": "Apache-2.0",
   "private": false,
-  "version": "0.6.0",
+  "version": "0.6.1",
   "type": "module",
   "publishConfig": {
     "access": "public"
@@ -27,6 +27,7 @@
     "@liam-hq/db-structure": "workspace:*",
     "@liam-hq/erd-core": "workspace:*",
     "@prisma/internals": "6.8.2",
+    "@swc/core": "1.12.9",
     "commander": "13.1.0",
     "glob": "11.0.3",
     "ink": "6.0.1",

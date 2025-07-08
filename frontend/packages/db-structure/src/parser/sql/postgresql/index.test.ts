@@ -534,4 +534,207 @@ describe(processor, () => {
       expect(errors).toEqual([])
     })
   })
+
+  describe('Schema-qualified table names with foreign keys', () => {
+    it('should parse foreign key constraints with schema-qualified table names', async () => {
+      const { value } = await processor(/* sql */ `
+        -- Create schemas
+        CREATE SCHEMA auth;
+        CREATE SCHEMA analytics;
+        CREATE SCHEMA ecommerce;
+
+        -- Create tables in different schemas
+        CREATE TABLE auth.users (
+          user_id uuid PRIMARY KEY,
+          email varchar(255) NOT NULL
+        );
+
+        CREATE TABLE analytics.page_views (
+          view_id bigint PRIMARY KEY,
+          user_id uuid,
+          page_url text NOT NULL
+        );
+
+        CREATE TABLE ecommerce.products (
+          product_id uuid PRIMARY KEY,
+          product_name varchar(255) NOT NULL,
+          created_by uuid
+        );
+
+        -- Add foreign key constraints with schema-qualified references (using ONLY keyword like pg_dump)
+        ALTER TABLE ONLY analytics.page_views
+          ADD CONSTRAINT fk_page_view_user 
+          FOREIGN KEY (user_id) REFERENCES auth.users(user_id) ON DELETE SET NULL;
+
+        ALTER TABLE ONLY ecommerce.products
+          ADD CONSTRAINT fk_product_creator 
+          FOREIGN KEY (created_by) REFERENCES auth.users(user_id) ON DELETE SET NULL;
+      `)
+
+      // Expected: Both foreign key constraints should be parsed correctly
+      expect(value.tables['page_views']?.constraints).toEqual({
+        PRIMARY_view_id: {
+          name: 'PRIMARY_view_id',
+          type: 'PRIMARY KEY',
+          columnName: 'view_id',
+        },
+        fk_page_view_user: {
+          name: 'fk_page_view_user',
+          type: 'FOREIGN KEY',
+          columnName: 'user_id',
+          targetTableName: 'users',
+          targetColumnName: 'user_id',
+          updateConstraint: 'NO_ACTION',
+          deleteConstraint: 'SET_NULL',
+        },
+      })
+
+      expect(value.tables['products']?.constraints).toEqual({
+        PRIMARY_product_id: {
+          name: 'PRIMARY_product_id',
+          type: 'PRIMARY KEY',
+          columnName: 'product_id',
+        },
+        fk_product_creator: {
+          name: 'fk_product_creator',
+          type: 'FOREIGN KEY',
+          columnName: 'created_by',
+          targetTableName: 'users',
+          targetColumnName: 'user_id',
+          updateConstraint: 'NO_ACTION',
+          deleteConstraint: 'SET_NULL',
+        },
+      })
+
+      // Verify all tables are present
+      expect(Object.keys(value.tables)).toContain('users')
+      expect(Object.keys(value.tables)).toContain('page_views')
+      expect(Object.keys(value.tables)).toContain('products')
+    })
+
+    it('should handle multiple schema-qualified foreign key constraints', async () => {
+      const { value } = await processor(/* sql */ `
+        CREATE SCHEMA ecommerce;
+        CREATE SCHEMA analytics;
+
+        CREATE TABLE ecommerce.customers (
+          customer_id uuid PRIMARY KEY,
+          email varchar(255) NOT NULL
+        );
+
+        CREATE TABLE ecommerce.orders (
+          order_id uuid PRIMARY KEY,
+          customer_id uuid NOT NULL,
+          total_amount decimal(10,2) NOT NULL
+        );
+
+        CREATE TABLE ecommerce.order_items (
+          order_item_id uuid PRIMARY KEY,
+          order_id uuid NOT NULL,
+          product_id uuid NOT NULL,
+          quantity integer NOT NULL
+        );
+
+        CREATE TABLE ecommerce.products (
+          product_id uuid PRIMARY KEY,
+          product_name varchar(255) NOT NULL
+        );
+
+        -- Add multiple foreign key constraints
+        ALTER TABLE ecommerce.orders
+          ADD CONSTRAINT fk_order_customer 
+          FOREIGN KEY (customer_id) REFERENCES ecommerce.customers(customer_id);
+
+        ALTER TABLE ecommerce.order_items
+          ADD CONSTRAINT fk_order_item_order 
+          FOREIGN KEY (order_id) REFERENCES ecommerce.orders(order_id) ON DELETE CASCADE;
+
+        ALTER TABLE ecommerce.order_items
+          ADD CONSTRAINT fk_order_item_product 
+          FOREIGN KEY (product_id) REFERENCES ecommerce.products(product_id);
+      `)
+
+      // Expected: All foreign key constraints should be parsed correctly
+      expect(value.tables['orders']?.constraints).toEqual(
+        expect.objectContaining({
+          fk_order_customer: {
+            name: 'fk_order_customer',
+            type: 'FOREIGN KEY',
+            columnName: 'customer_id',
+            targetTableName: 'customers',
+            targetColumnName: 'customer_id',
+            updateConstraint: 'NO_ACTION',
+            deleteConstraint: 'NO_ACTION',
+          },
+        }),
+      )
+
+      expect(value.tables['order_items']?.constraints).toEqual(
+        expect.objectContaining({
+          fk_order_item_order: {
+            name: 'fk_order_item_order',
+            type: 'FOREIGN KEY',
+            columnName: 'order_id',
+            targetTableName: 'orders',
+            targetColumnName: 'order_id',
+            updateConstraint: 'NO_ACTION',
+            deleteConstraint: 'CASCADE',
+          },
+          fk_order_item_product: {
+            name: 'fk_order_item_product',
+            type: 'FOREIGN KEY',
+            columnName: 'product_id',
+            targetTableName: 'products',
+            targetColumnName: 'product_id',
+            updateConstraint: 'NO_ACTION',
+            deleteConstraint: 'NO_ACTION',
+          },
+        }),
+      )
+    })
+
+    it('should parse complex dump with multiple foreign key constraints', async () => {
+      const { value } = await processor(/* sql */ `
+        -- Simulated complex dump with multiple foreign key constraints
+        CREATE SCHEMA analytics;
+        CREATE SCHEMA auth;
+        CREATE SCHEMA ecommerce;
+
+        CREATE TABLE auth.users (user_id uuid PRIMARY KEY);
+        CREATE TABLE auth.roles (role_id int PRIMARY KEY);
+        CREATE TABLE auth.user_roles (user_id uuid, role_id int, PRIMARY KEY (user_id, role_id));
+        
+        CREATE TABLE analytics.page_views (view_id bigint PRIMARY KEY, user_id uuid);
+        
+        CREATE TABLE ecommerce.customers (customer_id uuid PRIMARY KEY, user_id uuid);
+        CREATE TABLE ecommerce.products (product_id uuid PRIMARY KEY, created_by uuid);
+        CREATE TABLE ecommerce.orders (order_id uuid PRIMARY KEY, customer_id uuid);
+        CREATE TABLE ecommerce.order_items (order_item_id uuid PRIMARY KEY, order_id uuid, product_id uuid);
+
+        -- Foreign key constraints
+        ALTER TABLE ONLY analytics.page_views ADD CONSTRAINT fk_page_view_user FOREIGN KEY (user_id) REFERENCES auth.users(user_id) ON DELETE SET NULL;
+        ALTER TABLE ONLY auth.user_roles ADD CONSTRAINT fk_user_roles_user FOREIGN KEY (user_id) REFERENCES auth.users(user_id) ON DELETE CASCADE;
+        ALTER TABLE ONLY auth.user_roles ADD CONSTRAINT fk_user_roles_role FOREIGN KEY (role_id) REFERENCES auth.roles(role_id) ON DELETE CASCADE;
+        ALTER TABLE ONLY ecommerce.customers ADD CONSTRAINT fk_customer_user FOREIGN KEY (user_id) REFERENCES auth.users(user_id) ON DELETE SET NULL;
+        ALTER TABLE ONLY ecommerce.products ADD CONSTRAINT fk_product_creator FOREIGN KEY (created_by) REFERENCES auth.users(user_id) ON DELETE SET NULL;
+        ALTER TABLE ONLY ecommerce.orders ADD CONSTRAINT fk_order_customer FOREIGN KEY (customer_id) REFERENCES ecommerce.customers(customer_id);
+        ALTER TABLE ONLY ecommerce.order_items ADD CONSTRAINT fk_order_item_order FOREIGN KEY (order_id) REFERENCES ecommerce.orders(order_id) ON DELETE CASCADE;
+        ALTER TABLE ONLY ecommerce.order_items ADD CONSTRAINT fk_order_item_product FOREIGN KEY (product_id) REFERENCES ecommerce.products(product_id);
+      `)
+
+      // Count total foreign key constraints across all tables
+      const totalForeignKeys = Object.values(value.tables).reduce(
+        (count, table) => {
+          const foreignKeys = Object.values(table.constraints || {}).filter(
+            (constraint) => constraint.type === 'FOREIGN KEY',
+          )
+          return count + foreignKeys.length
+        },
+        0,
+      )
+
+      // Should parse all 8 foreign key constraints
+      expect(totalForeignKeys).toBe(8)
+    })
+  })
 })

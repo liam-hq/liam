@@ -424,7 +424,14 @@ describe('postgresqlOperationDeparser', () => {
         "ALTER TABLE \"orders\" ADD CONSTRAINT \"fk_orders_user_id\" FOREIGN KEY (\"user_id\") REFERENCES \"users\" (\"id\") ON UPDATE CASCADE ON DELETE SET NULL;"
       `)
 
-      await expectGeneratedSQLToBeParseable(result.value)
+      // Foreign key constraints require both source and target tables to exist for parsing
+      // We need to create the referenced tables first to test the generated SQL
+      const testSql = `
+        CREATE TABLE "users" (id INTEGER PRIMARY KEY);
+        CREATE TABLE "orders" (id INTEGER PRIMARY KEY, user_id INTEGER);
+        ${result.value}
+      `
+      await expectGeneratedSQLToBeParseable(testSql)
     })
 
     it('should generate ADD CONSTRAINT UNIQUE statement', async () => {

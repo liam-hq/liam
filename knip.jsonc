@@ -37,7 +37,10 @@
     "@liam-hq/configs", // Used by tsconfig and biome configuration files
     "@turbo/gen", // Required for `turbo gen` command in npm scripts
     "@langchain/community", // Temporarily unused due to disabled vectorstore functionality
-    "@biomejs/biome" // Referenced in settings.json to enable Biome's "format on save" in VSCode
+    "@biomejs/biome", // Referenced in settings.json to enable Biome's "format on save" in VSCode
+    "@swc/core", // Required for Vercel deployment to prevent native binding errors
+    "@swc/wasm", // Required for Vercel deployment to prevent native binding errors
+    "langsmith" // Automatically used by LangChain when environment variables are set
   ],
 
   // TODO: Review ignoreBinaries configuration later

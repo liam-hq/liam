@@ -12,8 +12,8 @@ if (process.env.VERCEL_ENV === 'production') {
 }
 
 const nextConfig: NextConfig = {
-  // NOTE: Exclude Prisma-related packages from the bundle
-  // These packages are installed separately in the node_modules/@prisma directory
+  // NOTE: Exclude Prisma and SWC-related packages from the bundle
+  // These packages are installed separately in the node_modules directory
   // Excluding them prevents `Error: Cannot find module 'fs'` errors in the build process
   images: {
     remotePatterns: [
@@ -37,6 +37,8 @@ const nextConfig: NextConfig = {
         '@prisma/internals',
         '@prisma/prisma-schema-wasm',
         '@prisma/schema-files-loader',
+        '@swc/core',
+        '@swc/wasm',
       )
     } else {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
@@ -63,6 +65,10 @@ const nextConfig: NextConfig = {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       config.externals['@prisma/schema-files-loader'] =
         '@prisma/schema-files-loader'
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      config.externals['@swc/core'] = '@swc/core'
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      config.externals['@swc/wasm'] = '@swc/wasm'
     }
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access

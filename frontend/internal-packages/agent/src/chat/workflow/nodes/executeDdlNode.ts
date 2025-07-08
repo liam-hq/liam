@@ -1,3 +1,4 @@
+import { postgresqlSchemaDeparser } from '@liam-hq/db-structure'
 import { executeQuery } from '@liam-hq/pglite-server'
 import type { SqlResult } from '@liam-hq/pglite-server/src/types'
 import { getWorkflowNodeProgress } from '../shared/getWorkflowNodeProgress'
@@ -6,8 +7,8 @@ import type { WorkflowState } from '../types'
 const NODE_NAME = 'executeDdlNode'
 
 /**
- * Execute DDL Node - Agent executes DDL
- * Performed by agent
+ * Execute DDL Node - Generates DDL from schema and executes it
+ * Generates DDL mechanically without LLM and then executes
  */
 export async function executeDdlNode(
   state: WorkflowState,
@@ -25,17 +26,41 @@ export async function executeDdlNode(
     )
   }
 
-  if (!state.ddlStatements || !state.ddlStatements.trim()) {
+  // Generate DDL from schema data
+  let ddlStatements: string
+  try {
+    const result = postgresqlSchemaDeparser(state.schemaData)
+    ddlStatements = result.value
+
+    // Log detailed information about what was generated
+    const tableCount = Object.keys(state.schemaData.tables).length
+    const ddlLength = ddlStatements.length
+
+    state.logger.log(
+      `[${NODE_NAME}] Generated DDL for ${tableCount} tables (${ddlLength} characters)`,
+    )
+    state.logger.debug(`[${NODE_NAME}] Generated DDL:`, { ddlStatements })
+  } catch (error) {
+    state.logger.log(`[${NODE_NAME}] DDL generation failed: ${error}`)
+    state.logger.log(`[${NODE_NAME}] Completed`)
+    return {
+      ...state,
+      ddlStatements: 'DDL generation failed due to an unexpected error.',
+    }
+  }
+
+  if (!ddlStatements || !ddlStatements.trim()) {
     state.logger.log(`[${NODE_NAME}] No DDL statements to execute`)
     state.logger.log(`[${NODE_NAME}] Completed`)
     return {
       ...state,
+      ddlStatements,
     }
   }
 
   const results: SqlResult[] = await executeQuery(
     state.designSessionId,
-    state.ddlStatements,
+    ddlStatements,
   )
 
   const hasErrors = results.some((result: SqlResult) => !result.success)
@@ -61,5 +86,6 @@ export async function executeDdlNode(
 
   return {
     ...state,
+    ddlStatements,
   }
 }

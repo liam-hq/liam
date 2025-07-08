@@ -39,8 +39,14 @@ const applySchemaChanges = async (
     }
   }
 
+  const newTableCount = Object.keys(result.newSchema.tables).length
+  state.logger.log(
+    `[${NODE_NAME}] Applied ${schemaChanges.length} schema changes successfully (${newTableCount} tables)`,
+  )
+
   return {
     ...state,
+    schemaData: result.newSchema,
     generatedAnswer: message,
     error: undefined,
   }
@@ -76,6 +82,10 @@ async function prepareSchemaDesign(
   state: WorkflowState,
 ): Promise<PreparedSchemaDesign> {
   const schemaText = convertSchemaToText(state.schemaData)
+
+  // Log current schema state for debugging
+  const tableCount = Object.keys(state.schemaData.tables).length
+  state.logger.log(`[${NODE_NAME}] Current schema has ${tableCount} tables`)
 
   // Create the agent instance
   const agent = new DatabaseSchemaBuildAgent()

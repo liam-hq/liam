@@ -41,7 +41,7 @@ export const Chat: FC<Props> = ({ schemaData, designSession }) => {
   const startAIResponse = async (content: string) => {
     // Send chat message to API
     const result = await sendChatMessage({
-      message: content,
+      userInput: content,
       timelineItems: realtimeTimelineItems,
       designSession,
     })

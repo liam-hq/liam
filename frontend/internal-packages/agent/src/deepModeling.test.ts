@@ -23,6 +23,12 @@ vi.mock('@liam-hq/pglite-server', () => ({
       success: true,
       sql: 'CREATE TABLE test (id INTEGER);',
       result: { rows: [], columns: [] },
+      id: 'test-result-id',
+      metadata: {
+        executionTime: 10,
+        timestamp: new Date().toISOString(),
+        affectedRows: 0,
+      },
     },
   ]),
 }))
@@ -199,6 +205,7 @@ describe('Chat Workflow', () => {
     // Setup createVersion mock
     vi.mocked(mockSchemaRepository.createVersion).mockResolvedValue({
       success: true,
+      newSchema: mockSchemaData, // Return the same schema for simplicity
     })
 
     // Setup createTimelineItem mock

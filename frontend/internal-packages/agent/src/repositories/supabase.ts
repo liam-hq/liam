@@ -336,6 +336,7 @@ export class SupabaseSchemaRepository implements SchemaRepository {
       if (parsedResult.output.success) {
         return {
           success: true,
+          newSchema: validationResult.output,
         }
       }
       return {
