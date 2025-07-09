@@ -220,7 +220,9 @@ const isPrimaryKeyColumn = (
 ): boolean => {
   return Object.values(table.constraints).some(
     (constraint) =>
-      constraint.type === 'PRIMARY KEY' && constraint.columnName === col.name,
+      constraint.type === 'PRIMARY KEY' &&
+      'columnNames' in constraint &&
+      constraint.columnNames.includes(col.name),
   )
 }
 
@@ -356,10 +358,11 @@ export async function prepareDmlNode(
   // Validate prerequisites
   if (!state.generatedUsecases || state.generatedUsecases.length === 0) {
     const errorMessage = 'No use cases found. Cannot generate DML statements.'
-    state.logger.error(`[${NODE_NAME}] ${errorMessage}`)
+    const error = new Error(`[${NODE_NAME}] ${errorMessage}`)
+    state.logger.error(error.message)
     return {
       ...state,
-      error: errorMessage,
+      error,
     }
   }
 
@@ -369,10 +372,11 @@ export async function prepareDmlNode(
   ) {
     const errorMessage =
       'No tables found in schema. Cannot generate DML statements.'
-    state.logger.error(`[${NODE_NAME}] ${errorMessage}`)
+    const error = new Error(`[${NODE_NAME}] ${errorMessage}`)
+    state.logger.error(error.message)
     return {
       ...state,
-      error: errorMessage,
+      error,
     }
   }
 

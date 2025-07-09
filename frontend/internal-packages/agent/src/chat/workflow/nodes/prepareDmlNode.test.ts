@@ -96,12 +96,12 @@ describe('prepareDmlNode', () => {
               users_pkey: {
                 type: 'PRIMARY KEY',
                 name: 'users_pkey',
-                columnName: 'id',
+                columnNames: ['id'],
               },
               email_unique: {
                 type: 'UNIQUE',
                 name: 'email_unique',
-                columnName: 'email',
+                columnNames: ['email'],
               },
             },
           },
@@ -147,7 +147,7 @@ describe('prepareDmlNode', () => {
               posts_pkey: {
                 type: 'PRIMARY KEY',
                 name: 'posts_pkey',
-                columnName: 'id',
+                columnNames: ['id'],
               },
             },
           },
@@ -305,8 +305,9 @@ describe('prepareDmlNode', () => {
 
       const result = await prepareDmlNode(stateWithoutUseCases)
 
-      expect(result.error).toBe(
-        'No use cases found. Cannot generate DML statements.',
+      expect(result.error).toBeInstanceOf(Error)
+      expect(result.error?.message).toBe(
+        '[prepareDmlNode] No use cases found. Cannot generate DML statements.',
       )
       expect(result.dmlStatements).toBeUndefined()
     })
@@ -319,8 +320,9 @@ describe('prepareDmlNode', () => {
 
       const result = await prepareDmlNode(stateWithEmptyUseCases)
 
-      expect(result.error).toBe(
-        'No use cases found. Cannot generate DML statements.',
+      expect(result.error).toBeInstanceOf(Error)
+      expect(result.error?.message).toBe(
+        '[prepareDmlNode] No use cases found. Cannot generate DML statements.',
       )
       expect(result.dmlStatements).toBeUndefined()
     })
@@ -335,8 +337,9 @@ describe('prepareDmlNode', () => {
 
       const result = await prepareDmlNode(stateWithoutSchema)
 
-      expect(result.error).toBe(
-        'No tables found in schema. Cannot generate DML statements.',
+      expect(result.error).toBeInstanceOf(Error)
+      expect(result.error?.message).toBe(
+        '[prepareDmlNode] No tables found in schema. Cannot generate DML statements.',
       )
       expect(result.dmlStatements).toBeUndefined()
     })
@@ -420,7 +423,7 @@ describe('prepareDmlNode', () => {
                 complex_table_pkey: {
                   type: 'PRIMARY KEY',
                   name: 'complex_table_pkey',
-                  columnName: 'id',
+                  columnNames: ['id'],
                 },
               },
             },

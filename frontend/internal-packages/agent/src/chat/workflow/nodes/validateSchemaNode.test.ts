@@ -286,8 +286,9 @@ describe('validateSchemaNode', () => {
 
       const result = await validateSchemaNode(baseState)
 
-      expect(result.error).toBe(
-        'DML validation failed: SQL: INSERT INTO nonexistent_table (id) VALUES (1);, Error: {"error":"Table does not exist"}',
+      expect(result.error).toBeInstanceOf(Error)
+      expect(result.error?.message).toBe(
+        '[validateSchemaNode] DML validation failed: SQL: INSERT INTO nonexistent_table (id) VALUES (1);, Error: {"error":"Table does not exist"}',
       )
       expect(mockLogger.error).toHaveBeenCalledWith(
         '[validateSchemaNode] DML validation failed: SQL: INSERT INTO nonexistent_table (id) VALUES (1);, Error: {"error":"Table does not exist"}',
@@ -314,9 +315,10 @@ describe('validateSchemaNode', () => {
 
       const result = await validateSchemaNode(baseState)
 
-      expect(result.error).toContain('DML validation failed:')
-      expect(result.error).toContain('Table does not exist')
-      expect(result.error).toContain('Column does not exist')
+      expect(result.error).toBeInstanceOf(Error)
+      expect(result.error?.message).toContain('DML validation failed:')
+      expect(result.error?.message).toContain('Table does not exist')
+      expect(result.error?.message).toContain('Column does not exist')
       expect(mockLogger.error).toHaveBeenCalledWith(
         expect.stringContaining('[validateSchemaNode] DML validation failed:'),
       )
@@ -328,7 +330,10 @@ describe('validateSchemaNode', () => {
 
       const result = await validateSchemaNode(baseState)
 
-      expect(result.error).toBe(`DML execution failed: ${errorMessage}`)
+      expect(result.error).toBeInstanceOf(Error)
+      expect(result.error?.message).toBe(
+        `[validateSchemaNode] DML execution failed: ${errorMessage}`,
+      )
       expect(mockLogger.error).toHaveBeenCalledWith(
         `[validateSchemaNode] DML execution failed: ${errorMessage}`,
       )
@@ -343,7 +348,10 @@ describe('validateSchemaNode', () => {
 
       const result = await validateSchemaNode(baseState)
 
-      expect(result.error).toBe(`DML execution failed: ${errorMessage}`)
+      expect(result.error).toBeInstanceOf(Error)
+      expect(result.error?.message).toBe(
+        `[validateSchemaNode] DML execution failed: ${errorMessage}`,
+      )
       expect(mockLogger.error).toHaveBeenCalledWith(
         `[validateSchemaNode] DML execution failed: ${errorMessage}`,
       )
@@ -378,8 +386,9 @@ describe('validateSchemaNode', () => {
       const result = await validateSchemaNode(baseState)
 
       expect(result.error).toBeDefined()
-      expect(result.error).toContain('DML validation failed:')
-      expect(result.error).toContain('invalid-email')
+      expect(result.error).toBeInstanceOf(Error)
+      expect(result.error?.message).toContain('DML validation failed:')
+      expect(result.error?.message).toContain('invalid-email')
     })
 
     it('should handle complex SQL statements with special characters', async () => {
@@ -587,9 +596,10 @@ describe('validateSchemaNode', () => {
 
       const result = await validateSchemaNode(baseState)
 
-      expect(result.error).toContain('Constraint violation')
-      expect(result.error).toContain('users_email_unique')
-      expect(result.error).toContain('test@example.com')
+      expect(result.error).toBeInstanceOf(Error)
+      expect(result.error?.message).toContain('Constraint violation')
+      expect(result.error?.message).toContain('users_email_unique')
+      expect(result.error?.message).toContain('test@example.com')
     })
   })
 })
