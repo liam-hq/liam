@@ -1,4 +1,4 @@
-import type { Meta } from '@storybook/react'
+import type { Meta, StoryObj } from '@storybook/react'
 import { ChatInput } from './ChatInput'
 
 const dummySchema = {
@@ -6,29 +6,82 @@ const dummySchema = {
     users: {
       name: 'users',
       columns: {
-        user_id: { name: 'user_id' },
-        name: { name: 'name' },
+        id: {
+          name: 'id',
+          type: 'integer',
+          default: null,
+          check: null,
+          comment: null,
+          primary: false,
+          unique: false,
+          notNull: false,
+        },
+        user_id: {
+          name: 'user_id',
+          type: 'integer',
+          default: null,
+          check: null,
+          comment: null,
+          primary: false,
+          unique: false,
+          notNull: false,
+        },
       },
+      comment: null,
+      constraints: {},
+      indexes: {},
     },
     posts: {
       name: 'posts',
       columns: {
-        post_id: { name: 'post_id' },
-        user_id: { name: 'user_id' },
+        id: {
+          name: 'id',
+          type: 'integer',
+          default: null,
+          check: null,
+          comment: null,
+          primary: false,
+          unique: false,
+          notNull: false,
+        },
+        post_id: {
+          name: 'post_id',
+          type: 'integer',
+          default: null,
+          check: null,
+          comment: null,
+          primary: false,
+          unique: false,
+          notNull: false,
+        },
+        content: {
+          name: 'content',
+          type: 'text',
+          default: null,
+          check: null,
+          comment: null,
+          primary: false,
+          unique: false,
+          notNull: false,
+        },
       },
+      comment: null,
+      constraints: {},
+      indexes: {},
     },
   },
 }
 
 const meta = {
   component: ChatInput,
-  title: 'Components/ChatInput',
+  tags: ['autodocs'],
 } satisfies Meta<typeof ChatInput>
 
 export default meta
+type Story = StoryObj<typeof meta>
 
 // Default state (empty) with SendButton
-export const Default = {
+export const Default: Story = {
   args: {
     onSendMessage: () => {},
     isLoading: false,
@@ -45,7 +98,7 @@ export const Default = {
 }
 
 // Loading state with CancelButton
-export const Loading = {
+export const Loading: Story = {
   args: {
     onSendMessage: () => {},
     isLoading: true,
@@ -63,7 +116,7 @@ export const Loading = {
 }
 
 // Loading state with content and CancelButton
-export const LoadingWithContent = {
+export const LoadingWithContent: Story = {
   args: {
     onSendMessage: () => {},
     isLoading: true,
@@ -82,7 +135,7 @@ export const LoadingWithContent = {
 }
 
 // Error state with filled message with SendButton
-export const WithError = {
+export const WithError: Story = {
   args: {
     onSendMessage: () => {},
     isLoading: false,
@@ -100,7 +153,7 @@ export const WithError = {
 }
 
 // Filled state (with content) with SendButton
-export const Filled = {
+export const Filled: Story = {
   args: {
     onSendMessage: () => {},
     isLoading: false,
@@ -118,7 +171,7 @@ export const Filled = {
 }
 
 // Interactive demo with state
-export const Interactive = {
+export const Interactive: Story = {
   args: {
     onSendMessage: (msg: string) => {
       alert(`Message sent: ${msg}`)

@@ -64,11 +64,12 @@ export async function analyzeRequirementsNode(
 
   if (analysisResult.isErr()) {
     const errorMessage = analysisResult.error
-    state.logger.error(`[${NODE_NAME}] Failed: ${errorMessage}`)
+    const error = new Error(`[${NODE_NAME}] Failed: ${errorMessage}`)
+    state.logger.error(error.message)
 
     return {
       ...state,
-      error: errorMessage,
+      error,
       retryCount: {
         ...state.retryCount,
         [NODE_NAME]: retryCount + 1,

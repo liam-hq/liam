@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import type { TimelineItemEntry } from '../../types/chatTypes'
+import type { TimelineItemEntry } from '@/features/timelineItems/types'
 import {
   formatTimelineItemHistory,
   isDuplicateTimelineItem,

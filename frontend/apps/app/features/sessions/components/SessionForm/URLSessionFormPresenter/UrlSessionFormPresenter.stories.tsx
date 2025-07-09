@@ -1,14 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react'
 import { URLSessionFormPresenter } from './UrlSessionFormPresenter'
 
-type URLSessionFormPresenterProps = {
-  formError?: string
-  isPending: boolean
-  formAction: (formData: FormData) => void
-}
-
-const meta: Meta<URLSessionFormPresenterProps> = {
-  title: 'Features/Sessions/URLSessionFormPresenter',
+const meta = {
   component: URLSessionFormPresenter,
   parameters: {
     layout: 'padded',
@@ -17,10 +10,10 @@ const meta: Meta<URLSessionFormPresenterProps> = {
     },
   },
   tags: ['autodocs'],
-}
+} satisfies Meta<typeof URLSessionFormPresenter>
 
 export default meta
-type Story = StoryObj<URLSessionFormPresenterProps>
+type Story = StoryObj<typeof meta>
 
 export const Default: Story = {
   args: {

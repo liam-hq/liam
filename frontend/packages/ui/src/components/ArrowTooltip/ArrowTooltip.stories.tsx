@@ -9,7 +9,6 @@ import {
 } from './ArrowTooltip'
 
 const meta: Meta<typeof ArrowTooltipContent> = {
-  title: 'Components/ArrowTooltip',
   component: ArrowTooltipContent,
   parameters: {
     layout: 'centered',

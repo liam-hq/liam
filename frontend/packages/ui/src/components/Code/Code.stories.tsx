@@ -2,7 +2,6 @@ import type { Meta, StoryObj } from '@storybook/react'
 import { Code } from './Code'
 
 const meta = {
-  title: 'Components/Code',
   component: Code,
   parameters: {
     layout: 'centered',

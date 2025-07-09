@@ -1,47 +1,42 @@
-import type { Meta } from '@storybook/react'
+import type { Meta, StoryObj } from '@storybook/react'
 import { UploadSessionFormPresenter } from './UploadSessionFormPresenter'
 
 const meta = {
-  title: 'Features/Sessions/UploadSessionFormPresenter',
   component: UploadSessionFormPresenter,
   parameters: {
     layout: 'centered',
   },
   tags: ['autodocs'],
+  render: (args) => {
+    return (
+      <div style={{ width: '800px' }}>
+        <UploadSessionFormPresenter {...args} />
+      </div>
+    )
+  },
 } satisfies Meta<typeof UploadSessionFormPresenter>
 
 export default meta
+type Story = StoryObj<typeof meta>
 
-export const Default = {
-  render: () => {
-    return (
-      <div style={{ width: '800px' }}>
-        <UploadSessionFormPresenter isPending={false} formAction={() => {}} />
-      </div>
-    )
+export const Default: Story = {
+  args: {
+    isPending: false,
+    formAction: () => {},
   },
 }
 
-export const WithFormError = {
-  render: () => {
-    return (
-      <div style={{ width: '800px' }}>
-        <UploadSessionFormPresenter
-          formError="Please enter a valid message."
-          isPending={false}
-          formAction={() => {}}
-        />
-      </div>
-    )
+export const WithFormError: Story = {
+  args: {
+    formError: 'Please enter a valid message.',
+    isPending: false,
+    formAction: () => {},
   },
 }
 
-export const Pending = {
-  render: () => {
-    return (
-      <div style={{ width: '800px' }}>
-        <UploadSessionFormPresenter isPending={true} formAction={() => {}} />
-      </div>
-    )
+export const Pending: Story = {
+  args: {
+    isPending: true,
+    formAction: () => {},
   },
 }

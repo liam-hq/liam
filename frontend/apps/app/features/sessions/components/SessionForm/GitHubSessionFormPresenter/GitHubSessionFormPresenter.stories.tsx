@@ -1,4 +1,4 @@
-import type { Meta } from '@storybook/react'
+import type { Meta, StoryObj } from '@storybook/react'
 import { useState } from 'react'
 import type { Projects } from '@/components/CommonLayout/AppBar/ProjectsDropdownMenu/services/getProjects'
 import { GitHubSessionFormPresenter } from './GitHubSessionFormPresenter'
@@ -31,164 +31,135 @@ const mockBranches = [
 ]
 
 const meta = {
-  title: 'Features/Sessions/GitHubSessionFormPresenter',
   component: GitHubSessionFormPresenter,
   parameters: {
     layout: 'centered',
   },
   tags: ['autodocs'],
+  render: (args) => (
+    <div style={{ width: '800px' }}>
+      <GitHubSessionFormPresenter {...args} />
+    </div>
+  ),
 } satisfies Meta<typeof GitHubSessionFormPresenter>
 
 export default meta
+type Story = StoryObj<typeof meta>
 
-export const Default = {
-  render: () => {
-    return (
-      <div style={{ width: '800px' }}>
-        <GitHubSessionFormPresenter
-          projects={mockProjects}
-          branches={[]}
-          isBranchesLoading={false}
-          isPending={false}
-          onProjectChange={() => {}}
-          formAction={() => {}}
-        />
-      </div>
-    )
+export const Default: Story = {
+  args: {
+    projects: mockProjects,
+    branches: [],
+    isBranchesLoading: false,
+    isPending: false,
+    onProjectChange: () => {},
+    formAction: () => {},
   },
 }
 
-export const WithProjects = {
-  render: () => {
-    return (
-      <div style={{ width: '800px' }}>
-        <GitHubSessionFormPresenter
-          projects={mockProjects}
-          defaultProjectId="1"
-          branches={[]}
-          isBranchesLoading={false}
-          isPending={false}
-          onProjectChange={() => {}}
-          formAction={() => {}}
-        />
-      </div>
-    )
+export const WithProjects: Story = {
+  args: {
+    projects: mockProjects,
+    defaultProjectId: '1',
+    branches: [],
+    isBranchesLoading: false,
+    isPending: false,
+    onProjectChange: () => {},
+    formAction: () => {},
   },
 }
 
-export const WithBranches = {
-  render: () => {
-    return (
-      <div style={{ width: '800px' }}>
-        <GitHubSessionFormPresenter
-          projects={mockProjects}
-          defaultProjectId="1"
-          branches={mockBranches}
-          isBranchesLoading={false}
-          isPending={false}
-          onProjectChange={() => {}}
-          formAction={() => {}}
-        />
-      </div>
-    )
+export const WithBranches: Story = {
+  args: {
+    projects: mockProjects,
+    defaultProjectId: '1',
+    branches: mockBranches,
+    isBranchesLoading: false,
+    isPending: false,
+    onProjectChange: () => {},
+    formAction: () => {},
   },
 }
 
-export const BranchesLoading = {
-  render: () => {
-    return (
-      <div style={{ width: '800px' }}>
-        <GitHubSessionFormPresenter
-          projects={mockProjects}
-          defaultProjectId="1"
-          branches={[]}
-          isBranchesLoading={true}
-          isPending={false}
-          onProjectChange={() => {}}
-          formAction={() => {}}
-        />
-      </div>
-    )
+export const BranchesLoading: Story = {
+  args: {
+    projects: mockProjects,
+    defaultProjectId: '1',
+    branches: [],
+    isBranchesLoading: true,
+    isPending: false,
+    onProjectChange: () => {},
+    formAction: () => {},
   },
 }
 
-export const WithBranchesError = {
-  render: () => {
-    return (
-      <div style={{ width: '800px' }}>
-        <GitHubSessionFormPresenter
-          projects={mockProjects}
-          defaultProjectId="1"
-          branches={[]}
-          isBranchesLoading={false}
-          branchesError="Failed to load branches. Please check your repository settings."
-          isPending={false}
-          onProjectChange={() => {}}
-          formAction={() => {}}
-        />
-      </div>
-    )
+export const WithBranchesError: Story = {
+  args: {
+    projects: mockProjects,
+    defaultProjectId: '1',
+    branches: [],
+    isBranchesLoading: false,
+    branchesError:
+      'Failed to load branches. Please check your repository settings.',
+    isPending: false,
+    onProjectChange: () => {},
+    formAction: () => {},
   },
 }
 
-export const WithFormError = {
-  render: () => {
-    return (
-      <div style={{ width: '800px' }}>
-        <GitHubSessionFormPresenter
-          projects={mockProjects}
-          branches={mockBranches}
-          isBranchesLoading={false}
-          formError="Please enter a valid message."
-          isPending={false}
-          onProjectChange={() => {}}
-          formAction={() => {}}
-        />
-      </div>
-    )
+export const WithFormError: Story = {
+  args: {
+    projects: mockProjects,
+    branches: mockBranches,
+    isBranchesLoading: false,
+    formError: 'Please enter a valid message.',
+    isPending: false,
+    onProjectChange: () => {},
+    formAction: () => {},
   },
 }
 
-export const Pending = {
-  render: () => {
-    return (
-      <div style={{ width: '800px' }}>
-        <GitHubSessionFormPresenter
-          projects={mockProjects}
-          branches={mockBranches}
-          isBranchesLoading={false}
-          isPending={true}
-          onProjectChange={() => {}}
-          formAction={() => {}}
-        />
-      </div>
-    )
+export const Pending: Story = {
+  args: {
+    projects: mockProjects,
+    branches: mockBranches,
+    isBranchesLoading: false,
+    isPending: true,
+    onProjectChange: () => {},
+    formAction: () => {},
   },
 }
 
-export const EmptyProjects = {
-  render: () => {
-    return (
-      <div style={{ width: '800px' }}>
-        <GitHubSessionFormPresenter
-          projects={[]}
-          branches={[]}
-          isBranchesLoading={false}
-          isPending={false}
-          onProjectChange={() => {}}
-          formAction={() => {}}
-        />
-      </div>
-    )
+export const EmptyProjects: Story = {
+  args: {
+    projects: [],
+    branches: [],
+    isBranchesLoading: false,
+    isPending: false,
+    onProjectChange: () => {},
+    formAction: () => {},
   },
 }
 
-export const Interactive = {
-  render: () => {
-    const [isPending, setIsPending] = useState(false)
-    const [selectedProjectId, setSelectedProjectId] = useState<string>('')
-    const [branches, setBranches] = useState<Branch[]>([])
-    const [isBranchesLoading, setIsBranchesLoading] = useState(false)
+export const Interactive: Story = {
+  args: {
+    projects: mockProjects,
+    branches: [],
+    isBranchesLoading: false,
+    isPending: false,
+    formAction: () => {},
+    onProjectChange: () => {},
+    defaultProjectId: '',
+  },
+  render: (args) => {
+    const [isPending, setIsPending] = useState(args.isPending)
+    const [selectedProjectId, setSelectedProjectId] = useState<string>(
+      args.defaultProjectId || '',
+    )
+    const [branches, setBranches] = useState<Branch[]>(args.branches)
+    const [isBranchesLoading, setIsBranchesLoading] = useState(
+      args.isBranchesLoading,
+    )
 
     const handleFormAction = (_formData: FormData) => {
       setIsPending(true)
@@ -212,29 +183,46 @@ export const Interactive = {
     }
 
     return (
-      <div style={{ width: '800px' }}>
-        <GitHubSessionFormPresenter
-          projects={mockProjects}
-          branches={branches}
-          isBranchesLoading={isBranchesLoading}
-          isPending={isPending}
-          formAction={handleFormAction}
-          onProjectChange={handleProjectChange}
-          defaultProjectId={selectedProjectId}
-        />
-      </div>
+      <GitHubSessionFormPresenter
+        {...args}
+        branches={branches}
+        isBranchesLoading={isBranchesLoading}
+        isPending={isPending}
+        formAction={handleFormAction}
+        onProjectChange={handleProjectChange}
+        defaultProjectId={selectedProjectId}
+      />
     )
   },
 }
 
-export const InteractiveWithError = {
-  render: () => {
-    const [isPending, setIsPending] = useState(false)
-    const [selectedProjectId, setSelectedProjectId] = useState<string>('')
-    const [branches, setBranches] = useState<Branch[]>([])
-    const [isBranchesLoading, setIsBranchesLoading] = useState(false)
-    const [formError, setFormError] = useState<string | undefined>()
-    const [branchesError, setBranchesError] = useState<string | undefined>()
+export const InteractiveWithError: Story = {
+  args: {
+    projects: mockProjects,
+    branches: [],
+    isBranchesLoading: false,
+    isPending: false,
+    formError: undefined,
+    branchesError: undefined,
+    formAction: () => {},
+    onProjectChange: () => {},
+    defaultProjectId: '',
+  },
+  render: (args) => {
+    const [isPending, setIsPending] = useState(args.isPending)
+    const [selectedProjectId, setSelectedProjectId] = useState<string>(
+      args.defaultProjectId || '',
+    )
+    const [branches, setBranches] = useState<Branch[]>(args.branches)
+    const [isBranchesLoading, setIsBranchesLoading] = useState(
+      args.isBranchesLoading,
+    )
+    const [formError, setFormError] = useState<string | undefined>(
+      args.formError,
+    )
+    const [branchesError, setBranchesError] = useState<string | undefined>(
+      args.branchesError,
+    )
 
     const handleFormAction = (formData: FormData) => {
       setIsPending(true)
@@ -282,7 +270,6 @@ export const InteractiveWithError = {
           display: 'flex',
           flexDirection: 'column',
           gap: '16px',
-          width: '800px',
         }}
       >
         <div style={{ display: 'flex', gap: '8px' }}>
@@ -333,7 +320,7 @@ export const InteractiveWithError = {
           </button>
         </div>
         <GitHubSessionFormPresenter
-          projects={mockProjects}
+          {...args}
           branches={branches}
           isBranchesLoading={isBranchesLoading}
           isPending={isPending}

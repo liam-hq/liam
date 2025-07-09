@@ -1,12 +1,14 @@
-import type { Meta } from '@storybook/react'
+import type { Meta, StoryObj } from '@storybook/react'
 import { type KeyboardEvent, useRef, useState } from 'react'
 import { MentionSuggestor } from './MentionSuggestor'
 
-const meta: Meta<typeof MentionSuggestor> = {
-  title: 'Components/ChatInput/MentionSuggestor',
+const meta = {
   component: MentionSuggestor,
-}
+  tags: ['autodocs'],
+} satisfies Meta<typeof MentionSuggestor>
+
 export default meta
+type Story = StoryObj<typeof meta>
 
 const schema = {
   tables: {
@@ -124,10 +126,18 @@ const handleSuggestionKeyDown = (
 /**
  * Basic schema mention example
  */
-export const SchemaMention = {
-  render: () => {
-    const [input, setInput] = useState('Type @ to mention schema...')
-    const [cursorPos, setcursorPos] = useState(0)
+export const SchemaMention: Story = {
+  args: {
+    id: 'mention-suggestor',
+    input: 'Type @ to mention schema...',
+    cursorPos: 0,
+    enabled: true,
+    schema,
+    onSelect: () => {},
+  },
+  render: (args) => {
+    const [input, setInput] = useState(args.input)
+    const [cursorPos, setcursorPos] = useState(args.cursorPos)
     const [selected, setSelected] = useState<string | null>(null)
     const textareaRef = useRef<HTMLTextAreaElement>(null)
 
@@ -151,8 +161,7 @@ export const SchemaMention = {
           style={{ width: '100%', fontSize: 16, marginBottom: 8 }}
         />
         <MentionSuggestor
-          id="mention-suggestor"
-          schema={schema}
+          {...args}
           input={input}
           cursorPos={cursorPos}
           enabled={/@[\w-]*$/.test(input.slice(0, cursorPos))}
@@ -178,10 +187,19 @@ export const SchemaMention = {
 /**
  * Example demonstrating item limiting and empty state
  */
-export const LimitedItems = {
-  render: () => {
-    const [input, setInput] = useState('Type @ to filter...')
-    const [cursorPos, setcursorPos] = useState(0)
+export const LimitedItems: Story = {
+  args: {
+    id: 'mention-suggestor',
+    input: 'Type @ to filter...',
+    cursorPos: 0,
+    enabled: true,
+    maxMatches: 2,
+    schema,
+    onSelect: () => {},
+  },
+  render: (args) => {
+    const [input, setInput] = useState(args.input)
+    const [cursorPos, setcursorPos] = useState(args.cursorPos)
     const [selected, setSelected] = useState<string | null>(null)
     const textareaRef = useRef<HTMLTextAreaElement>(null)
 
@@ -205,12 +223,10 @@ export const LimitedItems = {
           style={{ width: '100%', fontSize: 16, marginBottom: 8 }}
         />
         <MentionSuggestor
-          id="mention-suggestor"
-          schema={schema}
+          {...args}
           input={input}
           cursorPos={cursorPos}
           enabled={/@[\w-]*$/.test(input.slice(0, cursorPos))}
-          maxMatches={2}
           onSelect={(item) => {
             setSelected(item.label)
             textareaRef.current?.focus()

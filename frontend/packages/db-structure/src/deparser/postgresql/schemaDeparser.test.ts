@@ -33,7 +33,7 @@ describe('postgresqlSchemaDeparser', () => {
           constraints: {
             users_pkey: aPrimaryKeyConstraint({
               name: 'users_pkey',
-              columnName: 'id',
+              columnNames: ['id'],
             }),
           },
         }),
@@ -72,7 +72,7 @@ describe('postgresqlSchemaDeparser', () => {
           constraints: {
             products_pkey: aPrimaryKeyConstraint({
               name: 'products_pkey',
-              columnName: 'id',
+              columnNames: ['id'],
             }),
           },
         }),
@@ -123,7 +123,7 @@ describe('postgresqlSchemaDeparser', () => {
           constraints: {
             settings_pkey: aPrimaryKeyConstraint({
               name: 'settings_pkey',
-              columnName: 'id',
+              columnNames: ['id'],
             }),
           },
         }),
@@ -164,7 +164,7 @@ describe('postgresqlSchemaDeparser', () => {
           constraints: {
             test_pkey: aPrimaryKeyConstraint({
               name: 'test_pkey',
-              columnName: 'id',
+              columnNames: ['id'],
             }),
           },
         }),
@@ -205,7 +205,7 @@ describe('postgresqlSchemaDeparser', () => {
           constraints: {
             users_pkey: aPrimaryKeyConstraint({
               name: 'users_pkey',
-              columnName: 'id',
+              columnNames: ['id'],
             }),
           },
         }),
@@ -226,7 +226,7 @@ describe('postgresqlSchemaDeparser', () => {
           constraints: {
             products_pkey: aPrimaryKeyConstraint({
               name: 'products_pkey',
-              columnName: 'id',
+              columnNames: ['id'],
             }),
           },
         }),
@@ -453,7 +453,7 @@ describe('postgresqlSchemaDeparser', () => {
             constraints: {
               pk_users_id: aPrimaryKeyConstraint({
                 name: 'pk_users_id',
-                columnName: 'id',
+                columnNames: ['id'],
               }),
             },
           }),
@@ -554,7 +554,7 @@ describe('postgresqlSchemaDeparser', () => {
             constraints: {
               uk_users_email: aUniqueConstraint({
                 name: 'uk_users_email',
-                columnName: 'email',
+                columnNames: ['email'],
               }),
             },
           }),

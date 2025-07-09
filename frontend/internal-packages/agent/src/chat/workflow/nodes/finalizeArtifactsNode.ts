@@ -53,10 +53,10 @@ async function saveTimelineItem(
  */
 async function generateFinalResponse(state: WorkflowState): Promise<{
   finalResponse: string
-  errorToReturn: string | undefined
+  errorToReturn: Error | undefined
 }> {
   if (state.error) {
-    const finalResponse = `Sorry, an error occurred during processing: ${state.error}`
+    const finalResponse = `Sorry, an error occurred during processing: ${state.error.message}`
     await saveTimelineItem(state, finalResponse, 'error')
     return { finalResponse, errorToReturn: state.error }
   }
@@ -70,7 +70,10 @@ async function generateFinalResponse(state: WorkflowState): Promise<{
   const finalResponse =
     'Sorry, we could not generate an answer. Please try again.'
   await saveTimelineItem(state, finalResponse, 'error')
-  return { finalResponse, errorToReturn: 'No generated answer available' }
+  return {
+    finalResponse,
+    errorToReturn: new Error('No generated answer available'),
+  }
 }
 
 /**

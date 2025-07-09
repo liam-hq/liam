@@ -1,20 +1,21 @@
-import type { Meta } from '@storybook/react'
+import type { Meta, StoryObj } from '@storybook/react'
 import type { FC } from 'react'
 import { ViewErrorsCollapsible } from './ViewErrorsCollapsible'
 
 const meta = {
-  title: 'features/sessions/ViewErrorsCollapsible',
   component: ViewErrorsCollapsible,
   parameters: {
     layout: 'padded',
   },
   tags: ['autodocs'],
+  render: (args) => <ViewErrorsCollapsible {...args} />,
 } satisfies Meta<typeof ViewErrorsCollapsible>
 
 export default meta
+type Story = StoryObj<typeof meta>
 
 // Parsing error with line numbers
-export const ParsingError = {
+export const ParsingError: Story = {
   args: {
     error: {
       type: 'parsing' as const,
@@ -35,7 +36,7 @@ export const ParsingError = {
 }
 
 // Parsing error with has_many token (matches screenshot pattern)
-export const ParsingErrorHasMany = {
+export const ParsingErrorHasMany: Story = {
   args: {
     error: {
       type: 'parsing' as const,
@@ -62,7 +63,7 @@ export const ParsingErrorHasMany = {
 }
 
 // Parsing error without line numbers
-export const ParsingErrorSimple = {
+export const ParsingErrorSimple: Story = {
   args: {
     error: {
       type: 'parsing' as const,
@@ -79,7 +80,7 @@ export const ParsingErrorSimple = {
 }
 
 // Unsupported syntax error
-export const UnsupportedSyntaxError = {
+export const UnsupportedSyntaxError: Story = {
   args: {
     error: {
       type: 'unsupported' as const,
@@ -108,7 +109,7 @@ export const UnsupportedSyntaxError = {
 }
 
 // Unsupported syntax with multiple features
-export const UnsupportedSyntaxMultiple = {
+export const UnsupportedSyntaxMultiple: Story = {
   args: {
     error: {
       type: 'unsupported' as const,
@@ -130,7 +131,7 @@ export const UnsupportedSyntaxMultiple = {
 }
 
 // Generic error
-export const GenericError = {
+export const GenericError: Story = {
   args: {
     error: {
       type: 'generic' as const,
@@ -145,7 +146,7 @@ export const GenericError = {
 }
 
 // Error without filename
-export const ErrorWithoutFile = {
+export const ErrorWithoutFile: Story = {
   args: {
     error: {
       type: 'generic' as const,
@@ -159,7 +160,7 @@ export const ErrorWithoutFile = {
 }
 
 // Custom trigger text
-export const CustomTriggerText = {
+export const CustomTriggerText: Story = {
   args: {
     error: {
       type: 'parsing' as const,
@@ -174,7 +175,7 @@ export const CustomTriggerText = {
 }
 
 // Long error with many details
-export const LongError = {
+export const LongError: Story = {
   args: {
     error: {
       type: 'unsupported' as const,
@@ -204,7 +205,7 @@ export const LongError = {
 }
 
 // Minimal error
-export const MinimalError = {
+export const MinimalError: Story = {
   args: {
     error: {
       type: 'generic' as const,
@@ -215,77 +216,93 @@ export const MinimalError = {
 }
 
 // All error types demo
-export const AllErrorTypes = () => (
-  <div
-    style={{
-      display: 'flex',
-      flexDirection: 'column',
-      gap: '24px',
-      maxWidth: '800px',
-      margin: '0 auto',
-    }}
-  >
-    <div>
-      <h3 style={{ marginBottom: '12px', fontSize: '14px', fontWeight: '600' }}>
-        Parsing Error
-      </h3>
-      <ViewErrorsCollapsible
-        error={{
-          type: 'parsing',
-          message: 'schemarb parser failed',
-          fileName: 'schema.rb',
-          details: [
-            { line: 15, column: 23, text: 'unexpected token "{"' },
-            {
-              line: 15,
-              text: 'create_table "users", force: { cascade: true } do |t|',
-            },
-          ],
-          suggestion:
-            "Confirm you're using ActiveRecord schema DSL, not model definitions.",
-        }}
-      />
-    </div>
+export const AllErrorTypes: Story = {
+  args: {
+    // Note: These args are not used - the render function provides its own error data
+    error: {
+      type: 'generic' as const,
+      message: 'Placeholder error (not used)',
+      details: [],
+    },
+  },
+  render: () => (
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '24px',
+        maxWidth: '800px',
+        margin: '0 auto',
+      }}
+    >
+      <div>
+        <h3
+          style={{ marginBottom: '12px', fontSize: '14px', fontWeight: '600' }}
+        >
+          Parsing Error
+        </h3>
+        <ViewErrorsCollapsible
+          error={{
+            type: 'parsing',
+            message: 'schemarb parser failed',
+            fileName: 'schema.rb',
+            details: [
+              { line: 15, column: 23, text: 'unexpected token "{"' },
+              {
+                line: 15,
+                text: 'create_table "users", force: { cascade: true } do |t|',
+              },
+            ],
+            suggestion:
+              "Confirm you're using ActiveRecord schema DSL, not model definitions.",
+          }}
+        />
+      </div>
 
-    <div>
-      <h3 style={{ marginBottom: '12px', fontSize: '14px', fontWeight: '600' }}>
-        Unsupported Syntax Error
-      </h3>
-      <ViewErrorsCollapsible
-        error={{
-          type: 'unsupported',
-          message: 'Unsupported Rails feature detected',
-          fileName: 'schema.rb',
-          details: [
-            {
-              text: 'Found unsupported option: has_many :through in your schema definition.',
-            },
-          ],
-          explanation:
-            'The current parser does not support certain options in the schema.',
-          suggestions: [
-            'If this line is required, consider removing or replacing it temporarily for import.',
-            'Otherwise, please report this case so we can improve the parser.',
-          ],
-        }}
-      />
-    </div>
+      <div>
+        <h3
+          style={{ marginBottom: '12px', fontSize: '14px', fontWeight: '600' }}
+        >
+          Unsupported Syntax Error
+        </h3>
+        <ViewErrorsCollapsible
+          error={{
+            type: 'unsupported',
+            message: 'Unsupported Rails feature detected',
+            fileName: 'schema.rb',
+            details: [
+              {
+                text: 'Found unsupported option: has_many :through in your schema definition.',
+              },
+            ],
+            explanation:
+              'The current parser does not support certain options in the schema.',
+            suggestions: [
+              'If this line is required, consider removing or replacing it temporarily for import.',
+              'Otherwise, please report this case so we can improve the parser.',
+            ],
+          }}
+        />
+      </div>
 
-    <div>
-      <h3 style={{ marginBottom: '12px', fontSize: '14px', fontWeight: '600' }}>
-        Generic Error
-      </h3>
-      <ViewErrorsCollapsible
-        error={{
-          type: 'generic',
-          message: 'Failed to process schema file',
-          fileName: 'schema.sql',
-          details: [
-            'The file could not be parsed correctly.',
-            'Please ensure the file is valid and try again.',
-          ],
-        }}
-      />
+      <div>
+        <h3
+          style={{ marginBottom: '12px', fontSize: '14px', fontWeight: '600' }}
+        >
+          Generic Error
+        </h3>
+        <ViewErrorsCollapsible
+          error={{
+            type: 'generic',
+            message: 'Failed to process schema file',
+            fileName: 'schema.sql',
+            details: [
+              'The file could not be parsed correctly.',
+              'Please ensure the file is valid and try again.',
+            ],
+          }}
+        />
+      </div>
     </div>
-  </div>
-)
+  ),
+}

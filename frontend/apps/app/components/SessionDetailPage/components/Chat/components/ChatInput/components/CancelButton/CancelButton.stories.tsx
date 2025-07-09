@@ -1,15 +1,16 @@
-import type { Meta } from '@storybook/react'
+import type { Meta, StoryObj } from '@storybook/react'
 import { CancelButton } from './CancelButton'
 
 const meta = {
   component: CancelButton,
-  title: 'Components/ChatInput/CancelButton',
+  tags: ['autodocs'],
 } satisfies Meta<typeof CancelButton>
 
 export default meta
+type Story = StoryObj<typeof meta>
 
 // Default state (empty)
-export const Default = {
+export const Default: Story = {
   args: {
     hasContent: false,
     onClick: () => {},
@@ -25,7 +26,7 @@ export const Default = {
 }
 
 // With content
-export const WithContent = {
+export const WithContent: Story = {
   args: {
     hasContent: true,
     onClick: () => {},
@@ -42,7 +43,7 @@ export const WithContent = {
 }
 
 // Hover state
-export const Hover = {
+export const Hover: Story = {
   args: {
     hasContent: true,
     onClick: () => {},
@@ -55,21 +56,10 @@ export const Hover = {
       },
     },
   },
-  play: ({ canvasElement }: { canvasElement: HTMLElement }) => {
-    // This is a play function that will be executed when the story is rendered
-    // It simulates the hover state by adding a CSS class
-    const button = canvasElement.querySelector('button')
-    if (button) {
-      button.classList.add('hover')
-      // Add inline style to simulate hover
-      button.style.backgroundColor = 'var(--danger-default)'
-      button.style.color = 'var(--button-foreground)'
-    }
-  },
 }
 
 // With tooltip
-export const WithTooltip = {
+export const WithTooltip: Story = {
   args: {
     hasContent: true,
     onClick: () => {},
@@ -86,7 +76,7 @@ export const WithTooltip = {
 }
 
 // Disabled state
-export const Disabled = {
+export const Disabled: Story = {
   args: {
     hasContent: true,
     onClick: () => {},
@@ -102,7 +92,7 @@ export const Disabled = {
 }
 
 // Loading state
-export const Loading = {
+export const Loading: Story = {
   args: {
     hasContent: true,
     onClick: () => {},
@@ -116,18 +106,10 @@ export const Loading = {
       },
     },
   },
-  play: ({ canvasElement }: { canvasElement: HTMLElement }) => {
-    // This is a play function that will be executed when the story is rendered
-    // It adds the data-loading attribute to the button to simulate the loading state
-    const button = canvasElement.querySelector('button')
-    if (button) {
-      button.setAttribute('data-loading', 'true')
-    }
-  },
 }
 
 // Interactive demo
-export const Interactive = {
+export const Interactive: Story = {
   args: {
     hasContent: true,
     onClick: () => {

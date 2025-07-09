@@ -1,17 +1,16 @@
 import type { Meta, StoryObj } from '@storybook/react'
-import type { ProcessIndicatorProps } from './ProcessIndicator'
 import { ProcessIndicator } from './ProcessIndicator'
 
-const meta: Meta<ProcessIndicatorProps> = {
-  title: 'Components/Chat/ProcessIndicator',
+const meta = {
   component: ProcessIndicator,
   parameters: {
     layout: 'centered',
   },
-}
+  tags: ['autodocs'],
+} satisfies Meta<typeof ProcessIndicator>
 
 export default meta
-type Story = StoryObj<ProcessIndicatorProps>
+type Story = StoryObj<typeof meta>
 
 // Example of updating schema (expanded by default) - matches Figma design
 export const UpdatingSchema: Story = {

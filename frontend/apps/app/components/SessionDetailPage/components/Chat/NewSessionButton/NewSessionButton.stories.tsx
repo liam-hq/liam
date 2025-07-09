@@ -1,17 +1,12 @@
 import type { Meta, StoryObj } from '@storybook/react'
-import type { ComponentProps } from 'react'
 import { NewSessionButton } from './NewSessionButton'
-
-// Define the component props type
-type NewSessionButtonProps = ComponentProps<typeof NewSessionButton>
 
 const meta = {
   component: NewSessionButton,
-  title: 'Components/Chat/NewSessionButton',
 } satisfies Meta<typeof NewSessionButton>
 
 export default meta
-type Story = StoryObj<NewSessionButtonProps>
+type Story = StoryObj<typeof meta>
 
 export const Default: Story = {
   args: {},

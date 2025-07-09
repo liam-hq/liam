@@ -32,7 +32,7 @@ export class QAGenerateUsecaseAgent
 
   constructor() {
     const baseModel = new ChatOpenAI({
-      model: 'o3',
+      model: 'o4-mini',
       callbacks: [createLangfuseHandler()],
     })
 

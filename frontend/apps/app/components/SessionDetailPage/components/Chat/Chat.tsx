@@ -2,16 +2,15 @@
 
 import type { Schema } from '@liam-hq/db-structure'
 import { type FC, useEffect, useRef, useTransition } from 'react'
+import { generateTimelineItemId } from '@/features/timelineItems/services/timelineItemHelpers'
+import type {
+  TimelineItemEntry,
+  TimelineItemType,
+} from '@/features/timelineItems/types'
 import styles from './Chat.module.css'
 import { ChatInput } from './components/ChatInput'
 import { TimelineItem } from './components/TimelineItem'
-import {
-  type TimelineItemType,
-  useRealtimeTimelineItems,
-} from './hooks/useRealtimeTimelineItems'
-import { sendChatMessage } from './services/aiMessageService'
-import { generateTimelineItemId } from './services/timelineItemHelpers'
-import type { TimelineItemEntry } from './types/chatTypes'
+import { sendChatMessage } from './services'
 
 type DesignSession = {
   id: string
@@ -24,11 +23,16 @@ type DesignSession = {
 interface Props {
   schemaData: Schema
   designSession: DesignSession
+  timelineItems: TimelineItemEntry[]
+  onMessageSend: (entry: TimelineItemEntry) => void
 }
 
-export const Chat: FC<Props> = ({ schemaData, designSession }) => {
-  const { timelineItems: realtimeTimelineItems, addOrUpdateTimelineItem } =
-    useRealtimeTimelineItems(designSession)
+export const Chat: FC<Props> = ({
+  schemaData,
+  designSession,
+  timelineItems: realtimeTimelineItems,
+  onMessageSend,
+}) => {
   const [isLoading, startTransition] = useTransition()
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
@@ -63,7 +67,7 @@ export const Chat: FC<Props> = ({ schemaData, designSession }) => {
       role: 'user',
       timestamp: new Date(),
     }
-    addOrUpdateTimelineItem(userMessage)
+    onMessageSend(userMessage)
 
     startTransition(() => {
       startAIResponse(content)

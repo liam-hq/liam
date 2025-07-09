@@ -18,11 +18,16 @@ export type WorkflowState = {
   formattedHistory: string
   schemaData: Schema
   projectId?: string | undefined
-  error?: string | undefined
+  error?: Error | undefined
   retryCount: Record<string, number>
 
   ddlStatements?: string | undefined
   dmlStatements?: string | undefined
+
+  // DDL execution retry mechanism
+  shouldRetryWithDesignSchema?: boolean | undefined
+  ddlExecutionFailed?: boolean | undefined
+  ddlExecutionFailureReason?: string | undefined
 
   // Schema update fields
   buildingSchemaId: string

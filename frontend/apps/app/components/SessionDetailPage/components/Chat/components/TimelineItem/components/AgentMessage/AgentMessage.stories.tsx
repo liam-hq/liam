@@ -1,5 +1,4 @@
 import type { Meta, StoryObj } from '@storybook/react'
-import type { ComponentProps } from 'react'
 import {
   type MessageOption,
   MessageOptionButtons,
@@ -7,12 +6,8 @@ import {
 import { ProcessIndicator } from '../ProcessIndicator'
 import { AgentMessage } from './AgentMessage'
 
-// Define the component props type
-type AgentMessageProps = ComponentProps<typeof AgentMessage>
-
 const meta = {
   component: AgentMessage,
-  title: 'Components/Chat/AgentMessage',
   parameters: {
     layout: 'centered',
   },
@@ -20,7 +15,7 @@ const meta = {
 } satisfies Meta<typeof AgentMessage>
 
 export default meta
-type Story = StoryObj<AgentMessageProps>
+type Story = StoryObj<typeof meta>
 
 export const BuildDefault: Story = {
   args: {

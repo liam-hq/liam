@@ -222,7 +222,8 @@ describe('designSchemaNode -> executeDdlNode integration', () => {
     const result = await designSchemaNode(initialState)
 
     // Verify error handling
-    expect(result.error).toBe(
+    expect(result.error).toBeInstanceOf(Error)
+    expect(result.error?.message).toBe(
       'Invalid schema after applying changes: validation failed',
     )
     expect(result.schemaData).toEqual(initialSchema) // Should remain unchanged
@@ -277,7 +278,8 @@ describe('designSchemaNode -> executeDdlNode integration', () => {
     const result = await designSchemaNode(initialState)
 
     // Verify error handling
-    expect(result.error).toBe('Database connection failed')
+    expect(result.error).toBeInstanceOf(Error)
+    expect(result.error?.message).toBe('Database connection failed')
     expect(result.schemaData).toEqual(initialSchema) // Should remain unchanged
     expect(mockLogger.error).toHaveBeenCalledWith(
       'Schema update failed:',

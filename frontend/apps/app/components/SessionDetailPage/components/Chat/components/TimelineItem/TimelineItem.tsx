@@ -1,40 +1,16 @@
 'use client'
 
-import type { Database } from '@liam-hq/db'
-import type { FC, ReactNode } from 'react'
+import type { FC } from 'react'
+import type { TimelineItem as TimelineItemProps } from '@/features/timelineItems/types'
 import { AgentMessage } from './components/AgentMessage'
 import { ProcessIndicator } from './components/ProcessIndicator'
 import { UserMessage } from './components/UserMessage'
 import { VersionMessage } from './components/VersionMessage'
 import styles from './TimelineItem.module.css'
 
-// TODO: Modify to use what is inferred from the valibot schema
-export type TimelineItemProps =
-  | {
-      content: string
-      role: Database['public']['Enums']['timeline_item_type_enum']
-      timestamp?: Date
-      avatarSrc?: string
-      avatarAlt?: string
-      initial?: string
-      /**
-       * Optional children to render below the message content
-       */
-      children?: ReactNode
-    }
-  | {
-      id: string
-      role: 'schema_version'
-      content: string
-      building_schema_version_id: string
-    }
-  | {
-      role: 'progress'
-      content: string
-      progress: number
-    }
+type Props = TimelineItemProps
 
-export const TimelineItem: FC<TimelineItemProps> = (props) => {
+export const TimelineItem: FC<Props> = (props) => {
   // Handle schema_version role separately
   if ('building_schema_version_id' in props) {
     return (

@@ -105,7 +105,7 @@ function extractIdColumnAndConstraint(
   const idPrimaryKeyConstraint: PrimaryKeyConstraint = {
     type: 'PRIMARY KEY',
     name: 'PRIMARY_id',
-    columnName: 'id',
+    columnNames: ['id'],
   }
 
   if (keywordHash) {
@@ -160,11 +160,11 @@ function processCallNode(
     indexes.push(index)
 
     // Add unique constraint if index is unique
-    if (index.unique && index.columns[0]) {
+    if (index.unique && index.columns.length > 0) {
       const uniqueConstraint: UniqueConstraint = {
         type: 'UNIQUE',
-        name: `UNIQUE_${index.columns[0]}`,
-        columnName: index.columns[0],
+        name: `UNIQUE_${index.columns.join('_')}`,
+        columnNames: index.columns,
       }
       constraints.push(uniqueConstraint)
     }
@@ -204,7 +204,7 @@ function processCallNode(
         const uniqueConstraint: UniqueConstraint = {
           type: 'UNIQUE',
           name: `UNIQUE_${result.column.name}`,
-          columnName: result.column.name,
+          columnNames: [result.column.name],
         }
         constraints.push(uniqueConstraint)
       }

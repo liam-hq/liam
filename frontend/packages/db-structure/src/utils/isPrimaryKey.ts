@@ -6,6 +6,7 @@ export const isPrimaryKey = (
 ): boolean => {
   return Object.values(constraints).some(
     (constraint) =>
-      constraint.type === 'PRIMARY KEY' && constraint.columnName === columnName,
+      constraint.type === 'PRIMARY KEY' &&
+      constraint.columnNames.includes(columnName),
   )
 }

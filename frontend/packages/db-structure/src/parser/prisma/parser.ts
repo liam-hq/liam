@@ -90,7 +90,7 @@ function processModelField(
     constraint = {
       type: 'PRIMARY KEY' as const,
       name: constraintName,
-      columnName: fieldName,
+      columnNames: [fieldName],
     }
   } else if (field.isUnique) {
     // to avoid duplicate with PRIMARY KEY constraint, it doesn't create constraint object with `field.isId`
@@ -98,7 +98,7 @@ function processModelField(
     constraint = {
       type: 'UNIQUE' as const,
       name: constraintName,
-      columnName: fieldName,
+      columnNames: [fieldName],
     }
   }
 

@@ -48,11 +48,16 @@ export const createAnnotations = () => {
     organizationId: Annotation<string | undefined>,
     userId: Annotation<string>,
     designSessionId: Annotation<string>,
-    error: Annotation<string | undefined>,
+    error: Annotation<Error | undefined>,
     retryCount: Annotation<Record<string, number>>,
 
     ddlStatements: Annotation<string | undefined>,
     dmlStatements: Annotation<string | undefined>,
+
+    // DDL execution retry mechanism
+    shouldRetryWithDesignSchema: Annotation<boolean | undefined>,
+    ddlExecutionFailed: Annotation<boolean | undefined>,
+    ddlExecutionFailureReason: Annotation<string | undefined>,
 
     // Repository dependencies for data access
     repositories: Annotation<Repositories>,

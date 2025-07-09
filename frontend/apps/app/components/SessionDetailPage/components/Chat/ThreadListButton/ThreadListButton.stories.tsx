@@ -1,17 +1,13 @@
 import type { Meta, StoryObj } from '@storybook/react'
-import type { ComponentProps } from 'react'
 import { ThreadListButton } from './ThreadListButton'
 
-// Define the component props type
-type ThreadListButtonProps = ComponentProps<typeof ThreadListButton>
-
 const meta = {
-  title: 'Components/Chat/ThreadListButton',
   component: ThreadListButton,
+  tags: ['autodocs'],
 } satisfies Meta<typeof ThreadListButton>
 
 export default meta
-type Story = StoryObj<ThreadListButtonProps>
+type Story = StoryObj<typeof meta>
 
 export const Default: Story = {
   args: {},

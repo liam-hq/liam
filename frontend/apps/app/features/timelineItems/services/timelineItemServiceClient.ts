@@ -3,7 +3,7 @@
 import type { Tables } from '@liam-hq/db/supabase/database.types'
 import * as v from 'valibot'
 import { createClient } from '@/libs/db/client'
-import type { TimelineItemEntry } from '../types/chatTypes'
+import type { TimelineItemEntry } from '../types'
 
 type SchemaVersionTimelineItem = {
   id: string

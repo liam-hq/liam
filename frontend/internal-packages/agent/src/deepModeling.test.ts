@@ -86,7 +86,7 @@ describe('Chat Workflow', () => {
           users_pkey: {
             type: 'PRIMARY KEY',
             name: 'users_pkey',
-            columnName: 'id',
+            columnNames: ['id'],
           },
         },
       },

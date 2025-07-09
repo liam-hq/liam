@@ -37,7 +37,7 @@ describe('evaluate', () => {
               pk_user: {
                 type: 'PRIMARY KEY',
                 name: 'pk_user',
-                columnName: 'id',
+                columnNames: ['id'],
               },
             },
           },
@@ -75,7 +75,7 @@ describe('evaluate', () => {
               pk_post: {
                 type: 'PRIMARY KEY',
                 name: 'pk_post',
-                columnName: 'id',
+                columnNames: ['id'],
               },
             },
           },
@@ -110,7 +110,7 @@ describe('evaluate', () => {
               pk_user: {
                 type: 'PRIMARY KEY',
                 name: 'pk_user',
-                columnName: 'id',
+                columnNames: ['id'],
               },
             },
           },
@@ -148,7 +148,7 @@ describe('evaluate', () => {
               pk_post: {
                 type: 'PRIMARY KEY',
                 name: 'pk_post',
-                columnName: 'id',
+                columnNames: ['id'],
               },
             },
           },
@@ -199,7 +199,7 @@ describe('evaluate', () => {
               pk_user_account: {
                 type: 'PRIMARY KEY',
                 name: 'pk_user_account',
-                columnName: 'id',
+                columnNames: ['id'],
               },
             },
           },
@@ -229,7 +229,7 @@ describe('evaluate', () => {
               pk_blog_post: {
                 type: 'PRIMARY KEY',
                 name: 'pk_blog_post',
-                columnName: 'post_id',
+                columnNames: ['post_id'],
               },
             },
           },
@@ -264,7 +264,7 @@ describe('evaluate', () => {
               pk_user: {
                 type: 'PRIMARY KEY',
                 name: 'pk_user',
-                columnName: 'user_id',
+                columnNames: ['user_id'],
               },
             },
           },
@@ -294,7 +294,7 @@ describe('evaluate', () => {
               pk_post: {
                 type: 'PRIMARY KEY',
                 name: 'pk_post',
-                columnName: 'id',
+                columnNames: ['id'],
               },
             },
           },
@@ -367,7 +367,7 @@ describe('evaluate', () => {
               pk_customer: {
                 type: 'PRIMARY KEY',
                 name: 'pk_customer',
-                columnName: 'customer_id',
+                columnNames: ['customer_id'],
               },
             },
           },
@@ -418,7 +418,7 @@ describe('evaluate', () => {
               pk_customer: {
                 type: 'PRIMARY KEY',
                 name: 'pk_customer',
-                columnName: 'id',
+                columnNames: ['id'],
               },
             },
           },
@@ -468,7 +468,7 @@ describe('evaluate', () => {
               pk_users: {
                 type: 'PRIMARY KEY',
                 name: 'pk_users',
-                columnName: 'id',
+                columnNames: ['id'],
               },
             },
           },
@@ -498,7 +498,7 @@ describe('evaluate', () => {
               pk_posts: {
                 type: 'PRIMARY KEY',
                 name: 'pk_posts',
-                columnName: 'id',
+                columnNames: ['id'],
               },
               fk_posts_user_id: {
                 type: 'FOREIGN KEY',
@@ -534,7 +534,7 @@ describe('evaluate', () => {
               pk_users: {
                 type: 'PRIMARY KEY',
                 name: 'pk_users',
-                columnName: 'id',
+                columnNames: ['id'],
               },
             },
           },
@@ -564,7 +564,7 @@ describe('evaluate', () => {
               pk_posts: {
                 type: 'PRIMARY KEY',
                 name: 'pk_posts',
-                columnName: 'id',
+                columnNames: ['id'],
               },
               fk_posts_user_id: {
                 type: 'FOREIGN KEY',
@@ -611,7 +611,7 @@ describe('evaluate', () => {
               pk_users: {
                 type: 'PRIMARY KEY',
                 name: 'pk_users',
-                columnName: 'id',
+                columnNames: ['id'],
               },
             },
           },
@@ -641,7 +641,7 @@ describe('evaluate', () => {
               pk_posts: {
                 type: 'PRIMARY KEY',
                 name: 'pk_posts',
-                columnName: 'id',
+                columnNames: ['id'],
               },
               users_id_to_posts_user_id: {
                 type: 'FOREIGN KEY',
@@ -677,7 +677,7 @@ describe('evaluate', () => {
               pk_users: {
                 type: 'PRIMARY KEY',
                 name: 'pk_users',
-                columnName: 'id',
+                columnNames: ['id'],
               },
             },
           },
@@ -707,7 +707,7 @@ describe('evaluate', () => {
               pk_posts: {
                 type: 'PRIMARY KEY',
                 name: 'pk_posts',
-                columnName: 'id',
+                columnNames: ['id'],
               },
               fk_posts_user_id: {
                 type: 'FOREIGN KEY',
@@ -754,7 +754,7 @@ describe('evaluate', () => {
               pk_users: {
                 type: 'PRIMARY KEY',
                 name: 'pk_users',
-                columnName: 'id',
+                columnNames: ['id'],
               },
             },
           },
@@ -776,7 +776,7 @@ describe('evaluate', () => {
               pk_categories: {
                 type: 'PRIMARY KEY',
                 name: 'pk_categories',
-                columnName: 'id',
+                columnNames: ['id'],
               },
             },
           },
@@ -814,7 +814,7 @@ describe('evaluate', () => {
               pk_posts: {
                 type: 'PRIMARY KEY',
                 name: 'pk_posts',
-                columnName: 'id',
+                columnNames: ['id'],
               },
               fk_posts_user_id: {
                 type: 'FOREIGN KEY',
@@ -859,7 +859,7 @@ describe('evaluate', () => {
               pk_users: {
                 type: 'PRIMARY KEY',
                 name: 'pk_users',
-                columnName: 'id',
+                columnNames: ['id'],
               },
             },
           },
@@ -881,7 +881,7 @@ describe('evaluate', () => {
               pk_categories: {
                 type: 'PRIMARY KEY',
                 name: 'pk_categories',
-                columnName: 'id',
+                columnNames: ['id'],
               },
             },
           },
@@ -919,7 +919,7 @@ describe('evaluate', () => {
               pk_posts: {
                 type: 'PRIMARY KEY',
                 name: 'pk_posts',
-                columnName: 'id',
+                columnNames: ['id'],
               },
               fk_posts_user_id: {
                 type: 'FOREIGN KEY',
@@ -966,7 +966,7 @@ describe('evaluate', () => {
               pk_users: {
                 type: 'PRIMARY KEY',
                 name: 'pk_users',
-                columnName: 'id',
+                columnNames: ['id'],
               },
             },
           },
@@ -996,7 +996,7 @@ describe('evaluate', () => {
               pk_posts: {
                 type: 'PRIMARY KEY',
                 name: 'pk_posts',
-                columnName: 'id',
+                columnNames: ['id'],
               },
               users_id_to_posts_user_id: {
                 type: 'FOREIGN KEY',
@@ -1032,7 +1032,7 @@ describe('evaluate', () => {
               pk_users: {
                 type: 'PRIMARY KEY',
                 name: 'pk_users',
-                columnName: 'id',
+                columnNames: ['id'],
               },
             },
           },
@@ -1062,7 +1062,7 @@ describe('evaluate', () => {
               pk_posts: {
                 type: 'PRIMARY KEY',
                 name: 'pk_posts',
-                columnName: 'id',
+                columnNames: ['id'],
               },
               fk_posts_author_id: {
                 type: 'FOREIGN KEY',

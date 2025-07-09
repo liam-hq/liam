@@ -1,16 +1,20 @@
 'use client'
 
 import { type Schema, schemaSchema } from '@liam-hq/db-structure'
+import clsx from 'clsx'
 import {
   type ComponentProps,
   type FC,
   useCallback,
+  useMemo,
   useState,
   useTransition,
 } from 'react'
 import { safeParse } from 'valibot'
+import { useRealtimeTimelineItems } from '@/features/timelineItems/hooks/useRealtimeTimelineItems'
 import { Chat } from './components/Chat'
 import { Output } from './components/Output'
+import { OutputPlaceholder } from './components/OutputPlaceholder'
 import { useRealtimeBuildlingSchema } from './hooks/useRealtimeBuildlingSchema'
 import { SCHEMA_UPDATES_DOC, SCHEMA_UPDATES_REVIEW_COMMENTS } from './mock'
 import styles from './SessionDetailPage.module.css'
@@ -91,6 +95,21 @@ Please suggest a specific solution to resolve this problem.`
 
   useRealtimeBuildlingSchema(designSessionId, refetchSchemaAndVersion)
 
+  const hasCurrentVersion = currentVersion !== null
+
+  const { timelineItems, addOrUpdateTimelineItem } =
+    useRealtimeTimelineItems(designSession)
+  const isGenerating = useMemo(() => {
+    return timelineItems.some((item) => {
+      return (
+        item.role === 'progress' &&
+        'progress' in item &&
+        typeof item.progress === 'number' &&
+        item.progress < 100
+      )
+    })
+  }, [timelineItems])
+
   // Show loading state while schema is being fetched
   if (isRefetching) {
     return <div>Updating schema...</div>
@@ -103,22 +122,38 @@ Please suggest a specific solution to resolve this problem.`
 
   return (
     <div className={styles.container}>
-      <div className={styles.columns}>
+      <div
+        className={clsx(
+          styles.columns,
+          hasCurrentVersion ? styles.twoColumns : styles.oneColumn,
+        )}
+      >
         <div className={styles.chatSection}>
-          <Chat schemaData={currentSchema} designSession={designSession} />
-        </div>
-        <div className={styles.outputSection}>
-          <Output
-            schema={currentSchema}
-            prevSchema={prevSchema}
-            schemaUpdatesDoc={SCHEMA_UPDATES_DOC}
-            schemaUpdatesReviewComments={SCHEMA_UPDATES_REVIEW_COMMENTS}
-            onQuickFix={handleQuickFix}
-            designSessionId={designSessionId}
-            currentVersion={currentVersion}
-            onCurrentVersionChange={handleChangeCurrentVersion}
+          <Chat
+            schemaData={currentSchema}
+            designSession={designSession}
+            timelineItems={timelineItems}
+            onMessageSend={addOrUpdateTimelineItem}
           />
         </div>
+        {hasCurrentVersion && (
+          <div className={styles.outputSection}>
+            {isGenerating ? (
+              <OutputPlaceholder />
+            ) : (
+              <Output
+                schema={currentSchema}
+                prevSchema={prevSchema}
+                schemaUpdatesDoc={SCHEMA_UPDATES_DOC}
+                schemaUpdatesReviewComments={SCHEMA_UPDATES_REVIEW_COMMENTS}
+                onQuickFix={handleQuickFix}
+                designSessionId={designSessionId}
+                currentVersion={currentVersion}
+                onCurrentVersionChange={handleChangeCurrentVersion}
+              />
+            )}
+          </div>
+        )}
       </div>
     </div>
   )

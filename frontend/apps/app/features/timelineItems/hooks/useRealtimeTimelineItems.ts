@@ -1,11 +1,11 @@
-import type { Database, Tables } from '@liam-hq/db/supabase/database.types'
+import type { Tables } from '@liam-hq/db/supabase/database.types'
 import { useCallback, useEffect, useState } from 'react'
+import { isDuplicateTimelineItem } from '../services/timelineItemHelpers'
 import {
   convertTimelineItemToChatEntry,
-  isDuplicateTimelineItem,
   setupRealtimeSubscription,
-} from '../services'
-import type { TimelineItemEntry } from '../types/chatTypes'
+} from '../services/timelineItemServiceClient'
+import type { TimelineItemEntry, TimelineItemType } from '../types'
 
 const findExistingTimelineItemIndex = (
   timelineItems: TimelineItemEntry[],
@@ -49,33 +49,6 @@ const handleOptimisticUserUpdate = (
 
   return null
 }
-
-// TODO: Modify to use what is inferred from the valibot schema
-export type TimelineItemType =
-  | {
-      id: string
-      content: string
-      type: Database['public']['Enums']['timeline_item_type_enum']
-      user_id: string | null
-      created_at: string
-      updated_at: string
-      organization_id: string
-      design_session_id: string
-      building_schema_version_id: string | null
-      progress: number | null
-    }
-  | {
-      id: string
-      type: 'schema_version'
-      content: string
-      building_schema_version_id: string
-    }
-  | {
-      id: string
-      type: 'progress'
-      content: string
-      progress: number
-    }
 
 type UseRealtimeTimelineItemsFunc = (designSession: {
   id: string

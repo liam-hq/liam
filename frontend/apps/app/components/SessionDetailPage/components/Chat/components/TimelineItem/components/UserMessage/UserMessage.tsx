@@ -5,7 +5,7 @@ import type { FC } from 'react'
 import { MarkdownContent } from '@/components/MarkdownContent'
 import styles from './UserMessage.module.css'
 
-export interface UserMessageProps {
+interface UserMessageProps {
   content: string
   initial?: string
   avatarSrc?: string

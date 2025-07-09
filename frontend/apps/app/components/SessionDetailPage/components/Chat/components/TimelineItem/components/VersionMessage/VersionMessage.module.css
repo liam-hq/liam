@@ -2,7 +2,6 @@
   background: var(--pane-background);
   border: 1px solid var(--pane-border);
   border-radius: 4px;
-  margin-bottom: 12px;
   overflow: hidden;
   width: 100%;
 }

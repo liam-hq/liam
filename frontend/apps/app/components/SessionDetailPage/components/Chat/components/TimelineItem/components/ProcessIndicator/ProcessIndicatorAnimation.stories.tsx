@@ -1,11 +1,19 @@
-import type { Meta } from '@storybook/react'
+import type { Meta, StoryObj } from '@storybook/react'
 import { useEffect, useState } from 'react'
 import type { ProcessStatus } from './ProcessIndicator'
 import { ProcessIndicator } from './ProcessIndicator'
 
-/**
- * A component that animates the progress indicator
- */
+type Props = {
+  initialProgress?: number
+  incrementSpeed?: number
+  incrementAmount?: number
+  title?: string
+  subtitle?: string
+  primaryActionLabel?: string
+  secondaryActionLabel?: string
+  initialExpanded?: boolean
+}
+
 const AnimatedProcessIndicator = ({
   initialProgress = 0,
   incrementSpeed = 300,
@@ -15,16 +23,7 @@ const AnimatedProcessIndicator = ({
   primaryActionLabel,
   secondaryActionLabel,
   initialExpanded = true,
-}: {
-  initialProgress?: number
-  incrementSpeed?: number
-  incrementAmount?: number
-  title?: string
-  subtitle?: string
-  primaryActionLabel?: string
-  secondaryActionLabel?: string
-  initialExpanded?: boolean
-}) => {
+}: Props) => {
   const [progress, setProgress] = useState(initialProgress)
   const [status, setStatus] = useState<ProcessStatus>('processing')
 
@@ -73,69 +72,55 @@ const AnimatedProcessIndicator = ({
   )
 }
 
-// Define the props type for our animated component
-type AnimatedProcessIndicatorProps = {
-  initialProgress?: number
-  incrementSpeed?: number
-  incrementAmount?: number
-  title?: string
-  subtitle?: string
-  primaryActionLabel?: string
-  secondaryActionLabel?: string
-  initialExpanded?: boolean
-}
-
-// Create a meta object for our animated stories
-const meta: Meta<AnimatedProcessIndicatorProps> = {
-  title: 'Components/Chat/ProcessIndicator/Animation',
+const meta = {
   component: AnimatedProcessIndicator,
   parameters: {
     layout: 'centered',
   },
-}
+  tags: ['autodocs'],
+  render: (args) => <AnimatedProcessIndicator {...args} />,
+} satisfies Meta<typeof AnimatedProcessIndicator>
 
 export default meta
+type Story = StoryObj<typeof meta>
 
 // Standard progress animation
-export const StandardAnimation = () => (
-  <AnimatedProcessIndicator
-    initialProgress={0}
-    incrementSpeed={300}
-    incrementAmount={5}
-    title="Building application..."
-    subtitle="Please wait while we compile your application"
-    primaryActionLabel="View Build"
-    secondaryActionLabel="Cancel"
-  />
-)
-
-StandardAnimation.storyName = 'Standard Progress Animation'
+export const StandardAnimation: Story = {
+  args: {
+    initialProgress: 0,
+    incrementSpeed: 300,
+    incrementAmount: 5,
+    title: 'Building application...',
+    subtitle: 'Please wait while we compile your application',
+    primaryActionLabel: 'View Build',
+    secondaryActionLabel: 'Cancel',
+  },
+  name: 'Standard Progress Animation',
+}
 
 // Fast progress animation
-export const FastAnimation = () => (
-  <AnimatedProcessIndicator
-    initialProgress={30}
-    incrementSpeed={150}
-    incrementAmount={7}
-    title="Optimizing database..."
-    subtitle="Performing database optimization"
-    primaryActionLabel="View Details"
-  />
-)
-
-FastAnimation.storyName = 'Fast Progress Animation'
+export const FastAnimation: Story = {
+  args: {
+    initialProgress: 30,
+    incrementSpeed: 150,
+    incrementAmount: 7,
+    title: 'Optimizing database...',
+    subtitle: 'Performing database optimization',
+    primaryActionLabel: 'View Details',
+  },
+  name: 'Fast Progress Animation',
+}
 
 // Slow progress animation
-export const SlowAnimation = () => (
-  <AnimatedProcessIndicator
-    initialProgress={10}
-    incrementSpeed={500}
-    incrementAmount={3}
-    title="Running tests..."
-    subtitle="Executing test suite"
-    primaryActionLabel="View Tests"
-    secondaryActionLabel="Cancel"
-  />
-)
-
-SlowAnimation.storyName = 'Slow Progress Animation'
+export const SlowAnimation: Story = {
+  args: {
+    initialProgress: 10,
+    incrementSpeed: 500,
+    incrementAmount: 3,
+    title: 'Running tests...',
+    subtitle: 'Executing test suite',
+    primaryActionLabel: 'View Tests',
+    secondaryActionLabel: 'Cancel',
+  },
+  name: 'Slow Progress Animation',
+}

@@ -1,68 +1,71 @@
-import type { Meta } from '@storybook/react'
-import { UserMessage, type UserMessageProps } from '.'
+import type { Meta, StoryObj } from '@storybook/react'
+import { UserMessage } from '.'
 
-const meta: Meta<typeof UserMessage> = {
-  title: 'components/Chat/UserMessage',
+const meta = {
   component: UserMessage,
   parameters: {
     layout: 'centered',
   },
-}
+  tags: ['autodocs'],
+} satisfies Meta<typeof UserMessage>
 
 export default meta
+type Story = StoryObj<typeof meta>
 
-// Define stories with render functions
-export const Default = () => {
-  const props: UserMessageProps = {
+export const Default: Story = {
+  args: {
     content: 'Hello, this is a sample user message.',
     initial: 'U',
     userName: 'User',
-  }
-  return <UserMessage {...props} />
+  },
 }
 
-export const LongMessage = () => (
-  <UserMessage
-    content="This is a sample of a long message. Proposed schema changes for adding a chat function. Proposed schema changes for adding a chat function. Proposed schema changes for adding a chat function."
-    initial="U"
-  />
-)
+export const LongMessage: Story = {
+  args: {
+    content:
+      'This is a sample of a long message. Proposed schema changes for adding a chat function. Proposed schema changes for adding a chat function. Proposed schema changes for adding a chat function.',
+    initial: 'U',
+  },
+}
 
-export const WithTimestamp = () => (
-  <UserMessage
-    content="Message with timestamp."
-    initial="U"
-    userName="John Doe"
-    timestamp={new Date()}
-  />
-)
+export const WithTimestamp: Story = {
+  args: {
+    content: 'Message with timestamp.',
+    initial: 'U',
+    userName: 'John Doe',
+    timestamp: new Date(),
+  },
+}
 
-export const WithoutInitial = () => (
-  <UserMessage content="Message without initial." timestamp={new Date()} />
-)
+export const WithoutInitial: Story = {
+  args: {
+    content: 'Message without initial.',
+    timestamp: new Date(),
+  },
+}
 
-export const WithDefaultName = () => (
-  <UserMessage
-    content="Message with default 'User Name' when userName is not provided."
-    initial="D"
-    timestamp={new Date()}
-  />
-)
+export const WithDefaultName: Story = {
+  args: {
+    content: "Message with default 'User Name' when userName is not provided.",
+    initial: 'D',
+    timestamp: new Date(),
+  },
+}
 
-export const WithImageAvatar = () => (
-  <UserMessage
-    content="Message with image avatar."
-    avatarSrc="https://i.pravatar.cc/150?img=3"
-    avatarAlt="User avatar"
-    userName="Jane Smith"
-    timestamp={new Date()}
-  />
-)
+export const WithImageAvatar: Story = {
+  args: {
+    content: 'Message with image avatar.',
+    avatarSrc: 'https://i.pravatar.cc/150?img=3',
+    avatarAlt: 'User avatar',
+    userName: 'Jane Smith',
+    timestamp: new Date(),
+  },
+}
 
-export const WithUserNameOnly = () => (
-  <UserMessage
-    content="Message with user name but no timestamp."
-    initial="U"
-    userName="Alex Johnson"
-  />
-)
+export const WithUserNameOnly: Story = {
+  args: {
+    content: 'Message with user name but no timestamp.',
+    initial: 'U',
+    userName: 'Alex Johnson',
+  },
+}

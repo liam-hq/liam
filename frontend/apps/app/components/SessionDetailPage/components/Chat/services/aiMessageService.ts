@@ -1,9 +1,9 @@
 'use client'
 
 import { boolean, object, optional, parse, string } from 'valibot'
+import { formatTimelineItemHistory } from '@/features/timelineItems/services/timelineItemHelpers'
+import type { TimelineItemEntry } from '@/features/timelineItems/types'
 import { ERROR_MESSAGES } from '../constants/chatConstants'
-import type { TimelineItemEntry } from '../types/chatTypes'
-import { formatTimelineItemHistory } from './timelineItemHelpers'
 
 type DesignSession = {
   id: string

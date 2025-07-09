@@ -100,15 +100,15 @@ function processPrimaryKeyConstraint(constraint: {
 }): [string, Constraints[string]] | null {
   if (
     constraint.type === 'PRIMARY KEY' &&
-    constraint.columns?.length === 1 &&
-    constraint.columns?.[0]
+    constraint.columns &&
+    constraint.columns.length > 0
   ) {
     return [
       constraint.name,
       {
         type: 'PRIMARY KEY',
         name: constraint.name,
-        columnName: constraint.columns[0],
+        columnNames: constraint.columns,
       },
     ]
   }
@@ -169,15 +169,15 @@ function processUniqueConstraint(constraint: {
 }): [string, Constraints[string]] | null {
   if (
     constraint.type === 'UNIQUE' &&
-    constraint.columns?.length === 1 &&
-    constraint.columns[0]
+    constraint.columns &&
+    constraint.columns.length > 0
   ) {
     return [
       constraint.name,
       {
         type: 'UNIQUE',
         name: constraint.name,
-        columnName: constraint.columns[0],
+        columnNames: constraint.columns,
       },
     ]
   }

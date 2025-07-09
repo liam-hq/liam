@@ -3,7 +3,6 @@ import { Bell, Heart, Plus, Settings, User } from 'lucide-react'
 import { IconButton } from './IconButton'
 
 const meta = {
-  title: 'UI/IconButton',
   component: IconButton,
 } satisfies Meta<typeof IconButton>
 

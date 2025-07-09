@@ -24,9 +24,10 @@ export async function saveUserMessageNode(
       error: saveResult.error,
     })
     // Set error state to trigger transition to finalizeArtifacts
+    const error = new Error(`Failed to save message: ${saveResult.error}`)
     return {
       ...state,
-      error: `Failed to save message: ${saveResult.error}`,
+      error,
     }
   }
 

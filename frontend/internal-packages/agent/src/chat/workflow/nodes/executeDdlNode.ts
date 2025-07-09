@@ -1,6 +1,7 @@
 import { postgresqlSchemaDeparser } from '@liam-hq/db-structure'
 import { executeQuery } from '@liam-hq/pglite-server'
 import type { SqlResult } from '@liam-hq/pglite-server/src/types'
+import { WORKFLOW_RETRY_CONFIG } from '../constants'
 import { getWorkflowNodeProgress } from '../shared/getWorkflowNodeProgress'
 import type { WorkflowState } from '../types'
 
@@ -76,9 +77,34 @@ export async function executeDdlNode(
       .join('; ')
 
     state.logger.log(`[${NODE_NAME}] DDL execution failed: ${errorMessages}`)
+
+    // Check if this is the first failure or if we've already retried
+    const currentRetryCount = state.retryCount['ddlExecutionRetry'] || 0
+
+    if (currentRetryCount < WORKFLOW_RETRY_CONFIG.MAX_DDL_EXECUTION_RETRIES) {
+      // Set up retry with designSchemaNode
+      state.logger.log(`[${NODE_NAME}] Scheduling retry via designSchemaNode`)
+      state.logger.log(`[${NODE_NAME}] Completed`)
+      return {
+        ...state,
+        shouldRetryWithDesignSchema: true,
+        ddlExecutionFailureReason: errorMessages,
+        retryCount: {
+          ...state.retryCount,
+          ddlExecutionRetry: currentRetryCount + 1,
+        },
+      }
+    }
+
+    // Already retried - mark as permanently failed
+    state.logger.log(
+      `[${NODE_NAME}] DDL execution failed after retry, marking as failed`,
+    )
     state.logger.log(`[${NODE_NAME}] Completed`)
     return {
       ...state,
+      ddlExecutionFailed: true,
+      ddlExecutionFailureReason: errorMessages,
     }
   }
 

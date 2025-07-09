@@ -117,6 +117,17 @@ const createGraph = () => {
       return state.error ? 'finalizeArtifacts' : 'executeDDL'
     })
 
+    // Conditional edge for executeDDL - retry with designSchema if DDL execution fails
+    .addConditionalEdges('executeDDL', (state) => {
+      if (state.shouldRetryWithDesignSchema) {
+        return 'designSchema'
+      }
+      if (state.ddlExecutionFailed) {
+        return 'finalizeArtifacts'
+      }
+      return 'generateUsecase'
+    })
+
     // Conditional edges for validation results
     .addConditionalEdges('validateSchema', (state) => {
       // success → reviewDeliverables
@@ -182,7 +193,7 @@ export const deepModeling = async (
     })
 
     if (result.error) {
-      return err(new Error(result.error))
+      return err(result.error)
     }
 
     return ok({
@@ -195,9 +206,9 @@ export const deepModeling = async (
       error instanceof Error
         ? error.message
         : WORKFLOW_ERROR_MESSAGES.EXECUTION_FAILED
-    const errorState = { ...workflowState, error: errorMessage }
+    const errorState = { ...workflowState, error: new Error(errorMessage) }
     const finalizedResult = await finalizeArtifactsNode(errorState)
 
-    return err(new Error(finalizedResult.error || errorMessage))
+    return err(finalizedResult.error || new Error(errorMessage))
   }
 }
