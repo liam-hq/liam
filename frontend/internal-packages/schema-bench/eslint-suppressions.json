@@ -1,0 +1,7 @@
+{
+  "src/workspace/evaluation/evaluation.test.ts": {
+    "no-throw-error/no-throw-error": {
+      "count": 1
+    }
+  }
+}

@@ -87,7 +87,16 @@ export const VersionMessage: FC<Props> = ({ buildingSchemaVersionId }) => {
   }, [buildingSchemaVersionId])
 
   if (isPending || !version) {
-    return null
+    return (
+      <div className={styles.container}>
+        <div className={styles.header}>
+          <div className={styles.chevron}>
+            <ChevronDown />
+          </div>
+          <span className={styles.versionNumber}>Loading version...</span>
+        </div>
+      </div>
+    )
   }
 
   const displayVersionNumber = version.number
@@ -99,7 +108,6 @@ export const VersionMessage: FC<Props> = ({ buildingSchemaVersionId }) => {
 
   return (
     <div className={styles.container}>
-      {/* Header */}
       <button type="button" className={styles.header} onClick={toggleExpanded}>
         <div
           className={`${styles.chevron} ${isExpanded ? styles.expanded : ''}`}
@@ -111,7 +119,6 @@ export const VersionMessage: FC<Props> = ({ buildingSchemaVersionId }) => {
         </span>
       </button>
 
-      {/* Content */}
       <div className={`${styles.content} ${isExpanded ? styles.expanded : ''}`}>
         <div className={styles.operationList}>
           {patchOperations.map((operation, index) => (

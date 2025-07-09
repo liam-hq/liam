@@ -1,11 +1,12 @@
 name: E2E Tests
 
 on:
-  repository_dispatch:
-    types: ['vercel.deployment.success']
+  deployment_status:
 
 jobs:
   _e2e-tests:
+    # WARNING: Do not set 'environment' here to avoid infinite loop with Vercel deployment_status webhooks
+    # Vercel sends deployment_status events that could trigger this workflow repeatedly
     runs-on: ubuntu-latest
     timeout-minutes: 10
     strategy:
@@ -20,13 +21,13 @@ jobs:
         working-directory: "frontend/internal-packages/e2e"
     env:
       CI: true
-      URL: ${{ github.event.client_payload.deployment_status.target_url }}
-      ENVIRONMENT: ${{ github.event.client_payload.deployment.environment }}
+      URL: ${{ github.event.deployment_status.target_url }}
+      ENVIRONMENT: ${{ github.event.deployment.environment }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
-          ref: ${{ github.event.client_payload.deployment.sha }}
+          ref: ${{ github.event.deployment.sha }}
           persist-credentials: false
 
       - name: Check deployment conditions
@@ -35,11 +36,12 @@ jobs:
         working-directory: ${{ github.workspace }}
         run: |
           event_name      = "${{ github.event_name }}"
-          environment_val = "${{ github.event.client_payload.deployment.environment }}"
-          target_url      = "${{ github.event.client_payload.deployment_status.target_url }}"
+          event_state     = "${{ github.event.deployment_status.state }}"
+          environment_val = "${{ github.event.deployment.environment }}"
+          target_url      = "${{ github.event.deployment_status.target_url }}"
 
           result =
-            if event_name == "repository_dispatch"
+            if event_name == "deployment_status" && event_state == "success"
               # Production deployment
               if (environment_val.include?("Production") && target_url.include?("liam-app-git-main"))
                 "should_run=true"
