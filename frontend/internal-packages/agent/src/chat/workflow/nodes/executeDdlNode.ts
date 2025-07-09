@@ -1,15 +1,12 @@
 import { postgresqlSchemaDeparser } from '@liam-hq/db-structure'
-import { executeQuery } from '@liam-hq/pglite-server'
-import type { SqlResult } from '@liam-hq/pglite-server/src/types'
-import { WORKFLOW_RETRY_CONFIG } from '../constants'
 import { getWorkflowNodeProgress } from '../shared/getWorkflowNodeProgress'
 import type { WorkflowState } from '../types'
 
 const NODE_NAME = 'executeDdlNode'
 
 /**
- * Execute DDL Node - Generates DDL from schema and executes it
- * Generates DDL mechanically without LLM and then executes
+ * Execute DDL Node - Generates DDL from schema (execution deferred to validateSchemaNode)
+ * Generates DDL mechanically without LLM, execution happens later with DML
  */
 export async function executeDdlNode(
   state: WorkflowState,
@@ -43,6 +40,7 @@ export async function executeDdlNode(
   const ddlStatements = result.value
 
   // Log detailed information about what was generated
+  // TODO: Remove this detailed logging once the feature is stable and working properly
   const tableCount = Object.keys(state.schemaData.tables).length
   const ddlLength = ddlStatements.length
 
@@ -51,64 +49,10 @@ export async function executeDdlNode(
   )
   state.logger.debug(`[${NODE_NAME}] Generated DDL:`, { ddlStatements })
 
-  if (!ddlStatements || !ddlStatements.trim()) {
-    state.logger.log(`[${NODE_NAME}] No DDL statements to execute`)
-    state.logger.log(`[${NODE_NAME}] Completed`)
-    return {
-      ...state,
-      ddlStatements,
-    }
-  }
-
-  const results: SqlResult[] = await executeQuery(
-    state.designSessionId,
-    ddlStatements,
+  // Note: DDL execution is deferred to validateSchemaNode for combined DDL+DML execution
+  state.logger.log(
+    `[${NODE_NAME}] DDL generation completed, execution deferred to validateSchemaNode`,
   )
-
-  const hasErrors = results.some((result: SqlResult) => !result.success)
-
-  if (hasErrors) {
-    const errorMessages = results
-      .filter((result: SqlResult) => !result.success)
-      .map(
-        (result: SqlResult) =>
-          `SQL: ${result.sql}, Error: ${JSON.stringify(result.result)}`,
-      )
-      .join('; ')
-
-    state.logger.log(`[${NODE_NAME}] DDL execution failed: ${errorMessages}`)
-
-    // Check if this is the first failure or if we've already retried
-    const currentRetryCount = state.retryCount['ddlExecutionRetry'] || 0
-
-    if (currentRetryCount < WORKFLOW_RETRY_CONFIG.MAX_DDL_EXECUTION_RETRIES) {
-      // Set up retry with designSchemaNode
-      state.logger.log(`[${NODE_NAME}] Scheduling retry via designSchemaNode`)
-      state.logger.log(`[${NODE_NAME}] Completed`)
-      return {
-        ...state,
-        shouldRetryWithDesignSchema: true,
-        ddlExecutionFailureReason: errorMessages,
-        retryCount: {
-          ...state.retryCount,
-          ddlExecutionRetry: currentRetryCount + 1,
-        },
-      }
-    }
-
-    // Already retried - mark as permanently failed
-    state.logger.log(
-      `[${NODE_NAME}] DDL execution failed after retry, marking as failed`,
-    )
-    state.logger.log(`[${NODE_NAME}] Completed`)
-    return {
-      ...state,
-      ddlExecutionFailed: true,
-      ddlExecutionFailureReason: errorMessages,
-    }
-  }
-
-  state.logger.log(`[${NODE_NAME}] DDL executed successfully`)
   state.logger.log(`[${NODE_NAME}] Completed`)
 
   return {

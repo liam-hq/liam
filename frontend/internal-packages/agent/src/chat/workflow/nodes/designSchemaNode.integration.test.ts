@@ -166,17 +166,16 @@ describe('designSchemaNode -> executeDdlNode integration', () => {
       },
     ])
 
-    // Step 2: Execute DDL (should generate DDL and execute it)
+    // Step 2: Execute DDL (should generate DDL but defer execution)
     const afterDDL = await executeDdlNode(afterDesign)
 
-    // Verify DDL generation and execution worked
+    // Verify DDL generation worked (but execution is deferred)
     expect(afterDDL.ddlStatements).toContain('CREATE TABLE "users"')
     expect(afterDDL.ddlStatements).toContain('"id" INTEGER NOT NULL')
     expect(afterDDL.ddlStatements).toContain('"name" VARCHAR NOT NULL')
-    expect(executeQuery).toHaveBeenCalledWith(
-      'test-session',
-      expect.stringContaining('CREATE TABLE "users"'),
-    )
+
+    // executeQuery should not have been called yet (execution deferred to validateSchemaNode)
+    expect(executeQuery).not.toHaveBeenCalled()
   })
 
   it('should handle schema validation errors gracefully', async () => {

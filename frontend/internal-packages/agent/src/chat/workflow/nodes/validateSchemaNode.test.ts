@@ -1,3 +1,4 @@
+import { postgresqlSchemaDeparser } from '@liam-hq/db-structure'
 import { executeQuery } from '@liam-hq/pglite-server'
 import type { SqlResult } from '@liam-hq/pglite-server/src/types'
 import {
@@ -13,6 +14,10 @@ import type { WorkflowState } from '../types'
 import { validateSchemaNode } from './validateSchemaNode'
 
 // Mock dependencies
+vi.mock('@liam-hq/db-structure', () => ({
+  postgresqlSchemaDeparser: vi.fn(),
+}))
+
 vi.mock('@liam-hq/pglite-server', () => ({
   executeQuery: vi.fn(),
 }))
@@ -73,8 +78,33 @@ describe('validateSchemaNode', () => {
       userInput: 'test input',
       formattedHistory: 'test history',
       schemaData: {
-        tables: {},
-      } satisfies WorkflowState['schemaData'] as WorkflowState['schemaData'],
+        tables: {
+          users: {
+            name: 'users',
+            comment: null,
+            columns: {
+              id: {
+                name: 'id',
+                type: 'INTEGER',
+                default: null,
+                check: null,
+                notNull: true,
+                comment: null,
+              },
+              email: {
+                name: 'email',
+                type: 'VARCHAR(255)',
+                default: null,
+                check: null,
+                notNull: true,
+                comment: null,
+              },
+            },
+            constraints: {},
+            indexes: {},
+          },
+        },
+      },
       buildingSchemaId: 'schema-123',
       latestVersionNumber: 1,
       userId: 'user-123',
@@ -104,19 +134,32 @@ describe('validateSchemaNode', () => {
 
     // Mock utility functions
     vi.mocked(getWorkflowNodeProgress).mockReturnValue(75)
+
+    // Mock DDL generation
+    vi.mocked(postgresqlSchemaDeparser).mockReturnValue({
+      value:
+        'CREATE TABLE "users" ("id" INTEGER NOT NULL, "email" VARCHAR(255) NOT NULL);',
+      errors: [],
+    })
   })
 
   describe('Success scenarios', () => {
-    it('should execute DML statements successfully', async () => {
+    it('should execute combined DDL and DML statements successfully', async () => {
       const mockResults: SqlResult[] = [
         createMockSqlResult({
-          id: 'result-1',
+          id: 'ddl-result-1',
+          sql: 'CREATE TABLE "users" ("id" INTEGER NOT NULL, "email" VARCHAR(255) NOT NULL);',
+          success: true,
+          result: { message: 'Table created' },
+        }),
+        createMockSqlResult({
+          id: 'dml-result-1',
           sql: "INSERT INTO users (email, name) VALUES ('test@example.com', 'Test User');",
           success: true,
           result: { rowCount: 1 },
         }),
         createMockSqlResult({
-          id: 'result-2',
+          id: 'dml-result-2',
           sql: "UPDATE users SET name = 'Updated User' WHERE email = 'test@example.com';",
           success: true,
           result: { rowCount: 1 },
@@ -129,48 +172,138 @@ describe('validateSchemaNode', () => {
 
       expect(result).toEqual({
         ...baseState,
+        ddlStatements:
+          'CREATE TABLE "users" ("id" INTEGER NOT NULL, "email" VARCHAR(255) NOT NULL);',
         error: undefined,
       })
+
+      // Verify combined DDL and DML were executed together
+      expect(executeQuery).toHaveBeenCalledWith(
+        'session-123',
+        expect.stringContaining('CREATE TABLE "users"'),
+      )
+      expect(executeQuery).toHaveBeenCalledWith(
+        'session-123',
+        expect.stringContaining('INSERT INTO users'),
+      )
     })
 
-    it('should handle empty DML statements gracefully', async () => {
+    it('should handle empty DML statements gracefully and execute only DDL', async () => {
       const stateWithEmptyDML = {
         ...baseState,
         dmlStatements: '',
       }
 
+      const mockResults: SqlResult[] = [
+        createMockSqlResult({
+          id: 'ddl-result-1',
+          sql: 'CREATE TABLE "users" ("id" INTEGER NOT NULL, "email" VARCHAR(255) NOT NULL);',
+          success: true,
+          result: { message: 'Table created' },
+        }),
+      ]
+
+      vi.mocked(executeQuery).mockResolvedValue(mockResults)
+
       const result = await validateSchemaNode(stateWithEmptyDML)
 
       expect(result).toEqual({
         ...stateWithEmptyDML,
+        ddlStatements:
+          'CREATE TABLE "users" ("id" INTEGER NOT NULL, "email" VARCHAR(255) NOT NULL);',
+        error: undefined,
       })
-      expect(vi.mocked(executeQuery)).not.toHaveBeenCalled()
+
+      // Verify only DDL was executed
+      expect(executeQuery).toHaveBeenCalledWith(
+        'session-123',
+        'CREATE TABLE "users" ("id" INTEGER NOT NULL, "email" VARCHAR(255) NOT NULL);',
+      )
     })
 
-    it('should handle whitespace-only DML statements gracefully', async () => {
+    it('should handle whitespace-only DML statements gracefully and execute only DDL', async () => {
       const stateWithWhitespaceDML = {
         ...baseState,
         dmlStatements: '   \n\t   ',
       }
 
+      const mockResults: SqlResult[] = [
+        createMockSqlResult({
+          id: 'ddl-result-1',
+          sql: 'CREATE TABLE "users" ("id" INTEGER NOT NULL, "email" VARCHAR(255) NOT NULL);',
+          success: true,
+          result: { message: 'Table created' },
+        }),
+      ]
+
+      vi.mocked(executeQuery).mockResolvedValue(mockResults)
+
       const result = await validateSchemaNode(stateWithWhitespaceDML)
 
       expect(result).toEqual({
         ...stateWithWhitespaceDML,
+        ddlStatements:
+          'CREATE TABLE "users" ("id" INTEGER NOT NULL, "email" VARCHAR(255) NOT NULL);',
+        error: undefined,
       })
-      expect(vi.mocked(executeQuery)).not.toHaveBeenCalled()
+
+      // Verify only DDL was executed
+      expect(executeQuery).toHaveBeenCalledWith(
+        'session-123',
+        'CREATE TABLE "users" ("id" INTEGER NOT NULL, "email" VARCHAR(255) NOT NULL);',
+      )
     })
 
-    it('should handle undefined DML statements gracefully', async () => {
+    it('should handle undefined DML statements gracefully and execute only DDL', async () => {
       const stateWithUndefinedDML = {
         ...baseState,
         dmlStatements: undefined,
       }
 
+      const mockResults: SqlResult[] = [
+        createMockSqlResult({
+          id: 'ddl-result-1',
+          sql: 'CREATE TABLE "users" ("id" INTEGER NOT NULL, "email" VARCHAR(255) NOT NULL);',
+          success: true,
+          result: { message: 'Table created' },
+        }),
+      ]
+
+      vi.mocked(executeQuery).mockResolvedValue(mockResults)
+
       const result = await validateSchemaNode(stateWithUndefinedDML)
 
       expect(result).toEqual({
         ...stateWithUndefinedDML,
+        ddlStatements:
+          'CREATE TABLE "users" ("id" INTEGER NOT NULL, "email" VARCHAR(255) NOT NULL);',
+        error: undefined,
+      })
+
+      // Verify only DDL was executed
+      expect(executeQuery).toHaveBeenCalledWith(
+        'session-123',
+        'CREATE TABLE "users" ("id" INTEGER NOT NULL, "email" VARCHAR(255) NOT NULL);',
+      )
+    })
+
+    it('should skip execution when both DDL and DML are empty', async () => {
+      const stateWithEmptyDML = {
+        ...baseState,
+        dmlStatements: '',
+      }
+
+      // Mock empty DDL generation
+      vi.mocked(postgresqlSchemaDeparser).mockReturnValue({
+        value: '',
+        errors: [],
+      })
+
+      const result = await validateSchemaNode(stateWithEmptyDML)
+
+      expect(result).toEqual({
+        ...stateWithEmptyDML,
+        ddlStatements: '',
       })
       expect(vi.mocked(executeQuery)).not.toHaveBeenCalled()
     })
@@ -219,7 +352,7 @@ describe('validateSchemaNode', () => {
         '[validateSchemaNode] Started',
       )
       expect(mockLogger.log).toHaveBeenCalledWith(
-        '[validateSchemaNode] Successfully executed 2 DML statements',
+        '[validateSchemaNode] Successfully executed 2 DDL/DML statements',
       )
       expect(mockLogger.log).toHaveBeenCalledWith(
         '[validateSchemaNode] Schema validation passed',
@@ -506,14 +639,24 @@ describe('validateSchemaNode', () => {
         dmlStatements: largeDMLStatements,
       }
 
-      const mockResults: SqlResult[] = Array.from({ length: 1000 }, (_, i) =>
+      const mockResults: SqlResult[] = [
+        // DDL result
         createMockSqlResult({
-          id: `result-${i}`,
-          sql: `INSERT INTO users (email, name) VALUES ('user${i}@example.com', 'User ${i}');`,
+          id: 'ddl-result',
+          sql: 'CREATE TABLE "users" ("id" INTEGER NOT NULL, "email" VARCHAR(255) NOT NULL);',
           success: true,
-          result: { rowCount: 1 },
+          result: { message: 'Table created' },
         }),
-      )
+        // DML results
+        ...Array.from({ length: 1000 }, (_, i) =>
+          createMockSqlResult({
+            id: `dml-result-${i}`,
+            sql: `INSERT INTO users (email, name) VALUES ('user${i}@example.com', 'User ${i}');`,
+            success: true,
+            result: { rowCount: 1 },
+          }),
+        ),
+      ]
 
       vi.mocked(executeQuery).mockResolvedValue(mockResults)
 
@@ -521,7 +664,7 @@ describe('validateSchemaNode', () => {
 
       expect(result.error).toBeUndefined()
       expect(mockLogger.log).toHaveBeenCalledWith(
-        '[validateSchemaNode] Successfully executed 1000 DML statements',
+        '[validateSchemaNode] Successfully executed 1001 DDL/DML statements',
       )
     })
   })
@@ -571,7 +714,7 @@ describe('validateSchemaNode', () => {
 
       expect(result.error).toBeUndefined()
       expect(mockLogger.log).toHaveBeenCalledWith(
-        '[validateSchemaNode] Successfully executed 2 DML statements',
+        '[validateSchemaNode] Successfully executed 2 DDL/DML statements',
       )
     })
 
