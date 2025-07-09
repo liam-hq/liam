@@ -1,0 +1,17 @@
+{
+  "src/functions/processRepositoryAnalysis.ts": {
+    "no-throw-error/no-throw-error": {
+      "count": 3
+    }
+  },
+  "src/libs/supabase.ts": {
+    "no-throw-error/no-throw-error": {
+      "count": 1
+    }
+  },
+  "src/trigger/deepModelingWorkflowTask.ts": {
+    "no-throw-error/no-throw-error": {
+      "count": 1
+    }
+  }
+}

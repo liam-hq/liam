@@ -1,7 +1,37 @@
 {
+  "src/deparser/postgresql/operationDeparser.ts": {
+    "no-throw-error/no-throw-error": {
+      "count": 10
+    }
+  },
+  "src/parser/prisma/index.test.ts": {
+    "no-throw-error/no-throw-error": {
+      "count": 2
+    }
+  },
   "src/parser/schemarb/parser.ts": {
     "@typescript-eslint/consistent-type-assertions": {
       "count": 4
+    }
+  },
+  "src/parser/sql/postgresql/index.ts": {
+    "no-throw-error/no-throw-error": {
+      "count": 1
+    }
+  },
+  "src/parser/sql/postgresql/processSqlInChunks.test.ts": {
+    "no-throw-error/no-throw-error": {
+      "count": 1
+    }
+  },
+  "src/parser/sql/postgresql/processSqlInChunks.ts": {
+    "no-throw-error/no-throw-error": {
+      "count": 1
+    }
+  },
+  "src/schema/mergeSchema.ts": {
+    "no-throw-error/no-throw-error": {
+      "count": 1
     }
   }
 }

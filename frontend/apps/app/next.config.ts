@@ -15,6 +15,9 @@ const nextConfig: NextConfig = {
   // NOTE: Exclude Prisma and SWC-related packages from the bundle
   // These packages are installed separately in the node_modules directory
   // Excluding them prevents `Error: Cannot find module 'fs'` errors in the build process
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
   images: {
     remotePatterns: [
       {

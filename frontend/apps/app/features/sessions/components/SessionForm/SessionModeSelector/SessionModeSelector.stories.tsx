@@ -62,7 +62,8 @@ export const Interactive: Story = {
   parameters: {
     docs: {
       description: {
-        story: 'Interactive version where you can click to change modes',
+        story:
+          'Interactive version with full keyboard navigation support. Use Arrow keys, Home, and End to navigate between modes.',
       },
     },
   },

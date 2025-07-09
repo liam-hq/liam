@@ -1,0 +1,132 @@
+{
+  "app/(app)/app/(root)/invitations/tokens/[token]/page.tsx": {
+    "no-throw-error/no-throw-error": {
+      "count": 1
+    }
+  },
+  "app/(app)/app/(root)/projects/new/page.tsx": {
+    "no-throw-error/no-throw-error": {
+      "count": 2
+    }
+  },
+  "app/(app)/app/(root)/projects/page.tsx": {
+    "no-throw-error/no-throw-error": {
+      "count": 2
+    }
+  },
+  "app/(app)/app/(root)/settings/members/page.tsx": {
+    "no-throw-error/no-throw-error": {
+      "count": 1
+    }
+  },
+  "app/(app)/app/(with-project)/projects/[projectId]/page.tsx": {
+    "no-throw-error/no-throw-error": {
+      "count": 1
+    }
+  },
+  "app/(app)/app/(with-project-and-branch)/projects/[projectId]/ref/[branchOrCommit]/page.tsx": {
+    "no-throw-error/no-throw-error": {
+      "count": 1
+    }
+  },
+  "app/(app)/app/(with-project-and-branch)/projects/[projectId]/ref/[branchOrCommit]/schema/[...schemaFilePath]/page.tsx": {
+    "no-throw-error/no-throw-error": {
+      "count": 1
+    }
+  },
+  "app/(app)/app/(with-project-and-branch)/projects/[projectId]/ref/[branchOrCommit]/sessions/page.tsx": {
+    "no-throw-error/no-throw-error": {
+      "count": 1
+    }
+  },
+  "app/(app)/app/design_sessions/[id]/page.tsx": {
+    "no-throw-error/no-throw-error": {
+      "count": 4
+    }
+  },
+  "app/erd/p/[...slug]/page.tsx": {
+    "no-throw-error/no-throw-error": {
+      "count": 2
+    }
+  },
+  "components/BranchDetailPage/BranchDetailPage.tsx": {
+    "no-throw-error/no-throw-error": {
+      "count": 1
+    }
+  },
+  "components/CommonLayout/CommonLayout.tsx": {
+    "no-throw-error/no-throw-error": {
+      "count": 1
+    }
+  },
+  "components/GeneralPage/GeneralPage.tsx": {
+    "no-throw-error/no-throw-error": {
+      "count": 1
+    }
+  },
+  "components/OrganizationMembersPage/OrganizationMembersPage.tsx": {
+    "no-throw-error/no-throw-error": {
+      "count": 1
+    }
+  },
+  "components/ProjectLayout/ProjectHeader/ProjectHeader.tsx": {
+    "no-throw-error/no-throw-error": {
+      "count": 1
+    }
+  },
+  "components/ProjectNewPage/components/InstallationSelector/actions/addProject.ts": {
+    "no-throw-error/no-throw-error": {
+      "count": 3
+    }
+  },
+  "components/ProjectsPage/ProjectsPage.tsx": {
+    "no-throw-error/no-throw-error": {
+      "count": 1
+    }
+  },
+  "components/ProjectsPage/components/ProjectsListView/hooks/useProjectSearch.ts": {
+    "no-throw-error/no-throw-error": {
+      "count": 1
+    }
+  },
+  "components/SchemaPage/SchemaPage.tsx": {
+    "no-throw-error/no-throw-error": {
+      "count": 1
+    }
+  },
+  "components/SessionDetailPage/components/Chat/services/aiMessageService.ts": {
+    "no-throw-error/no-throw-error": {
+      "count": 2
+    }
+  },
+  "components/SessionDetailPage/components/Output/components/Header/VersionDropdown/hooks/useRealtimeVersions.ts": {
+    "no-throw-error/no-throw-error": {
+      "count": 1
+    }
+  },
+  "components/SessionDetailPage/hooks/useRealtimeBuildlingSchema.ts": {
+    "no-throw-error/no-throw-error": {
+      "count": 1
+    }
+  },
+  "features/organizations/services/getOrganizationId.ts": {
+    "no-throw-error/no-throw-error": {
+      "count": 2
+    }
+  },
+  "features/projects/services/getProjectRepository.test.ts": {
+    "no-throw-error/no-throw-error": {
+      "count": 2
+    }
+  },
+  "instrumentation.ts": {
+    "no-throw-error/no-throw-error": {
+      "count": 1
+    }
+  },
+  "next.config.ts": {
+    "no-throw-error/no-throw-error": {
+      "count": 1
+    }
+  }
+}

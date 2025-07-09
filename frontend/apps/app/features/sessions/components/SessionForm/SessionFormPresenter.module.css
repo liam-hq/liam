@@ -4,3 +4,10 @@
   gap: var(--spacing-10);
   width: 100%;
 }
+
+.formContainer {
+  position: relative;
+  width: 100%;
+  border-radius: var(--border-radius-xl);
+  overflow: hidden;
+}
