@@ -33,7 +33,10 @@ export const FitviewButton: FC<FitviewButtonProps> = ({
       ver: version.version,
       appEnv: version.envName,
     })
-    fitView()
+    fitView({
+      padding: 0.1,
+      duration: 0,
+    })
   }, [fitView, showMode, version])
 
   return (

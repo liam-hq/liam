@@ -67,7 +67,10 @@ export const TableDetail: FC<Props> = ({ table }) => {
     setNodes(layoutedNodes)
     setEdges(layoutedEdges)
 
-    fitView()
+    fitView({
+      padding: 0.1,
+      duration: 0,
+    })
 
     openRelatedTablesLogEvent({
       tableId: table.name,

@@ -55,7 +55,7 @@ export const useInitialAutoLayout = ({ nodes, displayArea }: Params) => {
       const fitViewOptions =
         displayArea === 'main' && activeTableName
           ? { maxZoom: 1, duration: 300, nodes: [{ id: activeTableName }] }
-          : { duration: 0 }
+          : { duration: 0, padding: 0.1 }
       fitView(fitViewOptions)
 
       setInitializeComplete(true)
