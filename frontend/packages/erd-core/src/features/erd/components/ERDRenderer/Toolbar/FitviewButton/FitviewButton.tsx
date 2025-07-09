@@ -33,9 +33,7 @@ export const FitviewButton: FC<FitviewButtonProps> = ({
       ver: version.version,
       appEnv: version.envName,
     })
-    requestAnimationFrame(() => {
-      fitView()
-    })
+    fitView()
   }, [fitView, showMode, version])
 
   return (

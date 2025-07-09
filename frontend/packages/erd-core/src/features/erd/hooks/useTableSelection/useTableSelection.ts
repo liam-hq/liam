@@ -25,12 +25,10 @@ export const useTableSelection = () => {
       setEdges(edges)
 
       if (displayArea === 'main') {
-        requestAnimationFrame(() => {
-          fitView({
-            maxZoom: 1,
-            duration: 300,
-            nodes: [{ id: tableId }],
-          })
+        fitView({
+          maxZoom: 1,
+          duration: 300,
+          nodes: [{ id: tableId }],
         })
       }
     },

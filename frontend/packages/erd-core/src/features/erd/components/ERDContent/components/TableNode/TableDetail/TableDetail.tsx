@@ -66,9 +66,8 @@ export const TableDetail: FC<Props> = ({ table }) => {
       await computeAutoLayout(updatedNodes, getEdges())
     setNodes(layoutedNodes)
     setEdges(layoutedEdges)
-    requestAnimationFrame(() => {
-      fitView()
-    })
+
+    fitView()
 
     openRelatedTablesLogEvent({
       tableId: table.name,
