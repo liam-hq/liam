@@ -3,9 +3,8 @@ name: Claude PR Creator
 on:
   issues:
     types: [labeled]
-  push:  # for testing - REMOVE BEFORE MERGE
-    branches:
-      - 'feat/test-automated-workflows'
+  pull_request:  # for testing - REMOVE BEFORE MERGE
+    types: [opened, synchronize, reopened]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.issue.number || github.sha }}
@@ -13,7 +12,7 @@ concurrency:
 
 jobs:
   claude-pr-creator:
-    if: contains(github.event.label.name, 'claude-create-pr') || github.event_name == 'push'
+    if: contains(github.event.label.name, 'claude-create-pr') || github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     timeout-minutes: 30
     permissions:
@@ -28,9 +27,9 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           persist-credentials: false
 
-      # Fetch actual issue details for push events
+      # Fetch actual issue details for non-issue events
       - name: Get Issue Details
-        if: github.event_name == 'push'
+        if: github.event_name != 'issues'
         id: issue
         uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
         with:
