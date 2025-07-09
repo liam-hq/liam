@@ -164,7 +164,7 @@ describe(processor, () => {
           users_email_key: {
             type: 'UNIQUE',
             name: 'users_email_key',
-            columnName: 'email',
+            columnNames: ['email'],
           },
         },
       })
@@ -319,7 +319,7 @@ describe(processor, () => {
           users_pkey: {
             type: 'PRIMARY KEY',
             name: 'users_pkey',
-            columnName: 'id',
+            columnNames: ['id'],
           },
         },
       })
@@ -557,7 +557,7 @@ describe(processor, () => {
           PRIMARY: {
             type: 'PRIMARY KEY',
             name: 'PRIMARY',
-            columnName: 'id',
+            columnNames: ['id'],
           },
         }
 
@@ -639,7 +639,7 @@ describe(processor, () => {
           user_id: {
             type: 'UNIQUE',
             name: 'user_id',
-            columnName: 'id',
+            columnNames: ['id'],
           },
         }
 

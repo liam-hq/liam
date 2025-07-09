@@ -78,10 +78,11 @@ export async function generateUsecaseNode(
   if (!state.analyzedRequirements) {
     const errorMessage =
       'No analyzed requirements found. Cannot generate use cases.'
-    state.logger.error(`[${NODE_NAME}] ${errorMessage}`)
+    const error = new Error(`[${NODE_NAME}] ${errorMessage}`)
+    state.logger.error(error.message)
     return {
       ...state,
-      error: errorMessage,
+      error,
     }
   }
 
@@ -107,11 +108,12 @@ export async function generateUsecaseNode(
 
   if (usecaseResult.isErr()) {
     const errorMessage = usecaseResult.error
-    state.logger.error(`[${NODE_NAME}] Failed: ${errorMessage}`)
+    const error = new Error(`[${NODE_NAME}] Failed: ${errorMessage}`)
+    state.logger.error(error.message)
 
     return {
       ...state,
-      error: errorMessage,
+      error,
       retryCount: {
         ...state.retryCount,
         [NODE_NAME]: retryCount + 1,

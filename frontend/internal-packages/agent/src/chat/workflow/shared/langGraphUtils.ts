@@ -48,7 +48,7 @@ export const createAnnotations = () => {
     organizationId: Annotation<string | undefined>,
     userId: Annotation<string>,
     designSessionId: Annotation<string>,
-    error: Annotation<string | undefined>,
+    error: Annotation<Error | undefined>,
     retryCount: Annotation<Record<string, number>>,
 
     ddlStatements: Annotation<string | undefined>,

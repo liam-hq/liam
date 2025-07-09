@@ -24,7 +24,7 @@ describe('mergeSchemas', () => {
       users_pkey: {
         type: 'PRIMARY KEY',
         name: 'users_pkey',
-        columnName: 'id',
+        columnNames: ['id'],
       },
     },
     ...overrides,

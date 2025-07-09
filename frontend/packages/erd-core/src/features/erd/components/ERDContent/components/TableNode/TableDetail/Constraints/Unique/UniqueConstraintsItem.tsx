@@ -17,8 +17,10 @@ export const UniqueConstraintsItem: FC<Props> = ({ uniqueConstraint }) => {
     <GridTableRoot>
       <GridTableHeader>{uniqueConstraint.name}</GridTableHeader>
       <GridTableItem>
-        <GridTableDt>Column</GridTableDt>
-        <GridTableDd>{uniqueConstraint.columnName}</GridTableDd>
+        <GridTableDt>
+          {uniqueConstraint.columnNames.length === 1 ? 'Column' : 'Columns'}
+        </GridTableDt>
+        <GridTableDd>{uniqueConstraint.columnNames.join(', ')}</GridTableDd>
       </GridTableItem>
     </GridTableRoot>
   )

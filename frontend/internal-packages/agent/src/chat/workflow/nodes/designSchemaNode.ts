@@ -29,13 +29,15 @@ const applySchemaChanges = async (
   })
 
   if (!result.success) {
+    const errorMessage = result.error || 'Failed to update schema'
+    const error = new Error(errorMessage)
     state.logger.error('Schema update failed:', {
-      error: result.error || 'Failed to update schema',
+      error: errorMessage,
     })
     return {
       ...state,
       generatedAnswer: message,
-      error: result.error || 'Failed to update schema',
+      error,
     }
   }
 

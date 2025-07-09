@@ -387,7 +387,7 @@ export const convertToSchema = (
       constraints.push({
         name: constraintName,
         type: 'PRIMARY KEY',
-        columnName,
+        columnNames: [columnName],
       })
     }
 
@@ -397,7 +397,7 @@ export const convertToSchema = (
       constraints.push({
         name: constraintName,
         type: 'UNIQUE',
-        columnName,
+        columnNames: [columnName],
       })
     }
 
@@ -429,12 +429,12 @@ export const convertToSchema = (
           .map((node) => node.String.sval)
           .filter((name): name is string => name !== undefined) || []
 
-      for (const columnName of columnNames) {
-        const constraintName = constraint.conname ?? `PRIMARY_${columnName}`
+      if (columnNames.length > 0) {
+        const constraintName = constraint.conname ?? `${tableName}_pkey`
         constraints.push({
           name: constraintName,
           type: 'PRIMARY KEY',
-          columnName,
+          columnNames,
         })
       }
     } else if (constraint.contype === 'CONSTR_FOREIGN') {
@@ -478,12 +478,13 @@ export const convertToSchema = (
           .map((node) => node.String.sval)
           .filter((name): name is string => name !== undefined) || []
 
-      for (const columnName of columnNames) {
-        const constraintName = constraint.conname ?? `UNIQUE_${columnName}`
+      if (columnNames.length > 0) {
+        const constraintName =
+          constraint.conname ?? `${tableName}_${columnNames.join('_')}_key`
         constraints.push({
           name: constraintName,
           type: 'UNIQUE',
-          columnName,
+          columnNames,
         })
       }
     }
@@ -827,12 +828,12 @@ export const convertToSchema = (
         .map((node) => node.String.sval)
         .filter((name): name is string => name !== undefined) || []
 
-    for (const columnName of columnNames) {
-      const constraintName = constraint.conname ?? `PRIMARY_${columnName}`
+    if (columnNames.length > 0) {
+      const constraintName = constraint.conname ?? `${foreignTableName}_pkey`
       table.constraints[constraintName] = {
         name: constraintName,
         type: 'PRIMARY KEY',
-        columnName,
+        columnNames,
       }
     }
   }
@@ -855,12 +856,13 @@ export const convertToSchema = (
         .map((node) => node.String.sval)
         .filter((name): name is string => name !== undefined) || []
 
-    for (const columnName of columnNames) {
-      const constraintName = constraint.conname ?? `UNIQUE_${columnName}`
+    if (columnNames.length > 0) {
+      const constraintName =
+        constraint.conname ?? `${foreignTableName}_${columnNames.join('_')}_key`
       table.constraints[constraintName] = {
         name: constraintName,
         type: 'UNIQUE',
-        columnName,
+        columnNames,
       }
     }
   }

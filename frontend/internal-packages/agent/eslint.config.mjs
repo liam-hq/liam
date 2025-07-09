@@ -3,7 +3,24 @@ import { createBaseConfig } from '../../internal-packages/configs/eslint/index.j
 
 const gitignorePath = fileURLToPath(new URL('.gitignore', import.meta.url))
 
-export default createBaseConfig({
+const baseConfig = createBaseConfig({
   tsconfigPath: './tsconfig.json',
   gitignorePath,
 })
+
+export default [
+  ...baseConfig,
+  {
+    files: ['**/*.ts', '**/*.tsx'],
+    rules: {
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector: 'TryStatement',
+          message:
+            'Try-catch statements are not allowed in @liam-hq/agent package. Use Result types from neverthrow instead.',
+        },
+      ],
+    },
+  },
+]

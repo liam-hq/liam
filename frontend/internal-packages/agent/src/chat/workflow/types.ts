@@ -18,7 +18,7 @@ export type WorkflowState = {
   formattedHistory: string
   schemaData: Schema
   projectId?: string | undefined
-  error?: string | undefined
+  error?: Error | undefined
   retryCount: Record<string, number>
 
   ddlStatements?: string | undefined
