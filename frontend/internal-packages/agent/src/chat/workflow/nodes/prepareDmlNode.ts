@@ -1,4 +1,7 @@
-import type { Column } from '@liam-hq/db-structure'
+import { postgresqlSchemaDeparser } from '@liam-hq/db-structure'
+import { ResultAsync } from 'neverthrow'
+import { DMLGenerationAgent } from '../../../langchain/agents'
+import type { DMLGenerationPromptVariables } from '../../../langchain/agents/dmlGenerationAgent'
 import type { Usecase } from '../../../langchain/agents/qaGenerateUsecaseAgent/agent'
 import { getWorkflowNodeProgress } from '../shared/getWorkflowNodeProgress'
 import type { WorkflowState } from '../types'
@@ -6,337 +9,49 @@ import type { WorkflowState } from '../types'
 const NODE_NAME = 'prepareDmlNode'
 
 /**
- * Generate sample value based on column name
+ * Format use cases for the DML generation agent
  */
-const generateValueByName = (columnName: string): string | null => {
-  const lowerName = columnName.toLowerCase()
-
-  if (lowerName.includes('email')) {
-    return `'user${Math.floor(Math.random() * 1000)}@example.com'`
-  }
-  if (lowerName.includes('name') || lowerName.includes('title')) {
-    const sampleNames = ['John Doe', 'Jane Smith', 'Test User', 'Sample Name']
-    return `'${sampleNames[Math.floor(Math.random() * sampleNames.length)]}'`
-  }
-  if (lowerName.includes('content') || lowerName.includes('description')) {
-    return `'Sample content for testing'`
-  }
-
-  return null
-}
-
-/**
- * Generate sample value based on column type
- */
-const generateValueByType = (
-  columnType: string,
-  columnName: string,
-): string => {
-  const lowerType = columnType.toLowerCase()
-
-  if (lowerType.includes('int') || lowerType.includes('serial')) {
-    return Math.floor(Math.random() * 100 + 1).toString()
-  }
-  if (lowerType.includes('bool')) {
-    return Math.random() > 0.5 ? 'true' : 'false'
-  }
-  if (lowerType.includes('date') && !lowerType.includes('update')) {
-    return `'${new Date().toISOString().split('T')[0]}'`
-  }
-  if (lowerType.includes('timestamp')) {
-    return 'CURRENT_TIMESTAMP'
-  }
-  if (lowerType.includes('json')) {
-    return `'{"key": "value"}'`
-  }
-  if (
-    lowerType.includes('decimal') ||
-    lowerType.includes('numeric') ||
-    lowerType.includes('float')
-  ) {
-    return (Math.random() * 100).toFixed(2)
-  }
-  if (
-    lowerType.includes('text') ||
-    lowerType.includes('varchar') ||
-    lowerType.includes('char')
-  ) {
-    return `'Sample ${columnName}'`
-  }
-
-  return `'default_value'`
-}
-
-/**
- * Generate appropriate sample values based on column type
- */
-const generateSampleValue = (
-  columnType: string,
-  columnName: string,
-): string => {
-  // Try to generate by name first
-  const valueByName = generateValueByName(columnName)
-  if (valueByName !== null) {
-    return valueByName
-  }
-
-  // Otherwise generate by type
-  return generateValueByType(columnType, columnName)
-}
-
-/**
- * Determine operation type from use case
- */
-const getOperationType = (usecase: Usecase) => {
-  const lowerTitle = usecase.title.toLowerCase()
-  const lowerDesc = usecase.description.toLowerCase()
-  const lowerReq = usecase.requirement.toLowerCase()
-
-  return {
-    isUpdate:
-      lowerTitle.includes('update') ||
-      lowerDesc.includes('update') ||
-      lowerReq.includes('update'),
-    isDelete:
-      lowerTitle.includes('delete') ||
-      lowerDesc.includes('delete') ||
-      lowerReq.includes('delete'),
-    isBulk:
-      usecase.requirementType === 'non_functional' &&
-      (lowerReq.includes('performance') ||
-        lowerReq.includes('concurrent') ||
-        lowerReq.includes('load')),
-  }
-}
-
-/**
- * Check if table name matches use case text
- */
-const tableMatchesText = (tableName: string, text: string): boolean => {
-  const lowerTableName = tableName.toLowerCase()
-  const singularName = lowerTableName.endsWith('s')
-    ? lowerTableName.slice(0, -1)
-    : lowerTableName
-  const lowerText = text.toLowerCase()
-
-  return (
-    lowerText.includes(lowerTableName) ||
-    lowerText.includes(singularName) ||
-    lowerText.includes(` ${singularName} `) ||
-    lowerText.includes(` ${lowerTableName} `)
-  )
-}
-
-/**
- * Find table by matching name in use case
- */
-const findTableByName = (
-  tables: WorkflowState['schemaData']['tables'][string][],
-  usecase: Usecase,
-): WorkflowState['schemaData']['tables'][string] | undefined => {
-  // Check title first
-  for (const table of tables) {
-    if (tableMatchesText(table.name, usecase.title)) {
-      return table
-    }
-  }
-
-  // Then check description and requirement
-  for (const table of tables) {
-    if (
-      tableMatchesText(table.name, usecase.description) ||
-      tableMatchesText(table.name, usecase.requirement)
-    ) {
-      return table
-    }
-  }
-
-  return undefined
-}
-
-/**
- * Find table by category
- */
-const findTableByCategory = (
-  tables: WorkflowState['schemaData']['tables'][string][],
-  schemaData: WorkflowState['schemaData'],
-  category: string,
-): WorkflowState['schemaData']['tables'][string] | undefined => {
-  const lowerCategory = category.toLowerCase()
-
-  if (lowerCategory.includes('user') && schemaData.tables['users']) {
-    return schemaData.tables['users']
-  }
-
-  if (lowerCategory.includes('content') || lowerCategory.includes('post')) {
-    for (const table of tables) {
-      const lowerName = table.name.toLowerCase()
-      if (
-        lowerName.includes('post') ||
-        lowerName.includes('content') ||
-        lowerName.includes('article')
-      ) {
-        return table
-      }
-    }
-  }
-
-  return undefined
-}
-
-/**
- * Find the most relevant table for a use case
- */
-const findTargetTable = (
-  usecase: Usecase,
-  tables: WorkflowState['schemaData']['tables'][string][],
-  schemaData: WorkflowState['schemaData'],
-): WorkflowState['schemaData']['tables'][string] | undefined => {
-  if (tables.length === 0) return undefined
-
-  // Try to find by name matching
-  const tableByName = findTableByName(tables, usecase)
-  if (tableByName) return tableByName
-
-  // Try to find by category
-  if (usecase.requirementCategory) {
-    const tableByCategory = findTableByCategory(
-      tables,
-      schemaData,
-      usecase.requirementCategory,
+function formatUseCases(usecases: Usecase[]): string {
+  return usecases
+    .map(
+      (usecase) => `
+Use Case: ${usecase.title}
+Type: ${usecase.requirementType}
+Category: ${usecase.requirementCategory}
+Requirement: ${usecase.requirement}
+Description: ${usecase.description}`,
     )
-    if (tableByCategory) return tableByCategory
+    .join('\n\n')
+}
+
+/**
+ * Format schema for the DML generation agent
+ */
+function formatSchema(schemaData: WorkflowState['schemaData']): string {
+  // Use the PostgreSQL schema deparser to get a SQL representation
+  const deparseResult = postgresqlSchemaDeparser(schemaData)
+
+  if (deparseResult.errors.length > 0) {
+    // Fallback to a simple text representation if deparser fails
+    const tables = Object.values(schemaData.tables)
+      .map((table) => {
+        const columns = Object.values(table.columns)
+          .map(
+            (col) =>
+              `  ${col.name} ${col.type}${col.notNull ? ' NOT NULL' : ''}`,
+          )
+          .join('\n')
+        return `Table: ${table.name}\n${columns}`
+      })
+      .join('\n\n')
+    return `Tables:\n${tables}`
   }
 
-  return tables[0] // Default to first table
+  return deparseResult.value
 }
 
 /**
- * Check if a column is a primary key
- */
-const isPrimaryKeyColumn = (
-  col: Column,
-  table: WorkflowState['schemaData']['tables'][string],
-): boolean => {
-  return Object.values(table.constraints).some(
-    (constraint) =>
-      constraint.type === 'PRIMARY KEY' &&
-      'columnNames' in constraint &&
-      constraint.columnNames.includes(col.name),
-  )
-}
-
-/**
- * Generate DELETE statement
- */
-const generateDeleteStatement = (tableName: string): string => {
-  return `DELETE FROM ${tableName} WHERE id = 1;`
-}
-
-/**
- * Generate UPDATE statement
- */
-const generateUpdateStatement = (
-  table: WorkflowState['schemaData']['tables'][string],
-): string => {
-  const updateColumns = Object.values(table.columns)
-    .filter(
-      (col) =>
-        !isPrimaryKeyColumn(col, table) && !col.name.includes('created_at'),
-    )
-    .slice(0, 2)
-
-  if (updateColumns.length === 0) return ''
-
-  const setClauses = updateColumns
-    .map((col) => `${col.name} = ${generateSampleValue(col.type, col.name)}`)
-    .join(', ')
-
-  return `UPDATE ${table.name} SET ${setClauses} WHERE id = 1;`
-}
-
-/**
- * Generate INSERT statement
- */
-const generateInsertStatement = (
-  table: WorkflowState['schemaData']['tables'][string],
-): string => {
-  const insertColumns = Object.values(table.columns).filter(
-    (col) => !isPrimaryKeyColumn(col, table) && !col.default,
-  )
-
-  if (insertColumns.length === 0) return ''
-
-  const columnNames = insertColumns.map((col) => col.name).join(', ')
-  const values = insertColumns
-    .map((col) => {
-      if (col.name.endsWith('_id') && col.name !== 'id') {
-        return '1' // Reference to existing record
-      }
-      return generateSampleValue(col.type, col.name)
-    })
-    .join(', ')
-
-  return `INSERT INTO ${table.name} (${columnNames}) VALUES (${values});`
-}
-
-/**
- * Generate statements for operation type
- */
-const generateStatementsForOperation = (
-  targetTable: WorkflowState['schemaData']['tables'][string],
-  operationType: ReturnType<typeof getOperationType>,
-): string[] => {
-  const statements: string[] = []
-
-  if (operationType.isDelete) {
-    statements.push(generateDeleteStatement(targetTable.name))
-  } else if (operationType.isUpdate) {
-    const updateSql = generateUpdateStatement(targetTable)
-    if (updateSql) statements.push(updateSql)
-  } else {
-    const insertSql = generateInsertStatement(targetTable)
-    if (insertSql) {
-      if (operationType.isBulk) {
-        for (let i = 0; i < 10; i++) {
-          statements.push(generateInsertStatement(targetTable))
-        }
-      } else {
-        statements.push(insertSql)
-      }
-    }
-  }
-
-  return statements
-}
-
-/**
- * Generate DML statements based on use case type
- */
-const generateDmlForUseCase = (
-  usecase: Usecase,
-  schemaData: WorkflowState['schemaData'],
-): string => {
-  const tables = Object.values(schemaData.tables)
-  const targetTable = findTargetTable(usecase, tables, schemaData)
-
-  if (!targetTable) {
-    return '' // No appropriate table found
-  }
-
-  const statements: string[] = [`-- ${usecase.title}`]
-  const operationType = getOperationType(usecase)
-  const operationStatements = generateStatementsForOperation(
-    targetTable,
-    operationType,
-  )
-
-  statements.push(...operationStatements)
-  return statements.join('\n')
-}
-
-/**
- * Prepare DML Node - Generates DML statements for testing
+ * Prepare DML Node - Generates DML statements for testing using AI agent
  * Based on use cases and schema
  */
 export async function prepareDmlNode(
@@ -380,18 +95,46 @@ export async function prepareDmlNode(
     }
   }
 
-  // Generate DML statements for each use case
-  const dmlStatements: string[] = []
+  // Initialize the DML generation agent
+  const dmlAgent = new DMLGenerationAgent()
 
-  for (const usecase of state.generatedUsecases) {
-    const dml = generateDmlForUseCase(usecase, state.schemaData)
-    if (dml) {
-      dmlStatements.push(dml)
-      dmlStatements.push('') // Empty line between use cases
+  // Format use cases and schema for the agent
+  const formattedUseCases = formatUseCases(state.generatedUsecases)
+  const formattedSchema = formatSchema(state.schemaData)
+
+  const promptVariables: DMLGenerationPromptVariables = {
+    chat_history: state.formattedHistory,
+    user_message: `Use Cases:\n${formattedUseCases}`,
+    schema: formattedSchema,
+  }
+
+  state.logger.log(
+    `[${NODE_NAME}] Generating DML for ${state.generatedUsecases.length} use cases using AI agent`,
+  )
+
+  const retryCount = state.retryCount[NODE_NAME] ?? 0
+
+  const dmlResult = await ResultAsync.fromPromise(
+    dmlAgent.generate(promptVariables),
+    (error) => (error instanceof Error ? error.message : String(error)),
+  )
+
+  if (dmlResult.isErr()) {
+    const errorMessage = dmlResult.error
+    const error = new Error(`[${NODE_NAME}] Failed: ${errorMessage}`)
+    state.logger.error(error.message)
+
+    return {
+      ...state,
+      error,
+      retryCount: {
+        ...state.retryCount,
+        [NODE_NAME]: retryCount + 1,
+      },
     }
   }
 
-  const finalDml = dmlStatements.join('\n').trim()
+  const result = dmlResult.value
 
   state.logger.log(
     `[${NODE_NAME}] Generated DML for ${state.generatedUsecases.length} use cases`,
@@ -400,7 +143,7 @@ export async function prepareDmlNode(
 
   return {
     ...state,
-    dmlStatements: finalDml,
+    dmlStatements: result.dmlStatements,
     error: undefined,
   }
 }

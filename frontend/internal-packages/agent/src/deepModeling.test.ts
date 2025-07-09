@@ -10,6 +10,7 @@ vi.mock('./langchain/agents', () => ({
   QAGenerateUsecaseAgent: vi.fn(),
   QADMLValidationAgent: vi.fn(),
   PMAnalysisAgent: vi.fn(),
+  DMLGenerationAgent: vi.fn(),
 }))
 
 // Mock the schema converter
@@ -45,6 +46,7 @@ describe('Chat Workflow', () => {
   let MockDatabaseSchemaBuildAgent: ReturnType<typeof vi.fn>
   let MockQAGenerateUsecaseAgent: ReturnType<typeof vi.fn>
   let MockPMAnalysisAgent: ReturnType<typeof vi.fn>
+  let MockDMLGenerationAgent: ReturnType<typeof vi.fn>
   let mockRepositories: Repositories
   let mockSchemaRepository: SchemaRepository
   let mockLogger: NodeLogger
@@ -136,6 +138,7 @@ describe('Chat Workflow', () => {
     )
     MockPMAnalysisAgent = vi.mocked(agentsModule.PMAnalysisAgent)
     MockQAGenerateUsecaseAgent = vi.mocked(agentsModule.QAGenerateUsecaseAgent)
+    MockDMLGenerationAgent = vi.mocked(agentsModule.DMLGenerationAgent)
 
     // Create mock repositories
     mockSchemaRepository = {
@@ -200,6 +203,12 @@ describe('Chat Workflow', () => {
             description: 'Mocked use case description',
           },
         ],
+      }),
+    }))
+    MockDMLGenerationAgent.mockImplementation(() => ({
+      generate: vi.fn().mockResolvedValue({
+        dmlStatements:
+          "-- Mocked DML statements\nINSERT INTO users (email, name) VALUES ('test@example.com', 'Test User');",
       }),
     }))
 

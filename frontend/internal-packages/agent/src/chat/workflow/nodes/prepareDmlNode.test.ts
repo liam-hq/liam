@@ -6,6 +6,7 @@ import {
   type MockedFunction,
   vi,
 } from 'vitest'
+import type { DMLGenerationPromptVariables } from '../../../langchain/agents/dmlGenerationAgent'
 import type { Usecase } from '../../../langchain/agents/qaGenerateUsecaseAgent/agent'
 import { getWorkflowNodeProgress } from '../shared/getWorkflowNodeProgress'
 import type { WorkflowState } from '../types'
@@ -14,6 +15,29 @@ import { prepareDmlNode } from './prepareDmlNode'
 // Mock dependencies
 vi.mock('../shared/getWorkflowNodeProgress', () => ({
   getWorkflowNodeProgress: vi.fn(),
+}))
+
+vi.mock('../../../langchain/agents', () => ({
+  DMLGenerationAgent: vi.fn(),
+}))
+
+vi.mock('@liam-hq/db-structure', () => ({
+  postgresqlSchemaDeparser: vi.fn().mockReturnValue({
+    value: `CREATE TABLE users (
+  id int NOT NULL,
+  email varchar NOT NULL,
+  name varchar NOT NULL,
+  created_at timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE posts (
+  id int NOT NULL,
+  user_id int NOT NULL,
+  title varchar NOT NULL,
+  content text
+);`,
+    errors: [],
+  }),
 }))
 
 describe('prepareDmlNode', () => {
@@ -36,8 +60,23 @@ describe('prepareDmlNode', () => {
   }
   let baseState: WorkflowState
 
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.clearAllMocks()
+
+    // Set default mock behavior for DMLGenerationAgent
+    const { DMLGenerationAgent } = await import('../../../langchain/agents')
+    const mockAgent = {
+      generate: vi.fn().mockResolvedValue({
+        dmlStatements: `-- User Registration
+INSERT INTO users (email, name) VALUES ('test@example.com', 'Test User');
+
+-- Create Post
+INSERT INTO posts (user_id, title, content) VALUES (1, 'Sample Post', 'Sample content for testing');`,
+      }),
+    }
+    vi.mocked(DMLGenerationAgent).mockReturnValue(
+      mockAgent as unknown as InstanceType<typeof DMLGenerationAgent>,
+    )
 
     // Mock logger
     mockLogger = {
@@ -193,6 +232,87 @@ describe('prepareDmlNode', () => {
     vi.mocked(getWorkflowNodeProgress).mockReturnValue(70)
   })
 
+  describe('Agent-based DML Generation', () => {
+    it('should use DMLGenerationAgent to generate DML statements', async () => {
+      const { DMLGenerationAgent } = await import('../../../langchain/agents')
+      const mockGenerate = vi.fn().mockResolvedValue({
+        dmlStatements: `-- User Registration
+INSERT INTO users (email, name) VALUES ('agent@example.com', 'Agent User');
+
+-- Create Post
+INSERT INTO posts (user_id, title, content) VALUES (1, 'Agent Post', 'Content from agent');`,
+      })
+
+      vi.mocked(DMLGenerationAgent).mockReturnValue({
+        generate: mockGenerate,
+      } as unknown as InstanceType<typeof DMLGenerationAgent>)
+
+      const result = await prepareDmlNode(baseState)
+
+      // Verify agent was instantiated
+      expect(DMLGenerationAgent).toHaveBeenCalledTimes(1)
+
+      // Verify agent.generate was called with correct parameters
+      expect(mockGenerate).toHaveBeenCalledTimes(1)
+      const callArgs = mockGenerate.mock
+        .calls[0]?.[0] as DMLGenerationPromptVariables
+      expect(callArgs.chat_history).toBe(baseState.formattedHistory)
+      expect(callArgs.user_message).toContain('Use Cases:')
+      expect(callArgs.schema).toContain('CREATE TABLE')
+
+      // Verify the result contains agent-generated DML
+      expect(result.dmlStatements).toContain('agent@example.com')
+      expect(result.dmlStatements).toContain('Agent Post')
+      expect(result.error).toBeUndefined()
+    })
+
+    it('should format use cases and schema properly for the agent', async () => {
+      const { DMLGenerationAgent } = await import('../../../langchain/agents')
+      const mockGenerate = vi.fn().mockResolvedValue({
+        dmlStatements: 'Generated DML',
+      })
+
+      vi.mocked(DMLGenerationAgent).mockReturnValue({
+        generate: mockGenerate,
+      } as unknown as InstanceType<typeof DMLGenerationAgent>)
+
+      await prepareDmlNode(baseState)
+
+      const callArgs = mockGenerate.mock
+        .calls[0]?.[0] as DMLGenerationPromptVariables
+
+      // Check use cases formatting
+      expect(callArgs.user_message).toContain('User Registration')
+      expect(callArgs.user_message).toContain('functional')
+      expect(callArgs.user_message).toContain('user_management')
+      expect(callArgs.user_message).toContain('Create Post')
+
+      // Check schema formatting
+      expect(callArgs.schema).toContain('users')
+      expect(callArgs.schema).toContain('email')
+      expect(callArgs.schema).toContain('posts')
+      expect(callArgs.schema).toContain('user_id')
+    })
+
+    it('should handle agent errors gracefully', async () => {
+      const { DMLGenerationAgent } = await import('../../../langchain/agents')
+      const mockGenerate = vi
+        .fn()
+        .mockRejectedValue(new Error('Agent generation failed'))
+
+      vi.mocked(DMLGenerationAgent).mockReturnValue({
+        generate: mockGenerate,
+      } as unknown as InstanceType<typeof DMLGenerationAgent>)
+
+      const result = await prepareDmlNode(baseState)
+
+      expect(result.error).toBeInstanceOf(Error)
+      expect(result.error?.message).toContain('[prepareDmlNode] Failed')
+      expect(result.error?.message).toContain('Agent generation failed')
+      expect(result.dmlStatements).toBeUndefined()
+    })
+  })
+
   describe('Success scenarios', () => {
     it('should generate DML statements for all use cases', async () => {
       const result = await prepareDmlNode(baseState)
@@ -228,6 +348,14 @@ describe('prepareDmlNode', () => {
     })
 
     it('should generate UPDATE statements for update use cases', async () => {
+      const { DMLGenerationAgent } = await import('../../../langchain/agents')
+      vi.mocked(DMLGenerationAgent).mockReturnValue({
+        generate: vi.fn().mockResolvedValue({
+          dmlStatements: `-- Update User Profile
+UPDATE users SET name = 'Updated User' WHERE id = 1;`,
+        }),
+      } as unknown as InstanceType<typeof DMLGenerationAgent>)
+
       const stateWithUpdateUseCase = {
         ...baseState,
         generatedUsecases: [
@@ -249,6 +377,14 @@ describe('prepareDmlNode', () => {
     })
 
     it('should generate DELETE statements for deletion use cases', async () => {
+      const { DMLGenerationAgent } = await import('../../../langchain/agents')
+      vi.mocked(DMLGenerationAgent).mockReturnValue({
+        generate: vi.fn().mockResolvedValue({
+          dmlStatements: `-- Delete Post
+DELETE FROM posts WHERE id = 1;`,
+        }),
+      } as unknown as InstanceType<typeof DMLGenerationAgent>)
+
       const stateWithDeleteUseCase = {
         ...baseState,
         generatedUsecases: [
@@ -274,7 +410,7 @@ describe('prepareDmlNode', () => {
 
       expect(mockLogger.log).toHaveBeenCalledWith('[prepareDmlNode] Started')
       expect(mockLogger.log).toHaveBeenCalledWith(
-        expect.stringContaining('[prepareDmlNode] Generated DML for'),
+        expect.stringContaining('[prepareDmlNode] Generating DML for'),
       )
       expect(mockLogger.log).toHaveBeenCalledWith('[prepareDmlNode] Completed')
     })
@@ -345,7 +481,15 @@ describe('prepareDmlNode', () => {
     })
 
     it('should handle DML generation errors gracefully', async () => {
-      // Test with malformed use case that might cause generation issues
+      // Even with malformed use case, agent should still be called and might generate something
+      const { DMLGenerationAgent } = await import('../../../langchain/agents')
+      vi.mocked(DMLGenerationAgent).mockReturnValue({
+        generate: vi.fn().mockResolvedValue({
+          dmlStatements:
+            "-- No valid use cases found\n-- Generated minimal test data\nINSERT INTO users (email, name) VALUES ('default@test.com', 'Default User');",
+        }),
+      } as unknown as InstanceType<typeof DMLGenerationAgent>)
+
       const stateWithMalformedUseCase = {
         ...baseState,
         generatedUsecases: [
@@ -431,6 +575,15 @@ describe('prepareDmlNode', () => {
         } satisfies WorkflowState['schemaData'] as WorkflowState['schemaData'],
       }
 
+      const { DMLGenerationAgent } = await import('../../../langchain/agents')
+      vi.mocked(DMLGenerationAgent).mockReturnValue({
+        generate: vi.fn().mockResolvedValue({
+          dmlStatements: `-- Complex table test data
+INSERT INTO complex_table (id, bool_col, date_col, json_col, decimal_col) 
+VALUES (1, true, '2024-01-15', '{"key": "value"}', 123.45);`,
+        }),
+      } as unknown as InstanceType<typeof DMLGenerationAgent>)
+
       const result = await prepareDmlNode(stateWithComplexSchema)
 
       expect(result.dmlStatements).toBeDefined()
@@ -441,6 +594,19 @@ describe('prepareDmlNode', () => {
     })
 
     it('should handle non-functional requirements', async () => {
+      const { DMLGenerationAgent } = await import('../../../langchain/agents')
+      vi.mocked(DMLGenerationAgent).mockReturnValue({
+        generate: vi.fn().mockResolvedValue({
+          dmlStatements: `-- Performance Test
+-- Generating bulk data for performance testing
+INSERT INTO users (email, name) VALUES ('user1@test.com', 'User 1');
+INSERT INTO users (email, name) VALUES ('user2@test.com', 'User 2');
+INSERT INTO users (email, name) VALUES ('user3@test.com', 'User 3');
+INSERT INTO users (email, name) VALUES ('user4@test.com', 'User 4');
+INSERT INTO users (email, name) VALUES ('user5@test.com', 'User 5');`,
+        }),
+      } as unknown as InstanceType<typeof DMLGenerationAgent>)
+
       const stateWithNonFunctionalReq = {
         ...baseState,
         generatedUsecases: [
@@ -495,6 +661,14 @@ describe('prepareDmlNode', () => {
     })
 
     it('should handle special characters in use case titles', async () => {
+      const { DMLGenerationAgent } = await import('../../../langchain/agents')
+      vi.mocked(DMLGenerationAgent).mockReturnValue({
+        generate: vi.fn().mockResolvedValue({
+          dmlStatements: `-- User's "Special" Test & More
+INSERT INTO users (email, name) VALUES ('special@test.com', 'Special User');`,
+        }),
+      } as unknown as InstanceType<typeof DMLGenerationAgent>)
+
       const stateWithSpecialChars = {
         ...baseState,
         generatedUsecases: [
