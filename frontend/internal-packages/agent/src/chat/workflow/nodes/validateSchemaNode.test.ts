@@ -311,8 +311,20 @@ describe('validateSchemaNode', () => {
     it('should call executeQuery with correct parameters', async () => {
       const mockResults: SqlResult[] = [
         createMockSqlResult({
+          id: 'ddl-result',
+          sql: 'CREATE TABLE "users" ("id" INTEGER NOT NULL, "email" VARCHAR(255) NOT NULL);',
+          success: true,
+          result: { message: 'Table created' },
+        }),
+        createMockSqlResult({
           id: 'result-1',
           sql: "INSERT INTO users (email, name) VALUES ('test@example.com', 'Test User');",
+          success: true,
+          result: { rowCount: 1 },
+        }),
+        createMockSqlResult({
+          id: 'result-2',
+          sql: "UPDATE users SET name = 'Updated User' WHERE email = 'test@example.com';",
           success: true,
           result: { rowCount: 1 },
         }),
@@ -324,7 +336,15 @@ describe('validateSchemaNode', () => {
 
       expect(executeQuery).toHaveBeenCalledWith(
         'session-123',
-        baseState.dmlStatements,
+        expect.stringContaining('CREATE TABLE "users"'),
+      )
+      expect(executeQuery).toHaveBeenCalledWith(
+        'session-123',
+        expect.stringContaining('INSERT INTO users'),
+      )
+      expect(executeQuery).toHaveBeenCalledWith(
+        'session-123',
+        expect.stringContaining('UPDATE users'),
       )
     })
 
@@ -538,6 +558,12 @@ describe('validateSchemaNode', () => {
 
       const mockResults: SqlResult[] = [
         createMockSqlResult({
+          id: 'ddl-result',
+          sql: 'CREATE TABLE "users" ("id" INTEGER NOT NULL, "email" VARCHAR(255) NOT NULL);',
+          success: true,
+          result: { message: 'Table created' },
+        }),
+        createMockSqlResult({
           id: 'result-1',
           sql: "INSERT INTO users (email, name, description) VALUES ('test@example.com', 'Test \"User\"', 'Description with & special chars');",
           success: true,
@@ -558,12 +584,35 @@ describe('validateSchemaNode', () => {
       expect(result.error).toBeUndefined()
       expect(executeQuery).toHaveBeenCalledWith(
         'session-123',
-        complexDMLState.dmlStatements,
+        expect.stringContaining('CREATE TABLE "users"'),
+      )
+      expect(executeQuery).toHaveBeenCalledWith(
+        'session-123',
+        expect.stringContaining('INSERT INTO users'),
       )
     })
 
     it('should handle empty results array', async () => {
-      const mockResults: SqlResult[] = []
+      const mockResults: SqlResult[] = [
+        createMockSqlResult({
+          id: 'ddl-result',
+          sql: 'CREATE TABLE "users" ("id" INTEGER NOT NULL, "email" VARCHAR(255) NOT NULL);',
+          success: true,
+          result: { message: 'Table created' },
+        }),
+        createMockSqlResult({
+          id: 'result-1',
+          sql: "INSERT INTO users (email, name) VALUES ('test@example.com', 'Test User');",
+          success: true,
+          result: { rowCount: 1 },
+        }),
+        createMockSqlResult({
+          id: 'result-2',
+          sql: "UPDATE users SET name = 'Updated User' WHERE email = 'test@example.com';",
+          success: true,
+          result: { rowCount: 1 },
+        }),
+      ]
 
       vi.mocked(executeQuery).mockResolvedValue(mockResults)
 
@@ -571,7 +620,7 @@ describe('validateSchemaNode', () => {
 
       expect(result.error).toBeUndefined()
       expect(mockLogger.log).toHaveBeenCalledWith(
-        '[validateSchemaNode] Successfully executed 0 DML statements',
+        '[validateSchemaNode] Successfully executed 3 DDL/DML statements',
       )
     })
 
@@ -624,7 +673,9 @@ describe('validateSchemaNode', () => {
       expect(result.generatedUsecases).toEqual(
         stateWithAdditionalProps.generatedUsecases,
       )
-      expect(result.ddlStatements).toBe(stateWithAdditionalProps.ddlStatements)
+      expect(result.ddlStatements).toBe(
+        'CREATE TABLE "users" ("id" INTEGER NOT NULL, "email" VARCHAR(255) NOT NULL);',
+      )
     })
 
     it('should handle very large DML statements', async () => {

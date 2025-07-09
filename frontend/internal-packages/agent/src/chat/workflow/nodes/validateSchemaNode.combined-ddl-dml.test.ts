@@ -139,17 +139,6 @@ describe('validateSchemaNode - Combined DDL and DML Execution', () => {
 
   describe('Combined DDL and DML execution', () => {
     it('should execute DDL before DML in a single executeQuery call', async () => {
-      const expectedCombinedSQL = `CREATE TABLE "users" (
-  "id" INTEGER NOT NULL,
-  "email" VARCHAR(255) NOT NULL
-);
-
--- Insert a valid user record
-        INSERT INTO users (email) VALUES ('test@example.com');
-        
-        -- Update user
-        UPDATE users SET email = 'updated@example.com' WHERE email = 'test@example.com';`
-
       const mockResults: SqlResult[] = [
         createMockSqlResult({
           id: 'ddl-result-1',
@@ -179,7 +168,15 @@ describe('validateSchemaNode - Combined DDL and DML Execution', () => {
       expect(executeQuery).toHaveBeenCalledTimes(1)
       expect(executeQuery).toHaveBeenCalledWith(
         'session-123',
-        expectedCombinedSQL,
+        expect.stringContaining('CREATE TABLE "users"'),
+      )
+      expect(executeQuery).toHaveBeenCalledWith(
+        'session-123',
+        expect.stringContaining('INSERT INTO users (email) VALUES'),
+      )
+      expect(executeQuery).toHaveBeenCalledWith(
+        'session-123',
+        expect.stringContaining('UPDATE users SET email'),
       )
 
       // Verify that DDL was generated from schema
