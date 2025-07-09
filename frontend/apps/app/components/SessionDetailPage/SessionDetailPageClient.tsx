@@ -100,14 +100,17 @@ Please suggest a specific solution to resolve this problem.`
   const { timelineItems, addOrUpdateTimelineItem } =
     useRealtimeTimelineItems(designSession)
   const isGenerating = useMemo(() => {
-    return timelineItems.some((item) => {
-      return (
-        item.role === 'progress' &&
-        'progress' in item &&
-        typeof item.progress === 'number' &&
-        item.progress < 100
-      )
-    })
+    const progressItems = timelineItems.filter(
+      (item) => item.role === 'progress',
+    )
+    if (progressItems.length === 0) return false
+
+    const latestProgressItem = progressItems[progressItems.length - 1]
+    return (
+      'progress' in latestProgressItem &&
+      typeof latestProgressItem.progress === 'number' &&
+      latestProgressItem.progress < 100
+    )
   }, [timelineItems])
 
   // Show loading state while schema is being fetched

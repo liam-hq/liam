@@ -6,7 +6,6 @@ import { AgentMessage } from './components/AgentMessage'
 import { ProcessIndicator } from './components/ProcessIndicator'
 import { UserMessage } from './components/UserMessage'
 import { VersionMessage } from './components/VersionMessage'
-import styles from './TimelineItem.module.css'
 
 type Props = TimelineItemProps
 
@@ -14,11 +13,11 @@ export const TimelineItem: FC<Props> = (props) => {
   // Handle schema_version role separately
   if ('building_schema_version_id' in props) {
     return (
-      <div className={styles.messageContainer}>
+      <AgentMessage state="default">
         <VersionMessage
           buildingSchemaVersionId={props.building_schema_version_id}
         />
-      </div>
+      </AgentMessage>
     )
   }
 
@@ -26,13 +25,15 @@ export const TimelineItem: FC<Props> = (props) => {
   if (props.role === 'progress' && 'progress' in props) {
     const progress = props.progress
     return (
-      <ProcessIndicator
-        initialExpanded
-        title="Processing AI Message"
-        subtitle={props.content}
-        progress={progress}
-        status={progress >= 100 ? 'complete' : 'processing'}
-      />
+      <AgentMessage state="default" message={props.content}>
+        <ProcessIndicator
+          initialExpanded
+          title="Processing AI Message"
+          subtitle={props.content}
+          progress={progress}
+          status={progress >= 100 ? 'complete' : 'processing'}
+        />
+      </AgentMessage>
     )
   }
 
@@ -48,25 +49,17 @@ export const TimelineItem: FC<Props> = (props) => {
       })
     : null
 
-  return (
-    <div className={styles.messageContainer}>
-      {role === 'user' ? (
-        <UserMessage
-          content={content}
-          timestamp={timestamp}
-          avatarSrc={avatarSrc}
-          avatarAlt={avatarAlt}
-          initial={initial}
-        />
-      ) : (
-        <AgentMessage
-          state="default"
-          message={content}
-          time={formattedTime || ''}
-        >
-          {children}
-        </AgentMessage>
-      )}
-    </div>
+  return role === 'user' ? (
+    <UserMessage
+      content={content}
+      timestamp={timestamp}
+      avatarSrc={avatarSrc}
+      avatarAlt={avatarAlt}
+      initial={initial}
+    />
+  ) : (
+    <AgentMessage state="default" message={content} time={formattedTime || ''}>
+      {children}
+    </AgentMessage>
   )
 }
