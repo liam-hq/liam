@@ -8,6 +8,7 @@ import type { NodeLogger } from './utils/nodeLogger'
 vi.mock('./langchain/agents', () => ({
   DatabaseSchemaBuildAgent: vi.fn(),
   QAGenerateUsecaseAgent: vi.fn(),
+  QADMLValidationAgent: vi.fn(),
   PMAnalysisAgent: vi.fn(),
 }))
 
