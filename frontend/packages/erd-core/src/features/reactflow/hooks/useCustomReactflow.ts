@@ -1,4 +1,4 @@
-import { type FitViewOptions, useReactFlow } from '@xyflow/react'
+import { useReactFlow } from '@xyflow/react'
 import { useCallback } from 'react'
 import { MAX_ZOOM, MIN_ZOOM } from '../constants'
 
@@ -7,11 +7,14 @@ export const useCustomReactflow = () => {
   const { fitView: primitiveFitView, ...restFunctions } = reactFlowInstance
 
   const fitView = useCallback(
-    async (options?: FitViewOptions) => {
-      // NOTE: Added setTimeout() to reference the updated nodes after setNodes() updates the value.
-      await new Promise<void>((resolve) =>
-        requestAnimationFrame(() => resolve())
-      )
+    async (options = {}) => {
+      // Use a more reliable timing approach that works in both browser and test environments
+      // This ensures UI updates complete before calling fitView
+      await new Promise((resolve) => {
+        // Use setTimeout with minimal delay for better test compatibility
+        setTimeout(resolve, 50)
+      })
+
       primitiveFitView({
         minZoom: MIN_ZOOM,
         maxZoom: MAX_ZOOM,
