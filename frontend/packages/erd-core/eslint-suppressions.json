@@ -1,0 +1,22 @@
+{
+  "src/features/erd/components/ERDRenderer/CommandPalette/CommandPaletteProvider/hooks.ts": {
+    "no-throw-error/no-throw-error": {
+      "count": 1
+    }
+  },
+  "src/providers/versionProvider.tsx": {
+    "no-throw-error/no-throw-error": {
+      "count": 1
+    }
+  },
+  "src/stores/schema/hooks.ts": {
+    "no-throw-error/no-throw-error": {
+      "count": 1
+    }
+  },
+  "src/stores/userEditing/hooks.ts": {
+    "no-throw-error/no-throw-error": {
+      "count": 1
+    }
+  }
+}
