@@ -100,14 +100,48 @@ Please suggest a specific solution to resolve this problem.`
   const { timelineItems, addOrUpdateTimelineItem } =
     useRealtimeTimelineItems(designSession)
   const isGenerating = useMemo(() => {
-    return timelineItems.some((item) => {
+    // Check if there's an error message after the last progress item
+    const hasErrorAfterProgress = timelineItems.some((item, index) => {
+      // Look for messages that contain "error" or "Error" - check all roles
+      if (typeof item.content !== 'string') {
+        return false
+      }
+
+      const isErrorMessage = item.content.toLowerCase().includes('error')
+      if (!isErrorMessage) return false
+
+      // Check if there's a progress item before this error
+      const previousProgressIndex = timelineItems
+        .slice(0, index)
+        .findLastIndex((prevItem) => prevItem.role === 'progress')
+
+      return previousProgressIndex >= 0
+    })
+
+    // If there's an error after progress, stop generating
+    if (hasErrorAfterProgress) {
+      return false
+    }
+
+    // Find the most recent progress item
+    const progressItems = timelineItems.filter((item) => {
       return (
         item.role === 'progress' &&
         'progress' in item &&
-        typeof item.progress === 'number' &&
-        item.progress < 100
+        typeof item.progress === 'number'
       )
     })
+
+    // If no progress items, not generating
+    if (progressItems.length === 0) {
+      return false
+    }
+
+    // Get the most recent progress item (assuming they're ordered by timestamp)
+    const latestProgress = progressItems[progressItems.length - 1]
+
+    // Only consider generating if the latest progress is less than 100
+    return 'progress' in latestProgress && latestProgress.progress < 100
   }, [timelineItems])
 
   // Show loading state while schema is being fetched
