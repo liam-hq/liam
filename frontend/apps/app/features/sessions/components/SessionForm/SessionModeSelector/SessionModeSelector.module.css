@@ -3,6 +3,7 @@
   display: flex;
   gap: var(--spacing-6);
   justify-content: center;
+  position: relative;
 }
 
 .modeButton {
@@ -19,17 +20,30 @@
   font-size: var(--font-size-4);
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: color 0.2s ease;
+  position: relative;
+  z-index: 2;
 }
 
 .modeButton:hover {
-  background-color: var(--overlay-10);
   color: var(--global-foreground);
 }
 
 .modeButtonActive {
-  background-color: var(--overlay-10);
   color: var(--global-foreground);
+}
+
+.modeButtonBackground {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  background-color: var(--overlay-10);
+  border-radius: var(--border-radius-full);
+  transition:
+    transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 1;
 }
 
 .modeButtonIcon {

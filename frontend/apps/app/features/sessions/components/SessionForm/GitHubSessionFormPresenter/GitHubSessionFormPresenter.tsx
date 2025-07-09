@@ -3,6 +3,7 @@ import clsx from 'clsx'
 import type { ChangeEvent, DragEvent, FC } from 'react'
 import { useEffect, useRef, useState } from 'react'
 import type { Projects } from '@/components/CommonLayout/AppBar/ProjectsDropdownMenu/services/getProjects'
+import { createAccessibleOpacityTransition } from '@/utils/accessibleTransitions'
 import { AttachmentPreview } from '../AttachmentPreview'
 import type { Branch } from '../BranchesDropdown'
 import { BranchesDropdown } from '../BranchesDropdown'
@@ -21,6 +22,7 @@ type Props = {
   isPending: boolean
   onProjectChange: (projectId: string) => void
   formAction: (formData: FormData) => void
+  isTransitioning?: boolean
 }
 
 export const GitHubSessionFormPresenter: FC<Props> = ({
@@ -33,6 +35,7 @@ export const GitHubSessionFormPresenter: FC<Props> = ({
   isPending,
   onProjectChange,
   formAction,
+  isTransitioning = false,
 }) => {
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const [hasContent, setHasContent] = useState(false)
@@ -121,7 +124,10 @@ export const GitHubSessionFormPresenter: FC<Props> = ({
         onDragOver={handleDrag}
         onDrop={handleDrop}
       >
-        <form action={formAction}>
+        <form
+          action={formAction}
+          style={createAccessibleOpacityTransition(!isTransitioning)}
+        >
           <div className={styles.formContent}>
             {attachments.length > 0 && (
               <div className={styles.attachmentsContainer}>

@@ -2,6 +2,7 @@ import { Button, RemoveButton } from '@liam-hq/ui'
 import clsx from 'clsx'
 import { type ChangeEvent, type FC, useRef, useState } from 'react'
 import type { FormatType } from '../../../../../components/FormatIcon/FormatIcon'
+import { createAccessibleOpacityTransition } from '../../../../../utils/accessibleTransitions'
 import { AttachmentsContainer } from '../AttachmentsContainer'
 import { useAutoResizeTextarea } from '../hooks/useAutoResizeTextarea'
 import { useFileAttachments } from '../hooks/useFileAttachments'
@@ -20,12 +21,14 @@ type Props = {
   formError?: string
   isPending: boolean
   formAction: (formData: FormData) => void
+  isTransitioning?: boolean
 }
 
 export const URLSessionFormPresenter: FC<Props> = ({
   formError,
   isPending,
   formAction,
+  isTransitioning = false,
 }) => {
   const [urlPath, setUrlPath] = useState('')
   const [textContent, setTextContent] = useState('')
@@ -192,7 +195,11 @@ export const URLSessionFormPresenter: FC<Props> = ({
         attachmentDragActive && styles.dragActive,
       )}
     >
-      <form action={formAction} className={styles.form}>
+      <form
+        action={formAction}
+        className={styles.form}
+        style={createAccessibleOpacityTransition(!isTransitioning)}
+      >
         {schemaContent && (
           <input type="hidden" name="schemaContent" value={schemaContent} />
         )}

@@ -1,6 +1,7 @@
 import { Button } from '@liam-hq/ui'
 import clsx from 'clsx'
 import { type ChangeEvent, type FC, useRef, useState } from 'react'
+import { createAccessibleOpacityTransition } from '@/utils/accessibleTransitions'
 import {
   FormatIcon,
   type FormatType,
@@ -20,6 +21,7 @@ type Props = {
   formError?: string
   isPending: boolean
   formAction: (formData: FormData) => void
+  isTransitioning?: boolean
 }
 
 // Helper function to handle file processing
@@ -47,6 +49,7 @@ export const UploadSessionFormPresenter: FC<Props> = ({
   formError,
   isPending,
   formAction,
+  isTransitioning = false,
 }) => {
   const [isHovered, setIsHovered] = useState(false)
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
@@ -138,7 +141,10 @@ export const UploadSessionFormPresenter: FC<Props> = ({
         (attachmentDragActive || schemaDragActive) && styles.dragActive,
       )}
     >
-      <form action={formAction}>
+      <form
+        action={formAction}
+        style={createAccessibleOpacityTransition(!isTransitioning)}
+      >
         {selectedFile && schemaStatus === 'valid' && selectedFormat && (
           <input type="hidden" name="schemaFormat" value={selectedFormat} />
         )}
