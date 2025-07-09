@@ -54,7 +54,7 @@ jobs:
           permission-contents: write
           permission-pull-requests: write
           permission-issues: write
-          repositories: ${{ github.repository }}
+          repositories: liam
 
       - name: Run Claude Code Action
         uses: anthropics/claude-code-action@91c510a769db0f9b79df0efbdded0c29c033f846 # beta
