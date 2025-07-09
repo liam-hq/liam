@@ -135,6 +135,10 @@ export const CommandPalette: FC = () => {
                   targetColumnCardinalities: undefined,
                   showMode: 'ALL_FIELDS',
                 }}
+                draggable={false}
+                selectable={false}
+                deletable={false}
+                selected={false}
                 dragging={false}
                 isConnectable={false}
                 positionAbsoluteX={0}
