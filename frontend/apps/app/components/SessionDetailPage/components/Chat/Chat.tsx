@@ -11,6 +11,7 @@ import styles from './Chat.module.css'
 import { ChatInput } from './components/ChatInput'
 import { TimelineItem } from './components/TimelineItem'
 import { sendChatMessage } from './services'
+import { useScrollToBottom } from './useScrollToBottom'
 
 type DesignSession = {
   id: string
@@ -30,31 +31,25 @@ interface Props {
 export const Chat: FC<Props> = ({
   schemaData,
   designSession,
-  timelineItems: realtimeTimelineItems,
+  timelineItems,
   onMessageSend,
 }) => {
   const [isLoading, startTransition] = useTransition()
-  const messagesEndRef = useRef<HTMLDivElement>(null)
-
-  // Scroll to bottom when component mounts or messages change
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [])
+  const { containerRef, scrollToBottom } = useScrollToBottom<HTMLDivElement>(
+    timelineItems.length,
+  )
 
   // Start AI response without saving user message (for auto-start scenarios)
   const startAIResponse = async (content: string) => {
     // Send chat message to API
     const result = await sendChatMessage({
       userInput: content,
-      timelineItems: realtimeTimelineItems,
+      timelineItems,
       designSession,
     })
 
     if (result.success) {
-      // Scroll to bottom after successful completion
-      setTimeout(() => {
-        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-      }, 10)
+      scrollToBottom()
     }
   }
 
@@ -76,9 +71,9 @@ export const Chat: FC<Props> = ({
 
   return (
     <div className={styles.wrapper}>
-      <div className={styles.messagesContainer}>
+      <div className={styles.messagesContainer} ref={containerRef}>
         {/* Display all timeline items */}
-        {realtimeTimelineItems.map((timelineItem) => (
+        {timelineItems.map((timelineItem) => (
           <TimelineItem key={timelineItem.id} {...timelineItem} />
         ))}
         {isLoading && (
@@ -88,7 +83,6 @@ export const Chat: FC<Props> = ({
             <div className={styles.loadingDot} />
           </div>
         )}
-        <div ref={messagesEndRef} />
       </div>
       <ChatInput
         onSendMessage={handleSendMessage}
