@@ -52,6 +52,7 @@ export const createAnnotations = () => {
     retryCount: Annotation<Record<string, number>>,
 
     ddlStatements: Annotation<string | undefined>,
+    dmlStatements: Annotation<string | undefined>,
 
     // DDL execution retry mechanism
     shouldRetryWithDesignSchema: Annotation<boolean | undefined>,

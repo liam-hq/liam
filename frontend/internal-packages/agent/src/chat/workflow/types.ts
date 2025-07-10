@@ -22,6 +22,7 @@ export type WorkflowState = {
   retryCount: Record<string, number>
 
   ddlStatements?: string | undefined
+  dmlStatements?: string | undefined
 
   // DDL execution retry mechanism
   shouldRetryWithDesignSchema?: boolean | undefined
