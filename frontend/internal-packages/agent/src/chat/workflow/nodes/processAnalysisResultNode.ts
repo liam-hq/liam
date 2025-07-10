@@ -43,7 +43,7 @@ export async function processAnalysisResultNode(
       error: configurableResult.error,
     }
   }
-  const { logger } = configurableResult.value
+  const { logger, repositories } = configurableResult.value
 
   logger.log(`[${NODE_NAME}] Started`)
 
@@ -106,7 +106,11 @@ export async function processAnalysisResultNode(
 
   return analysisResult.match(
     async (result) => {
-      await logAssistantMessage(state, 'Requirements analysis completed')
+      await logAssistantMessage(
+        state,
+        repositories,
+        'Requirements analysis completed',
+      )
 
       logger.log(`[${NODE_NAME}] Completed`)
 
@@ -125,6 +129,7 @@ export async function processAnalysisResultNode(
 
       await logAssistantMessage(
         state,
+        repositories,
         'Error occurred during requirements analysis processing',
       )
 
