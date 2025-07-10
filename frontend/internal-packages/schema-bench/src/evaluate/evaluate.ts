@@ -146,9 +146,14 @@ const validatePrimaryKeys = (
     return false
   }
 
-  return referencePKs.every(
-    (k: string) => columnMapping[k] && predictPKs.includes(columnMapping[k]),
-  )
+  return referencePKs.every((k: string) => {
+    // For composite primary keys (e.g., "(col1, col2)"), do direct string comparison
+    if (k.startsWith('(') && k.endsWith(')')) {
+      return predictPKs.includes(k)
+    }
+    // For single column primary keys, use column mapping
+    return columnMapping[k] && predictPKs.includes(columnMapping[k])
+  })
 }
 
 // TODO: Implement constraint validation logic. Now it only checks if the number of constraints matches.
@@ -193,18 +198,49 @@ const extractForeignKeys = (tables: Schema['tables']): ForeignKeyInfo[] => {
 const areForeignKeysMatching = (
   refFk: ForeignKeyInfo,
   predFk: ForeignKeyInfo,
+  tableMapping: Mapping,
+  columnMappings: Record<string, Mapping>,
 ): boolean => {
-  return (
-    refFk.tableName === predFk.tableName &&
-    refFk.constraint.columnName === predFk.constraint.columnName &&
-    refFk.constraint.targetTableName === predFk.constraint.targetTableName &&
-    refFk.constraint.targetColumnName === predFk.constraint.targetColumnName
-  )
+  // Check if source tables match using table mapping
+  const predTableName = Object.entries(tableMapping).find(
+    ([ref, _pred]) => ref === refFk.tableName,
+  )?.[1]
+  if (predTableName !== predFk.tableName) {
+    return false
+  }
+
+  // Check if target tables match using table mapping
+  const predTargetTableName = Object.entries(tableMapping).find(
+    ([ref, _pred]) => ref === refFk.constraint.targetTableName,
+  )?.[1]
+  if (predTargetTableName !== predFk.constraint.targetTableName) {
+    return false
+  }
+
+  // Check if columns match using column mapping for the source table
+  const sourceColumnMapping = columnMappings[refFk.tableName] || {}
+  const predColumnName = sourceColumnMapping[refFk.constraint.columnName]
+  if (predColumnName !== predFk.constraint.columnName) {
+    return false
+  }
+
+  // Check if target columns match using column mapping for the target table
+  const targetColumnMapping =
+    columnMappings[refFk.constraint.targetTableName] || {}
+  const predTargetColumnName =
+    targetColumnMapping[refFk.constraint.targetColumnName]
+  if (predTargetColumnName !== predFk.constraint.targetColumnName) {
+    return false
+  }
+
+  return true
 }
 
 const createForeignKeyMapping = (
   referenceTables: Schema['tables'],
   predictTables: Schema['tables'],
+  tableMapping: Mapping,
+  columnMappings: Record<string, Mapping>,
 ): Mapping => {
   const foreignKeyMapping: Mapping = {}
 
@@ -214,7 +250,7 @@ const createForeignKeyMapping = (
   // Match foreign keys based on table names and column references
   for (const refFk of referenceForeignKeys) {
     for (const predFk of predictForeignKeys) {
-      if (areForeignKeysMatching(refFk, predFk)) {
+      if (areForeignKeysMatching(refFk, predFk, tableMapping, columnMappings)) {
         foreignKeyMapping[refFk.name] = predFk.name
         break
       }
@@ -325,6 +361,8 @@ export const evaluate = async (
   const foreignKeyMapping = createForeignKeyMapping(
     reference.tables,
     predict.tables,
+    tableMapping,
+    allColumnMappings,
   )
 
   const { foreignKeyF1, foreignKeyAllCorrect } = calculateForeignKeyMetrics(

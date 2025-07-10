@@ -1047,8 +1047,8 @@ describe('evaluate', () => {
                 notNull: true,
                 comment: null,
               },
-              author_id: {
-                name: 'author_id',
+              random_field: {
+                name: 'random_field',
                 type: 'INTEGER',
                 default: null,
                 check: null,
@@ -1064,10 +1064,10 @@ describe('evaluate', () => {
                 name: 'pk_posts',
                 columnNames: ['id'],
               },
-              fk_posts_author_id: {
+              fk_posts_random: {
                 type: 'FOREIGN KEY',
-                name: 'fk_posts_author_id',
-                columnName: 'author_id',
+                name: 'fk_posts_random',
+                columnName: 'random_field',
                 targetTableName: 'users',
                 targetColumnName: 'id',
                 updateConstraint: 'NO_ACTION',
