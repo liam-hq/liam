@@ -8,27 +8,20 @@ export const useCustomReactflow = () => {
 
   const fitView = useCallback(
     async (options?: FitViewOptions) => {
-      // Enhanced timing strategy for React Flow v12.5+ and E2E tests
-      return new Promise<void>((resolve) => {
-        const executeFitView = () => {
-          primitiveFitView({
-            minZoom: MIN_ZOOM,
-            maxZoom: MAX_ZOOM,
-            ...options,
-          })
-          resolve()
-        }
-
-        // Use multiple timing strategies for maximum compatibility
-        if (typeof window !== 'undefined') {
-          // Browser environment - use requestAnimationFrame
-          requestAnimationFrame(() => {
-            setTimeout(executeFitView, 20)
-          })
-        } else {
-          // Test environment - use setTimeout with longer delay
-          setTimeout(executeFitView, 100)
-        }
+      // Allow layout to settle before calling fitView
+      await new Promise<void>((resolve) => {
+        requestAnimationFrame(() => {
+          setTimeout(() => {
+            primitiveFitView({
+              padding: 0.1, // default padding of 10%, can override via options
+              minZoom: MIN_ZOOM,
+              maxZoom: MAX_ZOOM,
+              includeHiddenNodes: false,
+              ...options,
+            })
+            resolve()
+          }, 0) // micro delay after frame to ensure DOM is updated
+        })
       })
     },
     [primitiveFitView],
