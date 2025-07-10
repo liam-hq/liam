@@ -140,6 +140,66 @@ const SchemaInfoDisplay: FC<{
   )
 }
 
+// Helper function to check if schema info should be displayed
+const shouldShowSchemaInfo = (
+  status: SchemaStatus,
+  schemaName?: string,
+  detectedFormat?: FormatType,
+  selectedFormat?: FormatType,
+  onFormatChange?: (format: FormatType) => void,
+): boolean => {
+  return (
+    status === 'valid' &&
+    !!schemaName &&
+    !!detectedFormat &&
+    !!selectedFormat &&
+    !!onFormatChange
+  )
+}
+
+// Helper function to create error information object
+const createErrorInfo = (
+  errorMessage?: string,
+  schemaName?: string,
+  errorDetails?: string[],
+): ErrorInfo => {
+  const isUnsupported = errorMessage?.includes('unsupported')
+  return {
+    type: isUnsupported ? 'unsupported' : 'parsing',
+    message: errorMessage || 'Schema validation failed',
+    fileName: schemaName,
+    details: errorDetails?.map((detail) => ({ text: detail })) || [],
+    suggestion: isUnsupported
+      ? undefined
+      : "Confirm you're using ActiveRecord schema DSL, not model definitions.",
+  }
+}
+
+// Error actions component
+const ErrorActions: FC<{
+  errorMessage?: string
+  schemaName?: string
+  errorDetails?: string[]
+  onViewTroubleshootingGuide?: () => void
+}> = ({ errorMessage, schemaName, errorDetails, onViewTroubleshootingGuide }) => (
+  <div className={styles.errorActions}>
+    {errorDetails && errorDetails.length > 0 && (
+      <ViewErrorsCollapsible
+        error={createErrorInfo(errorMessage, schemaName, errorDetails)}
+      />
+    )}
+    {onViewTroubleshootingGuide && (
+      <button
+        type="button"
+        className={styles.troubleshootingLink}
+        onClick={onViewTroubleshootingGuide}
+      >
+        Check out the troubleshooting guide →
+      </button>
+    )}
+  </div>
+)
+
 export const SchemaInfoSection: FC<Props> = ({
   status,
   schemaName,
@@ -178,50 +238,32 @@ export const SchemaInfoSection: FC<Props> = ({
         )}
       </div>
 
-      {status === 'valid' &&
-        schemaName &&
-        detectedFormat &&
-        selectedFormat &&
-        onFormatChange && (
-          <SchemaInfoDisplay
-            variant={variant}
-            schemaName={schemaName}
-            schemaUrl={schemaUrl}
-            detectedFormat={detectedFormat}
-            selectedFormat={selectedFormat}
-            showRemoveButton={showRemoveButton}
-            onFormatChange={onFormatChange}
-            onRemove={onRemove}
-          />
-        )}
+      {shouldShowSchemaInfo(
+        status,
+        schemaName,
+        detectedFormat,
+        selectedFormat,
+        onFormatChange,
+      ) && (
+        <SchemaInfoDisplay
+          variant={variant}
+          schemaName={schemaName!}
+          schemaUrl={schemaUrl}
+          detectedFormat={detectedFormat!}
+          selectedFormat={selectedFormat!}
+          showRemoveButton={showRemoveButton}
+          onFormatChange={onFormatChange!}
+          onRemove={onRemove}
+        />
+      )}
 
       {status === 'invalid' && (
-        <div className={styles.errorActions}>
-          {errorDetails && errorDetails.length > 0 && (
-            <ViewErrorsCollapsible
-              error={{
-                type: errorMessage?.includes('unsupported')
-                  ? 'unsupported'
-                  : 'parsing',
-                message: errorMessage || 'Schema validation failed',
-                fileName: schemaName,
-                details: errorDetails.map((detail) => ({ text: detail })),
-                suggestion: errorMessage?.includes('unsupported')
-                  ? undefined
-                  : "Confirm you're using ActiveRecord schema DSL, not model definitions.",
-              }}
-            />
-          )}
-          {onViewTroubleshootingGuide && (
-            <button
-              type="button"
-              className={styles.troubleshootingLink}
-              onClick={onViewTroubleshootingGuide}
-            >
-              Check out the troubleshooting guide →
-            </button>
-          )}
-        </div>
+        <ErrorActions
+          errorMessage={errorMessage}
+          schemaName={schemaName}
+          errorDetails={errorDetails}
+          onViewTroubleshootingGuide={onViewTroubleshootingGuide}
+        />
       )}
     </div>
   )
