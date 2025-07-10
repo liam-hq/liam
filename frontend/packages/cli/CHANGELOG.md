@@ -1,5 +1,11 @@
 # @liam-hq/cli
 
+## 0.6.4
+
+### Patch Changes
+
+- [#2444](https://github.com/liam-hq/liam/pull/2444) - ✨ Add support for multiple PostgreSQL schemas in Drizzle parser with proper FK resolution / Thanks [@FunamaYukina](https://github.com/FunamaYukina)!
+
 ## 0.6.3
 
 ### Patch Changes
