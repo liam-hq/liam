@@ -8,20 +8,16 @@ export const useCustomReactflow = () => {
 
   const fitView = useCallback(
     async (options?: FitViewOptions) => {
-      // Allow layout to settle before calling fitView
-      await new Promise<void>((resolve) => {
-        requestAnimationFrame(() => {
-          setTimeout(() => {
-            primitiveFitView({
-              padding: 0.1, // default padding of 10%, can override via options
-              minZoom: MIN_ZOOM,
-              maxZoom: MAX_ZOOM,
-              includeHiddenNodes: false,
-              ...options,
-            })
-            resolve()
-          }, 0) // micro delay after frame to ensure DOM is updated
-        })
+      // NOTE: Added setTimeout() to reference the updated nodes after setNodes() updates the value.
+      return new Promise<void>((resolve) => {
+        setTimeout(() => {
+          primitiveFitView({
+            minZoom: MIN_ZOOM,
+            maxZoom: MAX_ZOOM,
+            ...options,
+          })
+          resolve()
+        }, 50)
       })
     },
     [primitiveFitView],

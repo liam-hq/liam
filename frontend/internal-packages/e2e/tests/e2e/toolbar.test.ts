@@ -167,7 +167,7 @@ test('fitview button should make the table nodes fit the viewport', async ({
   const zoomInButton = toolbar.getByTestId('toolbar-icon-button-Zoom in')
 
   // Zoom in to ensure the table is out of viewport
-  for (let i = 0; i < 5; i++) {
+  for (let i = 0; i < 10; i++) {
     await zoomInButton.click()
   }
 
