@@ -37,10 +37,7 @@ export const TidyUpButton: FC<TidyUpButtonProps> = ({
 
     const { nodes } = await computeAutoLayout(getNodes(), getEdges())
     setNodes(nodes)
-    fitView({
-      padding: 0.1,
-      duration: 0,
-    })
+    fitView()
   }, [showMode, getNodes, getEdges, setNodes, fitView, version])
 
   return (

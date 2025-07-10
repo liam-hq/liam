@@ -166,6 +166,7 @@ export const ERDContentInner: FC<Props> = ({
         onNodeMouseEnter={handleMouseEnterNode}
         onNodeMouseLeave={handleMouseLeaveNode}
         onNodeDragStop={handleDragStopNode}
+        fitView
         panOnScroll
         panOnDrag={panOnDrag}
         deleteKeyCode={null} // Turn off because it does not want to be deleted
