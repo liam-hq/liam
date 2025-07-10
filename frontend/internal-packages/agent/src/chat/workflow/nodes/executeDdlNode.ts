@@ -2,7 +2,6 @@ import { postgresqlSchemaDeparser } from '@liam-hq/db-structure'
 import { executeQuery } from '@liam-hq/pglite-server'
 import type { SqlResult } from '@liam-hq/pglite-server/src/types'
 import { WORKFLOW_RETRY_CONFIG } from '../constants'
-import { getWorkflowNodeProgress } from '../shared/getWorkflowNodeProgress'
 import type { WorkflowState } from '../types'
 
 const NODE_NAME = 'executeDdlNode'
@@ -15,17 +14,6 @@ export async function executeDdlNode(
   state: WorkflowState,
 ): Promise<WorkflowState> {
   state.logger.log(`[${NODE_NAME}] Started`)
-
-  // Update progress message if available
-  if (state.progressTimelineItemId) {
-    await state.repositories.schema.updateTimelineItem(
-      state.progressTimelineItemId,
-      {
-        content: 'Processing: executeDDL',
-        progress: getWorkflowNodeProgress('executeDDL'),
-      },
-    )
-  }
 
   // Generate DDL from schema data
   const result = postgresqlSchemaDeparser(state.schemaData)

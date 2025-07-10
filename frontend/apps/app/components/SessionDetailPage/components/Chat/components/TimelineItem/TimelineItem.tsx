@@ -21,22 +21,6 @@ export const TimelineItem: FC<Props> = (props) => {
     )
   }
 
-  // Handle progress role separately
-  if (props.role === 'progress' && 'progress' in props) {
-    const progress = props.progress
-    return (
-      <AgentMessage state="default" message={props.content}>
-        <ProcessIndicator
-          initialExpanded
-          title="Processing AI Message"
-          subtitle={props.content}
-          progress={progress}
-          status={progress >= 100 ? 'complete' : 'processing'}
-        />
-      </AgentMessage>
-    )
-  }
-
   // Destructure props for regular messages
   const { content, role, timestamp, avatarSrc, avatarAlt, initial, children } =
     props

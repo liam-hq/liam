@@ -1,4 +1,3 @@
-import { getWorkflowNodeProgress } from '../shared/getWorkflowNodeProgress'
 import type { WorkflowState } from '../types'
 
 const NODE_NAME = 'reviewDeliverablesNode'
@@ -11,17 +10,6 @@ export async function reviewDeliverablesNode(
   state: WorkflowState,
 ): Promise<WorkflowState> {
   state.logger.log(`[${NODE_NAME}] Started`)
-
-  // Update progress message if available
-  if (state.progressTimelineItemId) {
-    await state.repositories.schema.updateTimelineItem(
-      state.progressTimelineItemId,
-      {
-        content: 'Processing: reviewDeliverables',
-        progress: getWorkflowNodeProgress('reviewDeliverables'),
-      },
-    )
-  }
 
   // TODO: Implement deliverables review logic
   // This node should perform final confirmation of requirements and deliverables

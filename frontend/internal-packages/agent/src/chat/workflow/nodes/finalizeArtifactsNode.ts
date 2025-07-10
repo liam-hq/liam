@@ -1,4 +1,3 @@
-import { getWorkflowNodeProgress } from '../shared/getWorkflowNodeProgress'
 import type { WorkflowState } from '../types'
 import {
   createOrUpdateArtifact,
@@ -84,17 +83,6 @@ export async function finalizeArtifactsNode(
   state: WorkflowState,
 ): Promise<WorkflowState> {
   state.logger.log(`[${NODE_NAME}] Started`)
-
-  // Update progress message if available
-  if (state.progressTimelineItemId) {
-    await state.repositories.schema.updateTimelineItem(
-      state.progressTimelineItemId,
-      {
-        content: 'Processing: finalizeArtifacts',
-        progress: getWorkflowNodeProgress('finalizeArtifacts'),
-      },
-    )
-  }
 
   await saveArtifacts(state)
   const { finalResponse, errorToReturn } = await generateFinalResponse(state)

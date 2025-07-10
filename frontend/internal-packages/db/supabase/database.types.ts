@@ -1175,7 +1175,6 @@ export type Database = {
           design_session_id: string
           id: string
           organization_id: string
-          progress: number | null
           type: Database['public']['Enums']['timeline_item_type_enum']
           updated_at: string
           user_id: string | null
@@ -1187,7 +1186,6 @@ export type Database = {
           design_session_id: string
           id?: string
           organization_id: string
-          progress?: number | null
           type: Database['public']['Enums']['timeline_item_type_enum']
           updated_at: string
           user_id?: string | null
@@ -1199,7 +1197,6 @@ export type Database = {
           design_session_id?: string
           id?: string
           organization_id?: string
-          progress?: number | null
           type?: Database['public']['Enums']['timeline_item_type_enum']
           updated_at?: string
           user_id?: string | null
@@ -1510,12 +1507,7 @@ export type Database = {
       knowledge_type: 'SCHEMA' | 'DOCS'
       schema_format_enum: 'schemarb' | 'postgres' | 'prisma' | 'tbls'
       severity_enum: 'CRITICAL' | 'WARNING' | 'POSITIVE' | 'QUESTION'
-      timeline_item_type_enum:
-        | 'user'
-        | 'assistant'
-        | 'schema_version'
-        | 'error'
-        | 'progress'
+      timeline_item_type_enum: 'user' | 'assistant' | 'schema_version' | 'error'
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1644,13 +1636,7 @@ export const Constants = {
       knowledge_type: ['SCHEMA', 'DOCS'],
       schema_format_enum: ['schemarb', 'postgres', 'prisma', 'tbls'],
       severity_enum: ['CRITICAL', 'WARNING', 'POSITIVE', 'QUESTION'],
-      timeline_item_type_enum: [
-        'user',
-        'assistant',
-        'schema_version',
-        'error',
-        'progress',
-      ],
+      timeline_item_type_enum: ['user', 'assistant', 'schema_version', 'error'],
     },
   },
 } as const

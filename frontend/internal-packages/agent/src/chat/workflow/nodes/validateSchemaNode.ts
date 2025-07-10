@@ -1,4 +1,3 @@
-import { getWorkflowNodeProgress } from '../shared/getWorkflowNodeProgress'
 import type { WorkflowState } from '../types'
 
 const NODE_NAME = 'validateSchemaNode'
@@ -11,17 +10,6 @@ export async function validateSchemaNode(
   state: WorkflowState,
 ): Promise<WorkflowState> {
   state.logger.log(`[${NODE_NAME}] Started`)
-
-  // Update progress message if available
-  if (state.progressTimelineItemId) {
-    await state.repositories.schema.updateTimelineItem(
-      state.progressTimelineItemId,
-      {
-        content: 'Processing: validateSchema',
-        progress: getWorkflowNodeProgress('validateSchema'),
-      },
-    )
-  }
 
   // TODO: Implement DML execution and validation logic
   // This node should execute DML and validate the schema

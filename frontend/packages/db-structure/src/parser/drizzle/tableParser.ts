@@ -9,6 +9,7 @@ import {
   getStringValue,
   isObjectExpression,
   isPgTableCall,
+  isSchemaTableCall,
   isStringLiteral,
 } from './astUtils.js'
 import { parseColumnFromProperty } from './columnParser.js'
@@ -77,6 +78,88 @@ export const parsePgTableCall = (
     columns: {},
     indexes: {},
   }
+
+  // Parse columns from the object expression
+  for (const prop of columnsExpr.properties) {
+    if (prop.type === 'KeyValueProperty') {
+      const column = parseColumnFromProperty(prop)
+      if (column) {
+        // Use the JS property name as the key
+        const jsPropertyName =
+          prop.key.type === 'Identifier' ? getIdentifierName(prop.key) : null
+        if (jsPropertyName) {
+          table.columns[jsPropertyName] = column
+        }
+      }
+    }
+  }
+
+  // Parse indexes and composite primary key from third argument if present
+  if (callExpr.arguments.length > 2) {
+    const thirdArg = callExpr.arguments[2]
+    const thirdArgExpr = getArgumentExpression(thirdArg)
+    if (thirdArgExpr && thirdArgExpr.type === 'ArrowFunctionExpression') {
+      // Parse arrow function like (table) => ({ nameIdx: index(...), pk: primaryKey(...) })
+      let returnExpr = thirdArgExpr.body
+
+      // Handle parenthesized expressions like (table) => ({ ... })
+      if (returnExpr.type === 'ParenthesisExpression') {
+        returnExpr = returnExpr.expression
+      }
+
+      if (returnExpr.type === 'ObjectExpression') {
+        for (const prop of returnExpr.properties) {
+          if (prop.type === 'KeyValueProperty') {
+            const indexName =
+              prop.key.type === 'Identifier'
+                ? getIdentifierName(prop.key)
+                : null
+            if (indexName && prop.value.type === 'CallExpression') {
+              const indexDef = parseIndexDefinition(prop.value, indexName)
+              if (indexDef) {
+                if (isCompositePrimaryKey(indexDef)) {
+                  table.compositePrimaryKey = indexDef
+                } else if (isDrizzleIndex(indexDef)) {
+                  table.indexes[indexName] = indexDef
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  return table
+}
+
+/**
+ * Parse schema.table() call expression
+ */
+export const parseSchemaTableCall = (
+  callExpr: CallExpression,
+): DrizzleTableDefinition | null => {
+  if (!isSchemaTableCall(callExpr) || callExpr.arguments.length < 2) return null
+
+  // Extract expression from SWC argument structure
+  const tableNameExpr = getArgumentExpression(callExpr.arguments[0])
+  const columnsExpr = getArgumentExpression(callExpr.arguments[1])
+
+  const tableName = tableNameExpr ? getStringValue(tableNameExpr) : null
+  if (!tableName || !columnsExpr || !isObjectExpression(columnsExpr))
+    return null
+
+  const table: DrizzleTableDefinition = {
+    name: tableName,
+    columns: {},
+    indexes: {},
+  }
+
+  // TODO: Handle table name conflicts across different schemas
+  // Currently, if multiple schemas have tables with the same name (e.g., auth.users and public.users),
+  // the later one will overwrite the earlier one since we only use the table name without schema prefix.
+  // This is a limitation shared by other parsers and should be addressed consistently across the codebase.
+  // ref: https://github.com/liam-hq/liam/discussions/2391
 
   // Parse columns from the object expression
   for (const prop of columnsExpr.properties) {

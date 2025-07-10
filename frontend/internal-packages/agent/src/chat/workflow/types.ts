@@ -42,7 +42,4 @@ export type WorkflowState = {
 
   // Logging functionality
   logger: NodeLogger
-
-  // Progress timeline item ID for tracking
-  progressTimelineItemId?: string | undefined
 }

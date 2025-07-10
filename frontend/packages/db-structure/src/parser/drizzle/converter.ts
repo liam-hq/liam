@@ -23,6 +23,7 @@ import type { DrizzleEnumDefinition, DrizzleTableDefinition } from './types.js'
 const convertToTable = (
   tableDef: DrizzleTableDefinition,
   enums: Record<string, DrizzleEnumDefinition> = {},
+  variableToTableMapping: Record<string, string> = {},
 ): Table => {
   const columns: Columns = {}
   const constraints: Constraints = {}
@@ -98,12 +99,17 @@ const convertToTable = (
 
     // Add foreign key constraint
     if (columnDef.references) {
+      // Resolve variable name to actual table name
+      const targetTableName =
+        variableToTableMapping[columnDef.references.table] ||
+        columnDef.references.table
+
       const constraintName = `${tableDef.name}_${columnDef.name}_${columnDef.references.table}_${columnDef.references.column}_fk`
       const constraint: ForeignKeyConstraint = {
         type: 'FOREIGN KEY',
         name: constraintName,
         columnName: columnDef.name, // Use actual column name, not JS property name
-        targetTableName: columnDef.references.table,
+        targetTableName: targetTableName,
         targetColumnName: columnDef.references.column,
         updateConstraint: columnDef.references.onUpdate
           ? convertReferenceOption(columnDef.references.onUpdate)
@@ -180,6 +186,7 @@ const fixForeignKeyTargetColumnNames = (
   for (const table of Object.values(tables)) {
     for (const constraint of Object.values(table.constraints)) {
       if (constraint.type === 'FOREIGN KEY') {
+        // Check in drizzleTables for column mapping
         const drizzleTargetTable = drizzleTables[constraint.targetTableName]
         if (drizzleTargetTable) {
           // Find column definition by JS property name and get actual DB column name
@@ -200,6 +207,7 @@ const fixForeignKeyTargetColumnNames = (
 export const convertDrizzleTablesToInternal = (
   drizzleTables: Record<string, DrizzleTableDefinition>,
   enums: Record<string, DrizzleEnumDefinition>,
+  variableToTableMapping: Record<string, string> = {},
 ): { tables: Record<string, Table>; errors: Error[] } => {
   const tables: Record<string, Table> = {}
   const errors: Error[] = []
@@ -207,7 +215,11 @@ export const convertDrizzleTablesToInternal = (
   // Convert Drizzle tables to internal format
   for (const [tableName, tableDef] of Object.entries(drizzleTables)) {
     try {
-      tables[tableName] = convertToTable(tableDef, enums)
+      tables[tableName] = convertToTable(
+        tableDef,
+        enums,
+        variableToTableMapping,
+      )
     } catch (error) {
       errors.push(
         new Error(

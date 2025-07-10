@@ -55,6 +55,14 @@ pnpm --filter @liam-hq/cli build
 ### Database Operations
 For database migration and type generation workflows, see [`docs/migrationOpsContext.md`](docs/migrationOpsContext.md).
 
+### Schema Changes
+- Schema files (schema.sql) must never be edited directly
+- Always use the following migration workflow:
+  1. `pnpm -F db supabase:migration:new <MIGRATION_NAME>`
+  2. Write DDL in the generated migration file
+  3. `pnpm -F db supabase:migration:up` to apply changes
+  4. `pnpm -F db supabase:gen` to regenerate type definitions
+
 ## Architecture
 
 ### Monorepo Structure

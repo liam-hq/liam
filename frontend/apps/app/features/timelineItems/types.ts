@@ -21,11 +21,6 @@ export type TimelineItem =
       content: string
       building_schema_version_id: string
     }
-  | {
-      role: 'progress'
-      content: string
-      progress: number
-    }
 
 export type TimelineItemEntry = TimelineItem & {
   id: string
@@ -43,17 +38,10 @@ export type TimelineItemType =
       organization_id: string
       design_session_id: string
       building_schema_version_id: string | null
-      progress: number | null
     }
   | {
       id: string
       type: 'schema_version'
       content: string
       building_schema_version_id: string
-    }
-  | {
-      id: string
-      type: 'progress'
-      content: string
-      progress: number
     }

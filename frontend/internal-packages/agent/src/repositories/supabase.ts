@@ -70,8 +70,7 @@ export class SupabaseSchemaRepository implements SchemaRepository {
           updated_at,
           organization_id,
           design_session_id,
-          building_schema_version_id,
-          progress
+          building_schema_version_id
         )
       `)
       .eq('id', designSessionId)
@@ -359,8 +358,6 @@ export class SupabaseSchemaRepository implements SchemaRepository {
       'buildingSchemaVersionId' in params
         ? params.buildingSchemaVersionId
         : null
-    const progress = 'progress' in params ? params.progress : null
-
     const now = new Date().toISOString()
 
     const { data: timelineItem, error } = await this.client
@@ -371,7 +368,6 @@ export class SupabaseSchemaRepository implements SchemaRepository {
         type,
         user_id: userId,
         building_schema_version_id: buildingSchemaVersionId,
-        progress,
         updated_at: now,
       })
       .select()

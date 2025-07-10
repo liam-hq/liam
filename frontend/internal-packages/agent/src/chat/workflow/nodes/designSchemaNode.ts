@@ -2,7 +2,6 @@ import { DatabaseSchemaBuildAgent } from '../../../langchain/agents'
 import type { BuildAgentResponse } from '../../../langchain/agents/databaseSchemaBuildAgent/agent'
 import type { SchemaAwareChatVariables } from '../../../langchain/utils/types'
 import { convertSchemaToText } from '../../../utils/convertSchemaToText'
-import { getWorkflowNodeProgress } from '../shared/getWorkflowNodeProgress'
 import type { WorkflowState } from '../types'
 
 const NODE_NAME = 'designSchemaNode'
@@ -106,17 +105,6 @@ export async function designSchemaNode(
   state: WorkflowState,
 ): Promise<WorkflowState> {
   state.logger.log(`[${NODE_NAME}] Started`)
-
-  // Update progress message if available
-  if (state.progressTimelineItemId) {
-    await state.repositories.schema.updateTimelineItem(
-      state.progressTimelineItemId,
-      {
-        content: 'Processing: designSchema',
-        progress: getWorkflowNodeProgress('designSchema'),
-      },
-    )
-  }
 
   const { agent, schemaText } = await prepareSchemaDesign(state)
 
