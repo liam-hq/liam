@@ -42,7 +42,9 @@ export const createAnnotations = () => {
     generatedAnswer: Annotation<string | undefined>,
     finalResponse: Annotation<string | undefined>,
     messages: Annotation<BaseMessage[]>({
-      reducer: (x, y) => x.concat(y),
+      reducer: (x, y) => {
+        return x.concat(y)
+      },
     }),
     schemaData: Annotation<Schema>,
     projectId: Annotation<string | undefined>,
