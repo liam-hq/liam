@@ -364,6 +364,133 @@ describe('validateSchemaNode', () => {
     expect(result.dmlExecutionSuccessful).toBe(true)
   })
 
+  it('should retry DML execution on retryable errors', async () => {
+    const mockResults: SqlResult[] = [
+      {
+        success: false,
+        sql: 'INSERT INTO users VALUES (1);',
+        result: { error: 'foreign key constraint violation' },
+        id: 'result-1',
+        metadata: {
+          executionTime: 5,
+          timestamp: new Date().toISOString(),
+        },
+      },
+    ]
+
+    vi.mocked(executeQuery).mockResolvedValue(mockResults)
+
+    const state = createMockState({
+      dmlStatements: 'INSERT INTO users VALUES (1);',
+    })
+
+    const result = await validateSchemaNode(state as WorkflowState)
+
+    expect(result.shouldRetryDmlExecution).toBe(true)
+    expect(result.dmlRetryReason).toContain('foreign key constraint violation')
+    expect(result.retryCount['dmlExecutionRetry']).toBe(1)
+    expect(mockLogger.log).toHaveBeenCalledWith(
+      '[validateSchemaNode] DML execution failed with retryable error, scheduling retry',
+    )
+  })
+
+  it('should not retry DML execution on non-retryable errors', async () => {
+    const mockResults: SqlResult[] = [
+      {
+        success: false,
+        sql: 'INSERT INTO users VALUES;',
+        result: { error: 'syntax error at or near "VALUES"' },
+        id: 'result-1',
+        metadata: {
+          executionTime: 2,
+          timestamp: new Date().toISOString(),
+        },
+      },
+    ]
+
+    vi.mocked(executeQuery).mockResolvedValue(mockResults)
+
+    const state = createMockState({
+      dmlStatements: 'INSERT INTO users VALUES;',
+    })
+
+    const result = await validateSchemaNode(state as WorkflowState)
+
+    expect(result.shouldRetryDmlExecution).toBeUndefined()
+    expect(result.dmlExecutionErrors).toContain('syntax error')
+    expect(mockLogger.log).toHaveBeenCalledWith(
+      '[validateSchemaNode] Completed with errors',
+    )
+  })
+
+  it('should not retry DML after max retries exceeded', async () => {
+    const mockResults: SqlResult[] = [
+      {
+        success: false,
+        sql: 'INSERT INTO users VALUES (1);',
+        result: { error: 'foreign key constraint violation' },
+        id: 'result-1',
+        metadata: {
+          executionTime: 5,
+          timestamp: new Date().toISOString(),
+        },
+      },
+    ]
+
+    vi.mocked(executeQuery).mockResolvedValue(mockResults)
+
+    const state = createMockState({
+      dmlStatements: 'INSERT INTO users VALUES (1);',
+      retryCount: { dmlExecutionRetry: 1 }, // Already at max retries
+    })
+
+    const result = await validateSchemaNode(state as WorkflowState)
+
+    expect(result.shouldRetryDmlExecution).toBeUndefined()
+    expect(result.dmlExecutionErrors).toContain(
+      'foreign key constraint violation',
+    )
+    expect(result.retryCount['dmlExecutionRetry']).toBe(1)
+  })
+
+  it('should handle mixed success and failure in DML execution', async () => {
+    const mockResults: SqlResult[] = [
+      {
+        success: true,
+        sql: 'INSERT INTO categories VALUES (1, "test");',
+        result: { rows: [], columns: [] },
+        id: 'result-1',
+        metadata: {
+          executionTime: 5,
+          timestamp: new Date().toISOString(),
+          affectedRows: 1,
+        },
+      },
+      {
+        success: false,
+        sql: 'INSERT INTO products VALUES (1, 999);',
+        result: { error: 'foreign key constraint violation on category_id' },
+        id: 'result-2',
+        metadata: {
+          executionTime: 3,
+          timestamp: new Date().toISOString(),
+        },
+      },
+    ]
+
+    vi.mocked(executeQuery).mockResolvedValue(mockResults)
+
+    const state = createMockState({
+      dmlStatements:
+        'INSERT INTO categories VALUES (1, "test"); INSERT INTO products VALUES (1, 999);',
+    })
+
+    const result = await validateSchemaNode(state as WorkflowState)
+
+    expect(result.shouldRetryDmlExecution).toBe(true)
+    expect(result.dmlRetryReason).toContain('foreign key constraint violation')
+  })
+
   it('should handle results without metadata', async () => {
     const mockResults: SqlResult[] = [
       {

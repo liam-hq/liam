@@ -32,6 +32,8 @@ export type WorkflowState = {
   // DML execution results
   dmlExecutionSuccessful?: boolean | undefined
   dmlExecutionErrors?: string | undefined
+  shouldRetryDmlExecution?: boolean | undefined
+  dmlRetryReason?: string | undefined
 
   // Schema update fields
   buildingSchemaId: string

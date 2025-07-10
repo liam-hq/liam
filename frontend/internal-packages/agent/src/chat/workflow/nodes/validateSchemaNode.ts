@@ -1,9 +1,26 @@
 import { executeQuery } from '@liam-hq/pglite-server'
 import type { SqlResult } from '@liam-hq/pglite-server/src/types'
+import { WORKFLOW_RETRY_CONFIG } from '../constants'
 import { getWorkflowNodeProgress } from '../shared/getWorkflowNodeProgress'
 import type { WorkflowState } from '../types'
 
 const NODE_NAME = 'validateSchemaNode'
+
+// Error patterns that might benefit from retry
+const RETRYABLE_ERROR_PATTERNS = [
+  'constraint violation',
+  'foreign key',
+  'duplicate key',
+  'deadlock',
+  'lock timeout',
+]
+
+function isRetryableError(errorMessage: string): boolean {
+  const lowerError = errorMessage.toLowerCase()
+  return RETRYABLE_ERROR_PATTERNS.some((pattern) =>
+    lowerError.includes(pattern),
+  )
+}
 
 /**
  * Validate Schema Node - Combined DDL/DML Execution & Validation
@@ -98,9 +115,34 @@ export async function validateSchemaNode(
       .join('; ')
 
     state.logger.error(`[${NODE_NAME}] DML execution failed: ${errorMessages}`)
-    state.logger.log(`[${NODE_NAME}] Completed with errors`)
 
-    // For now, we continue even with errors (future PR will handle error recovery)
+    // Check if errors are retryable
+    const hasRetryableError = isRetryableError(errorMessages)
+    const currentRetryCount = updatedState.retryCount['dmlExecutionRetry'] || 0
+
+    if (
+      hasRetryableError &&
+      currentRetryCount < WORKFLOW_RETRY_CONFIG.MAX_DML_EXECUTION_RETRIES
+    ) {
+      state.logger.log(
+        `[${NODE_NAME}] DML execution failed with retryable error, scheduling retry`,
+      )
+      state.logger.log(`[${NODE_NAME}] Completed with retry scheduled`)
+
+      return {
+        ...updatedState,
+        dmlExecutionErrors: errorMessages,
+        shouldRetryDmlExecution: true,
+        dmlRetryReason: errorMessages,
+        retryCount: {
+          ...updatedState.retryCount,
+          dmlExecutionRetry: currentRetryCount + 1,
+        },
+      }
+    }
+
+    // Non-retryable error or max retries exceeded
+    state.logger.log(`[${NODE_NAME}] Completed with errors`)
     return {
       ...updatedState,
       dmlExecutionErrors: errorMessages,

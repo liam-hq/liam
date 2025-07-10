@@ -35,4 +35,9 @@ export const WORKFLOW_RETRY_CONFIG = {
    * by going back to the designSchema node with the error information
    */
   MAX_DDL_EXECUTION_RETRIES: 1,
+  /**
+   * Maximum number of retries for DML execution failures
+   * When DML execution fails with retryable errors, the workflow will retry
+   */
+  MAX_DML_EXECUTION_RETRIES: 1,
 } as const
