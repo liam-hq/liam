@@ -1,3 +1,4 @@
+import type { BaseMessage } from '@langchain/core/messages'
 import { Annotation } from '@langchain/langgraph'
 import type { Schema } from '@liam-hq/db-structure'
 import type { Usecase } from '../../../langchain/agents/qaGenerateUsecaseAgent/agent'
@@ -40,7 +41,9 @@ export const createAnnotations = () => {
     generatedUsecases: Annotation<Usecase[] | undefined>,
     generatedAnswer: Annotation<string | undefined>,
     finalResponse: Annotation<string | undefined>,
-    formattedHistory: Annotation<string>,
+    messages: Annotation<BaseMessage[]>({
+      reducer: (x, y) => x.concat(y),
+    }),
     schemaData: Annotation<Schema>,
     projectId: Annotation<string | undefined>,
     buildingSchemaId: Annotation<string>,

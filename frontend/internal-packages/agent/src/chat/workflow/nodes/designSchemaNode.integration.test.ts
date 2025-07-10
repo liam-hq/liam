@@ -41,7 +41,7 @@ describe('designSchemaNode -> executeDdlNode integration', () => {
   const createMockState = (schemaData: Schema): WorkflowState => ({
     userInput: 'Add a users table with id and name fields',
     schemaData,
-    formattedHistory: '',
+    messages: [],
     retryCount: {},
     buildingSchemaId: 'test-schema',
     latestVersionNumber: 1,

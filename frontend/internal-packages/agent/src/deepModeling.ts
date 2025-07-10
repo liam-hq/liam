@@ -1,3 +1,4 @@
+import { AIMessage, HumanMessage } from '@langchain/core/messages'
 import { END, START, StateGraph } from '@langchain/langgraph'
 import type { Schema } from '@liam-hq/db-structure'
 import type { Result } from 'neverthrow'
@@ -6,10 +7,12 @@ import { WORKFLOW_ERROR_MESSAGES } from './chat/workflow/constants'
 import {
   analyzeRequirementsNode,
   designSchemaNode,
+  executeAnalysisToolNode,
   executeDdlNode,
   finalizeArtifactsNode,
   generateUsecaseNode,
   prepareDmlNode,
+  processAnalysisResultNode,
   reviewDeliverablesNode,
   saveUserMessageNode,
   validateSchemaNode,
@@ -40,12 +43,16 @@ export type DeepModelingResult = Result<
 >
 
 /**
- * Format chat history array into a string
- * @param history - Array of formatted chat history strings
- * @returns Formatted chat history string or default message if empty
+ * Convert history array to BaseMessage objects
+ * @param history - Array of [role, content] tuples
+ * @returns Array of BaseMessage objects
  */
-const formatChatHistory = (history: string[]): string => {
-  return history.length > 0 ? history.join('\n') : 'No previous conversation.'
+const convertHistoryToMessages = (history: [string, string][]) => {
+  return history.map(([role, content]) => {
+    return role === 'assistant'
+      ? new AIMessage(content)
+      : new HumanMessage(content)
+  })
 }
 
 /**
@@ -67,6 +74,12 @@ const createGraph = () => {
       retryPolicy: RETRY_POLICY,
     })
     .addNode('analyzeRequirements', analyzeRequirementsNode, {
+      retryPolicy: RETRY_POLICY,
+    })
+    .addNode('executeAnalysisTool', executeAnalysisToolNode, {
+      retryPolicy: RETRY_POLICY,
+    })
+    .addNode('processAnalysisResult', processAnalysisResultNode, {
       retryPolicy: RETRY_POLICY,
     })
     .addNode('designSchema', designSchemaNode, {
@@ -92,7 +105,8 @@ const createGraph = () => {
     })
 
     .addEdge(START, 'saveUserMessage')
-    .addEdge('analyzeRequirements', 'designSchema')
+    .addEdge('executeAnalysisTool', 'processAnalysisResult')
+    .addEdge('processAnalysisResult', 'designSchema')
     .addEdge('executeDDL', 'generateUsecase')
     .addEdge('generateUsecase', 'prepareDML')
     .addEdge('prepareDML', 'validateSchema')
@@ -101,6 +115,32 @@ const createGraph = () => {
     // Conditional edge for saveUserMessage - skip to finalizeArtifacts if error
     .addConditionalEdges('saveUserMessage', (state) => {
       return state.error ? 'finalizeArtifacts' : 'analyzeRequirements'
+    })
+
+    // Conditional edge for analyzeRequirements - route to tool execution or error handling
+    .addConditionalEdges('analyzeRequirements', (state) => {
+      if (state.error) {
+        return 'finalizeArtifacts'
+      }
+
+      // Check if the last message has tool calls
+      const lastMessage = state.messages[state.messages.length - 1]
+      if (lastMessage && lastMessage._getType() === 'ai') {
+        // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+        const aiMessage = lastMessage as any
+        if (
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+          aiMessage.tool_calls &&
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+          Array.isArray(aiMessage.tool_calls) &&
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+          aiMessage.tool_calls.length > 0
+        ) {
+          return 'executeAnalysisTool'
+        }
+      }
+
+      return 'finalizeArtifacts'
     })
 
     // Conditional edge for designSchema - skip to finalizeArtifacts if error
@@ -159,16 +199,15 @@ export const deepModeling = async (
 
   const { repositories, logger } = config.configurable
 
-  // Convert history format with role prefix
-  const historyArray = history.map(([role, content]) => {
-    const prefix = role === 'assistant' ? 'Assistant' : 'User'
-    return `${prefix}: ${content}`
-  })
+  // Convert history to BaseMessage objects and add current user input
+  const historyMessages = convertHistoryToMessages(history)
+  const currentUserMessage = new HumanMessage(userInput)
+  const allMessages = [...historyMessages, currentUserMessage]
 
   // Create workflow state
   const workflowState: WorkflowState = {
     userInput: userInput,
-    formattedHistory: formatChatHistory(historyArray),
+    messages: allMessages,
     schemaData,
     organizationId,
     buildingSchemaId,

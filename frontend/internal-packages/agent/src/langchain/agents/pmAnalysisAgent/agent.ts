@@ -1,5 +1,5 @@
+import { tool } from '@langchain/core/tools'
 import { ChatOpenAI } from '@langchain/openai'
-import { toJsonSchema } from '@valibot/to-json-schema'
 import * as v from 'valibot'
 import { createLangfuseHandler } from '../../utils/telemetry'
 import type { BasePromptVariables, ChatAgent } from '../../utils/types'
@@ -13,27 +13,79 @@ export const requirementsAnalysisSchema = v.object({
 
 type AnalysisResponse = v.InferOutput<typeof requirementsAnalysisSchema>
 
+// Create analysis tool using the schema
+export const analysisTool = tool(
+  async (input: unknown) => {
+    // Return the analysis result as-is
+    return JSON.stringify(input)
+  },
+  {
+    name: 'analyze_requirements',
+    description:
+      'Analyze user requirements and categorize them into business, functional, and non-functional requirements',
+    schema: {
+      type: 'object',
+      properties: {
+        businessRequirement: {
+          type: 'string',
+          description: 'The main business requirement',
+        },
+        functionalRequirements: {
+          type: 'object',
+          additionalProperties: {
+            type: 'array',
+            items: { type: 'string' },
+          },
+          description: 'Functional requirements grouped by category',
+        },
+        nonFunctionalRequirements: {
+          type: 'object',
+          additionalProperties: {
+            type: 'array',
+            items: { type: 'string' },
+          },
+          description: 'Non-functional requirements grouped by category',
+        },
+      },
+      required: [
+        'businessRequirement',
+        'functionalRequirements',
+        'nonFunctionalRequirements',
+      ],
+    },
+  },
+)
+
 export class PMAnalysisAgent
   implements ChatAgent<BasePromptVariables, AnalysisResponse>
 {
-  private analysisModel: ReturnType<ChatOpenAI['withStructuredOutput']>
+  private baseModel: ChatOpenAI
+  public analysisModel: ReturnType<ChatOpenAI['bindTools']>
+  public pmAnalysisPrompt = pmAnalysisPrompt
 
   constructor() {
-    const baseModel = new ChatOpenAI({
+    this.baseModel = new ChatOpenAI({
       model: 'o4-mini',
       callbacks: [createLangfuseHandler()],
     })
-
-    // Convert valibot schema to JSON Schema and bind to model
-    const analysisJsonSchema = toJsonSchema(requirementsAnalysisSchema)
-
-    this.analysisModel = baseModel.withStructuredOutput(analysisJsonSchema)
+    this.analysisModel = this.baseModel.bindTools([analysisTool], {
+      tool_choice: 'any',
+    })
   }
 
   async generate(variables: BasePromptVariables): Promise<AnalysisResponse> {
     const formattedPrompt = await pmAnalysisPrompt.format(variables)
     const rawResponse = await this.analysisModel.invoke(formattedPrompt)
-    return v.parse(requirementsAnalysisSchema, rawResponse)
+
+    // Extract tool call arguments from the response
+    const toolCall = rawResponse.tool_calls?.[0]
+    if (!toolCall) {
+      // eslint-disable-next-line no-throw-error/no-throw-error
+      throw new Error('No tool call found in response')
+    }
+
+    // Parse and validate the tool call arguments
+    return v.parse(requirementsAnalysisSchema, toolCall.args)
   }
 
   async analyzeRequirements(
@@ -41,6 +93,15 @@ export class PMAnalysisAgent
   ): Promise<v.InferOutput<typeof requirementsAnalysisSchema>> {
     const formattedPrompt = await pmAnalysisPrompt.format(variables)
     const rawResponse = await this.analysisModel.invoke(formattedPrompt)
-    return v.parse(requirementsAnalysisSchema, rawResponse)
+
+    // Extract tool call arguments from the response
+    const toolCall = rawResponse.tool_calls?.[0]
+    if (!toolCall) {
+      // eslint-disable-next-line no-throw-error/no-throw-error
+      throw new Error('No tool call found in response')
+    }
+
+    // Parse and validate the tool call arguments
+    return v.parse(requirementsAnalysisSchema, toolCall.args)
   }
 }

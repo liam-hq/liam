@@ -7,6 +7,7 @@ import { convertSchemaToText } from '../../../utils/convertSchemaToText'
 import type { NodeLogger } from '../../../utils/nodeLogger'
 import { getConfigurable } from '../shared/getConfigurable'
 import type { WorkflowState } from '../types'
+import { formatHistory } from '../utils/formatHistory'
 import { logAssistantMessage } from '../utils/timelineLogger'
 
 const NODE_NAME = 'designSchemaNode'
@@ -226,7 +227,7 @@ export async function designSchemaNode(
   // Create prompt variables directly
   const promptVariables: SchemaAwareChatVariables = {
     schema_text: schemaText,
-    chat_history: state.formattedHistory,
+    chat_history: formatHistory(state.messages),
     user_message: userMessage,
   }
 

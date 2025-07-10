@@ -1,3 +1,4 @@
+import type { BaseMessage } from '@langchain/core/messages'
 import type { Schema } from '@liam-hq/db-structure'
 import type { Usecase } from '../../langchain/agents/qaGenerateUsecaseAgent/agent'
 import type { Repositories } from '../../repositories'
@@ -15,7 +16,7 @@ export type WorkflowState = {
   generatedUsecases?: Usecase[] | undefined
   generatedAnswer?: string | undefined
   finalResponse?: string | undefined
-  formattedHistory: string
+  messages: BaseMessage[]
   schemaData: Schema
   projectId?: string | undefined
   error?: Error | undefined

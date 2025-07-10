@@ -1,39 +1,17 @@
 import type { RunnableConfig } from '@langchain/core/runnables'
 import { ResultAsync } from 'neverthrow'
-import type * as v from 'valibot'
 import { PMAnalysisAgent } from '../../../langchain/agents'
-import type { requirementsAnalysisSchema } from '../../../langchain/agents/pmAnalysisAgent/agent'
 import type { BasePromptVariables } from '../../../langchain/utils/types'
-import type { NodeLogger } from '../../../utils/nodeLogger'
 import { getConfigurable } from '../shared/getConfigurable'
 import type { WorkflowState } from '../types'
+import { formatHistory } from '../utils/formatHistory'
 import { logAssistantMessage } from '../utils/timelineLogger'
 
 const NODE_NAME = 'analyzeRequirementsNode'
 
-type AnalysisResult = v.InferOutput<typeof requirementsAnalysisSchema>
-
-/**
- * Log analysis results for debugging/monitoring purposes
- * TODO: Remove this function once the feature is stable and monitoring is no longer needed
- */
-const logAnalysisResult = (
-  logger: NodeLogger,
-  result: AnalysisResult,
-): void => {
-  logger.log(`[${NODE_NAME}] Analysis Result:`)
-  logger.log(`[${NODE_NAME}] BRD: ${result.businessRequirement}`)
-  logger.log(
-    `[${NODE_NAME}] Functional Requirements: ${JSON.stringify(result.functionalRequirements)}`,
-  )
-  logger.log(
-    `[${NODE_NAME}] Non-Functional Requirements: ${JSON.stringify(result.nonFunctionalRequirements)}`,
-  )
-}
-
 /**
  * Analyze Requirements Node - Requirements Organization
- * Performed by pmAnalysisAgent
+ * Calls LLM with analysis tool binding, then delegates to executeAnalysisToolNode
  */
 export async function analyzeRequirementsNode(
   state: WorkflowState,
@@ -55,7 +33,7 @@ export async function analyzeRequirementsNode(
   const pmAnalysisAgent = new PMAnalysisAgent()
 
   const promptVariables: BasePromptVariables = {
-    chat_history: state.formattedHistory,
+    chat_history: formatHistory(state.messages),
     user_message: state.userInput,
   }
 
@@ -68,30 +46,25 @@ export async function analyzeRequirementsNode(
   )
 
   const analysisResult = await ResultAsync.fromPromise(
-    pmAnalysisAgent.analyzeRequirements(promptVariables),
+    (async () => {
+      // Call the LLM to get tool call response
+      const formattedPrompt =
+        await pmAnalysisAgent.pmAnalysisPrompt.format(promptVariables)
+      const response =
+        await pmAnalysisAgent.analysisModel.invoke(formattedPrompt)
+
+      logger.log(`[${NODE_NAME}] LLM invoked successfully`)
+
+      return response
+    })(),
     (error) => (error instanceof Error ? error : new Error(String(error))),
   )
 
   return analysisResult.match(
-    async (result) => {
-      // Log the analysis result for debugging/monitoring purposes
-      logAnalysisResult(logger, result)
-
-      await logAssistantMessage(
-        state,
-        repositories,
-        'Requirements analysis completed',
-      )
-
-      logger.log(`[${NODE_NAME}] Completed`)
-
+    async (response) => {
       return {
         ...state,
-        analyzedRequirements: {
-          businessRequirement: result.businessRequirement,
-          functionalRequirements: result.functionalRequirements,
-          nonFunctionalRequirements: result.nonFunctionalRequirements,
-        },
+        messages: [response],
         error: undefined, // Clear error on success
       }
     },

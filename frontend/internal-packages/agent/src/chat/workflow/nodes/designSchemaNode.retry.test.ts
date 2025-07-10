@@ -60,7 +60,7 @@ describe('designSchemaNode retry behavior', () => {
 
     const state: WorkflowState = {
       userInput: 'Create a users table',
-      formattedHistory: '',
+      messages: [],
       schemaData: { tables: {} },
       buildingSchemaId: 'test-id',
       latestVersionNumber: 1,

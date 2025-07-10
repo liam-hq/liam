@@ -6,6 +6,7 @@ import type { BasePromptVariables } from '../../../langchain/utils/types'
 import type { NodeLogger } from '../../../utils/nodeLogger'
 import { getConfigurable } from '../shared/getConfigurable'
 import type { WorkflowState } from '../types'
+import { formatHistory } from '../utils/formatHistory'
 import { logAssistantMessage } from '../utils/timelineLogger'
 
 const NODE_NAME = 'generateUsecaseNode'
@@ -103,7 +104,7 @@ export async function generateUsecaseNode(
   )
 
   const promptVariables: BasePromptVariables = {
-    chat_history: state.formattedHistory,
+    chat_history: formatHistory(state.messages),
     user_message: requirementsText,
   }
 

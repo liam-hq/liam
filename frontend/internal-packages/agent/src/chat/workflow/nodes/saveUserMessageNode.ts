@@ -1,3 +1,4 @@
+import { HumanMessage } from '@langchain/core/messages'
 import type { RunnableConfig } from '@langchain/core/runnables'
 import { getConfigurable } from '../shared/getConfigurable'
 import type { WorkflowState } from '../types'
@@ -45,5 +46,11 @@ export async function saveUserMessageNode(
 
   logger.log(`[${NODE_NAME}] Successfully saved user message`)
 
-  return state
+  // Add user input as HumanMessage to the messages array
+  const userMessage = new HumanMessage(state.userInput)
+
+  return {
+    ...state,
+    messages: [userMessage],
+  }
 }
