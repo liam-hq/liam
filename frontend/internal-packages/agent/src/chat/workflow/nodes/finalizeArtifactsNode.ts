@@ -1,4 +1,5 @@
 import type { WorkflowState } from '../types'
+import { logAssistantMessage } from '../utils/timelineLogger'
 import {
   createOrUpdateArtifact,
   transformWorkflowStateToArtifact,
@@ -15,16 +16,19 @@ async function saveArtifacts(state: WorkflowState): Promise<void> {
     return
   }
 
+  await logAssistantMessage(state, 'Saving artifacts...')
   state.logger.log(`[${NODE_NAME}] Saving artifacts`)
   const artifact = transformWorkflowStateToArtifact(state)
   const artifactResult = await createOrUpdateArtifact(state, artifact)
 
   if (artifactResult.success) {
     state.logger.log(`[${NODE_NAME}] Artifacts saved successfully`)
+    await logAssistantMessage(state, 'Artifacts saved successfully')
   } else {
     state.logger.log(
       `[${NODE_NAME}] Failed to save artifacts: ${artifactResult.error}`,
     )
+    await logAssistantMessage(state, 'Failed to save artifacts')
   }
 }
 
@@ -54,6 +58,8 @@ async function generateFinalResponse(state: WorkflowState): Promise<{
   finalResponse: string
   errorToReturn: Error | undefined
 }> {
+  await logAssistantMessage(state, 'Generating final response...')
+
   if (state.error) {
     const finalResponse = `Sorry, an error occurred during processing: ${state.error.message}`
     await saveTimelineItem(state, finalResponse, 'error')
@@ -61,7 +67,9 @@ async function generateFinalResponse(state: WorkflowState): Promise<{
   }
 
   if (state.generatedAnswer) {
+    await logAssistantMessage(state, 'Final response generated successfully')
     await saveTimelineItem(state, state.generatedAnswer, 'assistant')
+
     return { finalResponse: state.generatedAnswer, errorToReturn: undefined }
   }
 
@@ -83,6 +91,8 @@ export async function finalizeArtifactsNode(
   state: WorkflowState,
 ): Promise<WorkflowState> {
   state.logger.log(`[${NODE_NAME}] Started`)
+
+  await logAssistantMessage(state, 'Preparing final deliverables...')
 
   await saveArtifacts(state)
   const { finalResponse, errorToReturn } = await generateFinalResponse(state)

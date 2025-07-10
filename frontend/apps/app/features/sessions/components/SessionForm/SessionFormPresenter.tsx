@@ -1,6 +1,6 @@
 import { type FC, useEffect, useRef, useState } from 'react'
 import type { Projects } from '@/components/CommonLayout/AppBar/ProjectsDropdownMenu/services/getProjects'
-import { createAccessibleHeightTransition } from '@/utils/accessibleTransitions'
+import { createAccessibleOpacityTransition } from '@/utils/accessibleTransitions'
 import { GitHubSessionFormPresenter } from './GitHubSessionFormPresenter'
 import styles from './SessionFormPresenter.module.css'
 import { type SessionMode, SessionModeSelector } from './SessionModeSelector'
@@ -69,19 +69,51 @@ export const SessionFormPresenter: FC<Props> = ({
     }, FADE_OUT_DURATION + HEIGHT_TRANSITION_DURATION)
   }
 
+  // Smooth height animation using max-height
   useEffect(() => {
-    // Set height when mode changes
-    const timer = setTimeout(() => {
-      const container = containerRef.current
-      const currentPanel = container?.querySelector('[role="tabpanel"]')
+    const container = containerRef.current
+    if (!container) return
 
-      if (container && currentPanel) {
-        const height = currentPanel.scrollHeight
-        container.style.height = `${height}px`
-      }
-    }, 0)
+    // Check if user prefers reduced motion
+    const prefersReducedMotion = window.matchMedia(
+      '(prefers-reduced-motion: reduce)',
+    ).matches
 
-    return () => clearTimeout(timer)
+    // Use ResizeObserver to detect content changes with requestAnimationFrame throttling
+    let ticking = false
+    const updateHeight = () => {
+      if (ticking) return
+      ticking = true
+      requestAnimationFrame(() => {
+        const currentPanel = container.querySelector('[role="tabpanel"]')
+        if (currentPanel) {
+          const height = currentPanel.scrollHeight
+          if (prefersReducedMotion) {
+            // Skip animation and set height immediately
+            container.style.transition = 'none'
+            container.style.maxHeight = `${height + 50}px`
+          } else {
+            // Set max-height slightly larger than actual height for smooth animation
+            container.style.maxHeight = `${height + 50}px`
+          }
+        }
+        ticking = false
+      })
+    }
+
+    // Initial height update
+    updateHeight()
+
+    // Watch for content changes
+    const resizeObserver = new ResizeObserver(updateHeight)
+    const currentPanel = container.querySelector('[role="tabpanel"]')
+    if (currentPanel) {
+      resizeObserver.observe(currentPanel)
+    }
+
+    return () => {
+      resizeObserver.disconnect()
+    }
   }, [mode])
 
   // Cleanup timers on unmount
@@ -98,13 +130,14 @@ export const SessionFormPresenter: FC<Props> = ({
         selectedMode={mode}
         onModeChange={handleModeChange}
       />
-      <div
-        ref={containerRef}
-        className={styles.formContainer}
-        style={createAccessibleHeightTransition()}
-      >
+      <div ref={containerRef} className={styles.formContainer}>
         {mode === 'github' && (
-          <div role="tabpanel" id="github-panel" aria-labelledby="github-tab">
+          <div
+            role="tabpanel"
+            id="github-panel"
+            aria-labelledby="github-tab"
+            style={createAccessibleOpacityTransition(!isTransitioning)}
+          >
             <GitHubSessionFormPresenter
               projects={projects}
               defaultProjectId={defaultProjectId}
@@ -120,7 +153,12 @@ export const SessionFormPresenter: FC<Props> = ({
           </div>
         )}
         {mode === 'upload' && (
-          <div role="tabpanel" id="upload-panel" aria-labelledby="upload-tab">
+          <div
+            role="tabpanel"
+            id="upload-panel"
+            aria-labelledby="upload-tab"
+            style={createAccessibleOpacityTransition(!isTransitioning)}
+          >
             <UploadSessionFormPresenter
               formError={formError}
               isPending={isPending}
@@ -130,7 +168,12 @@ export const SessionFormPresenter: FC<Props> = ({
           </div>
         )}
         {mode === 'url' && (
-          <div role="tabpanel" id="url-panel" aria-labelledby="url-tab">
+          <div
+            role="tabpanel"
+            id="url-panel"
+            aria-labelledby="url-tab"
+            style={createAccessibleOpacityTransition(!isTransitioning)}
+          >
             <URLSessionFormPresenter
               formError={formError}
               isPending={isPending}

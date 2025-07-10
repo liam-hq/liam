@@ -11,10 +11,12 @@ type Props = {
 }
 
 export const AttachmentsContainer: FC<Props> = ({ attachments, onRemove }) => {
-  if (attachments.length === 0) return null
+  const hasItems = attachments.length > 0
 
   return (
-    <div className={styles.container}>
+    <div
+      className={`${styles.container} ${hasItems ? styles.containerWithItems : styles.containerEmpty}`}
+    >
       {attachments.map((attachment) => (
         <AttachmentPreview
           key={attachment.id}

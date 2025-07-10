@@ -3,6 +3,7 @@ import { QAGenerateUsecaseAgent } from '../../../langchain/agents'
 import type { Usecase } from '../../../langchain/agents/qaGenerateUsecaseAgent/agent'
 import type { BasePromptVariables } from '../../../langchain/utils/types'
 import type { WorkflowState } from '../types'
+import { logAssistantMessage } from '../utils/timelineLogger'
 
 const NODE_NAME = 'generateUsecaseNode'
 
@@ -62,12 +63,20 @@ export async function generateUsecaseNode(
 ): Promise<WorkflowState> {
   state.logger.log(`[${NODE_NAME}] Started`)
 
+  await logAssistantMessage(state, 'Generating use cases...')
+
   // Check if we have analyzed requirements
   if (!state.analyzedRequirements) {
     const errorMessage =
       'No analyzed requirements found. Cannot generate use cases.'
     const error = new Error(`[${NODE_NAME}] ${errorMessage}`)
     state.logger.error(error.message)
+
+    await logAssistantMessage(
+      state,
+      'Error occurred during use case generation',
+    )
+
     return {
       ...state,
       error,
@@ -89,6 +98,8 @@ export async function generateUsecaseNode(
 
   const retryCount = state.retryCount[NODE_NAME] ?? 0
 
+  await logAssistantMessage(state, 'Analyzing test cases and queries...')
+
   const usecaseResult = await ResultAsync.fromPromise(
     qaAgent.generate(promptVariables),
     (error) => (error instanceof Error ? error.message : String(error)),
@@ -98,6 +109,11 @@ export async function generateUsecaseNode(
     const errorMessage = usecaseResult.error
     const error = new Error(`[${NODE_NAME}] Failed: ${errorMessage}`)
     state.logger.error(error.message)
+
+    await logAssistantMessage(
+      state,
+      'Error occurred during use case generation',
+    )
 
     return {
       ...state,
@@ -111,6 +127,9 @@ export async function generateUsecaseNode(
 
   const result = usecaseResult.value
   logUsecaseResults(state.logger, result.usecases)
+
+  await logAssistantMessage(state, 'Use case generation completed')
+
   state.logger.log(`[${NODE_NAME}] Completed`)
 
   return {

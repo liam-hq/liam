@@ -3,7 +3,7 @@
 import type { FC } from 'react'
 import type { TimelineItem as TimelineItemProps } from '@/features/timelineItems/types'
 import { AgentMessage } from './components/AgentMessage'
-import { ProcessIndicator } from './components/ProcessIndicator'
+import { LogMessage } from './components/LogMessage'
 import { UserMessage } from './components/UserMessage'
 import { VersionMessage } from './components/VersionMessage'
 
@@ -33,15 +33,27 @@ export const TimelineItem: FC<Props> = (props) => {
       })
     : null
 
-  return role === 'user' ? (
-    <UserMessage
-      content={content}
-      timestamp={timestamp}
-      avatarSrc={avatarSrc}
-      avatarAlt={avatarAlt}
-      initial={initial}
-    />
-  ) : (
+  if (role === 'user') {
+    return (
+      <UserMessage
+        content={content}
+        timestamp={timestamp}
+        avatarSrc={avatarSrc}
+        avatarAlt={avatarAlt}
+        initial={initial}
+      />
+    )
+  }
+
+  if (role === 'assistant_log') {
+    return (
+      <AgentMessage state="default">
+        <LogMessage content={content} />
+      </AgentMessage>
+    )
+  }
+
+  return (
     <AgentMessage state="default" message={content} time={formattedTime || ''}>
       {children}
     </AgentMessage>

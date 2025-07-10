@@ -46,7 +46,10 @@ describe('designSchemaNode retry behavior', () => {
           getSchema: vi.fn(),
           getDesignSession: vi.fn(),
           createVersion: vi.fn(),
-          createTimelineItem: vi.fn(),
+          createTimelineItem: vi.fn().mockResolvedValue({
+            success: true,
+            timelineItem: { id: 'test-timeline-id' },
+          }),
           createArtifact: vi.fn(),
           updateArtifact: vi.fn(),
           getArtifact: vi.fn(),

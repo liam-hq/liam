@@ -4,6 +4,7 @@ import { PMAnalysisAgent } from '../../../langchain/agents'
 import type { requirementsAnalysisSchema } from '../../../langchain/agents/pmAnalysisAgent/agent'
 import type { BasePromptVariables } from '../../../langchain/utils/types'
 import type { WorkflowState } from '../types'
+import { logAssistantMessage } from '../utils/timelineLogger'
 
 const NODE_NAME = 'analyzeRequirementsNode'
 
@@ -36,6 +37,8 @@ export async function analyzeRequirementsNode(
 ): Promise<WorkflowState> {
   state.logger.log(`[${NODE_NAME}] Started`)
 
+  await logAssistantMessage(state, 'Analyzing requirements...')
+
   const pmAnalysisAgent = new PMAnalysisAgent()
 
   const promptVariables: BasePromptVariables = {
@@ -44,6 +47,11 @@ export async function analyzeRequirementsNode(
   }
 
   const retryCount = state.retryCount[NODE_NAME] ?? 0
+
+  await logAssistantMessage(
+    state,
+    'Organizing business and functional requirements...',
+  )
 
   const analysisResult = await ResultAsync.fromPromise(
     pmAnalysisAgent.analyzeRequirements(promptVariables),
@@ -54,6 +62,11 @@ export async function analyzeRequirementsNode(
     const errorMessage = analysisResult.error
     const error = new Error(`[${NODE_NAME}] Failed: ${errorMessage}`)
     state.logger.error(error.message)
+
+    await logAssistantMessage(
+      state,
+      'Error occurred during requirements analysis',
+    )
 
     return {
       ...state,
@@ -67,6 +80,9 @@ export async function analyzeRequirementsNode(
 
   const result = analysisResult.value
   logAnalysisResult(state.logger, result)
+
+  await logAssistantMessage(state, 'Requirements analysis completed')
+
   state.logger.log(`[${NODE_NAME}] Completed`)
 
   return {

@@ -52,6 +52,9 @@ export type CreateTimelineItemParams = {
   | {
       type: 'error'
     }
+  | {
+      type: 'assistant_log'
+    }
 )
 
 export interface UpdateTimelineItemParams {
