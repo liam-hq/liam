@@ -1,0 +1,172 @@
+# .github/workflows/claude-pr-creator.yml
+name: Claude PR Creator
+on:
+  issues:
+    types: [labeled]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.issue.number }}
+  cancel-in-progress: true
+
+jobs:
+  claude-pr-creator:
+    if: github.event.label.name == 'claude-create-pr'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+    steps:
+      - name: Generate GitHub App Token
+        uses: actions/create-github-app-token@df432ceedc7162793a195dd1713ff69aefc7379e # v2.0.6
+        id: app-token
+        with:
+          app-id: ${{ secrets.LIAM_CODE_ASSISTANT_APP_ID }}
+          private-key: ${{ secrets.LIAM_CODE_ASSISTANT_PRIVATE_KEY }}
+          permission-contents: write
+          permission-pull-requests: write
+          permission-issues: write
+          repositories: liam
+
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          # Checkout using GitHub App Token
+          token: ${{ steps.app-token.outputs.token }}
+          persist-credentials: false
+
+      - name: Run Claude Code Action
+        uses: anthropics/claude-code-action@91c510a769db0f9b79df0efbdded0c29c033f846 # beta
+        id: claude-code
+        env:
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          ISSUE_TITLE: ${{ toJSON(github.event.issue.title) }}
+          ISSUE_BODY: ${{ toJSON(github.event.issue.body) }}
+        with:
+          github_token: ${{ steps.app-token.outputs.token }}
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          github_app_id: ${{ secrets.LIAM_CODE_ASSISTANT_APP_ID }}
+          github_app_private_key: ${{ secrets.LIAM_CODE_ASSISTANT_PRIVATE_KEY }}
+          direct_prompt: |
+            Please implement based on Issue #${{ github.event.issue.number }}:
+
+            Title: ${{ github.event.issue.title }}
+
+            Content:
+            ${{ github.event.issue.body }}
+
+            Please implement with appropriate branch name and commit message.
+            Output the branch name when implementation is complete.
+
+      - name: Create Pull Request
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
+        env:
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          ISSUE_TITLE: ${{ toJSON(github.event.issue.title) }}
+          ISSUE_BODY: ${{ toJSON(github.event.issue.body) }}
+        with:
+          github-token: ${{ steps.app-token.outputs.token }}
+          script: |
+            // Parse JSON-encoded environment variables
+            const issueTitle = JSON.parse(process.env.ISSUE_TITLE);
+            const issueBody = JSON.parse(process.env.ISSUE_BODY);
+
+            // Get the branch created by Claude Code Action
+            // Claude Code Action creates branches with pattern: claude/issue-<number>-<timestamp>
+            const issueNumber = process.env.ISSUE_NUMBER;
+            let claudeBranch = null;
+            let page = 1;
+            const maxPages = 10; // Prevent infinite loops
+
+            while (!claudeBranch && page <= maxPages) {
+              const branches = await github.rest.repos.listBranches({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                per_page: 100, // Limit results per page
+                page: page, // Specify the page number
+                protected: false // Only retrieve unprotected branches
+              });
+
+              // Find the branch created for this specific issue
+              claudeBranch = branches.data.find(branch =>
+                branch.name.startsWith(`claude/issue-${issueNumber}`) ||
+                branch.name.startsWith(`issue-${issueNumber}`)
+              );
+
+              // Break if no more branches are returned
+              if (branches.data.length === 0) {
+                break;
+              }
+
+              page++;
+            }
+
+            if (claudeBranch) {
+              console.log(`Creating PR for branch: ${claudeBranch.name}`);
+
+              // Check if PR already exists
+              const existingPRs = await github.rest.pulls.list({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                head: `${context.repo.owner}:${claudeBranch.name}`,
+                state: 'open'
+              });
+
+              if (existingPRs.data.length > 0) {
+                console.log(`PR already exists for branch: ${claudeBranch.name}`);
+                return;
+              }
+
+              try {
+                const pr = await github.rest.pulls.create({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  title: `Fix: ${issueTitle}`,
+                  head: claudeBranch.name,
+                  base: 'main',
+                  draft: true,
+                  body: [
+                    `Closes #${process.env.ISSUE_NUMBER}`,
+                    '',
+                    '## Summary',
+                    issueTitle,
+                    '',
+                    '## Implementation Details',
+                    issueBody,
+                    '',
+                    '## Auto-generated',
+                    'This PR was automatically generated by Claude Code Action.'
+                  ].join('\n')
+                });
+
+                console.log(`Pull Request created: ${pr.data.html_url}`);
+
+                // Add comment to the issue
+                await github.rest.issues.createComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: process.env.ISSUE_NUMBER,
+                  body: `🤖 Pull Request has been automatically created: ${pr.data.html_url}`
+                });
+              } catch (error) {
+                console.error(`Failed to create PR: ${error.message}`);
+
+                // Add error comment to the issue
+                await github.rest.issues.createComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: process.env.ISSUE_NUMBER,
+                  body: `❌ Failed to create Pull Request: ${error.message}`
+                });
+              }
+            } else {
+              console.log('No new branch found to create PR');
+
+              // Add comment to the issue
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: process.env.ISSUE_NUMBER,
+                body: `⚠️ No branch found for issue #${process.env.ISSUE_NUMBER}. Please check if Claude Code Action completed successfully.`
+              });
+            }
