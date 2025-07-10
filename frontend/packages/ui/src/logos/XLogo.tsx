@@ -1,8 +1,10 @@
 import type { ComponentPropsWithoutRef, FC } from 'react'
+import { useId } from 'react'
 
 type Props = ComponentPropsWithoutRef<'svg'>
 
 export const XLogo: FC<Props> = (props) => {
+  const clipId = useId()
   return (
     <svg
       role="img"
@@ -12,7 +14,7 @@ export const XLogo: FC<Props> = (props) => {
       viewBox="0 0 16 16"
       {...props}
     >
-      <g clipPath="url(#clip0_152_9120)">
+      <g clipPath={`url(#${clipId})`}>
         <path
           fillRule="evenodd"
           clipRule="evenodd"
@@ -21,7 +23,7 @@ export const XLogo: FC<Props> = (props) => {
         />
       </g>
       <defs>
-        <clipPath id="clip0_152_9120">
+        <clipPath id={clipId}>
           <rect width="16" height="16" fill="currentColor" />
         </clipPath>
       </defs>
