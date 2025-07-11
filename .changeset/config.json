@@ -21,6 +21,7 @@
     "@liam-hq/jobs",
     "@liam-hq/storybook",
     "@liam-hq/schema-bench",
+    "@liam-hq/github",
     "@liam-hq/artifact"
   ]
 }
