@@ -1513,6 +1513,8 @@ export type Database = {
         | 'schema_version'
         | 'error'
         | 'assistant_log'
+        | 'ddl_execution_result'
+        | 'dml_execution_result'
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1647,6 +1649,8 @@ export const Constants = {
         'schema_version',
         'error',
         'assistant_log',
+        'ddl_execution_result',
+        'dml_execution_result',
       ],
     },
   },

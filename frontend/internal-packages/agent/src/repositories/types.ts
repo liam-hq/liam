@@ -2,6 +2,10 @@ import type { Artifact } from '@liam-hq/artifact'
 import type { Database, Tables } from '@liam-hq/db/supabase/database.types'
 import type { Schema } from '@liam-hq/db-structure'
 import type { Operation } from 'fast-json-patch'
+import type {
+  DDLExecutionResult,
+  DMLExecutionResult,
+} from '../chat/workflow/types'
 
 export type SchemaData = {
   id: string
@@ -54,6 +58,14 @@ export type CreateTimelineItemParams = {
     }
   | {
       type: 'assistant_log'
+    }
+  | {
+      type: 'ddl_execution_result'
+      executionResult: DDLExecutionResult
+    }
+  | {
+      type: 'dml_execution_result'
+      executionResult: DMLExecutionResult
     }
 )
 

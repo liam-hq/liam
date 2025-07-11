@@ -358,13 +358,19 @@ export class SupabaseSchemaRepository implements SchemaRepository {
       'buildingSchemaVersionId' in params
         ? params.buildingSchemaVersionId
         : null
+
+    let finalContent = content
+    if ('executionResult' in params) {
+      finalContent = JSON.stringify(params.executionResult)
+    }
+
     const now = new Date().toISOString()
 
     const { data: timelineItem, error } = await this.client
       .from('timeline_items')
       .insert({
         design_session_id: designSessionId,
-        content,
+        content: finalContent,
         type,
         user_id: userId,
         building_schema_version_id: buildingSchemaVersionId,

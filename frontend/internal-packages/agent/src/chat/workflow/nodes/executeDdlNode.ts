@@ -4,8 +4,11 @@ import { executeQuery } from '@liam-hq/pglite-server'
 import type { SqlResult } from '@liam-hq/pglite-server/src/types'
 import { WORKFLOW_RETRY_CONFIG } from '../constants'
 import { getConfigurable } from '../shared/getConfigurable'
-import type { WorkflowState } from '../types'
-import { logAssistantMessage } from '../utils/timelineLogger'
+import type { DDLExecutionResult, WorkflowState } from '../types'
+import {
+  logAssistantMessage,
+  logDDLExecutionResult,
+} from '../utils/timelineLogger'
 
 /**
  * Execute DDL Node - Generates DDL from schema and executes it
@@ -67,12 +70,31 @@ export async function executeDdlNode(
 
   await logAssistantMessage(state, repositories, 'Executing DDL statements...')
 
+  const startTime = Date.now()
   const results: SqlResult[] = await executeQuery(
     state.designSessionId,
     ddlStatements,
   )
+  const executionTime = Date.now() - startTime
 
   const hasErrors = results.some((result: SqlResult) => !result.success)
+
+  const ddlExecutionResult: DDLExecutionResult = {
+    statements: [ddlStatements],
+    results,
+    executionTime,
+    success: !hasErrors,
+    errors: hasErrors
+      ? results
+          .filter((result: SqlResult) => !result.success)
+          .map(
+            (result: SqlResult) =>
+              `SQL: ${result.sql}, Error: ${JSON.stringify(result.result)}`,
+          )
+      : undefined,
+  }
+
+  await logDDLExecutionResult(state, repositories, ddlExecutionResult)
 
   if (hasErrors) {
     const errorMessages = results
