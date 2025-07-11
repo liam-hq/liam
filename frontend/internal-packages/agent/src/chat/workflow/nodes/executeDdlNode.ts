@@ -93,7 +93,24 @@ export async function executeDdlNode(
     const currentRetryCount = state.retryCount['ddlExecutionRetry'] || 0
 
     if (currentRetryCount < WORKFLOW_RETRY_CONFIG.MAX_DDL_EXECUTION_RETRIES) {
-      // Set up retry with designSchemaNode
+      const schemaResult = await repositories.schema.getSchema(
+        state.designSessionId,
+      )
+
+      if (!schemaResult.data) {
+        await logAssistantMessage(
+          state,
+          repositories,
+          'Failed to fetch current schema version for retry',
+        )
+        return {
+          ...state,
+          ddlExecutionFailed: true,
+          ddlExecutionFailureReason: `${errorMessages}; Failed to sync schema version for retry`,
+        }
+      }
+
+      // Set up retry with designSchemaNode using updated version info
       await logAssistantMessage(
         state,
         repositories,
@@ -104,6 +121,8 @@ export async function executeDdlNode(
         ...state,
         shouldRetryWithDesignSchema: true,
         ddlExecutionFailureReason: errorMessages,
+        latestVersionNumber: schemaResult.data.latestVersionNumber,
+        schemaData: schemaResult.data.schema,
         retryCount: {
           ...state.retryCount,
           ddlExecutionRetry: currentRetryCount + 1,
