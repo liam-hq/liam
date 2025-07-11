@@ -34,33 +34,42 @@ export const constraintsToRelationships = (tables: Tables): Relationships => {
       }
 
       const foreignKeyConstraint = result.output
-      // For now, we only support single-column foreign keys in relationships
-      // TODO: Support composite foreign keys in relationships
-      if (
-        foreignKeyConstraint.columnNames.length !== 1 ||
-        foreignKeyConstraint.targetColumnNames.length !== 1
-      ) {
-        continue
-      }
 
-      const columnName = foreignKeyConstraint.columnNames[0]
-      const targetColumnName = foreignKeyConstraint.targetColumnNames[0]
+      // Handle both single and composite foreign keys by creating a relationship for each column pair
+      const columnCount = Math.min(
+        foreignKeyConstraint.columnNames.length,
+        foreignKeyConstraint.targetColumnNames.length,
+      )
 
-      if (!columnName || !targetColumnName) {
-        continue
-      }
+      // Determine cardinality once for all column pairs (they should all have the same cardinality)
+      const cardinality = determineCardinalityForForeignKey(
+        tables,
+        table.name,
+        foreignKeyConstraint.columnNames,
+      )
 
-      const cardinality = determineCardinality(tables, table.name, columnName)
+      for (let i = 0; i < columnCount; i++) {
+        const columnName = foreignKeyConstraint.columnNames[i]
+        const targetColumnName = foreignKeyConstraint.targetColumnNames[i]
 
-      relationships[constraint.name] = {
-        name: constraint.name,
-        primaryTableName: foreignKeyConstraint.targetTableName,
-        primaryColumnName: targetColumnName,
-        foreignTableName: table.name,
-        foreignColumnName: columnName,
-        cardinality,
-        updateConstraint: foreignKeyConstraint.updateConstraint,
-        deleteConstraint: foreignKeyConstraint.deleteConstraint,
+        if (!columnName || !targetColumnName) {
+          continue
+        }
+
+        // For composite keys, append index to make unique relationship names
+        const relationshipKey =
+          columnCount > 1 ? `${constraint.name}_${i}` : constraint.name
+
+        relationships[relationshipKey] = {
+          name: relationshipKey,
+          primaryTableName: foreignKeyConstraint.targetTableName,
+          primaryColumnName: targetColumnName,
+          foreignTableName: table.name,
+          foreignColumnName: columnName,
+          cardinality,
+          updateConstraint: foreignKeyConstraint.updateConstraint,
+          deleteConstraint: foreignKeyConstraint.deleteConstraint,
+        }
       }
     }
   }
@@ -69,25 +78,33 @@ export const constraintsToRelationships = (tables: Tables): Relationships => {
 }
 
 /**
- * Determine the cardinality of a relationship based on column constraints
+ * Determine the cardinality of a foreign key relationship
+ * For composite foreign keys, checks if there's a UNIQUE constraint covering all foreign key columns
  */
-const determineCardinality = (
+const determineCardinalityForForeignKey = (
   tables: Tables,
   tableName: string,
-  columnName: string,
+  foreignKeyColumns: string[],
 ): Cardinality => {
   const table = tables[tableName]
   if (!table) {
     return 'ONE_TO_MANY'
   }
 
-  // Check for UNIQUE constraint in table constraints
+  // Check for UNIQUE constraint that covers all foreign key columns
   for (const constraint of Object.values(table.constraints)) {
-    if (
-      constraint.type === 'UNIQUE' &&
-      constraint.columnNames.includes(columnName)
-    ) {
-      return 'ONE_TO_ONE'
+    if (constraint.type === 'UNIQUE') {
+      // Check if the UNIQUE constraint contains all foreign key columns
+      const uniqueColumnsSet = new Set(constraint.columnNames)
+      const allForeignKeyColumnsInUnique = foreignKeyColumns.every((col) =>
+        uniqueColumnsSet.has(col),
+      )
+
+      if (allForeignKeyColumnsInUnique) {
+        // If the UNIQUE constraint has exactly the same columns as the foreign key,
+        // or if it's a subset (foreign key columns are all included), it's ONE_TO_ONE
+        return 'ONE_TO_ONE'
+      }
     }
   }
 
