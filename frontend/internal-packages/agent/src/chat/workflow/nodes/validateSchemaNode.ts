@@ -89,7 +89,9 @@ export async function validateSchemaNode(
       )
       .join('; ')
 
-    configurableResult.value.logger.error(`[${NODE_NAME}] DML execution failed: ${errorMessages}`)
+    configurableResult.value.logger.error(
+      `[${NODE_NAME}] DML execution failed: ${errorMessages}`,
+    )
 
     // Check if errors are retryable
     const hasRetryableError = isRetryableError(errorMessages)
@@ -102,7 +104,9 @@ export async function validateSchemaNode(
       configurableResult.value.logger.log(
         `[${NODE_NAME}] DML execution failed with retryable error, scheduling retry`,
       )
-      configurableResult.value.logger.log(`[${NODE_NAME}] Completed with retry scheduled`)
+      configurableResult.value.logger.log(
+        `[${NODE_NAME}] Completed with retry scheduled`,
+      )
 
       return {
         ...updatedState,
