@@ -55,8 +55,11 @@ export const convertTimelineItemToTimelineItemEntry = (
         type: 'assistant_log',
       }),
     )
-    .otherwise(() => ({
-      ...baseItem,
-      type: 'user', // Default to user if type is unknown
-    }))
+    .otherwise((item) => {
+      console.warn(`Unknown timeline item type: ${item.type}`)
+      return {
+        ...baseItem,
+        type: 'user' as const,
+      }
+    })
 }

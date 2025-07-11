@@ -152,7 +152,7 @@ export function useRealtimeTimelineItems(
     return () => {
       channel.unsubscribe()
     }
-  }, [designSessionId, handleError])
+  }, [designSessionId, handleError, handleNewTimelineItem])
 
   return {
     timelineItems,

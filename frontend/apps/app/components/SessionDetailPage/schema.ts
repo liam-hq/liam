@@ -12,8 +12,8 @@ export const timelineItemSchema = v.object({
     'error',
     'assistant_log',
   ]),
-  user_id: v.nullable(v.string()),
+  user_id: v.nullable(v.pipe(v.string(), v.uuid())),
   created_at: v.string(),
   organization_id: v.pipe(v.string(), v.uuid()),
-  building_schema_version_id: v.nullable(v.string()),
+  building_schema_version_id: v.nullable(v.pipe(v.string(), v.uuid())),
 })
