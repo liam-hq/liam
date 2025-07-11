@@ -17,6 +17,7 @@ import {
   saveUserMessageNode,
   validateSchemaNode,
 } from './chat/workflow/nodes'
+import { invokeSchemaDesignToolNode } from './chat/workflow/nodes/designSchemaNode'
 import {
   createAnnotations,
   DEFAULT_RECURSION_LIMIT,
@@ -56,6 +57,19 @@ const createGraph = () => {
   const ChatStateAnnotation = createAnnotations()
   const graph = new StateGraph(ChatStateAnnotation)
 
+  const shouldContinue = (state: WorkflowState) => {
+    const { messages } = state
+    const lastMessage = messages[messages.length - 1]
+    if (
+      'tool_calls' in lastMessage &&
+      Array.isArray(lastMessage.tool_calls) &&
+      lastMessage.tool_calls?.length
+    ) {
+      return 'invokeSchemaDesignTool'
+    }
+    return 'executeDDL'
+  }
+
   graph
     .addNode('saveUserMessage', saveUserMessageNode, {
       retryPolicy: RETRY_POLICY,
@@ -64,6 +78,9 @@ const createGraph = () => {
       retryPolicy: RETRY_POLICY,
     })
     .addNode('designSchema', designSchemaNode, {
+      retryPolicy: RETRY_POLICY,
+    })
+    .addNode('invokeSchemaDesignTool', invokeSchemaDesignToolNode, {
       retryPolicy: RETRY_POLICY,
     })
     .addNode('executeDDL', executeDdlNode, {
@@ -87,6 +104,12 @@ const createGraph = () => {
 
     .addEdge(START, 'saveUserMessage')
     .addEdge('analyzeRequirements', 'designSchema')
+    .addEdge('designSchema', 'invokeSchemaDesignTool')
+    .addConditionalEdges('designSchema', shouldContinue, [
+      'invokeSchemaDesignTool',
+      'executeDDL',
+    ])
+    .addEdge('invokeSchemaDesignTool', 'designSchema')
     .addEdge('executeDDL', 'generateUsecase')
     .addEdge('generateUsecase', 'prepareDML')
     .addEdge('prepareDML', 'validateSchema')
@@ -97,10 +120,11 @@ const createGraph = () => {
       return state.error ? 'finalizeArtifacts' : 'analyzeRequirements'
     })
 
-    // Conditional edge for designSchema - skip to finalizeArtifacts if error
-    .addConditionalEdges('designSchema', (state) => {
-      return state.error ? 'finalizeArtifacts' : 'executeDDL'
-    })
+
+    // // Conditional edge for designSchema - skip to finalizeArtifacts if error
+    // .addConditionalEdges('designSchema', (state) => {
+    //   return state.error ? 'finalizeArtifacts' : 'executeDDL'
+    // })
 
     // Conditional edge for executeDDL - retry with designSchema if DDL execution fails
     .addConditionalEdges('executeDDL', (state) => {

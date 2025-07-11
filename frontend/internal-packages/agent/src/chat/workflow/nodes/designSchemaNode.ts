@@ -1,11 +1,10 @@
 import { HumanMessage } from '@langchain/core/messages'
 import type { RunnableConfig } from '@langchain/core/runnables'
+import { ToolNode } from '@langchain/langgraph/prebuilt'
 import {
-  type DesignResponse,
-  type InvokeResult,
   invokeDesignAgent,
+  schemaDesignTool,
 } from '../../../langchain/agents/databaseSchemaBuildAgent/agent'
-import type { Repositories } from '../../../repositories'
 import { convertSchemaToText } from '../../../utils/convertSchemaToText'
 import { getConfigurable } from '../shared/getConfigurable'
 import type { WorkflowState } from '../types'
@@ -64,71 +63,68 @@ User Request: ${state.userInput}`
   return state.userInput
 }
 
-/**
- * Apply schema changes and return updated state
- */
-const applySchemaChanges = async (
-  operations: DesignResponse['operations'],
-  buildingSchemaVersionId: string,
-  message: string,
-  state: WorkflowState,
-  repositories: Repositories,
-): Promise<WorkflowState> => {
-  await logAssistantMessage(state, repositories, 'Applying schema changes...')
+// /**
+//  * Apply schema changes and return updated state
+//  */
+// const applySchemaChanges = async (
+//   operations: DesignResponse['operations'],
+//   buildingSchemaId: string,
+//   latestVersionNumber: number,
+//   message: string,
+//   state: WorkflowState,
+//   repositories: Repositories,
+// ): Promise<WorkflowState> => {
+//   await logAssistantMessage(state, repositories, 'Applying schema changes...')
 
-  const result = await repositories.schema.updateVersion({
-    buildingSchemaVersionId,
-    patch: operations,
-  })
+//   const result = await repositories.schema.createVersion({
+//     buildingSchemaId,
+//     patch: operations,
+//   })
 
-  if (!result.success) {
-    const errorMessage = result.error || 'Failed to update schema'
-    await logAssistantMessage(state, repositories, 'Schema update failed')
-    return {
-      ...state,
-      generatedAnswer: message,
-      error: new Error(errorMessage),
-    }
-  }
+//   if (!result.success) {
+//     const errorMessage = result.error || 'Failed to update schema'
+//     await logAssistantMessage(state, repositories, 'Schema update failed')
+//     return {
+//       ...state,
+//       generatedAnswer: message,
+//       error: new Error(errorMessage),
+//     }
+//   }
 
-  await logAssistantMessage(
-    state,
-    repositories,
-    `Applied ${operations.length} schema changes successfully`,
-  )
+//   await logAssistantMessage(
+//     state,
+//     repositories,
+//     `Applied ${operations.length} schema changes successfully`,
+//   )
 
-  return {
-    ...state,
-    schemaData: result.newSchema,
-    generatedAnswer: message,
-    error: undefined,
-  }
-}
+//   return {
+//     ...state,
+//     schemaData: result.newSchema,
+//     generatedAnswer: message,
+//     error: undefined,
+//   }
+// }
 
-/**
- * Handle schema changes if they exist
- */
-const handleSchemaChanges = async (
-  invokeResult: InvokeResult,
-  buildingSchemaVersionId: string,
-  state: WorkflowState,
-  repositories: Repositories,
-): Promise<WorkflowState> => {
-  if (invokeResult.operations.length === 0) {
-    return {
-      ...state,
-      generatedAnswer: invokeResult.message.text,
-    }
-  }
+// /**
+//  * Handle schema changes if they exist
+//  */
+// const handleSchemaChanges = async (
+//   message: AIMessage,
+//   state: WorkflowState,
+//   repositories: Repositories,
+// ): Promise<WorkflowState> => {
+//   const buildingSchemaId = state.buildingSchemaId
+//   const latestVersionNumber = state.latestVersionNumber
 
-  return await applySchemaChanges(
-    invokeResult.operations,
-    buildingSchemaVersionId,
-    invokeResult.message.text,
-    state,
-    repositories,
-  )
-}
+//   return await applySchemaChanges(
+//     message.operations,
+//     buildingSchemaId,
+//     latestVersionNumber,
+//     message.message.text,
+//     state,
+//     repositories,
+//   )
+// }
 
 /**
  * Design Schema Node - DB Design & DDL Execution
@@ -192,16 +188,20 @@ export async function designSchemaNode(
     )
   }
 
-  // Convert messages to BaseMessage array and add user message
-  const messages = [...state.messages, new HumanMessage(userMessage)]
-
   await logAssistantMessage(
     state,
     repositories,
     'Analyzing table structure and relationships...',
   )
 
-  const invokeResult = await invokeDesignAgent({ schemaText }, messages)
+  // Convert messages to BaseMessage array and add user message
+  const messages = [...state.messages, new HumanMessage(userMessage)]
+
+  const invokeResult = await invokeDesignAgent({ schemaText }, messages, {
+    buildingSchemaId: state.buildingSchemaId,
+    latestVersionNumber: state.latestVersionNumber,
+    repositories,
+  })
 
   if (invokeResult.isErr()) {
     await logAssistantMessage(state, repositories, 'Schema design failed')
@@ -211,26 +211,33 @@ export async function designSchemaNode(
     }
   }
 
-  const result = await handleSchemaChanges(
-    invokeResult.value,
-    buildingSchemaVersionId,
-    state,
-    repositories,
-  )
+  // const result = await handleSchemaChanges(invokeResult.value, state, repositories)
 
   await logAssistantMessage(state, repositories, 'Schema design completed')
 
-  // Clear retry flags after processing
-  const finalResult = {
-    ...result,
-    messages: [
-      ...state.messages,
-      new HumanMessage(userMessage),
-      invokeResult.value.message,
-    ],
+  return {
+    ...state,
+    // schemaData: result.newSchema,
+    messages: [invokeResult.value],
+    generatedAnswer: invokeResult.value.text,
+    error: undefined,
     shouldRetryWithDesignSchema: undefined,
     ddlExecutionFailureReason: undefined,
   }
+}
 
-  return finalResult
+// export const invokeSchemaDesignToolNode = new ToolNode([schemaDesignTool])
+export const invokeSchemaDesignToolNode = (
+  state: WorkflowState,
+  config: RunnableConfig,
+) => {
+  const toolNode = new ToolNode([schemaDesignTool])
+
+  return toolNode.invoke(state, {
+    configurable: {
+      ...config.configurable,
+      buildingSchemaId: state.buildingSchemaId,
+      latestVersionNumber: state.latestVersionNumber,
+    },
+  })
 }
