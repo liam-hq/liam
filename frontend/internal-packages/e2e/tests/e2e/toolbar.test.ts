@@ -195,7 +195,7 @@ test.describe('Show Mode', () => {
       })
       await modeButton.click()
 
-      const tableNode = page.getByRole('button', {
+      const tableNode = page.getByRole('group', {
         name: 'lists table',
         exact: true,
       })
