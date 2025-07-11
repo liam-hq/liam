@@ -17,10 +17,7 @@
     "enabled": true,
     "rules": {
       "recommended": true,
-      "nursery": {
-        // TODO: Re-enable useUniqueElementIds after fixing hardcoded IDs across codebase
-        "useUniqueElementIds": "off"
-      },
+      "nursery": {},
       "correctness": {
         "noUndeclaredDependencies": "error",
         "noUndeclaredVariables": "error",
