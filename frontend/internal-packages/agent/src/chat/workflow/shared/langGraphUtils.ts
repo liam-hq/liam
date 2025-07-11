@@ -1,5 +1,4 @@
-import type { BaseMessage } from '@langchain/core/messages'
-import { Annotation } from '@langchain/langgraph'
+import { Annotation, MessagesAnnotation } from '@langchain/langgraph'
 import type { Schema } from '@liam-hq/db-structure'
 import type { Usecase } from '../../../langchain/agents/qaGenerateUsecaseAgent/agent'
 import type { Repositories } from '../../../repositories'
@@ -29,7 +28,8 @@ export const DEFAULT_RECURSION_LIMIT = 20
  */
 export const createAnnotations = () => {
   return Annotation.Root({
-    messages: Annotation<BaseMessage[]>,
+    // messages: Annotation<BaseMessage[]>,
+    ...MessagesAnnotation.spec,
     userInput: Annotation<string>,
     analyzedRequirements: Annotation<
       | {
