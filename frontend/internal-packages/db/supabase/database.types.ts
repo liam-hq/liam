@@ -171,6 +171,7 @@ export type Database = {
       }
       design_sessions: {
         Row: {
+          artifact_mode: string | null
           created_at: string
           created_by_user_id: string
           id: string
@@ -180,6 +181,7 @@ export type Database = {
           project_id: string | null
         }
         Insert: {
+          artifact_mode?: string | null
           created_at?: string
           created_by_user_id: string
           id?: string
@@ -189,6 +191,7 @@ export type Database = {
           project_id?: string | null
         }
         Update: {
+          artifact_mode?: string | null
           created_at?: string
           created_by_user_id?: string
           id?: string
