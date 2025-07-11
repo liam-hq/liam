@@ -5,8 +5,8 @@ import { getConfigurable } from '../shared/getConfigurable'
 import type { WorkflowState } from '../types'
 
 /**
- * Validate Schema Node - DML Execution & Validation
- * Executed after DDL to populate schema with test data
+ * Validate Schema Node - Combined DDL/DML Execution & Validation
+ * Executes DDL and DML together in a single query to validate schema with test data
  */
 export async function validateSchemaNode(
   state: WorkflowState,
@@ -20,15 +20,26 @@ export async function validateSchemaNode(
     }
   }
 
-  // Check if DML statements are available
-  if (!state.dmlStatements || !state.dmlStatements.trim()) {
+  // Check if we have any statements to execute
+  const hasDdl = state.ddlStatements?.trim()
+  const hasDml = state.dmlStatements?.trim()
+
+  if (!hasDdl && !hasDml) {
     return state
   }
 
-  // Execute DML statements
+  // Combine DDL and DML statements
+  const combinedStatements = [
+    hasDdl ? state.ddlStatements : '',
+    hasDml ? state.dmlStatements : '',
+  ]
+    .filter(Boolean)
+    .join('\n')
+
+  // Execute combined statements
   const results: SqlResult[] = await executeQuery(
     state.designSessionId,
-    state.dmlStatements,
+    combinedStatements,
   )
 
   // Check for execution errors
@@ -43,7 +54,6 @@ export async function validateSchemaNode(
       )
       .join('; ')
 
-    // For now, we continue even with errors (future PR will handle error recovery)
     return {
       ...state,
       dmlExecutionErrors: errorMessages,
