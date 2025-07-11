@@ -24,7 +24,7 @@ function isRetryableError(errorMessage: string): boolean {
 }
 /**
  * Validate Schema Node - Combined DDL/DML Execution & Validation
- * Executes DDL (if needed) and then DML to validate schema with test data
+ * Executes DDL and DML together in a single query to validate schema with test data
  */
 export async function validateSchemaNode(
   state: WorkflowState,
@@ -38,43 +38,26 @@ export async function validateSchemaNode(
     }
   }
 
-  let updatedState = state
+  // Check if we have any statements to execute
+  const hasDdl = state.ddlStatements?.trim()
+  const hasDml = state.dmlStatements?.trim()
 
-  // Execute DDL first if available and not already executed
-  if (state.ddlStatements && !state.ddlExecutionFailed) {
-    const ddlResults: SqlResult[] = await executeQuery(
-      state.designSessionId,
-      state.ddlStatements,
-    )
-
-    const ddlHasErrors = ddlResults.some((result: SqlResult) => !result.success)
-
-    if (ddlHasErrors) {
-      const errorMessages = ddlResults
-        .filter((result: SqlResult) => !result.success)
-        .map(
-          (result: SqlResult) =>
-            `SQL: ${result.sql}, Error: ${JSON.stringify(result.result)}`,
-        )
-        .join('; ')
-
-      // Continue to try DML even if DDL fails
-      updatedState = {
-        ...updatedState,
-        ddlExecutionFailed: true,
-        ddlExecutionFailureReason: errorMessages,
-      }
-    }
+  if (!hasDdl && !hasDml) {
+    return state
   }
 
-  // Check if DML statements are available
-  if (!updatedState.dmlStatements || !updatedState.dmlStatements.trim()) {
-    return updatedState
-  }
-  // Execute DML statements
+  // Combine DDL and DML statements
+  const combinedStatements = [
+    hasDdl ? state.ddlStatements : '',
+    hasDml ? state.dmlStatements : '',
+  ]
+    .filter(Boolean)
+    .join('\n')
+
+  // Execute combined statements
   const results: SqlResult[] = await executeQuery(
-    updatedState.designSessionId,
-    updatedState.dmlStatements,
+    state.designSessionId,
+    combinedStatements,
   )
 
   // Check for execution errors
@@ -90,31 +73,31 @@ export async function validateSchemaNode(
       .join('; ')
 
     configurableResult.value.logger.error(
-      `[${NODE_NAME}] DML execution failed: ${errorMessages}`,
+      `[${NODE_NAME}] Execution failed: ${errorMessages}`,
     )
 
     // Check if errors are retryable
     const hasRetryableError = isRetryableError(errorMessages)
-    const currentRetryCount = updatedState.retryCount['dmlExecutionRetry'] || 0
+    const currentRetryCount = state.retryCount?.['dmlExecutionRetry'] || 0
 
     if (
       hasRetryableError &&
       currentRetryCount < WORKFLOW_RETRY_CONFIG.MAX_DML_EXECUTION_RETRIES
     ) {
       configurableResult.value.logger.log(
-        `[${NODE_NAME}] DML execution failed with retryable error, scheduling retry`,
+        `[${NODE_NAME}] Execution failed with retryable error, scheduling retry`,
       )
       configurableResult.value.logger.log(
         `[${NODE_NAME}] Completed with retry scheduled`,
       )
 
       return {
-        ...updatedState,
+        ...state,
         dmlExecutionErrors: errorMessages,
         shouldRetryDmlExecution: true,
         dmlRetryReason: errorMessages,
         retryCount: {
-          ...updatedState.retryCount,
+          ...state.retryCount,
           dmlExecutionRetry: currentRetryCount + 1,
         },
       }
@@ -123,13 +106,13 @@ export async function validateSchemaNode(
     // Non-retryable error or max retries exceeded
     configurableResult.value.logger.log(`[${NODE_NAME}] Completed with errors`)
     return {
-      ...updatedState,
+      ...state,
       dmlExecutionErrors: errorMessages,
     }
   }
 
   return {
-    ...updatedState,
+    ...state,
     dmlExecutionSuccessful: true,
   }
 }
