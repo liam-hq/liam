@@ -30,37 +30,38 @@ describe('prepareDmlNode', () => {
     })
   })
 
-  const createMockState = (overrides?: Partial<WorkflowState>) => {
-    const repositories: Repositories = {
-      schema: {
-        updateTimelineItem: vi.fn(),
-        getSchema: vi.fn(),
-        getDesignSession: vi.fn(),
-        createVersion: vi.fn(),
-        createTimelineItem: vi.fn().mockResolvedValue(undefined),
-        createArtifact: vi.fn(),
-        updateArtifact: vi.fn(),
-        getArtifact: vi.fn(),
-      },
-    }
+  const createMockRepositories = (): Repositories => ({
+    schema: {
+      updateTimelineItem: vi.fn(),
+      getSchema: vi.fn(),
+      getDesignSession: vi.fn(),
+      createVersion: vi.fn(),
+      createTimelineItem: vi.fn().mockResolvedValue(undefined),
+      createArtifact: vi.fn(),
+      updateArtifact: vi.fn(),
+      getArtifact: vi.fn(),
+    },
+  })
 
+  const createMockState = (
+    overrides?: Partial<WorkflowState>,
+  ): WorkflowState => {
     return {
       messages: [],
       userInput: 'test',
-      formattedHistory: '',
-      schemaData: { tables: {}, relationships: [] },
+      schemaData: { tables: {} },
       buildingSchemaId: 'test-id',
       latestVersionNumber: 1,
       userId: 'user-id',
       designSessionId: 'session-id',
       retryCount: {},
-      repositories,
-      logger: mockLogger,
+      artifactMode: 'full' as const,
       ...overrides,
     }
   }
 
   it('should generate DML statements when DDL and use cases are available', async () => {
+    const repositories = createMockRepositories()
     const state = createMockState({
       ddlStatements: 'CREATE TABLE users (id INT);',
       generatedUsecases: [
@@ -75,13 +76,14 @@ describe('prepareDmlNode', () => {
     })
 
     const result = await prepareDmlNode(state, {
-      configurable: { repositories: state.repositories, logger: mockLogger },
+      configurable: { repositories, logger: mockLogger },
     })
 
     expect(result.dmlStatements).toBe('-- Generated DML statements')
   })
 
   it('should return state unchanged when DDL statements are missing', async () => {
+    const repositories = createMockRepositories()
     const state = createMockState({
       generatedUsecases: [
         {
@@ -95,26 +97,28 @@ describe('prepareDmlNode', () => {
     })
 
     const result = await prepareDmlNode(state, {
-      configurable: { repositories: state.repositories, logger: mockLogger },
+      configurable: { repositories, logger: mockLogger },
     })
 
     expect(result.dmlStatements).toBeUndefined()
   })
 
   it('should return state unchanged when use cases are missing', async () => {
+    const repositories = createMockRepositories()
     const state = createMockState({
       ddlStatements: 'CREATE TABLE users (id INT);',
       generatedUsecases: [],
     })
 
     const result = await prepareDmlNode(state, {
-      configurable: { repositories: state.repositories, logger: mockLogger },
+      configurable: { repositories, logger: mockLogger },
     })
 
     expect(result.dmlStatements).toBeUndefined()
   })
 
   it('should log input statistics', async () => {
+    const repositories = createMockRepositories()
     const state = createMockState({
       ddlStatements:
         'CREATE TABLE users (id INT);\nCREATE TABLE posts (id INT);',
@@ -137,11 +141,12 @@ describe('prepareDmlNode', () => {
     })
 
     await prepareDmlNode(state, {
-      configurable: { repositories: state.repositories, logger: mockLogger },
+      configurable: { repositories, logger: mockLogger },
     })
   })
 
   it('should format use cases by category', async () => {
+    const repositories = createMockRepositories()
     const mockGenerate = vi.fn().mockResolvedValue({
       dmlStatements: '-- Generated DML statements',
     })
@@ -180,7 +185,7 @@ describe('prepareDmlNode', () => {
     })
 
     await prepareDmlNode(state, {
-      configurable: { repositories: state.repositories, logger: mockLogger },
+      configurable: { repositories, logger: mockLogger },
     })
 
     expect(mockGenerate).toHaveBeenCalledTimes(1)
@@ -213,6 +218,7 @@ describe('prepareDmlNode', () => {
   })
 
   it('should handle use cases without category', async () => {
+    const repositories = createMockRepositories()
     const mockGenerate = vi.fn().mockResolvedValue({
       dmlStatements: '-- Generated DML statements',
     })
@@ -237,7 +243,7 @@ describe('prepareDmlNode', () => {
     })
 
     await prepareDmlNode(state, {
-      configurable: { repositories: state.repositories, logger: mockLogger },
+      configurable: { repositories, logger: mockLogger },
     })
 
     expect(mockGenerate).toHaveBeenCalledWith({
@@ -247,6 +253,7 @@ describe('prepareDmlNode', () => {
   })
 
   it('should handle empty DML generation result', async () => {
+    const repositories = createMockRepositories()
     vi.mocked(DMLGenerationAgent).mockImplementationOnce(() => {
       const agent = {
         generate: vi.fn().mockResolvedValue({
@@ -271,7 +278,7 @@ describe('prepareDmlNode', () => {
     })
 
     const result = await prepareDmlNode(state, {
-      configurable: { repositories: state.repositories, logger: mockLogger },
+      configurable: { repositories, logger: mockLogger },
     })
 
     expect(result.dmlStatements).toBeUndefined()

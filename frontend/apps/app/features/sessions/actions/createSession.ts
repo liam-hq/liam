@@ -33,6 +33,10 @@ const FormDataSchema = v.object({
     v.string(),
     v.minLength(1, 'Initial message is required'),
   ),
+  artifactMode: v.optional(
+    v.union([v.literal('simple'), v.literal('full')]),
+    'full',
+  ),
 })
 
 type RepositoryData = {
@@ -193,8 +197,13 @@ export async function createSession(
     return { success: false, error: 'Invalid form data' }
   }
 
-  const { projectId, parentDesignSessionId, gitSha, initialMessage } =
-    parsedFormDataResult.output
+  const {
+    projectId,
+    parentDesignSessionId,
+    gitSha,
+    initialMessage,
+    artifactMode,
+  } = parsedFormDataResult.output
 
   const supabase = await createClient()
   const currentUserId = await getCurrentUserId(supabase)
@@ -224,6 +233,7 @@ export async function createSession(
       organization_id: organizationId,
       created_by_user_id: currentUserId,
       parent_design_session_id: parentDesignSessionId,
+      artifact_mode: artifactMode,
     })
     .select()
     .single()
@@ -268,6 +278,7 @@ export async function createSession(
     latestVersionNumber: 0,
     designSessionId: designSession.id,
     userId: currentUserId,
+    artifactMode,
   }
 
   // Generate idempotency key based on the payload

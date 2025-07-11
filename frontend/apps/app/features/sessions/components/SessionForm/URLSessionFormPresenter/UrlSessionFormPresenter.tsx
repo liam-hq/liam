@@ -23,6 +23,8 @@ type Props = {
   isPending: boolean
   formAction: (formData: FormData) => void
   isTransitioning?: boolean
+  onArtifactModeChange?: (isActive: boolean) => void
+  artifactMode?: boolean
 }
 
 export const URLSessionFormPresenter: FC<Props> = ({
@@ -30,6 +32,8 @@ export const URLSessionFormPresenter: FC<Props> = ({
   isPending,
   formAction,
   isTransitioning = false,
+  onArtifactModeChange,
+  artifactMode,
 }) => {
   const [urlPath, setUrlPath] = useState('')
   const [textContent, setTextContent] = useState('')
@@ -317,6 +321,8 @@ export const URLSessionFormPresenter: FC<Props> = ({
               hasContent={hasContent}
               onFileSelect={handleFileSelect}
               onCancel={handleResetForm}
+              onArtifactModeChange={onArtifactModeChange}
+              artifactMode={artifactMode}
             />
           </div>
         </div>

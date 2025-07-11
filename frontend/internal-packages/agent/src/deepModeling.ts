@@ -31,6 +31,7 @@ export type DeepModelingParams = {
   designSessionId: string
   userId: string
   recursionLimit?: number
+  artifactMode?: 'simple' | 'full'
 }
 
 export type DeepModelingResult = Result<
@@ -147,6 +148,7 @@ export const deepModeling = async (
     designSessionId,
     userId,
     recursionLimit = DEFAULT_RECURSION_LIMIT,
+    artifactMode = 'full',
   } = params
 
   const { repositories, logger } = config.configurable
@@ -172,6 +174,7 @@ export const deepModeling = async (
     designSessionId,
     userId,
     retryCount: {},
+    artifactMode,
   }
 
   try {

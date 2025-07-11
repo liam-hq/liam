@@ -1077,6 +1077,8 @@ CREATE TABLE IF NOT EXISTS "public"."design_sessions" (
     "parent_design_session_id" "uuid",
     "name" "text" NOT NULL,
     "created_at" timestamp(3) with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    "artifact_mode" "text" DEFAULT 'full'::"text",
+    CONSTRAINT "design_sessions_artifact_mode_check" CHECK (("artifact_mode" = ANY (ARRAY['simple'::"text", 'full'::"text"]))),
     CONSTRAINT "design_sessions_project_or_org_check" CHECK ((("project_id" IS NOT NULL) OR ("organization_id" IS NOT NULL)))
 );
 

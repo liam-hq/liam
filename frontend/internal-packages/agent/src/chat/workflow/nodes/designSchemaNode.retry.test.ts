@@ -69,6 +69,7 @@ describe('designSchemaNode retry behavior', () => {
       retryCount: { ddlExecutionRetry: 1 },
       shouldRetryWithDesignSchema: true,
       ddlExecutionFailureReason: 'Foreign key constraint error',
+      artifactMode: 'full',
     }
 
     const config = {

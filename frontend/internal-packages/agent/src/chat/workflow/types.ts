@@ -38,6 +38,8 @@ export type WorkflowState = {
 
   // Message saving fields
   designSessionId: string
+
+  artifactMode: 'simple' | 'full'
 }
 
 /**
