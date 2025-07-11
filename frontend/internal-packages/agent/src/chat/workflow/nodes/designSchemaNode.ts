@@ -186,19 +186,44 @@ export async function designSchemaNode(
   // Prepare user message with context
   const userMessage = prepareUserMessage(state)
 
-  // Log appropriate message for DDL retry case
+  let currentState = state
   if (state.shouldRetryWithDesignSchema && state.ddlExecutionFailureReason) {
     await logAssistantMessage(
       state,
       repositories,
       'Redesigning schema to fix DDL execution errors...',
     )
+
+    await logAssistantMessage(
+      state,
+      repositories,
+      'Verifying schema version for retry...',
+    )
+
+    const schemaResult = await repositories.schema.getSchema(
+      state.designSessionId,
+    )
+    if (
+      schemaResult.data &&
+      schemaResult.data.latestVersionNumber !== state.latestVersionNumber
+    ) {
+      await logAssistantMessage(
+        state,
+        repositories,
+        'Updating schema version for retry consistency',
+      )
+      currentState = {
+        ...state,
+        latestVersionNumber: schemaResult.data.latestVersionNumber,
+        schemaData: schemaResult.data.schema,
+      }
+    }
   }
 
   // Create prompt variables directly
   const promptVariables: SchemaAwareChatVariables = {
     schema_text: schemaText,
-    chat_history: formatMessagesToHistory(state.messages),
+    chat_history: formatMessagesToHistory(currentState.messages),
     user_message: userMessage,
   }
 
@@ -210,7 +235,7 @@ export async function designSchemaNode(
 
   // Use agent's generate method with prompt variables
   const response = await agent.generate(promptVariables)
-  const result = await handleSchemaChanges(response, state, repositories)
+  const result = await handleSchemaChanges(response, currentState, repositories)
 
   await logAssistantMessage(state, repositories, 'Schema design completed')
 
