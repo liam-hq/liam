@@ -1,5 +1,6 @@
 import type { BaseMessage } from '@langchain/core/messages'
 import type { Schema } from '@liam-hq/db-structure'
+import type { SqlResult } from '@liam-hq/pglite-server/src/types'
 import type { Usecase } from '../../langchain/agents/qaGenerateUsecaseAgent/agent'
 import type { Repositories } from '../../repositories'
 import type { NodeLogger } from '../../utils/nodeLogger'
@@ -43,6 +44,23 @@ export type WorkflowState = {
 /**
  * Type definition for the configurable object passed to workflow nodes
  */
+export type DDLExecutionResult = {
+  statements: string[]
+  results: SqlResult[]
+  executionTime: number
+  success: boolean
+  errors?: string[] | undefined
+}
+
+export type DMLExecutionResult = {
+  usecase: string
+  statements: string[]
+  results: SqlResult[]
+  executionTime: number
+  success: boolean
+  errors?: string[] | undefined
+}
+
 export type WorkflowConfigurable = {
   repositories: Repositories
   logger: NodeLogger
