@@ -15,6 +15,7 @@ jobs:
   claude-code-action:
     if: |
       (
+        (github.event_name == 'pull_request') ||
         (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@claude')) ||
         (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body, '@claude')) ||
         (github.event_name == 'pull_request_review' && contains(github.event.review.body, '@claude')) ||
@@ -37,6 +38,29 @@ jobs:
 
       - name: Setup pnpm
         uses: ./.github/actions/pnpm-setup
+
+      - name: Setup Claude settings with lint hook
+        run: |
+          mkdir -p ~/.claude
+          cat > ~/.claude/settings.json << 'EOF'
+          {
+            "enableAllProjectMcpServers": true,
+            "hooks": {
+              "PreToolUse": [
+                {
+                  "matcher": "mcp__github_file_ops__commit_files",
+                  "hooks": [
+                    {
+                      "type": "command",
+                      "command": "bash -c 'cd $GITHUB_WORKSPACE && pnpm fmt && pnpm lint && echo \"✅ Format and lint checks passed\"'",
+                      "run_in_background": false
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+          EOF
 
       - name: Run Claude PR Action
         uses: anthropics/claude-code-action@6364776f60df0aeb83d4efda5906d68d8cc72137 # beta
