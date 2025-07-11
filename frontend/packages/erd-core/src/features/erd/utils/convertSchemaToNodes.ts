@@ -7,6 +7,7 @@ import {
 } from '@/features/erd/constants'
 import { columnHandleId } from '@/features/erd/utils'
 import type { ShowMode } from '@/schemas/showMode'
+import { adjustMultipleEdges } from './adjustMultipleEdges'
 
 type Params = {
   schema: Schema
@@ -83,7 +84,7 @@ export const convertSchemaToNodes = ({
     ...tableNodes,
   ]
 
-  const edges: Edge[] = relationships.map((rel) => ({
+  const rawEdges: Edge[] = relationships.map((rel) => ({
     id: rel.name,
     type: 'relationship',
     source: rel.primaryTableName,
@@ -101,6 +102,9 @@ export const convertSchemaToNodes = ({
       cardinality: rel.cardinality,
     },
   }))
+
+  // Adjust edges to prevent overlap when multiple edges exist between same nodes
+  const edges = adjustMultipleEdges(rawEdges)
 
   return { nodes, edges }
 }

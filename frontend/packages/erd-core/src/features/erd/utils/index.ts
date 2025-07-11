@@ -1,3 +1,4 @@
+export * from './adjustMultipleEdges'
 export * from './columnHandleId'
 export * from './computeAutoLayout'
 export * from './convertSchemaToNodes'

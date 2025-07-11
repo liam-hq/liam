@@ -11,7 +11,7 @@
   },
   "src/features/erd/utils/convertSchemaToNodes.test.ts": {
     "@typescript-eslint/consistent-type-assertions": {
-      "count": 11
+      "count": 9
     }
   },
   "src/features/erd/utils/cookieUtils.ts": {

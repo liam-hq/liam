@@ -2,6 +2,7 @@ import { BaseEdge, type EdgeProps, getBezierPath } from '@xyflow/react'
 
 import clsx from 'clsx'
 import type { FC } from 'react'
+import { calculateBezierPathWithOffset } from '@/features/erd/utils/calculateBezierPathWithOffset'
 import styles from './RelationshipEdge.module.css'
 import type { RelationshipEdgeType } from './type'
 
@@ -20,14 +21,28 @@ export const RelationshipEdge: FC<Props> = ({
   id,
   data,
 }) => {
-  const [edgePath] = getBezierPath({
-    sourceX,
-    sourceY,
-    sourcePosition,
-    targetX,
-    targetY,
-    targetPosition,
-  })
+  // Use custom path calculation if there are multiple edges between same nodes
+  const hasMultipleEdges = (data?.totalEdgesInGroup ?? 1) > 1
+  const offset = data?.pathOffset || 0
+
+  const edgePath = hasMultipleEdges
+    ? calculateBezierPathWithOffset({
+        sourceX,
+        sourceY,
+        sourcePosition,
+        targetX,
+        targetY,
+        targetPosition,
+        offset,
+      })
+    : getBezierPath({
+        sourceX,
+        sourceY,
+        sourcePosition,
+        targetX,
+        targetY,
+        targetPosition,
+      })[0]
 
   return (
     <>

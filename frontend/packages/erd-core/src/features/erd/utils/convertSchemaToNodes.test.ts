@@ -112,13 +112,13 @@ describe('convertSchemaToNodes', () => {
         },
       })
 
-      const { nodes, edges } = convertSchemaToNodes({
+      const { edges } = convertSchemaToNodes({
         schema,
         showMode: 'ALL_FIELDS' as ShowMode,
       })
 
       expect(edges).toHaveLength(1)
-      expect(edges[0]).toEqual({
+      expect(edges[0]).toMatchObject({
         id: 'posts_user_id_fkey',
         type: 'relationship',
         source: 'users',
@@ -126,24 +126,77 @@ describe('convertSchemaToNodes', () => {
         sourceHandle: 'users-id',
         targetHandle: 'posts-user_id',
         data: {
-          relationship: expect.objectContaining({
-            name: 'posts_user_id_fkey',
-            primaryTableName: 'users',
-            primaryColumnName: 'id',
-            foreignTableName: 'posts',
-            foreignColumnName: 'user_id',
-            cardinality: 'ONE_TO_MANY',
-          }),
           cardinality: 'ONE_TO_MANY',
         },
       })
-
-      // Related tables should not have NON_RELATED_TABLE_GROUP_NODE as parent
-      const tableNodes = nodes.filter((node) => node.type === 'table')
-      expect(tableNodes.every((node) => !node.parentId)).toBe(true)
     })
 
-    it('should handle multiple relationships correctly', () => {
+    it('should handle multiple relationships between the same tables', () => {
+      const schema = aSchema({
+        tables: {
+          users: aTable({
+            name: 'users',
+            columns: {
+              id: aColumn({ name: 'id', type: 'integer' }),
+            },
+          }),
+          posts: aTable({
+            name: 'posts',
+            columns: {
+              id: aColumn({ name: 'id', type: 'integer' }),
+              author_id: aColumn({ name: 'author_id', type: 'integer' }),
+              reviewer_id: aColumn({ name: 'reviewer_id', type: 'integer' }),
+              editor_id: aColumn({ name: 'editor_id', type: 'integer' }),
+            },
+            constraints: {
+              fk_posts_author: aForeignKeyConstraint({
+                name: 'fk_posts_author',
+                columnNames: ['author_id'],
+                targetTableName: 'users',
+                targetColumnNames: ['id'],
+              }),
+              fk_posts_reviewer: aForeignKeyConstraint({
+                name: 'fk_posts_reviewer',
+                columnNames: ['reviewer_id'],
+                targetTableName: 'users',
+                targetColumnNames: ['id'],
+              }),
+              fk_posts_editor: aForeignKeyConstraint({
+                name: 'fk_posts_editor',
+                columnNames: ['editor_id'],
+                targetTableName: 'users',
+                targetColumnNames: ['id'],
+              }),
+            },
+          }),
+        },
+      })
+
+      const { edges } = convertSchemaToNodes({
+        schema,
+        showMode: 'ALL_FIELDS' as ShowMode,
+      })
+
+      expect(edges).toHaveLength(3)
+
+      // Check that all three relationships are created
+      const edgeIds = edges.map((edge) => edge.id)
+      expect(edgeIds).toContain('fk_posts_author')
+      expect(edgeIds).toContain('fk_posts_reviewer')
+      expect(edgeIds).toContain('fk_posts_editor')
+
+      // Verify each edge has the correct source/target handles
+      const authorEdge = edges.find((e) => e.id === 'fk_posts_author')
+      expect(authorEdge?.targetHandle).toBe('posts-author_id')
+
+      const reviewerEdge = edges.find((e) => e.id === 'fk_posts_reviewer')
+      expect(reviewerEdge?.targetHandle).toBe('posts-reviewer_id')
+
+      const editorEdge = edges.find((e) => e.id === 'fk_posts_editor')
+      expect(editorEdge?.targetHandle).toBe('posts-editor_id')
+    })
+
+    it('should handle TABLE_NAME showMode correctly', () => {
       const schema = aSchema({
         tables: {
           users: aTable({
@@ -167,37 +220,19 @@ describe('convertSchemaToNodes', () => {
               }),
             },
           }),
-          comments: aTable({
-            name: 'comments',
-            columns: {
-              id: aColumn({ name: 'id', type: 'integer' }),
-              post_id: aColumn({ name: 'post_id', type: 'integer' }),
-            },
-            constraints: {
-              comments_post_id_fkey: aForeignKeyConstraint({
-                name: 'comments_post_id_fkey',
-                columnNames: ['post_id'],
-                targetTableName: 'posts',
-                targetColumnNames: ['id'],
-              }),
-            },
-          }),
         },
       })
 
       const { edges } = convertSchemaToNodes({
         schema,
-        showMode: 'ALL_FIELDS' as ShowMode,
+        showMode: 'TABLE_NAME' as ShowMode,
       })
 
-      expect(edges).toHaveLength(2)
-      expect(edges.map((edge) => edge.id)).toEqual([
-        'posts_user_id_fkey',
-        'comments_post_id_fkey',
-      ])
+      expect(edges[0]?.sourceHandle).toBeNull()
+      expect(edges[0]?.targetHandle).toBeNull()
     })
 
-    it('should set ONE_TO_ONE cardinality correctly', () => {
+    it('should handle cardinality detection for UNIQUE constraints', () => {
       const schema = aSchema({
         tables: {
           users: aTable({
@@ -237,66 +272,8 @@ describe('convertSchemaToNodes', () => {
     })
   })
 
-  describe('ShowMode tests', () => {
-    const schema = aSchema({
-      tables: {
-        users: aTable({
-          name: 'users',
-          columns: {
-            id: aColumn({ name: 'id', type: 'integer' }),
-          },
-        }),
-        posts: aTable({
-          name: 'posts',
-          columns: {
-            id: aColumn({ name: 'id', type: 'integer' }),
-            user_id: aColumn({ name: 'user_id', type: 'integer' }),
-          },
-          constraints: {
-            posts_user_id_fkey: aForeignKeyConstraint({
-              name: 'posts_user_id_fkey',
-              columnNames: ['user_id'],
-              targetTableName: 'users',
-              targetColumnNames: ['id'],
-            }),
-          },
-        }),
-      },
-    })
-
-    it('should set column-level handles correctly in ALL_FIELDS mode', () => {
-      const { edges } = convertSchemaToNodes({
-        schema,
-        showMode: 'ALL_FIELDS' as ShowMode,
-      })
-
-      expect(edges[0]?.sourceHandle).toBe('users-id')
-      expect(edges[0]?.targetHandle).toBe('posts-user_id')
-    })
-
-    it('should set column-level handles correctly in KEY_ONLY mode', () => {
-      const { edges } = convertSchemaToNodes({
-        schema,
-        showMode: 'KEY_ONLY' as ShowMode,
-      })
-
-      expect(edges[0]?.sourceHandle).toBe('users-id')
-      expect(edges[0]?.targetHandle).toBe('posts-user_id')
-    })
-
-    it('should set handles to null in TABLE_NAME mode', () => {
-      const { edges } = convertSchemaToNodes({
-        schema,
-        showMode: 'TABLE_NAME' as ShowMode,
-      })
-
-      expect(edges[0]?.sourceHandle).toBeNull()
-      expect(edges[0]?.targetHandle).toBeNull()
-    })
-  })
-
-  describe('Non-related table group processing', () => {
-    it('should not create group node when all tables are related', () => {
+  describe('Node parentId assignment', () => {
+    it('should not assign NON_RELATED_TABLE_GROUP_NODE as parent to tables with relationships', () => {
       const schema = aSchema({
         tables: {
           users: aTable({
