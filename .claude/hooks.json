@@ -1,0 +1,15 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "mcp__github_file_ops__commit_files",
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".claude/hooks/pre-mcp-commit.sh"
+          }
+        ]
+      }
+    ]
+  }
+}
