@@ -37,7 +37,12 @@ describe('designSchemaNode retry behavior', () => {
     const mockRepositories = {
       schema: {
         updateTimelineItem: vi.fn(),
-        getSchema: vi.fn(),
+        getSchema: vi.fn().mockResolvedValue({
+          data: {
+            latestVersionNumber: 2,
+            schema: { tables: {} },
+          },
+        }),
         getDesignSession: vi.fn(),
         createVersion: vi.fn(),
         createTimelineItem: vi.fn().mockResolvedValue({
