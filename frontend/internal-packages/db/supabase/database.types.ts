@@ -1343,6 +1343,57 @@ export type Database = {
           },
         ]
       }
+      workflow_executions: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          design_session_id: string
+          error_message: string | null
+          id: string
+          organization_id: string
+          started_at: string | null
+          status: Database['public']['Enums']['execution_status_enum']
+          updated_at: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          design_session_id: string
+          error_message?: string | null
+          id?: string
+          organization_id: string
+          started_at?: string | null
+          status?: Database['public']['Enums']['execution_status_enum']
+          updated_at?: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          design_session_id?: string
+          error_message?: string | null
+          id?: string
+          organization_id?: string
+          started_at?: string | null
+          status?: Database['public']['Enums']['execution_status_enum']
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'workflow_executions_design_session_id_fkey'
+            columns: ['design_session_id']
+            isOneToOne: false
+            referencedRelation: 'design_sessions'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'workflow_executions_organization_id_fkey'
+            columns: ['organization_id']
+            isOneToOne: false
+            referencedRelation: 'organizations'
+            referencedColumns: ['id']
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -1504,6 +1555,7 @@ export type Database = {
         | 'PERFORMANCE_IMPACT'
         | 'PROJECT_RULES_CONSISTENCY'
         | 'SECURITY_OR_SCALABILITY'
+      execution_status_enum: 'idle' | 'running' | 'success' | 'failure'
       knowledge_type: 'SCHEMA' | 'DOCS'
       schema_format_enum: 'schemarb' | 'postgres' | 'prisma' | 'tbls'
       severity_enum: 'CRITICAL' | 'WARNING' | 'POSITIVE' | 'QUESTION'
@@ -1638,6 +1690,7 @@ export const Constants = {
         'PROJECT_RULES_CONSISTENCY',
         'SECURITY_OR_SCALABILITY',
       ],
+      execution_status_enum: ['idle', 'running', 'success', 'failure'],
       knowledge_type: ['SCHEMA', 'DOCS'],
       schema_format_enum: ['schemarb', 'postgres', 'prisma', 'tbls'],
       severity_enum: ['CRITICAL', 'WARNING', 'POSITIVE', 'QUESTION'],

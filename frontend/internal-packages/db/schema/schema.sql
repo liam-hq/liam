@@ -84,6 +84,17 @@ CREATE TYPE "public"."category_enum" AS ENUM (
 ALTER TYPE "public"."category_enum" OWNER TO "postgres";
 
 
+CREATE TYPE "public"."execution_status_enum" AS ENUM (
+    'idle',
+    'running',
+    'success',
+    'failure'
+);
+
+
+ALTER TYPE "public"."execution_status_enum" OWNER TO "postgres";
+
+
 CREATE TYPE "public"."knowledge_type" AS ENUM (
     'SCHEMA',
     'DOCS'
@@ -1022,6 +1033,19 @@ $$;
 
 ALTER FUNCTION "public"."update_building_schema"("p_schema_id" "uuid", "p_schema_schema" "jsonb", "p_schema_version_patch" "jsonb", "p_schema_version_reverse_patch" "jsonb", "p_latest_schema_version_number" integer, "p_message_content" "text") OWNER TO "postgres";
 
+
+CREATE OR REPLACE FUNCTION "public"."update_workflow_executions_updated_at"() RETURNS "trigger"
+    LANGUAGE "plpgsql"
+    AS $$
+BEGIN
+    NEW.updated_at = CURRENT_TIMESTAMP;
+    RETURN NEW;
+END;
+$$;
+
+
+ALTER FUNCTION "public"."update_workflow_executions_updated_at"() OWNER TO "postgres";
+
 SET default_tablespace = '';
 
 SET default_table_access_method = "heap";
@@ -1430,6 +1454,22 @@ CREATE TABLE IF NOT EXISTS "public"."validation_results" (
 ALTER TABLE "public"."validation_results" OWNER TO "postgres";
 
 
+CREATE TABLE IF NOT EXISTS "public"."workflow_executions" (
+    "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
+    "design_session_id" "uuid" NOT NULL,
+    "organization_id" "uuid" NOT NULL,
+    "status" "public"."execution_status_enum" DEFAULT 'idle'::"public"."execution_status_enum" NOT NULL,
+    "started_at" timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
+    "completed_at" timestamp with time zone,
+    "error_message" "text",
+    "created_at" timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    "updated_at" timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
+
+
+ALTER TABLE "public"."workflow_executions" OWNER TO "postgres";
+
+
 ALTER TABLE ONLY "public"."artifacts"
     ADD CONSTRAINT "artifacts_design_session_id_unique" UNIQUE ("design_session_id");
 
@@ -1615,6 +1655,11 @@ ALTER TABLE ONLY "public"."validation_results"
 
 
 
+ALTER TABLE ONLY "public"."workflow_executions"
+    ADD CONSTRAINT "workflow_executions_pkey" PRIMARY KEY ("id");
+
+
+
 CREATE INDEX "building_schema_versions_building_schema_id_idx" ON "public"."building_schema_versions" USING "btree" ("building_schema_id");
 
 
@@ -1660,6 +1705,22 @@ CREATE INDEX "idx_project_organization_id" ON "public"."projects" USING "btree" 
 
 
 CREATE INDEX "idx_review_feedback_comment_review_feedback_id" ON "public"."review_feedback_comments" USING "btree" ("review_feedback_id");
+
+
+
+CREATE INDEX "idx_workflow_executions_design_session_id" ON "public"."workflow_executions" USING "btree" ("design_session_id");
+
+
+
+CREATE INDEX "idx_workflow_executions_organization_id" ON "public"."workflow_executions" USING "btree" ("organization_id");
+
+
+
+CREATE INDEX "idx_workflow_executions_started_at" ON "public"."workflow_executions" USING "btree" ("started_at");
+
+
+
+CREATE INDEX "idx_workflow_executions_status" ON "public"."workflow_executions" USING "btree" ("status");
 
 
 
@@ -1816,6 +1877,10 @@ CREATE OR REPLACE TRIGGER "set_validation_queries_organization_id_trigger" BEFOR
 
 
 CREATE OR REPLACE TRIGGER "set_validation_results_organization_id_trigger" BEFORE INSERT OR UPDATE ON "public"."validation_results" FOR EACH ROW EXECUTE FUNCTION "public"."set_validation_results_organization_id"();
+
+
+
+CREATE OR REPLACE TRIGGER "trigger_workflow_executions_updated_at" BEFORE UPDATE ON "public"."workflow_executions" FOR EACH ROW EXECUTE FUNCTION "public"."update_workflow_executions_updated_at"();
 
 
 
@@ -2125,6 +2190,16 @@ ALTER TABLE ONLY "public"."validation_results"
 
 ALTER TABLE ONLY "public"."validation_results"
     ADD CONSTRAINT "validation_results_validation_query_id_fkey" FOREIGN KEY ("validation_query_id") REFERENCES "public"."validation_queries"("id") ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+
+ALTER TABLE ONLY "public"."workflow_executions"
+    ADD CONSTRAINT "workflow_executions_design_session_id_fkey" FOREIGN KEY ("design_session_id") REFERENCES "public"."design_sessions"("id") ON DELETE CASCADE;
+
+
+
+ALTER TABLE ONLY "public"."workflow_executions"
+    ADD CONSTRAINT "workflow_executions_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "public"."organizations"("id") ON DELETE CASCADE;
 
 
 
@@ -3178,9 +3253,40 @@ ALTER TABLE "public"."validation_queries" ENABLE ROW LEVEL SECURITY;
 ALTER TABLE "public"."validation_results" ENABLE ROW LEVEL SECURITY;
 
 
+ALTER TABLE "public"."workflow_executions" ENABLE ROW LEVEL SECURITY;
+
+
+CREATE POLICY "workflow_executions_delete_policy" ON "public"."workflow_executions" FOR DELETE USING ((EXISTS ( SELECT 1
+   FROM "public"."organization_members" "om"
+  WHERE ("om"."organization_id" = "workflow_executions"."organization_id"))));
+
+
+
+CREATE POLICY "workflow_executions_insert_policy" ON "public"."workflow_executions" FOR INSERT WITH CHECK ((EXISTS ( SELECT 1
+   FROM "public"."organization_members" "om"
+  WHERE ("om"."organization_id" = "workflow_executions"."organization_id"))));
+
+
+
+CREATE POLICY "workflow_executions_select_policy" ON "public"."workflow_executions" FOR SELECT USING ((EXISTS ( SELECT 1
+   FROM "public"."organization_members" "om"
+  WHERE ("om"."organization_id" = "workflow_executions"."organization_id"))));
+
+
+
+CREATE POLICY "workflow_executions_update_policy" ON "public"."workflow_executions" FOR UPDATE USING ((EXISTS ( SELECT 1
+   FROM "public"."organization_members" "om"
+  WHERE ("om"."organization_id" = "workflow_executions"."organization_id"))));
+
+
+
 
 
 ALTER PUBLICATION "supabase_realtime" OWNER TO "postgres";
+
+
+
+
 
 
 ALTER PUBLICATION "supabase_realtime" ADD TABLE ONLY "public"."artifacts";
@@ -4232,6 +4338,12 @@ GRANT ALL ON FUNCTION "public"."update_building_schema"("p_schema_id" "uuid", "p
 
 
 
+GRANT ALL ON FUNCTION "public"."update_workflow_executions_updated_at"() TO "anon";
+GRANT ALL ON FUNCTION "public"."update_workflow_executions_updated_at"() TO "authenticated";
+GRANT ALL ON FUNCTION "public"."update_workflow_executions_updated_at"() TO "service_role";
+
+
+
 GRANT ALL ON FUNCTION "public"."vector_accum"(double precision[], "public"."vector") TO "postgres";
 GRANT ALL ON FUNCTION "public"."vector_accum"(double precision[], "public"."vector") TO "anon";
 GRANT ALL ON FUNCTION "public"."vector_accum"(double precision[], "public"."vector") TO "authenticated";
@@ -4586,6 +4698,12 @@ GRANT ALL ON TABLE "public"."validation_queries" TO "service_role";
 GRANT ALL ON TABLE "public"."validation_results" TO "anon";
 GRANT ALL ON TABLE "public"."validation_results" TO "authenticated";
 GRANT ALL ON TABLE "public"."validation_results" TO "service_role";
+
+
+
+GRANT ALL ON TABLE "public"."workflow_executions" TO "anon";
+GRANT ALL ON TABLE "public"."workflow_executions" TO "authenticated";
+GRANT ALL ON TABLE "public"."workflow_executions" TO "service_role";
 
 
 
