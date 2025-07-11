@@ -174,7 +174,22 @@ export const deepModeling = async (
     retryCount: {},
   }
 
+  let workflowExecutionId: string | null = null
+
   try {
+    if (organizationId) {
+      const workflowStartResult =
+        await repositories.schema.createWorkflowExecution({
+          organizationId,
+          designSessionId,
+          status: 'running',
+        })
+
+      if (workflowStartResult.success) {
+        workflowExecutionId = workflowStartResult.workflowExecution.id
+      }
+    }
+
     const compiled = createGraph()
     const result = await compiled.invoke(workflowState, {
       recursionLimit,
@@ -185,7 +200,25 @@ export const deepModeling = async (
     })
 
     if (result.error) {
+      // Update workflow execution as failed
+      if (workflowExecutionId) {
+        await repositories.schema.updateWorkflowExecution({
+          id: workflowExecutionId,
+          status: 'failure',
+          errorMessage: result.error.message,
+          completedAt: new Date().toISOString(),
+        })
+      }
       return err(new Error(result.error.message))
+    }
+
+    // Update workflow execution as successful
+    if (workflowExecutionId) {
+      await repositories.schema.updateWorkflowExecution({
+        id: workflowExecutionId,
+        status: 'success',
+        completedAt: new Date().toISOString(),
+      })
     }
 
     return ok({
@@ -196,6 +229,16 @@ export const deepModeling = async (
       error instanceof Error
         ? error.message
         : WORKFLOW_ERROR_MESSAGES.EXECUTION_FAILED
+
+    // Update workflow execution as failed
+    if (workflowExecutionId) {
+      await repositories.schema.updateWorkflowExecution({
+        id: workflowExecutionId,
+        status: 'failure',
+        errorMessage,
+        completedAt: new Date().toISOString(),
+      })
+    }
 
     const errorState = { ...workflowState, error: new Error(errorMessage) }
     const finalizedResult = await finalizeArtifactsNode(errorState, {

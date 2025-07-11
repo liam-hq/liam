@@ -2,13 +2,14 @@
 
 import { type Schema, schemaSchema } from '@liam-hq/db-structure'
 import clsx from 'clsx'
-import { type FC, useCallback, useMemo, useState, useTransition } from 'react'
+import { type FC, useCallback, useState, useTransition } from 'react'
 import { safeParse } from 'valibot'
 import { Chat } from './components/Chat'
 import { Output } from './components/Output'
 import { OutputPlaceholder } from './components/OutputPlaceholder'
 import { useRealtimeBuildlingSchema } from './hooks/useRealtimeBuildlingSchema'
 import { useRealtimeTimelineItems } from './hooks/useRealtimeTimelineItems'
+import { useRealtimeWorkflowExecution } from './hooks/useRealtimeWorkflowExecution'
 import { SCHEMA_UPDATES_DOC, SCHEMA_UPDATES_REVIEW_COMMENTS } from './mock'
 import styles from './SessionDetailPage.module.css'
 import { buildCurrentSchema } from './services/buildCurrentSchema'
@@ -102,10 +103,8 @@ Please suggest a specific solution to resolve this problem.`
       convertTimelineItemToTimelineItemEntry(timelineItem),
     ),
   )
-  const isGenerating = useMemo(() => {
-    // Since progress role is removed, we no longer track generating state
-    return false
-  }, [timelineItems])
+
+  const { isGenerating } = useRealtimeWorkflowExecution(designSessionId)
 
   // Show loading state while schema is being fetched
   if (isRefetching) {
@@ -116,6 +115,8 @@ Please suggest a specific solution to resolve this problem.`
   if (currentSchema === null) {
     return <div>Failed to load schema</div>
   }
+
+  console.log(isGenerating, 'isGenerating')
 
   return (
     <div className={styles.container}>

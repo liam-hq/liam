@@ -15,13 +15,16 @@ import type {
   CreateArtifactParams,
   CreateTimelineItemParams,
   CreateVersionParams,
+  CreateWorkflowExecutionParams,
   DesignSessionData,
   SchemaData,
   SchemaRepository,
   TimelineItemResult,
   UpdateArtifactParams,
   UpdateTimelineItemParams,
+  UpdateWorkflowExecutionParams,
   VersionResult,
+  WorkflowExecutionResult,
 } from './types'
 
 const updateBuildingSchemaResultSchema = v.union([
@@ -530,6 +533,115 @@ export class SupabaseSchemaRepository implements SchemaRepository {
     return {
       success: true,
       artifact: artifactData,
+    }
+  }
+
+  async getWorkflowExecution(designSessionId: string) {
+    const { data, error } = await this.client
+      .from('workflow_executions')
+      .select('*')
+      .eq('design_session_id', designSessionId)
+      .order('created_at', {
+        ascending: true,
+      })
+
+    if (error) {
+      return {
+        data: null,
+        error: { message: error.message },
+      }
+    }
+
+    return {
+      data: data || [],
+      error: null,
+    }
+  }
+
+  async createWorkflowExecution(
+    params: CreateWorkflowExecutionParams,
+  ): Promise<WorkflowExecutionResult> {
+    const {
+      designSessionId,
+      organizationId,
+      status = 'running',
+      startedAt = new Date().toISOString(),
+    } = params
+
+    const now = new Date().toISOString()
+
+    const { data: workflowExecution, error } = await this.client
+      .from('workflow_executions')
+      .insert({
+        design_session_id: designSessionId,
+        organization_id: organizationId,
+        status,
+        started_at: startedAt,
+        updated_at: now,
+      })
+      .select()
+      .single()
+
+    if (error) {
+      console.error(
+        'Failed to create workflow execution:',
+        JSON.stringify(error, null, 2),
+      )
+      return {
+        success: false,
+        error: error.message,
+      }
+    }
+
+    return {
+      success: true,
+      workflowExecution,
+    }
+  }
+
+  async updateWorkflowExecution(
+    params: UpdateWorkflowExecutionParams,
+  ): Promise<WorkflowExecutionResult> {
+    const { id, status, errorMessage, completedAt } = params
+    const now = new Date().toISOString()
+
+    const updateData: Record<string, unknown> = {
+      updated_at: now,
+    }
+
+    if (status !== undefined) {
+      updateData['status'] = status
+    }
+
+    if (errorMessage !== undefined) {
+      updateData['error_message'] = errorMessage
+    }
+
+    if (completedAt !== undefined) {
+      updateData['completed_at'] = completedAt
+    }
+
+    const { data: workflowExecution, error } = await this.client
+      .from('workflow_executions')
+      .update(updateData)
+      .eq('id', id)
+      .select()
+      .single()
+
+    if (error) {
+      console.error(
+        'Failed to update workflow execution:',
+        JSON.stringify(error, null, 2),
+      )
+      return {
+        success: false,
+        error: error.message,
+      }
+    }
+
+    return {
+      success: true,
+      workflowExecution,
     }
   }
 }

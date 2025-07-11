@@ -42,6 +42,8 @@ describe('prepareDmlNode', () => {
         createArtifact: vi.fn(),
         updateArtifact: vi.fn(),
         getArtifact: vi.fn(),
+        createWorkflowExecution: vi.fn(),
+        updateWorkflowExecution: vi.fn(),
       },
     }
 

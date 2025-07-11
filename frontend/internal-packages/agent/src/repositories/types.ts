@@ -24,6 +24,8 @@ export type DesignSessionData = {
   }>
 }
 
+// export type Work
+
 export type CreateVersionParams = {
   buildingSchemaId: string
   latestVersionNumber: number
@@ -91,6 +93,30 @@ export type ArtifactResult =
       error: string
     }
 
+export type CreateWorkflowExecutionParams = {
+  designSessionId: string
+  organizationId: string
+  status?: Database['public']['Enums']['execution_status_enum']
+  startedAt?: string
+}
+
+export type WorkflowExecutionResult =
+  | {
+      success: true
+      workflowExecution: Tables<'workflow_executions'>
+    }
+  | {
+      success: false
+      error: string
+    }
+
+export type UpdateWorkflowExecutionParams = {
+  id: string
+  status?: Database['public']['Enums']['execution_status_enum']
+  errorMessage?: string
+  completedAt?: string
+}
+
 /**
  * Schema repository interface for data access abstraction
  */
@@ -142,6 +168,20 @@ export type SchemaRepository = {
    * Get artifact for a design session
    */
   getArtifact(designSessionId: string): Promise<ArtifactResult>
+
+  /**
+   * Create a new workflow execution
+   */
+  createWorkflowExecution(
+    params: CreateWorkflowExecutionParams,
+  ): Promise<WorkflowExecutionResult>
+
+  /**
+   * Update an existing workflow execution
+   */
+  updateWorkflowExecution(
+    params: UpdateWorkflowExecutionParams,
+  ): Promise<WorkflowExecutionResult>
 }
 
 /**
