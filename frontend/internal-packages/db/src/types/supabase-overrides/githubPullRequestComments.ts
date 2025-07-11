@@ -1,4 +1,4 @@
-export interface GithubPullRequestCommentsOverride {
+export type GithubPullRequestCommentsOverride = {
   public: {
     Tables: {
       github_pull_request_comments: {

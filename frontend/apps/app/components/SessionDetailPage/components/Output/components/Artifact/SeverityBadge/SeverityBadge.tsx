@@ -1,3 +1,4 @@
+import clsx from 'clsx'
 import type { FC } from 'react'
 import styles from './SeverityBadge.module.css'
 
@@ -15,7 +16,7 @@ const severityClassMap: Record<SeverityLevel, string> = {
 
 export const SeverityBadge: FC<Props> = ({ level }) => {
   return (
-    <div className={`${styles.badge} ${severityClassMap[level]}`}>
+    <div className={clsx(styles.badge, severityClassMap[level])}>
       <span>{level}</span>
     </div>
   )

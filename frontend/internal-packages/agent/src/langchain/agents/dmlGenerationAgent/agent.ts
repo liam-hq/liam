@@ -1,11 +1,11 @@
 import * as v from 'valibot'
-import type { NodeLogger } from '../../../utils/nodeLogger'
 import type { ChatAgent } from '../../utils/types'
+import { formatDMLGenerationPrompts } from './prompts'
 
 const DMLGenerationAgentInputSchema = v.object({
   schemaSQL: v.string(),
   formattedUseCases: v.string(),
-  schemaContext: v.optional(v.string()),
+  schemaContext: v.string(),
 })
 
 const DMLGenerationAgentOutputSchema = v.object({
@@ -22,19 +22,19 @@ type DMLGenerationAgentOutput = v.InferOutput<
 export class DMLGenerationAgent
   implements ChatAgent<DMLGenerationAgentInput, DMLGenerationAgentOutput>
 {
-  private readonly logger: NodeLogger
-
-  constructor(params: { logger: NodeLogger }) {
-    this.logger = params.logger
-  }
-
   async generate(
-    _input: DMLGenerationAgentInput,
+    input: DMLGenerationAgentInput,
   ): Promise<DMLGenerationAgentOutput> {
-    this.logger.info('Starting DML generation')
+    formatDMLGenerationPrompts({
+      schema: input.schemaSQL,
+      requirements: input.formattedUseCases,
+      chat_history: '',
+      user_message:
+        'Generate comprehensive DML statements for testing the provided schema.',
+    })
 
-    // Minimal implementation for now
-    // Will be expanded in PR2 with prompts
+    // TODO: Integrate with LLM using systemMessage and humanMessage
+
     return {
       dmlStatements: '-- DML statements will be generated here',
     }

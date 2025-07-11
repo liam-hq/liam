@@ -1,5 +1,6 @@
 'use client'
 
+import clsx from 'clsx'
 import type { ComponentProps } from 'react'
 import { match } from 'ts-pattern'
 import styles from './Avatar.module.css'
@@ -89,7 +90,7 @@ export const Avatar = ({
   if (user === 'jack') {
     return (
       <button
-        className={`${styles.avatar} ${sizeClass}`}
+        className={clsx(styles.avatar, sizeClass)}
         style={{ backgroundColor }}
         onClick={onClick}
         aria-label="User profile"
@@ -103,7 +104,7 @@ export const Avatar = ({
 
   return (
     <button
-      className={`${styles.avatar} ${sizeClass}`}
+      className={clsx(styles.avatar, sizeClass)}
       style={{ backgroundColor }}
       onClick={onClick}
       aria-label="User profile"

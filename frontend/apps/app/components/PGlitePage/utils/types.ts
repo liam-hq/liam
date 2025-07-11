@@ -3,7 +3,7 @@
 import type { PGlite } from '@electric-sql/pglite'
 
 // Result type definition - aligned with pglite-server package
-export interface SqlResult {
+export type SqlResult = {
   sql: string
   result: unknown
   success: boolean
@@ -16,13 +16,13 @@ export interface SqlResult {
 }
 
 // State for DDL section
-export interface DDLState {
+export type DDLState = {
   ddlInput: string
   results: SqlResult[]
 }
 
 // State for DML section (each section is independent)
-export interface DMLSection {
+export type DMLSection = {
   id: string
   dmlInput: string
   results: SqlResult[]

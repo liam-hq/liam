@@ -1,6 +1,21 @@
 {
+  "src/features/erd/components/ERDRenderer/CommandPalette/CommandPalette.test.tsx": {
+    "@typescript-eslint/consistent-type-assertions": {
+      "count": 1
+    }
+  },
   "src/features/erd/components/ERDRenderer/CommandPalette/CommandPaletteProvider/hooks.ts": {
     "no-throw-error/no-throw-error": {
+      "count": 1
+    }
+  },
+  "src/features/erd/utils/convertSchemaToNodes.test.ts": {
+    "@typescript-eslint/consistent-type-assertions": {
+      "count": 11
+    }
+  },
+  "src/features/erd/utils/cookieUtils.ts": {
+    "@typescript-eslint/consistent-type-assertions": {
       "count": 1
     }
   },

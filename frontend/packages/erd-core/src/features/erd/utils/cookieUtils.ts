@@ -1,4 +1,4 @@
-export interface CookieOptions {
+export type CookieOptions = {
   path?: string
   maxAge?: number
 }

@@ -4,7 +4,7 @@ import { Search } from '@liam-hq/ui'
 import { type ChangeEvent, type FC, type FormEvent, useState } from 'react'
 import styles from './SearchInput.module.css'
 
-interface SearchInputProps {
+type SearchInputProps = {
   onSearch: (query: string) => void
   loading?: boolean
   placeholder?: string

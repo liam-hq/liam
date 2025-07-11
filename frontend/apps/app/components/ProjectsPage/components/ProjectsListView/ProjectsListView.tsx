@@ -20,7 +20,7 @@ const isProjectWithLastCommit = (
   return 'lastCommitDate' in project
 }
 
-interface ProjectsListViewProps {
+type ProjectsListViewProps = {
   initialProjects: (Tables<'projects'> | ProjectWithLastCommit)[] | null
   organizationId?: string
 }

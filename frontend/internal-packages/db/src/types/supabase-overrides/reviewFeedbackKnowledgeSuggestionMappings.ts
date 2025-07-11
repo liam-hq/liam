@@ -1,4 +1,4 @@
-export interface ReviewFeedbackKnowledgeSuggestionMappingsOverride {
+export type ReviewFeedbackKnowledgeSuggestionMappingsOverride = {
   public: {
     Tables: {
       review_feedback_knowledge_suggestion_mappings: {

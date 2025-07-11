@@ -13,7 +13,7 @@ import { useVersion } from '@/providers'
 import { useUserEditing } from '@/stores'
 import { ToolbarIconButton } from '../ToolbarIconButton'
 
-interface TidyUpButtonProps {
+type TidyUpButtonProps = {
   children?: ReactNode
   size?: ComponentProps<typeof IconButton>['size']
 }

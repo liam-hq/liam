@@ -4,7 +4,7 @@ import 'react'
 // @see: https://stackoverflow.com/questions/52005083/how-to-define-css-variables-in-style-attribute-in-react-and-typescript
 // @see: https://github.com/frenic/csstype#what-should-i-do-when-i-get-type-errors
 declare module 'react' {
-  interface CSSProperties {
+  type CSSProperties = {
     [key: `--${string}`]: string
   }
 }

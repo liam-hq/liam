@@ -10,7 +10,7 @@ import {
   useState,
 } from 'react'
 
-interface CopyButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+type CopyButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
   onCopy: () => void
 }
 

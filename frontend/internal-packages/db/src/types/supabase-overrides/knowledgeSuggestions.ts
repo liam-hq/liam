@@ -1,4 +1,4 @@
-export interface KnowledgeSuggestionsOverride {
+export type KnowledgeSuggestionsOverride = {
   public: {
     Tables: {
       knowledge_suggestions: {

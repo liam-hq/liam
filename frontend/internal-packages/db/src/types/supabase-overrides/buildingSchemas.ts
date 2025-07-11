@@ -1,4 +1,4 @@
-export interface BuildingSchemasOverride {
+export type BuildingSchemasOverride = {
   public: {
     Tables: {
       building_schemas: {

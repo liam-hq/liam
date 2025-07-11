@@ -1,18 +1,18 @@
 import type { Schema } from '@liam-hq/db-structure'
 import type { Result } from 'neverthrow'
 
-export interface WorkspaceConfig {
+export type WorkspaceConfig = {
   workspacePath: string
   defaultDataPath: string
 }
 
-export interface EvaluationConfig {
+export type EvaluationConfig = {
   workspacePath: string
   caseId?: string
   outputFormat: 'json' | 'summary'
 }
 
-export interface EvaluationResult {
+export type EvaluationResult = {
   timestamp: string
   caseId: string
   metrics: {
@@ -30,7 +30,7 @@ export interface EvaluationResult {
   columnMappings: Record<string, Record<string, string>>
 }
 
-export interface CaseData {
+export type CaseData = {
   caseId: string
   outputSchema: Schema
   referenceSchema: Schema

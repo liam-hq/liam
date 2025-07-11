@@ -1,0 +1,75 @@
+name: trigger_dev_preview_cleanup
+on:
+  workflow_dispatch:
+  schedule:
+    # Run hourly during JST business hours (5:00-23:00 JST = 20:00-14:00 UTC)
+    # JST is UTC+9, so JST 5:00 = UTC 20:00 (previous day), JST 23:00 = UTC 14:00
+    - cron: '0 20-23 * * 1-5'  # UTC 20:00-23:00 (JST 5:00-8:00)
+    - cron: '0 0-14 * * 1-5'   # UTC 0:00-14:00 (JST 9:00-23:00)
+
+jobs:
+  cleanup_stale_previews:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    concurrency:
+      group: trigger_dev_preview_cleanup
+      cancel-in-progress: false
+    permissions:
+      contents: read
+      pull-requests: read
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/pnpm-setup
+
+      - name: Find and cleanup stale preview environments
+        shell: bash
+        env:
+          TRIGGER_ACCESS_TOKEN: ${{ secrets.TRIGGER_ACCESS_TOKEN }}
+          TRIGGER_PROJECT_ID: ${{ vars.TRIGGER_PROJECT_ID }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          echo "Searching for closed and unmerged PRs..."
+
+          # Get closed but unmerged latest PRs
+          CLOSED_BRANCHES=$(gh pr list --state closed --limit 200 --json headRefName,mergedAt | jq -r '.[] | select(.mergedAt == null) | .headRefName' | sort -u || true)
+
+          if [ -z "$CLOSED_BRANCHES" ]; then
+            echo "No closed unmerged PRs found"
+            exit 0
+          fi
+
+          echo "Found branches from closed unmerged PRs:"
+          echo "$CLOSED_BRANCHES"
+          echo ""
+
+          # Process each branch using a for loop instead of while
+          for BRANCH in $CLOSED_BRANCHES; do
+            if [ -z "$BRANCH" ]; then
+              continue
+            fi
+
+            # NOTE: We intentionally archive preview environments even if there are open PRs
+            # This aggressive cleanup ensures we don't accumulate stale preview environments
+            # from long-running or abandoned branches
+            echo "  → Attempting to archive preview environment: $BRANCH"
+
+            # Attempt to archive the preview environment
+            # Capture both stdout and stderr to check for failure messages
+            ARCHIVE_OUTPUT=$(pnpm --filter @liam-hq/jobs exec trigger preview archive --branch "$BRANCH" 2>&1)
+
+            # Check if the output contains "Failed to archive"
+            if echo "$ARCHIVE_OUTPUT" | grep -q "Failed to archive"; then
+              echo "  → Archive command failed (environment may not exist or already archived): $BRANCH"
+            else
+              echo "  ✓ Successfully archived preview for branch: $BRANCH"
+            fi
+
+            # Small delay to avoid rate limiting
+            sleep 1
+
+          done
+
+          echo ""
+          echo "Cleanup process completed"

@@ -7,6 +7,7 @@ import { createAccessibleOpacityTransition } from '@/utils/accessibleTransitions
 import { AttachmentPreview } from '../AttachmentPreview'
 import type { Branch } from '../BranchesDropdown'
 import { BranchesDropdown } from '../BranchesDropdown'
+import { useEnterKeySubmission } from '../hooks/useEnterKeySubmission'
 import { ProjectsDropdown } from '../ProjectsDropdown'
 import { SchemaDisplay } from '../SchemaDisplay'
 import { SessionFormActions } from '../SessionFormActions'
@@ -38,9 +39,15 @@ export const GitHubSessionFormPresenter: FC<Props> = ({
   isTransitioning = false,
 }) => {
   const textareaRef = useRef<HTMLTextAreaElement>(null)
+  const formRef = useRef<HTMLFormElement>(null)
   const [hasContent, setHasContent] = useState(false)
   const [selectedProjectId, setSelectedProjectId] = useState(
     defaultProjectId || '',
+  )
+  const handleEnterKeySubmission = useEnterKeySubmission(
+    hasContent,
+    isPending,
+    formRef,
   )
   const [selectedBranchSha, setSelectedBranchSha] = useState('')
   const [attachments, setAttachments] = useState<
@@ -125,6 +132,7 @@ export const GitHubSessionFormPresenter: FC<Props> = ({
         onDrop={handleDrop}
       >
         <form
+          ref={formRef}
           action={formAction}
           style={createAccessibleOpacityTransition(!isTransitioning)}
         >
@@ -148,6 +156,7 @@ export const GitHubSessionFormPresenter: FC<Props> = ({
                   name="initialMessage"
                   ref={textareaRef}
                   onChange={handleTextareaChange}
+                  onKeyDown={handleEnterKeySubmission}
                   placeholder="Enter your database design instructions. For example: Design a database for an e-commerce site that manages users, products, and orders..."
                   disabled={isPending}
                   className={styles.textarea}

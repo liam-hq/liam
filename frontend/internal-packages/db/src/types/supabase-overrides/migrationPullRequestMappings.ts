@@ -1,4 +1,4 @@
-export interface MigrationPullRequestMappingsOverride {
+export type MigrationPullRequestMappingsOverride = {
   public: {
     Tables: {
       migration_pull_request_mappings: {

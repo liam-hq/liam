@@ -23,7 +23,7 @@ import {
 import { inviteMember } from './actions/inviteMember'
 import styles from './InviteMemberModal.module.css'
 
-interface InviteMemberModalProps {
+type InviteMemberModalProps = {
   isOpen: boolean
   onClose: () => void
   organizationId: string

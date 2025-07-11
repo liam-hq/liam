@@ -120,7 +120,7 @@ CREATE TYPE "public"."timeline_item_type_enum" AS ENUM (
     'assistant',
     'schema_version',
     'error',
-    'progress'
+    'assistant_log'
 );
 
 
@@ -1383,17 +1383,11 @@ CREATE TABLE IF NOT EXISTS "public"."timeline_items" (
     "updated_at" timestamp(3) with time zone NOT NULL,
     "organization_id" "uuid" NOT NULL,
     "building_schema_version_id" "uuid",
-    "type" "public"."timeline_item_type_enum" NOT NULL,
-    "progress" integer,
-    CONSTRAINT "timeline_items_progress_check" CHECK (((("type" = 'progress'::"public"."timeline_item_type_enum") AND ("progress" IS NOT NULL) AND ("progress" >= 0) AND ("progress" <= 100)) OR (("type" <> 'progress'::"public"."timeline_item_type_enum") AND ("progress" IS NULL))))
+    "type" "public"."timeline_item_type_enum" NOT NULL
 );
 
 
 ALTER TABLE "public"."timeline_items" OWNER TO "postgres";
-
-
-COMMENT ON COLUMN "public"."timeline_items"."progress" IS 'Progress percentage (0-100) for progress type timeline items. Only set when type is progress.';
-
 
 
 CREATE TABLE IF NOT EXISTS "public"."users" (
@@ -1706,10 +1700,6 @@ CREATE UNIQUE INDEX "schema_file_path_project_id_key" ON "public"."schema_file_p
 
 
 CREATE INDEX "timeline_items_building_schema_version_id_idx" ON "public"."timeline_items" USING "btree" ("building_schema_version_id");
-
-
-
-CREATE INDEX "timeline_items_schema_version_type_idx" ON "public"."timeline_items" USING "btree" ("design_session_id", "created_at") WHERE ("type" = 'schema_version'::"public"."timeline_item_type_enum");
 
 
 

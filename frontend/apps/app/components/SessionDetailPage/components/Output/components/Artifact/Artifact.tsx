@@ -18,10 +18,10 @@ import styles from './Artifact.module.css'
 import { type DMLBlock, ExecutableDMLBlock } from './ExecutableDMLBlock'
 import { SeverityBadge } from './SeverityBadge'
 
-interface CodeProps extends HTMLAttributes<HTMLElement> {
+type CodeProps = {
   className?: string
   children?: ReactNode
-}
+} & HTMLAttributes<HTMLElement>
 
 type Props = {
   doc: string

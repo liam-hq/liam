@@ -6,7 +6,7 @@ import {
   getOrganizationMembers,
 } from './services/getMembersAndInvites'
 
-interface OrganizationMembersPageProps {
+type OrganizationMembersPageProps = {
   organization: {
     id: string
     name: string

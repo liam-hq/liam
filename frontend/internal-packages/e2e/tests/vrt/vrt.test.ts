@@ -22,7 +22,7 @@ const screenshot = async (page: Page, targetPage: TargetPage) => {
   await expect(page).toHaveScreenshot({ fullPage: true })
 }
 
-interface TargetPage {
+type TargetPage = {
   name: string
   path: string
 }

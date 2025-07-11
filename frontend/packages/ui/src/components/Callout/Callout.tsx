@@ -12,7 +12,7 @@ export type CalloutVariant =
 
 export type CalloutDevice = 'default' | 'mobile'
 
-export interface CalloutProps {
+export type CalloutProps = {
   variant?: CalloutVariant
   device?: CalloutDevice
   icon?: ReactNode

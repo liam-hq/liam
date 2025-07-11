@@ -50,19 +50,20 @@ const handleOptimisticUserUpdate = (
   return null
 }
 
-type UseRealtimeTimelineItemsFunc = (designSession: {
-  id: string
-  timelineItems: TimelineItemType[]
-}) => {
+type UseRealtimeTimelineItemsFunc = (
+  designSessionId: string,
+  timelineItems: TimelineItemType[],
+) => {
   timelineItems: TimelineItemEntry[]
   addOrUpdateTimelineItem: (newChatEntry: TimelineItemEntry) => void
 }
 
 export const useRealtimeTimelineItems: UseRealtimeTimelineItemsFunc = (
-  designSession,
+  designSessionId,
+  _timelineItems,
 ) => {
   // Initialize timeline items with existing timeline items (no welcome message)
-  const initialTimelineItems = designSession.timelineItems.map((item) => {
+  const initialTimelineItems = _timelineItems.map((item) => {
     return convertTimelineItemToChatEntry(item)
   })
 
@@ -130,7 +131,7 @@ export const useRealtimeTimelineItems: UseRealtimeTimelineItemsFunc = (
   // Set up realtime subscription for new timeline items
   useEffect(() => {
     const subscription = setupRealtimeSubscription(
-      designSession.id,
+      designSessionId,
       handleNewTimelineItem,
       handleRealtimeError,
     )
@@ -138,7 +139,7 @@ export const useRealtimeTimelineItems: UseRealtimeTimelineItemsFunc = (
     return () => {
       subscription.unsubscribe()
     }
-  }, [designSession.id, handleNewTimelineItem, handleRealtimeError])
+  }, [designSessionId, handleNewTimelineItem, handleRealtimeError])
 
   return {
     timelineItems,

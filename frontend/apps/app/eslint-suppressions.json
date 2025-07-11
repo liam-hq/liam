@@ -39,9 +39,19 @@
       "count": 1
     }
   },
+  "app/(app)/app/confirm/route.ts": {
+    "@typescript-eslint/consistent-type-assertions": {
+      "count": 1
+    }
+  },
   "app/(app)/app/design_sessions/[id]/page.tsx": {
     "no-throw-error/no-throw-error": {
-      "count": 4
+      "count": 1
+    }
+  },
+  "app/api/webhook/github/route.ts": {
+    "@typescript-eslint/consistent-type-assertions": {
+      "count": 3
     }
   },
   "app/erd/p/[...slug]/page.tsx": {
@@ -75,6 +85,9 @@
     }
   },
   "components/ProjectNewPage/components/InstallationSelector/actions/addProject.ts": {
+    "@typescript-eslint/consistent-type-assertions": {
+      "count": 6
+    },
     "no-throw-error/no-throw-error": {
       "count": 3
     }
@@ -94,8 +107,43 @@
       "count": 1
     }
   },
+  "components/SessionDetailPage/SessionDetailPage.tsx": {
+    "no-throw-error/no-throw-error": {
+      "count": 2
+    }
+  },
+  "components/SessionDetailPage/components/Chat/components/ChatInput/ChatInput.tsx": {
+    "@typescript-eslint/consistent-type-assertions": {
+      "count": 2
+    }
+  },
+  "components/SessionDetailPage/components/Chat/components/ChatInput/components/MentionSuggestor/MentionSuggestor.stories.tsx": {
+    "@typescript-eslint/consistent-type-assertions": {
+      "count": 4
+    }
+  },
+  "components/SessionDetailPage/components/Chat/components/ChatInput/components/MentionSuggestor/MentionSuggestor.tsx": {
+    "@typescript-eslint/consistent-type-assertions": {
+      "count": 3
+    }
+  },
+  "components/SessionDetailPage/components/Chat/components/TimelineItem/components/AgentMessage/components/MessageOptionButtons/MessageOptionButton.tsx": {
+    "@typescript-eslint/consistent-type-assertions": {
+      "count": 2
+    }
+  },
   "components/SessionDetailPage/components/Chat/services/aiMessageService.ts": {
     "no-throw-error/no-throw-error": {
+      "count": 2
+    }
+  },
+  "components/SessionDetailPage/components/Output/components/Artifact/Artifact.tsx": {
+    "@typescript-eslint/consistent-type-assertions": {
+      "count": 1
+    }
+  },
+  "components/SessionDetailPage/components/Output/components/Artifact/utils/formatArtifactToMarkdown.ts": {
+    "@typescript-eslint/consistent-type-assertions": {
       "count": 2
     }
   },
@@ -105,6 +153,11 @@
     }
   },
   "components/SessionDetailPage/hooks/useRealtimeBuildlingSchema.ts": {
+    "no-throw-error/no-throw-error": {
+      "count": 1
+    }
+  },
+  "components/SessionDetailPage/services/designSessionWithTimelineItems/fetchDesignSessionWithTimelineItems.ts": {
     "no-throw-error/no-throw-error": {
       "count": 1
     }
@@ -119,8 +172,18 @@
       "count": 2
     }
   },
+  "features/sessions/components/SessionForm/GitHubSessionFormPresenter/GitHubSessionFormPresenter.stories.tsx": {
+    "@typescript-eslint/consistent-type-assertions": {
+      "count": 1
+    }
+  },
   "instrumentation.ts": {
     "no-throw-error/no-throw-error": {
+      "count": 1
+    }
+  },
+  "libs/routes/urlgen.ts": {
+    "@typescript-eslint/consistent-type-assertions": {
       "count": 1
     }
   },

@@ -12,7 +12,7 @@ import clsx from 'clsx'
 import type { FC, MouseEvent } from 'react'
 import styles from './SendButton.module.css'
 
-interface SendButtonProps {
+type SendButtonProps = {
   hasContent: boolean
   onClick: (e: MouseEvent<HTMLButtonElement>) => void
   disabled?: boolean

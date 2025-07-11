@@ -1,7 +1,7 @@
 import { nanoid } from 'nanoid'
 import { useCallback, useState } from 'react'
 
-export interface FileAttachment {
+export type FileAttachment = {
   id: string
   url: string
   name: string

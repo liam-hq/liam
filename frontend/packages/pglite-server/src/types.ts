@@ -1,4 +1,4 @@
-export interface SqlResult {
+export type SqlResult = {
   sql: string
   result: unknown
   success: boolean

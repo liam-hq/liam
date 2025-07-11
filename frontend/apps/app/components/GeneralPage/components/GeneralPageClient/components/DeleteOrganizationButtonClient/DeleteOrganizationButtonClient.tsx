@@ -4,7 +4,7 @@ import { Button } from '@liam-hq/ui'
 import { useState, useTransition } from 'react'
 import { DeleteConfirmationModal } from './DeleteConfirmationModal'
 
-interface DeleteOrganizationButtonClientProps {
+type DeleteOrganizationButtonClientProps = {
   organizationId: string
   organizationName: string
   deleteAction: (formData: FormData) => void

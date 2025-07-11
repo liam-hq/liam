@@ -1175,7 +1175,6 @@ export type Database = {
           design_session_id: string
           id: string
           organization_id: string
-          progress: number | null
           type: Database['public']['Enums']['timeline_item_type_enum']
           updated_at: string
           user_id: string | null
@@ -1187,7 +1186,6 @@ export type Database = {
           design_session_id: string
           id?: string
           organization_id: string
-          progress?: number | null
           type: Database['public']['Enums']['timeline_item_type_enum']
           updated_at: string
           user_id?: string | null
@@ -1199,7 +1197,6 @@ export type Database = {
           design_session_id?: string
           id?: string
           organization_id?: string
-          progress?: number | null
           type?: Database['public']['Enums']['timeline_item_type_enum']
           updated_at?: string
           user_id?: string | null
@@ -1515,7 +1512,7 @@ export type Database = {
         | 'assistant'
         | 'schema_version'
         | 'error'
-        | 'progress'
+        | 'assistant_log'
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1649,7 +1646,7 @@ export const Constants = {
         'assistant',
         'schema_version',
         'error',
-        'progress',
+        'assistant_log',
       ],
     },
   },

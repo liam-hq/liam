@@ -1,4 +1,4 @@
-export interface DocFilePathsOverride {
+export type DocFilePathsOverride = {
   public: {
     Tables: {
       doc_file_paths: {

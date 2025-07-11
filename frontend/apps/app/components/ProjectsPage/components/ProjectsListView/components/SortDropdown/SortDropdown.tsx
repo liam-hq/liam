@@ -19,7 +19,7 @@ const SORT_OPTIONS: { value: SortOption; label: string }[] = [
   { value: 'name', label: 'Sort by project name' },
 ]
 
-interface SortDropdownProps {
+type SortDropdownProps = {
   initialSortOption?: SortOption
   onSortChange?: (option: SortOption) => void
 }

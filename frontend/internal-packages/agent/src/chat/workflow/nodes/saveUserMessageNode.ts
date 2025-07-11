@@ -1,6 +1,6 @@
+import type { RunnableConfig } from '@langchain/core/runnables'
+import { getConfigurable } from '../shared/getConfigurable'
 import type { WorkflowState } from '../types'
-
-const NODE_NAME = 'saveUserMessageNode'
 
 /**
  * Save User Message Node - Saves the user's message to the database
@@ -8,11 +8,19 @@ const NODE_NAME = 'saveUserMessageNode'
  */
 export async function saveUserMessageNode(
   state: WorkflowState,
+  config: RunnableConfig,
 ): Promise<WorkflowState> {
-  state.logger.log(`[${NODE_NAME}] Started`)
+  const configurableResult = getConfigurable(config)
+  if (configurableResult.isErr()) {
+    return {
+      ...state,
+      error: configurableResult.error,
+    }
+  }
+  const { repositories } = configurableResult.value
 
   // Save user message to database
-  const saveResult = await state.repositories.schema.createTimelineItem({
+  const saveResult = await repositories.schema.createTimelineItem({
     designSessionId: state.designSessionId,
     content: state.userInput,
     type: 'user',
@@ -20,9 +28,6 @@ export async function saveUserMessageNode(
   })
 
   if (!saveResult.success) {
-    state.logger.error(`[${NODE_NAME}] Failed to save user message:`, {
-      error: saveResult.error,
-    })
     // Set error state to trigger transition to finalizeArtifacts
     const error = new Error(`Failed to save message: ${saveResult.error}`)
     return {
@@ -30,8 +35,6 @@ export async function saveUserMessageNode(
       error,
     }
   }
-
-  state.logger.log(`[${NODE_NAME}] Successfully saved user message`)
 
   return state
 }

@@ -1,6 +1,6 @@
 import { createClient } from '@/libs/db/server'
 
-interface ProjectRepository {
+type ProjectRepository = {
   repository: {
     name: string
     owner: string

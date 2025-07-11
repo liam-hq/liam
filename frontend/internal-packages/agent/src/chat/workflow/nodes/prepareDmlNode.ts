@@ -1,8 +1,10 @@
+import type { RunnableConfig } from '@langchain/core/runnables'
 import { DMLGenerationAgent } from '../../../langchain/agents/dmlGenerationAgent/agent'
 import type { Usecase } from '../../../langchain/agents/qaGenerateUsecaseAgent/agent'
 import { convertSchemaToText } from '../../../utils/convertSchemaToText'
-import { getWorkflowNodeProgress } from '../shared/getWorkflowNodeProgress'
+import { getConfigurable } from '../shared/getConfigurable'
 import type { WorkflowState } from '../types'
+import { logAssistantMessage } from '../utils/timelineLogger'
 
 /**
  * Format use cases into a structured string for DML generation
@@ -45,40 +47,40 @@ function formatUseCases(useCases: Usecase[]): string {
  */
 export async function prepareDmlNode(
   state: WorkflowState,
+  config: RunnableConfig,
 ): Promise<WorkflowState> {
-  // Update progress message if available
-  if (state.progressTimelineItemId) {
-    await state.repositories.schema.updateTimelineItem(
-      state.progressTimelineItemId,
-      {
-        content: 'Processing: prepareDML',
-        progress: getWorkflowNodeProgress('prepareDML'),
-      },
-    )
+  const configurableResult = getConfigurable(config)
+  if (configurableResult.isErr()) {
+    return {
+      ...state,
+      error: configurableResult.error,
+    }
   }
+  const { repositories } = configurableResult.value
 
-  state.logger.info('Preparing DML statements')
+  await logAssistantMessage(state, repositories, 'Preparing DML statements...')
 
   // Check if we have required inputs
   if (!state.ddlStatements) {
-    state.logger.warn('No DDL statements available for DML generation')
+    await logAssistantMessage(
+      state,
+      repositories,
+      'Missing DDL statements for DML generation',
+    )
     return state
   }
 
   if (!state.generatedUsecases || state.generatedUsecases.length === 0) {
-    state.logger.warn('No use cases available for DML generation')
+    await logAssistantMessage(
+      state,
+      repositories,
+      'Missing use cases for DML generation',
+    )
     return state
   }
 
-  // Log input statistics
-  const tableCount = (state.ddlStatements.match(/CREATE TABLE/gi) || []).length
-  const useCaseCount = state.generatedUsecases.length
-  state.logger.info(
-    `Generating DML for ${tableCount} tables and ${useCaseCount} use cases`,
-  )
-
   // Create DML generation agent
-  const dmlAgent = new DMLGenerationAgent({ logger: state.logger })
+  const dmlAgent = new DMLGenerationAgent()
 
   // Format use cases for the agent
   const formattedUseCases = formatUseCases(state.generatedUsecases)
@@ -95,11 +97,19 @@ export async function prepareDmlNode(
 
   // Validate result
   if (!result.dmlStatements || result.dmlStatements.trim().length === 0) {
-    state.logger.warn('DML generation returned empty statements')
+    await logAssistantMessage(
+      state,
+      repositories,
+      'DML generation returned empty statements',
+    )
     return state
   }
 
-  state.logger.info('DML statements generated successfully')
+  await logAssistantMessage(
+    state,
+    repositories,
+    'DML statements generated successfully',
+  )
 
   return {
     ...state,

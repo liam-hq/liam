@@ -1,0 +1,102 @@
+name: PR Scheduler
+on:
+  schedule:
+    - cron: '0 13 * * 0-4'  # 22:00 JST (UTC+9) Sunday-Thursday
+  workflow_dispatch:  # Manual execution available
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  schedule-prs:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - name: Generate GitHub App Token
+        uses: actions/create-github-app-token@df432ceedc7162793a195dd1713ff69aefc7379e # v2.0.6
+        id: app-token
+        with:
+          app-id: ${{ secrets.LIAM_CODE_ASSISTANT_APP_ID }}
+          private-key: ${{ secrets.LIAM_CODE_ASSISTANT_PRIVATE_KEY }}
+          permission-contents: read
+          permission-issues: write
+      - name: Find and process scheduled issues
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
+        with:
+          github-token: ${{ steps.app-token.outputs.token }}
+          script: |
+            console.log('Processing scheduled issues...');
+
+            const issues = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'scheduled-task',
+              sort: 'created',  // Sort by creation date
+              direction: 'asc'  // Ascending order (oldest first)
+            });
+
+            console.log(`Found ${issues.data.length} scheduled issues`);
+
+            let processedCount = 0;
+            const maxProcessPerRun = 5; // Maximum 5 issues per run
+
+            for (const issue of issues.data) {
+              // Ignore pull requests masquerading as issues
+              if (issue.pull_request) {
+                console.log(`Skipping PR #${issue.number}`);
+                continue;
+              }
+              if (processedCount >= maxProcessPerRun) {
+                console.log(`Reached maximum limit of ${maxProcessPerRun} issues per run`);
+                break;
+              }
+
+              console.log(`Processing issue #${issue.number}: "${issue.title}"`);
+
+              try {
+                await github.rest.issues.addLabels({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: issue.number,
+                  labels: ['claude-create-pr']
+                });
+                console.log(`Added 'claude-create-pr' label to issue #${issue.number}`);
+
+                // Small delay to avoid rate limiting
+                await new Promise(resolve => setTimeout(resolve, 100));
+
+                await github.rest.issues.removeLabel({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: issue.number,
+                  name: 'scheduled-task'
+                });
+                console.log(`Removed 'scheduled-task' label from issue #${issue.number}`);
+
+                processedCount++;
+              } catch (error) {
+                console.error(`Failed to process issue #${issue.number}: ${error.message}`);
+
+                // Add error comment to the issue
+                try {
+                  await github.rest.issues.createComment({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    issue_number: issue.number,
+                    body: `⚠️ Failed to process scheduled issue: ${error.message}`
+                  });
+                } catch (commentError) {
+                  console.error(`Failed to add error comment: ${commentError.message}`);
+                }
+              }
+
+              // Small delay between issues to avoid rate limiting
+              await new Promise(resolve => setTimeout(resolve, 200));
+            }
+
+            console.log(`Processed ${processedCount} issues in this run`);

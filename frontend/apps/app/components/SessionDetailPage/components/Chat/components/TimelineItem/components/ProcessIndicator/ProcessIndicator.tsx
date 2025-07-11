@@ -8,6 +8,7 @@ import {
   IconButton,
   Spinner,
 } from '@liam-hq/ui'
+import clsx from 'clsx'
 import { type FC, type ReactNode, useState } from 'react'
 import styles from './ProcessIndicator.module.css'
 
@@ -26,7 +27,7 @@ const getProgressFillWidth = (
   return `${status === 'complete' ? 100 : progress}%`
 }
 
-interface ProcessIndicatorProps {
+type ProcessIndicatorProps = {
   /**
    * The title of the process
    */
@@ -103,11 +104,12 @@ export const ProcessIndicator: FC<ProcessIndicatorProps> = ({
     >
       <div className={styles.header}>
         <div
-          className={`${styles.iconContainer} ${
+          className={clsx(
+            styles.iconContainer,
             effectiveStatus === 'processing'
               ? styles.processingIcon
-              : styles.completeIcon
-          }`}
+              : styles.completeIcon,
+          )}
         >
           {getStatusIcon(effectiveStatus)}
         </div>

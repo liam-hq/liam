@@ -2,7 +2,7 @@ import clsx from 'clsx'
 import type { ComponentProps, ReactNode } from 'react'
 import styles from './RoundBadge.module.css'
 
-export interface RoundBadgeProps extends ComponentProps<'span'> {
+export type RoundBadgeProps = ComponentProps<'span'> & {
   /**
    * The content to be displayed inside the badge
    */

@@ -10,7 +10,7 @@ import {
 import { MessageOptionButton } from './MessageOptionButton'
 import styles from './MessageOptionButton.module.css'
 
-export interface MessageOption {
+export type MessageOption = {
   /**
    * Unique identifier for the option
    */
@@ -25,7 +25,7 @@ export interface MessageOption {
   disabled?: boolean
 }
 
-interface MessageOptionButtonsProps {
+type MessageOptionButtonsProps = {
   /**
    * The list of options to display
    */

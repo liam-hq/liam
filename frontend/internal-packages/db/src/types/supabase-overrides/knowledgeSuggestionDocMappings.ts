@@ -1,4 +1,4 @@
-export interface KnowledgeSuggestionDocMappingsOverride {
+export type KnowledgeSuggestionDocMappingsOverride = {
   public: {
     Tables: {
       knowledge_suggestion_doc_mappings: {

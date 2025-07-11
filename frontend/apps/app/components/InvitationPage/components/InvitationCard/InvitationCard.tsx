@@ -6,7 +6,7 @@ import { LiamLogoMark } from '@/logos'
 import { acceptInvitation } from './actions/acceptInvitation'
 import styles from './InvitationCard.module.css'
 
-interface InvitationCardProps {
+type InvitationCardProps = {
   organizationName: string | null
   token: string
   currentUser: {

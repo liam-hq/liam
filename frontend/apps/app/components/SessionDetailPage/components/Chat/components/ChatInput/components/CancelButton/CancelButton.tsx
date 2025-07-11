@@ -13,7 +13,7 @@ import { Pause } from 'lucide-react'
 import type { FC, MouseEvent } from 'react'
 import styles from './CancelButton.module.css'
 
-interface CancelButtonProps {
+type CancelButtonProps = {
   hasContent: boolean
   onClick: (e: MouseEvent<HTMLButtonElement>) => void
   disabled?: boolean

@@ -2,7 +2,7 @@
  * Type definitions for Drizzle ORM schema parsing
  */
 
-export interface DrizzleTableDefinition {
+export type DrizzleTableDefinition = {
   name: string
   columns: Record<string, DrizzleColumnDefinition>
   indexes: Record<string, DrizzleIndexDefinition>
@@ -10,7 +10,7 @@ export interface DrizzleTableDefinition {
   comment?: string | undefined
 }
 
-export interface DrizzleColumnDefinition {
+export type DrizzleColumnDefinition = {
   name: string
   type: string
   typeOptions?: Record<string, unknown>
@@ -29,19 +29,19 @@ export interface DrizzleColumnDefinition {
     | undefined
 }
 
-export interface DrizzleIndexDefinition {
+export type DrizzleIndexDefinition = {
   name: string
   columns: string[]
   unique: boolean
   type?: string
 }
 
-export interface DrizzleEnumDefinition {
+export type DrizzleEnumDefinition = {
   name: string
   values: string[]
 }
 
-export interface CompositePrimaryKeyDefinition {
+export type CompositePrimaryKeyDefinition = {
   type: 'primaryKey'
   columns: string[]
 }

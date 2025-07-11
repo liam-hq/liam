@@ -1,5 +1,6 @@
 'use client'
 
+import clsx from 'clsx'
 import { useState } from 'react'
 import styles from './QueryResultBox.module.css'
 import type { SqlResult } from './utils'
@@ -12,7 +13,10 @@ export const QueryResultBox = ({ result }: { result: SqlResult }) => {
       {/* Status header - always visible */}
       <button
         type="button"
-        className={`${styles.resultHeader} ${result.success ? styles.successHeader : styles.errorHeader}`}
+        className={clsx(
+          styles.resultHeader,
+          result.success ? styles.successHeader : styles.errorHeader,
+        )}
         onClick={() => setIsExpanded((isExpanded) => !isExpanded)}
         aria-expanded={isExpanded}
         aria-label={`${result.success ? 'Successful' : 'Failed'} query details ${isExpanded ? 'close' : 'open'}`}
@@ -36,7 +40,10 @@ export const QueryResultBox = ({ result }: { result: SqlResult }) => {
         <div className={styles.resultDetails}>
           <div className={styles.sqlCommand}>{result.sql}</div>
           <pre
-            className={`${styles.resultPre} ${result.success ? '' : styles.error}`}
+            className={clsx(
+              styles.resultPre,
+              result.success ? '' : styles.error,
+            )}
           >
             {JSON.stringify(result.result, null, 2)}
           </pre>

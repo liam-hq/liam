@@ -6,15 +6,15 @@ import ReactMarkdown from 'react-markdown'
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
 import remarkGfm from 'remark-gfm'
 
-interface CodeProps extends HTMLAttributes<HTMLElement> {
+type CodeProps = {
   node?: unknown
   inline?: boolean
   className?: string
   children?: ReactNode
   style?: CSSProperties
-}
+} & HTMLAttributes<HTMLElement>
 
-interface MarkdownContentProps {
+type MarkdownContentProps = {
   content: string
 }
 

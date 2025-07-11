@@ -272,7 +272,7 @@ export const convertToSchema = (
   /**
    * Column definition type
    */
-  interface ColumnDef {
+  type ColumnDef = {
     colname?: string
     typeName?: { names?: Node[] }
     constraints?: Node[]
@@ -281,7 +281,7 @@ export const convertToSchema = (
   /**
    * Column type
    */
-  interface Column {
+  type Column = {
     name: string
     type: string
     default: string | number | boolean | null
@@ -870,7 +870,7 @@ export const convertToSchema = (
   /**
    * ALTER TABLE command type
    */
-  interface AlterTableCmd {
+  type AlterTableCmd = {
     subtype: string
     def?: Node
   }

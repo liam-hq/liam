@@ -1,4 +1,4 @@
-export interface TimelineItemsOverride {
+export type TimelineItemsOverride = {
   public: {
     Tables: {
       timeline_items: {

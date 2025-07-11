@@ -1,5 +1,6 @@
 'use client'
 
+import clsx from 'clsx'
 import type { ComponentProps } from 'react'
 import { match } from 'ts-pattern'
 import styles from './Avatar.module.css'
@@ -49,7 +50,7 @@ export const AvatarWithImage = ({
 
   return (
     <button
-      className={`${styles.avatar} ${sizeClass} ${className || ''}`}
+      className={clsx(styles.avatar, sizeClass, className || '')}
       onClick={onClick}
       aria-label={alt}
       type="button"

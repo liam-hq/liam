@@ -1,5 +1,6 @@
 'use client'
 
+import clsx from 'clsx'
 import type { FC, ReactNode } from 'react'
 import { MarkdownContent } from '@/components/MarkdownContent'
 import styles from './AgentMessage.module.css'
@@ -48,13 +49,16 @@ export const AgentMessage: FC<AgentMessageProps> = ({
         {isGenerating &&
         (!message || (typeof message === 'string' && message.trim() === '')) ? (
           <div
-            className={`${styles.messageWrapper} ${styles.generatingContainer}`}
+            className={clsx(styles.messageWrapper, styles.generatingContainer)}
           >
             <span className={styles.generatingText}>Generating</span>
           </div>
         ) : (
           <div
-            className={`${styles.messageWrapper} ${isGenerating ? styles.generatingContainer : ''}`}
+            className={clsx(
+              styles.messageWrapper,
+              isGenerating ? styles.generatingContainer : '',
+            )}
           >
             <div className={styles.messageContent}>
               <span className={styles.messageText}>

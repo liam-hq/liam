@@ -3,13 +3,13 @@ import type { Database, Tables } from '@liam-hq/db/supabase/database.types'
 import type { Schema } from '@liam-hq/db-structure'
 import type { Operation } from 'fast-json-patch'
 
-export interface SchemaData {
+export type SchemaData = {
   id: string
   schema: Schema
   latestVersionNumber: number
 }
 
-export interface DesignSessionData {
+export type DesignSessionData = {
   organization_id: string
   timeline_items: Array<{
     id: string
@@ -21,11 +21,10 @@ export interface DesignSessionData {
     organization_id: string
     design_session_id: string
     building_schema_version_id: string | null
-    progress: number | null
   }>
 }
 
-export interface CreateVersionParams {
+export type CreateVersionParams = {
   buildingSchemaId: string
   latestVersionNumber: number
   patch: Operation[]
@@ -54,14 +53,12 @@ export type CreateTimelineItemParams = {
       type: 'error'
     }
   | {
-      type: 'progress'
-      progress: number
+      type: 'assistant_log'
     }
 )
 
-export interface UpdateTimelineItemParams {
+export type UpdateTimelineItemParams = {
   content?: string
-  progress?: number
 }
 
 export type TimelineItemResult =
@@ -74,12 +71,12 @@ export type TimelineItemResult =
       error: string
     }
 
-export interface CreateArtifactParams {
+export type CreateArtifactParams = {
   designSessionId: string
   artifact: Artifact
 }
 
-export interface UpdateArtifactParams {
+export type UpdateArtifactParams = {
   designSessionId: string
   artifact: Artifact
 }
@@ -97,7 +94,7 @@ export type ArtifactResult =
 /**
  * Schema repository interface for data access abstraction
  */
-export interface SchemaRepository {
+export type SchemaRepository = {
   /**
    * Fetch schema data for a design session
    */
@@ -150,6 +147,6 @@ export interface SchemaRepository {
 /**
  * Repository container for dependency injection
  */
-export interface Repositories {
+export type Repositories = {
   schema: SchemaRepository
 }

@@ -1,4 +1,4 @@
-export interface ProjectRepositoryMappingsOverride {
+export type ProjectRepositoryMappingsOverride = {
   public: {
     Tables: {
       project_repository_mappings: {

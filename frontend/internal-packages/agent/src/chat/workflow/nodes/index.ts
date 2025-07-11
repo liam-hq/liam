@@ -1,5 +1,4 @@
 export { analyzeRequirementsNode } from './analyzeRequirementsNode'
-export { createProgressMessageNode } from './createProgressMessageNode'
 export { designSchemaNode } from './designSchemaNode'
 export { executeDdlNode } from './executeDdlNode'
 export { finalizeArtifactsNode } from './finalizeArtifactsNode'

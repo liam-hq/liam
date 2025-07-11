@@ -22,8 +22,8 @@
 }
 
 .trigger:focus-visible {
-  outline: 1px solid var(--overlay-30);
-  outline-offset: 1px;
+  outline: none;
+  box-shadow: 0 0 0 2px var(--primary-accent);
 }
 
 .trigger:disabled {

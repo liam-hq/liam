@@ -14,6 +14,13 @@ import { TableNode } from '../../ERDContent/components'
 import styles from './CommandPalette.module.css'
 import { useCommandPalette } from './CommandPaletteProvider'
 
+const getTableLinkHref = (activeTableName: string) => {
+  if (typeof window === 'undefined') return
+  const searchParams = new URLSearchParams(window.location.search)
+  searchParams.set('active', activeTableName)
+  return `?${searchParams.toString()}`
+}
+
 export const CommandPalette: FC = () => {
   const { open, setOpen, toggleOpen } = useCommandPalette()
 
@@ -50,7 +57,7 @@ export const CommandPalette: FC = () => {
 
       if (event.key === 'Enter') {
         if (event.metaKey || event.ctrlKey) {
-          window.open(`?active=${tableName}`)
+          window.open(getTableLinkHref(tableName))
         } else {
           goToERD(tableName)
         }
@@ -99,7 +106,7 @@ export const CommandPalette: FC = () => {
             {Object.values(schema.current.tables).map((table) => (
               <Command.Item key={table.name} value={table.name} asChild>
                 <a
-                  href={`?active=${table.name}`}
+                  href={getTableLinkHref(table.name)}
                   onClick={(event) => {
                     // Do not call preventDefault to allow the default link behavior when ⌘ key is pressed
                     if (event.ctrlKey || event.metaKey) {

@@ -1,10 +1,11 @@
 'use client'
 
+import clsx from 'clsx'
 import styles from './DDLInputSection.module.css'
 import { QueryResultBox } from './QueryResultBox'
 import type { DDLState } from './utils'
 
-interface DDLInputSectionProps {
+type DDLInputSectionProps = {
   ddlState: DDLState
   updateDdlInput: (value: string) => void
   executeDDL: () => Promise<void>
@@ -37,7 +38,7 @@ CREATE TABLE posts (id SERIAL PRIMARY KEY, title TEXT, user_id INTEGER REFERENCE
       <button
         type="button"
         onClick={executeDDL}
-        className={`${styles.actionButton} ${styles.primaryButton}`}
+        className={clsx(styles.actionButton, styles.primaryButton)}
       >
         Execute DDL
       </button>

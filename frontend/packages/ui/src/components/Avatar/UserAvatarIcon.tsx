@@ -1,5 +1,6 @@
 'use client'
 
+import clsx from 'clsx'
 import type { ComponentProps } from 'react'
 import styles from './Avatar.module.css'
 
@@ -18,7 +19,7 @@ export const UserAvatarIcon = ({
       viewBox="0 0 16 16"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
-      className={`${styles.jackIcon} ${className || ''}`}
+      className={clsx(styles.jackIcon, className || '')}
       {...props}
     >
       <title>User Avatar</title>

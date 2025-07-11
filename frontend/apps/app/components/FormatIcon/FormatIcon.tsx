@@ -16,12 +16,12 @@ export type FormatType = 'postgres' | 'prisma' | 'schemarb' | 'tbls'
 /**
  * Props for the FormatIcon component
  */
-interface FormatIconProps extends Omit<IconProps, 'size'> {
+type FormatIconProps = {
   /** The format type to display an icon for */
   format: FormatType
   /** The size of the icon in pixels (default: 16) */
   size?: number
-}
+} & Omit<IconProps, 'size'>
 
 /**
  * Displays an icon representing a database schema format

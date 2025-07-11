@@ -1,4 +1,4 @@
-export interface OverallReviewsOverride {
+export type OverallReviewsOverride = {
   public: {
     Tables: {
       overall_reviews: {

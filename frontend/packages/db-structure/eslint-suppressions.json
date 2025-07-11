@@ -4,6 +4,16 @@
       "count": 10
     }
   },
+  "src/deparser/postgresql/schemaDeparser.ts": {
+    "@typescript-eslint/consistent-type-assertions": {
+      "count": 4
+    }
+  },
+  "src/deparser/postgresql/utils.ts": {
+    "@typescript-eslint/consistent-type-assertions": {
+      "count": 2
+    }
+  },
   "src/parser/prisma/index.test.ts": {
     "no-throw-error/no-throw-error": {
       "count": 2
@@ -11,7 +21,12 @@
   },
   "src/parser/schemarb/parser.ts": {
     "@typescript-eslint/consistent-type-assertions": {
-      "count": 4
+      "count": 7
+    }
+  },
+  "src/parser/sql/postgresql/converter.ts": {
+    "@typescript-eslint/consistent-type-assertions": {
+      "count": 3
     }
   },
   "src/parser/sql/postgresql/index.ts": {
@@ -26,6 +41,11 @@
   },
   "src/parser/sql/postgresql/processSqlInChunks.ts": {
     "no-throw-error/no-throw-error": {
+      "count": 1
+    }
+  },
+  "src/parser/tbls/parser.ts": {
+    "@typescript-eslint/consistent-type-assertions": {
       "count": 1
     }
   },

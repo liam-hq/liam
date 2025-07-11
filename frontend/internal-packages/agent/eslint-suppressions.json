@@ -24,7 +24,7 @@
   },
   "src/vectorstore/supabaseVectorStore.ts": {
     "@typescript-eslint/consistent-type-assertions": {
-      "count": 1
+      "count": 5
     },
     "no-restricted-syntax": {
       "count": 5

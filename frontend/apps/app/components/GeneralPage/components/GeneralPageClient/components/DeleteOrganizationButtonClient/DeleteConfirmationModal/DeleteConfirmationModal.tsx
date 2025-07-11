@@ -11,7 +11,7 @@ import {
 } from '@liam-hq/ui/src/components/Modal/Modal'
 import styles from './DeleteConfirmationModal.module.css'
 
-interface DeleteConfirmationModalProps {
+type DeleteConfirmationModalProps = {
   isOpen: boolean
   onClose: () => void
   organizationName: string

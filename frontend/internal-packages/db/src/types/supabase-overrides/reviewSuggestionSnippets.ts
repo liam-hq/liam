@@ -1,4 +1,4 @@
-export interface ReviewSuggestionSnippetsOverride {
+export type ReviewSuggestionSnippetsOverride = {
   public: {
     Tables: {
       review_suggestion_snippets: {

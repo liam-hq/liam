@@ -1,4 +1,4 @@
-export interface DesignSessionsOverride {
+export type DesignSessionsOverride = {
   public: {
     Tables: {
       design_sessions: {

@@ -15,7 +15,7 @@ export const ProjectTabSchema = union([
 
 export type ProjectTabValue = InferOutput<typeof ProjectTabSchema>
 
-interface ProjectTab {
+type ProjectTab = {
   value: ProjectTabValue
   label: string
   icon: typeof BookMarked | typeof ErdIcon | typeof MessagesSquare

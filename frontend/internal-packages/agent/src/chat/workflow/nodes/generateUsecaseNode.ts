@@ -1,28 +1,12 @@
+import { AIMessage } from '@langchain/core/messages'
+import type { RunnableConfig } from '@langchain/core/runnables'
 import { ResultAsync } from 'neverthrow'
 import { QAGenerateUsecaseAgent } from '../../../langchain/agents'
-import type { Usecase } from '../../../langchain/agents/qaGenerateUsecaseAgent/agent'
 import type { BasePromptVariables } from '../../../langchain/utils/types'
-import { getWorkflowNodeProgress } from '../shared/getWorkflowNodeProgress'
+import { getConfigurable } from '../shared/getConfigurable'
 import type { WorkflowState } from '../types'
-
-const NODE_NAME = 'generateUsecaseNode'
-
-/**
- * Log usecase generation results for debugging/monitoring purposes
- * TODO: Remove this function once the feature is stable and monitoring is no longer needed
- */
-const logUsecaseResults = (
-  logger: WorkflowState['logger'],
-  usecases: Usecase[],
-): void => {
-  logger.log(`[${NODE_NAME}] Generated ${usecases.length} use cases`)
-
-  usecases.forEach((usecase, index) => {
-    logger.log(
-      `[${NODE_NAME}] Usecase ${index + 1} (${usecase.requirementType}): ${JSON.stringify(usecase)}`,
-    )
-  })
-}
+import { formatMessagesToHistory } from '../utils/messageUtils'
+import { logAssistantMessage } from '../utils/timelineLogger'
 
 /**
  * Format analyzed requirements into a structured text for AI processing
@@ -60,29 +44,33 @@ Original User Input: ${userInput}
  */
 export async function generateUsecaseNode(
   state: WorkflowState,
+  config: RunnableConfig,
 ): Promise<WorkflowState> {
-  state.logger.log(`[${NODE_NAME}] Started`)
-
-  // Update progress message if available
-  if (state.progressTimelineItemId) {
-    await state.repositories.schema.updateTimelineItem(
-      state.progressTimelineItemId,
-      {
-        content: 'Processing: generateUsecase',
-        progress: getWorkflowNodeProgress('generateUsecase'),
-      },
-    )
+  const configurableResult = getConfigurable(config)
+  if (configurableResult.isErr()) {
+    return {
+      ...state,
+      error: configurableResult.error,
+    }
   }
+  const { repositories } = configurableResult.value
+
+  await logAssistantMessage(state, repositories, 'Generating use cases...')
 
   // Check if we have analyzed requirements
   if (!state.analyzedRequirements) {
     const errorMessage =
       'No analyzed requirements found. Cannot generate use cases.'
-    const error = new Error(`[${NODE_NAME}] ${errorMessage}`)
-    state.logger.error(error.message)
+
+    await logAssistantMessage(
+      state,
+      repositories,
+      'Error occurred during use case generation',
+    )
+
     return {
       ...state,
-      error,
+      error: new Error(errorMessage),
     }
   }
 
@@ -95,39 +83,60 @@ export async function generateUsecaseNode(
   )
 
   const promptVariables: BasePromptVariables = {
-    chat_history: state.formattedHistory,
+    chat_history: formatMessagesToHistory(state.messages),
     user_message: requirementsText,
   }
 
-  const retryCount = state.retryCount[NODE_NAME] ?? 0
+  const retryCount = state.retryCount['generateUsecaseNode'] ?? 0
+
+  await logAssistantMessage(
+    state,
+    repositories,
+    'Analyzing test cases and queries...',
+  )
 
   const usecaseResult = await ResultAsync.fromPromise(
     qaAgent.generate(promptVariables),
-    (error) => (error instanceof Error ? error.message : String(error)),
+    (error) => (error instanceof Error ? error : new Error(String(error))),
   )
 
-  if (usecaseResult.isErr()) {
-    const errorMessage = usecaseResult.error
-    const error = new Error(`[${NODE_NAME}] Failed: ${errorMessage}`)
-    state.logger.error(error.message)
+  return await usecaseResult.match(
+    async (generatedResult) => {
+      await logAssistantMessage(
+        state,
+        repositories,
+        'Use case generation completed',
+      )
 
-    return {
-      ...state,
-      error,
-      retryCount: {
-        ...state.retryCount,
-        [NODE_NAME]: retryCount + 1,
-      },
-    }
-  }
+      return {
+        ...state,
+        messages: [
+          ...state.messages,
+          new AIMessage({
+            content: `Generated ${generatedResult.usecases.length} use cases for testing and validation`,
+            name: 'QA Generate Usecase Agent',
+          }),
+        ],
+        generatedUsecases: generatedResult.usecases,
+        error: undefined, // Clear error on success
+      }
+    },
+    async (error) => {
+      await logAssistantMessage(
+        state,
+        repositories,
+        'Error occurred during use case generation',
+      )
 
-  const result = usecaseResult.value
-  logUsecaseResults(state.logger, result.usecases)
-  state.logger.log(`[${NODE_NAME}] Completed`)
-
-  return {
-    ...state,
-    generatedUsecases: result.usecases,
-    error: undefined,
-  }
+      // Increment retry count and set error
+      return {
+        ...state,
+        error: error,
+        retryCount: {
+          ...state.retryCount,
+          ['generateUsecaseNode']: retryCount + 1,
+        },
+      }
+    },
+  )
 }

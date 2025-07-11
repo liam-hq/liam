@@ -1,3 +1,4 @@
+import clsx from 'clsx'
 import type { FC } from 'react'
 import styles from './Code.module.css'
 
@@ -16,7 +17,12 @@ export const Code: FC<Props> = ({
 }) => {
   return (
     <span
-      className={`${styles.code} ${styles[variant]} ${styles[style]} ${styles[size]}`}
+      className={clsx(
+        styles.code,
+        styles[variant],
+        styles[style],
+        styles[size],
+      )}
     >
       {children}
     </span>

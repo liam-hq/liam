@@ -311,7 +311,7 @@ function logBatchError(batchError: unknown, batchNumber: number) {
 }
 
 // Define a type for schema metadata
-interface SchemaMetadata {
+type SchemaMetadata = {
   source: string
   type: string
   schemaHash: string

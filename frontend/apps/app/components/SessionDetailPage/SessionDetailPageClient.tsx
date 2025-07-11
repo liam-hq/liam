@@ -2,14 +2,7 @@
 
 import { type Schema, schemaSchema } from '@liam-hq/db-structure'
 import clsx from 'clsx'
-import {
-  type ComponentProps,
-  type FC,
-  useCallback,
-  useMemo,
-  useState,
-  useTransition,
-} from 'react'
+import { type FC, useCallback, useMemo, useState, useTransition } from 'react'
 import { safeParse } from 'valibot'
 import { useRealtimeTimelineItems } from '@/features/timelineItems/hooks/useRealtimeTimelineItems'
 import { Chat } from './components/Chat'
@@ -21,23 +14,29 @@ import styles from './SessionDetailPage.module.css'
 import { buildCurrentSchema } from './services/buildCurrentSchema'
 import { getBuildingSchema } from './services/buildingSchema/client/getBuldingSchema'
 import { buildPrevSchema } from './services/buildPrevSchema/client/buildPrevSchema'
+import type { DesignSessionWithTimelineItems } from './services/designSessionWithTimelineItems/types'
 import { getLatestVersion } from './services/latestVersion/client/getLatestVersion'
 import type { Version } from './types'
 
 type Props = {
-  designSession: ComponentProps<typeof Chat>['designSession']
+  designSessionWithTimelineItems: NonNullable<DesignSessionWithTimelineItems>
+  buildingSchemaId: string
+  latestVersionNumber?: number
   initialSchema: Schema | null
   initialPrevSchema: Schema | null
   initialCurrentVersion: Version | null
 }
 
 export const SessionDetailPageClient: FC<Props> = ({
-  designSession,
+  designSessionWithTimelineItems,
+  buildingSchemaId,
+  latestVersionNumber,
   initialSchema,
   initialPrevSchema,
   initialCurrentVersion,
 }) => {
-  const designSessionId = designSession.id
+  const designSessionId = designSessionWithTimelineItems.id
+  const organizationId = designSessionWithTimelineItems.organization_id
 
   const [prevSchema, setPrevSchema] = useState<Schema | null>(initialPrevSchema)
   const [currentSchema, setCurrentSchema] = useState<Schema | null>(
@@ -97,20 +96,13 @@ Please suggest a specific solution to resolve this problem.`
 
   const hasCurrentVersion = currentVersion !== null
 
-  const { timelineItems, addOrUpdateTimelineItem } =
-    useRealtimeTimelineItems(designSession)
+  const { timelineItems, addOrUpdateTimelineItem } = useRealtimeTimelineItems(
+    designSessionId,
+    designSessionWithTimelineItems.timeline_items,
+  )
   const isGenerating = useMemo(() => {
-    const progressItems = timelineItems.filter(
-      (item) => item.role === 'progress',
-    )
-    if (progressItems.length === 0) return false
-
-    const latestProgressItem = progressItems[progressItems.length - 1]
-    return (
-      'progress' in latestProgressItem &&
-      typeof latestProgressItem.progress === 'number' &&
-      latestProgressItem.progress < 100
-    )
+    // Since progress role is removed, we no longer track generating state
+    return false
   }, [timelineItems])
 
   // Show loading state while schema is being fetched
@@ -134,7 +126,10 @@ Please suggest a specific solution to resolve this problem.`
         <div className={styles.chatSection}>
           <Chat
             schemaData={currentSchema}
-            designSession={designSession}
+            designSessionId={designSessionId}
+            organizationId={organizationId}
+            buildingSchemaId={buildingSchemaId}
+            latestVersionNumber={latestVersionNumber}
             timelineItems={timelineItems}
             onMessageSend={addOrUpdateTimelineItem}
           />

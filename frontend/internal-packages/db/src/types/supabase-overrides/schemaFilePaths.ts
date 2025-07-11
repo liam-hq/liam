@@ -1,4 +1,4 @@
-export interface SchemaFilePathsOverride {
+export type SchemaFilePathsOverride = {
   public: {
     Tables: {
       schema_file_paths: {

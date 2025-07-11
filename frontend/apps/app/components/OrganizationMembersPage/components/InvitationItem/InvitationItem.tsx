@@ -15,7 +15,7 @@ import { type FC, useState } from 'react'
 import { DeleteInvitationModal } from '../DeleteInvitationModal'
 import styles from './InvitationItem.module.css'
 
-interface InvitationItemProps {
+type InvitationItemProps = {
   id: string
   email: string
   initial: string

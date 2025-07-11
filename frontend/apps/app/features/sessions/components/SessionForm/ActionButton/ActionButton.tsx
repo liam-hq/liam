@@ -13,7 +13,7 @@ import clsx from 'clsx'
 import type { FC, MouseEvent } from 'react'
 import styles from './ActionButton.module.css'
 
-interface ActionButtonProps {
+type ActionButtonProps = {
   hasContent: boolean
   isPending: boolean
   onSubmit: (e: MouseEvent<HTMLButtonElement>) => void

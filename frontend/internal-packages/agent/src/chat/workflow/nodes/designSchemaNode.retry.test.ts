@@ -34,39 +34,51 @@ describe('designSchemaNode retry behavior', () => {
         }) as never,
     )
 
+    const mockRepositories = {
+      schema: {
+        updateTimelineItem: vi.fn(),
+        getSchema: vi.fn(),
+        getDesignSession: vi.fn(),
+        createVersion: vi.fn(),
+        createTimelineItem: vi.fn().mockResolvedValue({
+          success: true,
+          timelineItem: { id: 'test-timeline-id' },
+        }),
+        createArtifact: vi.fn(),
+        updateArtifact: vi.fn(),
+        getArtifact: vi.fn(),
+      },
+    }
+
+    const mockLogger = {
+      log: vi.fn(),
+      debug: vi.fn(),
+      error: vi.fn(),
+      info: vi.fn(),
+      warn: vi.fn(),
+    }
+
     const state: WorkflowState = {
       userInput: 'Create a users table',
-      formattedHistory: '',
+      messages: [],
       schemaData: { tables: {} },
       buildingSchemaId: 'test-id',
       latestVersionNumber: 1,
-      repositories: {
-        schema: {
-          updateTimelineItem: vi.fn(),
-          getSchema: vi.fn(),
-          getDesignSession: vi.fn(),
-          createVersion: vi.fn(),
-          createTimelineItem: vi.fn(),
-          createArtifact: vi.fn(),
-          updateArtifact: vi.fn(),
-          getArtifact: vi.fn(),
-        },
-      },
       designSessionId: 'session-id',
       userId: 'user-id',
-      logger: {
-        log: vi.fn(),
-        debug: vi.fn(),
-        error: vi.fn(),
-        info: vi.fn(),
-        warn: vi.fn(),
-      },
       retryCount: { ddlExecutionRetry: 1 },
       shouldRetryWithDesignSchema: true,
       ddlExecutionFailureReason: 'Foreign key constraint error',
     }
 
-    await designSchemaNode(state)
+    const config = {
+      configurable: {
+        repositories: mockRepositories,
+        logger: mockLogger,
+      },
+    }
+
+    await designSchemaNode(state, config)
 
     // Check the generate call arguments
     expect(mockGenerate).toHaveBeenCalledWith(

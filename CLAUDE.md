@@ -55,6 +55,13 @@ pnpm --filter @liam-hq/cli build
 ### Database Operations
 For database migration and type generation workflows, see [`docs/migrationOpsContext.md`](docs/migrationOpsContext.md).
 
+### Schema Changes
+- Always use the following migration workflow:
+  1. `pnpm -F db supabase:migration:new <MIGRATION_NAME>`
+  2. Write DDL in the generated migration file
+  3. `pnpm -F db supabase:migration:up` to apply changes
+  4. `pnpm -F db supabase:gen` to regenerate type definitions
+
 ## Architecture
 
 ### Monorepo Structure
@@ -86,8 +93,7 @@ For database migration and type generation workflows, see [`docs/migrationOpsCon
 ## Development Guidelines
 
 ### TypeScript Standards
-- Use runtime type validation with `valibot` instead of type assertions
-- Avoid `as` keyword - use type predicates or `instanceof` checks
+- Use runtime type validation with `valibot` for external data validation
 - Use early returns for readability
 
 ### Code Editing

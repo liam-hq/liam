@@ -1,3 +1,4 @@
+import clsx from 'clsx'
 import type { Metadata } from 'next'
 import { Inter, Montserrat } from 'next/font/google'
 import type React from 'react'
@@ -43,7 +44,7 @@ export default function RootLayout({
       />
       <GtagScript />
       <GTMConsent />
-      <body className={`${inter.className} ${montserrat.variable}`}>
+      <body className={clsx(inter.className, montserrat.variable)}>
         <ToastProvider>{children}</ToastProvider>
       </body>
     </html>

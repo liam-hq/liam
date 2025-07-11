@@ -1,4 +1,5 @@
 import { Button } from '@liam-hq/ui'
+import clsx from 'clsx'
 import type { FC } from 'react'
 import styles from './Comment.module.css'
 
@@ -24,7 +25,7 @@ export const Comment: FC<Props> = ({ level, comment, onQuickFix }) => {
     <div className={styles.wrapper}>
       <div className={styles.container}>
         <div className={styles.content}>
-          <div className={`${styles.badge} ${severityClassMap[level]}`}>
+          <div className={clsx(styles.badge, severityClassMap[level])}>
             <span>{level}</span>
           </div>
           <p className={styles.text}>{comment}</p>

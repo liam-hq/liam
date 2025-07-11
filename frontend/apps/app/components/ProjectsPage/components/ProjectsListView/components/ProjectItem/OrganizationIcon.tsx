@@ -4,7 +4,7 @@ import Image from 'next/image'
 import { ProjectIcon } from '@/components/ProjectIcon'
 import styles from './ProjectItem.module.css'
 
-interface OrganizationIconProps {
+type OrganizationIconProps = {
   avatarUrl?: string | null
   owner: string
 }

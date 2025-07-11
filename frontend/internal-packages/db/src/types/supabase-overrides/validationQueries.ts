@@ -1,4 +1,4 @@
-export interface ValidationQueriesOverride {
+export type ValidationQueriesOverride = {
   public: {
     Tables: {
       validation_queries: {

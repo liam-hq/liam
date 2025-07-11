@@ -1,0 +1,7 @@
+{
+  "globalSetup.ts": {
+    "@typescript-eslint/consistent-type-assertions": {
+      "count": 1
+    }
+  }
+}

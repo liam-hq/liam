@@ -3,7 +3,7 @@ import type { FC } from 'react'
 import { FormatIcon, type FormatType } from '@/components/FormatIcon'
 import styles from './SchemaLink.module.css'
 
-interface SchemaLinkProps {
+type SchemaLinkProps = {
   schemaName: string
   format?: FormatType
 }

@@ -1,9 +1,11 @@
+import type { BaseMessage } from '@langchain/core/messages'
 import type { Schema } from '@liam-hq/db-structure'
 import type { Usecase } from '../../langchain/agents/qaGenerateUsecaseAgent/agent'
 import type { Repositories } from '../../repositories'
 import type { NodeLogger } from '../../utils/nodeLogger'
 
 export type WorkflowState = {
+  messages: BaseMessage[]
   userInput: string
   analyzedRequirements?:
     | {
@@ -15,7 +17,6 @@ export type WorkflowState = {
   generatedUsecases?: Usecase[] | undefined
   generatedAnswer?: string | undefined
   finalResponse?: string | undefined
-  formattedHistory: string
   schemaData: Schema
   projectId?: string | undefined
   error?: Error | undefined
@@ -43,13 +44,12 @@ export type WorkflowState = {
 
   // Message saving fields
   designSessionId: string
+}
 
-  // Repository dependencies for data access
+/**
+ * Type definition for the configurable object passed to workflow nodes
+ */
+export type WorkflowConfigurable = {
   repositories: Repositories
-
-  // Logging functionality
   logger: NodeLogger
-
-  // Progress timeline item ID for tracking
-  progressTimelineItemId?: string | undefined
 }

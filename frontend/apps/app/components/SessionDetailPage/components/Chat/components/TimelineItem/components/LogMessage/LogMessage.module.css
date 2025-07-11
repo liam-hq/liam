@@ -1,0 +1,13 @@
+.content {
+  width: 100%;
+  max-width: 100%;
+  font-family: var(--main-font);
+  font-style: italic;
+  font-weight: 400;
+  font-size: var(--font-size-3);
+  line-height: 1.8em;
+  color: var(--overlay-50);
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  word-break: break-word;
+}

@@ -3,65 +3,35 @@
 import type { Tables } from '@liam-hq/db/supabase/database.types'
 import * as v from 'valibot'
 import { createClient } from '@/libs/db/client'
-import type { TimelineItemEntry } from '../types'
-
-type SchemaVersionTimelineItem = {
-  id: string
-  type: 'schema_version'
-  content: string
-  building_schema_version_id: string
-}
-
-type ProgressTimelineItem = {
-  id: string
-  type: 'progress'
-  content: string
-  progress: number
-}
-
-// TODO: Modify to use what is inferred from the valibot schema
-type TimelineItem =
-  | Tables<'timeline_items'>
-  | SchemaVersionTimelineItem
-  | ProgressTimelineItem
+import type { TimelineItemEntry, TimelineItemType } from '../types'
 
 // TODO: Make sure to use it when storing data and as an inferential type
 const realtimeTimelineItemSchema = v.object({
   id: v.string(),
   design_session_id: v.pipe(v.string(), v.uuid()),
   content: v.string(),
-  type: v.picklist(['user', 'assistant', 'schema_version', 'progress']),
+  type: v.picklist([
+    'user',
+    'assistant',
+    'schema_version',
+    'error',
+    'assistant_log',
+  ]),
   user_id: v.nullable(v.string()),
   created_at: v.string(),
   updated_at: v.string(),
   organization_id: v.pipe(v.string(), v.uuid()),
   building_schema_version_id: v.nullable(v.string()),
-  progress: v.nullable(v.number()),
 })
 
-/**
- * Convert database timeline item to TimelineItemEntry format
- */
-function isSchemaVersionTimelineItem(
-  timelineItem: TimelineItem,
-): timelineItem is SchemaVersionTimelineItem {
-  return (
+export const convertTimelineItemToChatEntry = (
+  timelineItem: TimelineItemType,
+): TimelineItemEntry => {
+  if (
     timelineItem.type === 'schema_version' &&
     'building_schema_version_id' in timelineItem &&
     typeof timelineItem.building_schema_version_id === 'string'
   )
-}
-
-function isProgressTimelineItem(
-  timelineItem: TimelineItem,
-): timelineItem is ProgressTimelineItem {
-  return timelineItem.type === 'progress'
-}
-
-export const convertTimelineItemToChatEntry = (
-  timelineItem: TimelineItem,
-): TimelineItemEntry => {
-  if (isSchemaVersionTimelineItem(timelineItem)) {
     // Schema version timeline item
     return {
       id: timelineItem.id,
@@ -69,17 +39,6 @@ export const convertTimelineItemToChatEntry = (
       content: timelineItem.content,
       building_schema_version_id: timelineItem.building_schema_version_id,
     }
-  }
-
-  if (isProgressTimelineItem(timelineItem)) {
-    // Progress timeline item
-    return {
-      id: timelineItem.id,
-      content: timelineItem.content,
-      role: timelineItem.type,
-      progress: timelineItem.progress,
-    }
-  }
 
   // Regular timeline item from Tables<'timeline_items'>
   return {

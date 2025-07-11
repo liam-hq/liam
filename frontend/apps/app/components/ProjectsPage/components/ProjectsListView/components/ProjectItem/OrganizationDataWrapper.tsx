@@ -6,7 +6,7 @@ import { fetchOrganizationData } from './OrganizationData'
 import { OrganizationIcon } from './OrganizationIcon'
 import styles from './ProjectItem.module.css'
 
-interface OrganizationDataWrapperProps {
+type OrganizationDataWrapperProps = {
   installationId: number
   owner: string
   repo: string

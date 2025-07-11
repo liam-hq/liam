@@ -5,10 +5,14 @@
 import type { Module, VariableDeclarator } from '@swc/core'
 import { parseSync } from '@swc/core'
 import type { Processor, ProcessResult } from '../types.js'
-import { isPgTableCall } from './astUtils.js'
+import { isPgTableCall, isSchemaTableCall } from './astUtils.js'
 import { convertDrizzleTablesToInternal } from './converter.js'
 import { parsePgEnumCall } from './enumParser.js'
-import { parsePgTableCall, parsePgTableWithComment } from './tableParser.js'
+import {
+  parsePgTableCall,
+  parsePgTableWithComment,
+  parseSchemaTableCall,
+} from './tableParser.js'
 import type { DrizzleEnumDefinition, DrizzleTableDefinition } from './types.js'
 
 /**
@@ -19,6 +23,7 @@ const parseDrizzleSchema = (
 ): {
   tables: Record<string, DrizzleTableDefinition>
   enums: Record<string, DrizzleEnumDefinition>
+  variableToTableMapping: Record<string, string>
 } => {
   // Parse TypeScript code into AST
   const ast = parseSync(sourceCode, {
@@ -28,11 +33,12 @@ const parseDrizzleSchema = (
 
   const tables: Record<string, DrizzleTableDefinition> = {}
   const enums: Record<string, DrizzleEnumDefinition> = {}
+  const variableToTableMapping: Record<string, string> = {}
 
   // Traverse the AST to find pgTable calls
-  visitModule(ast, tables, enums)
+  visitModule(ast, tables, enums, variableToTableMapping)
 
-  return { tables, enums }
+  return { tables, enums, variableToTableMapping }
 }
 
 /**
@@ -42,18 +48,29 @@ const visitModule = (
   module: Module,
   tables: Record<string, DrizzleTableDefinition>,
   enums: Record<string, DrizzleEnumDefinition>,
+  variableToTableMapping: Record<string, string>,
 ) => {
   for (const item of module.body) {
     if (item.type === 'VariableDeclaration') {
       for (const declarator of item.declarations) {
-        visitVariableDeclarator(declarator, tables, enums)
+        visitVariableDeclarator(
+          declarator,
+          tables,
+          enums,
+          variableToTableMapping,
+        )
       }
     } else if (
       item.type === 'ExportDeclaration' &&
       item.declaration?.type === 'VariableDeclaration'
     ) {
       for (const declarator of item.declaration.declarations) {
-        visitVariableDeclarator(declarator, tables, enums)
+        visitVariableDeclarator(
+          declarator,
+          tables,
+          enums,
+          variableToTableMapping,
+        )
       }
     }
   }
@@ -66,6 +83,7 @@ const visitVariableDeclarator = (
   declarator: VariableDeclarator,
   tables: Record<string, DrizzleTableDefinition>,
   enums: Record<string, DrizzleEnumDefinition>,
+  variableToTableMapping: Record<string, string>,
 ) => {
   if (!declarator.init || declarator.init.type !== 'CallExpression') return
 
@@ -73,8 +91,17 @@ const visitVariableDeclarator = (
 
   if (isPgTableCall(callExpr)) {
     const table = parsePgTableCall(callExpr)
-    if (table) {
+    if (table && declarator.id.type === 'Identifier') {
       tables[table.name] = table
+      // Map variable name to table name
+      variableToTableMapping[declarator.id.value] = table.name
+    }
+  } else if (isSchemaTableCall(callExpr)) {
+    const table = parseSchemaTableCall(callExpr)
+    if (table && declarator.id.type === 'Identifier') {
+      tables[table.name] = table
+      // Map variable name to table name
+      variableToTableMapping[declarator.id.value] = table.name
     }
   } else if (
     declarator.init.type === 'CallExpression' &&
@@ -84,8 +111,10 @@ const visitVariableDeclarator = (
   ) {
     // Handle table comments: pgTable(...).comment(...)
     const table = parsePgTableWithComment(declarator.init)
-    if (table) {
+    if (table && declarator.id.type === 'Identifier') {
       tables[table.name] = table
+      // Map variable name to table name
+      variableToTableMapping[declarator.id.value] = table.name
     }
   } else if (
     callExpr.callee.type === 'Identifier' &&
@@ -105,10 +134,15 @@ const parseDrizzleSchemaString = (
   schemaString: string,
 ): Promise<ProcessResult> => {
   try {
-    const { tables: drizzleTables, enums } = parseDrizzleSchema(schemaString)
+    const {
+      tables: drizzleTables,
+      enums,
+      variableToTableMapping,
+    } = parseDrizzleSchema(schemaString)
     const { tables, errors } = convertDrizzleTablesToInternal(
       drizzleTables,
       enums,
+      variableToTableMapping,
     )
 
     return Promise.resolve({

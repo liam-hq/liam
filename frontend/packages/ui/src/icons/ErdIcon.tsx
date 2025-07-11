@@ -1,6 +1,6 @@
 import type { ComponentPropsWithoutRef, FC } from 'react'
 
-interface IconProps extends ComponentPropsWithoutRef<'svg'> {
+type IconProps = ComponentPropsWithoutRef<'svg'> & {
   size?: string | number
 }
 

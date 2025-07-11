@@ -1,14 +1,10 @@
-import { Button } from '@liam-hq/ui'
 import clsx from 'clsx'
 import { type ChangeEvent, type FC, useRef, useState } from 'react'
+import type { FormatType } from '@/components/FormatIcon/FormatIcon'
 import { createAccessibleOpacityTransition } from '@/utils/accessibleTransitions'
-import {
-  FormatIcon,
-  type FormatType,
-} from '../../../../../components/FormatIcon/FormatIcon'
 import { AttachmentsContainer } from '../AttachmentsContainer'
-import { FormatSelectDropdown } from '../FormatSelectDropdown'
 import { useAutoResizeTextarea } from '../hooks/useAutoResizeTextarea'
+import { useEnterKeySubmission } from '../hooks/useEnterKeySubmission'
 import { useFileAttachments } from '../hooks/useFileAttachments'
 import { useFileDragAndDrop } from '../hooks/useFileDragAndDrop'
 import { SchemaInfoSection, type SchemaStatus } from '../SchemaInfoSection'
@@ -59,6 +55,7 @@ export const UploadSessionFormPresenter: FC<Props> = ({
   const [schemaStatus, setSchemaStatus] = useState<SchemaStatus>('idle')
   const fileInputRef = useRef<HTMLInputElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
+  const formRef = useRef<HTMLFormElement>(null)
 
   // File attachments hook
   const {
@@ -67,6 +64,15 @@ export const UploadSessionFormPresenter: FC<Props> = ({
     handleRemoveAttachment,
     clearAttachments,
   } = useFileAttachments()
+
+  // Calculate hasContent for Enter key submission
+  const hasContent =
+    !!selectedFile || textContent.trim().length > 0 || attachments.length > 0
+  const handleEnterKeySubmission = useEnterKeySubmission(
+    hasContent,
+    isPending,
+    formRef,
+  )
 
   // File drag and drop for schema file
   const handleSchemaFileDrop = (files: FileList) => {
@@ -142,6 +148,7 @@ export const UploadSessionFormPresenter: FC<Props> = ({
       )}
     >
       <form
+        ref={formRef}
         action={formAction}
         style={createAccessibleOpacityTransition(!isTransitioning)}
       >
@@ -200,7 +207,10 @@ export const UploadSessionFormPresenter: FC<Props> = ({
         </div>
         <div className={styles.divider} />
         <div
-          className={`${styles.inputSection} ${attachmentDragActive ? styles.dragActive : ''}`}
+          className={clsx(
+            styles.inputSection,
+            attachmentDragActive ? styles.dragActive : '',
+          )}
           onDragEnter={handleAttachmentDrag}
           onDragLeave={handleAttachmentDrag}
           onDragOver={handleAttachmentDrag}
@@ -217,6 +227,7 @@ export const UploadSessionFormPresenter: FC<Props> = ({
               placeholder="Enter your database design instructions. For example: Design a database for an e-commerce site that manages users, products, and orders..."
               value={textContent}
               onChange={handleTextareaChange}
+              onKeyDown={handleEnterKeySubmission}
               className={styles.textarea}
               disabled={isPending}
               rows={4}
@@ -226,11 +237,7 @@ export const UploadSessionFormPresenter: FC<Props> = ({
           <div className={styles.buttonContainer}>
             <SessionFormActions
               isPending={isPending}
-              hasContent={
-                !!selectedFile ||
-                textContent.trim().length > 0 ||
-                attachments.length > 0
-              }
+              hasContent={hasContent}
               onFileSelect={handleFileSelect}
               onCancel={handleReset}
             />

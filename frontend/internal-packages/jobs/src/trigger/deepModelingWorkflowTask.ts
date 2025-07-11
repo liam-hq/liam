@@ -3,11 +3,8 @@ import { createSupabaseRepositories, deepModeling } from '@liam-hq/agent'
 import { logger, task } from '@trigger.dev/sdk'
 import { createClient } from '../libs/supabase'
 
-// Define type excluding repositories, schemaData, and logger
-type DeepModelingPayload = Omit<
-  DeepModelingParams,
-  'repositories' | 'schemaData' | 'logger'
->
+// Define type excluding schemaData (repositories and logger are now passed via config)
+type DeepModelingPayload = Omit<DeepModelingParams, 'schemaData'>
 
 function createWorkflowLogger(): NodeLogger {
   return {
@@ -56,12 +53,15 @@ export const deepModelingWorkflowTask = task({
 
     const deepModelingParams: DeepModelingParams = {
       ...payload,
-      repositories,
       schemaData: schemaResult.data.schema,
-      logger: workflowLogger,
     }
 
-    const result = await deepModeling(deepModelingParams)
+    const result = await deepModeling(deepModelingParams, {
+      configurable: {
+        repositories,
+        logger: workflowLogger,
+      },
+    })
 
     logger.log('Deep Modeling workflow completed:', {
       success: result.isOk(),

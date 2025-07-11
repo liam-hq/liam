@@ -2,7 +2,8 @@
   "permissions": {
     "allow": [],
     "deny": [
-      "Bash(git commit --no-verify:*)"
+      "Bash(git commit --no-verify:*)",
+      "Edit(frontend/internal-packages/db/schema/schema.sql)"
     ]
   }
 }

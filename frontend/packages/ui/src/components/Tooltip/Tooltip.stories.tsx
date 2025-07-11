@@ -8,7 +8,7 @@ import {
   TooltipTrigger,
 } from './Tooltip'
 
-interface TooltipDemoProps {
+type TooltipDemoProps = {
   content: ReactNode
   side?: 'top' | 'right' | 'bottom' | 'left'
   triggerText?: string

@@ -9,7 +9,7 @@ import { MemberItem } from '../MemberItem'
 import { SearchInput } from '../SearchInput'
 import styles from './ClientSearchWrapper.module.css'
 
-interface Member {
+type Member = {
   id: string
   joinedAt: string | null
   user: {
@@ -19,7 +19,7 @@ interface Member {
   }
 }
 
-interface Invite {
+type Invite = {
   id: string
   email: string
   invitedAt: string | null
@@ -30,7 +30,7 @@ interface Invite {
   }
 }
 
-interface ClientSearchWrapperProps {
+type ClientSearchWrapperProps = {
   members: Member[]
   invites: Invite[]
   organizationId: string

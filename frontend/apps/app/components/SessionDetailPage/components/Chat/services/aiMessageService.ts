@@ -5,24 +5,6 @@ import { formatTimelineItemHistory } from '@/features/timelineItems/services/tim
 import type { TimelineItemEntry } from '@/features/timelineItems/types'
 import { ERROR_MESSAGES } from '../constants/chatConstants'
 
-type DesignSession = {
-  id: string
-  organizationId: string
-  buildingSchemaId: string
-  latestVersionNumber?: number
-}
-
-interface SendChatMessageParams {
-  userInput: string
-  timelineItems: TimelineItemEntry[]
-  designSession: DesignSession
-}
-
-interface SendChatMessageResult {
-  success: boolean
-  error?: string
-}
-
 /**
  * Schema for API response validation
  */
@@ -32,14 +14,26 @@ const ChatAPIResponseSchema = object({
   error: optional(string()),
 })
 
+type ChatAPIRequestParams = {
+  userInput: string
+  history: [string, string][]
+  designSessionId: string
+  organizationId: string
+  buildingSchemaId: string
+  latestVersionNumber?: number
+}
+
 /**
  * Calls the /api/chat endpoint with the given parameters
  */
-const callChatAPI = async (
-  userInput: string,
-  history: [string, string][],
-  designSession: DesignSession,
-): Promise<Response> => {
+const callChatAPI = async ({
+  userInput,
+  history,
+  designSessionId,
+  organizationId,
+  buildingSchemaId,
+  latestVersionNumber,
+}: ChatAPIRequestParams): Promise<Response> => {
   const response = await fetch('/api/chat', {
     method: 'POST',
     headers: {
@@ -48,10 +42,10 @@ const callChatAPI = async (
     body: JSON.stringify({
       userInput,
       history,
-      organizationId: designSession.organizationId,
-      buildingSchemaId: designSession.buildingSchemaId,
-      latestVersionNumber: designSession.latestVersionNumber || 0,
-      designSessionId: designSession.id,
+      organizationId,
+      buildingSchemaId,
+      latestVersionNumber: latestVersionNumber || 0,
+      designSessionId,
     }),
   })
 
@@ -62,16 +56,18 @@ const callChatAPI = async (
   return response
 }
 
-/**
- * Handles errors
- */
-const handleChatError = (error: unknown): SendChatMessageResult => {
-  console.error('Error in sendChatMessage:', error)
+type SendChatMessageParams = {
+  timelineItems: TimelineItemEntry[]
+  userInput: string
+  designSessionId: string
+  organizationId: string
+  buildingSchemaId: string
+  latestVersionNumber?: number
+}
 
-  return {
-    success: false,
-    error: error instanceof Error ? error.message : ERROR_MESSAGES.GENERAL,
-  }
+type SendChatMessageResult = {
+  success: boolean
+  error?: string
 }
 
 /**
@@ -79,16 +75,26 @@ const handleChatError = (error: unknown): SendChatMessageResult => {
  * Messages are saved server-side and received via Supabase Realtime
  */
 export const sendChatMessage = async ({
-  userInput,
   timelineItems,
-  designSession,
+  userInput,
+  designSessionId,
+  organizationId,
+  buildingSchemaId,
+  latestVersionNumber,
 }: SendChatMessageParams): Promise<SendChatMessageResult> => {
   try {
     // Format timeline item history for API
     const history = formatTimelineItemHistory(timelineItems)
 
     // Call API
-    const response = await callChatAPI(userInput, history, designSession)
+    const response = await callChatAPI({
+      userInput,
+      history,
+      designSessionId,
+      organizationId,
+      buildingSchemaId,
+      latestVersionNumber,
+    })
 
     // Parse JSON response with type safety
     const rawData = await response.json()
@@ -100,6 +106,11 @@ export const sendChatMessage = async ({
 
     return { success: true }
   } catch (error) {
-    return handleChatError(error)
+    console.error('Error in sendChatMessage:', error)
+
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : ERROR_MESSAGES.GENERAL,
+    }
   }
 }

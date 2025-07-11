@@ -1,7 +1,7 @@
 import { createContext, type FC, type ReactNode, useContext } from 'react'
 import type { Version } from '@/schemas/version'
 
-interface VersionContextProps {
+type VersionContextProps = {
   version: Version
 }
 

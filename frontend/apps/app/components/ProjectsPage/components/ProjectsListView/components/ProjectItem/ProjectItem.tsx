@@ -14,7 +14,7 @@ type ProjectWithRepositories = Tables<'projects'> & {
   }>
 }
 
-interface ProjectItemProps {
+type ProjectItemProps = {
   project: ProjectWithRepositories
 }
 

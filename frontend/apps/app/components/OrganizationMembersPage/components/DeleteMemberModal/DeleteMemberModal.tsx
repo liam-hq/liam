@@ -14,7 +14,7 @@ import {
 import { type FC, useTransition } from 'react'
 import { removeMember } from './actions/removeMember'
 
-interface DeleteMemberModalProps {
+type DeleteMemberModalProps = {
   isOpen: boolean
   onClose: () => void
   memberId: string

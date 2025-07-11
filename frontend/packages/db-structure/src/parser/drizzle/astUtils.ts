@@ -116,6 +116,17 @@ export const isPgTableCall = (callExpr: CallExpression): boolean => {
 }
 
 /**
+ * Check if a call expression is a schema.table() call
+ */
+export const isSchemaTableCall = (callExpr: CallExpression): boolean => {
+  return (
+    isMemberExpression(callExpr.callee) &&
+    isIdentifier(callExpr.callee.property) &&
+    callExpr.callee.property.value === 'table'
+  )
+}
+
+/**
  * Extract string value from a string literal
  */
 export const getStringValue = (node: Expression): string | null => {

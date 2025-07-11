@@ -5,7 +5,7 @@ import { ProjectsListView } from './components/ProjectsListView'
 import { fetchLastCommitData } from './services/fetchLastCommitData'
 import type { ProjectWithLastCommit } from './types'
 
-interface ServerProjectsDataProviderProps {
+type ServerProjectsDataProviderProps = {
   projects: Tables<'projects'>[] | null
   organizationId?: string
 }

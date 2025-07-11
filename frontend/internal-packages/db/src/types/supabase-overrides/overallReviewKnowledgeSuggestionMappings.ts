@@ -1,4 +1,4 @@
-export interface OverallReviewKnowledgeSuggestionMappingsOverride {
+export type OverallReviewKnowledgeSuggestionMappingsOverride = {
   public: {
     Tables: {
       overall_review_knowledge_suggestion_mappings: {

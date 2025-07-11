@@ -14,7 +14,7 @@ import {
 import { type FC, useTransition } from 'react'
 import { removeInvitation } from './actions/removeInvitation'
 
-interface DeleteInvitationModalProps {
+type DeleteInvitationModalProps = {
   isOpen: boolean
   onClose: () => void
   invitationId: string

@@ -6,16 +6,17 @@ import {
   DropdownMenuRoot,
   DropdownMenuTrigger,
 } from '@liam-hq/ui'
+import clsx from 'clsx'
 import type { FC } from 'react'
 import { FormatIcon, type FormatType } from '@/components/FormatIcon/FormatIcon'
 import styles from './FormatSelectDropdown.module.css'
 
-interface FormatOption {
+type FormatOption = {
   format: FormatType
   label: string
 }
 
-interface FormatSelectDropdownProps {
+type FormatSelectDropdownProps = {
   selectedFormat: FormatType
   onFormatChange: (format: FormatType) => void
 }
@@ -58,7 +59,10 @@ export const FormatSelectDropdown: FC<FormatSelectDropdownProps> = ({
           <DropdownMenuItem
             key={option.format}
             onClick={() => handleSelectFormat(option.format)}
-            className={`${styles.menuItem} ${option.format === selectedFormat ? styles.menuItemSelected : ''}`}
+            className={clsx(
+              styles.menuItem,
+              option.format === selectedFormat ? styles.menuItemSelected : '',
+            )}
           >
             <div className={styles.menuContent}>
               <FormatIcon format={option.format} size={16} />

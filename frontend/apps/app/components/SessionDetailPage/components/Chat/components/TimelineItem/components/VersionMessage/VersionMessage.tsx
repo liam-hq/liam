@@ -3,6 +3,7 @@
 import type { Json, Tables } from '@liam-hq/db'
 import { operationsSchema } from '@liam-hq/db-structure'
 import { Check, ChevronDown } from '@liam-hq/ui'
+import clsx from 'clsx'
 import { type FC, useEffect, useState, useTransition } from 'react'
 import * as v from 'valibot'
 import { createClient } from '@/libs/db/client'
@@ -57,7 +58,7 @@ type BuildingSchemaVersion = Pick<
   'patch' | 'number' | 'id'
 >
 
-interface Props {
+type Props = {
   buildingSchemaVersionId: string
 }
 
@@ -110,7 +111,7 @@ export const VersionMessage: FC<Props> = ({ buildingSchemaVersionId }) => {
     <div className={styles.container}>
       <button type="button" className={styles.header} onClick={toggleExpanded}>
         <div
-          className={`${styles.chevron} ${isExpanded ? styles.expanded : ''}`}
+          className={clsx(styles.chevron, isExpanded ? styles.expanded : '')}
         >
           <ChevronDown />
         </div>
@@ -119,7 +120,7 @@ export const VersionMessage: FC<Props> = ({ buildingSchemaVersionId }) => {
         </span>
       </button>
 
-      <div className={`${styles.content} ${isExpanded ? styles.expanded : ''}`}>
+      <div className={clsx(styles.content, isExpanded ? styles.expanded : '')}>
         <div className={styles.operationList}>
           {patchOperations.map((operation, index) => (
             <div

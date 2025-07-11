@@ -4,7 +4,7 @@ import styles from './EmptyProjectsState.module.css'
 import { JackInBox } from './JackInBox'
 import { JackNoResult } from './JackNoResult'
 
-interface EmptyProjectsStateProps {
+type EmptyProjectsStateProps = {
   createProjectHref?: string
   projects?: unknown[] | null
 }

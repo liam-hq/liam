@@ -1,4 +1,4 @@
-export interface ValidationResultsOverride {
+export type ValidationResultsOverride = {
   public: {
     Tables: {
       validation_results: {

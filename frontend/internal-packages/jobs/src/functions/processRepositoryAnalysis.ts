@@ -4,7 +4,7 @@ import { getFileContent } from '@liam-hq/github'
 import { logger } from '@trigger.dev/sdk/v3'
 import { createClient } from '../libs/supabase'
 
-export interface RepositoryAnalysisPayload {
+export type RepositoryAnalysisPayload = {
   projectId: string
   repositoryId: string
   repositoryOwner: string
@@ -13,13 +13,13 @@ export interface RepositoryAnalysisPayload {
   organizationId: string
 }
 
-interface DocumentFile {
+type DocumentFile = {
   path: string
   content: string
   type: 'essential' | 'docs'
 }
 
-interface RepositoryDocumentMetadata {
+type RepositoryDocumentMetadata = {
   source: 'repository_analysis'
   type: 'essential' | 'docs'
   project_id: string

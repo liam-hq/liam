@@ -1,4 +1,4 @@
-export interface ArtifactsOverride {
+export type ArtifactsOverride = {
   public: {
     Tables: {
       artifacts: {

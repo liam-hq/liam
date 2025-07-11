@@ -28,25 +28,42 @@ describe('designSchemaNode -> executeDdlNode integration', () => {
   const mockRepository = {
     schema: {
       createVersion: vi.fn(),
+      createTimelineItem: vi.fn(),
+      getSchema: vi.fn(),
+      getDesignSession: vi.fn(),
+      updateTimelineItem: vi.fn(),
+      createArtifact: vi.fn(),
+      updateArtifact: vi.fn(),
+      getArtifact: vi.fn(),
     },
   }
 
   const createMockState = (schemaData: Schema): WorkflowState => ({
     userInput: 'Add a users table with id and name fields',
     schemaData,
-    logger: mockLogger,
-    formattedHistory: '',
+    messages: [],
     retryCount: {},
     buildingSchemaId: 'test-schema',
     latestVersionNumber: 1,
     userId: 'test-user',
     designSessionId: 'test-session',
-    repositories: mockRepository as never,
     ddlStatements: '',
+  })
+
+  const createMockConfig = () => ({
+    configurable: {
+      repositories: mockRepository,
+      logger: mockLogger,
+    },
   })
 
   beforeEach(() => {
     vi.clearAllMocks()
+    // Setup default successful timeline item creation
+    mockRepository.schema.createTimelineItem.mockResolvedValue({
+      success: true,
+      timelineItem: { id: 'test-timeline-id' } as const,
+    })
   })
 
   it('should update schemaData and execute DDL in executeDdlNode', async () => {
@@ -134,21 +151,13 @@ describe('designSchemaNode -> executeDdlNode integration', () => {
     const initialState = createMockState(initialSchema)
 
     // Step 1: Design schema (should add users table)
-    const afterDesign = await designSchemaNode(initialState)
+    const afterDesign = await designSchemaNode(initialState, createMockConfig())
 
     // Verify schema was updated in workflow state
     expect(afterDesign.schemaData.tables['users']).toBeDefined()
     expect(afterDesign.schemaData.tables['users']?.name).toBe('users')
     expect(Object.keys(afterDesign.schemaData.tables)).toHaveLength(1)
     expect(afterDesign.error).toBeUndefined()
-
-    // Verify logs
-    expect(mockLogger.log).toHaveBeenCalledWith(
-      '[designSchemaNode] Current schema has 0 tables',
-    )
-    expect(mockLogger.log).toHaveBeenCalledWith(
-      '[designSchemaNode] Applied 1 schema changes successfully (1 tables)',
-    )
 
     // Mock successful DDL execution
     const { executeQuery } = await import('@liam-hq/pglite-server')
@@ -167,7 +176,7 @@ describe('designSchemaNode -> executeDdlNode integration', () => {
     ])
 
     // Step 2: Execute DDL (should generate DDL and execute it)
-    const afterDDL = await executeDdlNode(afterDesign)
+    const afterDDL = await executeDdlNode(afterDesign, createMockConfig())
 
     // Verify DDL generation and execution worked
     expect(afterDDL.ddlStatements).toContain('CREATE TABLE "users"')
@@ -219,20 +228,14 @@ describe('designSchemaNode -> executeDdlNode integration', () => {
     const initialState = createMockState(initialSchema)
 
     // Step 1: Design schema (should fail during validation)
-    const result = await designSchemaNode(initialState)
+    const result = await designSchemaNode(initialState, createMockConfig())
 
     // Verify error handling
     expect(result.error).toBeInstanceOf(Error)
     expect(result.error?.message).toBe(
       'Invalid schema after applying changes: validation failed',
     )
-    expect(result.schemaData).toEqual(initialSchema) // Should remain unchanged
-    expect(mockLogger.error).toHaveBeenCalledWith(
-      'Schema update failed:',
-      expect.objectContaining({
-        error: 'Invalid schema after applying changes: validation failed',
-      }),
-    )
+    expect(result.schemaData).toEqual(initialSchema)
   })
 
   it('should handle repository errors gracefully', async () => {
@@ -275,17 +278,11 @@ describe('designSchemaNode -> executeDdlNode integration', () => {
     const initialState = createMockState(initialSchema)
 
     // Step 1: Design schema (should fail at repository level)
-    const result = await designSchemaNode(initialState)
+    const result = await designSchemaNode(initialState, createMockConfig())
 
     // Verify error handling
     expect(result.error).toBeInstanceOf(Error)
     expect(result.error?.message).toBe('Database connection failed')
-    expect(result.schemaData).toEqual(initialSchema) // Should remain unchanged
-    expect(mockLogger.error).toHaveBeenCalledWith(
-      'Schema update failed:',
-      expect.objectContaining({
-        error: 'Database connection failed',
-      }),
-    )
+    expect(result.schemaData).toEqual(initialSchema)
   })
 })

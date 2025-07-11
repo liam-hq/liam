@@ -5,14 +5,14 @@ import { NextResponse } from 'next/server'
 // This is a static route, so it will be rendered at build time
 export const dynamic = 'force-static'
 
-interface MDXFile {
+type MDXFile = {
   path: string // relative
   title: string
   url: string
   description?: string
 }
 
-interface Frontmatter {
+type Frontmatter = {
   title: string
   description?: string
 }

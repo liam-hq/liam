@@ -2,9 +2,10 @@ import { includeIgnoreFile } from '@eslint/compat'
 import tseslint from '@typescript-eslint/eslint-plugin'
 import tsParser from '@typescript-eslint/parser'
 import unicorn from 'eslint-plugin-unicorn'
-import { requireUseServerPlugin } from './require-use-server-plugin.js'
 import { noNonEnglishPlugin } from './no-non-english-plugin.js'
 import { noThrowErrorPlugin } from './no-throw-error-plugin.js'
+import { preferClsxPlugin } from './prefer-clsx-plugin.js'
+import { requireUseServerPlugin } from './require-use-server-plugin.js'
 
 /**
  * Base ESLint configuration with typescript-eslint setup
@@ -28,10 +29,11 @@ export function createBaseConfig(options = {}) {
       ],
       plugins: {
         '@typescript-eslint': tseslint,
-        'unicorn': unicorn,
+        unicorn: unicorn,
         'require-use-server': requireUseServerPlugin,
         'no-non-english': noNonEnglishPlugin,
         'no-throw-error': noThrowErrorPlugin,
+        'prefer-clsx': preferClsxPlugin,
       },
       languageOptions: {
         parser: tsParser,
@@ -43,34 +45,44 @@ export function createBaseConfig(options = {}) {
       },
       rules: {
         '@typescript-eslint/no-unsafe-member-access': 'error',
-        '@typescript-eslint/consistent-type-assertions': ['error', {
-          assertionStyle: 'as',
-          objectLiteralTypeAssertions: 'never'
-        }],
+        '@typescript-eslint/consistent-type-assertions': [
+          'error',
+          {
+            assertionStyle: 'never'
+          },
+        ],
+        '@typescript-eslint/consistent-type-definitions': ['error', 'type'],
         'require-use-server/require-use-server': 'error',
         'no-non-english/no-non-english-characters': 'error',
         'no-throw-error/no-throw-error': 'error',
-        'unicorn/filename-case': ['error', {
-          cases: {
-            camelCase: true,
-            pascalCase: true
+        'prefer-clsx/prefer-clsx-for-classnames': 'error',
+        'unicorn/filename-case': [
+          'error',
+          {
+            cases: {
+              camelCase: true,
+              pascalCase: true,
+            },
+            ignore: [
+              '^global-error\\.(tsx?)$',
+              '^instrumentation-client\\.(ts)$',
+              '^\\..*',
+              'README\\.md$',
+            ],
           },
-          ignore: [
-            '^global-error\\.(tsx?)$',
-            '^instrumentation-client\\.(ts)$',
-            '^\\..*',
-            'README\\.md$'
-          ]
-        }],
-        'no-restricted-exports': ['error', {
-          'restrictedNamedExports': ['*']
-        }],
+        ],
+        'no-restricted-exports': [
+          'error',
+          {
+            restrictedNamedExports: ['*'],
+          },
+        ],
         'no-restricted-syntax': [
           'error',
           {
-            'selector': 'ExportNamedDeclaration[source]',
-            'message': 'Re-exports are not allowed except in index.ts files'
-          }
+            selector: 'ExportNamedDeclaration[source]',
+            message: 'Re-exports are not allowed except in index.ts files',
+          },
         ],
       },
     },

@@ -3,7 +3,7 @@ import { ToolbarButton } from '@radix-ui/react-toolbar'
 import type { ComponentProps, FC, MouseEventHandler, ReactNode } from 'react'
 import styles from './ToolbarIconButton.module.css'
 
-interface ToolbarIconButtonProps {
+type ToolbarIconButtonProps = {
   children?: ReactNode
   size?: ComponentProps<typeof IconButton>['size']
   tooltipContent: string

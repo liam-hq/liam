@@ -1,4 +1,5 @@
 import { GithubLogo, Link, Upload } from '@liam-hq/ui'
+import clsx from 'clsx'
 import { type FC, useEffect, useRef } from 'react'
 import styles from './SessionModeSelector.module.css'
 
@@ -35,11 +36,16 @@ export const SessionModeSelector: FC<Props> = ({
   const buttonsRef = useRef<(HTMLButtonElement | null)[]>([])
   const backgroundRef = useRef<HTMLDivElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
+  const shouldFocusOnModeChange = useRef(false)
 
   useEffect(() => {
-    const selectedIndex = modes.findIndex((m) => m.mode === selectedMode)
-    if (selectedIndex !== -1 && buttonsRef.current[selectedIndex]) {
-      buttonsRef.current[selectedIndex]?.focus()
+    // Only focus when mode changes via arrow keys, not on initial render
+    if (shouldFocusOnModeChange.current) {
+      const selectedIndex = modes.findIndex((m) => m.mode === selectedMode)
+      if (selectedIndex !== -1 && buttonsRef.current[selectedIndex]) {
+        buttonsRef.current[selectedIndex]?.focus()
+      }
+      shouldFocusOnModeChange.current = false
     }
   }, [selectedMode])
 
@@ -67,18 +73,22 @@ export const SessionModeSelector: FC<Props> = ({
       case 'ArrowLeft':
         e.preventDefault()
         newIndex = currentIndex > 0 ? currentIndex - 1 : modes.length - 1
+        shouldFocusOnModeChange.current = true
         break
       case 'ArrowRight':
         e.preventDefault()
         newIndex = currentIndex < modes.length - 1 ? currentIndex + 1 : 0
+        shouldFocusOnModeChange.current = true
         break
       case 'Home':
         e.preventDefault()
         newIndex = 0
+        shouldFocusOnModeChange.current = true
         break
       case 'End':
         e.preventDefault()
         newIndex = modes.length - 1
+        shouldFocusOnModeChange.current = true
         break
       default:
         return
@@ -107,9 +117,10 @@ export const SessionModeSelector: FC<Props> = ({
           aria-selected={selectedMode === modeItem.mode}
           aria-controls={`${modeItem.mode}-panel`}
           tabIndex={selectedMode === modeItem.mode ? 0 : -1}
-          className={`${styles.modeButton} ${
-            selectedMode === modeItem.mode ? styles.modeButtonActive : ''
-          }`}
+          className={clsx(
+            styles.modeButton,
+            selectedMode === modeItem.mode ? styles.modeButtonActive : '',
+          )}
           onClick={() => onModeChange(modeItem.mode)}
           onKeyDown={(e) => handleKeyDown(e, index)}
         >

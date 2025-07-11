@@ -6,7 +6,7 @@ import { urlgen } from '@/libs/routes/urlgen'
 import styles from './ProjectHeader.module.css'
 import { PROJECT_TABS } from './projectConstants'
 
-interface ProjectHeaderProps {
+type ProjectHeaderProps = {
   projectId: string
   branchOrCommit?: string
 }

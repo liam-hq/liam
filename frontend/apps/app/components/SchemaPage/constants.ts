@@ -4,7 +4,7 @@ export const SCHEMA_TAB = {
 
 type SchemaTabValue = (typeof SCHEMA_TAB)[keyof typeof SCHEMA_TAB]
 
-interface SchemaTab {
+type SchemaTab = {
   value: SchemaTabValue
   label: string
 }

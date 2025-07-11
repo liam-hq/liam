@@ -4,6 +4,7 @@ import type {
   NonFunctionalRequirement,
 } from '@liam-hq/artifact'
 import type { Usecase } from '../../../langchain/agents/qaGenerateUsecaseAgent/agent'
+import type { Repositories } from '../../../repositories'
 import type { WorkflowState } from '../types'
 
 /**
@@ -93,15 +94,16 @@ const groupUsecasesByRequirement = (usecases: Usecase[]) => {
 export const createOrUpdateArtifact = async (
   state: WorkflowState,
   artifact: Artifact,
+  repositories: Repositories,
 ): Promise<{ success: boolean; error?: string }> => {
   // Try to get existing artifact first
-  const existingResult = await state.repositories.schema.getArtifact(
+  const existingResult = await repositories.schema.getArtifact(
     state.designSessionId,
   )
 
   if (existingResult.success) {
     // Artifact exists, update it
-    const updateResult = await state.repositories.schema.updateArtifact({
+    const updateResult = await repositories.schema.updateArtifact({
       designSessionId: state.designSessionId,
       artifact,
     })
@@ -118,7 +120,7 @@ export const createOrUpdateArtifact = async (
   }
 
   // Artifact doesn't exist, create new one
-  const createResult = await state.repositories.schema.createArtifact({
+  const createResult = await repositories.schema.createArtifact({
     designSessionId: state.designSessionId,
     artifact,
   })

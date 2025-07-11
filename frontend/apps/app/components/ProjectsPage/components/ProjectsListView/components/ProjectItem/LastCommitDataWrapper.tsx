@@ -3,14 +3,14 @@
 import { useEffect, useState, useTransition } from 'react'
 import { fetchLastCommitData } from '../../../../services/fetchLastCommitData'
 
-interface LastCommitDataWrapperProps {
+type LastCommitDataWrapperProps = {
   installationId: number
   owner: string
   repo: string
   defaultDate: string
 }
 
-interface CommitInfo {
+type CommitInfo = {
   author: string
   date: string
 }

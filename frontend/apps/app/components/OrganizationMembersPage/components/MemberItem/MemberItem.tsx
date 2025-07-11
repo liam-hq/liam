@@ -15,7 +15,7 @@ import { type FC, useState } from 'react'
 import { DeleteMemberModal } from '../DeleteMemberModal'
 import styles from './MemberItem.module.css'
 
-interface MemberItemProps {
+type MemberItemProps = {
   id: string
   name: string
   email: string

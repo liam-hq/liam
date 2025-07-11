@@ -1,4 +1,4 @@
-export interface MigrationsOverride {
+export type MigrationsOverride = {
   public: {
     Tables: {
       migrations: {

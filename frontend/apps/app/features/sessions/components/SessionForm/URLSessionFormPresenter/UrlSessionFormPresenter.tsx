@@ -5,6 +5,7 @@ import type { FormatType } from '../../../../../components/FormatIcon/FormatIcon
 import { createAccessibleOpacityTransition } from '../../../../../utils/accessibleTransitions'
 import { AttachmentsContainer } from '../AttachmentsContainer'
 import { useAutoResizeTextarea } from '../hooks/useAutoResizeTextarea'
+import { useEnterKeySubmission } from '../hooks/useEnterKeySubmission'
 import { useFileAttachments } from '../hooks/useFileAttachments'
 import { useFileDragAndDrop } from '../hooks/useFileDragAndDrop'
 import { SchemaInfoSection, type SchemaStatus } from '../SchemaInfoSection'
@@ -39,6 +40,7 @@ export const URLSessionFormPresenter: FC<Props> = ({
   const [schemaError, setSchemaError] = useState<string | null>(null)
   const [schemaErrorDetails, setSchemaErrorDetails] = useState<string[]>([])
   const textareaRef = useRef<HTMLTextAreaElement>(null)
+  const formRef = useRef<HTMLFormElement>(null)
 
   // File attachments hook
   const {
@@ -68,6 +70,11 @@ export const URLSessionFormPresenter: FC<Props> = ({
     schemaContent !== null ||
     textContent.trim().length > 0 ||
     attachments.length > 0
+  const handleEnterKeySubmission = useEnterKeySubmission(
+    hasContent,
+    isPending,
+    formRef,
+  )
 
   // Reset form to initial state
   const handleResetForm = () => {
@@ -196,6 +203,7 @@ export const URLSessionFormPresenter: FC<Props> = ({
       )}
     >
       <form
+        ref={formRef}
         action={formAction}
         className={styles.form}
         style={createAccessibleOpacityTransition(!isTransitioning)}
@@ -296,6 +304,7 @@ export const URLSessionFormPresenter: FC<Props> = ({
               placeholder="Enter your database design instructions. For example: Design a database for an e-commerce site that manages users, products, and orders..."
               value={textContent}
               onChange={handleTextareaChange}
+              onKeyDown={handleEnterKeySubmission}
               className={styles.textarea}
               disabled={isPending}
               rows={4}
