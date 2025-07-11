@@ -601,9 +601,9 @@ describe(processor, () => {
           post_user_id_fk: {
             type: 'FOREIGN KEY',
             name: 'post_user_id_fk',
-            columnName: 'user_id',
+            columnNames: ['user_id'],
             targetTableName: 'users',
-            targetColumnName: 'id',
+            targetColumnNames: ['id'],
             updateConstraint: 'RESTRICT',
             deleteConstraint: 'CASCADE',
           },

@@ -21,14 +21,16 @@ export const ForeignKeyConstraintsItem: React.FC<Props> = ({
     <GridTableRoot>
       <GridTableHeader>{foreignKeyConstraint.name}</GridTableHeader>
       <GridTableItem>
-        <GridTableDt>Column</GridTableDt>
-        <GridTableDd>{foreignKeyConstraint.columnName}</GridTableDd>
+        <GridTableDt>
+          Column{foreignKeyConstraint.columnNames.length > 1 ? 's' : ''}
+        </GridTableDt>
+        <GridTableDd>{foreignKeyConstraint.columnNames.join(', ')}</GridTableDd>
       </GridTableItem>
       <GridTableItem>
         <GridTableDt>Target Table</GridTableDt>
         <GridTableDd>
           <Table2 className={styles.tableKeyIcon} />
-          {`${foreignKeyConstraint.targetTableName}.${foreignKeyConstraint.targetColumnName}`}
+          {`${foreignKeyConstraint.targetTableName}.(${foreignKeyConstraint.targetColumnNames.join(', ')})`}
         </GridTableDd>
       </GridTableItem>
       <GridTableItem>

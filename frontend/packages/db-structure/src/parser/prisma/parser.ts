@@ -208,9 +208,9 @@ function processRelationshipField(
   const constraint: ForeignKeyConstraint = {
     type: 'FOREIGN KEY',
     name: field.relationName,
-    columnName: mappedForeignColumnName,
+    columnNames: [mappedForeignColumnName],
     targetTableName: primaryTableName,
-    targetColumnName: mappedPrimaryColumnName,
+    targetColumnNames: [mappedPrimaryColumnName],
     updateConstraint: 'NO_ACTION',
     deleteConstraint: normalizeConstraintName(field.relationOnDelete ?? ''),
   }
@@ -592,9 +592,9 @@ function createManyToManyJoinTableWithConstraints(
   table.constraints[`${joinTableName}_A_fkey`] = {
     type: 'FOREIGN KEY',
     name: `${joinTableName}_A_fkey`,
-    columnName: 'A',
+    columnNames: ['A'],
     targetTableName: model1,
-    targetColumnName: primaryColumnNameOfA,
+    targetColumnNames: [primaryColumnNameOfA],
     updateConstraint: 'CASCADE',
     deleteConstraint: 'CASCADE',
   }
@@ -602,9 +602,9 @@ function createManyToManyJoinTableWithConstraints(
   table.constraints[`${joinTableName}_B_fkey`] = {
     type: 'FOREIGN KEY',
     name: `${joinTableName}_B_fkey`,
-    columnName: 'B',
+    columnNames: ['B'],
     targetTableName: model2,
-    targetColumnName: primaryColumnNameOfB,
+    targetColumnNames: [primaryColumnNameOfB],
     updateConstraint: 'CASCADE',
     deleteConstraint: 'CASCADE',
   }

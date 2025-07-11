@@ -234,7 +234,7 @@ export function generateAddConstraintStatement(
       // from underscore format (SET_NULL, SET_DEFAULT, NO_ACTION) to space format
       // (SET NULL, SET DEFAULT, NO ACTION) to match PostgreSQL syntax directly.
       // This would be a breaking change requiring updates to all parsers and tests.
-      return `ALTER TABLE ${tableNameEscaped} ADD CONSTRAINT ${constraintName} FOREIGN KEY (${escapeIdentifier(constraint.columnName)}) REFERENCES ${escapeIdentifier(constraint.targetTableName)} (${escapeIdentifier(constraint.targetColumnName)}) ON UPDATE ${constraint.updateConstraint.replace('_', ' ')} ON DELETE ${constraint.deleteConstraint.replace('_', ' ')};`
+      return `ALTER TABLE ${tableNameEscaped} ADD CONSTRAINT ${constraintName} FOREIGN KEY (${constraint.columnNames.map(escapeIdentifier).join(', ')}) REFERENCES ${escapeIdentifier(constraint.targetTableName)} (${constraint.targetColumnNames.map(escapeIdentifier).join(', ')}) ON UPDATE ${constraint.updateConstraint.replace('_', ' ')} ON DELETE ${constraint.deleteConstraint.replace('_', ' ')};`
 
     case 'UNIQUE':
       return `ALTER TABLE ${tableNameEscaped} ADD CONSTRAINT ${constraintName} UNIQUE (${constraint.columnNames.map(escapeIdentifier).join(', ')});`

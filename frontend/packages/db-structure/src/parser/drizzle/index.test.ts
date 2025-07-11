@@ -231,9 +231,9 @@ describe(_processor, () => {
       ).toEqual({
         type: 'FOREIGN KEY',
         name: 'posts_user_id_users_id_fk',
-        columnName: 'user_id',
+        columnNames: ['user_id'],
         targetTableName: 'users',
-        targetColumnName: 'id',
+        targetColumnNames: ['id'],
         updateConstraint: 'NO_ACTION',
         deleteConstraint: 'NO_ACTION',
       })
@@ -278,9 +278,9 @@ describe(_processor, () => {
       ).toEqual({
         type: 'FOREIGN KEY',
         name: 'profiles_user_id_users_id_fk',
-        columnName: 'user_id',
+        columnNames: ['user_id'],
         targetTableName: 'users',
-        targetColumnName: 'id',
+        targetColumnNames: ['id'],
         updateConstraint: 'NO_ACTION',
         deleteConstraint: 'NO_ACTION',
       })
@@ -322,9 +322,9 @@ describe(_processor, () => {
       ).toEqual({
         type: 'FOREIGN KEY',
         name: 'posts_user_id_users_id_fk',
-        columnName: 'user_id',
+        columnNames: ['user_id'],
         targetTableName: 'users',
-        targetColumnName: 'id',
+        targetColumnNames: ['id'],
         updateConstraint: 'RESTRICT',
         deleteConstraint: 'CASCADE',
       })
@@ -384,9 +384,9 @@ describe(_processor, () => {
       ).toEqual({
         type: 'FOREIGN KEY',
         name: 'user_tags_user_id_users_id_fk',
-        columnName: 'user_id',
+        columnNames: ['user_id'],
         targetTableName: 'users',
-        targetColumnName: 'id',
+        targetColumnNames: ['id'],
         updateConstraint: 'NO_ACTION',
         deleteConstraint: 'NO_ACTION',
       })
@@ -399,9 +399,9 @@ describe(_processor, () => {
       ).toEqual({
         type: 'FOREIGN KEY',
         name: 'user_tags_tag_id_tags_id_fk',
-        columnName: 'tag_id',
+        columnNames: ['tag_id'],
         targetTableName: 'tags',
-        targetColumnName: 'id',
+        targetColumnNames: ['id'],
         updateConstraint: 'NO_ACTION',
         deleteConstraint: 'NO_ACTION',
       })
@@ -635,9 +635,9 @@ describe(_processor, () => {
       ).toEqual({
         type: 'FOREIGN KEY',
         name: 'instructors_user_id_users_id_fk',
-        columnName: 'user_id',
+        columnNames: ['user_id'],
         targetTableName: 'users',
-        targetColumnName: 'id',
+        targetColumnNames: ['id'],
         updateConstraint: 'NO_ACTION',
         deleteConstraint: 'NO_ACTION',
       })
@@ -810,7 +810,7 @@ describe(_processor, () => {
 
       expect(fkConstraint).toBeDefined()
       if (fkConstraint && fkConstraint.type === 'FOREIGN KEY') {
-        expect(fkConstraint.targetColumnName).toBe('user_id') // Should be DB column name, not JS property name
+        expect(fkConstraint.targetColumnNames).toEqual(['user_id']) // Should be DB column name, not JS property name
       }
     })
   })

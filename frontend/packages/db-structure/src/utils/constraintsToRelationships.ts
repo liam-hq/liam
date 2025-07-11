@@ -34,18 +34,30 @@ export const constraintsToRelationships = (tables: Tables): Relationships => {
       }
 
       const foreignKeyConstraint = result.output
-      const cardinality = determineCardinality(
-        tables,
-        table.name,
-        foreignKeyConstraint.columnName,
-      )
+      // For now, we only support single-column foreign keys in relationships
+      // TODO: Support composite foreign keys in relationships
+      if (
+        foreignKeyConstraint.columnNames.length !== 1 ||
+        foreignKeyConstraint.targetColumnNames.length !== 1
+      ) {
+        continue
+      }
+
+      const columnName = foreignKeyConstraint.columnNames[0]
+      const targetColumnName = foreignKeyConstraint.targetColumnNames[0]
+
+      if (!columnName || !targetColumnName) {
+        continue
+      }
+
+      const cardinality = determineCardinality(tables, table.name, columnName)
 
       relationships[constraint.name] = {
         name: constraint.name,
         primaryTableName: foreignKeyConstraint.targetTableName,
-        primaryColumnName: foreignKeyConstraint.targetColumnName,
+        primaryColumnName: targetColumnName,
         foreignTableName: table.name,
-        foreignColumnName: foreignKeyConstraint.columnName,
+        foreignColumnName: columnName,
         cardinality,
         updateConstraint: foreignKeyConstraint.updateConstraint,
         deleteConstraint: foreignKeyConstraint.deleteConstraint,
