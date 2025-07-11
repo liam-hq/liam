@@ -48,6 +48,7 @@ describe('designSchemaNode -> executeDdlNode integration', () => {
     userId: 'test-user',
     designSessionId: 'test-session',
     ddlStatements: '',
+    artifactMode: 'full',
   })
 
   const createMockConfig = () => ({

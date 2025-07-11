@@ -23,6 +23,8 @@ type Props = {
   isPending: boolean
   onProjectChange: (projectId: string) => void
   formAction: (formData: FormData) => void
+  onArtifactModeChange?: (isActive: boolean) => void
+  artifactMode?: boolean
 }
 
 export const SessionFormPresenter: FC<Props> = ({
@@ -35,6 +37,8 @@ export const SessionFormPresenter: FC<Props> = ({
   isPending,
   onProjectChange,
   formAction,
+  onArtifactModeChange,
+  artifactMode,
 }) => {
   const [mode, setMode] = useState<SessionMode>('github')
   const [isTransitioning, setIsTransitioning] = useState(false)
@@ -149,6 +153,8 @@ export const SessionFormPresenter: FC<Props> = ({
               onProjectChange={onProjectChange}
               formAction={formAction}
               isTransitioning={isTransitioning}
+              onArtifactModeChange={onArtifactModeChange}
+              artifactMode={artifactMode}
             />
           </div>
         )}
@@ -164,6 +170,8 @@ export const SessionFormPresenter: FC<Props> = ({
               isPending={isPending}
               formAction={formAction}
               isTransitioning={isTransitioning}
+              onArtifactModeChange={onArtifactModeChange}
+              artifactMode={artifactMode}
             />
           </div>
         )}
@@ -179,6 +187,8 @@ export const SessionFormPresenter: FC<Props> = ({
               isPending={isPending}
               formAction={formAction}
               isTransitioning={isTransitioning}
+              onArtifactModeChange={onArtifactModeChange}
+              artifactMode={artifactMode}
             />
           </div>
         )}

@@ -12,6 +12,10 @@ const chatRequestSchema = v.object({
   buildingSchemaId: v.string(),
   latestVersionNumber: v.number(),
   designSessionId: v.pipe(v.string(), v.uuid('Invalid design session ID')),
+  artifactMode: v.optional(
+    v.union([v.literal('simple'), v.literal('full')]),
+    'full',
+  ),
 })
 
 export async function POST(request: Request) {
@@ -43,10 +47,26 @@ export async function POST(request: Request) {
 
   const userId = userData.user.id
 
-  // Create payload with server-fetched user ID
+  // Fetch session data to get artifact mode
+  const { data: session, error: sessionError } = await supabase
+    .from('design_sessions')
+    .select('artifact_mode')
+    .eq('id', validationResult.output.designSessionId)
+    .single()
+
+  if (sessionError) {
+    return NextResponse.json(
+      { error: 'Failed to fetch session data' },
+      { status: 500 },
+    )
+  }
+
+  // Create payload with server-fetched user ID and artifact mode
   const jobPayload = {
     ...validationResult.output,
     userId,
+    // artifactMode: session.artifact_mode || 'full',
+    artifactMode: validationResult.output.artifactMode || 'full',
   }
 
   // Generate idempotency key based on the payload

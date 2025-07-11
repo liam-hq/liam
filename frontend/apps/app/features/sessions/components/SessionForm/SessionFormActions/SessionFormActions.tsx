@@ -16,6 +16,8 @@ type Props = {
   onFileSelect?: (files: FileList) => void
   onSubmit?: () => void
   onCancel?: () => void
+  onArtifactModeChange?: (isActive: boolean) => void
+  artifactMode?: boolean
 }
 
 export const SessionFormActions: FC<Props> = ({
@@ -26,14 +28,22 @@ export const SessionFormActions: FC<Props> = ({
   onFileSelect,
   onSubmit,
   onCancel,
+  onArtifactModeChange,
+  artifactMode = true,
 }) => {
-  const [isDeepModelingActive, setIsDeepModelingActive] = useState(false)
+  const [isDeepModelingActive, setIsDeepModelingActive] = useState(artifactMode)
+
+  const handleToggleChange = () => {
+    const newValue = !isDeepModelingActive
+    setIsDeepModelingActive(newValue)
+    onArtifactModeChange?.(newValue)
+  }
 
   return (
     <div className={styles.container}>
       <DeepModelingToggle
         isActive={isDeepModelingActive}
-        onClick={() => setIsDeepModelingActive((prev) => !prev)}
+        onClick={handleToggleChange}
         disabled={isPending}
       >
         Deep Modeling

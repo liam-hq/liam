@@ -1,6 +1,12 @@
 'use client'
 
-import { type FC, useActionState, useEffect, useTransition } from 'react'
+import {
+  type FC,
+  useActionState,
+  useEffect,
+  useState,
+  useTransition,
+} from 'react'
 import type { Projects } from '@/components/CommonLayout/AppBar/ProjectsDropdownMenu/services/getProjects'
 import { createSession } from '../../actions/createSession'
 import { getBranches } from '../../actions/getBranches'
@@ -13,6 +19,7 @@ type Props = {
 
 export const SessionForm: FC<Props> = ({ projects, defaultProjectId }) => {
   const [, startTransition] = useTransition()
+  const [artifactMode, setArtifactMode] = useState(true)
   const [state, formAction, isPending] = useActionState(createSession, {
     success: false,
   })
@@ -42,6 +49,11 @@ export const SessionForm: FC<Props> = ({ projects, defaultProjectId }) => {
     }
   }, [defaultProjectId, projects, branchesAction])
 
+  const handleFormAction = (formData: FormData) => {
+    formData.set('artifactMode', artifactMode ? 'full' : 'simple')
+    formAction(formData)
+  }
+
   return (
     <SessionFormPresenter
       projects={projects}
@@ -52,7 +64,9 @@ export const SessionForm: FC<Props> = ({ projects, defaultProjectId }) => {
       formError={state.error}
       isPending={isPending}
       onProjectChange={handleProjectChange}
-      formAction={formAction}
+      formAction={handleFormAction}
+      onArtifactModeChange={setArtifactMode}
+      artifactMode={artifactMode}
     />
   )
 }
