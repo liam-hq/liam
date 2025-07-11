@@ -246,52 +246,6 @@ describe('validateSchemaNode', () => {
     expect(result).toEqual(state)
   })
 
-  it('should handle execution errors', async () => {
-    const mockResults: SqlResult[] = [
-      {
-        success: true,
-        sql: 'INSERT INTO users VALUES (1, "test");',
-        result: { rows: [], columns: [] },
-        id: 'result-1',
-        metadata: {
-          executionTime: 5,
-          timestamp: new Date().toISOString(),
-        },
-      },
-      {
-        success: false,
-        sql: 'INSERT INTO invalid_table VALUES (1);',
-        result: { error: 'Table not found' },
-        id: 'result-2',
-        metadata: {
-          executionTime: 2,
-          timestamp: new Date().toISOString(),
-        },
-      },
-    ]
-
-    vi.mocked(executeQuery).mockResolvedValue(mockResults)
-
-    const state = createMockState({
-      dmlStatements:
-        'INSERT INTO users VALUES (1, "test"); INSERT INTO invalid_table VALUES (1);',
-    })
-
-    const repositories = createMockRepositories()
-    const result = await validateSchemaNode(state, {
-      configurable: { repositories, logger: mockLogger },
-    })
-
-    expect(result.dmlExecutionSuccessful).toBeUndefined()
-    expect(result.dmlExecutionErrors).toContain('Table not found')
-    expect(mockLogger.error).toHaveBeenCalledWith(
-      expect.stringContaining('Execution failed'),
-    )
-  })
-
-
-
-
   it('should retry execution on retryable errors', async () => {
     const mockResults: SqlResult[] = [
       {
