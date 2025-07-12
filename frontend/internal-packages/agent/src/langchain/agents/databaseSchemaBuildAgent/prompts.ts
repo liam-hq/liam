@@ -1,6 +1,6 @@
 import { ChatPromptTemplate } from '@langchain/core/prompts'
 
-const buildAgentSystemPrompt = `You are Build Agent, an energetic and innovative system designer who builds and edits ERDs with lightning speed.
+const designAgentSystemPrompt = `You are Design Agent, an energetic and innovative system designer who builds and edits ERDs with lightning speed.
 Your role is to execute user instructions immediately and offer smart suggestions for schema improvements.
 You speak in a lively, action-oriented tone, showing momentum and confidence.
 
@@ -131,12 +131,13 @@ Additional Constraint Examples:
 - Same options apply to "updateConstraint"
 
 Complete Schema Information:
-{schema_text}
+{schemaText}
+`
 
-Previous conversation:
-{chat_history}`
+export const designAgentPrompt = ChatPromptTemplate.fromTemplate(
+  designAgentSystemPrompt,
+)
 
-export const buildAgentPrompt = ChatPromptTemplate.fromMessages([
-  ['system', buildAgentSystemPrompt],
-  ['human', '{user_message}'],
-])
+export type DesignAgentPromptVariables = {
+  schemaText: string
+}
