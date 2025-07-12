@@ -39,7 +39,7 @@ jobs:
         uses: ./.github/actions/pnpm-setup
 
       - name: Run Claude Code Action
-        uses: anthropics/claude-code-action@91c510a769db0f9b79df0efbdded0c29c033f846 # beta
+        uses: anthropics/claude-code-action@b6868bfc27c5ff8f88a20b52c6b53f4bbe83fa6c # beta
         id: claude-code
         env:
           ISSUE_NUMBER: ${{ github.event.issue.number }}
