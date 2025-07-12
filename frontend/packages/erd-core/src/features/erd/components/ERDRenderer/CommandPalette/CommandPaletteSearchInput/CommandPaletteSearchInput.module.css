@@ -1,0 +1,23 @@
+.container {
+  display: flex;
+  flex-grow: 1;
+  position: relative;
+  align-items: center;
+}
+
+.input {
+  padding: var(--spacing-2) 0 var(--spacing-2) var(--spacing-6);
+  width: 100%;
+  border-radius: var(--border-radius-smbase);
+}
+
+.input:focus-visible {
+  outline: none;
+}
+
+.searchIcon {
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  color: var(--overlay-60);
+}

@@ -1,10 +1,11 @@
-import { Button, Search, Table2 } from '@liam-hq/ui'
+import { Button, Table2 } from '@liam-hq/ui'
 import { DialogClose } from '@radix-ui/react-dialog'
 import { Command } from 'cmdk'
 import { type FC, useCallback, useEffect, useState } from 'react'
 import { useTableSelection } from '@/features/erd/hooks'
 import { useSchema } from '@/stores'
 import { TableNode } from '../../../ERDContent/components'
+import { CommandPaletteSearchInput } from '../CommandPaletteSearchInput'
 import styles from './CommandPaletteContent.module.css'
 
 const getTableLinkHref = (activeTableName: string) => {
@@ -51,14 +52,8 @@ export const CommandPaletteContent: FC<Props> = ({ closeDialog }) => {
 
   return (
     <Command value={tableName ?? ''} onValueChange={(v) => setTableName(v)}>
-      <div className={styles.searchContainer}>
-        <div className={styles.searchFormWithIcon}>
-          <Search className={styles.searchIcon} />
-          <Command.Input
-            placeholder="Search"
-            onBlur={(event) => event.target.focus()}
-          />
-        </div>
+      <div className={styles.searchArea}>
+        <CommandPaletteSearchInput />
         <DialogClose asChild>
           <Button
             size="xs"
