@@ -108,9 +108,9 @@ const convertToTable = (
       const constraint: ForeignKeyConstraint = {
         type: 'FOREIGN KEY',
         name: constraintName,
-        columnName: columnDef.name, // Use actual column name, not JS property name
+        columnNames: [columnDef.name], // Use actual column name, not JS property name
         targetTableName: targetTableName,
-        targetColumnName: columnDef.references.column,
+        targetColumnNames: [columnDef.references.column],
         updateConstraint: columnDef.references.onUpdate
           ? convertReferenceOption(columnDef.references.onUpdate)
           : 'NO_ACTION',
@@ -189,12 +189,13 @@ const fixForeignKeyTargetColumnNames = (
         // Check in drizzleTables for column mapping
         const drizzleTargetTable = drizzleTables[constraint.targetTableName]
         if (drizzleTargetTable) {
-          // Find column definition by JS property name and get actual DB column name
-          const targetColumnDef =
-            drizzleTargetTable.columns[constraint.targetColumnName]
-          if (targetColumnDef) {
-            constraint.targetColumnName = targetColumnDef.name
-          }
+          // Map each target column from JS property name to actual DB column name
+          constraint.targetColumnNames = constraint.targetColumnNames.map(
+            (jsPropertyName) => {
+              const targetColumnDef = drizzleTargetTable.columns[jsPropertyName]
+              return targetColumnDef ? targetColumnDef.name : jsPropertyName
+            },
+          )
         }
       }
     }

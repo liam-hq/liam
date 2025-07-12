@@ -268,9 +268,9 @@ describe(processor, () => {
         }),
         fk_posts_user_id: aForeignKeyConstraint({
           name: 'fk_posts_user_id',
-          columnName: 'user_id',
+          columnNames: ['user_id'],
           targetTableName: 'users',
-          targetColumnName: 'id',
+          targetColumnNames: ['id'],
         }),
       })
     })
@@ -291,9 +291,9 @@ describe(processor, () => {
         }),
         fk_posts_user_id: aForeignKeyConstraint({
           name: 'fk_posts_user_id',
-          columnName: 'user_id',
+          columnNames: ['user_id'],
           targetTableName: 'users',
-          targetColumnName: 'id',
+          targetColumnNames: ['id'],
         }),
       })
     })
@@ -316,9 +316,9 @@ describe(processor, () => {
         fk_posts_user_id: aForeignKeyConstraint({
           type: 'FOREIGN KEY',
           name: 'fk_posts_user_id',
-          columnName: 'user_id',
+          columnNames: ['user_id'],
           targetTableName: 'users',
-          targetColumnName: 'id',
+          targetColumnNames: ['id'],
           updateConstraint: 'RESTRICT',
           deleteConstraint: 'CASCADE',
         }),

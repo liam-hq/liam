@@ -103,9 +103,9 @@ describe('convertSchemaToNodes', () => {
             constraints: {
               posts_user_id_fkey: aForeignKeyConstraint({
                 name: 'posts_user_id_fkey',
-                columnName: 'user_id',
+                columnNames: ['user_id'],
                 targetTableName: 'users',
-                targetColumnName: 'id',
+                targetColumnNames: ['id'],
               }),
             },
           }),
@@ -161,9 +161,9 @@ describe('convertSchemaToNodes', () => {
             constraints: {
               posts_user_id_fkey: aForeignKeyConstraint({
                 name: 'posts_user_id_fkey',
-                columnName: 'user_id',
+                columnNames: ['user_id'],
                 targetTableName: 'users',
-                targetColumnName: 'id',
+                targetColumnNames: ['id'],
               }),
             },
           }),
@@ -176,9 +176,9 @@ describe('convertSchemaToNodes', () => {
             constraints: {
               comments_post_id_fkey: aForeignKeyConstraint({
                 name: 'comments_post_id_fkey',
-                columnName: 'post_id',
+                columnNames: ['post_id'],
                 targetTableName: 'posts',
-                targetColumnName: 'id',
+                targetColumnNames: ['id'],
               }),
             },
           }),
@@ -215,9 +215,9 @@ describe('convertSchemaToNodes', () => {
             constraints: {
               profiles_user_id_fkey: aForeignKeyConstraint({
                 name: 'profiles_user_id_fkey',
-                columnName: 'user_id',
+                columnNames: ['user_id'],
                 targetTableName: 'users',
-                targetColumnName: 'id',
+                targetColumnNames: ['id'],
               }),
               profiles_user_id_unique: aUniqueConstraint({
                 name: 'profiles_user_id_unique',
@@ -255,9 +255,9 @@ describe('convertSchemaToNodes', () => {
           constraints: {
             posts_user_id_fkey: aForeignKeyConstraint({
               name: 'posts_user_id_fkey',
-              columnName: 'user_id',
+              columnNames: ['user_id'],
               targetTableName: 'users',
-              targetColumnName: 'id',
+              targetColumnNames: ['id'],
             }),
           },
         }),
@@ -314,9 +314,9 @@ describe('convertSchemaToNodes', () => {
             constraints: {
               posts_user_id_fkey: aForeignKeyConstraint({
                 name: 'posts_user_id_fkey',
-                columnName: 'user_id',
+                columnNames: ['user_id'],
                 targetTableName: 'users',
-                targetColumnName: 'id',
+                targetColumnNames: ['id'],
               }),
             },
           }),
@@ -363,9 +363,9 @@ describe('convertSchemaToNodes', () => {
             constraints: {
               categories_parent_id_fkey: aForeignKeyConstraint({
                 name: 'categories_parent_id_fkey',
-                columnName: 'parent_id',
+                columnNames: ['parent_id'],
                 targetTableName: 'categories',
-                targetColumnName: 'id',
+                targetColumnNames: ['id'],
               }),
             },
           }),

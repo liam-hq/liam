@@ -16,9 +16,9 @@ describe(extractSchemaForTable, () => {
       userPosts: {
         type: 'FOREIGN KEY',
         name: 'userPosts',
-        columnName: 'userId',
+        columnNames: ['userId'],
         targetTableName: 'users',
-        targetColumnName: 'id',
+        targetColumnNames: ['id'],
         updateConstraint: 'NO_ACTION',
         deleteConstraint: 'NO_ACTION',
       },
@@ -33,9 +33,9 @@ describe(extractSchemaForTable, () => {
       postComments: {
         type: 'FOREIGN KEY',
         name: 'postComments',
-        columnName: 'postId',
+        columnNames: ['postId'],
         targetTableName: 'posts',
-        targetColumnName: 'id',
+        targetColumnNames: ['id'],
         updateConstraint: 'NO_ACTION',
         deleteConstraint: 'NO_ACTION',
       },

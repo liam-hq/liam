@@ -129,10 +129,10 @@ function processForeignKeyConstraint(constraint: {
 }): [string, Constraints[string]] | null {
   if (
     constraint.type === 'FOREIGN KEY' &&
-    constraint.columns?.length === 1 &&
-    constraint.columns[0] &&
-    constraint.referenced_columns?.length === 1 &&
-    constraint.referenced_columns[0] &&
+    constraint.columns &&
+    constraint.columns.length > 0 &&
+    constraint.referenced_columns &&
+    constraint.referenced_columns.length > 0 &&
     constraint.referenced_table
   ) {
     const { updateConstraint, deleteConstraint } = extractForeignKeyActions(
@@ -144,9 +144,9 @@ function processForeignKeyConstraint(constraint: {
       {
         type: 'FOREIGN KEY',
         name: constraint.name,
-        columnName: constraint.columns[0],
+        columnNames: constraint.columns,
         targetTableName: constraint.referenced_table,
-        targetColumnName: constraint.referenced_columns[0],
+        targetColumnNames: constraint.referenced_columns,
         updateConstraint,
         deleteConstraint,
       },

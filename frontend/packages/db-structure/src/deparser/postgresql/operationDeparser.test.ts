@@ -409,9 +409,9 @@ describe('postgresqlOperationDeparser', () => {
         value: {
           type: 'FOREIGN KEY',
           name: 'fk_orders_user_id',
-          columnName: 'user_id',
+          columnNames: ['user_id'],
           targetTableName: 'users',
-          targetColumnName: 'id',
+          targetColumnNames: ['id'],
           updateConstraint: 'CASCADE',
           deleteConstraint: 'SET_NULL',
         },
