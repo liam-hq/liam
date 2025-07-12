@@ -1,4 +1,4 @@
-.content[cmdk-dialog] {
+.content {
   position: fixed;
   top: 50%;
   left: 50%;
@@ -14,7 +14,7 @@
   font-family: var(--main-font);
 }
 
-[cmdk-overlay]:has(+ .content) {
+.overlay {
   position: fixed;
   inset: 0;
   width: 100vw;
@@ -44,124 +44,4 @@
     opacity: 1;
     transform: translate(-50%, -50%) scale(1);
   }
-}
-
-.searchContainer {
-  display: flex;
-  align-items: center;
-  padding: var(--spacing-2) var(--spacing-4);
-  gap: var(--spacing-4);
-  width: 100%;
-  border-bottom: 1px solid var(--overlay-5);
-}
-
-.searchFormWithIcon {
-  display: flex;
-  flex-grow: 1;
-  position: relative;
-  align-items: center;
-}
-
-.searchFormWithIcon [cmdk-input] {
-  padding: var(--spacing-2) 0 var(--spacing-2) var(--spacing-6);
-  width: 100%;
-  border-radius: var(--border-radius-smbase);
-}
-
-.searchFormWithIcon [cmdk-input]:focus-visible {
-  outline: none;
-}
-
-.searchIcon {
-  position: absolute;
-  width: 16px;
-  height: 16px;
-  color: var(--overlay-60);
-}
-
-.escButton {
-  min-width: auto;
-}
-
-.main {
-  display: flex;
-  padding: var(--spacing-2);
-  height: 459px;
-}
-
-.main [cmdk-list] {
-  overflow-y: scroll;
-  height: 100%;
-  width: 300px;
-  scrollbar-color: var(--overlay-20) transparent;
-}
-
-.main [cmdk-group-heading] {
-  padding: var(--spacing-3) var(--spacing-2);
-  color: var(--global-mute-text);
-}
-
-.main [cmdk-item] {
-  display: flex;
-  padding: var(--spacing-2);
-  align-items: center;
-  line-height: 24px;
-}
-
-.main [cmdk-item] .itemText {
-  font-size: var(--font-size-5);
-  overflow-x: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.main [cmdk-item] .itemIcon {
-  flex-shrink: 0;
-  margin-right: var(--spacing-2);
-  width: 16px;
-  height: 16px;
-  color: var(--overlay-40);
-}
-
-.main [cmdk-item][data-selected='true'] {
-  background: var(--overlay-5);
-}
-
-.main [cmdk-item][data-selected='true'] .itemIcon {
-  color: var(--global-foreground);
-}
-
-.previewContainer {
-  display: flex;
-  flex-direction: column;
-  padding: var(--spacing-10) var(--spacing-8) var(--spacing-10) var(--spacing-5);
-  flex: 1;
-}
-
-.previewBackground {
-  padding: var(--spacing-10) var(--spacing-12);
-  background-color: var(--global-background);
-  height: 100%;
-  overflow-x: hidden;
-  overflow-y: scroll;
-  scrollbar-color: var(--overlay-20) transparent;
-  border-radius: var(--border-radius-lg-plus);
-}
-
-/* Empty search result display */
-.main [cmdk-list]:has([cmdk-empty]) {
-  width: 100%;
-  overflow: auto;
-  position: relative;
-}
-
-.main [cmdk-list] [cmdk-empty] {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50px);
-}
-
-.main [cmdk-list]:has([cmdk-empty]) + .previewContainer {
-  display: none;
 }
