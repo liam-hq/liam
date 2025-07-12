@@ -10,10 +10,10 @@
     "@supabase/supabase-js": "2.49.8"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.0.4",
+    "@biomejs/biome": "2.0.6",
     "@liam-hq/configs": "workspace:*",
-    "@types/node": "22.15.32",
-    "eslint": "9.29.0",
+    "@types/node": "22.15.34",
+    "eslint": "9.30.0",
     "typescript": "5.8.3",
     "vitest": "3.2.4"
   },

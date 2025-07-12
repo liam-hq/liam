@@ -22,12 +22,12 @@
     "zod": "3.24.4"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.0.4",
+    "@biomejs/biome": "2.0.6",
     "@liam-hq/configs": "workspace:*",
     "@pgsql/types": "15.0.2",
     "@prisma/generator-helper": "6.8.2",
-    "@types/node": "22.15.32",
-    "eslint": "9.29.0",
+    "@types/node": "22.15.34",
+    "eslint": "9.30.0",
     "json-refs": "3.0.15",
     "json-schema-to-zod": "2.6.1",
     "typescript": "5.8.3",
