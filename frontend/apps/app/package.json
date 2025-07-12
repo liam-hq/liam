@@ -33,7 +33,7 @@
     "date-fns": "4.1.0",
     "dotenv": "16.5.0",
     "flags": "4.0.1",
-    "langfuse-vercel": "3.37.4",
+    "langfuse-vercel": "3.37.6",
     "lucide-react": "0.511.0",
     "nanoid": "5.1.5",
     "next": "15.3.4",
