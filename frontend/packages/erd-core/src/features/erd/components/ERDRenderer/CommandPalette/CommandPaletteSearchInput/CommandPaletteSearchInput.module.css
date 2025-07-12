@@ -19,6 +19,8 @@
 
 .input {
   width: 100%;
+  position: relative;
+  z-index: 1;
   border-radius: var(--border-radius-smbase);
   caret-color: var(--global-foreground);
 }
