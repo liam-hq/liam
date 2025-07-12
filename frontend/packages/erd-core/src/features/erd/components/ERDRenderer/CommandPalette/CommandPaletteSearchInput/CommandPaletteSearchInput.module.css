@@ -1,23 +1,41 @@
 .container {
   display: flex;
   flex-grow: 1;
-  position: relative;
   align-items: center;
+  padding: var(--spacing-2) 0;
+  gap: var(--spacing-2);
+}
+
+.searchIcon {
+  width: 16px;
+  height: 16px;
+  color: var(--overlay-60);
+}
+
+.inputWithSuggestion {
+  position: relative;
+  width: 100%;
 }
 
 .input {
-  padding: var(--spacing-2) 0 var(--spacing-2) var(--spacing-6);
   width: 100%;
   border-radius: var(--border-radius-smbase);
+  caret-color: var(--global-foreground);
 }
 
 .input:focus-visible {
   outline: none;
 }
 
-.searchIcon {
+.suggestion {
   position: absolute;
-  width: 16px;
-  height: 16px;
+  top: 0;
+}
+
+.completeSuggestion {
   color: var(--overlay-60);
+}
+
+.completeInputText {
+  color: transparent;
 }

@@ -59,7 +59,7 @@ export const CommandPaletteContent: FC<Props> = ({ closeDialog }) => {
       }
     >
       <div className={styles.searchArea}>
-        <CommandPaletteSearchInput />
+        <CommandPaletteSearchInput selectedOption={tableName} />
         <DialogClose asChild>
           <Button
             size="xs"
