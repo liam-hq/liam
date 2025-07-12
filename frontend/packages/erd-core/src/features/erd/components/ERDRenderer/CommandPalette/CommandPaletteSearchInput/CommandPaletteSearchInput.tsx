@@ -29,6 +29,19 @@ export const CommandPaletteSearchInput: FC<Props> = ({ selectedOption }) => {
   }, [searchText, selectedOption])
 
   useEffect(() => {
+    if (selectedOption === null) return
+
+    const down = (event: KeyboardEvent) => {
+      if (event.key === 'Tab') {
+        setSearchText(selectedOption)
+      }
+    }
+
+    document.addEventListener('keydown', down)
+    return () => document.removeEventListener('keydown', down)
+  }, [selectedOption])
+
+  useEffect(() => {
     if (!prefixTextRef.current) return
 
     const inputPaddingLeft = prefixTextRef.current.offsetWidth
