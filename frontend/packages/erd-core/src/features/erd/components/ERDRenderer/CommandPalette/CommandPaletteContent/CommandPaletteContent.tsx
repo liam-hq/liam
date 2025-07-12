@@ -51,7 +51,13 @@ export const CommandPaletteContent: FC<Props> = ({ closeDialog }) => {
   }, [tableName])
 
   return (
-    <Command value={tableName ?? ''} onValueChange={(v) => setTableName(v)}>
+    <Command
+      value={tableName ?? ''}
+      onValueChange={(v) => setTableName(v)}
+      filter={(value, search) =>
+        value.toLowerCase().includes(search.toLowerCase()) ? 1 : 0
+      }
+    >
       <div className={styles.searchArea}>
         <CommandPaletteSearchInput />
         <DialogClose asChild>
