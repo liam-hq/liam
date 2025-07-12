@@ -106,6 +106,7 @@
   padding: var(--spacing-2);
   align-items: center;
   line-height: 24px;
+  border-radius: var(--border-radius-base);
 }
 
 .main [cmdk-item] .itemText {
