@@ -184,6 +184,8 @@ function processCallNode(
     return
   }
 
+  // Process Google Cloud Spanner's interleave definition since Rails 7.1.
+  // See:https://github.com/googleapis/ruby-spanner-activerecord/blob/a7ca729dc6fe13b1b23fda6698abab9e2c1ace8e/examples/snippets/interleaved-tables/README.md#models-for-interleaved-tables
   if (node.name === 'interleave_in') {
     const argNodes = node.arguments_?.compactChildNodes() ?? []
     const result = extractInterleaveDetails(argNodes)
@@ -595,7 +597,19 @@ function extractCheckConstraintWithTableName(
 }
 
 /**
- * Extract interleave constraint details
+ * Extract Google Cloud Spanner interleave constraint details from Rails migration
+ *
+ * Supports syntax: `t.interleave_in :parent_table` and `t.interleave_in :parent_table, :cascade`
+ *
+ * @param argNodes - Array of AST nodes from the interleave_in call
+ * @returns Result containing the parsed InterleaveConstraint or an error
+ *
+ * @example
+ * ```ruby
+ * t.interleave_in :users                           # Basic interleave
+ * t.interleave_in :albums, :cascade                # With cascade delete
+ * t.interleave_in :users, column: "user_id"       # With options
+ * ```
  */
 function extractInterleaveDetails(
   argNodes: Node[],
@@ -619,9 +633,9 @@ function extractInterleaveDetails(
   const interleaveConstraint: InterleaveConstraint = {
     type: 'INTERLEAVE',
     name: 'INTERLEAVE',
-    columnName: '',
+    columnName: `${parentTableName}_id`, // Default foreign key column
     targetTableName: parentTableName,
-    targetColumnName: '',
+    targetColumnName: 'id', // Default primary key column
     updateConstraint: 'NO_ACTION',
     deleteConstraint: 'NO_ACTION',
   }
@@ -645,7 +659,12 @@ function extractInterleaveDetails(
 }
 
 /**
- * Extract interleave constraint options
+ * Extract interleave constraint options from keyword hash arguments
+ *
+ * Processes hash options like `column:`, `name:`, `on_delete:` from interleave_in calls
+ *
+ * @param argNodes - Array of AST nodes that may contain KeywordHashNode
+ * @param interleaveConstraint - The constraint object to modify with extracted options
  */
 function extractInterleaveOptions(
   argNodes: Node[],
@@ -661,6 +680,11 @@ function extractInterleaveOptions(
 
 /**
  * Process options from a keyword hash node for interleave constraints
+ *
+ * Iterates through hash elements and delegates option processing to processInterleaveOption
+ *
+ * @param hashNode - The KeywordHashNode containing option key-value pairs
+ * @param interleaveConstraint - The constraint object to modify with extracted options
  */
 function processInterleaveKeywordHashNode(
   hashNode: KeywordHashNode,
@@ -679,7 +703,19 @@ function processInterleaveKeywordHashNode(
 }
 
 /**
- * Process a single option for an interleave constraint
+ * Process a single option for Spanner interleave constraint
+ *
+ * Handles specific option keys:
+ * - `column`: Sets the foreign key column name
+ * - `primary_key`: Sets the target primary key column name
+ * - `name`: Sets the constraint name
+ * - `on_delete`: Sets the delete constraint action (CASCADE or NO_ACTION)
+ *
+ * @param key - The option key (e.g., 'column', 'name', 'on_delete')
+ * @param value - The AST node containing the option value
+ * @param interleaveConstraint - The constraint object to modify
+ *
+ * @see {@link https://github.com/googleapis/ruby-spanner-activerecord/blob/a7ca729dc6fe13b1b23fda6698abab9e2c1ace8e/examples/snippets/interleaved-tables/README.md#models-for-interleaved-tables}
  */
 function processInterleaveOption(
   key: string,
@@ -713,6 +749,15 @@ function processInterleaveOption(
   }
 }
 
+/**
+ * Normalize interleave constraint delete action value
+ *
+ * Google Cloud Spanner interleave constraints only support CASCADE and NO_ACTION
+ * for delete operations. Update operations are always NO_ACTION.
+ *
+ * @param constraint - The raw constraint string from Ruby (e.g., 'cascade')
+ * @returns Normalized constraint action ('CASCADE' or 'NO_ACTION')
+ */
 function normalizeInterleaveConstraintName(
   constraint: string,
 ): 'CASCADE' | 'NO_ACTION' {

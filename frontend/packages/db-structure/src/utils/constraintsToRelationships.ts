@@ -20,7 +20,7 @@ export type Relationship = {
 export type Relationships = Record<string, Relationship>
 
 /**
- * Convert foreign key constraints to relationships for UI display
+ * Convert foreign key constraints and Google Cloud Spanner's interleave to relationships for UI display
  * @param tables - The tables object containing constraints
  * @returns Relationships derived from foreign key constraints
  */
