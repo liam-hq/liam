@@ -12,6 +12,8 @@ import schema from './schema.generated.js'
 
 const FK_ACTIONS = 'SET NULL|SET DEFAULT|RESTRICT|CASCADE|NO ACTION'
 
+const INTERLEAVE_IN_PARENT_ACTIONS = 'CASCADE|NO ACTION'
+
 function extractForeignKeyActions(def: string): {
   updateConstraint: ForeignKeyConstraintReferenceOption
   deleteConstraint: ForeignKeyConstraintReferenceOption
@@ -45,7 +47,9 @@ function extractForeignKeyActions(def: string): {
 function extractInterleaveActions(def: string): {
   deleteConstraint: InterleaveConstraintReferenceOption
 } {
-  const deleteMatch = def.match(new RegExp(`ON DELETE (${FK_ACTIONS})`))
+  const deleteMatch = def.match(
+    new RegExp(`ON DELETE (${INTERLEAVE_IN_PARENT_ACTIONS})`),
+  )
   if (deleteMatch?.[1] && deleteMatch[1].toLowerCase() === 'cascade') {
     return { deleteConstraint: 'CASCADE' }
   }
