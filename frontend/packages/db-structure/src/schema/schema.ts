@@ -98,10 +98,6 @@ export type InterleaveConstraintReferenceOption = v.InferOutput<
 
 /**
  * Schema for Google Cloud Spanner interleave constraints
- *
- * Interleave constraints define parent-child table relationships where child rows
- * are physically co-located with parent rows for better query performance.
- *
  * @see {@link https://cloud.google.com/spanner/docs/schema-and-data-model#creating-interleaved-tables}
  */
 export const interleaveConstraintSchema = v.object({

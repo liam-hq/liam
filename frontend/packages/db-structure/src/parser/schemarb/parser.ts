@@ -184,7 +184,7 @@ function processCallNode(
     return
   }
 
-  // Process Google Cloud Spanner's interleave definition since Rails 7.1.
+  // Process Google Cloud Spanner interleave definition since Rails 7.1.
   // See:https://github.com/googleapis/ruby-spanner-activerecord/blob/a7ca729dc6fe13b1b23fda6698abab9e2c1ace8e/examples/snippets/interleaved-tables/README.md#models-for-interleaved-tables
   if (node.name === 'interleave_in') {
     const argNodes = node.arguments_?.compactChildNodes() ?? []
