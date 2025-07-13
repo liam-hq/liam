@@ -3,6 +3,7 @@ import type {
   Constraints,
   ForeignKeyConstraintReferenceOption,
   Indexes,
+  InterleaveConstraintReferenceOption,
   Tables,
 } from '../../schema/index.js'
 import { aColumn, anIndex, aTable } from '../../schema/index.js'
@@ -39,6 +40,17 @@ function extractForeignKeyActions(def: string): {
   }
 
   return actions
+}
+
+function extractInterleaveActions(def: string): {
+  deleteConstraint: InterleaveConstraintReferenceOption
+} {
+  const deleteMatch = def.match(new RegExp(`ON DELETE (${FK_ACTIONS})`))
+  if (deleteMatch?.[1] && deleteMatch[1].toLowerCase() === 'cascade') {
+    return { deleteConstraint: 'CASCADE' }
+  }
+
+  return { deleteConstraint: 'NO_ACTION' }
 }
 
 function normalizeConstraintName(
@@ -210,6 +222,39 @@ function processCheckConstraint(constraint: {
   return null
 }
 
+function processInterleaveConstraint(constraint: {
+  type: string
+  name: string
+  columns?: string[]
+  def: string
+  referenced_table?: string
+  referenced_columns?: string[]
+}): [string, Constraints[string]] | null {
+  if (
+    constraint.type === 'INTERLEAVE' &&
+    constraint.columns?.length === 1 &&
+    constraint.columns[0] &&
+    constraint.referenced_table &&
+    constraint.referenced_columns?.length === 1 &&
+    constraint.referenced_columns[0]
+  ) {
+    const { deleteConstraint } = extractInterleaveActions(constraint.def)
+    return [
+      constraint.name,
+      {
+        type: 'INTERLEAVE',
+        name: constraint.name,
+        columnName: constraint.columns[0],
+        targetTableName: constraint.referenced_table,
+        targetColumnName: constraint.referenced_columns[0],
+        updateConstraint: 'NO_ACTION',
+        deleteConstraint,
+      },
+    ]
+  }
+  return null
+}
+
 /**
  * Process constraints for a table
  */
@@ -243,6 +288,8 @@ function processConstraints(
       result = processUniqueConstraint(constraint)
     } else if (constraint.type === 'CHECK') {
       result = processCheckConstraint(constraint)
+    } else if (constraint.type === 'INTERLEAVE') {
+      result = processInterleaveConstraint(constraint)
     }
 
     // Add constraint to the collection if valid

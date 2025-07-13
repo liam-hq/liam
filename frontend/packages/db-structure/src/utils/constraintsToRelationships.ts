@@ -1,6 +1,7 @@
 import * as v from 'valibot'
 import type { Tables } from '../schema/index.js'
 import { foreignKeyConstraintSchema } from '../schema/index.js'
+import { interleaveConstraintSchema } from '../schema/schema.js'
 
 // Define types locally since they're no longer exported from schema
 export type Cardinality = 'ONE_TO_ONE' | 'ONE_TO_MANY'
@@ -28,27 +29,39 @@ export const constraintsToRelationships = (tables: Tables): Relationships => {
 
   for (const table of Object.values(tables)) {
     for (const constraint of Object.values(table.constraints)) {
-      const result = v.safeParse(foreignKeyConstraintSchema, constraint)
+      if (
+        constraint.type !== 'FOREIGN KEY' &&
+        constraint.type !== 'INTERLEAVE'
+      ) {
+        continue
+      }
+
+      const schema =
+        constraint.type === 'FOREIGN KEY'
+          ? foreignKeyConstraintSchema
+          : interleaveConstraintSchema
+
+      const result = v.safeParse(schema, constraint)
       if (!result.success) {
         continue
       }
 
-      const foreignKeyConstraint = result.output
+      const parsedConstraint = result.output
       const cardinality = determineCardinality(
         tables,
         table.name,
-        foreignKeyConstraint.columnName,
+        parsedConstraint.columnName,
       )
 
       relationships[constraint.name] = {
         name: constraint.name,
-        primaryTableName: foreignKeyConstraint.targetTableName,
-        primaryColumnName: foreignKeyConstraint.targetColumnName,
+        primaryTableName: parsedConstraint.targetTableName,
+        primaryColumnName: parsedConstraint.targetColumnName,
         foreignTableName: table.name,
-        foreignColumnName: foreignKeyConstraint.columnName,
+        foreignColumnName: parsedConstraint.columnName,
         cardinality,
-        updateConstraint: foreignKeyConstraint.updateConstraint,
-        deleteConstraint: foreignKeyConstraint.deleteConstraint,
+        updateConstraint: parsedConstraint.updateConstraint,
+        deleteConstraint: parsedConstraint.deleteConstraint,
       }
     }
   }

@@ -210,6 +210,9 @@ export function generateAddConstraintStatement(
     case 'CHECK':
       return `ALTER TABLE ${tableNameEscaped} ADD CONSTRAINT ${constraintName} CHECK (${constraint.detail});`
 
+    case 'INTERLEAVE':
+      throw new Error('INTERLEAVE cannot be added via ALTER operation')
+
     default:
       return constraint satisfies never
   }

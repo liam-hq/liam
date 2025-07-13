@@ -25,6 +25,7 @@ import type {
   ForeignKeyConstraintReferenceOption,
   Index,
   Indexes,
+  InterleaveConstraint,
   PrimaryKeyConstraint,
   Schema,
   Table,
@@ -174,6 +175,18 @@ function processCallNode(
   if (node.name === 'check_constraint') {
     const argNodes = node.arguments_?.compactChildNodes() ?? []
     const result = extractCheckConstraint(argNodes)
+    if (result.isErr()) {
+      errors.push(result.error)
+    } else {
+      constraints.push(result.value)
+    }
+
+    return
+  }
+
+  if (node.name === 'interleave_in') {
+    const argNodes = node.arguments_?.compactChildNodes() ?? []
+    const result = extractInterleaveDetails(argNodes)
     if (result.isErr()) {
       errors.push(result.error)
     } else {
@@ -579,6 +592,137 @@ function extractCheckConstraintWithTableName(
   }
 
   return ok({ tableName, constraint })
+}
+
+/**
+ * Extract interleave constraint details
+ */
+function extractInterleaveDetails(
+  argNodes: Node[],
+): Result<InterleaveConstraint, UnexpectedTokenWarningError> {
+  // Extract parent table name from symbol or string
+  const parentTableNode = argNodes.find(
+    (node) => node instanceof SymbolNode || node instanceof StringNode,
+  )
+
+  if (!parentTableNode) {
+    return err(
+      new UnexpectedTokenWarningError(
+        'Interleave constraint must specify a parent table',
+      ),
+    )
+  }
+
+  const parentTableName = parentTableNode.unescaped.value
+
+  // Create interleave constraint with defaults
+  const interleaveConstraint: InterleaveConstraint = {
+    type: 'INTERLEAVE',
+    name: 'INTERLEAVE',
+    columnName: '',
+    targetTableName: parentTableName,
+    targetColumnName: '',
+    updateConstraint: 'NO_ACTION',
+    deleteConstraint: 'NO_ACTION',
+  }
+
+  // Check for cascade option (second argument as symbol)
+  const cascadeNode = argNodes.find(
+    (node, index) =>
+      index > 0 &&
+      node instanceof SymbolNode &&
+      node.unescaped.value === 'cascade',
+  )
+
+  if (cascadeNode) {
+    interleaveConstraint.deleteConstraint = 'CASCADE'
+  }
+
+  // Extract options from keyword hash if present
+  extractInterleaveOptions(argNodes, interleaveConstraint)
+
+  return ok(interleaveConstraint)
+}
+
+/**
+ * Extract interleave constraint options
+ */
+function extractInterleaveOptions(
+  argNodes: Node[],
+  interleaveConstraint: InterleaveConstraint,
+): void {
+  // Process options from keyword hash nodes
+  for (const argNode of argNodes) {
+    if (argNode instanceof KeywordHashNode) {
+      processInterleaveKeywordHashNode(argNode, interleaveConstraint)
+    }
+  }
+}
+
+/**
+ * Process options from a keyword hash node for interleave constraints
+ */
+function processInterleaveKeywordHashNode(
+  hashNode: KeywordHashNode,
+  interleaveConstraint: InterleaveConstraint,
+): void {
+  for (const argElement of hashNode.elements) {
+    if (!(argElement instanceof AssocNode)) continue
+
+    // @ts-expect-error: unescaped is defined as string but it is actually object
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    const key = argElement.key.unescaped.value
+    const value = argElement.value
+
+    processInterleaveOption(key, value, interleaveConstraint)
+  }
+}
+
+/**
+ * Process a single option for an interleave constraint
+ */
+function processInterleaveOption(
+  key: string,
+  value: Node,
+  interleaveConstraint: InterleaveConstraint,
+): void {
+  switch (key) {
+    case 'column':
+      if (value instanceof StringNode || value instanceof SymbolNode) {
+        interleaveConstraint.columnName = value.unescaped.value
+      }
+      break
+    case 'primary_key':
+      if (value instanceof StringNode || value instanceof SymbolNode) {
+        interleaveConstraint.targetColumnName = value.unescaped.value
+      }
+      break
+    case 'name':
+      if (value instanceof StringNode || value instanceof SymbolNode) {
+        interleaveConstraint.name = value.unescaped.value
+      }
+      break
+    case 'on_delete':
+      if (value instanceof SymbolNode) {
+        const deleteConstraint = normalizeInterleaveConstraintName(
+          value.unescaped.value,
+        )
+        interleaveConstraint.deleteConstraint = deleteConstraint
+      }
+      break
+  }
+}
+
+function normalizeInterleaveConstraintName(
+  constraint: string,
+): 'CASCADE' | 'NO_ACTION' {
+  // For interleave constraints, only CASCADE and NO_ACTION are valid
+  switch (constraint) {
+    case 'cascade':
+      return 'CASCADE'
+    default:
+      return 'NO_ACTION'
+  }
 }
 
 function normalizeConstraintName(

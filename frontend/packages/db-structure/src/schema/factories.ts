@@ -3,6 +3,7 @@ import type {
   Column,
   ForeignKeyConstraint,
   Index,
+  InterleaveConstraint,
   PrimaryKeyConstraint,
   Schema,
   Table,
@@ -80,6 +81,19 @@ export const aCheckConstraint = (
   type: 'CHECK',
   name: '',
   detail: '',
+  ...override,
+})
+
+export const aInterleaveConstraint = (
+  override?: Partial<InterleaveConstraint>,
+): InterleaveConstraint => ({
+  type: 'INTERLEAVE',
+  name: '',
+  columnName: '',
+  targetTableName: '',
+  targetColumnName: '',
+  updateConstraint: 'NO_ACTION',
+  deleteConstraint: 'NO_ACTION',
   ...override,
 })
 

@@ -29,6 +29,7 @@ export function buildConstraintColumnNameDiffItem(
     .with({ type: 'FOREIGN KEY' }, ({ columnName }) => columnName)
     .with({ type: 'PRIMARY KEY' }, ({ columnName }) => columnName)
     .with({ type: 'CHECK' }, () => undefined)
+    .with({ type: 'INTERLEAVE' }, () => undefined)
     .with(P.nullish, () => undefined)
     .exhaustive()
 
