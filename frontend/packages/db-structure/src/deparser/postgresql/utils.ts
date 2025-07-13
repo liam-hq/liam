@@ -211,7 +211,7 @@ export function generateAddConstraintStatement(
       return `ALTER TABLE ${tableNameEscaped} ADD CONSTRAINT ${constraintName} CHECK (${constraint.detail});`
 
     case 'INTERLEAVE':
-      throw new Error('INTERLEAVE cannot be added via ALTER operation')
+      throw new Error('INTERLEAVE constraints are not supported in PostgreSQL')
 
     default:
       return constraint satisfies never
