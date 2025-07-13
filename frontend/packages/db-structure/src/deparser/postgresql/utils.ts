@@ -211,7 +211,7 @@ export function generateAddConstraintStatement(
       return `ALTER TABLE ${tableNameEscaped} ADD CONSTRAINT ${constraintName} CHECK (${constraint.detail});`
 
     case 'INTERLEAVE':
-      throw new Error('INTERLEAVE constraints are not supported in PostgreSQL')
+      return `ALTER TABLE ${tableNameEscaped} SET INTERLEAVE IN PARENT ${escapeIdentifier(constraint.targetTableName)} ON DELETE ${constraint.deleteConstraint.replace('_', ' ')};`
 
     default:
       return constraint satisfies never
