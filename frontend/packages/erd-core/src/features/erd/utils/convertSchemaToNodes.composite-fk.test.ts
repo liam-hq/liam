@@ -106,7 +106,7 @@ describe('convertSchemaToNodes - Composite Foreign Keys', () => {
     expect(edges[0]?.targetHandle).not.toBe(edges[1]?.targetHandle)
 
     // Check that path offsets are applied to separate the edges
-    expect(edges[0]?.data?.['pathOffset']).toBe(-25) // First edge offset left
-    expect(edges[1]?.data?.['pathOffset']).toBe(25) // Second edge offset right
+    expect(edges[0]?.data?.['pathOffset']).toBe(-50) // First edge offset left
+    expect(edges[1]?.data?.['pathOffset']).toBe(50) // Second edge offset right
   })
 })

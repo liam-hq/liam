@@ -30,7 +30,7 @@ export const adjustMultipleEdges = (edges: Edge[]): Edge[] => {
     // Calculate offset based on position in group
     // Center the edges around 0 offset
     const totalEdges = group.length
-    const offset = (index - (totalEdges - 1) / 2) * 50 // 50px spacing between edges
+    const offset = (index - (totalEdges - 1) / 2) * 100 // 100px spacing between edges for better visibility
 
     return {
       ...edge,
@@ -41,6 +41,8 @@ export const adjustMultipleEdges = (edges: Edge[]): Edge[] => {
         edgeIndex: index,
         totalEdgesInGroup: totalEdges,
       },
+      // Add z-index to ensure edges don't overlap
+      zIndex: index,
     }
   })
 }

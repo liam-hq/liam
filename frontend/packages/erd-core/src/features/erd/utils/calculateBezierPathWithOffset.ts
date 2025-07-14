@@ -28,11 +28,17 @@ export const calculateBezierPathWithOffset = ({
 
   // Calculate control point offset perpendicular to the edge
   const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY)
+  
+  // Avoid division by zero
+  if (distance === 0) {
+    return `M ${sourceX},${sourceY} L ${targetX},${targetY}`
+  }
+  
   const normalX = -deltaY / distance
   const normalY = deltaX / distance
 
-  // Apply offset to control points
-  const controlPointOffset = offset * 0.5
+  // Apply stronger offset to control points for better separation
+  const controlPointOffset = offset * 2 // Increased from 0.5 to 2 for more visible separation
   const midX = (sourceX + targetX) / 2 + normalX * controlPointOffset
   const midY = (sourceY + targetY) / 2 + normalY * controlPointOffset
 
