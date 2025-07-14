@@ -1,0 +1,1 @@
+dsn: postgres://postgres:password@localhost:15432/postgres?sslmode=disable
