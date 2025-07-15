@@ -1,4 +1,5 @@
 #!/bin/bash
+set -euo pipefail
 cd $GITHUB_WORKSPACE
 echo "🔍 Pre-commit validation starting..." >&2
 echo "📁 Working in: $(pwd)" >&2

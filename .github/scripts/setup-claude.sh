@@ -1,4 +1,5 @@
 #!/bin/bash
+set -euo pipefail
 
 # Create Claude settings directory
 mkdir -p ~/.claude
