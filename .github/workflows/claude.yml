@@ -38,6 +38,12 @@ jobs:
       - name: Setup pnpm
         uses: ./.github/actions/pnpm-setup
 
+      - name: Setup Claude settings with lint hook
+        run: |
+          chmod +x .github/scripts/pre-commit-hook.sh
+          chmod +x .github/scripts/setup-claude.sh
+          ./.github/scripts/setup-claude.sh
+
       - name: Run Claude PR Action
         uses: anthropics/claude-code-action@b92e56a96bb2fce337ece11f6dcb03bab4826536 # beta
         with:
