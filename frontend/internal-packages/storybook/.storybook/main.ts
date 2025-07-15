@@ -37,6 +37,11 @@ const config: StorybookConfig = {
           __dirname,
           './langfuseWeb.mock.ts',
         ),
+        // Mock VersionMessage component to avoid Supabase dependency
+        '../../../apps/app/components/SessionDetailPage/components/Chat/components/TimelineItem/components/VersionMessage/VersionMessage': path.resolve(
+          __dirname,
+          '../../../apps/app/components/SessionDetailPage/components/Chat/components/TimelineItem/components/VersionMessage/VersionMessage.mock.tsx',
+        ),
       }
     }
     return config

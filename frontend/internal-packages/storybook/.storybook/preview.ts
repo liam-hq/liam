@@ -7,6 +7,12 @@ if (typeof window !== 'undefined') {
   window.__STORYBOOK_LANGFUSE_MOCK__ = getLangfuseWeb()
 }
 
+// Mock Supabase environment variables
+if (typeof process !== 'undefined') {
+  process.env.NEXT_PUBLIC_SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || 'http://localhost:54321'
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'mock-anon-key'
+}
+
 const preview: Preview = {
   parameters: {
     actions: { argTypesRegex: '^on[A-Z].*' },

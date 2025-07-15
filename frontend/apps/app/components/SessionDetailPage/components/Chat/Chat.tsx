@@ -6,6 +6,7 @@ import type { TimelineItemEntry } from '../../types'
 import styles from './Chat.module.css'
 import { ChatInput } from './components/ChatInput'
 import { TimelineItem } from './components/TimelineItem'
+import type { BuildingSchemaVersion } from './components/TimelineItem/components/VersionMessage/VersionMessage'
 import { sendChatMessage } from './services'
 import { generateTimelineItemId } from './services/timelineItemHelpers'
 import { useScrollToBottom } from './useScrollToBottom'
@@ -15,6 +16,8 @@ type Props = {
   designSessionId: string
   timelineItems: TimelineItemEntry[]
   onMessageSend: (entry: TimelineItemEntry) => void
+  onRetry?: () => void
+  mockVersionData?: BuildingSchemaVersion
 }
 
 export const Chat: FC<Props> = ({
@@ -22,6 +25,8 @@ export const Chat: FC<Props> = ({
   designSessionId,
   timelineItems,
   onMessageSend,
+  onRetry,
+  mockVersionData,
 }) => {
   const [isLoading, startTransition] = useTransition()
   const { containerRef, scrollToBottom } = useScrollToBottom<HTMLDivElement>(
@@ -62,7 +67,12 @@ export const Chat: FC<Props> = ({
       <div className={styles.messagesContainer} ref={containerRef}>
         {/* Display all timeline items */}
         {timelineItems.map((timelineItem) => (
-          <TimelineItem key={timelineItem.id} {...timelineItem} />
+          <TimelineItem
+            key={timelineItem.id}
+            {...timelineItem}
+            onRetry={onRetry}
+            mockVersionData={mockVersionData}
+          />
         ))}
         {isLoading && (
           <div className={styles.loadingIndicator}>

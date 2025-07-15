@@ -4,7 +4,7 @@ import clsx from 'clsx'
 import type { FC, ReactNode } from 'react'
 import { MarkdownContent } from '@/components/MarkdownContent'
 import styles from './AgentMessage.module.css'
-import { BuildAgent } from './components/AgentAvatar'
+import { DBAgent } from './components/AgentAvatar/DbAgent'
 
 type AgentMessageState = 'default' | 'generating'
 
@@ -26,6 +26,10 @@ type AgentMessageProps = {
    */
   agentName?: string
   /**
+   * Custom avatar component
+   */
+  avatar?: ReactNode
+  /**
    * Optional children to render below the message
    */
   children?: ReactNode
@@ -35,6 +39,7 @@ export const AgentMessage: FC<AgentMessageProps> = ({
   state = 'default',
   message = '',
   agentName,
+  avatar,
   children,
 }) => {
   const isGenerating = state === 'generating'
@@ -42,8 +47,8 @@ export const AgentMessage: FC<AgentMessageProps> = ({
   return (
     <div className={styles.container}>
       <div className={styles.avatarContainer}>
-        <BuildAgent />
-        <span className={styles.agentName}>{agentName || 'Build Agent'}</span>
+        {avatar || <DBAgent />}
+        <span className={styles.agentName}>{agentName || 'DB Agent'}</span>
       </div>
       <div className={styles.contentContainer}>
         {isGenerating &&

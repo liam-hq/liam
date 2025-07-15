@@ -82,7 +82,7 @@ const parsePatchOperations = (
   })
 }
 
-type BuildingSchemaVersion = Pick<
+export type BuildingSchemaVersion = Pick<
   Tables<'building_schema_versions'>,
   'patch' | 'number' | 'id'
 >
@@ -90,17 +90,24 @@ type BuildingSchemaVersion = Pick<
 type Props = {
   buildingSchemaVersionId: string
   onView?: () => void
+  mockVersionData?: BuildingSchemaVersion
 }
 
 export const VersionMessage: FC<Props> = ({
   buildingSchemaVersionId,
   onView,
+  mockVersionData,
 }) => {
   const [version, setVersion] = useState<BuildingSchemaVersion | null>(null)
   const [isPending, startTransition] = useTransition()
   const [isExpanded, setIsExpanded] = useState(false)
 
   useEffect(() => {
+    if (mockVersionData) {
+      setVersion(mockVersionData)
+      return
+    }
+
     startTransition(async () => {
       const supabase = createClient()
       const { data, error } = await supabase
@@ -118,7 +125,7 @@ export const VersionMessage: FC<Props> = ({
         setVersion(data)
       }
     })
-  }, [buildingSchemaVersionId])
+  }, [buildingSchemaVersionId, mockVersionData])
 
   if (isPending || !version) {
     return (
@@ -134,7 +141,7 @@ export const VersionMessage: FC<Props> = ({
             <div className={styles.collapseButton}>
               <ChevronRight />
             </div>
-            <span className={styles.versionNumber}>Loading version...</span>
+            <span className={styles.versionNumber}>Version 1</span>
           </button>
         </div>
       </div>

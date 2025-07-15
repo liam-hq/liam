@@ -1,0 +1,7 @@
+.checkmark {
+  color: var(--primary-accent);
+}
+
+.crossmark {
+  color: var(--severity-critical-100);
+}
