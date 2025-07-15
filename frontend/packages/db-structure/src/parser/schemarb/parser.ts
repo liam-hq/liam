@@ -25,6 +25,7 @@ import type {
   ForeignKeyConstraintReferenceOption,
   Index,
   Indexes,
+  InterleaveConstraint,
   PrimaryKeyConstraint,
   Schema,
   Table,
@@ -174,6 +175,20 @@ function processCallNode(
   if (node.name === 'check_constraint') {
     const argNodes = node.arguments_?.compactChildNodes() ?? []
     const result = extractCheckConstraint(argNodes)
+    if (result.isErr()) {
+      errors.push(result.error)
+    } else {
+      constraints.push(result.value)
+    }
+
+    return
+  }
+
+  // Process Google Cloud Spanner interleave definition since Rails 7.1.
+  // See:https://github.com/googleapis/ruby-spanner-activerecord/blob/a7ca729dc6fe13b1b23fda6698abab9e2c1ace8e/examples/snippets/interleaved-tables/README.md#models-for-interleaved-tables
+  if (node.name === 'interleave_in') {
+    const argNodes = node.arguments_?.compactChildNodes() ?? []
+    const result = extractInterleaveDetails(argNodes)
     if (result.isErr()) {
       errors.push(result.error)
     } else {
@@ -579,6 +594,180 @@ function extractCheckConstraintWithTableName(
   }
 
   return ok({ tableName, constraint })
+}
+
+/**
+ * Extract Google Cloud Spanner interleave constraint details from Rails migration
+ *
+ * Supports syntax: `t.interleave_in :parent_table` and `t.interleave_in :parent_table, :cascade`
+ *
+ * @param argNodes - Array of AST nodes from the interleave_in call
+ * @returns Result containing the parsed InterleaveConstraint or an error
+ *
+ * @example
+ * ```ruby
+ * t.interleave_in :users                           # Basic interleave
+ * t.interleave_in :albums, :cascade                # With cascade delete
+ * t.interleave_in :users, column: "user_id"       # With options
+ * ```
+ */
+function extractInterleaveDetails(
+  argNodes: Node[],
+): Result<InterleaveConstraint, UnexpectedTokenWarningError> {
+  // Extract parent table name from symbol or string
+  const parentTableNode = argNodes.find(
+    (node) => node instanceof SymbolNode || node instanceof StringNode,
+  )
+
+  if (!parentTableNode) {
+    return err(
+      new UnexpectedTokenWarningError(
+        'Interleave constraint must specify a parent table',
+      ),
+    )
+  }
+
+  const parentTableName = parentTableNode.unescaped.value
+
+  // Create interleave constraint with defaults
+  const interleaveConstraint: InterleaveConstraint = {
+    type: 'INTERLEAVE',
+    name: 'INTERLEAVE',
+    columnName: `${parentTableName}_id`, // Default foreign key column
+    targetTableName: parentTableName,
+    targetColumnName: 'id', // Default primary key column
+    updateConstraint: 'NO_ACTION',
+    deleteConstraint: 'NO_ACTION',
+  }
+
+  // Check for cascade option (second argument as symbol)
+  const cascadeNode = argNodes.find(
+    (node, index) =>
+      index > 0 &&
+      node instanceof SymbolNode &&
+      node.unescaped.value === 'cascade',
+  )
+
+  if (cascadeNode) {
+    interleaveConstraint.deleteConstraint = 'CASCADE'
+  }
+
+  // Extract options from keyword hash if present
+  extractInterleaveOptions(argNodes, interleaveConstraint)
+
+  return ok(interleaveConstraint)
+}
+
+/**
+ * Extract interleave constraint options from keyword hash arguments
+ *
+ * Processes hash options like `column:`, `name:`, `on_delete:` from interleave_in calls
+ *
+ * @param argNodes - Array of AST nodes that may contain KeywordHashNode
+ * @param interleaveConstraint - The constraint object to modify with extracted options
+ */
+function extractInterleaveOptions(
+  argNodes: Node[],
+  interleaveConstraint: InterleaveConstraint,
+): void {
+  // Process options from keyword hash nodes
+  for (const argNode of argNodes) {
+    if (argNode instanceof KeywordHashNode) {
+      processInterleaveKeywordHashNode(argNode, interleaveConstraint)
+    }
+  }
+}
+
+/**
+ * Process options from a keyword hash node for interleave constraints
+ *
+ * Iterates through hash elements and delegates option processing to processInterleaveOption
+ *
+ * @param hashNode - The KeywordHashNode containing option key-value pairs
+ * @param interleaveConstraint - The constraint object to modify with extracted options
+ */
+function processInterleaveKeywordHashNode(
+  hashNode: KeywordHashNode,
+  interleaveConstraint: InterleaveConstraint,
+): void {
+  for (const argElement of hashNode.elements) {
+    if (!(argElement instanceof AssocNode)) continue
+
+    // @ts-expect-error: unescaped is defined as string but it is actually object
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    const key = argElement.key.unescaped.value
+    const value = argElement.value
+
+    processInterleaveOption(key, value, interleaveConstraint)
+  }
+}
+
+/**
+ * Process a single option for Spanner interleave constraint
+ *
+ * Handles specific option keys:
+ * - `column`: Sets the foreign key column name
+ * - `primary_key`: Sets the target primary key column name
+ * - `name`: Sets the constraint name
+ * - `on_delete`: Sets the delete constraint action (CASCADE or NO_ACTION)
+ *
+ * @param key - The option key (e.g., 'column', 'name', 'on_delete')
+ * @param value - The AST node containing the option value
+ * @param interleaveConstraint - The constraint object to modify
+ *
+ * @see {@link https://github.com/googleapis/ruby-spanner-activerecord/blob/a7ca729dc6fe13b1b23fda6698abab9e2c1ace8e/examples/snippets/interleaved-tables/README.md#models-for-interleaved-tables}
+ */
+function processInterleaveOption(
+  key: string,
+  value: Node,
+  interleaveConstraint: InterleaveConstraint,
+): void {
+  switch (key) {
+    case 'column':
+      if (value instanceof StringNode || value instanceof SymbolNode) {
+        interleaveConstraint.columnName = value.unescaped.value
+      }
+      break
+    case 'primary_key':
+      if (value instanceof StringNode || value instanceof SymbolNode) {
+        interleaveConstraint.targetColumnName = value.unescaped.value
+      }
+      break
+    case 'name':
+      if (value instanceof StringNode || value instanceof SymbolNode) {
+        interleaveConstraint.name = value.unescaped.value
+      }
+      break
+    case 'on_delete':
+      if (value instanceof SymbolNode) {
+        const deleteConstraint = normalizeInterleaveConstraintName(
+          value.unescaped.value,
+        )
+        interleaveConstraint.deleteConstraint = deleteConstraint
+      }
+      break
+  }
+}
+
+/**
+ * Normalize interleave constraint delete action value
+ *
+ * Google Cloud Spanner interleave constraints only support CASCADE and NO_ACTION
+ * for delete operations. Update operations are always NO_ACTION.
+ *
+ * @param constraint - The raw constraint string from Ruby (e.g., 'cascade')
+ * @returns Normalized constraint action ('CASCADE' or 'NO_ACTION')
+ */
+function normalizeInterleaveConstraintName(
+  constraint: string,
+): 'CASCADE' | 'NO_ACTION' {
+  // For interleave constraints, only CASCADE and NO_ACTION are valid
+  switch (constraint) {
+    case 'cascade':
+      return 'CASCADE'
+    default:
+      return 'NO_ACTION'
+  }
 }
 
 function normalizeConstraintName(

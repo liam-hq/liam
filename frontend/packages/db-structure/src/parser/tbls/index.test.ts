@@ -681,6 +681,54 @@ describe(processor, () => {
 
         expect(value.tables['users']?.constraints).toEqual(expected)
       })
+
+      it('INTERLEAVE constraint', async () => {
+        const { value } = await processor(
+          JSON.stringify({
+            name: 'testdb',
+            tables: [
+              {
+                name: 'users',
+                type: 'TABLE',
+                columns: [{ name: 'id', type: 'int64', nullable: false }],
+              },
+              {
+                name: 'posts',
+                type: 'TABLE',
+                columns: [
+                  { name: 'id', type: 'int64', nullable: false },
+                  { name: 'user_id', type: 'int64', nullable: false },
+                ],
+                constraints: [
+                  {
+                    type: 'INTERLEAVE',
+                    name: 'INTERLEAVE',
+                    def: 'INTERLEAVE IN PARENT users ON DELETE CASCADE',
+                    table: 'posts',
+                    referenced_table: 'users',
+                    columns: ['user_id'],
+                    referenced_columns: ['id'],
+                  },
+                ],
+              },
+            ],
+          }),
+        )
+
+        const expected = {
+          INTERLEAVE: {
+            type: 'INTERLEAVE',
+            name: 'INTERLEAVE',
+            columnName: 'user_id',
+            targetTableName: 'users',
+            targetColumnName: 'id',
+            updateConstraint: 'NO_ACTION',
+            deleteConstraint: 'CASCADE',
+          },
+        }
+
+        expect(value.tables['posts']?.constraints).toEqual(expected)
+      })
     })
   })
 })

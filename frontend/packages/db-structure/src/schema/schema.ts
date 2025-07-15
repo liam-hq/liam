@@ -82,6 +82,37 @@ export type ForeignKeyConstraint = v.InferOutput<
   typeof foreignKeyConstraintSchema
 >
 
+/**
+ * Valid reference options for Google Cloud Spanner interleave constraints
+ *
+ * Spanner interleave constraints only support CASCADE and NO_ACTION for delete operations.
+ * Update operations are always NO_ACTION.
+ */
+const interleaveConstraintReferenceOptionSchema = v.picklist([
+  'CASCADE',
+  'NO_ACTION',
+])
+export type InterleaveConstraintReferenceOption = v.InferOutput<
+  typeof interleaveConstraintReferenceOptionSchema
+>
+
+/**
+ * Schema for Google Cloud Spanner interleave constraints
+ * @see {@link https://cloud.google.com/spanner/docs/schema-and-data-model#creating-interleaved-tables}
+ */
+export const interleaveConstraintSchema = v.object({
+  type: v.literal('INTERLEAVE'),
+  name: constraintNameSchema,
+  columnName: columnNameSchema,
+  targetTableName: tableNameSchema,
+  targetColumnName: columnNameSchema,
+  updateConstraint: v.literal('NO_ACTION'),
+  deleteConstraint: interleaveConstraintReferenceOptionSchema,
+})
+export type InterleaveConstraint = v.InferOutput<
+  typeof interleaveConstraintSchema
+>
+
 const uniqueConstraintSchema = v.object({
   type: v.literal('UNIQUE'),
   name: constraintNameSchema,
@@ -103,6 +134,7 @@ export const constraintSchema = v.union([
   foreignKeyConstraintSchema,
   uniqueConstraintSchema,
   checkConstraintSchema,
+  interleaveConstraintSchema,
 ])
 export type Constraint = v.InferOutput<typeof constraintSchema>
 

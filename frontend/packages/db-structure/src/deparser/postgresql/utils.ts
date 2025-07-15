@@ -242,6 +242,9 @@ export function generateAddConstraintStatement(
     case 'CHECK':
       return `ALTER TABLE ${tableNameEscaped} ADD CONSTRAINT ${constraintName} CHECK (${constraint.detail});`
 
+    case 'INTERLEAVE':
+      return `ALTER TABLE ${tableNameEscaped} SET INTERLEAVE IN PARENT ${escapeIdentifier(constraint.targetTableName)} ON DELETE ${constraint.deleteConstraint.replace('_', ' ')};`
+
     default:
       return constraint satisfies never
   }

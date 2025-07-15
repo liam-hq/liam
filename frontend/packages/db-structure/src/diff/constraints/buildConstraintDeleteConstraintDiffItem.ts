@@ -29,6 +29,7 @@ export function buildConstraintDeleteConstraintDiffItem(
     .with({ type: 'FOREIGN KEY' }, ({ deleteConstraint }) => deleteConstraint)
     .with({ type: 'PRIMARY KEY' }, () => undefined)
     .with({ type: 'CHECK' }, () => undefined)
+    .with({ type: 'INTERLEAVE' }, () => undefined)
     .with(P.nullish, () => undefined)
     .exhaustive()
 

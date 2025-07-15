@@ -4,6 +4,7 @@ import {
   aCheckConstraint,
   aColumn,
   aForeignKeyConstraint,
+  aInterleaveConstraint,
   anIndex,
   aPrimaryKeyConstraint,
   aSchema,
@@ -475,6 +476,59 @@ describe(processor, () => {
           name: 'custom_bio_index',
           columns: ['bio'],
           unique: false,
+        }),
+      })
+    })
+
+    it('interleave_in', async () => {
+      const { value } = await processor(/* Ruby */ `
+        create_table "users" do |t|
+          t.string "name"
+        end
+
+        create_table "albums", primary_key: [:singer_id, :album_id], id: false do |t|
+          t.interleave_in :users
+          t.integer "singer_id"
+          t.integer "album_id"
+          t.string "title"
+        end
+      `)
+
+      expect(value.tables['albums']?.constraints).toEqual({
+        INTERLEAVE: aInterleaveConstraint({
+          name: 'INTERLEAVE',
+          columnName: 'users_id',
+          targetTableName: 'users',
+          targetColumnName: 'id',
+          updateConstraint: 'NO_ACTION',
+          deleteConstraint: 'NO_ACTION',
+        }),
+      })
+    })
+
+    it('interleave_in with cascade', async () => {
+      const { value } = await processor(/* Ruby */ `
+        create_table "users" do |t|
+          t.string "name"
+        end
+
+        create_table "tracks", primary_key: [:singer_id, :album_id, :track_id], id: false do |t|
+          t.interleave_in :albums, :cascade
+          t.integer "singer_id"
+          t.integer "album_id"
+          t.integer "track_id"
+          t.string "title"
+        end
+      `)
+
+      expect(value.tables['tracks']?.constraints).toEqual({
+        INTERLEAVE: aInterleaveConstraint({
+          name: 'INTERLEAVE',
+          columnName: 'albums_id',
+          targetTableName: 'albums',
+          targetColumnName: 'id',
+          updateConstraint: 'NO_ACTION',
+          deleteConstraint: 'CASCADE',
         }),
       })
     })

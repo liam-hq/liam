@@ -236,6 +236,61 @@ describe('constraintsToRelationships', () => {
     expect(result['fk_posts_category']?.deleteConstraint).toBe('SET_NULL')
   })
 
+  it('should handle interleave constraints', () => {
+    const tables = {
+      users: aTable({
+        name: 'users',
+        columns: {
+          id: aColumn({
+            name: 'id',
+            type: 'STRING',
+            notNull: true,
+          }),
+        },
+      }),
+      posts: aTable({
+        name: 'posts',
+        columns: {
+          id: aColumn({
+            name: 'id',
+            type: 'STRING',
+            notNull: true,
+          }),
+          user_id: aColumn({
+            name: 'user_id',
+            type: 'STRING',
+            notNull: true,
+          }),
+        },
+        constraints: {
+          interleave_posts_user: {
+            name: 'INTERLEAVE',
+            type: 'INTERLEAVE',
+            columnName: 'user_id',
+            targetTableName: 'users',
+            targetColumnName: 'id',
+            updateConstraint: 'NO_ACTION',
+            deleteConstraint: 'CASCADE',
+          },
+        },
+      }),
+    }
+    const result = constraintsToRelationships(tables)
+
+    expect(result).toEqual({
+      INTERLEAVE: {
+        name: 'INTERLEAVE',
+        primaryTableName: 'users',
+        primaryColumnName: 'id',
+        foreignTableName: 'posts',
+        foreignColumnName: 'user_id',
+        cardinality: 'ONE_TO_MANY',
+        updateConstraint: 'NO_ACTION',
+        deleteConstraint: 'CASCADE',
+      },
+    })
+  })
+
   it('should ignore non-foreign key constraints', () => {
     const tables = {
       users: aTable({

@@ -31,6 +31,7 @@ export function buildConstraintColumnNameDiffItem(
     // TODO: Currently only detects changes in the first column of composite constraints
     .with({ type: 'PRIMARY KEY' }, ({ columnNames }) => columnNames[0])
     .with({ type: 'CHECK' }, () => undefined)
+    .with({ type: 'INTERLEAVE' }, () => undefined)
     .with(P.nullish, () => undefined)
     .exhaustive()
 
