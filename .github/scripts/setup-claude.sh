@@ -2,11 +2,11 @@
 set -euo pipefail
 
 # Create Claude settings directory
-mkdir -p ~/.claude
+mkdir -p "$HOME/.claude"
 
 # Create settings.json with hooks configuration
 # Note: Using environment variable expansion here
-cat > ~/.claude/settings.json << EOF
+cat > "$HOME/.claude/settings.json" << EOF
 {
   "enableAllProjectMcpServers": true,
   "hooks": {
