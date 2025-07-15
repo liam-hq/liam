@@ -22,7 +22,8 @@
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-repeat: no-repeat;
-  background-image: linear-gradient(
+  background-image:
+    linear-gradient(
       90deg,
       transparent calc(50% - var(--spread)),
       var(--primary-accent) 50%,

@@ -1,19 +1,15 @@
-import { AIMessage } from '@langchain/core/messages'
+import { HumanMessage } from '@langchain/core/messages'
 import type { RunnableConfig } from '@langchain/core/runnables'
-import { DatabaseSchemaBuildAgent } from '../../../langchain/agents'
-import type { BuildAgentResponse } from '../../../langchain/agents/databaseSchemaBuildAgent/agent'
-import type { SchemaAwareChatVariables } from '../../../langchain/utils/types'
+import {
+  type DesignResponse,
+  type InvokeResult,
+  invokeDesignAgent,
+} from '../../../langchain/agents/databaseSchemaBuildAgent/agent'
 import type { Repositories } from '../../../repositories'
 import { convertSchemaToText } from '../../../utils/convertSchemaToText'
 import { getConfigurable } from '../shared/getConfigurable'
 import type { WorkflowState } from '../types'
-import { formatMessagesToHistory } from '../utils/messageUtils'
 import { logAssistantMessage } from '../utils/timelineLogger'
-
-type PreparedSchemaDesign = {
-  agent: DatabaseSchemaBuildAgent
-  schemaText: string
-}
 
 const formatAnalyzedRequirements = (
   analyzedRequirements: NonNullable<WorkflowState['analyzedRequirements']>,
@@ -72,7 +68,7 @@ User Request: ${state.userInput}`
  * Apply schema changes and return updated state
  */
 const applySchemaChanges = async (
-  schemaChanges: BuildAgentResponse['schemaChanges'],
+  operations: DesignResponse['operations'],
   buildingSchemaId: string,
   latestVersionNumber: number,
   message: string,
@@ -84,7 +80,7 @@ const applySchemaChanges = async (
   const result = await repositories.schema.createVersion({
     buildingSchemaId,
     latestVersionNumber,
-    patch: schemaChanges,
+    patch: operations,
   })
 
   if (!result.success) {
@@ -100,7 +96,7 @@ const applySchemaChanges = async (
   await logAssistantMessage(
     state,
     repositories,
-    `Applied ${schemaChanges.length} schema changes successfully`,
+    `Applied ${operations.length} schema changes successfully`,
   )
 
   return {
@@ -115,14 +111,14 @@ const applySchemaChanges = async (
  * Handle schema changes if they exist
  */
 const handleSchemaChanges = async (
-  parsedResponse: BuildAgentResponse,
+  invokeResult: InvokeResult,
   state: WorkflowState,
   repositories: Repositories,
 ): Promise<WorkflowState> => {
-  if (parsedResponse.schemaChanges.length === 0) {
+  if (invokeResult.operations.length === 0) {
     return {
       ...state,
-      generatedAnswer: parsedResponse.message,
+      generatedAnswer: invokeResult.message.text,
     }
   }
 
@@ -130,36 +126,13 @@ const handleSchemaChanges = async (
   const latestVersionNumber = state.latestVersionNumber
 
   return await applySchemaChanges(
-    parsedResponse.schemaChanges,
+    invokeResult.operations,
     buildingSchemaId,
     latestVersionNumber,
-    parsedResponse.message,
+    invokeResult.message.text,
     state,
     repositories,
   )
-}
-
-async function prepareSchemaDesign(
-  state: WorkflowState,
-  repositories: Repositories,
-): Promise<PreparedSchemaDesign> {
-  await logAssistantMessage(state, repositories, 'Preparing schema design...')
-
-  const schemaText = convertSchemaToText(state.schemaData)
-
-  // Create the agent instance
-  const agent = new DatabaseSchemaBuildAgent()
-
-  await logAssistantMessage(
-    state,
-    repositories,
-    'Schema design preparation completed',
-  )
-
-  return {
-    agent,
-    schemaText,
-  }
 }
 
 /**
@@ -181,7 +154,7 @@ export async function designSchemaNode(
 
   await logAssistantMessage(state, repositories, 'Designing database schema...')
 
-  const { agent, schemaText } = await prepareSchemaDesign(state, repositories)
+  const schemaText = convertSchemaToText(state.schemaData)
 
   // Prepare user message with context
   const userMessage = prepareUserMessage(state)
@@ -220,12 +193,8 @@ export async function designSchemaNode(
     }
   }
 
-  // Create prompt variables directly
-  const promptVariables: SchemaAwareChatVariables = {
-    schema_text: schemaText,
-    chat_history: formatMessagesToHistory(currentState.messages),
-    user_message: userMessage,
-  }
+  // Convert messages to BaseMessage array and add user message
+  const messages = [...currentState.messages, new HumanMessage(userMessage)]
 
   await logAssistantMessage(
     state,
@@ -233,9 +202,21 @@ export async function designSchemaNode(
     'Analyzing table structure and relationships...',
   )
 
-  // Use agent's generate method with prompt variables
-  const response = await agent.generate(promptVariables)
-  const result = await handleSchemaChanges(response, currentState, repositories)
+  const invokeResult = await invokeDesignAgent({ schemaText }, messages)
+
+  if (invokeResult.isErr()) {
+    await logAssistantMessage(state, repositories, 'Schema design failed')
+    return {
+      ...state,
+      error: invokeResult.error,
+    }
+  }
+
+  const result = await handleSchemaChanges(
+    invokeResult.value,
+    currentState,
+    repositories,
+  )
 
   await logAssistantMessage(state, repositories, 'Schema design completed')
 
@@ -243,11 +224,9 @@ export async function designSchemaNode(
   const finalResult = {
     ...result,
     messages: [
-      ...state.messages,
-      new AIMessage({
-        content: response.message,
-        name: 'Database Schema Build Agent',
-      }),
+      ...currentState.messages,
+      new HumanMessage(userMessage),
+      invokeResult.value.message,
     ],
     shouldRetryWithDesignSchema: undefined,
     ddlExecutionFailureReason: undefined,

@@ -20,15 +20,15 @@
     "ts-pattern": "5.7.1"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.0.4",
+    "@biomejs/biome": "2.0.6",
     "@liam-hq/configs": "workspace:*",
-    "@tailwindcss/postcss": "4.1.10",
-    "@types/node": "22.15.32",
+    "@tailwindcss/postcss": "4.1.11",
+    "@types/node": "22.15.34",
     "@types/react": "19.1.8",
     "@types/react-dom": "19.1.6",
-    "eslint": "9.29.0",
+    "eslint": "9.30.0",
     "postcss": "8.5.6",
-    "tailwindcss": "4.1.10",
+    "tailwindcss": "4.1.11",
     "typescript": "5.8.3"
   },
   "scripts": {

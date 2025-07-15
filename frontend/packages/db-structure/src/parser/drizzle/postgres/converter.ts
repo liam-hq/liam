@@ -9,7 +9,7 @@ import type {
   ForeignKeyConstraint,
   Index,
   Table,
-} from '../../schema/index.js'
+} from '../../../schema/index.js'
 import {
   convertDefaultValue,
   convertDrizzleTypeToPgType,

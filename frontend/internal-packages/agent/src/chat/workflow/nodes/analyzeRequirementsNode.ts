@@ -61,7 +61,7 @@ export async function analyzeRequirementsNode(
           ...state.messages,
           new AIMessage({
             content: result.businessRequirement,
-            name: 'PM Analysis Agent',
+            name: 'PMAnalysisAgent',
           }),
         ],
         analyzedRequirements: {

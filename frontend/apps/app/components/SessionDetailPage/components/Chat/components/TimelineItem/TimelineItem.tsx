@@ -1,61 +1,40 @@
 'use client'
 
-import type { FC } from 'react'
-import type { TimelineItem as TimelineItemProps } from '@/features/timelineItems/types'
+import type { FC, PropsWithChildren } from 'react'
+import { match } from 'ts-pattern'
+import type { TimelineItemEntry } from '../../../../types'
 import { AgentMessage } from './components/AgentMessage'
 import { LogMessage } from './components/LogMessage'
 import { UserMessage } from './components/UserMessage'
 import { VersionMessage } from './components/VersionMessage'
 
-type Props = TimelineItemProps
+type Props = PropsWithChildren & TimelineItemEntry
 
 export const TimelineItem: FC<Props> = (props) => {
-  // Handle schema_version role separately
-  if ('building_schema_version_id' in props) {
-    return (
+  return match(props)
+    .with({ type: 'schema_version' }, ({ buildingSchemaVersionId }) => (
       <AgentMessage state="default">
-        <VersionMessage
-          buildingSchemaVersionId={props.building_schema_version_id}
-        />
+        <VersionMessage buildingSchemaVersionId={buildingSchemaVersionId} />
       </AgentMessage>
-    )
-  }
-
-  // Destructure props for regular messages
-  const { content, role, timestamp, avatarSrc, avatarAlt, initial, children } =
-    props
-
-  // Only format and display timestamp if it exists
-  const formattedTime = timestamp
-    ? timestamp.toLocaleTimeString([], {
-        hour: '2-digit',
-        minute: '2-digit',
-      })
-    : null
-
-  if (role === 'user') {
-    return (
-      <UserMessage
-        content={content}
-        timestamp={timestamp}
-        avatarSrc={avatarSrc}
-        avatarAlt={avatarAlt}
-        initial={initial}
-      />
-    )
-  }
-
-  if (role === 'assistant_log') {
-    return (
+    ))
+    .with({ type: 'user' }, ({ content, timestamp }) => (
+      <UserMessage content={content} timestamp={timestamp} />
+    ))
+    .with({ type: 'assistant_log' }, ({ content }) => (
       <AgentMessage state="default">
         <LogMessage content={content} />
       </AgentMessage>
-    )
-  }
-
-  return (
-    <AgentMessage state="default" message={content} time={formattedTime || ''}>
-      {children}
-    </AgentMessage>
-  )
+    ))
+    .otherwise(({ content, timestamp, children }) => (
+      <AgentMessage
+        state="default"
+        message={content}
+        time={timestamp.toLocaleTimeString([], {
+          hour: '2-digit',
+          minute: '2-digit',
+        })}
+      >
+        {children}
+      </AgentMessage>
+    ))
 }

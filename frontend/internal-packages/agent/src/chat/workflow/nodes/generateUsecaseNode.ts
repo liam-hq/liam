@@ -114,7 +114,7 @@ export async function generateUsecaseNode(
           ...state.messages,
           new AIMessage({
             content: `Generated ${generatedResult.usecases.length} use cases for testing and validation`,
-            name: 'QA Generate Usecase Agent',
+            name: 'QAGenerateUsecaseAgent',
           }),
         ],
         generatedUsecases: generatedResult.usecases,

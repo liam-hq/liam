@@ -1,14 +1,6 @@
 {
-  "src/chat/workflow/nodes/designSchemaNode.integration.test.ts": {
-    "@typescript-eslint/consistent-type-assertions": {
-      "count": 3
-    }
-  },
   "src/deepModeling.test.ts": {
     "@typescript-eslint/consistent-type-assertions": {
-      "count": 1
-    },
-    "no-throw-error/no-throw-error": {
       "count": 1
     }
   },

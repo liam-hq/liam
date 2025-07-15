@@ -39,7 +39,7 @@ jobs:
         uses: ./.github/actions/pnpm-setup
 
       - name: Run Claude PR Action
-        uses: anthropics/claude-code-action@6364776f60df0aeb83d4efda5906d68d8cc72137 # beta
+        uses: anthropics/claude-code-action@b92e56a96bb2fce337ece11f6dcb03bab4826536 # beta
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           additional_permissions: |

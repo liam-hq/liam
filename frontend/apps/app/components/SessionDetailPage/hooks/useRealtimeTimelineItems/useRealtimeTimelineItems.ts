@@ -1,11 +1,12 @@
-import type { Tables } from '@liam-hq/db/supabase/database.types'
+'use client'
+
 import { useCallback, useEffect, useState } from 'react'
-import { isDuplicateTimelineItem } from '../services/timelineItemHelpers'
-import {
-  convertTimelineItemToChatEntry,
-  setupRealtimeSubscription,
-} from '../services/timelineItemServiceClient'
-import type { TimelineItemEntry, TimelineItemType } from '../types'
+import * as v from 'valibot'
+import { createClient } from '@/libs/db/client'
+import { timelineItemSchema } from '../../schema'
+import { convertTimelineItemToTimelineItemEntry } from '../../services/convertTimelineItemToTimelineItemEntry'
+import type { TimelineItem, TimelineItemEntry } from '../../types'
+import { isDuplicateTimelineItem } from './utils/isDuplicateTimelineItem'
 
 const findExistingTimelineItemIndex = (
   timelineItems: TimelineItemEntry[],
@@ -28,14 +29,14 @@ const handleOptimisticUserUpdate = (
   timelineItems: TimelineItemEntry[],
   newEntry: TimelineItemEntry,
 ): TimelineItemEntry[] | null => {
-  if (newEntry.role !== 'user') {
+  if (newEntry.type !== 'user') {
     return null
   }
 
   // Find optimistic timeline item (user timeline item with temporary ID) that matches content
   const optimisticIndex = timelineItems.findIndex(
     (item) =>
-      item.role === 'user' &&
+      item.type === 'user' &&
       item.content === newEntry.content &&
       item.id !== newEntry.id,
   )
@@ -50,22 +51,18 @@ const handleOptimisticUserUpdate = (
   return null
 }
 
-type UseRealtimeTimelineItemsFunc = (
+export function useRealtimeTimelineItems(
   designSessionId: string,
-  timelineItems: TimelineItemType[],
-) => {
-  timelineItems: TimelineItemEntry[]
-  addOrUpdateTimelineItem: (newChatEntry: TimelineItemEntry) => void
-}
-
-export const useRealtimeTimelineItems: UseRealtimeTimelineItemsFunc = (
-  designSessionId,
-  _timelineItems,
-) => {
-  // Initialize timeline items with existing timeline items (no welcome message)
-  const initialTimelineItems = _timelineItems.map((item) => {
-    return convertTimelineItemToChatEntry(item)
-  })
+  initialTimelineItems: TimelineItemEntry[],
+) {
+  const [error, setError] = useState<Error | null>(null)
+  const handleError = useCallback((err: unknown) => {
+    setError(
+      err instanceof Error
+        ? err
+        : new Error('Realtime versions update processing failed'),
+    )
+  }, [])
 
   const [timelineItems, setTimelineItems] =
     useState<TimelineItemEntry[]>(initialTimelineItems)
@@ -106,43 +103,60 @@ export const useRealtimeTimelineItems: UseRealtimeTimelineItemsFunc = (
     [],
   )
 
-  // Handle new timeline items from realtime subscription
   const handleNewTimelineItem = useCallback(
-    (newTimelineItem: Tables<'timeline_items'>) => {
-      // Convert database timeline item to TimelineItemEntry format
-      const timelineItemEntry = convertTimelineItemToChatEntry(newTimelineItem)
+    (newTimelineItem: TimelineItem) => {
+      const timelineItemEntry =
+        convertTimelineItemToTimelineItemEntry(newTimelineItem)
 
       // TODO: Implement efficient duplicate checking - Use Set/Map for O(1) duplicate checking instead of O(n) array.some()
       // TODO: Implement smart auto-scroll - Consider user's scroll position and only auto-scroll when user is at bottom
-
       addOrUpdateTimelineItem(timelineItemEntry)
     },
     [addOrUpdateTimelineItem],
   )
 
-  // TODO: Implement comprehensive error handling - Add user notifications, retry logic, and distinguish between fatal/temporary errors
-  const handleRealtimeError = useCallback((_error: Error) => {
-    // TODO: Add user notification system and automatic retry mechanism
-    // console.error('Realtime subscription error:', error)
-  }, [])
-
-  // TODO: Add network failure handling - Implement reconnection logic and offline timeline item sync
-  // TODO: Add authentication/authorization validation - Verify user permissions for realtime subscription
-  // Set up realtime subscription for new timeline items
   useEffect(() => {
-    const subscription = setupRealtimeSubscription(
-      designSessionId,
-      handleNewTimelineItem,
-      handleRealtimeError,
-    )
+    const supabase = createClient()
+    const channel = supabase
+      .channel(`timeline_items:${designSessionId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'timeline_items',
+          filter: `design_session_id=eq.${designSessionId}`,
+        },
+        (payload) => {
+          try {
+            const parsed = v.safeParse(timelineItemSchema, payload.new)
+            if (!parsed.success) {
+              throw new Error('Invalid timeline item format')
+            }
+
+            const updatedTimelineItem = parsed.output
+            if (updatedTimelineItem.design_session_id === designSessionId) {
+              handleNewTimelineItem(updatedTimelineItem)
+            }
+          } catch (error) {
+            handleError(error)
+          }
+        },
+      )
+      .subscribe((status) => {
+        if (status === 'CHANNEL_ERROR') {
+          handleError(new Error('Failed to subscribe to timeline items'))
+        }
+      })
 
     return () => {
-      subscription.unsubscribe()
+      channel.unsubscribe()
     }
-  }, [designSessionId, handleNewTimelineItem, handleRealtimeError])
+  }, [designSessionId, handleError, handleNewTimelineItem])
 
   return {
     timelineItems,
+    error,
     addOrUpdateTimelineItem,
   }
 }

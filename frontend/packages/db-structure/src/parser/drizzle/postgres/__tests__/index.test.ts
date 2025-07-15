@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest'
-import type { Table } from '../../schema/index.js'
-import { aColumn, anIndex, aSchema, aTable } from '../../schema/index.js'
-import { createParserTestCases } from '../__tests__/index.js'
-import { processor as _processor } from './index.js'
+import { createParserTestCases } from '@/parser/__tests__/index.js'
+import type { Constraint, Table } from '@/schema/index.js'
+import { aColumn, anIndex, aSchema, aTable } from '@/schema/index.js'
+import { processor as _processor } from '../index.js'
 
 describe(_processor, () => {
   const userTable = (override?: Partial<Table>) =>
@@ -780,7 +780,7 @@ describe(_processor, () => {
       // Verify multiple FKs in one table
       const commentsFKs = value.tables['comments']?.constraints || {}
       const foreignKeyCount = Object.values(commentsFKs).filter(
-        (c) => c.type === 'FOREIGN KEY',
+        (c: Constraint) => c.type === 'FOREIGN KEY',
       ).length
       expect(foreignKeyCount).toBe(2)
     })
@@ -805,7 +805,7 @@ describe(_processor, () => {
       // Find the FK constraint (name might be different)
       const constraints = value.tables['posts']?.constraints || {}
       const fkConstraint = Object.values(constraints).find(
-        (c) => c.type === 'FOREIGN KEY',
+        (c: Constraint) => c.type === 'FOREIGN KEY',
       )
 
       expect(fkConstraint).toBeDefined()

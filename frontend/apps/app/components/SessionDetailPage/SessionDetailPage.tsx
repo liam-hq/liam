@@ -39,8 +39,6 @@ export const SessionDetailPage: FC<Props> = async ({ designSessionId }) => {
   return (
     <SessionDetailPageClient
       designSessionWithTimelineItems={designSessionWithTimelineItems}
-      buildingSchemaId={buildingSchema.id}
-      latestVersionNumber={latestVersion?.number}
       initialSchema={initialSchema}
       initialPrevSchema={initialPrevSchema}
       initialCurrentVersion={latestVersion}

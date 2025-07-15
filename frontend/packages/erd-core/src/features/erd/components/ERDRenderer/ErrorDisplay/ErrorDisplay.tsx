@@ -16,7 +16,7 @@ type Props = {
 
 export const ErrorDisplay: FC<Props> = ({ errors }) => {
   const error = errors[0]
-  if (!error) return <></>
+  if (!error) return null
   return (
     <div className={styles.wrapper}>
       {error.name !== 'NetworkError' && (

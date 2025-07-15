@@ -1,5 +1,6 @@
 import { configure } from '@trigger.dev/sdk'
 
+export type { DeepModelingPayload } from './trigger/deepModelingWorkflowTask'
 export { deepModelingWorkflowTask } from './trigger/deepModelingWorkflowTask'
 export { analyzeRepositoryTask } from './trigger/jobs'
 

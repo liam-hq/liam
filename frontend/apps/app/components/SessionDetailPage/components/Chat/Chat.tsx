@@ -2,20 +2,17 @@
 
 import type { Schema } from '@liam-hq/db-structure'
 import { type FC, useTransition } from 'react'
-import { generateTimelineItemId } from '@/features/timelineItems/services/timelineItemHelpers'
-import type { TimelineItemEntry } from '@/features/timelineItems/types'
+import type { TimelineItemEntry } from '../../types'
 import styles from './Chat.module.css'
 import { ChatInput } from './components/ChatInput'
 import { TimelineItem } from './components/TimelineItem'
 import { sendChatMessage } from './services'
+import { generateTimelineItemId } from './services/timelineItemHelpers'
 import { useScrollToBottom } from './useScrollToBottom'
 
 type Props = {
   schemaData: Schema
   designSessionId: string
-  organizationId: string
-  buildingSchemaId: string
-  latestVersionNumber?: number
   timelineItems: TimelineItemEntry[]
   onMessageSend: (entry: TimelineItemEntry) => void
 }
@@ -23,9 +20,6 @@ type Props = {
 export const Chat: FC<Props> = ({
   schemaData,
   designSessionId,
-  organizationId,
-  buildingSchemaId,
-  latestVersionNumber,
   timelineItems,
   onMessageSend,
 }) => {
@@ -38,12 +32,8 @@ export const Chat: FC<Props> = ({
   const startAIResponse = async (content: string) => {
     // Send chat message to API
     const result = await sendChatMessage({
-      timelineItems,
       userInput: content,
       designSessionId,
-      organizationId,
-      buildingSchemaId,
-      latestVersionNumber,
     })
 
     if (result.success) {
@@ -57,7 +47,7 @@ export const Chat: FC<Props> = ({
     const userMessage: TimelineItemEntry = {
       id: generateTimelineItemId('user'),
       content,
-      role: 'user',
+      type: 'user',
       timestamp: new Date(),
     }
     onMessageSend(userMessage)

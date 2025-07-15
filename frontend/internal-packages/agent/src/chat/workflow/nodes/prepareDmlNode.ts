@@ -1,6 +1,7 @@
 import type { RunnableConfig } from '@langchain/core/runnables'
 import { DMLGenerationAgent } from '../../../langchain/agents/dmlGenerationAgent/agent'
 import type { Usecase } from '../../../langchain/agents/qaGenerateUsecaseAgent/agent'
+import { convertSchemaToText } from '../../../utils/convertSchemaToText'
 import { getConfigurable } from '../shared/getConfigurable'
 import type { WorkflowState } from '../types'
 import { logAssistantMessage } from '../utils/timelineLogger'
@@ -84,10 +85,14 @@ export async function prepareDmlNode(
   // Format use cases for the agent
   const formattedUseCases = formatUseCases(state.generatedUsecases)
 
+  // Convert schema to text for additional context
+  const schemaContext = convertSchemaToText(state.schemaData)
+
   // Generate DML statements
   const result = await dmlAgent.generate({
     schemaSQL: state.ddlStatements,
     formattedUseCases,
+    schemaContext,
   })
 
   // Validate result

@@ -4,7 +4,7 @@ import { logger, task } from '@trigger.dev/sdk'
 import { createClient } from '../libs/supabase'
 
 // Define type excluding schemaData (repositories and logger are now passed via config)
-type DeepModelingPayload = Omit<DeepModelingParams, 'schemaData'>
+export type DeepModelingPayload = Omit<DeepModelingParams, 'schemaData'>
 
 function createWorkflowLogger(): NodeLogger {
   return {

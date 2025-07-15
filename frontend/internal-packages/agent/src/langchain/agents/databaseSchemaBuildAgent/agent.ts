@@ -1,40 +1,58 @@
+import {
+  AIMessage,
+  type BaseMessage,
+  SystemMessage,
+} from '@langchain/core/messages'
 import { ChatOpenAI } from '@langchain/openai'
 import { operationsSchema } from '@liam-hq/db-structure'
 import { toJsonSchema } from '@valibot/to-json-schema'
+import { ok, Result, ResultAsync } from 'neverthrow'
 import * as v from 'valibot'
 import { createLangfuseHandler } from '../../utils/telemetry'
-import type { ChatAgent, SchemaAwareChatVariables } from '../../utils/types'
-import { buildAgentPrompt } from './prompts'
+import { type DesignAgentPromptVariables, designAgentPrompt } from './prompts'
 
 // Define the response schema
-const buildAgentResponseSchema = v.object({
+const designResponseSchema = v.object({
   message: v.string(),
-  schemaChanges: operationsSchema,
+  operations: operationsSchema,
 })
 
-export type BuildAgentResponse = v.InferOutput<typeof buildAgentResponseSchema>
+export type DesignResponse = v.InferOutput<typeof designResponseSchema>
+export type InvokeResult = {
+  message: AIMessage
+  operations: DesignResponse['operations']
+}
 
-export class DatabaseSchemaBuildAgent
-  implements ChatAgent<SchemaAwareChatVariables, BuildAgentResponse>
-{
-  private model: ReturnType<ChatOpenAI['withStructuredOutput']>
+const jsonSchema = toJsonSchema(designResponseSchema)
+const model = new ChatOpenAI({
+  model: 'o4-mini',
+  callbacks: [createLangfuseHandler()],
+}).withStructuredOutput(jsonSchema)
 
-  constructor() {
-    const baseModel = new ChatOpenAI({
-      model: 'o4-mini',
-      callbacks: [createLangfuseHandler()],
-    })
+export const invokeDesignAgent = (
+  variables: DesignAgentPromptVariables,
+  messages: BaseMessage[],
+): ResultAsync<InvokeResult, Error> => {
+  const formatPrompt = ResultAsync.fromSafePromise(
+    designAgentPrompt.format(variables),
+  )
+  const invoke = ResultAsync.fromThrowable(
+    (systemPrompt: string) =>
+      model.invoke([new SystemMessage(systemPrompt), ...messages]),
+    (error) => new Error(`Failed to invoke design agent: ${error}`),
+  )
+  const parse = Result.fromThrowable(
+    (response: unknown) => v.parse(designResponseSchema, response),
+    (error) => new Error(`Failed to parse design agent response: ${error}`),
+  )
 
-    const jsonSchema = toJsonSchema(buildAgentResponseSchema)
-    this.model = baseModel.withStructuredOutput(jsonSchema)
-  }
-
-  async generate(
-    variables: SchemaAwareChatVariables,
-  ): Promise<BuildAgentResponse> {
-    const formattedPrompt = await buildAgentPrompt.format(variables)
-    const rawResponse = await this.model.invoke(formattedPrompt)
-
-    return v.parse(buildAgentResponseSchema, rawResponse)
-  }
+  return formatPrompt
+    .andThen(invoke)
+    .andThen(parse)
+    .andThen((parsed) =>
+      ok({
+        message: new AIMessage(parsed.message),
+        operations: parsed.operations,
+      }),
+    )
 }

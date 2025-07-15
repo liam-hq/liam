@@ -123,8 +123,8 @@ export const TableNameMenuButton: FC<Props> = ({
         tooltip={name}
         showtooltip={isTruncated}
       >
+        {/* biome-ignore lint/a11y/useSemanticElements: Using div with button role to avoid button-in-button nesting */}
         <div
-          // biome-ignore lint/a11y/useSemanticElements: Implemented with div button to be button in button
           role="button"
           tabIndex={0}
           onClick={handleTableSelection}

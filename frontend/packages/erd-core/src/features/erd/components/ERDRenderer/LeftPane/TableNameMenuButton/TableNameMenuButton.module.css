@@ -16,7 +16,8 @@
 }
 
 .active {
-  background: linear-gradient(
+  background:
+    linear-gradient(
       0deg,
       var(--primary-accent-overlay) 0%,
       var(--primary-accent-overlay) 100%
@@ -24,7 +25,8 @@
 }
 
 .active:hover {
-  background: linear-gradient(
+  background:
+    linear-gradient(
       0deg,
       var(--primary-accent-overlay-hover) 0%,
       var(--primary-accent-overlay-hover) 100%

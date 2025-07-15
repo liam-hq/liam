@@ -1,4 +1,6 @@
+import { AIMessage } from '@langchain/core/messages'
 import type { Schema } from '@liam-hq/db-structure'
+import { ResultAsync } from 'neverthrow'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { type DeepModelingParams, deepModeling } from './deepModeling'
 import type { Repositories, SchemaRepository } from './repositories'
@@ -6,9 +8,13 @@ import type { NodeLogger } from './utils/nodeLogger'
 
 // Mock the agents
 vi.mock('./langchain/agents', () => ({
-  DatabaseSchemaBuildAgent: vi.fn(),
   QAGenerateUsecaseAgent: vi.fn(),
   PMAnalysisAgent: vi.fn(),
+}))
+
+// Mock the design agent
+vi.mock('./langchain/agents/databaseSchemaBuildAgent/agent', () => ({
+  invokeDesignAgent: vi.fn(),
 }))
 
 // Mock the schema converter
@@ -44,13 +50,10 @@ vi.mock('@liam-hq/pglite-server', () => ({
 
 describe('Chat Workflow', () => {
   let mockSchemaData: Schema
-  let mockAgent: {
-    generate: ReturnType<typeof vi.fn>
-  }
   let mockPMAnalysisAgent: {
     analyzeRequirements: ReturnType<typeof vi.fn>
   }
-  let MockDatabaseSchemaBuildAgent: ReturnType<typeof vi.fn>
+  let mockInvokeDesignAgent: ReturnType<typeof vi.fn>
   let MockQAGenerateUsecaseAgent: ReturnType<typeof vi.fn>
   let MockPMAnalysisAgent: ReturnType<typeof vi.fn>
   let mockRepositories: Repositories
@@ -133,7 +136,7 @@ describe('Chat Workflow', () => {
       expect(result.value.text).toBe('Mocked agent response')
       expect(typeof result.value.text).toBe('string')
     }
-    expect(mockAgent.generate).toHaveBeenCalledOnce()
+    expect(mockInvokeDesignAgent).toHaveBeenCalledOnce()
 
     return result
   }
@@ -144,10 +147,11 @@ describe('Chat Workflow', () => {
 
     // Get the mocked modules
     const agentsModule = await import('./langchain/agents')
-
-    MockDatabaseSchemaBuildAgent = vi.mocked(
-      agentsModule.DatabaseSchemaBuildAgent,
+    const designAgentModule = await import(
+      './langchain/agents/databaseSchemaBuildAgent/agent'
     )
+
+    mockInvokeDesignAgent = vi.mocked(designAgentModule.invokeDesignAgent)
     MockPMAnalysisAgent = vi.mocked(agentsModule.PMAnalysisAgent)
     MockQAGenerateUsecaseAgent = vi.mocked(agentsModule.QAGenerateUsecaseAgent)
 
@@ -179,13 +183,15 @@ describe('Chat Workflow', () => {
     // Create mock schema data
     mockSchemaData = createMockSchema()
 
-    // Mock agent
-    mockAgent = {
-      generate: vi.fn().mockResolvedValue({
-        message: 'Mocked agent response',
-        schemaChanges: [],
-      }),
-    }
+    // Mock design agent response
+    mockInvokeDesignAgent.mockResolvedValue(
+      ResultAsync.fromSafePromise(
+        Promise.resolve({
+          message: new AIMessage('Mocked agent response'),
+          operations: [],
+        }),
+      ),
+    )
 
     // Mock PM Analysis agent
     mockPMAnalysisAgent = {
@@ -200,8 +206,7 @@ describe('Chat Workflow', () => {
       }),
     }
 
-    // Setup agent mocks
-    MockDatabaseSchemaBuildAgent.mockImplementation(() => mockAgent)
+    // Agent mock is already set up above
     MockPMAnalysisAgent.mockImplementation(() => mockPMAnalysisAgent)
     MockQAGenerateUsecaseAgent.mockImplementation(() => ({
       generate: vi.fn().mockResolvedValue({
@@ -286,7 +291,7 @@ describe('Chat Workflow', () => {
     it('should handle Build mode with structured JSON response and schema changes', async () => {
       const structuredResponse = {
         message: 'Added created_at column to users table',
-        schemaChanges: [
+        operations: [
           {
             op: 'add',
             path: '/tables/users/columns/created_at',
@@ -300,7 +305,14 @@ describe('Chat Workflow', () => {
         ],
       }
 
-      mockAgent.generate.mockResolvedValue(structuredResponse)
+      mockInvokeDesignAgent.mockResolvedValue(
+        ResultAsync.fromSafePromise(
+          Promise.resolve({
+            message: new AIMessage(structuredResponse.message),
+            operations: structuredResponse.operations,
+          }),
+        ),
+      )
 
       const params = createBaseParams({
         userInput: 'Add a created_at timestamp column to the users table',
@@ -333,10 +345,14 @@ describe('Chat Workflow', () => {
     })
 
     it('should handle Build mode with invalid JSON response gracefully', async () => {
-      mockAgent.generate.mockResolvedValue({
-        message: 'Invalid JSON response',
-        schemaChanges: [],
-      })
+      mockInvokeDesignAgent.mockResolvedValue(
+        ResultAsync.fromSafePromise(
+          Promise.resolve({
+            message: new AIMessage('Invalid JSON response'),
+            operations: [],
+          }),
+        ),
+      )
 
       const params = createBaseParams({
         userInput: 'Add a created_at timestamp column to the users table',
@@ -354,7 +370,7 @@ describe('Chat Workflow', () => {
     it('should handle schema update failure', async () => {
       const structuredResponse = {
         message: 'Attempted to add created_at column',
-        schemaChanges: [
+        operations: [
           {
             op: 'add',
             path: '/tables/users/columns/created_at',
@@ -363,7 +379,14 @@ describe('Chat Workflow', () => {
         ],
       }
 
-      mockAgent.generate.mockResolvedValue(structuredResponse)
+      mockInvokeDesignAgent.mockResolvedValue(
+        ResultAsync.fromSafePromise(
+          Promise.resolve({
+            message: new AIMessage(structuredResponse.message),
+            operations: structuredResponse.operations,
+          }),
+        ),
+      )
       vi.mocked(mockSchemaRepository.createVersion).mockResolvedValue({
         success: false,
         error: 'Database constraint violation',
@@ -390,7 +413,7 @@ describe('Chat Workflow', () => {
     it('should handle schema update exception', async () => {
       const structuredResponse = {
         message: 'Attempted to add created_at column',
-        schemaChanges: [
+        operations: [
           {
             op: 'add',
             path: '/tables/users/columns/created_at',
@@ -399,7 +422,14 @@ describe('Chat Workflow', () => {
         ],
       }
 
-      mockAgent.generate.mockResolvedValue(structuredResponse)
+      mockInvokeDesignAgent.mockResolvedValue(
+        ResultAsync.fromSafePromise(
+          Promise.resolve({
+            message: new AIMessage(structuredResponse.message),
+            operations: structuredResponse.operations,
+          }),
+        ),
+      )
       vi.mocked(mockSchemaRepository.createVersion).mockRejectedValue(
         new Error('Network error'),
       )
@@ -429,7 +459,9 @@ describe('Chat Workflow', () => {
 
   describe('Error Handling', () => {
     it('should handle agent generation errors', async () => {
-      mockAgent.generate.mockRejectedValue(new Error('Agent generation failed'))
+      mockInvokeDesignAgent.mockRejectedValue(
+        new Error('Agent generation failed'),
+      )
       const params = createBaseParams()
 
       const result = await deepModeling(params, createConfig())
@@ -440,19 +472,17 @@ describe('Chat Workflow', () => {
       }
     })
 
-    it('should handle agent creation failure', async () => {
-      MockDatabaseSchemaBuildAgent.mockImplementation(() => {
-        throw new Error('Failed to create DatabaseSchemaBuildAgent')
-      })
+    it('should handle agent invocation failure', async () => {
+      mockInvokeDesignAgent.mockRejectedValue(
+        new Error('Failed to invoke design agent'),
+      )
       const params = createBaseParams()
 
       const result = await deepModeling(params, createConfig())
 
       expect(result.isErr()).toBe(true)
       if (result.isErr()) {
-        expect(result.error.message).toBe(
-          'Failed to create DatabaseSchemaBuildAgent',
-        )
+        expect(result.error.message).toBe('Failed to invoke design agent')
       }
     })
 
@@ -485,12 +515,12 @@ describe('Chat Workflow', () => {
   })
 
   describe('Agent Selection', () => {
-    it('should instantiate DatabaseSchemaBuildAgent', async () => {
+    it('should invoke design agent', async () => {
       const params = createBaseParams({})
 
       await deepModeling(params, createConfig())
 
-      expect(MockDatabaseSchemaBuildAgent).toHaveBeenCalledOnce()
+      expect(mockInvokeDesignAgent).toHaveBeenCalledOnce()
     })
   })
 

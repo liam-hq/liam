@@ -1,9 +1,10 @@
 import type { SupabaseClientType } from '@liam-hq/db'
+import type { DesignSessionWithTimelineItems } from '../../types'
 
-export async function fetchDesignSessionWithTimelineItems(
+export const fetchDesignSessionWithTimelineItems = async (
   supabase: SupabaseClientType,
   designSessionId: string,
-) {
+): Promise<DesignSessionWithTimelineItems | null> => {
   const { data, error } = await supabase
     .from('design_sessions')
     .select(`
