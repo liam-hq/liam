@@ -6,7 +6,7 @@ import { useTableSelection } from '@/features/erd/hooks'
 import { useSchema } from '@/stores'
 import { TableNode } from '../../../ERDContent/components'
 import { CommandPaletteSearchInput } from '../CommandPaletteSearchInput'
-import type { InputMode } from '../types'
+import type { InputMode, Suggestion } from '../types'
 import styles from './CommandPaletteContent.module.css'
 
 const getTableLinkHref = (activeTableName: string) => {
@@ -20,10 +20,14 @@ type Props = {
 }
 
 export const CommandPaletteContent: FC<Props> = ({ closeDialog }) => {
-  const schema = useSchema()
   const [inputMode, setInputMode] = useState<InputMode>({ type: 'default' })
-  const [tableName, setTableName] = useState<string | null>(null)
-  const table = schema.current.tables[tableName ?? '']
+  const [selectedOption, setSelectedOption] = useState<Suggestion | null>(null)
+
+  const schema = useSchema()
+  const table =
+    selectedOption?.type === 'table'
+      ? schema.current.tables[selectedOption.name]
+      : undefined
   const { selectTable } = useTableSelection()
 
   const goToERD = useCallback(
@@ -37,33 +41,44 @@ export const CommandPaletteContent: FC<Props> = ({ closeDialog }) => {
   // Select option by pressing [Enter] key (with/without ⌘ key)
   useEffect(() => {
     const down = (event: KeyboardEvent) => {
-      if (!tableName) return
+      if (!selectedOption) return
 
-      if (event.key === 'Enter') {
-        if (event.metaKey || event.ctrlKey) {
-          window.open(getTableLinkHref(tableName))
-        } else {
-          goToERD(tableName)
+      if (selectedOption.type === 'table') {
+        const tableName = selectedOption.name
+        if (event.key === 'Enter') {
+          if (event.metaKey || event.ctrlKey) {
+            window.open(getTableLinkHref(tableName))
+          } else {
+            goToERD(tableName)
+          }
         }
       }
     }
 
     document.addEventListener('keydown', down)
     return () => document.removeEventListener('keydown', down)
-  }, [tableName])
+  }, [selectedOption])
 
   return (
     <Command
-      value={tableName ?? ''}
-      onValueChange={(v) => setTableName(v)}
-      filter={(value, search) =>
-        value.toLowerCase().includes(search.toLowerCase()) ? 1 : 0
+      value={
+        selectedOption ? `${selectedOption.type}|${selectedOption.name}` : ''
       }
+      onValueChange={(v) => {
+        const [type_, value] = v.split('|')
+        if ((type_ === 'command' || type_ === 'table') && value)
+          setSelectedOption({ type: type_, name: value })
+      }}
+      filter={(value, search) => {
+        return value.split('|')[1]?.toLowerCase().includes(search.toLowerCase())
+          ? 1
+          : 0
+      }}
     >
       <div className={styles.searchArea}>
         <CommandPaletteSearchInput
+          suggestion={selectedOption}
           inputMode={inputMode}
-          selectedOption={tableName}
           setInputMode={setInputMode}
         />
         <DialogClose asChild>
@@ -81,7 +96,11 @@ export const CommandPaletteContent: FC<Props> = ({ closeDialog }) => {
           <Command.Empty>No results found.</Command.Empty>
           <Command.Group heading="Tables">
             {Object.values(schema.current.tables).map((table) => (
-              <Command.Item key={table.name} value={table.name} asChild>
+              <Command.Item
+                key={table.name}
+                value={`table|${table.name}`}
+                asChild
+              >
                 <a
                   href={getTableLinkHref(table.name)}
                   onClick={(event) => {

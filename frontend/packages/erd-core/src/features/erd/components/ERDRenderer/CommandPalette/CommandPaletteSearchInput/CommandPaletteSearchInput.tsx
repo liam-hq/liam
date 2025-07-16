@@ -1,17 +1,17 @@
 import { Search } from '@liam-hq/ui'
 import { Command } from 'cmdk'
 import { type FC, useEffect, useMemo, useRef, useState } from 'react'
-import type { InputMode } from '../types'
+import type { InputMode, Suggestion } from '../types'
 import styles from './CommandPaletteSearchInput.module.css'
 
 type Props = {
-  selectedOption: string | null
+  suggestion: Suggestion | null
   inputMode: InputMode
   setInputMode: (inputMode: InputMode) => void
 }
 
 export const CommandPaletteSearchInput: FC<Props> = ({
-  selectedOption,
+  suggestion,
   inputMode,
   setInputMode,
 }) => {
@@ -22,21 +22,22 @@ export const CommandPaletteSearchInput: FC<Props> = ({
   const [searchText, setSearchText] = useState('')
 
   const { prefix, suffix } = useMemo(() => {
-    if (searchText === '') return { prefix: '', suffix: '' }
+    if (searchText === '' || suggestion === null)
+      return { prefix: '', suffix: '' }
 
-    const index = selectedOption
+    const index = suggestion.name
       ?.toLowerCase()
       .indexOf(searchText.toLowerCase())
     if (index === undefined) return { prefix: '', suffix: '' }
 
     return {
-      prefix: selectedOption?.slice(0, index),
-      suffix: selectedOption?.slice(
+      prefix: suggestion.name.slice(0, index),
+      suffix: suggestion.name.slice(
         index + searchText.length,
-        selectedOption.length,
+        suggestion.name.length,
       ),
     }
-  }, [searchText, selectedOption])
+  }, [searchText, suggestion])
 
   useEffect(() => {
     const inputPaddingLeft =
@@ -60,8 +61,8 @@ export const CommandPaletteSearchInput: FC<Props> = ({
               setInputMode({ type: 'command' })
               event.preventDefault()
             }
-            if (event.key === 'Tab' && selectedOption) {
-              setInputMode({ type: 'table', name: selectedOption })
+            if (event.key === 'Tab' && suggestion) {
+              setInputMode({ type: 'table', name: suggestion.name })
               setSearchText('')
               event.preventDefault()
             }
