@@ -4,10 +4,9 @@
   align-items: flex-start;
   justify-content: flex-start;
   gap: var(--spacing-1half);
-  background-color: rgba(247, 80, 73, 0.2);
+  background-color: var(--severity-critical-20);
   border-radius: var(--border-radius-base);
   padding: var(--spacing-2) var(--spacing-2half);
-  min-height: 34px;
   width: 100%;
   box-sizing: border-box;
 }
