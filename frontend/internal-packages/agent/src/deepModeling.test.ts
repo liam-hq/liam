@@ -2,28 +2,28 @@ import { AIMessage } from '@langchain/core/messages'
 import type { Schema } from '@liam-hq/db-structure'
 import { ResultAsync } from 'neverthrow'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { type DeepModelingParams, deepModeling } from './deepModeling'
-import type { Repositories, SchemaRepository } from './repositories'
-import type { NodeLogger } from './utils/nodeLogger'
+import { type DeepModelingParams, deepModeling } from './deepModeling.ts'
+import type { Repositories, SchemaRepository } from './repositories/index.ts'
+import type { NodeLogger } from './utils/nodeLogger.ts'
 
 // Mock the agents
-vi.mock('./langchain/agents', () => ({
+vi.mock('./langchain/agents/index.ts', () => ({
   QAGenerateUsecaseAgent: vi.fn(),
   PMAnalysisAgent: vi.fn(),
 }))
 
 // Mock the design agent
-vi.mock('./langchain/agents/databaseSchemaBuildAgent/agent', () => ({
+vi.mock('./langchain/agents/databaseSchemaBuildAgent/agent.ts', () => ({
   invokeDesignAgent: vi.fn(),
 }))
 
 // Mock the schema converter
-vi.mock('./utils/convertSchemaToText', () => ({
+vi.mock('./utils/convertSchemaToText.ts', () => ({
   convertSchemaToText: vi.fn(() => 'Mocked schema text'),
 }))
 
 // Mock DMLGenerationAgent directly
-vi.mock('./langchain/agents/dmlGenerationAgent/agent', () => ({
+vi.mock('./langchain/agents/dmlGenerationAgent/agent.ts', () => ({
   DMLGenerationAgent: vi.fn().mockImplementation(() => ({
     generate: vi.fn().mockResolvedValue({
       dmlStatements: '-- Mocked DML statements',
@@ -157,9 +157,9 @@ describe('Chat Workflow', () => {
     vi.clearAllMocks()
 
     // Get the mocked modules
-    const agentsModule = await import('./langchain/agents')
+    const agentsModule = await import('./langchain/agents/index.ts')
     const designAgentModule = await import(
-      './langchain/agents/databaseSchemaBuildAgent/agent'
+      './langchain/agents/databaseSchemaBuildAgent/agent.ts'
     )
 
     mockInvokeDesignAgent = vi.mocked(designAgentModule.invokeDesignAgent)

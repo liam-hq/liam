@@ -7,7 +7,7 @@ import { logAssistantMessage } from '../utils/timelineLogger'
 import {
   createOrUpdateArtifact,
   transformWorkflowStateToArtifact,
-} from '../utils/transformWorkflowStateToArtifact'
+} from '../utils/transformWorkflowStateToArtifact.ts'
 
 /**
  * Save artifacts if workflow state contains artifact data

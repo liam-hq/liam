@@ -2,6 +2,7 @@
   "name": "@liam-hq/agent",
   "private": true,
   "version": "0.1.0",
+  "type": "module",
   "main": "src/index.ts",
   "dependencies": {
     "@langchain/community": "0.3.47",

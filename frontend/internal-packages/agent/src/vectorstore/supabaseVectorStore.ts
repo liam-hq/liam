@@ -4,7 +4,7 @@ import { Document } from '@langchain/core/documents'
 import { OpenAIEmbeddings } from '@langchain/openai'
 import { createClient } from '@liam-hq/db'
 import type { Schema } from '@liam-hq/db-structure'
-import { convertSchemaToText } from '../utils/convertSchemaToText'
+import { convertSchemaToText } from '../utils/convertSchemaToText.ts'
 
 /**
  * Generates a hash for the schema data to detect changes
