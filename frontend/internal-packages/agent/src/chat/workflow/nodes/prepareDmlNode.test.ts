@@ -37,11 +37,14 @@ describe('prepareDmlNode', () => {
         updateTimelineItem: vi.fn(),
         getSchema: vi.fn(),
         getDesignSession: vi.fn(),
-        createVersion: vi.fn(),
+        createEmptyPatchVersion: vi.fn(),
+        updateVersion: vi.fn(),
         createTimelineItem: vi.fn().mockResolvedValue(undefined),
         createArtifact: vi.fn(),
         updateArtifact: vi.fn(),
         getArtifact: vi.fn(),
+        createWorkflowRun: vi.fn(),
+        updateWorkflowRunStatus: vi.fn(),
       },
     }
 

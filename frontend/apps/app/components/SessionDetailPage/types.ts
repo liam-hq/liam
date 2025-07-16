@@ -1,4 +1,4 @@
-import type { Tables } from '@liam-hq/db'
+import type { Database, Tables } from '@liam-hq/db'
 import type * as v from 'valibot'
 import type { timelineItemSchema } from './schema'
 
@@ -24,6 +24,9 @@ export type DesignSessionWithTimelineItems = Pick<
 > & {
   timeline_items: TimelineItem[]
 }
+
+export type WorkflowRunStatus =
+  Database['public']['Enums']['workflow_run_status']
 
 type BaseTimelineItemEntry = {
   id: string

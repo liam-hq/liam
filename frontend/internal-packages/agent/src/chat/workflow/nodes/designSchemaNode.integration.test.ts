@@ -27,7 +27,8 @@ describe('designSchemaNode -> executeDdlNode integration', () => {
 
   const mockRepository = {
     schema: {
-      createVersion: vi.fn(),
+      updateVersion: vi.fn(),
+      createEmptyPatchVersion: vi.fn(),
       createTimelineItem: vi.fn(),
       getSchema: vi.fn(),
       getDesignSession: vi.fn(),
@@ -63,6 +64,43 @@ describe('designSchemaNode -> executeDdlNode integration', () => {
     mockRepository.schema.createTimelineItem.mockResolvedValue({
       success: true,
       timelineItem: { id: 'test-timeline-id' } as const,
+    })
+    // Setup default successful version creation
+    mockRepository.schema.createEmptyPatchVersion.mockResolvedValue({
+      success: true,
+      versionId: 'test-version-id',
+    })
+    // Setup default successful version update
+    mockRepository.schema.updateVersion.mockResolvedValue({
+      success: true,
+      newSchema: {
+        tables: {
+          users: {
+            name: 'users',
+            comment: null,
+            columns: {
+              id: {
+                name: 'id',
+                type: 'INTEGER',
+                default: null,
+                check: null,
+                notNull: true,
+                comment: null,
+              },
+              name: {
+                name: 'name',
+                type: 'VARCHAR',
+                default: null,
+                check: null,
+                notNull: true,
+                comment: null,
+              },
+            },
+            constraints: {},
+            indexes: {},
+          },
+        },
+      },
     })
   })
 
@@ -110,39 +148,6 @@ describe('designSchemaNode -> executeDdlNode integration', () => {
         ],
       }),
     )
-
-    // Mock successful repository operation
-    mockRepository.schema.createVersion.mockResolvedValue({
-      success: true,
-      newSchema: {
-        tables: {
-          users: {
-            name: 'users',
-            comment: null,
-            columns: {
-              id: {
-                name: 'id',
-                type: 'INTEGER',
-                default: null,
-                check: null,
-                notNull: true,
-                comment: null,
-              },
-              name: {
-                name: 'name',
-                type: 'VARCHAR',
-                default: null,
-                check: null,
-                notNull: true,
-                comment: null,
-              },
-            },
-            constraints: {},
-            indexes: {},
-          },
-        },
-      },
-    })
 
     const initialState = createMockState(initialSchema)
 
@@ -212,7 +217,7 @@ describe('designSchemaNode -> executeDdlNode integration', () => {
     )
 
     // Mock repository operation that returns validation error
-    mockRepository.schema.createVersion.mockResolvedValue({
+    mockRepository.schema.updateVersion.mockResolvedValue({
       success: false,
       error: 'Invalid schema after applying changes: validation failed',
     })
@@ -258,7 +263,7 @@ describe('designSchemaNode -> executeDdlNode integration', () => {
     )
 
     // Mock repository failure
-    mockRepository.schema.createVersion.mockResolvedValue({
+    mockRepository.schema.updateVersion.mockResolvedValue({
       success: false,
       error: 'Database connection failed',
     })

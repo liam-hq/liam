@@ -70,17 +70,15 @@ User Request: ${state.userInput}`
  */
 const applySchemaChanges = async (
   operations: DesignResponse['operations'],
-  buildingSchemaId: string,
-  latestVersionNumber: number,
+  buildingSchemaVersionId: string,
   message: string,
   state: WorkflowState,
   repositories: Repositories,
 ): Promise<WorkflowState> => {
   await logAssistantMessage(state, repositories, 'Applying schema changes...')
 
-  const result = await repositories.schema.createVersion({
-    buildingSchemaId,
-    latestVersionNumber,
+  const result = await repositories.schema.updateVersion({
+    buildingSchemaVersionId,
     patch: operations,
   })
 
@@ -113,6 +111,7 @@ const applySchemaChanges = async (
  */
 const handleSchemaChanges = async (
   invokeResult: InvokeResult,
+  buildingSchemaVersionId: string,
   state: WorkflowState,
   repositories: Repositories,
 ): Promise<WorkflowState> => {
@@ -123,13 +122,9 @@ const handleSchemaChanges = async (
     }
   }
 
-  const buildingSchemaId = state.buildingSchemaId
-  const latestVersionNumber = state.latestVersionNumber
-
   return await applySchemaChanges(
     invokeResult.operations,
-    buildingSchemaId,
-    latestVersionNumber,
+    buildingSchemaVersionId,
     invokeResult.message.text,
     state,
     repositories,
@@ -154,6 +149,35 @@ export async function designSchemaNode(
   const { repositories } = configurableResult.value
 
   await logAssistantMessage(state, repositories, 'Designing database schema...')
+
+  // Create empty version at the beginning of the node
+  const buildingSchemaId = state.buildingSchemaId
+  const latestVersionNumber = state.latestVersionNumber
+
+  const createVersionResult = await repositories.schema.createEmptyPatchVersion(
+    {
+      buildingSchemaId,
+      latestVersionNumber,
+    },
+  )
+
+  if (!createVersionResult.success) {
+    const errorMessage =
+      createVersionResult.error || 'Failed to create new version'
+    await logAssistantMessage(state, repositories, 'Version creation failed')
+    return {
+      ...state,
+      error: new Error(errorMessage),
+    }
+  }
+
+  const buildingSchemaVersionId = createVersionResult.versionId
+
+  await logAssistantMessage(
+    state,
+    repositories,
+    'Created new schema version for updates...',
+  )
 
   const schemaText = convertSchemaToText(state.schemaData)
 
@@ -199,6 +223,7 @@ export async function designSchemaNode(
 
   const result = await handleSchemaChanges(
     invokeResult.value,
+    buildingSchemaVersionId,
     state,
     repositories,
   )

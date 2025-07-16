@@ -17,6 +17,7 @@
     "langfuse-langchain": "3.37.6",
     "langsmith": "0.3.34",
     "neverthrow": "8.2.0",
+    "uuid": "11.1.0",
     "valibot": "1.1.0"
   },
   "devDependencies": {
