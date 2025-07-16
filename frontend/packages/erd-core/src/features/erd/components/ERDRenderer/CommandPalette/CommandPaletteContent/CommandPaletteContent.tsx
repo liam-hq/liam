@@ -94,42 +94,46 @@ export const CommandPaletteContent: FC<Props> = ({ closeDialog }) => {
       <div className={styles.main}>
         <Command.List>
           <Command.Empty>No results found.</Command.Empty>
-          <Command.Group heading="Tables">
-            {Object.values(schema.current.tables).map((table) => (
-              <Command.Item
-                key={table.name}
-                value={`table|${table.name}`}
-                asChild
-              >
-                <a
-                  href={getTableLinkHref(table.name)}
-                  onClick={(event) => {
-                    // Do not call preventDefault to allow the default link behavior when ⌘ key is pressed
-                    if (event.ctrlKey || event.metaKey) {
-                      return
-                    }
-
-                    event.preventDefault()
-                    goToERD(table.name)
-                  }}
+          {(inputMode.type === 'default' || inputMode.type === 'table') && (
+            <Command.Group heading="Tables">
+              {Object.values(schema.current.tables).map((table) => (
+                <Command.Item
+                  key={table.name}
+                  value={`table|${table.name}`}
+                  asChild
                 >
-                  <Table2 className={styles.itemIcon} />
-                  <span className={styles.itemText}>{table.name}</span>
-                </a>
+                  <a
+                    href={getTableLinkHref(table.name)}
+                    onClick={(event) => {
+                      // Do not call preventDefault to allow the default link behavior when ⌘ key is pressed
+                      if (event.ctrlKey || event.metaKey) {
+                        return
+                      }
+
+                      event.preventDefault()
+                      goToERD(table.name)
+                    }}
+                  >
+                    <Table2 className={styles.itemIcon} />
+                    <span className={styles.itemText}>{table.name}</span>
+                  </a>
+                </Command.Item>
+              ))}
+            </Command.Group>
+          )}
+          {(inputMode.type === 'default' || inputMode.type === 'command') && (
+            <Command.Group heading="Command">
+              <Command.Item
+                value="command|Copy Link"
+                onSelect={async () => {
+                  navigator.clipboard.writeText(location.href)
+                }}
+              >
+                <Copy className={styles.itemIcon} />
+                <span className={styles.itemText}>Copy Link</span>
               </Command.Item>
-            ))}
-          </Command.Group>
-          <Command.Group heading="Command">
-            <Command.Item
-              value="command|Copy Link"
-              onSelect={async () => {
-                navigator.clipboard.writeText(location.href)
-              }}
-            >
-              <Copy className={styles.itemIcon} />
-              <span className={styles.itemText}>Copy Link</span>
-            </Command.Item>
-          </Command.Group>
+            </Command.Group>
+          )}
         </Command.List>
         <div
           className={styles.previewContainer}
