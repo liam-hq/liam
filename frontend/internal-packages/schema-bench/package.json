@@ -6,7 +6,9 @@
   "main": "src/index.ts",
   "dependencies": {
     "@huggingface/transformers": "3.3.3",
+    "@liam-hq/agent": "workspace:*",
     "@liam-hq/db-structure": "workspace:*",
+    "@supabase/supabase-js": "2.47.10",
     "neverthrow": "8.2.0",
     "openai": "5.9.2",
     "valibot": "1.1.0"
@@ -20,6 +22,7 @@
   "scripts": {
     "evaluateSchema": "node --experimental-strip-types src/cli/evaluateSchema.ts",
     "executeOpenai": "node --experimental-strip-types src/cli/executeOpenai.ts",
+    "executeLiamDB": "node --experimental-strip-types src/cli/executeLiamDB.ts",
     "fmt": "concurrently \"pnpm:fmt:*\"",
     "fmt:biome": "biome check --write --unsafe .",
     "fmt:eslint": "eslint --fix .",
