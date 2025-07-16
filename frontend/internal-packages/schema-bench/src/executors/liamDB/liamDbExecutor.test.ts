@@ -1,5 +1,5 @@
-import { describe, expect, it, vi } from 'vitest'
 import { err, ok } from 'neverthrow'
+import { describe, expect, it, vi } from 'vitest'
 import { createLiamDBExecutor } from './liamDbExecutor.ts'
 
 // Mock dependencies
@@ -179,7 +179,9 @@ describe('createLiamDBExecutor', () => {
 
       expect(result.isErr()).toBe(true)
       if (result.isErr()) {
-        expect(result.error.message).toContain('Failed to create design session')
+        expect(result.error.message).toContain(
+          'Failed to create design session',
+        )
       }
     })
 
