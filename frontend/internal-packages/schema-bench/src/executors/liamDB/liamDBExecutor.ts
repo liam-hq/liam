@@ -1,6 +1,5 @@
 import { createSupabaseRepositories, deepModeling } from '@liam-hq/agent'
 import type { SupabaseClientType } from '@liam-hq/db'
-import type { Schema } from '@liam-hq/db-structure'
 import { createClient } from '@supabase/supabase-js'
 import { err, ok, type Result } from 'neverthrow'
 import type {
@@ -10,10 +9,11 @@ import type {
 } from './types.ts'
 
 export const createLiamDBExecutor = (config: LiamDBExecutorConfig) => {
-  const supabase = createClient(
+  // @ts-expect-error - Type mismatch between Supabase client versions
+  const supabase: SupabaseClientType = createClient(
     config.supabaseUrl,
     config.supabaseAnonKey,
-  ) as unknown as SupabaseClientType
+  )
   const organizationId = config.organizationId
 
   const execute = async (
@@ -170,7 +170,8 @@ const runDeepModeling = async (
     const deepModelingResult = await deepModeling(
       {
         userInput,
-        schemaData: schemaResult.data as Schema,
+        // @ts-expect-error - Schema type mismatch between packages
+        schemaData: schemaResult.data,
         history: [], // Empty history for first message
         organizationId: organizationId,
         buildingSchemaId: buildingSchema.id,
@@ -183,11 +184,11 @@ const runDeepModeling = async (
         configurable: {
           repositories,
           logger: {
-            debug: console.debug,
-            log: console.log,
-            info: console.info,
-            warn: console.warn,
-            error: console.error,
+            debug: () => {},
+            log: () => {},
+            info: () => {},
+            warn: () => {},
+            error: () => {},
           },
         },
       },
@@ -224,5 +225,6 @@ const fetchSchema = async (
     )
   }
 
-  return ok(data.schema as LiamDBExecutorOutput)
+  // @ts-expect-error - Schema type from database
+  return ok(data.schema)
 }
