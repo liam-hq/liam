@@ -114,7 +114,7 @@ const mockTimelineItems: TimelineItemEntry[] = [
   },
   {
     id: 'timeline-assistant-error-1',
-    type: 'assistant',
+    type: 'error',
     content: `Error Details  
 Sorry, an error occurred during processing: Cannot perform an add operation at the desired path name: OPERATION_PATH_CANNOT_ADD index: 0 operation: { "op": "add", "path": "/tables/greenhouses/constraints/greenhouses_pkey", "value": { "type": "PRIMARY KEY", "name": "greenhouses_pkey", "columnNames": [ "id" ] } } tree: { "tables": {} }`,
     timestamp: new Date('2025-07-14T06:39:55Z'),
@@ -157,9 +157,9 @@ Sorry, an error occurred during processing: Cannot perform an add operation at t
   },
   {
     id: 'timeline-assistant-error-2',
-    type: 'assistant',
-    content: `Error Details  
-Sorry, an error occurred during processing: Version conflict: The schema has been modified since you last loaded it`,
+    type: 'error',
+    content:
+      'Version conflict: The schema has been modified since you last loaded it',
     timestamp: new Date('2025-07-14T06:40:20Z'),
   },
 ]
