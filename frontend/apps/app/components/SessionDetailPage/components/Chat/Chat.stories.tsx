@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react'
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import type { TimelineItemEntry } from '../../types'
 import { Chat } from './Chat'
 import { AnimationControls } from './components/AnimationControls'
@@ -465,26 +465,29 @@ const InteractiveDemo = () => {
     getAnimationDelays,
   ])
 
-  const getAnimationDelay = (index: number) => {
-    const animationDelays = getAnimationDelays()
-    if (
-      index >= ANIMATION_THRESHOLDS.RECOVERY_START_INDEX &&
-      index < timelineItemsState.length + recoverySteps.length
-    ) {
-      const recoveryStepIndex =
-        index - ANIMATION_THRESHOLDS.RECOVERY_START_INDEX
-      const currentRecoveryStep = recoverySteps[recoveryStepIndex]
-      const isHourglassStep =
-        currentRecoveryStep && !currentRecoveryStep.willFail
-      return isHourglassStep
-        ? animationDelays.HOURGLASS_TASK
-        : index - ANIMATION_THRESHOLDS.RECOVERY_START_INDEX <
-            recoverySteps.length
-          ? animationDelays.NORMAL_TASK
-          : animationDelays.QUICK_TASK
-    }
-    return animationDelays.NORMAL_TASK
-  }
+  const getAnimationDelay = useCallback(
+    (index: number) => {
+      const animationDelays = getAnimationDelays()
+      if (
+        index >= ANIMATION_THRESHOLDS.RECOVERY_START_INDEX &&
+        index < timelineItemsState.length + recoverySteps.length
+      ) {
+        const recoveryStepIndex =
+          index - ANIMATION_THRESHOLDS.RECOVERY_START_INDEX
+        const currentRecoveryStep = recoverySteps[recoveryStepIndex]
+        const isHourglassStep =
+          currentRecoveryStep && !currentRecoveryStep.willFail
+        return isHourglassStep
+          ? animationDelays.HOURGLASS_TASK
+          : index - ANIMATION_THRESHOLDS.RECOVERY_START_INDEX <
+              recoverySteps.length
+            ? animationDelays.NORMAL_TASK
+            : animationDelays.QUICK_TASK
+      }
+      return animationDelays.NORMAL_TASK
+    },
+    [timelineItemsState.length, recoverySteps],
+  )
 
   // Handle error display and recovery animation
   useEffect(() => {
