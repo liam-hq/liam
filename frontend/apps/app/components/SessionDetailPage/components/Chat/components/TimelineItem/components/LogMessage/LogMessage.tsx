@@ -19,23 +19,24 @@ export const LogMessage: FC<LogMessageProps> = ({ content }) => {
     const hasCheckOrCross = line.includes('✓') || line.includes('✗')
 
     // Replace ✓, ✗, ⏳, and style • lines
-    const parts = line.split(/(\s*✓\s*|\s*✗\s*|⏳)/).map((part) => {
+    const parts = line.split(/(\s*✓\s*|\s*✗\s*|⏳)/).map((part, partIndex) => {
+      const keyBase = `${lineIndex}-${part.trim()}-${partIndex}`
       if (part.includes('✓')) {
         return (
-          <span key={`check-${part}`} className={styles.checkmark}>
+          <span key={`check-${keyBase}`} className={styles.checkmark}>
             {part}
           </span>
         )
       }
       if (part.includes('✗')) {
         return (
-          <span key={`cross-${part}`} className={styles.crossmark}>
+          <span key={`cross-${keyBase}`} className={styles.crossmark}>
             {part}
           </span>
         )
       }
       if (part === '⏳') {
-        return <span key="hourglass-symbol">{part}</span>
+        return <span key={`hourglass-${keyBase}`}>{part}</span>
       }
       return part
     })
