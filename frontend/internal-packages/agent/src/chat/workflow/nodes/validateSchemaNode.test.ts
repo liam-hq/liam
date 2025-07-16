@@ -41,7 +41,7 @@ describe('validateSchemaNode', () => {
         getSchema: vi.fn(),
         getDesignSession: vi.fn(),
         createVersion: vi.fn(),
-        createTimelineItem: vi.fn(),
+        createTimelineItem: vi.fn().mockResolvedValue({}),
         createArtifact: vi.fn(),
         updateArtifact: vi.fn(),
         getArtifact: vi.fn(),
@@ -68,7 +68,7 @@ describe('validateSchemaNode', () => {
     expect(result).toEqual(state)
   })
 
-  it('should execute only DML when DDL is empty', async () => {
+  it('should execute DML statements for each use case', async () => {
     const mockResults: SqlResult[] = [
       {
         success: true,
@@ -86,40 +86,46 @@ describe('validateSchemaNode', () => {
 
     const state = createMockState({
       dmlStatements: 'INSERT INTO users VALUES (1, "test");',
-      ddlStatements: '',
+      generatedUsecases: [
+        {
+          requirementType: 'functional',
+          requirementCategory: 'User Management',
+          requirement: 'Users should be able to register',
+          title: 'User Registration',
+          description: 'Allow users to create new accounts',
+        },
+      ],
     })
 
     const repositories = createMockRepositories()
-    const result = await validateSchemaNode(state, {
+    await validateSchemaNode(state, {
       configurable: { repositories, logger: mockLogger },
     })
 
     expect(executeQuery).toHaveBeenCalledWith(
       'session-id',
-      'INSERT INTO users VALUES (1, "test");',
+      'INSERT INTO users VALUES (1, "test")',
     )
-    expect(result.dmlExecutionSuccessful).toBe(true)
+    expect(repositories.schema.createTimelineItem).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: 'dml_execution_result',
+        content: expect.stringContaining('User Registration'),
+      }),
+    )
   })
 
-  it('should execute only DDL when DML is empty', async () => {
-    const mockResults: SqlResult[] = [
-      {
-        success: true,
-        sql: 'CREATE TABLE users (id INT);',
-        result: { rows: [], columns: [] },
-        id: 'result-1',
-        metadata: {
-          executionTime: 10,
-          timestamp: new Date().toISOString(),
-        },
-      },
-    ]
-
-    vi.mocked(executeQuery).mockResolvedValue(mockResults)
-
+  it('should return early when no DML statements provided', async () => {
     const state = createMockState({
-      ddlStatements: 'CREATE TABLE users (id INT);',
       dmlStatements: '',
+      generatedUsecases: [
+        {
+          requirementType: 'functional',
+          requirementCategory: 'User Management',
+          requirement: 'Users should be able to register',
+          title: 'User Registration',
+          description: 'Allow users to create new accounts',
+        },
+      ],
     })
 
     const repositories = createMockRepositories()
@@ -127,42 +133,20 @@ describe('validateSchemaNode', () => {
       configurable: { repositories, logger: mockLogger },
     })
 
-    expect(executeQuery).toHaveBeenCalledWith(
-      'session-id',
-      'CREATE TABLE users (id INT);',
+    expect(executeQuery).not.toHaveBeenCalled()
+    expect(repositories.schema.createTimelineItem).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: 'assistant_log',
+        content: 'No DML statements to execute for validation',
+      }),
     )
-    expect(result.dmlExecutionSuccessful).toBe(true)
+    expect(result).toEqual(state)
   })
 
-  it('should combine and execute DDL and DML together', async () => {
-    const mockResults: SqlResult[] = [
-      {
-        success: true,
-        sql: 'CREATE TABLE users (id INT);',
-        result: { rows: [], columns: [] },
-        id: 'result-1',
-        metadata: {
-          executionTime: 10,
-          timestamp: new Date().toISOString(),
-        },
-      },
-      {
-        success: true,
-        sql: 'INSERT INTO users VALUES (1);',
-        result: { rows: [], columns: [] },
-        id: 'result-2',
-        metadata: {
-          executionTime: 5,
-          timestamp: new Date().toISOString(),
-        },
-      },
-    ]
-
-    vi.mocked(executeQuery).mockResolvedValue(mockResults)
-
+  it('should return early when no use cases provided', async () => {
     const state = createMockState({
-      ddlStatements: 'CREATE TABLE users (id INT);',
       dmlStatements: 'INSERT INTO users VALUES (1);',
+      generatedUsecases: [],
     })
 
     const repositories = createMockRepositories()
@@ -170,25 +154,18 @@ describe('validateSchemaNode', () => {
       configurable: { repositories, logger: mockLogger },
     })
 
-    expect(executeQuery).toHaveBeenCalledWith(
-      'session-id',
-      'CREATE TABLE users (id INT);\nINSERT INTO users VALUES (1);',
+    expect(executeQuery).not.toHaveBeenCalled()
+    expect(repositories.schema.createTimelineItem).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: 'assistant_log',
+        content: 'No use cases available for DML validation',
+      }),
     )
-    expect(result.dmlExecutionSuccessful).toBe(true)
+    expect(result).toEqual(state)
   })
 
-  it('should handle execution errors', async () => {
+  it('should handle execution errors and log them', async () => {
     const mockResults: SqlResult[] = [
-      {
-        success: true,
-        sql: 'CREATE TABLE users (id INT);',
-        result: { rows: [], columns: [] },
-        id: 'result-1',
-        metadata: {
-          executionTime: 10,
-          timestamp: new Date().toISOString(),
-        },
-      },
       {
         success: false,
         sql: 'INSERT INTO invalid_table VALUES (1);',
@@ -204,17 +181,35 @@ describe('validateSchemaNode', () => {
     vi.mocked(executeQuery).mockResolvedValue(mockResults)
 
     const state = createMockState({
-      ddlStatements: 'CREATE TABLE users (id INT);',
       dmlStatements: 'INSERT INTO invalid_table VALUES (1);',
+      generatedUsecases: [
+        {
+          requirementType: 'functional',
+          requirementCategory: 'User Management',
+          requirement: 'Users should be able to register',
+          title: 'User Registration',
+          description: 'Allow users to create new accounts',
+        },
+      ],
     })
 
     const repositories = createMockRepositories()
-    const result = await validateSchemaNode(state, {
+    await validateSchemaNode(state, {
       configurable: { repositories, logger: mockLogger },
     })
 
-    expect(result.dmlExecutionSuccessful).toBeUndefined()
-    expect(result.dmlExecutionErrors).toContain('Table not found')
+    expect(repositories.schema.createTimelineItem).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: 'dml_execution_result',
+        content: expect.stringContaining('"success":false'),
+      }),
+    )
+    expect(repositories.schema.createTimelineItem).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: 'dml_execution_result',
+        content: expect.stringContaining('Table not found'),
+      }),
+    )
   })
 
   it('should trim whitespace from statements', async () => {
