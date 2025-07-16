@@ -80,6 +80,7 @@ export async function generateUsecaseNode(
   const webSearchConfig: WebSearchConfig = {
     enabled: true,
     searchContextSize: 'medium',
+    forceUse: true,
   }
 
   const qaAgent = new QAGenerateUsecaseAgent(webSearchConfig)

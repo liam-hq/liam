@@ -33,6 +33,7 @@ export async function analyzeRequirementsNode(
   const webSearchConfig: WebSearchConfig = {
     enabled: true,
     searchContextSize: 'medium',
+    forceUse: true,
   }
 
   const pmAnalysisAgent = new PMAnalysisAgent(webSearchConfig)

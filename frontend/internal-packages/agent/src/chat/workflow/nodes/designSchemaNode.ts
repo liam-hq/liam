@@ -205,6 +205,7 @@ export async function designSchemaNode(
   const webSearchConfig: WebSearchConfig = {
     enabled: true,
     searchContextSize: 'medium',
+    forceUse: true,
   }
 
   const invokeResult = await invokeDesignAgent(
