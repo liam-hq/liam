@@ -22,7 +22,7 @@ type MarkdownContentProps = {
 export const MarkdownContent: FC<MarkdownContentProps> = ({ content }) => {
   const renderTextWithMarks = (text: string) => {
     const parts = text.split(/(✓|✗)/g)
-    return parts.map((part, _index) => {
+    return parts.map((part) => {
       if (part === '✓') {
         return (
           <span key={`checkmark-${text}-${part}`} className={styles.checkmark}>
@@ -42,13 +42,10 @@ export const MarkdownContent: FC<MarkdownContentProps> = ({ content }) => {
   }
 
   const generateStableKey = (content: string, index: number): string => {
-    let hash = 0
-    for (let i = 0; i < content.length; i++) {
-      const char = content.charCodeAt(i)
-      hash = (hash << 5) - hash + char
-      hash = hash & hash // Convert to 32-bit integer
-    }
-    return `child-${index}-${hash}`
+    // Use index as primary identifier with content prefix for stability
+    // This ensures uniqueness within the same parent and stability across renders
+    const contentPrefix = content.slice(0, 10).replace(/[^a-zA-Z0-9]/g, '')
+    return `text-${index}-${contentPrefix}`
   }
 
   const processChildren = (children: ReactNode): ReactNode => {
