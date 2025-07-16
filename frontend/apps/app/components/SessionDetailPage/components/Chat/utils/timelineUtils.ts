@@ -46,13 +46,21 @@ const generateAgentContent = (
   if (agentType === 'pm') {
     content = '📊 Requirements Analysis\n'
   } else if (agentType === 'db') {
-    const dbSteps = agentSteps.filter((s) => s.agent === 'db')
     const firstRelevantStep = relevantSteps[0]
-    if (
-      firstRelevantStep &&
-      dbSteps.indexOf(firstRelevantStep) >= DB_CREATION_STEP_THRESHOLD
-    ) {
-      content = '💾 Database Creation\n'
+    if (firstRelevantStep) {
+      const firstRelevantStepIndex = agentSteps.findIndex(
+        (step) => step === firstRelevantStep,
+      )
+      const dbStepsBeforeRelevant =
+        agentSteps
+          .slice(0, firstRelevantStepIndex + 1)
+          .filter((s) => s.agent === 'db').length - 1
+
+      if (dbStepsBeforeRelevant >= DB_CREATION_STEP_THRESHOLD) {
+        content = '💾 Database Creation\n'
+      } else {
+        content = '🏗️ Schema Design\n'
+      }
     } else {
       content = '🏗️ Schema Design\n'
     }
@@ -206,7 +214,7 @@ const addRecoveryMessages = (
     assistantType = 'assistant_db'
     timestamp = TIMELINE_TIMESTAMPS.DB_RECOVERY
   } else if (currentStep.type === 'qa-2') {
-    assistantType = 'assistant_db'
+    assistantType = 'assistant_qa'
     timestamp = TIMELINE_TIMESTAMPS.QA_RECOVERY
   }
 
