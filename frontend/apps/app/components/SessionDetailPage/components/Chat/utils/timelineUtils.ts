@@ -17,6 +17,12 @@ export type RecoveryStep = {
 // Named constants for improved readability
 const DB_CREATION_STEP_THRESHOLD = 3
 const MAX_ERROR_RECOVERY_STEPS_TO_SHOW = 10
+// Offset from the total currentIndex to the recovery step index
+// This represents the number of steps before recovery starts
+const RECOVERY_STEP_INDEX_OFFSET = 8
+// Indices for the initial completed messages in the mock timeline
+// These represent the message indices that should be shown progressively
+const INITIAL_COMPLETED_MESSAGE_INDICES = [8, 9, 10, 11]
 
 // Base timestamp for generating timeline entries
 const BASE_TIMESTAMP = new Date('2025-07-14T06:39:00Z')
@@ -230,8 +236,12 @@ const addInitialCompletedMessages = (
   items: TimelineItemEntry[],
   mockTimelineItems: TimelineItemEntry[],
 ): void => {
-  items.push(mockTimelineItems[3])
-  items.push(mockTimelineItems[4])
+  if (mockTimelineItems[3]) {
+    items.push(mockTimelineItems[3])
+  }
+  if (mockTimelineItems[4]) {
+    items.push(mockTimelineItems[4])
+  }
 }
 
 const addPostRecoveryMessages = (
@@ -239,20 +249,26 @@ const addPostRecoveryMessages = (
   extraIndex: number,
   mockTimelineItems: TimelineItemEntry[],
 ): void => {
-  items.push(mockTimelineItems[7])
+  // Check if index 7 exists before accessing
+  if (mockTimelineItems[7]) {
+    items.push(mockTimelineItems[7])
+  }
 
-  const progressiveMessages = [
-    mockTimelineItems[8],
-    mockTimelineItems[9],
-    mockTimelineItems[10],
-    mockTimelineItems[11],
-  ]
+  // Only create progressiveMessages array with existing items
+  const progressiveMessages: TimelineItemEntry[] = []
+  const indices = INITIAL_COMPLETED_MESSAGE_INDICES
+  for (const index of indices) {
+    if (mockTimelineItems[index]) {
+      progressiveMessages.push(mockTimelineItems[index])
+    }
+  }
 
   for (let i = 0; i < Math.min(extraIndex, progressiveMessages.length); i++) {
     items.push(progressiveMessages[i])
   }
 
-  if (extraIndex >= progressiveMessages.length + 1) {
+  // Check if index 15 exists before accessing
+  if (extraIndex >= progressiveMessages.length + 1 && mockTimelineItems[15]) {
     items.push(mockTimelineItems[15])
   }
 }
@@ -308,8 +324,8 @@ const addPostAgentStepsMessages = (
   if (currentIndex > 0) {
     items.push(mockTimelineItems[6])
 
-    if (currentIndex >= 8) {
-      const recoveryStepIndex = currentIndex - 8
+    if (currentIndex >= RECOVERY_STEP_INDEX_OFFSET) {
+      const recoveryStepIndex = currentIndex - RECOVERY_STEP_INDEX_OFFSET
 
       if (recoveryStepIndex < recoverySteps.length) {
         addRecoveryAnimations(
@@ -326,7 +342,8 @@ const addPostAgentStepsMessages = (
           isPlaying,
         )
 
-        const extraIndex = currentIndex - 8 - recoverySteps.length
+        const extraIndex =
+          currentIndex - RECOVERY_STEP_INDEX_OFFSET - recoverySteps.length
         addPostRecoveryMessages(items, extraIndex, mockTimelineItems)
       }
     }

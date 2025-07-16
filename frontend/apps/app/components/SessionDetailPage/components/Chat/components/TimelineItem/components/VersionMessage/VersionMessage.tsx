@@ -141,7 +141,11 @@ export const VersionMessage: FC<Props> = ({
             <div className={styles.collapseButton}>
               <ChevronRight />
             </div>
-            <span className={styles.versionNumber}>Version 1</span>
+            <span className={styles.versionNumber}>
+              {mockVersionData
+                ? `Version ${mockVersionData.number}`
+                : 'Loading version...'}
+            </span>
           </button>
         </div>
       </div>
