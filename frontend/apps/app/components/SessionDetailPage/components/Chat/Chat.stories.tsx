@@ -457,7 +457,13 @@ const InteractiveDemo = () => {
     }, delay)
 
     return () => clearTimeout(timer)
-  }, [animation.isPlaying, animation.currentStep, agentSteps])
+  }, [
+    animation.isPlaying,
+    animation.currentStep,
+    animation.setCurrentStep,
+    agentSteps,
+    getAnimationDelays,
+  ])
 
   const getAnimationDelay = (index: number) => {
     const animationDelays = getAnimationDelays()
