@@ -31,7 +31,7 @@ export async function analyzeRequirementsNode(
   await logAssistantMessage(state, repositories, 'Analyzing requirements...')
 
   const webSearchConfig: WebSearchConfig = {
-    enabled: process.env['WEB_SEARCH_ENABLED'] === 'true',
+    enabled: true,
     searchContextSize: 'medium',
   }
 

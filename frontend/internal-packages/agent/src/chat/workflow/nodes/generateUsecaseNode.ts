@@ -78,7 +78,7 @@ export async function generateUsecaseNode(
   }
 
   const webSearchConfig: WebSearchConfig = {
-    enabled: process.env['WEB_SEARCH_ENABLED'] === 'true',
+    enabled: true,
     searchContextSize: 'medium',
   }
 
