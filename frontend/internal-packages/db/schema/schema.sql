@@ -120,7 +120,9 @@ CREATE TYPE "public"."timeline_item_type_enum" AS ENUM (
     'assistant',
     'schema_version',
     'error',
-    'assistant_log'
+    'assistant_log',
+    'ddl_execution_result',
+    'dml_execution_result'
 );
 
 
