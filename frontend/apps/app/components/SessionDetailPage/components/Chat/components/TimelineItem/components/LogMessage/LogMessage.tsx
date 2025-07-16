@@ -44,7 +44,7 @@ export const LogMessage: FC<LogMessageProps> = ({ content }) => {
     if (hasCheckOrCross || isCurrentTask) {
       return (
         <span
-          key={`line-${lineIndex}-${line.substring(0, 20).replace(/\s+/g, '-')}`}
+          key={`line-${lineIndex}-${line.trim().substring(0, 30).replace(/\s+/g, '-') || 'empty'}`}
           className={clsx(
             styles.indentedLine,
             isPending ? styles.pendingTask : '',
@@ -59,7 +59,7 @@ export const LogMessage: FC<LogMessageProps> = ({ content }) => {
 
     return (
       <span
-        key={`line-${lineIndex}-${line.substring(0, 20).replace(/\s+/g, '-')}`}
+        key={`line-${lineIndex}-${line.trim().substring(0, 30).replace(/\s+/g, '-') || 'empty'}`}
         className={isPending ? styles.pendingTask : undefined}
       >
         {parts}

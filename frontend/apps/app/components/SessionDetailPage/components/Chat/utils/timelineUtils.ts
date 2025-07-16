@@ -338,7 +338,7 @@ const addPostAgentStepsMessages = (
   addInitialCompletedMessages(items, mockTimelineItems)
 
   if (currentIndex > 0) {
-    if (mockTimelineItems[6]) {
+    if (mockTimelineItems?.[6]) {
       items.push(mockTimelineItems[6])
     }
 
