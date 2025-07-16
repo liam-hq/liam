@@ -1,3 +1,4 @@
+import { Button } from '@liam-hq/ui'
 import { useEffect, useState } from 'react'
 import type {
   AnimationActions,
@@ -52,32 +53,38 @@ export const AnimationControls = ({
 
   return (
     <div className={styles.container}>
-      <button
+      <Button
         type="button"
         onClick={handlePlay}
         disabled={isPlaying}
         className={styles.button}
         aria-label={playButtonLabel}
+        variant="outline-secondary"
+        size="sm"
       >
         {isComplete ? 'Restart' : 'Start'}
-      </button>
-      <button
+      </Button>
+      <Button
         type="button"
         onClick={pause}
         disabled={!isPlaying}
         className={styles.button}
         aria-label="Pause animation"
+        variant="outline-secondary"
+        size="sm"
       >
         Pause
-      </button>
-      <button
+      </Button>
+      <Button
         type="button"
         onClick={reset}
         className={styles.button}
         aria-label="Reset animation to beginning"
+        variant="outline-secondary"
+        size="sm"
       >
         Reset
-      </button>
+      </Button>
     </div>
   )
 }
