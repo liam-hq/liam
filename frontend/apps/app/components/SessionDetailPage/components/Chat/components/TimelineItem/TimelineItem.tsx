@@ -2,7 +2,12 @@
 
 import type { FC, PropsWithChildren } from 'react'
 import { match } from 'ts-pattern'
-import type { TimelineItemEntry } from '../../../../types'
+import type {
+  AssistantDbTimelineItemEntry,
+  AssistantPmTimelineItemEntry,
+  AssistantQaTimelineItemEntry,
+  TimelineItemEntry,
+} from '../../../../types'
 import { AgentMessage } from './components/AgentMessage'
 import {
   DBAgent,

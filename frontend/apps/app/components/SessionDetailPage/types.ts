@@ -61,12 +61,24 @@ export type AssistantLogTimelineItemEntry = BaseTimelineItemEntry & {
   type: 'assistant_log'
 }
 
+export type AssistantPmTimelineItemEntry = BaseTimelineItemEntry & {
+  type: 'assistant_pm'
+}
+
+export type AssistantDbTimelineItemEntry = BaseTimelineItemEntry & {
+  type: 'assistant_db'
+}
+
+export type AssistantQaTimelineItemEntry = BaseTimelineItemEntry & {
+  type: 'assistant_qa'
+}
+
 export type TimelineItemEntry =
   | UserTimelineItemEntry
   | AssistantTimelineItemEntry
   | SchemaVersionTimelineItemEntry
   | ErrorTimelineItemEntry
   | AssistantLogTimelineItemEntry
-  | (BaseTimelineItemEntry & { type: 'assistant_pm' })
-  | (BaseTimelineItemEntry & { type: 'assistant_db' })
-  | (BaseTimelineItemEntry & { type: 'assistant_qa' })
+  | AssistantPmTimelineItemEntry
+  | AssistantDbTimelineItemEntry
+  | AssistantQaTimelineItemEntry
