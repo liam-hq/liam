@@ -1,15 +1,27 @@
 'use client'
 
 import type { Schema } from '@liam-hq/db-structure'
-import { type FC, useTransition } from 'react'
+import { type FC, useMemo, useTransition } from 'react'
 import type { TimelineItemEntry } from '../../types'
 import styles from './Chat.module.css'
 import { ChatInput } from './components/ChatInput'
 import { TimelineItem } from './components/TimelineItem'
 import type { BuildingSchemaVersion } from './components/TimelineItem/components/VersionMessage/VersionMessage'
+import { useProgressiveMessage } from './hooks/useProgressiveMessage'
 import { sendChatMessage } from './services'
 import { generateTimelineItemId } from './services/timelineItemHelpers'
 import { useScrollToBottom } from './useScrollToBottom'
+import {
+  groupConsecutiveMessages,
+  isMessageGroup,
+} from './utils/messageGrouping'
+import {
+  extractTasks,
+  getTaskStatusKey,
+  parseTaskLine,
+  TASK_STATUS,
+  type TaskStatus,
+} from './utils/taskProgress'
 
 type Props = {
   schemaData: Schema
@@ -32,6 +44,19 @@ export const Chat: FC<Props> = ({
   const { containerRef, scrollToBottom } = useScrollToBottom<HTMLDivElement>(
     timelineItems.length,
   )
+
+  // Hook for progressive message updates
+  const { simulateTaskCompletion, failTasksInMessage } = useProgressiveMessage({
+    onUpdateMessage: onMessageSend,
+  })
+
+  // Task status priority for sorting (lower number = higher priority)
+  const taskStatusPriority: Record<TaskStatus, number> = {
+    FAILED: 0,
+    IN_PROGRESS: 1,
+    PENDING: 2,
+    COMPLETED: 3,
+  }
 
   // Start AI response without saving user message (for auto-start scenarios)
   const startAIResponse = async (content: string) => {
@@ -62,18 +87,74 @@ export const Chat: FC<Props> = ({
     })
   }
 
+  // Group consecutive messages from the same agent
+  const groupedItems = useMemo(
+    () => groupConsecutiveMessages(timelineItems),
+    [timelineItems],
+  )
+
   return (
     <div className={styles.wrapper}>
       <div className={styles.messagesContainer} ref={containerRef}>
         {/* Display all timeline items */}
-        {timelineItems.map((timelineItem) => (
-          <TimelineItem
-            key={timelineItem.id}
-            {...timelineItem}
-            onRetry={onRetry}
-            mockVersionData={mockVersionData}
-          />
-        ))}
+        {groupedItems.map((item) => {
+          if (isMessageGroup(item)) {
+            // Combine messages from the group
+            const combinedContent = item.messages
+              .map((msg) => msg.content)
+              .join('\n\n')
+
+            // Use the first message as the base for the combined message
+            const firstMessage = item.messages[0]
+
+            // Analyze tasks in the content
+            const tasks = extractTasks(combinedContent)
+            const parsedTasks = tasks
+              .map(parseTaskLine)
+              .filter((task): task is NonNullable<typeof task> => task !== null)
+
+            // Check if there are in-progress tasks that need to be updated
+            const inProgressTaskCount = parsedTasks.filter((task) => {
+              const statusKey = getTaskStatusKey(task.status)
+              return statusKey === 'IN_PROGRESS'
+            }).length
+
+            if (inProgressTaskCount > 0) {
+              // In production, this would be triggered by server events
+              // simulateTaskCompletion(firstMessage)
+            }
+
+            return (
+              <TimelineItem
+                key={item.id}
+                {...firstMessage}
+                content={combinedContent}
+                onRetry={() => {
+                  // When retrying, mark in-progress tasks as failed before retry
+                  if (
+                    parsedTasks.some(
+                      (task) => task.status === TASK_STATUS.IN_PROGRESS,
+                    )
+                  ) {
+                    failTasksInMessage(firstMessage)
+                  }
+                  onRetry?.()
+                }}
+                mockVersionData={mockVersionData}
+              />
+            )
+          }
+
+          // Single message
+          return (
+            <TimelineItem
+              key={item.id}
+              {...item}
+              onRetry={onRetry}
+              mockVersionData={mockVersionData}
+            />
+          )
+        })}
         {isLoading && (
           <div className={styles.loadingIndicator}>
             <div className={styles.loadingDot} />
