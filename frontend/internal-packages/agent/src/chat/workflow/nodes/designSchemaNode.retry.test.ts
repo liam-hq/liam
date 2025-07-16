@@ -87,6 +87,10 @@ describe('designSchemaNode retry behavior', () => {
           content: expect.stringContaining('Foreign key constraint error'),
         }),
       ]),
+      expect.objectContaining({
+        enabled: expect.any(Boolean),
+        searchContextSize: expect.any(String),
+      }),
     )
   })
 })

@@ -1,3 +1,4 @@
+import type { BaseCallbackHandler } from '@langchain/core/callbacks/base'
 import { ChatOpenAI } from '@langchain/openai'
 
 export type WebSearchConfig = {
@@ -8,18 +9,24 @@ export type WebSearchConfig = {
 export const createWebSearchEnabledModel = (
   baseConfig: {
     model: string
-    callbacks?: any[]
+    callbacks?: BaseCallbackHandler[]
   },
   webSearchConfig: WebSearchConfig = { enabled: false },
 ) => {
-  const baseModel = new ChatOpenAI({
+  const modelConfig = {
     model: baseConfig.model,
     callbacks: baseConfig.callbacks || [],
-  })
-
-  if (!webSearchConfig.enabled) {
-    return baseModel
+    ...(webSearchConfig.enabled && {
+      tools: [
+        {
+          type: 'web_search_preview' as const,
+          web_search_preview: {
+            search_context_size: webSearchConfig.searchContextSize || 'medium',
+          },
+        },
+      ],
+    }),
   }
 
-  return baseModel
+  return new ChatOpenAI(modelConfig)
 }
