@@ -8,6 +8,7 @@ import { logAssistantMessage } from '../utils/timelineLogger'
 /**
  * Validate Schema Node - Combined DDL/DML Execution & Validation
  * Executes DDL and DML together in a single query to validate schema with test data
+ * This node also saves execution results to the database for audit purposes
  */
 export async function validateSchemaNode(
   state: WorkflowState,
