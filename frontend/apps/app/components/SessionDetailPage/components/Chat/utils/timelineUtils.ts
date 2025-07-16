@@ -378,7 +378,9 @@ export const createDynamicTimelineItems = (
 ): TimelineItemEntry[] => {
   const items: TimelineItemEntry[] = []
 
-  items.push(mockTimelineItems[0])
+  if (mockTimelineItems.length > 0) {
+    items.push(mockTimelineItems[0])
+  }
 
   if (currentStep > 0) {
     addPMAgentProgress(
