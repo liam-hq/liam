@@ -1,0 +1,3 @@
+{
+  "input": "Create a simple database schema for a blog system. The blog has posts, users, and comments. Each user can write multiple posts, and each post can have multiple comments."
+}

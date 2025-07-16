@@ -1,8 +1,8 @@
 import { AIMessage } from '@langchain/core/messages'
 import { ok } from 'neverthrow'
 import { describe, expect, it, vi } from 'vitest'
-import type { WorkflowState } from '../types'
-import { designSchemaNode } from './designSchemaNode'
+import type { WorkflowState } from '../types.ts'
+import { designSchemaNode } from './designSchemaNode.ts'
 
 // Mock the design agent
 vi.mock('../../../langchain/agents/databaseSchemaBuildAgent/agent', () => ({

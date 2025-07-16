@@ -5,12 +5,12 @@ import {
   type DesignResponse,
   type InvokeResult,
   invokeDesignAgent,
-} from '../../../langchain/agents/databaseSchemaBuildAgent/agent'
-import type { Repositories } from '../../../repositories'
-import { convertSchemaToText } from '../../../utils/convertSchemaToText'
-import { getConfigurable } from '../shared/getConfigurable'
-import type { WorkflowState } from '../types'
-import { logAssistantMessage } from '../utils/timelineLogger'
+} from '../../../langchain/agents/databaseSchemaBuildAgent/agent.ts'
+import type { Repositories } from '../../../repositories/index.ts'
+import { convertSchemaToText } from '../../../utils/convertSchemaToText.ts'
+import { getConfigurable } from '../shared/getConfigurable.ts'
+import type { WorkflowState } from '../types.ts'
+import { logAssistantMessage } from '../utils/timelineLogger.ts'
 
 /**
  * Apply schema changes and return updated state
