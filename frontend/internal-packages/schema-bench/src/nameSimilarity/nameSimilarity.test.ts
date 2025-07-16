@@ -1,8 +1,6 @@
 import { describe, expect, it } from 'vitest'
+import { TEST_TIMEOUTS } from '../testConfig'
 import { nameSimilarity } from './nameSimilarity'
-
-// Increase timeout due to model initialization
-const TIMEOUT = 30000
 
 describe('nameSimilarity', () => {
   it(
@@ -17,7 +15,7 @@ describe('nameSimilarity', () => {
       expect(mapping).toHaveProperty('Database Administrator')
       expect(mapping['Database Administrator']).toBe('Database Administrator')
     },
-    TIMEOUT,
+    TEST_TIMEOUTS.MODEL_INITIALIZATION,
   )
 
   it(
@@ -41,7 +39,7 @@ describe('nameSimilarity', () => {
         'Policy ID': 'Policy ID',
       })
     },
-    TIMEOUT,
+    TEST_TIMEOUTS.MODEL_INITIALIZATION,
   )
 
   it(
@@ -65,7 +63,7 @@ describe('nameSimilarity', () => {
         'Policy ID': 'Policy ID',
       })
     },
-    TIMEOUT,
+    TEST_TIMEOUTS.MODEL_INITIALIZATION,
   )
 
   it(
@@ -88,7 +86,7 @@ describe('nameSimilarity', () => {
         'Policy ID': 'Policy ID',
       })
     },
-    TIMEOUT,
+    TEST_TIMEOUTS.MODEL_INITIALIZATION,
   )
 
   it(
@@ -112,6 +110,6 @@ describe('nameSimilarity', () => {
         'Policy ID': 'Policy ID',
       })
     },
-    TIMEOUT,
+    TEST_TIMEOUTS.MODEL_INITIALIZATION,
   )
 })
