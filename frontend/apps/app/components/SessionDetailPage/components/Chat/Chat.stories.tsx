@@ -511,8 +511,13 @@ const InteractiveDemo = () => {
     animation.isPlaying,
     animation.currentStep,
     animation.currentIndex,
+    animation.setCurrentIndex,
+    animation.setIsPlaying,
+    agentSteps.length,
     recoverySteps.length,
     timelineItemsState.length,
+    getAnimationDelay,
+    ANIMATION_THRESHOLDS.RECOVERY_START_INDEX,
   ])
 
   const handleMessageSend = (entry: TimelineItemEntry) => {
