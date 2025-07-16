@@ -439,14 +439,18 @@ const InteractiveDemo = () => {
     if (!animation.isPlaying || animation.currentStep >= agentSteps.length)
       return
 
-    const currentStepData = agentSteps[animation.currentStep - 1]
-    const hasHourglassTask = currentStepData && !currentStepData.willFail
-    const animationDelays = getAnimationDelays()
+    let delay: number = getAnimationDelays().NORMAL_TASK
 
-    const delay =
-      hasHourglassTask && animation.currentStep < agentSteps.length
-        ? animationDelays.HOURGLASS_TASK
-        : animationDelays.NORMAL_TASK
+    if (animation.currentStep > 0) {
+      const currentStepData = agentSteps[animation.currentStep - 1]
+      const hasHourglassTask = currentStepData && !currentStepData.willFail
+      const animationDelays = getAnimationDelays()
+
+      delay =
+        hasHourglassTask && animation.currentStep < agentSteps.length
+          ? animationDelays.HOURGLASS_TASK
+          : animationDelays.NORMAL_TASK
+    }
 
     const timer = setTimeout(() => {
       animation.setCurrentStep((prev) => prev + 1)
