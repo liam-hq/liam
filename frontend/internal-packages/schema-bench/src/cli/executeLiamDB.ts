@@ -5,8 +5,8 @@ import { readdir, readFile, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import { err, ok, type Result } from 'neverthrow'
 import * as v from 'valibot'
-import { LiamDBExecutor } from '../executors/liamDB/liamDBExecutor.ts'
-import type { LiamDBExecutorInput } from '../executors/liamDB/types.ts'
+import { createLiamDBExecutor } from '../executors/liamDb/liamDbExecutor.ts'
+import type { LiamDBExecutorInput } from '../executors/liamDb/types.ts'
 
 const InputSchema = v.object({
   prompt: v.string(),
@@ -85,12 +85,10 @@ async function saveOutputFile(
 }
 
 async function executeCase(
-  executor: LiamDBExecutor,
+  executor: ReturnType<typeof createLiamDBExecutor>,
   caseId: string,
   input: LiamDBExecutorInput,
 ): Promise<Result<void, Error>> {
-  console.log(`Processing ${caseId}...`)
-  
   const result = await executor.execute(input)
   if (result.isErr()) {
     return err(
@@ -102,8 +100,6 @@ async function executeCase(
   if (saveResult.isErr()) {
     return saveResult
   }
-  
-  console.log(`✓ ${caseId} completed`)
   return ok(undefined)
 }
 
@@ -132,14 +128,11 @@ async function main() {
   const inputs = inputsResult.value
 
   if (inputs.length === 0) {
-    console.log('No input files found.')
     return
   }
 
-  console.log(`Found ${inputs.length} test cases`)
-
   // Create executor
-  const executor = new LiamDBExecutor({
+  const executor = createLiamDBExecutor({
     supabaseUrl,
     supabaseAnonKey,
     organizationId,
@@ -158,10 +151,6 @@ async function main() {
       console.error(`❌ ${caseId} failed: ${result.error.message}`)
     }
   }
-
-  console.log('\n📊 Results:')
-  console.log(`✅ Success: ${successCount}`)
-  console.log(`❌ Failed: ${failureCount}`)
 
   if (failureCount > 0) {
     process.exit(1)
