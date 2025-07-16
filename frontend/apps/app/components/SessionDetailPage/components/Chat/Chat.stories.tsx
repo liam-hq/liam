@@ -321,6 +321,9 @@ const mockSchemaData = {
 }
 
 const InteractiveDemo = () => {
+  const [timelineItemsState, setTimelineItemsState] =
+    useState<TimelineItemEntry[]>(mockTimelineItems)
+
   const agentSteps: AgentStep[] = useMemo(
     () => [
       { agent: 'pm', task: 'Analyzing requirements' },
@@ -431,7 +434,7 @@ const InteractiveDemo = () => {
     animation.currentIndex,
     agentSteps,
     recoverySteps,
-    mockTimelineItems,
+    timelineItemsState,
     animation.isPlaying,
   )
 
@@ -458,7 +461,7 @@ const InteractiveDemo = () => {
   const getAnimationDelay = (index: number) => {
     if (
       index >= ANIMATION_THRESHOLDS.RECOVERY_START_INDEX &&
-      index < mockTimelineItems.length + recoverySteps.length
+      index < timelineItemsState.length + recoverySteps.length
     ) {
       const recoveryStepIndex =
         index - ANIMATION_THRESHOLDS.RECOVERY_START_INDEX
@@ -490,7 +493,7 @@ const InteractiveDemo = () => {
 
     if (
       animation.currentIndex >= ANIMATION_THRESHOLDS.RECOVERY_START_INDEX &&
-      animation.currentIndex < mockTimelineItems.length + recoverySteps.length
+      animation.currentIndex < timelineItemsState.length + recoverySteps.length
     ) {
       const delay = getAnimationDelay(animation.currentIndex)
 
@@ -502,7 +505,7 @@ const InteractiveDemo = () => {
 
     if (
       animation.currentIndex >=
-      mockTimelineItems.length + recoverySteps.length
+      timelineItemsState.length + recoverySteps.length
     ) {
       animation.setIsPlaying(false)
     }
@@ -511,13 +514,14 @@ const InteractiveDemo = () => {
     animation.currentStep,
     animation.currentIndex,
     recoverySteps.length,
+    timelineItemsState.length,
   ])
 
   const handleMessageSend = (entry: TimelineItemEntry) => {
-    mockTimelineItems.push(entry)
+    setTimelineItemsState((prev) => [...prev, entry])
     if (
       !animation.isPlaying &&
-      animation.currentIndex === mockTimelineItems.length - 1
+      animation.currentIndex === timelineItemsState.length
     ) {
       animation.setCurrentIndex((prev) => prev + 1)
     }
@@ -529,7 +533,7 @@ const InteractiveDemo = () => {
         state={animation}
         actions={animation}
         agentStepsLength={agentSteps.length}
-        mockTimelineItemsLength={mockTimelineItems.length}
+        mockTimelineItemsLength={timelineItemsState.length}
       />
       <Chat
         timelineItems={timelineItems}
