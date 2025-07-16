@@ -34,21 +34,29 @@
         "pk": {
           "type": "PRIMARY KEY",
           "name": "pk_organization",
-          "columnNames": ["organization_code"]
+          "columnNames": [
+            "organization_code"
+          ]
         },
         "unique_organization_name": {
           "type": "UNIQUE",
           "name": "unique_organization_name",
-          "columnNames": ["organization_name"]
+          "columnNames": [
+            "organization_name"
+          ]
         },
         "fk_parent_org": {
           "type": "FOREIGN KEY",
           "name": "fk_organization_parent",
-          "columnName": "parent_organization_code",
           "targetTableName": "organization",
-          "targetColumnName": "organization_code",
           "updateConstraint": "NO_ACTION",
-          "deleteConstraint": "NO_ACTION"
+          "deleteConstraint": "NO_ACTION",
+          "columnNames": [
+            "parent_organization_code"
+          ],
+          "targetColumnNames": [
+            "organization_code"
+          ]
         }
       }
     },
@@ -78,12 +86,16 @@
         "pk": {
           "type": "PRIMARY KEY",
           "name": "pk_position",
-          "columnNames": ["position_code"]
+          "columnNames": [
+            "position_code"
+          ]
         },
         "unique_position_name": {
           "type": "UNIQUE",
           "name": "unique_position_name",
-          "columnNames": ["position_name"]
+          "columnNames": [
+            "position_name"
+          ]
         }
       }
     },
@@ -113,7 +125,9 @@
         "pk": {
           "type": "PRIMARY KEY",
           "name": "pk_employee",
-          "columnNames": ["employee_code"]
+          "columnNames": [
+            "employee_code"
+          ]
         }
       }
     },
@@ -159,43 +173,62 @@
         "pk": {
           "type": "PRIMARY KEY",
           "name": "pk_emp_aff",
-          "columnNames": ["employee_code", "organization_code"]
+          "columnNames": [
+            "employee_code",
+            "organization_code"
+          ]
         },
         "fk_emp_aff_emp": {
           "type": "FOREIGN KEY",
           "name": "fk_ea_emp",
-          "columnName": "employee_code",
           "targetTableName": "employee",
-          "targetColumnName": "employee_code",
           "updateConstraint": "NO_ACTION",
-          "deleteConstraint": "NO_ACTION"
+          "deleteConstraint": "NO_ACTION",
+          "columnNames": [
+            "employee_code"
+          ],
+          "targetColumnNames": [
+            "employee_code"
+          ]
         },
         "fk_emp_aff_org": {
           "type": "FOREIGN KEY",
           "name": "fk_ea_org",
-          "columnName": "organization_code",
           "targetTableName": "organization",
-          "targetColumnName": "organization_code",
           "updateConstraint": "NO_ACTION",
-          "deleteConstraint": "NO_ACTION"
+          "deleteConstraint": "NO_ACTION",
+          "columnNames": [
+            "organization_code"
+          ],
+          "targetColumnNames": [
+            "organization_code"
+          ]
         },
         "fk_emp_aff_pos": {
           "type": "FOREIGN KEY",
           "name": "fk_ea_pos",
-          "columnName": "position_code",
           "targetTableName": "position",
-          "targetColumnName": "position_code",
           "updateConstraint": "NO_ACTION",
-          "deleteConstraint": "NO_ACTION"
+          "deleteConstraint": "NO_ACTION",
+          "columnNames": [
+            "position_code"
+          ],
+          "targetColumnNames": [
+            "position_code"
+          ]
         },
         "fk_emp_aff_report": {
           "type": "FOREIGN KEY",
           "name": "fk_ea_report",
-          "columnName": "reporting_employee_code",
           "targetTableName": "employee",
-          "targetColumnName": "employee_code",
           "updateConstraint": "NO_ACTION",
-          "deleteConstraint": "NO_ACTION"
+          "deleteConstraint": "NO_ACTION",
+          "columnNames": [
+            "reporting_employee_code"
+          ],
+          "targetColumnNames": [
+            "employee_code"
+          ]
         }
       }
     },
@@ -241,7 +274,9 @@
         "pk": {
           "type": "PRIMARY KEY",
           "name": "pk_business_partner",
-          "columnNames": ["business_partner_code"]
+          "columnNames": [
+            "business_partner_code"
+          ]
         }
       }
     },
@@ -271,16 +306,22 @@
         "pk": {
           "type": "PRIMARY KEY",
           "name": "pk_client",
-          "columnNames": ["business_partner_code"]
+          "columnNames": [
+            "business_partner_code"
+          ]
         },
         "fk_client_business_partner": {
           "type": "FOREIGN KEY",
           "name": "fk_client_business_partner",
-          "columnName": "business_partner_code",
           "targetTableName": "business_partner",
-          "targetColumnName": "business_partner_code",
           "updateConstraint": "NO_ACTION",
-          "deleteConstraint": "NO_ACTION"
+          "deleteConstraint": "NO_ACTION",
+          "columnNames": [
+            "business_partner_code"
+          ],
+          "targetColumnNames": [
+            "business_partner_code"
+          ]
         }
       }
     },
@@ -310,16 +351,22 @@
         "pk": {
           "type": "PRIMARY KEY",
           "name": "pk_supplier",
-          "columnNames": ["business_partner_code"]
+          "columnNames": [
+            "business_partner_code"
+          ]
         },
         "fk_supplier_business_partner": {
           "type": "FOREIGN KEY",
           "name": "fk_supplier_business_partner",
-          "columnName": "business_partner_code",
           "targetTableName": "business_partner",
-          "targetColumnName": "business_partner_code",
           "updateConstraint": "NO_ACTION",
-          "deleteConstraint": "NO_ACTION"
+          "deleteConstraint": "NO_ACTION",
+          "columnNames": [
+            "business_partner_code"
+          ],
+          "targetColumnNames": [
+            "business_partner_code"
+          ]
         }
       }
     },
@@ -349,12 +396,16 @@
         "pk": {
           "type": "PRIMARY KEY",
           "name": "pk_brand",
-          "columnNames": ["brand_code"]
+          "columnNames": [
+            "brand_code"
+          ]
         },
         "unique_brand_name": {
           "type": "UNIQUE",
           "name": "unique_brand_name",
-          "columnNames": ["brand_name"]
+          "columnNames": [
+            "brand_name"
+          ]
         }
       }
     },
@@ -384,7 +435,9 @@
         "pk": {
           "type": "PRIMARY KEY",
           "name": "pk_item_cat",
-          "columnNames": ["item_category_code"]
+          "columnNames": [
+            "item_category_code"
+          ]
         }
       }
     },
@@ -422,25 +475,35 @@
         "pk": {
           "type": "PRIMARY KEY",
           "name": "pk_item",
-          "columnNames": ["manufacturer_part_number"]
+          "columnNames": [
+            "manufacturer_part_number"
+          ]
         },
         "fk_item_brand": {
           "type": "FOREIGN KEY",
           "name": "fk_item_brand",
-          "columnName": "brand_code",
           "targetTableName": "brand",
-          "targetColumnName": "brand_code",
           "updateConstraint": "NO_ACTION",
-          "deleteConstraint": "NO_ACTION"
+          "deleteConstraint": "NO_ACTION",
+          "columnNames": [
+            "brand_code"
+          ],
+          "targetColumnNames": [
+            "brand_code"
+          ]
         },
         "fk_item_cat": {
           "type": "FOREIGN KEY",
           "name": "fk_item_cat",
-          "columnName": "item_category_code",
           "targetTableName": "item_category",
-          "targetColumnName": "item_category_code",
           "updateConstraint": "NO_ACTION",
-          "deleteConstraint": "NO_ACTION"
+          "deleteConstraint": "NO_ACTION",
+          "columnNames": [
+            "item_category_code"
+          ],
+          "targetColumnNames": [
+            "item_category_code"
+          ]
         }
       }
     },
@@ -470,25 +533,36 @@
         "pk": {
           "type": "PRIMARY KEY",
           "name": "pk_handled_brand",
-          "columnNames": ["business_partner_code", "brand_code"]
+          "columnNames": [
+            "business_partner_code",
+            "brand_code"
+          ]
         },
         "fk_hb_supplier": {
           "type": "FOREIGN KEY",
           "name": "fk_hb_supplier",
-          "columnName": "business_partner_code",
           "targetTableName": "supplier",
-          "targetColumnName": "business_partner_code",
           "updateConstraint": "NO_ACTION",
-          "deleteConstraint": "NO_ACTION"
+          "deleteConstraint": "NO_ACTION",
+          "columnNames": [
+            "business_partner_code"
+          ],
+          "targetColumnNames": [
+            "business_partner_code"
+          ]
         },
         "fk_hb_brand": {
           "type": "FOREIGN KEY",
           "name": "fk_hb_brand",
-          "columnName": "brand_code",
           "targetTableName": "brand",
-          "targetColumnName": "brand_code",
           "updateConstraint": "NO_ACTION",
-          "deleteConstraint": "NO_ACTION"
+          "deleteConstraint": "NO_ACTION",
+          "columnNames": [
+            "brand_code"
+          ],
+          "targetColumnNames": [
+            "brand_code"
+          ]
         }
       }
     },
@@ -542,16 +616,22 @@
         "pk": {
           "type": "PRIMARY KEY",
           "name": "pk_prototype_project",
-          "columnNames": ["prototype_project_number"]
+          "columnNames": [
+            "prototype_project_number"
+          ]
         },
         "fk_prototype_project_client": {
           "type": "FOREIGN KEY",
           "name": "fk_prototype_project_client",
-          "columnName": "business_partner_code",
           "targetTableName": "client",
-          "targetColumnName": "business_partner_code",
           "updateConstraint": "NO_ACTION",
-          "deleteConstraint": "NO_ACTION"
+          "deleteConstraint": "NO_ACTION",
+          "columnNames": [
+            "business_partner_code"
+          ],
+          "targetColumnNames": [
+            "business_partner_code"
+          ]
         }
       }
     },
@@ -605,16 +685,23 @@
         "pk": {
           "type": "PRIMARY KEY",
           "name": "pk_model",
-          "columnNames": ["prototype_project_number", "model_name"]
+          "columnNames": [
+            "prototype_project_number",
+            "model_name"
+          ]
         },
         "fk_model_prototype_project": {
           "type": "FOREIGN KEY",
           "name": "fk_model_prototype_project",
-          "columnName": "prototype_project_number",
           "targetTableName": "prototype_project",
-          "targetColumnName": "prototype_project_number",
           "updateConstraint": "NO_ACTION",
-          "deleteConstraint": "NO_ACTION"
+          "deleteConstraint": "NO_ACTION",
+          "columnNames": [
+            "prototype_project_number"
+          ],
+          "targetColumnNames": [
+            "prototype_project_number"
+          ]
         }
       }
     },
@@ -669,29 +756,41 @@
         "fk_mi_model": {
           "type": "FOREIGN KEY",
           "name": "fk_mi_model",
-          "columnName": "prototype_project_number",
           "targetTableName": "model",
-          "targetColumnName": "prototype_project_number",
           "updateConstraint": "NO_ACTION",
-          "deleteConstraint": "NO_ACTION"
+          "deleteConstraint": "NO_ACTION",
+          "columnNames": [
+            "prototype_project_number"
+          ],
+          "targetColumnNames": [
+            "prototype_project_number"
+          ]
         },
         "fk_mi_model2": {
           "type": "FOREIGN KEY",
           "name": "fk_mi_model2",
-          "columnName": "model_name",
           "targetTableName": "model",
-          "targetColumnName": "model_name",
           "updateConstraint": "NO_ACTION",
-          "deleteConstraint": "NO_ACTION"
+          "deleteConstraint": "NO_ACTION",
+          "columnNames": [
+            "model_name"
+          ],
+          "targetColumnNames": [
+            "model_name"
+          ]
         },
         "fk_mi_item": {
           "type": "FOREIGN KEY",
           "name": "fk_mi_item",
-          "columnName": "manufacturer_part_number",
           "targetTableName": "item",
-          "targetColumnName": "manufacturer_part_number",
           "updateConstraint": "NO_ACTION",
-          "deleteConstraint": "NO_ACTION"
+          "deleteConstraint": "NO_ACTION",
+          "columnNames": [
+            "manufacturer_part_number"
+          ],
+          "targetColumnNames": [
+            "manufacturer_part_number"
+          ]
         }
       }
     },
@@ -753,20 +852,28 @@
         "fk_ppi_prototype_project": {
           "type": "FOREIGN KEY",
           "name": "fk_ppi_prototype_project",
-          "columnName": "prototype_project_number",
           "targetTableName": "prototype_project",
-          "targetColumnName": "prototype_project_number",
           "updateConstraint": "NO_ACTION",
-          "deleteConstraint": "NO_ACTION"
+          "deleteConstraint": "NO_ACTION",
+          "columnNames": [
+            "prototype_project_number"
+          ],
+          "targetColumnNames": [
+            "prototype_project_number"
+          ]
         },
         "fk_ppi_item": {
           "type": "FOREIGN KEY",
           "name": "fk_ppi_item",
-          "columnName": "manufacturer_part_number",
           "targetTableName": "item",
-          "targetColumnName": "manufacturer_part_number",
           "updateConstraint": "NO_ACTION",
-          "deleteConstraint": "NO_ACTION"
+          "deleteConstraint": "NO_ACTION",
+          "columnNames": [
+            "manufacturer_part_number"
+          ],
+          "targetColumnNames": [
+            "manufacturer_part_number"
+          ]
         }
       }
     },
@@ -812,25 +919,35 @@
         "pk": {
           "type": "PRIMARY KEY",
           "name": "pk_rfq",
-          "columnNames": ["rfq_number"]
+          "columnNames": [
+            "rfq_number"
+          ]
         },
         "fk_business_partner_code": {
           "type": "FOREIGN KEY",
           "name": "fk_business_partner_code",
-          "columnName": "business_partner_code",
           "targetTableName": "business_partner",
-          "targetColumnName": "business_partner_code",
           "updateConstraint": "NO_ACTION",
-          "deleteConstraint": "NO_ACTION"
+          "deleteConstraint": "NO_ACTION",
+          "columnNames": [
+            "business_partner_code"
+          ],
+          "targetColumnNames": [
+            "business_partner_code"
+          ]
         },
         "fk_rfq_prototype_project": {
           "type": "FOREIGN KEY",
           "name": "fk_rfq_prototype_project",
-          "columnName": "prototype_project_number",
           "targetTableName": "prototype_project",
-          "targetColumnName": "prototype_project_number",
           "updateConstraint": "NO_ACTION",
-          "deleteConstraint": "NO_ACTION"
+          "deleteConstraint": "NO_ACTION",
+          "columnNames": [
+            "prototype_project_number"
+          ],
+          "targetColumnNames": [
+            "prototype_project_number"
+          ]
         }
       }
     },
@@ -884,25 +1001,36 @@
         "pk": {
           "type": "PRIMARY KEY",
           "name": "pk_rfq_detail",
-          "columnNames": ["rfq_number", "rfq_detail_number"]
+          "columnNames": [
+            "rfq_number",
+            "rfq_detail_number"
+          ]
         },
         "fk_rd_rfq": {
           "type": "FOREIGN KEY",
           "name": "fk_rd_rfq",
-          "columnName": "rfq_number",
           "targetTableName": "request_for_quotation",
-          "targetColumnName": "rfq_number",
           "updateConstraint": "NO_ACTION",
-          "deleteConstraint": "NO_ACTION"
+          "deleteConstraint": "NO_ACTION",
+          "columnNames": [
+            "rfq_number"
+          ],
+          "targetColumnNames": [
+            "rfq_number"
+          ]
         },
         "fk_rd_item": {
           "type": "FOREIGN KEY",
           "name": "fk_rd_item",
-          "columnName": "manufacturer_part_number",
           "targetTableName": "item",
-          "targetColumnName": "manufacturer_part_number",
           "updateConstraint": "NO_ACTION",
-          "deleteConstraint": "NO_ACTION"
+          "deleteConstraint": "NO_ACTION",
+          "columnNames": [
+            "manufacturer_part_number"
+          ],
+          "targetColumnNames": [
+            "manufacturer_part_number"
+          ]
         }
       }
     },
@@ -948,16 +1076,22 @@
         "pk": {
           "type": "PRIMARY KEY",
           "name": "pk_quotation",
-          "columnNames": ["rfq_number"]
+          "columnNames": [
+            "rfq_number"
+          ]
         },
         "fk_q_rfq": {
           "type": "FOREIGN KEY",
           "name": "fk_q_rfq",
-          "columnName": "rfq_number",
           "targetTableName": "request_for_quotation",
-          "targetColumnName": "rfq_number",
           "updateConstraint": "NO_ACTION",
-          "deleteConstraint": "NO_ACTION"
+          "deleteConstraint": "NO_ACTION",
+          "columnNames": [
+            "rfq_number"
+          ],
+          "targetColumnNames": [
+            "rfq_number"
+          ]
         }
       }
     },
@@ -1035,34 +1169,49 @@
         "pk": {
           "type": "PRIMARY KEY",
           "name": "pk_quote_detail",
-          "columnNames": ["rfq_number", "quotation_detail_number"]
+          "columnNames": [
+            "rfq_number",
+            "quotation_detail_number"
+          ]
         },
         "fk_qd_quote": {
           "type": "FOREIGN KEY",
           "name": "fk_qd_quote",
-          "columnName": "rfq_number",
           "targetTableName": "quotation",
-          "targetColumnName": "rfq_number",
           "updateConstraint": "NO_ACTION",
-          "deleteConstraint": "NO_ACTION"
+          "deleteConstraint": "NO_ACTION",
+          "columnNames": [
+            "rfq_number"
+          ],
+          "targetColumnNames": [
+            "rfq_number"
+          ]
         },
         "fk_qd_rfq_detail": {
           "type": "FOREIGN KEY",
           "name": "fk_qd_rd",
-          "columnName": "rfq_detail_number",
           "targetTableName": "rfq_detail",
-          "targetColumnName": "rfq_detail_number",
           "updateConstraint": "NO_ACTION",
-          "deleteConstraint": "NO_ACTION"
+          "deleteConstraint": "NO_ACTION",
+          "columnNames": [
+            "rfq_detail_number"
+          ],
+          "targetColumnNames": [
+            "rfq_detail_number"
+          ]
         },
         "fk_qd_item": {
           "type": "FOREIGN KEY",
           "name": "fk_qd_item",
-          "columnName": "manufacturer_part_number",
           "targetTableName": "item",
-          "targetColumnName": "manufacturer_part_number",
           "updateConstraint": "NO_ACTION",
-          "deleteConstraint": "NO_ACTION"
+          "deleteConstraint": "NO_ACTION",
+          "columnNames": [
+            "manufacturer_part_number"
+          ],
+          "targetColumnNames": [
+            "manufacturer_part_number"
+          ]
         }
       }
     },
@@ -1100,7 +1249,9 @@
         "pk": {
           "type": "PRIMARY KEY",
           "name": "pk_purchase_order",
-          "columnNames": ["purchase_order_number"]
+          "columnNames": [
+            "purchase_order_number"
+          ]
         }
       }
     },
@@ -1170,29 +1321,41 @@
         "fk_pod_purchase_order": {
           "type": "FOREIGN KEY",
           "name": "fk_pod_purchase_order",
-          "columnName": "purchase_order_number",
           "targetTableName": "purchase_order",
-          "targetColumnName": "purchase_order_number",
           "updateConstraint": "NO_ACTION",
-          "deleteConstraint": "NO_ACTION"
+          "deleteConstraint": "NO_ACTION",
+          "columnNames": [
+            "purchase_order_number"
+          ],
+          "targetColumnNames": [
+            "purchase_order_number"
+          ]
         },
         "fk_pod_quote": {
           "type": "FOREIGN KEY",
           "name": "fk_pod_q",
-          "columnName": "rfq_number",
           "targetTableName": "quotation",
-          "targetColumnName": "rfq_number",
           "updateConstraint": "NO_ACTION",
-          "deleteConstraint": "NO_ACTION"
+          "deleteConstraint": "NO_ACTION",
+          "columnNames": [
+            "rfq_number"
+          ],
+          "targetColumnNames": [
+            "rfq_number"
+          ]
         },
         "fk_pod_quote3": {
           "type": "FOREIGN KEY",
           "name": "fk_pod_q3",
-          "columnName": "quotation_detail_number",
           "targetTableName": "quotation_detail",
-          "targetColumnName": "quotation_detail_number",
           "updateConstraint": "NO_ACTION",
-          "deleteConstraint": "NO_ACTION"
+          "deleteConstraint": "NO_ACTION",
+          "columnNames": [
+            "quotation_detail_number"
+          ],
+          "targetColumnNames": [
+            "quotation_detail_number"
+          ]
         }
       }
     },
@@ -1222,7 +1385,9 @@
         "pk": {
           "type": "PRIMARY KEY",
           "name": "pk_receipt",
-          "columnNames": ["receipt_number"]
+          "columnNames": [
+            "receipt_number"
+          ]
         }
       }
     },
@@ -1276,34 +1441,49 @@
         "pk": {
           "type": "PRIMARY KEY",
           "name": "pk_receipt_detail",
-          "columnNames": ["receipt_number", "receipt_detail_number"]
+          "columnNames": [
+            "receipt_number",
+            "receipt_detail_number"
+          ]
         },
         "fk_rd_receipt": {
           "type": "FOREIGN KEY",
           "name": "fk_rd_rcpt",
-          "columnName": "receipt_number",
           "targetTableName": "receipt",
-          "targetColumnName": "receipt_number",
           "updateConstraint": "NO_ACTION",
-          "deleteConstraint": "NO_ACTION"
+          "deleteConstraint": "NO_ACTION",
+          "columnNames": [
+            "receipt_number"
+          ],
+          "targetColumnNames": [
+            "receipt_number"
+          ]
         },
         "fk_rd_purchase_order": {
           "type": "FOREIGN KEY",
           "name": "fk_rd_purchase_order",
-          "columnName": "purchase_order_number",
           "targetTableName": "purchase_order",
-          "targetColumnName": "purchase_order_number",
           "updateConstraint": "NO_ACTION",
-          "deleteConstraint": "NO_ACTION"
+          "deleteConstraint": "NO_ACTION",
+          "columnNames": [
+            "purchase_order_number"
+          ],
+          "targetColumnNames": [
+            "purchase_order_number"
+          ]
         },
         "fk_rd_pod": {
           "type": "FOREIGN KEY",
           "name": "fk_rd_pod",
-          "columnName": "purchase_order_detail_number",
           "targetTableName": "purchase_order_detail",
-          "targetColumnName": "purchase_order_detail_number",
           "updateConstraint": "NO_ACTION",
-          "deleteConstraint": "NO_ACTION"
+          "deleteConstraint": "NO_ACTION",
+          "columnNames": [
+            "purchase_order_detail_number"
+          ],
+          "targetColumnNames": [
+            "purchase_order_detail_number"
+          ]
         }
       }
     }

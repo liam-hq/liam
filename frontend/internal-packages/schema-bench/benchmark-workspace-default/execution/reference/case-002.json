@@ -50,7 +50,9 @@
         "primary_key": {
           "type": "PRIMARY KEY",
           "name": "pk_customers",
-          "columnNames": ["Customer Number"]
+          "columnNames": [
+            "Customer Number"
+          ]
         }
       }
     },
@@ -96,7 +98,9 @@
         "primary_key": {
           "type": "PRIMARY KEY",
           "name": "pk_service_plans",
-          "columnNames": ["Plan Number"]
+          "columnNames": [
+            "Plan Number"
+          ]
         }
       }
     },
@@ -150,25 +154,37 @@
         "primary_key": {
           "type": "PRIMARY KEY",
           "name": "pk_subscriptions",
-          "columnNames": ["Customer Number", "Plan Number", "Subscription Time"]
+          "columnNames": [
+            "Customer Number",
+            "Plan Number",
+            "Subscription Time"
+          ]
         },
         "foreign_keys": {
           "type": "FOREIGN KEY",
           "name": "fk_subscriptions_customer",
-          "columnName": "Customer Number",
           "targetTableName": "Customer",
-          "targetColumnName": "Customer Number",
           "updateConstraint": "CASCADE",
-          "deleteConstraint": "CASCADE"
+          "deleteConstraint": "CASCADE",
+          "columnNames": [
+            "Customer Number"
+          ],
+          "targetColumnNames": [
+            "Customer Number"
+          ]
         },
         "foreign_keys_2": {
           "type": "FOREIGN KEY",
           "name": "fk_subscriptions_plan",
-          "columnName": "Plan Number",
           "targetTableName": "Service Plan",
-          "targetColumnName": "Plan Number",
           "updateConstraint": "CASCADE",
-          "deleteConstraint": "CASCADE"
+          "deleteConstraint": "CASCADE",
+          "columnNames": [
+            "Plan Number"
+          ],
+          "targetColumnNames": [
+            "Plan Number"
+          ]
         }
       }
     }
