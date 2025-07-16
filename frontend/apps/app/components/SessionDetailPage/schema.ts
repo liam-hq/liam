@@ -11,6 +11,8 @@ export const timelineItemSchema = v.object({
     'schema_version',
     'error',
     'assistant_log',
+    'ddl_execution_result',
+    'dml_execution_result',
   ]),
   user_id: v.nullable(v.pipe(v.string(), v.uuid())),
   created_at: v.string(),

@@ -28,7 +28,14 @@ export type DesignSessionWithTimelineItems = Pick<
 type BaseTimelineItemEntry = {
   id: string
   content: string
-  type: 'user' | 'assistant' | 'schema_version' | 'error' | 'assistant_log'
+  type:
+    | 'user'
+    | 'assistant'
+    | 'schema_version'
+    | 'error'
+    | 'assistant_log'
+    | 'ddl_execution_result'
+    | 'dml_execution_result'
   timestamp: Date
 }
 
@@ -59,3 +66,5 @@ export type TimelineItemEntry =
   | SchemaVersionTimelineItemEntry
   | ErrorTimelineItemEntry
   | AssistantLogTimelineItemEntry
+  | (BaseTimelineItemEntry & { type: 'ddl_execution_result' })
+  | (BaseTimelineItemEntry & { type: 'dml_execution_result' })

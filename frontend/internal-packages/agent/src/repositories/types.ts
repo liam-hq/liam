@@ -55,6 +55,12 @@ export type CreateTimelineItemParams = {
   | {
       type: 'assistant_log'
     }
+  | {
+      type: 'ddl_execution_result'
+    }
+  | {
+      type: 'dml_execution_result'
+    }
 )
 
 export type UpdateTimelineItemParams = {

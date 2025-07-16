@@ -1,40 +1,68 @@
 'use client'
 
-import type { FC, PropsWithChildren } from 'react'
-import { match } from 'ts-pattern'
+import type { FC } from 'react'
 import type { TimelineItemEntry } from '../../../../types'
 import { AgentMessage } from './components/AgentMessage'
+import { ExecutionResultMessage } from './components/ExecutionResultMessage'
 import { LogMessage } from './components/LogMessage'
 import { UserMessage } from './components/UserMessage'
 import { VersionMessage } from './components/VersionMessage'
 
-type Props = PropsWithChildren & TimelineItemEntry
+type Props = TimelineItemEntry
 
 export const TimelineItem: FC<Props> = (props) => {
-  return match(props)
-    .with({ type: 'schema_version' }, ({ buildingSchemaVersionId }) => (
+  if ('buildingSchemaVersionId' in props) {
+    return (
       <AgentMessage state="default">
-        <VersionMessage buildingSchemaVersionId={buildingSchemaVersionId} />
+        <VersionMessage
+          buildingSchemaVersionId={props.buildingSchemaVersionId}
+        />
       </AgentMessage>
-    ))
-    .with({ type: 'user' }, ({ content, timestamp }) => (
-      <UserMessage content={content} timestamp={timestamp} />
-    ))
-    .with({ type: 'assistant_log' }, ({ content }) => (
+    )
+  }
+
+  const { content, type, timestamp } = props
+
+  const formattedTime = timestamp
+    ? timestamp.toLocaleTimeString([], {
+        hour: '2-digit',
+        minute: '2-digit',
+      })
+    : null
+
+  if (type === 'user') {
+    return <UserMessage content={content} timestamp={timestamp} />
+  }
+
+  if (type === 'assistant_log') {
+    return (
       <AgentMessage state="default">
         <LogMessage content={content} />
       </AgentMessage>
-    ))
-    .otherwise(({ content, timestamp, children }) => (
-      <AgentMessage
-        state="default"
-        message={content}
-        time={timestamp.toLocaleTimeString([], {
-          hour: '2-digit',
-          minute: '2-digit',
-        })}
-      >
-        {children}
+    )
+  }
+
+  if (type === 'ddl_execution_result') {
+    return (
+      <AgentMessage state="default">
+        <ExecutionResultMessage result={{ content }} type="ddl" />
       </AgentMessage>
-    ))
+    )
+  }
+
+  if (type === 'dml_execution_result') {
+    return (
+      <AgentMessage state="default">
+        <ExecutionResultMessage result={{ content }} type="dml" />
+      </AgentMessage>
+    )
+  }
+
+  return (
+    <AgentMessage
+      state="default"
+      message={content}
+      time={formattedTime || ''}
+    />
+  )
 }
