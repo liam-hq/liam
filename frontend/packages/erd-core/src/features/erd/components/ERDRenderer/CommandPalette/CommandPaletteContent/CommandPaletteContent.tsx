@@ -6,6 +6,7 @@ import { useTableSelection } from '@/features/erd/hooks'
 import { useSchema } from '@/stores'
 import { TableNode } from '../../../ERDContent/components'
 import { CommandPaletteSearchInput } from '../CommandPaletteSearchInput'
+import type { InputMode } from '../types'
 import styles from './CommandPaletteContent.module.css'
 
 const getTableLinkHref = (activeTableName: string) => {
@@ -20,6 +21,7 @@ type Props = {
 
 export const CommandPaletteContent: FC<Props> = ({ closeDialog }) => {
   const schema = useSchema()
+  const [inputMode, setInputMode] = useState<InputMode>({ type: 'default' })
   const [tableName, setTableName] = useState<string | null>(null)
   const table = schema.current.tables[tableName ?? '']
   const { selectTable } = useTableSelection()
@@ -59,7 +61,11 @@ export const CommandPaletteContent: FC<Props> = ({ closeDialog }) => {
       }
     >
       <div className={styles.searchArea}>
-        <CommandPaletteSearchInput selectedOption={tableName} />
+        <CommandPaletteSearchInput
+          inputMode={inputMode}
+          selectedOption={tableName}
+          setInputMode={setInputMode}
+        />
         <DialogClose asChild>
           <Button
             size="xs"

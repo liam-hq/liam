@@ -1,11 +1,21 @@
 import { Search } from '@liam-hq/ui'
 import { Command } from 'cmdk'
 import { type FC, useEffect, useMemo, useRef, useState } from 'react'
+import type { InputMode } from '../types'
 import styles from './CommandPaletteSearchInput.module.css'
 
-type Props = { selectedOption: string | null }
+type Props = {
+  selectedOption: string | null
+  inputMode: InputMode
+  setInputMode: (inputMode: InputMode) => void
+}
 
-export const CommandPaletteSearchInput: FC<Props> = ({ selectedOption }) => {
+export const CommandPaletteSearchInput: FC<Props> = ({
+  selectedOption,
+  inputMode,
+  setInputMode,
+}) => {
+  const inputModeTextRef = useRef<HTMLSpanElement>(null)
   const prefixTextRef = useRef<HTMLSpanElement>(null)
   const [inputPaddingLeft, setInputPaddingLeft] = useState(0)
 
@@ -42,11 +52,11 @@ export const CommandPaletteSearchInput: FC<Props> = ({ selectedOption }) => {
   }, [selectedOption])
 
   useEffect(() => {
-    if (!prefixTextRef.current) return
-
-    const inputPaddingLeft = prefixTextRef.current.offsetWidth
+    const inputPaddingLeft =
+      (prefixTextRef.current?.offsetWidth ?? 0) +
+      (inputModeTextRef.current?.offsetWidth ?? 0)
     setInputPaddingLeft(inputPaddingLeft)
-  }, [prefix])
+  }, [inputMode, prefix])
 
   return (
     <div className={styles.container}>
@@ -61,6 +71,12 @@ export const CommandPaletteSearchInput: FC<Props> = ({ selectedOption }) => {
           style={{ paddingLeft: inputPaddingLeft }}
         />
         <div className={styles.suggestion}>
+          {inputMode.type !== 'default' && (
+            <span ref={inputModeTextRef} className={styles.inputModeIndicator}>
+              {inputMode.type === 'table' && inputMode.name}
+              {inputMode.type === 'command' && '>'}
+            </span>
+          )}
           <span ref={prefixTextRef} className={styles.completeSuggestion}>
             {prefix}
           </span>
