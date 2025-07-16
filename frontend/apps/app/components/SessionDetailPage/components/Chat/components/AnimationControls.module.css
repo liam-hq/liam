@@ -1,21 +1,21 @@
 .container {
-  margin-bottom: 20px;
+  margin-bottom: var(--spacing-5);
   display: flex;
-  gap: 10px;
+  gap: var(--spacing-2half);
 }
 
 .button {
-  padding: 8px 16px;
-  border-radius: 4px;
-  border: 1px solid #ccc;
+  padding: var(--spacing-2) var(--spacing-4);
+  border-radius: var(--border-radius-base);
+  border: var(--border-width-base) solid var(--button-border);
 }
 
 .button:enabled {
-  background: #fff;
+  background: var(--button-background);
   cursor: pointer;
 }
 
 .button:disabled {
-  background: #f0f0f0;
+  background: var(--button-disabled-background);
   cursor: not-allowed;
 }
