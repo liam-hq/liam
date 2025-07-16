@@ -2,8 +2,8 @@ import { Eye, EyeClosed, SidebarMenuAction } from '@liam-hq/ui'
 import { type FC, type MouseEvent, useCallback } from 'react'
 import { toggleLogEvent } from '@/features/gtm/utils'
 import { useCustomReactflow } from '@/features/reactflow/hooks'
-import { useVersion } from '@/providers'
-import { useUserEditing } from '@/stores'
+import { useVersionOrThrow } from '@/providers'
+import { useUserEditingOrThrow } from '@/stores'
 import styles from './VisibilityButton.module.css'
 
 type Props = {
@@ -12,9 +12,9 @@ type Props = {
 }
 
 export const VisibilityButton: FC<Props> = ({ tableName, hidden }) => {
-  const { toggleHiddenNodeId } = useUserEditing()
+  const { toggleHiddenNodeId } = useUserEditingOrThrow()
   const { updateNode } = useCustomReactflow()
-  const { version } = useVersion()
+  const { version } = useVersionOrThrow()
 
   const handleClick = useCallback(
     (event: MouseEvent) => {

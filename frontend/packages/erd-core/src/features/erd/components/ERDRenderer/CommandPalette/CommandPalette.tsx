@@ -14,7 +14,11 @@ import { CommandPaletteContent } from './CommandPaletteContent'
 import { useCommandPalette } from './CommandPaletteProvider'
 
 export const CommandPalette: FC = () => {
-  const { open, setOpen, toggleOpen } = useCommandPalette()
+  const commandPaletteResult = useCommandPalette()
+  if (commandPaletteResult.isErr()) {
+    throw commandPaletteResult.error
+  }
+  const { open, setOpen, toggleOpen } = commandPaletteResult.value
 
   // Toggle the menu when ⌘K is pressed
   useEffect(() => {
