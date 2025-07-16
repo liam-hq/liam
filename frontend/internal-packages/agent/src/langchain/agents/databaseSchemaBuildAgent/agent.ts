@@ -3,11 +3,14 @@ import {
   type BaseMessage,
   SystemMessage,
 } from '@langchain/core/messages'
-import { ChatOpenAI } from '@langchain/openai'
 import { operationsSchema } from '@liam-hq/db-structure'
 import { toJsonSchema } from '@valibot/to-json-schema'
 import { ok, Result, ResultAsync } from 'neverthrow'
 import * as v from 'valibot'
+import {
+  createWebSearchEnabledModel,
+  type WebSearchConfig,
+} from '../../tools/webSearch'
 import { createLangfuseHandler } from '../../utils/telemetry'
 import { type DesignAgentPromptVariables, designAgentPrompt } from './prompts'
 
@@ -23,16 +26,25 @@ export type InvokeResult = {
   operations: DesignResponse['operations']
 }
 
-const jsonSchema = toJsonSchema(designResponseSchema)
-const model = new ChatOpenAI({
-  model: 'o4-mini',
-  callbacks: [createLangfuseHandler()],
-}).withStructuredOutput(jsonSchema)
+const createDesignModel = (webSearchConfig?: WebSearchConfig) => {
+  const jsonSchema = toJsonSchema(designResponseSchema)
+  const baseModel = createWebSearchEnabledModel(
+    {
+      model: 'o4-mini',
+      callbacks: [createLangfuseHandler()],
+    },
+    webSearchConfig,
+  )
+  return baseModel.withStructuredOutput(jsonSchema)
+}
 
 export const invokeDesignAgent = (
   variables: DesignAgentPromptVariables,
   messages: BaseMessage[],
+  webSearchConfig?: WebSearchConfig,
 ): ResultAsync<InvokeResult, Error> => {
+  const model = createDesignModel(webSearchConfig)
+
   const formatPrompt = ResultAsync.fromSafePromise(
     designAgentPrompt.format(variables),
   )

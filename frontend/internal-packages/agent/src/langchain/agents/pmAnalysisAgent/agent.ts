@@ -1,6 +1,10 @@
-import { ChatOpenAI } from '@langchain/openai'
+import type { ChatOpenAI } from '@langchain/openai'
 import { toJsonSchema } from '@valibot/to-json-schema'
 import * as v from 'valibot'
+import {
+  createWebSearchEnabledModel,
+  type WebSearchConfig,
+} from '../../tools/webSearch'
 import { createLangfuseHandler } from '../../utils/telemetry'
 import type { BasePromptVariables, ChatAgent } from '../../utils/types'
 import { pmAnalysisPrompt } from './prompts'
@@ -18,11 +22,14 @@ export class PMAnalysisAgent
 {
   private analysisModel: ReturnType<ChatOpenAI['withStructuredOutput']>
 
-  constructor() {
-    const baseModel = new ChatOpenAI({
-      model: 'o4-mini',
-      callbacks: [createLangfuseHandler()],
-    })
+  constructor(webSearchConfig?: WebSearchConfig) {
+    const baseModel = createWebSearchEnabledModel(
+      {
+        model: 'o4-mini',
+        callbacks: [createLangfuseHandler()],
+      },
+      webSearchConfig,
+    )
 
     // Convert valibot schema to JSON Schema and bind to model
     const analysisJsonSchema = toJsonSchema(requirementsAnalysisSchema)

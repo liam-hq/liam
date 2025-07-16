@@ -5,6 +5,7 @@ import {
   type InvokeResult,
   invokeDesignAgent,
 } from '../../../langchain/agents/databaseSchemaBuildAgent/agent'
+import type { WebSearchConfig } from '../../../langchain/utils/types'
 import type { Repositories } from '../../../repositories'
 import { convertSchemaToText } from '../../../utils/convertSchemaToText'
 import { getConfigurable } from '../shared/getConfigurable'
@@ -177,7 +178,16 @@ export async function designSchemaNode(
     'Analyzing table structure and relationships...',
   )
 
-  const invokeResult = await invokeDesignAgent({ schemaText }, messages)
+  const webSearchConfig: WebSearchConfig = {
+    enabled: process.env['WEB_SEARCH_ENABLED'] === 'true',
+    searchContextSize: 'medium',
+  }
+
+  const invokeResult = await invokeDesignAgent(
+    { schemaText },
+    messages,
+    webSearchConfig,
+  )
 
   if (invokeResult.isErr()) {
     await logAssistantMessage(state, repositories, 'Schema design failed')

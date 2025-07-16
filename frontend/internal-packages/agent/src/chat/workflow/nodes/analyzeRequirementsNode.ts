@@ -2,7 +2,10 @@ import { AIMessage } from '@langchain/core/messages'
 import type { RunnableConfig } from '@langchain/core/runnables'
 import { ResultAsync } from 'neverthrow'
 import { PMAnalysisAgent } from '../../../langchain/agents'
-import type { BasePromptVariables } from '../../../langchain/utils/types'
+import type {
+  BasePromptVariables,
+  WebSearchConfig,
+} from '../../../langchain/utils/types'
 import { getConfigurable } from '../shared/getConfigurable'
 import type { WorkflowState } from '../types'
 import { formatMessagesToHistory } from '../utils/messageUtils'
@@ -27,7 +30,12 @@ export async function analyzeRequirementsNode(
 
   await logAssistantMessage(state, repositories, 'Analyzing requirements...')
 
-  const pmAnalysisAgent = new PMAnalysisAgent()
+  const webSearchConfig: WebSearchConfig = {
+    enabled: process.env['WEB_SEARCH_ENABLED'] === 'true',
+    searchContextSize: 'medium',
+  }
+
+  const pmAnalysisAgent = new PMAnalysisAgent(webSearchConfig)
 
   const promptVariables: BasePromptVariables = {
     chat_history: formatMessagesToHistory(state.messages),
