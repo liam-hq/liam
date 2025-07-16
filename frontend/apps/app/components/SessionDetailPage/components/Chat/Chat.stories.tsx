@@ -3,11 +3,9 @@ import { useEffect, useMemo, useState } from 'react'
 import type { TimelineItemEntry } from '../../types'
 import { Chat } from './Chat'
 import { AnimationControls } from './components/AnimationControls'
-import {
-  ANIMATION_DELAYS,
-  ANIMATION_THRESHOLDS,
-} from './constants/animationConstants'
+import { ANIMATION_THRESHOLDS } from './constants/animationConstants'
 import { useAnimationState } from './hooks/useAnimationState'
+import { getAnimationDelays } from './utils/animationUtils'
 import {
   type AgentStep,
   createDynamicTimelineItems,
@@ -445,11 +443,12 @@ const InteractiveDemo = () => {
 
     const currentStepData = agentSteps[animation.currentStep - 1]
     const hasHourglassTask = currentStepData && !currentStepData.willFail
+    const animationDelays = getAnimationDelays()
 
     const delay =
       hasHourglassTask && animation.currentStep < agentSteps.length
-        ? ANIMATION_DELAYS.HOURGLASS_TASK
-        : ANIMATION_DELAYS.NORMAL_TASK
+        ? animationDelays.HOURGLASS_TASK
+        : animationDelays.NORMAL_TASK
 
     const timer = setTimeout(() => {
       animation.setCurrentStep((prev) => prev + 1)
@@ -459,6 +458,7 @@ const InteractiveDemo = () => {
   }, [animation.isPlaying, animation.currentStep, agentSteps])
 
   const getAnimationDelay = (index: number) => {
+    const animationDelays = getAnimationDelays()
     if (
       index >= ANIMATION_THRESHOLDS.RECOVERY_START_INDEX &&
       index < timelineItemsState.length + recoverySteps.length
@@ -469,13 +469,13 @@ const InteractiveDemo = () => {
       const isHourglassStep =
         currentRecoveryStep && !currentRecoveryStep.willFail
       return isHourglassStep
-        ? ANIMATION_DELAYS.HOURGLASS_TASK
+        ? animationDelays.HOURGLASS_TASK
         : index - ANIMATION_THRESHOLDS.RECOVERY_START_INDEX <
             recoverySteps.length
-          ? ANIMATION_DELAYS.NORMAL_TASK
-          : ANIMATION_DELAYS.QUICK_TASK
+          ? animationDelays.NORMAL_TASK
+          : animationDelays.QUICK_TASK
     }
-    return ANIMATION_DELAYS.NORMAL_TASK
+    return animationDelays.NORMAL_TASK
   }
 
   // Handle error display and recovery animation

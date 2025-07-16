@@ -24,6 +24,13 @@ const RECOVERY_STEP_INDEX_OFFSET = 8
 // These represent the message indices that should be shown progressively
 const INITIAL_COMPLETED_MESSAGE_INDICES = [8, 9, 10, 11]
 
+// Step thresholds for agent progress checks
+const PM_AGENT_MAX_STEP = 3
+const DB_SCHEMA_MIN_STEP = 4
+const DB_SCHEMA_MAX_STEP = 6
+const DB_CREATION_MIN_STEP = 7
+const DB_CREATION_MAX_STEP = 9
+
 // Base timestamp for generating timeline entries
 const BASE_TIMESTAMP = new Date('2025-07-14T06:39:00Z')
 
@@ -157,7 +164,7 @@ const addPMAgentProgress = (
   isPlaying: boolean,
   mockTimelineItems: TimelineItemEntry[],
 ): void => {
-  if (currentStep <= 3) {
+  if (currentStep <= PM_AGENT_MAX_STEP) {
     items.push({
       id: 'timeline-pm-progress',
       type: 'assistant_pm',
@@ -165,7 +172,9 @@ const addPMAgentProgress = (
       timestamp: TIMELINE_TIMESTAMPS.PM_PROGRESS,
     })
   } else {
-    items.push(mockTimelineItems[1])
+    if (mockTimelineItems[1]) {
+      items.push(mockTimelineItems[1])
+    }
   }
 }
 
@@ -176,7 +185,7 @@ const addDBAgentProgress = (
   isPlaying: boolean,
   mockTimelineItems: TimelineItemEntry[],
 ): void => {
-  if (currentStep >= 4 && currentStep <= 6) {
+  if (currentStep >= DB_SCHEMA_MIN_STEP && currentStep <= DB_SCHEMA_MAX_STEP) {
     items.push({
       id: 'timeline-db-schema-progress',
       type: 'assistant_db',
@@ -185,8 +194,13 @@ const addDBAgentProgress = (
     })
   }
 
-  if (currentStep >= 7 && currentStep <= 9) {
-    items.push(mockTimelineItems[2])
+  if (
+    currentStep >= DB_CREATION_MIN_STEP &&
+    currentStep <= DB_CREATION_MAX_STEP
+  ) {
+    if (mockTimelineItems[2]) {
+      items.push(mockTimelineItems[2])
+    }
 
     items.push({
       id: 'timeline-db-creation-progress',
@@ -316,13 +330,17 @@ const addPostAgentStepsMessages = (
   isPlaying: boolean,
 ): void => {
   if (currentStep === agentSteps.length) {
-    items.push(mockTimelineItems[5])
+    if (mockTimelineItems[5]) {
+      items.push(mockTimelineItems[5])
+    }
   }
 
   addInitialCompletedMessages(items, mockTimelineItems)
 
   if (currentIndex > 0) {
-    items.push(mockTimelineItems[6])
+    if (mockTimelineItems[6]) {
+      items.push(mockTimelineItems[6])
+    }
 
     if (currentIndex >= RECOVERY_STEP_INDEX_OFFSET) {
       const recoveryStepIndex = currentIndex - RECOVERY_STEP_INDEX_OFFSET
@@ -371,7 +389,7 @@ export const createDynamicTimelineItems = (
       mockTimelineItems,
     )
 
-    if (currentStep > 3) {
+    if (currentStep > PM_AGENT_MAX_STEP) {
       addDBAgentProgress(
         items,
         currentStep,

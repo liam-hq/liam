@@ -19,23 +19,17 @@ export const LogMessage: FC<LogMessageProps> = ({ content }) => {
     const hasCheckOrCross = line.includes('✓') || line.includes('✗')
 
     // Replace ✓, ✗, ⏳, and style • lines
-    const parts = line.split(/(\s*✓\s*|\s*✗\s*|⏳)/).map((part, _partIndex) => {
+    const parts = line.split(/(\s*✓\s*|\s*✗\s*|⏳)/).map((part) => {
       if (part.includes('✓')) {
         return (
-          <span
-            key={`${lineIndex}-check-${part.trim()}`}
-            className={styles.checkmark}
-          >
+          <span key={`check-${part}`} className={styles.checkmark}>
             {part}
           </span>
         )
       }
       if (part.includes('✗')) {
         return (
-          <span
-            key={`${lineIndex}-cross-${part.trim()}`}
-            className={styles.crossmark}
-          >
+          <span key={`cross-${part}`} className={styles.crossmark}>
             {part}
           </span>
         )
@@ -49,7 +43,7 @@ export const LogMessage: FC<LogMessageProps> = ({ content }) => {
     if (hasCheckOrCross || isCurrentTask) {
       return (
         <span
-          key={`line-${lineIndex}-${line.substring(0, 10)}`}
+          key={`line-${line.substring(0, 20).replace(/\s+/g, '-')}`}
           className={clsx(
             styles.indentedLine,
             isPending ? styles.pendingTask : '',
@@ -64,7 +58,7 @@ export const LogMessage: FC<LogMessageProps> = ({ content }) => {
 
     return (
       <span
-        key={`line-${lineIndex}-${line.substring(0, 10)}`}
+        key={`line-${line.substring(0, 20).replace(/\s+/g, '-')}`}
         className={isPending ? styles.pendingTask : undefined}
       >
         {parts}

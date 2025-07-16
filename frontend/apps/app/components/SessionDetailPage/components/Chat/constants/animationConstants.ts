@@ -4,6 +4,12 @@ export const ANIMATION_DELAYS = {
   QUICK_TASK: 500,
 } as const
 
+export const REDUCED_MOTION_DELAYS = {
+  HOURGLASS_TASK: 0,
+  NORMAL_TASK: 0,
+  QUICK_TASK: 0,
+} as const
+
 export const ANIMATION_THRESHOLDS = {
   RETRY_THRESHOLD: 10,
   RECOVERY_START_INDEX: 8,
