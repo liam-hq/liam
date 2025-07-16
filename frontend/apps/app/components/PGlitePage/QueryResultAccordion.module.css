@@ -1,0 +1,95 @@
+.accordionContainer {
+  background: var(--color-gray-50);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-medium);
+  overflow: hidden;
+  margin-bottom: var(--spacing-3);
+}
+
+.statusBadge {
+  padding: var(--spacing-1) var(--spacing-3);
+  font-size: var(--font-size-small);
+  font-weight: var(--font-weight-medium);
+  text-align: center;
+}
+
+.success {
+  background-color: var(--color-success-light);
+  color: var(--color-success-dark);
+}
+
+.error {
+  background-color: var(--color-error-light);
+  color: var(--color-error-dark);
+}
+
+.accordionSection {
+  border-top: 1px solid var(--color-border);
+}
+
+.accordionHeader {
+  width: 100%;
+  padding: var(--spacing-3) var(--spacing-4);
+  background: var(--color-white);
+  border: none;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  transition: background-color 150ms ease-out;
+}
+
+.accordionHeader:hover {
+  background-color: var(--color-gray-100);
+}
+
+.accordionHeader:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: -2px;
+}
+
+.accordionTitle {
+  font-size: var(--font-size-medium);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-primary);
+}
+
+.accordionIcon {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-small);
+  transition: transform 150ms ease-out;
+}
+
+.accordionContent {
+  padding: var(--spacing-3) var(--spacing-4);
+  background: var(--color-white);
+  border-top: 1px solid var(--color-border);
+}
+
+.queryContent,
+.resultContent {
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-small);
+  line-height: 1.5;
+  background: var(--color-gray-50);
+  padding: var(--spacing-3);
+  border-radius: var(--border-radius-small);
+  overflow-x: auto;
+  margin: 0;
+}
+
+.metadata {
+  margin-top: var(--spacing-3);
+  padding-top: var(--spacing-3);
+  border-top: 1px solid var(--color-border);
+  font-size: var(--font-size-small);
+  color: var(--color-text-secondary);
+}
+
+.metadata > div {
+  margin-bottom: var(--spacing-1);
+}
+
+.metadata > div:last-child {
+  margin-bottom: 0;
+}

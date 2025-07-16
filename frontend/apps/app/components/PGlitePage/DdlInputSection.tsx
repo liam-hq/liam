@@ -2,7 +2,7 @@
 
 import clsx from 'clsx'
 import styles from './DDLInputSection.module.css'
-import { QueryResultBox } from './QueryResultBox'
+import { QueryResultAccordion } from './QueryResultAccordion'
 import type { DDLState } from './utils'
 
 type DDLInputSectionProps = {
@@ -46,7 +46,7 @@ CREATE TABLE posts (id SERIAL PRIMARY KEY, title TEXT, user_id INTEGER REFERENCE
       {/* DDL Execution Results */}
       <div className={styles.buttonGroup}>
         {ddlState.results.map((result) => (
-          <QueryResultBox key={result.id} result={result} />
+          <QueryResultAccordion key={result.id} result={result} />
         ))}
       </div>
     </div>

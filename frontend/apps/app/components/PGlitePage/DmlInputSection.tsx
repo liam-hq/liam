@@ -2,7 +2,7 @@
 
 import clsx from 'clsx'
 import styles from './DMLInputSection.module.css'
-import { QueryResultBox } from './QueryResultBox'
+import { QueryResultAccordion } from './QueryResultAccordion'
 import type { DMLSection } from './utils'
 
 type DMLInputSectionProps = {
@@ -51,7 +51,7 @@ SELECT * FROM users;"
       {/* DML Execution Results */}
       <div className={styles.buttonGroup}>
         {section.results.map((result) => (
-          <QueryResultBox key={result.id} result={result} />
+          <QueryResultAccordion key={result.id} result={result} />
         ))}
       </div>
     </div>
