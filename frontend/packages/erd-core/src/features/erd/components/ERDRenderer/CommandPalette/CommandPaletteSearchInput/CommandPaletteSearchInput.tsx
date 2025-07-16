@@ -39,19 +39,6 @@ export const CommandPaletteSearchInput: FC<Props> = ({
   }, [searchText, selectedOption])
 
   useEffect(() => {
-    if (selectedOption === null) return
-
-    const down = (event: KeyboardEvent) => {
-      if (event.key === 'Tab') {
-        setSearchText(selectedOption)
-      }
-    }
-
-    document.addEventListener('keydown', down)
-    return () => document.removeEventListener('keydown', down)
-  }, [selectedOption])
-
-  useEffect(() => {
     const inputPaddingLeft =
       (prefixTextRef.current?.offsetWidth ?? 0) +
       (inputModeTextRef.current?.offsetWidth ?? 0)
@@ -65,6 +52,20 @@ export const CommandPaletteSearchInput: FC<Props> = ({
         <Command.Input
           value={searchText}
           onValueChange={setSearchText}
+          onKeyDown={(event) => {
+            if (event.key === 'Backspace' && searchText === '') {
+              setInputMode({ type: 'default' })
+            }
+            if (event.key === '>' && inputMode.type === 'default') {
+              setInputMode({ type: 'command' })
+              event.preventDefault()
+            }
+            if (event.key === 'Tab' && selectedOption) {
+              setInputMode({ type: 'table', name: selectedOption })
+              setSearchText('')
+              event.preventDefault()
+            }
+          }}
           placeholder="Search"
           onBlur={(event) => event.target.focus()}
           className={styles.input}
@@ -73,7 +74,7 @@ export const CommandPaletteSearchInput: FC<Props> = ({
         <div className={styles.suggestion}>
           {inputMode.type !== 'default' && (
             <span ref={inputModeTextRef} className={styles.inputModeIndicator}>
-              {inputMode.type === 'table' && inputMode.name}
+              {inputMode.type === 'table' && `${inputMode.name} /`}
               {inputMode.type === 'command' && '>'}
             </span>
           )}
