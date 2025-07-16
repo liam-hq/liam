@@ -1,0 +1,16 @@
+.container {
+  margin: 16px 0;
+}
+
+.title {
+  margin: 0 0 12px 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.resultsContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}

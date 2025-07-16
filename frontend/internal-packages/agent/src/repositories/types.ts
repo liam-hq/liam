@@ -1,6 +1,7 @@
 import type { Artifact } from '@liam-hq/artifact'
 import type { Database, Tables } from '@liam-hq/db/supabase/database.types'
 import type { Schema } from '@liam-hq/db-structure'
+import type { SqlResult } from '@liam-hq/pglite-server/src/types'
 import type { Operation } from 'fast-json-patch'
 
 export type SchemaData = {
@@ -54,6 +55,14 @@ export type CreateTimelineItemParams = {
     }
   | {
       type: 'assistant_log'
+    }
+  | {
+      type: 'ddl_execution'
+      metadata?: { sqlResults: SqlResult[] }
+    }
+  | {
+      type: 'dml_execution'
+      metadata?: { sqlResults: SqlResult[] }
     }
 )
 

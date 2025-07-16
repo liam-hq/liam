@@ -1,5 +1,6 @@
 import type { BaseMessage } from '@langchain/core/messages'
 import type { Schema } from '@liam-hq/db-structure'
+import type { SqlResult } from '@liam-hq/pglite-server/src/types'
 import type { Usecase } from '../../langchain/agents/qaGenerateUsecaseAgent/agent'
 import type { Repositories } from '../../repositories'
 import type { NodeLogger } from '../../utils/nodeLogger'
@@ -33,6 +34,9 @@ export type WorkflowState = {
   // DML execution results
   dmlExecutionSuccessful?: boolean | undefined
   dmlExecutionErrors?: string | undefined
+
+  ddlExecutionResults?: SqlResult[] | undefined
+  dmlExecutionResults?: SqlResult[] | undefined
 
   // Schema update fields
   buildingSchemaId: string

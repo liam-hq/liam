@@ -5,7 +5,10 @@ import type { SqlResult } from '@liam-hq/pglite-server/src/types'
 import { WORKFLOW_RETRY_CONFIG } from '../constants'
 import { getConfigurable } from '../shared/getConfigurable'
 import type { WorkflowState } from '../types'
-import { logAssistantMessage } from '../utils/timelineLogger'
+import {
+  logAssistantMessage,
+  logDdlExecutionResults,
+} from '../utils/timelineLogger'
 
 /**
  * Execute DDL Node - Generates DDL from schema and executes it
@@ -131,8 +134,11 @@ export async function executeDdlNode(
     'Database created successfully',
   )
 
+  await logDdlExecutionResults(state, repositories, results)
+
   return {
     ...state,
     ddlStatements,
+    ddlExecutionResults: results,
   }
 }

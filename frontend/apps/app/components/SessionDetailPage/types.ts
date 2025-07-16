@@ -1,4 +1,5 @@
 import type { Tables } from '@liam-hq/db'
+import type { SqlResult } from '@liam-hq/pglite-server/src/types'
 import type * as v from 'valibot'
 import type { timelineItemSchema } from './schema'
 
@@ -28,7 +29,14 @@ export type DesignSessionWithTimelineItems = Pick<
 type BaseTimelineItemEntry = {
   id: string
   content: string
-  type: 'user' | 'assistant' | 'schema_version' | 'error' | 'assistant_log'
+  type:
+    | 'user'
+    | 'assistant'
+    | 'schema_version'
+    | 'error'
+    | 'assistant_log'
+    | 'ddl_execution'
+    | 'dml_execution'
   timestamp: Date
 }
 
@@ -53,9 +61,21 @@ export type AssistantLogTimelineItemEntry = BaseTimelineItemEntry & {
   type: 'assistant_log'
 }
 
+export type DdlExecutionTimelineItemEntry = BaseTimelineItemEntry & {
+  type: 'ddl_execution'
+  sqlResults: SqlResult[]
+}
+
+export type DmlExecutionTimelineItemEntry = BaseTimelineItemEntry & {
+  type: 'dml_execution'
+  sqlResults: SqlResult[]
+}
+
 export type TimelineItemEntry =
   | UserTimelineItemEntry
   | AssistantTimelineItemEntry
   | SchemaVersionTimelineItemEntry
   | ErrorTimelineItemEntry
   | AssistantLogTimelineItemEntry
+  | DdlExecutionTimelineItemEntry
+  | DmlExecutionTimelineItemEntry

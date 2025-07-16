@@ -391,7 +391,8 @@ export class SupabaseSchemaRepository implements SchemaRepository {
       .insert({
         design_session_id: designSessionId,
         content,
-        type,
+        // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+        type: type as any, // TODO: Remove type assertion after database migration is applied
         user_id: userId,
         building_schema_version_id: buildingSchemaVersionId,
         updated_at: now,

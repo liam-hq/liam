@@ -3,6 +3,7 @@ import { executeQuery } from '@liam-hq/pglite-server'
 import type { SqlResult } from '@liam-hq/pglite-server/src/types'
 import { getConfigurable } from '../shared/getConfigurable'
 import type { WorkflowState } from '../types'
+import { logDmlExecutionResults } from '../utils/timelineLogger'
 
 /**
  * Validate Schema Node - Combined DDL/DML Execution & Validation
@@ -60,8 +61,18 @@ export async function validateSchemaNode(
     }
   }
 
+  const configurableResult2 = getConfigurable(config)
+  if (configurableResult2.isOk()) {
+    await logDmlExecutionResults(
+      state,
+      configurableResult2.value.repositories,
+      results,
+    )
+  }
+
   return {
     ...state,
     dmlExecutionSuccessful: true,
+    dmlExecutionResults: results,
   }
 }
