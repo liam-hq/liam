@@ -94,7 +94,7 @@ function extractTableComment(argNodes: Node[]): string | null {
 
 function extractIdColumnAndConstraint(
   argNodes: Node[],
-): [Column, PrimaryKeyConstraint] | [null, null] {
+): [Column, PrimaryKeyConstraint] | [null, PrimaryKeyConstraint] | [null, null] {
   const keywordHash = argNodes.find((node) => node instanceof KeywordHashNode)
 
   const idColumn = aColumn({
@@ -109,6 +109,35 @@ function extractIdColumnAndConstraint(
   }
 
   if (keywordHash) {
+    // Check for composite primary key first
+    const primaryKeyAssoc = keywordHash.elements.find(
+      (elem) =>
+        elem instanceof AssocNode &&
+        elem.key instanceof SymbolNode &&
+        elem.key.unescaped.value === 'primary_key',
+    )
+
+    if (primaryKeyAssoc && primaryKeyAssoc instanceof AssocNode) {
+      if (primaryKeyAssoc.value instanceof ArrayNode) {
+        const columnNames: string[] = []
+        for (const elem of primaryKeyAssoc.value.compactChildNodes()) {
+          if (elem instanceof SymbolNode) {
+            columnNames.push(elem.unescaped.value)
+          }
+        }
+        
+        if (columnNames.length > 0) {
+          const compositePrimaryKeyConstraint: PrimaryKeyConstraint = {
+            type: 'PRIMARY KEY',
+            name: `PRIMARY_${columnNames.join('_')}`,
+            columnNames: columnNames,
+          }
+          return [null, compositePrimaryKeyConstraint]
+        }
+      }
+    }
+
+    // Check for id column configuration
     const idAssoc = keywordHash.elements.find(
       (elem) =>
         elem instanceof AssocNode &&
@@ -733,6 +762,8 @@ class SchemaFinder extends Visitor {
     const [idColumn, idConstraint] = extractIdColumnAndConstraint(argNodes)
     if (idColumn) {
       columns.push(idColumn)
+    }
+    if (idConstraint) {
       constraints.push(idConstraint)
     }
 
@@ -744,6 +775,16 @@ class SchemaFinder extends Visitor {
     indexes.push(...extractIndexes)
     constraints.push(...extractConstraints)
     this.errors.push(...extractErrors)
+
+    // Mark composite primary key columns as notNull: true
+    if (idConstraint && idConstraint.columnNames.length > 1) {
+      for (const columnName of idConstraint.columnNames) {
+        const column = columns.find((col) => col.name === columnName)
+        if (column) {
+          column.notNull = true
+        }
+      }
+    }
 
     table.columns = columns.reduce((acc, column) => {
       acc[column.name] = column
