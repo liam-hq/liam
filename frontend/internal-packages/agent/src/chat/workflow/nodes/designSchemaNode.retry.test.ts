@@ -81,10 +81,9 @@ describe('designSchemaNode retry behavior', () => {
       }),
       expect.arrayContaining([
         expect.objectContaining({
-          content: expect.stringContaining('Create a users table'),
-        }),
-        expect.objectContaining({
-          content: expect.stringContaining('Foreign key constraint error'),
+          content: expect.stringContaining(
+            'The following DDL execution failed: Foreign key constraint error',
+          ),
         }),
       ]),
       expect.objectContaining({
