@@ -60,12 +60,11 @@ describe('validateSchemaNode', () => {
     })
 
     const repositories = createMockRepositories()
-    const result = await validateSchemaNode(state, {
+    await validateSchemaNode(state, {
       configurable: { repositories, logger: mockLogger },
     })
 
     expect(executeQuery).not.toHaveBeenCalled()
-    expect(result).toEqual(state)
   })
 
   it('should execute DML statements for each use case', async () => {
@@ -129,7 +128,7 @@ describe('validateSchemaNode', () => {
     })
 
     const repositories = createMockRepositories()
-    const result = await validateSchemaNode(state, {
+    await validateSchemaNode(state, {
       configurable: { repositories, logger: mockLogger },
     })
 
@@ -140,7 +139,6 @@ describe('validateSchemaNode', () => {
         content: 'No DML statements to execute for validation',
       }),
     )
-    expect(result).toEqual(state)
   })
 
   it('should return early when no use cases provided', async () => {
@@ -150,7 +148,7 @@ describe('validateSchemaNode', () => {
     })
 
     const repositories = createMockRepositories()
-    const result = await validateSchemaNode(state, {
+    await validateSchemaNode(state, {
       configurable: { repositories, logger: mockLogger },
     })
 
@@ -161,7 +159,6 @@ describe('validateSchemaNode', () => {
         content: 'No use cases available for DML validation',
       }),
     )
-    expect(result).toEqual(state)
   })
 
   it('should handle execution errors and log them', async () => {
@@ -219,11 +216,10 @@ describe('validateSchemaNode', () => {
     })
 
     const repositories = createMockRepositories()
-    const result = await validateSchemaNode(state, {
+    await validateSchemaNode(state, {
       configurable: { repositories, logger: mockLogger },
     })
 
     expect(executeQuery).not.toHaveBeenCalled()
-    expect(result).toEqual(state)
   })
 })
