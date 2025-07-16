@@ -8,6 +8,7 @@
     "@huggingface/transformers": "3.3.3",
     "@liam-hq/db-structure": "workspace:*",
     "neverthrow": "8.2.0",
+    "openai": "5.9.2",
     "valibot": "1.1.0"
   },
   "devDependencies": {
@@ -18,6 +19,7 @@
   },
   "scripts": {
     "evaluateSchema": "node --experimental-strip-types src/cli/evaluateSchema.ts",
+    "executeOpenai": "node --experimental-strip-types src/cli/executeOpenai.ts",
     "fmt": "concurrently \"pnpm:fmt:*\"",
     "fmt:biome": "biome check --write --unsafe .",
     "fmt:eslint": "eslint --fix .",
