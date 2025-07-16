@@ -41,7 +41,7 @@ describe('validateSchemaNode', () => {
         getSchema: vi.fn(),
         getDesignSession: vi.fn(),
         createVersion: vi.fn(),
-        createTimelineItem: vi.fn(),
+        createTimelineItem: vi.fn().mockResolvedValue({ success: true }),
         createArtifact: vi.fn(),
         updateArtifact: vi.fn(),
         getArtifact: vi.fn(),
