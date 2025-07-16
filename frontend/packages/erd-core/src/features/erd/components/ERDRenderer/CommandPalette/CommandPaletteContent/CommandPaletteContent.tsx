@@ -1,4 +1,4 @@
-import { Button, Table2 } from '@liam-hq/ui'
+import { Button, Copy, Table2 } from '@liam-hq/ui'
 import { DialogClose } from '@radix-ui/react-dialog'
 import { Command } from 'cmdk'
 import { type FC, useCallback, useEffect, useState } from 'react'
@@ -118,6 +118,17 @@ export const CommandPaletteContent: FC<Props> = ({ closeDialog }) => {
                 </a>
               </Command.Item>
             ))}
+          </Command.Group>
+          <Command.Group heading="Command">
+            <Command.Item
+              value="command|Copy Link"
+              onSelect={async () => {
+                navigator.clipboard.writeText(location.href)
+              }}
+            >
+              <Copy className={styles.itemIcon} />
+              <span className={styles.itemText}>Copy Link</span>
+            </Command.Item>
           </Command.Group>
         </Command.List>
         <div

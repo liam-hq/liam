@@ -62,8 +62,12 @@ export const CommandPaletteSearchInput: FC<Props> = ({
               event.preventDefault()
             }
             if (event.key === 'Tab' && suggestion) {
-              setInputMode({ type: 'table', name: suggestion.name })
-              setSearchText('')
+              setInputMode(suggestion)
+              if (suggestion.type === 'command') {
+                setSearchText(suggestion.name)
+              } else if (suggestion.type === 'table') {
+                setSearchText('')
+              }
               event.preventDefault()
             }
           }}
