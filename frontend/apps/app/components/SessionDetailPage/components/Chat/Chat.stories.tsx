@@ -576,3 +576,73 @@ export const Default: Story = {
   },
   render: () => <InteractiveDemo />,
 }
+
+// Mock timeline items without emojis to test auto-enhancement
+const mockTimelineItemsWithoutEmojis: TimelineItemEntry[] = [
+  {
+    id: 'timeline-1',
+    type: 'user',
+    content:
+      'I want to design a database for a greenhouse monitoring system for a strawberry farm',
+    timestamp: new Date('2025-07-14T06:39:00Z'),
+  },
+  {
+    id: 'timeline-pm-agent-1',
+    type: 'assistant_pm',
+    content: `Requirements Analysis
+Analyzing requirements...
+Organizing business and functional requirements...
+Requirements analysis completed`,
+    timestamp: new Date('2025-07-14T06:39:10Z'),
+  },
+  {
+    id: 'timeline-db-agent-1',
+    type: 'assistant_db',
+    content: `Schema Design
+Designing database schema...
+Analyzing table structure and relationships...
+Applying schema changes...`,
+    timestamp: new Date('2025-07-14T06:39:15Z'),
+  },
+  {
+    id: 'timeline-db-agent-2',
+    type: 'assistant_db',
+    content: `Applied 7 schema changes successfully
+Schema design completed`,
+    timestamp: new Date('2025-07-14T06:39:20Z'),
+  },
+  {
+    id: 'timeline-qa-agent-1',
+    type: 'assistant_qa',
+    content: `Database Creation
+Creating database...
+Generated DDL statements (7 tables)
+Executing DDL statements...`,
+    timestamp: new Date('2025-07-14T06:39:25Z'),
+  },
+  {
+    id: 'timeline-error-1',
+    type: 'error',
+    content: 'Error occurred during DDL execution',
+    timestamp: new Date('2025-07-14T06:39:30Z'),
+  },
+  {
+    id: 'timeline-db-agent-3',
+    type: 'assistant_db',
+    content: `Error Recovery
+Redesigning schema to fix errors...
+Generating use cases...
+Analyzing test cases and queries...`,
+    timestamp: new Date('2025-07-14T06:39:35Z'),
+  },
+]
+
+export const WithAutoEmojis: Story = {
+  args: {
+    timelineItems: mockTimelineItemsWithoutEmojis,
+    schemaData: mockSchemaData,
+    designSessionId: 'design-session-2',
+    onMessageSend: () => {},
+    onRetry: () => {},
+  },
+}

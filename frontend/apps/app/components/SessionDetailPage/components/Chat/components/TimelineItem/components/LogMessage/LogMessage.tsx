@@ -1,14 +1,22 @@
 import clsx from 'clsx'
 import type { FC } from 'react'
 import styles from './LogMessage.module.css'
+import { enhanceMessage } from './utils/messageEnhancer'
 
 type LogMessageProps = {
   content: string
+  enhanceWithEmojis?: boolean
 }
 
-export const LogMessage: FC<LogMessageProps> = ({ content }) => {
+export const LogMessage: FC<LogMessageProps> = ({
+  content,
+  enhanceWithEmojis = true,
+}) => {
+  // Enhance content with emojis and status indicators if enabled
+  const processedContent = enhanceWithEmojis ? enhanceMessage(content) : content
+
   // Split content by lines to handle each task separately
-  const lines = content.split('\n')
+  const lines = processedContent.split('\n')
 
   const formattedContent = lines.map((line, lineIndex) => {
     // Check if this line is a pending task (starts with •)
