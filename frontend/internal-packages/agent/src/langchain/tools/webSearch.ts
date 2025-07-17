@@ -63,13 +63,14 @@ export const createWebSearchEnabledModel = (
   forceSearch = true,
 ) => {
   // Use web search preview model when forceSearch is true
-  const model = forceSearch ? 'gpt-4o-search-preview' : 'gpt-4o-mini'
+  const model = 'gpt-4o-mini'
 
   // gpt-4o-search-preview doesn't support temperature parameter
   const modelConfig = forceSearch
     ? {
         model,
         callbacks: baseConfig.callbacks || [],
+        tools: [{ type: 'web_search_preview' }],
       }
     : {
         model,
