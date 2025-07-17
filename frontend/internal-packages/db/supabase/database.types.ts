@@ -83,8 +83,8 @@ export type Database = {
           id: string
           number: number
           organization_id: string
-          patch: Json
-          reverse_patch: Json
+          patch: Json | null
+          reverse_patch: Json | null
         }
         Insert: {
           building_schema_id: string
@@ -92,8 +92,8 @@ export type Database = {
           id?: string
           number: number
           organization_id: string
-          patch: Json
-          reverse_patch: Json
+          patch?: Json | null
+          reverse_patch?: Json | null
         }
         Update: {
           building_schema_id?: string
@@ -101,8 +101,8 @@ export type Database = {
           id?: string
           number?: number
           organization_id?: string
-          patch?: Json
-          reverse_patch?: Json
+          patch?: Json | null
+          reverse_patch?: Json | null
         }
         Relationships: [
           {
@@ -1343,6 +1343,51 @@ export type Database = {
           },
         ]
       }
+      workflow_runs: {
+        Row: {
+          created_at: string
+          design_session_id: string
+          id: string
+          organization_id: string | null
+          status: Database['public']['Enums']['workflow_run_status']
+          updated_at: string
+          workflow_run_id: string
+        }
+        Insert: {
+          created_at?: string
+          design_session_id: string
+          id?: string
+          organization_id?: string | null
+          status?: Database['public']['Enums']['workflow_run_status']
+          updated_at?: string
+          workflow_run_id: string
+        }
+        Update: {
+          created_at?: string
+          design_session_id?: string
+          id?: string
+          organization_id?: string | null
+          status?: Database['public']['Enums']['workflow_run_status']
+          updated_at?: string
+          workflow_run_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'workflow_runs_design_session_id_fkey'
+            columns: ['design_session_id']
+            isOneToOne: false
+            referencedRelation: 'design_sessions'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'workflow_runs_organization_id_fkey'
+            columns: ['organization_id']
+            isOneToOne: false
+            referencedRelation: 'organizations'
+            referencedColumns: ['id']
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -1513,6 +1558,7 @@ export type Database = {
         | 'schema_version'
         | 'error'
         | 'assistant_log'
+      workflow_run_status: 'pending' | 'success' | 'error'
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1648,6 +1694,7 @@ export const Constants = {
         'error',
         'assistant_log',
       ],
+      workflow_run_status: ['pending', 'success', 'error'],
     },
   },
 } as const

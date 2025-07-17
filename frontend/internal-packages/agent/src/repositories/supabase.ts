@@ -8,34 +8,28 @@ import {
   operationsSchema,
   schemaSchema,
 } from '@liam-hq/db-structure'
+import type { SqlResult } from '@liam-hq/pglite-server/src/types'
 import { compare } from 'fast-json-patch'
 import * as v from 'valibot'
 import { ensurePathStructure } from '../utils/pathPreparation'
 import type {
   ArtifactResult,
   CreateArtifactParams,
+  CreateEmptyPatchVersionParams,
   CreateTimelineItemParams,
-  CreateVersionParams,
+  CreateVersionResult,
+  CreateWorkflowRunParams,
   DesignSessionData,
   SchemaData,
   SchemaRepository,
   TimelineItemResult,
   UpdateArtifactParams,
   UpdateTimelineItemParams,
+  UpdateVersionParams,
+  UpdateWorkflowRunStatusParams,
   VersionResult,
+  WorkflowRunResult,
 } from './types'
-
-const updateBuildingSchemaResultSchema = v.union([
-  v.object({
-    success: v.literal(true),
-    messageId: v.string(),
-    versionId: v.string(),
-  }),
-  v.object({
-    success: v.literal(false),
-    error: v.nullable(v.string()),
-  }),
-])
 
 /**
  * Convert Artifact to Json safely without type casting
@@ -210,100 +204,25 @@ export class SupabaseSchemaRepository implements SchemaRepository {
     return versions.length > 0 ? Math.max(...versions.map((v) => v.number)) : 0
   }
 
-  async createVersion(params: CreateVersionParams): Promise<VersionResult> {
-    const { buildingSchemaId, latestVersionNumber, patch } = params
+  async createEmptyPatchVersion(
+    params: CreateEmptyPatchVersionParams,
+  ): Promise<CreateVersionResult> {
+    const { buildingSchemaId, latestVersionNumber } = params
 
-    // Generate message content based on patch operations
-    const patchCount = patch.length
-    const messageContent =
-      patchCount === 1
-        ? 'Schema updated with 1 change'
-        : `Schema updated with ${patchCount} changes`
-
-    const { data: buildingSchema, error } = await this.client
-      .from('building_schemas')
-      .select(`
-        id, organization_id, initial_schema_snapshot, design_session_id
-      `)
-      .eq('id', buildingSchemaId)
-      .maybeSingle()
-
-    if (!buildingSchema || error) {
-      throw new Error(`Failed to fetch building schema: ${error?.message}`)
-    }
-
-    // Get all previous versions to reconstruct the content
-    const { data: previousVersions, error: previousVersionsError } =
+    // Get the building schema to get organization_id
+    const { data: buildingSchema, error: buildingSchemaError } =
       await this.client
-        .from('building_schema_versions')
-        .select('number, patch')
-        .eq('building_schema_id', buildingSchemaId)
-        .lte('number', latestVersionNumber)
-        .order('number', { ascending: true })
+        .from('building_schemas')
+        .select('organization_id')
+        .eq('id', buildingSchemaId)
+        .single()
 
-    if (previousVersionsError) {
-      throw new Error(
-        `Failed to fetch previous versions: ${previousVersionsError.message}`,
-      )
-    }
-
-    const patchArrayHistory = previousVersions
-      ?.map((version) => {
-        const parsed = v.safeParse(operationsSchema, version.patch)
-        if (parsed.success) {
-          return parsed.output
-        }
-        return null
-      })
-      .filter((version) => version !== null)
-
-    // Reconstruct the base content (first version) from the initial schema snapshot
-    const baseContent: Record<string, unknown> =
-      typeof buildingSchema.initial_schema_snapshot === 'object'
-        ? JSON.parse(JSON.stringify(buildingSchema.initial_schema_snapshot))
-        : {}
-
-    // Apply all patches in order to get the current content
-    const currentContent: Record<string, unknown> = { ...baseContent }
-
-    // Apply all patches in order
-    for (const patchArray of patchArrayHistory) {
-      const pathResult = ensurePathStructure(currentContent, patchArray)
-      if (pathResult.isErr()) {
-        return {
-          success: false,
-          error: `Failed to ensure path structure: ${pathResult.error}`,
-        }
-      }
-      // Apply each operation in the patch to currentContent
-      applyPatchOperations(currentContent, patchArray)
-    }
-
-    // Now apply the new patch to get the new content
-    const newContent = JSON.parse(JSON.stringify(currentContent))
-    const newPathResult = ensurePathStructure(newContent, patch)
-    if (newPathResult.isErr()) {
+    if (buildingSchemaError || !buildingSchema) {
       return {
         success: false,
-        error: `Failed to ensure path structure for new patch: ${newPathResult.error}`,
+        error: `Failed to fetch building schema: ${buildingSchemaError?.message}`,
       }
     }
-    applyPatchOperations(newContent, patch)
-
-    // Validate the new schema structure before proceeding
-    const validationResult = v.safeParse(schemaSchema, newContent)
-    if (!validationResult.success) {
-      const errorMessages = validationResult.issues
-        .map((issue) => `${issue.path?.join('.')} ${issue.message}`)
-        .join(', ')
-      return {
-        success: false,
-        error: `Invalid schema after applying changes: ${errorMessages}`,
-      }
-    }
-
-    // Calculate reverse patch from new content to current content
-    const reversePatch = compare(newContent, currentContent)
 
     // Get the latest version number for this schema
     const { data: latestVersion, error: latestVersionError } = await this.client
@@ -334,44 +253,183 @@ export class SupabaseSchemaRepository implements SchemaRepository {
       }
     }
 
-    const rpcParams = {
-      p_schema_id: buildingSchemaId,
-      p_schema_schema: newContent,
-      p_schema_version_patch: JSON.parse(JSON.stringify(patch)),
-      p_schema_version_reverse_patch: JSON.parse(JSON.stringify(reversePatch)),
-      p_latest_schema_version_number: actualLatestVersionNumber,
-      p_message_content: messageContent,
-    }
+    const newVersionNumber = actualLatestVersionNumber + 1
 
-    const { data, error: rpcError } = await this.client.rpc(
-      'update_building_schema',
-      rpcParams,
-    )
+    // Create empty version with null patch and reverse_patch
+    const { data: newVersion, error } = await this.client
+      .from('building_schema_versions')
+      .insert({
+        building_schema_id: buildingSchemaId,
+        organization_id: buildingSchema.organization_id,
+        number: newVersionNumber,
+        patch: null,
+        reverse_patch: null,
+      })
+      .select('id')
+      .single()
 
-    const parsedResult = v.safeParse(updateBuildingSchemaResultSchema, data)
-
-    if (rpcError) {
+    if (error) {
       return {
         success: false,
-        error: rpcError.message,
+        error: error.message,
       }
     }
 
-    if (parsedResult.success) {
-      if (parsedResult.output.success) {
-        return {
-          success: true,
-          newSchema: validationResult.output,
-        }
-      }
-      return {
-        success: false,
-        error: parsedResult.output.error,
-      }
-    }
     return {
-      success: false,
-      error: 'Invalid response from server',
+      success: true,
+      versionId: newVersion.id,
+    }
+  }
+
+  async updateVersion(params: UpdateVersionParams): Promise<VersionResult> {
+    const { buildingSchemaVersionId, patch } = params
+
+    // Get the building schema version
+    const { data: version, error: versionError } = await this.client
+      .from('building_schema_versions')
+      .select('building_schema_id, number')
+      .eq('id', buildingSchemaVersionId)
+      .single()
+
+    if (versionError || !version) {
+      return {
+        success: false,
+        error: `Failed to fetch building schema version: ${versionError?.message}`,
+      }
+    }
+
+    // Get the building schema
+    const { data: buildingSchema, error } = await this.client
+      .from('building_schemas')
+      .select(`
+        id, organization_id, initial_schema_snapshot, design_session_id
+      `)
+      .eq('id', version.building_schema_id)
+      .maybeSingle()
+
+    if (!buildingSchema || error) {
+      return {
+        success: false,
+        error: `Failed to fetch building schema: ${error?.message}`,
+      }
+    }
+
+    // Get all previous versions to reconstruct the content (excluding the current version)
+    const { data: previousVersions, error: previousVersionsError } =
+      await this.client
+        .from('building_schema_versions')
+        .select('number, patch')
+        .eq('building_schema_id', version.building_schema_id)
+        .lt('number', version.number)
+        .order('number', { ascending: true })
+
+    if (previousVersionsError) {
+      return {
+        success: false,
+        error: `Failed to fetch previous versions: ${previousVersionsError.message}`,
+      }
+    }
+
+    const patchArrayHistory = previousVersions
+      ?.map((version) => {
+        const parsed = v.safeParse(operationsSchema, version.patch)
+        if (parsed.success) {
+          return parsed.output
+        }
+        return null
+      })
+      .filter((version) => version !== null)
+
+    // Reconstruct the base content (first version) from the initial schema snapshot
+    const baseContent: Record<string, unknown> =
+      typeof buildingSchema.initial_schema_snapshot === 'object'
+        ? JSON.parse(JSON.stringify(buildingSchema.initial_schema_snapshot))
+        : {}
+
+    // Apply all patches in order to get the current content
+    const currentContent: Record<string, unknown> = { ...baseContent }
+
+    // Apply all patches in order
+    for (const patchArray of patchArrayHistory) {
+      // Apply each operation in the patch to currentContent
+      applyPatchOperations(currentContent, patchArray)
+    }
+
+    // Now apply the new patch to get the new content
+    const newContent = JSON.parse(JSON.stringify(currentContent))
+    applyPatchOperations(newContent, patch)
+
+    // Validate the new schema structure before proceeding
+    const validationResult = v.safeParse(schemaSchema, newContent)
+    if (!validationResult.success) {
+      const errorMessages = validationResult.issues
+        .map((issue) => `${issue.path?.join('.')} ${issue.message}`)
+        .join(', ')
+      return {
+        success: false,
+        error: `Invalid schema after applying changes: ${errorMessages}`,
+      }
+    }
+
+    // Calculate reverse patch from new content to current content
+    const reversePatch = compare(newContent, currentContent)
+
+    // Generate message content based on patch operations
+    const patchCount = patch.length
+    const messageContent =
+      patchCount === 1
+        ? 'Schema updated with 1 change'
+        : `Schema updated with ${patchCount} changes`
+
+    // Update the version with patch and reverse_patch
+    const { error: updateError } = await this.client
+      .from('building_schema_versions')
+      .update({
+        patch: JSON.parse(JSON.stringify(patch)),
+        reverse_patch: JSON.parse(JSON.stringify(reversePatch)),
+      })
+      .eq('id', buildingSchemaVersionId)
+
+    if (updateError) {
+      return {
+        success: false,
+        error: updateError.message,
+      }
+    }
+
+    // Update the building schema with the new schema
+    const { error: schemaUpdateError } = await this.client
+      .from('building_schemas')
+      .update({
+        schema: newContent,
+      })
+      .eq('id', version.building_schema_id)
+
+    if (schemaUpdateError) {
+      return {
+        success: false,
+        error: schemaUpdateError.message,
+      }
+    }
+
+    // Create a timeline item for the schema version
+    const timelineResult = await this.createTimelineItem({
+      designSessionId: buildingSchema.design_session_id,
+      content: messageContent,
+      type: 'schema_version',
+      buildingSchemaVersionId: buildingSchemaVersionId,
+    })
+
+    if (!timelineResult.success) {
+      return {
+        success: false,
+        error: `Failed to create timeline item: ${timelineResult.error}`,
+      }
+    }
+
+    return {
+      success: true,
+      newSchema: validationResult.output,
     }
   }
 
@@ -556,6 +614,124 @@ export class SupabaseSchemaRepository implements SchemaRepository {
     return {
       success: true,
       artifact: artifactData,
+    }
+  }
+
+  async createValidationQuery(params: {
+    designSessionId: string
+    queryString: string
+  }): Promise<
+    { success: true; queryId: string } | { success: false; error: string }
+  > {
+    const { data: validationQuery, error } = await this.client
+      .from('validation_queries')
+      .insert({
+        design_session_id: params.designSessionId,
+        query_string: params.queryString,
+      })
+      .select('id')
+      .single()
+
+    if (error) {
+      console.error('Failed to create validation query:', error)
+      return {
+        success: false,
+        error: error.message,
+      }
+    }
+
+    return {
+      success: true,
+      queryId: validationQuery.id,
+    }
+  }
+
+  async createValidationResults(params: {
+    validationQueryId: string
+    results: SqlResult[]
+  }): Promise<{ success: true } | { success: false; error: string }> {
+    const validationResults = params.results.map((result) => ({
+      validation_query_id: params.validationQueryId,
+      result_set: [JSON.parse(JSON.stringify(result.result))],
+      executed_at: result.metadata.timestamp,
+      status: result.success ? 'success' : 'failure',
+      error_message: result.success ? null : JSON.stringify(result.result),
+    }))
+
+    const { error } = await this.client
+      .from('validation_results')
+      .insert(validationResults)
+
+    if (error) {
+      console.error('Failed to create validation results:', error)
+      return {
+        success: false,
+        error: error.message,
+      }
+    }
+
+    return {
+      success: true,
+    }
+  }
+
+  async createWorkflowRun(
+    params: CreateWorkflowRunParams,
+  ): Promise<WorkflowRunResult> {
+    const { designSessionId, runId } = params
+
+    const { data: workflowRun, error } = await this.client
+      .from('workflow_runs')
+      .insert({
+        design_session_id: designSessionId,
+        workflow_run_id: runId,
+      })
+      .select()
+      .single()
+
+    if (error) {
+      console.error(
+        'Failed to create workflow run:',
+        JSON.stringify(error, null, 2),
+      )
+      return {
+        success: false,
+        error: error.message,
+      }
+    }
+
+    return {
+      success: true,
+      workflowRun,
+    }
+  }
+
+  async updateWorkflowRunStatus(
+    params: UpdateWorkflowRunStatusParams,
+  ): Promise<WorkflowRunResult> {
+    const { runId, status } = params
+
+    const { data: workflowRun, error } = await this.client
+      .from('workflow_runs')
+      .update({ status })
+      .eq('run_id', runId)
+      .select()
+      .single()
+
+    if (error) {
+      console.error(
+        'Failed to update workflow run status:',
+        JSON.stringify(error, null, 2),
+      )
+      return {
+        success: false,
+        error: error.message,
+      }
+    }
+
+    return {
+      success: true,
+      workflowRun,
     }
   }
 }

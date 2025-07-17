@@ -69,5 +69,8 @@
 .content {
   min-width: 200px;
   max-width: 300px;
+  max-height: 300px;
+  overflow-y: auto;
+  overflow-x: hidden;
   border-radius: var(--border-radius-md);
 }

@@ -1,12 +1,19 @@
+import { err, ok, type Result } from 'neverthrow'
 import { useContext } from 'react'
-import { CommandPaletteContext } from './context'
+import {
+  CommandPaletteContext,
+  type CommandPaletteContextValue,
+} from './context'
 
-export const useCommandPalette = () => {
+export const useCommandPalette = (): Result<
+  CommandPaletteContextValue,
+  Error
+> => {
   const commandPaletteValue = useContext(CommandPaletteContext)
   if (!commandPaletteValue)
-    throw new Error(
-      'useCommandPalette must be used within CommandPaletteProvider',
+    return err(
+      new Error('useCommandPalette must be used within CommandPaletteProvider'),
     )
 
-  return commandPaletteValue
+  return ok(commandPaletteValue)
 }

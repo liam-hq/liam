@@ -22,9 +22,8 @@ import styles from './ERDRenderer.module.css'
 import '@/styles/globals.css'
 import { toggleLogEvent } from '@/features/gtm/utils'
 import { useIsTouchDevice } from '@/hooks'
-import { useVersion } from '@/providers'
-import { useSchema } from '@/stores'
-import { useUserEditing } from '@/stores/userEditing'
+import { useVersionOrThrow } from '@/providers'
+import { useSchemaOrThrow, useUserEditingOrThrow } from '@/stores'
 import {
   convertSchemaToNodes,
   createHash,
@@ -60,8 +59,9 @@ export const ERDRenderer: FC<Props> = ({
   const [open, setOpen] = useState(defaultSidebarOpen)
   const [isResizing, setIsResizing] = useState(false)
 
-  const { showMode, showDiff } = useUserEditing()
-  const { current, merged } = useSchema()
+  const { showMode, showDiff } = useUserEditingOrThrow()
+
+  const { current, merged } = useSchemaOrThrow()
 
   const schema = useMemo(() => {
     return showDiff && merged ? merged : current
@@ -79,7 +79,7 @@ export const ERDRenderer: FC<Props> = ({
 
   const leftPanelRef = createRef<ImperativePanelHandle>()
 
-  const { version } = useVersion()
+  const { version } = useVersionOrThrow()
   const handleChangeOpen = useCallback(
     (nextPanelState: boolean) => {
       setOpen(nextPanelState)
