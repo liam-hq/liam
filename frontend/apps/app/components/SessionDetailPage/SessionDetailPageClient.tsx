@@ -10,7 +10,7 @@ import { OutputPlaceholder } from './components/OutputPlaceholder'
 import { useRealtimeBuildlingSchema } from './hooks/useRealtimeBuildlingSchema'
 import { useRealtimeTimelineItems } from './hooks/useRealtimeTimelineItems'
 import { useRealtimeWorkflowRuns } from './hooks/useRealtimeWorkflowRuns'
-import { SCHEMA_UPDATES_DOC, SCHEMA_UPDATES_REVIEW_COMMENTS } from './mock'
+import { SCHEMA_UPDATES_REVIEW_COMMENTS } from './mock'
 import styles from './SessionDetailPage.module.css'
 import { buildCurrentSchema } from './services/buildCurrentSchema'
 import { getBuildingSchema } from './services/buildingSchema/client/getBuldingSchema'
@@ -148,7 +148,6 @@ Please suggest a specific solution to resolve this problem.`
               <Output
                 schema={currentSchema}
                 prevSchema={prevSchema}
-                schemaUpdatesDoc={SCHEMA_UPDATES_DOC}
                 schemaUpdatesReviewComments={SCHEMA_UPDATES_REVIEW_COMMENTS}
                 onQuickFix={handleQuickFix}
                 designSessionId={designSessionId}
