@@ -67,10 +67,28 @@ export async function executeDdlNode(
 
   await logAssistantMessage(state, repositories, 'Executing DDL statements...')
 
-  const results: SqlResult[] = await executeQuery(
-    state.designSessionId,
-    ddlStatements,
-  )
+  // Skip actual DDL execution in offline mode
+  let results: SqlResult[]
+  if (process.env.LIAM_OFFLINE_MODE === 'true') {
+    console.log('[ExecuteDDL] Offline mode: Skipping actual DDL execution')
+    // Create mock results for offline mode
+    const statements = ddlStatements.split(';').filter(s => s.trim().length > 0)
+    results = statements.map((statement) => ({
+      success: true,
+      statement: statement.trim(),
+      result: {
+        rows: [],
+        fields: [],
+        affectedRows: 0,
+      },
+      executionTime: 0,
+    }))
+  } else {
+    results = await executeQuery(
+      state.designSessionId,
+      ddlStatements,
+    )
+  }
 
   const queryResult = await repositories.schema.createValidationQuery({
     designSessionId: state.designSessionId,

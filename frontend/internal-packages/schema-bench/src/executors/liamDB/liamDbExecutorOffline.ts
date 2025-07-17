@@ -21,6 +21,9 @@ export const createLiamDBExecutorOffline = () => {
         info: (message: string) => console.log(`[DeepModeling:INFO] ${message}`),
       }
 
+      // Set offline mode environment variable
+      process.env.LIAM_OFFLINE_MODE = 'true'
+      
       // Run actual deep modeling with shared repositories
       console.log(`🤖 Starting actual AI processing for: ${input.input.substring(0, 100)}...`)
       const deepModelingResult = await deepModeling(
@@ -67,7 +70,16 @@ export const createLiamDBExecutorOffline = () => {
         }
       }
       
-      const schemaResult = await repositories.schema.getSchema(designSessionId)
+      // First try to get schema by designSessionId, then try buildingSchemaId
+      let schemaResult = await repositories.schema.getSchema(designSessionId)
+      
+      if (!schemaResult.data && inMemoryRepo.schemas?.has(buildingSchemaId)) {
+        console.log(`🔍 Trying with buildingSchemaId: ${buildingSchemaId}`)
+        const schemaData = inMemoryRepo.schemas.get(buildingSchemaId)
+        if (schemaData) {
+          schemaResult = { data: schemaData, error: null }
+        }
+      }
 
       console.log(`📊 Schema result:`, {
         hasData: !!schemaResult.data,
