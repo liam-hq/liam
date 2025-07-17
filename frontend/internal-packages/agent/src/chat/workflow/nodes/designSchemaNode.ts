@@ -63,69 +63,6 @@ User Request: ${state.userInput}`
   return state.userInput
 }
 
-// /**
-//  * Apply schema changes and return updated state
-//  */
-// const applySchemaChanges = async (
-//   operations: DesignResponse['operations'],
-//   buildingSchemaId: string,
-//   latestVersionNumber: number,
-//   message: string,
-//   state: WorkflowState,
-//   repositories: Repositories,
-// ): Promise<WorkflowState> => {
-//   await logAssistantMessage(state, repositories, 'Applying schema changes...')
-
-//   const result = await repositories.schema.createVersion({
-//     buildingSchemaId,
-//     patch: operations,
-//   })
-
-//   if (!result.success) {
-//     const errorMessage = result.error || 'Failed to update schema'
-//     await logAssistantMessage(state, repositories, 'Schema update failed')
-//     return {
-//       ...state,
-//       generatedAnswer: message,
-//       error: new Error(errorMessage),
-//     }
-//   }
-
-//   await logAssistantMessage(
-//     state,
-//     repositories,
-//     `Applied ${operations.length} schema changes successfully`,
-//   )
-
-//   return {
-//     ...state,
-//     schemaData: result.newSchema,
-//     generatedAnswer: message,
-//     error: undefined,
-//   }
-// }
-
-// /**
-//  * Handle schema changes if they exist
-//  */
-// const handleSchemaChanges = async (
-//   message: AIMessage,
-//   state: WorkflowState,
-//   repositories: Repositories,
-// ): Promise<WorkflowState> => {
-//   const buildingSchemaId = state.buildingSchemaId
-//   const latestVersionNumber = state.latestVersionNumber
-
-//   return await applySchemaChanges(
-//     message.operations,
-//     buildingSchemaId,
-//     latestVersionNumber,
-//     message.message.text,
-//     state,
-//     repositories,
-//   )
-// }
-
 /**
  * Design Schema Node - DB Design & DDL Execution
  * Performed by dbAgent
@@ -165,8 +102,6 @@ export async function designSchemaNode(
       error: new Error(errorMessage),
     }
   }
-
-  const buildingSchemaVersionId = createVersionResult.versionId
 
   await logAssistantMessage(
     state,
@@ -210,8 +145,6 @@ export async function designSchemaNode(
       error: invokeResult.error,
     }
   }
-
-  // const result = await handleSchemaChanges(invokeResult.value, state, repositories)
 
   await logAssistantMessage(state, repositories, 'Schema design completed')
 
