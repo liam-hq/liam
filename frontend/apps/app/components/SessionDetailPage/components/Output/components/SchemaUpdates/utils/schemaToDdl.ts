@@ -39,8 +39,12 @@ export const schemaToDdl = (schema: Schema): SchemaToDdlResult => {
       }
     }
 
+    // Join statements and ensure consistent ending with a single newline
+    const ddl =
+      ddlStatements.length > 0 ? `${ddlStatements.join('\n\n')}\n` : ''
+
     return {
-      ddl: ddlStatements.join('\n\n'),
+      ddl,
       errors,
     }
   } catch (error) {
@@ -95,8 +99,12 @@ export const generateDiffDdl = (
       }
     }
 
+    // Join statements and ensure consistent ending with a single newline
+    const ddl =
+      ddlStatements.length > 0 ? `${ddlStatements.join('\n\n')}\n` : ''
+
     return {
-      ddl: ddlStatements.join('\n\n'),
+      ddl,
       errors,
     }
   } catch (error) {
