@@ -5,6 +5,7 @@ import type { SqlResult } from '@liam-hq/pglite-server/src/types'
 import { WORKFLOW_RETRY_CONFIG } from '../constants'
 import { getConfigurable } from '../shared/getConfigurable'
 import type { WorkflowState } from '../types'
+import { logQueryResults } from '../utils/queryResultLogger'
 import { logAssistantMessage } from '../utils/timelineLogger'
 
 /**
@@ -85,6 +86,21 @@ export async function executeDdlNode(
 
     const successCount = results.filter((r) => r.success).length
     const errorCount = results.length - successCount
+
+    // Log query results to timeline
+    const resultSummary =
+      errorCount === 0
+        ? `All ${successCount} SQL statements executed successfully`
+        : `${successCount} succeeded, ${errorCount} failed`
+
+    await logQueryResults(
+      state,
+      repositories,
+      queryResult.queryId,
+      results,
+      resultSummary,
+    )
+
     await logAssistantMessage(
       state,
       repositories,

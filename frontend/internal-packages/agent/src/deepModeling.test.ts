@@ -263,6 +263,8 @@ describe('Chat Workflow', () => {
         organization_id: 'test-org-id',
         design_session_id: 'test-design-session-id',
         building_schema_version_id: null,
+        query_result_id: null,
+        query_results: null,
       },
     })
 

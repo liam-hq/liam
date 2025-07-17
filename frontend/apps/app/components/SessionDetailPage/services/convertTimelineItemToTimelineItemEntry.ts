@@ -3,6 +3,7 @@ import type {
   AssistantLogTimelineItemEntry,
   AssistantTimelineItemEntry,
   ErrorTimelineItemEntry,
+  QueryResultTimelineItemEntry,
   SchemaVersionTimelineItemEntry,
   TimelineItem,
   TimelineItemEntry,
@@ -54,6 +55,39 @@ export const convertTimelineItemToTimelineItemEntry = (
         ...baseItem,
         type: 'assistant_log',
       }),
+    )
+    .with(
+      {
+        type: 'query_result',
+        query_result_id: P.string,
+        query_results: P.array(),
+      },
+      (item): QueryResultTimelineItemEntry => {
+        let results = item.query_results
+
+        // Parse the results if they are an array
+        if (Array.isArray(results)) {
+          results = results.map((r) => {
+            if (typeof r === 'object' && r !== null && 'result' in r) {
+              return {
+                ...r,
+                result:
+                  typeof r.result === 'string'
+                    ? JSON.parse(r.result)
+                    : r.result,
+              }
+            }
+            return r
+          })
+        }
+
+        return {
+          ...baseItem,
+          type: 'query_result',
+          queryResultId: item.query_result_id,
+          results,
+        }
+      },
     )
     .otherwise((item) => {
       console.warn(`Unknown timeline item type: ${item.type}`)

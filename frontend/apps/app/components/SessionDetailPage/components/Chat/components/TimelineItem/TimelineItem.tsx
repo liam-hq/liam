@@ -5,6 +5,7 @@ import { match } from 'ts-pattern'
 import type { TimelineItemEntry } from '../../../../types'
 import { AgentMessage } from './components/AgentMessage'
 import { LogMessage } from './components/LogMessage'
+import { QueryResultMessage } from './components/QueryResultMessage'
 import { UserMessage } from './components/UserMessage'
 import { VersionMessage } from './components/VersionMessage'
 
@@ -15,6 +16,14 @@ export const TimelineItem: FC<Props> = (props) => {
     .with({ type: 'schema_version' }, ({ buildingSchemaVersionId }) => (
       <AgentMessage state="default">
         <VersionMessage buildingSchemaVersionId={buildingSchemaVersionId} />
+      </AgentMessage>
+    ))
+    .with({ type: 'query_result' }, ({ queryResultId, results }) => (
+      <AgentMessage state="default">
+        <QueryResultMessage
+          queryResultId={queryResultId}
+          results={Array.isArray(results) ? results : undefined}
+        />
       </AgentMessage>
     ))
     .with({ type: 'user' }, ({ content, timestamp }) => (
