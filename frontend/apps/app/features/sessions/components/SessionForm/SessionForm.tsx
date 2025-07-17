@@ -15,6 +15,7 @@ export const SessionForm: FC<Props> = ({ projects, defaultProjectId }) => {
   const [, startTransition] = useTransition()
   const [state, formAction, isPending] = useActionState(createSession, {
     success: false,
+    error: undefined,
   })
 
   const [branchesState, branchesAction, isBranchesLoading] = useActionState(
