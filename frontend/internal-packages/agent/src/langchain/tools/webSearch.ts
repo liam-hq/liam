@@ -71,6 +71,9 @@ export const createWebSearchEnabledModel = (
         model,
         callbacks: baseConfig.callbacks || [],
         tools: [{ type: 'web_search_preview' }],
+        tool_choice: {
+          type: 'web_search_preview',
+        },
       }
     : {
         model,
