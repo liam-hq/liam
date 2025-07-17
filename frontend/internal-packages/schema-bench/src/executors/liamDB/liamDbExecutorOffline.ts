@@ -14,149 +14,32 @@ export const createLiamDBExecutorOffline = () => {
 
       // Create a simple logger for offline mode
       const logger = {
-        log: (_message: string) => {},
+        log: (message: string) => console.log(`[DeepModeling] ${message}`),
         error: (message: string) => console.error(`[DeepModeling] ${message}`),
         warn: (message: string) => console.warn(`[DeepModeling] ${message}`),
       }
-      const testSchema = {
-        tables: {
-          users: {
-            name: 'users',
-            columns: {
-              id: {
-                name: 'id',
-                type: 'integer',
-                primaryKey: true,
-                notNull: true,
-              },
-              username: {
-                name: 'username',
-                type: 'varchar',
-                notNull: true,
-              },
-              email: {
-                name: 'email',
-                type: 'varchar',
-                notNull: true,
-              },
-              created_at: {
-                name: 'created_at',
-                type: 'timestamp',
-                notNull: true,
-              },
-            },
-            primaryKey: {
-              columns: ['id'],
-            },
-          },
-          posts: {
-            name: 'posts',
-            columns: {
-              id: {
-                name: 'id',
-                type: 'integer',
-                primaryKey: true,
-                notNull: true,
-              },
-              title: {
-                name: 'title',
-                type: 'varchar',
-                notNull: true,
-              },
-              content: {
-                name: 'content',
-                type: 'text',
-                notNull: true,
-              },
-              user_id: {
-                name: 'user_id',
-                type: 'integer',
-                notNull: true,
-              },
-              created_at: {
-                name: 'created_at',
-                type: 'timestamp',
-                notNull: true,
-              },
-            },
-            primaryKey: {
-              columns: ['id'],
-            },
-          },
-          comments: {
-            name: 'comments',
-            columns: {
-              id: {
-                name: 'id',
-                type: 'integer',
-                primaryKey: true,
-                notNull: true,
-              },
-              content: {
-                name: 'content',
-                type: 'text',
-                notNull: true,
-              },
-              post_id: {
-                name: 'post_id',
-                type: 'integer',
-                notNull: true,
-              },
-              user_id: {
-                name: 'user_id',
-                type: 'integer',
-                notNull: true,
-              },
-              created_at: {
-                name: 'created_at',
-                type: 'timestamp',
-                notNull: true,
-              },
-            },
-            primaryKey: {
-              columns: ['id'],
-            },
+
+      // Run actual deep modeling with shared repositories
+      console.log(`🤖 Starting actual AI processing for: ${input.input.substring(0, 100)}...`)
+      const deepModelingResult = await deepModeling(
+        {
+          userInput: input.input,
+          schemaData: { tables: {}, relations: [] },
+          history: [],
+          organizationId: 'offline-org',
+          buildingSchemaId,
+          latestVersionNumber: 0,
+          designSessionId,
+          userId: 'offline-user',
+          recursionLimit: 5,
+        },
+        {
+          configurable: {
+            repositories,
+            logger,
           },
         },
-        relations: [
-          {
-            name: 'posts_user_id_fkey',
-            table: 'posts',
-            columns: ['user_id'],
-            referencedTable: 'users',
-            referencedColumns: ['id'],
-          },
-          {
-            name: 'comments_post_id_fkey',
-            table: 'comments',
-            columns: ['post_id'],
-            referencedTable: 'posts',
-            referencedColumns: ['id'],
-          },
-          {
-            name: 'comments_user_id_fkey',
-            table: 'comments',
-            columns: ['user_id'],
-            referencedTable: 'users',
-            referencedColumns: ['id'],
-          },
-        ],
-      }
-
-      // Store the test schema in the repository directly
-      // @ts-ignore - We need to access private properties for testing
-      const inMemoryRepo = repositories.schema as any
-      inMemoryRepo.schemas.set(designSessionId, {
-        id: buildingSchemaId,
-        schema: testSchema,
-        latestVersionNumber: 1,
-      })
-
-      // Mock successful deepModeling result
-      const deepModelingResult = {
-        isOk: () => true,
-        value: { text: 'Mock schema generated successfully' },
-      } as any
+      )
 
       if (!deepModelingResult.isOk()) {
         console.error(
@@ -168,9 +51,19 @@ export const createLiamDBExecutorOffline = () => {
           ),
         )
       }
+      console.log(`🔍 Checking schema in repository with sessionId: ${designSessionId}`)
       const schemaResult = await repositories.schema.getSchema(designSessionId)
 
+      console.log(`📊 Schema result:`, {
+        hasData: !!schemaResult.data,
+        hasError: !!schemaResult.error,
+        error: schemaResult.error?.message
+      })
+
       if (schemaResult.data?.schema) {
+        const tableCount = Object.keys(schemaResult.data.schema.tables).length
+        console.log(`✅ Found schema with ${tableCount} tables: ${Object.keys(schemaResult.data.schema.tables).join(', ')}`)
+        
         // Convert the schema to the expected output format
         const resultSchema: LiamDBExecutorOutput = {
           tables: schemaResult.data.schema.tables,
@@ -179,6 +72,8 @@ export const createLiamDBExecutorOffline = () => {
 
         return ok(resultSchema)
       }
+      
+      console.log(`⚠️  No schema found in repository, using fallback`)
       const fallbackSchema: LiamDBExecutorOutput = {
         tables: {
           generated_table: {
