@@ -132,6 +132,7 @@ export default defineConfig({
       syncVercelEnvVars({
         vercelAccessToken: process.env.VERCEL_ACCESS_TOKEN,
         projectId: process.env.VERCEL_PROJECT_ID,
+        vercelTeamId: process.env.VERCEL_TEAM_ID,
       }),
     ],
     external: [
