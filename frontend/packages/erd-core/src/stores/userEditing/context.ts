@@ -2,7 +2,7 @@ import { createContext } from 'react'
 import type { TableNodeType } from '@/features/erd/types'
 import type { ShowMode } from '@/schemas'
 
-type UserEditingContextValue = {
+export type UserEditingContextValue = {
   // URL synchronized state
   activeTableName: string | null
   setActiveTableName: (tableName: string | null) => void

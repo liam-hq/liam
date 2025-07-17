@@ -2,9 +2,9 @@ import { RadioGroup, RadioGroupItem } from '@liam-hq/ui'
 import { type FC, useCallback } from 'react'
 import { safeParse } from 'valibot'
 import { toolbarActionLogEvent } from '@/features/gtm/utils'
-import { useVersion } from '@/providers'
+import { useVersionOrThrow } from '@/providers'
 import { type ShowMode, showModeSchema } from '@/schemas/showMode'
-import { useUserEditing } from '@/stores'
+import { useUserEditingOrThrow } from '@/stores'
 import styles from './ShowModeMenuRadioGroup.module.css'
 
 const OPTION_LIST: { value: ShowMode; label: string }[] = [
@@ -14,9 +14,10 @@ const OPTION_LIST: { value: ShowMode; label: string }[] = [
 ]
 
 export const ShowModeMenuRadioGroup: FC = () => {
-  const { showMode, setShowMode } = useUserEditing()
+  const { showMode, setShowMode } = useUserEditingOrThrow()
 
-  const { version } = useVersion()
+  const { version } = useVersionOrThrow()
+
   const handleChangeValue = useCallback(
     (value: string) => {
       const parsed = safeParse(showModeSchema, value)

@@ -166,6 +166,8 @@ describe('Chat Workflow', () => {
       updateArtifact: vi.fn(),
       getArtifact: vi.fn(),
       updateTimelineItem: vi.fn(),
+      createValidationQuery: vi.fn(),
+      createValidationResults: vi.fn(),
       createWorkflowRun: vi.fn(),
       updateWorkflowRunStatus: vi.fn(),
     } as SchemaRepository
@@ -285,6 +287,16 @@ describe('Chat Workflow', () => {
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       },
+    })
+
+    // Setup validation query/results mocks
+    vi.mocked(mockSchemaRepository.createValidationQuery).mockResolvedValue({
+      success: true,
+      queryId: 'test-query-id',
+    })
+
+    vi.mocked(mockSchemaRepository.createValidationResults).mockResolvedValue({
+      success: true,
     })
 
     // Setup createWorkflowRun mock

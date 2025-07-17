@@ -4,7 +4,11 @@ import { useCommandPalette } from '../CommandPaletteProvider'
 import styles from './CommandPaletteTriggerButton.module.css'
 
 export const CommandPaletteTriggerButton: FC = () => {
-  const { setOpen } = useCommandPalette()
+  const commandPaletteResult = useCommandPalette()
+  if (commandPaletteResult.isErr()) {
+    throw commandPaletteResult.error
+  }
+  const { setOpen } = commandPaletteResult.value
 
   return (
     <button

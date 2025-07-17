@@ -7,7 +7,6 @@ import {
   type Schema,
 } from '@liam-hq/db-structure'
 import { describe, expect, it } from 'vitest'
-import type { ShowMode } from '@/schemas/showMode'
 import { NON_RELATED_TABLE_GROUP_NODE_ID, zIndex } from '../constants'
 import { convertSchemaToNodes } from './convertSchemaToNodes'
 
@@ -28,7 +27,7 @@ describe('convertSchemaToNodes', () => {
 
       const { nodes, edges } = convertSchemaToNodes({
         schema,
-        showMode: 'ALL_FIELDS' as ShowMode,
+        showMode: 'ALL_FIELDS',
       })
 
       expect(nodes).toHaveLength(2) // NON_RELATED_TABLE_GROUP_NODE + users table
@@ -69,7 +68,7 @@ describe('convertSchemaToNodes', () => {
 
       const { nodes } = convertSchemaToNodes({
         schema,
-        showMode: 'ALL_FIELDS' as ShowMode,
+        showMode: 'ALL_FIELDS',
       })
 
       expect(nodes).toHaveLength(4) // NON_RELATED_TABLE_GROUP_NODE + 3 tables
@@ -114,7 +113,7 @@ describe('convertSchemaToNodes', () => {
 
       const { nodes, edges } = convertSchemaToNodes({
         schema,
-        showMode: 'ALL_FIELDS' as ShowMode,
+        showMode: 'ALL_FIELDS',
       })
 
       expect(edges).toHaveLength(1)
@@ -187,7 +186,7 @@ describe('convertSchemaToNodes', () => {
 
       const { edges } = convertSchemaToNodes({
         schema,
-        showMode: 'ALL_FIELDS' as ShowMode,
+        showMode: 'ALL_FIELDS',
       })
 
       expect(edges).toHaveLength(2)
@@ -230,7 +229,7 @@ describe('convertSchemaToNodes', () => {
 
       const { edges } = convertSchemaToNodes({
         schema,
-        showMode: 'ALL_FIELDS' as ShowMode,
+        showMode: 'ALL_FIELDS',
       })
 
       expect(edges[0]?.data?.['cardinality']).toBe('ONE_TO_ONE')
@@ -267,7 +266,7 @@ describe('convertSchemaToNodes', () => {
     it('should set column-level handles correctly in ALL_FIELDS mode', () => {
       const { edges } = convertSchemaToNodes({
         schema,
-        showMode: 'ALL_FIELDS' as ShowMode,
+        showMode: 'ALL_FIELDS',
       })
 
       expect(edges[0]?.sourceHandle).toBe('users-id')
@@ -277,7 +276,7 @@ describe('convertSchemaToNodes', () => {
     it('should set column-level handles correctly in KEY_ONLY mode', () => {
       const { edges } = convertSchemaToNodes({
         schema,
-        showMode: 'KEY_ONLY' as ShowMode,
+        showMode: 'KEY_ONLY',
       })
 
       expect(edges[0]?.sourceHandle).toBe('users-id')
@@ -287,7 +286,7 @@ describe('convertSchemaToNodes', () => {
     it('should set handles to null in TABLE_NAME mode', () => {
       const { edges } = convertSchemaToNodes({
         schema,
-        showMode: 'TABLE_NAME' as ShowMode,
+        showMode: 'TABLE_NAME',
       })
 
       expect(edges[0]?.sourceHandle).toBeNull()
@@ -325,7 +324,7 @@ describe('convertSchemaToNodes', () => {
 
       const { nodes } = convertSchemaToNodes({
         schema,
-        showMode: 'ALL_FIELDS' as ShowMode,
+        showMode: 'ALL_FIELDS',
       })
 
       const groupNode = nodes.find(
@@ -344,7 +343,7 @@ describe('convertSchemaToNodes', () => {
 
       const { nodes, edges } = convertSchemaToNodes({
         schema,
-        showMode: 'ALL_FIELDS' as ShowMode,
+        showMode: 'ALL_FIELDS',
       })
 
       expect(nodes).toHaveLength(0)
@@ -374,7 +373,7 @@ describe('convertSchemaToNodes', () => {
 
       const { nodes, edges } = convertSchemaToNodes({
         schema,
-        showMode: 'ALL_FIELDS' as ShowMode,
+        showMode: 'ALL_FIELDS',
       })
 
       expect(edges).toHaveLength(1)

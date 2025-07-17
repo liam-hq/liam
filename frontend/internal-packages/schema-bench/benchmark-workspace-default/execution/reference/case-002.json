@@ -155,18 +155,18 @@
         "foreign_keys": {
           "type": "FOREIGN KEY",
           "name": "fk_subscriptions_customer",
-          "columnName": "Customer Number",
+          "columnNames": ["Customer Number"],
           "targetTableName": "Customer",
-          "targetColumnName": "Customer Number",
+          "targetColumnNames": ["Customer Number"],
           "updateConstraint": "CASCADE",
           "deleteConstraint": "CASCADE"
         },
         "foreign_keys_2": {
           "type": "FOREIGN KEY",
           "name": "fk_subscriptions_plan",
-          "columnName": "Plan Number",
+          "columnNames": ["Plan Number"],
           "targetTableName": "Service Plan",
-          "targetColumnName": "Plan Number",
+          "targetColumnNames": ["Plan Number"],
           "updateConstraint": "CASCADE",
           "deleteConstraint": "CASCADE"
         }

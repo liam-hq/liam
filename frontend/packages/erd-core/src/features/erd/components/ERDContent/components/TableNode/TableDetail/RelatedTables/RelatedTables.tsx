@@ -1,7 +1,7 @@
 import { GotoIcon, IconButton, Waypoints as WaypointsIcon } from '@liam-hq/ui'
 import { type Edge, type Node, ReactFlowProvider } from '@xyflow/react'
 import { type FC, type MouseEvent, useCallback } from 'react'
-import { useUserEditing } from '@/stores'
+import { useUserEditingOrThrow } from '@/stores'
 import { ERDContent } from '../../../../ErdContent'
 import { CollapsibleHeader } from '../CollapsibleHeader'
 import styles from './RelatedTables.module.css'
@@ -13,7 +13,7 @@ type Props = {
 }
 
 export const RelatedTables: FC<Props> = ({ nodes, edges, onOpenMainPane }) => {
-  const { activeTableName } = useUserEditing()
+  const { activeTableName } = useUserEditingOrThrow()
 
   const handleClick = useCallback(
     async (event: MouseEvent) => {

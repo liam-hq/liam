@@ -36,6 +36,13 @@ describe('designSchemaNode -> executeDdlNode integration', () => {
       createArtifact: vi.fn(),
       updateArtifact: vi.fn(),
       getArtifact: vi.fn(),
+      createValidationQuery: vi.fn().mockResolvedValue({
+        success: true,
+        queryId: 'mock-query-id',
+      }),
+      createValidationResults: vi.fn().mockResolvedValue({
+        success: true,
+      }),
     },
   }
 

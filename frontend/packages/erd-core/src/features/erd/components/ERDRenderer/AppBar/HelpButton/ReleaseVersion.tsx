@@ -1,9 +1,9 @@
 import type { FC } from 'react'
-import { useVersion } from '@/providers'
+import { useVersionOrThrow } from '@/providers'
 import styles from './ReleaseVersion.module.css'
 
 export const ReleaseVersion: FC = () => {
-  const { version } = useVersion()
+  const { version } = useVersionOrThrow()
 
   // Example output for version:
   // - Released version:

@@ -3,7 +3,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import type { DisplayArea } from '@/features/erd/types'
 import { computeAutoLayout, highlightNodesAndEdges } from '@/features/erd/utils'
 import { useCustomReactflow } from '@/features/reactflow/hooks'
-import { useUserEditing } from '@/stores'
+import { useUserEditingOrThrow } from '@/stores'
 import { useErdContentContext } from '../ErdContentContext'
 import { hasNonRelatedChildNodes, updateNodesHiddenState } from '../utils'
 
@@ -13,7 +13,7 @@ type Params = {
 }
 
 export const useInitialAutoLayout = ({ nodes, displayArea }: Params) => {
-  const { activeTableName, hiddenNodeIds } = useUserEditing()
+  const { activeTableName, hiddenNodeIds } = useUserEditingOrThrow()
   const { getEdges, setNodes, setEdges, fitView } = useCustomReactflow()
   const {
     actions: { setLoading },
@@ -57,7 +57,7 @@ export const useInitialAutoLayout = ({ nodes, displayArea }: Params) => {
         displayArea === 'main' && activeTableName
           ? { maxZoom: 1, duration: 300, nodes: [{ id: activeTableName }] }
           : { duration: 0 }
-      await fitView(fitViewOptions)
+      fitView(fitViewOptions)
 
       setInitializeComplete(true)
       setLoading(false)
