@@ -120,6 +120,7 @@ async function main() {
   }
 
   const inputs = inputsResult.value
+  console.log(`Found ${inputs.length} input files:`, inputs.map(i => i.caseId))
 
   if (inputs.length === 0) {
     return
@@ -133,9 +134,11 @@ async function main() {
   let failureCount = 0
 
   for (const { caseId, input } of inputs) {
+    console.log(`\n📝 Processing ${caseId}...`)
     const result = await executeCase(executor, caseId, input)
     if (result.isOk()) {
       successCount++
+      console.log(`✅ ${caseId} completed successfully`)
     } else {
       failureCount++
       console.error(`❌ ${caseId} failed: ${result.error.message}`)
