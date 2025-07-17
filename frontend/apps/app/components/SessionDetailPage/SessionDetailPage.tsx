@@ -6,6 +6,7 @@ import { getBuildingSchema } from './services/buildingSchema/server/getBuildingS
 import { buildPrevSchema } from './services/buildPrevSchema/server/buildPrevSchema'
 import { getDesignSessionWithTimelineItems } from './services/designSessionWithTimelineItems/server/getDesignSessionWithTimelineItems'
 import { getLatestVersion } from './services/latestVersion/server/getLatestVersion'
+import { getWorkflowRunStatus } from './services/workflowRuns/server/getWorkflowRunStatus'
 
 type Props = {
   designSessionId: string
@@ -36,12 +37,15 @@ export const SessionDetailPage: FC<Props> = async ({ designSessionId }) => {
         })
       : null
 
+  const initialWorkflowRunStatus = await getWorkflowRunStatus(designSessionId)
+
   return (
     <SessionDetailPageClient
       designSessionWithTimelineItems={designSessionWithTimelineItems}
       initialSchema={initialSchema}
       initialPrevSchema={initialPrevSchema}
       initialCurrentVersion={latestVersion}
+      initialWorkflowRunStatus={initialWorkflowRunStatus}
     />
   )
 }

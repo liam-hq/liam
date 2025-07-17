@@ -11,9 +11,9 @@ import {
 import { type FC, useCallback } from 'react'
 import { safeParse } from 'valibot'
 import { toolbarActionLogEvent } from '@/features/gtm/utils'
-import { useVersion } from '@/providers'
+import { useVersionOrThrow } from '@/providers'
 import { type ShowMode, showModeSchema } from '@/schemas/showMode'
-import { useUserEditing } from '@/stores'
+import { useUserEditingOrThrow } from '@/stores'
 import styles from './ShowModeMenu.module.css'
 
 const OPTION_LIST: { value: ShowMode; label: string }[] = [
@@ -23,9 +23,10 @@ const OPTION_LIST: { value: ShowMode; label: string }[] = [
 ]
 
 export const ShowModeMenu: FC = () => {
-  const { showMode, setShowMode } = useUserEditing()
+  const { showMode, setShowMode } = useUserEditingOrThrow()
 
-  const { version } = useVersion()
+  const { version } = useVersionOrThrow()
+
   const handleChangeValue = useCallback(
     (value: string) => {
       const parsed = safeParse(showModeSchema, value)

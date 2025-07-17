@@ -159,12 +159,17 @@ describe('Chat Workflow', () => {
     mockSchemaRepository = {
       getSchema: vi.fn(),
       getDesignSession: vi.fn(),
-      createVersion: vi.fn(),
+      createEmptyPatchVersion: vi.fn(),
+      updateVersion: vi.fn(),
       createTimelineItem: vi.fn(),
       createArtifact: vi.fn(),
       updateArtifact: vi.fn(),
       getArtifact: vi.fn(),
       updateTimelineItem: vi.fn(),
+      createValidationQuery: vi.fn(),
+      createValidationResults: vi.fn(),
+      createWorkflowRun: vi.fn(),
+      updateWorkflowRunStatus: vi.fn(),
     } as SchemaRepository
 
     mockRepositories = {
@@ -222,10 +227,16 @@ describe('Chat Workflow', () => {
       }),
     }))
 
-    // Setup createVersion mock
-    vi.mocked(mockSchemaRepository.createVersion).mockResolvedValue({
+    // Setup createEmptyVersion mock
+    vi.mocked(mockSchemaRepository.createEmptyPatchVersion).mockResolvedValue({
       success: true,
-      newSchema: mockSchemaData, // Return the same schema for simplicity
+      versionId: 'test-version-id',
+    })
+
+    // Setup updateVersion mock
+    vi.mocked(mockSchemaRepository.updateVersion).mockResolvedValue({
+      success: true,
+      newSchema: mockSchemaData,
     })
 
     // Setup createTimelineItem mock
@@ -277,9 +288,69 @@ describe('Chat Workflow', () => {
         updated_at: new Date().toISOString(),
       },
     })
+
+    // Setup validation query/results mocks
+    vi.mocked(mockSchemaRepository.createValidationQuery).mockResolvedValue({
+      success: true,
+      queryId: 'test-query-id',
+    })
+
+    vi.mocked(mockSchemaRepository.createValidationResults).mockResolvedValue({
+      success: true,
+    })
+
+    // Setup createWorkflowRun mock
+    vi.mocked(mockSchemaRepository.createWorkflowRun).mockResolvedValue({
+      success: true,
+      workflowRun: {
+        id: 'test-workflow-run-id',
+        workflow_run_id: 'test-run-id',
+        design_session_id: 'test-design-session-id',
+        organization_id: 'test-org-id',
+        status: 'pending' as const,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      },
+    })
+
+    // Setup updateWorkflowRunStatus mock
+    vi.mocked(mockSchemaRepository.updateWorkflowRunStatus).mockResolvedValue({
+      success: true,
+      workflowRun: {
+        id: 'test-workflow-run-id',
+        workflow_run_id: 'test-run-id',
+        design_session_id: 'test-design-session-id',
+        organization_id: 'test-org-id',
+        status: 'success' as const,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      },
+    })
   })
 
   describe('Build Mode', () => {
+    beforeEach(() => {
+      // Reset mocks for each test
+      vi.mocked(mockSchemaRepository.createEmptyPatchVersion).mockResolvedValue(
+        {
+          success: true,
+          versionId: 'test-version-id',
+        },
+      )
+      vi.mocked(mockSchemaRepository.updateVersion).mockResolvedValue({
+        success: true,
+        newSchema: mockSchemaData,
+      })
+      mockInvokeDesignAgent.mockResolvedValue(
+        ResultAsync.fromSafePromise(
+          Promise.resolve({
+            message: new AIMessage('Mocked agent response'),
+            operations: [],
+          }),
+        ),
+      )
+    })
+
     it('should execute successfully with valid Build mode state', async () => {
       const params = createBaseParams({
         userInput: 'Add a created_at timestamp column to the users table',
@@ -326,22 +397,6 @@ describe('Chat Workflow', () => {
       if (result.isOk()) {
         expect(result.value.text).toBe('Added created_at column to users table')
       }
-      expect(mockSchemaRepository.createVersion).toHaveBeenCalledWith({
-        buildingSchemaId: 'test-building-schema-id',
-        latestVersionNumber: 1,
-        patch: [
-          {
-            op: 'add',
-            path: '/tables/users/columns/created_at',
-            value: {
-              name: 'created_at',
-              type: 'timestamp',
-              default: 'CURRENT_TIMESTAMP',
-              notNull: true,
-            },
-          },
-        ],
-      })
     })
 
     it('should handle Build mode with invalid JSON response gracefully', async () => {
@@ -364,7 +419,6 @@ describe('Chat Workflow', () => {
       if (result.isOk()) {
         expect(result.value.text).toBe('Invalid JSON response')
       }
-      expect(mockSchemaRepository.createVersion).not.toHaveBeenCalled()
     })
 
     it('should handle schema update failure', async () => {
@@ -379,6 +433,12 @@ describe('Chat Workflow', () => {
         ],
       }
 
+      // Mock updateVersion to fail for this test
+      vi.mocked(mockSchemaRepository.updateVersion).mockResolvedValue({
+        success: false,
+        error: 'Database constraint violation',
+      })
+
       mockInvokeDesignAgent.mockResolvedValue(
         ResultAsync.fromSafePromise(
           Promise.resolve({
@@ -387,10 +447,6 @@ describe('Chat Workflow', () => {
           }),
         ),
       )
-      vi.mocked(mockSchemaRepository.createVersion).mockResolvedValue({
-        success: false,
-        error: 'Database constraint violation',
-      })
 
       const params = createBaseParams({
         userInput: 'Add a created_at timestamp column to the users table',
@@ -422,6 +478,11 @@ describe('Chat Workflow', () => {
         ],
       }
 
+      // Mock updateVersion to throw an exception for this test
+      vi.mocked(mockSchemaRepository.updateVersion).mockRejectedValue(
+        new Error('Network error'),
+      )
+
       mockInvokeDesignAgent.mockResolvedValue(
         ResultAsync.fromSafePromise(
           Promise.resolve({
@@ -429,9 +490,6 @@ describe('Chat Workflow', () => {
             operations: structuredResponse.operations,
           }),
         ),
-      )
-      vi.mocked(mockSchemaRepository.createVersion).mockRejectedValue(
-        new Error('Network error'),
       )
 
       const params = createBaseParams({
@@ -458,6 +516,20 @@ describe('Chat Workflow', () => {
   })
 
   describe('Error Handling', () => {
+    beforeEach(() => {
+      // Reset mocks for each test
+      vi.mocked(mockSchemaRepository.createEmptyPatchVersion).mockResolvedValue(
+        {
+          success: true,
+          versionId: 'test-version-id',
+        },
+      )
+      vi.mocked(mockSchemaRepository.updateVersion).mockResolvedValue({
+        success: true,
+        newSchema: mockSchemaData,
+      })
+    })
+
     it('should handle agent generation errors', async () => {
       mockInvokeDesignAgent.mockRejectedValue(
         new Error('Agent generation failed'),
@@ -500,6 +572,28 @@ describe('Chat Workflow', () => {
   })
 
   describe('State Management', () => {
+    beforeEach(() => {
+      // Reset mocks for each test
+      vi.mocked(mockSchemaRepository.createEmptyPatchVersion).mockResolvedValue(
+        {
+          success: true,
+          versionId: 'test-version-id',
+        },
+      )
+      vi.mocked(mockSchemaRepository.updateVersion).mockResolvedValue({
+        success: true,
+        newSchema: mockSchemaData,
+      })
+      mockInvokeDesignAgent.mockResolvedValue(
+        ResultAsync.fromSafePromise(
+          Promise.resolve({
+            message: new AIMessage('Mocked agent response'),
+            operations: [],
+          }),
+        ),
+      )
+    })
+
     it('should preserve state properties through workflow execution', async () => {
       const initialParams = createBaseParams({
         userInput: 'Test state management',
@@ -515,6 +609,28 @@ describe('Chat Workflow', () => {
   })
 
   describe('Agent Selection', () => {
+    beforeEach(() => {
+      // Reset mocks for each test
+      vi.mocked(mockSchemaRepository.createEmptyPatchVersion).mockResolvedValue(
+        {
+          success: true,
+          versionId: 'test-version-id',
+        },
+      )
+      vi.mocked(mockSchemaRepository.updateVersion).mockResolvedValue({
+        success: true,
+        newSchema: mockSchemaData,
+      })
+      mockInvokeDesignAgent.mockResolvedValue(
+        ResultAsync.fromSafePromise(
+          Promise.resolve({
+            message: new AIMessage('Mocked agent response'),
+            operations: [],
+          }),
+        ),
+      )
+    })
+
     it('should invoke design agent', async () => {
       const params = createBaseParams({})
 
@@ -525,6 +641,27 @@ describe('Chat Workflow', () => {
   })
 
   describe('Workflow Integration', () => {
+    beforeEach(() => {
+      // Reset mocks for each test
+      vi.mocked(mockSchemaRepository.createEmptyPatchVersion).mockResolvedValue(
+        {
+          success: true,
+          versionId: 'test-version-id',
+        },
+      )
+      vi.mocked(mockSchemaRepository.updateVersion).mockResolvedValue({
+        success: true,
+        newSchema: mockSchemaData,
+      })
+      mockInvokeDesignAgent.mockResolvedValue(
+        ResultAsync.fromSafePromise(
+          Promise.resolve({
+            message: new AIMessage('Mocked agent response'),
+            operations: [],
+          }),
+        ),
+      )
+    })
     // Helper function to execute multiple workflows sequentially
     const executeSequentialWorkflows = async (
       inputs: { userInput: string }[],

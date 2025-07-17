@@ -1,8 +1,10 @@
 import { AIMessage, HumanMessage } from '@langchain/core/messages'
+import { RunCollectorCallbackHandler } from '@langchain/core/tracers/run_collector'
 import { END, START, StateGraph } from '@langchain/langgraph'
 import type { Schema } from '@liam-hq/db-structure'
 import type { Result } from 'neverthrow'
 import { err, ok } from 'neverthrow'
+import { v4 as uuidv4 } from 'uuid'
 import { WORKFLOW_ERROR_MESSAGES } from './chat/workflow/constants'
 import {
   analyzeRequirementsNode,
@@ -174,19 +176,48 @@ export const deepModeling = async (
     retryCount: {},
   }
 
+  const runId = uuidv4()
+
   try {
+    const createWorkflowRunResult = await repositories.schema.createWorkflowRun(
+      {
+        designSessionId,
+        runId,
+      },
+    )
+
+    if (!createWorkflowRunResult.success) {
+      return err(
+        new Error(
+          `Failed to create workflow run record: ${createWorkflowRunResult.error}`,
+        ),
+      )
+    }
+
     const compiled = createGraph()
+    const runCollector = new RunCollectorCallbackHandler()
     const result = await compiled.invoke(workflowState, {
       recursionLimit,
       configurable: {
         repositories,
         logger,
       },
+      runId,
+      callbacks: [runCollector],
     })
 
     if (result.error) {
+      await repositories.schema.updateWorkflowRunStatus({
+        runId,
+        status: 'error',
+      })
       return err(new Error(result.error.message))
     }
+
+    await repositories.schema.updateWorkflowRunStatus({
+      runId,
+      status: 'success',
+    })
 
     return ok({
       text: result.finalResponse || result.generatedAnswer || '',
@@ -196,6 +227,11 @@ export const deepModeling = async (
       error instanceof Error
         ? error.message
         : WORKFLOW_ERROR_MESSAGES.EXECUTION_FAILED
+
+    await repositories.schema.updateWorkflowRunStatus({
+      runId,
+      status: 'error',
+    })
 
     const errorState = { ...workflowState, error: new Error(errorMessage) }
     const finalizedResult = await finalizeArtifactsNode(errorState, {

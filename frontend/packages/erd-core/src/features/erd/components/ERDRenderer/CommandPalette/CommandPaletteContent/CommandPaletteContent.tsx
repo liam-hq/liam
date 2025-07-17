@@ -3,7 +3,7 @@ import { DialogClose } from '@radix-ui/react-dialog'
 import { Command } from 'cmdk'
 import { type FC, useCallback, useEffect, useState } from 'react'
 import { useTableSelection } from '@/features/erd/hooks'
-import { useSchema } from '@/stores'
+import { useSchemaOrThrow } from '@/stores'
 import { TableNode } from '../../../ERDContent/components'
 import styles from './CommandPaletteContent.module.css'
 
@@ -18,7 +18,7 @@ type Props = {
 }
 
 export const CommandPaletteContent: FC<Props> = ({ closeDialog }) => {
-  const schema = useSchema()
+  const schema = useSchemaOrThrow()
   const [tableName, setTableName] = useState<string | null>(null)
   const table = schema.current.tables[tableName ?? '']
   const { selectTable } = useTableSelection()
@@ -116,6 +116,10 @@ export const CommandPaletteContent: FC<Props> = ({ closeDialog }) => {
                 isConnectable={false}
                 positionAbsoluteX={0}
                 positionAbsoluteY={0}
+                selectable={false}
+                deletable={false}
+                selected={false}
+                draggable={false}
                 zIndex={0}
               />
             )}
