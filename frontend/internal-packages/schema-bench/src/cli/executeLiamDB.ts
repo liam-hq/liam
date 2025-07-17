@@ -19,11 +19,9 @@ const InputSchema = v.object({
   input: v.string(),
 })
 
-const WORKSPACE_PATH = join(
-  process.env['INIT_CWD'] || process.cwd(),
-  'benchmark-workspace',
-  // 'benchmark-workspace-default',
-)
+// Get the repo root directory (where pnpm command is executed from)
+const REPO_ROOT = process.env['INIT_CWD'] || process.cwd()
+const WORKSPACE_PATH = join(REPO_ROOT, 'benchmark-workspace')
 
 async function loadInputFiles(): Promise<
   Result<Array<{ caseId: string; input: LiamDBExecutorInput }>, Error>
