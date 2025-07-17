@@ -14,6 +14,10 @@ export const createLiamDBExecutor = (config: LiamDBExecutorConfig) => {
 		config.supabaseUrl,
 		config.supabaseAnonKey,
 	);
+	supabase.auth.signInWithPassword({
+		email: "test@example.com",
+		password: "liampassword1234",
+	});
 	const organizationId = config.organizationId;
 
 	const execute = async (
@@ -72,7 +76,7 @@ const createDesignSession = async (
 			.insert({
 				organization_id: organizationId,
 				name: `Schema Bench Test - ${new Date().toISOString()}`,
-				created_by_user_id: "44597a5b-cc16-46e2-a98e-6d590f670ae6",
+				created_by_user_id: "2a57de2e-dd3d-4f9c-8735-29f52910b0fc",
 			})
 			.select("id")
 			.single();
@@ -105,7 +109,7 @@ const createDesignSession = async (
 				design_session_id: session.id,
 				type: "user" as const,
 				content: initialMessage,
-				user_id: "44597a5b-cc16-46e2-a98e-6d590f670ae6",
+				user_id: "2a57de2e-dd3d-4f9c-8735-29f52910b0fc",
 				updated_at: new Date().toISOString(),
 			});
 
