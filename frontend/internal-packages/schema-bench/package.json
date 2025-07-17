@@ -10,6 +10,7 @@
     "@liam-hq/db": "workspace:*",
     "@liam-hq/db-structure": "workspace:*",
     "@supabase/supabase-js": "2.49.8",
+    "dotenv": "16.5.0",
     "neverthrow": "8.2.0",
     "openai": "5.9.2",
     "valibot": "1.1.0"

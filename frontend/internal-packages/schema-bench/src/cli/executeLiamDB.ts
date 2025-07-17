@@ -3,10 +3,17 @@
 import { existsSync, mkdirSync } from 'node:fs'
 import { readdir, readFile, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
+import * as dotenv from 'dotenv'
 import { err, ok, type Result } from 'neverthrow'
 import * as v from 'valibot'
 import { createLiamDBExecutor } from '../executors/liamDb/liamDbExecutor.ts'
 import type { LiamDBExecutorInput } from '../executors/liamDb/types.ts'
+
+if (process.env.NODE_ENV !== 'production') {
+  dotenv.config({ path: '.env.local' })
+}
+
+dotenv.config({ path: '.env' })
 
 const InputSchema = v.object({
   prompt: v.string(),
