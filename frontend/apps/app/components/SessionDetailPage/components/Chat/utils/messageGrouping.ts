@@ -22,15 +22,17 @@ export const groupConsecutiveMessages = (
   let currentSender = ''
 
   const getSenderKey = (item: TimelineItemEntry): string => {
-    // Group agent messages by their type
+    // Group agent messages together (all assistant types)
     if (
+      item.type === 'assistant' ||
       item.type === 'assistant_pm' ||
       item.type === 'assistant_db' ||
-      item.type === 'assistant_qa'
+      item.type === 'assistant_qa' ||
+      item.type === 'assistant_log'
     ) {
-      return item.type
+      return 'assistant_group'
     }
-    // Don't group other types
+    // Don't group other types (user, error, schema_version)
     return `${item.type}_${item.id}`
   }
 

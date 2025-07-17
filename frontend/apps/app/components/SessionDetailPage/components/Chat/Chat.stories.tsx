@@ -66,7 +66,7 @@ const mockTimelineItems: TimelineItemEntry[] = [
   },
   {
     id: 'timeline-qa-agent-1',
-    type: 'assistant_db',
+    type: 'assistant_qa',
     content: `💾 Database Creation
 ✓ Creating database...
 ✓ Generated DDL statements (7 tables)
