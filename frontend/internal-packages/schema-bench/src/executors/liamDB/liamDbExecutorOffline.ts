@@ -1,6 +1,6 @@
 import { createInMemoryRepositories, deepModeling } from '@liam-hq/agent'
 import { err, ok, type Result } from 'neverthrow'
-import type { LiamDBExecutorInput, LiamDBExecutorOutput } from './types.ts'
+import type { LiamDBExecutorInput, LiamDBExecutorOutput } from './types'
 
 export const createLiamDBExecutorOffline = () => {
   const execute = async (
@@ -23,7 +23,7 @@ export const createLiamDBExecutorOffline = () => {
       const deepModelingResult = await deepModeling(
         {
           userInput: input.input,
-          schemaData: { tables: {}, relations: [] },
+          schemaData: { tables: {} },
           history: [],
           organizationId: 'offline-org',
           buildingSchemaId,
@@ -54,7 +54,7 @@ export const createLiamDBExecutorOffline = () => {
       // Debug: check what's actually in the repository
       const inMemoryRepo = repositories.schema as any
       if (inMemoryRepo.schemas?.size > 0) {
-        for (const [key, value] of inMemoryRepo.schemas.entries()) {
+        for (const _ of inMemoryRepo.schemas.entries()) {
         }
       }
 
@@ -72,23 +72,17 @@ export const createLiamDBExecutorOffline = () => {
         schemaResult.data?.schema &&
         Object.keys(schemaResult.data.schema.tables).length > 0
       ) {
-        const tableCount = Object.keys(schemaResult.data.schema.tables).length
-
         // Convert the schema to the expected output format
         const resultSchema: LiamDBExecutorOutput = {
           tables: schemaResult.data.schema.tables,
-          relations: schemaResult.data.schema.relations,
         }
 
         return ok(resultSchema)
       }
 
       // Parse AI response and create a basic schema structure
-      const _aiText = deepModelingResult.value.text.toLowerCase()
-
       const generatedSchema: LiamDBExecutorOutput = {
         tables: {},
-        relations: [],
       }
 
       const tableCount = Object.keys(generatedSchema.tables).length
