@@ -71,3 +71,9 @@
     transform: scale(1);
   }
 }
+
+.messageGroup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-5);
+}

@@ -101,7 +101,7 @@ export const Chat: FC<Props> = ({
           if (isMessageGroup(item)) {
             // Display each message in the group individually
             return (
-              <div key={item.id}>
+              <div key={item.id} className={styles.messageGroup}>
                 {item.messages.map((message) => {
                   // Analyze tasks in the content
                   const tasks = extractTasks(message.content)
