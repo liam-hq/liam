@@ -21,7 +21,10 @@ import {
   createAnnotations,
   DEFAULT_RECURSION_LIMIT,
 } from './chat/workflow/shared/langGraphUtils.ts'
-import type { WorkflowConfigurable, WorkflowState } from './chat/workflow/types.ts'
+import type {
+  WorkflowConfigurable,
+  WorkflowState,
+} from './chat/workflow/types.ts'
 
 export type DeepModelingParams = {
   userInput: string
@@ -281,7 +284,7 @@ export const deepModelingOffline = async (
 
   // Create a simple logger for offline mode
   const logger = {
-    log: (message: string) => console.log(`[DeepModeling] ${message}`),
+    log: (_message: string) => {},
     error: (message: string) => console.error(`[DeepModeling] ${message}`),
     warn: (message: string) => console.warn(`[DeepModeling] ${message}`),
   }

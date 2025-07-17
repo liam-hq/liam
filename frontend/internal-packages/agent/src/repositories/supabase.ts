@@ -10,7 +10,9 @@ import {
 } from '@liam-hq/db-structure'
 import type { SqlResult } from '@liam-hq/pglite-server/src/types'
 import pkg from 'fast-json-patch'
+
 const { compare } = pkg
+
 import * as v from 'valibot'
 import { ensurePathStructure } from '../utils/pathPreparation.ts'
 import type {

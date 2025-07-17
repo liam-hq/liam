@@ -3,7 +3,9 @@ import type { Database, Tables } from '@liam-hq/db/supabase/database.types'
 import type { Schema } from '@liam-hq/db-structure'
 import type { SqlResult } from '@liam-hq/pglite-server/src/types'
 import pkg from 'fast-json-patch'
+
 const { applyPatch } = pkg
+
 import type { Operation } from 'fast-json-patch'
 import { v4 as uuidv4 } from 'uuid'
 import type {
@@ -34,9 +36,15 @@ export class InMemorySchemaRepository implements SchemaRepository {
   private timelineItems: Map<string, Tables<'timeline_items'>> = new Map()
   private artifacts: Map<string, Tables<'artifacts'>> = new Map()
   private workflowRuns: Map<string, Tables<'workflow_runs'>> = new Map()
-  private validationQueries: Map<string, { designSessionId: string; queryString: string }> = new Map()
+  private validationQueries: Map<
+    string,
+    { designSessionId: string; queryString: string }
+  > = new Map()
   private validationResults: Map<string, SqlResult[]> = new Map()
-  private schemaVersions: Map<string, { id: string; schema: Schema; patch: Operation[] | null }> = new Map()
+  private schemaVersions: Map<
+    string,
+    { id: string; schema: Schema; patch: Operation[] | null }
+  > = new Map()
 
   async getSchema(designSessionId: string): Promise<{
     data: SchemaData | null
@@ -49,13 +57,15 @@ export class InMemorySchemaRepository implements SchemaRepository {
     return { data: schema, error: null }
   }
 
-  async getDesignSession(designSessionId: string): Promise<DesignSessionData | null> {
+  async getDesignSession(
+    designSessionId: string,
+  ): Promise<DesignSessionData | null> {
     const session = this.designSessions.get(designSessionId)
     if (!session) {
       // Create a default session if it doesn't exist
       const defaultSession: DesignSessionData = {
         organization_id: 'default-org',
-        timeline_items: []
+        timeline_items: [],
       }
       this.designSessions.set(designSessionId, defaultSession)
       return defaultSession
@@ -63,27 +73,29 @@ export class InMemorySchemaRepository implements SchemaRepository {
     return session
   }
 
-  async createEmptyPatchVersion(params: CreateEmptyPatchVersionParams): Promise<CreateVersionResult> {
+  async createEmptyPatchVersion(
+    params: CreateEmptyPatchVersionParams,
+  ): Promise<CreateVersionResult> {
     const versionId = uuidv4()
     const schema = this.schemas.get(params.buildingSchemaId)
-    
+
     if (!schema) {
       // Create a default empty schema if it doesn't exist
       const defaultSchema: Schema = {
         tables: {},
-        relations: []
+        relations: [],
       }
       this.schemas.set(params.buildingSchemaId, {
         id: params.buildingSchemaId,
         schema: defaultSchema,
-        latestVersionNumber: 1
+        latestVersionNumber: 1,
       })
     }
 
     this.schemaVersions.set(versionId, {
       id: versionId,
       schema: schema?.schema || { tables: {}, relations: [] },
-      patch: null
+      patch: null,
     })
 
     return { success: true, versionId }
@@ -96,30 +108,40 @@ export class InMemorySchemaRepository implements SchemaRepository {
     }
 
     try {
-      const newSchema = applyPatch(version.schema, params.patch).newDocument as Schema
+      const newSchema = applyPatch(version.schema, params.patch)
+        .newDocument as Schema
       version.schema = newSchema
       version.patch = params.patch
-      
+
       return { success: true, newSchema }
     } catch (error) {
-      return { success: false, error: error instanceof Error ? error.message : 'Unknown error' }
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+      }
     }
   }
 
-  async createTimelineItem(params: CreateTimelineItemParams): Promise<TimelineItemResult> {
+  async createTimelineItem(
+    params: CreateTimelineItemParams,
+  ): Promise<TimelineItemResult> {
     const timelineItemId = uuidv4()
     const now = new Date().toISOString()
-    
+
     const timelineItem: Tables<'timeline_items'> = {
       id: timelineItemId,
       content: params.content,
       type: params.type as Database['public']['Enums']['timeline_item_type_enum'],
-      user_id: 'type' in params && params.type === 'user' ? params.userId : null,
+      user_id:
+        'type' in params && params.type === 'user' ? params.userId : null,
       created_at: now,
       updated_at: now,
       organization_id: 'default-org',
       design_session_id: params.designSessionId,
-      building_schema_version_id: 'type' in params && params.type === 'schema_version' ? params.buildingSchemaVersionId : null
+      building_schema_version_id:
+        'type' in params && params.type === 'schema_version'
+          ? params.buildingSchemaVersionId
+          : null,
     }
 
     this.timelineItems.set(timelineItemId, timelineItem)
@@ -133,7 +155,10 @@ export class InMemorySchemaRepository implements SchemaRepository {
     return { success: true, timelineItem }
   }
 
-  async updateTimelineItem(id: string, updates: UpdateTimelineItemParams): Promise<TimelineItemResult> {
+  async updateTimelineItem(
+    id: string,
+    updates: UpdateTimelineItemParams,
+  ): Promise<TimelineItemResult> {
     const timelineItem = this.timelineItems.get(id)
     if (!timelineItem) {
       return { success: false, error: 'Timeline item not found' }
@@ -158,7 +183,7 @@ export class InMemorySchemaRepository implements SchemaRepository {
       created_at: now,
       updated_at: now,
       organization_id: 'default-org',
-      design_session_id: params.designSessionId
+      design_session_id: params.designSessionId,
     }
 
     this.artifacts.set(artifactId, artifact)
@@ -168,7 +193,7 @@ export class InMemorySchemaRepository implements SchemaRepository {
   async updateArtifact(params: UpdateArtifactParams): Promise<ArtifactResult> {
     // Find existing artifact for this design session
     const existingArtifact = Array.from(this.artifacts.values()).find(
-      a => a.design_session_id === params.designSessionId
+      (a) => a.design_session_id === params.designSessionId,
     )
 
     if (existingArtifact) {
@@ -184,7 +209,7 @@ export class InMemorySchemaRepository implements SchemaRepository {
 
   async getArtifact(designSessionId: string): Promise<ArtifactResult> {
     const artifact = Array.from(this.artifacts.values()).find(
-      a => a.design_session_id === designSessionId
+      (a) => a.design_session_id === designSessionId,
     )
 
     if (!artifact) {
@@ -197,11 +222,13 @@ export class InMemorySchemaRepository implements SchemaRepository {
   async createValidationQuery(params: {
     designSessionId: string
     queryString: string
-  }): Promise<{ success: true; queryId: string } | { success: false; error: string }> {
+  }): Promise<
+    { success: true; queryId: string } | { success: false; error: string }
+  > {
     const queryId = uuidv4()
     this.validationQueries.set(queryId, {
       designSessionId: params.designSessionId,
-      queryString: params.queryString
+      queryString: params.queryString,
     })
     return { success: true, queryId }
   }
@@ -214,7 +241,9 @@ export class InMemorySchemaRepository implements SchemaRepository {
     return { success: true }
   }
 
-  async createWorkflowRun(params: CreateWorkflowRunParams): Promise<WorkflowRunResult> {
+  async createWorkflowRun(
+    params: CreateWorkflowRunParams,
+  ): Promise<WorkflowRunResult> {
     const now = new Date().toISOString()
     const workflowRun: Tables<'workflow_runs'> = {
       id: uuidv4(),
@@ -223,14 +252,16 @@ export class InMemorySchemaRepository implements SchemaRepository {
       created_at: now,
       updated_at: now,
       organization_id: 'default-org',
-      design_session_id: params.designSessionId
+      design_session_id: params.designSessionId,
     }
 
     this.workflowRuns.set(params.runId, workflowRun)
     return { success: true, workflowRun }
   }
 
-  async updateWorkflowRunStatus(params: UpdateWorkflowRunStatusParams): Promise<WorkflowRunResult> {
+  async updateWorkflowRunStatus(
+    params: UpdateWorkflowRunStatusParams,
+  ): Promise<WorkflowRunResult> {
     const workflowRun = this.workflowRuns.get(params.runId)
     if (!workflowRun) {
       return { success: false, error: 'Workflow run not found' }

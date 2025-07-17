@@ -1,19 +1,20 @@
-import type { Schema } from '@liam-hq/db-structure'
 import { createHash } from 'node:crypto'
+import type { Schema } from '@liam-hq/db-structure'
 
 /**
  * In-memory vector store implementation for testing/offline use
  * This mocks the functionality of SupabaseVectorStore without requiring external dependencies
  */
 export class InMemoryVectorStore {
-  private documents: Map<string, {
-    id: string
-    content: string
-    metadata: Record<string, any>
-    hash: string
-  }> = new Map()
-
-  constructor() {}
+  private documents: Map<
+    string,
+    {
+      id: string
+      content: string
+      metadata: Record<string, any>
+      hash: string
+    }
+  > = new Map()
 
   /**
    * Generate a simple hash for schema content (replaces embedding)
@@ -25,16 +26,18 @@ export class InMemoryVectorStore {
   /**
    * Mock embedding sync - stores schema content with hash-based change detection
    */
-  async syncSchemaEmbeddings(schema: Schema): Promise<{ success: boolean; error?: string }> {
+  async syncSchemaEmbeddings(
+    schema: Schema,
+  ): Promise<{ success: boolean; error?: string }> {
     try {
       const schemaContent = JSON.stringify(schema)
       const hash = this.generateHash(schemaContent)
-      
+
       // Check if content has changed
-      const existingDoc = Array.from(this.documents.values()).find(doc => 
-        doc.metadata.type === 'schema'
+      const existingDoc = Array.from(this.documents.values()).find(
+        (doc) => doc.metadata.type === 'schema',
       )
-      
+
       if (existingDoc && existingDoc.hash === hash) {
         // No changes, skip sync
         return { success: true }
@@ -49,16 +52,16 @@ export class InMemoryVectorStore {
           type: 'schema',
           tableCount: Object.keys(schema.tables).length,
           relationCount: schema.relations.length,
-          lastUpdated: new Date().toISOString()
+          lastUpdated: new Date().toISOString(),
         },
-        hash
+        hash,
       })
 
       return { success: true }
     } catch (error) {
-      return { 
-        success: false, 
-        error: error instanceof Error ? error.message : 'Unknown error'
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
       }
     }
   }
@@ -66,12 +69,17 @@ export class InMemoryVectorStore {
   /**
    * Mock similarity search - returns stored documents based on simple matching
    */
-  async searchSimilar(query: string, limit: number = 5): Promise<Array<{
-    id: string
-    content: string
-    metadata: Record<string, any>
-    similarity: number
-  }>> {
+  async searchSimilar(
+    query: string,
+    limit = 5,
+  ): Promise<
+    Array<{
+      id: string
+      content: string
+      metadata: Record<string, any>
+      similarity: number
+    }>
+  > {
     const results: Array<{
       id: string
       content: string
@@ -82,20 +90,19 @@ export class InMemoryVectorStore {
     // Simple text-based similarity (mock implementation)
     for (const doc of this.documents.values()) {
       const similarity = this.calculateTextSimilarity(query, doc.content)
-      if (similarity > 0.1) { // Threshold for relevance
+      if (similarity > 0.1) {
+        // Threshold for relevance
         results.push({
           id: doc.id,
           content: doc.content,
           metadata: doc.metadata,
-          similarity
+          similarity,
         })
       }
     }
 
     // Sort by similarity and limit results
-    return results
-      .sort((a, b) => b.similarity - a.similarity)
-      .slice(0, limit)
+    return results.sort((a, b) => b.similarity - a.similarity).slice(0, limit)
   }
 
   /**
@@ -104,10 +111,10 @@ export class InMemoryVectorStore {
   private calculateTextSimilarity(text1: string, text2: string): number {
     const words1 = new Set(text1.toLowerCase().split(/\s+/))
     const words2 = new Set(text2.toLowerCase().split(/\s+/))
-    
-    const intersection = new Set([...words1].filter(word => words2.has(word)))
+
+    const intersection = new Set([...words1].filter((word) => words2.has(word)))
     const union = new Set([...words1, ...words2])
-    
+
     return intersection.size / union.size
   }
 
@@ -121,22 +128,24 @@ export class InMemoryVectorStore {
   } | null> {
     const doc = this.documents.get(id)
     if (!doc) return null
-    
+
     return {
       id: doc.id,
       content: doc.content,
-      metadata: doc.metadata
+      metadata: doc.metadata,
     }
   }
 
   /**
    * Get all documents with optional filtering
    */
-  async getAllDocuments(filter?: { type?: string }): Promise<Array<{
-    id: string
-    content: string
-    metadata: Record<string, any>
-  }>> {
+  async getAllDocuments(filter?: { type?: string }): Promise<
+    Array<{
+      id: string
+      content: string
+      metadata: Record<string, any>
+    }>
+  > {
     const results: Array<{
       id: string
       content: string
@@ -148,7 +157,7 @@ export class InMemoryVectorStore {
         results.push({
           id: doc.id,
           content: doc.content,
-          metadata: doc.metadata
+          metadata: doc.metadata,
         })
       }
     }

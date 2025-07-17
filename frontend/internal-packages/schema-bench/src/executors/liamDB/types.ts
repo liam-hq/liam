@@ -1,12 +1,12 @@
 import type { Schema } from '@liam-hq/db-structure'
 
-export type LiamDBExecutorInput = {
+type LiamDBExecutorInput = {
   input: string
 }
 
-export type LiamDBExecutorOutput = {} & Schema
+type LiamDBExecutorOutput = {} & Schema
 
-export type LiamDBExecutorConfig = {
+type LiamDBExecutorConfig = {
   supabaseUrl: string
   supabaseAnonKey: string
   organizationId: string

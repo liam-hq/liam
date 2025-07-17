@@ -1,4 +1,7 @@
-export { createSupabaseRepositories, createInMemoryRepositories } from './factory.ts'
+export {
+  createInMemoryRepositories,
+  createSupabaseRepositories,
+} from './factory.ts'
 
 export { InMemorySchemaRepository } from './inMemory.ts'
 export { SupabaseSchemaRepository } from './supabase.ts'

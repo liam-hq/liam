@@ -70,9 +70,10 @@ export async function executeDdlNode(
   // Skip actual DDL execution in offline mode
   let results: SqlResult[]
   if (process.env.LIAM_OFFLINE_MODE === 'true') {
-    console.log('[ExecuteDDL] Offline mode: Skipping actual DDL execution')
     // Create mock results for offline mode
-    const statements = ddlStatements.split(';').filter(s => s.trim().length > 0)
+    const statements = ddlStatements
+      .split(';')
+      .filter((s) => s.trim().length > 0)
     results = statements.map((statement) => ({
       success: true,
       statement: statement.trim(),
@@ -84,10 +85,7 @@ export async function executeDdlNode(
       executionTime: 0,
     }))
   } else {
-    results = await executeQuery(
-      state.designSessionId,
-      ddlStatements,
-    )
+    results = await executeQuery(state.designSessionId, ddlStatements)
   }
 
   const queryResult = await repositories.schema.createValidationQuery({
