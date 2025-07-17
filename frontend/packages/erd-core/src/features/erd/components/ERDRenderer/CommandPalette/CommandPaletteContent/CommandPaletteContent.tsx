@@ -68,8 +68,11 @@ export const CommandPaletteContent: FC<Props> = ({ closeDialog }) => {
       }
       onValueChange={(v) => {
         const [type_, value] = v.split('|')
-        if ((type_ === 'command' || type_ === 'table') && value)
+        if ((type_ === 'command' || type_ === 'table') && value) {
           setSelectedOption({ type: type_, name: value })
+        } else {
+          setSelectedOption(null)
+        }
       }}
       filter={(value, search) => {
         return value.split('|')[1]?.toLowerCase().includes(search.toLowerCase())
