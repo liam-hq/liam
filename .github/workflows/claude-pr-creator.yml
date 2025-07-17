@@ -12,7 +12,7 @@ jobs:
   claude-pr-creator:
     if: github.event.label.name == 'claude-create-pr'
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 60
     permissions:
       contents: write
       pull-requests: write
@@ -38,6 +38,9 @@ jobs:
       - name: Setup pnpm
         uses: ./.github/actions/pnpm-setup
 
+      - name: Setup Claude settings with lint hook
+        run: bash .github/scripts/setup-claude.sh
+
       - name: Run Claude Code Action
         uses: anthropics/claude-code-action@b92e56a96bb2fce337ece11f6dcb03bab4826536 # beta
         id: claude-code
@@ -48,6 +51,21 @@ jobs:
         with:
           github_token: ${{ steps.app-token.outputs.token }}
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          timeout_minutes: 60
+          additional_permissions: |
+            actions: read
+          custom_instructions: |
+            You have also been granted tools for editing files and running pnpm commands (fmt, install, lint, test) for testing your changes: pnpm fmt, pnpm install, pnpm lint, pnpm test.
+
+            MANDATORY PRE-COMMIT HOOK POLICY:
+            - When you see "mcp__github_file_ops__commit_files operation blocked by hook", this means lint/format errors exist
+            - You MUST immediately run "pnpm lint --fix" and "pnpm fmt" to fix all errors
+            - You MUST then manually fix any remaining violations shown in the error output
+            - You MUST continue fixing until "pnpm lint" and "pnpm fmt" both pass completely
+            - Only after ALL checks pass should you retry the commit
+            - NEVER abandon the task when blocked by pre-commit hook - always fix the issues
+            - Your task is NOT complete until the commit succeeds after passing all checks
+            - This is a REQUIREMENT, not a suggestion - commits MUST pass all lint/format checks
           allowed_tools: |
             Bash(pnpm fmt:*),
             Bash(pnpm install),

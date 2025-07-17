@@ -1,4 +1,4 @@
-import type { Tables } from '@liam-hq/db'
+import type { Database, Tables } from '@liam-hq/db'
 import type * as v from 'valibot'
 import type { timelineItemSchema } from './schema'
 
@@ -9,7 +9,10 @@ export type ReviewComment = {
   message: string
 }
 
-export type Version = Pick<Tables<'building_schema_versions'>, 'id' | 'number'>
+export type Version = Pick<
+  Tables<'building_schema_versions'>,
+  'id' | 'building_schema_id' | 'number' | 'patch' | 'reverse_patch'
+>
 
 export type BuildingSchema = Pick<
   Tables<'building_schemas'>,
@@ -24,6 +27,9 @@ export type DesignSessionWithTimelineItems = Pick<
 > & {
   timeline_items: TimelineItem[]
 }
+
+export type WorkflowRunStatus =
+  Database['public']['Enums']['workflow_run_status']
 
 type BaseTimelineItemEntry = {
   id: string

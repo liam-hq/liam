@@ -17,12 +17,14 @@
     "langfuse-langchain": "3.37.6",
     "langsmith": "0.3.34",
     "neverthrow": "8.2.0",
+    "uuid": "11.1.0",
     "valibot": "1.1.0"
   },
   "devDependencies": {
     "@biomejs/biome": "2.0.6",
     "@liam-hq/configs": "workspace:*",
     "@types/node": "22.15.34",
+    "@types/uuid": "10.0.0",
     "eslint": "9.30.0",
     "typescript": "5.8.3",
     "vitest": "3.2.4"

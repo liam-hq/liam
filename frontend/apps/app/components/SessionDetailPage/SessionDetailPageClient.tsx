@@ -1,45 +1,69 @@
 'use client'
 
-import { type Schema, schemaSchema } from '@liam-hq/db-structure'
+import type { Schema } from '@liam-hq/db-structure'
 import clsx from 'clsx'
-import { type FC, useCallback, useMemo, useState, useTransition } from 'react'
-import { safeParse } from 'valibot'
+import { type FC, useCallback, useState } from 'react'
 import { Chat } from './components/Chat'
 import { Output } from './components/Output'
 import { OutputPlaceholder } from './components/OutputPlaceholder'
-import { useRealtimeBuildlingSchema } from './hooks/useRealtimeBuildlingSchema'
 import { useRealtimeTimelineItems } from './hooks/useRealtimeTimelineItems'
+import { useRealtimeVersionsWithSchema } from './hooks/useRealtimeVersionsWithSchema'
+import { useRealtimeWorkflowRuns } from './hooks/useRealtimeWorkflowRuns'
 import { SCHEMA_UPDATES_DOC, SCHEMA_UPDATES_REVIEW_COMMENTS } from './mock'
 import styles from './SessionDetailPage.module.css'
-import { buildCurrentSchema } from './services/buildCurrentSchema'
-import { getBuildingSchema } from './services/buildingSchema/client/getBuldingSchema'
-import { buildPrevSchema } from './services/buildPrevSchema/client/buildPrevSchema'
 import { convertTimelineItemToTimelineItemEntry } from './services/convertTimelineItemToTimelineItemEntry'
-import { getLatestVersion } from './services/latestVersion/client/getLatestVersion'
-import type { DesignSessionWithTimelineItems, Version } from './types'
+import type {
+  DesignSessionWithTimelineItems,
+  Version,
+  WorkflowRunStatus,
+} from './types'
 
 type Props = {
+  buildingSchemaId: string
   designSessionWithTimelineItems: DesignSessionWithTimelineItems
-  initialSchema: Schema | null
+  initialDisplayedSchema: Schema | null
   initialPrevSchema: Schema | null
-  initialCurrentVersion: Version | null
+  initialVersions: Version[]
+  initialWorkflowRunStatus: WorkflowRunStatus | null
 }
 
 export const SessionDetailPageClient: FC<Props> = ({
+  buildingSchemaId,
   designSessionWithTimelineItems,
-  initialSchema,
+  initialDisplayedSchema,
   initialPrevSchema,
-  initialCurrentVersion,
+  initialVersions,
+  initialWorkflowRunStatus,
 }) => {
   const designSessionId = designSessionWithTimelineItems.id
 
-  const [prevSchema, setPrevSchema] = useState<Schema | null>(initialPrevSchema)
-  const [currentSchema, setCurrentSchema] = useState<Schema | null>(
-    initialSchema,
+  const {
+    versions,
+    selectedVersion,
+    setSelectedVersion,
+    displayedSchema,
+    prevSchema,
+  } = useRealtimeVersionsWithSchema({
+    buildingSchemaId,
+    initialVersions,
+    initialDisplayedSchema,
+    initialPrevSchema,
+  })
+
+  const handleChangeSelectedVersion = useCallback(
+    (version: Version) => {
+      setSelectedVersion(version)
+    },
+    [setSelectedVersion],
   )
-  const [currentVersion, setCurrentVersion] = useState<Version | null>(
-    initialCurrentVersion,
+
+  const { timelineItems, addOrUpdateTimelineItem } = useRealtimeTimelineItems(
+    designSessionId,
+    designSessionWithTimelineItems.timeline_items.map((timelineItem) =>
+      convertTimelineItemToTimelineItemEntry(timelineItem),
+    ),
   )
+
   const [, setQuickFixMessage] = useState<string>('')
 
   const handleQuickFix = useCallback((comment: string) => {
@@ -51,64 +75,19 @@ Please suggest a specific solution to resolve this problem.`
     setQuickFixMessage(fixMessage)
   }, [])
 
-  const handleChangeCurrentVersion = useCallback(async (version: Version) => {
-    const schema = await buildCurrentSchema({
-      designSessionId,
-      latestVersionNumber: version.number,
-    })
-    setCurrentSchema(schema)
-
-    const prevSchema = await buildPrevSchema({
-      currentSchema: schema,
-      currentVersionId: version.id,
-    })
-    setPrevSchema(prevSchema)
-
-    setCurrentVersion(version)
-  }, [])
-
-  const [isRefetching, startTransition] = useTransition()
-  const refetchSchemaAndVersion = useCallback(async () => {
-    startTransition(async () => {
-      const buildingSchema = await getBuildingSchema(designSessionId)
-      const parsedSchema = safeParse(schemaSchema, buildingSchema?.schema)
-      const currentSchema = parsedSchema.success ? parsedSchema.output : null
-      setCurrentSchema(currentSchema)
-
-      const latestVersion = await getLatestVersion(buildingSchema?.id ?? '')
-      setCurrentVersion(latestVersion)
-
-      if (currentSchema === null || latestVersion === null) return
-      const prevSchema = await buildPrevSchema({
-        currentSchema,
-        currentVersionId: latestVersion.id,
-      })
-      setPrevSchema(prevSchema)
-    })
-  }, [designSessionId])
-
-  useRealtimeBuildlingSchema(designSessionId, refetchSchemaAndVersion)
-
-  const hasCurrentVersion = currentVersion !== null
-
-  const { timelineItems, addOrUpdateTimelineItem } = useRealtimeTimelineItems(
+  const { status } = useRealtimeWorkflowRuns(
     designSessionId,
-    designSessionWithTimelineItems.timeline_items.map((timelineItem) =>
-      convertTimelineItemToTimelineItemEntry(timelineItem),
-    ),
+    initialWorkflowRunStatus,
   )
-  const isGenerating = useMemo(() => {
-    // Since progress role is removed, we no longer track generating state
-    return false
-  }, [timelineItems])
 
-  // Show loading state while schema is being fetched
-  if (isRefetching) {
-    return <div>Updating schema...</div>
-  }
+  const hasSelectedVersion = selectedVersion !== null
+
+  const isVersionReady =
+    status !== 'pending' ||
+    (selectedVersion?.patch !== null && selectedVersion?.reverse_patch !== null)
 
   // Show error state if no schema is available
-  if (currentSchema === null) {
+  if (displayedSchema === null) {
     return <div>Failed to load schema</div>
   }
 
@@ -117,32 +96,33 @@ Please suggest a specific solution to resolve this problem.`
       <div
         className={clsx(
           styles.columns,
-          hasCurrentVersion ? styles.twoColumns : styles.oneColumn,
+          hasSelectedVersion ? styles.twoColumns : styles.oneColumn,
         )}
       >
         <div className={styles.chatSection}>
           <Chat
-            schemaData={currentSchema}
+            schemaData={displayedSchema}
             designSessionId={designSessionId}
             timelineItems={timelineItems}
             onMessageSend={addOrUpdateTimelineItem}
           />
         </div>
-        {hasCurrentVersion && (
+        {hasSelectedVersion && (
           <div className={styles.outputSection}>
-            {isGenerating ? (
-              <OutputPlaceholder />
-            ) : (
+            {isVersionReady ? (
               <Output
-                schema={currentSchema}
+                designSessionId={designSessionId}
+                schema={displayedSchema}
                 prevSchema={prevSchema}
                 schemaUpdatesDoc={SCHEMA_UPDATES_DOC}
                 schemaUpdatesReviewComments={SCHEMA_UPDATES_REVIEW_COMMENTS}
                 onQuickFix={handleQuickFix}
-                designSessionId={designSessionId}
-                currentVersion={currentVersion}
-                onCurrentVersionChange={handleChangeCurrentVersion}
+                versions={versions}
+                selectedVersion={selectedVersion}
+                onSelectedVersionChange={handleChangeSelectedVersion}
               />
+            ) : (
+              <OutputPlaceholder />
             )}
           </div>
         )}

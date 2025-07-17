@@ -8,7 +8,8 @@
   "main": "src/index.ts",
   "dependencies": {
     "@supabase/ssr": "0.6.1",
-    "@supabase/supabase-js": "2.49.8"
+    "@supabase/supabase-js": "2.49.8",
+    "valibot": "1.1.0"
   },
   "devDependencies": {
     "@biomejs/biome": "2.0.6",

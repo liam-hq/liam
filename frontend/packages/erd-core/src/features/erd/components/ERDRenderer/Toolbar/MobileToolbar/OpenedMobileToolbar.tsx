@@ -3,9 +3,9 @@ import { useStore } from '@xyflow/react'
 import { type FC, useCallback } from 'react'
 import { toolbarActionLogEvent } from '@/features/gtm/utils'
 import { useCustomReactflow } from '@/features/reactflow/hooks'
-import { useVersion } from '@/providers'
+import { useVersionOrThrow } from '@/providers'
 import type { ShowMode } from '@/schemas/showMode'
-import { useUserEditing } from '@/stores'
+import { useUserEditingOrThrow } from '@/stores'
 import { FitviewButton } from '../FitviewButton'
 import { TidyUpButton } from '../TidyUpButton'
 import { ToolbarIconButton } from '../ToolbarIconButton'
@@ -22,8 +22,8 @@ export const OpenedMobileToolbar: FC<Props> = ({
 }) => {
   const { zoomIn, zoomOut } = useCustomReactflow()
   const zoomLevel = useStore((store) => store.transform[2])
-  const { showMode } = useUserEditing()
-  const { version } = useVersion()
+  const { showMode } = useUserEditingOrThrow()
+  const { version } = useVersionOrThrow()
   const LabelList: Record<ShowMode, string> = {
     ALL_FIELDS: 'All Fields',
     TABLE_NAME: 'Table Name',

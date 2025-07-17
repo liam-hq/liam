@@ -9,7 +9,7 @@
 
 .messagesContainer {
   flex: 1;
-  overflow-y: auto;
+  overflow-y: scroll;
   overflow-x: hidden; /* Prevent horizontal scrolling */
   padding: var(--spacing-4);
   display: flex;
@@ -17,6 +17,8 @@
   gap: var(--spacing-5);
   min-height: 0; /* Allow the container to shrink */
   scroll-behavior: smooth; /* Smooth scrolling */
+  scrollbar-color: var(--overlay-20) transparent;
+  scrollbar-width: thin;
 }
 
 /* Custom scrollbar styling for better UX */

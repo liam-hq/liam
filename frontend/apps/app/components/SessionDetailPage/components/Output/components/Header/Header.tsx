@@ -1,22 +1,13 @@
-import type { FC } from 'react'
+import type { ComponentProps, FC } from 'react'
 import { TabsList, TabsTrigger } from '@/components'
-import type { Version } from '../../../../types'
 import { OUTPUT_TABS_LIST } from '../../constants'
 import { ExportDropdown } from './ExportDropdown'
 import styles from './Header.module.css'
 import { VersionDropdown } from './VersionDropdown'
 
-type Props = {
-  designSessionId: string
-  currentVersion: Version | null
-  onCurrentVersionChange: (version: Version) => void
-}
+type Props = ComponentProps<typeof VersionDropdown>
 
-export const Header: FC<Props> = ({
-  designSessionId,
-  currentVersion,
-  onCurrentVersionChange,
-}) => {
+export const Header: FC<Props> = ({ ...propsForVersionDropdown }) => {
   return (
     <div className={styles.wrapper}>
       <TabsList className={styles.tabsList}>
@@ -32,11 +23,7 @@ export const Header: FC<Props> = ({
       </TabsList>
       <div className={styles.tail}>
         <ExportDropdown />
-        <VersionDropdown
-          designSessionId={designSessionId}
-          currentVersion={currentVersion}
-          onCurrentVersionChange={onCurrentVersionChange}
-        />
+        <VersionDropdown {...propsForVersionDropdown} />
       </div>
     </div>
   )

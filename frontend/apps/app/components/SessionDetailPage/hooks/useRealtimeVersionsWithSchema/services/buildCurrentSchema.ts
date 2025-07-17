@@ -1,12 +1,14 @@
+'use client'
+
 import {
   applyPatchOperations,
   operationsSchema,
   type Schema,
   schemaSchema,
 } from '@liam-hq/db-structure'
-import { safeParse } from 'valibot'
+import * as v from 'valibot'
+import type { Version } from '@/components/SessionDetailPage/types'
 import { createClient } from '@/libs/db/client'
-import { getBuildingSchema } from './buildingSchema/client/getBuldingSchema'
 
 async function getPreviousVersions(
   buildingSchemaId: string,
@@ -28,35 +30,33 @@ async function getPreviousVersions(
   return data
 }
 
-type Params = {
-  designSessionId: string
-  latestVersionNumber: number
-}
-
-export async function buildCurrentSchema({
-  designSessionId,
-  latestVersionNumber,
-}: Params) {
-  const buildingSchema = await getBuildingSchema(designSessionId)
+export async function buildCurrentSchema(targetVersion: Version) {
+  const supabase = createClient()
+  const { data: buildingSchema } = await supabase
+    .from('building_schemas')
+    .select('id, initial_schema_snapshot')
+    .eq('id', targetVersion.building_schema_id)
+    .single()
 
   const previousVersions = await getPreviousVersions(
     buildingSchema?.id ?? '',
-    latestVersionNumber,
+    targetVersion.number,
   )
 
   const operationsArray = previousVersions
     .map((version) => {
-      const parsed = safeParse(operationsSchema, version.patch)
+      const parsed = v.safeParse(operationsSchema, version.patch)
       if (!parsed.success) return null
 
       return parsed.output
     })
     .filter((version) => version !== null)
 
-  const parsedInitialSchema = safeParse(
+  const parsedInitialSchema = v.safeParse(
     schemaSchema,
     buildingSchema?.initial_schema_snapshot,
   )
+
   const baseSchema: Schema = parsedInitialSchema.success
     ? parsedInitialSchema.output
     : {
