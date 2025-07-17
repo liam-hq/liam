@@ -190,6 +190,48 @@ describe(processor, () => {
       expect(value).toEqual(expected)
     })
 
+    it('composite primary key', async () => {
+      const { value } = await processor(/* Ruby */ `
+        create_table "products", primary_key: [:store_id, :sku] do |t|
+          t.integer "store_id"
+          t.string "sku"
+          t.text "description"
+        end
+      `)
+
+      const expected = aSchema({
+        tables: {
+          products: aTable({
+            name: 'products',
+            columns: {
+              store_id: aColumn({
+                name: 'store_id',
+                type: 'integer',
+                notNull: true,
+              }),
+              sku: aColumn({
+                name: 'sku',
+                type: 'varchar',
+                notNull: true,
+              }),
+              description: aColumn({
+                name: 'description',
+                type: 'text',
+              }),
+            },
+            constraints: {
+              PRIMARY_store_id_sku: aPrimaryKeyConstraint({
+                name: 'PRIMARY_store_id_sku',
+                columnNames: ['store_id', 'sku'],
+              }),
+            },
+          }),
+        },
+      })
+
+      expect(value).toEqual(expected)
+    })
+
     it('index (unique: false)', async () => {
       const indexName = 'index_users_on_id_and_email'
       const { value } = await processor(/* Ruby */ `
