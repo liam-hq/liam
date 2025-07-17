@@ -244,3 +244,66 @@ export const deepModeling = async (
     return err(new Error(finalizedResult.error?.message || errorMessage))
   }
 }
+
+export type DeepModelingOfflineParams = {
+  userInput: string
+  schemaData?: Schema
+  history?: [string, string][]
+  organizationId?: string
+  buildingSchemaId?: string
+  latestVersionNumber?: number
+  designSessionId?: string
+  userId?: string
+  recursionLimit?: number
+}
+
+/**
+ * Execute Deep Modeling workflow in offline mode without database dependencies
+ */
+export const deepModelingOffline = async (
+  params: DeepModelingOfflineParams,
+): Promise<DeepModelingResult> => {
+  const {
+    userInput,
+    schemaData = { tables: {}, relations: [] },
+    history = [],
+    organizationId = 'offline-org',
+    buildingSchemaId = 'offline-schema',
+    latestVersionNumber = 0,
+    designSessionId = `offline-session-${Date.now()}`,
+    userId = 'offline-user',
+    recursionLimit = DEFAULT_RECURSION_LIMIT,
+  } = params
+
+  // Create in-memory repositories
+  const { createInMemoryRepositories } = await import('./repositories/index.ts')
+  const repositories = createInMemoryRepositories()
+
+  // Create a simple logger for offline mode
+  const logger = {
+    log: (message: string) => console.log(`[DeepModeling] ${message}`),
+    error: (message: string) => console.error(`[DeepModeling] ${message}`),
+    warn: (message: string) => console.warn(`[DeepModeling] ${message}`),
+  }
+
+  // Call the main deepModeling function with offline configuration
+  return deepModeling(
+    {
+      userInput,
+      schemaData,
+      history,
+      organizationId,
+      buildingSchemaId,
+      latestVersionNumber,
+      designSessionId,
+      userId,
+      recursionLimit,
+    },
+    {
+      configurable: {
+        repositories,
+        logger,
+      },
+    },
+  )
+}

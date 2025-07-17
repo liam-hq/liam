@@ -1,4 +1,5 @@
 import type { SupabaseClientType } from '@liam-hq/db'
+import { InMemorySchemaRepository } from './inMemory.ts'
 import { SupabaseSchemaRepository } from './supabase.ts'
 import type { Repositories } from './types.ts'
 
@@ -10,5 +11,14 @@ export function createSupabaseRepositories(
 ): Repositories {
   return {
     schema: new SupabaseSchemaRepository(client),
+  }
+}
+
+/**
+ * Factory function to create in-memory repositories for testing/offline use
+ */
+export function createInMemoryRepositories(): Repositories {
+  return {
+    schema: new InMemorySchemaRepository(),
   }
 }

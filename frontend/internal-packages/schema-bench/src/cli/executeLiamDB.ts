@@ -6,7 +6,7 @@ import { join } from 'node:path'
 import * as dotenv from 'dotenv'
 import { err, ok, type Result } from 'neverthrow'
 import * as v from 'valibot'
-import { createLiamDBExecutor } from '../executors/liamDb/liamDbExecutor.ts'
+import { createLiamDBExecutorOffline } from '../executors/liamDb/liamDbExecutorOffline.ts'
 import type { LiamDBExecutorInput } from '../executors/liamDb/types.ts'
 
 if (process.env.NODE_ENV !== 'production') {
@@ -92,7 +92,7 @@ async function saveOutputFile(
 }
 
 async function executeCase(
-  executor: ReturnType<typeof createLiamDBExecutor>,
+  executor: ReturnType<typeof createLiamDBExecutorOffline>,
   caseId: string,
   input: LiamDBExecutorInput,
 ): Promise<Result<void, Error>> {
@@ -111,27 +111,8 @@ async function executeCase(
 }
 
 async function main() {
-  // Check required environment variables
-  const supabaseUrl = process.env['NEXT_PUBLIC_SUPABASE_URL']
-  const supabaseAnonKey = process.env['NEXT_PUBLIC_SUPABASE_ANON_KEY']
-  const organizationId =
-    process.env['LIAM_ORGANIZATION_ID'] ??
-    '491159b2-7a53-44d0-971c-d8160aa77be6'
-
-  if (!supabaseUrl || !supabaseAnonKey) {
-    console.error('❌ Error: Required environment variables are missing')
-    console.error('Please set:')
-    console.error('  - NEXT_PUBLIC_SUPABASE_URL')
-    console.error('  - NEXT_PUBLIC_SUPABASE_ANON_KEY')
-    process.exit(1)
-  }
-
-  if (!organizationId) {
-    console.error('❌ Error: Required environment variables are missing')
-    console.error('Please set:')
-    console.error('  - LIAM_ORGANIZATION_ID')
-    process.exit(1)
-  }
+  console.log('🚀 Running LiamDB Executor in offline mode...')
+  console.log('ℹ️  This mode does not require database connection or API keys')
 
   // Load input files
   const inputsResult = await loadInputFiles()
@@ -146,12 +127,8 @@ async function main() {
     return
   }
 
-  // Create executor
-  const executor = createLiamDBExecutor({
-    supabaseUrl,
-    supabaseAnonKey,
-    organizationId,
-  })
+  // Create offline executor
+  const executor = createLiamDBExecutorOffline()
 
   // Process each case
   let successCount = 0

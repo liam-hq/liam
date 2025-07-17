@@ -1,5 +1,6 @@
-export { createSupabaseRepositories } from './factory.ts'
+export { createSupabaseRepositories, createInMemoryRepositories } from './factory.ts'
 
+export { InMemorySchemaRepository } from './inMemory.ts'
 export { SupabaseSchemaRepository } from './supabase.ts'
 export type {
   DesignSessionData,
