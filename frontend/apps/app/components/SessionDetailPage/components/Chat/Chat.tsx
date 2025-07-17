@@ -127,7 +127,7 @@ export const Chat: FC<Props> = ({
                 case 'assistant_log':
                   return { avatar: <DBAgent />, agentName: 'DB Agent' }
                 default:
-                  return { avatar: <DBAgent />, agentName: 'Agent' }
+                  return { avatar: <DBAgent />, agentName: 'DB Agent' }
               }
             })()
 
