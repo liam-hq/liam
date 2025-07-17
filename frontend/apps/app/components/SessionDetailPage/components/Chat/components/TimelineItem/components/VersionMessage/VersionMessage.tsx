@@ -18,7 +18,7 @@ import styles from './VersionMessage.module.css'
 /**
  * Parse JSON patch operations into structured format
  */
-export type StatusClass =
+type StatusClass =
   | 'statusAdded'
   | 'statusRemoved'
   | 'statusModified'

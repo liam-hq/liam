@@ -11,6 +11,7 @@ export type {
   SupabaseClient,
 } from '@supabase/supabase-js'
 export type { Database, Json, Tables } from '../supabase/database.types'
+export * from './factories'
 export {
   buildingSchemaVersionsSchema,
   jsonSchema,

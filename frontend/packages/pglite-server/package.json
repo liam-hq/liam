@@ -7,7 +7,7 @@
   },
   "main": "src/index.ts",
   "dependencies": {
-    "@electric-sql/pglite": "0.3.3"
+    "@electric-sql/pglite": "0.3.4"
   },
   "devDependencies": {
     "@biomejs/biome": "2.0.6",
