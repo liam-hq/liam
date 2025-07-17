@@ -65,9 +65,17 @@ export const createWebSearchEnabledModel = (
   // Use web search preview model when forceSearch is true
   const model = forceSearch ? 'gpt-4o-search-preview' : 'gpt-4o-mini'
 
-  return new ChatOpenAI({
-    model,
-    callbacks: baseConfig.callbacks || [],
-    temperature: 0,
-  })
+  // gpt-4o-search-preview doesn't support temperature parameter
+  const modelConfig = forceSearch
+    ? {
+        model,
+        callbacks: baseConfig.callbacks || [],
+      }
+    : {
+        model,
+        callbacks: baseConfig.callbacks || [],
+        temperature: 0,
+      }
+
+  return new ChatOpenAI(modelConfig)
 }
