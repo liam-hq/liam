@@ -22,6 +22,7 @@ const InputSchema = v.object({
 const WORKSPACE_PATH = join(
   process.env['INIT_CWD'] || process.cwd(),
   'benchmark-workspace',
+  // 'benchmark-workspace-default',
 )
 
 async function loadInputFiles(): Promise<
@@ -111,9 +112,6 @@ async function executeCase(
 }
 
 async function main() {
-  console.log('🚀 Running LiamDB Executor in offline mode...')
-  console.log('ℹ️  This mode does not require database connection or API keys')
-
   // Load input files
   const inputsResult = await loadInputFiles()
   if (inputsResult.isErr()) {
