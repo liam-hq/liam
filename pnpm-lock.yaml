@@ -500,6 +500,9 @@ importers:
       '@supabase/supabase-js':
         specifier: 2.49.8
         version: 2.49.8
+      neverthrow:
+        specifier: 8.2.0
+        version: 8.2.0
     devDependencies:
       '@biomejs/biome':
         specifier: 2.0.6

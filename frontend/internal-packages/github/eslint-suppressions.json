@@ -1,7 +1,1 @@
-{
-  "src/api.server.ts": {
-    "no-throw-error/no-throw-error": {
-      "count": 1
-    }
-  }
-}
+{}

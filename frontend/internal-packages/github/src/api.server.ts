@@ -1,5 +1,6 @@
 import { createAppAuth } from '@octokit/auth-app'
 import { Octokit } from '@octokit/rest'
+import { errAsync, ResultAsync } from 'neverthrow'
 import type { FileChange } from './types'
 
 const createOctokit = async (installationId: number) => {
@@ -151,17 +152,19 @@ export async function getRepositoriesByInstallationId(installationId: number) {
 export const getRepository = async (
   projectId: string,
   installationId: number,
-) => {
+): Promise<ResultAsync<any, Error>> => {
   const [owner, repo] = projectId.split('/')
-  if (!owner || !repo) throw new Error('Invalid project ID format')
+  if (!owner || !repo) {
+    return errAsync(new Error('Invalid project ID format'))
+  }
 
-  const octokit = await createOctokit(installationId)
-  const { data } = await octokit.repos.get({
-    owner,
-    repo,
-  })
-
-  return data
+  return ResultAsync.fromPromise(createOctokit(installationId), (error) =>
+    error instanceof Error ? error : new Error(String(error)),
+  ).andThen((octokit) =>
+    ResultAsync.fromPromise(octokit.repos.get({ owner, repo }), (error) =>
+      error instanceof Error ? error : new Error(String(error)),
+    ).map((res) => res.data),
+  )
 }
 
 /**
