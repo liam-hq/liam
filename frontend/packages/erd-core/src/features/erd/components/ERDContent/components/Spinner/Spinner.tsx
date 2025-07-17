@@ -8,7 +8,7 @@ type Props = {
 
 export const Spinner: FC<Props> = ({ className }) => {
   return (
-    // biome-ignore lint/a11y/useSemanticElements: <output> tag doesn't make sense for a loading spinner
+    // biome-ignore lint/a11y/useSemanticElements: role="status" is appropriate for loading indicators
     <div
       className={clsx(styles.spinnerBox, className)}
       role="status"

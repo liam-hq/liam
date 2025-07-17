@@ -5,7 +5,7 @@ import {
   type InvokeResult,
   invokeDesignAgent,
 } from '../../../langchain/agents/databaseSchemaBuildAgent/agent'
-import type { WebSearchConfig } from '../../../langchain/utils/types'
+import type { WebSearchOptions } from '../../../langchain/tools/webSearch'
 import type { Repositories } from '../../../repositories'
 import { convertSchemaToText } from '../../../utils/convertSchemaToText'
 import { getConfigurable } from '../shared/getConfigurable'
@@ -202,16 +202,15 @@ export async function designSchemaNode(
     'Analyzing table structure and relationships...',
   )
 
-  const webSearchConfig: WebSearchConfig = {
-    enabled: true,
-    searchContextSize: 'medium',
-    forceUse: true,
+  const webSearchOptions: WebSearchOptions = {
+    search_context_size: 'medium',
   }
 
   const invokeResult = await invokeDesignAgent(
     { schemaText },
     messages,
-    webSearchConfig,
+    webSearchOptions,
+    true,
   )
 
   if (invokeResult.isErr()) {

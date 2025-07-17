@@ -3,7 +3,7 @@ import { toJsonSchema } from '@valibot/to-json-schema'
 import * as v from 'valibot'
 import {
   createWebSearchEnabledModel,
-  type WebSearchConfig,
+  type WebSearchOptions,
 } from '../../tools/webSearch'
 import { createLangfuseHandler } from '../../utils/telemetry'
 import type { BasePromptVariables, ChatAgent } from '../../utils/types'
@@ -22,13 +22,16 @@ export class PMAnalysisAgent
 {
   private analysisModel: ReturnType<ChatOpenAI['withStructuredOutput']>
 
-  constructor(webSearchConfig?: WebSearchConfig) {
+  constructor(
+    webSearchOptions: WebSearchOptions = { search_context_size: 'medium' },
+    forceSearch = true,
+  ) {
     const baseModel = createWebSearchEnabledModel(
       {
-        model: 'o4-mini',
         callbacks: [createLangfuseHandler()],
       },
-      webSearchConfig,
+      webSearchOptions,
+      forceSearch,
     )
 
     // Convert valibot schema to JSON Schema and bind to model

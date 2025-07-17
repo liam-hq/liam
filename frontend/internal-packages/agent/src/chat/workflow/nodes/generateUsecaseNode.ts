@@ -2,10 +2,8 @@ import { AIMessage } from '@langchain/core/messages'
 import type { RunnableConfig } from '@langchain/core/runnables'
 import { ResultAsync } from 'neverthrow'
 import { QAGenerateUsecaseAgent } from '../../../langchain/agents'
-import type {
-  BasePromptVariables,
-  WebSearchConfig,
-} from '../../../langchain/utils/types'
+import type { WebSearchOptions } from '../../../langchain/tools/webSearch'
+import type { BasePromptVariables } from '../../../langchain/utils/types'
 import { getConfigurable } from '../shared/getConfigurable'
 import type { WorkflowState } from '../types'
 import { formatMessagesToHistory } from '../utils/messageUtils'
@@ -77,13 +75,11 @@ export async function generateUsecaseNode(
     }
   }
 
-  const webSearchConfig: WebSearchConfig = {
-    enabled: true,
-    searchContextSize: 'medium',
-    forceUse: true,
+  const webSearchOptions: WebSearchOptions = {
+    search_context_size: 'medium',
   }
 
-  const qaAgent = new QAGenerateUsecaseAgent(webSearchConfig)
+  const qaAgent = new QAGenerateUsecaseAgent(webSearchOptions, true)
 
   // Create a user message that includes the analyzed requirements
   const requirementsText = formatAnalyzedRequirements(

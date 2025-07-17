@@ -9,7 +9,7 @@ import { ok, Result, ResultAsync } from 'neverthrow'
 import * as v from 'valibot'
 import {
   createWebSearchEnabledModel,
-  type WebSearchConfig,
+  type WebSearchOptions,
 } from '../../tools/webSearch'
 import { createLangfuseHandler } from '../../utils/telemetry'
 import { type DesignAgentPromptVariables, designAgentPrompt } from './prompts'
@@ -26,14 +26,17 @@ export type InvokeResult = {
   operations: DesignResponse['operations']
 }
 
-const createDesignModel = (webSearchConfig?: WebSearchConfig) => {
+const createDesignModel = (
+  webSearchOptions: WebSearchOptions = { search_context_size: 'medium' },
+  forceSearch = true,
+) => {
   const jsonSchema = toJsonSchema(designResponseSchema)
   const baseModel = createWebSearchEnabledModel(
     {
-      model: 'o4-mini',
       callbacks: [createLangfuseHandler()],
     },
-    webSearchConfig,
+    webSearchOptions,
+    forceSearch,
   )
   return baseModel.withStructuredOutput(jsonSchema)
 }
@@ -41,9 +44,10 @@ const createDesignModel = (webSearchConfig?: WebSearchConfig) => {
 export const invokeDesignAgent = (
   variables: DesignAgentPromptVariables,
   messages: BaseMessage[],
-  webSearchConfig?: WebSearchConfig,
+  webSearchOptions: WebSearchOptions = { search_context_size: 'medium' },
+  forceSearch = true,
 ): ResultAsync<InvokeResult, Error> => {
-  const model = createDesignModel(webSearchConfig)
+  const model = createDesignModel(webSearchOptions, forceSearch)
 
   const formatPrompt = ResultAsync.fromSafePromise(
     designAgentPrompt.format(variables),
