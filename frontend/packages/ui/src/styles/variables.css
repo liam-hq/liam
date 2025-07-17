@@ -4,7 +4,7 @@
   --default-hover-animation-duration: 100ms;
 
   --code-font:
-    'ui-monospace', 'IBM·Plex·Mono', SF Mono, Menlo, Monaco, Consolas, monospace;
+    'ui-monospace', 'IBM Plex Mono', SF Mono, Menlo, Monaco, Consolas, monospace;
 
   --z-index-toolbar-closed: 800;
   --z-index-sidebar: 900;

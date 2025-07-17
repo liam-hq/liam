@@ -10,8 +10,8 @@ import { type FC, useCallback } from 'react'
 import { computeAutoLayout, convertSchemaToNodes } from '@/features/erd/utils'
 import { clickLogEvent, openRelatedTablesLogEvent } from '@/features/gtm/utils'
 import { useCustomReactflow } from '@/features/reactflow/hooks'
-import { useVersion } from '@/providers'
-import { useSchema, useUserEditing } from '@/stores'
+import { useVersionOrThrow } from '@/providers'
+import { useSchemaOrThrow, useUserEditingOrThrow } from '@/stores'
 import { updateNodesHiddenState } from '../../../utils'
 import { Columns } from './Columns'
 import { Comment } from './Comment'
@@ -26,8 +26,10 @@ type Props = {
 }
 
 export const TableDetail: FC<Props> = ({ table }) => {
-  const { setActiveTableName, setHiddenNodeIds } = useUserEditing()
-  const { current } = useSchema()
+  const { setActiveTableName, setHiddenNodeIds } = useUserEditingOrThrow()
+
+  const { current } = useSchemaOrThrow()
+
   const extractedSchema = extractSchemaForTable(table, current)
   const { nodes, edges } = convertSchemaToNodes({
     schema: extractedSchema,
@@ -36,7 +38,7 @@ export const TableDetail: FC<Props> = ({ table }) => {
 
   const { getNodes, getEdges, setNodes, setEdges, fitView } =
     useCustomReactflow()
-  const { version } = useVersion()
+  const { version } = useVersionOrThrow()
 
   const handleDrawerClose = () => {
     clickLogEvent({

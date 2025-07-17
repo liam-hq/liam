@@ -72,6 +72,26 @@ export async function executeDdlNode(
     ddlStatements,
   )
 
+  const queryResult = await repositories.schema.createValidationQuery({
+    designSessionId: state.designSessionId,
+    queryString: ddlStatements,
+  })
+
+  if (queryResult.success) {
+    await repositories.schema.createValidationResults({
+      validationQueryId: queryResult.queryId,
+      results,
+    })
+
+    const successCount = results.filter((r) => r.success).length
+    const errorCount = results.length - successCount
+    await logAssistantMessage(
+      state,
+      repositories,
+      `DDL Execution Complete: ${successCount} successful, ${errorCount} failed queries`,
+    )
+  }
+
   const hasErrors = results.some((result: SqlResult) => !result.success)
 
   if (hasErrors) {
