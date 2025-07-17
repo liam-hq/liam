@@ -1,10 +1,1 @@
-{
-  "src/workspace/evaluation/evaluation.test.ts": {
-    "@typescript-eslint/consistent-type-assertions": {
-      "count": 2
-    },
-    "no-throw-error/no-throw-error": {
-      "count": 1
-    }
-  }
-}
+{}

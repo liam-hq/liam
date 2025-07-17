@@ -2,6 +2,7 @@ import * as fs from 'node:fs'
 import * as os from 'node:os'
 import * as path from 'node:path'
 import type { Schema } from '@liam-hq/db-structure'
+import { errAsync, ResultAsync } from 'neverthrow'
 import {
   afterEach,
   beforeEach,
@@ -69,7 +70,7 @@ describe('evaluateSchema', () => {
 
   beforeEach(async () => {
     const { evaluate } = await import('../../evaluate/evaluate.ts')
-    mockEvaluate = evaluate as MockedFunction<typeof evaluate>
+    mockEvaluate = vi.mocked(evaluate)
     mockEvaluate.mockClear()
     mockEvaluate.mockResolvedValue(mockEvaluateResult)
 
@@ -290,33 +291,42 @@ describe('evaluateSchema', () => {
       consoleSpy.mockRestore()
     })
 
-    it('should create individual result files with correct naming', async () => {
+    it('should create individual result files with correct naming', (): ResultAsync<
+      void,
+      Error
+    > => {
       createTestFiles(['case1'])
 
       const config = getConfig()
-      const result = await evaluateSchema(config)
+      return ResultAsync.fromPromise(evaluateSchema(config), (err) =>
+        err instanceof Error ? err : new Error(String(err)),
+      ).andThen((result) => {
+        expect(result.isOk()).toBe(true)
 
-      expect(result.isOk()).toBe(true)
+        const evaluationDir = path.join(tempDir, 'evaluation')
+        const files = fs.readdirSync(evaluationDir)
+        const resultFiles = files.filter((file) =>
+          file.includes('case1_results_'),
+        )
+        expect(resultFiles.length).toBe(1)
 
-      const evaluationDir = path.join(tempDir, 'evaluation')
-      const files = fs.readdirSync(evaluationDir)
-      const resultFiles = files.filter((file) =>
-        file.includes('case1_results_'),
-      )
-      expect(resultFiles.length).toBe(1)
+        // Check file content
+        const firstResultFile = resultFiles[0]
+        if (!firstResultFile) {
+          return errAsync(new Error('No result files found'))
+        }
+        const resultFile = path.join(evaluationDir, firstResultFile)
+        const ResultFileContent = fs.readFileSync(resultFile, 'utf-8')
+        const content: { caseId: string; metrics: unknown } =
+          JSON.parse(ResultFileContent)
 
-      // Check file content
-      const firstResultFile = resultFiles[0]
-      if (!firstResultFile) {
-        throw new Error('No result files found')
-      }
-      const resultFile = path.join(evaluationDir, firstResultFile)
-      const content = JSON.parse(fs.readFileSync(resultFile, 'utf-8')) as {
-        caseId: string
-        metrics: unknown
-      }
-      expect(content.caseId).toBe('case1')
-      expect(content.metrics).toBeDefined()
+        expect(content.caseId).toBe('case1')
+        expect(content.metrics).toBeDefined()
+        return ResultAsync.fromPromise(
+          Promise.resolve(),
+          () => new Error('Unexpected error'),
+        )
+      })
     })
   })
 })
