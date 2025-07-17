@@ -12,13 +12,13 @@ export const createLiamDBExecutorOffline = () => {
 			const designSessionId = `offline-session-${Date.now()}`;
 			const buildingSchemaId = `offline-schema-${Date.now()}`;
 
-			// Create a simple logger for offline mode
+			// Create a logger that outputs to stderr for better debugging
 			const logger = {
-				log: (_message: string) => {},
-				error: (message: string) => console.error(`[DeepModeling] ${message}`),
-				warn: (message: string) => console.warn(`[DeepModeling] ${message}`),
-				debug: (_message: string) => {},
-				info: (_message: string) => {},
+				log: (message: string) => console.error(`[DeepModeling:LOG] ${message}`),
+				error: (message: string) => console.error(`[DeepModeling:ERROR] ${message}`),
+				warn: (message: string) => console.error(`[DeepModeling:WARN] ${message}`),
+				debug: (message: string) => console.error(`[DeepModeling:DEBUG] ${message}`),
+				info: (message: string) => console.error(`[DeepModeling:INFO] ${message}`),
 			};
 			console.log('Starting deepModeling with input length:', input.input.length);
 			console.log('Session IDs:', { designSessionId, buildingSchemaId });

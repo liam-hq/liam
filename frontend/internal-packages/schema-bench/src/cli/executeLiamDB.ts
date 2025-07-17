@@ -148,7 +148,16 @@ async function main() {
   }
 }
 
-main().catch((error) => {
+// Set a global timeout of 5 minutes
+const GLOBAL_TIMEOUT_MS = 5 * 60 * 1000 // 5 minutes
+
+const timeoutPromise = new Promise<never>((_, reject) => {
+  setTimeout(() => {
+    reject(new Error('Script execution timed out after 5 minutes'))
+  }, GLOBAL_TIMEOUT_MS)
+})
+
+Promise.race([main(), timeoutPromise]).catch((error) => {
   console.error('❌ Unexpected error:', error)
   process.exit(1)
 })
