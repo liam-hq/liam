@@ -99,49 +99,39 @@ export const Chat: FC<Props> = ({
         {/* Display all timeline items */}
         {groupedItems.map((item) => {
           if (isMessageGroup(item)) {
-            // Display each message in the group individually
+            // Use the first message to determine the type and display all messages together
+            const firstMessage = item.messages[0]
+            const combinedMessages = item.messages.map((msg) => msg.content)
+
             return (
-              <div key={item.id} className={styles.messageGroup}>
-                {item.messages.map((message) => {
-                  // Analyze tasks in the content
-                  const tasks = extractTasks(message.content)
-                  const parsedTasks = tasks
-                    .map(parseTaskLine)
-                    .filter(
-                      (task): task is NonNullable<typeof task> => task !== null,
-                    )
+              <TimelineItem
+                key={item.id}
+                {...firstMessage}
+                content={combinedMessages.join('\n')} // Pass messages as array
+                groupedMessages={combinedMessages} // Pass individual messages for structured display
+                onRetry={() => {
+                  // When retrying, mark in-progress tasks as failed before retry
+                  item.messages.forEach((message) => {
+                    const tasks = extractTasks(message.content)
+                    const parsedTasks = tasks
+                      .map(parseTaskLine)
+                      .filter(
+                        (task): task is NonNullable<typeof task> =>
+                          task !== null,
+                      )
 
-                  // Check if there are in-progress tasks that need to be updated
-                  const inProgressTaskCount = parsedTasks.filter((task) => {
-                    const statusKey = getTaskStatusKey(task.status)
-                    return statusKey === 'IN_PROGRESS'
-                  }).length
-
-                  if (inProgressTaskCount > 0) {
-                    // In production, this would be triggered by server events
-                    // simulateTaskCompletion(message)
-                  }
-
-                  return (
-                    <TimelineItem
-                      key={message.id}
-                      {...message}
-                      onRetry={() => {
-                        // When retrying, mark in-progress tasks as failed before retry
-                        if (
-                          parsedTasks.some(
-                            (task) => task.status === TASK_STATUS.IN_PROGRESS,
-                          )
-                        ) {
-                          failTasksInMessage(message)
-                        }
-                        onRetry?.()
-                      }}
-                      mockVersionData={mockVersionData}
-                    />
-                  )
-                })}
-              </div>
+                    if (
+                      parsedTasks.some(
+                        (task) => task.status === TASK_STATUS.IN_PROGRESS,
+                      )
+                    ) {
+                      failTasksInMessage(message)
+                    }
+                  })
+                  onRetry?.()
+                }}
+                mockVersionData={mockVersionData}
+              />
             )
           }
 

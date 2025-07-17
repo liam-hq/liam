@@ -15,6 +15,7 @@ import {
   QAAgent,
 } from './components/AgentMessage/components/AgentAvatar'
 import { ErrorMessage, ErrorMessageContent } from './components/ErrorMessage'
+import { GroupedLogMessage } from './components/GroupedLogMessage'
 import { LogMessage } from './components/LogMessage'
 import { UserMessage } from './components/UserMessage'
 import { VersionMessage } from './components/VersionMessage'
@@ -24,10 +25,11 @@ type Props = PropsWithChildren &
   TimelineItemEntry & {
     onRetry?: () => void
     mockVersionData?: BuildingSchemaVersion
+    groupedMessages?: string[]
   }
 
 export const TimelineItem: FC<Props> = (props) => {
-  const { onRetry, mockVersionData } = props
+  const { onRetry, mockVersionData, groupedMessages } = props
 
   return match(props)
     .with({ type: 'schema_version' }, ({ buildingSchemaVersionId }) => (
@@ -43,22 +45,38 @@ export const TimelineItem: FC<Props> = (props) => {
     ))
     .with({ type: 'assistant_log' }, ({ content }) => (
       <AgentMessage state="default">
-        <LogMessage content={content} />
+        {groupedMessages ? (
+          <GroupedLogMessage messages={groupedMessages} />
+        ) : (
+          <LogMessage content={content} />
+        )}
       </AgentMessage>
     ))
     .with({ type: 'assistant_pm' }, ({ content }) => (
       <AgentMessage state="default" avatar={<PMAgent />} agentName="PM Agent">
-        <LogMessage content={content} />
+        {groupedMessages ? (
+          <GroupedLogMessage messages={groupedMessages} />
+        ) : (
+          <LogMessage content={content} />
+        )}
       </AgentMessage>
     ))
     .with({ type: 'assistant_db' }, ({ content }) => (
       <AgentMessage state="default" avatar={<DBAgent />} agentName="DB Agent">
-        <LogMessage content={content} />
+        {groupedMessages ? (
+          <GroupedLogMessage messages={groupedMessages} />
+        ) : (
+          <LogMessage content={content} />
+        )}
       </AgentMessage>
     ))
     .with({ type: 'assistant_qa' }, ({ content }) => (
       <AgentMessage state="default" avatar={<QAAgent />} agentName="QA Agent">
-        <LogMessage content={content} />
+        {groupedMessages ? (
+          <GroupedLogMessage messages={groupedMessages} />
+        ) : (
+          <LogMessage content={content} />
+        )}
       </AgentMessage>
     ))
     .with({ type: 'error' }, ({ content }) => (
@@ -67,6 +85,21 @@ export const TimelineItem: FC<Props> = (props) => {
       </AgentMessage>
     ))
     .otherwise(({ content, timestamp, children }) => {
+      // For assistant type, use grouped messages if available
+      if (props.type === 'assistant' && groupedMessages) {
+        return (
+          <AgentMessage
+            state="default"
+            time={timestamp.toLocaleTimeString([], {
+              hour: '2-digit',
+              minute: '2-digit',
+            })}
+          >
+            <GroupedLogMessage messages={groupedMessages} />
+          </AgentMessage>
+        )
+      }
+
       return (
         <AgentMessage
           state="default"
