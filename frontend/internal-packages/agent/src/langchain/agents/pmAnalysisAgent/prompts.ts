@@ -23,12 +23,14 @@ OUTPUT REQUIREMENTS (STRICT):
     "nonFunctionalRequirements": {{
       "Performance": ["Performance requirement 1"],
       "Security": ["Security requirement 1"]
-    }}
+    }},
+    "toolsUsed": ["tool_name"]
   }}
 - No extra text or comments
 - businessRequirement: Concise (1–2 sentence) summary of overall requirements
 - functionalRequirements: WHAT the system should do (business-level)
 - nonFunctionalRequirements: HOW WELL the system should perform (always include, use empty object {{}} if none specified)
+- toolsUsed: List of tools used during analysis (e.g., "web_search" if web search was used, empty array [] if no tools were used)
 - Be specific, break down vague or multiple requirements
 - DO NOT infer or assume requirements not explicitly stated by the user
 
@@ -62,7 +64,8 @@ Example output:
       "Ensure secure password storage and handling",
       "Implement proper access control and authorization"
     ]
-  }}
+  }},
+  "toolsUsed": ["web_search"]
 }}`
 
 // Analysis Prompt Template
