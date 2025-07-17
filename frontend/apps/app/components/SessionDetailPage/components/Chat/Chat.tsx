@@ -13,7 +13,6 @@ import {
   QAAgent,
 } from './components/TimelineItem/components/AgentMessage/components/AgentAvatar'
 import { LogMessage } from './components/TimelineItem/components/LogMessage'
-import type { BuildingSchemaVersion } from './components/TimelineItem/components/VersionMessage/VersionMessage'
 import { sendChatMessage } from './services'
 import { generateTimelineItemId } from './services/timelineItemHelpers'
 import { useScrollToBottom } from './useScrollToBottom'
@@ -24,7 +23,6 @@ type Props = {
   timelineItems: TimelineItemEntry[]
   onMessageSend: (entry: TimelineItemEntry) => void
   onRetry?: () => void
-  mockVersionData?: BuildingSchemaVersion
 }
 
 export const Chat: FC<Props> = ({
@@ -33,7 +31,6 @@ export const Chat: FC<Props> = ({
   timelineItems,
   onMessageSend,
   onRetry,
-  mockVersionData,
 }) => {
   const [isLoading, startTransition] = useTransition()
   const { containerRef, scrollToBottom } = useScrollToBottom<HTMLDivElement>(
@@ -69,16 +66,11 @@ export const Chat: FC<Props> = ({
     })
   }
 
-  // Group consecutive messages from the same agent
+  // Group consecutive messages from the same agent and role
   const groupedTimelineItems = timelineItems.reduce<
     Array<TimelineItemEntry | TimelineItemEntry[]>
   >((acc, item) => {
-    const agentTypes = [
-      'assistant_log',
-      'assistant_pm',
-      'assistant_db',
-      'assistant_qa',
-    ]
+    const agentTypes = ['assistant_log', 'assistant']
 
     if (!agentTypes.includes(item.type)) {
       // Non-agent messages are added as-is
@@ -86,19 +78,25 @@ export const Chat: FC<Props> = ({
       return acc
     }
 
-    // Check if the previous item in the accumulator is a group of the same type
+    // Check if the previous item in the accumulator is a group of the same type and role
     const lastItem = acc[acc.length - 1]
     if (
       Array.isArray(lastItem) &&
       lastItem.length > 0 &&
-      lastItem[0].type === item.type
+      lastItem[0].type === item.type &&
+      'role' in lastItem[0] &&
+      'role' in item &&
+      lastItem[0].role === item.role
     ) {
       lastItem.push(item)
     } else if (
       !Array.isArray(lastItem) &&
       lastItem &&
       lastItem.type === item.type &&
-      agentTypes.includes(lastItem.type)
+      agentTypes.includes(lastItem.type) &&
+      'role' in lastItem &&
+      'role' in item &&
+      lastItem.role === item.role
     ) {
       acc[acc.length - 1] = [lastItem, item]
     } else {
@@ -116,16 +114,15 @@ export const Chat: FC<Props> = ({
           if (Array.isArray(item)) {
             // Render grouped agent messages
             const agentType = item[0].type
+            const agentRole = 'role' in item[0] ? item[0].role : undefined
             const agentProps = (() => {
-              switch (agentType) {
-                case 'assistant_pm':
+              switch (agentRole) {
+                case 'pm':
                   return { avatar: <PMAgent />, agentName: 'PM Agent' }
-                case 'assistant_db':
+                case 'db':
                   return { avatar: <DBAgent />, agentName: 'DB Agent' }
-                case 'assistant_qa':
+                case 'qa':
                   return { avatar: <QAAgent />, agentName: 'QA Agent' }
-                case 'assistant_log':
-                  return { avatar: <DBAgent />, agentName: 'DB Agent' }
                 default:
                   return { avatar: <DBAgent />, agentName: 'DB Agent' }
               }
@@ -163,8 +160,7 @@ export const Chat: FC<Props> = ({
             <TimelineItem
               key={item.id}
               {...item}
-              onRetry={onRetry}
-              mockVersionData={mockVersionData}
+              {...(item.type === 'error' && { onRetry })}
               isLastOfType={isLastMessage}
             />
           )

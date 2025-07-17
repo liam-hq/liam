@@ -34,7 +34,8 @@ const mockTimelineItems: TimelineItemEntry[] = [
   },
   {
     id: 'timeline-pm-agent-1',
-    type: 'assistant_pm',
+    type: 'assistant',
+    role: 'pm',
     content: `📊 Requirements Analysis
 ✓ Analyzing requirements...
 ✓ Organizing business and functional requirements...
@@ -43,7 +44,8 @@ const mockTimelineItems: TimelineItemEntry[] = [
   },
   {
     id: 'timeline-db-agent-1',
-    type: 'assistant_db',
+    type: 'assistant',
+    role: 'db',
     content: `🏗️ Schema Design
 ✓ Designing database schema...
 ✓ Analyzing table structure and relationships...
@@ -60,13 +62,15 @@ const mockTimelineItems: TimelineItemEntry[] = [
   {
     id: 'timeline-results-1',
     type: 'assistant',
+    role: 'db',
     content: `✓ Applied 7 schema changes successfully  
 ✓ Schema design completed`,
     timestamp: new Date('2025-07-14T06:39:25Z'),
   },
   {
     id: 'timeline-qa-agent-1',
-    type: 'assistant_db',
+    type: 'assistant',
+    role: 'db',
     content: `💾 Database Creation
 ✓ Creating database...
 ✓ Generated DDL statements (7 tables)
@@ -81,7 +85,8 @@ const mockTimelineItems: TimelineItemEntry[] = [
   },
   {
     id: 'timeline-db-agent-2',
-    type: 'assistant_db',
+    type: 'assistant',
+    role: 'db',
     content: `🔧 Error Recovery
 ✓ Redesigning schema to fix errors...
 ✓ Generating use cases...
@@ -103,7 +108,8 @@ const mockTimelineItems: TimelineItemEntry[] = [
   },
   {
     id: 'timeline-db-agent-3',
-    type: 'assistant_db',
+    type: 'assistant',
+    role: 'db',
     content: `📋 Final Processing
 ✓ Applying schema changes...
 ✓ Preparing final deliverables...
@@ -125,7 +131,8 @@ Sorry, an error occurred during processing: Cannot perform an add operation at t
   },
   {
     id: 'timeline-pm-agent-2',
-    type: 'assistant_pm',
+    type: 'assistant',
+    role: 'pm',
     content: `📊 Requirements Analysis
 ✓ Analyzing requirements...
 ✓ Organizing business and functional requirements...
@@ -134,7 +141,8 @@ Sorry, an error occurred during processing: Cannot perform an add operation at t
   },
   {
     id: 'timeline-db-agent-4',
-    type: 'assistant_db',
+    type: 'assistant',
+    role: 'db',
     content: `🏗️ Schema Design
 ✓ Designing database schema...
 ✓ Analyzing table structure and relationships...
@@ -145,7 +153,8 @@ Sorry, an error occurred during processing: Cannot perform an add operation at t
   },
   {
     id: 'timeline-qa-agent-2',
-    type: 'assistant_db',
+    type: 'assistant',
+    role: 'qa',
     content: `📦 Final Steps
 ✓ Preparing final deliverables...
 ✓ Saving artifacts...
@@ -161,47 +170,6 @@ Sorry, an error occurred during processing: Cannot perform an add operation at t
     timestamp: new Date('2025-07-14T06:40:20Z'),
   },
 ]
-
-// Mock version data for VersionMessage
-const mockVersionData = {
-  'version-1': {
-    id: 'version-1',
-    number: 1,
-    patch: [
-      {
-        op: 'add',
-        path: '/tables/greenhouses',
-        value: { name: 'greenhouses' },
-      },
-      { op: 'add', path: '/tables/sensors', value: { name: 'sensors' } },
-      {
-        op: 'add',
-        path: '/tables/sensor_data',
-        value: { name: 'sensor_data' },
-      },
-      {
-        op: 'add',
-        path: '/tables/greenhouses/columns/id',
-        value: { name: 'id', type: 'bigint' },
-      },
-      {
-        op: 'add',
-        path: '/tables/sensors/columns/id',
-        value: { name: 'id', type: 'bigint' },
-      },
-      {
-        op: 'add',
-        path: '/tables/sensor_data/columns/id',
-        value: { name: 'id', type: 'bigint' },
-      },
-      {
-        op: 'add',
-        path: '/tables/greenhouses/constraints/greenhouses_pkey',
-        value: { type: 'PRIMARY KEY', columnNames: ['id'] },
-      },
-    ],
-  },
-}
 
 // Mock schema based on greenhouse monitoring system
 const mockSchemaData = {
@@ -559,7 +527,6 @@ const InteractiveDemo = () => {
         designSessionId="design-session-1"
         onMessageSend={handleMessageSend}
         onRetry={animation.handleRetry}
-        mockVersionData={mockVersionData['version-1']}
       />
     </div>
   )
@@ -572,7 +539,6 @@ export const Default: Story = {
     designSessionId: 'design-session-1',
     onMessageSend: () => {},
     onRetry: () => {},
-    mockVersionData: mockVersionData['version-1'],
   },
   render: () => <InteractiveDemo />,
 }
