@@ -1,9 +1,9 @@
-import { Button, Copy, Table2 } from '@liam-hq/ui'
+import { Button, Copy, Eye, Fingerprint, KeyRound, Table2 } from '@liam-hq/ui'
 import { DialogClose } from '@radix-ui/react-dialog'
 import { Command } from 'cmdk'
 import { type FC, useCallback, useEffect, useState } from 'react'
 import { useTableSelection } from '@/features/erd/hooks'
-import { useSchema } from '@/stores'
+import { useSchema, useUserEditing } from '@/stores'
 import { TableNode } from '../../../ERDContent/components'
 import { CommandPaletteSearchInput } from '../CommandPaletteSearchInput'
 import type { InputMode, Suggestion } from '../types'
@@ -22,6 +22,8 @@ type Props = {
 export const CommandPaletteContent: FC<Props> = ({ closeDialog }) => {
   const [inputMode, setInputMode] = useState<InputMode>({ type: 'default' })
   const [selectedOption, setSelectedOption] = useState<Suggestion | null>(null)
+
+  const { setShowMode } = useUserEditing()
 
   const schema = useSchema()
   const table =
@@ -125,12 +127,40 @@ export const CommandPaletteContent: FC<Props> = ({ closeDialog }) => {
             <Command.Group heading="Command">
               <Command.Item
                 value="command|Copy Link"
-                onSelect={async () => {
-                  navigator.clipboard.writeText(location.href)
-                }}
+                onSelect={() => navigator.clipboard.writeText(location.href)}
               >
                 <Copy className={styles.itemIcon} />
                 <span className={styles.itemText}>Copy Link</span>
+              </Command.Item>
+              <Command.Item
+                value="command|Show All Fields"
+                onSelect={() => {
+                  setShowMode('ALL_FIELDS')
+                  closeDialog()
+                }}
+              >
+                <Eye className={styles.itemIcon} />
+                <span className={styles.itemText}>Show All Fields</span>
+              </Command.Item>
+              <Command.Item
+                value="command|Show Table Name"
+                onSelect={() => {
+                  setShowMode('TABLE_NAME')
+                  closeDialog()
+                }}
+              >
+                <Fingerprint className={styles.itemIcon} />
+                <span className={styles.itemText}>Show Table Name</span>
+              </Command.Item>
+              <Command.Item
+                value="command|Show Key Only"
+                onSelect={() => {
+                  setShowMode('KEY_ONLY')
+                  closeDialog()
+                }}
+              >
+                <KeyRound className={styles.itemIcon} />
+                <span className={styles.itemText}>Show Key Only</span>
               </Command.Item>
             </Command.Group>
           )}
