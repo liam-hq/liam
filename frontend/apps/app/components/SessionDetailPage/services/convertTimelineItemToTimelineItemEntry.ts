@@ -39,6 +39,8 @@ export const convertTimelineItemToTimelineItemEntry = (
       (): AssistantTimelineItemEntry => ({
         ...baseItem,
         type: 'assistant',
+        // TODO: Synchronize with role in timeline_items table
+        role: 'db',
       }),
     )
     .with(
@@ -53,6 +55,8 @@ export const convertTimelineItemToTimelineItemEntry = (
       (): AssistantLogTimelineItemEntry => ({
         ...baseItem,
         type: 'assistant_log',
+        // TODO: Synchronize with role in timeline_items table
+        role: 'db',
       }),
     )
     .otherwise((item) => {

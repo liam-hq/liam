@@ -16,6 +16,7 @@ describe('isDuplicateTimelineItem', () => {
     const newEntry: TimelineItemEntry = {
       id: '1',
       type: 'assistant',
+      role: 'db',
       content: 'Different content',
       timestamp: new Date('2024-01-01T11:00:00Z'),
     }
@@ -28,6 +29,7 @@ describe('isDuplicateTimelineItem', () => {
     const newEntry: TimelineItemEntry = {
       id: '2',
       type: 'assistant',
+      role: 'db',
       content: 'Different content',
       timestamp: new Date('2024-01-01T11:00:00Z'),
     }
@@ -76,6 +78,7 @@ describe('isDuplicateTimelineItem', () => {
     const newEntry: TimelineItemEntry = {
       id: '2',
       type: 'assistant',
+      role: 'db',
       content: 'Hello world',
       timestamp: new Date('2024-01-01T10:00:01Z'),
     }

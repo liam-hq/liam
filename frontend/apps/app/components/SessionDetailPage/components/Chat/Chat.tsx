@@ -17,7 +17,6 @@ type Props = {
   timelineItems: TimelineItemEntry[]
   onMessageSend: (entry: TimelineItemEntry) => void
   onRetry?: () => void
-  mockVersionData?: BuildingSchemaVersion
 }
 
 export const Chat: FC<Props> = ({
@@ -26,7 +25,6 @@ export const Chat: FC<Props> = ({
   timelineItems,
   onMessageSend,
   onRetry,
-  mockVersionData,
 }) => {
   const [isLoading, startTransition] = useTransition()
   const { containerRef, scrollToBottom } = useScrollToBottom<HTMLDivElement>(
@@ -70,8 +68,7 @@ export const Chat: FC<Props> = ({
           <TimelineItem
             key={timelineItem.id}
             {...timelineItem}
-            onRetry={onRetry}
-            mockVersionData={mockVersionData}
+            {...(timelineItem.type === 'error' && { onRetry })}
           />
         ))}
         {isLoading && (

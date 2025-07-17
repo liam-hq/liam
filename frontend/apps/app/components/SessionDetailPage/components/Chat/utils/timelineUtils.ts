@@ -167,7 +167,8 @@ const addPMAgentProgress = (
   if (currentStep <= PM_AGENT_MAX_STEP) {
     items.push({
       id: 'timeline-pm-progress',
-      type: 'assistant_pm',
+      type: 'assistant',
+      role: 'pm',
       content: generateAgentContent('pm', currentStep, agentSteps, isPlaying),
       timestamp: TIMELINE_TIMESTAMPS.PM_PROGRESS,
     })
@@ -188,7 +189,8 @@ const addDBAgentProgress = (
   if (currentStep >= DB_SCHEMA_MIN_STEP && currentStep <= DB_SCHEMA_MAX_STEP) {
     items.push({
       id: 'timeline-db-schema-progress',
-      type: 'assistant_db',
+      type: 'assistant',
+      role: 'db',
       content: generateAgentContent('db', currentStep, agentSteps, isPlaying),
       timestamp: TIMELINE_TIMESTAMPS.DB_SCHEMA_PROGRESS,
     })
@@ -204,7 +206,8 @@ const addDBAgentProgress = (
 
     items.push({
       id: 'timeline-db-creation-progress',
-      type: 'assistant_db',
+      type: 'assistant',
+      role: 'db',
       content: generateAgentContent('db', currentStep, agentSteps, isPlaying),
       timestamp: TIMELINE_TIMESTAMPS.DB_CREATION_PROGRESS,
     })
@@ -225,25 +228,40 @@ const addRecoveryMessages = (
   )
 
   let assistantType: TimelineItemEntry['type'] = 'assistant_log'
+  let role: 'pm' | 'db' | 'qa' = 'db'
   let timestamp = TIMELINE_TIMESTAMPS.ERROR_RECOVERY
 
   if (currentStep.type === 'pm-2') {
-    assistantType = 'assistant_pm'
+    assistantType = 'assistant'
+    role = 'pm'
     timestamp = TIMELINE_TIMESTAMPS.PM_RECOVERY
   } else if (currentStep.type === 'db-4') {
-    assistantType = 'assistant_db'
+    assistantType = 'assistant'
+    role = 'db'
     timestamp = TIMELINE_TIMESTAMPS.DB_RECOVERY
   } else if (currentStep.type === 'qa-2') {
-    assistantType = 'assistant_qa'
+    assistantType = 'assistant'
+    role = 'qa'
     timestamp = TIMELINE_TIMESTAMPS.QA_RECOVERY
   }
 
-  items.push({
-    id: `timeline-${currentStep.type}-progress`,
-    type: assistantType,
-    content,
-    timestamp,
-  })
+  if (assistantType === 'assistant') {
+    items.push({
+      id: `timeline-${currentStep.type}-progress`,
+      type: 'assistant',
+      role,
+      content,
+      timestamp,
+    })
+  } else {
+    items.push({
+      id: `timeline-${currentStep.type}-progress`,
+      type: 'assistant_log',
+      role: 'db',
+      content,
+      timestamp,
+    })
+  }
 }
 
 const addInitialCompletedMessages = (
