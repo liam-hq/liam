@@ -135,6 +135,7 @@ export async function designSchemaNode(
   const invokeResult = await invokeDesignAgent({ schemaText }, messages, {
     buildingSchemaId: state.buildingSchemaId,
     latestVersionNumber: state.latestVersionNumber,
+    buildingSchemaVersionId: createVersionResult.versionId,
     repositories,
   })
 
@@ -153,6 +154,7 @@ export async function designSchemaNode(
     // schemaData: result.newSchema,
     messages: [invokeResult.value],
     generatedAnswer: invokeResult.value.text,
+    buildingSchemaVersionId: createVersionResult.versionId,
     error: undefined,
     shouldRetryWithDesignSchema: undefined,
     ddlExecutionFailureReason: undefined,
@@ -171,6 +173,7 @@ export const invokeSchemaDesignToolNode = (
       ...config.configurable,
       buildingSchemaId: state.buildingSchemaId,
       latestVersionNumber: state.latestVersionNumber,
+      buildingSchemaVersionId: state.buildingSchemaVersionId,
     },
   })
 }

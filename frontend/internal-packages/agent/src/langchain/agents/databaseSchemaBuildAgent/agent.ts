@@ -28,6 +28,7 @@ const schemaDesignToolSchema = v.object({
 const toolConfigurableSchema = v.object({
   buildingSchemaId: v.string(),
   latestVersionNumber: v.number(),
+  buildingSchemaVersionId: v.string(),
 })
 
 type ToolConfigurable = {
@@ -68,13 +69,14 @@ export const schemaDesignTool = tool(
     if (toolConfigurableResult.isErr()) {
       return toolConfigurableResult.error.message
     }
-    const { repositories, buildingSchemaId, latestVersionNumber } =
-      toolConfigurableResult.value
+    const {
+      repositories,
+      buildingSchemaVersionId,
+    } = toolConfigurableResult.value
     const parsed = v.parse(schemaDesignToolSchema, input)
 
-    const result = await repositories.schema.createVersion({
-      buildingSchemaId,
-      latestVersionNumber,
+    const result = await repositories.schema.updateVersion({
+      buildingSchemaVersionId,
       patch: parsed.operations,
     })
 

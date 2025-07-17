@@ -59,14 +59,17 @@ const createGraph = () => {
 
   const shouldContinue = (state: WorkflowState) => {
     const { messages } = state
+    console.log({ messages, state })
     const lastMessage = messages[messages.length - 1]
     if (
       'tool_calls' in lastMessage &&
       Array.isArray(lastMessage.tool_calls) &&
       lastMessage.tool_calls?.length
     ) {
+      console.log('go to invokeSchemaDesignTool')
       return 'invokeSchemaDesignTool'
     }
+    console.log('go to executeDDL')
     return 'executeDDL'
   }
 
@@ -104,7 +107,6 @@ const createGraph = () => {
 
     .addEdge(START, 'saveUserMessage')
     .addEdge('analyzeRequirements', 'designSchema')
-    .addEdge('designSchema', 'invokeSchemaDesignTool')
     .addConditionalEdges('designSchema', shouldContinue, [
       'invokeSchemaDesignTool',
       'executeDDL',
