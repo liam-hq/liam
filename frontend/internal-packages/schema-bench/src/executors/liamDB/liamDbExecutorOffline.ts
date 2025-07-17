@@ -17,6 +17,8 @@ export const createLiamDBExecutorOffline = () => {
         log: (message: string) => console.log(`[DeepModeling] ${message}`),
         error: (message: string) => console.error(`[DeepModeling] ${message}`),
         warn: (message: string) => console.warn(`[DeepModeling] ${message}`),
+        debug: (message: string) => console.log(`[DeepModeling:DEBUG] ${message}`),
+        info: (message: string) => console.log(`[DeepModeling:INFO] ${message}`),
       }
 
       // Run actual deep modeling with shared repositories
@@ -31,7 +33,7 @@ export const createLiamDBExecutorOffline = () => {
           latestVersionNumber: 0,
           designSessionId,
           userId: 'offline-user',
-          recursionLimit: 5,
+          recursionLimit: 10,
         },
         {
           configurable: {
@@ -51,7 +53,20 @@ export const createLiamDBExecutorOffline = () => {
           ),
         )
       }
+
+      console.log(`✅ Deep modeling completed successfully`)
+      console.log(`📋 Response: ${deepModelingResult.value.text}`)
       console.log(`🔍 Checking schema in repository with sessionId: ${designSessionId}`)
+      
+      // Debug: check what's actually in the repository
+      const inMemoryRepo = repositories.schema as any
+      console.log(`🔍 Repository has ${inMemoryRepo.schemas?.size || 0} schemas stored`)
+      if (inMemoryRepo.schemas?.size > 0) {
+        for (const [key, value] of inMemoryRepo.schemas.entries()) {
+          console.log(`  - Schema key: ${key}, tables: ${Object.keys(value.schema?.tables || {}).length}`)
+        }
+      }
+      
       const schemaResult = await repositories.schema.getSchema(designSessionId)
 
       console.log(`📊 Schema result:`, {
