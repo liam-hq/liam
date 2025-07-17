@@ -16,7 +16,7 @@ if (process.env.NODE_ENV !== 'production') {
 dotenv.config({ path: '.env' })
 
 const InputSchema = v.object({
-  prompt: v.string(),
+  input: v.string(),
 })
 
 const WORKSPACE_PATH = join(
@@ -112,15 +112,23 @@ async function executeCase(
 
 async function main() {
   // Check required environment variables
-  const supabaseUrl = process.env['SUPABASE_URL']
-  const supabaseAnonKey = process.env['SUPABASE_ANON_KEY']
-  const organizationId = process.env['LIAM_ORGANIZATION_ID']
+  const supabaseUrl = process.env['NEXT_PUBLIC_SUPABASE_URL']
+  const supabaseAnonKey = process.env['NEXT_PUBLIC_SUPABASE_ANON_KEY']
+  const organizationId =
+    process.env['LIAM_ORGANIZATION_ID'] ??
+    '491159b2-7a53-44d0-971c-d8160aa77be6'
 
-  if (!supabaseUrl || !supabaseAnonKey || !organizationId) {
+  if (!supabaseUrl || !supabaseAnonKey) {
     console.error('❌ Error: Required environment variables are missing')
     console.error('Please set:')
-    console.error('  - SUPABASE_URL')
-    console.error('  - SUPABASE_ANON_KEY')
+    console.error('  - NEXT_PUBLIC_SUPABASE_URL')
+    console.error('  - NEXT_PUBLIC_SUPABASE_ANON_KEY')
+    process.exit(1)
+  }
+
+  if (!organizationId) {
+    console.error('❌ Error: Required environment variables are missing')
+    console.error('Please set:')
     console.error('  - LIAM_ORGANIZATION_ID')
     process.exit(1)
   }

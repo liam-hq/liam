@@ -6,8 +6,8 @@ To run the Liam-DB executor, you need to set the following environment variables
 
 ```bash
 # Supabase configuration
-export SUPABASE_URL="your-supabase-url"
-export SUPABASE_ANON_KEY="your-supabase-anon-key"
+export NEXT_PUBLIC_SUPABASE_URL="your-supabase-url"
+export NEXT_PUBLIC_SUPABASE_ANON_KEY="your-supabase-anon-key"
 
 # Organization ID (get this from your Liam ERD organization)
 export LIAM_ORGANIZATION_ID="your-organization-uuid"
