@@ -24,6 +24,7 @@ export default meta
 type Story = StoryObj<typeof meta>
 
 // Mock timeline items showing agent progress
+// Mock timeline items showing agent progress with status icons handled by LogMessage component
 const mockTimelineItems: TimelineItemEntry[] = [
   {
     id: 'timeline-1',
@@ -34,23 +35,45 @@ const mockTimelineItems: TimelineItemEntry[] = [
   },
   {
     id: 'timeline-pm-agent-1',
-    type: 'assistant',
+    type: 'assistant_log',
     role: 'pm',
-    content: `📊 Requirements Analysis
-✓ Analyzing requirements...
-✓ Organizing business and functional requirements...
-✓ Requirements analysis completed`,
+    content: 'Analyzing requirements...',
     timestamp: new Date('2025-07-14T06:39:10Z'),
   },
   {
+    id: 'timeline-pm-agent-2',
+    type: 'assistant_log',
+    role: 'pm',
+    content: 'Organizing business and functional requirements...',
+    timestamp: new Date('2025-07-14T06:39:12Z'),
+  },
+  {
+    id: 'timeline-pm-agent-3',
+    type: 'assistant_log',
+    role: 'pm',
+    content: 'Requirements analysis completed',
+    timestamp: new Date('2025-07-14T06:39:14Z'),
+  },
+  {
     id: 'timeline-db-agent-1',
-    type: 'assistant',
+    type: 'assistant_log',
     role: 'db',
-    content: `🏗️ Schema Design
-✓ Designing database schema...
-✓ Analyzing table structure and relationships...
-✓ Applying schema changes...`,
+    content: 'Designing database schema...',
     timestamp: new Date('2025-07-14T06:39:15Z'),
+  },
+  {
+    id: 'timeline-db-agent-2',
+    type: 'assistant_log',
+    role: 'db',
+    content: 'Analyzing table structure and relationships...',
+    timestamp: new Date('2025-07-14T06:39:17Z'),
+  },
+  {
+    id: 'timeline-db-agent-3',
+    type: 'assistant_log',
+    role: 'db',
+    content: 'Applying schema changes...',
+    timestamp: new Date('2025-07-14T06:39:19Z'),
   },
   {
     id: 'timeline-version-1',
@@ -63,19 +86,29 @@ const mockTimelineItems: TimelineItemEntry[] = [
     id: 'timeline-results-1',
     type: 'assistant',
     role: 'db',
-    content: `✓ Applied 7 schema changes successfully  
-✓ Schema design completed`,
+    content: 'Applied 7 schema changes successfully. Schema design completed.',
     timestamp: new Date('2025-07-14T06:39:25Z'),
   },
   {
     id: 'timeline-qa-agent-1',
-    type: 'assistant',
+    type: 'assistant_log',
     role: 'db',
-    content: `💾 Database Creation
-✓ Creating database...
-✓ Generated DDL statements (7 tables)
-✗ Executing DDL statements...`,
+    content: 'Creating database...',
     timestamp: new Date('2025-07-14T06:39:30Z'),
+  },
+  {
+    id: 'timeline-qa-agent-2',
+    type: 'assistant_log',
+    role: 'db',
+    content: 'Generated DDL statements (7 tables)',
+    timestamp: new Date('2025-07-14T06:39:32Z'),
+  },
+  {
+    id: 'timeline-qa-agent-3',
+    type: 'assistant_log',
+    role: 'db',
+    content: 'Executing DDL statements...',
+    timestamp: new Date('2025-07-14T06:39:34Z'),
   },
   {
     id: 'timeline-error-1',
@@ -84,20 +117,24 @@ const mockTimelineItems: TimelineItemEntry[] = [
     timestamp: new Date('2025-07-14T06:39:35Z'),
   },
   {
-    id: 'timeline-db-agent-2',
-    type: 'assistant',
+    id: 'timeline-db-agent-4',
+    type: 'assistant_log',
     role: 'db',
-    content: `🔧 Error Recovery
-✓ Redesigning schema to fix errors...
-✓ Generating use cases...
-✓ Designing database schema...
-✓ Analyzing test cases and queries...
-✓ Redesigning schema to fix DDL execution errors...
-✓ Analyzing table structure and relationships...
-✓ Applying schema changes...
-✓ Designing database schema...
-✓ Redesigning schema to fix DDL execution errors...
-✓ Analyzing table structure and relationships...`,
+    content: 'Redesigning schema to fix errors...',
+    timestamp: new Date('2025-07-14T06:39:36Z'),
+  },
+  {
+    id: 'timeline-db-agent-5',
+    type: 'assistant_log',
+    role: 'db',
+    content: 'Generating use cases...',
+    timestamp: new Date('2025-07-14T06:39:38Z'),
+  },
+  {
+    id: 'timeline-db-agent-6',
+    type: 'assistant_log',
+    role: 'db',
+    content: 'Analyzing test cases and queries...',
     timestamp: new Date('2025-07-14T06:39:40Z'),
   },
   {
@@ -107,13 +144,24 @@ const mockTimelineItems: TimelineItemEntry[] = [
     timestamp: new Date('2025-07-14T06:39:45Z'),
   },
   {
-    id: 'timeline-db-agent-3',
-    type: 'assistant',
+    id: 'timeline-db-agent-7',
+    type: 'assistant_log',
     role: 'db',
-    content: `📋 Final Processing
-✓ Applying schema changes...
-✓ Preparing final deliverables...
-✓ Generating final response...`,
+    content: 'Applying schema changes...',
+    timestamp: new Date('2025-07-14T06:39:46Z'),
+  },
+  {
+    id: 'timeline-db-agent-8',
+    type: 'assistant_log',
+    role: 'db',
+    content: 'Preparing final deliverables...',
+    timestamp: new Date('2025-07-14T06:39:48Z'),
+  },
+  {
+    id: 'timeline-db-agent-9',
+    type: 'assistant_log',
+    role: 'db',
+    content: 'Generating final response...',
     timestamp: new Date('2025-07-14T06:39:50Z'),
   },
   {
@@ -130,44 +178,95 @@ Sorry, an error occurred during processing: Cannot perform an add operation at t
     timestamp: new Date('2025-07-14T06:40:00Z'),
   },
   {
-    id: 'timeline-pm-agent-2',
-    type: 'assistant',
+    id: 'timeline-pm-agent-retry-1',
+    type: 'assistant_log',
     role: 'pm',
-    content: `📊 Requirements Analysis
-✓ Analyzing requirements...
-✓ Organizing business and functional requirements...
-✓ Requirements analysis completed`,
+    content: 'Analyzing requirements...',
     timestamp: new Date('2025-07-14T06:40:05Z'),
   },
   {
-    id: 'timeline-db-agent-4',
-    type: 'assistant',
+    id: 'timeline-pm-agent-retry-2',
+    type: 'assistant_log',
+    role: 'pm',
+    content: 'Organizing business and functional requirements...',
+    timestamp: new Date('2025-07-14T06:40:07Z'),
+  },
+  {
+    id: 'timeline-pm-agent-retry-3',
+    type: 'assistant_log',
+    role: 'pm',
+    content: 'Requirements analysis completed',
+    timestamp: new Date('2025-07-14T06:40:09Z'),
+  },
+  {
+    id: 'timeline-db-agent-retry-1',
+    type: 'assistant_log',
     role: 'db',
-    content: `🏗️ Schema Design
-✓ Designing database schema...
-✓ Analyzing table structure and relationships...
-✓ Applying schema changes...
-✗ Schema update failed
-✓ Schema design completed`,
+    content: 'Designing database schema...',
     timestamp: new Date('2025-07-14T06:40:10Z'),
   },
   {
-    id: 'timeline-qa-agent-2',
-    type: 'assistant',
+    id: 'timeline-db-agent-retry-2',
+    type: 'assistant_log',
+    role: 'db',
+    content: 'Analyzing table structure and relationships...',
+    timestamp: new Date('2025-07-14T06:40:12Z'),
+  },
+  {
+    id: 'timeline-db-agent-retry-3',
+    type: 'assistant_log',
+    role: 'db',
+    content: 'Applying schema changes...',
+    timestamp: new Date('2025-07-14T06:40:14Z'),
+  },
+  {
+    id: 'timeline-db-agent-retry-4',
+    type: 'assistant_log',
+    role: 'db',
+    content: 'Schema update failed',
+    timestamp: new Date('2025-07-14T06:40:16Z'),
+  },
+  {
+    id: 'timeline-db-agent-retry-5',
+    type: 'assistant_log',
+    role: 'db',
+    content: 'Schema design completed',
+    timestamp: new Date('2025-07-14T06:40:18Z'),
+  },
+  {
+    id: 'timeline-qa-agent-retry-1',
+    type: 'assistant_log',
     role: 'qa',
-    content: `📦 Final Steps
-✓ Preparing final deliverables...
-✓ Saving artifacts...
-✓ Artifacts saved successfully
-✓ Generating final response...`,
-    timestamp: new Date('2025-07-14T06:40:15Z'),
+    content: 'Preparing final deliverables...',
+    timestamp: new Date('2025-07-14T06:40:20Z'),
+  },
+  {
+    id: 'timeline-qa-agent-retry-2',
+    type: 'assistant_log',
+    role: 'qa',
+    content: 'Saving artifacts...',
+    timestamp: new Date('2025-07-14T06:40:22Z'),
+  },
+  {
+    id: 'timeline-qa-agent-retry-3',
+    type: 'assistant_log',
+    role: 'qa',
+    content: 'Artifacts saved successfully',
+    timestamp: new Date('2025-07-14T06:40:24Z'),
+  },
+  {
+    id: 'timeline-qa-agent-retry-4',
+    type: 'assistant_log',
+    role: 'qa',
+    content: 'Generating final response...',
+    timestamp: new Date('2025-07-14T06:40:26Z'),
   },
   {
     id: 'timeline-assistant-error-2',
     type: 'error',
     content:
       'Version conflict: The schema has been modified since you last loaded it',
-    timestamp: new Date('2025-07-14T06:40:20Z'),
+    timestamp: new Date('2025-07-14T06:40:30Z'),
   },
 ]
 
@@ -382,7 +481,6 @@ const InteractiveDemo = () => {
         agent: 'db',
         task: 'Schema update failed',
         type: 'db-4',
-        willFail: true,
       },
       { agent: 'db', task: 'Schema design completed', type: 'db-4' },
       { agent: 'qa', task: 'Preparing final deliverables', type: 'qa-2' },
@@ -541,4 +639,14 @@ export const Default: Story = {
     onRetry: () => {},
   },
   render: () => <InteractiveDemo />,
+}
+
+export const Static: Story = {
+  args: {
+    timelineItems: mockTimelineItems,
+    schemaData: mockSchemaData,
+    designSessionId: 'design-session-1',
+    onMessageSend: () => {},
+    onRetry: () => {},
+  },
 }

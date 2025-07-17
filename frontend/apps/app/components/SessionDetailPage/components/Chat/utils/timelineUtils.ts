@@ -161,21 +161,39 @@ const addPMAgentProgress = (
   items: TimelineItemEntry[],
   currentStep: number,
   agentSteps: AgentStep[],
-  isPlaying: boolean,
+  _isPlaying: boolean,
   mockTimelineItems: TimelineItemEntry[],
 ): void => {
   if (currentStep <= PM_AGENT_MAX_STEP) {
-    items.push({
-      id: 'timeline-pm-progress',
-      type: 'assistant',
-      role: 'pm',
-      content: generateAgentContent('pm', currentStep, agentSteps, isPlaying),
-      timestamp: TIMELINE_TIMESTAMPS.PM_PROGRESS,
+    // Generate individual log messages for each step
+    const pmSteps = agentSteps.filter(
+      (step, idx) => step.agent === 'pm' && idx < currentStep,
+    )
+    pmSteps.forEach((step, idx) => {
+      const stepIndex = agentSteps.findIndex((s) => s === step)
+      const isCurrentStep = stepIndex === currentStep - 1
+      const isLastPMStep = idx === pmSteps.length - 1
+
+      items.push({
+        id: `timeline-pm-progress-${idx}`,
+        type: 'assistant_log',
+        role: 'pm',
+        content: step.task,
+        timestamp: new Date(
+          TIMELINE_TIMESTAMPS.PM_PROGRESS.getTime() + idx * 2000,
+        ),
+      })
     })
   } else {
-    if (mockTimelineItems[1]) {
-      items.push(mockTimelineItems[1])
-    }
+    // Add completed PM messages from mockTimelineItems
+    const pmMessages = mockTimelineItems.filter(
+      (item) =>
+        item.type === 'assistant_log' &&
+        'role' in item &&
+        item.role === 'pm' &&
+        item.id.includes('pm-agent'),
+    )
+    pmMessages.forEach((msg) => items.push(msg))
   }
 }
 
@@ -183,33 +201,60 @@ const addDBAgentProgress = (
   items: TimelineItemEntry[],
   currentStep: number,
   agentSteps: AgentStep[],
-  isPlaying: boolean,
+  _isPlaying: boolean,
   mockTimelineItems: TimelineItemEntry[],
 ): void => {
+  // For schema design phase
   if (currentStep >= DB_SCHEMA_MIN_STEP && currentStep <= DB_SCHEMA_MAX_STEP) {
-    items.push({
-      id: 'timeline-db-schema-progress',
-      type: 'assistant',
-      role: 'db',
-      content: generateAgentContent('db', currentStep, agentSteps, isPlaying),
-      timestamp: TIMELINE_TIMESTAMPS.DB_SCHEMA_PROGRESS,
+    const dbSchemaSteps = agentSteps.filter(
+      (step, idx) =>
+        step.agent === 'db' &&
+        idx >= DB_SCHEMA_MIN_STEP - 1 &&
+        idx < currentStep &&
+        idx <= DB_SCHEMA_MAX_STEP - 1,
+    )
+
+    dbSchemaSteps.forEach((step, idx) => {
+      items.push({
+        id: `timeline-db-schema-progress-${idx}`,
+        type: 'assistant_log',
+        role: 'db',
+        content: step.task,
+        timestamp: new Date(
+          TIMELINE_TIMESTAMPS.DB_SCHEMA_PROGRESS.getTime() + idx * 2000,
+        ),
+      })
     })
   }
 
+  // For database creation phase
   if (
     currentStep >= DB_CREATION_MIN_STEP &&
     currentStep <= DB_CREATION_MAX_STEP
   ) {
-    if (mockTimelineItems[2]) {
-      items.push(mockTimelineItems[2])
+    // Add schema version message if exists
+    if (mockTimelineItems[7]) {
+      items.push(mockTimelineItems[7])
     }
 
-    items.push({
-      id: 'timeline-db-creation-progress',
-      type: 'assistant',
-      role: 'db',
-      content: generateAgentContent('db', currentStep, agentSteps, isPlaying),
-      timestamp: TIMELINE_TIMESTAMPS.DB_CREATION_PROGRESS,
+    const dbCreationSteps = agentSteps.filter(
+      (step, idx) =>
+        step.agent === 'db' &&
+        idx >= DB_CREATION_MIN_STEP - 1 &&
+        idx < currentStep &&
+        idx <= DB_CREATION_MAX_STEP - 1,
+    )
+
+    dbCreationSteps.forEach((step, idx) => {
+      items.push({
+        id: `timeline-db-creation-progress-${idx}`,
+        type: 'assistant_log',
+        role: 'db',
+        content: step.task,
+        timestamp: new Date(
+          TIMELINE_TIMESTAMPS.DB_CREATION_PROGRESS.getTime() + idx * 2000,
+        ),
+      })
     })
   }
 }
@@ -390,46 +435,121 @@ export const createDynamicTimelineItems = (
   currentStep: number,
   currentIndex: number,
   agentSteps: AgentStep[],
-  recoverySteps: RecoveryStep[],
+  _recoverySteps: RecoveryStep[],
   mockTimelineItems: TimelineItemEntry[],
-  isPlaying: boolean,
+  _isPlaying: boolean,
 ): TimelineItemEntry[] => {
   const items: TimelineItemEntry[] = []
 
+  // Add user message first
   if (mockTimelineItems.length > 0) {
     items.push(mockTimelineItems[0])
   }
 
-  if (currentStep > 0) {
-    addPMAgentProgress(
-      items,
-      currentStep,
-      agentSteps,
-      isPlaying,
-      mockTimelineItems,
-    )
-
-    if (currentStep > PM_AGENT_MAX_STEP) {
-      addDBAgentProgress(
-        items,
-        currentStep,
-        agentSteps,
-        isPlaying,
-        mockTimelineItems,
+  // For PM agent steps (1-3)
+  if (currentStep > 0 && currentStep <= PM_AGENT_MAX_STEP) {
+    const pmMessages = mockTimelineItems
+      .filter(
+        (item) =>
+          item.id.includes('timeline-pm-agent-') &&
+          item.type === 'assistant_log',
       )
-    }
+      .slice(0, 3)
+
+    const messagesToShow = pmMessages.slice(0, currentStep)
+    messagesToShow.forEach((msg) => items.push(msg))
   }
 
-  if (currentStep >= agentSteps.length) {
-    addPostAgentStepsMessages(
-      items,
-      currentStep,
-      currentIndex,
-      agentSteps,
-      recoverySteps,
-      mockTimelineItems,
-      isPlaying,
+  // For DB agent schema design steps (4-6)
+  if (currentStep > PM_AGENT_MAX_STEP && currentStep <= DB_SCHEMA_MAX_STEP) {
+    // Add all PM messages
+    const pmMessages = mockTimelineItems
+      .filter(
+        (item) =>
+          item.id.includes('timeline-pm-agent-') &&
+          item.type === 'assistant_log',
+      )
+      .slice(0, 3)
+    pmMessages.forEach((msg) => items.push(msg))
+
+    // Add DB schema messages
+    const dbSchemaMessages = mockTimelineItems
+      .filter(
+        (item) =>
+          item.id.includes('timeline-db-agent-') &&
+          item.type === 'assistant_log',
+      )
+      .slice(0, 3)
+
+    const dbMessagesToShow = dbSchemaMessages.slice(
+      0,
+      currentStep - PM_AGENT_MAX_STEP,
     )
+    dbMessagesToShow.forEach((msg) => items.push(msg))
+  }
+
+  // For DB creation steps (7-9)
+  if (currentStep > DB_SCHEMA_MAX_STEP && currentStep <= DB_CREATION_MAX_STEP) {
+    // Add all PM messages
+    const pmMessages = mockTimelineItems
+      .filter(
+        (item) =>
+          item.id.includes('timeline-pm-agent-') &&
+          item.type === 'assistant_log',
+      )
+      .slice(0, 3)
+    pmMessages.forEach((msg) => items.push(msg))
+
+    // Add all DB schema messages
+    const dbSchemaMessages = mockTimelineItems
+      .filter(
+        (item) =>
+          item.id.includes('timeline-db-agent-') &&
+          item.type === 'assistant_log',
+      )
+      .slice(0, 3)
+    dbSchemaMessages.forEach((msg) => items.push(msg))
+
+    // Add schema version
+    const schemaVersion = mockTimelineItems.find(
+      (item) => item.type === 'schema_version',
+    )
+    if (schemaVersion) items.push(schemaVersion)
+
+    // Add DB creation messages
+    const dbCreationMessages = mockTimelineItems
+      .filter(
+        (item) =>
+          item.id.includes('timeline-qa-agent-') &&
+          item.type === 'assistant_log',
+      )
+      .slice(0, 3)
+
+    const creationMessagesToShow = dbCreationMessages.slice(
+      0,
+      currentStep - DB_SCHEMA_MAX_STEP,
+    )
+    creationMessagesToShow.forEach((msg) => items.push(msg))
+  }
+
+  // Handle completed animation and recovery steps
+  if (currentStep >= agentSteps.length) {
+    // Show all messages up to the first error
+    const errorIndex = mockTimelineItems.findIndex(
+      (item) => item.type === 'error',
+    )
+    if (errorIndex > 0) {
+      mockTimelineItems
+        .slice(1, errorIndex + 1)
+        .forEach((msg) => items.push(msg))
+    }
+
+    // Handle recovery animation
+    if (currentIndex > 0) {
+      const remainingMessages = mockTimelineItems.slice(errorIndex + 1)
+      const messagesToShow = remainingMessages.slice(0, currentIndex)
+      messagesToShow.forEach((msg) => items.push(msg))
+    }
   }
 
   return items
