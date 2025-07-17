@@ -1,12 +1,12 @@
 import { AIMessage } from '@langchain/core/messages'
 import type { RunnableConfig } from '@langchain/core/runnables'
 import { ResultAsync } from 'neverthrow'
-import { PMAnalysisAgent } from '../../../langchain/agents'
-import type { BasePromptVariables } from '../../../langchain/utils/types'
-import { getConfigurable } from '../shared/getConfigurable'
-import type { WorkflowState } from '../types'
-import { formatMessagesToHistory } from '../utils/messageUtils'
-import { logAssistantMessage } from '../utils/timelineLogger'
+import { PMAnalysisAgent } from '../../../langchain/agents/index.ts'
+import type { BasePromptVariables } from '../../../langchain/utils/types.ts'
+import { getConfigurable } from '../shared/getConfigurable.ts'
+import type { WorkflowState } from '../types.ts'
+import { formatMessagesToHistory } from '../utils/messageUtils.ts'
+import { logAssistantMessage } from '../utils/timelineLogger.ts'
 
 /**
  * Analyze Requirements Node - Requirements Organization

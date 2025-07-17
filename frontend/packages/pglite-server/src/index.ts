@@ -1,3 +1,3 @@
-export * from './client'
-export * from './PGliteInstanceManager'
-export * from './types'
+export * from './client.ts'
+export * from './PGliteInstanceManager.ts'
+export * from './types.ts'

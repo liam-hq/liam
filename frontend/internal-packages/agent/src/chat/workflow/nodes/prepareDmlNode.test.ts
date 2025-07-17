@@ -1,10 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { DMLGenerationAgent } from '../../../langchain/agents/dmlGenerationAgent/agent'
-import type { Repositories } from '../../../repositories'
-import { convertSchemaToText } from '../../../utils/convertSchemaToText'
-import type { NodeLogger } from '../../../utils/nodeLogger'
-import type { WorkflowState } from '../types'
-import { prepareDmlNode } from './prepareDmlNode'
+import { DMLGenerationAgent } from '../../../langchain/agents/dmlGenerationAgent/agent.ts'
+import type { Repositories } from '../../../repositories/index.ts'
+import { convertSchemaToText } from '../../../utils/convertSchemaToText.ts'
+import type { NodeLogger } from '../../../utils/nodeLogger.ts'
+import type { WorkflowState } from '../types.ts'
+import { prepareDmlNode } from './prepareDmlNode.ts'
 
 vi.mock('../../../langchain/agents/dmlGenerationAgent/agent')
 

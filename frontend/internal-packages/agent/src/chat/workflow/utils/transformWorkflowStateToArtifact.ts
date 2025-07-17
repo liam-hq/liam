@@ -3,9 +3,9 @@ import type {
   FunctionalRequirement,
   NonFunctionalRequirement,
 } from '@liam-hq/artifact'
-import type { Usecase } from '../../../langchain/agents/qaGenerateUsecaseAgent/agent'
-import type { Repositories } from '../../../repositories'
-import type { WorkflowState } from '../types'
+import type { Usecase } from '../../../langchain/agents/qaGenerateUsecaseAgent/agent.ts'
+import type { Repositories } from '../../../repositories/index.ts'
+import type { WorkflowState } from '../types.ts'
 
 /**
  * Transform WorkflowState to Artifact format

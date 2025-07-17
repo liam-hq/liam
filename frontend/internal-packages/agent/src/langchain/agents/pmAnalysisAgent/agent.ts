@@ -1,9 +1,9 @@
 import { ChatOpenAI } from '@langchain/openai'
 import { toJsonSchema } from '@valibot/to-json-schema'
 import * as v from 'valibot'
-import { createLangfuseHandler } from '../../utils/telemetry'
-import type { BasePromptVariables, ChatAgent } from '../../utils/types'
-import { pmAnalysisPrompt } from './prompts'
+import { createLangfuseHandler } from '../../utils/telemetry.ts'
+import type { BasePromptVariables, ChatAgent } from '../../utils/types.ts'
+import { pmAnalysisPrompt } from './prompts.ts'
 
 export const requirementsAnalysisSchema = v.object({
   businessRequirement: v.string(),
