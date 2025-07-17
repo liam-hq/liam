@@ -20,44 +20,53 @@ export const createLiamDBExecutorOffline = () => {
 				debug: (_message: string) => {},
 				info: (_message: string) => {},
 			};
-			console.log('Starting deepModeling with input:', input.input);
+			console.log('Starting deepModeling with input length:', input.input.length);
 			console.log('Session IDs:', { designSessionId, buildingSchemaId });
 			
-			const deepModelingResult = await deepModeling(
-				{
-					userInput: input.input,
-					schemaData: { tables: {} },
-					history: [],
-					organizationId: "offline-org",
-					buildingSchemaId,
-					latestVersionNumber: 0,
-					designSessionId,
-					userId: "offline-user",
-					recursionLimit: 15,
-				},
-				{
-					configurable: {
-						repositories,
-						logger,
+			try {
+				const deepModelingResult = await deepModeling(
+					{
+						userInput: input.input,
+						schemaData: { tables: {} },
+						history: [],
+						organizationId: "offline-org",
+						buildingSchemaId,
+						latestVersionNumber: 0,
+						designSessionId,
+						userId: "offline-user",
+						recursionLimit: 30,
 					},
-				},
-			);
-
-			console.log('deepModeling completed:', {
-				isOk: deepModelingResult.isOk(),
-				hasValue: deepModelingResult.isOk() ? !!deepModelingResult.value : false,
-				valueText: deepModelingResult.isOk() ? deepModelingResult.value.text?.substring(0, 100) + '...' : 'N/A'
-			});
-
-			if (!deepModelingResult.isOk()) {
-				console.error(
-					`❌ Deep modeling failed: ${deepModelingResult.error.message}`,
+					{
+						configurable: {
+							repositories,
+							logger,
+						},
+					},
 				);
-				return err(
-					new Error(
-						`Deep modeling failed: ${deepModelingResult.error.message}`,
-					),
-				);
+
+				console.log('deepModeling completed:', {
+					isOk: deepModelingResult.isOk(),
+					hasValue: deepModelingResult.isOk() ? !!deepModelingResult.value : false,
+					valueText: deepModelingResult.isOk() ? deepModelingResult.value.text?.substring(0, 100) + '...' : 'N/A'
+				});
+
+				if (!deepModelingResult.isOk()) {
+					console.error(
+						`❌ Deep modeling failed: ${deepModelingResult.error.message}`,
+					);
+					console.error('Error details:', deepModelingResult.error);
+					return err(
+						new Error(
+							`Deep modeling failed: ${deepModelingResult.error.message}`,
+						),
+					);
+				}
+			} catch (error) {
+				console.error('❌ Exception in deepModeling:', error);
+				if (error instanceof Error) {
+					console.error('Stack trace:', error.stack);
+				}
+				throw error;
 			}
 
 			// Extract the generated schema from memory repositories
