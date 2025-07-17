@@ -13,7 +13,6 @@ export const requirementsAnalysisSchema = v.object({
   businessRequirement: v.string(),
   functionalRequirements: v.record(v.string(), v.array(v.string())),
   nonFunctionalRequirements: v.record(v.string(), v.array(v.string())),
-  toolsUsed: v.array(v.string()),
 })
 
 type AnalysisResponse = v.InferOutput<typeof requirementsAnalysisSchema>

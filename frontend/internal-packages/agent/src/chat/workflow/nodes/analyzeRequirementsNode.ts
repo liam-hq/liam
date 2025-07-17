@@ -73,7 +73,6 @@ export async function analyzeRequirementsNode(
           businessRequirement: result.businessRequirement,
           functionalRequirements: result.functionalRequirements,
           nonFunctionalRequirements: result.nonFunctionalRequirements,
-          toolsUsed: result.toolsUsed,
         },
         error: undefined, // Clear error on success
       }
