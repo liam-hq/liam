@@ -12,12 +12,14 @@ import {
   type RecoveryStep,
 } from './utils/timelineUtils'
 
-export const meta = {
+const meta = {
   component: Chat,
   parameters: {
     layout: 'padded',
   },
 } satisfies Meta<typeof Chat>
+
+export default meta
 
 type Story = StoryObj<typeof meta>
 
