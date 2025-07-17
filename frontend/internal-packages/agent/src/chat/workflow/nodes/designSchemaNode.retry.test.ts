@@ -94,9 +94,9 @@ describe('designSchemaNode retry behavior', () => {
         }),
       ]),
       expect.objectContaining({
-        enabled: expect.any(Boolean),
-        searchContextSize: expect.any(String),
+        search_context_size: expect.any(String),
       }),
+      true,
     )
   })
 })
