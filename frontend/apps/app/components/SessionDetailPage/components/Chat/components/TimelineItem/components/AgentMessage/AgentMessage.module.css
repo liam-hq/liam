@@ -30,8 +30,9 @@
 
 .messageContent {
   display: flex;
-  flex-direction: column;
-  gap: var(--spacing-2);
+  flex-direction: row;
+  align-items: flex-start;
+  gap: var(--spacing-1);
   width: 100%;
   max-width: 100%;
 }
@@ -575,4 +576,24 @@
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+/* Status Icons */
+.statusIcon {
+  flex-shrink: 0;
+  font-size: var(--font-size-4);
+  line-height: 1.8em;
+  margin-top: 0.1em;
+}
+
+.successIcon {
+  color: var(--primary-accent);
+}
+
+.errorIcon {
+  color: var(--severity-critical-100);
+}
+
+.progressIcon {
+  color: var(--global-foreground);
 }

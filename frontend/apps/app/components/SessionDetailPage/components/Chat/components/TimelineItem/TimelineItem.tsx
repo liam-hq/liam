@@ -24,10 +24,11 @@ type Props = PropsWithChildren &
   TimelineItemEntry & {
     onRetry?: () => void
     mockVersionData?: BuildingSchemaVersion
+    isLastOfType?: boolean
   }
 
 export const TimelineItem: FC<Props> = (props) => {
-  const { onRetry, mockVersionData } = props
+  const { onRetry, mockVersionData, isLastOfType } = props
 
   return match(props)
     .with({ type: 'schema_version' }, ({ buildingSchemaVersionId }) => (
@@ -48,17 +49,17 @@ export const TimelineItem: FC<Props> = (props) => {
     ))
     .with({ type: 'assistant_pm' }, ({ content }) => (
       <AgentMessage state="default" avatar={<PMAgent />} agentName="PM Agent">
-        <LogMessage content={content} />
+        <LogMessage content={content} isLast={isLastOfType} />
       </AgentMessage>
     ))
     .with({ type: 'assistant_db' }, ({ content }) => (
       <AgentMessage state="default" avatar={<DBAgent />} agentName="DB Agent">
-        <LogMessage content={content} />
+        <LogMessage content={content} isLast={isLastOfType} />
       </AgentMessage>
     ))
     .with({ type: 'assistant_qa' }, ({ content }) => (
       <AgentMessage state="default" avatar={<QAAgent />} agentName="QA Agent">
-        <LogMessage content={content} />
+        <LogMessage content={content} isLast={isLastOfType} />
       </AgentMessage>
     ))
     .with({ type: 'error' }, ({ content }) => (
@@ -66,18 +67,20 @@ export const TimelineItem: FC<Props> = (props) => {
         <ErrorMessage message={content} onRetry={onRetry} />
       </AgentMessage>
     ))
-    .otherwise(({ content, timestamp, children }) => {
-      return (
-        <AgentMessage
-          state="default"
-          message={content}
-          time={timestamp.toLocaleTimeString([], {
-            hour: '2-digit',
-            minute: '2-digit',
-          })}
-        >
-          {children}
-        </AgentMessage>
-      )
+    .with({ type: 'assistant' }, ({ content, timestamp }) => (
+      <AgentMessage
+        state="default"
+        avatar={<DBAgent />}
+        agentName="DB Agent"
+        message={content}
+        time={timestamp?.toLocaleTimeString([], {
+          hour: '2-digit',
+          minute: '2-digit',
+        })}
+      />
+    ))
+    .otherwise(() => {
+      // This should never happen as all cases are handled
+      return null
     })
 }
