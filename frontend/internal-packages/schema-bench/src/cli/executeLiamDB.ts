@@ -19,11 +19,9 @@ const InputSchema = v.object({
   input: v.string(),
 })
 
-const WORKSPACE_PATH = join(
-  process.env['INIT_CWD'] || process.cwd(),
-  'benchmark-workspace',
-  // 'benchmark-workspace-default',
-)
+// Get the repo root directory (where pnpm command is executed from)
+const REPO_ROOT = process.env['INIT_CWD'] || process.cwd()
+const WORKSPACE_PATH = join(REPO_ROOT, 'benchmark-workspace')
 
 async function loadInputFiles(): Promise<
   Result<Array<{ caseId: string; input: LiamDBExecutorInput }>, Error>
@@ -120,6 +118,7 @@ async function main() {
   }
 
   const inputs = inputsResult.value
+  console.log(`Found ${inputs.length} input files:`, inputs.map(i => i.caseId))
 
   if (inputs.length === 0) {
     return
@@ -133,9 +132,11 @@ async function main() {
   let failureCount = 0
 
   for (const { caseId, input } of inputs) {
+    console.log(`\n📝 Processing ${caseId}...`)
     const result = await executeCase(executor, caseId, input)
     if (result.isOk()) {
       successCount++
+      console.log(`✅ ${caseId} completed successfully`)
     } else {
       failureCount++
       console.error(`❌ ${caseId} failed: ${result.error.message}`)
@@ -147,7 +148,16 @@ async function main() {
   }
 }
 
-main().catch((error) => {
+// Set a global timeout of 10 minutes
+const GLOBAL_TIMEOUT_MS = 10 * 60 * 1000 // 10 minutes
+
+const timeoutPromise = new Promise<never>((_, reject) => {
+  setTimeout(() => {
+    reject(new Error('Script execution timed out after 10 minutes'))
+  }, GLOBAL_TIMEOUT_MS)
+})
+
+Promise.race([main(), timeoutPromise]).catch((error) => {
   console.error('❌ Unexpected error:', error)
   process.exit(1)
 })
