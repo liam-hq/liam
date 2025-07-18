@@ -121,39 +121,7 @@ describe('designSchemaNode -> executeDdlNode integration', () => {
     )
     const mockInvokeDesignAgent = vi.mocked(invokeDesignAgent)
     mockInvokeDesignAgent.mockResolvedValue(
-      ok({
-        message: new AIMessage('Created users table with id and name fields'),
-        operations: [
-          {
-            op: 'add',
-            path: '/tables/users',
-            value: {
-              name: 'users',
-              comment: null,
-              columns: {
-                id: {
-                  name: 'id',
-                  type: 'INTEGER',
-                  default: null,
-                  check: null,
-                  notNull: true,
-                  comment: null,
-                },
-                name: {
-                  name: 'name',
-                  type: 'VARCHAR',
-                  default: null,
-                  check: null,
-                  notNull: true,
-                  comment: null,
-                },
-              },
-              constraints: {},
-              indexes: {},
-            },
-          },
-        ],
-      }),
+      ok(new AIMessage('Created users table with id and name fields')),
     )
 
     const initialState = createMockState(initialSchema)
@@ -205,22 +173,7 @@ describe('designSchemaNode -> executeDdlNode integration', () => {
     )
     const mockInvokeDesignAgent = vi.mocked(invokeDesignAgent)
     mockInvokeDesignAgent.mockResolvedValue(
-      ok({
-        message: new AIMessage('Schema validation will fail'),
-        operations: [
-          {
-            op: 'add',
-            path: '/tables/test',
-            value: {
-              name: 'test',
-              comment: null,
-              columns: {},
-              constraints: {},
-              indexes: {},
-            },
-          },
-        ],
-      }),
+      ok(new AIMessage('Schema validation will fail')),
     )
 
     // Mock repository operation that returns validation error
@@ -251,22 +204,7 @@ describe('designSchemaNode -> executeDdlNode integration', () => {
     )
     const mockInvokeDesignAgent = vi.mocked(invokeDesignAgent)
     mockInvokeDesignAgent.mockResolvedValue(
-      ok({
-        message: new AIMessage('Repository will fail'),
-        operations: [
-          {
-            op: 'add',
-            path: '/tables/test',
-            value: {
-              name: 'test',
-              comment: null,
-              columns: {},
-              constraints: {},
-              indexes: {},
-            },
-          },
-        ],
-      }),
+      ok(new AIMessage('Repository will fail')),
     )
 
     // Mock repository failure

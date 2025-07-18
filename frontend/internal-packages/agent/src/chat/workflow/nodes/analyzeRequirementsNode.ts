@@ -115,7 +115,7 @@ export async function analyzeRequirementsNode(
 
       return {
         ...state,
-        messages: [...state.messages, completeMessage],
+        messages: [completeMessage],
         analyzedRequirements,
         error: undefined, // Clear error on success
       }

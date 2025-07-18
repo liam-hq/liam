@@ -22,10 +22,7 @@ describe('designSchemaNode retry behavior', () => {
     )
     const mockInvokeDesignAgent = vi.mocked(invokeDesignAgent)
     mockInvokeDesignAgent.mockResolvedValue(
-      ok({
-        message: new AIMessage('Schema generated successfully'),
-        operations: [],
-      }),
+      ok(new AIMessage('Schema generated successfully')),
     )
 
     const mockRepositories = {
