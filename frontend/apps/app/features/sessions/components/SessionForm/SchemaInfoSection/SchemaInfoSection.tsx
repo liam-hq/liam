@@ -11,7 +11,7 @@ import type { FormatType } from '../../../../../components/FormatIcon/FormatIcon
 import { FormatIcon } from '../../../../../components/FormatIcon/FormatIcon'
 import { FormatSelectDropdown } from '../FormatSelectDropdown'
 import { SchemaLink } from '../SchemaLink'
-import { type ErrorInfo, ViewErrorsCollapsible } from '../ViewErrorsCollapsible'
+import { ViewErrorsCollapsible } from '../ViewErrorsCollapsible'
 import styles from './SchemaInfoSection.module.css'
 
 // Helper function to parse error message and wrap code in backticks with Code component

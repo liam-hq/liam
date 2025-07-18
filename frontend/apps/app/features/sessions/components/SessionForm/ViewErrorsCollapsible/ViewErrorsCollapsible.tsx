@@ -41,7 +41,7 @@ type GenericError = BaseError & {
   details: string[]
 }
 
-export type ErrorInfo = ParsingError | UnsupportedSyntaxError | GenericError
+type ErrorInfo = ParsingError | UnsupportedSyntaxError | GenericError
 
 // Type guards for error types
 const isParsingError = (error: ErrorInfo): error is ParsingError => {
