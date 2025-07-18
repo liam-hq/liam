@@ -52,6 +52,16 @@ export function createBaseConfig(options = {}) {
           },
         ],
         '@typescript-eslint/consistent-type-definitions': ['error', 'type'],
+        '@typescript-eslint/no-unused-vars': [
+          'error',
+          {
+            argsIgnorePattern: '^_',
+            varsIgnorePattern: '^_|Schema$', // Allow Schema suffix for type inference (e.g., valibot schemas)
+            caughtErrorsIgnorePattern: '^_',
+            destructuredArrayIgnorePattern: '^_',
+            ignoreRestSiblings: true,
+          },
+        ],
         'require-use-server/require-use-server': 'error',
         'no-non-english/no-non-english-characters': 'error',
         'no-throw-error/no-throw-error': 'error',
