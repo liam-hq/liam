@@ -91,6 +91,10 @@ describe('designSchemaNode retry behavior', () => {
           content: expect.stringContaining('Foreign key constraint error'),
         }),
       ]),
+      expect.objectContaining({
+        buildingSchemaVersionId: 'test-version-id',
+        repositories: mockRepositories,
+      }),
     )
   })
 })
