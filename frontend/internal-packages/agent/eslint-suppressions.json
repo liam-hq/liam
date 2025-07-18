@@ -4,11 +4,6 @@
       "count": 1
     }
   },
-  "src/deepModeling.ts": {
-    "no-restricted-syntax": {
-      "count": 1
-    }
-  },
   "src/vectorstore/supabaseVectorStore.ts": {
     "@typescript-eslint/consistent-type-assertions": {
       "count": 5

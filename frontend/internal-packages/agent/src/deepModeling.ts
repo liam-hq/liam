@@ -3,7 +3,7 @@ import { RunCollectorCallbackHandler } from '@langchain/core/tracers/run_collect
 import { END, START, StateGraph } from '@langchain/langgraph'
 import type { Schema } from '@liam-hq/db-structure'
 import type { Result } from 'neverthrow'
-import { err, ok } from 'neverthrow'
+import { err, ok, ResultAsync } from 'neverthrow'
 import { v4 as uuidv4 } from 'uuid'
 import { WORKFLOW_ERROR_MESSAGES } from './chat/workflow/constants'
 import {
@@ -23,6 +23,7 @@ import {
   DEFAULT_RECURSION_LIMIT,
 } from './chat/workflow/shared/langGraphUtils'
 import type { WorkflowConfigurable, WorkflowState } from './chat/workflow/types'
+import type { WorkflowRunResult } from './repositories/types'
 
 export type DeepModelingParams = {
   userInput: string
@@ -43,6 +44,17 @@ export type DeepModelingResult = Result<WorkflowState, Error>
  */
 const RETRY_POLICY = {
   maxAttempts: process.env['NODE_ENV'] === 'test' ? 1 : 3,
+}
+
+/**
+ * Convert WorkflowRunResult to neverthrow Result
+ */
+const convertWorkflowRunResult = (
+  result: WorkflowRunResult,
+): Result<void, Error> => {
+  return result.success
+    ? ok(undefined)
+    : err(new Error(result.error || 'Unknown workflow run error'))
 }
 
 /**
@@ -178,67 +190,75 @@ export const deepModeling = async (
 
   const workflowRunId = uuidv4()
 
-  try {
-    const createWorkflowRunResult = await repositories.schema.createWorkflowRun(
-      {
-        designSessionId,
-        workflowRunId,
-      },
-    )
+  const createWorkflowRun = ResultAsync.fromSafePromise(
+    repositories.schema.createWorkflowRun({
+      designSessionId,
+      workflowRunId,
+    }),
+  ).andThen((result) => convertWorkflowRunResult(result))
 
-    if (!createWorkflowRunResult.success) {
-      return err(
-        new Error(
-          `Failed to create workflow run record: ${createWorkflowRunResult.error}`,
-        ),
+  const executeWorkflow = createWorkflowRun.andThen(() => {
+    const compiled = createGraph()
+    const runCollector = new RunCollectorCallbackHandler()
+
+    return ResultAsync.fromSafePromise(
+      compiled.invoke(workflowState, {
+        recursionLimit,
+        configurable: {
+          repositories,
+          logger,
+        },
+        runId: workflowRunId,
+        callbacks: [runCollector],
+      }),
+    )
+  })
+
+  const handleResult = executeWorkflow.andThen((result) => {
+    if (result.error) {
+      return ResultAsync.fromSafePromise(
+        repositories.schema.updateWorkflowRunStatus({
+          workflowRunId,
+          status: 'error',
+        }),
+      ).andThen(() =>
+        err(new Error(result.error?.message || 'Workflow execution failed')),
       )
     }
 
-    const compiled = createGraph()
-    const runCollector = new RunCollectorCallbackHandler()
-    const result = await compiled.invoke(workflowState, {
-      recursionLimit,
-      configurable: {
-        repositories,
-        logger,
-      },
-      runId: workflowRunId,
-      callbacks: [runCollector],
-    })
-
-    if (result.error) {
-      await repositories.schema.updateWorkflowRunStatus({
+    return ResultAsync.fromSafePromise(
+      repositories.schema.updateWorkflowRunStatus({
         workflowRunId,
-        status: 'error',
-      })
-      return err(new Error(result.error.message))
-    }
+        status: 'success',
+      }),
+    ).andThen(() => ok(result))
+  })
 
-    await repositories.schema.updateWorkflowRunStatus({
-      workflowRunId,
-      status: 'success',
-    })
-
-    return ok(result)
-  } catch (error) {
+  const handleError = (error: unknown): ResultAsync<WorkflowState, Error> => {
     const errorMessage =
       error instanceof Error
         ? error.message
         : WORKFLOW_ERROR_MESSAGES.EXECUTION_FAILED
 
-    await repositories.schema.updateWorkflowRunStatus({
-      workflowRunId,
-      status: 'error',
+    return ResultAsync.fromSafePromise(
+      repositories.schema.updateWorkflowRunStatus({
+        workflowRunId,
+        status: 'error',
+      }),
+    ).andThen(() => {
+      const errorState = { ...workflowState, error: new Error(errorMessage) }
+      return ResultAsync.fromSafePromise(
+        finalizeArtifactsNode(errorState, {
+          configurable: {
+            repositories,
+            logger,
+          },
+        }),
+      ).andThen((finalizedResult) =>
+        err(new Error(finalizedResult.error?.message || errorMessage)),
+      )
     })
-
-    const errorState = { ...workflowState, error: new Error(errorMessage) }
-    const finalizedResult = await finalizeArtifactsNode(errorState, {
-      configurable: {
-        repositories,
-        logger,
-      },
-    })
-
-    return err(new Error(finalizedResult.error?.message || errorMessage))
   }
+
+  return handleResult.orElse(handleError)
 }
