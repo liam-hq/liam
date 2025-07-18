@@ -1,8 +1,8 @@
 import type { BaseMessage } from '@langchain/core/messages'
 import type { Schema } from '@liam-hq/db-structure'
-import type { Usecase } from '../../langchain/agents/qaGenerateUsecaseAgent/agent'
-import type { Repositories } from '../../repositories'
-import type { NodeLogger } from '../../utils/nodeLogger'
+import type { Usecase } from '../../langchain/agents/qaGenerateUsecaseAgent/agent.ts'
+import type { Repositories } from '../../repositories/index.ts'
+import type { NodeLogger } from '../../utils/nodeLogger.ts'
 
 export type WorkflowState = {
   messages: BaseMessage[]

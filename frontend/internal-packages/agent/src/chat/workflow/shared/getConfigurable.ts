@@ -1,7 +1,7 @@
 import type { RunnableConfig } from '@langchain/core/runnables'
 import type { Result } from 'neverthrow'
 import { err, ok } from 'neverthrow'
-import type { WorkflowConfigurable } from '../types'
+import type { WorkflowConfigurable } from '../types.ts'
 
 /**
  * Extract the configurable object from the RunnableConfig

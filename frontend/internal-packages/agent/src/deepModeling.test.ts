@@ -2,9 +2,9 @@ import { AIMessage } from '@langchain/core/messages'
 import type { Schema } from '@liam-hq/db-structure'
 import { ResultAsync } from 'neverthrow'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { type DeepModelingParams, deepModeling } from './deepModeling'
-import type { Repositories, SchemaRepository } from './repositories'
-import type { NodeLogger } from './utils/nodeLogger'
+import { type DeepModelingParams, deepModeling } from './deepModeling.ts'
+import type { Repositories, SchemaRepository } from './repositories/index.ts'
+import type { NodeLogger } from './utils/nodeLogger.ts'
 
 // Mock the agents
 vi.mock('./langchain/agents', () => ({

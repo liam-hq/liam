@@ -11,7 +11,7 @@ import {
 import type { SqlResult } from '@liam-hq/pglite-server/src/types'
 import { compare } from 'fast-json-patch'
 import * as v from 'valibot'
-import { ensurePathStructure } from '../utils/pathPreparation'
+import { ensurePathStructure } from '../utils/pathPreparation.ts'
 import type {
   ArtifactResult,
   CreateArtifactParams,
@@ -29,7 +29,7 @@ import type {
   UpdateWorkflowRunStatusParams,
   VersionResult,
   WorkflowRunResult,
-} from './types'
+} from './types.ts'
 
 /**
  * Convert Artifact to Json safely without type casting

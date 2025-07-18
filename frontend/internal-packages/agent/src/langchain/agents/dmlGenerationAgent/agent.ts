@@ -1,6 +1,6 @@
 import * as v from 'valibot'
-import type { ChatAgent } from '../../utils/types'
-import { formatDMLGenerationPrompts } from './prompts'
+import type { ChatAgent } from '../../utils/types.ts'
+import { formatDMLGenerationPrompts } from './prompts.ts'
 
 const DMLGenerationAgentInputSchema = v.object({
   schemaSQL: v.string(),

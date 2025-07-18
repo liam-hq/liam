@@ -1,13 +1,13 @@
 import type { RunnableConfig } from '@langchain/core/runnables'
 import type { Database } from '@liam-hq/db'
-import type { Repositories } from '../../../repositories'
-import { getConfigurable } from '../shared/getConfigurable'
-import type { WorkflowState } from '../types'
-import { logAssistantMessage } from '../utils/timelineLogger'
+import type { Repositories } from '../../../repositories/index.ts'
+import { getConfigurable } from '../shared/getConfigurable.ts'
+import type { WorkflowState } from '../types.ts'
+import { logAssistantMessage } from '../utils/timelineLogger.ts'
 import {
   createOrUpdateArtifact,
   transformWorkflowStateToArtifact,
-} from '../utils/transformWorkflowStateToArtifact'
+} from '../utils/transformWorkflowStateToArtifact.ts'
 
 /**
  * Save artifacts if workflow state contains artifact data
