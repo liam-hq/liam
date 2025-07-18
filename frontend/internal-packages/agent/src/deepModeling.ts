@@ -92,9 +92,11 @@ const createGraph = () => {
     .addEdge('prepareDML', 'validateSchema')
     .addEdge('finalizeArtifacts', END)
 
-    // Conditional edge for saveUserMessage - skip to finalizeArtifacts if error, otherwise go to webSearch
+    // Conditional edge for saveUserMessage - skip to finalizeArtifacts if error, skip webSearch in offline mode
     .addConditionalEdges('saveUserMessage', (state) => {
-      return state.error ? 'finalizeArtifacts' : 'webSearch'
+      if (state.error) return 'finalizeArtifacts'
+      // Skip webSearch in offline mode
+      return process.env['LIAM_OFFLINE_MODE'] === 'true' ? 'analyzeRequirements' : 'webSearch'
     })
 
     // Conditional edge for designSchema - skip to finalizeArtifacts if error
