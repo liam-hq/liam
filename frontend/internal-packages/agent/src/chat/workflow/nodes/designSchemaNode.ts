@@ -46,12 +46,7 @@ export async function designSchemaNode(
   if (!createVersionResult.success) {
     const errorMessage =
       createVersionResult.error || 'Failed to create new version'
-    await logAssistantMessage(
-      state,
-      repositories,
-      errorMessage,
-      assistantRole,
-    )
+    await logAssistantMessage(state, repositories, errorMessage, assistantRole)
     return {
       ...state,
       error: new Error(errorMessage),
