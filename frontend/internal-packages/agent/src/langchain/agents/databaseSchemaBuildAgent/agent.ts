@@ -8,8 +8,11 @@ import { operationsSchema } from '@liam-hq/db-structure'
 import { toJsonSchema } from '@valibot/to-json-schema'
 import { ok, Result, ResultAsync } from 'neverthrow'
 import * as v from 'valibot'
-import { createLangfuseHandler } from '../../utils/telemetry'
-import { type DesignAgentPromptVariables, designAgentPrompt } from './prompts'
+import { createLangfuseHandler } from '../../utils/telemetry.ts'
+import {
+  type DesignAgentPromptVariables,
+  designAgentPrompt,
+} from './prompts.ts'
 
 // Define the response schema
 const designResponseSchema = v.object({

@@ -5,7 +5,7 @@ import type { Schema } from '@liam-hq/db-structure'
 import type { Result } from 'neverthrow'
 import { err, ok } from 'neverthrow'
 import { v4 as uuidv4 } from 'uuid'
-import { WORKFLOW_ERROR_MESSAGES } from './chat/workflow/constants'
+import { WORKFLOW_ERROR_MESSAGES } from './chat/workflow/constants.ts'
 import {
   analyzeRequirementsNode,
   designSchemaNode,
@@ -17,12 +17,15 @@ import {
   saveUserMessageNode,
   validateSchemaNode,
   webSearchNode,
-} from './chat/workflow/nodes'
+} from './chat/workflow/nodes/index.ts'
 import {
   createAnnotations,
   DEFAULT_RECURSION_LIMIT,
-} from './chat/workflow/shared/langGraphUtils'
-import type { WorkflowConfigurable, WorkflowState } from './chat/workflow/types'
+} from './chat/workflow/shared/langGraphUtils.ts'
+import type {
+  WorkflowConfigurable,
+  WorkflowState,
+} from './chat/workflow/types.ts'
 
 export type DeepModelingParams = {
   userInput: string

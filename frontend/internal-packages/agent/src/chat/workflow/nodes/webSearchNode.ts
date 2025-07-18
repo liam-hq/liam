@@ -3,9 +3,9 @@ import type { RunnableConfig } from '@langchain/core/runnables'
 import { ChatOpenAI } from '@langchain/openai'
 import type { Database } from '@liam-hq/db'
 import { ResultAsync } from 'neverthrow'
-import { getConfigurable } from '../shared/getConfigurable'
-import type { WorkflowState } from '../types'
-import { logAssistantMessage } from '../utils/timelineLogger'
+import { getConfigurable } from '../shared/getConfigurable.ts'
+import type { WorkflowState } from '../types.ts'
+import { logAssistantMessage } from '../utils/timelineLogger.ts'
 
 /**
  * Web Search Node - Initial Research

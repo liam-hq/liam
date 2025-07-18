@@ -1,6 +1,6 @@
 import type { SupabaseClientType } from '@liam-hq/db'
-import { SupabaseSchemaRepository } from './supabase'
-import type { Repositories } from './types'
+import { SupabaseSchemaRepository } from './supabase.ts'
+import type { Repositories } from './types.ts'
 
 /**
  * Factory function to create Supabase-based repositories
