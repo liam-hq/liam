@@ -33,7 +33,7 @@ export const createLiamDBExecutorOffline = () => {
           latestVersionNumber: 0,
           designSessionId,
           userId: 'offline-user',
-          recursionLimit: 10,
+          recursionLimit: 15,
         },
         {
           configurable: {
