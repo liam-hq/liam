@@ -20,53 +20,6 @@ type MarkdownContentProps = {
 }
 
 export const MarkdownContent: FC<MarkdownContentProps> = ({ content }) => {
-  const renderTextWithMarks = (text: string) => {
-    const parts = text.split(/(✓|✗)/g)
-    return parts.map((part) => {
-      if (part === '✓') {
-        return (
-          <span key={`checkmark-${text}-${part}`} className={styles.checkmark}>
-            ✓
-          </span>
-        )
-      }
-      if (part === '✗') {
-        return (
-          <span key={`crossmark-${text}-${part}`} className={styles.crossmark}>
-            ✗
-          </span>
-        )
-      }
-      return part
-    })
-  }
-
-  const generateStableKey = (content: string, index: number): string => {
-    // Use index as primary identifier with content prefix for stability
-    // This ensures uniqueness within the same parent and stability across renders
-    const contentPrefix = content.slice(0, 10).replace(/[^a-zA-Z0-9]/g, '')
-    return `text-${index}-${contentPrefix}`
-  }
-
-  const processChildren = (children: ReactNode): ReactNode => {
-    if (typeof children === 'string') {
-      return renderTextWithMarks(children)
-    }
-    if (Array.isArray(children)) {
-      return children.map((child, index) => {
-        if (typeof child === 'string') {
-          return (
-            <span key={generateStableKey(child, index)}>
-              {renderTextWithMarks(child)}
-            </span>
-          )
-        }
-        return child
-      })
-    }
-    return children
-  }
-
   return (
     <ReactMarkdown
       remarkPlugins={[remarkGfm]}
@@ -94,11 +47,26 @@ export const MarkdownContent: FC<MarkdownContentProps> = ({ content }) => {
             </code>
           )
         },
-        p({ children, ...props }) {
-          return <p {...props}>{processChildren(children)}</p>
+        ul({ children, node, ...props }) {
+          return (
+            <ul className={styles.ul} {...props}>
+              {children}
+            </ul>
+          )
         },
-        li({ children, ...props }) {
-          return <li {...props}>{processChildren(children)}</li>
+        ol({ children, node, ...props }) {
+          return (
+            <ol className={styles.ol} {...props}>
+              {children}
+            </ol>
+          )
+        },
+        li({ children, node, ...props }) {
+          return (
+            <li className={styles.li} {...props}>
+              {children}
+            </li>
+          )
         },
       }}
     >

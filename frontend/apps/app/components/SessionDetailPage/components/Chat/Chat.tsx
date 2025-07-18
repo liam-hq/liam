@@ -130,27 +130,18 @@ export const Chat: FC<Props> = ({
                     messageIndex === item.length - 1
 
                   return (
-                    <LogMessage
-                      key={message.id}
-                      content={message.content}
-                      isLast={isLastMessage}
-                    />
+                    <LogMessage key={message.id} content={message.content} />
                   )
                 })}
               </AgentMessage>
             )
           }
 
-          // Render single timeline item
-          // Check if this is the last item overall
-          const isLastMessage = groupIndex === groupedTimelineItems.length - 1
-
           return (
             <TimelineItem
               key={item.id}
               {...item}
               {...(item.type === 'error' && { onRetry })}
-              isLastOfType={isLastMessage}
             />
           )
         })}
