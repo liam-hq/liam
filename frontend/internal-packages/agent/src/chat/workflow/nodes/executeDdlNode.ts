@@ -15,8 +15,8 @@ import { logAssistantMessage } from '../utils/timelineLogger.ts'
 export async function executeDdlNode(
   state: WorkflowState,
   config: RunnableConfig,
+  assistantRole: Database['public']['Enums']['assistant_role_enum'],
 ): Promise<WorkflowState> {
-  const assistantRole: Database['public']['Enums']['assistant_role_enum'] = 'db'
   const configurableResult = getConfigurable(config)
   if (configurableResult.isErr()) {
     return {
@@ -82,10 +82,26 @@ export async function executeDdlNode(
     assistantRole,
   )
 
-  const results: SqlResult[] = await executeQuery(
-    state.designSessionId,
-    ddlStatements,
-  )
+  // Skip actual DDL execution in offline mode
+  let results: SqlResult[]
+  if (process.env.LIAM_OFFLINE_MODE === 'true') {
+    // Create mock results for offline mode
+    const statements = ddlStatements
+      .split(';')
+      .filter((s) => s.trim().length > 0)
+    results = statements.map((statement) => ({
+      success: true,
+      statement: statement.trim(),
+      result: {
+        rows: [],
+        fields: [],
+        affectedRows: 0,
+      },
+      executionTime: 0,
+    }))
+  } else {
+    results = await executeQuery(state.designSessionId, ddlStatements)
+  }
 
   const queryResult = await repositories.schema.createValidationQuery({
     designSessionId: state.designSessionId,
