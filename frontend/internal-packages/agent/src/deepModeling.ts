@@ -201,7 +201,7 @@ export const deepModeling = async (
     const compiled = createGraph()
     const runCollector = new RunCollectorCallbackHandler()
 
-    return ResultAsync.fromSafePromise(
+    return ResultAsync.fromPromise(
       compiled.invoke(workflowState, {
         recursionLimit,
         configurable: {
@@ -211,6 +211,7 @@ export const deepModeling = async (
         runId: workflowRunId,
         callbacks: [runCollector],
       }),
+      (error) => (error instanceof Error ? error : new Error(String(error))),
     )
   })
 
