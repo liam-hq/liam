@@ -7,6 +7,7 @@ import type { NodeLogger } from '../../utils/nodeLogger'
 export type WorkflowState = {
   messages: BaseMessage[]
   userInput: string
+  webSearchResults?: string | undefined
   analyzedRequirements?:
     | {
         businessRequirement: string
@@ -15,8 +16,6 @@ export type WorkflowState = {
       }
     | undefined
   generatedUsecases?: Usecase[] | undefined
-  generatedAnswer?: string | undefined
-  finalResponse?: string | undefined
   schemaData: Schema
   projectId?: string | undefined
   error?: Error | undefined

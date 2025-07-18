@@ -1,5 +1,5 @@
 import clsx from 'clsx'
-import type { FC } from 'react'
+import type { FC, ReactNode } from 'react'
 import styles from './LogMessage.module.css'
 
 type LogMessageProps = {
@@ -8,100 +8,83 @@ type LogMessageProps = {
   status?: 'success' | 'error' | 'in-progress' | 'pending'
 }
 
-export const LogMessage: FC<LogMessageProps> = ({
-  content,
-  isLast = false,
-  status,
-}) => {
-  // Check if this is a single-line message
-  const lines = content.split('\n')
-  const isSingleLine = lines.length === 1
+const generateLineKey = (lineIndex: number, line: string): string => {
+  const sanitizedLine =
+    line.trim().substring(0, 30).replace(/\s+/g, '-') || 'empty'
+  return `line-${lineIndex}-${sanitizedLine}`
+}
 
-  if (isSingleLine) {
-    // Use status prop if specified
-    const statusIcon = (() => {
-      if (status === 'error') return '✗'
-      if (status === 'in-progress') return '⏳'
-      if (status === 'pending') return '•'
-      // If status is not specified, use isLast
-      return isLast ? '⏳' : '✓'
-    })()
+const processLineParts = (line: string, lineIndex: number): ReactNode[] => {
+  return line.split(/(\s*✓\s*|\s*✗\s*|⏳)/).map((part, partIndex) => {
+    const keyBase = `${lineIndex}-${part.trim()}-${partIndex}`
 
+    if (part.includes('✓')) {
+      return (
+        <span key={`check-${keyBase}`} className={styles.checkmark}>
+          {part}
+        </span>
+      )
+    }
+
+    if (part.includes('✗')) {
+      return (
+        <span key={`cross-${keyBase}`} className={styles.crossmark}>
+          {part}
+        </span>
+      )
+    }
+
+    if (part === '⏳') {
+      return <span key={`hourglass-${keyBase}`}>{part}</span>
+    }
+
+    return part
+  })
+}
+
+const renderFormattedLine = (
+  line: string,
+  lineIndex: number,
+  parts: ReactNode[],
+  lines: string[],
+): ReactNode => {
+  const isPending = line.trim().startsWith('•')
+  const isCurrentTask = line.includes('⏳')
+  const hasCheckOrCross = line.includes('✓') || line.includes('✗')
+  const key = generateLineKey(lineIndex, line)
+  const lineBreak = lineIndex < lines.length - 1 ? '\n' : null
+
+  if (hasCheckOrCross || isCurrentTask) {
     return (
-      <div className={styles.content}>
-        <div className={styles.lineContainer}>
-          <span
-            className={clsx(
-              styles.statusIcon,
-              statusIcon === '✓' && styles.checkmark,
-              statusIcon === '✗' && styles.crossmark,
-              statusIcon === '⏳' && styles.inProgress,
-              statusIcon === '•' && styles.pendingTask,
-            )}
-          >
-            {statusIcon}
-          </span>
-          <span
-            className={clsx(
-              styles.lineText,
-              statusIcon === '⏳' && styles.currentTask,
-            )}
-          >
-            {content}
-          </span>
-        </div>
-      </div>
+      <span
+        key={key}
+        className={clsx(
+          styles.lineText,
+          isPending ? styles.pendingTask : '',
+          isCurrentTask ? styles.currentTask : '',
+        )}
+      >
+        {parts}
+        {lineBreak}
+      </span>
     )
   }
 
-  // For multi-line messages, handle each line separately
-  const formattedContent = lines
-    .map((line, lineIndex) => {
-      const trimmedLine = line.trim()
+  return (
+    <span key={key} className={isPending ? styles.pendingTask : undefined}>
+      {parts}
+      {lineBreak}
+    </span>
+  )
+}
 
-      // Skip empty lines
-      if (!trimmedLine) {
-        return null
-      }
+export const LogMessage: FC<LogMessageProps> = ({ content }) => {
+  const lines = content.split('\n')
 
-      // Use status prop if specified
-      const isLastLine = lineIndex === lines.length - 1
-      const statusIcon = (() => {
-        if (status === 'error') return '✗'
-        if (status === 'in-progress') return '⏳'
-        if (status === 'pending') return '•'
-        // If status is not specified, use isLast
-        return isLast && isLastLine ? '⏳' : '✓'
-      })()
-
-      return (
-        <div
-          key={`line-${lineIndex}-${trimmedLine.substring(0, 30).replace(/\s+/g, '-') || 'empty'}`}
-          className={styles.lineContainer}
-        >
-          <span
-            className={clsx(
-              styles.statusIcon,
-              statusIcon === '✓' && styles.checkmark,
-              statusIcon === '✗' && styles.crossmark,
-              statusIcon === '⏳' && styles.inProgress,
-              statusIcon === '•' && styles.pendingTask,
-            )}
-          >
-            {statusIcon}
-          </span>
-          <span
-            className={clsx(
-              styles.lineText,
-              statusIcon === '⏳' && styles.currentTask,
-            )}
-          >
-            {line}
-          </span>
-        </div>
-      )
-    })
-    .filter(Boolean)
+  const formattedContent = lines.map((line, lineIndex) => {
+    const parts = processLineParts(line, lineIndex)
+    return renderFormattedLine(line, lineIndex, parts, lines)
+  })
 
   return <div className={styles.content}>{formattedContent}</div>
 }

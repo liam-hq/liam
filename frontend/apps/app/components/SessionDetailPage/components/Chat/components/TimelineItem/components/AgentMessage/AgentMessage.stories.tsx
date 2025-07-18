@@ -23,7 +23,7 @@ export const BuildDefault: Story = {
     message:
       'We would like to make a proposal for the implementation of a chat UI. First, please allow me to check the current structure of the schema page.',
     time: '12:10',
-    agentName: 'Build Agent',
+    assistantRole: 'db',
   },
 }
 
@@ -32,13 +32,14 @@ export const BuildWithCustomName: Story = {
     state: 'default',
     message: 'This is a message from a build agent with a custom name.',
     time: '12:20',
-    agentName: 'Custom Build Agent',
+    assistantRole: 'db',
   },
 }
 
 export const BuildGenerating: Story = {
   args: {
     state: 'generating',
+    assistantRole: 'db',
   },
 }
 
@@ -399,6 +400,7 @@ export const BuildWithMarkdown: Story = {
     state: 'default',
     message: markdownContent,
     time: '12:15',
+    assistantRole: 'db',
   },
 }
 
@@ -414,7 +416,7 @@ export const BuildWithOptions: Story = {
     state: 'default',
     message: 'Please select from the following options:',
     time: '12:30',
-    agentName: 'Build Agent',
+    assistantRole: 'db',
     children: <MessageOptionButtons options={sampleOptions} />,
   },
 }
@@ -424,7 +426,7 @@ export const BuildWithMultiSelectOptions: Story = {
     state: 'default',
     message: 'Please select multiple options that apply:',
     time: '12:35',
-    agentName: 'Build Agent',
+    assistantRole: 'db',
     children: (
       <MessageOptionButtons
         options={[
@@ -443,7 +445,7 @@ export const BuildWithDatabaseOptions: Story = {
     state: 'default',
     message: 'Please select an operation to perform:',
     time: '12:45',
-    agentName: 'Build Agent',
+    assistantRole: 'db',
     children: (
       <MessageOptionButtons
         options={[
@@ -461,7 +463,7 @@ export const BuildAfterOptionSelected: Story = {
     state: 'default',
     message: 'Creating new table based on your selection...',
     time: '12:45',
-    agentName: 'Build Agent',
+    assistantRole: 'db',
     children: (
       <ProcessIndicator
         status="processing"
@@ -481,7 +483,7 @@ export const BuildAfterOptionSelectedCollapsed: Story = {
     state: 'default',
     message: 'Updating schema based on your selection...',
     time: '12:50',
-    agentName: 'Build Agent',
+    assistantRole: 'db',
     children: (
       <ProcessIndicator
         status="processing"
@@ -501,7 +503,7 @@ export const BuildAfterOptionSelectedCompleteCollapsed: Story = {
     state: 'default',
     message: 'Schema update completed successfully.',
     time: '12:55',
-    agentName: 'Build Agent',
+    assistantRole: 'db',
     children: (
       <ProcessIndicator
         status="complete"

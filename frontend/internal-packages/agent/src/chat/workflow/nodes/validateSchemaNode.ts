@@ -1,4 +1,5 @@
 import type { RunnableConfig } from '@langchain/core/runnables'
+import type { Database } from '@liam-hq/db'
 import { executeQuery } from '@liam-hq/pglite-server'
 import type { SqlResult } from '@liam-hq/pglite-server/src/types'
 import { getConfigurable } from '../shared/getConfigurable'
@@ -13,6 +14,7 @@ export async function validateSchemaNode(
   state: WorkflowState,
   config: RunnableConfig,
 ): Promise<WorkflowState> {
+  const assistantRole: Database['public']['Enums']['assistant_role_enum'] = 'db'
   const configurableResult = getConfigurable(config)
   if (configurableResult.isErr()) {
     return {
@@ -61,6 +63,7 @@ export async function validateSchemaNode(
       state,
       repositories,
       `Schema Validation Complete: ${successCount} successful, ${errorCount} failed queries`,
+      assistantRole,
     )
   }
 

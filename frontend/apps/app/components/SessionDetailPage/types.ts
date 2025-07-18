@@ -1,6 +1,5 @@
 import type { Database, Tables } from '@liam-hq/db'
 import type * as v from 'valibot'
-import type { timelineItemSchema } from './schema'
 
 export type ReviewComment = {
   fromLine: number
@@ -19,7 +18,18 @@ export type BuildingSchema = Pick<
   'id' | 'schema' | 'initial_schema_snapshot'
 >
 
-export type TimelineItem = v.InferOutput<typeof timelineItemSchema>
+export type TimelineItem = Pick<
+  Tables<'timeline_items'>,
+  | 'id'
+  | 'content'
+  | 'type'
+  | 'user_id'
+  | 'created_at'
+  | 'organization_id'
+  | 'design_session_id'
+  | 'building_schema_version_id'
+  | 'assistant_role'
+>
 
 export type DesignSessionWithTimelineItems = Pick<
   Tables<'design_sessions'>,
@@ -31,7 +41,7 @@ export type DesignSessionWithTimelineItems = Pick<
 export type WorkflowRunStatus =
   Database['public']['Enums']['workflow_run_status']
 
-type AssistantRole = 'pm' | 'db' | 'qa'
+type AssistantRole = Database['public']['Enums']['assistant_role_enum']
 
 type BaseTimelineItemEntry = {
   id: string

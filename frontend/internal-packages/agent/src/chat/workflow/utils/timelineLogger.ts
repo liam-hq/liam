@@ -1,3 +1,4 @@
+import type { Database } from '@liam-hq/db'
 import { ResultAsync } from 'neverthrow'
 import type { Repositories } from '../../../repositories'
 import type { WorkflowState } from '../types'
@@ -10,12 +11,14 @@ export async function logAssistantMessage(
   state: WorkflowState,
   repositories: Repositories,
   content: string,
+  role: Database['public']['Enums']['assistant_role_enum'],
 ): Promise<void> {
   const result = await ResultAsync.fromPromise(
     repositories.schema.createTimelineItem({
       designSessionId: state.designSessionId,
       content,
       type: 'assistant_log',
+      role,
     }),
     (error) => error,
   )

@@ -127,26 +127,27 @@
 
 /* Custom scrollbar styling - more natural appearance */
 .content {
-  scrollbar-width: thin;
-  scrollbar-color: var(--overlay-10) transparent;
+  scrollbar-width: var(--scrollbar-width);
+  scrollbar-color: var(--scrollbar-thumb-background)
+    var(--scrollbar-track-background);
 }
 
 .content::-webkit-scrollbar {
-  width: 4px;
+  width: var(--scrollbar-webkit-height);
 }
 
 .content::-webkit-scrollbar-track {
-  background: transparent;
+  background: var(--scrollbar-track-background);
 }
 
 .content::-webkit-scrollbar-thumb {
-  background: var(--overlay-10);
-  border-radius: 2px;
+  background: var(--scrollbar-thumb-background);
+  border-radius: var(--scrollbar-webkit-thumb-border-radius);
   transition: background 0.2s ease;
 }
 
 .content:hover::-webkit-scrollbar-thumb {
-  background: var(--overlay-20);
+  background: var(--scrollbar-thumb-background-hover);
 }
 
 /* Fade in/out effect for scrollbar */
@@ -155,7 +156,7 @@
 }
 
 .content:hover::-webkit-scrollbar-thumb {
-  background: var(--overlay-10);
+  background: var(--scrollbar-thumb-background);
 }
 
 .operationItem {
@@ -201,6 +202,7 @@
   align-items: center;
   gap: 4px;
   flex: 1;
+  flex-wrap: wrap;
 }
 
 .pathPart {
@@ -208,7 +210,7 @@
   font-size: var(--font-size-2);
   font-family: var(--code-font);
   line-height: normal;
-  white-space: nowrap;
+  word-break: break-word;
 }
 
 .arrowContainer {

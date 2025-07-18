@@ -438,6 +438,7 @@ export class SupabaseSchemaRepository implements SchemaRepository {
   ): Promise<TimelineItemResult> {
     const { designSessionId, content, type } = params
     const userId = 'userId' in params ? params.userId : null
+    const assistantRole = 'role' in params ? params.role : null
     const buildingSchemaVersionId =
       'buildingSchemaVersionId' in params
         ? params.buildingSchemaVersionId
@@ -453,6 +454,7 @@ export class SupabaseSchemaRepository implements SchemaRepository {
         user_id: userId,
         building_schema_version_id: buildingSchemaVersionId,
         updated_at: now,
+        assistant_role: assistantRole,
       })
       .select()
       .single()

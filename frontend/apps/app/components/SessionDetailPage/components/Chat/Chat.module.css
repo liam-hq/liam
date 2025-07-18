@@ -17,26 +17,27 @@
   gap: var(--spacing-5);
   min-height: 0; /* Allow the container to shrink */
   scroll-behavior: smooth; /* Smooth scrolling */
-  scrollbar-color: var(--overlay-20) transparent;
-  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb-background)
+    var(--scrollbar-track-background);
+  scrollbar-width: var(--scrollbar-width);
 }
 
 /* Custom scrollbar styling for better UX */
 .messagesContainer::-webkit-scrollbar {
-  width: 6px;
+  width: var(--scrollbar-webkit-width);
 }
 
 .messagesContainer::-webkit-scrollbar-track {
-  background: transparent;
+  background: var(--scrollbar-track-background);
 }
 
 .messagesContainer::-webkit-scrollbar-thumb {
-  background-color: var(--global-border-subtle);
-  border-radius: 3px;
+  background-color: var(--scrollbar-thumb-background);
+  border-radius: var(--scrollbar-webkit-thumb-border-radius);
 }
 
 .messagesContainer::-webkit-scrollbar-thumb:hover {
-  background-color: var(--global-border);
+  background-color: var(--scrollbar-thumb-background-hover);
 }
 
 .loadingIndicator {

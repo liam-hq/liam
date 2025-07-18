@@ -16,6 +16,7 @@ import {
   reviewDeliverablesNode,
   saveUserMessageNode,
   validateSchemaNode,
+  webSearchNode,
 } from './chat/workflow/nodes'
 import {
   createAnnotations,
@@ -35,18 +36,13 @@ export type DeepModelingParams = {
   recursionLimit?: number
 }
 
-export type DeepModelingResult = Result<
-  {
-    text: string
-  },
-  Error
->
+export type DeepModelingResult = Result<WorkflowState, Error>
 
 /**
  * Retry policy configuration for all nodes
  */
 const RETRY_POLICY = {
-  maxAttempts: 3,
+  maxAttempts: process.env['NODE_ENV'] === 'test' ? 1 : 3,
 }
 
 /**
@@ -58,6 +54,9 @@ const createGraph = () => {
 
   graph
     .addNode('saveUserMessage', saveUserMessageNode, {
+      retryPolicy: RETRY_POLICY,
+    })
+    .addNode('webSearch', webSearchNode, {
       retryPolicy: RETRY_POLICY,
     })
     .addNode('analyzeRequirements', analyzeRequirementsNode, {
@@ -86,15 +85,16 @@ const createGraph = () => {
     })
 
     .addEdge(START, 'saveUserMessage')
+    .addEdge('webSearch', 'analyzeRequirements')
     .addEdge('analyzeRequirements', 'designSchema')
     .addEdge('executeDDL', 'generateUsecase')
     .addEdge('generateUsecase', 'prepareDML')
     .addEdge('prepareDML', 'validateSchema')
     .addEdge('finalizeArtifacts', END)
 
-    // Conditional edge for saveUserMessage - skip to finalizeArtifacts if error
+    // Conditional edge for saveUserMessage - skip to finalizeArtifacts if error, otherwise go to webSearch
     .addConditionalEdges('saveUserMessage', (state) => {
-      return state.error ? 'finalizeArtifacts' : 'analyzeRequirements'
+      return state.error ? 'finalizeArtifacts' : 'webSearch'
     })
 
     // Conditional edge for designSchema - skip to finalizeArtifacts if error
@@ -219,9 +219,7 @@ export const deepModeling = async (
       status: 'success',
     })
 
-    return ok({
-      text: result.finalResponse || result.generatedAnswer || '',
-    })
+    return ok(result)
   } catch (error) {
     const errorMessage =
       error instanceof Error

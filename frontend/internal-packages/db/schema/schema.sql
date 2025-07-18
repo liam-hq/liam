@@ -72,6 +72,16 @@ CREATE EXTENSION IF NOT EXISTS "vector" WITH SCHEMA "public";
 
 
 
+CREATE TYPE "public"."assistant_role_enum" AS ENUM (
+    'db',
+    'pm',
+    'qa'
+);
+
+
+ALTER TYPE "public"."assistant_role_enum" OWNER TO "postgres";
+
+
 CREATE TYPE "public"."category_enum" AS ENUM (
     'MIGRATION_SAFETY',
     'DATA_INTEGRITY',
@@ -1423,7 +1433,8 @@ CREATE TABLE IF NOT EXISTS "public"."timeline_items" (
     "updated_at" timestamp(3) with time zone NOT NULL,
     "organization_id" "uuid" NOT NULL,
     "building_schema_version_id" "uuid",
-    "type" "public"."timeline_item_type_enum" NOT NULL
+    "type" "public"."timeline_item_type_enum" NOT NULL,
+    "assistant_role" "public"."assistant_role_enum"
 );
 
 

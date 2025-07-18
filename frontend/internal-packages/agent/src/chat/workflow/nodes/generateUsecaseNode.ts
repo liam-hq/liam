@@ -1,5 +1,6 @@
 import { AIMessage } from '@langchain/core/messages'
 import type { RunnableConfig } from '@langchain/core/runnables'
+import type { Database } from '@liam-hq/db'
 import { ResultAsync } from 'neverthrow'
 import { QAGenerateUsecaseAgent } from '../../../langchain/agents'
 import type { BasePromptVariables } from '../../../langchain/utils/types'
@@ -46,6 +47,7 @@ export async function generateUsecaseNode(
   state: WorkflowState,
   config: RunnableConfig,
 ): Promise<WorkflowState> {
+  const assistantRole: Database['public']['Enums']['assistant_role_enum'] = 'qa'
   const configurableResult = getConfigurable(config)
   if (configurableResult.isErr()) {
     return {
@@ -55,7 +57,12 @@ export async function generateUsecaseNode(
   }
   const { repositories } = configurableResult.value
 
-  await logAssistantMessage(state, repositories, 'Generating use cases...')
+  await logAssistantMessage(
+    state,
+    repositories,
+    'Generating use cases...',
+    assistantRole,
+  )
 
   // Check if we have analyzed requirements
   if (!state.analyzedRequirements) {
@@ -66,6 +73,7 @@ export async function generateUsecaseNode(
       state,
       repositories,
       'Error occurred during use case generation',
+      assistantRole,
     )
 
     return {
@@ -93,6 +101,7 @@ export async function generateUsecaseNode(
     state,
     repositories,
     'Analyzing test cases and queries...',
+    assistantRole,
   )
 
   const usecaseResult = await ResultAsync.fromPromise(
@@ -106,6 +115,7 @@ export async function generateUsecaseNode(
         state,
         repositories,
         'Use case generation completed',
+        assistantRole,
       )
 
       return {
@@ -126,6 +136,7 @@ export async function generateUsecaseNode(
         state,
         repositories,
         'Error occurred during use case generation',
+        assistantRole,
       )
 
       // Increment retry count and set error

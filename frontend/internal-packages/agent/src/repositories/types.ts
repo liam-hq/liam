@@ -53,6 +53,7 @@ export type CreateTimelineItemParams = {
     }
   | {
       type: 'assistant'
+      role: Database['public']['Enums']['assistant_role_enum']
     }
   | {
       type: 'schema_version'
@@ -63,6 +64,7 @@ export type CreateTimelineItemParams = {
     }
   | {
       type: 'assistant_log'
+      role: Database['public']['Enums']['assistant_role_enum']
     }
 )
 

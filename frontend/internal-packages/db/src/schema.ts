@@ -34,3 +34,23 @@ export const workflowRunsSchema: v.GenericSchema<Tables<'workflow_runs'>> =
     created_at: v.string(),
     updated_at: v.string(),
   })
+
+export const timelineItemsSchema: v.GenericSchema<Tables<'timeline_items'>> =
+  v.object({
+    id: v.string(),
+    design_session_id: v.pipe(v.string(), v.uuid()),
+    content: v.string(),
+    type: v.picklist([
+      'user',
+      'assistant',
+      'schema_version',
+      'error',
+      'assistant_log',
+    ]),
+    assistant_role: v.nullable(v.picklist(['db', 'pm', 'qa'])),
+    user_id: v.nullable(v.pipe(v.string(), v.uuid())),
+    created_at: v.string(),
+    updated_at: v.string(),
+    organization_id: v.pipe(v.string(), v.uuid()),
+    building_schema_version_id: v.nullable(v.pipe(v.string(), v.uuid())),
+  })

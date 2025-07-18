@@ -1,9 +1,9 @@
 'use client'
 
+import { timelineItemsSchema } from '@liam-hq/db'
 import { useCallback, useEffect, useState } from 'react'
 import * as v from 'valibot'
 import { createClient } from '@/libs/db/client'
-import { timelineItemSchema } from '../../schema'
 import { convertTimelineItemToTimelineItemEntry } from '../../services/convertTimelineItemToTimelineItemEntry'
 import type { TimelineItem, TimelineItemEntry } from '../../types'
 import { isDuplicateTimelineItem } from './utils/isDuplicateTimelineItem'
@@ -129,7 +129,7 @@ export function useRealtimeTimelineItems(
         },
         (payload) => {
           try {
-            const parsed = v.safeParse(timelineItemSchema, payload.new)
+            const parsed = v.safeParse(timelineItemsSchema, payload.new)
             if (!parsed.success) {
               throw new Error('Invalid timeline item format')
             }

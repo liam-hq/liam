@@ -9,7 +9,7 @@ import { OutputPlaceholder } from './components/OutputPlaceholder'
 import { useRealtimeTimelineItems } from './hooks/useRealtimeTimelineItems'
 import { useRealtimeVersionsWithSchema } from './hooks/useRealtimeVersionsWithSchema'
 import { useRealtimeWorkflowRuns } from './hooks/useRealtimeWorkflowRuns'
-import { SCHEMA_UPDATES_DOC, SCHEMA_UPDATES_REVIEW_COMMENTS } from './mock'
+import { SCHEMA_UPDATES_REVIEW_COMMENTS } from './mock'
 import styles from './SessionDetailPage.module.css'
 import { convertTimelineItemToTimelineItemEntry } from './services/convertTimelineItemToTimelineItemEntry'
 import type {
@@ -21,8 +21,8 @@ import type {
 type Props = {
   buildingSchemaId: string
   designSessionWithTimelineItems: DesignSessionWithTimelineItems
-  initialDisplayedSchema: Schema | null
-  initialPrevSchema: Schema | null
+  initialDisplayedSchema: Schema
+  initialPrevSchema: Schema
   initialVersions: Version[]
   initialWorkflowRunStatus: WorkflowRunStatus | null
 }
@@ -86,11 +86,6 @@ Please suggest a specific solution to resolve this problem.`
     status !== 'pending' ||
     (selectedVersion?.patch !== null && selectedVersion?.reverse_patch !== null)
 
-  // Show error state if no schema is available
-  if (displayedSchema === null) {
-    return <div>Failed to load schema</div>
-  }
-
   return (
     <div className={styles.container}>
       <div
@@ -114,7 +109,6 @@ Please suggest a specific solution to resolve this problem.`
                 designSessionId={designSessionId}
                 schema={displayedSchema}
                 prevSchema={prevSchema}
-                schemaUpdatesDoc={SCHEMA_UPDATES_DOC}
                 schemaUpdatesReviewComments={SCHEMA_UPDATES_REVIEW_COMMENTS}
                 onQuickFix={handleQuickFix}
                 versions={versions}

@@ -17,7 +17,7 @@ const version = parse(versionSchema, {
 
 type Props = {
   schema: Schema
-  prevSchema: Schema | undefined
+  prevSchema: Schema
 }
 
 export const ERD: FC<Props> = ({ schema, prevSchema }) => {
@@ -31,6 +31,7 @@ export const ERD: FC<Props> = ({ schema, prevSchema }) => {
         <ErdRendererProvider
           schema={{ current: schema, previous: prevSchema }}
           showDiff
+          defaultShowMode="ALL_FIELDS"
         >
           <ERDRenderer
             key={schemaKey}

@@ -1,4 +1,6 @@
+import type { Schema } from '@liam-hq/db-structure'
 import { schemaSchema } from '@liam-hq/db-structure'
+import { err, ok, type Result } from 'neverthrow'
 import type { FC } from 'react'
 import { safeParse } from 'valibot'
 import { SessionDetailPageClient } from './SessionDetailPageClient'
@@ -7,37 +9,66 @@ import { buildPrevSchema } from './services/buildPrevSchema/server/buildPrevSche
 import { getDesignSessionWithTimelineItems } from './services/designSessionWithTimelineItems/server/getDesignSessionWithTimelineItems'
 import { getVersions } from './services/getVersions'
 import { getWorkflowRunStatus } from './services/workflowRuns/server/getWorkflowRunStatus'
-import type { Version } from './types'
+import type { DesignSessionWithTimelineItems, Version } from './types'
 
 type Props = {
   designSessionId: string
 }
 
-export const SessionDetailPage: FC<Props> = async ({ designSessionId }) => {
+async function loadSessionData(designSessionId: string): Promise<
+  Result<
+    {
+      designSessionWithTimelineItems: DesignSessionWithTimelineItems
+      buildingSchema: NonNullable<Awaited<ReturnType<typeof getBuildingSchema>>>
+      initialSchema: Schema
+    },
+    Error
+  >
+> {
   const designSessionWithTimelineItems =
     await getDesignSessionWithTimelineItems(designSessionId)
 
   if (!designSessionWithTimelineItems) {
-    throw new Error('Design session not found')
+    return err(new Error('Design session not found'))
   }
 
   const buildingSchema = await getBuildingSchema(designSessionId)
   if (!buildingSchema) {
-    throw new Error('Building schema not found for design session')
+    return err(new Error('Building schema not found for design session'))
   }
 
   const parsedSchema = safeParse(schemaSchema, buildingSchema.schema)
   const initialSchema = parsedSchema.success ? parsedSchema.output : null
 
+  if (!initialSchema) {
+    return err(new Error('Invalid schema format'))
+  }
+
+  return ok({
+    designSessionWithTimelineItems,
+    buildingSchema,
+    initialSchema,
+  })
+}
+
+export const SessionDetailPage: FC<Props> = async ({ designSessionId }) => {
+  const result = await loadSessionData(designSessionId)
+
+  if (result.isErr()) {
+    throw result.error
+  }
+
+  const { designSessionWithTimelineItems, buildingSchema, initialSchema } =
+    result.value
+
   const versions = await getVersions(buildingSchema.id)
   const latestVersion: Version | undefined = versions[0]
-  const initialPrevSchema =
-    initialSchema !== null && latestVersion !== undefined
-      ? await buildPrevSchema({
-          currentSchema: initialSchema,
-          currentVersionId: latestVersion.id,
-        })
-      : null
+  const initialPrevSchema = latestVersion
+    ? ((await buildPrevSchema({
+        currentSchema: initialSchema,
+        currentVersionId: latestVersion.id,
+      })) ?? initialSchema)
+    : initialSchema
 
   const initialWorkflowRunStatus = await getWorkflowRunStatus(designSessionId)
 

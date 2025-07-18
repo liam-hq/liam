@@ -61,10 +61,10 @@ export const useMigrationsViewer = ({
       extensions.push(commentStateField(onQuickFix))
     }
 
-    if (showDiff && prevDoc) {
+    if (showDiff) {
       extensions.push(
         ...unifiedMergeView({
-          original: prevDoc,
+          original: prevDoc || '',
           highlightChanges: true,
           gutter: true,
           mergeControls: false,

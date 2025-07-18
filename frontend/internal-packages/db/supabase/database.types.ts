@@ -1169,6 +1169,9 @@ export type Database = {
       }
       timeline_items: {
         Row: {
+          assistant_role:
+            | Database['public']['Enums']['assistant_role_enum']
+            | null
           building_schema_version_id: string | null
           content: string
           created_at: string
@@ -1180,6 +1183,9 @@ export type Database = {
           user_id: string | null
         }
         Insert: {
+          assistant_role?:
+            | Database['public']['Enums']['assistant_role_enum']
+            | null
           building_schema_version_id?: string | null
           content: string
           created_at?: string
@@ -1191,6 +1197,9 @@ export type Database = {
           user_id?: string | null
         }
         Update: {
+          assistant_role?:
+            | Database['public']['Enums']['assistant_role_enum']
+            | null
           building_schema_version_id?: string | null
           content?: string
           created_at?: string
@@ -1543,6 +1552,7 @@ export type Database = {
       }
     }
     Enums: {
+      assistant_role_enum: 'db' | 'pm' | 'qa'
       category_enum:
         | 'MIGRATION_SAFETY'
         | 'DATA_INTEGRITY'
@@ -1677,6 +1687,7 @@ export const Constants = {
   },
   public: {
     Enums: {
+      assistant_role_enum: ['db', 'pm', 'qa'],
       category_enum: [
         'MIGRATION_SAFETY',
         'DATA_INTEGRITY',
