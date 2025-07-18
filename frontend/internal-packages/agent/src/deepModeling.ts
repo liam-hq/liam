@@ -17,7 +17,7 @@ import {
   saveUserMessageNode,
   validateSchemaNode,
   webSearchNode,
-} from './chat/workflow/nodes'
+} from './chat/workflow/nodes/index.ts'
 import {
   createAnnotations,
   DEFAULT_RECURSION_LIMIT,
