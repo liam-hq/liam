@@ -11,7 +11,7 @@ import { VersionMessage } from './components/VersionMessage'
 
 type Props = PropsWithChildren &
   TimelineItemEntry & {
-    isLastOfType?: boolean
+    isLastOfType: boolean
   }
 
 export const TimelineItem: FC<Props> = (props) => {
