@@ -148,12 +148,12 @@ async function main() {
   }
 }
 
-// Set a global timeout of 10 minutes
-const GLOBAL_TIMEOUT_MS = 10 * 60 * 1000 // 10 minutes
+// Set a global timeout of 40 minutes
+const GLOBAL_TIMEOUT_MS = 40 * 60 * 1000 // 40 minutes
 
 const timeoutPromise = new Promise<never>((_, reject) => {
   setTimeout(() => {
-    reject(new Error('Script execution timed out after 10 minutes'))
+    reject(new Error('Script execution timed out after 40 minutes'))
   }, GLOBAL_TIMEOUT_MS)
 })
 
