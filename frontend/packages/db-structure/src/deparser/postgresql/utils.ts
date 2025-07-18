@@ -96,11 +96,15 @@ export function generateAddColumnStatement(
   column: Column,
 ): string {
   const columnDefinition = generateColumnDefinition(column)
-  let ddl = `ALTER TABLE ${escapeIdentifier(tableName)} ADD COLUMN ${columnDefinition};`
+  let ddl = `ALTER TABLE ${escapeIdentifier(
+    tableName,
+  )} ADD COLUMN ${columnDefinition};`
 
   // Add column comment if exists
   if (column.comment) {
-    ddl += `\n\nCOMMENT ON COLUMN ${escapeIdentifier(tableName)}.${escapeIdentifier(column.name)} IS '${escapeString(column.comment)}';`
+    ddl += `\n\nCOMMENT ON COLUMN ${escapeIdentifier(
+      tableName,
+    )}.${escapeIdentifier(column.name)} IS '${escapeString(column.comment)}';`
   }
 
   return ddl
@@ -113,19 +117,23 @@ export function generateCreateTableStatement(table: Table): string {
   const tableName = table.name
 
   // Generate column definitions
-  const columnDefinitions = (Object.values(table.columns) as Column[]).map(
-    (column) => {
-      const definition = generateColumnDefinition(column, false)
-      return definition
-    },
-  )
+  const columnDefinitions = (
+    Object.values(table.columns) satisfies Column[]
+  ).map((column) => {
+    const definition = generateColumnDefinition(column, false)
+    return definition
+  })
 
   // Basic CREATE TABLE statement
-  let ddl = `CREATE TABLE ${escapeIdentifier(tableName)} (\n  ${columnDefinitions.join(',\n  ')}\n);`
+  let ddl = `CREATE TABLE ${escapeIdentifier(
+    tableName,
+  )} (\n  ${columnDefinitions.join(',\n  ')}\n);`
 
   // Add table comment
   if (table.comment) {
-    ddl += `\n\nCOMMENT ON TABLE ${escapeIdentifier(tableName)} IS '${escapeString(table.comment)}';`
+    ddl += `\n\nCOMMENT ON TABLE ${escapeIdentifier(
+      tableName,
+    )} IS '${escapeString(table.comment)}';`
   }
 
   // Add column comments
@@ -143,10 +151,12 @@ export function generateCreateTableStatement(table: Table): string {
 function generateColumnComments(tableName: string, table: Table): string {
   const comments: string[] = []
 
-  for (const column of Object.values(table.columns) as Column[]) {
+  for (const column of Object.values(table.columns) satisfies Column[]) {
     if (column.comment) {
       comments.push(
-        `COMMENT ON COLUMN ${escapeIdentifier(tableName)}.${escapeIdentifier(column.name)} IS '${escapeString(column.comment)}';`,
+        `COMMENT ON COLUMN ${escapeIdentifier(tableName)}.${escapeIdentifier(
+          column.name,
+        )} IS '${escapeString(column.comment)}';`,
       )
     }
   }
@@ -161,7 +171,9 @@ export function generateRemoveColumnStatement(
   tableName: string,
   columnName: string,
 ): string {
-  return `ALTER TABLE ${escapeIdentifier(tableName)} DROP COLUMN ${escapeIdentifier(columnName)};`
+  return `ALTER TABLE ${escapeIdentifier(
+    tableName,
+  )} DROP COLUMN ${escapeIdentifier(columnName)};`
 }
 
 /**
@@ -172,7 +184,11 @@ export function generateRenameColumnStatement(
   oldColumnName: string,
   newColumnName: string,
 ): string {
-  return `ALTER TABLE ${escapeIdentifier(tableName)} RENAME COLUMN ${escapeIdentifier(oldColumnName)} TO ${escapeIdentifier(newColumnName)};`
+  return `ALTER TABLE ${escapeIdentifier(
+    tableName,
+  )} RENAME COLUMN ${escapeIdentifier(oldColumnName)} TO ${escapeIdentifier(
+    newColumnName,
+  )};`
 }
 
 /**
@@ -189,7 +205,9 @@ export function generateRenameTableStatement(
   oldTableName: string,
   newTableName: string,
 ): string {
-  return `ALTER TABLE ${escapeIdentifier(oldTableName)} RENAME TO ${escapeIdentifier(newTableName)};`
+  return `ALTER TABLE ${escapeIdentifier(
+    oldTableName,
+  )} RENAME TO ${escapeIdentifier(newTableName)};`
 }
 
 /**
@@ -205,7 +223,9 @@ export function generateCreateIndexStatement(
     .map((col) => escapeIdentifier(col))
     .join(', ')
 
-  return `CREATE${uniqueKeyword} INDEX ${escapeIdentifier(index.name)} ON ${escapeIdentifier(tableName)}${indexMethod} (${columnList});`
+  return `CREATE${uniqueKeyword} INDEX ${escapeIdentifier(
+    index.name,
+  )} ON ${escapeIdentifier(tableName)}${indexMethod} (${columnList});`
 }
 
 /**
@@ -227,7 +247,9 @@ export function generateAddConstraintStatement(
 
   switch (constraint.type) {
     case 'PRIMARY KEY':
-      return `ALTER TABLE ${tableNameEscaped} ADD CONSTRAINT ${constraintName} PRIMARY KEY (${constraint.columnNames.map(escapeIdentifier).join(', ')});`
+      return `ALTER TABLE ${tableNameEscaped} ADD CONSTRAINT ${constraintName} PRIMARY KEY (${constraint.columnNames
+        .map(escapeIdentifier)
+        .join(', ')});`
 
     case 'FOREIGN KEY':
       // TODO: Consider changing the internal representation of foreign key constraints
@@ -237,7 +259,9 @@ export function generateAddConstraintStatement(
       return `ALTER TABLE ${tableNameEscaped} ADD CONSTRAINT ${constraintName} FOREIGN KEY (${constraint.columnNames.map(escapeIdentifier).join(', ')}) REFERENCES ${escapeIdentifier(constraint.targetTableName)} (${constraint.targetColumnNames.map(escapeIdentifier).join(', ')}) ON UPDATE ${constraint.updateConstraint.replace('_', ' ')} ON DELETE ${constraint.deleteConstraint.replace('_', ' ')};`
 
     case 'UNIQUE':
-      return `ALTER TABLE ${tableNameEscaped} ADD CONSTRAINT ${constraintName} UNIQUE (${constraint.columnNames.map(escapeIdentifier).join(', ')});`
+      return `ALTER TABLE ${tableNameEscaped} ADD CONSTRAINT ${constraintName} UNIQUE (${constraint.columnNames
+        .map(escapeIdentifier)
+        .join(', ')});`
 
     case 'CHECK':
       return `ALTER TABLE ${tableNameEscaped} ADD CONSTRAINT ${constraintName} CHECK (${constraint.detail});`
@@ -254,5 +278,7 @@ export function generateRemoveConstraintStatement(
   tableName: string,
   constraintName: string,
 ): string {
-  return `ALTER TABLE ${escapeIdentifier(tableName)} DROP CONSTRAINT ${escapeIdentifier(constraintName)};`
+  return `ALTER TABLE ${escapeIdentifier(
+    tableName,
+  )} DROP CONSTRAINT ${escapeIdentifier(constraintName)};`
 }

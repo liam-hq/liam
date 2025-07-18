@@ -1,3 +1,4 @@
+import { err, ok, type Result } from 'neverthrow'
 import { PATH_PATTERNS } from '../../operation/constants.js'
 import type {
   AddColumnOperation,
@@ -135,10 +136,10 @@ function extractTableAndConstraintNameFromPath(
  */
 function generateCreateTableFromOperation(
   operation: AddTableOperation,
-): string {
+): Result<string, Error> {
   const tableName = extractTableNameFromPath(operation.path)
   if (!tableName) {
-    throw new Error(`Invalid table path: ${operation.path}`)
+    return err(new Error(`Invalid table path: ${operation.path}`))
   }
 
   const table = operation.value
@@ -152,19 +153,21 @@ function generateCreateTableFromOperation(
     ddlStatements.push(generateAddConstraintStatement(table.name, constraint))
   }
 
-  return ddlStatements.join('\n\n')
+  return ok(ddlStatements.join('\n\n'))
 }
 
 /**
  * Generate ADD COLUMN DDL from column creation operation
  */
-function generateAddColumnFromOperation(operation: AddColumnOperation): string {
+function generateAddColumnFromOperation(
+  operation: AddColumnOperation,
+): Result<string, Error> {
   const pathInfo = extractTableAndColumnNameFromPath(operation.path)
   if (!pathInfo) {
-    throw new Error(`Invalid column path: ${operation.path}`)
+    return err(new Error(`Invalid column path: ${operation.path}`))
   }
 
-  return generateAddColumnStatement(pathInfo.tableName, operation.value)
+  return ok(generateAddColumnStatement(pathInfo.tableName, operation.value))
 }
 
 /**
@@ -172,13 +175,15 @@ function generateAddColumnFromOperation(operation: AddColumnOperation): string {
  */
 function generateRemoveColumnFromOperation(
   operation: RemoveColumnOperation,
-): string {
+): Result<string, Error> {
   const pathInfo = extractTableAndColumnNameFromPath(operation.path)
   if (!pathInfo) {
-    throw new Error(`Invalid column path: ${operation.path}`)
+    return err(new Error(`Invalid column path: ${operation.path}`))
   }
 
-  return generateRemoveColumnStatement(pathInfo.tableName, pathInfo.columnName)
+  return ok(
+    generateRemoveColumnStatement(pathInfo.tableName, pathInfo.columnName),
+  )
 }
 
 /**
@@ -186,16 +191,18 @@ function generateRemoveColumnFromOperation(
  */
 function generateRenameColumnFromOperation(
   operation: RenameColumnOperation,
-): string {
+): Result<string, Error> {
   const pathInfo = extractTableAndColumnNameFromNamePath(operation.path)
   if (!pathInfo) {
-    throw new Error(`Invalid column name path: ${operation.path}`)
+    return err(new Error(`Invalid column name path: ${operation.path}`))
   }
 
-  return generateRenameColumnStatement(
-    pathInfo.tableName,
-    pathInfo.columnName,
-    operation.value,
+  return ok(
+    generateRenameColumnStatement(
+      pathInfo.tableName,
+      pathInfo.columnName,
+      operation.value,
+    ),
   )
 }
 
@@ -204,13 +211,13 @@ function generateRenameColumnFromOperation(
  */
 function generateRemoveTableFromOperation(
   operation: RemoveTableOperation,
-): string {
+): Result<string, Error> {
   const tableName = extractTableNameFromPath(operation.path)
   if (!tableName) {
-    throw new Error(`Invalid table path: ${operation.path}`)
+    return err(new Error(`Invalid table path: ${operation.path}`))
   }
 
-  return generateRemoveTableStatement(tableName)
+  return ok(generateRemoveTableStatement(tableName))
 }
 
 /**
@@ -218,13 +225,13 @@ function generateRemoveTableFromOperation(
  */
 function generateRenameTableFromOperation(
   operation: ReplaceTableNameOperation,
-): string {
+): Result<string, Error> {
   const tableName = extractTableNameFromNamePath(operation.path)
   if (!tableName) {
-    throw new Error(`Invalid table name path: ${operation.path}`)
+    return err(new Error(`Invalid table name path: ${operation.path}`))
   }
 
-  return generateRenameTableStatement(tableName, operation.value)
+  return ok(generateRenameTableStatement(tableName, operation.value))
 }
 
 /**
@@ -232,13 +239,13 @@ function generateRenameTableFromOperation(
  */
 function generateCreateIndexFromOperation(
   operation: AddIndexOperation,
-): string {
+): Result<string, Error> {
   const pathInfo = extractTableAndIndexNameFromPath(operation.path)
   if (!pathInfo) {
-    throw new Error(`Invalid index path: ${operation.path}`)
+    return err(new Error(`Invalid index path: ${operation.path}`))
   }
 
-  return generateCreateIndexStatement(pathInfo.tableName, operation.value)
+  return ok(generateCreateIndexStatement(pathInfo.tableName, operation.value))
 }
 
 /**
@@ -246,13 +253,13 @@ function generateCreateIndexFromOperation(
  */
 function generateRemoveIndexFromOperation(
   operation: RemoveIndexOperation,
-): string {
+): Result<string, Error> {
   const pathInfo = extractTableAndIndexNameFromPath(operation.path)
   if (!pathInfo) {
-    throw new Error(`Invalid index path: ${operation.path}`)
+    return err(new Error(`Invalid index path: ${operation.path}`))
   }
 
-  return generateRemoveIndexStatement(pathInfo.indexName)
+  return ok(generateRemoveIndexStatement(pathInfo.indexName))
 }
 
 /**
@@ -260,13 +267,13 @@ function generateRemoveIndexFromOperation(
  */
 function generateAddConstraintFromOperation(
   operation: AddConstraintOperation,
-): string {
+): Result<string, Error> {
   const pathInfo = extractTableAndConstraintNameFromPath(operation.path)
   if (!pathInfo) {
-    throw new Error(`Invalid constraint path: ${operation.path}`)
+    return err(new Error(`Invalid constraint path: ${operation.path}`))
   }
 
-  return generateAddConstraintStatement(pathInfo.tableName, operation.value)
+  return ok(generateAddConstraintStatement(pathInfo.tableName, operation.value))
 }
 
 /**
@@ -274,15 +281,17 @@ function generateAddConstraintFromOperation(
  */
 function generateRemoveConstraintFromOperation(
   operation: RemoveConstraintOperation,
-): string {
+): Result<string, Error> {
   const pathInfo = extractTableAndConstraintNameFromPath(operation.path)
   if (!pathInfo) {
-    throw new Error(`Invalid constraint path: ${operation.path}`)
+    return err(new Error(`Invalid constraint path: ${operation.path}`))
   }
 
-  return generateRemoveConstraintStatement(
-    pathInfo.tableName,
-    pathInfo.constraintName,
+  return ok(
+    generateRemoveConstraintStatement(
+      pathInfo.tableName,
+      pathInfo.constraintName,
+    ),
   )
 }
 
@@ -292,52 +301,102 @@ export const postgresqlOperationDeparser: OperationDeparser = (
   const errors: { message: string }[] = []
 
   if (isAddTableOperation(operation)) {
-    const value = generateCreateTableFromOperation(operation)
+    const result = generateCreateTableFromOperation(operation)
+    if (result.isErr()) {
+      errors.push({ message: result.error.message })
+      return { value: '', errors }
+    }
+    const value = result.value
     return { value, errors }
   }
 
   if (isRemoveTableOperation(operation)) {
-    const value = generateRemoveTableFromOperation(operation)
+    const result = generateRemoveTableFromOperation(operation)
+    if (result.isErr()) {
+      errors.push({ message: result.error.message })
+      return { value: '', errors }
+    }
+    const value = result.value
     return { value, errors }
   }
 
   if (isReplaceTableNameOperation(operation)) {
-    const value = generateRenameTableFromOperation(operation)
+    const result = generateRenameTableFromOperation(operation)
+    if (result.isErr()) {
+      errors.push({ message: result.error.message })
+      return { value: '', errors }
+    }
+    const value = result.value
     return { value, errors }
   }
 
   if (isAddColumnOperation(operation)) {
-    const value = generateAddColumnFromOperation(operation)
+    const result = generateAddColumnFromOperation(operation)
+    if (result.isErr()) {
+      errors.push({ message: result.error.message })
+      return { value: '', errors }
+    }
+    const value = result.value
     return { value, errors }
   }
 
   if (isRemoveColumnOperation(operation)) {
-    const value = generateRemoveColumnFromOperation(operation)
+    const result = generateRemoveColumnFromOperation(operation)
+    if (result.isErr()) {
+      errors.push({ message: result.error.message })
+      return { value: '', errors }
+    }
+    const value = result.value
     return { value, errors }
   }
 
   if (isRenameColumnOperation(operation)) {
-    const value = generateRenameColumnFromOperation(operation)
+    const result = generateRenameColumnFromOperation(operation)
+    if (result.isErr()) {
+      errors.push({ message: result.error.message })
+      return { value: '', errors }
+    }
+    const value = result.value
     return { value, errors }
   }
 
   if (isAddIndexOperation(operation)) {
-    const value = generateCreateIndexFromOperation(operation)
+    const result = generateCreateIndexFromOperation(operation)
+    if (result.isErr()) {
+      errors.push({ message: result.error.message })
+      return { value: '', errors }
+    }
+    const value = result.value
     return { value, errors }
   }
 
   if (isRemoveIndexOperation(operation)) {
-    const value = generateRemoveIndexFromOperation(operation)
+    const result = generateRemoveIndexFromOperation(operation)
+    if (result.isErr()) {
+      errors.push({ message: result.error.message })
+      return { value: '', errors }
+    }
+    const value = result.value
     return { value, errors }
   }
 
   if (isAddConstraintOperation(operation)) {
-    const value = generateAddConstraintFromOperation(operation)
+    const result = generateAddConstraintFromOperation(operation)
+    if (result.isErr()) {
+      errors.push({ message: result.error.message })
+      return { value: '', errors }
+    }
+    const value = result.value
     return { value, errors }
   }
 
   if (isRemoveConstraintOperation(operation)) {
-    const value = generateRemoveConstraintFromOperation(operation)
+    const result = generateRemoveConstraintFromOperation(operation)
+    if (result.isErr()) {
+      errors.push({ message: result.error.message })
+      return { value: '', errors }
+    }
+    const value = result.value
     return { value, errors }
   }
 

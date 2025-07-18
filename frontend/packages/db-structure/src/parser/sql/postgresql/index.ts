@@ -1,4 +1,5 @@
 import type { RawStmt } from '@pgsql/types'
+import { errAsync, okAsync, ResultAsync } from 'neverthrow'
 import type { Schema } from '../../../schema/index.js'
 import { type ProcessError, UnexpectedTokenWarningError } from '../../errors.js'
 import type { Processor } from '../../types.js'
@@ -49,51 +50,71 @@ function processLastStatement(
 /**
  * Processes a single SQL chunk
  */
-async function processChunk(
+type SQLCallbackResult = [
+  retryOffset: number | null,
+  readOffset: number | null,
+  errors: ProcessError[],
+]
+function processChunk(
   chunk: string,
   schema: Schema,
   parseErrors: ProcessError[],
   rawSql: string,
-): Promise<[number | null, number | null, ProcessError[]]> {
+): ResultAsync<SQLCallbackResult, Error> {
   let readOffset: number | null = null
   let retryOffset: number | null = null
   const errors: ProcessError[] = []
 
-  const { parse_tree, error: parseError } = await parse(chunk)
+  return ResultAsync.fromPromise(parse(chunk), (err) =>
+    err instanceof Error ? err : new Error(String(err)),
+  ).andThen(({ parse_tree, error: parseError }) => {
+    if (parse_tree.stmts.length > 0 && parseError !== null) {
+      return errAsync(
+        new Error(
+          'UnexpectedCondition. parse_tree.stmts.length > 0 && parseError !== null',
+        ),
+      )
+    }
 
-  if (parse_tree.stmts.length > 0 && parseError !== null) {
-    throw new Error(
-      'UnexpectedCondition. parse_tree.stmts.length > 0 && parseError !== null',
-    )
-  }
+    if (parseError !== null) {
+      return okAsync(handleParseError(parseError))
+    }
 
-  if (parseError !== null) {
-    return handleParseError(parseError)
-  }
+    const [isLastStatementComplete, lastReadOffset, lastRetryOffset] =
+      processLastStatement(parse_tree.stmts)
 
-  const [isLastStatementComplete, lastReadOffset, lastRetryOffset] =
-    processLastStatement(parse_tree.stmts)
+    readOffset = lastReadOffset
+    retryOffset = lastRetryOffset
 
-  readOffset = lastReadOffset
-  retryOffset = lastRetryOffset
+    if (retryOffset !== null) {
+      return okAsync([
+        retryOffset,
+        readOffset,
+        errors,
+      ] satisfies SQLCallbackResult)
+    }
 
-  if (retryOffset !== null) {
-    return [retryOffset, readOffset, errors]
-  }
+    const { value: convertedSchema, errors: conversionErrors } =
+      convertToSchema(
+        isLastStatementComplete
+          ? parse_tree.stmts
+          : parse_tree.stmts.slice(0, -1),
+        rawSql,
+        schema,
+      )
 
-  const { value: convertedSchema, errors: conversionErrors } = convertToSchema(
-    isLastStatementComplete ? parse_tree.stmts : parse_tree.stmts.slice(0, -1),
-    rawSql,
-    schema,
-  )
+    if (conversionErrors !== null) {
+      parseErrors.push(...conversionErrors)
+    }
 
-  if (conversionErrors !== null) {
-    parseErrors.push(...conversionErrors)
-  }
+    mergeSchemas(schema, convertedSchema)
 
-  mergeSchemas(schema, convertedSchema)
-
-  return [retryOffset, readOffset, errors]
+    return okAsync([
+      retryOffset,
+      readOffset,
+      errors,
+    ] satisfies SQLCallbackResult)
+  })
 }
 
 // Number of lines to process in a single chunk.
@@ -114,7 +135,11 @@ export const processor: Processor = async (
   const parseErrors: ProcessError[] = []
 
   const errors = await processSQLInChunks(sql, chunkSize, async (chunk) => {
-    return processChunk(chunk, schema, parseErrors, sql)
+    const result = await processChunk(chunk, schema, parseErrors, sql)
+    return result.match(
+      (value) => value,
+      (error) => [null, null, [new UnexpectedTokenWarningError(error.message)]],
+    )
   })
 
   return { value: schema, errors: parseErrors.concat(errors) }

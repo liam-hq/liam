@@ -1,3 +1,4 @@
+import { err, ok, type Result } from 'neverthrow'
 import type { ProcessError } from '../../errors.js'
 
 /**
@@ -41,34 +42,37 @@ function handleSuccessfulProcessing(
   startIndex: number,
   readOffset: number | null,
   chunk: string,
-): {
-  newChunkSize: number
-  newRetryDirection: RetryDirection
-  nextIndex: number
-  errors: ProcessError[]
-  shouldBreak: boolean
-} {
+): Result<
+  {
+    newChunkSize: number
+    newRetryDirection: RetryDirection
+    nextIndex: number
+    errors: ProcessError[]
+    shouldBreak: boolean
+  },
+  Error
+> {
   if (readOffset !== null) {
     const lineNumber = getLineNumber(chunk, readOffset)
     if (lineNumber === null) {
-      throw new Error('UnexpectedCondition. lineNumber === null')
+      return err(new Error('UnexpectedCondition. lineNumber === null'))
     }
-    return {
+    return ok({
       newChunkSize: adjustedChunkSize,
       newRetryDirection: retryDirection,
       nextIndex: startIndex + lineNumber,
       errors: [],
       shouldBreak: true,
-    }
+    })
   }
 
-  return {
+  return ok({
     newChunkSize: adjustedChunkSize,
     newRetryDirection: retryDirection,
     nextIndex: startIndex + adjustedChunkSize,
     errors: [],
     shouldBreak: true,
-  }
+  })
 }
 
 /**
@@ -190,13 +194,17 @@ async function handleRetry(
 
   // Handle successful processing (no retry needed)
   if (retryOffset === null) {
-    return handleSuccessfulProcessing(
+    const processResult = handleSuccessfulProcessing(
       adjustedChunkSize,
       retryDirection,
       startIndex,
       readOffset,
       chunk,
     )
+    if (processResult.isErr()) {
+      throw processResult.error
+    }
+    return processResult.value
   }
 
   // Handle retry based on direction
