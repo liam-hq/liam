@@ -1,5 +1,4 @@
 import type { Database, Tables } from '@liam-hq/db'
-import type * as v from 'valibot'
 
 export type ReviewComment = {
   fromLine: number

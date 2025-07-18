@@ -3,7 +3,6 @@
 import { createHash } from 'node:crypto'
 import path from 'node:path'
 import type { SupabaseClientType } from '@liam-hq/db'
-import type { TablesInsert } from '@liam-hq/db/supabase/database.types'
 import type { Schema } from '@liam-hq/db-structure'
 import { parse, setPrismWasmUrl } from '@liam-hq/db-structure/parser'
 import { getFileContent } from '@liam-hq/github'

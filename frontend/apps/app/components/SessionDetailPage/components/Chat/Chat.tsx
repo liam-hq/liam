@@ -114,7 +114,6 @@ export const Chat: FC<Props> = ({
         {groupedTimelineItems.map((item, groupIndex) => {
           if (Array.isArray(item)) {
             // Render grouped agent messages
-            const agentType = item[0].type
             const agentRole = 'role' in item[0] ? item[0].role : 'db'
 
             return (

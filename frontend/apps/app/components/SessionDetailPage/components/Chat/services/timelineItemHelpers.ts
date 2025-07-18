@@ -1,5 +1,3 @@
-import type { TimelineItemEntry } from '../../../types'
-
 /**
  * Generate unique timeline item ID
  */

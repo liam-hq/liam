@@ -158,7 +158,7 @@ async function main() {
 
   // Process each case with max 4 concurrent requests
   const MAX_CONCURRENT = 4
-  let successCount = 0
+  let successCount = 0 // eslint-disable-line @typescript-eslint/no-unused-vars
   let failureCount = 0
 
   const getErrorMessage = (
