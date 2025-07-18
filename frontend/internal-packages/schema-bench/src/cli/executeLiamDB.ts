@@ -6,10 +6,10 @@ import { join } from 'node:path'
 import * as dotenv from 'dotenv'
 import { err, ok, type Result } from 'neverthrow'
 import * as v from 'valibot'
-import { createLiamDBExecutorOffline } from '../executors/liamDb/liamDbExecutorOffline.ts'
-import type { LiamDBExecutorInput } from '../executors/liamDb/types.ts'
+import { createLiamDBExecutorOffline } from '../executors/liamDB/liamDbExecutorOffline.ts'
+import type { LiamDBExecutorInput } from '../executors/liamDB/types.ts'
 
-if (process.env.NODE_ENV !== 'production') {
+if (process.env['NODE_ENV'] !== 'production') {
   dotenv.config({ path: '.env.local' })
 }
 
