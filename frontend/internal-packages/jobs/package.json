@@ -15,7 +15,7 @@
     "@octokit/auth-app": "7.2.1",
     "@octokit/rest": "21.1.1",
     "@sentry/node": "9.19.0",
-    "@trigger.dev/build": "4.0.0-v4-beta.21",
+    "@trigger.dev/build": "4.0.0-v4-beta.22",
     "@trigger.dev/sdk": "4.0.0-v4-beta.21"
   },
   "devDependencies": {
