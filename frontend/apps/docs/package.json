@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "dependencies": {
     "@liam-hq/ui": "workspace:*",
-    "@next/third-parties": "15.3.4",
+    "@next/third-parties": "15.3.5",
     "@rive-app/react-canvas": "4.20.1",
     "@sentry/nextjs": "9",
     "clsx": "2.1.1",
@@ -13,7 +13,7 @@
     "fumadocs-mdx": "11.6.10",
     "fumadocs-ui": "15.6.1",
     "lucide-react": "0.511.0",
-    "next": "15.3.4",
+    "next": "15.3.5",
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "tailwind-variants": "1.0.0",
