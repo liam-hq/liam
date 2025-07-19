@@ -123,8 +123,8 @@ importers:
         specifier: 1.12.9
         version: 1.12.9
       '@trigger.dev/sdk':
-        specifier: 4.0.0-v4-beta.21
-        version: 4.0.0-v4-beta.21(ai@4.3.17(react@19.1.0)(zod@3.25.76))(zod@3.25.76)
+        specifier: 4.0.0-v4-beta.22
+        version: 4.0.0-v4-beta.22(ai@4.3.17(react@19.1.0)(zod@3.25.76))(zod@3.25.76)
       '@types/react-syntax-highlighter':
         specifier: 15.5.13
         version: 15.5.13
@@ -559,8 +559,8 @@ importers:
         specifier: 4.0.0-v4-beta.21
         version: 4.0.0-v4-beta.21(typescript@5.8.3)
       '@trigger.dev/sdk':
-        specifier: 4.0.0-v4-beta.21
-        version: 4.0.0-v4-beta.21(ai@4.3.17(react@19.1.0)(zod@3.25.76))(zod@3.25.76)
+        specifier: 4.0.0-v4-beta.22
+        version: 4.0.0-v4-beta.22(ai@4.3.17(react@19.1.0)(zod@3.25.76))(zod@3.25.76)
     devDependencies:
       '@biomejs/biome':
         specifier: 2.0.6
@@ -5295,8 +5295,8 @@ packages:
     resolution: {integrity: sha512-FVaVNsW3KQgYEWStr80Iu+1l4KMyHPVU4QbV55pLQp7d126jOuP+hXYp7LhnYVZtgcQLIZSC0VjJc/UYwr4D6g==}
     engines: {node: '>=18.20.0'}
 
-  '@trigger.dev/sdk@4.0.0-v4-beta.21':
-    resolution: {integrity: sha512-ZKOYg/32EOyYU0CeEjimhhMaH/l7WNJT+K++7eSG3ShUoC2FU8wBPFcevXsoKGUY5/OpJtu4xpq34k8oRPB2cA==}
+  '@trigger.dev/sdk@4.0.0-v4-beta.22':
+    resolution: {integrity: sha512-yRv9G/KODpItU16Iv6gCfLQ2SjhGq443zTlYKY3XZf4HHIuByOhkOKYPRpl82FmJprL8DxnT7V0pma4kfHBzPQ==}
     engines: {node: '>=18.20.0'}
     peerDependencies:
       ai: ^4.2.0
@@ -16439,12 +16439,12 @@ snapshots:
       - supports-color
       - utf-8-validate
 
-  '@trigger.dev/sdk@4.0.0-v4-beta.21(ai@4.3.17(react@19.1.0)(zod@3.25.76))(zod@3.25.76)':
+  '@trigger.dev/sdk@4.0.0-v4-beta.22(ai@4.3.17(react@19.1.0)(zod@3.25.76))(zod@3.25.76)':
     dependencies:
       '@opentelemetry/api': 1.9.0
       '@opentelemetry/api-logs': 0.52.1
       '@opentelemetry/semantic-conventions': 1.25.1
-      '@trigger.dev/core': 4.0.0-v4-beta.21
+      '@trigger.dev/core': 4.0.0-v4-beta.22(supports-color@10.0.0)
       chalk: 5.4.1
       cronstrue: 2.59.0
       debug: 4.4.1(supports-color@10.0.0)
