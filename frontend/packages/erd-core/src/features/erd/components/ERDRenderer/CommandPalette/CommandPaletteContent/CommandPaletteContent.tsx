@@ -1,4 +1,11 @@
-import { Button, Copy, Eye, Fingerprint, KeyRound, Table2 } from '@liam-hq/ui'
+import {
+  Button,
+  Copy,
+  KeyRound,
+  PanelTop,
+  RectangleHorizontal,
+  Table2,
+} from '@liam-hq/ui'
 import { DialogClose } from '@radix-ui/react-dialog'
 import { Command } from 'cmdk'
 import { type FC, useCallback, useEffect, useState } from 'react'
@@ -142,7 +149,7 @@ export const CommandPaletteContent: FC<Props> = ({ closeDialog }) => {
                   closeDialog()
                 }}
               >
-                <Eye className={styles.itemIcon} />
+                <PanelTop className={styles.itemIcon} />
                 <span className={styles.itemText}>Show All Fields</span>
               </Command.Item>
               <Command.Item
@@ -152,7 +159,7 @@ export const CommandPaletteContent: FC<Props> = ({ closeDialog }) => {
                   closeDialog()
                 }}
               >
-                <Fingerprint className={styles.itemIcon} />
+                <RectangleHorizontal className={styles.itemIcon} />
                 <span className={styles.itemText}>Show Table Name</span>
               </Command.Item>
               <Command.Item
