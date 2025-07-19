@@ -1,5 +1,19 @@
 # @liam-hq/db-structure
 
+## 0.4.4
+
+### Patch Changes
+
+- [#2556](https://github.com/liam-hq/liam/pull/2556) - ♻️ Refactor drizzle parser directory structure to support multiple databases / Thanks [@FunamaYukina](https://github.com/FunamaYukina)!
+- [#2527](https://github.com/liam-hq/liam/pull/2527) - Add composite foreign key support / Thanks [@hoshinotsuyoshi](https://github.com/hoshinotsuyoshi)!
+
+- Change FK schema to use arrays for column names
+- Update all parsers to handle composite FKs
+- Create multiple edges (one per column pair) in ERD
+- Fix missing link icons on composite FK columns
+
+Note: UI representation is still under development, but link icon display has been improved.
+
 ## 0.4.3
 
 ### Patch Changes

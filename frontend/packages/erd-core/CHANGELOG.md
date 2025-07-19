@@ -1,5 +1,18 @@
 # @liam-hq/erd-core
 
+## 0.4.3
+
+### Patch Changes
+
+- [#2527](https://github.com/liam-hq/liam/pull/2527) - Add composite foreign key support / Thanks [@hoshinotsuyoshi](https://github.com/hoshinotsuyoshi)!
+
+- Change FK schema to use arrays for column names
+- Update all parsers to handle composite FKs
+- Create multiple edges (one per column pair) in ERD
+- Fix missing link icons on composite FK columns
+
+Note: UI representation is still under development, but link icon display has been improved.
+
 ## 0.4.2
 
 ### Patch Changes
