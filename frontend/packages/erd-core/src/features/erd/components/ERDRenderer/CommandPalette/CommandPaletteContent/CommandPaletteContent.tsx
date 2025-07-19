@@ -10,7 +10,7 @@ import { DialogClose } from '@radix-ui/react-dialog'
 import { Command } from 'cmdk'
 import { type FC, useCallback, useEffect, useState } from 'react'
 import { useTableSelection } from '@/features/erd/hooks'
-import { useSchema, useUserEditing } from '@/stores'
+import { useSchemaOrThrow, useUserEditingOrThrow } from '@/stores'
 import { TableNode } from '../../../ERDContent/components'
 import { CommandPaletteSearchInput } from '../CommandPaletteSearchInput'
 import type { InputMode, Suggestion } from '../types'
@@ -30,9 +30,9 @@ export const CommandPaletteContent: FC<Props> = ({ closeDialog }) => {
   const [inputMode, setInputMode] = useState<InputMode>({ type: 'default' })
   const [selectedOption, setSelectedOption] = useState<Suggestion | null>(null)
 
-  const { setShowMode } = useUserEditing()
+  const { setShowMode } = useUserEditingOrThrow()
 
-  const schema = useSchema()
+  const schema = useSchemaOrThrow()
   const table =
     selectedOption?.type === 'table'
       ? schema.current.tables[selectedOption.name]
@@ -197,6 +197,10 @@ export const CommandPaletteContent: FC<Props> = ({ closeDialog }) => {
                 isConnectable={false}
                 positionAbsoluteX={0}
                 positionAbsoluteY={0}
+                selectable={false}
+                deletable={false}
+                selected={false}
+                draggable={false}
                 zIndex={0}
               />
             )}

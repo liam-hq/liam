@@ -107,11 +107,6 @@
       "count": 1
     }
   },
-  "components/SessionDetailPage/SessionDetailPage.tsx": {
-    "no-throw-error/no-throw-error": {
-      "count": 2
-    }
-  },
   "components/SessionDetailPage/components/Chat/components/ChatInput/ChatInput.tsx": {
     "@typescript-eslint/consistent-type-assertions": {
       "count": 2
@@ -147,17 +142,12 @@
       "count": 2
     }
   },
-  "components/SessionDetailPage/components/Output/components/Header/VersionDropdown/hooks/useRealtimeVersions.ts": {
-    "no-throw-error/no-throw-error": {
-      "count": 1
-    }
-  },
-  "components/SessionDetailPage/hooks/useRealtimeBuildlingSchema.ts": {
-    "no-throw-error/no-throw-error": {
-      "count": 1
-    }
-  },
   "components/SessionDetailPage/hooks/useRealtimeTimelineItems/useRealtimeTimelineItems.ts": {
+    "no-throw-error/no-throw-error": {
+      "count": 1
+    }
+  },
+  "components/SessionDetailPage/hooks/useRealtimeWorkflowRuns.ts": {
     "no-throw-error/no-throw-error": {
       "count": 1
     }

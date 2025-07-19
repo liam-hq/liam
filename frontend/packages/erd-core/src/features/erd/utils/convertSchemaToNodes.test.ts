@@ -7,7 +7,6 @@ import {
   type Schema,
 } from '@liam-hq/db-structure'
 import { describe, expect, it } from 'vitest'
-import type { ShowMode } from '@/schemas/showMode'
 import { NON_RELATED_TABLE_GROUP_NODE_ID, zIndex } from '../constants'
 import { convertSchemaToNodes } from './convertSchemaToNodes'
 
@@ -28,7 +27,7 @@ describe('convertSchemaToNodes', () => {
 
       const { nodes, edges } = convertSchemaToNodes({
         schema,
-        showMode: 'ALL_FIELDS' as ShowMode,
+        showMode: 'ALL_FIELDS',
       })
 
       expect(nodes).toHaveLength(2) // NON_RELATED_TABLE_GROUP_NODE + users table
@@ -69,7 +68,7 @@ describe('convertSchemaToNodes', () => {
 
       const { nodes } = convertSchemaToNodes({
         schema,
-        showMode: 'ALL_FIELDS' as ShowMode,
+        showMode: 'ALL_FIELDS',
       })
 
       expect(nodes).toHaveLength(4) // NON_RELATED_TABLE_GROUP_NODE + 3 tables
@@ -103,9 +102,9 @@ describe('convertSchemaToNodes', () => {
             constraints: {
               posts_user_id_fkey: aForeignKeyConstraint({
                 name: 'posts_user_id_fkey',
-                columnName: 'user_id',
+                columnNames: ['user_id'],
                 targetTableName: 'users',
-                targetColumnName: 'id',
+                targetColumnNames: ['id'],
               }),
             },
           }),
@@ -114,7 +113,7 @@ describe('convertSchemaToNodes', () => {
 
       const { nodes, edges } = convertSchemaToNodes({
         schema,
-        showMode: 'ALL_FIELDS' as ShowMode,
+        showMode: 'ALL_FIELDS',
       })
 
       expect(edges).toHaveLength(1)
@@ -161,9 +160,9 @@ describe('convertSchemaToNodes', () => {
             constraints: {
               posts_user_id_fkey: aForeignKeyConstraint({
                 name: 'posts_user_id_fkey',
-                columnName: 'user_id',
+                columnNames: ['user_id'],
                 targetTableName: 'users',
-                targetColumnName: 'id',
+                targetColumnNames: ['id'],
               }),
             },
           }),
@@ -176,9 +175,9 @@ describe('convertSchemaToNodes', () => {
             constraints: {
               comments_post_id_fkey: aForeignKeyConstraint({
                 name: 'comments_post_id_fkey',
-                columnName: 'post_id',
+                columnNames: ['post_id'],
                 targetTableName: 'posts',
-                targetColumnName: 'id',
+                targetColumnNames: ['id'],
               }),
             },
           }),
@@ -187,7 +186,7 @@ describe('convertSchemaToNodes', () => {
 
       const { edges } = convertSchemaToNodes({
         schema,
-        showMode: 'ALL_FIELDS' as ShowMode,
+        showMode: 'ALL_FIELDS',
       })
 
       expect(edges).toHaveLength(2)
@@ -215,9 +214,9 @@ describe('convertSchemaToNodes', () => {
             constraints: {
               profiles_user_id_fkey: aForeignKeyConstraint({
                 name: 'profiles_user_id_fkey',
-                columnName: 'user_id',
+                columnNames: ['user_id'],
                 targetTableName: 'users',
-                targetColumnName: 'id',
+                targetColumnNames: ['id'],
               }),
               profiles_user_id_unique: aUniqueConstraint({
                 name: 'profiles_user_id_unique',
@@ -230,7 +229,7 @@ describe('convertSchemaToNodes', () => {
 
       const { edges } = convertSchemaToNodes({
         schema,
-        showMode: 'ALL_FIELDS' as ShowMode,
+        showMode: 'ALL_FIELDS',
       })
 
       expect(edges[0]?.data?.['cardinality']).toBe('ONE_TO_ONE')
@@ -255,9 +254,9 @@ describe('convertSchemaToNodes', () => {
           constraints: {
             posts_user_id_fkey: aForeignKeyConstraint({
               name: 'posts_user_id_fkey',
-              columnName: 'user_id',
+              columnNames: ['user_id'],
               targetTableName: 'users',
-              targetColumnName: 'id',
+              targetColumnNames: ['id'],
             }),
           },
         }),
@@ -267,7 +266,7 @@ describe('convertSchemaToNodes', () => {
     it('should set column-level handles correctly in ALL_FIELDS mode', () => {
       const { edges } = convertSchemaToNodes({
         schema,
-        showMode: 'ALL_FIELDS' as ShowMode,
+        showMode: 'ALL_FIELDS',
       })
 
       expect(edges[0]?.sourceHandle).toBe('users-id')
@@ -277,7 +276,7 @@ describe('convertSchemaToNodes', () => {
     it('should set column-level handles correctly in KEY_ONLY mode', () => {
       const { edges } = convertSchemaToNodes({
         schema,
-        showMode: 'KEY_ONLY' as ShowMode,
+        showMode: 'KEY_ONLY',
       })
 
       expect(edges[0]?.sourceHandle).toBe('users-id')
@@ -287,7 +286,7 @@ describe('convertSchemaToNodes', () => {
     it('should set handles to null in TABLE_NAME mode', () => {
       const { edges } = convertSchemaToNodes({
         schema,
-        showMode: 'TABLE_NAME' as ShowMode,
+        showMode: 'TABLE_NAME',
       })
 
       expect(edges[0]?.sourceHandle).toBeNull()
@@ -314,9 +313,9 @@ describe('convertSchemaToNodes', () => {
             constraints: {
               posts_user_id_fkey: aForeignKeyConstraint({
                 name: 'posts_user_id_fkey',
-                columnName: 'user_id',
+                columnNames: ['user_id'],
                 targetTableName: 'users',
-                targetColumnName: 'id',
+                targetColumnNames: ['id'],
               }),
             },
           }),
@@ -325,7 +324,7 @@ describe('convertSchemaToNodes', () => {
 
       const { nodes } = convertSchemaToNodes({
         schema,
-        showMode: 'ALL_FIELDS' as ShowMode,
+        showMode: 'ALL_FIELDS',
       })
 
       const groupNode = nodes.find(
@@ -344,7 +343,7 @@ describe('convertSchemaToNodes', () => {
 
       const { nodes, edges } = convertSchemaToNodes({
         schema,
-        showMode: 'ALL_FIELDS' as ShowMode,
+        showMode: 'ALL_FIELDS',
       })
 
       expect(nodes).toHaveLength(0)
@@ -363,9 +362,9 @@ describe('convertSchemaToNodes', () => {
             constraints: {
               categories_parent_id_fkey: aForeignKeyConstraint({
                 name: 'categories_parent_id_fkey',
-                columnName: 'parent_id',
+                columnNames: ['parent_id'],
                 targetTableName: 'categories',
-                targetColumnName: 'id',
+                targetColumnNames: ['id'],
               }),
             },
           }),
@@ -374,7 +373,7 @@ describe('convertSchemaToNodes', () => {
 
       const { nodes, edges } = convertSchemaToNodes({
         schema,
-        showMode: 'ALL_FIELDS' as ShowMode,
+        showMode: 'ALL_FIELDS',
       })
 
       expect(edges).toHaveLength(1)

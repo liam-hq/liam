@@ -609,7 +609,7 @@ function processForeignKeyOption(
   switch (key) {
     case 'column':
       if (value instanceof StringNode || value instanceof SymbolNode) {
-        foreignKeyConstraint.columnName = value.unescaped.value
+        foreignKeyConstraint.columnNames = [value.unescaped.value]
       }
       break
     case 'name':
@@ -660,13 +660,13 @@ function setDefaultForeignKeyValues(
   primaryTableName: string,
 ): void {
   // ref: https://api.rubyonrails.org/classes/ActiveRecord/ConnectionAdapters/SchemaStatements.html#method-i-add_foreign_key
-  if (foreignKeyConstraint.columnName === '') {
+  if (foreignKeyConstraint.columnNames.length === 0) {
     const columnName = `${singularize(primaryTableName)}_id`
-    foreignKeyConstraint.columnName = columnName
+    foreignKeyConstraint.columnNames = [columnName]
   }
 
   if (foreignKeyConstraint.name === '') {
-    foreignKeyConstraint.name = `fk_${foreignTableName}_${foreignKeyConstraint.columnName}`
+    foreignKeyConstraint.name = `fk_${foreignTableName}_${foreignKeyConstraint.columnNames[0]}`
   }
 }
 
@@ -775,7 +775,7 @@ class SchemaFinder extends Visitor {
 
     const foreignKeyConstraint = aForeignKeyConstraint({
       targetTableName: primaryTableName,
-      targetColumnName: 'id',
+      targetColumnNames: ['id'],
     })
 
     extractForeignKeyOptions(

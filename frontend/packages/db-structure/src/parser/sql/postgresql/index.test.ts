@@ -243,9 +243,9 @@ describe(processor, () => {
         fk_posts_user_id: {
           name: 'fk_posts_user_id',
           type: 'FOREIGN KEY',
-          columnName: 'user_id',
+          columnNames: ['user_id'],
           targetTableName: 'users',
-          targetColumnName: 'id',
+          targetColumnNames: ['id'],
           updateConstraint: 'NO_ACTION',
           deleteConstraint: 'NO_ACTION',
         },
@@ -280,8 +280,8 @@ describe(processor, () => {
         users_id_to_posts_user_id: {
           name: 'users_id_to_posts_user_id',
           type: 'FOREIGN KEY',
-          columnName: 'user_id',
-          targetColumnName: 'id',
+          columnNames: ['user_id'],
+          targetColumnNames: ['id'],
           targetTableName: 'users',
           updateConstraint: 'NO_ACTION',
           deleteConstraint: 'NO_ACTION',
@@ -311,8 +311,8 @@ describe(processor, () => {
         users_id_to_posts_user_id: {
           name: 'users_id_to_posts_user_id',
           type: 'FOREIGN KEY',
-          columnName: 'user_id',
-          targetColumnName: 'id',
+          columnNames: ['user_id'],
+          targetColumnNames: ['id'],
           targetTableName: 'users',
           updateConstraint: 'NO_ACTION',
           deleteConstraint: 'NO_ACTION',
@@ -384,9 +384,9 @@ describe(processor, () => {
         fk_posts_user_id: {
           name: 'fk_posts_user_id',
           type: 'FOREIGN KEY',
-          columnName: 'user_id',
+          columnNames: ['user_id'],
           targetTableName: 'users',
-          targetColumnName: 'id',
+          targetColumnNames: ['id'],
           updateConstraint: 'NO_ACTION',
           deleteConstraint: 'NO_ACTION',
         },
@@ -418,9 +418,9 @@ describe(processor, () => {
         users_id_to_posts_user_id: {
           name: 'users_id_to_posts_user_id',
           type: 'FOREIGN KEY',
-          columnName: 'user_id',
+          columnNames: ['user_id'],
           targetTableName: 'users',
-          targetColumnName: 'id',
+          targetColumnNames: ['id'],
           updateConstraint: 'NO_ACTION',
           deleteConstraint: 'NO_ACTION',
         },
@@ -447,9 +447,9 @@ describe(processor, () => {
         fk_posts_user_id: {
           name: 'fk_posts_user_id',
           type: 'FOREIGN KEY',
-          columnName: 'user_id',
+          columnNames: ['user_id'],
           targetTableName: 'users',
-          targetColumnName: 'id',
+          targetColumnNames: ['id'],
           updateConstraint: 'RESTRICT',
           deleteConstraint: 'CASCADE',
         },
@@ -548,6 +548,133 @@ describe(processor, () => {
     })
   })
 
+  describe('Composite foreign keys', () => {
+    it('should parse composite foreign key constraints', async () => {
+      const { value } = await processor(/* sql */ `
+        -- Create tables with composite primary keys
+        CREATE TABLE regions (
+          country_code VARCHAR(2),
+          region_code VARCHAR(10),
+          region_name VARCHAR(100),
+          PRIMARY KEY (country_code, region_code)
+        );
+
+        CREATE TABLE stores (
+          store_id SERIAL PRIMARY KEY,
+          country_code VARCHAR(2),
+          region_code VARCHAR(10),
+          store_name VARCHAR(100),
+          CONSTRAINT fk_store_region FOREIGN KEY (country_code, region_code) 
+            REFERENCES regions(country_code, region_code) ON DELETE CASCADE
+        );
+
+        CREATE TABLE store_employees (
+          employee_id SERIAL PRIMARY KEY,
+          country_code VARCHAR(2),
+          region_code VARCHAR(10),
+          employee_name VARCHAR(100),
+          hire_date DATE
+        );
+
+        -- Add composite foreign key using ALTER TABLE
+        ALTER TABLE store_employees
+          ADD CONSTRAINT fk_employee_region 
+          FOREIGN KEY (country_code, region_code) 
+          REFERENCES regions(country_code, region_code);
+      `)
+
+      // Expected: Composite foreign keys should include all columns
+      expect(value.tables['regions']?.constraints).toEqual({
+        regions_pkey: {
+          name: 'regions_pkey',
+          type: 'PRIMARY KEY',
+          columnNames: ['country_code', 'region_code'],
+        },
+      })
+
+      // Currently this will fail because foreign keys only support single columns
+      // The expected behavior would be:
+      expect(value.tables['stores']?.constraints).toEqual({
+        PRIMARY_store_id: {
+          name: 'PRIMARY_store_id',
+          type: 'PRIMARY KEY',
+          columnNames: ['store_id'],
+        },
+        fk_store_region: {
+          name: 'fk_store_region',
+          type: 'FOREIGN KEY',
+          columnNames: ['country_code', 'region_code'], // Should be array
+          targetTableName: 'regions',
+          targetColumnNames: ['country_code', 'region_code'], // Should be array
+          updateConstraint: 'NO_ACTION',
+          deleteConstraint: 'CASCADE',
+        },
+      })
+
+      expect(value.tables['store_employees']?.constraints).toEqual({
+        PRIMARY_employee_id: {
+          name: 'PRIMARY_employee_id',
+          type: 'PRIMARY KEY',
+          columnNames: ['employee_id'],
+        },
+        fk_employee_region: {
+          name: 'fk_employee_region',
+          type: 'FOREIGN KEY',
+          columnNames: ['country_code', 'region_code'], // Should be array
+          targetTableName: 'regions',
+          targetColumnNames: ['country_code', 'region_code'], // Should be array
+          updateConstraint: 'NO_ACTION',
+          deleteConstraint: 'NO_ACTION',
+        },
+      })
+    })
+
+    it('should handle composite foreign keys with mixed constraints', async () => {
+      const { value } = await processor(/* sql */ `
+        -- Time-series data with composite keys
+        CREATE TABLE metrics (
+          metric_type VARCHAR(50),
+          timestamp TIMESTAMPTZ,
+          value NUMERIC,
+          PRIMARY KEY (metric_type, timestamp)
+        );
+
+        CREATE TABLE metric_aggregations (
+          agg_id SERIAL PRIMARY KEY,
+          metric_type VARCHAR(50),
+          timestamp TIMESTAMPTZ,
+          hour_avg NUMERIC,
+          UNIQUE (metric_type, timestamp),
+          CONSTRAINT fk_metric_agg 
+            FOREIGN KEY (metric_type, timestamp) 
+            REFERENCES metrics(metric_type, timestamp) ON UPDATE CASCADE ON DELETE CASCADE
+        );
+      `)
+
+      expect(value.tables['metric_aggregations']?.constraints).toEqual({
+        PRIMARY_agg_id: {
+          name: 'PRIMARY_agg_id',
+          type: 'PRIMARY KEY',
+          columnNames: ['agg_id'],
+        },
+        metric_aggregations_metric_type_timestamp_key: {
+          name: 'metric_aggregations_metric_type_timestamp_key',
+          type: 'UNIQUE',
+          columnNames: ['metric_type', 'timestamp'],
+        },
+        fk_metric_agg: {
+          name: 'fk_metric_agg',
+          type: 'FOREIGN KEY',
+          columnNames: ['metric_type', 'timestamp'], // Should be array
+          targetTableName: 'metrics',
+          targetColumnNames: ['metric_type', 'timestamp'], // Should be array
+          updateConstraint: 'CASCADE',
+          deleteConstraint: 'CASCADE',
+        },
+      })
+    })
+  })
+
   describe('Schema-qualified table names with foreign keys', () => {
     it('should parse foreign key constraints with schema-qualified table names', async () => {
       const { value } = await processor(/* sql */ `
@@ -594,9 +721,9 @@ describe(processor, () => {
         fk_page_view_user: {
           name: 'fk_page_view_user',
           type: 'FOREIGN KEY',
-          columnName: 'user_id',
+          columnNames: ['user_id'],
           targetTableName: 'users',
-          targetColumnName: 'user_id',
+          targetColumnNames: ['user_id'],
           updateConstraint: 'NO_ACTION',
           deleteConstraint: 'SET_NULL',
         },
@@ -611,9 +738,9 @@ describe(processor, () => {
         fk_product_creator: {
           name: 'fk_product_creator',
           type: 'FOREIGN KEY',
-          columnName: 'created_by',
+          columnNames: ['created_by'],
           targetTableName: 'users',
-          targetColumnName: 'user_id',
+          targetColumnNames: ['user_id'],
           updateConstraint: 'NO_ACTION',
           deleteConstraint: 'SET_NULL',
         },
@@ -673,9 +800,9 @@ describe(processor, () => {
           fk_order_customer: {
             name: 'fk_order_customer',
             type: 'FOREIGN KEY',
-            columnName: 'customer_id',
+            columnNames: ['customer_id'],
             targetTableName: 'customers',
-            targetColumnName: 'customer_id',
+            targetColumnNames: ['customer_id'],
             updateConstraint: 'NO_ACTION',
             deleteConstraint: 'NO_ACTION',
           },
@@ -687,18 +814,18 @@ describe(processor, () => {
           fk_order_item_order: {
             name: 'fk_order_item_order',
             type: 'FOREIGN KEY',
-            columnName: 'order_id',
+            columnNames: ['order_id'],
             targetTableName: 'orders',
-            targetColumnName: 'order_id',
+            targetColumnNames: ['order_id'],
             updateConstraint: 'NO_ACTION',
             deleteConstraint: 'CASCADE',
           },
           fk_order_item_product: {
             name: 'fk_order_item_product',
             type: 'FOREIGN KEY',
-            columnName: 'product_id',
+            columnNames: ['product_id'],
             targetTableName: 'products',
-            targetColumnName: 'product_id',
+            targetColumnNames: ['product_id'],
             updateConstraint: 'NO_ACTION',
             deleteConstraint: 'NO_ACTION',
           },

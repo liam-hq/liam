@@ -504,9 +504,9 @@ describe('postgresqlSchemaDeparser', () => {
             constraints: {
               fk_orders_user_id: aForeignKeyConstraint({
                 name: 'fk_orders_user_id',
-                columnName: 'user_id',
+                columnNames: ['user_id'],
                 targetTableName: 'users',
-                targetColumnName: 'id',
+                targetColumnNames: ['id'],
                 updateConstraint: 'CASCADE',
                 deleteConstraint: 'SET_NULL',
               }),
@@ -722,17 +722,17 @@ describe('postgresqlSchemaDeparser', () => {
             constraints: {
               fk_orders_user: aForeignKeyConstraint({
                 name: 'fk_orders_user',
-                columnName: 'user_id',
+                columnNames: ['user_id'],
                 targetTableName: 'users',
-                targetColumnName: 'id',
+                targetColumnNames: ['id'],
                 updateConstraint: 'CASCADE',
                 deleteConstraint: 'CASCADE',
               }),
               fk_orders_product: aForeignKeyConstraint({
                 name: 'fk_orders_product',
-                columnName: 'product_id',
+                columnNames: ['product_id'],
                 targetTableName: 'products',
-                targetColumnName: 'id',
+                targetColumnNames: ['id'],
                 updateConstraint: 'CASCADE',
                 deleteConstraint: 'RESTRICT',
               }),
@@ -805,9 +805,9 @@ describe('postgresqlSchemaDeparser', () => {
             constraints: {
               fk_departments_manager: aForeignKeyConstraint({
                 name: 'fk_departments_manager',
-                columnName: 'manager_id',
+                columnNames: ['manager_id'],
                 targetTableName: 'employees',
-                targetColumnName: 'id',
+                targetColumnNames: ['id'],
                 updateConstraint: 'CASCADE',
                 deleteConstraint: 'SET_NULL',
               }),
@@ -836,9 +836,9 @@ describe('postgresqlSchemaDeparser', () => {
             constraints: {
               fk_employees_department: aForeignKeyConstraint({
                 name: 'fk_employees_department',
-                columnName: 'department_id',
+                columnNames: ['department_id'],
                 targetTableName: 'departments',
-                targetColumnName: 'id',
+                targetColumnNames: ['id'],
                 updateConstraint: 'CASCADE',
                 deleteConstraint: 'RESTRICT',
               }),

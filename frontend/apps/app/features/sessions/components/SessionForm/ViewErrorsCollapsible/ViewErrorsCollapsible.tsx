@@ -172,11 +172,7 @@ export const ViewErrorsCollapsible: FC<Props> = ({
     }
 
     // This should never happen, but provide a fallback for exhaustiveness
-    return (
-      <>
-        <p>[Error] An unknown error occurred</p>
-      </>
-    )
+    return <p>[Error] An unknown error occurred</p>
   }
 
   return (

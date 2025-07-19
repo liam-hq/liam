@@ -8,9 +8,9 @@ type Props = {
 
 export const Spinner: FC<Props> = ({ className }) => {
   return (
+    // biome-ignore lint/a11y/useSemanticElements: <output> tag doesn't make sense for a loading spinner
     <div
       className={clsx(styles.spinnerBox, className)}
-      // biome-ignore lint/a11y/useSemanticElements: Because div and status role are common for loading spinners
       role="status"
       aria-label="Loading"
       aria-live="polite"

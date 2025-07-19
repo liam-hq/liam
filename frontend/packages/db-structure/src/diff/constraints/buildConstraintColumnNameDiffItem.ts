@@ -27,7 +27,7 @@ export function buildConstraintColumnNameDiffItem(
   const data = match(constraint)
     // TODO: Currently only detects changes in the first column of composite constraints
     .with({ type: 'UNIQUE' }, ({ columnNames }) => columnNames[0])
-    .with({ type: 'FOREIGN KEY' }, ({ columnName }) => columnName)
+    .with({ type: 'FOREIGN KEY' }, ({ columnNames }) => columnNames[0])
     // TODO: Currently only detects changes in the first column of composite constraints
     .with({ type: 'PRIMARY KEY' }, ({ columnNames }) => columnNames[0])
     .with({ type: 'CHECK' }, () => undefined)

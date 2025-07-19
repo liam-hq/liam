@@ -30,8 +30,9 @@
 
 .messageContent {
   display: flex;
-  flex-direction: column;
-  gap: var(--spacing-2);
+  flex-direction: row;
+  align-items: flex-start;
+  gap: var(--spacing-1);
   width: 100%;
   max-width: 100%;
 }
@@ -208,17 +209,17 @@
 
 /* Add a subtle scrollbar for code blocks that overflow */
 .messageText :global(pre::-webkit-scrollbar) {
-  height: 8px;
-  background-color: transparent;
+  height: var(--scrollbar-webkit-height);
+  background-color: var(--scrollbar-track-background);
 }
 
 .messageText :global(pre::-webkit-scrollbar-thumb) {
-  background-color: var(--global-border);
-  border-radius: 4px;
+  background-color: var(--scrollbar-thumb-background-hover);
+  border-radius: var(--scrollbar-webkit-thumb-border-radius);
 }
 
 .messageText :global(pre::-webkit-scrollbar-track) {
-  background-color: transparent;
+  background-color: var(--scrollbar-track-background);
 }
 
 .messageText :global(pre code) {
@@ -295,17 +296,17 @@
 
 /* Table scrollbar styling */
 .messageText :global(table::-webkit-scrollbar) {
-  height: 8px;
-  background-color: transparent;
+  height: var(--scrollbar-webkit-height);
+  background-color: var(--scrollbar-track-background);
 }
 
 .messageText :global(table::-webkit-scrollbar-thumb) {
-  background-color: var(--global-border);
-  border-radius: 4px;
+  background-color: var(--scrollbar-thumb-background-hover);
+  border-radius: var(--scrollbar-webkit-thumb-border-radius);
 }
 
 .messageText :global(table::-webkit-scrollbar-track) {
-  background-color: transparent;
+  background-color: var(--scrollbar-track-background);
 }
 
 .messageText :global(table th) {
@@ -575,4 +576,24 @@
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+/* Status Icons */
+.statusIcon {
+  flex-shrink: 0;
+  font-size: var(--font-size-4);
+  line-height: 1.8em;
+  margin-top: 0.1em;
+}
+
+.successIcon {
+  color: var(--primary-accent);
+}
+
+.errorIcon {
+  color: var(--severity-critical-100);
+}
+
+.progressIcon {
+  color: var(--global-foreground);
 }

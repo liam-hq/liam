@@ -8,16 +8,18 @@
     "@huggingface/transformers": "3.3.3",
     "@liam-hq/db-structure": "workspace:*",
     "neverthrow": "8.2.0",
+    "openai": "5.9.2",
     "valibot": "1.1.0"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.0.4",
+    "@biomejs/biome": "2.0.6",
     "@liam-hq/configs": "workspace:*",
-    "eslint": "9.29.0",
+    "eslint": "9.30.1",
     "vitest": "3.2.4"
   },
   "scripts": {
     "evaluateSchema": "node --experimental-strip-types src/cli/evaluateSchema.ts",
+    "executeOpenai": "node --experimental-strip-types src/cli/executeOpenai.ts",
     "fmt": "concurrently \"pnpm:fmt:*\"",
     "fmt:biome": "biome check --write --unsafe .",
     "fmt:eslint": "eslint --fix .",

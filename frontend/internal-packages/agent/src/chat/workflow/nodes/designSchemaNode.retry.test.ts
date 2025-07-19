@@ -1,12 +1,12 @@
+import { AIMessage } from '@langchain/core/messages'
+import { ok } from 'neverthrow'
 import { describe, expect, it, vi } from 'vitest'
 import type { WorkflowState } from '../types'
 import { designSchemaNode } from './designSchemaNode'
 
-// Mock the agents
-vi.mock('../../../langchain/agents', () => ({
-  DatabaseSchemaBuildAgent: vi.fn().mockImplementation(() => ({
-    generate: vi.fn(),
-  })),
+// Mock the design agent
+vi.mock('../../../langchain/agents/databaseSchemaBuildAgent/agent', () => ({
+  invokeDesignAgent: vi.fn(),
 }))
 
 // Mock the schema converter
@@ -17,21 +17,15 @@ vi.mock('../../../utils/convertSchemaToText', () => ({
 describe('designSchemaNode retry behavior', () => {
   it('should include DDL failure reason in user message when retrying', async () => {
     // Setup the mock implementation
-    const { DatabaseSchemaBuildAgent } = await import(
-      '../../../langchain/agents'
+    const { invokeDesignAgent } = await import(
+      '../../../langchain/agents/databaseSchemaBuildAgent/agent'
     )
-    const mockGenerate = vi.fn().mockResolvedValue({
-      schema: { tables: {} },
-      schemaChanges: [],
-      message: 'Schema generated successfully',
-    })
-
-    vi.mocked(DatabaseSchemaBuildAgent).mockImplementation(
-      () =>
-        // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-        ({
-          generate: mockGenerate,
-        }) as never,
+    const mockInvokeDesignAgent = vi.mocked(invokeDesignAgent)
+    mockInvokeDesignAgent.mockResolvedValue(
+      ok({
+        message: new AIMessage('Schema generated successfully'),
+        operations: [],
+      }),
     )
 
     const mockRepositories = {
@@ -39,7 +33,14 @@ describe('designSchemaNode retry behavior', () => {
         updateTimelineItem: vi.fn(),
         getSchema: vi.fn(),
         getDesignSession: vi.fn(),
-        createVersion: vi.fn(),
+        createEmptyPatchVersion: vi.fn().mockResolvedValue({
+          success: true,
+          versionId: 'test-version-id',
+        }),
+        updateVersion: vi.fn().mockResolvedValue({
+          success: true,
+          newSchema: { tables: {} },
+        }),
         createTimelineItem: vi.fn().mockResolvedValue({
           success: true,
           timelineItem: { id: 'test-timeline-id' },
@@ -80,16 +81,19 @@ describe('designSchemaNode retry behavior', () => {
 
     await designSchemaNode(state, config)
 
-    // Check the generate call arguments
-    expect(mockGenerate).toHaveBeenCalledWith(
+    // Check the invoke call arguments
+    expect(mockInvokeDesignAgent).toHaveBeenCalledWith(
       expect.objectContaining({
-        user_message: expect.stringContaining('Create a users table'),
+        schemaText: expect.any(String),
       }),
-    )
-    expect(mockGenerate).toHaveBeenCalledWith(
-      expect.objectContaining({
-        user_message: expect.stringContaining('Foreign key constraint error'),
-      }),
+      expect.arrayContaining([
+        expect.objectContaining({
+          content: expect.stringContaining('Create a users table'),
+        }),
+        expect.objectContaining({
+          content: expect.stringContaining('Foreign key constraint error'),
+        }),
+      ]),
     )
   })
 })

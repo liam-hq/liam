@@ -1,0 +1,21 @@
+.container {
+  margin-bottom: var(--spacing-5);
+  display: flex;
+  gap: var(--spacing-2half);
+}
+
+.button {
+  padding: var(--spacing-2) var(--spacing-4);
+  border-radius: var(--border-radius-base);
+  border: var(--border-width-base) solid var(--button-border);
+}
+
+.button:enabled {
+  background: var(--button-background);
+  cursor: pointer;
+}
+
+.button:disabled {
+  background: var(--button-disabled-background);
+  cursor: not-allowed;
+}

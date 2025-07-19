@@ -1,25 +1,12 @@
 {
-  "src/chat/workflow/nodes/designSchemaNode.integration.test.ts": {
-    "@typescript-eslint/consistent-type-assertions": {
-      "count": 3
-    }
-  },
   "src/deepModeling.test.ts": {
     "@typescript-eslint/consistent-type-assertions": {
-      "count": 1
-    },
-    "no-throw-error/no-throw-error": {
       "count": 1
     }
   },
   "src/deepModeling.ts": {
     "no-restricted-syntax": {
       "count": 1
-    }
-  },
-  "src/repositories/supabase.ts": {
-    "no-throw-error/no-throw-error": {
-      "count": 3
     }
   },
   "src/vectorstore/supabaseVectorStore.ts": {

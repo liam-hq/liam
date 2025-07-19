@@ -21,7 +21,8 @@
   overflow-y: scroll;
   height: 100%;
   width: 300px;
-  scrollbar-color: var(--overlay-20) transparent;
+  scrollbar-color: var(--scrollbar-thumb-background)
+    var(--scrollbar-track-background);
 }
 
 .main [cmdk-group-heading] {
@@ -34,6 +35,7 @@
   padding: var(--spacing-2);
   align-items: center;
   line-height: 24px;
+  border-radius: var(--border-radius-base);
 }
 
 .main [cmdk-item] .itemText {
@@ -72,7 +74,8 @@
   height: 100%;
   overflow-x: hidden;
   overflow-y: scroll;
-  scrollbar-color: var(--overlay-20) transparent;
+  scrollbar-color: var(--scrollbar-thumb-background)
+    var(--scrollbar-track-background);
   border-radius: var(--border-radius-lg-plus);
 }
 

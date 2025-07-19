@@ -1,6 +1,6 @@
 import { createContext } from 'react'
 
-type CommandPaletteContextValue = {
+export type CommandPaletteContextValue = {
   open: boolean
   setOpen: (open: boolean) => void
   toggleOpen: () => void

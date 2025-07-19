@@ -1,98 +1,50 @@
-import { AIMessage } from '@langchain/core/messages'
+import { HumanMessage } from '@langchain/core/messages'
 import type { RunnableConfig } from '@langchain/core/runnables'
-import { DatabaseSchemaBuildAgent } from '../../../langchain/agents'
-import type { BuildAgentResponse } from '../../../langchain/agents/databaseSchemaBuildAgent/agent'
-import type { SchemaAwareChatVariables } from '../../../langchain/utils/types'
+import type { Database } from '@liam-hq/db'
+import {
+  type DesignResponse,
+  type InvokeResult,
+  invokeDesignAgent,
+} from '../../../langchain/agents/databaseSchemaBuildAgent/agent'
 import type { Repositories } from '../../../repositories'
 import { convertSchemaToText } from '../../../utils/convertSchemaToText'
 import { getConfigurable } from '../shared/getConfigurable'
 import type { WorkflowState } from '../types'
-import { formatMessagesToHistory } from '../utils/messageUtils'
 import { logAssistantMessage } from '../utils/timelineLogger'
-
-type PreparedSchemaDesign = {
-  agent: DatabaseSchemaBuildAgent
-  schemaText: string
-}
-
-const formatAnalyzedRequirements = (
-  analyzedRequirements: NonNullable<WorkflowState['analyzedRequirements']>,
-): string => {
-  const formatRequirements = (
-    requirements: Record<string, string[]>,
-    title: string,
-  ): string => {
-    const entries = Object.entries(requirements)
-    if (entries.length === 0) return ''
-
-    return `${title}:
-${entries
-  .map(
-    ([category, items]) =>
-      `- ${category}:\n  ${items.map((item) => `  • ${item}`).join('\n')}`,
-  )
-  .join('\n')}`
-  }
-
-  const sections = [
-    `Business Requirement:\n${analyzedRequirements.businessRequirement}`,
-    formatRequirements(
-      analyzedRequirements.functionalRequirements,
-      'Functional Requirements',
-    ),
-    formatRequirements(
-      analyzedRequirements.nonFunctionalRequirements,
-      'Non-Functional Requirements',
-    ),
-  ].filter(Boolean)
-
-  return sections.join('\n\n')
-}
-
-const prepareUserMessage = (state: WorkflowState): string => {
-  // DDL execution failure takes priority
-  if (state.shouldRetryWithDesignSchema && state.ddlExecutionFailureReason) {
-    return `The following DDL execution failed: ${state.ddlExecutionFailureReason}
-Original request: ${state.userInput}
-Please fix this issue by analyzing the schema and adding any missing constraints, primary keys, or other required schema elements to resolve the DDL execution error.`
-  }
-
-  // Include analyzed requirements if available
-  if (state.analyzedRequirements) {
-    return `Based on the following analyzed requirements:
-${formatAnalyzedRequirements(state.analyzedRequirements)}
-User Request: ${state.userInput}`
-  }
-
-  // Default to original user input
-  return state.userInput
-}
 
 /**
  * Apply schema changes and return updated state
  */
 const applySchemaChanges = async (
-  schemaChanges: BuildAgentResponse['schemaChanges'],
-  buildingSchemaId: string,
-  latestVersionNumber: number,
+  operations: DesignResponse['operations'],
+  buildingSchemaVersionId: string,
   message: string,
   state: WorkflowState,
   repositories: Repositories,
+  assistantRole: Database['public']['Enums']['assistant_role_enum'],
 ): Promise<WorkflowState> => {
-  await logAssistantMessage(state, repositories, 'Applying schema changes...')
+  await logAssistantMessage(
+    state,
+    repositories,
+    'Applying schema changes...',
+    assistantRole,
+  )
 
-  const result = await repositories.schema.createVersion({
-    buildingSchemaId,
-    latestVersionNumber,
-    patch: schemaChanges,
+  const result = await repositories.schema.updateVersion({
+    buildingSchemaVersionId,
+    patch: operations,
   })
 
   if (!result.success) {
     const errorMessage = result.error || 'Failed to update schema'
-    await logAssistantMessage(state, repositories, 'Schema update failed')
+    await logAssistantMessage(
+      state,
+      repositories,
+      'Schema update failed',
+      assistantRole,
+    )
     return {
       ...state,
-      generatedAnswer: message,
       error: new Error(errorMessage),
     }
   }
@@ -100,13 +52,31 @@ const applySchemaChanges = async (
   await logAssistantMessage(
     state,
     repositories,
-    `Applied ${schemaChanges.length} schema changes successfully`,
+    `Applied ${operations.length} schema changes successfully`,
+    assistantRole,
   )
+
+  // Save timeline item directly when answer is generated
+  const saveResult = await repositories.schema.createTimelineItem({
+    designSessionId: state.designSessionId,
+    content: message,
+    type: 'assistant',
+    role: 'db',
+  })
+
+  if (!saveResult.success) {
+    return {
+      ...state,
+      schemaData: result.newSchema,
+      error: new Error(
+        `Failed to save assistant timeline item: ${saveResult.error}`,
+      ),
+    }
+  }
 
   return {
     ...state,
     schemaData: result.newSchema,
-    generatedAnswer: message,
     error: undefined,
   }
 }
@@ -115,51 +85,40 @@ const applySchemaChanges = async (
  * Handle schema changes if they exist
  */
 const handleSchemaChanges = async (
-  parsedResponse: BuildAgentResponse,
+  invokeResult: InvokeResult,
+  buildingSchemaVersionId: string,
   state: WorkflowState,
   repositories: Repositories,
+  assistantRole: Database['public']['Enums']['assistant_role_enum'],
 ): Promise<WorkflowState> => {
-  if (parsedResponse.schemaChanges.length === 0) {
-    return {
-      ...state,
-      generatedAnswer: parsedResponse.message,
-    }
-  }
+  if (invokeResult.operations.length === 0) {
+    // Save timeline item directly when answer is generated
+    const saveResult = await repositories.schema.createTimelineItem({
+      designSessionId: state.designSessionId,
+      content: invokeResult.message.text,
+      type: 'assistant',
+      role: 'db',
+    })
 
-  const buildingSchemaId = state.buildingSchemaId
-  const latestVersionNumber = state.latestVersionNumber
+    if (!saveResult.success) {
+      return {
+        ...state,
+        error: new Error(
+          `Failed to save assistant timeline item: ${saveResult.error}`,
+        ),
+      }
+    }
+    return state
+  }
 
   return await applySchemaChanges(
-    parsedResponse.schemaChanges,
-    buildingSchemaId,
-    latestVersionNumber,
-    parsedResponse.message,
+    invokeResult.operations,
+    buildingSchemaVersionId,
+    invokeResult.message.text,
     state,
     repositories,
+    assistantRole,
   )
-}
-
-async function prepareSchemaDesign(
-  state: WorkflowState,
-  repositories: Repositories,
-): Promise<PreparedSchemaDesign> {
-  await logAssistantMessage(state, repositories, 'Preparing schema design...')
-
-  const schemaText = convertSchemaToText(state.schemaData)
-
-  // Create the agent instance
-  const agent = new DatabaseSchemaBuildAgent()
-
-  await logAssistantMessage(
-    state,
-    repositories,
-    'Schema design preparation completed',
-  )
-
-  return {
-    agent,
-    schemaText,
-  }
 }
 
 /**
@@ -170,6 +129,7 @@ export async function designSchemaNode(
   state: WorkflowState,
   config: RunnableConfig,
 ): Promise<WorkflowState> {
+  const assistantRole: Database['public']['Enums']['assistant_role_enum'] = 'db'
   const configurableResult = getConfigurable(config)
   if (configurableResult.isErr()) {
     return {
@@ -179,12 +139,49 @@ export async function designSchemaNode(
   }
   const { repositories } = configurableResult.value
 
-  await logAssistantMessage(state, repositories, 'Designing database schema...')
+  await logAssistantMessage(
+    state,
+    repositories,
+    'Designing database schema...',
+    assistantRole,
+  )
 
-  const { agent, schemaText } = await prepareSchemaDesign(state, repositories)
+  // Create empty version at the beginning of the node
+  const buildingSchemaId = state.buildingSchemaId
+  const latestVersionNumber = state.latestVersionNumber
 
-  // Prepare user message with context
-  const userMessage = prepareUserMessage(state)
+  const createVersionResult = await repositories.schema.createEmptyPatchVersion(
+    {
+      buildingSchemaId,
+      latestVersionNumber,
+    },
+  )
+
+  if (!createVersionResult.success) {
+    const errorMessage =
+      createVersionResult.error || 'Failed to create new version'
+    await logAssistantMessage(
+      state,
+      repositories,
+      'Version creation failed',
+      assistantRole,
+    )
+    return {
+      ...state,
+      error: new Error(errorMessage),
+    }
+  }
+
+  const buildingSchemaVersionId = createVersionResult.versionId
+
+  await logAssistantMessage(
+    state,
+    repositories,
+    'Created new schema version for updates...',
+    assistantRole,
+  )
+
+  const schemaText = convertSchemaToText(state.schemaData)
 
   // Log appropriate message for DDL retry case
   if (state.shouldRetryWithDesignSchema && state.ddlExecutionFailureReason) {
@@ -192,38 +189,62 @@ export async function designSchemaNode(
       state,
       repositories,
       'Redesigning schema to fix DDL execution errors...',
+      assistantRole,
     )
   }
 
-  // Create prompt variables directly
-  const promptVariables: SchemaAwareChatVariables = {
-    schema_text: schemaText,
-    chat_history: formatMessagesToHistory(state.messages),
-    user_message: userMessage,
+  // Use existing messages, or add DDL failure context if retrying
+  let messages = [...state.messages]
+  if (state.shouldRetryWithDesignSchema && state.ddlExecutionFailureReason) {
+    const ddlRetryMessage = new HumanMessage(
+      `The following DDL execution failed: ${state.ddlExecutionFailureReason}
+Original request: ${state.userInput}
+Please fix this issue by analyzing the schema and adding any missing constraints, primary keys, or other required schema elements to resolve the DDL execution error.`,
+    )
+    messages = [...messages, ddlRetryMessage]
   }
 
   await logAssistantMessage(
     state,
     repositories,
     'Analyzing table structure and relationships...',
+    assistantRole,
   )
 
-  // Use agent's generate method with prompt variables
-  const response = await agent.generate(promptVariables)
-  const result = await handleSchemaChanges(response, state, repositories)
+  const invokeResult = await invokeDesignAgent({ schemaText }, messages)
 
-  await logAssistantMessage(state, repositories, 'Schema design completed')
+  if (invokeResult.isErr()) {
+    await logAssistantMessage(
+      state,
+      repositories,
+      'Schema design failed',
+      assistantRole,
+    )
+    return {
+      ...state,
+      error: invokeResult.error,
+    }
+  }
+
+  const result = await handleSchemaChanges(
+    invokeResult.value,
+    buildingSchemaVersionId,
+    state,
+    repositories,
+    assistantRole,
+  )
+
+  await logAssistantMessage(
+    state,
+    repositories,
+    'Schema design completed',
+    assistantRole,
+  )
 
   // Clear retry flags after processing
   const finalResult = {
     ...result,
-    messages: [
-      ...state.messages,
-      new AIMessage({
-        content: response.message,
-        name: 'Database Schema Build Agent',
-      }),
-    ],
+    messages: [...messages, invokeResult.value.message],
     shouldRetryWithDesignSchema: undefined,
     ddlExecutionFailureReason: undefined,
   }

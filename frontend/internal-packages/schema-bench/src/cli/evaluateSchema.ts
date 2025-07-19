@@ -1,14 +1,16 @@
-import * as path from 'node:path'
-import { formatError } from '../shared/formatError.ts'
 import { evaluateSchema } from '../workspace/evaluation/evaluation.ts'
 import type { EvaluationConfig } from '../workspace/types'
+import {
+  getWorkspacePath,
+  handleCliError,
+  handleUnexpectedError,
+} from './utils/index.ts'
 
 // Right now, the script processes process.argv directly and lives in this package since it's still rough and only meant for internal (Liam team) use.
 // In the future, once things are more stable, we'd like to move this feature to the CLI package and rely on something like commander for argument parsing.
 
 const runEvaluateSchema = async (): Promise<void> => {
-  const initCwd = process.env['INIT_CWD'] || process.cwd()
-  const workspacePath = path.resolve(initCwd, 'benchmark-workspace')
+  const workspacePath = getWorkspacePath()
   const args = process.argv.slice(2)
 
   let caseId: string | undefined
@@ -34,9 +36,8 @@ const runEvaluateSchema = async (): Promise<void> => {
   const result = await evaluateSchema(config)
 
   if (result.isErr()) {
-    console.error('❌ Schema evaluation failed:', formatError(result.error))
-    process.exit(1)
+    handleCliError('Schema evaluation failed', result.error)
   }
 }
 
-runEvaluateSchema()
+runEvaluateSchema().catch(handleUnexpectedError)

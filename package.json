@@ -7,11 +7,11 @@
     "@changesets/get-github-info": "0.6.0",
     "@changesets/types": "6.1.0",
     "@turbo/gen": "2.5.4",
-    "@types/node": "22.15.32",
+    "@types/node": "22.16.0",
     "@vitest/coverage-v8": "3.2.4",
     "concurrently": "9.1.2",
     "knip": "5.60.2",
-    "lefthook": "1.11.14",
+    "lefthook": "1.11.16",
     "syncpack": "13.0.4",
     "turbo": "2.5.4",
     "typescript": "5.8.3",
@@ -54,7 +54,8 @@
       "esbuild": "0.25.5",
       "path-to-regexp": "8.2.0",
       "prismjs": "1.30.0",
-      "undici": "7.10.0"
+      "undici": "7.10.0",
+      "zod": "3.25.76"
     }
   }
 }

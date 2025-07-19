@@ -196,9 +196,11 @@ const areForeignKeysMatching = (
 ): boolean => {
   return (
     refFk.tableName === predFk.tableName &&
-    refFk.constraint.columnName === predFk.constraint.columnName &&
+    refFk.constraint.columnNames.join(',') ===
+      predFk.constraint.columnNames.join(',') &&
     refFk.constraint.targetTableName === predFk.constraint.targetTableName &&
-    refFk.constraint.targetColumnName === predFk.constraint.targetColumnName
+    refFk.constraint.targetColumnNames.join(',') ===
+      predFk.constraint.targetColumnNames.join(',')
   )
 }
 

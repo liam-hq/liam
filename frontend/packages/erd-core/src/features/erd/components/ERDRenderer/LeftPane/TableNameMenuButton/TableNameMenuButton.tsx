@@ -18,8 +18,8 @@ import {
 import { useTableSelection } from '@/features/erd/hooks'
 import type { TableNodeType } from '@/features/erd/types'
 import { selectTableLogEvent } from '@/features/gtm/utils'
-import { useVersion } from '@/providers'
-import { useUserEditing } from '@/stores'
+import { useVersionOrThrow } from '@/providers'
+import { useUserEditingOrThrow } from '@/stores'
 import styles from './TableNameMenuButton.module.css'
 import { VisibilityButton } from './VisibilityButton'
 
@@ -37,8 +37,8 @@ export const TableNameMenuButton: FC<Props> = ({
   const nodeId = node.id
   const name = node.data.table.name
   const { selectTable } = useTableSelection()
-  const { selectedNodeIds, updateSelectedNodeIds } = useUserEditing()
-  const { version } = useVersion()
+  const { selectedNodeIds, updateSelectedNodeIds } = useUserEditingOrThrow()
+  const { version } = useVersionOrThrow()
   const textRef = useRef<HTMLSpanElement>(null)
   const [isTruncated, setIsTruncated] = useState(false)
 
@@ -123,8 +123,8 @@ export const TableNameMenuButton: FC<Props> = ({
         tooltip={name}
         showtooltip={isTruncated}
       >
+        {/* biome-ignore lint/a11y/useSemanticElements: Using div with button role to avoid button-in-button nesting */}
         <div
-          // biome-ignore lint/a11y/useSemanticElements: Implemented with div button to be button in button
           role="button"
           tabIndex={0}
           onClick={handleTableSelection}

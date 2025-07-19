@@ -401,4 +401,9 @@
   --severity-warning-40: rgba(255, 215, 72, 0.4);
   --severity-warning-60: rgba(255, 215, 72, 0.6);
   --severity-warning-100: #ffd748;
+  --severity-test-5: rgba(193, 112, 255, 0.05);
+  --severity-test-20: rgba(193, 112, 255, 0.2);
+  --severity-test-40: rgba(193, 112, 255, 0.4);
+  --severity-test-60: rgba(193, 112, 255, 0.6);
+  --severity-test-100: #c170ff;
 }

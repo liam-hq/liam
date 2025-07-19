@@ -202,17 +202,17 @@
 
 /* Add a subtle scrollbar for code blocks that overflow */
 .body :global(pre::-webkit-scrollbar) {
-  height: 8px;
-  background-color: transparent;
+  height: var(--scrollbar-webkit-height);
+  background-color: var(--scrollbar-track-background);
 }
 
 .body :global(pre::-webkit-scrollbar-thumb) {
-  background-color: var(--global-border);
-  border-radius: 4px;
+  background-color: var(--scrollbar-thumb-background-hover);
+  border-radius: var(--scrollbar-webkit-thumb-border-radius);
 }
 
 .body :global(pre::-webkit-scrollbar-track) {
-  background-color: transparent;
+  background-color: var(--scrollbar-track-background);
 }
 
 .body :global(pre code) {
@@ -289,17 +289,17 @@
 
 /* Table scrollbar styling */
 .body :global(table::-webkit-scrollbar) {
-  height: 8px;
-  background-color: transparent;
+  height: var(--scrollbar-webkit-height);
+  background-color: var(--scrollbar-track-background);
 }
 
 .body :global(table::-webkit-scrollbar-thumb) {
-  background-color: var(--global-border);
-  border-radius: 4px;
+  background-color: var(--scrollbar-thumb-background-hover);
+  border-radius: var(--scrollbar-webkit-thumb-border-radius);
 }
 
 .body :global(table::-webkit-scrollbar-track) {
-  background-color: transparent;
+  background-color: var(--scrollbar-track-background);
 }
 
 .body :global(table th) {

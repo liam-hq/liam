@@ -39,6 +39,7 @@ const parseAsCompressedStringArray = createParser({
 
 type UserEditingProviderValue = {
   showDiff?: boolean | undefined
+  defaultShowMode?: ShowMode | undefined
 }
 
 type Props = PropsWithChildren & UserEditingProviderValue
@@ -46,6 +47,7 @@ type Props = PropsWithChildren & UserEditingProviderValue
 export const UserEditingProvider: FC<Props> = ({
   children,
   showDiff: initialShowDiff = false,
+  defaultShowMode = 'TABLE_NAME',
 }) => {
   const [activeTableName, setActiveTableName] = useQueryState(
     'active',
@@ -55,7 +57,7 @@ export const UserEditingProvider: FC<Props> = ({
   const [showMode, setShowMode] = useQueryState(
     'showMode',
     parseAsStringEnum<ShowMode>(['ALL_FIELDS', 'KEY_ONLY', 'TABLE_NAME'])
-      .withDefault('TABLE_NAME')
+      .withDefault(defaultShowMode)
       .withOptions({
         history: 'push',
       }),

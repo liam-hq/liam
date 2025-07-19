@@ -1,4 +1,5 @@
 import type { RunnableConfig } from '@langchain/core/runnables'
+import type { Database } from '@liam-hq/db'
 import { DMLGenerationAgent } from '../../../langchain/agents/dmlGenerationAgent/agent'
 import type { Usecase } from '../../../langchain/agents/qaGenerateUsecaseAgent/agent'
 import { convertSchemaToText } from '../../../utils/convertSchemaToText'
@@ -49,6 +50,7 @@ export async function prepareDmlNode(
   state: WorkflowState,
   config: RunnableConfig,
 ): Promise<WorkflowState> {
+  const assistantRole: Database['public']['Enums']['assistant_role_enum'] = 'db'
   const configurableResult = getConfigurable(config)
   if (configurableResult.isErr()) {
     return {
@@ -58,7 +60,12 @@ export async function prepareDmlNode(
   }
   const { repositories } = configurableResult.value
 
-  await logAssistantMessage(state, repositories, 'Preparing DML statements...')
+  await logAssistantMessage(
+    state,
+    repositories,
+    'Preparing DML statements...',
+    assistantRole,
+  )
 
   // Check if we have required inputs
   if (!state.ddlStatements) {
@@ -66,6 +73,7 @@ export async function prepareDmlNode(
       state,
       repositories,
       'Missing DDL statements for DML generation',
+      assistantRole,
     )
     return state
   }
@@ -75,6 +83,7 @@ export async function prepareDmlNode(
       state,
       repositories,
       'Missing use cases for DML generation',
+      assistantRole,
     )
     return state
   }
@@ -101,6 +110,7 @@ export async function prepareDmlNode(
       state,
       repositories,
       'DML generation returned empty statements',
+      assistantRole,
     )
     return state
   }
@@ -109,6 +119,7 @@ export async function prepareDmlNode(
     state,
     repositories,
     'DML statements generated successfully',
+    assistantRole,
   )
 
   return {

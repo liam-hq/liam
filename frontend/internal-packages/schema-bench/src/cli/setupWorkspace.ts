@@ -1,8 +1,12 @@
 import * as path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { formatError } from '../shared/formatError.ts'
 import { setupWorkspace } from '../workspace/setup/setup.ts'
 import type { WorkspaceConfig } from '../workspace/types'
+import {
+  getWorkspacePath,
+  handleCliError,
+  handleUnexpectedError,
+} from './utils/index.ts'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -11,8 +15,7 @@ const __dirname = path.dirname(__filename)
 // In the future, once things are more stable, we'd like to move this feature to the CLI package and rely on something like commander for argument parsing.
 
 const runSetupWorkspace = async (): Promise<void> => {
-  const initCwd = process.env['INIT_CWD'] || process.cwd()
-  const workspacePath = path.resolve(initCwd, 'benchmark-workspace')
+  const workspacePath = getWorkspacePath()
   const defaultDataPath = path.resolve(
     __dirname,
     '../../benchmark-workspace-default',
@@ -25,9 +28,8 @@ const runSetupWorkspace = async (): Promise<void> => {
   const result = await setupWorkspace(config)
 
   if (result.isErr()) {
-    console.error('❌ Workspace setup failed:', formatError(result.error))
-    process.exit(1)
+    handleCliError('Workspace setup failed', result.error)
   }
 }
 
-runSetupWorkspace()
+runSetupWorkspace().catch(handleUnexpectedError)

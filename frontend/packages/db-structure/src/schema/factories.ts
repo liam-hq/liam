@@ -57,9 +57,9 @@ export const aForeignKeyConstraint = (
 ): ForeignKeyConstraint => ({
   type: 'FOREIGN KEY',
   name: '',
-  columnName: '',
+  columnNames: [],
   targetTableName: '',
-  targetColumnName: '',
+  targetColumnNames: [],
   updateConstraint: 'NO_ACTION',
   deleteConstraint: 'NO_ACTION',
   ...override,

@@ -26,7 +26,10 @@ export function buildConstraintTargetColumnNameDiffItem(
 
   const data = match(constraint)
     .with({ type: 'UNIQUE' }, () => undefined)
-    .with({ type: 'FOREIGN KEY' }, ({ targetColumnName }) => targetColumnName)
+    .with(
+      { type: 'FOREIGN KEY' },
+      ({ targetColumnNames }) => targetColumnNames[0],
+    )
     .with({ type: 'PRIMARY KEY' }, () => undefined)
     .with({ type: 'CHECK' }, () => undefined)
     .with(P.nullish, () => undefined)

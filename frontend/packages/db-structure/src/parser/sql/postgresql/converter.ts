@@ -104,7 +104,7 @@ function extractDefaultValueFromConstraints(
 
 const constraintToForeignKeyConstraint = (
   foreignTableName: string,
-  foreignColumnName: string,
+  foreignColumnNames: string[],
   constraint: PgConstraint,
 ): Result<ForeignKeyConstraint, UnexpectedTokenWarningError> => {
   if (constraint.contype !== 'CONSTR_FOREIGN') {
@@ -114,11 +114,13 @@ const constraintToForeignKeyConstraint = (
   }
 
   const primaryTableName = constraint.pktable?.relname
-  const primaryColumnName = isStringNode(constraint.pk_attrs?.[0])
-    ? constraint.pk_attrs[0].String.sval
-    : undefined
+  const primaryColumnNames =
+    constraint.pk_attrs
+      ?.filter(isStringNode)
+      .map((node) => node.String.sval)
+      .filter((name): name is string => name !== undefined) || []
 
-  if (!primaryTableName || !primaryColumnName) {
+  if (!primaryTableName || primaryColumnNames.length === 0) {
     return err(
       new UnexpectedTokenWarningError('Invalid foreign key constraint'),
     )
@@ -126,21 +128,23 @@ const constraintToForeignKeyConstraint = (
 
   const name =
     constraint.conname ??
-    defaultRelationshipName(
-      primaryTableName,
-      primaryColumnName,
-      foreignTableName,
-      foreignColumnName,
-    )
+    (primaryColumnNames[0] && foreignColumnNames[0]
+      ? defaultRelationshipName(
+          primaryTableName,
+          primaryColumnNames[0],
+          foreignTableName,
+          foreignColumnNames[0],
+        )
+      : `fk_${foreignTableName}_${primaryTableName}`)
   const updateConstraint = getConstraintAction(constraint.fk_upd_action)
   const deleteConstraint = getConstraintAction(constraint.fk_del_action)
 
   const foreignKeyConstraint: ForeignKeyConstraint = {
     type: 'FOREIGN KEY',
     name,
-    columnName: foreignColumnName,
+    columnNames: foreignColumnNames,
     targetTableName: primaryTableName,
-    targetColumnName: primaryColumnName,
+    targetColumnNames: primaryColumnNames,
     updateConstraint,
     deleteConstraint,
   }
@@ -305,7 +309,7 @@ export const convertToSchema = (
       if (constraint.Constraint.contype === 'CONSTR_FOREIGN') {
         const relResult = constraintToForeignKeyConstraint(
           tableName,
-          columnName,
+          [columnName],
           constraint.Constraint,
         )
 
@@ -439,15 +443,16 @@ export const convertToSchema = (
       }
     } else if (constraint.contype === 'CONSTR_FOREIGN') {
       // Handle table-level foreign key constraint
-      const foreignColumnName =
-        constraint.fk_attrs?.[0] && isStringNode(constraint.fk_attrs[0])
-          ? constraint.fk_attrs[0].String.sval
-          : undefined
+      const foreignColumnNames =
+        constraint.fk_attrs
+          ?.filter(isStringNode)
+          .map((node) => node.String.sval)
+          .filter((name): name is string => name !== undefined) || []
 
-      if (foreignColumnName) {
+      if (foreignColumnNames.length > 0) {
         const relResult = constraintToForeignKeyConstraint(
           tableName,
-          foreignColumnName,
+          foreignColumnNames,
           constraint,
         )
 
@@ -756,16 +761,17 @@ export const convertToSchema = (
     foreignTableName: string,
     constraint: PgConstraint,
   ): void {
-    const foreignColumnName =
-      constraint.fk_attrs?.[0] && isStringNode(constraint.fk_attrs[0])
-        ? constraint.fk_attrs[0].String.sval
-        : undefined
+    const foreignColumnNames =
+      constraint.fk_attrs
+        ?.filter(isStringNode)
+        .map((node) => node.String.sval)
+        .filter((name): name is string => name !== undefined) || []
 
-    if (foreignColumnName === undefined) return
+    if (foreignColumnNames.length === 0) return
 
     const relResult = constraintToForeignKeyConstraint(
       foreignTableName,
-      foreignColumnName,
+      foreignColumnNames,
       constraint,
     )
 

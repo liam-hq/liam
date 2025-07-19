@@ -1,13 +1,55 @@
 .content {
   width: 100%;
   max-width: 100%;
-  font-family: var(--main-font);
-  font-style: italic;
+  font-family: var(--code-font);
+  font-style: normal;
   font-weight: 400;
-  font-size: var(--font-size-3);
+  font-size: var(--font-size-2);
   line-height: 1.8em;
-  color: var(--overlay-50);
+  color: var(--global-mute-text);
   word-wrap: break-word;
   overflow-wrap: break-word;
   word-break: break-word;
+}
+
+.content + .content {
+  margin-top: var(--spacing-1);
+}
+
+.lineContainer {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-1);
+}
+
+.statusIcon {
+  flex-shrink: 0;
+  width: 1.2em;
+  text-align: center;
+}
+
+.lineText {
+  flex: 1;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.checkmark {
+  color: var(--primary-accent);
+}
+
+.crossmark {
+  color: var(--severity-critical-100);
+}
+
+.inProgress {
+  color: var(--global-foreground);
+}
+
+.pendingTask {
+  color: var(--overlay-50);
+}
+
+.currentTask {
+  color: var(--global-foreground);
 }

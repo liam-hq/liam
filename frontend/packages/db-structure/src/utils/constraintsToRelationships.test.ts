@@ -38,9 +38,9 @@ describe('constraintsToRelationships', () => {
           fk_posts_user: {
             type: 'FOREIGN KEY',
             name: 'fk_posts_user',
-            columnName: 'user_id',
+            columnNames: ['user_id'],
             targetTableName: 'users',
-            targetColumnName: 'id',
+            targetColumnNames: ['id'],
             updateConstraint: 'CASCADE',
             deleteConstraint: 'CASCADE',
           },
@@ -94,9 +94,9 @@ describe('constraintsToRelationships', () => {
           fk_profiles_user: {
             type: 'FOREIGN KEY',
             name: 'fk_profiles_user',
-            columnName: 'user_id',
+            columnNames: ['user_id'],
             targetTableName: 'users',
-            targetColumnName: 'id',
+            targetColumnNames: ['id'],
             updateConstraint: 'CASCADE',
             deleteConstraint: 'CASCADE',
           },
@@ -144,9 +144,9 @@ describe('constraintsToRelationships', () => {
           fk_profiles_user: {
             type: 'FOREIGN KEY',
             name: 'fk_profiles_user',
-            columnName: 'user_id',
+            columnNames: ['user_id'],
             targetTableName: 'users',
-            targetColumnName: 'id',
+            targetColumnNames: ['id'],
             updateConstraint: 'CASCADE',
             deleteConstraint: 'CASCADE',
           },
@@ -209,18 +209,18 @@ describe('constraintsToRelationships', () => {
           fk_posts_user: {
             type: 'FOREIGN KEY',
             name: 'fk_posts_user',
-            columnName: 'user_id',
+            columnNames: ['user_id'],
             targetTableName: 'users',
-            targetColumnName: 'id',
+            targetColumnNames: ['id'],
             updateConstraint: 'CASCADE',
             deleteConstraint: 'CASCADE',
           },
           fk_posts_category: {
             type: 'FOREIGN KEY',
             name: 'fk_posts_category',
-            columnName: 'category_id',
+            columnNames: ['category_id'],
             targetTableName: 'categories',
-            targetColumnName: 'id',
+            targetColumnNames: ['id'],
             updateConstraint: 'CASCADE',
             deleteConstraint: 'SET_NULL',
           },
@@ -280,5 +280,148 @@ describe('constraintsToRelationships', () => {
     const result = constraintsToRelationships(tables)
 
     expect(result).toEqual({})
+  })
+
+  it('should handle composite foreign keys by creating multiple relationships', () => {
+    const tables = {
+      regions: aTable({
+        name: 'regions',
+        columns: {
+          country_code: aColumn({
+            name: 'country_code',
+            type: 'varchar',
+            notNull: true,
+          }),
+          region_code: aColumn({
+            name: 'region_code',
+            type: 'varchar',
+            notNull: true,
+          }),
+        },
+        constraints: {
+          pk_regions: {
+            type: 'PRIMARY KEY',
+            name: 'pk_regions',
+            columnNames: ['country_code', 'region_code'],
+          },
+        },
+      }),
+      stores: aTable({
+        name: 'stores',
+        columns: {
+          id: aColumn({
+            name: 'id',
+            type: 'bigint',
+            notNull: true,
+          }),
+          country_code: aColumn({
+            name: 'country_code',
+            type: 'varchar',
+            notNull: true,
+          }),
+          region_code: aColumn({
+            name: 'region_code',
+            type: 'varchar',
+            notNull: true,
+          }),
+        },
+        constraints: {
+          fk_stores_region: {
+            type: 'FOREIGN KEY',
+            name: 'fk_stores_region',
+            columnNames: ['country_code', 'region_code'],
+            targetTableName: 'regions',
+            targetColumnNames: ['country_code', 'region_code'],
+            updateConstraint: 'CASCADE',
+            deleteConstraint: 'CASCADE',
+          },
+        },
+      }),
+    }
+
+    const result = constraintsToRelationships(tables)
+
+    expect(Object.keys(result)).toHaveLength(2)
+    expect(result['fk_stores_region_0']).toEqual({
+      name: 'fk_stores_region_0',
+      primaryTableName: 'regions',
+      primaryColumnName: 'country_code',
+      foreignTableName: 'stores',
+      foreignColumnName: 'country_code',
+      cardinality: 'ONE_TO_MANY',
+      updateConstraint: 'CASCADE',
+      deleteConstraint: 'CASCADE',
+    })
+    expect(result['fk_stores_region_1']).toEqual({
+      name: 'fk_stores_region_1',
+      primaryTableName: 'regions',
+      primaryColumnName: 'region_code',
+      foreignTableName: 'stores',
+      foreignColumnName: 'region_code',
+      cardinality: 'ONE_TO_MANY',
+      updateConstraint: 'CASCADE',
+      deleteConstraint: 'CASCADE',
+    })
+  })
+
+  it('should detect ONE_TO_ONE for composite foreign keys with matching UNIQUE constraint', () => {
+    const tables = {
+      users: aTable({
+        name: 'users',
+        columns: {
+          id: aColumn({
+            name: 'id',
+            type: 'bigint',
+            notNull: true,
+          }),
+          email: aColumn({
+            name: 'email',
+            type: 'varchar',
+            notNull: true,
+          }),
+        },
+      }),
+      user_profiles: aTable({
+        name: 'user_profiles',
+        columns: {
+          user_id: aColumn({
+            name: 'user_id',
+            type: 'bigint',
+            notNull: true,
+          }),
+          profile_type: aColumn({
+            name: 'profile_type',
+            type: 'varchar',
+            notNull: true,
+          }),
+          bio: aColumn({
+            name: 'bio',
+            type: 'text',
+            notNull: false,
+          }),
+        },
+        constraints: {
+          fk_profiles_user: {
+            type: 'FOREIGN KEY',
+            name: 'fk_profiles_user',
+            columnNames: ['user_id', 'profile_type'],
+            targetTableName: 'users',
+            targetColumnNames: ['id', 'email'],
+            updateConstraint: 'CASCADE',
+            deleteConstraint: 'CASCADE',
+          },
+          uk_user_profile: {
+            type: 'UNIQUE',
+            name: 'uk_user_profile',
+            columnNames: ['user_id', 'profile_type'],
+          },
+        },
+      }),
+    }
+
+    const result = constraintsToRelationships(tables)
+
+    expect(result['fk_profiles_user_0']?.cardinality).toBe('ONE_TO_ONE')
+    expect(result['fk_profiles_user_1']?.cardinality).toBe('ONE_TO_ONE')
   })
 })

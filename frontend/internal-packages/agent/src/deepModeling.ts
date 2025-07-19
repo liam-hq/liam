@@ -1,8 +1,10 @@
 import { AIMessage, HumanMessage } from '@langchain/core/messages'
+import { RunCollectorCallbackHandler } from '@langchain/core/tracers/run_collector'
 import { END, START, StateGraph } from '@langchain/langgraph'
 import type { Schema } from '@liam-hq/db-structure'
 import type { Result } from 'neverthrow'
 import { err, ok } from 'neverthrow'
+import { v4 as uuidv4 } from 'uuid'
 import { WORKFLOW_ERROR_MESSAGES } from './chat/workflow/constants'
 import {
   analyzeRequirementsNode,
@@ -14,6 +16,7 @@ import {
   reviewDeliverablesNode,
   saveUserMessageNode,
   validateSchemaNode,
+  webSearchNode,
 } from './chat/workflow/nodes'
 import {
   createAnnotations,
@@ -33,18 +36,13 @@ export type DeepModelingParams = {
   recursionLimit?: number
 }
 
-export type DeepModelingResult = Result<
-  {
-    text: string
-  },
-  Error
->
+export type DeepModelingResult = Result<WorkflowState, Error>
 
 /**
  * Retry policy configuration for all nodes
  */
 const RETRY_POLICY = {
-  maxAttempts: 3,
+  maxAttempts: process.env['NODE_ENV'] === 'test' ? 1 : 3,
 }
 
 /**
@@ -56,6 +54,9 @@ const createGraph = () => {
 
   graph
     .addNode('saveUserMessage', saveUserMessageNode, {
+      retryPolicy: RETRY_POLICY,
+    })
+    .addNode('webSearch', webSearchNode, {
       retryPolicy: RETRY_POLICY,
     })
     .addNode('analyzeRequirements', analyzeRequirementsNode, {
@@ -84,15 +85,16 @@ const createGraph = () => {
     })
 
     .addEdge(START, 'saveUserMessage')
+    .addEdge('webSearch', 'analyzeRequirements')
     .addEdge('analyzeRequirements', 'designSchema')
     .addEdge('executeDDL', 'generateUsecase')
     .addEdge('generateUsecase', 'prepareDML')
     .addEdge('prepareDML', 'validateSchema')
     .addEdge('finalizeArtifacts', END)
 
-    // Conditional edge for saveUserMessage - skip to finalizeArtifacts if error
+    // Conditional edge for saveUserMessage - skip to finalizeArtifacts if error, otherwise go to webSearch
     .addConditionalEdges('saveUserMessage', (state) => {
-      return state.error ? 'finalizeArtifacts' : 'analyzeRequirements'
+      return state.error ? 'finalizeArtifacts' : 'webSearch'
     })
 
     // Conditional edge for designSchema - skip to finalizeArtifacts if error
@@ -174,28 +176,60 @@ export const deepModeling = async (
     retryCount: {},
   }
 
+  const workflowRunId = uuidv4()
+
   try {
+    const createWorkflowRunResult = await repositories.schema.createWorkflowRun(
+      {
+        designSessionId,
+        workflowRunId,
+      },
+    )
+
+    if (!createWorkflowRunResult.success) {
+      return err(
+        new Error(
+          `Failed to create workflow run record: ${createWorkflowRunResult.error}`,
+        ),
+      )
+    }
+
     const compiled = createGraph()
+    const runCollector = new RunCollectorCallbackHandler()
     const result = await compiled.invoke(workflowState, {
       recursionLimit,
       configurable: {
         repositories,
         logger,
       },
+      runId: workflowRunId,
+      callbacks: [runCollector],
     })
 
     if (result.error) {
+      await repositories.schema.updateWorkflowRunStatus({
+        workflowRunId,
+        status: 'error',
+      })
       return err(new Error(result.error.message))
     }
 
-    return ok({
-      text: result.finalResponse || result.generatedAnswer || '',
+    await repositories.schema.updateWorkflowRunStatus({
+      workflowRunId,
+      status: 'success',
     })
+
+    return ok(result)
   } catch (error) {
     const errorMessage =
       error instanceof Error
         ? error.message
         : WORKFLOW_ERROR_MESSAGES.EXECUTION_FAILED
+
+    await repositories.schema.updateWorkflowRunStatus({
+      workflowRunId,
+      status: 'error',
+    })
 
     const errorState = { ...workflowState, error: new Error(errorMessage) }
     const finalizedResult = await finalizeArtifactsNode(errorState, {

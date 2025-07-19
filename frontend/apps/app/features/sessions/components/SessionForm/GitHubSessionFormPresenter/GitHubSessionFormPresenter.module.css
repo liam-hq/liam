@@ -101,21 +101,22 @@
   flex: 1;
   overflow-x: auto;
   padding: 2px;
-  scrollbar-width: thin;
-  scrollbar-color: var(--overlay-20) transparent;
+  scrollbar-width: var(--scrollbar-width);
+  scrollbar-color: var(--scrollbar-thumb-background)
+    var(--scrollbar-track-background);
 }
 
 .dropdowns::-webkit-scrollbar {
-  height: 4px;
+  height: var(--scrollbar-webkit-height);
 }
 
 .dropdowns::-webkit-scrollbar-track {
-  background: transparent;
+  background: var(--scrollbar-track-background);
 }
 
 .dropdowns::-webkit-scrollbar-thumb {
-  background-color: var(--overlay-20);
-  border-radius: 2px;
+  background-color: var(--scrollbar-thumb-background);
+  border-radius: var(--scrollbar-webkit-thumb-border-radius);
 }
 
 .buttonCustom {

@@ -32,10 +32,14 @@ exports[`parse > should parse postgresql to JSON correctly 1`] = `
           "type": "PRIMARY KEY",
         },
         "users_id_to_posts_user_id": {
-          "columnName": "user_id",
+          "columnNames": [
+            "user_id",
+          ],
           "deleteConstraint": "NO_ACTION",
           "name": "users_id_to_posts_user_id",
-          "targetColumnName": "id",
+          "targetColumnNames": [
+            "id",
+          ],
           "targetTableName": "users",
           "type": "FOREIGN KEY",
           "updateConstraint": "NO_ACTION",
@@ -176,19 +180,27 @@ exports[`parse > should parse schema.rb to JSON correctly 1`] = `
           "type": "PRIMARY KEY",
         },
         "fk_comments_task_id": {
-          "columnName": "task_id",
+          "columnNames": [
+            "task_id",
+          ],
           "deleteConstraint": "CASCADE",
           "name": "fk_comments_task_id",
-          "targetColumnName": "id",
+          "targetColumnNames": [
+            "id",
+          ],
           "targetTableName": "tasks",
           "type": "FOREIGN KEY",
           "updateConstraint": "RESTRICT",
         },
         "fk_comments_user_id": {
-          "columnName": "user_id",
+          "columnNames": [
+            "user_id",
+          ],
           "deleteConstraint": "CASCADE",
           "name": "fk_comments_user_id",
-          "targetColumnName": "id",
+          "targetColumnNames": [
+            "id",
+          ],
           "targetTableName": "users",
           "type": "FOREIGN KEY",
           "updateConstraint": "RESTRICT",
@@ -291,10 +303,14 @@ exports[`parse > should parse schema.rb to JSON correctly 1`] = `
           "type": "PRIMARY KEY",
         },
         "fk_departments_company_id": {
-          "columnName": "company_id",
+          "columnNames": [
+            "company_id",
+          ],
           "deleteConstraint": "CASCADE",
           "name": "fk_departments_company_id",
-          "targetColumnName": "id",
+          "targetColumnNames": [
+            "id",
+          ],
           "targetTableName": "companies",
           "type": "FOREIGN KEY",
           "updateConstraint": "RESTRICT",
@@ -357,19 +373,27 @@ exports[`parse > should parse schema.rb to JSON correctly 1`] = `
           "type": "UNIQUE",
         },
         "fk_project_assignments_project_id": {
-          "columnName": "project_id",
+          "columnNames": [
+            "project_id",
+          ],
           "deleteConstraint": "CASCADE",
           "name": "fk_project_assignments_project_id",
-          "targetColumnName": "id",
+          "targetColumnNames": [
+            "id",
+          ],
           "targetTableName": "projects",
           "type": "FOREIGN KEY",
           "updateConstraint": "RESTRICT",
         },
         "fk_project_assignments_user_id": {
-          "columnName": "user_id",
+          "columnNames": [
+            "user_id",
+          ],
           "deleteConstraint": "CASCADE",
           "name": "fk_project_assignments_user_id",
-          "targetColumnName": "id",
+          "targetColumnNames": [
+            "id",
+          ],
           "targetTableName": "users",
           "type": "FOREIGN KEY",
           "updateConstraint": "RESTRICT",
@@ -433,10 +457,14 @@ exports[`parse > should parse schema.rb to JSON correctly 1`] = `
           "type": "PRIMARY KEY",
         },
         "fk_projects_company_id": {
-          "columnName": "company_id",
+          "columnNames": [
+            "company_id",
+          ],
           "deleteConstraint": "CASCADE",
           "name": "fk_projects_company_id",
-          "targetColumnName": "id",
+          "targetColumnNames": [
+            "id",
+          ],
           "targetTableName": "companies",
           "type": "FOREIGN KEY",
           "updateConstraint": "RESTRICT",
@@ -563,19 +591,27 @@ exports[`parse > should parse schema.rb to JSON correctly 1`] = `
           "type": "PRIMARY KEY",
         },
         "fk_tasks_assigned_user_id": {
-          "columnName": "assigned_user_id",
+          "columnNames": [
+            "assigned_user_id",
+          ],
           "deleteConstraint": "RESTRICT",
           "name": "fk_tasks_assigned_user_id",
-          "targetColumnName": "id",
+          "targetColumnNames": [
+            "id",
+          ],
           "targetTableName": "users",
           "type": "FOREIGN KEY",
           "updateConstraint": "RESTRICT",
         },
         "fk_tasks_project_id": {
-          "columnName": "project_id",
+          "columnNames": [
+            "project_id",
+          ],
           "deleteConstraint": "CASCADE",
           "name": "fk_tasks_project_id",
-          "targetColumnName": "id",
+          "targetColumnNames": [
+            "id",
+          ],
           "targetTableName": "projects",
           "type": "FOREIGN KEY",
           "updateConstraint": "RESTRICT",
@@ -662,19 +698,27 @@ exports[`parse > should parse schema.rb to JSON correctly 1`] = `
           "type": "PRIMARY KEY",
         },
         "fk_timesheets_task_id": {
-          "columnName": "task_id",
+          "columnNames": [
+            "task_id",
+          ],
           "deleteConstraint": "CASCADE",
           "name": "fk_timesheets_task_id",
-          "targetColumnName": "id",
+          "targetColumnNames": [
+            "id",
+          ],
           "targetTableName": "tasks",
           "type": "FOREIGN KEY",
           "updateConstraint": "RESTRICT",
         },
         "fk_timesheets_user_id": {
-          "columnName": "user_id",
+          "columnNames": [
+            "user_id",
+          ],
           "deleteConstraint": "CASCADE",
           "name": "fk_timesheets_user_id",
-          "targetColumnName": "id",
+          "targetColumnNames": [
+            "id",
+          ],
           "targetTableName": "users",
           "type": "FOREIGN KEY",
           "updateConstraint": "RESTRICT",
@@ -745,19 +789,27 @@ exports[`parse > should parse schema.rb to JSON correctly 1`] = `
           "type": "UNIQUE",
         },
         "fk_user_roles_role_id": {
-          "columnName": "role_id",
+          "columnNames": [
+            "role_id",
+          ],
           "deleteConstraint": "CASCADE",
           "name": "fk_user_roles_role_id",
-          "targetColumnName": "id",
+          "targetColumnNames": [
+            "id",
+          ],
           "targetTableName": "roles",
           "type": "FOREIGN KEY",
           "updateConstraint": "RESTRICT",
         },
         "fk_user_roles_user_id": {
-          "columnName": "user_id",
+          "columnNames": [
+            "user_id",
+          ],
           "deleteConstraint": "CASCADE",
           "name": "fk_user_roles_user_id",
-          "targetColumnName": "id",
+          "targetColumnNames": [
+            "id",
+          ],
           "targetTableName": "users",
           "type": "FOREIGN KEY",
           "updateConstraint": "RESTRICT",
@@ -853,19 +905,27 @@ exports[`parse > should parse schema.rb to JSON correctly 1`] = `
           "type": "PRIMARY KEY",
         },
         "fk_users_company_id": {
-          "columnName": "company_id",
+          "columnNames": [
+            "company_id",
+          ],
           "deleteConstraint": "CASCADE",
           "name": "fk_users_company_id",
-          "targetColumnName": "id",
+          "targetColumnNames": [
+            "id",
+          ],
           "targetTableName": "companies",
           "type": "FOREIGN KEY",
           "updateConstraint": "RESTRICT",
         },
         "fk_users_department_id": {
-          "columnName": "department_id",
+          "columnNames": [
+            "department_id",
+          ],
           "deleteConstraint": "CASCADE",
           "name": "fk_users_department_id",
-          "targetColumnName": "id",
+          "targetColumnNames": [
+            "id",
+          ],
           "targetTableName": "departments",
           "type": "FOREIGN KEY",
           "updateConstraint": "RESTRICT",
