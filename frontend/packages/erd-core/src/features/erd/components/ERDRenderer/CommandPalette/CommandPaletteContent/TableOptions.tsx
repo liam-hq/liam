@@ -2,15 +2,13 @@ import { Table2 } from '@liam-hq/ui'
 import { Command } from 'cmdk'
 import type { FC } from 'react'
 import { useSchemaOrThrow } from '@/stores'
+import { useCommandPaletteInnerOrThrow } from '../CommandPaletteInnerProvider'
 import { getTableLinkHref, suggestionToString } from '../utils'
 import styles from './CommandPaletteContent.module.css'
 
-type Props = {
-  goToERD: (tableName: string) => void
-}
-
-export const TableOptions: FC<Props> = ({ goToERD }) => {
+export const TableOptions: FC = () => {
   const schema = useSchemaOrThrow()
+  const { goToERD } = useCommandPaletteInnerOrThrow()
 
   return (
     <Command.Group heading="Tables">

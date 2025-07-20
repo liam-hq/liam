@@ -7,13 +7,13 @@ import {
 import { DiamondFillIcon, DiamondIcon, KeyRound, Table2 } from '@liam-hq/ui'
 import { Command } from 'cmdk'
 import type { FC } from 'react'
+import { useCommandPaletteInnerOrThrow } from '../CommandPaletteInnerProvider'
 import { getTableLinkHref, suggestionToString } from '../utils'
 import styles from './CommandPaletteContent.module.css'
 
 type Props = {
   searchText: string
   table: Table
-  goToERD: (tableName: string) => void
 }
 
 const ColumnIcon: FC<{
@@ -32,7 +32,9 @@ const ColumnIcon: FC<{
   return <DiamondIcon className={styles.itemIcon} />
 }
 
-export const ColumnOptions: FC<Props> = ({ searchText, table, goToERD }) => {
+export const ColumnOptions: FC<Props> = ({ searchText, table }) => {
+  const { goToERD } = useCommandPaletteInnerOrThrow()
+
   return (
     <Command.Group heading="Tables">
       <Command.Item

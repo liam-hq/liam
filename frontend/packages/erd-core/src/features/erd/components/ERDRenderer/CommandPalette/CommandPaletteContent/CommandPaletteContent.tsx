@@ -1,10 +1,10 @@
 import { Button } from '@liam-hq/ui'
 import { DialogClose } from '@radix-ui/react-dialog'
 import { Command } from 'cmdk'
-import { type FC, useCallback, useEffect, useState } from 'react'
-import { useTableSelection } from '@/features/erd/hooks'
+import { type FC, useEffect, useState } from 'react'
 import { useSchemaOrThrow } from '@/stores'
 import { TableNode } from '../../../ERDContent/components'
+import { useCommandPaletteInnerOrThrow } from '../CommandPaletteInnerProvider'
 import { CommandPaletteSearchInput } from '../CommandPaletteSearchInput'
 import type { InputMode, Suggestion } from '../types'
 import {
@@ -17,11 +17,7 @@ import { CommandOptions } from './CommandOptions'
 import styles from './CommandPaletteContent.module.css'
 import { TableOptions } from './TableOptions'
 
-type Props = {
-  closeDialog: () => void
-}
-
-export const CommandPaletteContent: FC<Props> = ({ closeDialog }) => {
+export const CommandPaletteContent: FC = () => {
   const [searchText, setSearchText] = useState('')
   const [inputMode, setInputMode] = useState<InputMode>({ type: 'default' })
   const [suggestion, setSuggestion] = useState<Suggestion | null>(null)
@@ -37,15 +33,8 @@ export const CommandPaletteContent: FC<Props> = ({ closeDialog }) => {
             : ''
           : ''
     ]
-  const { selectTable } = useTableSelection()
 
-  const goToERD = useCallback(
-    (tableName: string) => {
-      selectTable({ tableId: tableName, displayArea: 'main' })
-      closeDialog()
-    },
-    [selectTable, closeDialog],
-  )
+  const { goToERD } = useCommandPaletteInnerOrThrow()
 
   // Select option by pressing [Enter] key (with/without ⌘ key)
   useEffect(() => {
@@ -104,13 +93,9 @@ export const CommandPaletteContent: FC<Props> = ({ closeDialog }) => {
       <div className={styles.main}>
         <Command.List>
           <Command.Empty>No results found.</Command.Empty>
-          {inputMode.type === 'default' && <TableOptions goToERD={goToERD} />}
+          {inputMode.type === 'default' && <TableOptions />}
           {inputMode.type === 'column' && table && (
-            <ColumnOptions
-              table={table}
-              goToERD={goToERD}
-              searchText={searchText}
-            />
+            <ColumnOptions table={table} searchText={searchText} />
           )}
           {(inputMode.type === 'default' || inputMode.type === 'command') && (
             <CommandOptions />

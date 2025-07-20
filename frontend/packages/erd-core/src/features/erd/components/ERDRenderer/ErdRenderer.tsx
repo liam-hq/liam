@@ -32,7 +32,11 @@ import {
 } from '../../utils'
 import { ERDContent } from '../ERDContent'
 import { CardinalityMarkers } from './CardinalityMarkers'
-import { CommandPalette, CommandPaletteProvider } from './CommandPalette'
+import {
+  CommandPalette,
+  CommandPaletteInnerProvider,
+  CommandPaletteProvider,
+} from './CommandPalette'
 import { ErrorDisplay } from './ErrorDisplay'
 import { LeftPane } from './LeftPane'
 import { RelationshipEdgeParticleMarker } from './RelationshipEdgeParticleMarker'
@@ -179,7 +183,9 @@ export const ERDRenderer: FC<Props> = ({
                 </main>
               </ResizablePanel>
             </ResizablePanelGroup>
-            <CommandPalette />
+            <CommandPaletteInnerProvider>
+              <CommandPalette />
+            </CommandPaletteInnerProvider>
           </ReactFlowProvider>
         </CommandPaletteProvider>
       </ToastProvider>
