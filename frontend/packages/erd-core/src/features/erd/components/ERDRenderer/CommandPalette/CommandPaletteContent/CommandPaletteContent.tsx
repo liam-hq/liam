@@ -34,9 +34,15 @@ export const CommandPaletteContent: FC<Props> = ({ closeDialog }) => {
 
   const schema = useSchemaOrThrow()
   const table =
-    selectedOption?.type === 'table'
-      ? schema.current.tables[selectedOption.name]
-      : undefined
+    schema.current.tables[
+      inputMode?.type === 'column'
+        ? inputMode.tableName
+        : inputMode?.type === 'default'
+          ? selectedOption?.type === 'table'
+            ? selectedOption.name
+            : ''
+          : ''
+    ]
   const { selectTable } = useTableSelection()
 
   const goToERD = useCallback(
@@ -74,9 +80,21 @@ export const CommandPaletteContent: FC<Props> = ({ closeDialog }) => {
         selectedOption ? `${selectedOption.type}|${selectedOption.name}` : ''
       }
       onValueChange={(v) => {
-        const [type_, value] = v.split('|')
-        if ((type_ === 'command' || type_ === 'table') && value) {
-          setSelectedOption({ type: type_, name: value })
+        const [type, name] = v.split('|')
+        if (name === undefined) {
+          setSelectedOption(null)
+          return
+        }
+        if (type === 'command' || type === 'table') {
+          setSelectedOption({ type, name })
+        } else if (type === 'column') {
+          setSelectedOption((prev) =>
+            prev?.type === 'table'
+              ? { type: 'column', tableName: prev.name, name }
+              : prev?.type === 'column'
+                ? { ...prev, name }
+                : null,
+          )
         } else {
           setSelectedOption(null)
         }
@@ -131,6 +149,50 @@ export const CommandPaletteContent: FC<Props> = ({ closeDialog }) => {
                   </a>
                 </Command.Item>
               ))}
+            </Command.Group>
+          )}
+          {inputMode.type === 'column' && (
+            <Command.Group heading="Tables">
+              <Command.Item value={'column|'} asChild>
+                <a
+                  href={getTableLinkHref(inputMode.tableName)}
+                  onClick={(event) => {
+                    // Do not call preventDefault to allow the default link behavior when ⌘ key is pressed
+                    if (event.ctrlKey || event.metaKey) {
+                      return
+                    }
+
+                    event.preventDefault()
+                    goToERD(inputMode.tableName)
+                  }}
+                >
+                  <Table2 className={styles.itemIcon} />
+                  <span className={styles.itemText}>{inputMode.tableName}</span>
+                </a>
+              </Command.Item>
+              {table?.columns &&
+                Object.values(table?.columns).map((column) => (
+                  <Command.Item
+                    key={column.name}
+                    value={`column|${column.name}`}
+                  >
+                    <a
+                      href={getTableLinkHref(inputMode.tableName)}
+                      onClick={(event) => {
+                        // Do not call preventDefault to allow the default link behavior when ⌘ key is pressed
+                        if (event.ctrlKey || event.metaKey) {
+                          return
+                        }
+
+                        event.preventDefault()
+                        goToERD(inputMode.tableName)
+                      }}
+                    >
+                      <KeyRound className={styles.itemIcon} />
+                      <span className={styles.itemText}>{column.name}</span>
+                    </a>
+                  </Command.Item>
+                ))}
             </Command.Group>
           )}
           {(inputMode.type === 'default' || inputMode.type === 'command') && (

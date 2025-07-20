@@ -5,4 +5,5 @@ export type InputMode =
 
 export type Suggestion =
   | { type: 'table'; name: string }
+  | { type: 'column'; tableName: string; name: string }
   | { type: 'command'; name: string }
