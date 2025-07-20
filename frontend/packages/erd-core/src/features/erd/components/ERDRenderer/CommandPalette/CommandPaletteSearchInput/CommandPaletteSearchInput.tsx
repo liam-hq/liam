@@ -22,8 +22,8 @@ export const CommandPaletteSearchInput: FC<Props> = ({
   const [searchText, setSearchText] = useState('')
 
   const { prefix, suffix } = useMemo(() => {
-    if (searchText === '' || suggestion === null)
-      return { prefix: '', suffix: '' }
+    if (suggestion === null) return { prefix: '', suffix: '' }
+    if (searchText === '') return { prefix: '', suffix: suggestion.name }
 
     const index = suggestion.name
       ?.toLowerCase()
