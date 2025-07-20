@@ -3,11 +3,13 @@ import { Command } from 'cmdk'
 import type { FC } from 'react'
 import { useSchemaOrThrow } from '@/stores'
 import { useCommandPaletteInnerOrThrow } from '../CommandPaletteInnerProvider'
+import { useCommandPaletteOrThrow } from '../CommandPaletteProvider'
 import { getTableLinkHref, suggestionToString } from '../utils'
 import styles from './CommandPaletteContent.module.css'
 
 export const TableOptions: FC = () => {
   const schema = useSchemaOrThrow()
+  const { setOpen } = useCommandPaletteOrThrow()
   const { goToERD } = useCommandPaletteInnerOrThrow()
 
   return (
@@ -29,6 +31,7 @@ export const TableOptions: FC = () => {
 
               event.preventDefault()
               goToERD(table.name)
+              setOpen(false)
             }}
           >
             <Table2 className={styles.itemIcon} />

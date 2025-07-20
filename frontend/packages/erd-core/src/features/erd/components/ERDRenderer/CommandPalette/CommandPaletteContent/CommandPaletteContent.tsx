@@ -5,6 +5,7 @@ import { type FC, useEffect, useState } from 'react'
 import { useSchemaOrThrow } from '@/stores'
 import { TableNode } from '../../../ERDContent/components'
 import { useCommandPaletteInnerOrThrow } from '../CommandPaletteInnerProvider'
+import { useCommandPaletteOrThrow } from '../CommandPaletteProvider'
 import { CommandPaletteSearchInput } from '../CommandPaletteSearchInput'
 import type { InputMode, Suggestion } from '../types'
 import {
@@ -18,6 +19,9 @@ import styles from './CommandPaletteContent.module.css'
 import { TableOptions } from './TableOptions'
 
 export const CommandPaletteContent: FC = () => {
+  const { setOpen } = useCommandPaletteOrThrow()
+  const { goToERD } = useCommandPaletteInnerOrThrow()
+
   const [searchText, setSearchText] = useState('')
   const [inputMode, setInputMode] = useState<InputMode>({ type: 'default' })
   const [suggestion, setSuggestion] = useState<Suggestion | null>(null)
@@ -34,8 +38,6 @@ export const CommandPaletteContent: FC = () => {
           : ''
     ]
 
-  const { goToERD } = useCommandPaletteInnerOrThrow()
-
   // Select option by pressing [Enter] key (with/without ⌘ key)
   useEffect(() => {
     const down = (event: KeyboardEvent) => {
@@ -48,6 +50,7 @@ export const CommandPaletteContent: FC = () => {
             window.open(getTableLinkHref(tableName))
           } else {
             goToERD(tableName)
+            setOpen(false)
           }
         }
       }

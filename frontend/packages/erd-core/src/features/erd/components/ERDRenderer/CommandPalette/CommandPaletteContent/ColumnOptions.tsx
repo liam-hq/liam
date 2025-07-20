@@ -8,6 +8,7 @@ import { DiamondFillIcon, DiamondIcon, KeyRound, Table2 } from '@liam-hq/ui'
 import { Command } from 'cmdk'
 import type { FC } from 'react'
 import { useCommandPaletteInnerOrThrow } from '../CommandPaletteInnerProvider'
+import { useCommandPaletteOrThrow } from '../CommandPaletteProvider'
 import { getTableLinkHref, suggestionToString } from '../utils'
 import styles from './CommandPaletteContent.module.css'
 
@@ -33,6 +34,7 @@ const ColumnIcon: FC<{
 }
 
 export const ColumnOptions: FC<Props> = ({ searchText, table }) => {
+  const { setOpen } = useCommandPaletteOrThrow()
   const { goToERD } = useCommandPaletteInnerOrThrow()
 
   return (
@@ -53,6 +55,7 @@ export const ColumnOptions: FC<Props> = ({ searchText, table }) => {
 
             event.preventDefault()
             goToERD(table.name)
+            setOpen(false)
           }}
         >
           <Table2 className={styles.itemIcon} />
@@ -81,6 +84,7 @@ export const ColumnOptions: FC<Props> = ({ searchText, table }) => {
 
                 event.preventDefault()
                 goToERD(table.name)
+                setOpen(false)
               }}
               className={styles.column}
             >

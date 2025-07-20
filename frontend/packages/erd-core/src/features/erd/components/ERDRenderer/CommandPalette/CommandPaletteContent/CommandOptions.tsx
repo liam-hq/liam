@@ -6,65 +6,33 @@ import {
   Scan,
   TidyUpIcon,
 } from '@liam-hq/ui'
-import { useReactFlow } from '@xyflow/react'
 import { Command } from 'cmdk'
-import { type FC, useCallback } from 'react'
-import { computeAutoLayout } from '@/features/erd/utils'
-import { toolbarActionLogEvent } from '@/features/gtm/utils'
-import { useCustomReactflow } from '@/features/reactflow/hooks'
-import { useVersionOrThrow } from '@/providers'
-import { useUserEditingOrThrow } from '@/stores'
-import { useCommandPalette } from '../CommandPaletteProvider'
+import type { FC } from 'react'
+import { useCommandPaletteInnerOrThrow } from '../CommandPaletteInnerProvider'
+import { useCommandPaletteOrThrow } from '../CommandPaletteProvider'
 import { suggestionToString } from '../utils'
 import styles from './CommandPaletteContent.module.css'
 
 export const CommandOptions: FC = () => {
-  const commandPaletteResult = useCommandPalette()
-  if (commandPaletteResult.isErr()) {
-    throw commandPaletteResult.error
-  }
-  const { setOpen } = commandPaletteResult.value
+  const {
+    copyLink,
+    zoomToFit,
+    tidyUp,
+    showAllField,
+    showTableName,
+    showKeyOnly,
+  } = useCommandPaletteInnerOrThrow()
 
-  // for "Zoom to Fit"
-  const { fitView } = useCustomReactflow()
-  const { showMode } = useUserEditingOrThrow()
-  const { version } = useVersionOrThrow()
-  const handleZoomToFit = useCallback(() => {
-    toolbarActionLogEvent({
-      element: 'fitview',
-      showMode,
-      platform: version.displayedOn,
-      gitHash: version.gitHash,
-      ver: version.version,
-      appEnv: version.envName,
-    })
-    fitView()
-  }, [fitView, showMode, version])
-
-  // for "Tidy Up"
-  const { getNodes, getEdges, setNodes } = useReactFlow()
-  const handleTidyUp = useCallback(async () => {
-    toolbarActionLogEvent({
-      element: 'tidyUp',
-      showMode,
-      platform: version.displayedOn,
-      gitHash: version.gitHash,
-      ver: version.version,
-      appEnv: version.envName,
-    })
-    const { nodes } = await computeAutoLayout(getNodes(), getEdges())
-    setNodes(nodes)
-    fitView()
-  }, [showMode, getNodes, getEdges, setNodes, fitView, version])
-
-  // for "Show All Fields" / "Show Table Name" / Show Key Only""
-  const { setShowMode } = useUserEditingOrThrow()
+  const { setOpen } = useCommandPaletteOrThrow()
 
   return (
     <Command.Group heading="Command">
       <Command.Item
         value={suggestionToString({ type: 'command', name: 'Copy Link' })}
-        onSelect={() => navigator.clipboard.writeText(location.href)}
+        onSelect={() => {
+          copyLink()
+          setOpen(false)
+        }}
         className={styles.item}
       >
         <Copy className={styles.itemIcon} />
@@ -75,7 +43,7 @@ export const CommandOptions: FC = () => {
       <Command.Item
         value={suggestionToString({ type: 'command', name: 'Zoom to Fit' })}
         onSelect={() => {
-          handleZoomToFit()
+          zoomToFit()
           setOpen(false)
         }}
         className={styles.item}
@@ -88,7 +56,7 @@ export const CommandOptions: FC = () => {
       <Command.Item
         value={suggestionToString({ type: 'command', name: 'Tidy Up' })}
         onSelect={() => {
-          handleTidyUp()
+          tidyUp()
           setOpen(false)
         }}
         className={styles.item}
@@ -101,7 +69,7 @@ export const CommandOptions: FC = () => {
       <Command.Item
         value={suggestionToString({ type: 'command', name: 'Show All Fields' })}
         onSelect={() => {
-          setShowMode('ALL_FIELDS')
+          showAllField()
           setOpen(false)
         }}
         className={styles.item}
@@ -114,7 +82,7 @@ export const CommandOptions: FC = () => {
       <Command.Item
         value={suggestionToString({ type: 'command', name: 'Show Table Name' })}
         onSelect={() => {
-          setShowMode('TABLE_NAME')
+          showTableName()
           setOpen(false)
         }}
         className={styles.item}
@@ -127,7 +95,7 @@ export const CommandOptions: FC = () => {
       <Command.Item
         value={suggestionToString({ type: 'command', name: 'Show Key Only' })}
         onSelect={() => {
-          setShowMode('KEY_ONLY')
+          showKeyOnly()
           setOpen(false)
         }}
         className={styles.item}
