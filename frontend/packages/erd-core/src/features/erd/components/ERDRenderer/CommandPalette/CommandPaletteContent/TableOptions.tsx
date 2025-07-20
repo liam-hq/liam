@@ -2,13 +2,8 @@ import { Table2 } from '@liam-hq/ui'
 import { Command } from 'cmdk'
 import type { FC } from 'react'
 import { useSchemaOrThrow } from '@/stores'
+import { getTableLinkHref } from '../utils'
 import styles from './CommandPaletteContent.module.css'
-
-export const getTableLinkHref = (activeTableName: string) => {
-  const searchParams = new URLSearchParams(window.location.search)
-  searchParams.set('active', activeTableName)
-  return `?${searchParams.toString()}`
-}
 
 type Props = {
   goToERD: (tableName: string) => void

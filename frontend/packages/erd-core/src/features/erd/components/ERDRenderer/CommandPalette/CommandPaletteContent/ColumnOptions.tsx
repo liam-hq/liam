@@ -7,8 +7,8 @@ import {
 import { DiamondFillIcon, DiamondIcon, KeyRound, Table2 } from '@liam-hq/ui'
 import { Command } from 'cmdk'
 import type { FC } from 'react'
+import { getTableLinkHref } from '../utils'
 import styles from './CommandPaletteContent.module.css'
-import { getTableLinkHref } from './TableOptions'
 
 type Props = {
   table: Table

@@ -10,7 +10,7 @@ import type { InputMode, Suggestion } from '../types'
 import { ColumnOptions } from './ColumnOptions'
 import { CommandOptions } from './CommandOptions'
 import styles from './CommandPaletteContent.module.css'
-import { getTableLinkHref, TableOptions } from './TableOptions'
+import { TableOptions } from './TableOptions'
 
 type Props = {
   closeDialog: () => void
