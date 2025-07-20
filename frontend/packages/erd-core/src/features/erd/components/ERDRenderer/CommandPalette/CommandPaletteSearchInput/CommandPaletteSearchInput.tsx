@@ -62,7 +62,7 @@ export const CommandPaletteSearchInput: FC<Props> = ({
               event.preventDefault()
             }
             if (event.key === 'Tab' && suggestion) {
-              setInputMode(suggestion)
+              setInputMode({ type: 'column', tableName: suggestion.name })
               if (suggestion.type === 'command') {
                 setSearchText(suggestion.name)
               } else if (suggestion.type === 'table') {
@@ -79,7 +79,7 @@ export const CommandPaletteSearchInput: FC<Props> = ({
         <div className={styles.suggestion}>
           {inputMode.type !== 'default' && (
             <span ref={inputModeTextRef} className={styles.inputModeIndicator}>
-              {inputMode.type === 'table' && `${inputMode.name} /`}
+              {inputMode.type === 'column' && `${inputMode.tableName} /`}
               {inputMode.type === 'command' && '>'}
             </span>
           )}

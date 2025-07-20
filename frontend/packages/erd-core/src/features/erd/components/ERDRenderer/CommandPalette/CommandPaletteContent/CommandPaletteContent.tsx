@@ -106,7 +106,7 @@ export const CommandPaletteContent: FC<Props> = ({ closeDialog }) => {
       <div className={styles.main}>
         <Command.List>
           <Command.Empty>No results found.</Command.Empty>
-          {(inputMode.type === 'default' || inputMode.type === 'table') && (
+          {inputMode.type === 'default' && (
             <Command.Group heading="Tables">
               {Object.values(schema.current.tables).map((table) => (
                 <Command.Item

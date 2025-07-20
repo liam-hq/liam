@@ -1,6 +1,6 @@
 export type InputMode =
   | { type: 'default' }
-  | { type: 'table'; name: string }
+  | { type: 'column'; tableName: string }
   | { type: 'command' }
 
 export type Suggestion =
