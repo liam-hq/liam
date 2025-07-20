@@ -1,6 +1,14 @@
 import {
+  type Cardinality as CardinalityType,
+  type Column,
+  isPrimaryKey,
+  type Table,
+} from '@liam-hq/db-structure'
+import {
   Button,
   Copy,
+  DiamondFillIcon,
+  DiamondIcon,
   KeyRound,
   PanelTop,
   RectangleHorizontal,
@@ -24,6 +32,22 @@ const getTableLinkHref = (activeTableName: string) => {
 
 type Props = {
   closeDialog: () => void
+}
+
+const ColumnIcon: FC<{
+  table: Table
+  column: Column
+  targetCardinality?: CardinalityType | undefined
+}> = ({ table, column }) => {
+  if (isPrimaryKey(column.name, table.constraints)) {
+    return <KeyRound className={styles.itemIcon} />
+  }
+
+  if (column.notNull) {
+    return <DiamondFillIcon className={styles.itemIcon} />
+  }
+
+  return <DiamondIcon className={styles.itemIcon} />
 }
 
 export const CommandPaletteContent: FC<Props> = ({ closeDialog }) => {
@@ -190,7 +214,7 @@ export const CommandPaletteContent: FC<Props> = ({ closeDialog }) => {
                       }}
                       className={styles.column}
                     >
-                      <KeyRound className={styles.itemIcon} />
+                      <ColumnIcon table={table} column={column} />
                       <span className={styles.itemText}>{column.name}</span>
                     </a>
                   </Command.Item>
