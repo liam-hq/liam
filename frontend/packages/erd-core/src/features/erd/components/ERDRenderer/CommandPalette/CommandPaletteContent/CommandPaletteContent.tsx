@@ -100,9 +100,11 @@ export const CommandPaletteContent: FC<Props> = ({ closeDialog }) => {
         }
       }}
       filter={(value, search) => {
-        return value.split('|')[1]?.toLowerCase().includes(search.toLowerCase())
+        return value === 'column|'
           ? 1
-          : 0
+          : value.split('|')[1]?.toLowerCase().includes(search.toLowerCase())
+            ? 1
+            : 0
       }}
     >
       <div className={styles.searchArea}>
@@ -175,6 +177,7 @@ export const CommandPaletteContent: FC<Props> = ({ closeDialog }) => {
                   <Command.Item
                     key={column.name}
                     value={`column|${column.name}`}
+                    asChild
                   >
                     <a
                       href={getTableLinkHref(inputMode.tableName)}
@@ -187,6 +190,7 @@ export const CommandPaletteContent: FC<Props> = ({ closeDialog }) => {
                         event.preventDefault()
                         goToERD(inputMode.tableName)
                       }}
+                      className={styles.column}
                     >
                       <KeyRound className={styles.itemIcon} />
                       <span className={styles.itemText}>{column.name}</span>

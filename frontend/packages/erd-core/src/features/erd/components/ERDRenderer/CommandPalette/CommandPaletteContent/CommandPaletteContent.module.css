@@ -38,6 +38,10 @@
   border-radius: var(--border-radius-base);
 }
 
+.main [cmdk-item].column {
+  padding-left: var(--spacing-6);
+}
+
 .main [cmdk-item] .itemText {
   font-size: var(--font-size-5);
   overflow-x: hidden;
