@@ -5,21 +5,23 @@ import type { InputMode, Suggestion } from '../types'
 import styles from './CommandPaletteSearchInput.module.css'
 
 type Props = {
+  searchText: string
   suggestion: Suggestion | null
   inputMode: InputMode
+  setSearchText: (text: string) => void
   setInputMode: (inputMode: InputMode) => void
 }
 
 export const CommandPaletteSearchInput: FC<Props> = ({
-  suggestion,
+  searchText,
   inputMode,
+  suggestion,
+  setSearchText,
   setInputMode,
 }) => {
   const inputModeTextRef = useRef<HTMLSpanElement>(null)
   const prefixTextRef = useRef<HTMLSpanElement>(null)
   const [inputPaddingLeft, setInputPaddingLeft] = useState(0)
-
-  const [searchText, setSearchText] = useState('')
 
   const { prefix, suffix } = useMemo(() => {
     if (suggestion === null) return { prefix: '', suffix: '' }

@@ -22,6 +22,7 @@ type Props = {
 }
 
 export const CommandPaletteContent: FC<Props> = ({ closeDialog }) => {
+  const [searchText, setSearchText] = useState('')
   const [inputMode, setInputMode] = useState<InputMode>({ type: 'default' })
   const [suggestion, setSuggestion] = useState<Suggestion | null>(null)
 
@@ -84,8 +85,10 @@ export const CommandPaletteContent: FC<Props> = ({ closeDialog }) => {
     >
       <div className={styles.searchArea}>
         <CommandPaletteSearchInput
+          searchText={searchText}
           suggestion={suggestion}
           inputMode={inputMode}
+          setSearchText={setSearchText}
           setInputMode={setInputMode}
         />
         <DialogClose asChild>
@@ -103,7 +106,11 @@ export const CommandPaletteContent: FC<Props> = ({ closeDialog }) => {
           <Command.Empty>No results found.</Command.Empty>
           {inputMode.type === 'default' && <TableOptions goToERD={goToERD} />}
           {inputMode.type === 'column' && table && (
-            <ColumnOptions table={table} goToERD={goToERD} />
+            <ColumnOptions
+              table={table}
+              goToERD={goToERD}
+              searchText={searchText}
+            />
           )}
           {(inputMode.type === 'default' || inputMode.type === 'command') && (
             <CommandOptions />

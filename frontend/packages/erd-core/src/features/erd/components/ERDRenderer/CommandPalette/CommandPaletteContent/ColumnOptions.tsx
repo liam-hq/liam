@@ -11,6 +11,7 @@ import { getTableLinkHref, suggestionToString } from '../utils'
 import styles from './CommandPaletteContent.module.css'
 
 type Props = {
+  searchText: string
   table: Table
   goToERD: (tableName: string) => void
 }
@@ -31,12 +32,13 @@ const ColumnIcon: FC<{
   return <DiamondIcon className={styles.itemIcon} />
 }
 
-export const ColumnOptions: FC<Props> = ({ table, goToERD }) => {
+export const ColumnOptions: FC<Props> = ({ searchText, table, goToERD }) => {
   return (
     <Command.Group heading="Tables">
       <Command.Item
         className={styles.item}
         value={suggestionToString({ type: 'table', name: table.name })}
+        disabled={searchText !== ''}
         asChild
       >
         <a
