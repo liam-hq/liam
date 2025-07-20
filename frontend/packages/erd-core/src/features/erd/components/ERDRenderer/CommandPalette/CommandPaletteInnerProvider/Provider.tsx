@@ -1,5 +1,5 @@
 import { useReactFlow } from '@xyflow/react'
-import { type FC, type PropsWithChildren, useCallback } from 'react'
+import { type FC, type PropsWithChildren, useCallback, useEffect } from 'react'
 import { useTableSelection } from '@/features/erd/hooks'
 import { computeAutoLayout } from '@/features/erd/utils'
 import { toolbarActionLogEvent } from '@/features/gtm/utils'
@@ -64,6 +64,31 @@ export const CommandPaletteInnerProvider: FC<Props> = ({ children }) => {
   const showKeyOnly = useCallback(() => {
     setShowMode('KEY_ONLY')
   }, [])
+
+  useEffect(() => {
+    const down = (event: KeyboardEvent) => {
+      if (!event.metaKey && !event.ctrlKey) {
+        return
+      }
+
+      if (event.key === 'c') {
+        copyLink()
+      } else if (event.key === 'f') {
+        zoomToFit()
+      } else if (event.key === 't') {
+        tidyUp()
+      } else if (event.key === '1') {
+        showAllField()
+      } else if (event.key === '2') {
+        showTableName()
+      } else if (event.key === '3') {
+        showKeyOnly()
+      }
+    }
+
+    document.addEventListener('keydown', down)
+    return () => document.removeEventListener('keydown', down)
+  }, [copyLink, zoomToFit, tidyUp, showAllField, showTableName, showKeyOnly])
 
   return (
     <CommandPaletteInnerContext.Provider
