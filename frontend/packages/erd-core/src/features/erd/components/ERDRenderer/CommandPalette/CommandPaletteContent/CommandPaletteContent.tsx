@@ -1,60 +1,24 @@
-import {
-  type Cardinality as CardinalityType,
-  type Column,
-  isPrimaryKey,
-  type Table,
-} from '@liam-hq/db-structure'
-import {
-  Button,
-  Copy,
-  DiamondFillIcon,
-  DiamondIcon,
-  KeyRound,
-  PanelTop,
-  RectangleHorizontal,
-  Table2,
-} from '@liam-hq/ui'
+import { Button } from '@liam-hq/ui'
 import { DialogClose } from '@radix-ui/react-dialog'
 import { Command } from 'cmdk'
 import { type FC, useCallback, useEffect, useState } from 'react'
 import { useTableSelection } from '@/features/erd/hooks'
-import { useSchemaOrThrow, useUserEditingOrThrow } from '@/stores'
+import { useSchemaOrThrow } from '@/stores'
 import { TableNode } from '../../../ERDContent/components'
 import { CommandPaletteSearchInput } from '../CommandPaletteSearchInput'
 import type { InputMode, Suggestion } from '../types'
+import { ColumnOptions } from './ColumnOptions'
+import { CommandOptions } from './CommandOptions'
 import styles from './CommandPaletteContent.module.css'
-
-const getTableLinkHref = (activeTableName: string) => {
-  const searchParams = new URLSearchParams(window.location.search)
-  searchParams.set('active', activeTableName)
-  return `?${searchParams.toString()}`
-}
+import { getTableLinkHref, TableOptions } from './TableOptions'
 
 type Props = {
   closeDialog: () => void
 }
 
-const ColumnIcon: FC<{
-  table: Table
-  column: Column
-  targetCardinality?: CardinalityType | undefined
-}> = ({ table, column }) => {
-  if (isPrimaryKey(column.name, table.constraints)) {
-    return <KeyRound className={styles.itemIcon} />
-  }
-
-  if (column.notNull) {
-    return <DiamondFillIcon className={styles.itemIcon} />
-  }
-
-  return <DiamondIcon className={styles.itemIcon} />
-}
-
 export const CommandPaletteContent: FC<Props> = ({ closeDialog }) => {
   const [inputMode, setInputMode] = useState<InputMode>({ type: 'default' })
   const [suggestion, setSuggestion] = useState<Suggestion | null>(null)
-
-  const { setShowMode } = useUserEditingOrThrow()
 
   const schema = useSchemaOrThrow()
   const table =
@@ -148,119 +112,12 @@ export const CommandPaletteContent: FC<Props> = ({ closeDialog }) => {
       <div className={styles.main}>
         <Command.List>
           <Command.Empty>No results found.</Command.Empty>
-          {inputMode.type === 'default' && (
-            <Command.Group heading="Tables">
-              {Object.values(schema.current.tables).map((table) => (
-                <Command.Item
-                  key={table.name}
-                  value={`table|${table.name}`}
-                  asChild
-                >
-                  <a
-                    href={getTableLinkHref(table.name)}
-                    onClick={(event) => {
-                      // Do not call preventDefault to allow the default link behavior when ⌘ key is pressed
-                      if (event.ctrlKey || event.metaKey) {
-                        return
-                      }
-
-                      event.preventDefault()
-                      goToERD(table.name)
-                    }}
-                  >
-                    <Table2 className={styles.itemIcon} />
-                    <span className={styles.itemText}>{table.name}</span>
-                  </a>
-                </Command.Item>
-              ))}
-            </Command.Group>
-          )}
-          {inputMode.type === 'column' && (
-            <Command.Group heading="Tables">
-              <Command.Item value={'column|'} asChild>
-                <a
-                  href={getTableLinkHref(inputMode.tableName)}
-                  onClick={(event) => {
-                    // Do not call preventDefault to allow the default link behavior when ⌘ key is pressed
-                    if (event.ctrlKey || event.metaKey) {
-                      return
-                    }
-
-                    event.preventDefault()
-                    goToERD(inputMode.tableName)
-                  }}
-                >
-                  <Table2 className={styles.itemIcon} />
-                  <span className={styles.itemText}>{inputMode.tableName}</span>
-                </a>
-              </Command.Item>
-              {table?.columns &&
-                Object.values(table?.columns).map((column) => (
-                  <Command.Item
-                    key={column.name}
-                    value={`column|${column.name}`}
-                    asChild
-                  >
-                    <a
-                      href={getTableLinkHref(inputMode.tableName)}
-                      onClick={(event) => {
-                        // Do not call preventDefault to allow the default link behavior when ⌘ key is pressed
-                        if (event.ctrlKey || event.metaKey) {
-                          return
-                        }
-
-                        event.preventDefault()
-                        goToERD(inputMode.tableName)
-                      }}
-                      className={styles.column}
-                    >
-                      <ColumnIcon table={table} column={column} />
-                      <span className={styles.itemText}>{column.name}</span>
-                    </a>
-                  </Command.Item>
-                ))}
-            </Command.Group>
+          {inputMode.type === 'default' && <TableOptions goToERD={goToERD} />}
+          {inputMode.type === 'column' && table && (
+            <ColumnOptions table={table} goToERD={goToERD} />
           )}
           {(inputMode.type === 'default' || inputMode.type === 'command') && (
-            <Command.Group heading="Command">
-              <Command.Item
-                value="command|Copy Link"
-                onSelect={() => navigator.clipboard.writeText(location.href)}
-              >
-                <Copy className={styles.itemIcon} />
-                <span className={styles.itemText}>Copy Link</span>
-              </Command.Item>
-              <Command.Item
-                value="command|Show All Fields"
-                onSelect={() => {
-                  setShowMode('ALL_FIELDS')
-                  closeDialog()
-                }}
-              >
-                <PanelTop className={styles.itemIcon} />
-                <span className={styles.itemText}>Show All Fields</span>
-              </Command.Item>
-              <Command.Item
-                value="command|Show Table Name"
-                onSelect={() => {
-                  setShowMode('TABLE_NAME')
-                  closeDialog()
-                }}
-              >
-                <RectangleHorizontal className={styles.itemIcon} />
-                <span className={styles.itemText}>Show Table Name</span>
-              </Command.Item>
-              <Command.Item
-                value="command|Show Key Only"
-                onSelect={() => {
-                  setShowMode('KEY_ONLY')
-                  closeDialog()
-                }}
-              >
-                <KeyRound className={styles.itemIcon} />
-                <span className={styles.itemText}>Show Key Only</span>
-              </Command.Item>
-            </Command.Group>
+            <CommandOptions />
           )}
         </Command.List>
         <div

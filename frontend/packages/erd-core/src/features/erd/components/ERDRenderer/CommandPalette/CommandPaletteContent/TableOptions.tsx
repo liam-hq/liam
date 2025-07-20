@@ -1,0 +1,43 @@
+import { Table2 } from '@liam-hq/ui'
+import { Command } from 'cmdk'
+import type { FC } from 'react'
+import { useSchemaOrThrow } from '@/stores'
+import styles from './CommandPaletteContent.module.css'
+
+export const getTableLinkHref = (activeTableName: string) => {
+  const searchParams = new URLSearchParams(window.location.search)
+  searchParams.set('active', activeTableName)
+  return `?${searchParams.toString()}`
+}
+
+type Props = {
+  goToERD: (tableName: string) => void
+}
+
+export const TableOptions: FC<Props> = ({ goToERD }) => {
+  const schema = useSchemaOrThrow()
+
+  return (
+    <Command.Group heading="Tables">
+      {Object.values(schema.current.tables).map((table) => (
+        <Command.Item key={table.name} value={`table|${table.name}`} asChild>
+          <a
+            href={getTableLinkHref(table.name)}
+            onClick={(event) => {
+              // Do not call preventDefault to allow the default link behavior when ⌘ key is pressed
+              if (event.ctrlKey || event.metaKey) {
+                return
+              }
+
+              event.preventDefault()
+              goToERD(table.name)
+            }}
+          >
+            <Table2 className={styles.itemIcon} />
+            <span className={styles.itemText}>{table.name}</span>
+          </a>
+        </Command.Item>
+      ))}
+    </Command.Group>
+  )
+}
