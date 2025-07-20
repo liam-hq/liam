@@ -28,7 +28,7 @@ type Props = {
 
 export const CommandPaletteContent: FC<Props> = ({ closeDialog }) => {
   const [inputMode, setInputMode] = useState<InputMode>({ type: 'default' })
-  const [selectedOption, setSelectedOption] = useState<Suggestion | null>(null)
+  const [suggestion, setSuggestion] = useState<Suggestion | null>(null)
 
   const { setShowMode } = useUserEditingOrThrow()
 
@@ -38,8 +38,8 @@ export const CommandPaletteContent: FC<Props> = ({ closeDialog }) => {
       inputMode?.type === 'column'
         ? inputMode.tableName
         : inputMode?.type === 'default'
-          ? selectedOption?.type === 'table'
-            ? selectedOption.name
+          ? suggestion?.type === 'table'
+            ? suggestion.name
             : ''
           : ''
     ]
@@ -56,10 +56,10 @@ export const CommandPaletteContent: FC<Props> = ({ closeDialog }) => {
   // Select option by pressing [Enter] key (with/without ⌘ key)
   useEffect(() => {
     const down = (event: KeyboardEvent) => {
-      if (!selectedOption) return
+      if (!suggestion) return
 
-      if (selectedOption.type === 'table') {
-        const tableName = selectedOption.name
+      if (suggestion.type === 'table') {
+        const tableName = suggestion.name
         if (event.key === 'Enter') {
           if (event.metaKey || event.ctrlKey) {
             window.open(getTableLinkHref(tableName))
@@ -72,23 +72,21 @@ export const CommandPaletteContent: FC<Props> = ({ closeDialog }) => {
 
     document.addEventListener('keydown', down)
     return () => document.removeEventListener('keydown', down)
-  }, [selectedOption])
+  }, [suggestion])
 
   return (
     <Command
-      value={
-        selectedOption ? `${selectedOption.type}|${selectedOption.name}` : ''
-      }
+      value={suggestion ? `${suggestion.type}|${suggestion.name}` : ''}
       onValueChange={(v) => {
         const [type, name] = v.split('|')
         if (name === undefined) {
-          setSelectedOption(null)
+          setSuggestion(null)
           return
         }
         if (type === 'command' || type === 'table') {
-          setSelectedOption({ type, name })
+          setSuggestion({ type, name })
         } else if (type === 'column') {
-          setSelectedOption((prev) =>
+          setSuggestion((prev) =>
             prev?.type === 'table'
               ? { type: 'column', tableName: prev.name, name }
               : prev?.type === 'column'
@@ -96,7 +94,7 @@ export const CommandPaletteContent: FC<Props> = ({ closeDialog }) => {
                 : null,
           )
         } else {
-          setSelectedOption(null)
+          setSuggestion(null)
         }
       }}
       filter={(value, search) => {
@@ -109,7 +107,7 @@ export const CommandPaletteContent: FC<Props> = ({ closeDialog }) => {
     >
       <div className={styles.searchArea}>
         <CommandPaletteSearchInput
-          suggestion={selectedOption}
+          suggestion={suggestion}
           inputMode={inputMode}
           setInputMode={setInputMode}
         />
