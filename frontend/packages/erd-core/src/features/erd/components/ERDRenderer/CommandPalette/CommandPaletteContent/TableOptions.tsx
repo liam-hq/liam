@@ -2,7 +2,7 @@ import { Table2 } from '@liam-hq/ui'
 import { Command } from 'cmdk'
 import type { FC } from 'react'
 import { useSchemaOrThrow } from '@/stores'
-import { getTableLinkHref } from '../utils'
+import { getTableLinkHref, suggestionToString } from '../utils'
 import styles from './CommandPaletteContent.module.css'
 
 type Props = {
@@ -15,7 +15,11 @@ export const TableOptions: FC<Props> = ({ goToERD }) => {
   return (
     <Command.Group heading="Tables">
       {Object.values(schema.current.tables).map((table) => (
-        <Command.Item key={table.name} value={`table|${table.name}`} asChild>
+        <Command.Item
+          key={table.name}
+          value={suggestionToString({ type: 'table', name: table.name })}
+          asChild
+        >
           <a
             href={getTableLinkHref(table.name)}
             onClick={(event) => {

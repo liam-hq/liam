@@ -15,6 +15,7 @@ import { useCustomReactflow } from '@/features/reactflow/hooks'
 import { useVersionOrThrow } from '@/providers'
 import { useUserEditingOrThrow } from '@/stores'
 import { useCommandPalette } from '../CommandPaletteProvider'
+import { suggestionToString } from '../utils'
 import styles from './CommandPaletteContent.module.css'
 
 export const CommandOptions: FC = () => {
@@ -62,7 +63,7 @@ export const CommandOptions: FC = () => {
   return (
     <Command.Group heading="Command">
       <Command.Item
-        value="command|Copy Link"
+        value={suggestionToString({ type: 'command', name: 'Copy Link' })}
         onSelect={() => navigator.clipboard.writeText(location.href)}
       >
         <Copy className={styles.itemIcon} />
@@ -71,7 +72,7 @@ export const CommandOptions: FC = () => {
         <span className={styles.keyIcon}>C</span>
       </Command.Item>
       <Command.Item
-        value="command|Zoom to Fit"
+        value={suggestionToString({ type: 'command', name: 'Zoom to Fit' })}
         onSelect={() => {
           handleZoomToFit()
           setOpen(false)
@@ -83,7 +84,7 @@ export const CommandOptions: FC = () => {
         <span className={styles.keyIcon}>F</span>
       </Command.Item>
       <Command.Item
-        value="command|Tidy Up"
+        value={suggestionToString({ type: 'command', name: 'Tidy Up' })}
         onSelect={() => {
           handleTidyUp()
           setOpen(false)
@@ -95,7 +96,7 @@ export const CommandOptions: FC = () => {
         <span className={styles.keyIcon}>T</span>
       </Command.Item>
       <Command.Item
-        value="command|Show All Fields"
+        value={suggestionToString({ type: 'command', name: 'Show All Fields' })}
         onSelect={() => {
           setShowMode('ALL_FIELDS')
           setOpen(false)
@@ -107,7 +108,7 @@ export const CommandOptions: FC = () => {
         <span className={styles.keyIcon}>1</span>
       </Command.Item>
       <Command.Item
-        value="command|Show Table Name"
+        value={suggestionToString({ type: 'command', name: 'Show Table Name' })}
         onSelect={() => {
           setShowMode('TABLE_NAME')
           setOpen(false)
@@ -119,7 +120,7 @@ export const CommandOptions: FC = () => {
         <span className={styles.keyIcon}>2</span>
       </Command.Item>
       <Command.Item
-        value="command|Show Key Only"
+        value={suggestionToString({ type: 'command', name: 'Show Key Only' })}
         onSelect={() => {
           setShowMode('KEY_ONLY')
           setOpen(false)
@@ -130,13 +131,19 @@ export const CommandOptions: FC = () => {
         <span className={styles.keyIcon}>⌘</span>
         <span className={styles.keyIcon}>3</span>
       </Command.Item>
-      <Command.Item value="command|Export" onSelect={() => {}}>
+      <Command.Item
+        value={suggestionToString({ type: 'command', name: 'Export' })}
+        onSelect={() => {}}
+      >
         <KeyRound className={styles.itemIcon} />
         <span className={styles.itemText}>Export</span>
         <span className={styles.keyIcon}>⌘</span>
         <span className={styles.keyIcon}>E</span>
       </Command.Item>
-      <Command.Item value="command|Undo" onSelect={() => {}}>
+      <Command.Item
+        value={suggestionToString({ type: 'command', name: 'Undo' })}
+        onSelect={() => {}}
+      >
         <KeyRound className={styles.itemIcon} />
         <span className={styles.itemText}>Undo</span>
         <span className={styles.keyIcon}>⌘</span>

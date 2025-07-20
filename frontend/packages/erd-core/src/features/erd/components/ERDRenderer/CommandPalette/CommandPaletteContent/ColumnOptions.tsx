@@ -7,7 +7,7 @@ import {
 import { DiamondFillIcon, DiamondIcon, KeyRound, Table2 } from '@liam-hq/ui'
 import { Command } from 'cmdk'
 import type { FC } from 'react'
-import { getTableLinkHref } from '../utils'
+import { getTableLinkHref, suggestionToString } from '../utils'
 import styles from './CommandPaletteContent.module.css'
 
 type Props = {
@@ -34,7 +34,10 @@ const ColumnIcon: FC<{
 export const ColumnOptions: FC<Props> = ({ table, goToERD }) => {
   return (
     <Command.Group heading="Tables">
-      <Command.Item value={'column|'} asChild>
+      <Command.Item
+        value={suggestionToString({ type: 'table', name: table.name })}
+        asChild
+      >
         <a
           href={getTableLinkHref(table.name)}
           onClick={(event) => {
@@ -55,7 +58,11 @@ export const ColumnOptions: FC<Props> = ({ table, goToERD }) => {
         Object.values(table?.columns).map((column) => (
           <Command.Item
             key={column.name}
-            value={`column|${column.name}`}
+            value={suggestionToString({
+              type: 'column',
+              tableName: table.name,
+              name: column.name,
+            })}
             asChild
           >
             <a

@@ -7,7 +7,11 @@ import { useSchemaOrThrow } from '@/stores'
 import { TableNode } from '../../../ERDContent/components'
 import { CommandPaletteSearchInput } from '../CommandPaletteSearchInput'
 import type { InputMode, Suggestion } from '../types'
-import { getTableLinkHref } from '../utils'
+import {
+  getTableLinkHref,
+  stringToSuggestion,
+  suggestionToString,
+} from '../utils'
 import { ColumnOptions } from './ColumnOptions'
 import { CommandOptions } from './CommandOptions'
 import styles from './CommandPaletteContent.module.css'
@@ -65,33 +69,17 @@ export const CommandPaletteContent: FC<Props> = ({ closeDialog }) => {
 
   return (
     <Command
-      value={suggestion ? `${suggestion.type}|${suggestion.name}` : ''}
-      onValueChange={(v) => {
-        const [type, name] = v.split('|')
-        if (name === undefined) {
-          setSuggestion(null)
-          return
-        }
-        if (type === 'command' || type === 'table') {
-          setSuggestion({ type, name })
-        } else if (type === 'column') {
-          setSuggestion((prev) =>
-            prev?.type === 'table'
-              ? { type: 'column', tableName: prev.name, name }
-              : prev?.type === 'column'
-                ? { ...prev, name }
-                : null,
-          )
-        } else {
-          setSuggestion(null)
-        }
-      }}
+      value={suggestion ? suggestionToString(suggestion) : ''}
+      onValueChange={(value) => setSuggestion(stringToSuggestion(value))}
       filter={(value, search) => {
-        return value === 'column|'
+        const suggestion = stringToSuggestion(value)
+        if (suggestion === null) return 0
+
+        if (inputMode.type === 'column' && suggestion.type === 'table') return 1
+
+        return suggestion.name.toLowerCase().includes(search.toLowerCase())
           ? 1
-          : value.split('|')[1]?.toLowerCase().includes(search.toLowerCase())
-            ? 1
-            : 0
+          : 0
       }}
     >
       <div className={styles.searchArea}>
