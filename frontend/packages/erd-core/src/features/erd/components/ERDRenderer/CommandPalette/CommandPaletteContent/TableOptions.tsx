@@ -18,6 +18,7 @@ export const TableOptions: FC<Props> = ({ goToERD }) => {
         <Command.Item
           key={table.name}
           value={suggestionToString({ type: 'table', name: table.name })}
+          className={styles.item}
           asChild
         >
           <a

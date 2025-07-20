@@ -30,7 +30,7 @@
   color: var(--global-mute-text);
 }
 
-.main [cmdk-item] {
+.item {
   display: flex;
   padding: var(--spacing-2);
   align-items: center;
@@ -38,11 +38,11 @@
   border-radius: var(--border-radius-base);
 }
 
-.main [cmdk-item].column {
+.item.column {
   padding-left: var(--spacing-6);
 }
 
-.main [cmdk-item] .itemText {
+.item .itemText {
   flex-grow: 1;
   font-size: var(--font-size-5);
   overflow-x: hidden;
@@ -50,7 +50,7 @@
   white-space: nowrap;
 }
 
-.main [cmdk-item] .itemIcon {
+.item .itemIcon {
   flex-shrink: 0;
   margin-right: var(--spacing-2);
   width: 16px;
@@ -58,7 +58,7 @@
   color: var(--overlay-40);
 }
 
-.main [cmdk-item] .keyIcon {
+.item .keyIcon {
   display: inline-flex;
   height: 21px;
   width: 21px;
@@ -69,15 +69,15 @@
   background-color: var(--overlay-5);
 }
 
-.main [cmdk-item] .keyIcon + .keyIcon {
+.item .keyIcon + .keyIcon {
   margin-left: var(--spacing-1);
 }
 
-.main [cmdk-item][data-selected='true'] {
+.item[data-selected='true'] {
   background: var(--overlay-5);
 }
 
-.main [cmdk-item][data-selected='true'] .itemIcon {
+.item[data-selected='true'] .itemIcon {
   color: var(--global-foreground);
 }
 

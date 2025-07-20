@@ -35,6 +35,7 @@ export const ColumnOptions: FC<Props> = ({ table, goToERD }) => {
   return (
     <Command.Group heading="Tables">
       <Command.Item
+        className={styles.item}
         value={suggestionToString({ type: 'table', name: table.name })}
         asChild
       >
@@ -63,6 +64,7 @@ export const ColumnOptions: FC<Props> = ({ table, goToERD }) => {
               tableName: table.name,
               name: column.name,
             })}
+            className={styles.item}
             asChild
           >
             <a

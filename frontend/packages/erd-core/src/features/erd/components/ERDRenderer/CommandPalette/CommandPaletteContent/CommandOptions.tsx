@@ -65,6 +65,7 @@ export const CommandOptions: FC = () => {
       <Command.Item
         value={suggestionToString({ type: 'command', name: 'Copy Link' })}
         onSelect={() => navigator.clipboard.writeText(location.href)}
+        className={styles.item}
       >
         <Copy className={styles.itemIcon} />
         <span className={styles.itemText}>Copy Link</span>
@@ -77,6 +78,7 @@ export const CommandOptions: FC = () => {
           handleZoomToFit()
           setOpen(false)
         }}
+        className={styles.item}
       >
         <Scan className={styles.itemIcon} />
         <span className={styles.itemText}>Zoom to Fit</span>
@@ -89,6 +91,7 @@ export const CommandOptions: FC = () => {
           handleTidyUp()
           setOpen(false)
         }}
+        className={styles.item}
       >
         <TidyUpIcon className={styles.itemIcon} />
         <span className={styles.itemText}>Tidy Up</span>
@@ -101,6 +104,7 @@ export const CommandOptions: FC = () => {
           setShowMode('ALL_FIELDS')
           setOpen(false)
         }}
+        className={styles.item}
       >
         <PanelTop className={styles.itemIcon} />
         <span className={styles.itemText}>Show All Fields</span>
@@ -113,6 +117,7 @@ export const CommandOptions: FC = () => {
           setShowMode('TABLE_NAME')
           setOpen(false)
         }}
+        className={styles.item}
       >
         <RectangleHorizontal className={styles.itemIcon} />
         <span className={styles.itemText}>Show Table Name</span>
@@ -125,6 +130,7 @@ export const CommandOptions: FC = () => {
           setShowMode('KEY_ONLY')
           setOpen(false)
         }}
+        className={styles.item}
       >
         <KeyRound className={styles.itemIcon} />
         <span className={styles.itemText}>Show Key Only</span>
@@ -133,7 +139,8 @@ export const CommandOptions: FC = () => {
       </Command.Item>
       <Command.Item
         value={suggestionToString({ type: 'command', name: 'Export' })}
-        onSelect={() => {}}
+        onSelect={() => {}} /* TODO: implement */
+        className={styles.item}
       >
         <KeyRound className={styles.itemIcon} />
         <span className={styles.itemText}>Export</span>
@@ -142,7 +149,8 @@ export const CommandOptions: FC = () => {
       </Command.Item>
       <Command.Item
         value={suggestionToString({ type: 'command', name: 'Undo' })}
-        onSelect={() => {}}
+        onSelect={() => {}} /* TODO: implement */
+        className={styles.item}
       >
         <KeyRound className={styles.itemIcon} />
         <span className={styles.itemText}>Undo</span>
