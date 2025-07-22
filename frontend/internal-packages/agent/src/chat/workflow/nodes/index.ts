@@ -1,6 +1,5 @@
 export { analyzeRequirementsNode } from './analyzeRequirementsNode'
 export { designSchemaNode } from './designSchemaNode'
-export { executeDdlNode } from './executeDdlNode'
 export { finalizeArtifactsNode } from './finalizeArtifactsNode'
 export { generateUsecaseNode } from './generateUsecaseNode'
 export { prepareDmlNode } from './prepareDmlNode'

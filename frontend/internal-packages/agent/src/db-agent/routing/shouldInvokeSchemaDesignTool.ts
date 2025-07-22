@@ -6,7 +6,7 @@ import type { WorkflowState } from '../../chat/workflow/types'
  */
 export const shouldInvokeSchemaDesignTool = (
   state: WorkflowState,
-): 'invokeSchemaDesignTool' | 'executeDDL' => {
+): 'invokeSchemaDesignTool' | 'generateUsecase' => {
   const { messages } = state
   const lastMessage = messages[messages.length - 1]
 
@@ -14,7 +14,7 @@ export const shouldInvokeSchemaDesignTool = (
     return 'invokeSchemaDesignTool'
   }
 
-  return 'executeDDL'
+  return 'generateUsecase'
 }
 
 /**

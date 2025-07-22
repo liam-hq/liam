@@ -53,11 +53,6 @@ export const createAnnotations = () => {
     ddlStatements: Annotation<string | undefined>,
     dmlStatements: Annotation<string | undefined>,
 
-    // DDL execution retry mechanism
-    shouldRetryWithDesignSchema: Annotation<boolean | undefined>,
-    ddlExecutionFailed: Annotation<boolean | undefined>,
-    ddlExecutionFailureReason: Annotation<string | undefined>,
-
     // Repository dependencies for data access
     repositories: Annotation<Repositories>,
 

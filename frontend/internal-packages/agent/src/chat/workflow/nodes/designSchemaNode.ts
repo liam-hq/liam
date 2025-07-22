@@ -1,4 +1,3 @@
-import { HumanMessage } from '@langchain/core/messages'
 import type { RunnableConfig } from '@langchain/core/runnables'
 import type { Database } from '@liam-hq/db'
 import { invokeDesignAgent } from '../../../langchain/agents/databaseSchemaBuildAgent/agent'
@@ -62,26 +61,7 @@ export async function designSchemaNode(
 
   const schemaText = convertSchemaToText(state.schemaData)
 
-  // Log appropriate message for DDL retry case
-  if (state.shouldRetryWithDesignSchema && state.ddlExecutionFailureReason) {
-    await logAssistantMessage(
-      state,
-      repositories,
-      'Redesigning schema to fix DDL execution errors...',
-      assistantRole,
-    )
-  }
-
-  // Use existing messages, or add DDL failure context if retrying
-  let messages = [...state.messages]
-  if (state.shouldRetryWithDesignSchema && state.ddlExecutionFailureReason) {
-    const ddlRetryMessage = new HumanMessage(
-      `The following DDL execution failed: ${state.ddlExecutionFailureReason}
-Original request: ${state.userInput}
-Please fix this issue by analyzing the schema and adding any missing constraints, primary keys, or other required schema elements to resolve the DDL execution error.`,
-    )
-    messages = [...messages, ddlRetryMessage]
-  }
+  const messages = [...state.messages]
 
   await logAssistantMessage(
     state,
@@ -141,7 +121,5 @@ Please fix this issue by analyzing the schema and adding any missing constraints
     messages: [invokeResult.value],
     buildingSchemaVersionId: createVersionResult.versionId,
     latestVersionNumber: state.latestVersionNumber + 1,
-    shouldRetryWithDesignSchema: undefined,
-    ddlExecutionFailureReason: undefined,
   }
 }
