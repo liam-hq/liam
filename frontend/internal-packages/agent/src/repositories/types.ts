@@ -43,6 +43,10 @@ export type VersionResult =
   | { success: true; newSchema: Schema }
   | { success: false; error?: string | null }
 
+export type PreviewVersionResult =
+  | { success: true; newSchema: Schema; designSessionId: string }
+  | { success: false; error?: string | null }
+
 export type CreateTimelineItemParams = {
   designSessionId: string
   content: string
@@ -147,9 +151,19 @@ export type SchemaRepository = {
   ): Promise<CreateVersionResult>
 
   /**
+   * Delete an empty schema version (only if patch/reverse_patch are null)
+   */
+  deleteEmptyVersion(versionId: string): Promise<{ success: boolean; error?: string }>
+
+  /**
    * Update an existing schema version with patch/reverse_patch
    */
   updateVersion(params: UpdateVersionParams): Promise<VersionResult>
+
+  /**
+   * Preview schema changes without updating the database
+   */
+  previewVersionUpdate(params: UpdateVersionParams): Promise<PreviewVersionResult>
 
   /**
    * Create a new timeline item in the design session

@@ -20,6 +20,7 @@ import type {
   CreateVersionResult,
   CreateWorkflowRunParams,
   DesignSessionData,
+  PreviewVersionResult,
   SchemaData,
   SchemaRepository,
   TimelineItemResult,
@@ -281,6 +282,46 @@ export class SupabaseSchemaRepository implements SchemaRepository {
     }
   }
 
+  async deleteEmptyVersion(versionId: string): Promise<{ success: boolean; error?: string }> {
+    // First, verify that this version is empty (patch and reverse_patch are null)
+    const { data: version, error: fetchError } = await this.client
+      .from('building_schema_versions')
+      .select('patch, reverse_patch')
+      .eq('id', versionId)
+      .single()
+
+    if (fetchError || !version) {
+      return {
+        success: false,
+        error: `Failed to fetch version: ${fetchError?.message}`,
+      }
+    }
+
+    if (version.patch !== null || version.reverse_patch !== null) {
+      return {
+        success: false,
+        error: 'Cannot delete version with non-null patch or reverse_patch',
+      }
+    }
+
+    // Delete the empty version
+    const { error: deleteError } = await this.client
+      .from('building_schema_versions')
+      .delete()
+      .eq('id', versionId)
+
+    if (deleteError) {
+      return {
+        success: false,
+        error: deleteError.message,
+      }
+    }
+
+    return {
+      success: true,
+    }
+  }
+
   async updateVersion(params: UpdateVersionParams): Promise<VersionResult> {
     const { buildingSchemaVersionId, patch } = params
 
@@ -430,6 +471,104 @@ export class SupabaseSchemaRepository implements SchemaRepository {
     return {
       success: true,
       newSchema: validationResult.output,
+    }
+  }
+
+  async previewVersionUpdate(params: UpdateVersionParams): Promise<PreviewVersionResult> {
+    const { buildingSchemaVersionId, patch } = params
+
+    // Get the building schema version
+    const { data: version, error: versionError } = await this.client
+      .from('building_schema_versions')
+      .select('building_schema_id, number')
+      .eq('id', buildingSchemaVersionId)
+      .single()
+
+    if (versionError || !version) {
+      return {
+        success: false,
+        error: `Failed to fetch building schema version: ${versionError?.message}`,
+      }
+    }
+
+    // Get the building schema
+    const { data: buildingSchema, error } = await this.client
+      .from('building_schemas')
+      .select(`
+        id, organization_id, initial_schema_snapshot, design_session_id
+      `)
+      .eq('id', version.building_schema_id)
+      .maybeSingle()
+
+    if (!buildingSchema || error) {
+      return {
+        success: false,
+        error: `Failed to fetch building schema: ${error?.message}`,
+      }
+    }
+
+    // Get all previous versions to reconstruct the content (excluding the current version)
+    const { data: previousVersions, error: previousVersionsError } =
+      await this.client
+        .from('building_schema_versions')
+        .select('number, patch')
+        .eq('building_schema_id', version.building_schema_id)
+        .lt('number', version.number)
+        .order('number', { ascending: true })
+
+    if (previousVersionsError) {
+      return {
+        success: false,
+        error: `Failed to fetch previous versions: ${previousVersionsError.message}`,
+      }
+    }
+
+    const patchArrayHistory = previousVersions
+      ?.map((version) => {
+        const parsed = v.safeParse(operationsSchema, version.patch)
+        if (parsed.success) {
+          return parsed.output
+        }
+        return null
+      })
+      .filter((version) => version !== null)
+
+    // Reconstruct the base content (first version) from the initial schema snapshot
+    const baseContent: Record<string, unknown> =
+      typeof buildingSchema.initial_schema_snapshot === 'object'
+        ? JSON.parse(JSON.stringify(buildingSchema.initial_schema_snapshot))
+        : {}
+
+    // Apply all patches in order to get the current content
+    const currentContent: Record<string, unknown> = { ...baseContent }
+
+    // Apply all patches in order
+    for (const patchArray of patchArrayHistory) {
+      // Apply each operation in the patch to currentContent
+      applyPatchOperations(currentContent, patchArray)
+    }
+
+    // Now apply the new patch to get the new content
+    const newContent = JSON.parse(JSON.stringify(currentContent))
+    applyPatchOperations(newContent, patch)
+
+    // Validate the new schema structure before proceeding
+    const validationResult = v.safeParse(schemaSchema, newContent)
+    if (!validationResult.success) {
+      const errorMessages = validationResult.issues
+        .map((issue) => `${issue.path?.join('.')} ${issue.message}`)
+        .join(', ')
+      return {
+        success: false,
+        error: `Invalid schema after applying changes: ${errorMessages}`,
+      }
+    }
+
+    // Return the preview result without updating the database
+    return {
+      success: true,
+      newSchema: validationResult.output,
+      designSessionId: buildingSchema.design_session_id,
     }
   }
 
