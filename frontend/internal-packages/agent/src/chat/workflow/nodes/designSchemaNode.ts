@@ -86,7 +86,7 @@ Please fix this issue by analyzing the schema and adding any missing constraints
   await logAssistantMessage(
     state,
     repositories,
-    'Analyzing table structure and relationships...',
+    'Analyzing table structure and relationships, validating DDL...',
     assistantRole,
   )
 
@@ -102,6 +102,25 @@ Please fix this issue by analyzing the schema and adding any missing constraints
       'Schema design failed',
       assistantRole,
     )
+
+    // Clean up the empty version that was created
+    const deleteResult = await repositories.schema.deleteEmptyVersion(createVersionResult.versionId)
+    if (!deleteResult.success) {
+      await logAssistantMessage(
+        state,
+        repositories,
+        `Warning: Failed to cleanup empty version: ${deleteResult.error}`,
+        assistantRole,
+      )
+    } else {
+      await logAssistantMessage(
+        state,
+        repositories,
+        'Cleaned up empty version due to design failure',
+        assistantRole,
+      )
+    }
+
     return {
       ...state,
       error: invokeResult.error,
@@ -111,7 +130,7 @@ Please fix this issue by analyzing the schema and adding any missing constraints
   await logAssistantMessage(
     state,
     repositories,
-    'Schema design completed',
+    'Schema design and DDL validation completed successfully',
     assistantRole,
   )
 
