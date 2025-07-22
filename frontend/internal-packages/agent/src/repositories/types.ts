@@ -153,7 +153,9 @@ export type SchemaRepository = {
   /**
    * Delete an empty schema version (only if patch/reverse_patch are null)
    */
-  deleteEmptyVersion(versionId: string): Promise<{ success: boolean; error?: string }>
+  deleteEmptyVersion(
+    versionId: string,
+  ): Promise<{ success: boolean; error?: string }>
 
   /**
    * Update an existing schema version with patch/reverse_patch
@@ -163,7 +165,9 @@ export type SchemaRepository = {
   /**
    * Preview schema changes without updating the database
    */
-  previewVersionUpdate(params: UpdateVersionParams): Promise<PreviewVersionResult>
+  previewVersionUpdate(
+    params: UpdateVersionParams,
+  ): Promise<PreviewVersionResult>
 
   /**
    * Create a new timeline item in the design session

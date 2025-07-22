@@ -1,17 +1,17 @@
 import type { Database } from '@liam-hq/db'
+import type { Schema } from '@liam-hq/db-structure'
 import { postgresqlSchemaDeparser } from '@liam-hq/db-structure'
 import { executeQuery } from '@liam-hq/pglite-server'
 import type { SqlResult } from '@liam-hq/pglite-server/src/types'
-import type { SchemaData } from '@liam-hq/db-structure/src/types'
 
-export interface DdlExecutionResult {
+type DdlExecutionResult = {
   success: boolean
   ddlStatements: string
   results?: SqlResult[]
   errorMessages?: string
 }
 
-export interface DdlExecutionOptions {
+type DdlExecutionOptions = {
   designSessionId: string
   repositories: {
     schema: {
@@ -22,29 +22,24 @@ export interface DdlExecutionOptions {
       createValidationResults: (params: {
         validationQueryId: string
         results: SqlResult[]
-      }) => Promise<void>
+      }) => Promise<{ success: boolean; error?: string }>
     }
   }
-  logMessage?: (message: string, role: Database['public']['Enums']['assistant_role_enum']) => Promise<void>
+  logMessage?: (
+    message: string,
+    role: Database['public']['Enums']['assistant_role_enum'],
+  ) => Promise<void>
 }
 
 /**
- * Execute DDL statements for given schema data
- * This function generates DDL from schema data and executes it, with proper error handling
+ * Generate DDL from schema data
  */
-export async function executeDdl(
-  schemaData: SchemaData,
-  options: DdlExecutionOptions,
-): Promise<DdlExecutionResult> {
-  const { designSessionId, repositories, logMessage } = options
-
-  // Generate DDL from schema data
+const generateDdl = (
+  schemaData: Schema,
+): { success: boolean; ddlStatements: string; errorMessages?: string } => {
   const result = postgresqlSchemaDeparser(schemaData)
 
   if (result.errors.length > 0) {
-    if (logMessage) {
-      await logMessage('Error occurred during DDL generation', 'db')
-    }
     return {
       success: false,
       ddlStatements: 'DDL generation failed due to an unexpected error.',
@@ -52,9 +47,70 @@ export async function executeDdl(
     }
   }
 
-  const ddlStatements = result.value
+  return {
+    success: true,
+    ddlStatements: result.value,
+  }
+}
 
-  const tableCount = Object.keys(schemaData.tables).length
+/**
+ * Save query results to database
+ */
+const saveQueryResults = async (
+  designSessionId: string,
+  ddlStatements: string,
+  results: SqlResult[],
+  repositories: DdlExecutionOptions['repositories'],
+  logMessage?: (
+    message: string,
+    role: Database['public']['Enums']['assistant_role_enum'],
+  ) => Promise<void>,
+): Promise<void> => {
+  const queryResult = await repositories.schema.createValidationQuery({
+    designSessionId,
+    queryString: ddlStatements,
+  })
+
+  if (queryResult.success && queryResult.queryId) {
+    await repositories.schema.createValidationResults({
+      validationQueryId: queryResult.queryId,
+      results,
+    })
+
+    const successCount = results.filter((r) => r.success).length
+    const errorCount = results.length - successCount
+    if (logMessage) {
+      await logMessage(
+        `DDL Execution Complete: ${successCount} successful, ${errorCount} failed queries`,
+        'db',
+      )
+    }
+  }
+}
+
+/**
+ * Execute DDL statements for given schema data
+ * This function generates DDL from schema data and executes it, with proper error handling
+ */
+export async function executeDdl(
+  schemaData: Schema,
+  options: DdlExecutionOptions,
+): Promise<DdlExecutionResult> {
+  const { designSessionId, repositories, logMessage } = options
+
+  // Generate DDL from schema data
+  const ddlResult = generateDdl(schemaData)
+  if (!ddlResult.success) {
+    if (logMessage) {
+      await logMessage('Error occurred during DDL generation', 'db')
+    }
+    return ddlResult
+  }
+
+  const { ddlStatements } = ddlResult
+  const tableCount = schemaData.tables
+    ? Object.keys(schemaData.tables).length
+    : 0
 
   if (logMessage) {
     await logMessage(`Generated DDL statements (${tableCount} tables)`, 'db')
@@ -74,29 +130,19 @@ export async function executeDdl(
     await logMessage('Executing DDL statements...', 'db')
   }
 
-  const results: SqlResult[] = await executeQuery(designSessionId, ddlStatements)
+  const results: SqlResult[] = await executeQuery(
+    designSessionId,
+    ddlStatements,
+  )
 
   // Save query and results to database
-  const queryResult = await repositories.schema.createValidationQuery({
+  await saveQueryResults(
     designSessionId,
-    queryString: ddlStatements,
-  })
-
-  if (queryResult.success) {
-    await repositories.schema.createValidationResults({
-      validationQueryId: queryResult.queryId!,
-      results,
-    })
-
-    const successCount = results.filter((r) => r.success).length
-    const errorCount = results.length - successCount
-    if (logMessage) {
-      await logMessage(
-        `DDL Execution Complete: ${successCount} successful, ${errorCount} failed queries`,
-        'db',
-      )
-    }
-  }
+    ddlStatements,
+    results,
+    repositories,
+    logMessage,
+  )
 
   const hasErrors = results.some((result: SqlResult) => !result.success)
 

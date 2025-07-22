@@ -104,7 +104,9 @@ Please fix this issue by analyzing the schema and adding any missing constraints
     )
 
     // Clean up the empty version that was created
-    const deleteResult = await repositories.schema.deleteEmptyVersion(createVersionResult.versionId)
+    const deleteResult = await repositories.schema.deleteEmptyVersion(
+      createVersionResult.versionId,
+    )
     if (!deleteResult.success) {
       await logAssistantMessage(
         state,

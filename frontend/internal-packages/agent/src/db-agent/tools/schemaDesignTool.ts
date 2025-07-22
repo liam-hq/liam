@@ -31,7 +31,6 @@ export const schemaDesignTool = tool(
       return `Input validation failed: ${errorDetails}. Please check your operations format and ensure all required fields are provided correctly.`
     }
 
-
     // Preview the schema update without saving to database
     const previewResult = await repositories.schema.previewVersionUpdate({
       buildingSchemaVersionId,

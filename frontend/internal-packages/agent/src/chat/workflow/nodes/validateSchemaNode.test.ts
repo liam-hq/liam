@@ -58,6 +58,8 @@ describe('validateSchemaNode', () => {
         }),
         createWorkflowRun: vi.fn(),
         updateWorkflowRunStatus: vi.fn(),
+        deleteEmptyVersion: vi.fn(),
+        previewVersionUpdate: vi.fn(),
       },
     }
   }

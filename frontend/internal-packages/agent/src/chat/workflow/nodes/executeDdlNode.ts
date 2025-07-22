@@ -1,9 +1,9 @@
 import type { RunnableConfig } from '@langchain/core/runnables'
 import type { Database } from '@liam-hq/db'
+import { executeDdl } from '../../../utils/ddlExecutor'
 import { WORKFLOW_RETRY_CONFIG } from '../constants'
 import { getConfigurable } from '../shared/getConfigurable'
 import type { WorkflowState } from '../types'
-import { executeDdl } from '../../../utils/ddlExecutor'
 import { logAssistantMessage } from '../utils/timelineLogger'
 
 /**

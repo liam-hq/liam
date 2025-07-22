@@ -282,7 +282,9 @@ export class SupabaseSchemaRepository implements SchemaRepository {
     }
   }
 
-  async deleteEmptyVersion(versionId: string): Promise<{ success: boolean; error?: string }> {
+  async deleteEmptyVersion(
+    versionId: string,
+  ): Promise<{ success: boolean; error?: string }> {
     // First, verify that this version is empty (patch and reverse_patch are null)
     const { data: version, error: fetchError } = await this.client
       .from('building_schema_versions')
@@ -474,7 +476,9 @@ export class SupabaseSchemaRepository implements SchemaRepository {
     }
   }
 
-  async previewVersionUpdate(params: UpdateVersionParams): Promise<PreviewVersionResult> {
+  async previewVersionUpdate(
+    params: UpdateVersionParams,
+  ): Promise<PreviewVersionResult> {
     const { buildingSchemaVersionId, patch } = params
 
     // Get the building schema version

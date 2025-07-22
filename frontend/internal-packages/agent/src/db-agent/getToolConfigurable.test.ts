@@ -19,6 +19,8 @@ describe('getToolConfigurable', () => {
       createValidationResults: vi.fn(),
       createWorkflowRun: vi.fn(),
       updateWorkflowRunStatus: vi.fn(),
+      deleteEmptyVersion: vi.fn(),
+      previewVersionUpdate: vi.fn(),
     },
   }
 
