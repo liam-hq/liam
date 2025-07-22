@@ -1,11 +1,9 @@
 import type { RunnableConfig } from '@langchain/core/runnables'
 import type { Database } from '@liam-hq/db'
-import { postgresqlSchemaDeparser } from '@liam-hq/db-structure'
-import { executeQuery } from '@liam-hq/pglite-server'
-import type { SqlResult } from '@liam-hq/pglite-server/src/types'
 import { WORKFLOW_RETRY_CONFIG } from '../constants'
 import { getConfigurable } from '../shared/getConfigurable'
 import type { WorkflowState } from '../types'
+import { executeDdl } from '../../../utils/ddlExecutor'
 import { logAssistantMessage } from '../utils/timelineLogger'
 
 /**
@@ -33,98 +31,19 @@ export async function executeDdlNode(
     assistantRole,
   )
 
-  // Generate DDL from schema data
-  const result = postgresqlSchemaDeparser(state.schemaData)
-
-  if (result.errors.length > 0) {
-    await logAssistantMessage(
-      state,
-      repositories,
-      'Error occurred during DDL generation',
-      assistantRole,
-    )
-
-    return {
-      ...state,
-      ddlStatements: 'DDL generation failed due to an unexpected error.',
-    }
-  }
-
-  const ddlStatements = result.value
-
-  const tableCount = Object.keys(state.schemaData.tables).length
-
-  await logAssistantMessage(
-    state,
-    repositories,
-    `Generated DDL statements (${tableCount} tables)`,
-    assistantRole,
-  )
-
-  if (!ddlStatements || !ddlStatements.trim()) {
-    await logAssistantMessage(
-      state,
-      repositories,
-      'No DDL statements to execute',
-      assistantRole,
-    )
-
-    return {
-      ...state,
-      ddlStatements,
-    }
-  }
-
-  await logAssistantMessage(
-    state,
-    repositories,
-    'Executing DDL statements...',
-    assistantRole,
-  )
-
-  const results: SqlResult[] = await executeQuery(
-    state.designSessionId,
-    ddlStatements,
-  )
-
-  const queryResult = await repositories.schema.createValidationQuery({
+  // Execute DDL using the common function
+  const ddlResult = await executeDdl(state.schemaData, {
     designSessionId: state.designSessionId,
-    queryString: ddlStatements,
+    repositories,
+    logMessage: async (message: string) => {
+      await logAssistantMessage(state, repositories, message, assistantRole)
+    },
   })
 
-  if (queryResult.success) {
-    await repositories.schema.createValidationResults({
-      validationQueryId: queryResult.queryId,
-      results,
-    })
-
-    const successCount = results.filter((r) => r.success).length
-    const errorCount = results.length - successCount
-    await logAssistantMessage(
-      state,
-      repositories,
-      `DDL Execution Complete: ${successCount} successful, ${errorCount} failed queries`,
-      assistantRole,
-    )
-  }
-
-  const hasErrors = results.some((result: SqlResult) => !result.success)
+  const hasErrors = !ddlResult.success
 
   if (hasErrors) {
-    const errorMessages = results
-      .filter((result: SqlResult) => !result.success)
-      .map(
-        (result: SqlResult) =>
-          `SQL: ${result.sql}, Error: ${JSON.stringify(result.result)}`,
-      )
-      .join('; ')
-
-    await logAssistantMessage(
-      state,
-      repositories,
-      'Error occurred during DDL execution',
-      assistantRole,
-    )
+    const errorMessages = ddlResult.errorMessages || 'Unknown error occurred'
 
     // Check if this is the first failure or if we've already retried
     const currentRetryCount = state.retryCount['ddlExecutionRetry'] || 0
@@ -173,6 +92,6 @@ export async function executeDdlNode(
 
   return {
     ...state,
-    ddlStatements,
+    ddlStatements: ddlResult.ddlStatements,
   }
 }
