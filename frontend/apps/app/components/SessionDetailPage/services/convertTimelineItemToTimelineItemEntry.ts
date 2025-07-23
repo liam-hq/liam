@@ -56,6 +56,11 @@ export const convertTimelineItemToTimelineItemEntry = (
         ...baseItem,
         type: 'assistant_log',
         role: item.assistant_role ?? 'db',
+        isError:
+          item.content.includes('Error occurred') ||
+          item.content.includes('failed') ||
+          item.content.includes('Failed') ||
+          item.content.toLowerCase().includes('error'),
       }),
     )
     .with(

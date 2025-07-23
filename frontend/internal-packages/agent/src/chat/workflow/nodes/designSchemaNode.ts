@@ -46,7 +46,13 @@ export async function designSchemaNode(
   if (!createVersionResult.success) {
     const errorMessage =
       createVersionResult.error || 'Failed to create new version'
-    await logAssistantMessage(state, repositories, errorMessage, assistantRole)
+    await logAssistantMessage(
+      state,
+      repositories,
+      errorMessage,
+      assistantRole,
+      true,
+    )
     return {
       ...state,
       error: new Error(errorMessage),
@@ -101,6 +107,7 @@ Please fix this issue by analyzing the schema and adding any missing constraints
       repositories,
       'Schema design failed',
       assistantRole,
+      true,
     )
     return {
       ...state,

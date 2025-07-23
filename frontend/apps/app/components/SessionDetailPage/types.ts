@@ -90,6 +90,7 @@ export type ErrorTimelineItemEntry = BaseTimelineItemEntry & {
 export type AssistantLogTimelineItemEntry = BaseTimelineItemEntry & {
   type: 'assistant_log'
   role: AssistantRole
+  isError?: boolean
 }
 
 export type QueryResultTimelineItemEntry = BaseTimelineItemEntry & {

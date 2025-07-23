@@ -42,6 +42,10 @@ type AgentMessageProps = {
   time?: string
   assistantRole: Database['public']['Enums']['assistant_role_enum']
   /**
+   * Whether this message represents an error
+   */
+  isError?: boolean
+  /**
    * Optional children to render below the message
    */
   children?: ReactNode
@@ -51,6 +55,7 @@ export const AgentMessage: FC<AgentMessageProps> = ({
   state = 'default',
   message = '',
   assistantRole,
+  isError = false,
   children,
 }) => {
   const isGenerating = state === 'generating'
@@ -78,7 +83,9 @@ export const AgentMessage: FC<AgentMessageProps> = ({
             )}
           >
             <div className={styles.messageContent}>
-              <span className={styles.messageText}>
+              <span
+                className={clsx(styles.messageText, isError && styles.error)}
+              >
                 <MarkdownContent content={message} />
               </span>
             </div>

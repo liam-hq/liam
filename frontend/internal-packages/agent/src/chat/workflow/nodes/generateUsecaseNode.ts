@@ -74,6 +74,7 @@ export async function generateUsecaseNode(
       repositories,
       'Error occurred during use case generation',
       assistantRole,
+      true,
     )
 
     return {
@@ -137,6 +138,7 @@ export async function generateUsecaseNode(
         repositories,
         'Error occurred during use case generation',
         assistantRole,
+        true,
       )
 
       // Increment retry count and set error

@@ -43,6 +43,7 @@ export async function executeDdlNode(
       repositories,
       'Error occurred during DDL generation',
       assistantRole,
+      true,
     )
 
     return {
@@ -140,6 +141,7 @@ export async function executeDdlNode(
       repositories,
       'Error occurred during DDL execution',
       assistantRole,
+      true,
     )
 
     // Check if this is the first failure or if we've already retried
@@ -171,6 +173,7 @@ export async function executeDdlNode(
       repositories,
       'Unable to resolve DDL execution errors',
       assistantRole,
+      true,
     )
 
     return {

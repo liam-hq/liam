@@ -92,6 +92,7 @@ Provide a concise summary of the most relevant findings.`
         repositories,
         'Error occurred during web search',
         assistantRole,
+        true,
       )
 
       // Don't fail the entire workflow if web search fails

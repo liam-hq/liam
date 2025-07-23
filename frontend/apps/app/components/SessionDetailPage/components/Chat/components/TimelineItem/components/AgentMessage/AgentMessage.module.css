@@ -50,6 +50,10 @@
   word-break: break-word;
 }
 
+.messageText.error {
+  color: var(--severity-critical-100);
+}
+
 /* Exclude code blocks from text wrapping */
 .messageText :global(pre),
 .messageText :global(pre code),

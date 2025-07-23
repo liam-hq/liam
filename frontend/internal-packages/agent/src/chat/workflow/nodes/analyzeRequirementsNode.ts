@@ -126,6 +126,7 @@ export async function analyzeRequirementsNode(
         repositories,
         'Error occurred during requirements analysis',
         assistantRole,
+        true,
       )
 
       return {

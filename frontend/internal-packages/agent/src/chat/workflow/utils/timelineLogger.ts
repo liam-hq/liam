@@ -12,11 +12,12 @@ export async function logAssistantMessage(
   repositories: Repositories,
   content: string,
   role: Database['public']['Enums']['assistant_role_enum'],
+  isError?: boolean,
 ): Promise<void> {
   const result = await ResultAsync.fromPromise(
     repositories.schema.createTimelineItem({
       designSessionId: state.designSessionId,
-      content,
+      content: isError ? `Error: ${content}` : content,
       type: 'assistant_log',
       role,
     }),
