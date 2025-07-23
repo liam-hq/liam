@@ -35,8 +35,10 @@ const dmlOperationSchema = v.object({
 
 export type DMLOperation = v.InferOutput<typeof dmlOperationSchema>
 
-// Schema for generateDMLForUsecase response
-const generateDMLForUsecaseResponseSchema = v.array(dmlOperationSchema)
+// Schema for generateDMLForUsecase response - must be an object for OpenAI structured output
+const generateDMLForUsecaseResponseSchema = v.object({
+  operations: v.array(dmlOperationSchema),
+})
 
 // Input schema for generateDMLForUsecase - Not used in current implementation
 
@@ -44,6 +46,7 @@ type GenerateDMLForUsecaseInput = {
   usecase: Usecase
   ddlStatements: string
   schemaContext: string
+  previousError?: string
 }
 
 export class DMLGenerationAgent
@@ -83,7 +86,7 @@ export class DMLGenerationAgent
   async generateDMLForUsecase(
     input: GenerateDMLForUsecaseInput,
   ): Promise<Result<DMLOperation[], Error>> {
-    const { usecase, ddlStatements, schemaContext } = input
+    const { usecase, ddlStatements, schemaContext, previousError } = input
 
     // Prepare the prompt for LLM
     const prompt = `
@@ -102,12 +105,35 @@ Use Case:
 - Requirement Category: ${usecase.requirementCategory}
 - Requirement: ${usecase.requirement}
 
-Generate an array of DML operations. Each operation should have:
+${
+  previousError
+    ? `IMPORTANT: A previous attempt to generate DML for this use case failed with the following error:
+${previousError}
+
+Please ensure your response addresses this error. The error indicates that the response format must be a JSON object (not an array). Make sure to return an object that contains an array of operations, not a raw array.`
+    : ''
+}
+
+Generate a JSON object with an "operations" field containing an array of DML operations. Each operation in the array should have:
 1. sql: The SQL statement
 2. operationType: One of INSERT, UPDATE, DELETE, SELECT
 3. purpose: Why this operation is needed for testing this use case
 4. expectedOutcome: What should happen when this operation runs
 5. order: Execution order (starting from 1)
+
+Example structure:
+{
+  "operations": [
+    {
+      "sql": "INSERT INTO ...",
+      "operationType": "INSERT",
+      "purpose": "...",
+      "expectedOutcome": "...",
+      "order": 1
+    },
+    ...
+  ]
+}
 
 IMPORTANT:
 - Generate operations in the correct execution order (e.g., INSERTs before SELECTs)
@@ -115,6 +141,7 @@ IMPORTANT:
 - Include validation queries (SELECTs)
 - For non-functional requirements (like performance), generate bulk operations
 - Ensure all SQL references tables that exist in the schema
+- The response must be a valid JSON that matches the expected schema structure
 `
 
     // Invoke the model and handle errors with Result type
@@ -122,16 +149,17 @@ IMPORTANT:
       error instanceof Error
         ? error
         : new Error('Unknown error during model invocation'),
-    ).andThen((rawResponse) =>
-      ResultAsync.fromPromise(
-        Promise.resolve(
-          v.parse(generateDMLForUsecaseResponseSchema, rawResponse),
-        ),
-        (error) =>
-          error instanceof Error
-            ? error
-            : new Error('Failed to parse model response'),
-      ),
+    ).andThen(
+      (rawResponse) =>
+        ResultAsync.fromPromise(
+          Promise.resolve(
+            v.parse(generateDMLForUsecaseResponseSchema, rawResponse),
+          ),
+          (error) =>
+            error instanceof Error
+              ? error
+              : new Error('Failed to parse model response'),
+        ).map((parsedResponse) => parsedResponse.operations), // Extract the operations array from the wrapper object
     )
   }
 }

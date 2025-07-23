@@ -1,5 +1,7 @@
 import { Annotation, MessagesAnnotation } from '@langchain/langgraph'
 import type { Schema } from '@liam-hq/db-structure'
+import type { SqlResult } from '@liam-hq/pglite-server/src/types'
+import type { DMLOperation } from '../../../langchain/agents/dmlGenerationAgent/agent'
 import type { Usecase } from '../../../langchain/agents/qaGenerateUsecaseAgent/agent'
 import type { Repositories } from '../../../repositories'
 import type { NodeLogger } from '../../../utils/nodeLogger'
@@ -21,7 +23,7 @@ import type { NodeLogger } from '../../../utils/nodeLogger'
  * - Sufficient headroom for error handling loops
  * - Protection against infinite loops
  */
-export const DEFAULT_RECURSION_LIMIT = 20
+export const DEFAULT_RECURSION_LIMIT = 50
 
 /**
  * Create LangGraph-compatible annotations (shared)
@@ -30,6 +32,7 @@ export const createAnnotations = () => {
   return Annotation.Root({
     ...MessagesAnnotation.spec,
     userInput: Annotation<string>,
+    webSearchResults: Annotation<string | undefined>,
     analyzedRequirements: Annotation<
       | {
           businessRequirement: string
@@ -52,13 +55,34 @@ export const createAnnotations = () => {
 
     ddlStatements: Annotation<string | undefined>,
     dmlStatements: Annotation<string | undefined>,
+    dmlOperations: Annotation<
+      | Array<{
+          usecase: Usecase
+          operations: DMLOperation[]
+        }>
+      | undefined
+    >,
+
+    // DML execution results by operation
+    dmlExecutionResults: Annotation<
+      | Array<{
+          usecase: Usecase
+          operationResults: Array<{
+            operation: DMLOperation
+            result: SqlResult
+          }>
+        }>
+      | undefined
+    >,
 
     // DDL execution retry mechanism
     shouldRetryWithDesignSchema: Annotation<boolean | undefined>,
     ddlExecutionFailed: Annotation<boolean | undefined>,
     ddlExecutionFailureReason: Annotation<string | undefined>,
 
-    // DML validation retry mechanism
+    // DML execution results
+    dmlExecutionSuccessful: Annotation<boolean | undefined>,
+    dmlExecutionErrors: Annotation<string | undefined>,
     dmlValidationFailureReason: Annotation<string | undefined>,
 
     // Repository dependencies for data access
