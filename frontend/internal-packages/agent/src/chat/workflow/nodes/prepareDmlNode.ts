@@ -68,6 +68,16 @@ export async function prepareDmlNode(
     assistantRole,
   )
 
+  // Log previous validation errors if this is a retry
+  if (state.dmlValidationFailureReason) {
+    await logAssistantMessage(
+      state,
+      repositories,
+      `Previous validation errors: ${state.dmlValidationFailureReason}`,
+      assistantRole,
+    )
+  }
+
   // Check if we have required inputs
   if (!state.ddlStatements) {
     await logAssistantMessage(
@@ -101,6 +111,9 @@ export async function prepareDmlNode(
     operations: DMLOperation[]
   }> = []
 
+  // Track errors for context in retries
+  const errors: string[] = []
+
   for (const usecase of state.generatedUsecases) {
     const result = await dmlAgent.generateDMLForUsecase({
       usecase,
@@ -109,12 +122,16 @@ export async function prepareDmlNode(
     })
 
     if (result.isErr()) {
+      const errorMessage = `Failed to generate DML for use case "${usecase.title}": ${result.error.message}`
+      errors.push(errorMessage)
+
       await logAssistantMessage(
         state,
         repositories,
-        `Failed to generate DML for use case "${usecase.title}": ${result.error.message}`,
+        errorMessage,
         assistantRole,
       )
+
       return {
         ...state,
         error: result.error,

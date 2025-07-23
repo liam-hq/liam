@@ -4,6 +4,7 @@ import { executeQuery } from '@liam-hq/pglite-server'
 import type { SqlResult } from '@liam-hq/pglite-server/src/types'
 import type { DMLOperation } from '../../../langchain/agents/dmlGenerationAgent/agent'
 import type { Repositories } from '../../../repositories'
+import { WORKFLOW_RETRY_CONFIG } from '../constants'
 import { getConfigurable } from '../shared/getConfigurable'
 import type { WorkflowState } from '../types'
 import { logAssistantMessage } from '../utils/timelineLogger'
@@ -202,9 +203,51 @@ export async function validateSchemaNode(
 
   // Return results
   if (allErrors.length > 0) {
+    const errorMessage = allErrors.join('; ')
+
+    await logAssistantMessage(
+      state,
+      repositories,
+      'Error occurred during DML validation',
+      assistantRole,
+    )
+
+    // Check if this is the first failure or if we've already retried
+    const currentRetryCount = state.retryCount['dmlValidationRetry'] || 0
+
+    if (currentRetryCount < WORKFLOW_RETRY_CONFIG.MAX_DML_VALIDATION_RETRIES) {
+      // Set up retry with designSchemaNode
+      await logAssistantMessage(
+        state,
+        repositories,
+        'Redesigning schema to fix validation errors...',
+        assistantRole,
+      )
+
+      return {
+        ...state,
+        error: new Error('DML validation failed'),
+        dmlExecutionErrors: errorMessage,
+        dmlValidationFailureReason: errorMessage,
+        retryCount: {
+          ...state.retryCount,
+          dmlValidationRetry: currentRetryCount + 1,
+        },
+      }
+    }
+
+    // Already retried - mark as permanently failed
+    await logAssistantMessage(
+      state,
+      repositories,
+      'Unable to resolve DML validation errors after retry',
+      assistantRole,
+    )
+
     return {
       ...state,
-      dmlExecutionErrors: allErrors.join('; '),
+      dmlExecutionErrors: errorMessage,
+      dmlValidationFailureReason: errorMessage,
     }
   }
 

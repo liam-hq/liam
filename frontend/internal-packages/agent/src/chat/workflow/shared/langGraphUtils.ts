@@ -58,10 +58,16 @@ export const createAnnotations = () => {
     ddlExecutionFailed: Annotation<boolean | undefined>,
     ddlExecutionFailureReason: Annotation<string | undefined>,
 
+    // DML validation retry mechanism
+    dmlValidationFailureReason: Annotation<string | undefined>,
+
     // Repository dependencies for data access
     repositories: Annotation<Repositories>,
 
     // Logging functionality
     logger: Annotation<NodeLogger>,
+
+    // Error context for retries
+    previousErrors: Annotation<Record<string, string[]> | undefined>,
   })
 }

@@ -51,6 +51,7 @@ export type WorkflowState = {
   // DML execution results
   dmlExecutionSuccessful?: boolean | undefined
   dmlExecutionErrors?: string | undefined
+  dmlValidationFailureReason?: string | undefined
 
   // Schema update fields
   buildingSchemaId: string
@@ -61,6 +62,9 @@ export type WorkflowState = {
 
   // Message saving fields
   designSessionId: string
+
+  // Error context for retries
+  previousErrors?: Record<string, string[]> | undefined
 }
 
 /**
