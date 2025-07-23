@@ -34,8 +34,28 @@ export async function executeDdlNode(
     assistantRole,
   )
 
-  // Generate DDL from schema data
-  const result = postgresqlSchemaDeparser(state.schemaData)
+  // Fetch the latest schema from database to ensure we have the most current data
+  const schemaResult = await repositories.schema.getSchema(
+    state.designSessionId,
+  )
+  if (schemaResult.error || !schemaResult.data) {
+    await logAssistantMessage(
+      state,
+      repositories,
+      'Failed to fetch current schema from database',
+      assistantRole,
+    )
+    return {
+      ...state,
+      error: new Error(schemaResult.error?.message || 'Failed to fetch schema'),
+    }
+  }
+
+  const currentSchemaData = schemaResult.data
+  const currentSchema = currentSchemaData.schema
+
+  // Generate DDL from the latest schema data
+  const result = postgresqlSchemaDeparser(currentSchema)
 
   if (result.errors.length > 0) {
     await logAssistantMessage(
@@ -47,13 +67,14 @@ export async function executeDdlNode(
 
     return {
       ...state,
+      schemaData: currentSchema,
       ddlStatements: 'DDL generation failed due to an unexpected error.',
     }
   }
 
   const ddlStatements = result.value
 
-  const tableCount = Object.keys(state.schemaData.tables).length
+  const tableCount = Object.keys(currentSchema.tables).length
 
   await logAssistantMessage(
     state,
@@ -72,6 +93,7 @@ export async function executeDdlNode(
 
     return {
       ...state,
+      schemaData: currentSchema,
       ddlStatements,
     }
   }
@@ -156,6 +178,7 @@ export async function executeDdlNode(
 
       return {
         ...state,
+        schemaData: currentSchema,
         shouldRetryWithDesignSchema: true,
         ddlExecutionFailureReason: errorMessages,
         retryCount: {
@@ -175,6 +198,7 @@ export async function executeDdlNode(
 
     return {
       ...state,
+      schemaData: currentSchema,
       ddlExecutionFailed: true,
       ddlExecutionFailureReason: errorMessages,
     }
@@ -189,6 +213,7 @@ export async function executeDdlNode(
 
   return {
     ...state,
+    schemaData: currentSchema, // Update state with the latest schema
     ddlStatements,
   }
 }
