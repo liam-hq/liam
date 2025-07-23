@@ -3,6 +3,7 @@ import type {
   FunctionalRequirement,
   NonFunctionalRequirement,
 } from '@liam-hq/artifact'
+import type { DMLOperation } from '../../../langchain/agents/dmlGenerationAgent/agent'
 import type { Usecase } from '../../../langchain/agents/qaGenerateUsecaseAgent/agent'
 import type { Repositories } from '../../../repositories'
 import type { WorkflowState } from '../types'
@@ -18,6 +19,14 @@ export const transformWorkflowStateToArtifact = (
     state.analyzedRequirements?.businessRequirement ?? ''
   const usecases = state.generatedUsecases || []
 
+  // Create a map of DML operations by usecase title for quick lookup
+  const dmlOperationsByUsecase = new Map<string, DMLOperation[]>()
+  if (state.dmlOperations) {
+    for (const { usecase, operations } of state.dmlOperations) {
+      dmlOperationsByUsecase.set(usecase.title, operations)
+    }
+  }
+
   // Group use cases by requirement category and type
   const requirementGroups = groupUsecasesByRequirement(usecases)
 
@@ -31,11 +40,20 @@ export const transformWorkflowStateToArtifact = (
           type: 'functional',
           name: category,
           description: description || `Functional requirement: ${category}`,
-          use_cases: groupedUsecases.map((usecase) => ({
-            title: usecase.title,
-            description: usecase.description,
-            dml_operations: [], // Empty for now - to be populated when DML tracking is added
-          })),
+          use_cases: groupedUsecases.map((usecase) => {
+            // Get DML operations for this use case
+            const operations = dmlOperationsByUsecase.get(usecase.title) || []
+
+            return {
+              title: usecase.title,
+              description: usecase.description,
+              dml_operations: operations.map((op) => ({
+                sql: op.sql,
+                operation_type: op.operationType,
+                dml_execution_logs: [], // Initialize with empty array
+              })),
+            }
+          }),
         }
         return functionalRequirement
       }
@@ -111,11 +129,17 @@ export const createOrUpdateArtifact = async (
     if (updateResult.success) {
       return { success: true }
     }
-    return { success: false, error: updateResult.error }
+    return {
+      success: false,
+      error: !updateResult.success ? updateResult.error : 'Update failed',
+    }
   }
 
   // Check if the failure is due to "not found" vs actual error
-  if (existingResult.error !== 'Artifact not found') {
+  if (
+    !existingResult.success &&
+    existingResult.error !== 'Artifact not found'
+  ) {
     return { success: false, error: existingResult.error }
   }
 
@@ -128,5 +152,8 @@ export const createOrUpdateArtifact = async (
   if (createResult.success) {
     return { success: true }
   }
-  return { success: false, error: createResult.error }
+  return {
+    success: false,
+    error: !createResult.success ? createResult.error : 'Create failed',
+  }
 }

@@ -1,5 +1,6 @@
 import type { BaseMessage } from '@langchain/core/messages'
 import type { Schema } from '@liam-hq/db-structure'
+import type { DMLOperation } from '../../langchain/agents/dmlGenerationAgent/agent'
 import type { Usecase } from '../../langchain/agents/qaGenerateUsecaseAgent/agent'
 import type { Repositories } from '../../repositories'
 import type { NodeLogger } from '../../utils/nodeLogger'
@@ -23,6 +24,12 @@ export type WorkflowState = {
 
   ddlStatements?: string | undefined
   dmlStatements?: string | undefined
+  dmlOperations?:
+    | Array<{
+        usecase: Usecase
+        operations: DMLOperation[]
+      }>
+    | undefined
 
   // DDL execution retry mechanism
   shouldRetryWithDesignSchema?: boolean | undefined

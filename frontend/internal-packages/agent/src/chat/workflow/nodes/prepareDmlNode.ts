@@ -1,5 +1,6 @@
 import type { RunnableConfig } from '@langchain/core/runnables'
 import type { Database } from '@liam-hq/db'
+import type { DMLOperation } from '../../../langchain/agents/dmlGenerationAgent/agent'
 import { DMLGenerationAgent } from '../../../langchain/agents/dmlGenerationAgent/agent'
 import type { Usecase } from '../../../langchain/agents/qaGenerateUsecaseAgent/agent'
 import { convertSchemaToText } from '../../../utils/convertSchemaToText'
@@ -91,21 +92,54 @@ export async function prepareDmlNode(
   // Create DML generation agent
   const dmlAgent = new DMLGenerationAgent()
 
-  // Format use cases for the agent
-  const formattedUseCases = formatUseCases(state.generatedUsecases)
-
   // Convert schema to text for additional context
   const schemaContext = convertSchemaToText(state.schemaData)
 
-  // Generate DML statements
-  const result = await dmlAgent.generate({
+  // Generate DML operations for each use case
+  const dmlOperations: Array<{
+    usecase: Usecase
+    operations: DMLOperation[]
+  }> = []
+
+  for (const usecase of state.generatedUsecases) {
+    const result = await dmlAgent.generateDMLForUsecase({
+      usecase,
+      ddlStatements: state.ddlStatements,
+      schemaContext,
+    })
+
+    if (result.isErr()) {
+      await logAssistantMessage(
+        state,
+        repositories,
+        `Failed to generate DML for use case "${usecase.title}": ${result.error.message}`,
+        assistantRole,
+      )
+      return {
+        ...state,
+        error: result.error,
+      }
+    }
+
+    dmlOperations.push({
+      usecase,
+      operations: result.value,
+    })
+  }
+
+  // Also generate legacy format for backward compatibility
+  const formattedUseCases = formatUseCases(state.generatedUsecases)
+  const legacyResult = await dmlAgent.generate({
     schemaSQL: state.ddlStatements,
     formattedUseCases,
     schemaContext,
   })
 
-  // Validate result
-  if (!result.dmlStatements || result.dmlStatements.trim().length === 0) {
+  // Validate legacy result
+  if (
+    !legacyResult.dmlStatements ||
+    legacyResult.dmlStatements.trim().length === 0
+  ) {
     await logAssistantMessage(
       state,
       repositories,
@@ -118,12 +152,13 @@ export async function prepareDmlNode(
   await logAssistantMessage(
     state,
     repositories,
-    'DML statements generated successfully',
+    `DML operations generated successfully for ${dmlOperations.length} use cases`,
     assistantRole,
   )
 
   return {
     ...state,
-    dmlStatements: result.dmlStatements,
+    dmlStatements: legacyResult.dmlStatements,
+    dmlOperations,
   }
 }
