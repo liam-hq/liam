@@ -16,10 +16,89 @@ import { parseColumnFromProperty } from './columnParser.js'
 import { parseObjectExpression } from './expressionParser.js'
 import type {
   CompositePrimaryKeyDefinition,
+  DrizzleCheckConstraintDefinition,
+  DrizzleColumnDefinition,
   DrizzleIndexDefinition,
   DrizzleTableDefinition,
 } from './types.js'
 import { isCompositePrimaryKey, isDrizzleIndex } from './types.js'
+
+/**
+ * Parse indexes, constraints, and composite primary keys from third argument
+ */
+const parseTableExtensions = (
+  thirdArgExpr: Expression,
+  tableColumns: Record<string, DrizzleColumnDefinition>,
+): {
+  indexes: Record<string, DrizzleIndexDefinition>
+  constraints?: Record<string, import('../../../schema/index.js').Constraint>
+  compositePrimaryKey?: CompositePrimaryKeyDefinition
+} => {
+  const result: {
+    indexes: Record<string, DrizzleIndexDefinition>
+    constraints?: Record<string, import('../../../schema/index.js').Constraint>
+    compositePrimaryKey?: CompositePrimaryKeyDefinition
+  } = {
+    indexes: {},
+  }
+
+  if (thirdArgExpr.type === 'ArrowFunctionExpression') {
+    // Parse arrow function like (table) => ({ nameIdx: index(...), pk: primaryKey(...) })
+    let returnExpr = thirdArgExpr.body
+
+    // Handle parenthesized expressions like (table) => ({ ... })
+    if (returnExpr.type === 'ParenthesisExpression') {
+      returnExpr = returnExpr.expression
+    }
+
+    if (returnExpr.type === 'ObjectExpression') {
+      for (const prop of returnExpr.properties) {
+        if (prop.type === 'KeyValueProperty') {
+          const indexName =
+            prop.key.type === 'Identifier' ? getIdentifierName(prop.key) : null
+          if (indexName && prop.value.type === 'CallExpression') {
+            const indexDef = parseIndexDefinition(prop.value, indexName)
+            if (indexDef) {
+              if (isCompositePrimaryKey(indexDef)) {
+                result.compositePrimaryKey = indexDef
+              } else if (isDrizzleIndex(indexDef)) {
+                result.indexes[indexName] = indexDef
+              }
+            }
+
+            // Handle check constraints
+            const checkConstraint = parseCheckConstraint(prop.value, indexName)
+            if (checkConstraint) {
+              result.constraints = result.constraints || {}
+              result.constraints[checkConstraint.name] = {
+                type: 'CHECK',
+                name: checkConstraint.name,
+                detail: checkConstraint.condition,
+              }
+            }
+
+            // Handle unique constraints
+            const uniqueConstraint = parseUniqueConstraint(
+              prop.value,
+              indexName,
+              tableColumns,
+            )
+            if (uniqueConstraint) {
+              result.constraints = result.constraints || {}
+              result.constraints[uniqueConstraint.name] = {
+                type: 'UNIQUE',
+                name: uniqueConstraint.name,
+                columnNames: uniqueConstraint.columnNames,
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  return result
+}
 
 /**
  * Parse pgTable call with comment method chain
@@ -98,34 +177,14 @@ export const parsePgTableCall = (
   if (callExpr.arguments.length > 2) {
     const thirdArg = callExpr.arguments[2]
     const thirdArgExpr = getArgumentExpression(thirdArg)
-    if (thirdArgExpr && thirdArgExpr.type === 'ArrowFunctionExpression') {
-      // Parse arrow function like (table) => ({ nameIdx: index(...), pk: primaryKey(...) })
-      let returnExpr = thirdArgExpr.body
-
-      // Handle parenthesized expressions like (table) => ({ ... })
-      if (returnExpr.type === 'ParenthesisExpression') {
-        returnExpr = returnExpr.expression
+    if (thirdArgExpr) {
+      const extensions = parseTableExtensions(thirdArgExpr, table.columns)
+      table.indexes = extensions.indexes
+      if (extensions.constraints) {
+        table.constraints = extensions.constraints
       }
-
-      if (returnExpr.type === 'ObjectExpression') {
-        for (const prop of returnExpr.properties) {
-          if (prop.type === 'KeyValueProperty') {
-            const indexName =
-              prop.key.type === 'Identifier'
-                ? getIdentifierName(prop.key)
-                : null
-            if (indexName && prop.value.type === 'CallExpression') {
-              const indexDef = parseIndexDefinition(prop.value, indexName)
-              if (indexDef) {
-                if (isCompositePrimaryKey(indexDef)) {
-                  table.compositePrimaryKey = indexDef
-                } else if (isDrizzleIndex(indexDef)) {
-                  table.indexes[indexName] = indexDef
-                }
-              }
-            }
-          }
-        }
+      if (extensions.compositePrimaryKey) {
+        table.compositePrimaryKey = extensions.compositePrimaryKey
       }
     }
   }
@@ -180,34 +239,14 @@ export const parseSchemaTableCall = (
   if (callExpr.arguments.length > 2) {
     const thirdArg = callExpr.arguments[2]
     const thirdArgExpr = getArgumentExpression(thirdArg)
-    if (thirdArgExpr && thirdArgExpr.type === 'ArrowFunctionExpression') {
-      // Parse arrow function like (table) => ({ nameIdx: index(...), pk: primaryKey(...) })
-      let returnExpr = thirdArgExpr.body
-
-      // Handle parenthesized expressions like (table) => ({ ... })
-      if (returnExpr.type === 'ParenthesisExpression') {
-        returnExpr = returnExpr.expression
+    if (thirdArgExpr) {
+      const extensions = parseTableExtensions(thirdArgExpr, table.columns)
+      table.indexes = extensions.indexes
+      if (extensions.constraints) {
+        table.constraints = extensions.constraints
       }
-
-      if (returnExpr.type === 'ObjectExpression') {
-        for (const prop of returnExpr.properties) {
-          if (prop.type === 'KeyValueProperty') {
-            const indexName =
-              prop.key.type === 'Identifier'
-                ? getIdentifierName(prop.key)
-                : null
-            if (indexName && prop.value.type === 'CallExpression') {
-              const indexDef = parseIndexDefinition(prop.value, indexName)
-              if (indexDef) {
-                if (isCompositePrimaryKey(indexDef)) {
-                  table.compositePrimaryKey = indexDef
-                } else if (isDrizzleIndex(indexDef)) {
-                  table.indexes[indexName] = indexDef
-                }
-              }
-            }
-          }
-        }
+      if (extensions.compositePrimaryKey) {
+        table.compositePrimaryKey = extensions.compositePrimaryKey
       }
     }
   }
@@ -332,6 +371,148 @@ const parseIndexDefinition = (
       columns,
       unique: isUnique,
       type: indexType,
+    }
+  }
+
+  return null
+}
+
+/**
+ * Parse check constraint definition
+ */
+const parseCheckConstraint = (
+  callExpr: CallExpression,
+  name: string,
+): DrizzleCheckConstraintDefinition | null => {
+  // Handle check('constraint_name', sql`condition`) pattern
+  if (
+    callExpr.callee.type === 'Identifier' &&
+    callExpr.callee.value === 'check' &&
+    callExpr.arguments.length >= 2
+  ) {
+    // First argument is constraint name
+    const nameArg = callExpr.arguments[0]
+    const nameExpr = getArgumentExpression(nameArg)
+    let constraintName = name
+    if (nameExpr && isStringLiteral(nameExpr)) {
+      constraintName = nameExpr.value
+    }
+
+    // Second argument is the condition (sql template literal)
+    const conditionArg = callExpr.arguments[1]
+    const conditionExpr = getArgumentExpression(conditionArg)
+
+    // Handle sql`condition` template literal
+    if (
+      conditionExpr &&
+      conditionExpr.type === 'TaggedTemplateExpression' &&
+      conditionExpr.tag.type === 'Identifier' &&
+      conditionExpr.tag.value === 'sql' &&
+      conditionExpr.template.type === 'TemplateLiteral' &&
+      conditionExpr.template.quasis.length > 0
+    ) {
+      // Extract the raw string from the first template element
+      const firstQuasi = conditionExpr.template.quasis[0]
+      let condition = ''
+      if (firstQuasi && firstQuasi.type === 'TemplateElement') {
+        // Access the raw property directly
+        const hasRaw = 'raw' in firstQuasi && typeof firstQuasi.raw === 'string'
+        const hasCooked =
+          'cooked' in firstQuasi && typeof firstQuasi.cooked === 'string'
+
+        if (hasRaw) {
+          condition = firstQuasi.raw || ''
+        } else if (hasCooked) {
+          condition = firstQuasi.cooked || ''
+        }
+      }
+
+      return {
+        type: 'check',
+        name: constraintName,
+        condition,
+      }
+    }
+  }
+
+  return null
+}
+
+/**
+ * Parse unique constraint definition
+ */
+const parseUniqueConstraint = (
+  callExpr: CallExpression,
+  name: string,
+  tableColumns: Record<string, DrizzleColumnDefinition>,
+): { type: 'UNIQUE'; name: string; columnNames: string[] } | null => {
+  // Handle unique('constraint_name').on(...) method chain
+  let constraintName = name
+  let currentExpr: Expression = callExpr
+  const columns: string[] = []
+
+  // First check if we have a method chain ending with .on(...)
+  const methodCalls: Array<{ method: string; expr: CallExpression }> = []
+
+  // Traverse method chain to collect all calls
+  while (
+    currentExpr.type === 'CallExpression' &&
+    currentExpr.callee.type === 'MemberExpression' &&
+    currentExpr.callee.property.type === 'Identifier'
+  ) {
+    const methodName = currentExpr.callee.property.value
+    methodCalls.unshift({ method: methodName, expr: currentExpr })
+    currentExpr = currentExpr.callee.object
+  }
+
+  // The base should be unique()
+  if (
+    currentExpr.type === 'CallExpression' &&
+    currentExpr.callee.type === 'Identifier' &&
+    currentExpr.callee.value === 'unique'
+  ) {
+    // Get the constraint name from the first argument
+    if (currentExpr.arguments.length > 0) {
+      const nameArg = currentExpr.arguments[0]
+      const nameExpr = getArgumentExpression(nameArg)
+      if (nameExpr && isStringLiteral(nameExpr)) {
+        constraintName = nameExpr.value
+      }
+    }
+
+    // Find the .on() method call and parse columns
+    for (const { method, expr } of methodCalls) {
+      if (method === 'on') {
+        // Parse column references from .on(...) arguments
+        for (const arg of expr.arguments) {
+          const argExpr = getArgumentExpression(arg)
+          if (
+            argExpr &&
+            argExpr.type === 'MemberExpression' &&
+            argExpr.object.type === 'Identifier' &&
+            argExpr.property.type === 'Identifier'
+          ) {
+            // Get the JavaScript property name
+            const jsPropertyName = argExpr.property.value
+            // Find the actual database column name from the table columns
+            const column = tableColumns[jsPropertyName]
+            if (column) {
+              columns.push(column.name) // Use database column name
+            } else {
+              columns.push(jsPropertyName) // Fallback to JS property name
+            }
+          }
+        }
+        break
+      }
+    }
+
+    if (columns.length > 0) {
+      return {
+        type: 'UNIQUE',
+        name: constraintName,
+        columnNames: columns,
+      }
     }
   }
 

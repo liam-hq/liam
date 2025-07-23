@@ -864,10 +864,8 @@ describe.each(Object.entries(dbConfigs))(
         }
       })
 
-      // Add MySQL-specific check constraint test (PostgreSQL parser doesn't support check constraints yet)
-      if (dbType === 'mysql') {
-        it('check constraints', async () => {
-          const schema = `
+      it('check constraints', async () => {
+        const schema = `
           import { ${config.functions.table}, ${config.types.id}, varchar, ${config.functions.check} } from '${config.imports.core}';
           import { sql } from '${config.imports.relations}';
 
@@ -881,31 +879,28 @@ describe.each(Object.entries(dbConfigs))(
           }));
         `
 
-          const { value } = await config.processor(schema)
+        const { value } = await config.processor(schema)
 
-          expect(value.tables['users']?.constraints).toHaveProperty(
-            'users_age_check',
-          )
-          expect(value.tables['users']?.constraints['users_age_check']).toEqual(
-            {
-              type: 'CHECK',
-              name: 'users_age_check',
-              detail: 'age >= 0 AND age <= 150',
-            },
-          )
-
-          expect(value.tables['users']?.constraints).toHaveProperty(
-            'users_username_check',
-          )
-          expect(
-            value.tables['users']?.constraints['users_username_check'],
-          ).toEqual({
-            type: 'CHECK',
-            name: 'users_username_check',
-            detail: 'CHAR_LENGTH(username) >= 3',
-          })
+        expect(value.tables['users']?.constraints).toHaveProperty(
+          'users_age_check',
+        )
+        expect(value.tables['users']?.constraints['users_age_check']).toEqual({
+          type: 'CHECK',
+          name: 'users_age_check',
+          detail: 'age >= 0 AND age <= 150',
         })
-      }
+
+        expect(value.tables['users']?.constraints).toHaveProperty(
+          'users_username_check',
+        )
+        expect(
+          value.tables['users']?.constraints['users_username_check'],
+        ).toEqual({
+          type: 'CHECK',
+          name: 'users_username_check',
+          detail: 'CHAR_LENGTH(username) >= 3',
+        })
+      })
 
       // Add multi-schema tests for each database type
       it(`multiple ${config.name} schemas`, async () => {
@@ -962,11 +957,8 @@ describe.each(Object.entries(dbConfigs))(
         expect(foreignKeyCount).toBe(2)
       })
 
-      // table-level unique constraints test
-      // TODO: postgres - add support for unique() function to enable this test for PostgreSQL
-      if (dbType === 'mysql') {
-        it('table-level unique constraints', async () => {
-          const schema = `
+      it('table-level unique constraints', async () => {
+        const schema = `
           import { ${config.functions.table}, ${config.types.id}, varchar, unique } from '${config.imports.core}';
 
           export const users = ${config.functions.table}('users', {
@@ -980,31 +972,30 @@ describe.each(Object.entries(dbConfigs))(
           }));
         `
 
-          const { value } = await config.processor(schema)
+        const { value } = await config.processor(schema)
 
-          expect(value.tables['users']?.constraints).toHaveProperty(
-            'users_full_name_unique',
-          )
-          expect(
-            value.tables['users']?.constraints['users_full_name_unique'],
-          ).toEqual({
-            type: 'UNIQUE',
-            name: 'users_full_name_unique',
-            columnNames: ['first_name', 'last_name'],
-          })
-
-          expect(value.tables['users']?.constraints).toHaveProperty(
-            'users_email_unique',
-          )
-          expect(
-            value.tables['users']?.constraints['users_email_unique'],
-          ).toEqual({
-            type: 'UNIQUE',
-            name: 'users_email_unique',
-            columnNames: ['email'],
-          })
+        expect(value.tables['users']?.constraints).toHaveProperty(
+          'users_full_name_unique',
+        )
+        expect(
+          value.tables['users']?.constraints['users_full_name_unique'],
+        ).toEqual({
+          type: 'UNIQUE',
+          name: 'users_full_name_unique',
+          columnNames: ['first_name', 'last_name'],
         })
-      }
+
+        expect(value.tables['users']?.constraints).toHaveProperty(
+          'users_email_unique',
+        )
+        expect(
+          value.tables['users']?.constraints['users_email_unique'],
+        ).toEqual({
+          type: 'UNIQUE',
+          name: 'users_email_unique',
+          columnNames: ['email'],
+        })
+      })
     })
   },
 )
