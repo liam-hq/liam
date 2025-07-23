@@ -2,6 +2,7 @@ import type { RunnableConfig } from '@langchain/core/runnables'
 import type { Database } from '@liam-hq/db'
 import { executeQuery } from '@liam-hq/pglite-server'
 import type { SqlResult } from '@liam-hq/pglite-server/src/types'
+import type { DMLOperation } from '../../../langchain/agents/dmlGenerationAgent/agent'
 import type { Repositories } from '../../../repositories'
 import { getConfigurable } from '../shared/getConfigurable'
 import type { WorkflowState } from '../types'
@@ -49,11 +50,16 @@ async function executeDMLOperations(
   repositories: Repositories,
   allResults: SqlResult[],
   allErrors: string[],
+  dmlExecutionResults: NonNullable<WorkflowState['dmlExecutionResults']>,
 ): Promise<void> {
   if (!state.dmlOperations) return
 
   for (const usecaseOperations of state.dmlOperations) {
     const { usecase, operations } = usecaseOperations
+    const operationResults: Array<{
+      operation: DMLOperation
+      result: SqlResult
+    }> = []
 
     for (const operation of operations) {
       const dmlResults = await executeQuery(
@@ -75,6 +81,14 @@ async function executeDMLOperations(
         })
       }
 
+      // Store operation result for artifact
+      if (dmlResults.length > 0 && dmlResults[0]) {
+        operationResults.push({
+          operation,
+          result: dmlResults[0], // Take the first result for each operation
+        })
+      }
+
       // Check for DML errors
       const dmlErrors = dmlResults.filter((r) => !r.success)
       dmlErrors.forEach((error) => {
@@ -83,6 +97,12 @@ async function executeDMLOperations(
         )
       })
     }
+
+    // Store results for this usecase
+    dmlExecutionResults.push({
+      usecase,
+      operationResults,
+    })
   }
 }
 
@@ -148,6 +168,8 @@ export async function validateSchemaNode(
 
   const allResults: SqlResult[] = []
   const allErrors: string[] = []
+  const dmlExecutionResults: NonNullable<WorkflowState['dmlExecutionResults']> =
+    []
 
   // Execute DDL first if present
   if (hasDdl) {
@@ -156,7 +178,13 @@ export async function validateSchemaNode(
 
   // Execute DML operations individually if present
   if (hasDmlOperations && state.dmlOperations) {
-    await executeDMLOperations(state, repositories, allResults, allErrors)
+    await executeDMLOperations(
+      state,
+      repositories,
+      allResults,
+      allErrors,
+      dmlExecutionResults,
+    )
   } else if (hasDml && !hasDmlOperations) {
     // Legacy path: execute combined DML statements
     await executeLegacyDML(state, repositories, allResults, allErrors)
@@ -183,5 +211,7 @@ export async function validateSchemaNode(
   return {
     ...state,
     dmlExecutionSuccessful: true,
+    dmlExecutionResults:
+      dmlExecutionResults.length > 0 ? dmlExecutionResults : undefined,
   }
 }

@@ -3,6 +3,7 @@ import type {
   FunctionalRequirement,
   NonFunctionalRequirement,
 } from '@liam-hq/artifact'
+import type { SqlResult } from '@liam-hq/pglite-server/src/types'
 import type { DMLOperation } from '../../../langchain/agents/dmlGenerationAgent/agent'
 import type { Usecase } from '../../../langchain/agents/qaGenerateUsecaseAgent/agent'
 import type { Repositories } from '../../../repositories'
@@ -27,6 +28,17 @@ export const transformWorkflowStateToArtifact = (
     }
   }
 
+  // Create a map of DML execution results by usecase title
+  const dmlResultsByUsecase = new Map<
+    string,
+    Array<{ operation: DMLOperation; result: SqlResult }>
+  >()
+  if (state.dmlExecutionResults) {
+    for (const { usecase, operationResults } of state.dmlExecutionResults) {
+      dmlResultsByUsecase.set(usecase.title, operationResults)
+    }
+  }
+
   // Group use cases by requirement category and type
   const requirementGroups = groupUsecasesByRequirement(usecases)
 
@@ -43,15 +55,42 @@ export const transformWorkflowStateToArtifact = (
           use_cases: groupedUsecases.map((usecase) => {
             // Get DML operations for this use case
             const operations = dmlOperationsByUsecase.get(usecase.title) || []
+            const operationResults =
+              dmlResultsByUsecase.get(usecase.title) || []
 
             return {
               title: usecase.title,
               description: usecase.description,
-              dml_operations: operations.map((op) => ({
-                sql: op.sql,
-                operation_type: op.operationType,
-                dml_execution_logs: [], // Initialize with empty array
-              })),
+              dml_operations: operations.map((op) => {
+                // Find the execution result for this operation
+                const operationResult = operationResults.find(
+                  (result) => result.operation.sql === op.sql,
+                )
+
+                if (!operationResult) {
+                  return {
+                    sql: op.sql,
+                    operation_type: op.operationType,
+                    dml_execution_logs: [],
+                  }
+                }
+
+                const sqlResult = operationResult.result
+
+                return {
+                  sql: op.sql,
+                  operation_type: op.operationType,
+                  dml_execution_logs: [
+                    {
+                      executed_at: sqlResult.metadata.timestamp,
+                      success: sqlResult.success,
+                      result_summary: sqlResult.success
+                        ? 'Query executed successfully.'
+                        : `Query failed: ${JSON.stringify(sqlResult.result)}`,
+                    },
+                  ],
+                }
+              }),
             }
           }),
         }

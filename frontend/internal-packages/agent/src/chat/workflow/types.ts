@@ -1,5 +1,6 @@
 import type { BaseMessage } from '@langchain/core/messages'
 import type { Schema } from '@liam-hq/db-structure'
+import type { SqlResult } from '@liam-hq/pglite-server/src/types'
 import type { DMLOperation } from '../../langchain/agents/dmlGenerationAgent/agent'
 import type { Usecase } from '../../langchain/agents/qaGenerateUsecaseAgent/agent'
 import type { Repositories } from '../../repositories'
@@ -28,6 +29,17 @@ export type WorkflowState = {
     | Array<{
         usecase: Usecase
         operations: DMLOperation[]
+      }>
+    | undefined
+
+  // DML execution results by operation
+  dmlExecutionResults?:
+    | Array<{
+        usecase: Usecase
+        operationResults: Array<{
+          operation: DMLOperation
+          result: SqlResult
+        }>
       }>
     | undefined
 
