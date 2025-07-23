@@ -8,6 +8,7 @@ import { getConfigurable } from '../shared/getConfigurable'
 import type { WorkflowState } from '../types'
 import { formatMessagesToHistory } from '../utils/messageUtils'
 import { logAssistantMessage } from '../utils/timelineLogger'
+import { withTimelineItemSync } from '../utils/withTimelineItemSync'
 
 /**
  * Format analyzed requirements into a structured string
@@ -107,15 +108,24 @@ export async function analyzeRequirementsNode(
         nonFunctionalRequirements: result.nonFunctionalRequirements,
       }
 
-      // Create complete message with all analyzed requirements
-      const completeMessage = new AIMessage({
-        content: formatAnalyzedRequirements(analyzedRequirements),
-        name: 'PMAnalysisAgent',
-      })
+      // Create complete message with all analyzed requirements and sync to timeline
+      const completeMessage = await withTimelineItemSync(
+        new AIMessage({
+          content: formatAnalyzedRequirements(analyzedRequirements),
+          name: 'PMAnalysisAgent',
+        }),
+        {
+          designSessionId: state.designSessionId,
+          organizationId: state.organizationId || '',
+          userId: state.userId,
+          repositories,
+          assistantRole,
+        },
+      )
 
       return {
         ...state,
-        messages: [...state.messages, completeMessage],
+        messages: [completeMessage],
         analyzedRequirements,
         error: undefined, // Clear error on success
       }

@@ -10,11 +10,14 @@ const columnNamePathSchema = v.pipe(
 )
 
 // Add column operation
-const addColumnOperationSchema = v.object({
-  op: v.literal('add'),
-  path: columnPathSchema,
-  value: columnSchema,
-})
+const addColumnOperationSchema = v.pipe(
+  v.object({
+    op: v.literal('add'),
+    path: columnPathSchema,
+    value: columnSchema,
+  }),
+  v.description('Add new column to table'),
+)
 
 export type AddColumnOperation = v.InferOutput<typeof addColumnOperationSchema>
 
@@ -25,10 +28,13 @@ export const isAddColumnOperation = (
 }
 
 // Remove column operation
-const removeColumnOperationSchema = v.object({
-  op: v.literal('remove'),
-  path: columnPathSchema,
-})
+const removeColumnOperationSchema = v.pipe(
+  v.object({
+    op: v.literal('remove'),
+    path: columnPathSchema,
+  }),
+  v.description('Remove existing column'),
+)
 
 export type RemoveColumnOperation = v.InferOutput<
   typeof removeColumnOperationSchema
@@ -41,11 +47,14 @@ export const isRemoveColumnOperation = (
 }
 
 // Rename column operation (replace operation for column name)
-const renameColumnOperationSchema = v.object({
-  op: v.literal('replace'),
-  path: columnNamePathSchema,
-  value: v.string(),
-})
+const renameColumnOperationSchema = v.pipe(
+  v.object({
+    op: v.literal('replace'),
+    path: columnNamePathSchema,
+    value: v.string(),
+  }),
+  v.description('Rename existing column'),
+)
 
 export type RenameColumnOperation = v.InferOutput<
   typeof renameColumnOperationSchema

@@ -36,7 +36,7 @@ function isStringNode(node: Node | undefined): node is { String: PgString } {
 }
 
 function isConstraintNode(node: Node): node is { Constraint: PgConstraint } {
-  return (node as { Constraint: PgConstraint }).Constraint !== undefined
+  return 'Constraint' in node && node.Constraint !== undefined
 }
 
 // ON UPDATE or ON DELETE subclauses for foreign key
@@ -70,7 +70,7 @@ function extractDefaultValueFromConstraints(
 
   const constraintNodes = constraints.filter(isConstraintNode)
   for (const c of constraintNodes) {
-    const constraint = (c as { Constraint: PgConstraint }).Constraint
+    const constraint = c.Constraint
 
     // Skip if not a default constraint or missing required properties
     if (
@@ -874,20 +874,9 @@ export const convertToSchema = (
   }
 
   /**
-   * ALTER TABLE command type
-   */
-  type AlterTableCmd = {
-    subtype: string
-    def?: Node
-  }
-
-  /**
    * Process an ALTER TABLE command
    */
-  function processAlterTableCommand(
-    cmd: { AlterTableCmd?: AlterTableCmd },
-    foreignTableName: string,
-  ): void {
+  function processAlterTableCommand(cmd: Node, foreignTableName: string): void {
     if (!('AlterTableCmd' in cmd)) return
 
     const alterTableCmd = cmd.AlterTableCmd
@@ -923,10 +912,7 @@ export const convertToSchema = (
 
     // Process each command
     for (const cmd of alterTableStmt.cmds) {
-      processAlterTableCommand(
-        cmd as { AlterTableCmd?: AlterTableCmd },
-        foreignTableName,
-      )
+      processAlterTableCommand(cmd, foreignTableName)
     }
   }
 

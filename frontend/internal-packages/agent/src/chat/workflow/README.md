@@ -7,8 +7,7 @@ A **LangGraph implementation** for processing chat messages in the LIAM applicat
 ```mermaid
 flowchart TD
     START([START])
-    SAVE[saveUserMessage<br/>Save User Input]
-    WEBSEARCH[webSearch<br/>Web Search<br/><i>webSearchNode</i>]
+    WEBSEARCH[webSearch<br/>Initial Research<br/><i>pmAgent</i>]
     ANALYZE[analyzeRequirements<br/>Requirements Organization<br/><i>pmAnalysisAgent</i>]
     DESIGN[designSchema<br/>DB Design & DDL Execution<br/><i>dbAgent</i>]
     EXECUTE_DDL[executeDDL<br/>DDL Execution<br/><i>agent</i>]
@@ -19,9 +18,7 @@ flowchart TD
     FINALIZE[finalizeArtifacts<br/>Generate & Save Artifacts<br/><i>dbAgentArtifactGen</i>]
     END([__end__<br/>End])
 
-    START --> SAVE
-    SAVE -->|no error| WEBSEARCH
-    SAVE -->|error| FINALIZE
+    START --> WEBSEARCH
     WEBSEARCH --> ANALYZE
     ANALYZE --> DESIGN
     DESIGN -->|no error| EXECUTE_DDL
@@ -78,16 +75,17 @@ interface WorkflowState {
 - **Error Handling**: Structured error handling with graceful failure paths
 - **Retry Policy**: All nodes are configured with retry policy (maxAttempts: 3)
 - **Fallback Mechanism**: Automatic fallback to finalizeArtifacts on critical errors
-- **Direct Timeline Storage**: Responses are saved directly to timeline_items database table
+- **Automatic Timeline Sync**: All AI messages and user messages are automatically synchronized to timeline_items using `withTimelineItemSync` utility
+- **Real-time Progress Tracking**: Users can view AI responses in real-time during workflow execution
 - **Optimized Memory Usage**: No intermediate state storage for generated responses
 
 ## Nodes
 
-1. **saveUserMessage**: Saves user input and prepares initial state
+1. **webSearch**: Performs initial research and gathers relevant information (performed by pmAgent)
 2. **analyzeRequirements**: Organizes and clarifies requirements from user input (performed by pmAnalysisAgent)
-3. **designSchema**: Designs database schema and saves responses directly to timeline_items (performed by dbAgent)
+3. **designSchema**: Designs database schema with automatic timeline sync (performed by dbAgent)
 4. **executeDDL**: Executes DDL statements (performed by agent)
-5. **generateUsecase**: Creates use cases for testing (performed by qaAgent)
+5. **generateUsecase**: Creates use cases for testing with automatic timeline sync (performed by qaAgent)
 6. **prepareDML**: Generates DML statements for testing (performed by qaAgent)
 7. **validateSchema**: Executes DML and validates schema (performed by qaAgent)
 8. **reviewDeliverables**: Performs final confirmation of requirements and deliverables (performed by pmReviewAgent)
@@ -95,31 +93,35 @@ interface WorkflowState {
 
 ### Conditional Edge Logic
 
-- **saveUserMessage**: Routes to `webSearch` on success, `finalizeArtifacts` on error
-- **webSearch**: Routes to `analyzeRequirements`
 - **designSchema**: Routes to `executeDDL` on success, `finalizeArtifacts` on error
 - **executeDDL**: Routes to `generateUsecase` on success, `designSchema` if retry needed, `finalizeArtifacts` if failed
 - **validateSchema**: Routes to `reviewDeliverables` on success, `designSchema` on validation error
 - **reviewDeliverables**: Routes to `finalizeArtifacts` on success, `analyzeRequirements` if issues found
 
-## Optimization Features
+## Timeline Synchronization
 
-### Direct Timeline Storage
+### Automatic Message Sync with `withTimelineItemSync`
 
-- **Immediate Response Storage**: Generated responses are saved directly to the `timeline_items` table when created in `designSchemaNode`
-- **No State Bloat**: Responses are not stored in workflow state to reduce memory usage
-- **Database-Centric**: Frontend reads responses directly from the database rather than from workflow return values
+- **Universal Integration**: All AIMessage and HumanMessage instances are automatically synchronized to timeline_items
+- **Real-time Updates**: Messages appear in the UI immediately when created during workflow execution
+- **Type-appropriate Storage**: 
+  - User messages → `type: 'user'`
+  - AI responses → `type: 'assistant'` (main conversation messages with timestamps)
+  - Progress logs → `type: 'assistant_log'` (intermediate status updates without timestamps)
+- **Role Assignment**: Automatic assistant role assignment (`db`, `pm`, `qa`) based on workflow node context
+- **Error Resilience**: Timeline sync failures are logged but don't interrupt workflow execution
 
-### Simplified Return Values
+### Implementation Details
 
-- **Success Indicator Only**: The `deepModeling` function returns only `{ success: true }` or an error
-- **No Response Text**: The actual response text is not returned, as it's stored in the database
-- **Error Handling**: Only errors are propagated through the workflow return values
+- **User Message Sync**: User input is synchronized in `deepModeling.ts` before workflow execution
+- **AI Message Sync**: All workflow nodes (webSearch, analyzeRequirements, designSchema, generateUsecase) automatically sync their AI responses
+- **Non-blocking**: Timeline synchronization is asynchronous and non-blocking to ensure workflow performance
+- **Utility Function**: `withTimelineItemSync()` provides consistent message synchronization across all nodes
 
 ### Memory Optimization
 
-- **Removed Fields**: `generatedAnswer` and `finalResponse` have been removed from state
-- **Direct API Calls**: Timeline items are saved using `repositories.schema.createTimelineItem()` directly
+- **No State Bloat**: Messages are not duplicated in workflow state after timeline synchronization
+- **Database-Centric**: Frontend reads messages directly from timeline_items table
 - **Reduced Serialization**: Less data to serialize/deserialize in workflow state transitions
 
 ## Usage
@@ -148,6 +150,7 @@ const result = await deepModeling(
 );
 
 // Result is { success: true } on success, or Error on failure
-// Actual responses are stored in timeline_items table and read by frontend
+// All user and AI messages are automatically synchronized to timeline_items table
+// Frontend receives real-time updates as workflow progresses
 // The workflow is typically run as a background job via Trigger.dev
 ```

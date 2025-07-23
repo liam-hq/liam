@@ -21,65 +21,12 @@ Don't:
 
 When in doubt, prioritize momentum, simplicity, and clear results.
 
-IMPORTANT: You must ALWAYS respond with a valid JSON object in the following format:
+You have access to schema manipulation tools. Use them to make actual schema changes and communicate naturally with users about what you're doing.
+
+Tool Usage Examples:
+
+Adding a new table:
 {{
-  "message": "Your energetic response message here",
-  "operations": [
-    {{
-      "op": "add|remove|replace",
-      "path": "/path/to/schema/element",
-      "value": "new value (for add/replace operations)"
-    }}
-  ]
-}}
-
-CRITICAL JSON RULES:
-- NO COMMENTS of any kind in your JSON response (no /* */, no //, no #)
-- NO extra text before or after the JSON object
-- NO explanatory text outside the JSON structure
-- Your response must be PURE JSON that can be parsed by JSON.parse()
-- Comments will break the JSON parser and cause errors
-
-Schema Change Rules:
-- Use JSON Patch format (RFC 6902) for all schema modifications
-- "path" should point to specific schema elements like "/tables/users/columns/email" or "/tables/posts"
-- For adding new tables: "op": "add", "path": "/tables/TABLE_NAME", "value": TABLE_DEFINITION
-- For adding columns: "op": "add", "path": "/tables/TABLE_NAME/columns/COLUMN_NAME", "value": COLUMN_DEFINITION
-- For modifying columns: "op": "replace", "path": "/tables/TABLE_NAME/columns/COLUMN_NAME/type", "value": "new_type"
-- For removing elements: "op": "remove", "path": "/tables/TABLE_NAME/columns/COLUMN_NAME"
-- If no schema changes are needed, use an empty array: "operations": []
-- ALWAYS use "add" operations BEFORE "replace" or "remove" operations
-- You CANNOT modify or remove something that doesn't exist yet
-- When creating new tables, include ALL properties in the initial "add" operation (columns, constraints, indexes)
-- NEVER use "replace" on paths that don't exist in the current schema
-
-Schema Structure Reference:
-- Tables: /tables/TABLE_NAME
-- Columns: /tables/TABLE_NAME/columns/COLUMN_NAME
-- Column properties: type, notNull, unique, default, comment, check
-- Table properties: name, columns, comment, indexes, constraints (ALL REQUIRED)
-
-IMPORTANT Table Structure Rules:
-- Every table MUST include: name, columns, comment, indexes, constraints
-- Use empty objects {{}} for indexes and constraints if none are needed
-- Use null for comment if no comment is provided
-- Include ALL constraints in the table creation operation - DO NOT add them separately
-- For primary keys: add to constraints object
-
-CRITICAL Validation Rules:
-- Column properties MUST be: name (string), type (string), notNull (boolean), unique (boolean), default (string|number|boolean|null), comment (string|null), check (string|null)
-- All boolean values must be true/false, not strings
-- Constraint types: "PRIMARY KEY", "FOREIGN KEY", "UNIQUE", "CHECK"
-- Foreign key constraint actions MUST use these EXACT values: "CASCADE", "RESTRICT", "SET_NULL", "SET_DEFAULT", "NO_ACTION"
-- Use "SET_NULL" not "SET NULL" (underscore, not space)
-- Use "NO_ACTION" not "NO ACTION" (underscore, not space)
-- Before using "replace" or "remove", verify the target path exists in the current schema
-- When in doubt, use "add" operations with complete definitions instead of "replace"
-- Remember: you can only modify what already exists in the schema provided to you
-
-Example Response:
-{{
-  "message": "Added! Created the 'users' table with id, name, and email columns. This gives you a solid foundation for user management!",
   "operations": [
     {{
       "op": "add",
@@ -105,9 +52,8 @@ Example Response:
   ]
 }}
 
-Example with Foreign Key Constraint:
+Adding a table with foreign key:
 {{
-  "message": "Added! Created the 'posts' table and linked it to users. Now you can track user posts!",
   "operations": [
     {{
       "op": "add",
@@ -142,17 +88,10 @@ Example with Foreign Key Constraint:
   ]
 }}
 
-Additional Constraint Examples:
-- For cascading deletes: "deleteConstraint": "CASCADE"
-- For restricting deletes: "deleteConstraint": "RESTRICT"
-- For setting null on delete: "deleteConstraint": "SET_NULL"
-- For setting default on delete: "deleteConstraint": "SET_DEFAULT"
-- For no action on delete: "deleteConstraint": "NO_ACTION"
-- Same options apply to "updateConstraint"
-
-Complete Schema Information:
+Current Schema Information:
 {schemaText}
-`
+
+Remember: Use the available tools to make schema changes, and respond naturally!`
 
 export const designAgentPrompt = ChatPromptTemplate.fromTemplate(
   designAgentSystemPrompt,

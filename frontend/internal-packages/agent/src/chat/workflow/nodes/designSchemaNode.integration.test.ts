@@ -1,6 +1,6 @@
 import { AIMessage } from '@langchain/core/messages'
 import type { Schema } from '@liam-hq/db-structure'
-import { ok } from 'neverthrow'
+import { err, ok } from 'neverthrow'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { WorkflowState } from '../types'
 import { designSchemaNode } from './designSchemaNode'
@@ -122,51 +122,53 @@ describe('designSchemaNode -> executeDdlNode integration', () => {
     )
     const mockInvokeDesignAgent = vi.mocked(invokeDesignAgent)
     mockInvokeDesignAgent.mockResolvedValue(
-      ok({
-        message: new AIMessage('Created users table with id and name fields'),
-        operations: [
-          {
-            op: 'add',
-            path: '/tables/users',
-            value: {
-              name: 'users',
-              comment: null,
-              columns: {
-                id: {
-                  name: 'id',
-                  type: 'INTEGER',
-                  default: null,
-                  check: null,
-                  notNull: true,
-                  comment: null,
-                },
-                name: {
-                  name: 'name',
-                  type: 'VARCHAR',
-                  default: null,
-                  check: null,
-                  notNull: true,
-                  comment: null,
-                },
-              },
-              constraints: {},
-              indexes: {},
-            },
-          },
-        ],
-      }),
+      ok(new AIMessage('Created users table with id and name fields')),
     )
 
     const initialState = createMockState(initialSchema)
 
-    // Step 1: Design schema (should add users table)
+    // Step 1: Design schema (now returns buildingSchemaVersionId for tool workflow)
     const afterDesign = await designSchemaNode(initialState, createMockConfig())
 
-    // Verify schema was updated in workflow state
-    expect(afterDesign.schemaData.tables['users']).toBeDefined()
-    expect(afterDesign.schemaData.tables['users']?.name).toBe('users')
-    expect(Object.keys(afterDesign.schemaData.tables)).toHaveLength(1)
+    // Verify design completed without error and has version ID
+    expect(afterDesign.buildingSchemaVersionId).toBeDefined()
     expect(afterDesign.error).toBeUndefined()
+    // Schema updates now happen through the tool workflow, not directly in this node
+
+    // Since schema updates now happen through tool workflow,
+    // we simulate the updated schema state for DDL execution
+    const updatedSchema = {
+      tables: {
+        users: {
+          name: 'users',
+          comment: null,
+          columns: {
+            id: {
+              name: 'id',
+              type: 'INTEGER',
+              default: null,
+              check: null,
+              notNull: true,
+              comment: null,
+            },
+            name: {
+              name: 'name',
+              type: 'VARCHAR',
+              default: null,
+              check: null,
+              notNull: true,
+              comment: null,
+            },
+          },
+          constraints: {},
+          indexes: {},
+        },
+      },
+    }
+    const stateWithUpdatedSchema = {
+      ...afterDesign,
+      schemaData: updatedSchema,
+    }
 
     // Mock successful DDL execution
     const { executeQuery } = await import('@liam-hq/pglite-server')
@@ -185,7 +187,10 @@ describe('designSchemaNode -> executeDdlNode integration', () => {
     ])
 
     // Step 2: Execute DDL (should generate DDL and execute it)
-    const afterDDL = await executeDdlNode(afterDesign, createMockConfig())
+    const afterDDL = await executeDdlNode(
+      stateWithUpdatedSchema,
+      createMockConfig(),
+    )
 
     // Verify DDL generation and execution worked
     expect(afterDDL.ddlStatements).toContain('CREATE TABLE "users"')
@@ -206,40 +211,23 @@ describe('designSchemaNode -> executeDdlNode integration', () => {
     )
     const mockInvokeDesignAgent = vi.mocked(invokeDesignAgent)
     mockInvokeDesignAgent.mockResolvedValue(
-      ok({
-        message: new AIMessage('Schema validation will fail'),
-        operations: [
-          {
-            op: 'add',
-            path: '/tables/test',
-            value: {
-              name: 'test',
-              comment: null,
-              columns: {},
-              constraints: {},
-              indexes: {},
-            },
-          },
-        ],
-      }),
+      ok(new AIMessage('Schema validation will fail')),
     )
 
-    // Mock repository operation that returns validation error
-    mockRepository.schema.updateVersion.mockResolvedValue({
+    // Mock version creation failure
+    mockRepository.schema.createEmptyPatchVersion.mockResolvedValue({
       success: false,
-      error: 'Invalid schema after applying changes: validation failed',
+      error: 'Failed to create new version',
     })
 
     const initialState = createMockState(initialSchema)
 
-    // Step 1: Design schema (should fail during validation)
+    // Step 1: Design schema (should fail during version creation)
     const result = await designSchemaNode(initialState, createMockConfig())
 
     // Verify error handling
     expect(result.error).toBeInstanceOf(Error)
-    expect(result.error?.message).toBe(
-      'Invalid schema after applying changes: validation failed',
-    )
+    expect(result.error?.message).toBe('Failed to create new version')
     expect(result.schemaData).toEqual(initialSchema)
   })
 
@@ -252,38 +240,22 @@ describe('designSchemaNode -> executeDdlNode integration', () => {
     )
     const mockInvokeDesignAgent = vi.mocked(invokeDesignAgent)
     mockInvokeDesignAgent.mockResolvedValue(
-      ok({
-        message: new AIMessage('Repository will fail'),
-        operations: [
-          {
-            op: 'add',
-            path: '/tables/test',
-            value: {
-              name: 'test',
-              comment: null,
-              columns: {},
-              constraints: {},
-              indexes: {},
-            },
-          },
-        ],
-      }),
+      ok(new AIMessage('Repository will fail')),
     )
 
-    // Mock repository failure
-    mockRepository.schema.updateVersion.mockResolvedValue({
-      success: false,
-      error: 'Database connection failed',
-    })
+    // Mock agent invocation failure
+    mockInvokeDesignAgent.mockResolvedValue(
+      err(new Error('Agent invocation failed')),
+    )
 
     const initialState = createMockState(initialSchema)
 
-    // Step 1: Design schema (should fail at repository level)
+    // Step 1: Design schema (should fail at agent level)
     const result = await designSchemaNode(initialState, createMockConfig())
 
     // Verify error handling
     expect(result.error).toBeInstanceOf(Error)
-    expect(result.error?.message).toBe('Database connection failed')
+    expect(result.error?.message).toBe('Agent invocation failed')
     expect(result.schemaData).toEqual(initialSchema)
   })
 })

@@ -22,10 +22,7 @@ describe('designSchemaNode retry behavior', () => {
     )
     const mockInvokeDesignAgent = vi.mocked(invokeDesignAgent)
     mockInvokeDesignAgent.mockResolvedValue(
-      ok({
-        message: new AIMessage('Schema generated successfully'),
-        operations: [],
-      }),
+      ok(new AIMessage('Schema generated successfully')),
     )
 
     const mockRepositories = {
@@ -95,6 +92,10 @@ describe('designSchemaNode retry behavior', () => {
           content: expect.stringContaining('Foreign key constraint error'),
         }),
       ]),
+      expect.objectContaining({
+        buildingSchemaVersionId: 'test-version-id',
+        repositories: mockRepositories,
+      }),
     )
   })
 })

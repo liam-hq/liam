@@ -14,7 +14,6 @@ import {
   generateUsecaseNode,
   prepareDmlNode,
   reviewDeliverablesNode,
-  saveUserMessageNode,
   validateSchemaNode,
   webSearchNode,
 } from './chat/workflow/nodes'
@@ -23,6 +22,9 @@ import {
   DEFAULT_RECURSION_LIMIT,
 } from './chat/workflow/shared/langGraphUtils'
 import type { WorkflowConfigurable, WorkflowState } from './chat/workflow/types'
+import { withTimelineItemSync } from './chat/workflow/utils/withTimelineItemSync'
+import { invokeSchemaDesignToolNode } from './db-agent/nodes/invokeSchemaDesignToolNode'
+import { routeAfterDesignSchema } from './db-agent/routing/routeAfterDesignSchema'
 
 export type DeepModelingParams = {
   userInput: string
@@ -53,9 +55,6 @@ const createGraph = () => {
   const graph = new StateGraph(ChatStateAnnotation)
 
   graph
-    .addNode('saveUserMessage', saveUserMessageNode, {
-      retryPolicy: RETRY_POLICY,
-    })
     .addNode('webSearch', webSearchNode, {
       retryPolicy: RETRY_POLICY,
     })
@@ -63,6 +62,9 @@ const createGraph = () => {
       retryPolicy: RETRY_POLICY,
     })
     .addNode('designSchema', designSchemaNode, {
+      retryPolicy: RETRY_POLICY,
+    })
+    .addNode('invokeSchemaDesignTool', invokeSchemaDesignToolNode, {
       retryPolicy: RETRY_POLICY,
     })
     .addNode('executeDDL', executeDdlNode, {
@@ -84,37 +86,18 @@ const createGraph = () => {
       retryPolicy: RETRY_POLICY,
     })
 
-    .addEdge(START, 'saveUserMessage')
+    .addEdge(START, 'webSearch')
     .addEdge('webSearch', 'analyzeRequirements')
     .addEdge('analyzeRequirements', 'designSchema')
+    .addEdge('invokeSchemaDesignTool', 'designSchema')
+    .addConditionalEdges('designSchema', routeAfterDesignSchema, {
+      invokeSchemaDesignTool: 'invokeSchemaDesignTool',
+      executeDDL: 'executeDDL',
+    })
     .addEdge('executeDDL', 'generateUsecase')
     .addEdge('generateUsecase', 'prepareDML')
     .addEdge('prepareDML', 'validateSchema')
     .addEdge('finalizeArtifacts', END)
-
-    // Conditional edge for saveUserMessage - skip to finalizeArtifacts if error, otherwise go to webSearch
-    .addConditionalEdges(
-      'saveUserMessage',
-      (state) => {
-        return state.error ? 'finalizeArtifacts' : 'webSearch'
-      },
-      {
-        finalizeArtifacts: 'finalizeArtifacts',
-        webSearch: 'webSearch',
-      },
-    )
-
-    // Conditional edge for designSchema - skip to finalizeArtifacts if error
-    .addConditionalEdges(
-      'designSchema',
-      (state) => {
-        return state.error ? 'finalizeArtifacts' : 'executeDDL'
-      },
-      {
-        finalizeArtifacts: 'finalizeArtifacts',
-        executeDDL: 'executeDDL',
-      },
-    )
 
     // Conditional edge for executeDDL - retry with designSchema if DDL execution fails
     .addConditionalEdges(
@@ -196,8 +179,14 @@ export const deepModeling = async (
       : new HumanMessage(content)
   })
 
-  // Add the current user input as the latest message
-  messages.push(new HumanMessage(userInput))
+  // Add the current user input as the latest message with timeline sync
+  const humanMessage = await withTimelineItemSync(new HumanMessage(userInput), {
+    designSessionId,
+    organizationId: organizationId || '',
+    userId,
+    repositories,
+  })
+  messages.push(humanMessage)
 
   // Create workflow state
   const workflowState: WorkflowState = {

@@ -441,20 +441,21 @@ function extractDefaultValue(
 
 function extractForeignKeyTableNames(
   argNodes: Node[],
-): Result<[string, string], UnexpectedTokenWarningError> {
+): Result<[string, string], Error> {
   const stringNodes = argNodes.filter((node) => node instanceof StringNode)
   if (stringNodes.length !== 2) {
-    return err(
-      new UnexpectedTokenWarningError('Foreign key must have two table names'),
-    )
+    return err(new Error('Foreign key must have two table names'))
   }
 
-  const [foreignTableName, primaryTableName] = stringNodes.map(
-    (node): string => {
-      if (node instanceof StringNode) return node.unescaped.value
-      return ''
-    },
-  ) as [string, string]
+  const [firstNode, secondNode] = stringNodes.map((node): string => {
+    if (node instanceof StringNode) return node.unescaped.value
+    return ''
+  })
+  if (!firstNode || !secondNode) {
+    return err(new Error('Expected exactly 2 string values'))
+  }
+  const foreignTableName = firstNode
+  const primaryTableName = secondNode
 
   return ok([primaryTableName, foreignTableName])
 }
@@ -519,7 +520,7 @@ function extractCheckConstraint(
     )
   }
 
-  const [detail] = stringValues as [string]
+  const detail = stringValues[0] ?? ''
 
   // Create constraint with detail
   const constraint = aCheckConstraint({ detail })
@@ -561,7 +562,8 @@ function extractCheckConstraintWithTableName(
     )
   }
 
-  const [tableName, detail] = stringValues as [string, string]
+  const tableName = stringValues[0] ?? ''
+  const detail = stringValues[1] ?? ''
 
   // Create constraint with detail
   const constraint = aCheckConstraint({
@@ -700,10 +702,10 @@ class SchemaFinder extends Visitor {
 
   getSchema(): Schema {
     const schema: Schema = {
-      tables: this.tables.reduce((acc, table) => {
+      tables: this.tables.reduce((acc: Tables, table) => {
         acc[table.name] = table
         return acc
-      }, {} as Tables),
+      }, {}),
     }
     return schema
   }
@@ -745,20 +747,20 @@ class SchemaFinder extends Visitor {
     constraints.push(...extractConstraints)
     this.errors.push(...extractErrors)
 
-    table.columns = columns.reduce((acc, column) => {
+    table.columns = columns.reduce((acc: Columns, column) => {
       acc[column.name] = column
       return acc
-    }, {} as Columns)
+    }, {})
 
-    table.indexes = indexes.reduce((acc, index) => {
+    table.indexes = indexes.reduce((acc: Indexes, index) => {
       acc[index.name] = index
       return acc
-    }, {} as Indexes)
+    }, {})
 
-    table.constraints = constraints.reduce((acc, constraint) => {
+    table.constraints = constraints.reduce((acc: Constraints, constraint) => {
       acc[constraint.name] = constraint
       return acc
-    }, {} as Constraints)
+    }, {})
 
     this.tables.push(table)
   }

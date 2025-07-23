@@ -12,4 +12,7 @@ const operationSchema = v.union([
 ])
 export type Operation = v.InferOutput<typeof operationSchema>
 
-export const operationsSchema = v.array(operationSchema)
+export const operationsSchema = v.pipe(
+  v.array(operationSchema),
+  v.description('JSON Patch operations for database schema modifications'),
+)

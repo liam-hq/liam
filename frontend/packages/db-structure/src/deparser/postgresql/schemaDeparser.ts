@@ -11,14 +11,14 @@ export const postgresqlSchemaDeparser: SchemaDeparser = (schema: Schema) => {
   const errors: { message: string }[] = []
 
   // 1. Generate CREATE TABLE statements for each table
-  for (const table of Object.values(schema.tables) as Table[]) {
+  for (const table of Object.values(schema.tables) satisfies Table[]) {
     const createTableDDL = generateCreateTableStatement(table)
     ddlStatements.push(createTableDDL)
   }
 
   // 2. Generate CREATE INDEX statements for all tables
-  for (const table of Object.values(schema.tables) as Table[]) {
-    const indexes = Object.values(table.indexes) as Index[]
+  for (const table of Object.values(schema.tables) satisfies Table[]) {
+    const indexes = Object.values(table.indexes) satisfies Index[]
     for (const index of indexes) {
       const createIndexDDL = generateCreateIndexStatement(table.name, index)
       ddlStatements.push(createIndexDDL)
@@ -29,7 +29,7 @@ export const postgresqlSchemaDeparser: SchemaDeparser = (schema: Schema) => {
   // Note: Foreign key constraints are added last to ensure referenced tables exist
   const foreignKeyStatements: string[] = []
 
-  for (const table of Object.values(schema.tables) as Table[]) {
+  for (const table of Object.values(schema.tables) satisfies Table[]) {
     const constraints = Object.values(table.constraints)
     for (const constraint of constraints) {
       const addConstraintDDL = generateAddConstraintStatement(

@@ -6,6 +6,7 @@ import { ResultAsync } from 'neverthrow'
 import { getConfigurable } from '../shared/getConfigurable'
 import type { WorkflowState } from '../types'
 import { logAssistantMessage } from '../utils/timelineLogger'
+import { withTimelineItemSync } from '../utils/withTimelineItemSync'
 
 /**
  * Web Search Node - Initial Research
@@ -73,15 +74,23 @@ Provide a concise summary of the most relevant findings.`
           ? result.content
           : JSON.stringify(result.content)
 
+      const searchMessage = await withTimelineItemSync(
+        new AIMessage({
+          content: `Web Search Results:\n${searchContent}`,
+          name: 'WebSearchAgent',
+        }),
+        {
+          designSessionId: state.designSessionId,
+          organizationId: state.organizationId || '',
+          userId: state.userId,
+          repositories,
+          assistantRole,
+        },
+      )
+
       return {
         ...state,
-        messages: [
-          ...state.messages,
-          new AIMessage({
-            content: `Web Search Results:\n${searchContent}`,
-            name: 'WebSearchAgent',
-          }),
-        ],
+        messages: [...state.messages, searchMessage],
         webSearchResults: searchContent,
         error: undefined, // Clear error on success
       }
@@ -96,16 +105,24 @@ Provide a concise summary of the most relevant findings.`
 
       // Don't fail the entire workflow if web search fails
       // Just continue without the search results
+      const errorMessage = await withTimelineItemSync(
+        new AIMessage({
+          content:
+            'Web search was skipped due to an error, proceeding with analysis.',
+          name: 'WebSearchAgent',
+        }),
+        {
+          designSessionId: state.designSessionId,
+          organizationId: state.organizationId || '',
+          userId: state.userId,
+          repositories,
+          assistantRole,
+        },
+      )
+
       return {
         ...state,
-        messages: [
-          ...state.messages,
-          new AIMessage({
-            content:
-              'Web search was skipped due to an error, proceeding with analysis.',
-            name: 'WebSearchAgent',
-          }),
-        ],
+        messages: [...state.messages, errorMessage],
         webSearchResults: undefined,
         retryCount: {
           ...state.retryCount,

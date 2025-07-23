@@ -1,58 +1,35 @@
 import {
-  AIMessage,
+  type AIMessage,
   type BaseMessage,
   SystemMessage,
 } from '@langchain/core/messages'
 import { ChatOpenAI } from '@langchain/openai'
-import { operationsSchema } from '@liam-hq/db-structure'
-import { toJsonSchema } from '@valibot/to-json-schema'
-import { ok, Result, ResultAsync } from 'neverthrow'
-import * as v from 'valibot'
+import { ok, ResultAsync } from 'neverthrow'
+import type { ToolConfigurable } from '../../../db-agent/getToolConfigurable'
+import { schemaDesignTool } from '../../../db-agent/tools/schemaDesignTool'
 import { createLangfuseHandler } from '../../utils/telemetry'
 import { type DesignAgentPromptVariables, designAgentPrompt } from './prompts'
 
-// Define the response schema
-const designResponseSchema = v.object({
-  message: v.string(),
-  operations: operationsSchema,
-})
-
-export type DesignResponse = v.InferOutput<typeof designResponseSchema>
-export type InvokeResult = {
-  message: AIMessage
-  operations: DesignResponse['operations']
-}
-
-const jsonSchema = toJsonSchema(designResponseSchema)
 const model = new ChatOpenAI({
   model: 'o4-mini',
   callbacks: [createLangfuseHandler()],
-}).withStructuredOutput(jsonSchema)
+}).bindTools([schemaDesignTool])
 
 export const invokeDesignAgent = (
   variables: DesignAgentPromptVariables,
   messages: BaseMessage[],
-): ResultAsync<InvokeResult, Error> => {
+  configurable: ToolConfigurable,
+): ResultAsync<AIMessage, Error> => {
   const formatPrompt = ResultAsync.fromSafePromise(
     designAgentPrompt.format(variables),
   )
   const invoke = ResultAsync.fromThrowable(
     (systemPrompt: string) =>
-      model.invoke([new SystemMessage(systemPrompt), ...messages]),
+      model.invoke([new SystemMessage(systemPrompt), ...messages], {
+        configurable,
+      }),
     (error) => new Error(`Failed to invoke design agent: ${error}`),
   )
-  const parse = Result.fromThrowable(
-    (response: unknown) => v.parse(designResponseSchema, response),
-    (error) => new Error(`Failed to parse design agent response: ${error}`),
-  )
 
-  return formatPrompt
-    .andThen(invoke)
-    .andThen(parse)
-    .andThen((parsed) =>
-      ok({
-        message: new AIMessage(parsed.message),
-        operations: parsed.operations,
-      }),
-    )
+  return formatPrompt.andThen(invoke).andThen((response) => ok(response))
 }

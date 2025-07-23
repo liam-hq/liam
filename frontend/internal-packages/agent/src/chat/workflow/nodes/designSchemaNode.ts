@@ -1,125 +1,12 @@
 import { HumanMessage } from '@langchain/core/messages'
 import type { RunnableConfig } from '@langchain/core/runnables'
 import type { Database } from '@liam-hq/db'
-import {
-  type DesignResponse,
-  type InvokeResult,
-  invokeDesignAgent,
-} from '../../../langchain/agents/databaseSchemaBuildAgent/agent'
-import type { Repositories } from '../../../repositories'
+import { invokeDesignAgent } from '../../../langchain/agents/databaseSchemaBuildAgent/agent'
 import { convertSchemaToText } from '../../../utils/convertSchemaToText'
 import { getConfigurable } from '../shared/getConfigurable'
 import type { WorkflowState } from '../types'
 import { logAssistantMessage } from '../utils/timelineLogger'
-
-/**
- * Apply schema changes and return updated state
- */
-const applySchemaChanges = async (
-  operations: DesignResponse['operations'],
-  buildingSchemaVersionId: string,
-  message: string,
-  state: WorkflowState,
-  repositories: Repositories,
-  assistantRole: Database['public']['Enums']['assistant_role_enum'],
-): Promise<WorkflowState> => {
-  await logAssistantMessage(
-    state,
-    repositories,
-    'Applying schema changes...',
-    assistantRole,
-  )
-
-  const result = await repositories.schema.updateVersion({
-    buildingSchemaVersionId,
-    patch: operations,
-  })
-
-  if (!result.success) {
-    const errorMessage = result.error || 'Failed to update schema'
-    await logAssistantMessage(
-      state,
-      repositories,
-      'Schema update failed',
-      assistantRole,
-    )
-    return {
-      ...state,
-      error: new Error(errorMessage),
-    }
-  }
-
-  await logAssistantMessage(
-    state,
-    repositories,
-    `Applied ${operations.length} schema changes successfully`,
-    assistantRole,
-  )
-
-  // Save timeline item directly when answer is generated
-  const saveResult = await repositories.schema.createTimelineItem({
-    designSessionId: state.designSessionId,
-    content: message,
-    type: 'assistant',
-    role: 'db',
-  })
-
-  if (!saveResult.success) {
-    return {
-      ...state,
-      schemaData: result.newSchema,
-      error: new Error(
-        `Failed to save assistant timeline item: ${saveResult.error}`,
-      ),
-    }
-  }
-
-  return {
-    ...state,
-    schemaData: result.newSchema,
-    error: undefined,
-  }
-}
-
-/**
- * Handle schema changes if they exist
- */
-const handleSchemaChanges = async (
-  invokeResult: InvokeResult,
-  buildingSchemaVersionId: string,
-  state: WorkflowState,
-  repositories: Repositories,
-  assistantRole: Database['public']['Enums']['assistant_role_enum'],
-): Promise<WorkflowState> => {
-  if (invokeResult.operations.length === 0) {
-    // Save timeline item directly when answer is generated
-    const saveResult = await repositories.schema.createTimelineItem({
-      designSessionId: state.designSessionId,
-      content: invokeResult.message.text,
-      type: 'assistant',
-      role: 'db',
-    })
-
-    if (!saveResult.success) {
-      return {
-        ...state,
-        error: new Error(
-          `Failed to save assistant timeline item: ${saveResult.error}`,
-        ),
-      }
-    }
-    return state
-  }
-
-  return await applySchemaChanges(
-    invokeResult.operations,
-    buildingSchemaVersionId,
-    invokeResult.message.text,
-    state,
-    repositories,
-    assistantRole,
-  )
-}
+import { withTimelineItemSync } from '../utils/withTimelineItemSync'
 
 /**
  * Design Schema Node - DB Design & DDL Execution
@@ -160,19 +47,12 @@ export async function designSchemaNode(
   if (!createVersionResult.success) {
     const errorMessage =
       createVersionResult.error || 'Failed to create new version'
-    await logAssistantMessage(
-      state,
-      repositories,
-      'Version creation failed',
-      assistantRole,
-    )
+    await logAssistantMessage(state, repositories, errorMessage, assistantRole)
     return {
       ...state,
       error: new Error(errorMessage),
     }
   }
-
-  const buildingSchemaVersionId = createVersionResult.versionId
 
   await logAssistantMessage(
     state,
@@ -211,7 +91,10 @@ Please fix this issue by analyzing the schema and adding any missing constraints
     assistantRole,
   )
 
-  const invokeResult = await invokeDesignAgent({ schemaText }, messages)
+  const invokeResult = await invokeDesignAgent({ schemaText }, messages, {
+    buildingSchemaVersionId: createVersionResult.versionId,
+    repositories,
+  })
 
   if (invokeResult.isErr()) {
     await logAssistantMessage(
@@ -226,14 +109,6 @@ Please fix this issue by analyzing the schema and adding any missing constraints
     }
   }
 
-  const result = await handleSchemaChanges(
-    invokeResult.value,
-    buildingSchemaVersionId,
-    state,
-    repositories,
-    assistantRole,
-  )
-
   await logAssistantMessage(
     state,
     repositories,
@@ -241,13 +116,21 @@ Please fix this issue by analyzing the schema and adding any missing constraints
     assistantRole,
   )
 
-  // Clear retry flags after processing
-  const finalResult = {
-    ...result,
-    messages: [...messages, invokeResult.value.message],
+  // Apply timeline sync to the message and clear retry flags
+  const syncedMessage = await withTimelineItemSync(invokeResult.value, {
+    designSessionId: state.designSessionId,
+    organizationId: state.organizationId || '',
+    userId: state.userId,
+    repositories,
+    assistantRole,
+  })
+
+  return {
+    ...state,
+    messages: [syncedMessage],
+    buildingSchemaVersionId: createVersionResult.versionId,
+    latestVersionNumber: state.latestVersionNumber + 1,
     shouldRetryWithDesignSchema: undefined,
     ddlExecutionFailureReason: undefined,
   }
-
-  return finalResult
 }

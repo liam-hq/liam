@@ -6,11 +6,14 @@ import type { Operation } from './index.js'
 const indexPathSchema = v.pipe(v.string(), v.regex(PATH_PATTERNS.INDEX_BASE))
 
 // Add index operation
-const addIndexOperationSchema = v.object({
-  op: v.literal('add'),
-  path: indexPathSchema,
-  value: indexSchema,
-})
+const addIndexOperationSchema = v.pipe(
+  v.object({
+    op: v.literal('add'),
+    path: indexPathSchema,
+    value: indexSchema,
+  }),
+  v.description('Add new index to table'),
+)
 
 export type AddIndexOperation = v.InferOutput<typeof addIndexOperationSchema>
 
@@ -21,10 +24,13 @@ export const isAddIndexOperation = (
 }
 
 // Remove index operation
-const removeIndexOperationSchema = v.object({
-  op: v.literal('remove'),
-  path: indexPathSchema,
-})
+const removeIndexOperationSchema = v.pipe(
+  v.object({
+    op: v.literal('remove'),
+    path: indexPathSchema,
+  }),
+  v.description('Remove existing index'),
+)
 
 export type RemoveIndexOperation = v.InferOutput<
   typeof removeIndexOperationSchema

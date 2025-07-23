@@ -9,22 +9,31 @@ const tableNamePathSchema = v.pipe(
   v.regex(PATH_PATTERNS.TABLE_NAME),
 )
 
-const addTableOperationSchema = v.object({
-  op: v.literal('add'),
-  path: tablePathSchema,
-  value: tableSchema,
-})
+const addTableOperationSchema = v.pipe(
+  v.object({
+    op: v.literal('add'),
+    path: tablePathSchema,
+    value: tableSchema,
+  }),
+  v.description('Add new table with complete definition'),
+)
 
-const removeTableOperationSchema = v.object({
-  op: v.literal('remove'),
-  path: tablePathSchema,
-})
+const removeTableOperationSchema = v.pipe(
+  v.object({
+    op: v.literal('remove'),
+    path: tablePathSchema,
+  }),
+  v.description('Remove existing table'),
+)
 
-const replaceTableNameOperationSchema = v.object({
-  op: v.literal('replace'),
-  path: tableNamePathSchema,
-  value: v.string(),
-})
+const replaceTableNameOperationSchema = v.pipe(
+  v.object({
+    op: v.literal('replace'),
+    path: tableNamePathSchema,
+    value: v.string(),
+  }),
+  v.description('Rename existing table'),
+)
 
 export type AddTableOperation = v.InferOutput<typeof addTableOperationSchema>
 export type RemoveTableOperation = v.InferOutput<

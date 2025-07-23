@@ -1,3 +1,4 @@
+import { err, ok, type Result } from 'neverthrow'
 import type { Columns, Schema, Table, Tables } from './schema.js'
 
 const getRemovedColumns = (
@@ -16,14 +17,14 @@ const getRemovedColumns = (
 const mergeTable = (
   beforeTable: Table | undefined,
   afterTable: Table | undefined,
-) => {
+): Result<Table, Error> => {
   if (!afterTable && beforeTable) {
     // If only beforeTable exists, return it as is
-    return beforeTable
+    return ok(beforeTable)
   }
 
   if (!afterTable) {
-    throw new Error('Both beforeTable and afterTable are undefined')
+    return err(new Error('Both beforeTable and afterTable are undefined'))
   }
 
   const mergedTable = { ...afterTable }
@@ -39,7 +40,7 @@ const mergeTable = (
     }
   }
 
-  return mergedTable
+  return ok(mergedTable)
 }
 
 const mergeTables = (beforeTables: Tables, afterTables: Tables): Tables => {
@@ -54,7 +55,11 @@ const mergeTables = (beforeTables: Tables, afterTables: Tables): Tables => {
     const afterTable = afterTables[tableName]
 
     if (afterTable || beforeTable) {
-      mergedTables[tableName] = mergeTable(beforeTable, afterTable)
+      const mergeResult = mergeTable(beforeTable, afterTable)
+      if (mergeResult.isErr()) {
+        throw mergeResult.error
+      }
+      mergedTables[tableName] = mergeResult.value
     }
   })
 

@@ -8,6 +8,7 @@ import { getConfigurable } from '../shared/getConfigurable'
 import type { WorkflowState } from '../types'
 import { formatMessagesToHistory } from '../utils/messageUtils'
 import { logAssistantMessage } from '../utils/timelineLogger'
+import { withTimelineItemSync } from '../utils/withTimelineItemSync'
 
 /**
  * Format analyzed requirements into a structured text for AI processing
@@ -118,15 +119,23 @@ export async function generateUsecaseNode(
         assistantRole,
       )
 
+      const usecaseMessage = await withTimelineItemSync(
+        new AIMessage({
+          content: `Generated ${generatedResult.usecases.length} use cases for testing and validation`,
+          name: 'QAGenerateUsecaseAgent',
+        }),
+        {
+          designSessionId: state.designSessionId,
+          organizationId: state.organizationId || '',
+          userId: state.userId,
+          repositories,
+          assistantRole,
+        },
+      )
+
       return {
         ...state,
-        messages: [
-          ...state.messages,
-          new AIMessage({
-            content: `Generated ${generatedResult.usecases.length} use cases for testing and validation`,
-            name: 'QAGenerateUsecaseAgent',
-          }),
-        ],
+        messages: [...state.messages, usecaseMessage],
         generatedUsecases: generatedResult.usecases,
         error: undefined, // Clear error on success
       }

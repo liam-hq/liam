@@ -1,7 +1,6 @@
 Let's commit the changes.
 
 **Split large changes**: If changes touch multiple concerns, split them into separate commits
-**Commit only what is staged**: When there are staged changes, commit *only* those staged changes and nothing else
 
 - Use gitmoji (optional, recommended): Write commit messages using the emoji (e.g., ✨) itself, not the textual representation (e.g., `:sparkles:`)
 

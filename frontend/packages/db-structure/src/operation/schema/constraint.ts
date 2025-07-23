@@ -8,11 +8,14 @@ const constraintPathSchema = v.pipe(
   v.regex(PATH_PATTERNS.CONSTRAINT_BASE),
 )
 
-const addConstraintOperationSchema = v.object({
-  op: v.literal('add'),
-  path: constraintPathSchema,
-  value: constraintSchema,
-})
+const addConstraintOperationSchema = v.pipe(
+  v.object({
+    op: v.literal('add'),
+    path: constraintPathSchema,
+    value: constraintSchema,
+  }),
+  v.description('Add new constraint to table'),
+)
 
 export type AddConstraintOperation = v.InferOutput<
   typeof addConstraintOperationSchema
@@ -24,10 +27,13 @@ export const isAddConstraintOperation = (
   return v.safeParse(addConstraintOperationSchema, operation).success
 }
 
-const removeConstraintOperationSchema = v.object({
-  op: v.literal('remove'),
-  path: constraintPathSchema,
-})
+const removeConstraintOperationSchema = v.pipe(
+  v.object({
+    op: v.literal('remove'),
+    path: constraintPathSchema,
+  }),
+  v.description('Remove existing constraint'),
+)
 
 export type RemoveConstraintOperation = v.InferOutput<
   typeof removeConstraintOperationSchema

@@ -1,4 +1,5 @@
-import { describe, expect, it, vi } from 'vitest'
+import { errAsync, okAsync, type ResultAsync } from 'neverthrow'
+import { describe, expect, it, type MockedFunction, vi } from 'vitest'
 import { UnexpectedTokenWarningError } from '../../errors.js'
 import { processSQLInChunks } from './processSqlInChunks.js'
 
@@ -59,20 +60,24 @@ describe(processSQLInChunks, () => {
     ]
     const createMockCallback = (
       expectedCalls: [query: string, result: SQLCallbackResult][],
-    ) => {
+    ): MockedFunction<
+      (query: string) => Promise<ResultAsync<SQLCallbackResult, Error>>
+    > => {
       const callback = vi.fn().mockImplementation(async (query) => {
         const callIndex = callback.mock.calls.length - 1
         const expectedCall = expectedCalls[callIndex]
 
         if (!expectedCall) {
-          throw new Error(
-            `Unexpected callback call at index ${callIndex} with query:\n${query}`,
+          return errAsync(
+            new Error(
+              `Unexpected callback call at index ${callIndex} with query:\n${query}`,
+            ),
           )
         }
 
         const [expectedQuery, returnValue] = expectedCall
         expect(query).toBe(expectedQuery)
-        return returnValue
+        return okAsync(returnValue)
       })
 
       return callback
@@ -98,7 +103,20 @@ SELECT 3, -- partial statement
       ]
 
       const callback = createMockCallback(expectedCalls)
-      const errors = await processSQLInChunks(input, chunkSize, callback)
+      const wrapperCallback = async (
+        chunk: string,
+      ): Promise<SQLCallbackResult> => {
+        const result = await callback(chunk)
+        return result.match(
+          (value) => value,
+          (error) => [
+            null,
+            null,
+            [new UnexpectedTokenWarningError(error.message)],
+          ],
+        )
+      }
+      const errors = await processSQLInChunks(input, chunkSize, wrapperCallback)
 
       expect(errors).toEqual([])
       expect(callback).toHaveBeenCalledTimes(expectedCalls.length)
@@ -158,7 +176,20 @@ CREATE TABLE t1 (
       ]
 
       const callback = createMockCallback(expectedCalls)
-      const errors = await processSQLInChunks(input, chunkSize, callback)
+      const wrapperCallback = async (
+        chunk: string,
+      ): Promise<SQLCallbackResult> => {
+        const result = await callback(chunk)
+        return result.match(
+          (value) => value,
+          (error) => [
+            null,
+            null,
+            [new UnexpectedTokenWarningError(error.message)],
+          ],
+        )
+      }
+      const errors = await processSQLInChunks(input, chunkSize, wrapperCallback)
 
       expect(errors).toEqual([])
       expect(callback).toHaveBeenCalledTimes(expectedCalls.length)
