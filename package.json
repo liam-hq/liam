@@ -38,6 +38,7 @@
     "prepare": "lefthook install",
     "release": "pnpm build && pnpm changeset publish",
     "test": "turbo test",
+    "test:blank": "echo blank test",
     "test:coverage": "vitest --coverage",
     "test:e2e": "turbo test:e2e",
     "vercel:env-pull": "vercel env pull .env",
