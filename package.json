@@ -50,6 +50,7 @@
     ],
     "overrides": {
       "@radix-ui/react-dialog": "1.1.14",
+      "axios":"1.11.0",
       "cookie": "^0.7.0",
       "esbuild": "0.25.5",
       "path-to-regexp": "8.2.0",
