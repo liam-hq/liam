@@ -6,7 +6,6 @@ settings:
 
 overrides:
   '@radix-ui/react-dialog': 1.1.14
-  axios: 1.11.0
   cookie: ^0.7.0
   esbuild: 0.25.5
   path-to-regexp: 8.2.0
@@ -8457,7 +8456,7 @@ packages:
       '@langchain/mistralai': '*'
       '@langchain/ollama': '*'
       '@langchain/xai': '*'
-      axios: 1.11.0
+      axios: '*'
       cheerio: '*'
       handlebars: ^4.7.8
       peggy: ^3.0.2
@@ -10348,7 +10347,7 @@ packages:
     resolution: {integrity: sha512-pOLi+Gdll3JekwuFjXO3fTq+L9lzMQGcSq7M5gIjExcl3Gu1hd4XXuf5o3+LuSBsaULQH7DiNbsqPd1chVpQGQ==}
     engines: {node: '>=10.7.0'}
     peerDependencies:
-      axios: 1.11.0
+      axios: '*'
 
   retry@0.13.1:
     resolution: {integrity: sha512-XQBQ3I8W1Cge0Seh+6gjj03LbmRFWuoszgK9ooCpwYIrhhoO80pfq4cUkU5DkknwfOfFteRwlZ56PYOGYyFWdg==}
@@ -16615,7 +16614,7 @@ snapshots:
   '@types/node-fetch@2.6.12':
     dependencies:
       '@types/node': 22.16.0
-      form-data: 4.0.3
+      form-data: 4.0.4
 
   '@types/node@12.20.55': {}
 
