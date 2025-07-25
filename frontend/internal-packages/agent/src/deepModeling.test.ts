@@ -10,6 +10,9 @@ import type { NodeLogger } from './utils/nodeLogger'
 vi.mock('./langchain/agents', () => ({
   QAGenerateUsecaseAgent: vi.fn(),
   PMAnalysisAgent: vi.fn(),
+  WebSearchAgent: vi.fn().mockImplementation(() => ({
+    generate: vi.fn().mockResolvedValue('Mocked web search results'),
+  })),
 }))
 
 // Mock the design agent
