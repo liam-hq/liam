@@ -2,7 +2,7 @@
 
 import { Slot } from '@radix-ui/react-slot'
 import clsx from 'clsx'
-import { err, ok, Result } from 'neverthrow'
+import { err, ok, type Result } from 'neverthrow'
 import {
   type ComponentProps,
   createContext,

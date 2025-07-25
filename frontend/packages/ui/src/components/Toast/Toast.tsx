@@ -27,12 +27,13 @@ export const Toast: FC<Props> = ({
 }) => {
   return (
     <RadixToast.Root
-      className={clsx(styles.wrapper, {
-        [styles.success]: status === 'success',
-        [styles.error]: status === 'error',
-        [styles.warning]: status === 'warning',
-        [styles.info]: status === 'info',
-      })}
+      className={clsx(
+        styles.wrapper,
+        status === 'success' && styles.success,
+        status === 'error' && styles.error,
+        status === 'warning' && styles.warning,
+        status === 'info' && styles.info,
+      )}
       open={isOpen}
       onOpenChange={onOpenChange}
     >

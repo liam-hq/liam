@@ -1,0 +1,90 @@
+---
+title: Command Palette
+description: >
+  Quickly navigate to any table in your schema using the Command Palette. 
+  Search and jump to tables instantly with keyboard shortcuts and real-time preview.
+---
+
+## Overview
+
+The Command Palette is a powerful search interface that allows you to quickly find and navigate to any table in your database schema. It's especially useful when working with large schemas containing many tables, providing instant access without manual scrolling or browsing.
+
+## Opening the Command Palette
+
+You can open the Command Palette in two ways:
+
+- **Keyboard shortcut**: Press `Cmd+K` (Mac) or `Ctrl+K` (Windows/Linux)
+- **Click**: Use the search icon in the top-right corner of the interface
+
+![Command Palette Opening](/images/content/docs/ui-features/command-palette/opening.gif)
+
+## Basic Usage
+
+### Searching for Tables
+
+1. **Open the Command Palette** using one of the methods above
+2. **Type the table name** or part of it in the search field
+3. **Browse results** as they appear in real-time
+4. **Select a table** using keyboard navigation or mouse clicks
+
+The search supports fuzzy matching, so you don't need to type the exact table name. For example, typing "user" will find tables like "users", "user_roles", "user_profiles", etc.
+
+### Keyboard Navigation
+
+- **Arrow Keys**: Use `↑` and `↓` to navigate through search results
+- **Enter**: Navigate to the selected table in the current view
+- **Cmd/Ctrl + Enter**: Open the selected table in a new tab
+- **Escape**: Close the Command Palette
+
+### Mouse Navigation
+
+- **Click**: Navigate to the table in the current view
+- **Cmd/Ctrl + Click**: Open the table in a new tab
+
+## Table Preview
+
+When you select a table in the search results, the Command Palette displays a real-time preview of the table structure on the right side. This preview shows:
+
+- Table name and structure
+- Column names and types
+- Primary keys and constraints
+- Visual representation identical to the main ERD view
+
+This preview helps you confirm you're selecting the correct table before navigating, especially when dealing with similarly named tables.
+
+## Features
+
+### Fuzzy Search
+
+The Command Palette uses fuzzy search powered by [Fuse.js](https://fusejs.io/), which means:
+
+- **Partial matches**: Type any part of the table name
+- **Case insensitive**: Works regardless of capitalization
+- **Typo tolerance**: Handles minor spelling mistakes
+- **Real-time results**: Updates as you type
+
+### URL Integration
+
+When you navigate to a table using the Command Palette, the URL is updated with the appropriate query parameters. This means:
+
+- **Shareable links**: The URL reflects the current table selection
+- **Browser history**: You can use back/forward buttons
+- **Bookmarkable**: Save direct links to specific tables
+
+## Use Cases
+
+The Command Palette is particularly useful for:
+
+- **Large schemas**: Quickly finding tables in databases with hundreds of tables
+- **Partial recall**: When you remember only part of a table name
+- **Efficient navigation**: Avoiding manual scrolling through long table lists
+- **Presentation mode**: Quickly jumping between tables during demos or reviews
+- **Development workflow**: Fast access to relevant tables during code reviews
+
+## Tips and Best Practices
+
+- **Use partial names**: You don't need to type the full table name
+- **Try different keywords**: Search for functional terms that might appear in table names
+- **Use keyboard shortcuts**: `Cmd/Ctrl+K` is faster than clicking the search icon
+- **Preview before navigating**: Use the preview pane to confirm the correct table
+- **Open in new tabs**: Use `Cmd/Ctrl+Enter` when comparing multiple tables

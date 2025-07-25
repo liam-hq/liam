@@ -5,32 +5,37 @@ A **LangGraph implementation** for processing chat messages in the LIAM applicat
 ## Architecture
 
 ```mermaid
-flowchart TD
-    START([START])
-    WEBSEARCH[webSearch<br/>Initial Research<br/><i>pmAgent</i>]
-    ANALYZE[analyzeRequirements<br/>Requirements Organization<br/><i>pmAnalysisAgent</i>]
-    DESIGN[designSchema<br/>DB Design & DDL Execution<br/><i>dbAgent</i>]
-    EXECUTE_DDL[executeDDL<br/>DDL Execution<br/><i>agent</i>]
-    GENERATE_USECASE[generateUsecase<br/>Use Case Creation<br/><i>qaAgent</i>]
-    PREPARE_DML[prepareDML<br/>DML Generation<br/><i>qaAgent</i>]
-    VALIDATE[validateSchema<br/>DML Execution & Validation<br/><i>qaAgent</i>]
-    FINALIZE[finalizeArtifacts<br/>Generate & Save Artifacts<br/><i>dbAgentArtifactGen</i>]
-    END([__end__<br/>End])
-
-    START --> WEBSEARCH
-    WEBSEARCH --> ANALYZE
-    ANALYZE --> DESIGN
-    DESIGN -->|no error| EXECUTE_DDL
-    DESIGN -->|error| FINALIZE
-    EXECUTE_DDL -->|success| GENERATE_USECASE
-    EXECUTE_DDL -->|shouldRetryWithDesignSchema| DESIGN
-    EXECUTE_DDL -->|ddlExecutionFailed| FINALIZE
-    GENERATE_USECASE --> PREPARE_DML
-    PREPARE_DML --> VALIDATE
-    VALIDATE -->|success| FINALIZE
-    VALIDATE -->|error| DESIGN
-    FINALIZE --> END
-
+%%{init: {'flowchart': {'curve': 'linear'}}}%%
+graph TD;
+	__start__([<p>__start__</p>]):::first
+	webSearch(webSearch)
+	analyzeRequirements(analyzeRequirements)
+	designSchema(designSchema)
+	invokeSchemaDesignTool(invokeSchemaDesignTool)
+	executeDDL(executeDDL)
+	generateUsecase(generateUsecase)
+	prepareDML(prepareDML)
+	validateSchema(validateSchema)
+	finalizeArtifacts(finalizeArtifacts)
+	__end__([<p>__end__</p>]):::last
+	__start__ --> webSearch;
+	analyzeRequirements --> designSchema;
+	executeDDL --> generateUsecase;
+	finalizeArtifacts --> __end__;
+	generateUsecase --> prepareDML;
+	invokeSchemaDesignTool --> designSchema;
+	prepareDML --> validateSchema;
+	webSearch --> analyzeRequirements;
+	designSchema -.-> invokeSchemaDesignTool;
+	designSchema -.-> executeDDL;
+	executeDDL -.-> designSchema;
+	executeDDL -.-> finalizeArtifacts;
+	executeDDL -.-> generateUsecase;
+	validateSchema -.-> designSchema;
+	validateSchema -.-> finalizeArtifacts;
+	classDef default fill:#f2f0ff,line-height:1.2;
+	classDef first fill-opacity:0;
+	classDef last fill:#bfb6fc;
 ```
 
 ## Workflow State

@@ -35,20 +35,25 @@ export const Input = ({
 
   return (
     <div
-      className={clsx(styles.wrapper, wrapperClassName, sizeClassName, {
-        [styles.readOnly]: readOnly,
-        [styles.disabled]: disabled,
-        [styles.error]: error,
-      })}
+      className={clsx(
+        styles.wrapper,
+        wrapperClassName,
+        sizeClassName,
+        readOnly && styles.readOnly,
+        disabled && styles.disabled,
+        error && styles.error,
+      )}
     >
       {leftIcon && <div className={styles.icon}>{leftIcon}</div>}
       <input
         {...rest}
         type={type}
         ref={ref}
-        className={clsx(styles.input, className, {
-          [styles.alignRight]: align === 'right',
-        })}
+        className={clsx(
+          styles.input,
+          className,
+          align === 'right' && styles.alignRight,
+        )}
         disabled={disabled}
         readOnly={readOnly}
       />

@@ -22,10 +22,12 @@ const extractFrontmatter = (content: string): Frontmatter | null => {
   if (!frontmatterMatch) return null
 
   const frontmatter = frontmatterMatch[1]
+  if (!frontmatter) return null
+
   const titleMatch = frontmatter.match(/^title:\s*(.+)$/m)
   const descriptionMatch = frontmatter.match(/^description:\s*(.+)$/m)
 
-  if (!titleMatch) return null
+  if (!titleMatch || !titleMatch[1]) return null
 
   return {
     title: titleMatch[1],
