@@ -75,6 +75,26 @@
         "devDependencies"
       ],
       "automerge": true
+    },
+    {
+      "description": "Automerge minor/patch updates for stable packages",
+      "matchPackageNames": [
+        "react",
+        "react-dom", 
+        "next",
+        "lucide-react",
+        "clsx",
+        "nanoid",
+        "date-fns"
+      ],
+      "matchUpdateTypes": ["minor", "patch"],
+      "automerge": true
+    },
+    {
+      "description": "Automerge CodeMirror ecosystem",
+      "matchPackageNames": ["/^@codemirror/", "/^@lezer/"],
+      "matchUpdateTypes": ["minor", "patch"],
+      "automerge": true
     }
   ]
 }
