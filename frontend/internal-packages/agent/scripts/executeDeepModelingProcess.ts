@@ -18,7 +18,7 @@ import {
   setupInMemoryRepository,
   showHelp,
   validateEnvironment,
-} from './shared/scriptUtils'
+} from './shared/scriptUtils.ts'
 
 const currentLogLevel = getLogLevel()
 const logger = createLogger(currentLogLevel)

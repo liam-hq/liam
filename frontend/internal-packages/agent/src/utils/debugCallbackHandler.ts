@@ -1,6 +1,6 @@
 /* eslint-disable */
 import { BaseCallbackHandler } from '@langchain/core/callbacks/base'
-import type { NodeLogger } from './nodeLogger'
+import type { NodeLogger } from './nodeLogger.ts'
 
 export class DebugCallbackHandler extends BaseCallbackHandler {
   name = 'DebugCallbackHandler'

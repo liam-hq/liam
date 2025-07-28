@@ -21,7 +21,7 @@ import type {
   UpdateWorkflowRunStatusParams,
   VersionResult,
   WorkflowRunResult,
-} from './types'
+} from './types.ts'
 
 type InMemoryRepositoryState = {
   schemas: Map<string, SchemaData>

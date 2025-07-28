@@ -1,4 +1,4 @@
-import { hasProperty, isObject } from './scriptUtils'
+import { hasProperty, isObject } from './scriptUtils.ts'
 
 // Helper function to extract message type
 const getMessageType = (lastMessage: unknown): string => {

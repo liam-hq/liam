@@ -1,7 +1,7 @@
 import type { RunnableConfig } from '@langchain/core/runnables'
-import type { Repositories } from '../../../repositories'
-import { getConfigurable } from '../shared/getConfigurable'
-import type { WorkflowState } from '../types'
+import type { Repositories } from '../../../repositories/index.ts'
+import { getConfigurable } from '../shared/getConfigurable.ts'
+import type { WorkflowState } from '../types.ts'
 
 /**
  * Handle workflow errors and save error timeline items

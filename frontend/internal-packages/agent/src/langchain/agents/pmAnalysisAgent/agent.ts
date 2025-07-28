@@ -2,7 +2,7 @@ import { type BaseMessage, SystemMessage } from '@langchain/core/messages'
 import { ChatOpenAI } from '@langchain/openai'
 import { toJsonSchema } from '@valibot/to-json-schema'
 import * as v from 'valibot'
-import { PM_ANALYSIS_SYSTEM_MESSAGE } from './prompts'
+import { PM_ANALYSIS_SYSTEM_MESSAGE } from './prompts.ts'
 
 const requirementsAnalysisSchema = v.object({
   businessRequirement: v.string(),

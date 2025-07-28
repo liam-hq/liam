@@ -3,8 +3,8 @@ import type { Schema } from '@liam-hq/db-structure'
 import { err, ok } from 'neverthrow'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { WorkflowState } from '../types'
-import { designSchemaNode } from './designSchemaNode'
-import { executeDdlNode } from './executeDdlNode'
+import { designSchemaNode } from './designSchemaNode.ts'
+import { executeDdlNode } from './executeDdlNode.ts'
 
 // Mock the design agent
 vi.mock('../../../langchain/agents/databaseSchemaBuildAgent/agent', () => ({

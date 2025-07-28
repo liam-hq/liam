@@ -1,1 +1,1 @@
-export { PMAnalysisAgent } from './pmAnalysisAgent'
+export { PMAnalysisAgent } from './pmAnalysisAgent/index.ts'

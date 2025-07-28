@@ -2,9 +2,9 @@ import type { RunnableConfig } from '@langchain/core/runnables'
 import type { Database } from '@liam-hq/db'
 import { executeQuery } from '@liam-hq/pglite-server'
 import type { SqlResult } from '@liam-hq/pglite-server/src/types'
-import { getConfigurable } from '../shared/getConfigurable'
-import type { WorkflowState } from '../types'
-import { logAssistantMessage } from '../utils/timelineLogger'
+import { getConfigurable } from '../shared/getConfigurable.ts'
+import type { WorkflowState } from '../types.ts'
+import { logAssistantMessage } from '../utils/timelineLogger.ts'
 
 /**
  * Validate Schema Node - Combined DDL/DML Execution & Validation

@@ -5,7 +5,7 @@ import {
   ToolMessage,
 } from '@langchain/core/messages'
 import type { Database } from '@liam-hq/db'
-import type { SchemaRepository } from '../../../repositories/types'
+import type { SchemaRepository } from '../../../repositories/types.ts'
 
 type TimelineSyncContext = {
   designSessionId: string

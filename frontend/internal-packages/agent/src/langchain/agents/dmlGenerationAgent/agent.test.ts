@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { DMLGenerationAgent } from './agent'
+import { DMLGenerationAgent } from './agent.ts'
 
 describe('DMLGenerationAgent', () => {
   it('should create an instance of DMLGenerationAgent', () => {

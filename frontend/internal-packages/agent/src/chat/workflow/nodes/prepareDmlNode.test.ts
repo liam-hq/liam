@@ -4,7 +4,7 @@ import type { Repositories } from '../../../repositories'
 import { InMemoryRepository } from '../../../repositories/InMemoryRepository'
 import { convertSchemaToText } from '../../../utils/convertSchemaToText'
 import type { WorkflowState } from '../types'
-import { prepareDmlNode } from './prepareDmlNode'
+import { prepareDmlNode } from './prepareDmlNode.ts'
 
 vi.mock('../../../langchain/agents/dmlGenerationAgent/agent')
 

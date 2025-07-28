@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { ensurePathStructure } from '../utils/pathPreparation'
+import { ensurePathStructure } from '../utils/pathPreparation.ts'
 
 describe('ensurePathStructure', () => {
   it('should create nested object structure for add operation', () => {
