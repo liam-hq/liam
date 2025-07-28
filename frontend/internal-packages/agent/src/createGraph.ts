@@ -1,13 +1,13 @@
 import { END, START, StateGraph } from '@langchain/langgraph'
 import {
   analyzeRequirementsNode,
+  analyzeSearchRequirementNode,
   designSchemaNode,
   executeDdlNode,
   finalizeArtifactsNode,
   generateUsecaseNode,
   prepareDmlNode,
   validateSchemaNode,
-  webSearchNode,
 } from './chat/workflow/nodes'
 import { createAnnotations } from './chat/workflow/shared/langGraphUtils'
 import { invokeSchemaDesignToolNode } from './db-agent/nodes/invokeSchemaDesignToolNode'
@@ -28,7 +28,7 @@ export const createGraph = () => {
   const graph = new StateGraph(ChatStateAnnotation)
 
   graph
-    .addNode('webSearch', webSearchNode, {
+    .addNode('analyzeSearchRequirement', analyzeSearchRequirementNode, {
       retryPolicy: RETRY_POLICY,
     })
     .addNode('analyzeRequirements', analyzeRequirementsNode, {
@@ -56,8 +56,8 @@ export const createGraph = () => {
       retryPolicy: RETRY_POLICY,
     })
 
-    .addEdge(START, 'webSearch')
-    .addEdge('webSearch', 'analyzeRequirements')
+    .addEdge(START, 'analyzeSearchRequirement')
+    .addEdge('analyzeSearchRequirement', 'analyzeRequirements')
     .addEdge('analyzeRequirements', 'designSchema')
     .addEdge('invokeSchemaDesignTool', 'designSchema')
     .addConditionalEdges('designSchema', routeAfterDesignSchema, {
