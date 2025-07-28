@@ -15,6 +15,7 @@ export class DebugCallbackHandler extends BaseCallbackHandler {
     this.logger = logger
   }
 
+  // biome-ignore lint/suspicious/noExplicitAny: LangChain callback signature
   override async handleLLMStart(_llm: any, prompts: string[]): Promise<void> {
     this.stepCount++
     const startTime = Date.now()
@@ -30,6 +31,7 @@ export class DebugCallbackHandler extends BaseCallbackHandler {
     })
   }
 
+  // biome-ignore lint/suspicious/noExplicitAny: LangChain callback signature
   override async handleLLMEnd(_output: any): Promise<void> {
     const endTime = Date.now()
     const startTime = this.stepStartTimes.get(this.stepCount)
@@ -57,6 +59,7 @@ export class DebugCallbackHandler extends BaseCallbackHandler {
     }
   }
 
+  // biome-ignore lint/suspicious/noExplicitAny: LangChain callback signature
   override async handleToolStart(tool: any, input: string): Promise<void> {
     this.stepCount++
     const startTime = Date.now()
@@ -111,6 +114,7 @@ export class DebugCallbackHandler extends BaseCallbackHandler {
     }
   }
 
+  // biome-ignore lint/suspicious/noExplicitAny: LangChain callback signature
   override async handleChainStart(chain: any, _inputs: any): Promise<void> {
     this.stepCount++
     const startTime = Date.now()
@@ -140,6 +144,7 @@ export class DebugCallbackHandler extends BaseCallbackHandler {
     })
   }
 
+  // biome-ignore lint/suspicious/noExplicitAny: LangChain callback signature
   override async handleChainEnd(_outputs: any): Promise<void> {
     const endTime = Date.now()
     const startTime = this.stepStartTimes.get(this.stepCount)

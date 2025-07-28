@@ -26,6 +26,7 @@ const logger = createLogger(currentLogLevel)
 /**
  * Main execution function
  */
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Main execution function with complex logic
 const executeDeepModelingProcess = async (): Promise<Result<void, Error>> => {
   const sessionName = `Deep Modeling Session - ${new Date().toISOString()}`
 
@@ -33,6 +34,7 @@ const executeDeepModelingProcess = async (): Promise<Result<void, Error>> => {
   const useInMemory =
     process.env['AGENT_MODE'] === 'memory' || process.argv.includes('--memory')
 
+  // biome-ignore lint/suspicious/noExplicitAny: External API types are complex
   let setupResult: Result<any, Error>
 
   if (useInMemory) {
@@ -159,6 +161,7 @@ const executeDeepModelingProcess = async (): Promise<Result<void, Error>> => {
 
   // Log building schemas data for InMemory mode
   if (useInMemory && 'getAllBuildingSchemas' in repositories.schema) {
+    // biome-ignore lint/suspicious/noExplicitAny: InMemory repository method not in interface
     const buildingSchemas = (repositories.schema as any).getAllBuildingSchemas()
     logger.info('=== BUILDING SCHEMAS DATA ===')
     buildingSchemas.forEach((buildingSchema) => {

@@ -480,10 +480,7 @@ export class InMemoryRepository implements SchemaRepository {
    */
   getAllBuildingSchemas() {
     return Array.from(this.state.buildingSchemas.entries()).map(
-      ([id, schema]) => ({
-        id,
-        ...schema,
-      }),
+      ([, schema]) => schema,
     )
   }
 }
