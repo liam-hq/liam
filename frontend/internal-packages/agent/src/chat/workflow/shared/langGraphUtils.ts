@@ -30,6 +30,15 @@ export const createAnnotations = () => {
   return Annotation.Root({
     ...MessagesAnnotation.spec,
     userInput: Annotation<string>,
+    webSearchResults: Annotation<string | undefined>,
+    searchContext: Annotation<
+      | {
+          needsSearch: boolean
+          urls: string[]
+          searchQueries: string[]
+        }
+      | undefined
+    >,
     analyzedRequirements: Annotation<
       | {
           businessRequirement: string

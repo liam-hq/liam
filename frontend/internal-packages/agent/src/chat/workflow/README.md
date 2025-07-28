@@ -8,24 +8,30 @@ A **LangGraph implementation** for processing chat messages in the LIAM applicat
 %%{init: {'flowchart': {'curve': 'linear'}}}%%
 graph TD;
 	__start__([<p>__start__</p>]):::first
-	webSearch(webSearch)
+	analyzeSearchRequirement(analyzeSearchRequirement)
+	searchDecisionTool[searchDecisionTool]:::tool
+	webSearchTool[webSearchTool]:::tool
 	analyzeRequirements(analyzeRequirements)
 	designSchema(designSchema)
-	invokeSchemaDesignTool(invokeSchemaDesignTool)
+	invokeSchemaDesignTool(invokeSchemaDesignTool):::tool
 	executeDDL(executeDDL)
 	generateUsecase(generateUsecase)
 	prepareDML(prepareDML)
 	validateSchema(validateSchema)
 	finalizeArtifacts(finalizeArtifacts)
 	__end__([<p>__end__</p>]):::last
-	__start__ --> webSearch;
+	__start__ --> analyzeSearchRequirement;
+	analyzeSearchRequirement -.-> searchDecisionTool;
+	searchDecisionTool -.-> analyzeSearchRequirement;
+	analyzeSearchRequirement -.-> webSearchTool;
+	webSearchTool -.-> analyzeSearchRequirement;
+	analyzeSearchRequirement --> analyzeRequirements;
 	analyzeRequirements --> designSchema;
 	executeDDL --> generateUsecase;
 	finalizeArtifacts --> __end__;
 	generateUsecase --> prepareDML;
 	invokeSchemaDesignTool --> designSchema;
 	prepareDML --> validateSchema;
-	webSearch --> analyzeRequirements;
 	designSchema -.-> invokeSchemaDesignTool;
 	designSchema -.-> executeDDL;
 	executeDDL -.-> designSchema;
@@ -36,6 +42,7 @@ graph TD;
 	classDef default fill:#f2f0ff,line-height:1.2;
 	classDef first fill-opacity:0;
 	classDef last fill:#bfb6fc;
+	classDef tool fill:#e1f5fe,stroke:#0288d1,line-height:1.2;
 ```
 
 ## Workflow State
@@ -52,6 +59,14 @@ interface WorkflowState {
   userId: string;
   designSessionId: string;
   retryCount: Record<string, number>;
+
+  // Search analysis
+  searchAnalysis?: {
+    needsSearch: boolean;
+    reason: string;
+    hasUrls: boolean;
+    needsIndustryKnowledge: boolean;
+  };
 
   // Requirements analysis
   analyzedRequirements?: AnalyzedRequirements;
@@ -83,7 +98,7 @@ interface WorkflowState {
 
 ## Nodes
 
-1. **webSearch**: Performs initial research and gathers relevant information (performed by pmAgent)
+1. **analyzeSearchRequirement**: Analyzes user requirements using `searchDecisionTool` for structured decision-making, then conditionally performs web search using `webSearchTool` based on the decision results. Determines search necessity based on URL presence and industry knowledge requirements (performed by pmAgent)
 2. **analyzeRequirements**: Organizes and clarifies requirements from user input (performed by pmAnalysisAgent)
 3. **designSchema**: Designs database schema with automatic timeline sync (performed by dbAgent)
 4. **executeDDL**: Executes DDL statements (performed by agent)
@@ -114,7 +129,7 @@ interface WorkflowState {
 ### Implementation Details
 
 - **User Message Sync**: User input is synchronized in `deepModeling.ts` before workflow execution
-- **AI Message Sync**: All workflow nodes (webSearch, analyzeRequirements, designSchema, generateUsecase) automatically sync their AI responses
+- **AI Message Sync**: All workflow nodes (analyzeSearchRequirement, analyzeRequirements, designSchema, generateUsecase) automatically sync their AI responses
 - **Non-blocking**: Timeline synchronization is asynchronous and non-blocking to ensure workflow performance
 - **Utility Function**: `withTimelineItemSync()` provides consistent message synchronization across all nodes
 
