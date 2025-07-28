@@ -1,10 +1,13 @@
 import { resolve } from 'node:path'
 import { createClient, type SupabaseClientType } from '@liam-hq/db'
 import type { Schema } from '@liam-hq/db-structure'
+import { aSchema } from '@liam-hq/db-structure'
 import { config } from 'dotenv'
 import type { Result } from 'neverthrow'
 import { err, errAsync, ok, okAsync, ResultAsync } from 'neverthrow'
 import { createSupabaseRepositories } from '../../src/repositories/factory'
+import { InMemoryRepository } from '../../src/repositories/InMemoryRepository'
+import type { NodeLogger } from '../../src/utils/nodeLogger'
 
 // Load environment variables from ../../../../../.env
 config({ path: resolve(__dirname, '../../../../../.env') })
@@ -58,6 +61,15 @@ export const createLogger = (logLevel: LogLevel) => ({
 
     const timestamp = new Date().toISOString()
     process.stdout.write(`\n🔍 [DEBUG] ${timestamp} ${message}\n`)
+    if (metadata) {
+      process.stdout.write(`${JSON.stringify(metadata, null, 2)}\n`)
+    }
+  },
+  log: (message: string, metadata?: Record<string, unknown>) => {
+    if (LOG_LEVELS[logLevel] > LOG_LEVELS.INFO) return
+
+    const timestamp = new Date().toISOString()
+    process.stdout.write(`\n📝 [LOG] ${timestamp} ${message}\n`)
     if (metadata) {
       process.stdout.write(`${JSON.stringify(metadata, null, 2)}\n`)
     }
@@ -456,10 +468,108 @@ export const logSchemaResults = (
       if (currentLogLevel === 'DEBUG') {
         logger.debug('Schema details:', schemaData)
       }
+
+      // Always output final schema structure to console
+      logger.info('=== FINAL SCHEMA STRUCTURE ===')
+      for (const [tableName, table] of Object.entries(schemaData.tables)) {
+        logger.info(`\n📋 Table: ${tableName}`)
+        if (table.columns) {
+          for (const [columnName, column] of Object.entries(table.columns)) {
+            const nullable = column.notNull ? 'NOT NULL' : 'NULLABLE'
+            const defaultValue =
+              column.default !== null ? ` DEFAULT ${column.default}` : ''
+            const comment = column.comment ? ` -- ${column.comment}` : ''
+            logger.info(
+              `  • ${columnName}: ${column.type} ${nullable}${defaultValue}${comment}`,
+            )
+          }
+        }
+        // Log constraints if available
+        if (table.constraints) {
+          for (const [constraintName, constraint] of Object.entries(
+            table.constraints,
+          )) {
+            if (constraint.type === 'PRIMARY KEY') {
+              logger.info(
+                `  🔑 PRIMARY KEY (${constraint.columnNames.join(', ')})`,
+              )
+            } else if (constraint.type === 'FOREIGN KEY') {
+              logger.info(
+                `  🔗 FOREIGN KEY (${constraint.columnNames.join(', ')}) → ${constraint.targetTableName}(${constraint.targetColumnNames.join(', ')})`,
+              )
+            } else if (constraint.type === 'UNIQUE') {
+              logger.info(`  🎯 UNIQUE (${constraint.columnNames.join(', ')})`)
+            } else if (constraint.type === 'CHECK') {
+              logger.info(`  ✅ CHECK ${constraintName}: ${constraint.detail}`)
+            }
+          }
+        }
+        // Log indexes if available
+        if (table.indexes) {
+          for (const [indexName, index] of Object.entries(table.indexes)) {
+            const uniqueFlag = index.unique ? 'UNIQUE ' : ''
+            logger.info(
+              `  📇 ${uniqueFlag}INDEX ${indexName} (${index.columns.join(', ')})`,
+            )
+          }
+        }
+      }
+      logger.info('=== END SCHEMA STRUCTURE ===\n')
     } else {
       logger.info('RESULT: No tables created')
     }
   } else {
     logger.info('RESULT: No schema data found')
   }
+}
+
+/**
+ * Setup InMemory repository for testing without PostgreSQL
+ */
+export const setupInMemoryRepository = (_logger: NodeLogger) => {
+  return ok({
+    repositories: {
+      schema: new InMemoryRepository({
+        schemas: {
+          'demo-design-session': aSchema({
+            tables: {},
+          }),
+        },
+        designSessions: {
+          'demo-design-session': {},
+        },
+      }),
+    },
+    designSession: { organization_id: 'demo-org-id', timeline_items: [] },
+    buildingSchemaId: 'demo-design-session',
+    latestVersionNumber: 1,
+  })
+}
+
+/**
+ * Create workflow state for InMemory repository
+ */
+export const createInMemoryWorkflowState = (setupResult: any) => {
+  const userInput =
+    process.env['DEMO_USER_INPUT'] ||
+    'Add a posts table with title and content columns, and a foreign key to users'
+
+  const workflowState = {
+    userInput,
+    messages: [],
+    schemaData: aSchema({ tables: {} }),
+    history: [] satisfies [string, string][],
+    organizationId: 'demo-org-id',
+    buildingSchemaId: 'demo-design-session',
+    latestVersionNumber: 1,
+    designSessionId: 'demo-design-session',
+    userId: 'demo-user-id',
+    retryCount: {},
+    recursionLimit: 50, // Increased for debugging
+  }
+
+  return ok({
+    ...setupResult,
+    workflowState,
+  })
 }

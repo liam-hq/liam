@@ -1,18 +1,22 @@
 #!/usr/bin/env tsx
+// @ts-nocheck - Complex type interactions with external APIs
 
 import type { BaseMessage } from '@langchain/core/messages'
 import type { Result } from 'neverthrow'
 import { err, ok } from 'neverthrow'
 import { isToolMessageError } from '../src/chat/workflow/utils/toolMessageUtils'
 import { deepModeling } from '../src/deepModeling'
+import { DebugCallbackHandler } from '../src/utils/debugCallbackHandler'
 import {
   createBuildingSchema,
   createDesignSession,
+  createInMemoryWorkflowState,
   createLogger,
   createWorkflowState,
   getLogLevel,
   logSchemaResults,
   setupDatabaseAndUser,
+  setupInMemoryRepository,
   showHelp,
   validateEnvironment,
 } from './shared/scriptUtils'
@@ -52,26 +56,43 @@ const logWorkflowMessage = (
  * Main execution function
  */
 const executeDeepModelingProcess = async (): Promise<Result<void, Error>> => {
-  // Validate environment, setup database, create session and schema with andThen chaining
   const sessionName = `Deep Modeling Session - ${new Date().toISOString()}`
-  const setupResult = await validateEnvironment()
-    .andThen(setupDatabaseAndUser(logger))
-    .andThen(createDesignSession(sessionName))
-    .andThen(createBuildingSchema)
-    .andThen(createWorkflowState)
+
+  // Check if using InMemory mode
+  const useInMemory =
+    process.env['AGENT_MODE'] === 'memory' || process.argv.includes('--memory')
+
+  let setupResult: Result<any, Error>
+
+  if (useInMemory) {
+    logger.info('Using InMemory repository mode')
+    setupResult = setupInMemoryRepository(logger).andThen(
+      createInMemoryWorkflowState,
+    )
+  } else {
+    logger.info('Using PostgreSQL repository mode')
+    setupResult = await validateEnvironment()
+      .andThen(setupDatabaseAndUser(logger))
+      .andThen(createDesignSession(sessionName))
+      .andThen(createBuildingSchema)
+      .andThen(createWorkflowState)
+  }
 
   if (setupResult.isErr()) return err(setupResult.error)
   const { repositories, workflowState } = setupResult.value
 
   // Execute deep modeling workflow
+  const debugCallback = new DebugCallbackHandler({
+    ...logger,
+    log: logger.info,
+  })
+
   const config = {
     configurable: {
       repositories,
-      logger: {
-        ...logger,
-        log: logger.info,
-      },
+      logger,
     },
+    callbacks: [debugCallback],
   }
 
   logger.info('Starting Deep Modeling workflow execution...')
@@ -80,7 +101,15 @@ const executeDeepModelingProcess = async (): Promise<Result<void, Error>> => {
     `Initial tables: ${Object.keys(workflowState.schemaData.tables).length}`,
   )
 
+  logger.info('=== WORKFLOW CONFIGURATION ===')
+  logger.info('Recursion limit:', workflowState.recursionLimit)
+  logger.info('Building schema ID:', workflowState.buildingSchemaId)
+  logger.info('Organization ID:', workflowState.organizationId)
+  logger.info('User input length:', workflowState.userInput.length)
+  logger.info('=== STARTING WORKFLOW ===')
+
   const result = await deepModeling(workflowState, config)
+  debugCallback.getWorkflowSummary()
 
   if (result.isErr()) {
     logger.error(`Deep Modeling workflow failed: ${result.error.message}`)
@@ -98,19 +127,75 @@ const executeDeepModelingProcess = async (): Promise<Result<void, Error>> => {
     })
   }
 
+  // Get the latest schema from repository for InMemory mode
+  let finalSchemaData = finalWorkflowState.schemaData
+  if (useInMemory) {
+    logger.debug(
+      'Attempting to retrieve latest schema from InMemory repository...',
+    )
+    logger.debug('Building schema ID:', {
+      buildingSchemaId: finalWorkflowState.buildingSchemaId,
+    })
+
+    const latestSchemaResult = await repositories.schema.getSchema(
+      finalWorkflowState.buildingSchemaId,
+    )
+
+    if (latestSchemaResult.isOk()) {
+      const schemaData = latestSchemaResult.value
+      logger.debug('Schema retrieval result:', {
+        success: true,
+        schemaTableCount: schemaData.schema?.tables
+          ? Object.keys(schemaData.schema.tables).length
+          : 'N/A',
+      })
+
+      finalSchemaData = schemaData.schema
+      logger.debug('✅ Retrieved latest schema from InMemory repository')
+      logger.debug('Final schema table count:', {
+        count: Object.keys(finalSchemaData.tables || {}).length,
+      })
+    } else {
+      logger.warn('❌ Failed to retrieve schema from InMemory repository')
+      logger.warn('Retrieval error:', {
+        error: latestSchemaResult.error.message,
+      })
+    }
+  }
+
   // Debug: Log the final schema data structure
   if (currentLogLevel === 'DEBUG') {
     logger.debug('Final Schema Data:', {
-      schemaData: finalWorkflowState.schemaData,
+      schemaData: finalSchemaData,
     })
   }
 
   logSchemaResults(
     logger,
-    finalWorkflowState.schemaData,
+    finalSchemaData,
     currentLogLevel,
     finalWorkflowState.error,
   )
+
+  // Log building schemas data for InMemory mode
+  if (useInMemory && 'getAllBuildingSchemas' in repositories.schema) {
+    const buildingSchemas = (repositories.schema as any).getAllBuildingSchemas()
+    logger.info('=== BUILDING SCHEMAS DATA ===')
+    buildingSchemas.forEach((buildingSchema) => {
+      logger.info(`🏗️ Building Schema ID: ${buildingSchema.id}`)
+      logger.info(`   Design Session ID: ${buildingSchema.designSessionId}`)
+      logger.info(`   Organization ID: ${buildingSchema.organizationId}`)
+      logger.info(`   Latest Version: ${buildingSchema.latestVersionNumber}`)
+      logger.info(`   Updated At: ${buildingSchema.updatedAt}`)
+      logger.info(
+        `   Schema Tables: ${Object.keys(buildingSchema.schema.tables || {}).length}`,
+      )
+      if (currentLogLevel === 'DEBUG') {
+        logger.debug('   Full Schema:', { schema: buildingSchema.schema })
+      }
+    })
+    logger.info('=== END BUILDING SCHEMAS DATA ===\n')
+  }
 
   if (finalWorkflowState.error) {
     return err(finalWorkflowState.error)
@@ -134,7 +219,8 @@ if (require.main === module) {
       [
         'pnpm --filter @liam-hq/agent tsx scripts/executeDeepModelingProcess.ts',
         'pnpm --filter @liam-hq/agent tsx scripts/executeDeepModelingProcess.ts --log-level=DEBUG',
-        'pnpm --filter @liam-hq/agent tsx scripts/executeDeepModelingProcess.ts --log-level=WARN',
+        'pnpm --filter @liam-hq/agent tsx scripts/executeDeepModelingProcess.ts --memory',
+        'AGENT_MODE=memory pnpm --filter @liam-hq/agent tsx scripts/executeDeepModelingProcess.ts',
       ],
     )
     process.exit(0)
@@ -144,10 +230,18 @@ if (require.main === module) {
     `Starting Deep Modeling process execution (log level: ${currentLogLevel})`,
   )
 
-  executeDeepModelingProcess().then((result) => {
-    if (result.isErr()) {
-      logger.error(`FAILED: ${result.error.message}`)
+  executeDeepModelingProcess()
+    .then((result) => {
+      if (result.isErr()) {
+        logger.error(`FAILED: ${result.error.message}`)
+        process.exit(1)
+      } else {
+      }
+    })
+    .catch((error) => {
+      logger.error(
+        `UNCAUGHT EXCEPTION: ${error instanceof Error ? error.message : String(error)}`,
+      )
       process.exit(1)
-    }
-  })
+    })
 }

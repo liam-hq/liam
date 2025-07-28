@@ -22,11 +22,13 @@ export const schemaDesignTool = tool(
     }
     const { repositories, buildingSchemaId, latestVersionNumber } =
       toolConfigurableResult.value
+
     const parsed = v.safeParse(schemaDesignToolSchema, input)
     if (!parsed.success) {
       const errorDetails = parsed.issues
         .map((issue) => `${issue.path?.join('.')}: ${issue.message}`)
         .join(', ')
+
       return `Input validation failed: ${errorDetails}. Please check your operations format and ensure all required fields are provided correctly.`
     }
 
@@ -45,7 +47,6 @@ export const schemaDesignTool = tool(
         `Schema update failed: ${errorMessage}. Please fix the error and try again.`,
       )
     }
-
     return 'Schema successfully updated. The operations have been applied to the database schema.'
   },
   {
