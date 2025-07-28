@@ -53,14 +53,6 @@ interface WorkflowState {
   designSessionId: string;
   retryCount: Record<string, number>;
 
-  // Search analysis
-  searchAnalysis?: {
-    needsSearch: boolean;
-    reason: string;
-    hasUrls: boolean;
-    needsIndustryKnowledge: boolean;
-  };
-
   // Requirements analysis
   analyzedRequirements?: AnalyzedRequirements;
   generatedUsecases?: Usecase[];
@@ -91,7 +83,7 @@ interface WorkflowState {
 
 ## Nodes
 
-1. **analyzeSearchRequirement**: Analyzes user requirements using `searchDecisionTool` for structured decision-making, then conditionally performs web search using `webSearchTool` based on the decision results. Determines search necessity based on URL presence and industry knowledge requirements (performed by pmAgent)
+1. **analyzeSearchRequirement**: Analyzes user requirements using `searchDecisionTool` for structured decision-making, then conditionally performs web search using LangChain's `web_search_preview` tool based on the decision results. Determines search necessity based on URL presence and industry knowledge requirements. All search results are added to messages for downstream nodes (performed by pm role)
 2. **analyzeRequirements**: Organizes and clarifies requirements from user input (performed by pmAnalysisAgent)
 3. **designSchema**: Designs database schema with automatic timeline sync (performed by dbAgent)
 4. **executeDDL**: Executes DDL statements (performed by agent)
