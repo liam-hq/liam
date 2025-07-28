@@ -361,3 +361,81 @@ Here's a complete example from an insurance company database schema:
 - **Benchmarking**: Create standardized evaluation benchmarks for schema prediction tasks
 
 This package serves as a critical component for ensuring the quality and accuracy of automated database schema generation systems, providing detailed insights into both the strengths and weaknesses of prediction models.
+
+## LiamDB Executor Testing
+
+### Setup and Testing Procedure
+
+To test the LiamDB executor implementation, follow these steps from the project root directory.
+
+1. **Clean workspace**:
+   ```bash
+   rm -rf benchmark-workspace
+   ```
+
+2. **Setup workspace**:
+   ```bash
+   pnpm --filter @liam-hq/schema-bench setupWorkspace
+   ```
+
+3. **Remove default input files**:
+   ```bash
+   rm benchmark-workspace/execution/input/case-*
+   ```
+
+4. **Create test input file**:
+   Create `benchmark-workspace/execution/input/test-case.json` with the following content:
+   ```json
+   {
+     "businessDomain": "E-commerce Platform",
+     "requirements": "Design a database schema for an e-commerce platform that includes:\n\n1. User Management:\n   - Users with profiles, authentication credentials\n   - User roles (customer, admin, seller)\n\n2. Product Catalog:\n   - Products with categories, descriptions, prices\n   - Product variants (size, color, etc.)\n   - Inventory tracking\n\n3. Order Management:\n   - Shopping cart functionality\n   - Order processing with order items\n   - Order status tracking\n\n4. Payment Processing:\n   - Payment methods\n   - Payment transactions\n   - Refunds and billing\n\nThe system should support multiple sellers, product reviews, and basic reporting capabilities."
+   }
+   ```
+
+5. **Execute LiamDB executor**:
+   ```bash
+   pnpm --filter @liam-hq/schema-bench executeLiamDB
+   ```
+
+6. **Verify output**:
+   Check the generated output file at `benchmark-workspace/execution/output/test-case.json`
+
+### Input Format
+
+The LiamDB executor expects input files with the following format:
+
+```json
+{
+  "businessDomain": "string",
+  "requirements": "string"
+}
+```
+
+### Output Format
+
+The executor generates output files with the following structure:
+
+```json
+{
+  "tables": {
+    "table_name": {
+      "name": "table_name",
+      "columns": {
+        "column_name": {
+          "name": "column_name",
+          "type": "TYPE",
+          "default": null,
+          "check": null,
+          "notNull": boolean,
+          "comment": null
+        }
+      },
+      "comment": "string",
+      "indexes": {},
+      "constraints": {}
+    }
+  },
+  "message": "string",
+  "timestamp": "ISO_8601_string"
+}
+```
