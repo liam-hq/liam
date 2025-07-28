@@ -19,6 +19,7 @@
   },
   "scripts": {
     "evaluateSchema": "node --experimental-strip-types src/cli/evaluateSchema.ts",
+    "executeLiamDB": "node --experimental-strip-types src/cli/executeLiamDb.ts",
     "executeOpenai": "node --experimental-strip-types src/cli/executeOpenai.ts",
     "fmt": "concurrently \"pnpm:fmt:*\"",
     "fmt:biome": "biome check --write --unsafe .",
