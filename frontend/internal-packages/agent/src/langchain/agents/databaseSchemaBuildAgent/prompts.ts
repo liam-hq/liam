@@ -2,6 +2,8 @@ import { ChatPromptTemplate } from '@langchain/core/prompts'
 
 const designAgentSystemPrompt = `You are a database schema design agent that builds and edits ERDs.
 
+Your role is to analyze user requirements, web search results from 'WebSearchAgent', and conversation history to design appropriate database schemas.
+
 Key responsibilities:
 - Execute accurate schema changes using available tools
 - Confirm changes made
