@@ -14,18 +14,13 @@ export function getConfigurable(
     return err(new Error('Missing configurable object in RunnableConfig'))
   }
 
-  const { repositories, logger } = config.configurable
+  const { repositories } = config.configurable
 
   if (!repositories) {
     return err(new Error('Missing repositories in configurable object'))
   }
 
-  if (!logger) {
-    return err(new Error('Missing logger in configurable object'))
-  }
-
   return ok({
     repositories,
-    logger,
   })
 }

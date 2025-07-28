@@ -1,4 +1,6 @@
+import { isMessageContentError } from '../../src/chat/workflow/utils/toolMessageUtils'
 import { hasProperty, isObject } from './scriptUtils'
+import type { Logger } from './types'
 
 // Helper function to extract message type
 const getMessageType = (lastMessage: unknown): string => {
@@ -128,10 +130,7 @@ const getToolName = (lastMessage: unknown): string => {
 }
 
 // Helper function to log human message
-const logHumanMessage = (
-  logger: { info: (message: string) => void },
-  content: string | undefined,
-) => {
+const logHumanMessage = (logger: Logger, content: string | undefined) => {
   if (content && typeof content === 'string') {
     logger.info(`Request: ${content}`)
   }
@@ -139,7 +138,7 @@ const logHumanMessage = (
 
 // Helper function to log AI message
 const logAIMessage = (
-  logger: { info: (message: string) => void },
+  logger: Logger,
   content: string | undefined,
   lastMessage: unknown,
 ) => {
@@ -156,16 +155,19 @@ const logAIMessage = (
 
 // Helper function to log tool message
 const logToolMessage = (
-  logger: { info: (message: string) => void },
+  logger: Logger,
   content: string | undefined,
   lastMessage: unknown,
 ) => {
   const toolName = getToolName(lastMessage)
 
   if (content && typeof content === 'string') {
-    const isError = content.toLowerCase().includes('error')
-    const status = isError ? 'ERROR' : 'SUCCESS'
-    logger.info(`${String(toolName)} ${status}: ${content}`)
+    const isError = isMessageContentError(content)
+    if (isError) {
+      logger.error(`${String(toolName)} ERROR: ${content}`)
+    } else {
+      logger.info(`${String(toolName)} SUCCESS: ${content}`)
+    }
   } else {
     logger.info(`${String(toolName)}: No response`)
   }
@@ -173,7 +175,7 @@ const logToolMessage = (
 
 // Helper function to log message content
 const logMessageContent = (
-  logger: { info: (message: string) => void },
+  logger: Logger,
   messageType: string,
   lastMessage: unknown,
 ) => {
@@ -191,13 +193,7 @@ const logMessageContent = (
 }
 
 // Helper function to process stream chunk
-export const processStreamChunk = (
-  logger: {
-    info: (message: string) => void
-    debug: (message: string, metadata?: Record<string, unknown>) => void
-  },
-  chunk: unknown,
-) => {
+export const processStreamChunk = (logger: Logger, chunk: unknown) => {
   if (!isObject(chunk) || !Array.isArray(chunk['messages'])) {
     return
   }

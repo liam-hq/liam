@@ -3,6 +3,7 @@ import type { Database, Tables } from '@liam-hq/db/supabase/database.types'
 import type { Schema } from '@liam-hq/db-structure'
 import type { SqlResult } from '@liam-hq/pglite-server/src/types'
 import type { Operation } from 'fast-json-patch'
+import type { ResultAsync } from 'neverthrow'
 
 export type SchemaData = {
   id: string
@@ -125,10 +126,7 @@ export type SchemaRepository = {
   /**
    * Fetch schema data for a design session
    */
-  getSchema(designSessionId: string): Promise<{
-    data: SchemaData | null
-    error: { message: string } | null
-  }>
+  getSchema(designSessionId: string): ResultAsync<SchemaData, Error>
 
   /**
    * Fetch design session data including organization_id and timeline_items

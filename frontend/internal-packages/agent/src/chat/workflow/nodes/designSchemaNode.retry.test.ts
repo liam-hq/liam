@@ -48,14 +48,6 @@ describe('designSchemaNode retry behavior', () => {
       },
     }
 
-    const mockLogger = {
-      log: vi.fn(),
-      debug: vi.fn(),
-      error: vi.fn(),
-      info: vi.fn(),
-      warn: vi.fn(),
-    }
-
     const state: WorkflowState = {
       userInput: 'Create a users table',
       messages: [],
@@ -73,7 +65,6 @@ describe('designSchemaNode retry behavior', () => {
     const config = {
       configurable: {
         repositories: mockRepositories,
-        logger: mockLogger,
       },
     }
 

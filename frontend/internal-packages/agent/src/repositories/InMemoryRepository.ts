@@ -4,6 +4,7 @@ import type { Schema } from '@liam-hq/db-structure'
 import { schemaSchema } from '@liam-hq/db-structure'
 import type { SqlResult } from '@liam-hq/pglite-server/src/types'
 import { applyPatch } from 'fast-json-patch'
+import { errAsync, okAsync, type ResultAsync } from 'neverthrow'
 import * as v from 'valibot'
 import type {
   ArtifactResult,
@@ -112,15 +113,12 @@ export class InMemoryRepository implements SchemaRepository {
     return result.success
   }
 
-  async getSchema(designSessionId: string): Promise<{
-    data: SchemaData | null
-    error: { message: string } | null
-  }> {
+  getSchema(designSessionId: string): ResultAsync<SchemaData, Error> {
     const schema = this.state.schemas.get(designSessionId)
     if (!schema) {
-      return { data: null, error: { message: 'Schema not found' } }
+      return errAsync(new Error('Schema not found'))
     }
-    return { data: schema, error: null }
+    return okAsync(schema)
   }
 
   async getDesignSession(

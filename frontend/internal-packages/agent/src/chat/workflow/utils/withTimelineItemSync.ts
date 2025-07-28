@@ -6,6 +6,7 @@ import {
 } from '@langchain/core/messages'
 import type { Database } from '@liam-hq/db'
 import type { SchemaRepository } from '../../../repositories/types'
+import { isMessageContentError } from './toolMessageUtils'
 
 type TimelineSyncContext = {
   designSessionId: string
@@ -56,7 +57,7 @@ async function handleToolMessage(
 ): Promise<void> {
   const content = message.text
 
-  const isError = content.toLowerCase().includes('error')
+  const isError = isMessageContentError(content)
   const timelineType = isError ? 'error' : 'assistant'
 
   const result = isError

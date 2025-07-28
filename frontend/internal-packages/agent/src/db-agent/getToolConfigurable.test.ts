@@ -69,24 +69,6 @@ describe('getToolConfigurable', () => {
     }
   })
 
-  it('should return error when logger is missing', () => {
-    const config: RunnableConfig = {
-      configurable: {
-        buildingSchemaId: 'test-version-id',
-        latestVersionNumber: 1,
-        repositories,
-        // Missing logger
-      },
-    }
-
-    const result = getToolConfigurable(config)
-
-    expect(result.isErr()).toBe(true)
-    if (result.isErr()) {
-      expect(result.error.message).toBe('Missing logger in configurable object')
-    }
-  })
-
   it('should return error when buildingSchemaId is missing', () => {
     const config: RunnableConfig = {
       configurable: {
@@ -185,24 +167,6 @@ describe('getToolConfigurable', () => {
     }
   })
 
-  it('should accept string as logger (truthy check)', () => {
-    const config: RunnableConfig = {
-      configurable: {
-        buildingSchemaId: 'test-version-id',
-        latestVersionNumber: 1,
-        repositories,
-        logger: 'not-an-object', // Truthy value passes basic check
-      },
-    }
-
-    const result = getToolConfigurable(config)
-
-    expect(result.isOk()).toBe(true)
-    if (result.isOk()) {
-      expect(result.value.repositories).toBe(repositories)
-    }
-  })
-
   it('should return error when repositories is null', () => {
     const config: RunnableConfig = {
       configurable: {
@@ -220,24 +184,6 @@ describe('getToolConfigurable', () => {
       expect(result.error.message).toBe(
         'Missing repositories in configurable object',
       )
-    }
-  })
-
-  it('should return error when logger is null', () => {
-    const config: RunnableConfig = {
-      configurable: {
-        buildingSchemaId: 'test-version-id',
-        latestVersionNumber: 1,
-        repositories,
-        logger: null, // Falsy value
-      },
-    }
-
-    const result = getToolConfigurable(config)
-
-    expect(result.isErr()).toBe(true)
-    if (result.isErr()) {
-      expect(result.error.message).toBe('Missing logger in configurable object')
     }
   })
 })

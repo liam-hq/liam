@@ -63,9 +63,14 @@ export async function buildCurrentSchema(targetVersion: Version) {
         tables: {},
       }
 
-  const currentSchema: Schema = structuredClone(baseSchema)
+  let currentSchema: Schema = structuredClone(baseSchema)
   for (const operations of operationsArray) {
-    applyPatchOperations(currentSchema, operations)
+    const result = applyPatchOperations(currentSchema, operations)
+    if (result.isErr()) {
+      console.warn('Failed to apply patch operations:', result.error)
+      break
+    }
+    currentSchema = result.value
   }
 
   return currentSchema

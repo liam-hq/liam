@@ -66,29 +66,32 @@ describe('schemaDesignTool', () => {
     )
 
     // Verify the schema was actually updated in the repository by schemaDesignTool
-    const schemaData = await repositories.schema.getSchema('test-schema')
-    expect(schemaData.data?.schema).toEqual(
-      aSchema({
-        tables: {
-          users: aTable({
-            name: 'users',
-            columns: {
-              id: aColumn({
-                name: 'id',
-                type: 'integer',
-                notNull: true,
-              }),
-              name: aColumn({
-                name: 'name',
-                type: 'varchar(255)',
-                notNull: false,
-              }),
-            },
-          }),
-        },
-      }),
-    )
-    expect(schemaData.data?.latestVersionNumber).toBe(2)
+    const schemaResult = await repositories.schema.getSchema('test-schema')
+    expect(schemaResult.isOk()).toBe(true)
+    if (schemaResult.isOk()) {
+      expect(schemaResult.value.schema).toEqual(
+        aSchema({
+          tables: {
+            users: aTable({
+              name: 'users',
+              columns: {
+                id: aColumn({
+                  name: 'id',
+                  type: 'integer',
+                  notNull: true,
+                }),
+                name: aColumn({
+                  name: 'name',
+                  type: 'varchar(255)',
+                  notNull: false,
+                }),
+              },
+            }),
+          },
+        }),
+      )
+      expect(schemaResult.value.latestVersionNumber).toBe(2)
+    }
   })
 
   it('should throw error when update fails', async () => {

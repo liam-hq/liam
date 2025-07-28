@@ -17,14 +17,6 @@ vi.mock('@liam-hq/pglite-server', () => ({
 }))
 
 describe('designSchemaNode -> executeDdlNode integration', () => {
-  const mockLogger = {
-    log: vi.fn(),
-    debug: vi.fn(),
-    info: vi.fn(),
-    warn: vi.fn(),
-    error: vi.fn(),
-  }
-
   const mockRepository = {
     schema: {
       createVersion: vi.fn(),
@@ -63,7 +55,6 @@ describe('designSchemaNode -> executeDdlNode integration', () => {
   const createMockConfig = () => ({
     configurable: {
       repositories: mockRepository,
-      logger: mockLogger,
     },
   })
 

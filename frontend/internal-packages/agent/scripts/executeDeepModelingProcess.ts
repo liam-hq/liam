@@ -1,7 +1,9 @@
 #!/usr/bin/env tsx
 
+import type { BaseMessage } from '@langchain/core/messages'
 import type { Result } from 'neverthrow'
 import { err, ok } from 'neverthrow'
+import { isToolMessageError } from '../src/chat/workflow/utils/toolMessageUtils'
 import { deepModeling } from '../src/deepModeling'
 import {
   createBuildingSchema,
@@ -14,9 +16,37 @@ import {
   showHelp,
   validateEnvironment,
 } from './shared/scriptUtils'
+import type { Logger } from './shared/types'
 
 const currentLogLevel = getLogLevel()
 const logger = createLogger(currentLogLevel)
+
+const logWorkflowMessage = (
+  logger: Logger,
+  message: BaseMessage,
+  index: number,
+) => {
+  const messageType = message.constructor.name
+    .toLowerCase()
+    .replace('message', '')
+  const content = message.text
+
+  // Check if this is a ToolMessage with an error
+  if (isToolMessageError(message)) {
+    logger.error(
+      `  ${index + 1}. [${messageType}] ${content.substring(0, 200)}${
+        content.length > 200 ? '...' : ''
+      }`,
+    )
+    return
+  }
+
+  logger.info(
+    `  ${index + 1}. [${messageType}] ${content.substring(0, 200)}${
+      content.length > 200 ? '...' : ''
+    }`,
+  )
+}
 
 /**
  * Main execution function
@@ -64,16 +94,7 @@ const executeDeepModelingProcess = async (): Promise<Result<void, Error>> => {
   if (finalWorkflowState.messages && finalWorkflowState.messages.length > 0) {
     logger.info('Workflow Messages:')
     finalWorkflowState.messages.forEach((message, index) => {
-      const messageType = message.constructor.name
-        .toLowerCase()
-        .replace('message', '')
-      const content =
-        typeof message.content === 'string'
-          ? message.content
-          : JSON.stringify(message.content)
-      logger.info(
-        `  ${index + 1}. [${messageType}] ${content.substring(0, 200)}${content.length > 200 ? '...' : ''}`,
-      )
+      logWorkflowMessage(logger, message, index)
     })
   }
 

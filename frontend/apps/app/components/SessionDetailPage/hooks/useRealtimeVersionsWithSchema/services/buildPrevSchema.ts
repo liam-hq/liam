@@ -29,8 +29,8 @@ export async function buildPrevSchema({
   const parsed = v.safeParse(operationsSchema, data.reverse_patch)
   if (!parsed.success) return null
 
-  const prevSchema: Schema = structuredClone(currentSchema)
-  applyPatchOperations(prevSchema, parsed.output)
+  const prevSchemaResult = applyPatchOperations(currentSchema, parsed.output)
+  if (prevSchemaResult.isErr()) return null
 
-  return prevSchema
+  return prevSchemaResult.value
 }

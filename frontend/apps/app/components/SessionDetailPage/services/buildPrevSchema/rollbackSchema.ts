@@ -13,8 +13,8 @@ export async function rollbackSchema(
   const parsed = safeParse(operationsSchema, reversePatch)
   if (!parsed.success) return null
 
-  const prev: Schema = structuredClone(currentSchema)
-  applyPatchOperations(prev, parsed.output)
+  const prevResult = applyPatchOperations(currentSchema, parsed.output)
+  if (prevResult.isErr()) return null
 
-  return prev
+  return prevResult.value
 }

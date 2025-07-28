@@ -1,30 +1,10 @@
-import type { DeepModelingParams, NodeLogger } from '@liam-hq/agent'
+import type { DeepModelingParams } from '@liam-hq/agent'
 import { createSupabaseRepositories, deepModeling } from '@liam-hq/agent'
 import { logger, task } from '@trigger.dev/sdk'
 import { createClient } from '../libs/supabase'
 
-// Define type excluding schemaData (repositories and logger are now passed via config)
+// Define type excluding schemaData (repositories are now passed via config)
 export type DeepModelingPayload = Omit<DeepModelingParams, 'schemaData'>
-
-function createWorkflowLogger(): NodeLogger {
-  return {
-    debug: (message: string, metadata?: Record<string, unknown>) => {
-      logger.debug(message, metadata)
-    },
-    log: (message: string, metadata?: Record<string, unknown>) => {
-      logger.log(message, metadata)
-    },
-    info: (message: string, metadata?: Record<string, unknown>) => {
-      logger.info(message, metadata)
-    },
-    warn: (message: string, metadata?: Record<string, unknown>) => {
-      logger.warn(message, metadata)
-    },
-    error: (message: string, metadata?: Record<string, unknown>) => {
-      logger.error(message, metadata)
-    },
-  }
-}
 
 export const deepModelingWorkflowTask = task({
   id: 'deep-modeling-workflow',
@@ -45,21 +25,20 @@ export const deepModelingWorkflowTask = task({
     const schemaResult = await repositories.schema.getSchema(
       payload.designSessionId,
     )
-    if (schemaResult.error || !schemaResult.data) {
-      throw new Error(`Failed to fetch schema data: ${schemaResult.error}`)
+    if (schemaResult.isErr()) {
+      throw new Error(
+        `Failed to fetch schema data: ${schemaResult.error.message}`,
+      )
     }
-
-    const workflowLogger = createWorkflowLogger()
 
     const deepModelingParams: DeepModelingParams = {
       ...payload,
-      schemaData: schemaResult.data.schema,
+      schemaData: schemaResult.value.schema,
     }
 
     const result = await deepModeling(deepModelingParams, {
       configurable: {
         repositories,
-        logger: workflowLogger,
       },
     })
 

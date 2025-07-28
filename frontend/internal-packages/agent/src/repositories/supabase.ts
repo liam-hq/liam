@@ -10,6 +10,7 @@ import {
 } from '@liam-hq/db-structure'
 import type { SqlResult } from '@liam-hq/pglite-server/src/types'
 import { compare } from 'fast-json-patch'
+import { errAsync, okAsync, ResultAsync } from 'neverthrow'
 import * as v from 'valibot'
 import { ensurePathStructure } from '../utils/pathPreparation'
 import type {
@@ -89,71 +90,69 @@ export class SupabaseSchemaRepository implements SchemaRepository {
     }
   }
 
-  async getSchema(designSessionId: string): Promise<{
-    data: SchemaData | null
-    error: { message: string } | null
-  }> {
-    const buildingSchemaResult = await this.getBuildingSchema(designSessionId)
-    if (buildingSchemaResult.error || !buildingSchemaResult.data) {
-      return buildingSchemaResult
-    }
-
-    const { buildingSchema } = buildingSchemaResult.data
-
-    const versionsResult = await this.getSchemaVersions(buildingSchema.id)
-    if (versionsResult.error) {
-      return versionsResult
-    }
-
-    const { versions } = versionsResult.data
-    const currentSchema = this.buildCurrentSchema(buildingSchema, versions)
-    const latestVersionNumber = this.getLatestVersionNumber(versions)
-
-    return {
-      data: {
-        id: buildingSchema.id,
-        schema: currentSchema,
-        latestVersionNumber,
-      },
-      error: null,
-    }
+  getSchema(designSessionId: string): ResultAsync<SchemaData, Error> {
+    return this.getBuildingSchema(designSessionId)
+      .andThen(({ buildingSchema }) =>
+        this.getSchemaVersions(buildingSchema.id).map(({ versions }) => ({
+          buildingSchema,
+          versions,
+        })),
+      )
+      .map(({ buildingSchema, versions }) => {
+        const currentSchema = this.buildCurrentSchema(buildingSchema, versions)
+        const latestVersionNumber = this.getLatestVersionNumber(versions)
+        return {
+          id: buildingSchema.id,
+          schema: currentSchema,
+          latestVersionNumber,
+        }
+      })
   }
 
-  private async getBuildingSchema(designSessionId: string) {
-    const { data: buildingSchema, error: buildingSchemaError } =
-      await this.client
+  private getBuildingSchema(
+    designSessionId: string,
+  ): ResultAsync<
+    { buildingSchema: { id: string; initial_schema_snapshot: Json | null } },
+    Error
+  > {
+    return ResultAsync.fromPromise(
+      this.client
         .from('building_schemas')
         .select('id, initial_schema_snapshot')
         .eq('design_session_id', designSessionId)
-        .single()
-
-    if (buildingSchemaError || !buildingSchema) {
-      return {
-        data: null,
-        error: buildingSchemaError
-          ? { message: buildingSchemaError.message }
-          : null,
+        .single(),
+      (error) => new Error(`Failed to get building schema: ${String(error)}`),
+    ).andThen(({ data: buildingSchema, error: buildingSchemaError }) => {
+      if (buildingSchemaError || !buildingSchema) {
+        return errAsync(
+          new Error(
+            buildingSchemaError?.message || 'Building schema not found',
+          ),
+        )
       }
-    }
-
-    return { data: { buildingSchema }, error: null }
+      return okAsync({ buildingSchema })
+    })
   }
 
-  private async getSchemaVersions(buildingSchemaId: string) {
-    const { data: versions, error: versionsError } = await this.client
-      .from('building_schema_versions')
-      .select('number, patch')
-      .eq('building_schema_id', buildingSchemaId)
-      .order('number', { ascending: true })
-
-    if (versionsError) {
-      return {
-        data: null,
-        error: { message: versionsError.message },
+  private getSchemaVersions(
+    buildingSchemaId: string,
+  ): ResultAsync<
+    { versions: Array<{ number: number; patch: unknown }> },
+    Error
+  > {
+    return ResultAsync.fromPromise(
+      this.client
+        .from('building_schema_versions')
+        .select('number, patch')
+        .eq('building_schema_id', buildingSchemaId)
+        .order('number', { ascending: true }),
+      (error) => new Error(`Failed to get schema versions: ${String(error)}`),
+    ).andThen(({ data: versions, error: versionsError }) => {
+      if (versionsError) {
+        return errAsync(new Error(versionsError.message))
       }
-    }
-
-    return { data: { versions: versions || [] }, error: null }
+      return okAsync({ versions: versions || [] })
+    })
   }
 
   // TODO: Set response type to `{ success: true, data: Schema } | { success: false, error: unknown }`
@@ -267,17 +266,29 @@ export class SupabaseSchemaRepository implements SchemaRepository {
       }
     }
 
-    const currentContent = JSON.parse(JSON.stringify(validationResult.output))
+    let currentContent = JSON.parse(JSON.stringify(validationResult.output))
 
     // Apply all patches in order
     for (const patchArray of patchArrayHistory) {
-      // Apply each operation in the patch to currentContent
-      applyPatchOperations(currentContent, patchArray)
+      const result = applyPatchOperations(currentContent, patchArray)
+      if (result.isErr()) {
+        return {
+          success: false,
+          error: `Failed to apply patch operations: ${result.error.message}`,
+        }
+      }
+      currentContent = result.value
     }
 
     // Now apply the new patch to get the new content
-    const newContent = JSON.parse(JSON.stringify(currentContent))
-    applyPatchOperations(newContent, patch)
+    const newContentResult = applyPatchOperations(currentContent, patch)
+    if (newContentResult.isErr()) {
+      return {
+        success: false,
+        error: `Failed to apply new patch operations: ${newContentResult.error.message}`,
+      }
+    }
+    const newContent = newContentResult.value
 
     // Validate the new schema structure before proceeding
     const newSchemaValidationResult = v.safeParse(schemaSchema, newContent)
