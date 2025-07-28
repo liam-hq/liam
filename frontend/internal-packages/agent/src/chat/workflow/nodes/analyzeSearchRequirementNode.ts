@@ -63,7 +63,6 @@ function formatSearchResults(searchResults: string): string {
 const searchDecisionResultSchema = v.object({
   needsSearch: v.boolean(),
   reason: v.string(),
-  hasUrls: v.boolean(),
   needsIndustryKnowledge: v.boolean(),
   searchQueries: v.array(v.string()),
   urls: v.array(v.string()),
@@ -79,6 +78,39 @@ type ToolProcessingResult = {
 }
 
 /**
+ * Create search log message based on URLs and queries
+ */
+function createSearchLogMessage(
+  searchDecision: SearchDecisionResult | undefined,
+): string {
+  const hasUrls = searchDecision?.urls && searchDecision.urls.length > 0
+  const hasQueries =
+    searchDecision?.searchQueries && searchDecision.searchQueries.length > 0
+
+  if (!hasUrls && !hasQueries) {
+    return 'Performing web search...'
+  }
+
+  let logMessage = 'Performing web search'
+
+  if (hasUrls) {
+    const urlList = searchDecision.urls.map((url) => `- ${url}`).join('\n')
+    logMessage += `:\n\nResearching URLs:\n${urlList}`
+  }
+
+  if (hasQueries) {
+    const queryList = searchDecision.searchQueries
+      .map((query) => `- ${query}`)
+      .join('\n')
+    logMessage += hasUrls
+      ? `\n\nSearch queries:\n${queryList}`
+      : `:\n\nSearch queries:\n${queryList}`
+  }
+
+  return logMessage
+}
+
+/**
  * Execute web search and create timeline message
  */
 async function executeWebSearch(
@@ -89,26 +121,11 @@ async function executeWebSearch(
 ): Promise<{
   consolidatedMessage: AIMessage | undefined
 }> {
-  // Log specific URLs being researched if they exist
-  if (searchDecision?.urls && searchDecision.urls.length > 0) {
-    const urlList = searchDecision.urls.map((url) => `- ${url}`).join('\n')
-    await logAssistantMessage(
-      state,
-      repositories,
-      `Researching the following URLs:\n${urlList}`,
-      assistantRole,
-    )
-  } else {
-    await logAssistantMessage(
-      state,
-      repositories,
-      'Performing web search...',
-      assistantRole,
-    )
-  }
+  // Log search details
+  const logMessage = createSearchLogMessage(searchDecision)
+  await logAssistantMessage(state, repositories, logMessage, assistantRole)
 
   const webSearchResults = await webSearchTool({
-    hasUrls: Boolean(searchDecision?.urls && searchDecision.urls.length > 0),
     needsIndustryKnowledge: Boolean(
       searchDecision?.searchQueries && searchDecision.searchQueries.length > 0,
     ),
@@ -180,7 +197,6 @@ async function processToolResponse(
     searchDecision = {
       needsSearch: true,
       reason: 'No decision tool called, defaulting to search',
-      hasUrls: false,
       needsIndustryKnowledge: true,
       searchQueries: [],
       urls: [],
@@ -285,7 +301,6 @@ Consider:
         needsSearch: true,
         reason:
           'Tool invocation failed, defaulting to search for comprehensive results',
-        hasUrls: false,
         needsIndustryKnowledge: true,
         searchQueries: [],
         urls: [],

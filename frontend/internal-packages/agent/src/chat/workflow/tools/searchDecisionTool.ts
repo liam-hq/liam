@@ -5,7 +5,6 @@ import * as v from 'valibot'
 const SearchDecisionResultSchema = v.object({
   needsSearch: v.boolean(),
   reason: v.string(),
-  hasUrls: v.boolean(),
   needsIndustryKnowledge: v.boolean(),
   searchQueries: v.array(v.string()),
   urls: v.array(v.string()),
@@ -21,7 +20,6 @@ const searchDecisionJsonSchema = {
   properties: {
     needsSearch: { type: 'boolean' },
     reason: { type: 'string' },
-    hasUrls: { type: 'boolean' },
     needsIndustryKnowledge: { type: 'boolean' },
     searchQueries: {
       type: 'array',
@@ -37,7 +35,6 @@ const searchDecisionJsonSchema = {
   required: [
     'needsSearch',
     'reason',
-    'hasUrls',
     'needsIndustryKnowledge',
     'searchQueries',
     'urls',

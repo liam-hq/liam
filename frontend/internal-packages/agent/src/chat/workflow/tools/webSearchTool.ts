@@ -3,7 +3,6 @@ import { ChatOpenAI } from '@langchain/openai'
 import { ResultAsync } from 'neverthrow'
 
 type SearchOptions = {
-  hasUrls?: boolean
   needsIndustryKnowledge?: boolean
   searchQueries?: string[]
   urls?: string[]
@@ -17,7 +16,6 @@ export async function webSearchTool(
   options: SearchOptions = {},
 ): Promise<string | undefined> {
   const {
-    hasUrls = false,
     needsIndustryKnowledge = false,
     searchQueries = [],
     urls = [],
@@ -46,10 +44,8 @@ export async function webSearchTool(
 
   // Fallback to general guidance if no specific queries/URLs
   if (searchQueries.length === 0 && urls.length === 0) {
-    if (hasUrls) {
-      searchPrompt +=
-        ' Search the specific URLs mentioned by the user and extract their content, structure, and relevant details.'
-    }
+    // Note: This fallback case should rarely occur since urls.length === 0 here
+    // but keeping for defensive programming
 
     if (needsIndustryKnowledge) {
       searchPrompt +=
