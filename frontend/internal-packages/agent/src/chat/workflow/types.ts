@@ -6,14 +6,6 @@ import type { Repositories } from '../../repositories'
 export type WorkflowState = {
   messages: BaseMessage[]
   userInput: string
-  webSearchResults?: string | undefined
-  searchContext?:
-    | {
-        needsSearch: boolean
-        urls: string[]
-        searchQueries: string[]
-      }
-    | undefined
   analyzedRequirements?:
     | {
         businessRequirement: string

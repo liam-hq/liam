@@ -75,7 +75,6 @@ import { withTimelineItemSync } from '../utils/withTimelineItemSync'
 
 type ToolProcessingResult = {
   searchDecision: SearchDecisionResult
-  webSearchResults: string | undefined
   consolidatedMessage: AIMessage | undefined
 }
 
@@ -88,7 +87,6 @@ async function executeWebSearch(
   assistantRole: Database['public']['Enums']['assistant_role_enum'],
   searchDecision: SearchDecisionResult | undefined,
 ): Promise<{
-  webSearchResults: string | undefined
   consolidatedMessage: AIMessage | undefined
 }> {
   // Log specific URLs being researched if they exist
@@ -138,7 +136,7 @@ async function executeWebSearch(
     )
   }
 
-  return { webSearchResults, consolidatedMessage }
+  return { consolidatedMessage }
 }
 
 /**
@@ -151,7 +149,6 @@ async function processToolResponse(
   assistantRole: Database['public']['Enums']['assistant_role_enum'],
 ): Promise<ToolProcessingResult> {
   let searchDecision: SearchDecisionResult | undefined = undefined
-  let webSearchResults: string | undefined = undefined
   let consolidatedMessage: AIMessage | undefined = undefined
 
   // Process tool calls
@@ -173,7 +170,6 @@ async function processToolResponse(
           assistantRole,
           searchDecision,
         )
-        webSearchResults = searchResult.webSearchResults
         consolidatedMessage = searchResult.consolidatedMessage
       }
     }
@@ -193,7 +189,6 @@ async function processToolResponse(
 
   return {
     searchDecision,
-    webSearchResults,
     consolidatedMessage,
   }
 }
@@ -258,12 +253,11 @@ Consider:
       )
 
       // If search is needed but not performed by LLM, execute it now
-      let finalWebSearchResults = processedResult.webSearchResults
       let finalConsolidatedMessage = processedResult.consolidatedMessage
 
       if (
         processedResult.searchDecision.needsSearch &&
-        !processedResult.webSearchResults
+        !processedResult.consolidatedMessage
       ) {
         const searchResult = await executeWebSearch(
           state,
@@ -271,7 +265,6 @@ Consider:
           assistantRole,
           processedResult.searchDecision,
         )
-        finalWebSearchResults = searchResult.webSearchResults
         finalConsolidatedMessage = searchResult.consolidatedMessage
       }
 
@@ -282,12 +275,6 @@ Consider:
 
       return {
         ...state,
-        searchContext: {
-          needsSearch: processedResult.searchDecision.needsSearch,
-          urls: processedResult.searchDecision.urls,
-          searchQueries: processedResult.searchDecision.searchQueries,
-        },
-        webSearchResults: finalWebSearchResults,
         messages: finalMessages,
         error: undefined,
       }
@@ -311,34 +298,13 @@ Consider:
         assistantRole,
       )
 
-      const webSearchResults = await webSearchTool({
-        hasUrls: Boolean(defaultDecision.urls.length > 0),
-        needsIndustryKnowledge: Boolean(
-          defaultDecision.searchQueries.length > 0,
-        ),
-        searchQueries: defaultDecision.searchQueries,
-        urls: defaultDecision.urls,
-      })
-
-      let consolidatedMessage: AIMessage | undefined = undefined
-      if (webSearchResults) {
-        // Create consolidated fallback search message
-        const formattedResults = formatSearchResults(webSearchResults)
-
-        consolidatedMessage = await withTimelineItemSync(
-          new AIMessage({
-            content: formattedResults,
-            name: 'WebSearchAgent',
-          }),
-          {
-            designSessionId: state.designSessionId,
-            organizationId: state.organizationId || '',
-            userId: state.userId,
-            repositories,
-            assistantRole,
-          },
-        )
-      }
+      const searchResult = await executeWebSearch(
+        state,
+        repositories,
+        assistantRole,
+        defaultDecision,
+      )
+      const consolidatedMessage = searchResult.consolidatedMessage
 
       const finalMessages = consolidatedMessage
         ? [...state.messages, consolidatedMessage]
@@ -346,12 +312,6 @@ Consider:
 
       return {
         ...state,
-        searchContext: {
-          needsSearch: defaultDecision.needsSearch,
-          urls: defaultDecision.urls,
-          searchQueries: defaultDecision.searchQueries,
-        },
-        webSearchResults,
         messages: finalMessages,
         error: undefined, // Don't propagate error, continue with default
       }
