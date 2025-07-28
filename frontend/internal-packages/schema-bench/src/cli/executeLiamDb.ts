@@ -22,8 +22,7 @@ import {
 } from './utils/index.ts'
 
 const InputSchema = v.object({
-  businessDomain: v.string(),
-  requirements: v.string(),
+  input: v.string(),
 })
 
 async function loadInputFiles(): Promise<
@@ -85,11 +84,18 @@ async function loadInputFiles(): Promise<
       )
     }
 
+    // Extract business domain from input if possible, otherwise use generic
+    const inputText = validationResult.output.input
+    const businessDomain = inputText.includes('procurement') ? 'Procurement System' :
+                           inputText.includes('e-commerce') || inputText.includes('E-commerce') ? 'E-commerce Platform' :
+                           inputText.includes('insurance') ? 'Insurance System' :
+                           'Database System'
+
     inputs.push({
       caseId,
       input: {
-        businessDomain: validationResult.output.businessDomain,
-        requirements: validationResult.output.requirements,
+        businessDomain,
+        requirements: inputText,
       },
     })
   }

@@ -387,8 +387,7 @@ To test the LiamDB executor implementation, follow these steps from the project 
    Create `benchmark-workspace/execution/input/test-case.json` with the following content:
    ```json
    {
-     "businessDomain": "E-commerce Platform",
-     "requirements": "Design a database schema for an e-commerce platform that includes:\n\n1. User Management:\n   - Users with profiles, authentication credentials\n   - User roles (customer, admin, seller)\n\n2. Product Catalog:\n   - Products with categories, descriptions, prices\n   - Product variants (size, color, etc.)\n   - Inventory tracking\n\n3. Order Management:\n   - Shopping cart functionality\n   - Order processing with order items\n   - Order status tracking\n\n4. Payment Processing:\n   - Payment methods\n   - Payment transactions\n   - Refunds and billing\n\nThe system should support multiple sellers, product reviews, and basic reporting capabilities."
+     "input": "Design a database schema for an e-commerce platform that includes: 1. User Management: Users with profiles, authentication credentials, User roles (customer, admin, seller). 2. Product Catalog: Products with categories, descriptions, prices, Product variants (size, color, etc.), Inventory tracking. 3. Order Management: Shopping cart functionality, Order processing with order items, Order status tracking. 4. Payment Processing: Payment methods, Payment transactions, Refunds and billing. The system should support multiple sellers, product reviews, and basic reporting capabilities."
    }
    ```
 
@@ -406,10 +405,11 @@ The LiamDB executor expects input files with the following format:
 
 ```json
 {
-  "businessDomain": "string",
-  "requirements": "string"
+  "input": "string"
 }
 ```
+
+The executor automatically extracts the business domain from the input text and uses the full text as requirements.
 
 ### Output Format
 
