@@ -9,11 +9,9 @@ A **LangGraph implementation** for processing chat messages in the LIAM applicat
 graph TD;
 	__start__([<p>__start__</p>]):::first
 	analyzeSearchRequirement(analyzeSearchRequirement)
-	searchDecisionTool[searchDecisionTool]:::tool
-	webSearchTool[webSearchTool]:::tool
 	analyzeRequirements(analyzeRequirements)
 	designSchema(designSchema)
-	invokeSchemaDesignTool(invokeSchemaDesignTool):::tool
+	invokeSchemaDesignTool(invokeSchemaDesignTool)
 	executeDDL(executeDDL)
 	generateUsecase(generateUsecase)
 	prepareDML(prepareDML)
@@ -21,12 +19,8 @@ graph TD;
 	finalizeArtifacts(finalizeArtifacts)
 	__end__([<p>__end__</p>]):::last
 	__start__ --> analyzeSearchRequirement;
-	analyzeSearchRequirement -.-> searchDecisionTool;
-	searchDecisionTool -.-> analyzeSearchRequirement;
-	analyzeSearchRequirement -.-> webSearchTool;
-	webSearchTool -.-> analyzeSearchRequirement;
-	analyzeSearchRequirement --> analyzeRequirements;
 	analyzeRequirements --> designSchema;
+	analyzeSearchRequirement --> analyzeRequirements;
 	executeDDL --> generateUsecase;
 	finalizeArtifacts --> __end__;
 	generateUsecase --> prepareDML;
@@ -42,7 +36,6 @@ graph TD;
 	classDef default fill:#f2f0ff,line-height:1.2;
 	classDef first fill-opacity:0;
 	classDef last fill:#bfb6fc;
-	classDef tool fill:#e1f5fe,stroke:#0288d1,line-height:1.2;
 ```
 
 ## Workflow State
