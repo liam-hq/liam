@@ -34,6 +34,8 @@
     "dev": "tsc --watch",
     "execute-deep-modeling": "tsx scripts/executeDeepModelingProcess.ts",
     "execute-deep-modeling:debug": "tsx scripts/executeDeepModelingProcess.ts --log-level=DEBUG",
+    "execute-deep-modeling:memory": "AGENT_MODE=memory tsx scripts/executeDeepModelingProcess.ts",
+    "execute-deep-modeling:memory:debug": "AGENT_MODE=memory tsx scripts/executeDeepModelingProcess.ts --log-level=DEBUG",
     "execute-deep-modeling:warn": "tsx scripts/executeDeepModelingProcess.ts --log-level=WARN",
     "execute-design-process": "tsx scripts/executeDesignProcess.ts",
     "execute-design-process:debug": "tsx scripts/executeDesignProcess.ts --log-level=DEBUG",
