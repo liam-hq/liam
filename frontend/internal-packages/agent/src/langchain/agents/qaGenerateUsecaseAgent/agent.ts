@@ -22,7 +22,7 @@ const usecaseGenerationSchema = v.object({
 export type Usecase = v.InferOutput<typeof usecaseSchema>
 type UsecaseResponse = v.InferOutput<typeof usecaseGenerationSchema>
 
-export class QAGenerateUsecaseAgent {
+class QAGenerateUsecaseAgent {
   private usecaseModel: ReturnType<ChatOpenAI['withStructuredOutput']>
 
   constructor() {
