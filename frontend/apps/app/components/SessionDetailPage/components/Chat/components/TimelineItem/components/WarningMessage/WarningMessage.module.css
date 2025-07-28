@@ -1,0 +1,87 @@
+.warningContainer {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: var(--spacing-1half);
+  background-color: var(--severity-warning-20);
+  border-radius: var(--border-radius-base);
+  padding: var(--spacing-2) var(--spacing-2half) var(--spacing-2half);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.warningIcon {
+  flex-shrink: 0;
+  width: 12px;
+  height: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--severity-warning-100);
+  /* Align with text center */
+  margin-top: 4px;
+}
+
+.warningText {
+  font-family: var(--main-font);
+  font-weight: 400;
+  font-size: var(--font-size-4);
+  line-height: 1;
+  color: var(--global-body-text);
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  word-break: break-word;
+  white-space: pre-wrap;
+}
+
+/* Reset margin/padding for markdown content */
+.warningText :global(*:first-child) {
+  margin-top: 0;
+}
+
+.warningText :global(*:last-child) {
+  margin-bottom: 0;
+}
+
+.warningText :global(p) {
+  margin: 0;
+}
+
+/* Adjust list styling for better spacing */
+.warningText :global(ul),
+.warningText :global(ol) {
+  margin: 0 !important;
+}
+
+.warningText :global(li) {
+  margin-bottom: 0 !important;
+}
+
+.contentWrapper {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2);
+}
+
+.actionButtonWrapper {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.actionButton {
+  min-width: auto !important;
+}
+
+/* Override link color for warning messages */
+.warningText :global(a) {
+  color: var(--severity-warning-100);
+  text-decoration: none;
+  transition: opacity 0.2s;
+}
+
+.warningText :global(a:hover) {
+  opacity: 0.8;
+  text-decoration: underline;
+}

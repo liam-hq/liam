@@ -63,6 +63,7 @@ type BaseTimelineItemEntry = {
     | 'assistant'
     | 'schema_version'
     | 'error'
+    | 'warning'
     | 'assistant_log'
     | 'query_result'
   timestamp: Date
@@ -87,6 +88,12 @@ export type ErrorTimelineItemEntry = BaseTimelineItemEntry & {
   onRetry?: () => void
 }
 
+type WarningTimelineItemEntry = BaseTimelineItemEntry & {
+  type: 'warning'
+  onAction?: () => void
+  actionLabel?: string
+}
+
 export type AssistantLogTimelineItemEntry = BaseTimelineItemEntry & {
   type: 'assistant_log'
   role: AssistantRole
@@ -103,5 +110,6 @@ export type TimelineItemEntry =
   | AssistantTimelineItemEntry
   | SchemaVersionTimelineItemEntry
   | ErrorTimelineItemEntry
+  | WarningTimelineItemEntry
   | AssistantLogTimelineItemEntry
   | QueryResultTimelineItemEntry
