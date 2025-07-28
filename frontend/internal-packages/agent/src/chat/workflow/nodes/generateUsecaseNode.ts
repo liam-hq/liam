@@ -53,7 +53,7 @@ async function saveArtifacts(
  * Generate Usecase Node - QA Agent creates use cases
  * Performed by qaGenerateUsecaseAgent
  */
-export async function generateUsecaseNode(
+async function generateUsecaseNode(
   state: WorkflowState,
   config: RunnableConfig,
 ): Promise<WorkflowState> {

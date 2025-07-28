@@ -12,7 +12,7 @@ import { withTimelineItemSync } from '../utils/withTimelineItemSync'
  * Web Search Node - Initial Research
  * Searches web for context about the user's requirements before analysis
  */
-export async function webSearchNode(
+async function webSearchNode(
   state: WorkflowState,
   config: RunnableConfig,
 ): Promise<WorkflowState> {
