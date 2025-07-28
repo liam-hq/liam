@@ -44,8 +44,8 @@ export async function webSearchTool(
 
   // Fallback to general guidance if no specific queries/URLs
   if (searchQueries.length === 0 && urls.length === 0) {
-    // Note: This fallback case should rarely occur since urls.length === 0 here
-    // but keeping for defensive programming
+    // Note: This handles cases where only needsIndustryKnowledge is true
+    // without specific search queries or URLs provided
 
     if (needsIndustryKnowledge) {
       searchPrompt +=
