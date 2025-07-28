@@ -46,8 +46,8 @@ const searchDecisionJsonSchema = {
  * Determines if web search is needed based on user input
  */
 export const searchDecisionTool = tool(
-  async (_input: unknown) => {
-    // This function is not actually called (used as structured output)
+  async (_unusedInput: unknown) => {
+    // This parameter is unused and exists only for compatibility with the tool's interface.
     return 'Search decision analysis completed'
   },
   {
