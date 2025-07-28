@@ -6,6 +6,7 @@
   "main": "src/index.ts",
   "dependencies": {
     "@huggingface/transformers": "3.3.3",
+    "@liam-hq/agent": "workspace:*",
     "@liam-hq/db-structure": "workspace:*",
     "neverthrow": "8.2.0",
     "openai": "5.9.2",

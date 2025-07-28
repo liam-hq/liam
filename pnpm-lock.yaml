@@ -626,6 +626,9 @@ importers:
       '@huggingface/transformers':
         specifier: 3.3.3
         version: 3.3.3
+      '@liam-hq/agent':
+        specifier: workspace:*
+        version: link:../agent
       '@liam-hq/db-structure':
         specifier: workspace:*
         version: link:../../packages/db-structure

@@ -126,3 +126,189 @@ src/executors/liamDb/
 - LangChainのEventTarget警告問題
 - メモリリークの可能性
 - 複雑なエラーケースの処理
+
+---
+
+## 具体的な実装タスク (Phase 1: 基本統合)
+
+### 📝 修正するファイル
+
+#### 1. `frontend/internal-packages/schema-bench/package.json`
+```json
+{
+  "dependencies": {
+    "@huggingface/transformers": "3.3.3",
+    "@liam-hq/agent": "workspace:*",        // ← 追加
+    "@liam-hq/db-structure": "workspace:*", // ← 追加  
+    "neverthrow": "8.2.0",
+    "openai": "5.9.2",
+    "valibot": "1.1.0"
+  }
+}
+```
+
+### 📁 新規作成するファイル
+
+#### 2. `src/executors/liamDb/index.ts`
+```typescript
+export { LiamDbExecutor } from './liamDbExecutor.ts'
+export type { LiamDbExecutorInput, LiamDbExecutorConfig } from './types.ts'
+```
+
+#### 3. `src/executors/liamDb/types.ts`
+```typescript
+import type { Result } from 'neverthrow'
+import type { Schema } from '@liam-hq/db-structure'
+
+export interface LiamDbExecutorInput {
+  input: string  // テキストプロンプト
+}
+
+export interface LiamDbExecutorConfig {
+  timeout?: number
+  logLevel?: 'DEBUG' | 'INFO' | 'ERROR'
+}
+
+export interface LiamDbExecutorOutput {
+  tables: Record<string, {
+    name: string
+    columns: Record<string, {
+      name: string
+      type: string
+      // ...他のカラム情報
+    }>
+    // ...他のテーブル情報
+  }>
+}
+
+export interface LiamDbExecutor {
+  execute(input: LiamDbExecutorInput): Promise<Result<LiamDbExecutorOutput, Error>>
+}
+```
+
+#### 4. `src/executors/liamDb/liamDbExecutor.ts`
+```typescript
+import type { Result } from 'neverthrow'
+import { err, ok } from 'neverthrow'
+import type { Schema } from '@liam-hq/db-structure'
+import { deepModeling } from '@liam-hq/agent'
+
+import type { 
+  LiamDbExecutorInput, 
+  LiamDbExecutorOutput, 
+  LiamDbExecutorConfig 
+} from './types.ts'
+
+export class LiamDbExecutor {
+  private config: LiamDbExecutorConfig
+
+  constructor(config: LiamDbExecutorConfig = {}) {
+    this.config = config
+  }
+
+  async execute(input: LiamDbExecutorInput): Promise<Result<LiamDbExecutorOutput, Error>> {
+    try {
+      // @liam-hq/agent の deepModeling 関数を呼び出し
+      // InMemoryRepository のセットアップ
+      // WorkflowState の作成
+      // 結果の変換
+      
+      return ok(output)
+    } catch (error) {
+      return err(error instanceof Error ? error : new Error('Unknown error'))
+    }
+  }
+
+  private convertSchemaToOutput(schema: Schema): LiamDbExecutorOutput {
+    // Schema型からLiamDbExecutorOutput型への変換
+  }
+}
+```
+
+#### 5. `src/executors/liamDb/liamDbExecutor.test.ts`
+```typescript
+import { describe, expect, it } from 'vitest'
+import { LiamDbExecutor } from './liamDbExecutor.ts'
+
+describe('LiamDbExecutor', () => {
+  it('should create executor instance', () => {
+    const executor = new LiamDbExecutor()
+    expect(executor).toBeDefined()
+  })
+
+  it('should execute simple input', async () => {
+    const executor = new LiamDbExecutor()
+    const result = await executor.execute({
+      input: 'Create a users table with id and name columns'
+    })
+    
+    expect(result.isOk()).toBe(true)
+    if (result.isOk()) {
+      expect(result.value.tables).toBeDefined()
+    }
+  })
+})
+```
+
+### 🔧 修正するファイル
+
+#### 6. `src/cli/executeLiamDb.ts`
+```typescript
+// 現在のプレースホルダー実装を、実際のLiamDbExecutorを使うように変更
+
+import { LiamDbExecutor } from '../executors/liamDb/index.ts'
+
+async function executeCase(
+  executor: LiamDbExecutor,  // ← パラメータ追加
+  caseId: string,
+  input: LiamDbExecutorInput,
+): Promise<Result<void, Error>> {
+  const result = await executor.execute(input)  // ← 実際の実行
+  if (result.isErr()) {
+    return err(new Error(`Failed to execute ${caseId}: ${result.error.message}`))
+  }
+
+  const saveResult = await saveOutputFile(caseId, result.value)  // ← 実際の結果を保存
+  // ...
+}
+
+async function main() {
+  // ...
+  const executor = new LiamDbExecutor()  // ← executor作成
+  
+  for (const { caseId, input } of inputs) {
+    const result = await executeCase(executor, caseId, input)  // ← executor渡す
+    // ...
+  }
+}
+```
+
+## 🔍 事前調査が必要なこと
+
+1. **OpenAI executorの出力形式確認**
+   ```bash
+   cat benchmark-workspace/execution/output/case-001.json
+   # → 実際の出力構造を把握
+   ```
+
+2. **@liam-hq/agentの実装確認**
+   ```typescript
+   // deepModeling関数のシグネチャを確認
+   // InMemoryRepositoryの使用方法を確認
+   // executeDeepModelingProcess.tsの実装を参考
+   ```
+
+3. **依存関係の競合チェック**
+   ```bash
+   pnpm install --filter @liam-hq/schema-bench
+   ```
+
+## 📋 実装順序
+
+1. **package.jsonの依存関係追加** → 依存関係解決
+2. **types.tsの作成** → 型定義確立  
+3. **liamDbExecutor.tsの骨格作成** → 基本構造
+4. **deepModeling関数との統合** → 実際の機能実装
+5. **executeLiamDb.tsの修正** → CLIとの連携
+6. **テストの追加** → 品質保証
+7. **動作確認** → エンドツーエンドテスト

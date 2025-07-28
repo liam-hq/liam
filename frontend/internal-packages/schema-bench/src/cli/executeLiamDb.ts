@@ -12,19 +12,22 @@ import {
 } from 'neverthrow'
 import * as v from 'valibot'
 import {
+  LiamDbExecutorImpl,
+  type LiamDbExecutorInput,
+} from '../executors/liamDb/index.ts'
+import {
   getWorkspaceSubPath,
   handleCliError,
   handleUnexpectedError,
 } from './utils/index.ts'
 
 const InputSchema = v.object({
-  input: v.string(),
+  businessDomain: v.string(),
+  requirements: v.string(),
 })
 
-type LiamDBExecutorInput = v.InferOutput<typeof InputSchema>
-
 async function loadInputFiles(): Promise<
-  Result<Array<{ caseId: string; input: LiamDBExecutorInput }>, Error>
+  Result<Array<{ caseId: string; input: LiamDbExecutorInput }>, Error>
 > {
   const inputDir = getWorkspaceSubPath('execution/input')
 
@@ -45,7 +48,7 @@ async function loadInputFiles(): Promise<
   }
 
   const jsonFiles = filesResult.value.filter((file) => file.endsWith('.json'))
-  const inputs: Array<{ caseId: string; input: LiamDBExecutorInput }> = []
+  const inputs: Array<{ caseId: string; input: LiamDbExecutorInput }> = []
 
   for (const file of jsonFiles) {
     const caseId = file.replace('.json', '')
@@ -82,7 +85,13 @@ async function loadInputFiles(): Promise<
       )
     }
 
-    inputs.push({ caseId, input: validationResult.output })
+    inputs.push({
+      caseId,
+      input: {
+        businessDomain: validationResult.output.businessDomain,
+        requirements: validationResult.output.requirements,
+      },
+    })
   }
 
   return ok(inputs)
@@ -112,16 +121,17 @@ async function saveOutputFile(
 
 async function executeCase(
   caseId: string,
-  _input: LiamDBExecutorInput,
+  input: LiamDbExecutorInput,
 ): Promise<Result<void, Error>> {
-  // For now, return a placeholder result
-  const placeholderOutput = {
-    tables: {},
-    message: 'LiamDB executor not implemented yet',
-    timestamp: new Date().toISOString(),
+  const executor = new LiamDbExecutorImpl()
+
+  const executionResult = await executor.execute(input)
+  if (executionResult.isErr()) {
+    return err(new Error(`Execution failed: ${executionResult.error.message}`))
   }
 
-  const saveResult = await saveOutputFile(caseId, placeholderOutput)
+  const output = executionResult.value
+  const saveResult = await saveOutputFile(caseId, output)
   if (saveResult.isErr()) {
     return saveResult
   }
