@@ -1,0 +1,481 @@
+{
+  "tables": {
+    "alignment": {
+      "name": "alignment",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "int8",
+          "default": null,
+          "check": null,
+          "notNull": true,
+          "comment": null
+        },
+        "alignment": {
+          "name": "alignment",
+          "type": "text",
+          "default": null,
+          "check": null,
+          "notNull": false,
+          "comment": null
+        }
+      },
+      "comment": null,
+      "indexes": {},
+      "constraints": {
+        "idx_16745_alignment_pkey": {
+          "name": "idx_16745_alignment_pkey",
+          "type": "PRIMARY KEY",
+          "columnNames": ["id"]
+        }
+      }
+    },
+    "attribute": {
+      "name": "attribute",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "int8",
+          "default": null,
+          "check": null,
+          "notNull": true,
+          "comment": null
+        },
+        "attribute_name": {
+          "name": "attribute_name",
+          "type": "text",
+          "default": null,
+          "check": null,
+          "notNull": false,
+          "comment": null
+        }
+      },
+      "comment": null,
+      "indexes": {},
+      "constraints": {
+        "idx_16750_attribute_pkey": {
+          "name": "idx_16750_attribute_pkey",
+          "type": "PRIMARY KEY",
+          "columnNames": ["id"]
+        }
+      }
+    },
+    "colour": {
+      "name": "colour",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "int8",
+          "default": null,
+          "check": null,
+          "notNull": true,
+          "comment": null
+        },
+        "colour": {
+          "name": "colour",
+          "type": "text",
+          "default": null,
+          "check": null,
+          "notNull": false,
+          "comment": null
+        }
+      },
+      "comment": null,
+      "indexes": {},
+      "constraints": {
+        "idx_16755_colour_pkey": {
+          "name": "idx_16755_colour_pkey",
+          "type": "PRIMARY KEY",
+          "columnNames": ["id"]
+        }
+      }
+    },
+    "gender": {
+      "name": "gender",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "int8",
+          "default": null,
+          "check": null,
+          "notNull": true,
+          "comment": null
+        },
+        "gender": {
+          "name": "gender",
+          "type": "text",
+          "default": null,
+          "check": null,
+          "notNull": false,
+          "comment": null
+        }
+      },
+      "comment": null,
+      "indexes": {},
+      "constraints": {
+        "idx_16760_gender_pkey": {
+          "name": "idx_16760_gender_pkey",
+          "type": "PRIMARY KEY",
+          "columnNames": ["id"]
+        }
+      }
+    },
+    "hero_attribute": {
+      "name": "hero_attribute",
+      "columns": {
+        "hero_id": {
+          "name": "hero_id",
+          "type": "int8",
+          "default": null,
+          "check": null,
+          "notNull": false,
+          "comment": null
+        },
+        "attribute_id": {
+          "name": "attribute_id",
+          "type": "int8",
+          "default": null,
+          "check": null,
+          "notNull": false,
+          "comment": null
+        },
+        "attribute_value": {
+          "name": "attribute_value",
+          "type": "int8",
+          "default": null,
+          "check": null,
+          "notNull": false,
+          "comment": null
+        }
+      },
+      "comment": null,
+      "indexes": {},
+      "constraints": {
+        "hero_attribute_attribute_id_fkey": {
+          "type": "FOREIGN KEY",
+          "name": "hero_attribute_attribute_id_fkey",
+          "columnNames": ["attribute_id"],
+          "targetTableName": "attribute",
+          "targetColumnNames": ["id"],
+          "updateConstraint": "NO_ACTION",
+          "deleteConstraint": "NO_ACTION"
+        },
+        "hero_attribute_hero_id_fkey": {
+          "type": "FOREIGN KEY",
+          "name": "hero_attribute_hero_id_fkey",
+          "columnNames": ["hero_id"],
+          "targetTableName": "superhero",
+          "targetColumnNames": ["id"],
+          "updateConstraint": "NO_ACTION",
+          "deleteConstraint": "NO_ACTION"
+        }
+      }
+    },
+    "hero_power": {
+      "name": "hero_power",
+      "columns": {
+        "hero_id": {
+          "name": "hero_id",
+          "type": "int8",
+          "default": null,
+          "check": null,
+          "notNull": false,
+          "comment": null
+        },
+        "power_id": {
+          "name": "power_id",
+          "type": "int8",
+          "default": null,
+          "check": null,
+          "notNull": false,
+          "comment": null
+        }
+      },
+      "comment": null,
+      "indexes": {},
+      "constraints": {
+        "hero_power_hero_id_fkey": {
+          "type": "FOREIGN KEY",
+          "name": "hero_power_hero_id_fkey",
+          "columnNames": ["hero_id"],
+          "targetTableName": "superhero",
+          "targetColumnNames": ["id"],
+          "updateConstraint": "NO_ACTION",
+          "deleteConstraint": "NO_ACTION"
+        },
+        "hero_power_power_id_fkey": {
+          "type": "FOREIGN KEY",
+          "name": "hero_power_power_id_fkey",
+          "columnNames": ["power_id"],
+          "targetTableName": "superpower",
+          "targetColumnNames": ["id"],
+          "updateConstraint": "NO_ACTION",
+          "deleteConstraint": "NO_ACTION"
+        }
+      }
+    },
+    "publisher": {
+      "name": "publisher",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "int8",
+          "default": null,
+          "check": null,
+          "notNull": true,
+          "comment": null
+        },
+        "publisher_name": {
+          "name": "publisher_name",
+          "type": "text",
+          "default": null,
+          "check": null,
+          "notNull": false,
+          "comment": null
+        }
+      },
+      "comment": null,
+      "indexes": {},
+      "constraints": {
+        "idx_16765_publisher_pkey": {
+          "name": "idx_16765_publisher_pkey",
+          "type": "PRIMARY KEY",
+          "columnNames": ["id"]
+        }
+      }
+    },
+    "race": {
+      "name": "race",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "int8",
+          "default": null,
+          "check": null,
+          "notNull": true,
+          "comment": null
+        },
+        "race": {
+          "name": "race",
+          "type": "text",
+          "default": null,
+          "check": null,
+          "notNull": false,
+          "comment": null
+        }
+      },
+      "comment": null,
+      "indexes": {},
+      "constraints": {
+        "idx_16770_race_pkey": {
+          "name": "idx_16770_race_pkey",
+          "type": "PRIMARY KEY",
+          "columnNames": ["id"]
+        }
+      }
+    },
+    "superhero": {
+      "name": "superhero",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "int8",
+          "default": null,
+          "check": null,
+          "notNull": true,
+          "comment": null
+        },
+        "superhero_name": {
+          "name": "superhero_name",
+          "type": "text",
+          "default": null,
+          "check": null,
+          "notNull": false,
+          "comment": null
+        },
+        "full_name": {
+          "name": "full_name",
+          "type": "text",
+          "default": null,
+          "check": null,
+          "notNull": false,
+          "comment": null
+        },
+        "gender_id": {
+          "name": "gender_id",
+          "type": "int8",
+          "default": null,
+          "check": null,
+          "notNull": false,
+          "comment": null
+        },
+        "eye_colour_id": {
+          "name": "eye_colour_id",
+          "type": "int8",
+          "default": null,
+          "check": null,
+          "notNull": false,
+          "comment": null
+        },
+        "hair_colour_id": {
+          "name": "hair_colour_id",
+          "type": "int8",
+          "default": null,
+          "check": null,
+          "notNull": false,
+          "comment": null
+        },
+        "skin_colour_id": {
+          "name": "skin_colour_id",
+          "type": "int8",
+          "default": null,
+          "check": null,
+          "notNull": false,
+          "comment": null
+        },
+        "race_id": {
+          "name": "race_id",
+          "type": "int8",
+          "default": null,
+          "check": null,
+          "notNull": false,
+          "comment": null
+        },
+        "publisher_id": {
+          "name": "publisher_id",
+          "type": "int8",
+          "default": null,
+          "check": null,
+          "notNull": false,
+          "comment": null
+        },
+        "alignment_id": {
+          "name": "alignment_id",
+          "type": "int8",
+          "default": null,
+          "check": null,
+          "notNull": false,
+          "comment": null
+        },
+        "height_cm": {
+          "name": "height_cm",
+          "type": "int8",
+          "default": null,
+          "check": null,
+          "notNull": false,
+          "comment": null
+        },
+        "weight_kg": {
+          "name": "weight_kg",
+          "type": "int8",
+          "default": null,
+          "check": null,
+          "notNull": false,
+          "comment": null
+        }
+      },
+      "comment": null,
+      "indexes": {},
+      "constraints": {
+        "idx_16775_superhero_pkey": {
+          "name": "idx_16775_superhero_pkey",
+          "type": "PRIMARY KEY",
+          "columnNames": ["id"]
+        },
+        "superhero_alignment_id_fkey": {
+          "type": "FOREIGN KEY",
+          "name": "superhero_alignment_id_fkey",
+          "columnNames": ["alignment_id"],
+          "targetTableName": "alignment",
+          "targetColumnNames": ["id"],
+          "updateConstraint": "NO_ACTION",
+          "deleteConstraint": "NO_ACTION"
+        },
+        "superhero_eye_colour_id_fkey": {
+          "type": "FOREIGN KEY",
+          "name": "superhero_eye_colour_id_fkey",
+          "columnNames": ["eye_colour_id"],
+          "targetTableName": "colour",
+          "targetColumnNames": ["id"],
+          "updateConstraint": "NO_ACTION",
+          "deleteConstraint": "NO_ACTION"
+        },
+        "superhero_gender_id_fkey": {
+          "type": "FOREIGN KEY",
+          "name": "superhero_gender_id_fkey",
+          "columnNames": ["gender_id"],
+          "targetTableName": "gender",
+          "targetColumnNames": ["id"],
+          "updateConstraint": "NO_ACTION",
+          "deleteConstraint": "NO_ACTION"
+        },
+        "superhero_hair_colour_id_fkey": {
+          "type": "FOREIGN KEY",
+          "name": "superhero_hair_colour_id_fkey",
+          "columnNames": ["hair_colour_id"],
+          "targetTableName": "colour",
+          "targetColumnNames": ["id"],
+          "updateConstraint": "NO_ACTION",
+          "deleteConstraint": "NO_ACTION"
+        },
+        "superhero_publisher_id_fkey": {
+          "type": "FOREIGN KEY",
+          "name": "superhero_publisher_id_fkey",
+          "columnNames": ["publisher_id"],
+          "targetTableName": "publisher",
+          "targetColumnNames": ["id"],
+          "updateConstraint": "NO_ACTION",
+          "deleteConstraint": "NO_ACTION"
+        },
+        "superhero_race_id_fkey": {
+          "type": "FOREIGN KEY",
+          "name": "superhero_race_id_fkey",
+          "columnNames": ["race_id"],
+          "targetTableName": "race",
+          "targetColumnNames": ["id"],
+          "updateConstraint": "NO_ACTION",
+          "deleteConstraint": "NO_ACTION"
+        },
+        "superhero_skin_colour_id_fkey": {
+          "type": "FOREIGN KEY",
+          "name": "superhero_skin_colour_id_fkey",
+          "columnNames": ["skin_colour_id"],
+          "targetTableName": "colour",
+          "targetColumnNames": ["id"],
+          "updateConstraint": "NO_ACTION",
+          "deleteConstraint": "NO_ACTION"
+        }
+      }
+    },
+    "superpower": {
+      "name": "superpower",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "int8",
+          "default": null,
+          "check": null,
+          "notNull": true,
+          "comment": null
+        },
+        "power_name": {
+          "name": "power_name",
+          "type": "text",
+          "default": null,
+          "check": null,
+          "notNull": false,
+          "comment": null
+        }
+      },
+      "comment": null,
+      "indexes": {},
+      "constraints": {
+        "idx_16783_superpower_pkey": {
+          "name": "idx_16783_superpower_pkey",
+          "type": "PRIMARY KEY",
+          "columnNames": ["id"]
+        }
+      }
+    }
+  }
+}
