@@ -1,13 +1,13 @@
 import { AIMessage, HumanMessage, ToolMessage } from '@langchain/core/messages'
 import type { Database } from '@liam-hq/db'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import type { SchemaRepository } from '../../../repositories/types'
+import { InMemoryRepository } from '../../../repositories/InMemoryRepository'
 import { withTimelineItemSync } from './withTimelineItemSync'
 
 describe('withTimelineItemSync', () => {
-  let mockCreateTimelineItem: ReturnType<typeof vi.fn>
   let mockConsoleError: ReturnType<typeof vi.spyOn>
-  let mockRepository: { schema: SchemaRepository }
+  let mockRepository: { schema: InMemoryRepository }
+  let createTimelineItemSpy: any
 
   const createContext = (
     assistantRole?: Database['public']['Enums']['assistant_role_enum'],
@@ -23,23 +23,13 @@ describe('withTimelineItemSync', () => {
   }
 
   beforeEach(() => {
-    mockCreateTimelineItem = vi.fn().mockResolvedValue({ success: true })
     mockRepository = {
-      schema: {
-        createTimelineItem: mockCreateTimelineItem,
-        getSchema: vi.fn(),
-        getDesignSession: vi.fn(),
-        createVersion: vi.fn(),
-        updateTimelineItem: vi.fn(),
-        createArtifact: vi.fn(),
-        updateArtifact: vi.fn(),
-        getArtifact: vi.fn(),
-        createValidationQuery: vi.fn(),
-        createValidationResults: vi.fn(),
-        createWorkflowRun: vi.fn(),
-        updateWorkflowRunStatus: vi.fn(),
-      },
+      schema: new InMemoryRepository(),
     }
+    createTimelineItemSpy = vi.spyOn(
+      mockRepository.schema,
+      'createTimelineItem',
+    )
     mockConsoleError = vi.spyOn(console, 'error').mockImplementation(() => {})
   })
 
@@ -50,7 +40,7 @@ describe('withTimelineItemSync', () => {
 
       const result = await withTimelineItemSync(message, context)
 
-      expect(mockCreateTimelineItem).toHaveBeenCalledWith({
+      expect(createTimelineItemSpy).toHaveBeenCalledWith({
         designSessionId: 'test-session-id',
         content: 'Test AI response',
         type: 'assistant',
@@ -65,7 +55,7 @@ describe('withTimelineItemSync', () => {
 
       await withTimelineItemSync(message, context)
 
-      expect(mockCreateTimelineItem).toHaveBeenCalledWith({
+      expect(createTimelineItemSpy).toHaveBeenCalledWith({
         designSessionId: 'test-session-id',
         content: 'Test AI response',
         type: 'assistant',
@@ -81,7 +71,7 @@ describe('withTimelineItemSync', () => {
 
       const result = await withTimelineItemSync(message, context)
 
-      expect(mockCreateTimelineItem).toHaveBeenCalledWith({
+      expect(createTimelineItemSpy).toHaveBeenCalledWith({
         designSessionId: 'test-session-id',
         content: 'User input message',
         type: 'user',
@@ -101,7 +91,7 @@ describe('withTimelineItemSync', () => {
 
       const result = await withTimelineItemSync(message, context)
 
-      expect(mockCreateTimelineItem).toHaveBeenCalledWith({
+      expect(createTimelineItemSpy).toHaveBeenCalledWith({
         designSessionId: 'test-session-id',
         content: 'Error: Something went wrong',
         type: 'error',
@@ -118,7 +108,7 @@ describe('withTimelineItemSync', () => {
 
       const result = await withTimelineItemSync(message, context)
 
-      expect(mockCreateTimelineItem).toHaveBeenCalledWith({
+      expect(createTimelineItemSpy).toHaveBeenCalledWith({
         designSessionId: 'test-session-id',
         content: 'Tool execution successful',
         type: 'assistant',
@@ -144,7 +134,7 @@ describe('withTimelineItemSync', () => {
 
         await withTimelineItemSync(message, context)
 
-        expect(mockCreateTimelineItem).toHaveBeenCalledWith({
+        expect(createTimelineItemSpy).toHaveBeenCalledWith({
           designSessionId: 'test-session-id',
           content,
           type: 'error',
@@ -166,7 +156,7 @@ describe('withTimelineItemSync', () => {
 
       await withTimelineItemSync(message, context)
 
-      expect(mockCreateTimelineItem).toHaveBeenCalledWith({
+      expect(createTimelineItemSpy).toHaveBeenCalledWith({
         designSessionId: 'test-session-id',
         content: complexContent,
         type: 'error',
@@ -200,7 +190,8 @@ describe('withTimelineItemSync', () => {
       const context = createContext()
       const error = new Error('Database connection failed')
 
-      mockCreateTimelineItem.mockResolvedValue({
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      createTimelineItemSpy.mockResolvedValue({
         success: false,
         error: error.message,
       })
@@ -219,7 +210,8 @@ describe('withTimelineItemSync', () => {
       const context = createContext()
       const error = new Error('Network timeout')
 
-      mockCreateTimelineItem.mockResolvedValue({
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      createTimelineItemSpy.mockResolvedValue({
         success: false,
         error: error.message,
       })
@@ -241,7 +233,8 @@ describe('withTimelineItemSync', () => {
       const context = createContext()
       const error = new Error('Validation failed')
 
-      mockCreateTimelineItem.mockResolvedValue({
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      createTimelineItemSpy.mockResolvedValue({
         success: false,
         error: error.message,
       })
