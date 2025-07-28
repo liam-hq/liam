@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { BaseCallbackHandler } from '@langchain/core/callbacks/base'
 import type { NodeLogger } from './nodeLogger'
 

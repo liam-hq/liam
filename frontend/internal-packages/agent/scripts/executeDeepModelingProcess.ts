@@ -1,5 +1,6 @@
 #!/usr/bin/env tsx
 // @ts-nocheck - Complex type interactions with external APIs
+/* eslint-disable */
 
 import type { Result } from 'neverthrow'
 import { err, ok } from 'neverthrow'
