@@ -126,9 +126,7 @@ async function executeWebSearch(
   await logAssistantMessage(state, repositories, logMessage, assistantRole)
 
   const webSearchResults = await webSearchTool({
-    needsIndustryKnowledge: Boolean(
-      searchDecision?.searchQueries && searchDecision.searchQueries.length > 0,
-    ),
+    needsIndustryKnowledge: searchDecision?.needsIndustryKnowledge || false,
     searchQueries: searchDecision?.searchQueries || [],
     urls: searchDecision?.urls || [],
   })
@@ -243,7 +241,7 @@ export async function analyzeSearchRequirementNode(
 
   const prompt = `Analyze the user's request and determine if web search is needed.
 
-User's latest message: "${state.messages[state.messages.length - 1]?.content || ''}"
+User's latest message: "${state.userInput}"
 
 Use the SearchDecisionResult tool to analyze:
 1. Does the user mention any URLs that need to be researched?
