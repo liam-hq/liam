@@ -1,7 +1,7 @@
 import { AIMessage } from '@langchain/core/messages'
 import { ok } from 'neverthrow'
 import { describe, expect, it, vi } from 'vitest'
-import type { WorkflowState } from '../types'
+import type { WorkflowState } from '../types.ts'
 import { designSchemaNode } from './designSchemaNode.ts'
 
 // Mock the design agent

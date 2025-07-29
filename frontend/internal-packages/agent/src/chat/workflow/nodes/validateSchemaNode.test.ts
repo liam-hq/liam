@@ -2,7 +2,7 @@ import { executeQuery } from '@liam-hq/pglite-server'
 import type { SqlResult } from '@liam-hq/pglite-server/src/types'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { Repositories } from '../../../repositories'
-import type { WorkflowState } from '../types'
+import type { WorkflowState } from '../types.ts'
 import { validateSchemaNode } from './validateSchemaNode.ts'
 
 vi.mock('@liam-hq/pglite-server', () => ({

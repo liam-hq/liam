@@ -1,7 +1,7 @@
 import { AIMessage, HumanMessage, ToolMessage } from '@langchain/core/messages'
 import type { Database } from '@liam-hq/db'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import type { SchemaRepository } from '../../../repositories/types'
+import type { SchemaRepository } from '../../../repositories/types.ts'
 import { withTimelineItemSync } from './withTimelineItemSync.ts'
 
 describe('withTimelineItemSync', () => {
