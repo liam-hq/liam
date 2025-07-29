@@ -16,9 +16,3 @@ export type LiamDbExecutor = {
     input: LiamDbExecutorInput,
   ) => Promise<Result<LiamDbExecutorOutput, Error>>
 }
-
-export type LiamDbExecutorError = {
-  type: 'DEEP_MODELING_ERROR' | 'PARSING_ERROR' | 'VALIDATION_ERROR'
-  message: string
-  cause?: string
-}
