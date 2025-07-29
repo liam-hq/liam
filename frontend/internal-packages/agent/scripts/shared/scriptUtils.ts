@@ -1,4 +1,5 @@
-import { resolve } from 'node:path'
+import path, { resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { createClient, type SupabaseClientType } from '@liam-hq/db'
 import type { Schema } from '@liam-hq/db-structure'
 import { config } from 'dotenv'
@@ -6,6 +7,8 @@ import type { Result } from 'neverthrow'
 import { err, errAsync, ok, okAsync, ResultAsync } from 'neverthrow'
 import { createSupabaseRepositories } from '../../src/repositories/factory'
 
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
 // Load environment variables from ../../../../../.env
 config({ path: resolve(__dirname, '../../../../../.env') })
 

@@ -120,7 +120,7 @@ const executeDeepModelingProcess = async (): Promise<Result<void, Error>> => {
 }
 
 // Execute if this file is run directly
-if (require.main === module) {
+if (import.meta.url === `file://${process.argv[1]}`) {
   // Show usage information
   const args = process.argv.slice(2)
   if (args.includes('--help') || args.includes('-h')) {
