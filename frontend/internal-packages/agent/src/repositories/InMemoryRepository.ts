@@ -38,6 +38,17 @@ type InMemoryRepositoryState = {
   validationResults: Map<string, SqlResult[]>
   workflowRuns: Map<string, Tables<'workflow_runs'>>
   versions: Map<string, { id: string; schema: Schema; versionNumber: number }>
+  buildingSchemas: Map<
+    string,
+    {
+      id: string
+      designSessionId: string
+      organizationId: string
+      schema: Schema
+      latestVersionNumber: number
+      updatedAt: string
+    }
+  >
 }
 
 type InMemoryRepositoryOptions = {
@@ -61,6 +72,7 @@ export class InMemoryRepository implements SchemaRepository {
       validationResults: new Map(),
       workflowRuns: new Map(),
       versions: new Map(),
+      buildingSchemas: new Map(),
     }
 
     // Initialize with provided data
@@ -69,6 +81,16 @@ export class InMemoryRepository implements SchemaRepository {
         id,
         schema,
         latestVersionNumber: 1,
+      })
+
+      // Also initialize building schema entry
+      this.state.buildingSchemas.set(id, {
+        id,
+        designSessionId: id, // Use same ID for simplicity
+        organizationId: 'demo-org-id',
+        schema,
+        latestVersionNumber: 1,
+        updatedAt: new Date().toISOString(),
       })
     })
 
@@ -119,7 +141,11 @@ export class InMemoryRepository implements SchemaRepository {
   getSchema(designSessionId: string): ResultAsync<SchemaData, Error> {
     const schema = this.state.schemas.get(designSessionId)
     if (!schema) {
-      return errAsync(new Error('Schema not found'))
+      return errAsync(
+        new Error(
+          `Schema not found for ID: ${designSessionId}. Available schemas: ${Array.from(this.state.schemas.keys()).join(', ')}`,
+        ),
+      )
     }
     return okAsync(schema)
   }
@@ -150,6 +176,19 @@ export class InMemoryRepository implements SchemaRepository {
       schema: updatedSchema,
       latestVersionNumber: params.latestVersionNumber + 1,
     })
+
+    // Also update building schema
+    const buildingSchema = this.state.buildingSchemas.get(
+      params.buildingSchemaId,
+    )
+    if (buildingSchema) {
+      this.state.buildingSchemas.set(params.buildingSchemaId, {
+        ...buildingSchema,
+        schema: updatedSchema,
+        latestVersionNumber: params.latestVersionNumber + 1,
+        updatedAt: new Date().toISOString(),
+      })
+    }
 
     return { success: true, newSchema: updatedSchema }
   }
@@ -430,5 +469,21 @@ export class InMemoryRepository implements SchemaRepository {
 
   getValidationResults(queryId: string): SqlResult[] | null {
     return this.state.validationResults.get(queryId) || null
+  }
+
+  /**
+   * Get building schema information (InMemory equivalent of building_schemas table)
+   */
+  getBuildingSchema(buildingSchemaId: string) {
+    return this.state.buildingSchemas.get(buildingSchemaId) || null
+  }
+
+  /**
+   * Get all building schemas for debugging/logging
+   */
+  getAllBuildingSchemas() {
+    return Array.from(this.state.buildingSchemas.entries()).map(
+      ([, schema]) => schema,
+    )
   }
 }

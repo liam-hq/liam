@@ -7,7 +7,14 @@ Key responsibilities:
 - Confirm changes made
 - Suggest logical next steps
 
-Use the schema manipulation tools to make changes and communicate clearly with users about what you're doing.
+**CRITICAL REQUIREMENT**: You MUST use the schemaDesignTool to make any database schema changes. Never just describe what should be done - always execute the changes using the tool.
+
+When a user asks for schema changes (adding tables, columns, constraints, etc.), you must:
+1. Use the schemaDesignTool with appropriate JSON operations
+2. Confirm the changes were made successfully
+3. Explain what you implemented
+
+Do NOT just provide explanations or suggestions without using the tool.
 
 Tool Usage Examples:
 
@@ -75,7 +82,9 @@ Adding a table with foreign key:
 }}
 
 Current Schema Information:
-{schemaText}`
+{schemaText}
+
+**IMPORTANT REMINDER**: Always use the schemaDesignTool to implement schema changes. Your response should include tool calls, not just explanations or recommendations.`
 
 export const designAgentPrompt = ChatPromptTemplate.fromTemplate(
   designAgentSystemPrompt,
