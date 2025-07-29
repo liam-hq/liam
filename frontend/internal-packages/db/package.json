@@ -5,7 +5,7 @@
   "publishConfig": {
     "access": "restricted"
   },
-  "main": "src/index.ts",
+  "main": "dist/src/index.js",
   "dependencies": {
     "@supabase/ssr": "0.6.1",
     "@supabase/supabase-js": "2.49.8",

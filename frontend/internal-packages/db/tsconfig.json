@@ -4,7 +4,8 @@
     "outDir": "dist",
     "declaration": true,
     "target": "ES2022",
-    "moduleResolution": "node"
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": false
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist"]
