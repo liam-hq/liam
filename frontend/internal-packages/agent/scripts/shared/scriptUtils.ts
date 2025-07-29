@@ -62,6 +62,15 @@ export const createLogger = (logLevel: LogLevel) => ({
       process.stdout.write(`${JSON.stringify(metadata, null, 2)}\n`)
     }
   },
+  log: (message: string, metadata?: Record<string, unknown>) => {
+    if (LOG_LEVELS[logLevel] > LOG_LEVELS.INFO) return
+
+    const timestamp = new Date().toISOString()
+    process.stdout.write(`\n📝 [LOG] ${timestamp} ${message}\n`)
+    if (metadata) {
+      process.stdout.write(`${JSON.stringify(metadata, null, 2)}\n`)
+    }
+  },
   info: (message: string, metadata?: Record<string, unknown>) => {
     if (LOG_LEVELS[logLevel] > LOG_LEVELS.INFO) return
 
@@ -431,6 +440,7 @@ export const logSchemaResults = (
   schemaData: Schema | undefined,
   currentLogLevel: LogLevel,
   error?: Error,
+  // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Complex logging function with many conditions
 ) => {
   if (error) {
     logger.error(`Workflow completed with error: ${error.message}`)
@@ -456,6 +466,53 @@ export const logSchemaResults = (
       if (currentLogLevel === 'DEBUG') {
         logger.debug('Schema details:', schemaData)
       }
+
+      // Always output final schema structure to console
+      logger.info('=== FINAL SCHEMA STRUCTURE ===')
+      for (const [tableName, table] of Object.entries(schemaData.tables)) {
+        logger.info(`\n📋 Table: ${tableName}`)
+        if (table.columns) {
+          for (const [columnName, column] of Object.entries(table.columns)) {
+            const nullable = column.notNull ? 'NOT NULL' : 'NULLABLE'
+            const defaultValue =
+              column.default !== null ? ` DEFAULT ${column.default}` : ''
+            const comment = column.comment ? ` -- ${column.comment}` : ''
+            logger.info(
+              `  • ${columnName}: ${column.type} ${nullable}${defaultValue}${comment}`,
+            )
+          }
+        }
+        // Log constraints if available
+        if (table.constraints) {
+          for (const [constraintName, constraint] of Object.entries(
+            table.constraints,
+          )) {
+            if (constraint.type === 'PRIMARY KEY') {
+              logger.info(
+                `  🔑 PRIMARY KEY (${constraint.columnNames.join(', ')})`,
+              )
+            } else if (constraint.type === 'FOREIGN KEY') {
+              logger.info(
+                `  🔗 FOREIGN KEY (${constraint.columnNames.join(', ')}) → ${constraint.targetTableName}(${constraint.targetColumnNames.join(', ')})`,
+              )
+            } else if (constraint.type === 'UNIQUE') {
+              logger.info(`  🎯 UNIQUE (${constraint.columnNames.join(', ')})`)
+            } else if (constraint.type === 'CHECK') {
+              logger.info(`  ✅ CHECK ${constraintName}: ${constraint.detail}`)
+            }
+          }
+        }
+        // Log indexes if available
+        if (table.indexes) {
+          for (const [indexName, index] of Object.entries(table.indexes)) {
+            const uniqueFlag = index.unique ? 'UNIQUE ' : ''
+            logger.info(
+              `  📇 ${uniqueFlag}INDEX ${indexName} (${index.columns.join(', ')})`,
+            )
+          }
+        }
+      }
+      logger.info('=== END SCHEMA STRUCTURE ===\n')
     } else {
       logger.info('RESULT: No tables created')
     }

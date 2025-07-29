@@ -52,8 +52,9 @@ const logWorkflowMessage = (
  * Main execution function
  */
 const executeDeepModelingProcess = async (): Promise<Result<void, Error>> => {
-  // Validate environment, setup database, create session and schema with andThen chaining
   const sessionName = `Deep Modeling Session - ${new Date().toISOString()}`
+
+  // Validate environment, setup database, create session and schema with andThen chaining
   const setupResult = await validateEnvironment()
     .andThen(setupDatabaseAndUser(logger))
     .andThen(createDesignSession(sessionName))
@@ -63,14 +64,10 @@ const executeDeepModelingProcess = async (): Promise<Result<void, Error>> => {
   if (setupResult.isErr()) return err(setupResult.error)
   const { repositories, workflowState } = setupResult.value
 
-  // Execute deep modeling workflow
   const config = {
     configurable: {
       repositories,
-      logger: {
-        ...logger,
-        log: logger.info,
-      },
+      logger,
     },
   }
 
@@ -79,6 +76,21 @@ const executeDeepModelingProcess = async (): Promise<Result<void, Error>> => {
   logger.info(
     `Initial tables: ${Object.keys(workflowState.schemaData.tables).length}`,
   )
+
+  logger.info('=== WORKFLOW CONFIGURATION ===')
+  logger.info('Recursion limit:', {
+    recursionLimit: workflowState.recursionLimit,
+  })
+  logger.info('Building schema ID:', {
+    buildingSchemaId: workflowState.buildingSchemaId,
+  })
+  logger.info('Organization ID:', {
+    organizationId: workflowState.organizationId,
+  })
+  logger.info('User input length:', {
+    userInputLength: workflowState.userInput.length,
+  })
+  logger.info('=== STARTING WORKFLOW ===')
 
   const result = await deepModeling(workflowState, config)
 
@@ -98,16 +110,18 @@ const executeDeepModelingProcess = async (): Promise<Result<void, Error>> => {
     })
   }
 
+  const finalSchemaData = finalWorkflowState.schemaData
+
   // Debug: Log the final schema data structure
   if (currentLogLevel === 'DEBUG') {
     logger.debug('Final Schema Data:', {
-      schemaData: finalWorkflowState.schemaData,
+      schemaData: finalSchemaData,
     })
   }
 
   logSchemaResults(
     logger,
-    finalWorkflowState.schemaData,
+    finalSchemaData,
     currentLogLevel,
     finalWorkflowState.error,
   )
@@ -133,7 +147,6 @@ if (require.main === module) {
       [
         'pnpm --filter @liam-hq/agent tsx scripts/executeDeepModelingProcess.ts',
         'pnpm --filter @liam-hq/agent tsx scripts/executeDeepModelingProcess.ts --log-level=DEBUG',
-        'pnpm --filter @liam-hq/agent tsx scripts/executeDeepModelingProcess.ts --log-level=WARN',
       ],
     )
     process.exit(0)
@@ -143,10 +156,18 @@ if (require.main === module) {
     `Starting Deep Modeling process execution (log level: ${currentLogLevel})`,
   )
 
-  executeDeepModelingProcess().then((result) => {
-    if (result.isErr()) {
-      logger.error(`FAILED: ${result.error.message}`)
+  executeDeepModelingProcess()
+    .then((result) => {
+      if (result.isErr()) {
+        logger.error(`FAILED: ${result.error.message}`)
+        process.exit(1)
+      } else {
+      }
+    })
+    .catch((error) => {
+      logger.error(
+        `UNCAUGHT EXCEPTION: ${error instanceof Error ? error.message : String(error)}`,
+      )
       process.exit(1)
-    }
-  })
+    })
 }
