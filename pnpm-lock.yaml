@@ -635,6 +635,9 @@ importers:
       '@liam-hq/db-structure':
         specifier: workspace:*
         version: link:../../packages/db-structure
+      langsmith:
+        specifier: 0.3.44
+        version: 0.3.44(@opentelemetry/api@1.9.0)(@opentelemetry/exporter-trace-otlp-proto@0.52.1(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-trace-base@1.30.1(@opentelemetry/api@1.9.0))(openai@5.9.2(ws@8.18.3)(zod@3.25.76))
       neverthrow:
         specifier: 8.2.0
         version: 8.2.0
