@@ -1,13 +1,10 @@
 import { resolve } from 'node:path'
 import { createClient, type SupabaseClientType } from '@liam-hq/db'
 import type { Schema } from '@liam-hq/db-structure'
-import { aSchema } from '@liam-hq/db-structure'
 import { config } from 'dotenv'
 import type { Result } from 'neverthrow'
 import { err, errAsync, ok, okAsync, ResultAsync } from 'neverthrow'
 import { createSupabaseRepositories } from '../../src/repositories/factory'
-import { InMemoryRepository } from '../../src/repositories/InMemoryRepository'
-import type { NodeLogger } from '../../src/utils/nodeLogger'
 
 // Load environment variables from ../../../../../.env
 config({ path: resolve(__dirname, '../../../../../.env') })
@@ -522,56 +519,4 @@ export const logSchemaResults = (
   } else {
     logger.info('RESULT: No schema data found')
   }
-}
-
-/**
- * Setup InMemory repository for testing without PostgreSQL
- */
-export const setupInMemoryRepository = (_logger: NodeLogger) => {
-  return ok({
-    repositories: {
-      schema: new InMemoryRepository({
-        schemas: {
-          'demo-design-session': aSchema({
-            tables: {},
-          }),
-        },
-        designSessions: {
-          'demo-design-session': {},
-        },
-      }),
-    },
-    designSession: { organization_id: 'demo-org-id', timeline_items: [] },
-    buildingSchemaId: 'demo-design-session',
-    latestVersionNumber: 1,
-  })
-}
-
-/**
- * Create workflow state for InMemory repository
- */
-// biome-ignore lint/suspicious/noExplicitAny: Setup result has complex nested types
-export const createInMemoryWorkflowState = (setupResult: any) => {
-  const userInput =
-    process.env['DEMO_USER_INPUT'] ||
-    'Add a posts table with title and content columns, and a foreign key to users'
-
-  const workflowState = {
-    userInput,
-    messages: [],
-    schemaData: aSchema({ tables: {} }),
-    history: [] satisfies [string, string][],
-    organizationId: 'demo-org-id',
-    buildingSchemaId: 'demo-design-session',
-    latestVersionNumber: 1,
-    designSessionId: 'demo-design-session',
-    userId: 'demo-user-id',
-    retryCount: {},
-    recursionLimit: 50, // Increased for debugging
-  }
-
-  return ok({
-    ...setupResult,
-    workflowState,
-  })
 }
