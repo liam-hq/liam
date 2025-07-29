@@ -57,6 +57,8 @@ export const deepModeling = async (
       ? new AIMessage(content)
       : new HumanMessage(content)
   })
+
+  // Add the current user input as the latest message with timeline sync
   const humanMessage = await withTimelineItemSync(new HumanMessage(userInput), {
     designSessionId,
     organizationId: organizationId || '',
@@ -95,12 +97,9 @@ export const deepModeling = async (
         ),
       )
     }
+
     const compiled = createGraph()
-
     const runCollector = new RunCollectorCallbackHandler()
-
-    // const invokeStartTime = Date.now() // Unused variable
-
     const result = await compiled.invoke(workflowState, {
       recursionLimit,
       configurable: {
@@ -112,12 +111,6 @@ export const deepModeling = async (
       callbacks: [runCollector],
     })
 
-    // const invokeEndTime = Date.now() // Unused variable
-    // const invokeDuration = invokeEndTime - invokeStartTime // Unused variable
-
-    if (result) {
-    }
-
     if (result.error) {
       await repositories.schema.updateWorkflowRunStatus({
         workflowRunId,
@@ -125,20 +118,24 @@ export const deepModeling = async (
       })
       return err(new Error(result.error.message))
     }
+
     await repositories.schema.updateWorkflowRunStatus({
       workflowRunId,
       status: 'success',
     })
+
     return ok(result)
   } catch (error) {
     const errorMessage =
       error instanceof Error
         ? error.message
         : WORKFLOW_ERROR_MESSAGES.EXECUTION_FAILED
+
     await repositories.schema.updateWorkflowRunStatus({
       workflowRunId,
       status: 'error',
     })
+
     const errorState = { ...workflowState, error: new Error(errorMessage) }
     const finalizedResult = await finalizeArtifactsNode(errorState, {
       configurable: {
@@ -146,7 +143,6 @@ export const deepModeling = async (
       },
     })
 
-    const finalErrorMessage = finalizedResult.error?.message || errorMessage
-    return err(new Error(finalErrorMessage))
+    return err(new Error(finalizedResult.error?.message || errorMessage))
   }
 }
