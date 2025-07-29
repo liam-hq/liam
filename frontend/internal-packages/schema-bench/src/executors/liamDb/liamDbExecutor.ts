@@ -5,13 +5,11 @@ import type { Schema } from '@liam-hq/db-structure'
 import { aSchema } from '@liam-hq/db-structure'
 import { err, ok } from 'neverthrow'
 import type {
-  LiamDbExecutor,
   LiamDbExecutorInput,
   LiamDbExecutorOutput,
 } from './types.ts'
 
-export class LiamDbExecutorImpl implements LiamDbExecutor {
-  async execute(input: LiamDbExecutorInput) {
+export async function execute(input: LiamDbExecutorInput) {
     console.info(`Processing input: ${input.input.substring(0, 100)}...`)
 
     try {
@@ -90,7 +88,7 @@ export class LiamDbExecutorImpl implements LiamDbExecutor {
 
       // Convert Schema to LiamDbExecutorOutput format
       const output: LiamDbExecutorOutput =
-        this.convertSchemaToOutput(finalSchemaData)
+        convertSchemaToOutput(finalSchemaData)
 
       return ok(output)
     } catch (error) {
@@ -98,9 +96,9 @@ export class LiamDbExecutorImpl implements LiamDbExecutor {
         error instanceof Error ? error.message : String(error)
       return err(new Error(`Deep modeling execution failed: ${errorMessage}`))
     }
-  }
+}
 
-  private convertSchemaToOutput(schema: Schema): LiamDbExecutorOutput {
+function convertSchemaToOutput(schema: Schema): LiamDbExecutorOutput {
     // biome-ignore lint/suspicious/noExplicitAny: Legacy compatibility with existing output format
     const tables: Record<string, any> = {}
 
@@ -119,5 +117,4 @@ export class LiamDbExecutorImpl implements LiamDbExecutor {
       message: 'LiamDB executor with deepModeling integration',
       timestamp: new Date().toISOString(),
     }
-  }
 }

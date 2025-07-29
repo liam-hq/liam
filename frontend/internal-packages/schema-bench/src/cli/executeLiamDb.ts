@@ -14,7 +14,7 @@ import {
 } from 'neverthrow'
 import * as v from 'valibot'
 import {
-  LiamDbExecutorImpl,
+  execute,
   type LiamDbExecutorInput,
 } from '../executors/liamDb/index.ts'
 import {
@@ -128,9 +128,8 @@ async function executeCase(
   caseId: string,
   input: LiamDbExecutorInput,
 ): Promise<Result<void, Error>> {
-  const executor = new LiamDbExecutorImpl()
 
-  const executionResult = await executor.execute(input)
+  const executionResult = await execute(input)
   if (executionResult.isErr()) {
     return err(new Error(`Execution failed: ${executionResult.error.message}`))
   }
