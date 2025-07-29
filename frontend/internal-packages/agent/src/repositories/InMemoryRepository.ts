@@ -3,7 +3,10 @@ import type { Tables } from '@liam-hq/db/supabase/database.types'
 import type { Schema } from '@liam-hq/db-structure'
 import { schemaSchema } from '@liam-hq/db-structure'
 import type { SqlResult } from '@liam-hq/pglite-server/src/types'
-import { applyPatch } from 'fast-json-patch'
+import patchPkg from 'fast-json-patch'
+
+const { applyPatch } = patchPkg
+
 import { errAsync, okAsync, type ResultAsync } from 'neverthrow'
 import * as v from 'valibot'
 import type {
@@ -21,7 +24,7 @@ import type {
   UpdateWorkflowRunStatusParams,
   VersionResult,
   WorkflowRunResult,
-} from './types'
+} from './types.ts'
 
 type InMemoryRepositoryState = {
   schemas: Map<string, SchemaData>
@@ -480,10 +483,7 @@ export class InMemoryRepository implements SchemaRepository {
    */
   getAllBuildingSchemas() {
     return Array.from(this.state.buildingSchemas.entries()).map(
-      ([id, schema]) => ({
-        id,
-        ...schema,
-      }),
+      ([, schema]) => schema,
     )
   }
 }

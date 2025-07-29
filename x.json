@@ -1,0 +1,4 @@
+{
+  "input": "Design a database schema for an e-commerce platform that includes: 1. User Management: Users with profiles, authentication credentials, User roles (customer, admin, seller). 2. Product Catalog: Products with categories, descriptions, prices, Product variants (size, color, etc.), Inventory tracking. 3. Order Management: Shopping cart functionality, Order processing with order items, Order status tracking. 4. Payment Processing: Payment methods, Payment transactions, Refunds and billing. The system should support multiple sellers, product reviews, and basic reporting capabilities."
+}
+

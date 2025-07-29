@@ -1,6 +1,6 @@
-export { createSupabaseRepositories } from './factory'
+export { createSupabaseRepositories } from './factory.ts'
 
-export { SupabaseSchemaRepository } from './supabase'
+export { SupabaseSchemaRepository } from './supabase.ts'
 export type {
   CreateVersionParams,
   DesignSessionData,
@@ -9,4 +9,4 @@ export type {
   SchemaRepository,
   VersionResult,
   WorkflowRunResult,
-} from './types'
+} from './types.ts'

@@ -361,3 +361,81 @@ Here's a complete example from an insurance company database schema:
 - **Benchmarking**: Create standardized evaluation benchmarks for schema prediction tasks
 
 This package serves as a critical component for ensuring the quality and accuracy of automated database schema generation systems, providing detailed insights into both the strengths and weaknesses of prediction models.
+
+## LiamDB Executor Testing
+
+### Setup and Testing Procedure
+
+To test the LiamDB executor implementation, follow these steps from the project root directory.
+
+1. **Clean workspace**:
+   ```bash
+   rm -rf benchmark-workspace
+   ```
+
+2. **Setup workspace**:
+   ```bash
+   pnpm --filter @liam-hq/schema-bench setupWorkspace
+   ```
+
+3. **Remove default input files**:
+   ```bash
+   rm benchmark-workspace/execution/input/case-*
+   ```
+
+4. **Create test input file**:
+   Create `benchmark-workspace/execution/input/test-case.json` with the following content:
+   ```json
+   {
+     "input": "Design a database schema for an e-commerce platform that includes: 1. User Management: Users with profiles, authentication credentials, User roles (customer, admin, seller). 2. Product Catalog: Products with categories, descriptions, prices, Product variants (size, color, etc.), Inventory tracking. 3. Order Management: Shopping cart functionality, Order processing with order items, Order status tracking. 4. Payment Processing: Payment methods, Payment transactions, Refunds and billing. The system should support multiple sellers, product reviews, and basic reporting capabilities."
+   }
+   ```
+
+5. **Execute LiamDB executor**:
+   ```bash
+   pnpm --filter @liam-hq/schema-bench executeLiamDB
+   ```
+
+6. **Verify output**:
+   Check the generated output file at `benchmark-workspace/execution/output/test-case.json`
+
+### Input Format
+
+The LiamDB executor expects input files with the following format:
+
+```json
+{
+  "input": "string"
+}
+```
+
+The executor automatically extracts the business domain from the input text and uses the full text as requirements.
+
+### Output Format
+
+The executor generates output files with the following structure:
+
+```json
+{
+  "tables": {
+    "table_name": {
+      "name": "table_name",
+      "columns": {
+        "column_name": {
+          "name": "column_name",
+          "type": "TYPE",
+          "default": null,
+          "check": null,
+          "notNull": boolean,
+          "comment": null
+        }
+      },
+      "comment": "string",
+      "indexes": {},
+      "constraints": {}
+    }
+  },
+  "message": "string",
+  "timestamp": "ISO_8601_string"
+}
+```

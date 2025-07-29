@@ -4,11 +4,11 @@ import type { RunnableConfig } from '@langchain/core/runnables'
 import { ToolNode } from '@langchain/langgraph/prebuilt'
 import type { Schema } from '@liam-hq/db-structure'
 import type { ResultAsync } from 'neverthrow'
-import { getConfigurable } from '../../chat/workflow/shared/getConfigurable'
-import type { WorkflowState } from '../../chat/workflow/types'
-import { withTimelineItemSync } from '../../chat/workflow/utils/withTimelineItemSync'
-import type { Repositories } from '../../repositories'
-import { schemaDesignTool } from '../tools/schemaDesignTool'
+import { getConfigurable } from '../../chat/workflow/shared/getConfigurable.ts'
+import type { WorkflowState } from '../../chat/workflow/types.ts'
+import { withTimelineItemSync } from '../../chat/workflow/utils/withTimelineItemSync.ts'
+import type { Repositories } from '../../repositories/index.ts'
+import { schemaDesignTool } from '../tools/schemaDesignTool.ts'
 
 /**
  * Check if a message is a ToolMessage

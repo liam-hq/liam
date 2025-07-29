@@ -5,9 +5,12 @@ import {
 } from '@langchain/core/messages'
 import { ChatOpenAI } from '@langchain/openai'
 import { ok, ResultAsync } from 'neverthrow'
-import type { ToolConfigurable } from '../../../db-agent/getToolConfigurable'
-import { schemaDesignTool } from '../../../db-agent/tools/schemaDesignTool'
-import { type DesignAgentPromptVariables, designAgentPrompt } from './prompts'
+import type { ToolConfigurable } from '../../../db-agent/getToolConfigurable.ts'
+import { schemaDesignTool } from '../../../db-agent/tools/schemaDesignTool.ts'
+import {
+  type DesignAgentPromptVariables,
+  designAgentPrompt,
+} from './prompts.ts'
 
 const model = new ChatOpenAI({
   model: 'o4-mini',

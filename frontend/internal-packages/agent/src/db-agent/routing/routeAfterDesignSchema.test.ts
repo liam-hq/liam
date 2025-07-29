@@ -1,7 +1,7 @@
 import { AIMessage, HumanMessage } from '@langchain/core/messages'
 import { describe, expect, it } from 'vitest'
-import type { WorkflowState } from '../../chat/workflow/types'
-import { routeAfterDesignSchema } from './routeAfterDesignSchema'
+import type { WorkflowState } from '../../chat/workflow/types.ts'
+import { routeAfterDesignSchema } from './routeAfterDesignSchema.ts'
 
 const workflowState = (messages: WorkflowState['messages']): WorkflowState => ({
   messages,
@@ -34,7 +34,7 @@ describe('routeAfterDesignSchema', () => {
     expect(result).toBe('invokeSchemaDesignTool')
   })
 
-  it('should return executeDDL when message has no tool calls', () => {
+  it('should return prepareDML when message has no tool calls', () => {
     const messageWithoutToolCalls = new AIMessage({
       content: 'Schema analysis complete',
     })
@@ -42,10 +42,10 @@ describe('routeAfterDesignSchema', () => {
     const state = workflowState([messageWithoutToolCalls])
     const result = routeAfterDesignSchema(state)
 
-    expect(result).toBe('executeDDL')
+    expect(result).toBe('prepareDML')
   })
 
-  it('should return executeDDL when message has empty tool calls array', () => {
+  it('should return prepareDML when message has empty tool calls array', () => {
     const messageWithEmptyToolCalls = new AIMessage({
       content: 'No tools needed',
       tool_calls: [],
@@ -54,10 +54,10 @@ describe('routeAfterDesignSchema', () => {
     const state = workflowState([messageWithEmptyToolCalls])
     const result = routeAfterDesignSchema(state)
 
-    expect(result).toBe('executeDDL')
+    expect(result).toBe('prepareDML')
   })
 
-  it('should return executeDDL for HumanMessage', () => {
+  it('should return prepareDML for HumanMessage', () => {
     const humanMessage = new HumanMessage({
       content: 'User input',
     })
@@ -65,7 +65,7 @@ describe('routeAfterDesignSchema', () => {
     const state = workflowState([humanMessage])
     const result = routeAfterDesignSchema(state)
 
-    expect(result).toBe('executeDDL')
+    expect(result).toBe('prepareDML')
   })
 
   it('should handle multiple messages and check only the last one', () => {
@@ -87,7 +87,7 @@ describe('routeAfterDesignSchema', () => {
     const state = workflowState([messageWithToolCalls, messageWithoutToolCalls])
     const result = routeAfterDesignSchema(state)
 
-    expect(result).toBe('executeDDL')
+    expect(result).toBe('prepareDML')
   })
 
   it('should handle multiple tool calls', () => {

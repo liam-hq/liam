@@ -443,6 +443,7 @@ export const logSchemaResults = (
   schemaData: Schema | undefined,
   currentLogLevel: LogLevel,
   error?: Error,
+  // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Complex logging function with many conditions
 ) => {
   if (error) {
     logger.error(`Workflow completed with error: ${error.message}`)
@@ -549,6 +550,7 @@ export const setupInMemoryRepository = (_logger: NodeLogger) => {
 /**
  * Create workflow state for InMemory repository
  */
+// biome-ignore lint/suspicious/noExplicitAny: Setup result has complex nested types
 export const createInMemoryWorkflowState = (setupResult: any) => {
   const userInput =
     process.env['DEMO_USER_INPUT'] ||
