@@ -1,10 +1,9 @@
 {
   "extends": "@liam-hq/configs/tsconfig/base.json",
   "compilerOptions": {
-    "target": "ES2022",
-    "allowImportingTsExtensions": true,
-    "moduleResolution": "bundler",
-    "noEmit": true
+    "outDir": "dist",
+    "declaration": true,
+    "target": "ES2022"
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist"]
