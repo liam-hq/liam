@@ -7,9 +7,9 @@ import {
   prepareDmlNode,
   validateSchemaNode,
   webSearchNode,
-} from './chat/workflow/nodes'
-import { createAnnotations } from './chat/workflow/shared/langGraphUtils'
-import { createDbAgentGraph } from './db-agent/createDbAgentGraph'
+} from './chat/workflow/nodes/index.ts'
+import { createAnnotations } from './chat/workflow/shared/langGraphUtils.ts'
+import { createDbAgentGraph } from './db-agent/createDbAgentGraph.ts'
 
 /**
  * Retry policy configuration for all nodes

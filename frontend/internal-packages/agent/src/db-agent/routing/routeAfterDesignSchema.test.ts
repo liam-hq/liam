@@ -1,7 +1,7 @@
 import { AIMessage, HumanMessage } from '@langchain/core/messages'
 import { describe, expect, it } from 'vitest'
-import type { WorkflowState } from '../../chat/workflow/types'
-import { routeAfterDesignSchema } from './routeAfterDesignSchema'
+import type { WorkflowState } from '../../chat/workflow/types.ts'
+import { routeAfterDesignSchema } from './routeAfterDesignSchema.ts'
 
 const workflowState = (messages: WorkflowState['messages']): WorkflowState => ({
   messages,

@@ -4,12 +4,15 @@ import type { Schema } from '@liam-hq/db-structure'
 import type { Result } from 'neverthrow'
 import { err, ok } from 'neverthrow'
 import { v4 as uuidv4 } from 'uuid'
-import { WORKFLOW_ERROR_MESSAGES } from './chat/workflow/constants'
-import { finalizeArtifactsNode } from './chat/workflow/nodes'
-import { DEFAULT_RECURSION_LIMIT } from './chat/workflow/shared/langGraphUtils'
-import type { WorkflowConfigurable, WorkflowState } from './chat/workflow/types'
-import { withTimelineItemSync } from './chat/workflow/utils/withTimelineItemSync'
-import { createGraph } from './createGraph'
+import { WORKFLOW_ERROR_MESSAGES } from './chat/workflow/constants.ts'
+import { finalizeArtifactsNode } from './chat/workflow/nodes/index.ts'
+import { DEFAULT_RECURSION_LIMIT } from './chat/workflow/shared/langGraphUtils.ts'
+import type {
+  WorkflowConfigurable,
+  WorkflowState,
+} from './chat/workflow/types.ts'
+import { withTimelineItemSync } from './chat/workflow/utils/withTimelineItemSync.ts'
+import { createGraph } from './createGraph.ts'
 
 export type DeepModelingParams = {
   userInput: string

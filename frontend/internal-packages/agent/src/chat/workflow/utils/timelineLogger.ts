@@ -1,7 +1,7 @@
 import type { Database } from '@liam-hq/db'
 import { ResultAsync } from 'neverthrow'
-import type { Repositories } from '../../../repositories'
-import type { WorkflowState } from '../types'
+import type { Repositories } from '../../../repositories/index.ts'
+import type { WorkflowState } from '../types.ts'
 
 /**
  * Helper function to create assistant_log timeline items

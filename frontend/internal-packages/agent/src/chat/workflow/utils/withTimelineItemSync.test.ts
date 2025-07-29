@@ -1,8 +1,8 @@
 import { AIMessage, HumanMessage, ToolMessage } from '@langchain/core/messages'
 import type { Database } from '@liam-hq/db'
 import { describe, expect, it, vi } from 'vitest'
-import { InMemoryRepository } from '../../../repositories/InMemoryRepository'
-import { withTimelineItemSync } from './withTimelineItemSync'
+import { InMemoryRepository } from '../../../repositories/InMemoryRepository.ts'
+import { withTimelineItemSync } from './withTimelineItemSync.ts'
 
 describe('withTimelineItemSync', () => {
   const createContext = (

@@ -3,11 +3,11 @@ import type { Database } from '@liam-hq/db'
 import { postgresqlSchemaDeparser } from '@liam-hq/db-structure'
 import { executeQuery } from '@liam-hq/pglite-server'
 import type { SqlResult } from '@liam-hq/pglite-server/src/types'
-import { WORKFLOW_RETRY_CONFIG } from '../constants'
-import { getConfigurable } from '../shared/getConfigurable'
-import type { WorkflowState } from '../types'
-import { logQueryResults } from '../utils/queryResultLogger'
-import { logAssistantMessage } from '../utils/timelineLogger'
+import { WORKFLOW_RETRY_CONFIG } from '../constants.ts'
+import { getConfigurable } from '../shared/getConfigurable.ts'
+import type { WorkflowState } from '../types.ts'
+import { logQueryResults } from '../utils/queryResultLogger.ts'
+import { logAssistantMessage } from '../utils/timelineLogger.ts'
 
 /**
  * Execute DDL Node - Generates DDL from schema and executes it

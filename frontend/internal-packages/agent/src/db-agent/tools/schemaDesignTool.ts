@@ -4,7 +4,7 @@ import type { JSONSchema } from '@langchain/core/utils/json_schema'
 import { operationsSchema } from '@liam-hq/db-structure'
 import { toJsonSchema } from '@valibot/to-json-schema'
 import * as v from 'valibot'
-import { getToolConfigurable } from '../getToolConfigurable'
+import { getToolConfigurable } from '../getToolConfigurable.ts'
 
 const schemaDesignToolSchema = v.object({
   operations: operationsSchema,

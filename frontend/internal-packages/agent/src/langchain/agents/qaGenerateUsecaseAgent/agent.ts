@@ -4,9 +4,9 @@ import { ChatOpenAI } from '@langchain/openai'
 import { dmlOperationSchema } from '@liam-hq/artifact'
 import { v4 as uuidv4 } from 'uuid'
 import * as v from 'valibot'
-import { reasoningSchema } from '../../utils/schema'
-import type { Reasoning } from '../../utils/types'
-import { QA_GENERATE_USECASE_SYSTEM_MESSAGE } from './prompts'
+import { reasoningSchema } from '../../utils/schema.ts'
+import type { Reasoning } from '../../utils/types.ts'
+import { QA_GENERATE_USECASE_SYSTEM_MESSAGE } from './prompts.ts'
 
 // Direct JsonSchema definition instead of using toJsonSchema
 // because the generated schema has subtle incompatibilities with withStructuredOutput
