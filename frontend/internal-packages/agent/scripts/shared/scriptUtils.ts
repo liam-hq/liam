@@ -4,7 +4,7 @@ import type { Schema } from '@liam-hq/db-structure'
 import { config } from 'dotenv'
 import type { Result } from 'neverthrow'
 import { err, errAsync, ok, okAsync, ResultAsync } from 'neverthrow'
-import { createSupabaseRepositories } from '../../src/repositories/factory'
+import { createSupabaseRepositories } from '../../src/repositories/factory.ts'
 
 // Load environment variables from ../../../../../.env
 config({ path: resolve(__dirname, '../../../../../.env') })
