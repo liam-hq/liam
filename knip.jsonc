@@ -12,6 +12,7 @@
     "frontend/apps/docs/source.config.ts",
     // - Generated files may contain unused exports
     "frontend/internal-packages/db/supabase/database.types.ts",
+    "frontend/internal-packages/db/supabase/database.types.d.ts",
     // - Script for workaround
     "frontend/apps/app/scripts/install-prisma-internals.mjs",
     // - Script file which is read from trigger.config.ts

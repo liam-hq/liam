@@ -15,6 +15,7 @@
   },
   "linter": {
     "enabled": true,
+    "includes": ["**", "!**/supabase/database.types.d.ts"],
     "rules": {
       "recommended": true,
       "nursery": {
@@ -74,8 +75,7 @@
         // TODO: Re-enable noDescendingSpecificity after fixing CSS specificity issues
         "noDescendingSpecificity": "off"
       }
-    },
-    "includes": ["**"]
+    }
   },
   "vcs": {
     "enabled": true,
