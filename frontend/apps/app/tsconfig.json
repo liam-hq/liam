@@ -6,7 +6,6 @@
     "allowJs": true,
     "noEmit": true,
     "module": "esnext",
-    "allowImportingTsExtensions": true,
     "noPropertyAccessFromIndexSignature": false,
     "exactOptionalPropertyTypes": false,
     "noUncheckedIndexedAccess": false,
