@@ -1,5 +1,5 @@
 import { PGlite } from '@electric-sql/pglite'
-import type { SqlResult } from './types.ts'
+import type { SqlResult } from './types.js'
 
 /**
  * Manages PGlite database instances with immediate cleanup after query execution

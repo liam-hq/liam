@@ -1,5 +1,5 @@
 import type { RunnableConfig } from '@langchain/core/runnables'
-import { tool } from '@langchain/core/tools'
+import { type DynamicStructuredTool, tool } from '@langchain/core/tools'
 import type { JSONSchema } from '@langchain/core/utils/json_schema'
 import { operationsSchema } from '@liam-hq/db-structure'
 import { toJsonSchema } from '@valibot/to-json-schema'
@@ -14,7 +14,7 @@ const schemaDesignToolSchema = v.object({
 // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
 const toolSchema = toJsonSchema(schemaDesignToolSchema) as JSONSchema
 
-export const schemaDesignTool = tool(
+export const schemaDesignTool: DynamicStructuredTool = tool(
   async (input: unknown, config: RunnableConfig): Promise<string> => {
     const toolConfigurableResult = getToolConfigurable(config)
     if (toolConfigurableResult.isErr()) {

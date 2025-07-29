@@ -96,6 +96,7 @@ For database migration and type generation workflows, see [`docs/migrationOpsCon
 - Use runtime type validation with `valibot` for external data validation
 - Use early returns for readability
 - **ESM Import Extensions**: Check package.json for `"type": "module"` - if present, always include `.ts` extensions in relative imports for proper module resolution
+  - **Agent Package Rule**: The `frontend/internal-packages/agent` package uses ESM modules - ALL relative imports must include explicit `.ts` extensions (e.g., `from './utils.ts'`, `from '../types.ts'`)
 
 ### Code Editing
 - When modifying existing code, write the ideal state without worrying about backward compatibility

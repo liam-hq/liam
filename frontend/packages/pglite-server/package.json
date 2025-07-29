@@ -1,12 +1,13 @@
 {
   "name": "@liam-hq/pglite-server",
+  "description": "TypeScript ESM package for PGlite database instance management",
   "private": true,
   "version": "0.0.0",
   "type": "module",
   "publishConfig": {
     "access": "restricted"
   },
-  "main": "src/index.ts",
+  "main": "dist/index.js",
   "dependencies": {
     "@electric-sql/pglite": "0.3.4"
   },

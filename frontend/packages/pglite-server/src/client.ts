@@ -1,5 +1,5 @@
-import { PGliteInstanceManager } from './PGliteInstanceManager.ts'
-import type { SqlResult } from './types.ts'
+import { PGliteInstanceManager } from './PGliteInstanceManager.js'
+import type { SqlResult } from './types.js'
 
 const manager = new PGliteInstanceManager()
 
