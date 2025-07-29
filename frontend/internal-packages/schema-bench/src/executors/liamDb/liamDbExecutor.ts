@@ -4,10 +4,7 @@ import { DebugCallbackHandler } from '@liam-hq/agent/src/utils/debugCallbackHand
 import type { Schema } from '@liam-hq/db-structure'
 import { aSchema } from '@liam-hq/db-structure'
 import { err, ok, type Result } from 'neverthrow'
-import type {
-  LiamDbExecutorInput,
-  LiamDbExecutorOutput,
-} from './types.ts'
+import type { LiamDbExecutorInput, LiamDbExecutorOutput } from './types.ts'
 
 export async function execute(
   input: LiamDbExecutorInput,
@@ -94,22 +91,22 @@ export async function execute(
 }
 
 function convertSchemaToOutput(schema: Schema): LiamDbExecutorOutput {
-    // biome-ignore lint/suspicious/noExplicitAny: Legacy compatibility with existing output format
-    const tables: Record<string, any> = {}
+  // biome-ignore lint/suspicious/noExplicitAny: Legacy compatibility with existing output format
+  const tables: Record<string, any> = {}
 
-    for (const [tableName, table] of Object.entries(schema.tables)) {
-      tables[tableName] = {
-        name: tableName,
-        columns: table.columns,
-        comment: table.comment,
-        indexes: table.indexes || {},
-        constraints: table.constraints || {},
-      }
+  for (const [tableName, table] of Object.entries(schema.tables)) {
+    tables[tableName] = {
+      name: tableName,
+      columns: table.columns,
+      comment: table.comment,
+      indexes: table.indexes || {},
+      constraints: table.constraints || {},
     }
+  }
 
-    return {
-      tables,
-      message: 'LiamDB executor with deepModeling integration',
-      timestamp: new Date().toISOString(),
-    }
+  return {
+    tables,
+    message: 'LiamDB executor with deepModeling integration',
+    timestamp: new Date().toISOString(),
+  }
 }
