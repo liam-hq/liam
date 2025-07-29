@@ -15,25 +15,25 @@
 }
 
 .wrapper.info {
-  background: var(--info-background);
+  background: var(--toast-info-background);
   border-color: var(--color-teal-800);
   box-shadow: 0 0 20px 0 rgb(247 80 73 / 40%);
 }
 
 .wrapper.error {
-  background: var(--error-background);
+  background: var(--toast-error-background);
   border-color: var(--color-red-500);
   box-shadow: 0 0 20px 0 rgb(247 80 73 / 40%);
 }
 
 .wrapper.success {
-  background: var(--success-background);
+  background: var(--toast-success-background);
   border-color: var(--color-green-400);
   box-shadow: 0 0 20px 0 rgb(29 237 131 / 40%);
 }
 
 .wrapper.warning {
-  background: var(--warning-background);
+  background: var(--toast-warning-background);
   border-color: var(--color-gold-alpha-100);
   box-shadow: 0 0 20px 0 rgb(255 191 54 / 40%);
 }
@@ -65,19 +65,19 @@
 }
 
 .wrapper.info .title {
-  color: var(--info-foreground);
+  color: var(--toast-info-foreground);
 }
 
 .wrapper.error .title {
-  color: var(--error-foreground);
+  color: var(--toast-error-foreground);
 }
 
 .wrapper.success .title {
-  color: var(--success-foreground);
+  color: var(--toast-success-foreground);
 }
 
 .wrapper.warning .title {
-  color: var(--warning-foreground);
+  color: var(--toast-warning-foreground);
 }
 
 .description {
@@ -87,19 +87,19 @@
 }
 
 .wrapper.info .description {
-  color: var(--info-foreground);
+  color: var(--toast-info-foreground);
 }
 
 .wrapper.error .description {
-  color: var(--error-foreground);
+  color: var(--toast-error-foreground);
 }
 
 .wrapper.success .description {
-  color: var(--success-foreground);
+  color: var(--toast-success-foreground);
 }
 
 .wrapper.warning .description {
-  color: var(--warning-foreground);
+  color: var(--toast-warning-foreground);
 }
 
 .viewport {
