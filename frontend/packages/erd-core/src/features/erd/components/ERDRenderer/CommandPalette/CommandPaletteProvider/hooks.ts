@@ -17,3 +17,11 @@ export const useCommandPalette = (): Result<
 
   return ok(commandPaletteValue)
 }
+
+export const useCommandPaletteOrThrow = (): CommandPaletteContextValue => {
+  const result = useCommandPalette()
+  if (result.isErr()) {
+    throw result.error
+  }
+  return result.value
+}
