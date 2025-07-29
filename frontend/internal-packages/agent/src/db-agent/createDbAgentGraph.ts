@@ -2,7 +2,6 @@ import { END, START, StateGraph } from '@langchain/langgraph'
 import { designSchemaNode } from '../chat/workflow/nodes/designSchemaNode'
 import { createAnnotations } from '../chat/workflow/shared/langGraphUtils'
 import { invokeSchemaDesignToolNode } from './nodes/invokeSchemaDesignToolNode'
-import { routeAfterDesignSchema } from './routing/routeAfterDesignSchema'
 
 /**
  * Retry policy configuration for DB Agent nodes
@@ -32,11 +31,8 @@ export const createDbAgentGraph = () => {
     })
 
     .addEdge(START, 'designSchema')
-    .addEdge('invokeSchemaDesignTool', 'designSchema')
-    .addConditionalEdges('designSchema', routeAfterDesignSchema, {
-      invokeSchemaDesignTool: 'invokeSchemaDesignTool',
-      executeDDL: END,
-    })
+    .addEdge('designSchema', 'invokeSchemaDesignTool')
+    .addEdge('invokeSchemaDesignTool', END)
 
   return dbAgentGraph.compile()
 }
