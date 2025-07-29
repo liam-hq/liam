@@ -1,6 +1,9 @@
-// import { deepModeling } from '@liam-hq/agent'
-// import type { Schema } from '@liam-hq/db-structure'
-import { fromPromise, ok } from 'neverthrow'
+import { deepModeling } from '@liam-hq/agent'
+import { InMemoryRepository } from '@liam-hq/agent/src/repositories/InMemoryRepository.ts'
+import { DebugCallbackHandler } from '@liam-hq/agent/src/utils/debugCallbackHandler.ts'
+import type { Schema } from '@liam-hq/db-structure'
+import { aSchema } from '@liam-hq/db-structure'
+import { err, ok } from 'neverthrow'
 import type {
   LiamDbExecutor,
   LiamDbExecutorInput,
@@ -9,65 +12,112 @@ import type {
 
 export class LiamDbExecutorImpl implements LiamDbExecutor {
   async execute(input: LiamDbExecutorInput) {
-    // TODO: Implement actual deepModeling integration
-    // For Phase 1, we're testing the infrastructure with mock data
+    console.info(`Processing input: ${input.input.substring(0, 100)}...`)
 
-    console.log(`Processing business domain: ${input.businessDomain}`)
-    console.log(`Requirements: ${input.requirements.substring(0, 100)}...`)
+    try {
+      // Setup InMemory repository
+      const repositories = {
+        schema: new InMemoryRepository({
+          schemas: {
+            'demo-design-session': aSchema({
+              tables: {},
+            }),
+          },
+          designSessions: {
+            'demo-design-session': {},
+          },
+          workflowRuns: {},
+        }),
+      }
 
-    // Simulate some processing time with neverthrow
-    const delayResult = await fromPromise(
-      new Promise((resolve) => setTimeout(resolve, 1000)),
-      (error) =>
-        error instanceof Error
-          ? error
-          : new Error('Failed to simulate processing delay'),
-    )
+      // Create workflow state
+      const workflowState = {
+        userInput: input.input,
+        messages: [],
+        schemaData: aSchema({ tables: {} }),
+        history: [] satisfies [string, string][],
+        organizationId: 'demo-org-id',
+        buildingSchemaId: 'demo-design-session',
+        latestVersionNumber: 1,
+        designSessionId: 'demo-design-session',
+        userId: 'demo-user-id',
+        retryCount: {},
+      }
 
-    if (delayResult.isErr()) {
-      return delayResult
+      // Setup debug callback
+      const debugCallback = new DebugCallbackHandler({
+        debug: console.debug,
+        // biome-ignore lint/suspicious/noConsole: Required for deep modeling workflow logging
+        log: console.log,
+        info: console.info,
+        warn: console.warn,
+        error: console.error,
+      })
+
+      const config = {
+        configurable: {
+          repositories,
+          logger: {
+            debug: console.debug,
+            // biome-ignore lint/suspicious/noConsole: Required for deep modeling workflow logging
+            log: console.log,
+            info: console.info,
+            warn: console.warn,
+            error: console.error,
+          },
+        },
+        callbacks: [debugCallback],
+      }
+
+      // Execute deep modeling workflow
+      const result = await deepModeling(workflowState, config)
+
+      if (result.isErr()) {
+        return err(new Error(`Deep modeling failed: ${result.error.message}`))
+      }
+
+      const finalWorkflowState = result.value
+
+      // Get the latest schema from repository
+      let finalSchemaData = finalWorkflowState.schemaData
+      const latestSchemaResult = await repositories.schema.getSchema(
+        finalWorkflowState.buildingSchemaId,
+      )
+
+      if (latestSchemaResult.isOk()) {
+        finalSchemaData = latestSchemaResult.value.schema
+      }
+
+      // Convert Schema to LiamDbExecutorOutput format
+      const output: LiamDbExecutorOutput =
+        this.convertSchemaToOutput(finalSchemaData)
+
+      return ok(output)
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : String(error)
+      return err(new Error(`Deep modeling execution failed: ${errorMessage}`))
+    }
+  }
+
+  private convertSchemaToOutput(schema: Schema): LiamDbExecutorOutput {
+    // biome-ignore lint/suspicious/noExplicitAny: Legacy compatibility with existing output format
+    const tables: Record<string, any> = {}
+
+    for (const [tableName, table] of Object.entries(schema.tables)) {
+      tables[tableName] = {
+        name: tableName,
+        columns: table.columns,
+        comment: table.comment,
+        indexes: table.indexes || {},
+        constraints: table.constraints || {},
+      }
     }
 
-    // Return mock output in the expected format
-    const output: LiamDbExecutorOutput = {
-      tables: {
-        users: {
-          name: 'users',
-          columns: {
-            id: {
-              name: 'id',
-              type: 'INTEGER',
-              default: null,
-              check: null,
-              notNull: true,
-              comment: null,
-            },
-            email: {
-              name: 'email',
-              type: 'VARCHAR(255)',
-              default: null,
-              check: null,
-              notNull: true,
-              comment: null,
-            },
-            created_at: {
-              name: 'created_at',
-              type: 'TIMESTAMP',
-              default: 'CURRENT_TIMESTAMP',
-              check: null,
-              notNull: true,
-              comment: null,
-            },
-          },
-          comment: 'User accounts table',
-          indexes: {},
-          constraints: {},
-        },
-      },
-      message: 'LiamDB executor Phase 1 - Infrastructure test successful',
+    return {
+      tables,
+      message: 'LiamDB executor with deepModeling integration',
       timestamp: new Date().toISOString(),
     }
-
-    return ok(output)
   }
 }

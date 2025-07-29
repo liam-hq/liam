@@ -84,18 +84,10 @@ async function loadInputFiles(): Promise<
       )
     }
 
-    // Extract business domain from input if possible, otherwise use generic
-    const inputText = validationResult.output.input
-    const businessDomain = inputText.includes('procurement') ? 'Procurement System' :
-                           inputText.includes('e-commerce') || inputText.includes('E-commerce') ? 'E-commerce Platform' :
-                           inputText.includes('insurance') ? 'Insurance System' :
-                           'Database System'
-
     inputs.push({
       caseId,
       input: {
-        businessDomain,
-        requirements: inputText,
+        input: validationResult.output.input,
       },
     })
   }

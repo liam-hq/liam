@@ -1,8 +1,7 @@
 import type { Result } from 'neverthrow'
 
 export type LiamDbExecutorInput = {
-  businessDomain: string
-  requirements: string
+  input: string
 }
 
 export type LiamDbExecutorOutput = {
