@@ -6,7 +6,7 @@ import type { WorkflowState } from '../../chat/workflow/types.ts'
  */
 export const routeAfterDesignSchema = (
   state: WorkflowState,
-): 'invokeSchemaDesignTool' | 'executeDDL' => {
+): 'invokeSchemaDesignTool' | 'prepareDML' => {
   const { messages } = state
   const lastMessage = messages[messages.length - 1]
 
@@ -14,7 +14,7 @@ export const routeAfterDesignSchema = (
     return 'invokeSchemaDesignTool'
   }
 
-  return 'executeDDL'
+  return 'prepareDML'
 }
 
 /**
