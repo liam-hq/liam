@@ -8,6 +8,8 @@
     "@huggingface/transformers": "3.3.3",
     "@liam-hq/agent": "workspace:*",
     "@liam-hq/db-structure": "workspace:*",
+    "dotenv": "16.5.0",
+    "langsmith": "0.3.44",
     "neverthrow": "8.2.0",
     "openai": "5.9.2",
     "valibot": "1.1.0"

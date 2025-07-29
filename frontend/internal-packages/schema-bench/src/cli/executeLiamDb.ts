@@ -2,7 +2,9 @@
 
 import { existsSync, mkdirSync } from 'node:fs'
 import { readdir, readFile, writeFile } from 'node:fs/promises'
-import { join } from 'node:path'
+import path, { join, resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
+import { config } from 'dotenv'
 import {
   err,
   fromPromise,
@@ -20,6 +22,11 @@ import {
   handleCliError,
   handleUnexpectedError,
 } from './utils/index.ts'
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
+
+config({ path: resolve(__dirname, '../../../../../.env') })
 
 const InputSchema = v.object({
   input: v.string(),
@@ -152,14 +159,14 @@ async function main() {
   }
 
   // Process each case
-  let successCount = 0
+  let _successCount = 0
   let failureCount = 0
 
   for (const { caseId, input } of inputs) {
     const result = await executeCase(caseId, input)
 
     if (result.isOk()) {
-      successCount++
+      _successCount++
     } else {
       failureCount++
       console.error(`❌ ${caseId} failed: ${result.error.message}`)
