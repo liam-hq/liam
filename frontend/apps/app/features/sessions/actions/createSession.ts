@@ -28,6 +28,10 @@ const FormDataSchema = v.object({
   projectId: v.optional(v.nullable(emptyStringToNull)),
   parentDesignSessionId: v.optional(v.nullable(emptyStringToNull)),
   gitSha: v.optional(v.nullable(v.string())),
+  schemaFile: v.optional(v.nullable(v.any())),
+  schemaFormat: v.optional(
+    v.nullable(v.picklist(['schemarb', 'postgres', 'prisma', 'tbls'])),
+  ),
   initialMessage: v.pipe(
     v.string(),
     v.minLength(1, 'Initial message is required'),
@@ -59,6 +63,8 @@ function parseFormData(
     projectId: formData.get('projectId'),
     parentDesignSessionId: formData.get('parentDesignSessionId'),
     gitSha: formData.get('gitSha'),
+    schemaFile: formData.get('schemaFile'),
+    schemaFormat: formData.get('schemaFormat'),
     initialMessage: formData.get('initialMessage'),
   }
 
@@ -183,6 +189,29 @@ async function processSchema(
   }
 }
 
+async function processUploadedSchema(
+  schemaFile: File,
+  schemaFormat: SchemaFilePathData['format'],
+): Promise<
+  { schema: Schema; schemaFilePath: string | null } | CreateSessionState
+> {
+  try {
+    const content = await schemaFile.text()
+    const schemaResult = await parseSchemaFromContent(content, schemaFormat)
+    if ('success' in schemaResult) {
+      return schemaResult
+    }
+
+    return {
+      schema: schemaResult,
+      schemaFilePath: schemaFile.name,
+    }
+  } catch (error) {
+    console.error('Error processing uploaded schema:', error)
+    return { success: false, error: 'Failed to process uploaded schema file' }
+  }
+}
+
 export async function createSession(
   _prevState: CreateSessionState,
   formData: FormData,
@@ -192,8 +221,14 @@ export async function createSession(
     return { success: false, error: 'Invalid form data' }
   }
 
-  const { projectId, parentDesignSessionId, gitSha, initialMessage } =
-    parsedFormDataResult.output
+  const {
+    projectId,
+    parentDesignSessionId,
+    gitSha,
+    schemaFile,
+    schemaFormat,
+    initialMessage,
+  } = parsedFormDataResult.output
 
   const supabase = await createClient()
   const currentUserId = await getCurrentUserId(supabase)
@@ -232,8 +267,17 @@ export async function createSession(
     return { success: false, error: 'Failed to create design session' }
   }
 
-  // Process schema
-  const schemaResult = await processSchema(project, gitSha, supabase)
+  // Process schema - either from uploaded file or GitHub repository
+  let schemaResult:
+    | { schema: Schema; schemaFilePath: string | null }
+    | CreateSessionState
+
+  if (schemaFile && schemaFormat) {
+    schemaResult = await processUploadedSchema(schemaFile, schemaFormat)
+  } else {
+    schemaResult = await processSchema(project, gitSha, supabase)
+  }
+
   if ('success' in schemaResult) {
     return schemaResult
   }
