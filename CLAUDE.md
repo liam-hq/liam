@@ -95,6 +95,7 @@ For database migration and type generation workflows, see [`docs/migrationOpsCon
 ### TypeScript Standards
 - Use runtime type validation with `valibot` for external data validation
 - Use early returns for readability
+- **ESM Import Extensions**: Check package.json for `"type": "module"` - if present, always include `.ts` extensions in relative imports for proper module resolution
 
 ### Code Editing
 - When modifying existing code, write the ideal state without worrying about backward compatibility

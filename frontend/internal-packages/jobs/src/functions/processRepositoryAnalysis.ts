@@ -2,7 +2,14 @@ import { Document } from '@langchain/core/documents'
 import { OpenAIEmbeddings } from '@langchain/openai'
 import { getFileContent } from '@liam-hq/github'
 import { logger } from '@trigger.dev/sdk/v3'
-import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
+import {
+  err,
+  errAsync,
+  ok,
+  okAsync,
+  type Result,
+  ResultAsync,
+} from 'neverthrow'
 import { createClient } from '../libs/supabase'
 
 export type RepositoryAnalysisPayload = {

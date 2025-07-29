@@ -22,8 +22,8 @@ import {
   setupDatabaseAndUser,
   showHelp,
   validateEnvironment,
-} from './shared/scriptUtils'
-import { processStreamChunk } from './shared/streamingUtils'
+} from './shared/scriptUtils.ts'
+import { processStreamChunk } from './shared/streamingUtils.ts'
 
 const currentLogLevel = getLogLevel()
 const logger = createLogger(currentLogLevel)

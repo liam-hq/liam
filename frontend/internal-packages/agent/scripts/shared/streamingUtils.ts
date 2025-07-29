@@ -1,6 +1,6 @@
-import { isMessageContentError } from '../../src/chat/workflow/utils/toolMessageUtils'
-import { hasProperty, isObject } from './scriptUtils'
-import type { Logger } from './types'
+import { isMessageContentError } from '../../src/chat/workflow/utils/toolMessageUtils.ts'
+import { hasProperty, isObject } from './scriptUtils.ts'
+import type { Logger } from './types.ts'
 
 // Helper function to extract message type
 const getMessageType = (lastMessage: unknown): string => {

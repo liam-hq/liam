@@ -2,7 +2,7 @@ import type { Schema } from '@liam-hq/db-structure'
 import {
   createSupabaseVectorStore,
   isSchemaUpdated,
-} from './supabaseVectorStore'
+} from './supabaseVectorStore.ts'
 
 /**
  * Validates required environment variables

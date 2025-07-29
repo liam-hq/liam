@@ -2,7 +2,7 @@ import { type BaseMessage, SystemMessage } from '@langchain/core/messages'
 import type { Runnable } from '@langchain/core/runnables'
 import { ChatOpenAI } from '@langchain/openai'
 import * as v from 'valibot'
-import { PM_ANALYSIS_SYSTEM_MESSAGE } from './prompts'
+import { PM_ANALYSIS_SYSTEM_MESSAGE } from './prompts.ts'
 
 // Direct JsonSchema definition instead of using toJsonSchema
 // because the generated schema has subtle incompatibilities with withStructuredOutput

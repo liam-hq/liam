@@ -1,9 +1,9 @@
 import type { RunnableConfig } from '@langchain/core/runnables'
 import { aColumn, aSchema, aTable } from '@liam-hq/db-structure'
 import { describe, expect, it, vi } from 'vitest'
-import type { Repositories } from '../../repositories'
-import { InMemoryRepository } from '../../repositories/InMemoryRepository'
-import { schemaDesignTool } from './schemaDesignTool'
+import { InMemoryRepository } from '../../repositories/InMemoryRepository.ts'
+import type { Repositories } from '../../repositories/index.ts'
+import { schemaDesignTool } from './schemaDesignTool.ts'
 
 describe('schemaDesignTool', () => {
   const createMockConfig = (

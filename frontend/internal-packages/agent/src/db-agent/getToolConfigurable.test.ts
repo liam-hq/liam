@@ -1,8 +1,8 @@
 import type { RunnableConfig } from '@langchain/core/runnables'
 import { describe, expect, it, vi } from 'vitest'
-import type { Repositories } from '../repositories'
-import { InMemoryRepository } from '../repositories/InMemoryRepository'
-import { getToolConfigurable } from './getToolConfigurable'
+import { InMemoryRepository } from '../repositories/InMemoryRepository.ts'
+import type { Repositories } from '../repositories/index.ts'
+import { getToolConfigurable } from './getToolConfigurable.ts'
 
 describe('getToolConfigurable', () => {
   const repositories: Repositories = {

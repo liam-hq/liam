@@ -1,12 +1,12 @@
 import { HumanMessage } from '@langchain/core/messages'
 import type { RunnableConfig } from '@langchain/core/runnables'
 import type { Database } from '@liam-hq/db'
-import { invokeDesignAgent } from '../../../langchain/agents/databaseSchemaBuildAgent/agent'
-import { convertSchemaToText } from '../../../utils/convertSchemaToText'
-import { getConfigurable } from '../shared/getConfigurable'
-import type { WorkflowState } from '../types'
-import { logAssistantMessage } from '../utils/timelineLogger'
-import { withTimelineItemSync } from '../utils/withTimelineItemSync'
+import { invokeDesignAgent } from '../../../langchain/agents/databaseSchemaBuildAgent/agent.ts'
+import { convertSchemaToText } from '../../../utils/convertSchemaToText.ts'
+import { getConfigurable } from '../shared/getConfigurable.ts'
+import type { WorkflowState } from '../types.ts'
+import { logAssistantMessage } from '../utils/timelineLogger.ts'
+import { withTimelineItemSync } from '../utils/withTimelineItemSync.ts'
 
 /**
  * Design Schema Node - DB Design & DDL Execution

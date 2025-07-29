@@ -1,5 +1,5 @@
 import type { BaseMessage } from '@langchain/core/messages'
-import type { WorkflowState } from '../../chat/workflow/types'
+import type { WorkflowState } from '../../chat/workflow/types.ts'
 
 /**
  * Determines the next node based on whether the last message contains tool calls

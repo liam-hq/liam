@@ -2,7 +2,7 @@ import { type BaseMessage, SystemMessage } from '@langchain/core/messages'
 import { ChatOpenAI } from '@langchain/openai'
 import { toJsonSchema } from '@valibot/to-json-schema'
 import * as v from 'valibot'
-import { QA_GENERATE_USECASE_SYSTEM_MESSAGE } from './prompts'
+import { QA_GENERATE_USECASE_SYSTEM_MESSAGE } from './prompts.ts'
 
 // Single usecase schema
 const usecaseSchema = v.object({

@@ -1,11 +1,11 @@
 import type { RunnableConfig } from '@langchain/core/runnables'
 import type { Database } from '@liam-hq/db'
-import { DMLGenerationAgent } from '../../../langchain/agents/dmlGenerationAgent/agent'
-import type { Usecase } from '../../../langchain/agents/qaGenerateUsecaseAgent/agent'
-import { convertSchemaToText } from '../../../utils/convertSchemaToText'
-import { getConfigurable } from '../shared/getConfigurable'
-import type { WorkflowState } from '../types'
-import { logAssistantMessage } from '../utils/timelineLogger'
+import { DMLGenerationAgent } from '../../../langchain/agents/dmlGenerationAgent/agent.ts'
+import type { Usecase } from '../../../langchain/agents/qaGenerateUsecaseAgent/agent.ts'
+import { convertSchemaToText } from '../../../utils/convertSchemaToText.ts'
+import { getConfigurable } from '../shared/getConfigurable.ts'
+import type { WorkflowState } from '../types.ts'
+import { logAssistantMessage } from '../utils/timelineLogger.ts'
 
 /**
  * Format use cases into a structured string for DML generation

@@ -8,10 +8,10 @@ import {
   prepareDmlNode,
   validateSchemaNode,
   webSearchNode,
-} from './chat/workflow/nodes'
-import { createAnnotations } from './chat/workflow/shared/langGraphUtils'
-import { invokeSchemaDesignToolNode } from './db-agent/nodes/invokeSchemaDesignToolNode'
-import { routeAfterDesignSchema } from './db-agent/routing/routeAfterDesignSchema'
+} from './chat/workflow/nodes/index.ts'
+import { createAnnotations } from './chat/workflow/shared/langGraphUtils.ts'
+import { invokeSchemaDesignToolNode } from './db-agent/nodes/invokeSchemaDesignToolNode.ts'
+import { routeAfterDesignSchema } from './db-agent/routing/routeAfterDesignSchema.ts'
 
 /**
  * Retry policy configuration for all nodes

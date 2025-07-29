@@ -15,8 +15,8 @@ import {
   setupDatabaseAndUser,
   showHelp,
   validateEnvironment,
-} from './shared/scriptUtils'
-import type { Logger } from './shared/types'
+} from './shared/scriptUtils.ts'
+import type { Logger } from './shared/types.ts'
 
 const currentLogLevel = getLogLevel()
 const logger = createLogger(currentLogLevel)
@@ -111,7 +111,6 @@ const executeDeepModelingProcess = async (): Promise<Result<void, Error>> => {
     currentLogLevel,
     finalWorkflowState.error,
   )
-
   if (finalWorkflowState.error) {
     return err(finalWorkflowState.error)
   }
