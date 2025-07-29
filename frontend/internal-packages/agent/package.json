@@ -32,7 +32,7 @@
     "vitest": "3.2.4"
   },
   "scripts": {
-    "dev": "tsc --watch",
+    "dev": "tsc --watch --noEmit",
     "execute-deep-modeling": "tsx scripts/executeDeepModelingProcess.ts",
     "execute-deep-modeling:debug": "tsx scripts/executeDeepModelingProcess.ts --log-level=DEBUG",
     "execute-deep-modeling:warn": "tsx scripts/executeDeepModelingProcess.ts --log-level=WARN",
