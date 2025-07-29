@@ -20,7 +20,7 @@
   justify-content: center;
   color: var(--severity-warning-100);
   /* Align with text center */
-  margin-top: 4px;
+  margin-top: var(--spacing-1);
 }
 
 .warningText {
