@@ -125,33 +125,38 @@ async function executeWebSearch(
   const logMessage = createSearchLogMessage(searchDecision)
   await logAssistantMessage(state, repositories, logMessage, assistantRole)
 
-  const webSearchResults = await webSearchTool({
+  const webSearchResult = await webSearchTool({
     needsIndustryKnowledge: searchDecision?.needsIndustryKnowledge || false,
     searchQueries: searchDecision?.searchQueries || [],
     urls: searchDecision?.urls || [],
   })
 
-  let consolidatedMessage: AIMessage | undefined = undefined
-  if (webSearchResults) {
-    // Create consolidated message with formatted search results
-    const formattedResults = formatSearchResults(webSearchResults)
+  return webSearchResult.match(
+    async (webSearchResults) => {
+      // Create consolidated message with formatted search results
+      const formattedResults = formatSearchResults(webSearchResults)
 
-    consolidatedMessage = await withTimelineItemSync(
-      new AIMessage({
-        content: formattedResults,
-        name: 'WebSearchAgent',
-      }),
-      {
-        designSessionId: state.designSessionId,
-        organizationId: state.organizationId || '',
-        userId: state.userId,
-        repositories,
-        assistantRole,
-      },
-    )
-  }
+      const consolidatedMessage = await withTimelineItemSync(
+        new AIMessage({
+          content: formattedResults,
+          name: 'WebSearchAgent',
+        }),
+        {
+          designSessionId: state.designSessionId,
+          organizationId: state.organizationId || '',
+          userId: state.userId,
+          repositories,
+          assistantRole,
+        },
+      )
 
-  return { consolidatedMessage }
+      return { consolidatedMessage }
+    },
+    async (_error) => {
+      // Return undefined message on search failure
+      return { consolidatedMessage: undefined }
+    },
+  )
 }
 
 /**

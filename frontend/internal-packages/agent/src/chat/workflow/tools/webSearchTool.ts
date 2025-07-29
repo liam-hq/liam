@@ -12,9 +12,9 @@ type SearchOptions = {
  * Pure web search tool
  * Performs web search with customizable search strategy
  */
-export async function webSearchTool(
+export function webSearchTool(
   options: SearchOptions = {},
-): Promise<string | undefined> {
+): ResultAsync<string, Error> {
   const {
     needsIndustryKnowledge = false,
     searchQueries = [],
@@ -56,20 +56,12 @@ export async function webSearchTool(
   searchPrompt +=
     '\n\nReturn only the raw information found, not interpretations or solutions.'
 
-  const searchResult = await ResultAsync.fromPromise(
+  return ResultAsync.fromPromise(
     searchLlm.invoke([new SystemMessage(searchPrompt)]),
     (error) => (error instanceof Error ? error : new Error(String(error))),
-  )
-
-  return searchResult.match(
-    (result) => {
-      return typeof result.content === 'string'
-        ? result.content
-        : JSON.stringify(result.content)
-    },
-    (_error) => {
-      // Return undefined on search failure
-      return undefined
-    },
-  )
+  ).map((result) => {
+    return typeof result.content === 'string'
+      ? result.content
+      : JSON.stringify(result.content)
+  })
 }
