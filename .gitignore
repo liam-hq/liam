@@ -11,6 +11,10 @@ dist/
 benchmark-workspace/
 coverage/
 
+# Supabase generated files
+**/supabase/database.types.d.ts
+**/supabase/database.types.ts
+
 # Claude local settings
 .claude/settings.local.json
 
