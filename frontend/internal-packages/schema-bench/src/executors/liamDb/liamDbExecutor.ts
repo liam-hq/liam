@@ -106,7 +106,5 @@ function convertSchemaToOutput(schema: Schema): LiamDbExecutorOutput {
 
   return {
     tables,
-    message: 'LiamDB executor with deepModeling integration',
-    timestamp: new Date().toISOString(),
   }
 }

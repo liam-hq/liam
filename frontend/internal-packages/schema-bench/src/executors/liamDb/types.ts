@@ -7,8 +7,6 @@ export type LiamDbExecutorInput = {
 export type LiamDbExecutorOutput = {
   // biome-ignore lint/suspicious/noExplicitAny: Need flexible table structure for Phase 1
   tables: Record<string, any>
-  message: string
-  timestamp: string
 }
 
 export type LiamDbExecutor = {
