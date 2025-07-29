@@ -1,3 +1,3 @@
-export * from './deepModeling.ts'
-export * from './repositories/index.ts'
-export * from './utils/nodeLogger.ts'
+export * from './deepModeling.js'
+export * from './repositories/index.js'
+export * from './utils/nodeLogger.js'

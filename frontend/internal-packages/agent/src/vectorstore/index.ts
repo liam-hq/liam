@@ -1,2 +1,2 @@
-export * from './supabaseVectorStore.ts'
-export * from './syncSchemaVectorStore.ts'
+export * from './supabaseVectorStore.js'
+export * from './syncSchemaVectorStore.js'

@@ -1,1 +1,1 @@
-export * from './schemas/artifact.ts'
+export * from './schemas/artifact.js'

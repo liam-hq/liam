@@ -1,1 +1,1 @@
-export { PMAnalysisAgent } from './agent.ts'
+export { PMAnalysisAgent } from './agent.js'

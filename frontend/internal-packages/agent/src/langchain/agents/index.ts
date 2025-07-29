@@ -1,2 +1,2 @@
-export { PMAnalysisAgent } from './pmAnalysisAgent/index.ts'
-export { QAGenerateUsecaseAgent } from './qaGenerateUsecaseAgent/index.ts'
+export { PMAnalysisAgent } from './pmAnalysisAgent/index.js'
+export { QAGenerateUsecaseAgent } from './qaGenerateUsecaseAgent/index.js'
