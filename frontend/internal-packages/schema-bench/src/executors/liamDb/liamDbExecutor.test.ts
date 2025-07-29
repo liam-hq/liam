@@ -11,10 +11,6 @@ vi.mock('@liam-hq/agent/src/repositories/InMemoryRepository.ts', () => ({
   InMemoryRepository: vi.fn(),
 }))
 
-vi.mock('@liam-hq/agent/src/utils/debugCallbackHandler.ts', () => ({
-  DebugCallbackHandler: vi.fn(),
-}))
-
 describe('liamDbExecutor', () => {
   it('should export execute function', () => {
     expect(typeof execute).toBe('function')
