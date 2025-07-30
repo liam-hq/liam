@@ -62,9 +62,15 @@ Please fix this issue by analyzing the schema and adding any missing constraints
       'Unable to complete the database design. There may be conflicts in the requirements...',
       assistantRole,
     )
+
+    const currentRetryCount = state.retryCount['designSchema'] ?? 0
     return {
       ...state,
       error: invokeResult.error,
+      retryCount: {
+        ...state.retryCount,
+        ['designSchema']: currentRetryCount + 1,
+      },
     }
   }
 
