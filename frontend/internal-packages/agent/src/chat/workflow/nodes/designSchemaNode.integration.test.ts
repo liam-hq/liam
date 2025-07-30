@@ -206,43 +206,29 @@ describe('designSchemaNode -> executeDdlNode integration', () => {
 
     const initialState = createMockState(initialSchema)
 
-    // Step 1: Design schema (should fail during agent invocation)
-    const result = await designSchemaNode(initialState, createMockConfig())
-
-    // Verify error handling
-    expect(result.error).toBeInstanceOf(Error)
-    expect(result.error?.message).toBe('Agent invocation failed')
-    expect(result.schemaData).toEqual(initialSchema)
+    // Step 1: Design schema (should throw exception during agent invocation)
+    await expect(
+      designSchemaNode(initialState, createMockConfig()),
+    ).rejects.toThrow('Agent invocation failed')
   })
 
   it('should handle repository errors gracefully', async () => {
     const initialSchema: Schema = { tables: {} }
 
-    // Mock AI agent response
+    // Mock AI agent invocation failure
     const { invokeDesignAgent } = await import(
       '../../../langchain/agents/databaseSchemaBuildAgent/agent'
     )
     const mockInvokeDesignAgent = vi.mocked(invokeDesignAgent)
-    mockInvokeDesignAgent.mockResolvedValue(
-      ok({
-        response: new AIMessage('Repository will fail'),
-        reasoning: null,
-      }),
-    )
-
-    // Mock agent invocation failure
     mockInvokeDesignAgent.mockResolvedValue(
       err(new Error('Agent invocation failed')),
     )
 
     const initialState = createMockState(initialSchema)
 
-    // Step 1: Design schema (should fail at agent level)
-    const result = await designSchemaNode(initialState, createMockConfig())
-
-    // Verify error handling
-    expect(result.error).toBeInstanceOf(Error)
-    expect(result.error?.message).toBe('Agent invocation failed')
-    expect(result.schemaData).toEqual(initialSchema)
+    // Step 1: Design schema (should throw exception at agent level)
+    await expect(
+      designSchemaNode(initialState, createMockConfig()),
+    ).rejects.toThrow('Agent invocation failed')
   })
 })
