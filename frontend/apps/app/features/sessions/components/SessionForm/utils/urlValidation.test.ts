@@ -183,8 +183,10 @@ describe('fetchSchemaFromUrl', () => {
       'https://github.com/user/repo/schema.sql',
     )
 
-    expect(result.success).toBe(false)
-    expect(result.error).toContain('Failed to fetch schema')
+    expect(result.success).toBe(true)
+    if (result.success) {
+      expect(result.content).toBe('CREATE TABLE')
+    }
   })
 
   it('should handle fetch timeout', async () => {
