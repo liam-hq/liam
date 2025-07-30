@@ -632,15 +632,27 @@ importers:
       '@huggingface/transformers':
         specifier: 3.3.3
         version: 3.3.3
+      '@liam-hq/agent':
+        specifier: workspace:*
+        version: link:../agent
       '@liam-hq/db-structure':
         specifier: workspace:*
         version: link:../../packages/db-structure
+      dotenv:
+        specifier: 16.5.0
+        version: 16.5.0
+      langsmith:
+        specifier: 0.3.44
+        version: 0.3.44(@opentelemetry/api@1.9.0)(@opentelemetry/exporter-trace-otlp-proto@0.52.1(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-trace-base@1.30.1(@opentelemetry/api@1.9.0))(openai@5.9.2(ws@8.18.3)(zod@3.25.76))
       neverthrow:
         specifier: 8.2.0
         version: 8.2.0
       openai:
         specifier: 5.9.2
         version: 5.9.2(ws@8.18.3)(zod@3.25.76)
+      tsx:
+        specifier: 4.20.3
+        version: 4.20.3
       valibot:
         specifier: 1.1.0
         version: 1.1.0(typescript@5.8.3)
@@ -19440,7 +19452,7 @@ snapshots:
       isstream: 0.1.2
       jsonwebtoken: 9.0.2
       mime-types: 2.1.35
-      retry-axios: 2.6.0(axios@1.11.0(debug@4.4.1))
+      retry-axios: 2.6.0(axios@1.11.0)
       tough-cookie: 4.1.4
     transitivePeerDependencies:
       - supports-color
@@ -22195,7 +22207,7 @@ snapshots:
       onetime: 7.0.0
       signal-exit: 4.1.0
 
-  retry-axios@2.6.0(axios@1.11.0(debug@4.4.1)):
+  retry-axios@2.6.0(axios@1.11.0):
     dependencies:
       axios: 1.11.0(debug@4.4.1)
 
