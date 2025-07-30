@@ -1,4 +1,4 @@
-import { AIMessage } from '@langchain/core/messages'
+import { HumanMessage } from '@langchain/core/messages'
 import type { RunnableConfig } from '@langchain/core/runnables'
 import type { Database } from '@liam-hq/db'
 import { invokeDesignAgent } from '../../../langchain/agents/databaseSchemaBuildAgent/agent'
@@ -66,28 +66,16 @@ export async function designSchemaNode(
 
     await logAssistantMessage(state, repositories, errorMessage, assistantRole)
 
-    // Create an error message for the AI to learn from
-    const aiErrorMessage = new AIMessage({
-      content: `Previous attempt failed with error: ${invokeResult.error.message}. Please adjust your approach and try a different strategy to resolve the conflicts in the requirements.`,
-      additional_kwargs: {
-        role: assistantRole,
-        error: true,
-      },
+    // Create a human message for error feedback to avoid reasoning API issues
+    // Using HumanMessage prevents the "reasoning without required following item" error
+    const errorFeedbackMessage = new HumanMessage({
+      content: `The previous attempt failed with the following error: ${invokeResult.error.message}. Please try a different approach to resolve the issue.`,
     })
 
-    // Apply timeline sync to the error message
-    const syncedErrorMessage = await withTimelineItemSync(aiErrorMessage, {
-      designSessionId: state.designSessionId,
-      organizationId: state.organizationId || '',
-      userId: state.userId,
-      repositories,
-      assistantRole,
-    })
-
-    // Return state with error message added for self-recovery
+    // Return state with error feedback as HumanMessage for self-recovery
     return {
       ...state,
-      messages: [...state.messages, syncedErrorMessage],
+      messages: [...state.messages, errorFeedbackMessage],
       error: invokeResult.error,
       retryCount: {
         ...state.retryCount,
