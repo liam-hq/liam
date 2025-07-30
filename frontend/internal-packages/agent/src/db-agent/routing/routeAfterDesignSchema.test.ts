@@ -112,4 +112,100 @@ describe('routeAfterDesignSchema', () => {
 
     expect(result).toBe('invokeSchemaDesignTool')
   })
+
+  it('should return executeDDL when state has error', () => {
+    const messageWithToolCalls = new AIMessage({
+      content: 'I need to update the schema',
+      tool_calls: [
+        {
+          name: 'schemaDesignTool',
+          args: { operations: [] },
+          id: 'test-id',
+        },
+      ],
+    })
+
+    const state = {
+      ...workflowState([messageWithToolCalls]),
+      error: new Error('AI agent failed with 400 error'),
+    }
+    const result = routeAfterDesignSchema(state)
+
+    expect(result).toBe('executeDDL')
+  })
+
+  it('should return executeDDL when retry count exceeds limit', () => {
+    const messageWithToolCalls = new AIMessage({
+      content: 'I need to update the schema',
+      tool_calls: [
+        {
+          name: 'schemaDesignTool',
+          args: { operations: [] },
+          id: 'test-id',
+        },
+      ],
+    })
+
+    const state = {
+      ...workflowState([messageWithToolCalls]),
+      retryCount: { designSchema: 3 },
+    }
+    const result = routeAfterDesignSchema(state)
+
+    expect(result).toBe('executeDDL')
+  })
+
+  it('should return executeDDL when schema data has empty tables and retry count > 0', () => {
+    const messageWithToolCalls = new AIMessage({
+      content: 'I need to update the schema',
+      tool_calls: [
+        {
+          name: 'schemaDesignTool',
+          args: { operations: [] },
+          id: 'test-id',
+        },
+      ],
+    })
+
+    const state = {
+      ...workflowState([messageWithToolCalls]),
+      schemaData: { tables: {} },
+      retryCount: { designSchema: 1 },
+    }
+    const result = routeAfterDesignSchema(state)
+
+    expect(result).toBe('executeDDL')
+  })
+
+  it('should return invokeSchemaDesignTool when no error conditions and has tool calls', () => {
+    const messageWithToolCalls = new AIMessage({
+      content: 'I need to update the schema',
+      tool_calls: [
+        {
+          name: 'schemaDesignTool',
+          args: { operations: [] },
+          id: 'test-id',
+        },
+      ],
+    })
+
+    const state = {
+      ...workflowState([messageWithToolCalls]),
+      schemaData: {
+        tables: {
+          users: {
+            name: 'users',
+            columns: {},
+            comment: null,
+            indexes: {},
+            constraints: {},
+          },
+        },
+      },
+      retryCount: { designSchema: 1 },
+    }
+    const result = routeAfterDesignSchema(state)
+
+    expect(result).toBe('invokeSchemaDesignTool')
+  })
 })
