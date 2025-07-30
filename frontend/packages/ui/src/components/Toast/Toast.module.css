@@ -76,10 +76,19 @@
 
 .viewport {
   position: fixed;
-  top: var(--spacing-16);
-  right: var(--spacing-4);
   z-index: var(--z-index-toast);
   display: flex;
   flex-direction: column;
   gap: var(--spacing-4);
+}
+
+.viewport.header {
+  top: var(--spacing-16);
+  right: var(--spacing-4);
+}
+
+.viewport.commandPalette {
+  top: calc(50% + 266px);
+  left: 50%;
+  transform: translateX(-50%);
 }
