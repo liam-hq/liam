@@ -46,7 +46,12 @@ export const schemaDesignTool = tool(
       )
     }
 
-    return 'Schema successfully updated. The operations have been applied to the database schema.'
+    return JSON.stringify({
+      message:
+        'Schema successfully updated. The operations have been applied to the database schema.',
+      schemaData: result.newSchema,
+      latestVersionNumber: latestVersionNumber + 1,
+    })
   },
   {
     name: 'schemaDesignTool',

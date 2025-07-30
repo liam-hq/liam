@@ -5,6 +5,12 @@ import type { Repositories } from '../../repositories'
 import { InMemoryRepository } from '../../repositories/InMemoryRepository'
 import { schemaDesignTool } from './schemaDesignTool'
 
+type ToolResponse = {
+  message: string
+  schemaData: unknown
+  latestVersionNumber: number
+}
+
 describe('schemaDesignTool', () => {
   const createMockConfig = (
     buildingSchemaId: string,
@@ -61,9 +67,12 @@ describe('schemaDesignTool', () => {
 
     const result = await schemaDesignTool.invoke(input, config)
 
-    expect(result).toBe(
+    const parsedResult: ToolResponse = JSON.parse(result)
+    expect(parsedResult.message).toBe(
       'Schema successfully updated. The operations have been applied to the database schema.',
     )
+    expect(parsedResult.schemaData).toBeDefined()
+    expect(parsedResult.latestVersionNumber).toBe(2)
 
     // Verify the schema was actually updated in the repository by schemaDesignTool
     const schemaResult = await repositories.schema.getSchema('test-schema')
@@ -157,8 +166,11 @@ describe('schemaDesignTool', () => {
 
     const result = await schemaDesignTool.invoke(input, config)
 
-    expect(result).toBe(
+    const parsedResult: ToolResponse = JSON.parse(result)
+    expect(parsedResult.message).toBe(
       'Schema successfully updated. The operations have been applied to the database schema.',
     )
+    expect(parsedResult.schemaData).toBeDefined()
+    expect(parsedResult.latestVersionNumber).toBe(2)
   })
 })

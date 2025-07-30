@@ -3,11 +3,11 @@ import { ToolMessage } from '@langchain/core/messages'
 import type { RunnableConfig } from '@langchain/core/runnables'
 import { ToolNode } from '@langchain/langgraph/prebuilt'
 import type { Schema } from '@liam-hq/db-structure'
-import type { ResultAsync } from 'neverthrow'
+import { errAsync, okAsync, type ResultAsync } from 'neverthrow'
+import * as v from 'valibot'
 import { getConfigurable } from '../../chat/workflow/shared/getConfigurable'
 import type { WorkflowState } from '../../chat/workflow/types'
 import { withTimelineItemSync } from '../../chat/workflow/utils/withTimelineItemSync'
-import type { Repositories } from '../../repositories'
 import { schemaDesignTool } from '../tools/schemaDesignTool'
 
 /**
@@ -17,32 +17,48 @@ const isToolMessage = (message: BaseMessage): message is ToolMessage => {
   return message instanceof ToolMessage
 }
 
+const toolResponseSchema = v.object({
+  message: v.string(),
+  schemaData: v.any(),
+  latestVersionNumber: v.number(),
+})
+
 /**
- * Check if schemaDesignTool was executed successfully
+ * Check if schemaDesignTool was executed successfully and extract schema data
  */
-const wasSchemaDesignToolSuccessful = (messages: BaseMessage[]): boolean => {
+const extractSchemaDataFromToolResult = (
+  messages: BaseMessage[],
+): ResultAsync<{ schemaData: Schema; latestVersionNumber: number }, Error> => {
   const toolMessages = messages.filter(isToolMessage)
-  return toolMessages.some(
+  const schemaToolMessage = toolMessages.find(
     (msg) =>
       msg.name === 'schemaDesignTool' &&
       typeof msg.content === 'string' &&
       msg.content.includes('Schema successfully updated'),
   )
-}
 
-/**
- * Fetch updated schema safely using ResultAsync
- */
-const fetchUpdatedSchemaWithResult = (
-  repositories: Repositories,
-  designSessionId: string,
-): ResultAsync<{ schema: Schema; latestVersionNumber: number }, Error> => {
-  return repositories.schema
-    .getSchema(designSessionId)
-    .map(({ schema, latestVersionNumber }) => ({
-      schema,
-      latestVersionNumber,
-    }))
+  if (!schemaToolMessage) {
+    return errAsync(
+      new Error('Schema design tool was not executed successfully'),
+    )
+  }
+
+  if (typeof schemaToolMessage.content !== 'string') {
+    return errAsync(new Error('Tool message content is not a string'))
+  }
+
+  return okAsync(schemaToolMessage.content)
+    .andThen((content) => {
+      const parseResult = v.safeParse(toolResponseSchema, JSON.parse(content))
+      if (!parseResult.success) {
+        return errAsync(new Error('Invalid tool response format'))
+      }
+      return okAsync({
+        schemaData: parseResult.output.schemaData,
+        latestVersionNumber: parseResult.output.latestVersionNumber,
+      })
+    })
+    .orElse(() => errAsync(new Error('Failed to parse tool response')))
 }
 
 export const invokeSchemaDesignToolNode = async (
@@ -92,25 +108,13 @@ export const invokeSchemaDesignToolNode = async (
     messages: syncedMessages,
   }
 
-  if (wasSchemaDesignToolSuccessful(syncedMessages)) {
-    // Fetch the updated schema from database
-    const schemaResult = await fetchUpdatedSchemaWithResult(
-      repositories,
-      state.designSessionId,
-    )
-
-    if (schemaResult.isOk()) {
-      // Update workflow state with fresh schema data
-      updatedResult = {
-        ...updatedResult,
-        schemaData: schemaResult.value.schema,
-        latestVersionNumber: schemaResult.value.latestVersionNumber,
-      }
-    } else {
-      console.warn(
-        'Failed to fetch updated schema after tool execution:',
-        schemaResult.error,
-      )
+  const schemaResult = await extractSchemaDataFromToolResult(syncedMessages)
+  if (schemaResult.isOk()) {
+    // Update workflow state with schema data from tool response
+    updatedResult = {
+      ...updatedResult,
+      schemaData: schemaResult.value.schemaData,
+      latestVersionNumber: schemaResult.value.latestVersionNumber,
     }
   }
 
