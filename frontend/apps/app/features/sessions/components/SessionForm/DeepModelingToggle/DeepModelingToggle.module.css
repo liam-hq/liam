@@ -146,3 +146,7 @@
   background-color: var(--primary-overlay-20);
   color: var(--primary-color);
 }
+
+.hiddenInput {
+  display: none;
+}

@@ -3,7 +3,7 @@
  * @fileoverview Plugin to ensure Server Actions files start with 'use server' directive
  */
 
-import path from 'path'
+import path from 'node:path'
 
 export const requireUseServerPlugin = {
   meta: {
@@ -22,27 +22,27 @@ export const requireUseServerPlugin = {
         fixable: 'code',
         schema: [],
         messages: {
-          missingUseServer: "Server action files must start with 'use server' directive",
-          useServerNotFirst: "'use server' directive must be the first statement in the file",
+          missingUseServer:
+            "Server action files must start with 'use server' directive",
+          useServerNotFirst:
+            "'use server' directive must be the first statement in the file",
         },
       },
 
       create(context) {
         const filename = context.getFilename()
-        
+
         function isServerActionFile(filename) {
           const normalizedPath = path.normalize(filename).replace(/\\/g, '/')
-          return normalizedPath.includes('/actions/') && filename.endsWith('.ts')
-        }
+          const basename = path.basename(filename)
 
-        function hasUseServerDirective(body) {
-          if (body.length === 0) return false
-          
-          const firstStatement = body[0]
+          // index.ts files are excluded from the rule
+          if (basename === 'index.ts') {
+            return false
+          }
+
           return (
-            firstStatement.type === 'ExpressionStatement' &&
-            firstStatement.expression.type === 'Literal' &&
-            firstStatement.expression.value === 'use server'
+            normalizedPath.includes('/actions/') && filename.endsWith('.ts')
           )
         }
 
@@ -76,9 +76,12 @@ export const requireUseServerPlugin = {
                 fix(fixer) {
                   const sourceCode = context.getSourceCode()
                   const firstToken = sourceCode.getFirstToken(node)
-                  
+
                   if (firstToken) {
-                    return fixer.insertTextBefore(firstToken, "'use server'\n\n")
+                    return fixer.insertTextBefore(
+                      firstToken,
+                      "'use server'\n\n",
+                    )
                   }
                   return null
                 },
@@ -92,11 +95,14 @@ export const requireUseServerPlugin = {
                   const sourceCode = context.getSourceCode()
                   const useServerText = sourceCode.getText(useServerStatement)
                   const firstToken = sourceCode.getFirstToken(node)
-                  
+
                   if (firstToken) {
                     return [
                       fixer.remove(useServerStatement),
-                      fixer.insertTextBefore(firstToken, `${useServerText}\n\n`)
+                      fixer.insertTextBefore(
+                        firstToken,
+                        `${useServerText}\n\n`,
+                      ),
                     ]
                   }
                   return null

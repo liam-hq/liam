@@ -22,11 +22,6 @@ export type WorkflowState = {
   ddlStatements?: string | undefined
   dmlStatements?: string | undefined
 
-  // DDL execution retry mechanism
-  shouldRetryWithDesignSchema?: boolean | undefined
-  ddlExecutionFailed?: boolean | undefined
-  ddlExecutionFailureReason?: string | undefined
-
   // DML execution results
   dmlExecutionSuccessful?: boolean | undefined
   dmlExecutionErrors?: string | undefined
@@ -34,7 +29,6 @@ export type WorkflowState = {
   // Schema update fields
   buildingSchemaId: string
   latestVersionNumber: number
-  buildingSchemaVersionId?: string | undefined
   organizationId: string
   userId: string
 

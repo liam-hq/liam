@@ -54,6 +54,7 @@ export const Default: Story = {
     isPending: false,
     onProjectChange: () => {},
     formAction: () => {},
+    schemaFilePath: null,
   },
 }
 
@@ -66,6 +67,7 @@ export const WithProjects: Story = {
     isPending: false,
     onProjectChange: () => {},
     formAction: () => {},
+    schemaFilePath: null,
   },
 }
 
@@ -78,6 +80,7 @@ export const WithBranches: Story = {
     isPending: false,
     onProjectChange: () => {},
     formAction: () => {},
+    schemaFilePath: 'schema.rb',
   },
 }
 
@@ -90,6 +93,7 @@ export const BranchesLoading: Story = {
     isPending: false,
     onProjectChange: () => {},
     formAction: () => {},
+    schemaFilePath: null,
   },
 }
 
@@ -104,6 +108,7 @@ export const WithBranchesError: Story = {
     isPending: false,
     onProjectChange: () => {},
     formAction: () => {},
+    schemaFilePath: null,
   },
 }
 
@@ -116,6 +121,7 @@ export const WithFormError: Story = {
     isPending: false,
     onProjectChange: () => {},
     formAction: () => {},
+    schemaFilePath: 'database.sql',
   },
 }
 
@@ -127,6 +133,7 @@ export const Pending: Story = {
     isPending: true,
     onProjectChange: () => {},
     formAction: () => {},
+    schemaFilePath: 'db/schema.rb',
   },
 }
 
@@ -138,6 +145,7 @@ export const EmptyProjects: Story = {
     isPending: false,
     onProjectChange: () => {},
     formAction: () => {},
+    schemaFilePath: null,
   },
 }
 
@@ -150,6 +158,7 @@ export const Interactive: Story = {
     formAction: () => {},
     onProjectChange: () => {},
     defaultProjectId: '',
+    schemaFilePath: null,
   },
   render: (args) => {
     const [isPending, setIsPending] = useState(args.isPending)
@@ -191,6 +200,7 @@ export const Interactive: Story = {
         formAction={handleFormAction}
         onProjectChange={handleProjectChange}
         defaultProjectId={selectedProjectId}
+        schemaFilePath={args.schemaFilePath}
       />
     )
   },
@@ -207,6 +217,7 @@ export const InteractiveWithError: Story = {
     formAction: () => {},
     onProjectChange: () => {},
     defaultProjectId: '',
+    schemaFilePath: null,
   },
   render: (args) => {
     const [isPending, setIsPending] = useState(args.isPending)
@@ -329,6 +340,7 @@ export const InteractiveWithError: Story = {
           formAction={handleFormAction}
           onProjectChange={handleProjectChange}
           defaultProjectId={selectedProjectId}
+          schemaFilePath={args.schemaFilePath}
         />
       </div>
     )

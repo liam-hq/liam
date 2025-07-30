@@ -1,7 +1,6 @@
 'use client'
 
 import type { FC } from 'react'
-import { useState } from 'react'
 import { ActionButton } from '../ActionButton'
 import { AttachButton } from '../AttachButton'
 import { DeepModelingToggle } from '../DeepModelingToggle'
@@ -27,23 +26,22 @@ export const SessionFormActions: FC<Props> = ({
   onSubmit,
   onCancel,
 }) => {
-  const [isDeepModelingActive, setIsDeepModelingActive] = useState(false)
-
   return (
     <div className={styles.container}>
-      <DeepModelingToggle
-        isActive={isDeepModelingActive}
-        onClick={() => setIsDeepModelingActive((prev) => !prev)}
-        disabled={isPending}
-      >
+      <DeepModelingToggle name="isDeepModelingEnabled" disabled={isPending}>
         Deep Modeling
       </DeepModelingToggle>
-      <MicButton onClick={onMicClick || (() => {})} disabled={isPending} />
-      <AttachButton
-        onClick={onAttachClick || (() => {})}
-        onFileSelect={onFileSelect}
-        disabled={isPending}
-      />
+      {/* Temporarily hidden - Issue #5166: Hide voice input and file attachment UI */}
+      <div className={styles.hidden}>
+        <MicButton onClick={onMicClick || (() => {})} disabled={isPending} />
+      </div>
+      <div className={styles.hidden}>
+        <AttachButton
+          onClick={onAttachClick || (() => {})}
+          onFileSelect={onFileSelect}
+          disabled={isPending}
+        />
+      </div>
       <ActionButton
         hasContent={hasContent}
         isPending={isPending}

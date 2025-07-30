@@ -2,326 +2,122 @@
 
 ## Overview
 
-The Database Schema Evaluator package provides a comprehensive evaluation framework for assessing the accuracy of predicted database schemas against reference schemas. This package is designed to evaluate schema prediction models, tools, or automated database design systems by comparing their outputs with ground truth schemas.
+Schema-Bench is a comprehensive benchmarking tool for database schema generation and evaluation. It provides executors for generating schemas using different AI models and tools for evaluating their accuracy against reference schemas.
 
-## Core Functionality
+## Quick Start
 
-The evaluator performs multi-dimensional analysis across several key areas:
+### 1. Setup Workspace
+```bash
+pnpm --filter @liam-hq/schema-bench setupWorkspace
+```
+Creates the benchmark directory structure with input, output, and reference folders.
 
-### 1. Schema Name Matching
-- **Word Overlap Matching**: Identifies schemas with shared words or lexical similarities
-- **Semantic Similarity Matching**: Uses machine learning embeddings to find semantically related schema names
-- **Comprehensive Mapping**: Creates bidirectional mappings between reference and predicted schema names
+### 2. Create Input Cases
+Add JSON files to `benchmark-workspace/execution/input/` with your schema generation prompts:
+```json
+{
+  "input": "Create a products table with id and name columns"
+}
+```
 
-### 2. Attribute-Level Evaluation
-- **Attribute Name Matching**: Applies the same matching techniques to individual table attributes
-- **Precision and Recall Calculation**: Measures how well predicted attributes match reference attributes
-- **F1 Score Computation**: Provides balanced accuracy metrics for attribute matching
+### 3. Generate Schemas
+Choose one of the available executors:
 
-### 3. Structural Validation
-- **Primary Key Validation**: Verifies that predicted primary keys match reference primary keys
-- **Foreign Key Validation**: Checks foreign key relationships and constraints
-- **Schema Completeness**: Evaluates overall structural accuracy
+**OpenAI Executor:**
+```bash
+pnpm --filter @liam-hq/schema-bench executeOpenai
+```
 
-## Architecture
+**LiamDB Executor:**
+```bash
+pnpm --filter @liam-hq/schema-bench executeLiamDB
+```
 
-The package consists of three main components:
+### 4. Evaluate Results
+```bash
+pnpm --filter @liam-hq/schema-bench evaluateSchema
+```
 
-### evaluate.ts
-The main evaluation orchestrator that:
-- Coordinates the entire evaluation process
-- Integrates results from different matching algorithms
-- Calculates comprehensive metrics including F1 scores, precision, recall, and all-correct rates
-- Produces detailed evaluation reports
+## Available Commands
 
-### nameSimilarity.ts
-Semantic matching engine that:
-- Utilizes Hugging Face Transformers library with the 'all-MiniLM-L6-v2' model
-- Generates text embeddings for schema and attribute names
-- Calculates cosine similarity scores between embeddings
-- Identifies semantically related terms that may not share exact words
+| Command | Description |
+|---------|-------------|
+| `setupWorkspace` | Initialize benchmark directory structure |
+| `executeOpenai` | Generate schemas using OpenAI API |
+| `executeLiamDB` | Generate schemas using Liam's AI agent |
+| `evaluateSchema` | Evaluate generated schemas against references |
 
-### wordOverlapMatch.ts
-Lexical matching engine that:
-- Performs word tokenization and stop word removal
-- Detects exact word overlaps between names
-- Handles variations in naming conventions (e.g., camelCase vs snake_case)
+## Executors
 
-## Evaluation Metrics
+### OpenAI Executor
+- Uses OpenAI's GPT models to generate database schemas from natural language prompts
+- Requires `OPENAI_API_KEY` environment variable
+- Outputs structured schemas in JSON format
 
-The evaluator produces the following key metrics:
+### LiamDB Executor  
+- Uses Liam's internal AI agent for schema generation
+- Leverages deep modeling workflows for comprehensive schema design
+- Optimized for complex database requirements
 
-### Schema-Level Metrics
-- **Schema F1 Score**: Harmonic mean of precision and recall for schema name matching
-- **Schema All-Correct Rate**: Binary indicator of perfect schema name matching
+## Evaluation
 
-### Attribute-Level Metrics
-- **Attribute F1 Average**: Average F1 score across all matched schemas
-- **Attribute All-Correct Average**: Average all-correct rate for attribute matching
+The evaluation system performs multi-dimensional analysis:
 
-### Structural Metrics (TODO)
-- **Primary Key Average**: Accuracy rate for primary key prediction
-- **(TODO)Foreign Key Average**: Accuracy rate for foreign key prediction
-- **Schema All-Correct Full**: Overall completeness indicator combining all metrics
+### Matching Algorithms
+- **Word Overlap Matching**: Lexical similarity based on shared words
+- **Semantic Similarity**: ML embeddings using 'all-MiniLM-L6-v2' model
+- **Comprehensive Mapping**: Bidirectional schema and attribute matching
 
-## Input Schema Format
+### Key Metrics
+- **F1 Score**: Harmonic mean of precision and recall
+- **All-Correct Rate**: Binary indicator of perfect matching
+- **Structural Validation**: Primary key and foreign key accuracy
 
-The evaluator processes database schemas using the structured format defined in `@liam-hq/db-structure/schema`. The schema follows a comprehensive structure that includes tables and table groups:
+## Schema Format
+
+Schemas use the structured format from `@liam-hq/db-structure/schema`:
 
 ```typescript
 type Schema = {
   tables: Record<string, Table>
-  tableGroups: Record<string, TableGroup>
 }
 
 type Table = {
   name: string
   columns: Record<string, Column>
-  comment: string | null
-  indexes: Record<string, Index>
   constraints: Record<string, Constraint>
-}
-
-type Column = {
-  name: string
-  type: string
-  default: string | number | boolean | null
-  check: string | null
-  primary: boolean
-  unique: boolean
-  notNull: boolean
-  comment: string | null
+  // ... other properties
 }
 ```
 
-### Real-World Example
-
-Here's a complete example from an insurance company database schema:
+### Example: Simple Products Table
 
 ```json
 {
   "tables": {
-    "insurance_agent": {
-      "name": "insurance_agent",
+    "products": {
+      "name": "products",
       "columns": {
-        "agent_id": {
-          "name": "agent_id",
-          "type": "VARCHAR(50)",
-          "default": null,
-          "check": null,
+        "id": {
+          "name": "id",
+          "type": "INTEGER",
           "primary": true,
-          "unique": false,
           "notNull": true,
-          "comment": "Unique identifier for insurance agent"
+          "comment": "Product ID"
         },
         "name": {
-          "name": "name",
-          "type": "VARCHAR(100)",
-          "default": null,
-          "check": null,
-          "primary": false,
-          "unique": false,
+          "name": "name", 
+          "type": "VARCHAR(255)",
           "notNull": true,
-          "comment": "Agent full name"
-        },
-        "hire_date": {
-          "name": "hire_date",
-          "type": "DATE",
-          "default": null,
-          "check": null,
-          "primary": false,
-          "unique": false,
-          "notNull": true,
-          "comment": "Date when agent was hired"
-        },
-        "contact_phone": {
-          "name": "contact_phone",
-          "type": "VARCHAR(20)",
-          "default": null,
-          "check": null,
-          "primary": false,
-          "unique": false,
-          "notNull": false,
-          "comment": "Agent contact phone number"
+          "comment": "Product name"
         }
       },
-      "comment": "Insurance agents information",
-      "indexes": {},
+      "comment": "Products table",
       "constraints": {
-        "pk_insurance_agent": {
+        "pk_products": {
           "type": "PRIMARY KEY",
-          "name": "pk_insurance_agent",
-          "columnName": "agent_id"
-        }
-      }
-    },
-    "customer": {
-      "name": "customer",
-      "columns": {
-        "customer_id": {
-          "name": "customer_id",
-          "type": "VARCHAR(50)",
-          "default": null,
-          "check": null,
-          "primary": true,
-          "unique": false,
-          "notNull": true,
-          "comment": "Unique identifier for customer"
-        },
-        "name": {
-          "name": "name",
-          "type": "VARCHAR(100)",
-          "default": null,
-          "check": null,
-          "primary": false,
-          "unique": false,
-          "notNull": true,
-          "comment": "Customer full name"
-        },
-        "id_card_number": {
-          "name": "id_card_number",
-          "type": "VARCHAR(20)",
-          "default": null,
-          "check": null,
-          "primary": false,
-          "unique": true,
-          "notNull": true,
-          "comment": "Customer ID card number"
-        },
-        "contact_phone": {
-          "name": "contact_phone",
-          "type": "VARCHAR(20)",
-          "default": null,
-          "check": null,
-          "primary": false,
-          "unique": false,
-          "notNull": false,
-          "comment": "Customer contact phone"
-        },
-        "agent_id": {
-          "name": "agent_id",
-          "type": "VARCHAR(50)",
-          "default": null,
-          "check": null,
-          "primary": false,
-          "unique": false,
-          "notNull": true,
-          "comment": "Reference to insurance agent"
-        }
-      },
-      "comment": "Customer information",
-      "indexes": {},
-      "constraints": {
-        "pk_customer": {
-          "type": "PRIMARY KEY",
-          "name": "pk_customer",
-          "columnName": "customer_id"
-        },
-        "uk_customer_id_card": {
-          "type": "UNIQUE",
-          "name": "uk_customer_id_card",
-          "columnName": "id_card_number"
-        },
-        "fk_customer_agent": {
-          "type": "FOREIGN KEY",
-          "name": "fk_customer_agent",
-          "columnName": "agent_id",
-          "targetTableName": "insurance_agent",
-          "targetColumnName": "agent_id",
-          "updateConstraint": "CASCADE",
-          "deleteConstraint": "RESTRICT"
-        }
-      }
-    },
-    "policy": {
-      "name": "policy",
-      "columns": {
-        "policy_id": {
-          "name": "policy_id",
-          "type": "VARCHAR(50)",
-          "default": null,
-          "check": null,
-          "primary": true,
-          "unique": false,
-          "notNull": true,
-          "comment": "Unique identifier for policy"
-        },
-        "customer_id": {
-          "name": "customer_id",
-          "type": "VARCHAR(50)",
-          "default": null,
-          "check": null,
-          "primary": false,
-          "unique": false,
-          "notNull": true,
-          "comment": "Reference to customer"
-        },
-        "agent_id": {
-          "name": "agent_id",
-          "type": "VARCHAR(50)",
-          "default": null,
-          "check": null,
-          "primary": false,
-          "unique": false,
-          "notNull": true,
-          "comment": "Reference to insurance agent"
-        },
-        "policy_type": {
-          "name": "policy_type",
-          "type": "VARCHAR(50)",
-          "default": null,
-          "check": null,
-          "primary": false,
-          "unique": false,
-          "notNull": true,
-          "comment": "Type of insurance policy"
-        },
-        "premium_amount": {
-          "name": "premium_amount",
-          "type": "DECIMAL(10,2)",
-          "default": null,
-          "check": null,
-          "primary": false,
-          "unique": false,
-          "notNull": true,
-          "comment": "Monthly premium amount"
-        },
-        "start_date": {
-          "name": "start_date",
-          "type": "DATE",
-          "default": null,
-          "check": null,
-          "primary": false,
-          "unique": false,
-          "notNull": true,
-          "comment": "Policy start date"
-        }
-      },
-      "comment": "Insurance policy information",
-      "indexes": {},
-      "constraints": {
-        "pk_policy": {
-          "type": "PRIMARY KEY",
-          "name": "pk_policy",
-          "columnName": "policy_id"
-        },
-        "fk_policy_customer": {
-          "type": "FOREIGN KEY",
-          "name": "fk_policy_customer",
-          "columnName": "customer_id",
-          "targetTableName": "customer",
-          "targetColumnName": "customer_id",
-          "updateConstraint": "CASCADE",
-          "deleteConstraint": "CASCADE"
-        },
-        "fk_policy_agent": {
-          "type": "FOREIGN KEY",
-          "name": "fk_policy_agent",
-          "columnName": "agent_id",
-          "targetTableName": "insurance_agent",
-          "targetColumnName": "agent_id",
-          "updateConstraint": "NO_ACTION",
-          "deleteConstraint": "RESTRICT"
+          "name": "pk_products",
+          "columnName": "id"
         }
       }
     }
@@ -329,35 +125,36 @@ Here's a complete example from an insurance company database schema:
 }
 ```
 
-### Schema Structure Explanation
+## Workspace Structure
 
-- **Tables**: Record of table definitions with detailed column specifications
-  - **Columns**: Detailed column definitions including type, constraints, and metadata
-  - **Constraints**: Primary key, foreign key, unique, and check constraints
-  - **Indexes**: Database indexes for performance optimization
-  - **Comments**: Documentation for tables and columns
+After running `setupWorkspace`, the following directory structure is created:
 
-## Usage Workflow
+```
+benchmark-workspace/
+├── execution/
+│   ├── input/          # JSON files with prompts
+│   └── output/         # Generated schemas
+└── evaluation/
+    ├── reference/      # Reference schemas for comparison
+    └── result/         # Evaluation results
+```
 
-1. **Input Preparation**: Provide reference schemas and predicted schemas in the JSON format shown above
-2. **Multi-Stage Matching**: The system applies word overlap matching followed by semantic similarity matching
-3. **Comprehensive Evaluation**: All aspects (names, attributes, keys) are evaluated systematically
-4. **Metric Calculation**: Detailed metrics are computed and returned in a structured format
+## Environment Setup
 
-## Key Features
+For OpenAI executor, set your API key:
+```bash
+export OPENAI_API_KEY="your-api-key"
+```
 
-- **Multi-Algorithm Approach**: Combines lexical and semantic matching for robust name resolution
-- **Hierarchical Evaluation**: Evaluates both schema-level and attribute-level accuracy
-- **Flexible Thresholds**: Configurable similarity thresholds for different matching algorithms
-- **Comprehensive Metrics**: Provides both granular and aggregate evaluation metrics
-- **Performance Optimized**: Efficient algorithms for handling large schema sets
+## Example Workflow
+
+1. **Setup**: `pnpm --filter @liam-hq/schema-bench setupWorkspace`
+2. **Create input**: Add `case-001.json` with `{"input": "Create a users table"}`
+3. **Generate**: `pnpm --filter @liam-hq/schema-bench executeLiamDB`
+4. **Evaluate**: `pnpm --filter @liam-hq/schema-bench evaluateSchema`
 
 ## Use Cases
 
-- **Model Evaluation**: Assess the performance of database schema generation models
-- **Tool Comparison**: Compare different automated database design tools
-- **Quality Assurance**: Validate schema predictions in production systems
-- **Research**: Support academic research in database design automation
-- **Benchmarking**: Create standardized evaluation benchmarks for schema prediction tasks
-
-This package serves as a critical component for ensuring the quality and accuracy of automated database schema generation systems, providing detailed insights into both the strengths and weaknesses of prediction models.
+- **Model Comparison**: Compare OpenAI vs LiamDB schema generation
+- **Quality Assurance**: Validate schema generation accuracy
+- **Benchmarking**: Create standardized evaluation metrics

@@ -3,6 +3,7 @@
   align-items: center;
   justify-content: space-between;
   gap: var(--spacing-2);
+  height: 52px;
   padding: var(--spacing-2);
   border-bottom: 1px solid var(--global-border);
 }
@@ -11,24 +12,72 @@
   display: flex;
   align-items: center;
   gap: var(--spacing-2);
+  height: 100%;
 }
 
-.tabsTrigger {
+.erdSchemaTabsGroup {
   display: flex;
   align-items: center;
-  justify-content: center;
-  height: 1.75rem;
-  padding: 0 var(--spacing-2);
+  gap: var(--spacing-1half);
+  height: 100%;
+  padding: var(--spacing-1);
   border-radius: var(--border-radius-base);
-  font-size: var(--font-size-4);
   border: solid 1px var(--pane-border);
 }
 
-.tabsTrigger[data-state='active'] {
+.erdSchemaTabs {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-half);
+  height: 100%;
+}
+
+.erdSchemaTrigger {
+  height: 100%;
+  padding: 0 var(--spacing-2);
+  border-radius: var(--border-radius-sm);
+  font-size: var(--font-size-4);
+  transition: background-color var(--default-hover-animation-duration)
+    var(--default-timing-function);
+}
+
+.erdSchemaTrigger[data-state='active'] {
   background-color: var(--button-background-active);
 }
 
-.tabsTrigger:hover {
+.erdSchemaTrigger:not([data-state='active']):hover {
+  background-color: var(--button-background-hover);
+}
+
+.divider {
+  width: 1px;
+  height: 1rem;
+  background-color: var(--global-border);
+}
+
+.artifactTab {
+  display: flex;
+  align-items: center;
+  height: 100%;
+  border-radius: var(--border-radius-base);
+  border: solid 1px var(--pane-border);
+}
+
+.artifactTrigger {
+  height: 100%;
+  padding: 0 var(--spacing-2);
+  border-radius: var(--border-radius-base);
+  border: solid 1px var(--pane-border);
+  font-size: var(--font-size-4);
+  transition: background-color var(--default-hover-animation-duration)
+    var(--default-timing-function);
+}
+
+.artifactTrigger[data-state='active'] {
+  background-color: var(--button-background-active);
+}
+
+.artifactTrigger:not([data-state='active']):hover {
   background-color: var(--button-background-hover);
 }
 
@@ -36,4 +85,5 @@
   display: flex;
   align-items: center;
   gap: var(--spacing-2);
+  height: 100%;
 }

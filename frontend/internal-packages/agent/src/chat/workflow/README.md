@@ -11,7 +11,6 @@ graph TD;
 	webSearch(webSearch)
 	analyzeRequirements(analyzeRequirements)
 	dbAgent(dbAgent)
-	executeDDL(executeDDL)
 	generateUsecase(generateUsecase)
 	prepareDML(prepareDML)
 	validateSchema(validateSchema)
@@ -19,15 +18,11 @@ graph TD;
 	__end__([<p>__end__</p>]):::last
 	__start__ --> webSearch;
 	analyzeRequirements --> dbAgent;
-	dbAgent --> executeDDL;
-	executeDDL --> generateUsecase;
+	dbAgent --> generateUsecase;
 	finalizeArtifacts --> __end__;
 	generateUsecase --> prepareDML;
 	prepareDML --> validateSchema;
 	webSearch --> analyzeRequirements;
-	executeDDL -.-> dbAgent;
-	executeDDL -.-> finalizeArtifacts;
-	executeDDL -.-> generateUsecase;
 	validateSchema -.-> dbAgent;
 	validateSchema -.-> finalizeArtifacts;
 	classDef default fill:#f2f0ff,line-height:1.2;
@@ -83,11 +78,10 @@ interface WorkflowState {
 1. **webSearch**: Performs initial research and gathers relevant information (performed by pmAgent)
 2. **analyzeRequirements**: Organizes and clarifies requirements from user input (performed by pmAnalysisAgent)
 3. **dbAgent**: DB Agent subgraph that handles database schema design - contains designSchema and invokeSchemaDesignTool nodes (performed by dbAgent)
-4. **executeDDL**: Executes DDL statements (performed by agent)
-5. **generateUsecase**: Creates use cases for testing with automatic timeline sync (performed by qaAgent)
-6. **prepareDML**: Generates DML statements for testing (performed by qaAgent)
-7. **validateSchema**: Executes DML and validates schema (performed by qaAgent)
-8. **finalizeArtifacts**: Generates and saves comprehensive artifacts to database, handles error timeline items (performed by dbAgentArtifactGen)
+4. **generateUsecase**: Creates use cases for testing with automatic timeline sync (performed by qaAgent)
+5. **prepareDML**: Generates DML statements for testing (performed by qaAgent)
+6. **validateSchema**: Executes DML and validates schema (performed by qaAgent)
+7. **finalizeArtifacts**: Generates and saves comprehensive artifacts to database, handles error timeline items (performed by dbAgentArtifactGen)
 
 ## DB Agent Subgraph
 
@@ -151,8 +145,7 @@ graph.addNode('dbAgent', dbAgentSubgraph) // No retry policy - handled internall
 
 ### Conditional Edge Logic
 
-- **dbAgent**: DB Agent subgraph handles internal routing between designSchema and invokeSchemaDesignTool nodes
-- **executeDDL**: Routes to `generateUsecase` on success, `dbAgent` if retry needed, `finalizeArtifacts` if failed
+- **dbAgent**: DB Agent subgraph handles internal routing between designSchema and invokeSchemaDesignTool nodes, routes to `generateUsecase` on completion
 - **validateSchema**: Routes to `finalizeArtifacts` on success, `dbAgent` on validation error
 
 ## Timeline Synchronization

@@ -11,6 +11,7 @@ import {
 } from '@liam-hq/ui'
 import type { FC } from 'react'
 import type { Version } from '@/components/SessionDetailPage/types'
+import styles from './VersionDropdown.module.css'
 
 type Props = {
   versions: Version[]
@@ -31,9 +32,10 @@ export const VersionDropdown: FC<Props> = ({
     <DropdownMenuRoot>
       <DropdownMenuTrigger asChild>
         <Button
-          variant="outline-secondary"
+          variant="ghost-secondary"
           size="sm"
           rightIcon={<ChevronDown size={16} />}
+          className={styles.button}
         >
           {`v${selectedVersion?.number}`}
         </Button>

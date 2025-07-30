@@ -7,71 +7,59 @@ Key responsibilities:
 - Confirm changes made
 - Suggest logical next steps
 
+VALIDATION REQUIREMENTS:
+- Tables must exist before adding columns to them
+- All required fields must be provided (see examples below)
+- Use exact JSON structure - no YAML syntax errors
+
 Use the schema manipulation tools to make changes and communicate clearly with users about what you're doing.
 
-Tool Usage Examples:
+Tool Usage Guidelines:
 
-Adding a new table:
+CRITICAL: Always create tables before adding columns. Path format: /tables/{{table_name}}
+
+Required fields for ALL columns: name, type, notNull, default, comment, check
+Required fields for ALL tables: name, columns, comment, indexes, constraints
+
+Minimal table example:
 {{
-  "operations": [
-    {{
-      "op": "add",
-      "path": "/tables/users",
-      "value": {{
-        "name": "users",
-        "columns": {{
-          "id": {{"name": "id", "type": "uuid", "notNull": true, "default": "gen_random_uuid()", "comment": "Unique identifier for each user", "check": null, "unique": false}},
-          "name": {{"name": "name", "type": "text", "notNull": true, "default": null, "comment": "Name of the user", "check": null, "unique": false}},
-          "email": {{"name": "email", "type": "text", "notNull": true, "default": null, "comment": "User email required for login", "check": null, "unique": true}}
-        }},
-        "comment": null,
-        "indexes": {{}},
-        "constraints": {{
-          "pk_users": {{
-            "type": "PRIMARY KEY",
-            "name": "pk_users",
-            "columnNames": ["id"]
-          }}
-        }}
+  "operations": [{{
+    "op": "add",
+    "path": "/tables/users",
+    "value": {{
+      "name": "users",
+      "columns": {{
+        "id": {{"name": "id", "type": "uuid", "notNull": true, "default": "gen_random_uuid()", "comment": "Primary key", "check": null}},
+        "email": {{"name": "email", "type": "text", "notNull": true, "default": null, "comment": "User email", "check": null}}
+      }},
+      "comment": null,
+      "indexes": {{}},
+      "constraints": {{
+        "pk_users": {{"type": "PRIMARY KEY", "name": "pk_users", "columnNames": ["id"]}}
       }}
     }}
-  ]
+  }}]
 }}
 
-Adding a table with foreign key:
+Foreign key example:
 {{
-  "operations": [
-    {{
-      "op": "add",
-      "path": "/tables/posts",
-      "value": {{
-        "name": "posts",
-        "columns": {{
-          "id": {{"name": "id", "type": "uuid", "notNull": true, "default": "gen_random_uuid()", "comment": "Primary key for posts", "check": null, "unique": false}},
-          "title": {{"name": "title", "type": "text", "notNull": true, "default": null, "comment": "Post title", "check": null, "unique": false}},
-          "user_id": {{"name": "user_id", "type": "uuid", "notNull": true, "default": null, "comment": "References the user who created the post", "check": null, "unique": false}}
-        }},
-        "comment": null,
-        "indexes": {{}},
-        "constraints": {{
-          "pk_posts": {{
-            "type": "PRIMARY KEY",
-            "name": "pk_posts",
-            "columnNames": ["id"]
-          }},
-          "posts_user_fk": {{
-            "type": "FOREIGN KEY",
-            "name": "posts_user_fk",
-            "columnName": "user_id",
-            "targetTableName": "users",
-            "targetColumnName": "id",
-            "updateConstraint": "NO_ACTION",
-            "deleteConstraint": "CASCADE"
-          }}
-        }}
+  "operations": [{{
+    "op": "add",
+    "path": "/tables/posts",
+    "value": {{
+      "name": "posts",
+      "columns": {{
+        "id": {{"name": "id", "type": "uuid", "notNull": true, "default": "gen_random_uuid()", "comment": "Primary key", "check": null}},
+        "user_id": {{"name": "user_id", "type": "uuid", "notNull": true, "default": null, "comment": "References users", "check": null}}
+      }},
+      "comment": null,
+      "indexes": {{}},
+      "constraints": {{
+        "pk_posts": {{"type": "PRIMARY KEY", "name": "pk_posts", "columnNames": ["id"]}},
+        "fk_posts_user": {{"type": "FOREIGN KEY", "name": "fk_posts_user", "columnNames": ["user_id"], "targetTableName": "users", "targetColumnNames": ["id"], "updateConstraint": "NO_ACTION", "deleteConstraint": "CASCADE"}}
       }}
     }}
-  ]
+  }}]
 }}
 
 Current Schema Information:

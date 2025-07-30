@@ -12,55 +12,70 @@ import {
 import styles from './DeepModelingToggle.module.css'
 
 type Props = Omit<ComponentProps<'button'>, 'children'> & {
-  isActive?: boolean
+  name: string
   children: string
+  defaultChecked?: boolean
   ref?: Ref<HTMLButtonElement>
 }
 
 export const DeepModelingToggle: FC<Props> = ({
   className,
-  isActive = false,
   children,
+  name,
+  defaultChecked = false,
   onClick,
   ref,
   ...props
 }) => {
   const [isTransitioning, setIsTransitioning] = useState(false)
+  const [isActive, setIsActive] = useState(defaultChecked)
 
   const handleClick = (e: MouseEvent<HTMLButtonElement>) => {
     if (props.disabled) return
     setIsTransitioning(true)
     setTimeout(() => setIsTransitioning(false), 300)
+    setIsActive(!isActive)
     onClick?.(e)
   }
 
   return (
-    <button
-      ref={ref}
-      type="button"
-      className={clsx(
-        styles.wrapper,
-        isActive ? styles.active : styles.inactive,
-        isTransitioning && styles.transitioning,
-        props.disabled && styles.disabled,
-        className,
-      )}
-      onClick={handleClick}
-      {...props}
-    >
-      <span
+    <>
+      <input
+        type="checkbox"
+        name={name}
+        checked={isActive}
+        // Empty onChange handler required to suppress React warning about controlled component
+        // The actual state change is handled by the button's onClick handler
+        onChange={() => {}}
+        className={styles.hiddenInput}
+      />
+      <button
+        ref={ref}
+        type="button"
         className={clsx(
-          styles.thumb,
-          isActive ? styles.thumbActive : styles.thumbInactive,
+          styles.wrapper,
+          isActive ? styles.active : styles.inactive,
+          isTransitioning && styles.transitioning,
+          props.disabled && styles.disabled,
+          className,
         )}
+        onClick={handleClick}
+        {...props}
       >
-        {isActive ? (
-          <Sparkle className={styles.icon} />
-        ) : (
-          <Minus className={styles.icon} />
-        )}
-      </span>
-      <span className={styles.label}>{children}</span>
-    </button>
+        <span
+          className={clsx(
+            styles.thumb,
+            isActive ? styles.thumbActive : styles.thumbInactive,
+          )}
+        >
+          {isActive ? (
+            <Sparkle className={styles.icon} />
+          ) : (
+            <Minus className={styles.icon} />
+          )}
+        </span>
+        <span className={styles.label}>{children}</span>
+      </button>
+    </>
   )
 }

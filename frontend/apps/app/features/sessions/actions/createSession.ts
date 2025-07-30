@@ -6,7 +6,10 @@ import type { SupabaseClientType } from '@liam-hq/db'
 import type { Schema } from '@liam-hq/db-structure'
 import { parse, setPrismWasmUrl } from '@liam-hq/db-structure/parser'
 import { getFileContent } from '@liam-hq/github'
-import { deepModelingWorkflowTask } from '@liam-hq/jobs'
+import {
+  deepModelingWorkflowTask,
+  designProcessWorkflowTask,
+} from '@liam-hq/jobs'
 import { idempotencyKeys } from '@trigger.dev/sdk'
 import { redirect } from 'next/navigation'
 import * as v from 'valibot'
@@ -31,6 +34,13 @@ const FormDataSchema = v.object({
   initialMessage: v.pipe(
     v.string(),
     v.minLength(1, 'Initial message is required'),
+  ),
+  isDeepModelingEnabled: v.optional(
+    v.pipe(
+      v.string(),
+      v.transform((input) => input === 'true'),
+    ),
+    'false',
   ),
 })
 
@@ -192,8 +202,13 @@ export async function createSession(
     return { success: false, error: 'Invalid form data' }
   }
 
-  const { projectId, parentDesignSessionId, gitSha, initialMessage } =
-    parsedFormDataResult.output
+  const {
+    projectId,
+    parentDesignSessionId,
+    gitSha,
+    initialMessage,
+    isDeepModelingEnabled,
+  } = parsedFormDataResult.output
 
   const supabase = await createClient()
   const currentUserId = await getCurrentUserId(supabase)
@@ -278,9 +293,12 @@ export async function createSession(
     `chat-${designSession.id}-${payloadHash}`,
   )
 
-  // Trigger the chat processing job with idempotency key
+  // Trigger the appropriate workflow based on Deep Modeling toggle
   try {
-    await deepModelingWorkflowTask.trigger(chatPayload, {
+    const task = isDeepModelingEnabled
+      ? deepModelingWorkflowTask
+      : designProcessWorkflowTask
+    await task.trigger(chatPayload, {
       idempotencyKey,
     })
   } catch (error) {

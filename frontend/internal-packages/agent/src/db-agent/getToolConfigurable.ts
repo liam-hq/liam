@@ -7,6 +7,7 @@ import type { Repositories } from '../repositories'
 const toolConfigurableSchema = v.object({
   buildingSchemaId: v.string(),
   latestVersionNumber: v.number(),
+  designSessionId: v.string(),
 })
 
 export type ToolConfigurable = {

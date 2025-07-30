@@ -1,0 +1,11 @@
+.button {
+  min-width: auto;
+  height: 100%;
+  border-radius: var(--border-radius-sm);
+  transition: background-color var(--default-hover-animation-duration)
+    var(--default-timing-function);
+}
+
+.button:hover {
+  background-color: var(--button-background-hover);
+}

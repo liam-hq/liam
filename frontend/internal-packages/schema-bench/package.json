@@ -2,13 +2,16 @@
   "name": "@liam-hq/schema-bench",
   "private": true,
   "version": "0.1.0",
-  "type": "module",
   "main": "src/index.ts",
   "dependencies": {
     "@huggingface/transformers": "3.3.3",
+    "@liam-hq/agent": "workspace:*",
     "@liam-hq/db-structure": "workspace:*",
+    "dotenv": "16.5.0",
+    "langsmith": "0.3.44",
     "neverthrow": "8.2.0",
     "openai": "5.9.2",
+    "tsx": "4.20.3",
     "valibot": "1.1.0"
   },
   "devDependencies": {
@@ -18,8 +21,9 @@
     "vitest": "3.2.4"
   },
   "scripts": {
-    "evaluateSchema": "node --experimental-strip-types src/cli/evaluateSchema.ts",
-    "executeOpenai": "node --experimental-strip-types src/cli/executeOpenai.ts",
+    "evaluateSchema": "tsx src/cli/evaluateSchema.ts",
+    "executeLiamDB": "tsx src/cli/executeLiamDb.ts",
+    "executeOpenai": "tsx src/cli/executeOpenai.ts",
     "fmt": "concurrently \"pnpm:fmt:*\"",
     "fmt:biome": "biome check --write --unsafe .",
     "fmt:eslint": "eslint --fix .",
@@ -27,7 +31,7 @@
     "lint:biome": "biome check .",
     "lint:eslint": "eslint .",
     "lint:tsc": "tsc --noEmit",
-    "setupWorkspace": "node --experimental-strip-types src/cli/setupWorkspace.ts",
+    "setupWorkspace": "tsx src/cli/setupWorkspace.ts",
     "test": "vitest --watch=false --passWithNoTests"
   }
 }

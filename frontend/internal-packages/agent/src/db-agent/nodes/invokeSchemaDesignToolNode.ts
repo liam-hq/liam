@@ -63,7 +63,9 @@ export const invokeSchemaDesignToolNode = async (
   const result = await toolNode.invoke(state, {
     configurable: {
       ...config.configurable,
-      buildingSchemaVersionId: state.buildingSchemaVersionId,
+      buildingSchemaId: state.buildingSchemaId,
+      latestVersionNumber: state.latestVersionNumber,
+      designSessionId: state.designSessionId,
     },
   })
 

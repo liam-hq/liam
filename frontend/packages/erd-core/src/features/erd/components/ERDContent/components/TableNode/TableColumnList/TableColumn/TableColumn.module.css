@@ -112,3 +112,7 @@
   left: -20px;
   pointer-events: none;
 }
+
+.handleWithDiff[data-handlepos='left'] {
+  left: -56px; /* diffBox width (36px) + original left position (-20px) = -56px */
+}

@@ -1,3 +1,49 @@
+language: "en-US"
+tone_instructions: ""
+early_access: true
+enable_free_tier: true
+
 reviews:
-  review_status: false
-  high_level_summary: false
+  high_level_summary: true
+  high_level_summary_placeholder: "@coderabbitai summary"
+  review_status: true
+  commit_status: true
+  changed_files_summary: true
+  sequence_diagrams: true
+  estimate_code_review_effort: true
+  assess_linked_issues: true
+  related_issues: true
+  related_prs: true
+  suggested_labels: true
+  suggested_reviewers: true
+  poem: true
+  abort_on_close: true
+  drafts: true
+
+chat:
+  auto_reply: true
+  integrations:
+    jira:
+      usage: "auto"
+    linear:
+      usage: "auto"
+
+knowledge_base:
+  web_search:
+    enabled: true
+  code_guidelines:
+    enabled: true
+  learnings:
+    scope: "auto"
+  issues:
+    scope: "auto"
+  jira:
+    usage: "auto"
+  linear:
+    usage: "auto"
+  pull_requests:
+    scope: "auto"
+
+code_generation:
+  docstrings:
+    language: "en-US"

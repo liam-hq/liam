@@ -414,7 +414,7 @@ export const createWorkflowState = (setupData: CreateWorkflowStateInput) => {
     latestVersionNumber: buildingSchema.latest_version_number,
     designSessionId: designSession.id,
     userId: user.id,
-    recursionLimit: 25, // Higher limit for deep modeling
+    recursionLimit: 100, // Higher limit for deep modeling
   }
 
   return okAsync({

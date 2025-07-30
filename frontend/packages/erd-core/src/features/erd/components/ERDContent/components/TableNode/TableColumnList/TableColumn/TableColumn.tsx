@@ -162,7 +162,7 @@ export const TableColumn: FC<TableColumnProps> = ({
             id={handleId}
             type="target"
             position={Position.Left}
-            className={styles.handle}
+            className={clsx(styles.handle, showDiff && styles.handleWithDiff)}
           />
         )}
       </div>

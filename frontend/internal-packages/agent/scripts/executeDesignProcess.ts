@@ -103,7 +103,7 @@ const executeDesignProcess = async (): Promise<Result<void, Error>> => {
   const streamResult = await (async () => {
     const stream = await graph.stream(workflowState, {
       configurable: config.configurable,
-      recursionLimit: 10,
+      recursionLimit: 100,
       streamMode: 'values',
     })
 
