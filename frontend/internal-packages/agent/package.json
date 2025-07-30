@@ -7,7 +7,7 @@
     "@langchain/community": "0.3.49",
     "@langchain/core": "0.3.62",
     "@langchain/langgraph": "0.3.10",
-    "@langchain/openai": "0.5.18",
+    "@langchain/openai": "0.6.3",
     "@liam-hq/artifact": "workspace:*",
     "@liam-hq/db": "workspace:*",
     "@liam-hq/db-structure": "workspace:*",
@@ -15,10 +15,12 @@
     "@valibot/to-json-schema": "1.3.0",
     "dotenv": "16.5.0",
     "fast-json-patch": "3.1.1",
+    "langchain": "0.3.30",
     "langsmith": "0.3.44",
     "neverthrow": "8.2.0",
     "uuid": "11.1.0",
-    "valibot": "1.1.0"
+    "valibot": "1.1.0",
+    "zod": "3.25.76"
   },
   "devDependencies": {
     "@biomejs/biome": "2.1.1",
