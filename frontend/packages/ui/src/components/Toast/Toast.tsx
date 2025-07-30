@@ -67,9 +67,9 @@ export const ToastProvider = ({ children }: PropsWithChildren) => {
   }, [])
 
   return (
-    <RadixToast.Provider>
-      <ToastContext.Provider value={toast}>
-        {children}
+    <ToastContext.Provider value={toast}>
+      {children}
+      <RadixToast.Provider>
         {toastItems.map((value) => (
           <Toast
             key={value.id}
@@ -78,7 +78,7 @@ export const ToastProvider = ({ children }: PropsWithChildren) => {
           />
         ))}
         <RadixToast.Viewport className={styles.viewport} />
-      </ToastContext.Provider>
-    </RadixToast.Provider>
+      </RadixToast.Provider>
+    </ToastContext.Provider>
   )
 }
