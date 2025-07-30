@@ -5,7 +5,6 @@ import {
   generateUsecaseNode,
   prepareDmlNode,
   validateSchemaNode,
-  webSearchNode,
 } from './chat/workflow/nodes'
 import { createAnnotations } from './chat/workflow/shared/langGraphUtils'
 import { createDbAgentGraph } from './db-agent/createDbAgentGraph'
@@ -28,9 +27,6 @@ export const createGraph = () => {
   const dbAgentSubgraph = createDbAgentGraph()
 
   graph
-    .addNode('webSearch', webSearchNode, {
-      retryPolicy: RETRY_POLICY,
-    })
     .addNode('analyzeRequirements', analyzeRequirementsNode, {
       retryPolicy: RETRY_POLICY,
     })
@@ -48,8 +44,7 @@ export const createGraph = () => {
       retryPolicy: RETRY_POLICY,
     })
 
-    .addEdge(START, 'webSearch')
-    .addEdge('webSearch', 'analyzeRequirements')
+    .addEdge(START, 'analyzeRequirements')
     .addEdge('analyzeRequirements', 'dbAgent')
     .addEdge('dbAgent', 'generateUsecase')
     .addEdge('generateUsecase', 'prepareDML')

@@ -8,7 +8,6 @@ A **LangGraph implementation** for processing chat messages in the LIAM applicat
 %%{init: {'flowchart': {'curve': 'linear'}}}%%
 graph TD;
 	__start__([<p>__start__</p>]):::first
-	webSearch(webSearch)
 	analyzeRequirements(analyzeRequirements)
 	dbAgent(dbAgent)
 	generateUsecase(generateUsecase)
@@ -16,13 +15,12 @@ graph TD;
 	validateSchema(validateSchema)
 	finalizeArtifacts(finalizeArtifacts)
 	__end__([<p>__end__</p>]):::last
-	__start__ --> webSearch;
+	__start__ --> analyzeRequirements;
 	analyzeRequirements --> dbAgent;
 	dbAgent --> generateUsecase;
 	finalizeArtifacts --> __end__;
 	generateUsecase --> prepareDML;
 	prepareDML --> validateSchema;
-	webSearch --> analyzeRequirements;
 	validateSchema -.-> dbAgent;
 	validateSchema -.-> finalizeArtifacts;
 	classDef default fill:#f2f0ff,line-height:1.2;
@@ -75,13 +73,12 @@ interface WorkflowState {
 
 ## Nodes
 
-1. **webSearch**: Performs initial research and gathers relevant information (performed by pmAgent)
-2. **analyzeRequirements**: Organizes and clarifies requirements from user input (performed by pmAnalysisAgent)
-3. **dbAgent**: DB Agent subgraph that handles database schema design - contains designSchema and invokeSchemaDesignTool nodes (performed by dbAgent)
-4. **generateUsecase**: Creates use cases for testing with automatic timeline sync (performed by qaAgent)
-5. **prepareDML**: Generates DML statements for testing (performed by qaAgent)
-6. **validateSchema**: Executes DML and validates schema (performed by qaAgent)
-7. **finalizeArtifacts**: Generates and saves comprehensive artifacts to database, handles error timeline items (performed by dbAgentArtifactGen)
+1. **analyzeRequirements**: Analyzes and organizes requirements from user input with integrated web search functionality (performed by pmAnalysisAgent)
+2. **dbAgent**: DB Agent subgraph that handles database schema design - contains designSchema and invokeSchemaDesignTool nodes (performed by dbAgent)
+3. **generateUsecase**: Creates use cases for testing with automatic timeline sync (performed by qaAgent)
+4. **prepareDML**: Generates DML statements for testing (performed by qaAgent)
+5. **validateSchema**: Executes DML and validates schema (performed by qaAgent)
+6. **finalizeArtifacts**: Generates and saves comprehensive artifacts to database, handles error timeline items (performed by dbAgentArtifactGen)
 
 ## DB Agent Subgraph
 
@@ -164,7 +161,7 @@ graph.addNode('dbAgent', dbAgentSubgraph) // No retry policy - handled internall
 ### Implementation Details
 
 - **User Message Sync**: User input is synchronized in `deepModeling.ts` before workflow execution
-- **AI Message Sync**: All workflow nodes (webSearch, analyzeRequirements, dbAgent subgraph, generateUsecase) automatically sync their AI responses
+- **AI Message Sync**: All workflow nodes (analyzeRequirements, dbAgent subgraph, generateUsecase) automatically sync their AI responses
 - **Non-blocking**: Timeline synchronization is asynchronous and non-blocking to ensure workflow performance
 - **Utility Function**: `withTimelineItemSync()` provides consistent message synchronization across all nodes
 

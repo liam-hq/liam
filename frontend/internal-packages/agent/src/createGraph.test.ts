@@ -7,7 +7,6 @@ describe('createGraph', () => {
   const expectedMermaidDiagram = `%%{init: {'flowchart': {'curve': 'linear'}}}%%
 graph TD;
 	__start__([<p>__start__</p>]):::first
-	webSearch(webSearch)
 	analyzeRequirements(analyzeRequirements)
 	dbAgent(dbAgent)
 	generateUsecase(generateUsecase)
@@ -15,13 +14,12 @@ graph TD;
 	validateSchema(validateSchema)
 	finalizeArtifacts(finalizeArtifacts)
 	__end__([<p>__end__</p>]):::last
-	__start__ --> webSearch;
+	__start__ --> analyzeRequirements;
 	analyzeRequirements --> dbAgent;
 	dbAgent --> generateUsecase;
 	finalizeArtifacts --> __end__;
 	generateUsecase --> prepareDML;
 	prepareDML --> validateSchema;
-	webSearch --> analyzeRequirements;
 	validateSchema -.-> dbAgent;
 	validateSchema -.-> finalizeArtifacts;
 	classDef default fill:#f2f0ff,line-height:1.2;
