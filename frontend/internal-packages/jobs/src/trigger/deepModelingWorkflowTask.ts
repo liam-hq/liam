@@ -1,18 +1,18 @@
-import type { DeepModelingParams, DeepModelingResult } from '@liam-hq/agent'
+import type { AgentWorkflowParams, AgentWorkflowResult } from '@liam-hq/agent'
 import { createSupabaseRepositories, deepModeling } from '@liam-hq/agent'
 import { logger, task } from '@trigger.dev/sdk'
 import { errAsync, ResultAsync } from 'neverthrow'
 import { createClient } from '../libs/supabase'
 
 // Define type excluding schemaData (repositories are now passed via config)
-export type DeepModelingPayload = Omit<DeepModelingParams, 'schemaData'>
+export type DeepModelingPayload = Omit<AgentWorkflowParams, 'schemaData'>
 
 export const deepModelingWorkflowTask = task({
   id: 'deep-modeling-workflow',
   machine: 'medium-1x',
   run: async (
     payload: DeepModelingPayload,
-  ): Promise<ResultAsync<DeepModelingResult, Error>> => {
+  ): Promise<ResultAsync<AgentWorkflowResult, Error>> => {
     logger.log('Starting Deep Modeling workflow:', {
       buildingSchemaId: payload.buildingSchemaId,
       messageLength: payload.userInput.length,
@@ -32,7 +32,7 @@ export const deepModelingWorkflowTask = task({
     return repositories.schema
       .getSchema(payload.designSessionId)
       .andThen((schemaResult) => {
-        const deepModelingParams: DeepModelingParams = {
+        const deepModelingParams: AgentWorkflowParams = {
           ...payload,
           schemaData: schemaResult.schema,
         }

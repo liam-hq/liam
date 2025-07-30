@@ -53,6 +53,7 @@ export const Default: Story = {
     isPending: false,
     onProjectChange: () => {},
     formAction: () => {},
+    schemaFilePath: null,
   },
   parameters: {
     docs: {
@@ -73,6 +74,7 @@ export const WithBranches: Story = {
     isPending: false,
     onProjectChange: () => {},
     formAction: () => {},
+    schemaFilePath: 'db/schema.rb',
   },
   parameters: {
     docs: {
@@ -93,6 +95,7 @@ export const LoadingBranches: Story = {
     isPending: false,
     onProjectChange: () => {},
     formAction: () => {},
+    schemaFilePath: null,
   },
   parameters: {
     docs: {
@@ -114,6 +117,7 @@ export const WithBranchesError: Story = {
     isPending: false,
     onProjectChange: () => {},
     formAction: () => {},
+    schemaFilePath: null,
   },
   parameters: {
     docs: {
@@ -134,6 +138,7 @@ export const Pending: Story = {
     isPending: true,
     onProjectChange: () => {},
     formAction: () => {},
+    schemaFilePath: 'database.sql',
   },
   parameters: {
     docs: {
@@ -155,6 +160,7 @@ export const WithFormError: Story = {
     isPending: false,
     onProjectChange: () => {},
     formAction: () => {},
+    schemaFilePath: 'schema.prisma',
   },
   parameters: {
     docs: {
@@ -174,6 +180,7 @@ export const NoProject: Story = {
     isPending: false,
     onProjectChange: () => {},
     formAction: () => {},
+    schemaFilePath: null,
   },
   parameters: {
     docs: {

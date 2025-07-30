@@ -35,7 +35,7 @@ export const createDbAgentGraph = () => {
     .addEdge('invokeSchemaDesignTool', 'designSchema')
     .addConditionalEdges('designSchema', routeAfterDesignSchema, {
       invokeSchemaDesignTool: 'invokeSchemaDesignTool',
-      executeDDL: END,
+      generateUsecase: END,
     })
 
   return dbAgentGraph.compile()

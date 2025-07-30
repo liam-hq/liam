@@ -136,7 +136,8 @@ describe('withTimelineItemSync', () => {
       ]
 
       for (let i = 0; i < testCases.length; i++) {
-        const content = testCases[i]!
+        const content = testCases[i]
+        if (!content) continue
         const message = new ToolMessage({
           content,
           tool_call_id: 'test-call-id',

@@ -4,6 +4,7 @@ import { type FC, useActionState, useEffect, useTransition } from 'react'
 import type { Projects } from '@/components/CommonLayout/AppBar/ProjectsDropdownMenu/services/getProjects'
 import { createSession } from '../../actions/createSession'
 import { getBranches } from '../../actions/getBranches'
+import { getSchemaFilePath } from './actions/getSchemaFilePath'
 import { SessionFormPresenter } from './SessionFormPresenter'
 
 type Props = {
@@ -22,11 +23,17 @@ export const SessionForm: FC<Props> = ({ projects, defaultProjectId }) => {
     { branches: [], loading: false },
   )
 
+  const [schemaPathState, schemaPathAction] = useActionState(
+    getSchemaFilePath,
+    { path: null },
+  )
+
   const handleProjectChange = (projectId: string) => {
     startTransition(() => {
       const formData = new FormData()
       formData.append('projectId', projectId)
       branchesAction(formData)
+      schemaPathAction(formData)
     })
   }
 
@@ -38,9 +45,10 @@ export const SessionForm: FC<Props> = ({ projects, defaultProjectId }) => {
         const formData = new FormData()
         formData.append('projectId', defaultProjectId)
         branchesAction(formData)
+        schemaPathAction(formData)
       })
     }
-  }, [defaultProjectId, projects, branchesAction])
+  }, [defaultProjectId, projects, branchesAction, schemaPathAction])
 
   return (
     <SessionFormPresenter
@@ -53,6 +61,7 @@ export const SessionForm: FC<Props> = ({ projects, defaultProjectId }) => {
       isPending={isPending}
       onProjectChange={handleProjectChange}
       formAction={formAction}
+      schemaFilePath={schemaPathState.path}
     />
   )
 }

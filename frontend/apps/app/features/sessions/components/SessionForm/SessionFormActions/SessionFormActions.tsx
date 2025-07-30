@@ -1,7 +1,6 @@
 'use client'
 
 import type { FC } from 'react'
-import { useState } from 'react'
 import { ActionButton } from '../ActionButton'
 import { AttachButton } from '../AttachButton'
 import { DeepModelingToggle } from '../DeepModelingToggle'
@@ -27,15 +26,9 @@ export const SessionFormActions: FC<Props> = ({
   onSubmit,
   onCancel,
 }) => {
-  const [isDeepModelingActive, setIsDeepModelingActive] = useState(false)
-
   return (
     <div className={styles.container}>
-      <DeepModelingToggle
-        isActive={isDeepModelingActive}
-        onClick={() => setIsDeepModelingActive((prev) => !prev)}
-        disabled={isPending}
-      >
+      <DeepModelingToggle name="isDeepModelingEnabled" disabled={isPending}>
         Deep Modeling
       </DeepModelingToggle>
       {/* Temporarily hidden - Issue #5166: Hide voice input and file attachment UI */}

@@ -1,3 +1,7 @@
+export * from './db-agent/createDbAgentGraph'
+export * from './db-agent/invokeDbAgent'
 export * from './deepModeling'
 export * from './repositories'
+export * from './shared/workflowSetup'
+export * from './types'
 export * from './utils/nodeLogger'

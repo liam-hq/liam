@@ -22,6 +22,7 @@ describe('getToolConfigurable', () => {
       configurable: {
         buildingSchemaId: 'test-version-id',
         latestVersionNumber: 1,
+        designSessionId: 'test-session-id',
         repositories,
         logger: mockLogger,
       },
@@ -54,6 +55,7 @@ describe('getToolConfigurable', () => {
       configurable: {
         buildingSchemaId: 'test-version-id',
         latestVersionNumber: 1,
+        designSessionId: 'test-session-id',
         logger: mockLogger,
         // Missing repositories
       },
@@ -75,6 +77,7 @@ describe('getToolConfigurable', () => {
         repositories,
         logger: mockLogger,
         latestVersionNumber: 1,
+        designSessionId: 'test-session-id',
         // Missing buildingSchemaId
       },
     }
@@ -94,6 +97,7 @@ describe('getToolConfigurable', () => {
       configurable: {
         buildingSchemaId: 123, // Should be string
         latestVersionNumber: 1,
+        designSessionId: 'test-session-id',
         repositories,
         logger: mockLogger,
       },
@@ -114,6 +118,7 @@ describe('getToolConfigurable', () => {
       configurable: {
         buildingSchemaId: '', // Empty string is valid for v.string()
         latestVersionNumber: 1,
+        designSessionId: 'test-session-id',
         repositories,
         logger: mockLogger,
       },
@@ -132,6 +137,7 @@ describe('getToolConfigurable', () => {
       configurable: {
         buildingSchemaId: 'test-version-id',
         latestVersionNumber: 1,
+        designSessionId: 'test-session-id',
         repositories,
         logger: mockLogger,
         additionalProperty: 'should-be-ignored',
@@ -154,6 +160,7 @@ describe('getToolConfigurable', () => {
       configurable: {
         buildingSchemaId: 'test-version-id',
         latestVersionNumber: 1,
+        designSessionId: 'test-session-id',
         repositories: 'not-an-object', // Truthy value passes basic check
         logger: mockLogger,
       },
@@ -172,6 +179,7 @@ describe('getToolConfigurable', () => {
       configurable: {
         buildingSchemaId: 'test-version-id',
         latestVersionNumber: 1,
+        designSessionId: 'test-session-id',
         repositories: null, // Falsy value
         logger: mockLogger,
       },

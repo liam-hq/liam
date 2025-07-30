@@ -23,6 +23,7 @@ type Props = {
   isPending: boolean
   onProjectChange: (projectId: string) => void
   formAction: (formData: FormData) => void
+  schemaFilePath: string | null
 }
 
 export const SessionFormPresenter: FC<Props> = ({
@@ -35,6 +36,7 @@ export const SessionFormPresenter: FC<Props> = ({
   isPending,
   onProjectChange,
   formAction,
+  schemaFilePath,
 }) => {
   const [mode, setMode] = useState<SessionMode>('github')
   const [isTransitioning, setIsTransitioning] = useState(false)
@@ -149,6 +151,7 @@ export const SessionFormPresenter: FC<Props> = ({
               onProjectChange={onProjectChange}
               formAction={formAction}
               isTransitioning={isTransitioning}
+              schemaFilePath={schemaFilePath}
             />
           </div>
         )}
