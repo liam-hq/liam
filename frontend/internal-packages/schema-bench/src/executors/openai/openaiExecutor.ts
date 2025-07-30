@@ -1,10 +1,6 @@
-import {
-  err,
-  fromPromise,
-  type Result,
-  Result as ResultClass,
-} from 'neverthrow'
+import { err, fromPromise, type Result } from 'neverthrow'
 import OpenAI from 'openai'
+import { handleExecutionResult, safeJsonParse } from '../utils.ts'
 import { schemaJsonSchema } from './schemaJsonSchema.ts'
 import type {
   OpenAIExecutorConfig,
@@ -52,23 +48,22 @@ export class OpenAIExecutor {
         error instanceof Error ? error : new Error('Unknown error occurred'),
     )
 
-    if (apiResult.isErr()) {
-      return err(apiResult.error)
+    const handledApiResult = handleExecutionResult(
+      apiResult,
+      'OpenAI API call failed',
+    )
+    if (handledApiResult.isErr()) {
+      return err(handledApiResult.error)
     }
 
-    const content = apiResult.value.choices[0]?.message?.content
+    const content = handledApiResult.value.choices[0]?.message?.content
     if (!content) {
       return err(new Error('No response content from OpenAI'))
     }
 
-    const parseResult = ResultClass.fromThrowable(
-      () => JSON.parse(content),
-      (error) =>
-        error instanceof Error
-          ? error
-          : new Error('Failed to parse JSON response'),
-    )()
-
-    return parseResult
+    return safeJsonParse<OpenAIExecutorOutput>(
+      content,
+      'Failed to parse OpenAI JSON response',
+    )
   }
 }
