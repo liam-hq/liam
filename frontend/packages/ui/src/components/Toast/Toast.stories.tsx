@@ -1,5 +1,9 @@
 import type { Meta, StoryObj } from '@storybook/react'
-import { Toast, ToastProvider } from './Toast'
+import {
+  Toast,
+  ToastCommandPaletteViewport,
+  ToastHeaderViewport,
+} from './Toast'
 
 const meta = {
   component: Toast,
@@ -16,9 +20,9 @@ const meta = {
   },
   decorators: [
     (Story) => (
-      <ToastProvider>
+      <ToastHeaderViewport>
         <Story />
-      </ToastProvider>
+      </ToastHeaderViewport>
     ),
   ],
 } satisfies Meta<typeof Toast>
@@ -60,4 +64,21 @@ export const Warning: Story = {
     status: 'warning',
     isOpen: true,
   },
+}
+
+export const CommandPaleteViewport: Story = {
+  args: {
+    title: 'Info Toast',
+    description: 'Info Toast description',
+    status: 'info',
+    isOpen: true,
+  },
+
+  decorators: [
+    (Story) => (
+      <ToastCommandPaletteViewport>
+        <Story />
+      </ToastCommandPaletteViewport>
+    ),
+  ],
 }

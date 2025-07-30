@@ -47,6 +47,30 @@ export const Toast: FC<Props> = ({
   )
 }
 
+export const ToastHeaderViewport: FC<React.PropsWithChildren> = ({
+  children,
+}) => {
+  return (
+    <RadixToast.Provider>
+      {children}
+      <RadixToast.Viewport className={clsx(styles.viewport, styles.header)} />
+    </RadixToast.Provider>
+  )
+}
+
+export const ToastCommandPaletteViewport: FC<React.PropsWithChildren> = ({
+  children,
+}) => {
+  return (
+    <RadixToast.Provider>
+      {children}
+      <RadixToast.Viewport
+        className={clsx(styles.viewport, styles.commandPalette)}
+      />
+    </RadixToast.Provider>
+  )
+}
+
 export const ToastContext = createContext<ToastFn>(() => '')
 
 export const ToastProvider = ({ children }: PropsWithChildren) => {
@@ -69,8 +93,7 @@ export const ToastProvider = ({ children }: PropsWithChildren) => {
   return (
     <ToastContext.Provider value={toast}>
       {children}
-      {/* toast for the header actions */}
-      <RadixToast.Provider>
+      <ToastHeaderViewport>
         {toastItems.map((value) => (
           <Toast
             key={value.id}
@@ -78,10 +101,8 @@ export const ToastProvider = ({ children }: PropsWithChildren) => {
             onOpenChange={handleOpenChange(value.id)}
           />
         ))}
-        <RadixToast.Viewport className={clsx(styles.viewport, styles.header)} />
-      </RadixToast.Provider>
-      {/* toast for the command palette actions */}
-      <RadixToast.Provider>
+      </ToastHeaderViewport>
+      <ToastCommandPaletteViewport>
         {toastItems.map((value) => (
           <Toast
             key={value.id}
@@ -89,10 +110,7 @@ export const ToastProvider = ({ children }: PropsWithChildren) => {
             onOpenChange={handleOpenChange(value.id)}
           />
         ))}
-        <RadixToast.Viewport
-          className={clsx(styles.viewport, styles.commandPalette)}
-        />
-      </RadixToast.Provider>
+      </ToastCommandPaletteViewport>
     </ToastContext.Provider>
   )
 }
