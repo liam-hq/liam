@@ -29,6 +29,7 @@ export const createAnnotations = () => {
   return Annotation.Root({
     ...MessagesAnnotation.spec,
     userInput: Annotation<string>,
+    webSearchResults: Annotation<string | undefined>,
     analyzedRequirements: Annotation<
       | {
           businessRequirement: string
@@ -40,15 +41,20 @@ export const createAnnotations = () => {
     generatedUsecases: Annotation<Usecase[] | undefined>,
     schemaData: Annotation<Schema>,
     projectId: Annotation<string | undefined>,
-    buildingSchemaId: Annotation<string>,
-    latestVersionNumber: Annotation<number>,
-    organizationId: Annotation<string>,
-    userId: Annotation<string>,
-    designSessionId: Annotation<string>,
     error: Annotation<Error | undefined>,
     retryCount: Annotation<Record<string, number>>,
 
     ddlStatements: Annotation<string | undefined>,
     dmlStatements: Annotation<string | undefined>,
+
+    dmlExecutionSuccessful: Annotation<boolean | undefined>,
+    dmlExecutionErrors: Annotation<string | undefined>,
+
+    buildingSchemaId: Annotation<string>,
+    latestVersionNumber: Annotation<number>,
+    organizationId: Annotation<string>,
+    userId: Annotation<string>,
+
+    designSessionId: Annotation<string>,
   })
 }
