@@ -3,10 +3,15 @@ import type { WorkflowState } from '../../chat/workflow/types'
 
 /**
  * Determines the next node based on whether the last message contains tool calls
+ * Also checks for error state to prevent routing when errors occur
  */
 export const routeAfterDesignSchema = (
   state: WorkflowState,
 ): 'invokeSchemaDesignTool' | 'executeDDL' => {
+  if (state.error) {
+    return 'executeDDL'
+  }
+
   const { messages } = state
   const lastMessage = messages[messages.length - 1]
 

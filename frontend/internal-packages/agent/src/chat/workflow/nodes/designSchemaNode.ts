@@ -62,10 +62,7 @@ Please fix this issue by analyzing the schema and adding any missing constraints
       'Unable to complete the database design. There may be conflicts in the requirements...',
       assistantRole,
     )
-    return {
-      ...state,
-      error: invokeResult.error,
-    }
+    throw invokeResult.error
   }
 
   const { response, reasoning } = invokeResult.value
