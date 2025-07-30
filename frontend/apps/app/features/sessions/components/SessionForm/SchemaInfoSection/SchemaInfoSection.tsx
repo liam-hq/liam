@@ -9,6 +9,10 @@ import {
 import type { FC, ReactNode } from 'react'
 import type { FormatType } from '../../../../../components/FormatIcon/FormatIcon'
 import { FormatIcon } from '../../../../../components/FormatIcon/FormatIcon'
+import {
+  URL_VALIDATION_ERROR_MESSAGES,
+  URL_VALIDATION_ERROR_MESSAGES_JA,
+} from '../constants/urlValidationConstants'
 import { FormatSelectDropdown } from '../FormatSelectDropdown'
 import { SchemaLink } from '../SchemaLink'
 import { ViewErrorsCollapsible } from '../ViewErrorsCollapsible'
@@ -31,6 +35,28 @@ const parseErrorMessage = (message: string): ReactNode => {
     }
     return part
   })
+}
+
+// Helper function to get Japanese error message if available
+const getLocalizedErrorMessage = (message: string): string => {
+  const errorMappings: Record<string, string> = {
+    [URL_VALIDATION_ERROR_MESSAGES.INVALID_URL]:
+      URL_VALIDATION_ERROR_MESSAGES_JA.INVALID_URL,
+    [URL_VALIDATION_ERROR_MESSAGES.DOMAIN_NOT_ALLOWED]:
+      URL_VALIDATION_ERROR_MESSAGES_JA.DOMAIN_NOT_ALLOWED,
+    [URL_VALIDATION_ERROR_MESSAGES.FILE_TOO_LARGE]:
+      URL_VALIDATION_ERROR_MESSAGES_JA.FILE_TOO_LARGE,
+    [URL_VALIDATION_ERROR_MESSAGES.FETCH_TIMEOUT]:
+      URL_VALIDATION_ERROR_MESSAGES_JA.FETCH_TIMEOUT,
+    [URL_VALIDATION_ERROR_MESSAGES.FETCH_FAILED]:
+      URL_VALIDATION_ERROR_MESSAGES_JA.FETCH_FAILED,
+    [URL_VALIDATION_ERROR_MESSAGES.INVALID_FILE_TYPE]:
+      URL_VALIDATION_ERROR_MESSAGES_JA.INVALID_FILE_TYPE,
+    [URL_VALIDATION_ERROR_MESSAGES.GENERAL_ERROR]:
+      URL_VALIDATION_ERROR_MESSAGES_JA.GENERAL_ERROR,
+  }
+
+  return errorMappings[message] || message
 }
 
 type Props = {
@@ -173,7 +199,7 @@ export const SchemaInfoSection: FC<Props> = ({
         )}
         {status === 'invalid' && errorMessage && (
           <span className={styles.errorText}>
-            {parseErrorMessage(errorMessage)}
+            {parseErrorMessage(getLocalizedErrorMessage(errorMessage))}
           </span>
         )}
       </div>

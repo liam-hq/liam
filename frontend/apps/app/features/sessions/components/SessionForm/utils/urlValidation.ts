@@ -1,4 +1,5 @@
 import type { FormatType } from '../../../../../components/FormatIcon/FormatIcon'
+import { URL_VALIDATION_ERROR_MESSAGES } from '../constants/urlValidationConstants'
 
 // Parse allowed domains from environment variable
 const parseAllowedDomains = (): string[] => {
@@ -247,7 +248,7 @@ const readResponseWithSizeLimit = async (
   if (contentLength && Number.parseInt(contentLength) > maxSize) {
     return {
       success: false,
-      error: 'File too large. Maximum allowed size is 5MB.',
+      error: URL_VALIDATION_ERROR_MESSAGES.FILE_TOO_LARGE,
     }
   }
 
@@ -273,7 +274,7 @@ const readResponseWithSizeLimit = async (
         if (totalSize > maxSize) {
           return {
             success: false,
-            error: 'File too large. Maximum allowed size is 5MB.',
+            error: URL_VALIDATION_ERROR_MESSAGES.FILE_TOO_LARGE,
           }
         }
         chunks.push(value)
@@ -340,7 +341,7 @@ export const fetchSchemaFromUrl = async (
   if (!isValidSchemaUrl(url)) {
     return {
       success: false,
-      error: 'Invalid file type. Supported formats: .sql, .rb, .prisma, .json',
+      error: URL_VALIDATION_ERROR_MESSAGES.INVALID_FILE_TYPE,
     }
   }
 
@@ -354,7 +355,7 @@ export const fetchSchemaFromUrl = async (
     if (!response.ok) {
       return {
         success: false,
-        error: `Failed to fetch schema: HTTP ${response.status}`,
+        error: URL_VALIDATION_ERROR_MESSAGES.FETCH_FAILED,
       }
     }
 
@@ -366,13 +367,13 @@ export const fetchSchemaFromUrl = async (
     if (error instanceof Error && error.name === 'AbortError') {
       return {
         success: false,
-        error: 'Request timed out. Please try again or check the URL.',
+        error: URL_VALIDATION_ERROR_MESSAGES.FETCH_TIMEOUT,
       }
     }
 
     return {
       success: false,
-      error: `Failed to fetch schema: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      error: URL_VALIDATION_ERROR_MESSAGES.FETCH_FAILED,
     }
   }
 }

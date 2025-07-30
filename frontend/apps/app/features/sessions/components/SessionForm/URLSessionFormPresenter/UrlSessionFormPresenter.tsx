@@ -4,6 +4,7 @@ import { type ChangeEvent, type FC, useRef, useState } from 'react'
 import type { FormatType } from '../../../../../components/FormatIcon/FormatIcon'
 import { createAccessibleOpacityTransition } from '../../../../../utils/accessibleTransitions'
 import { AttachmentsContainer } from '../AttachmentsContainer'
+import { URL_VALIDATION_ERROR_MESSAGES } from '../constants/urlValidationConstants'
 import { useAutoResizeTextarea } from '../hooks/useAutoResizeTextarea'
 import { useEnterKeySubmission } from '../hooks/useEnterKeySubmission'
 import { useFileAttachments } from '../hooks/useFileAttachments'
@@ -101,8 +102,7 @@ export const URLSessionFormPresenter: FC<Props> = ({
     if (!isValidSchemaUrl(trimmedUrl)) {
       return {
         isValid: false,
-        error:
-          'Invalid URL. Please provide a valid URL pointing to a schema file (.sql, .rb, .prisma, or .json).',
+        error: URL_VALIDATION_ERROR_MESSAGES.INVALID_URL,
       }
     }
 
@@ -124,7 +124,7 @@ export const URLSessionFormPresenter: FC<Props> = ({
 
     return {
       success: false as const,
-      error: result.error || 'Failed to fetch schema',
+      error: result.error || URL_VALIDATION_ERROR_MESSAGES.GENERAL_ERROR,
     }
   }
 
