@@ -56,10 +56,6 @@ export async function designSchemaNode(
   })
 
   if (invokeResult.isErr()) {
-    const errorMessage = `Unable to complete the database design. There may be conflicts in the requirements. Error: ${invokeResult.error.message}`
-
-    await logAssistantMessage(state, repositories, errorMessage, assistantRole)
-
     // Create a human message for error feedback to avoid reasoning API issues
     // Using HumanMessage prevents the "reasoning without required following item" error
     const errorFeedbackMessage = new HumanMessage({
