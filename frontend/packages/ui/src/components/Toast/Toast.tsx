@@ -69,6 +69,7 @@ export const ToastProvider = ({ children }: PropsWithChildren) => {
   return (
     <ToastContext.Provider value={toast}>
       {children}
+      {/* toast for the header actions */}
       <RadixToast.Provider>
         {toastItems.map((value) => (
           <Toast
@@ -77,7 +78,20 @@ export const ToastProvider = ({ children }: PropsWithChildren) => {
             onOpenChange={handleOpenChange(value.id)}
           />
         ))}
-        <RadixToast.Viewport className={styles.viewport} />
+        <RadixToast.Viewport className={clsx(styles.viewport, styles.header)} />
+      </RadixToast.Provider>
+      {/* toast for the command palette actions */}
+      <RadixToast.Provider>
+        {toastItems.map((value) => (
+          <Toast
+            key={value.id}
+            {...value}
+            onOpenChange={handleOpenChange(value.id)}
+          />
+        ))}
+        <RadixToast.Viewport
+          className={clsx(styles.viewport, styles.commandPalette)}
+        />
       </RadixToast.Provider>
     </ToastContext.Provider>
   )
