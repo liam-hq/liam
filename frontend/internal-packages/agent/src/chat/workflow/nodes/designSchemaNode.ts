@@ -26,29 +26,6 @@ export async function designSchemaNode(
   }
   const { repositories } = configurableResult.value
 
-  // Track retry count
-  const retryCount = state.retryCount['designSchemaNode'] ?? 0
-
-  // Check if we've exceeded max retries
-  if (retryCount >= 3) {
-    const maxRetryMessage =
-      'Maximum retry attempts reached for database design. Please review your requirements and try again.'
-    await logAssistantMessage(
-      state,
-      repositories,
-      maxRetryMessage,
-      assistantRole,
-    )
-    return {
-      ...state,
-      error: new Error(maxRetryMessage),
-      retryCount: {
-        ...state.retryCount,
-        designSchemaNode: retryCount,
-      },
-    }
-  }
-
   // Check if the last message indicates successful schema update
   const lastMessage = state.messages[state.messages.length - 1]
   if (
@@ -94,10 +71,6 @@ export async function designSchemaNode(
       ...state,
       messages: [...state.messages, errorFeedbackMessage],
       error: invokeResult.error,
-      retryCount: {
-        ...state.retryCount,
-        designSchemaNode: retryCount + 1,
-      },
     }
   }
 
@@ -128,9 +101,5 @@ export async function designSchemaNode(
     ...state,
     messages: [...state.messages, syncedMessage],
     latestVersionNumber: state.latestVersionNumber + 1,
-    retryCount: {
-      ...state.retryCount,
-      designSchemaNode: 0, // Reset retry count on success
-    },
   }
 }
