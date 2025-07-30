@@ -112,4 +112,25 @@ describe('routeAfterDesignSchema', () => {
 
     expect(result).toBe('invokeSchemaDesignTool')
   })
+
+  it('should return generateUsecase when state has error', () => {
+    const messageWithToolCalls = new AIMessage({
+      content: 'I need to update the schema',
+      tool_calls: [
+        {
+          name: 'schemaDesignTool',
+          args: { operations: [] },
+          id: 'test-id',
+        },
+      ],
+    })
+
+    const stateWithError = {
+      ...workflowState([messageWithToolCalls]),
+      error: new Error('Test error'),
+    }
+    const result = routeAfterDesignSchema(stateWithError)
+
+    expect(result).toBe('generateUsecase')
+  })
 })
