@@ -53,7 +53,7 @@ export async function designSchemaNode(
 
   // Filter out AIMessages to avoid reasoning API issues
   // Only keep HumanMessages to prevent "reasoning without required following item" error
-  const messages = state.messages.filter((msg) => msg._getType() === 'human')
+  const messages = state.messages.filter((msg) => msg instanceof HumanMessage)
 
   const invokeResult = await invokeDesignAgent({ schemaText }, messages, {
     buildingSchemaId: state.buildingSchemaId,
