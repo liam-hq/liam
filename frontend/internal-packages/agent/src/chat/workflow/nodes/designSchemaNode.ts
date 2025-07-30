@@ -110,7 +110,7 @@ export async function designSchemaNode(
 
   return {
     ...state,
-    messages: [syncedMessage],
+    messages: [...state.messages, syncedMessage],
     latestVersionNumber: state.latestVersionNumber + 1,
     retryCount: {
       ...state.retryCount,
