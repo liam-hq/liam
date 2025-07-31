@@ -121,7 +121,10 @@ export async function prepareDmlNode(
       const header = op.description
         ? `-- ${op.description}`
         : `-- ${op.operation_type} operation for use case ${op.useCaseId}`
-      return `${header}\n${op.sql};`
+      const sqlWithSemicolon = op.sql.trim().endsWith(';')
+        ? op.sql
+        : `${op.sql};`
+      return `${header}\n${sqlWithSemicolon}`
     })
     .join('\n\n')
 
