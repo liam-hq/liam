@@ -1,6 +1,6 @@
 import type { ReviewComment } from './types'
 
-export const SCHEMA_UPDATES_REVIEW_COMMENTS: ReviewComment[] = [
+export const SQL_REVIEW_COMMENTS: ReviewComment[] = [
   {
     fromLine: 8,
     toLine: 9,

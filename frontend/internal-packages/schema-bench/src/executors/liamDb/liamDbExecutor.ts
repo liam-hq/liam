@@ -1,12 +1,13 @@
 import { deepModeling, InMemoryRepository } from '@liam-hq/agent'
 import { aSchema } from '@liam-hq/db-structure'
 import { err, ok, type Result } from 'neverthrow'
+import { handleExecutionResult, logInputProcessing } from '../utils.ts'
 import type { LiamDbExecutorInput, LiamDbExecutorOutput } from './types.ts'
 
 export async function execute(
   input: LiamDbExecutorInput,
 ): Promise<Result<LiamDbExecutorOutput, Error>> {
-  console.info(`Processing input: ${input.input.substring(0, 100)}...`)
+  logInputProcessing(input.input)
 
   // Setup InMemory repository
   const repositories = {
@@ -45,12 +46,13 @@ export async function execute(
 
   // Execute deep modeling workflow
   const result = await deepModeling(workflowState, config)
+  const handledResult = handleExecutionResult(result, 'Deep modeling failed')
 
-  if (result.isErr()) {
-    return err(new Error(`Deep modeling failed: ${result.error.message}`))
+  if (handledResult.isErr()) {
+    return err(handledResult.error)
   }
 
-  const finalWorkflowState = result.value
+  const finalWorkflowState = handledResult.value
 
   // Get the latest schema from repository
   let finalSchemaData = finalWorkflowState.schemaData

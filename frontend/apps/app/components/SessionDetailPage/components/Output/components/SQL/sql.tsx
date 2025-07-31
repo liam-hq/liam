@@ -3,9 +3,9 @@
 import type { Schema } from '@liam-hq/db-structure'
 import type { FC } from 'react'
 import type { ReviewComment } from '@/components/SessionDetailPage/types'
-import { useSchemaUpdates } from './hooks/useSchemaUpdates'
+import { useSql } from './hooks/useSql'
 import { MigrationsViewer } from './MigrationsViewer'
-import styles from './SchemaUpdates.module.css'
+import styles from './SQL.module.css'
 
 type Props = {
   currentSchema: Schema
@@ -13,12 +13,12 @@ type Props = {
   comments?: ReviewComment[]
 }
 
-export const SchemaUpdates: FC<Props> = ({
+export const SQL: FC<Props> = ({
   currentSchema,
   prevSchema,
   comments = [],
 }) => {
-  const { cumulativeDdl, prevCumulativeDdl } = useSchemaUpdates({
+  const { cumulativeDdl, prevCumulativeDdl } = useSql({
     currentSchema,
     prevSchema,
   })

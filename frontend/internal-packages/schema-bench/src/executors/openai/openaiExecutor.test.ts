@@ -95,7 +95,7 @@ describe('OpenAIExecutor', () => {
 
     expect(result.isErr()).toBe(true)
     if (result.isErr()) {
-      expect(result.error.message).toBe('API Error')
+      expect(result.error.message).toBe('OpenAI API call failed: API Error')
     }
   })
 

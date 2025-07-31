@@ -10,7 +10,7 @@ import { OutputPlaceholder } from './components/OutputPlaceholder'
 import { useRealtimeTimelineItems } from './hooks/useRealtimeTimelineItems'
 import { useRealtimeVersionsWithSchema } from './hooks/useRealtimeVersionsWithSchema'
 import { useRealtimeWorkflowRuns } from './hooks/useRealtimeWorkflowRuns'
-import { SCHEMA_UPDATES_REVIEW_COMMENTS } from './mock'
+import { SQL_REVIEW_COMMENTS } from './mock'
 import styles from './SessionDetailPage.module.css'
 import { convertTimelineItemToTimelineItemEntry } from './services/convertTimelineItemToTimelineItemEntry'
 import type {
@@ -111,7 +111,7 @@ export const SessionDetailPageClient: FC<Props> = ({
                 designSessionId={designSessionId}
                 schema={displayedSchema}
                 prevSchema={prevSchema}
-                schemaUpdatesReviewComments={SCHEMA_UPDATES_REVIEW_COMMENTS}
+                sqlReviewComments={SQL_REVIEW_COMMENTS}
                 versions={versions}
                 selectedVersion={selectedVersion}
                 onSelectedVersionChange={handleChangeSelectedVersion}

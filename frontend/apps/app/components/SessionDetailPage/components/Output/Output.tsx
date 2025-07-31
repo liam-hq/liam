@@ -5,7 +5,7 @@ import type { ReviewComment } from '../../types'
 import { ArtifactContainer } from './components/Artifact/ArtifactContainer'
 import { ERD } from './components/ERD'
 import { Header } from './components/Header'
-import { SchemaUpdates } from './components/SchemaUpdates'
+import { SQL } from './components/SQL'
 import { DEFAULT_OUTPUT_TAB, OUTPUT_TABS } from './constants'
 import styles from './Output.module.css'
 
@@ -13,14 +13,14 @@ type Props = ComponentProps<typeof Header> & {
   designSessionId: string
   schema: Schema
   prevSchema: Schema
-  schemaUpdatesReviewComments: ReviewComment[]
+  sqlReviewComments: ReviewComment[]
 }
 
 export const Output: FC<Props> = ({
   designSessionId,
   schema,
   prevSchema,
-  schemaUpdatesReviewComments,
+  sqlReviewComments,
   ...propsForHeader
 }) => {
   return (
@@ -29,14 +29,11 @@ export const Output: FC<Props> = ({
       <TabsContent value={OUTPUT_TABS.ERD} className={styles.tabsContent}>
         <ERD schema={schema} prevSchema={prevSchema} />
       </TabsContent>
-      <TabsContent
-        value={OUTPUT_TABS.SCHEMA_UPDATES}
-        className={styles.tabsContent}
-      >
-        <SchemaUpdates
+      <TabsContent value={OUTPUT_TABS.SQL} className={styles.tabsContent}>
+        <SQL
           currentSchema={schema}
           prevSchema={prevSchema}
-          comments={schemaUpdatesReviewComments}
+          comments={sqlReviewComments}
         />
       </TabsContent>
       <TabsContent value={OUTPUT_TABS.ARTIFACT} className={styles.tabsContent}>

@@ -12,6 +12,7 @@ import {
   FileText,
 } from '@liam-hq/ui'
 import type { FC } from 'react'
+import styles from './ExportDropdown.module.css'
 
 export const ExportDropdown: FC = () => {
   const handleDownloadMigrations = () => {
@@ -30,6 +31,7 @@ export const ExportDropdown: FC = () => {
           size="sm"
           leftIcon={<Download size={16} />}
           rightIcon={<ChevronDown size={16} />}
+          className={styles.button}
         >
           Export
         </Button>
