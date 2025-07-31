@@ -26,22 +26,6 @@ export async function designSchemaNode(
   }
   const { repositories } = configurableResult.value
 
-  // Check if the last message indicates successful schema update
-  const lastMessage = state.messages[state.messages.length - 1]
-  if (
-    lastMessage &&
-    'content' in lastMessage &&
-    typeof lastMessage.content === 'string' &&
-    lastMessage.content.includes('Schema successfully updated')
-  ) {
-    // If schema was successfully updated, return without calling AI again
-    // This prevents infinite loops and allows the workflow to exit
-    return {
-      ...state,
-      messages: state.messages,
-    }
-  }
-
   const schemaText = convertSchemaToText(state.schemaData)
 
   // Filter out AIMessages to avoid reasoning API issues
