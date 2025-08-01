@@ -46,7 +46,16 @@ const USECASE_GENERATION_SCHEMA = {
   additionalProperties: false,
 }
 
-// Single usecase schema
+// Response schema from OpenAI (without id and dmlOperations)
+const usecaseResponseSchema = v.object({
+  requirementType: v.picklist(['functional', 'non_functional']), // Type of requirement
+  requirementCategory: v.string(), // Category of the requirement
+  requirement: v.string(), // Content/text of the specific requirement
+  title: v.string(),
+  description: v.string(),
+})
+
+// Single usecase schema (with id and dmlOperations)
 const usecaseSchema = v.object({
   id: v.pipe(v.string(), v.uuid()), // UUID
   requirementType: v.picklist(['functional', 'non_functional']), // Type of requirement
@@ -57,7 +66,12 @@ const usecaseSchema = v.object({
   dmlOperations: v.array(dmlOperationSchema), // DML operations array
 })
 
-// Response schema for structured output
+// Response schema for structured output from OpenAI
+const usecaseGenerationResponseSchema = v.object({
+  usecases: v.array(usecaseResponseSchema),
+})
+
+// Internal schema with full usecase structure
 const usecaseGenerationSchema = v.object({
   usecases: v.array(usecaseSchema),
 })
@@ -150,7 +164,7 @@ export class QAGenerateUsecaseAgent {
     const reasoning = parsedReasoning.success ? parsedReasoning.output : null
 
     const parsedResponse = v.parse(
-      usecaseGenerationSchema,
+      usecaseGenerationResponseSchema,
       raw.additional_kwargs['parsed'],
     )
 
