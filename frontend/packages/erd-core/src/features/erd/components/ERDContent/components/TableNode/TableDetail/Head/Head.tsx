@@ -6,9 +6,14 @@ import {
   Table2,
   XIcon,
 } from '@liam-hq/ui'
-import type { FC } from 'react'
+import clsx from 'clsx'
+import { type FC, useMemo } from 'react'
+import { match } from 'ts-pattern'
+import diffStyles from '@/features/diff/styles/Diff.module.css'
 import { clickLogEvent } from '@/features/gtm/utils'
 import { useVersionOrThrow } from '@/providers'
+import { useSchemaOrThrow, useUserEditingOrThrow } from '@/stores'
+import { getChangeStatus } from './getChangeStatus'
 import styles from './Head.module.css'
 
 type Props = {
@@ -16,7 +21,28 @@ type Props = {
 }
 
 export const Head: FC<Props> = ({ table }) => {
+  const name = table.name
   const { version } = useVersionOrThrow()
+
+  const { diffItems } = useSchemaOrThrow()
+  const { showDiff } = useUserEditingOrThrow()
+
+  const changeStatus = useMemo(() => {
+    if (!showDiff) return undefined
+    return getChangeStatus({
+      tableId: name,
+      diffItems: diffItems ?? [],
+    })
+  }, [showDiff, name, diffItems])
+
+  const diffStyle = useMemo(() => {
+    if (!showDiff || !changeStatus) return undefined
+    return match(changeStatus)
+      .with('added', () => diffStyles.addedBg)
+      .with('removed', () => diffStyles.removedBg)
+      .with('modified', () => diffStyles.modifiedBg)
+      .otherwise(() => undefined)
+  }, [showDiff, changeStatus])
 
   const handleDrawerClose = () => {
     clickLogEvent({
@@ -29,7 +55,7 @@ export const Head: FC<Props> = ({ table }) => {
   }
 
   return (
-    <div className={styles.header}>
+    <div className={clsx(styles.header, showDiff && diffStyle)}>
       <DrawerTitle asChild>
         <div className={styles.iconTitleContainer}>
           <Table2 width={12} />
