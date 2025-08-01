@@ -10,6 +10,19 @@ export const routeAfterDesignSchema = (
   const { messages } = state
   const lastMessage = messages[messages.length - 1]
 
+  // Debug logging
+  if (process.env['NODE_ENV'] !== 'production') {
+    // biome-ignore lint/suspicious/noConsole: Debug logging
+    console.log('[DEBUG] routeAfterDesignSchema:', {
+      lastMessageType: lastMessage?._getType(),
+      hasToolCalls: lastMessage ? hasToolCalls(lastMessage) : false,
+      toolCalls:
+        lastMessage && 'tool_calls' in lastMessage
+          ? lastMessage.tool_calls
+          : undefined,
+    })
+  }
+
   if (lastMessage && hasToolCalls(lastMessage)) {
     return 'invokeSchemaDesignTool'
   }

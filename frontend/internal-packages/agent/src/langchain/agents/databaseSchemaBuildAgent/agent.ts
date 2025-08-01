@@ -31,6 +31,12 @@ const invokeModelWithRetry = async (
   configurable: ToolConfigurable,
   retryCount = 0,
 ): Promise<AIMessage> => {
+  // Debug: Log messages before invoke
+  if (process.env['NODE_ENV'] !== 'production') {
+    // biome-ignore lint/suspicious/noConsole: Debug logging
+    console.log('[DEBUG] Before invoke - Message count:', messages.length)
+  }
+
   const result = await ResultAsync.fromPromise(
     model.invoke([new SystemMessage(systemPrompt), ...messages], {
       configurable,
@@ -54,7 +60,7 @@ const invokeModelWithRetry = async (
       if (process.env['NODE_ENV'] !== 'production') {
         // biome-ignore lint/suspicious/noConsole: Debug logging in non-production
         console.warn(
-          `Tool call sync error detected (attempt ${retryCount + 1}/${MAX_RETRIES}):`,
+          `[DEBUG] Tool call sync error detected (attempt ${retryCount + 1}/${MAX_RETRIES}):`,
           {
             callId,
             errorMessage,
@@ -65,6 +71,7 @@ const invokeModelWithRetry = async (
                 Array.isArray(msg.tool_calls) &&
                 msg.tool_calls.length > 0,
             ),
+            retryingWithFilteredMessages: true,
           },
         )
       }
@@ -106,6 +113,23 @@ const invokeModelWithRetry = async (
 
     // Return the error for non-retryable cases
     throw result.error
+  }
+
+  // Debug: Log successful response
+  if (
+    process.env['NODE_ENV'] !== 'production' &&
+    result.value.tool_calls &&
+    result.value.tool_calls.length > 0
+  ) {
+    // biome-ignore lint/suspicious/noConsole: Debug logging
+    console.log('[DEBUG] AI Response with tool calls:', {
+      toolCallCount: result.value.tool_calls.length,
+      toolCalls: result.value.tool_calls.map((tc) => ({
+        id: tc.id,
+        name: tc.name,
+        args: tc.args,
+      })),
+    })
   }
 
   return result.value

@@ -58,6 +58,15 @@ export const invokeSchemaDesignToolNode = async (
   }
   const { repositories } = configurableResult.value
 
+  // Debug: Log state before tool invocation
+  if (process.env['NODE_ENV'] !== 'production' && state.messages.length > 0) {
+    // biome-ignore lint/suspicious/noConsole: Debug logging
+    console.log(
+      '[DEBUG] invokeSchemaDesignToolNode - Message count:',
+      state.messages.length,
+    )
+  }
+
   const toolNode = new ToolNode<{ messages: BaseMessage[] }>([schemaDesignTool])
 
   const result = await toolNode.invoke(state, {
