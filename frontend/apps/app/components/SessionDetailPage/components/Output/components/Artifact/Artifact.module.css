@@ -1,8 +1,8 @@
 .container {
-  display: grid;
-  grid-template-rows: auto 1fr;
+  display: flex;
+  flex-direction: column;
   width: 100%;
-  height: 100%;
+  min-height: 100%;
   gap: var(--spacing-2);
 }
 
@@ -27,23 +27,31 @@
   gap: var(--spacing-1);
 }
 
-.body {
+.contentWrapper {
+  display: flex;
+  gap: var(--spacing-8);
   width: 100%;
-  max-width: 100%;
-  min-height: 0;
-  overflow-y: scroll;
-  padding: var(--spacing-4);
+  justify-content: center;
+  flex: 1;
+}
+
+.bodyWrapper {
+  flex: 0 1 720px; /* Fixed 720px content width, shrinks on smaller screens */
+  width: 100%;
+}
+
+.body {
+  padding: var(--spacing-8) var(--spacing-6);
   font-family: var(--main-font);
   font-weight: 400;
-  font-size: var(--font-size-4);
-  line-height: 1.8em;
+  font-size: 0.925rem; /* 14.8px - optimal for readability */
+  line-height: 1.75;
   color: var(--global-body-text);
   word-wrap: break-word;
   overflow-wrap: break-word;
   word-break: break-word;
-  scrollbar-color: var(--scrollbar-thumb-background)
-    var(--scrollbar-track-background);
-  scrollbar-width: var(--scrollbar-width);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 /* Exclude code blocks from text wrapping */
@@ -64,9 +72,8 @@
 .body :global(h6) {
   margin-top: 1.5rem;
   margin-bottom: 1rem;
-  font-weight: 600;
   line-height: 1.25;
-  color: var(--global-body-text);
+  color: var(--global-foreground);
 }
 
 /* First element spacing adjustments */
@@ -74,54 +81,74 @@
   margin-top: 0;
 }
 
+/* Business Requirement (h1) */
 .body :global(h1) {
-  margin: 0.67em 0;
-  font-weight: 600;
-  padding-bottom: 0.3em;
-  font-size: 2em;
+  margin: var(--spacing-10) 0 var(--spacing-6) 0;
+  font-weight: 700;
+  font-size: 22px;
+  line-height: 1.3;
+  letter-spacing: -0.02em;
+  color: var(--global-foreground);
   border-bottom: 1px solid var(--global-border);
+  padding-bottom: var(--spacing-3);
 }
 
+/* Requirements, Functional Requirements (h2) */
 .body :global(h2) {
-  font-weight: 600;
-  padding-bottom: 0.3em;
-  font-size: 1.5em;
-  border-bottom: 1px solid var(--global-border);
+  margin: var(--spacing-10) 0 var(--spacing-4) 0;
+  font-weight: 700;
+  font-size: 1.25rem;
+  line-height: 1.75rem;
+  letter-spacing: -0.015em;
+  color: var(--global-foreground);
+  border-bottom: 1px solid var(--global-border-subtle);
+  padding-bottom: var(--spacing-2);
 }
 
+/* Functional/Non-Functional Requirements Categories (h3) */
 .body :global(h3) {
+  margin-top: 1.5em;
+  margin-bottom: 0.5em;
   font-weight: 600;
-  font-size: 1.25em;
+  font-size: 1.2em;
+  line-height: 1.65;
+  letter-spacing: -0.01em;
+  color: var(--global-foreground);
 }
 
+/* Individual Requirements (h4) */
 .body :global(h4) {
+  margin-top: 1.2em;
+  margin-bottom: 0.4em;
   font-weight: 600;
-  font-size: 1em;
+  font-size: 1.1em;
+  line-height: 1.6;
+  color: var(--global-foreground);
 }
 
 .body :global(h5) {
-  font-weight: 600;
+  font-weight: 400;
   font-size: 0.875em;
 }
 
 .body :global(h6) {
-  font-weight: 600;
+  font-weight: 400;
   font-size: 0.85em;
-  color: var(--global-body-text-subtle);
+  color: var(--global-foreground);
 }
 
 /* Paragraphs */
 .body :global(p) {
-  margin-top: 0;
-  margin-bottom: var(--spacing-2);
+  margin: 0 0 var(--spacing-4) 0;
+  line-height: 1.75;
 }
 
 /* Lists */
 .body :global(ul),
 .body :global(ol) {
-  margin-top: 0;
-  margin-bottom: var(--spacing-2);
-  padding-left: 2em;
+  margin: var(--spacing-4) 0;
+  padding-left: var(--spacing-6);
+  line-height: 1.75;
 }
 
 .body :global(ul) {
@@ -156,8 +183,12 @@
   list-style-type: lower-alpha;
 }
 
-.body :global(li + li) {
-  margin-top: 0.25em;
+.body :global(li) {
+  margin-bottom: var(--spacing-2);
+}
+
+.body :global(li:last-child) {
+  margin-bottom: 0;
 }
 
 /* Code */
@@ -195,7 +226,6 @@
 }
 
 .body :global(pre) {
-  margin-bottom: var(--spacing-2);
   width: 100%;
   max-width: 100%;
   position: relative;
@@ -395,4 +425,50 @@
 .body :global(details[open] summary) {
   margin-bottom: var(--spacing-2);
   border-bottom: 1px solid var(--global-border);
+}
+
+/* Section spacing */
+.body :global(section + section) {
+  margin-top: 32px;
+}
+
+/* Use Case titles styling */
+.body :global(ol > li > strong:first-child) {
+  font-weight: 600;
+  color: var(--global-foreground);
+}
+
+/* DML Operations list styling */
+.body :global(ul ul) {
+  margin-top: 8px;
+}
+
+/* Execution Logs section */
+.body :global(ul ul li) {
+  font-family: var(--code-font);
+  font-size: var(--font-size-3);
+  color: var(--global-body-text-subtle);
+}
+
+/* Execution log styling */
+.executionLogTimestamp {
+  color: var(--global-mute-text);
+}
+
+.body .executionLogSuccess {
+  color: var(--severity-positive-100) !important;
+}
+
+.body .executionLogFailed {
+  color: var(--danger-high-contrast-text) !important;
+}
+
+/* Execution Logs heading styling */
+.executionLogsHeading {
+  margin-top: var(--spacing-6) !important;
+}
+
+/* Non-functional requirements section */
+.body :global(h3) {
+  position: relative;
 }
