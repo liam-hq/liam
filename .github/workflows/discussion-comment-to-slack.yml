@@ -7,6 +7,6 @@ jobs:
     if: github.event.discussion && github.event.comment
     permissions:
       contents: read
-    uses: route06/actions/.github/workflows/gh_discussion_comment_to_slack.yml@155715656c4cd9079f1213d08d058e78dd00cae7 # v2.6.0
+    uses: route06/actions/.github/workflows/gh_discussion_comment_to_slack.yml@3bcea5bf834ff2e0e6c912c1167fcc1fe05e49c2 # v2.7.0
     secrets:
       slack-webhook-url: ${{ secrets.SLACK_GHD_WEBHOOK_URL }}

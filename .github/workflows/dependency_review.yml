@@ -10,4 +10,4 @@ permissions:
 
 jobs:
   dependency_review:
-    uses: route06/actions/.github/workflows/dependency_review.yml@155715656c4cd9079f1213d08d058e78dd00cae7 # v2.6.0
+    uses: route06/actions/.github/workflows/dependency_review.yml@3bcea5bf834ff2e0e6c912c1167fcc1fe05e49c2 # v2.7.0
