@@ -23,7 +23,7 @@ jobs:
           persist-credentials: false
 
       - name: Auto review Renovate PR
-        uses: anthropics/claude-code-action@7c5a98d59d2464ae73f453c3e649f5b813374481 # beta
+        uses: anthropics/claude-code-action@1f6e3225b088699398302ad624c21c1d780d082f # beta
         with:
           direct_prompt: |
             Review this Renovate PR for dependency updates. Analyze regression risks by examining:
