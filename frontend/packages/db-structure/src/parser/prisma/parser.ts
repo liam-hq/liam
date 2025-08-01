@@ -393,7 +393,7 @@ function processManyToManyRelationships(
 }
 
 /**
- * Preprocess schema to replace @id with @unique in views and collect view names
+ * Preprocess schema to remove view blocks entirely and collect view names
  */
 function preprocessPrismaSchema(schemaString: string): {
   processedSchema: string
@@ -401,14 +401,14 @@ function preprocessPrismaSchema(schemaString: string): {
 } {
   const viewNames = new Set<string>()
 
-  // Replace @id with @unique in view blocks and collect view names
+  // Remove view blocks entirely and collect view names
   const viewBlockRegex = /view\s+(\w+)\s*\{[^}]*\}/gs // 's' flag for multiline
   const processedSchema = schemaString.replace(
     viewBlockRegex,
-    (match, viewName) => {
+    (_match, viewName) => {
       viewNames.add(viewName)
-      // Replace @id with @unique to satisfy Prisma validation
-      return match.replace(/@id\b/g, '@unique')
+      // Remove the entire view block
+      return ''
     },
   )
 
@@ -419,7 +419,7 @@ function preprocessPrismaSchema(schemaString: string): {
  * Main function to parse a Prisma schema
  */
 async function parsePrismaSchema(schemaString: string): Promise<ProcessResult> {
-  // Preprocess schema to replace @id with @unique in views and collect view names
+  // Preprocess schema to remove view blocks entirely and collect view names
   const { processedSchema, viewNames } = preprocessPrismaSchema(schemaString)
   const dmmf = await getDMMF({ datamodel: processedSchema })
   const errors: Error[] = []

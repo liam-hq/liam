@@ -764,7 +764,7 @@ describe(_processor, () => {
       expect(value).toEqual(expectedSchema)
     })
 
-    it('should handle views with @id by removing them', async () => {
+    it('should handle views with @id and @unique by removing them', async () => {
       const { value } = await processor(`
         model User {
           id    Int     @id @default(autoincrement())
