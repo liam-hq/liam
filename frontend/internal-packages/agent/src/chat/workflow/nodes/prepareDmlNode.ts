@@ -82,10 +82,19 @@ export async function prepareDmlNode(
     await logAssistantMessage(
       state,
       repositories,
-      'Test scenarios not available. Cannot create sample data without use cases...',
+      'Test scenarios not available. Creating minimal sample data for your database...',
       assistantRole,
     )
-    return state
+
+    // Create minimal DML without use cases - just basic inserts for testing
+    const minimalDml = `-- Minimal sample data for testing
+-- Add sample data here based on your schema structure`
+
+    return {
+      ...state,
+      dmlStatements: minimalDml,
+      dmlOperations: [],
+    }
   }
 
   // Create DML generation agent

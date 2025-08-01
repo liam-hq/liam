@@ -16,12 +16,12 @@ graph TD;
 	finalizeArtifacts(finalizeArtifacts)
 	__end__([<p>__end__</p>]):::last
 	__start__ --> webSearch;
-	analyzeRequirements --> dbAgent;
 	dbAgent --> generateUsecase;
 	finalizeArtifacts --> __end__;
 	generateUsecase --> prepareDML;
 	prepareDML --> validateSchema;
 	webSearch --> analyzeRequirements;
+	analyzeRequirements -.-> dbAgent;
 	validateSchema -.-> dbAgent;
 	validateSchema -.-> finalizeArtifacts;
 	classDef default fill:#f2f0ff,line-height:1.2;
