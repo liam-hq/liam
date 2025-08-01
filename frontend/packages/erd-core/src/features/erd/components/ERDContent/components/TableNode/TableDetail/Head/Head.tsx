@@ -8,8 +8,7 @@ import {
 } from '@liam-hq/ui'
 import clsx from 'clsx'
 import { type FC, useMemo } from 'react'
-import { match } from 'ts-pattern'
-import diffStyles from '@/features/diff/styles/Diff.module.css'
+import { useDiffStyle } from '@/features/diff/hooks/useDiffStyle'
 import { clickLogEvent } from '@/features/gtm/utils'
 import { useVersionOrThrow } from '@/providers'
 import { useSchemaOrThrow, useUserEditingOrThrow } from '@/stores'
@@ -21,28 +20,19 @@ type Props = {
 }
 
 export const Head: FC<Props> = ({ table }) => {
-  const name = table.name
   const { version } = useVersionOrThrow()
-
   const { diffItems } = useSchemaOrThrow()
   const { showDiff } = useUserEditingOrThrow()
 
   const changeStatus = useMemo(() => {
     if (!showDiff) return undefined
     return getChangeStatus({
-      tableId: name,
+      tableId: table.name,
       diffItems: diffItems ?? [],
     })
-  }, [showDiff, name, diffItems])
+  }, [showDiff, table.name, diffItems])
 
-  const diffStyle = useMemo(() => {
-    if (!showDiff || !changeStatus) return undefined
-    return match(changeStatus)
-      .with('added', () => diffStyles.addedBg)
-      .with('removed', () => diffStyles.removedBg)
-      .with('modified', () => diffStyles.modifiedBg)
-      .otherwise(() => undefined)
-  }, [showDiff, changeStatus])
+  const diffStyle = useDiffStyle(showDiff, changeStatus)
 
   const handleDrawerClose = () => {
     clickLogEvent({
