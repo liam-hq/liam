@@ -6,6 +6,10 @@ import { convertSchemaToText } from '../../../utils/convertSchemaToText'
 import { getConfigurable } from '../shared/getConfigurable'
 import type { WorkflowState } from '../types'
 import { logAssistantMessage } from '../utils/timelineLogger'
+import {
+  filterOrphanedToolMessages,
+  validateToolCallConsistency,
+} from '../utils/toolMessageUtils'
 import { withTimelineItemSync } from '../utils/withTimelineItemSync'
 
 /**
@@ -51,12 +55,23 @@ export async function designSchemaNode(
     return msg
   })
 
-  const invokeResult = await invokeDesignAgent({ schemaText }, messages, {
-    buildingSchemaId: state.buildingSchemaId,
-    latestVersionNumber: state.latestVersionNumber,
-    designSessionId: state.designSessionId,
-    repositories,
-  })
+  const filteredMessages = filterOrphanedToolMessages(messages)
+
+  const validationErrors = validateToolCallConsistency(filteredMessages)
+  if (validationErrors.length > 0) {
+    console.warn('Tool call consistency issues detected:', validationErrors)
+  }
+
+  const invokeResult = await invokeDesignAgent(
+    { schemaText },
+    filteredMessages,
+    {
+      buildingSchemaId: state.buildingSchemaId,
+      latestVersionNumber: state.latestVersionNumber,
+      designSessionId: state.designSessionId,
+      repositories,
+    },
+  )
 
   if (invokeResult.isErr()) {
     // Create a human message for error feedback to avoid reasoning API issues
@@ -68,7 +83,7 @@ export async function designSchemaNode(
     // Return state with error feedback as HumanMessage for self-recovery
     return {
       ...state,
-      messages: [errorFeedbackMessage],
+      messages: [...state.messages, errorFeedbackMessage],
       error: invokeResult.error,
     }
   }
@@ -98,7 +113,7 @@ export async function designSchemaNode(
 
   return {
     ...state,
-    messages: [syncedMessage],
+    messages: [...state.messages, syncedMessage],
     latestVersionNumber: state.latestVersionNumber + 1,
   }
 }
