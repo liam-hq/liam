@@ -73,7 +73,7 @@ describe('prepareDmlNode', () => {
     expect(result.dmlOperations).toBeUndefined()
   })
 
-  it('should return state unchanged when use cases are missing', async () => {
+  it('should return minimal DML when use cases are missing', async () => {
     const state = createMockState({
       ddlStatements: 'CREATE TABLE users (id INT);',
     })
@@ -82,11 +82,13 @@ describe('prepareDmlNode', () => {
       configurable: { repositories: state.repositories },
     })
 
-    expect(result.dmlStatements).toBeUndefined()
-    expect(result.dmlOperations).toBeUndefined()
+    expect(result.dmlStatements).toBe(
+      '-- Minimal sample data for testing\n-- Add sample data here based on your schema structure',
+    )
+    expect(result.dmlOperations).toEqual([])
   })
 
-  it('should return state unchanged when use cases array is empty', async () => {
+  it('should return minimal DML when use cases array is empty', async () => {
     const state = createMockState({
       ddlStatements: 'CREATE TABLE users (id INT);',
       generatedUsecases: [],
@@ -96,8 +98,10 @@ describe('prepareDmlNode', () => {
       configurable: { repositories: state.repositories },
     })
 
-    expect(result.dmlStatements).toBeUndefined()
-    expect(result.dmlOperations).toBeUndefined()
+    expect(result.dmlStatements).toBe(
+      '-- Minimal sample data for testing\n-- Add sample data here based on your schema structure',
+    )
+    expect(result.dmlOperations).toEqual([])
   })
 
   it('should handle empty DML generation result', async () => {

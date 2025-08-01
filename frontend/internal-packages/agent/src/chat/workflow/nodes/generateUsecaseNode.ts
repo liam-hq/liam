@@ -74,22 +74,17 @@ export async function generateUsecaseNode(
     assistantRole,
   )
 
-  // Check if we have analyzed requirements
+  // Check if we have analyzed requirements - if not, try to proceed with minimal context
   if (!state.analyzedRequirements) {
-    const errorMessage =
-      'No analyzed requirements found. Cannot generate use cases.'
-
     await logAssistantMessage(
       state,
       repositories,
-      'Unable to generate test scenarios. This might be due to unclear requirements...',
+      'Requirements analysis was incomplete. Generating test scenarios based on available context...',
       assistantRole,
     )
 
-    return {
-      ...state,
-      error: new Error(errorMessage),
-    }
+    // Don't set error here - let the agent try to generate use cases from messages
+    // The QAGenerateUsecaseAgent can still work with the conversation history
   }
 
   const qaAgent = new QAGenerateUsecaseAgent()

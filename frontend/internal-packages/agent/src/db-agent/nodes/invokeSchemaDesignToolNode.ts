@@ -9,6 +9,7 @@ import type { WorkflowState } from '../../chat/workflow/types'
 import { withTimelineItemSync } from '../../chat/workflow/utils/withTimelineItemSync'
 import type { Repositories } from '../../repositories'
 import { schemaDesignTool } from '../tools/schemaDesignTool'
+import { analyzeDdlGenerationResult } from '../utils/analyzeDdlGenerationResult'
 
 /**
  * Check if a message is a ToolMessage
@@ -104,8 +105,31 @@ export const invokeSchemaDesignToolNode = async (
     if (schemaResult.isOk()) {
       // Generate DDL statements from the updated schema
       const ddlResult = postgresqlSchemaDeparser(schemaResult.value.schema)
-      const ddlStatements =
-        ddlResult.errors.length > 0 ? undefined : ddlResult.value
+      const analysis = analyzeDdlGenerationResult(
+        schemaResult.value.schema,
+        ddlResult,
+      )
+
+      let ddlStatements: string | undefined
+
+      if (analysis.hasErrors) {
+        // Log detailed error analysis
+        console.error('DDL generation failed:', analysis.detailedReason)
+        ddlStatements = undefined
+      } else if (analysis.isEmpty) {
+        // Log detailed reason for empty DDL
+        console.warn('DDL generation info:', analysis.detailedReason)
+        if (analysis.warnings.length > 0) {
+          console.warn('Schema warnings:', analysis.warnings.join('; '))
+        }
+        ddlStatements = ddlResult.value
+      } else {
+        // Success case - log any warnings
+        if (analysis.warnings.length > 0) {
+          console.info('Schema info:', analysis.warnings.join('; '))
+        }
+        ddlStatements = ddlResult.value
+      }
 
       // Update workflow state with fresh schema data and DDL statements
       updatedResult = {

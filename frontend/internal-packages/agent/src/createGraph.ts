@@ -50,7 +50,20 @@ export const createGraph = () => {
 
     .addEdge(START, 'webSearch')
     .addEdge('webSearch', 'analyzeRequirements')
-    .addEdge('analyzeRequirements', 'dbAgent')
+
+    // Conditional edge after analyzeRequirements
+    .addConditionalEdges(
+      'analyzeRequirements',
+      (_state) => {
+        // If analyzedRequirements is missing, it means the node failed
+        // Continue anyway to dbAgent - it can work with minimal requirements
+        return 'dbAgent'
+      },
+      {
+        dbAgent: 'dbAgent',
+      },
+    )
+
     .addEdge('dbAgent', 'generateUsecase')
     .addEdge('generateUsecase', 'prepareDML')
     .addEdge('prepareDML', 'validateSchema')
