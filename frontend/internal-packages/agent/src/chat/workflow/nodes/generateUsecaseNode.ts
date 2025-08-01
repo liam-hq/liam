@@ -112,6 +112,10 @@ export async function generateUsecaseNode(
     assistantRole,
   )
 
+  // If we have analyzed requirements, log them
+  if (state.analyzedRequirements) {
+  }
+
   // Check if we have analyzed requirements
   if (!state.analyzedRequirements) {
     // If no analyzed requirements but we have schema data, infer from schema
@@ -121,6 +125,14 @@ export async function generateUsecaseNode(
     ) {
       const errorMessage =
         'No analyzed requirements or schema data found. Cannot generate use cases.'
+
+      console.error(
+        '[ERROR generateUsecaseNode] Missing requirements and schema:',
+        {
+          analyzedRequirements: state.analyzedRequirements,
+          schemaData: state.schemaData,
+        },
+      )
 
       await logAssistantMessage(
         state,
@@ -147,10 +159,13 @@ export async function generateUsecaseNode(
   const qaAgent = new QAGenerateUsecaseAgent()
 
   const retryCount = state.retryCount['generateUsecaseNode'] ?? 0
-  
+
   // Check max retry limit to prevent infinite loops
   if (retryCount >= 3) {
-    console.error('[ERROR generateUsecaseNode] Max retries exceeded:', retryCount)
+    console.error(
+      '[ERROR generateUsecaseNode] Max retries exceeded:',
+      retryCount,
+    )
     await logAssistantMessage(
       state,
       repositories,
@@ -183,14 +198,32 @@ export async function generateUsecaseNode(
         delete cleanedKwargs['reasoning']
       }
 
-      return new AIMessage({
+      // Preserve all other message properties including tool_calls
+      const aiMessageFields: {
+        content: typeof content
+        additional_kwargs: typeof cleanedKwargs
+        response_metadata: typeof response_metadata
+        tool_calls?: typeof tool_calls
+        invalid_tool_calls?: typeof invalid_tool_calls
+        usage_metadata?: typeof usage_metadata
+      } = {
         content,
         additional_kwargs: cleanedKwargs,
         response_metadata,
-        tool_calls,
-        invalid_tool_calls,
-        usage_metadata,
-      })
+      }
+
+      // Only add optional fields if they are defined
+      if (tool_calls !== undefined) {
+        aiMessageFields.tool_calls = tool_calls
+      }
+      if (invalid_tool_calls !== undefined) {
+        aiMessageFields.invalid_tool_calls = invalid_tool_calls
+      }
+      if (usage_metadata !== undefined) {
+        aiMessageFields.usage_metadata = usage_metadata
+      }
+
+      return new AIMessage(aiMessageFields)
     }
     return msg
   })
@@ -213,21 +246,52 @@ ${JSON.stringify(state.schemaData, null, 2)}`,
     })
 
     messagesToUse = [...cleanedMessages, requirementsMessage]
+  } else if (state.analyzedRequirements) {
+    // Add requirements to messages as context
+    const requirementsMessage = new HumanMessage({
+      content: `Please generate use cases based on the following analyzed requirements:
+
+Business Requirement:
+${state.analyzedRequirements.businessRequirement}
+
+Functional Requirements:
+${Object.entries(state.analyzedRequirements.functionalRequirements || {})
+  .map(
+    ([category, reqs]) =>
+      `${category}:\n${Array.isArray(reqs) ? reqs.map((r: string) => `- ${r}`).join('\n') : ''}`,
+  )
+  .join('\n\n')}
+
+Non-Functional Requirements:
+${Object.entries(state.analyzedRequirements.nonFunctionalRequirements || {})
+  .map(
+    ([category, reqs]) =>
+      `${category}:\n${Array.isArray(reqs) ? reqs.map((r: string) => `- ${r}`).join('\n') : ''}`,
+  )
+  .join('\n\n')}
+
+Database Schema:
+${JSON.stringify(state.schemaData, null, 2)}`,
+    })
+
+    messagesToUse = [...cleanedMessages, requirementsMessage]
   }
 
-  // Use prepared messages - includes error messages and all context
   const usecaseResult = await ResultAsync.fromPromise(
     qaAgent.generate(messagesToUse),
-    (error) => (error instanceof Error ? error : new Error(String(error))),
+    (error) => {
+      console.error('[ERROR generateUsecaseNode] QA Agent generation failed:', {
+        error: error instanceof Error ? error.message : String(error),
+        errorType:
+          error instanceof Error ? error.constructor.name : typeof error,
+        stack: error instanceof Error ? error.stack : undefined,
+      })
+      return error instanceof Error ? error : new Error(String(error))
+    },
   )
 
   return await usecaseResult.match(
     async ({ response, reasoning }) => {
-      console.log('[SUCCESS generateUsecaseNode] QA Agent generated usecases:', {
-        usecaseCount: response.usecases.length,
-        hasReasoning: !!reasoning,
-      })
-      
       // Log reasoning summary if available
       if (reasoning?.summary && reasoning.summary.length > 0) {
         for (const summaryItem of reasoning.summary) {
@@ -268,7 +332,7 @@ ${JSON.stringify(state.schemaData, null, 2)}`,
     },
     async (error) => {
       console.error('[ERROR generateUsecaseNode] QA Agent failed:', error)
-      
+
       await logAssistantMessage(
         state,
         repositories,
