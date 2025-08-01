@@ -2,6 +2,7 @@ import type { RunnableConfig } from '@langchain/core/runnables'
 import type { Database } from '@liam-hq/db'
 import { DMLGenerationAgent } from '../../../langchain/agents/dmlGenerationAgent/agent'
 import type { Usecase } from '../../../langchain/agents/qaGenerateUsecaseAgent/agent'
+import { WorkflowTerminationError } from '../../../shared/errorHandling'
 import { convertSchemaToText } from '../../../utils/convertSchemaToText'
 import { getConfigurable } from '../shared/getConfigurable'
 import type { WorkflowState } from '../types'
@@ -53,10 +54,10 @@ export async function prepareDmlNode(
   const assistantRole: Database['public']['Enums']['assistant_role_enum'] = 'db'
   const configurableResult = getConfigurable(config)
   if (configurableResult.isErr()) {
-    return {
-      ...state,
-      error: configurableResult.error,
-    }
+    throw new WorkflowTerminationError(
+      configurableResult.error,
+      'prepareDmlNode',
+    )
   }
   const { repositories } = configurableResult.value
 

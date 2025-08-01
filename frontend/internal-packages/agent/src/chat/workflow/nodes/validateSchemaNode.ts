@@ -4,6 +4,7 @@ import { executeQuery } from '@liam-hq/pglite-server'
 import type { SqlResult } from '@liam-hq/pglite-server/src/types'
 import { ResultAsync } from 'neverthrow'
 import type { Usecase } from '../../../langchain/agents/qaGenerateUsecaseAgent/agent'
+import { WorkflowTerminationError } from '../../../shared/errorHandling'
 import { getConfigurable } from '../shared/getConfigurable'
 import type { WorkflowState } from '../types'
 import { logAssistantMessage } from '../utils/timelineLogger'
@@ -148,10 +149,10 @@ export async function validateSchemaNode(
   const assistantRole: Database['public']['Enums']['assistant_role_enum'] = 'db'
   const configurableResult = getConfigurable(config)
   if (configurableResult.isErr()) {
-    return {
-      ...state,
-      error: configurableResult.error,
-    }
+    throw new WorkflowTerminationError(
+      configurableResult.error,
+      'validateSchemaNode',
+    )
   }
   const { repositories } = configurableResult.value
 

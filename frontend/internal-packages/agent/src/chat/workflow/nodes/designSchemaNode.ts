@@ -1,7 +1,8 @@
-import { AIMessage, HumanMessage } from '@langchain/core/messages'
+import { AIMessage } from '@langchain/core/messages'
 import type { RunnableConfig } from '@langchain/core/runnables'
 import type { Database } from '@liam-hq/db'
 import { invokeDesignAgent } from '../../../langchain/agents/databaseSchemaBuildAgent/agent'
+import { WorkflowTerminationError } from '../../../shared/errorHandling'
 import { convertSchemaToText } from '../../../utils/convertSchemaToText'
 import { getConfigurable } from '../shared/getConfigurable'
 import type { WorkflowState } from '../types'
@@ -19,10 +20,10 @@ export async function designSchemaNode(
   const assistantRole: Database['public']['Enums']['assistant_role_enum'] = 'db'
   const configurableResult = getConfigurable(config)
   if (configurableResult.isErr()) {
-    return {
-      ...state,
-      error: configurableResult.error,
-    }
+    throw new WorkflowTerminationError(
+      configurableResult.error,
+      'designSchemaNode',
+    )
   }
   const { repositories } = configurableResult.value
 
@@ -87,18 +88,7 @@ export async function designSchemaNode(
   })
 
   if (invokeResult.isErr()) {
-    // Create a human message for error feedback to avoid reasoning API issues
-    // Using HumanMessage prevents the "reasoning without required following item" error
-    const errorFeedbackMessage = new HumanMessage({
-      content: `The previous attempt failed with the following error: ${invokeResult.error.message}. Please try a different approach to resolve the issue.`,
-    })
-
-    // Return state with error feedback as HumanMessage for self-recovery
-    return {
-      ...state,
-      messages: [errorFeedbackMessage],
-      error: invokeResult.error,
-    }
+    throw new WorkflowTerminationError(invokeResult.error, 'designSchemaNode')
   }
 
   const { response, reasoning } = invokeResult.value

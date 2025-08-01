@@ -3,7 +3,6 @@ import { RunCollectorCallbackHandler } from '@langchain/core/tracers/run_collect
 import type { CompiledStateGraph } from '@langchain/langgraph'
 import { err, ok, ResultAsync } from 'neverthrow'
 import { v4 as uuidv4 } from 'uuid'
-import { finalizeArtifactsNode } from '../chat/workflow/nodes'
 import { DEFAULT_RECURSION_LIMIT } from '../chat/workflow/shared/langGraphUtils'
 import type {
   WorkflowConfigurable,
@@ -11,6 +10,7 @@ import type {
 } from '../chat/workflow/types'
 import { withTimelineItemSync } from '../chat/workflow/utils/withTimelineItemSync'
 import type { AgentWorkflowParams, AgentWorkflowResult } from '../types'
+import { WorkflowTerminationError } from './errorHandling'
 
 /**
  * Shared workflow setup configuration
@@ -131,11 +131,7 @@ export const executeWorkflowWithTracking = <
     setupResult
   const { repositories } = configurable
 
-  // Type guards for safe type checking
-  const hasError = (obj: unknown): obj is { error?: Error } => {
-    return typeof obj === 'object' && obj !== null && 'error' in obj
-  }
-
+  // Type guard for safe type checking
   const isWorkflowState = (obj: unknown): obj is WorkflowState => {
     return typeof obj === 'object' && obj !== null
   }
@@ -148,60 +144,61 @@ export const executeWorkflowWithTracking = <
       runId: workflowRunId,
       callbacks: [runCollector],
     }),
-    (error) => new Error(String(error)),
+    (error) => {
+      // WorkflowTerminationError means the workflow was intentionally terminated
+      if (error instanceof WorkflowTerminationError) {
+        return error
+      }
+      return new Error(String(error))
+    },
   )
 
-  // 2. Update status to error
-  const updateErrorStatus = (result: { error?: Error }) =>
+  // 2. Update workflow status
+  const updateWorkflowStatus = (status: 'success' | 'error') =>
     ResultAsync.fromPromise(
       repositories.schema.updateWorkflowRunStatus({
         workflowRunId,
-        status: 'error',
+        status,
       }),
       (error) => new Error(String(error)),
-    ).map(() => result)
-
-  // 3. Finalize artifacts for error case
-  const finalizeArtifacts = (result: { error?: Error }) =>
-    ResultAsync.fromPromise(
-      finalizeArtifactsNode(
-        { ...workflowState, error: result.error },
-        {
-          configurable: { repositories },
-        },
-      ),
-      (error) => new Error(String(error)),
-    ).andThen((finalizedResult) =>
-      err(
-        new Error(
-          finalizedResult.error?.message ||
-            result.error?.message ||
-            'Workflow execution failed',
-        ),
-      ),
     )
 
-  // 4. Update status to success
+  // 3. Update status to success and validate result
   const updateSuccessStatus = (result: unknown) =>
-    ResultAsync.fromPromise(
-      repositories.schema.updateWorkflowRunStatus({
-        workflowRunId,
-        status: 'success',
-      }),
-      (error) => new Error(String(error)),
-    ).map(() => result)
+    updateWorkflowStatus('success').map(() => result)
 
-  // 5. Validate and return successful result
   const validateAndReturnResult = (result: unknown) =>
     isWorkflowState(result)
       ? ok(ok(result))
       : err(new Error('Invalid workflow result'))
 
-  // 6. Chain everything together
-  return executeWorkflow.andThen((result) => {
-    if (hasError(result) && result.error) {
-      return updateErrorStatus(result).andThen(finalizeArtifacts)
-    }
-    return updateSuccessStatus(result).andThen(validateAndReturnResult)
-  })
+  // 4. Handle WorkflowTerminationError - save timeline item and update status
+  const saveTimelineItem = (error: WorkflowTerminationError) =>
+    ResultAsync.fromPromise(
+      repositories.schema.createTimelineItem({
+        designSessionId: workflowState.designSessionId,
+        content: error.message,
+        type: 'error',
+      }),
+      (timelineError) => new Error(String(timelineError)),
+    )
+
+  const handleWorkflowTermination = (error: WorkflowTerminationError) =>
+    ResultAsync.combine([
+      saveTimelineItem(error),
+      updateWorkflowStatus('error'),
+    ]).map(() => ok(workflowState))
+
+  // 5. Chain everything together
+  return executeWorkflow
+    .andThen(updateSuccessStatus)
+    .andThen(validateAndReturnResult)
+    .orElse((error) => {
+      // Handle WorkflowTerminationError - these are expected errors
+      if (error instanceof WorkflowTerminationError) {
+        return handleWorkflowTermination(error)
+      }
+      // All other errors are unexpected
+      return err(error)
+    })
 }

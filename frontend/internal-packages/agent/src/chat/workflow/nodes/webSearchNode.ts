@@ -3,6 +3,7 @@ import type { RunnableConfig } from '@langchain/core/runnables'
 import { ChatOpenAI } from '@langchain/openai'
 import type { Database } from '@liam-hq/db'
 import { ResultAsync } from 'neverthrow'
+import { WorkflowTerminationError } from '../../../shared/errorHandling'
 import { getConfigurable } from '../shared/getConfigurable'
 import type { WorkflowState } from '../types'
 import { formatWebSearchContent } from '../utils/formatWebSearchContent'
@@ -20,10 +21,10 @@ export async function webSearchNode(
   const assistantRole: Database['public']['Enums']['assistant_role_enum'] = 'pm'
   const configurableResult = getConfigurable(config)
   if (configurableResult.isErr()) {
-    return {
-      ...state,
-      error: configurableResult.error,
-    }
+    throw new WorkflowTerminationError(
+      configurableResult.error,
+      'webSearchNode',
+    )
   }
   const { repositories } = configurableResult.value
 
@@ -83,7 +84,6 @@ Provide a concise summary of the most relevant findings.`
         ...state,
         messages: [searchMessage],
         webSearchResults: searchContent,
-        error: undefined, // Clear error on success
       }
     },
     async (_error) => {

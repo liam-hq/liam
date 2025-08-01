@@ -127,12 +127,8 @@ const executeDesignProcess = async (): Promise<Result<void, Error>> => {
     logger,
     streamResult.schemaData,
     currentLogLevel,
-    streamResult.error,
+    undefined, // Error handling is now done immediately in workflow
   )
-
-  if (streamResult.error) {
-    return err(streamResult.error)
-  }
 
   return ok(undefined)
 }

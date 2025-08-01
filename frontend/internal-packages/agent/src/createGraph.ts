@@ -9,13 +9,7 @@ import {
 } from './chat/workflow/nodes'
 import { createAnnotations } from './chat/workflow/shared/langGraphUtils'
 import { createDbAgentGraph } from './db-agent/createDbAgentGraph'
-
-/**
- * Retry policy configuration for all nodes
- */
-const RETRY_POLICY = {
-  maxAttempts: process.env['NODE_ENV'] === 'test' ? 1 : 3,
-}
+import { RETRY_POLICY } from './shared/errorHandling'
 
 /**
  * Create and configure the LangGraph workflow
@@ -62,7 +56,9 @@ export const createGraph = () => {
       (state) => {
         // success → finalizeArtifacts
         // dml error or test fail → dbAgent
-        return state.error ? 'dbAgent' : 'finalizeArtifacts'
+        return state.dmlExecutionSuccessful === false
+          ? 'dbAgent'
+          : 'finalizeArtifacts'
       },
       {
         dbAgent: 'dbAgent',

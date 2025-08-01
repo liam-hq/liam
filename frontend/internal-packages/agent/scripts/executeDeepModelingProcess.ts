@@ -109,12 +109,8 @@ const executeDeepModelingProcess = async (): Promise<Result<void, Error>> => {
     logger,
     finalWorkflowState.schemaData,
     currentLogLevel,
-    finalWorkflowState.error,
+    undefined, // Error handling is now done immediately in workflow
   )
-
-  if (finalWorkflowState.error) {
-    return err(finalWorkflowState.error)
-  }
 
   return ok(undefined)
 }
