@@ -10,20 +10,20 @@ graph TD;
 	__start__([<p>__start__</p>]):::first
 	webSearch(webSearch)
 	analyzeRequirements(analyzeRequirements)
-	dbAgent(dbAgent)
 	generateUsecase(generateUsecase)
+	dbAgent(dbAgent)
 	prepareDML(prepareDML)
 	validateSchema(validateSchema)
 	finalizeArtifacts(finalizeArtifacts)
 	__end__([<p>__end__</p>]):::last
 	__start__ --> webSearch;
-	analyzeRequirements --> dbAgent;
-	dbAgent --> generateUsecase;
+	analyzeRequirements --> generateUsecase;
+	dbAgent --> prepareDML;
 	finalizeArtifacts --> __end__;
-	generateUsecase --> prepareDML;
+	generateUsecase --> dbAgent;
 	prepareDML --> validateSchema;
 	webSearch --> analyzeRequirements;
-	validateSchema -.-> dbAgent;
+	validateSchema -.-> generateUsecase;
 	validateSchema -.-> finalizeArtifacts;
 	classDef default fill:#f2f0ff,line-height:1.2;
 	classDef first fill-opacity:0;
@@ -145,8 +145,8 @@ graph.addNode('dbAgent', dbAgentSubgraph) // No retry policy - handled internall
 
 ### Conditional Edge Logic
 
-- **dbAgent**: DB Agent subgraph handles internal routing between designSchema and invokeSchemaDesignTool nodes, routes to `generateUsecase` on completion
-- **validateSchema**: Routes to `finalizeArtifacts` on success, `dbAgent` on validation error
+- **dbAgent**: DB Agent subgraph handles internal routing between designSchema and invokeSchemaDesignTool nodes, routes to `prepareDML` on completion
+- **validateSchema**: Routes to `finalizeArtifacts` on success, `generateUsecase` on validation error (restart from use case generation)
 
 ## Timeline Synchronization
 

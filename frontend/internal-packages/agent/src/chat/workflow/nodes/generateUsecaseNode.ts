@@ -96,9 +96,19 @@ export async function generateUsecaseNode(
 
   const retryCount = state.retryCount['generateUsecaseNode'] ?? 0
 
-  // Use state.messages directly - includes error messages and all context
+  const requirementsOnlyMessages = state.messages.filter((msg) => {
+    const content = msg.content.toString().toLowerCase()
+    return (
+      !content.includes('ddl') &&
+      !content.includes('schema') &&
+      !content.includes('table') &&
+      !content.includes('create table') &&
+      !content.includes('database design')
+    )
+  })
+
   const usecaseResult = await ResultAsync.fromPromise(
-    qaAgent.generate(state.messages),
+    qaAgent.generate(requirementsOnlyMessages),
     (error) => (error instanceof Error ? error : new Error(String(error))),
   )
 
