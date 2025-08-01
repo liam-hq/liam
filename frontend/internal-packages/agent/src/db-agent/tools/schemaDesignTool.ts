@@ -13,6 +13,7 @@ import { toJsonSchema } from '@valibot/to-json-schema'
 import type { Operation } from 'fast-json-patch'
 import { fromThrowable } from 'neverthrow'
 import * as v from 'valibot'
+import type { SchemaRepository } from '../../repositories/types'
 import { getToolConfigurable } from '../getToolConfigurable'
 
 const schemaDesignToolSchema = v.object({
@@ -44,7 +45,10 @@ const applySchemaOperations = (
 const validateAndExecuteDDL = async (
   schema: Schema,
   designSessionId: string,
-): Promise<{ ddlStatements: string; results: SqlResult[] }> => {
+  repositories: { schema: SchemaRepository },
+): Promise<
+  { ddlStatements: string; results: SqlResult[] } | { error: string }
+> => {
   // Validate DDL by generating and executing it
   const ddlResult = postgresqlSchemaDeparser(schema)
 
@@ -52,11 +56,24 @@ const validateAndExecuteDDL = async (
     const errorDetails = ddlResult.errors
       .map((error) => error.message)
       .join('; ')
-    // LangGraph tool nodes require throwing errors to trigger retry mechanism
-    // eslint-disable-next-line no-throw-error/no-throw-error
-    throw new Error(
-      `DDL generation failed due to schema errors: ${errorDetails}. The schema design contains issues that prevent valid SQL generation. Please review and fix the schema structure.`,
-    )
+
+    // Create timeline item to display errors to user
+    const timelineResult = await repositories.schema.createTimelineItem({
+      designSessionId,
+      content: `Schema validation errors: ${errorDetails}`,
+      type: 'error',
+    })
+
+    if (!timelineResult.success) {
+      console.error(
+        'Failed to create error timeline item:',
+        timelineResult.error,
+      )
+    }
+
+    return {
+      error: `DDL generation failed due to schema errors: ${errorDetails}. The schema design contains issues that prevent valid SQL generation. Please review and fix the schema structure.`,
+    }
   }
 
   const ddlStatements = ddlResult.value
@@ -122,10 +139,17 @@ export const schemaDesignTool = tool(
     applySchemaOperations(currentSchema, parsed.output.operations)
 
     // Validate DDL by generating and executing it
-    const { ddlStatements, results } = await validateAndExecuteDDL(
+    const validationResult = await validateAndExecuteDDL(
       currentSchema,
       designSessionId,
+      repositories,
     )
+
+    if ('error' in validationResult) {
+      return validationResult.error
+    }
+
+    const { ddlStatements, results } = validationResult
 
     // Log the validation query and results
     const queryResult = await repositories.schema.createValidationQuery({
