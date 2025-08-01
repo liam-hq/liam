@@ -393,10 +393,62 @@ function processManyToManyRelationships(
 }
 
 /**
+ * Preprocess schema to remove view blocks entirely and collect view names
+ */
+function preprocessPrismaSchema(schemaString: string): {
+  processedSchema: string
+  viewNames: Set<string>
+} {
+  const viewNames = new Set<string>()
+
+  // Split schema into lines for safer processing
+  const lines = schemaString.split('\n')
+  const processedLines: string[] = []
+  let inViewBlock = false
+  let currentViewName = ''
+  let braceCount = 0
+
+  for (const line of lines) {
+    const viewMatch = line.match(/^\s*view\s+(\w+)\s*\{/)
+
+    if (viewMatch) {
+      // Start of a view block
+      inViewBlock = true
+      currentViewName = viewMatch[1] || ''
+      viewNames.add(currentViewName)
+      braceCount = 1
+      continue
+    }
+
+    if (inViewBlock) {
+      // Count braces to handle nested structures
+      for (const char of line) {
+        if (char === '{') braceCount++
+        else if (char === '}') braceCount--
+      }
+
+      if (braceCount === 0) {
+        // End of view block
+        inViewBlock = false
+        currentViewName = ''
+      }
+      continue
+    }
+
+    // Keep non-view lines
+    processedLines.push(line)
+  }
+
+  return { processedSchema: processedLines.join('\n'), viewNames }
+}
+
+/**
  * Main function to parse a Prisma schema
  */
 async function parsePrismaSchema(schemaString: string): Promise<ProcessResult> {
-  const dmmf = await getDMMF({ datamodel: schemaString })
+  // Preprocess schema to remove view blocks entirely and collect view names
+  const { processedSchema, viewNames } = preprocessPrismaSchema(schemaString)
+  const dmmf = await getDMMF({ datamodel: processedSchema })
   const errors: Error[] = []
 
   // Track many-to-many relationships for later processing
@@ -408,15 +460,20 @@ async function parsePrismaSchema(schemaString: string): Promise<ProcessResult> {
     field2: DMMF.Field
   }> = []
 
+  // Filter out views from models using collected view names
+  const models = dmmf.datamodel.models.filter(
+    (model) => !viewNames.has(model.name),
+  )
+
   // Build field renaming map
-  const tableFieldRenaming = buildFieldRenamingMap(dmmf.datamodel.models)
+  const tableFieldRenaming = buildFieldRenamingMap(models)
 
   // Process models and create tables
-  const tables = processTables(dmmf.datamodel.models, tableFieldRenaming)
+  const tables = processTables(models, tableFieldRenaming)
 
   // Process constraints
   processConstraints(
-    dmmf.datamodel.models,
+    models,
     tables,
     tableFieldRenaming,
     processedManyToManyRelations,
@@ -424,19 +481,10 @@ async function parsePrismaSchema(schemaString: string): Promise<ProcessResult> {
   )
 
   // Process indexes
-  processIndexes(
-    dmmf.datamodel.indexes,
-    dmmf.datamodel.models,
-    tables,
-    tableFieldRenaming,
-  )
+  processIndexes(dmmf.datamodel.indexes, models, tables, tableFieldRenaming)
 
   // Process many-to-many relationships
-  processManyToManyRelationships(
-    manyToManyRelations,
-    tables,
-    dmmf.datamodel.models,
-  )
+  processManyToManyRelationships(manyToManyRelations, tables, models)
 
   return {
     value: {
