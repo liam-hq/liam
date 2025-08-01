@@ -15,6 +15,7 @@ export {
   buildSchemaDiff,
   columnRelatedDiffItemSchema,
   schemaDiffItemsSchema,
+  tableCommentDiffItemSchema,
   tableDiffItemSchema,
   tableNameDiffItemSchema,
   tableRelatedDiffItemSchema,
