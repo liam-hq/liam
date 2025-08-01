@@ -34,10 +34,10 @@ export const createGraph = () => {
     .addNode('analyzeRequirements', analyzeRequirementsNode, {
       retryPolicy: RETRY_POLICY,
     })
-    .addNode('dbAgent', dbAgentSubgraph)
     .addNode('generateUsecase', generateUsecaseNode, {
       retryPolicy: RETRY_POLICY,
     })
+    .addNode('dbAgent', dbAgentSubgraph)
     .addNode('prepareDML', prepareDmlNode, {
       retryPolicy: RETRY_POLICY,
     })
@@ -50,22 +50,22 @@ export const createGraph = () => {
 
     .addEdge(START, 'webSearch')
     .addEdge('webSearch', 'analyzeRequirements')
-    .addEdge('analyzeRequirements', 'dbAgent')
-    .addEdge('dbAgent', 'generateUsecase')
-    .addEdge('generateUsecase', 'prepareDML')
-    .addEdge('prepareDML', 'validateSchema')
+    .addEdge('analyzeRequirements', 'generateUsecase')
     .addEdge('finalizeArtifacts', END)
+    .addEdge('generateUsecase', 'dbAgent')
+    .addEdge('dbAgent', 'prepareDML')
+    .addEdge('prepareDML', 'validateSchema')
 
     // Conditional edges for validation results
     .addConditionalEdges(
       'validateSchema',
       (state) => {
         // success → finalizeArtifacts
-        // dml error or test fail → dbAgent
-        return state.error ? 'dbAgent' : 'finalizeArtifacts'
+        // dml error or test fail → generateUsecase (restart from use case generation)
+        return state.error ? 'generateUsecase' : 'finalizeArtifacts'
       },
       {
-        dbAgent: 'dbAgent',
+        generateUsecase: 'generateUsecase',
         finalizeArtifacts: 'finalizeArtifacts',
       },
     )

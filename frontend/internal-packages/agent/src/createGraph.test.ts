@@ -9,20 +9,20 @@ graph TD;
 	__start__([<p>__start__</p>]):::first
 	webSearch(webSearch)
 	analyzeRequirements(analyzeRequirements)
-	dbAgent(dbAgent)
 	generateUsecase(generateUsecase)
+	dbAgent(dbAgent)
 	prepareDML(prepareDML)
 	validateSchema(validateSchema)
 	finalizeArtifacts(finalizeArtifacts)
 	__end__([<p>__end__</p>]):::last
 	__start__ --> webSearch;
-	analyzeRequirements --> dbAgent;
-	dbAgent --> generateUsecase;
+	analyzeRequirements --> generateUsecase;
+	dbAgent --> prepareDML;
 	finalizeArtifacts --> __end__;
-	generateUsecase --> prepareDML;
+	generateUsecase --> dbAgent;
 	prepareDML --> validateSchema;
 	webSearch --> analyzeRequirements;
-	validateSchema -.-> dbAgent;
+	validateSchema -.-> generateUsecase;
 	validateSchema -.-> finalizeArtifacts;
 	classDef default fill:#f2f0ff,line-height:1.2;
 	classDef first fill-opacity:0;
