@@ -163,8 +163,40 @@ export async function generateUsecaseNode(
     }
   }
 
+  // Remove reasoning field from AIMessages to avoid API issues
+  // This prevents the "reasoning without required following item" error
+  const cleanedMessages = state.messages.map((msg) => {
+    if (msg instanceof AIMessage) {
+      // Create a new AIMessage without the reasoning field
+      const {
+        content,
+        additional_kwargs,
+        response_metadata,
+        tool_calls,
+        invalid_tool_calls,
+        usage_metadata,
+      } = msg
+      const cleanedKwargs = { ...additional_kwargs }
+
+      // Remove reasoning from additional_kwargs if it exists
+      if ('reasoning' in cleanedKwargs) {
+        delete cleanedKwargs['reasoning']
+      }
+
+      return new AIMessage({
+        content,
+        additional_kwargs: cleanedKwargs,
+        response_metadata,
+        tool_calls,
+        invalid_tool_calls,
+        usage_metadata,
+      })
+    }
+    return msg
+  })
+
   // Prepare messages for QA Agent
-  let messagesToUse = state.messages
+  let messagesToUse = cleanedMessages
 
   // If no analyzed requirements, add inferred requirements from schema
   if (!state.analyzedRequirements && state.schemaData) {
@@ -180,7 +212,7 @@ Database Schema:
 ${JSON.stringify(state.schemaData, null, 2)}`,
     })
 
-    messagesToUse = [...state.messages, requirementsMessage]
+    messagesToUse = [...cleanedMessages, requirementsMessage]
   }
 
   // Use prepared messages - includes error messages and all context
