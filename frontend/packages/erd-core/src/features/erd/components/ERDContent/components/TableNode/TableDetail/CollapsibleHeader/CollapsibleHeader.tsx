@@ -1,24 +1,27 @@
 import { ChevronDown, ChevronUp, IconButton } from '@liam-hq/ui'
+import clsx from 'clsx'
 import {
+  type ComponentProps,
   type FC,
   type KeyboardEvent,
   type MouseEvent,
+  type PropsWithChildren,
   type ReactNode,
   useState,
 } from 'react'
 import styles from './CollapsibleHeader.module.css'
 
-type CollapsibleHeaderProps = {
-  title: string
-  icon: ReactNode
-  children: ReactNode
-  isContentVisible: boolean
-  stickyTopHeight: number
-  contentMaxHeight: number
-  additionalButtons?: ReactNode
-}
+type Props = ComponentProps<'div'> &
+  PropsWithChildren & {
+    title: string
+    icon: ReactNode
+    isContentVisible: boolean
+    stickyTopHeight: number
+    contentMaxHeight: number
+    additionalButtons?: ReactNode
+  }
 
-export const CollapsibleHeader: FC<CollapsibleHeaderProps> = ({
+export const CollapsibleHeader: FC<Props> = ({
   title,
   icon,
   children,
@@ -26,6 +29,8 @@ export const CollapsibleHeader: FC<CollapsibleHeaderProps> = ({
   stickyTopHeight,
   contentMaxHeight,
   additionalButtons,
+  className,
+  ...props
 }) => {
   const [isClosed, setIsClosed] = useState(!isContentVisible)
 
@@ -44,12 +49,13 @@ export const CollapsibleHeader: FC<CollapsibleHeaderProps> = ({
     <>
       {/* biome-ignore lint/a11y/useSemanticElements: Using div with button role to avoid button-in-button nesting */}
       <div
-        className={styles.header}
+        className={clsx(styles.header, className)}
         style={{ top: stickyTopHeight }}
         role="button"
         tabIndex={0}
         onClick={handleClose}
         onKeyDown={handleKeyDown}
+        {...props}
       >
         <div className={styles.iconTitleContainer}>
           {icon}
