@@ -147,6 +147,21 @@ export async function generateUsecaseNode(
   const qaAgent = new QAGenerateUsecaseAgent()
 
   const retryCount = state.retryCount['generateUsecaseNode'] ?? 0
+  
+  // Check max retry limit to prevent infinite loops
+  if (retryCount >= 3) {
+    console.error('[ERROR generateUsecaseNode] Max retries exceeded:', retryCount)
+    await logAssistantMessage(
+      state,
+      repositories,
+      'Unable to generate test scenarios after multiple attempts. Please check the requirements and try again.',
+      assistantRole,
+    )
+    return {
+      ...state,
+      error: new Error('Max retry limit exceeded for use case generation'),
+    }
+  }
 
   // Prepare messages for QA Agent
   let messagesToUse = state.messages
@@ -176,6 +191,11 @@ ${JSON.stringify(state.schemaData, null, 2)}`,
 
   return await usecaseResult.match(
     async ({ response, reasoning }) => {
+      console.log('[SUCCESS generateUsecaseNode] QA Agent generated usecases:', {
+        usecaseCount: response.usecases.length,
+        hasReasoning: !!reasoning,
+      })
+      
       // Log reasoning summary if available
       if (reasoning?.summary && reasoning.summary.length > 0) {
         for (const summaryItem of reasoning.summary) {
@@ -215,6 +235,8 @@ ${JSON.stringify(state.schemaData, null, 2)}`,
       return updatedState
     },
     async (error) => {
+      console.error('[ERROR generateUsecaseNode] QA Agent failed:', error)
+      
       await logAssistantMessage(
         state,
         repositories,
