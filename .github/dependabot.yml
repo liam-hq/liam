@@ -1,4 +1,4 @@
 # https://docs.github.com/code-security/dependabot/working-with-dependabot/dependabot-options-reference
 
 version: 2
-updates:
+updates: []
