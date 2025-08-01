@@ -11,23 +11,26 @@ import {
   type SchemaFormat,
   UrlFormDataSchema,
 } from '../../shared/validation/sessionFormValidation'
+import { fetchSchemaFromUrl as fetchSchemaFromUrlUtil } from '../utils/urlValidation'
 
 async function fetchSchemaFromUrl(
   url: string,
   format: SchemaFormat,
 ): Promise<Schema | CreateSessionState> {
-  try {
-    const response = await fetch(url)
-    if (!response.ok) {
-      return { success: false, error: 'Failed to fetch schema from URL' }
-    }
+  const result = await fetchSchemaFromUrlUtil(url)
 
-    const content = await response.text()
-    return await parseSchemaContent(content, format)
-  } catch (error) {
-    console.error('Error fetching schema from URL:', error)
-    return { success: false, error: 'Failed to fetch schema from URL' }
+  if (!result.success) {
+    return {
+      success: false,
+      error: result.error || 'Failed to fetch schema from URL',
+    }
   }
+
+  if (!result.content) {
+    return { success: false, error: 'No content received from URL' }
+  }
+
+  return await parseSchemaContent(result.content, format)
 }
 
 export async function createUrlSession(
