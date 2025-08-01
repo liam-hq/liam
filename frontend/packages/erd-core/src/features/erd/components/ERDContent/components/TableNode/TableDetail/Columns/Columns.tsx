@@ -40,7 +40,11 @@ export const Columns: FC<Props> = ({ table }) => {
     >
       {Object.entries(table.columns).map(([key, column]) => (
         <div className={styles.itemWrapper} key={key}>
-          <ColumnsItem column={column} constraints={table.constraints} />
+          <ColumnsItem
+            tableId={table.name}
+            column={column}
+            constraints={table.constraints}
+          />
         </div>
       ))}
     </CollapsibleHeader>

@@ -13,17 +13,36 @@ import {
   GridTableRow,
   KeyRound,
 } from '@liam-hq/ui'
-import type { FC } from 'react'
+import clsx from 'clsx'
+import { type FC, useMemo } from 'react'
+import { useDiffStyle } from '@/features/diff/hooks/useDiffStyle'
+import { useSchemaOrThrow, useUserEditingOrThrow } from '@/stores'
 import styles from './ColumnsItem.module.css'
+import { getChangeStatus } from './getChangeStatus'
 
 type Props = {
+  tableId: string
   column: Column
   constraints: Constraints
 }
 
-export const ColumnsItem: FC<Props> = ({ column, constraints }) => {
+export const ColumnsItem: FC<Props> = ({ tableId, column, constraints }) => {
+  const { diffItems } = useSchemaOrThrow()
+  const { showDiff } = useUserEditingOrThrow()
+
+  const changeStatus = useMemo(() => {
+    if (!showDiff) return undefined
+    return getChangeStatus({
+      tableId,
+      diffItems: diffItems ?? [],
+      columnId: column.name,
+    })
+  }, [showDiff, tableId, diffItems])
+
+  const diffStyle = useDiffStyle(showDiff, changeStatus)
+
   return (
-    <div className={styles.wrapper}>
+    <div className={clsx(styles.wrapper, diffStyle)}>
       <h3 className={styles.heading}>{column.name}</h3>
       {column.comment && <p className={styles.comment}>{column.comment}</p>}
       <GridTableRoot>
