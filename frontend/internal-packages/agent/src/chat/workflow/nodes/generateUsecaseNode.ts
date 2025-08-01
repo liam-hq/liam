@@ -77,12 +77,12 @@ export async function generateUsecaseNode(
   // Check if we have analyzed requirements
   if (!state.analyzedRequirements) {
     const errorMessage =
-      'No analyzed requirements found. Cannot generate use cases.'
+      'No analyzed requirements found. This indicates a state propagation issue between DB Agent and main workflow. Please check that the requirements analysis step completed successfully.'
 
     await logAssistantMessage(
       state,
       repositories,
-      'Unable to generate test scenarios. This might be due to unclear requirements...',
+      'Unable to generate test scenarios due to missing requirements analysis. This might indicate a workflow state issue...',
       assistantRole,
     )
 

@@ -113,6 +113,8 @@ export const invokeSchemaDesignToolNode = async (
         schemaData: schemaResult.value.schema,
         latestVersionNumber: schemaResult.value.latestVersionNumber,
         ddlStatements,
+        analyzedRequirements: state.analyzedRequirements,
+        generatedUsecases: state.generatedUsecases,
       }
     } else {
       console.warn(
