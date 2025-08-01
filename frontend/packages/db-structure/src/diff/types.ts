@@ -40,21 +40,21 @@ const baseSchemaDiffItemSchema = object({
   tableId: string(),
 })
 
-const tableDiffItemSchema = object({
+export const tableDiffItemSchema = object({
   ...baseSchemaDiffItemSchema.entries,
   kind: literal('table'),
   data: tableSchema,
 })
 export type TableDiffItem = InferOutput<typeof tableDiffItemSchema>
 
-const tableNameDiffItemSchema = object({
+export const tableNameDiffItemSchema = object({
   ...baseSchemaDiffItemSchema.entries,
   kind: literal('table-name'),
   data: tableNameSchema,
 })
 export type TableNameDiffItem = InferOutput<typeof tableNameDiffItemSchema>
 
-const tableCommentDiffItemSchema = object({
+export const tableCommentDiffItemSchema = object({
   ...baseSchemaDiffItemSchema.entries,
   kind: literal('table-comment'),
   data: commentSchema,

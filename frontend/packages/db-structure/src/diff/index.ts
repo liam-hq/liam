@@ -10,5 +10,8 @@ export type {
 export {
   columnRelatedDiffItemSchema,
   schemaDiffItemsSchema,
+  tableCommentDiffItemSchema,
+  tableDiffItemSchema,
+  tableNameDiffItemSchema,
   tableRelatedDiffItemSchema,
 } from './types.js'

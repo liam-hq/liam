@@ -1,14 +1,7 @@
 import type { Table } from '@liam-hq/db-structure'
-import {
-  DrawerClose,
-  DrawerTitle,
-  IconButton,
-  Table2 as Table2Icon,
-  XIcon,
-} from '@liam-hq/ui'
 import { type FC, useCallback } from 'react'
 import { computeAutoLayout, convertSchemaToNodes } from '@/features/erd/utils'
-import { clickLogEvent, openRelatedTablesLogEvent } from '@/features/gtm/utils'
+import { openRelatedTablesLogEvent } from '@/features/gtm/utils'
 import { useCustomReactflow } from '@/features/reactflow/hooks'
 import { useVersionOrThrow } from '@/providers'
 import { useSchemaOrThrow, useUserEditingOrThrow } from '@/stores'
@@ -17,6 +10,7 @@ import { Columns } from './Columns'
 import { Comment } from './Comment'
 import { Constraints } from './Constraints'
 import { extractSchemaForTable } from './extractSchemaForTable'
+import { Head } from './Head'
 import { Indexes } from './Indexes'
 import { RelatedTables } from './RelatedTables'
 import styles from './TableDetail.module.css'
@@ -39,16 +33,6 @@ export const TableDetail: FC<Props> = ({ table }) => {
   const { getNodes, getEdges, setNodes, setEdges, fitView } =
     useCustomReactflow()
   const { version } = useVersionOrThrow()
-
-  const handleDrawerClose = () => {
-    clickLogEvent({
-      element: 'closeTableDetailButton',
-      platform: version.displayedOn,
-      gitHash: version.gitHash,
-      ver: version.version,
-      appEnv: version.envName,
-    })
-  }
 
   const handleOpenMainPane = useCallback(async () => {
     const visibleNodeIds: string[] = nodes.map((node) => node.id)
@@ -93,23 +77,9 @@ export const TableDetail: FC<Props> = ({ table }) => {
 
   return (
     <section className={styles.wrapper}>
-      <div className={styles.header}>
-        <DrawerTitle asChild>
-          <div className={styles.iconTitleContainer}>
-            <Table2Icon width={12} />
-            <h1 className={styles.heading}>{table.name}</h1>
-          </div>
-        </DrawerTitle>
-        <DrawerClose asChild>
-          <IconButton
-            icon={<XIcon />}
-            tooltipContent="Close"
-            onClick={handleDrawerClose}
-          />
-        </DrawerClose>
-      </div>
+      <Head table={table} />
       <div className={styles.body}>
-        {table.comment && <Comment comment={table.comment} />}
+        {table.comment && <Comment table={table} />}
         <Columns columns={table.columns} constraints={table.constraints} />
         <Indexes indexes={table.indexes} />
         <Constraints constraints={table.constraints} />
