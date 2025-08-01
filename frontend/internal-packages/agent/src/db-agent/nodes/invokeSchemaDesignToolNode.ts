@@ -63,6 +63,7 @@ const getSchemaDesignToolResult = (
     })
 
     const validationResult = v.safeParse(responseSchema, parseJsonResult.value)
+
     if (validationResult.success) {
       // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
       const updatedSchema = validationResult.output.updatedSchema as Schema

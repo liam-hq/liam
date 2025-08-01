@@ -11,7 +11,6 @@ import { executeQuery } from '@liam-hq/pglite-server'
 import type { SqlResult } from '@liam-hq/pglite-server/src/types'
 import { toJsonSchema } from '@valibot/to-json-schema'
 import type { Operation } from 'fast-json-patch'
-import { fromThrowable } from 'neverthrow'
 import * as v from 'valibot'
 import { getToolConfigurable } from '../getToolConfigurable'
 
@@ -26,19 +25,18 @@ const toolSchema = toJsonSchema(schemaDesignToolSchema) as JSONSchema
 const applySchemaOperations = (
   schema: Schema,
   operations: Operation[],
-): void => {
-  const applyOperationsResult = fromThrowable(
-    () => applyPatchOperations(schema, operations),
-    (error) => (error instanceof Error ? error.message : 'Unknown error'),
-  )()
+): Schema => {
+  const applyOperationsResult = applyPatchOperations(schema, operations)
 
   if (applyOperationsResult.isErr()) {
     // LangGraph tool nodes require throwing errors to trigger retry mechanism
     // eslint-disable-next-line no-throw-error/no-throw-error
     throw new Error(
-      `Failed to apply schema operations: ${applyOperationsResult.error}. Please check the operations format and try again.`,
+      `Failed to apply schema operations: ${applyOperationsResult.error.message}. Please check the operations format and try again.`,
     )
   }
+
+  return applyOperationsResult.value
 }
 
 const validateAndExecuteDDL = async (
@@ -118,8 +116,11 @@ export const schemaDesignTool = tool(
 
     // Apply operations to current schema to get the updated schema
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-    const currentSchema = structuredClone(schemaResult.value.schema) as Schema
-    applySchemaOperations(currentSchema, parsed.output.operations)
+    const baseSchema = structuredClone(schemaResult.value.schema) as Schema
+    const currentSchema = applySchemaOperations(
+      baseSchema,
+      parsed.output.operations,
+    )
 
     // Validate DDL by generating and executing it
     const { ddlStatements, results } = await validateAndExecuteDDL(
@@ -182,13 +183,15 @@ export const schemaDesignTool = tool(
     // Return the updated schema and version information as a structured object
     // This allows the invoking node to immediately use the updated schema
     // without needing to re-fetch from the database
-    return JSON.stringify({
+    const result = {
       message:
         'Schema successfully updated. The operations have been applied to the database schema, DDL validation passed, and new version created.',
       updatedSchema: currentSchema,
       latestVersionNumber: schemaResult.value.latestVersionNumber + 1,
       ddlStatements,
-    })
+    }
+
+    return JSON.stringify(result)
   },
   {
     name: 'schemaDesignTool',
