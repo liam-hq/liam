@@ -7,6 +7,14 @@ const constraintPathSchema = v.pipe(
   v.string(),
   v.regex(PATH_PATTERNS.CONSTRAINT_BASE),
 )
+const constraintDeletePathSchema = v.pipe(
+  v.string(),
+  v.regex(PATH_PATTERNS.CONSTRAINT_DELETE_CONSTRAINT),
+)
+const constraintUpdatePathSchema = v.pipe(
+  v.string(),
+  v.regex(PATH_PATTERNS.CONSTRAINT_UPDATE_CONSTRAINT),
+)
 
 const addConstraintOperationSchema = v.pipe(
   v.object({
@@ -45,7 +53,47 @@ export const isRemoveConstraintOperation = (
   return v.safeParse(removeConstraintOperationSchema, operation).success
 }
 
+const replaceConstraintDeleteOperationSchema = v.pipe(
+  v.object({
+    op: v.literal('replace'),
+    path: constraintDeletePathSchema,
+    value: v.string(),
+  }),
+  v.description('Replace constraint delete action'),
+)
+
+export type ReplaceConstraintDeleteOperation = v.InferOutput<
+  typeof replaceConstraintDeleteOperationSchema
+>
+
+export const isReplaceConstraintDeleteOperation = (
+  operation: Operation,
+): operation is ReplaceConstraintDeleteOperation => {
+  return v.safeParse(replaceConstraintDeleteOperationSchema, operation).success
+}
+
+const replaceConstraintUpdateOperationSchema = v.pipe(
+  v.object({
+    op: v.literal('replace'),
+    path: constraintUpdatePathSchema,
+    value: v.string(),
+  }),
+  v.description('Replace constraint update action'),
+)
+
+export type ReplaceConstraintUpdateOperation = v.InferOutput<
+  typeof replaceConstraintUpdateOperationSchema
+>
+
+export const isReplaceConstraintUpdateOperation = (
+  operation: Operation,
+): operation is ReplaceConstraintUpdateOperation => {
+  return v.safeParse(replaceConstraintUpdateOperationSchema, operation).success
+}
+
 export const constraintOperations = [
   addConstraintOperationSchema,
   removeConstraintOperationSchema,
+  replaceConstraintDeleteOperationSchema,
+  replaceConstraintUpdateOperationSchema,
 ]

@@ -4,19 +4,33 @@ import type {
   AddColumnOperation,
   RemoveColumnOperation,
   RenameColumnOperation,
+  ReplaceColumnCheckOperation,
+  ReplaceColumnCommentOperation,
+  ReplaceColumnDefaultOperation,
+  ReplaceColumnNotNullOperation,
+  ReplaceColumnTypeOperation,
 } from '../../operation/schema/column.js'
 import {
   isAddColumnOperation,
   isRemoveColumnOperation,
   isRenameColumnOperation,
+  isReplaceColumnCheckOperation,
+  isReplaceColumnCommentOperation,
+  isReplaceColumnDefaultOperation,
+  isReplaceColumnNotNullOperation,
+  isReplaceColumnTypeOperation,
 } from '../../operation/schema/column.js'
 import type {
   AddConstraintOperation,
   RemoveConstraintOperation,
+  ReplaceConstraintDeleteOperation,
+  ReplaceConstraintUpdateOperation,
 } from '../../operation/schema/constraint.js'
 import {
   isAddConstraintOperation,
   isRemoveConstraintOperation,
+  isReplaceConstraintDeleteOperation,
+  isReplaceConstraintUpdateOperation,
 } from '../../operation/schema/constraint.js'
 import type { Operation } from '../../operation/schema/index.js'
 import type {
@@ -30,25 +44,34 @@ import {
 import type {
   AddTableOperation,
   RemoveTableOperation,
+  ReplaceTableCommentOperation,
   ReplaceTableNameOperation,
 } from '../../operation/schema/table.js'
 import {
   isAddTableOperation,
   isRemoveTableOperation,
+  isReplaceTableCommentOperation,
   isReplaceTableNameOperation,
 } from '../../operation/schema/table.js'
 import type { OperationDeparser } from '../type.js'
 import {
+  generateAddCheckConstraintStatement,
   generateAddColumnStatement,
   generateAddConstraintStatement,
+  generateAlterColumnDefaultStatement,
+  generateAlterColumnNotNullStatement,
+  generateAlterColumnTypeStatement,
+  generateColumnCommentStatement,
   generateCreateIndexStatement,
   generateCreateTableStatement,
+  generateDropCheckConstraintStatement,
   generateRemoveColumnStatement,
   generateRemoveConstraintStatement,
   generateRemoveIndexStatement,
   generateRemoveTableStatement,
   generateRenameColumnStatement,
   generateRenameTableStatement,
+  generateTableCommentStatement,
 } from './utils.js'
 
 /**
@@ -122,6 +145,126 @@ function extractTableAndConstraintNameFromPath(
   path: string,
 ): { tableName: string; constraintName: string } | null {
   const match = path.match(PATH_PATTERNS.CONSTRAINT_BASE)
+  if (!match || !match[1] || !match[2]) {
+    return null
+  }
+  return {
+    tableName: match[1],
+    constraintName: match[2],
+  }
+}
+
+/**
+ * Extract table name from table comment path
+ */
+function extractTableNameFromCommentPath(path: string): string | null {
+  const match = path.match(PATH_PATTERNS.TABLE_COMMENT)
+  return match?.[1] || null
+}
+
+/**
+ * Extract table and column names from column type path
+ */
+function extractTableAndColumnNameFromTypePath(
+  path: string,
+): { tableName: string; columnName: string } | null {
+  const match = path.match(PATH_PATTERNS.COLUMN_TYPE)
+  if (!match || !match[1] || !match[2]) {
+    return null
+  }
+  return {
+    tableName: match[1],
+    columnName: match[2],
+  }
+}
+
+/**
+ * Extract table and column names from column comment path
+ */
+function extractTableAndColumnNameFromCommentPath(
+  path: string,
+): { tableName: string; columnName: string } | null {
+  const match = path.match(PATH_PATTERNS.COLUMN_COMMENT)
+  if (!match || !match[1] || !match[2]) {
+    return null
+  }
+  return {
+    tableName: match[1],
+    columnName: match[2],
+  }
+}
+
+/**
+ * Extract table and column names from column check path
+ */
+function extractTableAndColumnNameFromCheckPath(
+  path: string,
+): { tableName: string; columnName: string } | null {
+  const match = path.match(PATH_PATTERNS.COLUMN_CHECK)
+  if (!match || !match[1] || !match[2]) {
+    return null
+  }
+  return {
+    tableName: match[1],
+    columnName: match[2],
+  }
+}
+
+/**
+ * Extract table and column names from column notNull path
+ */
+function extractTableAndColumnNameFromNotNullPath(
+  path: string,
+): { tableName: string; columnName: string } | null {
+  const match = path.match(PATH_PATTERNS.COLUMN_NOT_NULL)
+  if (!match || !match[1] || !match[2]) {
+    return null
+  }
+  return {
+    tableName: match[1],
+    columnName: match[2],
+  }
+}
+
+/**
+ * Extract table and column names from column default path
+ */
+function extractTableAndColumnNameFromDefaultPath(
+  path: string,
+): { tableName: string; columnName: string } | null {
+  const match = path.match(PATH_PATTERNS.COLUMN_DEFAULT)
+  if (!match || !match[1] || !match[2]) {
+    return null
+  }
+  return {
+    tableName: match[1],
+    columnName: match[2],
+  }
+}
+
+/**
+ * Extract table and constraint names from constraint delete path
+ */
+function extractTableAndConstraintNameFromDeletePath(
+  path: string,
+): { tableName: string; constraintName: string } | null {
+  const match = path.match(PATH_PATTERNS.CONSTRAINT_DELETE_CONSTRAINT)
+  if (!match || !match[1] || !match[2]) {
+    return null
+  }
+  return {
+    tableName: match[1],
+    constraintName: match[2],
+  }
+}
+
+/**
+ * Extract table and constraint names from constraint update path
+ */
+function extractTableAndConstraintNameFromUpdatePath(
+  path: string,
+): { tableName: string; constraintName: string } | null {
+  const match = path.match(PATH_PATTERNS.CONSTRAINT_UPDATE_CONSTRAINT)
   if (!match || !match[1] || !match[2]) {
     return null
   }
@@ -295,6 +438,173 @@ function generateRemoveConstraintFromOperation(
   )
 }
 
+/**
+ * Generate ALTER COLUMN TYPE DDL from column type replacement operation
+ */
+function generateAlterColumnTypeFromOperation(
+  operation: ReplaceColumnTypeOperation,
+): Result<string, Error> {
+  const pathInfo = extractTableAndColumnNameFromTypePath(operation.path)
+  if (!pathInfo) {
+    return err(new Error(`Invalid column type path: ${operation.path}`))
+  }
+
+  return ok(
+    generateAlterColumnTypeStatement(
+      pathInfo.tableName,
+      pathInfo.columnName,
+      operation.value,
+    ),
+  )
+}
+
+/**
+ * Generate ALTER COLUMN SET/DROP NOT NULL DDL from notNull replacement operation
+ */
+function generateAlterColumnNotNullFromOperation(
+  operation: ReplaceColumnNotNullOperation,
+): Result<string, Error> {
+  const pathInfo = extractTableAndColumnNameFromNotNullPath(operation.path)
+  if (!pathInfo) {
+    return err(new Error(`Invalid column notNull path: ${operation.path}`))
+  }
+
+  return ok(
+    generateAlterColumnNotNullStatement(
+      pathInfo.tableName,
+      pathInfo.columnName,
+      operation.value,
+    ),
+  )
+}
+
+/**
+ * Generate ALTER COLUMN SET/DROP DEFAULT DDL from default replacement operation
+ */
+function generateAlterColumnDefaultFromOperation(
+  operation: ReplaceColumnDefaultOperation,
+): Result<string, Error> {
+  const pathInfo = extractTableAndColumnNameFromDefaultPath(operation.path)
+  if (!pathInfo) {
+    return err(new Error(`Invalid column default path: ${operation.path}`))
+  }
+
+  return ok(
+    generateAlterColumnDefaultStatement(
+      pathInfo.tableName,
+      pathInfo.columnName,
+      operation.value,
+    ),
+  )
+}
+
+/**
+ * Generate COMMENT ON TABLE DDL from table comment replacement operation
+ */
+function generateTableCommentFromOperation(
+  operation: ReplaceTableCommentOperation,
+): Result<string, Error> {
+  const tableName = extractTableNameFromCommentPath(operation.path)
+  if (!tableName) {
+    return err(new Error(`Invalid table comment path: ${operation.path}`))
+  }
+
+  return ok(generateTableCommentStatement(tableName, operation.value))
+}
+
+/**
+ * Generate COMMENT ON COLUMN DDL from column comment replacement operation
+ */
+function generateColumnCommentFromOperation(
+  operation: ReplaceColumnCommentOperation,
+): Result<string, Error> {
+  const pathInfo = extractTableAndColumnNameFromCommentPath(operation.path)
+  if (!pathInfo) {
+    return err(new Error(`Invalid column comment path: ${operation.path}`))
+  }
+
+  return ok(
+    generateColumnCommentStatement(
+      pathInfo.tableName,
+      pathInfo.columnName,
+      operation.value,
+    ),
+  )
+}
+
+/**
+ * Generate ADD/DROP CHECK CONSTRAINT DDL from column check replacement operation
+ */
+function generateAlterColumnCheckFromOperation(
+  operation: ReplaceColumnCheckOperation,
+): Result<string, Error> {
+  const pathInfo = extractTableAndColumnNameFromCheckPath(operation.path)
+  if (!pathInfo) {
+    return err(new Error(`Invalid column check path: ${operation.path}`))
+  }
+
+  // If value is empty or null, drop the check constraint
+  if (!operation.value || operation.value.trim() === '') {
+    return ok(
+      generateDropCheckConstraintStatement(
+        pathInfo.tableName,
+        pathInfo.columnName,
+      ),
+    )
+  }
+
+  // Otherwise, add a new check constraint
+  return ok(
+    generateAddCheckConstraintStatement(
+      pathInfo.tableName,
+      pathInfo.columnName,
+      operation.value,
+    ),
+  )
+}
+
+/**
+ * Generate ALTER CONSTRAINT DDL for constraint delete action replacement
+ * Note: This is not directly supported in PostgreSQL, would require DROP and re-ADD
+ */
+function generateAlterConstraintDeleteFromOperation(
+  operation: ReplaceConstraintDeleteOperation,
+): Result<string, Error> {
+  const pathInfo = extractTableAndConstraintNameFromDeletePath(operation.path)
+  if (!pathInfo) {
+    return err(new Error(`Invalid constraint delete path: ${operation.path}`))
+  }
+
+  // PostgreSQL doesn't support ALTER CONSTRAINT for changing actions
+  // This would require DROP CONSTRAINT and ADD CONSTRAINT with new action
+  return err(
+    new Error(
+      'Altering constraint delete action is not directly supported. Drop and recreate the constraint.',
+    ),
+  )
+}
+
+/**
+ * Generate ALTER CONSTRAINT DDL for constraint update action replacement
+ * Note: This is not directly supported in PostgreSQL, would require DROP and re-ADD
+ */
+function generateAlterConstraintUpdateFromOperation(
+  operation: ReplaceConstraintUpdateOperation,
+): Result<string, Error> {
+  const pathInfo = extractTableAndConstraintNameFromUpdatePath(operation.path)
+  if (!pathInfo) {
+    return err(new Error(`Invalid constraint update path: ${operation.path}`))
+  }
+
+  // PostgreSQL doesn't support ALTER CONSTRAINT for changing actions
+  // This would require DROP CONSTRAINT and ADD CONSTRAINT with new action
+  return err(
+    new Error(
+      'Altering constraint update action is not directly supported. Drop and recreate the constraint.',
+    ),
+  )
+}
+
 export const postgresqlOperationDeparser: OperationDeparser = (
   operation: Operation,
 ) => {
@@ -392,6 +702,86 @@ export const postgresqlOperationDeparser: OperationDeparser = (
 
   if (isRemoveConstraintOperation(operation)) {
     const result = generateRemoveConstraintFromOperation(operation)
+    if (result.isErr()) {
+      errors.push({ message: result.error.message })
+      return { value: '', errors }
+    }
+    const value = result.value
+    return { value, errors }
+  }
+
+  if (isReplaceColumnTypeOperation(operation)) {
+    const result = generateAlterColumnTypeFromOperation(operation)
+    if (result.isErr()) {
+      errors.push({ message: result.error.message })
+      return { value: '', errors }
+    }
+    const value = result.value
+    return { value, errors }
+  }
+
+  if (isReplaceColumnNotNullOperation(operation)) {
+    const result = generateAlterColumnNotNullFromOperation(operation)
+    if (result.isErr()) {
+      errors.push({ message: result.error.message })
+      return { value: '', errors }
+    }
+    const value = result.value
+    return { value, errors }
+  }
+
+  if (isReplaceColumnDefaultOperation(operation)) {
+    const result = generateAlterColumnDefaultFromOperation(operation)
+    if (result.isErr()) {
+      errors.push({ message: result.error.message })
+      return { value: '', errors }
+    }
+    const value = result.value
+    return { value, errors }
+  }
+
+  if (isReplaceTableCommentOperation(operation)) {
+    const result = generateTableCommentFromOperation(operation)
+    if (result.isErr()) {
+      errors.push({ message: result.error.message })
+      return { value: '', errors }
+    }
+    const value = result.value
+    return { value, errors }
+  }
+
+  if (isReplaceColumnCommentOperation(operation)) {
+    const result = generateColumnCommentFromOperation(operation)
+    if (result.isErr()) {
+      errors.push({ message: result.error.message })
+      return { value: '', errors }
+    }
+    const value = result.value
+    return { value, errors }
+  }
+
+  if (isReplaceColumnCheckOperation(operation)) {
+    const result = generateAlterColumnCheckFromOperation(operation)
+    if (result.isErr()) {
+      errors.push({ message: result.error.message })
+      return { value: '', errors }
+    }
+    const value = result.value
+    return { value, errors }
+  }
+
+  if (isReplaceConstraintDeleteOperation(operation)) {
+    const result = generateAlterConstraintDeleteFromOperation(operation)
+    if (result.isErr()) {
+      errors.push({ message: result.error.message })
+      return { value: '', errors }
+    }
+    const value = result.value
+    return { value, errors }
+  }
+
+  if (isReplaceConstraintUpdateOperation(operation)) {
+    const result = generateAlterConstraintUpdateFromOperation(operation)
     if (result.isErr()) {
       errors.push({ message: result.error.message })
       return { value: '', errors }

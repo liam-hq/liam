@@ -5,6 +5,7 @@ import type { Database } from '@liam-hq/db'
 import { ResultAsync } from 'neverthrow'
 import { getConfigurable } from '../shared/getConfigurable'
 import type { WorkflowState } from '../types'
+import { formatWebSearchContent } from '../utils/formatWebSearchContent'
 import { logAssistantMessage } from '../utils/timelineLogger'
 import { withTimelineItemSync } from '../utils/withTimelineItemSync'
 
@@ -61,11 +62,8 @@ Provide a concise summary of the most relevant findings.`
 
   return searchResult.match(
     async (result) => {
-      // Extract the search results content
-      const searchContent =
-        typeof result.content === 'string'
-          ? result.content
-          : JSON.stringify(result.content)
+      // Extract and format the search results content
+      const searchContent = formatWebSearchContent(result.content)
 
       const searchMessage = await withTimelineItemSync(
         new AIMessage({

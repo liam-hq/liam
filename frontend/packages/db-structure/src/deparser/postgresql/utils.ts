@@ -282,3 +282,112 @@ export function generateRemoveConstraintStatement(
     tableName,
   )} DROP CONSTRAINT ${escapeIdentifier(constraintName)};`
 }
+
+/**
+ * Generate ALTER TABLE ... ALTER COLUMN ... TYPE statement
+ */
+export function generateAlterColumnTypeStatement(
+  tableName: string,
+  columnName: string,
+  newType: string,
+): string {
+  return `ALTER TABLE ${escapeIdentifier(
+    tableName,
+  )} ALTER COLUMN ${escapeIdentifier(columnName)} TYPE ${newType};`
+}
+
+/**
+ * Generate ALTER TABLE ... ALTER COLUMN ... SET/DROP NOT NULL statement
+ */
+export function generateAlterColumnNotNullStatement(
+  tableName: string,
+  columnName: string,
+  notNull: boolean,
+): string {
+  const action = notNull ? 'SET NOT NULL' : 'DROP NOT NULL'
+  return `ALTER TABLE ${escapeIdentifier(
+    tableName,
+  )} ALTER COLUMN ${escapeIdentifier(columnName)} ${action};`
+}
+
+/**
+ * Generate ALTER TABLE ... ALTER COLUMN ... SET/DROP DEFAULT statement
+ */
+export function generateAlterColumnDefaultStatement(
+  tableName: string,
+  columnName: string,
+  defaultValue: string | null,
+): string {
+  if (defaultValue === null) {
+    return `ALTER TABLE ${escapeIdentifier(
+      tableName,
+    )} ALTER COLUMN ${escapeIdentifier(columnName)} DROP DEFAULT;`
+  }
+  return `ALTER TABLE ${escapeIdentifier(
+    tableName,
+  )} ALTER COLUMN ${escapeIdentifier(
+    columnName,
+  )} SET DEFAULT ${formatDefaultValue(defaultValue)};`
+}
+
+/**
+ * Generate COMMENT ON TABLE statement
+ */
+export function generateTableCommentStatement(
+  tableName: string,
+  comment: string | null,
+): string {
+  if (comment === null) {
+    return `COMMENT ON TABLE ${escapeIdentifier(tableName)} IS NULL;`
+  }
+  return `COMMENT ON TABLE ${escapeIdentifier(tableName)} IS '${escapeString(
+    comment,
+  )}';`
+}
+
+/**
+ * Generate COMMENT ON COLUMN statement
+ */
+export function generateColumnCommentStatement(
+  tableName: string,
+  columnName: string,
+  comment: string | null,
+): string {
+  if (comment === null) {
+    return `COMMENT ON COLUMN ${escapeIdentifier(tableName)}.${escapeIdentifier(
+      columnName,
+    )} IS NULL;`
+  }
+  return `COMMENT ON COLUMN ${escapeIdentifier(tableName)}.${escapeIdentifier(
+    columnName,
+  )} IS '${escapeString(comment)}';`
+}
+
+/**
+ * Generate ALTER TABLE ... ADD CONSTRAINT ... CHECK statement
+ */
+export function generateAddCheckConstraintStatement(
+  tableName: string,
+  columnName: string,
+  checkExpression: string,
+): string {
+  const constraintName = `${tableName}_${columnName}_check`
+  return `ALTER TABLE ${escapeIdentifier(
+    tableName,
+  )} ADD CONSTRAINT ${escapeIdentifier(
+    constraintName,
+  )} CHECK (${checkExpression});`
+}
+
+/**
+ * Generate ALTER TABLE ... DROP CONSTRAINT statement for column check
+ */
+export function generateDropCheckConstraintStatement(
+  tableName: string,
+  columnName: string,
+): string {
+  const constraintName = `${tableName}_${columnName}_check`
+  return `ALTER TABLE ${escapeIdentifier(
+    tableName,
+  )} DROP CONSTRAINT IF EXISTS ${escapeIdentifier(constraintName)};`
+}

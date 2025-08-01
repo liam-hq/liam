@@ -524,4 +524,254 @@ describe('postgresqlOperationDeparser', () => {
       await expectGeneratedSQLToBeParseable(result.value)
     })
   })
+
+  describe('table comment operations', () => {
+    it('should generate COMMENT ON TABLE statement', async () => {
+      const operation: Operation = {
+        op: 'replace',
+        path: '/tables/users/comment',
+        value: 'Updated user table comment',
+      }
+
+      const result = postgresqlOperationDeparser(operation)
+
+      expect(result.errors).toHaveLength(0)
+      expect(result.value).toMatchInlineSnapshot(`
+        "COMMENT ON TABLE \"users\" IS 'Updated user table comment';"
+      `)
+
+      await expectGeneratedSQLToBeParseable(result.value)
+    })
+
+    it('should generate COMMENT ON TABLE IS NULL for null value', async () => {
+      const operation: Operation = {
+        op: 'replace',
+        path: '/tables/users/comment',
+        value: null,
+      }
+
+      const result = postgresqlOperationDeparser(operation)
+
+      expect(result.errors).toHaveLength(0)
+      expect(result.value).toMatchInlineSnapshot(`
+        "COMMENT ON TABLE \"users\" IS NULL;"
+      `)
+
+      await expectGeneratedSQLToBeParseable(result.value)
+    })
+  })
+
+  describe('column type operations', () => {
+    it('should generate ALTER COLUMN TYPE statement', async () => {
+      const operation: Operation = {
+        op: 'replace',
+        path: '/tables/users/columns/email/type',
+        value: 'text',
+      }
+
+      const result = postgresqlOperationDeparser(operation)
+
+      expect(result.errors).toHaveLength(0)
+      expect(result.value).toMatchInlineSnapshot(`
+        "ALTER TABLE \"users\" ALTER COLUMN \"email\" TYPE text;"
+      `)
+
+      await expectGeneratedSQLToBeParseable(result.value)
+    })
+  })
+
+  describe('column comment operations', () => {
+    it('should generate COMMENT ON COLUMN statement', async () => {
+      const operation: Operation = {
+        op: 'replace',
+        path: '/tables/users/columns/email/comment',
+        value: 'User email address',
+      }
+
+      const result = postgresqlOperationDeparser(operation)
+
+      expect(result.errors).toHaveLength(0)
+      expect(result.value).toMatchInlineSnapshot(`
+        "COMMENT ON COLUMN \"users\".\"email\" IS 'User email address';"
+      `)
+
+      await expectGeneratedSQLToBeParseable(result.value)
+    })
+
+    it('should generate COMMENT ON COLUMN IS NULL for null value', async () => {
+      const operation: Operation = {
+        op: 'replace',
+        path: '/tables/users/columns/email/comment',
+        value: null,
+      }
+
+      const result = postgresqlOperationDeparser(operation)
+
+      expect(result.errors).toHaveLength(0)
+      expect(result.value).toMatchInlineSnapshot(`
+        "COMMENT ON COLUMN \"users\".\"email\" IS NULL;"
+      `)
+
+      await expectGeneratedSQLToBeParseable(result.value)
+    })
+  })
+
+  describe('column notNull operations', () => {
+    it('should generate ALTER COLUMN SET NOT NULL statement', async () => {
+      const operation: Operation = {
+        op: 'replace',
+        path: '/tables/users/columns/email/notNull',
+        value: true,
+      }
+
+      const result = postgresqlOperationDeparser(operation)
+
+      expect(result.errors).toHaveLength(0)
+      expect(result.value).toMatchInlineSnapshot(`
+        "ALTER TABLE \"users\" ALTER COLUMN \"email\" SET NOT NULL;"
+      `)
+
+      await expectGeneratedSQLToBeParseable(result.value)
+    })
+
+    it('should generate ALTER COLUMN DROP NOT NULL statement', async () => {
+      const operation: Operation = {
+        op: 'replace',
+        path: '/tables/users/columns/email/notNull',
+        value: false,
+      }
+
+      const result = postgresqlOperationDeparser(operation)
+
+      expect(result.errors).toHaveLength(0)
+      expect(result.value).toMatchInlineSnapshot(`
+        "ALTER TABLE \"users\" ALTER COLUMN \"email\" DROP NOT NULL;"
+      `)
+
+      await expectGeneratedSQLToBeParseable(result.value)
+    })
+  })
+
+  describe('column default operations', () => {
+    it('should generate ALTER COLUMN SET DEFAULT statement', async () => {
+      const operation: Operation = {
+        op: 'replace',
+        path: '/tables/users/columns/status/default',
+        value: 'active',
+      }
+
+      const result = postgresqlOperationDeparser(operation)
+
+      expect(result.errors).toHaveLength(0)
+      expect(result.value).toMatchInlineSnapshot(`
+        "ALTER TABLE \"users\" ALTER COLUMN \"status\" SET DEFAULT 'active';"
+      `)
+
+      await expectGeneratedSQLToBeParseable(result.value)
+    })
+
+    it('should generate ALTER COLUMN DROP DEFAULT statement for null', async () => {
+      const operation: Operation = {
+        op: 'replace',
+        path: '/tables/users/columns/status/default',
+        value: null,
+      }
+
+      const result = postgresqlOperationDeparser(operation)
+
+      expect(result.errors).toHaveLength(0)
+      expect(result.value).toMatchInlineSnapshot(`
+        "ALTER TABLE \"users\" ALTER COLUMN \"status\" DROP DEFAULT;"
+      `)
+
+      await expectGeneratedSQLToBeParseable(result.value)
+    })
+
+    it('should generate ALTER COLUMN SET DEFAULT with function', async () => {
+      const operation: Operation = {
+        op: 'replace',
+        path: '/tables/users/columns/created_at/default',
+        value: 'now()',
+      }
+
+      const result = postgresqlOperationDeparser(operation)
+
+      expect(result.errors).toHaveLength(0)
+      expect(result.value).toMatchInlineSnapshot(`
+        "ALTER TABLE \"users\" ALTER COLUMN \"created_at\" SET DEFAULT now();"
+      `)
+
+      await expectGeneratedSQLToBeParseable(result.value)
+    })
+  })
+
+  describe('column check operations', () => {
+    it('should generate ADD CHECK CONSTRAINT statement', async () => {
+      const operation: Operation = {
+        op: 'replace',
+        path: '/tables/products/columns/price/check',
+        value: 'price > 0',
+      }
+
+      const result = postgresqlOperationDeparser(operation)
+
+      expect(result.errors).toHaveLength(0)
+      expect(result.value).toMatchInlineSnapshot(`
+        "ALTER TABLE \"products\" ADD CONSTRAINT \"products_price_check\" CHECK (price > 0);"
+      `)
+
+      await expectGeneratedSQLToBeParseable(result.value)
+    })
+
+    it('should generate DROP CHECK CONSTRAINT statement for empty value', async () => {
+      const operation: Operation = {
+        op: 'replace',
+        path: '/tables/products/columns/price/check',
+        value: '',
+      }
+
+      const result = postgresqlOperationDeparser(operation)
+
+      expect(result.errors).toHaveLength(0)
+      expect(result.value).toMatchInlineSnapshot(`
+        "ALTER TABLE \"products\" DROP CONSTRAINT IF EXISTS \"products_price_check\";"
+      `)
+
+      await expectGeneratedSQLToBeParseable(result.value)
+    })
+  })
+
+  describe('constraint action operations', () => {
+    it('should return error for constraint delete action replacement', async () => {
+      const operation: Operation = {
+        op: 'replace',
+        path: '/tables/orders/constraints/fk_orders_user_id/deleteConstraint',
+        value: 'CASCADE',
+      }
+
+      const result = postgresqlOperationDeparser(operation)
+
+      expect(result.errors).toHaveLength(1)
+      expect(result.errors[0]?.message).toMatchInlineSnapshot(
+        `"Altering constraint delete action is not directly supported. Drop and recreate the constraint."`,
+      )
+      expect(result.value).toBe('')
+    })
+
+    it('should return error for constraint update action replacement', async () => {
+      const operation: Operation = {
+        op: 'replace',
+        path: '/tables/orders/constraints/fk_orders_user_id/updateConstraint',
+        value: 'RESTRICT',
+      }
+
+      const result = postgresqlOperationDeparser(operation)
+
+      expect(result.errors).toHaveLength(1)
+      expect(result.errors[0]?.message).toMatchInlineSnapshot(
+        `"Altering constraint update action is not directly supported. Drop and recreate the constraint."`,
+      )
+      expect(result.value).toBe('')
+    })
+  })
 })

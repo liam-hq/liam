@@ -15,6 +15,7 @@ import { SessionFormActions } from '../../shared/SessionFormActions'
 import { DropZone } from './DropZone'
 import styles from './UploadSessionFormPresenter.module.css'
 import { getFileFormat, isValidFileExtension } from './utils/fileValidation'
+import { calculateHasContent } from './utils/hasContentCalculation'
 
 type Props = {
   formError?: string
@@ -30,10 +31,19 @@ const processFile = (
   setSelectedFile: (file: File) => void,
   setDetectedFormat: (format: FormatType | null) => void,
   setSelectedFormat: (format: FormatType | null) => void,
+  fileInputRef: React.RefObject<HTMLInputElement | null>,
 ) => {
   const isValid = isValidFileExtension(file.name)
   setSchemaStatus(isValid ? 'valid' : 'invalid')
   setSelectedFile(file)
+
+  // Create a new FileList and set it to the input element
+  const dataTransfer = new DataTransfer()
+  dataTransfer.items.add(file)
+  if (fileInputRef.current) {
+    fileInputRef.current.files = dataTransfer.files
+  }
+
   if (isValid) {
     const format = getFileFormat(file.name)
     setDetectedFormat(format)
@@ -69,8 +79,12 @@ export const UploadSessionFormPresenter: FC<Props> = ({
   } = useFileAttachments()
 
   // Calculate hasContent for Enter key submission
-  const hasContent =
-    !!selectedFile || textContent.trim().length > 0 || attachments.length > 0
+  const hasContent = calculateHasContent({
+    selectedFile,
+    schemaStatus,
+    textContent,
+    attachments,
+  })
   const handleEnterKeySubmission = useEnterKeySubmission(
     hasContent,
     isPending,
@@ -87,6 +101,7 @@ export const UploadSessionFormPresenter: FC<Props> = ({
         setSelectedFile,
         setDetectedFormat,
         setSelectedFormat,
+        fileInputRef,
       )
     }
   }
@@ -113,6 +128,7 @@ export const UploadSessionFormPresenter: FC<Props> = ({
         setSelectedFile,
         setDetectedFormat,
         setSelectedFormat,
+        fileInputRef,
       )
     }
   }
@@ -226,7 +242,7 @@ export const UploadSessionFormPresenter: FC<Props> = ({
           <div className={styles.textareaWrapper ?? ''}>
             <textarea
               ref={textareaRef}
-              name="message"
+              name="initialMessage"
               placeholder="Enter your database design instructions. For example: Design a database for an e-commerce site that manages users, products, and orders..."
               value={textContent}
               onChange={handleTextareaChange}

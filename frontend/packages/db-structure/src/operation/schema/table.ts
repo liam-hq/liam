@@ -8,6 +8,10 @@ const tableNamePathSchema = v.pipe(
   v.string(),
   v.regex(PATH_PATTERNS.TABLE_NAME),
 )
+const tableCommentPathSchema = v.pipe(
+  v.string(),
+  v.regex(PATH_PATTERNS.TABLE_COMMENT),
+)
 
 const addTableOperationSchema = v.pipe(
   v.object({
@@ -35,12 +39,24 @@ const replaceTableNameOperationSchema = v.pipe(
   v.description('Rename existing table'),
 )
 
+const replaceTableCommentOperationSchema = v.pipe(
+  v.object({
+    op: v.literal('replace'),
+    path: tableCommentPathSchema,
+    value: v.union([v.string(), v.null()]),
+  }),
+  v.description('Replace table comment'),
+)
+
 export type AddTableOperation = v.InferOutput<typeof addTableOperationSchema>
 export type RemoveTableOperation = v.InferOutput<
   typeof removeTableOperationSchema
 >
 export type ReplaceTableNameOperation = v.InferOutput<
   typeof replaceTableNameOperationSchema
+>
+export type ReplaceTableCommentOperation = v.InferOutput<
+  typeof replaceTableCommentOperationSchema
 >
 
 export const isAddTableOperation = (
@@ -61,8 +77,15 @@ export const isReplaceTableNameOperation = (
   return v.safeParse(replaceTableNameOperationSchema, operation).success
 }
 
+export const isReplaceTableCommentOperation = (
+  operation: Operation,
+): operation is ReplaceTableCommentOperation => {
+  return v.safeParse(replaceTableCommentOperationSchema, operation).success
+}
+
 export const tableOperations = [
   addTableOperationSchema,
   removeTableOperationSchema,
   replaceTableNameOperationSchema,
+  replaceTableCommentOperationSchema,
 ]
