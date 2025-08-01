@@ -14,6 +14,7 @@ import type { Operation } from 'fast-json-patch'
 import { fromThrowable } from 'neverthrow'
 import * as v from 'valibot'
 import { getToolConfigurable } from '../getToolConfigurable'
+import { analyzeDdlGenerationResult } from '../utils/analyzeDdlGenerationResult'
 
 const schemaDesignToolSchema = v.object({
   operations: operationsSchema,
@@ -47,19 +48,31 @@ const validateAndExecuteDDL = async (
 ): Promise<{ ddlStatements: string; results: SqlResult[] }> => {
   // Validate DDL by generating and executing it
   const ddlResult = postgresqlSchemaDeparser(schema)
+  const analysis = analyzeDdlGenerationResult(schema, ddlResult)
 
-  if (ddlResult.errors.length > 0) {
-    const errorDetails = ddlResult.errors
-      .map((error) => error.message)
-      .join('; ')
+  if (analysis.hasErrors) {
     // LangGraph tool nodes require throwing errors to trigger retry mechanism
     // eslint-disable-next-line no-throw-error/no-throw-error
     throw new Error(
-      `DDL generation failed due to schema errors: ${errorDetails}. The schema design contains issues that prevent valid SQL generation. Please review and fix the schema structure.`,
+      `DDL generation failed: ${analysis.detailedReason}. Please review and fix the schema structure.`,
     )
   }
 
   const ddlStatements = ddlResult.value
+
+  // Check if DDL is empty and provide detailed feedback
+  if (analysis.isEmpty) {
+    if (analysis.detailedReason?.includes('no tables defined')) {
+      // Empty schema is valid for initial state
+      console.warn('Schema info:', analysis.detailedReason)
+    } else {
+      // This indicates a potential issue with table definitions
+      // eslint-disable-next-line no-throw-error/no-throw-error
+      throw new Error(
+        `Invalid schema structure: ${analysis.detailedReason}. ${analysis.warnings.join('; ')}`,
+      )
+    }
+  }
 
   // Execute DDL to validate it
   const results: SqlResult[] = await executeQuery(

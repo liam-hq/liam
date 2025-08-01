@@ -78,6 +78,37 @@ export async function prepareDmlNode(
     return state
   }
 
+  // Check if DDL is empty (no tables)
+  if (state.ddlStatements.trim() === '') {
+    // Analyze the schema to provide more specific feedback
+    const tableCount = Object.keys(state.schemaData?.tables || {}).length
+    let errorMessage: string
+
+    if (tableCount === 0) {
+      errorMessage =
+        'The database schema is empty (no tables defined). Please create at least one table with columns before generating sample data.'
+    } else {
+      // This is unusual - we have tables but empty DDL
+      const tableNames = Object.keys(state.schemaData?.tables || {})
+      const tablesWithoutColumns = tableNames.filter((tableName) => {
+        const table = state.schemaData?.tables[tableName]
+        return !table?.columns || Object.keys(table.columns).length === 0
+      })
+
+      if (tablesWithoutColumns.length > 0) {
+        errorMessage = `Cannot generate sample data: The following tables have no columns: ${tablesWithoutColumns.join(', ')}. Please add columns to these tables first.`
+      } else {
+        errorMessage = `The database schema contains ${tableCount} table(s) but no DDL was generated. This may be due to invalid table definitions. Please check your schema structure.`
+      }
+    }
+
+    await logAssistantMessage(state, repositories, errorMessage, assistantRole)
+    return {
+      ...state,
+      error: new Error('Cannot generate DML for empty or invalid schema'),
+    }
+  }
+
   if (!state.generatedUsecases || state.generatedUsecases.length === 0) {
     await logAssistantMessage(
       state,
