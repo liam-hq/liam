@@ -1,96 +1,147 @@
-import type {
-  Artifact,
-  FunctionalRequirement,
-  NonFunctionalRequirement,
-} from '@liam-hq/artifact'
+import type { Artifact, DmlOperation, UseCase } from '@liam-hq/artifact'
 
-/**
- * Convert Artifact data structure to Markdown format
- */
-export const formatArtifactToMarkdown = (artifact: Artifact): string => {
+function formatDmlOperation(operation: DmlOperation): string {
+  const sections: string[] = []
+
+  // Operation type and description
+  if (operation.description) {
+    sections.push(`**${operation.operation_type}** - ${operation.description}`)
+  } else {
+    sections.push(`**${operation.operation_type}**`)
+  }
+  sections.push('')
+
+  // SQL code block
+  sections.push('```sql')
+  sections.push(operation.sql.trim())
+  sections.push('```')
+
+  // Execution logs
+  if (operation.dml_execution_logs.length > 0) {
+    sections.push('')
+    sections.push('**Execution History:**')
+    sections.push('')
+
+    operation.dml_execution_logs.forEach((log) => {
+      const statusIcon = log.success ? '✅' : '❌'
+      const executedAt = new Date(log.executed_at).toLocaleString('en-US', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+      })
+
+      sections.push(`${statusIcon} **${executedAt}**`)
+      sections.push(`> ${log.result_summary}`)
+      sections.push('')
+    })
+  }
+
+  return sections.join('\n')
+}
+
+function formatUseCase(useCase: UseCase, index: number): string {
+  const sections: string[] = []
+
+  sections.push(`#### ${index + 1}. ${useCase.title}`)
+  sections.push('')
+  sections.push(useCase.description)
+
+  if (useCase.dml_operations.length > 0) {
+    sections.push('')
+    sections.push('**Related DML Operations:**')
+    sections.push('')
+
+    useCase.dml_operations.forEach((operation, opIndex) => {
+      if (useCase.dml_operations.length > 1) {
+        sections.push(`##### Operation ${opIndex + 1}`)
+        sections.push('')
+      }
+      sections.push(formatDmlOperation(operation))
+
+      if (opIndex < useCase.dml_operations.length - 1) {
+        sections.push('---')
+        sections.push('')
+      }
+    })
+  }
+
+  return sections.join('\n')
+}
+
+export function formatArtifactToMarkdown(artifact: Artifact): string {
   const { requirement_analysis } = artifact
   const { business_requirement, requirements } = requirement_analysis
 
   const sections: string[] = []
 
-  // Business Requirement section
-  sections.push('# Business Requirement')
+  // Header
+  sections.push('# Requirements Document')
+  sections.push('')
+  sections.push(
+    'This document outlines system requirements and their associated data manipulation language (DML) operations.',
+  )
+  sections.push('')
+  sections.push('---')
+  sections.push('')
+
+  // Business requirement
+  sections.push('## 📋 Business Requirements')
   sections.push('')
   sections.push(business_requirement)
   sections.push('')
 
-  // Requirements section
-  if (requirements.length > 0) {
-    sections.push('## Requirements')
+  // Functional requirements
+  const functionalReqs = requirements.filter((req) => req.type === 'functional')
+  if (functionalReqs.length > 0) {
+    sections.push('## 🔧 Functional Requirements')
     sections.push('')
 
-    // Group requirements by type
-    const functionalReqs = requirements.filter(
-      (req) => req.type === 'functional',
-    ) as FunctionalRequirement[]
-    const nonFunctionalReqs = requirements.filter(
-      (req) => req.type === 'non_functional',
-    ) as NonFunctionalRequirement[]
-
-    // Functional Requirements
-    if (functionalReqs.length > 0) {
-      sections.push('### Functional Requirements')
+    functionalReqs.forEach((req, reqIndex) => {
+      sections.push(`### ${reqIndex + 1}. ${req.name}`)
       sections.push('')
+      sections.push(req.description)
 
-      functionalReqs.forEach((req, index) => {
-        sections.push(`#### ${index + 1}. ${req.name}`)
+      if (req.type === 'functional' && req.use_cases.length > 0) {
         sections.push('')
-        sections.push(req.description)
+        sections.push('**Use Cases:**')
         sections.push('')
 
-        // Use cases
-        if (req.use_cases.length > 0) {
-          sections.push('**Use Cases:**')
+        req.use_cases.forEach((useCase, ucIndex) => {
+          sections.push(formatUseCase(useCase, ucIndex))
           sections.push('')
+        })
+      }
 
-          req.use_cases.forEach((useCase, ucIndex) => {
-            sections.push(`${ucIndex + 1}. **${useCase.title}**`)
-            sections.push(`   - ${useCase.description}`)
+      if (reqIndex < functionalReqs.length - 1) {
+        sections.push('---')
+        sections.push('')
+      }
+    })
+  }
 
-            // DML Operations (if any)
-            if (useCase.dml_operations.length > 0) {
-              sections.push('   - **DML Operations:**')
-              useCase.dml_operations.forEach((dml, dmlIndex) => {
-                sections.push(`     ${dmlIndex + 1}. ${dml.operation_type}`)
-                sections.push('        ```sql')
-                sections.push(`        ${dml.sql}`)
-                sections.push('        ```')
+  // Non-functional requirements
+  const nonFunctionalReqs = requirements.filter(
+    (req) => req.type === 'non_functional',
+  )
+  if (nonFunctionalReqs.length > 0) {
+    sections.push('')
+    sections.push('## 📊 Non-Functional Requirements')
+    sections.push('')
 
-                // Execution logs (if any)
-                if (dml.dml_execution_logs.length > 0) {
-                  sections.push('        **Execution Logs:**')
-                  dml.dml_execution_logs.forEach((log) => {
-                    const status = log.success ? '✅ Success' : '❌ Failed'
-                    sections.push(
-                      `        - ${new Date(log.executed_at).toLocaleString()}: ${status} - ${log.result_summary}`,
-                    )
-                  })
-                }
-              })
-            }
-          })
-          sections.push('')
-        }
-      })
-    }
-
-    // Non-Functional Requirements
-    if (nonFunctionalReqs.length > 0) {
-      sections.push('### Non-Functional Requirements')
+    nonFunctionalReqs.forEach((req, reqIndex) => {
+      sections.push(`### ${reqIndex + 1}. ${req.name}`)
       sections.push('')
+      sections.push(req.description)
 
-      nonFunctionalReqs.forEach((req, index) => {
-        sections.push(`#### ${index + 1}. ${req.name}`)
+      if (reqIndex < nonFunctionalReqs.length - 1) {
         sections.push('')
-        sections.push(req.description)
+        sections.push('---')
         sections.push('')
-      })
-    }
+      }
+    })
   }
 
   return sections.join('\n')

@@ -8,8 +8,6 @@ import rehypeRaw from 'rehype-raw'
 import remarkGfm from 'remark-gfm'
 import { CopyButton } from '../shared/CopyButton'
 import styles from './Artifact.module.css'
-import { type DMLBlock, ExecutableDMLBlock } from './ExecutableDMLBlock'
-import { SeverityBadge } from './SeverityBadge'
 
 type CodeProps = {
   className?: string
@@ -31,36 +29,10 @@ export const Artifact: FC<Props> = ({ doc }) => {
           remarkPlugins={[remarkGfm]}
           rehypePlugins={[rehypeRaw]}
           components={{
-            p(props) {
-              const { children, ...rest } = props
-              const text = String(children)
-
-              // Detect severity:Level format and replace with badge
-              const severityMatch = text.match(
-                /^severity:\s*(High|Medium|Low)$/i,
-              )
-              if (severityMatch) {
-                const level = severityMatch[1] as 'High' | 'Medium' | 'Low'
-                return <SeverityBadge level={level} />
-              }
-
-              return <p {...rest}>{children}</p>
-            },
             code(props: CodeProps) {
               const { children, className, ...rest } = props
               const match = /language-(\w+)/.exec(className || '')
               const isInline = !match && !className
-              const language = match?.[1]
-
-              // Use ExecutableDMLBlock for SQL code blocks
-              if (!isInline && language === 'sql') {
-                const sqlCode = String(children).replace(/\n$/, '')
-                const dmlBlock: DMLBlock = {
-                  name: 'SQL Query',
-                  code: sqlCode,
-                }
-                return <ExecutableDMLBlock dmlBlock={dmlBlock} />
-              }
 
               return !isInline && match ? (
                 <SyntaxHighlighter

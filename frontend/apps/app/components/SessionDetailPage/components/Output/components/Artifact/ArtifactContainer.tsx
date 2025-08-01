@@ -24,8 +24,6 @@ export const ArtifactContainer: FC<Props> = ({ artifact, loading, error }) => {
     return <div>No artifact available yet</div>
   }
 
-  // Convert artifact data to markdown format
   const markdownContent = formatArtifactToMarkdown(artifact)
-
   return <Artifact doc={markdownContent} />
 }

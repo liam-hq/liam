@@ -1,1 +1,0 @@
-export { SeverityBadge } from './SeverityBadge'

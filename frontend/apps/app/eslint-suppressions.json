@@ -132,16 +132,6 @@
       "count": 2
     }
   },
-  "components/SessionDetailPage/components/Output/components/Artifact/Artifact.tsx": {
-    "@typescript-eslint/consistent-type-assertions": {
-      "count": 1
-    }
-  },
-  "components/SessionDetailPage/components/Output/components/Artifact/utils/formatArtifactToMarkdown.ts": {
-    "@typescript-eslint/consistent-type-assertions": {
-      "count": 2
-    }
-  },
   "components/SessionDetailPage/hooks/useRealtimeWorkflowRuns.ts": {
     "no-throw-error/no-throw-error": {
       "count": 1
