@@ -3,7 +3,8 @@ import { ToolMessage } from '@langchain/core/messages'
 import type { RunnableConfig } from '@langchain/core/runnables'
 import { ToolNode } from '@langchain/langgraph/prebuilt'
 import { postgresqlSchemaDeparser, type Schema } from '@liam-hq/db-structure'
-import type { ResultAsync } from 'neverthrow'
+import { fromThrowable, type ResultAsync } from 'neverthrow'
+import * as v from 'valibot'
 import { getConfigurable } from '../../chat/workflow/shared/getConfigurable'
 import type { WorkflowState } from '../../chat/workflow/types'
 import { withTimelineItemSync } from '../../chat/workflow/utils/withTimelineItemSync'
@@ -18,16 +19,64 @@ const isToolMessage = (message: BaseMessage): message is ToolMessage => {
 }
 
 /**
- * Check if schemaDesignTool was executed successfully
+ * Check if schemaDesignTool was executed successfully and extract the result
  */
-const wasSchemaDesignToolSuccessful = (messages: BaseMessage[]): boolean => {
+const getSchemaDesignToolResult = (
+  messages: BaseMessage[],
+): {
+  success: boolean
+  updatedSchema?: Schema
+  latestVersionNumber?: number
+  ddlStatements?: string
+} => {
   const toolMessages = messages.filter(isToolMessage)
-  return toolMessages.some(
+  const successMessage = toolMessages.find(
     (msg) =>
       msg.name === 'schemaDesignTool' &&
       typeof msg.content === 'string' &&
       msg.content.includes('Schema successfully updated'),
   )
+
+  if (!successMessage) {
+    return { success: false }
+  }
+
+  // Ensure content is a string
+  const content =
+    typeof successMessage.content === 'string' ? successMessage.content : ''
+  if (!content) {
+    return { success: false }
+  }
+
+  // Try to parse as JSON
+  const parseJsonResult = fromThrowable(
+    () => JSON.parse(content),
+    () => null,
+  )()
+
+  if (parseJsonResult.isOk() && parseJsonResult.value) {
+    // Define schema for the expected response structure
+    const responseSchema = v.object({
+      updatedSchema: v.unknown(), // We'll trust this is a valid Schema since it comes from our tool
+      latestVersionNumber: v.number(),
+      ddlStatements: v.string(),
+    })
+
+    const validationResult = v.safeParse(responseSchema, parseJsonResult.value)
+    if (validationResult.success) {
+      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+      const updatedSchema = validationResult.output.updatedSchema as Schema
+      return {
+        success: true,
+        updatedSchema,
+        latestVersionNumber: validationResult.output.latestVersionNumber,
+        ddlStatements: validationResult.output.ddlStatements,
+      }
+    }
+  }
+
+  // Fallback for backward compatibility if content is not JSON
+  return { success: true }
 }
 
 /**
@@ -94,31 +143,44 @@ export const invokeSchemaDesignToolNode = async (
     messages: syncedMessages,
   }
 
-  if (wasSchemaDesignToolSuccessful(syncedMessages)) {
-    // Fetch the updated schema from database
-    const schemaResult = await fetchUpdatedSchemaWithResult(
-      repositories,
-      state.designSessionId,
-    )
+  const toolResult = getSchemaDesignToolResult(syncedMessages)
 
-    if (schemaResult.isOk()) {
-      // Generate DDL statements from the updated schema
-      const ddlResult = postgresqlSchemaDeparser(schemaResult.value.schema)
-      const ddlStatements =
-        ddlResult.errors.length > 0 ? undefined : ddlResult.value
-
-      // Update workflow state with fresh schema data and DDL statements
+  if (toolResult.success) {
+    // Use the schema returned directly from the tool if available
+    if (toolResult.updatedSchema && toolResult.latestVersionNumber) {
+      // Update workflow state with the schema returned from the tool
       updatedResult = {
         ...updatedResult,
-        schemaData: schemaResult.value.schema,
-        latestVersionNumber: schemaResult.value.latestVersionNumber,
-        ddlStatements,
+        schemaData: toolResult.updatedSchema,
+        latestVersionNumber: toolResult.latestVersionNumber,
+        ddlStatements: toolResult.ddlStatements,
       }
     } else {
-      console.warn(
-        'Failed to fetch updated schema after tool execution:',
-        schemaResult.error,
+      // Fallback: fetch from database if tool didn't return schema (backward compatibility)
+      const schemaResult = await fetchUpdatedSchemaWithResult(
+        repositories,
+        state.designSessionId,
       )
+
+      if (schemaResult.isOk()) {
+        // Generate DDL statements from the updated schema
+        const ddlResult = postgresqlSchemaDeparser(schemaResult.value.schema)
+        const ddlStatements =
+          ddlResult.errors.length > 0 ? undefined : ddlResult.value
+
+        // Update workflow state with fresh schema data and DDL statements
+        updatedResult = {
+          ...updatedResult,
+          schemaData: schemaResult.value.schema,
+          latestVersionNumber: schemaResult.value.latestVersionNumber,
+          ddlStatements,
+        }
+      } else {
+        console.warn(
+          'Failed to fetch updated schema after tool execution:',
+          schemaResult.error,
+        )
+      }
     }
   }
 

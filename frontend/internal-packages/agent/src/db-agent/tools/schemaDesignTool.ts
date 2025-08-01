@@ -179,7 +179,16 @@ export const schemaDesignTool = tool(
       )
     }
 
-    return 'Schema successfully updated. The operations have been applied to the database schema, DDL validation passed, and new version created.'
+    // Return the updated schema and version information as a structured object
+    // This allows the invoking node to immediately use the updated schema
+    // without needing to re-fetch from the database
+    return JSON.stringify({
+      message:
+        'Schema successfully updated. The operations have been applied to the database schema, DDL validation passed, and new version created.',
+      updatedSchema: currentSchema,
+      latestVersionNumber: schemaResult.value.latestVersionNumber + 1,
+      ddlStatements,
+    })
   },
   {
     name: 'schemaDesignTool',
