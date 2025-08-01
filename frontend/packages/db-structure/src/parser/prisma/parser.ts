@@ -393,10 +393,35 @@ function processManyToManyRelationships(
 }
 
 /**
+ * Preprocess schema to replace @id with @unique in views and collect view names
+ */
+function preprocessPrismaSchema(schemaString: string): {
+  processedSchema: string
+  viewNames: Set<string>
+} {
+  const viewNames = new Set<string>()
+
+  // Replace @id with @unique in view blocks and collect view names
+  const viewBlockRegex = /view\s+(\w+)\s*\{[^}]*\}/gs // 's' flag for multiline
+  const processedSchema = schemaString.replace(
+    viewBlockRegex,
+    (match, viewName) => {
+      viewNames.add(viewName)
+      // Replace @id with @unique to satisfy Prisma validation
+      return match.replace(/@id\b/g, '@unique')
+    },
+  )
+
+  return { processedSchema, viewNames }
+}
+
+/**
  * Main function to parse a Prisma schema
  */
 async function parsePrismaSchema(schemaString: string): Promise<ProcessResult> {
-  const dmmf = await getDMMF({ datamodel: schemaString })
+  // Preprocess schema to replace @id with @unique in views and collect view names
+  const { processedSchema, viewNames } = preprocessPrismaSchema(schemaString)
+  const dmmf = await getDMMF({ datamodel: processedSchema })
   const errors: Error[] = []
 
   // Track many-to-many relationships for later processing
@@ -408,15 +433,20 @@ async function parsePrismaSchema(schemaString: string): Promise<ProcessResult> {
     field2: DMMF.Field
   }> = []
 
+  // Filter out views from models using collected view names
+  const models = dmmf.datamodel.models.filter(
+    (model) => !viewNames.has(model.name),
+  )
+
   // Build field renaming map
-  const tableFieldRenaming = buildFieldRenamingMap(dmmf.datamodel.models)
+  const tableFieldRenaming = buildFieldRenamingMap(models)
 
   // Process models and create tables
-  const tables = processTables(dmmf.datamodel.models, tableFieldRenaming)
+  const tables = processTables(models, tableFieldRenaming)
 
   // Process constraints
   processConstraints(
-    dmmf.datamodel.models,
+    models,
     tables,
     tableFieldRenaming,
     processedManyToManyRelations,
@@ -424,19 +454,10 @@ async function parsePrismaSchema(schemaString: string): Promise<ProcessResult> {
   )
 
   // Process indexes
-  processIndexes(
-    dmmf.datamodel.indexes,
-    dmmf.datamodel.models,
-    tables,
-    tableFieldRenaming,
-  )
+  processIndexes(dmmf.datamodel.indexes, models, tables, tableFieldRenaming)
 
   // Process many-to-many relationships
-  processManyToManyRelationships(
-    manyToManyRelations,
-    tables,
-    dmmf.datamodel.models,
-  )
+  processManyToManyRelationships(manyToManyRelations, tables, models)
 
   return {
     value: {

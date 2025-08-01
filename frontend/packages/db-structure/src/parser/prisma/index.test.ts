@@ -43,6 +43,7 @@ describe(_processor, () => {
   const prismaSchemaHeader = `
     generator client {
       provider = "prisma-client-js"
+      previewFeatures = ["views"]
     }
 
     datasource db {
@@ -761,6 +762,94 @@ describe(_processor, () => {
       })
 
       expect(value).toEqual(expectedSchema)
+    })
+
+    it('should handle views with @id by removing them', async () => {
+      const { value } = await processor(`
+        model User {
+          id    Int     @id @default(autoincrement())
+          name  String
+        }
+
+        view UserView {
+          id    Int     @id @default(autoincrement())
+          name  String
+          email String
+        }
+
+        view TraceView {
+          id         String   @id @default(cuid())
+          timestamp  DateTime @default(now())
+          projectId  String   @map("project_id")
+        }
+      `)
+
+      // Views should be filtered out and not appear in the result
+      expect(value.tables['User']).toBeDefined()
+      expect(value.tables['UserView']).toBeUndefined()
+      expect(value.tables['TraceView']).toBeUndefined()
+
+      // Only the User model should be present
+      const userTable = value.tables['User']
+      expect(userTable?.columns).toEqual({
+        id: aColumn({
+          name: 'id',
+          type: 'serial',
+          default: 'autoincrement()',
+          notNull: true,
+        }),
+        name: aColumn({
+          name: 'name',
+          type: 'text',
+          notNull: true,
+        }),
+      })
+    })
+
+    it('should handle mixed models and views correctly', async () => {
+      const { value } = await processor(`
+        model Post {
+          id     Int    @id @default(autoincrement())
+          title  String
+          userId Int    @map("user_id")
+          user   User   @relation(fields: [userId], references: [id])
+        }
+
+        view PostView {
+          id     Int    @id
+          title  String
+          author String
+        }
+
+        model User {
+          id    Int    @id @default(autoincrement())
+          name  String
+          posts Post[]
+        }
+
+        view ObservationView {
+          id        String   @id @default(cuid())
+          traceId   String?  @map("trace_id")
+          projectId String   @map("project_id")
+        }
+      `)
+
+      // Only models should be present, views should be filtered out
+      expect(Object.keys(value.tables).sort()).toEqual(['Post', 'User'])
+      expect(value.tables['PostView']).toBeUndefined()
+      expect(value.tables['ObservationView']).toBeUndefined()
+
+      // Verify foreign key relationships still work between models
+      const postConstraints = value.tables['Post']?.constraints
+      expect(postConstraints?.['PostToUser']).toEqual({
+        type: 'FOREIGN KEY',
+        name: 'PostToUser',
+        columnNames: ['user_id'],
+        targetTableName: 'User',
+        targetColumnNames: ['id'],
+        updateConstraint: 'NO_ACTION',
+        deleteConstraint: 'NO_ACTION',
+      })
     })
   })
 })
