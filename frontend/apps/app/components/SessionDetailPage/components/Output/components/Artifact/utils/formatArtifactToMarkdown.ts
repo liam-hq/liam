@@ -58,11 +58,16 @@ export const formatArtifactToMarkdown = (artifact: Artifact): string => {
               useCase.dml_operations.forEach((dml, dmlIndex) => {
                 sections.push(`     ${dmlIndex + 1}. ${dml.operation_type}`)
                 sections.push('        ```sql')
-                sections.push(`        ${dml.sql}`)
+                // Handle multi-line SQL by splitting and properly indenting each line
+                const sqlLines = dml.sql.split('\n')
+                sqlLines.forEach((line) => {
+                  sections.push(`        ${line}`)
+                })
                 sections.push('        ```')
 
                 // Execution logs (if any)
                 if (dml.dml_execution_logs.length > 0) {
+                  sections.push('') // Add empty line for spacing
                   sections.push('        **Execution Logs:**')
                   dml.dml_execution_logs.forEach((log) => {
                     const status = log.success ? '✅ Success' : '❌ Failed'
