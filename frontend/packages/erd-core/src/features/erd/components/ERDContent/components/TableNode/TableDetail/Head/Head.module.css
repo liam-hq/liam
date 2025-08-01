@@ -1,0 +1,27 @@
+.header {
+  display: grid;
+  grid-auto-flow: column;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-2);
+  border-bottom: 1px solid var(--global-border);
+  color: var(--overlay-70);
+}
+
+.header:focus-visible {
+  outline: 1px solid var(--primary-color);
+}
+
+.iconTitleContainer {
+  display: grid;
+  grid-auto-flow: column;
+  gap: var(--spacing-1);
+  align-items: center;
+}
+
+.heading {
+  color: var(--global-foreground);
+  font-size: var(--font-size-3);
+  font-style: normal;
+  line-height: normal;
+}
