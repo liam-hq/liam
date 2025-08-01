@@ -401,18 +401,45 @@ function preprocessPrismaSchema(schemaString: string): {
 } {
   const viewNames = new Set<string>()
 
-  // Remove view blocks entirely and collect view names
-  const viewBlockRegex = /view\s+(\w+)\s*\{[^}]*\}/gs // 's' flag for multiline
-  const processedSchema = schemaString.replace(
-    viewBlockRegex,
-    (_match, viewName) => {
-      viewNames.add(viewName)
-      // Remove the entire view block
-      return ''
-    },
-  )
+  // Split schema into lines for safer processing
+  const lines = schemaString.split('\n')
+  const processedLines: string[] = []
+  let inViewBlock = false
+  let currentViewName = ''
+  let braceCount = 0
 
-  return { processedSchema, viewNames }
+  for (const line of lines) {
+    const viewMatch = line.match(/^\s*view\s+(\w+)\s*\{/)
+
+    if (viewMatch) {
+      // Start of a view block
+      inViewBlock = true
+      currentViewName = viewMatch[1] || ''
+      viewNames.add(currentViewName)
+      braceCount = 1
+      continue
+    }
+
+    if (inViewBlock) {
+      // Count braces to handle nested structures
+      for (const char of line) {
+        if (char === '{') braceCount++
+        else if (char === '}') braceCount--
+      }
+
+      if (braceCount === 0) {
+        // End of view block
+        inViewBlock = false
+        currentViewName = ''
+      }
+      continue
+    }
+
+    // Keep non-view lines
+    processedLines.push(line)
+  }
+
+  return { processedSchema: processedLines.join('\n'), viewNames }
 }
 
 /**
