@@ -149,6 +149,13 @@ const convertToTable = (
     }
   }
 
+  // Convert table-level constraints
+  if (tableDef.constraints) {
+    for (const constraint of Object.values(tableDef.constraints)) {
+      constraints[constraint.name] = constraint
+    }
+  }
+
   // Convert indexes
   for (const [_, indexDef] of Object.entries(tableDef.indexes)) {
     // Map JS property names to actual column names
