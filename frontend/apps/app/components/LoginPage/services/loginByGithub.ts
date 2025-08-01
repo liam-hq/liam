@@ -13,8 +13,8 @@ function getAuthCallbackUrl({
   next?: string
   provider: OAuthProvider
 }): string {
-  let url = process.env.SITE_URL
-    ? `https://${process.env.SITE_URL}`
+  let url = process.env.VERCEL_ENV !== "preview"
+    ? process.env.NEXT_PUBLIC_BASE_URL
     : process.env.VERCEL_BRANCH_URL
       ? `https://${process.env.VERCEL_BRANCH_URL}`
       : 'http://localhost:3001/'
