@@ -81,8 +81,8 @@ importers:
         specifier: 6.38.0
         version: 6.38.0
       '@electric-sql/pglite':
-        specifier: 0.3.4
-        version: 0.3.4
+        specifier: 0.3.5
+        version: 0.3.5
       '@lezer/highlight':
         specifier: 1.2.1
         version: 1.2.1
@@ -956,8 +956,8 @@ importers:
   frontend/packages/pglite-server:
     dependencies:
       '@electric-sql/pglite':
-        specifier: 0.3.4
-        version: 0.3.4
+        specifier: 0.3.5
+        version: 0.3.5
     devDependencies:
       '@biomejs/biome':
         specifier: 2.1.2
@@ -1954,8 +1954,8 @@ packages:
   '@electric-sql/client@1.0.0-beta.1':
     resolution: {integrity: sha512-Ei9jN3pDoGzc+a/bGqnB5ajb52IvSv7/n2btuyzUlcOHIR2kM9fqtYTJXPwZYKLkGZlHWlpHgWyRtrinkP2nHg==}
 
-  '@electric-sql/pglite@0.3.4':
-    resolution: {integrity: sha512-h5hoL2GuxcWN8Q3+jtesIRem14iIvAZVEsTeUF6eO9RiUb6ar73QVIEW9t+Ud58iXAcAE2dFMtWqw3W2Oo4LDw==}
+  '@electric-sql/pglite@0.3.5':
+    resolution: {integrity: sha512-fhODErXJjOrnsJj5f1A8sH/Zj0INpLUbqOCiskufIUImUsFOBNHE6/FApY656Q2VSOp46wkXX3rvbBBO8O8Cag==}
 
   '@emnapi/core@1.4.5':
     resolution: {integrity: sha512-XsLw1dEOpkSX/WucdqUhPWP7hDxSvZiY+fsUC14h+FtQ2Ifni4znbBt8punRX+Uj2JG/uDb8nEHVKvrVlvdZ5Q==}
@@ -13031,7 +13031,7 @@ snapshots:
     optionalDependencies:
       '@rollup/rollup-darwin-arm64': 4.46.0
 
-  '@electric-sql/pglite@0.3.4': {}
+  '@electric-sql/pglite@0.3.5': {}
 
   '@emnapi/core@1.4.5':
     dependencies:
