@@ -8,7 +8,7 @@
     "@liam-hq/agent": "workspace:*",
     "@liam-hq/db-structure": "workspace:*",
     "dotenv": "16.5.0",
-    "langsmith": "0.3.44",
+    "langsmith": "0.3.46",
     "neverthrow": "8.2.0",
     "openai": "5.9.2",
     "tsx": "4.20.3",
