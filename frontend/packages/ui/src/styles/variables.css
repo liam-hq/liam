@@ -13,10 +13,10 @@
   --z-index-dropdown-menu: 1100;
   --z-index-popover: 1500;
   --z-index-tooltip: 2000;
-  --z-index-toast: 3000;
   --z-index-overlay: 3100;
   --z-index-toolbar-opened: 3200;
   --z-index-command-palette: 3300;
+  --z-index-toast: 3400;
   --z-index-cookie-consent: 4000;
 
   /* Scrollbar design tokens */
