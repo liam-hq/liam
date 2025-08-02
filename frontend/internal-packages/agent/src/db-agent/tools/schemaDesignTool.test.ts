@@ -5,6 +5,7 @@ import {
   aSchema,
   aTable,
 } from '@liam-hq/db-structure'
+import * as v from 'valibot'
 import { describe, expect, it, vi } from 'vitest'
 import type { Repositories } from '../../repositories'
 import { InMemoryRepository } from '../../repositories/InMemoryRepository'
@@ -73,9 +74,21 @@ describe('schemaDesignTool', () => {
 
     const result = await schemaDesignTool.invoke(input, config)
 
-    expect(result).toBe(
+    // Parse the JSON result with validation
+    const resultSchema = v.object({
+      message: v.string(),
+      updatedSchema: v.unknown(),
+      latestVersionNumber: v.number(),
+      ddlStatements: v.string(),
+    })
+    const parsedResult = v.parse(resultSchema, JSON.parse(result))
+
+    expect(parsedResult.message).toBe(
       'Schema successfully updated. The operations have been applied to the database schema, DDL validation passed, and new version created.',
     )
+    expect(parsedResult.updatedSchema).toBeDefined()
+    expect(parsedResult.latestVersionNumber).toBe(2)
+    expect(parsedResult.ddlStatements).toBeDefined()
 
     // Verify the schema was actually updated in the repository by schemaDesignTool
     const schemaData = await repositories.schema.getSchema('test-session')
@@ -184,7 +197,9 @@ describe('schemaDesignTool', () => {
 
     // With actual PGlite, empty operations on empty schema should succeed
     const result = await schemaDesignTool.invoke(input, config)
-    expect(result).toBe(
+    const messageSchema = v.object({ message: v.string() })
+    const parsedResult = v.parse(messageSchema, JSON.parse(result))
+    expect(parsedResult.message).toBe(
       'Schema successfully updated. The operations have been applied to the database schema, DDL validation passed, and new version created.',
     )
   })
