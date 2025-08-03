@@ -73,10 +73,10 @@ export const ToastCommandPaletteViewport: FC<React.PropsWithChildren> = ({
 
 export const ToastContext = createContext<{
   headerToast: ToastFn
-  commandPaletteToast: ToastFn
+  commandPaletteToast: (options: ToastOptions) => void
 }>({
   headerToast: () => '',
-  commandPaletteToast: () => '',
+  commandPaletteToast: () => {},
 })
 
 export const ToastProvider = ({ children }: PropsWithChildren) => {
@@ -96,29 +96,25 @@ export const ToastProvider = ({ children }: PropsWithChildren) => {
     return id
   }, [])
 
-  const [commandPaletteToastItems, setCommandPaletteToastItems] = useState<
-    ToastItem[]
-  >([])
-  const handleCommandPaletteToastOpenChange = useCallback((id: ToastId) => {
-    return () => {
-      setCommandPaletteToastItems((prev) =>
-        prev.map((item) =>
-          item.id === id ? { ...item, isOpen: !item.isOpen } : item,
-        ),
-      )
-    }
+  const [commandPaletteToast, setCommandPaletteToast] =
+    useState<ToastItem | null>(null)
+  const closeCommandPaletteToast = useCallback(() => {
+    setCommandPaletteToast((prev) =>
+      prev === null ? null : { ...prev, isOpen: false },
+    )
   }, [])
-  const commandPaletteToast = useCallback((options: ToastOptions): ToastId => {
-    const id = nanoid()
-    setCommandPaletteToastItems((prev) => [
-      ...prev,
-      { ...options, id, isOpen: true },
-    ])
-    return id
+  const createCommandPaletteToast = useCallback((options: ToastOptions) => {
+    closeCommandPaletteToast()
+    window.setTimeout(() => {
+      const id = nanoid()
+      setCommandPaletteToast({ ...options, id, isOpen: true })
+    }, 100)
   }, [])
 
   return (
-    <ToastContext.Provider value={{ headerToast, commandPaletteToast }}>
+    <ToastContext.Provider
+      value={{ headerToast, commandPaletteToast: createCommandPaletteToast }}
+    >
       {children}
       <ToastHeaderViewport>
         {headerToastItems.map((value) => (
@@ -130,13 +126,12 @@ export const ToastProvider = ({ children }: PropsWithChildren) => {
         ))}
       </ToastHeaderViewport>
       <ToastCommandPaletteViewport>
-        {commandPaletteToastItems.map((value) => (
+        {commandPaletteToast && (
           <Toast
-            key={value.id}
-            {...value}
-            onOpenChange={handleCommandPaletteToastOpenChange(value.id)}
+            {...commandPaletteToast}
+            onOpenChange={closeCommandPaletteToast}
           />
-        ))}
+        )}
       </ToastCommandPaletteViewport>
     </ToastContext.Provider>
   )
