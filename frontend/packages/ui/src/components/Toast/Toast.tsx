@@ -2,7 +2,6 @@
 
 import * as RadixToast from '@radix-ui/react-toast'
 import clsx from 'clsx'
-import { nanoid } from 'nanoid'
 import {
   createContext,
   type FC,
@@ -11,7 +10,7 @@ import {
   useState,
 } from 'react'
 import styles from './Toast.module.css'
-import type { ToastFn, ToastId, ToastItem, ToastOptions } from './types'
+import type { ToastFn, ToastItem, ToastOptions } from './types'
 
 type Props = ToastOptions & {
   isOpen: boolean
@@ -73,57 +72,54 @@ export const ToastCommandPaletteViewport: FC<React.PropsWithChildren> = ({
 
 export const ToastContext = createContext<{
   headerToast: ToastFn
-  commandPaletteToast: (options: ToastOptions) => void
+  commandPaletteToast: ToastFn
 }>({
-  headerToast: () => '',
+  headerToast: () => {},
   commandPaletteToast: () => {},
 })
 
-export const ToastProvider = ({ children }: PropsWithChildren) => {
-  const [headerToastItems, setHeaderToastItems] = useState<ToastItem[]>([])
-  const handleHeaderToastOpenChange = useCallback((id: ToastId) => {
-    return () => {
-      setHeaderToastItems((prev) =>
-        prev.map((item) =>
-          item.id === id ? { ...item, isOpen: !item.isOpen } : item,
-        ),
-      )
-    }
+const useToastItem = () => {
+  const [toastItem, setToastItem] = useState<ToastItem | null>(null)
+  const closeToastItem = useCallback(() => {
+    setToastItem((prev) => (prev === null ? null : { ...prev, isOpen: false }))
   }, [])
-  const headerToast = useCallback((options: ToastOptions): ToastId => {
-    const id = nanoid()
-    setHeaderToastItems((prev) => [...prev, { ...options, id, isOpen: true }])
-    return id
+  const createToastItem = useCallback((options: ToastOptions) => {
+    closeToastItem()
+    window.setTimeout(() => setToastItem({ ...options, isOpen: true }), 100)
   }, [])
 
-  const [commandPaletteToast, setCommandPaletteToast] =
-    useState<ToastItem | null>(null)
-  const closeCommandPaletteToast = useCallback(() => {
-    setCommandPaletteToast((prev) =>
-      prev === null ? null : { ...prev, isOpen: false },
-    )
-  }, [])
-  const createCommandPaletteToast = useCallback((options: ToastOptions) => {
-    closeCommandPaletteToast()
-    window.setTimeout(() => {
-      const id = nanoid()
-      setCommandPaletteToast({ ...options, id, isOpen: true })
-    }, 100)
-  }, [])
+  return {
+    toastItem,
+    createToastItem,
+    closeToastItem,
+  }
+}
+
+export const ToastProvider = ({ children }: PropsWithChildren) => {
+  const {
+    toastItem: headerToast,
+    createToastItem: createHeaderToast,
+    closeToastItem: closeHeaderToast,
+  } = useToastItem()
+
+  const {
+    toastItem: commandPaletteToast,
+    createToastItem: createCommandPaletteToast,
+    closeToastItem: closeCommandPaletteToast,
+  } = useToastItem()
 
   return (
     <ToastContext.Provider
-      value={{ headerToast, commandPaletteToast: createCommandPaletteToast }}
+      value={{
+        headerToast: createHeaderToast,
+        commandPaletteToast: createCommandPaletteToast,
+      }}
     >
       {children}
       <ToastHeaderViewport>
-        {headerToastItems.map((value) => (
-          <Toast
-            key={value.id}
-            {...value}
-            onOpenChange={handleHeaderToastOpenChange(value.id)}
-          />
-        ))}
+        {headerToast && (
+          <Toast {...headerToast} onOpenChange={closeHeaderToast} />
+        )}
       </ToastHeaderViewport>
       <ToastCommandPaletteViewport>
         {commandPaletteToast && (
