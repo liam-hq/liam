@@ -15,8 +15,8 @@
     "@octokit/auth-app": "7.2.2",
     "@octokit/rest": "21.1.1",
     "@sentry/node": "9.19.0",
-    "@trigger.dev/build": "4.0.0-v4-beta.22",
-    "@trigger.dev/sdk": "4.0.0-v4-beta.22",
+    "@trigger.dev/build": "4.0.0-v4-beta.23",
+    "@trigger.dev/sdk": "4.0.0-v4-beta.23",
     "neverthrow": "8.2.0"
   },
   "devDependencies": {
@@ -27,7 +27,7 @@
     "dotenv": "16.5.0",
     "eslint": "9.31.0",
     "glob": "11.0.3",
-    "trigger.dev": "4.0.0-v4-beta.22",
+    "trigger.dev": "4.0.0-v4-beta.23",
     "typescript": "5.8.3",
     "vitest": "3.2.4"
   },
