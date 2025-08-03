@@ -34,7 +34,7 @@
     "@testing-library/user-event": "14.6.1",
     "@types/pako": "2.0.3",
     "@types/react": "19.1.8",
-    "@vitejs/plugin-react": "4.6.0",
+    "@vitejs/plugin-react": "4.7.0",
     "eslint": "9.31.0",
     "happy-dom": "17.6.3",
     "typed-css-modules": "0.9.1",

@@ -47,7 +47,7 @@
     "@types/node": "22.16.5",
     "@types/react": "19.1.8",
     "@types/react-dom": "19.1.6",
-    "@vitejs/plugin-react": "4.6.0",
+    "@vitejs/plugin-react": "4.7.0",
     "eslint": "9.31.0",
     "rollup": "4.45.1",
     "rollup-plugin-execute": "1.1.1",
