@@ -2,6 +2,7 @@ import { type BaseMessage, SystemMessage } from '@langchain/core/messages'
 import type { Runnable } from '@langchain/core/runnables'
 import { ChatOpenAI } from '@langchain/openai'
 import { dmlOperationSchema } from '@liam-hq/artifact'
+import { ResultAsync } from 'neverthrow'
 import { v4 as uuidv4 } from 'uuid'
 import * as v from 'valibot'
 import { reasoningSchema } from '../../utils/schema'
@@ -45,7 +46,16 @@ const USECASE_GENERATION_SCHEMA = {
   additionalProperties: false,
 }
 
-// Single usecase schema
+// Response schema from OpenAI (without id and dmlOperations)
+const usecaseResponseSchema = v.object({
+  requirementType: v.picklist(['functional', 'non_functional']), // Type of requirement
+  requirementCategory: v.string(), // Category of the requirement
+  requirement: v.string(), // Content/text of the specific requirement
+  title: v.string(),
+  description: v.string(),
+})
+
+// Single usecase schema (with id and dmlOperations)
 const usecaseSchema = v.object({
   id: v.pipe(v.string(), v.uuid()), // UUID
   requirementType: v.picklist(['functional', 'non_functional']), // Type of requirement
@@ -56,7 +66,12 @@ const usecaseSchema = v.object({
   dmlOperations: v.array(dmlOperationSchema), // DML operations array
 })
 
-// Response schema for structured output
+// Response schema for structured output from OpenAI
+const usecaseGenerationResponseSchema = v.object({
+  usecases: v.array(usecaseResponseSchema),
+})
+
+// Internal schema with full usecase structure
 const usecaseGenerationSchema = v.object({
   usecases: v.array(usecaseSchema),
 })
@@ -103,7 +118,45 @@ export class QAGenerateUsecaseAgent {
       ...messages,
     ]
 
-    const { raw } = await this.usecaseModel.invoke(allMessages)
+    const result = await ResultAsync.fromPromise(
+      this.usecaseModel.invoke(allMessages),
+      (error) => {
+        console.error(
+          '[ERROR QAGenerateUsecaseAgent] Failed to invoke model:',
+          {
+            error: error instanceof Error ? error.message : String(error),
+            errorType:
+              error instanceof Error ? error.constructor.name : typeof error,
+            stack: error instanceof Error ? error.stack : undefined,
+          },
+        )
+
+        // Log more details if it's an OpenAI error
+        if (error instanceof Error && error.message.includes('OpenAI')) {
+          console.error(
+            '[ERROR QAGenerateUsecaseAgent] OpenAI API error details:',
+            {
+              fullError: error,
+              messageCount: allMessages.length,
+              totalContentLength: allMessages.reduce(
+                (sum, msg) =>
+                  sum + (msg.content ? String(msg.content).length : 0),
+                0,
+              ),
+            },
+          )
+        }
+
+        return error instanceof Error ? error : new Error(String(error))
+      },
+    )
+
+    if (result.isErr()) {
+      throw result.error
+    }
+
+    const { raw } = result.value
+
     const parsedReasoning = v.safeParse(
       reasoningSchema,
       raw.additional_kwargs['reasoning'],
@@ -111,7 +164,7 @@ export class QAGenerateUsecaseAgent {
     const reasoning = parsedReasoning.success ? parsedReasoning.output : null
 
     const parsedResponse = v.parse(
-      usecaseGenerationSchema,
+      usecaseGenerationResponseSchema,
       raw.additional_kwargs['parsed'],
     )
 

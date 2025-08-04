@@ -13,6 +13,29 @@ import { withTimelineItemSync } from '../chat/workflow/utils/withTimelineItemSyn
 import type { AgentWorkflowParams, AgentWorkflowResult } from '../types'
 
 /**
+ * Type guard to check if an object is a valid analyzed requirements structure
+ */
+function isAnalyzedRequirements(
+  obj: unknown,
+): obj is NonNullable<WorkflowState['analyzedRequirements']> {
+  if (obj === null || typeof obj !== 'object') {
+    return false
+  }
+
+  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+  const record = obj as Record<string, unknown>
+
+  return (
+    'businessRequirement' in record &&
+    'functionalRequirements' in record &&
+    'nonFunctionalRequirements' in record &&
+    typeof record['businessRequirement'] === 'string' &&
+    typeof record['functionalRequirements'] === 'object' &&
+    typeof record['nonFunctionalRequirements'] === 'object'
+  )
+}
+
+/**
  * Shared workflow setup configuration
  */
 export type WorkflowSetupConfig = {
@@ -85,31 +108,59 @@ export const setupWorkflowState = (
     return ok(createWorkflowRun)
   })
 
-  return ResultAsync.combine([setupMessage, createWorkflowRun]).andThen(
-    ([messages]) => {
-      const runCollector = new RunCollectorCallbackHandler()
-      return ok({
-        workflowState: {
-          userInput: userInput,
-          messages,
-          schemaData,
-          organizationId,
-          buildingSchemaId,
-          latestVersionNumber,
-          designSessionId,
-          userId,
-          retryCount: {},
-        },
-        workflowRunId,
-        runCollector,
-        configurable: {
-          repositories,
-          buildingSchemaId,
-          latestVersionNumber,
-        },
-      })
-    },
+  // Try to fetch existing analyzed requirements from artifacts
+  const fetchExistingRequirements = ResultAsync.fromPromise(
+    repositories.schema.getArtifact(designSessionId),
+    (error) => new Error(String(error)),
   )
+    .andThen((artifactResult) => {
+      if (artifactResult.success && artifactResult.artifact.artifact) {
+        const artifact = artifactResult.artifact.artifact
+        // Check if this artifact contains analyzed requirements
+        if (
+          artifact &&
+          typeof artifact === 'object' &&
+          artifact !== null &&
+          'businessRequirement' in artifact
+        ) {
+          return ok(artifact)
+        }
+      }
+      return ok(null)
+    })
+    .orElse(() => ok(null)) // If error, continue without requirements
+
+  return ResultAsync.combine([
+    setupMessage,
+    createWorkflowRun,
+    fetchExistingRequirements,
+  ]).andThen(([messages, _, existingRequirements]) => {
+    const runCollector = new RunCollectorCallbackHandler()
+    return ok({
+      workflowState: {
+        userInput: userInput,
+        messages,
+        schemaData,
+        organizationId,
+        buildingSchemaId,
+        latestVersionNumber,
+        designSessionId,
+        userId,
+        retryCount: {},
+        // Add analyzed requirements if they exist and match the expected type structure
+        analyzedRequirements: isAnalyzedRequirements(existingRequirements)
+          ? existingRequirements
+          : undefined,
+      },
+      workflowRunId,
+      runCollector,
+      configurable: {
+        repositories,
+        buildingSchemaId,
+        latestVersionNumber,
+      },
+    })
+  })
 }
 
 /**
