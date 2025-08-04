@@ -6,8 +6,12 @@
   box-shadow: 0 0 20px 0 rgb(0 169 182 / 40%);
 }
 
-.wrapper[data-state='open'] {
-  animation: slideIn 150ms cubic-bezier(0.16, 1, 0.3, 1);
+.header .wrapper[data-state='open'] {
+  animation: slideInFromRight 150ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.commandPalette .wrapper[data-state='open'] {
+  animation: slideInFromBottom 150ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .wrapper[data-state='closed'] {
@@ -42,13 +46,23 @@
   box-shadow: 0 0 20px 0 rgb(255 191 54 / 40%);
 }
 
-@keyframes slideIn {
+@keyframes slideInFromBottom {
   from {
     transform: translateY(100%);
   }
 
   to {
-    transform: translate(0);
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInFromRight {
+  from {
+    transform: translateX(100%);
+  }
+
+  to {
+    transform: translateX(0);
   }
 }
 
