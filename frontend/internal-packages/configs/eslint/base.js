@@ -6,6 +6,8 @@ import { noNonEnglishPlugin } from './no-non-english-plugin.js'
 import { noThrowErrorPlugin } from './no-throw-error-plugin.js'
 import { preferClsxPlugin } from './prefer-clsx-plugin.js'
 import { requireUseServerPlugin } from './require-use-server-plugin.js'
+import css from '@eslint/css';
+import cssModulesKit from '@css-modules-kit/eslint-plugin';
 
 /**
  * Base ESLint configuration with typescript-eslint setup
@@ -117,6 +119,15 @@ export function createBaseConfig(options = {}) {
         'no-non-english/no-non-english-characters': 'error',
         'no-throw-error/no-throw-error': 'error',
       },
+    },
+    {
+      files: ['**/*.css'],
+      language: "css/css",
+      plugins: {
+        css,
+        'css-modules-kit': cssModulesKit,
+      },
+      rules: {...cssModulesKit.configs.recommended.rules},
     },
   ]
 }

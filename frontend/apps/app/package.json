@@ -72,10 +72,11 @@
     "gen:css": "tcm -p '!(node_modules|.next|.trigger|.turbo)/**/*.module.css'",
     "lint": "concurrently \"pnpm:lint:*\"",
     "lint:biome": "biome check .",
-    "lint:eslint": "eslint .",
+    "lint:eslint": "eslint . --prune-suppressions",
     "lint:tsc": "tsc --noEmit",
     "postinstall": "cp ../../packages/db-structure/node_modules/@ruby/prism/src/prism.wasm prism.wasm",
     "start": "next start",
+    "suppressions": "eslint --suppress-all --fix",
     "test": "vitest --watch=false",
     "test:vitest": "pnpm vitest"
   }

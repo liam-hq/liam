@@ -1,1 +1,32 @@
-{}
+{
+  "src/features/diff/styles/Diff.module.css": {
+    "css-modules-kit/no-missing-component-file": {
+      "count": 1
+    }
+  },
+  "src/features/erd/components/ERDContent/ERDContent.module.css": {
+    "css-modules-kit/no-unused-class-names": {
+      "count": 1
+    }
+  },
+  "src/features/erd/components/ERDRenderer/AppBar/AppBar.module.css": {
+    "css-modules-kit/no-unused-class-names": {
+      "count": 2
+    }
+  },
+  "src/features/erd/components/ERDRenderer/AppBar/ExportButton/ExportButton.module.css": {
+    "css-modules-kit/no-missing-component-file": {
+      "count": 1
+    }
+  },
+  "src/features/erd/components/ERDRenderer/LeftPane/LeftPane.module.css": {
+    "css-modules-kit/no-unused-class-names": {
+      "count": 5
+    }
+  },
+  "src/features/erd/components/ERDRenderer/Toolbar/DesktopToolbar.module.css": {
+    "css-modules-kit/no-unused-class-names": {
+      "count": 1
+    }
+  }
+}

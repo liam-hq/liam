@@ -11,7 +11,7 @@
     "enabled": true,
     "indentStyle": "space",
     "lineWidth": 80,
-    "includes": ["**", "!**/package.json"] // some rules conflict with syncpack
+    "includes": ["**", "!**/package.json","!**/eslint-suppressions.json"] // some rules conflict with syncpack
   },
   "linter": {
     "enabled": true,
