@@ -18,6 +18,11 @@ function getAuthCallbackUrl({
     : process.env.VERCEL_BRANCH_URL
       ? `https://${process.env.VERCEL_BRANCH_URL}`
       : 'http://localhost:3001/'
+  
+  if (!url) {
+    url = 'http://localhost:3001/'
+  }
+  
   url = url.endsWith('/') ? url : `${url}/`
   return `${url}app/auth/callback/${provider}?next=${encodeURIComponent(next)}`
 }
