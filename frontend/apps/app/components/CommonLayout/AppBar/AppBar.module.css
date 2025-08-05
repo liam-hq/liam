@@ -25,6 +25,18 @@
   margin-left: auto;
 }
 
+.sessionInfo {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-3);
+}
+
+.sessionName {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--text-primary);
+}
+
 .breadcrumbs {
   display: flex;
   align-items: center;

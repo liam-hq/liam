@@ -10,6 +10,8 @@ export const fetchDesignSessionWithTimelineItems = async (
     .select(`
         id,
         organization_id,
+        project_id,
+        name,
         timeline_items (
           id,
           content,

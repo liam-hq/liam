@@ -54,7 +54,7 @@ export type TimelineItem = Pick<
 
 export type DesignSessionWithTimelineItems = Pick<
   Tables<'design_sessions'>,
-  'id' | 'organization_id'
+  'id' | 'organization_id' | 'project_id' | 'name'
 > & {
   timeline_items: TimelineItem[]
 }
