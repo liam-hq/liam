@@ -61,6 +61,10 @@ const validateAndExecuteDDL = async (
 
   const ddlStatements = ddlResult.value
 
+  if (ddlStatements === '' || ddlStatements.trim() === '') {
+    return { ddlStatements: '', results: [] }
+  }
+
   // Execute DDL to validate it
   const results: SqlResult[] = await executeQuery(
     designSessionId,
@@ -119,6 +123,7 @@ export const schemaDesignTool = tool(
     // Apply operations to current schema to get the updated schema
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     const currentSchema = structuredClone(schemaResult.value.schema) as Schema
+
     applySchemaOperations(currentSchema, parsed.output.operations)
 
     // Validate DDL by generating and executing it
@@ -144,7 +149,14 @@ export const schemaDesignTool = tool(
         (result) => result.success,
       ).length
       const totalStatements = results.length
-      const summary = `DDL validation successful: ${successfulStatements}/${totalStatements} statements executed successfully`
+
+      let summary: string
+      if (totalStatements === 0) {
+        summary =
+          'DDL validation completed: No DDL statements were generated (schema may be empty or unchanged)'
+      } else {
+        summary = `DDL validation successful: ${successfulStatements}/${totalStatements} statements executed successfully`
+      }
 
       // Create timeline item for DDL execution results
       const result = await repositories.schema.createTimelineItem({
