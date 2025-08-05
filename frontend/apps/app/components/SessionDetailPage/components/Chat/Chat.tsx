@@ -1,7 +1,7 @@
 'use client'
 
 import type { Schema } from '@liam-hq/db-structure'
-import { type FC, useTransition } from 'react'
+import { type FC, useState, useTransition } from 'react'
 import type { TimelineItemEntry } from '../../types'
 import styles from './Chat.module.css'
 import { ChatInput } from './components/ChatInput'
@@ -36,6 +36,7 @@ export const Chat: FC<Props> = ({
     timelineItems.length,
   )
   const [, startTransition] = useTransition()
+  const [isDeepModelingEnabled, setIsDeepModelingEnabled] = useState(true)
 
   const startAIResponse = async (content: string) => {
     const optimisticMessage: TimelineItemEntry = {
@@ -49,6 +50,7 @@ export const Chat: FC<Props> = ({
     await sendChatMessage({
       designSessionId,
       userInput: content,
+      isDeepModelingEnabled,
     })
   }
 
@@ -159,6 +161,8 @@ export const Chat: FC<Props> = ({
         onSendMessage={handleSendMessage}
         isWorkflowRunning={isWorkflowRunning}
         schema={schemaData}
+        isDeepModelingEnabled={isDeepModelingEnabled}
+        onDeepModelingToggle={setIsDeepModelingEnabled}
       />
     </div>
   )

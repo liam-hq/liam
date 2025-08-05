@@ -19,6 +19,7 @@ import {
   useRef,
   useState,
 } from 'react'
+import { DeepModelingToggle } from '@/features/sessions/components/shared/DeepModelingToggle'
 import styles from './ChatInput.module.css'
 import {
   type MentionItem,
@@ -36,6 +37,8 @@ type Props = {
   initialMessage?: string
   schema: Schema
   onSendMessage: (message: string) => void
+  isDeepModelingEnabled: boolean
+  onDeepModelingToggle: (enabled: boolean) => void
 }
 
 export const ChatInput: FC<Props> = ({
@@ -44,6 +47,8 @@ export const ChatInput: FC<Props> = ({
   initialMessage = '',
   schema,
   onSendMessage,
+  isDeepModelingEnabled,
+  onDeepModelingToggle,
 }) => {
   const mentionSuggestorRef = useRef<MentionSuggestorHandle>(null)
   const mentionSuggestorId = useId()
@@ -207,11 +212,22 @@ export const ChatInput: FC<Props> = ({
             </PopoverPortal>
           </PopoverRoot>
         </div>
-        <SendButton
-          hasContent={hasContent}
-          disabled={isWorkflowRunning || error}
-          onClick={handleSubmit}
-        />
+        <div className={styles.actions}>
+          <DeepModelingToggle
+            name="isDeepModelingEnabled"
+            defaultChecked={isDeepModelingEnabled}
+            onChange={() => onDeepModelingToggle(!isDeepModelingEnabled)}
+            disabled={isWorkflowRunning || error}
+            className={styles.modeToggle}
+          >
+            Deep Modeling
+          </DeepModelingToggle>
+          <SendButton
+            hasContent={hasContent}
+            disabled={isWorkflowRunning || error}
+            onClick={handleSubmit}
+          />
+        </div>
       </form>
     </div>
   )
