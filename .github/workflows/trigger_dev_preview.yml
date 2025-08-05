@@ -48,7 +48,7 @@ jobs:
       - id: check
         run: |
           author="${{ github.event.pull_request.user.login }}"
-          if [[ "$author" == *"devin"* ]] || [[ "$author" == *"Devin"* ]]; then
+          if [[ "${author,,}" == *"devin"* ]]; then
             echo "is-devin=true" >> $GITHUB_OUTPUT
             echo "Detected Devin PR author: $author"
           else
