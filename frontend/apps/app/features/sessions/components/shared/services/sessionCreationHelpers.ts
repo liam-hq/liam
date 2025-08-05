@@ -94,6 +94,31 @@ const createBuildingSchema = async (
   return buildingSchema
 }
 
+const createInitialVersion = async (
+  buildingSchemaId: string,
+  organizationId: string,
+  supabase: SupabaseClientType,
+): Promise<{ id: string } | CreateSessionState> => {
+  const { data: version, error: versionError } = await supabase
+    .from('building_schema_versions')
+    .insert({
+      building_schema_id: buildingSchemaId,
+      organization_id: organizationId,
+      number: 0,
+      patch: null,
+      reverse_patch: null,
+    })
+    .select()
+    .single()
+
+  if (versionError || !version) {
+    console.error('Error creating initial version:', versionError)
+    return { success: false, error: 'Failed to create initial version' }
+  }
+
+  return version
+}
+
 const triggerChatWorkflow = async (
   initialMessage: string,
   isDeepModelingEnabled: boolean,
@@ -193,6 +218,15 @@ export const createSessionWithSchema = async (
     return buildingSchemaResult
   }
   const buildingSchema = buildingSchemaResult
+
+  const initialVersionResult = await createInitialVersion(
+    buildingSchema.id,
+    organizationId,
+    supabase,
+  )
+  if ('success' in initialVersionResult) {
+    return initialVersionResult
+  }
 
   const workflowError = await triggerChatWorkflow(
     params.initialMessage,
