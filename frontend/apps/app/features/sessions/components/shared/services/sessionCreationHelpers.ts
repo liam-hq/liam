@@ -94,6 +94,10 @@ const createBuildingSchema = async (
   return buildingSchema
 }
 
+const hasSchemaContent = (schema: Schema): boolean => {
+  return Object.keys(schema.tables).length > 0
+}
+
 const createInitialVersion = async (
   buildingSchemaId: string,
   organizationId: string,
@@ -219,13 +223,15 @@ export const createSessionWithSchema = async (
   }
   const buildingSchema = buildingSchemaResult
 
-  const initialVersionResult = await createInitialVersion(
-    buildingSchema.id,
-    organizationId,
-    supabase,
-  )
-  if ('success' in initialVersionResult) {
-    return initialVersionResult
+  if (hasSchemaContent(schemaSource.schema)) {
+    const initialVersionResult = await createInitialVersion(
+      buildingSchema.id,
+      organizationId,
+      supabase,
+    )
+    if ('success' in initialVersionResult) {
+      return initialVersionResult
+    }
   }
 
   const workflowError = await triggerChatWorkflow(
