@@ -1,4 +1,5 @@
 import { LayoutGrid, Settings } from '@liam-hq/ui'
+import Link from 'next/link'
 import type { FC } from 'react'
 import { LiamLogoMark, LiamMigrationLogo } from '@/logos'
 import type { Organization } from '../services/getOrganization'
@@ -23,14 +24,18 @@ export const GlobalNav: FC<Props> = ({
     <div className={styles.globalNavContainer} data-global-nav-container>
       <nav className={styles.globalNav}>
         <div className={styles.logoContainer}>
-          <div className={styles.logoSection}>
+          <Link
+            href="/"
+            className={styles.logoSection}
+            aria-label="Go to Homepage"
+          >
             <div className={itemStyles.iconContainer}>
               <LiamLogoMark />
             </div>
             <div className={itemStyles.labelArea}>
               <LiamMigrationLogo className={styles.liamMigrationLogo} />
             </div>
-          </div>
+          </Link>
         </div>
 
         <div className={styles.navSection}>

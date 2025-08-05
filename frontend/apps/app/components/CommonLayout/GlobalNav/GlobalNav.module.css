@@ -37,6 +37,12 @@
   padding: var(--spacing-1half, 0.375rem) var(--spacing-2, 0.5rem);
 }
 
+.logoSection:hover {
+  background-color: var(--pane-background-active);
+  border-radius: var(--border-radius-md);
+  cursor: pointer;
+}
+
 .liamMigrationLogo {
   width: 7.55156rem;
   height: 0.97744rem;
