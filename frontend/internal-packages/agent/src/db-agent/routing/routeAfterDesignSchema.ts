@@ -2,13 +2,20 @@ import type { BaseMessage } from '@langchain/core/messages'
 import type { WorkflowState } from '../../chat/workflow/types'
 
 /**
- * Determines the next node based on whether the last message contains tool calls
+ * Determines the next node based on tool calls in the AI response
+ * AI makes the decision about tool usage based on context in prompts
+ * Forces tool usage when schema is empty (no tables exist)
  */
 export const routeAfterDesignSchema = (
   state: WorkflowState,
 ): 'invokeSchemaDesignTool' | 'generateUsecase' => {
-  const { messages } = state
+  const { messages, schemaData } = state
   const lastMessage = messages[messages.length - 1]
+
+  const isEmptySchema = Object.keys(schemaData.tables).length === 0
+  if (isEmptySchema) {
+    return 'invokeSchemaDesignTool'
+  }
 
   if (lastMessage && hasToolCalls(lastMessage)) {
     return 'invokeSchemaDesignTool'
