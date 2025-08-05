@@ -1,0 +1,15 @@
+.trigger {
+  border: none;
+  background: none;
+  padding: 0;
+  cursor: pointer;
+  border-radius: 50%;
+}
+
+.trigger:hover {
+  opacity: 0.8;
+}
+
+.content {
+  min-width: 120px;
+}
