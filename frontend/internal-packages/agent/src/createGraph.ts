@@ -3,10 +3,12 @@ import {
   analyzeRequirementsNode,
   finalizeArtifactsNode,
   generateUsecaseNode,
+  preAssessmentNode,
   prepareDmlNode,
   saveRequirementToArtifactNode,
   validateSchemaNode,
 } from './chat/workflow/nodes'
+import { routeAfterPreAssessment } from './chat/workflow/routing/routeAfterPreAssessment'
 import { createAnnotations } from './chat/workflow/shared/langGraphUtils'
 import { createDbAgentGraph } from './db-agent/createDbAgentGraph'
 import { RETRY_POLICY } from './shared/errorHandling'
@@ -22,6 +24,9 @@ export const createGraph = () => {
   const dbAgentSubgraph = createDbAgentGraph()
 
   graph
+    .addNode('preAssessment', preAssessmentNode, {
+      retryPolicy: RETRY_POLICY,
+    })
     .addNode('analyzeRequirements', analyzeRequirementsNode, {
       retryPolicy: RETRY_POLICY,
     })
@@ -42,12 +47,38 @@ export const createGraph = () => {
       retryPolicy: RETRY_POLICY,
     })
 
-    .addEdge(START, 'analyzeRequirements')
+    .addEdge(START, 'preAssessment')
     .addEdge('saveRequirementToArtifact', 'dbAgent')
     .addEdge('dbAgent', 'generateUsecase')
     .addEdge('generateUsecase', 'prepareDML')
     .addEdge('prepareDML', 'validateSchema')
     .addEdge('finalizeArtifacts', END)
+
+    // Conditional edges for pre-assessment
+    .addConditionalEdges(
+      'preAssessment',
+      (state) => {
+        const MAX_RETRIES = 3
+        const retryCount = state.retryCount['preAssessment'] || 0
+
+        if (state.preAssessmentResult !== undefined) {
+          return routeAfterPreAssessment(state)
+        }
+
+        // If max retries exceeded → fallback to finalizeArtifacts
+        if (retryCount >= MAX_RETRIES) {
+          return 'finalizeArtifacts'
+        }
+
+        // Otherwise → retry preAssessment
+        return 'preAssessment'
+      },
+      {
+        preAssessment: 'preAssessment',
+        analyzeRequirements: 'analyzeRequirements',
+        finalizeArtifacts: 'finalizeArtifacts',
+      },
+    )
 
     // Conditional edges for requirements analysis
     .addConditionalEdges(

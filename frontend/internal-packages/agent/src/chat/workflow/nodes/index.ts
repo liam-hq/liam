@@ -2,5 +2,6 @@ export { saveRequirementToArtifactNode } from '../../../pm-agent/nodes/saveRequi
 export { analyzeRequirementsNode } from './analyzeRequirementsNode'
 export { finalizeArtifactsNode } from './finalizeArtifactsNode'
 export { generateUsecaseNode } from './generateUsecaseNode'
+export { preAssessmentNode } from './preAssessmentNode'
 export { prepareDmlNode } from './prepareDmlNode'
 export { validateSchemaNode } from './validateSchemaNode'

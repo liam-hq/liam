@@ -30,6 +30,14 @@ export const createAnnotations = () => {
   return Annotation.Root({
     ...MessagesAnnotation.spec,
     userInput: Annotation<string>,
+    preAssessmentResult: Annotation<
+      | {
+          decision: 'irrelevant' | 'insufficient' | 'sufficient'
+          reasoning: string
+          response: string
+        }
+      | undefined
+    >,
     analyzedRequirements: Annotation<
       | {
           businessRequirement: string
