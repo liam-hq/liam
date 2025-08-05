@@ -107,7 +107,8 @@ export const schemaDesignTool = tool(
     }
 
     // Get current schema to validate DDL before creating version
-    const schemaResult = await repositories.schema.getSchema(designSessionId)
+    const schemaResult =
+      await repositories.schema.getSchemaByBuildingId(buildingSchemaId)
     if (schemaResult.isErr()) {
       // LangGraph tool nodes require throwing errors to trigger retry mechanism
       // eslint-disable-next-line no-throw-error/no-throw-error

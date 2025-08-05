@@ -111,6 +111,32 @@ export class SupabaseSchemaRepository implements SchemaRepository {
       })
   }
 
+  getSchemaByBuildingId(
+    buildingSchemaId: string,
+  ): ResultAsync<SchemaData, Error> {
+    return this.getSchemaVersions(buildingSchemaId).andThen(({ versions }) => {
+      return ResultAsync.fromPromise(
+        this.client
+          .from('building_schemas')
+          .select('initial_schema_snapshot')
+          .eq('id', buildingSchemaId)
+          .single(),
+        (error) => new Error(`Failed to get building schema: ${String(error)}`),
+      ).map(({ data: buildingSchema }) => {
+        const currentSchema = this.buildCurrentSchemaFromVersions(
+          buildingSchema?.initial_schema_snapshot ?? null,
+          versions,
+        )
+        const latestVersionNumber = this.getLatestVersionNumber(versions)
+        return {
+          id: buildingSchemaId,
+          schema: currentSchema,
+          latestVersionNumber,
+        }
+      })
+    })
+  }
+
   private getBuildingSchema(
     designSessionId: string,
   ): ResultAsync<
@@ -203,6 +229,38 @@ export class SupabaseSchemaRepository implements SchemaRepository {
 
   private getLatestVersionNumber(versions: Array<{ number: number }>): number {
     return versions.length > 0 ? Math.max(...versions.map((v) => v.number)) : 0
+  }
+
+  private buildCurrentSchemaFromVersions(
+    initialSchemaSnapshot: Json | null,
+    versions: Array<{ number: number; patch: unknown }>,
+  ): Schema {
+    const validationResult = v.safeParse(schemaSchema, initialSchemaSnapshot)
+    if (!validationResult.success) {
+      return { tables: {} }
+    }
+
+    let currentContent = JSON.parse(JSON.stringify(validationResult.output))
+
+    const patchArrayHistory = versions
+      .map((version) => {
+        const parsed = v.safeParse(operationsSchema, version.patch)
+        if (parsed.success) {
+          return parsed.output
+        }
+        return null
+      })
+      .filter((patch): patch is NonNullable<typeof patch> => patch !== null)
+
+    for (const patchArray of patchArrayHistory) {
+      const result = applyPatchOperations(currentContent, patchArray)
+      if (result.isErr()) {
+        continue
+      }
+      currentContent = result.value
+    }
+
+    return currentContent
   }
 
   async createVersion(params: CreateVersionParams): Promise<VersionResult> {

@@ -78,7 +78,8 @@ describe('schemaDesignTool', () => {
     )
 
     // Verify the schema was actually updated in the repository by schemaDesignTool
-    const schemaData = await repositories.schema.getSchema('test-session')
+    const schemaData =
+      await repositories.schema.getSchemaByBuildingId('test-session')
     expect(schemaData.isOk()).toBe(true)
     if (schemaData.isOk()) {
       expect(schemaData.value.schema).toEqual(

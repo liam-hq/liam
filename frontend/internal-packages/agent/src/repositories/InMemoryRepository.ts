@@ -25,6 +25,7 @@ import type {
 
 type InMemoryRepositoryState = {
   schemas: Map<string, SchemaData>
+  schemasByBuildingId: Map<string, SchemaData>
   designSessions: Map<string, DesignSessionData>
   timelineItems: Map<string, Tables<'timeline_items'>>
   artifacts: Map<string, Tables<'artifacts'>>
@@ -64,6 +65,7 @@ export class InMemoryRepository implements SchemaRepository {
   constructor(options: InMemoryRepositoryOptions = {}) {
     this.state = {
       schemas: new Map(),
+      schemasByBuildingId: new Map(),
       designSessions: new Map(),
       timelineItems: new Map(),
       artifacts: new Map(),
@@ -90,6 +92,13 @@ export class InMemoryRepository implements SchemaRepository {
         schema,
         latestVersionNumber: 1,
         updatedAt: new Date().toISOString(),
+      })
+
+      // Initialize schemasByBuildingId map for the new method
+      this.state.schemasByBuildingId.set(id, {
+        id,
+        schema,
+        latestVersionNumber: 1,
       })
     })
 
@@ -149,6 +158,20 @@ export class InMemoryRepository implements SchemaRepository {
     return okAsync(schema)
   }
 
+  getSchemaByBuildingId(
+    buildingSchemaId: string,
+  ): ResultAsync<SchemaData, Error> {
+    const schema = this.state.schemasByBuildingId?.get(buildingSchemaId)
+    if (!schema) {
+      return errAsync(
+        new Error(
+          `Schema not found for building schema ID: ${buildingSchemaId}`,
+        ),
+      )
+    }
+    return okAsync(schema)
+  }
+
   async getDesignSession(
     designSessionId: string,
   ): Promise<DesignSessionData | null> {
@@ -171,6 +194,13 @@ export class InMemoryRepository implements SchemaRepository {
 
     // Update schema
     this.state.schemas.set(params.buildingSchemaId, {
+      ...schema,
+      schema: updatedSchema,
+      latestVersionNumber: params.latestVersionNumber + 1,
+    })
+
+    // Also update schemasByBuildingId
+    this.state.schemasByBuildingId.set(params.buildingSchemaId, {
       ...schema,
       schema: updatedSchema,
       latestVersionNumber: params.latestVersionNumber + 1,

@@ -35,10 +35,10 @@ const wasSchemaDesignToolSuccessful = (messages: BaseMessage[]): boolean => {
  */
 const fetchUpdatedSchemaWithResult = (
   repositories: Repositories,
-  designSessionId: string,
+  buildingSchemaId: string,
 ): ResultAsync<{ schema: Schema; latestVersionNumber: number }, Error> => {
   return repositories.schema
-    .getSchema(designSessionId)
+    .getSchemaByBuildingId(buildingSchemaId)
     .map(({ schema, latestVersionNumber }) => ({
       schema,
       latestVersionNumber,
@@ -98,7 +98,7 @@ export const invokeSchemaDesignToolNode = async (
     // Fetch the updated schema from database
     const schemaResult = await fetchUpdatedSchemaWithResult(
       repositories,
-      state.designSessionId,
+      state.buildingSchemaId,
     )
 
     if (schemaResult.isOk()) {

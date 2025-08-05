@@ -129,6 +129,13 @@ export type SchemaRepository = {
   getSchema(designSessionId: string): ResultAsync<SchemaData, Error>
 
   /**
+   * Fetch schema data using buildingSchemaId directly (new approach)
+   */
+  getSchemaByBuildingId(
+    buildingSchemaId: string,
+  ): ResultAsync<SchemaData, Error>
+
+  /**
    * Fetch design session data including organization_id and timeline_items
    */
   getDesignSession(designSessionId: string): Promise<DesignSessionData | null>
