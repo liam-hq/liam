@@ -17,7 +17,6 @@ export const UserMessage: FC<UserMessageProps> = ({
   content,
   avatarSrc,
   avatarAlt = 'User avatar',
-  timestamp,
   userName,
 }) => {
   const userInitial = userName
@@ -30,16 +29,6 @@ export const UserMessage: FC<UserMessageProps> = ({
         .slice(0, 2) || 'U' // Fallback to 'U' if no valid initials
     : 'U'
 
-  // Format timestamp if it exists - use explicit locale and timezone for consistency
-  const formattedTime = timestamp
-    ? timestamp.toLocaleTimeString('en-US', {
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: false,
-        timeZone: 'UTC',
-      })
-    : null
-
   return (
     <div className={styles.container}>
       <div className={styles.avatarContainer}>
@@ -49,9 +38,6 @@ export const UserMessage: FC<UserMessageProps> = ({
           <Avatar initial={userInitial} size="sm" user="you" />
         )}
         <span className={styles.userName}>{userName || 'User Name'}</span>
-        {formattedTime && (
-          <span className={styles.messageTime}>{formattedTime}</span>
-        )}
       </div>
       <div className={styles.contentContainer}>
         <div className={styles.messageWrapper}>
