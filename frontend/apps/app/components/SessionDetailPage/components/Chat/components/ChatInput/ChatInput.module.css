@@ -111,3 +111,9 @@
 .modeToggle {
   align-self: flex-start;
 }
+
+.actions {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--spacing-2);
+}
