@@ -36,9 +36,30 @@ jobs:
               - 'biome.jsonc'
               - '.syncpackrc'
 
+  check-pr-author:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      is-devin: ${{ steps.check.outputs.is-devin }}
+    steps:
+      - id: check
+        run: |
+          author="${{ github.event.pull_request.user.login }}"
+          if [[ "$author" == *"devin"* ]] || [[ "$author" == *"Devin"* ]]; then
+            echo "is-devin=true" >> $GITHUB_OUTPUT
+            echo "Detected Devin PR author: $author"
+          else
+            echo "is-devin=false" >> $GITHUB_OUTPUT
+            echo "Detected human PR author: $author"
+          fi
+
   trigger_dev:
-    needs: [setup-job]
+    needs: [setup-job, check-pr-author]
     if: ${{ github.event.action != 'closed' && needs.setup-job.outputs.should-deploy-preview == 'true' }}
+    environment: ${{ needs.check-pr-author.outputs.is-devin == 'true' && 'trigger-dev-preview' || '' }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
     permissions:
@@ -63,7 +84,9 @@ jobs:
         run: pnpm deploy:jobs -- --env preview --branch ${{ github.head_ref }}
 
   archive_preview:
+    needs: [check-pr-author]
     if: github.event.action == 'closed'
+    environment: ${{ needs.check-pr-author.outputs.is-devin == 'true' && 'trigger-dev-preview' || '' }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
     permissions:
