@@ -39,3 +39,8 @@ export type GitHubWebhookPayload = {
     }
   }
 }
+
+export type GetInstallationsResult = {
+  installations: Installation[]
+  error: string | null
+}

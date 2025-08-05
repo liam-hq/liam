@@ -27,11 +27,24 @@ export default async function NewProjectPage() {
     throw new Error('Session not found')
   }
 
-  const { installations } = await getInstallations(data.session)
+  const result = await getInstallations(data.session)
+
+  if (result.error) {
+    return (
+      <div style={{ padding: '2rem', textAlign: 'center' }}>
+        <h1>GitHub Authentication Error</h1>
+        <p>{result.error}</p>
+        <p>
+          Please try refreshing the page or contact support if the issue
+          persists.
+        </p>
+      </div>
+    )
+  }
 
   return (
     <ProjectNewPage
-      installations={installations}
+      installations={result.installations}
       organizationId={organizationId}
     />
   )
