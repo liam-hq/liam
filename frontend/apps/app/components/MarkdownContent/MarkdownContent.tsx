@@ -22,6 +22,8 @@ type MarkdownContentProps = {
 }
 
 export const MarkdownContent: FC<MarkdownContentProps> = ({ content }) => {
+  const preprocessedContent = content.replace(/(?<!\n)\n(?!\n)/g, '\n\n')
+
   return (
     <ReactMarkdown
       remarkPlugins={[remarkGfm]}
@@ -227,7 +229,7 @@ export const MarkdownContent: FC<MarkdownContentProps> = ({ content }) => {
         },
       }}
     >
-      {content}
+      {preprocessedContent}
     </ReactMarkdown>
   )
 }
