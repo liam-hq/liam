@@ -2,6 +2,7 @@
 
 import {
   Avatar,
+  AvatarWithImage,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuPortal,
@@ -21,6 +22,7 @@ type MemberItemProps = {
   email: string
   initial: string
   avatarColor?: number
+  avatarUrl?: string
   organizationId: string
   isSelf: boolean
   onRemoveSuccess?: () => void
@@ -32,6 +34,7 @@ export const MemberItem: FC<MemberItemProps> = ({
   email,
   initial,
   avatarColor = 1,
+  avatarUrl,
   organizationId,
   isSelf,
   onRemoveSuccess,
@@ -54,11 +57,15 @@ export const MemberItem: FC<MemberItemProps> = ({
         onSuccess={onRemoveSuccess}
       />
 
-      <Avatar
-        initial={initial}
-        size="lg"
-        user={getAvatarUserFromColor(avatarColor)}
-      />
+      {avatarUrl ? (
+        <AvatarWithImage src={avatarUrl} alt={name} size="lg" />
+      ) : (
+        <Avatar
+          initial={initial}
+          size="lg"
+          user={getAvatarUserFromColor(avatarColor)}
+        />
+      )}
       <div className={styles.memberBody}>
         <div className={styles.memberInfo}>
           <div className={styles.nameEmail}>
