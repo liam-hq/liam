@@ -84,9 +84,7 @@ jobs:
         run: pnpm deploy:jobs -- --env preview --branch ${{ github.head_ref }}
 
   archive_preview:
-    needs: [check-pr-author]
     if: github.event.action == 'closed'
-    environment: ${{ needs.check-pr-author.outputs.is-devin == 'true' && 'trigger-dev-preview' || '' }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
     permissions:
