@@ -17,7 +17,7 @@ describe('validateSchemaNode', () => {
     return {
       messages: [],
       userInput: 'test',
-      schemaData: { tables: {} },
+      schemaData: { tables: {}, enums: {} },
       buildingSchemaId: 'test-id',
       latestVersionNumber: 1,
       organizationId: 'test-org-id',

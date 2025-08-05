@@ -32,6 +32,7 @@ describe('buildColumnDefaultDiffItem', () => {
         constraints: {},
       },
     },
+    enums: {},
   }
 
   const beforeSchema: Schema = structuredClone(baseSchema)

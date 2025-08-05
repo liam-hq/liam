@@ -27,6 +27,7 @@ const schema: SchemaProviderValue = {
       follows: aTable({ name: 'follows' }),
       user_settings: aTable({ name: 'user_settings' }),
     },
+    enums: {},
   },
 }
 

@@ -87,7 +87,7 @@ export default async function Page({
 
   const url = `https://${joinedPath}`
 
-  const blankSchema = { tables: {} }
+  const blankSchema = { tables: {}, enums: {} }
 
   const contentUrl = resolveContentUrl(url)
   const weCannotAccess = `Our signal's lost in the void! No access at this time..`

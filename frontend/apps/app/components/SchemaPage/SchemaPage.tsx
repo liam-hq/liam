@@ -24,7 +24,7 @@ async function getERDEditorContent({
   branchOrCommit,
   schemaFilePath,
 }: Params): Promise<Response> {
-  const blankSchema = { tables: {} }
+  const blankSchema = { tables: {}, enums: {} }
   const supabase = await createClient()
 
   const { data: project } = await supabase

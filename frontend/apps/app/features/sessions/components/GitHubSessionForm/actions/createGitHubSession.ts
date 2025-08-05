@@ -83,7 +83,7 @@ async function processGitHubSchema(
 > {
   if (!project) {
     return {
-      schema: { tables: {} },
+      schema: { tables: {}, enums: {} },
       schemaFilePath: null,
     }
   }

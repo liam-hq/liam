@@ -70,6 +70,7 @@ const dummySchema = {
       indexes: {},
     },
   },
+  enums: {},
 }
 
 const meta = {

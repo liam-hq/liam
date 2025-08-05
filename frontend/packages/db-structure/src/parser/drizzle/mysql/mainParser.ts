@@ -159,19 +159,23 @@ const parseDrizzleSchemaString = (
       enums,
       variableToTableMapping,
     } = parseDrizzleSchema(schemaString)
-    const { tables, errors } = convertDrizzleTablesToInternal(
+    const {
+      tables,
+      enums: convertedEnums,
+      errors,
+    } = convertDrizzleTablesToInternal(
       drizzleTables,
       enums,
       variableToTableMapping,
     )
 
     return Promise.resolve({
-      value: { tables },
+      value: { tables, enums: convertedEnums },
       errors,
     })
   } catch (error) {
     return Promise.resolve({
-      value: { tables: {} },
+      value: { tables: {}, enums: {} },
       errors: [
         new Error(
           `Error parsing Drizzle MySQL schema: ${error instanceof Error ? error.message : String(error)}`,

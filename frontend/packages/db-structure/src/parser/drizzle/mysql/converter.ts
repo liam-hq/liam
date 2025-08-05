@@ -6,6 +6,7 @@ import type {
   Column,
   Columns,
   Constraints,
+  Enum,
   ForeignKeyConstraint,
   Index,
   Table,
@@ -220,9 +221,22 @@ export const convertDrizzleTablesToInternal = (
   drizzleTables: Record<string, DrizzleTableDefinition>,
   enums: Record<string, DrizzleEnumDefinition>,
   variableToTableMapping: Record<string, string> = {},
-): { tables: Record<string, Table>; errors: Error[] } => {
+): {
+  tables: Record<string, Table>
+  enums: Record<string, Enum>
+  errors: Error[]
+} => {
   const tables: Record<string, Table> = {}
+  const convertedEnums: Record<string, Enum> = {}
   const errors: Error[] = []
+
+  // Convert Drizzle enums to internal format
+  for (const [, enumDef] of Object.entries(enums)) {
+    convertedEnums[enumDef.name] = {
+      name: enumDef.name,
+      values: enumDef.values,
+    }
+  }
 
   // Convert Drizzle tables to internal format
   for (const tableDef of Object.values(drizzleTables)) {
@@ -246,5 +260,5 @@ export const convertDrizzleTablesToInternal = (
   // Fix foreign key constraint targetColumnName from JS property names to actual DB column names
   fixForeignKeyTargetColumnNames(tables, drizzleTables)
 
-  return { tables, errors }
+  return { tables, enums: convertedEnums, errors }
 }

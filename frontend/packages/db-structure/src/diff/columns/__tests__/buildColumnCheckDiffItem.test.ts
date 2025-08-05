@@ -32,6 +32,7 @@ describe('buildColumnCheckDiffItem', () => {
         constraints: {},
       },
     },
+    enums: {},
   }
 
   const beforeSchema: Schema = structuredClone(baseSchema)

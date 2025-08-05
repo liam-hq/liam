@@ -1,6 +1,7 @@
 import type {
   CheckConstraint,
   Column,
+  Enum,
   ForeignKeyConstraint,
   Index,
   PrimaryKeyConstraint,
@@ -83,6 +84,12 @@ export const aCheckConstraint = (
   ...override,
 })
 
+export const anEnum = (override?: Partial<Enum>): Enum => ({
+  name: 'status',
+  values: ['active', 'inactive'],
+  ...override,
+})
+
 const tables = (override?: Tables): Tables => {
   return (
     override ?? {
@@ -93,4 +100,5 @@ const tables = (override?: Tables): Tables => {
 
 export const aSchema = (override?: Partial<Schema>): Schema => ({
   tables: tables(override?.tables),
+  enums: override?.enums ?? {},
 })

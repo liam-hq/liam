@@ -37,6 +37,7 @@ describe('buildColumnDiffItem', () => {
 
     const schema: Schema = {
       tables: {},
+      enums: {},
     }
 
     if (includeTable) {

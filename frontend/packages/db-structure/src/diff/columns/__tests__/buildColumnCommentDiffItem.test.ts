@@ -32,6 +32,7 @@ describe('buildColumnCommentDiffItem', () => {
         constraints: {},
       },
     },
+    enums: {},
   }
 
   const beforeSchema: Schema = structuredClone(baseSchema)

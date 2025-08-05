@@ -33,8 +33,11 @@ export const parsePgEnumCall = (
 
   const values: string[] = []
   for (const element of valuesExpr.elements) {
-    if (isStringLiteral(element)) {
-      values.push(element.value)
+    if (element) {
+      const elementExpr = getArgumentExpression(element)
+      if (elementExpr && isStringLiteral(elementExpr)) {
+        values.push(elementExpr.value)
+      }
     }
   }
 

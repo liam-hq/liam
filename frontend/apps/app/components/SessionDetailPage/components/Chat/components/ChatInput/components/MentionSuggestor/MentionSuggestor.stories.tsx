@@ -79,6 +79,7 @@ const schema = {
       indexes: {},
     },
   },
+  enums: {},
 }
 
 /**

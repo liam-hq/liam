@@ -2,6 +2,7 @@
 
 exports[`parse > should parse postgresql to JSON correctly 1`] = `
 {
+  "enums": {},
   "tables": {
     "posts": {
       "columns": {
@@ -126,6 +127,7 @@ exports[`parse > should parse postgresql to JSON correctly 1`] = `
 
 exports[`parse > should parse schema.rb to JSON correctly 1`] = `
 {
+  "enums": {},
   "tables": {
     "comments": {
       "columns": {

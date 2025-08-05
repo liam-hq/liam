@@ -28,6 +28,7 @@ describe('buildColumnNameDiffItem', () => {
   ): Schema => {
     const schema: Schema = {
       tables: {},
+      enums: {},
     }
 
     schema.tables[mockTableId] = {

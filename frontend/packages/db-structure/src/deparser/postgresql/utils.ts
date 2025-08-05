@@ -1,4 +1,10 @@
-import type { Column, Constraint, Index, Table } from '../../schema/index.js'
+import type {
+  Column,
+  Constraint,
+  Enum,
+  Index,
+  Table,
+} from '../../schema/index.js'
 
 /**
  * Generate column definition as DDL string
@@ -390,4 +396,16 @@ export function generateDropCheckConstraintStatement(
   return `ALTER TABLE ${escapeIdentifier(
     tableName,
   )} DROP CONSTRAINT IF EXISTS ${escapeIdentifier(constraintName)};`
+}
+
+/**
+ * Generate CREATE TYPE statement for an enum
+ */
+export function generateCreateEnumStatement(enumDef: Enum): string {
+  const enumName = escapeIdentifier(enumDef.name)
+  const values = enumDef.values
+    .map((value) => `'${escapeString(value)}'`)
+    .join(', ')
+
+  return `CREATE TYPE ${enumName} AS ENUM (${values});`
 }

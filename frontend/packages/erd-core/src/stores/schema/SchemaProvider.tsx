@@ -21,6 +21,7 @@ export const SchemaProvider: FC<Props> = ({ children, current, previous }) => {
   const computedSchema: SchemaContextValue = useMemo(() => {
     const emptySchema: Schema = {
       tables: {},
+      enums: {},
     }
     const diffItems = buildSchemaDiff(previous ?? emptySchema, current)
     const filteredDiffItems = diffItems.filter(

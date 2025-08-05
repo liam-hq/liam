@@ -441,6 +441,7 @@ async function parsePrismaSchema(schemaString: string): Promise<ProcessResult> {
   return {
     value: {
       tables,
+      enums: {},
     },
     errors: errors,
   }

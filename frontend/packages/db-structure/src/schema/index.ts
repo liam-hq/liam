@@ -15,6 +15,7 @@ export type {
   Columns,
   Constraint,
   Constraints,
+  Enum,
   ForeignKeyConstraint,
   ForeignKeyConstraintReferenceOption,
   Index,

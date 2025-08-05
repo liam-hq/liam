@@ -515,21 +515,32 @@ describe.each(Object.entries(dbConfigs))(
 
         const { value } = await config.processor(schema)
 
-        const expected = config.userTableBase({
-          columns: {
-            name: aColumn({
-              name: 'name',
-              type: config.expectedTypes.varchar(255),
-              notNull: false,
-            }),
-            role: aColumn({
-              name: 'role',
-              type: enumType,
-              default: 'user',
-              notNull: false,
-            }),
-          },
-        })
+        const expected = {
+          ...config.userTableBase({
+            columns: {
+              name: aColumn({
+                name: 'name',
+                type: config.expectedTypes.varchar(255),
+                notNull: false,
+              }),
+              role: aColumn({
+                name: 'role',
+                type: enumType,
+                default: 'user',
+                notNull: false,
+              }),
+            },
+          }),
+          enums:
+            dbType === 'postgres'
+              ? {
+                  role: {
+                    name: 'role',
+                    values: ['user', 'admin'],
+                  },
+                }
+              : {},
+        }
 
         expect(value).toEqual(expected)
       })

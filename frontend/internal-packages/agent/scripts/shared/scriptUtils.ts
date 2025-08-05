@@ -234,7 +234,7 @@ export const createBuildingSchema = (
   },
 ) => {
   const { supabaseClient, organization, designSession } = sessionData
-  const initialSchema: Schema = { tables: {} }
+  const initialSchema: Schema = { tables: {}, enums: {} }
 
   return ResultAsync.fromPromise(
     supabaseClient
@@ -417,6 +417,7 @@ export const createWorkflowState = (
   // Empty schema for testing - let AI design from scratch
   const sampleSchema: Schema = {
     tables: {},
+    enums: {},
   }
 
   const userInput = getBusinessManagementSystemUserInput()

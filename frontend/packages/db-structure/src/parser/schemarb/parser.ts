@@ -706,6 +706,7 @@ class SchemaFinder extends Visitor {
         acc[table.name] = table
         return acc
       }, {}),
+      enums: {},
     }
     return schema
   }

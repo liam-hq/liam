@@ -49,6 +49,7 @@ const createWorkflowState = (setupData: CreateWorkflowStateInput) => {
   // Empty schema for testing - let AI design from scratch
   const sampleSchema: Schema = {
     tables: {},
+    enums: {},
   }
 
   const userInput = getBusinessManagementSystemUserInput()

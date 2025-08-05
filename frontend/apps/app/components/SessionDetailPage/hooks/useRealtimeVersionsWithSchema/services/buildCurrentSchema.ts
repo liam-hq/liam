@@ -61,6 +61,7 @@ export async function buildCurrentSchema(targetVersion: Version) {
     ? parsedInitialSchema.output
     : {
         tables: {},
+        enums: {},
       }
 
   let currentSchema: Schema = structuredClone(baseSchema)

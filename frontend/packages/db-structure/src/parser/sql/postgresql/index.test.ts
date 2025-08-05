@@ -489,7 +489,7 @@ describe(processor, () => {
         CREATEe TABLE posts ();
       `)
 
-      const value = { tables: {} }
+      const value = { tables: {}, enums: {} }
       const errors = [
         new UnexpectedTokenWarningError('syntax error at or near "CREATEe"'),
       ]

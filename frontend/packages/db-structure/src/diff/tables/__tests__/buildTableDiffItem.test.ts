@@ -22,6 +22,7 @@ describe('buildTableDiffItem', () => {
         constraints: {},
       },
     },
+    enums: {},
   }
 
   // Base test schema with existence checks

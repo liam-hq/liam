@@ -80,6 +80,7 @@ describe('evaluate', () => {
             },
           },
         },
+        enums: {},
       }
 
       const predict: Schema = {
@@ -153,6 +154,7 @@ describe('evaluate', () => {
             },
           },
         },
+        enums: {},
       }
 
       const result = await evaluate(reference, predict)
@@ -234,6 +236,7 @@ describe('evaluate', () => {
             },
           },
         },
+        enums: {},
       }
 
       const predict: Schema = {
@@ -299,6 +302,7 @@ describe('evaluate', () => {
             },
           },
         },
+        enums: {},
       }
 
       const result = await evaluate(reference, predict)
@@ -372,6 +376,7 @@ describe('evaluate', () => {
             },
           },
         },
+        enums: {},
       }
 
       const predict: Schema = {
@@ -423,6 +428,7 @@ describe('evaluate', () => {
             },
           },
         },
+        enums: {},
       }
 
       const result = await evaluate(reference, predict)
@@ -512,6 +518,7 @@ describe('evaluate', () => {
             },
           },
         },
+        enums: {},
       }
 
       const predict: Schema = {
@@ -578,6 +585,7 @@ describe('evaluate', () => {
             },
           },
         },
+        enums: {},
       }
 
       const result = await evaluate(reference, predict)
@@ -655,6 +663,7 @@ describe('evaluate', () => {
             },
           },
         },
+        enums: {},
       }
 
       const predict: Schema = {
@@ -721,6 +730,7 @@ describe('evaluate', () => {
             },
           },
         },
+        enums: {},
       }
 
       const result = await evaluate(reference, predict)
@@ -837,6 +847,7 @@ describe('evaluate', () => {
             },
           },
         },
+        enums: {},
       }
 
       const predict: Schema = {
@@ -933,6 +944,7 @@ describe('evaluate', () => {
             },
           },
         },
+        enums: {},
       }
 
       const result = await evaluate(reference, predict)
@@ -1010,6 +1022,7 @@ describe('evaluate', () => {
             },
           },
         },
+        enums: {},
       }
 
       const predict: Schema = {
@@ -1076,6 +1089,7 @@ describe('evaluate', () => {
             },
           },
         },
+        enums: {},
       }
 
       const result = await evaluate(reference, predict)

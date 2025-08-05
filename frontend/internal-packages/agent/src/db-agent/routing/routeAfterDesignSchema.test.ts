@@ -6,7 +6,7 @@ import { routeAfterDesignSchema } from './routeAfterDesignSchema'
 const workflowState = (messages: WorkflowState['messages']): WorkflowState => ({
   messages,
   userInput: 'test input',
-  schemaData: { tables: {} },
+  schemaData: { tables: {}, enums: {} },
   buildingSchemaId: 'test-id',
   latestVersionNumber: 1,
   organizationId: 'test-org',

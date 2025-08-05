@@ -3,6 +3,7 @@ import {
   aCheckConstraint,
   aColumn,
   aForeignKeyConstraint,
+  anEnum,
   anIndex,
   aPrimaryKeyConstraint,
   aSchema,
@@ -1263,6 +1264,127 @@ describe('postgresqlSchemaDeparser', () => {
         expect(result.value).not.toContain("DEFAULT 'gen_random_uuid()'")
         expect(result.value).not.toContain("DEFAULT 'now()'")
       })
+    })
+  })
+
+  describe('enum generation', () => {
+    it('should generate CREATE TYPE statements for enums', async () => {
+      const schema = aSchema({
+        enums: {
+          user_role: anEnum({
+            name: 'user_role',
+            values: ['student', 'instructor', 'admin'],
+          }),
+        },
+        tables: {},
+      })
+
+      const result = postgresqlSchemaDeparser(schema)
+
+      expect(result.errors).toHaveLength(0)
+      expect(result.value).toMatchInlineSnapshot(`
+        "CREATE TYPE "user_role" AS ENUM ('student', 'instructor', 'admin');"
+      `)
+
+      await expectGeneratedSQLToBeParseable(result.value)
+    })
+
+    it('should generate enums before tables that reference them', async () => {
+      const schema = aSchema({
+        enums: {
+          user_role: anEnum({
+            name: 'user_role',
+            values: ['student', 'instructor', 'admin'],
+          }),
+        },
+        tables: {
+          users: aTable({
+            name: 'users',
+            columns: {
+              id: aColumn({
+                name: 'id',
+                type: 'bigint',
+                notNull: true,
+              }),
+              role: aColumn({
+                name: 'role',
+                type: 'user_role',
+                notNull: true,
+              }),
+            },
+            constraints: {
+              users_pkey: aPrimaryKeyConstraint({
+                name: 'users_pkey',
+                columnNames: ['id'],
+              }),
+            },
+          }),
+        },
+      })
+
+      const result = postgresqlSchemaDeparser(schema)
+
+      expect(result.errors).toHaveLength(0)
+      expect(result.value).toMatchInlineSnapshot(`
+        "CREATE TYPE "user_role" AS ENUM ('student', 'instructor', 'admin');
+
+        CREATE TABLE "users" (
+          "id" bigint NOT NULL,
+          "role" user_role NOT NULL
+        );
+        
+        ALTER TABLE "users" ADD CONSTRAINT "users_pkey" PRIMARY KEY ("id");"
+      `)
+
+      await expectGeneratedSQLToBeParseable(result.value)
+    })
+
+    it('should handle multiple enums', async () => {
+      const schema = aSchema({
+        enums: {
+          user_role: anEnum({
+            name: 'user_role',
+            values: ['student', 'instructor', 'admin'],
+          }),
+          status: anEnum({
+            name: 'status',
+            values: ['active', 'inactive', 'pending'],
+          }),
+        },
+        tables: {},
+      })
+
+      const result = postgresqlSchemaDeparser(schema)
+
+      expect(result.errors).toHaveLength(0)
+      expect(result.value).toMatchInlineSnapshot(`
+        "CREATE TYPE "user_role" AS ENUM ('student', 'instructor', 'admin');
+
+        CREATE TYPE "status" AS ENUM ('active', 'inactive', 'pending');"
+      `)
+
+      await expectGeneratedSQLToBeParseable(result.value)
+    })
+
+    it('should handle enum values with special characters', async () => {
+      const schema = aSchema({
+        enums: {
+          special_enum: anEnum({
+            name: 'special_enum',
+            values: ['value with spaces', "value'with'quotes", 'normal_value'],
+          }),
+        },
+        tables: {},
+      })
+
+      const result = postgresqlSchemaDeparser(schema)
+
+      expect(result.errors).toHaveLength(0)
+      expect(result.value).toMatchInlineSnapshot(`
+        "CREATE TYPE "special_enum" AS ENUM ('value with spaces', 'value''with''quotes', 'normal_value');"
+      `)
+
+      await expectGeneratedSQLToBeParseable(result.value)
     })
   })
 })

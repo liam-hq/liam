@@ -1,6 +1,10 @@
 import * as v from 'valibot'
 
 // Export these schema definitions
+const enumNameSchema = v.string()
+
+const enumValuesSchema = v.array(v.string())
+
 export const columnNameSchema = v.string()
 
 export const columnTypeSchema = v.string()
@@ -31,6 +35,14 @@ export const columnSchema = v.object({
 const columnsSchema = v.record(columnNameSchema, columnSchema)
 export type Columns = v.InferOutput<typeof columnsSchema>
 export type Column = v.InferOutput<typeof columnSchema>
+
+const enumSchema = v.object({
+  name: enumNameSchema,
+  values: enumValuesSchema,
+})
+export type Enum = v.InferOutput<typeof enumSchema>
+
+const enumsSchema = v.record(enumNameSchema, enumSchema)
 
 export const indexNameSchema = v.string()
 
@@ -126,6 +138,7 @@ export type Tables = v.InferOutput<typeof tablesSchema>
 // Schema definition for the entire database structure
 export const schemaSchema = v.object({
   tables: tablesSchema,
+  enums: enumsSchema,
 })
 
 export type Schema = v.InferOutput<typeof schemaSchema>

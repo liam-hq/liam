@@ -51,6 +51,7 @@ describe('evaluateSchema', () => {
         constraints: {},
       },
     },
+    enums: {},
   }
 
   const mockEvaluateResult = {

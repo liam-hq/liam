@@ -38,7 +38,7 @@ describe('prepareDmlNode', () => {
     return {
       messages: [],
       userInput: 'test',
-      schemaData: { tables: {} },
+      schemaData: { tables: {}, enums: {} },
       buildingSchemaId: 'test-id',
       latestVersionNumber: 1,
       organizationId: 'test-org-id',
@@ -175,6 +175,7 @@ describe('prepareDmlNode', () => {
             indexes: {},
           },
         },
+        enums: {},
       },
     })
 

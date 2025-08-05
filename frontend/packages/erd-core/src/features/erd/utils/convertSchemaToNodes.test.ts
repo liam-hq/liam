@@ -339,7 +339,7 @@ describe('convertSchemaToNodes', () => {
 
   describe('Edge cases and boundary value tests', () => {
     it('should handle empty schema correctly', () => {
-      const schema: Schema = { tables: {} }
+      const schema: Schema = { tables: {}, enums: {} }
 
       const { nodes, edges } = convertSchemaToNodes({
         schema,
