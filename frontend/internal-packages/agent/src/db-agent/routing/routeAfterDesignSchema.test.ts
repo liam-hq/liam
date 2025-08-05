@@ -15,6 +15,27 @@ const workflowState = (messages: WorkflowState['messages']): WorkflowState => ({
   retryCount: {},
 })
 
+const createStateWithSchema = (
+  messages: WorkflowState['messages'],
+  options: { isEmpty?: boolean } = {},
+): WorkflowState => {
+  const state = workflowState(messages)
+  state.schemaData = options.isEmpty
+    ? { tables: {} }
+    : {
+        tables: {
+          users: {
+            name: 'users',
+            columns: {},
+            comment: null,
+            indexes: {},
+            constraints: {},
+          },
+        },
+      }
+  return state
+}
+
 describe('routeAfterDesignSchema', () => {
   it('should return invokeSchemaDesignTool when message has tool calls', () => {
     const messageWithToolCalls = new AIMessage({
@@ -28,18 +49,7 @@ describe('routeAfterDesignSchema', () => {
       ],
     })
 
-    const state = workflowState([messageWithToolCalls])
-    state.schemaData = {
-      tables: {
-        users: {
-          name: 'users',
-          columns: {},
-          comment: null,
-          indexes: {},
-          constraints: {},
-        },
-      },
-    }
+    const state = createStateWithSchema([messageWithToolCalls])
     const result = routeAfterDesignSchema(state)
 
     expect(result).toBe('invokeSchemaDesignTool')
@@ -50,18 +60,7 @@ describe('routeAfterDesignSchema', () => {
       content: 'Schema analysis complete',
     })
 
-    const state = workflowState([messageWithoutToolCalls])
-    state.schemaData = {
-      tables: {
-        users: {
-          name: 'users',
-          columns: {},
-          comment: null,
-          indexes: {},
-          constraints: {},
-        },
-      },
-    }
+    const state = createStateWithSchema([messageWithoutToolCalls])
     const result = routeAfterDesignSchema(state)
 
     expect(result).toBe('generateUsecase')
@@ -73,18 +72,7 @@ describe('routeAfterDesignSchema', () => {
       tool_calls: [],
     })
 
-    const state = workflowState([messageWithEmptyToolCalls])
-    state.schemaData = {
-      tables: {
-        users: {
-          name: 'users',
-          columns: {},
-          comment: null,
-          indexes: {},
-          constraints: {},
-        },
-      },
-    }
+    const state = createStateWithSchema([messageWithEmptyToolCalls])
     const result = routeAfterDesignSchema(state)
 
     expect(result).toBe('generateUsecase')
@@ -95,18 +83,7 @@ describe('routeAfterDesignSchema', () => {
       content: 'User input',
     })
 
-    const state = workflowState([humanMessage])
-    state.schemaData = {
-      tables: {
-        users: {
-          name: 'users',
-          columns: {},
-          comment: null,
-          indexes: {},
-          constraints: {},
-        },
-      },
-    }
+    const state = createStateWithSchema([humanMessage])
     const result = routeAfterDesignSchema(state)
 
     expect(result).toBe('generateUsecase')
@@ -128,18 +105,10 @@ describe('routeAfterDesignSchema', () => {
       content: 'Schema analysis complete',
     })
 
-    const state = workflowState([messageWithToolCalls, messageWithoutToolCalls])
-    state.schemaData = {
-      tables: {
-        users: {
-          name: 'users',
-          columns: {},
-          comment: null,
-          indexes: {},
-          constraints: {},
-        },
-      },
-    }
+    const state = createStateWithSchema([
+      messageWithToolCalls,
+      messageWithoutToolCalls,
+    ])
     const result = routeAfterDesignSchema(state)
 
     expect(result).toBe('generateUsecase')
@@ -162,18 +131,7 @@ describe('routeAfterDesignSchema', () => {
       ],
     })
 
-    const state = workflowState([messageWithMultipleToolCalls])
-    state.schemaData = {
-      tables: {
-        users: {
-          name: 'users',
-          columns: {},
-          comment: null,
-          indexes: {},
-          constraints: {},
-        },
-      },
-    }
+    const state = createStateWithSchema([messageWithMultipleToolCalls])
     const result = routeAfterDesignSchema(state)
 
     expect(result).toBe('invokeSchemaDesignTool')
@@ -184,8 +142,9 @@ describe('routeAfterDesignSchema', () => {
       content: 'Schema analysis complete',
     })
 
-    const state = workflowState([messageWithoutToolCalls])
-    state.schemaData = { tables: {} }
+    const state = createStateWithSchema([messageWithoutToolCalls], {
+      isEmpty: true,
+    })
 
     const result = routeAfterDesignSchema(state)
 
@@ -197,8 +156,7 @@ describe('routeAfterDesignSchema', () => {
       content: 'Create a user table',
     })
 
-    const state = workflowState([humanMessage])
-    state.schemaData = { tables: {} }
+    const state = createStateWithSchema([humanMessage], { isEmpty: true })
 
     const result = routeAfterDesignSchema(state)
 
@@ -217,8 +175,9 @@ describe('routeAfterDesignSchema', () => {
       ],
     })
 
-    const state = workflowState([messageWithToolCalls])
-    state.schemaData = { tables: {} }
+    const state = createStateWithSchema([messageWithToolCalls], {
+      isEmpty: true,
+    })
 
     const result = routeAfterDesignSchema(state)
 
@@ -230,18 +189,7 @@ describe('routeAfterDesignSchema', () => {
       content: 'Schema analysis complete',
     })
 
-    const state = workflowState([messageWithoutToolCalls])
-    state.schemaData = {
-      tables: {
-        users: {
-          name: 'users',
-          columns: {},
-          comment: null,
-          indexes: {},
-          constraints: {},
-        },
-      },
-    }
+    const state = createStateWithSchema([messageWithoutToolCalls])
 
     const result = routeAfterDesignSchema(state)
 
