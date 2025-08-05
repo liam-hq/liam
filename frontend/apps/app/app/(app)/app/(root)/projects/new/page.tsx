@@ -1,4 +1,5 @@
 import { getInstallations } from '@liam-hq/github'
+import { redirect } from 'next/navigation'
 import { ProjectNewPage } from '@/components/ProjectNewPage'
 import { getOrganizationId } from '@/features/organizations/services/getOrganizationId'
 import { createClient } from '@/libs/db/server'
@@ -25,6 +26,10 @@ export default async function NewProjectPage() {
 
   if (data.session === null) {
     throw new Error('Session not found')
+  }
+
+  if (!data.session.provider_token) {
+    redirect('/app/login')
   }
 
   const { installations } = await getInstallations(data.session)
