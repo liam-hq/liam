@@ -146,6 +146,22 @@ export const schemaDesignTool = tool(
       const totalStatements = results.length
       const summary = `DDL validation successful: ${successfulStatements}/${totalStatements} statements executed successfully`
 
+      // Create assistant timeline item for the summary message
+      const assistantResult = await repositories.schema.createTimelineItem({
+        designSessionId,
+        content: summary,
+        type: 'assistant',
+        role: 'db',
+      })
+
+      if (!assistantResult.success) {
+        // LangGraph tool nodes require throwing errors to trigger retry mechanism
+        // eslint-disable-next-line no-throw-error/no-throw-error
+        throw new Error(
+          `Failed to create assistant timeline item for DDL validation summary: ${assistantResult.error}. Please try again.`,
+        )
+      }
+
       // Create timeline item for DDL execution results
       const result = await repositories.schema.createTimelineItem({
         designSessionId,
