@@ -39,6 +39,60 @@ const getCurrentUserId = async (
   return userData?.user?.id || null
 }
 
+const generateSessionTitle = (firstMessage: string): string => {
+  const cleanMessage = firstMessage.trim().replace(/\s+/g, ' ')
+
+  const patterns = [
+    {
+      regex: /(?:ユーザー|user).*?(?:管理|テーブル|table)/i,
+      // eslint-disable-next-line no-non-english/no-non-english-characters
+      title: 'ユーザー管理システム',
+    },
+    {
+      regex: /(?:商品|product).*?(?:管理|テーブル|table)/i,
+      // eslint-disable-next-line no-non-english/no-non-english-characters
+      title: '商品管理システム',
+    },
+    {
+      regex: /(?:注文|order).*?(?:管理|テーブル|table)/i,
+      // eslint-disable-next-line no-non-english/no-non-english-characters
+      title: '注文管理システム',
+    },
+    {
+      regex: /(?:在庫|inventory).*?(?:管理|システム)/i,
+      // eslint-disable-next-line no-non-english/no-non-english-characters
+      title: '在庫管理システム',
+    },
+    {
+      regex: /(?:決済|payment).*?(?:システム|テーブル)/i,
+      // eslint-disable-next-line no-non-english/no-non-english-characters
+      title: '決済システム',
+    },
+    {
+      regex: /(?:ブログ|blog).*?(?:記事|post)/i,
+      // eslint-disable-next-line no-non-english/no-non-english-characters
+      title: 'ブログシステム',
+    },
+    {
+      regex: /(?:EC|ecommerce).*?(?:サイト|システム)/i,
+      // eslint-disable-next-line no-non-english/no-non-english-characters
+      title: 'ECサイト',
+    },
+  ]
+
+  for (const pattern of patterns) {
+    if (pattern.regex.test(cleanMessage)) {
+      return pattern.title
+    }
+  }
+
+  if (cleanMessage.length > 20) {
+    return `${cleanMessage.slice(0, 20)}...`
+  }
+
+  return cleanMessage || `Design Session - ${new Date().toISOString()}`
+}
+
 const createDesignSession = async (
   params: SessionCreationParams,
   supabase: SupabaseClientType,
@@ -48,7 +102,7 @@ const createDesignSession = async (
   const { data: designSession, error: insertError } = await supabase
     .from('design_sessions')
     .insert({
-      name: `Design Session - ${new Date().toISOString()}`,
+      name: generateSessionTitle(params.initialMessage),
       project_id: params.projectId,
       organization_id: organizationId,
       created_by_user_id: currentUserId,
