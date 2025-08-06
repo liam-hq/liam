@@ -4,7 +4,14 @@ import { DEFAULT_TEST_URL } from './defaultTestUrl'
 async function globalSetup(config: FullConfig) {
   const { baseURL, storageState } = config.projects?.[0]?.use || {}
   const browser = await chromium.launch()
-  const page = await browser.newPage()
+  const context = await browser.newContext({
+    extraHTTPHeaders: {
+      'x-vercel-protection-bypass':
+        process.env.VERCEL_PROTECTION_BYPASS_SECRET || '',
+    },
+  })
+  const page = await context.newPage()
+
   await page.goto(`${baseURL}${DEFAULT_TEST_URL}`)
 
   const cookieButton = page.getByRole('button', {

@@ -1,5 +1,14 @@
 # @liam-hq/schema
 
+## 0.5.0
+
+### Minor Changes
+
+- [#2897](https://github.com/liam-hq/liam/pull/2897) - - 💥 Rename package from @liam-hq/db-structure to @liam-hq/schema / Thanks [@devin-ai-integration](https://github.com/apps/devin-ai-integration)!
+  - Package name changed for better clarity and consistency
+  - Directory structure updated from `frontend/packages/db-structure/` to `frontend/packages/schema/`
+  - All import statements updated from `@liam-hq/db-structure` to `@liam-hq/schema`
+
 ## 0.4.4
 
 ### Patch Changes

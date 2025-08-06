@@ -11,6 +11,7 @@ import type {
 import { withTimelineItemSync } from '../chat/workflow/utils/withTimelineItemSync'
 import type { AgentWorkflowParams, AgentWorkflowResult } from '../types'
 import { WorkflowTerminationError } from './errorHandling'
+import { createEnhancedTraceData } from './traceEnhancer'
 
 /**
  * Shared workflow setup configuration
@@ -29,6 +30,10 @@ export type WorkflowSetupResult = {
   configurable: WorkflowConfigurable & {
     buildingSchemaId: string
     latestVersionNumber: number
+  }
+  traceEnhancement: {
+    tags: string[]
+    metadata: Record<string, unknown>
   }
 }
 
@@ -88,6 +93,23 @@ export const setupWorkflowState = (
   return ResultAsync.combine([setupMessage, createWorkflowRun]).andThen(
     ([messages]) => {
       const runCollector = new RunCollectorCallbackHandler()
+
+      // Enhanced tracing with environment and developer context
+      const traceEnhancement = createEnhancedTraceData(
+        workflowRunId,
+        'agent-workflow',
+        [`organization:${organizationId}`, `session:${designSessionId}`],
+        {
+          workflow: {
+            building_schema_id: buildingSchemaId,
+            design_session_id: designSessionId,
+            user_id: userId,
+            organization_id: organizationId,
+            version_number: latestVersionNumber,
+          },
+        },
+      )
+
       return ok({
         workflowState: {
           userInput: userInput,
@@ -107,6 +129,7 @@ export const setupWorkflowState = (
           buildingSchemaId,
           latestVersionNumber,
         },
+        traceEnhancement,
       })
     },
   )
@@ -127,8 +150,13 @@ export const executeWorkflowWithTracking = <
   setupResult: WorkflowSetupResult,
   recursionLimit: number = DEFAULT_RECURSION_LIMIT,
 ): ResultAsync<AgentWorkflowResult, Error> => {
-  const { workflowState, workflowRunId, runCollector, configurable } =
-    setupResult
+  const {
+    workflowState,
+    workflowRunId,
+    runCollector,
+    configurable,
+    traceEnhancement,
+  } = setupResult
   const { repositories } = configurable
 
   // Type guard for safe type checking
@@ -136,13 +164,15 @@ export const executeWorkflowWithTracking = <
     return typeof obj === 'object' && obj !== null
   }
 
-  // 1. Execute the workflow
+  // 1. Execute the workflow with enhanced tracing
   const executeWorkflow = ResultAsync.fromPromise(
     compiled.invoke(workflowState, {
       recursionLimit,
       configurable,
       runId: workflowRunId,
       callbacks: [runCollector],
+      tags: traceEnhancement.tags,
+      metadata: traceEnhancement.metadata,
     }),
     (error) => {
       // WorkflowTerminationError means the workflow was intentionally terminated

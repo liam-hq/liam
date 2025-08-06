@@ -91,6 +91,7 @@ jobs:
         run: pnpm exec playwright test --project="${{ matrix.browser }}"
         env:
           URL: ${{ env.URL }}
+          VERCEL_PROTECTION_BYPASS_SECRET: ${{ secrets.VERCEL_PROTECTION_BYPASS_SECRET }}
 
       # FIXME: This step is not working well. All environments seem to be Preview.
       - name: Upload test results
