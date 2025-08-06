@@ -41,4 +41,8 @@ export type WorkflowState = {
  */
 export type WorkflowConfigurable = {
   repositories: Repositories
+  /**
+   * Thread ID for checkpoint functionality (maps to designSessionId)
+   */
+  thread_id: string
 }

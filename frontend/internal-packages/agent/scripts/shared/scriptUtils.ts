@@ -436,7 +436,10 @@ export const createWorkflowState = (
 
   // Use shared setupWorkflowState function
   return setupWorkflowState(workflowParams, {
-    configurable: { repositories },
+    configurable: { 
+      repositories,
+      thread_id: workflowParams.designSessionId,
+    },
   }).map((workflowSetupResult) => ({
     workflowState: workflowSetupResult.workflowState,
     options: {

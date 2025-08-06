@@ -147,7 +147,7 @@ export class PMAnalysisAgent {
                   const content = this.convertContentToString(
                     followUpResult.content,
                   )
-                  searchResults += content + '\n'
+                  searchResults += `${content}\n`
                 }
               }
 

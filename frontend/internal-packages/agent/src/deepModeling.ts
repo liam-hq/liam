@@ -27,7 +27,7 @@ export const deepModeling = async (
   }
 
   const setup = setupResult.value
-  const compiled = createGraph()
+  const compiled = createGraph(setup.checkpointer)
 
   // Execute workflow with proper tracking and error handling
   const workflowResult = await executeWorkflowWithTracking(

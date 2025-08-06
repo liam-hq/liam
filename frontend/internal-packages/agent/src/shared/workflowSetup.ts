@@ -1,5 +1,6 @@
 import { AIMessage, HumanMessage } from '@langchain/core/messages'
 import { RunCollectorCallbackHandler } from '@langchain/core/tracers/run_collector'
+import type { BaseCheckpointSaver } from '@langchain/langgraph-checkpoint'
 import type { CompiledStateGraph } from '@langchain/langgraph'
 import { err, ok, ResultAsync } from 'neverthrow'
 import { v4 as uuidv4 } from 'uuid'
@@ -9,6 +10,7 @@ import type {
   WorkflowState,
 } from '../chat/workflow/types'
 import { withTimelineItemSync } from '../chat/workflow/utils/withTimelineItemSync'
+import { isSchemaRepositoryWithCheckpointerFactory } from '../repositories/types'
 import type { AgentWorkflowParams, AgentWorkflowResult } from '../types'
 import { WorkflowTerminationError } from './errorHandling'
 
@@ -26,6 +28,7 @@ export type WorkflowSetupResult = {
   workflowState: WorkflowState
   workflowRunId: string
   runCollector: RunCollectorCallbackHandler
+  checkpointer?: BaseCheckpointSaver
   configurable: WorkflowConfigurable & {
     buildingSchemaId: string
     latestVersionNumber: number
@@ -88,6 +91,18 @@ export const setupWorkflowState = (
   return ResultAsync.combine([setupMessage, createWorkflowRun]).andThen(
     ([messages]) => {
       const runCollector = new RunCollectorCallbackHandler()
+      
+      // Initialize checkpointer with organizationId
+      let checkpointer: BaseCheckpointSaver
+      
+      // For SupabaseSchemaRepository, initialize the checkpointer
+      if (isSchemaRepositoryWithCheckpointerFactory(repositories.schema)) {
+        checkpointer = repositories.schema.createCheckpointer(organizationId)
+      } else {
+        // For other repositories (like InMemoryRepository), use the existing checkpointer
+        checkpointer = repositories.schema.checkpointer
+      }
+      
       return ok({
         workflowState: {
           userInput: userInput,
@@ -102,10 +117,13 @@ export const setupWorkflowState = (
         },
         workflowRunId,
         runCollector,
+        checkpointer,
         configurable: {
           repositories,
           buildingSchemaId,
           latestVersionNumber,
+          // Add thread_id for checkpoint functionality
+          thread_id: designSessionId,
         },
       })
     },

@@ -1,9 +1,11 @@
+import type { BaseCheckpointSaver } from '@langchain/langgraph-checkpoint'
 import type { Artifact } from '@liam-hq/artifact'
 import type { Database, Tables } from '@liam-hq/db/supabase/database.types'
 import type { SqlResult } from '@liam-hq/pglite-server/src/types'
 import type { Schema } from '@liam-hq/schema'
 import type { Operation } from 'fast-json-patch'
 import type { ResultAsync } from 'neverthrow'
+import type { SupabaseCheckpointSaver } from '../checkpoint/SupabaseCheckpointSaver'
 
 export type SchemaData = {
   id: string
@@ -124,6 +126,11 @@ export type UpdateWorkflowRunStatusParams = {
  */
 export type SchemaRepository = {
   /**
+   * Checkpointer for LangGraph workflow state persistence
+   */
+  readonly checkpointer: BaseCheckpointSaver
+
+  /**
    * Fetch schema data for a design session
    */
   getSchema(designSessionId: string): ResultAsync<SchemaData, Error>
@@ -197,6 +204,23 @@ export type SchemaRepository = {
   updateWorkflowRunStatus(
     params: UpdateWorkflowRunStatusParams,
   ): Promise<WorkflowRunResult>
+}
+
+/**
+ * Extended type for repositories that can create checkpointers
+ * (Used by SupabaseSchemaRepository)
+ */
+export type SchemaRepositoryWithCheckpointerFactory = SchemaRepository & {
+  createCheckpointer(organizationId: string): SupabaseCheckpointSaver
+}
+
+/**
+ * Type guard to check if a repository can create checkpointers
+ */
+export function isSchemaRepositoryWithCheckpointerFactory(
+  repository: SchemaRepository,
+): repository is SchemaRepositoryWithCheckpointerFactory {
+  return 'createCheckpointer' in repository && typeof repository.createCheckpointer === 'function'
 }
 
 /**

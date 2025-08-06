@@ -83,8 +83,8 @@ export type Database = {
           id: string
           number: number
           organization_id: string
-          patch: Json | null
-          reverse_patch: Json | null
+          patch: Json
+          reverse_patch: Json
         }
         Insert: {
           building_schema_id: string
@@ -92,8 +92,8 @@ export type Database = {
           id?: string
           number: number
           organization_id: string
-          patch?: Json | null
-          reverse_patch?: Json | null
+          patch: Json
+          reverse_patch: Json
         }
         Update: {
           building_schema_id?: string
@@ -101,8 +101,8 @@ export type Database = {
           id?: string
           number?: number
           organization_id?: string
-          patch?: Json | null
-          reverse_patch?: Json | null
+          patch?: Json
+          reverse_patch?: Json
         }
         Relationships: [
           {
@@ -1160,6 +1160,153 @@ export type Database = {
           },
           {
             foreignKeyName: 'schema_file_paths_organization_id_fkey'
+            columns: ['organization_id']
+            isOneToOne: false
+            referencedRelation: 'organizations'
+            referencedColumns: ['id']
+          },
+        ]
+      }
+      session_checkpoint_blobs: {
+        Row: {
+          blob: string | null
+          channel: string
+          checkpoint_ns: string
+          created_at: string
+          id: string
+          organization_id: string
+          thread_id: string
+          type: string
+          updated_at: string
+          version: string
+        }
+        Insert: {
+          blob?: string | null
+          channel: string
+          checkpoint_ns?: string
+          created_at?: string
+          id?: string
+          organization_id: string
+          thread_id: string
+          type: string
+          updated_at?: string
+          version: string
+        }
+        Update: {
+          blob?: string | null
+          channel?: string
+          checkpoint_ns?: string
+          created_at?: string
+          id?: string
+          organization_id?: string
+          thread_id?: string
+          type?: string
+          updated_at?: string
+          version?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'session_checkpoint_blobs_organization_id_fkey'
+            columns: ['organization_id']
+            isOneToOne: false
+            referencedRelation: 'organizations'
+            referencedColumns: ['id']
+          },
+        ]
+      }
+      session_checkpoint_writes: {
+        Row: {
+          blob: string
+          channel: string
+          checkpoint_id: string
+          checkpoint_ns: string
+          created_at: string
+          id: string
+          idx: number
+          organization_id: string
+          task_id: string
+          thread_id: string
+          type: string | null
+          updated_at: string
+        }
+        Insert: {
+          blob: string
+          channel: string
+          checkpoint_id: string
+          checkpoint_ns?: string
+          created_at?: string
+          id?: string
+          idx: number
+          organization_id: string
+          task_id: string
+          thread_id: string
+          type?: string | null
+          updated_at?: string
+        }
+        Update: {
+          blob?: string
+          channel?: string
+          checkpoint_id?: string
+          checkpoint_ns?: string
+          created_at?: string
+          id?: string
+          idx?: number
+          organization_id?: string
+          task_id?: string
+          thread_id?: string
+          type?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'session_checkpoint_writes_organization_id_fkey'
+            columns: ['organization_id']
+            isOneToOne: false
+            referencedRelation: 'organizations'
+            referencedColumns: ['id']
+          },
+        ]
+      }
+      session_checkpoints: {
+        Row: {
+          checkpoint: Json
+          checkpoint_id: string
+          checkpoint_ns: string
+          created_at: string
+          id: string
+          metadata: Json
+          organization_id: string
+          parent_checkpoint_id: string | null
+          thread_id: string
+          updated_at: string
+        }
+        Insert: {
+          checkpoint: Json
+          checkpoint_id: string
+          checkpoint_ns?: string
+          created_at?: string
+          id?: string
+          metadata?: Json
+          organization_id: string
+          parent_checkpoint_id?: string | null
+          thread_id: string
+          updated_at?: string
+        }
+        Update: {
+          checkpoint?: Json
+          checkpoint_id?: string
+          checkpoint_ns?: string
+          created_at?: string
+          id?: string
+          metadata?: Json
+          organization_id?: string
+          parent_checkpoint_id?: string | null
+          thread_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'session_checkpoints_organization_id_fkey'
             columns: ['organization_id']
             isOneToOne: false
             referencedRelation: 'organizations'

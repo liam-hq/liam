@@ -1073,6 +1073,45 @@ $$;
 
 ALTER FUNCTION "public"."update_building_schema"("p_schema_id" "uuid", "p_schema_schema" "jsonb", "p_schema_version_patch" "jsonb", "p_schema_version_reverse_patch" "jsonb", "p_latest_schema_version_number" integer, "p_message_content" "text") OWNER TO "postgres";
 
+
+CREATE OR REPLACE FUNCTION "public"."update_session_checkpoint_blobs_updated_at"() RETURNS "trigger"
+    LANGUAGE "plpgsql" SECURITY DEFINER
+    AS $$
+BEGIN
+  NEW.updated_at := CURRENT_TIMESTAMP;
+  RETURN NEW;
+END;
+$$;
+
+
+ALTER FUNCTION "public"."update_session_checkpoint_blobs_updated_at"() OWNER TO "postgres";
+
+
+CREATE OR REPLACE FUNCTION "public"."update_session_checkpoint_writes_updated_at"() RETURNS "trigger"
+    LANGUAGE "plpgsql" SECURITY DEFINER
+    AS $$
+BEGIN
+  NEW.updated_at := CURRENT_TIMESTAMP;
+  RETURN NEW;
+END;
+$$;
+
+
+ALTER FUNCTION "public"."update_session_checkpoint_writes_updated_at"() OWNER TO "postgres";
+
+
+CREATE OR REPLACE FUNCTION "public"."update_session_checkpoints_updated_at"() RETURNS "trigger"
+    LANGUAGE "plpgsql" SECURITY DEFINER
+    AS $$
+BEGIN
+  NEW.updated_at := CURRENT_TIMESTAMP;
+  RETURN NEW;
+END;
+$$;
+
+
+ALTER FUNCTION "public"."update_session_checkpoints_updated_at"() OWNER TO "postgres";
+
 SET default_tablespace = '';
 
 SET default_table_access_method = "heap";
@@ -1097,8 +1136,8 @@ CREATE TABLE IF NOT EXISTS "public"."building_schema_versions" (
     "building_schema_id" "uuid" NOT NULL,
     "number" integer NOT NULL,
     "created_at" timestamp with time zone DEFAULT "now"() NOT NULL,
-    "patch" "jsonb",
-    "reverse_patch" "jsonb"
+    "patch" "jsonb" NOT NULL,
+    "reverse_patch" "jsonb" NOT NULL
 );
 
 
@@ -1425,6 +1464,59 @@ CREATE TABLE IF NOT EXISTS "public"."schema_file_paths" (
 ALTER TABLE "public"."schema_file_paths" OWNER TO "postgres";
 
 
+CREATE TABLE IF NOT EXISTS "public"."session_checkpoint_blobs" (
+    "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
+    "organization_id" "uuid" NOT NULL,
+    "thread_id" "text" NOT NULL,
+    "checkpoint_ns" "text" DEFAULT ''::"text" NOT NULL,
+    "channel" "text" NOT NULL,
+    "version" "text" NOT NULL,
+    "type" "text" NOT NULL,
+    "blob" "bytea",
+    "created_at" timestamp(3) with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    "updated_at" timestamp(3) with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
+
+
+ALTER TABLE "public"."session_checkpoint_blobs" OWNER TO "postgres";
+
+
+CREATE TABLE IF NOT EXISTS "public"."session_checkpoint_writes" (
+    "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
+    "organization_id" "uuid" NOT NULL,
+    "thread_id" "text" NOT NULL,
+    "checkpoint_ns" "text" DEFAULT ''::"text" NOT NULL,
+    "checkpoint_id" "text" NOT NULL,
+    "task_id" "text" NOT NULL,
+    "idx" integer NOT NULL,
+    "channel" "text" NOT NULL,
+    "type" "text",
+    "blob" "bytea" NOT NULL,
+    "created_at" timestamp(3) with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    "updated_at" timestamp(3) with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
+
+
+ALTER TABLE "public"."session_checkpoint_writes" OWNER TO "postgres";
+
+
+CREATE TABLE IF NOT EXISTS "public"."session_checkpoints" (
+    "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
+    "organization_id" "uuid" NOT NULL,
+    "thread_id" "text" NOT NULL,
+    "checkpoint_ns" "text" DEFAULT ''::"text" NOT NULL,
+    "checkpoint_id" "text" NOT NULL,
+    "parent_checkpoint_id" "text",
+    "checkpoint" "jsonb" NOT NULL,
+    "metadata" "jsonb" DEFAULT '{}'::"jsonb" NOT NULL,
+    "created_at" timestamp(3) with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    "updated_at" timestamp(3) with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
+
+
+ALTER TABLE "public"."session_checkpoints" OWNER TO "postgres";
+
+
 CREATE TABLE IF NOT EXISTS "public"."timeline_items" (
     "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
     "design_session_id" "uuid" NOT NULL,
@@ -1657,6 +1749,36 @@ ALTER TABLE ONLY "public"."review_suggestion_snippets"
 
 
 
+ALTER TABLE ONLY "public"."session_checkpoint_blobs"
+    ADD CONSTRAINT "session_checkpoint_blobs_pkey" PRIMARY KEY ("id");
+
+
+
+ALTER TABLE ONLY "public"."session_checkpoint_blobs"
+    ADD CONSTRAINT "session_checkpoint_blobs_unique" UNIQUE ("thread_id", "checkpoint_ns", "channel", "version");
+
+
+
+ALTER TABLE ONLY "public"."session_checkpoint_writes"
+    ADD CONSTRAINT "session_checkpoint_writes_pkey" PRIMARY KEY ("id");
+
+
+
+ALTER TABLE ONLY "public"."session_checkpoint_writes"
+    ADD CONSTRAINT "session_checkpoint_writes_unique" UNIQUE ("thread_id", "checkpoint_ns", "checkpoint_id", "task_id", "idx");
+
+
+
+ALTER TABLE ONLY "public"."session_checkpoints"
+    ADD CONSTRAINT "session_checkpoints_pkey" PRIMARY KEY ("id");
+
+
+
+ALTER TABLE ONLY "public"."session_checkpoints"
+    ADD CONSTRAINT "session_checkpoints_thread_ns_checkpoint_unique" UNIQUE ("thread_id", "checkpoint_ns", "checkpoint_id");
+
+
+
 ALTER TABLE ONLY "public"."timeline_items"
     ADD CONSTRAINT "timeline_items_pkey" PRIMARY KEY ("id");
 
@@ -1737,6 +1859,22 @@ CREATE INDEX "idx_project_organization_id" ON "public"."projects" USING "btree" 
 
 
 CREATE INDEX "idx_review_feedback_comment_review_feedback_id" ON "public"."review_feedback_comments" USING "btree" ("review_feedback_id");
+
+
+
+CREATE INDEX "idx_session_checkpoint_blobs_thread_channel" ON "public"."session_checkpoint_blobs" USING "btree" ("thread_id", "checkpoint_ns", "channel");
+
+
+
+CREATE INDEX "idx_session_checkpoint_writes_checkpoint" ON "public"."session_checkpoint_writes" USING "btree" ("thread_id", "checkpoint_ns", "checkpoint_id");
+
+
+
+CREATE INDEX "idx_session_checkpoints_org_thread" ON "public"."session_checkpoints" USING "btree" ("organization_id", "thread_id");
+
+
+
+CREATE INDEX "idx_session_checkpoints_thread_created" ON "public"."session_checkpoints" USING "btree" ("thread_id", "created_at" DESC);
 
 
 
@@ -1917,6 +2055,18 @@ CREATE OR REPLACE TRIGGER "set_workflow_runs_updated_at_trigger" BEFORE UPDATE O
 
 
 CREATE OR REPLACE TRIGGER "update_artifacts_updated_at_trigger" BEFORE UPDATE ON "public"."artifacts" FOR EACH ROW EXECUTE FUNCTION "public"."update_artifacts_updated_at"();
+
+
+
+CREATE OR REPLACE TRIGGER "update_session_checkpoint_blobs_updated_at_trigger" BEFORE UPDATE ON "public"."session_checkpoint_blobs" FOR EACH ROW EXECUTE FUNCTION "public"."update_session_checkpoint_blobs_updated_at"();
+
+
+
+CREATE OR REPLACE TRIGGER "update_session_checkpoint_writes_updated_at_trigger" BEFORE UPDATE ON "public"."session_checkpoint_writes" FOR EACH ROW EXECUTE FUNCTION "public"."update_session_checkpoint_writes_updated_at"();
+
+
+
+CREATE OR REPLACE TRIGGER "update_session_checkpoints_updated_at_trigger" BEFORE UPDATE ON "public"."session_checkpoints" FOR EACH ROW EXECUTE FUNCTION "public"."update_session_checkpoints_updated_at"();
 
 
 
@@ -2185,6 +2335,21 @@ ALTER TABLE ONLY "public"."schema_file_paths"
 
 
 
+ALTER TABLE ONLY "public"."session_checkpoint_blobs"
+    ADD CONSTRAINT "session_checkpoint_blobs_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "public"."organizations"("id") ON UPDATE CASCADE ON DELETE RESTRICT;
+
+
+
+ALTER TABLE ONLY "public"."session_checkpoint_writes"
+    ADD CONSTRAINT "session_checkpoint_writes_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "public"."organizations"("id") ON UPDATE CASCADE ON DELETE RESTRICT;
+
+
+
+ALTER TABLE ONLY "public"."session_checkpoints"
+    ADD CONSTRAINT "session_checkpoints_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "public"."organizations"("id") ON UPDATE CASCADE ON DELETE RESTRICT;
+
+
+
 ALTER TABLE ONLY "public"."timeline_items"
     ADD CONSTRAINT "timeline_items_building_schema_version_id_fkey" FOREIGN KEY ("building_schema_version_id") REFERENCES "public"."building_schema_versions"("id") ON DELETE CASCADE;
 
@@ -2320,6 +2485,24 @@ CREATE POLICY "authenticated_users_can_delete_org_projects" ON "public"."project
 
 
 COMMENT ON POLICY "authenticated_users_can_delete_org_projects" ON "public"."projects" IS 'Authenticated users can only delete projects in organizations they are members of';
+
+
+
+CREATE POLICY "authenticated_users_can_delete_org_session_checkpoint_blobs" ON "public"."session_checkpoint_blobs" FOR DELETE TO "authenticated" USING (("organization_id" IN ( SELECT "organization_members"."organization_id"
+   FROM "public"."organization_members"
+  WHERE ("organization_members"."user_id" = "auth"."uid"()))));
+
+
+
+CREATE POLICY "authenticated_users_can_delete_org_session_checkpoint_writes" ON "public"."session_checkpoint_writes" FOR DELETE TO "authenticated" USING (("organization_id" IN ( SELECT "organization_members"."organization_id"
+   FROM "public"."organization_members"
+  WHERE ("organization_members"."user_id" = "auth"."uid"()))));
+
+
+
+CREATE POLICY "authenticated_users_can_delete_org_session_checkpoints" ON "public"."session_checkpoints" FOR DELETE TO "authenticated" USING (("organization_id" IN ( SELECT "organization_members"."organization_id"
+   FROM "public"."organization_members"
+  WHERE ("organization_members"."user_id" = "auth"."uid"()))));
 
 
 
@@ -2480,6 +2663,24 @@ CREATE POLICY "authenticated_users_can_insert_org_schema_file_paths" ON "public"
 
 
 COMMENT ON POLICY "authenticated_users_can_insert_org_schema_file_paths" ON "public"."schema_file_paths" IS 'Authenticated users can only create schema file paths in organizations they are members of';
+
+
+
+CREATE POLICY "authenticated_users_can_insert_org_session_checkpoint_blobs" ON "public"."session_checkpoint_blobs" FOR INSERT TO "authenticated" WITH CHECK (("organization_id" IN ( SELECT "organization_members"."organization_id"
+   FROM "public"."organization_members"
+  WHERE ("organization_members"."user_id" = "auth"."uid"()))));
+
+
+
+CREATE POLICY "authenticated_users_can_insert_org_session_checkpoint_writes" ON "public"."session_checkpoint_writes" FOR INSERT TO "authenticated" WITH CHECK (("organization_id" IN ( SELECT "organization_members"."organization_id"
+   FROM "public"."organization_members"
+  WHERE ("organization_members"."user_id" = "auth"."uid"()))));
+
+
+
+CREATE POLICY "authenticated_users_can_insert_org_session_checkpoints" ON "public"."session_checkpoints" FOR INSERT TO "authenticated" WITH CHECK (("organization_id" IN ( SELECT "organization_members"."organization_id"
+   FROM "public"."organization_members"
+  WHERE ("organization_members"."user_id" = "auth"."uid"()))));
 
 
 
@@ -2765,6 +2966,24 @@ COMMENT ON POLICY "authenticated_users_can_select_org_schema_file_paths" ON "pub
 
 
 
+CREATE POLICY "authenticated_users_can_select_org_session_checkpoint_blobs" ON "public"."session_checkpoint_blobs" FOR SELECT TO "authenticated" USING (("organization_id" IN ( SELECT "organization_members"."organization_id"
+   FROM "public"."organization_members"
+  WHERE ("organization_members"."user_id" = "auth"."uid"()))));
+
+
+
+CREATE POLICY "authenticated_users_can_select_org_session_checkpoint_writes" ON "public"."session_checkpoint_writes" FOR SELECT TO "authenticated" USING (("organization_id" IN ( SELECT "organization_members"."organization_id"
+   FROM "public"."organization_members"
+  WHERE ("organization_members"."user_id" = "auth"."uid"()))));
+
+
+
+CREATE POLICY "authenticated_users_can_select_org_session_checkpoints" ON "public"."session_checkpoints" FOR SELECT TO "authenticated" USING (("organization_id" IN ( SELECT "organization_members"."organization_id"
+   FROM "public"."organization_members"
+  WHERE ("organization_members"."user_id" = "auth"."uid"()))));
+
+
+
 CREATE POLICY "authenticated_users_can_select_org_timeline_items" ON "public"."timeline_items" FOR SELECT TO "authenticated" USING (("organization_id" IN ( SELECT "organization_members"."organization_id"
    FROM "public"."organization_members"
   WHERE ("organization_members"."user_id" = "auth"."uid"()))));
@@ -2925,6 +3144,30 @@ COMMENT ON POLICY "authenticated_users_can_update_org_schema_file_paths" ON "pub
 
 
 
+CREATE POLICY "authenticated_users_can_update_org_session_checkpoint_blobs" ON "public"."session_checkpoint_blobs" FOR UPDATE TO "authenticated" USING (("organization_id" IN ( SELECT "organization_members"."organization_id"
+   FROM "public"."organization_members"
+  WHERE ("organization_members"."user_id" = "auth"."uid"())))) WITH CHECK (("organization_id" IN ( SELECT "organization_members"."organization_id"
+   FROM "public"."organization_members"
+  WHERE ("organization_members"."user_id" = "auth"."uid"()))));
+
+
+
+CREATE POLICY "authenticated_users_can_update_org_session_checkpoint_writes" ON "public"."session_checkpoint_writes" FOR UPDATE TO "authenticated" USING (("organization_id" IN ( SELECT "organization_members"."organization_id"
+   FROM "public"."organization_members"
+  WHERE ("organization_members"."user_id" = "auth"."uid"())))) WITH CHECK (("organization_id" IN ( SELECT "organization_members"."organization_id"
+   FROM "public"."organization_members"
+  WHERE ("organization_members"."user_id" = "auth"."uid"()))));
+
+
+
+CREATE POLICY "authenticated_users_can_update_org_session_checkpoints" ON "public"."session_checkpoints" FOR UPDATE TO "authenticated" USING (("organization_id" IN ( SELECT "organization_members"."organization_id"
+   FROM "public"."organization_members"
+  WHERE ("organization_members"."user_id" = "auth"."uid"())))) WITH CHECK (("organization_id" IN ( SELECT "organization_members"."organization_id"
+   FROM "public"."organization_members"
+  WHERE ("organization_members"."user_id" = "auth"."uid"()))));
+
+
+
 CREATE POLICY "authenticated_users_can_update_org_timeline_items" ON "public"."timeline_items" FOR UPDATE TO "authenticated" USING (("organization_id" IN ( SELECT "organization_members"."organization_id"
    FROM "public"."organization_members"
   WHERE ("organization_members"."user_id" = "auth"."uid"())))) WITH CHECK (("organization_id" IN ( SELECT "organization_members"."organization_id"
@@ -3077,6 +3320,18 @@ COMMENT ON POLICY "service_role_can_delete_all_projects" ON "public"."projects" 
 
 
 
+CREATE POLICY "service_role_can_delete_all_session_checkpoint_blobs" ON "public"."session_checkpoint_blobs" FOR DELETE TO "service_role" USING (true);
+
+
+
+CREATE POLICY "service_role_can_delete_all_session_checkpoint_writes" ON "public"."session_checkpoint_writes" FOR DELETE TO "service_role" USING (true);
+
+
+
+CREATE POLICY "service_role_can_delete_all_session_checkpoints" ON "public"."session_checkpoints" FOR DELETE TO "service_role" USING (true);
+
+
+
 CREATE POLICY "service_role_can_delete_all_validation_queries" ON "public"."validation_queries" FOR DELETE TO "service_role" USING (true);
 
 
@@ -3162,6 +3417,18 @@ CREATE POLICY "service_role_can_insert_all_review_feedbacks" ON "public"."review
 
 
 CREATE POLICY "service_role_can_insert_all_review_suggestion_snippets" ON "public"."review_suggestion_snippets" FOR INSERT TO "service_role" WITH CHECK (true);
+
+
+
+CREATE POLICY "service_role_can_insert_all_session_checkpoint_blobs" ON "public"."session_checkpoint_blobs" FOR INSERT TO "service_role" WITH CHECK (true);
+
+
+
+CREATE POLICY "service_role_can_insert_all_session_checkpoint_writes" ON "public"."session_checkpoint_writes" FOR INSERT TO "service_role" WITH CHECK (true);
+
+
+
+CREATE POLICY "service_role_can_insert_all_session_checkpoints" ON "public"."session_checkpoints" FOR INSERT TO "service_role" WITH CHECK (true);
 
 
 
@@ -3257,6 +3524,18 @@ CREATE POLICY "service_role_can_select_all_schema_file_paths" ON "public"."schem
 
 
 
+CREATE POLICY "service_role_can_select_all_session_checkpoint_blobs" ON "public"."session_checkpoint_blobs" FOR SELECT TO "service_role" USING (true);
+
+
+
+CREATE POLICY "service_role_can_select_all_session_checkpoint_writes" ON "public"."session_checkpoint_writes" FOR SELECT TO "service_role" USING (true);
+
+
+
+CREATE POLICY "service_role_can_select_all_session_checkpoints" ON "public"."session_checkpoints" FOR SELECT TO "service_role" USING (true);
+
+
+
 CREATE POLICY "service_role_can_select_all_timeline_items" ON "public"."timeline_items" FOR SELECT TO "service_role" USING (true);
 
 
@@ -3313,6 +3592,18 @@ COMMENT ON POLICY "service_role_can_update_all_projects" ON "public"."projects" 
 
 
 
+CREATE POLICY "service_role_can_update_all_session_checkpoint_blobs" ON "public"."session_checkpoint_blobs" FOR UPDATE TO "service_role" USING (true) WITH CHECK (true);
+
+
+
+CREATE POLICY "service_role_can_update_all_session_checkpoint_writes" ON "public"."session_checkpoint_writes" FOR UPDATE TO "service_role" USING (true) WITH CHECK (true);
+
+
+
+CREATE POLICY "service_role_can_update_all_session_checkpoints" ON "public"."session_checkpoints" FOR UPDATE TO "service_role" USING (true) WITH CHECK (true);
+
+
+
 CREATE POLICY "service_role_can_update_all_timeline_items" ON "public"."timeline_items" FOR UPDATE TO "service_role" USING (true) WITH CHECK (true);
 
 
@@ -3327,6 +3618,15 @@ CREATE POLICY "service_role_can_update_all_validation_results" ON "public"."vali
 
 CREATE POLICY "service_role_can_update_all_workflow_runs" ON "public"."workflow_runs" FOR UPDATE TO "service_role" USING (true) WITH CHECK (true);
 
+
+
+ALTER TABLE "public"."session_checkpoint_blobs" ENABLE ROW LEVEL SECURITY;
+
+
+ALTER TABLE "public"."session_checkpoint_writes" ENABLE ROW LEVEL SECURITY;
+
+
+ALTER TABLE "public"."session_checkpoints" ENABLE ROW LEVEL SECURITY;
 
 
 ALTER TABLE "public"."timeline_items" ENABLE ROW LEVEL SECURITY;
@@ -3354,6 +3654,10 @@ ALTER TABLE "public"."workflow_runs" ENABLE ROW LEVEL SECURITY;
 
 
 ALTER PUBLICATION "supabase_realtime" OWNER TO "postgres";
+
+
+
+
 
 
 ALTER PUBLICATION "supabase_realtime" ADD TABLE ONLY "public"."artifacts";
@@ -4425,6 +4729,24 @@ GRANT ALL ON FUNCTION "public"."update_building_schema"("p_schema_id" "uuid", "p
 
 
 
+GRANT ALL ON FUNCTION "public"."update_session_checkpoint_blobs_updated_at"() TO "anon";
+GRANT ALL ON FUNCTION "public"."update_session_checkpoint_blobs_updated_at"() TO "authenticated";
+GRANT ALL ON FUNCTION "public"."update_session_checkpoint_blobs_updated_at"() TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."update_session_checkpoint_writes_updated_at"() TO "anon";
+GRANT ALL ON FUNCTION "public"."update_session_checkpoint_writes_updated_at"() TO "authenticated";
+GRANT ALL ON FUNCTION "public"."update_session_checkpoint_writes_updated_at"() TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."update_session_checkpoints_updated_at"() TO "anon";
+GRANT ALL ON FUNCTION "public"."update_session_checkpoints_updated_at"() TO "authenticated";
+GRANT ALL ON FUNCTION "public"."update_session_checkpoints_updated_at"() TO "service_role";
+
+
+
 GRANT ALL ON FUNCTION "public"."vector_accum"(double precision[], "public"."vector") TO "postgres";
 GRANT ALL ON FUNCTION "public"."vector_accum"(double precision[], "public"."vector") TO "anon";
 GRANT ALL ON FUNCTION "public"."vector_accum"(double precision[], "public"."vector") TO "authenticated";
@@ -4755,6 +5077,24 @@ GRANT ALL ON TABLE "public"."review_suggestion_snippets" TO "service_role";
 GRANT ALL ON TABLE "public"."schema_file_paths" TO "anon";
 GRANT ALL ON TABLE "public"."schema_file_paths" TO "authenticated";
 GRANT ALL ON TABLE "public"."schema_file_paths" TO "service_role";
+
+
+
+GRANT ALL ON TABLE "public"."session_checkpoint_blobs" TO "anon";
+GRANT ALL ON TABLE "public"."session_checkpoint_blobs" TO "authenticated";
+GRANT ALL ON TABLE "public"."session_checkpoint_blobs" TO "service_role";
+
+
+
+GRANT ALL ON TABLE "public"."session_checkpoint_writes" TO "anon";
+GRANT ALL ON TABLE "public"."session_checkpoint_writes" TO "authenticated";
+GRANT ALL ON TABLE "public"."session_checkpoint_writes" TO "service_role";
+
+
+
+GRANT ALL ON TABLE "public"."session_checkpoints" TO "anon";
+GRANT ALL ON TABLE "public"."session_checkpoints" TO "authenticated";
+GRANT ALL ON TABLE "public"."session_checkpoints" TO "service_role";
 
 
 

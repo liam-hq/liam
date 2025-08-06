@@ -4,6 +4,7 @@ import type { SupabaseClientType } from '@liam-hq/db'
 import type { Json } from '@liam-hq/db/supabase/database.types'
 import type { SqlResult } from '@liam-hq/pglite-server/src/types'
 import type { Schema } from '@liam-hq/schema'
+import { SupabaseCheckpointSaver } from '../checkpoint/SupabaseCheckpointSaver'
 import {
   applyPatchOperations,
   operationsSchema,
@@ -21,7 +22,7 @@ import type {
   CreateWorkflowRunParams,
   DesignSessionData,
   SchemaData,
-  SchemaRepository,
+  SchemaRepositoryWithCheckpointerFactory,
   TimelineItemResult,
   UpdateArtifactParams,
   UpdateTimelineItemParams,
@@ -40,11 +41,30 @@ const artifactToJson = (artifact: Artifact): Json => {
 /**
  * Supabase implementation of SchemaRepository
  */
-export class SupabaseSchemaRepository implements SchemaRepository {
+export class SupabaseSchemaRepository implements SchemaRepositoryWithCheckpointerFactory {
   private client: SupabaseClientType
+  private _checkpointer?: SupabaseCheckpointSaver
 
   constructor(client: SupabaseClientType) {
     this.client = client
+  }
+
+  get checkpointer(): SupabaseCheckpointSaver {
+    if (!this._checkpointer) {
+      // eslint-disable-next-line no-throw-error/no-throw-error
+      throw new Error(
+        'Checkpointer not initialized. Call createCheckpointer(organizationId) first.',
+      )
+    }
+    return this._checkpointer
+  }
+
+  createCheckpointer(organizationId: string): SupabaseCheckpointSaver {
+    this._checkpointer = new SupabaseCheckpointSaver({
+      client: this.client,
+      options: { organizationId },
+    })
+    return this._checkpointer
   }
 
   async getDesignSession(

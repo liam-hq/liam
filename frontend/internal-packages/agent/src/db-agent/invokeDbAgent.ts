@@ -1,6 +1,8 @@
+import type { BaseCheckpointSaver } from '@langchain/langgraph-checkpoint'
 import type { ResultAsync } from 'neverthrow'
 import { DEFAULT_RECURSION_LIMIT } from '../chat/workflow/shared/langGraphUtils'
 import type { WorkflowConfigurable } from '../chat/workflow/types'
+import { isSchemaRepositoryWithCheckpointerFactory } from '../repositories/types'
 import {
   executeWorkflowWithTracking,
   setupWorkflowState,
@@ -18,8 +20,25 @@ export const invokeDbAgent = (
   _config: { repositories: WorkflowConfigurable['repositories'] },
 ): ResultAsync<AgentWorkflowResult, Error> => {
   const { recursionLimit = DEFAULT_RECURSION_LIMIT } = params
-  const config = { configurable: { repositories: _config.repositories } }
-  const compiled = createDbAgentGraph()
+  const config = { 
+    configurable: { 
+      repositories: _config.repositories,
+      thread_id: params.designSessionId,
+    } 
+  }
+  
+  // Get or create checkpointer from repositories
+  let checkpointer: BaseCheckpointSaver
+  
+  // For SupabaseSchemaRepository, initialize the checkpointer
+  if (isSchemaRepositoryWithCheckpointerFactory(_config.repositories.schema)) {
+    checkpointer = _config.repositories.schema.createCheckpointer(params.organizationId)
+  } else {
+    // For other repositories (like InMemoryRepository), use the existing checkpointer
+    checkpointer = _config.repositories.schema.checkpointer
+  }
+  
+  const compiled = createDbAgentGraph(checkpointer)
 
   // Setup workflow state with message conversion and timeline sync
   return setupWorkflowState(params, config).andThen((setup) =>

@@ -14,13 +14,18 @@ export function getConfigurable(
     return err(new Error('Missing configurable object in RunnableConfig'))
   }
 
-  const { repositories } = config.configurable
+  const { repositories, thread_id } = config.configurable
 
   if (!repositories) {
     return err(new Error('Missing repositories in configurable object'))
   }
 
+  if (!thread_id) {
+    return err(new Error('Missing thread_id in configurable object'))
+  }
+
   return ok({
     repositories,
+    thread_id,
   })
 }
