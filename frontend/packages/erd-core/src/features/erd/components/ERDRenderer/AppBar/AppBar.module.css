@@ -36,16 +36,12 @@
 
 .title {
   color: var(--overlay-40);
-  margin-right: auto;
+  text-align: center;
   font-family: var(--main-font);
   font-size: var(--font-size-4);
   font-style: normal;
   font-weight: 600;
   line-height: 1;
-
-  @media (min-width: 768px) {
-    margin-left: var(--spacing-4);
-  }
 }
 
 .rightSide {
