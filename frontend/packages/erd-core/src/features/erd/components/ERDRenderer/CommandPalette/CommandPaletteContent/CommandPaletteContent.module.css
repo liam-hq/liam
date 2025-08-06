@@ -45,8 +45,6 @@
   overflow-y: scroll;
   height: 100%;
   width: 300px;
-  scrollbar-color: var(--scrollbar-thumb-background)
-    var(--scrollbar-track-background);
 }
 
 .main [cmdk-group-heading] {
@@ -98,8 +96,6 @@
   height: 100%;
   overflow-x: hidden;
   overflow-y: scroll;
-  scrollbar-color: var(--scrollbar-thumb-background)
-    var(--scrollbar-track-background);
   border-radius: var(--border-radius-lg-plus);
 }
 

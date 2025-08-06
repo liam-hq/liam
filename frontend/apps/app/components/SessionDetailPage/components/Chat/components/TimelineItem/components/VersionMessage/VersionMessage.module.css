@@ -125,31 +125,6 @@
   overflow-y: auto;
 }
 
-/* Custom scrollbar styling - more natural appearance */
-.content {
-  scrollbar-width: var(--scrollbar-width);
-  scrollbar-color: var(--scrollbar-thumb-background)
-    var(--scrollbar-track-background);
-}
-
-.content::-webkit-scrollbar {
-  width: var(--scrollbar-webkit-height);
-}
-
-.content::-webkit-scrollbar-track {
-  background: var(--scrollbar-track-background);
-}
-
-.content::-webkit-scrollbar-thumb {
-  background: var(--scrollbar-thumb-background);
-  border-radius: var(--scrollbar-webkit-thumb-border-radius);
-  transition: background 0.2s ease;
-}
-
-.content:hover::-webkit-scrollbar-thumb {
-  background: var(--scrollbar-thumb-background-hover);
-}
-
 /* Fade in/out effect for scrollbar */
 .content:not(:hover)::-webkit-scrollbar-thumb {
   background: transparent;

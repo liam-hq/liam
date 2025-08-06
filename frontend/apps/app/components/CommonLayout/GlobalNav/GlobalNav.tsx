@@ -1,6 +1,6 @@
 import { LayoutGrid, Settings } from '@liam-hq/ui'
 import type { FC } from 'react'
-import { LiamLogoMark, LiamMigrationLogo } from '@/logos'
+import { LiamDbLogo, LiamLogoMark } from '@/logos'
 import type { Organization } from '../services/getOrganization'
 import type { OrganizationsByUserId } from '../services/getOrganizationsByUserId'
 import styles from './GlobalNav.module.css'
@@ -28,7 +28,7 @@ export const GlobalNav: FC<Props> = ({
               <LiamLogoMark />
             </div>
             <div className={itemStyles.labelArea}>
-              <LiamMigrationLogo className={styles.liamMigrationLogo} />
+              <LiamDbLogo className={styles.liamMigrationLogo} />
             </div>
           </div>
         </div>

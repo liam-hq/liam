@@ -1,10 +1,10 @@
 import type { FC } from 'react'
-import { AvatarWithImage } from '@/components'
 import { ChevronRight } from '@/icons'
 import styles from './AppBar.module.css'
 import { BranchDropdownMenu } from './BranchDropdownMenu'
 import { ProjectsDropdownMenu } from './ProjectsDropdownMenu'
 import { getAuthUser } from './services/getAuthUser'
+import { UserDropdown } from './UserDropdown'
 
 type Props = {
   currentProjectId?: string
@@ -37,9 +37,7 @@ export const AppBar: FC<Props> = async ({
         )}
       </div>
       <div className={styles.rightSection}>
-        {avatarUrl && (
-          <AvatarWithImage src={avatarUrl} alt="User profile" size="sm" />
-        )}
+        {avatarUrl && <UserDropdown avatarUrl={avatarUrl} />}
       </div>
     </div>
   )

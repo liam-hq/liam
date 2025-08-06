@@ -5,3 +5,29 @@
 @import './variables.css';
 @import './icons/lucide.css';
 @import './syntax-highlight.css';
+
+/* Global scrollbar styling for all scrollable elements */
+* {
+  scrollbar-color: var(--scrollbar-thumb-background)
+    var(--scrollbar-track-background);
+  scrollbar-width: var(--scrollbar-width);
+}
+
+/* WebKit scrollbar styling */
+*::-webkit-scrollbar {
+  width: var(--scrollbar-webkit-width);
+  height: var(--scrollbar-webkit-height);
+}
+
+*::-webkit-scrollbar-track {
+  background: var(--scrollbar-track-background);
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: var(--scrollbar-thumb-background);
+  border-radius: var(--scrollbar-webkit-thumb-border-radius);
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background-color: var(--scrollbar-thumb-background-hover);
+}

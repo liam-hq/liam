@@ -85,22 +85,3 @@
   font-weight: 500 !important;
   font-style: normal !important;
 }
-
-/* Scrollbar styling */
-.toc::-webkit-scrollbar {
-  width: var(--scrollbar-webkit-width);
-  background-color: var(--scrollbar-track-background);
-}
-
-.toc::-webkit-scrollbar-thumb {
-  background-color: var(--scrollbar-thumb-background);
-  border-radius: var(--scrollbar-webkit-thumb-border-radius);
-}
-
-.toc::-webkit-scrollbar-thumb:hover {
-  background-color: var(--scrollbar-thumb-background-hover);
-}
-
-.toc::-webkit-scrollbar-track {
-  background-color: var(--scrollbar-track-background);
-}
