@@ -1838,9 +1838,6 @@ CREATE OR REPLACE TRIGGER "check_last_organization_member" BEFORE DELETE ON "pub
 COMMENT ON TRIGGER "check_last_organization_member" ON "public"."organization_members" IS 'Prevents deletion of the last member of an organization to ensure organizations always have at least one member';
 
 
-CREATE OR REPLACE TRIGGER "on_auth_user_updated" AFTER UPDATE ON "auth"."users" FOR EACH ROW EXECUTE FUNCTION "public"."handle_user_avatar_update"();
-
-
 
 CREATE OR REPLACE TRIGGER "set_artifacts_organization_id_trigger" BEFORE INSERT OR UPDATE ON "public"."artifacts" FOR EACH ROW EXECUTE FUNCTION "public"."set_artifacts_organization_id"();
 
@@ -4027,6 +4024,7 @@ GRANT ALL ON FUNCTION "public"."hamming_distance"(bit, bit) TO "service_role";
 GRANT ALL ON FUNCTION "public"."handle_new_user"() TO "anon";
 GRANT ALL ON FUNCTION "public"."handle_new_user"() TO "authenticated";
 GRANT ALL ON FUNCTION "public"."handle_new_user"() TO "service_role";
+
 
 
 GRANT ALL ON FUNCTION "public"."handle_user_avatar_update"() TO "anon";
