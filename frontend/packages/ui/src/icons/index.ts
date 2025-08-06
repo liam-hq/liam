@@ -38,6 +38,7 @@ export {
   Link2,
   List,
   Lock,
+  LogOut,
   Megaphone,
   Menu,
   MessageSquareText,
