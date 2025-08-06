@@ -1,10 +1,13 @@
 import { DrawerContent, DrawerPortal, DrawerRoot } from '@liam-hq/ui'
+import clsx from 'clsx'
 import { type FC, type PropsWithChildren, useCallback, useMemo } from 'react'
 import { useSchemaOrThrow, useUserEditingOrThrow } from '@/stores'
 import { TableDetail } from '../../ERDContent/components/TableNode/TableDetail'
 import styles from './TableDetailDrawer.module.css'
 
-export const TableDetailDrawerRoot: FC<PropsWithChildren> = ({ children }) => {
+export const TableDetailDrawerRoot: FC<
+  PropsWithChildren<{ withAppBar?: boolean }>
+> = ({ children, withAppBar: _withAppBar = false }) => {
   const { activeTableName, setActiveTableName } = useUserEditingOrThrow()
 
   const { current } = useSchemaOrThrow()
@@ -31,7 +34,9 @@ export const TableDetailDrawerRoot: FC<PropsWithChildren> = ({ children }) => {
   )
 }
 
-export const TableDetailDrawer: FC = () => {
+export const TableDetailDrawer: FC<{ withAppBar?: boolean }> = ({
+  withAppBar = false,
+}) => {
   const { current, merged } = useSchemaOrThrow()
   const { showDiff, activeTableName } = useUserEditingOrThrow()
 
@@ -50,7 +55,13 @@ export const TableDetailDrawer: FC = () => {
   return (
     <DrawerPortal>
       {table !== undefined && (
-        <DrawerContent className={styles.content} {...ariaDescribedBy}>
+        <DrawerContent
+          className={clsx(
+            styles.content,
+            !withAppBar && styles.contentNoHeader,
+          )}
+          {...ariaDescribedBy}
+        >
           <TableDetail table={table} />
         </DrawerContent>
       )}
