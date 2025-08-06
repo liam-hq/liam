@@ -12,7 +12,8 @@ export const getOrganizationMembers = async (organizationId: string) => {
       users(
         id,
         name,
-        email
+        email,
+        avatar_url
       )
     `)
     .eq('organization_id', organizationId)
@@ -22,25 +23,13 @@ export const getOrganizationMembers = async (organizationId: string) => {
     return []
   }
 
-  const membersWithAvatars = await Promise.all(
-    data.map(async (member) => {
-      const { data: authData } = await supabase.auth.admin.getUserById(
-        member.users.id,
-      )
-      const avatarUrl = authData.user?.user_metadata?.avatar_url
+  const members = data.map((member) => ({
+    id: member.id,
+    joinedAt: member.joined_at,
+    user: member.users,
+  }))
 
-      return {
-        id: member.id,
-        joinedAt: member.joined_at,
-        user: {
-          ...member.users,
-          avatar_url: avatarUrl,
-        },
-      }
-    }),
-  )
-
-  return membersWithAvatars
+  return members
 }
 
 export const getOrganizationInvites = async (organizationId: string) => {

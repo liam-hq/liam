@@ -22,7 +22,7 @@ type MemberItemProps = {
   email: string
   initial: string
   avatarColor?: number
-  avatarUrl?: string
+  avatarUrl?: string | null
   organizationId: string
   isSelf: boolean
   onRemoveSuccess?: () => void
