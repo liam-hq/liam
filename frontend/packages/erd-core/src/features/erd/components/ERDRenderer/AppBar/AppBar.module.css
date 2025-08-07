@@ -1,6 +1,5 @@
 .wrapper {
-  display: grid;
-  grid-template-columns: auto 1fr auto;
+  display: flex;
   align-items: center;
   min-height: var(--default-header-height);
   padding: var(--spacing-2) var(--spacing-2) var(--spacing-2) var(--spacing-0);
@@ -9,6 +8,7 @@
   z-index: var(--z-index-header);
 
   @media (min-width: 768px) {
+    gap: var(--spacing-4);
     padding: 0 var(--spacing-4);
   }
 }
@@ -36,12 +36,13 @@
 
 .title {
   color: var(--overlay-40);
-  text-align: center;
+  text-align: left;
   font-family: var(--main-font);
   font-size: var(--font-size-4);
   font-style: normal;
   font-weight: 600;
   line-height: 1;
+  flex: 1;
 }
 
 .rightSide {
