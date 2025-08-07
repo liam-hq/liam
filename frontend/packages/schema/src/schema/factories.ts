@@ -78,7 +78,7 @@ export const aCheckConstraint = (
   override?: Partial<CheckConstraint>,
 ): CheckConstraint => ({
   type: 'CHECK',
-  name: '',
+  name: null,
   detail: '',
   ...override,
 })

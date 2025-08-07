@@ -329,17 +329,22 @@ describe(processor, () => {
         );
       `)
 
-      expect(value.tables['products']?.constraints).toEqual({
+      expect(value.tables['products']?.constraints).toMatchObject({
         PRIMARY_id: {
           name: 'PRIMARY_id',
           type: 'PRIMARY KEY',
           columnNames: ['id'],
         },
-        CHECK_price: {
-          name: 'CHECK_price',
-          type: 'CHECK',
-          detail: 'CHECK (price > 0)',
-        },
+      })
+
+      const checkConstraints = Object.values(
+        value.tables['products']?.constraints || {},
+      ).filter((c) => c.type === 'CHECK')
+      expect(checkConstraints).toHaveLength(1)
+      expect(checkConstraints[0]).toEqual({
+        name: null,
+        type: 'CHECK',
+        detail: 'CHECK (price > 0)',
       })
     })
 
@@ -479,6 +484,54 @@ describe(processor, () => {
           type: 'CHECK',
           detail: 'CHECK (price > 0)',
         },
+      })
+    })
+
+    it('unnamed check constraint', async () => {
+      const { value } = await processor(/* sql */ `
+        CREATE TABLE users (
+            id SERIAL PRIMARY KEY,
+            age INT CHECK (age >= 0)
+        );
+      `)
+
+      const constraints = value.tables['users']?.constraints
+      expect(constraints).toBeDefined()
+
+      const checkConstraints = Object.values(constraints || {}).filter(
+        (c) => c.type === 'CHECK',
+      )
+      expect(checkConstraints).toHaveLength(1)
+      expect(checkConstraints[0]).toEqual({
+        name: null,
+        type: 'CHECK',
+        detail: 'CHECK (age >= 0)',
+      })
+    })
+
+    it('unnamed table-level check constraint', async () => {
+      const { value } = await processor(/* sql */ `
+        CREATE TABLE products (
+            id SERIAL PRIMARY KEY,
+            price numeric,
+            discount numeric
+        );
+
+        ALTER TABLE products
+        ADD CHECK (price > discount);
+      `)
+
+      const constraints = value.tables['products']?.constraints
+      expect(constraints).toBeDefined()
+
+      const checkConstraints = Object.values(constraints || {}).filter(
+        (c) => c.type === 'CHECK',
+      )
+      expect(checkConstraints).toHaveLength(1)
+      expect(checkConstraints[0]).toEqual({
+        name: null,
+        type: 'CHECK',
+        detail: 'CHECK (price > discount)',
       })
     })
   })

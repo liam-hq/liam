@@ -19,7 +19,7 @@ export const Detail: FC<Props> = ({ tableId, constraint }) => {
     return getChangeStatus({
       tableId,
       diffItems: diffItems ?? [],
-      constraintId: constraint.name,
+      constraintId: constraint.name ?? '',
     })
   }, [showDiff, tableId, diffItems, constraint.name])
 

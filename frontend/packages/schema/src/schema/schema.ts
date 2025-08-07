@@ -95,7 +95,7 @@ export const checkConstraintDetailSchema = v.string()
 
 const checkConstraintSchema = v.object({
   type: v.literal('CHECK'),
-  name: constraintNameSchema,
+  name: v.nullable(constraintNameSchema),
   detail: checkConstraintDetailSchema,
 })
 export type CheckConstraint = v.InferOutput<typeof checkConstraintSchema>

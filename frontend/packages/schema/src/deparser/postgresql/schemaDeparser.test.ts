@@ -617,6 +617,48 @@ describe('postgresqlSchemaDeparser', () => {
 
       await expectGeneratedSQLToBeParseable(result.value)
     })
+
+    it('should generate unnamed CHECK constraints', async () => {
+      const schema = aSchema({
+        tables: {
+          products: aTable({
+            name: 'products',
+            columns: {
+              id: aColumn({
+                name: 'id',
+                type: 'bigint',
+                notNull: true,
+              }),
+              price: aColumn({
+                name: 'price',
+                type: 'decimal(10,2)',
+                notNull: true,
+              }),
+            },
+            constraints: {
+              unnamed_check_1: aCheckConstraint({
+                name: null,
+                detail: 'price > 0',
+              }),
+            },
+          }),
+        },
+      })
+
+      const result = postgresqlSchemaDeparser(schema)
+
+      expect(result.errors).toHaveLength(0)
+      expect(result.value).toMatchInlineSnapshot(`
+        "CREATE TABLE \"products\" (
+          \"id\" bigint NOT NULL,
+          \"price\" decimal(10,2) NOT NULL
+        );
+
+        ALTER TABLE \"products\" ADD CHECK (price > 0);"
+      `)
+
+      await expectGeneratedSQLToBeParseable(result.value)
+    })
   })
 
   describe('complex schemas', () => {

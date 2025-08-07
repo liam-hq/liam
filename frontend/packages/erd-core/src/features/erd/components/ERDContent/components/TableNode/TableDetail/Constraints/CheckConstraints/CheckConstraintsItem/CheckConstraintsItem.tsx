@@ -24,7 +24,7 @@ export const CheckConstraintsItem: FC<Props> = ({
     return getChangeStatus({
       tableId,
       diffItems: diffItems ?? [],
-      constraintId: checkConstraint.name,
+      constraintId: checkConstraint.name ?? '',
     })
   }, [showDiff, tableId, diffItems, checkConstraint.name])
 

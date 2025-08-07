@@ -242,7 +242,9 @@ export function generateAddConstraintStatement(
   tableName: string,
   constraint: Constraint,
 ): string {
-  const constraintName = escapeIdentifier(constraint.name)
+  const constraintName = constraint.name
+    ? escapeIdentifier(constraint.name)
+    : ''
   const tableNameEscaped = escapeIdentifier(tableName)
 
   switch (constraint.type) {
@@ -264,7 +266,9 @@ export function generateAddConstraintStatement(
         .join(', ')});`
 
     case 'CHECK':
-      return `ALTER TABLE ${tableNameEscaped} ADD CONSTRAINT ${constraintName} CHECK (${constraint.detail});`
+      return constraint.name
+        ? `ALTER TABLE ${tableNameEscaped} ADD CONSTRAINT ${constraintName} CHECK (${constraint.detail});`
+        : `ALTER TABLE ${tableNameEscaped} ADD CHECK (${constraint.detail});`
 
     default:
       return constraint satisfies never

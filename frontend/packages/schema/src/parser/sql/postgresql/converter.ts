@@ -153,7 +153,7 @@ const constraintToForeignKeyConstraint = (
 }
 
 const constraintToCheckConstraint = (
-  columnName: string | undefined,
+  _columnName: string | undefined,
   constraint: PgConstraint,
   rawSql: string,
 ): Result<CheckConstraint, UnexpectedTokenWarningError> => {
@@ -187,7 +187,7 @@ const constraintToCheckConstraint = (
   }
 
   const checkConstraint: CheckConstraint = {
-    name: constraint.conname ?? `CHECK_${columnName}`,
+    name: constraint.conname ?? null,
     type: 'CHECK',
     detail: `CHECK ${rawSql.slice(startLocation, endLocation + 1)}`,
   }
@@ -527,7 +527,10 @@ export const convertToSchema = (
         }
 
         for (const constraint of columnConstraints) {
-          constraints[constraint.name] = constraint
+          const constraintKey =
+            constraint.name ??
+            `CHECK_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+          constraints[constraintKey] = constraint
         }
         tableErrors.push(...colErrors)
       } else if (isConstraintNode(elt)) {
@@ -536,7 +539,10 @@ export const convertToSchema = (
           processTableLevelConstraint(elt.Constraint, tableName)
 
         for (const constraint of tableLevelConstraints) {
-          constraints[constraint.name] = constraint
+          const constraintKey =
+            constraint.name ??
+            `CHECK_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+          constraints[constraintKey] = constraint
         }
         tableErrors.push(...constraintErrors)
       }
@@ -812,7 +818,10 @@ export const convertToSchema = (
     const table = findTable(foreignTableName)
 
     if (table) {
-      table.constraints[relResult.value.name] = relResult.value
+      const constraintKey =
+        relResult.value.name ??
+        `CHECK_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+      table.constraints[constraintKey] = relResult.value
     }
   }
 

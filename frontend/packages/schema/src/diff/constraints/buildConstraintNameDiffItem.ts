@@ -28,7 +28,7 @@ export function buildConstraintNameDiffItem(
   return {
     kind: 'constraint-name',
     status,
-    data,
+    data: data ?? '',
     tableId,
     constraintId,
   }

@@ -759,7 +759,10 @@ class SchemaFinder extends Visitor {
     }, {})
 
     table.constraints = constraints.reduce((acc: Constraints, constraint) => {
-      acc[constraint.name] = constraint
+      const constraintKey =
+        constraint.name ??
+        `CHECK_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+      acc[constraintKey] = constraint
       return acc
     }, {})
 
@@ -807,7 +810,10 @@ class SchemaFinder extends Visitor {
     const { tableName, constraint } = constraintResult.value
     const table = this.tables.find((table) => table.name === tableName)
     if (table) {
-      table.constraints[constraint.name] = constraint
+      const constraintKey =
+        constraint.name ??
+        `CHECK_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+      table.constraints[constraintKey] = constraint
     }
   }
 

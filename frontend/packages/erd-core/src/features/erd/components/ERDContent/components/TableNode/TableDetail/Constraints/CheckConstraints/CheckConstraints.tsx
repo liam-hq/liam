@@ -16,9 +16,9 @@ export const CheckConstraints: FC<Props> = ({ tableId, constraints }) => {
         <Check className={styles.constraintsIcon} />
         Check
       </h3>
-      {constraints.map((constraint) => (
+      {constraints.map((constraint, index) => (
         <CheckConstraintsItem
-          key={constraint.name}
+          key={constraint.name ?? `unnamed-${index}`}
           tableId={tableId}
           checkConstraint={constraint}
         />

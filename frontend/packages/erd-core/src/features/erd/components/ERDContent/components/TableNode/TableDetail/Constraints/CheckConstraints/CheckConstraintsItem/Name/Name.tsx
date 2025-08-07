@@ -19,13 +19,15 @@ export const Name: FC<Props> = ({ tableId, constraint }) => {
     return getChangeStatus({
       tableId,
       diffItems: diffItems ?? [],
-      constraintId: constraint.name,
+      constraintId: constraint.name ?? '',
     })
   }, [showDiff, tableId, diffItems, constraint.name])
 
   const diffStyle = useDiffStyle(showDiff, changeStatus)
 
   return (
-    <GridTableHeader className={diffStyle}>{constraint.name}</GridTableHeader>
+    <GridTableHeader className={diffStyle}>
+      {constraint.name ?? 'Unnamed'}
+    </GridTableHeader>
   )
 }
