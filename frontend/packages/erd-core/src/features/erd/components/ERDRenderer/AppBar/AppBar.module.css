@@ -1,6 +1,5 @@
 .wrapper {
-  display: grid;
-  grid-template-columns: auto 1fr auto;
+  display: flex;
   align-items: center;
   min-height: var(--default-header-height);
   padding: var(--spacing-2) var(--spacing-2) var(--spacing-2) var(--spacing-0);
@@ -9,6 +8,7 @@
   z-index: var(--z-index-header);
 
   @media (min-width: 768px) {
+    gap: var(--spacing-4);
     padding: 0 var(--spacing-4);
   }
 }
@@ -42,11 +42,7 @@
   font-style: normal;
   font-weight: 600;
   line-height: 1;
-  margin-right: auto;
-
-  @media (min-width: 768px) {
-    margin-left: var(--spacing-4);
-  }
+  flex: 1;
 }
 
 .rightSide {
