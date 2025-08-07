@@ -13,7 +13,6 @@ export const routeAfterDesignSchema = (
   if (lastMessage && hasToolCalls(lastMessage)) {
     return 'invokeSchemaDesignTool'
   }
-
   return 'generateUsecase'
 }
 

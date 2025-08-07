@@ -45,7 +45,6 @@ const validateAndExecuteDDL = async (
   schema: Schema,
   designSessionId: string,
 ): Promise<{ ddlStatements: string; results: SqlResult[] }> => {
-  // Validate DDL by generating and executing it
   const ddlResult = postgresqlSchemaDeparser(schema)
 
   if (ddlResult.errors.length > 0) {

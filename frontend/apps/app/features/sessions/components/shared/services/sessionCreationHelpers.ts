@@ -159,17 +159,29 @@ export const createSessionWithSchema = async (
   params: SessionCreationParams,
   schemaSource: SchemaSource,
 ): Promise<CreateSessionState> => {
+  console.log('[createSessionWithSchema] Starting session creation', {
+    initialMessage: params.initialMessage,
+    isDeepModelingEnabled: params.isDeepModelingEnabled,
+    schemaFilePath: schemaSource.schemaFilePath,
+    timestamp: new Date().toISOString(),
+  })
+
   const supabase = await createClient()
   const currentUserId = await getCurrentUserId(supabase)
   if (!currentUserId) {
+    console.error('[createSessionWithSchema] Authentication failed - no current user')
     return { success: false, error: 'Authentication required' }
   }
+  console.log('[createSessionWithSchema] Current user ID:', currentUserId)
 
   const organizationId = await getOrganizationId()
   if (!organizationId) {
+    console.error('[createSessionWithSchema] Organization not found')
     return { success: false, error: 'Organization not found' }
   }
+  console.log('[createSessionWithSchema] Organization ID:', organizationId)
 
+  console.log('[createSessionWithSchema] Creating design session...')
   const designSessionResult = await createDesignSession(
     params,
     supabase,
@@ -177,10 +189,15 @@ export const createSessionWithSchema = async (
     currentUserId,
   )
   if ('success' in designSessionResult) {
+    console.error('[createSessionWithSchema] Failed to create design session:', designSessionResult.error)
     return designSessionResult
   }
   const designSession = designSessionResult
+  console.log('[createSessionWithSchema] Design session created:', {
+    id: designSession.id,
+  })
 
+  console.log('[createSessionWithSchema] Creating building schema...')
   const buildingSchemaResult = await createBuildingSchema(
     designSession.id,
     schemaSource.schema,
@@ -190,10 +207,15 @@ export const createSessionWithSchema = async (
     organizationId,
   )
   if ('success' in buildingSchemaResult) {
+    console.error('[createSessionWithSchema] Failed to create building schema:', buildingSchemaResult.error)
     return buildingSchemaResult
   }
   const buildingSchema = buildingSchemaResult
+  console.log('[createSessionWithSchema] Building schema created:', {
+    id: buildingSchema.id,
+  })
 
+  console.log('[createSessionWithSchema] Triggering chat workflow...')
   const workflowError = await triggerChatWorkflow(
     params.initialMessage,
     params.isDeepModelingEnabled,
@@ -203,8 +225,11 @@ export const createSessionWithSchema = async (
     currentUserId,
   )
   if (workflowError) {
+    console.error('[createSessionWithSchema] Failed to trigger workflow:', workflowError)
     return workflowError
   }
+  console.log('[createSessionWithSchema] Workflow triggered successfully')
 
+  console.log('[createSessionWithSchema] Redirecting to session:', `/app/design_sessions/${designSession.id}`)
   redirect(`/app/design_sessions/${designSession.id}`)
 }

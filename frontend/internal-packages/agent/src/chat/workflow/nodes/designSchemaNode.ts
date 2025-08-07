@@ -88,6 +88,10 @@ export async function designSchemaNode(
   })
 
   if (invokeResult.isErr()) {
+    console.error(
+      '[DEBUG] designSchemaNode - invoke failed:',
+      invokeResult.error,
+    )
     throw new WorkflowTerminationError(invokeResult.error, 'designSchemaNode')
   }
 

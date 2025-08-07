@@ -45,6 +45,5 @@ export const convertSchemaToText = (schema: Schema): string => {
       schemaText = `${schemaText}${tableDoc}\n\n`
     }
   }
-
   return schemaText
 }
