@@ -13,6 +13,11 @@ const config: StorybookConfig = {
       files: '**/*.stories.@(jsx|tsx|mdx)',
       titlePrefix: 'ui',
     },
+    {
+      directory: '../../../packages/erd-core/src',
+      files: '**/*.stories.@(jsx|tsx|mdx)',
+      titlePrefix: 'erd-core',
+    },
   ],
   addons: [
     '@storybook/addon-links',
@@ -39,6 +44,19 @@ const config: StorybookConfig = {
         ),
       }
     }
+    
+    const TsconfigPathsPlugin = require('tsconfig-paths-webpack-plugin')
+    if (config.resolve) {
+      if (!config.resolve.plugins) {
+        config.resolve.plugins = []
+      }
+      config.resolve.plugins.push(
+        new TsconfigPathsPlugin({
+          configFile: path.resolve(__dirname, '../../../packages/erd-core/tsconfig.json'),
+        })
+      )
+    }
+    
     return config
   },
 }
