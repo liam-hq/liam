@@ -715,6 +715,9 @@ importers:
       storybook:
         specifier: 8.6.14
         version: 8.6.14(prettier@3.6.2)
+      tsconfig-paths-webpack-plugin:
+        specifier: 4.1.0
+        version: 4.1.0
       typescript:
         specifier: 5.8.3
         version: 5.8.3
@@ -11158,8 +11161,8 @@ packages:
       typescript:
         optional: true
 
-  tsconfig-paths-webpack-plugin@4.2.0:
-    resolution: {integrity: sha512-zbem3rfRS8BgeNK50Zz5SIQgXzLafiHjOwUAvk/38/o1jHn/V5QAgVUcz884or7WYcPaH3N2CIfUc2u0ul7UcA==}
+  tsconfig-paths-webpack-plugin@4.1.0:
+    resolution: {integrity: sha512-xWFISjviPydmtmgeUAuXp4N1fky+VCtfhOkDUFIv5ea7p4wuTomI4QTrXvFBX2S4jZsmyTSrStQl+E+4w+RzxA==}
     engines: {node: '>=10.13.0'}
 
   tsconfig-paths@4.2.0:
@@ -16008,7 +16011,7 @@ snapshots:
       styled-jsx: 5.1.7(@babel/core@7.28.0)(react@19.1.0)
       ts-dedent: 2.2.0
       tsconfig-paths: 4.2.0
-      tsconfig-paths-webpack-plugin: 4.2.0
+      tsconfig-paths-webpack-plugin: 4.1.0
     optionalDependencies:
       sharp: 0.33.5
       typescript: 5.8.3
@@ -19596,7 +19599,7 @@ snapshots:
       isstream: 0.1.2
       jsonwebtoken: 9.0.2
       mime-types: 2.1.35
-      retry-axios: 2.6.0(axios@1.11.0(debug@4.4.1))
+      retry-axios: 2.6.0(axios@1.11.0)
       tough-cookie: 4.1.4
     transitivePeerDependencies:
       - supports-color
@@ -22351,7 +22354,7 @@ snapshots:
       onetime: 7.0.0
       signal-exit: 4.1.0
 
-  retry-axios@2.6.0(axios@1.11.0(debug@4.4.1)):
+  retry-axios@2.6.0(axios@1.11.0):
     dependencies:
       axios: 1.11.0(debug@4.4.1)
 
@@ -23380,11 +23383,10 @@ snapshots:
     optionalDependencies:
       typescript: 5.8.3
 
-  tsconfig-paths-webpack-plugin@4.2.0:
+  tsconfig-paths-webpack-plugin@4.1.0:
     dependencies:
       chalk: 4.1.2
       enhanced-resolve: 5.18.2
-      tapable: 2.2.2
       tsconfig-paths: 4.2.0
 
   tsconfig-paths@4.2.0:
