@@ -4,6 +4,7 @@ import { useToast } from '../components/Toast/useToast'
 
 type UseCopyOptions = {
   toast?: {
+    position?: 'header' | 'command-palette'
     success: string
     error: string
   }
@@ -18,7 +19,7 @@ type UseCopyReturn = {
 export const useCopy = (options: UseCopyOptions = {}): UseCopyReturn => {
   const { toast: toastMessages, resetDelay = 2000 } = options
   const [isCopied, setIsCopied] = useState(false)
-  const toast = useToast()
+  const toast = useToast(toastMessages?.position)
 
   const copy = useCallback(
     async (text: string) => {
