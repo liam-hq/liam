@@ -65,7 +65,6 @@ export const convertTimelineItemToTimelineItemEntry = (
       {
         type: 'query_result',
         query_result_id: P.string,
-        validation_queries: P.not(P.nullish),
       },
       (item): QueryResultTimelineItemEntry => {
         // Extract and format query results from validation data
