@@ -1,4 +1,5 @@
 import type { RunnableConfig } from '@langchain/core/runnables'
+import type { DynamicStructuredTool } from '@langchain/core/tools'
 import { tool } from '@langchain/core/tools'
 import type { JSONSchema } from '@langchain/core/utils/json_schema'
 import { executeQuery } from '@liam-hq/pglite-server'
@@ -70,7 +71,7 @@ const validateAndExecuteDDL = async (
   return { ddlStatements, results }
 }
 
-export const schemaDesignTool = tool(
+export const schemaDesignTool: DynamicStructuredTool = tool(
   async (input: unknown, config: RunnableConfig): Promise<string> => {
     const toolConfigurableResult = getToolConfigurable(config)
     if (toolConfigurableResult.isErr()) {
