@@ -26,6 +26,11 @@ export const fetchDesignSessionWithTimelineItems = async (
             name,
             email
           ),
+          building_schema_versions!building_schema_version_id (
+            id,
+            number,
+            patch
+          ),
           validation_queries!query_result_id (
             id,
             query_string,

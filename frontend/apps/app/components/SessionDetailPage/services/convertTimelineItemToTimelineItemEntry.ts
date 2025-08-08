@@ -28,6 +28,7 @@ export const convertTimelineItemToTimelineItemEntry = (
         ...baseItem,
         type: 'schema_version',
         buildingSchemaVersionId: item.building_schema_version_id,
+        version: item.building_schema_versions,
       }),
     )
     .with(

@@ -35,6 +35,11 @@ export type TimelineItem = Pick<
     name: string
     email: string
   } | null
+  building_schema_versions?: {
+    id: string
+    number: number
+    patch: Database['public']['Tables']['building_schema_versions']['Row']['patch']
+  } | null
   validation_queries?: {
     id: string
     query_string: string
@@ -92,6 +97,11 @@ export type AssistantTimelineItemEntry = BaseTimelineItemEntry & {
 export type SchemaVersionTimelineItemEntry = BaseTimelineItemEntry & {
   type: 'schema_version'
   buildingSchemaVersionId: string
+  version?: {
+    id: string
+    number: number
+    patch: Database['public']['Tables']['building_schema_versions']['Row']['patch']
+  } | null
   onView?: (versionId: string) => void
 }
 
