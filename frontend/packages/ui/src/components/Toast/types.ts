@@ -1,5 +1,3 @@
-export type ToastId = string
-
 type ToastStatus = 'success' | 'error' | 'warning' | 'info'
 
 export type ToastOptions = {
@@ -8,6 +6,6 @@ export type ToastOptions = {
   status: ToastStatus
 }
 
-export type ToastItem = ToastOptions & { id: ToastId; isOpen: boolean }
+export type ToastItem = ToastOptions & { isOpen: boolean }
 
-export type ToastFn = (options: ToastOptions) => ToastId
+export type ToastFn = (options: ToastOptions) => void

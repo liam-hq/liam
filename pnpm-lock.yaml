@@ -1034,9 +1034,6 @@ importers:
       lucide-react:
         specifier: 0.511.0
         version: 0.511.0(react@19.1.0)
-      nanoid:
-        specifier: 5.1.5
-        version: 5.1.5
       neverthrow:
         specifier: 8.2.0
         version: 8.2.0

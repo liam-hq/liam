@@ -2,7 +2,6 @@
 
 import * as RadixToast from '@radix-ui/react-toast'
 import clsx from 'clsx'
-import { nanoid } from 'nanoid'
 import {
   createContext,
   type FC,
@@ -11,7 +10,7 @@ import {
   useState,
 } from 'react'
 import styles from './Toast.module.css'
-import type { ToastFn, ToastId, ToastItem, ToastOptions } from './types'
+import type { ToastFn, ToastItem, ToastOptions } from './types'
 
 type Props = ToastOptions & {
   isOpen: boolean
@@ -50,33 +49,20 @@ export const Toast: FC<Props> = ({
 export const ToastContext = createContext<ToastFn>(() => '')
 
 export const ToastProvider = ({ children }: PropsWithChildren) => {
-  const [toastItems, setToastItems] = useState<ToastItem[]>([])
-  const handleOpenChange = useCallback((id: ToastId) => {
-    return () => {
-      setToastItems((prev) =>
-        prev.map((item) =>
-          item.id === id ? { ...item, isOpen: !item.isOpen } : item,
-        ),
-      )
-    }
+  const [toastItem, setToastItem] = useState<ToastItem | null>(null)
+  const closeToastItem = useCallback(() => {
+    setToastItem((prev) => (prev === null ? null : { ...prev, isOpen: false }))
   }, [])
-  const toast = useCallback((options: ToastOptions): ToastId => {
-    const id = nanoid()
-    setToastItems((prev) => [...prev, { ...options, id, isOpen: true }])
-    return id
+  const createToastItem = useCallback((options: ToastOptions) => {
+    closeToastItem()
+    window.setTimeout(() => setToastItem({ ...options, isOpen: true }), 100)
   }, [])
 
   return (
     <RadixToast.Provider>
-      <ToastContext.Provider value={toast}>
+      <ToastContext.Provider value={createToastItem}>
         {children}
-        {toastItems.map((value) => (
-          <Toast
-            key={value.id}
-            {...value}
-            onOpenChange={handleOpenChange(value.id)}
-          />
-        ))}
+        {toastItem && <Toast {...toastItem} onOpenChange={closeToastItem} />}
         <RadixToast.Viewport className={styles.viewport} />
       </ToastContext.Provider>
     </RadixToast.Provider>

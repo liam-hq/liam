@@ -44,7 +44,7 @@
 
 @keyframes slideIn {
   from {
-    transform: translateX(100%);
+    transform: translateY(100%);
   }
 
   to {
