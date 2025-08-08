@@ -16,6 +16,7 @@ type Member = {
     id: string
     name: string
     email: string
+    avatar_url?: string | null
   }
 }
 
@@ -126,6 +127,7 @@ export const ClientSearchWrapper: FC<ClientSearchWrapperProps> = ({
                   email={member.user.email}
                   initial={getInitial(member.user.name)}
                   avatarColor={getAvatarColor(member.user.id)}
+                  avatarUrl={member.user.avatar_url}
                   organizationId={organizationId}
                   isSelf={member.user.id === currentUserId}
                   onRemoveSuccess={() =>
