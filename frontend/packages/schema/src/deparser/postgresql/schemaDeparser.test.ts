@@ -1264,5 +1264,302 @@ describe('postgresqlSchemaDeparser', () => {
         expect(result.value).not.toContain("DEFAULT 'now()'")
       })
     })
+
+    describe('function generation', () => {
+      it('should generate custom function definitions for cuid', async () => {
+        const schema = aSchema({
+          tables: {
+            users: aTable({
+              name: 'users',
+              columns: {
+                id: aColumn({
+                  name: 'id',
+                  type: 'text',
+                  notNull: true,
+                  default: 'cuid(25)',
+                }),
+                short_id: aColumn({
+                  name: 'short_id',
+                  type: 'text',
+                  notNull: true,
+                  default: 'cuid(10)',
+                }),
+              },
+            }),
+          },
+        })
+
+        const result = postgresqlSchemaDeparser(schema)
+
+        expect(result.errors).toHaveLength(0)
+
+        // Should contain cuid function definition
+        expect(result.value).toContain('CREATE OR REPLACE FUNCTION cuid')
+        expect(result.value).toContain('length INTEGER DEFAULT 25')
+        expect(result.value).toContain('RETURNS TEXT')
+        expect(result.value).toContain('LANGUAGE plpgsql')
+
+        // Should contain the table with cuid defaults
+        expect(result.value).toContain('DEFAULT cuid(25)')
+        expect(result.value).toContain('DEFAULT cuid(10)')
+
+        // Function definition should come before table creation
+        const functionIndex = result.value.indexOf(
+          'CREATE OR REPLACE FUNCTION cuid',
+        )
+        const tableIndex = result.value.indexOf('CREATE TABLE "users"')
+        expect(functionIndex).toBeGreaterThan(-1)
+        expect(tableIndex).toBeGreaterThan(-1)
+        expect(functionIndex).toBeLessThan(tableIndex)
+
+        await expectGeneratedSQLToBeParseable(result.value)
+      })
+
+      it('should generate uuid-ossp extension for UUID functions', async () => {
+        const schema = aSchema({
+          tables: {
+            sessions: aTable({
+              name: 'sessions',
+              columns: {
+                id: aColumn({
+                  name: 'id',
+                  type: 'uuid',
+                  notNull: true,
+                  default: 'gen_random_uuid()',
+                }),
+                legacy_id: aColumn({
+                  name: 'legacy_id',
+                  type: 'uuid',
+                  notNull: false,
+                  default: 'uuid_generate_v4()',
+                }),
+              },
+            }),
+          },
+        })
+
+        const result = postgresqlSchemaDeparser(schema)
+
+        expect(result.errors).toHaveLength(0)
+
+        // Should contain uuid-ossp extension
+        expect(result.value).toContain(
+          'CREATE EXTENSION IF NOT EXISTS "uuid-ossp"',
+        )
+
+        // Should contain UUID function calls
+        expect(result.value).toContain('DEFAULT gen_random_uuid()')
+        expect(result.value).toContain('DEFAULT uuid_generate_v4()')
+
+        // Extension should come before table creation
+        const extensionIndex = result.value.indexOf('CREATE EXTENSION')
+        const tableIndex = result.value.indexOf('CREATE TABLE "sessions"')
+        expect(extensionIndex).toBeGreaterThan(-1)
+        expect(tableIndex).toBeGreaterThan(-1)
+        expect(extensionIndex).toBeLessThan(tableIndex)
+
+        await expectGeneratedSQLToBeParseable(result.value)
+      })
+
+      it('should generate both extensions and custom functions', async () => {
+        const schema = aSchema({
+          tables: {
+            media: aTable({
+              name: 'media',
+              columns: {
+                id: aColumn({
+                  name: 'id',
+                  type: 'text',
+                  notNull: true,
+                  default: 'cuid(1)', // Custom function
+                }),
+                uuid_id: aColumn({
+                  name: 'uuid_id',
+                  type: 'uuid',
+                  notNull: false,
+                  default: 'gen_random_uuid()', // Extension function
+                }),
+                created_at: aColumn({
+                  name: 'created_at',
+                  type: 'timestamptz',
+                  notNull: false,
+                  default: 'now()', // Built-in function
+                }),
+              },
+            }),
+          },
+        })
+
+        const result = postgresqlSchemaDeparser(schema)
+
+        expect(result.errors).toHaveLength(0)
+
+        // Should contain both extension and custom function
+        expect(result.value).toContain(
+          'CREATE EXTENSION IF NOT EXISTS "uuid-ossp"',
+        )
+        expect(result.value).toContain('CREATE OR REPLACE FUNCTION cuid')
+
+        // Should contain all function calls
+        expect(result.value).toContain('DEFAULT cuid(1)')
+        expect(result.value).toContain('DEFAULT gen_random_uuid()')
+        expect(result.value).toContain('DEFAULT now()')
+
+        // Functions/extensions should come before table
+        const extensionIndex = result.value.indexOf('CREATE EXTENSION')
+        const functionIndex = result.value.indexOf('CREATE OR REPLACE FUNCTION')
+        const tableIndex = result.value.indexOf('CREATE TABLE "media"')
+
+        expect(extensionIndex).toBeGreaterThan(-1)
+        expect(functionIndex).toBeGreaterThan(-1)
+        expect(tableIndex).toBeGreaterThan(-1)
+
+        expect(extensionIndex).toBeLessThan(tableIndex)
+        expect(functionIndex).toBeLessThan(tableIndex)
+
+        await expectGeneratedSQLToBeParseable(result.value)
+      })
+
+      it('should handle nested function calls', async () => {
+        const schema = aSchema({
+          tables: {
+            analytics: aTable({
+              name: 'analytics',
+              columns: {
+                timestamp_col: aColumn({
+                  name: 'timestamp_col',
+                  type: 'bigint',
+                  notNull: false,
+                  default: 'extract(epoch from now())',
+                }),
+                random_rounded: aColumn({
+                  name: 'random_rounded',
+                  type: 'numeric',
+                  notNull: false,
+                  default: 'round(random() * 100, 2)',
+                }),
+              },
+            }),
+          },
+        })
+
+        const result = postgresqlSchemaDeparser(schema)
+
+        expect(result.errors).toHaveLength(0)
+
+        // Should not generate definitions for built-in functions
+        expect(result.value).not.toContain('CREATE OR REPLACE FUNCTION extract')
+        expect(result.value).not.toContain('CREATE OR REPLACE FUNCTION now')
+        expect(result.value).not.toContain('CREATE OR REPLACE FUNCTION round')
+        expect(result.value).not.toContain('CREATE OR REPLACE FUNCTION random')
+
+        // Should contain the complex expressions as-is
+        expect(result.value).toContain('DEFAULT extract(epoch from now())')
+        expect(result.value).toContain('DEFAULT round(random() * 100, 2)')
+
+        await expectGeneratedSQLToBeParseable(result.value)
+      })
+
+      it('should deduplicate function definitions across tables', async () => {
+        const schema = aSchema({
+          tables: {
+            users: aTable({
+              name: 'users',
+              columns: {
+                id: aColumn({
+                  name: 'id',
+                  type: 'text',
+                  notNull: true,
+                  default: 'cuid(25)',
+                }),
+              },
+            }),
+            posts: aTable({
+              name: 'posts',
+              columns: {
+                id: aColumn({
+                  name: 'id',
+                  type: 'text',
+                  notNull: true,
+                  default: 'cuid(10)',
+                }),
+                uuid_id: aColumn({
+                  name: 'uuid_id',
+                  type: 'uuid',
+                  notNull: false,
+                  default: 'gen_random_uuid()',
+                }),
+              },
+            }),
+          },
+        })
+
+        const result = postgresqlSchemaDeparser(schema)
+
+        expect(result.errors).toHaveLength(0)
+
+        // Should contain function definitions only once
+        const cuidMatches = result.value.match(
+          /CREATE OR REPLACE FUNCTION cuid/g,
+        )
+        const extensionMatches = result.value.match(
+          /CREATE EXTENSION IF NOT EXISTS "uuid-ossp"/g,
+        )
+
+        expect(cuidMatches).toHaveLength(1)
+        expect(extensionMatches).toHaveLength(1)
+
+        // Should contain all function calls
+        expect(result.value).toContain('DEFAULT cuid(25)')
+        expect(result.value).toContain('DEFAULT cuid(10)')
+        expect(result.value).toContain('DEFAULT gen_random_uuid()')
+
+        await expectGeneratedSQLToBeParseable(result.value)
+      })
+
+      it('should handle schemas without function calls', async () => {
+        const schema = aSchema({
+          tables: {
+            simple: aTable({
+              name: 'simple',
+              columns: {
+                id: aColumn({
+                  name: 'id',
+                  type: 'bigint',
+                  notNull: true,
+                }),
+                name: aColumn({
+                  name: 'name',
+                  type: 'text',
+                  notNull: true,
+                  default: 'unnamed',
+                }),
+                count: aColumn({
+                  name: 'count',
+                  type: 'integer',
+                  notNull: false,
+                  default: 0,
+                }),
+              },
+            }),
+          },
+        })
+
+        const result = postgresqlSchemaDeparser(schema)
+
+        expect(result.errors).toHaveLength(0)
+
+        // Should not contain any function definitions
+        expect(result.value).not.toContain('CREATE EXTENSION')
+        expect(result.value).not.toContain('CREATE OR REPLACE FUNCTION')
+
+        // Should contain the table and default values
+        expect(result.value).toContain('CREATE TABLE "simple"')
+        expect(result.value).toContain("DEFAULT 'unnamed'")
+        expect(result.value).toContain('DEFAULT 0')
+
+        await expectGeneratedSQLToBeParseable(result.value)
+      })
+    })
   })
 })
