@@ -428,14 +428,15 @@ function extractFunctionsFromValue(value: string): string[] {
     }
   }
 
-  // Check for functions without parentheses
+  // Check for functions without parentheses using word boundary regex
   const functionsWithoutParens = [
     'current_timestamp',
     'current_date',
     'current_time',
   ]
   for (const func of functionsWithoutParens) {
-    if (trimmedValue.toLowerCase().includes(func)) {
+    const wordBoundaryPattern = new RegExp(`\\b${func}\\b`, 'i')
+    if (wordBoundaryPattern.test(trimmedValue)) {
       functions.add(func)
     }
   }

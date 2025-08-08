@@ -45,11 +45,7 @@ describe('extractFunctionsFromColumns', () => {
 
     const result = extractFunctionsFromColumns(columns)
 
-    expect([...result].sort()).toEqual([
-      'current_date',
-      'current_time',
-      'current_timestamp',
-    ])
+    expect([...result].sort()).toEqual(['current_date', 'current_timestamp'])
   })
 
   it('should extract nested function calls', () => {
