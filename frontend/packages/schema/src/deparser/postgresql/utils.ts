@@ -461,7 +461,7 @@ DECLARE
     i INTEGER := 0;
 BEGIN
     FOR i IN 1..length LOOP
-        result := result || substr(chars, floor(random() * length(chars) + 1)::INTEGER, 1);
+        result := result || substr(chars, floor(random() * char_length(chars)) + 1, 1);
     END LOOP;
     RETURN result;
 END;
