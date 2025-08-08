@@ -412,7 +412,7 @@ export function extractFunctionsFromColumns(columns: Column[]): Set<string> {
  * Extract function names from a default value string
  */
 function extractFunctionsFromValue(value: string): string[] {
-  const functions: string[] = []
+  const functions = new Set<string>()
   const trimmedValue = value.trim()
 
   // Function pattern: function_name followed by optional whitespace and opening parenthesis
@@ -424,9 +424,7 @@ function extractFunctionsFromValue(value: string): string[] {
   while ((match = functionPattern.exec(trimmedValue)) !== null) {
     if (match[1]) {
       const functionName = match[1].toLowerCase()
-      if (!functions.includes(functionName)) {
-        functions.push(functionName)
-      }
+      functions.add(functionName)
     }
   }
 
@@ -438,13 +436,11 @@ function extractFunctionsFromValue(value: string): string[] {
   ]
   for (const func of functionsWithoutParens) {
     if (trimmedValue.toLowerCase().includes(func)) {
-      if (!functions.includes(func)) {
-        functions.push(func)
-      }
+      functions.add(func)
     }
   }
 
-  return functions
+  return Array.from(functions)
 }
 
 /**
