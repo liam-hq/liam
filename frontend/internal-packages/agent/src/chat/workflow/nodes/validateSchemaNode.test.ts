@@ -1,5 +1,5 @@
+import type { SqlResult } from '@liam-hq/pglite-server'
 import { executeQuery } from '@liam-hq/pglite-server'
-import type { SqlResult } from '@liam-hq/pglite-server/src/types'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { Repositories } from '../../../repositories'
 import { InMemoryRepository } from '../../../repositories/InMemoryRepository'

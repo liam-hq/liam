@@ -2,8 +2,8 @@ import type { RunnableConfig } from '@langchain/core/runnables'
 import type { DynamicStructuredTool } from '@langchain/core/tools'
 import { tool } from '@langchain/core/tools'
 import type { JSONSchema } from '@langchain/core/utils/json_schema'
+import type { SqlResult } from '@liam-hq/pglite-server'
 import { executeQuery } from '@liam-hq/pglite-server'
-import type { SqlResult } from '@liam-hq/pglite-server/src/types'
 import {
   applyPatchOperations,
   operationsSchema,

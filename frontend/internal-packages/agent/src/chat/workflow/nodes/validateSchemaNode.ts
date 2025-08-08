@@ -1,7 +1,7 @@
 import type { RunnableConfig } from '@langchain/core/runnables'
 import type { Database } from '@liam-hq/db'
+import type { SqlResult } from '@liam-hq/pglite-server'
 import { executeQuery } from '@liam-hq/pglite-server'
-import type { SqlResult } from '@liam-hq/pglite-server/src/types'
 import { ResultAsync } from 'neverthrow'
 import type { Usecase } from '../../../langchain/agents/qaGenerateUsecaseAgent/agent'
 import { WorkflowTerminationError } from '../../../shared/errorHandling'
