@@ -1,61 +1,50 @@
 .container {
-  padding: 24px;
-  max-width: 1200px;
-  margin: 0 auto;
-}
-
-.header {
   display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 32px;
-  gap: 16px;
+  padding: var(--spacing-20, 80px) var(--spacing-4, 16px);
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-20, 80px);
+  font-family: var(--main-font);
 }
 
-.titleSection {
-  flex: 1;
+.wrapper {
+  display: flex;
+  width: 782px;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-7, 28px);
 }
 
 .title {
-  font-size: 24px;
+  font-size: 52px;
   font-weight: 600;
-  margin: 0 0 8px 0;
+  color: var(--global-foreground);
+  text-align: center;
+  line-height: 1;
+  letter-spacing: -0.312px;
+  margin: 0 0 var(--spacing-7) 0;
+  width: 100%;
+}
+
+.recentsSection {
+  margin-top: var(--spacing-12);
+  padding-top: var(--spacing-12);
+  border-top: 1px solid var(--color-border-divider);
+  width: 100%;
+}
+
+.recentsTitle {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-semibold);
+  margin-bottom: var(--spacing-6);
   color: var(--color-text-primary);
-}
-
-.description {
-  font-size: 14px;
-  color: var(--color-text-secondary);
-  margin: 0;
-}
-
-.formSection {
-  margin-bottom: 32px;
-  padding: 24px;
-  background-color: var(--callout-default-background);
-  border: 1px solid var(--global-border);
-  border-radius: var(--border-radius-md);
-}
-
-.formTitle {
-  font-size: 18px;
-  font-weight: 600;
-  margin: 0 0 16px 0;
-  color: var(--color-text-primary);
-}
-
-.loadingState {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 48px;
-  color: var(--color-text-secondary);
+  text-align: center;
 }
 
 .sessionsList {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--spacing-2);
 }
 
 .emptyState {
@@ -63,26 +52,28 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 64px 24px;
+  padding: var(--spacing-16) var(--spacing-6);
   text-align: center;
+  margin-top: var(--spacing-12);
+  width: 100%;
 }
 
 .emptyIcon {
-  margin-bottom: 16px;
+  margin-bottom: var(--spacing-4);
   color: var(--color-text-tertiary);
 }
 
 .emptyTitle {
-  font-size: 18px;
-  font-weight: 600;
-  margin: 0 0 8px 0;
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  margin: 0 0 var(--spacing-2) 0;
   color: var(--color-text-primary);
 }
 
 .emptyDescription {
-  font-size: 14px;
+  font-size: var(--font-size-sm);
   color: var(--color-text-secondary);
-  margin: 0 0 24px 0;
+  margin: 0;
   max-width: 400px;
   line-height: 1.5;
 }
