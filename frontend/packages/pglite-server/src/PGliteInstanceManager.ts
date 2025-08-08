@@ -1,4 +1,5 @@
 import { PGlite } from '@electric-sql/pglite'
+import { uuid_ossp } from '@electric-sql/pglite/contrib/uuid_ossp'
 import type { SqlResult } from './types'
 
 /**
@@ -7,9 +8,40 @@ import type { SqlResult } from './types'
 export class PGliteInstanceManager {
   /**
    * Creates a new PGlite instance for query execution
+   * Includes required extensions and custom functions
    */
   private async createInstance(): Promise<PGlite> {
-    return new PGlite()
+    const db = new PGlite({
+      extensions: { uuid_ossp },
+    })
+
+    try {
+      // Initialize required functions and extensions
+      await db.exec(`
+        -- Enable uuid-ossp extension for UUID generation
+        CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+        -- Create cuid function for custom ID generation
+        CREATE OR REPLACE FUNCTION cuid(length INTEGER DEFAULT 25)
+        RETURNS TEXT AS $$
+        DECLARE
+            chars TEXT := 'abcdefghijklmnopqrstuvwxyz0123456789';
+            result TEXT := '';
+            i INTEGER := 0;
+        BEGIN
+            FOR i IN 1..length LOOP
+                result := result || substr(chars, floor(random() * length(chars) + 1)::INTEGER, 1);
+            END LOOP;
+            RETURN result;
+        END;
+        $$ LANGUAGE plpgsql;
+      `)
+    } catch (error) {
+      console.warn('Failed to initialize PGlite functions:', error)
+      // Continue execution as basic PGlite functionality should still work
+    }
+
+    return db
   }
 
   /**
