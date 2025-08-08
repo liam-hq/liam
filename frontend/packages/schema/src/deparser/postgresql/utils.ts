@@ -391,3 +391,111 @@ export function generateDropCheckConstraintStatement(
     tableName,
   )} DROP CONSTRAINT IF EXISTS ${escapeIdentifier(constraintName)};`
 }
+
+/**
+ * Extract function names from DEFAULT values in columns
+ */
+export function extractFunctionsFromColumns(columns: Column[]): Set<string> {
+  const functions = new Set<string>()
+
+  for (const column of columns) {
+    if (column.default !== null && typeof column.default === 'string') {
+      const extractedFunctions = extractFunctionsFromValue(column.default)
+      extractedFunctions.forEach((func) => functions.add(func))
+    }
+  }
+
+  return functions
+}
+
+/**
+ * Extract function names from a default value string
+ */
+function extractFunctionsFromValue(value: string): string[] {
+  const functions: string[] = []
+  const trimmedValue = value.trim()
+
+  // Function pattern: function_name followed by optional whitespace and opening parenthesis
+  const functionPattern = /\b([a-zA-Z_][a-zA-Z0-9_]*)\s*\(/g
+  let match: RegExpExecArray | null
+
+  // Use biome-ignore to allow assignment in expression for regex matching pattern
+  // biome-ignore lint/suspicious/noAssignInExpressions: Standard regex pattern matching requires assignment in while condition
+  while ((match = functionPattern.exec(trimmedValue)) !== null) {
+    if (match[1]) {
+      const functionName = match[1].toLowerCase()
+      if (!functions.includes(functionName)) {
+        functions.push(functionName)
+      }
+    }
+  }
+
+  // Check for functions without parentheses
+  const functionsWithoutParens = [
+    'current_timestamp',
+    'current_date',
+    'current_time',
+  ]
+  for (const func of functionsWithoutParens) {
+    if (trimmedValue.toLowerCase().includes(func)) {
+      if (!functions.includes(func)) {
+        functions.push(func)
+      }
+    }
+  }
+
+  return functions
+}
+
+/**
+ * Generate CREATE FUNCTION statements for required custom functions
+ */
+export function generateRequiredFunctions(
+  requiredFunctions: Set<string>,
+): string[] {
+  const functionDefinitions: string[] = []
+
+  // Custom functions that need to be defined
+  const customFunctionDefinitions: Record<string, string> = {
+    cuid: `CREATE OR REPLACE FUNCTION cuid(length INTEGER DEFAULT 25)
+RETURNS TEXT AS $$
+DECLARE
+    chars TEXT := 'abcdefghijklmnopqrstuvwxyz0123456789';
+    result TEXT := '';
+    i INTEGER := 0;
+BEGIN
+    FOR i IN 1..length LOOP
+        result := result || substr(chars, floor(random() * length(chars) + 1)::INTEGER, 1);
+    END LOOP;
+    RETURN result;
+END;
+$$ LANGUAGE plpgsql;`,
+  }
+
+  // Extensions that need to be enabled
+  const requiredExtensions: Record<string, string> = {
+    gen_random_uuid: 'CREATE EXTENSION IF NOT EXISTS "uuid-ossp";',
+    uuid_generate_v1: 'CREATE EXTENSION IF NOT EXISTS "uuid-ossp";',
+    uuid_generate_v4: 'CREATE EXTENSION IF NOT EXISTS "uuid-ossp";',
+  }
+
+  const addedExtensions = new Set<string>()
+
+  for (const functionName of requiredFunctions) {
+    // Check if we need to add an extension
+    if (requiredExtensions[functionName]) {
+      const extension = requiredExtensions[functionName]
+      if (!addedExtensions.has(extension)) {
+        functionDefinitions.push(extension)
+        addedExtensions.add(extension)
+      }
+    }
+
+    // Check if we need to add a custom function definition
+    if (customFunctionDefinitions[functionName]) {
+      functionDefinitions.push(customFunctionDefinitions[functionName])
+    }
+  }
+
+  return functionDefinitions
+}

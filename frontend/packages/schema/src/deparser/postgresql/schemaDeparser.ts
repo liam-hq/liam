@@ -1,25 +1,39 @@
 import type { Index, Schema, Table } from '../../schema/index.js'
 import type { SchemaDeparser } from '../type.js'
 import {
+  extractFunctionsFromColumns,
   generateAddConstraintStatement,
   generateCreateIndexStatement,
   generateCreateTableStatement,
+  generateRequiredFunctions,
 } from './utils.js'
 
 export const postgresqlSchemaDeparser: SchemaDeparser = (schema: Schema) => {
   const ddlStatements: string[] = []
   const errors: { message: string }[] = []
 
+  // 1. Extract required functions from all DEFAULT clauses
+  const allRequiredFunctions = new Set<string>()
+  for (const table of Object.values(schema.tables) satisfies Table[]) {
+    const columns = Object.values(table.columns)
+    const tableFunctions = extractFunctionsFromColumns(columns)
+    tableFunctions.forEach((func) => allRequiredFunctions.add(func))
+  }
+
+  // 2. Generate CREATE EXTENSION and CREATE FUNCTION statements
+  const functionDefinitions = generateRequiredFunctions(allRequiredFunctions)
+  ddlStatements.push(...functionDefinitions)
+
   // TODO: Add enum deparser support
   // Generate CREATE TYPE enum statements before tables
 
-  // 1. Generate CREATE TABLE statements for each table
+  // 3. Generate CREATE TABLE statements for each table
   for (const table of Object.values(schema.tables) satisfies Table[]) {
     const createTableDDL = generateCreateTableStatement(table)
     ddlStatements.push(createTableDDL)
   }
 
-  // 2. Generate CREATE INDEX statements for all tables
+  // 4. Generate CREATE INDEX statements for all tables
   for (const table of Object.values(schema.tables) satisfies Table[]) {
     const indexes = Object.values(table.indexes) satisfies Index[]
     for (const index of indexes) {
@@ -28,7 +42,7 @@ export const postgresqlSchemaDeparser: SchemaDeparser = (schema: Schema) => {
     }
   }
 
-  // 3. Generate ADD CONSTRAINT statements for all tables
+  // 5. Generate ADD CONSTRAINT statements for all tables
   // Note: Foreign key constraints are added last to ensure referenced tables exist
   const foreignKeyStatements: string[] = []
 
