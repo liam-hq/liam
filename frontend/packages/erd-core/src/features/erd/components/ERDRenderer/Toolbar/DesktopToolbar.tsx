@@ -1,12 +1,16 @@
 import * as ToolbarPrimitive from '@radix-ui/react-toolbar'
-import type { FC } from 'react'
+import type { FC, ReactNode } from 'react'
 import styles from './DesktopToolbar.module.css'
 import { FitviewButton } from './FitviewButton'
 import { ShowModeMenu } from './ShowModeMenu'
 import { TidyUpButton } from './TidyUpButton'
 import { ZoomControls } from './ZoomControls'
 
-export const DesktopToolbar: FC = () => {
+type Props = {
+  customActions?: ReactNode
+}
+
+export const DesktopToolbar: FC<Props> = ({ customActions }) => {
   return (
     <ToolbarPrimitive.Root
       className={styles.root}
@@ -18,8 +22,7 @@ export const DesktopToolbar: FC = () => {
       <div className={styles.buttons}>
         <FitviewButton />
         <TidyUpButton />
-        {/* TODO: enable once implemented */}
-        {/* <ViewControlButton /> */}
+        {customActions}
       </div>
       <ToolbarPrimitive.Separator className={styles.separator} />
       <ShowModeMenu />
