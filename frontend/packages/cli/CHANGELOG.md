@@ -1,5 +1,11 @@
 # @liam-hq/cli
 
+## 0.7.2
+
+### Patch Changes
+
+- [#2945](https://github.com/liam-hq/liam/pull/2945) - 🐛fix(regression): Restore broken column highlighting in TableColumn / Thanks [@FunamaYukina](https://github.com/FunamaYukina)!
+
 ## 0.7.1
 
 ### Patch Changes
