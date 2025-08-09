@@ -3,6 +3,7 @@ import {
   aCheckConstraint,
   aColumn,
   aForeignKeyConstraint,
+  anEnum,
   anIndex,
   aPrimaryKeyConstraint,
   aSchema,
@@ -866,6 +867,175 @@ describe('postgresqlSchemaDeparser', () => {
         ALTER TABLE \"departments\" ADD CONSTRAINT \"fk_departments_manager\" FOREIGN KEY (\"manager_id\") REFERENCES \"employees\" (\"id\") ON UPDATE CASCADE ON DELETE SET NULL;
 
         ALTER TABLE \"employees\" ADD CONSTRAINT \"fk_employees_department\" FOREIGN KEY (\"department_id\") REFERENCES \"departments\" (\"id\") ON UPDATE CASCADE ON DELETE RESTRICT;"
+      `)
+
+      await expectGeneratedSQLToBeParseable(result.value)
+    })
+  })
+
+  describe('enum generation', () => {
+    it('should generate basic CREATE TYPE AS ENUM statement', async () => {
+      const schema = aSchema({
+        enums: {
+          status: anEnum({
+            name: 'status',
+            values: ['active', 'inactive', 'pending'],
+          }),
+        },
+        tables: {},
+      })
+
+      const result = postgresqlSchemaDeparser(schema)
+
+      expect(result.errors).toHaveLength(0)
+      expect(result.value).toMatchInlineSnapshot(`
+        "CREATE TYPE "status" AS ENUM ('active', 'inactive', 'pending');"
+      `)
+
+      await expectGeneratedSQLToBeParseable(result.value)
+    })
+
+    it('should generate CREATE TYPE AS ENUM with comment', async () => {
+      const schema = aSchema({
+        enums: {
+          user_role: anEnum({
+            name: 'user_role',
+            values: ['admin', 'user', 'guest'],
+            comment: 'User role enumeration',
+          }),
+        },
+        tables: {},
+      })
+
+      const result = postgresqlSchemaDeparser(schema)
+
+      expect(result.errors).toHaveLength(0)
+      expect(result.value).toMatchInlineSnapshot(`
+        "CREATE TYPE "user_role" AS ENUM ('admin', 'user', 'guest');
+
+        COMMENT ON TYPE "user_role" IS 'User role enumeration';"
+      `)
+
+      await expectGeneratedSQLToBeParseable(result.value)
+    })
+
+    it('should generate multiple enums', async () => {
+      const schema = aSchema({
+        enums: {
+          status: anEnum({
+            name: 'status',
+            values: ['active', 'inactive'],
+          }),
+          priority: anEnum({
+            name: 'priority',
+            values: ['low', 'medium', 'high'],
+            comment: 'Task priority levels',
+          }),
+        },
+        tables: {},
+      })
+
+      const result = postgresqlSchemaDeparser(schema)
+
+      expect(result.errors).toHaveLength(0)
+      expect(result.value).toMatchInlineSnapshot(`
+        "CREATE TYPE "status" AS ENUM ('active', 'inactive');
+
+        CREATE TYPE "priority" AS ENUM ('low', 'medium', 'high');
+
+        COMMENT ON TYPE "priority" IS 'Task priority levels';"
+      `)
+
+      await expectGeneratedSQLToBeParseable(result.value)
+    })
+
+    it('should handle enum with single value', async () => {
+      const schema = aSchema({
+        enums: {
+          singleton: anEnum({
+            name: 'singleton',
+            values: ['only_value'],
+          }),
+        },
+        tables: {},
+      })
+
+      const result = postgresqlSchemaDeparser(schema)
+
+      expect(result.errors).toHaveLength(0)
+      expect(result.value).toMatchInlineSnapshot(`
+        "CREATE TYPE "singleton" AS ENUM ('only_value');"
+      `)
+
+      await expectGeneratedSQLToBeParseable(result.value)
+    })
+
+    it('should handle enum with quotes in values', async () => {
+      const schema = aSchema({
+        enums: {
+          quoted_values: anEnum({
+            name: 'quoted_values',
+            values: ["value with 'quotes'", 'normal_value'],
+          }),
+        },
+        tables: {},
+      })
+
+      const result = postgresqlSchemaDeparser(schema)
+
+      expect(result.errors).toHaveLength(0)
+      expect(result.value).toMatchInlineSnapshot(`
+        "CREATE TYPE "quoted_values" AS ENUM ('value with ''quotes''', 'normal_value');"
+      `)
+
+      await expectGeneratedSQLToBeParseable(result.value)
+    })
+
+    it('should generate enums before tables', async () => {
+      const schema = aSchema({
+        enums: {
+          user_status: anEnum({
+            name: 'user_status',
+            values: ['active', 'inactive'],
+          }),
+        },
+        tables: {
+          users: aTable({
+            name: 'users',
+            columns: {
+              id: aColumn({
+                name: 'id',
+                type: 'bigint',
+                notNull: true,
+              }),
+              status: aColumn({
+                name: 'status',
+                type: 'user_status',
+                notNull: true,
+              }),
+            },
+            constraints: {
+              users_pkey: aPrimaryKeyConstraint({
+                name: 'users_pkey',
+                columnNames: ['id'],
+              }),
+            },
+          }),
+        },
+      })
+
+      const result = postgresqlSchemaDeparser(schema)
+
+      expect(result.errors).toHaveLength(0)
+      expect(result.value).toMatchInlineSnapshot(`
+        "CREATE TYPE "user_status" AS ENUM ('active', 'inactive');
+
+        CREATE TABLE "users" (
+          "id" bigint NOT NULL,
+          "status" user_status NOT NULL
+        );
+
+        ALTER TABLE "users" ADD CONSTRAINT "users_pkey" PRIMARY KEY ("id");"
       `)
 
       await expectGeneratedSQLToBeParseable(result.value)

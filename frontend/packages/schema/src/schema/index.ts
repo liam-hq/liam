@@ -2,6 +2,7 @@ export {
   aCheckConstraint,
   aColumn,
   aForeignKeyConstraint,
+  anEnum,
   anIndex,
   aPrimaryKeyConstraint,
   aSchema,

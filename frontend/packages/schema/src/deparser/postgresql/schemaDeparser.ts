@@ -1,7 +1,8 @@
-import type { Index, Schema, Table } from '../../schema/index.js'
+import type { Enum, Index, Schema, Table } from '../../schema/index.js'
 import type { SchemaDeparser } from '../type.js'
 import {
   generateAddConstraintStatement,
+  generateCreateEnumStatement,
   generateCreateIndexStatement,
   generateCreateTableStatement,
 } from './utils.js'
@@ -10,16 +11,19 @@ export const postgresqlSchemaDeparser: SchemaDeparser = (schema: Schema) => {
   const ddlStatements: string[] = []
   const errors: { message: string }[] = []
 
-  // TODO: Add enum deparser support
-  // Generate CREATE TYPE enum statements before tables
+  // 1. Generate CREATE TYPE AS ENUM statements for each enum (before tables)
+  for (const enumObj of Object.values(schema.enums) satisfies Enum[]) {
+    const createEnumDDL = generateCreateEnumStatement(enumObj)
+    ddlStatements.push(createEnumDDL)
+  }
 
-  // 1. Generate CREATE TABLE statements for each table
+  // 2. Generate CREATE TABLE statements for each table
   for (const table of Object.values(schema.tables) satisfies Table[]) {
     const createTableDDL = generateCreateTableStatement(table)
     ddlStatements.push(createTableDDL)
   }
 
-  // 2. Generate CREATE INDEX statements for all tables
+  // 3. Generate CREATE INDEX statements for all tables
   for (const table of Object.values(schema.tables) satisfies Table[]) {
     const indexes = Object.values(table.indexes) satisfies Index[]
     for (const index of indexes) {
@@ -28,7 +32,7 @@ export const postgresqlSchemaDeparser: SchemaDeparser = (schema: Schema) => {
     }
   }
 
-  // 3. Generate ADD CONSTRAINT statements for all tables
+  // 4. Generate ADD CONSTRAINT statements for all tables
   // Note: Foreign key constraints are added last to ensure referenced tables exist
   const foreignKeyStatements: string[] = []
 
