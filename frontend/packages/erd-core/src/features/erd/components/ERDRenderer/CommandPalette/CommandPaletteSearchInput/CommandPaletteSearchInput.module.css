@@ -21,3 +21,22 @@
   height: 16px;
   color: var(--overlay-60);
 }
+
+.inputWithSuggestion {
+  position: relative;
+  width: 100%;
+}
+
+.suggestion {
+  position: absolute;
+  top: 0;
+  padding: 8px 0 8px 24px;
+}
+
+.inputValue {
+  color: transparent;
+}
+
+.suggestionSuffix {
+  color: var(--overlay-60);
+}
