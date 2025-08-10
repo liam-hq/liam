@@ -24,6 +24,7 @@ export const CommandPaletteSearchInput: FC<Props> = ({ suggestion }) => {
       <Search className={styles.searchIcon} />
       <div className={styles.inputWithSuggestion}>
         <Command.Input
+          className={styles.input}
           value={value}
           onValueChange={setValue}
           onBlur={(event) => event.target.focus()}
