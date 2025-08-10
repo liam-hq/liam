@@ -3,16 +3,16 @@ import userEvent from '@testing-library/user-event'
 import { ReactFlowProvider } from '@xyflow/react'
 import { afterEach, expect, it, vi } from 'vitest'
 import * as UseFitScreen from '../useFitScreen'
-import { useSubscribeZoomToFitCommand } from './useSubscribeZoomToFitCommand'
+import { useSubscribeTidyUpCommand } from './useSubscribeTidyUpCommand'
 
-const mockZoomToFit = vi.fn()
+const mockTidyUp = vi.fn()
 
 const originalUseFitScreen = UseFitScreen.useFitScreen
 vi.spyOn(UseFitScreen, 'useFitScreen').mockImplementation(() => {
   const original = originalUseFitScreen()
   return {
     ...original,
-    zoomToFit: mockZoomToFit,
+    tidyUp: mockTidyUp,
   }
 })
 
@@ -24,11 +24,11 @@ const wrapper = ({ children }: React.PropsWithChildren) => (
   <ReactFlowProvider>{children}</ReactFlowProvider>
 )
 
-it('zooms to fit nodes when ⇧1 is pressed', async () => {
+it('tidy up nodes when ⇧t is pressed', async () => {
   const user = userEvent.setup()
-  renderHook(() => useSubscribeZoomToFitCommand(), { wrapper })
+  renderHook(() => useSubscribeTidyUpCommand(), { wrapper })
 
-  await user.keyboard('{Shift>}1{/Shift}')
+  await user.keyboard('{Shift>}t{/Shift}')
 
-  expect(mockZoomToFit).toHaveBeenCalled()
+  expect(mockTidyUp).toHaveBeenCalled()
 })
