@@ -1,13 +1,16 @@
 import { Search } from '@liam-hq/ui'
 import { Command } from 'cmdk'
-import { type FC, useMemo, useState } from 'react'
+import { type ComponentProps, type FC, useMemo, useState } from 'react'
 import styles from './CommandPaletteSearchInput.module.css'
 
-type Props = {
+type Props = ComponentProps<typeof Command.Input> & {
   suggestion: string | null
 }
 
-export const CommandPaletteSearchInput: FC<Props> = ({ suggestion }) => {
+export const CommandPaletteSearchInput: FC<Props> = ({
+  suggestion,
+  ...inputProps
+}) => {
   const [value, setValue] = useState('')
 
   const suggestionSuffix = useMemo(() => {
@@ -24,10 +27,10 @@ export const CommandPaletteSearchInput: FC<Props> = ({ suggestion }) => {
       <Search className={styles.searchIcon} />
       <div className={styles.inputWithSuggestion}>
         <Command.Input
+          {...inputProps}
           className={styles.input}
           value={value}
           onValueChange={setValue}
-          onBlur={(event) => event.target.focus()}
         />
         <div className={styles.suggestion}>
           <span className={styles.inputValue}>{value}</span>

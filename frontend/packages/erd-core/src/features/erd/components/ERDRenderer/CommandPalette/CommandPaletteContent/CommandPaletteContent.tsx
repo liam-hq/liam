@@ -53,7 +53,10 @@ export const CommandPaletteContent: FC<Props> = ({ closeDialog }) => {
   return (
     <Command value={tableName ?? ''} onValueChange={(v) => setTableName(v)}>
       <div className={styles.searchContainer}>
-        <CommandPaletteSearchInput suggestion={tableName} />
+        <CommandPaletteSearchInput
+          suggestion={tableName}
+          onBlur={(event) => event.target.focus()}
+        />
         <DialogClose asChild>
           <Button
             size="xs"
