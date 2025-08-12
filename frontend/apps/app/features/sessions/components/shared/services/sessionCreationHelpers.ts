@@ -1,6 +1,5 @@
 'use server'
 
-import path from 'node:path'
 import { createSupabaseRepositories } from '@liam-hq/agent'
 import type { SupabaseClientType } from '@liam-hq/db'
 import type { Schema } from '@liam-hq/schema'
@@ -129,7 +128,7 @@ export const parseSchemaContent = async (
   format: SchemaFormat,
 ): Promise<Schema | CreateSessionState> => {
   try {
-    setPrismWasmUrl(path.resolve(process.cwd(), 'prism.wasm'))
+    setPrismWasmUrl(`${process.cwd()}/prism.wasm`)
     const { value: parsedSchema, errors } = await parse(content, format)
 
     if (errors && errors.length > 0) {
