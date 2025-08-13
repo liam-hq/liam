@@ -5,7 +5,11 @@ const resolveContentUrl = (url: string): string | undefined => {
   try {
     const parsedUrl = new URL(url)
 
-    if (parsedUrl.hostname === 'github.com' && url.includes('/blob/')) {
+    if (parsedUrl.hostname !== 'github.com') {
+      return undefined
+    }
+
+    if (url.includes('/blob/')) {
       return url
         .replace('github.com', 'raw.githubusercontent.com')
         .replace('/blob', '')
@@ -104,7 +108,8 @@ export const fetchSchemaFromUrl = async (
   if (!contentUrl) {
     return {
       success: false,
-      error: 'Invalid URL format. Please provide a valid URL.',
+      error:
+        'Only GitHub URLs are supported. Please provide a GitHub repository URL (e.g., github.com/user/repo/blob/main/schema.sql).',
     }
   }
 
