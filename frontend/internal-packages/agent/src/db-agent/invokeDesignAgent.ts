@@ -15,7 +15,9 @@ import { schemaDesignTool } from './tools/schemaDesignTool'
 const model = new ChatOpenAI({
   model: 'gpt-5',
   useResponsesApi: true,
-}).bindTools([schemaDesignTool])
+}).bindTools([schemaDesignTool], {
+  tool_choice: schemaDesignTool.name,
+})
 
 type DesignAgentResult = {
   response: AIMessage
