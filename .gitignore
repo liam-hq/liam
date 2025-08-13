@@ -10,6 +10,7 @@ pglite.wasm
 dist/
 benchmark-workspace/
 coverage/
+frontend/packages/db-structure/
 
 # Claude local settings
 .claude/settings.local.json
