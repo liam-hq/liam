@@ -32,25 +32,6 @@ async function handleAIMessage(
   }
 }
 
-async function handleHumanMessage(
-  message: HumanMessage,
-  context: TimelineSyncContext,
-): Promise<void> {
-  const result = await context.repositories.schema.createTimelineItem({
-    designSessionId: context.designSessionId,
-    content: message.text,
-    type: 'user',
-    userId: context.userId,
-  })
-
-  if (!result.success) {
-    console.error(
-      'Failed to create timeline item for HumanMessage:',
-      result.error,
-    )
-  }
-}
-
 async function handleToolMessage(
   message: ToolMessage,
   context: TimelineSyncContext,
@@ -88,7 +69,6 @@ export async function withTimelineItemSync(
   if (message instanceof AIMessage) {
     await handleAIMessage(message, context)
   } else if (message instanceof HumanMessage) {
-    await handleHumanMessage(message, context)
   } else if (message instanceof ToolMessage) {
     await handleToolMessage(message, context)
   }

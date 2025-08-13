@@ -65,7 +65,7 @@ describe('withTimelineItemSync', () => {
   })
 
   describe('HumanMessage handling', () => {
-    it('should create user timeline item with correct parameters', async () => {
+    it('should skip creating timeline item for HumanMessage to prevent duplication', async () => {
       const message = new HumanMessage('User input message')
       const context = createContext()
 
@@ -73,13 +73,8 @@ describe('withTimelineItemSync', () => {
 
       const timelineItems =
         context.repository.getTimelineItems('test-session-id')
-      expect(timelineItems).toHaveLength(1)
-      expect(timelineItems[0]).toMatchObject({
-        content: 'User input message',
-        type: 'user',
-        user_id: 'test-user-id',
-        design_session_id: 'test-session-id',
-      })
+
+      expect(timelineItems).toHaveLength(0)
       expect(result).toBe(message)
     })
   })
@@ -199,10 +194,10 @@ describe('withTimelineItemSync', () => {
       expect(humanResult).toBe(humanMessage)
       expect(toolResult).toBe(toolMessage)
 
-      // Verify all timeline items were created
+      // Verify only AI and Tool messages created timeline items (HumanMessage is skipped)
       const timelineItems =
         context.repository.getTimelineItems('test-session-id')
-      expect(timelineItems).toHaveLength(3)
+      expect(timelineItems).toHaveLength(2)
     })
   })
 
@@ -238,13 +233,13 @@ describe('withTimelineItemSync', () => {
       mockConsoleError.mockRestore()
     })
 
-    it('should log error and continue when createTimelineItem fails for HumanMessage', async () => {
+    it('should not log any errors for HumanMessage since processing is skipped', async () => {
       const mockConsoleError = vi
         .spyOn(console, 'error')
         .mockImplementation(() => {})
       const message = new HumanMessage('Test message')
 
-      // Create a repository that will fail
+      // Create a repository that would fail if called
       const failingRepository = new InMemoryRepository()
       vi.spyOn(failingRepository, 'createTimelineItem').mockResolvedValue({
         success: false,
@@ -260,10 +255,8 @@ describe('withTimelineItemSync', () => {
 
       const result = await withTimelineItemSync(message, context)
 
-      expect(mockConsoleError).toHaveBeenCalledWith(
-        'Failed to create timeline item for HumanMessage:',
-        'Network timeout',
-      )
+      expect(mockConsoleError).not.toHaveBeenCalled()
+      expect(failingRepository.createTimelineItem).not.toHaveBeenCalled()
       expect(result).toBe(message)
 
       mockConsoleError.mockRestore()
