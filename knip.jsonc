@@ -25,7 +25,9 @@
     "frontend/internal-packages/agent/src/vectorstore/syncSchemaVectorStore.ts",
     // - Newly added enum schema definitions (will be used in future implementations)
     "frontend/packages/schema/src/schema/schema.ts",
-    "frontend/packages/schema/src/schema/index.ts"
+    "frontend/packages/schema/src/schema/index.ts",
+    // - Foundation code for Public Share feature (createPublicServerClient will be used in future phases)
+    "frontend/apps/app/libs/db/server.ts"
   ],
 
 
