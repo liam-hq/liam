@@ -245,10 +245,10 @@ export async function DELETE(
 - [ ] neverthrowパターン適用
 - [ ] 認証・権限チェック実装
 
-### 🔧 **Phase 1.3: シンプルトグルUI統合 (1日)**
-**目標**: Notion風のシンプルトグルスイッチ
+### 🔧 **Phase 1.3: Vercel v0風シェアUI統合 (1日)**
+**目標**: Vercel v0スタイルのクリーンなシェア機能
 **期間**: 1日
-**レビューポイント**: UI/UX の直感性
+**レビューポイント**: UI/UXのミニマル性と直感性
 
 #### トグルUI Hook
 ```typescript
@@ -326,18 +326,10 @@ export const usePublicShareToggle = (designSessionId: string) => {
 }
 ```
 
-#### Export Dropdown更新
+#### Export Dropdown更新（Share統合）
 ```tsx
 // components/SessionDetailPage/components/Output/components/Header/ExportDropdown.tsx
-import { Globe, ExternalLink } from '@liam-hq/ui'
-import { usePublicShareToggle } from '@/hooks/usePublicShareToggle'
-
-type Props = {
-  schema: Schema
-  artifactDoc?: string
-  cumulativeOperations: Operation[]
-  designSessionId: string
-}
+import { Share, ChevronDown } from '@liam-hq/ui'
 
 export const ExportDropdown: FC<Props> = ({
   schema,
@@ -345,84 +337,215 @@ export const ExportDropdown: FC<Props> = ({
   cumulativeOperations,
   designSessionId,
 }) => {
+  const [isShareDialogOpen, setIsShareDialogOpen] = useState(false)
+
+  return (
+    <>
+      <div className="flex gap-2">
+        {/* Export Dropdown */}
+        <DropdownMenuRoot>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="outline-secondary"
+              size="md"
+              rightIcon={<ChevronDown size={16} />}
+              className={styles.button}
+            >
+              Export
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuPortal>
+            <DropdownMenuContent align="end" sideOffset={8}>
+              {/* 既存のエクスポートオプション */}
+              {artifactDoc && cumulativeOperations.length > 0 && (
+                <DropdownMenuItem
+                  leftIcon={<FileText size={16} />}
+                  onSelect={handleCopyAIPrompt}
+                >
+                  Prompt for AI Agent
+                </DropdownMenuItem>
+              )}
+              <DropdownMenuItem
+                leftIcon={<Copy size={16} />}
+                onSelect={handleCopyPostgreSQL}
+              >
+                Copy PostgreSQL
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenuPortal>
+        </DropdownMenuRoot>
+        
+        {/* Share Button (v0 style) */}
+        <Button
+          variant="outline-secondary"
+          size="md"
+          leftIcon={<Share size={16} />}
+          onClick={() => setIsShareDialogOpen(true)}
+          className={styles.shareButton}
+        >
+          Share
+        </Button>
+      </div>
+      
+      {/* Share Dialog */}
+      <ShareDialog
+        isOpen={isShareDialogOpen}
+        onClose={() => setIsShareDialogOpen(false)}
+        designSessionId={designSessionId}
+      />
+    </>
+  )
+}
+```
+
+#### Vercel v0風 Share Dialog
+```tsx
+// components/ShareDialog/ShareDialog.tsx
+import { useState } from 'react'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  Button,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+  Avatar,
+  AvatarImage,
+  AvatarFallback,
+  useToast
+} from '@liam-hq/ui'
+import { Lock, Link, Copy, Check } from '@liam-hq/ui'
+import { usePublicShareToggle } from '@/hooks/usePublicShareToggle'
+
+type Props = {
+  isOpen: boolean
+  onClose: () => void
+  designSessionId: string
+}
+
+export const ShareDialog: FC<Props> = ({
+  isOpen,
+  onClose,
+  designSessionId
+}) => {
   const { isPublic, loading, togglePublicShare } = usePublicShareToggle(designSessionId)
+  const [copied, setCopied] = useState(false)
   const toast = useToast()
 
-  const copyPublicUrl = async () => {
+  const handleVisibilityChange = async (value: string) => {
+    const shouldBePublic = value === 'link'
+    if (shouldBePublic !== isPublic) {
+      await togglePublicShare()
+    }
+  }
+
+  const copyLink = async () => {
+    if (!isPublic) return
+    
     const publicUrl = `${window.location.origin}/public/sessions/${designSessionId}`
     await navigator.clipboard.writeText(publicUrl)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
     toast({
-      title: 'Public URL copied',
-      description: 'Share this link with others',
+      title: 'Link copied',
       status: 'success'
     })
   }
 
   return (
-    <DropdownMenuRoot>
-      <DropdownMenuTrigger asChild>
-        <Button
-          variant="outline-secondary"
-          size="md"
-          rightIcon={<ChevronDown size={16} />}
-          className={styles.button}
-        >
-          Export
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuPortal>
-        <DropdownMenuContent align="end" sideOffset={8}>
-          {/* 既存のエクスポートオプション */}
-          {artifactDoc && cumulativeOperations.length > 0 && (
-            <DropdownMenuItem
-              leftIcon={<FileText size={16} />}
-              onSelect={handleCopyAIPrompt}
-            >
-              Prompt for AI Agent
-            </DropdownMenuItem>
-          )}
-          <DropdownMenuItem
-            leftIcon={<Copy size={16} />}
-            onSelect={handleCopyPostgreSQL}
-          >
-            Copy PostgreSQL
-          </DropdownMenuItem>
-          
-          {/* 公開設定 */}
-          <div className="border-t my-1" />
-          <div className="px-2 py-1.5">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Globe size={16} className={isPublic ? "text-green-600" : "text-gray-400"} />
-                <span className="text-sm">Public sharing</span>
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="max-w-md bg-gray-900 border-gray-800">
+        <DialogHeader>
+          <DialogTitle className="text-white">Share</DialogTitle>
+        </DialogHeader>
+
+        <div className="space-y-6">
+          {/* People with access */}
+          <div>
+            <h4 className="text-sm font-medium text-gray-300 mb-3">People with access</h4>
+            <div className="flex items-center gap-3">
+              <Avatar className="h-8 w-8">
+                <AvatarImage src="/api/user/avatar" />
+                <AvatarFallback>You</AvatarFallback>
+              </Avatar>
+              <div className="flex-1">
+                <div className="text-sm text-white">You</div>
+                <div className="text-xs text-gray-400">your@email.com</div>
               </div>
-              <Switch
-                checked={isPublic}
-                onCheckedChange={togglePublicShare}
-                disabled={loading}
-              />
             </div>
-            {isPublic && (
-              <button
-                onClick={copyPublicUrl}
-                className="mt-1 text-xs text-blue-600 hover:text-blue-800 flex items-center gap-1"
-              >
-                <ExternalLink size={12} />
-                Copy public link
-              </button>
-            )}
           </div>
-        </DropdownMenuContent>
-      </DropdownMenuPortal>
-    </DropdownMenuRoot>
+
+          {/* Visibility */}
+          <div>
+            <h4 className="text-sm font-medium text-gray-300 mb-3">Visibility</h4>
+            <div className="flex gap-2">
+              <Select
+                value={isPublic ? 'link' : 'private'}
+                onValueChange={handleVisibilityChange}
+                disabled={loading}
+              >
+                <SelectTrigger className="flex-1 bg-gray-800 border-gray-700 text-white">
+                  <div className="flex items-center gap-2">
+                    {isPublic ? (
+                      <Link className="h-4 w-4" />
+                    ) : (
+                      <Lock className="h-4 w-4" />
+                    )}
+                    <SelectValue />
+                  </div>
+                </SelectTrigger>
+                <SelectContent className="bg-gray-800 border-gray-700">
+                  <SelectItem value="private" className="text-white">
+                    <div className="flex items-center gap-2">
+                      <Lock className="h-4 w-4" />
+                      Private
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="link" className="text-white">
+                    <div className="flex items-center gap-2">
+                      <Link className="h-4 w-4" />
+                      Anyone with the link
+                    </div>
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+              
+              {isPublic && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={copyLink}
+                  disabled={loading}
+                  className="border-gray-700 text-white hover:bg-gray-800"
+                >
+                  {copied ? (
+                    <Check className="h-4 w-4" />
+                  ) : (
+                    <>
+                      <Copy className="h-4 w-4 mr-2" />
+                      Copy Link
+                    </>
+                  )}
+                </Button>
+              )}
+            </div>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
   )
 }
 ```
 
 #### ✅ **Phase 1.3 完了判定**
-- [ ] トグルスイッチ実装
-- [ ] リアルタイム状態同期
-- [ ] 公開URL コピー機能
+- [ ] Vercel v0風 Share Dialog実装
+- [ ] Visibility選択機能（Private/Anyone with the link）
+- [ ] Copy Link機能
+- [ ] People with access表示
 
 ### 🔧 **Phase 1.4: リアルタイム公開ページ (1-2日)**
 **目標**: 既存テーブル参照によるリアルタイム表示
