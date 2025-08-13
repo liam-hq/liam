@@ -7,6 +7,13 @@ import type { Repositories } from '../../repositories'
 export type WorkflowState = {
   messages: BaseMessage[]
   userInput: string
+  preAssessmentResult?:
+    | {
+        decision: 'irrelevant' | 'insufficient' | 'sufficient'
+        reasoning: string
+        response: string
+      }
+    | undefined
   analyzedRequirements?:
     | {
         businessRequirement: string
