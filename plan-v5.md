@@ -458,56 +458,56 @@ export const ShareDialog: FC<Props> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-md bg-gray-900 border-gray-800">
+      <DialogContent className={styles.shareDialog}>
         <DialogHeader>
-          <DialogTitle className="text-white">Share</DialogTitle>
+          <DialogTitle className={styles.shareTitle}>Share</DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-6">
+        <div className={styles.shareContent}>
           {/* People with access */}
-          <div>
-            <h4 className="text-sm font-medium text-gray-300 mb-3">People with access</h4>
-            <div className="flex items-center gap-3">
-              <Avatar className="h-8 w-8">
+          <div className={styles.accessSection}>
+            <h4 className={styles.sectionTitle}>People with access</h4>
+            <div className={styles.userInfo}>
+              <Avatar className={styles.avatar}>
                 <AvatarImage src="/api/user/avatar" />
                 <AvatarFallback>You</AvatarFallback>
               </Avatar>
-              <div className="flex-1">
-                <div className="text-sm text-white">You</div>
-                <div className="text-xs text-gray-400">your@email.com</div>
+              <div className={styles.userDetails}>
+                <div className={styles.userName}>You</div>
+                <div className={styles.userEmail}>your@email.com</div>
               </div>
             </div>
           </div>
 
           {/* Visibility */}
-          <div>
-            <h4 className="text-sm font-medium text-gray-300 mb-3">Visibility</h4>
-            <div className="flex gap-2">
+          <div className={styles.visibilitySection}>
+            <h4 className={styles.sectionTitle}>Visibility</h4>
+            <div className={styles.visibilityControls}>
               <Select
                 value={isPublic ? 'link' : 'private'}
                 onValueChange={handleVisibilityChange}
                 disabled={loading}
               >
-                <SelectTrigger className="flex-1 bg-gray-800 border-gray-700 text-white">
-                  <div className="flex items-center gap-2">
+                <SelectTrigger className={styles.visibilitySelect}>
+                  <div className={styles.selectTriggerContent}>
                     {isPublic ? (
-                      <Link className="h-4 w-4" />
+                      <Link className={styles.selectIcon} />
                     ) : (
-                      <Lock className="h-4 w-4" />
+                      <Lock className={styles.selectIcon} />
                     )}
                     <SelectValue />
                   </div>
                 </SelectTrigger>
-                <SelectContent className="bg-gray-800 border-gray-700">
-                  <SelectItem value="private" className="text-white">
-                    <div className="flex items-center gap-2">
-                      <Lock className="h-4 w-4" />
+                <SelectContent className={styles.selectContent}>
+                  <SelectItem value="private" className={styles.selectItem}>
+                    <div className={styles.selectItemContent}>
+                      <Lock className={styles.selectIcon} />
                       Private
                     </div>
                   </SelectItem>
-                  <SelectItem value="link" className="text-white">
-                    <div className="flex items-center gap-2">
-                      <Link className="h-4 w-4" />
+                  <SelectItem value="link" className={styles.selectItem}>
+                    <div className={styles.selectItemContent}>
+                      <Link className={styles.selectIcon} />
                       Anyone with the link
                     </div>
                   </SelectItem>
@@ -520,13 +520,13 @@ export const ShareDialog: FC<Props> = ({
                   size="sm"
                   onClick={copyLink}
                   disabled={loading}
-                  className="border-gray-700 text-white hover:bg-gray-800"
+                  className={styles.copyButton}
                 >
                   {copied ? (
                     <Check className="h-4 w-4" />
                   ) : (
                     <>
-                      <Copy className="h-4 w-4 mr-2" />
+                      <Copy className={styles.copyIcon} />
                       Copy Link
                     </>
                   )}
@@ -538,6 +538,117 @@ export const ShareDialog: FC<Props> = ({
       </DialogContent>
     </Dialog>
   )
+}
+```
+
+#### ShareDialog CSS Modules
+```css
+/* components/ShareDialog/ShareDialog.module.css */
+
+.shareDialog {
+  max-width: 28rem;
+  background-color: var(--color-gray-900);
+  border: 1px solid var(--color-gray-800);
+  color: var(--color-white);
+}
+
+.shareTitle {
+  color: var(--color-white);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+}
+
+.shareContent {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-6);
+}
+
+.accessSection,
+.visibilitySection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-3);
+}
+
+.sectionTitle {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-gray-300);
+}
+
+.userInfo {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-3);
+}
+
+.avatar {
+  width: var(--spacing-8);
+  height: var(--spacing-8);
+}
+
+.userDetails {
+  flex: 1;
+}
+
+.userName {
+  font-size: var(--font-size-sm);
+  color: var(--color-white);
+}
+
+.userEmail {
+  font-size: var(--font-size-xs);
+  color: var(--color-gray-400);
+}
+
+.visibilityControls {
+  display: flex;
+  gap: var(--spacing-2);
+}
+
+.visibilitySelect {
+  flex: 1;
+  background-color: var(--color-gray-800);
+  border: 1px solid var(--color-gray-700);
+  color: var(--color-white);
+}
+
+.selectTriggerContent,
+.selectItemContent {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+}
+
+.selectIcon {
+  width: var(--spacing-4);
+  height: var(--spacing-4);
+}
+
+.selectContent {
+  background-color: var(--color-gray-800);
+  border: 1px solid var(--color-gray-700);
+}
+
+.selectItem {
+  color: var(--color-white);
+}
+
+.copyButton {
+  border: 1px solid var(--color-gray-700);
+  color: var(--color-white);
+  background-color: transparent;
+}
+
+.copyButton:hover {
+  background-color: var(--color-gray-800);
+}
+
+.copyIcon {
+  width: var(--spacing-4);
+  height: var(--spacing-4);
+  margin-right: var(--spacing-2);
 }
 ```
 
