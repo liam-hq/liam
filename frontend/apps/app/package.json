@@ -75,7 +75,7 @@
     "lint:biome": "biome check .",
     "lint:eslint": "eslint .",
     "lint:tsc": "tsc --noEmit",
-    "postinstall": "cp ../../packages/schema/node_modules/@ruby/prism/src/prism.wasm prism.wasm",
+    "postinstall": "cp ../../packages/schema/node_modules/@ruby/prism/src/prism.wasm prism.wasm && cp node_modules/@electric-sql/pglite/dist/pglite.wasm pglite.wasm && cp node_modules/@electric-sql/pglite/dist/pglite.data pglite.data",
     "start": "next start",
     "test": "vitest --watch=false",
     "test:vitest": "pnpm vitest"

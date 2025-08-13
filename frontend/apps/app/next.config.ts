@@ -99,6 +99,7 @@ const nextConfig: NextConfig = {
   },
   outputFileTracingIncludes: {
     '/erd/p/\\[\\.\\.\\.slug\\]': ['./prism.wasm'],
+    '/app/design_sessions/new': ['./pglite.wasm', './pglite.data'],
   },
   env: {
     NEXT_PUBLIC_GIT_HASH: gitCommitHash,
