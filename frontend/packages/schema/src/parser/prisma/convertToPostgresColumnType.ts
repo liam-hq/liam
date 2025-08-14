@@ -1,5 +1,12 @@
 import type { DMMF } from '@prisma/generator-helper'
 
+// Helper function to check if a default value is a cuid function
+export function isCuidFunction(
+  defaultValue: DMMF.Field['default'] | null,
+): boolean {
+  return typeof defaultValue === 'string' && /cuid\(\d*\)/.test(defaultValue)
+}
+
 // Helper function to handle autoincrement types
 function getAutoincrementType(typeName: string): string {
   switch (typeName) {
@@ -21,10 +28,7 @@ function handleNativeType(
   defaultValue: DMMF.Field['default'] | null,
 ): string {
   // Check for cuid (before autoincrement check)
-  if (
-    typeof defaultValue === 'string' &&
-    defaultValue.match(/cuid\(\d*\)/) // cuid() or cuid(2) pattern
-  ) {
+  if (isCuidFunction(defaultValue)) {
     // cuid is generated on the application side, so we use text type
     return 'text'
   }
@@ -89,10 +93,7 @@ export function convertToPostgresColumnType(
   }
 
   // Handle cuid without native type (before autoincrement check)
-  if (
-    typeof defaultValue === 'string' &&
-    defaultValue.match(/cuid\(\d*\)/) // cuid() or cuid(2) pattern
-  ) {
+  if (isCuidFunction(defaultValue)) {
     // cuid format is suitable for text type
     return 'text'
   }

@@ -9,7 +9,10 @@ import type {
   Table,
 } from '../../schema/index.js'
 import type { Processor, ProcessResult } from '../types.js'
-import { convertToPostgresColumnType } from './convertToPostgresColumnType.js'
+import {
+  convertToPostgresColumnType,
+  isCuidFunction,
+} from './convertToPostgresColumnType.js'
 
 // NOTE: Workaround for CommonJS module import issue with @prisma/internals
 // CommonJS module can not support all module.exports as named exports
@@ -71,10 +74,7 @@ function processModelField(
     tableFieldRenaming[model.dbName || model.name]?.[field.name] ?? field.name
 
   // For cuid(), don't set database-level default since it's generated client-side
-  const finalDefaultValue =
-    typeof defaultValue === 'string' && defaultValue.match(/cuid\(\d*\)/)
-      ? null
-      : defaultValue
+  const finalDefaultValue = isCuidFunction(defaultValue) ? null : defaultValue
 
   const column = {
     name: fieldName,
