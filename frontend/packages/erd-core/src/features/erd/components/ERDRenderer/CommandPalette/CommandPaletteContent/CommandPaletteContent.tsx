@@ -1,64 +1,88 @@
-import { Button, Search, Table2 } from '@liam-hq/ui'
+import { Button } from '@liam-hq/ui'
 import { DialogClose } from '@radix-ui/react-dialog'
 import { Command } from 'cmdk'
-import { type FC, useCallback, useEffect, useState } from 'react'
-import { useTableSelection } from '@/features/erd/hooks'
+import { type FC, useEffect, useState } from 'react'
 import { useSchemaOrThrow } from '@/stores'
 import { TableNode } from '../../../ERDContent/components'
+import { useCommandPaletteInnerOrThrow } from '../CommandPaletteInnerProvider'
+import { useCommandPaletteOrThrow } from '../CommandPaletteProvider'
+import { CommandPaletteSearchInput } from '../CommandPaletteSearchInput'
+import type { InputMode, Suggestion } from '../types'
+import {
+  getTableLinkHref,
+  stringToSuggestion,
+  suggestionToString,
+} from '../utils'
+import { ColumnOptions } from './ColumnOptions'
+import { CommandOptions } from './CommandOptions'
 import styles from './CommandPaletteContent.module.css'
+import { TableOptions } from './TableOptions'
 
-const getTableLinkHref = (activeTableName: string) => {
-  const searchParams = new URLSearchParams(window.location.search)
-  searchParams.set('active', activeTableName)
-  return `?${searchParams.toString()}`
-}
+export const CommandPaletteContent: FC = () => {
+  const { setOpen } = useCommandPaletteOrThrow()
+  const { goToERD } = useCommandPaletteInnerOrThrow()
 
-type Props = {
-  closeDialog: () => void
-}
+  const [searchText, setSearchText] = useState('')
+  const [inputMode, setInputMode] = useState<InputMode>({ type: 'default' })
+  const [suggestion, setSuggestion] = useState<Suggestion | null>(null)
 
-export const CommandPaletteContent: FC<Props> = ({ closeDialog }) => {
   const schema = useSchemaOrThrow()
-  const [tableName, setTableName] = useState<string | null>(null)
-  const table = schema.current.tables[tableName ?? '']
-  const { selectTable } = useTableSelection()
-
-  const goToERD = useCallback(
-    (tableName: string) => {
-      selectTable({ tableId: tableName, displayArea: 'main' })
-      closeDialog()
-    },
-    [selectTable, closeDialog],
-  )
+  const table =
+    schema.current.tables[
+      inputMode?.type === 'column'
+        ? inputMode.tableName
+        : inputMode?.type === 'default'
+          ? suggestion?.type === 'table'
+            ? suggestion.name
+            : ''
+          : ''
+    ]
 
   // Select option by pressing [Enter] key (with/without ⌘ key)
   useEffect(() => {
     const down = (event: KeyboardEvent) => {
-      if (!tableName) return
+      if (!suggestion) return
 
-      if (event.key === 'Enter') {
-        if (event.metaKey || event.ctrlKey) {
-          window.open(getTableLinkHref(tableName))
-        } else {
-          goToERD(tableName)
+      if (suggestion.type === 'table') {
+        const tableName = suggestion.name
+        if (event.key === 'Enter') {
+          if (event.metaKey || event.ctrlKey) {
+            window.open(getTableLinkHref(tableName))
+          } else {
+            goToERD(tableName)
+            setOpen(false)
+          }
         }
       }
     }
 
     document.addEventListener('keydown', down)
     return () => document.removeEventListener('keydown', down)
-  }, [tableName])
+  }, [suggestion])
 
   return (
-    <Command value={tableName ?? ''} onValueChange={(v) => setTableName(v)}>
-      <div className={styles.searchContainer}>
-        <div className={styles.searchFormWithIcon}>
-          <Search className={styles.searchIcon} />
-          <Command.Input
-            placeholder="Search"
-            onBlur={(event) => event.target.focus()}
-          />
-        </div>
+    <Command
+      value={suggestion ? suggestionToString(suggestion) : ''}
+      onValueChange={(value) => setSuggestion(stringToSuggestion(value))}
+      filter={(value, search) => {
+        const suggestion = stringToSuggestion(value)
+        if (suggestion === null) return 0
+
+        if (inputMode.type === 'column' && suggestion.type === 'table') return 1
+
+        return suggestion.name.toLowerCase().includes(search.toLowerCase())
+          ? 1
+          : 0
+      }}
+    >
+      <div className={styles.searchArea}>
+        <CommandPaletteSearchInput
+          searchText={searchText}
+          suggestion={suggestion}
+          inputMode={inputMode}
+          setSearchText={setSearchText}
+          setInputMode={setInputMode}
+        />
         <DialogClose asChild>
           <Button
             size="xs"
@@ -72,27 +96,13 @@ export const CommandPaletteContent: FC<Props> = ({ closeDialog }) => {
       <div className={styles.main}>
         <Command.List>
           <Command.Empty>No results found.</Command.Empty>
-          <Command.Group heading="Tables">
-            {Object.values(schema.current.tables).map((table) => (
-              <Command.Item key={table.name} value={table.name} asChild>
-                <a
-                  href={getTableLinkHref(table.name)}
-                  onClick={(event) => {
-                    // Do not call preventDefault to allow the default link behavior when ⌘ key is pressed
-                    if (event.ctrlKey || event.metaKey) {
-                      return
-                    }
-
-                    event.preventDefault()
-                    goToERD(table.name)
-                  }}
-                >
-                  <Table2 className={styles.itemIcon} />
-                  <span className={styles.itemText}>{table.name}</span>
-                </a>
-              </Command.Item>
-            ))}
-          </Command.Group>
+          {inputMode.type === 'default' && <TableOptions />}
+          {inputMode.type === 'column' && table && (
+            <ColumnOptions table={table} searchText={searchText} />
+          )}
+          {(inputMode.type === 'default' || inputMode.type === 'command') && (
+            <CommandOptions />
+          )}
         </Command.List>
         <div
           className={styles.previewContainer}
