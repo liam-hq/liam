@@ -3,6 +3,7 @@
 import type { Schema } from '@liam-hq/schema'
 import { type FC, useTransition } from 'react'
 import type { TimelineItemEntry } from '../../types'
+import { ShareButton } from '../ShareButton'
 import styles from './Chat.module.css'
 import { ChatInput } from './components/ChatInput'
 import { TimelineItem } from './components/TimelineItem'
@@ -146,6 +147,9 @@ export const Chat: FC<Props> = ({
 
   return (
     <div className={styles.wrapper}>
+      <div className={styles.header}>
+        <ShareButton designSessionId={designSessionId} />
+      </div>
       <div className={styles.messagesContainer} ref={containerRef}>
         {/* Display grouped timeline items */}
         {groupedTimelineItems.map((item) => {

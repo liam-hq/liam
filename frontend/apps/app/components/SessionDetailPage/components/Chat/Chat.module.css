@@ -7,6 +7,14 @@
   min-height: 0; /* Allow flex items to shrink */
 }
 
+.header {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  padding: var(--spacing-3) var(--spacing-4);
+  border-bottom: 1px solid var(--color-gray-200);
+}
+
 .messagesContainer {
   flex: 1;
   overflow-y: scroll;
