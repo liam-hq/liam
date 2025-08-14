@@ -101,11 +101,6 @@ CREATE POLICY "authenticated_users_can_select_org_public_share_settings" ON "pub
           WHERE ("organization_members"."user_id" = "auth"."uid"()))))));
 
 
-ALTER TABLE "public"."artifacts_public" ENABLE ROW LEVEL SECURITY;
-ALTER TABLE "public"."building_schema_versions_public" ENABLE ROW LEVEL SECURITY;
-ALTER TABLE "public"."building_schemas_public" ENABLE ROW LEVEL SECURITY;
-ALTER TABLE "public"."design_sessions_public" ENABLE ROW LEVEL SECURITY;
-ALTER TABLE "public"."timeline_items_public" ENABLE ROW LEVEL SECURITY;
 
 
 CREATE POLICY "public_artifacts_public_read" ON "public"."artifacts_public" FOR SELECT TO "anon" USING (("design_session_id" IN ( SELECT "public_share_settings"."design_session_id"
