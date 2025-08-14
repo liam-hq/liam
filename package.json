@@ -21,7 +21,6 @@
   "scripts": {
     "build": "turbo build",
     "create-env-files": "([ -f .env ] || touch .env) && ([ -f .env.local ] || touch .env.local)",
-    "deploy:jobs": "turbo deploy --filter=@liam-hq/jobs",
     "dev": "turbo dev",
     "fmt": "concurrently \"pnpm:fmt:*\"",
     "fmt:knip": "knip --fix",

@@ -1,6 +1,5 @@
 'use server'
 
-import { analyzeRepositoryTask } from '@liam-hq/jobs'
 import { redirect } from 'next/navigation'
 import * as v from 'valibot'
 import { createClient } from '@/libs/db/server'
@@ -56,22 +55,7 @@ export const addProject = async (formData: FormData) => {
     throw new Error(result.output.error)
   }
 
-  const { project_id, repository_id } = result.output
-
-  // Trigger repository analysis in the background
-  try {
-    await analyzeRepositoryTask.trigger({
-      projectId: project_id,
-      repositoryId: repository_id,
-      repositoryOwner,
-      repositoryName,
-      installationId: Number(installationId),
-      organizationId,
-    })
-  } catch (error) {
-    // Log the error but don't fail the project creation
-    console.error('Failed to trigger repository analysis:', error)
-  }
+  const { project_id } = result.output
 
   redirect(urlgen('projects/[projectId]', { projectId: project_id }))
 }

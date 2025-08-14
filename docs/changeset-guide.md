@@ -29,7 +29,7 @@ All of the following conditions must be met:
   ```
   @liam-hq/agent, @liam-hq/app, @liam-hq/docs,
   @liam-hq/figma-to-css-variables, @liam-hq/db,
-  @liam-hq/jobs, @liam-hq/storybook, @liam-hq/github,
+  @liam-hq/storybook, @liam-hq/github,
   @liam-hq/schema-bench
   ```
 

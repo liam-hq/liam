@@ -9,7 +9,7 @@ A **LangGraph implementation** for processing chat messages in the LIAM applicat
 graph TD;
 	__start__([<p>__start__</p>]):::first
 	analyzeRequirements(analyzeRequirements)
-	saveRequirementToArtifact(saveRequirementToArtifact)
+	invokeSaveArtifactTool(invokeSaveArtifactTool)
 	dbAgent(dbAgent)
 	generateUsecase(generateUsecase)
 	prepareDML(prepareDML)
@@ -20,13 +20,12 @@ graph TD;
 	dbAgent --> generateUsecase;
 	finalizeArtifacts --> __end__;
 	generateUsecase --> prepareDML;
+	invokeSaveArtifactTool --> analyzeRequirements;
 	prepareDML --> validateSchema;
-	saveRequirementToArtifact --> dbAgent;
-	analyzeRequirements -.-> saveRequirementToArtifact;
-	analyzeRequirements -.-> finalizeArtifacts;
+	analyzeRequirements -.-> invokeSaveArtifactTool;
+	analyzeRequirements -.-> dbAgent;
 	validateSchema -.-> dbAgent;
 	validateSchema -.-> finalizeArtifacts;
-	analyzeRequirements -.-> analyzeRequirements;
 	classDef default fill:#f2f0ff,line-height:1.2;
 	classDef first fill-opacity:0;
 	classDef last fill:#bfb6fc;

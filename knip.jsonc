@@ -12,10 +12,9 @@
     "frontend/apps/docs/source.config.ts",
     // - Generated files may contain unused exports
     "frontend/internal-packages/db/supabase/database.types.ts",
+    "frontend/packages/db-structure/src/parser/tbls/schema.generated.ts",
     // - Script for workaround
     "frontend/apps/app/scripts/install-prisma-internals.mjs",
-    // - Script file which is read from trigger.config.ts
-    "frontend/internal-packages/jobs/src/trigger/jobs.ts",
     // - Next.js special files
     "frontend/apps/docs/app/docs/sitemap.ts",
     "frontend/apps/app/next.config.ts",
@@ -55,8 +54,5 @@
     "frontend/packages/cli": {
       "entry": ["bin/cli.ts", "src/main.tsx"]
     },
-    "frontend/internal-packages/jobs": {
-      "entry": ["trigger.config.ts"]
-    }
   }
 }

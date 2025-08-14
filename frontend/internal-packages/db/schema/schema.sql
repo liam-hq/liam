@@ -487,39 +487,6 @@ $$;
 ALTER FUNCTION "public"."is_current_user_org_member"("_org" "uuid") OWNER TO "postgres";
 
 
-CREATE OR REPLACE FUNCTION "public"."match_documents"("filter" "jsonb" DEFAULT '{}'::"jsonb", "match_count" integer DEFAULT 10, "query_embedding" "public"."vector" DEFAULT NULL::"public"."vector", "match_threshold" double precision DEFAULT 0.3) RETURNS TABLE("id" "uuid", "content" "text", "metadata" "jsonb", "similarity" double precision)
-    LANGUAGE "plpgsql" STABLE
-    AS $$
-begin
-  -- Check which signature is being used based on parameters
-  if query_embedding is null and filter ? 'query_embedding' then
-    -- Extract query_embedding from filter if provided in that format
-    query_embedding := (filter->>'query_embedding')::vector(1536);
-  end if;
-
-  -- Ensure we have a valid query_embedding
-  if query_embedding is null then
-    raise exception 'query_embedding is required';
-  end if;
-
-  -- Return matching documents
-  return query
-  select
-    d.id,
-    d.content,
-    d.metadata,
-    1 - (d.embedding <=> query_embedding) as similarity
-  from documents d
-  where 1 - (d.embedding <=> query_embedding) > match_threshold
-  order by similarity desc
-  limit match_count;
-end;
-$$;
-
-
-ALTER FUNCTION "public"."match_documents"("filter" "jsonb", "match_count" integer, "query_embedding" "public"."vector", "match_threshold" double precision) OWNER TO "postgres";
-
-
 CREATE OR REPLACE FUNCTION "public"."prevent_delete_last_organization_member"() RETURNS "trigger"
     LANGUAGE "plpgsql"
     AS $$
@@ -1300,20 +1267,6 @@ CREATE TABLE IF NOT EXISTS "public"."doc_file_paths" (
 ALTER TABLE "public"."doc_file_paths" OWNER TO "postgres";
 
 
-CREATE TABLE IF NOT EXISTS "public"."documents" (
-    "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
-    "content" "text" NOT NULL,
-    "metadata" "jsonb",
-    "embedding" "public"."vector"(1536),
-    "created_at" timestamp(3) with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    "updated_at" timestamp(3) with time zone NOT NULL,
-    "organization_id" "uuid" NOT NULL
-);
-
-
-ALTER TABLE "public"."documents" OWNER TO "postgres";
-
-
 CREATE TABLE IF NOT EXISTS "public"."github_pull_request_comments" (
     "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
     "github_pull_request_id" "uuid" NOT NULL,
@@ -1718,11 +1671,6 @@ ALTER TABLE ONLY "public"."design_sessions"
 
 
 
-ALTER TABLE ONLY "public"."documents"
-    ADD CONSTRAINT "documents_pkey" PRIMARY KEY ("id");
-
-
-
 ALTER TABLE ONLY "public"."doc_file_paths"
     ADD CONSTRAINT "github_doc_file_path_pkey" PRIMARY KEY ("id");
 
@@ -1892,10 +1840,6 @@ CREATE INDEX "building_schema_versions_number_idx" ON "public"."building_schema_
 
 
 CREATE UNIQUE INDEX "doc_file_path_path_project_id_key" ON "public"."doc_file_paths" USING "btree" ("path", "project_id");
-
-
-
-CREATE INDEX "documents_embedding_idx" ON "public"."documents" USING "ivfflat" ("embedding" "public"."vector_cosine_ops") WITH ("lists"='100');
 
 
 
@@ -2227,11 +2171,6 @@ ALTER TABLE ONLY "public"."design_sessions"
 
 ALTER TABLE ONLY "public"."doc_file_paths"
     ADD CONSTRAINT "doc_file_paths_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "public"."organizations"("id") ON UPDATE CASCADE ON DELETE RESTRICT;
-
-
-
-ALTER TABLE ONLY "public"."documents"
-    ADD CONSTRAINT "documents_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "public"."organizations"("id") ON DELETE CASCADE;
 
 
 
@@ -2574,16 +2513,6 @@ COMMENT ON POLICY "authenticated_users_can_delete_org_design_sessions" ON "publi
 
 
 
-CREATE POLICY "authenticated_users_can_delete_org_documents" ON "public"."documents" FOR DELETE TO "authenticated" USING (("organization_id" IN ( SELECT "organization_members"."organization_id"
-   FROM "public"."organization_members"
-  WHERE ("organization_members"."user_id" = "auth"."uid"()))));
-
-
-
-COMMENT ON POLICY "authenticated_users_can_delete_org_documents" ON "public"."documents" IS 'Authenticated users can only delete documents in organizations they are members of';
-
-
-
 CREATE POLICY "authenticated_users_can_delete_org_invitations" ON "public"."invitations" FOR DELETE TO "authenticated" USING (("organization_id" IN ( SELECT "organization_members"."organization_id"
    FROM "public"."organization_members"
   WHERE ("organization_members"."user_id" = "auth"."uid"()))));
@@ -2731,16 +2660,6 @@ CREATE POLICY "authenticated_users_can_insert_org_doc_file_paths" ON "public"."d
 
 
 COMMENT ON POLICY "authenticated_users_can_insert_org_doc_file_paths" ON "public"."doc_file_paths" IS 'Authenticated users can insert doc file paths for their organization';
-
-
-
-CREATE POLICY "authenticated_users_can_insert_org_documents" ON "public"."documents" FOR INSERT TO "authenticated" WITH CHECK (("organization_id" IN ( SELECT "organization_members"."organization_id"
-   FROM "public"."organization_members"
-  WHERE ("organization_members"."user_id" = "auth"."uid"()))));
-
-
-
-COMMENT ON POLICY "authenticated_users_can_insert_org_documents" ON "public"."documents" IS 'Authenticated users can only add documents to organizations they are members of';
 
 
 
@@ -2959,16 +2878,6 @@ CREATE POLICY "authenticated_users_can_select_org_doc_file_paths" ON "public"."d
 
 
 COMMENT ON POLICY "authenticated_users_can_select_org_doc_file_paths" ON "public"."doc_file_paths" IS 'Authenticated users can select doc file paths for their organization';
-
-
-
-CREATE POLICY "authenticated_users_can_select_org_documents" ON "public"."documents" FOR SELECT TO "authenticated" USING (("organization_id" IN ( SELECT "organization_members"."organization_id"
-   FROM "public"."organization_members"
-  WHERE ("organization_members"."user_id" = "auth"."uid"()))));
-
-
-
-COMMENT ON POLICY "authenticated_users_can_select_org_documents" ON "public"."documents" IS 'Authenticated users can only view documents in organizations they are members of';
 
 
 
@@ -3272,16 +3181,6 @@ COMMENT ON POLICY "authenticated_users_can_update_org_design_sessions" ON "publi
 
 
 
-CREATE POLICY "authenticated_users_can_update_org_documents" ON "public"."documents" FOR UPDATE TO "authenticated" USING (("organization_id" IN ( SELECT "organization_members"."organization_id"
-   FROM "public"."organization_members"
-  WHERE ("organization_members"."user_id" = "auth"."uid"()))));
-
-
-
-COMMENT ON POLICY "authenticated_users_can_update_org_documents" ON "public"."documents" IS 'Authenticated users can only update documents in organizations they are members of';
-
-
-
 CREATE POLICY "authenticated_users_can_update_org_invitations" ON "public"."invitations" FOR UPDATE TO "authenticated" USING (("organization_id" IN ( SELECT "organization_members"."organization_id"
    FROM "public"."organization_members"
   WHERE ("organization_members"."user_id" = "auth"."uid"())))) WITH CHECK (("organization_id" IN ( SELECT "organization_members"."organization_id"
@@ -3420,9 +3319,6 @@ ALTER TABLE "public"."design_sessions" ENABLE ROW LEVEL SECURITY;
 ALTER TABLE "public"."doc_file_paths" ENABLE ROW LEVEL SECURITY;
 
 
-ALTER TABLE "public"."documents" ENABLE ROW LEVEL SECURITY;
-
-
 ALTER TABLE "public"."github_pull_request_comments" ENABLE ROW LEVEL SECURITY;
 
 
@@ -3504,10 +3400,6 @@ CREATE POLICY "service_role_can_delete_all_checkpoints" ON "public"."checkpoints
 
 
 
-CREATE POLICY "service_role_can_delete_all_documents" ON "public"."documents" FOR DELETE TO "service_role" USING (true);
-
-
-
 CREATE POLICY "service_role_can_delete_all_invitations" ON "public"."invitations" FOR DELETE TO "service_role" USING (true);
 
 
@@ -3565,10 +3457,6 @@ CREATE POLICY "service_role_can_insert_all_checkpoints" ON "public"."checkpoints
 
 
 CREATE POLICY "service_role_can_insert_all_design_sessions" ON "public"."design_sessions" FOR INSERT TO "service_role" WITH CHECK (true);
-
-
-
-CREATE POLICY "service_role_can_insert_all_documents" ON "public"."documents" FOR INSERT TO "service_role" WITH CHECK (true);
 
 
 
@@ -3680,10 +3568,6 @@ CREATE POLICY "service_role_can_select_all_doc_file_paths" ON "public"."doc_file
 
 
 
-CREATE POLICY "service_role_can_select_all_documents" ON "public"."documents" FOR SELECT TO "service_role" USING (true);
-
-
-
 CREATE POLICY "service_role_can_select_all_github_pull_request_comments" ON "public"."github_pull_request_comments" FOR SELECT TO "service_role" USING (true);
 
 
@@ -3781,10 +3665,6 @@ CREATE POLICY "service_role_can_update_all_checkpoints" ON "public"."checkpoints
 
 
 CREATE POLICY "service_role_can_update_all_design_sessions" ON "public"."design_sessions" FOR UPDATE TO "service_role" USING (true) WITH CHECK (true);
-
-
-
-CREATE POLICY "service_role_can_update_all_documents" ON "public"."documents" FOR UPDATE TO "service_role" USING (true) WITH CHECK (true);
 
 
 
@@ -4670,11 +4550,6 @@ GRANT ALL ON FUNCTION "public"."l2_normalize"("public"."vector") TO "service_rol
 
 
 
-GRANT ALL ON FUNCTION "public"."match_documents"("filter" "jsonb", "match_count" integer, "query_embedding" "public"."vector", "match_threshold" double precision) TO "authenticated";
-GRANT ALL ON FUNCTION "public"."match_documents"("filter" "jsonb", "match_count" integer, "query_embedding" "public"."vector", "match_threshold" double precision) TO "service_role";
-
-
-
 GRANT ALL ON FUNCTION "public"."prevent_delete_last_organization_member"() TO "authenticated";
 GRANT ALL ON FUNCTION "public"."prevent_delete_last_organization_member"() TO "service_role";
 
@@ -5122,11 +4997,6 @@ GRANT ALL ON TABLE "public"."design_sessions" TO "service_role";
 
 GRANT ALL ON TABLE "public"."doc_file_paths" TO "authenticated";
 GRANT ALL ON TABLE "public"."doc_file_paths" TO "service_role";
-
-
-
-GRANT ALL ON TABLE "public"."documents" TO "authenticated";
-GRANT ALL ON TABLE "public"."documents" TO "service_role";
 
 
 

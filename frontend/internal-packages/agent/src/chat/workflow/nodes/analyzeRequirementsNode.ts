@@ -33,61 +33,32 @@ export async function analyzeRequirementsNode(
 
   const pmAnalysisAgent = new PMAnalysisAgent()
 
-  const analysisResult = await pmAnalysisAgent.generate(state.messages)
+  const analysisResult = await pmAnalysisAgent.generate(
+    state.messages,
+    configurableResult.value,
+  )
 
-  return analysisResult.match(
-    async (analysisData) => {
-      // Log reasoning summary if available
-      if (
-        analysisData.reasoning?.summary &&
-        analysisData.reasoning.summary.length > 0
-      ) {
-        for (const summaryItem of analysisData.reasoning.summary) {
-          await logAssistantMessage(
-            state,
-            repositories,
-            summaryItem.text,
-            assistantRole,
-          )
-        }
-      }
+  if (analysisResult.isErr()) {
+    throw new WorkflowTerminationError(
+      analysisResult.error,
+      'analyzeRequirementsNode',
+    )
+  }
 
-      // PMAnalysisAgent has already parsed the JSON response
-      // Set analyzedRequirements so the conditional routing can proceed to saveRequirementToArtifact
-      const analyzedRequirements = {
-        businessRequirement: analysisData.response.businessRequirement,
-        functionalRequirements: analysisData.response.functionalRequirements,
-        nonFunctionalRequirements:
-          analysisData.response.nonFunctionalRequirements,
-      }
+  const { response, reasoning } = analysisResult.value
 
-      return {
-        ...state,
-        analyzedRequirements,
-      }
-    },
-    async (error) => {
-      const currentRetryCount = state.retryCount['analyzeRequirements'] || 0
-      const newRetryCount = currentRetryCount + 1
-
+  if (reasoning?.summary && reasoning.summary.length > 0) {
+    for (const summaryItem of reasoning.summary) {
       await logAssistantMessage(
         state,
         repositories,
-        `Having trouble understanding your requirements (attempt ${newRetryCount}): ${error.message}. Let me try a different approach...`,
+        summaryItem.text,
         assistantRole,
       )
-
-      // Instead of throwing, return state with incremented retry count
-      // This allows conditional routing to decide whether to retry or fallback
-      return {
-        ...state,
-        retryCount: {
-          ...state.retryCount,
-          analyzeRequirements: newRetryCount,
-        },
-        // Keep analyzedRequirements undefined so conditional routing works
-        analyzedRequirements: undefined,
-      }
-    },
-  )
+    }
+  }
+  return {
+    ...state,
+    messages: [response],
+  }
 }

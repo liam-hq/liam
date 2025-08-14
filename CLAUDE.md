@@ -72,7 +72,6 @@ For database migration and type generation workflows, see [`docs/migrationOpsCon
 - **frontend/packages/schema** - Database schema parser (`@liam-hq/schema`)
 - **frontend/packages/ui** - UI component library (`@liam-hq/ui`)
 - **frontend/packages/github** - GitHub API integration (`@liam-hq/github`)
-- **frontend/packages/jobs** - Background jobs with Trigger.dev (`@liam-hq/jobs`)
 
 ### Key Technologies
 - **Frontend**: React 18, Next.js 15, TypeScript
@@ -81,14 +80,12 @@ For database migration and type generation workflows, see [`docs/migrationOpsCon
 - **State**: Valtio for state management
 - **Validation**: Valibot for runtime type validation
 - **Build**: Turborepo, pnpm workspaces
-- **Jobs**: Trigger.dev for background processing
 
 ### Data Flow
 1. Schema files are parsed by `@liam-hq/schema`
 2. ERD visualization is handled by `@liam-hq/erd-core` using React Flow
 3. UI components from `@liam-hq/ui` provide consistent design
 4. GitHub integration via `@liam-hq/github` for PR reviews
-5. Background jobs in `@liam-hq/jobs` handle async operations
 
 ## Development Guidelines
 

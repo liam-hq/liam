@@ -20,18 +20,6 @@
       ],
       "outputLogs": "errors-only"
     },
-    "@liam-hq/jobs#deploy": {
-      "dependsOn": ["^build"],
-      "passThroughEnv": [
-        "SENTRY_AUTH_TOKEN",
-        "SENTRY_ORG",
-        "SENTRY_PROJECT",
-        "SENTRY_DSN",
-        "NEXT_PUBLIC_ENV_NAME",
-        "TRIGGER_ACCESS_TOKEN",
-        "TRIGGER_PROJECT_ID"
-      ]
-    },
     "@liam-hq/docs#build": {
       "dependsOn": ["^build"],
       "outputs": [".next"]

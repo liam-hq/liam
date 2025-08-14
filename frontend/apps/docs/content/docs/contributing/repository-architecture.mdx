@@ -81,12 +81,6 @@ Our project uses a monorepo structure managed with pnpm workspaces, allowing us 
 │       │   │   ├── hooks/
 │       │   │   └── utils/
 │       │   └── package.json
-│       ├── jobs/             # Trigger.dev jobs and workflows (@liam-hq/jobs)
-│       │   ├── src/
-│       │   │   ├── functions/
-│       │   │   ├── jobs/
-│       │   │   └── types/
-│       │   └── package.json
 │       └── ui/               # UI component library (@liam-hq/ui)
 │           ├── src/
 │           │   ├── components/
@@ -157,21 +151,6 @@ React Flow based ERD visualization components and logic. see: [/docs/ui-features
 - ERD Visualization
 - UI Components
 - State Management
-
-### Jobs Package (`@liam-hq/jobs`)
-
-Trigger.dev job definitions and utilities for handling background jobs.
-
-**Key Responsibilities:**
-
-- Pull request review workflow
-- GitHub integration for comments
-- Background job orchestration
-
-**Tech Stack:**
-
-- Trigger.dev SDK
-- LangChain for AI-powered reviews
 
 ### UI Package (`@liam-hq/ui`)
 

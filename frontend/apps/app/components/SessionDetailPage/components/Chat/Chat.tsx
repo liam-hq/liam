@@ -69,7 +69,41 @@ export const Chat: FC<Props> = ({
     })
   }
 
-  // Group consecutive messages from the same agent
+  // Determines the role for grouping purposes
+  // Messages with 'role' property use their role, others default to 'db'
+  const getEffectiveRole = (entry: TimelineItemEntry): string => {
+    return 'role' in entry ? entry.role : 'db'
+  }
+
+  // Helper to check if an item can be grouped with the previous item
+  const canGroupWithPrevious = (
+    lastItem: TimelineItemEntry | TimelineItemEntry[] | undefined,
+    currentItem: TimelineItemEntry,
+    agentTypes: string[],
+  ): { canGroup: boolean; isArray: boolean } => {
+    if (!lastItem) return { canGroup: false, isArray: false }
+
+    const currentRole = getEffectiveRole(currentItem)
+
+    if (Array.isArray(lastItem) && lastItem.length > 0) {
+      const firstItem = lastItem[0]
+      return {
+        canGroup: !!firstItem && getEffectiveRole(firstItem) === currentRole,
+        isArray: true,
+      }
+    }
+
+    if (!Array.isArray(lastItem) && agentTypes.includes(lastItem.type)) {
+      return {
+        canGroup: getEffectiveRole(lastItem) === currentRole,
+        isArray: false,
+      }
+    }
+
+    return { canGroup: false, isArray: false }
+  }
+
+  // Group consecutive messages from the same agent to reduce visual clutter
   const groupedTimelineItems = timelineItems.reduce<
     Array<TimelineItemEntry | TimelineItemEntry[]>
   >((acc, item) => {
@@ -81,48 +115,32 @@ export const Chat: FC<Props> = ({
       'error',
     ]
 
+    // Non-agent messages (like user messages) are never grouped
     if (!agentTypes.includes(item.type)) {
-      // Non-agent messages are added as-is
       acc.push(item)
       return acc
     }
 
-    // Check if the previous item in the accumulator is a group of the same type
     const lastItem = acc[acc.length - 1]
+    const groupingCheck = canGroupWithPrevious(lastItem, item, agentTypes)
 
-    // Helper function to get effective role
-    const getEffectiveRole = (entry: TimelineItemEntry): string => {
-      if ('role' in entry) {
-        return entry.role
-      }
-      // schema_version, query_result, error all render as 'db' agent
-      return 'db'
-    }
-
-    const currentRole = getEffectiveRole(item)
-
-    if (Array.isArray(lastItem) && lastItem.length > 0) {
-      const firstItem = lastItem[0]
-      if (!firstItem) return acc
-      const lastRole = getEffectiveRole(firstItem)
-      if (lastRole === currentRole) {
+    if (groupingCheck.canGroup) {
+      if (groupingCheck.isArray && Array.isArray(lastItem)) {
+        // Add to existing group
         lastItem.push(item)
-        return acc
-      }
-    } else if (
-      lastItem &&
-      !Array.isArray(lastItem) &&
-      agentTypes.includes(lastItem.type)
-    ) {
-      const lastRole = getEffectiveRole(lastItem)
-      if (lastRole === currentRole) {
+      } else if (
+        !groupingCheck.isArray &&
+        lastItem &&
+        !Array.isArray(lastItem)
+      ) {
+        // Create new group from two single items
         acc[acc.length - 1] = [lastItem, item]
-        return acc
       }
+      return acc
     }
 
+    // No grouping possible - add as standalone item
     acc.push(item)
-
     return acc
   }, [])
 

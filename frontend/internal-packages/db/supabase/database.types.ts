@@ -443,44 +443,6 @@ export type Database = {
           },
         ]
       }
-      documents: {
-        Row: {
-          content: string
-          created_at: string
-          embedding: string | null
-          id: string
-          metadata: Json | null
-          organization_id: string
-          updated_at: string
-        }
-        Insert: {
-          content: string
-          created_at?: string
-          embedding?: string | null
-          id?: string
-          metadata?: Json | null
-          organization_id: string
-          updated_at: string
-        }
-        Update: {
-          content?: string
-          created_at?: string
-          embedding?: string | null
-          id?: string
-          metadata?: Json | null
-          organization_id?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: 'documents_organization_id_fkey'
-            columns: ['organization_id']
-            isOneToOne: false
-            referencedRelation: 'organizations'
-            referencedColumns: ['id']
-          },
-        ]
-      }
       github_pull_request_comments: {
         Row: {
           created_at: string
@@ -1664,20 +1626,6 @@ export type Database = {
       l2_normalize: {
         Args: { '': string } | { '': unknown } | { '': unknown }
         Returns: string
-      }
-      match_documents: {
-        Args: {
-          filter?: Json
-          match_count?: number
-          query_embedding?: string
-          match_threshold?: number
-        }
-        Returns: {
-          id: string
-          content: string
-          metadata: Json
-          similarity: number
-        }[]
       }
       sparsevec_out: {
         Args: { '': unknown }

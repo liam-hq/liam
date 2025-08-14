@@ -4,12 +4,13 @@ import {
   analyzeRequirementsNode,
   finalizeArtifactsNode,
   generateUsecaseNode,
+  invokeSaveArtifactToolNode,
   prepareDmlNode,
-  saveRequirementToArtifactNode,
   validateSchemaNode,
 } from './chat/workflow/nodes'
 import { createAnnotations } from './chat/workflow/shared/langGraphUtils'
 import { createDbAgentGraph } from './db-agent/createDbAgentGraph'
+import { routeAfterAnalyzeRequirements } from './pm-agent/routing/routeAfterAnalyzeRequirements'
 import { RETRY_POLICY } from './shared/errorHandling'
 
 /**
@@ -28,7 +29,7 @@ export const createGraph = (checkpointer?: BaseCheckpointSaver) => {
     .addNode('analyzeRequirements', analyzeRequirementsNode, {
       retryPolicy: RETRY_POLICY,
     })
-    .addNode('saveRequirementToArtifact', saveRequirementToArtifactNode, {
+    .addNode('invokeSaveArtifactTool', invokeSaveArtifactToolNode, {
       retryPolicy: RETRY_POLICY,
     })
     .addNode('dbAgent', dbAgentSubgraph)
@@ -46,38 +47,17 @@ export const createGraph = (checkpointer?: BaseCheckpointSaver) => {
     })
 
     .addEdge(START, 'analyzeRequirements')
-    .addEdge('saveRequirementToArtifact', 'dbAgent')
+    .addEdge('invokeSaveArtifactTool', 'analyzeRequirements')
     .addEdge('dbAgent', 'generateUsecase')
     .addEdge('generateUsecase', 'prepareDML')
     .addEdge('prepareDML', 'validateSchema')
     .addEdge('finalizeArtifacts', END)
 
     // Conditional edges for requirements analysis
-    .addConditionalEdges(
-      'analyzeRequirements',
-      (state) => {
-        const MAX_RETRIES = 3
-        const retryCount = state.retryCount['analyzeRequirements'] || 0
-
-        // If analyzedRequirements is defined → proceed to saveRequirementToArtifact
-        if (state.analyzedRequirements !== undefined) {
-          return 'saveRequirementToArtifact'
-        }
-
-        // If max retries exceeded → fallback to finalizeArtifacts
-        if (retryCount >= MAX_RETRIES) {
-          return 'finalizeArtifacts'
-        }
-
-        // Otherwise → retry analyzeRequirements
-        return 'analyzeRequirements'
-      },
-      {
-        analyzeRequirements: 'analyzeRequirements',
-        saveRequirementToArtifact: 'saveRequirementToArtifact',
-        finalizeArtifacts: 'finalizeArtifacts',
-      },
-    )
+    .addConditionalEdges('analyzeRequirements', routeAfterAnalyzeRequirements, {
+      invokeSaveArtifactTool: 'invokeSaveArtifactTool',
+      dbAgent: 'dbAgent',
+    })
 
     // Conditional edges for validation results
     .addConditionalEdges(
