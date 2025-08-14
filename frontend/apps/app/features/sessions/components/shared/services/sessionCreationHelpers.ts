@@ -197,5 +197,5 @@ export const createSessionWithSchema = async (
   const queryParams = new URLSearchParams({
     deepModeling: params.isDeepModelingEnabled.toString(),
   })
-  redirect(`/app/design_sessions/${designSession.id}?${queryParams.toString()}`)
+  redirect(`/app/design_sessions/${designSession.id}/stream-poc?${queryParams.toString()}`)
 }
