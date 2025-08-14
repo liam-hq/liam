@@ -1,4 +1,5 @@
 import { createServerClient } from '@liam-hq/db'
+import { err, ok, type Result } from 'neverthrow'
 import { cookies } from 'next/headers'
 
 /**
@@ -43,15 +44,27 @@ export async function createClient({
  * This is foundation code for Public Share feature Phase 1.1
  * Will be used in future phases for server-side anonymous access to public data
  */
-export async function createPublicServerClient() {
-  return createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL ?? '',
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? '',
-    {
+export function createPublicServerClient(): Result<
+  ReturnType<typeof createServerClient>,
+  Error
+> {
+  const supabaseUrl = process.env.SUPABASE_URL
+  const supabaseAnonKey = process.env.SUPABASE_ANON_KEY
+
+  if (!supabaseUrl) {
+    return err(new Error('SUPABASE_URL environment variable is not set'))
+  }
+
+  if (!supabaseAnonKey) {
+    return err(new Error('SUPABASE_ANON_KEY environment variable is not set'))
+  }
+
+  return ok(
+    createServerClient(supabaseUrl, supabaseAnonKey, {
       cookies: {
         getAll: () => [],
         setAll: () => {},
       },
-    },
+    }),
   )
 }
