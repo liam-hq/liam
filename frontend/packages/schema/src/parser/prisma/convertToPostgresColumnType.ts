@@ -20,6 +20,15 @@ function handleNativeType(
   nativeTypeArgs: readonly string[],
   defaultValue: DMMF.Field['default'] | null,
 ): string {
+  // Check for cuid (before autoincrement check)
+  if (
+    typeof defaultValue === 'string' &&
+    defaultValue.match(/cuid\(\d*\)/) // cuid() or cuid(2) pattern
+  ) {
+    // cuid is generated on the application side, so we use text type
+    return 'text'
+  }
+
   // Check for autoincrement
   if (
     typeof defaultValue === 'string' &&
@@ -77,6 +86,15 @@ export function convertToPostgresColumnType(
   if (nativeType) {
     const [nativeTypeName, nativeTypeArgs] = nativeType
     return handleNativeType(nativeTypeName, nativeTypeArgs, defaultValue)
+  }
+
+  // Handle cuid without native type (before autoincrement check)
+  if (
+    typeof defaultValue === 'string' &&
+    defaultValue.match(/cuid\(\d*\)/) // cuid() or cuid(2) pattern
+  ) {
+    // cuid format is suitable for text type
+    return 'text'
   }
 
   // Handle autoincrement without native type

@@ -70,6 +70,12 @@ function processModelField(
   const fieldName =
     tableFieldRenaming[model.dbName || model.name]?.[field.name] ?? field.name
 
+  // For cuid(), don't set database-level default since it's generated client-side
+  const finalDefaultValue =
+    typeof defaultValue === 'string' && defaultValue.match(/cuid\(\d*\)/)
+      ? null
+      : defaultValue
+
   const column = {
     name: fieldName,
     type: convertToPostgresColumnType(
@@ -77,7 +83,7 @@ function processModelField(
       field.nativeType,
       defaultValue,
     ),
-    default: defaultValue,
+    default: finalDefaultValue,
     notNull: field.isRequired,
     comment: field.documentation ?? null,
     check: null,
