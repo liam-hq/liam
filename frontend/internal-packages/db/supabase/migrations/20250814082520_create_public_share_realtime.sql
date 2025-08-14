@@ -4,12 +4,63 @@ CREATE TABLE IF NOT EXISTS "public"."public_share_settings" (
 );
 ALTER TABLE "public"."public_share_settings" OWNER TO "postgres";
 
+CREATE VIEW public.artifacts_public AS
+SELECT 
+    id,
+    design_session_id,
+    artifact,
+    created_at,
+    updated_at
+FROM public.artifacts;
+
+CREATE VIEW public.building_schema_versions_public AS
+SELECT 
+    id,
+    building_schema_id,
+    number,
+    created_at,
+    patch,
+    reverse_patch
+FROM public.building_schema_versions;
+
+CREATE VIEW public.building_schemas_public AS
+SELECT 
+    id,
+    design_session_id,
+    schema,
+    created_at,
+    git_sha,
+    initial_schema_snapshot,
+    schema_file_path
+FROM public.building_schemas;
+
+CREATE VIEW public.design_sessions_public AS
+SELECT 
+    id,
+    name,
+    created_at,
+    parent_design_session_id
+FROM public.design_sessions;
+
+CREATE VIEW public.timeline_items_public AS
+SELECT 
+    id,
+    design_session_id,
+    content,
+    created_at,
+    updated_at,
+    building_schema_version_id,
+    type,
+    query_result_id,
+    assistant_role
+FROM public.timeline_items;
+
 GRANT SELECT ON TABLE "public"."public_share_settings" TO "anon";
-GRANT SELECT ON TABLE "public"."design_sessions" TO "anon";
-GRANT SELECT ON TABLE "public"."artifacts" TO "anon";
-GRANT SELECT ON TABLE "public"."building_schema_versions" TO "anon";
-GRANT SELECT ON TABLE "public"."building_schemas" TO "anon";
-GRANT SELECT ON TABLE "public"."timeline_items" TO "anon";
+GRANT SELECT ON TABLE "public"."artifacts_public" TO "anon";
+GRANT SELECT ON TABLE "public"."building_schema_versions_public" TO "anon";
+GRANT SELECT ON TABLE "public"."building_schemas_public" TO "anon";
+GRANT SELECT ON TABLE "public"."design_sessions_public" TO "anon";
+GRANT SELECT ON TABLE "public"."timeline_items_public" TO "anon";
 
 
 
@@ -50,6 +101,7 @@ CREATE POLICY "authenticated_users_can_select_org_public_share_settings" ON "pub
           WHERE ("organization_members"."user_id" = "auth"."uid"()))))));
 
 
+-- RLS policies for the actual tables (not views)
 CREATE POLICY "public_artifacts_read" ON "public"."artifacts" FOR SELECT TO "anon" USING (("design_session_id" IN ( SELECT "public_share_settings"."design_session_id"
    FROM "public"."public_share_settings")));
 

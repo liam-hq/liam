@@ -1071,6 +1071,18 @@ CREATE TABLE IF NOT EXISTS "public"."artifacts" (
 ALTER TABLE "public"."artifacts" OWNER TO "postgres";
 
 
+CREATE OR REPLACE VIEW "public"."artifacts_public" AS
+ SELECT "artifacts"."id",
+    "artifacts"."design_session_id",
+    "artifacts"."artifact",
+    "artifacts"."created_at",
+    "artifacts"."updated_at"
+   FROM "public"."artifacts";
+
+
+ALTER TABLE "public"."artifacts_public" OWNER TO "postgres";
+
+
 CREATE TABLE IF NOT EXISTS "public"."building_schema_versions" (
     "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
     "organization_id" "uuid" NOT NULL,
@@ -1083,6 +1095,19 @@ CREATE TABLE IF NOT EXISTS "public"."building_schema_versions" (
 
 
 ALTER TABLE "public"."building_schema_versions" OWNER TO "postgres";
+
+
+CREATE OR REPLACE VIEW "public"."building_schema_versions_public" AS
+ SELECT "building_schema_versions"."id",
+    "building_schema_versions"."building_schema_id",
+    "building_schema_versions"."number",
+    "building_schema_versions"."created_at",
+    "building_schema_versions"."patch",
+    "building_schema_versions"."reverse_patch"
+   FROM "public"."building_schema_versions";
+
+
+ALTER TABLE "public"."building_schema_versions_public" OWNER TO "postgres";
 
 
 CREATE TABLE IF NOT EXISTS "public"."building_schemas" (
@@ -1098,6 +1123,20 @@ CREATE TABLE IF NOT EXISTS "public"."building_schemas" (
 
 
 ALTER TABLE "public"."building_schemas" OWNER TO "postgres";
+
+
+CREATE OR REPLACE VIEW "public"."building_schemas_public" AS
+ SELECT "building_schemas"."id",
+    "building_schemas"."design_session_id",
+    "building_schemas"."schema",
+    "building_schemas"."created_at",
+    "building_schemas"."git_sha",
+    "building_schemas"."initial_schema_snapshot",
+    "building_schemas"."schema_file_path"
+   FROM "public"."building_schemas";
+
+
+ALTER TABLE "public"."building_schemas_public" OWNER TO "postgres";
 
 
 CREATE TABLE IF NOT EXISTS "public"."checkpoint_blobs" (
@@ -1251,6 +1290,17 @@ CREATE TABLE IF NOT EXISTS "public"."design_sessions" (
 
 
 ALTER TABLE "public"."design_sessions" OWNER TO "postgres";
+
+
+CREATE OR REPLACE VIEW "public"."design_sessions_public" AS
+ SELECT "design_sessions"."id",
+    "design_sessions"."name",
+    "design_sessions"."created_at",
+    "design_sessions"."parent_design_session_id"
+   FROM "public"."design_sessions";
+
+
+ALTER TABLE "public"."design_sessions_public" OWNER TO "postgres";
 
 
 CREATE TABLE IF NOT EXISTS "public"."doc_file_paths" (
@@ -1554,6 +1604,22 @@ CREATE TABLE IF NOT EXISTS "public"."timeline_items" (
 
 
 ALTER TABLE "public"."timeline_items" OWNER TO "postgres";
+
+
+CREATE OR REPLACE VIEW "public"."timeline_items_public" AS
+ SELECT "timeline_items"."id",
+    "timeline_items"."design_session_id",
+    "timeline_items"."content",
+    "timeline_items"."created_at",
+    "timeline_items"."updated_at",
+    "timeline_items"."building_schema_version_id",
+    "timeline_items"."type",
+    "timeline_items"."query_result_id",
+    "timeline_items"."assistant_role"
+   FROM "public"."timeline_items";
+
+
+ALTER TABLE "public"."timeline_items_public" OWNER TO "postgres";
 
 
 CREATE TABLE IF NOT EXISTS "public"."users" (
@@ -5034,19 +5100,34 @@ GRANT ALL ON FUNCTION "public"."sum"("public"."vector") TO "service_role";
 
 GRANT ALL ON TABLE "public"."artifacts" TO "authenticated";
 GRANT ALL ON TABLE "public"."artifacts" TO "service_role";
-GRANT SELECT ON TABLE "public"."artifacts" TO "anon";
+
+
+
+GRANT ALL ON TABLE "public"."artifacts_public" TO "authenticated";
+GRANT ALL ON TABLE "public"."artifacts_public" TO "service_role";
+GRANT SELECT ON TABLE "public"."artifacts_public" TO "anon";
 
 
 
 GRANT ALL ON TABLE "public"."building_schema_versions" TO "authenticated";
 GRANT ALL ON TABLE "public"."building_schema_versions" TO "service_role";
-GRANT SELECT ON TABLE "public"."building_schema_versions" TO "anon";
+
+
+
+GRANT ALL ON TABLE "public"."building_schema_versions_public" TO "authenticated";
+GRANT ALL ON TABLE "public"."building_schema_versions_public" TO "service_role";
+GRANT SELECT ON TABLE "public"."building_schema_versions_public" TO "anon";
 
 
 
 GRANT ALL ON TABLE "public"."building_schemas" TO "authenticated";
 GRANT ALL ON TABLE "public"."building_schemas" TO "service_role";
-GRANT SELECT ON TABLE "public"."building_schemas" TO "anon";
+
+
+
+GRANT ALL ON TABLE "public"."building_schemas_public" TO "authenticated";
+GRANT ALL ON TABLE "public"."building_schemas_public" TO "service_role";
+GRANT SELECT ON TABLE "public"."building_schemas_public" TO "anon";
 
 
 
@@ -5072,7 +5153,12 @@ GRANT ALL ON TABLE "public"."checkpoints" TO "service_role";
 
 GRANT ALL ON TABLE "public"."design_sessions" TO "authenticated";
 GRANT ALL ON TABLE "public"."design_sessions" TO "service_role";
-GRANT SELECT ON TABLE "public"."design_sessions" TO "anon";
+
+
+
+GRANT ALL ON TABLE "public"."design_sessions_public" TO "authenticated";
+GRANT ALL ON TABLE "public"."design_sessions_public" TO "service_role";
+GRANT SELECT ON TABLE "public"."design_sessions_public" TO "anon";
 
 
 
@@ -5184,7 +5270,12 @@ GRANT ALL ON TABLE "public"."schema_file_paths" TO "service_role";
 
 GRANT ALL ON TABLE "public"."timeline_items" TO "authenticated";
 GRANT ALL ON TABLE "public"."timeline_items" TO "service_role";
-GRANT SELECT ON TABLE "public"."timeline_items" TO "anon";
+
+
+
+GRANT ALL ON TABLE "public"."timeline_items_public" TO "authenticated";
+GRANT ALL ON TABLE "public"."timeline_items_public" TO "service_role";
+GRANT SELECT ON TABLE "public"."timeline_items_public" TO "anon";
 
 
 

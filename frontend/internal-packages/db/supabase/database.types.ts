@@ -68,6 +68,13 @@ export type Database = {
             referencedColumns: ['id']
           },
           {
+            foreignKeyName: 'artifacts_design_session_id_fkey'
+            columns: ['design_session_id']
+            isOneToOne: true
+            referencedRelation: 'design_sessions_public'
+            referencedColumns: ['id']
+          },
+          {
             foreignKeyName: 'artifacts_organization_id_fkey'
             columns: ['organization_id']
             isOneToOne: false
@@ -110,6 +117,13 @@ export type Database = {
             columns: ['building_schema_id']
             isOneToOne: false
             referencedRelation: 'building_schemas'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'building_schema_versions_building_schema_id_fkey'
+            columns: ['building_schema_id']
+            isOneToOne: false
+            referencedRelation: 'building_schemas_public'
             referencedColumns: ['id']
           },
           {
@@ -158,6 +172,13 @@ export type Database = {
             columns: ['design_session_id']
             isOneToOne: true
             referencedRelation: 'design_sessions'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'building_schemas_design_session_id_fkey'
+            columns: ['design_session_id']
+            isOneToOne: true
+            referencedRelation: 'design_sessions_public'
             referencedColumns: ['id']
           },
           {
@@ -387,6 +408,13 @@ export type Database = {
             columns: ['parent_design_session_id']
             isOneToOne: false
             referencedRelation: 'design_sessions'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'design_sessions_parent_design_session_id_fkey'
+            columns: ['parent_design_session_id']
+            isOneToOne: false
+            referencedRelation: 'design_sessions_public'
             referencedColumns: ['id']
           },
           {
@@ -1072,6 +1100,13 @@ export type Database = {
             referencedRelation: 'design_sessions'
             referencedColumns: ['id']
           },
+          {
+            foreignKeyName: 'public_share_settings_design_session_id_fkey'
+            columns: ['design_session_id']
+            isOneToOne: true
+            referencedRelation: 'design_sessions_public'
+            referencedColumns: ['id']
+          },
         ]
       }
       review_feedback_comments: {
@@ -1377,10 +1412,24 @@ export type Database = {
             referencedColumns: ['id']
           },
           {
+            foreignKeyName: 'timeline_items_building_schema_version_id_fkey'
+            columns: ['building_schema_version_id']
+            isOneToOne: false
+            referencedRelation: 'building_schema_versions_public'
+            referencedColumns: ['id']
+          },
+          {
             foreignKeyName: 'timeline_items_design_session_id_fkey'
             columns: ['design_session_id']
             isOneToOne: false
             referencedRelation: 'design_sessions'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'timeline_items_design_session_id_fkey'
+            columns: ['design_session_id']
+            isOneToOne: false
+            referencedRelation: 'design_sessions_public'
             referencedColumns: ['id']
           },
           {
@@ -1455,6 +1504,13 @@ export type Database = {
             columns: ['design_session_id']
             isOneToOne: false
             referencedRelation: 'design_sessions'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'validation_queries_design_session_id_fkey'
+            columns: ['design_session_id']
+            isOneToOne: false
+            referencedRelation: 'design_sessions_public'
             referencedColumns: ['id']
           },
           {
@@ -1554,6 +1610,13 @@ export type Database = {
             referencedColumns: ['id']
           },
           {
+            foreignKeyName: 'workflow_runs_design_session_id_fkey'
+            columns: ['design_session_id']
+            isOneToOne: false
+            referencedRelation: 'design_sessions_public'
+            referencedColumns: ['id']
+          },
+          {
             foreignKeyName: 'workflow_runs_organization_id_fkey'
             columns: ['organization_id']
             isOneToOne: false
@@ -1564,7 +1627,246 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      artifacts_public: {
+        Row: {
+          artifact: Json | null
+          created_at: string | null
+          design_session_id: string | null
+          id: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          artifact?: Json | null
+          created_at?: string | null
+          design_session_id?: string | null
+          id?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          artifact?: Json | null
+          created_at?: string | null
+          design_session_id?: string | null
+          id?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'artifacts_design_session_id_fkey'
+            columns: ['design_session_id']
+            isOneToOne: true
+            referencedRelation: 'design_sessions'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'artifacts_design_session_id_fkey'
+            columns: ['design_session_id']
+            isOneToOne: true
+            referencedRelation: 'design_sessions_public'
+            referencedColumns: ['id']
+          },
+        ]
+      }
+      building_schema_versions_public: {
+        Row: {
+          building_schema_id: string | null
+          created_at: string | null
+          id: string | null
+          number: number | null
+          patch: Json | null
+          reverse_patch: Json | null
+        }
+        Insert: {
+          building_schema_id?: string | null
+          created_at?: string | null
+          id?: string | null
+          number?: number | null
+          patch?: Json | null
+          reverse_patch?: Json | null
+        }
+        Update: {
+          building_schema_id?: string | null
+          created_at?: string | null
+          id?: string | null
+          number?: number | null
+          patch?: Json | null
+          reverse_patch?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'building_schema_versions_building_schema_id_fkey'
+            columns: ['building_schema_id']
+            isOneToOne: false
+            referencedRelation: 'building_schemas'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'building_schema_versions_building_schema_id_fkey'
+            columns: ['building_schema_id']
+            isOneToOne: false
+            referencedRelation: 'building_schemas_public'
+            referencedColumns: ['id']
+          },
+        ]
+      }
+      building_schemas_public: {
+        Row: {
+          created_at: string | null
+          design_session_id: string | null
+          git_sha: string | null
+          id: string | null
+          initial_schema_snapshot: Json | null
+          schema: Json | null
+          schema_file_path: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          design_session_id?: string | null
+          git_sha?: string | null
+          id?: string | null
+          initial_schema_snapshot?: Json | null
+          schema?: Json | null
+          schema_file_path?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          design_session_id?: string | null
+          git_sha?: string | null
+          id?: string | null
+          initial_schema_snapshot?: Json | null
+          schema?: Json | null
+          schema_file_path?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'building_schemas_design_session_id_fkey'
+            columns: ['design_session_id']
+            isOneToOne: true
+            referencedRelation: 'design_sessions'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'building_schemas_design_session_id_fkey'
+            columns: ['design_session_id']
+            isOneToOne: true
+            referencedRelation: 'design_sessions_public'
+            referencedColumns: ['id']
+          },
+        ]
+      }
+      design_sessions_public: {
+        Row: {
+          created_at: string | null
+          id: string | null
+          name: string | null
+          parent_design_session_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string | null
+          name?: string | null
+          parent_design_session_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string | null
+          name?: string | null
+          parent_design_session_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'design_sessions_parent_design_session_id_fkey'
+            columns: ['parent_design_session_id']
+            isOneToOne: false
+            referencedRelation: 'design_sessions'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'design_sessions_parent_design_session_id_fkey'
+            columns: ['parent_design_session_id']
+            isOneToOne: false
+            referencedRelation: 'design_sessions_public'
+            referencedColumns: ['id']
+          },
+        ]
+      }
+      timeline_items_public: {
+        Row: {
+          assistant_role:
+            | Database['public']['Enums']['assistant_role_enum']
+            | null
+          building_schema_version_id: string | null
+          content: string | null
+          created_at: string | null
+          design_session_id: string | null
+          id: string | null
+          query_result_id: string | null
+          type: Database['public']['Enums']['timeline_item_type_enum'] | null
+          updated_at: string | null
+        }
+        Insert: {
+          assistant_role?:
+            | Database['public']['Enums']['assistant_role_enum']
+            | null
+          building_schema_version_id?: string | null
+          content?: string | null
+          created_at?: string | null
+          design_session_id?: string | null
+          id?: string | null
+          query_result_id?: string | null
+          type?: Database['public']['Enums']['timeline_item_type_enum'] | null
+          updated_at?: string | null
+        }
+        Update: {
+          assistant_role?:
+            | Database['public']['Enums']['assistant_role_enum']
+            | null
+          building_schema_version_id?: string | null
+          content?: string | null
+          created_at?: string | null
+          design_session_id?: string | null
+          id?: string | null
+          query_result_id?: string | null
+          type?: Database['public']['Enums']['timeline_item_type_enum'] | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'timeline_items_building_schema_version_id_fkey'
+            columns: ['building_schema_version_id']
+            isOneToOne: false
+            referencedRelation: 'building_schema_versions'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'timeline_items_building_schema_version_id_fkey'
+            columns: ['building_schema_version_id']
+            isOneToOne: false
+            referencedRelation: 'building_schema_versions_public'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'timeline_items_design_session_id_fkey'
+            columns: ['design_session_id']
+            isOneToOne: false
+            referencedRelation: 'design_sessions'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'timeline_items_design_session_id_fkey'
+            columns: ['design_session_id']
+            isOneToOne: false
+            referencedRelation: 'design_sessions_public'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'timeline_items_query_result_id_fkey'
+            columns: ['query_result_id']
+            isOneToOne: false
+            referencedRelation: 'validation_queries'
+            referencedColumns: ['id']
+          },
+        ]
+      }
     }
     Functions: {
       accept_invitation: {
