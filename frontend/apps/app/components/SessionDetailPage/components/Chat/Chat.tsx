@@ -2,12 +2,12 @@
 
 import type { Schema } from '@liam-hq/schema'
 import { type FC, useTransition } from 'react'
+import { useStream } from '../../hooks/useStream'
 import type { TimelineItemEntry } from '../../types'
 import styles from './Chat.module.css'
 import { ChatInput } from './components/ChatInput'
 import { TimelineItem } from './components/TimelineItem'
 import { WorkflowRunningIndicator } from './components/WorkflowRunningIndicator'
-import { sendChatMessage } from './services'
 import { generateTimelineItemId } from './services/timelineItemHelpers'
 import { useScrollToBottom } from './useScrollToBottom'
 
@@ -38,6 +38,7 @@ export const Chat: FC<Props> = ({
     timelineItems.length,
   )
   const [, startTransition] = useTransition()
+  const { start } = useStream()
 
   const startAIResponse = async (content: string) => {
     const optimisticMessage: TimelineItemEntry = {
@@ -48,7 +49,7 @@ export const Chat: FC<Props> = ({
     }
     onMessageSend(optimisticMessage)
 
-    await sendChatMessage({
+    await start({
       designSessionId,
       userInput: content,
       isDeepModelingEnabled,
