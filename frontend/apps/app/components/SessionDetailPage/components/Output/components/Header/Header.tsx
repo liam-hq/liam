@@ -19,6 +19,7 @@ type Props = ComponentProps<typeof VersionDropdown> & {
   tabValue: OutputTabValue
   artifactDoc?: string
   hasArtifact?: boolean
+  designSessionId: string
 }
 
 const generateCumulativeOperations = (
@@ -48,6 +49,7 @@ export const Header: FC<Props> = ({
   tabValue,
   artifactDoc,
   hasArtifact,
+  designSessionId,
   ...propsForVersionDropdown
 }) => {
   const { versions, selectedVersion } = propsForVersionDropdown
@@ -97,6 +99,7 @@ export const Header: FC<Props> = ({
           schema={schema}
           artifactDoc={artifactDoc}
           cumulativeOperations={cumulativeOperations}
+          designSessionId={designSessionId}
         />
       </div>
     </div>

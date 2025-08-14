@@ -21,6 +21,7 @@ type Props = {
   isWorkflowRunning?: boolean
   onArtifactLinkClick: () => void
   isDeepModelingEnabled: boolean
+  isPublicView?: boolean
 }
 
 export const Chat: FC<Props> = ({
@@ -33,6 +34,7 @@ export const Chat: FC<Props> = ({
   isWorkflowRunning = false,
   onArtifactLinkClick,
   isDeepModelingEnabled,
+  isPublicView = false,
 }) => {
   const { containerRef } = useScrollToBottom<HTMLDivElement>(
     timelineItems.length,
@@ -180,6 +182,7 @@ export const Chat: FC<Props> = ({
         onSendMessage={handleSendMessage}
         isWorkflowRunning={isWorkflowRunning}
         schema={schemaData}
+        isPublicView={isPublicView}
       />
     </div>
   )

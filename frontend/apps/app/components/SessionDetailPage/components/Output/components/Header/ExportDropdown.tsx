@@ -12,10 +12,13 @@ import {
   DropdownMenuRoot,
   DropdownMenuTrigger,
   FileText,
+  Share2,
   useToast,
 } from '@liam-hq/ui'
 import { fromPromise } from 'neverthrow'
 import type { FC } from 'react'
+import { useState } from 'react'
+import { ShareDialog } from '@/components/ShareDialog'
 import { schemaToDdl } from '../SQL/utils/schemaToDdl'
 import styles from './ExportDropdown.module.css'
 
@@ -23,6 +26,7 @@ type Props = {
   schema: Schema
   artifactDoc?: string
   cumulativeOperations: Operation[]
+  designSessionId: string
 }
 
 const generateCumulativeDDL = (operations: Operation[]): string => {
@@ -66,8 +70,10 @@ export const ExportDropdown: FC<Props> = ({
   schema,
   artifactDoc,
   cumulativeOperations,
+  designSessionId,
 }) => {
   const toast = useToast()
+  const [isShareDialogOpen, setIsShareDialogOpen] = useState(false)
 
   const handleCopyAIPrompt = async () => {
     if (!artifactDoc) return
@@ -127,35 +133,55 @@ export const ExportDropdown: FC<Props> = ({
   }
 
   return (
-    <DropdownMenuRoot>
-      <DropdownMenuTrigger asChild>
+    <>
+      <div className={styles.buttonGroup}>
+        <DropdownMenuRoot>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="outline-secondary"
+              size="md"
+              rightIcon={<ChevronDown size={16} />}
+              className={styles.button}
+            >
+              Export
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuPortal>
+            <DropdownMenuContent align="end" sideOffset={8}>
+              {artifactDoc && cumulativeOperations.length > 0 && (
+                <DropdownMenuItem
+                  leftIcon={<FileText size={16} />}
+                  onSelect={handleCopyAIPrompt}
+                >
+                  Prompt for AI Agent
+                </DropdownMenuItem>
+              )}
+              <DropdownMenuItem
+                leftIcon={<Copy size={16} />}
+                onSelect={handleCopyPostgreSQL}
+              >
+                Copy PostgreSQL
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenuPortal>
+        </DropdownMenuRoot>
+
         <Button
           variant="outline-secondary"
           size="md"
-          rightIcon={<ChevronDown size={16} />}
+          leftIcon={<Share2 size={16} />}
+          onClick={() => setIsShareDialogOpen(true)}
           className={styles.button}
         >
-          Export
+          Share
         </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuPortal>
-        <DropdownMenuContent align="end" sideOffset={8}>
-          {artifactDoc && cumulativeOperations.length > 0 && (
-            <DropdownMenuItem
-              leftIcon={<FileText size={16} />}
-              onSelect={handleCopyAIPrompt}
-            >
-              Prompt for AI Agent
-            </DropdownMenuItem>
-          )}
-          <DropdownMenuItem
-            leftIcon={<Copy size={16} />}
-            onSelect={handleCopyPostgreSQL}
-          >
-            Copy PostgreSQL
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenuPortal>
-    </DropdownMenuRoot>
+      </div>
+
+      <ShareDialog
+        isOpen={isShareDialogOpen}
+        onClose={() => setIsShareDialogOpen(false)}
+        designSessionId={designSessionId}
+      />
+    </>
   )
 }

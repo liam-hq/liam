@@ -1,8 +1,10 @@
+import type { Artifact } from '@liam-hq/artifact'
 import type { Schema } from '@liam-hq/schema'
 import { type ComponentProps, type FC, useCallback, useState } from 'react'
 import { TabsContent, TabsRoot } from '@/components'
 import type { ReviewComment } from '../../types'
 import { ArtifactContainer } from './components/Artifact/ArtifactContainer'
+import { usePublicRealtimeArtifact } from './components/Artifact/hooks/usePublicRealtimeArtifact'
 import { useRealtimeArtifact } from './components/Artifact/hooks/useRealtimeArtifact'
 import { formatArtifactToMarkdown } from './components/Artifact/utils/formatArtifactToMarkdown'
 import { ERD } from './components/ERD'
@@ -21,6 +23,8 @@ type BaseProps = ComponentProps<typeof VersionDropdown> & {
   schema: Schema
   prevSchema: Schema
   sqlReviewComments: ReviewComment[]
+  isPublicView?: boolean
+  initialArtifact?: Artifact | null
 }
 
 type ControlledProps = BaseProps & {
@@ -42,11 +46,21 @@ export const Output: FC<Props> = ({
   sqlReviewComments,
   activeTab,
   onTabChange,
+  isPublicView = false,
+  initialArtifact = null,
   ...propsForVersionDropdown
 }) => {
   const [internalTabValue, setInternalTabValue] =
     useState<OutputTabValue>(DEFAULT_OUTPUT_TAB)
-  const { artifact, loading, error } = useRealtimeArtifact(designSessionId)
+
+  const publicArtifactResult = usePublicRealtimeArtifact(
+    designSessionId,
+    initialArtifact,
+  )
+  const privateArtifactResult = useRealtimeArtifact(designSessionId)
+  const { artifact, loading, error } = isPublicView
+    ? publicArtifactResult
+    : privateArtifactResult
 
   const isTabValue = (value: string): value is OutputTabValue => {
     return Object.values(OUTPUT_TABS).some((tabValue) => tabValue === value)
@@ -78,6 +92,7 @@ export const Output: FC<Props> = ({
         tabValue={tabValue}
         artifactDoc={artifactDoc}
         hasArtifact={!!artifact}
+        designSessionId={designSessionId}
         {...propsForVersionDropdown}
       />
       <TabsContent value={OUTPUT_TABS.ERD} className={styles.tabsContent}>

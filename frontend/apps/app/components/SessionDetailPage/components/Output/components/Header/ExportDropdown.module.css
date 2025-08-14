@@ -1,3 +1,9 @@
+.buttonGroup {
+  display: flex;
+  gap: var(--spacing-2);
+  height: 100%;
+}
+
 .button {
   height: 100%;
   border-radius: var(--border-radius-sm);

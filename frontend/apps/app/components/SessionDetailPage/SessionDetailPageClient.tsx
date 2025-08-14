@@ -1,14 +1,19 @@
 'use client'
 
+import type { Artifact } from '@liam-hq/artifact'
 import type { Schema } from '@liam-hq/schema'
 import clsx from 'clsx'
 import { type FC, useCallback, useEffect, useRef, useState } from 'react'
 import { Chat } from './components/Chat'
 import { sendChatMessage } from './components/Chat/services/aiMessageService'
 import { Output } from './components/Output'
+import { usePublicRealtimeArtifact } from './components/Output/components/Artifact/hooks/usePublicRealtimeArtifact'
 import { useRealtimeArtifact } from './components/Output/components/Artifact/hooks/useRealtimeArtifact'
 import { OUTPUT_TABS } from './components/Output/constants'
 import { OutputPlaceholder } from './components/OutputPlaceholder'
+import { usePublicRealtimeTimelineItems } from './hooks/usePublicRealtimeTimelineItems'
+import { usePublicRealtimeVersionsWithSchema } from './hooks/usePublicRealtimeVersionsWithSchema'
+import { usePublicRealtimeWorkflowRuns } from './hooks/usePublicRealtimeWorkflowRuns'
 import { useRealtimeTimelineItems } from './hooks/useRealtimeTimelineItems'
 import { useRealtimeVersionsWithSchema } from './hooks/useRealtimeVersionsWithSchema'
 import { useRealtimeWorkflowRuns } from './hooks/useRealtimeWorkflowRuns'
@@ -29,6 +34,8 @@ type Props = {
   initialVersions: Version[]
   initialWorkflowRunStatus: WorkflowRunStatus | null
   isDeepModelingEnabled: boolean
+  isPublicView?: boolean
+  initialArtifact?: Artifact | null
 }
 
 export const SessionDetailPageClient: FC<Props> = ({
@@ -39,8 +46,24 @@ export const SessionDetailPageClient: FC<Props> = ({
   initialVersions,
   initialWorkflowRunStatus,
   isDeepModelingEnabled,
+  isPublicView = false,
+  initialArtifact = null,
 }) => {
   const designSessionId = designSessionWithTimelineItems.id
+
+  const publicVersionsResult = usePublicRealtimeVersionsWithSchema({
+    buildingSchemaId,
+    initialVersions,
+    initialDisplayedSchema,
+    initialPrevSchema,
+  })
+
+  const privateVersionsResult = useRealtimeVersionsWithSchema({
+    buildingSchemaId,
+    initialVersions,
+    initialDisplayedSchema,
+    initialPrevSchema,
+  })
 
   const {
     versions,
@@ -48,12 +71,7 @@ export const SessionDetailPageClient: FC<Props> = ({
     setSelectedVersion,
     displayedSchema,
     prevSchema,
-  } = useRealtimeVersionsWithSchema({
-    buildingSchemaId,
-    initialVersions,
-    initialDisplayedSchema,
-    initialPrevSchema,
-  })
+  } = isPublicView ? publicVersionsResult : privateVersionsResult
 
   const handleChangeSelectedVersion = useCallback(
     (version: Version) => {
@@ -69,12 +87,23 @@ export const SessionDetailPageClient: FC<Props> = ({
     setSelectedVersion(version)
   }, [])
 
-  const { timelineItems, addOrUpdateTimelineItem } = useRealtimeTimelineItems(
+  const publicTimelineResult = usePublicRealtimeTimelineItems(
     designSessionId,
     designSessionWithTimelineItems.timeline_items.map((timelineItem) =>
       convertTimelineItemToTimelineItemEntry(timelineItem),
     ),
   )
+
+  const privateTimelineResult = useRealtimeTimelineItems(
+    designSessionId,
+    designSessionWithTimelineItems.timeline_items.map((timelineItem) =>
+      convertTimelineItemToTimelineItemEntry(timelineItem),
+    ),
+  )
+
+  const { timelineItems, addOrUpdateTimelineItem } = isPublicView
+    ? publicTimelineResult
+    : privateTimelineResult
 
   const [activeTab, setActiveTab] = useState<string | undefined>(undefined)
 
@@ -85,14 +114,27 @@ export const SessionDetailPageClient: FC<Props> = ({
   const hasSelectedVersion = selectedVersion !== null
 
   // Use realtime artifact hook to monitor artifact changes
-  const { artifact } = useRealtimeArtifact(designSessionId)
+  // For public view, use a dummy hook that returns initial artifact
+  const publicArtifactResult = usePublicRealtimeArtifact(
+    designSessionId,
+    initialArtifact,
+  )
+  const privateArtifactResult = useRealtimeArtifact(designSessionId)
+  const { artifact } = isPublicView
+    ? publicArtifactResult
+    : privateArtifactResult
   const hasRealtimeArtifact = !!artifact
 
   // Use realtime workflow status
-  const { status } = useRealtimeWorkflowRuns(
+  const publicWorkflowResult = usePublicRealtimeWorkflowRuns(
     designSessionId,
     initialWorkflowRunStatus,
   )
+  const privateWorkflowResult = useRealtimeWorkflowRuns(
+    designSessionId,
+    initialWorkflowRunStatus,
+  )
+  const { status } = isPublicView ? publicWorkflowResult : privateWorkflowResult
 
   // Track if initial workflow has been triggered to prevent multiple executions
   const hasTriggeredInitialWorkflow = useRef(false)
@@ -147,9 +189,10 @@ export const SessionDetailPageClient: FC<Props> = ({
             onVersionView={handleViewVersion}
             onArtifactLinkClick={handleArtifactLinkClick}
             isDeepModelingEnabled={isDeepModelingEnabled}
+            isPublicView={isPublicView}
           />
         </div>
-        {hasSelectedVersion && (
+        {hasSelectedVersion && selectedVersion && (
           <div className={styles.outputSection}>
             {shouldShowOutput ? (
               activeTab !== undefined ? (
@@ -163,6 +206,8 @@ export const SessionDetailPageClient: FC<Props> = ({
                   onSelectedVersionChange={handleChangeSelectedVersion}
                   activeTab={activeTab}
                   onTabChange={setActiveTab}
+                  isPublicView={isPublicView}
+                  initialArtifact={initialArtifact}
                 />
               ) : (
                 <Output
@@ -173,6 +218,8 @@ export const SessionDetailPageClient: FC<Props> = ({
                   versions={versions}
                   selectedVersion={selectedVersion}
                   onSelectedVersionChange={handleChangeSelectedVersion}
+                  isPublicView={isPublicView}
+                  initialArtifact={initialArtifact}
                 />
               )
             ) : (
