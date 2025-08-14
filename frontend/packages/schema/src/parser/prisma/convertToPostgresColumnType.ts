@@ -27,12 +27,6 @@ function handleNativeType(
   nativeTypeArgs: readonly string[],
   defaultValue: DMMF.Field['default'] | null,
 ): string {
-  // Check for cuid (before autoincrement check)
-  if (isCuidFunction(defaultValue)) {
-    // cuid is generated on the application side, so we use text type
-    return 'text'
-  }
-
   // Check for autoincrement
   if (
     typeof defaultValue === 'string' &&
