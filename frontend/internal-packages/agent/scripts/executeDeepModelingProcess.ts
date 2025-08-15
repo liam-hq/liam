@@ -66,8 +66,6 @@ const executeDeepModelingProcess = async (): Promise<Result<void, Error>> => {
   // Execute workflow with streaming
   const graph = createGraph()
 
-  logger.info('Starting Deep Modeling workflow execution...')
-
   // Use streaming with proper async iterator handling
   const streamResult = await (async () => {
     const stream = await graph.stream(workflowState, options)
