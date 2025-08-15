@@ -26,7 +26,7 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: 'https',
-        hostname: 'liam-erd-web.vercel.app',
+        hostname: 'liambx.com',
       },
     ],
   },
