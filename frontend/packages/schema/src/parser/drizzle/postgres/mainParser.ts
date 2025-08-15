@@ -6,7 +6,10 @@ import type { Module, VariableDeclarator } from '@swc/core'
 import { parseSync } from '@swc/core'
 import type { Processor, ProcessResult } from '../../types.js'
 import { isPgTableCall, isSchemaTableCall } from './astUtils.js'
-import { convertDrizzleTablesToInternal } from './converter.js'
+import {
+  convertDrizzleEnumsToInternal,
+  convertDrizzleTablesToInternal,
+} from './converter.js'
 import { parsePgEnumCall } from './enumParser.js'
 import {
   parsePgTableCall,
@@ -144,9 +147,10 @@ const parseDrizzleSchemaString = (
       enums,
       variableToTableMapping,
     )
+    const convertedEnums = convertDrizzleEnumsToInternal(enums)
 
     return Promise.resolve({
-      value: { tables, enums: {} },
+      value: { tables, enums: convertedEnums },
       errors,
     })
   } catch (error) {

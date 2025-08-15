@@ -7,12 +7,52 @@ import {
   getArgumentExpression,
   getIdentifierName,
   getStringValue,
+  isArrayExpression,
   isObjectExpression,
   isStringLiteral,
   parseMethodChain,
 } from './astUtils.js'
 import { parseDefaultValue, parseObjectExpression } from './expressionParser.js'
-import type { DrizzleColumnDefinition } from './types.js'
+import type { DrizzleColumnDefinition, DrizzleEnumDefinition } from './types.js'
+
+/**
+ * Extract enum definition from inline mysqlEnum call
+ */
+const extractInlineEnumDefinition = (
+  callExpr: Expression,
+): DrizzleEnumDefinition | null => {
+  if (
+    callExpr.type !== 'CallExpression' ||
+    callExpr.callee.type !== 'Identifier' ||
+    callExpr.callee.value !== 'mysqlEnum' ||
+    callExpr.arguments.length < 2
+  ) {
+    return null
+  }
+
+  const enumNameArg = callExpr.arguments[0]
+  const valuesArg = callExpr.arguments[1]
+
+  if (!enumNameArg || !valuesArg) return null
+
+  const enumNameExpr = getArgumentExpression(enumNameArg)
+  const valuesExpr = getArgumentExpression(valuesArg)
+
+  const enumName = enumNameExpr ? getStringValue(enumNameExpr) : null
+  if (!enumName || !valuesExpr || !isArrayExpression(valuesExpr)) return null
+
+  const values: string[] = []
+  for (const element of valuesExpr.elements) {
+    if (element && typeof element === 'object' && 'expression' in element) {
+      const expr = element.expression
+      if (isStringLiteral(expr)) {
+        values.push(expr.value)
+      }
+    }
+  }
+
+  return { name: enumName, values }
+}
 
 /**
  * Parse runtime function from $defaultFn or $onUpdate arguments
@@ -39,10 +79,11 @@ const parseRuntimeFunction = (args: Argument[]): string => {
 }
 
 /**
- * Parse column definition from object property
+ * Parse column definition from object property and extract any inline enum definitions
  */
 export const parseColumnFromProperty = (
   prop: Property,
+  extractedEnums?: Record<string, DrizzleEnumDefinition>,
 ): DrizzleColumnDefinition | null => {
   if (prop.type !== 'KeyValueProperty') return null
 
@@ -72,6 +113,13 @@ export const parseColumnFromProperty = (
     current.callee.type === 'Identifier'
   ) {
     baseType = current.callee.value
+
+    if (baseType === 'mysqlEnum' && extractedEnums) {
+      const enumDef = extractInlineEnumDefinition(current)
+      if (enumDef) {
+        extractedEnums[enumDef.name] = enumDef
+      }
+    }
   }
 
   if (!baseType) return null

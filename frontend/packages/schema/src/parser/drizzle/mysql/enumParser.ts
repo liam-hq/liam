@@ -33,8 +33,11 @@ export const parseMysqlEnumCall = (
 
   const values: string[] = []
   for (const element of valuesExpr.elements) {
-    if (isStringLiteral(element)) {
-      values.push(element.value)
+    if (element && typeof element === 'object' && 'expression' in element) {
+      const expr = element.expression
+      if (isStringLiteral(expr)) {
+        values.push(expr.value)
+      }
     }
   }
 

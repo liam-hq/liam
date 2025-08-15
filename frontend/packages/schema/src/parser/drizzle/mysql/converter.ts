@@ -6,6 +6,7 @@ import type {
   Column,
   Columns,
   Constraints,
+  Enum,
   ForeignKeyConstraint,
   Index,
   Table,
@@ -247,4 +248,23 @@ export const convertDrizzleTablesToInternal = (
   fixForeignKeyTargetColumnNames(tables, drizzleTables)
 
   return { tables, errors }
+}
+
+/**
+ * Convert Drizzle enum definitions to internal format
+ */
+export const convertDrizzleEnumsToInternal = (
+  enums: Record<string, DrizzleEnumDefinition>,
+): Record<string, Enum> => {
+  const convertedEnums: Record<string, Enum> = {}
+
+  for (const [, enumDef] of Object.entries(enums)) {
+    convertedEnums[enumDef.name] = {
+      name: enumDef.name,
+      values: enumDef.values,
+      comment: null,
+    }
+  }
+
+  return convertedEnums
 }

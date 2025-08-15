@@ -10,7 +10,10 @@ import {
   isMysqlTableCall,
   isSchemaTableCall,
 } from './astUtils.js'
-import { convertDrizzleTablesToInternal } from './converter.js'
+import {
+  convertDrizzleEnumsToInternal,
+  convertDrizzleTablesToInternal,
+} from './converter.js'
 import { parseMysqlEnumCall } from './enumParser.js'
 import { parseMysqlSchemaCall } from './schemaParser.js'
 import {
@@ -105,14 +108,14 @@ const visitVariableDeclarator = (
   const callExpr = declarator.init
 
   if (isMysqlTableCall(callExpr)) {
-    const table = parseMysqlTableCall(callExpr)
+    const table = parseMysqlTableCall(callExpr, enums)
     if (table && declarator.id.type === 'Identifier') {
       tables[table.name] = table
       // Map variable name to table name
       variableToTableMapping[declarator.id.value] = table.name
     }
   } else if (isSchemaTableCall(callExpr)) {
-    const table = parseSchemaTableCall(callExpr)
+    const table = parseSchemaTableCall(callExpr, enums)
     if (table && declarator.id.type === 'Identifier') {
       tables[table.name] = table
       // Map variable name to table name
@@ -125,7 +128,7 @@ const visitVariableDeclarator = (
     declarator.init.callee.property.value === '$comment'
   ) {
     // Handle table comments: mysqlTable(...).comment(...)
-    const table = parseMysqlTableWithComment(declarator.init)
+    const table = parseMysqlTableWithComment(declarator.init, enums)
     if (table && declarator.id.type === 'Identifier') {
       tables[table.name] = table
       // Map variable name to table name
@@ -164,9 +167,10 @@ const parseDrizzleSchemaString = (
       enums,
       variableToTableMapping,
     )
+    const convertedEnums = convertDrizzleEnumsToInternal(enums)
 
     return Promise.resolve({
-      value: { tables, enums: {} },
+      value: { tables, enums: convertedEnums },
       errors,
     })
   } catch (error) {

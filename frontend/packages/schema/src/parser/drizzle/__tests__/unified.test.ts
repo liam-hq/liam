@@ -531,7 +531,122 @@ describe.each(Object.entries(dbConfigs))(
           },
         })
 
-        expect(value).toEqual(expected)
+        // Verify that enums object contains the parsed enum definition
+        expect(value.enums).toHaveProperty('role')
+        expect(value.enums['role']).toEqual({
+          name: 'role',
+          values: ['user', 'admin'],
+          comment: null,
+        })
+
+        // Verify the rest of the schema structure
+        expect(value.tables).toEqual(expected.tables)
+      })
+
+      it('enum parsing returns enum definitions', async () => {
+        const enumFunction = config.functions.enum
+
+        const schema = `
+        import { ${config.functions.table}, ${config.types.id}, varchar, ${enumFunction} } from '${config.imports.core}';
+
+        ${dbType === 'postgres' ? `export const roleEnum = ${enumFunction}('role', ['user', 'admin', 'moderator']);` : ''}
+
+        export const users = ${config.functions.table}('users', {
+          id: ${config.types.idColumn()},
+          name: varchar('name', { length: 255 }),
+          role: ${
+            dbType === 'mysql'
+              ? `${enumFunction}('role', ['user', 'admin', 'moderator']).default('user')`
+              : `roleEnum('role').default('user')`
+          },
+        });
+      `
+
+        const { value } = await config.processor(schema)
+
+        // Verify that enums object contains the parsed enum definition
+        expect(value.enums).toHaveProperty('role')
+        expect(value.enums['role']).toEqual({
+          name: 'role',
+          values: ['user', 'admin', 'moderator'],
+          comment: null,
+        })
+      })
+
+      it('multiple enum definitions', async () => {
+        const enumFunction = config.functions.enum
+
+        const schema = `
+        import { ${config.functions.table}, ${config.types.id}, varchar, ${enumFunction} } from '${config.imports.core}';
+
+        ${
+          dbType === 'postgres'
+            ? `
+        export const roleEnum = ${enumFunction}('role', ['user', 'admin']);
+        export const statusEnum = ${enumFunction}('status', ['active', 'inactive', 'pending']);
+        `
+            : ''
+        }
+
+        export const users = ${config.functions.table}('users', {
+          id: ${config.types.idColumn()},
+          name: varchar('name', { length: 255 }),
+          role: ${
+            dbType === 'mysql'
+              ? `${enumFunction}('role', ['user', 'admin']).default('user')`
+              : `roleEnum('role').default('user')`
+          },
+          status: ${
+            dbType === 'mysql'
+              ? `${enumFunction}('status', ['active', 'inactive', 'pending']).default('active')`
+              : `statusEnum('status').default('active')`
+          },
+        });
+      `
+
+        const { value } = await config.processor(schema)
+
+        // Verify that enums object contains both enum definitions
+        expect(value.enums).toHaveProperty('role')
+        expect(value.enums).toHaveProperty('status')
+
+        expect(value.enums['role']).toEqual({
+          name: 'role',
+          values: ['user', 'admin'],
+          comment: null,
+        })
+
+        expect(value.enums['status']).toEqual({
+          name: 'status',
+          values: ['active', 'inactive', 'pending'],
+          comment: null,
+        })
+      })
+
+      it('empty enum definition', async () => {
+        const enumFunction = config.functions.enum
+
+        const schema = `
+        import { ${config.functions.table}, ${config.types.id}, varchar, ${enumFunction} } from '${config.imports.core}';
+
+        ${dbType === 'postgres' ? `export const emptyEnum = ${enumFunction}('empty_enum', []);` : ''}
+
+        export const users = ${config.functions.table}('users', {
+          id: ${config.types.idColumn()},
+          name: varchar('name', { length: 255 }),
+          ${dbType === 'mysql' ? `empty_field: ${enumFunction}('empty_enum', []),` : `empty_field: emptyEnum('empty_field'),`}
+        });
+      `
+
+        const { value } = await config.processor(schema)
+
+        // Verify that empty enum is still included
+        expect(value.enums).toHaveProperty('empty_enum')
+        expect(value.enums['empty_enum']).toEqual({
+          name: 'empty_enum',
+          values: [],
+          comment: null,
+        })
       })
 
       it('foreign key constraint (one-to-one)', async () => {

@@ -19,22 +19,24 @@ import type {
   CompositePrimaryKeyDefinition,
   DrizzleCheckConstraintDefinition,
   DrizzleColumnDefinition,
+  DrizzleEnumDefinition,
   DrizzleIndexDefinition,
   DrizzleTableDefinition,
 } from './types.js'
 import { isCompositePrimaryKey, isDrizzleIndex } from './types.js'
 
 /**
- * Parse columns from object expression
+ * Parse columns from object expression and extract any inline enum definitions
  */
 const parseTableColumns = (
   columnsExpr: ObjectExpression,
+  extractedEnums?: Record<string, DrizzleEnumDefinition>,
 ): Record<string, DrizzleColumnDefinition> => {
   const columns: Record<string, DrizzleColumnDefinition> = {}
 
   for (const prop of columnsExpr.properties) {
     if (prop.type === 'KeyValueProperty') {
-      const column = parseColumnFromProperty(prop)
+      const column = parseColumnFromProperty(prop, extractedEnums)
       if (column) {
         // Use the JS property name as the key
         const jsPropertyName =
@@ -127,10 +129,11 @@ const parseTableExtensions = (
 }
 
 /**
- * Parse mysqlTable call with comment method chain
+ * Parse mysqlTable call with comment method chain and extract any inline enum definitions
  */
 export const parseMysqlTableWithComment = (
   commentCallExpr: CallExpression,
+  extractedEnums?: Record<string, DrizzleEnumDefinition>,
 ): DrizzleTableDefinition | null => {
   // Extract the comment from the call arguments
   let comment: string | null = null
@@ -149,7 +152,7 @@ export const parseMysqlTableWithComment = (
       mysqlTableCall.type === 'CallExpression' &&
       isMysqlTableCall(mysqlTableCall)
     ) {
-      const table = parseMysqlTableCall(mysqlTableCall)
+      const table = parseMysqlTableCall(mysqlTableCall, extractedEnums)
       if (table && comment) {
         table.comment = comment
       }
@@ -161,10 +164,11 @@ export const parseMysqlTableWithComment = (
 }
 
 /**
- * Parse mysqlTable call expression
+ * Parse mysqlTable call expression and extract any inline enum definitions
  */
 export const parseMysqlTableCall = (
   callExpr: CallExpression,
+  extractedEnums?: Record<string, DrizzleEnumDefinition>,
 ): DrizzleTableDefinition | null => {
   if (callExpr.arguments.length < 2) return null
 
@@ -187,8 +191,8 @@ export const parseMysqlTableCall = (
     indexes: {},
   }
 
-  // Parse columns from the object expression
-  table.columns = parseTableColumns(columnsExpr)
+  // Parse columns from the object expression and extract any inline enum definitions
+  table.columns = parseTableColumns(columnsExpr, extractedEnums)
 
   // Parse indexes and composite primary key from third argument if present
   if (callExpr.arguments.length > 2) {
@@ -210,10 +214,11 @@ export const parseMysqlTableCall = (
 }
 
 /**
- * Parse schema.table() call expression
+ * Parse schema.table() call expression and extract any inline enum definitions
  */
 export const parseSchemaTableCall = (
   callExpr: CallExpression,
+  extractedEnums?: Record<string, DrizzleEnumDefinition>,
 ): DrizzleTableDefinition | null => {
   if (!isSchemaTableCall(callExpr) || callExpr.arguments.length < 2) return null
 
@@ -244,8 +249,8 @@ export const parseSchemaTableCall = (
   // Note: We now handle schema namespace by storing the schema name
   // and using the original table name for database operations
 
-  // Parse columns from the object expression
-  table.columns = parseTableColumns(columnsExpr)
+  // Parse columns from the object expression and extract any inline enum definitions
+  table.columns = parseTableColumns(columnsExpr, extractedEnums)
 
   // Parse indexes and composite primary key from third argument if present
   if (callExpr.arguments.length > 2) {
