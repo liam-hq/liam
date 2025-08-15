@@ -1051,6 +1051,29 @@ export type Database = {
           },
         ]
       }
+      public_share_settings: {
+        Row: {
+          created_at: string
+          design_session_id: string
+        }
+        Insert: {
+          created_at?: string
+          design_session_id: string
+        }
+        Update: {
+          created_at?: string
+          design_session_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'public_share_settings_design_session_id_fkey'
+            columns: ['design_session_id']
+            isOneToOne: true
+            referencedRelation: 'design_sessions'
+            referencedColumns: ['id']
+          },
+        ]
+      }
       review_feedback_comments: {
         Row: {
           content: string

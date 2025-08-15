@@ -1456,6 +1456,15 @@ CREATE TABLE IF NOT EXISTS "public"."projects" (
 ALTER TABLE "public"."projects" OWNER TO "postgres";
 
 
+CREATE TABLE IF NOT EXISTS "public"."public_share_settings" (
+    "design_session_id" "uuid" NOT NULL,
+    "created_at" timestamp with time zone DEFAULT "now"() NOT NULL
+);
+
+
+ALTER TABLE "public"."public_share_settings" OWNER TO "postgres";
+
+
 CREATE TABLE IF NOT EXISTS "public"."review_feedback_comments" (
     "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
     "review_feedback_id" "uuid" NOT NULL,
@@ -1771,6 +1780,11 @@ ALTER TABLE ONLY "public"."project_repository_mappings"
 
 
 
+ALTER TABLE ONLY "public"."public_share_settings"
+    ADD CONSTRAINT "public_share_settings_pkey" PRIMARY KEY ("design_session_id");
+
+
+
 ALTER TABLE ONLY "public"."github_pull_requests"
     ADD CONSTRAINT "pull_request_pkey" PRIMARY KEY ("id");
 
@@ -1908,6 +1922,10 @@ CREATE INDEX "idx_messages_user_id_created_at" ON "public"."timeline_items" USIN
 
 
 CREATE INDEX "idx_project_organization_id" ON "public"."projects" USING "btree" ("organization_id");
+
+
+
+CREATE INDEX "idx_public_share_settings_created_at" ON "public"."public_share_settings" USING "btree" ("created_at");
 
 
 
@@ -2319,6 +2337,11 @@ ALTER TABLE ONLY "public"."project_repository_mappings"
 
 
 
+ALTER TABLE ONLY "public"."public_share_settings"
+    ADD CONSTRAINT "public_share_settings_design_session_id_fkey" FOREIGN KEY ("design_session_id") REFERENCES "public"."design_sessions"("id") ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+
 ALTER TABLE ONLY "public"."review_feedback_comments"
     ADD CONSTRAINT "review_feedback_comment_review_feedback_id_fkey" FOREIGN KEY ("review_feedback_id") REFERENCES "public"."review_feedbacks"("id") ON UPDATE CASCADE ON DELETE CASCADE;
 
@@ -2547,6 +2570,14 @@ COMMENT ON POLICY "authenticated_users_can_delete_org_projects" ON "public"."pro
 
 
 
+CREATE POLICY "authenticated_users_can_delete_org_public_share_settings" ON "public"."public_share_settings" FOR DELETE TO "authenticated" USING (("design_session_id" IN ( SELECT "ds"."id"
+   FROM "public"."design_sessions" "ds"
+  WHERE ("ds"."organization_id" IN ( SELECT "organization_members"."organization_id"
+           FROM "public"."organization_members"
+          WHERE ("organization_members"."user_id" = "auth"."uid"()))))));
+
+
+
 CREATE POLICY "authenticated_users_can_delete_org_validation_queries" ON "public"."validation_queries" FOR DELETE TO "authenticated" USING (("organization_id" IN ( SELECT "organization_members"."organization_id"
    FROM "public"."organization_members"
   WHERE ("organization_members"."user_id" = "auth"."uid"()))));
@@ -2714,6 +2745,14 @@ CREATE POLICY "authenticated_users_can_insert_org_project_repository_mappings" O
 
 
 COMMENT ON POLICY "authenticated_users_can_insert_org_project_repository_mappings" ON "public"."project_repository_mappings" IS 'Authenticated users can only create project repository mappings in organizations they are members of';
+
+
+
+CREATE POLICY "authenticated_users_can_insert_org_public_share_settings" ON "public"."public_share_settings" FOR INSERT TO "authenticated" WITH CHECK (("design_session_id" IN ( SELECT "ds"."id"
+   FROM "public"."design_sessions" "ds"
+  WHERE ("ds"."organization_id" IN ( SELECT "organization_members"."organization_id"
+           FROM "public"."organization_members"
+          WHERE ("organization_members"."user_id" = "auth"."uid"()))))));
 
 
 
@@ -3000,6 +3039,14 @@ CREATE POLICY "authenticated_users_can_select_org_projects" ON "public"."project
 
 
 COMMENT ON POLICY "authenticated_users_can_select_org_projects" ON "public"."projects" IS 'Authenticated users can only view projects belonging to organizations they are members of';
+
+
+
+CREATE POLICY "authenticated_users_can_select_org_public_share_settings" ON "public"."public_share_settings" FOR SELECT TO "authenticated" USING (("design_session_id" IN ( SELECT "ds"."id"
+   FROM "public"."design_sessions" "ds"
+  WHERE ("ds"."organization_id" IN ( SELECT "organization_members"."organization_id"
+           FROM "public"."organization_members"
+          WHERE ("organization_members"."user_id" = "auth"."uid"()))))));
 
 
 
@@ -3359,6 +3406,40 @@ ALTER TABLE "public"."project_repository_mappings" ENABLE ROW LEVEL SECURITY;
 
 
 ALTER TABLE "public"."projects" ENABLE ROW LEVEL SECURITY;
+
+
+CREATE POLICY "public_artifacts_read" ON "public"."artifacts" FOR SELECT TO "anon" USING (("design_session_id" IN ( SELECT "public_share_settings"."design_session_id"
+   FROM "public"."public_share_settings")));
+
+
+
+CREATE POLICY "public_building_schema_versions_read" ON "public"."building_schema_versions" FOR SELECT TO "anon" USING (("building_schema_id" IN ( SELECT "bs"."id"
+   FROM "public"."building_schemas" "bs"
+  WHERE ("bs"."design_session_id" IN ( SELECT "public_share_settings"."design_session_id"
+           FROM "public"."public_share_settings")))));
+
+
+
+CREATE POLICY "public_building_schemas_read" ON "public"."building_schemas" FOR SELECT TO "anon" USING (("design_session_id" IN ( SELECT "public_share_settings"."design_session_id"
+   FROM "public"."public_share_settings")));
+
+
+
+CREATE POLICY "public_sessions_read" ON "public"."design_sessions" FOR SELECT TO "anon" USING (("id" IN ( SELECT "public_share_settings"."design_session_id"
+   FROM "public"."public_share_settings")));
+
+
+
+ALTER TABLE "public"."public_share_settings" ENABLE ROW LEVEL SECURITY;
+
+
+CREATE POLICY "public_share_settings_read" ON "public"."public_share_settings" FOR SELECT TO "anon" USING (true);
+
+
+
+CREATE POLICY "public_timeline_items_read" ON "public"."timeline_items" FOR SELECT TO "anon" USING (("design_session_id" IN ( SELECT "public_share_settings"."design_session_id"
+   FROM "public"."public_share_settings")));
+
 
 
 ALTER TABLE "public"."review_feedback_comments" ENABLE ROW LEVEL SECURITY;
@@ -4960,13 +5041,85 @@ GRANT ALL ON TABLE "public"."artifacts" TO "service_role";
 
 
 
+GRANT SELECT("id") ON TABLE "public"."artifacts" TO "anon";
+
+
+
+GRANT SELECT("design_session_id") ON TABLE "public"."artifacts" TO "anon";
+
+
+
+GRANT SELECT("artifact") ON TABLE "public"."artifacts" TO "anon";
+
+
+
+GRANT SELECT("created_at") ON TABLE "public"."artifacts" TO "anon";
+
+
+
+GRANT SELECT("updated_at") ON TABLE "public"."artifacts" TO "anon";
+
+
+
 GRANT ALL ON TABLE "public"."building_schema_versions" TO "authenticated";
 GRANT ALL ON TABLE "public"."building_schema_versions" TO "service_role";
 
 
 
+GRANT SELECT("id") ON TABLE "public"."building_schema_versions" TO "anon";
+
+
+
+GRANT SELECT("building_schema_id") ON TABLE "public"."building_schema_versions" TO "anon";
+
+
+
+GRANT SELECT("number") ON TABLE "public"."building_schema_versions" TO "anon";
+
+
+
+GRANT SELECT("created_at") ON TABLE "public"."building_schema_versions" TO "anon";
+
+
+
+GRANT SELECT("patch") ON TABLE "public"."building_schema_versions" TO "anon";
+
+
+
+GRANT SELECT("reverse_patch") ON TABLE "public"."building_schema_versions" TO "anon";
+
+
+
 GRANT ALL ON TABLE "public"."building_schemas" TO "authenticated";
 GRANT ALL ON TABLE "public"."building_schemas" TO "service_role";
+
+
+
+GRANT SELECT("id") ON TABLE "public"."building_schemas" TO "anon";
+
+
+
+GRANT SELECT("design_session_id") ON TABLE "public"."building_schemas" TO "anon";
+
+
+
+GRANT SELECT("schema") ON TABLE "public"."building_schemas" TO "anon";
+
+
+
+GRANT SELECT("created_at") ON TABLE "public"."building_schemas" TO "anon";
+
+
+
+GRANT SELECT("git_sha") ON TABLE "public"."building_schemas" TO "anon";
+
+
+
+GRANT SELECT("initial_schema_snapshot") ON TABLE "public"."building_schemas" TO "anon";
+
+
+
+GRANT SELECT("schema_file_path") ON TABLE "public"."building_schemas" TO "anon";
 
 
 
@@ -4992,6 +5145,22 @@ GRANT ALL ON TABLE "public"."checkpoints" TO "service_role";
 
 GRANT ALL ON TABLE "public"."design_sessions" TO "authenticated";
 GRANT ALL ON TABLE "public"."design_sessions" TO "service_role";
+
+
+
+GRANT SELECT("id") ON TABLE "public"."design_sessions" TO "anon";
+
+
+
+GRANT SELECT("parent_design_session_id") ON TABLE "public"."design_sessions" TO "anon";
+
+
+
+GRANT SELECT("name") ON TABLE "public"."design_sessions" TO "anon";
+
+
+
+GRANT SELECT("created_at") ON TABLE "public"."design_sessions" TO "anon";
 
 
 
@@ -5070,6 +5239,12 @@ GRANT ALL ON TABLE "public"."projects" TO "service_role";
 
 
 
+GRANT ALL ON TABLE "public"."public_share_settings" TO "authenticated";
+GRANT ALL ON TABLE "public"."public_share_settings" TO "service_role";
+GRANT SELECT ON TABLE "public"."public_share_settings" TO "anon";
+
+
+
 GRANT ALL ON TABLE "public"."review_feedback_comments" TO "authenticated";
 GRANT ALL ON TABLE "public"."review_feedback_comments" TO "service_role";
 
@@ -5097,6 +5272,42 @@ GRANT ALL ON TABLE "public"."schema_file_paths" TO "service_role";
 
 GRANT ALL ON TABLE "public"."timeline_items" TO "authenticated";
 GRANT ALL ON TABLE "public"."timeline_items" TO "service_role";
+
+
+
+GRANT SELECT("id") ON TABLE "public"."timeline_items" TO "anon";
+
+
+
+GRANT SELECT("design_session_id") ON TABLE "public"."timeline_items" TO "anon";
+
+
+
+GRANT SELECT("content") ON TABLE "public"."timeline_items" TO "anon";
+
+
+
+GRANT SELECT("created_at") ON TABLE "public"."timeline_items" TO "anon";
+
+
+
+GRANT SELECT("updated_at") ON TABLE "public"."timeline_items" TO "anon";
+
+
+
+GRANT SELECT("building_schema_version_id") ON TABLE "public"."timeline_items" TO "anon";
+
+
+
+GRANT SELECT("type") ON TABLE "public"."timeline_items" TO "anon";
+
+
+
+GRANT SELECT("query_result_id") ON TABLE "public"."timeline_items" TO "anon";
+
+
+
+GRANT SELECT("assistant_role") ON TABLE "public"."timeline_items" TO "anon";
 
 
 
