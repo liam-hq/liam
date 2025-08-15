@@ -25,60 +25,32 @@ const getMessageType = (lastMessage: unknown): string => {
   return rawMessageType.toLowerCase().replace('message', '')
 }
 
-// Helper function to count operations from string
-const countOperationsFromString = (functionArgs: string): string => {
-  const operationsMatch = functionArgs.match(/"operations":\s*\[([^\]]*)\]/)
-  if (operationsMatch && operationsMatch[1] !== undefined) {
-    const commaCount = (operationsMatch[1].match(/,/g) || []).length
-    return ` (${commaCount + 1} ops)`
-  }
-  return ''
-}
-
-// Helper function to count operations from object
-const countOperationsFromObject = (functionArgs: unknown): string => {
-  if (isObject(functionArgs) && hasProperty(functionArgs, 'operations')) {
-    const operations = functionArgs.operations
-    if (Array.isArray(operations)) {
-      return ` (${operations.length} ops)`
-    }
-  }
-  return ''
-}
-
-// Helper function to extract operations count from function arguments
-const getOperationsCount = (functionArgs: unknown): string => {
-  if (!functionArgs) return ''
-
-  if (typeof functionArgs === 'string' && functionArgs.includes('operations')) {
-    return countOperationsFromString(functionArgs)
-  }
-  return countOperationsFromObject(functionArgs)
-}
-
 // Helper function to process tool calls
-const processToolCalls = (toolCalls: unknown[]): string => {
-  return toolCalls
-    .map((call: unknown) => {
-      if (isObject(call)) {
-        const functionName =
-          isObject(call['function']) && hasProperty(call['function'], 'name')
-            ? call['function']['name']
-            : call['name']
-        const toolName = functionName || 'unknown'
+const processToolCalls = (
+  toolCalls: unknown[],
+): { names: string; args: unknown[] } => {
+  const processedCalls = toolCalls.map((call: unknown) => {
+    if (isObject(call)) {
+      const functionName =
+        isObject(call['function']) && hasProperty(call['function'], 'name')
+          ? call['function']['name']
+          : call['name']
+      const toolName = functionName || 'unknown'
 
-        const functionArgs =
-          isObject(call['function']) &&
-          hasProperty(call['function'], 'arguments')
-            ? call['function']['arguments']
-            : call['args']
+      const functionArgs =
+        isObject(call['function']) && hasProperty(call['function'], 'arguments')
+          ? call['function']['arguments']
+          : call['args']
 
-        const operationsCount = getOperationsCount(functionArgs)
-        return `${String(toolName)}${operationsCount}`
-      }
-      return 'unknown'
-    })
-    .join(', ')
+      return { name: String(toolName), args: functionArgs }
+    }
+    return { name: 'unknown', args: undefined }
+  })
+
+  const names = processedCalls.map((c) => c.name).join(', ')
+  const args = processedCalls.map((c) => c.args)
+
+  return { names, args }
 }
 
 // Helper function to extract content from message
@@ -146,8 +118,17 @@ const logAIMessage = (
   const hasToolCalls = Array.isArray(toolCalls) && toolCalls.length > 0
 
   if (hasToolCalls) {
-    const toolInfo = processToolCalls(toolCalls)
-    logger.info(`AI calling: ${toolInfo}`)
+    const { names, args } = processToolCalls(toolCalls)
+    logger.info(`AI calling: ${names}`)
+    // Log arguments for each tool call
+    args.forEach((arg) => {
+      if (arg !== undefined) {
+        // For string arguments that look like JSON, they'll be parsed by JSON.stringify
+        // For objects, they'll be properly formatted
+        // This avoids the need for try-catch entirely
+        logger.info(`  Arguments: ${JSON.stringify(arg, null, 2)}`)
+      }
+    })
   } else if (content && typeof content === 'string' && content.trim()) {
     logger.info(`AI response: ${content.trim()}`)
   }
