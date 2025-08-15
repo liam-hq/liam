@@ -1,0 +1,27 @@
+name: JSON Schema Validation
+
+on:
+  push:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate-github-actions-workflows:
+    name: Validate GitHub Actions workflows
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+
+      - name: Validate workflows
+        uses: dsanders11/json-schema-validate-action@79b2d95a446a0d786f7f244ae7764f8370ff3657 # v1.4.0
+        with:
+          schema: https://json.schemastore.org/github-workflow.json
+          files: .github/workflows/**.yml
