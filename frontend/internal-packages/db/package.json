@@ -16,7 +16,7 @@
     "@biomejs/biome": "2.1.2",
     "@liam-hq/configs": "workspace:*",
     "eslint": "9.32.0",
-    "supabase": "2.31.7",
+    "supabase": "2.33.9",
     "type-fest": "4.41.0",
     "typescript": "5.8.3"
   },

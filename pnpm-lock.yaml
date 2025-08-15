@@ -458,8 +458,8 @@ importers:
         specifier: 9.32.0
         version: 9.32.0(jiti@2.5.1)
       supabase:
-        specifier: 2.31.7
-        version: 2.31.7
+        specifier: 2.33.9
+        version: 2.33.9
       type-fest:
         specifier: 4.41.0
         version: 4.41.0
@@ -10213,8 +10213,8 @@ packages:
       babel-plugin-macros:
         optional: true
 
-  supabase@2.31.7:
-    resolution: {integrity: sha512-355gAPUlYAcTvJLrwhqdGPdKuj9SQUOT7U641jqGwNz/aXQNHhGaFolxf6tiR4SM3sS7Yy8Mae9fhwmJFYj3DA==}
+  supabase@2.33.9:
+    resolution: {integrity: sha512-bjCdzcAzbzmPn5B4FNjsAE32aHDgCHtHngj0eDZdZ1+tVbH1/4TwGeZWy41JeiraNx5VPMG+BUOG2VNBXXcXEA==}
     engines: {npm: '>=8'}
     hasBin: true
 
@@ -18349,7 +18349,7 @@ snapshots:
       isstream: 0.1.2
       jsonwebtoken: 9.0.2
       mime-types: 2.1.35
-      retry-axios: 2.6.0(axios@1.11.0)
+      retry-axios: 2.6.0(axios@1.11.0(debug@4.4.1))
       tough-cookie: 4.1.4
     transitivePeerDependencies:
       - supports-color
@@ -20979,7 +20979,7 @@ snapshots:
       onetime: 7.0.0
       signal-exit: 4.1.0
 
-  retry-axios@2.6.0(axios@1.11.0):
+  retry-axios@2.6.0(axios@1.11.0(debug@4.4.1)):
     dependencies:
       axios: 1.11.0(debug@4.4.1)
 
@@ -21567,7 +21567,7 @@ snapshots:
     optionalDependencies:
       '@babel/core': 7.28.0
 
-  supabase@2.31.7:
+  supabase@2.33.9:
     dependencies:
       bin-links: 5.0.0
       https-proxy-agent: 7.0.6
