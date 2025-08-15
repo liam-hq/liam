@@ -1,20 +1,18 @@
 import clsx from 'clsx'
-import { type ChangeEvent, type FC, useRef, useState } from 'react'
+import type { FC } from 'react'
 import type { FormatType } from '@/components/FormatIcon/FormatIcon'
 import { createAccessibleOpacityTransition } from '@/utils/accessibleTransitions'
-import {
-  SchemaInfoSection,
-  type SchemaStatus,
-} from '../../GitHubSessionForm/SchemaInfoSection'
+import type { SchemaStatus } from '../../GitHubSessionForm/SchemaInfoSection'
 import { AttachmentsContainer } from '../../shared/AttachmentsContainer'
 import { useAutoResizeTextarea } from '../../shared/hooks/useAutoResizeTextarea'
 import { useEnterKeySubmission } from '../../shared/hooks/useEnterKeySubmission'
 import { useFileAttachments } from '../../shared/hooks/useFileAttachments'
 import { useFileDragAndDrop } from '../../shared/hooks/useFileDragAndDrop'
 import { SessionFormActions } from '../../shared/SessionFormActions'
-import { DropZone } from './DropZone'
+import { SchemaUploadSection } from './components/SchemaUploadSection'
+import { useUploadSessionState } from './hooks/useUploadSessionState'
 import styles from './UploadSessionFormPresenter.module.css'
-import { getFileFormat, isValidFileExtension } from './utils/fileValidation'
+import { processUploadedFile } from './utils/fileProcessing'
 import { calculateHasContent } from './utils/hasContentCalculation'
 
 type Props = {
@@ -24,51 +22,31 @@ type Props = {
   isTransitioning?: boolean
 }
 
-// Helper function to handle file processing
-const processFile = (
-  file: File,
-  setSchemaStatus: (status: SchemaStatus) => void,
-  setSelectedFile: (file: File) => void,
-  setDetectedFormat: (format: FormatType | null) => void,
-  setSelectedFormat: (format: FormatType | null) => void,
-  fileInputRef: React.RefObject<HTMLInputElement | null>,
-) => {
-  const isValid = isValidFileExtension(file.name)
-  setSchemaStatus(isValid ? 'valid' : 'invalid')
-  setSelectedFile(file)
-
-  // Create a new FileList and set it to the input element
-  const dataTransfer = new DataTransfer()
-  dataTransfer.items.add(file)
-  if (fileInputRef.current) {
-    fileInputRef.current.files = dataTransfer.files
-  }
-
-  if (isValid) {
-    const format = getFileFormat(file.name)
-    setDetectedFormat(format)
-    setSelectedFormat(format)
-  } else {
-    setDetectedFormat(null)
-    setSelectedFormat(null)
-  }
-}
-
 export const UploadSessionFormPresenter: FC<Props> = ({
   formError,
   isPending,
   formAction,
   isTransitioning = false,
 }) => {
-  const [isHovered, setIsHovered] = useState(false)
-  const [selectedFile, setSelectedFile] = useState<File | null>(null)
-  const [detectedFormat, setDetectedFormat] = useState<FormatType | null>(null)
-  const [selectedFormat, setSelectedFormat] = useState<FormatType | null>(null)
-  const [textContent, setTextContent] = useState('')
-  const [schemaStatus, setSchemaStatus] = useState<SchemaStatus>('idle')
-  const fileInputRef = useRef<HTMLInputElement>(null)
-  const textareaRef = useRef<HTMLTextAreaElement>(null)
-  const formRef = useRef<HTMLFormElement>(null)
+  const {
+    isHovered,
+    selectedFile,
+    detectedFormat,
+    selectedFormat,
+    textContent,
+    schemaStatus,
+    fileInputRef,
+    textareaRef,
+    formRef,
+    setIsHovered,
+    setSelectedFile,
+    setDetectedFormat,
+    setSelectedFormat,
+    setTextContent,
+    setSchemaStatus,
+    resetState,
+    resetSchemaState,
+  } = useUploadSessionState()
 
   // File attachments hook
   const {
@@ -95,14 +73,15 @@ export const UploadSessionFormPresenter: FC<Props> = ({
   const handleSchemaFileDrop = (files: FileList) => {
     const file = files[0]
     if (file) {
-      processFile(
-        file,
-        setSchemaStatus,
-        setSelectedFile,
-        setDetectedFormat,
-        setSelectedFormat,
-        fileInputRef,
-      )
+      const {
+        status,
+        detectedFormat: newDetectedFormat,
+        selectedFormat: newSelectedFormat,
+      } = processUploadedFile(file, fileInputRef)
+      setSelectedFile(file)
+      setSchemaStatus(status)
+      setDetectedFormat(newDetectedFormat)
+      setSelectedFormat(newSelectedFormat)
     }
   }
 
@@ -119,18 +98,16 @@ export const UploadSessionFormPresenter: FC<Props> = ({
     handleDrop: handleAttachmentDrop,
   } = useFileDragAndDrop(handleFileSelect)
 
-  const handleSchemaFileSelect = (e: ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (file) {
-      processFile(
-        file,
-        setSchemaStatus,
-        setSelectedFile,
-        setDetectedFormat,
-        setSelectedFormat,
-        fileInputRef,
-      )
-    }
+  const handleFileProcess = (
+    file: File,
+    status: SchemaStatus,
+    newDetectedFormat: FormatType | null,
+    newSelectedFormat: FormatType | null,
+  ) => {
+    setSelectedFile(file)
+    setSchemaStatus(status)
+    setDetectedFormat(newDetectedFormat)
+    setSelectedFormat(newSelectedFormat)
   }
 
   const handleSelectFile = () => {
@@ -145,15 +122,8 @@ export const UploadSessionFormPresenter: FC<Props> = ({
   })
 
   const handleReset = () => {
-    setSelectedFile(null)
-    setDetectedFormat(null)
-    setSelectedFormat(null)
-    setTextContent('')
-    setSchemaStatus('idle')
+    resetState()
     clearAttachments()
-    if (fileInputRef.current) {
-      fileInputRef.current.value = ''
-    }
     // The auto-resize hook will handle the height adjustment
   }
 
@@ -174,56 +144,23 @@ export const UploadSessionFormPresenter: FC<Props> = ({
         {selectedFile && schemaStatus === 'valid' && selectedFormat && (
           <input type="hidden" name="schemaFormat" value={selectedFormat} />
         )}
-        <div className={styles.uploadSection ?? ''}>
-          <div className={styles.uploadContainer ?? ''}>
-            <DropZone
-              isPending={isPending}
-              schemaDragActive={schemaDragActive}
-              isHovered={isHovered}
-              onSelectFile={handleSelectFile}
-              onDragEnter={handleSchemaDrag}
-              onDragLeave={handleSchemaDrag}
-              onDragOver={handleSchemaDrag}
-              onDrop={handleSchemaDrop}
-              onMouseEnter={() => !isPending && setIsHovered(true)}
-              onMouseLeave={() => setIsHovered(false)}
-              hasSelectedFile={!!selectedFile}
-              isValidSchema={schemaStatus !== 'invalid'}
-            />
-            <input
-              ref={fileInputRef}
-              type="file"
-              name="schemaFile"
-              onChange={handleSchemaFileSelect}
-              accept=".sql,.rb,.prisma,.json"
-              className={styles.hiddenFileInput}
-              disabled={isPending}
-            />
-            {selectedFile && (
-              <SchemaInfoSection
-                status={schemaStatus}
-                schemaName={selectedFile.name}
-                detectedFormat={detectedFormat || 'postgres'}
-                selectedFormat={selectedFormat || detectedFormat || 'postgres'}
-                errorMessage={
-                  schemaStatus === 'invalid'
-                    ? 'Unsupported file type. Please upload .sql, .rb, .prisma, or .json files.'
-                    : undefined
-                }
-                onFormatChange={setSelectedFormat}
-                onRemove={() => {
-                  setSelectedFile(null)
-                  setSchemaStatus('idle')
-                  setDetectedFormat(null)
-                  setSelectedFormat(null)
-                  if (fileInputRef.current) {
-                    fileInputRef.current.value = ''
-                  }
-                }}
-              />
-            )}
-          </div>
-        </div>
+        <SchemaUploadSection
+          isPending={isPending}
+          schemaDragActive={schemaDragActive}
+          isHovered={isHovered}
+          selectedFile={selectedFile}
+          schemaStatus={schemaStatus}
+          detectedFormat={detectedFormat}
+          selectedFormat={selectedFormat}
+          fileInputRef={fileInputRef}
+          onSelectFile={handleSelectFile}
+          onSchemaDrop={handleSchemaDrop}
+          onSchemaDrag={handleSchemaDrag}
+          onHoverChange={setIsHovered}
+          onFileProcess={handleFileProcess}
+          onFormatChange={setSelectedFormat}
+          onRemoveSchema={resetSchemaState}
+        />
         <div className={styles.divider} />
         <div
           className={clsx(
