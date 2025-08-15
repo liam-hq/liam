@@ -64,7 +64,22 @@ const getMessageContent = (lastMessage: unknown): string | undefined => {
       ? lastMessage['kwargs']['content']
       : undefined)
 
-  return typeof content === 'string' ? content : undefined
+  // Handle both string and array formats
+  if (typeof content === 'string') {
+    return content
+  }
+
+  // Handle array format (e.g., [{ type: 'text', text: '...', annotations: [] }])
+  if (Array.isArray(content) && content.length > 0) {
+    const firstItem = content[0]
+    if (isObject(firstItem) && hasProperty(firstItem, 'text')) {
+      return typeof firstItem['text'] === 'string'
+        ? firstItem['text']
+        : undefined
+    }
+  }
+
+  return undefined
 }
 
 // Helper function to extract tool calls from AI message
