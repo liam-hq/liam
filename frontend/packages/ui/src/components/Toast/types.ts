@@ -9,3 +9,5 @@ export type ToastOptions = {
 export type ToastItem = ToastOptions & { isOpen: boolean }
 
 export type ToastFn = (options: ToastOptions) => void
+
+export type ToastPosition = 'header' | 'command-palette'
