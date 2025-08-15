@@ -158,7 +158,7 @@ export const ERDRenderer: FC<Props> = ({
                   <div className={styles.triggerWrapper}>
                     <SidebarTrigger />
                   </div>
-                  <TableDetailDrawerRoot>
+                  <TableDetailDrawerRoot withAppBar={withAppBar}>
                     {errorObjects.length > 0 && (
                       <ErrorDisplay errors={errorObjects} />
                     )}
@@ -170,7 +170,7 @@ export const ERDRenderer: FC<Props> = ({
                           edges={edges}
                           displayArea="main"
                         />
-                        <TableDetailDrawer />
+                        <TableDetailDrawer withAppBar={withAppBar} />
                       </>
                     )}
                   </TableDetailDrawerRoot>
