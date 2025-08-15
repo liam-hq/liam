@@ -117,8 +117,6 @@ const executeDeepModelingProcess = async (
     options.configurable.repositories.schema.checkpointer,
   )
 
-  logger.info('Starting Deep Modeling workflow execution...')
-
   // Use streaming with proper async iterator handling
   const streamResult = await (async () => {
     const stream = await graph.stream(workflowState, options)
