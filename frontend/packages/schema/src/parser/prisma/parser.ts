@@ -3,6 +3,7 @@ import pkg from '@prisma/internals'
 import type {
   Columns,
   Constraints,
+  Enum,
   ForeignKeyConstraint,
   ForeignKeyConstraintReferenceOption,
   Index,
@@ -393,6 +394,27 @@ function processManyToManyRelationships(
 }
 
 /**
+ * Process enums from DMMF and create enum objects
+ */
+function processEnums(
+  dmmfEnums: readonly DMMF.DatamodelEnum[],
+): Record<string, Enum> {
+  const enums: Record<string, Enum> = {}
+
+  for (const dmmfEnum of dmmfEnums) {
+    const values = dmmfEnum.values.map((value) => value.name)
+
+    enums[dmmfEnum.name] = {
+      name: dmmfEnum.name,
+      values,
+      comment: dmmfEnum.documentation ?? null,
+    }
+  }
+
+  return enums
+}
+
+/**
  * Main function to parse a Prisma schema
  */
 async function parsePrismaSchema(schemaString: string): Promise<ProcessResult> {
@@ -413,6 +435,9 @@ async function parsePrismaSchema(schemaString: string): Promise<ProcessResult> {
 
   // Process models and create tables
   const tables = processTables(dmmf.datamodel.models, tableFieldRenaming)
+
+  // Process enums
+  const enums = processEnums(dmmf.datamodel.enums)
 
   // Process constraints
   processConstraints(
@@ -441,7 +466,7 @@ async function parsePrismaSchema(schemaString: string): Promise<ProcessResult> {
   return {
     value: {
       tables,
-      enums: {},
+      enums,
     },
     errors: errors,
   }
@@ -726,5 +751,4 @@ function getPrimaryKeyInfo(table: Table, models: readonly DMMF.Model[]) {
   return primaryKeyField
 }
 
-// TODO: Add enum parsing support for Prisma schemas
 export const processor: Processor = (str) => parsePrismaSchema(str)
