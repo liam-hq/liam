@@ -14,7 +14,7 @@ describe(_processor, () => {
             id: aColumn({
               name: 'id',
               type: 'bigserial',
-              default: 'autoincrement()',
+              default: null, // autoincrement() handled by type system
               notNull: true,
             }),
             ...override?.columns,
@@ -438,7 +438,7 @@ describe(_processor, () => {
               _id: aColumn({
                 name: '_id',
                 type: 'bigserial',
-                default: 'autoincrement()',
+                default: null, // autoincrement() handled by type system
                 notNull: true,
               }),
               raw_email_address: aColumn({
@@ -478,7 +478,7 @@ describe(_processor, () => {
               id: aColumn({
                 name: 'id',
                 type: 'bigserial',
-                default: 'autoincrement()',
+                default: null, // autoincrement() handled by type system
                 notNull: true,
               }),
               raw_user_id: aColumn({
@@ -549,7 +549,7 @@ describe(_processor, () => {
               _id: aColumn({
                 name: '_id',
                 type: 'serial',
-                default: 'autoincrement()',
+                default: null, // autoincrement() handled by type system
                 notNull: true,
               }),
               raw_email_address: aColumn({
@@ -595,7 +595,7 @@ describe(_processor, () => {
               id: aColumn({
                 name: 'id',
                 type: 'serial',
-                default: 'autoincrement()',
+                default: null, // autoincrement() handled by type system
                 notNull: true,
               }),
               raw_user_id: aColumn({
@@ -656,7 +656,7 @@ describe(_processor, () => {
               id: aColumn({
                 name: 'id',
                 type: 'serial',
-                default: 'autoincrement()',
+                default: null, // autoincrement() handled by type system
                 notNull: true,
               }),
               title: aColumn({
@@ -686,7 +686,7 @@ describe(_processor, () => {
               id: aColumn({
                 name: 'id',
                 type: 'serial',
-                default: 'autoincrement()',
+                default: null, // autoincrement() handled by type system
                 notNull: true,
               }),
               name: aColumn({
@@ -761,6 +761,381 @@ describe(_processor, () => {
       })
 
       expect(value).toEqual(expectedSchema)
+    })
+
+    it('Prisma default functions with PostgreSQL support', async () => {
+      const { value } = await processor(`
+        model User {
+          id           String @id @default(cuid())
+          uuid4_id     String @default(uuid(4))
+          uuid_id      String @default(uuid())
+          created_at   DateTime @default(now())
+          custom_field String @default(dbgenerated("'custom_value'"))
+        }
+      `)
+
+      const expectedSchema = aSchema({
+        tables: {
+          User: aTable({
+            name: 'User',
+            columns: {
+              id: aColumn({
+                name: 'id',
+                type: 'text',
+                default: null, // cuid() is client-generated
+                notNull: true,
+              }),
+              uuid4_id: aColumn({
+                name: 'uuid4_id',
+                type: 'text',
+                default: null, // uuid(4) is client-generated
+                notNull: true,
+              }),
+              uuid_id: aColumn({
+                name: 'uuid_id',
+                type: 'text',
+                default: null, // uuid() is client-generated
+                notNull: true,
+              }),
+              created_at: aColumn({
+                name: 'created_at',
+                type: 'timestamp(3)',
+                default: 'CURRENT_TIMESTAMP', // now() is DB-generated
+                notNull: true,
+              }),
+              custom_field: aColumn({
+                name: 'custom_field',
+                type: 'text',
+                default: "'custom_value'", // dbgenerated() with custom SQL
+                notNull: true,
+              }),
+            },
+            indexes: {
+              User_pkey: anIndex({
+                name: 'User_pkey',
+                columns: ['id'],
+                unique: true,
+              }),
+            },
+            constraints: {
+              PRIMARY_id: {
+                type: 'PRIMARY KEY',
+                name: 'PRIMARY_id',
+                columnNames: ['id'],
+              },
+            },
+            comment: null,
+          }),
+        },
+      })
+
+      expect(value).toEqual(expectedSchema)
+    })
+
+    it('all supported Prisma client-generated ID functions', async () => {
+      const { value } = await processor(`
+        model User {
+          id           String @id @default(cuid())
+          cuid2_id     String @default(cuid(2))
+          ulid_id      String @default(ulid())
+          nano_id      String @default(nanoid())
+          nano_custom  String @default(nanoid(10))
+          uuid7_id     String @default(uuid(7))
+        }
+      `)
+
+      const expectedSchema = aSchema({
+        tables: {
+          User: aTable({
+            name: 'User',
+            columns: {
+              id: aColumn({
+                name: 'id',
+                type: 'text',
+                default: null, // cuid() is supported and client-generated
+                notNull: true,
+              }),
+              cuid2_id: aColumn({
+                name: 'cuid2_id',
+                type: 'text',
+                default: null, // cuid(2) is supported and client-generated
+                notNull: true,
+              }),
+              ulid_id: aColumn({
+                name: 'ulid_id',
+                type: 'text',
+                default: null, // ulid() is supported and client-generated
+                notNull: true,
+              }),
+              nano_id: aColumn({
+                name: 'nano_id',
+                type: 'text',
+                default: null, // nanoid() is supported and client-generated
+                notNull: true,
+              }),
+              nano_custom: aColumn({
+                name: 'nano_custom',
+                type: 'text',
+                default: null, // nanoid(10) is supported and client-generated
+                notNull: true,
+              }),
+              uuid7_id: aColumn({
+                name: 'uuid7_id',
+                type: 'text',
+                default: null, // uuid(7) is supported and client-generated
+                notNull: true,
+              }),
+            },
+            indexes: {
+              User_pkey: anIndex({
+                name: 'User_pkey',
+                columns: ['id'],
+                unique: true,
+              }),
+            },
+            constraints: {
+              PRIMARY_id: {
+                type: 'PRIMARY KEY',
+                name: 'PRIMARY_id',
+                columnNames: ['id'],
+              },
+            },
+            comment: null,
+          }),
+        },
+      })
+
+      expect(value).toEqual(expectedSchema)
+    })
+
+    it('complete Prisma function specification verification', async () => {
+      const { value } = await processor(`
+        model User {
+          id           BigInt   @id @default(autoincrement())
+          cuid_id      String   @default(cuid())
+          cuid2_id     String   @default(cuid(2))
+          uuid_id      String   @default(uuid())
+          uuid4_id     String   @default(uuid(4))
+          uuid7_id     String   @default(uuid(7))
+          ulid_id      String   @default(ulid())
+          nanoid_id    String   @default(nanoid())
+          nanoid_10    String   @default(nanoid(10))
+          created_at   DateTime @default(now())
+          custom_field String   @default(dbgenerated("'custom_value'"))
+        }
+      `)
+
+      const expectedSchema = aSchema({
+        tables: {
+          User: aTable({
+            name: 'User',
+            columns: {
+              // autoincrement() -> SERIAL type, null default (handled by type system)
+              id: aColumn({
+                name: 'id',
+                type: 'bigserial',
+                default: null,
+                notNull: true,
+              }),
+              // cuid() -> TEXT type, null default (Prisma Client generated)
+              cuid_id: aColumn({
+                name: 'cuid_id',
+                type: 'text',
+                default: null,
+                notNull: true,
+              }),
+              // cuid(2) -> TEXT type, null default (Prisma Client generated)
+              cuid2_id: aColumn({
+                name: 'cuid2_id',
+                type: 'text',
+                default: null,
+                notNull: true,
+              }),
+              // uuid() -> TEXT type, null default (Prisma Client generated)
+              uuid_id: aColumn({
+                name: 'uuid_id',
+                type: 'text',
+                default: null,
+                notNull: true,
+              }),
+              // uuid(4) -> TEXT type, null default (Prisma Client generated)
+              uuid4_id: aColumn({
+                name: 'uuid4_id',
+                type: 'text',
+                default: null,
+                notNull: true,
+              }),
+              // uuid(7) -> TEXT type, null default (Prisma Client generated)
+              uuid7_id: aColumn({
+                name: 'uuid7_id',
+                type: 'text',
+                default: null,
+                notNull: true,
+              }),
+              // ulid() -> TEXT type, null default (Prisma Client generated)
+              ulid_id: aColumn({
+                name: 'ulid_id',
+                type: 'text',
+                default: null,
+                notNull: true,
+              }),
+              // nanoid() -> TEXT type, null default (Prisma Client generated)
+              nanoid_id: aColumn({
+                name: 'nanoid_id',
+                type: 'text',
+                default: null,
+                notNull: true,
+              }),
+              // nanoid(10) -> TEXT type, null default (Prisma Client generated)
+              nanoid_10: aColumn({
+                name: 'nanoid_10',
+                type: 'text',
+                default: null,
+                notNull: true,
+              }),
+              // now() -> TIMESTAMP(3) type, CURRENT_TIMESTAMP default (DB generated)
+              created_at: aColumn({
+                name: 'created_at',
+                type: 'timestamp(3)',
+                default: 'CURRENT_TIMESTAMP',
+                notNull: true,
+              }),
+              // dbgenerated() -> custom SQL expression (DB generated)
+              custom_field: aColumn({
+                name: 'custom_field',
+                type: 'text',
+                default: "'custom_value'",
+                notNull: true,
+              }),
+            },
+            indexes: {
+              User_pkey: anIndex({
+                name: 'User_pkey',
+                columns: ['id'],
+                unique: true,
+              }),
+            },
+            constraints: {
+              PRIMARY_id: {
+                type: 'PRIMARY KEY',
+                name: 'PRIMARY_id',
+                columnNames: ['id'],
+              },
+            },
+            comment: null,
+          }),
+        },
+      })
+
+      expect(value).toEqual(expectedSchema)
+    })
+
+    it('unsupported functions cause Prisma DMMF errors (expected behavior)', async () => {
+      // Test that sequence() causes Prisma to reject the schema
+      await expect(
+        processor(`
+          model Test {
+            id String @id @default(sequence())
+          }
+        `),
+      ).rejects.toThrow()
+
+      // Test that auto() causes Prisma to reject the schema
+      await expect(
+        processor(`
+          model Test {
+            id String @id @default(auto())
+          }
+        `),
+      ).rejects.toThrow()
+    })
+
+    it('sequence() works with CockroachDB provider but our parser converts it', async () => {
+      // Test with CockroachDB provider where sequence() is supported
+      const cockroachProcessor = async (schema: string) =>
+        _processor(`
+
+          generator client {
+            provider = "prisma-client-js"
+          }
+
+          datasource db {
+            provider = "cockroachdb"
+            url = env("DATABASE_URL")
+          }
+
+          ${schema}
+        `)
+
+      const { value } = await cockroachProcessor(`
+        model Test {
+          id String @id @default(sequence())
+        }
+      `)
+
+      // Our parser should handle sequence() gracefully by returning null default
+      expect(value.tables['Test']?.columns['id']?.type).toBe('text')
+      expect(value.tables['Test']?.columns['id']?.default).toBe(null)
+    })
+
+    it('auto() works with MongoDB provider but our parser converts it', async () => {
+      // Test with MongoDB provider where auto() is supported
+      const mongoProcessor = async (schema: string) =>
+        _processor(`
+          generator client {
+            provider = "prisma-client-js"
+          }
+
+          datasource db {
+            provider = "mongodb"
+            url = env("DATABASE_URL")
+          }
+
+          ${schema}
+        `)
+
+      const { value } = await mongoProcessor(`
+        model Test {
+          id String @id @default(auto()) @map("_id") @db.ObjectId
+        }
+      `)
+
+      // Our parser should handle auto() gracefully by returning null default
+      // MongoDB ObjectId native type converts to 'objectid', not 'text'
+      expect(value.tables['Test']?.columns['_id']?.type).toBe('objectid')
+      expect(value.tables['Test']?.columns['_id']?.default).toBe(null)
+    })
+
+    it('should correctly map @db.SmallInt with autoincrement() to smallserial', async () => {
+      const { value } = await processor(`
+        model Test {
+          id Int @id @default(autoincrement()) @db.SmallInt
+        }
+      `)
+
+      // Should map to smallserial, not serial
+      expect(value.tables['Test']?.columns['id']?.type).toBe('smallserial')
+      expect(value.tables['Test']?.columns['id']?.default).toBe(null)
+    })
+
+    it('should preserve explicit native types even with text-generating functions', async () => {
+      const { value } = await processor(`
+        model Test {
+          id         Int    @id @default(autoincrement())
+          uuid_field String @default(uuid()) @db.Uuid
+          cuid_field String @default(cuid()) @db.VarChar(30)
+        }
+      `)
+
+      // Should preserve @db.Uuid instead of forcing text
+      expect(value.tables['Test']?.columns['uuid_field']?.type).toBe('uuid')
+      expect(value.tables['Test']?.columns['uuid_field']?.default).toBe(null)
+
+      // Should preserve @db.VarChar(30) instead of forcing text
+      expect(value.tables['Test']?.columns['cuid_field']?.type).toBe(
+        'varchar(30)',
+      )
+      expect(value.tables['Test']?.columns['cuid_field']?.default).toBe(null)
     })
   })
 })

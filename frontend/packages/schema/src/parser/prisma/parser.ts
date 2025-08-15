@@ -29,6 +29,37 @@ const getFieldRenamedIndex = (
 }
 
 /**
+ * Check if a field has autoincrement() function
+ * @see https://www.prisma.io/docs/orm/reference/prisma-schema-reference#default
+ */
+function hasAutoincrementFunction(field: DMMF.Field): boolean {
+  const value = field.default?.valueOf()
+  if (typeof value === 'object' && value !== null && 'name' in value) {
+    const functionName = String(value.name)
+    return functionName === 'autoincrement'
+  }
+  return false
+}
+
+/**
+ * Check if a field has a function that requires TEXT type (either supported or unsupported)
+ * @see https://www.prisma.io/docs/orm/reference/prisma-schema-reference#default
+ */
+function requiresTextType(field: DMMF.Field): boolean {
+  const value = field.default?.valueOf()
+  if (typeof value === 'object' && value !== null && 'name' in value) {
+    const functionName = String(value.name)
+
+    // All functions that generate TEXT values (all are supported)
+    const textGeneratingFunctions = ['cuid', 'uuid', 'ulid', 'nanoid']
+
+    return textGeneratingFunctions.includes(functionName)
+  }
+
+  return false
+}
+
+/**
  * Build a mapping of field renamings from model fields
  */
 function buildFieldRenamingMap(
@@ -67,16 +98,52 @@ function processModelField(
 
   const defaultValue = extractDefaultValue(field)
 
+  // Check if the field requires TEXT type
+  const needsTextType = requiresTextType(field)
+
+  // Check if the field has autoincrement() which affects type
+  const hasAutoincrement = hasAutoincrementFunction(field)
+
   const fieldName =
     tableFieldRenaming[model.dbName || model.name]?.[field.name] ?? field.name
 
-  const column = {
-    name: fieldName,
-    type: convertToPostgresColumnType(
+  let columnType: string
+  if (needsTextType && !field.nativeType) {
+    // Only force text type if there's no explicit native type
+    columnType = 'text'
+  } else if (hasAutoincrement) {
+    // Handle autoincrement type mapping
+    // First resolve the base PostgreSQL type considering native types
+    const baseType = convertToPostgresColumnType(
+      field.type,
+      field.nativeType,
+      null, // Pass null to get base type without autoincrement
+    )
+    // Then map to the appropriate serial type
+    switch (baseType) {
+      case 'smallint':
+        columnType = 'smallserial'
+        break
+      case 'integer':
+        columnType = 'serial'
+        break
+      case 'bigint':
+        columnType = 'bigserial'
+        break
+      default:
+        columnType = baseType
+    }
+  } else {
+    columnType = convertToPostgresColumnType(
       field.type,
       field.nativeType,
       defaultValue,
-    ),
+    )
+  }
+
+  const column = {
+    name: fieldName,
+    type: columnType,
     default: defaultValue,
     notNull: field.isRequired,
     comment: field.documentation ?? null,
@@ -479,6 +546,20 @@ function extractIndex(index: DMMF.Index): Index | null {
   }
 }
 
+/**
+ * Check if a value is a primitive type suitable for SQL
+ */
+function isPrimitiveType(
+  value: unknown,
+): value is string | number | boolean | null {
+  return (
+    typeof value === 'string' ||
+    typeof value === 'number' ||
+    typeof value === 'boolean' ||
+    value === null
+  )
+}
+
 function extractDefaultValue(field: DMMF.Field) {
   const value = field.default?.valueOf()
   const defaultValue = value === undefined ? null : value
@@ -487,16 +568,69 @@ function extractDefaultValue(field: DMMF.Field) {
   // This function handles both primitive types (`string | number | boolean`) and objects,
   // returning a string like `name(args)` for objects.
   // Note: `FieldDefaultScalar[]` is not supported.
+  // @see https://www.prisma.io/docs/orm/reference/prisma-schema-reference#default
   if (typeof defaultValue === 'object' && defaultValue !== null) {
     if ('name' in defaultValue && 'args' in defaultValue) {
-      return `${defaultValue.name}(${defaultValue.args})`
+      const functionName = String(defaultValue.name)
+
+      // Handle supported functions
+      switch (functionName) {
+        case 'cuid':
+          // cuid() and cuid(2) are client-generated, no database default
+          return null
+
+        case 'uuid':
+          // All uuid() variants are client-generated in Prisma
+          return null
+
+        case 'ulid':
+          // ulid() is client-generated in Prisma
+          return null
+
+        case 'nanoid':
+          // nanoid() and nanoid(size) are client-generated in Prisma
+          return null
+
+        case 'now':
+          // now() creates database-level DEFAULT
+          return 'CURRENT_TIMESTAMP'
+
+        case 'dbgenerated': {
+          // dbgenerated() takes SQL expression as argument
+          // Note: Prisma validates non-empty strings since v2.21.0, so this is safe
+          const args = Array.isArray(defaultValue.args) ? defaultValue.args : []
+          return args.length > 0 ? String(args[0]) : null
+        }
+
+        case 'autoincrement':
+          // autoincrement() is handled by type system (SERIAL), no DEFAULT needed
+          return null
+
+        // Unsupported functions in PostgreSQL - return null for graceful handling
+        case 'sequence': // CockroachDB only
+        case 'auto': // MongoDB only
+          return null
+
+        default: {
+          // Fallback for any other functions
+          // Validate that all args are primitive types to prevent invalid SQL
+          const args = Array.isArray(defaultValue.args)
+            ? defaultValue.args
+            : [defaultValue.args]
+          const allPrimitives = args.every(isPrimitiveType)
+
+          if (!allPrimitives) {
+            // Return null for safety if arguments contain complex objects
+            return null
+          }
+
+          const defaultArgsStr = args.join(',')
+          return `${functionName}(${defaultArgsStr})`
+        }
+      }
     }
   }
-  return typeof defaultValue === 'string' ||
-    typeof defaultValue === 'number' ||
-    typeof defaultValue === 'boolean'
-    ? defaultValue
-    : null
+  return isPrimitiveType(defaultValue) ? defaultValue : null
 }
 
 function normalizeConstraintName(
