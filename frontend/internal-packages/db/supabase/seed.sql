@@ -158,8 +158,105 @@ begin
     current_timestamp
   );
 
+  -- 8. create a design session
+  declare
+    v_design_session_id uuid := gen_random_uuid();
+    v_building_schema_id uuid := gen_random_uuid();
+  begin
+    insert into public.design_sessions (
+      id,
+      project_id,
+      organization_id,
+      created_by_user_id,
+      name,
+      created_at
+    )
+    values (
+      v_design_session_id,
+      v_project_id,
+      v_org_id,
+      v_user_id,
+      'Sample Design Session',
+      current_timestamp
+    );
+
+    -- 9. create a building schema
+    insert into public.building_schemas (
+      id,
+      design_session_id,
+      organization_id,
+      schema,
+      created_at,
+      git_sha,
+      initial_schema_snapshot,
+      schema_file_path
+    )
+    values (
+      v_building_schema_id,
+      v_design_session_id,
+      v_org_id,
+      '{"tables": [], "relationships": []}'::jsonb,
+      current_timestamp,
+      'abc123def456',
+      '{"tables": [], "relationships": []}'::jsonb,
+      'frontend/internal-packages/db/schema/schema.sql'
+    );
+
+    -- 10. create a building schema version
+    insert into public.building_schema_versions (
+      organization_id,
+      building_schema_id,
+      number,
+      created_at,
+      patch,
+      reverse_patch
+    )
+    values (
+      v_org_id,
+      v_building_schema_id,
+      1,
+      current_timestamp,
+      null,
+      null
+    );
+
+    -- 11. create a timeline item
+    insert into public.timeline_items (
+      design_session_id,
+      user_id,
+      content,
+      created_at,
+      updated_at,
+      organization_id,
+      type,
+      assistant_role
+    )
+    values (
+      v_design_session_id,
+      v_user_id,
+      'Welcome to your design session!',
+      current_timestamp,
+      current_timestamp,
+      v_org_id,
+      'user',
+      null
+    );
+
+    -- 12. optionally, create a public share setting for the design session (commented out by default)
+    -- uncomment if you want to test public sharing functionality
+    -- insert into public.public_share_settings (
+    --   design_session_id,
+    --   created_at
+    -- )
+    -- values (
+    --   v_design_session_id,
+    --   current_timestamp
+    -- );
+  end;
+
   raise notice 'environment: %, seeded database with test data.',
     case when is_local then 'local' else 'preview' end;
   raise notice 'test users created: test@example.com, test2@example.com with password: liampassword1234';
   raise notice 'using installation_id: %', v_installation_id;
+  raise notice 'created sample design session with building schema, version, and timeline item';
 end $$;
