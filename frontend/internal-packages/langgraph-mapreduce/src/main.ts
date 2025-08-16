@@ -54,19 +54,29 @@ interface JokeState {
 const generateTopics = async (
   state: typeof OverallState.State
 ): Promise<Partial<typeof OverallState.State>> => {
+  console.info("🔍 [generateTopics] Input state:", state);
+
   const prompt = subjectsPrompt.replace("topic", state.topic);
+  console.info("📝 [generateTopics] Prompt:", prompt);
+
   const response = await model
     .withStructuredOutput(Subjects, { name: "subjects" })
     .invoke(prompt);
+
+  console.info("✅ [generateTopics] Generated subjects:", response.subjects);
   return { subjects: response.subjects };
 };
 
 // Function to generate a joke
 const generateJoke = async (state: JokeState): Promise<{ jokes: string[] }> => {
+  console.info("🎭 [generateJoke] Processing subject:", state.subject);
+
   const prompt = jokePrompt.replace("subject", state.subject);
   const response = await model
     .withStructuredOutput(Joke, { name: "joke" })
     .invoke(prompt);
+
+  console.info("😄 [generateJoke] Generated joke for", state.subject, ":", response.joke);
   return { jokes: [response.joke] };
 };
 
@@ -83,6 +93,8 @@ const continueToJokes = (state: typeof OverallState.State) => {
 const bestJoke = async (
   state: typeof OverallState.State
 ): Promise<Partial<typeof OverallState.State>> => {
+  console.info("🏆 [bestJoke] Evaluating", state.jokes.length, "jokes");
+
   const jokes = state.jokes.join("\n\n");
   const prompt = bestJokePrompt
     .replace("jokes", jokes)
@@ -90,7 +102,9 @@ const bestJoke = async (
   const response = await model
     .withStructuredOutput(BestJoke, { name: "best_joke" })
     .invoke(prompt);
-  return { bestSelectedJoke: state.jokes[response.id] };
+
+  console.info("🎯 [bestJoke] Selected joke index:", response.id);
+  return { bestSelectedJoke: state.jokes[response.id] || '' };
 };
 
 // Construct the graph: here we put everything together to construct our graph
@@ -108,18 +122,20 @@ const app = graph.compile();
 // Main execution
 const main = async () => {
   const topic = process.argv[2] || "animals";
-  
-  console.log(`Generating jokes about: ${topic}\n`);
-  
+
+  console.info(`Generating jokes about: ${topic}\n`);
+  console.info("=== Starting LangGraph workflow ===\n");
+
   try {
     const result = await app.invoke({ topic });
-    
-    console.log("Generated subjects:", result.subjects);
-    console.log("\nAll jokes:");
+
+    console.info("\n=== Final Results ===");
+    console.info("Generated subjects:", result.subjects);
+    console.info("\nAll jokes:");
     result.jokes.forEach((joke, index) => {
-      console.log(`${index + 1}. ${joke}`);
+      console.info(`${index + 1}. ${joke}`);
     });
-    console.log("\n🏆 Best joke:", result.bestSelectedJoke);
+    console.info("\n🏆 Best joke:", result.bestSelectedJoke);
   } catch (error) {
     console.error("Error:", error);
     process.exit(1);
