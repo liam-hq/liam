@@ -20,7 +20,7 @@ jobs:
           persist-credentials: false
 
       - name: Run Claude Code Security Review
-        uses: anthropics/claude-code-security-review@c19afa74097b892109a6598b94297280ce7d1beb
+        uses: anthropics/claude-code-security-review@c51ac4fce843683a8c6ba9e63bc47efcbce3da30
         with:
           claude-api-key: ${{ secrets.ANTHROPIC_API_KEY }}
           comment-pr: true
