@@ -38,32 +38,19 @@ export function useRealtimeArtifact(designSessionId: string) {
       .maybeSingle()
 
     if (fetchError) {
-      // For public view, check if it's a permission error (expected when no artifact exists)
-      if (isPublic && fetchError.code === 'PGRST116') {
-        // This is expected - no artifact exists yet for this session
+      // For public view, any error is expected (no artifact exists yet)
+      if (isPublic) {
         setLoading(false)
         return
       }
 
-      // Check if this is a real error or just no data
-      const hasErrorContent =
-        fetchError.message ||
-        fetchError.code ||
-        fetchError.details ||
-        Object.keys(fetchError).length > 0
-
-      if (hasErrorContent && fetchError.code !== 'PGRST116') {
-        // Only log if there's actual error content and it's not a "no rows" error
-        console.error('Error fetching artifact:', {
-          message: fetchError.message || 'No message',
-          code: fetchError.code || 'No code',
-          hint: fetchError.hint || 'No hint',
-          details: JSON.stringify(fetchError),
-        })
-      }
-
-      // Don't set error state for empty responses or permission errors in public view
-      if (fetchError.message && fetchError.code !== 'PGRST116') {
+      // For private view, handle actual errors
+      if (fetchError.code && fetchError.code !== 'PGRST116') {
+        // Only log real errors, not "no rows" errors
+        console.error(
+          'Error fetching artifact:',
+          fetchError.message || fetchError,
+        )
         handleError(fetchError)
       }
 
