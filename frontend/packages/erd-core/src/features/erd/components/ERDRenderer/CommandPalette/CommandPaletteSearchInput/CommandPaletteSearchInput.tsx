@@ -14,12 +14,12 @@ export const CommandPaletteSearchInput: FC<Props> = ({
   const [value, setValue] = useState('')
 
   const suggestionSuffix = useMemo(() => {
-    if (!suggestion) return ''
+    if (!suggestion) return null
 
     if (suggestion.toLowerCase().startsWith(value.toLowerCase())) {
       return suggestion.slice(value.length).toLowerCase()
     }
-    return `- ${suggestion}`
+    return ` - ${suggestion}`
   }, [value, suggestion])
 
   return (
@@ -32,15 +32,17 @@ export const CommandPaletteSearchInput: FC<Props> = ({
           value={value}
           onValueChange={setValue}
         />
-        <div className={styles.suggestion}>
-          <span className={styles.inputValue}>{value}</span>
-          <span
-            className={styles.suggestionSuffix}
-            data-testid="command-palette-search-input-suggestion-suffix"
-          >
-            {suggestionSuffix}
-          </span>
-        </div>
+        {suggestionSuffix && (
+          <div className={styles.suggestion}>
+            <span className={styles.inputValue}>{value}</span>
+            <span
+              className={styles.suggestionSuffix}
+              data-testid="command-palette-search-input-suggestion-suffix"
+            >
+              {suggestionSuffix}
+            </span>
+          </div>
+        )}
       </div>
     </div>
   )
