@@ -26,8 +26,10 @@
   min-height: 0;
   border-left: solid 1px var(--pane-border);
   overflow: hidden;
+  background-color: var(--global-background);
 }
 
 .chatSection {
   min-height: 0;
+  background-color: var(--global-background);
 }
