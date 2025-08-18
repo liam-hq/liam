@@ -1,9 +1,9 @@
 import type { Schema } from '@liam-hq/schema'
 import { type ComponentProps, type FC, useCallback, useState } from 'react'
 import { TabsContent, TabsRoot } from '@/components'
-import { useAdaptiveRealtimeArtifact } from '../../hooks/viewMode'
 import type { ReviewComment } from '../../types'
 import { ArtifactContainer } from './components/Artifact/ArtifactContainer'
+import { useRealtimeArtifact } from './components/Artifact/hooks/useRealtimeArtifact'
 import { formatArtifactToMarkdown } from './components/Artifact/utils/formatArtifactToMarkdown'
 import { ERD } from './components/ERD'
 import { Header } from './components/Header'
@@ -49,8 +49,7 @@ export const Output: FC<Props> = ({
   const [internalTabValue, setInternalTabValue] =
     useState<OutputTabValue>(DEFAULT_OUTPUT_TAB)
 
-  const { artifact, loading, error } =
-    useAdaptiveRealtimeArtifact(designSessionId)
+  const { artifact, loading, error } = useRealtimeArtifact(designSessionId)
 
   const isTabValue = (value: string): value is OutputTabValue => {
     return Object.values(OUTPUT_TABS).some((tabValue) => tabValue === value)

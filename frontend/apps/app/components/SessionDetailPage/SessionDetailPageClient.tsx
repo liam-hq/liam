@@ -6,14 +6,12 @@ import { type FC, useCallback, useEffect, useRef, useState } from 'react'
 import { Chat } from './components/Chat'
 import { sendChatMessage } from './components/Chat/services/aiMessageService'
 import { Output } from './components/Output'
+import { useRealtimeArtifact } from './components/Output/components/Artifact/hooks/useRealtimeArtifact'
 import { OUTPUT_TABS } from './components/Output/constants'
 import { OutputPlaceholder } from './components/OutputPlaceholder'
-import {
-  useAdaptiveRealtimeArtifact,
-  useAdaptiveRealtimeTimelineItems,
-  useAdaptiveRealtimeVersions,
-  useAdaptiveRealtimeWorkflowRuns,
-} from './hooks/viewMode'
+import { useRealtimeTimelineItems } from './hooks/useRealtimeTimelineItems'
+import { useRealtimeVersionsWithSchema } from './hooks/useRealtimeVersionsWithSchema'
+import { useRealtimeWorkflowRuns } from './hooks/useRealtimeWorkflowRuns'
 import { SQL_REVIEW_COMMENTS } from './mock'
 import styles from './SessionDetailPage.module.css'
 import { convertTimelineItemToTimelineItemEntry } from './services/convertTimelineItemToTimelineItemEntry'
@@ -52,7 +50,7 @@ export const SessionDetailPageClient: FC<Props> = ({
     setSelectedVersion,
     displayedSchema,
     prevSchema,
-  } = useAdaptiveRealtimeVersions({
+  } = useRealtimeVersionsWithSchema({
     buildingSchemaId,
     initialVersions,
     initialDisplayedSchema,
@@ -73,13 +71,12 @@ export const SessionDetailPageClient: FC<Props> = ({
     setSelectedVersion(version)
   }, [])
 
-  const { timelineItems, addOrUpdateTimelineItem } =
-    useAdaptiveRealtimeTimelineItems(
-      designSessionId,
-      designSessionWithTimelineItems.timeline_items.map((timelineItem) =>
-        convertTimelineItemToTimelineItemEntry(timelineItem),
-      ),
-    )
+  const { timelineItems, addOrUpdateTimelineItem } = useRealtimeTimelineItems(
+    designSessionId,
+    designSessionWithTimelineItems.timeline_items.map((timelineItem) =>
+      convertTimelineItemToTimelineItemEntry(timelineItem),
+    ),
+  )
 
   const [activeTab, setActiveTab] = useState<string | undefined>(undefined)
 
@@ -90,11 +87,11 @@ export const SessionDetailPageClient: FC<Props> = ({
   const hasSelectedVersion = selectedVersion !== null
 
   // Use realtime artifact hook to monitor artifact changes
-  const { artifact } = useAdaptiveRealtimeArtifact(designSessionId)
+  const { artifact } = useRealtimeArtifact(designSessionId)
   const hasRealtimeArtifact = !!artifact
 
   // Use realtime workflow status
-  const { status } = useAdaptiveRealtimeWorkflowRuns(
+  const { status } = useRealtimeWorkflowRuns(
     designSessionId,
     initialWorkflowRunStatus,
   )

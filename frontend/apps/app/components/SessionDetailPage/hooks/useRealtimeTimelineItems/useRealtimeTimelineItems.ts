@@ -9,6 +9,7 @@ import { err, ok, type Result } from 'neverthrow'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import * as v from 'valibot'
 import { createClient } from '@/libs/db/client'
+import { useViewMode } from '../../hooks/viewMode'
 import { convertTimelineItemToTimelineItemEntry } from '../../services/convertTimelineItemToTimelineItemEntry'
 import type { TimelineItem, TimelineItemEntry } from '../../types'
 import { isDuplicateTimelineItem } from './utils/isDuplicateTimelineItem'
@@ -86,6 +87,7 @@ export function useRealtimeTimelineItems(
   designSessionId: string,
   initialTimelineItems: TimelineItemEntry[],
 ) {
+  const { isPublic } = useViewMode()
   const [error, setError] = useState<Error | null>(null)
   const handleError = useCallback((err: unknown) => {
     setError(
@@ -126,6 +128,9 @@ export function useRealtimeTimelineItems(
   // Add or update timeline item with duplicate checking and optimistic update handling
   const addOrUpdateTimelineItem = useCallback(
     (newChatEntry: TimelineItemEntry) => {
+      // For public view, disable adding/updating timeline items
+      if (isPublic) return
+
       setTimelineItems((prev) => {
         // Check if we need to update an existing timeline item by its temporary ID
         // This handles streaming updates and other in-place updates
@@ -156,7 +161,7 @@ export function useRealtimeTimelineItems(
         return [...prev, newChatEntry]
       })
     },
-    [],
+    [isPublic],
   )
 
   const handleNewTimelineItem = useCallback(
@@ -169,6 +174,9 @@ export function useRealtimeTimelineItems(
   )
 
   useEffect(() => {
+    // Skip realtime subscription for public view
+    if (isPublic) return
+
     const supabase = createClient()
 
     // Subscribe to timeline_items changes
@@ -233,7 +241,7 @@ export function useRealtimeTimelineItems(
       timelineChannel.unsubscribe()
       versionsChannel.unsubscribe()
     }
-  }, [designSessionId, handleError, handleNewTimelineItem])
+  }, [designSessionId, handleError, handleNewTimelineItem, isPublic])
 
   return {
     timelineItems: timelineItemsWithVersions,
