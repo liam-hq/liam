@@ -21,6 +21,25 @@ export default [
             'Try-catch statements are not allowed in @liam-hq/agent package. Use Result types from neverthrow instead.',
         },
       ],
+      'no-restricted-imports': [
+        'error',
+        {
+          paths: [
+            {
+              name: '@langchain/core/callbacks/dispatch',
+              importNames: ['dispatchCustomEvent'],
+              message:
+                'Direct use of dispatchCustomEvent is not allowed. Use the wrapper function from src/stream/dispatchCustomEvent.ts instead.',
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    files: ['src/stream/dispatchCustomEvent.ts'],
+    rules: {
+      'no-restricted-imports': 'off',
     },
   },
 ]
