@@ -1,14 +1,15 @@
 import {
-  type AIMessage,
+  AIMessage,
   type BaseMessage,
   SystemMessage,
 } from '@langchain/core/messages'
 import { ChatOpenAI } from '@langchain/openai'
-import { ok, ResultAsync } from 'neverthrow'
+import { ResultAsync } from 'neverthrow'
 import * as v from 'valibot'
 import type { WorkflowConfigurable } from '../chat/workflow/types'
 import { reasoningSchema } from '../langchain/utils/schema'
 import type { Reasoning } from '../langchain/utils/types'
+import { dispatchCustomEvent } from '../stream/dispatchCustomEvent'
 import { removeReasoningFromMessages } from '../utils/messageCleanup'
 import {
   type PmAnalysisPromptVariables,
@@ -50,22 +51,50 @@ export const invokePmAnalysisAgent = (
 
   const invoke = ResultAsync.fromThrowable(
     (systemPrompt: string) =>
-      model.invoke([new SystemMessage(systemPrompt), ...cleanedMessages], {
+      model.stream([new SystemMessage(systemPrompt), ...cleanedMessages], {
         configurable,
       }),
     (error) => (error instanceof Error ? error : new Error(String(error))),
   )
 
-  return formatPrompt.andThen(invoke).andThen((response) => {
-    const parsedReasoning = v.safeParse(
-      reasoningSchema,
-      response.additional_kwargs['reasoning'],
-    )
-    const reasoning = parsedReasoning.success ? parsedReasoning.output : null
+  return formatPrompt.andThen(invoke).andThen((stream) => {
+    return ResultAsync.fromPromise(
+      (async () => {
+        const contentParts: string[] = []
+        let finalKwargs: Record<string, unknown> = {}
+        let latestReasoningRaw: unknown = null
 
-    return ok({
-      response,
-      reasoning,
-    })
+        for await (const chunk of stream) {
+          await dispatchCustomEvent('pm', 'delta', chunk)
+
+          if (Array.isArray(chunk.content)) {
+            for (const part of chunk.content) {
+              if (part.type === 'text') {
+                contentParts.push(part.text)
+              }
+            }
+          } else if (typeof chunk.content === 'string') {
+            contentParts.push(chunk.content)
+          }
+          finalKwargs = { ...finalKwargs, ...chunk.additional_kwargs }
+
+          if (chunk.additional_kwargs['reasoning'] !== undefined) {
+            latestReasoningRaw = chunk.additional_kwargs['reasoning']
+          }
+        }
+
+        const finalContent = contentParts.join('')
+        const response = new AIMessage(finalContent, finalKwargs)
+
+        const parsed = v.safeParse(reasoningSchema, latestReasoningRaw)
+        const reasoning = parsed.success ? parsed.output : null
+
+        return {
+          response,
+          reasoning,
+        }
+      })(),
+      (error) => (error instanceof Error ? error : new Error(String(error))),
+    )
   })
 }
