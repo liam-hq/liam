@@ -3,6 +3,8 @@ import { schemaSchema } from '@liam-hq/schema'
 import { err, ok, type Result } from 'neverthrow'
 import type { FC } from 'react'
 import { safeParse } from 'valibot'
+import { checkPublicShareStatus } from '@/features/public-share/actions'
+import { ViewModeProvider } from './contexts/ViewModeContext'
 import { SessionDetailPageClient } from './SessionDetailPageClient'
 import { getBuildingSchema } from './services/buildingSchema/server/getBuildingSchema'
 import { buildPrevSchema } from './services/buildPrevSchema/server/buildPrevSchema'
@@ -76,15 +78,22 @@ export const SessionDetailPage: FC<Props> = async ({
 
   const initialWorkflowRunStatus = await getWorkflowRunStatus(designSessionId)
 
+  // Fetch initial public share status
+  const { isPublic: initialIsPublic } =
+    await checkPublicShareStatus(designSessionId)
+
   return (
-    <SessionDetailPageClient
-      buildingSchemaId={buildingSchema.id}
-      designSessionWithTimelineItems={designSessionWithTimelineItems}
-      initialDisplayedSchema={initialSchema}
-      initialPrevSchema={initialPrevSchema}
-      initialVersions={versions}
-      initialWorkflowRunStatus={initialWorkflowRunStatus}
-      isDeepModelingEnabled={isDeepModelingEnabled}
-    />
+    <ViewModeProvider mode="private">
+      <SessionDetailPageClient
+        buildingSchemaId={buildingSchema.id}
+        designSessionWithTimelineItems={designSessionWithTimelineItems}
+        initialDisplayedSchema={initialSchema}
+        initialPrevSchema={initialPrevSchema}
+        initialVersions={versions}
+        initialWorkflowRunStatus={initialWorkflowRunStatus}
+        isDeepModelingEnabled={isDeepModelingEnabled}
+        initialIsPublic={initialIsPublic}
+      />
+    </ViewModeProvider>
   )
 }

@@ -38,6 +38,11 @@ export async function createClient({
   )
 }
 
+/**
+ * Create a public Supabase client for anonymous access
+ * This is foundation code for Public Share feature Phase 1.1
+ * Will be used in future phases for server-side anonymous access to public data
+ */
 export async function createPublicServerClient() {
   return createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL ?? '',

@@ -36,8 +36,28 @@ export function useRealtimeArtifact(designSessionId: string) {
       .maybeSingle()
 
     if (fetchError) {
-      console.error('Error fetching artifact:', fetchError)
-      handleError(fetchError)
+      // Check if this is a real error or just no data
+      const hasErrorContent =
+        fetchError.message ||
+        fetchError.code ||
+        fetchError.details ||
+        Object.keys(fetchError).length > 0
+
+      if (hasErrorContent) {
+        // Only log if there's actual error content
+        console.error('Error fetching artifact:', {
+          message: fetchError.message || 'No message',
+          code: fetchError.code || 'No code',
+          hint: fetchError.hint || 'No hint',
+          details: JSON.stringify(fetchError),
+        })
+      }
+
+      // Don't set error state for empty responses
+      if (fetchError.message || fetchError.code) {
+        handleError(fetchError)
+      }
+
       setLoading(false)
       return
     }

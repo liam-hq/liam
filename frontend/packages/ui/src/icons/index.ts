@@ -54,6 +54,7 @@ export {
   Scan,
   Search,
   Settings,
+  Share2,
   Sparkle,
   Table2,
   Ungroup,

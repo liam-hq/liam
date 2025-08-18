@@ -6,12 +6,14 @@ import { type FC, useCallback, useEffect, useRef, useState } from 'react'
 import { Chat } from './components/Chat'
 import { sendChatMessage } from './components/Chat/services/aiMessageService'
 import { Output } from './components/Output'
-import { useRealtimeArtifact } from './components/Output/components/Artifact/hooks/useRealtimeArtifact'
 import { OUTPUT_TABS } from './components/Output/constants'
 import { OutputPlaceholder } from './components/OutputPlaceholder'
-import { useRealtimeTimelineItems } from './hooks/useRealtimeTimelineItems'
-import { useRealtimeVersionsWithSchema } from './hooks/useRealtimeVersionsWithSchema'
-import { useRealtimeWorkflowRuns } from './hooks/useRealtimeWorkflowRuns'
+import {
+  useAdaptiveRealtimeArtifact,
+  useAdaptiveRealtimeTimelineItems,
+  useAdaptiveRealtimeVersions,
+  useAdaptiveRealtimeWorkflowRuns,
+} from './hooks/viewMode'
 import { SQL_REVIEW_COMMENTS } from './mock'
 import styles from './SessionDetailPage.module.css'
 import { convertTimelineItemToTimelineItemEntry } from './services/convertTimelineItemToTimelineItemEntry'
@@ -29,6 +31,7 @@ type Props = {
   initialVersions: Version[]
   initialWorkflowRunStatus: WorkflowRunStatus | null
   isDeepModelingEnabled: boolean
+  initialIsPublic?: boolean
 }
 
 export const SessionDetailPageClient: FC<Props> = ({
@@ -39,6 +42,7 @@ export const SessionDetailPageClient: FC<Props> = ({
   initialVersions,
   initialWorkflowRunStatus,
   isDeepModelingEnabled,
+  initialIsPublic = false,
 }) => {
   const designSessionId = designSessionWithTimelineItems.id
 
@@ -48,7 +52,7 @@ export const SessionDetailPageClient: FC<Props> = ({
     setSelectedVersion,
     displayedSchema,
     prevSchema,
-  } = useRealtimeVersionsWithSchema({
+  } = useAdaptiveRealtimeVersions({
     buildingSchemaId,
     initialVersions,
     initialDisplayedSchema,
@@ -63,18 +67,19 @@ export const SessionDetailPageClient: FC<Props> = ({
   )
 
   const handleViewVersion = useCallback((versionId: string) => {
-    const version = versions.find((version) => version.id === versionId)
+    const version = versions.find((v) => v.id === versionId)
     if (!version) return
 
     setSelectedVersion(version)
   }, [])
 
-  const { timelineItems, addOrUpdateTimelineItem } = useRealtimeTimelineItems(
-    designSessionId,
-    designSessionWithTimelineItems.timeline_items.map((timelineItem) =>
-      convertTimelineItemToTimelineItemEntry(timelineItem),
-    ),
-  )
+  const { timelineItems, addOrUpdateTimelineItem } =
+    useAdaptiveRealtimeTimelineItems(
+      designSessionId,
+      designSessionWithTimelineItems.timeline_items.map((timelineItem) =>
+        convertTimelineItemToTimelineItemEntry(timelineItem),
+      ),
+    )
 
   const [activeTab, setActiveTab] = useState<string | undefined>(undefined)
 
@@ -85,11 +90,11 @@ export const SessionDetailPageClient: FC<Props> = ({
   const hasSelectedVersion = selectedVersion !== null
 
   // Use realtime artifact hook to monitor artifact changes
-  const { artifact } = useRealtimeArtifact(designSessionId)
+  const { artifact } = useAdaptiveRealtimeArtifact(designSessionId)
   const hasRealtimeArtifact = !!artifact
 
   // Use realtime workflow status
-  const { status } = useRealtimeWorkflowRuns(
+  const { status } = useAdaptiveRealtimeWorkflowRuns(
     designSessionId,
     initialWorkflowRunStatus,
   )
@@ -149,7 +154,7 @@ export const SessionDetailPageClient: FC<Props> = ({
             isDeepModelingEnabled={isDeepModelingEnabled}
           />
         </div>
-        {hasSelectedVersion && (
+        {hasSelectedVersion && selectedVersion && (
           <div className={styles.outputSection}>
             {shouldShowOutput ? (
               activeTab !== undefined ? (
@@ -163,6 +168,7 @@ export const SessionDetailPageClient: FC<Props> = ({
                   onSelectedVersionChange={handleChangeSelectedVersion}
                   activeTab={activeTab}
                   onTabChange={setActiveTab}
+                  initialIsPublic={initialIsPublic}
                 />
               ) : (
                 <Output
@@ -173,6 +179,7 @@ export const SessionDetailPageClient: FC<Props> = ({
                   versions={versions}
                   selectedVersion={selectedVersion}
                   onSelectedVersionChange={handleChangeSelectedVersion}
+                  initialIsPublic={initialIsPublic}
                 />
               )
             ) : (

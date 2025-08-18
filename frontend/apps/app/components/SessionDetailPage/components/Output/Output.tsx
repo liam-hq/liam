@@ -1,9 +1,9 @@
 import type { Schema } from '@liam-hq/schema'
 import { type ComponentProps, type FC, useCallback, useState } from 'react'
 import { TabsContent, TabsRoot } from '@/components'
+import { useAdaptiveRealtimeArtifact } from '../../hooks/viewMode'
 import type { ReviewComment } from '../../types'
 import { ArtifactContainer } from './components/Artifact/ArtifactContainer'
-import { useRealtimeArtifact } from './components/Artifact/hooks/useRealtimeArtifact'
 import { formatArtifactToMarkdown } from './components/Artifact/utils/formatArtifactToMarkdown'
 import { ERD } from './components/ERD'
 import { Header } from './components/Header'
@@ -21,6 +21,7 @@ type BaseProps = ComponentProps<typeof VersionDropdown> & {
   schema: Schema
   prevSchema: Schema
   sqlReviewComments: ReviewComment[]
+  initialIsPublic?: boolean
 }
 
 type ControlledProps = BaseProps & {
@@ -42,11 +43,14 @@ export const Output: FC<Props> = ({
   sqlReviewComments,
   activeTab,
   onTabChange,
+  initialIsPublic = false,
   ...propsForVersionDropdown
 }) => {
   const [internalTabValue, setInternalTabValue] =
     useState<OutputTabValue>(DEFAULT_OUTPUT_TAB)
-  const { artifact, loading, error } = useRealtimeArtifact(designSessionId)
+
+  const { artifact, loading, error } =
+    useAdaptiveRealtimeArtifact(designSessionId)
 
   const isTabValue = (value: string): value is OutputTabValue => {
     return Object.values(OUTPUT_TABS).some((tabValue) => tabValue === value)
@@ -78,6 +82,8 @@ export const Output: FC<Props> = ({
         tabValue={tabValue}
         artifactDoc={artifactDoc}
         hasArtifact={!!artifact}
+        designSessionId={designSessionId}
+        initialIsPublic={initialIsPublic}
         {...propsForVersionDropdown}
       />
       <TabsContent value={OUTPUT_TABS.ERD} className={styles.tabsContent}>

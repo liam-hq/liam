@@ -50,6 +50,7 @@ const meta = {
       reverse_patch: {},
     },
     onSelectedVersionChange: () => {},
+    designSessionId: 'test-session-id',
   },
   render: (args) => <HeaderDemo {...args} />,
 } satisfies Meta<typeof Header>

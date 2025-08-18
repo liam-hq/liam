@@ -1,10 +1,9 @@
 'use server'
 
-import { createClient, createPublicServerClient } from '@/libs/db/server'
+import { createClient } from '@/libs/db/server'
 
 export async function checkPublicShareStatus(designSessionId: string) {
-  // Use public client for checking share status (no auth required)
-  const supabase = await createPublicServerClient()
+  const supabase = await createClient()
 
   const { error } = await supabase
     .from('public_share_settings')
