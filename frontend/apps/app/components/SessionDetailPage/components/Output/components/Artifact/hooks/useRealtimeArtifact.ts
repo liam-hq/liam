@@ -4,6 +4,7 @@ import { type Artifact, artifactSchema } from '@liam-hq/artifact'
 import { useCallback, useEffect, useState } from 'react'
 import * as v from 'valibot'
 import { createClient } from '@/libs/db/client'
+import { useViewMode } from '../../../../../hooks/viewMode'
 
 const artifactDataSchema = v.object({
   id: v.pipe(v.string(), v.uuid()),
@@ -15,6 +16,7 @@ const artifactDataSchema = v.object({
 })
 
 export function useRealtimeArtifact(designSessionId: string) {
+  const { isPublic } = useViewMode()
   const [artifact, setArtifact] = useState<Artifact | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<Error | null>(null)
@@ -94,6 +96,9 @@ export function useRealtimeArtifact(designSessionId: string) {
 
   // Set up realtime subscription
   useEffect(() => {
+    // Skip realtime subscription for public view
+    if (isPublic) return
+
     const supabase = createClient()
 
     const channel = supabase
@@ -129,7 +134,7 @@ export function useRealtimeArtifact(designSessionId: string) {
     return () => {
       channel.unsubscribe()
     }
-  }, [designSessionId, handleError])
+  }, [designSessionId, handleError, isPublic])
 
   return {
     artifact,
