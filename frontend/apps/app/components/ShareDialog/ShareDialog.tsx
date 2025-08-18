@@ -37,7 +37,7 @@ export const ShareDialog: FC<Props> = ({
   const copyLink = async () => {
     if (!isPublic) return
 
-    const publicUrl = `${window.location.origin}/public/sessions/${designSessionId}`
+    const publicUrl = `${window.location.origin}/public/design_sessions/${designSessionId}`
     await navigator.clipboard.writeText(publicUrl)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
