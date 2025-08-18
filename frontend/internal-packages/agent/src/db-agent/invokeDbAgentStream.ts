@@ -34,25 +34,15 @@ export async function invokeDbAgentStream(
     callbacks: [runCollector],
     tags: traceEnhancement.tags,
     metadata: traceEnhancement.metadata,
-    streamMode: 'updates',
+    streamMode: 'custom',
     version: 'v2',
-    encoding: 'text/event-stream',
   })
 
-  /**
-   * TODO: Transform compiled.streamEvents results into a format that makes it easier to build messages
-   * @see https://js.langchain.com/docs/how_to/streaming/#event-reference
-    // for await (const ev of stream) {
-    //   if (ev.event === 'on_chat_model_stream' && ev.data?.chunk) {
+  async function* iter() {
+    for await (const ev of stream) {
+      yield ev
+    }
+  }
 
-    //     const chunkId = ev.data.chunk.id
-    //     const content = ev.data.chunk.content
-    //     yield { event: 'assistant', data: { chunkId, content } }
-    //   } else {
-    //     ....
-    //   }
-    // }
-   */
-
-  return stream
+  return iter()
 }
