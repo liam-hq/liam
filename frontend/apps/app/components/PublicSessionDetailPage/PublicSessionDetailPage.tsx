@@ -6,6 +6,7 @@ import { createPublicServerClient } from '@/libs/db/server'
 import { ViewModeProvider } from '../SessionDetailPage/contexts/ViewModeContext'
 import { SessionDetailPageClient } from '../SessionDetailPage/SessionDetailPageClient'
 import { buildPrevSchema } from '../SessionDetailPage/services/buildPrevSchema/server/buildPrevSchema'
+import styles from './PublicSessionDetailPage.module.css'
 
 type Props = {
   designSessionId: string
@@ -114,33 +115,35 @@ export const PublicSessionDetailPage: FC<Props> = async ({
   }
 
   return (
-    <ViewModeProvider mode="public">
-      <SessionDetailPageClient
-        buildingSchemaId={buildingSchemaId}
-        designSessionWithTimelineItems={designSessionWithTimelineItems}
-        initialDisplayedSchema={initialSchema}
-        initialPrevSchema={initialPrevSchema}
-        initialVersions={versions
-          .filter(
-            (
-              v,
-            ): v is NonNullable<typeof v> & {
-              id: string
-              number: number
-              created_at: string
-            } => v.id !== null && v.number !== null && v.created_at !== null,
-          )
-          .map((v) => ({
-            id: v.id,
-            number: v.number,
-            created_at: v.created_at,
-            building_schema_id: v.building_schema_id ?? '',
-            patch: v.patch ?? {},
-            reverse_patch: v.reverse_patch ?? {},
-          }))}
-        initialWorkflowRunStatus={null}
-        isDeepModelingEnabled={false}
-      />
-    </ViewModeProvider>
+    <div className={styles.publicWrapper}>
+      <ViewModeProvider mode="public">
+        <SessionDetailPageClient
+          buildingSchemaId={buildingSchemaId}
+          designSessionWithTimelineItems={designSessionWithTimelineItems}
+          initialDisplayedSchema={initialSchema}
+          initialPrevSchema={initialPrevSchema}
+          initialVersions={versions
+            .filter(
+              (
+                v,
+              ): v is NonNullable<typeof v> & {
+                id: string
+                number: number
+                created_at: string
+              } => v.id !== null && v.number !== null && v.created_at !== null,
+            )
+            .map((v) => ({
+              id: v.id,
+              number: v.number,
+              created_at: v.created_at,
+              building_schema_id: v.building_schema_id ?? '',
+              patch: v.patch ?? {},
+              reverse_patch: v.reverse_patch ?? {},
+            }))}
+          initialWorkflowRunStatus={null}
+          isDeepModelingEnabled={false}
+        />
+      </ViewModeProvider>
+    </div>
   )
 }
