@@ -12,6 +12,7 @@ import { toJsonSchema } from '@valibot/to-json-schema'
 import { err, ok, type Result } from 'neverthrow'
 import * as v from 'valibot'
 import { getConfigurable } from '../../chat/workflow/shared/getConfigurable'
+import { makeSchemaStrict } from '../../langchain/utils/strictSchema'
 import type { Repositories } from '../../repositories'
 import { WorkflowTerminationError } from '../../shared/errorHandling'
 
@@ -26,7 +27,10 @@ type AnalyzedRequirements = v.InferOutput<typeof analyzedRequirementsSchema>
 
 // toJsonSchema returns a JSONSchema7, which is not assignable to JSONSchema
 // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-const toolSchema = toJsonSchema(analyzedRequirementsSchema) as JSONSchema
+const toolSchema = makeSchemaStrict(
+  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+  toJsonSchema(analyzedRequirementsSchema) as JSONSchema,
+)
 
 const configSchema = v.object({
   toolCall: v.object({

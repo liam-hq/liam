@@ -11,6 +11,7 @@ import {
 } from '@liam-hq/schema'
 import { toJsonSchema } from '@valibot/to-json-schema'
 import * as v from 'valibot'
+import { makeSchemaStrict } from '../../langchain/utils/strictSchema'
 import { getToolConfigurable } from '../getToolConfigurable'
 
 const schemaDesignToolSchema = v.object({
@@ -19,7 +20,10 @@ const schemaDesignToolSchema = v.object({
 
 // toJsonSchema returns a JSONSchema7, which is not assignable to JSONSchema
 // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-const toolSchema = toJsonSchema(schemaDesignToolSchema) as JSONSchema
+const toolSchema = makeSchemaStrict(
+  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+  toJsonSchema(schemaDesignToolSchema) as JSONSchema,
+)
 
 const validateAndExecuteDDL = async (
   schema: Schema,
