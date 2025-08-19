@@ -86,15 +86,9 @@ export function useRealtimeVersionsWithSchema({
     })
   }, [])
 
-  // For public view, disable version switching
-  const handleSetSelectedVersion = useCallback(
-    (version: Version | null) => {
-      if (!isPublic) {
-        setSelectedVersion(version)
-      }
-    },
-    [isPublic],
-  )
+  const handleSetSelectedVersion = useCallback((version: Version | null) => {
+    setSelectedVersion(version)
+  }, [])
 
   useEffect(() => {
     setSelectedVersion(versions[0] ?? null)
