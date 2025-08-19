@@ -3,6 +3,16 @@ import type { NextRequest } from 'next/server'
 import { NextResponse } from 'next/server'
 
 export async function updateSession(request: NextRequest) {
+  // Handle public routes with appropriate cache headers
+  if (request.nextUrl.pathname.startsWith('/public/')) {
+    const response = NextResponse.next()
+    response.headers.set(
+      'Cache-Control',
+      'public, max-age=0, s-maxage=60, stale-while-revalidate=86400'
+    )
+    return response
+  }
+
   // Skip middleware if path doesn't start with /app
   if (!request.nextUrl.pathname.startsWith('/app')) {
     return NextResponse.next()
