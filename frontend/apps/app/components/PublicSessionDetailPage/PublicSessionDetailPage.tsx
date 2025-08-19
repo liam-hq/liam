@@ -3,10 +3,10 @@ import { notFound } from 'next/navigation'
 import type { FC } from 'react'
 import { safeParse } from 'valibot'
 import { createPublicServerClient } from '@/libs/db/server'
+import { PublicLayout } from '../PublicLayout'
 import { ViewModeProvider } from '../SessionDetailPage/contexts/ViewModeContext'
 import { SessionDetailPageClient } from '../SessionDetailPage/SessionDetailPageClient'
 import { buildPrevSchema } from '../SessionDetailPage/services/buildPrevSchema/server/buildPrevSchema'
-import styles from './PublicSessionDetailPage.module.css'
 
 type Props = {
   designSessionId: string
@@ -115,7 +115,7 @@ export const PublicSessionDetailPage: FC<Props> = async ({
   }
 
   return (
-    <div className={styles.publicWrapper}>
+    <PublicLayout>
       <ViewModeProvider mode="public">
         <SessionDetailPageClient
           buildingSchemaId={buildingSchemaId}
@@ -144,6 +144,6 @@ export const PublicSessionDetailPage: FC<Props> = async ({
           isDeepModelingEnabled={false}
         />
       </ViewModeProvider>
-    </div>
+    </PublicLayout>
   )
 }
