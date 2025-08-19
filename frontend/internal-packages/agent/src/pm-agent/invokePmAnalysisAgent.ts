@@ -42,6 +42,7 @@ export const invokePmAnalysisAgent = (
     {
       parallel_tool_calls: false,
       tool_choice: 'required',
+      strict: true,
     },
   )
 

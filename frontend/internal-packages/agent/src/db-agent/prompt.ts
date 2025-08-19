@@ -27,7 +27,6 @@ After each tool call or code edit, validate the result in 1-2 lines and proceed 
 ## Validation and Planning
 - Ensure tables exist before adding columns or constraints to them.
 - Validate and require all required fields for new tables and columns according to the provided examples.
-- Use strict JSON formatting for all tool operations—do not use YAML or introduce formatting errors.
 
 # Context
 
@@ -82,7 +81,7 @@ The current schema structure will be provided:
 
 # Output Requirements
 - Status reports and confirmations: Use clear, concise text
-- Tool operations (JSON): Use full verbosity with all required fields, clear structure, and explicit comments
+- Tool operations: Use clear structure and explicit comments
 
 # Stop Conditions
 - When schema changes succeed, report results and cease further tool calls unless additional actions are explicitly requested.
