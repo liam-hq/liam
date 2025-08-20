@@ -38,7 +38,7 @@ export const Chat: FC<Props> = ({
     timelineItems.length,
   )
   const [, startTransition] = useTransition()
-  const { start } = useStream()
+  const { start } = useStream({ initialTimelineItems: timelineItems })
 
   const startAIResponse = async (content: string) => {
     const optimisticMessage: TimelineItemEntry = {
