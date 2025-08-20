@@ -3,6 +3,10 @@
   "private": true,
   "version": "0.1.0",
   "main": "src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./client": "./src/client.ts"
+  },
   "dependencies": {
     "@langchain/community": "0.3.53",
     "@langchain/core": "0.3.72",
