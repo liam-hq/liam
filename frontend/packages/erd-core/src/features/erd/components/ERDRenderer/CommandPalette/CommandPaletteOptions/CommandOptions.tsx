@@ -7,6 +7,7 @@ import {
   TidyUpIcon,
 } from '@liam-hq/ui'
 import { Command } from 'cmdk'
+import { useQueryState } from 'nuqs'
 import type { FC } from 'react'
 import { useUserEditingOrThrow } from '@/stores'
 import { useCommandPalette } from '../CommandPaletteProvider'
@@ -19,6 +20,8 @@ export const CommandPaletteCommandOptions: FC = () => {
   const { zoomToFit, tidyUp } = useFitScreen()
   const { setShowMode } = useUserEditingOrThrow()
 
+  const [closeAfterCopy] = useQueryState('close', { defaultValue: '' })
+
   const result = useCommandPalette()
   const setOpen = result.isOk() ? result.value.setOpen : () => {}
 
@@ -29,7 +32,9 @@ export const CommandPaletteCommandOptions: FC = () => {
         value="copy link"
         onSelect={() => {
           copyLink()
-          setOpen(false)
+          if (closeAfterCopy === 'true') {
+            setOpen(false)
+          }
         }}
       >
         <Copy className={styles.itemIcon} />
