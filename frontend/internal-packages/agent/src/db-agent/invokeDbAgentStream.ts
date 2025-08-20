@@ -34,13 +34,19 @@ export async function invokeDbAgentStream(
     callbacks: [runCollector],
     tags: traceEnhancement.tags,
     metadata: traceEnhancement.metadata,
-    streamMode: 'custom',
+    streamMode: 'messages',
     version: 'v2',
+    subgraphs: true,
   })
 
   async function* iter() {
     for await (const ev of stream) {
-      yield ev
+      if (ev.event === 'on_custom_event') {
+        yield {
+          event: ev.name,
+          data: [ev.data, ev.metadata],
+        }
+      }
     }
   }
 
