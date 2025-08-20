@@ -2,7 +2,6 @@ import { DEFAULT_RECURSION_LIMIT } from './chat/workflow/shared/langGraphUtils'
 import type { WorkflowConfigurable } from './chat/workflow/types'
 import { createGraph } from './createGraph'
 import { setupWorkflowState } from './shared/workflowSetup'
-import { transformEvent } from './stream/transformEvent'
 import type { AgentWorkflowParams } from './types'
 
 // TODO: Move to deepModeling.ts once the streaming migration is established
@@ -35,14 +34,18 @@ export async function deepModelingStream(
     callbacks: [runCollector],
     tags: traceEnhancement.tags,
     metadata: traceEnhancement.metadata,
-    streamMode: 'custom',
+    streamMode: 'messages',
     version: 'v2',
   })
 
   async function* iter() {
     for await (const ev of stream) {
-      const t = transformEvent(ev)
-      if (t) yield t
+      if (ev.event === 'on_custom_event') {
+        yield {
+          event: ev.name,
+          data: [ev.data, ev.metadata],
+        }
+      }
     }
   }
 
