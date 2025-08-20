@@ -71,7 +71,7 @@ export const SessionDetailPageClient: FC<Props> = ({
     setSelectedVersion(version)
   }, [])
 
-  const { timelineItems, addOrUpdateTimelineItem } = useRealtimeTimelineItems(
+  const { addOrUpdateTimelineItem } = useRealtimeTimelineItems(
     designSessionId,
     designSessionWithTimelineItems.timeline_items.map((timelineItem) =>
       convertTimelineItemToTimelineItemEntry(timelineItem),
@@ -96,7 +96,11 @@ export const SessionDetailPageClient: FC<Props> = ({
     initialWorkflowRunStatus,
   )
 
-  const { start } = useStream()
+  const { timelineItems, isStreaming, start } = useStream({
+    initialTimelineItems: designSessionWithTimelineItems.timeline_items.map(
+      (timelineItem) => convertTimelineItemToTimelineItemEntry(timelineItem),
+    ),
+  })
   // Track if initial workflow has been triggered to prevent multiple executions
   const hasTriggeredInitialWorkflow = useRef(false)
 
@@ -145,7 +149,7 @@ export const SessionDetailPageClient: FC<Props> = ({
             schemaData={displayedSchema}
             designSessionId={designSessionId}
             timelineItems={timelineItems}
-            isWorkflowRunning={status === 'pending'}
+            isWorkflowRunning={status === 'pending' || isStreaming}
             onMessageSend={addOrUpdateTimelineItem}
             onVersionView={handleViewVersion}
             onArtifactLinkClick={handleArtifactLinkClick}

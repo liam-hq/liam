@@ -8,6 +8,11 @@ import { NextResponse } from 'next/server'
 import * as v from 'valibot'
 import { createClient } from '@/libs/db/server'
 
+function line(event: string, data: unknown) {
+  const payload = typeof data === 'string' ? data : JSON.stringify(data)
+  return `event: ${event}\ndata: ${payload}\n\n`
+}
+
 // https://vercel.com/docs/functions/configuring-functions/duration#maximum-duration-for-different-runtimes
 export const maxDuration = 800
 
@@ -111,9 +116,25 @@ export async function POST(request: Request) {
     },
   }
 
-  const stream = validationResult.output.isDeepModelingEnabled
-    ? await deepModelingStream(params, config)
-    : await invokeDbAgentStream(params, config)
+  const enc = new TextEncoder()
+  const stream = new ReadableStream<Uint8Array>({
+    async start(controller) {
+      try {
+        const events = validationResult.output.isDeepModelingEnabled
+          ? await deepModelingStream(params, config)
+          : await invokeDbAgentStream(params, config)
+        for await (const ev of events) {
+          controller.enqueue(enc.encode(line(ev.event, ev.data)))
+        }
+        controller.enqueue(enc.encode(line('end', null)))
+      } catch (err) {
+        const message = err instanceof Error ? err.message : String(err)
+        controller.enqueue(enc.encode(line('error', { message })))
+      } finally {
+        controller.close()
+      }
+    },
+  })
 
   return new Response(stream, {
     headers: {
