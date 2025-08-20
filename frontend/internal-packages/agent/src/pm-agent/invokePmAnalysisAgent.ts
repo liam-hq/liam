@@ -1,5 +1,7 @@
+import { dispatchCustomEvent } from '@langchain/core/callbacks/dispatch'
 import {
   AIMessage,
+  AIMessageChunk,
   type BaseMessage,
   SystemMessage,
 } from '@langchain/core/messages'
@@ -9,7 +11,6 @@ import * as v from 'valibot'
 import type { WorkflowConfigurable } from '../chat/workflow/types'
 import { reasoningSchema } from '../langchain/utils/schema'
 import type { Reasoning } from '../langchain/utils/types'
-import { dispatchCustomEvent } from '../stream/dispatchCustomEvent'
 import { removeReasoningFromMessages } from '../utils/messageCleanup'
 import {
   type PmAnalysisPromptVariables,
@@ -41,6 +42,7 @@ export const invokePmAnalysisAgent = (
     model: 'gpt-5',
     reasoning: { effort: 'medium', summary: 'detailed' },
     useResponsesApi: true,
+    streaming: true,
   }).bindTools(
     [{ type: 'web_search_preview' }, saveRequirementsToArtifactTool],
     {
@@ -60,33 +62,34 @@ export const invokePmAnalysisAgent = (
   return formatPrompt.andThen(invoke).andThen((stream) => {
     return ResultAsync.fromPromise(
       (async () => {
-        const contentParts: string[] = []
-        let finalKwargs: Record<string, unknown> = {}
-        let latestReasoningRaw: unknown = null
+        let accumulatedChunk: AIMessageChunk | null = null
 
-        for await (const chunk of stream) {
-          await dispatchCustomEvent('pm', 'delta', chunk)
+        for await (const _chunk of stream) {
+          const chunk = new AIMessageChunk({ ..._chunk, name: 'pm' })
+          await dispatchCustomEvent('messages', chunk)
 
-          if (Array.isArray(chunk.content)) {
-            for (const part of chunk.content) {
-              if (part.type === 'text') {
-                contentParts.push(part.text)
-              }
-            }
-          } else if (typeof chunk.content === 'string') {
-            contentParts.push(chunk.content)
-          }
-          finalKwargs = { ...finalKwargs, ...chunk.additional_kwargs }
-
-          if (chunk.additional_kwargs['reasoning'] !== undefined) {
-            latestReasoningRaw = chunk.additional_kwargs['reasoning']
-          }
+          // Accumulate chunks using concat method
+          accumulatedChunk = accumulatedChunk
+            ? accumulatedChunk.concat(chunk)
+            : chunk
         }
 
-        const finalContent = contentParts.join('')
-        const response = new AIMessage(finalContent, finalKwargs)
+        // Convert the final accumulated chunk to AIMessage
+        const response = accumulatedChunk
+          ? new AIMessage({
+              content: accumulatedChunk.content,
+              additional_kwargs: accumulatedChunk.additional_kwargs,
+              ...(accumulatedChunk.tool_calls && {
+                tool_calls: accumulatedChunk.tool_calls,
+              }),
+              ...(accumulatedChunk.name && { name: accumulatedChunk.name }),
+            })
+          : new AIMessage('')
 
-        const parsed = v.safeParse(reasoningSchema, latestReasoningRaw)
+        const parsed = v.safeParse(
+          reasoningSchema,
+          accumulatedChunk?.additional_kwargs['reasoning'],
+        )
         const reasoning = parsed.success ? parsed.output : null
 
         return {
