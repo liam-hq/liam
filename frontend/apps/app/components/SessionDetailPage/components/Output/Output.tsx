@@ -30,7 +30,9 @@ type ControlledProps = BaseProps & {
 }
 
 type UncontrolledProps = BaseProps & {
+  // eslint-disable-next-line no-restricted-syntax
   activeTab?: never
+  // eslint-disable-next-line no-restricted-syntax
   onTabChange?: never
 }
 

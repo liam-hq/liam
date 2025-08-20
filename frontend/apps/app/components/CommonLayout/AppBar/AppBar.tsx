@@ -7,8 +7,8 @@ import { getAuthUser } from './services/getAuthUser'
 import { UserDropdown } from './UserDropdown'
 
 type Props = {
-  currentProjectId?: string
-  currentBranchOrCommit?: string
+  currentProjectId: string
+  currentBranchOrCommit: string
 }
 
 export const AppBar: FC<Props> = async ({

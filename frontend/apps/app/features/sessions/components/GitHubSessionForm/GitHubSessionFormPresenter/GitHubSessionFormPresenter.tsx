@@ -15,14 +15,19 @@ import styles from './GitHubSessionFormPresenter.module.css'
 
 type Props = {
   projects: Projects
+  // eslint-disable-next-line no-restricted-syntax
   defaultProjectId?: string
-  branches: Branch[]
+  // eslint-disable-next-line no-restricted-syntax
+  branches?: Branch[]
   isBranchesLoading: boolean
+  // eslint-disable-next-line no-restricted-syntax
   branchesError?: string
+  // eslint-disable-next-line no-restricted-syntax
   formError?: string
   isPending: boolean
   onProjectChange: (projectId: string) => void
   formAction: (formData: FormData) => void
+  // eslint-disable-next-line no-restricted-syntax
   isTransitioning?: boolean
   schemaFilePath: string | null
 }
@@ -184,7 +189,7 @@ export const GitHubSessionFormPresenter: FC<Props> = ({
                 }}
                 disabled={isPending}
               />
-              {branches.length > 0 && (
+              {branches && branches.length > 0 && (
                 <>
                   <input
                     type="hidden"
@@ -192,7 +197,7 @@ export const GitHubSessionFormPresenter: FC<Props> = ({
                     value={selectedBranchSha}
                   />
                   <BranchesDropdown
-                    branches={branches}
+                    branches={branches || []}
                     selectedBranchSha={selectedBranchSha}
                     onBranchChange={setSelectedBranchSha}
                     disabled={isPending}

@@ -6,6 +6,7 @@ import styles from './OrganizationsPage.module.css'
 import { OrganizationsPageClient } from './OrganizationsPageClient'
 
 export const OrganizationsPage: FC<{
+  // eslint-disable-next-line no-restricted-syntax
   children?: ReactNode
 }> = async () => {
   const organizations = await getOrganizations()

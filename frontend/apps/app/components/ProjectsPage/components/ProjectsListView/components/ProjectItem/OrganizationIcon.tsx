@@ -5,6 +5,7 @@ import { ProjectIcon } from '@/components/ProjectIcon'
 import styles from './ProjectItem.module.css'
 
 type OrganizationIconProps = {
+  // eslint-disable-next-line no-restricted-syntax
   avatarUrl?: string | null
   owner: string
 }

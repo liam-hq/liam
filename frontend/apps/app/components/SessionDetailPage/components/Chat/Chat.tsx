@@ -17,7 +17,9 @@ type Props = {
   timelineItems: TimelineItemEntry[]
   onMessageSend: (message: TimelineItemEntry) => void
   onVersionView: (versionId: string) => void
+  // eslint-disable-next-line no-restricted-syntax
   onRetry?: () => void
+  // eslint-disable-next-line no-restricted-syntax
   isWorkflowRunning?: boolean
   onArtifactLinkClick: () => void
   isDeepModelingEnabled: boolean
@@ -179,6 +181,8 @@ export const Chat: FC<Props> = ({
       <ChatInput
         onSendMessage={handleSendMessage}
         isWorkflowRunning={isWorkflowRunning}
+        error={false}
+        initialMessage=""
         schema={schemaData}
       />
     </div>

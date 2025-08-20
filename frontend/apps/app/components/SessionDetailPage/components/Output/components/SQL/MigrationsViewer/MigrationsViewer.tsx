@@ -5,10 +5,13 @@ import { useMigrationsViewer } from './useMigrationsViewer'
 
 type Props = {
   doc: string
+  // eslint-disable-next-line no-restricted-syntax
   prevDoc?: string
+  // eslint-disable-next-line no-restricted-syntax
   showDiff?: boolean
   comments: ReviewComment[]
   showComments: boolean
+  // eslint-disable-next-line no-restricted-syntax
   onQuickFix?: (comment: string) => void
 }
 

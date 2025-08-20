@@ -97,6 +97,7 @@ export default async function Page({
       <ERDViewer
         schema={blankSchema}
         defaultSidebarOpen={false}
+        defaultPanelSizes={[20, 80]}
         errorObjects={[
           {
             name: 'NetworkError',
@@ -110,6 +111,7 @@ export default async function Page({
   const networkErrorObjects: {
     name: 'NetworkError'
     message: string
+    // eslint-disable-next-line no-restricted-syntax
     instruction?: string
   }[] = []
   const res = await fetch(contentUrl, { cache: 'no-store' }).catch((e) => {
@@ -138,7 +140,11 @@ export default async function Page({
       <ERDViewer
         schema={blankSchema}
         defaultSidebarOpen={false}
-        errorObjects={networkErrorObjects}
+        defaultPanelSizes={[20, 80]}
+        errorObjects={networkErrorObjects.map((obj) => ({
+          ...obj,
+          instruction: obj.instruction || pleaseCheck,
+        }))}
       />
     )
   }
@@ -147,6 +153,7 @@ export default async function Page({
       <ERDViewer
         schema={blankSchema}
         defaultSidebarOpen={false}
+        defaultPanelSizes={[20, 80]}
         errorObjects={[
           {
             name: 'NetworkError',
@@ -177,6 +184,7 @@ export default async function Page({
       <ERDViewer
         schema={blankSchema}
         defaultSidebarOpen={false}
+        defaultPanelSizes={[20, 80]}
         errorObjects={[
           {
             name: 'NetworkError',
@@ -196,6 +204,7 @@ export default async function Page({
   const errorObjects = errors.map((error) => ({
     name: error.name,
     message: error.message,
+    instruction: 'Please check the schema file for syntax errors',
   }))
   const cookieStore = await cookies()
   const defaultSidebarOpen = cookieStore.get('sidebar:state')?.value === 'true'

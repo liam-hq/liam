@@ -7,12 +7,19 @@ type Props = {
   isPending: boolean
   schemaDragActive: boolean
   isHovered: boolean
+  // eslint-disable-next-line no-restricted-syntax
   onSelectFile?: () => void
+  // eslint-disable-next-line no-restricted-syntax
   onDragEnter?: (e: DragEvent) => void
+  // eslint-disable-next-line no-restricted-syntax
   onDragLeave?: (e: DragEvent) => void
+  // eslint-disable-next-line no-restricted-syntax
   onDragOver?: (e: DragEvent) => void
+  // eslint-disable-next-line no-restricted-syntax
   onDrop?: (e: DragEvent) => void
+  // eslint-disable-next-line no-restricted-syntax
   onMouseEnter?: () => void
+  // eslint-disable-next-line no-restricted-syntax
   onMouseLeave?: () => void
   hasSelectedFile: boolean
   isValidSchema: boolean

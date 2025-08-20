@@ -14,28 +14,32 @@ import styles from './MicButton.module.css'
 type MicButtonState = 'default' | 'hover' | 'active' | 'active-hover'
 
 type MicButtonProps = {
-  state?: MicButtonState
+  state: MicButtonState
+  // eslint-disable-next-line no-restricted-syntax
   onClick?: MouseEventHandler<HTMLButtonElement>
+  // eslint-disable-next-line no-restricted-syntax
   className?: string
+  // eslint-disable-next-line no-restricted-syntax
   'aria-label'?: string
+  // eslint-disable-next-line no-restricted-syntax
   ref?: Ref<HTMLButtonElement>
-  disabled?: boolean
+  disabled: boolean
 }
 
 export const MicButton: FC<MicButtonProps> = ({
   state: stateProp,
   onClick,
   className,
-  'aria-label': ariaLabel = 'Voice Input',
+  'aria-label': ariaLabel,
   ref,
-  disabled = false,
+  disabled,
 }) => {
   const [isActive, setIsActive] = useState(false)
   const [isHovering, setIsHovering] = useState(false)
 
   // If state is provided from props, use it. Otherwise, calculate based on internal state
   const state =
-    stateProp ??
+    stateProp ||
     (isActive
       ? isHovering
         ? 'active-hover'

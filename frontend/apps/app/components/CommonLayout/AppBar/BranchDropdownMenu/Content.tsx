@@ -33,6 +33,8 @@ export const Content: FC<Props> = ({
       branches={branches}
       selectedBranchSha={currentBranchName}
       onBranchChange={handleBranchChange}
+      disabled={false}
+      isLoading={false}
       placeholder="Search branches..."
       className={styles.trigger}
     />

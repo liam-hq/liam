@@ -32,6 +32,7 @@ export const ParsingError: Story = {
       suggestion:
         "Confirm you're using ActiveRecord schema DSL, not model definitions.",
     },
+    triggerText: 'View parsing error',
   },
 }
 
@@ -59,6 +60,7 @@ export const ParsingErrorHasMany: Story = {
       suggestion:
         "Confirm you're using ActiveRecord schema DSL, not model definitions.",
     },
+    triggerText: 'View parsing error',
   },
 }
 
@@ -76,6 +78,7 @@ export const ParsingErrorSimple: Story = {
       suggestion:
         'Check that your schema file follows standard Rails conventions.',
     },
+    triggerText: 'View parsing error',
   },
 }
 
@@ -98,6 +101,7 @@ export const UnsupportedSyntaxError: Story = {
         'Otherwise, please report this case so we can improve the parser.',
       ],
     },
+    triggerText: 'View unsupported syntax error',
   },
   decorators: [
     (Story: FC) => (
@@ -127,6 +131,7 @@ export const UnsupportedSyntaxMultiple: Story = {
         'Contact support if you need help with schema conversion.',
       ],
     },
+    triggerText: 'View unsupported syntax error',
   },
 }
 
@@ -142,6 +147,7 @@ export const GenericError: Story = {
         'Please ensure the file is valid and try again.',
       ],
     },
+    triggerText: 'View generic error',
   },
 }
 
@@ -156,6 +162,7 @@ export const ErrorWithoutFile: Story = {
         'Please check the format and try again.',
       ],
     },
+    triggerText: 'View validation error',
   },
 }
 
@@ -201,6 +208,7 @@ export const LongError: Story = {
         'Consider regenerating the schema from a fresh database',
       ],
     },
+    triggerText: 'View legacy syntax error',
   },
 }
 
@@ -212,6 +220,7 @@ export const MinimalError: Story = {
       message: 'Schema error',
       details: [],
     },
+    triggerText: 'View schema error',
   },
 }
 
@@ -224,6 +233,7 @@ export const AllErrorTypes: Story = {
       message: 'Placeholder error (not used)',
       details: [],
     },
+    triggerText: 'View all error types',
   },
   render: () => (
     <div
@@ -256,6 +266,7 @@ export const AllErrorTypes: Story = {
             suggestion:
               "Confirm you're using ActiveRecord schema DSL, not model definitions.",
           }}
+          triggerText="View parsing error"
         />
       </div>
 
@@ -282,6 +293,7 @@ export const AllErrorTypes: Story = {
               'Otherwise, please report this case so we can improve the parser.',
             ],
           }}
+          triggerText="View unsupported syntax error"
         />
       </div>
 
@@ -301,6 +313,7 @@ export const AllErrorTypes: Story = {
               'Please ensure the file is valid and try again.',
             ],
           }}
+          triggerText="View generic error"
         />
       </div>
     </div>

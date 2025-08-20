@@ -9,7 +9,9 @@ import styles from './QueryResultMessage.module.css'
 
 type Props = {
   queryResultId: string
+  // eslint-disable-next-line no-restricted-syntax
   results?: SqlResult[]
+  // eslint-disable-next-line no-restricted-syntax
   onView?: () => void
 }
 

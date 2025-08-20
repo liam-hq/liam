@@ -33,8 +33,8 @@ import { isRegularKey } from './utils/isRegularKey'
 
 type Props = {
   isWorkflowRunning: boolean
-  error?: boolean
-  initialMessage?: string
+  error: boolean
+  initialMessage: string
   schema: Schema
   onSendMessage: (message: string) => void
 }

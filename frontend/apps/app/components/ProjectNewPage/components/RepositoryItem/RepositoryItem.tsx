@@ -5,14 +5,10 @@ import styles from './RepositoryItem.module.css'
 type Props = {
   name: string
   onClick: () => void
-  isLoading?: boolean
+  isLoading: boolean
 }
 
-export const RepositoryItem: FC<Props> = ({
-  name,
-  onClick,
-  isLoading = false,
-}) => {
+export const RepositoryItem: FC<Props> = ({ name, onClick, isLoading }) => {
   return (
     <div className={styles.wrapper}>
       <span>{name}</span>

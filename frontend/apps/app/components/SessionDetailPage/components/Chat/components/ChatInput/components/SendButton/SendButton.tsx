@@ -7,7 +7,7 @@ import styles from './SendButton.module.css'
 type SendButtonProps = {
   hasContent: boolean
   onClick: (e: MouseEvent<HTMLButtonElement>) => void
-  disabled?: boolean
+  disabled: boolean
 }
 
 export const SendButton: FC<SendButtonProps> = ({

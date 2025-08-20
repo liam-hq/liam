@@ -25,7 +25,9 @@ const getDefaultTabFromPath = async (): Promise<
 
 type Props = PropsWithChildren & {
   projectId: string
+  // eslint-disable-next-line no-restricted-syntax
   branchOrCommit?: string
+  // eslint-disable-next-line no-restricted-syntax
   projectHeader?: boolean
 }
 

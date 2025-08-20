@@ -14,11 +14,15 @@ import type {
 } from '../validation/sessionFormValidation'
 
 type SessionCreationParams = {
+  // eslint-disable-next-line no-restricted-syntax
   parentDesignSessionId?: string | null
   initialMessage: string
   isDeepModelingEnabled: boolean
+  // eslint-disable-next-line no-restricted-syntax
   projectId?: string | null
+  // eslint-disable-next-line no-restricted-syntax
   schemaFilePath?: string | null
+  // eslint-disable-next-line no-restricted-syntax
   gitSha?: string | null
 }
 

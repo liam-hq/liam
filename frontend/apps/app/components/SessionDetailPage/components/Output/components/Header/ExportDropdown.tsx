@@ -21,6 +21,7 @@ import styles from './ExportDropdown.module.css'
 
 type Props = {
   schema: Schema
+  // eslint-disable-next-line no-restricted-syntax
   artifactDoc?: string
   cumulativeOperations: Operation[]
 }

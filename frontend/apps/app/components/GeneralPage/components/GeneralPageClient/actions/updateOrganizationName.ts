@@ -9,7 +9,11 @@ import { createClient } from '@/libs/db/server'
 export async function updateOrganizationName(
   organizationId: string,
   name: string,
-): Promise<{ success: boolean; error?: string }> {
+): Promise<{
+  success: boolean
+  // eslint-disable-next-line no-restricted-syntax
+  error?: string
+}> {
   if (!name.trim()) {
     return { success: false, error: 'Organization name cannot be empty' }
   }

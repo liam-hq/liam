@@ -10,7 +10,9 @@ import styles from './ProjectRadioItem.module.css'
 
 type Props = ComponentProps<typeof DropdownMenuPrimitiveRadioItem> & {
   label: string
+  // eslint-disable-next-line no-restricted-syntax
   showIcon?: boolean
+  // eslint-disable-next-line no-restricted-syntax
   isRepository?: boolean
 }
 

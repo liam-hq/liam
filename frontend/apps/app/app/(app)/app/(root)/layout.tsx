@@ -6,5 +6,9 @@ export default function Layout({
 }: Readonly<{
   children: ReactNode
 }>) {
-  return <CommonLayout>{children}</CommonLayout>
+  return (
+    <CommonLayout projectId="" branchOrCommit="">
+      {children}
+    </CommonLayout>
+  )
 }

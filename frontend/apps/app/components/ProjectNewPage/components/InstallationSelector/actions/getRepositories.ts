@@ -9,6 +9,7 @@ import * as v from 'valibot'
 type GetRepositoriesState = {
   repositories: Repository[]
   loading: boolean
+  // eslint-disable-next-line no-restricted-syntax
   error?: string
 }
 

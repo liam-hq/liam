@@ -5,9 +5,11 @@ import { createClient } from '@/libs/db/server'
 /**
  * Delete organization
  */
-export async function deleteOrganization(
-  organizationId: string,
-): Promise<{ success: boolean; error?: string }> {
+export async function deleteOrganization(organizationId: string): Promise<{
+  success: boolean
+  // eslint-disable-next-line no-restricted-syntax
+  error?: string
+}> {
   const supabase = await createClient()
   const { error } = await supabase
     .from('organizations')

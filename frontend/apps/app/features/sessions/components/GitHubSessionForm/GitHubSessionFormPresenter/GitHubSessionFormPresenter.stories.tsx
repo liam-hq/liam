@@ -165,7 +165,7 @@ export const Interactive: Story = {
     const [selectedProjectId, setSelectedProjectId] = useState<string>(
       args.defaultProjectId || '',
     )
-    const [branches, setBranches] = useState<Branch[]>(args.branches)
+    const [branches, setBranches] = useState<Branch[]>(args.branches || [])
     const [isBranchesLoading, setIsBranchesLoading] = useState(
       args.isBranchesLoading,
     )
@@ -224,7 +224,7 @@ export const InteractiveWithError: Story = {
     const [selectedProjectId, setSelectedProjectId] = useState<string>(
       args.defaultProjectId || '',
     )
-    const [branches, setBranches] = useState<Branch[]>(args.branches)
+    const [branches, setBranches] = useState<Branch[]>(args.branches || [])
     const [isBranchesLoading, setIsBranchesLoading] = useState(
       args.isBranchesLoading,
     )

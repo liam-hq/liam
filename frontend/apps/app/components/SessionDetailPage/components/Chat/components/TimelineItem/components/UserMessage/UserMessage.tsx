@@ -7,9 +7,13 @@ import styles from './UserMessage.module.css'
 
 type UserMessageProps = {
   content: string
+  // eslint-disable-next-line no-restricted-syntax
   avatarSrc?: string
+  // eslint-disable-next-line no-restricted-syntax
   avatarAlt?: string
+  // eslint-disable-next-line no-restricted-syntax
   timestamp?: Date
+  // eslint-disable-next-line no-restricted-syntax
   userName?: string
 }
 

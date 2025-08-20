@@ -5,7 +5,7 @@ import styles from './SchemaLink.module.css'
 
 type SchemaLinkProps = {
   schemaName: string
-  format?: FormatType
+  format: FormatType
 }
 
 export const SchemaLink: FC<SchemaLinkProps> = ({
@@ -19,7 +19,7 @@ export const SchemaLink: FC<SchemaLinkProps> = ({
       aria-label={`Open schema ${schemaName}`}
     >
       <div className={styles.formatIcon}>
-        <FormatIcon format={format} />
+        <FormatIcon format={format} size={16} />
       </div>
       <span className={styles.schemaName}>{schemaName}</span>
       <div className={styles.iconContainer}>

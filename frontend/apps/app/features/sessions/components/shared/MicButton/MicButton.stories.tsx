@@ -24,29 +24,35 @@ type Story = StoryObj<typeof meta>
 export const Default: Story = {
   args: {
     state: 'default',
+    disabled: false,
   },
 }
 
 export const Hover: Story = {
   args: {
     state: 'hover',
+    disabled: false,
   },
 }
 
 export const Active: Story = {
   args: {
     state: 'active',
+    disabled: false,
   },
 }
 
 export const ActiveHover: Story = {
   args: {
     state: 'active-hover',
+    disabled: false,
   },
 }
 
 export const Interactive: Story = {
   args: {
+    state: 'default',
+    disabled: false,
     onClick: () => {},
   },
   render: (args) => {

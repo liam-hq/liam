@@ -11,6 +11,7 @@ import styles from './SQL.module.css'
 type Props = {
   currentSchema: Schema
   prevSchema: Schema
+  // eslint-disable-next-line no-restricted-syntax
   comments?: ReviewComment[]
 }
 
@@ -30,6 +31,7 @@ export const SQL: FC<Props> = ({
         <CopyButton
           textToCopy={cumulativeDdl}
           tooltipLabel="Copy Migration Diff"
+          size="md"
         />
       </div>
       <div className={styles.body}>

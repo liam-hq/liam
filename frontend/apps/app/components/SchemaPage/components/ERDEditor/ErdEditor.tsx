@@ -14,6 +14,7 @@ type Props = {
   schema: Schema
   errorObjects: ComponentProps<typeof ERDRenderer>['errorObjects']
   defaultSidebarOpen: boolean
+  // eslint-disable-next-line no-restricted-syntax
   defaultPanelSizes?: number[]
   projectId: string
   branchOrCommit: string

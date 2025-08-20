@@ -14,6 +14,7 @@ import { PM_AGENT_ROLE, QA_AGENT_ROLE } from './constants'
 
 type Props = PropsWithChildren &
   TimelineItemEntry & {
+    // eslint-disable-next-line no-restricted-syntax
     showHeader?: boolean
     onArtifactLinkClick: () => void
   }
@@ -24,6 +25,7 @@ type ViewLinkConfig = {
 
 const getViewLinkConfig = (
   role: string,
+  // eslint-disable-next-line no-restricted-syntax
   artifactAction?: 'created' | 'updated' | null,
 ): ViewLinkConfig | null => {
   // Only show link when artifact was created or updated in this message
@@ -49,12 +51,22 @@ export const TimelineItem: FC<Props> = (props) => {
 
   return match(timelineItemProps)
     .with({ type: 'schema_version' }, ({ version, onView }) => (
-      <AgentMessage state="default" assistantRole="db" showHeader={showHeader}>
+      <AgentMessage
+        state="default"
+        assistantRole="db"
+        showHeader={showHeader}
+        message="Schema version updated"
+      >
         <VersionMessage version={version} onView={onView} />
       </AgentMessage>
     ))
     .with({ type: 'query_result' }, ({ queryResultId, results }) => (
-      <AgentMessage state="default" assistantRole="db" showHeader={showHeader}>
+      <AgentMessage
+        state="default"
+        assistantRole="db"
+        showHeader={showHeader}
+        message="Query executed"
+      >
         <QueryResultMessage
           queryResultId={queryResultId}
           results={Array.isArray(results) ? results : undefined}
@@ -75,6 +87,7 @@ export const TimelineItem: FC<Props> = (props) => {
           state="default"
           assistantRole={role}
           showHeader={showHeader}
+          message={content}
         >
           <LogMessage content={content} />
           {viewLinkConfig && (
@@ -115,7 +128,12 @@ export const TimelineItem: FC<Props> = (props) => {
       },
     )
     .with({ type: 'error' }, ({ content, onRetry }) => (
-      <AgentMessage state="default" assistantRole="db" showHeader={showHeader}>
+      <AgentMessage
+        state="default"
+        assistantRole="db"
+        showHeader={showHeader}
+        message="Error occurred"
+      >
         <ErrorMessage message={content} onRetry={onRetry} />
       </AgentMessage>
     ))

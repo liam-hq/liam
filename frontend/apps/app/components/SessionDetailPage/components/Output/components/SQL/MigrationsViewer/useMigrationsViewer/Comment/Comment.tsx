@@ -8,6 +8,7 @@ type SeverityLevel = 'High' | 'Medium' | 'Low'
 type Props = {
   level: SeverityLevel
   comment: string
+  // eslint-disable-next-line no-restricted-syntax
   onQuickFix?: (comment: string) => void
 }
 

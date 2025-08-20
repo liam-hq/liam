@@ -20,7 +20,9 @@ const SORT_OPTIONS: { value: SortOption; label: string }[] = [
 ]
 
 type SortDropdownProps = {
+  // eslint-disable-next-line no-restricted-syntax
   initialSortOption?: SortOption
+  // eslint-disable-next-line no-restricted-syntax
   onSortChange?: (option: SortOption) => void
 }
 

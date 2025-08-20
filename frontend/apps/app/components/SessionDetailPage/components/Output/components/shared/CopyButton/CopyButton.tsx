@@ -7,7 +7,7 @@ import type { FC } from 'react'
 type Props = {
   textToCopy: string
   tooltipLabel: string
-  size?: 'sm' | 'md'
+  size: 'sm' | 'md'
 }
 
 export const CopyButton: FC<Props> = ({

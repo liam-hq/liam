@@ -35,37 +35,39 @@ type ProcessIndicatorProps = {
   /**
    * The subtitle description
    */
-  subtitle?: string
+  subtitle: string
   /**
    * The progress percentage (0-100)
    * When it reaches 100, status will automatically become 'complete'
    */
-  progress?: number
+  progress: number
   /**
    * Optional override for the status
    * If not provided, status will be 'complete' when progress is 100, otherwise 'processing'
    */
-  status?: ProcessStatus
+  status: ProcessStatus
   /**
    * The label for the primary action button
    */
-  primaryActionLabel?: string
+  primaryActionLabel: string
   /**
    * Callback for the primary action button
    */
+  // eslint-disable-next-line no-restricted-syntax
   onPrimaryAction?: () => void
   /**
    * The label for the secondary action button
    */
-  secondaryActionLabel?: string
+  secondaryActionLabel: string
   /**
    * Callback for the secondary action button
    */
+  // eslint-disable-next-line no-restricted-syntax
   onSecondaryAction?: () => void
   /**
    * Initial expanded state
    */
-  initialExpanded?: boolean
+  initialExpanded: boolean
 }
 
 /**
@@ -73,12 +75,12 @@ type ProcessIndicatorProps = {
  */
 export const ProcessIndicator: FC<ProcessIndicatorProps> = ({
   title,
-  subtitle,
+  subtitle = '',
   progress = 0,
-  status,
-  primaryActionLabel,
+  status = 'processing',
+  primaryActionLabel = '',
   onPrimaryAction,
-  secondaryActionLabel,
+  secondaryActionLabel = '',
   onSecondaryAction,
   initialExpanded = true,
 }) => {

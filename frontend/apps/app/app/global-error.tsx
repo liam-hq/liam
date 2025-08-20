@@ -7,7 +7,10 @@ import { useEffect } from 'react'
 export default function GlobalError({
   error,
 }: {
-  error: Error & { digest?: string }
+  error: Error & {
+    // eslint-disable-next-line no-restricted-syntax
+    digest?: string
+  }
 }) {
   useEffect(() => {
     Sentry.captureException(error)

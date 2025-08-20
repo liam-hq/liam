@@ -22,6 +22,7 @@ const isProjectWithLastCommit = (
 
 type ProjectsListViewProps = {
   initialProjects: (Tables<'projects'> | ProjectWithLastCommit)[] | null
+  // eslint-disable-next-line no-restricted-syntax
   organizationId?: string
 }
 

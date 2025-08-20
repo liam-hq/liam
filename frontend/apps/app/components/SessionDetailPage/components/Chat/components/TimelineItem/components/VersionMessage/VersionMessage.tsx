@@ -79,6 +79,7 @@ type Props = {
     number: number
     patch: Tables<'building_schema_versions'>['patch']
   } | null
+  // eslint-disable-next-line no-restricted-syntax
   onView?: (versionId: string) => void
 }
 

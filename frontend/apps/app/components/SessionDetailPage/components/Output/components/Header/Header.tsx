@@ -18,7 +18,9 @@ import { VersionDropdown } from './VersionDropdown'
 type Props = ComponentProps<typeof VersionDropdown> & {
   schema: Schema
   tabValue: OutputTabValue
+  // eslint-disable-next-line no-restricted-syntax
   artifactDoc?: string
+  // eslint-disable-next-line no-restricted-syntax
   hasArtifact?: boolean
   designSessionId: string
   initialIsPublic: boolean

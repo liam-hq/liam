@@ -22,6 +22,8 @@ type Story = StoryObj<typeof meta>
 export const Idle: Story = {
   args: {
     status: 'idle',
+    showRemoveButton: false,
+    variant: 'default',
   },
 }
 
@@ -29,6 +31,8 @@ export const Idle: Story = {
 export const Validating: Story = {
   args: {
     status: 'validating',
+    showRemoveButton: false,
+    variant: 'default',
   },
 }
 
@@ -39,6 +43,8 @@ export const ValidDefault: Story = {
     schemaName: 'database_schema.sql',
     detectedFormat: 'postgres',
     selectedFormat: 'postgres',
+    showRemoveButton: true,
+    variant: 'default',
     onFormatChange: (_format: FormatType) => {},
     onRemove: () => {},
   },
@@ -64,6 +70,8 @@ export const InvalidBasic: Story = {
     status: 'invalid',
     errorMessage:
       'Unsupported file type. Please upload .sql, .rb, .prisma, or .json files.',
+    showRemoveButton: true,
+    variant: 'default',
   },
 }
 
@@ -77,6 +85,8 @@ export const InvalidWithDetails: Story = {
       'Line 25: Unexpected token ";"',
       'Line 30: Missing closing parenthesis',
     ],
+    showRemoveButton: true,
+    variant: 'default',
     onViewTroubleshootingGuide: () => {},
   },
 }
@@ -92,6 +102,8 @@ export const InvalidParsingErrorHasMany: Story = {
       "Error: Unexpected token 'has_many'",
       'Context: Unsupported association syntax in current parser version',
     ],
+    showRemoveButton: true,
+    variant: 'default',
     onViewTroubleshootingGuide: () => {},
   },
 }
@@ -102,6 +114,8 @@ export const InvalidNetworkError: Story = {
     status: 'invalid',
     errorMessage:
       'Failed to fetch schema from URL. Please check the URL and try again.',
+    showRemoveButton: true,
+    variant: 'default',
     onViewTroubleshootingGuide: () => {},
   },
 }
@@ -111,6 +125,8 @@ export const InvalidFormatMismatch: Story = {
   args: {
     status: 'invalid',
     errorMessage: 'The selected format does not match the file extension.',
+    showRemoveButton: true,
+    variant: 'default',
     onViewTroubleshootingGuide: () => {},
   },
 }
@@ -122,6 +138,8 @@ export const ValidPostgres: Story = {
     schemaName: 'postgres_schema.sql',
     detectedFormat: 'postgres',
     selectedFormat: 'postgres',
+    showRemoveButton: true,
+    variant: 'default',
     onFormatChange: (_format: FormatType) => {},
     onRemove: () => {},
   },
@@ -133,6 +151,8 @@ export const ValidRails: Story = {
     schemaName: 'schema.rb',
     detectedFormat: 'schemarb',
     selectedFormat: 'schemarb',
+    showRemoveButton: true,
+    variant: 'default',
     onFormatChange: (_format: FormatType) => {},
     onRemove: () => {},
   },
@@ -144,6 +164,8 @@ export const ValidPrisma: Story = {
     schemaName: 'schema.prisma',
     detectedFormat: 'prisma',
     selectedFormat: 'prisma',
+    showRemoveButton: true,
+    variant: 'default',
     onFormatChange: (_format: FormatType) => {},
     onRemove: () => {},
   },
@@ -155,6 +177,8 @@ export const ValidTbls: Story = {
     schemaName: 'tbls-schema.json',
     detectedFormat: 'tbls',
     selectedFormat: 'tbls',
+    showRemoveButton: true,
+    variant: 'default',
     onFormatChange: (_format: FormatType) => {},
     onRemove: () => {},
   },
@@ -168,6 +192,8 @@ export const ValidLongFileName: Story = {
       'very_long_database_schema_file_name_that_might_overflow_the_container.sql',
     detectedFormat: 'postgres',
     selectedFormat: 'postgres',
+    showRemoveButton: true,
+    variant: 'default',
     onFormatChange: (_format: FormatType) => {},
     onRemove: () => {},
   },
@@ -182,6 +208,8 @@ export const InvalidManyErrors: Story = {
       { length: 20 },
       (_, i) => `Line ${i + 1}: Error in SQL syntax`,
     ),
+    showRemoveButton: true,
+    variant: 'default',
     onViewTroubleshootingGuide: () => {},
   },
 }

@@ -87,6 +87,7 @@ export const Default: Story = {
     onSendMessage: () => {},
     isWorkflowRunning: false,
     error: false,
+    initialMessage: '',
     schema: dummySchema,
   },
   parameters: {
@@ -104,6 +105,7 @@ export const WorkflowRunning: Story = {
     onSendMessage: () => {},
     isWorkflowRunning: true,
     error: false,
+    initialMessage: '',
     schema: dummySchema,
   },
   parameters: {

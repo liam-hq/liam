@@ -4,7 +4,9 @@ import { getAllMentionCandidates } from './getAllMentionCandidates'
 type Params = {
   schema: Schema
   query: string
+  // eslint-disable-next-line no-restricted-syntax
   options?: {
+    // eslint-disable-next-line no-restricted-syntax
     limit?: number
   }
 }

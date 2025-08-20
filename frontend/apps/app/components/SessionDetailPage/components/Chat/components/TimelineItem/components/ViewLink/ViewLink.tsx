@@ -12,6 +12,7 @@ type ViewLinkProps = {
   /**
    * Callback function when the link is clicked
    */
+  // eslint-disable-next-line no-restricted-syntax
   onClick?: (() => void) | undefined
   /**
    * Accessible label for screen readers - required for proper accessibility

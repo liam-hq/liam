@@ -21,9 +21,9 @@ type Story = StoryObj<typeof meta>
 export const OptionButtonsGroup: Story = {
   args: {
     options: [
-      { id: '1', text: 'Option 1: Create a new table' },
-      { id: '2', text: 'Option 2: Modify existing schema' },
-      { id: '3', text: 'Option 3: Generate SQL queries' },
+      { id: '1', text: 'Option 1: Create a new table', disabled: false },
+      { id: '2', text: 'Option 2: Modify existing schema', disabled: false },
+      { id: '3', text: 'Option 3: Generate SQL queries', disabled: false },
     ],
   },
   name: 'MessageOptionButtons - Build',
@@ -33,9 +33,9 @@ export const OptionButtonsGroup: Story = {
 export const OptionButtonsGroupMultiSelect: Story = {
   args: {
     options: [
-      { id: '1', text: 'Option 1: Database design' },
-      { id: '2', text: 'Option 2: API implementation' },
-      { id: '3', text: 'Option 3: UI components' },
+      { id: '1', text: 'Option 1: Database design', disabled: false },
+      { id: '2', text: 'Option 2: API implementation', disabled: false },
+      { id: '3', text: 'Option 3: UI components', disabled: false },
     ],
     multiSelect: true,
   },

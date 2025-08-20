@@ -89,7 +89,9 @@ export const fetchSchemaFromUrl = async (
   url: string,
 ): Promise<{
   success: boolean
+  // eslint-disable-next-line no-restricted-syntax
   content?: string
+  // eslint-disable-next-line no-restricted-syntax
   error?: string
 }> => {
   // Validate and resolve URL

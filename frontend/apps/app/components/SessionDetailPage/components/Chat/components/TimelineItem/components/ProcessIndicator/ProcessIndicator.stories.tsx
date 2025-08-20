@@ -56,7 +56,11 @@ export const TableCreationComplete: Story = {
   args: {
     status: 'complete',
     title: 'Table Creation Complete',
+    subtitle: 'The table has been successfully created.',
+    progress: 100,
     primaryActionLabel: 'View Table',
+    secondaryActionLabel: 'Close',
+    initialExpanded: true,
   },
 }
 
@@ -69,6 +73,7 @@ export const HighProgress: Story = {
     progress: 85,
     primaryActionLabel: 'View Details',
     secondaryActionLabel: 'Cancel',
+    initialExpanded: false,
   },
 }
 
@@ -79,6 +84,9 @@ export const NoActions: Story = {
     title: 'Running automated tests',
     subtitle: 'Testing database integrity',
     progress: 45,
+    primaryActionLabel: 'View Progress',
+    secondaryActionLabel: 'Cancel',
+    initialExpanded: false,
   },
 }
 

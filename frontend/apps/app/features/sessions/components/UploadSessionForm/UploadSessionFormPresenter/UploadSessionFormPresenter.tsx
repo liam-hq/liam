@@ -200,6 +200,8 @@ const renderUploadSection = (
                 ? 'Unsupported file type. Please upload .sql, .rb, .prisma, or .json files.'
                 : undefined
             }
+            showRemoveButton={true}
+            variant="default"
             onFormatChange={state.setSelectedFormat}
             onRemove={handleSchemaRemove}
           />

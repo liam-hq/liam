@@ -19,7 +19,9 @@ import {
 } from './utils'
 
 type CodeProps = {
+  // eslint-disable-next-line no-restricted-syntax
   className?: string
+  // eslint-disable-next-line no-restricted-syntax
   children?: ReactNode
 } & HTMLAttributes<HTMLElement>
 
@@ -31,7 +33,7 @@ export const Artifact: FC<Props> = ({ doc }) => {
   return (
     <div className={styles.container}>
       <div className={styles.head}>
-        <CopyButton textToCopy={doc} tooltipLabel="Copy Markdown" />
+        <CopyButton textToCopy={doc} tooltipLabel="Copy Markdown" size="md" />
       </div>
       <div className={styles.contentWrapper} data-artifact-content>
         <div className={styles.bodyWrapper}>

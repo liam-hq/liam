@@ -6,8 +6,8 @@ import styles from './SearchInput.module.css'
 
 type SearchInputProps = {
   onSearch: (query: string) => void
-  loading?: boolean
-  placeholder?: string
+  loading: boolean
+  placeholder: string
 }
 
 export const SearchInput: FC<SearchInputProps> = ({

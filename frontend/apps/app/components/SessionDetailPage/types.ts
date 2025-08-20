@@ -30,19 +30,23 @@ export type TimelineItem = Pick<
   | 'assistant_role'
   | 'query_result_id'
 > & {
+  // eslint-disable-next-line no-restricted-syntax
   users?: {
     id: string
     name: string
     email: string
   } | null
+  // eslint-disable-next-line no-restricted-syntax
   building_schema_versions?: {
     id: string
     number: number
     patch: Database['public']['Tables']['building_schema_versions']['Row']['patch']
   } | null
+  // eslint-disable-next-line no-restricted-syntax
   validation_queries?: {
     id: string
     query_string: string
+    // eslint-disable-next-line no-restricted-syntax
     validation_results?: Array<{
       id: string
       result_set: unknown[] | null
@@ -54,6 +58,7 @@ export type TimelineItem = Pick<
   // TODO: Backend needs to add artifact_action field to timeline_items table
   // This field should be set to 'created' when PM agent creates requirements artifact
   // and 'updated' when QA agent adds use cases to the artifact
+  // eslint-disable-next-line no-restricted-syntax
   artifact_action?: 'created' | 'updated' | null
 }
 
@@ -81,11 +86,13 @@ type BaseTimelineItemEntry = {
     | 'query_result'
   timestamp: Date
   // Backend artifact_action field - used to determine when to show view links
+  // eslint-disable-next-line no-restricted-syntax
   artifactAction?: 'created' | 'updated' | null
 }
 
 export type UserTimelineItemEntry = BaseTimelineItemEntry & {
   type: 'user'
+  // eslint-disable-next-line no-restricted-syntax
   userName?: string
 }
 
@@ -97,16 +104,19 @@ export type AssistantTimelineItemEntry = BaseTimelineItemEntry & {
 export type SchemaVersionTimelineItemEntry = BaseTimelineItemEntry & {
   type: 'schema_version'
   buildingSchemaVersionId: string
+  // eslint-disable-next-line no-restricted-syntax
   version: {
     id: string
     number: number
     patch: Database['public']['Tables']['building_schema_versions']['Row']['patch']
   } | null
+  // eslint-disable-next-line no-restricted-syntax
   onView?: (versionId: string) => void
 }
 
 export type ErrorTimelineItemEntry = BaseTimelineItemEntry & {
   type: 'error'
+  // eslint-disable-next-line no-restricted-syntax
   onRetry?: () => void
 }
 

@@ -21,7 +21,7 @@ type DeleteConfirmationModalProps = {
   onConfirmTextChange: (text: string) => void
   isConfirmEnabled: boolean
   onConfirm: () => void
-  isPending?: boolean
+  isPending: boolean
 }
 
 export function DeleteConfirmationModal({
@@ -32,7 +32,7 @@ export function DeleteConfirmationModal({
   onConfirmTextChange,
   isConfirmEnabled,
   onConfirm,
-  isPending = false,
+  isPending,
 }: DeleteConfirmationModalProps) {
   return (
     <ModalRoot open={isOpen} onOpenChange={onClose}>

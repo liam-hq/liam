@@ -10,6 +10,7 @@ function getAuthCallbackUrl({
   next = '/app/design_sessions/new',
   provider,
 }: {
+  // eslint-disable-next-line no-restricted-syntax
   next?: string
   provider: OAuthProvider
 }): string {

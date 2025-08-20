@@ -25,6 +25,7 @@ export const BuildDefault: Story = {
       'We would like to make a proposal for the implementation of a chat UI. First, please allow me to check the current structure of the schema page.',
     time: '12:10',
     assistantRole: 'db',
+    showHeader: true,
   },
 }
 
@@ -34,6 +35,7 @@ export const BuildWithCustomName: Story = {
     message: 'This is a message from a build agent with a custom name.',
     time: '12:20',
     assistantRole: 'db',
+    showHeader: true,
   },
 }
 
@@ -41,6 +43,8 @@ export const BuildGenerating: Story = {
   args: {
     state: 'generating',
     assistantRole: 'db',
+    message: 'Generating response...',
+    showHeader: true,
   },
 }
 
@@ -402,14 +406,15 @@ export const BuildWithMarkdown: Story = {
     message: markdownContent,
     time: '12:15',
     assistantRole: 'db',
+    showHeader: true,
   },
 }
 
 // Sample options for MessageOptionButtons
 const sampleOptions: MessageOption[] = [
-  { id: 'option1', text: 'Option 1' },
-  { id: 'option2', text: 'Option 2' },
-  { id: 'option3', text: 'Option 3' },
+  { id: 'option1', text: 'Option 1', disabled: false },
+  { id: 'option2', text: 'Option 2', disabled: false },
+  { id: 'option3', text: 'Option 3', disabled: false },
 ]
 
 export const BuildWithOptions: Story = {
@@ -418,6 +423,7 @@ export const BuildWithOptions: Story = {
     message: 'Please select from the following options:',
     time: '12:30',
     assistantRole: 'db',
+    showHeader: true,
     children: <MessageOptionButtons options={sampleOptions} />,
   },
 }
@@ -428,12 +434,17 @@ export const BuildWithMultiSelectOptions: Story = {
     message: 'Please select multiple options that apply:',
     time: '12:35',
     assistantRole: 'db',
+    showHeader: true,
     children: (
       <MessageOptionButtons
         options={[
-          { id: 'option1', text: 'Option 1: Database design' },
-          { id: 'option2', text: 'Option 2: API implementation' },
-          { id: 'option3', text: 'Option 3: UI components' },
+          { id: 'option1', text: 'Option 1: Database design', disabled: false },
+          {
+            id: 'option2',
+            text: 'Option 2: API implementation',
+            disabled: false,
+          },
+          { id: 'option3', text: 'Option 3: UI components', disabled: false },
         ]}
         multiSelect={true}
       />
@@ -447,12 +458,13 @@ export const BuildWithDatabaseOptions: Story = {
     message: 'Please select an operation to perform:',
     time: '12:45',
     assistantRole: 'db',
+    showHeader: true,
     children: (
       <MessageOptionButtons
         options={[
-          { id: 'option1', text: 'Create new table' },
-          { id: 'option2', text: 'Modify existing schema' },
-          { id: 'option3', text: 'Generate SQL migration' },
+          { id: 'option1', text: 'Create new table', disabled: false },
+          { id: 'option2', text: 'Modify existing schema', disabled: false },
+          { id: 'option3', text: 'Generate SQL migration', disabled: false },
         ]}
       />
     ),
@@ -465,6 +477,7 @@ export const BuildAfterOptionSelected: Story = {
     message: 'Creating new table based on your selection...',
     time: '12:45',
     assistantRole: 'db',
+    showHeader: true,
     children: (
       <ProcessIndicator
         status="processing"
@@ -485,6 +498,7 @@ export const BuildAfterOptionSelectedCollapsed: Story = {
     message: 'Updating schema based on your selection...',
     time: '12:50',
     assistantRole: 'db',
+    showHeader: true,
     children: (
       <ProcessIndicator
         status="processing"
@@ -505,6 +519,7 @@ export const BuildAfterOptionSelectedCompleteCollapsed: Story = {
     message: 'Schema update completed successfully.',
     time: '12:55',
     assistantRole: 'db',
+    showHeader: true,
     children: (
       <ProcessIndicator
         status="complete"
@@ -525,6 +540,7 @@ export const PMWithRequirementsAnalyzed: Story = {
     message: 'Your requirements have been analyzed and saved',
     time: '14:30',
     assistantRole: 'pm',
+    showHeader: true,
     children: (
       <ViewLink
         text="View Requirements"
@@ -541,6 +557,7 @@ export const QAWithUseCasesSaved: Story = {
     message: 'Your use cases have been saved and are ready for implementation',
     time: '14:35',
     assistantRole: 'qa',
+    showHeader: true,
     children: (
       <ViewLink
         text="View Use Cases"

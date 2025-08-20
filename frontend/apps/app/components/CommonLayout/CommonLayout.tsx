@@ -9,8 +9,8 @@ import { getOrganization } from './services/getOrganization'
 import { getOrganizationsByUserId } from './services/getOrganizationsByUserId'
 
 type CommonLayoutProps = {
-  projectId?: string
-  branchOrCommit?: string
+  projectId: string
+  branchOrCommit: string
   children: ReactNode
 }
 

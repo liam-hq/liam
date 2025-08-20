@@ -6,18 +6,19 @@ import styles from './BranchesDropdown.module.css'
 
 type Props = {
   branches: Branch[]
+  // eslint-disable-next-line no-restricted-syntax
   selectedBranchSha?: string
   onBranchChange: (sha: string) => void
-  disabled?: boolean
-  isLoading?: boolean
+  disabled: boolean
+  isLoading: boolean
 }
 
 export const BranchesDropdown: FC<Props> = ({
   branches,
   selectedBranchSha,
   onBranchChange,
-  disabled = false,
-  isLoading = false,
+  disabled,
+  isLoading,
 }) => {
   return (
     <BranchCombobox
@@ -25,6 +26,7 @@ export const BranchesDropdown: FC<Props> = ({
       selectedBranchSha={selectedBranchSha}
       onBranchChange={onBranchChange}
       disabled={disabled || isLoading}
+      isLoading={isLoading}
       placeholder="Search branches..."
       className={styles.container}
     />

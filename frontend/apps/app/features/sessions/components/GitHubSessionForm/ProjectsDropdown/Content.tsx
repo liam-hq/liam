@@ -17,6 +17,7 @@ import styles from './ProjectsDropdown.module.css'
 
 type Props = {
   projects: Projects
+  // eslint-disable-next-line no-restricted-syntax
   selectedProjectId?: string
   onProjectChange: (projectId: string) => void
 }

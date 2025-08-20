@@ -20,7 +20,7 @@ type FormatIconProps = {
   /** The format type to display an icon for */
   format: FormatType
   /** The size of the icon in pixels (default: 16) */
-  size?: number
+  size: number
 } & Omit<IconProps, 'size'>
 
 /**

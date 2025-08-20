@@ -14,9 +14,10 @@ import styles from './ProjectsDropdown.module.css'
 
 type Props = {
   projects: Projects
+  // eslint-disable-next-line no-restricted-syntax
   selectedProjectId?: string
   onProjectChange: (projectId: string) => void
-  disabled?: boolean
+  disabled: boolean
 }
 
 export const ProjectsDropdown: FC<Props> = ({
@@ -42,10 +43,10 @@ export const ProjectsDropdown: FC<Props> = ({
 
 type TriggerProps = {
   label: string
-  disabled?: boolean
+  disabled: boolean
 }
 
-const Trigger: FC<TriggerProps> = ({ label, disabled }) => {
+const Trigger: FC<TriggerProps> = ({ label, disabled = false }) => {
   const hasSelection = label !== 'Connect Project'
 
   return (

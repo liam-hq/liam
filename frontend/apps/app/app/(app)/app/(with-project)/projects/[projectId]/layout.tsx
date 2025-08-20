@@ -17,7 +17,7 @@ export default async function Layout({ children, params }: LayoutProps) {
   const { projectId } = parsedParams.output
 
   return (
-    <CommonLayout projectId={projectId}>
+    <CommonLayout projectId={projectId} branchOrCommit="main">
       <ProjectLayout projectId={projectId}>{children}</ProjectLayout>
     </CommonLayout>
   )

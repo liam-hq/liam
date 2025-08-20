@@ -10,21 +10,21 @@ import { CookieConsent } from '@/components/CookieConsent'
 type ErrorObject = {
   name: string
   message: string
-  instruction?: string
+  instruction: string
 }
 
 type ERDViewerProps = {
   schema: Schema
   errorObjects: ErrorObject[]
   defaultSidebarOpen: boolean
-  defaultPanelSizes?: number[]
+  defaultPanelSizes: number[]
 }
 
 export default function ERDViewer({
   schema,
   errorObjects,
   defaultSidebarOpen,
-  defaultPanelSizes = [20, 80],
+  defaultPanelSizes,
 }: ERDViewerProps) {
   const [isShowCookieConsent, setShowCookieConsent] = useState(false)
 

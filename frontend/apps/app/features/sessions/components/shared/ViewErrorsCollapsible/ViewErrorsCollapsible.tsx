@@ -11,6 +11,7 @@ import styles from './ViewErrorsCollapsible.module.css'
 type BaseError = {
   type: string
   message: string
+  // eslint-disable-next-line no-restricted-syntax
   fileName?: string
 }
 
@@ -18,10 +19,13 @@ type BaseError = {
 type ParsingError = BaseError & {
   type: 'parsing'
   details: Array<{
+    // eslint-disable-next-line no-restricted-syntax
     line?: number
+    // eslint-disable-next-line no-restricted-syntax
     column?: number
     text: string
   }>
+  // eslint-disable-next-line no-restricted-syntax
   suggestion?: string
 }
 
@@ -31,7 +35,9 @@ type UnsupportedSyntaxError = BaseError & {
   details: Array<{
     text: string
   }>
+  // eslint-disable-next-line no-restricted-syntax
   explanation?: string
+  // eslint-disable-next-line no-restricted-syntax
   suggestions?: string[]
 }
 
@@ -60,13 +66,14 @@ const isGenericError = (error: ErrorInfo): error is GenericError => {
 
 type Props = {
   error: ErrorInfo
-  triggerText?: string
+  triggerText: string
+  // eslint-disable-next-line no-restricted-syntax
   className?: string
 }
 
 export const ViewErrorsCollapsible: FC<Props> = ({
   error,
-  triggerText = 'View errors',
+  triggerText,
   className,
 }) => {
   const [isOpen, setIsOpen] = useState(false)

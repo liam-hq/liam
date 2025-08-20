@@ -1,6 +1,7 @@
 import { type DragEvent, useCallback, useRef, useState } from 'react'
 
 export const useFileDragAndDrop = (
+  // eslint-disable-next-line no-restricted-syntax
   onFilesDropped?: (files: FileList) => void,
 ) => {
   const [dragActive, setDragActive] = useState(false)

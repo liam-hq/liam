@@ -14,14 +14,16 @@ type MessageOptionButtonProps = {
   /**
    * Whether the button is selected
    */
+  // eslint-disable-next-line no-restricted-syntax
   isSelected?: boolean
   /**
    * Whether the button is disabled
    */
-  isDisabled?: boolean
+  isDisabled: boolean
   /**
    * Callback function when the button is clicked
    */
+  // eslint-disable-next-line no-restricted-syntax
   onClick?: (event: MouseEvent<HTMLButtonElement>) => void
 }
 

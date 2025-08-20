@@ -14,9 +14,13 @@ import { useRef } from 'react'
 import styles from './AttachButton.module.css'
 
 type AttachButtonProps = ComponentProps<'button'> & {
+  // eslint-disable-next-line no-restricted-syntax
   tooltipSide?: ComponentProps<typeof ArrowTooltipContent>['side']
+  // eslint-disable-next-line no-restricted-syntax
   ref?: Ref<HTMLButtonElement>
+  // eslint-disable-next-line no-restricted-syntax
   onFileSelect?: (files: FileList) => void
+  // eslint-disable-next-line no-restricted-syntax
   accept?: string
 }
 

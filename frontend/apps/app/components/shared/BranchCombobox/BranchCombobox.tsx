@@ -14,11 +14,13 @@ export type Branch = {
 
 type Props = {
   branches: Branch[]
+  // eslint-disable-next-line no-restricted-syntax
   selectedBranchSha?: string
   onBranchChange: (sha: string) => void
-  disabled?: boolean
-  isLoading?: boolean
-  placeholder?: string
+  disabled: boolean
+  isLoading: boolean
+  placeholder: string
+  // eslint-disable-next-line no-restricted-syntax
   className?: string
 }
 
