@@ -2,7 +2,7 @@
 
 import type { Schema } from '@liam-hq/schema'
 import { type FC, useTransition } from 'react'
-import { useStream } from '../../hooks/useStream'
+import { useStream } from '../../hooks/useStream/useStream'
 import type { TimelineItemEntry } from '../../types'
 import styles from './Chat.module.css'
 import { ChatInput } from './components/ChatInput'
@@ -38,7 +38,7 @@ export const Chat: FC<Props> = ({
     timelineItems.length,
   )
   const [, startTransition] = useTransition()
-  const { start } = useStream({ initialTimelineItems: timelineItems })
+  const { start } = useStream()
 
   const startAIResponse = async (content: string) => {
     const optimisticMessage: TimelineItemEntry = {

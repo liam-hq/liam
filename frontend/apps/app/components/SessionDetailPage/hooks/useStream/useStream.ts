@@ -1,9 +1,9 @@
-import type { CustomStreamEvent } from '@liam-hq/agent/client'
-import { err, ok, type Result } from 'neverthrow'
-import { useCallback, useMemo, useRef, useState } from 'react'
+import type { StoredMessage } from '@langchain/core/messages'
+import { err, ok } from 'neverthrow'
+import { useCallback, useRef, useState } from 'react'
 import { ERROR_MESSAGES } from '../../components/Chat/constants/chatConstants'
-import type { AssistantTimelineItemEntry, TimelineItemEntry } from '../../types'
-import { parseCustomStreamEvents } from './parseCustomStreamEvents'
+import { MessageTupleManager } from './MessageTupleManager'
+import { parseSse } from './parseSse'
 
 type ChatRequest = {
   userInput: string
@@ -11,123 +11,89 @@ type ChatRequest = {
   isDeepModelingEnabled: boolean
 }
 
-type StreamError = {
-  type: 'network' | 'abort' | 'unknown'
-  message: string
-  status?: number
-}
-
-type Params = {
-  initialTimelineItems: TimelineItemEntry[]
-}
-
-export const useStream = ({ initialTimelineItems }: Params) => {
-  const [timelineItemsMap, setTimelineItemsMap] = useState<
-    Map<string, TimelineItemEntry>
-  >(() => {
-    const map = new Map<string, TimelineItemEntry>()
-    initialTimelineItems.forEach((item) => map.set(item.id, item))
-    return map
-  })
+/**
+ * NOTE: Custom hook based on useStream from @langchain/langgraph-sdk
+ * @see https://github.com/langchain-ai/langgraphjs/blob/3320793bffffa02682227644aefbee95dee330a2/libs/sdk/src/react/stream.tsx
+ */
+export const useStream = () => {
+  const [messages, setMessages] = useState<StoredMessage[]>([])
+  const messageManagerRef = useRef(new MessageTupleManager())
 
   const [isStreaming, setIsStreaming] = useState(false)
   const abortRef = useRef<AbortController | null>(null)
 
-  const handleStreamEvent = useCallback((event: CustomStreamEvent) => {
-    if (event.event === 'delta' && event.data) {
-      const { runId, content, role } = event.data
+  const stop = useCallback(() => {
+    abortRef.current?.abort()
+    abortRef.current = null
+  }, [])
 
-      if (content && runId && role) {
-        setTimelineItemsMap((prevMap) => {
-          const newMap = new Map(prevMap)
-          const existingItem = newMap.get(runId)
+  const start = useCallback(async (params: ChatRequest) => {
+    abortRef.current?.abort()
+    abortRef.current = new AbortController()
+    setIsStreaming(true)
 
-          if (existingItem && existingItem.type === 'assistant') {
-            const assistantItem = existingItem
-            newMap.set(runId, {
-              ...assistantItem,
-              content: assistantItem.content + content,
-            })
-          } else {
-            const newItem: AssistantTimelineItemEntry = {
-              id: runId,
-              type: 'assistant',
-              role,
-              content,
-              timestamp: new Date(),
-            }
-            newMap.set(runId, newItem)
-          }
+    try {
+      const res = await fetch('/api/chat/stream', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(params),
+        signal: abortRef.current.signal,
+      })
 
-          return newMap
+      if (!res.body) {
+        return err({
+          type: 'network',
+          message: ERROR_MESSAGES.FETCH_FAILED,
+          status: res.status,
         })
       }
+
+      for await (const ev of parseSse(res.body)) {
+        if (ev.event !== 'messages') continue
+
+        const parsedData = JSON.parse(ev.data)
+        const [serialized, metadata] = parsedData
+        const messageId = messageManagerRef.current.add(serialized, metadata)
+        if (!messageId) continue
+
+        setMessages((prev) => {
+          const newMessages = [...prev]
+          const { chunk, index } =
+            messageManagerRef.current.get(messageId, prev.length) ?? {}
+
+          if (!chunk) return newMessages
+
+          const message = chunk.toDict()
+          if (index === undefined) {
+            newMessages.push(message)
+          } else {
+            newMessages[index] = message
+          }
+
+          return newMessages
+        })
+      }
+
+      setIsStreaming(false)
+      return ok(undefined)
+    } catch (error) {
+      if (error instanceof Error && error.name === 'AbortError') {
+        return err({
+          type: 'abort',
+          message: 'Request was aborted',
+        })
+      }
+      return err({
+        type: 'unknown',
+        message: ERROR_MESSAGES.GENERAL,
+      })
     }
   }, [])
 
-  const timelineItems = useMemo(() => {
-    return Array.from(timelineItemsMap.values()).sort((a, b) => {
-      const aTime = a.timestamp?.getTime() ?? 0
-      const bTime = b.timestamp?.getTime() ?? 0
-      return aTime - bTime
-    })
-  }, [timelineItemsMap])
-
-  const start = useCallback(
-    async (params: ChatRequest): Promise<Result<void, StreamError>> => {
-      abortRef.current?.abort()
-      abortRef.current = new AbortController()
-      setIsStreaming(true)
-
-      try {
-        const res = await fetch('/api/chat/stream', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(params),
-          signal: abortRef.current.signal,
-        })
-
-        if (!res.body) {
-          return err({
-            type: 'network',
-            message: ERROR_MESSAGES.FETCH_FAILED,
-            status: res.status,
-          })
-        }
-
-        for await (const ev of parseCustomStreamEvents(res.body)) {
-          handleStreamEvent(ev)
-        }
-
-        // Stream completed successfully
-        setIsStreaming(false)
-        return ok(undefined)
-      } catch (error) {
-        setIsStreaming(false)
-        if (error instanceof Error && error.name === 'AbortError') {
-          return err({
-            type: 'abort',
-            message: 'Request was aborted',
-          })
-        }
-        return err({
-          type: 'unknown',
-          message: ERROR_MESSAGES.GENERAL,
-        })
-      }
-    },
-    [handleStreamEvent],
-  )
-
-  const stop = useCallback(() => {
-    abortRef.current?.abort()
-    setIsStreaming(false)
-  }, [])
-
   return {
-    timelineItems,
+    messages,
     isStreaming,
-    start,
     stop,
+    start,
   }
 }
