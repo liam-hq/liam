@@ -99,7 +99,7 @@ describe('validateSchemaNode', () => {
       'session-id',
       expect.stringContaining('INSERT INTO users VALUES (1, "test");'),
     )
-    expect(result.dmlExecutionSuccessful).toBe(true)
+    expect(result.dmlExecutionErrors).toBeUndefined()
   })
 
   it('should execute only DDL when DML is empty', async () => {
@@ -132,7 +132,7 @@ describe('validateSchemaNode', () => {
       'session-id',
       'CREATE TABLE users (id INT);',
     )
-    expect(result.dmlExecutionSuccessful).toBe(true)
+    expect(result.dmlExecutionErrors).toBeUndefined()
   })
 
   it('should execute DDL first then DML individually', async () => {
@@ -211,7 +211,7 @@ describe('validateSchemaNode', () => {
       'session-id',
       expect.stringContaining('INSERT INTO users VALUES (1);'),
     )
-    expect(result.dmlExecutionSuccessful).toBe(true)
+    expect(result.dmlExecutionErrors).toBeUndefined()
   })
 
   it('should handle execution errors', async () => {
@@ -272,7 +272,6 @@ describe('validateSchemaNode', () => {
       configurable: { repositories, thread_id: 'test-thread' },
     })
 
-    expect(result.dmlExecutionSuccessful).toBeUndefined()
     expect(result.dmlExecutionErrors).toContain('SQL: UseCase:')
     expect(result.dmlExecutionErrors).toContain('Error:')
   })
@@ -346,7 +345,7 @@ describe('validateSchemaNode', () => {
     )
 
     // Verify execution was successful
-    expect(result.dmlExecutionSuccessful).toBe(true)
+    expect(result.dmlExecutionErrors).toBeUndefined()
 
     // Verify execution logs were added to the usecase's DML operations
     expect(result.generatedUsecases).toBeDefined()
@@ -356,7 +355,7 @@ describe('validateSchemaNode', () => {
     const firstDmlOp = firstUsecase?.dmlOperations?.[0]
     expect(firstDmlOp).toBeDefined()
     expect(firstDmlOp?.dml_execution_logs).toBeDefined()
-    const executionLogs = firstDmlOp?.dml_execution_logs!
+    const executionLogs = firstDmlOp?.dml_execution_logs ?? []
     expect(executionLogs).toHaveLength(1)
     expect(executionLogs[0]?.success).toBe(true)
   })

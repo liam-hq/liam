@@ -51,7 +51,6 @@ interface WorkflowState {
   dmlStatements?: string;
 
   // DML execution results
-  dmlExecutionSuccessful?: boolean;
   dmlExecutionErrors?: string;
 }
 ```

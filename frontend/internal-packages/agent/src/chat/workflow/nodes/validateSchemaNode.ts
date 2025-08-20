@@ -281,6 +281,5 @@ export async function validateSchemaNode(
 
   return {
     ...updatedState,
-    dmlExecutionSuccessful: true,
   }
 }

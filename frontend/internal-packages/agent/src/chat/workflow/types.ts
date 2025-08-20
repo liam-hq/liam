@@ -20,7 +20,6 @@ export type WorkflowState = {
   dmlStatements?: string | undefined
 
   // DML execution results
-  dmlExecutionSuccessful?: boolean | undefined
   dmlExecutionErrors?: string | undefined
 
   // Schema update fields

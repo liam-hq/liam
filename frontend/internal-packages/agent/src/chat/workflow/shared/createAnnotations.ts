@@ -29,7 +29,6 @@ export const createAnnotations = () => {
     dmlStatements: Annotation<string | undefined>,
 
     // DML execution results
-    dmlExecutionSuccessful: Annotation<boolean | undefined>,
     dmlExecutionErrors: Annotation<string | undefined>,
   })
 }

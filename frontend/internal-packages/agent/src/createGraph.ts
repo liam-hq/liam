@@ -72,9 +72,7 @@ export const createGraph = (checkpointer?: BaseCheckpointSaver) => {
       (state) => {
         // success → finalizeArtifacts
         // dml error or test fail → dbAgent
-        return state.dmlExecutionSuccessful === false
-          ? 'dbAgent'
-          : 'finalizeArtifacts'
+        return state.dmlExecutionErrors ? 'dbAgent' : 'finalizeArtifacts'
       },
       {
         dbAgent: 'dbAgent',
