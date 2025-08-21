@@ -15,19 +15,14 @@ import styles from './GitHubSessionFormPresenter.module.css'
 
 type Props = {
   projects: Projects
-  // eslint-disable-next-line no-restricted-syntax
   defaultProjectId?: string
-  // eslint-disable-next-line no-restricted-syntax
   branches?: Branch[]
   isBranchesLoading: boolean
-  // eslint-disable-next-line no-restricted-syntax
   branchesError?: string
-  // eslint-disable-next-line no-restricted-syntax
   formError?: string
   isPending: boolean
   onProjectChange: (projectId: string) => void
   formAction: (formData: FormData) => void
-  // eslint-disable-next-line no-restricted-syntax
   isTransitioning?: boolean
   schemaFilePath: string | null
 }

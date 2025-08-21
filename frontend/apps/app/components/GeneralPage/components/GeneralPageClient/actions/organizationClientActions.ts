@@ -10,13 +10,11 @@ type ActionState =
   | {
       success: false
       error: string
-      // eslint-disable-next-line no-restricted-syntax
       message?: undefined
     }
   | {
       success: true
       message: string
-      // eslint-disable-next-line no-restricted-syntax
       error?: undefined
     }
   | { success: false; error: null; message: null }

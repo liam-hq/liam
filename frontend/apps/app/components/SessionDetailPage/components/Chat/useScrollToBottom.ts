@@ -1,9 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 type Options = {
-  // eslint-disable-next-line no-restricted-syntax
   threshold?: number
-  // eslint-disable-next-line no-restricted-syntax
   behavior?: ScrollBehavior
 }
 

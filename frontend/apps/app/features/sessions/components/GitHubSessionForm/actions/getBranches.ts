@@ -13,7 +13,6 @@ type BranchWithSha = {
 type GetBranchesState = {
   branches: BranchWithSha[]
   loading: boolean
-  // eslint-disable-next-line no-restricted-syntax
   error?: string
 }
 

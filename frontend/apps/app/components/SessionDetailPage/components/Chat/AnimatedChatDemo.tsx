@@ -7,7 +7,6 @@ import { Chat } from './Chat'
 const ITEMS = aTypicalConversation()
 
 type AnimatedChatDemoProps = ComponentProps<typeof Chat> & {
-  // eslint-disable-next-line no-restricted-syntax
   animationInterval?: number
 }
 

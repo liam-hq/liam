@@ -15,13 +15,9 @@ type MicButtonState = 'default' | 'hover' | 'active' | 'active-hover'
 
 type MicButtonProps = {
   state: MicButtonState
-  // eslint-disable-next-line no-restricted-syntax
   onClick?: MouseEventHandler<HTMLButtonElement>
-  // eslint-disable-next-line no-restricted-syntax
   className?: string
-  // eslint-disable-next-line no-restricted-syntax
   'aria-label'?: string
-  // eslint-disable-next-line no-restricted-syntax
   ref?: Ref<HTMLButtonElement>
   disabled: boolean
 }

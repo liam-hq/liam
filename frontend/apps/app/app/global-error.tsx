@@ -8,7 +8,6 @@ export default function GlobalError({
   error,
 }: {
   error: Error & {
-    // eslint-disable-next-line no-restricted-syntax
     digest?: string
   }
 }) {

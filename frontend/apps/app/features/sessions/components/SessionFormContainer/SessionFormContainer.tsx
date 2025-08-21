@@ -11,7 +11,6 @@ import { type SessionMode, SessionModeSelector } from './SessionModeSelector'
 
 type Props = {
   projects: Projects
-  // eslint-disable-next-line no-restricted-syntax
   defaultProjectId?: string
 }
 

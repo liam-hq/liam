@@ -19,9 +19,7 @@ import {
 } from './utils'
 
 type CodeProps = {
-  // eslint-disable-next-line no-restricted-syntax
   className?: string
-  // eslint-disable-next-line no-restricted-syntax
   children?: ReactNode
 } & HTMLAttributes<HTMLElement>
 

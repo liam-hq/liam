@@ -17,9 +17,7 @@ type Props = {
   timelineItems: TimelineItemEntry[]
   onMessageSend: (message: TimelineItemEntry) => void
   onVersionView: (versionId: string) => void
-  // eslint-disable-next-line no-restricted-syntax
   onRetry?: () => void
-  // eslint-disable-next-line no-restricted-syntax
   isWorkflowRunning?: boolean
   onArtifactLinkClick: () => void
   isDeepModelingEnabled: boolean

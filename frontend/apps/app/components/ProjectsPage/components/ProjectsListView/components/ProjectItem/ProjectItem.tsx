@@ -10,7 +10,6 @@ import { OrganizationDataWrapper } from './OrganizationDataWrapper'
 import styles from './ProjectItem.module.css'
 
 type ProjectWithRepositories = Tables<'projects'> & {
-  // eslint-disable-next-line no-restricted-syntax
   project_repository_mappings?: Array<{
     repository: Tables<'github_repositories'>
   }>

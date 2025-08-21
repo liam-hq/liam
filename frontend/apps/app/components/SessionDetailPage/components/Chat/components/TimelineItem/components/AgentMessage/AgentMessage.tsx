@@ -40,13 +40,11 @@ type AgentMessageProps = {
   /**
    * The timestamp to display
    */
-  // eslint-disable-next-line no-restricted-syntax
   time?: string
   assistantRole: Database['public']['Enums']['assistant_role_enum']
   /**
    * Optional children to render below the message
    */
-  // eslint-disable-next-line no-restricted-syntax
   children?: ReactNode
   /**
    * Whether to show avatar and name (false for consecutive messages from the same agent)

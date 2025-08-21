@@ -1,8 +1,6 @@
 type HighlightedLabelParts = {
   before: string
-  // eslint-disable-next-line no-restricted-syntax
   match?: string
-  // eslint-disable-next-line no-restricted-syntax
   after?: string
 }
 

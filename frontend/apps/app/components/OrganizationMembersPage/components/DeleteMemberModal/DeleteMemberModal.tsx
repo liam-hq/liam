@@ -21,7 +21,6 @@ type DeleteMemberModalProps = {
   organizationId: string
   memberName: string
   isSelf: boolean
-  // eslint-disable-next-line no-restricted-syntax
   onSuccess?: () => void
 }
 

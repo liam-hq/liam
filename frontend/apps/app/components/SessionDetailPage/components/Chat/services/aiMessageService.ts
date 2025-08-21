@@ -53,7 +53,6 @@ type SendChatMessageParams = {
 
 type SendChatMessageResult = {
   success: boolean
-  // eslint-disable-next-line no-restricted-syntax
   error?: string
 }
 

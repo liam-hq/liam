@@ -3,9 +3,7 @@ import type { FC } from 'react'
 import styles from './FileIcon.module.css'
 
 type Props = {
-  // eslint-disable-next-line no-restricted-syntax
   isHovered?: boolean
-  // eslint-disable-next-line no-restricted-syntax
   isDragActive?: boolean
 }
 

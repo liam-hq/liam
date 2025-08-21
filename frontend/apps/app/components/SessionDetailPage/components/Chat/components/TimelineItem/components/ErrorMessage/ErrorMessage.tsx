@@ -7,7 +7,6 @@ import styles from './ErrorMessage.module.css'
 
 type ErrorMessageProps = {
   message: string
-  // eslint-disable-next-line no-restricted-syntax
   onRetry?: () => void
 }
 

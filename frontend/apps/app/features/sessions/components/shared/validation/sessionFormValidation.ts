@@ -2,7 +2,6 @@ import * as v from 'valibot'
 
 export type CreateSessionState = {
   success: boolean
-  // eslint-disable-next-line no-restricted-syntax
   error?: string
 }
 

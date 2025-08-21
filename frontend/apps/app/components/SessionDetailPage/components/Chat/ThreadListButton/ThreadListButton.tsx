@@ -7,9 +7,7 @@ type Props = Omit<
   ComponentProps<typeof IconButton>,
   'icon' | 'tooltipContent'
 > & {
-  // eslint-disable-next-line no-restricted-syntax
   tooltipContent?: string
-  // eslint-disable-next-line no-restricted-syntax
   variant?: ComponentProps<typeof IconButton>['variant']
 }
 

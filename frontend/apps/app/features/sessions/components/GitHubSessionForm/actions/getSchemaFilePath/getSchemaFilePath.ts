@@ -4,7 +4,6 @@ import { fetchSchemaFilePath } from './fetchSchemaFilePath'
 
 type SchemaFilePathState = {
   path: string | null
-  // eslint-disable-next-line no-restricted-syntax
   error?: string
 }
 

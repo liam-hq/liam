@@ -9,7 +9,6 @@ type Props = {
   schemaName: string
   format: FormatType
   href: string
-  // eslint-disable-next-line no-restricted-syntax
   onClick?: () => void
 }
 

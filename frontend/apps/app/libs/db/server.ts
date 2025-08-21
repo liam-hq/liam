@@ -10,7 +10,6 @@ import { cookies } from 'next/headers'
 export async function createClient({
   useServiceRole = false,
 }: {
-  // eslint-disable-next-line no-restricted-syntax
   useServiceRole?: boolean
 } = {}) {
   const cookieStore = await cookies()

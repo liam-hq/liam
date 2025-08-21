@@ -7,7 +7,6 @@ import type { ProjectWithLastCommit } from './types'
 
 type ServerProjectsDataProviderProps = {
   projects: Tables<'projects'>[] | null
-  // eslint-disable-next-line no-restricted-syntax
   organizationId?: string
 }
 

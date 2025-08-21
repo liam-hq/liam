@@ -5,9 +5,7 @@ import { JackInBox } from './JackInBox'
 import { JackNoResult } from './JackNoResult'
 
 type EmptyProjectsStateProps = {
-  // eslint-disable-next-line no-restricted-syntax
   createProjectHref?: string
-  // eslint-disable-next-line no-restricted-syntax
   projects?: unknown[] | null
 }
 

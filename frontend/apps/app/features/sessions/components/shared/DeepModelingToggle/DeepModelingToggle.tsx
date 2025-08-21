@@ -14,9 +14,7 @@ import styles from './DeepModelingToggle.module.css'
 type Props = Omit<ComponentProps<'button'>, 'children'> & {
   name: string
   children: string
-  // eslint-disable-next-line no-restricted-syntax
   defaultChecked?: boolean
-  // eslint-disable-next-line no-restricted-syntax
   ref?: Ref<HTMLButtonElement>
 }
 

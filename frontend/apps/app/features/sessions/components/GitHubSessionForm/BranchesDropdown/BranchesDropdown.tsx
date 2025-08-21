@@ -6,7 +6,6 @@ import styles from './BranchesDropdown.module.css'
 
 type Props = {
   branches: Branch[]
-  // eslint-disable-next-line no-restricted-syntax
   selectedBranchSha?: string
   onBranchChange: (sha: string) => void
   disabled: boolean

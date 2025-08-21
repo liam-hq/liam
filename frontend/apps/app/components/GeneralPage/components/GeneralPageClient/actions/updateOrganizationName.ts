@@ -11,7 +11,6 @@ export async function updateOrganizationName(
   name: string,
 ): Promise<{
   success: boolean
-  // eslint-disable-next-line no-restricted-syntax
   error?: string
 }> {
   if (!name.trim()) {

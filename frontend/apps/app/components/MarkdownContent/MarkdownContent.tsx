@@ -10,15 +10,10 @@ import remarkGfm from 'remark-gfm'
 import styles from './MarkdownContent.module.css'
 
 type CodeProps = {
-  // eslint-disable-next-line no-restricted-syntax
   node?: unknown
-  // eslint-disable-next-line no-restricted-syntax
   inline?: boolean
-  // eslint-disable-next-line no-restricted-syntax
   className?: string
-  // eslint-disable-next-line no-restricted-syntax
   children?: ReactNode
-  // eslint-disable-next-line no-restricted-syntax
   style?: CSSProperties
 } & HTMLAttributes<HTMLElement>
 

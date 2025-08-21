@@ -30,12 +30,9 @@ type Props = {
   schema: Schema
   input: string
   cursorPos: number
-  // eslint-disable-next-line no-restricted-syntax
   maxMatches?: number
   onSelect: (candidate: MentionItem, byKeyboard?: boolean) => void
-  // eslint-disable-next-line no-restricted-syntax
   onClose?: () => void
-  // eslint-disable-next-line no-restricted-syntax
   ref?: Ref<MentionSuggestorHandle>
 }
 

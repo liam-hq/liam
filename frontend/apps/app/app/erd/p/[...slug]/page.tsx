@@ -111,7 +111,6 @@ export default async function Page({
   const networkErrorObjects: {
     name: 'NetworkError'
     message: string
-    // eslint-disable-next-line no-restricted-syntax
     instruction?: string
   }[] = []
   const res = await fetch(contentUrl, { cache: 'no-store' }).catch((e) => {

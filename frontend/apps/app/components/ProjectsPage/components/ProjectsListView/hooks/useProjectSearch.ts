@@ -10,9 +10,7 @@ type SearchResult = {
 }
 
 export const useProjectSearch = (
-  // eslint-disable-next-line no-restricted-syntax
   organizationId?: string,
-  // eslint-disable-next-line no-restricted-syntax
   initialProjects?: Tables<'projects'>[] | null,
 ) => {
   const [searchResult, setSearchResult] = useState<SearchResult>({

@@ -35,25 +35,16 @@ const parseErrorMessage = (message: string): ReactNode => {
 
 type Props = {
   status: SchemaStatus
-  // eslint-disable-next-line no-restricted-syntax
   schemaName?: string
-  // eslint-disable-next-line no-restricted-syntax
   schemaUrl?: string
-  // eslint-disable-next-line no-restricted-syntax
   detectedFormat?: FormatType
-  // eslint-disable-next-line no-restricted-syntax
   selectedFormat?: FormatType
-  // eslint-disable-next-line no-restricted-syntax
   errorMessage?: string
-  // eslint-disable-next-line no-restricted-syntax
   errorDetails?: string[]
   showRemoveButton: boolean
   variant: 'default' | 'simple'
-  // eslint-disable-next-line no-restricted-syntax
   onFormatChange?: (format: FormatType) => void
-  // eslint-disable-next-line no-restricted-syntax
   onRemove?: () => void
-  // eslint-disable-next-line no-restricted-syntax
   onViewTroubleshootingGuide?: () => void
 }
 
@@ -92,13 +83,11 @@ const StatusIndicator: FC<{ status: SchemaStatus }> = ({ status }) => {
 const SchemaInfoDisplay: FC<{
   variant: 'default' | 'simple'
   schemaName: string
-  // eslint-disable-next-line no-restricted-syntax
   schemaUrl?: string
   detectedFormat: FormatType
   selectedFormat: FormatType
   showRemoveButton: boolean
   onFormatChange: (format: FormatType) => void
-  // eslint-disable-next-line no-restricted-syntax
   onRemove?: () => void
 }> = ({
   variant,

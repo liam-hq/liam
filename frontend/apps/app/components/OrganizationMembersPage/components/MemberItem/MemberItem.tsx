@@ -20,11 +20,9 @@ type MemberItemProps = {
   name: string
   email: string
   initial: string
-  // eslint-disable-next-line no-restricted-syntax
   avatarColor?: number
   organizationId: string
   isSelf: boolean
-  // eslint-disable-next-line no-restricted-syntax
   onRemoveSuccess?: () => void
 }
 

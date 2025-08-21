@@ -53,7 +53,6 @@ type ProcessIndicatorProps = {
   /**
    * Callback for the primary action button
    */
-  // eslint-disable-next-line no-restricted-syntax
   onPrimaryAction?: () => void
   /**
    * The label for the secondary action button
@@ -62,7 +61,6 @@ type ProcessIndicatorProps = {
   /**
    * Callback for the secondary action button
    */
-  // eslint-disable-next-line no-restricted-syntax
   onSecondaryAction?: () => void
   /**
    * Initial expanded state

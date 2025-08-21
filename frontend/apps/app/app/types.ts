@@ -8,7 +8,6 @@ export type PageProps = {
 
 //https://nextjs.org/docs/app/api-reference/file-conventions/layout
 export type LayoutProps = {
-  // eslint-disable-next-line no-restricted-syntax
   children?: ReactNode
   params: Promise<{ [key: string]: string | string[] | undefined }>
 }

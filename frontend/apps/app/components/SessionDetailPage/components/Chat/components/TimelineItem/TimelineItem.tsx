@@ -14,7 +14,6 @@ import { PM_AGENT_ROLE, QA_AGENT_ROLE } from './constants'
 
 type Props = PropsWithChildren &
   TimelineItemEntry & {
-    // eslint-disable-next-line no-restricted-syntax
     showHeader?: boolean
     onArtifactLinkClick: () => void
   }
@@ -25,7 +24,6 @@ type ViewLinkConfig = {
 
 const getViewLinkConfig = (
   role: string,
-  // eslint-disable-next-line no-restricted-syntax
   artifactAction?: 'created' | 'updated' | null,
 ): ViewLinkConfig | null => {
   // Only show link when artifact was created or updated in this message

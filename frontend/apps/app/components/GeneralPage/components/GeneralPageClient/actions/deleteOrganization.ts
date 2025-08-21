@@ -7,7 +7,6 @@ import { createClient } from '@/libs/db/server'
  */
 export async function deleteOrganization(organizationId: string): Promise<{
   success: boolean
-  // eslint-disable-next-line no-restricted-syntax
   error?: string
 }> {
   const supabase = await createClient()

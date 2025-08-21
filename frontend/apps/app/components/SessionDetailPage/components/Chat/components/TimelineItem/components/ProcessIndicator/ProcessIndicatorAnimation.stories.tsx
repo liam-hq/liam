@@ -4,20 +4,13 @@ import type { ProcessStatus } from './ProcessIndicator'
 import { ProcessIndicator } from './ProcessIndicator'
 
 type Props = {
-  // eslint-disable-next-line no-restricted-syntax
   initialProgress?: number
-  // eslint-disable-next-line no-restricted-syntax
   incrementSpeed?: number
-  // eslint-disable-next-line no-restricted-syntax
   incrementAmount?: number
   title: string
-  // eslint-disable-next-line no-restricted-syntax
   subtitle?: string
-  // eslint-disable-next-line no-restricted-syntax
   primaryActionLabel?: string
-  // eslint-disable-next-line no-restricted-syntax
   secondaryActionLabel?: string
-  // eslint-disable-next-line no-restricted-syntax
   initialExpanded?: boolean
 }
 

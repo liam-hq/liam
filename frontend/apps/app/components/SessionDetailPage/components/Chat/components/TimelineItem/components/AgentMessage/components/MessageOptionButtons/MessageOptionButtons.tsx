@@ -33,17 +33,14 @@ type MessageOptionButtonsProps = {
   /**
    * The ID of the selected option
    */
-  // eslint-disable-next-line no-restricted-syntax
   selectedOptionId?: string
   /**
    * Whether to allow multiple selections
    */
-  // eslint-disable-next-line no-restricted-syntax
   multiSelect?: boolean
   /**
    * Callback function when an option is selected
    */
-  // eslint-disable-next-line no-restricted-syntax
   onSelect?: (optionId: string, selected: boolean) => void
 }
 

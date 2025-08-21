@@ -37,15 +37,10 @@ const baseExtensions: Extension[] = [
 
 type Props = {
   doc: string
-  // eslint-disable-next-line no-restricted-syntax
   prevDoc?: string
-  // eslint-disable-next-line no-restricted-syntax
   showDiff?: boolean
-  // eslint-disable-next-line no-restricted-syntax
   comments?: ReviewComment[]
-  // eslint-disable-next-line no-restricted-syntax
   showComments?: boolean
-  // eslint-disable-next-line no-restricted-syntax
   onQuickFix?: (comment: string) => void
 }
 
@@ -69,7 +64,6 @@ export const useMigrationsViewer = ({
 
   const buildExtensions = (
     showComments: boolean,
-    // eslint-disable-next-line no-restricted-syntax
     onQuickFix?: (comment: string) => void,
     showDiff?: boolean,
     prevDoc?: string,

@@ -11,7 +11,6 @@ export type SqlResult = {
   metadata: {
     executionTime: number
     timestamp: string
-    // eslint-disable-next-line no-restricted-syntax
     affectedRows?: number | undefined
   }
 }

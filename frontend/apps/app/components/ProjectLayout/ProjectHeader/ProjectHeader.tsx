@@ -8,7 +8,6 @@ import { PROJECT_TABS } from './projectConstants'
 
 type ProjectHeaderProps = {
   projectId: string
-  // eslint-disable-next-line no-restricted-syntax
   branchOrCommit?: string
 }
 

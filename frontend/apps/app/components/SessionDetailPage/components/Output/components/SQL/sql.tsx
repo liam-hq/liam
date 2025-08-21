@@ -11,7 +11,6 @@ import styles from './SQL.module.css'
 type Props = {
   currentSchema: Schema
   prevSchema: Schema
-  // eslint-disable-next-line no-restricted-syntax
   comments?: ReviewComment[]
 }
 
