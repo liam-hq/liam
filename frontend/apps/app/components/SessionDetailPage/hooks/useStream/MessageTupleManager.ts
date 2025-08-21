@@ -1,11 +1,11 @@
 import {
   type BaseMessage,
   type BaseMessageChunk,
-  type BaseMessageLike,
   coerceMessageLikeToMessage,
   convertToChunk,
   isBaseMessageChunk,
 } from '@langchain/core/messages'
+import type { Message } from '@langchain/langgraph-sdk'
 
 function tryConvertToChunk(message: BaseMessage) {
   try {
@@ -32,7 +32,7 @@ export class MessageTupleManager {
     this.chunks = {}
   }
 
-  add(serialized: BaseMessageLike, metadata: Record<string, unknown>) {
+  add(serialized: Message, metadata: Record<string, unknown> | undefined) {
     const message = coerceMessageLikeToMessage(serialized)
     const chunk = tryConvertToChunk(message)
     const { id } = chunk ?? message
@@ -44,6 +44,8 @@ export class MessageTupleManager {
       const prev = this.chunks[id].chunk
       this.chunks[id].chunk =
         (isBaseMessageChunk(prev) ? prev : null)?.concat(chunk) ?? chunk
+      // NOTE: chunk.concat() always makes name undefined, so override it separately
+      this.chunks[id].chunk.name = chunk.name
     } else {
       this.chunks[id].chunk = message
     }
@@ -56,13 +58,8 @@ export class MessageTupleManager {
   }
 
   get(id: string, defaultIndex?: number) {
-    const entry = this.chunks[id]
-    if (entry == null) return null
-
-    if (defaultIndex !== null && entry.index == null) {
-      entry.index = defaultIndex ?? 0
-    }
-
-    return entry
+    if (this.chunks[id] == null) return null
+    if (defaultIndex != null) this.chunks[id].index ??= defaultIndex
+    return this.chunks[id]
   }
 }
