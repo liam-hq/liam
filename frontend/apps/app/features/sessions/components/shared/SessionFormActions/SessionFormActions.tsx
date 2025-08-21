@@ -10,15 +10,10 @@ import styles from './SessionFormActions.module.css'
 type Props = {
   isPending: boolean
   hasContent: boolean
-  // eslint-disable-next-line no-restricted-syntax
   onMicClick?: () => void
-  // eslint-disable-next-line no-restricted-syntax
   onAttachClick?: () => void
-  // eslint-disable-next-line no-restricted-syntax
   onFileSelect?: (files: FileList) => void
-  // eslint-disable-next-line no-restricted-syntax
   onSubmit?: () => void
-  // eslint-disable-next-line no-restricted-syntax
   onCancel?: () => void
 }
 
