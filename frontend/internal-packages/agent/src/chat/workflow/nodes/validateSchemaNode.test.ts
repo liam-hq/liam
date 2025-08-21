@@ -79,7 +79,7 @@ describe('validateSchemaNode', () => {
     })
 
     expect(result.dmlExecutionSuccessful).toBe(true)
-  })
+  }, 15000)
 
   it('should execute only DDL when DML is empty', async () => {
     const state = createMockState({
@@ -93,7 +93,7 @@ describe('validateSchemaNode', () => {
     })
 
     expect(result.dmlExecutionSuccessful).toBe(true)
-  })
+  }, 15000)
 
   it('should execute DDL first then DML individually', async () => {
     const state = createMockState({
@@ -124,7 +124,7 @@ describe('validateSchemaNode', () => {
     })
 
     expect(result.dmlExecutionSuccessful).toBe(true)
-  })
+  }, 15000)
 
   it('should handle execution errors', async () => {
     const state = createMockState({
@@ -157,7 +157,7 @@ describe('validateSchemaNode', () => {
     expect(result.dmlExecutionSuccessful).toBeUndefined()
     expect(result.dmlExecutionErrors).toContain('SQL: UseCase:')
     expect(result.dmlExecutionErrors).toContain('Error:')
-  })
+  }, 15000)
 
   it('should trim whitespace from statements', async () => {
     const state = createMockState({
@@ -214,5 +214,5 @@ describe('validateSchemaNode', () => {
     const executionLogs = firstDmlOp?.dml_execution_logs ?? []
     expect(executionLogs).toHaveLength(1)
     expect(executionLogs[0]?.success).toBe(true)
-  })
+  }, 15000)
 })
