@@ -1,3 +1,5 @@
+import { layoutStyles } from '@liam-hq/ui'
+import clsx from 'clsx'
 import type { ReactNode } from 'react'
 import { getOrganizationId } from '@/features/organizations/services/getOrganizationId'
 import { AppBar } from './AppBar'
@@ -32,18 +34,20 @@ export async function CommonLayout({
   )
 
   return (
-    <div className={styles.layout}>
+    <div className={clsx(layoutStyles.layout)}>
       {organization && <OrgCookie orgId={organization.id} />}
       <GlobalNav
         currentOrganization={organization}
         organizations={organizations}
       />
-      <div className={styles.mainContent}>
+      <div className={clsx(layoutStyles.mainContent)}>
         <AppBar
           currentProjectId={projectId}
           currentBranchOrCommit={branchOrCommit}
         />
-        <main className={styles.content}>{children}</main>
+        <main className={clsx(layoutStyles.content, styles.content)}>
+          {children}
+        </main>
       </div>
     </div>
   )

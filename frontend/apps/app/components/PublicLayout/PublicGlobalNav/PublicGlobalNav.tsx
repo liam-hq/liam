@@ -1,18 +1,19 @@
+import { globalNavStyles } from '@liam-hq/ui'
+import clsx from 'clsx'
 import type { FC } from 'react'
 import { LiamDbLogo, LiamLogoMark } from '@/logos'
-import styles from './PublicGlobalNav.module.css'
 
 export const PublicGlobalNav: FC = () => {
   return (
-    <div className={styles.globalNavContainer}>
-      <nav className={styles.globalNav}>
-        <div className={styles.logoContainer}>
-          <div className={styles.logoSection}>
-            <div className={styles.iconContainer}>
+    <div className={clsx(globalNavStyles.globalNavContainer)}>
+      <nav className={clsx(globalNavStyles.globalNav)}>
+        <div className={clsx(globalNavStyles.logoContainer)}>
+          <div className={clsx(globalNavStyles.logoSection)}>
+            <div className={clsx(globalNavStyles.iconContainer)}>
               <LiamLogoMark />
             </div>
-            <div className={styles.labelArea}>
-              <LiamDbLogo className={styles.liamMigrationLogo} />
+            <div className={clsx(globalNavStyles.labelArea)}>
+              <LiamDbLogo className={clsx(globalNavStyles.liamMigrationLogo)} />
             </div>
           </div>
         </div>

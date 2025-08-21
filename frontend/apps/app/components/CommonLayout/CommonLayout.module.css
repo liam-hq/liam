@@ -1,15 +1,3 @@
-.layout {
-  composes: layout from '../../../../packages/ui/src/components/Layout/Layout.module.css';
-}
-
-.mainContent {
-  composes: mainContent from '../../../../packages/ui/src/components/Layout/Layout.module.css';
-}
-
-.content {
-  composes: content from '../../../../packages/ui/src/components/Layout/Layout.module.css';
-}
-
 /* Target ERD viewer specifically when it's inside the content area */
 .content > div[style*='height: 100dvh'] {
   height: calc(100vh - 52px) !important; /* Override the 100dvh height */

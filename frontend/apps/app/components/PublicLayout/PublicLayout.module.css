@@ -1,11 +1,1 @@
-.layout {
-  composes: layout from '../../../../packages/ui/src/components/Layout/Layout.module.css';
-}
-
-.mainContent {
-  composes: mainContent from '../../../../packages/ui/src/components/Layout/Layout.module.css';
-}
-
-.content {
-  composes: content from '../../../../packages/ui/src/components/Layout/Layout.module.css';
-}
+/* PublicLayout specific styles - base styles will be applied via clsx */

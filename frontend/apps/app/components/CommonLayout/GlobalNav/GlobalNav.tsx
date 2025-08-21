@@ -1,10 +1,10 @@
-import { LayoutGrid, Settings } from '@liam-hq/ui'
+import { globalNavStyles, LayoutGrid, Settings } from '@liam-hq/ui'
+import clsx from 'clsx'
 import type { FC } from 'react'
 import { LiamDbLogo, LiamLogoMark } from '@/logos'
 import type { Organization } from '../services/getOrganization'
 import type { OrganizationsByUserId } from '../services/getOrganizationsByUserId'
 import styles from './GlobalNav.module.css'
-import itemStyles from './Item.module.css'
 import { LinkItem } from './LinkItem'
 import { NewSessionButton } from './NewSessionButton'
 import { OrganizationItem } from './OrganizationItem'
@@ -20,15 +20,18 @@ export const GlobalNav: FC<Props> = ({
   organizations,
 }) => {
   return (
-    <div className={styles.globalNavContainer} data-global-nav-container>
-      <nav className={styles.globalNav}>
-        <div className={styles.logoContainer}>
-          <div className={styles.logoSection}>
-            <div className={itemStyles.iconContainer}>
+    <div
+      className={clsx(globalNavStyles.globalNavContainer)}
+      data-global-nav-container
+    >
+      <nav className={clsx(globalNavStyles.globalNav, styles.globalNav)}>
+        <div className={clsx(globalNavStyles.logoContainer)}>
+          <div className={clsx(globalNavStyles.logoSection)}>
+            <div className={clsx(globalNavStyles.iconContainer)}>
               <LiamLogoMark />
             </div>
-            <div className={itemStyles.labelArea}>
-              <LiamDbLogo className={styles.liamMigrationLogo} />
+            <div className={clsx(globalNavStyles.labelArea)}>
+              <LiamDbLogo className={clsx(globalNavStyles.liamMigrationLogo)} />
             </div>
           </div>
         </div>

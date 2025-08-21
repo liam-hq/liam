@@ -1,3 +1,5 @@
+import { appBarStyles } from '@liam-hq/ui'
+import clsx from 'clsx'
 import type { FC } from 'react'
 import { ChevronRight } from '@/icons'
 import styles from './AppBar.module.css'
@@ -19,8 +21,8 @@ export const AppBar: FC<Props> = async ({
 
   const avatarUrl = authUser.user?.user_metadata?.avatar_url
   return (
-    <div className={styles.wrapper}>
-      <div className={styles.leftSection}>
+    <div className={clsx(appBarStyles.wrapper)}>
+      <div className={clsx(appBarStyles.leftSection)}>
         {currentProjectId && (
           <div className={styles.breadcrumbs}>
             <ProjectsDropdownMenu currentProjectId={currentProjectId} />

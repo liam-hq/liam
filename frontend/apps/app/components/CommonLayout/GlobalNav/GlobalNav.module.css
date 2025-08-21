@@ -1,26 +1,6 @@
-.globalNavContainer {
-  composes: globalNavContainer from '../../../../../packages/ui/src/components/GlobalNav/GlobalNav.module.css';
-}
-
-.globalNav {
-  composes: globalNav from '../../../../../packages/ui/src/components/GlobalNav/GlobalNav.module.css';
-}
-
 .globalNav:has([data-radix-menu-content][data-state='open']) {
   width: 11rem;
   box-shadow: 4px 0 16px rgba(0, 0, 0, 0.2);
-}
-
-.logoContainer {
-  composes: logoContainer from '../../../../../packages/ui/src/components/GlobalNav/GlobalNav.module.css';
-}
-
-.logoSection {
-  composes: logoSection from '../../../../../packages/ui/src/components/GlobalNav/GlobalNav.module.css';
-}
-
-.liamMigrationLogo {
-  composes: liamMigrationLogo from '../../../../../packages/ui/src/components/GlobalNav/GlobalNav.module.css';
 }
 
 .navSection {

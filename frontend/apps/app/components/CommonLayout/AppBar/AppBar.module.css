@@ -1,10 +1,4 @@
-.wrapper {
-  composes: wrapper from '../../../../../packages/ui/src/components/AppBar/AppBar.module.css';
-}
-
-.leftSection {
-  composes: leftSection from '../../../../../packages/ui/src/components/AppBar/AppBar.module.css';
-}
+/* AppBar specific styles - base styles will be applied via clsx */
 
 .rightSection {
   display: flex;
