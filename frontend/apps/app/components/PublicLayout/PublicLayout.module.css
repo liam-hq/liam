@@ -1,23 +1,11 @@
 .layout {
-  display: flex;
-  height: 100vh;
-  background-color: var(--global-background);
-  color: var(--global-foreground);
+  composes: layout from '../../../../packages/ui/src/components/Layout/Layout.module.css';
 }
 
 .mainContent {
-  display: flex;
-  flex-direction: column;
-  flex-grow: 1;
-  overflow: hidden;
-  height: 100%;
+  composes: mainContent from '../../../../packages/ui/src/components/Layout/Layout.module.css';
 }
 
 .content {
-  flex-grow: 1;
-  padding: 0;
-  overflow: auto;
-  height: calc(100% - 52px); /* Subtract AppBar height */
-  display: flex;
-  flex-direction: column;
+  composes: content from '../../../../packages/ui/src/components/Layout/Layout.module.css';
 }
