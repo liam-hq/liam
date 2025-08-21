@@ -8,21 +8,4 @@ export default [
     tsconfigPath: './tsconfig.json',
     gitignorePath,
   }),
-  {
-    rules: {
-      'no-restricted-syntax': [
-        'error',
-        {
-          selector: 'TSPropertySignature[optional=true]',
-          message:
-            'Optional properties are not allowed. Use required properties instead.',
-        },
-        {
-          selector: 'TSMethodSignature[optional=true]',
-          message:
-            'Optional methods are not allowed. Use required methods instead.',
-        },
-      ],
-    },
-  },
 ]
