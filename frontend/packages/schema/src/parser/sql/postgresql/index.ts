@@ -60,6 +60,7 @@ function processChunk(
   schema: Schema,
   parseErrors: ProcessError[],
   rawSql: string,
+  chunkOffset = 0,
 ): ResultAsync<SQLCallbackResult, Error> {
   let readOffset: number | null = null
   let retryOffset: number | null = null
@@ -101,6 +102,7 @@ function processChunk(
           : parse_tree.stmts.slice(0, -1),
         rawSql,
         schema,
+        chunkOffset,
       )
 
     if (conversionErrors !== null) {
@@ -135,13 +137,27 @@ export const processor: Processor = async (
 
   const parseErrors: ProcessError[] = []
 
-  const errors = await processSQLInChunks(sql, chunkSize, async (chunk) => {
-    const result = await processChunk(chunk, schema, parseErrors, sql)
-    return result.match(
-      (value) => value,
-      (error) => [null, null, [new UnexpectedTokenWarningError(error.message)]],
-    )
-  })
+  const errors = await processSQLInChunks(
+    sql,
+    chunkSize,
+    async (chunk, chunkOffset = 0) => {
+      const result = await processChunk(
+        chunk,
+        schema,
+        parseErrors,
+        sql,
+        chunkOffset,
+      )
+      return result.match(
+        (value) => value,
+        (error) => [
+          null,
+          null,
+          [new UnexpectedTokenWarningError(error.message)],
+        ],
+      )
+    },
+  )
 
   return { value: schema, errors: parseErrors.concat(errors) }
 }

@@ -167,8 +167,10 @@ async function handleRetry(
   currentChunkSize: number,
   originalChunkSize: number,
   retryDirection: RetryDirection,
+  chunkOffset: number,
   callback: (
     chunk: string,
+    chunkOffset?: number,
   ) => Promise<[number | null, number | null, ProcessError[]]>,
 ): Promise<{
   newChunkSize: number
@@ -190,7 +192,7 @@ async function handleRetry(
   const chunk = lines
     .slice(startIndex, startIndex + adjustedChunkSize)
     .join('\n')
-  const [retryOffset, readOffset, errors] = await callback(chunk)
+  const [retryOffset, readOffset, errors] = await callback(chunk, chunkOffset)
 
   // Handle successful processing (no retry needed)
   if (retryOffset === null) {
@@ -228,8 +230,10 @@ async function processPosition(
   lines: string[],
   startIndex: number,
   chunkSize: number,
+  chunkOffset: number,
   callback: (
     chunk: string,
+    chunkOffset?: number,
   ) => Promise<[number | null, number | null, ProcessError[]]>,
 ): Promise<{
   newIndex: number
@@ -246,6 +250,7 @@ async function processPosition(
       currentChunkSize,
       chunkSize,
       retryDirection,
+      chunkOffset,
       callback,
     )
 
@@ -281,6 +286,7 @@ export const processSQLInChunks = async (
   chunkSize: number,
   callback: (
     chunk: string,
+    chunkOffset?: number,
   ) => Promise<[number | null, number | null, ProcessError[]]>,
 ): Promise<ProcessError[]> => {
   if (sqlInput === '') return []
@@ -292,10 +298,17 @@ export const processSQLInChunks = async (
     // Stop processing if we've encountered errors
     if (processErrors.length > 0) break
 
+    // Calculate chunk offset in characters (sum of all previous lines plus newlines)
+    let chunkOffset = 0
+    for (let j = 0; j < i; j++) {
+      chunkOffset += (lines[j] || '').length + 1 // +1 for newline character
+    }
+
     const { newIndex, errors } = await processPosition(
       lines,
       i,
       chunkSize,
+      chunkOffset,
       callback,
     )
 
