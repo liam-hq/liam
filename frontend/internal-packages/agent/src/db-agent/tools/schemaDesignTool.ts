@@ -23,8 +23,8 @@ const toolSchema = toJsonSchema(schemaDesignToolSchema) as JSONSchema
 
 const validateAndExecuteDDL = async (
   schema: Schema,
-  designSessionId: string,
-): Promise<{ results: SqlResult[]; ddlStatements: string }> => {
+): Promise<{ ddlStatements: string; results: SqlResult[] }> => {
+  // Validate DDL by generating and executing it
   const ddlResult = postgresqlSchemaDeparser(schema)
 
   if (ddlResult.errors.length > 0) {
@@ -40,10 +40,8 @@ const validateAndExecuteDDL = async (
 
   const ddlStatements = ddlResult.value
 
-  const results: SqlResult[] = await executeQuery(
-    designSessionId,
-    ddlStatements,
-  )
+  // Execute DDL to validate it
+  const results: SqlResult[] = await executeQuery(ddlStatements)
 
   const hasExecutionErrors = results.some(
     (result: SqlResult) => !result.success,
@@ -106,9 +104,8 @@ export const schemaDesignTool = tool(
       )
     }
 
-    const { results, ddlStatements } = await validateAndExecuteDDL(
+    const { ddlStatements, results } = await validateAndExecuteDDL(
       applyResult.value,
-      designSessionId,
     )
 
     const queryResult = await repositories.schema.createValidationQuery({

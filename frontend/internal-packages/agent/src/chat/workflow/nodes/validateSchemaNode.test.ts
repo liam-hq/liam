@@ -9,7 +9,7 @@ import { validateSchemaNode } from './validateSchemaNode'
 
 describe('validateSchemaNode', () => {
   beforeAll(async () => {
-    await executeQuery('warmup', 'SELECT 1')
+    await executeQuery('SELECT 1')
   }, 30000)
 
   const createMockState = (

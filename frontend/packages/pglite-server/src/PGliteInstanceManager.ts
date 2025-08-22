@@ -100,7 +100,7 @@ export class PGliteInstanceManager {
   /**
    * Execute SQL query with immediate instance cleanup
    */
-  async executeQuery(_sessionId: string, sql: string): Promise<SqlResult[]> {
+  async executeQuery(sql: string): Promise<SqlResult[]> {
     const db = await this.createInstance()
     try {
       return await this.executeSql(sql, db)

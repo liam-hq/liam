@@ -123,7 +123,7 @@ export const PGlitePlayground = ({
   useEffect(() => {
     const initializeConnection = async () => {
       try {
-        await executeQuery(sessionId, 'SELECT 1')
+        await executeQuery('SELECT 1')
         setIsConnected(true)
 
         // Add one initial DML section
@@ -160,7 +160,7 @@ export const PGlitePlayground = ({
 
     try {
       // Execute DDL using server-side PGlite instance
-      const results = await executeQuery(sessionId, ddlState.ddlInput)
+      const results = await executeQuery(ddlState.ddlInput)
       setDdlState((prev) => ({
         ...prev,
         results: [...prev.results, ...results],
@@ -196,7 +196,7 @@ export const PGlitePlayground = ({
 
     try {
       // Execute DML using server-side PGlite instance
-      const results = await executeQuery(sessionId, section.dmlInput)
+      const results = await executeQuery(section.dmlInput)
 
       setDmlSections((prev) => {
         const newSections = [...prev]
@@ -261,7 +261,7 @@ export const PGlitePlayground = ({
 
         try {
           // Execute DDL using server-side PGlite instance
-          const results = await executeQuery(sessionId, ddl)
+          const results = await executeQuery(ddl)
           setDdlState((prev) => ({
             ...prev,
             results: [...prev.results, ...results],
@@ -306,7 +306,7 @@ export const PGlitePlayground = ({
 
         try {
           // Execute the query using server-side PGlite instance
-          const results = await executeQuery(sessionId, query)
+          const results = await executeQuery(query)
 
           setDmlSections((prev) => {
             const sectionIndex = prev.findIndex((s) => s.id === newSectionId)
@@ -375,7 +375,7 @@ export const PGlitePlayground = ({
 
         try {
           // Execute the query using server-side PGlite instance
-          const results = await executeQuery(sessionId, query)
+          const results = await executeQuery(query)
 
           setDmlSections((prev) => {
             const newSections = [...prev]

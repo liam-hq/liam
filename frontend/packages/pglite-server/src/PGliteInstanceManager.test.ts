@@ -7,12 +7,12 @@ describe('PGliteInstanceManager', () => {
   // Warm up the pg-query-emscripten module before tests
   beforeAll(async () => {
     // Execute a simple query to initialize the parser
-    await manager.executeQuery('warmup', 'SELECT 1')
+    await manager.executeQuery('SELECT 1')
   }, 30000)
 
   it('should handle single statement', async () => {
     const sql = 'SELECT 1;'
-    const results = await manager.executeQuery('test-session', sql)
+    const results = await manager.executeQuery(sql)
 
     expect(results).toHaveLength(1)
     expect(results[0]?.success).toBe(true)
@@ -21,7 +21,7 @@ describe('PGliteInstanceManager', () => {
 
   it('should handle multiple statements', async () => {
     const sql = 'SELECT 1; SELECT 2;'
-    const results = await manager.executeQuery('test-session', sql)
+    const results = await manager.executeQuery(sql)
 
     expect(results).toHaveLength(2)
     expect(results[0]?.success).toBe(true)
@@ -42,7 +42,7 @@ describe('PGliteInstanceManager', () => {
       SELECT hello();
     `
 
-    const results = await manager.executeQuery('test-session', sql)
+    const results = await manager.executeQuery(sql)
 
     // Should parse into 2 statements: CREATE FUNCTION and SELECT
     expect(results).toHaveLength(2)
@@ -64,7 +64,7 @@ describe('PGliteInstanceManager', () => {
       $func$ LANGUAGE plpgsql;
     `
 
-    const results = await manager.executeQuery('test-session', sql)
+    const results = await manager.executeQuery(sql)
 
     // Should be parsed as single statement despite internal semicolons
     expect(results).toHaveLength(1)
@@ -90,7 +90,7 @@ describe('PGliteInstanceManager', () => {
       SELECT test_func();
     `
 
-    const results = await manager.executeQuery('test-session', sql)
+    const results = await manager.executeQuery(sql)
 
     expect(results).toHaveLength(3)
     expect(results[0]?.sql.trim()).toBe("SELECT 'before function'")
@@ -102,7 +102,7 @@ describe('PGliteInstanceManager', () => {
   it('should fallback to simple splitting on parse errors', async () => {
     // Intentionally malformed SQL to test fallback
     const sql = 'INVALID SQL SYNTAX;;;'
-    const results = await manager.executeQuery('test-session', sql)
+    const results = await manager.executeQuery(sql)
 
     // Should still attempt to execute (though it will fail)
     expect(results).toHaveLength(1)
