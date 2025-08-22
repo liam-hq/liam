@@ -10,6 +10,11 @@ import {
   ModalPortal,
   ModalRoot,
   ModalTitle,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from '@liam-hq/ui'
 import { type FC, useState } from 'react'
 import { usePublicShareServerAction } from '@/hooks/usePublicShareServerAction'
@@ -97,23 +102,32 @@ export const ShareDialog: FC<Props> = ({
                 </h4>
                 <div className={styles.visibilityControls}>
                   <div className={styles.selectWrapper}>
-                    <select
+                    <Select
                       value={isPublic ? 'link' : 'private'}
-                      onChange={(e) => handleVisibilityChange(e.target.value)}
+                      onValueChange={handleVisibilityChange}
                       disabled={loading}
-                      className={styles.visibilitySelect}
-                      aria-labelledby="visibility-section-title"
                     >
-                      <option value="private" className={styles.selectOption}>
-                        🔒 Private
-                      </option>
-                      <option value="link" className={styles.selectOption}>
-                        🔗 Anyone with the link
-                      </option>
-                    </select>
-                    <div className={styles.selectIcon}>
-                      {isPublic ? <Link size={16} /> : <Lock size={16} />}
-                    </div>
+                      <SelectTrigger
+                        className={styles.visibilitySelect}
+                        aria-labelledby="visibility-section-title"
+                      >
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="private">
+                          <span className={styles.selectItemContent}>
+                            <Lock size={16} />
+                            Private
+                          </span>
+                        </SelectItem>
+                        <SelectItem value="link">
+                          <span className={styles.selectItemContent}>
+                            <Link size={16} />
+                            Anyone with the link
+                          </span>
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
 
                   {isPublic && (

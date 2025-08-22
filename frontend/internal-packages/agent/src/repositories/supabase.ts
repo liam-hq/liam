@@ -194,7 +194,6 @@ export class SupabaseSchemaRepository implements SchemaRepository {
           patchParsed.output,
         )
         if (patchResult.isOk()) {
-          // Update currentSchema with the patched result
           Object.assign(currentSchema, patchResult.value)
         } else {
           // Failed to apply patch for this version, continue with next
@@ -207,7 +206,6 @@ export class SupabaseSchemaRepository implements SchemaRepository {
       }
     }
 
-    // Validate and return as Schema type
     const validationResult = v.safeParse(schemaSchema, currentSchema)
     if (!validationResult.success) {
       // Schema validation failed, using fallback schema
@@ -224,7 +222,6 @@ export class SupabaseSchemaRepository implements SchemaRepository {
   async createVersion(params: CreateVersionParams): Promise<VersionResult> {
     const { buildingSchemaId, latestVersionNumber, patch } = params
 
-    // Generate message content based on patch operations
     const patchCount = patch.length
     const messageContent =
       patchCount === 1
@@ -246,7 +243,6 @@ export class SupabaseSchemaRepository implements SchemaRepository {
       }
     }
 
-    // Get all previous versions to reconstruct the content
     const { data: previousVersions, error: previousVersionsError } =
       await this.client
         .from('building_schema_versions')
@@ -308,7 +304,6 @@ export class SupabaseSchemaRepository implements SchemaRepository {
     }
     const newContent = newContentResult.value
 
-    // Validate the new schema structure before proceeding
     const newSchemaValidationResult = v.safeParse(schemaSchema, newContent)
 
     if (!newSchemaValidationResult.success) {
@@ -321,7 +316,6 @@ export class SupabaseSchemaRepository implements SchemaRepository {
     // Calculate reverse patch from new content to current content
     const reversePatch = compare(newContent, currentContent)
 
-    // Get the latest version number for this schema
     const { data: latestVersion, error: latestVersionError } = await this.client
       .from('building_schema_versions')
       .select('number')
@@ -337,7 +331,6 @@ export class SupabaseSchemaRepository implements SchemaRepository {
       }
     }
 
-    // Get the actual latest version number
     const actualLatestVersionNumber = latestVersion ? latestVersion.number : 0
 
     // Check if the expected version number matches the actual latest version number
@@ -352,7 +345,6 @@ export class SupabaseSchemaRepository implements SchemaRepository {
 
     const newVersionNumber = actualLatestVersionNumber + 1
 
-    // Create new version with patch and reverse_patch
     const { data: newVersion, error: createVersionError } = await this.client
       .from('building_schema_versions')
       .insert({
@@ -372,7 +364,6 @@ export class SupabaseSchemaRepository implements SchemaRepository {
       }
     }
 
-    // Update the building schema with the new schema
     const { error: schemaUpdateError } = await this.client
       .from('building_schemas')
       .update({
@@ -387,7 +378,6 @@ export class SupabaseSchemaRepository implements SchemaRepository {
       }
     }
 
-    // Create a timeline item for the schema version
     const timelineResult = await this.createTimelineItem({
       designSessionId: buildingSchema.design_session_id,
       content: messageContent,
@@ -489,8 +479,6 @@ export class SupabaseSchemaRepository implements SchemaRepository {
 
   async createArtifact(params: CreateArtifactParams): Promise<ArtifactResult> {
     const { designSessionId, artifact } = params
-
-    // Validate artifact data
     const validationResult = v.safeParse(artifactSchema, artifact)
     if (!validationResult.success) {
       const errorMessages = validationResult.issues
@@ -530,8 +518,6 @@ export class SupabaseSchemaRepository implements SchemaRepository {
 
   async updateArtifact(params: UpdateArtifactParams): Promise<ArtifactResult> {
     const { designSessionId, artifact } = params
-
-    // Validate artifact data
     const validationResult = v.safeParse(artifactSchema, artifact)
     if (!validationResult.success) {
       const errorMessages = validationResult.issues

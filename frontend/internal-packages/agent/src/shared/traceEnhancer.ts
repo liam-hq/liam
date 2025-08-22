@@ -10,7 +10,6 @@ import { Result } from 'neverthrow'
  * Environment information for enhanced tracing
  */
 type TraceEnvironmentInfo = {
-  // Runtime Context
   runtime: {
     name: string
     version: string
@@ -18,21 +17,18 @@ type TraceEnvironmentInfo = {
     arch: string
   }
 
-  // Environment Context
   environment: {
     name: string
     region?: string | undefined
     nodeEnv?: string | undefined
   }
 
-  // Developer Context
   developer: {
     username: string
     hostname: string
     timezone: string
   }
 
-  // Git Context
   git: {
     branch: string
     commit: string
@@ -105,13 +101,11 @@ const getLangGraphVersion = (): Result<string, Error> => {
  * Get environment name with proper preview/production detection
  */
 const getEnvironmentName = (): string => {
-  // Use NEXT_PUBLIC_ENV_NAME first (can be 'preview' or 'production')
   const nextPublicEnv = process.env['NEXT_PUBLIC_ENV_NAME']
   if (nextPublicEnv) {
     return nextPublicEnv
   }
 
-  // Fallback to NODE_ENV
   return process.env['NODE_ENV'] || 'development'
 }
 
@@ -180,14 +174,12 @@ export const createEnhancedTraceData = (
     },
   }
 
-  // Combine all tags
   const allTags = [
     ...environmentTags,
     ...additionalTags,
     ...(graphName ? [`graph:${graphName}`] : []),
   ]
 
-  // Combine all metadata
   const allMetadata = {
     ...environmentInfo,
     ...langGraphMetadata,

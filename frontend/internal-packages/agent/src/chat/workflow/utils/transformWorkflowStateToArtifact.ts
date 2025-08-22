@@ -26,7 +26,6 @@ const convertAnalyzedRequirementsToArtifact = (
 ): (FunctionalRequirement | NonFunctionalRequirement)[] => {
   const requirements: (FunctionalRequirement | NonFunctionalRequirement)[] = []
 
-  // Add functional requirements
   for (const [category, items] of Object.entries(
     analyzedRequirements.functionalRequirements,
   )) {
@@ -39,7 +38,6 @@ const convertAnalyzedRequirementsToArtifact = (
     requirements.push(functionalRequirement)
   }
 
-  // Add non-functional requirements
   for (const [category, items] of Object.entries(
     analyzedRequirements.nonFunctionalRequirements,
   )) {
@@ -83,10 +81,8 @@ const mergeUseCasesIntoRequirements = (
       existingReq.type === 'functional' &&
       type === 'functional'
     ) {
-      // Update existing functional requirement with use cases
       existingReq.use_cases = groupedUsecases.map(mapUseCasesToRequirements)
     } else if (!existingReq) {
-      // Add new requirement from use cases if it doesn't exist
       if (type === 'functional') {
         const functionalRequirement: FunctionalRequirement = {
           type: 'functional',
@@ -125,7 +121,6 @@ export const transformWorkflowStateToArtifact = (
   const businessRequirement =
     state.analyzedRequirements?.businessRequirement ?? ''
 
-  // Start with requirements from analyzedRequirements
   const requirements = state.analyzedRequirements
     ? convertAnalyzedRequirementsToArtifact(state.analyzedRequirements)
     : []

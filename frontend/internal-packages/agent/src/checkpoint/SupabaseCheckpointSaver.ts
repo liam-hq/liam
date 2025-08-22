@@ -85,14 +85,12 @@ export class SupabaseCheckpointSaver extends BaseCheckpointSaver<number> {
       return undefined
     }
 
-    // Build base checkpoint query without joins
     const baseQuery = this.client
       .from('checkpoints')
       .select('*')
       .eq('thread_id', thread_id)
       .eq('checkpoint_ns', checkpoint_ns)
 
-    // Add checkpoint_id filter if provided, otherwise get latest
     const query = checkpoint_id
       ? baseQuery.eq('checkpoint_id', checkpoint_id).single()
       : baseQuery.order('checkpoint_id', { ascending: false }).limit(1).single()
@@ -125,10 +123,8 @@ export class SupabaseCheckpointSaver extends BaseCheckpointSaver<number> {
       blobsData || [],
     )
 
-    // Load metadata
     const metadata = await this._loadMetadata(checkpointData.metadata)
 
-    // Build configs
     const finalConfig: RunnableConfig = {
       configurable: {
         thread_id,
@@ -147,7 +143,6 @@ export class SupabaseCheckpointSaver extends BaseCheckpointSaver<number> {
         }
       : undefined
 
-    // Load pending writes
     const pendingWrites = await this._loadWrites(writesData || [])
 
     const tuple: CheckpointTuple = {
@@ -175,7 +170,6 @@ export class SupabaseCheckpointSaver extends BaseCheckpointSaver<number> {
       return
     }
 
-    // Build base query without joins
     let query = this.client
       .from('checkpoints')
       .select('*')
@@ -313,7 +307,6 @@ export class SupabaseCheckpointSaver extends BaseCheckpointSaver<number> {
       throw new Error(`Failed to save checkpoint: ${checkpointError.message}`)
     }
 
-    // Save channel blobs
     const blobs = await this._dumpBlobs(
       thread_id,
       checkpoint_ns,
@@ -388,7 +381,6 @@ export class SupabaseCheckpointSaver extends BaseCheckpointSaver<number> {
    * Required for compatibility with LangGraph 0.4.x
    */
   async deleteThread(threadId: string): Promise<void> {
-    // Delete all checkpoints for the thread
     const { error: checkpointsError } = await this.client
       .from('checkpoints')
       .delete()
@@ -402,7 +394,6 @@ export class SupabaseCheckpointSaver extends BaseCheckpointSaver<number> {
       )
     }
 
-    // Delete all checkpoint writes for the thread
     const { error: writesError } = await this.client
       .from('checkpoint_writes')
       .delete()
@@ -416,7 +407,6 @@ export class SupabaseCheckpointSaver extends BaseCheckpointSaver<number> {
       )
     }
 
-    // Delete all checkpoint blobs for the thread
     const { error: blobsError } = await this.client
       .from('checkpoint_blobs')
       .delete()
@@ -534,7 +524,6 @@ export class SupabaseCheckpointSaver extends BaseCheckpointSaver<number> {
    * Helper method to load metadata
    */
   private async _loadMetadata(metadata: Json): Promise<CheckpointMetadata> {
-    // Parse and validate metadata, allowing flexible extra properties
     return parseCheckpointMetadata(metadata)
   }
 

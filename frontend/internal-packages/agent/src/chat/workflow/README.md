@@ -17,8 +17,7 @@ graph TD;
 	dbAgent --> qaAgent;
 	finalizeArtifacts --> __end__;
 	pmAgent --> dbAgent;
-	qaAgent -.-> dbAgent;
-	qaAgent -.-> finalizeArtifacts;
+	qaAgent --> finalizeArtifacts;
 	classDef default fill:#f2f0ff,line-height:1.2;
 	classDef first fill-opacity:0;
 	classDef last fill:#bfb6fc;
@@ -42,12 +41,10 @@ interface WorkflowState {
   analyzedRequirements?: AnalyzedRequirements;
   generatedUsecases?: Usecase[];
 
-  // DDL/DML execution
-  ddlStatements?: string;
+  // DML execution
   dmlStatements?: string;
 
   // DML execution results
-  dmlExecutionSuccessful?: boolean;
   dmlExecutionErrors?: string;
 }
 ```
@@ -244,7 +241,7 @@ graph.addNode('qaAgent', qaAgentSubgraph) // No retry policy - handled internall
 - **analyzeRequirements**: Routes to `saveRequirementToArtifact` when requirements are successfully analyzed, retries `analyzeRequirements` with retry count tracking (max 3 attempts), fallback to `finalizeArtifacts` when max retries exceeded
 - **saveRequirementToArtifact**: Always routes to `dbAgent` after processing artifacts (workflow termination node pattern)
 - **dbAgent**: DB Agent subgraph handles internal routing between designSchema and invokeSchemaDesignTool nodes, routes to `qaAgent` on completion
-- **qaAgent**: QA Agent subgraph handles internal routing between generateUsecase, prepareDML, and validateSchema nodes, routes to `finalizeArtifacts` on success, `dbAgent` on validation error
+- **qaAgent**: QA Agent subgraph handles internal routing between generateUsecase, prepareDML, and validateSchema nodes, always routes to `finalizeArtifacts` (conditional routing temporarily disabled)
 
 ## Timeline Synchronization
 

@@ -65,7 +65,6 @@ export class InMemoryRepository implements SchemaRepository {
   private idCounter = 1
 
   constructor(options: InMemoryRepositoryOptions = {}) {
-    // Initialize in-memory checkpointer
     this.checkpointer = new MemorySaver()
     this.state = {
       schemas: new Map(),
@@ -79,7 +78,6 @@ export class InMemoryRepository implements SchemaRepository {
       buildingSchemas: new Map(),
     }
 
-    // Initialize with provided data
     Object.entries(options.schemas || {}).forEach(([id, schema]) => {
       this.state.schemas.set(id, {
         id,
@@ -174,7 +172,6 @@ export class InMemoryRepository implements SchemaRepository {
       return { success: false, error: 'Invalid schema after patch' }
     }
 
-    // Update schema
     this.state.schemas.set(params.buildingSchemaId, {
       ...schema,
       schema: updatedSchema,
@@ -217,7 +214,6 @@ export class InMemoryRepository implements SchemaRepository {
       versionNumber: params.latestVersionNumber + 1,
     })
 
-    // Update schema's latest version number
     this.state.schemas.set(params.buildingSchemaId, {
       ...schema,
       latestVersionNumber: params.latestVersionNumber + 1,
@@ -298,7 +294,6 @@ export class InMemoryRepository implements SchemaRepository {
 
     this.state.timelineItems.set(id, timelineItem)
 
-    // Add to design session timeline (simplified structure for DesignSessionData)
     const designSession = this.state.designSessions.get(params.designSessionId)
     if (designSession) {
       designSession.timeline_items.push({
@@ -383,7 +378,6 @@ export class InMemoryRepository implements SchemaRepository {
     const existingArtifact = this.state.artifacts.get(designSessionId)
 
     if (existingArtifact) {
-      // Update existing artifact
       const updatedArtifact: Tables<'artifacts'> = {
         ...existingArtifact,
         artifact: artifact,
@@ -393,7 +387,6 @@ export class InMemoryRepository implements SchemaRepository {
       return okAsync(updatedArtifact)
     }
 
-    // Create new artifact
     const newArtifact: Tables<'artifacts'> = {
       id: this.generateId(),
       design_session_id: designSessionId,

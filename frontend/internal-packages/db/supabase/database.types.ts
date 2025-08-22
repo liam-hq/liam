@@ -17,10 +17,10 @@ export type Database = {
     Functions: {
       graphql: {
         Args: {
+          extensions?: Json
           operationName?: string
           query?: string
           variables?: Json
-          extensions?: Json
         }
         Returns: Json
       }
@@ -1573,12 +1573,12 @@ export type Database = {
       }
       add_project: {
         Args: {
+          p_installation_id: number
+          p_organization_id: string
           p_project_name: string
+          p_repository_identifier: number
           p_repository_name: string
           p_repository_owner: string
-          p_installation_id: number
-          p_repository_identifier: number
-          p_organization_id: string
         }
         Returns: Json
       }
@@ -1668,12 +1668,12 @@ export type Database = {
       }
       update_building_schema: {
         Args: {
+          p_latest_schema_version_number: number
+          p_message_content: string
           p_schema_id: string
           p_schema_schema: Json
           p_schema_version_patch: Json
           p_schema_version_reverse_patch: Json
-          p_latest_schema_version_number: number
-          p_message_content: string
         }
         Returns: Json
       }

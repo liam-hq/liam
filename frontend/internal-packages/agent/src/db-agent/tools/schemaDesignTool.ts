@@ -24,8 +24,7 @@ const toolSchema = toJsonSchema(schemaDesignToolSchema) as JSONSchema
 const validateAndExecuteDDL = async (
   schema: Schema,
   designSessionId: string,
-): Promise<{ ddlStatements: string; results: SqlResult[] }> => {
-  // Validate DDL by generating and executing it
+): Promise<{ results: SqlResult[]; ddlStatements: string }> => {
   const ddlResult = postgresqlSchemaDeparser(schema)
 
   if (ddlResult.errors.length > 0) {
@@ -41,7 +40,6 @@ const validateAndExecuteDDL = async (
 
   const ddlStatements = ddlResult.value
 
-  // Execute DDL to validate it
   const results: SqlResult[] = await executeQuery(
     designSessionId,
     ddlStatements,
@@ -67,7 +65,7 @@ const validateAndExecuteDDL = async (
     )
   }
 
-  return { ddlStatements, results }
+  return { results, ddlStatements }
 }
 
 export const schemaDesignTool = tool(
@@ -86,7 +84,6 @@ export const schemaDesignTool = tool(
       return `Input validation failed: ${errorDetails}. Please check your operations format and ensure all required fields are provided correctly.`
     }
 
-    // Get current schema to validate DDL before creating version
     const schemaResult = await repositories.schema.getSchema(designSessionId)
     if (schemaResult.isErr()) {
       // LangGraph tool nodes require throwing errors to trigger retry mechanism
@@ -109,13 +106,11 @@ export const schemaDesignTool = tool(
       )
     }
 
-    // Validate DDL by generating and executing it
-    const { ddlStatements, results } = await validateAndExecuteDDL(
+    const { results, ddlStatements } = await validateAndExecuteDDL(
       applyResult.value,
       designSessionId,
     )
 
-    // Log the validation query and results
     const queryResult = await repositories.schema.createValidationQuery({
       designSessionId,
       queryString: ddlStatements,
@@ -127,14 +122,12 @@ export const schemaDesignTool = tool(
         results,
       })
 
-      // Log successful DDL execution to timeline
       const successfulStatements = results.filter(
         (result) => result.success,
       ).length
       const totalStatements = results.length
       const summary = `DDL validation successful: ${successfulStatements}/${totalStatements} statements executed successfully`
 
-      // Create timeline item for DDL execution results
       const result = await repositories.schema.createTimelineItem({
         designSessionId,
         content: summary,
@@ -151,7 +144,6 @@ export const schemaDesignTool = tool(
       }
     }
 
-    // After DDL validation passes, create the actual version
     const versionResult = await repositories.schema.createVersion({
       buildingSchemaId,
       latestVersionNumber: schemaResult.value.latestVersionNumber,

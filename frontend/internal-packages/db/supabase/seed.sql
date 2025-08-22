@@ -158,8 +158,459 @@ begin
     current_timestamp
   );
 
+  -- 8. create a design session
+  declare
+    v_design_session_id uuid := gen_random_uuid();
+    v_building_schema_id uuid := gen_random_uuid();
+  begin
+    insert into public.design_sessions (
+      id,
+      project_id,
+      organization_id,
+      created_by_user_id,
+      name,
+      created_at
+    )
+    values (
+      v_design_session_id,
+      v_project_id,
+      v_org_id,
+      v_user_id,
+      'Sample Design Session',
+      current_timestamp
+    );
+
+    -- 9. create a building schema
+    insert into public.building_schemas (
+      id,
+      design_session_id,
+      organization_id,
+      schema,
+      created_at,
+      git_sha,
+      initial_schema_snapshot,
+      schema_file_path
+    )
+    values (
+      v_building_schema_id,
+      v_design_session_id,
+      v_org_id,
+      '{
+        "tables": {
+          "users": {
+            "name": "users",
+            "columns": {
+              "id": {
+                "name": "id",
+                "type": "uuid",
+                "notNull": true,
+                "default": "gen_random_uuid()",
+                "check": null,
+                "comment": null
+              },
+              "email": {
+                "name": "email",
+                "type": "text",
+                "notNull": true,
+                "default": null,
+                "check": null,
+                "comment": "User email address"
+              },
+              "name": {
+                "name": "name",
+                "type": "text",
+                "notNull": false,
+                "default": null,
+                "check": null,
+                "comment": "User display name"
+              },
+              "created_at": {
+                "name": "created_at",
+                "type": "timestamp with time zone",
+                "notNull": true,
+                "default": "CURRENT_TIMESTAMP",
+                "check": null,
+                "comment": null
+              }
+            },
+            "comment": "User accounts table",
+            "indexes": {
+              "idx_users_email": {
+                "name": "idx_users_email",
+                "unique": true,
+                "columns": ["email"],
+                "type": "btree"
+              }
+            },
+            "constraints": {
+              "users_pkey": {
+                "type": "PRIMARY KEY",
+                "name": "users_pkey",
+                "columnNames": ["id"]
+              }
+            }
+          },
+          "posts": {
+            "name": "posts",
+            "columns": {
+              "id": {
+                "name": "id",
+                "type": "uuid",
+                "notNull": true,
+                "default": "gen_random_uuid()",
+                "check": null,
+                "comment": null
+              },
+              "user_id": {
+                "name": "user_id",
+                "type": "uuid",
+                "notNull": true,
+                "default": null,
+                "check": null,
+                "comment": "Author of the post"
+              },
+              "title": {
+                "name": "title",
+                "type": "text",
+                "notNull": true,
+                "default": null,
+                "check": null,
+                "comment": null
+              },
+              "content": {
+                "name": "content",
+                "type": "text",
+                "notNull": false,
+                "default": null,
+                "check": null,
+                "comment": null
+              },
+              "published": {
+                "name": "published",
+                "type": "boolean",
+                "notNull": true,
+                "default": "false",
+                "check": null,
+                "comment": null
+              },
+              "created_at": {
+                "name": "created_at",
+                "type": "timestamp with time zone",
+                "notNull": true,
+                "default": "CURRENT_TIMESTAMP",
+                "check": null,
+                "comment": null
+              }
+            },
+            "comment": "Blog posts table",
+            "indexes": {
+              "idx_posts_user_id": {
+                "name": "idx_posts_user_id",
+                "unique": false,
+                "columns": ["user_id"],
+                "type": "btree"
+              },
+              "idx_posts_published": {
+                "name": "idx_posts_published",
+                "unique": false,
+                "columns": ["published"],
+                "type": "btree"
+              }
+            },
+            "constraints": {
+              "posts_pkey": {
+                "type": "PRIMARY KEY",
+                "name": "posts_pkey",
+                "columnNames": ["id"]
+              },
+              "posts_user_id_fkey": {
+                "type": "FOREIGN KEY",
+                "name": "posts_user_id_fkey",
+                "columnNames": ["user_id"],
+                "targetTableName": "users",
+                "targetColumnNames": ["id"],
+                "updateConstraint": "CASCADE",
+                "deleteConstraint": "CASCADE"
+              }
+            }
+          }
+        },
+        "enums": {}
+      }'::jsonb,
+      current_timestamp,
+      'abc123def456',
+      '{
+        "tables": {
+          "users": {
+            "name": "users",
+            "columns": {
+              "id": {
+                "name": "id",
+                "type": "uuid",
+                "notNull": true,
+                "default": "gen_random_uuid()",
+                "check": null,
+                "comment": null
+              },
+              "email": {
+                "name": "email",
+                "type": "text",
+                "notNull": true,
+                "default": null,
+                "check": null,
+                "comment": "User email address"
+              },
+              "name": {
+                "name": "name",
+                "type": "text",
+                "notNull": false,
+                "default": null,
+                "check": null,
+                "comment": "User display name"
+              },
+              "created_at": {
+                "name": "created_at",
+                "type": "timestamp with time zone",
+                "notNull": true,
+                "default": "CURRENT_TIMESTAMP",
+                "check": null,
+                "comment": null
+              }
+            },
+            "comment": "User accounts table",
+            "indexes": {
+              "idx_users_email": {
+                "name": "idx_users_email",
+                "unique": true,
+                "columns": ["email"],
+                "type": "btree"
+              }
+            },
+            "constraints": {
+              "users_pkey": {
+                "type": "PRIMARY KEY",
+                "name": "users_pkey",
+                "columnNames": ["id"]
+              }
+            }
+          },
+          "posts": {
+            "name": "posts",
+            "columns": {
+              "id": {
+                "name": "id",
+                "type": "uuid",
+                "notNull": true,
+                "default": "gen_random_uuid()",
+                "check": null,
+                "comment": null
+              },
+              "user_id": {
+                "name": "user_id",
+                "type": "uuid",
+                "notNull": true,
+                "default": null,
+                "check": null,
+                "comment": "Author of the post"
+              },
+              "title": {
+                "name": "title",
+                "type": "text",
+                "notNull": true,
+                "default": null,
+                "check": null,
+                "comment": null
+              },
+              "content": {
+                "name": "content",
+                "type": "text",
+                "notNull": false,
+                "default": null,
+                "check": null,
+                "comment": null
+              },
+              "published": {
+                "name": "published",
+                "type": "boolean",
+                "notNull": true,
+                "default": "false",
+                "check": null,
+                "comment": null
+              },
+              "created_at": {
+                "name": "created_at",
+                "type": "timestamp with time zone",
+                "notNull": true,
+                "default": "CURRENT_TIMESTAMP",
+                "check": null,
+                "comment": null
+              }
+            },
+            "comment": "Blog posts table",
+            "indexes": {
+              "idx_posts_user_id": {
+                "name": "idx_posts_user_id",
+                "unique": false,
+                "columns": ["user_id"],
+                "type": "btree"
+              },
+              "idx_posts_published": {
+                "name": "idx_posts_published",
+                "unique": false,
+                "columns": ["published"],
+                "type": "btree"
+              }
+            },
+            "constraints": {
+              "posts_pkey": {
+                "type": "PRIMARY KEY",
+                "name": "posts_pkey",
+                "columnNames": ["id"]
+              },
+              "posts_user_id_fkey": {
+                "type": "FOREIGN KEY",
+                "name": "posts_user_id_fkey",
+                "columnNames": ["user_id"],
+                "targetTableName": "users",
+                "targetColumnNames": ["id"],
+                "updateConstraint": "CASCADE",
+                "deleteConstraint": "CASCADE"
+              }
+            }
+          }
+        },
+        "enums": {}
+      }'::jsonb,
+      'frontend/internal-packages/db/schema/schema.sql'
+    );
+
+    -- 10. create a building schema version
+    insert into public.building_schema_versions (
+      organization_id,
+      building_schema_id,
+      number,
+      created_at,
+      patch,
+      reverse_patch
+    )
+    values (
+      v_org_id,
+      v_building_schema_id,
+      1,
+      current_timestamp,
+      '[]'::jsonb,
+      '[]'::jsonb
+    );
+
+    -- 11. create a timeline item
+    insert into public.timeline_items (
+      design_session_id,
+      user_id,
+      content,
+      created_at,
+      updated_at,
+      organization_id,
+      type,
+      assistant_role
+    )
+    values (
+      v_design_session_id,
+      v_user_id,
+      'Welcome to your design session!',
+      current_timestamp,
+      current_timestamp,
+      v_org_id,
+      'user',
+      null
+    );
+
+    -- 12. create artifact data for the design session
+    insert into public.artifacts (
+      design_session_id,
+      organization_id,
+      artifact,
+      created_at,
+      updated_at
+    )
+    values (
+      v_design_session_id,
+      v_org_id,
+      '{
+        "requirement_analysis": {
+          "business_requirement": "Build a simple blog platform where users can create, edit, and publish posts",
+          "requirements": [
+            {
+              "type": "functional",
+              "name": "User Management",
+              "description": [
+                "Users should be able to register with email",
+                "Users should have unique email addresses",
+                "User profiles should store display names"
+              ],
+              "use_cases": [
+                {
+                  "title": "User Registration",
+                  "description": "New users can create an account",
+                  "dml_operations": [
+                    {
+                      "useCaseId": "UC001",
+                      "operation_type": "INSERT",
+                      "sql": "INSERT INTO users (email, name) VALUES (''john@example.com'', ''John Doe'')",
+                      "description": "Create a new user account",
+                      "dml_execution_logs": []
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "functional", 
+              "name": "Post Management",
+              "description": [
+                "Users can create blog posts",
+                "Posts can be published or kept as drafts",
+                "Posts are linked to their authors"
+              ],
+              "use_cases": [
+                {
+                  "title": "Create Blog Post",
+                  "description": "Users can create new blog posts",
+                  "dml_operations": [
+                    {
+                      "useCaseId": "UC002",
+                      "operation_type": "INSERT",
+                      "sql": "INSERT INTO posts (user_id, title, content, published) VALUES (''user-uuid'', ''My First Post'', ''Content here...'', false)",
+                      "description": "Create a new blog post as draft",
+                      "dml_execution_logs": []
+                    }
+                  ]
+                },
+                {
+                  "title": "Publish Blog Post",
+                  "description": "Users can publish their draft posts",
+                  "dml_operations": [
+                    {
+                      "useCaseId": "UC003",
+                      "operation_type": "UPDATE",
+                      "sql": "UPDATE posts SET published = true WHERE id = ''post-uuid''",
+                      "description": "Publish a draft post",
+                      "dml_execution_logs": []
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      }'::jsonb,
+      current_timestamp,
+      current_timestamp
+    );
+  end;
+
   raise notice 'environment: %, seeded database with test data.',
     case when is_local then 'local' else 'preview' end;
   raise notice 'test users created: test@example.com, test2@example.com with password: liampassword1234';
   raise notice 'using installation_id: %', v_installation_id;
+  raise notice 'created sample design session with building schema, version, and timeline item';
 end $$;

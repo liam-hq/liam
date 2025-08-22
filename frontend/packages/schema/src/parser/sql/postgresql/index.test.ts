@@ -544,6 +544,33 @@ describe(processor, () => {
 
       expect(result).toEqual({ value, errors })
     })
+
+    it('should ignore \\restrict and \\unrestrict lines from PostgreSQL 16.10+', async () => {
+      const { value, errors } = await processor(/* sql */ `--
+-- PostgreSQL database dump
+--
+
+\\restrict GNe5kMfiI0ANWitVE3BZ0HVlF41EznPoORQML2l8w8Tg2gLdbf9IxWY2UPYdYuN
+
+SET statement_timeout = 0;
+SET lock_timeout = 0;
+
+CREATE TABLE users (
+  id BIGSERIAL PRIMARY KEY,
+  name VARCHAR(255) NOT NULL
+);
+
+CREATE TYPE status AS ENUM ('active', 'inactive');
+
+\\unrestrict GNe5kMfiI0ANWitVE3BZ0HVlF41EznPoORQML2l8w8Tg2gLdbf9IxWY2UPYdYuN`)
+
+      expect(errors).toEqual([])
+      expect(value.tables['users']).toBeDefined()
+      expect(value.tables['users']?.columns['id']).toBeDefined()
+      expect(value.tables['users']?.columns['name']).toBeDefined()
+      expect(value.enums['status']).toBeDefined()
+      expect(value.enums['status']?.values).toEqual(['active', 'inactive'])
+    })
   })
 
   describe('Long "create table" statement (surpassing CHUNK_SIZE). regression test for liam-hq/liam#874', () => {

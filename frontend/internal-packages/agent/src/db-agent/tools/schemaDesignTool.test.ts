@@ -1,16 +1,25 @@
 import type { RunnableConfig } from '@langchain/core/runnables'
+import { executeQuery } from '@liam-hq/pglite-server'
 import {
   aColumn,
   aForeignKeyConstraint,
   aSchema,
   aTable,
 } from '@liam-hq/schema'
-import { describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { Repositories } from '../../repositories'
 import { InMemoryRepository } from '../../repositories/InMemoryRepository'
 import { schemaDesignTool } from './schemaDesignTool'
 
+vi.mock('@liam-hq/pglite-server', () => ({
+  executeQuery: vi.fn(),
+}))
+
 describe('schemaDesignTool', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
   const createMockConfig = (
     buildingSchemaId: string,
     latestVersionNumber: number,
@@ -34,6 +43,19 @@ describe('schemaDesignTool', () => {
   })
 
   it('should successfully update schema version with DDL validation', async () => {
+    vi.mocked(executeQuery).mockResolvedValue([
+      {
+        success: true,
+        sql: 'CREATE TABLE users (id integer NOT NULL, name varchar(255));',
+        result: { rows: [], columns: [] },
+        id: 'result-1',
+        metadata: {
+          executionTime: 1,
+          timestamp: new Date().toISOString(),
+        },
+      },
+    ])
+
     const repositories: Repositories = {
       schema: new InMemoryRepository({
         schemas: {
@@ -164,6 +186,9 @@ describe('schemaDesignTool', () => {
   })
 
   it('should handle empty operations array', async () => {
+    // Empty schema with empty operations should generate empty DDL
+    vi.mocked(executeQuery).mockResolvedValue([])
+
     const initialSchema = aSchema({ tables: {} })
     const repositories: Repositories = {
       schema: new InMemoryRepository({

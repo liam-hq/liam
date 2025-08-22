@@ -72,7 +72,6 @@ export async function generateUsecaseNode(
     assistantRole,
   )
 
-  // Check if we have analyzed requirements
   if (!state.analyzedRequirements) {
     const errorMessage =
       'No analyzed requirements found. Cannot generate use cases.'
@@ -135,7 +134,6 @@ export async function generateUsecaseNode(
         generatedUsecases: response.usecases,
       }
 
-      // Save artifacts if usecases are successfully generated
       await saveArtifacts(updatedState, repositories, assistantRole)
 
       return updatedState

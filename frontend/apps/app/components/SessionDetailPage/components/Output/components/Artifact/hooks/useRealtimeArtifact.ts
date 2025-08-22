@@ -12,7 +12,6 @@ const artifactDataSchema = v.object({
   artifact: artifactSchema,
   created_at: v.string(),
   updated_at: v.string(),
-  organization_id: v.pipe(v.string(), v.uuid()),
 })
 
 export function useRealtimeArtifact(designSessionId: string) {
@@ -34,9 +33,7 @@ export function useRealtimeArtifact(designSessionId: string) {
     const { data, error: fetchError } = await supabase
       .from('artifacts')
       // Explicitly specify columns as anon user has grants on individual columns, not all columns
-      .select(
-        'id, design_session_id, artifact, created_at, updated_at, organization_id',
-      )
+      .select('id, design_session_id, artifact, created_at, updated_at')
       .eq('design_session_id', designSessionId)
       .maybeSingle()
 

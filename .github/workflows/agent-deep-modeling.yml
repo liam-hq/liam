@@ -52,6 +52,7 @@ jobs:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           LANGSMITH_API_KEY: ${{ secrets.LANGSMITH_API_KEY }}
           LANGSMITH_PROJECT: "liam-app"
+        shell: bash
         run: |
           echo "## 🤖 Agent Deep Modeling Execution" > execution_log.md
           echo "" >> execution_log.md
@@ -61,14 +62,20 @@ jobs:
           echo "" >> execution_log.md
           echo '```' >> execution_log.md
           
-          if pnpm --filter @liam-hq/agent execute-deep-modeling 2>&1 | tee -a execution_log.md; then
-            echo '```' >> execution_log.md
-            echo "" >> execution_log.md
+          set -o pipefail
+          pnpm --filter @liam-hq/agent execute-deep-modeling 2>&1 | tee -a execution_log.md
+          exit_code=${PIPESTATUS[0]}
+          
+          echo '```' >> execution_log.md
+          echo "" >> execution_log.md
+          
+          if [ $exit_code -eq 0 ]; then
             echo "✅ **Status:** Completed successfully" >> execution_log.md
+            echo "success=true" >> $GITHUB_OUTPUT
           else
-            echo '```' >> execution_log.md
-            echo "" >> execution_log.md
-            echo "❌ **Status:** Failed with exit code $?" >> execution_log.md
+            echo "❌ **Status:** Failed with exit code $exit_code" >> execution_log.md
+            echo "success=false" >> $GITHUB_OUTPUT
+            echo "exit_code=$exit_code" >> $GITHUB_OUTPUT
           fi
           
           echo "" >> execution_log.md
@@ -80,3 +87,9 @@ jobs:
         with:
           header: agent-deep-modeling-execution
           path: execution_log.md
+
+      - name: Check execution result
+        if: steps.deep-modeling.outputs.success == 'false'
+        run: |
+          echo "Agent deep modeling execution failed"
+          exit 1

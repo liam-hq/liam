@@ -1,5 +1,11 @@
 # @liam-hq/schema
 
+## 0.5.1
+
+### Patch Changes
+
+- [#3105](https://github.com/liam-hq/liam/pull/3105) - 🐛 Fix ERD display failure with PostgreSQL 16.10+ pg_dump outputs / Thanks [@FunamaYukina](https://github.com/FunamaYukina)!
+
 ## 0.5.0
 
 ### Minor Changes

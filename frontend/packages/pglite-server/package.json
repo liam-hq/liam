@@ -20,7 +20,6 @@
     "vitest": "3.2.4"
   },
   "scripts": {
-    "build": "tsc",
     "fmt": "concurrently \"pnpm:fmt:*\"",
     "fmt:biome": "biome check --write --unsafe .",
     "fmt:eslint": "eslint --fix .",

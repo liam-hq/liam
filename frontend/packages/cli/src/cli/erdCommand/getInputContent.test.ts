@@ -25,9 +25,12 @@ describe('getInputContent', () => {
     vi.spyOn(fs, 'existsSync').mockReturnValue(true)
     vi.spyOn(fs, 'readFileSync').mockReturnValue(mockFileContent)
 
-    const content = await getInputContent(mockFilePath)
+    const result = await getInputContent(mockFilePath)
 
-    expect(content).toBe(mockFileContent)
+    expect(result.isOk()).toBe(true)
+    if (result.isOk()) {
+      expect(result.value).toBe(mockFileContent)
+    }
   })
 
   it('should throw an error if the local file path is invalid', async () => {
@@ -41,9 +44,14 @@ describe('getInputContent', () => {
     })
     vi.spyOn(fs, 'existsSync').mockReturnValue(false)
 
-    await expect(getInputContent(mockFilePath)).rejects.toThrow(
-      'File not found: /invalid/path/to/file.txt',
-    )
+    const result = await getInputContent(mockFilePath)
+
+    expect(result.isErr()).toBe(true)
+    if (result.isErr()) {
+      expect(result.error.message).toBe(
+        'File not found: /invalid/path/to/file.txt',
+      )
+    }
   })
 
   it('should download raw content from GitHub when given a GitHub blob URL', async () => {
@@ -58,9 +66,12 @@ describe('getInputContent', () => {
         async () => new Response(mockGitHubContent, { status: 200 }),
       )
 
-    const content = await getInputContent(mockGitHubUrl)
+    const result = await getInputContent(mockGitHubUrl)
 
-    expect(content).toBe(mockGitHubContent)
+    expect(result.isOk()).toBe(true)
+    if (result.isOk()) {
+      expect(result.value).toBe(mockGitHubContent)
+    }
     expect(mockFetch).toHaveBeenCalledWith(mockRawUrl)
   })
 
@@ -74,9 +85,12 @@ describe('getInputContent', () => {
         async () => new Response(mockUrlContent, { status: 200 }),
       )
 
-    const content = await getInputContent(mockUrl)
+    const result = await getInputContent(mockUrl)
 
-    expect(content).toBe(mockUrlContent)
+    expect(result.isOk()).toBe(true)
+    if (result.isOk()) {
+      expect(result.value).toBe(mockUrlContent)
+    }
     expect(mockFetch).toHaveBeenCalledWith(mockUrl)
   })
 
@@ -87,9 +101,12 @@ describe('getInputContent', () => {
       async () => new Response('', { status: 404, statusText: 'Not Found' }),
     )
 
-    await expect(getInputContent(mockUrl)).rejects.toThrow(
-      'Failed to download file: Not Found',
-    )
+    const result = await getInputContent(mockUrl)
+
+    expect(result.isErr()).toBe(true)
+    if (result.isErr()) {
+      expect(result.error.message).toBe('Failed to download file: Not Found')
+    }
   })
 
   it('should read and combine multiple files when given a glob pattern', async () => {
@@ -107,9 +124,12 @@ describe('getInputContent', () => {
       .mockReturnValueOnce(mockContents[0])
       .mockReturnValueOnce(mockContents[1])
 
-    const content = await getInputContent('/path/to/*.sql')
+    const result = await getInputContent('/path/to/*.sql')
 
-    expect(content).toBe(mockContents.join('\n'))
+    expect(result.isOk()).toBe(true)
+    if (result.isOk()) {
+      expect(result.value).toBe(mockContents.join('\n'))
+    }
     expect(glob).toHaveBeenCalledWith('/path/to/*.sql')
   })
 
@@ -126,17 +146,27 @@ describe('getInputContent', () => {
       .mockReturnValueOnce(false)
     vi.spyOn(fs, 'readFileSync').mockReturnValueOnce('file1 content')
 
-    await expect(getInputContent('*.sql')).rejects.toThrow(
-      'File not found: /path/to/nonexistent.sql',
-    )
+    const result = await getInputContent('*.sql')
+
+    expect(result.isErr()).toBe(true)
+    if (result.isErr()) {
+      expect(result.error.message).toBe(
+        'File not found: /path/to/nonexistent.sql',
+      )
+    }
   })
 
   it('should throw an error if no files match the glob pattern', async () => {
     vi.mocked(glob).mockImplementation(async () => [])
 
-    await expect(getInputContent('*.nonexistent')).rejects.toThrow(
-      'No files found matching the pattern. Please provide valid file(s).',
-    )
+    const result = await getInputContent('*.nonexistent')
+
+    expect(result.isErr()).toBe(true)
+    if (result.isErr()) {
+      expect(result.error.message).toBe(
+        'No files found matching the pattern. Please provide valid file(s).',
+      )
+    }
   })
 
   describe('Windows path handling', () => {
@@ -172,9 +202,12 @@ describe('getInputContent', () => {
       vi.spyOn(fs, 'existsSync').mockReturnValue(true)
       vi.spyOn(fs, 'readFileSync').mockReturnValue(mockFileContent)
 
-      const content = await getInputContent(windowsPath)
+      const result = await getInputContent(windowsPath)
 
-      expect(content).toBe(mockFileContent)
+      expect(result.isOk()).toBe(true)
+      if (result.isOk()) {
+        expect(result.value).toBe(mockFileContent)
+      }
       expect(glob).toHaveBeenCalledWith(normalizedPath)
     })
 
@@ -195,9 +228,12 @@ describe('getInputContent', () => {
         .mockReturnValueOnce(mockContents[0])
         .mockReturnValueOnce(mockContents[1])
 
-      const content = await getInputContent(windowsGlob)
+      const result = await getInputContent(windowsGlob)
 
-      expect(content).toBe(mockContents.join('\n'))
+      expect(result.isOk()).toBe(true)
+      if (result.isOk()) {
+        expect(result.value).toBe(mockContents.join('\n'))
+      }
       expect(glob).toHaveBeenCalledWith(normalizedGlob)
     })
 
@@ -215,9 +251,12 @@ describe('getInputContent', () => {
       vi.spyOn(fs, 'existsSync').mockReturnValue(true)
       vi.spyOn(fs, 'readFileSync').mockReturnValue(mockFileContent)
 
-      const content = await getInputContent(mixedPath)
+      const result = await getInputContent(mixedPath)
 
-      expect(content).toBe(mockFileContent)
+      expect(result.isOk()).toBe(true)
+      if (result.isOk()) {
+        expect(result.value).toBe(mockFileContent)
+      }
       expect(glob).toHaveBeenCalledWith(normalizedPath)
     })
   })
@@ -255,9 +294,12 @@ describe('getInputContent', () => {
       vi.spyOn(fs, 'existsSync').mockReturnValue(true)
       vi.spyOn(fs, 'readFileSync').mockReturnValue(mockFileContent)
 
-      const content = await getInputContent(linuxPathWithBackslash)
+      const result = await getInputContent(linuxPathWithBackslash)
 
-      expect(content).toBe(mockFileContent)
+      expect(result.isOk()).toBe(true)
+      if (result.isOk()) {
+        expect(result.value).toBe(mockFileContent)
+      }
       // Should be called with the original path, not converted
       expect(glob).toHaveBeenCalledWith(linuxPathWithBackslash)
     })
@@ -275,9 +317,12 @@ describe('getInputContent', () => {
       vi.spyOn(fs, 'existsSync').mockReturnValue(true)
       vi.spyOn(fs, 'readFileSync').mockReturnValue(mockFileContent)
 
-      const content = await getInputContent(linuxPath)
+      const result = await getInputContent(linuxPath)
 
-      expect(content).toBe(mockFileContent)
+      expect(result.isOk()).toBe(true)
+      if (result.isOk()) {
+        expect(result.value).toBe(mockFileContent)
+      }
       expect(glob).toHaveBeenCalledWith(linuxPath)
     })
   })

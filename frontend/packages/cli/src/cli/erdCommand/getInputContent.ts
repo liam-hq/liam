@@ -1,6 +1,7 @@
 import fs from 'node:fs'
 import { URL } from 'node:url'
 import { glob } from 'glob'
+import { err, ok, type Result, ResultAsync } from 'neverthrow'
 
 function isValidUrl(url: string): boolean {
   try {
@@ -30,49 +31,60 @@ function normalizePathForGlob(inputPath: string): string {
   // Once we add Windows CI environment, we should revisit this implementation.
 }
 
-async function readLocalFiles(pattern: string): Promise<string> {
+async function readLocalFiles(pattern: string): Promise<Result<string, Error>> {
   const normalizedPattern = normalizePathForGlob(pattern)
   const files = await glob(normalizedPattern)
   if (files.length === 0) {
-    throw new Error(
-      'No files found matching the pattern. Please provide valid file(s).',
+    return err(
+      new Error(
+        'No files found matching the pattern. Please provide valid file(s).',
+      ),
     )
   }
 
-  const contents = await Promise.all(
-    files.map(async (filePath) => {
-      if (!fs.existsSync(filePath)) {
-        throw new Error(`File not found: ${filePath}`)
-      }
-      return fs.readFileSync(filePath, 'utf8')
-    }),
-  )
+  // Pre-validate file existence to avoid throwing inside async map
+  const missing = files.find((filePath) => !fs.existsSync(filePath))
+  if (missing) {
+    return err(new Error(`File not found: ${missing}`))
+  }
 
-  return contents.join('\n')
+  const contents = files.map((filePath) => fs.readFileSync(filePath, 'utf8'))
+  return ok(contents.join('\n'))
 }
 
-async function downloadGitHubRawContent(githubUrl: string): Promise<string> {
+function downloadGitHubRawContent(
+  githubUrl: string,
+): ResultAsync<string, Error> {
   const rawFileUrl = githubUrl
     .replace('github.com', 'raw.githubusercontent.com')
     .replace('/blob', '')
-  return await downloadFile(rawFileUrl)
+  return downloadFile(rawFileUrl)
 }
 
-async function downloadFile(url: string): Promise<string> {
-  const response = await fetch(url)
-  if (!response.ok) {
-    throw new Error(`Failed to download file: ${response.statusText}`)
-  }
-  const data = await response.text()
-  return data
+function downloadFile(url: string): ResultAsync<string, Error> {
+  return ResultAsync.fromPromise(
+    fetch(url).then(async (response) => {
+      if (!response.ok) {
+        return await Promise.reject(
+          new Error(`Failed to download file: ${response.statusText}`),
+        )
+      }
+      return await response.text()
+    }),
+    (error) => (error instanceof Error ? error : new Error(String(error))),
+  )
 }
 
-export async function getInputContent(inputPath: string): Promise<string> {
+export async function getInputContent(
+  inputPath: string,
+): Promise<Result<string, Error>> {
   if (!isValidUrl(inputPath)) {
     return await readLocalFiles(inputPath)
   }
 
-  return isGitHubFileUrl(inputPath)
-    ? await downloadGitHubRawContent(inputPath)
-    : await downloadFile(inputPath)
+  const resultAsync = isGitHubFileUrl(inputPath)
+    ? downloadGitHubRawContent(inputPath)
+    : downloadFile(inputPath)
+
+  return await resultAsync
 }

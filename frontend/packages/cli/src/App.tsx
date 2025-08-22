@@ -7,7 +7,7 @@ import {
   versionSchema,
 } from '@liam-hq/erd-core'
 import { type Schema, schemaSchema } from '@liam-hq/schema'
-
+import { ResultAsync } from 'neverthrow'
 import { useEffect, useState } from 'react'
 import * as v from 'valibot'
 
@@ -15,23 +15,25 @@ const emptySchema: Schema = {
   tables: {},
 }
 
-async function loadSchemaContent() {
-  try {
-    const response = await fetch('./schema.json')
-    if (!response.ok) {
-      throw new Error(`Failed to fetch schema: ${response.statusText}`)
-    }
-    const data = await response.json()
+function loadSchemaContent() {
+  return ResultAsync.fromPromise(
+    fetch('./schema.json').then(async (response) => {
+      if (!response.ok) {
+        return await Promise.reject(
+          new Error(`Failed to fetch schema: ${response.statusText}`),
+        )
+      }
+      return await response.json()
+    }),
+    (error) => (error instanceof Error ? error : new Error(String(error))),
+  ).map((data) => {
     const result = v.safeParse(schemaSchema, data)
-
     if (result.success) {
       return result.output
     }
-
     console.info(result.issues)
-  } catch (error) {
-    console.error('Error loading schema content:', error)
-  }
+    return undefined
+  })
 }
 
 const versionData = {
@@ -70,7 +72,13 @@ function App() {
     getSidebarSettingsFromCookie()
 
   useEffect(() => {
-    loadSchemaContent().then((val) => setSchema(val ?? emptySchema))
+    loadSchemaContent().match(
+      (val) => setSchema(val ?? emptySchema),
+      (error) => {
+        console.error('Error loading schema content:', error)
+        setSchema(emptySchema)
+      },
+    )
   }, [])
 
   return (

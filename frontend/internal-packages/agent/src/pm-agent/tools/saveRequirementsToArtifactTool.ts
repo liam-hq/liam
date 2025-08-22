@@ -53,7 +53,6 @@ const createArtifactFromRequirements = (
 ): Artifact => {
   const requirements: (FunctionalRequirement | NonFunctionalRequirement)[] = []
 
-  // Add functional requirements
   for (const [category, items] of Object.entries(
     analyzedRequirements.functionalRequirements,
   )) {
@@ -66,7 +65,6 @@ const createArtifactFromRequirements = (
     requirements.push(functionalRequirement)
   }
 
-  // Add non-functional requirements
   for (const [category, items] of Object.entries(
     analyzedRequirements.nonFunctionalRequirements,
   )) {
@@ -93,7 +91,6 @@ const getToolConfigurable = (
   if (baseConfigResult.isErr()) {
     return err(baseConfigResult.error)
   }
-  // Parse config for toolCall and configurable using Valibot
   const configParseResult = v.safeParse(configSchema, config)
   if (!configParseResult.success) {
     const errorMessage = configParseResult.issues

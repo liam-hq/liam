@@ -137,44 +137,12 @@
 
 .visibilitySelect {
   width: 100%;
-  padding: var(--spacing-2) var(--spacing-3);
-  padding-left: var(--spacing-9);
-  background-color: var(--color-gray-800);
-  border: 1px solid var(--color-gray-700);
-  border-radius: var(--radius-2);
-  color: var(--color-white);
-  font-size: var(--font-size-4);
-  cursor: pointer;
-  appearance: none;
-  transition: border-color 0.2s;
 }
 
-.visibilitySelect:hover {
-  border-color: var(--color-gray-600);
-}
-
-.visibilitySelect:focus {
-  outline: none;
-  border-color: var(--color-primary-500);
-}
-
-.visibilitySelect:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.selectIcon {
-  position: absolute;
-  left: var(--spacing-3);
-  top: 50%;
-  transform: translateY(-50%);
-  pointer-events: none;
-  color: var(--color-gray-400);
-}
-
-.selectOption {
-  background-color: var(--color-gray-800);
-  color: var(--color-white);
+.selectItemContent {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
 }
 
 .copyButton {

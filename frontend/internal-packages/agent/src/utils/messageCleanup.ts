@@ -7,8 +7,6 @@ import { AIMessage, type BaseMessage } from '@langchain/core/messages'
  */
 export function removeReasoningFromMessage(message: BaseMessage): BaseMessage {
   if (message instanceof AIMessage) {
-    // Create a new AIMessage without the reasoning field
-    // Clone the message but exclude reasoning if it exists
     const {
       content,
       additional_kwargs,
@@ -19,12 +17,10 @@ export function removeReasoningFromMessage(message: BaseMessage): BaseMessage {
     } = message
     const cleanedKwargs = { ...additional_kwargs }
 
-    // Remove reasoning from additional_kwargs if it exists
     if ('reasoning' in cleanedKwargs) {
       delete cleanedKwargs['reasoning']
     }
 
-    // Preserve all other message properties including tool_calls
     const aiMessageFields: {
       content: typeof content
       additional_kwargs: typeof cleanedKwargs
@@ -38,7 +34,6 @@ export function removeReasoningFromMessage(message: BaseMessage): BaseMessage {
       response_metadata,
     }
 
-    // Only add optional fields if they are defined
     if (tool_calls !== undefined) {
       aiMessageFields.tool_calls = tool_calls
     }

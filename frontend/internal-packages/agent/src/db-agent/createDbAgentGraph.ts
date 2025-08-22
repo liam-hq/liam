@@ -1,6 +1,6 @@
 import { END, START, StateGraph } from '@langchain/langgraph'
 import type { BaseCheckpointSaver } from '@langchain/langgraph-checkpoint'
-import { createAnnotations } from '../chat/workflow/shared/createAnnotations'
+import { workflowAnnotation } from '../chat/workflow/shared/createAnnotations'
 import { designSchemaNode } from './nodes/designSchemaNode'
 import { invokeSchemaDesignToolNode } from './nodes/invokeSchemaDesignToolNode'
 import { routeAfterDesignSchema } from './routing/routeAfterDesignSchema'
@@ -23,8 +23,7 @@ const RETRY_POLICY = {
  * @param checkpointer - Optional checkpoint saver for persistent state management
  */
 export const createDbAgentGraph = (checkpointer?: BaseCheckpointSaver) => {
-  const ChatStateAnnotation = createAnnotations()
-  const dbAgentGraph = new StateGraph(ChatStateAnnotation)
+  const dbAgentGraph = new StateGraph(workflowAnnotation)
 
   dbAgentGraph
     .addNode('designSchema', designSchemaNode, {

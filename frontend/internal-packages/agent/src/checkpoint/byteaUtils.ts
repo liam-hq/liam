@@ -10,12 +10,10 @@
  * Uses efficient methods based on environment (Node.js vs Browser)
  */
 export const uint8ArrayToBase64 = (uint8Array: Uint8Array): string => {
-  // For Node.js environments - more efficient for large data
   if (typeof Buffer !== 'undefined') {
     return Buffer.from(uint8Array).toString('base64')
   }
 
-  // For browser environments - more efficient than the old method
   const binaryString = Array.from(uint8Array)
     .map((byte) => String.fromCharCode(byte))
     .join('')
@@ -27,10 +25,7 @@ export const uint8ArrayToBase64 = (uint8Array: Uint8Array): string => {
  * Handles format: '\x48656c6c6f' -> [72, 101, 108, 108, 111]
  */
 export const hexToUint8Array = (hex: string): Uint8Array => {
-  // Remove the '\x' prefix if present
   const cleanHex = hex.startsWith('\\x') ? hex.slice(2) : hex
-
-  // Convert hex string to Uint8Array
   const bytes = new Uint8Array(cleanHex.length / 2)
   for (let i = 0; i < cleanHex.length; i += 2) {
     bytes[i / 2] = Number.parseInt(cleanHex.substring(i, i + 2), 16)
@@ -43,12 +38,10 @@ export const hexToUint8Array = (hex: string): Uint8Array => {
  * Uses efficient methods based on environment
  */
 export const base64ToUint8Array = (base64: string): Uint8Array => {
-  // For Node.js environments - more efficient
   if (typeof Buffer !== 'undefined') {
     return new Uint8Array(Buffer.from(base64, 'base64'))
   }
 
-  // For browser environments
   const binaryString = atob(base64)
   const bytes = new Uint8Array(binaryString.length)
   for (let i = 0; i < binaryString.length; i++) {
@@ -62,7 +55,6 @@ export const base64ToUint8Array = (base64: string): Uint8Array => {
  * Supabase always returns BYTEA columns in hex format (\x...)
  */
 export const byteaToUint8Array = (data: string): Uint8Array => {
-  // Supabase BYTEA is always in hex format
   return hexToUint8Array(data)
 }
 

@@ -25,21 +25,14 @@ export async function runPreprocess(
   outputDir: string,
   format: SupportedFormat | undefined,
 ): Promise<Output> {
-  let input: string
-  try {
-    input = await getInputContent(inputPath)
-  } catch (error) {
+  const inputContentResult = await getInputContent(inputPath)
+  if (inputContentResult.isErr()) {
     return {
       outputFilePath: null,
-      errors: [
-        new ArgumentError(
-          error instanceof Error
-            ? error.message
-            : 'Failed to read input file(s)',
-        ),
-      ],
+      errors: [new ArgumentError(inputContentResult.error.message)],
     }
   }
+  const input = inputContentResult.value
   let detectedFormat: SupportedFormat | undefined
 
   if (format === undefined) {

@@ -1,6 +1,6 @@
 'use client'
 
-import { Button } from '@liam-hq/ui'
+import { Button, Link } from '@liam-hq/ui'
 import type { FC } from 'react'
 import { useState } from 'react'
 import { ShareDialog } from '@/components/ShareDialog'
@@ -22,7 +22,7 @@ export const ShareButton: FC<Props> = ({
       <Button
         variant="outline-secondary"
         size="md"
-        leftIcon={<span style={{ fontSize: '14px' }}>🔗</span>}
+        leftIcon={<Link size={16} />}
         onClick={() => setIsShareDialogOpen(true)}
         className={styles.button}
       >

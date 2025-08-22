@@ -5,7 +5,7 @@ import {
   prepareDmlNode,
   validateSchemaNode,
 } from '../chat/workflow/nodes'
-import { createAnnotations } from '../chat/workflow/shared/createAnnotations'
+import { workflowAnnotation } from '../chat/workflow/shared/createAnnotations'
 import { RETRY_POLICY } from '../shared/errorHandling'
 
 /**
@@ -19,8 +19,7 @@ import { RETRY_POLICY } from '../shared/errorHandling'
  * @param checkpointer - Optional checkpoint saver for persistent state management
  */
 export const createQaAgentGraph = (checkpointer?: BaseCheckpointSaver) => {
-  const ChatStateAnnotation = createAnnotations()
-  const qaAgentGraph = new StateGraph(ChatStateAnnotation)
+  const qaAgentGraph = new StateGraph(workflowAnnotation)
 
   qaAgentGraph
     .addNode('generateUsecase', generateUsecaseNode, {

@@ -15,13 +15,11 @@ import { withTimelineItemSync } from '../utils/withTimelineItemSync'
 function generateWorkflowSummary(
   state: WorkflowState,
 ): ResultAsync<AIMessage, Error> {
-  // Create LLM for summary generation
   const llm = new ChatOpenAI({
     model: 'gpt-5-nano',
     reasoning: { effort: 'minimal' },
   })
 
-  // Create a summary prompt based on the workflow messages
   const summaryPrompt = `Based on the following workflow conversation about database design, provide a concise summary of what was accomplished:
 
 Please summarize:
@@ -57,7 +55,6 @@ export async function finalizeArtifactsNode(
 
   const { repositories } = configurableResult.value
 
-  // Generate workflow summary for successful workflows
   const assistantRole: Database['public']['Enums']['assistant_role_enum'] = 'db'
 
   await logAssistantMessage(

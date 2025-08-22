@@ -24,7 +24,6 @@ export const invokeDbAgent = (
     config.configurable.repositories.schema.checkpointer,
   )
 
-  // Setup workflow state with message conversion and timeline sync
   return setupWorkflowState(params, config).andThen((setup) =>
     executeWorkflowWithTracking(compiled, setup, recursionLimit),
   )

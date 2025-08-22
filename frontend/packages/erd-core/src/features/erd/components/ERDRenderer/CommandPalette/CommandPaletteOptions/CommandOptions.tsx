@@ -12,6 +12,7 @@ import { useUserEditingOrThrow } from '@/stores'
 import { useCommandPalette } from '../CommandPaletteProvider'
 import { useCopyLink } from '../hooks/useCopyLink'
 import { useFitScreen } from '../hooks/useFitScreen'
+import { getSuggestionText } from '../utils'
 import styles from './CommandPaletteOptions.module.css'
 
 export const CommandPaletteCommandOptions: FC = () => {
@@ -26,7 +27,7 @@ export const CommandPaletteCommandOptions: FC = () => {
     <Command.Group heading="Commands">
       <Command.Item
         className={styles.item}
-        value="copy link"
+        value={getSuggestionText({ type: 'command', name: 'copy link' })}
         onSelect={() => {
           copyLink()
           setOpen(false)
@@ -38,7 +39,7 @@ export const CommandPaletteCommandOptions: FC = () => {
         <span className={styles.keyIcon}>C</span>
       </Command.Item>
       <Command.Item
-        value="Zoom to Fit"
+        value={getSuggestionText({ type: 'command', name: 'Zoom to Fit' })}
         onSelect={() => {
           zoomToFit()
           setOpen(false)
@@ -51,7 +52,7 @@ export const CommandPaletteCommandOptions: FC = () => {
         <span className={styles.keyIcon}>1</span>
       </Command.Item>
       <Command.Item
-        value="Tidy Up"
+        value={getSuggestionText({ type: 'command', name: 'Tidy Up' })}
         onSelect={() => {
           tidyUp()
           setOpen(false)
@@ -64,7 +65,7 @@ export const CommandPaletteCommandOptions: FC = () => {
         <span className={styles.keyIcon}>T</span>
       </Command.Item>
       <Command.Item
-        value="Show All Fields"
+        value={getSuggestionText({ type: 'command', name: 'Show All Fields' })}
         onSelect={() => {
           setShowMode('ALL_FIELDS')
           setOpen(false)
@@ -77,7 +78,7 @@ export const CommandPaletteCommandOptions: FC = () => {
         <span className={styles.keyIcon}>2</span>
       </Command.Item>
       <Command.Item
-        value="Show Table Name"
+        value={getSuggestionText({ type: 'command', name: 'Show Table Name' })}
         onSelect={() => {
           setShowMode('TABLE_NAME')
           setOpen(false)
@@ -90,7 +91,7 @@ export const CommandPaletteCommandOptions: FC = () => {
         <span className={styles.keyIcon}>3</span>
       </Command.Item>
       <Command.Item
-        value="Show Key Only"
+        value={getSuggestionText({ type: 'command', name: 'Show Key Only' })}
         onSelect={() => {
           setShowMode('KEY_ONLY')
           setOpen(false)

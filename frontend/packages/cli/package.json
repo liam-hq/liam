@@ -15,7 +15,7 @@
   },
   "license": "Apache-2.0",
   "private": false,
-  "version": "0.7.3",
+  "version": "0.7.5",
   "type": "module",
   "publishConfig": {
     "access": "public"
@@ -33,6 +33,7 @@
     "ink": "6.0.1",
     "ink-gradient": "3.0.0",
     "inquirer": "12.6.3",
+    "neverthrow": "8.2.0",
     "react": "19.1.1",
     "react-dom": "19.1.1",
     "valibot": "1.1.0",
