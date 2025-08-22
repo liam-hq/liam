@@ -4,7 +4,7 @@ import { HumanMessage } from '@langchain/core/messages'
 import type { Schema } from '@liam-hq/schema'
 import type { Result } from 'neverthrow'
 import { err, ok, okAsync } from 'neverthrow'
-import { createGraph } from '../src/createGraph'
+import { createLeadAgentGraph } from '../src/lead-agent/createLeadAgentGraph'
 import { hasHelpFlag, parseDesignProcessArgs } from './shared/argumentParser'
 import {
   createLogger,
@@ -81,7 +81,7 @@ const executeDeepModelingProcess = async (
   if (setupResult.isErr()) return err(setupResult.error)
   const { workflowState, options } = setupResult.value
 
-  const graph = createGraph(
+  const graph = createLeadAgentGraph(
     options.configurable.repositories.schema.checkpointer,
   )
 
