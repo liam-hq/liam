@@ -195,7 +195,6 @@ const constraintToCheckConstraint = (
     return null
   }
 
-  // Use location-based approach with chunk offset correction
   const absoluteLocation = constraint.location + (chunkOffset || 0)
   const parentheses = findBalancedParentheses(rawSql, absoluteLocation)
 
