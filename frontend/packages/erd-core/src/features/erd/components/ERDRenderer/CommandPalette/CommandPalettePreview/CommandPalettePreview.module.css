@@ -1,16 +1,21 @@
-.tableNodeWrapper {
-  padding: var(--spacing-10);
+.container {
   background-color: var(--global-background);
   height: 100%;
   width: 270px;
+  border-radius: var(--border-radius-lg-plus);
+}
+
+.tableNodeWrapper {
+  height: 100%;
+  width: 100%;
+  padding: var(--spacing-10);
   overflow-x: hidden;
   overflow-y: scroll;
   scrollbar-gutter: stable both-edges;
-  border-radius: var(--border-radius-lg-plus);
 }
 
 .previewImage {
   height: 100%;
-  width: 270px;
+  width: 100%;
   border-radius: var(--border-radius-lg-plus);
 }

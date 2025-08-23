@@ -4,16 +4,18 @@ import styles from './CommandPalettePreview.module.css'
 
 export const CommandPreview: FC = () => {
   return (
-    <img
-      className={styles.previewImage}
-      src={
-        typeof CopyLinkPreview === 'string'
-          ? CopyLinkPreview
-          : typeof CopyLinkPreview.src === 'string'
-            ? CopyLinkPreview.src
-            : undefined
-      }
-      alt=""
-    />
+    <div className={styles.container}>
+      <img
+        className={styles.previewImage}
+        src={
+          typeof CopyLinkPreview === 'string'
+            ? CopyLinkPreview
+            : typeof CopyLinkPreview.src === 'string'
+              ? CopyLinkPreview.src
+              : undefined
+        }
+        alt=""
+      />
+    </div>
   )
 }

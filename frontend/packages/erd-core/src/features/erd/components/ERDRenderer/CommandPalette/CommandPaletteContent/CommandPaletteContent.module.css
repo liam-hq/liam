@@ -32,7 +32,6 @@
   display: flex;
   flex-direction: column;
   padding: var(--spacing-5) var(--spacing-4);
-  width: 302px;
 }
 
 /* Empty search result display */
