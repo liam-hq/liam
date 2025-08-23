@@ -12,7 +12,7 @@ export const TablePreview: FC<Props> = ({ tableName }) => {
   const table = schema.current.tables[tableName]
 
   return (
-    <div className={styles.container}>
+    <div className={styles.tableNodeWrapper}>
       {table && (
         <TableNode
           id=""
