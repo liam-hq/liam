@@ -7,7 +7,7 @@ type UseCopyOptions = {
   toast?: {
     success: string
     error: string
-    position?: ToastPosition
+    position?: ToastPosition | undefined
   }
   resetDelay?: number
 }

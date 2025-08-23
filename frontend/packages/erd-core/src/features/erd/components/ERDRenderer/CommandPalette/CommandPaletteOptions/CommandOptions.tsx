@@ -16,7 +16,7 @@ import { getSuggestionText } from '../utils'
 import styles from './CommandPaletteOptions.module.css'
 
 export const CommandPaletteCommandOptions: FC = () => {
-  const { copyLink } = useCopyLink()
+  const { copyLink } = useCopyLink('command-palette')
   const { zoomToFit, tidyUp } = useFitScreen()
   const { setShowMode } = useUserEditingOrThrow()
 
