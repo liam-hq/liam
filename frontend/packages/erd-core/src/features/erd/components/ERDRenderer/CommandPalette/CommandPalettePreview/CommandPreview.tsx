@@ -2,7 +2,11 @@ import type { FC } from 'react'
 import CopyLinkPreview from './asserts/copy-link-preview.gif'
 import styles from './CommandPalettePreview.module.css'
 
-export const CommandPreview: FC = () => {
+type Props = {
+  commandName: string
+}
+
+export const CommandPreview: FC<Props> = () => {
   return (
     <div className={styles.container}>
       <img

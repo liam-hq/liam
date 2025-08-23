@@ -74,7 +74,9 @@ export const CommandPaletteContent: FC = () => {
           {suggestion?.type === 'table' && (
             <TablePreview tableName={suggestion.name} />
           )}
-          {suggestion?.type === 'command' && <CommandPreview />}
+          {suggestion?.type === 'command' && (
+            <CommandPreview commandName={suggestion.name} />
+          )}
         </div>
       </div>
     </Command>
