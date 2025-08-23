@@ -5,6 +5,7 @@ import { type FC, useCallback, useEffect, useMemo, useState } from 'react'
 import { useTableSelection } from '@/features/erd/hooks'
 import { useSchemaOrThrow } from '@/stores'
 import { TableNode } from '../../../ERDContent/components'
+import { CommandPaletteCommandOptions } from '../CommandPaletteOptions'
 import { CommandPaletteSearchInput } from '../CommandPaletteSearchInput'
 import type { CommandPaletteInputMode } from '../types'
 import { getSuggestionText, textToSuggestion } from '../utils'
@@ -126,12 +127,9 @@ export const CommandPaletteContent: FC<Props> = ({ closeDialog }) => {
               ))}
             </Command.Group>
           )}
-          {
-            (inputMode.type === 'default' || inputMode.type === 'command') &&
-              null
-            // TODO(command options): uncomment the following line to release command options
-            // <CommandPaletteCommandOptions />
-          }
+          {(inputMode.type === 'default' || inputMode.type === 'command') && (
+            <CommandPaletteCommandOptions />
+          )}
         </Command.List>
         <div
           className={styles.previewContainer}
