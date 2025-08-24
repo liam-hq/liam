@@ -382,11 +382,8 @@ const SidebarMenuButton = ({
     return button
   }
 
-  if (typeof tooltip === 'string') {
-    tooltip = {
-      children: tooltip,
-    }
-  }
+  const tooltipProps: ComponentProps<typeof TooltipContent> =
+    typeof tooltip === 'string' ? { children: tooltip } : tooltip
 
   return (
     <TooltipRoot>
@@ -395,7 +392,7 @@ const SidebarMenuButton = ({
         side="top"
         align="center"
         hidden={!showtooltip}
-        {...tooltip}
+        {...tooltipProps}
       />
     </TooltipRoot>
   )
