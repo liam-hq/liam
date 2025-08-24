@@ -9,26 +9,31 @@ import { prepareDmlNode } from './prepareDmlNode'
 
 vi.mock('../../../langchain/agents/dmlGenerationAgent/agent')
 
+// Helper function to create a mock DMLGenerationAgent
+const createMockDMLGenerationAgent = (
+  dmlOperations: unknown[] = [
+    {
+      useCaseId: 'test-id-1',
+      operation_type: 'INSERT',
+      sql: "INSERT INTO users (id, name) VALUES (1, 'Test User')",
+      description: 'Create test user',
+    },
+  ],
+): DMLGenerationAgent => {
+  return {
+    generate: vi.fn().mockResolvedValue({
+      dmlOperations,
+    }),
+  } satisfies DMLGenerationAgent
+}
+
 describe('prepareDmlNode', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     // Set up default mock implementation
-    vi.mocked(DMLGenerationAgent).mockImplementation(() => {
-      const agent = {
-        generate: vi.fn().mockResolvedValue({
-          dmlOperations: [
-            {
-              useCaseId: 'test-id-1',
-              operation_type: 'INSERT',
-              sql: "INSERT INTO users (id, name) VALUES (1, 'Test User')",
-              description: 'Create test user',
-            },
-          ],
-        }),
-      }
-      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-      return agent as unknown as DMLGenerationAgent
-    })
+    vi.mocked(DMLGenerationAgent).mockImplementation(() =>
+      createMockDMLGenerationAgent(),
+    )
   })
 
   const createMockState = (overrides?: Partial<WorkflowState>) => {
@@ -125,15 +130,9 @@ describe('prepareDmlNode', () => {
   })
 
   it('should handle empty DML generation result', async () => {
-    vi.mocked(DMLGenerationAgent).mockImplementationOnce(() => {
-      const agent = {
-        generate: vi.fn().mockResolvedValue({
-          dmlOperations: [],
-        }),
-      }
-      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-      return agent as unknown as DMLGenerationAgent
-    })
+    vi.mocked(DMLGenerationAgent).mockImplementationOnce(() =>
+      createMockDMLGenerationAgent([]),
+    )
 
     const state = createMockState({
       schemaData: aSchema({

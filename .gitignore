@@ -16,3 +16,6 @@ coverage/
 
 # Lefthook local config
 lefthook-local.yml
+
+# Temporary test files
+test-eslint.js

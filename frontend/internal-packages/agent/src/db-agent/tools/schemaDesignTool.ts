@@ -17,7 +17,8 @@ const schemaDesignToolSchema = v.object({
   operations: operationsSchema,
 })
 
-// toJsonSchema returns a JSONSchema7, which is not assignable to JSONSchema
+// Convert valibot schema to LangChain JSONSchema format
+// Type assertion is necessary due to incompatibility between JSONSchema7 and JSONSchema types
 // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
 const toolSchema = toJsonSchema(schemaDesignToolSchema) as JSONSchema
 
