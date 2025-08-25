@@ -5,7 +5,7 @@ import {
   type SupportedFormat,
   setPrismWasmUrl,
   supportedFormatSchema,
-} from '@liam-hq/db-structure/parser'
+} from '@liam-hq/schema/parser'
 import * as Sentry from '@sentry/nextjs'
 import { load } from 'cheerio'
 import type { Metadata } from 'next'
@@ -87,7 +87,7 @@ export default async function Page({
 
   const url = `https://${joinedPath}`
 
-  const blankSchema = { tables: {} }
+  const blankSchema = { tables: {}, enums: {} }
 
   const contentUrl = resolveContentUrl(url)
   const weCannotAccess = `Our signal's lost in the void! No access at this time..`

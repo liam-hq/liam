@@ -1,4 +1,4 @@
-import { aColumn, aSchema, aTable } from '@liam-hq/db-structure'
+import { aColumn, aSchema, aTable } from '@liam-hq/schema'
 import { ToastProvider } from '@liam-hq/ui'
 import type { Meta, StoryObj } from '@storybook/react'
 import { ExportDropdown } from './ExportDropdown'

@@ -4,8 +4,8 @@
   "version": "0.1.0",
   "dependencies": {
     "@liam-hq/ui": "workspace:*",
-    "react": "19.1.0",
-    "react-dom": "19.1.0"
+    "react": "19.1.1",
+    "react-dom": "19.1.1"
   },
   "devDependencies": {
     "@storybook/addon-essentials": "8.6.14",
@@ -13,12 +13,12 @@
     "@storybook/addon-links": "8.6.14",
     "@storybook/nextjs": "8.6.14",
     "@storybook/react": "8.6.14",
-    "@types/react": "19.1.8",
-    "@types/react-dom": "19.1.6",
+    "@types/react": "19.1.9",
+    "@types/react-dom": "19.1.7",
     "msw": "2.10.4",
     "msw-storybook-addon": "2.0.5",
     "storybook": "8.6.14",
-    "typescript": "5.8.3"
+    "typescript": "5.9.2"
   },
   "scripts": {
     "build": "mkdir -p public && mkdir -p .storybook/public && storybook build",

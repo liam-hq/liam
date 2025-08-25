@@ -5,7 +5,7 @@
   "dependencies": {
     "@liam-hq/ui": "workspace:*",
     "@next/third-parties": "15.3.5",
-    "@rive-app/react-canvas": "4.20.1",
+    "@rive-app/react-canvas": "4.22.1",
     "@sentry/nextjs": "9",
     "clsx": "2.1.1",
     "date-fns": "4.1.0",
@@ -14,22 +14,22 @@
     "fumadocs-ui": "15.6.1",
     "lucide-react": "0.511.0",
     "next": "15.3.5",
-    "react": "19.1.0",
-    "react-dom": "19.1.0",
+    "react": "19.1.1",
+    "react-dom": "19.1.1",
     "tailwind-variants": "1.0.0",
     "ts-pattern": "5.7.1"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.1.2",
+    "@biomejs/biome": "2.1.4",
     "@liam-hq/configs": "workspace:*",
     "@tailwindcss/postcss": "4.1.11",
-    "@types/node": "22.16.5",
-    "@types/react": "19.1.8",
-    "@types/react-dom": "19.1.6",
-    "eslint": "9.31.0",
+    "@types/node": "22.17.1",
+    "@types/react": "19.1.9",
+    "@types/react-dom": "19.1.7",
+    "eslint": "9.33.0",
     "postcss": "8.5.6",
     "tailwindcss": "4.1.11",
-    "typescript": "5.8.3"
+    "typescript": "5.9.2"
   },
   "scripts": {
     "build": "next build",

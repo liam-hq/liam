@@ -104,145 +104,73 @@ All user data must be encrypted at rest and in transit, with multi-factor authen
 The architecture should support horizontal scaling to accommodate growing user base without significant refactoring.
 `
 
-export const Minimal: Story = {
-  name: 'Minimal Display',
-  args: {
-    doc: `# Simple Document
-
-Just a simple document with minimal content to test edge cases.
-
-## Single Section
-
-This document has very little content.`,
-  },
-}
-
-export const WithRequirements: Story = {
-  name: 'Requirements Only (No Use Cases)',
+export const Default: Story = {
+  name: 'Default',
   args: {
     doc: sampleMarkdown,
   },
 }
 
-export const FullExample: Story = {
-  name: 'Full Example (Requirements, Use Cases, Execution Results)',
+export const WithLongSQLQueries: Story = {
+  name: 'With Long SQL Queries',
   args: {
-    doc: `# 📦 Inventory Management System
+    doc: `# SQL Query Overflow Test
 
-The system should track inventory levels and generate alerts when stock falls below minimum thresholds.
-
----
-
-## 📋 Business Requirements
-
-The inventory management system must provide real-time tracking of stock levels across multiple warehouses, automated reordering capabilities, and comprehensive reporting features to optimize supply chain operations.
-
-## 🔧 Functional Requirements
-
-### 1. Inventory Tracking
-
-Monitor real-time inventory levels across all warehouses with automatic synchronization and alerts.
-
-**Use Cases:**
-
-#### 1. Update Stock Levels
-
-When products are received or shipped, the system should update inventory counts in real-time.
-
-**Related DML Operations:**
-
-1. **UPDATE - Decrease Stock for Shipment**
+## Long Single-Line Query
 
 \`\`\`sql
-UPDATE inventory 
-SET quantity = quantity - 50,
-    last_modified = CURRENT_TIMESTAMP
-WHERE product_id = 'PROD-001' 
-  AND warehouse_id = 'WH-EAST';
+SELECT users.id, users.username, users.email, users.first_name, users.last_name, users.phone_number, users.date_of_birth, users.registration_date, users.last_login_date, users.account_status, users.email_verified, users.phone_verified, users.two_factor_enabled, users.preferred_language, users.timezone, users.notification_preferences, profiles.bio, profiles.avatar_url, profiles.cover_photo_url, profiles.website_url, profiles.location, profiles.occupation FROM users LEFT JOIN profiles ON users.id = profiles.user_id WHERE users.account_status = 'active' AND users.email_verified = true ORDER BY users.registration_date DESC LIMIT 100;
 \`\`\`
 
-**Execution History:**
-- 12/28/2024, 10:30:45 AM: ✅ Success - Updated 1 row(s) in 23ms
-- 12/28/2024, 09:15:22 AM: ✅ Success - Updated 1 row(s) in 18ms
-- 12/27/2024, 03:45:10 PM: ❌ Failed - Lock timeout exceeded after 5000ms
-
-2. **INSERT - Record Transaction**
+## Complex Table Creation
 
 \`\`\`sql
-INSERT INTO inventory_transactions 
-(transaction_id, product_id, quantity_change, transaction_type, created_at)
-VALUES 
-('TXN-' || gen_random_uuid(), 'PROD-001', -50, 'SHIPMENT', CURRENT_TIMESTAMP);
+CREATE TABLE comprehensive_user_activity_tracking_table (
+    activity_id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    user_id BIGINT NOT NULL,
+    session_id VARCHAR(255) NOT NULL,
+    activity_type ENUM('page_view', 'button_click', 'form_submission', 'api_call', 'file_download', 'file_upload', 'search_query', 'video_play', 'video_pause', 'video_complete'),
+    activity_timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    page_url VARCHAR(2048),
+    referrer_url VARCHAR(2048),
+    user_agent_string VARCHAR(500),
+    ip_address_anonymized VARCHAR(45),
+    geographic_country VARCHAR(100),
+    geographic_region VARCHAR(100),
+    geographic_city VARCHAR(100),
+    device_type ENUM('desktop', 'tablet', 'mobile', 'smart_tv', 'game_console', 'wearable', 'other'),
+    operating_system VARCHAR(50),
+    browser_name VARCHAR(50),
+    browser_version VARCHAR(20),
+    screen_resolution VARCHAR(20),
+    viewport_dimensions VARCHAR(20),
+    connection_type VARCHAR(20),
+    estimated_bandwidth_mbps DECIMAL(10, 2),
+    interaction_element_id VARCHAR(255),
+    interaction_element_class VARCHAR(500),
+    interaction_element_text TEXT,
+    custom_event_properties JSON,
+    experiment_variant_assignments JSON,
+    feature_flags_active JSON,
+    error_messages TEXT,
+    performance_metrics JSON,
+    CONSTRAINT fk_user_activity_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE ON UPDATE CASCADE,
+    INDEX idx_user_activity_user_timestamp (user_id, activity_timestamp),
+    INDEX idx_user_activity_session (session_id),
+    INDEX idx_user_activity_type_timestamp (activity_type, activity_timestamp),
+    INDEX idx_user_activity_timestamp (activity_timestamp DESC)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 \`\`\`
 
-**Execution History:**
-- 12/28/2024, 10:30:46 AM: ✅ Success - Inserted 1 row(s) in 15ms
-- 12/28/2024, 09:15:23 AM: ✅ Success - Inserted 1 row(s) in 12ms
+## Regular Text
 
-#### 2. Check Low Stock Items
+This is regular markdown text that should wrap normally without horizontal scrolling. Even if this paragraph becomes very long with many words, it should wrap to the next line rather than causing horizontal overflow.
 
-System should automatically identify items below minimum threshold and trigger reorder alerts.
-
-**Related DML Operations:**
+## Normal Query
 
 \`\`\`sql
-SELECT p.product_id, p.product_name, i.quantity, i.minimum_threshold
-FROM inventory i
-JOIN products p ON i.product_id = p.product_id
-WHERE i.quantity < i.minimum_threshold
-ORDER BY (i.quantity::float / i.minimum_threshold) ASC;
+SELECT * FROM users WHERE active = true;
 \`\`\`
-
-### 2. Automated Reordering
-
-System must generate purchase orders automatically when stock falls below configured thresholds.
-
-**Use Cases:**
-
-#### 1. Generate Purchase Order
-
-When inventory reaches minimum threshold, create a purchase order for the optimal reorder quantity.
-
-**Related DML Operations:**
-
-\`\`\`sql
-INSERT INTO purchase_orders (order_id, supplier_id, product_id, quantity, status, created_at)
-SELECT 
-  'PO-' || gen_random_uuid(),
-  p.preferred_supplier_id,
-  p.product_id,
-  p.reorder_quantity,
-  'PENDING',
-  CURRENT_TIMESTAMP
-FROM products p
-JOIN inventory i ON p.product_id = i.product_id
-WHERE i.quantity < i.minimum_threshold
-  AND NOT EXISTS (
-    SELECT 1 FROM purchase_orders po
-    WHERE po.product_id = p.product_id
-      AND po.status IN ('PENDING', 'APPROVED')
-  );
-\`\`\`
-
-## 📊 Non-Functional Requirements
-
-### 1. Performance
-
-- Response time for inventory queries must be under 100ms for 95% of requests
-- System should handle 1,000 concurrent inventory updates per second
-- Database indexes optimized for frequent read operations
-
-### 2. Reliability
-
-- 99.9% uptime for inventory tracking services
-- Automatic failover to secondary warehouse systems
-- Data consistency maintained across distributed warehouses
-
-### 3. Scalability
-
-- Support for up to 100,000 SKUs per warehouse
-- Horizontal scaling capability for peak seasons
-- Efficient archival of historical transaction data
 `,
   },
 }

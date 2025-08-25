@@ -1,4 +1,4 @@
-import type { PrimaryKeyConstraint } from '@liam-hq/db-structure'
+import type { PrimaryKeyConstraint } from '@liam-hq/schema'
 import { KeyRound } from '@liam-hq/ui'
 import clsx from 'clsx'
 import type { FC } from 'react'

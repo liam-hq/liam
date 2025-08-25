@@ -1,4 +1,4 @@
-import type { Schema } from '@liam-hq/db-structure'
+import type { Schema } from '@liam-hq/schema'
 import { type ComponentProps, type FC, useCallback, useState } from 'react'
 import { TabsContent, TabsRoot } from '@/components'
 import type { ReviewComment } from '../../types'
@@ -21,6 +21,7 @@ type BaseProps = ComponentProps<typeof VersionDropdown> & {
   schema: Schema
   prevSchema: Schema
   sqlReviewComments: ReviewComment[]
+  initialIsPublic: boolean
 }
 
 type ControlledProps = BaseProps & {
@@ -42,10 +43,12 @@ export const Output: FC<Props> = ({
   sqlReviewComments,
   activeTab,
   onTabChange,
+  initialIsPublic = false,
   ...propsForVersionDropdown
 }) => {
   const [internalTabValue, setInternalTabValue] =
     useState<OutputTabValue>(DEFAULT_OUTPUT_TAB)
+
   const { artifact, loading, error } = useRealtimeArtifact(designSessionId)
 
   const isTabValue = (value: string): value is OutputTabValue => {
@@ -78,6 +81,8 @@ export const Output: FC<Props> = ({
         tabValue={tabValue}
         artifactDoc={artifactDoc}
         hasArtifact={!!artifact}
+        designSessionId={designSessionId}
+        initialIsPublic={initialIsPublic}
         {...propsForVersionDropdown}
       />
       <TabsContent value={OUTPUT_TABS.ERD} className={styles.tabsContent}>

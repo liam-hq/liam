@@ -1,8 +1,8 @@
 'use server'
 
 import type { SupabaseClientType } from '@liam-hq/db'
-import type { Schema } from '@liam-hq/db-structure'
 import { getFileContent } from '@liam-hq/github'
+import type { Schema } from '@liam-hq/schema'
 import { createClient } from '@/libs/db/server'
 import {
   createSessionWithSchema,
@@ -83,7 +83,7 @@ async function processGitHubSchema(
 > {
   if (!project) {
     return {
-      schema: { tables: {} },
+      schema: { tables: {}, enums: {} },
       schemaFilePath: null,
     }
   }

@@ -28,7 +28,7 @@ export class OpenAIExecutor {
     logInputProcessing(input.input)
     const apiResult = await fromPromise(
       this.client.chat.completions.create({
-        model: 'o4-mini',
+        model: 'gpt-5',
         messages: [
           {
             role: 'system',

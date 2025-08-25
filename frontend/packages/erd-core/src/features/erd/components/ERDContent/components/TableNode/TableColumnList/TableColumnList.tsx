@@ -1,4 +1,4 @@
-import { type Column, isPrimaryKey, type Table } from '@liam-hq/db-structure'
+import { type Column, isPrimaryKey, type Table } from '@liam-hq/schema'
 import type { FC } from 'react'
 import type { TableNodeData } from '@/features/erd/types'
 import { columnHandleId } from '@/features/erd/utils'

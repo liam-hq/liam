@@ -46,6 +46,11 @@ const aSchemaVersionTimelineItemEntry = (
   content: 'Schema version 1.0.0',
   type: 'schema_version',
   buildingSchemaVersionId: 'version-123',
+  version: {
+    id: 'version-123',
+    number: 1,
+    patch: [],
+  },
   timestamp: new Date(Date.now() - 58 * 60 * 1000), // 58 minutes ago
   ...overrides,
 })

@@ -7,25 +7,16 @@ describe('createGraph', () => {
   const expectedMermaidDiagram = `%%{init: {'flowchart': {'curve': 'linear'}}}%%
 graph TD;
 	__start__([<p>__start__</p>]):::first
-	analyzeRequirements(analyzeRequirements)
-	saveRequirementToArtifact(saveRequirementToArtifact)
+	pmAgent(pmAgent)
 	dbAgent(dbAgent)
-	generateUsecase(generateUsecase)
-	prepareDML(prepareDML)
-	validateSchema(validateSchema)
+	qaAgent(qaAgent)
 	finalizeArtifacts(finalizeArtifacts)
 	__end__([<p>__end__</p>]):::last
-	__start__ --> analyzeRequirements;
-	dbAgent --> generateUsecase;
+	__start__ --> pmAgent;
+	dbAgent --> qaAgent;
 	finalizeArtifacts --> __end__;
-	generateUsecase --> prepareDML;
-	prepareDML --> validateSchema;
-	saveRequirementToArtifact --> dbAgent;
-	analyzeRequirements -.-> saveRequirementToArtifact;
-	analyzeRequirements -.-> finalizeArtifacts;
-	validateSchema -.-> dbAgent;
-	validateSchema -.-> finalizeArtifacts;
-	analyzeRequirements -.-> analyzeRequirements;
+	pmAgent --> dbAgent;
+	qaAgent --> finalizeArtifacts;
 	classDef default fill:#f2f0ff,line-height:1.2;
 	classDef first fill-opacity:0;
 	classDef last fill:#bfb6fc;
@@ -40,7 +31,7 @@ graph TD;
   })
 
   it('should have the same diagram in README.md as the generated graph', () => {
-    const readmePath = join(__dirname, 'chat', 'workflow', 'README.md')
+    const readmePath = join(__dirname, '..', 'README.md')
     const readmeContent = readFileSync(readmePath, 'utf-8')
 
     // Check that the README contains the expected Mermaid diagram

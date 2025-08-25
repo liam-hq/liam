@@ -113,6 +113,7 @@
 .tail {
   display: flex;
   align-items: center;
+  gap: var(--spacing-2);
   height: 100%;
   padding: var(--spacing-2) 0;
 }

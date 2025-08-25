@@ -1,4 +1,4 @@
-import type { ForeignKeyConstraint } from '@liam-hq/db-structure'
+import type { ForeignKeyConstraint } from '@liam-hq/schema'
 import { Link } from '@liam-hq/ui'
 import clsx from 'clsx'
 import type { FC } from 'react'

@@ -4,6 +4,7 @@ import Link from 'next/link'
 import type { FC } from 'react'
 import { ProjectIcon } from '@/components/ProjectIcon'
 import { urlgen } from '@/libs/routes'
+import { formatDate } from '@/libs/utils'
 import { LastCommitDataWrapper } from './LastCommitDataWrapper'
 import { OrganizationDataWrapper } from './OrganizationDataWrapper'
 import styles from './ProjectItem.module.css'
@@ -19,16 +20,6 @@ type ProjectItemProps = {
 }
 
 export const ProjectItem: FC<ProjectItemProps> = ({ project }) => {
-  // Format date to "MMM DD, YYYY" format
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString)
-    return date.toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-    })
-  }
-
   const repositoryName = project.name?.toLowerCase() || 'untitled-project'
   const repository = project.project_repository_mappings?.[0]?.repository
 

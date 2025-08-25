@@ -1,4 +1,4 @@
-import type { UniqueConstraint } from '@liam-hq/db-structure'
+import type { UniqueConstraint } from '@liam-hq/schema'
 import { Fingerprint } from '@liam-hq/ui'
 import type { FC } from 'react'
 import styles from '../Constraints.module.css'

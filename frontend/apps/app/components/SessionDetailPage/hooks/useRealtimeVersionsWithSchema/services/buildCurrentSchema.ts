@@ -5,7 +5,7 @@ import {
   operationsSchema,
   type Schema,
   schemaSchema,
-} from '@liam-hq/db-structure'
+} from '@liam-hq/schema'
 import * as v from 'valibot'
 import type { Version } from '@/components/SessionDetailPage/types'
 import { createClient } from '@/libs/db/client'
@@ -61,6 +61,7 @@ export async function buildCurrentSchema(targetVersion: Version) {
     ? parsedInitialSchema.output
     : {
         tables: {},
+        enums: {},
       }
 
   let currentSchema: Schema = structuredClone(baseSchema)

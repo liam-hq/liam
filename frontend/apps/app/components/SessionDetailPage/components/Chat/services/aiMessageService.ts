@@ -15,6 +15,7 @@ const ChatAPIResponseSchema = object({
 type ChatAPIRequestParams = {
   userInput: string
   designSessionId: string
+  isDeepModelingEnabled: boolean
 }
 
 /**
@@ -23,6 +24,7 @@ type ChatAPIRequestParams = {
 const callChatAPI = async ({
   userInput,
   designSessionId,
+  isDeepModelingEnabled,
 }: ChatAPIRequestParams): Promise<Response> => {
   const response = await fetch('/api/chat', {
     method: 'POST',
@@ -31,8 +33,8 @@ const callChatAPI = async ({
     },
     body: JSON.stringify({
       userInput,
-      history,
       designSessionId,
+      isDeepModelingEnabled,
     }),
   })
 
@@ -46,6 +48,7 @@ const callChatAPI = async ({
 type SendChatMessageParams = {
   userInput: string
   designSessionId: string
+  isDeepModelingEnabled: boolean
 }
 
 type SendChatMessageResult = {
@@ -60,11 +63,13 @@ type SendChatMessageResult = {
 export const sendChatMessage = async ({
   userInput,
   designSessionId,
+  isDeepModelingEnabled,
 }: SendChatMessageParams): Promise<SendChatMessageResult> => {
   try {
     const response = await callChatAPI({
       userInput,
       designSessionId,
+      isDeepModelingEnabled,
     })
 
     // Parse JSON response with type safety

@@ -1,4 +1,4 @@
-import type { ForeignKeyConstraint } from '@liam-hq/db-structure'
+import type { ForeignKeyConstraint } from '@liam-hq/schema'
 import { GridTableDd, GridTableDt, GridTableItem, Table2 } from '@liam-hq/ui'
 import { type FC, useMemo } from 'react'
 import { useDiffStyle } from '@/features/diff/hooks/useDiffStyle'
@@ -12,17 +12,17 @@ type Props = {
 }
 
 export const TargetTable: FC<Props> = ({ tableId, constraint }) => {
-  const { diffItems } = useSchemaOrThrow()
+  const { operations } = useSchemaOrThrow()
   const { showDiff } = useUserEditingOrThrow()
 
   const changeStatus = useMemo(() => {
     if (!showDiff) return undefined
     return getChangeStatus({
       tableId,
-      diffItems: diffItems ?? [],
+      operations: operations ?? [],
       constraintId: constraint.name,
     })
-  }, [showDiff, tableId, diffItems, constraint.name])
+  }, [showDiff, tableId, operations, constraint.name])
 
   const diffStyle = useDiffStyle(showDiff, changeStatus)
 

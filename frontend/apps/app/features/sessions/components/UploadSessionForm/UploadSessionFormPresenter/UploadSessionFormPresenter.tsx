@@ -54,44 +54,43 @@ const processFile = (
   }
 }
 
-export const UploadSessionFormPresenter: FC<Props> = ({
-  formError,
-  isPending,
-  formAction,
-  isTransitioning = false,
-}) => {
+const useUploadFormState = () => {
   const [isHovered, setIsHovered] = useState(false)
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [detectedFormat, setDetectedFormat] = useState<FormatType | null>(null)
   const [selectedFormat, setSelectedFormat] = useState<FormatType | null>(null)
   const [textContent, setTextContent] = useState('')
   const [schemaStatus, setSchemaStatus] = useState<SchemaStatus>('idle')
-  const fileInputRef = useRef<HTMLInputElement>(null)
-  const textareaRef = useRef<HTMLTextAreaElement>(null)
-  const formRef = useRef<HTMLFormElement>(null)
 
-  // File attachments hook
-  const {
-    attachments,
-    handleFileSelect,
-    handleRemoveAttachment,
-    clearAttachments,
-  } = useFileAttachments()
-
-  // Calculate hasContent for Enter key submission
-  const hasContent = calculateHasContent({
+  return {
+    isHovered,
+    setIsHovered,
     selectedFile,
-    schemaStatus,
+    setSelectedFile,
+    detectedFormat,
+    setDetectedFormat,
+    selectedFormat,
+    setSelectedFormat,
     textContent,
-    attachments,
-  })
-  const handleEnterKeySubmission = useEnterKeySubmission(
-    hasContent,
-    isPending,
-    formRef,
-  )
+    setTextContent,
+    schemaStatus,
+    setSchemaStatus,
+  }
+}
 
-  // File drag and drop for schema file
+const useUploadFormHandlers = (
+  state: ReturnType<typeof useUploadFormState>,
+  fileInputRef: React.RefObject<HTMLInputElement | null>,
+  clearAttachments: () => void,
+) => {
+  const {
+    setSelectedFile,
+    setDetectedFormat,
+    setSelectedFormat,
+    setTextContent,
+    setSchemaStatus,
+  } = state
+
   const handleSchemaFileDrop = (files: FileList) => {
     const file = files[0]
     if (file) {
@@ -105,19 +104,6 @@ export const UploadSessionFormPresenter: FC<Props> = ({
       )
     }
   }
-
-  const {
-    dragActive: schemaDragActive,
-    handleDrag: handleSchemaDrag,
-    handleDrop: handleSchemaDrop,
-  } = useFileDragAndDrop(handleSchemaFileDrop)
-
-  // File drag and drop for attachments
-  const {
-    dragActive: attachmentDragActive,
-    handleDrag: handleAttachmentDrag,
-    handleDrop: handleAttachmentDrop,
-  } = useFileDragAndDrop(handleFileSelect)
 
   const handleSchemaFileSelect = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -137,13 +123,6 @@ export const UploadSessionFormPresenter: FC<Props> = ({
     fileInputRef.current?.click()
   }
 
-  // Use auto-resize hook for textarea
-  const { handleChange } = useAutoResizeTextarea(textareaRef, textContent)
-
-  const handleTextareaChange = handleChange((e) => {
-    setTextContent(e.target.value)
-  })
-
   const handleReset = () => {
     setSelectedFile(null)
     setDetectedFormat(null)
@@ -154,8 +133,131 @@ export const UploadSessionFormPresenter: FC<Props> = ({
     if (fileInputRef.current) {
       fileInputRef.current.value = ''
     }
-    // The auto-resize hook will handle the height adjustment
   }
+
+  const handleSchemaRemove = () => {
+    setSelectedFile(null)
+    setSchemaStatus('idle')
+    setDetectedFormat(null)
+    setSelectedFormat(null)
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ''
+    }
+  }
+
+  return {
+    handleSchemaFileDrop,
+    handleSchemaFileSelect,
+    handleSelectFile,
+    handleReset,
+    handleSchemaRemove,
+  }
+}
+
+const renderUploadSection = (
+  state: ReturnType<typeof useUploadFormState>,
+  handlers: ReturnType<typeof useUploadFormHandlers>,
+  isPending: boolean,
+  schemaDragActive: boolean,
+  handleSchemaDrag: (e: React.DragEvent) => void,
+  handleSchemaDrop: (e: React.DragEvent) => void,
+) => {
+  const {
+    isHovered,
+    setIsHovered,
+    selectedFile,
+    schemaStatus,
+    detectedFormat,
+    selectedFormat,
+  } = state
+  const { handleSelectFile, handleSchemaRemove } = handlers
+
+  return (
+    <div className={styles.uploadSection ?? ''}>
+      <div className={styles.uploadContainer ?? ''}>
+        <DropZone
+          isPending={isPending}
+          schemaDragActive={schemaDragActive}
+          isHovered={isHovered}
+          onSelectFile={handleSelectFile}
+          onDragEnter={handleSchemaDrag}
+          onDragLeave={handleSchemaDrag}
+          onDragOver={handleSchemaDrag}
+          onDrop={handleSchemaDrop}
+          onMouseEnter={() => !isPending && setIsHovered(true)}
+          onMouseLeave={() => setIsHovered(false)}
+          hasSelectedFile={!!selectedFile}
+          isValidSchema={schemaStatus !== 'invalid'}
+        />
+        {selectedFile && (
+          <SchemaInfoSection
+            status={schemaStatus}
+            schemaName={selectedFile.name}
+            detectedFormat={detectedFormat || 'postgres'}
+            selectedFormat={selectedFormat || detectedFormat || 'postgres'}
+            errorMessage={
+              schemaStatus === 'invalid'
+                ? 'Unsupported file type. Please upload .sql, .rb, .prisma, or .json files.'
+                : undefined
+            }
+            onFormatChange={state.setSelectedFormat}
+            onRemove={handleSchemaRemove}
+          />
+        )}
+      </div>
+    </div>
+  )
+}
+
+export const UploadSessionFormPresenter: FC<Props> = ({
+  formError,
+  isPending,
+  formAction,
+  isTransitioning = false,
+}) => {
+  const state = useUploadFormState()
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const textareaRef = useRef<HTMLTextAreaElement>(null)
+  const formRef = useRef<HTMLFormElement>(null)
+
+  const {
+    attachments,
+    handleFileSelect,
+    handleRemoveAttachment,
+    clearAttachments,
+  } = useFileAttachments()
+
+  const handlers = useUploadFormHandlers(state, fileInputRef, clearAttachments)
+
+  const hasContent = calculateHasContent({
+    selectedFile: state.selectedFile,
+    schemaStatus: state.schemaStatus,
+    textContent: state.textContent,
+    attachments,
+  })
+
+  const handleEnterKeySubmission = useEnterKeySubmission(
+    hasContent,
+    isPending,
+    formRef,
+  )
+
+  const {
+    dragActive: schemaDragActive,
+    handleDrag: handleSchemaDrag,
+    handleDrop: handleSchemaDrop,
+  } = useFileDragAndDrop(handlers.handleSchemaFileDrop)
+
+  const {
+    dragActive: attachmentDragActive,
+    handleDrag: handleAttachmentDrag,
+    handleDrop: handleAttachmentDrop,
+  } = useFileDragAndDrop(handleFileSelect)
+
+  const { handleChange } = useAutoResizeTextarea(textareaRef, state.textContent)
+  const handleTextareaChange = handleChange((e) => {
+    state.setTextContent(e.target.value)
+  })
 
   return (
     <div
@@ -171,59 +273,32 @@ export const UploadSessionFormPresenter: FC<Props> = ({
         action={formAction}
         style={createAccessibleOpacityTransition(!isTransitioning)}
       >
-        {selectedFile && schemaStatus === 'valid' && selectedFormat && (
-          <input type="hidden" name="schemaFormat" value={selectedFormat} />
-        )}
-        <div className={styles.uploadSection ?? ''}>
-          <div className={styles.uploadContainer ?? ''}>
-            <DropZone
-              isPending={isPending}
-              schemaDragActive={schemaDragActive}
-              isHovered={isHovered}
-              onSelectFile={handleSelectFile}
-              onDragEnter={handleSchemaDrag}
-              onDragLeave={handleSchemaDrag}
-              onDragOver={handleSchemaDrag}
-              onDrop={handleSchemaDrop}
-              onMouseEnter={() => !isPending && setIsHovered(true)}
-              onMouseLeave={() => setIsHovered(false)}
-              hasSelectedFile={!!selectedFile}
-              isValidSchema={schemaStatus !== 'invalid'}
-            />
+        {state.selectedFile &&
+          state.schemaStatus === 'valid' &&
+          state.selectedFormat && (
             <input
-              ref={fileInputRef}
-              type="file"
-              name="schemaFile"
-              onChange={handleSchemaFileSelect}
-              accept=".sql,.rb,.prisma,.json"
-              className={styles.hiddenFileInput}
-              disabled={isPending}
+              type="hidden"
+              name="schemaFormat"
+              value={state.selectedFormat}
             />
-            {selectedFile && (
-              <SchemaInfoSection
-                status={schemaStatus}
-                schemaName={selectedFile.name}
-                detectedFormat={detectedFormat || 'postgres'}
-                selectedFormat={selectedFormat || detectedFormat || 'postgres'}
-                errorMessage={
-                  schemaStatus === 'invalid'
-                    ? 'Unsupported file type. Please upload .sql, .rb, .prisma, or .json files.'
-                    : undefined
-                }
-                onFormatChange={setSelectedFormat}
-                onRemove={() => {
-                  setSelectedFile(null)
-                  setSchemaStatus('idle')
-                  setDetectedFormat(null)
-                  setSelectedFormat(null)
-                  if (fileInputRef.current) {
-                    fileInputRef.current.value = ''
-                  }
-                }}
-              />
-            )}
-          </div>
-        </div>
+          )}
+        <input
+          ref={fileInputRef}
+          type="file"
+          name="schemaFile"
+          onChange={handlers.handleSchemaFileSelect}
+          accept=".sql,.rb,.prisma,.json"
+          className={styles.hiddenFileInput}
+          disabled={isPending}
+        />
+        {renderUploadSection(
+          state,
+          handlers,
+          isPending,
+          schemaDragActive,
+          handleSchemaDrag,
+          handleSchemaDrop,
+        )}
         <div className={styles.divider} />
         <div
           className={clsx(
@@ -244,7 +319,7 @@ export const UploadSessionFormPresenter: FC<Props> = ({
               ref={textareaRef}
               name="initialMessage"
               placeholder="Enter your database design instructions. For example: Design a database for an e-commerce site that manages users, products, and orders..."
-              value={textContent}
+              value={state.textContent}
               onChange={handleTextareaChange}
               onKeyDown={handleEnterKeySubmission}
               className={styles.textarea ?? ''}
@@ -258,7 +333,7 @@ export const UploadSessionFormPresenter: FC<Props> = ({
               isPending={isPending}
               hasContent={hasContent}
               onFileSelect={handleFileSelect}
-              onCancel={handleReset}
+              onCancel={handlers.handleReset}
             />
           </div>
         </div>

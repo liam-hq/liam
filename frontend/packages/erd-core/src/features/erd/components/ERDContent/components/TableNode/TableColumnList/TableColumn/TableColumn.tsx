@@ -3,7 +3,7 @@ import {
   type Column,
   isPrimaryKey,
   type Table,
-} from '@liam-hq/db-structure'
+} from '@liam-hq/schema'
 import { DiamondFillIcon, DiamondIcon, KeyRound, Link } from '@liam-hq/ui'
 import { Handle, Position } from '@xyflow/react'
 import clsx from 'clsx'
@@ -95,8 +95,7 @@ export const TableColumn: FC<TableColumnProps> = ({
   isHighlightedTable,
 }) => {
   const { showDiff } = useUserEditingOrThrow()
-
-  const { diffItems } = useSchemaOrThrow()
+  const { operations } = useSchemaOrThrow()
 
   // Only calculate diff-related values when showDiff is true
   const changeStatus = useMemo(() => {
@@ -104,9 +103,9 @@ export const TableColumn: FC<TableColumnProps> = ({
     return getChangeStatus({
       tableId: table.name,
       columnId: column.name,
-      diffItems: diffItems ?? [],
+      operations: operations ?? [],
     })
-  }, [showDiff, table.name, column.name, diffItems])
+  }, [showDiff, table.name, column.name, operations])
 
   const diffStyle = useMemo(() => {
     if (!showDiff || !changeStatus) return undefined
@@ -121,7 +120,13 @@ export const TableColumn: FC<TableColumnProps> = ({
     isHighlightedTable && (isSource || !!targetCardinality)
 
   return (
-    <li className={clsx(styles.wrapper, showDiff && styles.wrapperWithDiff)}>
+    <li
+      className={clsx(
+        styles.wrapper,
+        showDiff && styles.wrapperWithDiff,
+        shouldHighlight && styles.highlightRelatedColumn,
+      )}
+    >
       {showDiff && changeStatus && (
         <div className={clsx(styles.diffBox, diffStyle)}>
           <DiffIcon changeStatus={changeStatus} />
@@ -130,11 +135,7 @@ export const TableColumn: FC<TableColumnProps> = ({
 
       <div
         key={column.name}
-        className={clsx(
-          styles.columnWrapper,
-          shouldHighlight && styles.highlightRelatedColumn,
-          showDiff && diffStyle,
-        )}
+        className={clsx(styles.columnWrapper, showDiff && diffStyle)}
       >
         <ColumnIcon
           table={table}

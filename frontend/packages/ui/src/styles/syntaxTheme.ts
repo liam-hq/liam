@@ -47,6 +47,8 @@ export const syntaxCustomStyle = {
   padding: 'var(--syntax-padding)',
   fontSize: 'var(--syntax-font-size)',
   marginBottom: 'var(--syntax-margin-bottom)',
+  overflowX: 'auto' as const,
+  maxWidth: '100%',
 }
 
 export const syntaxCodeTagProps = {

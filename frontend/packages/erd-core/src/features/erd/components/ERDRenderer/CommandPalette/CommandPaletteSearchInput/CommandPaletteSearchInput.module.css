@@ -1,0 +1,32 @@
+.container {
+  display: flex;
+  flex-grow: 1;
+  align-items: center;
+}
+
+.inputContainer {
+  display: flex;
+  margin-left: var(--spacing-2);
+}
+
+.input {
+  padding: var(--spacing-2) 0;
+  width: 100%;
+  border-radius: var(--border-radius-smbase);
+}
+
+.input:focus-visible {
+  outline: none;
+}
+
+.modePrefix {
+  flex-shrink: 0;
+  margin-right: var(--spacing-1);
+  padding: var(--spacing-2) 0;
+}
+
+.searchIcon {
+  width: 16px;
+  height: 16px;
+  color: var(--overlay-60);
+}

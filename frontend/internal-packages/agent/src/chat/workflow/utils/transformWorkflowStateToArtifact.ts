@@ -5,36 +5,17 @@ import type {
   NonFunctionalRequirement,
 } from '@liam-hq/artifact'
 import type { Usecase } from '../../../langchain/agents/qaGenerateUsecaseAgent/agent'
-import type { Repositories } from '../../../repositories'
 import type { WorkflowState } from '../types'
 
 /**
- * Map workflow-level DML operations to individual use cases
+ * Wraps a description string in an array format with fallback
  */
-const mapDmlOperationsToUsecases = (
-  usecases: Usecase[],
-  workflowDmlOperations: WorkflowState['dmlOperations'],
-): Usecase[] => {
-  if (!workflowDmlOperations || workflowDmlOperations.length === 0) {
-    return usecases
-  }
-
-  return usecases.map((usecase) => {
-    const usecaseDmlOperations = workflowDmlOperations
-      .filter((dmlOp) => dmlOp.useCaseId === usecase.id)
-      .map((dmlOp) => ({
-        useCaseId: dmlOp.useCaseId,
-        operation_type: dmlOp.operation_type,
-        sql: dmlOp.sql,
-        description: dmlOp.description,
-        dml_execution_logs: dmlOp.dml_execution_logs || [],
-      }))
-
-    return {
-      ...usecase,
-      dmlOperations: usecaseDmlOperations,
-    }
-  })
+const wrapDescription = (
+  description: string | undefined,
+  prefix: string,
+  category: string,
+): string[] => {
+  return description ? [description] : [`${prefix}${category}`]
 }
 
 /**
@@ -45,27 +26,25 @@ const convertAnalyzedRequirementsToArtifact = (
 ): (FunctionalRequirement | NonFunctionalRequirement)[] => {
   const requirements: (FunctionalRequirement | NonFunctionalRequirement)[] = []
 
-  // Add functional requirements
   for (const [category, items] of Object.entries(
     analyzedRequirements.functionalRequirements,
   )) {
     const functionalRequirement: FunctionalRequirement = {
       type: 'functional',
       name: category,
-      description: items.join(', '),
+      description: items, // Keep as array
       use_cases: [], // Will be populated later if usecases exist
     }
     requirements.push(functionalRequirement)
   }
 
-  // Add non-functional requirements
   for (const [category, items] of Object.entries(
     analyzedRequirements.nonFunctionalRequirements,
   )) {
     const nonFunctionalRequirement: NonFunctionalRequirement = {
       type: 'non_functional',
       name: category,
-      description: items.join(', '),
+      description: items, // Keep as array
     }
     requirements.push(nonFunctionalRequirement)
   }
@@ -102,15 +81,17 @@ const mergeUseCasesIntoRequirements = (
       existingReq.type === 'functional' &&
       type === 'functional'
     ) {
-      // Update existing functional requirement with use cases
       existingReq.use_cases = groupedUsecases.map(mapUseCasesToRequirements)
     } else if (!existingReq) {
-      // Add new requirement from use cases if it doesn't exist
       if (type === 'functional') {
         const functionalRequirement: FunctionalRequirement = {
           type: 'functional',
           name: category,
-          description: description || `Functional requirement: ${category}`,
+          description: wrapDescription(
+            description,
+            'Functional requirement: ',
+            category,
+          ),
           use_cases: groupedUsecases.map(mapUseCasesToRequirements),
         }
         requirements.push(functionalRequirement)
@@ -118,7 +99,11 @@ const mergeUseCasesIntoRequirements = (
         const nonFunctionalRequirement: NonFunctionalRequirement = {
           type: 'non_functional',
           name: category,
-          description: description || `Non-functional requirement: ${category}`,
+          description: wrapDescription(
+            description,
+            'Non-functional requirement: ',
+            category,
+          ),
         }
         requirements.push(nonFunctionalRequirement)
       }
@@ -136,17 +121,12 @@ export const transformWorkflowStateToArtifact = (
   const businessRequirement =
     state.analyzedRequirements?.businessRequirement ?? ''
 
-  // Start with requirements from analyzedRequirements
   const requirements = state.analyzedRequirements
     ? convertAnalyzedRequirementsToArtifact(state.analyzedRequirements)
     : []
 
   if (state.generatedUsecases && state.generatedUsecases.length > 0) {
-    const usecasesWithDmlOperations = mapDmlOperationsToUsecases(
-      state.generatedUsecases,
-      state.dmlOperations,
-    )
-    mergeUseCasesIntoRequirements(requirements, usecasesWithDmlOperations)
+    mergeUseCasesIntoRequirements(requirements, state.generatedUsecases)
   }
 
   return {
@@ -185,48 +165,4 @@ const groupUsecasesByRequirement = (usecases: Usecase[]) => {
   }
 
   return groups
-}
-
-/**
- * Create an artifact with upsert logic
- * Tries to update existing artifact first, creates new one if not found
- */
-export const createOrUpdateArtifact = async (
-  state: WorkflowState,
-  artifact: Artifact,
-  repositories: Repositories,
-): Promise<{ success: boolean; error?: string }> => {
-  // Try to get existing artifact first
-  const existingResult = await repositories.schema.getArtifact(
-    state.designSessionId,
-  )
-
-  if (existingResult.success) {
-    // Artifact exists, update it
-    const updateResult = await repositories.schema.updateArtifact({
-      designSessionId: state.designSessionId,
-      artifact,
-    })
-
-    if (updateResult.success) {
-      return { success: true }
-    }
-    return { success: false, error: updateResult.error }
-  }
-
-  // Check if the failure is due to "not found" vs actual error
-  if (existingResult.error !== 'Artifact not found') {
-    return { success: false, error: existingResult.error }
-  }
-
-  // Artifact doesn't exist, create new one
-  const createResult = await repositories.schema.createArtifact({
-    designSessionId: state.designSessionId,
-    artifact,
-  })
-
-  if (createResult.success) {
-    return { success: true }
-  }
-  return { success: false, error: createResult.error }
 }

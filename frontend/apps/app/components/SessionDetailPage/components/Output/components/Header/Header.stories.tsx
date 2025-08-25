@@ -1,4 +1,4 @@
-import { aSchema } from '@liam-hq/db-structure'
+import { aSchema } from '@liam-hq/schema'
 import { TabsRoot } from '@liam-hq/ui'
 import type { Meta, StoryObj } from '@storybook/react'
 import { type ComponentProps, type FC, useCallback, useState } from 'react'
@@ -50,6 +50,8 @@ const meta = {
       reverse_patch: {},
     },
     onSelectedVersionChange: () => {},
+    designSessionId: 'test-session-id',
+    initialIsPublic: false,
   },
   render: (args) => <HeaderDemo {...args} />,
 } satisfies Meta<typeof Header>

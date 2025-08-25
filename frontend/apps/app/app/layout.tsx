@@ -19,9 +19,9 @@ const montserrat = Montserrat({
 const imageUrl = '/assets/liam_erd.png'
 
 export const metadata: Metadata = {
-  title: 'Liam ERD',
+  title: 'Liam DB',
   description:
-    'Automatically generates beautiful and easy-to-read ER diagrams from your database.',
+    'Build and manage your database schemas with Liam DB. Create, visualize, and collaborate on database designs.',
   openGraph: {
     siteName: 'Liam',
     type: 'website',

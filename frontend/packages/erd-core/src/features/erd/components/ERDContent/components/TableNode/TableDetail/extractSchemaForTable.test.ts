@@ -1,5 +1,5 @@
-import type { Schema } from '@liam-hq/db-structure'
-import { aColumn, aTable } from '@liam-hq/db-structure'
+import type { Schema } from '@liam-hq/schema'
+import { aColumn, aTable } from '@liam-hq/schema'
 import { describe, expect, it } from 'vitest'
 import { extractSchemaForTable } from './extractSchemaForTable'
 
@@ -49,12 +49,14 @@ describe(extractSchemaForTable, () => {
       posts,
       comments,
     },
+    enums: {},
   }
 
   it('should extract related tables for the given table (primary table)', () => {
     const result = extractSchemaForTable(users, schema)
     expect(result).toEqual({
       tables: { users, posts },
+      enums: {},
     })
   })
 
@@ -62,16 +64,19 @@ describe(extractSchemaForTable, () => {
     const result = extractSchemaForTable(comments, schema)
     expect(result).toEqual({
       tables: { posts, comments },
+      enums: {},
     })
   })
 
   it('should return its own table if no relationships are found', () => {
     const emptySchema: Schema = {
       tables: { users },
+      enums: {},
     }
     const result = extractSchemaForTable(users, emptySchema)
     expect(result).toEqual({
       tables: { users },
+      enums: {},
     })
   })
 })

@@ -1,10 +1,10 @@
-import { createHash } from 'node:crypto'
 import {
-  type DeepModelingPayload,
-  deepModelingWorkflowTask,
-  designProcessWorkflowTask,
-} from '@liam-hq/jobs'
-import { idempotencyKeys } from '@trigger.dev/sdk'
+  type AgentWorkflowParams,
+  createSupabaseRepositories,
+  deepModeling,
+  invokeDbAgent,
+} from '@liam-hq/agent'
+import { okAsync } from 'neverthrow'
 import { NextResponse } from 'next/server'
 import * as v from 'valibot'
 import { createClient } from '@/libs/db/server'
@@ -14,6 +14,9 @@ const chatRequestSchema = v.object({
   designSessionId: v.pipe(v.string(), v.uuid('Invalid design session ID')),
   isDeepModelingEnabled: v.optional(v.boolean(), true),
 })
+
+// https://vercel.com/docs/functions/configuring-functions/duration#maximum-duration-for-different-runtimes
+export const maxDuration = 800
 
 export async function POST(request: Request) {
   const requestBody = await request.json()
@@ -41,11 +44,12 @@ export async function POST(request: Request) {
     )
   }
   const userId = userData.user.id
+  const designSessionId = validationResult.output.designSessionId
 
   const { data: designSession, error: designSessionError } = await supabase
     .from('design_sessions')
     .select('organization_id')
-    .eq('id', validationResult.output.designSessionId)
+    .eq('id', designSessionId)
     .limit(1)
     .single()
 
@@ -58,10 +62,29 @@ export async function POST(request: Request) {
 
   const organizationId = designSession.organization_id
 
+  const repositories = createSupabaseRepositories(supabase, organizationId)
+  const userMessageResult = await repositories.schema.createTimelineItem({
+    designSessionId: validationResult.output.designSessionId,
+    content: validationResult.output.userInput,
+    type: 'user',
+    userId,
+  })
+
+  if (!userMessageResult.success) {
+    console.error('Failed to save user message:', userMessageResult.error)
+    return NextResponse.json(
+      {
+        error: 'Failed to save user message',
+        details: userMessageResult.error,
+      },
+      { status: 500 },
+    )
+  }
+
   const { data: buildingSchema, error: buildingSchemaError } = await supabase
     .from('building_schemas')
     .select('id')
-    .eq('design_session_id', validationResult.output.designSessionId)
+    .eq('design_session_id', designSessionId)
     .single()
 
   if (buildingSchemaError) {
@@ -79,59 +102,48 @@ export async function POST(request: Request) {
     .limit(1)
     .maybeSingle()
 
-  if (latestVersionError || !latestVersion) {
+  if (latestVersionError) {
     return NextResponse.json(
-      { error: 'Latest version not found for building schema' },
-      { status: 404 },
-    )
-  }
-
-  const { data: timelineItems, error: timelineItemsError } = await supabase
-    .from('timeline_items')
-    .select('type, content')
-    .eq('design_session_id', validationResult.output.designSessionId)
-    .order('created_at', { ascending: true })
-
-  if (timelineItemsError) {
-    return NextResponse.json(
-      { error: 'Failed to fetch timeline items' },
+      { error: 'Error fetching latest version' },
       { status: 500 },
     )
   }
 
-  const history: [string, string][] = timelineItems.map((item) => [
-    item.type === 'user' ? 'Human' : 'AI',
-    item.content,
-  ])
+  // If no version exists yet (initial state), use 0 as the version number
+  const latestVersionNumber = latestVersion?.number ?? 0
 
-  const jobPayload: DeepModelingPayload = {
-    ...validationResult.output,
-    userId,
-    organizationId: organizationId,
-    latestVersionNumber: latestVersion.number,
-    buildingSchemaId: buildingSchema.id,
-    history,
-  }
+  const result = await repositories.schema
+    .getSchema(designSessionId)
+    .andThen((data) => {
+      const params: AgentWorkflowParams = {
+        userInput: validationResult.output.userInput,
+        schemaData: data.schema,
+        organizationId,
+        buildingSchemaId: buildingSchema.id,
+        latestVersionNumber: latestVersionNumber,
+        designSessionId: designSessionId,
+        userId,
+      }
 
-  // Generate idempotency key based on the payload
-  // This ensures the same request won't be processed multiple times
-  const payloadHash = createHash('sha256')
-    .update(JSON.stringify(jobPayload))
-    .digest('hex')
+      const config = {
+        configurable: {
+          repositories,
+          thread_id: designSessionId,
+        },
+      }
 
-  const idempotencyKey = await idempotencyKeys.create(
-    `chat-${validationResult.output.designSessionId}-${payloadHash}`,
-  )
+      return okAsync({ params, config })
+    })
+    .andThen(({ params, config }) => {
+      const workflow = validationResult.output.isDeepModelingEnabled
+        ? deepModeling
+        : invokeDbAgent
 
-  // Trigger the appropriate workflow based on Deep Modeling toggle
-  const task = validationResult.output.isDeepModelingEnabled
-    ? deepModelingWorkflowTask
-    : designProcessWorkflowTask
-  await task.trigger(jobPayload, {
-    idempotencyKey,
-  })
+      return workflow(params, config)
+    })
 
   return NextResponse.json({
-    success: true,
+    success: result.isOk(),
+    error: result.isErr() ? result.error.message : undefined,
   })
 }

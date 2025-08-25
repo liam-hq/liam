@@ -1,0 +1,23 @@
+.layout {
+  display: flex;
+  height: 100vh;
+  background-color: var(--global-background);
+  color: var(--global-foreground);
+}
+
+.mainContent {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  overflow: hidden;
+  height: 100%;
+}
+
+.content {
+  flex-grow: 1;
+  padding: 0;
+  overflow: auto;
+  height: calc(100% - 52px); /* Subtract AppBar height */
+  display: flex;
+  flex-direction: column;
+}

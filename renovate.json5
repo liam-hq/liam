@@ -21,13 +21,6 @@
       ]
     },
     {
-      "groupName": "trigger.dev",
-      "matchPackageNames": [
-        "/^@trigger\\.dev\//",
-        "/^trigger\\.dev$/"
-      ]
-    },
-    {
       "matchUpdateTypes": [
         "patch"
       ],
@@ -69,7 +62,9 @@
         "pnpm",
         "concurrently",
         "node",
-        "knip"
+        "knip",
+        "anthropics/claude-code-action",
+        "anthropics/claude-code-security-review"
       ],
       "matchDepTypes": [
         "devDependencies"

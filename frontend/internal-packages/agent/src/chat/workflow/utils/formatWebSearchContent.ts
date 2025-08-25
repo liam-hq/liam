@@ -44,7 +44,6 @@ type WebSearchContentItem = v.InferOutput<typeof WebSearchContentItemSchema>
  * Output: Clean, readable markdown-formatted text with citations
  */
 export const formatWebSearchContent = (content: unknown): string => {
-  // Validate and parse content using valibot
   const parseResult = v.safeParse(WebSearchContentSchema, content)
 
   if (parseResult.success) {
@@ -65,7 +64,6 @@ const formatValidContent = (items: WebSearchContentItem[]): string => {
 
   const formattedItems = items.map((item, index) => {
     const formatted = formatContentItem(item)
-    // Add separator for multiple results
     return items.length > 1
       ? `## Search Result ${index + 1}\n\n${formatted}`
       : formatted

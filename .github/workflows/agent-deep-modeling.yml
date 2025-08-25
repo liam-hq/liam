@@ -1,0 +1,95 @@
+name: agent-deep-modeling
+
+on:
+  pull_request:
+    paths:
+      - 'frontend/internal-packages/agent/**'
+      - 'frontend/internal-packages/artifact/**'
+      - 'frontend/internal-packages/db/**'
+      - 'frontend/packages/schema/**'
+      - 'frontend/packages/pglite-server/**'
+      - '.github/workflows/agent-deep-modeling.yml'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  agent-deep-modeling:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      pull-requests: write
+
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+
+      - uses: ./.github/actions/pnpm-setup
+
+      - name: Start Supabase
+        run: pnpm --filter @liam-hq/db supabase:start
+
+      - name: Setup environment
+        run: cp .env.template .env
+
+      - name: Make scripts executable
+        run: chmod +x ./scripts/extract-supabase-anon-key.sh ./scripts/extract-supabase-service-key.sh
+
+      - name: Extract Supabase keys
+        run: |
+          ./scripts/extract-supabase-anon-key.sh
+          ./scripts/extract-supabase-service-key.sh
+
+      - name: Build schema package
+        run: pnpm build --filter @liam-hq/schema
+
+      - name: Execute deep modeling process
+        id: deep-modeling
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          LANGSMITH_API_KEY: ${{ secrets.LANGSMITH_API_KEY }}
+          LANGSMITH_PROJECT: "liam-app"
+        shell: bash
+        run: |
+          echo "## 🤖 Agent Deep Modeling Execution" > execution_log.md
+          echo "" >> execution_log.md
+          echo "**Started at:** $(date -u '+%Y-%m-%d %H:%M:%S UTC')" >> execution_log.md
+          echo "" >> execution_log.md
+          echo "### Command Output" >> execution_log.md
+          echo "" >> execution_log.md
+          echo '```' >> execution_log.md
+          
+          set -o pipefail
+          pnpm --filter @liam-hq/agent execute-deep-modeling 2>&1 | tee -a execution_log.md
+          exit_code=${PIPESTATUS[0]}
+          
+          echo '```' >> execution_log.md
+          echo "" >> execution_log.md
+          
+          if [ $exit_code -eq 0 ]; then
+            echo "✅ **Status:** Completed successfully" >> execution_log.md
+            echo "success=true" >> $GITHUB_OUTPUT
+          else
+            echo "❌ **Status:** Failed with exit code $exit_code" >> execution_log.md
+            echo "success=false" >> $GITHUB_OUTPUT
+            echo "exit_code=$exit_code" >> $GITHUB_OUTPUT
+          fi
+          
+          echo "" >> execution_log.md
+          echo "**Finished at:** $(date -u '+%Y-%m-%d %H:%M:%S UTC')" >> execution_log.md
+        continue-on-error: true
+
+      - name: Post execution log to PR
+        uses: marocchino/sticky-pull-request-comment@773744901bac0e8cbb5a0dc842800d45e9b2b405 # v2.9.4
+        with:
+          header: agent-deep-modeling-execution
+          path: execution_log.md
+
+      - name: Check execution result
+        if: steps.deep-modeling.outputs.success == 'false'
+        run: |
+          echo "Agent deep modeling execution failed"
+          exit 1

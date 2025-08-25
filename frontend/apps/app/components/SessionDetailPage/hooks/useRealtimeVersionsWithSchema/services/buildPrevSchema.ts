@@ -4,7 +4,7 @@ import {
   applyPatchOperations,
   operationsSchema,
   type Schema,
-} from '@liam-hq/db-structure'
+} from '@liam-hq/schema'
 import * as v from 'valibot'
 import { createClient } from '@/libs/db/client'
 

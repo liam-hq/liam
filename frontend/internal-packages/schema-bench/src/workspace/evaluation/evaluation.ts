@@ -1,6 +1,6 @@
 import * as fs from 'node:fs'
 import * as path from 'node:path'
-import { type Schema, schemaSchema } from '@liam-hq/db-structure'
+import { type Schema, schemaSchema } from '@liam-hq/schema'
 import { err, ok, Result, ResultAsync } from 'neverthrow'
 import * as v from 'valibot'
 import { evaluate } from '../../evaluate/evaluate.ts'

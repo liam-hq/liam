@@ -62,6 +62,43 @@ describe('withTimelineItemSync', () => {
         design_session_id: 'test-session-id',
       })
     })
+
+    it('should create error timeline item when AIMessage contains error', async () => {
+      const message = new AIMessage('Error: Failed to process request')
+      const context = createContext('db')
+
+      const result = await withTimelineItemSync(message, context)
+
+      const timelineItems =
+        context.repository.getTimelineItems('test-session-id')
+      expect(timelineItems).toHaveLength(1)
+      expect(timelineItems[0]).toMatchObject({
+        content: 'Error: Failed to process request',
+        type: 'error',
+        design_session_id: 'test-session-id',
+      })
+      expect(result).toBe(message)
+    })
+
+    it('should detect validation errors in AIMessage', async () => {
+      const message = new AIMessage(
+        'Database validation found 3 issues. Please fix the following errors:\n\n- "User Registration":\n  - column "name" does not exist',
+      )
+      const context = createContext('db')
+
+      const result = await withTimelineItemSync(message, context)
+
+      const timelineItems =
+        context.repository.getTimelineItems('test-session-id')
+      expect(timelineItems).toHaveLength(1)
+      expect(timelineItems[0]).toMatchObject({
+        content:
+          'Database validation found 3 issues. Please fix the following errors:\n\n- "User Registration":\n  - column "name" does not exist',
+        type: 'error',
+        design_session_id: 'test-session-id',
+      })
+      expect(result).toBe(message)
+    })
   })
 
   describe('HumanMessage handling', () => {
@@ -230,7 +267,7 @@ describe('withTimelineItemSync', () => {
       const result = await withTimelineItemSync(message, context)
 
       expect(mockConsoleError).toHaveBeenCalledWith(
-        'Failed to create timeline item for AIMessage:',
+        'Failed to create timeline item for AIMessage (assistant):',
         'Database connection failed',
       )
       expect(result).toBe(message)

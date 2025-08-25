@@ -15,8 +15,8 @@ import type {
   ForeignKeyConstraint,
   PrimaryKeyConstraint,
   Schema,
-} from '@liam-hq/db-structure'
-import { foreignKeyConstraintSchema } from '@liam-hq/db-structure'
+} from '@liam-hq/schema'
+import { foreignKeyConstraintSchema } from '@liam-hq/schema'
 import * as v from 'valibot'
 import { nameSimilarity } from '../nameSimilarity/nameSimilarity.ts'
 import { wordOverlapMatch } from '../wordOverlapMatch/wordOverlapMatch.ts'

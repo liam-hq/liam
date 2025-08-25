@@ -1,8 +1,10 @@
-import type { Schema } from '@liam-hq/db-structure'
-import { schemaSchema } from '@liam-hq/db-structure'
+import type { Schema } from '@liam-hq/schema'
+import { schemaSchema } from '@liam-hq/schema'
 import { err, ok, type Result } from 'neverthrow'
 import type { FC } from 'react'
 import { safeParse } from 'valibot'
+import { checkPublicShareStatus } from '@/features/public-share/actions'
+import { ViewModeProvider } from './contexts/ViewModeContext'
 import { SessionDetailPageClient } from './SessionDetailPageClient'
 import { getBuildingSchema } from './services/buildingSchema/server/getBuildingSchema'
 import { buildPrevSchema } from './services/buildPrevSchema/server/buildPrevSchema'
@@ -13,6 +15,7 @@ import type { DesignSessionWithTimelineItems, Version } from './types'
 
 type Props = {
   designSessionId: string
+  isDeepModelingEnabled: boolean
 }
 
 async function loadSessionData(designSessionId: string): Promise<
@@ -51,7 +54,10 @@ async function loadSessionData(designSessionId: string): Promise<
   })
 }
 
-export const SessionDetailPage: FC<Props> = async ({ designSessionId }) => {
+export const SessionDetailPage: FC<Props> = async ({
+  designSessionId,
+  isDeepModelingEnabled,
+}) => {
   const result = await loadSessionData(designSessionId)
 
   if (result.isErr()) {
@@ -72,14 +78,22 @@ export const SessionDetailPage: FC<Props> = async ({ designSessionId }) => {
 
   const initialWorkflowRunStatus = await getWorkflowRunStatus(designSessionId)
 
+  // Fetch initial public share status
+  const { isPublic: initialIsPublic } =
+    await checkPublicShareStatus(designSessionId)
+
   return (
-    <SessionDetailPageClient
-      buildingSchemaId={buildingSchema.id}
-      designSessionWithTimelineItems={designSessionWithTimelineItems}
-      initialDisplayedSchema={initialSchema}
-      initialPrevSchema={initialPrevSchema}
-      initialVersions={versions}
-      initialWorkflowRunStatus={initialWorkflowRunStatus}
-    />
+    <ViewModeProvider mode="private">
+      <SessionDetailPageClient
+        buildingSchemaId={buildingSchema.id}
+        designSessionWithTimelineItems={designSessionWithTimelineItems}
+        initialDisplayedSchema={initialSchema}
+        initialPrevSchema={initialPrevSchema}
+        initialVersions={versions}
+        initialWorkflowRunStatus={initialWorkflowRunStatus}
+        isDeepModelingEnabled={isDeepModelingEnabled}
+        initialIsPublic={initialIsPublic}
+      />
+    </ViewModeProvider>
   )
 }

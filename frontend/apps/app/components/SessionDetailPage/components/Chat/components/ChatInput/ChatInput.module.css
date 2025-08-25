@@ -76,9 +76,6 @@
   border: none;
   outline: none;
   color: var(--global-foreground);
-  scrollbar-color: var(--scrollbar-thumb-background)
-    var(--scrollbar-track-background);
-  scrollbar-width: var(--scrollbar-width);
 }
 
 .input::placeholder {

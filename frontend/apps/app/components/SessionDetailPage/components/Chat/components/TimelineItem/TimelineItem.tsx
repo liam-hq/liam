@@ -48,12 +48,9 @@ export const TimelineItem: FC<Props> = (props) => {
   const { showHeader = true, onArtifactLinkClick, ...timelineItemProps } = props
 
   return match(timelineItemProps)
-    .with({ type: 'schema_version' }, ({ buildingSchemaVersionId, onView }) => (
+    .with({ type: 'schema_version' }, ({ version, onView }) => (
       <AgentMessage state="default" assistantRole="db" showHeader={showHeader}>
-        <VersionMessage
-          buildingSchemaVersionId={buildingSchemaVersionId}
-          onView={onView}
-        />
+        <VersionMessage version={version} onView={onView} />
       </AgentMessage>
     ))
     .with({ type: 'query_result' }, ({ queryResultId, results }) => (

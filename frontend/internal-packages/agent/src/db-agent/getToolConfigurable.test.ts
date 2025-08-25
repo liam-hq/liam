@@ -25,6 +25,7 @@ describe('getToolConfigurable', () => {
         designSessionId: 'test-session-id',
         repositories,
         logger: mockLogger,
+        thread_id: 'test-thread',
       },
     }
 
@@ -57,6 +58,7 @@ describe('getToolConfigurable', () => {
         latestVersionNumber: 1,
         designSessionId: 'test-session-id',
         logger: mockLogger,
+        thread_id: 'test-thread',
         // Missing repositories
       },
     }
@@ -71,6 +73,28 @@ describe('getToolConfigurable', () => {
     }
   })
 
+  it('should return error when thread_id is missing', () => {
+    const config: RunnableConfig = {
+      configurable: {
+        buildingSchemaId: 'test-version-id',
+        latestVersionNumber: 1,
+        designSessionId: 'test-session-id',
+        repositories,
+        logger: mockLogger,
+        // Missing thread_id
+      },
+    }
+
+    const result = getToolConfigurable(config)
+
+    expect(result.isErr()).toBe(true)
+    if (result.isErr()) {
+      expect(result.error.message).toBe(
+        'Missing thread_id in configurable object',
+      )
+    }
+  })
+
   it('should return error when buildingSchemaId is missing', () => {
     const config: RunnableConfig = {
       configurable: {
@@ -78,6 +102,7 @@ describe('getToolConfigurable', () => {
         logger: mockLogger,
         latestVersionNumber: 1,
         designSessionId: 'test-session-id',
+        thread_id: 'test-thread',
         // Missing buildingSchemaId
       },
     }
@@ -100,6 +125,7 @@ describe('getToolConfigurable', () => {
         designSessionId: 'test-session-id',
         repositories,
         logger: mockLogger,
+        thread_id: 'test-thread',
       },
     }
 
@@ -121,6 +147,7 @@ describe('getToolConfigurable', () => {
         designSessionId: 'test-session-id',
         repositories,
         logger: mockLogger,
+        thread_id: 'test-thread',
       },
     }
 
@@ -140,6 +167,7 @@ describe('getToolConfigurable', () => {
         designSessionId: 'test-session-id',
         repositories,
         logger: mockLogger,
+        thread_id: 'test-thread',
         additionalProperty: 'should-be-ignored',
       },
     }
@@ -163,6 +191,7 @@ describe('getToolConfigurable', () => {
         designSessionId: 'test-session-id',
         repositories: 'not-an-object', // Truthy value passes basic check
         logger: mockLogger,
+        thread_id: 'test-thread',
       },
     }
 
@@ -182,6 +211,7 @@ describe('getToolConfigurable', () => {
         designSessionId: 'test-session-id',
         repositories: null, // Falsy value
         logger: mockLogger,
+        thread_id: 'test-thread',
       },
     }
 

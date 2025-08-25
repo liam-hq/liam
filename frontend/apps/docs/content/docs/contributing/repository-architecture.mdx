@@ -64,7 +64,7 @@ Our project uses a monorepo structure managed with pnpm workspaces, allowing us 
 │       │   ├── biome/
 │       │   ├── tsconfig/
 │       │   └── package.json
-│       ├── db-structure/     # Schema parser (@liam-hq/db-structure)
+│       ├── schema/          # Schema parser (@liam-hq/schema)
 │       │   ├── src/
 │       │   │   ├── parser/
 │       │   │   └── utils/
@@ -80,12 +80,6 @@ Our project uses a monorepo structure managed with pnpm workspaces, allowing us 
 │       │   │   ├── components/
 │       │   │   ├── hooks/
 │       │   │   └── utils/
-│       │   └── package.json
-│       ├── jobs/             # Trigger.dev jobs and workflows (@liam-hq/jobs)
-│       │   ├── src/
-│       │   │   ├── functions/
-│       │   │   ├── jobs/
-│       │   │   └── types/
 │       │   └── package.json
 │       └── ui/               # UI component library (@liam-hq/ui)
 │           ├── src/
@@ -118,7 +112,7 @@ Command-line tool for generating static ERD visualization files. see: [/docs/cli
 - Interactive project setup via `init` command
 - Static site generation with Vite
 
-### DB Structure Package (`@liam-hq/db-structure`)
+### Schema Package (`@liam-hq/schema`)
 
 Database schema parser supporting multiple formats. see: [/docs/parser/supported-formats](/docs/parser/supported-formats)
 
@@ -157,21 +151,6 @@ React Flow based ERD visualization components and logic. see: [/docs/ui-features
 - ERD Visualization
 - UI Components
 - State Management
-
-### Jobs Package (`@liam-hq/jobs`)
-
-Trigger.dev job definitions and utilities for handling background jobs.
-
-**Key Responsibilities:**
-
-- Pull request review workflow
-- GitHub integration for comments
-- Background job orchestration
-
-**Tech Stack:**
-
-- Trigger.dev SDK
-- LangChain for AI-powered reviews
 
 ### UI Package (`@liam-hq/ui`)
 

@@ -1,4 +1,4 @@
-import { supportedFormatSchema } from '@liam-hq/db-structure/parser'
+import { supportedFormatSchema } from '@liam-hq/schema/parser'
 import { Command } from 'commander'
 import { actionRunner } from '../actionRunner.js'
 import { buildCommand } from './buildCommand/index.js'

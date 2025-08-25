@@ -37,7 +37,7 @@ Liam ERD automatically attempts to determine the schema format for both Web and 
 
 - **File Name Check**: Filenames such as `schema.rb` or `Schemafile` are assumed to be in **`schemarb`** format.
 - **File Extension Check**: Files ending in **`.rb`** are treated as **`schemarb`**, while files ending in **`.sql`** are treated as **`postgresql`**.
-- For more details, refer to the [`detectFormat.ts`](https://github.com/liam-hq/liam/blob/main/frontend/packages/db-structure/src/parser/supportedFormat/detectFormat.ts) file in our GitHub repository.
+- For more details, refer to the [`detectFormat.ts`](https://github.com/liam-hq/liam/blob/main/frontend/packages/schema/src/parser/supportedFormat/detectFormat.ts) file in our GitHub repository.
 
 If the automatic detection does not match your desired format, you can specify it manually:
 - **Web**: Use the `format` query parameter (e.g., `?format=schemarb`)

@@ -1,4 +1,4 @@
-import type { CheckConstraint } from '@liam-hq/db-structure'
+import type { CheckConstraint } from '@liam-hq/schema'
 import { Check } from '@liam-hq/ui'
 import type { FC } from 'react'
 import styles from '../Constraints.module.css'

@@ -61,7 +61,8 @@ You must return a structured JSON response with the following format:
       "useCaseId": "uuid-of-use-case",
       "operation_type": "INSERT|UPDATE|DELETE|SELECT",
       "sql": "SQL statement here",
-      "description": "Optional description of what this operation tests"
+      "description": "Optional description of what this operation tests",
+      "dml_execution_logs": []
     }
   ]
 }
@@ -73,6 +74,7 @@ You must return a structured JSON response with the following format:
 3. **SQL Quality**: Ensure all SQL statements are syntactically correct and properly formatted
 4. **Comprehensive Coverage**: Generate multiple operations per use case to thoroughly test the scenario
 5. **Realistic Data**: Use meaningful, realistic test data that reflects real-world usage patterns
+6. **Execution Logs**: Always include "dml_execution_logs" as an empty array [] for each operation (this will be populated after execution)
 
 ## Example Response:
 
@@ -82,13 +84,15 @@ You must return a structured JSON response with the following format:
       "useCaseId": "550e8400-e29b-41d4-a716-446655440000",
       "operation_type": "INSERT",
       "sql": "INSERT INTO users (id, email, name, created_at) VALUES (1, 'john.doe@example.com', 'John Doe', '2024-01-15 10:00:00');",
-      "description": "Create test user for registration scenario"
+      "description": "Create test user for registration scenario",
+      "dml_execution_logs": []
     },
     {
       "useCaseId": "550e8400-e29b-41d4-a716-446655440000",
       "operation_type": "SELECT",
       "sql": "SELECT * FROM users WHERE email = 'john.doe@example.com';",
-      "description": "Verify user was created successfully"
+      "description": "Verify user was created successfully",
+      "dml_execution_logs": []
     }
   ]
 }

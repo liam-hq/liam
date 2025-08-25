@@ -1,51 +1,54 @@
 import {
   type ChangeStatus,
-  indexColumnsDiffItemSchema,
-  indexDiffItemSchema,
-  type SchemaDiffItem,
-  tableDiffItemSchema,
-} from '@liam-hq/db-structure'
-import { safeParse } from 'valibot'
+  getIndexColumnsChangeStatus,
+  getIndexRelatedChangeStatus,
+  getTableRelatedChangeStatus,
+  type Operation,
+} from '@liam-hq/schema'
 
 type Params = {
   tableId: string
   indexId: string
-  diffItems: SchemaDiffItem[]
+  operations: Operation[]
 }
 
+/**
+ * Priority order for status determination:
+ *
+ * 1. Table-level changes
+ *    - Table addition/deletion → returns 'added'/'removed'
+ *
+ * 2. Index-level changes
+ *    - Index addition/deletion → returns 'added'/'removed'
+ *
+ * 3. Index columns changes
+ *    - Index columns modification → returns 'modified'
+ *
+ * 4. No changes
+ *    - None of the above → returns 'unchanged'
+ */
 export function getChangeStatus({
   tableId,
   indexId,
-  diffItems,
+  operations,
 }: Params): ChangeStatus {
-  const filteredDiffItems = diffItems.filter((d) => d.tableId === tableId)
-
-  // Priority 1: Check for table-level changes (added/removed)
-  // If the table itself has been added or removed, return that status immediately
-  const tableRelatedDiffItem = filteredDiffItems.find((item) => {
-    const parsed = safeParse(tableDiffItemSchema, item)
-    return parsed.success
-  })
-
-  if (tableRelatedDiffItem) {
-    return tableRelatedDiffItem.status
+  const tableStatus = getTableRelatedChangeStatus({ tableId, operations })
+  if (tableStatus === 'added' || tableStatus === 'removed') {
+    return tableStatus
   }
 
-  // Priority 2: Check for index-level changes (added/removed)
-  // If the index itself has been added or removed, return that status immediately
-  const indexDiffItem = filteredDiffItems.find((item) => {
-    const parsed = safeParse(indexDiffItemSchema, item)
-    return parsed.success && parsed.output.indexId === indexId
+  const indexStatus = getIndexRelatedChangeStatus({
+    tableId,
+    indexId,
+    operations,
   })
-
-  if (indexDiffItem) {
-    return indexDiffItem.status
+  if (indexStatus === 'added' || indexStatus === 'removed') {
+    return indexStatus
   }
 
-  const indexColumnsDiffItem = filteredDiffItems.find((item) => {
-    const parsed = safeParse(indexColumnsDiffItemSchema, item)
-    return parsed.success && parsed.output.indexId === indexId
+  return getIndexColumnsChangeStatus({
+    tableId,
+    indexId,
+    operations,
   })
-
-  return indexColumnsDiffItem?.status ?? 'unchanged'
 }

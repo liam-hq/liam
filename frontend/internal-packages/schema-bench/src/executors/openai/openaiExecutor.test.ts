@@ -76,7 +76,7 @@ describe('OpenAIExecutor', () => {
 
     expect(mockCreate).toHaveBeenCalledWith(
       expect.objectContaining({
-        model: 'o4-mini',
+        model: 'gpt-5',
         messages: expect.arrayContaining([
           expect.objectContaining({ role: 'system' }),
           expect.objectContaining({ role: 'user' }),

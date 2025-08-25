@@ -1,4 +1,4 @@
-import type { Index } from '@liam-hq/db-structure'
+import type { Index } from '@liam-hq/schema'
 import { GridTableRoot } from '@liam-hq/ui'
 import clsx from 'clsx'
 import { type FC, useMemo } from 'react'
@@ -19,17 +19,17 @@ type Props = {
 }
 
 export const IndexesItem: FC<Props> = ({ tableId, index }) => {
-  const { diffItems } = useSchemaOrThrow()
+  const { operations } = useSchemaOrThrow()
   const { showDiff } = useUserEditingOrThrow()
 
   const changeStatus = useMemo(() => {
     if (!showDiff) return undefined
     return getChangeStatus({
       tableId,
-      diffItems: diffItems ?? [],
+      operations: operations ?? [],
       indexId: index.name,
     })
-  }, [showDiff, tableId, diffItems, index.name])
+  }, [showDiff, tableId, operations, index.name])
 
   const diffStyle = useDiffStyle(showDiff, changeStatus)
 

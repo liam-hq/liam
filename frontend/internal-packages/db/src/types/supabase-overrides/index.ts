@@ -2,6 +2,10 @@ import type { MergeDeep } from 'type-fest'
 import type { Database as DatabaseGenerated } from '../../../supabase/database.types'
 import type { ArtifactsOverride } from './artifacts'
 import type { BuildingSchemasOverride } from './buildingSchemas'
+import type { CheckpointBlobsOverride } from './checkpointBlobs'
+import type { CheckpointMigrationsOverride } from './checkpointMigrations'
+import type { CheckpointsOverride } from './checkpoints'
+import type { CheckpointWritesOverride } from './checkpointWrites'
 import type { DesignSessionsOverride } from './designSessions'
 import type { DocFilePathsOverride } from './docFilePaths'
 import type { GithubPullRequestCommentsOverride } from './githubPullRequestComments'
@@ -46,5 +50,9 @@ export type AppDatabaseOverrides = MergeDeep<
     ValidationQueriesOverride &
     ValidationResultsOverride &
     TimelineItemsOverride &
-    ArtifactsOverride
+    ArtifactsOverride &
+    CheckpointsOverride &
+    CheckpointBlobsOverride &
+    CheckpointWritesOverride &
+    CheckpointMigrationsOverride
 >

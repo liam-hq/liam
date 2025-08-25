@@ -1,4 +1,4 @@
-import type { Schema } from '@liam-hq/db-structure'
+import type { Schema } from '@liam-hq/schema'
 import type { Result } from 'neverthrow'
 
 export type WorkspaceConfig = {

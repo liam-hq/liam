@@ -1,96 +1,58 @@
+import type { RunnableConfig } from '@langchain/core/runnables'
 import { END, START, StateGraph } from '@langchain/langgraph'
-import {
-  analyzeRequirementsNode,
-  finalizeArtifactsNode,
-  generateUsecaseNode,
-  prepareDmlNode,
-  saveRequirementToArtifactNode,
-  validateSchemaNode,
-} from './chat/workflow/nodes'
-import { createAnnotations } from './chat/workflow/shared/langGraphUtils'
+import type { BaseCheckpointSaver } from '@langchain/langgraph-checkpoint'
+import { finalizeArtifactsNode } from './chat/workflow/nodes'
+import { workflowAnnotation } from './chat/workflow/shared/createAnnotations'
+import type { WorkflowState } from './chat/workflow/types'
 import { createDbAgentGraph } from './db-agent/createDbAgentGraph'
+import { createPmAgentGraph } from './pm-agent/createPmAgentGraph'
+import { createQaAgentGraph } from './qa-agent/createQaAgentGraph'
 import { RETRY_POLICY } from './shared/errorHandling'
 
 /**
  * Create and configure the LangGraph workflow
+ *
+ * @param checkpointer - Optional checkpoint saver for persistent state management
  */
-export const createGraph = () => {
-  const ChatStateAnnotation = createAnnotations()
-  const graph = new StateGraph(ChatStateAnnotation)
+export const createGraph = (checkpointer?: BaseCheckpointSaver) => {
+  const graph = new StateGraph(workflowAnnotation)
+  const dbAgentSubgraph = createDbAgentGraph(checkpointer)
+  const qaAgentSubgraph = createQaAgentGraph(checkpointer)
 
-  // Create DB Agent subgraph
-  const dbAgentSubgraph = createDbAgentGraph()
+  const callPmAgent = async (state: WorkflowState, config: RunnableConfig) => {
+    const pmAgentSubgraph = createPmAgentGraph(checkpointer)
+    const pmAgentOutput = await pmAgentSubgraph.invoke(
+      {
+        messages: state.messages,
+        analyzedRequirements: state.analyzedRequirements || {
+          businessRequirement: '',
+          functionalRequirements: {},
+          nonFunctionalRequirements: {},
+        },
+        designSessionId: state.designSessionId,
+        schemaData: state.schemaData,
+        analyzedRequirementsRetryCount: 0,
+      },
+      config,
+    )
+
+    return { ...state, ...pmAgentOutput }
+  }
 
   graph
-    .addNode('analyzeRequirements', analyzeRequirementsNode, {
-      retryPolicy: RETRY_POLICY,
-    })
-    .addNode('saveRequirementToArtifact', saveRequirementToArtifactNode, {
-      retryPolicy: RETRY_POLICY,
-    })
+    .addNode('pmAgent', callPmAgent)
     .addNode('dbAgent', dbAgentSubgraph)
-    .addNode('generateUsecase', generateUsecaseNode, {
-      retryPolicy: RETRY_POLICY,
-    })
-    .addNode('prepareDML', prepareDmlNode, {
-      retryPolicy: RETRY_POLICY,
-    })
-    .addNode('validateSchema', validateSchemaNode, {
-      retryPolicy: RETRY_POLICY,
-    })
+    .addNode('qaAgent', qaAgentSubgraph)
     .addNode('finalizeArtifacts', finalizeArtifactsNode, {
       retryPolicy: RETRY_POLICY,
     })
 
-    .addEdge(START, 'analyzeRequirements')
-    .addEdge('saveRequirementToArtifact', 'dbAgent')
-    .addEdge('dbAgent', 'generateUsecase')
-    .addEdge('generateUsecase', 'prepareDML')
-    .addEdge('prepareDML', 'validateSchema')
+    .addEdge(START, 'pmAgent')
+    .addEdge('pmAgent', 'dbAgent')
+    .addEdge('dbAgent', 'qaAgent')
+    // TODO: Temporarily removed conditional edges to prevent infinite loop when errors route back to dbAgent
+    .addEdge('qaAgent', 'finalizeArtifacts')
     .addEdge('finalizeArtifacts', END)
 
-    // Conditional edges for requirements analysis
-    .addConditionalEdges(
-      'analyzeRequirements',
-      (state) => {
-        const MAX_RETRIES = 3
-        const retryCount = state.retryCount['analyzeRequirements'] || 0
-
-        // If analyzedRequirements is defined → proceed to saveRequirementToArtifact
-        if (state.analyzedRequirements !== undefined) {
-          return 'saveRequirementToArtifact'
-        }
-
-        // If max retries exceeded → fallback to finalizeArtifacts
-        if (retryCount >= MAX_RETRIES) {
-          return 'finalizeArtifacts'
-        }
-
-        // Otherwise → retry analyzeRequirements
-        return 'analyzeRequirements'
-      },
-      {
-        analyzeRequirements: 'analyzeRequirements',
-        saveRequirementToArtifact: 'saveRequirementToArtifact',
-        finalizeArtifacts: 'finalizeArtifacts',
-      },
-    )
-
-    // Conditional edges for validation results
-    .addConditionalEdges(
-      'validateSchema',
-      (state) => {
-        // success → finalizeArtifacts
-        // dml error or test fail → dbAgent
-        return state.dmlExecutionSuccessful === false
-          ? 'dbAgent'
-          : 'finalizeArtifacts'
-      },
-      {
-        dbAgent: 'dbAgent',
-        finalizeArtifacts: 'finalizeArtifacts',
-      },
-    )
-
-  return graph.compile()
+  return checkpointer ? graph.compile({ checkpointer }) : graph.compile()
 }

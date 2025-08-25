@@ -97,6 +97,13 @@ export const SessionModeSelector: FC<Props> = ({
     onModeChange(modes[newIndex]?.mode ?? 'github')
   }
 
+  const setButtonRef =
+    (index: number) => (element: HTMLButtonElement | null) => {
+      if (buttonsRef.current && element) {
+        buttonsRef.current[index] = element
+      }
+    }
+
   return (
     <div
       ref={containerRef}
@@ -105,29 +112,30 @@ export const SessionModeSelector: FC<Props> = ({
       aria-label="Session mode selector"
     >
       <div ref={backgroundRef} className={styles.modeButtonBackground} />
-      {modes.map((modeItem, index) => (
-        <button
-          key={modeItem.mode}
-          ref={(el) => {
-            buttonsRef.current[index] = el
-          }}
-          type="button"
-          role="tab"
-          id={`${modeItem.mode}-tab`}
-          aria-selected={selectedMode === modeItem.mode}
-          aria-controls={`${modeItem.mode}-panel`}
-          tabIndex={selectedMode === modeItem.mode ? 0 : -1}
-          className={clsx(
-            styles.modeButton,
-            selectedMode === modeItem.mode ? styles.modeButtonActive : '',
-          )}
-          onClick={() => onModeChange(modeItem.mode)}
-          onKeyDown={(e) => handleKeyDown(e, index)}
-        >
-          {modeItem.icon}
-          {modeItem.label}
-        </button>
-      ))}
+      {modes.map((modeItem, index) => {
+        const currentIndex = index
+        return (
+          <button
+            key={modeItem.mode}
+            ref={setButtonRef(currentIndex)}
+            type="button"
+            role="tab"
+            id={`${modeItem.mode}-tab`}
+            aria-selected={selectedMode === modeItem.mode}
+            aria-controls={`${modeItem.mode}-panel`}
+            tabIndex={selectedMode === modeItem.mode ? 0 : -1}
+            className={clsx(
+              styles.modeButton,
+              selectedMode === modeItem.mode ? styles.modeButtonActive : '',
+            )}
+            onClick={() => onModeChange(modeItem.mode)}
+            onKeyDown={(e) => handleKeyDown(e, index)}
+          >
+            {modeItem.icon}
+            {modeItem.label}
+          </button>
+        )
+      })}
     </div>
   )
 }

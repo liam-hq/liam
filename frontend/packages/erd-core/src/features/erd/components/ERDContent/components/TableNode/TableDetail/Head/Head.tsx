@@ -1,4 +1,4 @@
-import type { Table } from '@liam-hq/db-structure'
+import { getTableChangeStatus, type Table } from '@liam-hq/schema'
 import {
   DrawerClose,
   DrawerTitle,
@@ -12,7 +12,6 @@ import { useDiffStyle } from '@/features/diff/hooks/useDiffStyle'
 import { clickLogEvent } from '@/features/gtm/utils'
 import { useVersionOrThrow } from '@/providers'
 import { useSchemaOrThrow, useUserEditingOrThrow } from '@/stores'
-import { getChangeStatus } from './getChangeStatus'
 import styles from './Head.module.css'
 
 type Props = {
@@ -21,16 +20,16 @@ type Props = {
 
 export const Head: FC<Props> = ({ table }) => {
   const { version } = useVersionOrThrow()
-  const { diffItems } = useSchemaOrThrow()
+  const { operations } = useSchemaOrThrow()
   const { showDiff } = useUserEditingOrThrow()
 
   const changeStatus = useMemo(() => {
     if (!showDiff) return undefined
-    return getChangeStatus({
+    return getTableChangeStatus({
       tableId: table.name,
-      diffItems: diffItems ?? [],
+      operations: operations ?? [],
     })
-  }, [showDiff, table.name, diffItems])
+  }, [showDiff, table.name, operations])
 
   const diffStyle = useDiffStyle(showDiff, changeStatus)
 

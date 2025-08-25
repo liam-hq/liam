@@ -1,38 +1,44 @@
 import {
   type ChangeStatus,
-  type SchemaDiffItem,
-  tableCommentDiffItemSchema,
-  tableDiffItemSchema,
-} from '@liam-hq/db-structure'
-import { safeParse } from 'valibot'
+  getTableChangeStatus,
+  getTableCommentChangeStatus,
+  type Operation,
+} from '@liam-hq/schema'
 
 type Params = {
   tableId: string
-  diffItems: SchemaDiffItem[]
+  operations: Operation[]
 }
 
-export function getChangeStatus({ tableId, diffItems }: Params): ChangeStatus {
-  const filteredDiffItems = diffItems.filter((d) => d.tableId === tableId)
-
-  // Prioritize table-level changes (added/removed) if they exist
-  const tableDiffItem = filteredDiffItems.find((item) => {
-    const parsed = safeParse(tableDiffItemSchema, item)
-    return parsed.success
-  })
-
-  if (tableDiffItem) {
-    return tableDiffItem.status
+/**
+ * Determines the change status for the table comment component.
+ *
+ * Priority order for status determination:
+ *
+ * 1. Table-level changes
+ *    - Table addition → returns 'added'
+ *    - Table deletion → returns 'removed'
+ *    - Table name changes → returns 'modified'
+ *
+ * 2. Table comment changes
+ *    - Comment replacement → returns 'modified'
+ *    - Comment addition (when implemented) → would return 'added'
+ *    - Comment removal (when implemented) → would return 'removed'
+ *
+ * 3. No changes
+ *    - None of the above → returns 'unchanged'
+ *
+ * Note: Table-level changes take precedence because when a table is
+ * added/removed, its comment is implicitly affected.
+ */
+export function getChangeStatus({ tableId, operations }: Params): ChangeStatus {
+  const tableStatus = getTableChangeStatus({ tableId, operations })
+  if (tableStatus === 'added' || tableStatus === 'removed') {
+    return tableStatus
   }
 
-  // Check for table comment changes as secondary priority
-  const tableCommentDiffItem = filteredDiffItems.find((item) => {
-    const parsed = safeParse(tableCommentDiffItemSchema, item)
-    return parsed.success
+  return getTableCommentChangeStatus({
+    tableId,
+    operations,
   })
-
-  if (tableCommentDiffItem) {
-    return tableCommentDiffItem.status
-  }
-
-  return 'unchanged'
 }

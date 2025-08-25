@@ -1,4 +1,4 @@
-import type { Table } from '@liam-hq/db-structure'
+import type { Table } from '@liam-hq/schema'
 import { Rows3 as Rows3Icon } from '@liam-hq/ui'
 import type { FC } from 'react'
 import { CollapsibleHeader } from '../CollapsibleHeader'

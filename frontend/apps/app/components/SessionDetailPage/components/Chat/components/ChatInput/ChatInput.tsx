@@ -1,6 +1,6 @@
 'use client'
 
-import type { Schema } from '@liam-hq/db-structure'
+import type { Schema } from '@liam-hq/schema'
 import {
   PopoverAnchor,
   PopoverContent,
@@ -19,6 +19,7 @@ import {
   useRef,
   useState,
 } from 'react'
+import { useViewMode } from '../../../../hooks/viewMode'
 import styles from './ChatInput.module.css'
 import {
   type MentionItem,
@@ -45,6 +46,7 @@ export const ChatInput: FC<Props> = ({
   schema,
   onSendMessage,
 }) => {
+  const { isPublic } = useViewMode()
   const mentionSuggestorRef = useRef<MentionSuggestorHandle>(null)
   const mentionSuggestorId = useId()
 
@@ -169,12 +171,18 @@ export const ChatInput: FC<Props> = ({
               <textarea
                 ref={textareaRef}
                 value={message}
-                placeholder="Build or ask anything, @ to mention schema tables"
-                disabled={isWorkflowRunning}
+                placeholder={
+                  isPublic
+                    ? 'Read-only mode'
+                    : 'Build or ask anything, @ to mention schema tables'
+                }
+                disabled={isWorkflowRunning || isPublic}
                 className={styles.input}
                 rows={1}
                 data-error={error ? 'true' : undefined}
-                role="combobox"
+                {...{
+                  role: 'combobox',
+                }}
                 aria-controls={mentionSuggestorId}
                 aria-expanded={isMentionSuggestorOpen}
                 aria-autocomplete="list"
@@ -209,7 +217,7 @@ export const ChatInput: FC<Props> = ({
         </div>
         <SendButton
           hasContent={hasContent}
-          disabled={isWorkflowRunning || error}
+          disabled={isWorkflowRunning || error || isPublic}
           onClick={handleSubmit}
         />
       </form>

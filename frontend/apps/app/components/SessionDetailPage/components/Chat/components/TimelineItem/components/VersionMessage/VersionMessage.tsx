@@ -1,7 +1,7 @@
 'use client'
 
-import type { Json, Tables } from '@liam-hq/db'
-import { operationsSchema } from '@liam-hq/db-structure'
+import type { Tables } from '@liam-hq/db'
+import { operationsSchema } from '@liam-hq/schema'
 import {
   ArrowRight,
   Button,
@@ -10,16 +10,8 @@ import {
   ChevronRight,
 } from '@liam-hq/ui'
 import clsx from 'clsx'
-import {
-  type FC,
-  Fragment,
-  useCallback,
-  useEffect,
-  useState,
-  useTransition,
-} from 'react'
+import { type FC, Fragment, useCallback, useState } from 'react'
 import * as v from 'valibot'
-import { createClient } from '@/libs/db/client'
 import styles from './VersionMessage.module.css'
 
 /**
@@ -32,7 +24,7 @@ type StatusClass =
   | 'statusUnknown'
 
 const parsePatchOperations = (
-  patch: Json,
+  patch: Tables<'building_schema_versions'>['patch'],
 ): Array<{
   path: string[]
   op: string
@@ -81,50 +73,25 @@ const parsePatchOperations = (
   })
 }
 
-type BuildingSchemaVersion = Pick<
-  Tables<'building_schema_versions'>,
-  'patch' | 'number' | 'id'
->
-
 type Props = {
-  buildingSchemaVersionId: string
+  version: {
+    id: string
+    number: number
+    patch: Tables<'building_schema_versions'>['patch']
+  } | null
   onView?: (versionId: string) => void
 }
 
-export const VersionMessage: FC<Props> = ({
-  buildingSchemaVersionId,
-  onView,
-}) => {
-  const [version, setVersion] = useState<BuildingSchemaVersion | null>(null)
-  const [isPending, startTransition] = useTransition()
+export const VersionMessage: FC<Props> = ({ version, onView }) => {
   const [isExpanded, setIsExpanded] = useState(false)
+  const currentVersion = version
 
   const handleClick = useCallback(() => {
-    if (!version) return
-    onView?.(version.id)
-  }, [version, onView])
+    if (!currentVersion) return
+    onView?.(currentVersion.id)
+  }, [currentVersion, onView])
 
-  useEffect(() => {
-    startTransition(async () => {
-      const supabase = createClient()
-      const { data, error } = await supabase
-        .from('building_schema_versions')
-        .select('id, number, patch')
-        .eq('id', buildingSchemaVersionId)
-        .single()
-
-      if (error) {
-        console.error('Failed to fetch version:', error)
-        return
-      }
-
-      if (data) {
-        setVersion(data)
-      }
-    })
-  }, [buildingSchemaVersionId])
-
-  if (isPending || !version) {
+  if (!currentVersion) {
     return (
       <div className={styles.container}>
         <div className={styles.header}>
@@ -132,21 +99,23 @@ export const VersionMessage: FC<Props> = ({
             type="button"
             className={styles.headerButton}
             disabled
-            aria-label="Loading version details"
+            aria-label="Version information loading"
             aria-expanded={false}
           >
             <div className={styles.collapseButton}>
               <ChevronRight />
             </div>
-            <span className={styles.versionNumber}>Loading version...</span>
+            <span className={styles.versionNumber}>
+              Version information loading...
+            </span>
           </button>
         </div>
       </div>
     )
   }
 
-  const displayVersionNumber = version.number
-  const patchOperations = parsePatchOperations(version.patch)
+  const displayVersionNumber = currentVersion.number
+  const patchOperations = parsePatchOperations(currentVersion.patch)
 
   const toggleExpanded = () => {
     setIsExpanded(!isExpanded)
@@ -161,7 +130,7 @@ export const VersionMessage: FC<Props> = ({
           onClick={toggleExpanded}
           aria-label={`${isExpanded ? 'Collapse' : 'Expand'} version ${displayVersionNumber} details`}
           aria-expanded={isExpanded}
-          id={`version-header-${buildingSchemaVersionId}`}
+          id={`version-header-${currentVersion?.id}`}
         >
           <div className={styles.collapseButton}>
             {isExpanded ? <ChevronDown /> : <ChevronRight />}
@@ -185,12 +154,12 @@ export const VersionMessage: FC<Props> = ({
       <div className={styles.divider} />
       <section
         className={clsx(styles.contentWrapper, isExpanded && styles.expanded)}
-        aria-labelledby={`version-header-${buildingSchemaVersionId}`}
+        aria-labelledby={`version-header-${currentVersion?.id}`}
       >
         <div className={styles.content}>
           {patchOperations.map((operation, index) => (
             <div
-              key={`${version.id}-${index}`}
+              key={`${currentVersion.id}-${index}`}
               className={clsx(
                 styles.operationItem,
                 styles[operation.statusClass],
@@ -198,8 +167,7 @@ export const VersionMessage: FC<Props> = ({
             >
               <div className={styles.pathContainer}>
                 {operation.path.map((part, partIndex) => (
-                  // biome-ignore lint/suspicious/noArrayIndexKey: Path parts maintain their order
-                  <Fragment key={`${buildingSchemaVersionId}-${partIndex}`}>
+                  <Fragment key={`${currentVersion.id}-${partIndex}`}>
                     {partIndex > 0 && (
                       <div className={styles.arrowContainer}>
                         <ArrowRight />

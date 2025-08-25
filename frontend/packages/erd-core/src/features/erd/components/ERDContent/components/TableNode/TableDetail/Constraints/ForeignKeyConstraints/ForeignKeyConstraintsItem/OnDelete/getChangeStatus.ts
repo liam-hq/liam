@@ -1,56 +1,39 @@
 import {
   type ChangeStatus,
-  constraintDeleteConstraintDiffItemSchema,
-  constraintDiffItemSchema,
-  type SchemaDiffItem,
-  tableDiffItemSchema,
-} from '@liam-hq/db-structure'
-import { safeParse } from 'valibot'
+  getConstraintDeleteConstraintChangeStatus,
+  getConstraintRelatedChangeStatus,
+  getTableRelatedChangeStatus,
+  type Operation,
+} from '@liam-hq/schema'
 
 type Params = {
   tableId: string
   constraintId: string
-  diffItems: SchemaDiffItem[]
+  operations: Operation[]
 }
 
 export function getChangeStatus({
   tableId,
   constraintId,
-  diffItems,
+  operations,
 }: Params): ChangeStatus {
-  const filteredDiffItems = diffItems.filter((d) => d.tableId === tableId)
-
-  // Priority 1: Check for table-level changes (added/removed)
-  // If the table itself has been added or removed, return that status immediately
-  const tableRelatedDiffItem = filteredDiffItems.find((item) => {
-    const parsed = safeParse(tableDiffItemSchema, item)
-    return parsed.success
-  })
-
-  if (tableRelatedDiffItem) {
-    return tableRelatedDiffItem.status
+  const tableStatus = getTableRelatedChangeStatus({ tableId, operations })
+  if (tableStatus === 'added' || tableStatus === 'removed') {
+    return tableStatus
   }
 
-  // Priority 2: Check for constraint-level changes (added/removed)
-  // If the constraint itself has been added or removed, return that status immediately
-  const constraintDiffItem = filteredDiffItems.find((item) => {
-    const parsed = safeParse(constraintDiffItemSchema, item)
-    return (
-      parsed.success &&
-      parsed.output.constraintId === constraintId &&
-      parsed.output.data.type === 'FOREIGN KEY'
-    )
+  const constraintStatus = getConstraintRelatedChangeStatus({
+    tableId,
+    constraintId,
+    operations,
   })
-
-  if (constraintDiffItem) {
-    return constraintDiffItem.status
+  if (constraintStatus === 'added' || constraintStatus === 'removed') {
+    return constraintStatus
   }
 
-  // Check for constraint onDelete changes
-  const constraintDeleteDiffItem = filteredDiffItems.find((item) => {
-    const parsed = safeParse(constraintDeleteConstraintDiffItemSchema, item)
-    return parsed.success && parsed.output.constraintId === constraintId
+  return getConstraintDeleteConstraintChangeStatus({
+    tableId,
+    constraintId,
+    operations,
   })
-
-  return constraintDeleteDiffItem?.status ?? 'unchanged'
 }

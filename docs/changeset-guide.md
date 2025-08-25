@@ -13,7 +13,7 @@ All of the following conditions must be met:
 1. **Target packages** (not in ignore list):
    - `@liam-hq/cli`
    - `@liam-hq/erd-core`
-   - `@liam-hq/db-structure`
+   - `@liam-hq/schema`
    - `@liam-hq/ui`
 
 2. **User-facing changes**:
@@ -29,7 +29,7 @@ All of the following conditions must be met:
   ```
   @liam-hq/agent, @liam-hq/app, @liam-hq/docs,
   @liam-hq/figma-to-css-variables, @liam-hq/db,
-  @liam-hq/jobs, @liam-hq/storybook, @liam-hq/github,
+  @liam-hq/storybook, @liam-hq/github,
   @liam-hq/schema-bench
   ```
 
@@ -73,7 +73,7 @@ While breaking changes are technically allowed in 0.x under SemVer, we treat the
 ### New Feature (minor)
 ```markdown
 ---
-"@liam-hq/db-structure": minor
+"@liam-hq/schema": minor
 ---
 
 - ✨ Add support for Rails inline index syntax in schema.rb parser

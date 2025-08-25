@@ -1,4 +1,4 @@
-import type { Schema } from '@liam-hq/db-structure'
+import type { Schema } from '@liam-hq/schema'
 import { describe, expect, it } from 'vitest'
 import { evaluate } from './evaluate'
 
@@ -10,6 +10,7 @@ describe('evaluate', () => {
     'simple case: full match',
     async () => {
       const reference: Schema = {
+        enums: {},
         tables: {
           user: {
             name: 'user',
@@ -83,6 +84,7 @@ describe('evaluate', () => {
       }
 
       const predict: Schema = {
+        enums: {},
         tables: {
           user: {
             name: 'user',
@@ -172,6 +174,7 @@ describe('evaluate', () => {
     'partial match: similar table names',
     async () => {
       const reference: Schema = {
+        enums: {},
         tables: {
           user_account: {
             name: 'user_account',
@@ -237,6 +240,7 @@ describe('evaluate', () => {
       }
 
       const predict: Schema = {
+        enums: {},
         tables: {
           user: {
             name: 'user',
@@ -324,6 +328,7 @@ describe('evaluate', () => {
     'mixed similarity: some exact, some partial matches',
     async () => {
       const reference: Schema = {
+        enums: {},
         tables: {
           customer: {
             name: 'customer',
@@ -375,6 +380,7 @@ describe('evaluate', () => {
       }
 
       const predict: Schema = {
+        enums: {},
         tables: {
           customer: {
             name: 'customer',
@@ -449,6 +455,7 @@ describe('evaluate', () => {
     'foreign key evaluation: perfect match',
     async () => {
       const reference: Schema = {
+        enums: {},
         tables: {
           users: {
             name: 'users',
@@ -515,6 +522,7 @@ describe('evaluate', () => {
       }
 
       const predict: Schema = {
+        enums: {},
         tables: {
           users: {
             name: 'users',
@@ -592,6 +600,7 @@ describe('evaluate', () => {
     'foreign key evaluation: partial match with different names',
     async () => {
       const reference: Schema = {
+        enums: {},
         tables: {
           users: {
             name: 'users',
@@ -658,6 +667,7 @@ describe('evaluate', () => {
       }
 
       const predict: Schema = {
+        enums: {},
         tables: {
           users: {
             name: 'users',
@@ -735,6 +745,7 @@ describe('evaluate', () => {
     'foreign key evaluation: partial match (F1 score between 0 and 1)',
     async () => {
       const reference: Schema = {
+        enums: {},
         tables: {
           users: {
             name: 'users',
@@ -840,6 +851,7 @@ describe('evaluate', () => {
       }
 
       const predict: Schema = {
+        enums: {},
         tables: {
           users: {
             name: 'users',
@@ -947,6 +959,7 @@ describe('evaluate', () => {
     'foreign key evaluation: no match',
     async () => {
       const reference: Schema = {
+        enums: {},
         tables: {
           users: {
             name: 'users',
@@ -1013,6 +1026,7 @@ describe('evaluate', () => {
       }
 
       const predict: Schema = {
+        enums: {},
         tables: {
           users: {
             name: 'users',

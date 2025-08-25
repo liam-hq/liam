@@ -1,53 +1,41 @@
 import {
   type ChangeStatus,
-  columnDiffItemSchema,
-  constraintDiffItemSchema,
-  type SchemaDiffItem,
-  tableDiffItemSchema,
-} from '@liam-hq/db-structure'
-import { safeParse } from 'valibot'
+  getColumnRelatedChangeStatus,
+  getConstraintColumnNamesChangeStatus,
+  getTableRelatedChangeStatus,
+  type Operation,
+} from '@liam-hq/schema'
 
 type Params = {
   tableId: string
   columnId: string
-  diffItems: SchemaDiffItem[]
+  constraintId: string
+  operations: Operation[]
 }
 
 export function getChangeStatus({
   tableId,
   columnId,
-  diffItems,
+  constraintId,
+  operations,
 }: Params): ChangeStatus {
-  const filteredDiffItems = diffItems.filter((d) => d.tableId === tableId)
-
-  // Priority 1: Check for table-level changes (added/removed)
-  const tableRelatedDiffItem = filteredDiffItems.find((item) => {
-    const parsed = safeParse(tableDiffItemSchema, item)
-    return parsed.success
-  })
-
-  if (tableRelatedDiffItem) {
-    return tableRelatedDiffItem.status
+  const tableStatus = getTableRelatedChangeStatus({ tableId, operations })
+  if (tableStatus === 'added' || tableStatus === 'removed') {
+    return tableStatus
   }
 
-  // Priority 2: Check for column-level changes (added/removed)
-  const columnDiffItem = filteredDiffItems.find((item) => {
-    const parsed = safeParse(columnDiffItemSchema, item)
-    return parsed.success && parsed.output.columnId === columnId
+  const columnStatus = getColumnRelatedChangeStatus({
+    tableId,
+    columnId,
+    operations,
   })
-
-  if (columnDiffItem) {
-    return columnDiffItem.status
+  if (columnStatus === 'added' || columnStatus === 'removed') {
+    return columnStatus
   }
 
-  // Priority 3: Check for primary key constraint changes
-  const constraintDiffItem = filteredDiffItems.find((item) => {
-    const parsed = safeParse(constraintDiffItemSchema, item)
-    if (parsed.success && parsed.output.data.type === 'PRIMARY KEY') {
-      return parsed.output.data.columnNames.includes(columnId)
-    }
-    return false
+  return getConstraintColumnNamesChangeStatus({
+    tableId,
+    constraintId,
+    operations,
   })
-
-  return constraintDiffItem?.status ?? 'unchanged'
 }

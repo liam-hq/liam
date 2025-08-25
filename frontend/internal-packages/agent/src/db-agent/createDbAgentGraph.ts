@@ -1,6 +1,7 @@
 import { END, START, StateGraph } from '@langchain/langgraph'
-import { designSchemaNode } from '../chat/workflow/nodes/designSchemaNode'
-import { createAnnotations } from '../chat/workflow/shared/langGraphUtils'
+import type { BaseCheckpointSaver } from '@langchain/langgraph-checkpoint'
+import { workflowAnnotation } from '../chat/workflow/shared/createAnnotations'
+import { designSchemaNode } from './nodes/designSchemaNode'
 import { invokeSchemaDesignToolNode } from './nodes/invokeSchemaDesignToolNode'
 import { routeAfterDesignSchema } from './routing/routeAfterDesignSchema'
 
@@ -18,10 +19,11 @@ const RETRY_POLICY = {
  * 1. designSchema - Uses AI to design database schema
  * 2. invokeSchemaDesignTool - Applies schema changes using tools
  * 3. Loop between design and tool invocation until schema is complete
+ *
+ * @param checkpointer - Optional checkpoint saver for persistent state management
  */
-export const createDbAgentGraph = () => {
-  const ChatStateAnnotation = createAnnotations()
-  const dbAgentGraph = new StateGraph(ChatStateAnnotation)
+export const createDbAgentGraph = (checkpointer?: BaseCheckpointSaver) => {
+  const dbAgentGraph = new StateGraph(workflowAnnotation)
 
   dbAgentGraph
     .addNode('designSchema', designSchemaNode, {
@@ -38,5 +40,7 @@ export const createDbAgentGraph = () => {
       generateUsecase: END,
     })
 
-  return dbAgentGraph.compile()
+  return checkpointer
+    ? dbAgentGraph.compile({ checkpointer })
+    : dbAgentGraph.compile()
 }

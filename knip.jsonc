@@ -12,10 +12,9 @@
     "frontend/apps/docs/source.config.ts",
     // - Generated files may contain unused exports
     "frontend/internal-packages/db/supabase/database.types.ts",
+    "frontend/packages/db-structure/src/parser/tbls/schema.generated.ts",
     // - Script for workaround
     "frontend/apps/app/scripts/install-prisma-internals.mjs",
-    // - Script file which is read from trigger.config.ts
-    "frontend/internal-packages/jobs/src/trigger/jobs.ts",
     // - Next.js special files
     "frontend/apps/docs/app/docs/sitemap.ts",
     "frontend/apps/app/next.config.ts",
@@ -23,17 +22,27 @@
     // - Temporarily unused vectorstore files (will be re-enabled later)
     "frontend/internal-packages/agent/src/vectorstore/index.ts",
     "frontend/internal-packages/agent/src/vectorstore/supabaseVectorStore.ts",
-    "frontend/internal-packages/agent/src/vectorstore/syncSchemaVectorStore.ts"
+    "frontend/internal-packages/agent/src/vectorstore/syncSchemaVectorStore.ts",
+    // - Newly added enum schema definitions (will be used in future implementations)
+    "frontend/packages/schema/src/schema/schema.ts",
+    "frontend/packages/schema/src/schema/index.ts",
+    // - Temporarily unused CommandPalette components (will be used in the future release)
+    "frontend/packages/erd-core/src/features/erd/components/ERDRenderer/CommandPalette/CommandPaletteOptions/CommandOptions.tsx",
+    "frontend/packages/erd-core/src/features/erd/components/ERDRenderer/CommandPalette/CommandPaletteOptions/index.ts",
+    // - Foundation code for Public Share feature (createPublicServerClient will be used in future phases)
+    "frontend/apps/app/libs/db/server.ts",
+    // - Server Actions are not detected by knip due to 'use server' directive
+    "frontend/apps/app/features/public-share/actions.ts"
   ],
 
 
   // Dependencies to ignore when analyzing
   "ignoreDependencies": [
     "@prisma/internals", // Used by CLI package for schema parsing
-    "zod", // Used by db-structure package
+    "zod", // Used by schema package
     "destyle.css", // Used by CSS imports in ui package
-    "json-refs", // Used by db-structure npm scripts
-    "json-schema-to-zod", // Used by db-structure npm scripts
+    "json-refs", // Used by schema npm scripts
+    "json-schema-to-zod", // Used by schema npm scripts
     "@liam-hq/cli", // Used by erd-sample build script
     "@liam-hq/configs", // Used by tsconfig and biome configuration files
     "@turbo/gen", // Required for `turbo gen` command in npm scripts
@@ -52,8 +61,5 @@
     "frontend/packages/cli": {
       "entry": ["bin/cli.ts", "src/main.tsx"]
     },
-    "frontend/internal-packages/jobs": {
-      "entry": ["trigger.config.ts"]
-    }
   }
 }

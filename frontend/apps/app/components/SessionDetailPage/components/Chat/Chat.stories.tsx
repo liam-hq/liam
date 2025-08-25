@@ -1,5 +1,5 @@
 import { aBuildingSchemaVersion } from '@liam-hq/db'
-import { aSchema } from '@liam-hq/db-structure'
+import { aSchema } from '@liam-hq/schema'
 import type { Meta, StoryObj } from '@storybook/react'
 import { HttpResponse, http } from 'msw'
 import { aTypicalConversation } from '../../factories'
@@ -43,6 +43,7 @@ export const Default: Story = {
     onMessageSend: () => {},
     onVersionView: () => {},
     onArtifactLinkClick: () => {},
+    isDeepModelingEnabled: false,
   },
 }
 
@@ -54,6 +55,7 @@ export const AnimatedDemo: Story = {
     onMessageSend: () => {},
     onVersionView: () => {},
     onArtifactLinkClick: () => {},
+    isDeepModelingEnabled: false,
   },
   render: (props) => <AnimatedChatDemo {...props} />,
 }

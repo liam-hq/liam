@@ -1,10 +1,9 @@
-import type { Column } from '@liam-hq/db-structure'
+import { type Column, getColumnCommentChangeStatus } from '@liam-hq/schema'
 import clsx from 'clsx'
 import { type FC, useMemo } from 'react'
 import { useDiffStyle } from '@/features/diff/hooks/useDiffStyle'
 import { useSchemaOrThrow, useUserEditingOrThrow } from '@/stores'
 import styles from './Comment.module.css'
-import { getChangeStatus } from './getChangeStatus'
 
 type Props = {
   tableId: string
@@ -12,17 +11,17 @@ type Props = {
 }
 
 export const Comment: FC<Props> = ({ tableId, column }) => {
-  const { diffItems } = useSchemaOrThrow()
+  const { operations } = useSchemaOrThrow()
   const { showDiff } = useUserEditingOrThrow()
 
   const changeStatus = useMemo(() => {
     if (!showDiff) return undefined
-    return getChangeStatus({
+    return getColumnCommentChangeStatus({
       tableId,
-      diffItems: diffItems ?? [],
+      operations: operations ?? [],
       columnId: column.name,
     })
-  }, [showDiff, tableId, diffItems])
+  }, [showDiff, tableId, operations])
 
   const diffStyle = useDiffStyle(showDiff, changeStatus)
 

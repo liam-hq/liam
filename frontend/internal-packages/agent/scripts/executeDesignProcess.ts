@@ -1,57 +1,52 @@
 #!/usr/bin/env tsx
 
 import { HumanMessage } from '@langchain/core/messages'
-import type { SupabaseClientType } from '@liam-hq/db'
-import type { Schema } from '@liam-hq/db-structure'
+import type { Schema } from '@liam-hq/schema'
 import type { Result } from 'neverthrow'
 import { err, ok, okAsync } from 'neverthrow'
+import { DEFAULT_RECURSION_LIMIT } from '../src/chat/workflow/shared/langGraphUtils'
 import type { WorkflowState } from '../src/chat/workflow/types'
 import { createDbAgentGraph } from '../src/db-agent/createDbAgentGraph'
-import type { createSupabaseRepositories } from '../src/repositories/factory'
+import { hasHelpFlag, parseDesignProcessArgs } from './shared/argumentParser'
 import {
-  createBuildingSchema,
-  createDesignSession,
   createLogger,
   getBusinessManagementSystemUserInput,
   getLogLevel,
   logSchemaResults,
+  type SetupDatabaseAndUserResult,
   setupDatabaseAndUser,
   showHelp,
   validateEnvironment,
 } from './shared/scriptUtils'
+import { findOrCreateDesignSession } from './shared/sessionUtils'
 import { processStreamChunk } from './shared/streamingUtils'
 
 const currentLogLevel = getLogLevel()
 const logger = createLogger(currentLogLevel)
 
 /**
- * Create DB Agent graph for database schema design
+ * Create workflow state
  */
-const createSimplifiedGraph = () => {
-  return createDbAgentGraph()
-}
-
-/**
- * Create minimal data for the workflow
- */
-type CreateWorkflowStateInput = {
-  supabaseClient: SupabaseClientType
-  repositories: ReturnType<typeof createSupabaseRepositories>
-  organization: { id: string; name: string }
+type CreateWorkflowStateInput = SetupDatabaseAndUserResult & {
   buildingSchema: { id: string; latest_version_number: number }
   designSession: { id: string; name: string }
-  user: { id: string; email: string }
 }
 
-const createWorkflowState = (setupData: CreateWorkflowStateInput) => {
+const createWorkflowState = (
+  setupData: CreateWorkflowStateInput,
+  customUserInput?: string,
+  _isResume = false,
+) => {
   const { organization, buildingSchema, designSession, user } = setupData
 
   // Empty schema for testing - let AI design from scratch
   const sampleSchema: Schema = {
     tables: {},
+    enums: {},
   }
 
-  const userInput = getBusinessManagementSystemUserInput()
+  // Use custom user input if provided, otherwise use default
+  const userInput = customUserInput || getBusinessManagementSystemUserInput()
 
   const workflowState: WorkflowState = {
     userInput,
@@ -62,7 +57,6 @@ const createWorkflowState = (setupData: CreateWorkflowStateInput) => {
     designSessionId: designSession.id,
     userId: user.id,
     organizationId: organization.id,
-    retryCount: {},
   }
 
   return okAsync({
@@ -74,14 +68,14 @@ const createWorkflowState = (setupData: CreateWorkflowStateInput) => {
 /**
  * Main execution function
  */
-const executeDesignProcess = async (): Promise<Result<void, Error>> => {
-  // Validate environment, setup database, create session and schema with andThen chaining
-  const sessionName = `Design Session - ${new Date().toISOString()}`
+const executeDesignProcess = async (
+  customPrompt?: string,
+  resumeSessionId?: string,
+): Promise<Result<void, Error>> => {
   const setupResult = await validateEnvironment()
     .andThen(setupDatabaseAndUser(logger))
-    .andThen(createDesignSession(sessionName))
-    .andThen(createBuildingSchema)
-    .andThen(createWorkflowState)
+    .andThen(findOrCreateDesignSession(resumeSessionId))
+    .andThen((data) => createWorkflowState(data, customPrompt))
 
   if (setupResult.isErr()) return err(setupResult.error)
   const { repositories, workflowState } = setupResult.value
@@ -93,9 +87,10 @@ const executeDesignProcess = async (): Promise<Result<void, Error>> => {
       logger,
       buildingSchemaId: workflowState.buildingSchemaId,
       latestVersionNumber: workflowState.latestVersionNumber,
+      thread_id: workflowState.designSessionId,
     },
   }
-  const graph = createSimplifiedGraph()
+  const graph = createDbAgentGraph(repositories.schema.checkpointer)
 
   logger.info('Starting AI workflow execution...')
 
@@ -103,7 +98,7 @@ const executeDesignProcess = async (): Promise<Result<void, Error>> => {
   const streamResult = await (async () => {
     const stream = await graph.stream(workflowState, {
       configurable: config.configurable,
-      recursionLimit: 100,
+      recursionLimit: DEFAULT_RECURSION_LIMIT,
       streamMode: 'values',
     })
 
@@ -123,30 +118,37 @@ const executeDesignProcess = async (): Promise<Result<void, Error>> => {
 
   logger.info('Workflow completed')
 
-  logSchemaResults(
-    logger,
-    streamResult.schemaData,
-    currentLogLevel,
-    undefined, // Error handling is now done immediately in workflow
-  )
+  // Log the session_id for future reference when resuming sessions
+  const sessionId = workflowState.designSessionId
+  logger.info(`Session ID: ${sessionId}`)
+  logger.info(`To resume this session later, use: --session-id ${sessionId}`)
+
+  logSchemaResults(logger, streamResult.schemaData, currentLogLevel, undefined)
 
   return ok(undefined)
 }
 
 // Execute if this file is run directly
 if (require.main === module) {
+  // Parse command line arguments
+  const { prompt, sessionId } = parseDesignProcessArgs()
+
   // Show usage information
-  const args = process.argv.slice(2)
-  if (args.includes('--help') || args.includes('-h')) {
+  if (hasHelpFlag()) {
     showHelp(
       'executeDesignProcess.ts',
       `Executes the design process workflow for database schema generation.
   This script creates a design session, builds a schema, and runs the
-  design workflow using LangGraph.`,
+  design workflow using LangGraph with checkpoint support.
+
+  Additional Options:
+    --prompt, -p <text>     Custom prompt for the AI
+    --session-id, -s <id>   Resume from existing design session (session ID)`,
       [
         'pnpm --filter @liam-hq/agent execute-design-process',
+        'pnpm --filter @liam-hq/agent execute-design-process --prompt "Create a user management system"',
+        'pnpm --filter @liam-hq/agent execute-design-process --session-id abc-123 --prompt "Add more tables"',
         'pnpm --filter @liam-hq/agent execute-design-process:debug',
-        'pnpm --filter @liam-hq/agent execute-design-process:warn',
       ],
     )
     process.exit(0)
@@ -156,10 +158,12 @@ if (require.main === module) {
     `Starting design process execution (log level: ${currentLogLevel})`,
   )
 
-  executeDesignProcess().then((result) => {
+  executeDesignProcess(prompt, sessionId).then((result) => {
     if (result.isErr()) {
       logger.error(`FAILED: ${result.error.message}`)
       process.exit(1)
     }
+
+    logger.info('Design session completed successfully')
   })
 }
