@@ -18,6 +18,10 @@ export const parse = async (str: string): Promise<PgParseResult> => {
       initial: 2048, // 128MB (64KB × 2048 pages)
       maximum: 4096, // 256MB max
     }),
+    locateFile: (path: string, prefix: string) => {
+      // Fixes URL object type errors in serverless environments
+      return String(prefix) + path
+    },
   })
   // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
   const result = pgQuery.parse(filteredStr)
