@@ -10,7 +10,7 @@ import { createClient } from '@/libs/db/server'
 
 function line(event: string, data: unknown) {
   const payload = typeof data === 'string' ? data : JSON.stringify(data)
-  return `event: ${event}\ndata: ${payload}\n\n`
+  return `event:${event}\ndata:${payload}\n\n`
 }
 
 // https://vercel.com/docs/functions/configuring-functions/duration#maximum-duration-for-different-runtimes
