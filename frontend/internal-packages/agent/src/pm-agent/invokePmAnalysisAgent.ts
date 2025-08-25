@@ -62,10 +62,13 @@ export const invokePmAnalysisAgent = (
   return formatPrompt.andThen(invoke).andThen((stream) => {
     return ResultAsync.fromPromise(
       (async () => {
+        // OpenAI ("chatcmpl-...") and LangGraph ("run-...") use different id formats,
+        // so we overwrite with a UUID to unify chunk ids for consistent handling.
+        const id = crypto.randomUUID()
         let accumulatedChunk: AIMessageChunk | null = null
 
         for await (const _chunk of stream) {
-          const chunk = new AIMessageChunk({ ..._chunk, name: 'pm' })
+          const chunk = new AIMessageChunk({ ..._chunk, id, name: 'pm' })
           await dispatchCustomEvent('messages', chunk)
 
           // Accumulate chunks using concat method
