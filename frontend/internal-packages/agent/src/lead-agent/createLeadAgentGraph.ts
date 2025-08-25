@@ -2,8 +2,8 @@ import { END, START, StateGraph } from '@langchain/langgraph'
 import type { BaseCheckpointSaver } from '@langchain/langgraph-checkpoint'
 import { RETRY_POLICY } from '../shared/errorHandling'
 import { leadAgentStateAnnotation } from './annotation'
-import { classifyMessage, toolNode } from './classifyMessage'
-import { routeAfterClassification } from './classifyMessage/utils'
+import { classifyMessage } from './classifyMessage'
+import { summarizeWorkflow } from './summarizeWorkflow'
 
 export const createLeadAgentGraph = (checkpointer?: BaseCheckpointSaver) => {
   const leadAgentGraph = new StateGraph(leadAgentStateAnnotation)
@@ -11,16 +11,15 @@ export const createLeadAgentGraph = (checkpointer?: BaseCheckpointSaver) => {
   leadAgentGraph
     .addNode('classify', classifyMessage, {
       retryPolicy: RETRY_POLICY,
+      // Specify possible destinations for Command-based routing
+      ends: ['summarizeWorkflow', END],
     })
-    .addNode('tool', toolNode, {
+    .addNode('summarizeWorkflow', summarizeWorkflow, {
       retryPolicy: RETRY_POLICY,
     })
     .addEdge(START, 'classify')
-    .addEdge('tool', END)
-    .addConditionalEdges('classify', routeAfterClassification, {
-      toolNode: 'tool',
-      END: END,
-    })
+    // classifyMessage returns a Command that directly specifies the routing
+    .addEdge('summarizeWorkflow', END)
 
   return checkpointer
     ? leadAgentGraph.compile({ checkpointer })

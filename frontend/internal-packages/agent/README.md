@@ -12,13 +12,11 @@ graph TD;
 	pmAgent(pmAgent)
 	dbAgent(dbAgent)
 	qaAgent(qaAgent)
-	finalizeArtifacts(finalizeArtifacts)
 	__end__([<p>__end__</p>]):::last
 	__start__ --> leadAgent;
 	dbAgent --> qaAgent;
-	finalizeArtifacts --> __end__;
 	pmAgent --> dbAgent;
-	qaAgent --> finalizeArtifacts;
+	qaAgent --> leadAgent;
 	leadAgent -.-> pmAgent;
 	leadAgent -.-> __end__;
 	classDef default fill:#f2f0ff,line-height:1.2;
@@ -68,8 +66,8 @@ interface WorkflowState {
 1. **leadAgent**: Lead Agent subgraph that routes requests to appropriate specialized agents
 2. **pmAgent**: PM Agent subgraph that handles requirements analysis - contains analyzeRequirements and invokeSaveArtifactTool nodes
 3. **dbAgent**: DB Agent subgraph that handles database schema design - contains designSchema and invokeSchemaDesignTool nodes (performed by dbAgent)
-4. **qaAgent**: QA Agent subgraph that handles testing and validation - contains generateTestcase, prepareDML, and validateSchema nodes (performed by qaAgent)
-5. **finalizeArtifacts**: Generates and saves comprehensive artifacts to database, handles error timeline items (performed by dbAgentArtifactGen)
+4. **qaAgent**: QA Agent subgraph that handles testing and validation - contains generateUsecase, prepareDML, and validateSchema nodes (performed by qaAgent)
+5. **leadAgent (summarize)**: When QA completes, Lead Agent summarizes the workflow by generating a comprehensive summary
 
 ## Lead Agent Subgraph
 
@@ -82,12 +80,12 @@ The `leadAgent` node is implemented as a **LangGraph subgraph** that acts as the
 graph TD;
 	__start__([<p>__start__</p>]):::first
 	classify(classify)
-	tool(tool)
+	summarizeWorkflow(summarizeWorkflow)
 	__end__([<p>__end__</p>]):::last
 	__start__ --> classify;
-	tool --> __end__;
-	classify -. &nbsp;toolNode&nbsp; .-> tool;
-	classify -. &nbsp;END&nbsp; .-> __end__;
+	summarizeWorkflow --> __end__;
+	classify -.-> summarizeWorkflow;
+	classify -.-> __end__;
 	classDef default fill:#f2f0ff,line-height:1.2;
 	classDef first fill-opacity:0;
 	classDef last fill:#bfb6fc;
@@ -99,17 +97,19 @@ graph TD;
 - **Purpose**: Analyzes user requests and determines appropriate routing
 - **Performed by**: GPT-5-nano with specialized routing logic
 - **Retry Policy**: maxAttempts: 3 (internal to subgraph)
-- **Decision Making**: Evaluates request intent for database design tasks
+- **Decision Making**: Uses Command-based routing for direct control flow
+- **Routing**: Routes to pmAgent for database design tasks or summarizeWorkflow after QA completion
 
-#### 2. tool Node
-- **Purpose**: Executes the routing tool (`routeToAgent`)
-- **Performed by**: ToolNode with routing capabilities
-- **Tool Integration**: Routes to specialized agents (currently pmAgent)
+#### 2. summarizeWorkflow Node
+- **Purpose**: Generates workflow summary after QA completion
+- **Performed by**: GPT-5-nano with minimal reasoning
+- **Activation**: Triggered when QA Agent has generated use cases
 
 ### Lead Agent Flow Patterns
 
-1. **Database Design Request**: `START → classify → tool → END` (routes to pmAgent)
+1. **Database Design Request**: `START → classify → END` (routes to pmAgent via Command)
 2. **Non-Database Request**: `START → classify → END` (responds directly without routing)
+3. **Workflow Summarization**: `START → classify → summarizeWorkflow → END` (after QA completion)
 
 ### Lead Agent Benefits
 

@@ -11,13 +11,11 @@ graph TD;
 	pmAgent(pmAgent)
 	dbAgent(dbAgent)
 	qaAgent(qaAgent)
-	finalizeArtifacts(finalizeArtifacts)
 	__end__([<p>__end__</p>]):::last
 	__start__ --> leadAgent;
 	dbAgent --> qaAgent;
-	finalizeArtifacts --> __end__;
 	pmAgent --> dbAgent;
-	qaAgent --> finalizeArtifacts;
+	qaAgent --> leadAgent;
 	leadAgent -.-> pmAgent;
 	leadAgent -.-> __end__;
 	classDef default fill:#f2f0ff,line-height:1.2;

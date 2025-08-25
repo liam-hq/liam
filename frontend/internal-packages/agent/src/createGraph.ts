@@ -1,14 +1,12 @@
 import type { RunnableConfig } from '@langchain/core/runnables'
 import { END, START, StateGraph } from '@langchain/langgraph'
 import type { BaseCheckpointSaver } from '@langchain/langgraph-checkpoint'
-import { finalizeArtifactsNode } from './chat/workflow/nodes'
 import { workflowAnnotation } from './chat/workflow/shared/createAnnotations'
 import type { WorkflowState } from './chat/workflow/types'
 import { createDbAgentGraph } from './db-agent/createDbAgentGraph'
 import { createLeadAgentGraph } from './lead-agent/createLeadAgentGraph'
 import { createPmAgentGraph } from './pm-agent/createPmAgentGraph'
 import { createQaAgentGraph } from './qa-agent/createQaAgentGraph'
-import { RETRY_POLICY } from './shared/errorHandling'
 
 /**
  * Create and configure the LangGraph workflow
@@ -46,9 +44,6 @@ export const createGraph = (checkpointer?: BaseCheckpointSaver) => {
     .addNode('pmAgent', callPmAgent)
     .addNode('dbAgent', dbAgentSubgraph)
     .addNode('qaAgent', qaAgentSubgraph)
-    .addNode('finalizeArtifacts', finalizeArtifactsNode, {
-      retryPolicy: RETRY_POLICY,
-    })
 
     .addEdge(START, 'leadAgent')
     .addConditionalEdges('leadAgent', (state) => state.next, {
@@ -57,9 +52,9 @@ export const createGraph = (checkpointer?: BaseCheckpointSaver) => {
     })
     .addEdge('pmAgent', 'dbAgent')
     .addEdge('dbAgent', 'qaAgent')
-    // TODO: Temporarily removed conditional edges to prevent infinite loop when errors route back to dbAgent
-    .addEdge('qaAgent', 'finalizeArtifacts')
-    .addEdge('finalizeArtifacts', END)
+    // Route back to Lead Agent after QA Agent completes
+    // Lead Agent will finalize the workflow
+    .addEdge('qaAgent', 'leadAgent')
 
   return checkpointer ? graph.compile({ checkpointer }) : graph.compile()
 }

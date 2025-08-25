@@ -1,11 +1,8 @@
-import { Annotation, END, MessagesAnnotation } from '@langchain/langgraph'
+import { Annotation } from '@langchain/langgraph'
+import { workflowAnnotation } from '../chat/workflow/shared/createAnnotations'
 
 export const leadAgentStateAnnotation = Annotation.Root({
-  ...MessagesAnnotation.spec,
-  next: Annotation<string>({
-    reducer: (x, y) => y ?? x ?? END,
-    default: () => END,
-  }),
+  ...workflowAnnotation.spec,
 })
 
 export type LeadAgentState = typeof leadAgentStateAnnotation.State
