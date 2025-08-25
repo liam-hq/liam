@@ -1,6 +1,7 @@
 import { execSync } from 'node:child_process'
 import { withSentryConfig } from '@sentry/nextjs'
 import type { NextConfig } from 'next'
+import { ROUTE_PREFIXES } from './libs/routes/constants'
 
 const gitCommitHash = execSync('git rev-parse --short HEAD').toString().trim()
 const releaseDate = new Date().toISOString().split('T')[0]
@@ -18,6 +19,14 @@ const nextConfig: NextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
+  experimental: {
+    serverActions: {
+      allowedOrigins:
+        process.env.VERCEL_ENV === 'production'
+          ? ['liambx.com', 'liam-erd-web.vercel.app']
+          : undefined,
+    },
+  },
   images: {
     remotePatterns: [
       {
@@ -30,6 +39,7 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  serverExternalPackages: ['@electric-sql/pglite'],
   webpack: (config) => {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     if (Array.isArray(config.externals)) {
@@ -110,6 +120,20 @@ const nextConfig: NextConfig = {
     process.env.NEXT_PUBLIC_ENV_NAME === 'production'
       ? process.env.ASSET_PREFIX
       : undefined,
+  async headers() {
+    return [
+      {
+        source: `${ROUTE_PREFIXES.PUBLIC}/:path*`,
+        headers: [
+          {
+            key: 'Cache-Control',
+            value:
+              'public, max-age=0, s-maxage=60, stale-while-revalidate=86400',
+          },
+        ],
+      },
+    ]
+  },
 }
 
 export default withSentryConfig(nextConfig, {

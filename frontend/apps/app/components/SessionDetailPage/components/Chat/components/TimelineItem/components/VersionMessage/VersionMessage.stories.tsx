@@ -35,7 +35,17 @@ type Story = StoryObj<typeof meta>
 
 export const Default: Story = {
   args: {
-    buildingSchemaVersionId: 'test-id',
+    version: {
+      id: '123',
+      number: 1,
+      patch: [
+        {
+          op: 'add',
+          path: '/tables/users',
+          value: { name: 'users', columns: [] },
+        },
+      ],
+    },
     onView: () => {},
   },
 }

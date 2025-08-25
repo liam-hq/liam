@@ -26,7 +26,7 @@ export const useCaseSchema = v.object({
 // Base requirement schema properties
 const baseRequirementProperties = {
   name: v.string(),
-  description: v.string(),
+  description: v.array(v.string()),
 }
 
 // Functional requirement schema

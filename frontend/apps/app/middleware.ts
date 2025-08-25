@@ -1,10 +1,11 @@
 import { createServerClient } from '@liam-hq/db'
 import type { NextRequest } from 'next/server'
 import { NextResponse } from 'next/server'
+import { ROUTE_PREFIXES } from './libs/routes/constants'
 
 export async function updateSession(request: NextRequest) {
   // Skip middleware if path doesn't start with /app
-  if (!request.nextUrl.pathname.startsWith('/app')) {
+  if (!request.nextUrl.pathname.startsWith(ROUTE_PREFIXES.APP)) {
     return NextResponse.next()
   }
 
@@ -47,12 +48,13 @@ export async function updateSession(request: NextRequest) {
 
   if (
     !user &&
-    !request.nextUrl.pathname.startsWith('/app/login') &&
-    !request.nextUrl.pathname.startsWith('/app/auth')
+    !request.nextUrl.pathname.startsWith(ROUTE_PREFIXES.LOGIN) &&
+    !request.nextUrl.pathname.startsWith(ROUTE_PREFIXES.AUTH) &&
+    !request.nextUrl.pathname.startsWith(ROUTE_PREFIXES.PUBLIC)
   ) {
     // no user, potentially respond by redirecting the user to the login page
     const url = request.nextUrl.clone()
-    url.pathname = '/app/login'
+    url.pathname = ROUTE_PREFIXES.LOGIN
 
     // Create the redirect response
     const redirectResponse = NextResponse.redirect(url)

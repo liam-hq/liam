@@ -1,5 +1,5 @@
-import type { Schema } from '@liam-hq/db-structure'
-import { postgresqlSchemaDeparser } from '@liam-hq/db-structure'
+import type { Schema } from '@liam-hq/schema'
+import { postgresqlSchemaDeparser } from '@liam-hq/schema'
 
 type SchemaToDdlResult = {
   ddl: string
@@ -7,7 +7,7 @@ type SchemaToDdlResult = {
 }
 
 /**
- * Convert schema to DDL statements using the @liam-hq/db-structure PostgreSQL deparser
+ * Convert schema to DDL statements using the @liam-hq/schema PostgreSQL deparser
  */
 export const schemaToDdl = (schema: Schema): SchemaToDdlResult => {
   const result = postgresqlSchemaDeparser(schema)

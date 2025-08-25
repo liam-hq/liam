@@ -1,16 +1,25 @@
 import type { RunnableConfig } from '@langchain/core/runnables'
+import { executeQuery } from '@liam-hq/pglite-server'
 import {
   aColumn,
   aForeignKeyConstraint,
   aSchema,
   aTable,
-} from '@liam-hq/db-structure'
-import { describe, expect, it, vi } from 'vitest'
+} from '@liam-hq/schema'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { Repositories } from '../../repositories'
 import { InMemoryRepository } from '../../repositories/InMemoryRepository'
 import { schemaDesignTool } from './schemaDesignTool'
 
+vi.mock('@liam-hq/pglite-server', () => ({
+  executeQuery: vi.fn(),
+}))
+
 describe('schemaDesignTool', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
   const createMockConfig = (
     buildingSchemaId: string,
     latestVersionNumber: number,
@@ -22,6 +31,7 @@ describe('schemaDesignTool', () => {
       latestVersionNumber,
       designSessionId,
       repositories: testRepositories,
+      thread_id: 'test-thread',
       logger: {
         log: vi.fn(),
         debug: vi.fn(),
@@ -33,6 +43,19 @@ describe('schemaDesignTool', () => {
   })
 
   it('should successfully update schema version with DDL validation', async () => {
+    vi.mocked(executeQuery).mockResolvedValue([
+      {
+        success: true,
+        sql: 'CREATE TABLE users (id integer NOT NULL, name varchar(255));',
+        result: { rows: [], columns: [] },
+        id: 'result-1',
+        metadata: {
+          executionTime: 1,
+          timestamp: new Date().toISOString(),
+        },
+      },
+    ])
+
     const repositories: Repositories = {
       schema: new InMemoryRepository({
         schemas: {
@@ -74,7 +97,7 @@ describe('schemaDesignTool', () => {
     const result = await schemaDesignTool.invoke(input, config)
 
     expect(result).toBe(
-      'Schema successfully updated. The operations have been applied to the database schema, DDL validation passed, and new version created.',
+      'Schema successfully updated. The operations have been applied to the database schema, DDL validation successful (1/1 statements executed successfully), and new version created.',
     )
 
     // Verify the schema was actually updated in the repository by schemaDesignTool
@@ -163,6 +186,9 @@ describe('schemaDesignTool', () => {
   })
 
   it('should handle empty operations array', async () => {
+    // Empty schema with empty operations should generate empty DDL
+    vi.mocked(executeQuery).mockResolvedValue([])
+
     const initialSchema = aSchema({ tables: {} })
     const repositories: Repositories = {
       schema: new InMemoryRepository({
@@ -185,7 +211,7 @@ describe('schemaDesignTool', () => {
     // With actual PGlite, empty operations on empty schema should succeed
     const result = await schemaDesignTool.invoke(input, config)
     expect(result).toBe(
-      'Schema successfully updated. The operations have been applied to the database schema, DDL validation passed, and new version created.',
+      'Schema successfully updated. The operations have been applied to the database schema, DDL validation successful (0/0 statements executed successfully), and new version created.',
     )
   })
 

@@ -1,5 +1,5 @@
-import type { Schema } from '@liam-hq/db-structure'
-import { type Operation, operationsSchema } from '@liam-hq/db-structure'
+import type { Schema } from '@liam-hq/schema'
+import { type Operation, operationsSchema } from '@liam-hq/schema'
 import { TabsList, TabsTrigger } from '@liam-hq/ui'
 import clsx from 'clsx'
 import type { ComponentProps, FC } from 'react'
@@ -12,6 +12,7 @@ import {
 } from '../../constants'
 import { ExportDropdown } from './ExportDropdown'
 import styles from './Header.module.css'
+import { ShareButton } from './ShareButton'
 import { VersionDropdown } from './VersionDropdown'
 
 type Props = ComponentProps<typeof VersionDropdown> & {
@@ -19,6 +20,8 @@ type Props = ComponentProps<typeof VersionDropdown> & {
   tabValue: OutputTabValue
   artifactDoc?: string
   hasArtifact?: boolean
+  designSessionId: string
+  initialIsPublic: boolean
 }
 
 const generateCumulativeOperations = (
@@ -48,6 +51,8 @@ export const Header: FC<Props> = ({
   tabValue,
   artifactDoc,
   hasArtifact,
+  designSessionId,
+  initialIsPublic,
   ...propsForVersionDropdown
 }) => {
   const { versions, selectedVersion } = propsForVersionDropdown
@@ -97,6 +102,10 @@ export const Header: FC<Props> = ({
           schema={schema}
           artifactDoc={artifactDoc}
           cumulativeOperations={cumulativeOperations}
+        />
+        <ShareButton
+          designSessionId={designSessionId}
+          initialIsPublic={initialIsPublic}
         />
       </div>
     </div>

@@ -1,53 +1,49 @@
 import {
   type ChangeStatus,
-  indexRelatedDiffItemSchema,
-  type SchemaDiffItem,
-  tableDiffItemSchema,
-} from '@liam-hq/db-structure'
-import { safeParse } from 'valibot'
+  getIndexRelatedChangeStatus,
+  getTableRelatedChangeStatus,
+  type Operation,
+} from '@liam-hq/schema'
 
 type Params = {
   tableId: string
   indexId: string
-  diffItems: SchemaDiffItem[]
+  operations: Operation[]
 }
 
+/**
+ * Determines the change status for the index item component.
+ *
+ * Priority order for status determination:
+ *
+ * 1. Table-level changes
+ *    - Table addition → returns 'added'
+ *    - Table deletion → returns 'removed'
+ *
+ * 2. Index-level changes
+ *    - Index addition → returns 'added'
+ *    - Index deletion → returns 'removed'
+ *    - Index modifications (name, columns, unique, type) → returns 'modified'
+ *
+ * 3. No changes
+ *    - None of the above → returns 'unchanged'
+ *
+ * Note: Table-level changes take precedence because when a table is
+ * added/removed, all its indexes are implicitly affected.
+ */
 export function getChangeStatus({
   tableId,
   indexId,
-  diffItems,
+  operations,
 }: Params): ChangeStatus {
-  const filteredDiffItems = diffItems.filter((d) => d.tableId === tableId)
+  const tableStatus = getTableRelatedChangeStatus({ tableId, operations })
+  if (tableStatus === 'added' || tableStatus === 'removed') {
+    return tableStatus
+  }
 
-  // Priority 1: Check for table-level changes (added/removed)
-  // If the table itself has been added or removed, return that status immediately
-  const tableRelatedDiffItem = filteredDiffItems.find((item) => {
-    const parsed = safeParse(tableDiffItemSchema, item)
-    return parsed.success
+  return getIndexRelatedChangeStatus({
+    tableId,
+    indexId,
+    operations,
   })
-
-  if (tableRelatedDiffItem) {
-    return tableRelatedDiffItem.status
-  }
-
-  const indexRelatedDiffItems = filteredDiffItems.filter((item) => {
-    const parsed = safeParse(indexRelatedDiffItemSchema, item)
-    return parsed.success && parsed.output.indexId === indexId
-  })
-
-  if (indexRelatedDiffItems.length === 0) {
-    return 'unchanged'
-  }
-
-  // Collect all unique statuses from index changes
-  const statuses = indexRelatedDiffItems.map((item) => item.status)
-  const uniqueStatuses = new Set(statuses)
-
-  // All indexes have the same change status
-  if (uniqueStatuses.size === 1 && statuses[0] !== undefined) {
-    return statuses[0]
-  }
-
-  // Mixed statuses indicate the index has been modified
-  return 'modified'
 }

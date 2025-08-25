@@ -1,4 +1,4 @@
-import type { Cardinality, Table } from '@liam-hq/db-structure'
+import type { Cardinality, Table } from '@liam-hq/schema'
 import type { Node } from '@xyflow/react'
 import type { ShowMode } from '@/schemas/showMode/types'
 

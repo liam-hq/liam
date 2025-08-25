@@ -46,3 +46,4 @@ $ARGUMENTS
   - Impact analysis (risks and benefits)
   - Technical considerations (implementation notes)
 - **Evidence documentation**: Include specific file paths, line numbers, and search results
+- **Cross-repository references**: When referencing PRs or issues from repositories other than route06/liam-internal (e.g., liam-hq/liam), use the full format `repository#number` (e.g., `liam-hq/liam#2991`) instead of just `#number` to ensure proper GitHub linking

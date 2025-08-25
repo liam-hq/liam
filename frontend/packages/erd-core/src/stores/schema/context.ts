@@ -1,4 +1,4 @@
-import { schemaDiffItemsSchema, schemaSchema } from '@liam-hq/db-structure'
+import { operationsSchema, schemaSchema } from '@liam-hq/schema'
 import { createContext } from 'react'
 import * as v from 'valibot'
 
@@ -6,7 +6,7 @@ const schemaStoreSchema = v.object({
   current: schemaSchema,
   previous: v.optional(schemaSchema),
   merged: v.optional(schemaSchema),
-  diffItems: v.optional(schemaDiffItemsSchema),
+  operations: v.optional(operationsSchema),
 })
 
 export type SchemaContextValue = v.InferOutput<typeof schemaStoreSchema>

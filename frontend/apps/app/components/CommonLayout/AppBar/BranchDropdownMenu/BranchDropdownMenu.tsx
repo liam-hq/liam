@@ -1,9 +1,6 @@
 import type { FC } from 'react'
-import { DropdownMenuRoot, DropdownMenuTrigger } from '@/components'
-import { ChevronsUpDown } from '@/icons'
-import styles from './BranchDropdownMenu.module.css'
 import { Content } from './Content'
-import { type Branch, getBranches } from './services/getBranches'
+import { getBranches } from './services/getBranches'
 
 type Props = {
   currentProjectId: string
@@ -23,32 +20,17 @@ export const BranchDropdownMenu: FC<Props> = async ({
     return null
   }
 
-  return (
-    <DropdownMenuRoot>
-      <Trigger currentBranch={currentBranch} />
-      <Content
-        currentBranch={currentBranch}
-        branches={branches}
-        currentProjectId={currentProjectId}
-      />
-    </DropdownMenuRoot>
-  )
-}
+  const comboboxBranches = branches.map((branch) => ({
+    name: branch.name,
+    sha: branch.name,
+    protected: branch.protected,
+  }))
 
-type TriggerProps = {
-  currentBranch: Branch
-}
-
-const Trigger: FC<TriggerProps> = ({ currentBranch }) => {
   return (
-    <DropdownMenuTrigger className={styles.trigger}>
-      <div className={styles.nameAndTag}>
-        <span className={styles.name}>{currentBranch.name}</span>
-        {currentBranch.protected && (
-          <span className={styles.tag}>production</span>
-        )}
-      </div>
-      <ChevronsUpDown className={styles.chevronIcon} />
-    </DropdownMenuTrigger>
+    <Content
+      branches={comboboxBranches}
+      currentBranchName={currentBranch.name}
+      currentProjectId={currentProjectId}
+    />
   )
 }

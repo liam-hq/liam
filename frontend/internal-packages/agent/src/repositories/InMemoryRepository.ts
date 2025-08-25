@@ -1,8 +1,10 @@
+import type { BaseCheckpointSaver } from '@langchain/langgraph-checkpoint'
+import { MemorySaver } from '@langchain/langgraph-checkpoint'
 import type { Artifact } from '@liam-hq/artifact'
 import type { Tables } from '@liam-hq/db/supabase/database.types'
-import type { Schema } from '@liam-hq/db-structure'
-import { schemaSchema } from '@liam-hq/db-structure'
 import type { SqlResult } from '@liam-hq/pglite-server/src/types'
+import type { Schema } from '@liam-hq/schema'
+import { schemaSchema } from '@liam-hq/schema'
 import { applyPatch } from 'fast-json-patch'
 import { errAsync, okAsync, type ResultAsync } from 'neverthrow'
 import * as v from 'valibot'
@@ -57,11 +59,13 @@ type InMemoryRepositoryOptions = {
 
 export class InMemoryRepository implements SchemaRepository {
   private state: InMemoryRepositoryState
+  public checkpointer: BaseCheckpointSaver
   // Used by generateId method
   // biome-ignore lint/correctness/noUnusedPrivateClassMembers: used by generateId method
   private idCounter = 1
 
   constructor(options: InMemoryRepositoryOptions = {}) {
+    this.checkpointer = new MemorySaver()
     this.state = {
       schemas: new Map(),
       designSessions: new Map(),
@@ -74,7 +78,6 @@ export class InMemoryRepository implements SchemaRepository {
       buildingSchemas: new Map(),
     }
 
-    // Initialize with provided data
     Object.entries(options.schemas || {}).forEach(([id, schema]) => {
       this.state.schemas.set(id, {
         id,
@@ -169,7 +172,6 @@ export class InMemoryRepository implements SchemaRepository {
       return { success: false, error: 'Invalid schema after patch' }
     }
 
-    // Update schema
     this.state.schemas.set(params.buildingSchemaId, {
       ...schema,
       schema: updatedSchema,
@@ -212,7 +214,6 @@ export class InMemoryRepository implements SchemaRepository {
       versionNumber: params.latestVersionNumber + 1,
     })
 
-    // Update schema's latest version number
     this.state.schemas.set(params.buildingSchemaId, {
       ...schema,
       latestVersionNumber: params.latestVersionNumber + 1,
@@ -293,7 +294,6 @@ export class InMemoryRepository implements SchemaRepository {
 
     this.state.timelineItems.set(id, timelineItem)
 
-    // Add to design session timeline (simplified structure for DesignSessionData)
     const designSession = this.state.designSessions.get(params.designSessionId)
     if (designSession) {
       designSession.timeline_items.push({
@@ -367,6 +367,37 @@ export class InMemoryRepository implements SchemaRepository {
     this.state.artifacts.set(params.designSessionId, updated)
 
     return { success: true, artifact: updated }
+  }
+
+  upsertArtifact(
+    params: CreateArtifactParams,
+  ): ResultAsync<Tables<'artifacts'>, Error> {
+    const { designSessionId, artifact } = params
+    const now = new Date().toISOString()
+
+    const existingArtifact = this.state.artifacts.get(designSessionId)
+
+    if (existingArtifact) {
+      const updatedArtifact: Tables<'artifacts'> = {
+        ...existingArtifact,
+        artifact: artifact,
+        updated_at: now,
+      }
+      this.state.artifacts.set(designSessionId, updatedArtifact)
+      return okAsync(updatedArtifact)
+    }
+
+    const newArtifact: Tables<'artifacts'> = {
+      id: this.generateId(),
+      design_session_id: designSessionId,
+      organization_id: 'test-org-id',
+      artifact: artifact,
+      created_at: now,
+      updated_at: now,
+    }
+
+    this.state.artifacts.set(designSessionId, newArtifact)
+    return okAsync(newArtifact)
   }
 
   async getArtifact(designSessionId: string): Promise<ArtifactResult> {

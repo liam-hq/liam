@@ -4,6 +4,7 @@ import clsx from 'clsx'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { urlgen } from '@/libs/routes'
+import { formatDateShort } from '@/libs/utils'
 import itemStyles from '../Item.module.css'
 import styles from './RecentsSection.module.css'
 import type { RecentSession } from './types'
@@ -41,9 +42,7 @@ export const RecentsSectionClient = ({
                   id: session.id,
                 })
                 const isActive = pathname === sessionUrl
-                const sessionDate = new Date(
-                  session.created_at,
-                ).toLocaleDateString()
+                const sessionDate = formatDateShort(session.created_at)
                 return (
                   <Link
                     key={session.id}

@@ -1,8 +1,4 @@
-import {
-  type Column,
-  type Constraints,
-  isPrimaryKey,
-} from '@liam-hq/db-structure'
+import type { Column, Constraints } from '@liam-hq/schema'
 import { GridTableRoot } from '@liam-hq/ui'
 import clsx from 'clsx'
 import { type FC, useMemo } from 'react'
@@ -23,19 +19,29 @@ type Props = {
 }
 
 export const ColumnsItem: FC<Props> = ({ tableId, column, constraints }) => {
-  const { diffItems } = useSchemaOrThrow()
+  const { operations } = useSchemaOrThrow()
   const { showDiff } = useUserEditingOrThrow()
 
   const changeStatus = useMemo(() => {
     if (!showDiff) return undefined
     return getChangeStatus({
       tableId,
-      diffItems: diffItems ?? [],
+      operations: operations ?? [],
       columnId: column.name,
     })
-  }, [showDiff, tableId, diffItems])
+  }, [showDiff, tableId, operations])
 
   const diffStyle = useDiffStyle(showDiff, changeStatus)
+
+  const constraint = useMemo(
+    () =>
+      Object.values(constraints).find(
+        (constraint) =>
+          constraint.type === 'PRIMARY KEY' &&
+          constraint.columnNames.includes(column.name),
+      ),
+    [constraints],
+  )
 
   return (
     <div className={clsx(styles.wrapper, diffStyle)}>
@@ -44,8 +50,12 @@ export const ColumnsItem: FC<Props> = ({ tableId, column, constraints }) => {
       <GridTableRoot>
         <Type tableId={tableId} column={column} />
         <Default tableId={tableId} column={column} />
-        {isPrimaryKey(column.name, constraints) && (
-          <PrimaryKey tableId={tableId} columnName={column.name} />
+        {constraint && (
+          <PrimaryKey
+            tableId={tableId}
+            columnName={column.name}
+            constraintName={constraint.name}
+          />
         )}
         <NotNull tableId={tableId} column={column} />
       </GridTableRoot>

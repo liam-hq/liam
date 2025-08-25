@@ -18,7 +18,7 @@
       "@/*": [
         "./*",
         "../../packages/erd-core/src/*",
-        "../../packages/db-structure/src/*",
+        "../../packages/schema/src/*",
         "../../packages/jobs/src/*",
         "../../packages/ui/src/*"
       ]

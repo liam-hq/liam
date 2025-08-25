@@ -1,13 +1,10 @@
 import { resolve } from 'node:path'
 import { createClient, type SupabaseClientType } from '@liam-hq/db'
-import type { Schema } from '@liam-hq/db-structure'
+import type { Schema } from '@liam-hq/schema'
 import { config } from 'dotenv'
 import type { Result } from 'neverthrow'
 import { err, errAsync, ok, okAsync, ResultAsync } from 'neverthrow'
 import { createSupabaseRepositories } from '../../src/repositories/factory'
-import type { WorkflowSetupResult } from '../../src/shared/workflowSetup'
-import { setupWorkflowState } from '../../src/shared/workflowSetup'
-import type { AgentWorkflowParams } from '../../src/types'
 
 // Load environment variables from ../../../../../.env
 config({ path: resolve(__dirname, '../../../../../.env') })
@@ -119,15 +116,9 @@ export const validateEnvironment = (): ResultAsync<void, Error> => {
 }
 
 /**
- * Create Supabase client and repositories
+ * Create Supabase client
  */
-const createDatabaseConnection = (): Result<
-  {
-    supabaseClient: SupabaseClientType
-    repositories: ReturnType<typeof createSupabaseRepositories>
-  },
-  Error
-> => {
+const createDatabaseConnection = (): Result<SupabaseClientType, Error> => {
   const supabaseUrl = process.env['NEXT_PUBLIC_SUPABASE_URL']
   const supabaseKey = process.env['SUPABASE_SERVICE_ROLE_KEY']
 
@@ -139,9 +130,7 @@ const createDatabaseConnection = (): Result<
     )
   }
   const supabaseClient = createClient(supabaseUrl, supabaseKey)
-  const repositories = createSupabaseRepositories(supabaseClient)
-
-  return ok({ supabaseClient, repositories })
+  return ok(supabaseClient)
 }
 
 /**
@@ -195,35 +184,35 @@ const getUser = async (
 /**
  * Create design session record
  */
-export const createDesignSession =
-  (sessionName: string) => (setupData: SetupDatabaseAndUserResult) => {
-    const { supabaseClient, organization, user } = setupData
+export const createDesignSession = (setupData: SetupDatabaseAndUserResult) => {
+  const { supabaseClient, organization, user } = setupData
+  const sessionName = `Design Session - ${new Date().toISOString()}`
 
-    return ResultAsync.fromPromise(
-      supabaseClient
-        .from('design_sessions')
-        .insert({
-          name: sessionName,
-          project_id: null, // No project for this session
-          organization_id: organization.id,
-          created_by_user_id: user.id,
-          parent_design_session_id: null,
-        })
-        .select()
-        .single(),
-      (error) => new Error(`Failed to create design session: ${error}`),
-    ).andThen(({ data: designSession, error: insertError }) => {
-      if (insertError || !designSession) {
-        return errAsync(
-          new Error(`Failed to create design session: ${insertError?.message}`),
-        )
-      }
-      return okAsync({
-        ...setupData,
-        designSession,
+  return ResultAsync.fromPromise(
+    supabaseClient
+      .from('design_sessions')
+      .insert({
+        name: sessionName,
+        project_id: null, // No project for this session
+        organization_id: organization.id,
+        created_by_user_id: user.id,
+        parent_design_session_id: null,
       })
+      .select()
+      .single(),
+    (error) => new Error(`Failed to create design session: ${error}`),
+  ).andThen(({ data: designSession, error: insertError }) => {
+    if (insertError || !designSession) {
+      return errAsync(
+        new Error(`Failed to create design session: ${insertError?.message}`),
+      )
+    }
+    return okAsync({
+      ...setupData,
+      designSession,
     })
-  }
+  })
+}
 
 /**
  * Create building schema record
@@ -234,7 +223,7 @@ export const createBuildingSchema = (
   },
 ) => {
   const { supabaseClient, organization, designSession } = sessionData
-  const initialSchema: Schema = { tables: {} }
+  const initialSchema: Schema = { tables: {}, enums: {} }
 
   return ResultAsync.fromPromise(
     supabaseClient
@@ -270,26 +259,11 @@ export const createBuildingSchema = (
 
 type SupabaseRepositories = ReturnType<typeof createSupabaseRepositories>
 
-type SetupDatabaseAndUserResult = {
+export type SetupDatabaseAndUserResult = {
   supabaseClient: SupabaseClientType
   repositories: SupabaseRepositories
   organization: { id: string; name: string }
   user: { id: string; email: string }
-}
-
-type CreateWorkflowStateInput = SetupDatabaseAndUserResult & {
-  designSession: { id: string; name: string }
-  buildingSchema: { id: string; latest_version_number: number }
-}
-
-type CreateWorkflowStateResult = {
-  workflowState: WorkflowSetupResult['workflowState']
-  options: {
-    configurable: WorkflowSetupResult['configurable']
-    recursionLimit: number
-    streamMode: 'values'
-    callbacks: WorkflowSetupResult['runCollector'][]
-  }
 }
 
 /**
@@ -302,7 +276,7 @@ export const setupDatabaseAndUser =
     if (connectionResult.isErr()) {
       return errAsync(connectionResult.error)
     }
-    const { supabaseClient, repositories } = connectionResult.value
+    const supabaseClient = connectionResult.value
 
     logger.debug('Setting up database connections and user data')
 
@@ -332,6 +306,11 @@ export const setupDatabaseAndUser =
         }
         const user = userResult.value
         logger.debug('Found user:', { id: user.id, email: user.email })
+
+        const repositories = createSupabaseRepositories(
+          supabaseClient,
+          organization.id,
+        )
 
         return okAsync({
           supabaseClient,
@@ -403,49 +382,6 @@ export const getBusinessManagementSystemUserInput = (): string => {
    - Supplier-brand handling relationships
 
 Please design a normalized database schema with proper primary keys, foreign key relationships, and constraints to support these business operations effectively.`
-}
-
-/**
- * Create workflow state for deep modeling using shared setupWorkflowState
- */
-export const createWorkflowState = (
-  setupData: CreateWorkflowStateInput,
-): ResultAsync<CreateWorkflowStateResult, Error> => {
-  const { organization, buildingSchema, designSession, user, repositories } =
-    setupData
-
-  // Empty schema for testing - let AI design from scratch
-  const sampleSchema: Schema = {
-    tables: {},
-  }
-
-  const userInput = getBusinessManagementSystemUserInput()
-
-  // Convert to AgentWorkflowParams for setupWorkflowState
-  const workflowParams: AgentWorkflowParams = {
-    userInput,
-    schemaData: sampleSchema,
-    history: [] satisfies [string, string][], // Empty history for initial run
-    organizationId: organization.id,
-    buildingSchemaId: buildingSchema.id,
-    latestVersionNumber: buildingSchema.latest_version_number,
-    designSessionId: designSession.id,
-    userId: user.id,
-    recursionLimit: 100, // Higher limit for deep modeling
-  }
-
-  // Use shared setupWorkflowState function
-  return setupWorkflowState(workflowParams, {
-    configurable: { repositories },
-  }).map((workflowSetupResult) => ({
-    workflowState: workflowSetupResult.workflowState,
-    options: {
-      configurable: workflowSetupResult.configurable,
-      recursionLimit: 100,
-      streamMode: 'values' as const,
-      callbacks: [workflowSetupResult.runCollector],
-    },
-  }))
 }
 
 /**

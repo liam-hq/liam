@@ -1,4 +1,4 @@
-import type { Column } from '@liam-hq/db-structure'
+import type { Column } from '@liam-hq/schema'
 import { GridTableDd, GridTableDt, GridTableItem } from '@liam-hq/ui'
 import { type FC, useMemo } from 'react'
 import { useDiffStyle } from '@/features/diff/hooks/useDiffStyle'
@@ -11,7 +11,7 @@ type Props = {
 }
 
 export const Default: FC<Props> = ({ tableId, column }) => {
-  const { diffItems } = useSchemaOrThrow()
+  const { operations } = useSchemaOrThrow()
   const { showDiff } = useUserEditingOrThrow()
 
   const changeStatus = useMemo(() => {
@@ -19,9 +19,9 @@ export const Default: FC<Props> = ({ tableId, column }) => {
     return getChangeStatus({
       tableId,
       columnId: column.name,
-      diffItems: diffItems ?? [],
+      operations: operations ?? [],
     })
-  }, [showDiff, tableId, diffItems, column.name])
+  }, [showDiff, tableId, operations, column.name])
 
   const diffStyle = useDiffStyle(showDiff, changeStatus)
 

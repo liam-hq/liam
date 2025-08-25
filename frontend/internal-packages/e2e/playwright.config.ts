@@ -13,6 +13,10 @@ export default defineConfig({
     baseURL: process.env.URL || 'http://localhost:5173',
     trace: 'on-first-retry',
     storageState: 'storageState.json',
+    extraHTTPHeaders: {
+      'x-vercel-protection-bypass':
+        process.env.VERCEL_PROTECTION_BYPASS_SECRET || '',
+    },
   },
 
   projects: [

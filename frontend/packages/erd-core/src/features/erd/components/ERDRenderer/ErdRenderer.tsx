@@ -13,6 +13,7 @@ import {
   type ComponentProps,
   createRef,
   type FC,
+  type ReactNode,
   useCallback,
   useMemo,
   useState,
@@ -44,6 +45,7 @@ type Props = {
   errorObjects?: ComponentProps<typeof ErrorDisplay>['errors']
   defaultPanelSizes?: number[]
   withAppBar?: boolean
+  customToolbarActions?: ReactNode
 }
 
 const SIDEBAR_COOKIE_NAME = 'sidebar:state'
@@ -55,6 +57,7 @@ export const ERDRenderer: FC<Props> = ({
   errorObjects = [],
   defaultPanelSizes = [20, 80],
   withAppBar = false,
+  customToolbarActions,
 }) => {
   const [open, setOpen] = useState(defaultSidebarOpen)
   const [isResizing, setIsResizing] = useState(false)
@@ -173,7 +176,7 @@ export const ERDRenderer: FC<Props> = ({
                   </TableDetailDrawerRoot>
                   {errorObjects.length === 0 && (
                     <div className={styles.toolbarWrapper}>
-                      <Toolbar />
+                      <Toolbar customActions={customToolbarActions} />
                     </div>
                   )}
                 </main>

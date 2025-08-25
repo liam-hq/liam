@@ -1,4 +1,4 @@
-import type { Indexes as IndexesType } from '@liam-hq/db-structure'
+import type { Indexes as IndexesType } from '@liam-hq/schema'
 import { FileText } from '@liam-hq/ui'
 import type { FC } from 'react'
 import { CollapsibleHeader } from '../CollapsibleHeader'

@@ -49,6 +49,6 @@ The project uses a monorepo structure managed with pnpm workspaces, allowing for
 The project follows a structured organization with clear separation of concerns:
 
 - **Apps**: Contains the main web applications (app, docs, erd-sample, migration-web)
-- **Packages**: Shared libraries and tools (cli, configs, db-structure, erd-core, ui)
+- **Packages**: Shared libraries and tools (cli, configs, schema, erd-core, ui)
 
 Each package has specific responsibilities and is designed to be modular and focused on specific functionality.

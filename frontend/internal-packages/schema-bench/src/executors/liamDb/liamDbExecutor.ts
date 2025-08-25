@@ -1,5 +1,5 @@
 import { deepModeling, InMemoryRepository } from '@liam-hq/agent'
-import { aSchema } from '@liam-hq/db-structure'
+import { aSchema } from '@liam-hq/schema'
 import { err, ok, type Result } from 'neverthrow'
 import { handleExecutionResult, logInputProcessing } from '../utils.ts'
 import type { LiamDbExecutorInput, LiamDbExecutorOutput } from './types.ts'
@@ -41,6 +41,7 @@ export async function execute(
   const config = {
     configurable: {
       repositories,
+      thread_id: 'demo-design-session',
     },
   }
 

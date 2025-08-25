@@ -8,10 +8,15 @@ import styles from './PrimaryKey.module.css'
 type Props = {
   tableId: string
   columnName: string
+  constraintName: string
 }
 
-export const PrimaryKey: FC<Props> = ({ tableId, columnName }) => {
-  const { diffItems } = useSchemaOrThrow()
+export const PrimaryKey: FC<Props> = ({
+  tableId,
+  columnName,
+  constraintName,
+}) => {
+  const { operations } = useSchemaOrThrow()
   const { showDiff } = useUserEditingOrThrow()
 
   const changeStatus = useMemo(() => {
@@ -19,9 +24,10 @@ export const PrimaryKey: FC<Props> = ({ tableId, columnName }) => {
     return getChangeStatus({
       tableId,
       columnId: columnName,
-      diffItems: diffItems ?? [],
+      constraintId: constraintName,
+      operations: operations ?? [],
     })
-  }, [showDiff, tableId, diffItems, columnName])
+  }, [showDiff, tableId, operations, columnName])
 
   const diffStyle = useDiffStyle(showDiff, changeStatus)
 

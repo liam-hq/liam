@@ -1,4 +1,4 @@
-import type { ChangeStatus } from '@liam-hq/db-structure'
+import type { ChangeStatus } from '@liam-hq/schema'
 import { useMemo } from 'react'
 import { match } from 'ts-pattern'
 import diffStyles from '@/features/diff/styles/Diff.module.css'

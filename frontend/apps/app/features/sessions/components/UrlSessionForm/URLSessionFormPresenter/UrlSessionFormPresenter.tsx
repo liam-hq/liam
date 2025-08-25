@@ -28,12 +28,7 @@ type Props = {
   isTransitioning?: boolean
 }
 
-export const URLSessionFormPresenter: FC<Props> = ({
-  formError,
-  isPending,
-  formAction,
-  isTransitioning = false,
-}) => {
+const useUrlFormState = () => {
   const [urlPath, setUrlPath] = useState('')
   const [textContent, setTextContent] = useState('')
   const [schemaStatus, setSchemaStatus] = useState<SchemaStatus>('idle')
@@ -42,44 +37,42 @@ export const URLSessionFormPresenter: FC<Props> = ({
   const [detectedFormat, setDetectedFormat] = useState<FormatType>('postgres')
   const [schemaError, setSchemaError] = useState<string | null>(null)
   const [schemaErrorDetails, setSchemaErrorDetails] = useState<string[]>([])
-  const textareaRef = useRef<HTMLTextAreaElement>(null)
-  const formRef = useRef<HTMLFormElement>(null)
 
-  // File attachments hook
+  return {
+    urlPath,
+    setUrlPath,
+    textContent,
+    setTextContent,
+    schemaStatus,
+    setSchemaStatus,
+    schemaContent,
+    setSchemaContent,
+    selectedFormat,
+    setSelectedFormat,
+    detectedFormat,
+    setDetectedFormat,
+    schemaError,
+    setSchemaError,
+    schemaErrorDetails,
+    setSchemaErrorDetails,
+  }
+}
+
+const useUrlFormHandlers = (
+  state: ReturnType<typeof useUrlFormState>,
+  clearAttachments: () => void,
+) => {
   const {
-    attachments,
-    handleFileSelect,
-    handleRemoveAttachment,
-    clearAttachments,
-  } = useFileAttachments()
+    setUrlPath,
+    setTextContent,
+    setSchemaStatus,
+    setSchemaContent,
+    setSelectedFormat,
+    setDetectedFormat,
+    setSchemaError,
+    setSchemaErrorDetails,
+  } = state
 
-  // File drag and drop for attachments
-  const {
-    dragActive: attachmentDragActive,
-    handleDrag: handleAttachmentDrag,
-    handleDrop: handleAttachmentDrop,
-  } = useFileDragAndDrop(handleFileSelect)
-
-  // Use auto-resize hook for textarea
-  const { handleChange } = useAutoResizeTextarea(textareaRef, textContent)
-
-  const handleTextareaChange = handleChange(
-    (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-      setTextContent(e.target.value)
-    },
-  )
-
-  const hasContent =
-    schemaContent !== null ||
-    textContent.trim().length > 0 ||
-    attachments.length > 0
-  const handleEnterKeySubmission = useEnterKeySubmission(
-    hasContent,
-    isPending,
-    formRef,
-  )
-
-  // Reset form to initial state
   const handleResetForm = () => {
     setUrlPath('')
     setTextContent('')
@@ -89,11 +82,9 @@ export const URLSessionFormPresenter: FC<Props> = ({
     setDetectedFormat('postgres')
     setSchemaError(null)
     setSchemaErrorDetails([])
-    // Reset file attachments through the hook
     clearAttachments()
   }
 
-  // Helper function for URL validation
   const validateUrl = (url: string): { isValid: boolean; error?: string } => {
     const trimmedUrl = url.trim()
 
@@ -112,7 +103,6 @@ export const URLSessionFormPresenter: FC<Props> = ({
     return { isValid: true }
   }
 
-  // Helper function for fetching schema
   const performSchemaFetch = async (url: string) => {
     const result = await fetchSchemaFromUrl(url)
 
@@ -131,50 +121,10 @@ export const URLSessionFormPresenter: FC<Props> = ({
     }
   }
 
-  // Helper function for handling errors and updating state
   const handleSchemaError = (error: string) => {
     setSchemaStatus('invalid')
     setSchemaError(error)
     setSchemaErrorDetails([])
-  }
-
-  const handleFetchSchema = async () => {
-    // Validate URL
-    const validation = validateUrl(urlPath)
-    if (!validation.isValid) {
-      if (validation.error) {
-        handleSchemaError(validation.error)
-      }
-      return
-    }
-
-    // Update state to show loading
-    setSchemaStatus('validating')
-    setSchemaError(null)
-    setSchemaErrorDetails([])
-
-    try {
-      // Fetch schema
-      const result = await performSchemaFetch(urlPath.trim())
-
-      if (result.success) {
-        // Handle successful fetch
-        setSchemaStatus('valid')
-        setSchemaContent(result.content)
-        setDetectedFormat(result.format)
-        setSelectedFormat(result.format)
-      } else {
-        // Handle fetch error
-        handleSchemaError(result.error)
-      }
-    } catch (error) {
-      // Handle unexpected errors
-      const errorMessage =
-        error instanceof Error
-          ? `An error occurred while fetching the schema: ${error.message}`
-          : 'An unexpected error occurred while fetching the schema'
-      handleSchemaError(errorMessage)
-    }
   }
 
   const handleRemoveSchema = () => {
@@ -187,14 +137,201 @@ export const URLSessionFormPresenter: FC<Props> = ({
 
   const handleUrlChange = (e: ChangeEvent<HTMLInputElement>) => {
     setUrlPath(e.target.value)
-    // Reset schema status when URL changes
-    if (schemaStatus !== 'idle') {
+    if (state.schemaStatus !== 'idle') {
       setSchemaStatus('idle')
       setSchemaContent(null)
       setSchemaError(null)
       setSchemaErrorDetails([])
     }
   }
+
+  return {
+    handleResetForm,
+    validateUrl,
+    performSchemaFetch,
+    handleSchemaError,
+    handleRemoveSchema,
+    handleUrlChange,
+  }
+}
+
+const useSchemaFetch = (
+  state: ReturnType<typeof useUrlFormState>,
+  handlers: ReturnType<typeof useUrlFormHandlers>,
+) => {
+  const { urlPath } = state
+  const { validateUrl, performSchemaFetch, handleSchemaError } = handlers
+
+  const handleFetchSchema = async () => {
+    const validation = validateUrl(urlPath)
+    if (!validation.isValid) {
+      if (validation.error) {
+        handleSchemaError(validation.error)
+      }
+      return
+    }
+
+    state.setSchemaStatus('validating')
+    state.setSchemaError(null)
+    state.setSchemaErrorDetails([])
+
+    try {
+      const result = await performSchemaFetch(urlPath.trim())
+
+      if (result.success) {
+        state.setSchemaStatus('valid')
+        state.setSchemaContent(result.content)
+        state.setDetectedFormat(result.format)
+        state.setSelectedFormat(result.format)
+      } else {
+        handleSchemaError(result.error)
+      }
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error
+          ? `An error occurred while fetching the schema: ${error.message}`
+          : 'An unexpected error occurred while fetching the schema'
+      handleSchemaError(errorMessage)
+    }
+  }
+
+  return { handleFetchSchema }
+}
+
+const renderUrlInputSection = (
+  state: ReturnType<typeof useUrlFormState>,
+  handlers: ReturnType<typeof useUrlFormHandlers>,
+  schemaFetch: ReturnType<typeof useSchemaFetch>,
+  isPending: boolean,
+) => {
+  const {
+    urlPath,
+    schemaStatus,
+    detectedFormat,
+    selectedFormat,
+    schemaError,
+    schemaErrorDetails,
+  } = state
+  const { handleUrlChange, handleRemoveSchema } = handlers
+  const { handleFetchSchema } = schemaFetch
+
+  return (
+    <div className={styles.inputSection}>
+      <div className={styles.urlInputWrapper}>
+        <div className={styles.inputContainer ?? ''}>
+          <input
+            id="schemaUrl"
+            name="schemaUrl"
+            type="text"
+            value={urlPath}
+            onChange={handleUrlChange}
+            onKeyDown={(e) => {
+              if (
+                e.key === 'Enter' &&
+                urlPath.trim() &&
+                schemaStatus !== 'validating'
+              ) {
+                e.preventDefault()
+                handleFetchSchema()
+              }
+            }}
+            placeholder="Enter schema file path (e.g., db/schema.rb)"
+            disabled={isPending}
+            className={styles.urlInput}
+          />
+          {urlPath && (
+            <RemoveButton
+              onClick={handleRemoveSchema}
+              variant="transparent"
+              size="sm"
+              className={styles.clearButton ?? ''}
+              aria-label="Clear input"
+            />
+          )}
+        </div>
+        <Button
+          type="button"
+          variant={urlPath.trim() ? 'solid-primary' : 'outline-secondary'}
+          size="md"
+          disabled={
+            isPending || !urlPath.trim() || schemaStatus === 'validating'
+          }
+          onClick={handleFetchSchema}
+        >
+          Fetch Schema
+        </Button>
+      </div>
+      {schemaStatus !== 'idle' && (
+        <SchemaInfoSection
+          status={schemaStatus}
+          schemaName={getFileNameFromUrl(urlPath)}
+          schemaUrl={urlPath}
+          detectedFormat={detectedFormat}
+          selectedFormat={selectedFormat}
+          errorMessage={schemaError || undefined}
+          errorDetails={
+            schemaErrorDetails.length > 0 ? schemaErrorDetails : undefined
+          }
+          variant="simple"
+          showRemoveButton={false}
+          onFormatChange={state.setSelectedFormat}
+          onRemove={handleRemoveSchema}
+          onViewTroubleshootingGuide={() => {
+            window.open(
+              'https://liambx.com/docs/parser/troubleshooting',
+              '_blank',
+              'noopener,noreferrer',
+            )
+          }}
+        />
+      )}
+    </div>
+  )
+}
+
+export const URLSessionFormPresenter: FC<Props> = ({
+  formError,
+  isPending,
+  formAction,
+  isTransitioning = false,
+}) => {
+  const state = useUrlFormState()
+  const textareaRef = useRef<HTMLTextAreaElement>(null)
+  const formRef = useRef<HTMLFormElement>(null)
+
+  const {
+    attachments,
+    handleFileSelect,
+    handleRemoveAttachment,
+    clearAttachments,
+  } = useFileAttachments()
+
+  const handlers = useUrlFormHandlers(state, clearAttachments)
+  const schemaFetch = useSchemaFetch(state, handlers)
+
+  const {
+    dragActive: attachmentDragActive,
+    handleDrag: handleAttachmentDrag,
+    handleDrop: handleAttachmentDrop,
+  } = useFileDragAndDrop(handleFileSelect)
+
+  const { handleChange } = useAutoResizeTextarea(textareaRef, state.textContent)
+  const handleTextareaChange = handleChange(
+    (e: ChangeEvent<HTMLTextAreaElement>) => {
+      state.setTextContent(e.target.value)
+    },
+  )
+
+  const hasContent =
+    state.schemaContent !== null ||
+    state.textContent.trim().length > 0 ||
+    attachments.length > 0
+
+  const handleEnterKeySubmission = useEnterKeySubmission(
+    hasContent,
+    isPending,
+    formRef,
+  )
 
   return (
     <div
@@ -211,80 +348,15 @@ export const URLSessionFormPresenter: FC<Props> = ({
         className={styles.form}
         style={createAccessibleOpacityTransition(!isTransitioning)}
       >
-        {schemaContent && (
-          <input type="hidden" name="schemaContent" value={schemaContent} />
+        {state.schemaContent && (
+          <input
+            type="hidden"
+            name="schemaContent"
+            value={state.schemaContent}
+          />
         )}
-        <input type="hidden" name="schemaFormat" value={selectedFormat} />
-        <div className={styles.inputSection}>
-          <div className={styles.urlInputWrapper}>
-            <div className={styles.inputContainer ?? ''}>
-              <input
-                id="schemaUrl"
-                name="schemaUrl"
-                type="text"
-                value={urlPath}
-                onChange={handleUrlChange}
-                onKeyDown={(e) => {
-                  if (
-                    e.key === 'Enter' &&
-                    urlPath.trim() &&
-                    schemaStatus !== 'validating'
-                  ) {
-                    e.preventDefault()
-                    handleFetchSchema()
-                  }
-                }}
-                placeholder="Enter schema file path (e.g., db/schema.rb)"
-                disabled={isPending}
-                className={styles.urlInput}
-              />
-              {urlPath && (
-                <RemoveButton
-                  onClick={handleRemoveSchema}
-                  variant="transparent"
-                  size="sm"
-                  className={styles.clearButton ?? ''}
-                  aria-label="Clear input"
-                />
-              )}
-            </div>
-            <Button
-              type="button"
-              variant={urlPath.trim() ? 'solid-primary' : 'outline-secondary'}
-              size="md"
-              disabled={
-                isPending || !urlPath.trim() || schemaStatus === 'validating'
-              }
-              onClick={handleFetchSchema}
-            >
-              Fetch Schema
-            </Button>
-          </div>
-          {schemaStatus !== 'idle' && (
-            <SchemaInfoSection
-              status={schemaStatus}
-              schemaName={getFileNameFromUrl(urlPath)}
-              schemaUrl={urlPath}
-              detectedFormat={detectedFormat}
-              selectedFormat={selectedFormat}
-              errorMessage={schemaError || undefined}
-              errorDetails={
-                schemaErrorDetails.length > 0 ? schemaErrorDetails : undefined
-              }
-              variant="simple"
-              showRemoveButton={false}
-              onFormatChange={setSelectedFormat}
-              onRemove={handleRemoveSchema}
-              onViewTroubleshootingGuide={() => {
-                window.open(
-                  'https://liambx.com/docs/parser/troubleshooting',
-                  '_blank',
-                  'noopener,noreferrer',
-                )
-              }}
-            />
-          )}
-        </div>
+        <input type="hidden" name="schemaFormat" value={state.selectedFormat} />
+        {renderUrlInputSection(state, handlers, schemaFetch, isPending)}
         <div
           className={clsx(
             styles.inputSection ?? '',
@@ -301,11 +373,11 @@ export const URLSessionFormPresenter: FC<Props> = ({
           />
           <div className={styles.textareaWrapper ?? ''}>
             <textarea
-              id="initialMessage"
               ref={textareaRef}
+              id="initialMessage"
               name="initialMessage"
               placeholder="Enter your database design instructions. For example: Design a database for an e-commerce site that manages users, products, and orders..."
-              value={textContent}
+              value={state.textContent}
               onChange={handleTextareaChange}
               onKeyDown={handleEnterKeySubmission}
               className={styles.textarea ?? ''}
@@ -319,7 +391,7 @@ export const URLSessionFormPresenter: FC<Props> = ({
               isPending={isPending}
               hasContent={hasContent}
               onFileSelect={handleFileSelect}
-              onCancel={handleResetForm}
+              onCancel={handlers.handleResetForm}
             />
           </div>
         </div>

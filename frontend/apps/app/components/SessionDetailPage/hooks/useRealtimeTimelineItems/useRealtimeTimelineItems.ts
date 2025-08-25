@@ -1,10 +1,15 @@
 'use client'
 
-import { timelineItemsSchema } from '@liam-hq/db'
+import {
+  buildingSchemaVersionsSchema,
+  type Database,
+  timelineItemsSchema,
+} from '@liam-hq/db'
 import { err, ok, type Result } from 'neverthrow'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import * as v from 'valibot'
 import { createClient } from '@/libs/db/client'
+import { useViewMode } from '../../hooks/viewMode'
 import { convertTimelineItemToTimelineItemEntry } from '../../services/convertTimelineItemToTimelineItemEntry'
 import type { TimelineItem, TimelineItemEntry } from '../../types'
 import { isDuplicateTimelineItem } from './utils/isDuplicateTimelineItem'
@@ -15,6 +20,24 @@ const parseTimelineItem = (data: unknown): Result<TimelineItem, Error> => {
     return err(new Error('Invalid timeline item format'))
   }
   return ok(parsed.output)
+}
+
+type VersionData = {
+  id: string
+  number: number
+  patch: Database['public']['Tables']['building_schema_versions']['Row']['patch']
+}
+
+const parseVersionData = (data: unknown): Result<VersionData, Error> => {
+  const parsed = v.safeParse(buildingSchemaVersionsSchema, data)
+  if (!parsed.success) {
+    return err(new Error('Invalid building schema version format'))
+  }
+  return ok({
+    id: parsed.output.id,
+    number: parsed.output.number,
+    patch: parsed.output.patch,
+  })
 }
 
 const findExistingTimelineItemIndex = (
@@ -64,6 +87,7 @@ export function useRealtimeTimelineItems(
   designSessionId: string,
   initialTimelineItems: TimelineItemEntry[],
 ) {
+  const { isPublic } = useViewMode()
   const [error, setError] = useState<Error | null>(null)
   const handleError = useCallback((err: unknown) => {
     setError(
@@ -76,9 +100,37 @@ export function useRealtimeTimelineItems(
   const [timelineItems, setTimelineItems] =
     useState<TimelineItemEntry[]>(initialTimelineItems)
 
+  // Store version information separately - initialize from initial timeline items
+  const [versions, setVersions] = useState<Map<string, VersionData>>(() => {
+    const initialVersions = new Map<string, VersionData>()
+    initialTimelineItems.forEach((item) => {
+      if (item.type === 'schema_version' && item.version) {
+        initialVersions.set(item.version.id, item.version)
+      }
+    })
+    return initialVersions
+  })
+
+  // Combine timeline items with current version information
+  const timelineItemsWithVersions = useMemo(() => {
+    return timelineItems.map((item) => {
+      if (item.type === 'schema_version' && item.buildingSchemaVersionId) {
+        const version = versions.get(item.buildingSchemaVersionId)
+        return {
+          ...item,
+          version: version || null,
+        }
+      }
+      return item
+    })
+  }, [timelineItems, versions])
+
   // Add or update timeline item with duplicate checking and optimistic update handling
   const addOrUpdateTimelineItem = useCallback(
     (newChatEntry: TimelineItemEntry) => {
+      // For public view, disable adding/updating timeline items
+      if (isPublic) return
+
       setTimelineItems((prev) => {
         // Check if we need to update an existing timeline item by its temporary ID
         // This handles streaming updates and other in-place updates
@@ -109,24 +161,26 @@ export function useRealtimeTimelineItems(
         return [...prev, newChatEntry]
       })
     },
-    [],
+    [isPublic],
   )
 
   const handleNewTimelineItem = useCallback(
-    (newTimelineItem: TimelineItem) => {
+    async (newTimelineItem: TimelineItem) => {
       const timelineItemEntry =
         convertTimelineItemToTimelineItemEntry(newTimelineItem)
-
-      // TODO: Implement efficient duplicate checking - Use Set/Map for O(1) duplicate checking instead of O(n) array.some()
-      // TODO: Implement smart auto-scroll - Consider user's scroll position and only auto-scroll when user is at bottom
       addOrUpdateTimelineItem(timelineItemEntry)
     },
     [addOrUpdateTimelineItem],
   )
 
   useEffect(() => {
+    // Skip realtime subscription for public view
+    if (isPublic) return
+
     const supabase = createClient()
-    const channel = supabase
+
+    // Subscribe to timeline_items changes
+    const timelineChannel = supabase
       .channel(`timeline_items:${designSessionId}`)
       .on(
         'postgres_changes',
@@ -145,7 +199,7 @@ export function useRealtimeTimelineItems(
 
           const updatedTimelineItem = parseResult.value
           if (updatedTimelineItem.design_session_id === designSessionId) {
-            handleNewTimelineItem(updatedTimelineItem)
+            handleNewTimelineItem(updatedTimelineItem).catch(handleError)
           }
         },
       )
@@ -155,13 +209,42 @@ export function useRealtimeTimelineItems(
         }
       })
 
+    // Subscribe to building_schema_versions changes
+    const versionsChannel = supabase
+      .channel('building_schema_versions')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'building_schema_versions',
+        },
+        (payload) => {
+          const parseResult = parseVersionData(payload.new)
+          if (parseResult.isOk()) {
+            const version = parseResult.value
+            setVersions((prev) => new Map(prev).set(version.id, version))
+          } else {
+            handleError(parseResult.error)
+          }
+        },
+      )
+      .subscribe((status) => {
+        if (status === 'CHANNEL_ERROR') {
+          handleError(
+            new Error('Failed to subscribe to building schema versions'),
+          )
+        }
+      })
+
     return () => {
-      channel.unsubscribe()
+      timelineChannel.unsubscribe()
+      versionsChannel.unsubscribe()
     }
-  }, [designSessionId, handleError, handleNewTimelineItem])
+  }, [designSessionId, handleError, handleNewTimelineItem, isPublic])
 
   return {
-    timelineItems,
+    timelineItems: timelineItemsWithVersions,
     error,
     addOrUpdateTimelineItem,
   }

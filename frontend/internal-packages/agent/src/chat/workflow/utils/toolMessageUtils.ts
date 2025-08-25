@@ -15,5 +15,5 @@ export const isToolMessageError = (message: BaseMessage): boolean => {
  * @returns true if the content contains error indicators
  */
 export const isMessageContentError = (content: string): boolean => {
-  return /\berror\b/i.test(content)
+  return /\berrors?\b/i.test(content)
 }

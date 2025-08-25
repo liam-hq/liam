@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState, useTransition } from 'react'
+import { formatDate } from '@/libs/utils'
 import { fetchLastCommitData } from '../../../../services/fetchLastCommitData'
 
 type LastCommitDataWrapperProps = {
@@ -23,16 +24,6 @@ export function LastCommitDataWrapper({
 }: LastCommitDataWrapperProps) {
   const [commitInfo, setCommitInfo] = useState<CommitInfo | null>(null)
   const [isLoading, startTransition] = useTransition()
-
-  // Date formatting function
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString)
-    return date.toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-    })
-  }
 
   useEffect(() => {
     startTransition(async () => {

@@ -1,4 +1,3 @@
-import { err } from 'neverthrow'
 import { DEFAULT_RECURSION_LIMIT } from './chat/workflow/shared/langGraphUtils'
 import type { WorkflowConfigurable } from './chat/workflow/types'
 import { createGraph } from './createGraph'
@@ -11,33 +10,18 @@ import type { AgentWorkflowParams, AgentWorkflowResult } from './types'
 /**
  * Execute Deep Modeling workflow
  */
-export const deepModeling = async (
+export const deepModeling = (
   params: AgentWorkflowParams,
   config: {
     configurable: WorkflowConfigurable
   },
-): Promise<AgentWorkflowResult> => {
+): AgentWorkflowResult => {
   const { recursionLimit = DEFAULT_RECURSION_LIMIT } = params
-
-  // Setup workflow state with message conversion and timeline sync
-  const setupResult = await setupWorkflowState(params, config)
-
-  if (setupResult.isErr()) {
-    return err(setupResult.error)
-  }
-
-  const setup = setupResult.value
-  const compiled = createGraph()
-
-  // Execute workflow with proper tracking and error handling
-  const workflowResult = await executeWorkflowWithTracking(
-    compiled,
-    setup,
-    recursionLimit,
+  const compiled = createGraph(
+    config.configurable.repositories.schema.checkpointer,
   )
 
-  return workflowResult.match(
-    (result) => result,
-    (error) => err(error),
-  )
+  return setupWorkflowState(params, config).andThen((setupResult) => {
+    return executeWorkflowWithTracking(compiled, setupResult, recursionLimit)
+  })
 }

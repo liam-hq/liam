@@ -1,4 +1,4 @@
-import type { ChangeStatus } from '@liam-hq/db-structure'
+import type { ChangeStatus } from '@liam-hq/schema'
 import { Dot, Minus, Plus } from '@liam-hq/ui'
 import clsx from 'clsx'
 import type { FC } from 'react'

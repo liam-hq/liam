@@ -75,7 +75,7 @@ The evaluation system performs multi-dimensional analysis:
 
 ## Schema Format
 
-Schemas use the structured format from `@liam-hq/db-structure/schema`:
+Schemas use the structured format from `@liam-hq/schema/schema`:
 
 ```typescript
 type Schema = {

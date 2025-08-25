@@ -2,6 +2,8 @@
 
 This guide explains how to create pull requests using GitHub CLI in our project.
 
+**Important**: All PR titles and descriptions should be written in English.
+
 ## Prerequisites
 
 1. Install GitHub CLI if you haven't already:
@@ -42,7 +44,9 @@ This guide explains how to create pull requests using GitHub CLI in our project.
 
 ## Best Practices
 
-1. **PR Title Format**: Use conventional commit format with emojis
+1. **Language**: Always use English for PR titles and descriptions
+
+2. **PR Title Format**: Use conventional commit format with emojis
 
    - Always include an appropriate emoji at the beginning of the title
    - Use the actual emoji character (not the code representation like `:sparkles:`)
@@ -51,23 +55,24 @@ This guide explains how to create pull requests using GitHub CLI in our project.
      - `🐛(auth): Fix login redirect issue`
      - `📝(readme): Update installation instructions`
 
-2. **Description Template**: Always use our PR template structure from @.github/pull_request_template.md:
+3. **Description Template**: Always use our PR template structure from @.github/pull_request_template.md:
 
-3. **Template Accuracy**: Ensure your PR description precisely follows the template structure:
+4. **Template Accuracy**: Ensure your PR description precisely follows the template structure:
 
    - Don't modify or rename the PR-Agent sections (`pr_agent:summary` and `pr_agent:walkthrough`)
    - Keep all section headers exactly as they appear in the template
    - Don't add custom sections that aren't in the template
 
-4. **Draft PRs**: Start as draft when the work is in progress
+5. **Draft PRs**: Start as draft when the work is in progress
    - Use `--draft` flag in the command
    - Convert to ready for review when complete using `gh pr ready`
 
 ### Common Mistakes to Avoid
 
-1. **Incorrect Section Headers**: Always use the exact section headers from the template
-2. **Adding Custom Sections**: Stick to the sections defined in the template
-3. **Using Outdated Templates**: Always refer to the current @.github/pull_request_template.md file
+1. **Using Non-English Text**: All PR content must be in English
+2. **Incorrect Section Headers**: Always use the exact section headers from the template
+3. **Adding Custom Sections**: Stick to the sections defined in the template
+4. **Using Outdated Templates**: Always refer to the current @.github/pull_request_template.md file
 
 ### Missing Sections
 

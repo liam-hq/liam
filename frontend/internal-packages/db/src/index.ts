@@ -14,6 +14,7 @@ export type { Database, Json, Tables } from '../supabase/database.types'
 export * from './factories'
 export * from './schema'
 export type { AppDatabaseOverrides } from './types'
+export { toResultAsync } from './utils/toResultAsync'
 
 export type SupabaseClientType = ReturnType<typeof createServerClient>
 

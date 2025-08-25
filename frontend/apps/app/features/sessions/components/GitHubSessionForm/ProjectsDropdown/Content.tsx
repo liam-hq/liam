@@ -8,8 +8,10 @@ import {
   DropdownMenuSeparator,
   Plus,
 } from '@liam-hq/ui'
+import { useRouter } from 'next/navigation'
 import type { FC } from 'react'
 import type { Projects } from '@/components/CommonLayout/AppBar/ProjectsDropdownMenu/services/getProjects'
+import { urlgen } from '@/libs/routes'
 import { ProjectRadioItem } from './ProjectRadioItem'
 import styles from './ProjectsDropdown.module.css'
 
@@ -24,6 +26,8 @@ export const Content: FC<Props> = ({
   selectedProjectId,
   onProjectChange,
 }) => {
+  const router = useRouter()
+
   const handleValueChange = (value: string) => {
     if (value === '') {
       // Allow empty value for optional field
@@ -31,6 +35,10 @@ export const Content: FC<Props> = ({
     } else {
       onProjectChange(value)
     }
+  }
+
+  const handleAddProject = () => {
+    router.push(urlgen('projects/new'))
   }
 
   return (
@@ -61,9 +69,7 @@ export const Content: FC<Props> = ({
         </DropdownMenuRadioGroup>
         <DropdownMenuSeparator />
         <DropdownMenuItem
-          onSelect={() => {
-            window.open('/projects/new', '_blank')
-          }}
+          onSelect={handleAddProject}
           className={styles.addNewProject}
         >
           <Plus className={styles.addIcon} />

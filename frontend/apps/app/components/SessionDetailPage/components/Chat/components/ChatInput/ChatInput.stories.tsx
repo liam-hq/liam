@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react'
 import { ChatInput } from './ChatInput'
 
 const dummySchema = {
+  enums: {},
   tables: {
     users: {
       name: 'users',

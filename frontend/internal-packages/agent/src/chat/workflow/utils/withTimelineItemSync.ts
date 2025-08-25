@@ -16,20 +16,40 @@ type TimelineSyncContext = {
   assistantRole?: Database['public']['Enums']['assistant_role_enum']
 }
 
+async function handleAssistantOrErrorMessage(
+  message: AIMessage | ToolMessage,
+  context: TimelineSyncContext,
+  messageType: 'AIMessage' | 'ToolMessage',
+): Promise<void> {
+  const content = message.text
+  const isError = isMessageContentError(content)
+
+  const result = isError
+    ? await context.repositories.schema.createTimelineItem({
+        designSessionId: context.designSessionId,
+        content,
+        type: 'error',
+      })
+    : await context.repositories.schema.createTimelineItem({
+        designSessionId: context.designSessionId,
+        content,
+        type: 'assistant',
+        role: context.assistantRole || 'db',
+      })
+
+  if (!result.success) {
+    console.error(
+      `Failed to create timeline item for ${messageType} (${isError ? 'error' : 'assistant'}):`,
+      result.error,
+    )
+  }
+}
+
 async function handleAIMessage(
   message: AIMessage,
   context: TimelineSyncContext,
 ): Promise<void> {
-  const result = await context.repositories.schema.createTimelineItem({
-    designSessionId: context.designSessionId,
-    content: message.text,
-    type: 'assistant',
-    role: context.assistantRole || 'db',
-  })
-
-  if (!result.success) {
-    console.error('Failed to create timeline item for AIMessage:', result.error)
-  }
+  await handleAssistantOrErrorMessage(message, context, 'AIMessage')
 }
 
 async function handleHumanMessage(
@@ -55,30 +75,7 @@ async function handleToolMessage(
   message: ToolMessage,
   context: TimelineSyncContext,
 ): Promise<void> {
-  const content = message.text
-
-  const isError = isMessageContentError(content)
-  const timelineType = isError ? 'error' : 'assistant'
-
-  const result = isError
-    ? await context.repositories.schema.createTimelineItem({
-        designSessionId: context.designSessionId,
-        content,
-        type: 'error',
-      })
-    : await context.repositories.schema.createTimelineItem({
-        designSessionId: context.designSessionId,
-        content,
-        type: 'assistant',
-        role: context.assistantRole || 'db',
-      })
-
-  if (!result.success) {
-    console.error(
-      `Failed to create timeline item for ToolMessage (${timelineType}):`,
-      result.error,
-    )
-  }
+  await handleAssistantOrErrorMessage(message, context, 'ToolMessage')
 }
 
 export async function withTimelineItemSync(

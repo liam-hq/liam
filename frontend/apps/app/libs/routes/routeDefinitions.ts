@@ -1,3 +1,5 @@
+import { ROUTE_PREFIXES } from './constants'
+
 export type RouteDefinitions = {
   login: string
   projects: string
@@ -29,6 +31,7 @@ export type RouteDefinitions = {
     schemaFilePath: string
   }) => string
   'design_sessions/[id]': (params: { id: string }) => string
+  'public/design_sessions/[id]': (params: { id: string }) => string
 }
 
 export const routeDefinitions: RouteDefinitions = {
@@ -79,5 +82,8 @@ export const routeDefinitions: RouteDefinitions = {
   },
   'design_sessions/[id]': ({ id }) => {
     return `/app/design_sessions/${id}`
+  },
+  'public/design_sessions/[id]': ({ id }) => {
+    return `${ROUTE_PREFIXES.PUBLIC}/design_sessions/${id}`
   },
 } as const

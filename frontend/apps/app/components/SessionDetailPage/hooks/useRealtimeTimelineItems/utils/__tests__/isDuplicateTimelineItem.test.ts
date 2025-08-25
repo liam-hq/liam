@@ -105,6 +105,7 @@ describe('isDuplicateTimelineItem', () => {
       type: 'schema_version',
       content: 'Schema updated',
       buildingSchemaVersionId: 'version-1',
+      version: { id: 'version-1', number: 1, patch: [] },
       timestamp: new Date('2024-01-01T10:00:01Z'),
     }
 
@@ -113,6 +114,7 @@ describe('isDuplicateTimelineItem', () => {
       type: 'schema_version',
       content: 'Different content',
       buildingSchemaVersionId: 'version-2',
+      version: { id: 'version-2', number: 2, patch: [] },
       timestamp: new Date('2024-01-01T11:00:01Z'),
     }
 
@@ -126,6 +128,7 @@ describe('isDuplicateTimelineItem', () => {
       type: 'schema_version',
       content: 'Schema updated',
       buildingSchemaVersionId: 'version-1',
+      version: { id: 'version-1', number: 1, patch: [] },
       timestamp: new Date('2024-01-01T10:00:01Z'),
     }
 
@@ -134,6 +137,7 @@ describe('isDuplicateTimelineItem', () => {
       type: 'schema_version',
       content: 'Schema updated',
       buildingSchemaVersionId: 'version-1', // Same version ID but different entry ID
+      version: { id: 'version-1', number: 1, patch: [] },
       timestamp: new Date('2024-01-01T10:00:01Z'),
     }
 

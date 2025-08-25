@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../../../../../node_modules/.pnpm/trigger.dev@4.0.0-v4-beta.21_typescript@5.8.3/node_modules/trigger.dev/src/shims/esm.ts"],
+  "sourcesContent": [null],
+  "mappings": ";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;AAAA,SAAS,qBAAqB;AAC9B,OAAO,UAAU;AACjB,OAAO,SAAS;AAFhB;;AAKA,eAAW,UAAU,cAAc,YAAY,GAAG;AAElD,eAAW,aAAa,IAAI,cAAc,YAAY,GAAG;AACzD,eAAW,YAAY,KAAK,QAAQ,UAAU;;;",
+  "names": []
+}

@@ -1,10 +1,11 @@
 'use client'
 
 import { buildingSchemaVersionsSchema } from '@liam-hq/db'
-import { type Schema, schemaSchema } from '@liam-hq/db-structure'
+import { type Schema, schemaSchema } from '@liam-hq/schema'
 import { useCallback, useEffect, useState, useTransition } from 'react'
 import * as v from 'valibot'
 import { createClient } from '@/libs/db/client'
+import { useViewMode } from '../../hooks/viewMode'
 import type { Version } from '../../types'
 import { buildCurrentSchema } from './services/buildCurrentSchema'
 import { buildPrevSchema } from './services/buildPrevSchema'
@@ -22,6 +23,7 @@ export function useRealtimeVersionsWithSchema({
   initialDisplayedSchema,
   initialPrevSchema,
 }: Params) {
+  const { isPublic } = useViewMode()
   const [isPending, startTransition] = useTransition()
   const [versions, setVersions] = useState<Version[]>(initialVersions)
   const [selectedVersion, setSelectedVersion] = useState<Version | null>(
@@ -93,6 +95,9 @@ export function useRealtimeVersionsWithSchema({
   }, [selectedVersion, handleBuildCurrentAndPrevSchema])
 
   useEffect(() => {
+    // Skip realtime subscription for public view
+    if (isPublic) return
+
     const supabase = createClient()
     const channel = supabase
       .channel(`building_schema_versions:${buildingSchemaId}`)
@@ -131,7 +136,7 @@ export function useRealtimeVersionsWithSchema({
     return () => {
       channel.unsubscribe()
     }
-  }, [buildingSchemaId, handleError, handleAddOrUpdateVersion])
+  }, [buildingSchemaId, handleError, handleAddOrUpdateVersion, isPublic])
 
   return {
     isPending,

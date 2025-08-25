@@ -1,53 +1,50 @@
 import {
   type ChangeStatus,
-  columnRelatedDiffItemSchema,
-  type SchemaDiffItem,
-  tableDiffItemSchema,
-} from '@liam-hq/db-structure'
-import { safeParse } from 'valibot'
+  getColumnRelatedChangeStatus,
+  getTableRelatedChangeStatus,
+  type Operation,
+} from '@liam-hq/schema'
 
 type Params = {
   tableId: string
   columnId: string
-  diffItems: SchemaDiffItem[]
+  operations: Operation[]
 }
 
+/**
+ * Determines the change status for the column item component.
+ *
+ * Priority order for status determination:
+ *
+ * 1. Table-level changes
+ *    - Table addition → returns 'added'
+ *    - Table deletion → returns 'removed'
+ *
+ * 2. Column-level changes
+ *    - Column addition → returns 'added'
+ *    - Column deletion → returns 'removed'
+ *    - Column modifications (type, nullability, default, etc.) → returns 'modified'
+ *
+ * 3. No changes
+ *    - None of the above → returns 'unchanged'
+ *
+ * Note: Table-level changes take precedence because when a table is
+ * added/removed, all its columns are implicitly affected.
+ */
 export function getChangeStatus({
   tableId,
   columnId,
-  diffItems,
+  operations,
 }: Params): ChangeStatus {
-  const filteredDiffItems = diffItems.filter((d) => d.tableId === tableId)
+  const tableStatus = getTableRelatedChangeStatus({ tableId, operations })
+  if (tableStatus === 'added' || tableStatus === 'removed') {
+    return tableStatus
+  }
 
-  // Priority 1: Check for table-level changes (added/removed)
-  // If the table itself has been added or removed, return that status immediately
-  const tableRelatedDiffItem = filteredDiffItems.find((item) => {
-    const parsed = safeParse(tableDiffItemSchema, item)
-    return parsed.success
+  const columnStatus = getColumnRelatedChangeStatus({
+    tableId,
+    columnId,
+    operations,
   })
-
-  if (tableRelatedDiffItem) {
-    return tableRelatedDiffItem.status
-  }
-
-  const columnRelatedDiffItems = filteredDiffItems.filter((item) => {
-    const parsed = safeParse(columnRelatedDiffItemSchema, item)
-    return parsed.success && parsed.output.columnId === columnId
-  })
-
-  if (columnRelatedDiffItems.length === 0) {
-    return 'unchanged'
-  }
-
-  // Collect all unique statuses from column changes
-  const statuses = columnRelatedDiffItems.map((item) => item.status)
-  const uniqueStatuses = new Set(statuses)
-
-  // All columns have the same change status
-  if (uniqueStatuses.size === 1 && statuses[0] !== undefined) {
-    return statuses[0]
-  }
-
-  // Mixed statuses indicate the table has been modified
-  return 'modified'
+  return columnStatus
 }

@@ -33,7 +33,6 @@ const callChatAPI = async ({
     },
     body: JSON.stringify({
       userInput,
-      history,
       designSessionId,
       isDeepModelingEnabled,
     }),

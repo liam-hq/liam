@@ -2,6 +2,7 @@ import { MessagesSquare } from '@liam-hq/ui'
 import Link from 'next/link'
 import type { FC } from 'react'
 import { urlgen } from '@/libs/routes'
+import { formatDate } from '@/libs/utils'
 import styles from './SessionItem.module.css'
 import type { ProjectSession } from './services/fetchProjectSessions'
 
@@ -21,7 +22,7 @@ export const SessionItem: FC<Props> = ({ session }) => {
       <div className={styles.content}>
         <h4 className={styles.sessionName}>{session.name}</h4>
         <p className={styles.sessionDate}>
-          Created {new Date(session.created_at).toLocaleDateString()}
+          Created {formatDate(session.created_at)}
         </p>
       </div>
       <div className={styles.arrow}>→</div>

@@ -1,5 +1,5 @@
-import type { Cardinality, Schema } from '@liam-hq/db-structure'
-import { constraintsToRelationships } from '@liam-hq/db-structure'
+import type { Cardinality, Schema } from '@liam-hq/schema'
+import { constraintsToRelationships } from '@liam-hq/schema'
 import type { Edge, Node } from '@xyflow/react'
 import {
   NON_RELATED_TABLE_GROUP_NODE_ID,

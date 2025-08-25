@@ -6,18 +6,18 @@
   "dependencies": {
     "@huggingface/transformers": "3.3.3",
     "@liam-hq/agent": "workspace:*",
-    "@liam-hq/db-structure": "workspace:*",
+    "@liam-hq/schema": "workspace:*",
     "dotenv": "16.5.0",
-    "langsmith": "0.3.46",
+    "langsmith": "0.3.61",
     "neverthrow": "8.2.0",
     "openai": "5.9.2",
     "tsx": "4.20.3",
     "valibot": "1.1.0"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.1.2",
+    "@biomejs/biome": "2.1.4",
     "@liam-hq/configs": "workspace:*",
-    "eslint": "9.31.0",
+    "eslint": "9.33.0",
     "vitest": "3.2.4"
   },
   "scripts": {

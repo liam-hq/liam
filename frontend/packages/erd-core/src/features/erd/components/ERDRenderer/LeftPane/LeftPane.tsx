@@ -159,7 +159,7 @@ export const LeftPane = () => {
             </span>
           </SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu>
+            <SidebarMenu className={styles.tablesMenu}>
               {tableNodes.map((node) => (
                 <TableNameMenuButton
                   key={node.id}

@@ -1,0 +1,42 @@
+{
+  "configPath": "/Users/noritakaikeda/Documents/GitHub/liam/frontend/internal-packages/jobs/.trigger/tmp/build-5drF6I/frontend/internal-packages/jobs/trigger.config.mjs",
+  "tasks": [
+    {
+      "id": "deep-modeling-workflow",
+      "retry": {
+        "maxAttempts": 3,
+        "factor": 2,
+        "minTimeoutInMs": 1000,
+        "maxTimeoutInMs": 10000,
+        "randomize": true
+      },
+      "machine": {
+        "preset": "medium-1x"
+      },
+      "maxDuration": 3600,
+      "filePath": "src/trigger/deepModelingWorkflowTask.ts",
+      "entryPoint": "/Users/noritakaikeda/Documents/GitHub/liam/frontend/internal-packages/jobs/.trigger/tmp/build-5drF6I/frontend/internal-packages/jobs/src/trigger/deepModelingWorkflowTask.mjs"
+    },
+    {
+      "id": "analyze-repository",
+      "retry": {
+        "maxAttempts": 3,
+        "factor": 2,
+        "minTimeoutInMs": 1000,
+        "maxTimeoutInMs": 10000,
+        "randomize": true
+      },
+      "maxDuration": 3600,
+      "filePath": "src/trigger/jobs.ts",
+      "entryPoint": "/Users/noritakaikeda/Documents/GitHub/liam/frontend/internal-packages/jobs/.trigger/tmp/build-5drF6I/frontend/internal-packages/jobs/src/trigger/jobs.mjs"
+    }
+  ],
+  "queues": [],
+  "workerEntryPoint": "/Users/noritakaikeda/Documents/GitHub/liam/frontend/internal-packages/jobs/.trigger/tmp/build-5drF6I/node_modules/.pnpm/trigger.dev@4.0.0-v4-beta.21_typescript@5.8.3/node_modules/trigger.dev/dist/esm/entryPoints/dev-run-worker.mjs",
+  "runtime": "node",
+  "customConditions": [],
+  "timings": {
+    "src/trigger/deepModelingWorkflowTask.ts": 64.93875,
+    "src/trigger/jobs.ts": 8.739082999999994
+  }
+}

@@ -2,17 +2,17 @@ import { renderHook } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { ReactFlowProvider } from '@xyflow/react'
 import { afterEach, expect, it, vi } from 'vitest'
-import * as ReactFlowHooks from '@/features/reactflow/hooks'
+import * as UseFitScreen from '../useFitScreen'
 import { useSubscribeZoomToFitCommand } from './useSubscribeZoomToFitCommand'
 
-const mockFitView = vi.fn()
+const mockZoomToFit = vi.fn()
 
-const originalUseCustomReactflow = ReactFlowHooks.useCustomReactflow
-vi.spyOn(ReactFlowHooks, 'useCustomReactflow').mockImplementation(() => {
-  const original = originalUseCustomReactflow()
+const originalUseFitScreen = UseFitScreen.useFitScreen
+vi.spyOn(UseFitScreen, 'useFitScreen').mockImplementation(() => {
+  const original = originalUseFitScreen()
   return {
     ...original,
-    fitView: mockFitView,
+    zoomToFit: mockZoomToFit,
   }
 })
 
@@ -30,5 +30,5 @@ it('zooms to fit nodes when ⇧1 is pressed', async () => {
 
   await user.keyboard('{Shift>}1{/Shift}')
 
-  expect(mockFitView).toHaveBeenCalled()
+  expect(mockZoomToFit).toHaveBeenCalled()
 })

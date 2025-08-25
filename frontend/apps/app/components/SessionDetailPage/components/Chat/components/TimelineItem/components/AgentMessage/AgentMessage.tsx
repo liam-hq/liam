@@ -4,6 +4,7 @@ import type { Database } from '@liam-hq/db'
 import clsx from 'clsx'
 import type { FC, ReactNode } from 'react'
 import { MarkdownContent } from '@/components/MarkdownContent'
+import { CopyButton } from '@/components/SessionDetailPage/components/Output/components/shared/CopyButton'
 import styles from './AgentMessage.module.css'
 import { DBAgent, PMAgent, QAAgent } from './components/AgentAvatar'
 
@@ -89,6 +90,15 @@ export const AgentMessage: FC<AgentMessageProps> = ({
                 <MarkdownContent content={message} />
               </span>
             </div>
+            {message && (
+              <div className={styles.copyButtonWrapper}>
+                <CopyButton
+                  textToCopy={message}
+                  tooltipLabel="Copy message"
+                  size="sm"
+                />
+              </div>
+            )}
           </div>
         )}
         {children}

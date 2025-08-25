@@ -1,4 +1,4 @@
-import type { Table } from '@liam-hq/db-structure'
+import type { Table } from '@liam-hq/schema'
 import { type FC, useCallback } from 'react'
 import { computeAutoLayout, convertSchemaToNodes } from '@/features/erd/utils'
 import { openRelatedTablesLogEvent } from '@/features/gtm/utils'

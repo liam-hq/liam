@@ -1,10 +1,7 @@
 'use client'
 
-import type { Schema } from '@liam-hq/db-structure'
-import {
-  type Operation,
-  postgresqlOperationDeparser,
-} from '@liam-hq/db-structure'
+import type { Schema } from '@liam-hq/schema'
+import { type Operation, postgresqlOperationDeparser } from '@liam-hq/schema'
 import {
   Button,
   ChevronDown,

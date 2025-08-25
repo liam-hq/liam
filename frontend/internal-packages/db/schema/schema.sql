@@ -487,39 +487,6 @@ $$;
 ALTER FUNCTION "public"."is_current_user_org_member"("_org" "uuid") OWNER TO "postgres";
 
 
-CREATE OR REPLACE FUNCTION "public"."match_documents"("filter" "jsonb" DEFAULT '{}'::"jsonb", "match_count" integer DEFAULT 10, "query_embedding" "public"."vector" DEFAULT NULL::"public"."vector", "match_threshold" double precision DEFAULT 0.3) RETURNS TABLE("id" "uuid", "content" "text", "metadata" "jsonb", "similarity" double precision)
-    LANGUAGE "plpgsql" STABLE
-    AS $$
-begin
-  -- Check which signature is being used based on parameters
-  if query_embedding is null and filter ? 'query_embedding' then
-    -- Extract query_embedding from filter if provided in that format
-    query_embedding := (filter->>'query_embedding')::vector(1536);
-  end if;
-
-  -- Ensure we have a valid query_embedding
-  if query_embedding is null then
-    raise exception 'query_embedding is required';
-  end if;
-
-  -- Return matching documents
-  return query
-  select
-    d.id,
-    d.content,
-    d.metadata,
-    1 - (d.embedding <=> query_embedding) as similarity
-  from documents d
-  where 1 - (d.embedding <=> query_embedding) > match_threshold
-  order by similarity desc
-  limit match_count;
-end;
-$$;
-
-
-ALTER FUNCTION "public"."match_documents"("filter" "jsonb", "match_count" integer, "query_embedding" "public"."vector", "match_threshold" double precision) OWNER TO "postgres";
-
-
 CREATE OR REPLACE FUNCTION "public"."prevent_delete_last_organization_member"() RETURNS "trigger"
     LANGUAGE "plpgsql"
     AS $$
@@ -1073,6 +1040,19 @@ $$;
 
 ALTER FUNCTION "public"."update_building_schema"("p_schema_id" "uuid", "p_schema_schema" "jsonb", "p_schema_version_patch" "jsonb", "p_schema_version_reverse_patch" "jsonb", "p_latest_schema_version_number" integer, "p_message_content" "text") OWNER TO "postgres";
 
+
+CREATE OR REPLACE FUNCTION "public"."update_checkpoints_updated_at"() RETURNS "trigger"
+    LANGUAGE "plpgsql"
+    AS $$
+BEGIN
+  NEW.updated_at = now();
+  RETURN NEW;
+END;
+$$;
+
+
+ALTER FUNCTION "public"."update_checkpoints_updated_at"() OWNER TO "postgres";
+
 SET default_tablespace = '';
 
 SET default_table_access_method = "heap";
@@ -1120,6 +1100,144 @@ CREATE TABLE IF NOT EXISTS "public"."building_schemas" (
 ALTER TABLE "public"."building_schemas" OWNER TO "postgres";
 
 
+CREATE TABLE IF NOT EXISTS "public"."checkpoint_blobs" (
+    "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
+    "thread_id" "text" NOT NULL,
+    "checkpoint_ns" "text" DEFAULT ''::"text" NOT NULL,
+    "channel" "text" NOT NULL,
+    "version" "text" NOT NULL,
+    "type" "text" NOT NULL,
+    "blob" "bytea",
+    "organization_id" "uuid" NOT NULL,
+    "created_at" timestamp with time zone DEFAULT "now"()
+);
+
+
+ALTER TABLE "public"."checkpoint_blobs" OWNER TO "postgres";
+
+
+COMMENT ON TABLE "public"."checkpoint_blobs" IS 'Stores channel values (state data) for checkpoints';
+
+
+
+COMMENT ON COLUMN "public"."checkpoint_blobs"."channel" IS 'Name of the channel containing state data';
+
+
+
+COMMENT ON COLUMN "public"."checkpoint_blobs"."version" IS 'Version number for channel value tracking';
+
+
+
+COMMENT ON COLUMN "public"."checkpoint_blobs"."type" IS 'Type hint for deserialization';
+
+
+
+COMMENT ON COLUMN "public"."checkpoint_blobs"."blob" IS 'Binary serialized data';
+
+
+
+CREATE TABLE IF NOT EXISTS "public"."checkpoint_migrations" (
+    "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
+    "v" integer NOT NULL,
+    "organization_id" "uuid" NOT NULL,
+    "created_at" timestamp with time zone DEFAULT "now"()
+);
+
+
+ALTER TABLE "public"."checkpoint_migrations" OWNER TO "postgres";
+
+
+COMMENT ON TABLE "public"."checkpoint_migrations" IS 'Tracks applied checkpoint system migrations';
+
+
+
+COMMENT ON COLUMN "public"."checkpoint_migrations"."v" IS 'Migration version number';
+
+
+
+CREATE TABLE IF NOT EXISTS "public"."checkpoint_writes" (
+    "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
+    "thread_id" "text" NOT NULL,
+    "checkpoint_ns" "text" DEFAULT ''::"text" NOT NULL,
+    "checkpoint_id" "text" NOT NULL,
+    "task_id" "text" NOT NULL,
+    "idx" integer NOT NULL,
+    "channel" "text" NOT NULL,
+    "type" "text",
+    "blob" "bytea" NOT NULL,
+    "organization_id" "uuid" NOT NULL,
+    "created_at" timestamp with time zone DEFAULT "now"()
+);
+
+
+ALTER TABLE "public"."checkpoint_writes" OWNER TO "postgres";
+
+
+COMMENT ON TABLE "public"."checkpoint_writes" IS 'Stores pending write operations for checkpoints';
+
+
+
+COMMENT ON COLUMN "public"."checkpoint_writes"."task_id" IS 'Identifier of the task that generated this write';
+
+
+
+COMMENT ON COLUMN "public"."checkpoint_writes"."idx" IS 'Index for ordering multiple writes from the same task';
+
+
+
+COMMENT ON COLUMN "public"."checkpoint_writes"."channel" IS 'Target channel for the write operation';
+
+
+
+CREATE TABLE IF NOT EXISTS "public"."checkpoints" (
+    "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
+    "thread_id" "text" NOT NULL,
+    "checkpoint_ns" "text" DEFAULT ''::"text" NOT NULL,
+    "checkpoint_id" "text" NOT NULL,
+    "parent_checkpoint_id" "text",
+    "checkpoint" "jsonb" NOT NULL,
+    "metadata" "jsonb" DEFAULT '{}'::"jsonb" NOT NULL,
+    "organization_id" "uuid" NOT NULL,
+    "created_at" timestamp with time zone DEFAULT "now"(),
+    "updated_at" timestamp with time zone DEFAULT "now"()
+);
+
+
+ALTER TABLE "public"."checkpoints" OWNER TO "postgres";
+
+
+COMMENT ON TABLE "public"."checkpoints" IS 'Stores LangGraph checkpoint metadata for workflow state persistence';
+
+
+
+COMMENT ON COLUMN "public"."checkpoints"."thread_id" IS 'Unique identifier for the workflow thread';
+
+
+
+COMMENT ON COLUMN "public"."checkpoints"."checkpoint_ns" IS 'Namespace for checkpoint isolation within a thread';
+
+
+
+COMMENT ON COLUMN "public"."checkpoints"."checkpoint_id" IS 'Unique identifier for this checkpoint';
+
+
+
+COMMENT ON COLUMN "public"."checkpoints"."parent_checkpoint_id" IS 'Reference to parent checkpoint for version history';
+
+
+
+COMMENT ON COLUMN "public"."checkpoints"."checkpoint" IS 'Serialized checkpoint data including versions and metadata';
+
+
+
+COMMENT ON COLUMN "public"."checkpoints"."metadata" IS 'Custom metadata attached to the checkpoint';
+
+
+
+COMMENT ON COLUMN "public"."checkpoints"."organization_id" IS 'Organization ID for multi-tenant isolation';
+
+
+
 CREATE TABLE IF NOT EXISTS "public"."design_sessions" (
     "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
     "project_id" "uuid",
@@ -1147,20 +1265,6 @@ CREATE TABLE IF NOT EXISTS "public"."doc_file_paths" (
 
 
 ALTER TABLE "public"."doc_file_paths" OWNER TO "postgres";
-
-
-CREATE TABLE IF NOT EXISTS "public"."documents" (
-    "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
-    "content" "text" NOT NULL,
-    "metadata" "jsonb",
-    "embedding" "public"."vector"(1536),
-    "created_at" timestamp(3) with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    "updated_at" timestamp(3) with time zone NOT NULL,
-    "organization_id" "uuid" NOT NULL
-);
-
-
-ALTER TABLE "public"."documents" OWNER TO "postgres";
 
 
 CREATE TABLE IF NOT EXISTS "public"."github_pull_request_comments" (
@@ -1352,6 +1456,15 @@ CREATE TABLE IF NOT EXISTS "public"."projects" (
 ALTER TABLE "public"."projects" OWNER TO "postgres";
 
 
+CREATE TABLE IF NOT EXISTS "public"."public_share_settings" (
+    "design_session_id" "uuid" NOT NULL,
+    "created_at" timestamp with time zone DEFAULT "now"() NOT NULL
+);
+
+
+ALTER TABLE "public"."public_share_settings" OWNER TO "postgres";
+
+
 CREATE TABLE IF NOT EXISTS "public"."review_feedback_comments" (
     "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
     "review_feedback_id" "uuid" NOT NULL,
@@ -1522,13 +1635,48 @@ ALTER TABLE ONLY "public"."building_schemas"
 
 
 
+ALTER TABLE ONLY "public"."checkpoint_blobs"
+    ADD CONSTRAINT "checkpoint_blobs_pkey" PRIMARY KEY ("id");
+
+
+
+ALTER TABLE ONLY "public"."checkpoint_blobs"
+    ADD CONSTRAINT "checkpoint_blobs_thread_id_checkpoint_ns_channel_version_or_key" UNIQUE ("thread_id", "checkpoint_ns", "channel", "version", "organization_id");
+
+
+
+ALTER TABLE ONLY "public"."checkpoint_migrations"
+    ADD CONSTRAINT "checkpoint_migrations_pkey" PRIMARY KEY ("id");
+
+
+
+ALTER TABLE ONLY "public"."checkpoint_migrations"
+    ADD CONSTRAINT "checkpoint_migrations_v_organization_id_key" UNIQUE ("v", "organization_id");
+
+
+
+ALTER TABLE ONLY "public"."checkpoint_writes"
+    ADD CONSTRAINT "checkpoint_writes_pkey" PRIMARY KEY ("id");
+
+
+
+ALTER TABLE ONLY "public"."checkpoint_writes"
+    ADD CONSTRAINT "checkpoint_writes_thread_id_checkpoint_ns_checkpoint_id_tas_key" UNIQUE ("thread_id", "checkpoint_ns", "checkpoint_id", "task_id", "idx", "organization_id");
+
+
+
+ALTER TABLE ONLY "public"."checkpoints"
+    ADD CONSTRAINT "checkpoints_pkey" PRIMARY KEY ("id");
+
+
+
+ALTER TABLE ONLY "public"."checkpoints"
+    ADD CONSTRAINT "checkpoints_thread_id_checkpoint_ns_checkpoint_id_organizat_key" UNIQUE ("thread_id", "checkpoint_ns", "checkpoint_id", "organization_id");
+
+
+
 ALTER TABLE ONLY "public"."design_sessions"
     ADD CONSTRAINT "design_sessions_pkey" PRIMARY KEY ("id");
-
-
-
-ALTER TABLE ONLY "public"."documents"
-    ADD CONSTRAINT "documents_pkey" PRIMARY KEY ("id");
 
 
 
@@ -1632,6 +1780,11 @@ ALTER TABLE ONLY "public"."project_repository_mappings"
 
 
 
+ALTER TABLE ONLY "public"."public_share_settings"
+    ADD CONSTRAINT "public_share_settings_pkey" PRIMARY KEY ("design_session_id");
+
+
+
 ALTER TABLE ONLY "public"."github_pull_requests"
     ADD CONSTRAINT "pull_request_pkey" PRIMARY KEY ("id");
 
@@ -1704,10 +1857,6 @@ CREATE UNIQUE INDEX "doc_file_path_path_project_id_key" ON "public"."doc_file_pa
 
 
 
-CREATE INDEX "documents_embedding_idx" ON "public"."documents" USING "ivfflat" ("embedding" "public"."vector_cosine_ops") WITH ("lists"='100');
-
-
-
 CREATE UNIQUE INDEX "github_pull_request_repository_id_pull_number_key" ON "public"."github_pull_requests" USING "btree" ("repository_id", "pull_number");
 
 
@@ -1724,6 +1873,46 @@ CREATE INDEX "idx_building_schemas_design_session_created" ON "public"."building
 
 
 
+CREATE INDEX "idx_checkpoint_blobs_organization_id" ON "public"."checkpoint_blobs" USING "btree" ("organization_id");
+
+
+
+CREATE INDEX "idx_checkpoint_blobs_thread_id" ON "public"."checkpoint_blobs" USING "btree" ("thread_id", "checkpoint_ns");
+
+
+
+CREATE INDEX "idx_checkpoint_migrations_organization_id" ON "public"."checkpoint_migrations" USING "btree" ("organization_id");
+
+
+
+CREATE INDEX "idx_checkpoint_writes_checkpoint" ON "public"."checkpoint_writes" USING "btree" ("thread_id", "checkpoint_ns", "checkpoint_id");
+
+
+
+CREATE INDEX "idx_checkpoint_writes_organization_id" ON "public"."checkpoint_writes" USING "btree" ("organization_id");
+
+
+
+CREATE INDEX "idx_checkpoint_writes_task" ON "public"."checkpoint_writes" USING "btree" ("task_id");
+
+
+
+CREATE INDEX "idx_checkpoints_created_at" ON "public"."checkpoints" USING "btree" ("created_at" DESC);
+
+
+
+CREATE INDEX "idx_checkpoints_organization_id" ON "public"."checkpoints" USING "btree" ("organization_id");
+
+
+
+CREATE INDEX "idx_checkpoints_parent" ON "public"."checkpoints" USING "btree" ("parent_checkpoint_id") WHERE ("parent_checkpoint_id" IS NOT NULL);
+
+
+
+CREATE INDEX "idx_checkpoints_thread_id" ON "public"."checkpoints" USING "btree" ("thread_id", "checkpoint_ns");
+
+
+
 CREATE INDEX "idx_messages_design_session_created_at" ON "public"."timeline_items" USING "btree" ("design_session_id", "created_at" DESC);
 
 
@@ -1733,6 +1922,10 @@ CREATE INDEX "idx_messages_user_id_created_at" ON "public"."timeline_items" USIN
 
 
 CREATE INDEX "idx_project_organization_id" ON "public"."projects" USING "btree" ("organization_id");
+
+
+
+CREATE INDEX "idx_public_share_settings_created_at" ON "public"."public_share_settings" USING "btree" ("created_at");
 
 
 
@@ -1920,6 +2113,10 @@ CREATE OR REPLACE TRIGGER "update_artifacts_updated_at_trigger" BEFORE UPDATE ON
 
 
 
+CREATE OR REPLACE TRIGGER "update_checkpoints_updated_at_trigger" BEFORE UPDATE ON "public"."checkpoints" FOR EACH ROW EXECUTE FUNCTION "public"."update_checkpoints_updated_at"();
+
+
+
 ALTER TABLE ONLY "public"."artifacts"
     ADD CONSTRAINT "artifacts_design_session_id_fkey" FOREIGN KEY ("design_session_id") REFERENCES "public"."design_sessions"("id") ON UPDATE CASCADE ON DELETE CASCADE;
 
@@ -1950,6 +2147,26 @@ ALTER TABLE ONLY "public"."building_schemas"
 
 
 
+ALTER TABLE ONLY "public"."checkpoint_blobs"
+    ADD CONSTRAINT "checkpoint_blobs_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "public"."organizations"("id") ON UPDATE CASCADE ON DELETE RESTRICT;
+
+
+
+ALTER TABLE ONLY "public"."checkpoint_migrations"
+    ADD CONSTRAINT "checkpoint_migrations_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "public"."organizations"("id") ON UPDATE CASCADE ON DELETE RESTRICT;
+
+
+
+ALTER TABLE ONLY "public"."checkpoint_writes"
+    ADD CONSTRAINT "checkpoint_writes_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "public"."organizations"("id") ON UPDATE CASCADE ON DELETE RESTRICT;
+
+
+
+ALTER TABLE ONLY "public"."checkpoints"
+    ADD CONSTRAINT "checkpoints_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "public"."organizations"("id") ON UPDATE CASCADE ON DELETE RESTRICT;
+
+
+
 ALTER TABLE ONLY "public"."design_sessions"
     ADD CONSTRAINT "design_sessions_created_by_user_id_fkey" FOREIGN KEY ("created_by_user_id") REFERENCES "public"."users"("id") ON UPDATE CASCADE ON DELETE RESTRICT;
 
@@ -1972,11 +2189,6 @@ ALTER TABLE ONLY "public"."design_sessions"
 
 ALTER TABLE ONLY "public"."doc_file_paths"
     ADD CONSTRAINT "doc_file_paths_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "public"."organizations"("id") ON UPDATE CASCADE ON DELETE RESTRICT;
-
-
-
-ALTER TABLE ONLY "public"."documents"
-    ADD CONSTRAINT "documents_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "public"."organizations"("id") ON DELETE CASCADE;
 
 
 
@@ -2125,6 +2337,11 @@ ALTER TABLE ONLY "public"."project_repository_mappings"
 
 
 
+ALTER TABLE ONLY "public"."public_share_settings"
+    ADD CONSTRAINT "public_share_settings_design_session_id_fkey" FOREIGN KEY ("design_session_id") REFERENCES "public"."design_sessions"("id") ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+
 ALTER TABLE ONLY "public"."review_feedback_comments"
     ADD CONSTRAINT "review_feedback_comment_review_feedback_id_fkey" FOREIGN KEY ("review_feedback_id") REFERENCES "public"."review_feedbacks"("id") ON UPDATE CASCADE ON DELETE CASCADE;
 
@@ -2269,6 +2486,46 @@ COMMENT ON POLICY "authenticated_users_can_delete_org_building_schemas" ON "publ
 
 
 
+CREATE POLICY "authenticated_users_can_delete_org_checkpoint_blobs" ON "public"."checkpoint_blobs" FOR DELETE TO "authenticated" USING (("organization_id" IN ( SELECT "organization_members"."organization_id"
+   FROM "public"."organization_members"
+  WHERE ("organization_members"."user_id" = "auth"."uid"()))));
+
+
+
+COMMENT ON POLICY "authenticated_users_can_delete_org_checkpoint_blobs" ON "public"."checkpoint_blobs" IS 'Authenticated users can only delete checkpoint blobs in organizations they are members of';
+
+
+
+CREATE POLICY "authenticated_users_can_delete_org_checkpoint_migrations" ON "public"."checkpoint_migrations" FOR DELETE TO "authenticated" USING (("organization_id" IN ( SELECT "organization_members"."organization_id"
+   FROM "public"."organization_members"
+  WHERE ("organization_members"."user_id" = "auth"."uid"()))));
+
+
+
+COMMENT ON POLICY "authenticated_users_can_delete_org_checkpoint_migrations" ON "public"."checkpoint_migrations" IS 'Authenticated users can only delete checkpoint migrations in organizations they are members of';
+
+
+
+CREATE POLICY "authenticated_users_can_delete_org_checkpoint_writes" ON "public"."checkpoint_writes" FOR DELETE TO "authenticated" USING (("organization_id" IN ( SELECT "organization_members"."organization_id"
+   FROM "public"."organization_members"
+  WHERE ("organization_members"."user_id" = "auth"."uid"()))));
+
+
+
+COMMENT ON POLICY "authenticated_users_can_delete_org_checkpoint_writes" ON "public"."checkpoint_writes" IS 'Authenticated users can only delete checkpoint writes in organizations they are members of';
+
+
+
+CREATE POLICY "authenticated_users_can_delete_org_checkpoints" ON "public"."checkpoints" FOR DELETE TO "authenticated" USING (("organization_id" IN ( SELECT "organization_members"."organization_id"
+   FROM "public"."organization_members"
+  WHERE ("organization_members"."user_id" = "auth"."uid"()))));
+
+
+
+COMMENT ON POLICY "authenticated_users_can_delete_org_checkpoints" ON "public"."checkpoints" IS 'Authenticated users can only delete checkpoints in organizations they are members of';
+
+
+
 CREATE POLICY "authenticated_users_can_delete_org_design_sessions" ON "public"."design_sessions" FOR DELETE TO "authenticated" USING (("organization_id" IN ( SELECT "organization_members"."organization_id"
    FROM "public"."organization_members"
   WHERE ("organization_members"."user_id" = "auth"."uid"()))));
@@ -2276,16 +2533,6 @@ CREATE POLICY "authenticated_users_can_delete_org_design_sessions" ON "public"."
 
 
 COMMENT ON POLICY "authenticated_users_can_delete_org_design_sessions" ON "public"."design_sessions" IS 'Authenticated users can only delete design sessions in organizations they are members of';
-
-
-
-CREATE POLICY "authenticated_users_can_delete_org_documents" ON "public"."documents" FOR DELETE TO "authenticated" USING (("organization_id" IN ( SELECT "organization_members"."organization_id"
-   FROM "public"."organization_members"
-  WHERE ("organization_members"."user_id" = "auth"."uid"()))));
-
-
-
-COMMENT ON POLICY "authenticated_users_can_delete_org_documents" ON "public"."documents" IS 'Authenticated users can only delete documents in organizations they are members of';
 
 
 
@@ -2320,6 +2567,14 @@ CREATE POLICY "authenticated_users_can_delete_org_projects" ON "public"."project
 
 
 COMMENT ON POLICY "authenticated_users_can_delete_org_projects" ON "public"."projects" IS 'Authenticated users can only delete projects in organizations they are members of';
+
+
+
+CREATE POLICY "authenticated_users_can_delete_org_public_share_settings" ON "public"."public_share_settings" FOR DELETE TO "authenticated" USING (("design_session_id" IN ( SELECT "ds"."id"
+   FROM "public"."design_sessions" "ds"
+  WHERE ("ds"."organization_id" IN ( SELECT "organization_members"."organization_id"
+           FROM "public"."organization_members"
+          WHERE ("organization_members"."user_id" = "auth"."uid"()))))));
 
 
 
@@ -2379,6 +2634,46 @@ COMMENT ON POLICY "authenticated_users_can_insert_org_building_schemas" ON "publ
 
 
 
+CREATE POLICY "authenticated_users_can_insert_org_checkpoint_blobs" ON "public"."checkpoint_blobs" FOR INSERT TO "authenticated" WITH CHECK (("organization_id" IN ( SELECT "organization_members"."organization_id"
+   FROM "public"."organization_members"
+  WHERE ("organization_members"."user_id" = "auth"."uid"()))));
+
+
+
+COMMENT ON POLICY "authenticated_users_can_insert_org_checkpoint_blobs" ON "public"."checkpoint_blobs" IS 'Authenticated users can only create checkpoint blobs in organizations they are members of';
+
+
+
+CREATE POLICY "authenticated_users_can_insert_org_checkpoint_migrations" ON "public"."checkpoint_migrations" FOR INSERT TO "authenticated" WITH CHECK (("organization_id" IN ( SELECT "organization_members"."organization_id"
+   FROM "public"."organization_members"
+  WHERE ("organization_members"."user_id" = "auth"."uid"()))));
+
+
+
+COMMENT ON POLICY "authenticated_users_can_insert_org_checkpoint_migrations" ON "public"."checkpoint_migrations" IS 'Authenticated users can only create checkpoint migrations in organizations they are members of';
+
+
+
+CREATE POLICY "authenticated_users_can_insert_org_checkpoint_writes" ON "public"."checkpoint_writes" FOR INSERT TO "authenticated" WITH CHECK (("organization_id" IN ( SELECT "organization_members"."organization_id"
+   FROM "public"."organization_members"
+  WHERE ("organization_members"."user_id" = "auth"."uid"()))));
+
+
+
+COMMENT ON POLICY "authenticated_users_can_insert_org_checkpoint_writes" ON "public"."checkpoint_writes" IS 'Authenticated users can only create checkpoint writes in organizations they are members of';
+
+
+
+CREATE POLICY "authenticated_users_can_insert_org_checkpoints" ON "public"."checkpoints" FOR INSERT TO "authenticated" WITH CHECK (("organization_id" IN ( SELECT "organization_members"."organization_id"
+   FROM "public"."organization_members"
+  WHERE ("organization_members"."user_id" = "auth"."uid"()))));
+
+
+
+COMMENT ON POLICY "authenticated_users_can_insert_org_checkpoints" ON "public"."checkpoints" IS 'Authenticated users can only create checkpoints in organizations they are members of';
+
+
+
 CREATE POLICY "authenticated_users_can_insert_org_design_sessions" ON "public"."design_sessions" FOR INSERT TO "authenticated" WITH CHECK (("organization_id" IN ( SELECT "organization_members"."organization_id"
    FROM "public"."organization_members"
   WHERE ("organization_members"."user_id" = "auth"."uid"()))));
@@ -2396,16 +2691,6 @@ CREATE POLICY "authenticated_users_can_insert_org_doc_file_paths" ON "public"."d
 
 
 COMMENT ON POLICY "authenticated_users_can_insert_org_doc_file_paths" ON "public"."doc_file_paths" IS 'Authenticated users can insert doc file paths for their organization';
-
-
-
-CREATE POLICY "authenticated_users_can_insert_org_documents" ON "public"."documents" FOR INSERT TO "authenticated" WITH CHECK (("organization_id" IN ( SELECT "organization_members"."organization_id"
-   FROM "public"."organization_members"
-  WHERE ("organization_members"."user_id" = "auth"."uid"()))));
-
-
-
-COMMENT ON POLICY "authenticated_users_can_insert_org_documents" ON "public"."documents" IS 'Authenticated users can only add documents to organizations they are members of';
 
 
 
@@ -2460,6 +2745,14 @@ CREATE POLICY "authenticated_users_can_insert_org_project_repository_mappings" O
 
 
 COMMENT ON POLICY "authenticated_users_can_insert_org_project_repository_mappings" ON "public"."project_repository_mappings" IS 'Authenticated users can only create project repository mappings in organizations they are members of';
+
+
+
+CREATE POLICY "authenticated_users_can_insert_org_public_share_settings" ON "public"."public_share_settings" FOR INSERT TO "authenticated" WITH CHECK (("design_session_id" IN ( SELECT "ds"."id"
+   FROM "public"."design_sessions" "ds"
+  WHERE ("ds"."organization_id" IN ( SELECT "organization_members"."organization_id"
+           FROM "public"."organization_members"
+          WHERE ("organization_members"."user_id" = "auth"."uid"()))))));
 
 
 
@@ -2567,6 +2860,46 @@ COMMENT ON POLICY "authenticated_users_can_select_org_building_schemas" ON "publ
 
 
 
+CREATE POLICY "authenticated_users_can_select_org_checkpoint_blobs" ON "public"."checkpoint_blobs" FOR SELECT TO "authenticated" USING (("organization_id" IN ( SELECT "organization_members"."organization_id"
+   FROM "public"."organization_members"
+  WHERE ("organization_members"."user_id" = "auth"."uid"()))));
+
+
+
+COMMENT ON POLICY "authenticated_users_can_select_org_checkpoint_blobs" ON "public"."checkpoint_blobs" IS 'Authenticated users can only view checkpoint blobs belonging to organizations they are members of';
+
+
+
+CREATE POLICY "authenticated_users_can_select_org_checkpoint_migrations" ON "public"."checkpoint_migrations" FOR SELECT TO "authenticated" USING (("organization_id" IN ( SELECT "organization_members"."organization_id"
+   FROM "public"."organization_members"
+  WHERE ("organization_members"."user_id" = "auth"."uid"()))));
+
+
+
+COMMENT ON POLICY "authenticated_users_can_select_org_checkpoint_migrations" ON "public"."checkpoint_migrations" IS 'Authenticated users can only view checkpoint migrations belonging to organizations they are members of';
+
+
+
+CREATE POLICY "authenticated_users_can_select_org_checkpoint_writes" ON "public"."checkpoint_writes" FOR SELECT TO "authenticated" USING (("organization_id" IN ( SELECT "organization_members"."organization_id"
+   FROM "public"."organization_members"
+  WHERE ("organization_members"."user_id" = "auth"."uid"()))));
+
+
+
+COMMENT ON POLICY "authenticated_users_can_select_org_checkpoint_writes" ON "public"."checkpoint_writes" IS 'Authenticated users can only view checkpoint writes belonging to organizations they are members of';
+
+
+
+CREATE POLICY "authenticated_users_can_select_org_checkpoints" ON "public"."checkpoints" FOR SELECT TO "authenticated" USING (("organization_id" IN ( SELECT "organization_members"."organization_id"
+   FROM "public"."organization_members"
+  WHERE ("organization_members"."user_id" = "auth"."uid"()))));
+
+
+
+COMMENT ON POLICY "authenticated_users_can_select_org_checkpoints" ON "public"."checkpoints" IS 'Authenticated users can only view checkpoints belonging to organizations they are members of';
+
+
+
 CREATE POLICY "authenticated_users_can_select_org_design_sessions" ON "public"."design_sessions" FOR SELECT TO "authenticated" USING (("organization_id" IN ( SELECT "organization_members"."organization_id"
    FROM "public"."organization_members"
   WHERE ("organization_members"."user_id" = "auth"."uid"()))));
@@ -2584,16 +2917,6 @@ CREATE POLICY "authenticated_users_can_select_org_doc_file_paths" ON "public"."d
 
 
 COMMENT ON POLICY "authenticated_users_can_select_org_doc_file_paths" ON "public"."doc_file_paths" IS 'Authenticated users can select doc file paths for their organization';
-
-
-
-CREATE POLICY "authenticated_users_can_select_org_documents" ON "public"."documents" FOR SELECT TO "authenticated" USING (("organization_id" IN ( SELECT "organization_members"."organization_id"
-   FROM "public"."organization_members"
-  WHERE ("organization_members"."user_id" = "auth"."uid"()))));
-
-
-
-COMMENT ON POLICY "authenticated_users_can_select_org_documents" ON "public"."documents" IS 'Authenticated users can only view documents in organizations they are members of';
 
 
 
@@ -2719,6 +3042,14 @@ COMMENT ON POLICY "authenticated_users_can_select_org_projects" ON "public"."pro
 
 
 
+CREATE POLICY "authenticated_users_can_select_org_public_share_settings" ON "public"."public_share_settings" FOR SELECT TO "authenticated" USING (("design_session_id" IN ( SELECT "ds"."id"
+   FROM "public"."design_sessions" "ds"
+  WHERE ("ds"."organization_id" IN ( SELECT "organization_members"."organization_id"
+           FROM "public"."organization_members"
+          WHERE ("organization_members"."user_id" = "auth"."uid"()))))));
+
+
+
 CREATE POLICY "authenticated_users_can_select_org_review_feedback_comments" ON "public"."review_feedback_comments" FOR SELECT TO "authenticated" USING (("organization_id" IN ( SELECT "organization_members"."organization_id"
    FROM "public"."organization_members"
   WHERE ("organization_members"."user_id" = "auth"."uid"()))));
@@ -2837,6 +3168,54 @@ COMMENT ON POLICY "authenticated_users_can_update_org_building_schemas" ON "publ
 
 
 
+CREATE POLICY "authenticated_users_can_update_org_checkpoint_blobs" ON "public"."checkpoint_blobs" FOR UPDATE TO "authenticated" USING (("organization_id" IN ( SELECT "organization_members"."organization_id"
+   FROM "public"."organization_members"
+  WHERE ("organization_members"."user_id" = "auth"."uid"())))) WITH CHECK (("organization_id" IN ( SELECT "organization_members"."organization_id"
+   FROM "public"."organization_members"
+  WHERE ("organization_members"."user_id" = "auth"."uid"()))));
+
+
+
+COMMENT ON POLICY "authenticated_users_can_update_org_checkpoint_blobs" ON "public"."checkpoint_blobs" IS 'Authenticated users can only update checkpoint blobs in organizations they are members of';
+
+
+
+CREATE POLICY "authenticated_users_can_update_org_checkpoint_migrations" ON "public"."checkpoint_migrations" FOR UPDATE TO "authenticated" USING (("organization_id" IN ( SELECT "organization_members"."organization_id"
+   FROM "public"."organization_members"
+  WHERE ("organization_members"."user_id" = "auth"."uid"())))) WITH CHECK (("organization_id" IN ( SELECT "organization_members"."organization_id"
+   FROM "public"."organization_members"
+  WHERE ("organization_members"."user_id" = "auth"."uid"()))));
+
+
+
+COMMENT ON POLICY "authenticated_users_can_update_org_checkpoint_migrations" ON "public"."checkpoint_migrations" IS 'Authenticated users can only update checkpoint migrations in organizations they are members of';
+
+
+
+CREATE POLICY "authenticated_users_can_update_org_checkpoint_writes" ON "public"."checkpoint_writes" FOR UPDATE TO "authenticated" USING (("organization_id" IN ( SELECT "organization_members"."organization_id"
+   FROM "public"."organization_members"
+  WHERE ("organization_members"."user_id" = "auth"."uid"())))) WITH CHECK (("organization_id" IN ( SELECT "organization_members"."organization_id"
+   FROM "public"."organization_members"
+  WHERE ("organization_members"."user_id" = "auth"."uid"()))));
+
+
+
+COMMENT ON POLICY "authenticated_users_can_update_org_checkpoint_writes" ON "public"."checkpoint_writes" IS 'Authenticated users can only update checkpoint writes in organizations they are members of';
+
+
+
+CREATE POLICY "authenticated_users_can_update_org_checkpoints" ON "public"."checkpoints" FOR UPDATE TO "authenticated" USING (("organization_id" IN ( SELECT "organization_members"."organization_id"
+   FROM "public"."organization_members"
+  WHERE ("organization_members"."user_id" = "auth"."uid"())))) WITH CHECK (("organization_id" IN ( SELECT "organization_members"."organization_id"
+   FROM "public"."organization_members"
+  WHERE ("organization_members"."user_id" = "auth"."uid"()))));
+
+
+
+COMMENT ON POLICY "authenticated_users_can_update_org_checkpoints" ON "public"."checkpoints" IS 'Authenticated users can only update checkpoints in organizations they are members of';
+
+
+
 CREATE POLICY "authenticated_users_can_update_org_design_sessions" ON "public"."design_sessions" FOR UPDATE TO "authenticated" USING (("organization_id" IN ( SELECT "organization_members"."organization_id"
    FROM "public"."organization_members"
   WHERE ("organization_members"."user_id" = "auth"."uid"())))) WITH CHECK (("organization_id" IN ( SELECT "organization_members"."organization_id"
@@ -2846,16 +3225,6 @@ CREATE POLICY "authenticated_users_can_update_org_design_sessions" ON "public"."
 
 
 COMMENT ON POLICY "authenticated_users_can_update_org_design_sessions" ON "public"."design_sessions" IS 'Authenticated users can only update design sessions in organizations they are members of';
-
-
-
-CREATE POLICY "authenticated_users_can_update_org_documents" ON "public"."documents" FOR UPDATE TO "authenticated" USING (("organization_id" IN ( SELECT "organization_members"."organization_id"
-   FROM "public"."organization_members"
-  WHERE ("organization_members"."user_id" = "auth"."uid"()))));
-
-
-
-COMMENT ON POLICY "authenticated_users_can_update_org_documents" ON "public"."documents" IS 'Authenticated users can only update documents in organizations they are members of';
 
 
 
@@ -2979,13 +3348,22 @@ ALTER TABLE "public"."building_schema_versions" ENABLE ROW LEVEL SECURITY;
 ALTER TABLE "public"."building_schemas" ENABLE ROW LEVEL SECURITY;
 
 
+ALTER TABLE "public"."checkpoint_blobs" ENABLE ROW LEVEL SECURITY;
+
+
+ALTER TABLE "public"."checkpoint_migrations" ENABLE ROW LEVEL SECURITY;
+
+
+ALTER TABLE "public"."checkpoint_writes" ENABLE ROW LEVEL SECURITY;
+
+
+ALTER TABLE "public"."checkpoints" ENABLE ROW LEVEL SECURITY;
+
+
 ALTER TABLE "public"."design_sessions" ENABLE ROW LEVEL SECURITY;
 
 
 ALTER TABLE "public"."doc_file_paths" ENABLE ROW LEVEL SECURITY;
-
-
-ALTER TABLE "public"."documents" ENABLE ROW LEVEL SECURITY;
 
 
 ALTER TABLE "public"."github_pull_request_comments" ENABLE ROW LEVEL SECURITY;
@@ -3030,6 +3408,40 @@ ALTER TABLE "public"."project_repository_mappings" ENABLE ROW LEVEL SECURITY;
 ALTER TABLE "public"."projects" ENABLE ROW LEVEL SECURITY;
 
 
+CREATE POLICY "public_artifacts_read" ON "public"."artifacts" FOR SELECT TO "anon" USING (("design_session_id" IN ( SELECT "public_share_settings"."design_session_id"
+   FROM "public"."public_share_settings")));
+
+
+
+CREATE POLICY "public_building_schema_versions_read" ON "public"."building_schema_versions" FOR SELECT TO "anon" USING (("building_schema_id" IN ( SELECT "bs"."id"
+   FROM "public"."building_schemas" "bs"
+  WHERE ("bs"."design_session_id" IN ( SELECT "public_share_settings"."design_session_id"
+           FROM "public"."public_share_settings")))));
+
+
+
+CREATE POLICY "public_building_schemas_read" ON "public"."building_schemas" FOR SELECT TO "anon" USING (("design_session_id" IN ( SELECT "public_share_settings"."design_session_id"
+   FROM "public"."public_share_settings")));
+
+
+
+CREATE POLICY "public_sessions_read" ON "public"."design_sessions" FOR SELECT TO "anon" USING (("id" IN ( SELECT "public_share_settings"."design_session_id"
+   FROM "public"."public_share_settings")));
+
+
+
+ALTER TABLE "public"."public_share_settings" ENABLE ROW LEVEL SECURITY;
+
+
+CREATE POLICY "public_share_settings_read" ON "public"."public_share_settings" FOR SELECT TO "anon" USING (true);
+
+
+
+CREATE POLICY "public_timeline_items_read" ON "public"."timeline_items" FOR SELECT TO "anon" USING (("design_session_id" IN ( SELECT "public_share_settings"."design_session_id"
+   FROM "public"."public_share_settings")));
+
+
+
 ALTER TABLE "public"."review_feedback_comments" ENABLE ROW LEVEL SECURITY;
 
 
@@ -3053,7 +3465,19 @@ CREATE POLICY "service_role_can_delete_all_building_schemas" ON "public"."buildi
 
 
 
-CREATE POLICY "service_role_can_delete_all_documents" ON "public"."documents" FOR DELETE TO "service_role" USING (true);
+CREATE POLICY "service_role_can_delete_all_checkpoint_blobs" ON "public"."checkpoint_blobs" FOR DELETE TO "service_role" USING (true);
+
+
+
+CREATE POLICY "service_role_can_delete_all_checkpoint_migrations" ON "public"."checkpoint_migrations" FOR DELETE TO "service_role" USING (true);
+
+
+
+CREATE POLICY "service_role_can_delete_all_checkpoint_writes" ON "public"."checkpoint_writes" FOR DELETE TO "service_role" USING (true);
+
+
+
+CREATE POLICY "service_role_can_delete_all_checkpoints" ON "public"."checkpoints" FOR DELETE TO "service_role" USING (true);
 
 
 
@@ -3097,11 +3521,23 @@ CREATE POLICY "service_role_can_insert_all_building_schemas" ON "public"."buildi
 
 
 
+CREATE POLICY "service_role_can_insert_all_checkpoint_blobs" ON "public"."checkpoint_blobs" FOR INSERT TO "service_role" WITH CHECK (true);
+
+
+
+CREATE POLICY "service_role_can_insert_all_checkpoint_migrations" ON "public"."checkpoint_migrations" FOR INSERT TO "service_role" WITH CHECK (true);
+
+
+
+CREATE POLICY "service_role_can_insert_all_checkpoint_writes" ON "public"."checkpoint_writes" FOR INSERT TO "service_role" WITH CHECK (true);
+
+
+
+CREATE POLICY "service_role_can_insert_all_checkpoints" ON "public"."checkpoints" FOR INSERT TO "service_role" WITH CHECK (true);
+
+
+
 CREATE POLICY "service_role_can_insert_all_design_sessions" ON "public"."design_sessions" FOR INSERT TO "service_role" WITH CHECK (true);
-
-
-
-CREATE POLICY "service_role_can_insert_all_documents" ON "public"."documents" FOR INSERT TO "service_role" WITH CHECK (true);
 
 
 
@@ -3189,15 +3625,27 @@ CREATE POLICY "service_role_can_select_all_building_schemas" ON "public"."buildi
 
 
 
+CREATE POLICY "service_role_can_select_all_checkpoint_blobs" ON "public"."checkpoint_blobs" FOR SELECT TO "service_role" USING (true);
+
+
+
+CREATE POLICY "service_role_can_select_all_checkpoint_migrations" ON "public"."checkpoint_migrations" FOR SELECT TO "service_role" USING (true);
+
+
+
+CREATE POLICY "service_role_can_select_all_checkpoint_writes" ON "public"."checkpoint_writes" FOR SELECT TO "service_role" USING (true);
+
+
+
+CREATE POLICY "service_role_can_select_all_checkpoints" ON "public"."checkpoints" FOR SELECT TO "service_role" USING (true);
+
+
+
 CREATE POLICY "service_role_can_select_all_design_sessions" ON "public"."design_sessions" FOR SELECT TO "service_role" USING (true);
 
 
 
 CREATE POLICY "service_role_can_select_all_doc_file_paths" ON "public"."doc_file_paths" FOR SELECT TO "service_role" USING (true);
-
-
-
-CREATE POLICY "service_role_can_select_all_documents" ON "public"."documents" FOR SELECT TO "service_role" USING (true);
 
 
 
@@ -3281,11 +3729,23 @@ CREATE POLICY "service_role_can_update_all_building_schemas" ON "public"."buildi
 
 
 
+CREATE POLICY "service_role_can_update_all_checkpoint_blobs" ON "public"."checkpoint_blobs" FOR UPDATE TO "service_role" USING (true) WITH CHECK (true);
+
+
+
+CREATE POLICY "service_role_can_update_all_checkpoint_migrations" ON "public"."checkpoint_migrations" FOR UPDATE TO "service_role" USING (true) WITH CHECK (true);
+
+
+
+CREATE POLICY "service_role_can_update_all_checkpoint_writes" ON "public"."checkpoint_writes" FOR UPDATE TO "service_role" USING (true) WITH CHECK (true);
+
+
+
+CREATE POLICY "service_role_can_update_all_checkpoints" ON "public"."checkpoints" FOR UPDATE TO "service_role" USING (true) WITH CHECK (true);
+
+
+
 CREATE POLICY "service_role_can_update_all_design_sessions" ON "public"."design_sessions" FOR UPDATE TO "service_role" USING (true) WITH CHECK (true);
-
-
-
-CREATE POLICY "service_role_can_update_all_documents" ON "public"."documents" FOR UPDATE TO "service_role" USING (true) WITH CHECK (true);
 
 
 
@@ -3380,7 +3840,6 @@ ALTER PUBLICATION "supabase_realtime" ADD TABLE ONLY "public"."workflow_runs";
 
 
 GRANT USAGE ON SCHEMA "public" TO "postgres";
-GRANT USAGE ON SCHEMA "public" TO "anon";
 GRANT USAGE ON SCHEMA "public" TO "authenticated";
 GRANT USAGE ON SCHEMA "public" TO "service_role";
 
@@ -4002,7 +4461,6 @@ GRANT ALL ON FUNCTION "public"."hamming_distance"(bit, bit) TO "service_role";
 
 
 
-GRANT ALL ON FUNCTION "public"."handle_new_user"() TO "anon";
 GRANT ALL ON FUNCTION "public"."handle_new_user"() TO "authenticated";
 GRANT ALL ON FUNCTION "public"."handle_new_user"() TO "service_role";
 
@@ -4063,7 +4521,6 @@ GRANT ALL ON FUNCTION "public"."invite_organization_member"("p_email" "text", "p
 
 
 REVOKE ALL ON FUNCTION "public"."is_current_user_org_member"("_org" "uuid") FROM PUBLIC;
-GRANT ALL ON FUNCTION "public"."is_current_user_org_member"("_org" "uuid") TO "anon";
 GRANT ALL ON FUNCTION "public"."is_current_user_org_member"("_org" "uuid") TO "authenticated";
 GRANT ALL ON FUNCTION "public"."is_current_user_org_member"("_org" "uuid") TO "service_role";
 
@@ -4174,157 +4631,126 @@ GRANT ALL ON FUNCTION "public"."l2_normalize"("public"."vector") TO "service_rol
 
 
 
-GRANT ALL ON FUNCTION "public"."match_documents"("filter" "jsonb", "match_count" integer, "query_embedding" "public"."vector", "match_threshold" double precision) TO "anon";
-GRANT ALL ON FUNCTION "public"."match_documents"("filter" "jsonb", "match_count" integer, "query_embedding" "public"."vector", "match_threshold" double precision) TO "authenticated";
-GRANT ALL ON FUNCTION "public"."match_documents"("filter" "jsonb", "match_count" integer, "query_embedding" "public"."vector", "match_threshold" double precision) TO "service_role";
-
-
-
-GRANT ALL ON FUNCTION "public"."prevent_delete_last_organization_member"() TO "anon";
 GRANT ALL ON FUNCTION "public"."prevent_delete_last_organization_member"() TO "authenticated";
 GRANT ALL ON FUNCTION "public"."prevent_delete_last_organization_member"() TO "service_role";
 
 
 
-GRANT ALL ON FUNCTION "public"."set_artifacts_organization_id"() TO "anon";
 GRANT ALL ON FUNCTION "public"."set_artifacts_organization_id"() TO "authenticated";
 GRANT ALL ON FUNCTION "public"."set_artifacts_organization_id"() TO "service_role";
 
 
 
-GRANT ALL ON FUNCTION "public"."set_building_schema_versions_organization_id"() TO "anon";
 GRANT ALL ON FUNCTION "public"."set_building_schema_versions_organization_id"() TO "authenticated";
 GRANT ALL ON FUNCTION "public"."set_building_schema_versions_organization_id"() TO "service_role";
 
 
 
-GRANT ALL ON FUNCTION "public"."set_building_schemas_organization_id"() TO "anon";
 GRANT ALL ON FUNCTION "public"."set_building_schemas_organization_id"() TO "authenticated";
 GRANT ALL ON FUNCTION "public"."set_building_schemas_organization_id"() TO "service_role";
 
 
 
-GRANT ALL ON FUNCTION "public"."set_design_sessions_organization_id"() TO "anon";
 GRANT ALL ON FUNCTION "public"."set_design_sessions_organization_id"() TO "authenticated";
 GRANT ALL ON FUNCTION "public"."set_design_sessions_organization_id"() TO "service_role";
 
 
 
-GRANT ALL ON FUNCTION "public"."set_doc_file_paths_organization_id"() TO "anon";
 GRANT ALL ON FUNCTION "public"."set_doc_file_paths_organization_id"() TO "authenticated";
 GRANT ALL ON FUNCTION "public"."set_doc_file_paths_organization_id"() TO "service_role";
 
 
 
-GRANT ALL ON FUNCTION "public"."set_github_pull_request_comments_organization_id"() TO "anon";
 GRANT ALL ON FUNCTION "public"."set_github_pull_request_comments_organization_id"() TO "authenticated";
 GRANT ALL ON FUNCTION "public"."set_github_pull_request_comments_organization_id"() TO "service_role";
 
 
 
-GRANT ALL ON FUNCTION "public"."set_github_pull_requests_organization_id"() TO "anon";
 GRANT ALL ON FUNCTION "public"."set_github_pull_requests_organization_id"() TO "authenticated";
 GRANT ALL ON FUNCTION "public"."set_github_pull_requests_organization_id"() TO "service_role";
 
 
 
-GRANT ALL ON FUNCTION "public"."set_knowledge_suggestion_doc_mappings_organization_id"() TO "anon";
 GRANT ALL ON FUNCTION "public"."set_knowledge_suggestion_doc_mappings_organization_id"() TO "authenticated";
 GRANT ALL ON FUNCTION "public"."set_knowledge_suggestion_doc_mappings_organization_id"() TO "service_role";
 
 
 
-GRANT ALL ON FUNCTION "public"."set_knowledge_suggestions_organization_id"() TO "anon";
 GRANT ALL ON FUNCTION "public"."set_knowledge_suggestions_organization_id"() TO "authenticated";
 GRANT ALL ON FUNCTION "public"."set_knowledge_suggestions_organization_id"() TO "service_role";
 
 
 
-GRANT ALL ON FUNCTION "public"."set_migration_pull_request_mappings_organization_id"() TO "anon";
 GRANT ALL ON FUNCTION "public"."set_migration_pull_request_mappings_organization_id"() TO "authenticated";
 GRANT ALL ON FUNCTION "public"."set_migration_pull_request_mappings_organization_id"() TO "service_role";
 
 
 
-GRANT ALL ON FUNCTION "public"."set_migrations_organization_id"() TO "anon";
 GRANT ALL ON FUNCTION "public"."set_migrations_organization_id"() TO "authenticated";
 GRANT ALL ON FUNCTION "public"."set_migrations_organization_id"() TO "service_role";
 
 
 
-GRANT ALL ON FUNCTION "public"."set_overall_review_knowledge_suggestion_mappings_organization_i"() TO "anon";
 GRANT ALL ON FUNCTION "public"."set_overall_review_knowledge_suggestion_mappings_organization_i"() TO "authenticated";
 GRANT ALL ON FUNCTION "public"."set_overall_review_knowledge_suggestion_mappings_organization_i"() TO "service_role";
 
 
 
-GRANT ALL ON FUNCTION "public"."set_overall_reviews_organization_id"() TO "anon";
 GRANT ALL ON FUNCTION "public"."set_overall_reviews_organization_id"() TO "authenticated";
 GRANT ALL ON FUNCTION "public"."set_overall_reviews_organization_id"() TO "service_role";
 
 
 
-GRANT ALL ON FUNCTION "public"."set_project_repository_mappings_organization_id"() TO "anon";
 GRANT ALL ON FUNCTION "public"."set_project_repository_mappings_organization_id"() TO "authenticated";
 GRANT ALL ON FUNCTION "public"."set_project_repository_mappings_organization_id"() TO "service_role";
 
 
 
-GRANT ALL ON FUNCTION "public"."set_review_feedback_comments_organization_id"() TO "anon";
 GRANT ALL ON FUNCTION "public"."set_review_feedback_comments_organization_id"() TO "authenticated";
 GRANT ALL ON FUNCTION "public"."set_review_feedback_comments_organization_id"() TO "service_role";
 
 
 
-GRANT ALL ON FUNCTION "public"."set_review_feedback_knowledge_suggestion_mappings_organization_"() TO "anon";
 GRANT ALL ON FUNCTION "public"."set_review_feedback_knowledge_suggestion_mappings_organization_"() TO "authenticated";
 GRANT ALL ON FUNCTION "public"."set_review_feedback_knowledge_suggestion_mappings_organization_"() TO "service_role";
 
 
 
-GRANT ALL ON FUNCTION "public"."set_review_feedbacks_organization_id"() TO "anon";
 GRANT ALL ON FUNCTION "public"."set_review_feedbacks_organization_id"() TO "authenticated";
 GRANT ALL ON FUNCTION "public"."set_review_feedbacks_organization_id"() TO "service_role";
 
 
 
-GRANT ALL ON FUNCTION "public"."set_review_suggestion_snippets_organization_id"() TO "anon";
 GRANT ALL ON FUNCTION "public"."set_review_suggestion_snippets_organization_id"() TO "authenticated";
 GRANT ALL ON FUNCTION "public"."set_review_suggestion_snippets_organization_id"() TO "service_role";
 
 
 
-GRANT ALL ON FUNCTION "public"."set_schema_file_paths_organization_id"() TO "anon";
 GRANT ALL ON FUNCTION "public"."set_schema_file_paths_organization_id"() TO "authenticated";
 GRANT ALL ON FUNCTION "public"."set_schema_file_paths_organization_id"() TO "service_role";
 
 
 
-GRANT ALL ON FUNCTION "public"."set_timeline_items_organization_id"() TO "anon";
 GRANT ALL ON FUNCTION "public"."set_timeline_items_organization_id"() TO "authenticated";
 GRANT ALL ON FUNCTION "public"."set_timeline_items_organization_id"() TO "service_role";
 
 
 
-GRANT ALL ON FUNCTION "public"."set_validation_queries_organization_id"() TO "anon";
 GRANT ALL ON FUNCTION "public"."set_validation_queries_organization_id"() TO "authenticated";
 GRANT ALL ON FUNCTION "public"."set_validation_queries_organization_id"() TO "service_role";
 
 
 
-GRANT ALL ON FUNCTION "public"."set_validation_results_organization_id"() TO "anon";
 GRANT ALL ON FUNCTION "public"."set_validation_results_organization_id"() TO "authenticated";
 GRANT ALL ON FUNCTION "public"."set_validation_results_organization_id"() TO "service_role";
 
 
 
-GRANT ALL ON FUNCTION "public"."set_workflow_runs_organization_id"() TO "anon";
 GRANT ALL ON FUNCTION "public"."set_workflow_runs_organization_id"() TO "authenticated";
 GRANT ALL ON FUNCTION "public"."set_workflow_runs_organization_id"() TO "service_role";
 
 
 
-GRANT ALL ON FUNCTION "public"."set_workflow_runs_updated_at"() TO "anon";
 GRANT ALL ON FUNCTION "public"."set_workflow_runs_updated_at"() TO "authenticated";
 GRANT ALL ON FUNCTION "public"."set_workflow_runs_updated_at"() TO "service_role";
 
@@ -4407,21 +4833,23 @@ GRANT ALL ON FUNCTION "public"."subvector"("public"."vector", integer, integer) 
 
 
 
-GRANT ALL ON FUNCTION "public"."sync_existing_users"() TO "anon";
 GRANT ALL ON FUNCTION "public"."sync_existing_users"() TO "authenticated";
 GRANT ALL ON FUNCTION "public"."sync_existing_users"() TO "service_role";
 
 
 
-GRANT ALL ON FUNCTION "public"."update_artifacts_updated_at"() TO "anon";
 GRANT ALL ON FUNCTION "public"."update_artifacts_updated_at"() TO "authenticated";
 GRANT ALL ON FUNCTION "public"."update_artifacts_updated_at"() TO "service_role";
 
 
 
-GRANT ALL ON FUNCTION "public"."update_building_schema"("p_schema_id" "uuid", "p_schema_schema" "jsonb", "p_schema_version_patch" "jsonb", "p_schema_version_reverse_patch" "jsonb", "p_latest_schema_version_number" integer, "p_message_content" "text") TO "anon";
 GRANT ALL ON FUNCTION "public"."update_building_schema"("p_schema_id" "uuid", "p_schema_schema" "jsonb", "p_schema_version_patch" "jsonb", "p_schema_version_reverse_patch" "jsonb", "p_latest_schema_version_number" integer, "p_message_content" "text") TO "authenticated";
 GRANT ALL ON FUNCTION "public"."update_building_schema"("p_schema_id" "uuid", "p_schema_schema" "jsonb", "p_schema_version_patch" "jsonb", "p_schema_version_reverse_patch" "jsonb", "p_latest_schema_version_number" integer, "p_message_content" "text") TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."update_checkpoints_updated_at"() TO "authenticated";
+GRANT ALL ON FUNCTION "public"."update_checkpoints_updated_at"() TO "service_role";
 
 
 
@@ -4608,181 +5036,296 @@ GRANT ALL ON FUNCTION "public"."sum"("public"."vector") TO "service_role";
 
 
 
-GRANT ALL ON TABLE "public"."artifacts" TO "anon";
 GRANT ALL ON TABLE "public"."artifacts" TO "authenticated";
 GRANT ALL ON TABLE "public"."artifacts" TO "service_role";
 
 
 
-GRANT ALL ON TABLE "public"."building_schema_versions" TO "anon";
+GRANT SELECT("id") ON TABLE "public"."artifacts" TO "anon";
+
+
+
+GRANT SELECT("design_session_id") ON TABLE "public"."artifacts" TO "anon";
+
+
+
+GRANT SELECT("artifact") ON TABLE "public"."artifacts" TO "anon";
+
+
+
+GRANT SELECT("created_at") ON TABLE "public"."artifacts" TO "anon";
+
+
+
+GRANT SELECT("updated_at") ON TABLE "public"."artifacts" TO "anon";
+
+
+
 GRANT ALL ON TABLE "public"."building_schema_versions" TO "authenticated";
 GRANT ALL ON TABLE "public"."building_schema_versions" TO "service_role";
 
 
 
-GRANT ALL ON TABLE "public"."building_schemas" TO "anon";
+GRANT SELECT("id") ON TABLE "public"."building_schema_versions" TO "anon";
+
+
+
+GRANT SELECT("building_schema_id") ON TABLE "public"."building_schema_versions" TO "anon";
+
+
+
+GRANT SELECT("number") ON TABLE "public"."building_schema_versions" TO "anon";
+
+
+
+GRANT SELECT("created_at") ON TABLE "public"."building_schema_versions" TO "anon";
+
+
+
+GRANT SELECT("patch") ON TABLE "public"."building_schema_versions" TO "anon";
+
+
+
+GRANT SELECT("reverse_patch") ON TABLE "public"."building_schema_versions" TO "anon";
+
+
+
 GRANT ALL ON TABLE "public"."building_schemas" TO "authenticated";
 GRANT ALL ON TABLE "public"."building_schemas" TO "service_role";
 
 
 
-GRANT ALL ON TABLE "public"."design_sessions" TO "anon";
+GRANT SELECT("id") ON TABLE "public"."building_schemas" TO "anon";
+
+
+
+GRANT SELECT("design_session_id") ON TABLE "public"."building_schemas" TO "anon";
+
+
+
+GRANT SELECT("schema") ON TABLE "public"."building_schemas" TO "anon";
+
+
+
+GRANT SELECT("created_at") ON TABLE "public"."building_schemas" TO "anon";
+
+
+
+GRANT SELECT("git_sha") ON TABLE "public"."building_schemas" TO "anon";
+
+
+
+GRANT SELECT("initial_schema_snapshot") ON TABLE "public"."building_schemas" TO "anon";
+
+
+
+GRANT SELECT("schema_file_path") ON TABLE "public"."building_schemas" TO "anon";
+
+
+
+GRANT ALL ON TABLE "public"."checkpoint_blobs" TO "authenticated";
+GRANT ALL ON TABLE "public"."checkpoint_blobs" TO "service_role";
+
+
+
+GRANT ALL ON TABLE "public"."checkpoint_migrations" TO "authenticated";
+GRANT ALL ON TABLE "public"."checkpoint_migrations" TO "service_role";
+
+
+
+GRANT ALL ON TABLE "public"."checkpoint_writes" TO "authenticated";
+GRANT ALL ON TABLE "public"."checkpoint_writes" TO "service_role";
+
+
+
+GRANT ALL ON TABLE "public"."checkpoints" TO "authenticated";
+GRANT ALL ON TABLE "public"."checkpoints" TO "service_role";
+
+
+
 GRANT ALL ON TABLE "public"."design_sessions" TO "authenticated";
 GRANT ALL ON TABLE "public"."design_sessions" TO "service_role";
 
 
 
-GRANT ALL ON TABLE "public"."doc_file_paths" TO "anon";
+GRANT SELECT("id") ON TABLE "public"."design_sessions" TO "anon";
+
+
+
+GRANT SELECT("parent_design_session_id") ON TABLE "public"."design_sessions" TO "anon";
+
+
+
+GRANT SELECT("name") ON TABLE "public"."design_sessions" TO "anon";
+
+
+
+GRANT SELECT("created_at") ON TABLE "public"."design_sessions" TO "anon";
+
+
+
 GRANT ALL ON TABLE "public"."doc_file_paths" TO "authenticated";
 GRANT ALL ON TABLE "public"."doc_file_paths" TO "service_role";
 
 
 
-GRANT ALL ON TABLE "public"."documents" TO "anon";
-GRANT ALL ON TABLE "public"."documents" TO "authenticated";
-GRANT ALL ON TABLE "public"."documents" TO "service_role";
-
-
-
-GRANT ALL ON TABLE "public"."github_pull_request_comments" TO "anon";
 GRANT ALL ON TABLE "public"."github_pull_request_comments" TO "authenticated";
 GRANT ALL ON TABLE "public"."github_pull_request_comments" TO "service_role";
 
 
 
-GRANT ALL ON TABLE "public"."github_pull_requests" TO "anon";
 GRANT ALL ON TABLE "public"."github_pull_requests" TO "authenticated";
 GRANT ALL ON TABLE "public"."github_pull_requests" TO "service_role";
 
 
 
-GRANT ALL ON TABLE "public"."github_repositories" TO "anon";
 GRANT ALL ON TABLE "public"."github_repositories" TO "authenticated";
 GRANT ALL ON TABLE "public"."github_repositories" TO "service_role";
 
 
 
-GRANT ALL ON TABLE "public"."invitations" TO "anon";
 GRANT ALL ON TABLE "public"."invitations" TO "authenticated";
 GRANT ALL ON TABLE "public"."invitations" TO "service_role";
 
 
 
-GRANT ALL ON TABLE "public"."knowledge_suggestion_doc_mappings" TO "anon";
 GRANT ALL ON TABLE "public"."knowledge_suggestion_doc_mappings" TO "authenticated";
 GRANT ALL ON TABLE "public"."knowledge_suggestion_doc_mappings" TO "service_role";
 
 
 
-GRANT ALL ON TABLE "public"."knowledge_suggestions" TO "anon";
 GRANT ALL ON TABLE "public"."knowledge_suggestions" TO "authenticated";
 GRANT ALL ON TABLE "public"."knowledge_suggestions" TO "service_role";
 
 
 
-GRANT ALL ON TABLE "public"."migration_pull_request_mappings" TO "anon";
 GRANT ALL ON TABLE "public"."migration_pull_request_mappings" TO "authenticated";
 GRANT ALL ON TABLE "public"."migration_pull_request_mappings" TO "service_role";
 
 
 
-GRANT ALL ON TABLE "public"."migrations" TO "anon";
 GRANT ALL ON TABLE "public"."migrations" TO "authenticated";
 GRANT ALL ON TABLE "public"."migrations" TO "service_role";
 
 
 
-GRANT ALL ON TABLE "public"."organization_members" TO "anon";
 GRANT ALL ON TABLE "public"."organization_members" TO "authenticated";
 GRANT ALL ON TABLE "public"."organization_members" TO "service_role";
 
 
 
-GRANT ALL ON TABLE "public"."organizations" TO "anon";
 GRANT ALL ON TABLE "public"."organizations" TO "authenticated";
 GRANT ALL ON TABLE "public"."organizations" TO "service_role";
 
 
 
-GRANT ALL ON TABLE "public"."overall_review_knowledge_suggestion_mappings" TO "anon";
 GRANT ALL ON TABLE "public"."overall_review_knowledge_suggestion_mappings" TO "authenticated";
 GRANT ALL ON TABLE "public"."overall_review_knowledge_suggestion_mappings" TO "service_role";
 
 
 
-GRANT ALL ON TABLE "public"."overall_reviews" TO "anon";
 GRANT ALL ON TABLE "public"."overall_reviews" TO "authenticated";
 GRANT ALL ON TABLE "public"."overall_reviews" TO "service_role";
 
 
 
-GRANT ALL ON TABLE "public"."project_repository_mappings" TO "anon";
 GRANT ALL ON TABLE "public"."project_repository_mappings" TO "authenticated";
 GRANT ALL ON TABLE "public"."project_repository_mappings" TO "service_role";
 
 
 
-GRANT ALL ON TABLE "public"."projects" TO "anon";
 GRANT ALL ON TABLE "public"."projects" TO "authenticated";
 GRANT ALL ON TABLE "public"."projects" TO "service_role";
 
 
 
-GRANT ALL ON TABLE "public"."review_feedback_comments" TO "anon";
+GRANT ALL ON TABLE "public"."public_share_settings" TO "authenticated";
+GRANT ALL ON TABLE "public"."public_share_settings" TO "service_role";
+GRANT SELECT ON TABLE "public"."public_share_settings" TO "anon";
+
+
+
 GRANT ALL ON TABLE "public"."review_feedback_comments" TO "authenticated";
 GRANT ALL ON TABLE "public"."review_feedback_comments" TO "service_role";
 
 
 
-GRANT ALL ON TABLE "public"."review_feedback_knowledge_suggestion_mappings" TO "anon";
 GRANT ALL ON TABLE "public"."review_feedback_knowledge_suggestion_mappings" TO "authenticated";
 GRANT ALL ON TABLE "public"."review_feedback_knowledge_suggestion_mappings" TO "service_role";
 
 
 
-GRANT ALL ON TABLE "public"."review_feedbacks" TO "anon";
 GRANT ALL ON TABLE "public"."review_feedbacks" TO "authenticated";
 GRANT ALL ON TABLE "public"."review_feedbacks" TO "service_role";
 
 
 
-GRANT ALL ON TABLE "public"."review_suggestion_snippets" TO "anon";
 GRANT ALL ON TABLE "public"."review_suggestion_snippets" TO "authenticated";
 GRANT ALL ON TABLE "public"."review_suggestion_snippets" TO "service_role";
 
 
 
-GRANT ALL ON TABLE "public"."schema_file_paths" TO "anon";
 GRANT ALL ON TABLE "public"."schema_file_paths" TO "authenticated";
 GRANT ALL ON TABLE "public"."schema_file_paths" TO "service_role";
 
 
 
-GRANT ALL ON TABLE "public"."timeline_items" TO "anon";
 GRANT ALL ON TABLE "public"."timeline_items" TO "authenticated";
 GRANT ALL ON TABLE "public"."timeline_items" TO "service_role";
 
 
 
-GRANT ALL ON TABLE "public"."users" TO "anon";
+GRANT SELECT("id") ON TABLE "public"."timeline_items" TO "anon";
+
+
+
+GRANT SELECT("design_session_id") ON TABLE "public"."timeline_items" TO "anon";
+
+
+
+GRANT SELECT("content") ON TABLE "public"."timeline_items" TO "anon";
+
+
+
+GRANT SELECT("created_at") ON TABLE "public"."timeline_items" TO "anon";
+
+
+
+GRANT SELECT("updated_at") ON TABLE "public"."timeline_items" TO "anon";
+
+
+
+GRANT SELECT("building_schema_version_id") ON TABLE "public"."timeline_items" TO "anon";
+
+
+
+GRANT SELECT("type") ON TABLE "public"."timeline_items" TO "anon";
+
+
+
+GRANT SELECT("query_result_id") ON TABLE "public"."timeline_items" TO "anon";
+
+
+
+GRANT SELECT("assistant_role") ON TABLE "public"."timeline_items" TO "anon";
+
+
+
 GRANT ALL ON TABLE "public"."users" TO "authenticated";
 GRANT ALL ON TABLE "public"."users" TO "service_role";
 
 
 
-GRANT ALL ON TABLE "public"."validation_queries" TO "anon";
 GRANT ALL ON TABLE "public"."validation_queries" TO "authenticated";
 GRANT ALL ON TABLE "public"."validation_queries" TO "service_role";
 
 
 
-GRANT ALL ON TABLE "public"."validation_results" TO "anon";
 GRANT ALL ON TABLE "public"."validation_results" TO "authenticated";
 GRANT ALL ON TABLE "public"."validation_results" TO "service_role";
 
 
 
-GRANT ALL ON TABLE "public"."workflow_runs" TO "anon";
 GRANT ALL ON TABLE "public"."workflow_runs" TO "authenticated";
 GRANT ALL ON TABLE "public"."workflow_runs" TO "service_role";
 
@@ -4795,7 +5338,6 @@ GRANT ALL ON TABLE "public"."workflow_runs" TO "service_role";
 
 
 ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT ALL ON SEQUENCES  TO "postgres";
-ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT ALL ON SEQUENCES  TO "anon";
 ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT ALL ON SEQUENCES  TO "authenticated";
 ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT ALL ON SEQUENCES  TO "service_role";
 
@@ -4805,7 +5347,6 @@ ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT ALL ON SEQ
 
 
 ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT ALL ON FUNCTIONS  TO "postgres";
-ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT ALL ON FUNCTIONS  TO "anon";
 ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT ALL ON FUNCTIONS  TO "authenticated";
 ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT ALL ON FUNCTIONS  TO "service_role";
 
@@ -4815,7 +5356,6 @@ ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT ALL ON FUN
 
 
 ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT ALL ON TABLES  TO "postgres";
-ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT ALL ON TABLES  TO "anon";
 ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT ALL ON TABLES  TO "authenticated";
 ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT ALL ON TABLES  TO "service_role";
 

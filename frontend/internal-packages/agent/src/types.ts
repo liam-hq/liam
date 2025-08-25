@@ -1,5 +1,5 @@
-import type { Schema } from '@liam-hq/db-structure'
-import type { Result } from 'neverthrow'
+import type { Schema } from '@liam-hq/schema'
+import type { ResultAsync } from 'neverthrow'
 import type { WorkflowState } from './chat/workflow/types'
 
 /**
@@ -8,7 +8,6 @@ import type { WorkflowState } from './chat/workflow/types'
 export type AgentWorkflowParams = {
   userInput: string
   schemaData: Schema
-  history: [string, string][]
   organizationId: string
   buildingSchemaId: string
   latestVersionNumber: number
@@ -20,4 +19,4 @@ export type AgentWorkflowParams = {
 /**
  * Result type for agent workflow execution
  */
-export type AgentWorkflowResult = Result<WorkflowState, Error>
+export type AgentWorkflowResult = ResultAsync<WorkflowState, Error>

@@ -1,1 +1,1 @@
-export * from './BranchDropdownMenu'
+export { BranchDropdownMenu } from './BranchDropdownMenu'

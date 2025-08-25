@@ -69,10 +69,9 @@ For database migration and type generation workflows, see [`docs/migrationOpsCon
 - **frontend/apps/docs** - Documentation site (`@liam-hq/docs`)
 - **frontend/packages/cli** - Command-line tool (`@liam-hq/cli`)
 - **frontend/packages/erd-core** - Core ERD visualization (`@liam-hq/erd-core`)
-- **frontend/packages/db-structure** - Database schema parser (`@liam-hq/db-structure`)
+- **frontend/packages/schema** - Database schema parser (`@liam-hq/schema`)
 - **frontend/packages/ui** - UI component library (`@liam-hq/ui`)
 - **frontend/packages/github** - GitHub API integration (`@liam-hq/github`)
-- **frontend/packages/jobs** - Background jobs with Trigger.dev (`@liam-hq/jobs`)
 
 ### Key Technologies
 - **Frontend**: React 18, Next.js 15, TypeScript
@@ -81,14 +80,12 @@ For database migration and type generation workflows, see [`docs/migrationOpsCon
 - **State**: Valtio for state management
 - **Validation**: Valibot for runtime type validation
 - **Build**: Turborepo, pnpm workspaces
-- **Jobs**: Trigger.dev for background processing
 
 ### Data Flow
-1. Schema files are parsed by `@liam-hq/db-structure`
+1. Schema files are parsed by `@liam-hq/schema`
 2. ERD visualization is handled by `@liam-hq/erd-core` using React Flow
 3. UI components from `@liam-hq/ui` provide consistent design
 4. GitHub integration via `@liam-hq/github` for PR reviews
-5. Background jobs in `@liam-hq/jobs` handle async operations
 
 ## Development Guidelines
 
@@ -97,9 +94,20 @@ For database migration and type generation workflows, see [`docs/migrationOpsCon
 - Use early returns for readability
 
 ### Code Editing
-- When modifying existing code, write the ideal state without worrying about backward compatibility
-- Don't maintain redundant code for the sake of compatibility
-- Focus on clean, optimal implementation
+- Write simple, direct code without backward compatibility concerns - update all call sites together
+```typescript
+// ❌ Bad: Optional parameter leads to conditional logic
+function saveUser(data: UserData, userId?: string) {
+  const id = userId || generateId(); // Unnecessary fallback logic
+  if (!userId) console.warn('Using generated ID') // Extra handling
+  return db.save(id, data)
+}
+
+// ✅ Good: Required parameter, update all callers
+function saveUser(data: UserData, userId: string) {
+  return db.save(userId, data) // Simple and clear
+}
+```
 
 ### Component Patterns
 - Use named exports only (no default exports)
@@ -117,6 +125,7 @@ For database migration and type generation workflows, see [`docs/migrationOpsCon
 - Server Components for server-side data fetching
 - Client-side fetching only when necessary
 - Align data fetching responsibilities with component roles
+- Use Server Actions for all data mutations (create, update, delete operations)
 
 ### CSS
 - Use CSS Variables from `@liam-hq/ui` package

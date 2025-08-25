@@ -1,7 +1,7 @@
 {
   "name": "@liam-hq/erd-core",
   "license": "Apache-2.0",
-  "version": "0.6.0",
+  "version": "0.6.3",
   "type": "module",
   "publishConfig": {
     "access": "public"
@@ -21,24 +21,25 @@
     "neverthrow": "8.2.0",
     "nuqs": "2.4.3",
     "pako": "2.1.0",
-    "react": "19.1.0",
+    "react": "19.1.1",
     "ts-pattern": "5.7.1",
     "valibot": "1.1.0"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.1.2",
+    "@biomejs/biome": "2.1.4",
     "@liam-hq/configs": "workspace:*",
-    "@liam-hq/db-structure": "workspace:*",
-    "@testing-library/jest-dom": "6.6.3",
+    "@liam-hq/schema": "workspace:*",
+    "@storybook/react": "8.6.14",
+    "@testing-library/jest-dom": "6.6.4",
     "@testing-library/react": "16.3.0",
     "@testing-library/user-event": "14.6.1",
     "@types/pako": "2.0.3",
-    "@types/react": "19.1.8",
+    "@types/react": "19.1.9",
     "@vitejs/plugin-react": "4.6.0",
-    "eslint": "9.31.0",
+    "eslint": "9.33.0",
     "happy-dom": "17.6.3",
     "typed-css-modules": "0.9.1",
-    "typescript": "5.8.3",
+    "typescript": "5.9.2",
     "vitest": "3.2.4"
   },
   "scripts": {

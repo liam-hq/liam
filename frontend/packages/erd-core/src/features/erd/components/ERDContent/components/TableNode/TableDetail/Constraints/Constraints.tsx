@@ -1,4 +1,4 @@
-import type { Table } from '@liam-hq/db-structure'
+import type { Table } from '@liam-hq/schema'
 import { Lock } from '@liam-hq/ui'
 import type React from 'react'
 import { CollapsibleHeader } from '../CollapsibleHeader'

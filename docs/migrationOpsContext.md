@@ -10,7 +10,7 @@ Our project uses Supabase Branching for database migration management. This syst
 ## Key Constraints
 
 - No guaranteed order between app deployments and migrations.
-- Either app (`@liam-hq/app`, `@liam-hq/jobs`) or migrations may complete first.
+- Either app (`@liam-hq/app`) or migrations may complete first.
 - Migrations must be backward compatible with the previous app version.
 - App must work with both old and new database schema.
 

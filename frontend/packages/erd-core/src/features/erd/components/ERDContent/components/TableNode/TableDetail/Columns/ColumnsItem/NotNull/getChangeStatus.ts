@@ -1,50 +1,61 @@
 import {
   type ChangeStatus,
-  columnDiffItemSchema,
-  columnNotNullDiffItemSchema,
-  type SchemaDiffItem,
-  tableDiffItemSchema,
-} from '@liam-hq/db-structure'
-import { safeParse } from 'valibot'
+  getColumnNotNullChangeStatus,
+  getColumnRelatedChangeStatus,
+  getTableRelatedChangeStatus,
+  type Operation,
+} from '@liam-hq/schema'
 
 type Params = {
   tableId: string
   columnId: string
-  diffItems: SchemaDiffItem[]
+  operations: Operation[]
 }
 
+/**
+ * Determines the change status for the column not null constraint component.
+ *
+ * Priority order for status determination:
+ *
+ * 1. Table-level changes
+ *    - Table addition → returns 'added'
+ *    - Table deletion → returns 'removed'
+ *
+ * 2. Column-level changes
+ *    - Column addition → returns 'added'
+ *    - Column deletion → returns 'removed'
+ *
+ * 3. Column not null constraint changes
+ *    - Not null constraint modification → returns 'modified'
+ *
+ * 4. No changes
+ *    - None of the above → returns 'unchanged'
+ *
+ * Note: Table and column-level changes take precedence because when a
+ * table/column is added/removed, its not null constraint is implicitly affected.
+ */
 export function getChangeStatus({
   tableId,
   columnId,
-  diffItems,
+  operations,
 }: Params): ChangeStatus {
-  const filteredDiffItems = diffItems.filter((d) => d.tableId === tableId)
-
-  // Priority 1: Check for table-level changes (added/removed)
-  const tableRelatedDiffItem = filteredDiffItems.find((item) => {
-    const parsed = safeParse(tableDiffItemSchema, item)
-    return parsed.success
-  })
-
-  if (tableRelatedDiffItem) {
-    return tableRelatedDiffItem.status
+  const tableStatus = getTableRelatedChangeStatus({ tableId, operations })
+  if (tableStatus === 'added' || tableStatus === 'removed') {
+    return tableStatus
   }
 
-  // Priority 2: Check for column-level changes (added/removed)
-  const columnDiffItem = filteredDiffItems.find((item) => {
-    const parsed = safeParse(columnDiffItemSchema, item)
-    return parsed.success && parsed.output.columnId === columnId
+  const columnStatus = getColumnRelatedChangeStatus({
+    tableId,
+    columnId,
+    operations,
   })
-
-  if (columnDiffItem) {
-    return columnDiffItem.status
+  if (columnStatus === 'added' || columnStatus === 'removed') {
+    return columnStatus
   }
 
-  // Priority 3: Check for column not-null changes
-  const columnNotNullDiffItem = filteredDiffItems.find((item) => {
-    const parsed = safeParse(columnNotNullDiffItemSchema, item)
-    return parsed.success && parsed.output.columnId === columnId
+  return getColumnNotNullChangeStatus({
+    tableId,
+    columnId,
+    operations,
   })
-
-  return columnNotNullDiffItem?.status ?? 'unchanged'
 }

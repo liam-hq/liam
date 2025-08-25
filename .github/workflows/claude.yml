@@ -42,7 +42,7 @@ jobs:
         run: bash .github/scripts/setup-claude.sh
 
       - name: Run Claude PR Action
-        uses: anthropics/claude-code-action@d66adfb7fa44e4f7c6a3d6f93cde1c4fb8589c21 # beta
+        uses: anthropics/claude-code-action@a47fdbe49f641eadaf74042deb4cd9dfb8a981d5 # beta
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           timeout_minutes: 60

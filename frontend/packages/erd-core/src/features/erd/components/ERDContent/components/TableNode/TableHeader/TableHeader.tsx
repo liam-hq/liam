@@ -19,7 +19,7 @@ export const TableHeader: FC<Props> = ({ data }) => {
   const name = data.table.name
   const { showMode: _showMode, showDiff } = useUserEditingOrThrow()
 
-  const { diffItems } = useSchemaOrThrow()
+  const { operations } = useSchemaOrThrow()
   const showMode = data.showMode ?? _showMode
 
   const isTarget = data.targetColumnCardinalities !== undefined
@@ -30,9 +30,9 @@ export const TableHeader: FC<Props> = ({ data }) => {
     if (!showDiff) return undefined
     return getChangeStatus({
       tableId: name,
-      diffItems: diffItems ?? [],
+      operations: operations ?? [],
     })
-  }, [showDiff, name, diffItems])
+  }, [showDiff, name, operations])
 
   const diffStyle = useMemo(() => {
     if (!showDiff || !changeStatus) return undefined

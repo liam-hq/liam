@@ -8,7 +8,9 @@ description: Update a pull request description to match the project's PR templat
 
 Update the specified pull request's description to follow the project's PR template format defined in @.github/pull_request_template.md.
 
-**IMPORTANT**: Always read the exact content of @.github/pull_request_template.md first to understand the current template structure. Do not assume the template contains sections that are not actually present.
+**IMPORTANT**:
+- Always read the exact content of @.github/pull_request_template.md first to understand the current template structure. Do not assume the template contains sections that are not actually present.
+- **Write all PR descriptions in English**. This is critical for project consistency.
 
 ### Steps
 

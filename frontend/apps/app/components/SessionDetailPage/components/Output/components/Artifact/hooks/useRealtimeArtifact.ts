@@ -4,6 +4,7 @@ import { type Artifact, artifactSchema } from '@liam-hq/artifact'
 import { useCallback, useEffect, useState } from 'react'
 import * as v from 'valibot'
 import { createClient } from '@/libs/db/client'
+import { useViewMode } from '../../../../../hooks/viewMode'
 
 const artifactDataSchema = v.object({
   id: v.pipe(v.string(), v.uuid()),
@@ -11,10 +12,10 @@ const artifactDataSchema = v.object({
   artifact: artifactSchema,
   created_at: v.string(),
   updated_at: v.string(),
-  organization_id: v.pipe(v.string(), v.uuid()),
 })
 
 export function useRealtimeArtifact(designSessionId: string) {
+  const { isPublic } = useViewMode()
   const [artifact, setArtifact] = useState<Artifact | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<Error | null>(null)
@@ -31,13 +32,20 @@ export function useRealtimeArtifact(designSessionId: string) {
     const supabase = createClient()
     const { data, error: fetchError } = await supabase
       .from('artifacts')
-      .select('*')
+      // Explicitly specify columns as anon user has grants on individual columns, not all columns
+      .select('id, design_session_id, artifact, created_at, updated_at')
       .eq('design_session_id', designSessionId)
       .maybeSingle()
 
     if (fetchError) {
-      console.error('Error fetching artifact:', fetchError)
-      handleError(fetchError)
+      if (fetchError.code) {
+        console.error(
+          'Error fetching artifact:',
+          fetchError.message || fetchError,
+        )
+        handleError(fetchError)
+      }
+
       setLoading(false)
       return
     }
@@ -67,6 +75,9 @@ export function useRealtimeArtifact(designSessionId: string) {
 
   // Set up realtime subscription
   useEffect(() => {
+    // Skip realtime subscription for public view
+    if (isPublic) return
+
     const supabase = createClient()
 
     const channel = supabase
@@ -102,7 +113,7 @@ export function useRealtimeArtifact(designSessionId: string) {
     return () => {
       channel.unsubscribe()
     }
-  }, [designSessionId, handleError])
+  }, [designSessionId, handleError, isPublic])
 
   return {
     artifact,

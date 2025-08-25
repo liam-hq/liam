@@ -1,4 +1,4 @@
-import type { Table } from '@liam-hq/db-structure'
+import type { Table } from '@liam-hq/schema'
 import { DrawerDescription } from '@liam-hq/ui'
 import clsx from 'clsx'
 import { type FC, useMemo } from 'react'
@@ -12,16 +12,16 @@ type Props = {
 }
 
 export const Comment: FC<Props> = ({ table }) => {
-  const { diffItems } = useSchemaOrThrow()
+  const { operations } = useSchemaOrThrow()
   const { showDiff } = useUserEditingOrThrow()
 
   const changeStatus = useMemo(() => {
     if (!showDiff) return undefined
     return getChangeStatus({
       tableId: table.name,
-      diffItems: diffItems ?? [],
+      operations: operations ?? [],
     })
-  }, [showDiff, table.name, diffItems])
+  }, [showDiff, table.name, operations])
 
   const diffStyle = useDiffStyle(showDiff, changeStatus)
 

@@ -3,7 +3,7 @@
   "concurrency": "15",
   "tasks": {
     "@liam-hq/storybook#build": {
-      "dependsOn": ["^build", "@liam-hq/db-structure#build"],
+      "dependsOn": ["^build", "@liam-hq/schema#build"],
       "outputs": ["storybook-static"]
     },
     "build": {
@@ -19,18 +19,6 @@
         "TRIGGER_PROJECT_ID"
       ],
       "outputLogs": "errors-only"
-    },
-    "@liam-hq/jobs#deploy": {
-      "dependsOn": ["^build"],
-      "passThroughEnv": [
-        "SENTRY_AUTH_TOKEN",
-        "SENTRY_ORG",
-        "SENTRY_PROJECT",
-        "SENTRY_DSN",
-        "NEXT_PUBLIC_ENV_NAME",
-        "TRIGGER_ACCESS_TOKEN",
-        "TRIGGER_PROJECT_ID"
-      ]
     },
     "@liam-hq/docs#build": {
       "dependsOn": ["^build"],
@@ -54,7 +42,7 @@
       "dependsOn": ["^gen"],
       "outputLogs": "errors-only"
     },
-    "@liam-hq/db-structure#gen": {
+    "@liam-hq/schema#gen": {
       "dependsOn": ["^gen"],
       "outputs": ["src/parser/tbls/schema.generated.ts"],
       "outputLogs": "errors-only"

@@ -6,7 +6,7 @@ import {
   type Schema,
   type Table,
   type Tables,
-} from '@liam-hq/db-structure'
+} from '@liam-hq/schema'
 import type { MentionItem } from '../../../types'
 
 // Function to generate table candidates

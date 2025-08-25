@@ -4,12 +4,14 @@ import { workflowRunsSchema } from '@liam-hq/db'
 import { useCallback, useEffect, useState } from 'react'
 import * as v from 'valibot'
 import { createClient } from '@/libs/db/client'
+import { useViewMode } from '../hooks/viewMode'
 import type { WorkflowRunStatus } from '../types'
 
 export function useRealtimeWorkflowRuns(
   designSessionId: string,
   initialStatus: WorkflowRunStatus | null,
 ) {
+  const { isPublic } = useViewMode()
   const [error, setError] = useState<Error | null>(null)
 
   const handleError = useCallback((err: unknown) => {
@@ -23,6 +25,9 @@ export function useRealtimeWorkflowRuns(
   const [status, setStatus] = useState<WorkflowRunStatus | null>(initialStatus)
 
   useEffect(() => {
+    // Skip realtime subscription for public view
+    if (isPublic) return
+
     const supabase = createClient()
     const channel = supabase
       .channel(`workflow_runs:${designSessionId}`)
@@ -59,7 +64,7 @@ export function useRealtimeWorkflowRuns(
     return () => {
       channel.unsubscribe()
     }
-  }, [designSessionId, handleError])
+  }, [designSessionId, handleError, isPublic])
 
   return {
     status,

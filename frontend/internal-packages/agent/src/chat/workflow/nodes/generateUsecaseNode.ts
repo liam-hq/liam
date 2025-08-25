@@ -9,10 +9,7 @@ import { removeReasoningFromMessages } from '../../../utils/messageCleanup'
 import { getConfigurable } from '../shared/getConfigurable'
 import type { WorkflowState } from '../types'
 import { logAssistantMessage } from '../utils/timelineLogger'
-import {
-  createOrUpdateArtifact,
-  transformWorkflowStateToArtifact,
-} from '../utils/transformWorkflowStateToArtifact'
+import { transformWorkflowStateToArtifact } from '../utils/transformWorkflowStateToArtifact'
 import { withTimelineItemSync } from '../utils/withTimelineItemSync'
 
 /**
@@ -28,13 +25,12 @@ async function saveArtifacts(
   }
 
   const artifact = transformWorkflowStateToArtifact(state)
-  const artifactResult = await createOrUpdateArtifact(
-    state,
+  const artifactResult = await repositories.schema.upsertArtifact({
+    designSessionId: state.designSessionId,
     artifact,
-    repositories,
-  )
+  })
 
-  if (artifactResult.success) {
+  if (artifactResult.isOk()) {
     await logAssistantMessage(
       state,
       repositories,
@@ -76,7 +72,6 @@ export async function generateUsecaseNode(
     assistantRole,
   )
 
-  // Check if we have analyzed requirements
   if (!state.analyzedRequirements) {
     const errorMessage =
       'No analyzed requirements found. Cannot generate use cases.'
@@ -139,7 +134,6 @@ export async function generateUsecaseNode(
         generatedUsecases: response.usecases,
       }
 
-      // Save artifacts if usecases are successfully generated
       await saveArtifacts(updatedState, repositories, assistantRole)
 
       return updatedState

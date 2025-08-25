@@ -1,7 +1,7 @@
 import { getRepositoryBranches } from '@liam-hq/github'
 import { createClient } from '@/libs/db/server'
 
-export type Branch = {
+type Branch = {
   name: string
   protected: boolean
 }

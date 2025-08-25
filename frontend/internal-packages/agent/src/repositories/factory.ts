@@ -7,8 +7,9 @@ import type { Repositories } from './types'
  */
 export function createSupabaseRepositories(
   client: SupabaseClientType,
+  organizationId: string,
 ): Repositories {
   return {
-    schema: new SupabaseSchemaRepository(client),
+    schema: new SupabaseSchemaRepository(client, organizationId),
   }
 }

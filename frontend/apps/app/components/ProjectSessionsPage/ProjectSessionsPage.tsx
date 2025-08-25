@@ -19,39 +19,41 @@ export const ProjectSessionsPage: FC<Props> = async ({ projectId }) => {
 
   return (
     <div className={styles.container}>
-      <div className={styles.header}>
-        <div className={styles.titleSection}>
-          <h2 className={styles.title}>Sessions</h2>
-          <p className={styles.description}>Design sessions for this project</p>
-        </div>
-      </div>
-
-      <div className={styles.formSection}>
-        <h3 className={styles.formTitle}>Create New Session</h3>
+      <div className={styles.wrapper}>
+        <h1 className={styles.title}>
+          Create a new session
+          <br />
+          for this project
+        </h1>
         <SessionFormContainer
           projects={projects}
           defaultProjectId={projectId}
         />
-      </div>
 
-      {sessions.length > 0 ? (
-        <div className={styles.sessionsList}>
-          {sessions.map((session) => (
-            <SessionItem key={session.id} session={session} />
-          ))}
-        </div>
-      ) : (
-        <div className={styles.emptyState}>
-          <div className={styles.emptyIcon}>
-            <MessagesSquare size={48} />
+        {sessions.length > 0 && (
+          <div className={styles.recentsSection}>
+            <h2 className={styles.recentsTitle}>Session History</h2>
+            <div className={styles.sessionsList}>
+              {sessions.map((session) => (
+                <SessionItem key={session.id} session={session} />
+              ))}
+            </div>
           </div>
-          <h3 className={styles.emptyTitle}>No sessions yet</h3>
-          <p className={styles.emptyDescription}>
-            Start a new design session to explore ideas and generate artifacts
-            for this project.
-          </p>
-        </div>
-      )}
+        )}
+
+        {sessions.length === 0 && (
+          <div className={styles.emptyState}>
+            <div className={styles.emptyIcon}>
+              <MessagesSquare size={48} />
+            </div>
+            <h3 className={styles.emptyTitle}>No sessions yet</h3>
+            <p className={styles.emptyDescription}>
+              Start a new design session to explore ideas and generate artifacts
+              for this project.
+            </p>
+          </div>
+        )}
+      </div>
     </div>
   )
 }

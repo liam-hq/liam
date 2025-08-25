@@ -1,6 +1,6 @@
 'use client'
 
-import type { Schema } from '@liam-hq/db-structure'
+import type { Schema } from '@liam-hq/schema'
 import type { FC } from 'react'
 import type { ReviewComment } from '@/components/SessionDetailPage/types'
 import { CopyButton } from '../shared/CopyButton'

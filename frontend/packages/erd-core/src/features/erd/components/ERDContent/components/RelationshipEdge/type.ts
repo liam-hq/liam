@@ -1,4 +1,4 @@
-import type { Cardinality } from '@liam-hq/db-structure'
+import type { Cardinality } from '@liam-hq/schema'
 import type { Edge } from '@xyflow/react'
 
 type Data = {
