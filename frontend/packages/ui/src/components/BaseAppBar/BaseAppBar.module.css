@@ -1,0 +1,25 @@
+.wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  height: 52px;
+  padding: var(--spacing-3) var(--spacing-3half) var(--spacing-3)
+    var(--spacing-2);
+  background-color: var(--global-muted-background);
+  border-radius: var(--border-radius-base);
+  border-bottom: 1px solid var(--pane-border);
+}
+
+.leftSection {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  flex: 1;
+}
+
+.rightSection {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+}

@@ -28,6 +28,7 @@ export {
   Fingerprint,
   GitBranch,
   GitPullRequestArrow,
+  Globe,
   Group,
   Hash,
   Info,

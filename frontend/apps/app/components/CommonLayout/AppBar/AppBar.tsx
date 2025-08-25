@@ -1,3 +1,4 @@
+import { BaseAppBar } from '@liam-hq/ui'
 import type { FC } from 'react'
 import { ChevronRight } from '@/icons'
 import styles from './AppBar.module.css'
@@ -19,9 +20,9 @@ export const AppBar: FC<Props> = async ({
 
   const avatarUrl = authUser.user?.user_metadata?.avatar_url
   return (
-    <div className={styles.wrapper}>
-      <div className={styles.leftSection}>
-        {currentProjectId && (
+    <BaseAppBar
+      leftContent={
+        currentProjectId && (
           <div className={styles.breadcrumbs}>
             <ProjectsDropdownMenu currentProjectId={currentProjectId} />
             {currentBranchOrCommit && (
@@ -34,11 +35,10 @@ export const AppBar: FC<Props> = async ({
               </>
             )}
           </div>
-        )}
-      </div>
-      <div className={styles.rightSection}>
-        {avatarUrl && <UserDropdown avatarUrl={avatarUrl} />}
-      </div>
-    </div>
+        )
+      }
+      rightContent={avatarUrl && <UserDropdown avatarUrl={avatarUrl} />}
+      rightSectionClassName={styles.rightSection}
+    />
   )
 }

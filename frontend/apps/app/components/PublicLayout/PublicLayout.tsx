@@ -1,3 +1,4 @@
+import { BaseLayout } from '@liam-hq/ui'
 import type { FC, ReactNode } from 'react'
 import { PublicAppBar } from './PublicAppBar'
 import { PublicGlobalNav } from './PublicGlobalNav'
@@ -9,12 +10,12 @@ type Props = {
 
 export const PublicLayout: FC<Props> = ({ children }) => {
   return (
-    <div className={styles.layout}>
-      <PublicGlobalNav />
-      <div className={styles.mainContent}>
-        <PublicAppBar />
-        <main className={styles.content}>{children}</main>
-      </div>
-    </div>
+    <BaseLayout
+      className={styles.customLayout}
+      globalNav={<PublicGlobalNav />}
+      appBar={<PublicAppBar />}
+    >
+      {children}
+    </BaseLayout>
   )
 }

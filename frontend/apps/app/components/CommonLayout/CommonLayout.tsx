@@ -1,3 +1,4 @@
+import { BaseLayout } from '@liam-hq/ui'
 import type { ReactNode } from 'react'
 import { getOrganizationId } from '@/features/organizations/services/getOrganizationId'
 import { AppBar } from './AppBar'
@@ -32,19 +33,25 @@ export async function CommonLayout({
   )
 
   return (
-    <div className={styles.layout}>
+    <>
       {organization && <OrgCookie orgId={organization.id} />}
-      <GlobalNav
-        currentOrganization={organization}
-        organizations={organizations}
-      />
-      <div className={styles.mainContent}>
-        <AppBar
-          currentProjectId={projectId}
-          currentBranchOrCommit={branchOrCommit}
-        />
-        <main className={styles.content}>{children}</main>
-      </div>
-    </div>
+      <BaseLayout
+        className={styles.customLayout}
+        globalNav={
+          <GlobalNav
+            currentOrganization={organization}
+            organizations={organizations}
+          />
+        }
+        appBar={
+          <AppBar
+            currentProjectId={projectId}
+            currentBranchOrCommit={branchOrCommit}
+          />
+        }
+      >
+        {children}
+      </BaseLayout>
+    </>
   )
 }
