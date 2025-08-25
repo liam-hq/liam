@@ -29,7 +29,7 @@ export const ToolCalls: FC<Props> = ({ toolCalls }) => {
   return (
     <div className={styles.container}>
       {toolCalls.map((tc, _idx) => {
-        const args = tc.args as Record<string, unknown>
+        const args = tc.args
         const hasArgs = Object.keys(args).length > 0
         return (
           <div key={tc.name} className={styles.toolCall}>

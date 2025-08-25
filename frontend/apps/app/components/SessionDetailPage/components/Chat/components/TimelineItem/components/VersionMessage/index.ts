@@ -1,1 +1,0 @@
-export { VersionMessage } from './VersionMessage'

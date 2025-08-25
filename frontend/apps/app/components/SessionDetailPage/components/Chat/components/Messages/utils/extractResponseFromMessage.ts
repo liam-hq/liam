@@ -8,17 +8,17 @@ export function extractResponseFromMessage(message: Message): string {
 
   if (
     Array.isArray(message.content) &&
-    ['input_json_delta', 'tool_use'].includes(
-      message.content[0]?.type as string,
-    ) &&
+    ['input_json_delta', 'tool_use'].includes(message.content[0]?.type ?? '') &&
     message.content[0] &&
     'input' in message.content[0] &&
     message.content[0].input
   ) {
     try {
-      const parsedJson = parsePartialJson(message.content[0].input as string)
-      if (parsedJson.response) {
-        return parsedJson.response
+      let json: Record<string, unknown> = {}
+      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+      json = parsePartialJson(message.content[0].input as string) ?? {}
+      if ('response' in json && typeof json['response'] === 'string') {
+        return json['response']
       }
     } catch {
       // no-op
