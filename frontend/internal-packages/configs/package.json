@@ -11,7 +11,9 @@
   },
   "devDependencies": {
     "@biomejs/biome": "2.1.4",
-    "@eslint/compat": "1.3.2",
+    "@css-modules-kit/eslint-plugin": "0.2.1",
+    "@eslint/compat": "1.3.1",
+    "@eslint/css": "0.10.0",
     "@tsconfig/strictest": "2.0.5",
     "@typescript-eslint/eslint-plugin": "8.39.0",
     "@typescript-eslint/parser": "8.39.0",

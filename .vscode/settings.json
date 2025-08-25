@@ -29,6 +29,7 @@
       "source.fixAll.stylelint": "always"
     }
   },
+  "eslint.validate": ["css"],
   "prettier.requireConfig": false,
   "eslint.workingDirectories": [
     {

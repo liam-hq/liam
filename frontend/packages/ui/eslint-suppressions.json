@@ -1,1 +1,27 @@
-{}
+{
+  "src/components/Avatar/Avatar.module.css": {
+    "css-modules-kit/no-unused-class-names": {
+      "count": 1
+    }
+  },
+  "src/components/Callout/Callout.module.css": {
+    "css-modules-kit/no-unused-class-names": {
+      "count": 5
+    }
+  },
+  "src/components/Code/Code.module.css": {
+    "css-modules-kit/no-unused-class-names": {
+      "count": 11
+    }
+  },
+  "src/components/RemoveButton/RemoveButton.module.css": {
+    "css-modules-kit/no-unused-class-names": {
+      "count": 11
+    }
+  },
+  "src/components/RoundBadge/RoundBadge.module.css": {
+    "css-modules-kit/no-unused-class-names": {
+      "count": 4
+    }
+  }
+}

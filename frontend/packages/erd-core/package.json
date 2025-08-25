@@ -52,8 +52,9 @@
     "gen:css": "tcm src",
     "lint": "concurrently \"pnpm:lint:*\"",
     "lint:biome": "biome check .",
-    "lint:eslint": "eslint .",
+    "lint:eslint": "eslint . --prune-suppressions",
     "lint:tsc": "tsc --noEmit",
+    "suppressions": "eslint --suppress-all --fix --max-warnings 0",
     "test": "vitest --watch=false"
   }
 }
