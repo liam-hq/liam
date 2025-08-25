@@ -1,4 +1,4 @@
-import { DEFAULT_RECURSION_LIMIT } from './chat/workflow/shared/langGraphUtils'
+import { DEFAULT_RECURSION_LIMIT } from './chat/workflow/shared/workflowConstants'
 import type { WorkflowConfigurable } from './chat/workflow/types'
 import { createGraph } from './createGraph'
 import {

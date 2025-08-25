@@ -4,7 +4,7 @@ import type { CompiledStateGraph } from '@langchain/langgraph'
 import { END } from '@langchain/langgraph'
 import { err, errAsync, ok, okAsync, ResultAsync } from 'neverthrow'
 import { v4 as uuidv4 } from 'uuid'
-import { DEFAULT_RECURSION_LIMIT } from '../chat/workflow/shared/langGraphUtils'
+import { DEFAULT_RECURSION_LIMIT } from '../chat/workflow/shared/workflowConstants'
 import type {
   WorkflowConfigurable,
   WorkflowState,
