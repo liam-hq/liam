@@ -1,4 +1,10 @@
-import { SystemMessage, ToolMessage } from '@langchain/core/messages'
+import { dispatchCustomEvent } from '@langchain/core/callbacks/dispatch'
+import {
+  AIMessage,
+  AIMessageChunk,
+  SystemMessage,
+  ToolMessage,
+} from '@langchain/core/messages'
 import type { RunnableConfig } from '@langchain/core/runnables'
 import { Command, END } from '@langchain/langgraph'
 import { ChatOpenAI } from '@langchain/openai'
@@ -32,14 +38,50 @@ export async function classifyMessage(
 
   const invoke = ResultAsync.fromThrowable(
     (configurable: WorkflowConfigurable) => {
-      return model.invoke([new SystemMessage(prompt), ...state.messages], {
+      return model.stream([new SystemMessage(prompt), ...state.messages], {
         configurable,
       })
     },
     (error) => (error instanceof Error ? error : new Error(String(error))),
   )
 
-  const result = await getConfigurable(config).asyncAndThen(invoke)
+  const result = await getConfigurable(config)
+    .asyncAndThen(invoke)
+    .andThen((stream) => {
+      return ResultAsync.fromPromise(
+        (async () => {
+          // OpenAI ("chatcmpl-...") and LangGraph ("run-...") use different id formats,
+          // so we overwrite with a UUID to unify chunk ids for consistent handling.
+          const id = crypto.randomUUID()
+          let accumulatedChunk: AIMessageChunk | null = null
+
+          for await (const _chunk of stream) {
+            const chunk = new AIMessageChunk({ ..._chunk, id, name: 'lead' })
+            await dispatchCustomEvent('messages', chunk)
+
+            // Accumulate chunks using concat method
+            accumulatedChunk = accumulatedChunk
+              ? accumulatedChunk.concat(chunk)
+              : chunk
+          }
+
+          // Convert the final accumulated chunk to AIMessage
+          const response = accumulatedChunk
+            ? new AIMessage({
+                content: accumulatedChunk.content,
+                additional_kwargs: accumulatedChunk.additional_kwargs,
+                ...(accumulatedChunk.tool_calls && {
+                  tool_calls: accumulatedChunk.tool_calls,
+                }),
+                ...(accumulatedChunk.name && { name: accumulatedChunk.name }),
+              })
+            : new AIMessage('')
+
+          return response
+        })(),
+        (error) => (error instanceof Error ? error : new Error(String(error))),
+      )
+    })
 
   if (result.isErr()) {
     throw new WorkflowTerminationError(result.error, 'classifyMessage')
