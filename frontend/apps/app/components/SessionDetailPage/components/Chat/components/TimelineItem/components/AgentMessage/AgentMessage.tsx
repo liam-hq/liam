@@ -4,7 +4,7 @@ import type { Database } from '@liam-hq/db'
 import clsx from 'clsx'
 import type { FC, ReactNode } from 'react'
 import { MarkdownContent } from '@/components/MarkdownContent'
-import { CopyButton } from '@/components/SessionDetailPage/components/Output/components/shared/CopyButton'
+import { CopyButton } from '@/components/SessionDetailPage/components/CopyButton'
 import styles from './AgentMessage.module.css'
 import { DBAgent, PMAgent, QAAgent } from './components/AgentAvatar'
 
