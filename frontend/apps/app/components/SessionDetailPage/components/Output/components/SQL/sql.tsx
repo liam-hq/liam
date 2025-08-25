@@ -3,7 +3,7 @@
 import type { Schema } from '@liam-hq/schema'
 import type { FC } from 'react'
 import type { ReviewComment } from '@/components/SessionDetailPage/types'
-import { CopyButton } from '../shared/CopyButton'
+import { CopyButton } from '../../../CopyButton'
 import { useSql } from './hooks/useSql'
 import { MigrationsViewer } from './MigrationsViewer'
 import styles from './SQL.module.css'
