@@ -9,6 +9,7 @@
     "@codemirror/merge": "6.10.2",
     "@codemirror/state": "6.5.2",
     "@codemirror/view": "6.38.1",
+    "@langchain/core": "0.3.72",
     "@lezer/highlight": "1.2.1",
     "@liam-hq/agent": "workspace:*",
     "@liam-hq/artifact": "workspace:*",
