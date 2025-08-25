@@ -12978,7 +12978,7 @@ snapshots:
       consola: 3.4.2
       detect-libc: 2.0.4
       https-proxy-agent: 7.0.6
-      node-fetch: 2.7.0
+      node-fetch: 2.6.9
       nopt: 8.1.0
       semver: 7.7.2
       tar: 7.4.3
