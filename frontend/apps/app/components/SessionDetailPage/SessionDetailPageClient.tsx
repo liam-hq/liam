@@ -6,7 +6,6 @@ import { type FC, useCallback, useEffect, useRef, useState } from 'react'
 import { Chat } from './components/Chat'
 import { Output } from './components/Output'
 import { useRealtimeArtifact } from './components/Output/components/Artifact/hooks/useRealtimeArtifact'
-import { OUTPUT_TABS } from './components/Output/constants'
 import { OutputPlaceholder } from './components/OutputPlaceholder'
 import { useRealtimeTimelineItems } from './hooks/useRealtimeTimelineItems'
 import { useRealtimeVersionsWithSchema } from './hooks/useRealtimeVersionsWithSchema'
@@ -64,12 +63,12 @@ export const SessionDetailPageClient: FC<Props> = ({
     [setSelectedVersion],
   )
 
-  const handleViewVersion = useCallback((versionId: string) => {
-    const version = versions.find((version) => version.id === versionId)
-    if (!version) return
+  // const handleViewVersion = useCallback((versionId: string) => {
+  //   const version = versions.find((version) => version.id === versionId)
+  //   if (!version) return
 
-    setSelectedVersion(version)
-  }, [])
+  //   setSelectedVersion(version)
+  // }, [])
 
   const { timelineItems, addOrUpdateTimelineItem } = useRealtimeTimelineItems(
     designSessionId,
@@ -80,9 +79,9 @@ export const SessionDetailPageClient: FC<Props> = ({
 
   const [activeTab, setActiveTab] = useState<string | undefined>(undefined)
 
-  const handleArtifactLinkClick = useCallback(() => {
-    setActiveTab(OUTPUT_TABS.ARTIFACT)
-  }, [])
+  // const handleArtifactLinkClick = useCallback(() => {
+  //   setActiveTab(OUTPUT_TABS.ARTIFACT)
+  // }, [])
 
   const hasSelectedVersion = selectedVersion !== null
 
@@ -96,7 +95,7 @@ export const SessionDetailPageClient: FC<Props> = ({
     initialWorkflowRunStatus,
   )
 
-  const { isStreaming, start } = useStream()
+  const { isStreaming, messages, start } = useStream()
   // Track if initial workflow has been triggered to prevent multiple executions
   const hasTriggeredInitialWorkflow = useRef(false)
 
@@ -143,13 +142,10 @@ export const SessionDetailPageClient: FC<Props> = ({
         <div className={styles.chatSection}>
           <Chat
             schemaData={displayedSchema}
-            designSessionId={designSessionId}
+            messages={messages}
             timelineItems={timelineItems}
             isWorkflowRunning={status === 'pending' || isStreaming}
             onMessageSend={addOrUpdateTimelineItem}
-            onVersionView={handleViewVersion}
-            onArtifactLinkClick={handleArtifactLinkClick}
-            isDeepModelingEnabled={isDeepModelingEnabled}
           />
         </div>
         {hasSelectedVersion && (
