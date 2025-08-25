@@ -107,9 +107,6 @@ importers:
       '@liam-hq/github':
         specifier: workspace:*
         version: link:../../internal-packages/github
-      '@liam-hq/pglite-server':
-        specifier: workspace:*
-        version: link:../../packages/pglite-server
       '@liam-hq/schema':
         specifier: workspace:*
         version: link:../../packages/schema
