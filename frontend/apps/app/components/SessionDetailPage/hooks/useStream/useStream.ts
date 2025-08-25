@@ -8,6 +8,7 @@ import { parseSse } from './parseSse'
 
 const toMessageDict = (chunk: BaseMessage): Message => {
   const { type, data } = chunk.toDict()
+  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
   return { ...data, type } as Message
 }
 
