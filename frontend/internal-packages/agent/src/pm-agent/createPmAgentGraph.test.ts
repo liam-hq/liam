@@ -1,29 +1,30 @@
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
-import { createDbAgentGraph } from './createDbAgentGraph'
+import { createPmAgentGraph } from './createPmAgentGraph'
 
-describe('createDbAgentGraph', () => {
+describe('createPmAgentGraph', () => {
   const expectedMermaidDiagram = `%%{init: {'flowchart': {'curve': 'linear'}}}%%
 graph TD;
 	__start__([<p>__start__</p>]):::first
-	designSchema(designSchema)
-	invokeSchemaDesignTool(invokeSchemaDesignTool)
+	analyzeRequirements(analyzeRequirements)
+	invokeSaveArtifactTool(invokeSaveArtifactTool)
 	__end__([<p>__end__</p>]):::last
-	__start__ --> designSchema;
-	invokeSchemaDesignTool --> designSchema;
-	designSchema -.-> invokeSchemaDesignTool;
-	designSchema -. &nbsp;generateTestcase&nbsp; .-> __end__;
+	__start__ --> analyzeRequirements;
+	invokeSaveArtifactTool --> analyzeRequirements;
+	analyzeRequirements -.-> invokeSaveArtifactTool;
+	analyzeRequirements -. &nbsp;END&nbsp; .-> __end__;
+	analyzeRequirements -.-> analyzeRequirements;
 	classDef default fill:#f2f0ff,line-height:1.2;
 	classDef first fill-opacity:0;
 	classDef last fill:#bfb6fc;
 `
 
-  it('should create and return a compiled DB Agent subgraph', async () => {
-    const compiledDbAgentGraph = createDbAgentGraph()
-    expect(compiledDbAgentGraph).toBeDefined()
+  it('should create and return a compiled PM Agent subgraph', async () => {
+    const compiledPmAgentGraph = createPmAgentGraph()
+    expect(compiledPmAgentGraph).toBeDefined()
 
-    const graph = await compiledDbAgentGraph.getGraphAsync()
+    const graph = await compiledPmAgentGraph.getGraphAsync()
     const mermaid = graph.drawMermaid()
     expect(mermaid).toEqual(expectedMermaidDiagram)
   })

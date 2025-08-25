@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { createQaAgentGraph } from './createQaAgentGraph'
 
@@ -27,50 +29,11 @@ graph TD;
     expect(mermaid).toEqual(expectedMermaidDiagram)
   })
 
-  it('should have correct node structure for QA testing process', async () => {
-    const compiledQaAgentGraph = createQaAgentGraph()
-    const graph = await compiledQaAgentGraph.getGraphAsync()
+  it('should have the same diagram in README.md as the generated graph', () => {
+    const readmePath = join(__dirname, '..', '..', 'README.md')
+    const readmeContent = readFileSync(readmePath, 'utf-8')
 
-    // Check that required nodes exist
-    const nodeNames = Object.keys(graph.nodes)
-    expect(nodeNames).toContain('generateTestcase')
-    expect(nodeNames).toContain('prepareDML')
-    expect(nodeNames).toContain('validateSchema')
-  })
-
-  it('should start with generateTestcase node', async () => {
-    const compiledQaAgentGraph = createQaAgentGraph()
-    const graph = await compiledQaAgentGraph.getGraphAsync()
-
-    // Check that the graph starts with generateTestcase by examining edges from START
-    const startEdges = graph.edges.filter((edge) => edge.source === '__start__')
-    const targetNodes = startEdges.map((edge) => edge.target)
-    expect(targetNodes).toContain('generateTestcase')
-  })
-
-  it('should have linear flow from generateTestcase to validateSchema', async () => {
-    const compiledQaAgentGraph = createQaAgentGraph()
-    const graph = await compiledQaAgentGraph.getGraphAsync()
-
-    const generateTestcaseEdges = graph.edges.filter(
-      (edge) => edge.source === 'generateTestcase',
-    )
-    expect(
-      generateTestcaseEdges.some((edge) => edge.target === 'prepareDML'),
-    ).toBe(true)
-
-    const prepareDMLEdges = graph.edges.filter(
-      (edge) => edge.source === 'prepareDML',
-    )
-    expect(
-      prepareDMLEdges.some((edge) => edge.target === 'validateSchema'),
-    ).toBe(true)
-
-    const validateSchemaEdges = graph.edges.filter(
-      (edge) => edge.source === 'validateSchema',
-    )
-    expect(validateSchemaEdges.some((edge) => edge.target === '__end__')).toBe(
-      true,
-    )
+    // Check that the README contains the expected Mermaid diagram
+    expect(readmeContent).toContain(expectedMermaidDiagram)
   })
 })
