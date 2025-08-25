@@ -44,12 +44,6 @@ export const Chat: FC<Props> = ({
       timestamp: new Date(),
     }
     onMessageSend(optimisticMessage)
-
-    // await start({
-    //   designSessionId,
-    //   userInput: content,
-    //   isDeepModelingEnabled,
-    // })
   }
 
   const handleSendMessage = (content: string) => {
@@ -66,6 +60,7 @@ export const Chat: FC<Props> = ({
     })
   }
 
+  // TODO: After migrating from TimelineItem to Messages, improve and implement this when message grouping becomes necessary
   // Determines the role for grouping purposes
   // Messages with 'role' property use their role, others default to 'db'
   // const getEffectiveRole = (entry: TimelineItemEntry): string => {
@@ -144,32 +139,6 @@ export const Chat: FC<Props> = ({
   return (
     <div className={styles.wrapper}>
       <div className={styles.messagesContainer} ref={containerRef}>
-        {/* {groupedTimelineItems.map((item) => {
-          if (Array.isArray(item)) {
-            // Render grouped agent messages using modified TimelineItem
-            return item.map((message, messageIndex) => (
-              <TimelineItem
-                key={message.id}
-                {...message}
-                showHeader={messageIndex === 0}
-                {...(message.type === 'schema_version' && {
-                  onView: onVersionView,
-                })}
-                onArtifactLinkClick={onArtifactLinkClick}
-              />
-            ))
-          }
-
-          return (
-            <TimelineItem
-              key={item.id}
-              {...item}
-              {...(item.type === 'error' && { onRetry })}
-              {...(item.type === 'schema_version' && { onView: onVersionView })}
-              onArtifactLinkClick={onArtifactLinkClick}
-            />
-          )
-        })} */}
         <Messages messages={messages} />
         {isWorkflowRunning && <WorkflowRunningIndicator />}
       </div>

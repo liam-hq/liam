@@ -63,6 +63,7 @@ export const SessionDetailPageClient: FC<Props> = ({
     [setSelectedVersion],
   )
 
+  // TODO: Connect to Messages component once migration path from TimelineItems to Messages is established
   // const handleViewVersion = useCallback((versionId: string) => {
   //   const version = versions.find((version) => version.id === versionId)
   //   if (!version) return
@@ -79,6 +80,7 @@ export const SessionDetailPageClient: FC<Props> = ({
 
   const [activeTab, setActiveTab] = useState<string | undefined>(undefined)
 
+  // TODO: Connect to Messages component once migration path from TimelineItems to Messages is established
   // const handleArtifactLinkClick = useCallback(() => {
   //   setActiveTab(OUTPUT_TABS.ARTIFACT)
   // }, [])
