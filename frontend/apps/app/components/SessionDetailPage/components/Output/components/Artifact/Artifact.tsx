@@ -6,7 +6,7 @@ import ReactMarkdown from 'react-markdown'
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
 import rehypeRaw from 'rehype-raw'
 import remarkGfm from 'remark-gfm'
-import { CopyButton } from '../shared/CopyButton'
+import { CopyButton } from '../../../CopyButton'
 import styles from './Artifact.module.css'
 import { TableOfContents } from './TableOfContents/TableOfContents'
 import {

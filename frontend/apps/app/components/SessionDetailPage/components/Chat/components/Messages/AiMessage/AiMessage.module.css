@@ -1,0 +1,477 @@
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  gap: var(--spacing-2);
+}
+
+.avatarContainer {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding: 0;
+  min-height: 24px;
+  gap: var(--spacing-1);
+}
+
+.agentName {
+  font-family: var(--main-font);
+  font-weight: 500;
+  font-size: var(--font-size-3);
+  line-height: 1.6;
+  color: var(--global-body-text);
+  margin-left: var(--spacing-1);
+}
+
+.contentContainer {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.messagesWrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--spacing-2);
+  width: 100%;
+  max-width: 100%;
+  position: relative;
+}
+
+.markdownWrapper {
+  font-family: var(--main-font);
+  font-weight: 400;
+  font-size: var(--font-size-4);
+  line-height: 1.8em;
+  color: var(--global-body-text);
+  width: 100%;
+  max-width: 100%;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+.responseMessageWrapper {
+  display: flex;
+  flex-direction: column;
+}
+
+.copyButtonWrapper {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: var(--spacing-1);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  pointer-events: none;
+}
+
+.responseMessageWrapper:hover .copyButtonWrapper {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Exclude code blocks from text wrapping */
+.markdownWrapper :global(pre),
+.markdownWrapper :global(pre code),
+.markdownWrapper :global(pre > div) {
+  word-wrap: normal !important;
+  overflow-wrap: normal !important;
+  word-break: normal !important;
+}
+
+/* Headings */
+.markdownWrapper :global(h1),
+.markdownWrapper :global(h2),
+.markdownWrapper :global(h3),
+.markdownWrapper :global(h4),
+.markdownWrapper :global(h5),
+.markdownWrapper :global(h6) {
+  margin-top: 1.5rem;
+  margin-bottom: 1rem;
+  font-weight: 600;
+  line-height: 1.25;
+  color: var(--global-body-text);
+}
+
+/* First element spacing adjustments */
+.markdownWrapper :global(*:first-child) {
+  margin-top: 0;
+}
+
+.markdownWrapper :global(h1) {
+  margin: 0.67em 0;
+  font-weight: 600;
+  padding-bottom: 0.3em;
+  font-size: 2em;
+  border-bottom: 1px solid var(--global-border);
+}
+
+.markdownWrapper :global(h2) {
+  font-weight: 600;
+  padding-bottom: 0.3em;
+  font-size: 1.5em;
+  border-bottom: 1px solid var(--global-border);
+}
+
+.markdownWrapper :global(h3) {
+  font-weight: 600;
+  font-size: 1.25em;
+}
+
+.markdownWrapper :global(h4) {
+  font-weight: 600;
+  font-size: 1em;
+}
+
+.markdownWrapper :global(h5) {
+  font-weight: 600;
+  font-size: 0.875em;
+}
+
+.markdownWrapper :global(h6) {
+  font-weight: 600;
+  font-size: 0.85em;
+  color: var(--global-body-text-subtle);
+}
+
+/* Paragraphs */
+.markdownWrapper :global(p) {
+  margin-top: 0;
+  margin-bottom: var(--spacing-2);
+}
+
+/* Lists */
+.markdownWrapper :global(ul),
+.markdownWrapper :global(ol) {
+  margin-top: 0;
+  margin-bottom: var(--spacing-2);
+  padding-left: 2em;
+}
+
+.markdownWrapper :global(ul) {
+  list-style-type: disc;
+}
+
+.markdownWrapper :global(ol) {
+  list-style-type: decimal;
+}
+
+.markdownWrapper :global(ol ol),
+.markdownWrapper :global(ul ol) {
+  list-style-type: lower-roman;
+}
+
+.markdownWrapper :global(ul ul),
+.markdownWrapper :global(ol ul) {
+  list-style-type: circle;
+}
+
+.markdownWrapper :global(ul ul ul),
+.markdownWrapper :global(ul ol ul),
+.markdownWrapper :global(ol ul ul),
+.markdownWrapper :global(ol ol ul) {
+  list-style-type: square;
+}
+
+.markdownWrapper :global(ul ul ol),
+.markdownWrapper :global(ul ol ol),
+.markdownWrapper :global(ol ul ol),
+.markdownWrapper :global(ol ol ol) {
+  list-style-type: lower-alpha;
+}
+
+.markdownWrapper :global(li + li) {
+  margin-top: 0.25em;
+}
+
+/* Code */
+.markdownWrapper :global(code),
+.markdownWrapper :global(tt) {
+  padding: 0.2em 0.4em;
+  margin: 0;
+  font-size: 85%;
+  white-space: break-spaces;
+  background-color: var(--global-foreground-subtle);
+  border-radius: var(--border-radius-small);
+  font-family: var(--code-font);
+}
+
+/* Inline code within paragraphs and other elements */
+.markdownWrapper :global(p > code),
+.markdownWrapper :global(li > code),
+.markdownWrapper :global(h1 > code),
+.markdownWrapper :global(h2 > code),
+.markdownWrapper :global(h3 > code),
+.markdownWrapper :global(h4 > code),
+.markdownWrapper :global(h5 > code),
+.markdownWrapper :global(h6 > code),
+.markdownWrapper :global(a > code),
+.markdownWrapper :global(em > code),
+.markdownWrapper :global(strong > code) {
+  display: inline;
+  padding: 0.1em 0.3em;
+  vertical-align: baseline;
+  color: #e3e3e3;
+  background-color: var(--overlay-10);
+  border-radius: 3px;
+  font-family: var(--code-font, monospace);
+  font-size: 85%;
+}
+
+.markdownWrapper :global(pre) {
+  margin-bottom: var(--spacing-2);
+  width: 100%;
+  max-width: 100%;
+  position: relative;
+  overflow-x: auto;
+  border-radius: var(--border-radius-base);
+}
+
+/* Add a subtle scrollbar for code blocks that overflow */
+.markdownWrapper :global(pre::-webkit-scrollbar) {
+  height: var(--scrollbar-webkit-height);
+  background-color: var(--scrollbar-track-background);
+}
+
+.markdownWrapper :global(pre::-webkit-scrollbar-thumb) {
+  background-color: var(--scrollbar-thumb-background-hover);
+  border-radius: var(--scrollbar-webkit-thumb-border-radius);
+}
+
+.markdownWrapper :global(pre::-webkit-scrollbar-track) {
+  background-color: var(--scrollbar-track-background);
+}
+
+.markdownWrapper :global(pre code) {
+  display: inline-block;
+  max-width: 100%;
+  padding: 0;
+  margin: 0;
+  overflow: visible;
+  line-height: inherit;
+  word-wrap: normal !important;
+  word-break: normal !important;
+  white-space: pre !important;
+  background-color: transparent;
+  border: 0;
+  font-size: 12px;
+}
+
+/* Ensure SyntaxHighlighter's container displays properly */
+.markdownWrapper :global(pre > div) {
+  white-space: pre !important;
+  overflow-x: auto !important;
+  word-wrap: normal !important;
+  word-break: normal !important;
+}
+
+/* Links */
+.markdownWrapper :global(a) {
+  background-color: transparent;
+  color: var(--primary-accent);
+  text-decoration: none;
+}
+
+.markdownWrapper :global(a:hover) {
+  text-decoration: underline;
+}
+
+/* Images */
+.markdownWrapper :global(img) {
+  border-style: none;
+  max-width: 100%;
+  box-sizing: content-box;
+  border-radius: var(--border-radius-base);
+}
+
+/* Blockquotes */
+.markdownWrapper :global(blockquote) {
+  margin: 0 0 var(--spacing-2) 0;
+  padding: 0 var(--spacing-2);
+  color: var(--global-body-text-subtle);
+  border-left: 0.25em solid var(--global-border);
+}
+
+.markdownWrapper :global(blockquote) > :global(:first-child) {
+  margin-top: 0;
+}
+
+.markdownWrapper :global(blockquote) > :global(:last-child) {
+  margin-bottom: 0;
+}
+
+/* Tables */
+.markdownWrapper :global(table) {
+  border-spacing: 0;
+  border-collapse: separate;
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  margin-bottom: var(--spacing-3);
+  border: 1px solid var(--global-border);
+  border-radius: var(--border-radius-base);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* Table scrollbar styling */
+.markdownWrapper :global(table::-webkit-scrollbar) {
+  height: var(--scrollbar-webkit-height);
+  background-color: var(--scrollbar-track-background);
+}
+
+.markdownWrapper :global(table::-webkit-scrollbar-thumb) {
+  background-color: var(--scrollbar-thumb-background-hover);
+  border-radius: var(--scrollbar-webkit-thumb-border-radius);
+}
+
+.markdownWrapper :global(table::-webkit-scrollbar-track) {
+  background-color: var(--scrollbar-track-background);
+}
+
+.markdownWrapper :global(table th) {
+  font-weight: 600;
+  background-color: var(--global-foreground-subtle);
+  color: var(--global-body-text);
+  text-align: left;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  border-bottom: 2px solid var(--global-border);
+}
+
+.markdownWrapper :global(table th),
+.markdownWrapper :global(table td) {
+  padding: var(--spacing-1half) var(--spacing-2);
+  border: 1px solid var(--global-border);
+  border-top: none;
+  border-left: none;
+}
+
+.markdownWrapper :global(table th:last-child),
+.markdownWrapper :global(table td:last-child) {
+  border-right: none;
+}
+
+.markdownWrapper :global(table tr:last-child td) {
+  border-bottom: none;
+}
+
+/* Align numeric content to the right */
+.markdownWrapper :global(table td:only-child),
+.markdownWrapper :global(table td:first-child:last-child) {
+  text-align: left;
+}
+
+.markdownWrapper :global(table td:not(:only-child)) {
+  text-align: left;
+}
+
+/* Numeric content detection (approximate) */
+.markdownWrapper :global(table td:not(:only-child):not(:first-child)) {
+  text-align: right;
+}
+
+.markdownWrapper :global(table tr) {
+  background-color: var(--global-background);
+  transition: background-color 0.15s ease;
+}
+
+.markdownWrapper :global(table tr:nth-child(2n)) {
+  background-color: rgba(var(--global-foreground-subtle-rgb, 0, 0, 0), 0.3);
+}
+
+.markdownWrapper :global(table tr:hover) {
+  background-color: rgba(var(--primary-accent-rgb, 0, 0, 0), 0.05);
+}
+
+/* Task Lists */
+.markdownWrapper :global(.task-list-item) {
+  list-style-type: none;
+}
+
+.markdownWrapper :global(.task-list-item + .task-list-item) {
+  margin-top: 0.25rem;
+}
+
+.markdownWrapper :global(.task-list-item-checkbox) {
+  margin: 0 0.2em 0.25em -1.4em;
+  vertical-align: middle;
+}
+
+/* Horizontal Rule */
+.markdownWrapper :global(hr) {
+  box-sizing: content-box;
+  overflow: hidden;
+  background: transparent;
+  border-bottom: 1px solid var(--global-border);
+  height: 0.25em;
+  padding: 0;
+  margin: var(--spacing-3) 0;
+  background-color: var(--global-border);
+  border: 0;
+}
+
+/* Emphasis */
+.markdownWrapper :global(strong) {
+  font-weight: 600;
+}
+
+.markdownWrapper :global(em) {
+  font-style: italic;
+}
+
+/* Strikethrough */
+.markdownWrapper :global(del) {
+  text-decoration: line-through;
+}
+
+/* Definition Lists */
+.markdownWrapper :global(dl) {
+  padding: 0;
+}
+
+.markdownWrapper :global(dl dt) {
+  padding: 0;
+  margin-top: var(--spacing-2);
+  font-size: 1em;
+  font-style: italic;
+  font-weight: 600;
+}
+
+.markdownWrapper :global(dl dd) {
+  padding: 0 var(--spacing-2);
+  margin-bottom: var(--spacing-2);
+}
+
+/* Special formatting for task list items */
+.markdownWrapper :global(ul) :global(li.task-list-item) {
+  list-style-type: none;
+  padding-left: 0;
+}
+
+.markdownWrapper :global(ul) :global(li.task-list-item::before) {
+  content: none;
+}
+
+/* Adjustments for GitHub Flavored Markdown */
+.markdownWrapper :global(li:has(input[type='checkbox'])) {
+  list-style-type: none;
+}
+
+.markdownWrapper :global(li:has(input[type='checkbox'])::before) {
+  content: none;
+}
+
+.markdownWrapper :global(ul > li:has(input[type='checkbox'])) {
+  position: relative;
+  padding-left: 1.5em;
+}
+
+.markdownWrapper :global(input[type='checkbox']) {
+  margin-right: 0.4em;
+  position: absolute;
+  left: 0;
+  top: 0.25em;
+}

@@ -1,9 +1,16 @@
-import type { StoredMessage } from '@langchain/core/messages'
+import type { BaseMessage } from '@langchain/core/messages'
+import type { Message } from '@langchain/langgraph-sdk'
 import { err, ok } from 'neverthrow'
 import { useCallback, useRef, useState } from 'react'
 import { ERROR_MESSAGES } from '../../components/Chat/constants/chatConstants'
 import { MessageTupleManager } from './MessageTupleManager'
 import { parseSse } from './parseSse'
+
+const toMessageDict = (chunk: BaseMessage): Message => {
+  const { type, data } = chunk.toDict()
+  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+  return { ...data, type } as Message
+}
 
 type ChatRequest = {
   userInput: string
@@ -16,7 +23,7 @@ type ChatRequest = {
  * @see https://github.com/langchain-ai/langgraphjs/blob/3320793bffffa02682227644aefbee95dee330a2/libs/sdk/src/react/stream.tsx
  */
 export const useStream = () => {
-  const [messages, setMessages] = useState<StoredMessage[]>([])
+  const [messages, setMessages] = useState<Message[]>([])
   const messageManagerRef = useRef(new MessageTupleManager())
 
   const [isStreaming, setIsStreaming] = useState(false)
@@ -63,7 +70,7 @@ export const useStream = () => {
 
           if (!chunk) return newMessages
 
-          const message = chunk.toDict()
+          const message = toMessageDict(chunk)
           if (index === undefined) {
             newMessages.push(message)
           } else {
