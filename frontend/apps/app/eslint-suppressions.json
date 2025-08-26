@@ -227,29 +227,9 @@
       "count": 3
     }
   },
-  "components/SessionDetailPage/components/Chat/components/TimelineItem/components/AgentMessage/AgentMessage.module.css": {
-    "css-modules-kit/no-unused-class-names": {
-      "count": 6
-    }
-  },
-  "components/SessionDetailPage/components/Chat/components/TimelineItem/components/AgentMessage/components/MessageOptionButtons/MessageOptionButton.module.css": {
-    "css-modules-kit/no-unused-class-names": {
-      "count": 5
-    }
-  },
-  "components/SessionDetailPage/components/Chat/components/TimelineItem/components/AgentMessage/components/MessageOptionButtons/MessageOptionButton.tsx": {
-    "@typescript-eslint/consistent-type-assertions": {
-      "count": 2
-    }
-  },
   "components/SessionDetailPage/components/Chat/factories.ts": {
     "@typescript-eslint/consistent-type-assertions": {
       "count": 5
-    }
-  },
-  "components/SessionDetailPage/components/Chat/services/aiMessageService.ts": {
-    "no-throw-error/no-throw-error": {
-      "count": 2
     }
   },
   "components/SessionDetailPage/components/Output/components/Artifact/Artifact.module.css": {
