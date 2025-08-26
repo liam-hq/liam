@@ -7,7 +7,7 @@ import { CopyButton } from '@/components/SessionDetailPage/components/CopyButton
 import { extractReasoningFromMessage } from '../utils/extractReasoningFromMessage'
 import { extractResponseFromMessage } from '../utils/extractResponseFromMessage'
 import { extractToolCallsFromMessage } from '../utils/extractToolCallsFromMessage'
-import { DBAgent, PMAgent, QAAgent } from './AgentAvatar'
+import { DBAgent, LeadAgent, PMAgent, QAAgent } from './AgentAvatar'
 import styles from './AiMessage.module.css'
 import { ReasoningMessage } from './ReasoningMessage'
 import { ToolCalls } from './ToolCalls'
@@ -20,18 +20,15 @@ const getAgentInfo = (name: string | undefined) => {
     return { avatar: <DBAgent />, name: 'DB Agent' }
   }
 
-  return (
-    match(parsed.output)
-      .with('db', () => ({
-        avatar: <DBAgent />,
-        name: 'DB Agent',
-      }))
-      .with('pm', () => ({ avatar: <PMAgent />, name: 'PM Agent' }))
-      .with('qa', () => ({ avatar: <QAAgent />, name: 'QA Agent' }))
-      // TODO: Prepare <LeadAgent />
-      .with('lead', () => ({ avatar: <QAAgent />, name: 'Lead Agent' }))
-      .exhaustive()
-  )
+  return match(parsed.output)
+    .with('db', () => ({
+      avatar: <DBAgent />,
+      name: 'DB Agent',
+    }))
+    .with('pm', () => ({ avatar: <PMAgent />, name: 'PM Agent' }))
+    .with('qa', () => ({ avatar: <QAAgent />, name: 'QA Agent' }))
+    .with('lead', () => ({ avatar: <LeadAgent />, name: 'Lead Agent' }))
+    .exhaustive()
 }
 
 type Props = {
