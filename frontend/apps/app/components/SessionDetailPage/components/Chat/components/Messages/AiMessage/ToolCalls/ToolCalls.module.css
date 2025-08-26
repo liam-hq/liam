@@ -1,0 +1,79 @@
+.container {
+  display: grid;
+  width: 100%;
+  grid-template-rows: 1fr auto;
+  gap: 0.5rem;
+}
+
+.toolCall {
+  border: 1px solid var(--color-border);
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+.header {
+  border-bottom: 1px solid var(--color-border);
+  background-color: var(--color-card);
+  padding: 0.5rem 1rem;
+}
+
+.title {
+  color: var(--color-foreground);
+  font-weight: 500;
+}
+
+.id {
+  background-color: var(--color-muted);
+  margin-left: 0.5rem;
+  border-radius: 0.25rem;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.875rem;
+}
+
+.table {
+  min-width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.table tbody {
+  border-top: 1px solid var(--color-border);
+}
+
+.tableRow {
+  border-bottom: 1px solid var(--color-border);
+}
+
+.tableRow:last-child {
+  border-bottom: none;
+}
+
+.keyCell {
+  color: var(--color-foreground);
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.valueCell {
+  color: var(--color-foreground-secondary);
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+}
+
+.complexValue {
+  background-color: var(--color-muted-secondary);
+  border-radius: 0.25rem;
+  padding: 0.25rem 0.5rem;
+  font-family: monospace;
+  font-size: 0.875rem;
+  word-break: break-all;
+}
+
+.emptyArgs {
+  color: var(--color-foreground-secondary);
+  display: block;
+  padding: 0.75rem;
+  font-size: 0.875rem;
+}
