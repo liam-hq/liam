@@ -74,7 +74,10 @@ export const useStream = () => {
           if (index === undefined) {
             newMessages.push(message)
           } else {
-            newMessages[index] = message
+            newMessages[index] = {
+              ...prev[index],
+              ...message,
+            }
           }
 
           return newMessages
