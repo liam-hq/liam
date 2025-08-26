@@ -1,16 +1,12 @@
-import type { BaseMessage } from '@langchain/core/messages'
-import type { Message } from '@langchain/langgraph-sdk'
+import {
+  type BaseMessage,
+  coerceMessageLikeToMessage,
+} from '@langchain/core/messages'
 import { err, ok } from 'neverthrow'
 import { useCallback, useRef, useState } from 'react'
 import { ERROR_MESSAGES } from '../../components/Chat/constants/chatConstants'
 import { MessageTupleManager } from './MessageTupleManager'
 import { parseSse } from './parseSse'
-
-const toMessageDict = (chunk: BaseMessage): Message => {
-  const { type, data } = chunk.toDict()
-  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-  return { ...data, type } as Message
-}
 
 type ChatRequest = {
   userInput: string
@@ -23,7 +19,7 @@ type ChatRequest = {
  * @see https://github.com/langchain-ai/langgraphjs/blob/3320793bffffa02682227644aefbee95dee330a2/libs/sdk/src/react/stream.tsx
  */
 export const useStream = () => {
-  const [messages, setMessages] = useState<Message[]>([])
+  const [messages, setMessages] = useState<BaseMessage[]>([])
   const messageManagerRef = useRef(new MessageTupleManager())
 
   const [isStreaming, setIsStreaming] = useState(false)
@@ -65,19 +61,16 @@ export const useStream = () => {
 
         setMessages((prev) => {
           const newMessages = [...prev]
-          const { chunk, index } =
-            messageManagerRef.current.get(messageId, prev.length) ?? {}
+          const result = messageManagerRef.current.get(messageId, prev.length)
+          if (!result?.chunk) return newMessages
 
-          if (!chunk) return newMessages
+          const { chunk, index } = result
+          const message = coerceMessageLikeToMessage(chunk)
 
-          const message = toMessageDict(chunk)
           if (index === undefined) {
             newMessages.push(message)
           } else {
-            newMessages[index] = {
-              ...prev[index],
-              ...message,
-            }
+            newMessages[index] = message
           }
 
           return newMessages

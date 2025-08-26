@@ -1,15 +1,15 @@
 import type {
   AIMessage,
+  BaseMessage,
   HumanMessage,
-  Message,
   SystemMessage,
   ToolMessage,
-} from '@langchain/langgraph-sdk'
+} from '@langchain/core/messages'
 
 export const aMessage = (
   type: 'human' | 'ai' | 'tool' | 'system' = 'human',
-  overrides?: Partial<Message>,
-): Message => {
+  overrides?: Partial<BaseMessage>,
+): BaseMessage => {
   const baseMessage = {
     id: `msg-${Date.now()}-${Math.random()}`,
     content: 'This is a test message',
@@ -49,6 +49,7 @@ export const aMessage = (
         content: 'Tool execution completed successfully',
         tool_call_id: 'tool-call-123',
         status: 'success',
+        lc_direct_tool_output: true,
         ...overrides,
       } as ToolMessage
 

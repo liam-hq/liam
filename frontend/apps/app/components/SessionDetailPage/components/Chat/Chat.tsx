@@ -1,6 +1,6 @@
 'use client'
 
-import type { Message } from '@langchain/langgraph-sdk'
+import type { BaseMessage } from '@langchain/core/messages'
 import type { Schema } from '@liam-hq/schema'
 import { type FC, useTransition } from 'react'
 import type { TimelineItemEntry } from '../../types'
@@ -14,7 +14,7 @@ import { useScrollToBottom } from './useScrollToBottom'
 type Props = {
   schemaData: Schema
   // designSessionId: string
-  messages: Message[]
+  messages: BaseMessage[]
   timelineItems: TimelineItemEntry[]
   onMessageSend: (message: TimelineItemEntry) => void
   // onVersionView: (versionId: string) => void

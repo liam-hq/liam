@@ -1,4 +1,4 @@
-import type { Message } from '@langchain/langgraph-sdk'
+import type { BaseMessage } from '@langchain/core/messages'
 import { aBuildingSchemaVersion } from '@liam-hq/db'
 import { aSchema } from '@liam-hq/schema'
 import type { Meta, StoryObj } from '@storybook/nextjs'
@@ -11,24 +11,15 @@ import { aMessage } from './factories'
 const ITEMS = aTypicalConversation()
 
 // Sample messages for testing
-const MESSAGES: Message[] = [
+const MESSAGES: BaseMessage[] = [
   aMessage('human', {
     content: 'Create a database for managing a library system',
   }),
   aMessage('ai', {
     content:
       "I'll help you design a database for a library management system. Let me analyze the requirements.",
-    tool_calls: [
-      {
-        name: 'analyze_requirements',
-        args: { domain: 'library_management' },
-        id: 'call_1',
-        type: 'tool_call',
-      },
-    ],
   }),
   aMessage('tool', {
-    tool_call_id: 'call_1',
     content:
       'Requirements analyzed: Need tables for books, members, loans, and categories',
   }),
@@ -123,32 +114,9 @@ export const WithComplexMessages: Story = {
             text: "I'll design a comprehensive e-commerce database. Here's the structure:",
           },
         ],
-        tool_calls: [
-          {
-            name: 'create_schema',
-            args: {
-              tables: ['products', 'users', 'orders', 'cart_items'],
-            },
-            id: 'call_schema_1',
-            type: 'tool_call',
-          },
-        ],
-        usage_metadata: {
-          input_tokens: 200,
-          output_tokens: 500,
-          total_tokens: 700,
-          input_token_details: {
-            cache_read: 50,
-          },
-          output_token_details: {
-            reasoning: 100,
-          },
-        },
       }),
       aMessage('tool', {
-        tool_call_id: 'call_schema_1',
         content: 'Schema created successfully with 4 tables and relationships',
-        status: 'success',
       }),
       aMessage('ai', {
         content:
