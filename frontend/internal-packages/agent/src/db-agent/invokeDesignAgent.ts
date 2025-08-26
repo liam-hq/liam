@@ -1,10 +1,12 @@
+import { dispatchCustomEvent } from '@langchain/core/callbacks/dispatch'
 import {
-  type AIMessage,
+  AIMessage,
+  AIMessageChunk,
   type BaseMessage,
   SystemMessage,
 } from '@langchain/core/messages'
 import { ChatOpenAI } from '@langchain/openai'
-import { ok, ResultAsync } from 'neverthrow'
+import { ResultAsync } from 'neverthrow'
 import * as v from 'valibot'
 import { reasoningSchema } from '../langchain/utils/schema'
 import type { Reasoning } from '../langchain/utils/types'
@@ -33,22 +35,54 @@ export const invokeDesignAgent = (
   )
   const invoke = ResultAsync.fromThrowable(
     (systemPrompt: string) =>
-      model.invoke([new SystemMessage(systemPrompt), ...messages], {
+      model.stream([new SystemMessage(systemPrompt), ...messages], {
         configurable,
       }),
     (error) => new Error(`Failed to invoke design agent: ${error}`),
   )
 
-  return formatPrompt.andThen(invoke).andThen((response) => {
-    const parsedReasoning = v.safeParse(
-      reasoningSchema,
-      response.additional_kwargs['reasoning'],
-    )
-    const reasoning = parsedReasoning.success ? parsedReasoning.output : null
+  return formatPrompt.andThen(invoke).andThen((stream) => {
+    return ResultAsync.fromPromise(
+      (async () => {
+        // OpenAI ("chatcmpl-...") and LangGraph ("run-...") use different id formats,
+        // so we overwrite with a UUID to unify chunk ids for consistent handling.
+        const id = crypto.randomUUID()
+        let accumulatedChunk: AIMessageChunk | null = null
 
-    return ok({
-      response,
-      reasoning,
-    })
+        for await (const _chunk of stream) {
+          const chunk = new AIMessageChunk({ ..._chunk, id, name: 'db' })
+          await dispatchCustomEvent('messages', chunk)
+
+          // Accumulate chunks using concat method
+          accumulatedChunk = accumulatedChunk
+            ? accumulatedChunk.concat(chunk)
+            : chunk
+        }
+
+        // Convert the final accumulated chunk to AIMessage
+        const response = accumulatedChunk
+          ? new AIMessage({
+              content: accumulatedChunk.content,
+              additional_kwargs: accumulatedChunk.additional_kwargs,
+              ...(accumulatedChunk.tool_calls && {
+                tool_calls: accumulatedChunk.tool_calls,
+              }),
+              ...(accumulatedChunk.name && { name: accumulatedChunk.name }),
+            })
+          : new AIMessage('')
+
+        const parsed = v.safeParse(
+          reasoningSchema,
+          accumulatedChunk?.additional_kwargs['reasoning'],
+        )
+        const reasoning = parsed.success ? parsed.output : null
+
+        return {
+          response,
+          reasoning,
+        }
+      })(),
+      (error) => (error instanceof Error ? error : new Error(String(error))),
+    )
   })
 }
