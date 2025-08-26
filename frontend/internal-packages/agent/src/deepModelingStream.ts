@@ -1,4 +1,4 @@
-import { DEFAULT_RECURSION_LIMIT } from './chat/workflow/shared/langGraphUtils'
+import { DEFAULT_RECURSION_LIMIT } from './chat/workflow/shared/workflowConstants'
 import type { WorkflowConfigurable } from './chat/workflow/types'
 import { createGraph } from './createGraph'
 import { setupWorkflowState } from './shared/workflowSetup'
@@ -12,7 +12,9 @@ export async function deepModelingStream(
   },
 ) {
   const { recursionLimit = DEFAULT_RECURSION_LIMIT } = params
-  const compiled = createGraph()
+  const compiled = createGraph(
+    config.configurable.repositories.schema.checkpointer,
+  )
 
   const setupResult = await setupWorkflowState(params, config)
   if (setupResult.isErr()) {
