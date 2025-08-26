@@ -5,7 +5,6 @@ import {
   convertToChunk,
   isBaseMessageChunk,
 } from '@langchain/core/messages'
-import type { Message } from '@langchain/langgraph-sdk'
 
 function tryConvertToChunk(message: BaseMessage) {
   try {
@@ -32,7 +31,7 @@ export class MessageTupleManager {
     this.chunks = {}
   }
 
-  add(serialized: Message, metadata: Record<string, unknown> | undefined) {
+  add(serialized: BaseMessage, metadata: Record<string, unknown> | undefined) {
     const message = coerceMessageLikeToMessage(serialized)
     const chunk = tryConvertToChunk(message)
     const { id } = chunk ?? message
