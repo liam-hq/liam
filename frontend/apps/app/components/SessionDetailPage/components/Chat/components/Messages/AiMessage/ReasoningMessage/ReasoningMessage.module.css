@@ -19,21 +19,3 @@
 .content + .content {
   margin-top: var(--spacing-1);
 }
-
-.lineContainer {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--spacing-1);
-}
-
-.statusIcon {
-  flex-shrink: 0;
-  width: 1.2em;
-  text-align: center;
-}
-
-.lineText {
-  flex: 1;
-  white-space: pre-wrap;
-  word-break: break-word;
-}
