@@ -1,4 +1,4 @@
-import { DEFAULT_RECURSION_LIMIT } from '../chat/workflow/shared/langGraphUtils'
+import { DEFAULT_RECURSION_LIMIT } from '../chat/workflow/shared/workflowConstants'
 import type { WorkflowConfigurable } from '../chat/workflow/types'
 import { setupWorkflowState } from '../shared/workflowSetup'
 import type { AgentWorkflowParams } from '../types'
@@ -12,7 +12,9 @@ export async function invokeDbAgentStream(
   },
 ) {
   const { recursionLimit = DEFAULT_RECURSION_LIMIT } = params
-  const compiled = createDbAgentGraph()
+  const compiled = createDbAgentGraph(
+    config.configurable.repositories.schema.checkpointer,
+  )
 
   const setupResult = await setupWorkflowState(params, config)
   if (setupResult.isErr()) {
