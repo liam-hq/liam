@@ -39,8 +39,17 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-  serverExternalPackages: ['@electric-sql/pglite', 'pg-query-emscripten'],
+  serverExternalPackages: ['@electric-sql/pglite'],
   webpack: (config) => {
+    // Enable WebAssembly experimental features for pg-query-emscripten and @electric-sql/pglite
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    config.experiments = {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      ...config.experiments,
+      asyncWebAssembly: true,
+      syncWebAssembly: true,
+    }
+
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     if (Array.isArray(config.externals)) {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
