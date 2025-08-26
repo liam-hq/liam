@@ -1,7 +1,4 @@
 import type { RawStmt } from '@pgsql/types'
-// pg-query-emscripten does not have types, so we need to define them ourselves
-// @ts-expect-error
-import Module from 'pg-query-emscripten'
 
 export const parse = async (str: string): Promise<PgParseResult> => {
   // Filter out \restrict and \unrestrict lines from PostgreSQL 16.10+
@@ -12,6 +9,11 @@ export const parse = async (str: string): Promise<PgParseResult> => {
       return !line.startsWith('\\restrict') && !line.startsWith('\\unrestrict')
     })
     .join('\n')
+
+  // Dynamic import to avoid build-time issues
+  // @ts-expect-error pg-query-emscripten does not have type definitions
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+  const Module = await import('pg-query-emscripten').then((m) => m.default)
 
   const pgQuery = await new Module({
     wasmMemory: new WebAssembly.Memory({
