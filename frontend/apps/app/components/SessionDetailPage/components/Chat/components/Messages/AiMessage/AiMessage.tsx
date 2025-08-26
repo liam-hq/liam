@@ -1,5 +1,4 @@
 import type { AIMessage } from '@langchain/langgraph-sdk'
-import type { Database } from '@liam-hq/db'
 import type { FC } from 'react'
 import { match } from 'ts-pattern'
 import * as v from 'valibot'
@@ -13,9 +12,7 @@ import styles from './AiMessage.module.css'
 import { ReasoningMessage } from './ReasoningMessage'
 import { ToolCalls } from './ToolCalls'
 
-const agentRoleSchema: v.GenericSchema<
-  Database['public']['Enums']['assistant_role_enum']
-> = v.picklist(['db', 'pm', 'qa'])
+const agentRoleSchema = v.picklist(['db', 'pm', 'qa', 'lead'])
 
 const getAgentInfo = (name: string | undefined) => {
   const parsed = v.safeParse(agentRoleSchema, name)
@@ -23,14 +20,18 @@ const getAgentInfo = (name: string | undefined) => {
     return { avatar: <DBAgent />, name: 'DB Agent' }
   }
 
-  return match(parsed.output)
-    .with('db', () => ({
-      avatar: <DBAgent />,
-      name: 'DB Agent',
-    }))
-    .with('pm', () => ({ avatar: <PMAgent />, name: 'PM Agent' }))
-    .with('qa', () => ({ avatar: <QAAgent />, name: 'QA Agent' }))
-    .exhaustive()
+  return (
+    match(parsed.output)
+      .with('db', () => ({
+        avatar: <DBAgent />,
+        name: 'DB Agent',
+      }))
+      .with('pm', () => ({ avatar: <PMAgent />, name: 'PM Agent' }))
+      .with('qa', () => ({ avatar: <QAAgent />, name: 'QA Agent' }))
+      // TODO: Prepare <LeadAgent />
+      .with('lead', () => ({ avatar: <QAAgent />, name: 'Lead Agent' }))
+      .exhaustive()
+  )
 }
 
 type Props = {
