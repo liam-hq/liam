@@ -13,12 +13,7 @@ export const parse = async (str: string): Promise<PgParseResult> => {
     })
     .join('\n')
 
-  const pgQuery = await new Module({
-    wasmMemory: new WebAssembly.Memory({
-      initial: 2048, // 128MB (64KB × 2048 pages)
-      maximum: 4096, // 256MB max
-    }),
-  })
+  const pgQuery = await new Module()
   // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
   const result = pgQuery.parse(filteredStr)
   return result
