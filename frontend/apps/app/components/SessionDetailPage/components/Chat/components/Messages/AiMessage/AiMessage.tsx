@@ -7,6 +7,7 @@ import { MarkdownContent } from '@/components/MarkdownContent'
 import { CopyButton } from '@/components/SessionDetailPage/components/CopyButton'
 import { extractReasoningFromMessage } from '../utils/extractReasoningFromMessage'
 import { extractResponseFromMessage } from '../utils/extractResponseFromMessage'
+import { extractToolCallsFromMessage } from '../utils/extractToolCallsFromMessage'
 import { DBAgent, PMAgent, QAAgent } from './AgentAvatar'
 import styles from './AiMessage.module.css'
 import { ReasoningMessage } from './ReasoningMessage'
@@ -40,6 +41,7 @@ export const AiMessage: FC<Props> = ({ message }) => {
   const { avatar, name } = getAgentInfo(message.name)
   const messageContentString = extractResponseFromMessage(message)
   const reasoningText = extractReasoningFromMessage(message)
+  const toolCalls = extractToolCallsFromMessage(message)
 
   return (
     <div className={styles.wrapper}>
@@ -50,19 +52,21 @@ export const AiMessage: FC<Props> = ({ message }) => {
       <div className={styles.contentContainer}>
         <div className={styles.messagesWrapper}>
           {reasoningText && <ReasoningMessage content={reasoningText} />}
-          <div className={styles.responseMessageWrapper}>
-            <div className={styles.markdownWrapper}>
-              <MarkdownContent content={messageContentString} />
+          {messageContentString !== '' && (
+            <div className={styles.responseMessageWrapper}>
+              <div className={styles.markdownWrapper}>
+                <MarkdownContent content={messageContentString} />
+              </div>
+              <div className={styles.copyButtonWrapper}>
+                <CopyButton
+                  textToCopy={messageContentString}
+                  tooltipLabel="Copy message"
+                  size="sm"
+                />
+              </div>
             </div>
-            <div className={styles.copyButtonWrapper}>
-              <CopyButton
-                textToCopy={messageContentString}
-                tooltipLabel="Copy message"
-                size="sm"
-              />
-            </div>
-          </div>
-          <ToolCalls toolCalls={message.tool_calls} />
+          )}
+          <ToolCalls toolCalls={toolCalls} />
         </div>
       </div>
     </div>

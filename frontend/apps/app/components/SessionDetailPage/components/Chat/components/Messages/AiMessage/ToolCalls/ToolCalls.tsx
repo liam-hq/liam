@@ -1,66 +1,40 @@
-import type { AIMessage } from '@langchain/langgraph-sdk'
+import { Wrench } from 'lucide-react'
 import type { FC } from 'react'
+import type { ToolCalls as ToolCallsType } from '../../schema'
 import styles from './ToolCalls.module.css'
 
-function isComplexValue(value: unknown): boolean {
-  return Array.isArray(value) || (typeof value === 'object' && value !== null)
-}
-
 type Props = {
-  toolCalls: AIMessage['tool_calls']
+  toolCalls: ToolCallsType
 }
 
 /**
- * TODO: Design Request
+ * TODO: Design Improvement
  *
- * ## Component Overview
- * Tool Execution History Cards - Visualizes the external tools/functions called by AI during task execution
+ * ## Current Implementation
+ * Displays tool calls made by AI during conversation with basic styling
  *
- * ## Display Elements
- * 1. Tool Name - Name of the executed function (e.g., search_database, analyze_data)
- * 2. Execution ID - Unique identifier for traceability (optional)
- * 3. Parameter List - Arguments passed to the tool in key-value format
- *    - Simple values: Display as plain text
- *    - Complex values (arrays/objects): Display as formatted JSON
+ * ## Areas for Enhancement
+ * 1. Visual Design - Improve card appearance and spacing
+ * 2. Icon System - Add specific icons for different tool types
+ * 3. Argument Display - Better formatting for JSON arguments
  */
 export const ToolCalls: FC<Props> = ({ toolCalls }) => {
-  if (!toolCalls || toolCalls.length === 0) return null
+  if (toolCalls.length === 0) return null
 
   return (
     <div className={styles.container}>
+      <div className={styles.title}>Tool Calls ({toolCalls.length})</div>
       {toolCalls.map((tc, _idx) => {
-        const args = tc.args
-        const hasArgs = Object.keys(args).length > 0
         return (
-          <div key={tc.name} className={styles.toolCall}>
-            <div className={styles.header}>
-              <h3 className={styles.title}>
-                {tc.name}
-                {tc.id && <code className={styles.id}>{tc.id}</code>}
-              </h3>
+          <div key={tc.id} className={styles.toolCall}>
+            <div className={styles.toolCallTitle}>
+              <Wrench className={styles.icon} />
+              <p className={styles.functionName}>{tc.function.name}</p>
             </div>
-            {hasArgs ? (
-              <table className={styles.table}>
-                <tbody>
-                  {Object.entries(args).map(([key, value]) => (
-                    <tr key={key} className={styles.tableRow}>
-                      <td className={styles.keyCell}>{key}</td>
-                      <td className={styles.valueCell}>
-                        {isComplexValue(value) ? (
-                          <code className={styles.complexValue}>
-                            {JSON.stringify(value, null, 2)}
-                          </code>
-                        ) : (
-                          String(value)
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            ) : (
-              <code className={styles.emptyArgs}>{'{}'}</code>
-            )}
+            <div className={styles.args}>
+              <span className={styles.argTitle}>ARGUMENTS</span>
+              <code className={styles.argCode}>{tc.function.arguments}</code>
+            </div>
           </div>
         )
       })}
