@@ -24,6 +24,11 @@
       "count": 1
     }
   },
+  "app/(app)/app/(with-project-and-branch)/projects/[projectId]/ref/[branchOrCommit]/layout.module.css": {
+    "css-modules-kit/no-unused-class-names": {
+      "count": 2
+    }
+  },
   "app/(app)/app/(with-project-and-branch)/projects/[projectId]/ref/[branchOrCommit]/page.tsx": {
     "no-throw-error/no-throw-error": {
       "count": 1
@@ -59,8 +64,23 @@
       "count": 2
     }
   },
+  "components/BranchDetailPage/BranchDetailPage.module.css": {
+    "css-modules-kit/no-unused-class-names": {
+      "count": 7
+    }
+  },
   "components/BranchDetailPage/BranchDetailPage.tsx": {
     "no-throw-error/no-throw-error": {
+      "count": 1
+    }
+  },
+  "components/CommonLayout/AppBar/BranchDropdownMenu/BranchDropdownMenu.module.css": {
+    "css-modules-kit/no-unused-class-names": {
+      "count": 8
+    }
+  },
+  "components/CommonLayout/AppBar/ProjectsDropdownMenu/ProjectsDropdownMenu.module.css": {
+    "css-modules-kit/no-unused-class-names": {
       "count": 1
     }
   },
@@ -69,9 +89,39 @@
       "count": 1
     }
   },
+  "components/CommonLayout/GlobalNav/OrganizationItem/OrganizationItem.module.css": {
+    "css-modules-kit/no-unused-class-names": {
+      "count": 1
+    }
+  },
+  "components/CommonLayout/GlobalNav/RecentsSection/RecentsSection.module.css": {
+    "css-modules-kit/no-unused-class-names": {
+      "count": 21
+    }
+  },
+  "components/FormatIcon/FormatIcon.module.css": {
+    "css-modules-kit/no-unused-class-names": {
+      "count": 1
+    }
+  },
+  "components/GeneralPage/GeneralPage.module.css": {
+    "css-modules-kit/no-unused-class-names": {
+      "count": 17
+    }
+  },
   "components/GeneralPage/GeneralPage.tsx": {
     "no-throw-error/no-throw-error": {
       "count": 1
+    }
+  },
+  "components/GeneralPage/components/GeneralPageClient/components/DeleteOrganizationButtonClient/DeleteOrganizationButtonClient.module.css": {
+    "css-modules-kit/no-unused-class-names": {
+      "count": 9
+    }
+  },
+  "components/LoginPage/LoginPage.module.css": {
+    "css-modules-kit/no-unused-class-names": {
+      "count": 7
     }
   },
   "components/OrganizationMembersPage/OrganizationMembersPage.tsx": {
@@ -79,8 +129,38 @@
       "count": 1
     }
   },
+  "components/OrganizationMembersPage/components/InvitationItem/InvitationItem.module.css": {
+    "css-modules-kit/no-unused-class-names": {
+      "count": 2
+    }
+  },
+  "components/OrganizationMembersPage/components/InviteMemberModal/InviteMemberModal.module.css": {
+    "css-modules-kit/no-unused-class-names": {
+      "count": 2
+    }
+  },
+  "components/OrganizationMembersPage/components/MemberItem/MemberItem.module.css": {
+    "css-modules-kit/no-unused-class-names": {
+      "count": 2
+    }
+  },
+  "components/OrganizationNewPage/OrganizationNewPage.module.css": {
+    "css-modules-kit/no-unused-class-names": {
+      "count": 2
+    }
+  },
+  "components/ProjectLayout/ProjectHeader/ProjectHeader.module.css": {
+    "css-modules-kit/no-unused-class-names": {
+      "count": 3
+    }
+  },
   "components/ProjectLayout/ProjectHeader/ProjectHeader.tsx": {
     "no-throw-error/no-throw-error": {
+      "count": 1
+    }
+  },
+  "components/ProjectNewPage/components/InstallationSelector/InstallationSelector.module.css": {
+    "css-modules-kit/no-unused-class-names": {
       "count": 1
     }
   },
@@ -90,6 +170,11 @@
     },
     "no-throw-error/no-throw-error": {
       "count": 3
+    }
+  },
+  "components/ProjectsPage/ProjectsPage.module.css": {
+    "css-modules-kit/no-unused-class-names": {
+      "count": 9
     }
   },
   "components/ProjectsPage/ProjectsPage.tsx": {
@@ -102,9 +187,29 @@
       "count": 1
     }
   },
+  "components/PublicSessionDetailPage/PublicSessionDetailPage.module.css": {
+    "css-modules-kit/no-unused-class-names": {
+      "count": 1
+    }
+  },
   "components/SchemaPage/SchemaPage.tsx": {
     "no-throw-error/no-throw-error": {
       "count": 1
+    }
+  },
+  "components/SchemaPage/components/SchemaHeader/SchemaHeader.module.css": {
+    "css-modules-kit/no-unused-class-names": {
+      "count": 1
+    }
+  },
+  "components/SessionDetailPage/SessionDetailPage.module.css": {
+    "css-modules-kit/no-unused-class-names": {
+      "count": 6
+    }
+  },
+  "components/SessionDetailPage/components/Chat/components/ChatInput/ChatInput.module.css": {
+    "css-modules-kit/no-unused-class-names": {
+      "count": 5
     }
   },
   "components/SessionDetailPage/components/Chat/components/ChatInput/ChatInput.tsx": {
@@ -122,13 +227,48 @@
       "count": 3
     }
   },
+  "components/SessionDetailPage/components/Chat/components/TimelineItem/components/AgentMessage/AgentMessage.module.css": {
+    "css-modules-kit/no-unused-class-names": {
+      "count": 6
+    }
+  },
+  "components/SessionDetailPage/components/Chat/components/TimelineItem/components/AgentMessage/components/MessageOptionButtons/MessageOptionButton.module.css": {
+    "css-modules-kit/no-unused-class-names": {
+      "count": 5
+    }
+  },
   "components/SessionDetailPage/components/Chat/components/TimelineItem/components/AgentMessage/components/MessageOptionButtons/MessageOptionButton.tsx": {
     "@typescript-eslint/consistent-type-assertions": {
       "count": 2
     }
   },
+  "components/SessionDetailPage/components/Chat/components/TimelineItem/components/LogMessage/LogMessage.module.css": {
+    "css-modules-kit/no-unused-class-names": {
+      "count": 3
+    }
+  },
+  "components/SessionDetailPage/components/Chat/components/TimelineItem/components/VersionMessage/VersionMessage.module.css": {
+    "css-modules-kit/no-unused-class-names": {
+      "count": 13
+    }
+  },
   "components/SessionDetailPage/components/Chat/services/aiMessageService.ts": {
     "no-throw-error/no-throw-error": {
+      "count": 2
+    }
+  },
+  "components/SessionDetailPage/components/Output/components/Artifact/Artifact.module.css": {
+    "css-modules-kit/no-unused-class-names": {
+      "count": 2
+    }
+  },
+  "components/SessionDetailPage/components/Output/components/SQL/MigrationsViewer/useMigrationsViewer/Comment/Comment.module.css": {
+    "css-modules-kit/no-unused-class-names": {
+      "count": 1
+    }
+  },
+  "components/SessionDetailPage/components/Output/components/SQL/SQL.module.css": {
+    "css-modules-kit/no-unused-class-names": {
       "count": 2
     }
   },
@@ -142,6 +282,16 @@
       "count": 1
     }
   },
+  "components/SessionsNewPage/SessionsNewPage.module.css": {
+    "css-modules-kit/no-unused-class-names": {
+      "count": 19
+    }
+  },
+  "components/ShareDialog/ShareDialog.module.css": {
+    "css-modules-kit/no-unused-class-names": {
+      "count": 1
+    }
+  },
   "features/organizations/services/getOrganizationId.ts": {
     "no-throw-error/no-throw-error": {
       "count": 2
@@ -152,8 +302,38 @@
       "count": 2
     }
   },
-  "features/sessions/components/SessionForm/GitHubSessionFormPresenter/GitHubSessionFormPresenter.stories.tsx": {
-    "@typescript-eslint/consistent-type-assertions": {
+  "features/sessions/components/GitHubSessionForm/BranchesDropdown/BranchesDropdown.module.css": {
+    "css-modules-kit/no-unused-class-names": {
+      "count": 10
+    }
+  },
+  "features/sessions/components/GitHubSessionForm/GitHubSessionFormPresenter/GitHubSessionFormPresenter.module.css": {
+    "css-modules-kit/no-unused-class-names": {
+      "count": 3
+    }
+  },
+  "features/sessions/components/GitHubSessionForm/ProjectsDropdown/ProjectsDropdown.module.css": {
+    "css-modules-kit/no-unused-class-names": {
+      "count": 5
+    }
+  },
+  "features/sessions/components/UploadSessionForm/UploadSessionFormPresenter/UploadSessionFormPresenter.module.css": {
+    "css-modules-kit/no-unused-class-names": {
+      "count": 50
+    }
+  },
+  "features/sessions/components/shared/AttachmentPreview/AttachmentPreview.module.css": {
+    "css-modules-kit/no-unused-class-names": {
+      "count": 1
+    }
+  },
+  "features/sessions/components/shared/DeepModelingToggle/DeepModelingToggle.module.css": {
+    "css-modules-kit/no-unused-class-names": {
+      "count": 1
+    }
+  },
+  "features/sessions/components/shared/FormatSelectDropdown/FormatSelectDropdown.module.css": {
+    "css-modules-kit/no-unused-class-names": {
       "count": 1
     }
   },

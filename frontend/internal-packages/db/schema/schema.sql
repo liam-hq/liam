@@ -344,11 +344,12 @@ CREATE OR REPLACE FUNCTION "public"."handle_new_user"() RETURNS "trigger"
     SET "search_path" TO ''
     AS $$
 BEGIN
-  INSERT INTO public."users" (id, name, email)
+  INSERT INTO public.users (id, name, email, avatar_url)
   VALUES (
     NEW.id, 
     COALESCE(NEW.raw_user_meta_data->>'name', NEW.email),
-    NEW.email
+    NEW.email,
+    NEW.raw_user_meta_data->>'avatar_url'
   );
   RETURN NEW;
 END;
@@ -356,6 +357,25 @@ $$;
 
 
 ALTER FUNCTION "public"."handle_new_user"() OWNER TO "postgres";
+
+
+CREATE OR REPLACE FUNCTION "public"."handle_user_metadata_update"() RETURNS "trigger"
+    LANGUAGE "plpgsql" SECURITY DEFINER
+    SET "search_path" TO ''
+    AS $$
+BEGIN
+  UPDATE public.users 
+  SET 
+    name = COALESCE(NEW.raw_user_meta_data->>'name', NEW.email),
+    avatar_url = NEW.raw_user_meta_data->>'avatar_url'
+  WHERE id = NEW.id;
+  
+  RETURN NEW;
+END;
+$$;
+
+
+ALTER FUNCTION "public"."handle_user_metadata_update"() OWNER TO "postgres";
 
 
 CREATE OR REPLACE FUNCTION "public"."invite_organization_member"("p_email" "text", "p_organization_id" "uuid") RETURNS "jsonb"
@@ -1559,7 +1579,8 @@ ALTER TABLE "public"."timeline_items" OWNER TO "postgres";
 CREATE TABLE IF NOT EXISTS "public"."users" (
     "id" "uuid" NOT NULL,
     "name" "text" NOT NULL,
-    "email" "text" NOT NULL
+    "email" "text" NOT NULL,
+    "avatar_url" "text"
 );
 
 
@@ -4463,6 +4484,11 @@ GRANT ALL ON FUNCTION "public"."hamming_distance"(bit, bit) TO "service_role";
 
 GRANT ALL ON FUNCTION "public"."handle_new_user"() TO "authenticated";
 GRANT ALL ON FUNCTION "public"."handle_new_user"() TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."handle_user_metadata_update"() TO "authenticated";
+GRANT ALL ON FUNCTION "public"."handle_user_metadata_update"() TO "service_role";
 
 
 

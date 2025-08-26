@@ -6,34 +6,34 @@ import { generateDdlFromSchema } from '../../chat/workflow/utils/generateDdl'
 import { logAssistantMessage } from '../../chat/workflow/utils/timelineLogger'
 import { WorkflowTerminationError } from '../../shared/errorHandling'
 import { convertSchemaToText } from '../../utils/convertSchemaToText'
-import type { Usecase } from '../generateUsecase/agent'
+import type { Testcase } from '../generateTestcase/agent'
 import { DMLGenerationAgent } from './agent'
 
 /**
- * Format use cases into a structured string for DML generation
+ * Format test cases into a structured string for DML generation
  */
-function formatUseCases(useCases: Usecase[]): string {
-  // Group use cases by requirement category
-  const groupedUseCases = useCases.reduce<Record<string, Usecase[]>>(
-    (acc, uc) => {
-      const category = uc.requirementCategory?.trim() || 'General'
+function formatTestCases(testCases: Testcase[]): string {
+  // Group test cases by requirement category
+  const groupedTestCases = testCases.reduce<Record<string, Testcase[]>>(
+    (acc, tc) => {
+      const category = tc.requirementCategory?.trim() || 'General'
       if (!acc[category]) {
         acc[category] = []
       }
-      acc[category].push(uc)
+      acc[category].push(tc)
       return acc
     },
     {},
   )
 
-  // Format grouped use cases with UUIDs
-  const formattedGroups = Object.entries(groupedUseCases).map(
+  // Format grouped test cases with UUIDs
+  const formattedGroups = Object.entries(groupedTestCases).map(
     ([category, cases]) => {
       const formattedCases = cases
         .map(
-          (uc) =>
-            `  - ID: ${uc.id} | ${uc.title}: ${uc.description}${
-              uc.requirement ? ` (Requirement: ${uc.requirement})` : ''
+          (tc) =>
+            `  - ID: ${tc.id} | ${tc.title}: ${tc.description}${
+              tc.requirement ? ` (Requirement: ${tc.requirement})` : ''
             }`,
         )
         .join('\n')
@@ -80,11 +80,11 @@ export async function prepareDmlNode(
     return state
   }
 
-  if (!state.generatedUsecases || state.generatedUsecases.length === 0) {
+  if (!state.generatedTestcases || state.generatedTestcases.length === 0) {
     await logAssistantMessage(
       state,
       repositories,
-      'Test scenarios not available. Cannot create sample data without use cases...',
+      'Test scenarios not available. Cannot create sample data without test cases...',
       assistantRole,
     )
     return state
@@ -92,13 +92,13 @@ export async function prepareDmlNode(
 
   const dmlAgent = new DMLGenerationAgent()
 
-  const formattedUseCases = formatUseCases(state.generatedUsecases)
+  const formattedTestCases = formatTestCases(state.generatedTestcases)
 
   const schemaContext = convertSchemaToText(state.schemaData)
 
   const result = await dmlAgent.generate({
     schemaSQL: ddlStatements,
-    formattedUseCases,
+    formattedTestCases,
     schemaContext,
   })
 
@@ -116,24 +116,24 @@ export async function prepareDmlNode(
     .map((op) => {
       const header = op.description
         ? `-- ${op.description}`
-        : `-- ${op.operation_type} operation for use case ${op.useCaseId}`
+        : `-- ${op.operation_type} operation for test case ${op.testCaseId}`
       return `${header}\n${op.sql};`
     })
     .join('\n\n')
 
-  const updatedUsecases = state.generatedUsecases.map((usecase) => {
-    const usecaseDmlOperations = result.dmlOperations.filter(
-      (op) => op.useCaseId === usecase.id,
+  const updatedTestcases = state.generatedTestcases.map((testcase) => {
+    const testcaseDmlOperations = result.dmlOperations.filter(
+      (op) => op.testCaseId === testcase.id,
     )
     return {
-      ...usecase,
-      dmlOperations: usecaseDmlOperations,
+      ...testcase,
+      dmlOperations: testcaseDmlOperations,
     }
   })
 
   return {
     ...state,
     dmlStatements,
-    generatedUsecases: updatedUsecases,
+    generatedTestcases: updatedTestcases,
   }
 }

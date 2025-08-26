@@ -330,7 +330,7 @@ This is where the GIN index on the JSONB column proves useful."
   anAssistantLogTimelineItemEntry({
     role: 'db',
     content: `**DML Preparation**
-Based on the use cases, let's prepare actual data manipulations.
+Based on the test cases, let's prepare actual data manipulations.
 We'll start by inserting a basic classification hierarchy and sample animal data.
 
 **Preparing Classification Data:**

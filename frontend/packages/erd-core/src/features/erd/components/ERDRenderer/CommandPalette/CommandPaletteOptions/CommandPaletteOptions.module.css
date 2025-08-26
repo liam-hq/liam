@@ -37,10 +37,13 @@
   margin-left: var(--spacing-1);
 }
 
-.item[data-selected='true'] {
+.item[data-selected='true'] /* when setting the styles.item class to the Command.Item component */,
+[data-selected='true']
+  .item /* when setting the styles.item class on the children of the Command.Item component */ {
   background: var(--overlay-5);
 }
 
-.item[data-selected='true'] .itemIcon {
+.item[data-selected='true'] .itemIcon,
+[data-selected='true'] .item .itemIcon {
   color: var(--global-foreground);
 }

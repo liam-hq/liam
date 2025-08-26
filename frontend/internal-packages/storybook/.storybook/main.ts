@@ -1,5 +1,8 @@
-import path from 'node:path'
+import { createRequire } from "node:module";
+import path, { dirname, join } from 'node:path';
 import type { StorybookConfig } from '@storybook/nextjs'
+
+const require = createRequire(import.meta.url);
 
 const config: StorybookConfig = {
   stories: [
@@ -19,30 +22,21 @@ const config: StorybookConfig = {
       titlePrefix: 'erd-core',
     },
   ],
-  addons: [
-    '@storybook/addon-links',
-    '@storybook/addon-essentials',
-    '@storybook/addon-interactions',
-  ],
+
+  addons: [getAbsolutePath("@storybook/addon-links"), getAbsolutePath("@storybook/addon-docs")],
+
   framework: {
-    name: '@storybook/nextjs',
+    name: getAbsolutePath("@storybook/nextjs"),
     options: {},
   },
-  docs: {
-    autodocs: 'tag',
-  },
+
   staticDirs: ['../public', './public', '../../../apps/app/public'],
+
   webpackFinal: async (config) => {
     if (config.resolve) {
       config.resolve.alias = {
         ...config.resolve.alias,
         '@': path.resolve(__dirname, '../../../apps/app'),
-        // Mock VersionMessage component to avoid Supabase dependency
-        '../../../apps/app/components/SessionDetailPage/components/Chat/components/TimelineItem/components/VersionMessage/VersionMessage':
-          path.resolve(
-            __dirname,
-            '../../../apps/app/components/SessionDetailPage/components/Chat/components/TimelineItem/components/VersionMessage/VersionMessage.mock.tsx',
-          ),
       }
 
       if (!config.resolve.plugins) {
@@ -85,7 +79,11 @@ const config: StorybookConfig = {
       })
     }
     return config
-  },
+  }
 }
 
 export default config
+
+function getAbsolutePath(value: string): any {
+  return dirname(require.resolve(join(value, "package.json")));
+}

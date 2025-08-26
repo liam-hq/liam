@@ -547,13 +547,13 @@ begin
                 "Users should have unique email addresses",
                 "User profiles should store display names"
               ],
-              "use_cases": [
+              "test_cases": [
                 {
                   "title": "User Registration",
                   "description": "New users can create an account",
                   "dml_operations": [
                     {
-                      "useCaseId": "UC001",
+                      "testCaseId": "UC001",
                       "operation_type": "INSERT",
                       "sql": "INSERT INTO users (email, name) VALUES (''john@example.com'', ''John Doe'')",
                       "description": "Create a new user account",
@@ -571,13 +571,13 @@ begin
                 "Posts can be published or kept as drafts",
                 "Posts are linked to their authors"
               ],
-              "use_cases": [
+              "test_cases": [
                 {
                   "title": "Create Blog Post",
                   "description": "Users can create new blog posts",
                   "dml_operations": [
                     {
-                      "useCaseId": "UC002",
+                      "testCaseId": "UC002",
                       "operation_type": "INSERT",
                       "sql": "INSERT INTO posts (user_id, title, content, published) VALUES (''user-uuid'', ''My First Post'', ''Content here...'', false)",
                       "description": "Create a new blog post as draft",
@@ -590,7 +590,7 @@ begin
                   "description": "Users can publish their draft posts",
                   "dml_operations": [
                     {
-                      "useCaseId": "UC003",
+                      "testCaseId": "UC003",
                       "operation_type": "UPDATE",
                       "sql": "UPDATE posts SET published = true WHERE id = ''post-uuid''",
                       "description": "Publish a draft post",

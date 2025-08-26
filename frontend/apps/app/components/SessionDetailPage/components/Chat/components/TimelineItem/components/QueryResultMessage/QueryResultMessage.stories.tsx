@@ -1,5 +1,5 @@
 import type { SqlResult } from '@liam-hq/pglite-server'
-import type { Meta, StoryObj } from '@storybook/react'
+import type { Meta, StoryObj } from '@storybook/nextjs'
 import { QueryResultMessage } from './QueryResultMessage'
 
 const meta = {

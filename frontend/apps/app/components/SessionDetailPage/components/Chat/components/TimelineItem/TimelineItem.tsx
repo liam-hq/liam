@@ -38,7 +38,7 @@ const getViewLinkConfig = (
   }
 
   if (role === QA_AGENT_ROLE) {
-    return { text: 'View Use Cases' }
+    return { text: 'View Test Cases' }
   }
 
   return null

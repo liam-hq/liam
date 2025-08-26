@@ -1,6 +1,6 @@
 import type { BaseMessage } from '@langchain/core/messages'
 import type { Schema } from '@liam-hq/schema'
-import type { Usecase } from '../../qa-agent/generateUsecase/agent'
+import type { Testcase } from '../../qa-agent/generateTestcase/agent'
 import type { Repositories } from '../../repositories'
 
 export type WorkflowState = {
@@ -13,7 +13,7 @@ export type WorkflowState = {
         nonFunctionalRequirements: Record<string, string[]>
       }
     | undefined
-  generatedUsecases?: Usecase[] | undefined
+  generatedTestcases?: Testcase[] | undefined
   schemaData: Schema
 
   dmlStatements?: string | undefined

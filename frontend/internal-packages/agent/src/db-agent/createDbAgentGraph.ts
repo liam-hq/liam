@@ -37,7 +37,7 @@ export const createDbAgentGraph = (checkpointer?: BaseCheckpointSaver) => {
     .addEdge('invokeSchemaDesignTool', 'designSchema')
     .addConditionalEdges('designSchema', routeAfterDesignSchema, {
       invokeSchemaDesignTool: 'invokeSchemaDesignTool',
-      generateUsecase: END,
+      generateTestcase: END,
     })
 
   return checkpointer

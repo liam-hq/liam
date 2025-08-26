@@ -9,19 +9,18 @@ import {
 import { Command } from 'cmdk'
 import type { FC } from 'react'
 import { useUserEditingOrThrow } from '@/stores'
-import { useCommandPalette } from '../CommandPaletteProvider'
+import { useCommandPaletteOrThrow } from '../CommandPaletteProvider'
 import { useCopyLink } from '../hooks/useCopyLink'
 import { useFitScreen } from '../hooks/useFitScreen'
 import { getSuggestionText } from '../utils'
 import styles from './CommandPaletteOptions.module.css'
 
 export const CommandPaletteCommandOptions: FC = () => {
-  const { copyLink } = useCopyLink()
+  const { copyLink } = useCopyLink('command-palette')
   const { zoomToFit, tidyUp } = useFitScreen()
   const { setShowMode } = useUserEditingOrThrow()
 
-  const result = useCommandPalette()
-  const setOpen = result.isOk() ? result.value.setOpen : () => {}
+  const { setOpen } = useCommandPaletteOrThrow()
 
   return (
     <Command.Group heading="Commands">

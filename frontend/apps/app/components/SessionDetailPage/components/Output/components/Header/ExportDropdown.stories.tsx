@@ -1,6 +1,6 @@
 import { aColumn, aSchema, aTable } from '@liam-hq/schema'
 import { ToastProvider } from '@liam-hq/ui'
-import type { Meta, StoryObj } from '@storybook/react'
+import type { Meta, StoryObj } from '@storybook/nextjs'
 import { ExportDropdown } from './ExportDropdown'
 
 const sampleSchema = aSchema({

@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/react'
+import type { Meta, StoryObj } from '@storybook/nextjs'
 import '@xyflow/react/dist/style.css'
 import type React from 'react'
 import type { ComponentProps, FC, PropsWithChildren } from 'react'

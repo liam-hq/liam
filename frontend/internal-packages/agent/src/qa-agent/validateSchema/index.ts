@@ -10,11 +10,11 @@ import { generateDdlFromSchema } from '../../chat/workflow/utils/generateDdl'
 import { transformWorkflowStateToArtifact } from '../../chat/workflow/utils/transformWorkflowStateToArtifact'
 import { withTimelineItemSync } from '../../chat/workflow/utils/withTimelineItemSync'
 import { WorkflowTerminationError } from '../../shared/errorHandling'
-import type { Usecase } from '../generateUsecase/agent'
+import type { Testcase } from '../generateTestcase/agent'
 
-type UsecaseDmlExecutionResult = {
-  useCaseId: string
-  useCaseTitle: string
+type TestcaseDmlExecutionResult = {
+  testCaseId: string
+  testCaseTitle: string
   success: boolean
   executedOperations: number
   errors?: string[]
@@ -22,17 +22,17 @@ type UsecaseDmlExecutionResult = {
 }
 
 /**
- * Execute DML operations by usecase with DDL statements
- * Combines DDL and usecase-specific DML into single execution units
+ * Execute DML operations by testcase with DDL statements
+ * Combines DDL and testcase-specific DML into single execution units
  */
-async function executeDmlOperationsByUsecase(
+async function executeDmlOperationsByTestcase(
   ddlStatements: string,
-  usecases: Usecase[],
-): Promise<UsecaseDmlExecutionResult[]> {
-  const results: UsecaseDmlExecutionResult[] = []
+  testcases: Testcase[],
+): Promise<TestcaseDmlExecutionResult[]> {
+  const results: TestcaseDmlExecutionResult[] = []
 
-  for (const usecase of usecases) {
-    if (!usecase.dmlOperations || usecase.dmlOperations.length === 0) {
+  for (const testcase of testcases) {
+    if (!testcase.dmlOperations || testcase.dmlOperations.length === 0) {
       continue
     }
 
@@ -43,9 +43,9 @@ async function executeDmlOperationsByUsecase(
     }
 
     sqlParts.push(
-      `-- UseCase: ${usecase.id}`,
-      `-- ${usecase.title}`,
-      ...usecase.dmlOperations.map((op) => {
+      `-- Test Case: ${testcase.id}`,
+      `-- ${testcase.title}`,
+      ...testcase.dmlOperations.map((op) => {
         const header = op.description
           ? `-- ${op.description}`
           : `-- ${op.operation_type} operation`
@@ -80,17 +80,17 @@ async function executeDmlOperationsByUsecase(
         })
 
       results.push({
-        useCaseId: usecase.id,
-        useCaseTitle: usecase.title,
+        testCaseId: testcase.id,
+        testCaseTitle: testcase.title,
         success: !hasErrors,
-        executedOperations: usecase.dmlOperations.length,
+        executedOperations: testcase.dmlOperations.length,
         ...(hasErrors && { errors }),
         executedAt: startTime,
       })
     } else {
       results.push({
-        useCaseId: usecase.id,
-        useCaseTitle: usecase.title,
+        testCaseId: testcase.id,
+        testCaseTitle: testcase.title,
         success: false,
         executedOperations: 0,
         errors: [executionResult.error.message],
@@ -103,32 +103,34 @@ async function executeDmlOperationsByUsecase(
 }
 
 /**
- * Update workflow state with usecase-based execution results
+ * Update workflow state with testcase-based execution results
  */
-function updateWorkflowStateWithUsecaseResults(
+function updateWorkflowStateWithTestcaseResults(
   state: WorkflowState,
-  results: UsecaseDmlExecutionResult[],
+  results: TestcaseDmlExecutionResult[],
 ): WorkflowState {
-  if (!state.generatedUsecases) {
+  if (!state.generatedTestcases) {
     return state
   }
 
-  const resultMap = new Map(results.map((result) => [result.useCaseId, result]))
+  const resultMap = new Map(
+    results.map((result) => [result.testCaseId, result]),
+  )
 
-  const updatedUsecases = state.generatedUsecases.map((usecase) => {
-    const usecaseResult = resultMap.get(usecase.id)
+  const updatedTestcases = state.generatedTestcases.map((testcase) => {
+    const testcaseResult = resultMap.get(testcase.id)
 
-    if (!usecaseResult || !usecase.dmlOperations) {
-      return usecase
+    if (!testcaseResult || !testcase.dmlOperations) {
+      return testcase
     }
 
-    const updatedDmlOperations = usecase.dmlOperations.map((dmlOp) => {
+    const updatedDmlOperations = testcase.dmlOperations.map((dmlOp) => {
       const executionLog = {
-        executed_at: usecaseResult.executedAt.toISOString(),
-        success: usecaseResult.success,
-        result_summary: usecaseResult.success
-          ? `UseCase "${usecaseResult.useCaseTitle}" operations completed successfully`
-          : `UseCase "${usecaseResult.useCaseTitle}" failed: ${usecaseResult.errors?.join('; ')}`,
+        executed_at: testcaseResult.executedAt.toISOString(),
+        success: testcaseResult.success,
+        result_summary: testcaseResult.success
+          ? `Test Case "${testcaseResult.testCaseTitle}" operations completed successfully`
+          : `Test Case "${testcaseResult.testCaseTitle}" failed: ${testcaseResult.errors?.join('; ')}`,
       }
 
       return {
@@ -138,14 +140,14 @@ function updateWorkflowStateWithUsecaseResults(
     })
 
     return {
-      ...usecase,
+      ...testcase,
       dmlOperations: updatedDmlOperations,
     }
   })
 
   return {
     ...state,
-    generatedUsecases: updatedUsecases,
+    generatedTestcases: updatedTestcases,
   }
 }
 
@@ -169,12 +171,12 @@ export async function validateSchemaNode(
 
   const ddlStatements = generateDdlFromSchema(state.schemaData)
   const hasDdl = ddlStatements?.trim()
-  const hasUsecases =
-    state.generatedUsecases && state.generatedUsecases.length > 0
+  const hasTestcases =
+    state.generatedTestcases && state.generatedTestcases.length > 0
   const hasDml =
-    hasUsecases &&
-    state.generatedUsecases?.some(
-      (uc) => uc.dmlOperations && uc.dmlOperations.length > 0,
+    hasTestcases &&
+    state.generatedTestcases?.some(
+      (tc) => tc.dmlOperations && tc.dmlOperations.length > 0,
     )
 
   if (!hasDdl && !hasDml) {
@@ -196,22 +198,22 @@ export async function validateSchemaNode(
     allResults = [...ddlResults]
   }
 
-  let usecaseExecutionResults: UsecaseDmlExecutionResult[] = []
+  let testcaseExecutionResults: TestcaseDmlExecutionResult[] = []
   let updatedState = state
-  if (hasDml && state.generatedUsecases) {
-    usecaseExecutionResults = await executeDmlOperationsByUsecase(
+  if (hasDml && state.generatedTestcases) {
+    testcaseExecutionResults = await executeDmlOperationsByTestcase(
       ddlStatements || '',
-      state.generatedUsecases,
+      state.generatedTestcases,
     )
 
-    const dmlSqlResults: SqlResult[] = usecaseExecutionResults.map(
+    const dmlSqlResults: SqlResult[] = testcaseExecutionResults.map(
       (result) => ({
-        sql: `UseCase: ${result.useCaseTitle}`,
+        sql: `Test Case: ${result.testCaseTitle}`,
         result: result.success
           ? { executedOperations: result.executedOperations }
           : { errors: result.errors },
         success: result.success,
-        id: `usecase-${result.useCaseId}`,
+        id: `testcase-${result.testCaseId}`,
         metadata: {
           executionTime: 0,
           timestamp: result.executedAt.toISOString(),
@@ -220,9 +222,9 @@ export async function validateSchemaNode(
     )
     allResults = [...allResults, ...dmlSqlResults]
 
-    updatedState = updateWorkflowStateWithUsecaseResults(
+    updatedState = updateWorkflowStateWithTestcaseResults(
       state,
-      usecaseExecutionResults,
+      testcaseExecutionResults,
     )
 
     const artifact = transformWorkflowStateToArtifact(updatedState)
@@ -253,11 +255,11 @@ export async function validateSchemaNode(
       validationMessage =
         'Database validation complete: all checks passed successfully'
     } else {
-      const errorDetails = usecaseExecutionResults
+      const errorDetails = testcaseExecutionResults
         .filter((result) => !result.success)
         .map((result) => {
           const errorMessages = result.errors?.join('\n  - ') || 'Unknown error'
-          return `- "${result.useCaseTitle}":\n  - ${errorMessages}`
+          return `- "${result.testCaseTitle}":\n  - ${errorMessages}`
         })
         .join('\n')
 

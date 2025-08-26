@@ -12,7 +12,8 @@ export const getOrganizationMembers = async (organizationId: string) => {
       users(
         id,
         name,
-        email
+        email,
+        avatar_url
       )
     `)
     .eq('organization_id', organizationId)

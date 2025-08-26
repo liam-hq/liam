@@ -35,7 +35,7 @@ describe('routeAfterDesignSchema', () => {
     expect(result).toBe('invokeSchemaDesignTool')
   })
 
-  it('should return generateUsecase when message has no tool calls', () => {
+  it('should return generateTestcase when message has no tool calls', () => {
     const messageWithoutToolCalls = new AIMessage({
       content: 'Schema analysis complete',
     })
@@ -43,10 +43,10 @@ describe('routeAfterDesignSchema', () => {
     const state = workflowState([messageWithoutToolCalls])
     const result = routeAfterDesignSchema(state)
 
-    expect(result).toBe('generateUsecase')
+    expect(result).toBe('generateTestcase')
   })
 
-  it('should return generateUsecase when message has empty tool calls array', () => {
+  it('should return generateTestcase when message has empty tool calls array', () => {
     const messageWithEmptyToolCalls = new AIMessage({
       content: 'No tools needed',
       tool_calls: [],
@@ -55,10 +55,10 @@ describe('routeAfterDesignSchema', () => {
     const state = workflowState([messageWithEmptyToolCalls])
     const result = routeAfterDesignSchema(state)
 
-    expect(result).toBe('generateUsecase')
+    expect(result).toBe('generateTestcase')
   })
 
-  it('should return generateUsecase for HumanMessage', () => {
+  it('should return generateTestcase for HumanMessage', () => {
     const humanMessage = new HumanMessage({
       content: 'User input',
     })
@@ -66,7 +66,7 @@ describe('routeAfterDesignSchema', () => {
     const state = workflowState([humanMessage])
     const result = routeAfterDesignSchema(state)
 
-    expect(result).toBe('generateUsecase')
+    expect(result).toBe('generateTestcase')
   })
 
   it('should handle multiple messages and check only the last one', () => {
@@ -88,7 +88,7 @@ describe('routeAfterDesignSchema', () => {
     const state = workflowState([messageWithToolCalls, messageWithoutToolCalls])
     const result = routeAfterDesignSchema(state)
 
-    expect(result).toBe('generateUsecase')
+    expect(result).toBe('generateTestcase')
   })
 
   it('should handle multiple tool calls', () => {

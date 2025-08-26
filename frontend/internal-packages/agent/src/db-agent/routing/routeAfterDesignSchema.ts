@@ -6,7 +6,7 @@ import type { WorkflowState } from '../../chat/workflow/types'
  */
 export const routeAfterDesignSchema = (
   state: WorkflowState,
-): 'invokeSchemaDesignTool' | 'generateUsecase' => {
+): 'invokeSchemaDesignTool' | 'generateTestcase' => {
   const { messages } = state
   const lastMessage = messages[messages.length - 1]
 
@@ -14,7 +14,7 @@ export const routeAfterDesignSchema = (
     return 'invokeSchemaDesignTool'
   }
 
-  return 'generateUsecase'
+  return 'generateTestcase'
 }
 
 /**

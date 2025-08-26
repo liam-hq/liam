@@ -1,6 +1,6 @@
 import { aSchema } from '@liam-hq/schema'
 import { TabsRoot } from '@liam-hq/ui'
-import type { Meta, StoryObj } from '@storybook/react'
+import type { Meta, StoryObj } from '@storybook/nextjs'
 import { type ComponentProps, type FC, useCallback, useState } from 'react'
 import {
   DEFAULT_OUTPUT_TAB,

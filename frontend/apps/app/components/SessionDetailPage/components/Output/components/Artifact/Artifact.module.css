@@ -142,7 +142,7 @@
   color: var(--global-foreground);
 }
 
-/* Use Cases (h5) */
+/* Test Cases (h5) */
 .body :global(h5) {
   margin-top: 2.5rem;
   margin-bottom: 0.75rem;

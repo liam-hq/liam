@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/react'
+import type { Meta, StoryObj } from '@storybook/nextjs'
 import {
   type MessageOption,
   MessageOptionButtons,
@@ -535,16 +535,16 @@ export const PMWithRequirementsAnalyzed: Story = {
   },
 }
 
-export const QAWithUseCasesSaved: Story = {
+export const QAWithTestCasesSaved: Story = {
   args: {
     state: 'default',
-    message: 'Your use cases have been saved and are ready for implementation',
+    message: 'Your test cases have been saved and are ready for implementation',
     time: '14:35',
     assistantRole: 'qa',
     children: (
       <ViewLink
-        text="View Use Cases"
-        ariaLabel="Navigate to use cases tab"
+        text="View Test Cases"
+        ariaLabel="Navigate to test cases tab"
         onClick={() => {}}
       />
     ),

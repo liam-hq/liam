@@ -10,7 +10,7 @@ import { withTimelineItemSync } from '../../chat/workflow/utils/withTimelineItem
 import type { Repositories } from '../../repositories'
 import { WorkflowTerminationError } from '../../shared/errorHandling'
 import { removeReasoningFromMessages } from '../../utils/messageCleanup'
-import { QAGenerateUsecaseAgent } from './agent'
+import { QAGenerateTestcaseAgent } from './agent'
 
 /**
  * Save artifacts if workflow state contains artifact data
@@ -20,7 +20,7 @@ async function saveArtifacts(
   repositories: Repositories,
   assistantRole: Database['public']['Enums']['assistant_role_enum'],
 ): Promise<void> {
-  if (!state.analyzedRequirements && !state.generatedUsecases) {
+  if (!state.analyzedRequirements && !state.generatedTestcases) {
     return
   }
 
@@ -34,24 +34,24 @@ async function saveArtifacts(
     await logAssistantMessage(
       state,
       repositories,
-      'Your use cases have been saved and are ready for implementation',
+      'Your test cases have been saved and are ready for implementation',
       assistantRole,
     )
   } else {
     await logAssistantMessage(
       state,
       repositories,
-      'Unable to save your use cases. Please try again or contact support...',
+      'Unable to save your test cases. Please try again or contact support...',
       assistantRole,
     )
   }
 }
 
 /**
- * Generate Usecase Node - QA Agent creates use cases
- * Performed by qaGenerateUsecaseAgent
+ * Generate Testcase Node - QA Agent creates test cases
+ * Performed by qaGenerateTestcaseAgent
  */
-export async function generateUsecaseNode(
+export async function generateTestcaseNode(
   state: WorkflowState,
   config: RunnableConfig,
 ): Promise<WorkflowState> {
@@ -60,7 +60,7 @@ export async function generateUsecaseNode(
   if (configurableResult.isErr()) {
     throw new WorkflowTerminationError(
       configurableResult.error,
-      'generateUsecaseNode',
+      'generateTestcaseNode',
     )
   }
   const { repositories } = configurableResult.value
@@ -74,7 +74,7 @@ export async function generateUsecaseNode(
 
   if (!state.analyzedRequirements) {
     const errorMessage =
-      'No analyzed requirements found. Cannot generate use cases.'
+      'No analyzed requirements found. Cannot generate test cases.'
 
     await logAssistantMessage(
       state,
@@ -85,22 +85,22 @@ export async function generateUsecaseNode(
 
     throw new WorkflowTerminationError(
       new Error(errorMessage),
-      'generateUsecaseNode',
+      'generateTestcaseNode',
     )
   }
 
-  const qaAgent = new QAGenerateUsecaseAgent()
+  const qaAgent = new QAGenerateTestcaseAgent()
 
   // Remove reasoning field from AIMessages to avoid API issues
   // This prevents the "reasoning without required following item" error
   const cleanedMessages = removeReasoningFromMessages(state.messages)
 
-  const usecaseResult = await ResultAsync.fromPromise(
+  const testcaseResult = await ResultAsync.fromPromise(
     qaAgent.generate(cleanedMessages),
     (error) => (error instanceof Error ? error : new Error(String(error))),
   )
 
-  return await usecaseResult.match(
+  return await testcaseResult.match(
     async ({ response, reasoning }) => {
       // Log reasoning summary if available
       if (reasoning?.summary && reasoning.summary.length > 0) {
@@ -114,10 +114,10 @@ export async function generateUsecaseNode(
         }
       }
 
-      const usecaseMessage = await withTimelineItemSync(
+      const testcaseMessage = await withTimelineItemSync(
         new AIMessage({
-          content: `Generated ${response.usecases.length} use cases for testing and validation`,
-          name: 'QAGenerateUsecaseAgent',
+          content: `Generated ${response.testcases.length} test cases for testing and validation`,
+          name: 'QAGenerateTestcaseAgent',
         }),
         {
           designSessionId: state.designSessionId,
@@ -130,8 +130,8 @@ export async function generateUsecaseNode(
 
       const updatedState = {
         ...state,
-        messages: [usecaseMessage],
-        generatedUsecases: response.usecases,
+        messages: [testcaseMessage],
+        generatedTestcases: response.testcases,
       }
 
       await saveArtifacts(updatedState, repositories, assistantRole)
@@ -146,7 +146,7 @@ export async function generateUsecaseNode(
         assistantRole,
       )
 
-      throw new WorkflowTerminationError(error, 'generateUsecaseNode')
+      throw new WorkflowTerminationError(error, 'generateTestcaseNode')
     },
   )
 }

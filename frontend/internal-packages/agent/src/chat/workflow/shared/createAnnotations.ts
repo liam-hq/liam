@@ -1,6 +1,6 @@
 import { Annotation, END, MessagesAnnotation } from '@langchain/langgraph'
 import type { Schema } from '@liam-hq/schema'
-import type { Usecase } from '../../../qa-agent/generateUsecase/agent'
+import type { Testcase } from '../../../qa-agent/generateTestcase/agent'
 
 export const workflowAnnotation = Annotation.Root({
   ...MessagesAnnotation.spec,
@@ -13,7 +13,7 @@ export const workflowAnnotation = Annotation.Root({
       }
     | undefined
   >,
-  generatedUsecases: Annotation<Usecase[] | undefined>,
+  generatedTestcases: Annotation<Testcase[] | undefined>,
   schemaData: Annotation<Schema>,
   buildingSchemaId: Annotation<string>,
   latestVersionNumber: Annotation<number>,

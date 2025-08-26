@@ -2,15 +2,15 @@ import { END, START, StateGraph } from '@langchain/langgraph'
 import type { BaseCheckpointSaver } from '@langchain/langgraph-checkpoint'
 import { workflowAnnotation } from '../chat/workflow/shared/createAnnotations'
 import { RETRY_POLICY } from '../shared/errorHandling'
-import { generateUsecaseNode } from './generateUsecase'
+import { generateTestcaseNode } from './generateTestcase'
 import { prepareDmlNode } from './prepareDml'
 import { validateSchemaNode } from './validateSchema'
 
 /**
- * Create and configure the QA Agent subgraph for use case generation and validation
+ * Create and configure the QA Agent subgraph for test case generation and validation
  *
  * The QA Agent handles the testing and validation process:
- * 1. generateUsecase - Creates use cases for testing with automatic timeline sync
+ * 1. generateTestcase - Creates test cases for testing with automatic timeline sync
  * 2. prepareDML - Generates DML statements for testing
  * 3. validateSchema - Executes DML and validates schema
  *
@@ -20,7 +20,7 @@ export const createQaAgentGraph = (checkpointer?: BaseCheckpointSaver) => {
   const qaAgentGraph = new StateGraph(workflowAnnotation)
 
   qaAgentGraph
-    .addNode('generateUsecase', generateUsecaseNode, {
+    .addNode('generateTestcase', generateTestcaseNode, {
       retryPolicy: RETRY_POLICY,
     })
     .addNode('prepareDML', prepareDmlNode, {
@@ -30,8 +30,8 @@ export const createQaAgentGraph = (checkpointer?: BaseCheckpointSaver) => {
       retryPolicy: RETRY_POLICY,
     })
 
-    .addEdge(START, 'generateUsecase')
-    .addEdge('generateUsecase', 'prepareDML')
+    .addEdge(START, 'generateTestcase')
+    .addEdge('generateTestcase', 'prepareDML')
     .addEdge('prepareDML', 'validateSchema')
     .addEdge('validateSchema', END)
 

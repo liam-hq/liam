@@ -6,17 +6,17 @@ import { v4 as uuidv4 } from 'uuid'
 import * as v from 'valibot'
 import { reasoningSchema } from '../../langchain/utils/schema'
 import type { Reasoning } from '../../langchain/utils/types'
-import { QA_GENERATE_USECASE_SYSTEM_MESSAGE } from './prompts'
+import { QA_GENERATE_TESTCASE_SYSTEM_MESSAGE } from './prompts'
 
 // Direct JsonSchema definition instead of using toJsonSchema
 // because the generated schema has subtle incompatibilities with withStructuredOutput
 // (specifically the properties:{}, required:[] structure).
 // TODO: Migrate from valibot to zod, which is officially supported by langchain
-const USECASE_GENERATION_SCHEMA = {
-  title: 'UsecaseGeneration',
+const TESTCASE_GENERATION_SCHEMA = {
+  title: 'TestcaseGeneration',
   type: 'object',
   properties: {
-    usecases: {
+    testcases: {
       type: 'array',
       items: {
         type: 'object',
@@ -41,12 +41,12 @@ const USECASE_GENERATION_SCHEMA = {
       },
     },
   },
-  required: ['usecases'],
+  required: ['testcases'],
   additionalProperties: false,
 }
 
-// Schema for usecase from OpenAI response (without id and dmlOperations)
-const usecaseFromApiSchema = v.object({
+// Schema for testcase from OpenAI response (without id and dmlOperations)
+const testcaseFromApiSchema = v.object({
   requirementType: v.picklist(['functional', 'non_functional']), // Type of requirement
   requirementCategory: v.string(), // Category of the requirement
   requirement: v.string(), // Content/text of the specific requirement
@@ -54,8 +54,8 @@ const usecaseFromApiSchema = v.object({
   description: v.string(),
 })
 
-// Complete usecase schema with id and dmlOperations (for final output)
-const usecaseSchema = v.object({
+// Complete testcase schema with id and dmlOperations (for final output)
+const testcaseSchema = v.object({
   id: v.pipe(v.string(), v.uuid()), // UUID
   requirementType: v.picklist(['functional', 'non_functional']), // Type of requirement
   requirementCategory: v.string(), // Category of the requirement
@@ -66,29 +66,29 @@ const usecaseSchema = v.object({
 })
 
 // Response schema for OpenAI structured output (without id and dmlOperations)
-const usecaseGenerationFromApiSchema = v.object({
-  usecases: v.array(usecaseFromApiSchema),
+const testcaseGenerationFromApiSchema = v.object({
+  testcases: v.array(testcaseFromApiSchema),
 })
 
 // Response schema for final output
-const usecaseGenerationSchema = v.object({
-  usecases: v.array(usecaseSchema),
+const testcaseGenerationSchema = v.object({
+  testcases: v.array(testcaseSchema),
 })
 
-export type Usecase = v.InferOutput<typeof usecaseSchema>
-type UsecaseResponse = v.InferOutput<typeof usecaseGenerationSchema>
+export type Testcase = v.InferOutput<typeof testcaseSchema>
+type TestcaseResponse = v.InferOutput<typeof testcaseGenerationSchema>
 
 type RunInput = (BaseMessage | SystemMessage)[]
 
-type RunOutput = UsecaseResponse
+type RunOutput = TestcaseResponse
 
-type UsecaseWithReasoning = {
-  response: UsecaseResponse
+type TestcaseWithReasoning = {
+  response: TestcaseResponse
   reasoning: Reasoning | null
 }
 
-export class QAGenerateUsecaseAgent {
-  private usecaseModel: Runnable<
+export class QAGenerateTestcaseAgent {
+  private testcaseModel: Runnable<
     RunInput,
     {
       raw: BaseMessage
@@ -103,21 +103,21 @@ export class QAGenerateUsecaseAgent {
       useResponsesApi: true,
     })
 
-    this.usecaseModel = baseModel.withStructuredOutput<RunOutput>(
-      USECASE_GENERATION_SCHEMA,
+    this.testcaseModel = baseModel.withStructuredOutput<RunOutput>(
+      TESTCASE_GENERATION_SCHEMA,
       {
         includeRaw: true,
       },
     )
   }
 
-  async generate(messages: BaseMessage[]): Promise<UsecaseWithReasoning> {
+  async generate(messages: BaseMessage[]): Promise<TestcaseWithReasoning> {
     const allMessages = [
-      new SystemMessage(QA_GENERATE_USECASE_SYSTEM_MESSAGE),
+      new SystemMessage(QA_GENERATE_TESTCASE_SYSTEM_MESSAGE),
       ...messages,
     ]
 
-    const { raw } = await this.usecaseModel.invoke(allMessages)
+    const { raw } = await this.testcaseModel.invoke(allMessages)
     const parsedReasoning = v.safeParse(
       reasoningSchema,
       raw.additional_kwargs['reasoning'],
@@ -125,18 +125,18 @@ export class QAGenerateUsecaseAgent {
     const reasoning = parsedReasoning.success ? parsedReasoning.output : null
 
     const parsedResponse = v.parse(
-      usecaseGenerationFromApiSchema,
+      testcaseGenerationFromApiSchema,
       raw.additional_kwargs['parsed'],
     )
 
-    const usecasesWithIds = parsedResponse.usecases.map((usecase) => ({
-      ...usecase,
+    const testcasesWithIds = parsedResponse.testcases.map((testcase) => ({
+      ...testcase,
       id: uuidv4(),
       dmlOperations: [],
     }))
 
     return {
-      response: { usecases: usecasesWithIds },
+      response: { testcases: testcasesWithIds },
       reasoning,
     }
   }

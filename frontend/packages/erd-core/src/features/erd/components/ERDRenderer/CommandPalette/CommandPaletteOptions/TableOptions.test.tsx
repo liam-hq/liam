@@ -13,15 +13,28 @@ import {
   UserEditingProvider,
 } from '@/stores'
 import { CommandPaletteProvider } from '../CommandPaletteProvider'
+import * as UseCommandPalette from '../CommandPaletteProvider/hooks'
 import { TableOptions } from './TableOptions'
 
 afterEach(() => {
   vi.clearAllMocks()
 })
 
+const mockSetCommandPaletteDialogOpen = vi.fn()
 const mockSelectTable = vi.fn()
 const mockWindowOpen = vi.fn()
 
+const originalUseCommandPaletteOrThrow =
+  UseCommandPalette.useCommandPaletteOrThrow
+vi.spyOn(UseCommandPalette, 'useCommandPaletteOrThrow').mockImplementation(
+  () => {
+    const original = originalUseCommandPaletteOrThrow()
+    return {
+      ...original,
+      setOpen: mockSetCommandPaletteDialogOpen,
+    }
+  },
+)
 const originalUseTableSelection = UseTableSelection.useTableSelection
 vi.spyOn(UseTableSelection, 'useTableSelection').mockImplementation(() => {
   const original = originalUseTableSelection()
@@ -62,11 +75,11 @@ it('displays table options', () => {
   render(<TableOptions suggestion={null} />, { wrapper })
 
   // FIXME: their roles should be "link" rather than "option". Also we would like to check its href attribute
-  expect(screen.getByRole('option', { name: 'users' })).toBeInTheDocument()
-  expect(screen.getByRole('option', { name: 'posts' })).toBeInTheDocument()
-  expect(screen.getByRole('option', { name: 'follows' })).toBeInTheDocument()
+  expect(screen.getByRole('link', { name: 'users' })).toBeInTheDocument()
+  expect(screen.getByRole('link', { name: 'posts' })).toBeInTheDocument()
+  expect(screen.getByRole('link', { name: 'follows' })).toBeInTheDocument()
   expect(
-    screen.getByRole('option', { name: 'user_settings' }),
+    screen.getByRole('link', { name: 'user_settings' }),
   ).toBeInTheDocument()
 })
 
@@ -75,10 +88,10 @@ describe('mouse interactions', () => {
     render(<TableOptions suggestion={null} />, { wrapper })
     const user = userEvent.setup()
 
-    await user.click(screen.getByRole('option', { name: 'follows' }))
+    await user.click(screen.getByRole('link', { name: 'follows' }))
 
     expect(mockSelectTable).toHaveBeenCalled()
-    // TODO: check if the dialog is closed
+    expect(mockSetCommandPaletteDialogOpen).toHaveBeenCalledWith(false)
   })
 
   it('does nothing with ⌘ + click (default browser action: open in new tab)', async () => {
@@ -86,10 +99,11 @@ describe('mouse interactions', () => {
     const user = userEvent.setup()
 
     await user.keyboard('{Meta>}')
-    await user.click(screen.getByRole('option', { name: 'follows' }))
+    await user.click(screen.getByRole('link', { name: 'follows' }))
     await user.keyboard('{/Meta}')
 
     expect(mockSelectTable).not.toHaveBeenCalled()
+    expect(mockSetCommandPaletteDialogOpen).not.toHaveBeenCalled()
   })
 })
 
@@ -106,7 +120,7 @@ describe('keyboard interactions', () => {
       displayArea: 'main',
       tableId: 'users',
     })
-    // TODO: check if the dialog is closed
+    expect(mockSetCommandPaletteDialogOpen).toHaveBeenCalledWith(false)
 
     // other functions are not called
     expect(mockWindowOpen).not.toHaveBeenCalled()
@@ -124,6 +138,7 @@ describe('keyboard interactions', () => {
 
     // other functions are not called
     expect(mockSelectTable).not.toHaveBeenCalled()
+    expect(mockSetCommandPaletteDialogOpen).not.toHaveBeenCalled()
   })
 
   it('does nothing on Enter when suggestion is not table', async () => {
@@ -137,6 +152,6 @@ describe('keyboard interactions', () => {
 
     expect(mockWindowOpen).not.toHaveBeenCalled()
     expect(mockSelectTable).not.toHaveBeenCalled()
-    // TODO: check if the dialog is NOT closed
+    expect(mockSetCommandPaletteDialogOpen).not.toHaveBeenCalled()
   })
 })

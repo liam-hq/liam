@@ -1,5 +1,5 @@
 import { aBuildingSchemaVersion } from '@liam-hq/db'
-import type { Meta, StoryObj } from '@storybook/react'
+import type { Meta, StoryObj } from '@storybook/nextjs'
 import { HttpResponse, http } from 'msw'
 import { VersionMessage } from './VersionMessage'
 

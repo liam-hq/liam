@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/react'
+import type { Meta, StoryObj } from '@storybook/nextjs'
 import styles from './AgentAvatars.stories.module.css'
 import { DBAgent } from './DbAgent'
 import { PMAgent } from './PmAgent'

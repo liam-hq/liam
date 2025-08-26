@@ -5,10 +5,7 @@ import {
   type CommandPaletteContextValue,
 } from './context'
 
-export const useCommandPalette = (): Result<
-  CommandPaletteContextValue,
-  Error
-> => {
+const useCommandPalette = (): Result<CommandPaletteContextValue, Error> => {
   const commandPaletteValue = useContext(CommandPaletteContext)
   if (!commandPaletteValue)
     return err(
@@ -16,4 +13,11 @@ export const useCommandPalette = (): Result<
     )
 
   return ok(commandPaletteValue)
+}
+
+export const useCommandPaletteOrThrow = (): CommandPaletteContextValue => {
+  const result = useCommandPalette()
+  if (result.isErr()) throw result.error
+
+  return result.value
 }

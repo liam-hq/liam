@@ -71,9 +71,9 @@ describe('validateSchemaNode', () => {
     vi.mocked(executeQuery).mockResolvedValue(mockResults)
 
     const state = createMockState({
-      generatedUsecases: [
+      generatedTestcases: [
         {
-          id: 'usecase-1',
+          id: 'testcase-1',
           requirementType: 'functional',
           requirementCategory: 'data_management',
           requirement: 'Insert user data',
@@ -81,7 +81,7 @@ describe('validateSchemaNode', () => {
           description: 'Insert a new user record',
           dmlOperations: [
             {
-              useCaseId: 'usecase-1',
+              testCaseId: 'testcase-1',
               operation_type: 'INSERT',
               sql: 'INSERT INTO users VALUES (1, "test");',
               dml_execution_logs: [],
@@ -191,9 +191,9 @@ describe('validateSchemaNode', () => {
           }),
         },
       }),
-      generatedUsecases: [
+      generatedTestcases: [
         {
-          id: 'usecase-1',
+          id: 'testcase-1',
           requirementType: 'functional',
           requirementCategory: 'data_management',
           requirement: 'Insert user data',
@@ -201,7 +201,7 @@ describe('validateSchemaNode', () => {
           description: 'Insert a new user record',
           dmlOperations: [
             {
-              useCaseId: 'usecase-1',
+              testCaseId: 'testcase-1',
               operation_type: 'INSERT',
               sql: 'INSERT INTO users VALUES (1);',
               dml_execution_logs: [],
@@ -276,9 +276,9 @@ describe('validateSchemaNode', () => {
           }),
         },
       }),
-      generatedUsecases: [
+      generatedTestcases: [
         {
-          id: 'usecase-1',
+          id: 'testcase-1',
           requirementType: 'functional',
           requirementCategory: 'data_management',
           requirement: 'Insert invalid data',
@@ -286,7 +286,7 @@ describe('validateSchemaNode', () => {
           description: 'Attempt to insert data into invalid table',
           dmlOperations: [
             {
-              useCaseId: 'usecase-1',
+              testCaseId: 'testcase-1',
               operation_type: 'INSERT',
               sql: 'INSERT INTO invalid_table VALUES (1);',
               dml_execution_logs: [],
@@ -301,7 +301,7 @@ describe('validateSchemaNode', () => {
       configurable: { repositories, thread_id: 'test-thread' },
     })
 
-    expect(result.dmlExecutionErrors).toContain('SQL: UseCase:')
+    expect(result.dmlExecutionErrors).toContain('SQL: Test Case:')
     expect(result.dmlExecutionErrors).toContain('Error:')
   })
 
@@ -417,9 +417,9 @@ describe('validateSchemaNode', () => {
           }),
         },
       }),
-      generatedUsecases: [
+      generatedTestcases: [
         {
-          id: 'usecase-1',
+          id: 'testcase-1',
           requirementType: 'functional',
           requirementCategory: 'data_management',
           requirement: 'Insert user data',
@@ -427,7 +427,7 @@ describe('validateSchemaNode', () => {
           description: 'Insert a new user record',
           dmlOperations: [
             {
-              useCaseId: 'usecase-1',
+              testCaseId: 'testcase-1',
               operation_type: 'INSERT',
               sql: 'INSERT INTO users VALUES (1);',
               dml_execution_logs: [],
@@ -435,7 +435,7 @@ describe('validateSchemaNode', () => {
           ],
         },
         {
-          id: 'usecase-2',
+          id: 'testcase-2',
           requirementType: 'functional',
           requirementCategory: 'data_management',
           requirement: 'Update user data',
@@ -443,7 +443,7 @@ describe('validateSchemaNode', () => {
           description: 'Update user record',
           dmlOperations: [
             {
-              useCaseId: 'usecase-2',
+              testCaseId: 'testcase-2',
               operation_type: 'UPDATE',
               sql: 'UPDATE users SET name = "test";',
               dml_execution_logs: [],
@@ -460,7 +460,7 @@ describe('validateSchemaNode', () => {
 
     // Verify that all error messages are accumulated
     expect(result.dmlExecutionErrors).toBe(
-      'SQL: UseCase: Insert User, Error: {"errors":["Column count mismatch"]}; SQL: UseCase: Update User, Error: {"errors":["Column \\"name\\" does not exist"]}',
+      'SQL: Test Case: Insert User, Error: {"errors":["Column count mismatch"]}; SQL: Test Case: Update User, Error: {"errors":["Column \\"name\\" does not exist"]}',
     )
   })
 
@@ -485,9 +485,9 @@ describe('validateSchemaNode', () => {
     const state = createMockState({
       dmlStatements: '',
       dmlExecutionErrors: 'Previous error message', // Pre-existing error
-      generatedUsecases: [
+      generatedTestcases: [
         {
-          id: 'usecase-1',
+          id: 'testcase-1',
           requirementType: 'functional',
           requirementCategory: 'data_management',
           requirement: 'Insert user data',
@@ -495,7 +495,7 @@ describe('validateSchemaNode', () => {
           description: 'Insert a new user record',
           dmlOperations: [
             {
-              useCaseId: 'usecase-1',
+              testCaseId: 'testcase-1',
               operation_type: 'INSERT',
               sql: 'INSERT INTO users VALUES (1, "test");',
               dml_execution_logs: [],
@@ -515,9 +515,9 @@ describe('validateSchemaNode', () => {
     expect(result.dmlExecutionErrors).toBe('Previous error message')
   })
 
-  it('should execute DML operations from each usecase', async () => {
+  it('should execute DML operations from each testcase', async () => {
     // This test verifies that validateSchemaNode executes DML operations
-    // found in each usecase's dmlOperations array
+    // found in each testcase's dmlOperations array
 
     const sqlResults: SqlResult[] = [
       {
@@ -536,9 +536,9 @@ describe('validateSchemaNode', () => {
 
     const state = createMockState({
       dmlStatements: 'INSERT INTO users VALUES (1, "test");',
-      generatedUsecases: [
+      generatedTestcases: [
         {
-          id: 'usecase-1',
+          id: 'testcase-1',
           requirementType: 'functional',
           requirementCategory: 'data_management',
           requirement: 'Insert user data',
@@ -546,7 +546,7 @@ describe('validateSchemaNode', () => {
           description: 'Insert a new user record',
           dmlOperations: [
             {
-              useCaseId: 'usecase-1',
+              testCaseId: 'testcase-1',
               operation_type: 'INSERT',
               sql: 'INSERT INTO users VALUES (1, "test");',
               dml_execution_logs: [],
@@ -569,12 +569,12 @@ describe('validateSchemaNode', () => {
     // Verify execution was successful
     expect(result.dmlExecutionErrors).toBeUndefined()
 
-    // Verify execution logs were added to the usecase's DML operations
-    expect(result.generatedUsecases).toBeDefined()
-    const firstUsecase = result.generatedUsecases?.[0]
-    expect(firstUsecase).toBeDefined()
-    expect(firstUsecase?.dmlOperations).toBeDefined()
-    const firstDmlOp = firstUsecase?.dmlOperations?.[0]
+    // Verify execution logs were added to the testcase's DML operations
+    expect(result.generatedTestcases).toBeDefined()
+    const firstTestcase = result.generatedTestcases?.[0]
+    expect(firstTestcase).toBeDefined()
+    expect(firstTestcase?.dmlOperations).toBeDefined()
+    const firstDmlOp = firstTestcase?.dmlOperations?.[0]
     expect(firstDmlOp).toBeDefined()
     expect(firstDmlOp?.dml_execution_logs).toBeDefined()
     const executionLogs = firstDmlOp?.dml_execution_logs

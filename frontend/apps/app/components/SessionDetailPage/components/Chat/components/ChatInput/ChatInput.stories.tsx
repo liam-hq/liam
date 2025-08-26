@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/react'
+import type { Meta, StoryObj } from '@storybook/nextjs'
 import { ChatInput } from './ChatInput'
 
 const dummySchema = {
@@ -76,6 +76,19 @@ const dummySchema = {
 const meta = {
   component: ChatInput,
   tags: ['autodocs'],
+  parameters: {
+    // Mock modules for public mode
+    moduleMetadata: {
+      mock: [
+        {
+          module: '../../../../hooks/viewMode',
+          mock: {
+            useViewMode: () => ({ isPublic: false }),
+          },
+        },
+      ],
+    },
+  },
 } satisfies Meta<typeof ChatInput>
 
 export default meta

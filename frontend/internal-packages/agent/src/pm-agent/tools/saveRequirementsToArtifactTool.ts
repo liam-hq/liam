@@ -60,7 +60,7 @@ const createArtifactFromRequirements = (
       type: 'functional',
       name: category,
       description: items,
-      use_cases: [], // Empty array as use cases don't exist at this point
+      test_cases: [], // Empty array as test cases don't exist at this point
     }
     requirements.push(functionalRequirement)
   }

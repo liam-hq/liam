@@ -1,5 +1,10 @@
-import type { Meta, StoryObj } from '@storybook/react'
-import { type KeyboardEvent, useRef, useState } from 'react'
+import type { Meta, StoryObj } from '@storybook/nextjs'
+import {
+  type ComponentProps,
+  type KeyboardEvent,
+  useRef,
+  useState,
+} from 'react'
 import { MentionSuggestor } from './MentionSuggestor'
 
 const meta = {
@@ -136,7 +141,7 @@ export const SchemaMention: Story = {
     schema,
     onSelect: () => {},
   },
-  render: (args) => {
+  render: (args: ComponentProps<typeof MentionSuggestor>) => {
     const [input, setInput] = useState(args.input)
     const [cursorPos, setcursorPos] = useState(args.cursorPos)
     const [selected, setSelected] = useState<string | null>(null)
@@ -198,7 +203,7 @@ export const LimitedItems: Story = {
     schema,
     onSelect: () => {},
   },
-  render: (args) => {
+  render: (args: ComponentProps<typeof MentionSuggestor>) => {
     const [input, setInput] = useState(args.input)
     const [cursorPos, setcursorPos] = useState(args.cursorPos)
     const [selected, setSelected] = useState<string | null>(null)

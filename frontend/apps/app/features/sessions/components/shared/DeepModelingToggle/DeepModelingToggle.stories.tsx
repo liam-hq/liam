@@ -1,4 +1,5 @@
-import type { Meta, StoryObj } from '@storybook/react'
+import type { Meta, StoryObj } from '@storybook/nextjs'
+import type { ComponentProps } from 'react'
 import { DeepModelingToggle } from './DeepModelingToggle'
 
 const meta = {
@@ -34,7 +35,7 @@ export const Interactive: Story = {
     defaultChecked: true,
     children: 'Deep Modeling',
   },
-  render: (args) => {
+  render: (args: ComponentProps<typeof DeepModelingToggle>) => {
     return (
       <form>
         <DeepModelingToggle {...args}>{args.children}</DeepModelingToggle>

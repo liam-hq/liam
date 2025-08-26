@@ -5,12 +5,12 @@ describe('createQaAgentGraph', () => {
   const expectedMermaidDiagram = `%%{init: {'flowchart': {'curve': 'linear'}}}%%
 graph TD;
 	__start__([<p>__start__</p>]):::first
-	generateUsecase(generateUsecase)
+	generateTestcase(generateTestcase)
 	prepareDML(prepareDML)
 	validateSchema(validateSchema)
 	__end__([<p>__end__</p>]):::last
-	__start__ --> generateUsecase;
-	generateUsecase --> prepareDML;
+	__start__ --> generateTestcase;
+	generateTestcase --> prepareDML;
 	prepareDML --> validateSchema;
 	validateSchema --> __end__;
 	classDef default fill:#f2f0ff,line-height:1.2;
@@ -33,30 +33,30 @@ graph TD;
 
     // Check that required nodes exist
     const nodeNames = Object.keys(graph.nodes)
-    expect(nodeNames).toContain('generateUsecase')
+    expect(nodeNames).toContain('generateTestcase')
     expect(nodeNames).toContain('prepareDML')
     expect(nodeNames).toContain('validateSchema')
   })
 
-  it('should start with generateUsecase node', async () => {
+  it('should start with generateTestcase node', async () => {
     const compiledQaAgentGraph = createQaAgentGraph()
     const graph = await compiledQaAgentGraph.getGraphAsync()
 
-    // Check that the graph starts with generateUsecase by examining edges from START
+    // Check that the graph starts with generateTestcase by examining edges from START
     const startEdges = graph.edges.filter((edge) => edge.source === '__start__')
     const targetNodes = startEdges.map((edge) => edge.target)
-    expect(targetNodes).toContain('generateUsecase')
+    expect(targetNodes).toContain('generateTestcase')
   })
 
-  it('should have linear flow from generateUsecase to validateSchema', async () => {
+  it('should have linear flow from generateTestcase to validateSchema', async () => {
     const compiledQaAgentGraph = createQaAgentGraph()
     const graph = await compiledQaAgentGraph.getGraphAsync()
 
-    const generateUsecaseEdges = graph.edges.filter(
-      (edge) => edge.source === 'generateUsecase',
+    const generateTestcaseEdges = graph.edges.filter(
+      (edge) => edge.source === 'generateTestcase',
     )
     expect(
-      generateUsecaseEdges.some((edge) => edge.target === 'prepareDML'),
+      generateTestcaseEdges.some((edge) => edge.target === 'prepareDML'),
     ).toBe(true)
 
     const prepareDMLEdges = graph.edges.filter(

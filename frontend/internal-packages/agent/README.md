@@ -42,7 +42,7 @@ interface WorkflowState {
 
   // Requirements analysis
   analyzedRequirements?: AnalyzedRequirements;
-  generatedUsecases?: Usecase[];
+  generatedTestcases?: Testcase[];
 
   // DML execution
   dmlStatements?: string;
@@ -68,7 +68,7 @@ interface WorkflowState {
 1. **leadAgent**: Lead Agent subgraph that routes requests to appropriate specialized agents
 2. **pmAgent**: PM Agent subgraph that handles requirements analysis - contains analyzeRequirements and invokeSaveArtifactTool nodes
 3. **dbAgent**: DB Agent subgraph that handles database schema design - contains designSchema and invokeSchemaDesignTool nodes (performed by dbAgent)
-4. **qaAgent**: QA Agent subgraph that handles testing and validation - contains generateUsecase, prepareDML, and validateSchema nodes (performed by qaAgent)
+4. **qaAgent**: QA Agent subgraph that handles testing and validation - contains generateTestcase, prepareDML, and validateSchema nodes (performed by qaAgent)
 5. **finalizeArtifacts**: Generates and saves comprehensive artifacts to database, handles error timeline items (performed by dbAgentArtifactGen)
 
 ## Lead Agent Subgraph
@@ -229,12 +229,12 @@ The `qaAgent` node is implemented as a **LangGraph subgraph** that encapsulates 
 %%{init: {'flowchart': {'curve': 'linear'}}}%%
 graph TD;
 	__start__([<p>__start__</p>]):::first
-	generateUsecase(generateUsecase)
+	generateTestcase(generateTestcase)
 	prepareDML(prepareDML)
 	validateSchema(validateSchema)
 	__end__([<p>__end__</p>]):::last
-	__start__ --> generateUsecase;
-	generateUsecase --> prepareDML;
+	__start__ --> generateTestcase;
+	generateTestcase --> prepareDML;
 	prepareDML --> validateSchema;
 	validateSchema --> __end__;
 	classDef default fill:#f2f0ff,line-height:1.2;
@@ -244,14 +244,14 @@ graph TD;
 
 ### QA Agent Components
 
-#### 1. generateUsecase Node
-- **Purpose**: Creates comprehensive use cases for testing database schema functionality
-- **Performed by**: QA Generate Usecase Agent with GPT-4
+#### 1. generateTestcase Node
+- **Purpose**: Creates comprehensive test cases for testing database schema functionality
+- **Performed by**: QA Generate Testcase Agent with GPT-4
 - **Retry Policy**: maxAttempts: 3 (internal to subgraph)
 - **Timeline Sync**: Automatic message synchronization
 
 #### 2. prepareDML Node
-- **Purpose**: Generates DML statements based on use cases for schema validation
+- **Purpose**: Generates DML statements based on test cases for schema validation
 - **Performed by**: DML Generation Agent
 - **Retry Policy**: maxAttempts: 3 (internal to subgraph)
 - **Output**: Structured DML operations for testing
@@ -264,7 +264,7 @@ graph TD;
 
 ### QA Agent Flow Patterns
 
-1. **Linear Testing Flow**: `START → generateUsecase → prepareDML → validateSchema → END`
+1. **Linear Testing Flow**: `START → generateTestcase → prepareDML → validateSchema → END`
 2. **Comprehensive Validation**: Each step builds upon the previous to ensure thorough testing
 
 ### QA Agent Benefits
@@ -292,7 +292,7 @@ graph.addNode('qaAgent', qaAgentSubgraph) // No retry policy - handled internall
 - **analyzeRequirements**: Routes to `saveRequirementToArtifact` when requirements are successfully analyzed, retries `analyzeRequirements` with retry count tracking (max 3 attempts), fallback to `finalizeArtifacts` when max retries exceeded
 - **saveRequirementToArtifact**: Always routes to `dbAgent` after processing artifacts (workflow termination node pattern)
 - **dbAgent**: DB Agent subgraph handles internal routing between designSchema and invokeSchemaDesignTool nodes, routes to `qaAgent` on completion
-- **qaAgent**: QA Agent subgraph handles internal routing between generateUsecase, prepareDML, and validateSchema nodes, always routes to `finalizeArtifacts` (conditional routing temporarily disabled)
+- **qaAgent**: QA Agent subgraph handles internal routing between generateTestcase, prepareDML, and validateSchema nodes, always routes to `finalizeArtifacts` (conditional routing temporarily disabled)
 
 ## Timeline Synchronization
 
@@ -310,7 +310,7 @@ graph.addNode('qaAgent', qaAgentSubgraph) // No retry policy - handled internall
 ### Implementation Details
 
 - **User Message Sync**: User input is synchronized in `deepModeling.ts` before workflow execution
-- **AI Message Sync**: All workflow nodes (analyzeRequirements, dbAgent subgraph, generateUsecase) automatically sync their AI responses
+- **AI Message Sync**: All workflow nodes (analyzeRequirements, dbAgent subgraph, generateTestcase) automatically sync their AI responses
 - **Non-blocking**: Timeline synchronization is asynchronous and non-blocking to ensure workflow performance
 - **Utility Function**: `withTimelineItemSync()` provides consistent message synchronization across all nodes
 

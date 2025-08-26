@@ -1,0 +1,143 @@
+.dialog {
+  width: 90vw;
+  max-width: 450px;
+  border-radius: var(--border-radius-xl, 0.75rem);
+  border: 1px solid var(--primary-color, #1ded83);
+  background:
+    var(
+      --Auth-Background,
+      linear-gradient(
+        179deg,
+        var(--primary-gradation-overlay-start, rgba(29, 237, 131, 0.12)) 0.79%,
+        var(--primary-gradation-overlay-end, rgba(29, 237, 131, 0)) 99.35%
+      )
+    ), var(--global-background);
+  box-shadow:
+    0px 0px 20px 0px rgba(29, 237, 131, 0.4),
+    0px 4px 80px 0px rgba(29, 237, 131, 0.1) inset;
+  backdrop-filter: blur(2.5px);
+}
+
+.dialogContent {
+  padding: 0;
+}
+
+.dialogHeader {
+  display: flex;
+  justify-content: flex-end;
+  padding: var(--spacing-4);
+}
+
+.closeButton {
+  background: none;
+  border: none;
+  font-size: var(--font-size-8);
+  cursor: pointer;
+  color: var(--text-secondary);
+  line-height: 1;
+  padding: 0;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.closeButton:hover {
+  color: var(--text-primary);
+}
+
+.authContent {
+  padding: 0 var(--spacing-10) var(--spacing-10);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-8);
+}
+
+.titleWrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-3);
+}
+
+.logoMark {
+  width: 2.5rem;
+  height: 2.5rem;
+}
+
+.title {
+  text-align: center;
+  margin-bottom: var(--spacing-6);
+  color: var(--global-foreground);
+  font-size: var(--font-size-8);
+  font-weight: var(--text-weight-en-medium);
+}
+
+.oauthList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-4);
+  width: 100%;
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  color: var(--overlay-70);
+  margin: var(--spacing-4) 0;
+}
+
+.divider::before,
+.divider::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px solid var(--global-border);
+}
+
+.divider span {
+  padding: 0 var(--spacing-2);
+  font-size: var(--font-size-3);
+}
+
+.oauthButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-2);
+  width: 100%;
+  padding: var(--spacing-2) var(--spacing-4);
+  border-radius: var(--border-radius-base);
+  border: 1px solid var(--global-border);
+  background-color: transparent;
+  color: var(--global-foreground);
+  font-size: var(--font-size-4);
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.oauthButton:hover {
+  background-color: var(--pane-background-hover);
+}
+
+.switchAuth {
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: var(--font-size-2);
+  margin-top: var(--spacing-4);
+}
+
+.createAccountLink {
+  background: none;
+  border: none;
+  color: var(--primary-color);
+  cursor: pointer;
+  font-size: inherit;
+  text-decoration: none;
+  transition: opacity 0.2s ease;
+}
+
+.createAccountLink:hover {
+  opacity: 0.8;
+  text-decoration: underline;
+}

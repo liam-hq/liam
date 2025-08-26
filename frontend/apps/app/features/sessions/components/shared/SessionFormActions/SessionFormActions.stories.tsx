@@ -1,5 +1,5 @@
-import type { Meta, StoryObj } from '@storybook/react'
-import { useState } from 'react'
+import type { Meta, StoryObj } from '@storybook/nextjs'
+import { type ComponentProps, useState } from 'react'
 import { SessionFormActions } from './SessionFormActions'
 
 const meta = {
@@ -59,7 +59,7 @@ export const Interactive: Story = {
     onSubmit: () => {},
     onCancel: () => {},
   },
-  render: (args) => {
+  render: (args: ComponentProps<typeof SessionFormActions>) => {
     const [isPending, setIsPending] = useState(args.isPending)
     const [hasContent, setHasContent] = useState(args.hasContent)
 

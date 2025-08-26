@@ -151,11 +151,11 @@ describe('options and combobox interactions', () => {
       elements: { dialog },
     } = await prepareCommandPalette()
 
-    expect(within(dialog).getAllByRole('option')).toHaveLength(4)
-    expect(within(dialog).getByRole('option', { name: 'users' }))
-    expect(within(dialog).getByRole('option', { name: 'posts' }))
-    expect(within(dialog).getByRole('option', { name: 'follows' }))
-    expect(within(dialog).getByRole('option', { name: 'user_settings' }))
+    expect(within(dialog).getAllByRole('link')).toHaveLength(4)
+    expect(within(dialog).getByRole('link', { name: 'users' }))
+    expect(within(dialog).getByRole('link', { name: 'posts' }))
+    expect(within(dialog).getByRole('link', { name: 'follows' }))
+    expect(within(dialog).getByRole('link', { name: 'user_settings' }))
   })
 
   it('filters options based on user input in the combobox', async () => {
@@ -168,9 +168,9 @@ describe('options and combobox interactions', () => {
 
     await user.keyboard('user')
 
-    expect(within(dialog).getAllByRole('option')).toHaveLength(2)
-    expect(within(dialog).getByRole('option', { name: 'users' }))
-    expect(within(dialog).getByRole('option', { name: 'user_settings' }))
+    expect(within(dialog).getAllByRole('link')).toHaveLength(2)
+    expect(within(dialog).getByRole('link', { name: 'users' }))
+    expect(within(dialog).getByRole('link', { name: 'user_settings' }))
   })
 
   it('renders "No results found." if user input does not match any options', async () => {
@@ -197,7 +197,7 @@ describe('preview with option interactions', () => {
 
     expect(within(preview).getByText('users')).toBeInTheDocument()
 
-    await user.hover(within(dialog).getByRole('option', { name: 'follows' }))
+    await user.hover(within(dialog).getByRole('link', { name: 'follows' }))
 
     expect(within(preview).getByText('follows')).toBeInTheDocument()
   })
@@ -231,9 +231,7 @@ describe('go to ERD with option select', () => {
 
     expect(activeTableNameDisplay).toBeEmptyDOMElement()
 
-    const followsOption = within(dialog).getByRole('option', {
-      name: 'follows',
-    })
+    const followsOption = within(dialog).getByRole('link', { name: 'follows' })
     const firstChild = followsOption.firstChild
     if (firstChild && firstChild instanceof Element) {
       await user.click(firstChild)

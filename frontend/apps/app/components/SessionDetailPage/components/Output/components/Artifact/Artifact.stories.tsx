@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/react'
+import type { Meta, StoryObj } from '@storybook/nextjs'
 import { Artifact } from './Artifact'
 
 const meta = {
@@ -50,7 +50,7 @@ The system should provide a comprehensive user management platform that allows a
 
 The system must provide functionality to create, read, update, and delete user accounts with appropriate role-based access control.
 
-**Use Cases:**
+**Test Cases:**
 
 #### 1. Create New User
 
@@ -78,7 +78,7 @@ WHERE user_id = 123;
 
 The system must support flexible role creation and assignment with granular permissions.
 
-**Use Cases:**
+**Test Cases:**
 
 #### 1. Assign Role to User
 

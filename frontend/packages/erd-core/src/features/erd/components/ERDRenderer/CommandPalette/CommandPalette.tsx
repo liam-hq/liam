@@ -11,17 +11,13 @@ import {
 import { type FC, useEffect } from 'react'
 import styles from './CommandPalette.module.css'
 import { CommandPaletteContent } from './CommandPaletteContent'
-import { useCommandPalette } from './CommandPaletteProvider'
+import { useCommandPaletteOrThrow } from './CommandPaletteProvider'
 import { useSubscribeCommands } from './hooks'
 
 export const CommandPalette: FC = () => {
   useSubscribeCommands()
 
-  const commandPaletteResult = useCommandPalette()
-  if (commandPaletteResult.isErr()) {
-    throw commandPaletteResult.error
-  }
-  const { open, setOpen, toggleOpen } = commandPaletteResult.value
+  const { open, setOpen, toggleOpen } = useCommandPaletteOrThrow()
 
   // Toggle the menu when ⌘K is pressed
   useEffect(() => {

@@ -29,7 +29,7 @@
     "@biomejs/biome": "2.1.4",
     "@liam-hq/configs": "workspace:*",
     "@liam-hq/schema": "workspace:*",
-    "@storybook/react": "8.6.14",
+    "@storybook/nextjs": "9.1.3",
     "@testing-library/jest-dom": "6.6.4",
     "@testing-library/react": "16.3.0",
     "@testing-library/user-event": "14.6.1",
@@ -52,8 +52,9 @@
     "gen:css": "tcm src",
     "lint": "concurrently \"pnpm:lint:*\"",
     "lint:biome": "biome check .",
-    "lint:eslint": "eslint .",
+    "lint:eslint": "eslint . --prune-suppressions",
     "lint:tsc": "tsc --noEmit",
+    "suppressions": "eslint --suppress-all --fix --max-warnings 0",
     "test": "vitest --watch=false"
   }
 }

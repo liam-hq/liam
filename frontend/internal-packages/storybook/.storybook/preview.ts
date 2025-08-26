@@ -1,4 +1,4 @@
-import type { Preview } from '@storybook/react'
+import type { Preview } from '@storybook/nextjs'
 import '@liam-hq/ui/src/styles/globals.css'
 import { initialize, mswDecorator } from 'msw-storybook-addon'
 
@@ -26,13 +26,15 @@ const preview: Preview = {
       },
     },
     backgrounds: {
-      default: 'dark',
-      values: [
-        { name: 'light', value: '#f8f8f8' },
-        { name: 'dark', value: '#333333' },
-      ],
+      options: {
+        light: { name: 'Light', value: '#f8f8f8' },
+        dark: { name: 'Dark', value: '#333333' },
+      },
     },
     layout: 'centered',
+  },
+  initialGlobals: {
+    backgrounds: { value: 'dark' },
   },
   tags: ['autodocs'],
 }

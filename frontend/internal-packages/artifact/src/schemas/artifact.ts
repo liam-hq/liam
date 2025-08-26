@@ -9,15 +9,15 @@ export const dmlExecutionLogSchema = v.object({
 
 // DML operation schema
 export const dmlOperationSchema = v.object({
-  useCaseId: v.string(),
+  testCaseId: v.string(),
   operation_type: v.picklist(['INSERT', 'UPDATE', 'DELETE', 'SELECT']),
   sql: v.string(),
   description: v.optional(v.string()),
   dml_execution_logs: v.array(dmlExecutionLogSchema),
 })
 
-// Use case schema
-export const useCaseSchema = v.object({
+// Test case schema
+export const testCaseSchema = v.object({
   title: v.string(),
   description: v.string(),
   dml_operations: v.array(dmlOperationSchema),
@@ -33,7 +33,7 @@ const baseRequirementProperties = {
 export const functionalRequirementSchema = v.object({
   ...baseRequirementProperties,
   type: v.literal('functional'),
-  use_cases: v.array(useCaseSchema),
+  test_cases: v.array(testCaseSchema),
 })
 
 // Non-functional requirement schema
@@ -62,7 +62,7 @@ export const artifactSchema = v.object({
 // Export TypeScript types
 export type DmlExecutionLog = v.InferOutput<typeof dmlExecutionLogSchema>
 export type DmlOperation = v.InferOutput<typeof dmlOperationSchema>
-export type UseCase = v.InferOutput<typeof useCaseSchema>
+export type TestCase = v.InferOutput<typeof testCaseSchema>
 export type FunctionalRequirement = v.InferOutput<
   typeof functionalRequirementSchema
 >

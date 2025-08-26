@@ -1,22 +1,22 @@
-import type { Artifact, UseCase } from '@liam-hq/artifact'
+import type { Artifact, TestCase } from '@liam-hq/artifact'
 import { EXECUTION_SECTION_TITLE, FAILURE_ICON, SUCCESS_ICON } from '../utils'
 
-function formatUseCase(
-  useCase: UseCase,
+function formatTestCase(
+  testCase: TestCase,
   index: number,
   reqIndex: number,
 ): string {
   const sections: string[] = []
 
-  sections.push(`#### ${reqIndex + 1}.${index + 1}. ${useCase.title}`)
+  sections.push(`#### ${reqIndex + 1}.${index + 1}. ${testCase.title}`)
   sections.push('')
-  sections.push(useCase.description)
+  sections.push(testCase.description)
 
-  if (useCase.dml_operations.length > 0) {
+  if (testCase.dml_operations.length > 0) {
     sections.push('')
 
     // Format all operations directly as headings
-    useCase.dml_operations.forEach((operation, opIndex) => {
+    testCase.dml_operations.forEach((operation, opIndex) => {
       // Format as heading with operation type and description
       if (operation.description) {
         sections.push(
@@ -56,7 +56,7 @@ function formatUseCase(
         })
       }
 
-      if (opIndex < useCase.dml_operations.length - 1) {
+      if (opIndex < testCase.dml_operations.length - 1) {
         sections.push('---')
         sections.push('')
       }
@@ -103,13 +103,13 @@ export function formatArtifactToMarkdown(artifact: Artifact): string {
       })
       sections.push('')
 
-      if (req.type === 'functional' && req.use_cases.length > 0) {
+      if (req.type === 'functional' && req.test_cases.length > 0) {
         sections.push('')
-        sections.push('**Use Cases:**')
+        sections.push('**Test Cases:**')
         sections.push('')
 
-        req.use_cases.forEach((useCase, ucIndex) => {
-          sections.push(formatUseCase(useCase, ucIndex, reqIndex))
+        req.test_cases.forEach((testCase, tcIndex) => {
+          sections.push(formatTestCase(testCase, tcIndex, reqIndex))
           sections.push('')
         })
       }

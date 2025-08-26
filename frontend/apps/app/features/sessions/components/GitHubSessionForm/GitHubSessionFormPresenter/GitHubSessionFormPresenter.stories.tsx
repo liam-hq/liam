@@ -1,5 +1,5 @@
-import type { Meta, StoryObj } from '@storybook/react'
-import { useState } from 'react'
+import type { Meta, StoryObj } from '@storybook/nextjs'
+import { type ComponentProps, useState } from 'react'
 import type { Projects } from '@/components/CommonLayout/AppBar/ProjectsDropdownMenu/services/getProjects'
 import { GitHubSessionFormPresenter } from './GitHubSessionFormPresenter'
 
@@ -36,7 +36,7 @@ const meta = {
     layout: 'centered',
   },
   tags: ['autodocs'],
-  render: (args) => (
+  render: (args: ComponentProps<typeof GitHubSessionFormPresenter>) => (
     <div style={{ width: '800px' }}>
       <GitHubSessionFormPresenter {...args} />
     </div>
@@ -160,7 +160,7 @@ export const Interactive: Story = {
     defaultProjectId: '',
     schemaFilePath: null,
   },
-  render: (args) => {
+  render: (args: ComponentProps<typeof GitHubSessionFormPresenter>) => {
     const [isPending, setIsPending] = useState(args.isPending)
     const [selectedProjectId, setSelectedProjectId] = useState<string>(
       args.defaultProjectId || '',
@@ -219,7 +219,7 @@ export const InteractiveWithError: Story = {
     defaultProjectId: '',
     schemaFilePath: null,
   },
-  render: (args) => {
+  render: (args: ComponentProps<typeof GitHubSessionFormPresenter>) => {
     const [isPending, setIsPending] = useState(args.isPending)
     const [selectedProjectId, setSelectedProjectId] = useState<string>(
       args.defaultProjectId || '',

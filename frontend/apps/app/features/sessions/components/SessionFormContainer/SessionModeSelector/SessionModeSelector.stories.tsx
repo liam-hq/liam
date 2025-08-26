@@ -1,5 +1,5 @@
-import type { Meta, StoryObj } from '@storybook/react'
-import { useState } from 'react'
+import type { Meta, StoryObj } from '@storybook/nextjs'
+import { type ComponentProps, useState } from 'react'
 import { type SessionMode, SessionModeSelector } from './SessionModeSelector'
 
 const meta = {
@@ -46,7 +46,7 @@ export const Interactive: Story = {
     selectedMode: 'github',
     onModeChange: () => {},
   },
-  render: (args) => {
+  render: (args: ComponentProps<typeof SessionModeSelector>) => {
     const [selectedMode, setSelectedMode] = useState<SessionMode>(
       args.selectedMode,
     )

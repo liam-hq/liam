@@ -1,14 +1,10 @@
 import { Search } from '@liam-hq/ui'
 import type { FC } from 'react'
-import { useCommandPalette } from '../CommandPaletteProvider'
+import { useCommandPaletteOrThrow } from '../CommandPaletteProvider'
 import styles from './CommandPaletteTriggerButton.module.css'
 
 export const CommandPaletteTriggerButton: FC = () => {
-  const commandPaletteResult = useCommandPalette()
-  if (commandPaletteResult.isErr()) {
-    throw commandPaletteResult.error
-  }
-  const { setOpen } = commandPaletteResult.value
+  const { setOpen } = useCommandPaletteOrThrow()
 
   return (
     <button
