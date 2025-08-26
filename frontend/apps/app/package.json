@@ -11,7 +11,6 @@
     "@codemirror/view": "6.38.1",
     "@electric-sql/pglite": "0.3.7",
     "@langchain/core": "0.3.72",
-    "@langchain/langgraph-sdk": "0.0.109",
     "@lezer/highlight": "1.2.1",
     "@liam-hq/agent": "workspace:*",
     "@liam-hq/artifact": "workspace:*",

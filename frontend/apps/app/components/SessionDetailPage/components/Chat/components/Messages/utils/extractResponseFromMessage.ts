@@ -1,10 +1,9 @@
+import { type BaseMessage, isAIMessage } from '@langchain/core/messages'
 import { parsePartialJson } from '@langchain/core/output_parsers'
-import type { Message } from '@langchain/langgraph-sdk'
 import { getContentString } from './getContentString'
-import { isAiMessage } from './messageTypeGuards'
 
-export function extractResponseFromMessage(message: Message): string {
-  if (!isAiMessage(message)) return getContentString(message.content)
+export function extractResponseFromMessage(message: BaseMessage): string {
+  if (!isAIMessage(message)) return getContentString(message.content)
 
   if (
     Array.isArray(message.content) &&

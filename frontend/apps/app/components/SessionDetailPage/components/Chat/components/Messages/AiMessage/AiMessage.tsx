@@ -1,4 +1,4 @@
-import type { AIMessage } from '@langchain/langgraph-sdk'
+import type { AIMessage } from '@langchain/core/messages'
 import type { FC } from 'react'
 import { match } from 'ts-pattern'
 import * as v from 'valibot'

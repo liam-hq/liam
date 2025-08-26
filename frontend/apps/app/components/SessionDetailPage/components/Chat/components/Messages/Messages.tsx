@@ -1,15 +1,14 @@
-import type { Message } from '@langchain/langgraph-sdk'
+import { type BaseMessage, isAIMessage } from '@langchain/core/messages'
 import type { FC } from 'react'
 import { AiMessage } from './AiMessage'
-import { isAiMessage } from './utils/messageTypeGuards'
 
 type Props = {
-  messages: Message[]
+  messages: BaseMessage[]
 }
 
 export const Messages: FC<Props> = ({ messages }) => {
   return messages.map((message) => {
-    if (isAiMessage(message)) {
+    if (isAIMessage(message)) {
       return <AiMessage key={message.id} message={message} />
     }
 

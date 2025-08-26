@@ -1,8 +1,10 @@
-import type { Message } from '@langchain/langgraph-sdk'
+import type { BaseMessage } from '@langchain/core/messages'
 import * as v from 'valibot'
 import { additionalKwargsSchema } from '../schema'
 
-export function extractReasoningFromMessage(message: Message): string | null {
+export function extractReasoningFromMessage(
+  message: BaseMessage,
+): string | null {
   const parsed = v.safeParse(additionalKwargsSchema, message.additional_kwargs)
   if (!parsed.success || !parsed.output.reasoning) return null
 
