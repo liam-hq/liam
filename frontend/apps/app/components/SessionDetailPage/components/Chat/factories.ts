@@ -39,6 +39,17 @@ export const aMessage = (
           output_tokens: 50,
           total_tokens: 150,
         },
+        additional_kwargs: {
+          tool_calls: [
+            {
+              id: 'call_1',
+              function: {
+                name: 'analyze_requirements',
+                arguments: JSON.stringify({ domain: 'library_management' }),
+              },
+            },
+          ],
+        },
         ...overrides,
       } as AIMessage
 
