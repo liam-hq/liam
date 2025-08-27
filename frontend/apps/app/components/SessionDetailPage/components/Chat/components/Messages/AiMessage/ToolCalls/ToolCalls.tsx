@@ -1,4 +1,4 @@
-import { Wrench } from 'lucide-react'
+import { Wrench } from '@liam-hq/ui'
 import type { FC } from 'react'
 import type { ToolCalls as ToolCallsType } from '../../schema'
 import styles from './ToolCalls.module.css'
