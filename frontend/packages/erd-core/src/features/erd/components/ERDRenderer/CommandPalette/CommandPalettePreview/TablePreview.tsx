@@ -13,30 +13,32 @@ export const TablePreview: FC<Props> = ({ tableName }) => {
 
   return (
     <div className={styles.container}>
-      {table && (
-        <TableNode
-          id=""
-          type="table"
-          data={{
-            table: table,
-            isActiveHighlighted: false,
-            isHighlighted: false,
-            isTooltipVisible: false,
-            sourceColumnName: undefined,
-            targetColumnCardinalities: undefined,
-            showMode: 'ALL_FIELDS',
-          }}
-          dragging={false}
-          isConnectable={false}
-          positionAbsoluteX={0}
-          positionAbsoluteY={0}
-          selectable={false}
-          deletable={false}
-          selected={false}
-          draggable={false}
-          zIndex={0}
-        />
-      )}
+      <div className={styles.tableNodeWrapper}>
+        {table && (
+          <TableNode
+            id=""
+            type="table"
+            data={{
+              table: table,
+              isActiveHighlighted: false,
+              isHighlighted: false,
+              isTooltipVisible: false,
+              sourceColumnName: undefined,
+              targetColumnCardinalities: undefined,
+              showMode: 'ALL_FIELDS',
+            }}
+            dragging={false}
+            isConnectable={false}
+            positionAbsoluteX={0}
+            positionAbsoluteY={0}
+            selectable={false}
+            deletable={false}
+            selected={false}
+            draggable={false}
+            zIndex={0}
+          />
+        )}
+      </div>
     </div>
   )
 }
