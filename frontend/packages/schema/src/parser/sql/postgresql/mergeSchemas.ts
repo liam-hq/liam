@@ -27,4 +27,14 @@ export const mergeSchemas = (target: Schema, source: Schema) => {
       ...enumObj,
     }
   }
+
+  // Merge extensions
+  for (const [extensionName, extensionObj] of Object.entries(
+    source.extensions,
+  )) {
+    target.extensions[extensionName] = {
+      ...target.extensions[extensionName],
+      ...extensionObj,
+    }
+  }
 }

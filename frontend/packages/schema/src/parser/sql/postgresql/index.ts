@@ -1,10 +1,10 @@
 import type { RawStmt } from '@pgsql/types'
 import { errAsync, okAsync, ResultAsync } from 'neverthrow'
 import type { Schema } from '../../../schema/index.js'
-import { mergeSchemas } from '../../../schema/index.js'
 import { type ProcessError, UnexpectedTokenWarningError } from '../../errors.js'
 import type { Processor } from '../../types.js'
 import { convertToSchema } from './converter.js'
+import { mergeSchemas } from './mergeSchemas.js'
 import { parse } from './parser.js'
 import { processSQLInChunks } from './processSqlInChunks.js'
 
@@ -109,10 +109,7 @@ function processChunk(
       parseErrors.push(...conversionErrors)
     }
 
-    const mergedSchema = mergeSchemas(schema, convertedSchema)
-    schema.tables = mergedSchema.tables
-    schema.enums = mergedSchema.enums
-    schema.extensions = mergedSchema.extensions
+    mergeSchemas(schema, convertedSchema)
 
     return okAsync([
       retryOffset,
