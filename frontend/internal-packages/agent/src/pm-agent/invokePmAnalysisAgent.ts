@@ -87,7 +87,7 @@ export const invokePmAnalysisAgent = (
               }),
               ...(accumulatedChunk.name && { name: accumulatedChunk.name }),
             })
-          : new AIMessage('')
+          : new AIMessage({ content: '', name: 'pm' })
 
         const parsed = v.safeParse(
           reasoningSchema,
