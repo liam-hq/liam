@@ -227,11 +227,6 @@
       "count": 3
     }
   },
-  "components/SessionDetailPage/components/Chat/factories.ts": {
-    "@typescript-eslint/consistent-type-assertions": {
-      "count": 5
-    }
-  },
   "components/SessionDetailPage/components/Output/components/Artifact/Artifact.module.css": {
     "css-modules-kit/no-unused-class-names": {
       "count": 2
