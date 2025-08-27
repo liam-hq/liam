@@ -2,6 +2,7 @@ import type {
   Column,
   Constraint,
   Enum,
+  Extension,
   Index,
   Table,
 } from '../../schema/index.js'
@@ -460,6 +461,54 @@ export function generateCreateEnumStatement(enumObj: Enum): string {
   if (enumObj.comment) {
     ddl += `\n\nCOMMENT ON TYPE ${enumName} IS '${escapeString(enumObj.comment)}';`
   }
+
+  return ddl
+}
+
+/**
+ * Generate CREATE EXTENSION statement
+ */
+/**
+ * Extensions supported by PGlite
+ * @see https://pglite.dev/extensions/
+ */
+const PGLITE_SUPPORTED_EXTENSIONS = new Set([
+  'live',
+  'pgvector',
+  'amcheck',
+  'auto_explain',
+  'bloom',
+  'btree_gin',
+  'btree_gist',
+  'citext',
+  'cube',
+  'earthdistance',
+  'fuzzystrmatch',
+  'hstore',
+  'isn',
+  'lo',
+  'ltree',
+  'pg_ivm',
+  'pg_trgm',
+  'seg',
+  'tablefunc',
+  'tcn',
+  'tsm_system_rows',
+  'tsm_system_time',
+  'uuid-ossp',
+])
+
+/**
+ * Check if an extension is supported by PGlite
+ */
+export function isPGliteSupportedExtension(extensionName: string): boolean {
+  return PGLITE_SUPPORTED_EXTENSIONS.has(extensionName)
+}
+
+export function generateCreateExtensionStatement(extension: Extension): string {
+  const extensionName = escapeIdentifier(extension.name)
+
+  const ddl = `CREATE EXTENSION ${extensionName};`
 
   return ddl
 }

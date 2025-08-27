@@ -1335,6 +1335,259 @@ describe('postgresqlSchemaDeparser', () => {
     })
   })
 
+  describe('extension generation', () => {
+    it('should generate basic CREATE EXTENSION statement', async () => {
+      const schema = aSchema({
+        extensions: {
+          pgvector: {
+            name: 'pgvector',
+          },
+        },
+        tables: {},
+      })
+
+      const result = postgresqlSchemaDeparser(schema)
+
+      expect(result.errors).toHaveLength(0)
+      expect(result.value).toMatchInlineSnapshot(`
+        "CREATE EXTENSION \"pgvector\";"
+      `)
+
+      await expectGeneratedSQLToBeParseable(result.value)
+    })
+
+    it('should generate CREATE EXTENSION for uuid-ossp', async () => {
+      const schema = aSchema({
+        extensions: {
+          uuid_ossp: {
+            name: 'uuid-ossp',
+          },
+        },
+        tables: {},
+      })
+
+      const result = postgresqlSchemaDeparser(schema)
+
+      expect(result.errors).toHaveLength(0)
+      expect(result.value).toMatchInlineSnapshot(`
+        "CREATE EXTENSION \"uuid-ossp\";"
+      `)
+
+      await expectGeneratedSQLToBeParseable(result.value)
+    })
+
+    it('should generate CREATE EXTENSION for hstore', async () => {
+      const schema = aSchema({
+        extensions: {
+          hstore: {
+            name: 'hstore',
+          },
+        },
+        tables: {},
+      })
+
+      const result = postgresqlSchemaDeparser(schema)
+
+      expect(result.errors).toHaveLength(0)
+      expect(result.value).toMatchInlineSnapshot(`
+        "CREATE EXTENSION \"hstore\";"
+      `)
+
+      await expectGeneratedSQLToBeParseable(result.value)
+    })
+
+    it('should generate CREATE EXTENSION for pg_trgm', async () => {
+      const schema = aSchema({
+        extensions: {
+          pg_trgm: {
+            name: 'pg_trgm',
+          },
+        },
+        tables: {},
+      })
+
+      const result = postgresqlSchemaDeparser(schema)
+
+      expect(result.errors).toHaveLength(0)
+      expect(result.value).toMatchInlineSnapshot(`
+        "CREATE EXTENSION \"pg_trgm\";"
+      `)
+
+      await expectGeneratedSQLToBeParseable(result.value)
+    })
+
+    it('should generate multiple extensions', async () => {
+      const schema = aSchema({
+        extensions: {
+          pgvector: {
+            name: 'pgvector',
+          },
+          uuid_ossp: {
+            name: 'uuid-ossp',
+          },
+        },
+        tables: {},
+      })
+
+      const result = postgresqlSchemaDeparser(schema)
+
+      expect(result.errors).toHaveLength(0)
+      expect(result.value).toMatchInlineSnapshot(`
+        "CREATE EXTENSION \"pgvector\";
+
+        CREATE EXTENSION \"uuid-ossp\";"
+      `)
+
+      await expectGeneratedSQLToBeParseable(result.value)
+    })
+
+    it('should generate extensions before enums and tables', async () => {
+      const schema = aSchema({
+        extensions: {
+          pgvector: {
+            name: 'pgvector',
+          },
+        },
+        enums: {
+          status: anEnum({
+            name: 'status',
+            values: ['active', 'inactive'],
+          }),
+        },
+        tables: {
+          users: aTable({
+            name: 'users',
+            columns: {
+              id: aColumn({
+                name: 'id',
+                type: 'uuid',
+                notNull: true,
+                default: 'gen_random_uuid()',
+              }),
+              embedding: aColumn({
+                name: 'embedding',
+                type: 'vector(384)',
+                notNull: false,
+              }),
+            },
+            constraints: {
+              users_pkey: aPrimaryKeyConstraint({
+                name: 'users_pkey',
+                columnNames: ['id'],
+              }),
+            },
+          }),
+        },
+      })
+
+      const result = postgresqlSchemaDeparser(schema)
+
+      expect(result.errors).toHaveLength(0)
+
+      // Check that extensions come first
+      const lines = result.value.split('\n').filter((line) => line.trim())
+      expect(lines[0]).toContain('CREATE EXTENSION')
+
+      // Verify the complete output structure
+      expect(result.value).toMatchInlineSnapshot(`
+        "CREATE EXTENSION \"pgvector\";
+
+        CREATE TYPE \"status\" AS ENUM ('active', 'inactive');
+
+        CREATE TABLE \"users\" (
+          \"id\" uuid NOT NULL DEFAULT gen_random_uuid(),
+          \"embedding\" vector(384)
+        );
+
+        ALTER TABLE \"users\" ADD CONSTRAINT \"users_pkey\" PRIMARY KEY (\"id\");"
+      `)
+
+      await expectGeneratedSQLToBeParseable(result.value)
+    })
+
+    it('should handle extension names with underscores', async () => {
+      const schema = aSchema({
+        extensions: {
+          tsm_system_rows: {
+            name: 'tsm_system_rows',
+          },
+        },
+        tables: {},
+      })
+
+      const result = postgresqlSchemaDeparser(schema)
+
+      expect(result.errors).toHaveLength(0)
+      expect(result.value).toMatchInlineSnapshot(`
+        "CREATE EXTENSION \"tsm_system_rows\";"
+      `)
+
+      await expectGeneratedSQLToBeParseable(result.value)
+    })
+
+    it('should only generate extensions supported by PGlite', async () => {
+      const schema = aSchema({
+        extensions: {
+          // PGlite supported extensions
+          'uuid-ossp': {
+            name: 'uuid-ossp',
+          },
+          vector: {
+            name: 'pgvector',
+          },
+          hstore: {
+            name: 'hstore',
+          },
+          // PGlite unsupported extensions (should be filtered out)
+          postgis: {
+            name: 'postgis',
+          },
+          pg_stat_statements: {
+            name: 'pg_stat_statements',
+          },
+        },
+        tables: {},
+      })
+
+      const result = postgresqlSchemaDeparser(schema)
+
+      expect(result.errors).toHaveLength(0)
+      expect(result.value).toMatchInlineSnapshot(`
+        "CREATE EXTENSION "uuid-ossp";
+
+        CREATE EXTENSION "pgvector";
+
+        CREATE EXTENSION "hstore";"
+      `)
+
+      // Verify unsupported extensions are not included
+      expect(result.value).not.toContain('postgis')
+      expect(result.value).not.toContain('pg_stat_statements')
+
+      await expectGeneratedSQLToBeParseable(result.value)
+    })
+
+    it('should handle empty output when all extensions are unsupported', async () => {
+      const schema = aSchema({
+        extensions: {
+          // All unsupported extensions
+          postgis: {
+            name: 'postgis',
+          },
+          pg_stat_statements: {
+            name: 'pg_stat_statements',
+          },
+        },
+        tables: {},
+      })
+
+      const result = postgresqlSchemaDeparser(schema)
+
+      expect(result.errors).toHaveLength(0)
+      expect(result.value).toBe('')
+    })
+  })
+
   describe('error handling', () => {
     it('should handle empty table name', async () => {
       const schema = aSchema({
