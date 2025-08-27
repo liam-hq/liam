@@ -2,6 +2,7 @@ import type {
   AlterTableStmt,
   CommentStmt,
   CreateEnumStmt,
+  CreateExtensionStmt,
   CreateStmt,
   IndexStmt,
   List,
@@ -17,6 +18,7 @@ import type {
   Constraint,
   Constraints,
   Enum,
+  Extension,
   ForeignKeyConstraint,
   ForeignKeyConstraintReferenceOption,
   Schema,
@@ -245,6 +247,7 @@ export const convertToSchema = (
 ): ProcessResult => {
   const tables: Record<string, Table> = {}
   const enums: Record<string, Enum> = {}
+  const extensions: Record<string, Extension> = {}
   const errors: ProcessError[] = []
 
   function isCreateStmt(stmt: Node): stmt is { CreateStmt: CreateStmt } {
@@ -269,6 +272,12 @@ export const convertToSchema = (
     stmt: Node,
   ): stmt is { CreateEnumStmt: CreateEnumStmt } {
     return 'CreateEnumStmt' in stmt
+  }
+
+  function isCreateExtensionStmt(
+    stmt: Node,
+  ): stmt is { CreateExtensionStmt: CreateExtensionStmt } {
+    return 'CreateExtensionStmt' in stmt
   }
 
   /**
@@ -1058,6 +1067,57 @@ export const convertToSchema = (
   }
 
   /**
+   * Handle CREATE EXTENSION statement
+   */
+  function handleCreateExtensionStmt(
+    createExtensionStmt: CreateExtensionStmt,
+  ): void {
+    // Extract extension name
+    if (!createExtensionStmt?.extname) return
+
+    const extensionName = createExtensionStmt.extname
+
+    // Parse options from DefElem structures
+    let version: string | undefined
+    let fromVersion: string | undefined
+    let cascade: boolean | undefined
+
+    if (createExtensionStmt.options) {
+      for (const option of createExtensionStmt.options) {
+        if ('DefElem' in option && option.DefElem) {
+          const defElem = option.DefElem
+          const optionName = defElem.defname
+
+          if (optionName === 'new_version' && defElem.arg) {
+            // Extract version string from String node
+            if ('String' in defElem.arg && defElem.arg.String?.sval) {
+              version = defElem.arg.String.sval
+            }
+          } else if (optionName === 'old_version' && defElem.arg) {
+            // Extract fromVersion string from String node
+            if ('String' in defElem.arg && defElem.arg.String?.sval) {
+              fromVersion = defElem.arg.String.sval
+            }
+          } else if (optionName === 'cascade') {
+            // CASCADE option is typically just a flag without a value
+            cascade = true
+          }
+        }
+      }
+    }
+
+    const extension: Extension = {
+      name: extensionName,
+      version,
+      fromVersion,
+      ifNotExists: createExtensionStmt.if_not_exists || undefined,
+      cascade,
+    }
+
+    extensions[extensionName] = extension
+  }
+
+  /**
    * Handle ALTER TABLE statement
    */
   function handleAlterTableStmt(alterTableStmt: AlterTableStmt): void {
@@ -1090,6 +1150,8 @@ export const convertToSchema = (
       handleAlterTableStmt(stmt.AlterTableStmt)
     } else if (isCreateEnumStmt(stmt)) {
       handleCreateEnumStmt(stmt.CreateEnumStmt)
+    } else if (isCreateExtensionStmt(stmt)) {
+      handleCreateExtensionStmt(stmt.CreateExtensionStmt)
     }
   }
 
@@ -1097,7 +1159,7 @@ export const convertToSchema = (
     value: {
       tables,
       enums,
-      extensions: {},
+      extensions,
     },
     errors,
   }

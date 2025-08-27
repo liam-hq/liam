@@ -1119,4 +1119,221 @@ CREATE TYPE status AS ENUM ('active', 'inactive');
       )
     })
   })
+
+  describe('CREATE EXTENSION statement', () => {
+    it('should parse basic extension creation', async () => {
+      const { value } = await processor(/* sql */ `
+        CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+      `)
+
+      expect(value.extensions).toEqual({
+        'uuid-ossp': {
+          name: 'uuid-ossp',
+          version: undefined,
+          fromVersion: undefined,
+          ifNotExists: true,
+          cascade: undefined,
+        },
+      })
+    })
+
+    it('should parse extensions with various option combinations', async () => {
+      const { value } = await processor(/* sql */ `
+        CREATE EXTENSION pgvector VERSION '0.5.0';
+        CREATE EXTENSION postgis CASCADE;
+        CREATE EXTENSION IF NOT EXISTS pgcrypto VERSION '1.3' CASCADE;
+      `)
+
+      expect(value.extensions).toEqual({
+        pgvector: {
+          name: 'pgvector',
+          version: '0.5.0',
+          fromVersion: undefined,
+          ifNotExists: undefined,
+          cascade: undefined,
+        },
+        postgis: {
+          name: 'postgis',
+          version: undefined,
+          fromVersion: undefined,
+          ifNotExists: undefined,
+          cascade: true,
+        },
+        pgcrypto: {
+          name: 'pgcrypto',
+          version: '1.3',
+          fromVersion: undefined,
+          ifNotExists: true,
+          cascade: true,
+        },
+      })
+    })
+
+    it('should handle extension creation without IF NOT EXISTS', async () => {
+      const { value } = await processor(/* sql */ `
+        CREATE EXTENSION uuid_ossp;
+        CREATE EXTENSION "pg_trgm";
+      `)
+
+      expect(value.extensions).toEqual({
+        uuid_ossp: {
+          name: 'uuid_ossp',
+          version: undefined,
+          fromVersion: undefined,
+          ifNotExists: undefined,
+          cascade: undefined,
+        },
+        pg_trgm: {
+          name: 'pg_trgm',
+          version: undefined,
+          fromVersion: undefined,
+          ifNotExists: undefined,
+          cascade: undefined,
+        },
+      })
+    })
+
+    it('should handle extensions with tables and other objects', async () => {
+      const { value } = await processor(/* sql */ `
+        CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+        
+        CREATE TABLE users (
+          id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+          name VARCHAR(255) NOT NULL
+        );
+        
+        CREATE EXTENSION pgvector;
+        
+        CREATE TABLE embeddings (
+          id SERIAL PRIMARY KEY,
+          user_id UUID REFERENCES users(id),
+          vector vector(384)
+        );
+      `)
+
+      expect(value.extensions).toEqual({
+        'uuid-ossp': {
+          name: 'uuid-ossp',
+          version: undefined,
+          fromVersion: undefined,
+          ifNotExists: true,
+          cascade: undefined,
+        },
+        pgvector: {
+          name: 'pgvector',
+          version: undefined,
+          fromVersion: undefined,
+          ifNotExists: undefined,
+          cascade: undefined,
+        },
+      })
+
+      expect(value.tables).toEqual({
+        users: expect.objectContaining({
+          name: 'users',
+          columns: expect.objectContaining({
+            id: expect.objectContaining({ type: 'uuid' }),
+            name: expect.objectContaining({ type: 'varchar' }),
+          }),
+        }),
+        embeddings: expect.objectContaining({
+          name: 'embeddings',
+          columns: expect.objectContaining({
+            id: expect.objectContaining({ type: 'serial' }),
+            user_id: expect.objectContaining({ type: 'uuid' }),
+            vector: expect.objectContaining({ type: 'vector' }),
+          }),
+        }),
+      })
+    })
+
+    it('should parse extension with quoted names', async () => {
+      const { value } = await processor(/* sql */ `
+        CREATE EXTENSION "uuid-ossp" VERSION '1.1';
+        CREATE EXTENSION IF NOT EXISTS "pg_trgm";
+      `)
+
+      expect(value.extensions).toEqual({
+        'uuid-ossp': {
+          name: 'uuid-ossp',
+          version: '1.1',
+          fromVersion: undefined,
+          ifNotExists: undefined,
+          cascade: undefined,
+        },
+        pg_trgm: {
+          name: 'pg_trgm',
+          version: undefined,
+          fromVersion: undefined,
+          ifNotExists: true,
+          cascade: undefined,
+        },
+      })
+    })
+
+    it('should handle complex DDL with extensions', async () => {
+      const { value, errors } = await processor(/* sql */ `
+        -- Enable required extensions
+        CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+        CREATE EXTENSION IF NOT EXISTS pgcrypto;
+        
+        -- Create custom types
+        CREATE TYPE user_status AS ENUM ('active', 'inactive', 'pending');
+        
+        -- Create tables
+        CREATE TABLE users (
+          id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+          email TEXT UNIQUE NOT NULL,
+          password_hash TEXT NOT NULL,
+          status user_status DEFAULT 'pending',
+          created_at TIMESTAMPTZ DEFAULT NOW(),
+          updated_at TIMESTAMPTZ DEFAULT NOW()
+        );
+        
+        -- Add indexes
+        CREATE INDEX idx_users_email ON users(email);
+        CREATE INDEX idx_users_status ON users(status);
+        
+        -- Add another extension
+        CREATE EXTENSION IF NOT EXISTS pgvector VERSION '0.5.0' CASCADE;
+      `)
+
+      expect(errors).toEqual([])
+
+      expect(value.extensions).toEqual({
+        'uuid-ossp': {
+          name: 'uuid-ossp',
+          version: undefined,
+          fromVersion: undefined,
+          ifNotExists: true,
+          cascade: undefined,
+        },
+        pgcrypto: {
+          name: 'pgcrypto',
+          version: undefined,
+          fromVersion: undefined,
+          ifNotExists: true,
+          cascade: undefined,
+        },
+        pgvector: {
+          name: 'pgvector',
+          version: '0.5.0',
+          fromVersion: undefined,
+          ifNotExists: true,
+          cascade: true,
+        },
+      })
+
+      expect(value.enums).toEqual({
+        user_status: {
+          name: 'user_status',
+          values: ['active', 'inactive', 'pending'],
+          comment: null,
+        },
+      })
+
+      expect(value.tables['users']).toBeDefined()
+      expect(Object.keys(value.tables['users']?.indexes || {})).toHaveLength(2)
+    })
+  })
 })
