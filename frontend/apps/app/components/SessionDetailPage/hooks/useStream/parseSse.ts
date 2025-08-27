@@ -26,8 +26,12 @@ export async function* parseSse(
 
   while (true) {
     const { value, done } = await reader.read()
-    if (done) break
-    buffer += decoder.decode(value, { stream: true })
+    if (done) {
+      // Flush any pending bytes from the decoder (handles multi-byte code points at chunk boundaries)
+      buffer += decoder.decode()
+    } else {
+      buffer += decoder.decode(value, { stream: true })
+    }
 
     while (true) {
       const nl = buffer.indexOf('\n')
@@ -54,6 +58,8 @@ export async function* parseSse(
           break
       }
     }
+
+    if (done) break
   }
 
   const ev = flush()
