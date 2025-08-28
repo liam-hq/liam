@@ -1,4 +1,3 @@
-import { isPGliteSupportedExtension } from '../../extensions.js'
 import type {
   Enum,
   Extension,
@@ -6,6 +5,7 @@ import type {
   Schema,
   Table,
 } from '../../schema/index.js'
+import { isPGliteSupportedExtension } from '../../utils/extensions.js'
 import type { SchemaDeparser } from '../type.js'
 import {
   generateAddConstraintStatement,
