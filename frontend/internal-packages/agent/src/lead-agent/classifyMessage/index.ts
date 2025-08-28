@@ -15,6 +15,7 @@ import type {
   WorkflowState,
 } from '../../chat/workflow/types'
 import { WorkflowTerminationError } from '../../shared/errorHandling'
+import { SSE_EVENTS } from '../../streaming/constants'
 import { routeToAgent } from '../tools/routeToAgent'
 import { isQACompleted } from '../utils/workflowStatus'
 import { prompt } from './prompt'
@@ -57,7 +58,7 @@ export async function classifyMessage(
 
           for await (const _chunk of stream) {
             const chunk = new AIMessageChunk({ ..._chunk, id, name: 'lead' })
-            await dispatchCustomEvent('messages', chunk)
+            await dispatchCustomEvent(SSE_EVENTS.MESSAGES, chunk)
 
             // Accumulate chunks using concat method
             accumulatedChunk = accumulatedChunk

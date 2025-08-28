@@ -2,6 +2,7 @@ import {
   type BaseMessage,
   coerceMessageLikeToMessage,
 } from '@langchain/core/messages'
+import { SSE_EVENTS } from '@liam-hq/agent/client'
 import { err, ok } from 'neverthrow'
 import { useCallback, useRef, useState } from 'react'
 import { ERROR_MESSAGES } from '../../components/Chat/constants/chatConstants'
@@ -52,12 +53,12 @@ export const useStream = () => {
       }
 
       for await (const ev of parseSse(res.body)) {
-        if (ev.event === 'end') {
+        if (ev.event === SSE_EVENTS.END) {
           setIsStreaming(false)
           break
         }
 
-        if (ev.event !== 'messages') continue
+        if (ev.event !== SSE_EVENTS.MESSAGES) continue
 
         const parsedData = JSON.parse(ev.data)
         const [serialized, metadata] = parsedData

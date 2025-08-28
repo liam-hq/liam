@@ -10,6 +10,7 @@ import { ResultAsync } from 'neverthrow'
 import * as v from 'valibot'
 import { reasoningSchema } from '../langchain/utils/schema'
 import type { Reasoning } from '../langchain/utils/types'
+import { SSE_EVENTS } from '../streaming/constants'
 import type { ToolConfigurable } from './getToolConfigurable'
 import { type DesignAgentPromptVariables, designAgentPrompt } from './prompt'
 import { schemaDesignTool } from './tools/schemaDesignTool'
@@ -51,7 +52,7 @@ export const invokeDesignAgent = (
 
         for await (const _chunk of stream) {
           const chunk = new AIMessageChunk({ ..._chunk, id, name: 'db' })
-          await dispatchCustomEvent('messages', chunk)
+          await dispatchCustomEvent(SSE_EVENTS.MESSAGES, chunk)
 
           // Accumulate chunks using concat method
           accumulatedChunk = accumulatedChunk
