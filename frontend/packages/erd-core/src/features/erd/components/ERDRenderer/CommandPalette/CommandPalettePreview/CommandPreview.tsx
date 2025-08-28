@@ -11,23 +11,19 @@ type Props = {
   commandName: string
 }
 
-const COMMAND_VIDEO_SOURCE = {
+const COMMAND_VIDEO_SOURCE: Record<string, string> = {
   'copy link': copyLink,
   'Zoom to Fit': zoomToFit,
   'Tidy Up': tidyUp,
 }
 
-const COMMAND_IMAGE_SOURCE = {
+const COMMAND_IMAGE_SOURCE: Record<string, string | { src: string }> = {
   'Show All Fields': showAllFields,
   'Show Key Only': showKeyOnly,
   'Show Table Name': showTableName,
 }
 
 export const CommandPreview: FC<Props> = ({ commandName }) => {
-  console.log(
-    COMMAND_VIDEO_SOURCE[commandName],
-    COMMAND_IMAGE_SOURCE[commandName],
-  )
   return (
     <div className={styles.container}>
       {COMMAND_VIDEO_SOURCE[commandName] && (
@@ -37,7 +33,11 @@ export const CommandPreview: FC<Props> = ({ commandName }) => {
       )}
       {COMMAND_IMAGE_SOURCE[commandName] && (
         <img
-          src={COMMAND_IMAGE_SOURCE[commandName].src}
+          src={
+            typeof COMMAND_IMAGE_SOURCE[commandName] === 'string'
+              ? COMMAND_IMAGE_SOURCE[commandName]
+              : COMMAND_IMAGE_SOURCE[commandName].src
+          }
           className={styles.image}
           alt=""
         />
