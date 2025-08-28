@@ -27,6 +27,7 @@
   align-items: stretch;
   width: 100%;
   max-width: 100%;
+  position: relative;
 }
 
 .messageContent {
@@ -66,4 +67,18 @@
   line-height: 1.6;
   color: var(--overlay-50);
   margin-left: var(--spacing-1);
+}
+
+.copyButtonWrapper {
+  position: absolute;
+  bottom: var(--spacing-1);
+  right: calc(-1 * var(--spacing-10));
+  opacity: 0;
+  animation: fadeIn 0.2s ease-in-out forwards;
+}
+
+@keyframes fadeIn {
+  to {
+    opacity: 1;
+  }
 }

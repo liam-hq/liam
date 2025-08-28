@@ -1,7 +1,7 @@
 'use client'
 
-import { Avatar, AvatarWithImage } from '@liam-hq/ui'
-import type { FC } from 'react'
+import { Avatar, AvatarWithImage, Check, Copy, IconButton } from '@liam-hq/ui'
+import { type FC, useState } from 'react'
 import { MarkdownContent } from '@/components/MarkdownContent'
 import styles from './UserMessage.module.css'
 
@@ -20,6 +20,9 @@ export const UserMessage: FC<UserMessageProps> = ({
   timestamp,
   userName,
 }) => {
+  const [isCopied, setIsCopied] = useState(false)
+  const [isHovered, setIsHovered] = useState(false)
+
   const userInitial = userName
     ? userName
         .split(' ')
@@ -40,8 +43,24 @@ export const UserMessage: FC<UserMessageProps> = ({
       })
     : null
 
+  const handleCopyMessage = async () => {
+    try {
+      await navigator.clipboard.writeText(content)
+      setIsCopied(true)
+      setTimeout(() => {
+        setIsCopied(false)
+      }, 2000)
+    } catch (error) {
+      console.error('Failed to copy message:', error)
+    }
+  }
+
   return (
-    <div className={styles.container}>
+    <div
+      className={styles.container}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
       <div className={styles.avatarContainer}>
         {avatarSrc ? (
           <AvatarWithImage src={avatarSrc} alt={avatarAlt} size="sm" />
@@ -60,6 +79,18 @@ export const UserMessage: FC<UserMessageProps> = ({
               <MarkdownContent content={content} />
             </div>
           </div>
+          {isHovered && (
+            <div className={styles.copyButtonWrapper}>
+              <IconButton
+                icon={isCopied ? <Check size={16} /> : <Copy size={16} />}
+                onClick={handleCopyMessage}
+                tooltipContent={isCopied ? 'Copied!' : 'Copy message'}
+                size="sm"
+                variant="hoverBackground"
+                aria-label={isCopied ? 'Message copied' : 'Copy message'}
+              />
+            </div>
+          )}
         </div>
       </div>
     </div>
