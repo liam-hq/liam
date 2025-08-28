@@ -8,6 +8,7 @@ import type { RawStmt } from '@pgsql/types'
 import {
   detectExtensionsFromSQL,
   getExtensionConfiguration,
+  getJavaScriptName,
 } from './extensions'
 import type { SqlResult } from './types'
 
@@ -33,27 +34,24 @@ export class PGliteInstanceManager {
    * Dynamically load PGlite extensions based on detected extension names
    */
   private async loadExtensions(extensionNames: string[]): Promise<Extensions> {
+    const { imports } = getExtensionConfiguration(extensionNames)
     const extensions: Extensions = {}
 
-    for (const extensionName of extensionNames) {
+    for (const [sqlName, importPath] of Object.entries(imports)) {
       try {
-        switch (extensionName) {
-          case 'uuid-ossp': {
-            const { uuid_ossp } = await import(
-              '@electric-sql/pglite/contrib/uuid_ossp'
-            )
-            extensions['uuid_ossp'] = uuid_ossp
-            break
-          }
-          // Note: Other extensions may not be available in all PGlite versions
-          // This is a minimal implementation focusing on commonly available extensions
-          default:
-            // Silently skip unsupported extensions
-            break
+        const jsName = getJavaScriptName(sqlName)
+        // Extract module path from import statement
+        const modulePath = importPath.match(/from\s+['"`](.+?)['"`]/)?.[1]
+        if (!modulePath) continue
+
+        const mod = await import(modulePath)
+        // Attach by JS export name if present
+        if (jsName in mod) {
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+          extensions[jsName] = mod[jsName]
         }
-      } catch (error) {
-        // Silently handle extension loading failures
-        // Extensions will simply not be available if loading fails
+      } catch {
+        // Silent skip: unsupported or failed import
       }
     }
 
