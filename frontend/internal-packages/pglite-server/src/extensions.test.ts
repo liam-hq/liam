@@ -1,69 +1,46 @@
-import { PGLITE_SUPPORTED_EXTENSIONS } from '@liam-hq/schema'
+import {
+  getPGliteJavaScriptName,
+  PGLITE_SUPPORTED_EXTENSIONS,
+} from '@liam-hq/schema'
 import { describe, expect, it } from 'vitest'
 import {
-  detectExtensionsFromSQL,
+  extractRequiredExtensions,
   getExtensionConfiguration,
-  getJavaScriptName,
   isExtensionSupported,
 } from './extensions'
 
 describe('PGlite Extension Utilities', () => {
-  describe('detectExtensionsFromSQL', () => {
-    it('should detect CREATE EXTENSION statements', () => {
-      const sql = `
-        CREATE EXTENSION "uuid-ossp";
-        CREATE TABLE users (id uuid);
-      `
-      const extensions = detectExtensionsFromSQL(sql)
-      expect(extensions).toEqual(['uuid-ossp'])
+  describe('extractRequiredExtensions', () => {
+    it('should extract extensions from schema', () => {
+      const schema = {
+        tables: {},
+        enums: {},
+        extensions: {
+          'uuid-ossp': { name: 'uuid-ossp' },
+          vector: { name: 'vector' },
+        },
+      }
+      const extensions = extractRequiredExtensions(schema)
+      expect(extensions).toEqual(['uuid-ossp', 'vector'])
     })
 
-    it('should detect CREATE EXTENSION IF NOT EXISTS statements', () => {
-      const sql = `CREATE EXTENSION IF NOT EXISTS "vector";`
-      const extensions = detectExtensionsFromSQL(sql)
-      expect(extensions).toEqual(['vector'])
+    it('should return empty array when no extensions in schema', () => {
+      const schema = {
+        tables: {},
+        enums: {},
+        extensions: {},
+      }
+      const extensions = extractRequiredExtensions(schema)
+      expect(extensions).toEqual([])
     })
 
-    it('should detect multiple extensions', () => {
-      const sql = `
-        CREATE EXTENSION "uuid-ossp";
-        CREATE EXTENSION IF NOT EXISTS "hstore";
-        CREATE EXTENSION "pg_trgm";
-      `
-      const extensions = detectExtensionsFromSQL(sql)
-      expect(extensions).toEqual(['uuid-ossp', 'hstore', 'pg_trgm'])
-    })
-
-    it('should detect extensions without quotes', () => {
-      const sql = 'CREATE EXTENSION vector;'
-      const extensions = detectExtensionsFromSQL(sql)
-      expect(extensions).toEqual(['vector'])
-    })
-
-    it('should handle extensions with underscores', () => {
-      const sql = 'CREATE EXTENSION tsm_system_rows;'
-      const extensions = detectExtensionsFromSQL(sql)
-      expect(extensions).toEqual(['tsm_system_rows'])
-    })
-
-    it('should filter out unsupported extensions', () => {
-      const sql = `
-        CREATE EXTENSION "uuid-ossp";
-        CREATE EXTENSION "postgis";  -- Not supported
-        CREATE EXTENSION "hstore";
-      `
-      const extensions = detectExtensionsFromSQL(sql)
-      expect(extensions).toEqual(['uuid-ossp', 'hstore'])
-    })
-
-    it('should return empty array when no extensions found', () => {
-      const sql = 'CREATE TABLE users (id integer);'
-      const extensions = detectExtensionsFromSQL(sql)
+    it('should return empty array when schema is undefined', () => {
+      const extensions = extractRequiredExtensions(undefined)
       expect(extensions).toEqual([])
     })
   })
 
-  describe('getJavaScriptName', () => {
+  describe('getPGliteJavaScriptName', () => {
     const testCases = [
       {
         sql: 'uuid-ossp',
@@ -77,7 +54,7 @@ describe('PGlite Extension Utilities', () => {
 
     testCases.forEach(({ sql, js, description }) => {
       it(`should ${description}`, () => {
-        expect(getJavaScriptName(sql)).toBe(js)
+        expect(getPGliteJavaScriptName(sql)).toBe(js)
       })
     })
   })

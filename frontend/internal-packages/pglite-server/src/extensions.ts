@@ -38,45 +38,6 @@ export function isExtensionSupported(extensionName: string): boolean {
 }
 
 /**
- * Get the JavaScript import name for a SQL extension name
- * Re-exports the function from the schema package for consistency
- */
-export function getJavaScriptName(sqlName: string): string {
-  return getPGliteJavaScriptName(sqlName)
-}
-
-/**
- * Detect extensions from SQL text by parsing CREATE EXTENSION statements
- *
- * @param sql SQL text that may contain CREATE EXTENSION statements
- * @returns Array of detected extension names
- */
-export function detectExtensionsFromSQL(sql: string): string[] {
-  const extensions: string[] = []
-
-  // Parse CREATE EXTENSION statements
-  // Matches: CREATE EXTENSION [IF NOT EXISTS] "extension_name"
-  // or: CREATE EXTENSION [IF NOT EXISTS] extension_name
-  const extensionRegex =
-    /CREATE\s+EXTENSION\s+(?:IF\s+NOT\s+EXISTS\s+)?["']?([a-zA-Z0-9_-]+)["']?/gi
-
-  let match: RegExpExecArray | null
-  // biome-ignore lint/suspicious/noAssignInExpressions: Standard regex pattern matching idiom
-  while ((match = extensionRegex.exec(sql)) !== null) {
-    const extensionName = match[1]
-    if (extensionName && isExtensionSupported(extensionName)) {
-      extensions.push(extensionName)
-    } else if (extensionName) {
-      console.warn(
-        `Extension '${extensionName}' detected in SQL but not supported by PGlite`,
-      )
-    }
-  }
-
-  return extensions
-}
-
-/**
  * Get configuration info for initializing PGlite with extensions
  *
  * This returns information about what extensions would need to be imported
@@ -100,7 +61,7 @@ export function getExtensionConfiguration(extensions: string[]): {
       continue
     }
 
-    const jsName = getJavaScriptName(extensionName)
+    const jsName = getPGliteJavaScriptName(extensionName)
 
     // Generate import statement using the unified mapping system
     imports[jsName] =

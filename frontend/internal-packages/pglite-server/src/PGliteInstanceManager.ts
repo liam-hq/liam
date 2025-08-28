@@ -3,13 +3,10 @@ import {
   PGlite,
   type PGliteOptions,
 } from '@electric-sql/pglite'
+import { getPGliteJavaScriptName } from '@liam-hq/schema'
 import { type PgParseResult, pgParse } from '@liam-hq/schema/parser'
 import type { RawStmt } from '@pgsql/types'
-import {
-  detectExtensionsFromSQL,
-  getExtensionConfiguration,
-  getJavaScriptName,
-} from './extensions'
+import { getExtensionConfiguration } from './extensions'
 import type { SqlResult } from './types'
 
 /**
@@ -39,7 +36,7 @@ export class PGliteInstanceManager {
 
     for (const [sqlName, importPath] of Object.entries(imports)) {
       try {
-        const jsName = getJavaScriptName(sqlName)
+        const jsName = getPGliteJavaScriptName(sqlName)
         // Extract module path from import statement
         const modulePath = importPath.match(/from\s+['"`](.+?)['"`]/)?.[1]
         if (!modulePath) continue
@@ -60,40 +57,21 @@ export class PGliteInstanceManager {
 
   /**
    * Execute SQL query with immediate instance cleanup
+   * @param sql SQL to execute
+   * @param options Optional configuration including required extensions
    */
-  async executeQuery(sql: string): Promise<SqlResult[]> {
-    // Detect extensions from SQL
-    const detectedExtensions = detectExtensionsFromSQL(sql)
+  async executeQuery(
+    sql: string,
+    options?: { extensions?: string[] },
+  ): Promise<SqlResult[]> {
+    const extensions = options?.extensions || []
 
-    let processedSql = sql
-    if (detectedExtensions.length > 0) {
-      const extensionConfig = getExtensionConfiguration(detectedExtensions)
-
-      if (Object.keys(extensionConfig.imports).length > 0) {
-        // Remove CREATE EXTENSION statements from SQL since extensions are loaded at initialization
-        processedSql = this.removeCreateExtensionStatements(sql)
-      }
-    }
-
-    const db = await this.createInstance(detectedExtensions)
+    const db = await this.createInstance(extensions)
     try {
-      return await this.executeSql(processedSql, db)
+      return await this.executeSql(sql, db)
     } finally {
       db.close?.()
     }
-  }
-
-  /**
-   * Remove CREATE EXTENSION statements from SQL text
-   */
-  private removeCreateExtensionStatements(sql: string): string {
-    // Remove CREATE EXTENSION statements (both quoted and unquoted forms)
-    return sql
-      .replace(
-        /CREATE\s+EXTENSION\s+(?:IF\s+NOT\s+EXISTS\s+)?["']?[a-zA-Z0-9_-]+["']?\s*;/gi,
-        '',
-      )
-      .trim()
   }
 
   /**
