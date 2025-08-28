@@ -4,6 +4,7 @@ import { type StructuredTool, tool } from '@langchain/core/tools'
 import type { JSONSchema } from '@langchain/core/utils/json_schema'
 import { Command } from '@langchain/langgraph'
 import { dmlOperationSchema } from '@liam-hq/artifact'
+import { type PgParseResult, pgParse } from '@liam-hq/schema/parser'
 import { toJsonSchema } from '@valibot/to-json-schema'
 import { v4 as uuidv4 } from 'uuid'
 import * as v from 'valibot'
@@ -47,6 +48,27 @@ const getToolCallId = (config: RunnableConfig): string => {
   return configParseResult.output.toolCall.id
 }
 
+/**
+ * Validate SQL syntax for all DML operations
+ */
+const validateDmlSyntax = async (
+  testcasesWithDml: Array<{ dmlOperations: Array<{ sql: string }> }>,
+): Promise<void> => {
+  for (const testcase of testcasesWithDml) {
+    for (const dmlOp of testcase.dmlOperations) {
+      const parseResult: PgParseResult = await pgParse(dmlOp.sql)
+      if (parseResult.error) {
+        throw new WorkflowTerminationError(
+          new Error(
+            `SQL syntax error in DML operation: ${parseResult.error.message}. SQL: ${dmlOp.sql}`,
+          ),
+          'saveTestcasesAndDmlTool',
+        )
+      }
+    }
+  }
+}
+
 export const saveTestcasesAndDmlTool: StructuredTool = tool(
   async (input: unknown, config: RunnableConfig): Promise<Command> => {
     const parsed = v.safeParse(saveTestcasesAndDmlToolSchema, input)
@@ -69,6 +91,8 @@ export const saveTestcasesAndDmlTool: StructuredTool = tool(
         'saveTestcasesAndDmlTool',
       )
     }
+
+    await validateDmlSyntax(testcasesWithDml)
 
     const toolCallId = getToolCallId(config)
 
