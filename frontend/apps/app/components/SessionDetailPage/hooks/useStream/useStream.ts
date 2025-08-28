@@ -52,6 +52,11 @@ export const useStream = () => {
       }
 
       for await (const ev of parseSse(res.body)) {
+        if (ev.event === 'end') {
+          setIsStreaming(false)
+          break
+        }
+
         if (ev.event !== 'messages') continue
 
         const parsedData = JSON.parse(ev.data)
