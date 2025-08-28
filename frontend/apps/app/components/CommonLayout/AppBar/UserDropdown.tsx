@@ -12,7 +12,6 @@ import {
   DropdownMenuTrigger,
 } from '@/components'
 import { createClient } from '@/libs/db/client'
-import styles from './UserDropdown.module.css'
 
 function getUserInitial({
   userName,
@@ -76,22 +75,21 @@ export const UserDropdown: FC<Props> = ({ avatarUrl, userName, userEmail }) => {
   return (
     <DropdownMenuRoot>
       <DropdownMenuTrigger asChild>
-        <button
-          type="button"
-          aria-label="Open user menu"
-          className={styles.triggerButton}
-        >
-          {avatarUrl ? (
-            <AvatarWithImage src={avatarUrl} alt="" size="sm" />
-          ) : (
-            <Avatar
-              initial={userInitial}
-              size="sm"
-              user="you"
-              aria-label={`${userName || userEmail || 'User'} profile`}
-            />
-          )}
-        </button>
+        {avatarUrl ? (
+          <AvatarWithImage
+            src={avatarUrl}
+            alt=""
+            size="sm"
+            aria-label={`${userName || userEmail || 'User'} profile`}
+          />
+        ) : (
+          <Avatar
+            initial={userInitial}
+            size="sm"
+            user="you"
+            aria-label={`${userName || userEmail || 'User'} profile`}
+          />
+        )}
       </DropdownMenuTrigger>
       <DropdownMenuPortal>
         <DropdownMenuContent align="end" sideOffset={5}>

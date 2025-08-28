@@ -331,6 +331,9 @@ importers:
       '@liam-hq/db':
         specifier: workspace:*
         version: link:../db
+      '@liam-hq/neverthrow':
+        specifier: workspace:*
+        version: link:../neverthrow
       '@liam-hq/pglite-server':
         specifier: workspace:*
         version: link:../pglite-server
@@ -565,6 +568,31 @@ importers:
       tsx:
         specifier: 4.20.3
         version: 4.20.3
+      typescript:
+        specifier: 5.9.2
+        version: 5.9.2
+
+  frontend/internal-packages/neverthrow:
+    dependencies:
+      neverthrow:
+        specifier: 8.2.0
+        version: 8.2.0
+    devDependencies:
+      '@biomejs/biome':
+        specifier: 2.1.4
+        version: 2.1.4
+      '@liam-hq/configs':
+        specifier: workspace:*
+        version: link:../configs
+      '@types/node':
+        specifier: 22.17.1
+        version: 22.17.1
+      concurrently:
+        specifier: 9.2.0
+        version: 9.2.0
+      eslint:
+        specifier: 9.33.0
+        version: 9.33.0(jiti@2.5.1)
       typescript:
         specifier: 5.9.2
         version: 5.9.2
@@ -867,6 +895,9 @@ importers:
 
   frontend/packages/schema:
     dependencies:
+      '@liam-hq/neverthrow':
+        specifier: workspace:*
+        version: link:../../internal-packages/neverthrow
       '@prisma/internals':
         specifier: 6.8.2
         version: 6.8.2(typescript@5.9.2)
@@ -15287,7 +15318,7 @@ snapshots:
 
   '@types/minimatch@6.0.0':
     dependencies:
-      minimatch: 9.0.5
+      minimatch: 10.0.3
 
   '@types/ms@2.1.0': {}
 

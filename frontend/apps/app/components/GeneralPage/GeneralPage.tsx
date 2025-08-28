@@ -1,3 +1,4 @@
+import { notFound } from 'next/navigation'
 import { GeneralPageClient } from './components/GeneralPageClient'
 import { getOrganizationDetails } from './services/getOrganizationDetails'
 
@@ -10,7 +11,7 @@ export async function GeneralPage({
   const organization = await getOrganizationDetails(organizationId)
 
   if (!organization) {
-    throw new Error('Organization not found')
+    notFound()
   }
 
   // Use the client component with useActionState for toast notifications

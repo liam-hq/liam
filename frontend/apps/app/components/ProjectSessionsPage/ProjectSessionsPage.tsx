@@ -1,8 +1,10 @@
 import { MessagesSquare } from '@liam-hq/ui'
+import { redirect } from 'next/navigation'
 import type { FC } from 'react'
 import { getProjects } from '@/components/CommonLayout/AppBar/ProjectsDropdownMenu/services/getProjects'
 import { getOrganizationId } from '@/features/organizations/services/getOrganizationId'
 import { SessionFormContainer } from '@/features/sessions/components/SessionFormContainer'
+import { urlgen } from '@/libs/routes'
 import styles from './ProjectSessionsPage.module.css'
 import { SessionItem } from './SessionItem'
 import { fetchProjectSessions } from './services/fetchProjectSessions'
@@ -13,7 +15,12 @@ type Props = {
 
 export const ProjectSessionsPage: FC<Props> = async ({ projectId }) => {
   const sessions = await fetchProjectSessions(projectId)
-  const organizationId = await getOrganizationId()
+  const organizationIdResult = await getOrganizationId()
+  if (organizationIdResult.isErr()) {
+    redirect(urlgen('login'))
+  }
+
+  const organizationId = organizationIdResult.value
   const projectsResponse = await getProjects(organizationId)
   const projects = projectsResponse.data || []
 

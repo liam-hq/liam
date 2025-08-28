@@ -4,7 +4,8 @@ import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
 import process from 'node:process'
-import { Result } from 'neverthrow'
+import { fromThrowable } from '@liam-hq/neverthrow'
+import type { Result } from 'neverthrow'
 
 /**
  * Environment information for enhanced tracing
@@ -51,50 +52,41 @@ type LangGraphTraceMetadata = {
  * Get current Git branch safely using Result type
  */
 const getCurrentBranch = (): Result<string, Error> => {
-  return Result.fromThrowable(
-    () => {
-      return execSync('git branch --show-current', {
-        encoding: 'utf8',
-        timeout: 5000,
-        stdio: ['ignore', 'pipe', 'ignore'],
-      }).trim()
-    },
-    (error) => new Error(`Failed to get git branch: ${String(error)}`),
-  )()
+  return fromThrowable(() => {
+    return execSync('git branch --show-current', {
+      encoding: 'utf8',
+      timeout: 5000,
+      stdio: ['ignore', 'pipe', 'ignore'],
+    }).trim()
+  })()
 }
 
 /**
  * Get current Git commit hash safely using Result type
  */
 const getCurrentCommit = (): Result<string, Error> => {
-  return Result.fromThrowable(
-    () => {
-      return execSync('git rev-parse HEAD', {
-        encoding: 'utf8',
-        timeout: 5000,
-        stdio: ['ignore', 'pipe', 'ignore'],
-      })
-        .trim()
-        .slice(0, 8)
-    },
-    (error) => new Error(`Failed to get git commit: ${String(error)}`),
-  )()
+  return fromThrowable(() => {
+    return execSync('git rev-parse HEAD', {
+      encoding: 'utf8',
+      timeout: 5000,
+      stdio: ['ignore', 'pipe', 'ignore'],
+    })
+      .trim()
+      .slice(0, 8)
+  })()
 }
 
 /**
  * Get LangGraph version from package.json using Result type
  */
 const getLangGraphVersion = (): Result<string, Error> => {
-  return Result.fromThrowable(
-    () => {
-      const packageJsonPath = path.resolve(__dirname, '../../package.json')
-      const packageJsonContent = fs.readFileSync(packageJsonPath, 'utf8')
-      const packageJson: { dependencies?: Record<string, string> } =
-        JSON.parse(packageJsonContent)
-      return packageJson.dependencies?.['@langchain/langgraph'] ?? 'unknown'
-    },
-    (error) => new Error(`Failed to get LangGraph version: ${String(error)}`),
-  )()
+  return fromThrowable(() => {
+    const packageJsonPath = path.resolve(__dirname, '../../package.json')
+    const packageJsonContent = fs.readFileSync(packageJsonPath, 'utf8')
+    const packageJson: { dependencies?: Record<string, string> } =
+      JSON.parse(packageJsonContent)
+    return packageJson.dependencies?.['@langchain/langgraph'] ?? 'unknown'
+  })()
 }
 
 /**

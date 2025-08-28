@@ -79,6 +79,18 @@ export function createBaseConfig(options = {}) {
 						restrictedNamedExports: ["*"],
 					},
 				],
+				"no-restricted-imports": [
+					"error",
+					{
+						paths: [
+							{
+								name: "neverthrow",
+								importNames: ["fromThrowable", "fromAsyncThrowable"],
+								message: "Use @liam-hq/neverthrow instead for consistent error handling",
+							},
+						],
+					},
+				],
 				"no-restricted-syntax": [
 					"error",
 					{

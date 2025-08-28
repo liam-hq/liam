@@ -1,5 +1,7 @@
+import { redirect } from 'next/navigation'
 import type { FC } from 'react'
 import { createClient } from '@/libs/db/server'
+import { urlgen } from '@/libs/routes'
 import { ClientSearchWrapper } from './components/ClientSearchWrapper'
 import {
   getOrganizationInvites,
@@ -24,7 +26,7 @@ export const OrganizationMembersPage: FC<
   const { data: userData } = await supabase.auth.getUser()
 
   if (!userData.user?.id) {
-    throw new Error('User not authenticated')
+    redirect(urlgen('login'))
   }
 
   const currentUserId = userData.user.id

@@ -1,4 +1,4 @@
-import { Result } from 'neverthrow'
+import { fromThrowable } from '@liam-hq/neverthrow'
 import * as v from 'valibot'
 
 /**
@@ -98,10 +98,7 @@ const formatUnknownContent = (content: unknown): string => {
   }
 
   if (typeof content === 'object') {
-    return Result.fromThrowable(
-      () => JSON.stringify(content, null, 2),
-      () => 'Failed to stringify content',
-    )().match(
+    return fromThrowable(() => JSON.stringify(content, null, 2))().match(
       (jsonString) => `\`\`\`json\n${jsonString}\n\`\`\``,
       () => String(content),
     )

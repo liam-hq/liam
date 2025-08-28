@@ -1,3 +1,4 @@
+import { notFound } from 'next/navigation'
 import * as v from 'valibot'
 import type { PageProps } from '@/app/types'
 import { ProjectSessionsPage } from '@/components/ProjectSessionsPage'
@@ -10,7 +11,7 @@ const paramsSchema = v.object({
 
 export default async function Page({ params }: PageProps) {
   const parsedParams = v.safeParse(paramsSchema, await params)
-  if (!parsedParams.success) throw new Error('Invalid parameters')
+  if (!parsedParams.success) notFound()
 
   const { projectId } = parsedParams.output
   return <ProjectSessionsPage projectId={projectId} />

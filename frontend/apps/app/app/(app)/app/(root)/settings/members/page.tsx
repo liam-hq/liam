@@ -1,14 +1,16 @@
+import { notFound, redirect } from 'next/navigation'
 import { OrganizationMembersPage } from '@/components/OrganizationMembersPage'
 import { getOrganizationId } from '@/features/organizations/services/getOrganizationId'
 import { createClient } from '@/libs/db/server'
+import { urlgen } from '@/libs/routes'
 
 export default async function MembersPage() {
-  const organizationId = await getOrganizationId()
-
-  // TODO: Reconsider what screen should be displayed to the user when organizationId is not available
-  if (organizationId == null) {
-    return null
+  const organizationIdResult = await getOrganizationId()
+  if (organizationIdResult.isErr()) {
+    redirect(urlgen('login'))
   }
+
+  const organizationId = organizationIdResult.value
 
   const supabase = await createClient()
 
@@ -20,7 +22,7 @@ export default async function MembersPage() {
 
   if (error || !organization) {
     console.error('Error fetching organization:', error)
-    throw new Error('Organization not found')
+    notFound()
   }
 
   return <OrganizationMembersPage organization={organization} />

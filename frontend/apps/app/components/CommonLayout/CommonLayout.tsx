@@ -1,6 +1,8 @@
 import { BaseLayout } from '@liam-hq/ui'
+import { redirect } from 'next/navigation'
 import type { ReactNode } from 'react'
 import { getOrganizationId } from '@/features/organizations/services/getOrganizationId'
+import { urlgen } from '@/libs/routes'
 import { AppBar } from './AppBar'
 import { GlobalNav } from './GlobalNav'
 import { OrgCookie } from './OrgCookie'
@@ -19,12 +21,17 @@ export async function CommonLayout({
   branchOrCommit,
   children,
 }: CommonLayoutProps) {
-  const organizationId = await getOrganizationId()
+  const organizationIdResult = await getOrganizationId()
+  if (organizationIdResult.isErr()) {
+    redirect(urlgen('login'))
+  }
+
+  const organizationId = organizationIdResult.value
   const { data: organization } = await getOrganization(organizationId)
 
   const { data: authUser, error } = await getAuthUser()
   if (error) {
-    throw new Error('Authentication failed')
+    redirect(urlgen('login'))
   }
 
   const { data: organizations } = await getOrganizationsByUserId(

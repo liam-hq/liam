@@ -1,5 +1,6 @@
 import { TabsList, TabsTrigger } from '@liam-hq/ui'
 import Link from 'next/link'
+import { notFound } from 'next/navigation'
 import type { FC } from 'react'
 import { createClient } from '@/libs/db/server'
 import { urlgen } from '@/libs/routes/urlgen'
@@ -30,7 +31,7 @@ async function getProject(projectId: string) {
 
   if (error || !project) {
     console.error('Error fetching project:', error)
-    throw new Error('Project not found')
+    notFound()
   }
 
   const { data: schemaPath, error: schemaPathError } = await supabase

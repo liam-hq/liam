@@ -6,6 +6,7 @@ import {
   SystemMessage,
 } from '@langchain/core/messages'
 import { ChatOpenAI } from '@langchain/openai'
+import { fromAsyncThrowable } from '@liam-hq/neverthrow'
 import { ResultAsync } from 'neverthrow'
 import * as v from 'valibot'
 import { SSE_EVENTS } from '../client'
@@ -34,12 +35,10 @@ export const invokeDesignAgent = (
   const formatPrompt = ResultAsync.fromSafePromise(
     designAgentPrompt.format(variables),
   )
-  const invoke = ResultAsync.fromThrowable(
-    (systemPrompt: string) =>
-      model.stream([new SystemMessage(systemPrompt), ...messages], {
-        configurable,
-      }),
-    (error) => new Error(`Failed to invoke design agent: ${error}`),
+  const invoke = fromAsyncThrowable((systemPrompt: string) =>
+    model.stream([new SystemMessage(systemPrompt), ...messages], {
+      configurable,
+    }),
   )
 
   return formatPrompt.andThen(invoke).andThen((stream) => {

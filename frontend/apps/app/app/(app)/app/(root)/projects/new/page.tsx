@@ -1,15 +1,19 @@
 import { getInstallations } from '@liam-hq/github'
+import { redirect } from 'next/navigation'
 import { ProjectNewPage } from '@/components/ProjectNewPage'
 import { getOrganizationId } from '@/features/organizations/services/getOrganizationId'
 import { createClient } from '@/libs/db/server'
+import { urlgen } from '@/libs/routes'
 
 export default async function NewProjectPage() {
-  const organizationId = await getOrganizationId()
+  const organizationIdResult = await getOrganizationId()
 
-  // TODO: Reconsider what screen should be displayed to the user when organizationId is not available
-  if (organizationId == null) {
-    return null
+  if (organizationIdResult.isErr()) {
+    console.error('Failed to get organization ID:', organizationIdResult.error)
+    redirect(urlgen('login'))
   }
+
+  const organizationId = organizationIdResult.value
 
   const supabase = await createClient()
   const {
@@ -18,13 +22,13 @@ export default async function NewProjectPage() {
   } = await supabase.auth.getUser()
   if (error || !user) {
     console.error('Error fetching user:', error)
-    throw new Error('User not authenticated')
+    redirect(urlgen('login'))
   }
 
   const { data } = await supabase.auth.getSession()
 
   if (data.session === null) {
-    throw new Error('Session not found')
+    redirect(urlgen('login'))
   }
 
   const { installations } = await getInstallations(data.session)

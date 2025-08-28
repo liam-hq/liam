@@ -1,13 +1,21 @@
+import { redirect } from 'next/navigation'
 import type { FC } from 'react'
 import { getProjects } from '@/components/CommonLayout/AppBar/ProjectsDropdownMenu/services/getProjects'
 import { fetchRecentSessions } from '@/components/CommonLayout/GlobalNav/RecentsSection/fetchRecentSessions'
 import { SessionItem } from '@/components/ProjectSessionsPage/SessionItem'
 import { getOrganizationId } from '@/features/organizations/services/getOrganizationId'
 import { SessionFormContainer } from '@/features/sessions/components/SessionFormContainer'
+import { urlgen } from '@/libs/routes'
 import styles from './SessionsNewPage.module.css'
 
 export const SessionsNewPage: FC = async () => {
-  const organizationId = await getOrganizationId()
+  const organizationIdResult = await getOrganizationId()
+  if (organizationIdResult.isErr()) {
+    console.error('Failed to get organization ID:', organizationIdResult.error)
+    redirect(urlgen('login'))
+  }
+
+  const organizationId = organizationIdResult.value
   const projectsResponse = await getProjects(organizationId)
   const projects = projectsResponse.data || []
 

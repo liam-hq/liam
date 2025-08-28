@@ -1,0 +1,6 @@
+{
+  "extends": "@liam-hq/configs/tsconfig/base.json",
+  "compilerOptions": {},
+  "include": ["src/**/*"],
+  "exclude": ["node_modules"]
+}

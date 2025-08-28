@@ -1,14 +1,16 @@
+import { redirect } from 'next/navigation'
 import { ProjectsPage } from '@/components/ProjectsPage'
 import { getOrganizationId } from '@/features/organizations/services/getOrganizationId'
 import { createClient } from '@/libs/db/server'
+import { urlgen } from '@/libs/routes'
 
 export default async function Page() {
-  const organizationId = await getOrganizationId()
-
-  // TODO: Reconsider what screen should be displayed to the user when organizationId is not available
-  if (organizationId == null) {
-    return null
+  const organizationIdResult = await getOrganizationId()
+  if (organizationIdResult.isErr()) {
+    redirect(urlgen('login'))
   }
+
+  const organizationId = organizationIdResult.value
 
   const supabase = await createClient()
   const { data } = await supabase.auth.getSession()
@@ -19,10 +21,10 @@ export default async function Page() {
 
   if (error || !user) {
     console.error('Error fetching user:', error)
-    throw new Error('User not authenticated')
+    redirect(urlgen('login'))
   }
   if (data.session === null) {
-    throw new Error('User not authenticated')
+    redirect(urlgen('login'))
   }
 
   return <ProjectsPage organizationId={organizationId} />

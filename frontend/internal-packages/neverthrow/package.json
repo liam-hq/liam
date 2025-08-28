@@ -1,0 +1,33 @@
+{
+  "name": "@liam-hq/neverthrow",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "publishConfig": {
+    "access": "restricted"
+  },
+  "main": "src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "neverthrow": "8.2.0"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.1.4",
+    "@liam-hq/configs": "workspace:*",
+    "@types/node": "22.17.1",
+    "concurrently": "9.2.0",
+    "eslint": "9.33.0",
+    "typescript": "5.9.2"
+  },
+  "scripts": {
+    "fmt": "concurrently \"pnpm:fmt:*\"",
+    "fmt:biome": "biome check --write --unsafe .",
+    "fmt:eslint": "eslint --fix .",
+    "lint": "concurrently \"pnpm:lint:*\"",
+    "lint:biome": "biome check .",
+    "lint:eslint": "eslint .",
+    "lint:tsc": "tsc --noEmit"
+  }
+}

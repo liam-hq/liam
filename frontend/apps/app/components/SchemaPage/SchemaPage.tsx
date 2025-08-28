@@ -3,6 +3,7 @@ import { getFileContent } from '@liam-hq/github'
 import { parse, setPrismWasmUrl } from '@liam-hq/schema/parser'
 import * as Sentry from '@sentry/nextjs'
 import { cookies } from 'next/headers'
+import { notFound } from 'next/navigation'
 import type { ComponentProps, FC } from 'react'
 import { TabsContent, TabsRoot } from '@/components'
 import { createClient } from '@/libs/db/server'
@@ -56,7 +57,7 @@ async function getERDEditorContent({
     !repository.name
   ) {
     console.error('Repository information not found')
-    throw new Error('Repository information not found')
+    notFound()
   }
 
   const repositoryFullName = `${repository.owner}/${repository.name}`
@@ -125,7 +126,7 @@ async function getERDEditorContent({
     schema,
     defaultSidebarOpen,
     defaultPanelSizes,
-    errorObjects: errors.map((error) => ({
+    errorObjects: errors.map((error: Error) => ({
       name: error.name,
       message: error.message,
     })),

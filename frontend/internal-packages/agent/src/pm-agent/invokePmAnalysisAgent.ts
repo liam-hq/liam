@@ -6,6 +6,7 @@ import {
   SystemMessage,
 } from '@langchain/core/messages'
 import { ChatOpenAI } from '@langchain/openai'
+import { fromAsyncThrowable } from '@liam-hq/neverthrow'
 import { ResultAsync } from 'neverthrow'
 import * as v from 'valibot'
 import type { WorkflowConfigurable } from '../chat/workflow/types'
@@ -52,12 +53,10 @@ export const invokePmAnalysisAgent = (
     },
   )
 
-  const invoke = ResultAsync.fromThrowable(
-    (systemPrompt: string) =>
-      model.stream([new SystemMessage(systemPrompt), ...cleanedMessages], {
-        configurable,
-      }),
-    (error) => (error instanceof Error ? error : new Error(String(error))),
+  const invoke = fromAsyncThrowable((systemPrompt: string) =>
+    model.stream([new SystemMessage(systemPrompt), ...cleanedMessages], {
+      configurable,
+    }),
   )
 
   return formatPrompt.andThen(invoke).andThen((stream) => {
