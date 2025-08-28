@@ -105,6 +105,11 @@ const nextConfig: NextConfig = {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     config.plugins = [...config.plugins]
 
+    config.module.rules.push({
+      test: /\.mp4$/,
+      type: 'asset/resource',
+    })
+
     return config
   },
   outputFileTracingIncludes: {
