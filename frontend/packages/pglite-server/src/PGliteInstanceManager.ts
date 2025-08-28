@@ -1,6 +1,14 @@
-import { PGlite } from '@electric-sql/pglite'
+import {
+  type Extensions,
+  PGlite,
+  type PGliteOptions,
+} from '@electric-sql/pglite'
 import { type PgParseResult, pgParse } from '@liam-hq/schema/parser'
 import type { RawStmt } from '@pgsql/types'
+import {
+  detectExtensionsFromSQL,
+  getExtensionConfiguration,
+} from './extensions'
 import type { SqlResult } from './types'
 
 /**
@@ -8,24 +16,86 @@ import type { SqlResult } from './types'
  */
 export class PGliteInstanceManager {
   /**
-   * Creates a new PGlite instance for query execution
+   * Creates a new PGlite instance for query execution with optional extensions
    */
-  private async createInstance(): Promise<PGlite> {
-    return new PGlite({
+  private async createInstance(extensionNames: string[] = []): Promise<PGlite> {
+    const extensions = await this.loadExtensions(extensionNames)
+
+    const config: PGliteOptions = {
       initialMemory: 2 * 1024 * 1024 * 1024, // 2GB initial memory allocation
-    })
+      ...(Object.keys(extensions).length > 0 && { extensions }),
+    }
+
+    return new PGlite(config)
+  }
+
+  /**
+   * Dynamically load PGlite extensions based on detected extension names
+   */
+  private async loadExtensions(extensionNames: string[]): Promise<Extensions> {
+    const extensions: Extensions = {}
+
+    for (const extensionName of extensionNames) {
+      try {
+        switch (extensionName) {
+          case 'uuid-ossp': {
+            const { uuid_ossp } = await import(
+              '@electric-sql/pglite/contrib/uuid_ossp'
+            )
+            extensions['uuid_ossp'] = uuid_ossp
+            break
+          }
+          // Note: Other extensions may not be available in all PGlite versions
+          // This is a minimal implementation focusing on commonly available extensions
+          default:
+            // Silently skip unsupported extensions
+            break
+        }
+      } catch (error) {
+        // Silently handle extension loading failures
+        // Extensions will simply not be available if loading fails
+      }
+    }
+
+    return extensions
   }
 
   /**
    * Execute SQL query with immediate instance cleanup
    */
   async executeQuery(sql: string): Promise<SqlResult[]> {
-    const db = await this.createInstance()
+    // Detect extensions from SQL
+    const detectedExtensions = detectExtensionsFromSQL(sql)
+
+    let processedSql = sql
+    if (detectedExtensions.length > 0) {
+      const extensionConfig = getExtensionConfiguration(detectedExtensions)
+
+      if (Object.keys(extensionConfig.imports).length > 0) {
+        // Remove CREATE EXTENSION statements from SQL since extensions are loaded at initialization
+        processedSql = this.removeCreateExtensionStatements(sql)
+      }
+    }
+
+    const db = await this.createInstance(detectedExtensions)
     try {
-      return await this.executeSql(sql, db)
+      return await this.executeSql(processedSql, db)
     } finally {
       db.close?.()
     }
+  }
+
+  /**
+   * Remove CREATE EXTENSION statements from SQL text
+   */
+  private removeCreateExtensionStatements(sql: string): string {
+    // Remove CREATE EXTENSION statements (both quoted and unquoted forms)
+    return sql
+      .replace(
+        /CREATE\s+EXTENSION\s+(?:IF\s+NOT\s+EXISTS\s+)?["']?[a-zA-Z0-9_-]+["']?\s*;/gi,
+        '',
+      )
+      .trim()
   }
 
   /**

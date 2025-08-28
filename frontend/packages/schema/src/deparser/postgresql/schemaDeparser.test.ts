@@ -1339,8 +1339,8 @@ describe('postgresqlSchemaDeparser', () => {
     it('should generate basic CREATE EXTENSION statement', async () => {
       const schema = aSchema({
         extensions: {
-          pgvector: {
-            name: 'pgvector',
+          vector: {
+            name: 'vector',
           },
         },
         tables: {},
@@ -1350,7 +1350,7 @@ describe('postgresqlSchemaDeparser', () => {
 
       expect(result.errors).toHaveLength(0)
       expect(result.value).toMatchInlineSnapshot(`
-        "CREATE EXTENSION \"pgvector\";"
+        "CREATE EXTENSION \"vector\";"
       `)
 
       await expectGeneratedSQLToBeParseable(result.value)
@@ -1419,8 +1419,8 @@ describe('postgresqlSchemaDeparser', () => {
     it('should generate multiple extensions', async () => {
       const schema = aSchema({
         extensions: {
-          pgvector: {
-            name: 'pgvector',
+          vector: {
+            name: 'vector',
           },
           uuid_ossp: {
             name: 'uuid-ossp',
@@ -1433,7 +1433,7 @@ describe('postgresqlSchemaDeparser', () => {
 
       expect(result.errors).toHaveLength(0)
       expect(result.value).toMatchInlineSnapshot(`
-        "CREATE EXTENSION \"pgvector\";
+        "CREATE EXTENSION \"vector\";
 
         CREATE EXTENSION \"uuid-ossp\";"
       `)
@@ -1444,8 +1444,8 @@ describe('postgresqlSchemaDeparser', () => {
     it('should generate extensions before enums and tables', async () => {
       const schema = aSchema({
         extensions: {
-          pgvector: {
-            name: 'pgvector',
+          vector: {
+            name: 'vector',
           },
         },
         enums: {
@@ -1490,7 +1490,7 @@ describe('postgresqlSchemaDeparser', () => {
 
       // Verify the complete output structure
       expect(result.value).toMatchInlineSnapshot(`
-        "CREATE EXTENSION \"pgvector\";
+        "CREATE EXTENSION \"vector\";
 
         CREATE TYPE \"status\" AS ENUM ('active', 'inactive');
 
@@ -1533,7 +1533,7 @@ describe('postgresqlSchemaDeparser', () => {
             name: 'uuid-ossp',
           },
           vector: {
-            name: 'pgvector',
+            name: 'vector',
           },
           hstore: {
             name: 'hstore',
@@ -1555,7 +1555,7 @@ describe('postgresqlSchemaDeparser', () => {
       expect(result.value).toMatchInlineSnapshot(`
         "CREATE EXTENSION "uuid-ossp";
 
-        CREATE EXTENSION "pgvector";
+        CREATE EXTENSION "vector";
 
         CREATE EXTENSION "hstore";"
       `)

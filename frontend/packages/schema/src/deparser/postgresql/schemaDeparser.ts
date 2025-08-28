@@ -1,3 +1,4 @@
+import { isPGliteSupportedExtension } from '../../extensions.js'
 import type {
   Enum,
   Extension,
@@ -12,7 +13,6 @@ import {
   generateCreateExtensionStatement,
   generateCreateIndexStatement,
   generateCreateTableStatement,
-  isPGliteSupportedExtension,
 } from './utils.js'
 
 export const postgresqlSchemaDeparser: SchemaDeparser = (schema: Schema) => {
