@@ -1,5 +1,5 @@
 .container {
-  height: 361px;
+  height: 386px;
   width: 271px;
   background-color: var(--global-background);
   border-radius: var(--border-radius-lg-plus);
@@ -12,4 +12,9 @@
   overflow-x: hidden;
   overflow-y: scroll;
   scrollbar-gutter: stable both-edges;
+}
+
+.video, .image {
+  height: 100%;
+  width: 100%;
 }
