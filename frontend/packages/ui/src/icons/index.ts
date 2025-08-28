@@ -62,6 +62,7 @@ export {
   Upload,
   Users,
   Waypoints,
+  Wrench,
   X,
   XCircle,
   XIcon,

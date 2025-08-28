@@ -71,10 +71,9 @@ export const invokeDesignAgent = (
             })
           : new AIMessage('')
 
-        const parsed = v.safeParse(
-          reasoningSchema,
-          accumulatedChunk?.additional_kwargs['reasoning'],
-        )
+        const reasoningPayload =
+          accumulatedChunk?.additional_kwargs?.['reasoning']
+        const parsed = v.safeParse(reasoningSchema, reasoningPayload)
         const reasoning = parsed.success ? parsed.output : null
 
         return {

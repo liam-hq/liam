@@ -466,7 +466,7 @@
 
 .markdownWrapper :global(ul > li:has(input[type='checkbox'])) {
   position: relative;
-  padding-left: 1.5em;
+  padding-left: var(--spacing-6);
 }
 
 .markdownWrapper :global(input[type='checkbox']) {

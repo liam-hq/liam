@@ -1,6 +1,6 @@
-import type {
+import {
   AIMessage,
-  BaseMessage,
+  type BaseMessage,
   HumanMessage,
   SystemMessage,
   ToolMessage,
@@ -19,19 +19,15 @@ export const aMessage = (
 
   switch (type) {
     case 'human':
-      return {
+      return new HumanMessage({
         ...baseMessage,
-        type: 'human',
-        example: false,
         ...overrides,
-      } as HumanMessage
+      })
 
     case 'ai':
-      return {
+      return new AIMessage({
         ...baseMessage,
-        type: 'ai',
         content: 'I can help you with that.',
-        example: false,
         tool_calls: [],
         invalid_tool_calls: [],
         usage_metadata: {
@@ -39,33 +35,41 @@ export const aMessage = (
           output_tokens: 50,
           total_tokens: 150,
         },
+        additional_kwargs: {
+          tool_calls: [
+            {
+              id: 'call_1',
+              type: 'function',
+              function: {
+                name: 'analyze_requirements',
+                arguments: JSON.stringify({ domain: 'library_management' }),
+              },
+            },
+          ],
+        },
         ...overrides,
-      } as AIMessage
+      })
 
     case 'tool':
-      return {
+      return new ToolMessage({
         ...baseMessage,
-        type: 'tool',
         content: 'Tool execution completed successfully',
         tool_call_id: 'tool-call-123',
         status: 'success',
-        lc_direct_tool_output: true,
         ...overrides,
-      } as ToolMessage
+      })
 
     case 'system':
-      return {
+      return new SystemMessage({
         ...baseMessage,
-        type: 'system',
         content: 'System message',
         ...overrides,
-      } as SystemMessage
+      })
 
     default:
-      return {
+      return new HumanMessage({
         ...baseMessage,
-        type: 'human',
         ...overrides,
-      } as HumanMessage
+      })
   }
 }
