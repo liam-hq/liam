@@ -1,12 +1,11 @@
 import { AIMessage, HumanMessage } from '@langchain/core/messages'
 import { END } from '@langchain/langgraph'
 import { describe, expect, it } from 'vitest'
-import type { WorkflowState } from '../../chat/workflow/types'
+import type { DbAgentState } from '../shared/dbAgentAnnotation'
 import { routeAfterDesignSchema } from './routeAfterDesignSchema'
 
-const workflowState = (messages: WorkflowState['messages']): WorkflowState => ({
+const workflowState = (messages: DbAgentState['messages']): DbAgentState => ({
   messages,
-  userInput: 'test input',
   schemaData: { tables: {}, enums: {}, extensions: {} },
   buildingSchemaId: 'test-id',
   latestVersionNumber: 1,

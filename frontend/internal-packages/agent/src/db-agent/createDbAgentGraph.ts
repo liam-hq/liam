@@ -1,9 +1,9 @@
 import { END, START, StateGraph } from '@langchain/langgraph'
 import type { BaseCheckpointSaver } from '@langchain/langgraph-checkpoint'
-import { workflowAnnotation } from '../chat/workflow/shared/createAnnotations'
 import { designSchemaNode } from './nodes/designSchemaNode'
 import { invokeSchemaDesignToolNode } from './nodes/invokeSchemaDesignToolNode'
 import { routeAfterDesignSchema } from './routing/routeAfterDesignSchema'
+import { dbAgentAnnotation } from './shared/dbAgentAnnotation'
 
 /**
  * Retry policy configuration for DB Agent nodes
@@ -23,7 +23,7 @@ const RETRY_POLICY = {
  * @param checkpointer - Optional checkpoint saver for persistent state management
  */
 export const createDbAgentGraph = (checkpointer?: BaseCheckpointSaver) => {
-  const dbAgentGraph = new StateGraph(workflowAnnotation)
+  const dbAgentGraph = new StateGraph(dbAgentAnnotation)
 
   dbAgentGraph
     .addNode('designSchema', designSchemaNode, {

@@ -1,22 +1,22 @@
 import type { RunnableConfig } from '@langchain/core/runnables'
 import type { Database } from '@liam-hq/db'
 import { getConfigurable } from '../../chat/workflow/shared/getConfigurable'
-import type { WorkflowState } from '../../chat/workflow/types'
 import { logAssistantMessage } from '../../chat/workflow/utils/timelineLogger'
 import { withTimelineItemSync } from '../../chat/workflow/utils/withTimelineItemSync'
 import { WorkflowTerminationError } from '../../shared/errorHandling'
 import { convertSchemaToText } from '../../utils/convertSchemaToText'
 import { removeReasoningFromMessages } from '../../utils/messageCleanup'
 import { invokeDesignAgent } from '../invokeDesignAgent'
+import type { DbAgentState } from '../shared/dbAgentAnnotation'
 
 /**
  * Design Schema Node - DB Design & DDL Execution
  * Performed by dbAgent
  */
 export async function designSchemaNode(
-  state: WorkflowState,
+  state: DbAgentState,
   config: RunnableConfig,
-): Promise<WorkflowState> {
+): Promise<DbAgentState> {
   const assistantRole: Database['public']['Enums']['assistant_role_enum'] = 'db'
   const configurableResult = getConfigurable(config)
   if (configurableResult.isErr()) {

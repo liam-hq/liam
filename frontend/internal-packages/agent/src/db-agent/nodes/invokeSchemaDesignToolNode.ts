@@ -5,9 +5,9 @@ import { ToolNode } from '@langchain/langgraph/prebuilt'
 import type { Schema } from '@liam-hq/schema'
 import type { ResultAsync } from 'neverthrow'
 import { getConfigurable } from '../../chat/workflow/shared/getConfigurable'
-import type { WorkflowState } from '../../chat/workflow/types'
 import { withTimelineItemSync } from '../../chat/workflow/utils/withTimelineItemSync'
 import type { Repositories } from '../../repositories'
+import type { DbAgentState } from '../shared/dbAgentAnnotation'
 import { schemaDesignTool } from '../tools/schemaDesignTool'
 
 /**
@@ -46,7 +46,7 @@ const fetchUpdatedSchemaWithResult = (
 }
 
 export const invokeSchemaDesignToolNode = async (
-  state: WorkflowState,
+  state: DbAgentState,
   config: RunnableConfig,
 ) => {
   const configurableResult = getConfigurable(config)

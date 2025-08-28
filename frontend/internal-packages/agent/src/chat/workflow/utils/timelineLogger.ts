@@ -8,7 +8,7 @@ import type { WorkflowState } from '../types'
  * Reduces code duplication across workflow nodes
  */
 export async function logAssistantMessage(
-  state: WorkflowState,
+  state: WorkflowState | { designSessionId: string },
   repositories: Repositories,
   content: string,
   role: Database['public']['Enums']['assistant_role_enum'],
