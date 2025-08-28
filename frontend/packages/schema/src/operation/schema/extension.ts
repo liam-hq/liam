@@ -1,6 +1,7 @@
 import * as v from 'valibot'
 import { extensionSchema } from '../../schema/schema.js'
 import { PATH_PATTERNS } from '../constants.js'
+import type { Operation } from './index.js'
 
 // Add extension operation
 const addExtensionOperation = v.object({
@@ -23,19 +24,24 @@ const removeExtensionOperation = v.object({
   ),
 })
 
-// Replace extension operation
-const replaceExtensionOperation = v.object({
-  op: v.literal('replace'),
-  path: v.pipe(
-    v.string(),
-    v.regex(PATH_PATTERNS.EXTENSION_BASE),
-    v.description('Path to replace extension (e.g., /extensions/vector)'),
-  ),
-  value: extensionSchema,
-})
+export type AddExtensionOperation = v.InferOutput<typeof addExtensionOperation>
+export type RemoveExtensionOperation = v.InferOutput<
+  typeof removeExtensionOperation
+>
+
+export const isAddExtensionOperation = (
+  operation: Operation,
+): operation is AddExtensionOperation => {
+  return v.safeParse(addExtensionOperation, operation).success
+}
+
+export const isRemoveExtensionOperation = (
+  operation: Operation,
+): operation is RemoveExtensionOperation => {
+  return v.safeParse(removeExtensionOperation, operation).success
+}
 
 export const extensionOperations = [
   addExtensionOperation,
   removeExtensionOperation,
-  replaceExtensionOperation,
 ]

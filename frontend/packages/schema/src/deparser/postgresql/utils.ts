@@ -476,3 +476,11 @@ export function generateCreateExtensionStatement(extension: Extension): string {
 
   return ddl
 }
+
+/**
+ * Generate DROP EXTENSION statement
+ */
+export function generateDropExtensionStatement(extensionName: string): string {
+  const escapedExtensionName = escapeIdentifier(extensionName)
+  return `DROP EXTENSION ${escapedExtensionName};`
+}
