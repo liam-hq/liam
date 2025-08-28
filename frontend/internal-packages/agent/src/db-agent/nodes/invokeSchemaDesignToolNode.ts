@@ -60,7 +60,7 @@ export const invokeSchemaDesignToolNode = async (
 
   const toolNode = new ToolNode<{ messages: BaseMessage[] }>([schemaDesignTool])
 
-  const result = await toolNode.invoke(state, {
+  const stream = await toolNode.stream(state, {
     configurable: {
       ...config.configurable,
       buildingSchemaId: state.buildingSchemaId,
@@ -68,6 +68,12 @@ export const invokeSchemaDesignToolNode = async (
       designSessionId: state.designSessionId,
     },
   })
+
+  let result: { messages: BaseMessage[] } = { messages: [] }
+
+  for await (const chunk of stream) {
+    result = chunk
+  }
 
   // Sync all ToolMessages to timeline
   const messages = result.messages

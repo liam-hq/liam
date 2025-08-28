@@ -7,7 +7,7 @@ on:
       - 'frontend/internal-packages/artifact/**'
       - 'frontend/internal-packages/db/**'
       - 'frontend/packages/schema/**'
-      - 'frontend/packages/pglite-server/**'
+      - 'frontend/internal-packages/pglite-server/**'
       - '.github/workflows/agent-deep-modeling.yml'
 
 concurrency:
@@ -60,13 +60,11 @@ jobs:
           echo "" >> execution_log.md
           echo "### Command Output" >> execution_log.md
           echo "" >> execution_log.md
-          echo '```' >> execution_log.md
           
           set -o pipefail
           pnpm --filter @liam-hq/agent execute-deep-modeling 2>&1 | tee -a execution_log.md
           exit_code=${PIPESTATUS[0]}
           
-          echo '```' >> execution_log.md
           echo "" >> execution_log.md
           
           if [ $exit_code -eq 0 ]; then

@@ -13,10 +13,18 @@ export const invokeSaveArtifactToolNode = async (
 ) => {
   const toolNode = new ToolNode([saveRequirementsToArtifactTool])
 
-  return toolNode.invoke(state, {
+  const stream = await toolNode.stream(state, {
     configurable: {
       ...config.configurable,
       designSessionId: state.designSessionId,
     },
   })
+
+  let result = {}
+
+  for await (const chunk of stream) {
+    result = chunk
+  }
+
+  return result
 }

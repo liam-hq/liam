@@ -1,5 +1,5 @@
-import type { BaseMessage } from '@langchain/core/messages'
 import { WorkflowTerminationError } from '../../shared/errorHandling'
+import { hasToolCalls } from '../../utils/hasToolCalls'
 import type { PmAgentState } from '../pmAgentAnnotations'
 
 const MAX_ANALYSIS_RETRY_COUNT = 3
@@ -38,15 +38,4 @@ export const routeAfterAnalyzeRequirements = (
 
   // 4. No tool calls and requirements not set -> re-analyze
   return 'analyzeRequirements'
-}
-
-/**
- * Checks if a message contains tool calls
- */
-const hasToolCalls = (message: BaseMessage): boolean => {
-  return (
-    'tool_calls' in message &&
-    Array.isArray(message.tool_calls) &&
-    message.tool_calls.length > 0
-  )
 }

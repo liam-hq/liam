@@ -8,6 +8,7 @@ type Props = ComponentProps<'button'> & {
   variant?:
     | 'solid-primary'
     | 'solid-danger'
+    | 'solid-inverse'
     | 'outline-secondary'
     | 'outline-overlay'
     | 'ghost-secondary'
@@ -45,6 +46,7 @@ export const Button = ({
   const variantClassName = match(variant)
     .with('solid-primary', () => styles.solidPrimary)
     .with('solid-danger', () => styles.solidDanger)
+    .with('solid-inverse', () => styles.solidInverse)
     .with('outline-secondary', () => styles.outlineSecondary)
     .with('outline-overlay', () => styles.outlineOverlay)
     .with('ghost-secondary', () => styles.ghostSecondary)

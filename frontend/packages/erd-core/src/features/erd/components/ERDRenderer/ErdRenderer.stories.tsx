@@ -1,6 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/nextjs'
 import '@xyflow/react/dist/style.css'
-import type React from 'react'
 import type { ComponentProps, FC, PropsWithChildren } from 'react'
 import { ErdRendererProvider, VersionProvider } from '@/providers'
 import { mockCurrentSchema } from '../../mocks'

@@ -239,6 +239,9 @@
   --button-danger-background-hover: #d55235;
   --button-ghost-secondary-background: #00331b;
   --button-secondary-background-hover: #ffffff;
+  --button-solid-inverse-background: rgba(0, 0, 0, 0.9);
+  --button-solid-inverse-foreground: #1ded83;
+  --button-solid-inverse-background-hover: rgba(0, 0, 0, 1);
   --avatar-text: #232526;
   --pane-border: #383a3b;
   --pane-border-hover: #5f6366;

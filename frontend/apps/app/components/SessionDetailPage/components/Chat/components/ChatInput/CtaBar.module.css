@@ -1,0 +1,34 @@
+.ctaBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-3) var(--spacing-4);
+  background-color: var(--primary-color);
+  border-radius: var(--border-radius-base);
+  color: rgba(0, 0, 0, 0.9);
+}
+
+.ctaText {
+  font-size: var(--font-size-3);
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+
+.ctaButton {
+  will-change: transform;
+  transition:
+    transform 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.ctaButton:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+}
+
+@media (width <= 768px) {
+  .ctaButton {
+    padding: var(--spacing-1) var(--spacing-2);
+    font-size: var(--font-size-2);
+  }
+}

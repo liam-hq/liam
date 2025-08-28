@@ -11,15 +11,8 @@ import { transformWorkflowStateToArtifact } from '../../chat/workflow/utils/tran
 import { withTimelineItemSync } from '../../chat/workflow/utils/withTimelineItemSync'
 import { WorkflowTerminationError } from '../../shared/errorHandling'
 import type { Testcase } from '../generateTestcase/agent'
-
-type TestcaseDmlExecutionResult = {
-  testCaseId: string
-  testCaseTitle: string
-  success: boolean
-  executedOperations: number
-  errors?: string[]
-  executedAt: Date
-}
+import { formatValidationErrors } from './formatValidationErrors'
+import type { TestcaseDmlExecutionResult } from './types'
 
 /**
  * Execute DML operations by testcase with DDL statements
@@ -65,18 +58,26 @@ async function executeDmlOperationsByTestcase(
       const sqlResults = executionResult.value
 
       const hasErrors = sqlResults.some((result) => !result.success)
-      const errors = sqlResults
+
+      // Extract failed operations with SQL and error pairs
+      const failedOperations = sqlResults
         .filter((result) => !result.success)
         .map((result) => {
-          // Extract error message from result object
+          let error = 'Unknown error'
           if (
             typeof result.result === 'object' &&
             result.result !== null &&
             'error' in result.result
           ) {
-            return String(result.result.error)
+            error = String(result.result.error)
+          } else {
+            error = String(result.result)
           }
-          return String(result.result)
+
+          return {
+            sql: result.sql,
+            error: error,
+          }
         })
 
       results.push({
@@ -84,7 +85,7 @@ async function executeDmlOperationsByTestcase(
         testCaseTitle: testcase.title,
         success: !hasErrors,
         executedOperations: testcase.dmlOperations.length,
-        ...(hasErrors && { errors }),
+        ...(hasErrors && { failedOperations }),
         executedAt: startTime,
       })
     } else {
@@ -93,7 +94,10 @@ async function executeDmlOperationsByTestcase(
         testCaseTitle: testcase.title,
         success: false,
         executedOperations: 0,
-        errors: [executionResult.error.message],
+        failedOperations: testcase.dmlOperations.map((op) => ({
+          sql: op.sql,
+          error: executionResult.error.message,
+        })),
         executedAt: startTime,
       })
     }
@@ -130,7 +134,7 @@ function updateWorkflowStateWithTestcaseResults(
         success: testcaseResult.success,
         result_summary: testcaseResult.success
           ? `Test Case "${testcaseResult.testCaseTitle}" operations completed successfully`
-          : `Test Case "${testcaseResult.testCaseTitle}" failed: ${testcaseResult.errors?.join('; ')}`,
+          : `Test Case "${testcaseResult.testCaseTitle}" failed: ${testcaseResult.failedOperations?.map((op) => op.error).join('; ')}`,
       }
 
       return {
@@ -211,7 +215,7 @@ export async function validateSchemaNode(
         sql: `Test Case: ${result.testCaseTitle}`,
         result: result.success
           ? { executedOperations: result.executedOperations }
-          : { errors: result.errors },
+          : { errors: result.failedOperations?.map((op) => op.error) },
         success: result.success,
         id: `testcase-${result.testCaseId}`,
         metadata: {
@@ -247,24 +251,7 @@ export async function validateSchemaNode(
       results,
     })
 
-    const successCount = results.filter((r) => r.success).length
-    const errorCount = results.length - successCount
-
-    let validationMessage: string
-    if (errorCount === 0) {
-      validationMessage =
-        'Database validation complete: all checks passed successfully'
-    } else {
-      const errorDetails = testcaseExecutionResults
-        .filter((result) => !result.success)
-        .map((result) => {
-          const errorMessages = result.errors?.join('\n  - ') || 'Unknown error'
-          return `- "${result.testCaseTitle}":\n  - ${errorMessages}`
-        })
-        .join('\n')
-
-      validationMessage = `Database validation found ${errorCount} issues. Please fix the following errors:\n\n${errorDetails}`
-    }
+    const validationMessage = formatValidationErrors(testcaseExecutionResults)
 
     const validationAIMessage = new AIMessage({
       content: validationMessage,

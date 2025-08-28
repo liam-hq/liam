@@ -10,9 +10,10 @@ import {
   ModalPortal,
   ModalRoot,
   ModalTitle,
+  XIcon,
 } from '@liam-hq/ui'
 import { type ChangeEvent, type FC, useCallback, useState } from 'react'
-import styles from './SignUpModal.module.css'
+import authStyles from '../AuthModal.module.css'
 
 type Props = {
   isOpen: boolean
@@ -42,33 +43,39 @@ export const SignUpModal: FC<Props> = ({
   }
 
   return (
-    <ModalRoot open={isOpen} onOpenChange={onClose}>
+    <ModalRoot
+      open={isOpen}
+      onOpenChange={(open) => {
+        if (!open) onClose()
+      }}
+    >
       <ModalPortal>
         <ModalOverlay />
-        <ModalContent className={styles.dialog}>
-          <ModalTitle className="sr-only">Welcome to Liam DB</ModalTitle>
-          <div className={styles.dialogContent}>
-            <div className={styles.dialogHeader}>
+        <ModalContent className={authStyles.dialog}>
+          <div className={authStyles.dialogContent}>
+            <div className={authStyles.dialogHeader}>
               <button
                 type="button"
-                className={styles.closeButton}
+                className={authStyles.closeButton}
                 onClick={onClose}
                 aria-label="Close"
               >
-                ×
+                <XIcon size={18} />
               </button>
             </div>
 
-            <div className={styles.authContent}>
-              <div className={styles.titleWrapper}>
-                <LiamLogoMark className={styles.logoMark} />
-                <h1 className={styles.title}>Welcome to Liam DB</h1>
+            <div className={authStyles.authContent}>
+              <div className={authStyles.titleWrapper}>
+                <LiamLogoMark className={authStyles.logoMark} />
+                <ModalTitle className={authStyles.title}>
+                  Welcome to Liam DB
+                </ModalTitle>
               </div>
 
-              <div className={styles.oauthList}>
-                <form onSubmit={handleEmailSignUp} className={styles.form}>
-                  <div className={styles.formGroup}>
-                    <label htmlFor="signup-email" className={styles.label}>
+              <div className={authStyles.oauthList}>
+                <form onSubmit={handleEmailSignUp} className={authStyles.form}>
+                  <div className={authStyles.formGroup}>
+                    <label htmlFor="signup-email" className={authStyles.label}>
                       Email
                     </label>
                     <Input
@@ -80,6 +87,10 @@ export const SignUpModal: FC<Props> = ({
                       value={email}
                       onChange={handleChangeEmail}
                       required
+                      autoComplete="email"
+                      inputMode="email"
+                      autoCapitalize="none"
+                      spellCheck={false}
                     />
                   </div>
 
@@ -88,25 +99,25 @@ export const SignUpModal: FC<Props> = ({
                   </Button>
                 </form>
 
-                <div className={styles.divider}>
+                <div className={authStyles.divider}>
                   <span>OR</span>
                 </div>
 
                 <button
                   type="button"
                   onClick={handleGithubSignUp}
-                  className={styles.oauthButton}
+                  className={authStyles.oauthButton}
                 >
                   <GithubLogo />
                   Sign up with GitHub
                 </button>
               </div>
 
-              <div className={styles.switchAuth}>
+              <div className={authStyles.switchAuth}>
                 Already have an account?{' '}
                 <button
                   type="button"
-                  className={styles.signInLink}
+                  className={authStyles.authSwitchLink}
                   onClick={onSwitchToSignIn}
                 >
                   Sign in

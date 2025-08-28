@@ -1,14 +1,4 @@
 {
-  "src/features/erd/components/ERDContent/ERDContent.module.css": {
-    "css-modules-kit/no-unused-class-names": {
-      "count": 1
-    }
-  },
-  "src/features/erd/components/ERDContent/ErdContent.module.css": {
-    "css-modules-kit/no-unused-class-names": {
-      "count": 1
-    }
-  },
   "src/features/erd/components/ERDContent/components/TableNode/TableDetail/Constraints/Constraints.module.css": {
     "css-modules-kit/no-unused-class-names": {
       "count": 4

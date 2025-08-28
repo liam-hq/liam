@@ -1,6 +1,7 @@
 'use client'
 
 import {
+  Building2,
   Check,
   ChevronDown,
   Copy,
@@ -9,6 +10,7 @@ import {
   DropdownMenuPortal,
   DropdownMenuRoot,
   DropdownMenuTrigger,
+  Globe,
   Link,
   Lock,
   ModalContent,
@@ -16,6 +18,7 @@ import {
   ModalPortal,
   ModalRoot,
   ModalTitle,
+  Spinner,
   XIcon,
 } from '@liam-hq/ui'
 import { type FC, useRef, useState } from 'react'
@@ -97,12 +100,18 @@ export const ShareDialog: FC<Props> = ({
               <div className={styles.accessSection}>
                 <h4 className={styles.sectionTitle}>People with access</h4>
                 <div className={styles.userInfo}>
-                  <div className={styles.avatar}>
-                    <span>You</span>
+                  <div className={styles.accessIcon}>
+                    {isPublic ? <Globe size={20} /> : <Building2 size={20} />}
                   </div>
                   <div className={styles.userDetails}>
-                    <div className={styles.userName}>You (Owner)</div>
-                    <div className={styles.userEmail}>Has full access</div>
+                    <div className={styles.userName}>
+                      {isPublic ? 'Anyone' : 'Organization members'}
+                    </div>
+                    <div className={styles.userEmail}>
+                      {isPublic
+                        ? 'Anyone with the link can view'
+                        : 'Members can view this session'}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -113,7 +122,8 @@ export const ShareDialog: FC<Props> = ({
                   id="visibility-section-title"
                   className={styles.sectionTitle}
                 >
-                  Visibility
+                  <span>Visibility</span>
+                  {loading && <Spinner size="12" />}
                 </h4>
                 <div className={styles.visibilityControls}>
                   <div className={styles.selectWrapper}>
@@ -200,11 +210,11 @@ export const ShareDialog: FC<Props> = ({
                     </button>
                   )}
                 </div>
-                {isPublic && (
-                  <p className={styles.visibilityDescription}>
-                    Anyone with the link can view this session
-                  </p>
-                )}
+                <p className={styles.visibilityDescription}>
+                  {isPublic
+                    ? 'Anyone with the link can view this session'
+                    : 'Only organization members can view this session'}
+                </p>
               </div>
             </div>
           </div>

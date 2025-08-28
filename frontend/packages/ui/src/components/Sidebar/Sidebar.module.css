@@ -47,7 +47,7 @@
 .sidebar {
   background: var(--pane-background);
   width: 100%;
-  height: 100%;
+  height: 100svh;
   display: flex;
   flex-direction: column;
 }
@@ -56,6 +56,7 @@
   flex: 1 1 0%;
   overflow-y: auto;
   padding-bottom: var(--spacing-10);
+  touch-action: pan-y;
 }
 
 .sidebarMenuItem {

@@ -1,7 +1,7 @@
 {
   "name": "@liam-hq/ui",
   "license": "Apache-2.0",
-  "version": "0.0.21",
+  "version": "0.0.22",
   "publishConfig": {
     "access": "public"
   },
@@ -53,12 +53,12 @@
     "dev:css": "tcm src --watch",
     "fmt": "concurrently \"pnpm:fmt:*\"",
     "fmt:biome": "biome check --write --unsafe .",
-    "fmt:eslint": "eslint --fix .",
+    "fmt:eslint": "eslint --fix --prune-suppressions .",
     "gen": "concurrently \"pnpm:gen:*\"",
     "gen:css": "tcm src",
     "lint": "concurrently \"pnpm:lint:*\"",
     "lint:biome": "biome check .",
-    "lint:eslint": "eslint . --prune-suppressions",
+    "lint:eslint": "eslint .",
     "lint:tsc": "tsc --noEmit",
     "suppressions": "eslint --suppress-all --fix --max-warnings 0",
     "test": "vitest --watch=false"

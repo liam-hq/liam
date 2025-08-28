@@ -23,7 +23,7 @@ const nextConfig: NextConfig = {
     serverActions: {
       allowedOrigins:
         process.env.VERCEL_ENV === 'production'
-          ? ['liambx.com', 'liam-erd-web.vercel.app']
+          ? ['liambx.com', 'liam-erd-web.vercel.app', 'app.liambx.com']
           : undefined,
     },
   },
@@ -36,6 +36,10 @@ const nextConfig: NextConfig = {
       {
         protocol: 'https',
         hostname: 'liam-erd-web.vercel.app',
+      },
+      {
+        protocol: 'https',
+        hostname: 'app.liambx.com',
       },
     ],
   },

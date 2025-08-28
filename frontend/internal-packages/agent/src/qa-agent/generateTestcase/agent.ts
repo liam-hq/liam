@@ -55,7 +55,7 @@ const testcaseFromApiSchema = v.object({
 })
 
 // Complete testcase schema with id and dmlOperations (for final output)
-const testcaseSchema = v.object({
+export const testcaseSchema = v.object({
   id: v.pipe(v.string(), v.uuid()), // UUID
   requirementType: v.picklist(['functional', 'non_functional']), // Type of requirement
   requirementCategory: v.string(), // Category of the requirement

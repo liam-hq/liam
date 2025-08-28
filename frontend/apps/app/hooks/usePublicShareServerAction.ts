@@ -16,6 +16,7 @@ export const usePublicShareServerAction = ({
 }: UsePublicShareServerActionProps) => {
   const [isPublic, setIsPublic] = useState(initialIsPublic)
   const [isPending, startTransition] = useTransition()
+  const [isLoading, setIsLoading] = useState(false)
   const isPublicRef = useRef(initialIsPublic)
 
   // Reset state when designSessionId or initialIsPublic changes
@@ -32,6 +33,8 @@ export const usePublicShareServerAction = ({
   const togglePublicShare = useCallback(async () => {
     const currentIsPublic = isPublicRef.current
 
+    setIsLoading(true)
+
     const result = await fromPromise(
       currentIsPublic
         ? disablePublicShare(designSessionId)
@@ -44,6 +47,8 @@ export const usePublicShareServerAction = ({
             : 'Failed to update sharing settings',
       }),
     )
+
+    setIsLoading(false)
 
     return result.match(
       (data) => {
@@ -59,7 +64,7 @@ export const usePublicShareServerAction = ({
   }, [designSessionId])
   return {
     isPublic,
-    loading: isPending,
+    loading: isLoading || isPending,
     togglePublicShare,
   }
 }

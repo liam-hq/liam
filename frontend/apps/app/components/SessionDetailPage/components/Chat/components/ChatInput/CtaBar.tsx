@@ -1,6 +1,6 @@
 import { Button } from '@liam-hq/ui'
 import type { FC } from 'react'
-import styles from './ChatInput.module.css'
+import styles from './CtaBar.module.css'
 
 type Props = {
   onSignUpClick: () => void
@@ -9,10 +9,10 @@ type Props = {
 export const CtaBar: FC<Props> = ({ onSignUpClick }) => {
   return (
     <div className={styles.ctaBar}>
-      <span className={styles.ctaText}>Sign up to use Liam</span>
+      <span className={styles.ctaText}>Sign up to use Liam DB</span>
       <Button
         type="button"
-        variant="solid-primary"
+        variant="solid-inverse"
         size="sm"
         className={styles.ctaButton}
         onClick={onSignUpClick}

@@ -8,11 +8,12 @@ import {
   ModalPortal,
   ModalRoot,
   ModalTitle,
+  XIcon,
 } from '@liam-hq/ui'
 import type { FC } from 'react'
+import authStyles from '../AuthModal.module.css'
 import { EmailForm } from '../LoginPage/EmailForm'
 import { loginByGithub } from '../LoginPage/services/loginByGithub'
-import styles from './SignInModal.module.css'
 
 type Props = {
   isOpen: boolean
@@ -28,32 +29,33 @@ export const SignInModal: FC<Props> = ({
   returnTo = '/app/design_sessions/new',
 }) => {
   return (
-    <ModalRoot open={isOpen} onOpenChange={onClose}>
+    <ModalRoot open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <ModalPortal>
         <ModalOverlay />
-        <ModalContent className={styles.dialog}>
-          <ModalTitle className="sr-only">Sign in to Liam DB</ModalTitle>
-          <div className={styles.dialogContent}>
-            <div className={styles.dialogHeader}>
+        <ModalContent className={authStyles.dialog}>
+          <div className={authStyles.dialogContent}>
+            <div className={authStyles.dialogHeader}>
               <button
                 type="button"
-                className={styles.closeButton}
+                className={authStyles.closeButton}
                 onClick={onClose}
                 aria-label="Close"
               >
-                ×
+                <XIcon size={18} />
               </button>
             </div>
 
-            <div className={styles.authContent}>
-              <div className={styles.titleWrapper}>
-                <LiamLogoMark className={styles.logoMark} />
-                <h1 className={styles.title}>Sign in to Liam DB</h1>
+            <div className={authStyles.authContent}>
+              <div className={authStyles.titleWrapper}>
+                <LiamLogoMark className={authStyles.logoMark} />
+                <ModalTitle className={authStyles.title}>
+                  Sign in to Liam DB
+                </ModalTitle>
               </div>
 
-              <div className={styles.oauthList}>
+              <div className={authStyles.oauthList}>
                 <EmailForm returnTo={returnTo} />
-                <div className={styles.divider}>
+                <div className={authStyles.divider}>
                   <span>OR</span>
                 </div>
                 <form>
@@ -61,7 +63,7 @@ export const SignInModal: FC<Props> = ({
                   <button
                     type="submit"
                     formAction={loginByGithub}
-                    className={styles.oauthButton}
+                    className={authStyles.oauthButton}
                   >
                     <GithubLogo />
                     Sign in with GitHub
@@ -69,11 +71,11 @@ export const SignInModal: FC<Props> = ({
                 </form>
               </div>
 
-              <div className={styles.switchAuth}>
+              <div className={authStyles.switchAuth}>
                 No account?{' '}
                 <button
                   type="button"
-                  className={styles.createAccountLink}
+                  className={authStyles.authSwitchLink}
                   onClick={onSwitchToSignUp}
                 >
                   Create one

@@ -8,13 +8,16 @@ describe('createQaAgentGraph', () => {
 graph TD;
 	__start__([<p>__start__</p>]):::first
 	generateTestcase(generateTestcase)
-	prepareDML(prepareDML)
+	generateDml(generateDml)
+	invokeSaveDmlTool(invokeSaveDmlTool)
 	validateSchema(validateSchema)
 	__end__([<p>__end__</p>]):::last
 	__start__ --> generateTestcase;
-	generateTestcase --> prepareDML;
-	prepareDML --> validateSchema;
+	generateTestcase --> generateDml;
+	invokeSaveDmlTool --> generateDml;
 	validateSchema --> __end__;
+	generateDml -.-> invokeSaveDmlTool;
+	generateDml -.-> validateSchema;
 	classDef default fill:#f2f0ff,line-height:1.2;
 	classDef first fill-opacity:0;
 	classDef last fill:#bfb6fc;

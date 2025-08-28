@@ -5,33 +5,6 @@
   padding: var(--spacing-2);
 }
 
-.ctaBar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: var(--spacing-3) var(--spacing-4);
-  background-color: var(--primary-accent);
-  border-radius: var(--border-radius-base);
-  color: var(--global-foreground);
-}
-
-.ctaText {
-  font-size: var(--font-size-3);
-  font-weight: var(--font-weight-medium);
-}
-
-.ctaButton {
-  background-color: white !important;
-  color: var(--primary-accent) !important;
-  border: 1px solid transparent !important;
-  font-weight: var(--font-weight-medium);
-}
-
-.ctaButton:hover {
-  background-color: rgba(255, 255, 255, 0.9) !important;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
 .inputContainer {
   display: flex;
   align-items: flex-end;
@@ -130,8 +103,4 @@
   outline: none !important;
   border: none !important;
   box-shadow: none !important;
-}
-
-.modeToggle {
-  align-self: flex-start;
 }

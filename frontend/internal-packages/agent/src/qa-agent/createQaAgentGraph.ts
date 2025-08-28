@@ -2,20 +2,12 @@ import { END, START, StateGraph } from '@langchain/langgraph'
 import type { BaseCheckpointSaver } from '@langchain/langgraph-checkpoint'
 import { workflowAnnotation } from '../chat/workflow/shared/createAnnotations'
 import { RETRY_POLICY } from '../shared/errorHandling'
+import { generateDmlNode } from './generateDml'
 import { generateTestcaseNode } from './generateTestcase'
-import { prepareDmlNode } from './prepareDml'
+import { invokeSaveDmlToolNode } from './nodes/invokeSaveDmlToolNode'
+import { routeAfterGenerateDml } from './routing/routeAfterGenerateDml'
 import { validateSchemaNode } from './validateSchema'
 
-/**
- * Create and configure the QA Agent subgraph for test case generation and validation
- *
- * The QA Agent handles the testing and validation process:
- * 1. generateTestcase - Creates test cases for testing with automatic timeline sync
- * 2. prepareDML - Generates DML statements for testing
- * 3. validateSchema - Executes DML and validates schema
- *
- * @param checkpointer - Optional checkpoint saver for persistent state management
- */
 export const createQaAgentGraph = (checkpointer?: BaseCheckpointSaver) => {
   const qaAgentGraph = new StateGraph(workflowAnnotation)
 
@@ -23,7 +15,10 @@ export const createQaAgentGraph = (checkpointer?: BaseCheckpointSaver) => {
     .addNode('generateTestcase', generateTestcaseNode, {
       retryPolicy: RETRY_POLICY,
     })
-    .addNode('prepareDML', prepareDmlNode, {
+    .addNode('generateDml', generateDmlNode, {
+      retryPolicy: RETRY_POLICY,
+    })
+    .addNode('invokeSaveDmlTool', invokeSaveDmlToolNode, {
       retryPolicy: RETRY_POLICY,
     })
     .addNode('validateSchema', validateSchemaNode, {
@@ -31,8 +26,12 @@ export const createQaAgentGraph = (checkpointer?: BaseCheckpointSaver) => {
     })
 
     .addEdge(START, 'generateTestcase')
-    .addEdge('generateTestcase', 'prepareDML')
-    .addEdge('prepareDML', 'validateSchema')
+    .addEdge('generateTestcase', 'generateDml')
+    .addConditionalEdges('generateDml', routeAfterGenerateDml, {
+      invokeSaveDmlTool: 'invokeSaveDmlTool',
+      validateSchema: 'validateSchema',
+    })
+    .addEdge('invokeSaveDmlTool', 'generateDml')
     .addEdge('validateSchema', END)
 
   return checkpointer

@@ -1,5 +1,11 @@
 # @liam-hq/ui
 
+## 0.0.22
+
+### Patch Changes
+
+- [#3195](https://github.com/liam-hq/liam/pull/3195) - 🐛 Fixed an issue where the sidebar couldn't be scrolled properly on Android Chrome browsers. / Thanks [@FunamaYukina](https://github.com/FunamaYukina)!
+
 ## 0.0.21
 
 ### Patch Changes

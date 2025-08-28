@@ -63,6 +63,22 @@
   border-color: var(--button-danger-background-hover);
 }
 
+.solidInverse {
+  color: var(--button-solid-inverse-foreground);
+  background: var(--button-solid-inverse-background);
+  border: 1px solid var(--button-solid-inverse-background);
+  transition:
+    background-color var(--default-hover-animation-duration)
+    var(--default-timing-function),
+    border-color var(--default-hover-animation-duration)
+    var(--default-timing-function);
+}
+
+.solidInverse:hover {
+  background-color: var(--button-solid-inverse-background-hover);
+  border-color: var(--button-solid-inverse-background-hover);
+}
+
 .outlineSecondary {
   color: var(--button-danger-foreground);
   background-color: transparent;

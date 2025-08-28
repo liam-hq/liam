@@ -1,5 +1,7 @@
 # @liam-hq/cli
 
+## 0.7.8
+
 ## 0.7.7
 
 ### Patch Changes

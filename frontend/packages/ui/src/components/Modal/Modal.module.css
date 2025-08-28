@@ -1,8 +1,10 @@
 .dialogOverlay {
   position: fixed;
   inset: 0;
-  z-index: 1;
+  z-index: 1001;
   background-color: var(--modal-overlay);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
   isolation: isolate;
   animation: overlayShow 150ms cubic-bezier(0.16, 1, 0.3, 1);
 }
@@ -12,7 +14,7 @@
   position: fixed;
   top: 50%;
   left: 50%;
-  z-index: 2;
+  z-index: 1002;
   width: 400px;
   padding: var(--spacing-5);
   color: var(--global-foreground);

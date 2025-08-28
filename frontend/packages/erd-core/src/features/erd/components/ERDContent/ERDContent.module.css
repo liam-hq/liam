@@ -11,7 +11,3 @@
   left: 50%;
   transform: translate(-50%, -50%);
 }
-
-.groupEditMode :global(.react-flow__pane) {
-  cursor: crosshair;
-}
