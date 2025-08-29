@@ -7,7 +7,8 @@
     "build": "tsc",
     "dev": "tsx src/main.ts",
     "chat": "tsx src/chat-memory.ts",
-    "game": "tsx src/game-state.ts"
+    "game": "tsx src/game-state.ts",
+    "simple": "tsx src/simple-game.ts"
   },
   "dependencies": {
     "@langchain/anthropic": "^0.3.0",

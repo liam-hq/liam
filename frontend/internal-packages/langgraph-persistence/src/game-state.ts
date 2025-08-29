@@ -202,26 +202,32 @@ async function main() {
   console.log("=== 🎮 RPGゲームの永続的セーブデータ ===");
   
   const checkpointer = new MemorySaver();
-  const graph = buildGameGraph().compile({ checkpointer });
+  const graph = buildGameGraph().compile({ 
+    checkpointer,
+    recursionLimit: 50  // 再帰上限を増やす
+  });
   
   // プレイヤー1のセーブデータ
   const player1Save = "save-player1";
   
-  // ゲーム開始
-  console.log("\n--- 新規ゲーム開始 ---");
+  // ゲーム開始（短いセッションで実行）
+  console.log("\n--- 新規ゲーム開始（短縮版デモ） ---");
   const newGame = await graph.invoke(
     {
       playerName: "勇者アリス",
       level: 1,
       hp: 50,
       maxHp: 50,
-      exp: 0,
+      exp: 80,  // 経験値を多めに設定（レベルアップ間近）
       gold: 100,
       currentLocation: "町",
       inBattle: false,
       enemyHp: 0,
     },
-    { configurable: { thread_id: player1Save } }
+    { 
+      configurable: { thread_id: player1Save },
+      recursionLimit: 15  // このinvokeだけ制限
+    }
   );
   console.log("状態:", {
     レベル: newGame.level,
