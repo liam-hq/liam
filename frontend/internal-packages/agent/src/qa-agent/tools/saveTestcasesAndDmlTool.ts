@@ -114,7 +114,10 @@ export const saveTestcasesAndDmlTool: StructuredTool = tool(
   {
     name: 'saveTestcasesAndDmlTool',
     description:
-      'Save generated test cases along with their corresponding DML (Data Manipulation Language) operations for testing database schemas. Each test case includes its scenario description and the SQL operations needed to set up and validate the test.',
+      'Save generated test cases along with their corresponding DML operations for a single requirement. ' +
+      'Used in map-reduce parallel processing where each requirement is processed independently. ' +
+      'Accepts an array of test cases as one requirement may generate multiple test scenarios. ' +
+      'Each test case includes its scenario description and the SQL operations needed to set up and validate the test.',
     schema: toolSchema,
   },
 )
