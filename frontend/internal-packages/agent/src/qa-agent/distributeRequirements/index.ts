@@ -103,7 +103,7 @@ export function continueToRequirements(state: WorkflowState) {
         currentRequirement: reqData,
         schemaData: state.schemaData,
         messages: [], // Start with empty messages for isolation
-        generatedTestcases: [], // Will be populated by the subgraph
+        testcases: [], // Will be populated by the subgraph
       }),
   )
 }

@@ -114,7 +114,7 @@ function updateWorkflowStateWithTestcaseResults(
   state: WorkflowState,
   results: TestcaseDmlExecutionResult[],
 ): WorkflowState {
-  if (!state.generatedTestcases) {
+  if (!state.testcases) {
     return state
   }
 
@@ -122,7 +122,7 @@ function updateWorkflowStateWithTestcaseResults(
     results.map((result) => [result.testCaseId, result]),
   )
 
-  const updatedTestcases = state.generatedTestcases.map((testcase) => {
+  const updatedTestcases = state.testcases.map((testcase) => {
     const testcaseResult = resultMap.get(testcase.id)
 
     if (!testcaseResult || !testcase.dmlOperations) {
@@ -154,7 +154,7 @@ function updateWorkflowStateWithTestcaseResults(
 
   return {
     ...state,
-    generatedTestcases: updatedTestcases,
+    testcases: updatedTestcases,
   }
 }
 
@@ -178,11 +178,10 @@ export async function validateSchemaNode(
 
   const ddlStatements = generateDdlFromSchema(state.schemaData)
   const hasDdl = ddlStatements?.trim()
-  const hasTestcases =
-    state.generatedTestcases && state.generatedTestcases.length > 0
+  const hasTestcases = state.testcases && state.testcases.length > 0
   const hasDml =
     hasTestcases &&
-    state.generatedTestcases?.some(
+    state.testcases?.some(
       (tc) => tc.dmlOperations && tc.dmlOperations.length > 0,
     )
 
@@ -207,10 +206,10 @@ export async function validateSchemaNode(
 
   let testcaseExecutionResults: TestcaseDmlExecutionResult[] = []
   let updatedState = state
-  if (hasDml && state.generatedTestcases) {
+  if (hasDml && state.testcases) {
     testcaseExecutionResults = await executeDmlOperationsByTestcase(
       ddlStatements || '',
-      state.generatedTestcases,
+      state.testcases,
     )
 
     const dmlSqlResults: SqlResult[] = testcaseExecutionResults.map(

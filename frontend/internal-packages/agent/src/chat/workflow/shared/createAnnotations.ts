@@ -13,7 +13,7 @@ export const workflowAnnotation = Annotation.Root({
       }
     | undefined
   >,
-  generatedTestcases: Annotation<Testcase[] | undefined>({
+  testcases: Annotation<Testcase[] | undefined>({
     reducer: (existing, newTestcases) => {
       // Concatenate test cases from parallel executions
       if (!existing) return newTestcases

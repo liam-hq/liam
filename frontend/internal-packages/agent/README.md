@@ -40,7 +40,7 @@ interface WorkflowState {
 
   // Requirements analysis
   analyzedRequirements?: AnalyzedRequirements;
-  generatedTestcases?: Testcase[];
+  testcases?: Testcase[];
 
   // DML execution results
   dmlExecutionErrors?: string;
@@ -91,6 +91,7 @@ graph TD;
 ### Lead Agent Components
 
 #### 1. classify Node
+
 - **Purpose**: Analyzes user requests and determines appropriate routing
 - **Performed by**: GPT-5-nano with specialized routing logic
 - **Retry Policy**: maxAttempts: 3 (internal to subgraph)
@@ -98,6 +99,7 @@ graph TD;
 - **Routing**: Routes to pmAgent for database design tasks or summarizeWorkflow after QA completion
 
 #### 2. summarizeWorkflow Node
+
 - **Purpose**: Generates workflow summary after QA completion
 - **Performed by**: GPT-5-nano with minimal reasoning
 - **Activation**: Triggered when QA Agent has generated use cases
@@ -141,12 +143,14 @@ graph TD;
 ### PM Agent Components
 
 #### 1. analyzeRequirements Node
+
 - **Purpose**: Analyzes and structures user requirements into BRDs
 - **Performed by**: PM Analysis Agent with GPT-5
 - **Retry Policy**: maxAttempts: 3 (internal to subgraph)
 - **Timeline Sync**: Automatic message synchronization
 
 #### 2. invokeSaveArtifactTool Node
+
 - **Purpose**: Saves analyzed requirements as artifacts to database
 - **Performed by**: saveRequirementsToArtifactTool
 - **Retry Policy**: maxAttempts: 3 (internal to subgraph)
@@ -182,12 +186,14 @@ graph TD;
 ### Subgraph Components
 
 #### 1. designSchema Node
+
 - **Purpose**: Uses AI to design database schema based on requirements
 - **Performed by**: dbAgent (Database Schema Build Agent)
 - **Retry Policy**: maxAttempts: 3 (internal to subgraph)
 - **Timeline Sync**: Automatic message synchronization
 
 #### 2. invokeSchemaDesignTool Node
+
 - **Purpose**: Executes schema design tools to apply changes to the database
 - **Performed by**: schemaDesignTool
 - **Retry Policy**: maxAttempts: 3 (internal to subgraph)
@@ -211,10 +217,10 @@ graph TD;
 The DB Agent subgraph is integrated into the main workflow as:
 
 ```typescript
-import { createDbAgentGraph } from './db-agent/createDbAgentGraph'
+import { createDbAgentGraph } from "./db-agent/createDbAgentGraph";
 
-const dbAgentSubgraph = createDbAgentGraph()
-graph.addNode('dbAgent', dbAgentSubgraph) // No retry policy - handled internally
+const dbAgentSubgraph = createDbAgentGraph();
+graph.addNode("dbAgent", dbAgentSubgraph); // No retry policy - handled internally
 ```
 
 ## QA Agent Subgraph
@@ -244,6 +250,7 @@ graph TD;
 ### QA Agent Components
 
 #### 1. generateTestcaseAndDml Node
+
 - **Purpose**: Creates comprehensive test cases and generates corresponding DML operations in a single unified process
 - **Performed by**: Unified QA Agent with GPT-5-mini using tool-based architecture
 - **Retry Policy**: maxAttempts: 3 (internal to subgraph)
@@ -251,12 +258,14 @@ graph TD;
 - **Output**: AI-generated test cases with DML operations using tool calls
 
 #### 2. invokeSaveTestcasesAndDmlTool Node
+
 - **Purpose**: Executes the saveTestcasesAndDmlTool to save both test cases and DML operations
 - **Performed by**: ToolNode with saveTestcasesAndDmlTool
 - **Retry Policy**: maxAttempts: 3 (internal to subgraph)
 - **Tool Integration**: Saves test cases and DML operations atomically for validation
 
 #### 3. validateSchema Node
+
 - **Purpose**: Executes DML statements and validates schema functionality
 - **Performed by**: DML Generation Agent with database execution
 - **Retry Policy**: maxAttempts: 3 (internal to subgraph)
@@ -282,10 +291,10 @@ graph TD;
 The QA Agent subgraph is integrated into the main workflow as:
 
 ```typescript
-import { createQaAgentGraph } from './qa-agent/createQaAgentGraph'
+import { createQaAgentGraph } from "./qa-agent/createQaAgentGraph";
 
-const qaAgentSubgraph = createQaAgentGraph()
-graph.addNode('qaAgent', qaAgentSubgraph) // No retry policy - handled internally
+const qaAgentSubgraph = createQaAgentGraph();
+graph.addNode("qaAgent", qaAgentSubgraph); // No retry policy - handled internally
 ```
 
 ### Conditional Edge Logic
@@ -301,7 +310,7 @@ graph.addNode('qaAgent', qaAgentSubgraph) // No retry policy - handled internall
 
 - **Universal Integration**: All AIMessage and HumanMessage instances are automatically synchronized to timeline_items
 - **Real-time Updates**: Messages appear in the UI immediately when created during workflow execution
-- **Type-appropriate Storage**: 
+- **Type-appropriate Storage**:
   - User messages → `type: 'user'`
   - AI responses → `type: 'assistant'` (main conversation messages with timestamps)
   - Progress logs → `type: 'assistant_log'` (intermediate status updates without timestamps)
