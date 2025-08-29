@@ -1,23 +1,25 @@
 import type { BaseMessage } from '@langchain/core/messages'
 import { AIMessage } from '@langchain/core/messages'
-import type { WorkflowState } from '../../chat/workflow/types'
+import { END } from '@langchain/langgraph'
+import type { testcaseAnnotation } from '../annotations'
 
 /**
- * Route after generateTestcaseAndDml node based on whether tool calls are present
+ * Route after generateTestcaseNode based on whether tool calls are present
+ * This is used within the testcase subgraph for retry logic
  */
-export const routeAfterGenerateTestcaseAndDml = (
-  state: WorkflowState,
-): 'invokeSaveTestcasesAndDmlTool' | 'validateSchema' => {
+export const routeAfterGenerate = (
+  state: typeof testcaseAnnotation.State,
+): 'invokeSaveTool' | typeof END => {
   const { messages } = state
   const lastMessage = messages[messages.length - 1]
 
   // Check if the last message has tool calls
   if (lastMessage && hasToolCalls(lastMessage)) {
-    return 'invokeSaveTestcasesAndDmlTool'
+    return 'invokeSaveTool'
   }
 
-  // Default to validation if no tool calls
-  return 'validateSchema'
+  // If no tool calls, generation is complete
+  return END
 }
 
 /**
