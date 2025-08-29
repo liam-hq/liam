@@ -71,7 +71,7 @@ export const saveTestcasesAndDmlTool: StructuredTool = tool(
 
     const toolCallId = getToolCallId(config)
 
-    const generatedTestcases: Testcase[] = testcasesWithDml.map((testcase) => {
+    const testcases: Testcase[] = testcasesWithDml.map((testcase) => {
       const testcaseId = uuidv4()
 
       const dmlOperationsWithId = testcase.dmlOperations.map((op) => ({
@@ -91,7 +91,7 @@ export const saveTestcasesAndDmlTool: StructuredTool = tool(
       }
     })
 
-    const totalDmlOperations = generatedTestcases.reduce(
+    const totalDmlOperations = testcases.reduce(
       (sum, tc) => sum + tc.dmlOperations.length,
       0,
     )
@@ -99,14 +99,14 @@ export const saveTestcasesAndDmlTool: StructuredTool = tool(
     const toolMessage = new ToolMessage({
       id: uuidv4(),
       status: 'success',
-      content: `Successfully saved ${generatedTestcases.length} test cases with ${totalDmlOperations} DML operations`,
+      content: `Successfully saved ${testcases.length} test cases with ${totalDmlOperations} DML operations`,
       tool_call_id: toolCallId,
     })
     await dispatchCustomEvent(SSE_EVENTS.MESSAGES, toolMessage)
 
     return new Command({
       update: {
-        generatedTestcases,
+        testcases,
         messages: [toolMessage],
       },
     })
