@@ -8,9 +8,7 @@ const StateAnnotation = Annotation.Root({
   score: Annotation<number>,
   result: Annotation<string>,
   processed: Annotation<boolean>,
-  retryCount: Annotation<number>({
-    default: () => 0,
-  }),
+  retryCount: Annotation<number>,
 });
 
 // 基本的なCommandの使用例

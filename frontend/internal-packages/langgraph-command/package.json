@@ -6,7 +6,8 @@
   "scripts": {
     "build": "tsc",
     "start": "node dist/main.js",
-    "dev": "tsx src/main.ts"
+    "dev": "tsx src/main.ts",
+    "coffee": "tsx src/coffee-shop.ts"
   },
   "dependencies": {
     "@langchain/anthropic": "^0.3.0",
