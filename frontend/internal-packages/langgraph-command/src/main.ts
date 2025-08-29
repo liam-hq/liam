@@ -8,6 +8,9 @@ const StateAnnotation = Annotation.Root({
   score: Annotation<number>,
   result: Annotation<string>,
   processed: Annotation<boolean>,
+  retryCount: Annotation<number>({
+    default: () => 0,
+  }),
 });
 
 // 基本的なCommandの使用例
@@ -79,17 +82,16 @@ const retryNode = (state: typeof StateAnnotation.State) => {
   return { bar: "retry suggested" };
 };
 
-// 再帰実行の例
+// 再帰実行の例（自分自身へgoto）
 const retryableNode = (state: typeof StateAnnotation.State) => {
-  const retryCount = (state as any).retryCount || 0;
-  console.log(`retryableNode実行: 試行回数 = ${retryCount + 1}`);
+  console.log(`retryableNode実行: 試行回数 = ${state.retryCount + 1}`);
   
-  if (retryCount < 3) {
+  if (state.retryCount < 3) {
     return new Command({
       update: { 
-        retryCount: retryCount + 1,
+        retryCount: state.retryCount + 1,
       },
-      recurse: true  // 同じノードを再実行
+      goto: "retryable"  // 自分自身へ遷移することで再実行
     });
   }
   
@@ -102,7 +104,9 @@ const retryableNode = (state: typeof StateAnnotation.State) => {
 // グラフの構築
 const buildBasicGraph = () => {
   const graph = new StateGraph(StateAnnotation)
-    .addNode("myNode", myNode)
+    .addNode("myNode", myNode, { 
+      ends: ["myOtherNode"]  // Commandで遷移する可能性のあるノードを指定
+    })
     .addNode("myOtherNode", myOtherNode)
     .addEdge("__start__", "myNode");
     
@@ -111,7 +115,9 @@ const buildBasicGraph = () => {
 
 const buildRouterGraph = () => {
   const graph = new StateGraph(StateAnnotation)
-    .addNode("router", routerNode)
+    .addNode("router", routerNode, {
+      ends: ["celebrateNode", "passNode", "retryNode"]  // 3つの遷移先を指定
+    })
     .addNode("celebrateNode", celebrateNode)
     .addNode("passNode", passNode)
     .addNode("retryNode", retryNode)
@@ -122,7 +128,9 @@ const buildRouterGraph = () => {
 
 const buildRetryGraph = () => {
   const graph = new StateGraph(StateAnnotation)
-    .addNode("retryable", retryableNode)
+    .addNode("retryable", retryableNode, {
+      ends: ["retryable"]  // 自分自身へ遷移する可能性があることを指定
+    })
     .addEdge("__start__", "retryable");
     
   return graph.compile();
@@ -162,7 +170,7 @@ async function main() {
   });
   console.log("最終状態:", lowScoreResult);
   
-  console.log("\n=== 再帰実行例 ===");
+  console.log("\n=== ループ実行例（自分自身へのgoto） ===");
   const retryGraph = buildRetryGraph();
   const retryResult = await retryGraph.invoke({
     foo: "",
@@ -170,6 +178,7 @@ async function main() {
     score: 0,
     result: "",
     processed: false,
+    retryCount: 0,
   });
   console.log("最終状態:", retryResult);
 }
