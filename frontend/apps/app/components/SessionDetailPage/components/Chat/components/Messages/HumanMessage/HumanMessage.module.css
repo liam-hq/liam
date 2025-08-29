@@ -1,0 +1,46 @@
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  align-items: flex-end;
+  gap: var(--spacing-2);
+}
+
+.messageContainer {
+  display: flex;
+  flex-direction: column;
+  max-width: 70%;
+  position: relative;
+}
+
+.messageContent {
+  background-color: var(--primary-accent);
+  color: var(--global-background);
+  padding: var(--spacing-2) var(--spacing-3);
+  border-radius: var(--border-radius-base);
+  font-family: var(--main-font);
+  font-weight: 400;
+  font-size: var(--font-size-4);
+  line-height: 1.8em;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+.contentWrapper {
+  display: flex;
+  flex-direction: column;
+}
+
+.copyButtonWrapper {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: var(--spacing-1);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  pointer-events: none;
+}
+
+.messageContainer:hover .copyButtonWrapper {
+  opacity: 1;
+  pointer-events: auto;
+}
