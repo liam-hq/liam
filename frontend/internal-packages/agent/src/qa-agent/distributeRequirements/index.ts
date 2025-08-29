@@ -23,7 +23,7 @@ function prepareRequirements(state: WorkflowState): RequirementData[] {
       new Error(
         'No analyzed requirements found. Cannot distribute requirements for test case generation.',
       ),
-      'distributeRequirements',
+      'continueToRequirements',
     )
   }
 
@@ -80,7 +80,7 @@ function prepareRequirements(state: WorkflowState): RequirementData[] {
   if (allRequirements.length === 0) {
     throw new WorkflowTerminationError(
       new Error('No requirements to process after distribution.'),
-      'distributeRequirements',
+      'continueToRequirements',
     )
   }
 
@@ -88,30 +88,17 @@ function prepareRequirements(state: WorkflowState): RequirementData[] {
 }
 
 /**
- * Distribute Requirements Node - Prepare state for map-reduce pattern
- * This node just validates and returns empty update
- */
-export function distributeRequirements(state: WorkflowState) {
-  // Validate that requirements exist
-  prepareRequirements(state)
-
-  // Just validate and return empty state update
-  // The actual Send objects are returned by continueToRequirements function
-  return {}
-}
-
-/**
  * Conditional edge function to create Send objects for parallel processing
- * This is called after distributeRequirements node
+ * This is called directly from START node
  */
 export function continueToRequirements(state: WorkflowState) {
   const allRequirements = prepareRequirements(state)
 
   // Use Send API to distribute each requirement for parallel processing
-  // Each requirement will be processed by testcaseSubgraph with isolated state
+  // Each requirement will be processed by testcaseGeneration with isolated state
   return allRequirements.map(
     (reqData) =>
-      new Send('testcaseSubgraph', {
+      new Send('testcaseGeneration', {
         // Each subgraph gets its own isolated state
         currentRequirement: reqData,
         schemaData: state.schemaData,
