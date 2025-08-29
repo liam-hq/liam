@@ -7,7 +7,8 @@
     "build": "tsc",
     "start": "node dist/main.js",
     "dev": "tsx src/main.ts",
-    "coffee": "tsx src/coffee-shop.ts"
+    "coffee": "tsx src/coffee-shop.ts",
+    "persist": "tsx src/persistence-demo.ts"
   },
   "dependencies": {
     "@langchain/anthropic": "^0.3.0",
