@@ -591,6 +591,28 @@ importers:
         specifier: ^5.6.3
         version: 5.9.2
 
+  frontend/internal-packages/langgraph-persistence:
+    dependencies:
+      '@langchain/anthropic':
+        specifier: ^0.3.0
+        version: 0.3.26(@langchain/core@0.3.72(@opentelemetry/api@1.9.0)(@opentelemetry/sdk-trace-base@1.30.1(@opentelemetry/api@1.9.0))(openai@5.12.2(ws@8.18.3)(zod@3.25.76)))
+      '@langchain/langgraph':
+        specifier: ^0.2.0
+        version: 0.2.74(@langchain/core@0.3.72(@opentelemetry/api@1.9.0)(@opentelemetry/sdk-trace-base@1.30.1(@opentelemetry/api@1.9.0))(openai@5.12.2(ws@8.18.3)(zod@3.25.76)))(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(zod-to-json-schema@3.24.6(zod@3.25.76))
+      zod:
+        specifier: 3.25.76
+        version: 3.25.76
+    devDependencies:
+      '@types/node':
+        specifier: ^20.0.0
+        version: 20.19.11
+      tsx:
+        specifier: ^4.19.1
+        version: 4.20.3
+      typescript:
+        specifier: ^5.6.3
+        version: 5.9.2
+
   frontend/internal-packages/mcp-server:
     dependencies:
       '@modelcontextprotocol/sdk':
