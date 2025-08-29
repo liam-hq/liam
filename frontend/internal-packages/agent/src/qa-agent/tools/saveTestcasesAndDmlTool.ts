@@ -69,7 +69,7 @@ export const saveTestcasesAndDmlTool: StructuredTool = tool(
 
     const toolCallId = getToolCallId(config)
 
-    const generatedTestcases: Testcase[] = testcasesWithDml.map((testcase) => {
+    const testcases: Testcase[] = testcasesWithDml.map((testcase) => {
       const testcaseId = uuidv4()
 
       const dmlOperationsWithId = testcase.dmlOperations.map((op) => ({
@@ -89,19 +89,19 @@ export const saveTestcasesAndDmlTool: StructuredTool = tool(
       }
     })
 
-    const totalDmlOperations = generatedTestcases.reduce(
+    const totalDmlOperations = testcases.reduce(
       (sum, tc) => sum + tc.dmlOperations.length,
       0,
     )
 
     const toolMessage = new ToolMessage({
-      content: `Successfully saved ${generatedTestcases.length} test cases with ${totalDmlOperations} DML operations`,
+      content: `Successfully saved ${testcases.length} test cases with ${totalDmlOperations} DML operations`,
       tool_call_id: toolCallId,
     })
 
     return new Command({
       update: {
-        generatedTestcases,
+        testcases,
         messages: [toolMessage],
       },
     })
@@ -109,7 +109,10 @@ export const saveTestcasesAndDmlTool: StructuredTool = tool(
   {
     name: 'saveTestcasesAndDmlTool',
     description:
-      'Save generated test cases along with their corresponding DML (Data Manipulation Language) operations for testing database schemas. Each test case includes its scenario description and the SQL operations needed to set up and validate the test.',
+      'Save generated test cases along with their corresponding DML operations for a single requirement. ' +
+      'Used in map-reduce parallel processing where each requirement is processed independently. ' +
+      'Accepts an array of test cases as one requirement may generate multiple test scenarios. ' +
+      'Each test case includes its scenario description and the SQL operations needed to set up and validate the test.',
     schema: toolSchema,
   },
 )

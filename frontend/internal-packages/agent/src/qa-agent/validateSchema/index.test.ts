@@ -69,7 +69,7 @@ describe('validateSchemaNode', () => {
     vi.mocked(executeQuery).mockResolvedValue(mockResults)
 
     const state = createMockState({
-      generatedTestcases: [
+      testcases: [
         {
           id: 'testcase-1',
           requirementType: 'functional',
@@ -188,7 +188,7 @@ describe('validateSchemaNode', () => {
           }),
         },
       }),
-      generatedTestcases: [
+      testcases: [
         {
           id: 'testcase-1',
           requirementType: 'functional',
@@ -273,7 +273,7 @@ describe('validateSchemaNode', () => {
           }),
         },
       }),
-      generatedTestcases: [
+      testcases: [
         {
           id: 'testcase-1',
           requirementType: 'functional',
@@ -411,7 +411,7 @@ describe('validateSchemaNode', () => {
           }),
         },
       }),
-      generatedTestcases: [
+      testcases: [
         {
           id: 'testcase-1',
           requirementType: 'functional',
@@ -478,7 +478,7 @@ describe('validateSchemaNode', () => {
 
     const state = createMockState({
       dmlExecutionErrors: 'Previous error message', // Pre-existing error
-      generatedTestcases: [
+      testcases: [
         {
           id: 'testcase-1',
           requirementType: 'functional',
@@ -528,7 +528,7 @@ describe('validateSchemaNode', () => {
     vi.mocked(executeQuery).mockResolvedValue(sqlResults)
 
     const state = createMockState({
-      generatedTestcases: [
+      testcases: [
         {
           id: 'testcase-1',
           requirementType: 'functional',
@@ -562,8 +562,8 @@ describe('validateSchemaNode', () => {
     expect(result.dmlExecutionErrors).toBeUndefined()
 
     // Verify execution logs were added to the testcase's DML operations
-    expect(result.generatedTestcases).toBeDefined()
-    const firstTestcase = result.generatedTestcases?.[0]
+    expect(result.testcases).toBeDefined()
+    const firstTestcase = result.testcases?.[0]
     expect(firstTestcase).toBeDefined()
     expect(firstTestcase?.dmlOperations).toBeDefined()
     const firstDmlOp = firstTestcase?.dmlOperations?.[0]
