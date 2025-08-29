@@ -2,6 +2,7 @@ import type {
   Column,
   Constraint,
   Enum,
+  Extension,
   Index,
   Table,
 } from '../../schema/index.js'
@@ -462,4 +463,17 @@ export function generateCreateEnumStatement(enumObj: Enum): string {
   }
 
   return ddl
+}
+
+/**
+ * Generate CREATE EXTENSION statement from Extension type
+ */
+export function generateCreateExtensionStatement(extension: Extension): string {
+  // Quote extension names containing hyphens or uppercase letters
+  const quotedName =
+    extension.name.includes('-') || /[A-Z]/.test(extension.name)
+      ? `"${extension.name}"`
+      : extension.name
+
+  return `CREATE EXTENSION IF NOT EXISTS ${quotedName};`
 }
