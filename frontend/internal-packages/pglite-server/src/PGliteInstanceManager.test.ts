@@ -1,4 +1,4 @@
-import { beforeAll, describe, expect, it } from 'vitest'
+import { beforeAll, describe, expect, it, vi } from 'vitest'
 import { PGliteInstanceManager } from './PGliteInstanceManager'
 
 describe('PGliteInstanceManager', () => {
@@ -183,6 +183,87 @@ describe('PGliteInstanceManager', () => {
           },
         },
       ])
+    })
+  })
+
+  describe('Extension Support', () => {
+    it('should filter out unsupported extensions and warn', async () => {
+      const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
+
+      const sql = 'SELECT 1;'
+      const results = await manager.executeQuery(sql, [
+        'unsupported_extension',
+        'another_fake_ext',
+      ])
+
+      expect(results).toHaveLength(1)
+      expect(results[0]?.success).toBe(true)
+      expect(consoleSpy).toHaveBeenCalledWith(
+        "Extension 'unsupported_extension' is not supported in PGlite environment",
+      )
+      expect(consoleSpy).toHaveBeenCalledWith(
+        "Extension 'another_fake_ext' is not supported in PGlite environment",
+      )
+
+      consoleSpy.mockRestore()
+    })
+
+    it('should handle empty extension array', async () => {
+      const sql = 'SELECT 1;'
+      const results = await manager.executeQuery(sql, [])
+
+      expect(results).toHaveLength(1)
+      expect(results[0]?.success).toBe(true)
+      expect(results[0]?.sql.trim()).toBe('SELECT 1')
+    })
+
+    it('should handle contrib extensions with dynamic imports', async () => {
+      const sql = 'SELECT 1;'
+      const results = await manager.executeQuery(sql, ['uuid-ossp', 'hstore'])
+
+      expect(results).toHaveLength(1)
+      expect(results[0]?.success).toBe(true)
+      // Extensions should be loaded without warning since they are supported
+    })
+
+    describe('Supported Extensions', () => {
+      const supportedExtensions = [
+        'live',
+        'vector',
+        'pg_ivm',
+        'uuid-ossp',
+        'hstore',
+        'pg_trgm',
+        'btree_gin',
+        'citext',
+        'ltree',
+        'fuzzystrmatch',
+      ]
+
+      it.each(supportedExtensions.slice(0, 3))(
+        'should not warn for supported extension: %s',
+        async (extensionName) => {
+          const consoleSpy = vi
+            .spyOn(console, 'warn')
+            .mockImplementation(() => {})
+
+          const sql = 'SELECT 1;'
+          const results = await manager.executeQuery(sql, [extensionName])
+
+          expect(results).toHaveLength(1)
+          expect(results[0]?.success).toBe(true)
+
+          // Should not warn about unsupported extension (but may warn about import not implemented)
+          const unsupportedWarnings = consoleSpy.mock.calls.filter(
+            (call) =>
+              typeof call[0] === 'string' &&
+              call[0].includes('is not supported in PGlite environment'),
+          )
+          expect(unsupportedWarnings).toHaveLength(0)
+
+          consoleSpy.mockRestore()
+        },
+      )
     })
   })
 })
