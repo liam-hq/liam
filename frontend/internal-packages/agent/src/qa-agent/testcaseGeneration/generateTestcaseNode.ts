@@ -4,7 +4,7 @@ import {
   SystemMessage,
 } from '@langchain/core/messages'
 import { ChatOpenAI } from '@langchain/openai'
-import { ResultAsync } from 'neverthrow'
+import { fromAsyncThrowable } from '@liam-hq/neverthrow'
 import { convertSchemaToText } from '../../utils/convertSchemaToText'
 import { removeReasoningFromMessages } from '../../utils/messageCleanup'
 import { saveTestcasesAndDmlTool } from '../tools/saveTestcasesAndDmlTool'
@@ -42,15 +42,13 @@ export async function generateTestcaseNode(
 
   const cleanedMessages = removeReasoningFromMessages(messages)
 
-  const invokeModel = ResultAsync.fromThrowable(
-    () =>
-      model.invoke([
-        new SystemMessage(SYSTEM_PROMPT_FOR_SINGLE_REQUIREMENT),
-        new HumanMessage(contextMessage),
-        // Include all previous messages in this subgraph's scope
-        ...cleanedMessages,
-      ]),
-    (error) => (error instanceof Error ? error : new Error(String(error))),
+  const invokeModel = fromAsyncThrowable(() =>
+    model.invoke([
+      new SystemMessage(SYSTEM_PROMPT_FOR_SINGLE_REQUIREMENT),
+      new HumanMessage(contextMessage),
+      // Include all previous messages in this subgraph's scope
+      ...cleanedMessages,
+    ]),
   )
 
   const result = await invokeModel()
