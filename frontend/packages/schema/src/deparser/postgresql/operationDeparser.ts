@@ -32,6 +32,14 @@ import {
   isReplaceConstraintDeleteOperation,
   isReplaceConstraintUpdateOperation,
 } from '../../operation/schema/constraint.js'
+import type {
+  AddExtensionOperation,
+  RemoveExtensionOperation,
+} from '../../operation/schema/extension.js'
+import {
+  isAddExtensionOperation,
+  isRemoveExtensionOperation,
+} from '../../operation/schema/extension.js'
 import type { Operation } from '../../operation/schema/index.js'
 import type {
   AddIndexOperation,
@@ -62,9 +70,11 @@ import {
   generateAlterColumnNotNullStatement,
   generateAlterColumnTypeStatement,
   generateColumnCommentStatement,
+  generateCreateExtensionStatement,
   generateCreateIndexStatement,
   generateCreateTableStatement,
   generateDropCheckConstraintStatement,
+  generateDropExtensionStatement,
   generateRemoveColumnStatement,
   generateRemoveConstraintStatement,
   generateRemoveIndexStatement,
@@ -272,6 +282,14 @@ function extractTableAndConstraintNameFromUpdatePath(
     tableName: match[1],
     constraintName: match[2],
   }
+}
+
+/**
+ * Extract extension name from extension operation path
+ */
+function extractExtensionNameFromPath(path: string): string | null {
+  const match = path.match(PATH_PATTERNS.EXTENSION_BASE)
+  return match?.[1] || null
 }
 
 /**
@@ -605,6 +623,31 @@ function generateAlterConstraintUpdateFromOperation(
   )
 }
 
+/**
+ * Generate CREATE EXTENSION DDL from extension creation operation
+ */
+function generateAddExtensionFromOperation(
+  operation: AddExtensionOperation,
+): Result<string, Error> {
+  const extensionName = extractExtensionNameFromPath(operation.path)
+  if (!extensionName) {
+    return err(new Error(`Invalid extension path: ${operation.path}`))
+  }
+
+  return ok(generateCreateExtensionStatement(operation.value))
+}
+
+function generateRemoveExtensionFromOperation(
+  operation: RemoveExtensionOperation,
+): Result<string, Error> {
+  const extensionName = extractExtensionNameFromPath(operation.path)
+  if (!extensionName) {
+    return err(new Error(`Invalid extension path: ${operation.path}`))
+  }
+
+  return ok(generateDropExtensionStatement(extensionName))
+}
+
 export const postgresqlOperationDeparser: OperationDeparser = (
   operation: Operation,
 ) => {
@@ -782,6 +825,26 @@ export const postgresqlOperationDeparser: OperationDeparser = (
 
   if (isReplaceConstraintUpdateOperation(operation)) {
     const result = generateAlterConstraintUpdateFromOperation(operation)
+    if (result.isErr()) {
+      errors.push({ message: result.error.message })
+      return { value: '', errors }
+    }
+    const value = result.value
+    return { value, errors }
+  }
+
+  if (isAddExtensionOperation(operation)) {
+    const result = generateAddExtensionFromOperation(operation)
+    if (result.isErr()) {
+      errors.push({ message: result.error.message })
+      return { value: '', errors }
+    }
+    const value = result.value
+    return { value, errors }
+  }
+
+  if (isRemoveExtensionOperation(operation)) {
+    const result = generateRemoveExtensionFromOperation(operation)
     if (result.isErr()) {
       errors.push({ message: result.error.message })
       return { value: '', errors }

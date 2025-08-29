@@ -2,6 +2,7 @@ import type {
   Column,
   Constraint,
   Enum,
+  Extension,
   Index,
   Table,
 } from '../../schema/index.js'
@@ -462,4 +463,24 @@ export function generateCreateEnumStatement(enumObj: Enum): string {
   }
 
   return ddl
+}
+
+/**
+ * Generate CREATE EXTENSION statement
+ */
+
+export function generateCreateExtensionStatement(extension: Extension): string {
+  const extensionName = escapeIdentifier(extension.name)
+
+  const ddl = `CREATE EXTENSION ${extensionName};`
+
+  return ddl
+}
+
+/**
+ * Generate DROP EXTENSION statement
+ */
+export function generateDropExtensionStatement(extensionName: string): string {
+  const escapedExtensionName = escapeIdentifier(extensionName)
+  return `DROP EXTENSION ${escapedExtensionName};`
 }

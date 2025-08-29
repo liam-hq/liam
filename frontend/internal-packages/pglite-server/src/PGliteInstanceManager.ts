@@ -1,6 +1,12 @@
-import { PGlite } from '@electric-sql/pglite'
+import {
+  type Extensions,
+  PGlite,
+  type PGliteOptions,
+} from '@electric-sql/pglite'
+import { getPGliteJavaScriptName } from '@liam-hq/schema'
 import { type PgParseResult, pgParse } from '@liam-hq/schema/parser'
 import type { RawStmt } from '@pgsql/types'
+import { getExtensionConfiguration } from './extensions'
 import type { SqlResult } from './types'
 
 /**
@@ -8,19 +14,59 @@ import type { SqlResult } from './types'
  */
 export class PGliteInstanceManager {
   /**
-   * Creates a new PGlite instance for query execution
+   * Creates a new PGlite instance for query execution with optional extensions
    */
-  private async createInstance(): Promise<PGlite> {
-    return new PGlite({
+  private async createInstance(extensionNames: string[] = []): Promise<PGlite> {
+    const extensions = await this.loadExtensions(extensionNames)
+
+    const config: PGliteOptions = {
       initialMemory: 2 * 1024 * 1024 * 1024, // 2GB initial memory allocation
-    })
+      ...(Object.keys(extensions).length > 0 && { extensions }),
+    }
+
+    return new PGlite(config)
+  }
+
+  /**
+   * Dynamically load PGlite extensions based on detected extension names
+   */
+  private async loadExtensions(extensionNames: string[]): Promise<Extensions> {
+    const { imports } = getExtensionConfiguration(extensionNames)
+    const extensions: Extensions = {}
+
+    for (const [sqlName, importPath] of Object.entries(imports)) {
+      try {
+        const jsName = getPGliteJavaScriptName(sqlName)
+        // Extract module path from import statement
+        const modulePath = importPath.match(/from\s+['"`](.+?)['"`]/)?.[1]
+        if (!modulePath) continue
+
+        const mod = await import(modulePath)
+        // Attach by JS export name if present
+        if (jsName in mod) {
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+          extensions[jsName] = mod[jsName]
+        }
+      } catch {
+        // Silent skip: unsupported or failed import
+      }
+    }
+
+    return extensions
   }
 
   /**
    * Execute SQL query with immediate instance cleanup
+   * @param sql SQL to execute
+   * @param options Optional configuration including required extensions
    */
-  async executeQuery(sql: string): Promise<SqlResult[]> {
-    const db = await this.createInstance()
+  async executeQuery(
+    sql: string,
+    options?: { extensions?: string[] },
+  ): Promise<SqlResult[]> {
+    const extensions = options?.extensions || []
+
+    const db = await this.createInstance(extensions)
     try {
       return await this.executeSql(sql, db)
     } finally {

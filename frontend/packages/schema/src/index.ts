@@ -64,4 +64,10 @@ export {
   type Relationship,
   type Relationships,
 } from './utils/constraintsToRelationships.js'
+export {
+  getPGliteJavaScriptName,
+  isPGliteSupportedExtension,
+  PGLITE_EXTENSION_NAME_MAPPING,
+  PGLITE_SUPPORTED_EXTENSIONS,
+} from './utils/extensions.js'
 export { isPrimaryKey } from './utils/isPrimaryKey.js'

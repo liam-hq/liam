@@ -774,4 +774,76 @@ describe('postgresqlOperationDeparser', () => {
       expect(result.value).toBe('')
     })
   })
+
+  describe('extension operations', () => {
+    it('should generate CREATE EXTENSION statement from add operation', async () => {
+      const operation: Operation = {
+        op: 'add',
+        path: '/extensions/vector',
+        value: {
+          name: 'vector',
+        },
+      }
+
+      const result = postgresqlOperationDeparser(operation)
+
+      expect(result.errors).toHaveLength(0)
+      expect(result.value).toMatchInlineSnapshot(`
+        "CREATE EXTENSION \"vector\";"
+      `)
+
+      await expectGeneratedSQLToBeParseable(result.value)
+    })
+
+    it('should generate CREATE EXTENSION for hyphenated extension name', async () => {
+      const operation: Operation = {
+        op: 'add',
+        path: '/extensions/uuid-ossp',
+        value: {
+          name: 'uuid-ossp',
+        },
+      }
+
+      const result = postgresqlOperationDeparser(operation)
+
+      expect(result.errors).toHaveLength(0)
+      expect(result.value).toMatchInlineSnapshot(`
+        "CREATE EXTENSION \"uuid-ossp\";"
+      `)
+
+      await expectGeneratedSQLToBeParseable(result.value)
+    })
+
+    it('should generate DROP EXTENSION statement from remove operation', async () => {
+      const operation: Operation = {
+        op: 'remove',
+        path: '/extensions/vector',
+      }
+
+      const result = postgresqlOperationDeparser(operation)
+
+      expect(result.errors).toHaveLength(0)
+      expect(result.value).toMatchInlineSnapshot(`
+        "DROP EXTENSION \"vector\";"
+      `)
+
+      await expectGeneratedSQLToBeParseable(result.value)
+    })
+
+    it('should generate DROP EXTENSION for hyphenated extension name', async () => {
+      const operation: Operation = {
+        op: 'remove',
+        path: '/extensions/uuid-ossp',
+      }
+
+      const result = postgresqlOperationDeparser(operation)
+
+      expect(result.errors).toHaveLength(0)
+      expect(result.value).toMatchInlineSnapshot(`
+        "DROP EXTENSION \"uuid-ossp\";"
+      `)
+
+      await expectGeneratedSQLToBeParseable(result.value)
+    })
+  })
 })
