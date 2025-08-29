@@ -1,7 +1,7 @@
 import type { BaseMessage } from '@langchain/core/messages'
 import { AIMessage } from '@langchain/core/messages'
 import { END } from '@langchain/langgraph'
-import type { testcaseAnnotation } from '../annotations'
+import type { testcaseAnnotation } from './testcaseAnnotation'
 
 /**
  * Route after generateTestcaseNode based on whether tool calls are present

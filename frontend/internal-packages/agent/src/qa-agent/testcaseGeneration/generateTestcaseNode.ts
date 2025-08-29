@@ -5,18 +5,17 @@ import {
 } from '@langchain/core/messages'
 import { ChatOpenAI } from '@langchain/openai'
 import { ResultAsync } from 'neverthrow'
-import { WorkflowTerminationError } from '../../../shared/errorHandling'
-import { convertSchemaToText } from '../../../utils/convertSchemaToText'
-import { removeReasoningFromMessages } from '../../../utils/messageCleanup'
-import { saveTestcasesAndDmlTool } from '../../tools/saveTestcasesAndDmlTool'
-import type { testcaseAnnotation } from '../annotations'
+import { convertSchemaToText } from '../../utils/convertSchemaToText'
+import { removeReasoningFromMessages } from '../../utils/messageCleanup'
+import { saveTestcasesAndDmlTool } from '../tools/saveTestcasesAndDmlTool'
 import {
   humanPromptTemplateForSingleRequirement,
   SYSTEM_PROMPT_FOR_SINGLE_REQUIREMENT,
-} from '../prompts'
+} from './prompts'
+import type { testcaseAnnotation } from './testcaseAnnotation'
 
 const model = new ChatOpenAI({
-  model: 'gpt-5-mini',
+  model: 'gpt-5-nano',
   useResponsesApi: true,
 }).bindTools([saveTestcasesAndDmlTool], {
   parallel_tool_calls: false,
@@ -33,18 +32,9 @@ export async function generateTestcaseNode(
 ): Promise<{ messages: BaseMessage[] }> {
   const { currentRequirement, schemaData, messages } = state
 
-  if (!currentRequirement) {
-    throw new WorkflowTerminationError(
-      new Error(
-        'No current requirement found. This node should be called with requirement data.',
-      ),
-      'generateTestcaseNode',
-    )
-  }
-
   const contextMessage = await humanPromptTemplateForSingleRequirement.format({
     schemaContext: convertSchemaToText(schemaData),
-    businessContext: currentRequirement.businessContext || 'Not provided',
+    businessContext: currentRequirement.businessContext,
     requirementType: currentRequirement.type,
     requirementCategory: currentRequirement.category,
     requirement: currentRequirement.requirement,
@@ -66,10 +56,10 @@ export async function generateTestcaseNode(
   const result = await invokeModel()
 
   if (result.isErr()) {
-    console.error(
-      `❌ Failed to generate test case for ${currentRequirement.category}: ${result.error.message}`,
+    // eslint-disable-next-line no-throw-error/no-throw-error -- Required for LangGraph retry mechanism
+    throw new Error(
+      `Failed to generate test case for ${currentRequirement.category}: ${result.error.message}`,
     )
-    throw new WorkflowTerminationError(result.error, 'generateTestcaseNode')
   }
 
   return {
