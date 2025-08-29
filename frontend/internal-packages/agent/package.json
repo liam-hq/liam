@@ -55,6 +55,7 @@
     "lint:biome": "biome check .",
     "lint:eslint": "eslint .",
     "lint:tsc": "tsc --noEmit",
-    "test": "vitest --watch=false --passWithNoTests"
+    "test": "vitest --watch=false --passWithNoTests",
+    "test:integration": "vitest --watch=false --passWithNoTests --config vitest.config.integration.ts"
   }
 }
