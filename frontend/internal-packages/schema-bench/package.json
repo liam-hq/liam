@@ -22,7 +22,9 @@
   },
   "scripts": {
     "evaluateSchema": "tsx src/cli/evaluateSchema.ts",
+    "evaluateSchemaMulti": "tsx src/cli/evaluateSchemaMulti.ts",
     "executeLiamDB": "tsx src/cli/executeLiamDb.ts",
+    "executeLiamDBMulti": "tsx src/cli/executeLiamDbMulti.ts",
     "executeOpenai": "tsx src/cli/executeOpenai.ts",
     "fmt": "concurrently \"pnpm:fmt:*\"",
     "fmt:biome": "biome check --write --unsafe .",

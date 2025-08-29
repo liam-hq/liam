@@ -38,12 +38,15 @@ type EvaluateResult = {
   tableMapping: Mapping
   columnMappings: Record<string, Mapping>
   tableF1Score: number
+  tableRecall: number
   tableAllCorrectRate: number
   columnF1ScoreAverage: number
+  columnRecallAverage: number
   columnAllCorrectRateAverage: number
   primaryKeyAccuracyAverage: number
   constraintAccuracy: number
   foreignKeyF1Score: number
+  foreignKeyRecall: number
   foreignKeyAllCorrectRate: number
   overallSchemaAccuracy: number
 }
@@ -85,7 +88,7 @@ const calculateTableMetrics = (
       : (2 * tablePrecision * tableRecall) / (tablePrecision + tableRecall)
   const tableAllcorrect = tableF1 === 1 ? 1 : 0
 
-  return { tableF1, tableAllcorrect }
+  return { tableF1, tableRecall, tableAllcorrect }
 }
 
 const createColumnMapping = async (
@@ -126,6 +129,7 @@ const calculateColumnMetrics = (
 
   return {
     columnF1,
+    columnRecall,
     columnAllcorrect: Math.abs(columnF1 - 1) < EPSILON ? 1 : 0,
   }
 }
@@ -253,7 +257,7 @@ const calculateForeignKeyMetrics = (
         (foreignKeyPrecision + foreignKeyRecall)
   const foreignKeyAllCorrect = Math.abs(foreignKeyF1 - 1) < EPSILON ? 1 : 0
 
-  return { foreignKeyF1, foreignKeyAllCorrect }
+  return { foreignKeyF1, foreignKeyRecall, foreignKeyAllCorrect }
 }
 
 export const evaluate = async (
@@ -270,7 +274,7 @@ export const evaluate = async (
   )
 
   // 2. Table-level Precision/Recall/F1/Allcorrect
-  const { tableF1, tableAllcorrect } = calculateTableMetrics(
+  const { tableF1, tableRecall, tableAllcorrect } = calculateTableMetrics(
     referenceTableNames,
     predictTableNames,
     tableMapping,
@@ -278,6 +282,7 @@ export const evaluate = async (
 
   // 3. Column-level evaluation for each matched table
   let totalColumnF1Score = 0
+  let totalColumnRecall = 0
   let totalColumnAllCorrectCount = 0
   let totalPrimaryKeyCorrectCount = 0
   let totalConstraintCorrectCount = 0
@@ -299,13 +304,14 @@ export const evaluate = async (
     )
     allColumnMappings[tableName] = columnMapping
 
-    const { columnF1, columnAllcorrect } = calculateColumnMetrics(
+    const { columnF1, columnRecall, columnAllcorrect } = calculateColumnMetrics(
       referenceColumnNames,
       predictColumnNames,
       columnMapping,
     )
 
     totalColumnF1Score += columnF1
+    totalColumnRecall += columnRecall
     totalColumnAllCorrectCount += columnAllcorrect
 
     // Primary key validation
@@ -329,16 +335,20 @@ export const evaluate = async (
     predict.tables,
   )
 
-  const { foreignKeyF1, foreignKeyAllCorrect } = calculateForeignKeyMetrics(
-    reference.tables,
-    predict.tables,
-    foreignKeyMapping,
-  )
+  const { foreignKeyF1, foreignKeyRecall, foreignKeyAllCorrect } =
+    calculateForeignKeyMetrics(
+      reference.tables,
+      predict.tables,
+      foreignKeyMapping,
+    )
 
   // Calculate averages
   const totalTableCount = referenceTableNames.length
   const columnF1ScoreAverage = totalTableCount
     ? totalColumnF1Score / totalTableCount
+    : 0
+  const columnRecallAverage = totalTableCount
+    ? totalColumnRecall / totalTableCount
     : 0
   const columnAllCorrectRateAverage = totalTableCount
     ? totalColumnAllCorrectCount / totalTableCount
@@ -360,12 +370,15 @@ export const evaluate = async (
     tableMapping,
     columnMappings: allColumnMappings,
     tableF1Score: tableF1,
+    tableRecall,
     tableAllCorrectRate: tableAllcorrect,
     columnF1ScoreAverage,
+    columnRecallAverage,
     columnAllCorrectRateAverage,
     primaryKeyAccuracyAverage,
     constraintAccuracy,
     foreignKeyF1Score: foreignKeyF1,
+    foreignKeyRecall,
     foreignKeyAllCorrectRate: foreignKeyAllCorrect,
     overallSchemaAccuracy,
   }
