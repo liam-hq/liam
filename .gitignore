@@ -16,3 +16,6 @@ coverage/
 
 # Lefthook local config
 lefthook-local.yml
+
+# Serena files
+.serena
