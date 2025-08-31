@@ -27,6 +27,9 @@ const COMMAND_IMAGE_SOURCE: Record<string, string | { src: string }> = {
   'Show Table Name': showTableName,
 }
 
+const getImage = (img: string | { src: string }) =>
+  typeof img === 'object' ? img.src : img
+
 export const CommandPreview: FC<Props> = ({ commandName }) => {
   return (
     <div className={styles.container}>
@@ -38,9 +41,7 @@ export const CommandPreview: FC<Props> = ({ commandName }) => {
           key={commandName}
           poster={
             COMMAND_VIDEO_SOURCE[commandName].thumbnail
-              ? typeof COMMAND_VIDEO_SOURCE[commandName].thumbnail === 'string'
-                ? COMMAND_VIDEO_SOURCE[commandName].thumbnail
-                : COMMAND_VIDEO_SOURCE[commandName].thumbnail.src
+              ? getImage(COMMAND_VIDEO_SOURCE[commandName].thumbnail)
               : undefined
           }
         >
@@ -52,11 +53,7 @@ export const CommandPreview: FC<Props> = ({ commandName }) => {
       )}
       {COMMAND_IMAGE_SOURCE[commandName] && (
         <img
-          src={
-            typeof COMMAND_IMAGE_SOURCE[commandName] === 'string'
-              ? COMMAND_IMAGE_SOURCE[commandName]
-              : COMMAND_IMAGE_SOURCE[commandName].src
-          }
+          src={getImage(COMMAND_IMAGE_SOURCE[commandName])}
           className={styles.image}
           alt=""
         />
