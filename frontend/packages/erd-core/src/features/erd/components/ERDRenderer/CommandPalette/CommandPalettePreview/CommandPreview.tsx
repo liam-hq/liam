@@ -1,5 +1,6 @@
 import type { FC } from 'react'
 import copyLink from './assets/copy-link.mp4'
+import copyLinkThumbnail from './assets/copy-link-thumbnail.png'
 import showAllFields from './assets/show-all-fields.png'
 import showKeyOnly from './assets/show-key-only.png'
 import showTableName from './assets/show-table-name.png'
@@ -11,10 +12,13 @@ type Props = {
   commandName: string
 }
 
-const COMMAND_VIDEO_SOURCE: Record<string, string> = {
-  'copy link': copyLink,
-  'Zoom to Fit': zoomToFit,
-  'Tidy Up': tidyUp,
+const COMMAND_VIDEO_SOURCE: Record<
+  string,
+  { video: string; thumbnail?: string | { src: string } }
+> = {
+  'copy link': { video: copyLink, thumbnail: copyLinkThumbnail },
+  'Zoom to Fit': { video: zoomToFit },
+  'Tidy Up': { video: tidyUp },
 }
 
 const COMMAND_IMAGE_SOURCE: Record<string, string | { src: string }> = {
@@ -27,8 +31,23 @@ export const CommandPreview: FC<Props> = ({ commandName }) => {
   return (
     <div className={styles.container}>
       {COMMAND_VIDEO_SOURCE[commandName] && (
-        <video muted autoPlay className={styles.video} key={commandName}>
-          <source src={COMMAND_VIDEO_SOURCE[commandName]} type="video/mp4" />
+        <video
+          muted
+          autoPlay
+          className={styles.video}
+          key={commandName}
+          poster={
+            COMMAND_VIDEO_SOURCE[commandName].thumbnail
+              ? typeof COMMAND_VIDEO_SOURCE[commandName].thumbnail === 'string'
+                ? COMMAND_VIDEO_SOURCE[commandName].thumbnail
+                : COMMAND_VIDEO_SOURCE[commandName].thumbnail.src
+              : undefined
+          }
+        >
+          <source
+            src={COMMAND_VIDEO_SOURCE[commandName].video}
+            type="video/mp4"
+          />
         </video>
       )}
       {COMMAND_IMAGE_SOURCE[commandName] && (
