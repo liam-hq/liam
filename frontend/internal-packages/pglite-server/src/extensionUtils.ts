@@ -163,12 +163,6 @@ export async function loadExtensions(
     // Silently exclude unsupported extensions - they will be reported in the summary
   }
 
-  if (supportedExtensions.length !== requiredExtensions.length) {
-    console.info(
-      `Filtered extensions: ${supportedExtensions.join(', ')} (${supportedExtensions.length}/${requiredExtensions.length} supported)`,
-    )
-  }
-
   return { extensions, supportedExtensions }
 }
 
