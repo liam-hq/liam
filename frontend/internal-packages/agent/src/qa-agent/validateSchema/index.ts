@@ -22,6 +22,7 @@ import type { TestcaseDmlExecutionResult } from './types'
 async function executeDmlOperationsByTestcase(
   ddlStatements: string,
   testcases: Testcase[],
+  requiredExtensions: string[],
 ): Promise<TestcaseDmlExecutionResult[]> {
   const results: TestcaseDmlExecutionResult[] = []
 
@@ -51,7 +52,7 @@ async function executeDmlOperationsByTestcase(
 
     const startTime = new Date()
     const executionResult = await ResultAsync.fromPromise(
-      executeQuery(combinedSql),
+      executeQuery(combinedSql, requiredExtensions),
       (error) => new Error(String(error)),
     )
 
@@ -177,6 +178,7 @@ export async function validateSchemaNode(
   const { repositories } = configurableResult.value
 
   const ddlStatements = generateDdlFromSchema(state.schemaData)
+  const requiredExtensions = Object.keys(state.schemaData.extensions)
   const hasDdl = ddlStatements?.trim()
   const hasTestcases =
     state.generatedTestcases && state.generatedTestcases.length > 0
@@ -201,7 +203,10 @@ export async function validateSchemaNode(
 
   // Execute DDL first if present
   if (hasDdl && ddlStatements) {
-    const ddlResults: SqlResult[] = await executeQuery(ddlStatements)
+    const ddlResults: SqlResult[] = await executeQuery(
+      ddlStatements,
+      requiredExtensions,
+    )
     allResults = [...ddlResults]
   }
 
@@ -211,6 +216,7 @@ export async function validateSchemaNode(
     testcaseExecutionResults = await executeDmlOperationsByTestcase(
       ddlStatements || '',
       state.generatedTestcases,
+      requiredExtensions,
     )
 
     const dmlSqlResults: SqlResult[] = testcaseExecutionResults.map(

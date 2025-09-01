@@ -1,4 +1,4 @@
-import { beforeAll, describe, expect, it } from 'vitest'
+import { beforeAll, describe, expect, it, vi } from 'vitest'
 import { PGliteInstanceManager } from './PGliteInstanceManager'
 
 describe('PGliteInstanceManager', () => {
@@ -7,12 +7,12 @@ describe('PGliteInstanceManager', () => {
   // Warm up the pg-query-emscripten module before tests
   beforeAll(async () => {
     // Execute a simple query to initialize the parser
-    await manager.executeQuery('SELECT 1')
+    await manager.executeQuery('SELECT 1', [])
   }, 30000)
 
   it('should handle single statement', async () => {
     const sql = 'SELECT 1;'
-    const results = await manager.executeQuery(sql)
+    const results = await manager.executeQuery(sql, [])
 
     expect(results).toHaveLength(1)
     expect(results[0]?.success).toBe(true)
@@ -21,7 +21,7 @@ describe('PGliteInstanceManager', () => {
 
   it('should handle multiple statements', async () => {
     const sql = 'SELECT 1; SELECT 2;'
-    const results = await manager.executeQuery(sql)
+    const results = await manager.executeQuery(sql, [])
 
     expect(results).toHaveLength(2)
     expect(results[0]?.success).toBe(true)
@@ -42,7 +42,7 @@ describe('PGliteInstanceManager', () => {
       SELECT hello();
     `
 
-    const results = await manager.executeQuery(sql)
+    const results = await manager.executeQuery(sql, [])
 
     // Should parse into 2 statements: CREATE FUNCTION and SELECT
     expect(results).toHaveLength(2)
@@ -64,7 +64,7 @@ describe('PGliteInstanceManager', () => {
       $func$ LANGUAGE plpgsql;
     `
 
-    const results = await manager.executeQuery(sql)
+    const results = await manager.executeQuery(sql, [])
 
     // Should be parsed as single statement despite internal semicolons
     expect(results).toHaveLength(1)
@@ -90,7 +90,7 @@ describe('PGliteInstanceManager', () => {
       SELECT test_func();
     `
 
-    const results = await manager.executeQuery(sql)
+    const results = await manager.executeQuery(sql, [])
 
     expect(results).toHaveLength(3)
     expect(results[0]?.sql.trim()).toBe("SELECT 'before function'")
@@ -102,7 +102,7 @@ describe('PGliteInstanceManager', () => {
   it('should fallback to simple splitting on parse errors', async () => {
     // Intentionally malformed SQL to test fallback
     const sql = 'INVALID SQL SYNTAX;;;'
-    const results = await manager.executeQuery(sql)
+    const results = await manager.executeQuery(sql, [])
 
     // Should still attempt to execute (though it will fail)
     expect(results).toHaveLength(1)
@@ -127,7 +127,7 @@ describe('PGliteInstanceManager', () => {
         SELECT COUNT(*) FROM test_problem; -- Will show only 0 rows (transaction rolled back)
       `
 
-      const results = await manager.executeQuery(sql)
+      const results = await manager.executeQuery(sql, [])
 
       const normalizedResults = results.map((r) => ({
         sql: r.sql,
@@ -183,6 +183,87 @@ describe('PGliteInstanceManager', () => {
           },
         },
       ])
+    })
+  })
+
+  describe('Extension Support', () => {
+    it('should filter out unsupported extensions and warn', async () => {
+      const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
+
+      const sql = 'SELECT 1;'
+      const results = await manager.executeQuery(sql, [
+        'unsupported_extension',
+        'another_fake_ext',
+      ])
+
+      expect(results).toHaveLength(1)
+      expect(results[0]?.success).toBe(true)
+      expect(consoleSpy).toHaveBeenCalledWith(
+        "Extension 'unsupported_extension' is not supported in PGlite environment and will be excluded",
+      )
+      expect(consoleSpy).toHaveBeenCalledWith(
+        "Extension 'another_fake_ext' is not supported in PGlite environment and will be excluded",
+      )
+
+      consoleSpy.mockRestore()
+    })
+
+    it('should handle empty extension array', async () => {
+      const sql = 'SELECT 1;'
+      const results = await manager.executeQuery(sql, [])
+
+      expect(results).toHaveLength(1)
+      expect(results[0]?.success).toBe(true)
+      expect(results[0]?.sql.trim()).toBe('SELECT 1')
+    })
+
+    it('should handle contrib extensions with dynamic imports', async () => {
+      const sql = 'SELECT 1;'
+      const results = await manager.executeQuery(sql, ['uuid-ossp', 'hstore'])
+
+      expect(results).toHaveLength(1)
+      expect(results[0]?.success).toBe(true)
+      // Extensions should be loaded without warning since they are supported
+    })
+
+    describe('Supported Extensions', () => {
+      const supportedExtensions = [
+        'live',
+        'vector',
+        'pg_ivm',
+        'uuid-ossp',
+        'hstore',
+        'pg_trgm',
+        'btree_gin',
+        'citext',
+        'ltree',
+        'fuzzystrmatch',
+      ]
+
+      it.each(supportedExtensions.slice(0, 3))(
+        'should not warn for supported extension: %s',
+        async (extensionName) => {
+          const consoleSpy = vi
+            .spyOn(console, 'warn')
+            .mockImplementation(() => {})
+
+          const sql = 'SELECT 1;'
+          const results = await manager.executeQuery(sql, [extensionName])
+
+          expect(results).toHaveLength(1)
+          expect(results[0]?.success).toBe(true)
+
+          // Should not warn about unsupported extension (but may warn about import not implemented)
+          const unsupportedWarnings = consoleSpy.mock.calls.filter(
+            (call) =>
+              typeof call[0] === 'string' &&
+              call[0].includes('is not supported in PGlite environment'),
+          )
+          expect(unsupportedWarnings).toHaveLength(0)
+
+          consoleSpy.mockRestore()
+        },
+      )
     })
   })
 })
