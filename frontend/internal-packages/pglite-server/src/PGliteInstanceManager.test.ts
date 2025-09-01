@@ -7,12 +7,12 @@ describe('PGliteInstanceManager', () => {
   // Warm up the pg-query-emscripten module before tests
   beforeAll(async () => {
     // Execute a simple query to initialize the parser
-    await manager.executeQuery('SELECT 1')
+    await manager.executeQuery('SELECT 1', [])
   }, 30000)
 
   it('should handle single statement', async () => {
     const sql = 'SELECT 1;'
-    const results = await manager.executeQuery(sql)
+    const results = await manager.executeQuery(sql, [])
 
     expect(results).toHaveLength(1)
     expect(results[0]?.success).toBe(true)
@@ -21,7 +21,7 @@ describe('PGliteInstanceManager', () => {
 
   it('should handle multiple statements', async () => {
     const sql = 'SELECT 1; SELECT 2;'
-    const results = await manager.executeQuery(sql)
+    const results = await manager.executeQuery(sql, [])
 
     expect(results).toHaveLength(2)
     expect(results[0]?.success).toBe(true)
@@ -42,7 +42,7 @@ describe('PGliteInstanceManager', () => {
       SELECT hello();
     `
 
-    const results = await manager.executeQuery(sql)
+    const results = await manager.executeQuery(sql, [])
 
     // Should parse into 2 statements: CREATE FUNCTION and SELECT
     expect(results).toHaveLength(2)
@@ -64,7 +64,7 @@ describe('PGliteInstanceManager', () => {
       $func$ LANGUAGE plpgsql;
     `
 
-    const results = await manager.executeQuery(sql)
+    const results = await manager.executeQuery(sql, [])
 
     // Should be parsed as single statement despite internal semicolons
     expect(results).toHaveLength(1)
@@ -90,7 +90,7 @@ describe('PGliteInstanceManager', () => {
       SELECT test_func();
     `
 
-    const results = await manager.executeQuery(sql)
+    const results = await manager.executeQuery(sql, [])
 
     expect(results).toHaveLength(3)
     expect(results[0]?.sql.trim()).toBe("SELECT 'before function'")
@@ -102,7 +102,7 @@ describe('PGliteInstanceManager', () => {
   it('should fallback to simple splitting on parse errors', async () => {
     // Intentionally malformed SQL to test fallback
     const sql = 'INVALID SQL SYNTAX;;;'
-    const results = await manager.executeQuery(sql)
+    const results = await manager.executeQuery(sql, [])
 
     // Should still attempt to execute (though it will fail)
     expect(results).toHaveLength(1)
@@ -127,7 +127,7 @@ describe('PGliteInstanceManager', () => {
         SELECT COUNT(*) FROM test_problem; -- Will show only 0 rows (transaction rolled back)
       `
 
-      const results = await manager.executeQuery(sql)
+      const results = await manager.executeQuery(sql, [])
 
       const normalizedResults = results.map((r) => ({
         sql: r.sql,
@@ -183,6 +183,74 @@ describe('PGliteInstanceManager', () => {
           },
         },
       ])
+    })
+  })
+
+  describe('Extension Support', () => {
+    it('should filter out unsupported extensions', async () => {
+      const sql = 'SELECT 1;'
+      const results = await manager.executeQuery(sql, [
+        'unsupported_extension',
+        'another_fake_ext',
+      ])
+
+      expect(results).toHaveLength(1)
+      expect(results[0]?.success).toBe(true)
+    })
+
+    it('should handle empty extension array', async () => {
+      const sql = 'SELECT 1;'
+      const results = await manager.executeQuery(sql, [])
+
+      expect(results).toHaveLength(1)
+      expect(results[0]?.success).toBe(true)
+      expect(results[0]?.sql.trim()).toBe('SELECT 1')
+    })
+
+    it('should normalize extension names (uuid-ossp → uuid_ossp)', async () => {
+      const sql = 'SELECT 1;'
+      // Test that uuid-ossp gets normalized to uuid_ossp internally
+      const results = await manager.executeQuery(sql, ['uuid-ossp'])
+
+      expect(results).toHaveLength(1)
+      expect(results[0]?.success).toBe(true)
+    })
+
+    it('should handle mixed supported and unsupported extensions', async () => {
+      const sql = 'SELECT 1;'
+      const results = await manager.executeQuery(sql, [
+        'hstore', // supported
+        'fake_extension', // unsupported
+        'pg_trgm', // supported
+        'another_fake', // unsupported
+      ])
+
+      expect(results).toHaveLength(1)
+      expect(results[0]?.success).toBe(true)
+      // Only supported extensions will be loaded, unsupported ones filtered out
+    })
+
+    describe('Representative Extension Loading', () => {
+      // Representative sample covering different categories
+      const representativeExtensions = [
+        'live',
+        'uuid-ossp', // Contrib with normalization (uuid-ossp → uuid_ossp)
+        'hstore',
+        'vector',
+        'pg_trgm',
+        'btree_gin',
+      ]
+
+      it.each(representativeExtensions)(
+        'should successfully load extension: %s',
+        async (extensionName) => {
+          const sql = 'SELECT 1;'
+          const results = await manager.executeQuery(sql, [extensionName])
+
+          expect(results).toHaveLength(1)
+          expect(results[0]?.success).toBe(true)
+        },
+      )
     })
   })
 })

@@ -36,9 +36,13 @@ const validateAndExecuteDDL = async (
   }
 
   const ddlStatements = ddlResult.value
+  const requiredExtensions = Object.keys(schema.extensions)
 
   // Execute DDL to validate it
-  const results: SqlResult[] = await executeQuery(ddlStatements)
+  const results: SqlResult[] = await executeQuery(
+    ddlStatements,
+    requiredExtensions,
+  )
 
   const hasExecutionErrors = results.some(
     (result: SqlResult) => !result.success,

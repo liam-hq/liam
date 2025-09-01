@@ -1,6 +1,7 @@
 import { PGlite } from '@electric-sql/pglite'
 import { type PgParseResult, pgParse } from '@liam-hq/schema/parser'
 import type { RawStmt } from '@pgsql/types'
+import { filterExtensionDDL, loadExtensions } from './extensionUtils'
 import type { SqlResult } from './types'
 
 /**
@@ -9,20 +10,52 @@ import type { SqlResult } from './types'
 export class PGliteInstanceManager {
   /**
    * Creates a new PGlite instance for query execution
+   * Returns both the instance and the list of supported extensions
    */
-  private async createInstance(): Promise<PGlite> {
-    return new PGlite({
-      initialMemory: 2 * 1024 * 1024 * 1024, // 2GB initial memory allocation
-    })
+  private async createInstance(
+    requiredExtensions: string[],
+  ): Promise<{ db: PGlite; supportedExtensions: string[] }> {
+    if (requiredExtensions.length === 0) {
+      return {
+        db: new PGlite({
+          initialMemory: 2 * 1024 * 1024 * 1024, // 2GB initial memory allocation
+          extensions: {},
+        }),
+        supportedExtensions: [],
+      }
+    }
+
+    const { extensions, supportedExtensions } =
+      await loadExtensions(requiredExtensions)
+
+    return {
+      db: new PGlite({
+        initialMemory: 2 * 1024 * 1024 * 1024, // 2GB initial memory allocation
+        extensions,
+      }),
+      supportedExtensions,
+    }
   }
 
   /**
    * Execute SQL query with immediate instance cleanup
+   * Only executes DDL for supported extensions
    */
-  async executeQuery(sql: string): Promise<SqlResult[]> {
-    const db = await this.createInstance()
+  async executeQuery(
+    sql: string,
+    requiredExtensions: string[],
+  ): Promise<SqlResult[]> {
+    const { db, supportedExtensions } =
+      await this.createInstance(requiredExtensions)
+
+    // If we filtered out some extensions, we need to filter the SQL too
+    let filteredSql = sql
+    if (supportedExtensions.length !== requiredExtensions.length) {
+      filteredSql = filterExtensionDDL(sql, supportedExtensions)
+    }
+
     try {
-      return await this.executeSql(sql, db)
+      return await this.executeSql(filteredSql, db)
     } finally {
       db.close?.()
     }
