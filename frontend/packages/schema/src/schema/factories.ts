@@ -3,6 +3,7 @@ import type {
   Column,
   Enum,
   Enums,
+  Extension,
   Extensions,
   ForeignKeyConstraint,
   Index,
@@ -90,6 +91,11 @@ export const anEnum = (override?: Partial<Enum>): Enum => ({
   name: 'status',
   values: ['active', 'inactive'],
   comment: null,
+  ...override,
+})
+
+export const anExtension = (override?: Partial<Extension>): Extension => ({
+  name: 'uuid-ossp',
   ...override,
 })
 

@@ -1,8 +1,15 @@
-import type { Enum, Index, Schema, Table } from '../../schema/index.js'
+import type {
+  Enum,
+  Extension,
+  Index,
+  Schema,
+  Table,
+} from '../../schema/index.js'
 import type { SchemaDeparser } from '../type.js'
 import {
   generateAddConstraintStatement,
   generateCreateEnumStatement,
+  generateCreateExtensionStatement,
   generateCreateIndexStatement,
   generateCreateTableStatement,
 } from './utils.js'
@@ -11,19 +18,27 @@ export const postgresqlSchemaDeparser: SchemaDeparser = (schema: Schema) => {
   const ddlStatements: string[] = []
   const errors: { message: string }[] = []
 
-  // 1. Generate CREATE TYPE AS ENUM statements for each enum (before tables)
+  // 1. Generate CREATE EXTENSION statements for each extension (before all other DDL)
+  for (const extension of Object.values(
+    schema.extensions,
+  ) satisfies Extension[]) {
+    const createExtensionDDL = generateCreateExtensionStatement(extension)
+    ddlStatements.push(createExtensionDDL)
+  }
+
+  // 2. Generate CREATE TYPE AS ENUM statements for each enum (before tables)
   for (const enumObj of Object.values(schema.enums) satisfies Enum[]) {
     const createEnumDDL = generateCreateEnumStatement(enumObj)
     ddlStatements.push(createEnumDDL)
   }
 
-  // 2. Generate CREATE TABLE statements for each table
+  // 3. Generate CREATE TABLE statements for each table
   for (const table of Object.values(schema.tables) satisfies Table[]) {
     const createTableDDL = generateCreateTableStatement(table)
     ddlStatements.push(createTableDDL)
   }
 
-  // 3. Generate CREATE INDEX statements for all tables
+  // 4. Generate CREATE INDEX statements for all tables
   for (const table of Object.values(schema.tables) satisfies Table[]) {
     const indexes = Object.values(table.indexes) satisfies Index[]
     for (const index of indexes) {
@@ -32,7 +47,7 @@ export const postgresqlSchemaDeparser: SchemaDeparser = (schema: Schema) => {
     }
   }
 
-  // 4. Generate ADD CONSTRAINT statements for all tables
+  // 5. Generate ADD CONSTRAINT statements for all tables
   // Note: Foreign key constraints are added last to ensure referenced tables exist
   const foreignKeyStatements: string[] = []
 

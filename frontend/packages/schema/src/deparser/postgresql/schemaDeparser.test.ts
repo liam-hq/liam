@@ -4,6 +4,7 @@ import {
   aColumn,
   aForeignKeyConstraint,
   anEnum,
+  anExtension,
   anIndex,
   aPrimaryKeyConstraint,
   aSchema,
@@ -15,6 +16,52 @@ import { expectGeneratedSQLToBeParseable } from './testUtils.js'
 import { generateAlterColumnTypeStatement } from './utils.js'
 
 describe('postgresqlSchemaDeparser', () => {
+  it('should generate CREATE EXTENSION statements', async () => {
+    const schema = aSchema({
+      extensions: {
+        'uuid-ossp': anExtension({ name: 'uuid-ossp' }),
+        vector: anExtension({ name: 'vector' }),
+        hstore: anExtension({ name: 'hstore' }),
+      },
+      tables: {
+        users: aTable({
+          name: 'users',
+          columns: {
+            id: aColumn({
+              name: 'id',
+              type: 'uuid',
+              default: 'uuid_generate_v4()',
+              notNull: true,
+            }),
+          },
+          constraints: {
+            users_pkey: aPrimaryKeyConstraint({
+              name: 'users_pkey',
+              columnNames: ['id'],
+            }),
+          },
+        }),
+      },
+    })
+
+    const result = postgresqlSchemaDeparser(schema)
+
+    expect(result.errors).toHaveLength(0)
+    expect(result.value).toContain(
+      'CREATE EXTENSION IF NOT EXISTS "uuid-ossp";',
+    )
+    expect(result.value).toContain('CREATE EXTENSION IF NOT EXISTS vector;')
+    expect(result.value).toContain('CREATE EXTENSION IF NOT EXISTS hstore;')
+
+    // Extensions should come first
+    const lines = result.value.trim().split('\n')
+    expect(lines[0]).toBe('CREATE EXTENSION IF NOT EXISTS "uuid-ossp";')
+    expect(lines[2]).toBe('CREATE EXTENSION IF NOT EXISTS vector;')
+    expect(lines[4]).toBe('CREATE EXTENSION IF NOT EXISTS hstore;')
+
+    await expectGeneratedSQLToBeParseable(result.value)
+  })
+
   it('should generate basic CREATE TABLE statement', async () => {
     const schema = aSchema({
       tables: {
