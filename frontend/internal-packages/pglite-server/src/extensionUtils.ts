@@ -178,9 +178,10 @@ export function filterExtensionDDL(
     supportedExtensions.map((ext) => normalizeExtensionName(ext)),
   )
 
-  // Pattern to match CREATE EXTENSION statements
+  // Pattern to match CREATE EXTENSION statements including WITH clauses and semicolon
+  // This regex captures the entire CREATE EXTENSION statement including the semicolon
   const createExtensionRegex =
-    /CREATE\s+EXTENSION\s+(?:IF\s+NOT\s+EXISTS\s+)?["']?([^"'\s;]+)["']?/gi
+    /CREATE\s+EXTENSION\s+(?:IF\s+NOT\s+EXISTS\s+)?["']?([^"'\s;]+)["']?[^;]*;/gi
 
   return sql.replace(createExtensionRegex, (match, extensionName) => {
     const normalizedExt = normalizeExtensionName(extensionName)
@@ -188,7 +189,11 @@ export function filterExtensionDDL(
     if (normalizedSupported.has(normalizedExt)) {
       return match // Keep the statement
     }
-    // Comment out unsupported extension
-    return `-- Excluded (not supported in PGlite): ${match}`
+    // Comment out unsupported extension - add -- to each line
+    const commentedMatch = match
+      .split('\n')
+      .map((line) => (line.trim() ? `-- ${line}` : '--'))
+      .join('\n')
+    return `-- Excluded (not supported in PGlite):\n${commentedMatch}`
   })
 }

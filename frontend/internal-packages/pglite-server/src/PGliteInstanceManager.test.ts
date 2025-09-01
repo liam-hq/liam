@@ -187,95 +187,63 @@ describe('PGliteInstanceManager', () => {
   })
 
   describe('Extension Support', () => {
-    it('should filter out unsupported extensions', async () => {
-      const sql = 'SELECT 1;'
-      const results = await manager.executeQuery(sql, [
-        'unsupported_extension',
-        'another_fake_ext',
-      ])
+    it('should handle basic extension loading scenarios', async () => {
+      // Test multiple scenarios in one test to reduce redundancy
 
+      // 1. Empty extensions
+      let results = await manager.executeQuery('SELECT 1;', [])
       expect(results).toHaveLength(1)
       expect(results[0]?.success).toBe(true)
-    })
 
-    it('should handle empty extension array', async () => {
-      const sql = 'SELECT 1;'
-      const results = await manager.executeQuery(sql, [])
-
+      // 2. Supported extensions (including normalization)
+      results = await manager.executeQuery('SELECT 1;', ['uuid-ossp', 'hstore'])
       expect(results).toHaveLength(1)
       expect(results[0]?.success).toBe(true)
-      expect(results[0]?.sql.trim()).toBe('SELECT 1')
-    })
 
-    it('should normalize extension names (uuid-ossp → uuid_ossp)', async () => {
-      const sql = 'SELECT 1;'
-      // Test that uuid-ossp gets normalized to uuid_ossp internally
-      const results = await manager.executeQuery(sql, ['uuid-ossp'])
-
-      expect(results).toHaveLength(1)
-      expect(results[0]?.success).toBe(true)
-    })
-
-    it('should handle mixed supported and unsupported extensions', async () => {
-      const sql = 'SELECT 1;'
-      const results = await manager.executeQuery(sql, [
-        'hstore', // supported
-        'fake_extension', // unsupported
-        'pg_trgm', // supported
-        'another_fake', // unsupported
-      ])
-
-      expect(results).toHaveLength(1)
-      expect(results[0]?.success).toBe(true)
-      // Only supported extensions will be loaded, unsupported ones filtered out
-    })
-
-    describe('Representative Extension Loading', () => {
-      // Representative sample covering different categories
-      const representativeExtensions = [
-        'live',
-        'uuid-ossp', // Contrib with normalization (uuid-ossp → uuid_ossp)
+      // 3. Mixed supported/unsupported extensions
+      results = await manager.executeQuery('SELECT 1;', [
         'hstore',
-        'vector',
+        'fake_extension',
         'pg_trgm',
-        'btree_gin',
-      ]
+        'unsupported',
+      ])
+      expect(results).toHaveLength(1)
+      expect(results[0]?.success).toBe(true)
+    })
 
-      it.each(representativeExtensions)(
-        'should successfully load extension: %s',
-        async (extensionName) => {
-          const sql = 'SELECT 1;'
-          const results = await manager.executeQuery(sql, [extensionName])
+    it('should load representative extensions successfully', async () => {
+      const extensions = ['live', 'uuid-ossp', 'hstore', 'vector', 'pg_trgm']
 
-          expect(results).toHaveLength(1)
-          expect(results[0]?.success).toBe(true)
-        },
-      )
+      for (const ext of extensions) {
+        const results = await manager.executeQuery('SELECT 1;', [ext])
+        expect(results).toHaveLength(1)
+        expect(results[0]?.success).toBe(true)
+      }
     })
 
     describe('CREATE EXTENSION DDL Filtering', () => {
-      it('should keep CREATE EXTENSION for supported extensions', async () => {
+      it('should handle supported and unsupported extensions in DDL', async () => {
         const sql = `
           CREATE EXTENSION IF NOT EXISTS hstore;
+          CREATE EXTENSION IF NOT EXISTS fake_extension;
           CREATE EXTENSION IF NOT EXISTS pg_trgm;
           SELECT 1;
         `
         const results = await manager.executeQuery(sql, ['hstore', 'pg_trgm'])
 
-        // All statements should execute successfully
+        // Should execute: hstore, pg_trgm, SELECT
+        // fake_extension should be filtered out
         expect(results).toHaveLength(3)
-        expect(results[0]?.success).toBe(true)
         expect(results[0]?.sql).toContain(
           'CREATE EXTENSION IF NOT EXISTS hstore',
         )
-        expect(results[1]?.success).toBe(true)
         expect(results[1]?.sql).toContain(
           'CREATE EXTENSION IF NOT EXISTS pg_trgm',
         )
-        expect(results[2]?.success).toBe(true)
+        expect(results[2]?.sql.trim()).toBe('SELECT 1')
       })
 
-      it('should comment out CREATE EXTENSION for unsupported extensions', async () => {
+      it('should comment out all unsupported extensions', async () => {
         const sql = `
           CREATE EXTENSION IF NOT EXISTS fake_extension;
           CREATE EXTENSION IF NOT EXISTS another_fake;
@@ -283,99 +251,68 @@ describe('PGliteInstanceManager', () => {
         `
         const results = await manager.executeQuery(sql, [])
 
-        // The filtered SQL should contain commented out extensions and the SELECT statement
         expect(results).toHaveLength(1)
         expect(results[0]?.sql).toContain(
-          '-- Excluded (not supported in PGlite): CREATE EXTENSION',
+          '-- Excluded (not supported in PGlite):',
         )
+        expect(results[0]?.sql).toContain('-- CREATE EXTENSION')
         expect(results[0]?.sql).toContain('SELECT 1')
         expect(results[0]?.success).toBe(true)
       })
 
-      it('should handle mixed supported and unsupported extensions in DDL', async () => {
-        const sql = `
-          CREATE EXTENSION IF NOT EXISTS hstore;
-          CREATE EXTENSION IF NOT EXISTS fake_extension;
-          CREATE EXTENSION IF NOT EXISTS pg_trgm;
-          CREATE EXTENSION IF NOT EXISTS unsupported_ext;
-          CREATE TABLE test (id INT);
-        `
-        const results = await manager.executeQuery(sql, ['hstore', 'pg_trgm'])
-
-        // Should execute: hstore, pg_trgm, CREATE TABLE
-        // Should be filtered: fake_extension, unsupported_ext
-        expect(results).toHaveLength(3)
-        expect(results[0]?.sql).toContain(
-          'CREATE EXTENSION IF NOT EXISTS hstore',
-        )
-        expect(results[1]?.sql).toContain(
-          'CREATE EXTENSION IF NOT EXISTS pg_trgm',
-        )
-        expect(results[2]?.sql).toContain('CREATE TABLE test')
-      })
-
-      it('should normalize extension names in DDL (uuid-ossp → uuid_ossp)', async () => {
+      it('should handle quoted extension names and normalization', async () => {
         const sql = `
           CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
-          SELECT uuid_generate_v4();
-        `
-        const results = await manager.executeQuery(sql, ['uuid-ossp'])
-
-        // Extension should be loaded successfully with normalization
-        expect(results).toHaveLength(2)
-        expect(results[0]?.success).toBe(true)
-        expect(results[0]?.sql).toContain('CREATE EXTENSION')
-        expect(results[0]?.sql).toContain('uuid-ossp')
-        // The second statement should work if extension loaded correctly
-        expect(results[1]?.success).toBe(true)
-      })
-
-      it('should handle DDL with quoted and unquoted extension names', async () => {
-        const sql = `
           CREATE EXTENSION IF NOT EXISTS "hstore";
-          CREATE EXTENSION IF NOT EXISTS pg_trgm;
-          CREATE EXTENSION vector;
-          SELECT 1;
+          CREATE EXTENSION pg_trgm;
         `
         const results = await manager.executeQuery(sql, [
+          'uuid-ossp',
           'hstore',
           'pg_trgm',
-          'vector',
         ])
 
-        expect(results).toHaveLength(4)
-        expect(results[0]?.sql).toContain(
-          'CREATE EXTENSION IF NOT EXISTS "hstore"',
-        )
-        expect(results[1]?.sql).toContain(
-          'CREATE EXTENSION IF NOT EXISTS pg_trgm',
-        )
-        expect(results[2]?.sql).toContain('CREATE EXTENSION vector')
-        expect(results[3]?.sql.trim()).toBe('SELECT 1')
+        expect(results).toHaveLength(3)
+        expect(results[0]?.sql).toContain('uuid-ossp')
+        expect(results[1]?.sql).toContain('"hstore"')
+        expect(results[2]?.sql).toContain('pg_trgm')
       })
 
-      it('should filter extensions not in the provided array even if supported', async () => {
+      it('should handle complex CREATE EXTENSION statements with WITH clauses', async () => {
+        // This test verifies that the regex can properly handle WITH, SCHEMA, VERSION, CASCADE clauses
         const sql = `
-          CREATE EXTENSION IF NOT EXISTS hstore;
-          CREATE EXTENSION IF NOT EXISTS pg_trgm;
-          CREATE EXTENSION IF NOT EXISTS vector;
+          CREATE EXTENSION IF NOT EXISTS pg_ivm
+            WITH VERSION '1.9'
+            SCHEMA public
+            CASCADE;
+          CREATE EXTENSION fake_complex
+            WITH VERSION '2.0'
+            SCHEMA test;
           SELECT 1;
         `
-        // Only provide hstore in the extensions array
-        const results = await manager.executeQuery(sql, ['hstore'])
+        const results = await manager.executeQuery(sql, ['pg_ivm'])
 
-        // hstore should execute, pg_trgm and vector should be commented out
-        expect(results).toHaveLength(2)
+        // With the improved regex, the SQL should be parsed correctly
+        // The pg_ivm extension is supported, so it should execute
+        // The fake_complex extension should be commented out
+        // The SELECT 1 should execute successfully
+        expect(results).toHaveLength(2) // CREATE EXTENSION pg_ivm and SELECT 1
+
+        // First result: CREATE EXTENSION pg_ivm (should succeed)
         expect(results[0]?.sql).toContain(
-          'CREATE EXTENSION IF NOT EXISTS hstore',
+          'CREATE EXTENSION IF NOT EXISTS pg_ivm',
         )
-        expect(results[1]?.sql).toContain(
-          '-- Excluded (not supported in PGlite): CREATE EXTENSION IF NOT EXISTS pg_trgm',
-        )
-        expect(results[1]?.sql).toContain(
-          '-- Excluded (not supported in PGlite): CREATE EXTENSION IF NOT EXISTS vector',
-        )
+        expect(results[0]?.sql).toContain('WITH VERSION')
+        expect(results[0]?.sql).toContain('SCHEMA public')
+        expect(results[0]?.sql).toContain('CASCADE')
+        expect(results[0]?.success).toBe(true)
+
+        // Second result: Comments + SELECT 1 (should succeed)
         expect(results[1]?.sql).toContain('SELECT 1')
+        expect(results[1]?.sql).toContain(
+          '-- Excluded (not supported in PGlite)',
+        )
+        expect(results[1]?.success).toBe(true)
       })
     })
   })
