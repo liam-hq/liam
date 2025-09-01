@@ -48,11 +48,8 @@ export class PGliteInstanceManager {
     const { db, supportedExtensions } =
       await this.createInstance(requiredExtensions)
 
-    // If we filtered out some extensions, we need to filter the SQL too
-    let filteredSql = sql
-    if (supportedExtensions.length !== requiredExtensions.length) {
-      filteredSql = filterExtensionDDL(sql, supportedExtensions)
-    }
+    // Always filter CREATE EXTENSION statements based on supported extensions
+    const filteredSql = filterExtensionDDL(sql, supportedExtensions)
 
     try {
       return await this.executeSql(filteredSql, db)

@@ -252,5 +252,131 @@ describe('PGliteInstanceManager', () => {
         },
       )
     })
+
+    describe('CREATE EXTENSION DDL Filtering', () => {
+      it('should keep CREATE EXTENSION for supported extensions', async () => {
+        const sql = `
+          CREATE EXTENSION IF NOT EXISTS hstore;
+          CREATE EXTENSION IF NOT EXISTS pg_trgm;
+          SELECT 1;
+        `
+        const results = await manager.executeQuery(sql, ['hstore', 'pg_trgm'])
+
+        // All statements should execute successfully
+        expect(results).toHaveLength(3)
+        expect(results[0]?.success).toBe(true)
+        expect(results[0]?.sql).toContain(
+          'CREATE EXTENSION IF NOT EXISTS hstore',
+        )
+        expect(results[1]?.success).toBe(true)
+        expect(results[1]?.sql).toContain(
+          'CREATE EXTENSION IF NOT EXISTS pg_trgm',
+        )
+        expect(results[2]?.success).toBe(true)
+      })
+
+      it('should comment out CREATE EXTENSION for unsupported extensions', async () => {
+        const sql = `
+          CREATE EXTENSION IF NOT EXISTS fake_extension;
+          CREATE EXTENSION IF NOT EXISTS another_fake;
+          SELECT 1;
+        `
+        const results = await manager.executeQuery(sql, [])
+
+        // The filtered SQL should contain commented out extensions and the SELECT statement
+        expect(results).toHaveLength(1)
+        expect(results[0]?.sql).toContain(
+          '-- Excluded (not supported in PGlite): CREATE EXTENSION',
+        )
+        expect(results[0]?.sql).toContain('SELECT 1')
+        expect(results[0]?.success).toBe(true)
+      })
+
+      it('should handle mixed supported and unsupported extensions in DDL', async () => {
+        const sql = `
+          CREATE EXTENSION IF NOT EXISTS hstore;
+          CREATE EXTENSION IF NOT EXISTS fake_extension;
+          CREATE EXTENSION IF NOT EXISTS pg_trgm;
+          CREATE EXTENSION IF NOT EXISTS unsupported_ext;
+          CREATE TABLE test (id INT);
+        `
+        const results = await manager.executeQuery(sql, ['hstore', 'pg_trgm'])
+
+        // Should execute: hstore, pg_trgm, CREATE TABLE
+        // Should be filtered: fake_extension, unsupported_ext
+        expect(results).toHaveLength(3)
+        expect(results[0]?.sql).toContain(
+          'CREATE EXTENSION IF NOT EXISTS hstore',
+        )
+        expect(results[1]?.sql).toContain(
+          'CREATE EXTENSION IF NOT EXISTS pg_trgm',
+        )
+        expect(results[2]?.sql).toContain('CREATE TABLE test')
+      })
+
+      it('should normalize extension names in DDL (uuid-ossp → uuid_ossp)', async () => {
+        const sql = `
+          CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+          SELECT uuid_generate_v4();
+        `
+        const results = await manager.executeQuery(sql, ['uuid-ossp'])
+
+        // Extension should be loaded successfully with normalization
+        expect(results).toHaveLength(2)
+        expect(results[0]?.success).toBe(true)
+        expect(results[0]?.sql).toContain('CREATE EXTENSION')
+        expect(results[0]?.sql).toContain('uuid-ossp')
+        // The second statement should work if extension loaded correctly
+        expect(results[1]?.success).toBe(true)
+      })
+
+      it('should handle DDL with quoted and unquoted extension names', async () => {
+        const sql = `
+          CREATE EXTENSION IF NOT EXISTS "hstore";
+          CREATE EXTENSION IF NOT EXISTS pg_trgm;
+          CREATE EXTENSION vector;
+          SELECT 1;
+        `
+        const results = await manager.executeQuery(sql, [
+          'hstore',
+          'pg_trgm',
+          'vector',
+        ])
+
+        expect(results).toHaveLength(4)
+        expect(results[0]?.sql).toContain(
+          'CREATE EXTENSION IF NOT EXISTS "hstore"',
+        )
+        expect(results[1]?.sql).toContain(
+          'CREATE EXTENSION IF NOT EXISTS pg_trgm',
+        )
+        expect(results[2]?.sql).toContain('CREATE EXTENSION vector')
+        expect(results[3]?.sql.trim()).toBe('SELECT 1')
+      })
+
+      it('should filter extensions not in the provided array even if supported', async () => {
+        const sql = `
+          CREATE EXTENSION IF NOT EXISTS hstore;
+          CREATE EXTENSION IF NOT EXISTS pg_trgm;
+          CREATE EXTENSION IF NOT EXISTS vector;
+          SELECT 1;
+        `
+        // Only provide hstore in the extensions array
+        const results = await manager.executeQuery(sql, ['hstore'])
+
+        // hstore should execute, pg_trgm and vector should be commented out
+        expect(results).toHaveLength(2)
+        expect(results[0]?.sql).toContain(
+          'CREATE EXTENSION IF NOT EXISTS hstore',
+        )
+        expect(results[1]?.sql).toContain(
+          '-- Excluded (not supported in PGlite): CREATE EXTENSION IF NOT EXISTS pg_trgm',
+        )
+        expect(results[1]?.sql).toContain(
+          '-- Excluded (not supported in PGlite): CREATE EXTENSION IF NOT EXISTS vector',
+        )
+        expect(results[1]?.sql).toContain('SELECT 1')
+      })
+    })
   })
 })
