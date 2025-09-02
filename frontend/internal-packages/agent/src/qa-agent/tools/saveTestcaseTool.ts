@@ -16,8 +16,8 @@ const dmlOperationWithoutLogsSchema = v.omit(dmlOperationSchema, [
 ])
 
 const testcaseWithDmlSchema = v.object({
-  ...v.omit(testcaseSchema, ['id', 'dmlOperations']).entries,
-  dmlOperations: v.array(dmlOperationWithoutLogsSchema),
+  ...v.omit(testcaseSchema, ['id', 'dmlOperation']).entries,
+  dmlOperation: dmlOperationWithoutLogsSchema,
 })
 
 const saveTestcaseToolSchema = v.object({
@@ -66,11 +66,11 @@ export const saveTestcaseTool: StructuredTool = tool(
 
     const testcaseId = uuidv4()
 
-    const dmlOperationsWithId = testcaseWithDml.dmlOperations.map((op) => ({
-      ...op,
+    const dmlOperationWithId = {
+      ...testcaseWithDml.dmlOperation,
       testCaseId: testcaseId,
       dml_execution_logs: [],
-    }))
+    }
 
     const testcase: Testcase = {
       id: testcaseId,
@@ -79,11 +79,11 @@ export const saveTestcaseTool: StructuredTool = tool(
       requirement: testcaseWithDml.requirement,
       title: testcaseWithDml.title,
       description: testcaseWithDml.description,
-      dmlOperations: dmlOperationsWithId,
+      dmlOperation: dmlOperationWithId,
     }
 
     const toolMessage = new ToolMessage({
-      content: `Successfully saved test case "${testcase.title}" with ${testcase.dmlOperations.length} DML operations`,
+      content: `Successfully saved test case "${testcase.title}" with DML operation`,
       tool_call_id: toolCallId,
     })
     await dispatchCustomEvent(SSE_EVENTS.MESSAGES, toolMessage)
@@ -98,8 +98,8 @@ export const saveTestcaseTool: StructuredTool = tool(
   {
     name: 'saveTestcase',
     description:
-      'Save a single test case with its corresponding DML operations for a requirement. ' +
-      'The test case includes its scenario description and the SQL operations needed to set up and validate the test.',
+      'Save a single test case with its corresponding DML operation for a requirement. ' +
+      'The test case includes its scenario description and the SQL operation needed to set up and validate the test.',
     schema: toolSchema,
   },
 )
