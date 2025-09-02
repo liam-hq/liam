@@ -138,13 +138,14 @@ async function loadExtensionModule(
 
 /**
  * Load and filter extensions for PGlite
- * Returns both the Extensions object and the list of actually supported extensions
+ * Returns both the extension modules object and the list of supported extension names
  */
-export async function loadExtensions(
-  requiredExtensions: string[],
-): Promise<{ extensions: Extensions; supportedExtensions: string[] }> {
-  const extensions: Extensions = {}
-  const supportedExtensions: string[] = []
+export async function loadExtensions(requiredExtensions: string[]): Promise<{
+  extensionModules: Extensions
+  supportedExtensionNames: string[]
+}> {
+  const extensionModules: Extensions = {}
+  const supportedExtensionNames: string[] = []
 
   for (const ext of requiredExtensions) {
     const normalizedExt = normalizeExtensionName(ext)
@@ -154,8 +155,8 @@ export async function loadExtensions(
 
     if (extensionModule) {
       try {
-        extensions[normalizedExt] = extensionModule
-        supportedExtensions.push(ext) // Add original extension name to supported list
+        extensionModules[normalizedExt] = extensionModule
+        supportedExtensionNames.push(ext) // Add original extension name to supported list
       } catch (error) {
         console.error(`Failed to configure extension ${normalizedExt}:`, error)
       }
@@ -163,7 +164,7 @@ export async function loadExtensions(
     // Silently exclude unsupported extensions - they will be reported in the summary
   }
 
-  return { extensions, supportedExtensions }
+  return { extensionModules, supportedExtensionNames }
 }
 
 /**

@@ -25,15 +25,15 @@ export class PGliteInstanceManager {
       }
     }
 
-    const { extensions, supportedExtensions } =
+    const { extensionModules, supportedExtensionNames } =
       await loadExtensions(requiredExtensions)
 
     return {
       db: new PGlite({
         initialMemory: 2 * 1024 * 1024 * 1024, // 2GB initial memory allocation
-        extensions,
+        extensions: extensionModules,
       }),
-      supportedExtensions,
+      supportedExtensions: supportedExtensionNames,
     }
   }
 
