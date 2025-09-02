@@ -232,18 +232,14 @@ describe('PGliteInstanceManager', () => {
         const results = await manager.executeQuery(sql, ['hstore', 'pg_trgm'])
 
         // Should execute: hstore, pg_trgm, SELECT
-        // fake_extension should be filtered out
+        // fake_extension should be completely removed
         expect(results).toHaveLength(3)
-        expect(results[0]?.sql).toContain(
-          'CREATE EXTENSION IF NOT EXISTS hstore',
-        )
-        expect(results[1]?.sql).toContain(
-          'CREATE EXTENSION IF NOT EXISTS pg_trgm',
-        )
-        expect(results[2]?.sql.trim()).toBe('SELECT 1')
+        expect(results[0]?.sql).toBe('CREATE EXTENSION IF NOT EXISTS hstore')
+        expect(results[1]?.sql).toBe('CREATE EXTENSION IF NOT EXISTS pg_trgm')
+        expect(results[2]?.sql).toBe('SELECT 1')
       })
 
-      it('should comment out all unsupported extensions', async () => {
+      it('should completely remove all unsupported extensions', async () => {
         const sql = `
           CREATE EXTENSION IF NOT EXISTS fake_extension;
           CREATE EXTENSION IF NOT EXISTS another_fake;
@@ -252,11 +248,7 @@ describe('PGliteInstanceManager', () => {
         const results = await manager.executeQuery(sql, [])
 
         expect(results).toHaveLength(1)
-        expect(results[0]?.sql).toContain(
-          '-- Excluded (not supported in PGlite):',
-        )
-        expect(results[0]?.sql).toContain('-- CREATE EXTENSION')
-        expect(results[0]?.sql).toContain('SELECT 1')
+        expect(results[0]?.sql).toBe('SELECT 1')
         expect(results[0]?.success).toBe(true)
       })
 
@@ -294,7 +286,7 @@ describe('PGliteInstanceManager', () => {
 
         // Complex CREATE EXTENSION should be simplified to basic form for PGlite compatibility
         // The pg_ivm extension is supported, so it should execute as simplified form
-        // The fake_complex extension should be commented out
+        // The fake_complex extension should be completely removed
         // The SELECT 1 should execute successfully
         expect(results).toHaveLength(2) // CREATE EXTENSION pg_ivm and SELECT 1
 
@@ -302,10 +294,8 @@ describe('PGliteInstanceManager', () => {
         expect(results[0]?.sql).toBe('CREATE EXTENSION IF NOT EXISTS pg_ivm')
         expect(results[0]?.success).toBe(true)
 
-        // Second result: Comments + SELECT 1 (should succeed)
-        expect(results[1]?.sql).toBe(
-          "-- Excluded (not supported in PGlite):\n-- CREATE EXTENSION fake_complex\n--             WITH VERSION '2.0'\n--             SCHEMA test;\n          SELECT 1",
-        )
+        // Second result: SELECT 1 (should succeed)
+        expect(results[1]?.sql).toBe('SELECT 1')
         expect(results[1]?.success).toBe(true)
       })
     })

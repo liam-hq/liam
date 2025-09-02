@@ -202,11 +202,6 @@ export function filterExtensionDDL(
       return `CREATE EXTENSION ${extensionPart};`
     }
 
-    // Comment out unsupported extension - add -- to each line
-    const commentedMatch = stmt
-      .split('\n')
-      .map((line) => (line.trim() ? `-- ${line}` : '--'))
-      .join('\n')
-    return `-- Excluded (not supported in PGlite):\n${commentedMatch}`
+    return ''
   })
 }
