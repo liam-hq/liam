@@ -7,17 +7,17 @@ import { ChatOpenAI } from '@langchain/openai'
 import { fromAsyncThrowable } from '@liam-hq/neverthrow'
 import { convertSchemaToText } from '../../utils/convertSchemaToText'
 import { removeReasoningFromMessages } from '../../utils/messageCleanup'
-import { saveTestcasesAndDmlTool } from '../tools/saveTestcasesAndDmlTool'
+import { saveTestcaseTool } from '../tools/saveTestcaseTool'
 import {
-  humanPromptTemplateForSingleRequirement,
-  SYSTEM_PROMPT_FOR_SINGLE_REQUIREMENT,
+  humanPromptTemplateForTestcaseGeneration,
+  SYSTEM_PROMPT_FOR_TESTCASE_GENERATION,
 } from './prompts'
 import type { testcaseAnnotation } from './testcaseAnnotation'
 
 const model = new ChatOpenAI({
   model: 'gpt-5-nano',
   useResponsesApi: true,
-}).bindTools([saveTestcasesAndDmlTool], {
+}).bindTools([saveTestcaseTool], {
   parallel_tool_calls: false,
   tool_choice: 'required',
 })
@@ -32,7 +32,7 @@ export async function generateTestcaseNode(
 ): Promise<{ messages: BaseMessage[] }> {
   const { currentRequirement, schemaData, messages } = state
 
-  const contextMessage = await humanPromptTemplateForSingleRequirement.format({
+  const contextMessage = await humanPromptTemplateForTestcaseGeneration.format({
     schemaContext: convertSchemaToText(schemaData),
     businessContext: currentRequirement.businessContext,
     requirementType: currentRequirement.type,
@@ -44,7 +44,7 @@ export async function generateTestcaseNode(
 
   const invokeModel = fromAsyncThrowable(() =>
     model.invoke([
-      new SystemMessage(SYSTEM_PROMPT_FOR_SINGLE_REQUIREMENT),
+      new SystemMessage(SYSTEM_PROMPT_FOR_TESTCASE_GENERATION),
       new HumanMessage(contextMessage),
       // Include all previous messages in this subgraph's scope
       ...cleanedMessages,

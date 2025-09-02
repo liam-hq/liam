@@ -13,20 +13,11 @@ export const workflowAnnotation = Annotation.Root({
       }
     | undefined
   >,
-  testcases: Annotation<Testcase[] | undefined>({
-    reducer: (existing, newTestcases) => {
-      // Concatenate test cases from parallel executions
-      if (!existing) return newTestcases
-      if (!newTestcases) return existing
-      return existing.concat(newTestcases)
-    },
-    default: () => undefined,
+  testcases: Annotation<Testcase[]>({
+    reducer: (prev, next) => prev.concat(next),
+    default: () => [],
   }),
-  schemaData: Annotation<Schema>({
-    // Use last-write-wins reducer since schemaData is read-only
-    // and all parallel executions receive the same value
-    reducer: (existing, newValue) => newValue ?? existing,
-  }),
+  schemaData: Annotation<Schema>,
   buildingSchemaId: Annotation<string>,
   latestVersionNumber: Annotation<number>,
   organizationId: Annotation<string>,
