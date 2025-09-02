@@ -13,6 +13,9 @@ const workflowState = (messages: WorkflowState['messages']): WorkflowState => ({
   organizationId: 'test-org',
   userId: 'test-user',
   designSessionId: 'test-session',
+  analyzedRequirements: undefined,
+  generatedTestcases: undefined,
+  dmlExecutionErrors: undefined,
   next: END,
 })
 

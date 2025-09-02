@@ -25,6 +25,9 @@ describe('validateSchemaNode', () => {
       organizationId: 'test-org-id',
       userId: 'user-id',
       designSessionId: 'session-id',
+      analyzedRequirements: undefined,
+      generatedTestcases: undefined,
+      dmlExecutionErrors: undefined,
       next: END,
       ...overrides,
     }

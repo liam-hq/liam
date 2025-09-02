@@ -30,11 +30,4 @@ export const workflowAnnotation = Annotation.Root({
   }),
 })
 
-export type WorkflowState = Omit<
-  typeof workflowAnnotation.State,
-  'analyzedRequirements' | 'generatedTestcases' | 'dmlExecutionErrors'
-> & {
-  analyzedRequirements?: typeof workflowAnnotation.State.analyzedRequirements
-  generatedTestcases?: typeof workflowAnnotation.State.generatedTestcases
-  dmlExecutionErrors?: typeof workflowAnnotation.State.dmlExecutionErrors
-}
+export type WorkflowState = typeof workflowAnnotation.State

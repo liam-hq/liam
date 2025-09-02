@@ -46,6 +46,9 @@ describe('summarizeWorkflow Integration', () => {
       designSessionId: context.designSessionId,
       userId: context.userId,
       organizationId: context.organizationId,
+      analyzedRequirements: undefined,
+      generatedTestcases: undefined,
+      dmlExecutionErrors: undefined,
       next: END,
     }
 

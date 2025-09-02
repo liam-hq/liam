@@ -67,6 +67,8 @@ const createWorkflowState = (
     userId: user.id,
     organizationId: organization.id,
     analyzedRequirements,
+    generatedTestcases: undefined,
+    dmlExecutionErrors: undefined,
     next: END,
   }
 
