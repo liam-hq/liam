@@ -63,7 +63,7 @@ interface WorkflowState {
 1. **leadAgent**: Lead Agent subgraph that routes requests to appropriate specialized agents
 2. **pmAgent**: PM Agent subgraph that handles requirements analysis - contains analyzeRequirements and invokeSaveArtifactTool nodes
 3. **dbAgent**: DB Agent subgraph that handles database schema design - contains designSchema and invokeSchemaDesignTool nodes (performed by dbAgent)
-4. **qaAgent**: QA Agent subgraph that handles testing and validation - contains generateTestcaseAndDml, invokeSaveTestcasesAndDmlTool, and validateSchema nodes (performed by qaAgent)
+4. **qaAgent**: QA Agent subgraph that handles testing and validation - contains testcaseGeneration (map-reduce) and validateSchema nodes
 5. **leadAgent (summarize)**: When QA completes, Lead Agent summarizes the workflow by generating a comprehensive summary
 
 ## Lead Agent Subgraph
@@ -233,15 +233,14 @@ The `qaAgent` node is implemented as a **LangGraph subgraph** that encapsulates 
 %%{init: {'flowchart': {'curve': 'linear'}}}%%
 graph TD;
 	__start__([<p>__start__</p>]):::first
-	generateTestcaseAndDml(generateTestcaseAndDml)
-	invokeSaveTestcasesAndDmlTool(invokeSaveTestcasesAndDmlTool)
+	testcaseGeneration(testcaseGeneration)
 	validateSchema(validateSchema)
 	__end__([<p>__end__</p>]):::last
-	__start__ --> generateTestcaseAndDml;
-	invokeSaveTestcasesAndDmlTool --> generateTestcaseAndDml;
+	testcaseGeneration --> validateSchema;
 	validateSchema --> __end__;
-	generateTestcaseAndDml -.-> invokeSaveTestcasesAndDmlTool;
-	generateTestcaseAndDml -.-> validateSchema;
+	__start__ -.-> testcaseGeneration;
+	__start__ -.-> validateSchema;
+	__start__ -.-> __end__;
 	classDef default fill:#f2f0ff,line-height:1.2;
 	classDef first fill-opacity:0;
 	classDef last fill:#bfb6fc;
@@ -249,22 +248,15 @@ graph TD;
 
 ### QA Agent Components
 
-#### 1. generateTestcaseAndDml Node
+#### 1. testcaseGeneration Node
 
-- **Purpose**: Creates comprehensive test cases and generates corresponding DML operations in a single unified process
-- **Performed by**: Unified QA Agent with GPT-5-mini using tool-based architecture
+- **Purpose**: Implements map-reduce pattern for parallel testcase generation
+- **Performed by**: Multiple parallel instances of testcase generation subgraph
 - **Retry Policy**: maxAttempts: 3 (internal to subgraph)
 - **Timeline Sync**: Automatic message synchronization
 - **Output**: AI-generated test cases with DML operations using tool calls
 
-#### 2. invokeSaveTestcasesAndDmlTool Node
-
-- **Purpose**: Executes the saveTestcase tool to save test cases and DML operations
-- **Performed by**: ToolNode with saveTestcase tool
-- **Retry Policy**: maxAttempts: 3 (internal to subgraph)
-- **Tool Integration**: Saves test cases and DML operations atomically for validation
-
-#### 3. validateSchema Node
+#### 2. validateSchema Node
 
 - **Purpose**: Executes DML statements and validates schema functionality
 - **Performed by**: DML Generation Agent with database execution
@@ -273,9 +265,9 @@ graph TD;
 
 ### QA Agent Flow Patterns
 
-1. **Direct Validation Flow**: `START → generateTestcaseAndDml → validateSchema → END` (when test cases and DML operations are generated and saved directly)
-2. **Tool-based Flow**: `START → generateTestcaseAndDml → invokeSaveTestcasesAndDmlTool → generateTestcaseAndDml → validateSchema → END` (when tool calls are required for saving)
-3. **Comprehensive Validation**: Each step builds upon the previous to ensure thorough testing with conditional routing
+1. **Map-Reduce Flow**: `START → testcaseGeneration (parallel) → validateSchema → END`
+2. **Parallel Processing**: Multiple testcase generation instances run concurrently
+3. **Comprehensive Validation**: All testcases are validated together after generation
 
 ### QA Agent Benefits
 
