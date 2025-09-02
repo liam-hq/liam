@@ -189,6 +189,11 @@
       "count": 1
     }
   },
+  "features/sessions/components/shared/MicButton/MicButton.module.css": {
+    "css-modules-kit/no-unused-class-names": {
+      "count": 7
+    }
+  },
   "instrumentation.ts": {
     "no-throw-error/no-throw-error": {
       "count": 1
