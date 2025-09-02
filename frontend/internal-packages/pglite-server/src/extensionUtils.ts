@@ -180,8 +180,9 @@ export function filterExtensionDDL(
 
   // Pattern to match CREATE EXTENSION statements including WITH clauses and semicolon
   // This regex captures the entire CREATE EXTENSION statement including the semicolon
+  // Uses non-greedy quantifiers to prevent ReDoS attacks
   const createExtensionRegex =
-    /CREATE\s+EXTENSION\s+(?:IF\s+NOT\s+EXISTS\s+)?["']?([^"'\s;]+)["']?[^;]*;/gi
+    /CREATE\s+EXTENSION\s+(?:IF\s+NOT\s+EXISTS\s+)?["']?([^"'\s;]+)["']?[^;]*?;/gi
 
   return sql.replace(createExtensionRegex, (match, extensionName) => {
     const normalizedExt = normalizeExtensionName(extensionName)
