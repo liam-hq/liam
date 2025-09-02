@@ -42,6 +42,25 @@ COMMIT;`,
                   },
                 },
                 {
+                  title: 'Aircraft Model Update',
+                  description:
+                    'The operations manager updates existing aircraft information by modifying the model and capacity fields.',
+                  dml_operation: {
+                    testCaseId: 'aircraft-update-1',
+                    operation_type: 'UPDATE',
+                    sql: "UPDATE airplanes SET model = 'ATR42-700', capacity = 50 WHERE airplane_number = 'JA100A';",
+                    description:
+                      'Aircraft model name and seat count update (normal update scenario for existing data).',
+                    dml_execution_logs: [
+                      {
+                        executed_at: '2024-06-01T08:05:00Z',
+                        success: true,
+                        result_summary: '1 row updated',
+                      },
+                    ],
+                  },
+                },
+                {
                   title: 'View Flights by Aircraft',
                   description:
                     'The operations manager specifies an aircraft number on the search screen and searches with period and route conditions. The system extracts flights associated with the specified aircraft within the period and displays a list of flight names, departure times, arrival times, segments, assigned captain and first officer.',
@@ -240,7 +259,10 @@ WHERE id = 'fc70279f-04d3-41ea-97e9-3a1bb7ee358f';`,
         ✅ **06/01/2024, 08:00:00 AM**
         > 3 rows inserted
 
-        ---
+
+        #### 1.2. Aircraft Model Update
+
+        The operations manager updates existing aircraft information by modifying the model and capacity fields.
 
         ##### **UPDATE** - Aircraft model name and seat count update (normal update scenario for existing data).
 
@@ -254,7 +276,7 @@ WHERE id = 'fc70279f-04d3-41ea-97e9-3a1bb7ee358f';`,
         > 1 row updated
 
 
-        #### 1.2. View Flights by Aircraft
+        #### 1.3. View Flights by Aircraft
 
         The operations manager specifies an aircraft number on the search screen and searches with period and route conditions. The system extracts flights associated with the specified aircraft within the period and displays a list of flight names, departure times, arrival times, segments, assigned captain and first officer.
 
@@ -826,6 +848,16 @@ WHERE id = 'fc70279f-04d3-41ea-97e9-3a1bb7ee358f';`,
                     testCaseId: 'uc-1',
                     operation_type: 'INSERT',
                     sql: 'INSERT INTO orders (user_id) VALUES ($1)',
+                    dml_execution_logs: [],
+                  },
+                },
+                {
+                  title: 'Another Operation',
+                  description: 'Second operation in the requirement',
+                  dml_operation: {
+                    testCaseId: 'uc-2',
+                    operation_type: 'UPDATE',
+                    sql: 'UPDATE inventory SET quantity = quantity - 1',
                     dml_execution_logs: [],
                   },
                 },
