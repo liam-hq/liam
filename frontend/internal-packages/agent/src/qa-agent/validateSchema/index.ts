@@ -1,6 +1,5 @@
 import { AIMessage } from '@langchain/core/messages'
 import type { RunnableConfig } from '@langchain/core/runnables'
-import type { DmlOperation } from '@liam-hq/artifact'
 import type { Database } from '@liam-hq/db'
 import { executeQuery } from '@liam-hq/pglite-server'
 import type { SqlResult } from '@liam-hq/pglite-server/src/types'
@@ -27,7 +26,7 @@ async function executeDmlOperationsByTestcase(
   const results: TestcaseDmlExecutionResult[] = []
 
   for (const testcase of testcases) {
-    if (!testcase.dmlOperations || testcase.dmlOperations.length === 0) {
+    if (!testcase.dmlOperation) {
       continue
     }
 
@@ -37,15 +36,14 @@ async function executeDmlOperationsByTestcase(
       sqlParts.push('-- DDL Statements', ddlStatements, '')
     }
 
+    const op = testcase.dmlOperation
+    const header = op.description
+      ? `-- ${op.description}`
+      : `-- ${op.operation_type} operation`
     sqlParts.push(
       `-- Test Case: ${testcase.id}`,
       `-- ${testcase.title}`,
-      ...testcase.dmlOperations.map((op: DmlOperation) => {
-        const header = op.description
-          ? `-- ${op.description}`
-          : `-- ${op.operation_type} operation`
-        return `${header}\n${op.sql};`
-      }),
+      `${header}\n${op.sql};`,
     )
 
     const combinedSql = sqlParts.filter(Boolean).join('\n')
@@ -61,45 +59,42 @@ async function executeDmlOperationsByTestcase(
 
       const hasErrors = sqlResults.some((result) => !result.success)
 
-      // Extract failed operations with SQL and error pairs
-      const failedOperations = sqlResults
-        .filter((result) => !result.success)
-        .map((result) => {
-          let error = 'Unknown error'
-          if (
-            typeof result.result === 'object' &&
-            result.result !== null &&
-            'error' in result.result
-          ) {
-            error = String(result.result.error)
-          } else {
-            error = String(result.result)
-          }
+      if (hasErrors) {
+        const failedResult = sqlResults.find((result) => !result.success)
+        let error = 'Unknown error'
+        if (
+          typeof failedResult?.result === 'object' &&
+          failedResult?.result !== null &&
+          'error' in failedResult.result
+        ) {
+          error = String(failedResult.result.error)
+        } else {
+          error = String(failedResult?.result)
+        }
 
-          return {
-            sql: result.sql,
-            error: error,
-          }
+        results.push({
+          testCaseId: testcase.id,
+          testCaseTitle: testcase.title,
+          success: false,
+          error,
+          failedSql: failedResult?.sql || testcase.dmlOperation.sql,
+          executedAt: startTime,
         })
-
-      results.push({
-        testCaseId: testcase.id,
-        testCaseTitle: testcase.title,
-        success: !hasErrors,
-        executedOperations: testcase.dmlOperations.length,
-        ...(hasErrors && { failedOperations }),
-        executedAt: startTime,
-      })
+      } else {
+        results.push({
+          testCaseId: testcase.id,
+          testCaseTitle: testcase.title,
+          success: true,
+          executedAt: startTime,
+        })
+      }
     } else {
       results.push({
         testCaseId: testcase.id,
         testCaseTitle: testcase.title,
         success: false,
-        executedOperations: 0,
-        failedOperations: testcase.dmlOperations.map((op) => ({
-          sql: op.sql,
-          error: executionResult.error.message,
-        })),
+        error: executionResult.error.message,
+        failedSql: testcase.dmlOperation.sql,
         executedAt: startTime,
       })
     }
@@ -126,30 +121,26 @@ function updateWorkflowStateWithTestcaseResults(
   const updatedTestcases = state.testcases.map((testcase) => {
     const testcaseResult = resultMap.get(testcase.id)
 
-    if (!testcaseResult || !testcase.dmlOperations) {
+    if (!testcaseResult || !testcase.dmlOperation) {
       return testcase
     }
 
-    const updatedDmlOperations = testcase.dmlOperations.map(
-      (dmlOp: DmlOperation) => {
-        const executionLog = {
-          executed_at: testcaseResult.executedAt.toISOString(),
-          success: testcaseResult.success,
-          result_summary: testcaseResult.success
-            ? `Test Case "${testcaseResult.testCaseTitle}" operations completed successfully`
-            : `Test Case "${testcaseResult.testCaseTitle}" failed: ${testcaseResult.failedOperations?.map((op) => op.error).join('; ')}`,
-        }
+    const executionLog = {
+      executed_at: testcaseResult.executedAt.toISOString(),
+      success: testcaseResult.success,
+      result_summary: testcaseResult.success
+        ? `Test Case "${testcaseResult.testCaseTitle}" operation completed successfully`
+        : `Test Case "${testcaseResult.testCaseTitle}" failed: ${testcaseResult.error}`,
+    }
 
-        return {
-          ...dmlOp,
-          dml_execution_logs: [executionLog],
-        }
-      },
-    )
+    const updatedDmlOperation = {
+      ...testcase.dmlOperation,
+      dml_execution_logs: [executionLog],
+    }
 
     return {
       ...testcase,
-      dmlOperations: updatedDmlOperations,
+      dmlOperation: updatedDmlOperation,
     }
   })
 
@@ -181,11 +172,7 @@ export async function validateSchemaNode(
   const requiredExtensions = Object.keys(state.schemaData.extensions).sort()
   const hasDdl = ddlStatements?.trim()
   const hasTestcases = state.testcases && state.testcases.length > 0
-  const hasDml =
-    hasTestcases &&
-    state.testcases?.some(
-      (tc) => tc.dmlOperations && tc.dmlOperations.length > 0,
-    )
+  const hasDml = hasTestcases && state.testcases?.some((tc) => tc.dmlOperation)
 
   if (!hasDdl && !hasDml) {
     return state
@@ -222,8 +209,8 @@ export async function validateSchemaNode(
       (result) => ({
         sql: `Test Case: ${result.testCaseTitle}`,
         result: result.success
-          ? { executedOperations: result.executedOperations }
-          : { errors: result.failedOperations?.map((op) => op.error) },
+          ? { status: 'success' }
+          : { error: result.error },
         success: result.success,
         id: `testcase-${result.testCaseId}`,
         metadata: {

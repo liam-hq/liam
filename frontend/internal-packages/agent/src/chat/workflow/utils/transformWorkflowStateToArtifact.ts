@@ -57,10 +57,10 @@ const convertAnalyzedRequirementsToArtifact = (
  */
 const mapTestCasesToRequirements = (
   testcase: Testcase,
-): { title: string; description: string; dml_operations: DmlOperation[] } => ({
+): { title: string; description: string; dml_operation: DmlOperation } => ({
   title: testcase.title,
   description: testcase.description,
-  dml_operations: testcase.dmlOperations, // Use the actual dmlOperations from testcase
+  dml_operation: testcase.dmlOperation,
 })
 
 /**
