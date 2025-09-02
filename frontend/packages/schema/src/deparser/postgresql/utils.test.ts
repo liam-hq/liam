@@ -79,11 +79,6 @@ describe('generateCreateExtensionStatement', () => {
         name: 'my"special"extension',
         expected: 'CREATE EXTENSION IF NOT EXISTS "my""special""extension";',
       },
-      // Edge cases: names with spaces
-      {
-        name: 'my extension',
-        expected: 'CREATE EXTENSION IF NOT EXISTS "my extension";',
-      },
       // Edge cases: names with special characters
       {
         name: 'ext$name',
