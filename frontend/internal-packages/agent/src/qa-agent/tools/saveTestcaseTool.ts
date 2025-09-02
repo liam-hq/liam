@@ -20,11 +20,11 @@ const testcaseWithDmlSchema = v.object({
   dmlOperations: v.array(dmlOperationWithoutLogsSchema),
 })
 
-const saveTestcasesAndDmlToolSchema = v.object({
-  testcasesWithDml: v.array(testcaseWithDmlSchema),
+const saveTestcaseToolSchema = v.object({
+  testcaseWithDml: testcaseWithDmlSchema,
 })
 
-const toolSchema = toJsonSchema(saveTestcasesAndDmlToolSchema)
+const toolSchema = toJsonSchema(saveTestcaseToolSchema)
 
 const configSchema = v.object({
   toolCall: v.object({
@@ -40,15 +40,15 @@ const getToolCallId = (config: RunnableConfig): string => {
   if (!configParseResult.success) {
     throw new WorkflowTerminationError(
       new Error('Tool call ID not found in config'),
-      'saveTestcasesAndDmlTool',
+      'saveTestcaseTool',
     )
   }
   return configParseResult.output.toolCall.id
 }
 
-export const saveTestcasesAndDmlTool: StructuredTool = tool(
+export const saveTestcaseTool: StructuredTool = tool(
   async (input: unknown, config: RunnableConfig): Promise<Command> => {
-    const parsed = v.safeParse(saveTestcasesAndDmlToolSchema, input)
+    const parsed = v.safeParse(saveTestcaseToolSchema, input)
     if (!parsed.success) {
       throw new WorkflowTerminationError(
         new Error(
@@ -56,68 +56,50 @@ export const saveTestcasesAndDmlTool: StructuredTool = tool(
             .map((issue) => issue.message)
             .join(', ')}`,
         ),
-        'saveTestcasesAndDmlTool',
+        'saveTestcaseTool',
       )
     }
 
-    const { testcasesWithDml } = parsed.output
-
-    if (testcasesWithDml.length === 0) {
-      throw new WorkflowTerminationError(
-        new Error('No test cases provided to save.'),
-        'saveTestcasesAndDmlTool',
-      )
-    }
+    const { testcaseWithDml } = parsed.output
 
     const toolCallId = getToolCallId(config)
 
-    const testcases: Testcase[] = testcasesWithDml.map((testcase) => {
-      const testcaseId = uuidv4()
+    const testcaseId = uuidv4()
 
-      const dmlOperationsWithId = testcase.dmlOperations.map((op) => ({
-        ...op,
-        testCaseId: testcaseId,
-        dml_execution_logs: [],
-      }))
+    const dmlOperationsWithId = testcaseWithDml.dmlOperations.map((op) => ({
+      ...op,
+      testCaseId: testcaseId,
+      dml_execution_logs: [],
+    }))
 
-      return {
-        id: testcaseId,
-        requirementType: testcase.requirementType,
-        requirementCategory: testcase.requirementCategory,
-        requirement: testcase.requirement,
-        title: testcase.title,
-        description: testcase.description,
-        dmlOperations: dmlOperationsWithId,
-      }
-    })
-
-    const totalDmlOperations = testcases.reduce(
-      (sum, tc) => sum + tc.dmlOperations.length,
-      0,
-    )
+    const testcase: Testcase = {
+      id: testcaseId,
+      requirementType: testcaseWithDml.requirementType,
+      requirementCategory: testcaseWithDml.requirementCategory,
+      requirement: testcaseWithDml.requirement,
+      title: testcaseWithDml.title,
+      description: testcaseWithDml.description,
+      dmlOperations: dmlOperationsWithId,
+    }
 
     const toolMessage = new ToolMessage({
-      id: uuidv4(),
-      status: 'success',
-      content: `Successfully saved ${testcases.length} test cases with ${totalDmlOperations} DML operations`,
+      content: `Successfully saved test case "${testcase.title}" with ${testcase.dmlOperations.length} DML operations`,
       tool_call_id: toolCallId,
     })
     await dispatchCustomEvent(SSE_EVENTS.MESSAGES, toolMessage)
 
     return new Command({
       update: {
-        testcases,
+        testcases: [testcase],
         messages: [toolMessage],
       },
     })
   },
   {
-    name: 'saveTestcasesAndDmlTool',
+    name: 'saveTestcase',
     description:
-      'Save generated test cases along with their corresponding DML operations for a single requirement. ' +
-      'Used in map-reduce parallel processing where each requirement is processed independently. ' +
-      'Accepts an array of test cases as one requirement may generate multiple test scenarios. ' +
-      'Each test case includes its scenario description and the SQL operations needed to set up and validate the test.',
+      'Save a single test case with its corresponding DML operations for a requirement. ' +
+      'The test case includes its scenario description and the SQL operations needed to set up and validate the test.',
     schema: toolSchema,
   },
 )

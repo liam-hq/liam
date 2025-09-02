@@ -13,7 +13,7 @@ export type WorkflowState = {
         nonFunctionalRequirements: Record<string, string[]>
       }
     | undefined
-  testcases?: Testcase[] | undefined
+  testcases: Testcase[]
   schemaData: Schema
 
   // DML execution results

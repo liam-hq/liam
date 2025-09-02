@@ -20,6 +20,7 @@ describe('validateSchemaNode', () => {
       messages: [],
       userInput: 'test',
       schemaData: aSchema({ tables: {} }),
+      testcases: [],
       buildingSchemaId: 'test-id',
       latestVersionNumber: 1,
       organizationId: 'test-org-id',

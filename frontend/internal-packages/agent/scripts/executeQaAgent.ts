@@ -61,6 +61,7 @@ const createWorkflowState = (
     // TODO: Create QA-specific annotation to remove userInput field entirely
     messages: [],
     schemaData,
+    testcases: [],
     buildingSchemaId: buildingSchema.id,
     latestVersionNumber: buildingSchema.latest_version_number,
     designSessionId: designSession.id,

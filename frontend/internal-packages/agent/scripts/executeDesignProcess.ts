@@ -54,6 +54,7 @@ const createWorkflowState = (
     userInput,
     messages: [new HumanMessage(userInput)],
     schemaData: sampleSchema,
+    testcases: [],
     buildingSchemaId: buildingSchema.id,
     latestVersionNumber: buildingSchema.latest_version_number,
     designSessionId: designSession.id,

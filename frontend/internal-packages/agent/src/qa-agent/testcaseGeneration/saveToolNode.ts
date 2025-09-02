@@ -1,8 +1,8 @@
 import { ToolNode } from '@langchain/langgraph/prebuilt'
-import { saveTestcasesAndDmlTool } from '../tools/saveTestcasesAndDmlTool'
+import { saveTestcaseTool } from '../tools/saveTestcaseTool'
 
 /**
  * Save Tool Node for testcase generation
- * Executes the saveTestcasesAndDmlTool within the isolated subgraph context
+ * Executes the saveTestcaseTool within the isolated subgraph context
  */
-export const saveToolNode = new ToolNode([saveTestcasesAndDmlTool])
+export const saveToolNode = new ToolNode([saveTestcaseTool])

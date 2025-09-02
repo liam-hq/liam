@@ -259,8 +259,8 @@ graph TD;
 
 #### 2. invokeSaveTestcasesAndDmlTool Node
 
-- **Purpose**: Executes the saveTestcasesAndDmlTool to save both test cases and DML operations
-- **Performed by**: ToolNode with saveTestcasesAndDmlTool
+- **Purpose**: Executes the saveTestcase tool to save test cases and DML operations
+- **Performed by**: ToolNode with saveTestcase tool
 - **Retry Policy**: maxAttempts: 3 (internal to subgraph)
 - **Tool Integration**: Saves test cases and DML operations atomically for validation
 
