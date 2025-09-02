@@ -1,4 +1,4 @@
-import type { WorkflowState } from '../../chat/workflow/types'
+import type { WorkflowState } from '../../chat/workflow/shared/workflowAnnotation'
 import { hasToolCalls } from '../../utils/hasToolCalls'
 
 /**

@@ -1,7 +1,7 @@
 import type { RunnableConfig } from '@langchain/core/runnables'
 import type { Database } from '@liam-hq/db'
 import { getConfigurable } from '../../chat/workflow/shared/getConfigurable'
-import type { WorkflowState } from '../../chat/workflow/types'
+import type { WorkflowState } from '../../chat/workflow/shared/workflowAnnotation'
 import { withTimelineItemSync } from '../../chat/workflow/utils/withTimelineItemSync'
 import { WorkflowTerminationError } from '../../shared/errorHandling'
 import { convertSchemaToText } from '../../utils/convertSchemaToText'

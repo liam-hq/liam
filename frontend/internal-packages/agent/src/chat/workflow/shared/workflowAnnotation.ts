@@ -29,3 +29,12 @@ export const workflowAnnotation = Annotation.Root({
     default: () => END,
   }),
 })
+
+export type WorkflowState = Omit<
+  typeof workflowAnnotation.State,
+  'analyzedRequirements' | 'generatedTestcases' | 'dmlExecutionErrors'
+> & {
+  analyzedRequirements?: typeof workflowAnnotation.State.analyzedRequirements
+  generatedTestcases?: typeof workflowAnnotation.State.generatedTestcases
+  dmlExecutionErrors?: typeof workflowAnnotation.State.dmlExecutionErrors
+}

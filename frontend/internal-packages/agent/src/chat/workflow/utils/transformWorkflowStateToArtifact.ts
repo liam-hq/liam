@@ -5,7 +5,7 @@ import type {
   NonFunctionalRequirement,
 } from '@liam-hq/artifact'
 import type { Testcase } from '../../../qa-agent/types'
-import type { WorkflowState } from '../types'
+import type { WorkflowState } from '../shared/workflowAnnotation'
 
 /**
  * Wraps a description string in an array format with fallback

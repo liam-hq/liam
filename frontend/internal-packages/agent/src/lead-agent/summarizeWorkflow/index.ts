@@ -8,7 +8,7 @@ import { END } from '@langchain/langgraph'
 import { ChatOpenAI } from '@langchain/openai'
 import { ResultAsync } from 'neverthrow'
 import { v4 as uuidv4 } from 'uuid'
-import type { WorkflowState } from '../../chat/workflow/types'
+import type { WorkflowState } from '../../chat/workflow/shared/workflowAnnotation'
 import { SSE_EVENTS } from '../../client'
 
 const AGENT_NAME = 'lead' as const
