@@ -83,7 +83,7 @@ export const saveTestcaseTool: StructuredTool = tool(
     }
 
     const toolMessage = new ToolMessage({
-      content: `Successfully saved test case "${testcase.title}" with 1 DML operation`,
+      content: `Successfully saved test case "${testcase.title}" with DML operation`,
       tool_call_id: toolCallId,
     })
     await dispatchCustomEvent(SSE_EVENTS.MESSAGES, toolMessage)
@@ -98,8 +98,8 @@ export const saveTestcaseTool: StructuredTool = tool(
   {
     name: 'saveTestcase',
     description:
-      'Save a single test case with its corresponding DML operations for a requirement. ' +
-      'The test case includes its scenario description and the SQL operations needed to set up and validate the test.',
+      'Save a single test case with its corresponding DML operation for a requirement. ' +
+      'The test case includes its scenario description and the SQL operation needed to set up and validate the test.',
     schema: toolSchema,
   },
 )
