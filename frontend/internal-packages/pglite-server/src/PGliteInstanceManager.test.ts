@@ -278,8 +278,8 @@ describe('PGliteInstanceManager', () => {
         expect(results[2]?.sql).toContain('pg_trgm')
       })
 
-      it('should handle complex CREATE EXTENSION statements with WITH clauses', async () => {
-        // This test verifies that the regex can properly handle WITH, SCHEMA, VERSION, CASCADE clauses
+      it('should simplify complex CREATE EXTENSION statements by removing WITH clauses', async () => {
+        // This test verifies that complex CREATE EXTENSION statements are simplified for PGlite compatibility
         const sql = `
           CREATE EXTENSION IF NOT EXISTS pg_ivm
             WITH VERSION '1.9'
@@ -292,25 +292,19 @@ describe('PGliteInstanceManager', () => {
         `
         const results = await manager.executeQuery(sql, ['pg_ivm'])
 
-        // With the improved regex, the SQL should be parsed correctly
-        // The pg_ivm extension is supported, so it should execute
+        // Complex CREATE EXTENSION should be simplified to basic form for PGlite compatibility
+        // The pg_ivm extension is supported, so it should execute as simplified form
         // The fake_complex extension should be commented out
         // The SELECT 1 should execute successfully
         expect(results).toHaveLength(2) // CREATE EXTENSION pg_ivm and SELECT 1
 
-        // First result: CREATE EXTENSION pg_ivm (should succeed)
-        expect(results[0]?.sql).toContain(
-          'CREATE EXTENSION IF NOT EXISTS pg_ivm',
-        )
-        expect(results[0]?.sql).toContain('WITH VERSION')
-        expect(results[0]?.sql).toContain('SCHEMA public')
-        expect(results[0]?.sql).toContain('CASCADE')
+        // First result: Simplified CREATE EXTENSION pg_ivm (should succeed)
+        expect(results[0]?.sql).toBe('CREATE EXTENSION IF NOT EXISTS pg_ivm')
         expect(results[0]?.success).toBe(true)
 
         // Second result: Comments + SELECT 1 (should succeed)
-        expect(results[1]?.sql).toContain('SELECT 1')
-        expect(results[1]?.sql).toContain(
-          '-- Excluded (not supported in PGlite)',
+        expect(results[1]?.sql).toBe(
+          "-- Excluded (not supported in PGlite):\n-- CREATE EXTENSION fake_complex\n--             WITH VERSION '2.0'\n--             SCHEMA test;\n          SELECT 1",
         )
         expect(results[1]?.success).toBe(true)
       })

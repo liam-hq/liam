@@ -178,20 +178,32 @@ export function filterExtensionDDL(
     supportedExtensions.map((ext) => normalizeExtensionName(ext)),
   )
 
-  // Pattern to match CREATE EXTENSION statements including WITH clauses and semicolon
-  // This regex captures the entire CREATE EXTENSION statement including the semicolon
-  // Uses non-greedy quantifiers to prevent ReDoS attacks
-  const createExtensionRegex =
-    /CREATE\s+EXTENSION\s+(?:IF\s+NOT\s+EXISTS\s+)?["']?([^"'\s;]+)["']?[^;]*?;/gi
+  // Pass 1: grab full statements cheaply; Pass 2: extract and simplify
+  const stmtRegex = /CREATE\s+EXTENSION\b[^;]*;/gi
+  return sql.replace(stmtRegex, (stmt) => {
+    const m = stmt.match(
+      /CREATE\s+EXTENSION\s+((?:IF\s+NOT\s+EXISTS\s+)?["']?[^"'\s;]+["']?)/i,
+    )
+    const extensionPart = m?.[1] // e.g., "IF NOT EXISTS pg_ivm" or "hstore"
+    if (!extensionPart) return stmt
 
-  return sql.replace(createExtensionRegex, (match, extensionName) => {
+    // Extract just the extension name for normalization check
+    const nameMatch = extensionPart.match(
+      /(?:IF\s+NOT\s+EXISTS\s+)?["']?([^"'\s;]+)["']?/,
+    )
+    const extensionName = nameMatch?.[1]
+    if (!extensionName) return stmt
+
     const normalizedExt = normalizeExtensionName(extensionName)
+
     // Check if extension is in our supported list (dynamic import handled extensions)
     if (normalizedSupported.has(normalizedExt)) {
-      return match // Keep the statement
+      // Return simplified CREATE EXTENSION statement without WITH/CASCADE clauses
+      return `CREATE EXTENSION ${extensionPart};`
     }
+
     // Comment out unsupported extension - add -- to each line
-    const commentedMatch = match
+    const commentedMatch = stmt
       .split('\n')
       .map((line) => (line.trim() ? `-- ${line}` : '--'))
       .join('\n')
