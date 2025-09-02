@@ -47,6 +47,7 @@ describe('summarizeWorkflow Integration', () => {
       userId: context.userId,
       organizationId: context.organizationId,
       next: END,
+      testcases: [],
     }
 
     // Act
