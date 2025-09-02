@@ -503,8 +503,8 @@ describe('validateSchemaNode', () => {
   })
 
   it('should execute DML operations from each testcase', async () => {
-    // This test verifies that validateSchemaNode executes the DML operation
-    // found in each testcase's dmlOperation field
+    // This test verifies that validateSchemaNode executes DML operations
+    // found in each testcase's dmlOperation
 
     const sqlResults: SqlResult[] = [
       {

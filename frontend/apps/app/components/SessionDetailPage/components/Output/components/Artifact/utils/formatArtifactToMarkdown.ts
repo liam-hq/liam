@@ -12,46 +12,49 @@ function formatTestCase(
   sections.push('')
   sections.push(testCase.description)
 
-  const operation = testCase.dmlOperation
-  sections.push('')
-
-  // Format as heading with operation type and description
-  if (operation.description) {
-    sections.push(
-      `##### **${operation.operation_type}** - ${operation.description}`,
-    )
-  } else {
-    sections.push(`##### **${operation.operation_type}**`)
-  }
-  sections.push('')
-
-  // SQL code block
-  sections.push('```sql')
-  sections.push(operation.sql.trim())
-  sections.push('```')
-
-  // Execution logs
-  if (operation.dml_execution_logs.length > 0) {
-    sections.push('')
-    sections.push(`**${EXECUTION_SECTION_TITLE}:**`)
+  if (testCase.dml_operation) {
     sections.push('')
 
-    operation.dml_execution_logs.forEach((log) => {
-      const statusIcon = log.success ? SUCCESS_ICON : FAILURE_ICON
-      const executedAt = new Date(log.executed_at).toLocaleString('en-US', {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit',
-        timeZone: 'UTC',
-      })
+    const operation = testCase.dml_operation
 
-      sections.push(`${statusIcon} **${executedAt}**`)
-      sections.push(`> ${log.result_summary}`)
+    // Format as heading with operation type and description
+    if (operation.description) {
+      sections.push(
+        `##### **${operation.operation_type}** - ${operation.description}`,
+      )
+    } else {
+      sections.push(`##### **${operation.operation_type}**`)
+    }
+    sections.push('')
+
+    // SQL code block
+    sections.push('```sql')
+    sections.push(operation.sql.trim())
+    sections.push('```')
+
+    // Execution logs
+    if (operation.dml_execution_logs.length > 0) {
       sections.push('')
-    })
+      sections.push(`**${EXECUTION_SECTION_TITLE}:**`)
+      sections.push('')
+
+      operation.dml_execution_logs.forEach((log) => {
+        const statusIcon = log.success ? SUCCESS_ICON : FAILURE_ICON
+        const executedAt = new Date(log.executed_at).toLocaleString('en-US', {
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit',
+          timeZone: 'UTC',
+        })
+
+        sections.push(`${statusIcon} **${executedAt}**`)
+        sections.push(`> ${log.result_summary}`)
+        sections.push('')
+      })
+    }
   }
 
   return sections.join('\n')

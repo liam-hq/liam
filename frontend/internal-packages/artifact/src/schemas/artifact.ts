@@ -20,7 +20,7 @@ export const dmlOperationSchema = v.object({
 export const testCaseSchema = v.object({
   title: v.string(),
   description: v.string(),
-  dmlOperation: dmlOperationSchema,
+  dml_operation: dmlOperationSchema,
 })
 
 // Base requirement schema properties

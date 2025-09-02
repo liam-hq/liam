@@ -1,6 +1,6 @@
 import { AIMessage } from '@langchain/core/messages'
 import type { RunnableConfig } from '@langchain/core/runnables'
-import type { DmlOperation } from '@liam-hq/artifact'
+import type { Database } from '@liam-hq/db'
 import { executeQuery } from '@liam-hq/pglite-server'
 import type { SqlResult } from '@liam-hq/pglite-server/src/types'
 import { ResultAsync } from 'neverthrow'
@@ -8,55 +8,11 @@ import { getConfigurable } from '../../chat/workflow/shared/getConfigurable'
 import type { WorkflowState } from '../../chat/workflow/types'
 import { generateDdlFromSchema } from '../../chat/workflow/utils/generateDdl'
 import { transformWorkflowStateToArtifact } from '../../chat/workflow/utils/transformWorkflowStateToArtifact'
+import { withTimelineItemSync } from '../../chat/workflow/utils/withTimelineItemSync'
 import { WorkflowTerminationError } from '../../shared/errorHandling'
 import type { Testcase } from '../types'
 import { formatValidationErrors } from './formatValidationErrors'
 import type { TestcaseDmlExecutionResult } from './types'
-
-function isErrorResult(value: unknown): value is { error: unknown } {
-  return typeof value === 'object' && value !== null && 'error' in value
-}
-
-/**
- * Build combined SQL for DDL and testcase DML
- */
-function buildCombinedSql(ddlStatements: string, testcase: Testcase): string {
-  const sqlParts = []
-
-  if (ddlStatements.trim()) {
-    sqlParts.push('-- DDL Statements', ddlStatements, '')
-  }
-
-  const op: DmlOperation = testcase.dmlOperation
-  const header = op.description
-    ? `-- ${op.description}`
-    : `-- ${op.operation_type} operation`
-  sqlParts.push(
-    `-- Test Case: ${testcase.id}`,
-    `-- ${testcase.title}`,
-    `${header}\n${op.sql};`,
-  )
-
-  return sqlParts.filter(Boolean).join('\n')
-}
-
-/**
- * Extract failed operation from SQL results
- */
-function extractFailedOperation(
-  sqlResults: SqlResult[],
-): { sql: string; error: string } | undefined {
-  const firstFailed = sqlResults.find((r) => !r.success)
-  if (!firstFailed) {
-    return undefined
-  }
-
-  const error = isErrorResult(firstFailed.result)
-    ? String(firstFailed.result.error)
-    : String(firstFailed.result)
-
-  return { sql: firstFailed.sql, error }
-}
 
 /**
  * Execute DML operations by testcase with DDL statements
@@ -70,9 +26,29 @@ async function executeDmlOperationsByTestcase(
   const results: TestcaseDmlExecutionResult[] = []
 
   for (const testcase of testcases) {
-    const combinedSql = buildCombinedSql(ddlStatements, testcase)
-    const startTime = new Date()
+    if (!testcase.dmlOperation) {
+      continue
+    }
 
+    const sqlParts = []
+
+    if (ddlStatements.trim()) {
+      sqlParts.push('-- DDL Statements', ddlStatements, '')
+    }
+
+    const op = testcase.dmlOperation
+    const header = op.description
+      ? `-- ${op.description}`
+      : `-- ${op.operation_type} operation`
+    sqlParts.push(
+      `-- Test Case: ${testcase.id}`,
+      `-- ${testcase.title}`,
+      `${header}\n${op.sql};`,
+    )
+
+    const combinedSql = sqlParts.filter(Boolean).join('\n')
+
+    const startTime = new Date()
     const executionResult = await ResultAsync.fromPromise(
       executeQuery(combinedSql, requiredExtensions),
       (error) => new Error(String(error)),
@@ -80,27 +56,45 @@ async function executeDmlOperationsByTestcase(
 
     if (executionResult.isOk()) {
       const sqlResults = executionResult.value
-      const hasErrors = sqlResults.some((result) => !result.success)
-      const failedOperation = hasErrors
-        ? extractFailedOperation(sqlResults)
-        : undefined
 
-      results.push({
-        testCaseId: testcase.id,
-        testCaseTitle: testcase.title,
-        success: !hasErrors,
-        ...(hasErrors && failedOperation && { failedOperation }),
-        executedAt: startTime,
-      })
+      const hasErrors = sqlResults.some((result) => !result.success)
+
+      if (hasErrors) {
+        const failedResult = sqlResults.find((result) => !result.success)
+        let error = 'Unknown error'
+        if (
+          typeof failedResult?.result === 'object' &&
+          failedResult?.result !== null &&
+          'error' in failedResult.result
+        ) {
+          error = String(failedResult.result.error)
+        } else {
+          error = String(failedResult?.result)
+        }
+
+        results.push({
+          testCaseId: testcase.id,
+          testCaseTitle: testcase.title,
+          success: false,
+          error,
+          failedSql: failedResult?.sql || testcase.dmlOperation.sql,
+          executedAt: startTime,
+        })
+      } else {
+        results.push({
+          testCaseId: testcase.id,
+          testCaseTitle: testcase.title,
+          success: true,
+          executedAt: startTime,
+        })
+      }
     } else {
       results.push({
         testCaseId: testcase.id,
         testCaseTitle: testcase.title,
         success: false,
-        failedOperation: {
-          sql: testcase.dmlOperation.sql,
-          error: executionResult.error.message,
-        },
+        error: executionResult.error.message,
+        failedSql: testcase.dmlOperation.sql,
         executedAt: startTime,
       })
     }
@@ -127,21 +121,20 @@ function updateWorkflowStateWithTestcaseResults(
   const updatedTestcases = state.testcases.map((testcase) => {
     const testcaseResult = resultMap.get(testcase.id)
 
-    if (!testcaseResult) {
+    if (!testcaseResult || !testcase.dmlOperation) {
       return testcase
     }
 
-    const dmlOp: DmlOperation = testcase.dmlOperation
     const executionLog = {
       executed_at: testcaseResult.executedAt.toISOString(),
       success: testcaseResult.success,
       result_summary: testcaseResult.success
-        ? `Test Case "${testcaseResult.testCaseTitle}" operations completed successfully`
-        : `Test Case "${testcaseResult.testCaseTitle}" failed: ${testcaseResult.failedOperation?.error ?? 'Unknown error'}`,
+        ? `Test Case "${testcaseResult.testCaseTitle}" operation completed successfully`
+        : `Test Case "${testcaseResult.testCaseTitle}" failed: ${testcaseResult.error}`,
     }
 
     const updatedDmlOperation = {
-      ...dmlOp,
+      ...testcase.dmlOperation,
       dml_execution_logs: [executionLog],
     }
 
@@ -165,6 +158,7 @@ export async function validateSchemaNode(
   state: WorkflowState,
   config: RunnableConfig,
 ): Promise<WorkflowState> {
+  const assistantRole: Database['public']['Enums']['assistant_role_enum'] = 'db'
   const configurableResult = getConfigurable(config)
   if (configurableResult.isErr()) {
     throw new WorkflowTerminationError(
@@ -178,7 +172,7 @@ export async function validateSchemaNode(
   const requiredExtensions = Object.keys(state.schemaData.extensions).sort()
   const hasDdl = ddlStatements?.trim()
   const hasTestcases = state.testcases.length > 0
-  const hasDml = hasTestcases
+  const hasDml = hasTestcases && state.testcases.some((tc) => tc.dmlOperation)
 
   if (!hasDdl && !hasDml) {
     return state
@@ -215,8 +209,8 @@ export async function validateSchemaNode(
       (result) => ({
         sql: `Test Case: ${result.testCaseTitle}`,
         result: result.success
-          ? { executed: true }
-          : { error: result.failedOperation?.error },
+          ? { status: 'success' }
+          : { error: result.error },
         success: result.success,
         id: `testcase-${result.testCaseId}`,
         metadata: {
@@ -259,9 +253,18 @@ export async function validateSchemaNode(
       name: 'SchemaValidator',
     })
 
+    // Sync with timeline
+    const syncedMessage = await withTimelineItemSync(validationAIMessage, {
+      designSessionId: state.designSessionId,
+      organizationId: state.organizationId || '',
+      userId: state.userId,
+      repositories,
+      assistantRole,
+    })
+
     updatedState = {
       ...updatedState,
-      messages: [...state.messages, validationAIMessage],
+      messages: [...state.messages, syncedMessage],
     }
   }
 

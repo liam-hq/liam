@@ -9,10 +9,8 @@ describe('formatValidationErrors', () => {
         testCaseId: 'test-1',
         testCaseTitle: 'Test Insert Operation',
         success: false,
-        failedOperation: {
-          sql: "INSERT INTO users (id, name) VALUES (1, 'John')",
-          error: 'duplicate key value violates unique constraint',
-        },
+        error: 'duplicate key value violates unique constraint',
+        failedSql: "INSERT INTO users (id, name) VALUES (1, 'John')",
         executedAt: new Date('2024-01-01T00:00:00Z'),
       },
     ]
@@ -23,9 +21,34 @@ describe('formatValidationErrors', () => {
       "Database validation found 1 issues. Please fix the following errors:
 
       ### ❌ **Test Case:** Test Insert Operation
-      #### 1. Error: \`duplicate key value violates unique constraint\`
+      #### Error: \`duplicate key value violates unique constraint\`
       \`\`\`sql
       INSERT INTO users (id, name) VALUES (1, 'John')
+      \`\`\`"
+    `)
+  })
+
+  it('should format multiple errors in single test case', () => {
+    const results: TestcaseDmlExecutionResult[] = [
+      {
+        testCaseId: 'test-1',
+        testCaseTitle: 'Complex Transaction Test',
+        success: false,
+        error: 'invalid input syntax for type uuid',
+        failedSql: "INSERT INTO accounts (id) VALUES ('invalid-uuid')",
+        executedAt: new Date('2024-01-01T00:00:00Z'),
+      },
+    ]
+
+    const formatted = formatValidationErrors(results)
+
+    expect(formatted).toMatchInlineSnapshot(`
+      "Database validation found 1 issues. Please fix the following errors:
+
+      ### ❌ **Test Case:** Complex Transaction Test
+      #### Error: \`invalid input syntax for type uuid\`
+      \`\`\`sql
+      INSERT INTO accounts (id) VALUES ('invalid-uuid')
       \`\`\`"
     `)
   })
@@ -36,10 +59,8 @@ describe('formatValidationErrors', () => {
         testCaseId: 'test-1',
         testCaseTitle: 'First Test Case',
         success: false,
-        failedOperation: {
-          sql: 'INSERT INTO table1 VALUES (1)',
-          error: 'table1 does not exist',
-        },
+        error: 'table1 does not exist',
+        failedSql: 'INSERT INTO table1 VALUES (1)',
         executedAt: new Date('2024-01-01T00:00:00Z'),
       },
       {
@@ -52,10 +73,8 @@ describe('formatValidationErrors', () => {
         testCaseId: 'test-3',
         testCaseTitle: 'Third Test Case',
         success: false,
-        failedOperation: {
-          sql: 'UPDATE table2 SET col = 1',
-          error: 'permission denied',
-        },
+        error: 'permission denied',
+        failedSql: 'UPDATE table2 SET col = 1',
         executedAt: new Date('2024-01-01T00:00:00Z'),
       },
     ]
@@ -66,13 +85,13 @@ describe('formatValidationErrors', () => {
       "Database validation found 2 issues. Please fix the following errors:
 
       ### ❌ **Test Case:** First Test Case
-      #### 1. Error: \`table1 does not exist\`
+      #### Error: \`table1 does not exist\`
       \`\`\`sql
       INSERT INTO table1 VALUES (1)
       \`\`\`
 
       ### ❌ **Test Case:** Third Test Case
-      #### 1. Error: \`permission denied\`
+      #### Error: \`permission denied\`
       \`\`\`sql
       UPDATE table2 SET col = 1
       \`\`\`"
@@ -96,10 +115,8 @@ describe('formatValidationErrors', () => {
         testCaseId: 'test-1',
         testCaseTitle: 'Long SQL Test',
         success: false,
-        failedOperation: {
-          sql: longSql,
-          error: 'syntax error',
-        },
+        error: 'syntax error',
+        failedSql: longSql,
         executedAt: new Date('2024-01-01T00:00:00Z'),
       },
     ]
@@ -110,7 +127,7 @@ describe('formatValidationErrors', () => {
       "Database validation found 1 issues. Please fix the following errors:
 
       ### ❌ **Test Case:** Long SQL Test
-      #### 1. Error: \`syntax error\`
+      #### Error: \`syntax error\`
       \`\`\`sql
       INSERT INTO very_long_table_name_with_many_columns (
             column1, column2, column3, column4, column5, column6, column7, column8,
@@ -132,10 +149,8 @@ describe('formatValidationErrors', () => {
         testCaseId: 'test-1',
         testCaseTitle: 'SQL with Comments',
         success: false,
-        failedOperation: {
-          sql: sqlWithComments,
-          error: 'some error',
-        },
+        error: 'some error',
+        failedSql: sqlWithComments,
         executedAt: new Date('2024-01-01T00:00:00Z'),
       },
     ]
@@ -146,7 +161,7 @@ describe('formatValidationErrors', () => {
       "Database validation found 1 issues. Please fix the following errors:
 
       ### ❌ **Test Case:** SQL with Comments
-      #### 1. Error: \`some error\`
+      #### Error: \`some error\`
       \`\`\`sql
       -- This is a comment
           INSERT INTO users (id, name) VALUES (1, 'John');
@@ -156,13 +171,14 @@ describe('formatValidationErrors', () => {
     `)
   })
 
-  it('should handle empty failed operations array', () => {
+  it('should handle failed case without SQL details', () => {
     const results: TestcaseDmlExecutionResult[] = [
       {
         testCaseId: 'test-1',
-        testCaseTitle: 'Test with empty failures',
+        testCaseTitle: 'Test with minimal error info',
         success: false,
-        failedOperation: undefined,
+        error: 'Unknown error occurred',
+        failedSql: '',
         executedAt: new Date('2024-01-01T00:00:00Z'),
       },
     ]
@@ -172,7 +188,7 @@ describe('formatValidationErrors', () => {
     expect(formatted).toMatchInlineSnapshot(`
       "Database validation found 1 issues. Please fix the following errors:
 
-      ### ❌ **Test Case:** Test with empty failures"
+      ### ❌ **Test Case:** Test with minimal error info"
     `)
   })
 
@@ -205,10 +221,8 @@ describe('formatValidationErrors', () => {
         testCaseId: 'test-1',
         testCaseTitle: 'Test with Special Characters',
         success: false,
-        failedOperation: {
-          sql: "INSERT INTO test VALUES ('data')",
-          error: 'Error with `backticks` and "quotes" and \'single quotes\'',
-        },
+        error: 'Error with `backticks` and "quotes" and \'single quotes\'',
+        failedSql: "INSERT INTO test VALUES ('data')",
         executedAt: new Date('2024-01-01T00:00:00Z'),
       },
     ]
@@ -219,7 +233,7 @@ describe('formatValidationErrors', () => {
       "Database validation found 1 issues. Please fix the following errors:
 
       ### ❌ **Test Case:** Test with Special Characters
-      #### 1. Error: \`Error with \`backticks\` and "quotes" and 'single quotes'\`
+      #### Error: \`Error with \`backticks\` and "quotes" and 'single quotes'\`
       \`\`\`sql
       INSERT INTO test VALUES ('data')
       \`\`\`"

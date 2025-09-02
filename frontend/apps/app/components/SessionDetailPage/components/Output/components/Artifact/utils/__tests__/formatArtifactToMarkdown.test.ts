@@ -1,4 +1,4 @@
-import type { Artifact, DmlOperation } from '@liam-hq/artifact'
+import type { Artifact } from '@liam-hq/artifact'
 import { describe, expect, it } from 'vitest'
 import { formatArtifactToMarkdown } from '../formatArtifactToMarkdown'
 
@@ -21,7 +21,7 @@ describe('formatArtifactToMarkdown', () => {
                   title: 'Aircraft Registration and Update',
                   description:
                     'The operations manager opens the aircraft management screen, selects "New Registration", and enters the aircraft number, model, and seating capacity. Upon clicking the register button, the system verifies required field entry, confirms aircraft number uniqueness, checks that seating capacity is a positive number, then records it in the aircraft registry.',
-                  dmlOperation: {
+                  dml_operation: {
                     testCaseId: 'dbeab333-1119-4392-8f9c-f8f0a21c1dc2',
                     operation_type: 'INSERT',
                     sql: `BEGIN;
@@ -45,7 +45,7 @@ COMMIT;`,
                   title: 'View Flights by Aircraft',
                   description:
                     'The operations manager specifies an aircraft number on the search screen and searches with period and route conditions. The system extracts flights associated with the specified aircraft within the period and displays a list of flight names, departure times, arrival times, segments, assigned captain and first officer.',
-                  dmlOperation: {
+                  dml_operation: {
                     testCaseId: 'd698dd19-82ea-48a7-bafe-b84ed1b3743d',
                     operation_type: 'SELECT',
                     sql: `SELECT f.flight_name, f.scheduled_departure, f.scheduled_arrival, f.origin, f.destination
@@ -78,7 +78,7 @@ ORDER BY f.scheduled_departure;`,
                   title: 'Flight Schedule Creation',
                   description:
                     'The schedule coordinator enters flight name, departure time, arrival time, origin, and destination on the flight creation screen, then selects aircraft number and pilot IDs. The system validates the input values before saving.',
-                  dmlOperation: {
+                  dml_operation: {
                     testCaseId: 'ca0dd9b5-f923-4f08-afb8-c441ad57fd0a',
                     operation_type: 'INSERT',
                     sql: `INSERT INTO flights (id, flight_name, origin, destination, scheduled_departure, scheduled_arrival, airplane_number, captain_id, first_officer_id)
@@ -98,7 +98,7 @@ VALUES ('fc70279f-04d3-41ea-97e9-3a1bb7ee358f', 'JAL101', 'Tokyo', 'Osaka', '202
                   title: 'Recording Actual Flight Times',
                   description:
                     'After operation, the operations coordinator opens the target flight details screen and enters the start time (actual departure) and end time (actual arrival) then saves.',
-                  dmlOperation: {
+                  dml_operation: {
                     testCaseId: '469fe899-d91e-4a2e-8ad4-756d5192185f',
                     operation_type: 'UPDATE',
                     sql: `UPDATE flights SET actual_start = '2024-06-01 08:05:00+09', actual_end = '2024-06-01 09:12:00+09'
@@ -127,7 +127,7 @@ WHERE id = 'fc70279f-04d3-41ea-97e9-3a1bb7ee358f';`,
                   title: 'Pilot (Captain/First Officer) Registration',
                   description:
                     'HR or operations manager selects "New Registration" from the pilot roster screen and enters pilot ID, name, and phone number then saves.',
-                  dmlOperation: {
+                  dml_operation: {
                     testCaseId: 'aad974e0-de84-4e49-b1c3-998a3d7a9905',
                     operation_type: 'INSERT',
                     sql: `INSERT INTO pilots (pilot_id, name, phone) VALUES
@@ -163,7 +163,7 @@ WHERE id = 'fc70279f-04d3-41ea-97e9-3a1bb7ee358f';`,
                   title: 'Referential Integrity Verification',
                   description:
                     'Verify that the system properly returns errors when attempting to delete aircraft with existing flights or pilots assigned to flights.',
-                  dmlOperation: {
+                  dml_operation: {
                     testCaseId: 'dbeab333-1119-4392-8f9c-f8f0a21c1dc2',
                     operation_type: 'DELETE',
                     sql: `DELETE FROM airplanes WHERE airplane_number = 'JA330C';`,
@@ -239,6 +239,19 @@ WHERE id = 'fc70279f-04d3-41ea-97e9-3a1bb7ee358f';`,
 
         ✅ **06/01/2024, 08:00:00 AM**
         > 3 rows inserted
+
+        ---
+
+        ##### **UPDATE** - Aircraft model name and seat count update (normal update scenario for existing data).
+
+        \`\`\`sql
+        UPDATE airplanes SET model = 'ATR42-700', capacity = 50 WHERE airplane_number = 'JA100A';
+        \`\`\`
+
+        **Execution History:**
+
+        ✅ **06/01/2024, 08:05:00 AM**
+        > 1 row updated
 
 
         #### 1.2. View Flights by Aircraft
@@ -523,7 +536,7 @@ WHERE id = 'fc70279f-04d3-41ea-97e9-3a1bb7ee358f';`,
                 {
                   title: 'Test Use Case',
                   description: 'Use case description',
-                  dmlOperation: {
+                  dml_operation: {
                     testCaseId: 'uc-1',
                     operation_type: 'UPDATE',
                     sql: 'UPDATE users SET status = $1',
@@ -556,7 +569,7 @@ WHERE id = 'fc70279f-04d3-41ea-97e9-3a1bb7ee358f';`,
                 {
                   title: 'Test Use Case',
                   description: 'Use case description',
-                  dmlOperation: {
+                  dml_operation: {
                     testCaseId: 'uc-1',
                     operation_type: 'DELETE',
                     sql: 'DELETE FROM users WHERE id = $1',
@@ -588,7 +601,7 @@ WHERE id = 'fc70279f-04d3-41ea-97e9-3a1bb7ee358f';`,
                 {
                   title: 'Test Use Case',
                   description: 'Use case description',
-                  dmlOperation: {
+                  dml_operation: {
                     testCaseId: 'uc-1',
                     operation_type: 'SELECT',
                     sql: 'SELECT * FROM users',
@@ -627,7 +640,7 @@ WHERE id = 'fc70279f-04d3-41ea-97e9-3a1bb7ee358f';`,
                 {
                   title: 'Test Use Case',
                   description: 'Use case description',
-                  dmlOperation: {
+                  dml_operation: {
                     testCaseId: 'uc-1',
                     operation_type: 'INSERT',
                     sql: 'INSERT INTO users (email) VALUES ($1)',
@@ -665,7 +678,7 @@ WHERE id = 'fc70279f-04d3-41ea-97e9-3a1bb7ee358f';`,
                 {
                   title: 'Test Use Case',
                   description: 'Use case description',
-                  dmlOperation: {
+                  dml_operation: {
                     testCaseId: 'uc-1',
                     operation_type: 'INSERT',
                     sql: 'INSERT INTO orders (user_id, total) VALUES ($1, $2)',
@@ -710,7 +723,7 @@ WHERE id = 'fc70279f-04d3-41ea-97e9-3a1bb7ee358f';`,
                 {
                   title: 'Test Use Case',
                   description: 'Use case description',
-                  dmlOperation: {
+                  dml_operation: {
                     testCaseId: 'uc-1',
                     operation_type: 'SELECT',
                     sql: 'SELECT * FROM products',
@@ -741,7 +754,7 @@ WHERE id = 'fc70279f-04d3-41ea-97e9-3a1bb7ee358f';`,
                 {
                   title: 'Test Use Case',
                   description: 'Use case description',
-                  dmlOperation: {
+                  dml_operation: {
                     testCaseId: 'uc-1',
                     operation_type: 'SELECT',
                     sql: '  \n  SELECT * FROM users  \n  ',
@@ -775,7 +788,7 @@ WHERE id = 'fc70279f-04d3-41ea-97e9-3a1bb7ee358f';`,
                 {
                   title: 'Single Operation Use Case',
                   description: 'This use case has one operation',
-                  dmlOperation: {
+                  dml_operation: {
                     testCaseId: 'uc-1',
                     operation_type: 'INSERT',
                     sql: 'INSERT INTO logs (message) VALUES ($1)',
@@ -796,6 +809,41 @@ WHERE id = 'fc70279f-04d3-41ea-97e9-3a1bb7ee358f';`,
       expect(result).not.toContain('##### Operation 1')
     })
 
+    it('should format use case with multiple DML operations', () => {
+      const artifact: Artifact = {
+        requirement_analysis: {
+          business_requirement: 'Test',
+          requirements: [
+            {
+              name: 'Test Feature',
+              description: ['Test description'],
+              type: 'functional',
+              test_cases: [
+                {
+                  title: 'Multi Operation Use Case',
+                  description: 'This use case has multiple operations',
+                  dml_operation: {
+                    testCaseId: 'uc-1',
+                    operation_type: 'INSERT',
+                    sql: 'INSERT INTO orders (user_id) VALUES ($1)',
+                    dml_execution_logs: [],
+                  },
+                },
+              ],
+            },
+          ],
+        },
+      }
+
+      const result = formatArtifactToMarkdown(artifact)
+
+      expect(result).toContain('##### **INSERT**')
+      expect(result).toContain('##### **UPDATE**')
+      expect(result).toContain('---')
+      expect(result).toContain('INSERT INTO orders')
+      expect(result).toContain('UPDATE inventory')
+    })
+
     it('should format use case without DML operations', () => {
       const artifact: Artifact = {
         requirement_analysis: {
@@ -809,8 +857,8 @@ WHERE id = 'fc70279f-04d3-41ea-97e9-3a1bb7ee358f';`,
                 {
                   title: 'No Operations Use Case',
                   description: 'This use case has no operations yet',
-                  dmlOperation: {
-                    testCaseId: 'dummy',
+                  dml_operation: {
+                    testCaseId: 'mock-1',
                     operation_type: 'SELECT',
                     sql: 'SELECT 1',
                     dml_execution_logs: [],
@@ -842,8 +890,8 @@ WHERE id = 'fc70279f-04d3-41ea-97e9-3a1bb7ee358f';`,
                 {
                   title: 'User Registration',
                   description: 'Register new users',
-                  dmlOperation: {
-                    testCaseId: 'dummy',
+                  dml_operation: {
+                    testCaseId: 'mock-1',
                     operation_type: 'SELECT',
                     sql: 'SELECT 1',
                     dml_execution_logs: [],
@@ -852,8 +900,8 @@ WHERE id = 'fc70279f-04d3-41ea-97e9-3a1bb7ee358f';`,
                 {
                   title: 'User Login',
                   description: 'Authenticate users',
-                  dmlOperation: {
-                    testCaseId: 'dummy',
+                  dml_operation: {
+                    testCaseId: 'mock-1',
                     operation_type: 'SELECT',
                     sql: 'SELECT 1',
                     dml_execution_logs: [],
@@ -862,8 +910,8 @@ WHERE id = 'fc70279f-04d3-41ea-97e9-3a1bb7ee358f';`,
                 {
                   title: 'Password Reset',
                   description: 'Reset user password',
-                  dmlOperation: {
-                    testCaseId: 'dummy',
+                  dml_operation: {
+                    testCaseId: 'mock-1',
                     operation_type: 'SELECT',
                     sql: 'SELECT 1',
                     dml_execution_logs: [],
@@ -895,8 +943,8 @@ WHERE id = 'fc70279f-04d3-41ea-97e9-3a1bb7ee358f';`,
                 {
                   title: 'UC 1.1',
                   description: 'First use case',
-                  dmlOperation: {
-                    testCaseId: 'dummy',
+                  dml_operation: {
+                    testCaseId: 'mock-1',
                     operation_type: 'SELECT',
                     sql: 'SELECT 1',
                     dml_execution_logs: [],
@@ -905,8 +953,8 @@ WHERE id = 'fc70279f-04d3-41ea-97e9-3a1bb7ee358f';`,
                 {
                   title: 'UC 1.2',
                   description: 'Second use case',
-                  dmlOperation: {
-                    testCaseId: 'dummy',
+                  dml_operation: {
+                    testCaseId: 'mock-1',
                     operation_type: 'SELECT',
                     sql: 'SELECT 1',
                     dml_execution_logs: [],
@@ -922,8 +970,8 @@ WHERE id = 'fc70279f-04d3-41ea-97e9-3a1bb7ee358f';`,
                 {
                   title: 'UC 2.1',
                   description: 'Third use case',
-                  dmlOperation: {
-                    testCaseId: 'dummy',
+                  dml_operation: {
+                    testCaseId: 'mock-1',
                     operation_type: 'SELECT',
                     sql: 'SELECT 1',
                     dml_execution_logs: [],
@@ -947,33 +995,6 @@ WHERE id = 'fc70279f-04d3-41ea-97e9-3a1bb7ee358f';`,
 
   describe('edge cases', () => {
     it('should handle all operation types', () => {
-      const operations: DmlOperation[] = [
-        {
-          testCaseId: 'uc-1',
-          operation_type: 'INSERT',
-          sql: 'INSERT INTO test',
-          dml_execution_logs: [],
-        },
-        {
-          testCaseId: 'uc-2',
-          operation_type: 'UPDATE',
-          sql: 'UPDATE test',
-          dml_execution_logs: [],
-        },
-        {
-          testCaseId: 'uc-3',
-          operation_type: 'DELETE',
-          sql: 'DELETE FROM test',
-          dml_execution_logs: [],
-        },
-        {
-          testCaseId: 'uc-4',
-          operation_type: 'SELECT',
-          sql: 'SELECT * FROM test',
-          dml_execution_logs: [],
-        },
-      ]
-
       const artifact: Artifact = {
         requirement_analysis: {
           business_requirement: 'Test all operations',
@@ -984,24 +1005,14 @@ WHERE id = 'fc70279f-04d3-41ea-97e9-3a1bb7ee358f';`,
               type: 'functional',
               test_cases: [
                 {
-                  title: 'INSERT Operation',
-                  description: 'Test INSERT operation',
-                  dmlOperation: operations[0]!,
-                },
-                {
-                  title: 'UPDATE Operation',
-                  description: 'Test UPDATE operation',
-                  dmlOperation: operations[1]!,
-                },
-                {
-                  title: 'DELETE Operation',
-                  description: 'Test DELETE operation',
-                  dmlOperation: operations[2]!,
-                },
-                {
-                  title: 'SELECT Operation',
-                  description: 'Test SELECT operation',
-                  dmlOperation: operations[3]!,
+                  title: 'All Operations',
+                  description: 'Test all DML operation types',
+                  dml_operation: {
+                    testCaseId: 'uc-1',
+                    operation_type: 'INSERT',
+                    sql: 'INSERT INTO test',
+                    dml_execution_logs: [],
+                  },
                 },
               ],
             },
@@ -1012,9 +1023,6 @@ WHERE id = 'fc70279f-04d3-41ea-97e9-3a1bb7ee358f';`,
       const result = formatArtifactToMarkdown(artifact)
 
       expect(result).toContain('**INSERT**')
-      expect(result).toContain('**UPDATE**')
-      expect(result).toContain('**DELETE**')
-      expect(result).toContain('**SELECT**')
     })
 
     it('should handle very long text content gracefully', () => {
@@ -1033,7 +1041,7 @@ WHERE id = 'fc70279f-04d3-41ea-97e9-3a1bb7ee358f';`,
                 {
                   title: 'Long Use Case',
                   description: longDescription,
-                  dmlOperation: {
+                  dml_operation: {
                     testCaseId: 'uc-1',
                     operation_type: 'SELECT',
                     sql: longSQL,
@@ -1072,7 +1080,7 @@ WHERE id = 'fc70279f-04d3-41ea-97e9-3a1bb7ee358f';`,
                 {
                   title: 'Use Case [with brackets]',
                   description: 'Description with `code` and <tags>',
-                  dmlOperation: {
+                  dml_operation: {
                     testCaseId: 'uc-1',
                     operation_type: 'SELECT',
                     sql: 'SELECT * FROM users WHERE name = "John\'s"',

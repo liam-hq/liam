@@ -1,4 +1,4 @@
-import type { FailedOperation, TestcaseDmlExecutionResult } from './types'
+import type { TestcaseDmlExecutionResult } from './types'
 
 function formatSqlForDisplay(sql: string, maxLength = 300): string {
   const cleanSql = sql.trim()
@@ -7,14 +7,6 @@ function formatSqlForDisplay(sql: string, maxLength = 300): string {
     return `${cleanSql.substring(0, maxLength)}...`
   }
   return cleanSql
-}
-
-function formatFailedOperation(failedOperation: FailedOperation): string {
-  let details = `#### 1. Error: \`${failedOperation.error}\`\n`
-  details += '```sql\n'
-  details += formatSqlForDisplay(failedOperation.sql)
-  details += '\n```'
-  return details
 }
 
 export function formatValidationErrors(
@@ -33,8 +25,11 @@ export function formatValidationErrors(
     .map((result) => {
       let details = `### ❌ **Test Case:** ${result.testCaseTitle}`
 
-      if (result.failedOperation) {
-        details += `\n${formatFailedOperation(result.failedOperation)}`
+      if (result.error && result.failedSql) {
+        details += `\n#### Error: \`${result.error}\``
+        details += '\n```sql\n'
+        details += formatSqlForDisplay(result.failedSql)
+        details += '\n```'
       }
 
       return details
