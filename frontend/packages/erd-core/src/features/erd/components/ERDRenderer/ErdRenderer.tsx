@@ -15,6 +15,7 @@ import {
   type FC,
   type ReactNode,
   useCallback,
+  useId,
   useMemo,
   useState,
 } from 'react'
@@ -36,6 +37,7 @@ import { CardinalityMarkers } from './CardinalityMarkers'
 import { CommandPalette, CommandPaletteProvider } from './CommandPalette'
 import { ErrorDisplay } from './ErrorDisplay'
 import { LeftPane } from './LeftPane'
+import { MarkerIdsProvider } from './MarkerIdsContext'
 import { RelationshipEdgeParticleMarker } from './RelationshipEdgeParticleMarker'
 import { TableDetailDrawer, TableDetailDrawerRoot } from './TableDetailDrawer'
 import { Toolbar } from './Toolbar'
@@ -61,6 +63,36 @@ export const ERDRenderer: FC<Props> = ({
 }) => {
   const [open, setOpen] = useState(defaultSidebarOpen)
   const [isResizing, setIsResizing] = useState(false)
+
+  // Generate unique IDs for SVG markers and gradients
+  const zeroOrOneLeftId = useId()
+  const zeroOrOneLeftHighlightId = useId()
+  const zeroOrOneRightId = useId()
+  const zeroOrOneRightHighlightId = useId()
+  const zeroOrManyLeftId = useId()
+  const zeroOrManyLeftHighlightId = useId()
+  const gradientId = useId()
+
+  const markerIds = useMemo(
+    () => ({
+      zeroOrOneLeftId,
+      zeroOrOneLeftHighlightId,
+      zeroOrOneRightId,
+      zeroOrOneRightHighlightId,
+      zeroOrManyLeftId,
+      zeroOrManyLeftHighlightId,
+      gradientId,
+    }),
+    [
+      zeroOrOneLeftId,
+      zeroOrOneLeftHighlightId,
+      zeroOrOneRightId,
+      zeroOrOneRightHighlightId,
+      zeroOrManyLeftId,
+      zeroOrManyLeftHighlightId,
+      gradientId,
+    ],
+  )
 
   const { showMode, showDiff } = useUserEditingOrThrow()
 
@@ -122,70 +154,79 @@ export const ERDRenderer: FC<Props> = ({
       open={open}
       onOpenChange={handleChangeOpen}
     >
-      <CardinalityMarkers />
-      <RelationshipEdgeParticleMarker />
-      <ToastProvider>
-        <CommandPaletteProvider>
-          {withAppBar && <AppBar />}
-          <ReactFlowProvider>
-            <ResizablePanelGroup
-              direction="horizontal"
-              className={styles.mainWrapper}
-              onLayout={setWidth}
-            >
-              <ResizablePanel
-                collapsible
-                defaultSize={open ? defaultPanelSizes[0] : 0}
-                minSize={isMobile ? 40 : 15}
-                maxSize={isMobile ? 80 : 30}
-                ref={leftPanelRef}
-                isResizing={isResizing}
-                onResize={(size: number) => {
-                  if (open && size < 15) {
-                    handleChangeOpen(false)
-                  }
-                }}
+      <CardinalityMarkers
+        zeroOrOneLeftId={zeroOrOneLeftId}
+        zeroOrOneLeftHighlightId={zeroOrOneLeftHighlightId}
+        zeroOrOneRightId={zeroOrOneRightId}
+        zeroOrOneRightHighlightId={zeroOrOneRightHighlightId}
+        zeroOrManyLeftId={zeroOrManyLeftId}
+        zeroOrManyLeftHighlightId={zeroOrManyLeftHighlightId}
+      />
+      <RelationshipEdgeParticleMarker gradientId={gradientId} />
+      <MarkerIdsProvider value={markerIds}>
+        <ToastProvider>
+          <CommandPaletteProvider>
+            {withAppBar && <AppBar />}
+            <ReactFlowProvider>
+              <ResizablePanelGroup
+                direction="horizontal"
+                className={styles.mainWrapper}
+                onLayout={setWidth}
               >
-                <LeftPane />
-              </ResizablePanel>
-              <ResizableHandle onDragging={(e) => setIsResizing(e)} />
-              <ResizablePanel
-                collapsible
-                defaultSize={defaultPanelSizes[1]}
-                isResizing={isResizing}
-              >
-                <main className={styles.main}>
-                  <div className={styles.triggerWrapper}>
-                    <SidebarTrigger />
-                  </div>
-                  <TableDetailDrawerRoot>
-                    {errorObjects.length > 0 && (
-                      <ErrorDisplay errors={errorObjects} />
-                    )}
-                    {errorObjects.length > 0 || (
-                      <>
-                        <ERDContent
-                          key={`${schemaKey}-${showMode}`}
-                          nodes={nodes}
-                          edges={edges}
-                          displayArea="main"
-                        />
-                        <TableDetailDrawer />
-                      </>
-                    )}
-                  </TableDetailDrawerRoot>
-                  {errorObjects.length === 0 && (
-                    <div className={styles.toolbarWrapper}>
-                      <Toolbar customActions={customToolbarActions} />
+                <ResizablePanel
+                  collapsible
+                  defaultSize={open ? defaultPanelSizes[0] : 0}
+                  minSize={isMobile ? 40 : 15}
+                  maxSize={isMobile ? 80 : 30}
+                  ref={leftPanelRef}
+                  isResizing={isResizing}
+                  onResize={(size: number) => {
+                    if (open && size < 15) {
+                      handleChangeOpen(false)
+                    }
+                  }}
+                >
+                  <LeftPane />
+                </ResizablePanel>
+                <ResizableHandle onDragging={(e) => setIsResizing(e)} />
+                <ResizablePanel
+                  collapsible
+                  defaultSize={defaultPanelSizes[1]}
+                  isResizing={isResizing}
+                >
+                  <main className={styles.main}>
+                    <div className={styles.triggerWrapper}>
+                      <SidebarTrigger />
                     </div>
-                  )}
-                </main>
-              </ResizablePanel>
-            </ResizablePanelGroup>
-            <CommandPalette />
-          </ReactFlowProvider>
-        </CommandPaletteProvider>
-      </ToastProvider>
+                    <TableDetailDrawerRoot>
+                      {errorObjects.length > 0 && (
+                        <ErrorDisplay errors={errorObjects} />
+                      )}
+                      {errorObjects.length > 0 || (
+                        <>
+                          <ERDContent
+                            key={`${schemaKey}-${showMode}`}
+                            nodes={nodes}
+                            edges={edges}
+                            displayArea="main"
+                          />
+                          <TableDetailDrawer />
+                        </>
+                      )}
+                    </TableDetailDrawerRoot>
+                    {errorObjects.length === 0 && (
+                      <div className={styles.toolbarWrapper}>
+                        <Toolbar customActions={customToolbarActions} />
+                      </div>
+                    )}
+                  </main>
+                </ResizablePanel>
+              </ResizablePanelGroup>
+              <CommandPalette />
+            </ReactFlowProvider>
+          </CommandPaletteProvider>
+        </ToastProvider>
+      </MarkerIdsProvider>
     </SidebarProvider>
   )
 }
