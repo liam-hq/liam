@@ -9,7 +9,7 @@ import { ERROR_MESSAGES } from '../../components/Chat/constants/chatConstants'
 import { MessageTupleManager } from './MessageTupleManager'
 import { parseSse } from './parseSse'
 
-type ChatRequest = {
+export type ChatRequest = {
   userInput: string
   designSessionId: string
   isDeepModelingEnabled: boolean

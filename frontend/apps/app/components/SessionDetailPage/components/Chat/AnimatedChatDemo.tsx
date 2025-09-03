@@ -1,6 +1,7 @@
 import { Button } from '@liam-hq/ui'
 import { type ComponentProps, useEffect, useState } from 'react'
 import { aTypicalConversation } from '../../factories'
+import type { ChatRequest } from '../../hooks/useStream/useStream'
 import type { TimelineItemEntry } from '../../types'
 import { Chat } from './Chat'
 
@@ -18,7 +19,13 @@ export const AnimatedChatDemo = ({
   const [isAnimating, setIsAnimating] = useState(false)
   const [currentIndex, setCurrentIndex] = useState(0)
 
-  const handleMessageSend = (entry: TimelineItemEntry) => {
+  const handleSendMessage = (params: ChatRequest) => {
+    const entry: TimelineItemEntry = {
+      id: `demo-${Date.now()}`,
+      type: 'user',
+      content: params.userInput,
+      timestamp: new Date(),
+    }
     setTimelineItems((prev) => [...prev, entry])
   }
 
@@ -95,7 +102,7 @@ export const AnimatedChatDemo = ({
       <Chat
         {...props}
         timelineItems={timelineItems}
-        onMessageSend={handleMessageSend}
+        onSendMessage={handleSendMessage}
       />
     </>
   )
