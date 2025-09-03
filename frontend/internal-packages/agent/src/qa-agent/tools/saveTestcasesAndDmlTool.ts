@@ -7,8 +7,8 @@ import { dmlOperationSchema } from '@liam-hq/artifact'
 import { v4 as uuidv4 } from 'uuid'
 import * as v from 'valibot'
 import { SSE_EVENTS } from '../../client'
-import { WorkflowTerminationError } from '../../shared/errorHandling'
-import { toJsonSchema } from '../../shared/jsonSchema'
+import { WorkflowTerminationError } from '../../utils/errorHandling'
+import { toJsonSchema } from '../../utils/jsonSchema'
 import { type Testcase, testcaseSchema } from '../types'
 
 const dmlOperationWithoutLogsSchema = v.omit(dmlOperationSchema, [
@@ -39,8 +39,7 @@ const getToolCallId = (config: RunnableConfig): string => {
   const configParseResult = v.safeParse(configSchema, config)
   if (!configParseResult.success) {
     throw new WorkflowTerminationError(
-      new Error('Tool call ID not found in config'),
-      'saveTestcasesAndDmlTool',
+      'saveTestcasesAndDmlTool: Tool call ID not found in config',
     )
   }
   return configParseResult.output.toolCall.id
@@ -51,12 +50,9 @@ export const saveTestcasesAndDmlTool: StructuredTool = tool(
     const parsed = v.safeParse(saveTestcasesAndDmlToolSchema, input)
     if (!parsed.success) {
       throw new WorkflowTerminationError(
-        new Error(
-          `Invalid tool input: ${parsed.issues
-            .map((issue) => issue.message)
-            .join(', ')}`,
-        ),
-        'saveTestcasesAndDmlTool',
+        `saveTestcasesAndDmlTool: Invalid tool input: ${parsed.issues
+          .map((issue) => issue.message)
+          .join(', ')}`,
       )
     }
 
@@ -64,8 +60,7 @@ export const saveTestcasesAndDmlTool: StructuredTool = tool(
 
     if (testcasesWithDml.length === 0) {
       throw new WorkflowTerminationError(
-        new Error('No test cases provided to save.'),
-        'saveTestcasesAndDmlTool',
+        'saveTestcasesAndDmlTool: No test cases provided to save.',
       )
     }
 

@@ -1,7 +1,7 @@
 import type { RunnableConfig } from '@langchain/core/runnables'
-import { getConfigurable } from '../../chat/workflow/shared/getConfigurable'
-import { WorkflowTerminationError } from '../../shared/errorHandling'
 import { convertSchemaToText } from '../../utils/convertSchemaToText'
+import { WorkflowTerminationError } from '../../utils/errorHandling'
+import { getConfigurable } from '../../utils/getConfigurable'
 import { invokePmAnalysisAgent } from '../invokePmAnalysisAgent'
 import type { PmAgentState } from '../pmAgentAnnotations'
 
@@ -16,8 +16,7 @@ export async function analyzeRequirementsNode(
   const configurableResult = getConfigurable(config)
   if (configurableResult.isErr()) {
     throw new WorkflowTerminationError(
-      configurableResult.error,
-      'analyzeRequirementsNode',
+      `analyzeRequirementsNode: ${configurableResult.error.message}`,
     )
   }
 
@@ -31,8 +30,7 @@ export async function analyzeRequirementsNode(
 
   if (analysisResult.isErr()) {
     throw new WorkflowTerminationError(
-      analysisResult.error,
-      'analyzeRequirementsNode',
+      `analyzeRequirementsNode: ${analysisResult.error.message}`,
     )
   }
 

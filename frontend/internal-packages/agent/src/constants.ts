@@ -1,0 +1,1 @@
+export const DEFAULT_RECURSION_LIMIT = 50

@@ -1,5 +1,5 @@
 import { type BaseMessage, isBaseMessage } from '@langchain/core/messages'
-import type { WorkflowConfigurable } from './chat/workflow/types'
+import type { WorkflowConfigurable } from './types'
 
 export async function getMessages(config: {
   configurable: WorkflowConfigurable

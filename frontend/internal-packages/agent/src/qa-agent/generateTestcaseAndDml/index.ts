@@ -5,9 +5,9 @@ import {
 } from '@langchain/core/messages'
 import { ChatOpenAI } from '@langchain/openai'
 import { ResultAsync } from 'neverthrow'
-import type { WorkflowState } from '../../chat/workflow/types'
-import { WorkflowTerminationError } from '../../shared/errorHandling'
+import type { WorkflowState } from '../../types'
 import { convertSchemaToText } from '../../utils/convertSchemaToText'
+import { WorkflowTerminationError } from '../../utils/errorHandling'
 import { removeReasoningFromMessages } from '../../utils/messageCleanup'
 import { saveTestcasesAndDmlTool } from '../tools/saveTestcasesAndDmlTool'
 import { humanPromptTemplate, SYSTEM_PROMPT } from './prompt'
@@ -89,10 +89,7 @@ export async function generateTestcaseAndDmlNode(
 ): Promise<{ messages: BaseMessage[] }> {
   if (!state.analyzedRequirements) {
     throw new WorkflowTerminationError(
-      new Error(
-        'No analyzed requirements found. Cannot generate test cases and DML.',
-      ),
-      'generateTestcaseAndDmlNode',
+      'generateTestcaseAndDmlNode: No analyzed requirements found. Cannot generate test cases and DML.',
     )
   }
 
@@ -119,8 +116,7 @@ export async function generateTestcaseAndDmlNode(
 
   if (result.isErr()) {
     throw new WorkflowTerminationError(
-      result.error,
-      'generateTestcaseAndDmlNode',
+      `generateTestcaseAndDmlNode: ${result.error.message}`,
     )
   }
 

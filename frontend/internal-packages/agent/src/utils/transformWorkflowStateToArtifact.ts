@@ -4,7 +4,7 @@ import type {
   FunctionalRequirement,
   NonFunctionalRequirement,
 } from '@liam-hq/artifact'
-import type { Testcase } from '../../../qa-agent/types'
+import type { Testcase } from '../qa-agent/types'
 import type { WorkflowState } from '../types'
 
 /**
@@ -32,8 +32,8 @@ const convertAnalyzedRequirementsToArtifact = (
     const functionalRequirement: FunctionalRequirement = {
       type: 'functional',
       name: category,
-      description: items, // Keep as array
-      test_cases: [], // Will be populated later if testcases exist
+      description: items,
+      test_cases: [],
     }
     requirements.push(functionalRequirement)
   }
@@ -44,7 +44,7 @@ const convertAnalyzedRequirementsToArtifact = (
     const nonFunctionalRequirement: NonFunctionalRequirement = {
       type: 'non_functional',
       name: category,
-      description: items, // Keep as array
+      description: items,
     }
     requirements.push(nonFunctionalRequirement)
   }
@@ -161,7 +161,7 @@ const groupTestcasesByRequirement = (testcases: Testcase[]) => {
       groups[category] = {
         type: testcase.requirementType,
         testcases: [],
-        description: testcase.requirement, // Use the first requirement description
+        description: testcase.requirement,
       }
     }
 

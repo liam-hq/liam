@@ -1,4 +1,4 @@
-import { WorkflowTerminationError } from '../../shared/errorHandling'
+import { WorkflowTerminationError } from '../../utils/errorHandling'
 import { hasToolCalls } from '../../utils/hasToolCalls'
 import type { PmAgentState } from '../pmAgentAnnotations'
 
@@ -23,10 +23,7 @@ export const routeAfterAnalyzeRequirements = (
   // 2. If retry limit exceeded, throw error
   if (analyzedRequirementsRetryCount >= MAX_ANALYSIS_RETRY_COUNT) {
     throw new WorkflowTerminationError(
-      new Error(
-        `Failed to analyze requirements after ${MAX_ANALYSIS_RETRY_COUNT} attempts`,
-      ),
-      'routeAfterAnalyzeRequirements',
+      `routeAfterAnalyzeRequirements: Failed to analyze requirements after ${MAX_ANALYSIS_RETRY_COUNT} attempts`,
     )
   }
 

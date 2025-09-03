@@ -1,6 +1,6 @@
 import { Annotation, END, MessagesAnnotation } from '@langchain/langgraph'
 import type { Schema } from '@liam-hq/schema'
-import type { Testcase } from '../../../qa-agent/types'
+import type { Testcase } from './qa-agent/types'
 
 export const workflowAnnotation = Annotation.Root({
   ...MessagesAnnotation.spec,

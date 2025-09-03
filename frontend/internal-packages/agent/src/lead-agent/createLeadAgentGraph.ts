@@ -1,7 +1,7 @@
 import { END, START, StateGraph } from '@langchain/langgraph'
 import type { BaseCheckpointSaver } from '@langchain/langgraph-checkpoint'
-import { workflowAnnotation } from '../chat/workflow/shared/workflowAnnotation'
-import { RETRY_POLICY } from '../shared/errorHandling'
+import { workflowAnnotation } from '../annotations'
+import { RETRY_POLICY } from '../utils/errorHandling'
 import { classifyMessage } from './classifyMessage'
 import { summarizeWorkflow } from './summarizeWorkflow'
 
