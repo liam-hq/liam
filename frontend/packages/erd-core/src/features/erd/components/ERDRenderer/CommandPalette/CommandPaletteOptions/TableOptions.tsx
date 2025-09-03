@@ -1,4 +1,4 @@
-import { Table2 } from '@liam-hq/ui'
+import { KeyRound, Table2 } from '@liam-hq/ui'
 import { Command } from 'cmdk'
 import { type FC, useCallback, useEffect } from 'react'
 import { useSchemaOrThrow } from '../../../../../../stores'
@@ -25,8 +25,12 @@ export const TableOptions: FC<Props> = ({ suggestion }) => {
   const { selectTable } = useTableSelection()
 
   const goToERD = useCallback(
-    (tableName: string) => {
-      selectTable({ tableId: tableName, displayArea: 'main' })
+    (tableName: string, column?: string) => {
+      selectTable({
+        tableId: tableName,
+        columnName: column ?? null,
+        displayArea: 'main',
+      })
       setOpen(false)
     },
     [selectTable, setOpen],
@@ -58,27 +62,50 @@ export const TableOptions: FC<Props> = ({ suggestion }) => {
   return (
     <Command.Group heading="Tables">
       {Object.values(schema.current.tables).map((table) => (
-        <Command.Item
-          key={table.name}
-          value={getSuggestionText({ type: 'table', name: table.name })}
-        >
-          <a
-            className={styles.item}
-            href={getTableLinkHref(table.name)}
-            onClick={(event) => {
-              // Do not call preventDefault to allow the default link behavior when ⌘ key is pressed
-              if (event.ctrlKey || event.metaKey) {
-                return
-              }
-
-              event.preventDefault()
-              goToERD(table.name)
-            }}
+        <>
+          <Command.Item
+            key={table.name}
+            value={getSuggestionText({ type: 'table', name: table.name })}
           >
-            <Table2 className={styles.itemIcon} />
-            <span className={styles.itemText}>{table.name}</span>
-          </a>
-        </Command.Item>
+            <a
+              className={styles.item}
+              href={getTableLinkHref(table.name)}
+              onClick={(event) => {
+                // Do not call preventDefault to allow the default link behavior when ⌘ key is pressed
+                if (event.ctrlKey || event.metaKey) {
+                  return
+                }
+
+                event.preventDefault()
+                goToERD(table.name)
+              }}
+            >
+              <Table2 className={styles.itemIcon} />
+              <span className={styles.itemText}>{table.name}</span>
+            </a>
+          </Command.Item>
+          <Command.Item
+            key={table.name}
+            value={getSuggestionText({ type: 'table', name: table.name })}
+          >
+            <a
+              className={styles.item}
+              href={getTableLinkHref(table.name)}
+              onClick={(event) => {
+                // Do not call preventDefault to allow the default link behavior when ⌘ key is pressed
+                if (event.ctrlKey || event.metaKey) {
+                  return
+                }
+
+                event.preventDefault()
+                goToERD(table.name, 'created_at')
+              }}
+            >
+              <KeyRound className={styles.itemIcon} />
+              <span className={styles.itemText}>created_at</span>
+            </a>
+          </Command.Item>
+        </>
       ))}
     </Command.Group>
   )

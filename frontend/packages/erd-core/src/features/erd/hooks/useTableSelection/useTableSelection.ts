@@ -7,7 +7,7 @@ import { highlightNodesAndEdges } from '../../utils'
 type SelectTableParams = {
   tableId: string
   displayArea: DisplayArea
-  columnName?: string
+  columnName?: string | null
 }
 
 export const useTableSelection = () => {
