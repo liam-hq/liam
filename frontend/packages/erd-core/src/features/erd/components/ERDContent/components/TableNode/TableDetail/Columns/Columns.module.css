@@ -1,3 +1,4 @@
 .itemWrapper {
   border-bottom: 1px solid var(--global-border);
+  scroll-margin-top: 41px;
 }
