@@ -1,11 +1,5 @@
-import type { StaticImageData } from 'next/image'
 import type { FC } from 'react'
-import copyLink from './assets/copy-link.mp4'
-import showAllFields from './assets/show-all-fields.png'
-import showKeyOnly from './assets/show-key-only.png'
-import showTableName from './assets/show-table-name.png'
-import tidyUp from './assets/tidy-up.mp4'
-import zoomToFit from './assets/zoom-to-fit.mp4'
+import { ASSET_URLS } from '../../../../../../config/assetUrls'
 import styles from './CommandPalettePreview.module.css'
 
 type Props = {
@@ -13,19 +7,16 @@ type Props = {
 }
 
 const COMMAND_VIDEO_SOURCE: Record<string, string> = {
-  'copy link': copyLink,
-  'Zoom to Fit': zoomToFit,
-  'Tidy Up': tidyUp,
+  'copy link': ASSET_URLS.videos.copyLink,
+  'Zoom to Fit': ASSET_URLS.videos.zoomToFit,
+  'Tidy Up': ASSET_URLS.videos.tidyUp,
 }
 
-const COMMAND_IMAGE_SOURCE: Record<string, string | StaticImageData> = {
-  'Show All Fields': showAllFields,
-  'Show Key Only': showKeyOnly,
-  'Show Table Name': showTableName,
+const COMMAND_IMAGE_SOURCE: Record<string, string> = {
+  'Show All Fields': ASSET_URLS.images.showAllFields,
+  'Show Key Only': ASSET_URLS.images.showKeyOnly,
+  'Show Table Name': ASSET_URLS.images.showTableName,
 }
-
-const getImageSrc = (imageSrc: string | StaticImageData) =>
-  typeof imageSrc === 'string' ? imageSrc : imageSrc.src
 
 export const CommandPreview: FC<Props> = ({ commandName }) => {
   return (
@@ -43,7 +34,7 @@ export const CommandPreview: FC<Props> = ({ commandName }) => {
       )}
       {COMMAND_IMAGE_SOURCE[commandName] && (
         <img
-          src={getImageSrc(COMMAND_IMAGE_SOURCE[commandName])}
+          src={COMMAND_IMAGE_SOURCE[commandName]}
           className={styles.image}
           alt={`Demonstration of the ${commandName} command execution result`}
         />
