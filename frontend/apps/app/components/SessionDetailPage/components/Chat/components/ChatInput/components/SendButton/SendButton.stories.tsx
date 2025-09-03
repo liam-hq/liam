@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/nextjs'
-import { useState } from 'react'
+import { useId, useState } from 'react'
 import { SendButton } from './SendButton'
 
 const meta = {
@@ -63,19 +63,20 @@ export const Interactive: Story = {
     onClick: () => alert('Button clicked!'),
   },
   render: ({ hasContent: initialHasContent, ...args }) => {
+    const checkboxId = useId()
     const [hasContent, setHasContent] = useState(initialHasContent)
 
     return (
       <div style={{ width: '300px', padding: '40px 20px' }}>
         <div style={{ marginBottom: '20px' }}>
           <label
-            htmlFor="has-content-checkbox"
+            htmlFor={checkboxId}
             style={{ color: 'white', marginRight: '10px' }}
           >
             Has Content:
           </label>
           <input
-            id="has-content-checkbox"
+            id={checkboxId}
             type="checkbox"
             checked={hasContent}
             onChange={(e) => setHasContent(e.target.checked)}

@@ -8,6 +8,16 @@ export type SessionMode = 'github' | 'upload' | 'url'
 type Props = {
   selectedMode: SessionMode
   onModeChange: (mode: SessionMode) => void
+  tabIds?: {
+    github: string
+    upload: string
+    url: string
+  }
+  panelIds?: {
+    github: string
+    upload: string
+    url: string
+  }
 }
 
 const modes: { mode: SessionMode; label: string; icon: React.ReactElement }[] =
@@ -32,6 +42,8 @@ const modes: { mode: SessionMode; label: string; icon: React.ReactElement }[] =
 export const SessionModeSelector: FC<Props> = ({
   selectedMode,
   onModeChange,
+  tabIds,
+  panelIds,
 }) => {
   const buttonsRef = useRef<(HTMLButtonElement | null)[]>([])
   const backgroundRef = useRef<HTMLDivElement>(null)
@@ -120,9 +132,11 @@ export const SessionModeSelector: FC<Props> = ({
             ref={setButtonRef(currentIndex)}
             type="button"
             role="tab"
-            id={`${modeItem.mode}-tab`}
+            id={tabIds ? tabIds[modeItem.mode] : `${modeItem.mode}-tab`}
             aria-selected={selectedMode === modeItem.mode}
-            aria-controls={`${modeItem.mode}-panel`}
+            aria-controls={
+              panelIds ? panelIds[modeItem.mode] : `${modeItem.mode}-panel`
+            }
             tabIndex={selectedMode === modeItem.mode ? 0 : -1}
             className={clsx(
               styles.modeButton,

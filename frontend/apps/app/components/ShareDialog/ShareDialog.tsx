@@ -21,7 +21,7 @@ import {
   Spinner,
   XIcon,
 } from '@liam-hq/ui'
-import { type FC, useRef, useState } from 'react'
+import { type FC, useId, useRef, useState } from 'react'
 import { usePublicShareServerAction } from '@/hooks/usePublicShareServerAction'
 import { urlgen } from '@/libs/routes'
 import styles from './ShareDialog.module.css'
@@ -39,6 +39,7 @@ export const ShareDialog: FC<Props> = ({
   designSessionId,
   initialIsPublic = false,
 }) => {
+  const visibilityTitleId = useId()
   const { isPublic, loading, togglePublicShare } = usePublicShareServerAction({
     designSessionId,
     initialIsPublic,
@@ -118,10 +119,7 @@ export const ShareDialog: FC<Props> = ({
 
               {/* Visibility */}
               <div className={styles.visibilitySection}>
-                <h4
-                  id="visibility-section-title"
-                  className={styles.sectionTitle}
-                >
+                <h4 id={visibilityTitleId} className={styles.sectionTitle}>
                   <span>Visibility</span>
                   {loading && <Spinner size="12" />}
                 </h4>
@@ -133,7 +131,7 @@ export const ShareDialog: FC<Props> = ({
                           type="button"
                           className={styles.visibilityDropdown}
                           disabled={loading}
-                          aria-labelledby="visibility-section-title"
+                          aria-labelledby={visibilityTitleId}
                         >
                           <span className={styles.dropdownValue}>
                             {isPublic ? (

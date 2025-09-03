@@ -1,6 +1,6 @@
 'use client'
 
-import { type FC, useEffect, useRef, useState } from 'react'
+import { type FC, useEffect, useId, useRef, useState } from 'react'
 import type { Projects } from '@/components/CommonLayout/AppBar/ProjectsDropdownMenu/services/getProjects'
 import { createAccessibleOpacityTransition } from '@/utils/accessibleTransitions'
 import { GitHubSessionForm } from '../GitHubSessionForm'
@@ -18,6 +18,12 @@ export const SessionFormContainer: FC<Props> = ({
   projects,
   defaultProjectId,
 }) => {
+  const githubTabId = useId()
+  const uploadTabId = useId()
+  const urlTabId = useId()
+  const githubPanelId = useId()
+  const uploadPanelId = useId()
+  const urlPanelId = useId()
   const [mode, setMode] = useState<SessionMode>('github')
   const [isTransitioning, setIsTransitioning] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
@@ -111,13 +117,23 @@ export const SessionFormContainer: FC<Props> = ({
       <SessionModeSelector
         selectedMode={mode}
         onModeChange={handleModeChange}
+        tabIds={{
+          github: githubTabId,
+          upload: uploadTabId,
+          url: urlTabId,
+        }}
+        panelIds={{
+          github: githubPanelId,
+          upload: uploadPanelId,
+          url: urlPanelId,
+        }}
       />
       <div ref={containerRef} className={styles.formContainer}>
         {mode === 'github' && (
           <div
             role="tabpanel"
-            id="github-panel"
-            aria-labelledby="github-tab"
+            id={githubPanelId}
+            aria-labelledby={githubTabId}
             style={createAccessibleOpacityTransition(!isTransitioning)}
           >
             <GitHubSessionForm
@@ -129,8 +145,8 @@ export const SessionFormContainer: FC<Props> = ({
         {mode === 'upload' && (
           <div
             role="tabpanel"
-            id="upload-panel"
-            aria-labelledby="upload-tab"
+            id={uploadPanelId}
+            aria-labelledby={uploadTabId}
             style={createAccessibleOpacityTransition(!isTransitioning)}
           >
             <UploadSessionForm />
@@ -139,8 +155,8 @@ export const SessionFormContainer: FC<Props> = ({
         {mode === 'url' && (
           <div
             role="tabpanel"
-            id="url-panel"
-            aria-labelledby="url-tab"
+            id={urlPanelId}
+            aria-labelledby={urlTabId}
             style={createAccessibleOpacityTransition(!isTransitioning)}
           >
             <UrlSessionForm />

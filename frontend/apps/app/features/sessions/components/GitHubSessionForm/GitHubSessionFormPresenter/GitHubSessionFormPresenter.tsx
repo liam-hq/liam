@@ -1,7 +1,7 @@
 import { ArrowTooltipProvider } from '@liam-hq/ui'
 import clsx from 'clsx'
 import type { ChangeEvent, DragEvent, FC } from 'react'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useId, useRef, useState } from 'react'
 import type { Projects } from '@/components/CommonLayout/AppBar/ProjectsDropdownMenu/services/getProjects'
 import { createAccessibleOpacityTransition } from '@/utils/accessibleTransitions'
 import { AttachmentPreview } from '../../shared/AttachmentPreview'
@@ -40,6 +40,7 @@ export const GitHubSessionFormPresenter: FC<Props> = ({
   isTransitioning = false,
   schemaFilePath,
 }) => {
+  const textareaId = useId()
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const formRef = useRef<HTMLFormElement>(null)
   const [hasContent, setHasContent] = useState(false)
@@ -154,7 +155,7 @@ export const GitHubSessionFormPresenter: FC<Props> = ({
             <div className={styles.formGroup}>
               <div className={styles.inputWrapper}>
                 <textarea
-                  id="initialMessage"
+                  id={textareaId}
                   name="initialMessage"
                   ref={textareaRef}
                   onChange={handleTextareaChange}

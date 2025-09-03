@@ -1,6 +1,6 @@
 import { Button, RemoveButton } from '@liam-hq/ui'
 import clsx from 'clsx'
-import { type ChangeEvent, type FC, useRef, useState } from 'react'
+import { type ChangeEvent, type FC, useId, useRef, useState } from 'react'
 import type { FormatType } from '../../../../../components/FormatIcon/FormatIcon'
 import { createAccessibleOpacityTransition } from '../../../../../utils/accessibleTransitions'
 import {
@@ -203,6 +203,7 @@ const renderUrlInputSection = (
   handlers: ReturnType<typeof useUrlFormHandlers>,
   schemaFetch: ReturnType<typeof useSchemaFetch>,
   isPending: boolean,
+  schemaUrlId: string,
 ) => {
   const {
     urlPath,
@@ -220,7 +221,7 @@ const renderUrlInputSection = (
       <div className={styles.urlInputWrapper}>
         <div className={styles.inputContainer ?? ''}>
           <input
-            id="schemaUrl"
+            id={schemaUrlId}
             name="schemaUrl"
             type="text"
             value={urlPath}
@@ -295,6 +296,8 @@ export const URLSessionFormPresenter: FC<Props> = ({
   formAction,
   isTransitioning = false,
 }) => {
+  const schemaUrlId = useId()
+  const initialMessageId = useId()
   const state = useUrlFormState()
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const formRef = useRef<HTMLFormElement>(null)
@@ -356,7 +359,13 @@ export const URLSessionFormPresenter: FC<Props> = ({
           />
         )}
         <input type="hidden" name="schemaFormat" value={state.selectedFormat} />
-        {renderUrlInputSection(state, handlers, schemaFetch, isPending)}
+        {renderUrlInputSection(
+          state,
+          handlers,
+          schemaFetch,
+          isPending,
+          schemaUrlId,
+        )}
         <div
           className={clsx(
             styles.inputSection ?? '',
@@ -374,7 +383,7 @@ export const URLSessionFormPresenter: FC<Props> = ({
           <div className={styles.textareaWrapper ?? ''}>
             <textarea
               ref={textareaRef}
-              id="initialMessage"
+              id={initialMessageId}
               name="initialMessage"
               placeholder="Enter your database design instructions. For example: Design a database for an e-commerce site that manages users, products, and orders..."
               value={state.textContent}
