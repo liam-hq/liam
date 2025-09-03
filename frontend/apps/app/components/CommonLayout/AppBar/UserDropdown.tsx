@@ -64,7 +64,7 @@ export const UserDropdown: FC<Props> = ({ avatarUrl, userName, userEmail }) => {
       deleteCookie('organizationId')
 
       // Redirect with success parameter
-      router.push('/app/login?logout=success')
+      router.push('/login?logout=success')
     } else {
       toast({
         title: 'Logout failed',

@@ -3,10 +3,25 @@
 import { Button } from '@liam-hq/ui'
 import { add, getTime, isAfter } from 'date-fns'
 import { type FC, useCallback, useEffect, useState } from 'react'
-import { GTM_CONSENT_MODE_KEY, updateConsent } from '../../libs/gtm'
 import styles from './CookieConsent.module.css'
 
 const COOKIE_CONSENT_EXPIRE_KEY = 'cookieConsentExpire'
+const GTM_CONSENT_MODE_KEY = 'gtmConsentMode'
+
+function updateConsent(consent: 'granted' | 'denied' | undefined) {
+  const consentMode = {
+    ad_storage: consent,
+    analytics_storage: consent,
+    personalization_storage: consent,
+    functionality_storage: consent,
+    security_storage: consent,
+  }
+
+  if (typeof window !== 'undefined' && window.gtag) {
+    window.gtag('consent', 'update', consentMode)
+  }
+  localStorage.setItem(GTM_CONSENT_MODE_KEY, JSON.stringify(consentMode))
+}
 
 export const CookieConsent: FC = () => {
   const [open, setOpen] = useState(false)

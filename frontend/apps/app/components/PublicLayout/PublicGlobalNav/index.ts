@@ -1,1 +1,0 @@
-export { PublicGlobalNav } from './PublicGlobalNav'

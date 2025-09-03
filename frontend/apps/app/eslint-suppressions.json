@@ -1,10 +1,10 @@
 {
-  "app/(app)/app/(with-project-and-branch)/projects/[projectId]/ref/[branchOrCommit]/layout.module.css": {
+  "app/(with-project-and-branch)/projects/[projectId]/ref/[branchOrCommit]/layout.module.css": {
     "css-modules-kit/no-unused-class-names": {
       "count": 2
     }
   },
-  "app/(app)/app/confirm/route.ts": {
+  "app/confirm/route.ts": {
     "@typescript-eslint/consistent-type-assertions": {
       "count": 1
     }

@@ -90,10 +90,7 @@ export const inviteMember = async (formData: FormData) => {
     } as const
   }
 
-  revalidatePath(
-    `/app/organizations/${organizationId}/settings/members`,
-    'page',
-  )
+  revalidatePath(`/organizations/${organizationId}/settings/members`, 'page')
 
   return result.output
 }

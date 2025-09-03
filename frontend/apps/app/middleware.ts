@@ -4,8 +4,13 @@ import { NextResponse } from 'next/server'
 import { ROUTE_PREFIXES } from './libs/routes/constants'
 
 export async function updateSession(request: NextRequest) {
-  // Skip middleware if path doesn't start with /app
-  if (!request.nextUrl.pathname.startsWith(ROUTE_PREFIXES.APP)) {
+  // Skip middleware for public routes, static files, and API routes
+  if (
+    request.nextUrl.pathname.startsWith('/api') ||
+    request.nextUrl.pathname.startsWith('/erd') ||
+    request.nextUrl.pathname.startsWith('/_next') ||
+    request.nextUrl.pathname.startsWith('/favicon.ico')
+  ) {
     return NextResponse.next()
   }
 
