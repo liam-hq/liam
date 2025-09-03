@@ -1,3 +1,4 @@
+import type { StoredMessage } from '@langchain/core/messages'
 import { schemaSchema } from '@liam-hq/schema'
 import { notFound } from 'next/navigation'
 import type { ReactElement } from 'react'
@@ -7,6 +8,33 @@ import { PublicLayout } from '../PublicLayout'
 import { ViewModeProvider } from '../SessionDetailPage/contexts/ViewModeContext'
 import { SessionDetailPageClient } from '../SessionDetailPage/SessionDetailPageClient'
 import { buildPrevSchema } from '../SessionDetailPage/services/buildPrevSchema/server/buildPrevSchema'
+
+let messageIdCounter = 0
+const generateMessageId = () => {
+  messageIdCounter++
+  return `public-message-${messageIdCounter}`
+}
+
+const convertTimelineItemsToStoredMessages = (
+  timelineItems: Array<{
+    id?: string
+    content?: string
+    type?: string
+  }> | null,
+): StoredMessage[] => {
+  return (timelineItems || []).map((item) => ({
+    type: item.type === 'user' ? 'human' : 'ai',
+    data: {
+      content: item.content ?? '',
+      role: item.type === 'user' ? 'human' : 'ai',
+      id: item.id ?? generateMessageId(),
+      additional_kwargs: {},
+      response_metadata: {},
+      name: undefined,
+      tool_call_id: undefined,
+    },
+  }))
+}
 
 type Props = {
   designSessionId: string
@@ -122,7 +150,7 @@ export const PublicSessionDetailPage = async ({
           designSessionWithTimelineItems={designSessionWithTimelineItems}
           // TODO: Fetch actual messages using getMessages() once organizationId becomes optional in createSupabaseRepositories
           // Currently blocked: Public sessions don't have organizationId, but createSupabaseRepositories requires it
-          initialMessages={[]}
+          initialMessages={convertTimelineItemsToStoredMessages(timelineItems)}
           initialDisplayedSchema={initialSchema}
           initialPrevSchema={initialPrevSchema}
           initialVersions={versions
