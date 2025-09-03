@@ -80,7 +80,11 @@ export const schemaDesignTool: StructuredTool = tool(
       const errorDetails = parsed.issues
         .map((issue) => `${issue.path?.join('.')}: ${issue.message}`)
         .join(', ')
-      return `Input validation failed: ${errorDetails}. Please check your operations format and ensure all required fields are provided correctly.`
+      // LangGraph tool nodes require throwing errors to trigger retry mechanism
+      // eslint-disable-next-line no-throw-error/no-throw-error
+      throw new Error(
+        `Input validation failed: ${errorDetails}. Please check your operations format and ensure all required fields are provided correctly.`,
+      )
     }
 
     const schemaResult = await repositories.schema.getSchema(designSessionId)

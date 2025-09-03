@@ -179,9 +179,8 @@ describe('schemaDesignTool', () => {
       operations: 'invalid-operations', // Should be an array
     }
 
-    // LangChain validates schema before our tool function is called
     await expect(schemaDesignTool.invoke(input, config)).rejects.toThrow(
-      'Received tool input did not match expected schema',
+      'Input validation failed',
     )
   })
 
