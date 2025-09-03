@@ -36,7 +36,7 @@ async function getAuthCallbackUrl({
   }
 
   url = url.endsWith('/') ? url : `${url}/`
-  return `${url}app/auth/callback/${provider}?next=${encodeURIComponent(next)}`
+  return `${url}auth/callback/${provider}?next=${encodeURIComponent(next)}`
 }
 
 export async function loginByGithub(formData: FormData) {
