@@ -1,6 +1,8 @@
 // Asset CDN Configuration
-// TODO: Replace with actual CDN URLs when deployed
-const CDN_BASE_URL = 'https://assets.liam-hq.com/erd-core/2025-01'
+// TODO: Replace with actual CDN URL when deployed to Vercel
+// Development: http://localhost:3000 (if running locally)
+// Production: https://liam-assets.vercel.app or custom domain
+const CDN_BASE_URL = 'https://liam-assets.vercel.app/erd-core/2025-01'
 
 export const ASSET_URLS = {
   videos: {

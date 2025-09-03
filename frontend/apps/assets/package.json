@@ -1,0 +1,14 @@
+{
+  "name": "@liam-hq/assets",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Static assets CDN for Liam ERD",
+  "scripts": {
+    "build": "node scripts/build.js",
+    "clean": "rm -rf .vercel/output"
+  },
+  "devDependencies": {
+    "@types/node": "22.17.1",
+    "fs-extra": "11.2.0"
+  }
+}
