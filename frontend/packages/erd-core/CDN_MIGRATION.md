@@ -34,7 +34,7 @@ The following files need to be uploaded to the CDN:
 
 ## Next Steps
 1. Deploy assets to Vercel static hosting (as discussed in issue #5562)
-2. Set up proper CDN domain (e.g., `assets.liam-hq.com`)
+2. Set up proper CDN domain (e.g., `assets.liambx.com`)
 3. Update the `CDN_BASE_URL` in `assetUrls.ts` with the actual URL
 4. Consider implementing fallback mechanism for offline usage (future enhancement)
 

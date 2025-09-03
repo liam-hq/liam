@@ -45,8 +45,8 @@ pnpm build
 This app is automatically deployed to Vercel on push to main branch.
 
 ### Production URL
-- Base URL: `https://assets.liam-hq.com` (to be configured)
-- Example asset: `https://assets.liam-hq.com/erd-core/2025-01/videos/copy-link.mp4`
+- Base URL: `https://assets.liambx.com` (to be configured)
+- Example asset: `https://assets.liambx.com/erd-core/2025-01/videos/copy-link.mp4`
 
 ## Adding New Assets
 
