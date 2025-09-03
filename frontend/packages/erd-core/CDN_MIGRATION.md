@@ -8,8 +8,8 @@ This change migrates static assets (videos and images) from being bundled within
 ### 1. Asset URL Configuration
 Created `/frontend/packages/erd-core/src/config/assetUrls.ts`:
 - Centralized configuration for all CDN asset URLs
-- Uses versioned path structure (e.g., `/2025-01/`) for backward compatibility
-- Temporary placeholder URL: `https://assets.liam-hq.com/erd-core/`
+- Uses versioned path structure (e.g., `/2025-09/`) for backward compatibility
+- Temporary placeholder URL: `https://assets.liambx.com/erd-core/`
 
 ### 2. Component Updates
 Modified `/frontend/packages/erd-core/src/features/erd/components/ERDRenderer/CommandPalette/CommandPalettePreview/CommandPreview.tsx`:

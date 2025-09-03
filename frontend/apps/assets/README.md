@@ -11,7 +11,7 @@ This application serves static assets (images, videos, etc.) for Liam ERD compon
 ```
 public/
 ├── erd-core/
-│   └── 2025-01/         # Versioned assets for January 2025
+│   └── 2025-09/         # Versioned assets for September 2025
 │       ├── videos/
 │       │   ├── copy-link.mp4
 │       │   ├── tidy-up.mp4
@@ -25,7 +25,7 @@ public/
 
 ## Versioning Strategy
 
-Assets are versioned by year and month (e.g., `2025-01`) to ensure:
+Assets are versioned by year and month (e.g., `2025-09`) to ensure:
 - Backward compatibility with older CLI versions
 - Predictable URLs for long-term caching
 - Easy rollback if needed
@@ -46,7 +46,7 @@ This app is automatically deployed to Vercel on push to main branch.
 
 ### Production URL
 - Base URL: `https://assets.liambx.com` (to be configured)
-- Example asset: `https://assets.liambx.com/erd-core/2025-01/videos/copy-link.mp4`
+- Example asset: `https://assets.liambx.com/erd-core/2025-09/videos/copy-link.mp4`
 
 ## Adding New Assets
 
