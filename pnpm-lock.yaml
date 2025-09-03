@@ -110,9 +110,6 @@ importers:
       '@liam-hq/ui':
         specifier: workspace:*
         version: link:../../packages/ui
-      '@next/third-parties':
-        specifier: 15.3.5
-        version: 15.3.5(next@15.4.7(@opentelemetry/api@1.9.0)(@playwright/test@1.54.2)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(react@19.1.1)
       '@rive-app/react-canvas':
         specifier: 4.22.1
         version: 4.22.1(react@19.1.1)
@@ -18273,7 +18270,7 @@ snapshots:
       isstream: 0.1.2
       jsonwebtoken: 9.0.2
       mime-types: 2.1.35
-      retry-axios: 2.6.0(axios@1.11.0)
+      retry-axios: 2.6.0(axios@1.11.0(debug@4.4.1))
       tough-cookie: 4.1.4
     transitivePeerDependencies:
       - supports-color
@@ -20937,7 +20934,7 @@ snapshots:
       onetime: 7.0.0
       signal-exit: 4.1.0
 
-  retry-axios@2.6.0(axios@1.11.0):
+  retry-axios@2.6.0(axios@1.11.0(debug@4.4.1)):
     dependencies:
       axios: 1.11.0(debug@4.4.1)
 
