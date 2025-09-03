@@ -10,7 +10,9 @@ export async function updateSession(request: NextRequest) {
     request.nextUrl.pathname.startsWith('/erd') ||
     request.nextUrl.pathname.startsWith('/_next') ||
     request.nextUrl.pathname.startsWith('/favicon.ico') ||
-    request.nextUrl.pathname === '/login'
+    request.nextUrl.pathname.startsWith(ROUTE_PREFIXES.LOGIN) ||
+    request.nextUrl.pathname.startsWith(ROUTE_PREFIXES.AUTH) ||
+    request.nextUrl.pathname.startsWith(ROUTE_PREFIXES.PUBLIC)
   ) {
     return NextResponse.next()
   }

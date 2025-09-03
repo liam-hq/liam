@@ -1,4 +1,5 @@
 import { BaseLayout } from '@liam-hq/ui'
+import { headers } from 'next/headers'
 import { redirect } from 'next/navigation'
 import type { ReactNode } from 'react'
 import { getOrganizationId } from '../../features/organizations/services/getOrganizationId'
@@ -21,6 +22,18 @@ export async function CommonLayout({
   branchOrCommit,
   children,
 }: CommonLayoutProps) {
+  const headersList = await headers()
+  const pathname = headersList.get('x-url-path') || ''
+
+  const isAuthPage =
+    pathname.startsWith('/login') ||
+    pathname.startsWith('/auth') ||
+    pathname.startsWith('/public')
+
+  if (isAuthPage) {
+    return <>{children}</>
+  }
+
   const organizationIdResult = await getOrganizationId()
   if (organizationIdResult.isErr()) {
     redirect(urlgen('login'))
