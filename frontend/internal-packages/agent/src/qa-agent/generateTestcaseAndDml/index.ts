@@ -5,10 +5,10 @@ import {
 } from '@langchain/core/messages'
 import { ChatOpenAI } from '@langchain/openai'
 import { ResultAsync } from 'neverthrow'
-import type { WorkflowState } from '../../chat/workflow/types'
 import { WorkflowTerminationError } from '../../shared/errorHandling'
 import { convertSchemaToText } from '../../utils/convertSchemaToText'
 import { removeReasoningFromMessages } from '../../utils/messageCleanup'
+import type { WorkflowState } from '../../workflow/types'
 import { saveTestcasesAndDmlTool } from '../tools/saveTestcasesAndDmlTool'
 import { humanPromptTemplate, SYSTEM_PROMPT } from './prompt'
 

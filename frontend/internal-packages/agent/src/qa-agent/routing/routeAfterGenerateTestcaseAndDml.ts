@@ -1,6 +1,6 @@
 import type { BaseMessage } from '@langchain/core/messages'
 import { AIMessage } from '@langchain/core/messages'
-import type { WorkflowState } from '../../chat/workflow/types'
+import type { WorkflowState } from '../../workflow/types'
 
 /**
  * Route after generateTestcaseAndDml node based on whether tool calls are present

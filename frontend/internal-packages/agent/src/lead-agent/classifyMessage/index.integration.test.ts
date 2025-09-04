@@ -10,8 +10,8 @@ import {
   getTestConfig,
   outputStream,
 } from '../../../test-utils/workflowTestHelpers'
-import { workflowAnnotation } from '../../chat/workflow/shared/workflowAnnotation'
-import type { WorkflowState } from '../../chat/workflow/types'
+import { workflowAnnotation } from '../../workflow/shared/workflowAnnotation'
+import type { WorkflowState } from '../../workflow/types'
 import { classifyMessage } from './index'
 
 const createTestStateAndConfig = async (

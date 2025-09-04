@@ -1,10 +1,10 @@
-import { DEFAULT_RECURSION_LIMIT } from '../chat/workflow/shared/workflowConstants'
-import type { WorkflowConfigurable } from '../chat/workflow/types'
 import {
   executeWorkflowWithTracking,
   setupWorkflowState,
 } from '../shared/workflowSetup'
 import type { AgentWorkflowParams, AgentWorkflowResult } from '../types'
+import { DEFAULT_RECURSION_LIMIT } from '../workflow/shared/workflowConstants'
+import type { WorkflowConfigurable } from '../workflow/types'
 import { createDbAgentGraph } from './createDbAgentGraph'
 
 /**

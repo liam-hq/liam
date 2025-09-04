@@ -1,8 +1,8 @@
 import type { RunnableConfig } from '@langchain/core/runnables'
-import { getConfigurable } from '../../chat/workflow/shared/getConfigurable'
 import { WorkflowTerminationError } from '../../shared/errorHandling'
 import { convertSchemaToText } from '../../utils/convertSchemaToText'
 import { removeReasoningFromMessages } from '../../utils/messageCleanup'
+import { getConfigurable } from '../../workflow/shared/getConfigurable'
 import { invokeDesignAgent } from '../invokeDesignAgent'
 import type { DbAgentState } from '../shared/dbAgentAnnotation'
 

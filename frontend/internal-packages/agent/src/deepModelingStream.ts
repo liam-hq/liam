@@ -1,8 +1,8 @@
-import { DEFAULT_RECURSION_LIMIT } from './chat/workflow/shared/workflowConstants'
-import type { WorkflowConfigurable } from './chat/workflow/types'
 import { createGraph } from './createGraph'
 import { setupWorkflowState } from './shared/workflowSetup'
 import type { AgentWorkflowParams } from './types'
+import { DEFAULT_RECURSION_LIMIT } from './workflow/shared/workflowConstants'
+import type { WorkflowConfigurable } from './workflow/types'
 
 // TODO: Move to deepModeling.ts once the streaming migration is established
 export async function deepModelingStream(

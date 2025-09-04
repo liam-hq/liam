@@ -1,5 +1,5 @@
 import { gray } from 'yoctocolors'
-import { isMessageContentError } from '../../src/chat/workflow/utils/toolMessageUtils'
+import { isMessageContentError } from '../../src/workflow/utils/toolMessageUtils'
 import { hasProperty, isObject } from './scriptUtils'
 import type { Logger } from './types'
 

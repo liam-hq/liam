@@ -1,7 +1,7 @@
 import type { RunnableConfig } from '@langchain/core/runnables'
-import { getConfigurable } from '../../chat/workflow/shared/getConfigurable'
 import { WorkflowTerminationError } from '../../shared/errorHandling'
 import { convertSchemaToText } from '../../utils/convertSchemaToText'
+import { getConfigurable } from '../../workflow/shared/getConfigurable'
 import { invokePmAnalysisAgent } from '../invokePmAnalysisAgent'
 import type { PmAgentState } from '../pmAgentAnnotations'
 

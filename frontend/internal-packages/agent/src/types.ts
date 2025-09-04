@@ -1,6 +1,6 @@
 import type { Schema } from '@liam-hq/schema'
 import type { ResultAsync } from 'neverthrow'
-import type { WorkflowState } from './chat/workflow/types'
+import type { WorkflowState } from './workflow/types'
 
 /**
  * Parameters for agent workflow execution
