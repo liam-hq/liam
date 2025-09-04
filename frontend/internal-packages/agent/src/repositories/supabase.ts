@@ -119,6 +119,19 @@ export class SupabaseSchemaRepository implements SchemaRepository {
       })
   }
 
+  /**
+   * Get building schema data with initial_schema_snapshot
+   * Used for validation purposes where raw initial schema is needed
+   */
+  getBuildingSchemaData(
+    designSessionId: string,
+  ): ResultAsync<
+    { buildingSchema: { id: string; initial_schema_snapshot: Json | null } },
+    Error
+  > {
+    return this.getBuildingSchema(designSessionId)
+  }
+
   private getBuildingSchema(
     designSessionId: string,
   ): ResultAsync<

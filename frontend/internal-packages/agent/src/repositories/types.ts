@@ -1,6 +1,10 @@
 import type { BaseCheckpointSaver } from '@langchain/langgraph-checkpoint'
 import type { Artifact } from '@liam-hq/artifact'
-import type { Database, Tables } from '@liam-hq/db/supabase/database.types'
+import type {
+  Database,
+  Json,
+  Tables,
+} from '@liam-hq/db/supabase/database.types'
 import type { SqlResult } from '@liam-hq/pglite-server/src/types'
 import type { Schema } from '@liam-hq/schema'
 import type { Operation } from 'fast-json-patch'
@@ -134,6 +138,17 @@ export type SchemaRepository = {
    * Fetch schema data for a design session
    */
   getSchema(designSessionId: string): ResultAsync<SchemaData, Error>
+
+  /**
+   * Get building schema data with initial_schema_snapshot
+   * Used for validation purposes where raw initial schema is needed
+   */
+  getBuildingSchemaData(
+    designSessionId: string,
+  ): ResultAsync<
+    { buildingSchema: { id: string; initial_schema_snapshot: Json | null } },
+    Error
+  >
 
   /**
    * Fetch design session data including organization_id and timeline_items

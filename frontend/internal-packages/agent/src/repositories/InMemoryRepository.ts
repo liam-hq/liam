@@ -1,7 +1,7 @@
 import type { BaseCheckpointSaver } from '@langchain/langgraph-checkpoint'
 import { MemorySaver } from '@langchain/langgraph-checkpoint'
 import type { Artifact } from '@liam-hq/artifact'
-import type { Tables } from '@liam-hq/db/supabase/database.types'
+import type { Json, Tables } from '@liam-hq/db/supabase/database.types'
 import type { SqlResult } from '@liam-hq/pglite-server/src/types'
 import type { Schema } from '@liam-hq/schema'
 import { schemaSchema } from '@liam-hq/schema'
@@ -149,6 +149,32 @@ export class InMemoryRepository implements SchemaRepository {
       )
     }
     return okAsync(schema)
+  }
+
+  getBuildingSchemaData(
+    designSessionId: string,
+  ): ResultAsync<
+    { buildingSchema: { id: string; initial_schema_snapshot: Json | null } },
+    Error
+  > {
+    // For InMemoryRepository, we'll simulate the building schema data
+    // In a real scenario, this would come from the database
+    const schema = this.state.schemas.get(designSessionId)
+    if (!schema) {
+      return errAsync(
+        new Error(
+          `Building schema not found for ID: ${designSessionId}. Available schemas: ${Array.from(this.state.schemas.keys()).join(', ')}`,
+        ),
+      )
+    }
+
+    // Return the schema data as initial_schema_snapshot
+    return okAsync({
+      buildingSchema: {
+        id: schema.id,
+        initial_schema_snapshot: JSON.parse(JSON.stringify(schema.schema)),
+      },
+    })
   }
 
   async getDesignSession(
