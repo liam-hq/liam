@@ -1,4 +1,5 @@
 import type { FC } from 'react'
+import { useId } from 'react'
 import { useSchemaOrThrow } from '../../../../../../stores'
 import { TableNode } from '../../../ERDContent/components'
 import styles from './CommandPalettePreview.module.css'
@@ -8,6 +9,7 @@ type Props = {
 }
 
 export const TablePreview: FC<Props> = ({ tableName }) => {
+  const tableNodeId = useId()
   const schema = useSchemaOrThrow()
   const table = schema.current.tables[tableName]
 
@@ -16,7 +18,7 @@ export const TablePreview: FC<Props> = ({ tableName }) => {
       <div className={styles.tableNodeWrapper}>
         {table && (
           <TableNode
-            id=""
+            id={tableNodeId}
             type="table"
             data={{
               table: table,

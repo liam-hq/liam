@@ -6,33 +6,49 @@ import {
 import type { FC } from 'react'
 import styles from './CardinalityMarkers.module.css'
 
-export const CardinalityMarkers: FC = () => {
+type Props = {
+  zeroOrOneLeftId: string
+  zeroOrOneLeftHighlightId: string
+  zeroOrOneRightId: string
+  zeroOrOneRightHighlightId: string
+  zeroOrManyLeftId: string
+  zeroOrManyLeftHighlightId: string
+}
+
+export const CardinalityMarkers: FC<Props> = ({
+  zeroOrOneLeftId,
+  zeroOrOneLeftHighlightId,
+  zeroOrOneRightId,
+  zeroOrOneRightHighlightId,
+  zeroOrManyLeftId,
+  zeroOrManyLeftHighlightId,
+}) => {
   return (
     <div className={styles.wrapper}>
       <CardinalityZeroOrOneLeftMarker
-        id="zeroOrOneLeft"
+        id={zeroOrOneLeftId}
         color="var(--pane-border-hover)"
       />
       <CardinalityZeroOrOneLeftMarker
-        id="zeroOrOneLeftHighlight"
+        id={zeroOrOneLeftHighlightId}
         isHighlighted={true}
         color="var(--node-layout)"
       />
       <CardinalityZeroOrOneRightMarker
-        id="zeroOrOneRight"
+        id={zeroOrOneRightId}
         color="var(--pane-border-hover)"
       />
       <CardinalityZeroOrOneRightMarker
-        id="zeroOrOneRightHighlight"
+        id={zeroOrOneRightHighlightId}
         isHighlighted={true}
         color="var(--node-layout)"
       />
       <CardinalityZeroOrManyLeftMarker
-        id="zeroOrManyLeft"
+        id={zeroOrManyLeftId}
         color="var(--pane-border-hover)"
       />
       <CardinalityZeroOrManyLeftMarker
-        id="zeroOrManyLeftHighlight"
+        id={zeroOrManyLeftHighlightId}
         isHighlighted={true}
         color="var(--node-layout)"
       />

@@ -2,6 +2,7 @@ import { BaseEdge, type EdgeProps, getBezierPath } from '@xyflow/react'
 
 import clsx from 'clsx'
 import type { FC } from 'react'
+import { useMarkerIds } from '../../../ERDRenderer/MarkerIdsContext'
 import styles from './RelationshipEdge.module.css'
 import type { RelationshipEdgeType } from './type'
 
@@ -20,6 +21,7 @@ export const RelationshipEdge: FC<Props> = ({
   id,
   data,
 }) => {
+  const markerIds = useMarkerIds()
   const [edgePath] = getBezierPath({
     sourceX,
     sourceY,
@@ -36,17 +38,17 @@ export const RelationshipEdge: FC<Props> = ({
         path={edgePath}
         markerStart={
           data?.isHighlighted
-            ? 'url(#zeroOrOneRightHighlight)'
-            : 'url(#zeroOrOneRight)'
+            ? `url(#${markerIds.zeroOrOneRightHighlightId})`
+            : `url(#${markerIds.zeroOrOneRightId})`
         }
         markerEnd={
           data?.cardinality === 'ONE_TO_ONE'
             ? data?.isHighlighted
-              ? 'url(#zeroOrOneLeftHighlight)'
-              : 'url(#zeroOrOneLeft)'
+              ? `url(#${markerIds.zeroOrOneLeftHighlightId})`
+              : `url(#${markerIds.zeroOrOneLeftId})`
             : data?.isHighlighted
-              ? 'url(#zeroOrManyLeftHighlight)'
-              : 'url(#zeroOrManyLeft)'
+              ? `url(#${markerIds.zeroOrManyLeftHighlightId})`
+              : `url(#${markerIds.zeroOrManyLeftId})`
         }
         className={clsx(styles.edge, data?.isHighlighted && styles.hovered)}
       />
@@ -56,7 +58,7 @@ export const RelationshipEdge: FC<Props> = ({
             key={`particle-${i}-${ANIMATE_DURATION}`}
             rx="5"
             ry="1.2"
-            fill="url(#myGradient)"
+            fill={`url(#${markerIds.gradientId})`}
           >
             <animateMotion
               begin={`${-i * (ANIMATE_DURATION / PARTICLE_COUNT)}s`}
