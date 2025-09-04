@@ -127,11 +127,6 @@ export async function validateInitialSchemaNode(
     const detailedError = new Error(
       `Initial schema validation failed:\n\nDDL execution failed:\n- Successful: ${executionResults.filter((r) => r.success).length} statements\n- Failed: ${failedResults.length} statements\n\nError details:\n${errorDetails}\n\nPlease review and fix your schema to use PostgreSQL-compatible syntax.`,
     )
-
-    // Temporary console.error for debugging.
-    // WorkflowTerminationError is not properly handled in the streaming execution path
-    // TODO: Remove once WorkflowTerminationError handling is fixed in the streaming pipeline.
-    console.error('DDL Execution Errors:', detailedError)
     throw new WorkflowTerminationError(
       detailedError,
       'validateInitialSchemaNode',
