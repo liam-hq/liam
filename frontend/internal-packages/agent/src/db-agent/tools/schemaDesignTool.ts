@@ -9,6 +9,7 @@ import {
   type Schema,
 } from '@liam-hq/schema'
 import * as v from 'valibot'
+import { WorkflowTerminationError } from '../../utils/errorHandling'
 import { toJsonSchema } from '../../utils/jsonSchema'
 import { getToolConfigurable } from '../getToolConfigurable'
 
@@ -80,7 +81,12 @@ export const schemaDesignTool: StructuredTool = tool(
       const errorDetails = parsed.issues
         .map((issue) => `${issue.path?.join('.')}: ${issue.message}`)
         .join(', ')
-      return `Input validation failed: ${errorDetails}. Please check your operations format and ensure all required fields are provided correctly.`
+      throw new WorkflowTerminationError(
+        `Received tool input did not match expected schema: ${errorDetails}. Please check your operations format and ensure all required fields are provided correctly.`,
+        new Error(
+          `Received tool input did not match expected schema: ${errorDetails}. Please check your operations format and ensure all required fields are provided correctly.`,
+        ),
+      )
     }
 
     const schemaResult = await repositories.schema.getSchema(designSessionId)
