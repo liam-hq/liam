@@ -37,7 +37,7 @@ const meta = {
     nextjs: {
       appDirectory: true,
       navigation: {
-        pathname: '/storybook-mock',
+        pathname: '/app/design_sessions/new',
         query: {},
       },
     },
