@@ -34,13 +34,6 @@ const meta = {
   component: GitHubSessionFormPresenter,
   parameters: {
     layout: 'centered',
-    nextjs: {
-      appDirectory: true,
-      navigation: {
-        pathname: '/app/design_sessions/new',
-        query: {},
-      },
-    },
   },
   tags: ['autodocs'],
   render: (args: ComponentProps<typeof GitHubSessionFormPresenter>) => (
