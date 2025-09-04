@@ -2,7 +2,6 @@ import { Button } from '@liam-hq/ui'
 import { type ComponentProps, useEffect, useState } from 'react'
 import { aTypicalConversation } from '../../factories'
 import type { ChatRequest } from '../../hooks/useStream/useStream'
-import type { TimelineItemEntry } from '../../types'
 import { Chat } from './Chat'
 
 const ITEMS = aTypicalConversation()
@@ -18,8 +17,7 @@ export const AnimatedChatDemo = ({
   const [isAnimating, setIsAnimating] = useState(false)
   const [currentIndex, setCurrentIndex] = useState(0)
 
-  const handleSendMessage = (_params: ChatRequest) => {
-  }
+  const handleSendMessage = (_params: ChatRequest) => {}
 
   const handleStart = () => {
     if (currentIndex === 0 || currentIndex >= ITEMS.length) {
