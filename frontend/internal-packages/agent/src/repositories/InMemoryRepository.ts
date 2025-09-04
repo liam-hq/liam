@@ -159,23 +159,25 @@ export class InMemoryRepository implements SchemaRepository {
     { buildingSchema: { id: string; initial_schema_snapshot: Json | null } },
     Error
   > {
-    const schema = this.state.schemas.get(designSessionId)
     const building = this.state.buildingSchemas.get(designSessionId)
-    if (!schema || !building) {
+    if (!building) {
       return errAsync(
         new Error(
-          `Building schema not found for ID: ${designSessionId}. Available schemas: ${Array.from(this.state.schemas.keys()).join(', ')}`,
+          `Building schema not found for ID: ${designSessionId}. Available schemas: ${Array.from(this.state.buildingSchemas.keys()).join(', ')}`,
         ),
       )
     }
 
-    // Prefer explicit initial snapshot when present; fall back to current schema
+    // For validation workflows, always prefer explicit initial snapshot
+    // Fall back to working schema only if no explicit snapshot exists
+    const schema = this.state.schemas.get(designSessionId)
     const snapshot =
       building.initialSchemaSnapshot ??
-      JSON.parse(JSON.stringify(schema.schema))
+      (schema ? JSON.parse(JSON.stringify(schema.schema)) : null)
+
     return okAsync({
       buildingSchema: {
-        id: schema.id,
+        id: building.id,
         initial_schema_snapshot: snapshot,
       },
     })
@@ -558,14 +560,14 @@ export class InMemoryRepository implements SchemaRepository {
       }
     }
 
-    // Update the building schema with the new initial_schema_snapshot
+    // Store raw snapshot (even if not a valid Schema) for validation workflows
     this.state.buildingSchemas.set(buildingSchemaId, {
       ...buildingSchema,
-      initialSchemaSnapshot: initialSchema,
+      initialSchemaSnapshot: JSON.parse(JSON.stringify(initialSchema)),
       updatedAt: new Date().toISOString(),
     })
 
-    // Also update the schema entry to match if it's a valid schema
+    // Update the working schema only when it's structurally valid
     if (this.isValidSchema(initialSchema)) {
       this.state.schemas.set(buildingSchemaId, {
         id: buildingSchemaId,

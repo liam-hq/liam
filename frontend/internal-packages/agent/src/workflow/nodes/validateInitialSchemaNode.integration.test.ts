@@ -1,5 +1,6 @@
 import { HumanMessage } from '@langchain/core/messages'
 import { END, START, StateGraph } from '@langchain/langgraph'
+import { aColumn, aSchema, aTable } from '@liam-hq/schema'
 import { describe, it } from 'vitest'
 import {
   getTestConfig,
@@ -73,69 +74,48 @@ describe('validateInitialSchemaNode Integration', () => {
   })
 
   it('should validate actual schema and execute full validation flow', async () => {
-    // Create a test schema with actual tables for validation
-    const testSchema = {
+    // Create a test schema using proper factory functions to ensure correct structure
+    const testSchema = aSchema({
       tables: {
-        users: {
+        users: aTable({
           name: 'users',
           columns: {
-            id: {
+            id: aColumn({
               name: 'id',
               type: 'serial',
-              default: null,
-              check: null,
               notNull: true,
-              comment: null,
-            },
-            email: {
+            }),
+            email: aColumn({
               name: 'email',
               type: 'varchar(255)',
-              default: null,
-              check: null,
               notNull: true,
-              comment: null,
-            },
-            created_at: {
+            }),
+            created_at: aColumn({
               name: 'created_at',
               type: 'timestamp',
               default: 'now()',
-              check: null,
               notNull: true,
-              comment: null,
-            },
+            }),
           },
-          comment: null,
-          indexes: {},
-          constraints: {},
-        },
-        roles: {
+        }),
+        roles: aTable({
           name: 'roles',
           columns: {
-            id: {
+            id: aColumn({
               name: 'id',
               type: 'serial',
-              default: null,
-              check: null,
               notNull: true,
-              comment: null,
-            },
-            name: {
+            }),
+            name: aColumn({
               name: 'name',
               type: 'varchar(100)',
-              default: null,
-              check: null,
               notNull: true,
-              comment: null,
-            },
+            }),
           },
-          comment: null,
           indexes: {},
-          constraints: {},
-        },
+        }),
       },
-      enums: {},
-      extensions: {},
-    }
+    })
 
     // Arrange - Set up test with actual initial schema for debugging
     const graph = new StateGraph(workflowAnnotation)
