@@ -4,6 +4,7 @@
   "version": "0.1.0",
   "dependencies": {
     "@liam-hq/ui": "workspace:*",
+    "next": "15.4.7",
     "react": "19.1.1",
     "react-dom": "19.1.1"
   },
