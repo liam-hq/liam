@@ -133,6 +133,44 @@ async function executeCase(
   return ok(undefined)
 }
 
+function getErrorMessage(
+  result: PromiseSettledResult<Result<void, Error>>,
+): string {
+  if (result.status === 'fulfilled' && result.value.isErr()) {
+    return result.value.error.message
+  }
+  if (result.status === 'rejected' && result.reason instanceof Error) {
+    return result.reason.message
+  }
+  return 'Unknown error'
+}
+
+async function processBatch(
+  batch: Array<{ caseId: string; input: LiamDbExecutorInput }>,
+): Promise<{ successCount: number; failureCount: number }> {
+  const promises = batch.map(({ caseId, input }) => executeCase(caseId, input))
+  const results = await Promise.allSettled(promises)
+
+  let successCount = 0
+  let failureCount = 0
+
+  results.forEach((result, index) => {
+    const batchItem = batch[index]
+    if (!batchItem) return
+
+    const { caseId } = batchItem
+    if (result.status === 'fulfilled' && result.value.isOk()) {
+      successCount++
+    } else {
+      failureCount++
+      const error = getErrorMessage(result)
+      console.error(`❌ ${caseId} failed: ${error}`)
+    }
+  })
+
+  return { successCount, failureCount }
+}
+
 async function main() {
   // Load input files
   const inputsResult = await loadInputFiles()
@@ -150,51 +188,18 @@ async function main() {
 
   // Process each case with max 4 concurrent request
   const MAX_CONCURRENT = 4
-  let successCount = 0
-  let failureCount = 0
-
-  const getErrorMessage = (
-    result: PromiseSettledResult<Result<void, Error>>,
-  ): string => {
-    if (result.status === 'fulfilled' && result.value.isErr()) {
-      return result.value.error.message
-    }
-    if (result.status === 'rejected' && result.reason instanceof Error) {
-      return result.reason.message
-    }
-    return 'Unknown error'
-  }
-
-  const processBatch = async (
-    batch: Array<{ caseId: string; input: LiamDbExecutorInput }>,
-  ) => {
-    const promises = batch.map(({ caseId, input }) =>
-      executeCase(caseId, input),
-    )
-    const results = await Promise.allSettled(promises)
-
-    results.forEach((result, index) => {
-      const batchItem = batch[index]
-      if (!batchItem) return
-
-      const { caseId } = batchItem
-      if (result.status === 'fulfilled' && result.value.isOk()) {
-        successCount++
-      } else {
-        failureCount++
-        const error = getErrorMessage(result)
-        console.error(`❌ ${caseId} failed: ${error}`)
-      }
-    })
-  }
+  let totalSuccessCount = 0
+  let totalFailureCount = 0
 
   for (let i = 0; i < inputs.length; i += MAX_CONCURRENT) {
     const batch = inputs.slice(i, i + MAX_CONCURRENT)
-    await processBatch(batch)
+    const { successCount, failureCount } = await processBatch(batch)
+    totalSuccessCount += successCount
+    totalFailureCount += failureCount
   }
 
-  if (failureCount > 0) {
-    handleCliError(`${failureCount} case(s) failed`)
+  if (totalFailureCount > 0) {
+    handleCliError(`${totalFailureCount} case(s) failed`)
     return
   }
 }
