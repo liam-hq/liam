@@ -47,6 +47,7 @@ type InMemoryRepositoryState = {
       schema: Schema
       latestVersionNumber: number
       updatedAt: string
+      initialSchemaSnapshot?: Json | null
     }
   >
 }
@@ -92,6 +93,7 @@ export class InMemoryRepository implements SchemaRepository {
         schema,
         latestVersionNumber: 1,
         updatedAt: new Date().toISOString(),
+        initialSchemaSnapshot: JSON.parse(JSON.stringify(schema)),
       })
     })
 
@@ -157,10 +159,9 @@ export class InMemoryRepository implements SchemaRepository {
     { buildingSchema: { id: string; initial_schema_snapshot: Json | null } },
     Error
   > {
-    // For InMemoryRepository, we'll simulate the building schema data
-    // In a real scenario, this would come from the database
     const schema = this.state.schemas.get(designSessionId)
-    if (!schema) {
+    const building = this.state.buildingSchemas.get(designSessionId)
+    if (!schema || !building) {
       return errAsync(
         new Error(
           `Building schema not found for ID: ${designSessionId}. Available schemas: ${Array.from(this.state.schemas.keys()).join(', ')}`,
@@ -168,11 +169,14 @@ export class InMemoryRepository implements SchemaRepository {
       )
     }
 
-    // Return the schema data as initial_schema_snapshot
+    // Prefer explicit initial snapshot when present; fall back to current schema
+    const snapshot =
+      building.initialSchemaSnapshot ??
+      JSON.parse(JSON.stringify(schema.schema))
     return okAsync({
       buildingSchema: {
         id: schema.id,
-        initial_schema_snapshot: JSON.parse(JSON.stringify(schema.schema)),
+        initial_schema_snapshot: snapshot,
       },
     })
   }
@@ -557,11 +561,11 @@ export class InMemoryRepository implements SchemaRepository {
     // Update the building schema with the new initial_schema_snapshot
     this.state.buildingSchemas.set(buildingSchemaId, {
       ...buildingSchema,
-      // Note: InMemoryRepository doesn't have initial_schema_snapshot field
-      // but we can simulate it by updating the corresponding schema entry
+      initialSchemaSnapshot: initialSchema,
+      updatedAt: new Date().toISOString(),
     })
 
-    // Also update the schema entry to match
+    // Also update the schema entry to match if it's a valid schema
     if (this.isValidSchema(initialSchema)) {
       this.state.schemas.set(buildingSchemaId, {
         id: buildingSchemaId,
