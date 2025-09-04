@@ -36,6 +36,10 @@ const meta = {
     layout: 'centered',
     nextjs: {
       appDirectory: true,
+      navigation: {
+        pathname: '/storybook-mock',
+        query: {},
+      },
     },
   },
   tags: ['autodocs'],
