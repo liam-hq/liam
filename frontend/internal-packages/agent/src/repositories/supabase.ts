@@ -756,4 +756,22 @@ export class SupabaseSchemaRepository implements SchemaRepository {
       userName: data.name,
     }
   }
+
+  async updateBuildingSchemaInitialSnapshot(
+    buildingSchemaId: string,
+    initialSchema: Json,
+  ): Promise<{ success: true } | { success: false; error: string }> {
+    const { error } = await this.client
+      .from('building_schemas')
+      .update({
+        initial_schema_snapshot: initialSchema,
+      })
+      .eq('id', buildingSchemaId)
+
+    if (error) {
+      return { success: false, error: error.message }
+    }
+
+    return { success: true }
+  }
 }

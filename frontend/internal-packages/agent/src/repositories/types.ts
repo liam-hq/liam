@@ -233,6 +233,14 @@ export type SchemaRepository = {
   getUserInfo(userId: string): Promise<UserInfo | null>
 
   /**
+   * Update building schema's initial_schema_snapshot for testing purposes
+   */
+  updateBuildingSchemaInitialSnapshot(
+    buildingSchemaId: string,
+    initialSchema: Json,
+  ): Promise<{ success: true } | { success: false; error: string }>
+
+  /**
    * The checkpoint saver instance
    */
   checkpointer: BaseCheckpointSaver

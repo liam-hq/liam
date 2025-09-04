@@ -1,4 +1,5 @@
 import type { RunnableConfig } from '@langchain/core/runnables'
+import type { Json } from '@liam-hq/db/supabase/database.types'
 import {
   createLogger,
   setupDatabaseAndUser,
@@ -68,4 +69,48 @@ export const getTestConfig = async (): Promise<{
       organizationId: organization.id,
     },
   }
+}
+/**
+ * Extended test config that sets up initial schema snapshot for debugging
+ */
+export const getTestConfigWithInitialSchema = async (
+  initialSchema: Json,
+): Promise<{
+  config: RunnableConfig
+  context: {
+    buildingSchemaId: string
+    latestVersionNumber: number
+    designSessionId: string
+    userId: string
+    organizationId: string
+  }
+}> => {
+  // Get base configuration
+  const baseConfig = await getTestConfig()
+
+  // Update the building schema's initial_schema_snapshot
+  const configurable = baseConfig.config.configurable
+  if (!configurable || !configurable['repositories']) {
+    // eslint-disable-next-line no-throw-error/no-throw-error
+    throw new Error('Test configuration is missing repositories')
+  }
+
+  const updateResult = await configurable[
+    'repositories'
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+  ].schema.updateBuildingSchemaInitialSnapshot(
+    baseConfig.context.buildingSchemaId,
+    initialSchema,
+  )
+
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+  if (!updateResult.success) {
+    // eslint-disable-next-line no-throw-error/no-throw-error
+    throw new Error(
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      `Failed to set initial schema for test: ${updateResult.error}`,
+    )
+  }
+
+  return baseConfig
 }

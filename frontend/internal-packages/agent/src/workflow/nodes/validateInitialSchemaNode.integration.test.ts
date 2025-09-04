@@ -3,6 +3,7 @@ import { END, START, StateGraph } from '@langchain/langgraph'
 import { describe, it } from 'vitest'
 import {
   getTestConfig,
+  getTestConfigWithInitialSchema,
   outputStream,
 } from '../../../test-utils/workflowTestHelpers'
 import { workflowAnnotation } from '../../chat/workflow/shared/workflowAnnotation'
@@ -71,16 +72,82 @@ describe('validateInitialSchemaNode Integration', () => {
     await outputStream(stream, 'DEBUG') // Use DEBUG level for detailed logs
   })
 
-  it('should handle schema validation with detailed logging', async () => {
-    // Arrange
+  it('should validate actual schema and execute full validation flow', async () => {
+    // Create a test schema with actual tables for validation
+    const testSchema = {
+      tables: {
+        users: {
+          name: 'users',
+          columns: {
+            id: {
+              name: 'id',
+              type: 'serial',
+              default: null,
+              check: null,
+              notNull: true,
+              comment: null,
+            },
+            email: {
+              name: 'email',
+              type: 'varchar(255)',
+              default: null,
+              check: null,
+              notNull: true,
+              comment: null,
+            },
+            created_at: {
+              name: 'created_at',
+              type: 'timestamp',
+              default: 'now()',
+              check: null,
+              notNull: true,
+              comment: null,
+            },
+          },
+          comment: null,
+          indexes: {},
+          constraints: {},
+        },
+        roles: {
+          name: 'roles',
+          columns: {
+            id: {
+              name: 'id',
+              type: 'serial',
+              default: null,
+              check: null,
+              notNull: true,
+              comment: null,
+            },
+            name: {
+              name: 'name',
+              type: 'varchar(100)',
+              default: null,
+              check: null,
+              notNull: true,
+              comment: null,
+            },
+          },
+          comment: null,
+          indexes: {},
+          constraints: {},
+        },
+      },
+      enums: {},
+      extensions: {},
+    }
+
+    // Arrange - Set up test with actual initial schema for debugging
     const graph = new StateGraph(workflowAnnotation)
       .addNode('validateInitialSchemaNode', validateInitialSchemaNode)
       .addEdge(START, 'validateInitialSchemaNode')
       .addEdge('validateInitialSchemaNode', END)
       .compile()
-    const { config, context } = await getTestConfig()
 
-    const userInput = 'Test schema validation workflow with logging'
+    // Use the new helper to set up initial_schema_snapshot with actual data
+    const { config, context } = await getTestConfigWithInitialSchema(testSchema)
+
+    const userInput = 'Add a permissions table and link it to roles and users'
 
     const state: WorkflowState = {
       userInput,
@@ -102,7 +169,7 @@ describe('validateInitialSchemaNode Integration', () => {
     // Act
     const stream = await graph.stream(state, config)
 
-    // Assert (Output with detailed logging)
+    // Assert (Output with detailed logging to see full validation flow)
     await outputStream(stream, 'DEBUG')
   })
 })

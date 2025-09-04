@@ -540,4 +540,36 @@ export class InMemoryRepository implements SchemaRepository {
       userName: `Test User ${userId}`,
     }
   }
+
+  async updateBuildingSchemaInitialSnapshot(
+    buildingSchemaId: string,
+    initialSchema: Json,
+  ): Promise<{ success: true } | { success: false; error: string }> {
+    // For InMemoryRepository, we can update the building schema directly
+    const buildingSchema = this.state.buildingSchemas.get(buildingSchemaId)
+    if (!buildingSchema) {
+      return {
+        success: false,
+        error: `Building schema not found for ID: ${buildingSchemaId}`,
+      }
+    }
+
+    // Update the building schema with the new initial_schema_snapshot
+    this.state.buildingSchemas.set(buildingSchemaId, {
+      ...buildingSchema,
+      // Note: InMemoryRepository doesn't have initial_schema_snapshot field
+      // but we can simulate it by updating the corresponding schema entry
+    })
+
+    // Also update the schema entry to match
+    if (this.isValidSchema(initialSchema)) {
+      this.state.schemas.set(buildingSchemaId, {
+        id: buildingSchemaId,
+        schema: initialSchema,
+        latestVersionNumber: buildingSchema.latestVersionNumber,
+      })
+    }
+
+    return { success: true }
+  }
 }
