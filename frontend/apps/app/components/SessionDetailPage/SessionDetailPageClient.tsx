@@ -155,7 +155,6 @@ export const SessionDetailPageClient: FC<Props> = ({
             schemaData={displayedSchema}
             designSessionId={designSessionId}
             messages={messages}
-            timelineItems={timelineItems}
             isWorkflowRunning={status === 'pending' || isStreaming}
             onSendMessage={start}
             isDeepModelingEnabled={isDeepModelingEnabled}

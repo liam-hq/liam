@@ -3,12 +3,9 @@ import { aBuildingSchemaVersion } from '@liam-hq/db'
 import { aSchema } from '@liam-hq/schema'
 import type { Meta, StoryObj } from '@storybook/nextjs'
 import { HttpResponse, http } from 'msw'
-import { aTypicalConversation } from '../../factories'
 import { AnimatedChatDemo } from './AnimatedChatDemo'
 import { Chat } from './Chat'
 import { aMessage } from './factories'
-
-const ITEMS = aTypicalConversation()
 
 // Sample messages for testing
 const MESSAGES: BaseMessage[] = [
@@ -85,7 +82,6 @@ export const Default: Story = {
   args: {
     schemaData: aSchema(),
     designSessionId: 'demo-session-id',
-    timelineItems: ITEMS,
     messages: MESSAGES,
     onSendMessage: () => {},
     isDeepModelingEnabled: false,
@@ -96,7 +92,6 @@ export const AnimatedDemo: Story = {
   args: {
     schemaData: aSchema(),
     designSessionId: 'demo-session-id',
-    timelineItems: ITEMS,
     messages: MESSAGES,
     onSendMessage: () => {},
     isDeepModelingEnabled: false,
@@ -128,7 +123,6 @@ export const WithComplexMessages: Story = {
           'The database design is complete. Would you like me to add payment processing tables?',
       }),
     ],
-    timelineItems: ITEMS,
     onSendMessage: () => {},
     isDeepModelingEnabled: false,
   },

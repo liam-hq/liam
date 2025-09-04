@@ -23,7 +23,6 @@ const chatRequestSchema = v.object({
   isDeepModelingEnabled: v.optional(v.boolean(), true),
 })
 
-// TODO: Move to api/chat/route.ts once the streaming migration is established
 export async function POST(request: Request) {
   const requestBody = await request.json()
   const validationResult = v.safeParse(chatRequestSchema, requestBody)
