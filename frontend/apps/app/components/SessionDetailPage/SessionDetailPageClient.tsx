@@ -104,6 +104,8 @@ export const SessionDetailPageClient: FC<Props> = ({
   )
 
   const chatMessages = mapStoredMessagesToChatMessages(initialMessages)
+
+
   const { isStreaming, messages, start } = useStream({
     initialMessages: chatMessages,
   })
