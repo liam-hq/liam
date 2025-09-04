@@ -10,8 +10,8 @@ import {
 } from '@liam-hq/ui'
 import { useRouter } from 'next/navigation'
 import type { FC } from 'react'
-import type { Projects } from '@/components/CommonLayout/AppBar/ProjectsDropdownMenu/services/getProjects'
-import { urlgen } from '@/libs/routes'
+import type { Projects } from '../../../../../components/CommonLayout/AppBar/ProjectsDropdownMenu/services/getProjects'
+import { urlgen } from '../../../../../libs/routes'
 import { ProjectRadioItem } from './ProjectRadioItem'
 import styles from './ProjectsDropdown.module.css'
 

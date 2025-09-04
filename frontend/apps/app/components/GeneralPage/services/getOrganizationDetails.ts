@@ -1,6 +1,6 @@
 'use server'
 
-import { createClient } from '@/libs/db/server'
+import { createClient } from '../../../libs/db/server'
 
 /**
  * Get organization details by ID

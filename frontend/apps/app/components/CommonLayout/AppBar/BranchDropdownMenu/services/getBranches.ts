@@ -1,5 +1,5 @@
 import { getRepositoryBranches } from '@liam-hq/github'
-import { createClient } from '@/libs/db/server'
+import { createClient } from '../../../../../libs/db/server'
 
 type Branch = {
   name: string

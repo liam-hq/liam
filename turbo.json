@@ -14,9 +14,7 @@
         "SENTRY_ORG",
         "SENTRY_PROJECT",
         "SENTRY_DSN",
-        "NEXT_PUBLIC_ENV_NAME",
-        "TRIGGER_ACCESS_TOKEN",
-        "TRIGGER_PROJECT_ID"
+        "NEXT_PUBLIC_ENV_NAME"
       ],
       "outputLogs": "errors-only"
     },

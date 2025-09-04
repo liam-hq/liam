@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation'
-import { urlgen } from '@/libs/routes'
+import { urlgen } from '../../libs/routes'
 import { EmptyProjectsState } from './components/EmptyProjectsState'
 import styles from './ProjectsPage.module.css'
 import { ServerProjectsDataProvider } from './ServerProjectsDataProvider'

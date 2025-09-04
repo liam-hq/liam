@@ -1,8 +1,8 @@
 import { redirect } from 'next/navigation'
-import { ProjectsPage } from '@/components/ProjectsPage'
-import { getOrganizationId } from '@/features/organizations/services/getOrganizationId'
-import { createClient } from '@/libs/db/server'
-import { urlgen } from '@/libs/routes'
+import { ProjectsPage } from '../../../../../components/ProjectsPage'
+import { getOrganizationId } from '../../../../../features/organizations/services/getOrganizationId'
+import { createClient } from '../../../../../libs/db/server'
+import { urlgen } from '../../../../../libs/routes'
 
 export default async function Page() {
   const organizationIdResult = await getOrganizationId()

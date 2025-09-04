@@ -1,8 +1,11 @@
 import { type Column, getColumnCommentChangeStatus } from '@liam-hq/schema'
 import clsx from 'clsx'
 import { type FC, useMemo } from 'react'
-import { useDiffStyle } from '@/features/diff/hooks/useDiffStyle'
-import { useSchemaOrThrow, useUserEditingOrThrow } from '@/stores'
+import {
+  useSchemaOrThrow,
+  useUserEditingOrThrow,
+} from '../../../../../../../../../../stores'
+import { useDiffStyle } from '../../../../../../../../../diff/hooks/useDiffStyle'
 import styles from './Comment.module.css'
 
 type Props = {

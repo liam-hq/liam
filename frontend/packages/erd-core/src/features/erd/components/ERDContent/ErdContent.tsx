@@ -10,13 +10,13 @@ import {
   useNodesState,
 } from '@xyflow/react'
 import { type FC, useCallback } from 'react'
-import { useTableSelection } from '@/features/erd/hooks'
-import type { DisplayArea } from '@/features/erd/types'
-import { selectTableLogEvent } from '@/features/gtm/utils'
-import { repositionTableLogEvent } from '@/features/gtm/utils/repositionTableLogEvent'
-import { MAX_ZOOM, MIN_ZOOM } from '@/features/reactflow/constants'
-import { useVersionOrThrow } from '@/providers'
-import { useUserEditingOrThrow } from '@/stores'
+import { useVersionOrThrow } from '../../../../providers'
+import { useUserEditingOrThrow } from '../../../../stores'
+import { selectTableLogEvent } from '../../../gtm/utils'
+import { repositionTableLogEvent } from '../../../gtm/utils/repositionTableLogEvent'
+import { MAX_ZOOM, MIN_ZOOM } from '../../../reactflow/constants'
+import { useTableSelection } from '../../hooks'
+import type { DisplayArea } from '../../types'
 import { highlightNodesAndEdges, isTableNode } from '../../utils'
 import {
   NonRelatedTableGroupNode,

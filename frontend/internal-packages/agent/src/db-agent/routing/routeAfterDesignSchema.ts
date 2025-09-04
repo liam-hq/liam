@@ -1,11 +1,11 @@
-import type { WorkflowState } from '../../chat/workflow/types'
 import { hasToolCalls } from '../../utils/hasToolCalls'
+import type { DbAgentState } from '../shared/dbAgentAnnotation'
 
 /**
  * Determines the next node based on whether the last message contains tool calls
  */
 export const routeAfterDesignSchema = (
-  state: WorkflowState,
+  state: DbAgentState,
 ): 'invokeSchemaDesignTool' | 'generateTestcase' => {
   const { messages } = state
   const lastMessage = messages[messages.length - 1]

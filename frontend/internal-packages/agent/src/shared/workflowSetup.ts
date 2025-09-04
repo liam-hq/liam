@@ -113,6 +113,7 @@ export const setupWorkflowState = (
           userInput: userInput,
           messages: allMessages,
           schemaData,
+          testcases: [],
           organizationId,
           buildingSchemaId,
           latestVersionNumber,

@@ -1,9 +1,9 @@
 import { Eye, EyeClosed, SidebarMenuAction } from '@liam-hq/ui'
 import { type FC, type MouseEvent, useCallback } from 'react'
-import { toggleLogEvent } from '@/features/gtm/utils'
-import { useCustomReactflow } from '@/features/reactflow/hooks'
-import { useVersionOrThrow } from '@/providers'
-import { useUserEditingOrThrow } from '@/stores'
+import { useVersionOrThrow } from '../../../../../../providers'
+import { useUserEditingOrThrow } from '../../../../../../stores'
+import { toggleLogEvent } from '../../../../../gtm/utils'
+import { useCustomReactflow } from '../../../../../reactflow/hooks'
 import styles from './VisibilityButton.module.css'
 
 type Props = {

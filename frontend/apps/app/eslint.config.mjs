@@ -3,9 +3,7 @@ import { createBaseConfig } from '../../internal-packages/configs/eslint/index.j
 
 const gitignorePath = fileURLToPath(new URL('.gitignore', import.meta.url))
 
-export default [
-  ...createBaseConfig({
-    tsconfigPath: './tsconfig.json',
-    gitignorePath,
-  }),
-]
+export default createBaseConfig({
+  tsconfigPath: './tsconfig.json',
+  gitignorePath,
+})

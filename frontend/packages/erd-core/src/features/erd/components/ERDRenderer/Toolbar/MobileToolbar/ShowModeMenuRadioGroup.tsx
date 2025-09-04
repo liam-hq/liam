@@ -1,10 +1,13 @@
 import { RadioGroup, RadioGroupItem } from '@liam-hq/ui'
 import { type FC, useCallback } from 'react'
 import { safeParse } from 'valibot'
-import { toolbarActionLogEvent } from '@/features/gtm/utils'
-import { useVersionOrThrow } from '@/providers'
-import { type ShowMode, showModeSchema } from '@/schemas/showMode'
-import { useUserEditingOrThrow } from '@/stores'
+import { useVersionOrThrow } from '../../../../../../providers'
+import {
+  type ShowMode,
+  showModeSchema,
+} from '../../../../../../schemas/showMode'
+import { useUserEditingOrThrow } from '../../../../../../stores'
+import { toolbarActionLogEvent } from '../../../../../gtm/utils'
 import styles from './ShowModeMenuRadioGroup.module.css'
 
 const OPTION_LIST: { value: ShowMode; label: string }[] = [

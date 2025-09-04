@@ -9,16 +9,12 @@ function formatSqlForDisplay(sql: string, maxLength = 300): string {
   return cleanSql
 }
 
-function formatFailedOperations(failedOperations: FailedOperation[]): string {
-  return failedOperations
-    .map((op, index) => {
-      let details = `#### ${index + 1}. Error: \`${op.error}\`\n`
-      details += '```sql\n'
-      details += formatSqlForDisplay(op.sql)
-      details += '\n```'
-      return details
-    })
-    .join('\n\n')
+function formatFailedOperation(failedOperation: FailedOperation): string {
+  let details = `#### 1. Error: \`${failedOperation.error}\`\n`
+  details += '```sql\n'
+  details += formatSqlForDisplay(failedOperation.sql)
+  details += '\n```'
+  return details
 }
 
 export function formatValidationErrors(
@@ -37,8 +33,8 @@ export function formatValidationErrors(
     .map((result) => {
       let details = `### ❌ **Test Case:** ${result.testCaseTitle}`
 
-      if (result.failedOperations && result.failedOperations.length > 0) {
-        details += `\n${formatFailedOperations(result.failedOperations)}`
+      if (result.failedOperation) {
+        details += `\n${formatFailedOperation(result.failedOperation)}`
       }
 
       return details

@@ -13,10 +13,10 @@ import {
   useEffect,
   useState,
 } from 'react'
-import type { TableNodeType } from '@/features/erd/types'
-import type { ShowMode } from '@/schemas'
-import { compressToEncodedUriComponent } from '@/utils/compressToEncodedUriComponent'
-import { decompressFromEncodedUriComponent } from '@/utils/decompressFromEncodedUriComponent'
+import type { TableNodeType } from '../../features/erd/types'
+import type { ShowMode } from '../../schemas'
+import { compressToEncodedUriComponent } from '../../utils/compressToEncodedUriComponent'
+import { decompressFromEncodedUriComponent } from '../../utils/decompressFromEncodedUriComponent'
 import { UserEditingContext } from './context'
 
 const parseAsCompressedStringArray = createParser({

@@ -1,6 +1,6 @@
 import { ArrowUpRight } from '@liam-hq/ui'
 import type { FC } from 'react'
-import { FormatIcon, type FormatType } from '@/components/FormatIcon'
+import { FormatIcon, type FormatType } from '../FormatIcon'
 import styles from './SchemaLink.module.css'
 
 type SchemaLinkProps = {

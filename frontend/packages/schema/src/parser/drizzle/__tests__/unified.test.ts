@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
-import { createParserTestCases } from '@/parser/__tests__/index.js'
-import type { Constraint, Table } from '@/schema/index.js'
-import { aColumn, anIndex, aSchema, aTable } from '@/schema/index.js'
+import type { Constraint, Table } from '../../../schema/index.js'
+import { aColumn, anIndex, aSchema, aTable } from '../../../schema/index.js'
+import { createParserTestCases } from '../../__tests__/index.js'
 import { processor as mysqlProcessor } from '../mysql/index.js'
 import { processor as postgresProcessor } from '../postgres/index.js'
 

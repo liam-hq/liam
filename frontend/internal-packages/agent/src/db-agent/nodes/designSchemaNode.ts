@@ -1,22 +1,19 @@
 import type { RunnableConfig } from '@langchain/core/runnables'
-import type { Database } from '@liam-hq/db'
 import { getConfigurable } from '../../chat/workflow/shared/getConfigurable'
-import type { WorkflowState } from '../../chat/workflow/types'
-import { withTimelineItemSync } from '../../chat/workflow/utils/withTimelineItemSync'
 import { WorkflowTerminationError } from '../../shared/errorHandling'
 import { convertSchemaToText } from '../../utils/convertSchemaToText'
 import { removeReasoningFromMessages } from '../../utils/messageCleanup'
 import { invokeDesignAgent } from '../invokeDesignAgent'
+import type { DbAgentState } from '../shared/dbAgentAnnotation'
 
 /**
  * Design Schema Node - DB Design & DDL Execution
  * Performed by dbAgent
  */
 export async function designSchemaNode(
-  state: WorkflowState,
+  state: DbAgentState,
   config: RunnableConfig,
-): Promise<WorkflowState> {
-  const assistantRole: Database['public']['Enums']['assistant_role_enum'] = 'db'
+): Promise<DbAgentState> {
   const configurableResult = getConfigurable(config)
   if (configurableResult.isErr()) {
     throw new WorkflowTerminationError(
@@ -45,18 +42,9 @@ export async function designSchemaNode(
 
   const { response } = invokeResult.value
 
-  // Apply timeline sync to the message and clear retry flags
-  const syncedMessage = await withTimelineItemSync(response, {
-    designSessionId: state.designSessionId,
-    organizationId: state.organizationId || '',
-    userId: state.userId,
-    repositories,
-    assistantRole,
-  })
-
   return {
     ...state,
-    messages: [syncedMessage],
+    messages: [response],
     latestVersionNumber: state.latestVersionNumber + 1,
   }
 }

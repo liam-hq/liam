@@ -15,11 +15,11 @@ import {
   useRef,
   useState,
 } from 'react'
-import { useTableSelection } from '@/features/erd/hooks'
-import type { TableNodeType } from '@/features/erd/types'
-import { selectTableLogEvent } from '@/features/gtm/utils'
-import { useVersionOrThrow } from '@/providers'
-import { useUserEditingOrThrow } from '@/stores'
+import { useVersionOrThrow } from '../../../../../../providers'
+import { useUserEditingOrThrow } from '../../../../../../stores'
+import { selectTableLogEvent } from '../../../../../gtm/utils'
+import { useTableSelection } from '../../../../hooks'
+import type { TableNodeType } from '../../../../types'
 import styles from './TableNameMenuButton.module.css'
 import { VisibilityButton } from './VisibilityButton'
 

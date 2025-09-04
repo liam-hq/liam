@@ -591,6 +591,7 @@ function isPrimitiveType(
   )
 }
 
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: TODO: Refactor to reduce complexity
 function extractDefaultValue(field: DMMF.Field) {
   const value = field.default?.valueOf()
   const defaultValue = value === undefined ? null : value

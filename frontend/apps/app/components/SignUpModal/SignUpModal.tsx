@@ -12,7 +12,7 @@ import {
   ModalTitle,
   XIcon,
 } from '@liam-hq/ui'
-import { type ChangeEvent, type FC, useCallback, useState } from 'react'
+import { type ChangeEvent, type FC, useCallback, useId, useState } from 'react'
 import authStyles from '../AuthModal.module.css'
 
 type Props = {
@@ -27,6 +27,7 @@ export const SignUpModal: FC<Props> = ({
   onSwitchToSignIn,
 }) => {
   const [email, setEmail] = useState<string>('')
+  const emailInputId = useId()
 
   const handleChangeEmail = useCallback((e: ChangeEvent<HTMLInputElement>) => {
     setEmail(e.target.value)
@@ -75,11 +76,11 @@ export const SignUpModal: FC<Props> = ({
               <div className={authStyles.oauthList}>
                 <form onSubmit={handleEmailSignUp} className={authStyles.form}>
                   <div className={authStyles.formGroup}>
-                    <label htmlFor="signup-email" className={authStyles.label}>
+                    <label htmlFor={emailInputId} className={authStyles.label}>
                       Email
                     </label>
                     <Input
-                      id="signup-email"
+                      id={emailInputId}
                       name="email"
                       type="email"
                       placeholder="Enter your email"

@@ -2,7 +2,7 @@
 import { cookies, headers } from 'next/headers'
 import { redirect } from 'next/navigation'
 
-import { createClient } from '@/libs/db/server'
+import { createClient } from '../../../libs/db/server'
 
 type OAuthProvider = 'github'
 

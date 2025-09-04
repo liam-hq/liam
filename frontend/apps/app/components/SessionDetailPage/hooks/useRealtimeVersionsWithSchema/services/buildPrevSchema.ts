@@ -6,7 +6,7 @@ import {
   type Schema,
 } from '@liam-hq/schema'
 import * as v from 'valibot'
-import { createClient } from '@/libs/db/client'
+import { createClient } from '../../../../../libs/db/client'
 
 type Params = {
   currentSchema: Schema

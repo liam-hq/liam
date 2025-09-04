@@ -1,10 +1,10 @@
 'use server'
 
+import { generateOrganizationNameFromUser } from '../../../features/organizations/services/generateOrganizationNameFromUser'
+import { setOrganizationIdCookie } from '../../../features/organizations/services/setOrganizationIdCookie'
+import { createClient } from '../../../libs/db/server'
 // TODO: move to /features/organizations/services directory
-import { createOrganization } from '@/components/OrganizationNewPage/actions/createOrganizations'
-import { generateOrganizationNameFromUser } from '@/features/organizations/services/generateOrganizationNameFromUser'
-import { setOrganizationIdCookie } from '@/features/organizations/services/setOrganizationIdCookie'
-import { createClient } from '@/libs/db/server'
+import { createOrganization } from '../../OrganizationNewPage/actions/createOrganizations'
 
 export async function ensureUserHasOrganization() {
   const supabase = await createClient()

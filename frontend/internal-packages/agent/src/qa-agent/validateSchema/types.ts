@@ -7,7 +7,6 @@ export type TestcaseDmlExecutionResult = {
   testCaseId: string
   testCaseTitle: string
   success: boolean
-  executedOperations: number
-  failedOperations?: FailedOperation[]
+  failedOperation?: FailedOperation | undefined
   executedAt: Date
 }

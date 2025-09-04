@@ -2,7 +2,7 @@ import { ToolbarIconButton } from '@liam-hq/erd-core'
 import { MessageCircleIcon } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { type FC, useCallback } from 'react'
-import { urlgen } from '@/libs/routes'
+import { urlgen } from '../../../../libs/routes'
 
 type Props = {
   projectId: string

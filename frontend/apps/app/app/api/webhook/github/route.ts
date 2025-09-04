@@ -2,7 +2,7 @@ import crypto from 'node:crypto'
 import type { GitHubWebhookPayload } from '@liam-hq/github'
 import { supportedEvents } from '@liam-hq/github'
 import { type NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/libs/db/server'
+import { createClient } from '../../../../libs/db/server'
 import { checkSchemaChanges } from './utils/checkSchemaChanges'
 
 const verifyWebhookSignature = (

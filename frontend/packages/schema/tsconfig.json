@@ -4,10 +4,7 @@
     "outDir": "dist",
     "declaration": true,
     "target": "ES2022",
-    "baseUrl": ".",
-    "paths": {
-      "@/*": ["src/*"]
-    }
+    "baseUrl": "."
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist"]

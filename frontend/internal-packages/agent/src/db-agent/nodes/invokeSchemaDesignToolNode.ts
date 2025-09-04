@@ -5,9 +5,8 @@ import { ToolNode } from '@langchain/langgraph/prebuilt'
 import type { Schema } from '@liam-hq/schema'
 import type { ResultAsync } from 'neverthrow'
 import { getConfigurable } from '../../chat/workflow/shared/getConfigurable'
-import type { WorkflowState } from '../../chat/workflow/types'
-import { withTimelineItemSync } from '../../chat/workflow/utils/withTimelineItemSync'
 import type { Repositories } from '../../repositories'
+import type { DbAgentState } from '../shared/dbAgentAnnotation'
 import { schemaDesignTool } from '../tools/schemaDesignTool'
 
 /**
@@ -46,7 +45,7 @@ const fetchUpdatedSchemaWithResult = (
 }
 
 export const invokeSchemaDesignToolNode = async (
-  state: WorkflowState,
+  state: DbAgentState,
   config: RunnableConfig,
 ) => {
   const configurableResult = getConfigurable(config)
@@ -75,31 +74,18 @@ export const invokeSchemaDesignToolNode = async (
     result = chunk
   }
 
-  // Sync all ToolMessages to timeline
   const messages = result.messages
   if (!Array.isArray(messages)) {
     return result
   }
 
-  const syncedMessages = await Promise.all(
-    messages.map(async (message: BaseMessage) => {
-      return await withTimelineItemSync(message, {
-        designSessionId: state.designSessionId,
-        organizationId: state.organizationId || '',
-        userId: state.userId,
-        repositories,
-        assistantRole: 'db',
-      })
-    }),
-  )
-
   let updatedResult = {
     ...state,
     ...result,
-    messages: syncedMessages,
+    messages: messages,
   }
 
-  if (wasSchemaDesignToolSuccessful(syncedMessages)) {
+  if (wasSchemaDesignToolSuccessful(messages)) {
     const schemaResult = await fetchUpdatedSchemaWithResult(
       repositories,
       state.designSessionId,

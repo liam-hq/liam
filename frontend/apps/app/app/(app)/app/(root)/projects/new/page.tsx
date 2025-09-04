@@ -1,9 +1,9 @@
 import { getInstallations } from '@liam-hq/github'
 import { redirect } from 'next/navigation'
-import { ProjectNewPage } from '@/components/ProjectNewPage'
-import { getOrganizationId } from '@/features/organizations/services/getOrganizationId'
-import { createClient } from '@/libs/db/server'
-import { urlgen } from '@/libs/routes'
+import { ProjectNewPage } from '../../../../../../components/ProjectNewPage'
+import { getOrganizationId } from '../../../../../../features/organizations/services/getOrganizationId'
+import { createClient } from '../../../../../../libs/db/server'
+import { urlgen } from '../../../../../../libs/routes'
 
 export default async function NewProjectPage() {
   const organizationIdResult = await getOrganizationId()

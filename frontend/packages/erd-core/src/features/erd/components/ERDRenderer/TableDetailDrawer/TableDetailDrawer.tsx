@@ -1,6 +1,6 @@
 import { DrawerContent, DrawerPortal, DrawerRoot } from '@liam-hq/ui'
 import { type FC, type PropsWithChildren, useCallback, useMemo } from 'react'
-import { useSchemaOrThrow, useUserEditingOrThrow } from '@/stores'
+import { useSchemaOrThrow, useUserEditingOrThrow } from '../../../../../stores'
 import { TableDetail } from '../../ERDContent/components/TableNode/TableDetail'
 import styles from './TableDetailDrawer.module.css'
 

@@ -233,6 +233,7 @@ export class SupabaseSchemaRepository implements SchemaRepository {
     return versions.length > 0 ? Math.max(...versions.map((v) => v.number)) : 0
   }
 
+  // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: TODO: Refactor to reduce complexity
   async createVersion(params: CreateVersionParams): Promise<VersionResult> {
     const { buildingSchemaId, latestVersionNumber, patch } = params
 

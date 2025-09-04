@@ -1,6 +1,6 @@
 'use server'
 
-import { createClient, createPublicServerClient } from '@/libs/db/server'
+import { createClient, createPublicServerClient } from '../../libs/db/server'
 
 export async function checkPublicShareStatus(designSessionId: string) {
   // Use public client for checking share status (no auth required)

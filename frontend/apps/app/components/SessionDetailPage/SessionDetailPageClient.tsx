@@ -154,7 +154,6 @@ export const SessionDetailPageClient: FC<Props> = ({
           <Chat
             schemaData={displayedSchema}
             messages={messages}
-            timelineItems={timelineItems}
             isWorkflowRunning={status === 'pending' || isStreaming}
             onMessageSend={addOrUpdateTimelineItem}
           />

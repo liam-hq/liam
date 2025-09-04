@@ -1,6 +1,6 @@
 import type { BaseLayoutProps } from 'fumadocs-ui/layouts/shared'
 import { FolderKanban } from 'lucide-react'
-import { LiamLogo } from '@/components'
+import { LiamLogo } from '../components'
 
 /**
  * Shared layout configurations

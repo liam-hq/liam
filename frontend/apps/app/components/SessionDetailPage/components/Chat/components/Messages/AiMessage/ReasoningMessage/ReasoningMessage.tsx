@@ -1,5 +1,5 @@
 import type { FC } from 'react'
-import { MarkdownContent } from '@/components/MarkdownContent'
+import { MarkdownContent } from '../../../../../../../MarkdownContent'
 import styles from './ReasoningMessage.module.css'
 
 type Props = {

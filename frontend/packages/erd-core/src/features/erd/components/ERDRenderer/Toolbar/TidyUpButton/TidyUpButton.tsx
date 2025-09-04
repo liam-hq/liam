@@ -6,11 +6,11 @@ import {
   type ReactNode,
   useCallback,
 } from 'react'
-import { computeAutoLayout } from '@/features/erd/utils'
-import { toolbarActionLogEvent } from '@/features/gtm/utils'
-import { useCustomReactflow } from '@/features/reactflow/hooks'
-import { useVersionOrThrow } from '@/providers'
-import { useUserEditingOrThrow } from '@/stores'
+import { useVersionOrThrow } from '../../../../../../providers'
+import { useUserEditingOrThrow } from '../../../../../../stores'
+import { toolbarActionLogEvent } from '../../../../../gtm/utils'
+import { useCustomReactflow } from '../../../../../reactflow/hooks'
+import { computeAutoLayout } from '../../../../utils'
 import { ToolbarIconButton } from '../ToolbarIconButton'
 
 type TidyUpButtonProps = {

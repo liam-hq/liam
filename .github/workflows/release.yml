@@ -1,3 +1,8 @@
+# NOTE: This workflow is configured as a Trusted Publisher on npmjs.com
+# The workflow filename "release.yml" is registered in the Trusted Publisher settings.
+# If you rename this file, you must also update the Trusted Publisher configuration on npmjs.com
+# ex. https://www.npmjs.com/package/@liam-hq/cli/access
+
 name: release
 on:
   push:
@@ -42,7 +47,6 @@ jobs:
           publish: pnpm run release
         env:
           GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
       - name: Trigger released_package_test.yml via API
         if: ${{ steps.changesets-action.outputs.published == 'true' }}
         run: |

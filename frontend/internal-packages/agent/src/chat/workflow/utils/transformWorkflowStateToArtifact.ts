@@ -57,10 +57,14 @@ const convertAnalyzedRequirementsToArtifact = (
  */
 const mapTestCasesToRequirements = (
   testcase: Testcase,
-): { title: string; description: string; dml_operations: DmlOperation[] } => ({
+): {
+  title: string
+  description: string
+  dmlOperation: DmlOperation
+} => ({
   title: testcase.title,
   description: testcase.description,
-  dml_operations: testcase.dmlOperations, // Use the actual dmlOperations from testcase
+  dmlOperation: testcase.dmlOperation,
 })
 
 /**
@@ -125,8 +129,8 @@ export const transformWorkflowStateToArtifact = (
     ? convertAnalyzedRequirementsToArtifact(state.analyzedRequirements)
     : []
 
-  if (state.generatedTestcases && state.generatedTestcases.length > 0) {
-    mergeTestCasesIntoRequirements(requirements, state.generatedTestcases)
+  if (state.testcases.length > 0) {
+    mergeTestCasesIntoRequirements(requirements, state.testcases)
   }
 
   return {

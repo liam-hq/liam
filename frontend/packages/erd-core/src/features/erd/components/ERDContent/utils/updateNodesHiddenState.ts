@@ -1,5 +1,5 @@
 import type { Node } from '@xyflow/react'
-import { NON_RELATED_TABLE_GROUP_NODE_ID } from '@/features/erd/constants'
+import { NON_RELATED_TABLE_GROUP_NODE_ID } from '../../../constants'
 
 type Params = {
   nodes: Node[]

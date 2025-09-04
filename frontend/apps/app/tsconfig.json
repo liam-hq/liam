@@ -13,16 +13,7 @@
       {
         "name": "next"
       }
-    ],
-    "paths": {
-      "@/*": [
-        "./*",
-        "../../packages/erd-core/src/*",
-        "../../packages/schema/src/*",
-        "../../packages/jobs/src/*",
-        "../../packages/ui/src/*"
-      ]
-    }
+    ]
   },
   "include": [
     "next-env.d.ts",

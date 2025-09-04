@@ -1,6 +1,6 @@
 import { createContext } from 'react'
-import type { TableNodeType } from '@/features/erd/types'
-import type { ShowMode } from '@/schemas'
+import type { TableNodeType } from '../../features/erd/types'
+import type { ShowMode } from '../../schemas'
 
 export type UserEditingContextValue = {
   // URL synchronized state

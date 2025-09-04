@@ -3,7 +3,7 @@ import { useCallback, useEffect, useRef, useState, useTransition } from 'react'
 import {
   disablePublicShare,
   enablePublicShare,
-} from '@/features/public-share/actions'
+} from '../features/public-share/actions'
 
 type UsePublicShareServerActionProps = {
   designSessionId: string

@@ -1,4 +1,4 @@
-import type { FormatType } from '@/components/FormatIcon/FormatIcon'
+import type { FormatType } from '../../../../../../components/FormatIcon/FormatIcon'
 
 const getFileExtension = (fileName: string): string => {
   if (!fileName || typeof fileName !== 'string') {

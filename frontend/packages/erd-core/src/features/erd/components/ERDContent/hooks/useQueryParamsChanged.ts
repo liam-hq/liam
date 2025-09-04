@@ -1,8 +1,8 @@
 import { useCallback, useEffect } from 'react'
-import type { DisplayArea } from '@/features/erd/types'
-import { computeAutoLayout, highlightNodesAndEdges } from '@/features/erd/utils'
-import { useCustomReactflow } from '@/features/reactflow/hooks'
-import { useUserEditingOrThrow } from '@/stores'
+import { useUserEditingOrThrow } from '../../../../../stores'
+import { useCustomReactflow } from '../../../../reactflow/hooks'
+import type { DisplayArea } from '../../../types'
+import { computeAutoLayout, highlightNodesAndEdges } from '../../../utils'
 import { hasNonRelatedChildNodes, updateNodesHiddenState } from '../utils'
 import { usePopStateListener } from './usePopStateListener'
 

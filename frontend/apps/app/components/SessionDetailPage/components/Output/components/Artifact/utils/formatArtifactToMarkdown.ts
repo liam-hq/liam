@@ -12,54 +12,45 @@ function formatTestCase(
   sections.push('')
   sections.push(testCase.description)
 
-  if (testCase.dml_operations.length > 0) {
+  const operation = testCase.dmlOperation
+  sections.push('')
+
+  // Format as heading with operation type and description
+  if (operation.description) {
+    sections.push(
+      `##### **${operation.operation_type}** - ${operation.description}`,
+    )
+  } else {
+    sections.push(`##### **${operation.operation_type}**`)
+  }
+  sections.push('')
+
+  // SQL code block
+  sections.push('```sql')
+  sections.push(operation.sql.trim())
+  sections.push('```')
+
+  // Execution logs
+  if (operation.dml_execution_logs.length > 0) {
+    sections.push('')
+    sections.push(`**${EXECUTION_SECTION_TITLE}:**`)
     sections.push('')
 
-    // Format all operations directly as headings
-    testCase.dml_operations.forEach((operation, opIndex) => {
-      // Format as heading with operation type and description
-      if (operation.description) {
-        sections.push(
-          `##### **${operation.operation_type}** - ${operation.description}`,
-        )
-      } else {
-        sections.push(`##### **${operation.operation_type}**`)
-      }
+    operation.dml_execution_logs.forEach((log) => {
+      const statusIcon = log.success ? SUCCESS_ICON : FAILURE_ICON
+      const executedAt = new Date(log.executed_at).toLocaleString('en-US', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        timeZone: 'UTC',
+      })
+
+      sections.push(`${statusIcon} **${executedAt}**`)
+      sections.push(`> ${log.result_summary}`)
       sections.push('')
-
-      // SQL code block
-      sections.push('```sql')
-      sections.push(operation.sql.trim())
-      sections.push('```')
-
-      // Execution logs
-      if (operation.dml_execution_logs.length > 0) {
-        sections.push('')
-        sections.push(`**${EXECUTION_SECTION_TITLE}:**`)
-        sections.push('')
-
-        operation.dml_execution_logs.forEach((log) => {
-          const statusIcon = log.success ? SUCCESS_ICON : FAILURE_ICON
-          const executedAt = new Date(log.executed_at).toLocaleString('en-US', {
-            year: 'numeric',
-            month: '2-digit',
-            day: '2-digit',
-            hour: '2-digit',
-            minute: '2-digit',
-            second: '2-digit',
-            timeZone: 'UTC',
-          })
-
-          sections.push(`${statusIcon} **${executedAt}**`)
-          sections.push(`> ${log.result_summary}`)
-          sections.push('')
-        })
-      }
-
-      if (opIndex < testCase.dml_operations.length - 1) {
-        sections.push('---')
-        sections.push('')
-      }
     })
   }
 

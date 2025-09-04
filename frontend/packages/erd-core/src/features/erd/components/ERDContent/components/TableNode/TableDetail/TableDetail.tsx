@@ -1,10 +1,13 @@
 import type { Table } from '@liam-hq/schema'
 import { type FC, useCallback } from 'react'
-import { computeAutoLayout, convertSchemaToNodes } from '@/features/erd/utils'
-import { openRelatedTablesLogEvent } from '@/features/gtm/utils'
-import { useCustomReactflow } from '@/features/reactflow/hooks'
-import { useVersionOrThrow } from '@/providers'
-import { useSchemaOrThrow, useUserEditingOrThrow } from '@/stores'
+import { useVersionOrThrow } from '../../../../../../../providers'
+import {
+  useSchemaOrThrow,
+  useUserEditingOrThrow,
+} from '../../../../../../../stores'
+import { openRelatedTablesLogEvent } from '../../../../../../gtm/utils'
+import { useCustomReactflow } from '../../../../../../reactflow/hooks'
+import { computeAutoLayout, convertSchemaToNodes } from '../../../../../utils'
 import { updateNodesHiddenState } from '../../../utils'
 import { Columns } from './Columns'
 import { Comment } from './Comment'

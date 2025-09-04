@@ -1,12 +1,12 @@
 import type { BaseMessage } from '@langchain/core/messages'
 import { AIMessage } from '@langchain/core/messages'
-import type { WorkflowState } from '../../chat/workflow/types'
+import type { QaAgentState } from '../shared/qaAgentAnnotation'
 
 /**
  * Route after generateTestcaseAndDml node based on whether tool calls are present
  */
 export const routeAfterGenerateTestcaseAndDml = (
-  state: WorkflowState,
+  state: QaAgentState,
 ): 'invokeSaveTestcasesAndDmlTool' | 'validateSchema' => {
   const { messages } = state
   const lastMessage = messages[messages.length - 1]

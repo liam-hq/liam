@@ -1,8 +1,7 @@
 'use client'
 
-import { Button } from '@liam-hq/ui'
+import { Button, LiamLogoMark } from '@liam-hq/ui'
 import { useState, useTransition } from 'react'
-import { LiamLogoMark } from '@/logos'
 import { acceptInvitation } from './actions/acceptInvitation'
 import styles from './InvitationCard.module.css'
 

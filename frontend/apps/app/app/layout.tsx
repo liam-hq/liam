@@ -5,7 +5,7 @@ import type React from 'react'
 import './globals.css'
 import { ToastProvider } from '@liam-hq/ui'
 import { GoogleTagManager } from '@next/third-parties/google'
-import { GTM_ID, GTMConsent, GtagScript } from '@/libs/gtm'
+import { GTM_ID, GTMConsent, GtagScript } from '../libs/gtm'
 
 const inter = Inter({
   subsets: ['latin'],

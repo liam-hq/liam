@@ -9,7 +9,7 @@ import {
   Wrench,
 } from '@liam-hq/ui'
 import { type FC, useMemo, useState } from 'react'
-import { MarkdownContent } from '@/components/MarkdownContent'
+import { MarkdownContent } from '../../../../../../../../MarkdownContent'
 import markdownStyles from '../../../Markdown.module.css'
 import type { ToolCall as ToolCallType } from '../../../schema'
 import { extractResponseFromMessage } from '../../../utils/extractResponseFromMessage'

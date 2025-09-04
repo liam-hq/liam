@@ -7,8 +7,8 @@ import {
   schemaSchema,
 } from '@liam-hq/schema'
 import * as v from 'valibot'
-import type { Version } from '@/components/SessionDetailPage/types'
-import { createClient } from '@/libs/db/client'
+import { createClient } from '../../../../../libs/db/client'
+import type { Version } from '../../../types'
 
 async function getPreviousVersions(
   buildingSchemaId: string,

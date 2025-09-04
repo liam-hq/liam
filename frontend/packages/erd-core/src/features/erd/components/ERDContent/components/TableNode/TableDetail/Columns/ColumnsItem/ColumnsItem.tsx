@@ -2,8 +2,11 @@ import type { Column, Constraints } from '@liam-hq/schema'
 import { GridTableRoot } from '@liam-hq/ui'
 import clsx from 'clsx'
 import { type FC, useMemo } from 'react'
-import { useDiffStyle } from '@/features/diff/hooks/useDiffStyle'
-import { useSchemaOrThrow, useUserEditingOrThrow } from '@/stores'
+import {
+  useSchemaOrThrow,
+  useUserEditingOrThrow,
+} from '../../../../../../../../../stores'
+import { useDiffStyle } from '../../../../../../../../diff/hooks/useDiffStyle'
 import styles from './ColumnsItem.module.css'
 import { Comment } from './Comment'
 import { Default } from './Default'

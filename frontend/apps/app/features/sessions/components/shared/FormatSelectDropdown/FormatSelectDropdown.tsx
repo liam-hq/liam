@@ -8,7 +8,10 @@ import {
 } from '@liam-hq/ui'
 import clsx from 'clsx'
 import type { FC } from 'react'
-import { FormatIcon, type FormatType } from '@/components/FormatIcon/FormatIcon'
+import {
+  FormatIcon,
+  type FormatType,
+} from '../../../../../components/FormatIcon/FormatIcon'
 import styles from './FormatSelectDropdown.module.css'
 
 type FormatOption = {

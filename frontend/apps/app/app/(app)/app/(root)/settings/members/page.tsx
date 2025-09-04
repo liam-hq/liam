@@ -1,8 +1,8 @@
 import { notFound, redirect } from 'next/navigation'
-import { OrganizationMembersPage } from '@/components/OrganizationMembersPage'
-import { getOrganizationId } from '@/features/organizations/services/getOrganizationId'
-import { createClient } from '@/libs/db/server'
-import { urlgen } from '@/libs/routes'
+import { OrganizationMembersPage } from '../../../../../../components/OrganizationMembersPage'
+import { getOrganizationId } from '../../../../../../features/organizations/services/getOrganizationId'
+import { createClient } from '../../../../../../libs/db/server'
+import { urlgen } from '../../../../../../libs/routes'
 
 export default async function MembersPage() {
   const organizationIdResult = await getOrganizationId()

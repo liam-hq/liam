@@ -2,7 +2,7 @@
 
 import { getRepositoryBranches } from '@liam-hq/github'
 import * as v from 'valibot'
-import { createClient } from '@/libs/db/server'
+import { createClient } from '../../../../../libs/db/server'
 
 type BranchWithSha = {
   name: string

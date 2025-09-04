@@ -1,6 +1,6 @@
 import type { Schema } from '@liam-hq/schema'
+import { TabsContent, TabsRoot } from '@liam-hq/ui'
 import { type ComponentProps, type FC, useCallback, useState } from 'react'
-import { TabsContent, TabsRoot } from '@/components'
 import type { ReviewComment } from '../../types'
 import { ArtifactContainer } from './components/Artifact/ArtifactContainer'
 import { useRealtimeArtifact } from './components/Artifact/hooks/useRealtimeArtifact'

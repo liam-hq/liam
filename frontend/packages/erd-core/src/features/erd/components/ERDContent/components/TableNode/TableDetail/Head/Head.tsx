@@ -8,10 +8,13 @@ import {
 } from '@liam-hq/ui'
 import clsx from 'clsx'
 import { type FC, useMemo } from 'react'
-import { useDiffStyle } from '@/features/diff/hooks/useDiffStyle'
-import { clickLogEvent } from '@/features/gtm/utils'
-import { useVersionOrThrow } from '@/providers'
-import { useSchemaOrThrow, useUserEditingOrThrow } from '@/stores'
+import { useVersionOrThrow } from '../../../../../../../../providers'
+import {
+  useSchemaOrThrow,
+  useUserEditingOrThrow,
+} from '../../../../../../../../stores'
+import { useDiffStyle } from '../../../../../../../diff/hooks/useDiffStyle'
+import { clickLogEvent } from '../../../../../../../gtm/utils'
 import styles from './Head.module.css'
 
 type Props = {

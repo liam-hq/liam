@@ -30,6 +30,7 @@ describe('designSchemaNode Integration', () => {
         enums: {},
         extensions: {},
       },
+      testcases: [],
       buildingSchemaId: context.buildingSchemaId,
       latestVersionNumber: context.latestVersionNumber,
       designSessionId: context.designSessionId,

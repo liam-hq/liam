@@ -159,6 +159,7 @@ export class SupabaseCheckpointSaver extends BaseCheckpointSaver<number> {
     return tuple
   }
 
+  // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: TODO: Refactor to reduce complexity
   async *list(
     config: RunnableConfig,
     options?: CheckpointListOptions,

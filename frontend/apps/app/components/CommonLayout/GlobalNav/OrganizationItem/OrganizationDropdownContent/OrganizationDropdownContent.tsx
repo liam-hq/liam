@@ -1,17 +1,17 @@
 'use client'
 
-import { Plus } from '@liam-hq/ui'
-import { useRouter } from 'next/navigation'
-import { type FC, useCallback } from 'react'
 import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
   DropdownMenuSeparator,
-} from '@/components'
-import { setOrganizationIdCookie } from '@/features/organizations/services/setOrganizationIdCookie'
-import { urlgen } from '@/libs/routes'
+  Plus,
+} from '@liam-hq/ui'
+import { useRouter } from 'next/navigation'
+import { type FC, useCallback } from 'react'
+import { setOrganizationIdCookie } from '../../../../../features/organizations/services/setOrganizationIdCookie'
+import { urlgen } from '../../../../../libs/routes'
 import type { Organization } from '../../../services/getOrganization'
 import type { OrganizationsByUserId } from '../../../services/getOrganizationsByUserId'
 import styles from './OrganizationDropdownContent.module.css'

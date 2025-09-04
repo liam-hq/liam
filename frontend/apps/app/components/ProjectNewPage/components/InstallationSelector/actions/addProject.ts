@@ -2,9 +2,9 @@
 
 import { redirect } from 'next/navigation'
 import * as v from 'valibot'
-import { getOrganizationId } from '@/features/organizations/services/getOrganizationId'
-import { createClient } from '@/libs/db/server'
-import { urlgen } from '@/libs/routes'
+import { getOrganizationId } from '../../../../../features/organizations/services/getOrganizationId'
+import { createClient } from '../../../../../libs/db/server'
+import { urlgen } from '../../../../../libs/routes'
 
 // Define schema for RPC function response validation
 const addProjectResultSchema = v.union([

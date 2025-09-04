@@ -2,8 +2,8 @@ import { renderHook } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { NuqsTestingAdapter } from 'nuqs/adapters/testing'
 import { afterEach, expect, it, vi } from 'vitest'
-import * as Store from '@/stores'
-import { UserEditingProvider } from '@/stores'
+import * as Store from '../../../../../../../stores'
+import { UserEditingProvider } from '../../../../../../../stores'
 import { useSubscribeShowModeCommand } from './useSubscribeSwitchShowMode'
 
 const mockSetShowMode = vi.fn()

@@ -1,14 +1,14 @@
 import { END, START, StateGraph } from '@langchain/langgraph'
 import type { BaseCheckpointSaver } from '@langchain/langgraph-checkpoint'
-import { workflowAnnotation } from '../chat/workflow/shared/workflowAnnotation'
 import { RETRY_POLICY } from '../shared/errorHandling'
 import { generateTestcaseAndDmlNode } from './generateTestcaseAndDml'
 import { invokeSaveTestcasesAndDmlToolNode } from './nodes/invokeSaveTestcasesAndDmlToolNode'
 import { routeAfterGenerateTestcaseAndDml } from './routing/routeAfterGenerateTestcaseAndDml'
+import { qaAgentAnnotation } from './shared/qaAgentAnnotation'
 import { validateSchemaNode } from './validateSchema'
 
 export const createQaAgentGraph = (checkpointer?: BaseCheckpointSaver) => {
-  const qaAgentGraph = new StateGraph(workflowAnnotation)
+  const qaAgentGraph = new StateGraph(qaAgentAnnotation)
 
   qaAgentGraph
     .addNode('generateTestcaseAndDml', generateTestcaseAndDmlNode, {

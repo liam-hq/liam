@@ -19,8 +19,8 @@ import {
   useRef,
   useState,
 } from 'react'
-import { AuthModals } from '@/components/AuthModals'
-import { useAuthModal } from '@/hooks/useAuthModal'
+import { useAuthModal } from '../../../../../../hooks/useAuthModal'
+import { AuthModals } from '../../../../../AuthModals'
 import { useViewMode } from '../../../../hooks/viewMode'
 import styles from './ChatInput.module.css'
 import { CtaBar } from './CtaBar'

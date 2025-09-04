@@ -2,7 +2,7 @@
 import { redirect } from 'next/navigation'
 import * as v from 'valibot'
 
-import { createClient } from '@/libs/db/server'
+import { createClient } from '../../../libs/db/server'
 import { ensureUserHasOrganization } from './ensureUserHasOrganization'
 
 export async function loginByEmail(formData: FormData) {

@@ -1,7 +1,7 @@
 'use client'
 
 import { add, getTime, isAfter } from 'date-fns'
-import { Banner } from '@/components'
+import { Banner } from '../components'
 import './global.css'
 import { CookieConsent } from '@liam-hq/ui'
 import { GoogleTagManager } from '@next/third-parties/google'
@@ -14,7 +14,7 @@ import {
   GTMConsent,
   GtagScript,
   updateConsent,
-} from '@/lib/gtm'
+} from '../lib/gtm'
 
 const COOKIE_CONSENT_EXPIRE_KEY = 'cookieConsentExpire'
 
@@ -78,6 +78,7 @@ export default function Layout({ children }: { children: ReactNode }) {
             },
           }}
         >
+          {/* biome-ignore lint/nursery/useUniqueElementIds: Banner ID is used for localStorage persistence and CSS styling */}
           <Banner
             id="liam-erd-introduction"
             variant="dark"

@@ -1,7 +1,7 @@
 'use server'
 
 import { Resend } from 'resend'
-import { createClient } from '@/libs/db/server'
+import { createClient } from '../../../../../libs/db/server'
 
 // Email template component
 const InvitationEmail = ({

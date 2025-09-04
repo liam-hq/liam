@@ -1,7 +1,10 @@
 'use client'
 
 import type { FC } from 'react'
-import { type Branch, BranchCombobox } from '@/components/shared/BranchCombobox'
+import {
+  type Branch,
+  BranchCombobox,
+} from '../../../../../components/shared/BranchCombobox'
 import styles from './BranchesDropdown.module.css'
 
 type Props = {

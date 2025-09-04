@@ -1,5 +1,5 @@
 import type { Schema } from '@liam-hq/schema'
-import { createClient } from '@/libs/db/server'
+import { createClient } from '../../../../../libs/db/server'
 import { fetchVersionById } from '../fetchVersionById'
 import { rollbackSchema } from '../rollbackSchema'
 

@@ -1,4 +1,4 @@
-import { createClient } from '@/libs/db/server'
+import { createClient } from '../../../libs/db/server'
 
 export const getProjects = async (organizationId?: string) => {
   const supabase = await createClient()

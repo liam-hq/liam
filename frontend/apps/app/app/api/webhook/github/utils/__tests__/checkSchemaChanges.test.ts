@@ -7,7 +7,7 @@ vi.mock('@liam-hq/github', () => ({
   getPullRequestFiles: vi.fn(),
 }))
 
-vi.mock('@/src/trigger/jobs', () => ({
+vi.mock('../../../../../src/trigger/jobs', () => ({
   savePullRequestTask: { trigger: vi.fn() },
 }))
 
@@ -72,7 +72,7 @@ describe('checkSchemaChanges', () => {
 
   it.skip('should return true if schema file changes are detected', async () => {
     // Get the Supabase client
-    const { createClient } = await import('@/libs/db/server')
+    const { createClient } = await import('../../../../../../libs/db/server')
     const supabase = await createClient()
 
     // Create a test project

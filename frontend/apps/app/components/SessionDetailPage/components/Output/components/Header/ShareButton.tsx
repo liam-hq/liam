@@ -3,10 +3,10 @@
 import { Button, Link } from '@liam-hq/ui'
 import type { FC } from 'react'
 import { useState } from 'react'
-import { AuthModals } from '@/components/AuthModals'
-import { useViewMode } from '@/components/SessionDetailPage/hooks/viewMode/useViewMode'
-import { ShareDialog } from '@/components/ShareDialog'
-import { useAuthModal } from '@/hooks/useAuthModal'
+import { useAuthModal } from '../../../../../../hooks/useAuthModal'
+import { AuthModals } from '../../../../../AuthModals'
+import { ShareDialog } from '../../../../../ShareDialog'
+import { useViewMode } from '../../../../hooks/viewMode/useViewMode'
 import styles from './ShareButton.module.css'
 
 type Props = {

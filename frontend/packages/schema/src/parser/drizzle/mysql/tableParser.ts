@@ -61,6 +61,7 @@ const parseTableExtensions = (
   indexes: Record<string, DrizzleIndexDefinition>
   constraints?: Record<string, Constraint>
   compositePrimaryKey?: CompositePrimaryKeyDefinition
+  // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: TODO: Refactor to reduce complexity
 } => {
   const result: {
     indexes: Record<string, DrizzleIndexDefinition>
@@ -277,6 +278,7 @@ export const parseSchemaTableCall = (
 const parseIndexDefinition = (
   callExpr: CallExpression,
   name: string,
+  // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: TODO: Refactor to reduce complexity
 ): DrizzleIndexDefinition | CompositePrimaryKeyDefinition | null => {
   // Handle primaryKey({ columns: [...] })
   if (
@@ -387,6 +389,7 @@ const parseIndexDefinition = (
 const parseCheckConstraint = (
   callExpr: CallExpression,
   name: string,
+  // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: TODO: Refactor to reduce complexity
 ): DrizzleCheckConstraintDefinition | null => {
   // Handle check('constraint_name', sql`condition`)
   if (
@@ -471,6 +474,7 @@ const parseUniqueConstraint = (
   callExpr: CallExpression,
   name: string,
   tableColumns: Record<string, DrizzleColumnDefinition>,
+  // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: TODO: Refactor to reduce complexity
 ): { type: 'UNIQUE'; name: string; columnNames: string[] } | null => {
   // Handle unique('constraint_name').on(...) method chain
   let constraintName = name

@@ -1,7 +1,7 @@
 import { useReactFlow } from '@xyflow/react'
 import { useCallback } from 'react'
-import { computeAutoLayout } from '@/features/erd/utils'
-import { useCustomReactflow } from '@/features/reactflow/hooks'
+import { useCustomReactflow } from '../../../../../reactflow/hooks'
+import { computeAutoLayout } from '../../../../utils'
 
 export const useFitScreen = () => {
   const { getNodes, getEdges, setNodes } = useReactFlow()

@@ -3,7 +3,7 @@
 import { Button } from '@liam-hq/ui'
 import { add, getTime, isAfter } from 'date-fns'
 import { type FC, useCallback, useEffect, useState } from 'react'
-import { GTM_CONSENT_MODE_KEY, updateConsent } from '@/libs/gtm'
+import { GTM_CONSENT_MODE_KEY, updateConsent } from '../../libs/gtm'
 import styles from './CookieConsent.module.css'
 
 const COOKIE_CONSENT_EXPIRE_KEY = 'cookieConsentExpire'

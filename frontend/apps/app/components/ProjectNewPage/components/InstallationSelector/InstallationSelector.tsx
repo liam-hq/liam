@@ -2,6 +2,13 @@
 
 import type { Installation, Repository } from '@liam-hq/github'
 import {
+  Button,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuRoot,
+  DropdownMenuTrigger,
+} from '@liam-hq/ui'
+import {
   type FC,
   useActionState,
   useCallback,
@@ -9,13 +16,6 @@ import {
   useTransition,
 } from 'react'
 import { match, P } from 'ts-pattern'
-import {
-  Button,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuRoot,
-  DropdownMenuTrigger,
-} from '@/components'
 import { RepositoryItem } from '../RepositoryItem'
 import { addProject } from './actions/addProject'
 import { getRepositories } from './actions/getRepositories'

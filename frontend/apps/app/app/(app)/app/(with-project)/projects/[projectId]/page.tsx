@@ -1,6 +1,6 @@
 import { notFound, redirect } from 'next/navigation'
 import * as v from 'valibot'
-import type { PageProps } from '@/app/types'
+import type { PageProps } from '../../../../../types'
 
 const paramsSchema = v.object({
   projectId: v.string(),

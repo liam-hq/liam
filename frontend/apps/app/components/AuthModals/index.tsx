@@ -1,5 +1,5 @@
 import type { FC } from 'react'
-import type { AuthModalType } from '@/hooks/useAuthModal'
+import type { AuthModalType } from '../../hooks/useAuthModal'
 import { SignInModal } from '../SignInModal'
 import { SignUpModal } from '../SignUpModal'
 

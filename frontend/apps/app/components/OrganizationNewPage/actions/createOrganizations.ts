@@ -1,6 +1,6 @@
 'use server'
 
-import { createClient } from '@/libs/db/server'
+import { createClient } from '../../../libs/db/server'
 
 type CreateOrganizationResult =
   | { success: true; organizationId: string }

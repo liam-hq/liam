@@ -1,12 +1,9 @@
 import type { Cardinality, Schema } from '@liam-hq/schema'
 import { constraintsToRelationships } from '@liam-hq/schema'
 import type { Edge, Node } from '@xyflow/react'
-import {
-  NON_RELATED_TABLE_GROUP_NODE_ID,
-  zIndex,
-} from '@/features/erd/constants'
-import { columnHandleId } from '@/features/erd/utils'
-import type { ShowMode } from '@/schemas/showMode'
+import type { ShowMode } from '../../../schemas/showMode'
+import { NON_RELATED_TABLE_GROUP_NODE_ID, zIndex } from '../constants'
+import { columnHandleId } from './'
 
 type Params = {
   schema: Schema

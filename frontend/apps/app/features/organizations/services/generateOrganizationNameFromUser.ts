@@ -1,6 +1,6 @@
 'use server'
 
-import { createClient } from '@/libs/db/server'
+import { createClient } from '../../../libs/db/server'
 
 export async function generateOrganizationNameFromUser(): Promise<
   string | null

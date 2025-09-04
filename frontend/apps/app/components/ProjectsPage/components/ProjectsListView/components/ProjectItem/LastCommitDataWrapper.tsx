@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState, useTransition } from 'react'
-import { formatDate } from '@/libs/utils'
+import { formatDate } from '../../../../../../libs/utils'
 import { fetchLastCommitData } from '../../../../services/fetchLastCommitData'
 
 type LastCommitDataWrapperProps = {

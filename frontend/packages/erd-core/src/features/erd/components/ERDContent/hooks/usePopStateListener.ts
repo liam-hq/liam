@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { useUserEditingOrThrow } from '@/stores'
+import { useUserEditingOrThrow } from '../../../../../stores'
 
 export const usePopStateListener = () => {
   const { setIsPopstateInProgress } = useUserEditingOrThrow()

@@ -3,7 +3,7 @@
 import { workflowRunsSchema } from '@liam-hq/db'
 import { useCallback, useEffect, useState } from 'react'
 import * as v from 'valibot'
-import { createClient } from '@/libs/db/client'
+import { createClient } from '../../../libs/db/client'
 import { useViewMode } from '../hooks/viewMode'
 import type { WorkflowRunStatus } from '../types'
 

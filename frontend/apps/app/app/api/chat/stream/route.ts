@@ -7,7 +7,7 @@ import {
 import { SSE_EVENTS } from '@liam-hq/agent/client'
 import { NextResponse } from 'next/server'
 import * as v from 'valibot'
-import { createClient } from '@/libs/db/server'
+import { createClient } from '../../../../libs/db/server'
 
 function line(event: string, data: unknown) {
   const payload = typeof data === 'string' ? data : JSON.stringify(data)
@@ -23,7 +23,6 @@ const chatRequestSchema = v.object({
   isDeepModelingEnabled: v.optional(v.boolean(), true),
 })
 
-// TODO: Move to api/chat/route.ts once the streaming migration is established
 export async function POST(request: Request) {
   const requestBody = await request.json()
   const validationResult = v.safeParse(chatRequestSchema, requestBody)

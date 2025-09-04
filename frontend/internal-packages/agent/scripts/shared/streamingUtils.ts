@@ -27,7 +27,10 @@ const getMessageType = (lastMessage: unknown): string => {
 }
 
 // Helper function to summarize tool arguments
-const getArgumentSummary = (args: unknown): string => {
+const getArgumentSummary = (
+  args: unknown,
+  // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: TODO: Refactor to reduce complexity
+): string => {
   // Pure type-based handling - no special cases for any tools
 
   if (typeof args === 'string') {

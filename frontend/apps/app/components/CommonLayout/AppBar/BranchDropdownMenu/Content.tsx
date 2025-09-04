@@ -2,8 +2,8 @@
 
 import { useRouter } from 'next/navigation'
 import type { FC } from 'react'
-import { BranchCombobox } from '@/components/shared/BranchCombobox'
-import { urlgen } from '@/libs/routes'
+import { urlgen } from '../../../../libs/routes'
+import { BranchCombobox } from '../../../shared/BranchCombobox'
 import styles from './BranchDropdownMenu.module.css'
 
 type Props = {

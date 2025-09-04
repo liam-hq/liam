@@ -607,6 +607,7 @@ function generateAlterConstraintUpdateFromOperation(
 
 export const postgresqlOperationDeparser: OperationDeparser = (
   operation: Operation,
+  // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: TODO: Refactor to reduce complexity
 ) => {
   const errors: { message: string }[] = []
 

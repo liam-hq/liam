@@ -1,6 +1,5 @@
-import { BaseGlobalNav } from '@liam-hq/ui'
+import { BaseGlobalNav, LiamDbLogo, LiamLogoMark } from '@liam-hq/ui'
 import type { FC } from 'react'
-import { LiamDbLogo, LiamLogoMark } from '@/logos'
 import styles from './PublicGlobalNav.module.css'
 
 export const PublicGlobalNav: FC = () => {

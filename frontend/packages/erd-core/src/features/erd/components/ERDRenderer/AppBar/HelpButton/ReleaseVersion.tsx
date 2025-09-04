@@ -1,5 +1,5 @@
 import type { FC } from 'react'
-import { useVersionOrThrow } from '@/providers'
+import { useVersionOrThrow } from '../../../../../../providers'
 import styles from './ReleaseVersion.module.css'
 
 export const ReleaseVersion: FC = () => {

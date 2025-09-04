@@ -1,8 +1,8 @@
 import { notFound } from 'next/navigation'
 import * as v from 'valibot'
-import type { PageProps } from '@/app/types'
-import { SchemaPage } from '@/components/SchemaPage'
-import { branchOrCommitSchema } from '@/libs/routes'
+import { SchemaPage } from '../../../../../../../../../../components/SchemaPage'
+import { branchOrCommitSchema } from '../../../../../../../../../../libs/routes'
+import type { PageProps } from '../../../../../../../../../types'
 
 const paramsSchema = v.object({
   projectId: v.string(),

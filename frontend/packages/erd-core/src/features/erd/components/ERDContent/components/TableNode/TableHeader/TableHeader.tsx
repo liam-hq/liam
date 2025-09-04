@@ -3,11 +3,14 @@ import { Handle, Position } from '@xyflow/react'
 import clsx from 'clsx'
 import { type FC, type MouseEvent, useMemo } from 'react'
 import { match } from 'ts-pattern'
-import { DiffIcon } from '@/features/diff/components/DiffIcon'
-import diffStyles from '@/features/diff/styles/Diff.module.css'
-import type { TableNodeData } from '@/features/erd/types'
-import { useCustomReactflow } from '@/features/reactflow/hooks'
-import { useSchemaOrThrow, useUserEditingOrThrow } from '@/stores'
+import {
+  useSchemaOrThrow,
+  useUserEditingOrThrow,
+} from '../../../../../../../stores'
+import { DiffIcon } from '../../../../../../diff/components/DiffIcon'
+import diffStyles from '../../../../../../diff/styles/Diff.module.css'
+import { useCustomReactflow } from '../../../../../../reactflow/hooks'
+import type { TableNodeData } from '../../../../../types'
 import { getChangeStatus } from './getChangeStatus'
 import styles from './TableHeader.module.css'
 

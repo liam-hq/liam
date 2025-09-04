@@ -3,6 +3,7 @@ type SSEEvent = {
   data: string
 }
 
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: TODO: Refactor to reduce complexity
 export async function* parseSse(
   stream: ReadableStream<Uint8Array>,
 ): AsyncGenerator<SSEEvent, void, unknown> {

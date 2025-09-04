@@ -1,5 +1,5 @@
 import { getPullRequestFiles } from '@liam-hq/github'
-import { createClient } from '@/libs/db/server'
+import { createClient } from '../../../../../libs/db/server'
 
 type CheckSchemaChangesParams = {
   installationId: number

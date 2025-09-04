@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation'
 import type { FC } from 'react'
-import { createClient } from '@/libs/db/server'
-import { urlgen } from '@/libs/routes'
+import { createClient } from '../../libs/db/server'
+import { urlgen } from '../../libs/routes'
 import { ClientSearchWrapper } from './components/ClientSearchWrapper'
 import {
   getOrganizationInvites,

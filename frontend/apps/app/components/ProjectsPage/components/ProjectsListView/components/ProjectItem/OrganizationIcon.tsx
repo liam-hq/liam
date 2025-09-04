@@ -1,7 +1,7 @@
 'use client'
 
 import Image from 'next/image'
-import { ProjectIcon } from '@/components/ProjectIcon'
+import { ProjectIcon } from '../../../../../ProjectIcon'
 import styles from './ProjectItem.module.css'
 
 type OrganizationIconProps = {

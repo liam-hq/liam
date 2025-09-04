@@ -1,5 +1,5 @@
 import type { Edge, Node } from '@xyflow/react'
-import { zIndex } from '@/features/erd/constants'
+import { zIndex } from '../constants'
 import type { TableNodeType } from '../types'
 import { isTableNode } from './isTableNode'
 

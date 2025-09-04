@@ -1,7 +1,7 @@
 import * as v from 'valibot'
-import type { LayoutProps } from '@/app/types'
-import { CommonLayout } from '@/components/CommonLayout'
-import { ProjectLayout } from '@/components/ProjectLayout'
+import { CommonLayout } from '../../../../../../components/CommonLayout'
+import { ProjectLayout } from '../../../../../../components/ProjectLayout'
+import type { LayoutProps } from '../../../../../types'
 
 const paramsSchema = v.object({
   projectId: v.string(),

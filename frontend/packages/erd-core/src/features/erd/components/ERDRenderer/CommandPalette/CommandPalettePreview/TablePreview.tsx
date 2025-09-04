@@ -1,5 +1,5 @@
 import type { FC } from 'react'
-import { useSchemaOrThrow } from '@/stores'
+import { useSchemaOrThrow } from '../../../../../../stores'
 import { TableNode } from '../../../ERDContent/components'
 import styles from './CommandPalettePreview.module.css'
 

@@ -9,8 +9,8 @@ import {
   SchemaProvider,
   type SchemaProviderValue,
   UserEditingProvider,
-} from '@/stores'
-import { UserEditingContext } from '@/stores/userEditing/context'
+} from '../../../../../stores'
+import { UserEditingContext } from '../../../../../stores/userEditing/context'
 import { CommandPalette } from './CommandPalette'
 import { CommandPaletteProvider } from './CommandPaletteProvider'
 import { CommandPaletteTriggerButton } from './CommandPaletteTriggerButton'

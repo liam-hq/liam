@@ -8,7 +8,7 @@ import {
 import { err, ok, type Result } from 'neverthrow'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import * as v from 'valibot'
-import { createClient } from '@/libs/db/client'
+import { createClient } from '../../../../libs/db/client'
 import { useViewMode } from '../../hooks/viewMode'
 import { convertTimelineItemToTimelineItemEntry } from '../../services/convertTimelineItemToTimelineItemEntry'
 import type { TimelineItem, TimelineItemEntry } from '../../types'

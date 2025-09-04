@@ -1,4 +1,4 @@
-import { SessionsNewPage } from '@/components/SessionsNewPage'
+import { SessionsNewPage } from '../../../../../components/SessionsNewPage'
 
 export default async function Page() {
   return <SessionsNewPage />

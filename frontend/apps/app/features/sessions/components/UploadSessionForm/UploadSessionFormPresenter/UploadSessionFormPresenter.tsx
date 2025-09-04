@@ -1,7 +1,7 @@
 import clsx from 'clsx'
 import { type ChangeEvent, type FC, useRef, useState } from 'react'
-import type { FormatType } from '@/components/FormatIcon/FormatIcon'
-import { createAccessibleOpacityTransition } from '@/utils/accessibleTransitions'
+import type { FormatType } from '../../../../../components/FormatIcon/FormatIcon'
+import { createAccessibleOpacityTransition } from '../../../../../utils/accessibleTransitions'
 import {
   SchemaInfoSection,
   type SchemaStatus,

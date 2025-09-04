@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/nextjs'
 import '@xyflow/react/dist/style.css'
 import type { ComponentProps, FC, PropsWithChildren } from 'react'
-import { ErdRendererProvider, VersionProvider } from '@/providers'
+import { ErdRendererProvider, VersionProvider } from '../../../../providers'
 import { mockCurrentSchema } from '../../mocks'
 import { ERDRenderer } from './ErdRenderer'
 

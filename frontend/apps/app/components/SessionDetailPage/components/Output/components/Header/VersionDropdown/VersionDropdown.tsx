@@ -10,7 +10,7 @@ import {
   DropdownMenuTrigger,
 } from '@liam-hq/ui'
 import type { FC } from 'react'
-import type { Version } from '@/components/SessionDetailPage/types'
+import type { Version } from '../../../../../types'
 import styles from './VersionDropdown.module.css'
 
 type Props = {

@@ -1,6 +1,6 @@
 'use server'
 
-import { createClient } from '@/libs/db/server'
+import { createClient } from '../../../../../libs/db/server'
 import type { BuildingSchema } from '../../../types'
 import { fetchBuildingSchema } from '../fetchBuildingSchema'
 

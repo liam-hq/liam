@@ -46,7 +46,7 @@ jobs:
               if (environment_val.include?("Production") && target_url.include?("liam-app-git-main"))
                 "should_run=true"
               # Preview deployment
-              elsif environment_val.include?("Preview") && !target_url.include?("liam-erd-sample") && !target_url.include?("liam-docs") && !target_url.include?("liam-storybook")
+              elsif environment_val.include?("Preview") && !target_url.include?("liam-erd-sample") && !target_url.include?("liam-docs") && !target_url.include?("liam-storybook") && !target_url.include?("liam-assets")
                 "should_run=true"
               else
                 "should_run=false"

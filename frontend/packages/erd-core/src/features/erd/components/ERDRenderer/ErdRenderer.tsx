@@ -20,11 +20,11 @@ import {
 } from 'react'
 import { AppBar } from './AppBar'
 import styles from './ERDRenderer.module.css'
-import '@/styles/globals.css'
-import { toggleLogEvent } from '@/features/gtm/utils'
-import { useIsTouchDevice } from '@/hooks'
-import { useVersionOrThrow } from '@/providers'
-import { useSchemaOrThrow, useUserEditingOrThrow } from '@/stores'
+import '../../../../styles/globals.css'
+import { useIsTouchDevice } from '../../../../hooks'
+import { useVersionOrThrow } from '../../../../providers'
+import { useSchemaOrThrow, useUserEditingOrThrow } from '../../../../stores'
+import { toggleLogEvent } from '../../../gtm/utils'
 import {
   convertSchemaToNodes,
   createHash,

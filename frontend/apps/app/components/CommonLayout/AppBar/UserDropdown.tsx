@@ -1,17 +1,19 @@
 'use client'
 
-import { Avatar, LogOut, useToast } from '@liam-hq/ui'
-import { useRouter } from 'next/navigation'
-import { type FC, useCallback } from 'react'
 import {
+  Avatar,
   AvatarWithImage,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuPortal,
   DropdownMenuRoot,
   DropdownMenuTrigger,
-} from '@/components'
-import { createClient } from '@/libs/db/client'
+  LogOut,
+  useToast,
+} from '@liam-hq/ui'
+import { useRouter } from 'next/navigation'
+import { type FC, useCallback } from 'react'
+import { createClient } from '../../../libs/db/client'
 
 function getUserInitial({
   userName,

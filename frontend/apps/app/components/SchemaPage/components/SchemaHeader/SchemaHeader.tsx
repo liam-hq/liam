@@ -1,6 +1,6 @@
+import { TabsList, TabsTrigger } from '@liam-hq/ui'
 import type { FC } from 'react'
-import { TabsList, TabsTrigger } from '@/components'
-import { SchemaLink } from '@/components/SchemaLink'
+import { SchemaLink } from '../../../SchemaLink'
 import { SCHEMA_TABS } from '../../constants'
 import styles from './SchemaHeader.module.css'
 

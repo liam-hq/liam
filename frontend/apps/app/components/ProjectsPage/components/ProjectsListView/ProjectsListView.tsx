@@ -2,7 +2,7 @@
 import type { Tables } from '@liam-hq/db/supabase/database.types'
 import Link from 'next/link'
 import { useState } from 'react'
-import { urlgen } from '@/libs/routes'
+import { urlgen } from '../../../../libs/routes'
 import styles from '../../ProjectsPage.module.css'
 import type { ProjectWithLastCommit } from '../../types'
 import { EmptyProjectsState } from '../EmptyProjectsState'

@@ -13,6 +13,7 @@ const workflowState = (messages: WorkflowState['messages']): WorkflowState => ({
   organizationId: 'test-org',
   userId: 'test-user',
   designSessionId: 'test-session',
+  testcases: [],
   next: END,
 })
 

@@ -21,9 +21,9 @@ import {
   Spinner,
   XIcon,
 } from '@liam-hq/ui'
-import { type FC, useRef, useState } from 'react'
-import { usePublicShareServerAction } from '@/hooks/usePublicShareServerAction'
-import { urlgen } from '@/libs/routes'
+import { type FC, useId, useRef, useState } from 'react'
+import { usePublicShareServerAction } from '../../hooks/usePublicShareServerAction'
+import { urlgen } from '../../libs/routes'
 import styles from './ShareDialog.module.css'
 
 type Props = {
@@ -45,6 +45,7 @@ export const ShareDialog: FC<Props> = ({
   })
   const [copied, setCopied] = useState(false)
   const isTogglingRef = useRef(false)
+  const visibilitySectionTitleId = useId()
 
   const handlePrivateClick = async () => {
     if (isTogglingRef.current || !isPublic) return
@@ -119,7 +120,7 @@ export const ShareDialog: FC<Props> = ({
               {/* Visibility */}
               <div className={styles.visibilitySection}>
                 <h4
-                  id="visibility-section-title"
+                  id={visibilitySectionTitleId}
                   className={styles.sectionTitle}
                 >
                   <span>Visibility</span>
@@ -133,7 +134,7 @@ export const ShareDialog: FC<Props> = ({
                           type="button"
                           className={styles.visibilityDropdown}
                           disabled={loading}
-                          aria-labelledby="visibility-section-title"
+                          aria-labelledby={visibilitySectionTitleId}
                         >
                           <span className={styles.dropdownValue}>
                             {isPublic ? (

@@ -5,7 +5,7 @@ import { ErdRendererProvider } from '@liam-hq/erd-core/nextjs'
 import type { Schema } from '@liam-hq/schema'
 import { useEffect, useState } from 'react'
 import * as v from 'valibot'
-import { CookieConsent } from '@/components/CookieConsent'
+import { CookieConsent } from '../../../../components/CookieConsent'
 
 type ErrorObject = {
   name: string

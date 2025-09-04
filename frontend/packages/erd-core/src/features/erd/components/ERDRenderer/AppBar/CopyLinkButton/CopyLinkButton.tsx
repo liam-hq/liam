@@ -8,8 +8,8 @@ import {
 } from '@liam-hq/ui'
 import { useCopy } from '@liam-hq/ui/hooks'
 import { type FC, useCallback } from 'react'
-import { clickLogEvent } from '@/features/gtm/utils'
-import { useVersionOrThrow } from '@/providers'
+import { useVersionOrThrow } from '../../../../../../providers'
+import { clickLogEvent } from '../../../../../gtm/utils'
 
 export const CopyLinkButton: FC = () => {
   const { version } = useVersionOrThrow()

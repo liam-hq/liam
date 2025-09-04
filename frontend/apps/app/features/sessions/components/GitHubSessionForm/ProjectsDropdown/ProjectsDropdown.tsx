@@ -7,7 +7,7 @@ import {
   Link2,
 } from '@liam-hq/ui'
 import type { FC } from 'react'
-import type { Projects } from '@/components/CommonLayout/AppBar/ProjectsDropdownMenu/services/getProjects'
+import type { Projects } from '../../../../../components/CommonLayout/AppBar/ProjectsDropdownMenu/services/getProjects'
 import { ProjectIcon } from '../../../../../components/ProjectIcon'
 import { Content } from './Content'
 import styles from './ProjectsDropdown.module.css'

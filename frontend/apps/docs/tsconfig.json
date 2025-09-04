@@ -6,9 +6,6 @@
     "noEmit": true,
     "exactOptionalPropertyTypes": false,
     "noPropertyAccessFromIndexSignature": false,
-    "paths": {
-      "@/*": ["./*"]
-    },
     "plugins": [
       {
         "name": "next"

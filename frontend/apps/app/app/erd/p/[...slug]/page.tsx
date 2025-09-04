@@ -12,7 +12,7 @@ import type { Metadata } from 'next'
 import { cookies } from 'next/headers'
 import { notFound } from 'next/navigation'
 import * as v from 'valibot'
-import type { PageProps } from '@/app/types'
+import type { PageProps } from '../../../types'
 import ERDViewer from './erdViewer'
 
 const paramsSchema = v.object({

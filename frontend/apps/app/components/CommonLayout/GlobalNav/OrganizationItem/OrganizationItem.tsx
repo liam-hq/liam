@@ -1,8 +1,12 @@
 'use client'
 
-import { Building, ChevronsUpDown } from '@liam-hq/ui'
+import {
+  Building,
+  ChevronsUpDown,
+  DropdownMenuRoot,
+  DropdownMenuTrigger,
+} from '@liam-hq/ui'
 import type { FC } from 'react'
-import { DropdownMenuRoot, DropdownMenuTrigger } from '@/components'
 import type { Organization } from '../../services/getOrganization'
 import type { OrganizationsByUserId } from '../../services/getOrganizationsByUserId'
 import itemStyles from '../Item.module.css'

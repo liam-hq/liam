@@ -6,7 +6,7 @@ import {
   aTable,
   aUniqueConstraint,
 } from '@liam-hq/schema'
-import type { SchemaProviderValue } from '@/stores'
+import type { SchemaProviderValue } from '../../stores'
 
 const usersTable = aTable({
   name: 'users',

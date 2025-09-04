@@ -8,7 +8,7 @@ import {
 } from '@liam-hq/ui'
 import { Command } from 'cmdk'
 import type { FC } from 'react'
-import { useUserEditingOrThrow } from '@/stores'
+import { useUserEditingOrThrow } from '../../../../../../stores'
 import { useCommandPaletteOrThrow } from '../CommandPaletteProvider'
 import { useCopyLink } from '../hooks/useCopyLink'
 import { useFitScreen } from '../hooks/useFitScreen'

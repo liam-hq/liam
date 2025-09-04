@@ -2,8 +2,11 @@ import type { Index } from '@liam-hq/schema'
 import { GridTableDd, GridTableDt, GridTableItem } from '@liam-hq/ui'
 import clsx from 'clsx'
 import { type FC, useMemo } from 'react'
-import { useDiffStyle } from '@/features/diff/hooks/useDiffStyle'
-import { useSchemaOrThrow, useUserEditingOrThrow } from '@/stores'
+import {
+  useSchemaOrThrow,
+  useUserEditingOrThrow,
+} from '../../../../../../../../../../stores'
+import { useDiffStyle } from '../../../../../../../../../diff/hooks/useDiffStyle'
 import styles from './Columns.module.css'
 import { getChangeStatus } from './getChangeStatus'
 

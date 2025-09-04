@@ -1,8 +1,11 @@
 import type { ForeignKeyConstraint } from '@liam-hq/schema'
 import { GridTableHeader } from '@liam-hq/ui'
 import { type FC, useMemo } from 'react'
-import { useDiffStyle } from '@/features/diff/hooks/useDiffStyle'
-import { useSchemaOrThrow, useUserEditingOrThrow } from '@/stores'
+import {
+  useSchemaOrThrow,
+  useUserEditingOrThrow,
+} from '../../../../../../../../../../../stores'
+import { useDiffStyle } from '../../../../../../../../../../diff/hooks/useDiffStyle'
 import { getChangeStatus } from './getChangeStatus'
 
 type Props = {

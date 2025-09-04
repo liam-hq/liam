@@ -8,7 +8,7 @@ export const testcaseSchema = v.object({
   requirement: v.string(),
   title: v.string(),
   description: v.string(),
-  dmlOperations: v.array(dmlOperationSchema),
+  dmlOperation: dmlOperationSchema,
 })
 
 export type Testcase = v.InferOutput<typeof testcaseSchema>

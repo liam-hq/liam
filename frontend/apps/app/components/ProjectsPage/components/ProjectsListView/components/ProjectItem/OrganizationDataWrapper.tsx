@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState, useTransition } from 'react'
-import { ProjectIcon } from '@/components/ProjectIcon'
+import { ProjectIcon } from '../../../../../ProjectIcon'
 import { fetchOrganizationData } from './OrganizationData'
 import { OrganizationIcon } from './OrganizationIcon'
 import styles from './ProjectItem.module.css'

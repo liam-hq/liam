@@ -13,8 +13,8 @@ import {
   Heading,
   Tab,
   Tabs,
-} from '@/components'
-import { source } from '@/lib/source'
+} from '../../../components'
+import { source } from '../../../lib/source'
 
 export default async function Page(props: {
   params: Promise<{ slug?: string[] }>

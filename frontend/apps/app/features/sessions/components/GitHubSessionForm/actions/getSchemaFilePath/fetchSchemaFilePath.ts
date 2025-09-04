@@ -1,6 +1,6 @@
 'use server'
 
-import { createClient } from '@/libs/db/server'
+import { createClient } from '../../../../../../libs/db/server'
 
 export const fetchSchemaFilePath = async (projectId: string | null) => {
   if (!projectId) {

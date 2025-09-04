@@ -1,6 +1,6 @@
 'use server'
 
-import { createClient } from '@/libs/db/server'
+import { createClient } from '../../../../../libs/db/server'
 import type { WorkflowRunStatus } from '../../../types'
 import { fetchWorkflowRunStatus } from '../fetchWorkflowRunStatus'
 

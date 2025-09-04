@@ -1,6 +1,6 @@
 import { toResultAsync } from '@liam-hq/db'
 import { errAsync, okAsync, ResultAsync } from 'neverthrow'
-import { createClient } from '@/libs/db/server'
+import { createClient } from '../../../libs/db/server'
 import { getOrganizationIdFromCookie } from './getOrganizationIdFromCookie'
 
 const getOrganizationIdFromDatabase = (): ResultAsync<string, Error> => {

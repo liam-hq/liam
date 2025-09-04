@@ -34,6 +34,7 @@ export const useStream = ({ initialMessages }: Props) => {
     abortRef.current = null
   }, [])
 
+  // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: TODO: Refactor to reduce complexity
   const start = useCallback(async (params: ChatRequest) => {
     abortRef.current?.abort()
     abortRef.current = new AbortController()

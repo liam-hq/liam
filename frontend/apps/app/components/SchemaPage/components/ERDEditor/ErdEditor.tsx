@@ -1,12 +1,10 @@
 'use client'
 
+import { ERDRenderer, VersionProvider, versionSchema } from '@liam-hq/erd-core'
 import { ErdRendererProvider } from '@liam-hq/erd-core/nextjs'
 import type { Schema } from '@liam-hq/schema'
 import type { ComponentProps, FC } from 'react'
 import { parse } from 'valibot'
-import { ERDRenderer } from '@/features'
-import { VersionProvider } from '@/providers'
-import { versionSchema } from '@/schemas'
 import { CreateDesignSessionButton } from '../CreateDesignSessionButton'
 import styles from './ERDEditor.module.css'
 

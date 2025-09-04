@@ -9,9 +9,12 @@ import { Handle, Position } from '@xyflow/react'
 import clsx from 'clsx'
 import { type FC, useMemo } from 'react'
 import { match } from 'ts-pattern'
-import { DiffIcon } from '@/features/diff/components/DiffIcon'
-import diffStyles from '@/features/diff/styles/Diff.module.css'
-import { useSchemaOrThrow, useUserEditingOrThrow } from '@/stores'
+import {
+  useSchemaOrThrow,
+  useUserEditingOrThrow,
+} from '../../../../../../../../stores'
+import { DiffIcon } from '../../../../../../../diff/components/DiffIcon'
+import diffStyles from '../../../../../../../diff/styles/Diff.module.css'
 import { getChangeStatus } from './getChangeStatus'
 import styles from './TableColumn.module.css'
 

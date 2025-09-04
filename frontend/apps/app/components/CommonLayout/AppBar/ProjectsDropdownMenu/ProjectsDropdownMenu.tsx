@@ -1,8 +1,11 @@
-import { ChevronsUpDown } from '@liam-hq/ui'
+import {
+  ChevronsUpDown,
+  DropdownMenuRoot,
+  DropdownMenuTrigger,
+} from '@liam-hq/ui'
 import type { FC } from 'react'
-import { DropdownMenuRoot, DropdownMenuTrigger } from '@/components'
-import { ProjectIcon } from '@/components/ProjectIcon'
-import { getOrganizationId } from '@/features/organizations/services/getOrganizationId'
+import { getOrganizationId } from '../../../../features/organizations/services/getOrganizationId'
+import { ProjectIcon } from '../../../ProjectIcon'
 import { Content } from './Content'
 import styles from './ProjectsDropdownMenu.module.css'
 import { getProject } from './services/getProject'

@@ -9,13 +9,10 @@ describe('formatValidationErrors', () => {
         testCaseId: 'test-1',
         testCaseTitle: 'Test Insert Operation',
         success: false,
-        executedOperations: 1,
-        failedOperations: [
-          {
-            sql: "INSERT INTO users (id, name) VALUES (1, 'John')",
-            error: 'duplicate key value violates unique constraint',
-          },
-        ],
+        failedOperation: {
+          sql: "INSERT INTO users (id, name) VALUES (1, 'John')",
+          error: 'duplicate key value violates unique constraint',
+        },
         executedAt: new Date('2024-01-01T00:00:00Z'),
       },
     ]
@@ -33,89 +30,32 @@ describe('formatValidationErrors', () => {
     `)
   })
 
-  it('should format multiple errors in single test case', () => {
-    const results: TestcaseDmlExecutionResult[] = [
-      {
-        testCaseId: 'test-1',
-        testCaseTitle: 'Complex Transaction Test',
-        success: false,
-        executedOperations: 3,
-        failedOperations: [
-          {
-            sql: "INSERT INTO accounts (id) VALUES ('invalid-uuid')",
-            error: 'invalid input syntax for type uuid',
-          },
-          {
-            sql: "UPDATE accounts SET balance = 100 WHERE id = 'invalid-uuid'",
-            error:
-              'current transaction is aborted, commands ignored until end of transaction block',
-          },
-          {
-            sql: "DELETE FROM accounts WHERE id = 'invalid-uuid'",
-            error:
-              'current transaction is aborted, commands ignored until end of transaction block',
-          },
-        ],
-        executedAt: new Date('2024-01-01T00:00:00Z'),
-      },
-    ]
-
-    const formatted = formatValidationErrors(results)
-
-    expect(formatted).toMatchInlineSnapshot(`
-      "Database validation found 1 issues. Please fix the following errors:
-
-      ### ❌ **Test Case:** Complex Transaction Test
-      #### 1. Error: \`invalid input syntax for type uuid\`
-      \`\`\`sql
-      INSERT INTO accounts (id) VALUES ('invalid-uuid')
-      \`\`\`
-
-      #### 2. Error: \`current transaction is aborted, commands ignored until end of transaction block\`
-      \`\`\`sql
-      UPDATE accounts SET balance = 100 WHERE id = 'invalid-uuid'
-      \`\`\`
-
-      #### 3. Error: \`current transaction is aborted, commands ignored until end of transaction block\`
-      \`\`\`sql
-      DELETE FROM accounts WHERE id = 'invalid-uuid'
-      \`\`\`"
-    `)
-  })
-
   it('should format errors from multiple test cases', () => {
     const results: TestcaseDmlExecutionResult[] = [
       {
         testCaseId: 'test-1',
         testCaseTitle: 'First Test Case',
         success: false,
-        executedOperations: 1,
-        failedOperations: [
-          {
-            sql: 'INSERT INTO table1 VALUES (1)',
-            error: 'table1 does not exist',
-          },
-        ],
+        failedOperation: {
+          sql: 'INSERT INTO table1 VALUES (1)',
+          error: 'table1 does not exist',
+        },
         executedAt: new Date('2024-01-01T00:00:00Z'),
       },
       {
         testCaseId: 'test-2',
         testCaseTitle: 'Second Test Case',
         success: true,
-        executedOperations: 2,
         executedAt: new Date('2024-01-01T00:00:00Z'),
       },
       {
         testCaseId: 'test-3',
         testCaseTitle: 'Third Test Case',
         success: false,
-        executedOperations: 1,
-        failedOperations: [
-          {
-            sql: 'UPDATE table2 SET col = 1',
-            error: 'permission denied',
-          },
-        ],
+        failedOperation: {
+          sql: 'UPDATE table2 SET col = 1',
+          error: 'permission denied',
+        },
         executedAt: new Date('2024-01-01T00:00:00Z'),
       },
     ]
@@ -156,13 +96,10 @@ describe('formatValidationErrors', () => {
         testCaseId: 'test-1',
         testCaseTitle: 'Long SQL Test',
         success: false,
-        executedOperations: 1,
-        failedOperations: [
-          {
-            sql: longSql,
-            error: 'syntax error',
-          },
-        ],
+        failedOperation: {
+          sql: longSql,
+          error: 'syntax error',
+        },
         executedAt: new Date('2024-01-01T00:00:00Z'),
       },
     ]
@@ -195,13 +132,10 @@ describe('formatValidationErrors', () => {
         testCaseId: 'test-1',
         testCaseTitle: 'SQL with Comments',
         success: false,
-        executedOperations: 1,
-        failedOperations: [
-          {
-            sql: sqlWithComments,
-            error: 'some error',
-          },
-        ],
+        failedOperation: {
+          sql: sqlWithComments,
+          error: 'some error',
+        },
         executedAt: new Date('2024-01-01T00:00:00Z'),
       },
     ]
@@ -228,8 +162,7 @@ describe('formatValidationErrors', () => {
         testCaseId: 'test-1',
         testCaseTitle: 'Test with empty failures',
         success: false,
-        executedOperations: 0,
-        failedOperations: [],
+        failedOperation: undefined,
         executedAt: new Date('2024-01-01T00:00:00Z'),
       },
     ]
@@ -249,14 +182,12 @@ describe('formatValidationErrors', () => {
         testCaseId: 'test-1',
         testCaseTitle: 'Successful Test 1',
         success: true,
-        executedOperations: 5,
         executedAt: new Date('2024-01-01T00:00:00Z'),
       },
       {
         testCaseId: 'test-2',
         testCaseTitle: 'Successful Test 2',
         success: true,
-        executedOperations: 3,
         executedAt: new Date('2024-01-01T00:00:00Z'),
       },
     ]
@@ -274,13 +205,10 @@ describe('formatValidationErrors', () => {
         testCaseId: 'test-1',
         testCaseTitle: 'Test with Special Characters',
         success: false,
-        executedOperations: 1,
-        failedOperations: [
-          {
-            sql: "INSERT INTO test VALUES ('data')",
-            error: 'Error with `backticks` and "quotes" and \'single quotes\'',
-          },
-        ],
+        failedOperation: {
+          sql: "INSERT INTO test VALUES ('data')",
+          error: 'Error with `backticks` and "quotes" and \'single quotes\'',
+        },
         executedAt: new Date('2024-01-01T00:00:00Z'),
       },
     ]

@@ -4,7 +4,7 @@ import { TabsList, TabsTrigger } from '@liam-hq/ui'
 import clsx from 'clsx'
 import type { ComponentProps, FC } from 'react'
 import * as v from 'valibot'
-import type { Version } from '@/components/SessionDetailPage/types'
+import type { Version } from '../../../../types'
 import {
   ARTIFACT_TAB,
   ERD_SCHEMA_TABS_LIST,

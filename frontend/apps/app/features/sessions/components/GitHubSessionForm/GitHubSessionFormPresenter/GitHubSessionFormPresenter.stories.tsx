@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/nextjs'
 import { type ComponentProps, useState } from 'react'
-import type { Projects } from '@/components/CommonLayout/AppBar/ProjectsDropdownMenu/services/getProjects'
+import type { Projects } from '../../../../../components/CommonLayout/AppBar/ProjectsDropdownMenu/services/getProjects'
 import { GitHubSessionFormPresenter } from './GitHubSessionFormPresenter'
 
 type Branch = {

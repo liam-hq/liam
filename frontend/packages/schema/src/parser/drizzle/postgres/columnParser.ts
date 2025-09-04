@@ -19,6 +19,7 @@ import type { DrizzleColumnDefinition } from './types.js'
  */
 export const parseColumnFromProperty = (
   prop: Property,
+  // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: TODO: Refactor to reduce complexity
 ): DrizzleColumnDefinition | null => {
   if (prop.type !== 'KeyValueProperty') return null
 
