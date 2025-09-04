@@ -4,11 +4,11 @@ import type { DmlOperation } from '@liam-hq/artifact'
 import { executeQuery } from '@liam-hq/pglite-server'
 import type { SqlResult } from '@liam-hq/pglite-server/src/types'
 import { ResultAsync } from 'neverthrow'
-import { getConfigurable } from '../../chat/workflow/shared/getConfigurable'
-import type { WorkflowState } from '../../chat/workflow/types'
-import { generateDdlFromSchema } from '../../chat/workflow/utils/generateDdl'
-import { transformWorkflowStateToArtifact } from '../../chat/workflow/utils/transformWorkflowStateToArtifact'
-import { WorkflowTerminationError } from '../../shared/errorHandling'
+import type { WorkflowState } from '../../types'
+import { WorkflowTerminationError } from '../../utils/errorHandling'
+import { generateDdlFromSchema } from '../../utils/generateDdl'
+import { getConfigurable } from '../../utils/getConfigurable'
+import { transformWorkflowStateToArtifact } from '../../utils/transformWorkflowStateToArtifact'
 import type { Testcase } from '../types'
 import { formatValidationErrors } from './formatValidationErrors'
 import type { TestcaseDmlExecutionResult } from './types'
@@ -168,8 +168,8 @@ export async function validateSchemaNode(
   const configurableResult = getConfigurable(config)
   if (configurableResult.isErr()) {
     throw new WorkflowTerminationError(
+      'validateSchemaNode failed',
       configurableResult.error,
-      'validateSchemaNode',
     )
   }
   const { repositories } = configurableResult.value

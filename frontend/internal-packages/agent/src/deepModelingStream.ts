@@ -1,8 +1,7 @@
-import { DEFAULT_RECURSION_LIMIT } from './chat/workflow/shared/workflowConstants'
-import type { WorkflowConfigurable } from './chat/workflow/types'
 import { createGraph } from './createGraph'
-import { setupWorkflowState } from './shared/workflowSetup'
-import type { AgentWorkflowParams } from './types'
+import type { AgentWorkflowParams, WorkflowConfigurable } from './types'
+import { DEFAULT_RECURSION_LIMIT } from './utils/constants'
+import { setupWorkflowState } from './utils/workflowSetup'
 
 // TODO: Move to deepModeling.ts once the streaming migration is established
 export async function deepModelingStream(
@@ -34,8 +33,10 @@ export async function deepModelingStream(
     configurable,
     runId: workflowRunId,
     callbacks: [runCollector],
-    tags: traceEnhancement.tags,
-    metadata: traceEnhancement.metadata,
+    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions, @typescript-eslint/no-unsafe-member-access
+    tags: (traceEnhancement as any)['tags'],
+    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions, @typescript-eslint/no-unsafe-member-access
+    metadata: (traceEnhancement as any)['metadata'],
     streamMode: 'messages',
     version: 'v2',
   })

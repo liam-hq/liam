@@ -3,9 +3,9 @@ import { executeQuery } from '@liam-hq/pglite-server'
 import type { SqlResult } from '@liam-hq/pglite-server/src/types'
 import { aColumn, aSchema, aTable } from '@liam-hq/schema'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import type { WorkflowState } from '../../chat/workflow/types'
 import type { Repositories } from '../../repositories'
 import { InMemoryRepository } from '../../repositories/InMemoryRepository'
+import type { WorkflowState } from '../../types'
 import { validateSchemaNode } from './index'
 
 vi.mock('@liam-hq/pglite-server', () => ({

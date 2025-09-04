@@ -1,7 +1,7 @@
 import type { RunnableConfig } from '@langchain/core/runnables'
-import { getConfigurable } from '../../chat/workflow/shared/getConfigurable'
-import { WorkflowTerminationError } from '../../shared/errorHandling'
 import { convertSchemaToText } from '../../utils/convertSchemaToText'
+import { WorkflowTerminationError } from '../../utils/errorHandling'
+import { getConfigurable } from '../../utils/getConfigurable'
 import { removeReasoningFromMessages } from '../../utils/messageCleanup'
 import { invokeDesignAgent } from '../invokeDesignAgent'
 import type { DbAgentState } from '../shared/dbAgentAnnotation'
@@ -17,8 +17,8 @@ export async function designSchemaNode(
   const configurableResult = getConfigurable(config)
   if (configurableResult.isErr()) {
     throw new WorkflowTerminationError(
-      configurableResult.error,
       'designSchemaNode',
+      configurableResult.error,
     )
   }
   const { repositories } = configurableResult.value
@@ -37,7 +37,7 @@ export async function designSchemaNode(
   })
 
   if (invokeResult.isErr()) {
-    throw new WorkflowTerminationError(invokeResult.error, 'designSchemaNode')
+    throw new WorkflowTerminationError('designSchemaNode', invokeResult.error)
   }
 
   const { response } = invokeResult.value

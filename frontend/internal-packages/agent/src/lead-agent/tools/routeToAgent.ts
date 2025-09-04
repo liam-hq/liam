@@ -6,8 +6,8 @@ import { fromValibotSafeParse } from '@liam-hq/neverthrow'
 import { ok, type Result } from 'neverthrow'
 import { v4 as uuidv4 } from 'uuid'
 import * as v from 'valibot'
-import { WorkflowTerminationError } from '../../shared/errorHandling'
-import { toJsonSchema } from '../../shared/jsonSchema'
+import { WorkflowTerminationError } from '../../utils/errorHandling'
+import { toJsonSchema } from '../../utils/jsonSchema'
 
 const inputSchema = v.object({
   targetAgent: v.picklist(['pmAgent']),
@@ -46,16 +46,16 @@ export const routeToAgent: StructuredTool = tool(
         .map((issue) => issue.message)
         .join(', ')
       throw new WorkflowTerminationError(
+        `Invalid input structure: ${errorMessage}`,
         new Error(`Invalid input structure: ${errorMessage}`),
-        'routeToAgent',
       )
     }
 
     const toolConfigurableResult = getToolConfigurable(config)
     if (toolConfigurableResult.isErr()) {
       throw new WorkflowTerminationError(
+        'routeToAgent failed',
         toolConfigurableResult.error,
-        'routeToAgent',
       )
     }
 
