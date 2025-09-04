@@ -81,16 +81,22 @@ type Story = StoryObj<typeof meta>
 export const Default: Story = {
   args: {
     schemaData: aSchema(),
+    designSessionId: 'test-session-id',
     messages: MESSAGES,
     onMessageSend: () => {},
+    onWorkflowStart: () => {},
+    isDeepModelingEnabled: true,
   },
 }
 
 export const AnimatedDemo: Story = {
   args: {
     schemaData: aSchema(),
+    designSessionId: 'test-session-id',
     messages: MESSAGES,
     onMessageSend: () => {},
+    onWorkflowStart: () => {},
+    isDeepModelingEnabled: true,
   },
   render: (props) => <AnimatedChatDemo {...props} />,
 }
@@ -98,6 +104,7 @@ export const AnimatedDemo: Story = {
 export const WithComplexMessages: Story = {
   args: {
     schemaData: aSchema(),
+    designSessionId: 'test-session-id',
     messages: [
       aMessage('human', {
         content: 'Design a database for an e-commerce platform',
@@ -119,5 +126,7 @@ export const WithComplexMessages: Story = {
       }),
     ],
     onMessageSend: () => {},
+    onWorkflowStart: () => {},
+    isDeepModelingEnabled: true,
   },
 }

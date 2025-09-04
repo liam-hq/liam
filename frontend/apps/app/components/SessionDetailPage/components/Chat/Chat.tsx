@@ -13,33 +13,36 @@ import { useScrollToBottom } from './useScrollToBottom'
 
 type Props = {
   schemaData: Schema
-  // designSessionId: string
+  designSessionId: string
   messages: BaseMessage[]
   onMessageSend: (message: TimelineItemEntry) => void
-  // onVersionView: (versionId: string) => void
-  // onRetry?: () => void
+  onWorkflowStart: (params: {
+    userInput: string
+    designSessionId: string
+    isDeepModelingEnabled: boolean
+  }) => void
   isWorkflowRunning?: boolean
-  // onArtifactLinkClick: () => void
-  // isDeepModelingEnabled: boolean
+  isDeepModelingEnabled: boolean
 }
 
 export const Chat: FC<Props> = ({
   schemaData,
+  designSessionId,
   messages,
   onMessageSend,
+  onWorkflowStart,
   isWorkflowRunning = false,
+  isDeepModelingEnabled,
 }) => {
   const { containerRef } = useScrollToBottom<HTMLDivElement>(messages.length)
   const [, startTransition] = useTransition()
 
   const startAIResponse = async (content: string) => {
-    const optimisticMessage: TimelineItemEntry = {
-      id: generateTimelineItemId('user'),
-      type: 'user',
-      content,
-      timestamp: new Date(),
-    }
-    onMessageSend(optimisticMessage)
+    onWorkflowStart({
+      userInput: content,
+      designSessionId,
+      isDeepModelingEnabled,
+    })
   }
 
   const handleSendMessage = (content: string) => {

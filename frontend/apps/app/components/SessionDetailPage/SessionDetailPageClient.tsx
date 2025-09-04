@@ -6,7 +6,7 @@ import {
 } from '@langchain/core/messages'
 import type { Schema } from '@liam-hq/schema'
 import clsx from 'clsx'
-import { type FC, useCallback, useEffect, useRef, useState } from 'react'
+import { type FC, useCallback, useState } from 'react'
 import { Chat } from './components/Chat'
 import { Output } from './components/Output'
 import { useRealtimeArtifact } from './components/Output/components/Artifact/hooks/useRealtimeArtifact'
@@ -77,7 +77,7 @@ export const SessionDetailPageClient: FC<Props> = ({
   //   setSelectedVersion(version)
   // }, [])
 
-  const { timelineItems, addOrUpdateTimelineItem } = useRealtimeTimelineItems(
+  const { addOrUpdateTimelineItem } = useRealtimeTimelineItems(
     designSessionId,
     designSessionWithTimelineItems.timeline_items.map((timelineItem) =>
       convertTimelineItemToTimelineItemEntry(timelineItem),
@@ -108,37 +108,17 @@ export const SessionDetailPageClient: FC<Props> = ({
   const { isStreaming, messages, start } = useStream({
     initialMessages: chatMessages,
   })
-  // Track if initial workflow has been triggered to prevent multiple executions
-  const hasTriggeredInitialWorkflow = useRef(false)
 
-  // Auto-trigger workflow on page load if there's an unanswered user message
-  useEffect(() => {
-    const triggerInitialWorkflow = async () => {
-      // Skip if already triggered
-      if (hasTriggeredInitialWorkflow.current) return
-
-      // Check if there's exactly one timeline item and it's a user message
-      if (timelineItems.length !== 1) return
-
-      const firstItem = timelineItems[0]
-      if (!firstItem || firstItem.type !== 'user') return
-
-      // Check if there's already a workflow running
-      if (status === 'pending') return
-
-      // Mark as triggered before the async call
-      hasTriggeredInitialWorkflow.current = true
-
-      // Trigger the workflow for the initial user message
-      await start({
-        designSessionId,
-        userInput: firstItem.content,
-        isDeepModelingEnabled,
-      })
-    }
-
-    triggerInitialWorkflow()
-  }, [timelineItems, status, designSessionId, isDeepModelingEnabled])
+  const handleWorkflowStart = useCallback(
+    async (params: {
+      userInput: string
+      designSessionId: string
+      isDeepModelingEnabled: boolean
+    }) => {
+      await start(params)
+    },
+    [start],
+  )
 
   // Show Output if artifact exists OR workflow is not pending
   const shouldShowOutput = hasRealtimeArtifact || status !== 'pending'
@@ -154,9 +134,12 @@ export const SessionDetailPageClient: FC<Props> = ({
         <div className={styles.chatSection}>
           <Chat
             schemaData={displayedSchema}
+            designSessionId={designSessionId}
             messages={messages}
-            isWorkflowRunning={status === 'pending' || isStreaming}
             onMessageSend={addOrUpdateTimelineItem}
+            onWorkflowStart={handleWorkflowStart}
+            isWorkflowRunning={status === 'pending' || isStreaming}
+            isDeepModelingEnabled={isDeepModelingEnabled}
           />
         </div>
         {hasSelectedVersion && (
