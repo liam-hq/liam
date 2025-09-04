@@ -1,9 +1,6 @@
 'use client'
 
 import {
-  AIMessage,
-  type BaseMessage,
-  HumanMessage,
   mapStoredMessagesToChatMessages,
   type StoredMessage,
 } from '@langchain/core/messages'
@@ -106,55 +103,10 @@ export const SessionDetailPageClient: FC<Props> = ({
     initialWorkflowRunStatus,
   )
 
-  const convertTimelineItemsToMessages = (
-    timelineItems: ReturnType<typeof useRealtimeTimelineItems>['timelineItems'],
-  ): BaseMessage[] => {
-    return timelineItems
-      .map((item) => {
-        const baseMessage = {
-          id: item.id,
-          content: item.content,
-          additional_kwargs: {},
-          response_metadata: {},
-        }
-
-        if (item.type === 'user') {
-          return new HumanMessage(baseMessage)
-        }
-        if (item.type === 'assistant') {
-          return new AIMessage({
-            ...baseMessage,
-            tool_calls: [],
-            invalid_tool_calls: [],
-          })
-        }
-        return null
-      })
-      .filter((message): message is BaseMessage => message !== null)
-  }
-
   const chatMessages = mapStoredMessagesToChatMessages(initialMessages)
-  const timelineMessages = convertTimelineItemsToMessages(timelineItems)
-
-  const deduplicateMessages = (messages: BaseMessage[]): BaseMessage[] => {
-    const seen = new Set<string>()
-    return messages.filter((message) => {
-      const key = `${message.content}-${message.id}`
-      if (seen.has(key)) {
-        return false
-      }
-      seen.add(key)
-      return true
-    })
-  }
-
-  const allInitialMessages = deduplicateMessages([
-    ...timelineMessages,
-    ...chatMessages,
-  ])
 
   const { isStreaming, messages, start } = useStream({
-    initialMessages: allInitialMessages,
+    initialMessages: chatMessages,
   })
   // Track if initial workflow has been triggered to prevent multiple executions
   const hasTriggeredInitialWorkflow = useRef(false)
