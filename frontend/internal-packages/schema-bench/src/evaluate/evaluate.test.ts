@@ -1113,4 +1113,147 @@ describe('evaluate', () => {
     },
     TIMEOUT,
   )
+
+  it(
+    'table all-correct with EPSILON: boundary case near 1',
+    async () => {
+      const reference: Schema = {
+        enums: {},
+        extensions: {},
+        tables: {
+          test_table: {
+            name: 'test_table',
+            columns: {
+              id: {
+                name: 'id',
+                type: 'INTEGER',
+                default: null,
+                check: null,
+                notNull: true,
+                comment: null,
+              },
+            },
+            comment: null,
+            indexes: {},
+            constraints: {
+              pk_test: {
+                type: 'PRIMARY KEY',
+                name: 'pk_test',
+                columnNames: ['id'],
+              },
+            },
+          },
+        },
+      }
+
+      const predict: Schema = {
+        enums: {},
+        extensions: {},
+        tables: {
+          test_table: {
+            name: 'test_table',
+            columns: {
+              id: {
+                name: 'id',
+                type: 'INTEGER',
+                default: null,
+                check: null,
+                notNull: true,
+                comment: null,
+              },
+            },
+            comment: null,
+            indexes: {},
+            constraints: {
+              pk_test: {
+                type: 'PRIMARY KEY',
+                name: 'pk_test',
+                columnNames: ['id'],
+              },
+            },
+          },
+        },
+      }
+
+      const result = await evaluate(reference, predict)
+
+      expect(result.tableF1Score).toBe(1)
+      expect(result.tableAllCorrectRate).toBe(1)
+    },
+    TIMEOUT,
+  )
+
+  it(
+    'table all-correct with EPSILON: threshold case below tolerance',
+    async () => {
+      const reference: Schema = {
+        enums: {},
+        extensions: {},
+        tables: {
+          table1: {
+            name: 'table1',
+            columns: {
+              id: {
+                name: 'id',
+                type: 'INTEGER',
+                default: null,
+                check: null,
+                notNull: true,
+                comment: null,
+              },
+            },
+            comment: null,
+            indexes: {},
+            constraints: {},
+          },
+          table2: {
+            name: 'table2',
+            columns: {
+              id: {
+                name: 'id',
+                type: 'INTEGER',
+                default: null,
+                check: null,
+                notNull: true,
+                comment: null,
+              },
+            },
+            comment: null,
+            indexes: {},
+            constraints: {},
+          },
+        },
+      }
+
+      const predict: Schema = {
+        enums: {},
+        extensions: {},
+        tables: {
+          table1: {
+            name: 'table1',
+            columns: {
+              id: {
+                name: 'id',
+                type: 'INTEGER',
+                default: null,
+                check: null,
+                notNull: true,
+                comment: null,
+              },
+            },
+            comment: null,
+            indexes: {},
+            constraints: {},
+          },
+        },
+      }
+
+      const result = await evaluate(reference, predict)
+
+      expect(result.tableF1Score).toBeLessThan(1)
+      expect(result.tableF1Score).toBeGreaterThan(0)
+      expect(result.tableAllCorrectRate).toBe(0)
+    },
+    TIMEOUT,
+  )
 })
