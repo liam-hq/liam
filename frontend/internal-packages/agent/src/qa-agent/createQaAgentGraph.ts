@@ -2,6 +2,7 @@ import { END, START, StateGraph } from '@langchain/langgraph'
 import type { BaseCheckpointSaver } from '@langchain/langgraph-checkpoint'
 import { RETRY_POLICY } from '../shared/errorHandling'
 import { generateTestcaseAndDmlNode } from './generateTestcaseAndDml'
+import { invokeRunTestToolNode } from './nodes/invokeRunTestToolNode'
 import { invokeSaveTestcasesAndDmlToolNode } from './nodes/invokeSaveTestcasesAndDmlToolNode'
 import { routeAfterGenerateTestcaseAndDml } from './routing/routeAfterGenerateTestcaseAndDml'
 import { qaAgentAnnotation } from './shared/qaAgentAnnotation'
@@ -24,6 +25,9 @@ export const createQaAgentGraph = (checkpointer?: BaseCheckpointSaver) => {
     .addNode('validateSchema', validateSchemaNode, {
       retryPolicy: RETRY_POLICY,
     })
+    .addNode('invokeRunTestTool', invokeRunTestToolNode, {
+      retryPolicy: RETRY_POLICY,
+    })
 
     .addEdge(START, 'generateTestcaseAndDml')
     .addConditionalEdges(
@@ -35,7 +39,8 @@ export const createQaAgentGraph = (checkpointer?: BaseCheckpointSaver) => {
       },
     )
     .addEdge('invokeSaveTestcasesAndDmlTool', 'generateTestcaseAndDml')
-    .addEdge('validateSchema', END)
+    .addEdge('validateSchema', 'invokeRunTestTool')
+    .addEdge('invokeRunTestTool', END)
 
   return checkpointer
     ? qaAgentGraph.compile({ checkpointer })
