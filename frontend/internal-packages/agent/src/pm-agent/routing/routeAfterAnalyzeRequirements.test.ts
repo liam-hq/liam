@@ -1,6 +1,6 @@
 import { AIMessage, HumanMessage } from '@langchain/core/messages'
 import { describe, expect, it } from 'vitest'
-import { WorkflowTerminationError } from '../../shared/errorHandling'
+import { WorkflowTerminationError } from '../../utils/errorHandling'
 import type { PmAgentState } from '../pmAgentAnnotations'
 import { routeAfterAnalyzeRequirements } from './routeAfterAnalyzeRequirements'
 

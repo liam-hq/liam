@@ -10,11 +10,10 @@ import { fromAsyncThrowable } from '@liam-hq/neverthrow'
 import { ResultAsync } from 'neverthrow'
 import { v4 as uuidv4 } from 'uuid'
 import * as v from 'valibot'
-import type { WorkflowConfigurable } from '../chat/workflow/types'
 import { SSE_EVENTS } from '../client'
-import { reasoningSchema } from '../langchain/utils/schema'
-import type { Reasoning } from '../langchain/utils/types'
+import type { Reasoning, WorkflowConfigurable } from '../types'
 import { removeReasoningFromMessages } from '../utils/messageCleanup'
+import { reasoningSchema } from '../utils/validationSchema'
 import {
   type PmAnalysisPromptVariables,
   pmAnalysisPrompt,

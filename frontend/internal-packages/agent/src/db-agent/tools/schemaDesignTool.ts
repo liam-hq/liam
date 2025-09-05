@@ -9,7 +9,7 @@ import {
   type Schema,
 } from '@liam-hq/schema'
 import * as v from 'valibot'
-import { toJsonSchema } from '../../shared/jsonSchema'
+import { toJsonSchema } from '../../utils/jsonSchema'
 import { getToolConfigurable } from '../getToolConfigurable'
 
 const schemaDesignToolSchema = v.object({

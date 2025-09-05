@@ -5,9 +5,9 @@ import * as path from 'node:path'
 import { END } from '@langchain/langgraph'
 import type { Result } from 'neverthrow'
 import { err, ok, okAsync } from 'neverthrow'
-import { DEFAULT_RECURSION_LIMIT } from '../src/chat/workflow/shared/workflowConstants'
-import type { WorkflowState } from '../src/chat/workflow/types'
+import { DEFAULT_RECURSION_LIMIT } from '../src/constants'
 import { createQaAgentGraph } from '../src/qa-agent/createQaAgentGraph'
+import type { WorkflowState } from '../src/types'
 import { hasHelpFlag, parseQaAgentArgs } from './shared/argumentParser'
 import {
   createLogger,

@@ -4,12 +4,13 @@ import type { CompiledStateGraph } from '@langchain/langgraph'
 import { END } from '@langchain/langgraph'
 import { err, errAsync, ok, okAsync, ResultAsync } from 'neverthrow'
 import { v4 as uuidv4 } from 'uuid'
-import { DEFAULT_RECURSION_LIMIT } from '../chat/workflow/shared/workflowConstants'
+import { DEFAULT_RECURSION_LIMIT } from '../constants'
 import type {
+  AgentWorkflowParams,
+  AgentWorkflowResult,
   WorkflowConfigurable,
   WorkflowState,
-} from '../chat/workflow/types'
-import type { AgentWorkflowParams, AgentWorkflowResult } from '../types'
+} from '../types'
 import { WorkflowTerminationError } from './errorHandling'
 import { createEnhancedTraceData } from './traceEnhancer'
 

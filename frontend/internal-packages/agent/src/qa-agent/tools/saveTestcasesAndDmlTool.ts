@@ -7,8 +7,8 @@ import { dmlOperationSchema } from '@liam-hq/artifact'
 import { v4 as uuidv4 } from 'uuid'
 import * as v from 'valibot'
 import { SSE_EVENTS } from '../../client'
-import { WorkflowTerminationError } from '../../shared/errorHandling'
-import { toJsonSchema } from '../../shared/jsonSchema'
+import { WorkflowTerminationError } from '../../utils/errorHandling'
+import { toJsonSchema } from '../../utils/jsonSchema'
 import { type Testcase, testcaseSchema } from '../types'
 
 const dmlOperationWithoutLogsSchema = v.omit(dmlOperationSchema, [
