@@ -1,3 +1,4 @@
+import { AIMessage } from '@langchain/core/messages'
 import type { RunnableConfig } from '@langchain/core/runnables'
 import { END, START, StateGraph } from '@langchain/langgraph'
 import type { BaseCheckpointSaver } from '@langchain/langgraph-checkpoint'
@@ -54,8 +55,21 @@ export const createGraph = (checkpointer?: BaseCheckpointSaver) => {
     .addNode('dbAgent', dbAgentSubgraph)
     .addNode('qaAgent', callQaAgent)
 
-    .addEdge(START, 'validateInitialSchema')
+    .addConditionalEdges(
+      START,
+      (state) => {
+        const isFirstExecution = !state.messages.some(
+          (msg) => msg instanceof AIMessage,
+        )
+        return isFirstExecution ? 'validateInitialSchema' : 'leadAgent'
+      },
+      {
+        validateInitialSchema: 'validateInitialSchema',
+        leadAgent: 'leadAgent',
+      },
+    )
     .addEdge('validateInitialSchema', 'leadAgent')
+
     .addConditionalEdges('leadAgent', (state) => state.next, {
       pmAgent: 'pmAgent',
       [END]: END,
