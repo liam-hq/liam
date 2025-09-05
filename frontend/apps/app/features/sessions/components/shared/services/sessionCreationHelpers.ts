@@ -1,6 +1,7 @@
 'use server'
 
 import path from 'node:path'
+import type { Repositories } from '@liam-hq/agent'
 import { createSupabaseRepositories } from '@liam-hq/agent'
 import type { SupabaseClientType } from '@liam-hq/db'
 import type { Schema } from '@liam-hq/schema'
@@ -100,26 +101,75 @@ const createBuildingSchema = async (
   return buildingSchema
 }
 
+const initializeWorkflowWithMessage = async (
+  initialMessage: string,
+  designSessionId: string,
+  organizationId: string,
+  repositories: Repositories,
+): Promise<CreateSessionState> => {
+  try {
+    const { createGraph } = await import('@liam-hq/agent')
+    const { HumanMessage } = await import('@langchain/core/messages')
+
+    const checkpointer = repositories.schema.checkpointer
+    const compiledGraph = createGraph(checkpointer)
+
+    const userMessage = new HumanMessage({
+      content: initialMessage,
+    })
+
+    const workflowState = {
+      userInput: initialMessage,
+      messages: [userMessage],
+      schemaData: { tables: {}, enums: {}, extensions: {} },
+      testcases: [],
+      organizationId,
+      buildingSchemaId: '',
+      latestVersionNumber: 0,
+      designSessionId,
+      userId: '',
+      next: 'END',
+    }
+
+    await compiledGraph.invoke(workflowState, {
+      configurable: {
+        repositories,
+        thread_id: designSessionId,
+      },
+    })
+
+    return { success: true }
+  } catch (error) {
+    console.error('Error initializing workflow with message:', error)
+    return {
+      success: false,
+      error: 'Failed to initialize workflow with message',
+    }
+  }
+}
+
 const saveInitialMessage = async (
   initialMessage: string,
   designSessionId: string,
   organizationId: string,
-  currentUserId: string,
+  _currentUserId: string,
 ): Promise<CreateSessionState> => {
   const supabase = await createClient()
   const repositories = createSupabaseRepositories(supabase, organizationId)
 
-  // Save initial user message to timeline
-  const userMessageResult = await repositories.schema.createTimelineItem({
+  const workflowResult = await initializeWorkflowWithMessage(
+    initialMessage,
     designSessionId,
-    content: initialMessage,
-    type: 'user',
-    userId: currentUserId,
-  })
+    organizationId,
+    repositories,
+  )
 
-  if (!userMessageResult.success) {
-    console.error('Error saving initial user message:', userMessageResult.error)
-    return { success: false, error: 'Failed to save initial user message' }
+  if (!workflowResult.success) {
+    console.error('Error initializing workflow:', workflowResult.error)
+    return {
+      success: false,
+      error: 'Failed to initialize workflow with initial message',
+    }
   }
 
   return { success: true }
