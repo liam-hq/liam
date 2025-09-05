@@ -24,7 +24,7 @@ export async function getInvitationData(token: string) {
 
   if (!user) {
     // Redirect to login if not authenticated
-    redirect('/app/login')
+    redirect('/login')
   }
   const currentUser = {
     id: user.id,

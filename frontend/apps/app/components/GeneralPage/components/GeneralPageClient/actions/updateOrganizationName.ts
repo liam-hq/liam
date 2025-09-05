@@ -26,8 +26,8 @@ export async function updateOrganizationName(
   }
 
   // Revalidate the organization pages to reflect the changes
-  revalidatePath(`/app/organizations/${organizationId}`)
-  revalidatePath(`/app/organizations/${organizationId}/settings/general`)
+  revalidatePath(`/organizations/${organizationId}`)
+  revalidatePath(`/organizations/${organizationId}/settings/general`)
 
   return { success: true }
 }

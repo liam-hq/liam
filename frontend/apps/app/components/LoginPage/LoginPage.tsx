@@ -7,7 +7,7 @@ import { SignInGithubButton } from './SignInGithubButton'
 
 export async function LoginPage() {
   // Get the returnTo value from the cookie
-  let returnTo = '/app/design_sessions/new'
+  let returnTo = '/design_sessions/new'
 
   const cookieStore = await cookies()
   const returnToCookie = cookieStore.get('returnTo')

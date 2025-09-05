@@ -13,7 +13,7 @@ export async function loginByEmail(formData: FormData) {
   const formReturnTo = formData.get('returnTo')
   const returnTo = formReturnTo
     ? formReturnTo.toString()
-    : '/app/design_sessions/new'
+    : '/design_sessions/new'
 
   const loginFormSchema = v.object({
     email: v.pipe(v.string(), v.email('Please enter a valid email address')),

@@ -62,7 +62,7 @@ export const BranchDetailPage = async ({
     <div className={styles.container}>
       <header className={styles.header}>
         <div className={styles.headerLeft}>
-          <Link href={`/app/projects/${projectId}`} className={styles.backLink}>
+          <Link href={`/projects/${projectId}`} className={styles.backLink}>
             ← Back to Project
           </Link>
           <h1 className={styles.title}>

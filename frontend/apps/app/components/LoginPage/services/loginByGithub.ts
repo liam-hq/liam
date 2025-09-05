@@ -7,7 +7,7 @@ import { createClient } from '../../../libs/db/server'
 type OAuthProvider = 'github'
 
 async function getAuthCallbackUrl({
-  next = '/app/design_sessions/new',
+  next = '/design_sessions/new',
   provider,
 }: {
   next?: string
@@ -47,7 +47,7 @@ export async function loginByGithub(formData: FormData) {
   const formReturnTo = formData.get('returnTo')
   const returnTo = formReturnTo
     ? formReturnTo.toString()
-    : '/app/design_sessions/new'
+    : '/design_sessions/new'
 
   // Clear the returnTo cookie since we've used it
   const cookieStore = await cookies()

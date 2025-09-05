@@ -16,6 +16,6 @@ export const Default: Story = {
     isOpen: true,
     onClose: () => {},
     onSwitchToSignUp: () => {},
-    returnTo: '/app/design_sessions/new',
+    returnTo: '/design_sessions/new',
   },
 }

@@ -42,7 +42,7 @@ export async function removeMember(formData: FormData) {
     }
   }
 
-  revalidatePath(`/app/organizations/${organizationId}/members`)
+  revalidatePath(`/organizations/${organizationId}/members`)
 
   return {
     success: true,
