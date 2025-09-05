@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/nextjs'
+import { getRouter } from '@storybook/nextjs/navigation.mock'
 import { type ComponentProps, useState } from 'react'
 import type { Projects } from '../../../../../components/CommonLayout/AppBar/ProjectsDropdownMenu/services/getProjects'
 import { GitHubSessionFormPresenter } from './GitHubSessionFormPresenter'
@@ -36,10 +37,6 @@ const meta = {
     layout: 'centered',
     nextjs: {
       appDirectory: true,
-      navigation: {
-        pathname: '/app/design_sessions/new',
-        query: {},
-      },
     },
   },
   tags: ['autodocs'],
@@ -167,6 +164,10 @@ export const Interactive: Story = {
     defaultProjectId: '',
     schemaFilePath: null,
   },
+  beforeEach: () => {
+    // Mock router.push for interactive story
+    getRouter().push.mockImplementation(() => Promise.resolve(true))
+  },
   render: (args: ComponentProps<typeof GitHubSessionFormPresenter>) => {
     const [isPending, setIsPending] = useState(args.isPending)
     const [selectedProjectId, setSelectedProjectId] = useState<string>(
@@ -225,6 +226,10 @@ export const InteractiveWithError: Story = {
     onProjectChange: () => {},
     defaultProjectId: '',
     schemaFilePath: null,
+  },
+  beforeEach: () => {
+    // Mock router.push for interactive story
+    getRouter().push.mockImplementation(() => Promise.resolve(true))
   },
   render: (args: ComponentProps<typeof GitHubSessionFormPresenter>) => {
     const [isPending, setIsPending] = useState(args.isPending)
