@@ -74,7 +74,6 @@ describe('validateInitialSchemaNode Integration', () => {
   })
 
   it('should validate actual schema and execute full validation flow', async () => {
-    // Create a test schema using proper factory functions to ensure correct structure
     const testSchema = aSchema({
       tables: {
         users: aTable({
@@ -124,8 +123,11 @@ describe('validateInitialSchemaNode Integration', () => {
       .addEdge('validateInitialSchemaNode', END)
       .compile()
 
-    // Use the new helper to set up initial_schema_snapshot with actual data
-    const { config, context } = await getTestConfigWithInitialSchema(testSchema)
+    const testConfigResult = await getTestConfigWithInitialSchema(testSchema)
+    if (testConfigResult.isErr()) {
+      throw testConfigResult.error
+    }
+    const { config, context } = testConfigResult.value
 
     const userInput = 'Add a permissions table and link it to roles and users'
 
