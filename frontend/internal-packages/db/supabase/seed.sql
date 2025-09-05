@@ -554,7 +554,6 @@ begin
                   "title": "User Registration",
                   "description": "New users can create an account",
                   "dmlOperation": {
-                      "testCaseId": "UC001",
                       "operation_type": "INSERT",
                       "sql": "INSERT INTO users (email, name) VALUES (''john@example.com'', ''John Doe'')",
                       "description": "Create a new user account",
@@ -576,7 +575,6 @@ begin
                   "title": "Create Blog Post",
                   "description": "Users can create new blog posts",
                   "dmlOperation": {
-                      "testCaseId": "UC002",
                       "operation_type": "INSERT",
                       "sql": "INSERT INTO posts (user_id, title, content, published) VALUES (''user-uuid'', ''My First Post'', ''Content here...'', false)",
                       "description": "Create a new blog post as draft",
@@ -587,7 +585,6 @@ begin
                   "title": "Publish Blog Post",
                   "description": "Users can publish their draft posts",
                   "dmlOperation": {
-                      "testCaseId": "UC003",
                       "operation_type": "UPDATE",
                       "sql": "UPDATE posts SET published = true WHERE id = ''post-uuid''",
                       "description": "Publish a draft post",
