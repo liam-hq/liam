@@ -1,4 +1,3 @@
-import { AIMessage } from '@langchain/core/messages'
 import type { RunnableConfig } from '@langchain/core/runnables'
 import { executeQuery } from '@liam-hq/pglite-server'
 import { postgresqlSchemaDeparser, schemaSchema } from '@liam-hq/schema'
@@ -6,10 +5,6 @@ import * as v from 'valibot'
 import { getConfigurable } from '../../chat/workflow/shared/getConfigurable'
 import type { WorkflowState } from '../../chat/workflow/types'
 import { WorkflowTerminationError } from '../../shared/errorHandling'
-
-const isFirstWorkflowExecution = (state: WorkflowState): boolean => {
-  return !state.messages.some((msg) => msg instanceof AIMessage)
-}
 
 /**
  * Validates initial schema and provides Instant Database initialization experience.
@@ -19,10 +14,6 @@ export async function validateInitialSchemaNode(
   state: WorkflowState,
   config: RunnableConfig,
 ): Promise<WorkflowState> {
-  if (!isFirstWorkflowExecution(state)) {
-    return state
-  }
-
   const configurableResult = getConfigurable(config)
   if (configurableResult.isErr()) {
     throw new WorkflowTerminationError(

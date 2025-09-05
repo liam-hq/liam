@@ -1,3 +1,4 @@
+import { AIMessage } from '@langchain/core/messages'
 import type { RunnableConfig } from '@langchain/core/runnables'
 import { END, START, StateGraph } from '@langchain/langgraph'
 import type { BaseCheckpointSaver } from '@langchain/langgraph-checkpoint'
@@ -14,6 +15,15 @@ import { validateInitialSchemaNode } from './workflow/nodes/validateInitialSchem
  *
  * @param checkpointer - Optional checkpoint saver for persistent state management
  */
+
+const routeFirstExecution = (
+  state: WorkflowState,
+): 'validateInitialSchema' | 'leadAgent' => {
+  const isFirstExecution = !state.messages.some(
+    (msg) => msg instanceof AIMessage,
+  )
+  return isFirstExecution ? 'validateInitialSchema' : 'leadAgent'
+}
 export const createGraph = (checkpointer?: BaseCheckpointSaver) => {
   const graph = new StateGraph(workflowAnnotation)
   const leadAgentSubgraph = createLeadAgentGraph(checkpointer)
@@ -54,7 +64,11 @@ export const createGraph = (checkpointer?: BaseCheckpointSaver) => {
     .addNode('dbAgent', dbAgentSubgraph)
     .addNode('qaAgent', callQaAgent)
 
-    .addEdge(START, 'validateInitialSchema')
+    // Conditional routing from START based on execution state
+    .addConditionalEdges(START, routeFirstExecution, {
+      validateInitialSchema: 'validateInitialSchema',
+      leadAgent: 'leadAgent',
+    })
     .addEdge('validateInitialSchema', 'leadAgent')
     .addConditionalEdges('leadAgent', (state) => state.next, {
       pmAgent: 'pmAgent',
