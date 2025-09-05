@@ -40,7 +40,7 @@ export async function removeInvitation(formData: FormData) {
     }
   }
 
-  revalidatePath(`/app/organizations/${organizationId}/members`)
+  revalidatePath(`/organizations/${organizationId}/members`)
 
   return {
     success: true,

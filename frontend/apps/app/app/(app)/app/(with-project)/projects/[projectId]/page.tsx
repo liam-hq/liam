@@ -13,5 +13,5 @@ export default async function Page({ params }: PageProps) {
   const { projectId } = parsedParams.output
 
   // Redirect to the branch detail page with 'main' as the default branch
-  return redirect(`/app/projects/${projectId}/ref/main`)
+  return redirect(`/projects/${projectId}/ref/main`)
 }
