@@ -17,15 +17,10 @@ import { SSE_EVENTS } from '../../client'
 import type { Repositories } from '../../repositories'
 import { WorkflowTerminationError } from '../../shared/errorHandling'
 import { toJsonSchema } from '../../shared/jsonSchema'
-
-// Valibot schema for validating analyzedRequirements structure
-const analyzedRequirementsSchema = v.object({
-  businessRequirement: v.string(),
-  functionalRequirements: v.record(v.string(), v.array(v.string())),
-  nonFunctionalRequirements: v.record(v.string(), v.array(v.string())),
-})
-
-type AnalyzedRequirements = v.InferOutput<typeof analyzedRequirementsSchema>
+import {
+  type AnalyzedRequirements,
+  analyzedRequirementsSchema,
+} from '../../utils/schema/analyzedRequirements'
 
 const toolSchema = toJsonSchema(analyzedRequirementsSchema)
 

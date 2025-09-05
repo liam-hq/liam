@@ -2,17 +2,12 @@ import type { BaseMessage } from '@langchain/core/messages'
 import type { Schema } from '@liam-hq/schema'
 import type { Testcase } from '../../qa-agent/types'
 import type { Repositories } from '../../repositories'
+import type { AnalyzedRequirementsAnnotationType } from '../../utils/schema/analyzedRequirements'
 
 export type WorkflowState = {
   messages: BaseMessage[]
   userInput: string
-  analyzedRequirements?:
-    | {
-        businessRequirement: string
-        functionalRequirements: Record<string, string[]>
-        nonFunctionalRequirements: Record<string, string[]>
-      }
-    | undefined
+  analyzedRequirements?: AnalyzedRequirementsAnnotationType
   testcases: Testcase[]
   schemaData: Schema
 

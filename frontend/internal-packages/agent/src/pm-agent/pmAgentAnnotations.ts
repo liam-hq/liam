@@ -1,5 +1,6 @@
 import { Annotation, MessagesAnnotation } from '@langchain/langgraph'
 import type { Schema } from '@liam-hq/schema'
+import type { AnalyzedRequirements } from '../utils/schema/analyzedRequirements'
 
 /**
  * PM Agent subgraph specific state annotation
@@ -7,11 +8,7 @@ import type { Schema } from '@liam-hq/schema'
  */
 export const pmAgentStateAnnotation = Annotation.Root({
   ...MessagesAnnotation.spec,
-  analyzedRequirements: Annotation<{
-    businessRequirement: string
-    functionalRequirements: Record<string, string[]>
-    nonFunctionalRequirements: Record<string, string[]>
-  }>,
+  analyzedRequirements: Annotation<AnalyzedRequirements>,
   designSessionId: Annotation<string>,
   schemaData: Annotation<Schema>,
 
