@@ -1,0 +1,50 @@
+{
+  "tables": {
+    "products": {
+      "name": "products",
+      "columns": {
+        "product_id": {
+          "name": "product_id",
+          "type": "integer",
+          "notNull": true,
+          "default": "",
+          "check": "",
+          "comment": ""
+        }
+      },
+      "indexes": {},
+      "constraints": {}
+    },
+    "customers": {
+      "name": "customers",
+      "columns": {
+        "customer_id": {
+          "name": "customer_id",
+          "type": "integer",
+          "notNull": true,
+          "default": "",
+          "check": "",
+          "comment": ""
+        }
+      },
+      "indexes": {},
+      "constraints": {}
+    },
+    "orders": {
+      "name": "orders",
+      "columns": {
+        "order_id": {
+          "name": "order_id",
+          "type": "integer",
+          "notNull": true,
+          "default": "",
+          "check": "",
+          "comment": ""
+        }
+      },
+      "indexes": {},
+      "constraints": {}
+    }
+  },
+  "enums": {}
+}

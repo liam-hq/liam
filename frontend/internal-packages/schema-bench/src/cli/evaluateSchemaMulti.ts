@@ -36,7 +36,9 @@ async function main() {
   // Parse command-line arguments
   const args = process.argv.slice(2)
   const requestedDatasets =
-    args.length > 0 ? args : ['default', 'entity-extraction']
+    args.length > 0
+      ? args
+      : ['default', 'entity-extraction', 'ambiguous-recall']
 
   // Define all available datasets
   const allDatasets = [
@@ -45,6 +47,7 @@ async function main() {
       name: 'entity-extraction',
       path: join(workspacePath, 'entity-extraction'),
     },
+    { name: 'ambiguous-recall', path: join(workspacePath, 'ambiguous-recall') },
   ]
 
   // Filter to requested datasets
