@@ -230,10 +230,12 @@ graph TD;
 	generateTestcaseAndDml(generateTestcaseAndDml)
 	invokeSaveTestcasesAndDmlTool(invokeSaveTestcasesAndDmlTool)
 	validateSchema(validateSchema)
+	invokeRunTestTool(invokeRunTestTool)
 	__end__([<p>__end__</p>]):::last
 	__start__ --> generateTestcaseAndDml;
+	invokeRunTestTool --> __end__;
 	invokeSaveTestcasesAndDmlTool --> generateTestcaseAndDml;
-	validateSchema --> __end__;
+	validateSchema --> invokeRunTestTool;
 	generateTestcaseAndDml -.-> invokeSaveTestcasesAndDmlTool;
 	generateTestcaseAndDml -.-> validateSchema;
 	classDef default fill:#f2f0ff,line-height:1.2;
@@ -256,15 +258,21 @@ graph TD;
 - **Tool Integration**: Saves test cases and DML operations atomically for validation
 
 #### 3. validateSchema Node
+- **Purpose**: Creates AI message to trigger test execution for schema validation
+- **Performed by**: validateSchemaNode function
+- **Retry Policy**: maxAttempts: 3 (internal to subgraph)
+- **Output**: Generates tool call for runTestTool execution
+
+#### 4. invokeRunTestTool Node
 - **Purpose**: Executes DML statements and validates schema functionality
-- **Performed by**: DML Generation Agent with database execution
+- **Performed by**: ToolNode with runTestTool
 - **Retry Policy**: maxAttempts: 3 (internal to subgraph)
 - **Validation**: Schema integrity and DML execution results
 
 ### QA Agent Flow Patterns
 
-1. **Direct Validation Flow**: `START → generateTestcaseAndDml → validateSchema → END` (when test cases and DML operations are generated and saved directly)
-2. **Tool-based Flow**: `START → generateTestcaseAndDml → invokeSaveTestcasesAndDmlTool → generateTestcaseAndDml → validateSchema → END` (when tool calls are required for saving)
+1. **Direct Validation Flow**: `START → generateTestcaseAndDml → validateSchema → invokeRunTestTool → END` (when test cases and DML operations are generated and saved directly)
+2. **Tool-based Flow**: `START → generateTestcaseAndDml → invokeSaveTestcasesAndDmlTool → generateTestcaseAndDml → validateSchema → invokeRunTestTool → END` (when tool calls are required for saving)
 3. **Comprehensive Validation**: Each step builds upon the previous to ensure thorough testing with conditional routing
 
 ### QA Agent Benefits

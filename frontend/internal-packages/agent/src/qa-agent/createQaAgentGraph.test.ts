@@ -10,10 +10,12 @@ graph TD;
 	generateTestcaseAndDml(generateTestcaseAndDml)
 	invokeSaveTestcasesAndDmlTool(invokeSaveTestcasesAndDmlTool)
 	validateSchema(validateSchema)
+	invokeRunTestTool(invokeRunTestTool)
 	__end__([<p>__end__</p>]):::last
 	__start__ --> generateTestcaseAndDml;
+	invokeRunTestTool --> __end__;
 	invokeSaveTestcasesAndDmlTool --> generateTestcaseAndDml;
-	validateSchema --> __end__;
+	validateSchema --> invokeRunTestTool;
 	generateTestcaseAndDml -.-> invokeSaveTestcasesAndDmlTool;
 	generateTestcaseAndDml -.-> validateSchema;
 	classDef default fill:#f2f0ff,line-height:1.2;
