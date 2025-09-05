@@ -1,6 +1,6 @@
 import type { RunnableConfig } from '@langchain/core/runnables'
 import type { Json } from '@liam-hq/db/supabase/database.types'
-import { errAsync, okAsync, ResultAsync } from 'neverthrow'
+import { errAsync, ResultAsync } from 'neverthrow'
 import {
   createLogger,
   setupDatabaseAndUser,
@@ -102,21 +102,11 @@ export const getTestConfigWithInitialSchema = (
 
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     const repositories = configurable['repositories'] as Repositories
-    return ResultAsync.fromPromise(
-      repositories.schema.updateBuildingSchemaInitialSnapshot(
+    return repositories.schema
+      .updateBuildingSchemaInitialSnapshot(
         baseConfig.context.buildingSchemaId,
         initialSchema,
-      ),
-      (error) => new Error(`Failed to update schema: ${error}`),
-    ).andThen((updateResult) => {
-      if (!updateResult.success) {
-        return errAsync(
-          new Error(
-            `Failed to set initial schema for test: ${updateResult.error}`,
-          ),
-        )
-      }
-      return okAsync(baseConfig)
-    })
+      )
+      .map(() => baseConfig)
   })
 }

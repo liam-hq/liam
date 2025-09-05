@@ -547,17 +547,16 @@ export class InMemoryRepository implements SchemaRepository {
     }
   }
 
-  async updateBuildingSchemaInitialSnapshot(
+  updateBuildingSchemaInitialSnapshot(
     buildingSchemaId: string,
     initialSchema: Json,
-  ): Promise<{ success: true } | { success: false; error: string }> {
+  ): ResultAsync<void, Error> {
     // For InMemoryRepository, we can update the building schema directly
     const buildingSchema = this.state.buildingSchemas.get(buildingSchemaId)
     if (!buildingSchema) {
-      return {
-        success: false,
-        error: `Building schema not found for ID: ${buildingSchemaId}`,
-      }
+      return errAsync(
+        new Error(`Building schema not found for ID: ${buildingSchemaId}`),
+      )
     }
 
     // Store raw snapshot (even if not a valid Schema) for validation workflows
@@ -576,6 +575,6 @@ export class InMemoryRepository implements SchemaRepository {
       })
     }
 
-    return { success: true }
+    return okAsync(undefined)
   }
 }

@@ -238,7 +238,7 @@ export type SchemaRepository = {
   updateBuildingSchemaInitialSnapshot(
     buildingSchemaId: string,
     initialSchema: Json,
-  ): Promise<{ success: true } | { success: false; error: string }>
+  ): ResultAsync<void, Error>
 
   /**
    * The checkpoint saver instance
