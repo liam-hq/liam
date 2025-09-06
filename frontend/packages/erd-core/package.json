@@ -34,7 +34,7 @@
     "@liam-hq/configs": "workspace:*",
     "@liam-hq/schema": "workspace:*",
     "@storybook/nextjs": "9.1.3",
-    "@testing-library/jest-dom": "6.6.4",
+    "@testing-library/jest-dom": "6.8.0",
     "@testing-library/react": "16.3.0",
     "@testing-library/user-event": "14.6.1",
     "@types/pako": "2.0.3",
