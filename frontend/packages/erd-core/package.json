@@ -18,7 +18,7 @@
     "@liam-hq/ui": "workspace:*",
     "@radix-ui/react-dialog": "1.1.15",
     "@radix-ui/react-toolbar": "1.1.11",
-    "@xyflow/react": "12.8.3",
+    "@xyflow/react": "12.8.4",
     "clsx": "2.1.1",
     "cmdk": "1.1.1",
     "elkjs": "0.10.0",
