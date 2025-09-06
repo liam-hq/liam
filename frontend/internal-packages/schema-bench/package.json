@@ -22,7 +22,10 @@
   },
   "scripts": {
     "evaluateSchema": "tsx src/cli/evaluateSchema.ts",
-    "executeLiamDB": "tsx src/cli/executeLiamDb.ts",
+    "evaluateSchemaMulti": "tsx src/cli/evaluateSchemaMulti.ts",
+    "executeLiamDB": "tsx src/cli/executeLiamDbUnified.ts",
+    "executeLiamDB:default": "tsx src/cli/executeLiamDbDefault.ts",
+    "executeLiamDB:entityExtraction": "tsx src/cli/executeLiamDbEntityExtraction.ts",
     "executeOpenai": "tsx src/cli/executeOpenai.ts",
     "fmt": "concurrently \"pnpm:fmt:*\"",
     "fmt:biome": "biome check --write --unsafe .",

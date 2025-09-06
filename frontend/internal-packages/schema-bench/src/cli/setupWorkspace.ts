@@ -16,19 +16,33 @@ const __dirname = path.dirname(__filename)
 
 const runSetupWorkspace = async (): Promise<void> => {
   const workspacePath = getWorkspacePath()
-  const defaultDataPath = path.resolve(
-    __dirname,
-    '../../benchmark-workspace-default',
-  )
-  const config: WorkspaceConfig = {
-    workspacePath,
-    defaultDataPath,
-  }
 
-  const result = await setupWorkspace(config)
+  // Setup multiple benchmark datasets
+  const datasets = [
+    {
+      name: 'default',
+      path: path.resolve(__dirname, '../../benchmark-workspace-default'),
+    },
+    {
+      name: 'entity-extraction',
+      path: path.resolve(
+        __dirname,
+        '../../benchmark-workspace-entity-extraction',
+      ),
+    },
+  ]
 
-  if (result.isErr()) {
-    handleCliError('Workspace setup failed', result.error)
+  for (const dataset of datasets) {
+    const datasetWorkspacePath = path.join(workspacePath, dataset.name)
+    const config: WorkspaceConfig = {
+      workspacePath: datasetWorkspacePath,
+      defaultDataPath: dataset.path,
+    }
+    const result = await setupWorkspace(config)
+
+    if (result.isErr()) {
+      handleCliError(`Workspace setup failed for ${dataset.name}`, result.error)
+    }
   }
 }
 

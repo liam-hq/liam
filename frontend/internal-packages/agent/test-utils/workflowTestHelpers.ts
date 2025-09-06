@@ -1,6 +1,7 @@
 import type { RunnableConfig } from '@langchain/core/runnables'
 import {
   createLogger,
+  getLogLevel,
   setupDatabaseAndUser,
   validateEnvironment,
 } from '../scripts/shared/scriptUtils'
@@ -13,7 +14,7 @@ import { processStreamChunk } from '../scripts/shared/streamingUtils'
  */
 export const outputStream = async <T extends Record<string, unknown>>(
   stream: AsyncGenerator<T, void, unknown>,
-  logLevel: 'ERROR' | 'INFO' | 'DEBUG' = 'INFO',
+  logLevel: 'ERROR' | 'INFO' | 'DEBUG' | 'WARN' = getLogLevel(),
 ): Promise<void> => {
   const logger = createLogger(logLevel)
 

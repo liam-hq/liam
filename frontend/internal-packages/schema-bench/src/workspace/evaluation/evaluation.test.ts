@@ -57,12 +57,15 @@ describe('evaluateSchema', () => {
 
   const mockEvaluateResult = {
     tableF1Score: 0.9,
+    tableRecall: 0.88,
     tableAllCorrectRate: 0.8,
     columnF1ScoreAverage: 0.85,
+    columnRecallAverage: 0.83,
     columnAllCorrectRateAverage: 0.75,
     primaryKeyAccuracyAverage: 0.95,
     constraintAccuracy: 0.88,
     foreignKeyF1Score: 0.92,
+    foreignKeyRecall: 0.9,
     foreignKeyAllCorrectRate: 0.87,
     overallSchemaAccuracy: 0.89,
     tableMapping: { users: 'users' },

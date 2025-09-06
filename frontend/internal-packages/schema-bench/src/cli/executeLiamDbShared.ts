@@ -13,22 +13,28 @@ import {
 } from 'neverthrow'
 import * as v from 'valibot'
 import { execute, type LiamDbExecutorInput } from '../executors/liamDb/index.ts'
-import {
-  getWorkspaceSubPath,
-  handleCliError,
-  handleUnexpectedError,
-} from './utils/index.ts'
 
 config({ path: resolve(__dirname, '../../../../../.env') })
 
-const InputSchema = v.object({
-  input: v.string(),
-})
+const InputSchema = v.union([
+  v.object({
+    input: v.string(),
+  }),
+  v.string(), // Support legacy format
+])
 
-async function loadInputFiles(): Promise<
+type DatasetResult = {
+  datasetName: string
+  success: number
+  failure: number
+}
+
+async function loadInputFiles(
+  datasetPath: string,
+): Promise<
   Result<Array<{ caseId: string; input: LiamDbExecutorInput }>, Error>
 > {
-  const inputDir = getWorkspaceSubPath('execution/input')
+  const inputDir = join(datasetPath, 'execution/input')
 
   if (!existsSync(inputDir)) {
     return err(
@@ -84,9 +90,14 @@ async function loadInputFiles(): Promise<
       )
     }
 
+    const normalizedInput: LiamDbExecutorInput =
+      typeof validationResult.output === 'string'
+        ? { input: validationResult.output }
+        : validationResult.output
+
     inputs.push({
       caseId,
-      input: validationResult.output satisfies LiamDbExecutorInput,
+      input: normalizedInput,
     })
   }
 
@@ -94,10 +105,11 @@ async function loadInputFiles(): Promise<
 }
 
 async function saveOutputFile(
+  datasetPath: string,
   caseId: string,
   output: unknown,
 ): Promise<Result<void, Error>> {
-  const outputDir = getWorkspaceSubPath('execution/output')
+  const outputDir = join(datasetPath, 'execution/output')
 
   if (!existsSync(outputDir)) {
     mkdirSync(outputDir, { recursive: true })
@@ -116,6 +128,7 @@ async function saveOutputFile(
 }
 
 async function executeCase(
+  datasetPath: string,
   caseId: string,
   input: LiamDbExecutorInput,
 ): Promise<Result<void, Error>> {
@@ -126,64 +139,49 @@ async function executeCase(
     )
   }
 
-  const saveResult = await saveOutputFile(caseId, result.value)
+  const saveResult = await saveOutputFile(datasetPath, caseId, result.value)
   if (saveResult.isErr()) {
     return saveResult
   }
   return ok(undefined)
 }
 
-async function main() {
+export async function processDataset(
+  datasetName: string,
+  datasetPath: string,
+): Promise<DatasetResult> {
   // Load input files
-  const inputsResult = await loadInputFiles()
+  const inputsResult = await loadInputFiles(datasetPath)
   if (inputsResult.isErr()) {
-    handleCliError('Failed to load input files', inputsResult.error)
-    return
+    console.warn(`⚠️  ${datasetName}: ${inputsResult.error.message}`)
+    return { datasetName, success: 0, failure: 1 }
   }
 
   const inputs = inputsResult.value
 
   if (inputs.length === 0) {
-    // No input files found, exit silently
-    return
+    console.warn('   ⚠️  No input files found')
+    return { datasetName, success: 0, failure: 0 }
   }
 
-  // Process each case with max 4 concurrent request
-  const MAX_CONCURRENT = 4
+  // Process each case with max 5 concurrent requests for stability
+  const MAX_CONCURRENT = 5
   let successCount = 0
   let failureCount = 0
-
-  const getErrorMessage = (
-    result: PromiseSettledResult<Result<void, Error>>,
-  ): string => {
-    if (result.status === 'fulfilled' && result.value.isErr()) {
-      return result.value.error.message
-    }
-    if (result.status === 'rejected' && result.reason instanceof Error) {
-      return result.reason.message
-    }
-    return 'Unknown error'
-  }
 
   const processBatch = async (
     batch: Array<{ caseId: string; input: LiamDbExecutorInput }>,
   ) => {
     const promises = batch.map(({ caseId, input }) =>
-      executeCase(caseId, input),
+      executeCase(datasetPath, caseId, input),
     )
     const results = await Promise.allSettled(promises)
 
-    results.forEach((result, index) => {
-      const batchItem = batch[index]
-      if (!batchItem) return
-
-      const { caseId } = batchItem
+    results.forEach((result) => {
       if (result.status === 'fulfilled' && result.value.isOk()) {
         successCount++
       } else {
         failureCount++
-        const error = getErrorMessage(result)
-        console.error(`❌ ${caseId} failed: ${error}`)
       }
     })
   }
@@ -192,11 +190,5 @@ async function main() {
     const batch = inputs.slice(i, i + MAX_CONCURRENT)
     await processBatch(batch)
   }
-
-  if (failureCount > 0) {
-    handleCliError(`${failureCount} case(s) failed`)
-    return
-  }
+  return { datasetName, success: successCount, failure: failureCount }
 }
-
-main().catch(handleUnexpectedError)

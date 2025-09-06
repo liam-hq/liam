@@ -17,12 +17,15 @@ export type EvaluationResult = {
   caseId: string
   metrics: {
     tableF1Score: number
+    tableRecall: number
     tableAllCorrectRate: number
     columnF1ScoreAverage: number
+    columnRecallAverage: number
     columnAllCorrectRateAverage: number
     primaryKeyAccuracyAverage: number
     constraintAccuracy: number
     foreignKeyF1Score: number
+    foreignKeyRecall: number
     foreignKeyAllCorrectRate: number
     overallSchemaAccuracy: number
   }

@@ -1,7 +1,11 @@
 {
   "name": "@liam-hq/erd-core",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/liam-hq/liam.git"
+  },
   "license": "Apache-2.0",
-  "version": "0.6.7",
+  "version": "0.6.8",
   "type": "module",
   "publishConfig": {
     "access": "public"
@@ -56,5 +60,11 @@
     "lint:tsc": "tsc --noEmit",
     "suppressions": "eslint --suppress-all --fix --max-warnings 0",
     "test": "vitest --watch=false"
-  }
+  },
+  "files": [
+    "src/**/*",
+    "README.md",
+    "package.json",
+    "LICENSE"
+  ]
 }

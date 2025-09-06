@@ -28,7 +28,7 @@ jobs:
         run: |
           echo "Starting after ${{ github.event.inputs.delay_seconds }} seconds"
           sleep ${{ github.event.inputs.delay_seconds }}
-      - name: check @liam-hq/cli exit code
+      - name: "check @liam-hq/cli exit code 1: version check"
         shell: bash
         run: |
           version="${{ github.event.inputs.version }}"
@@ -41,6 +41,22 @@ jobs:
             exit 1
           fi
           npx --yes @liam-hq/cli@${version} --version
+
+      - name: "check @liam-hq/cli exit code 2: --format postgres check"
+        run: |
+          version="${{ github.event.inputs.version }}"
+          npx --yes @liam-hq/cli@${version} erd build --input https://github.com/liam-hq/liam/blob/main/frontend/internal-packages/db/schema/schema.sql --format postgres
+
+      - name: "check @liam-hq/cli exit code 3: --format schemarb check"
+        run: |
+          version="${{ github.event.inputs.version }}"
+          npx --yes @liam-hq/cli@${version} erd build --input https://github.com/mastodon/mastodon/blob/e2f085e2b2cec08dc1f5ae825730c2a3bf62e054/db/schema.rb --format schemarb
+
+      - name: "check @liam-hq/cli exit code 4: --format prisma check"
+        run: |
+          version="${{ github.event.inputs.version }}"
+          npx --yes @liam-hq/cli@${version} erd build --input https://github.com/langfuse/langfuse/blob/cf29c6b7e447cf1aec7a8d50ae6a877c3844b7cd/packages/shared/prisma/schema.prisma --format prisma
+
 
       # derived from https://github.com/route06/actions/blob/8e3ac6855302a4fe3bd621ebd16c7a0da261948a/.github/workflows/notify_slack_on_ci_failed.yml
       - name: Slack Notification on Success

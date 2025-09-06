@@ -13,7 +13,7 @@ export const useAuthModal = () => {
 
   const returnTo =
     typeof window !== 'undefined'
-      ? window.location.pathname.replace('/app/public/', '/app/')
+      ? window.location.pathname.replace('/public/', '/app/')
       : '/app/design_sessions/new'
 
   return {

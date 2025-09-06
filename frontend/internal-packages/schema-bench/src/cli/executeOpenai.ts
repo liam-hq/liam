@@ -156,9 +156,8 @@ async function main() {
   // Create executor
   const executor = new OpenAIExecutor({ apiKey })
 
-  // Process each case with max 4 concurrent requests
-  const MAX_CONCURRENT = 4
-  let successCount = 0
+  // Process each case with max 5 concurrent requests
+  const MAX_CONCURRENT = 5
   let failureCount = 0
 
   const getErrorMessage = (
@@ -187,7 +186,7 @@ async function main() {
 
       const { caseId } = batchItem
       if (result.status === 'fulfilled' && result.value.isOk()) {
-        successCount++
+        // Case executed successfully
       } else {
         failureCount++
         const error = getErrorMessage(result)

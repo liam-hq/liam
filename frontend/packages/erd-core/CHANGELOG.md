@@ -1,5 +1,12 @@
 # @liam-hq/erd-core
 
+## 0.6.8
+
+### Patch Changes
+
+- [#3314](https://github.com/liam-hq/liam/pull/3314) - Optimize published content by adding files field to exclude development files while maintaining TypeScript direct publishing / Thanks [@devin-ai-integration](https://github.com/apps/devin-ai-integration)!
+- [#3314](https://github.com/liam-hq/liam/pull/3314) - Optimize published content by adding files field to exclude development files while maintaining TypeScript direct publishing / Thanks [@devin-ai-integration](https://github.com/apps/devin-ai-integration)!
+
 ## 0.6.7
 
 ### Patch Changes

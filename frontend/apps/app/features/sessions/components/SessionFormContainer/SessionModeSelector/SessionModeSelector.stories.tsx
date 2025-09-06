@@ -51,11 +51,15 @@ export const Interactive: Story = {
       args.selectedMode,
     )
 
+    const handleModeChange = (mode: SessionMode) => {
+      setSelectedMode(mode)
+    }
+
     return (
       <SessionModeSelector
         {...args}
         selectedMode={selectedMode}
-        onModeChange={setSelectedMode}
+        onModeChange={handleModeChange}
       />
     )
   },

@@ -17,43 +17,75 @@ Execute schema benchmark comparison between LiamDB and OpenAI models.
 
 ## Execution
 
-**Important**: When using the Bash tool for these commands, always set the timeout parameter to the maximum value (600000ms / 10 minutes) as benchmark operations can be time-intensive.
+**Important**: Benchmark operations are time-intensive. The system now supports:
+- Parallel dataset processing for faster execution
+- Automatic input format standardization
+- Improved error handling and progress reporting
 
-First, I'll clean up any existing workspace and set up a fresh benchmark environment:
+First, I'll clean up any existing workspace and set up a fresh benchmark environment with multiple datasets:
 
 ```bash
 rm -rf benchmark-workspace && pnpm --filter @liam-hq/schema-bench setupWorkspace
 ```
 
-Next, I'll execute the specified model:
+This will set up two benchmark datasets:
+- **default**: Standard schema generation benchmark (3 complex cases)
+- **entity-extraction**: Tests if specified table/column names appear in output (5 cases)
+
+The system features:
+- **Parallel Processing**: Datasets are processed simultaneously for faster execution
+- **Smart Concurrency**: Each dataset uses MAX_CONCURRENT=5 for stability
+- **Input Standardization**: Entity-extraction inputs are automatically wrapped in `{"input": "..."}` format
+
+Next, I'll execute the specified model with dataset selection:
 
 {{#if (eq (lower model) "liamdb")}}
 ```bash
-pnpm --filter @liam-hq/schema-bench executeLiamDB
+# Run LiamDB on all datasets in the workspace
+pnpm --filter @liam-hq/schema-bench executeLiamDB -all
+
+# Run LiamDB on a specific dataset
+pnpm --filter @liam-hq/schema-bench executeLiamDB -entity-extraction
+
+# Run LiamDB on multiple datasets
+pnpm --filter @liam-hq/schema-bench executeLiamDB -default -entity-extraction
 ```
 {{else if (eq (lower model) "openai")}}
 ```bash
+# OpenAI currently targets the default dataset
 pnpm --filter @liam-hq/schema-bench executeOpenai
 ```
 {{else}}
 **Error**: Invalid model specified. Please use 'LiamDB' or 'OpenAI'.
 {{/if}}
 
-If execution succeeds, I'll run the evaluation:
+If execution succeeds, I'll run the evaluation on all datasets:
 
 ```bash
-pnpm --filter @liam-hq/schema-bench evaluateSchema
+pnpm --filter @liam-hq/schema-bench evaluateSchemaMulti
 ```
 
-Finally, I'll read the latest summary results from `benchmark-workspace/evaluation/` and display the metrics in a formatted table.
+The evaluation will display comprehensive metrics for each dataset:
 
-The results will show average metrics including:
-- Table F1 Score
-- Table All Correct Rate
-- Column F1 Score Average
-- Column All Correct Rate Average
-- Primary Key Accuracy Average
-- Constraint Accuracy
-- Foreign Key F1 Score
-- Foreign Key All Correct Rate
-- Overall Schema Accuracy
+**For each dataset:**
+- **Table F1 Score**: Harmonic mean of table precision and recall
+- **Table Recall**: How many reference tables were found
+- **Table All Correct Rate**: Percentage of perfectly matched tables
+- **Column F1 Score Average**: Average F1 score across all tables' columns
+- **Column Recall Average**: How many reference columns were found
+- **Column All Correct Rate Average**: Percentage of perfectly matched columns
+- **Primary Key Accuracy Average**: Accuracy of primary key identification
+- **Constraint Accuracy**: Accuracy of constraint detection
+- **Foreign Key F1 Score**: F1 score for foreign key relationships
+- **Foreign Key Recall**: How many reference foreign keys were found
+- **Foreign Key All Correct Rate**: Percentage of perfectly matched foreign keys
+- **Overall Schema Accuracy**: Combined accuracy across all metrics
+
+### Expected Performance:
+- **Default dataset**: ~60-80% overall accuracy for complex schemas
+- **Entity-extraction dataset**: ~100% recall for mentioned entities
+
+### Execution Time:
+- Setup: ~5 seconds
+- LiamDB execution: ~20-30 minutes for all 8 cases
+- Evaluation: ~10 seconds

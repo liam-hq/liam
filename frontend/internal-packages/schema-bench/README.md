@@ -2,76 +2,88 @@
 
 ## Overview
 
-Schema-Bench is a comprehensive benchmarking tool for database schema generation and evaluation. It provides executors for generating schemas using different AI models and tools for evaluating their accuracy against reference schemas.
+Schema-Bench benchmarks database schema generation and evaluation across models (LiamDB, OpenAI). It provides executors for generating schemas and tools for evaluating outputs against reference schemas across multiple datasets.
 
 ## Quick Start
 
-### 1. Setup Workspace
+### 1) Clean and set up workspace (multiple datasets)
 ```bash
-pnpm --filter @liam-hq/schema-bench setupWorkspace
+rm -rf benchmark-workspace && pnpm --filter @liam-hq/schema-bench setupWorkspace
 ```
-Creates the benchmark directory structure with input, output, and reference folders.
+This creates a benchmark workspace with two datasets:
+- default: Standard schema generation (3 complex cases)
+- entity-extraction: Checks whether specified table/column names appear (5 cases)
 
-### 2. Create Input Cases
-Add JSON files to `benchmark-workspace/execution/input/` with your schema generation prompts:
-```json
-{
-  "input": "Create a products table with id and name columns"
-}
-```
+System features:
+- Parallel dataset processing for faster execution
+- Smart concurrency per dataset (MAX_CONCURRENT=5)
+- Automatic input standardization (strings get wrapped to `{ "input": "..." }`)
 
-### 3. Generate Schemas
-Choose one of the available executors:
+### 2) Execute a model
 
-**OpenAI Executor:**
+LiamDB:
 ```bash
+# Run on all datasets in the workspace
+pnpm --filter @liam-hq/schema-bench executeLiamDB -all
+
+# Run on a specific dataset
+pnpm --filter @liam-hq/schema-bench executeLiamDB -entity-extraction
+
+# Run on multiple datasets
+pnpm --filter @liam-hq/schema-bench executeLiamDB -default -entity-extraction
+```
+
+OpenAI:
+```bash
+# OpenAI currently targets the default dataset
 pnpm --filter @liam-hq/schema-bench executeOpenai
 ```
 
-**LiamDB Executor:**
+### 3) Evaluate results (all datasets)
 ```bash
-pnpm --filter @liam-hq/schema-bench executeLiamDB
+pnpm --filter @liam-hq/schema-bench evaluateSchemaMulti
 ```
 
-### 4. Evaluate Results
-```bash
-pnpm --filter @liam-hq/schema-bench evaluateSchema
-```
+### Execution time (rough guide)
+- Setup: ~5s
+- LiamDB execution (all 8 cases): ~20–30m
+- Evaluation: ~10s
 
 ## Available Commands
 
-| Command | Description |
-|---------|-------------|
-| `setupWorkspace` | Initialize benchmark directory structure |
-| `executeOpenai` | Generate schemas using OpenAI API |
-| `executeLiamDB` | Generate schemas using Liam's AI agent |
-| `evaluateSchema` | Evaluate generated schemas against references |
+- setupWorkspace: Initialize benchmark workspace with datasets
+- executeLiamDB: Unified executor with dataset flags (`-all`, `-default`, `-entity-extraction`)
+- executeOpenai: Execute on default dataset
+- evaluateSchemaMulti: Evaluate all available datasets
+
+Note: Legacy dataset-specific scripts exist but the unified `executeLiamDB` is recommended.
 
 ## Executors
 
 ### OpenAI Executor
-- Uses OpenAI's GPT models to generate database schemas from natural language prompts
-- Requires `OPENAI_API_KEY` environment variable
-- Outputs structured schemas in JSON format
+- Uses OpenAI models to generate schemas from natural language prompts
+- Requires `OPENAI_API_KEY` in your environment
+- Outputs JSON schemas
 
-### LiamDB Executor  
+### LiamDB Executor
 - Uses Liam's internal AI agent for schema generation
-- Leverages deep modeling workflows for comprehensive schema design
-- Optimized for complex database requirements
+- Designed for complex, multi-step schema design workflows
 
 ## Evaluation
 
-The evaluation system performs multi-dimensional analysis:
-
-### Matching Algorithms
-- **Word Overlap Matching**: Lexical similarity based on shared words
-- **Semantic Similarity**: ML embeddings using 'all-MiniLM-L6-v2' model
-- **Comprehensive Mapping**: Bidirectional schema and attribute matching
-
-### Key Metrics
-- **F1 Score**: Harmonic mean of precision and recall
-- **All-Correct Rate**: Binary indicator of perfect matching
-- **Structural Validation**: Primary key and foreign key accuracy
+The evaluation computes comprehensive metrics for each dataset:
+- Table F1 Score: Harmonic mean of table precision and recall
+- Table Recall: Fraction of reference tables recovered
+- Table All Correct Rate: Percentage of perfectly matched tables
+- Column F1 Score Average: Average F1 across table columns
+- Column Recall Average: Fraction of reference columns recovered
+- Column All Correct Rate Average: Percentage of perfectly matched columns
+- Primary Key Accuracy Average: Accuracy of primary key detection
+- Constraint Accuracy: Accuracy of constraint detection
+- Foreign Key F1 Score: F1 score for foreign key relationships
+- Foreign Key Recall: Fraction of reference foreign keys recovered
+- Foreign Key All Correct Rate: Percentage of perfectly matched foreign keys
+- Overall Schema Accuracy: Aggregated metric across dimensions
 
 ## Schema Format
 
@@ -86,7 +98,6 @@ type Table = {
   name: string
   columns: Record<string, Column>
   constraints: Record<string, Constraint>
-  // ... other properties
 }
 ```
 
@@ -106,7 +117,7 @@ type Table = {
           "comment": "Product ID"
         },
         "name": {
-          "name": "name", 
+          "name": "name",
           "type": "VARCHAR(255)",
           "notNull": true,
           "comment": "Product name"
@@ -127,16 +138,22 @@ type Table = {
 
 ## Workspace Structure
 
-After running `setupWorkspace`, the following directory structure is created:
+After `setupWorkspace`, the workspace contains dataset directories under `benchmark-workspace/`:
 
 ```
 benchmark-workspace/
-├── execution/
-│   ├── input/          # JSON files with prompts
-│   └── output/         # Generated schemas
-└── evaluation/
-    ├── reference/      # Reference schemas for comparison
-    └── result/         # Evaluation results
+├── default/
+│   ├── execution/
+│   │   ├── input/      # JSON prompt files
+│   │   ├── output/     # Generated schemas
+│   │   └── reference/  # Reference schemas for comparison
+│   └── evaluation/     # Evaluation results (per-case + summary)
+└── entity-extraction/
+    ├── execution/
+    │   ├── input/
+    │   ├── output/
+    │   └── reference/
+    └── evaluation/
 ```
 
 ## Environment Setup
@@ -148,13 +165,13 @@ export OPENAI_API_KEY="your-api-key"
 
 ## Example Workflow
 
-1. **Setup**: `pnpm --filter @liam-hq/schema-bench setupWorkspace`
-2. **Create input**: Add `case-001.json` with `{"input": "Create a users table"}`
-3. **Generate**: `pnpm --filter @liam-hq/schema-bench executeLiamDB`
-4. **Evaluate**: `pnpm --filter @liam-hq/schema-bench evaluateSchema`
+1) Clean and setup: `rm -rf benchmark-workspace && pnpm --filter @liam-hq/schema-bench setupWorkspace`
+2) Execute (LiamDB): `pnpm --filter @liam-hq/schema-bench executeLiamDB -all`
+   or Execute (OpenAI): `pnpm --filter @liam-hq/schema-bench executeOpenai`
+3) Evaluate: `pnpm --filter @liam-hq/schema-bench evaluateSchemaMulti`
 
 ## Use Cases
 
-- **Model Comparison**: Compare OpenAI vs LiamDB schema generation
-- **Quality Assurance**: Validate schema generation accuracy
-- **Benchmarking**: Create standardized evaluation metrics
+- Model comparison across datasets
+- Quality assurance for schema generation
+- Repeatable benchmarking with standardized metrics

@@ -1,5 +1,5 @@
 import clsx from 'clsx'
-import type { FC } from 'react'
+import { type FC, useId } from 'react'
 import styles from './FileIcon.module.css'
 
 type Props = {
@@ -11,6 +11,9 @@ export const FileIcon: FC<Props> = ({
   isHovered = false,
   isDragActive = false,
 }) => {
+  const titleId = useId()
+  const filter0Id = useId()
+  const filter1Id = useId()
   return (
     <svg
       className={clsx(
@@ -20,13 +23,13 @@ export const FileIcon: FC<Props> = ({
       viewBox="0 0 134 120"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
-      aria-labelledby="file-upload-icon-title"
+      aria-labelledby={titleId}
     >
-      <title id="file-upload-icon-title">File upload icon</title>
+      <title id={titleId}>File upload icon</title>
       {isHovered && (
         <defs>
           <filter
-            id="filter0_d"
+            id={filter0Id}
             x="13"
             y="0.75"
             width="108"
@@ -61,7 +64,7 @@ export const FileIcon: FC<Props> = ({
             />
           </filter>
           <filter
-            id="filter1_i"
+            id={filter1Id}
             x="43"
             y="46.75"
             width="48"
@@ -126,8 +129,8 @@ export const FileIcon: FC<Props> = ({
 
       {/* Front file */}
       {isHovered || isDragActive ? (
-        <g filter="url(#filter0_d)">
-          <g filter="url(#filter1_i)">
+        <g filter={`url(#${filter0Id})`}>
+          <g filter={`url(#${filter1Id})`}>
             <path
               d="M46.0174 46.75H76.4463L90 60.582V100.732C90 101.847 89.0966 102.75 87.9824 102.75H46.0174C44.9034 102.75 44 101.847 44 100.732V48.7674C44 47.1009 44.3509 46.75 46.0174 46.75Z"
               fill="#232526"

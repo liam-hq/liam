@@ -3,6 +3,9 @@
   "root": false,
   "linter": {
     "rules": {
+      "nursery": {
+        "useUniqueElementIds": "error"
+      },
       "style": {
         "noRestrictedImports": {
           "options": {
