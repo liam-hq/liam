@@ -124,6 +124,10 @@ async function loadExtensionModule(
         )
         return module.tsm_system_time
       }
+      case 'pgtap': {
+        const module = await import('./extensions/pgtap/index')
+        return module.pgtap
+      }
       default:
         return null
     }
