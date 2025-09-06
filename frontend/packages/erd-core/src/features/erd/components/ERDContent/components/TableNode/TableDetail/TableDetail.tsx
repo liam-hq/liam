@@ -23,7 +23,8 @@ type Props = {
 }
 
 export const TableDetail: FC<Props> = ({ table }) => {
-  const { setActiveTableName, setHiddenNodeIds } = useUserEditingOrThrow()
+  const { setActiveTableName, setFocusColumnName, setHiddenNodeIds } =
+    useUserEditingOrThrow()
 
   const { current } = useSchemaOrThrow()
 
@@ -51,6 +52,7 @@ export const TableDetail: FC<Props> = ({ table }) => {
 
     setHiddenNodeIds(hiddenNodeIds)
     setActiveTableName(null)
+    setFocusColumnName(null)
 
     const { nodes: layoutedNodes, edges: layoutedEdges } =
       await computeAutoLayout(updatedNodes, getEdges())
@@ -70,6 +72,7 @@ export const TableDetail: FC<Props> = ({ table }) => {
     table,
     version,
     setActiveTableName,
+    setFocusColumnName,
     setHiddenNodeIds,
     getNodes,
     getEdges,

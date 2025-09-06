@@ -1,5 +1,6 @@
 import type { Column, Constraints } from '@liam-hq/schema'
 import { GridTableRoot } from '@liam-hq/ui'
+import { useCopy } from '@liam-hq/ui/hooks'
 import clsx from 'clsx'
 import { type FC, useMemo } from 'react'
 import {
@@ -21,9 +22,19 @@ type Props = {
   constraints: Constraints
 }
 
+const getColumninkHref = (focusColumnName: string) => {
+  const searchParams = new URLSearchParams(window.location.search)
+  searchParams.set('column', focusColumnName)
+
+  const url = new URL(window.location.href)
+  url.search = searchParams.toString()
+  return url.toString()
+}
+
 export const ColumnsItem: FC<Props> = ({ tableId, column, constraints }) => {
   const { operations } = useSchemaOrThrow()
-  const { showDiff } = useUserEditingOrThrow()
+  const { showDiff, setFocusColumnName } = useUserEditingOrThrow()
+  const { copy } = useCopy()
 
   const changeStatus = useMemo(() => {
     if (!showDiff) return undefined
@@ -48,7 +59,20 @@ export const ColumnsItem: FC<Props> = ({ tableId, column, constraints }) => {
 
   return (
     <div className={clsx(styles.wrapper, diffStyle)}>
-      <h3 className={styles.heading}>{column.name}</h3>
+      <h3 className={styles.heading}>
+        {column.name}
+        <button
+          type="button"
+          className={styles.linkButton}
+          onClick={() => {
+            setFocusColumnName(column.name)
+            copy(getColumninkHref(column.name))
+          }}
+        >
+          #
+        </button>
+      </h3>
+
       {column.comment && <Comment tableId={tableId} column={column} />}
       <GridTableRoot>
         <Type tableId={tableId} column={column} />

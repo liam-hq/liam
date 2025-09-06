@@ -11,3 +11,7 @@
   font-weight: 400;
   line-height: normal;
 }
+
+.linkButton {
+  margin-left: var(--spacing-1);
+}

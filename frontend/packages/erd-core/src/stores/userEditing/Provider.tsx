@@ -54,6 +54,11 @@ export const UserEditingProvider: FC<Props> = ({
     parseAsString.withDefault('').withOptions({ history: 'push' }),
   )
 
+  const [focusColumnName, setFocusColumnName] = useQueryState(
+    'column',
+    parseAsString.withDefault('').withOptions({ history: 'push' }),
+  )
+
   const [showMode, setShowMode] = useQueryState(
     'showMode',
     parseAsStringEnum<ShowMode>(['ALL_FIELDS', 'KEY_ONLY', 'TABLE_NAME'])
@@ -202,6 +207,8 @@ export const UserEditingProvider: FC<Props> = ({
         // URL synchronized state
         activeTableName,
         setActiveTableName,
+        focusColumnName,
+        setFocusColumnName,
         showMode,
         setShowMode,
         hiddenNodeIds,

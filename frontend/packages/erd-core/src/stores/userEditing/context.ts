@@ -7,6 +7,9 @@ export type UserEditingContextValue = {
   activeTableName: string | null
   setActiveTableName: (tableName: string | null) => void
 
+  focusColumnName: string | null
+  setFocusColumnName: (columnName: string | null) => void
+
   showMode: ShowMode
   setShowMode: (showMode: ShowMode | null) => void
 
