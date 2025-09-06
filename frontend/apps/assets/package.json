@@ -10,7 +10,7 @@
     "@types/node": "22.17.1",
     "concurrently": "9.2.0",
     "eslint": "9.33.0",
-    "fs-extra": "11.2.0"
+    "fs-extra": "11.3.1"
   },
   "scripts": {
     "build": "node scripts/build.js",
