@@ -2,6 +2,7 @@ import type { Table } from '@liam-hq/schema'
 import { Rows3 as Rows3Icon } from '@liam-hq/ui'
 import { type FC, useEffect, useRef } from 'react'
 import { useUserEditingOrThrow } from '../../../../../../../../stores'
+import { BlinkCircle } from '../BlinkCircle/BlinkCircle'
 import { CollapsibleHeader } from '../CollapsibleHeader'
 import styles from './Columns.module.css'
 import { ColumnsItem } from './ColumnsItem'
@@ -40,6 +41,11 @@ export const Columns: FC<Props> = ({ table }) => {
     >
       {Object.entries(table.columns).map(([key, column]) => (
         <div className={styles.itemWrapper} key={key} data-column={column.name}>
+          {focusColumnName === column.name && (
+            <div className={styles.blinkCircleWrapper}>
+              <BlinkCircle />
+            </div>
+          )}
           <ColumnsItem
             tableId={table.name}
             column={column}
