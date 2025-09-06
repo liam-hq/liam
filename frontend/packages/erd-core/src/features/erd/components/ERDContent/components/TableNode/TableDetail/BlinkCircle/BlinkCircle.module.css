@@ -12,6 +12,7 @@
   transform: translate(-50%, -50%);
   background-color: var(--primary-accent);
   animation: sizePulse 2700ms forwards;
+  animation-delay: 300ms;
 }
 
 @keyframes sizePulse {
