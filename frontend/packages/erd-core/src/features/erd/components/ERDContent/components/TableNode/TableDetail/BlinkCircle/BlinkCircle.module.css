@@ -1,0 +1,56 @@
+.container {
+  position: relative;
+}
+
+.container:before {
+  position: absolute;
+  display: block;
+  content: '';
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  background-color: var(--primary-accent);
+  animation: sizePulse 2700ms forwards;
+}
+
+@keyframes sizePulse {
+  12.5% {
+    width: 3px;
+    height: 3px;
+  }
+  25% {
+    width: 10px;
+    height: 10px;
+    animation-timing-function: ease-out;
+  }
+  37.5% {
+    width: 10px;
+    height: 10px;
+  }
+  50% {
+    width: 3px;
+    height: 3px;
+    animation-timing-function: ease-out;
+  }
+  62.5% {
+    width: 3px;
+    height: 3px;
+  }
+  75% {
+    width: 10px;
+    height: 10px;
+    animation-timing-function: ease-out;
+  }
+  87.5% {
+    width: 10px;
+    height: 10px;
+    opacity: 1;
+  }
+  100% {
+    width: 0px;
+    height: 0px;
+    opacity: 0;
+    animation-timing-function: ease-out;
+  }
+}
