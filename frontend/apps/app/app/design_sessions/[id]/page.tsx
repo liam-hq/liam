@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation'
 import * as v from 'valibot'
-import { SessionDetailPage } from '../../../../../components/SessionDetailPage'
-import type { PageProps } from '../../../../types'
+import { SessionDetailPage } from '../../../components/SessionDetailPage'
+import type { PageProps } from '../../types'
 
 const paramsSchema = v.object({
   id: v.string(),

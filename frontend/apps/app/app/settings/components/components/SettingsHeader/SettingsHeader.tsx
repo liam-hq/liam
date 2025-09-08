@@ -2,8 +2,8 @@ import { TabsList, TabsTrigger } from '@liam-hq/ui'
 import Link from 'next/link'
 import type { FC } from 'react'
 import { match } from 'ts-pattern'
-import { urlgen } from '../../../../../../../libs/routes/urlgen'
-import { SETTINGS_TABS } from '../../constants'
+import { urlgen } from '../../../../../libs/routes/urlgen'
+import { SETTINGS_TABS } from '../../../constants'
 import styles from './SettingsHeader.module.css'
 
 export const SettingsHeader: FC = () => {

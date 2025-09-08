@@ -1,8 +1,8 @@
 import { TabsContent, TabsRoot } from '@liam-hq/ui'
 import { headers } from 'next/headers'
 import { safeParse } from 'valibot'
-import type { LayoutProps } from '../../../../types'
-import { SettingsHeader } from './components/SettingsHeader'
+import type { LayoutProps } from '../types'
+import { SettingsHeader } from './components/components/SettingsHeader'
 import {
   SETTINGS_TAB,
   SettingsTabSchema,

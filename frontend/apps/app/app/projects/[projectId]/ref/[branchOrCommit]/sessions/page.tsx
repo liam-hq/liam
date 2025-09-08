@@ -1,8 +1,8 @@
 import { notFound } from 'next/navigation'
 import * as v from 'valibot'
-import { ProjectSessionsPage } from '../../../../../../../../../components/ProjectSessionsPage'
-import { branchOrCommitSchema } from '../../../../../../../../../libs/routes'
-import type { PageProps } from '../../../../../../../../types'
+import { ProjectSessionsPage } from '../../../../../../components/ProjectSessionsPage'
+import { branchOrCommitSchema } from '../../../../../../libs/routes'
+import type { PageProps } from '../../../../../types'
 
 const paramsSchema = v.object({
   projectId: v.string(),
