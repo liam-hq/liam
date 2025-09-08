@@ -2,58 +2,40 @@
 
 import type { BaseMessage } from '@langchain/core/messages'
 import type { Schema } from '@liam-hq/schema'
-import { type FC, useTransition } from 'react'
-import type { TimelineItemEntry } from '../../types'
+import type { FC } from 'react'
+import type { ChatRequest } from '../../hooks/useStream/useStream'
 import styles from './Chat.module.css'
 import { ChatInput } from './components/ChatInput'
 import { Messages } from './components/Messages'
 import { WorkflowRunningIndicator } from './components/WorkflowRunningIndicator'
-import { generateTimelineItemId } from './services/timelineItemHelpers'
 import { useScrollToBottom } from './useScrollToBottom'
 
 type Props = {
   schemaData: Schema
-  // designSessionId: string
+  designSessionId: string
   messages: BaseMessage[]
-  onMessageSend: (message: TimelineItemEntry) => void
-  // onVersionView: (versionId: string) => void
-  // onRetry?: () => void
+  onSendMessage: (params: ChatRequest) => void
+  isDeepModelingEnabled: boolean
   isWorkflowRunning?: boolean
-  // onArtifactLinkClick: () => void
-  // isDeepModelingEnabled: boolean
 }
 
 export const Chat: FC<Props> = ({
   schemaData,
+  designSessionId,
   messages,
-  onMessageSend,
+  onSendMessage,
+  isDeepModelingEnabled,
   isWorkflowRunning = false,
 }) => {
   const { containerRef } = useScrollToBottom<HTMLDivElement>(messages.length)
-  const [, startTransition] = useTransition()
-
-  const startAIResponse = async (content: string) => {
-    const optimisticMessage: TimelineItemEntry = {
-      id: generateTimelineItemId('user'),
-      type: 'user',
-      content,
-      timestamp: new Date(),
-    }
-    onMessageSend(optimisticMessage)
-  }
 
   const handleSendMessage = (content: string) => {
-    const userMessage: TimelineItemEntry = {
-      id: generateTimelineItemId('user'),
-      type: 'user',
-      content,
-      timestamp: new Date(),
+    const chatRequest: ChatRequest = {
+      userInput: content,
+      designSessionId,
+      isDeepModelingEnabled,
     }
-    onMessageSend(userMessage)
-
-    startTransition(() => {
-      startAIResponse(content)
-    })
+    onSendMessage(chatRequest)
   }
 
   return (

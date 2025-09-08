@@ -79,7 +79,7 @@ export const SessionDetailPageClient: FC<Props> = ({
   //   setSelectedVersion(version)
   // }, [])
 
-  const { addOrUpdateTimelineItem } = useRealtimeTimelineItems(
+  useRealtimeTimelineItems(
     designSessionId,
     designSessionWithTimelineItems.timeline_items.map((timelineItem) =>
       convertTimelineItemToTimelineItemEntry(timelineItem),
@@ -156,9 +156,11 @@ export const SessionDetailPageClient: FC<Props> = ({
         <div className={styles.chatSection}>
           <Chat
             schemaData={displayedSchema}
+            designSessionId={designSessionId}
             messages={messages}
             isWorkflowRunning={status === 'pending' || isStreaming}
-            onMessageSend={addOrUpdateTimelineItem}
+            onSendMessage={start}
+            isDeepModelingEnabled={isDeepModelingEnabled}
           />
         </div>
         {hasSelectedVersion && (
