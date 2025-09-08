@@ -23,7 +23,7 @@
     "neverthrow": "8.2.0",
     "pg-query-emscripten": "5.1.0",
     "valibot": "1.1.0",
-    "zod": "3.25.76"
+    "zod": "4.1.1"
   },
   "devDependencies": {
     "@biomejs/biome": "2.1.4",
