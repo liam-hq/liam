@@ -13,3 +13,9 @@
   overflow-y: scroll;
   scrollbar-gutter: stable both-edges;
 }
+
+.image,
+.video {
+  height: 100%;
+  width: 100%;
+}

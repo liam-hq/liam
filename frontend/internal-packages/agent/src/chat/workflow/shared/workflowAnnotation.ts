@@ -13,7 +13,10 @@ export const workflowAnnotation = Annotation.Root({
       }
     | undefined
   >,
-  testcases: Annotation<Testcase[]>,
+  testcases: Annotation<Testcase[]>({
+    reducer: (prev, next) => prev.concat(next),
+    default: () => [],
+  }),
   schemaData: Annotation<Schema>,
   buildingSchemaId: Annotation<string>,
   latestVersionNumber: Annotation<number>,

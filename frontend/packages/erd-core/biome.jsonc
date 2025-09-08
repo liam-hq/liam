@@ -4,6 +4,7 @@
   "linter": {
     "rules": {
       "correctness": {
+        "useExhaustiveDependencies": "error",
         "noNodejsModules": "error"
       }
     }

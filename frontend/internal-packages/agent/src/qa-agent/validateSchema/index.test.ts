@@ -76,7 +76,6 @@ describe('validateSchemaNode', () => {
           title: 'Insert User',
           description: 'Insert a new user record',
           dmlOperation: {
-            testCaseId: 'testcase-1',
             operation_type: 'INSERT',
             sql: 'INSERT INTO users VALUES (1, "test");',
             dml_execution_logs: [],
@@ -195,7 +194,6 @@ describe('validateSchemaNode', () => {
           title: 'Insert User',
           description: 'Insert a new user record',
           dmlOperation: {
-            testCaseId: 'testcase-1',
             operation_type: 'INSERT',
             sql: 'INSERT INTO users VALUES (1);',
             dml_execution_logs: [],
@@ -281,7 +279,6 @@ describe('validateSchemaNode', () => {
           title: 'Insert Invalid Data',
           description: 'Attempt to insert data into invalid table',
           dmlOperation: {
-            testCaseId: 'testcase-1',
             operation_type: 'INSERT',
             sql: 'INSERT INTO invalid_table VALUES (1);',
             dml_execution_logs: [],
@@ -417,7 +414,6 @@ describe('validateSchemaNode', () => {
           title: 'Insert User',
           description: 'Insert a new user record',
           dmlOperation: {
-            testCaseId: 'testcase-1',
             operation_type: 'INSERT',
             sql: 'INSERT INTO users VALUES (1);',
             dml_execution_logs: [],
@@ -431,7 +427,6 @@ describe('validateSchemaNode', () => {
           title: 'Update User',
           description: 'Update user record',
           dmlOperation: {
-            testCaseId: 'testcase-2',
             operation_type: 'UPDATE',
             sql: 'UPDATE users SET name = "test";',
             dml_execution_logs: [],
@@ -480,7 +475,6 @@ describe('validateSchemaNode', () => {
           title: 'Insert User',
           description: 'Insert a new user record',
           dmlOperation: {
-            testCaseId: 'testcase-1',
             operation_type: 'INSERT',
             sql: 'INSERT INTO users VALUES (1, "test");',
             dml_execution_logs: [],
@@ -500,8 +494,8 @@ describe('validateSchemaNode', () => {
   })
 
   it('should execute DML operations from each testcase', async () => {
-    // This test verifies that validateSchemaNode executes the DML operation
-    // found in each testcase's dmlOperation field
+    // This test verifies that validateSchemaNode executes DML operations
+    // found in each testcase's dmlOperation
 
     const sqlResults: SqlResult[] = [
       {
@@ -528,7 +522,6 @@ describe('validateSchemaNode', () => {
           title: 'Insert User',
           description: 'Insert a new user record',
           dmlOperation: {
-            testCaseId: 'testcase-1',
             operation_type: 'INSERT',
             sql: 'INSERT INTO users VALUES (1, "test");',
             dml_execution_logs: [],

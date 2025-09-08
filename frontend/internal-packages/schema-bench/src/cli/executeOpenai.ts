@@ -158,7 +158,6 @@ async function main() {
 
   // Process each case with max 5 concurrent requests
   const MAX_CONCURRENT = 5
-  let successCount = 0
   let failureCount = 0
 
   const getErrorMessage = (
@@ -187,7 +186,7 @@ async function main() {
 
       const { caseId } = batchItem
       if (result.status === 'fulfilled' && result.value.isOk()) {
-        successCount++
+        // Case executed successfully
       } else {
         failureCount++
         const error = getErrorMessage(result)

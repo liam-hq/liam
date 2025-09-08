@@ -1,9 +1,4 @@
 {
-  "app/api/webhook/github/route.ts": {
-    "@typescript-eslint/consistent-type-assertions": {
-      "count": 3
-    }
-  },
   "app/confirm/route.ts": {
     "@typescript-eslint/consistent-type-assertions": {
       "count": 1

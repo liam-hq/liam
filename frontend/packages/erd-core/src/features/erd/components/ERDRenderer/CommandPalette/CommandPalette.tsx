@@ -30,7 +30,7 @@ export const CommandPalette: FC = () => {
 
     document.addEventListener('keydown', down)
     return () => document.removeEventListener('keydown', down)
-  }, [])
+  }, [toggleOpen])
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>

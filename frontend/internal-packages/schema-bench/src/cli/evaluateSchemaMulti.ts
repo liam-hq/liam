@@ -80,13 +80,10 @@ async function main() {
 
   // Collect statistics
   let allSuccess = true
-  let totalEvaluated = 0
   const failedDatasets = []
 
   for (const result of evaluationResults) {
-    if (result.success && result.results) {
-      totalEvaluated += result.results.length
-    } else if (!result.success) {
+    if (!result.success) {
       allSuccess = false
       failedDatasets.push(result.datasetName)
     }

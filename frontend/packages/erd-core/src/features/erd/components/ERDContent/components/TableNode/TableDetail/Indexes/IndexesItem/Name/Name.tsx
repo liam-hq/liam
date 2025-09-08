@@ -24,7 +24,7 @@ export const Name: FC<Props> = ({ tableId, index }) => {
       operations: operations ?? [],
       indexId: index.name,
     })
-  }, [showDiff, tableId, operations])
+  }, [showDiff, tableId, operations, index.name])
 
   const diffStyle = useDiffStyle(showDiff, changeStatus)
 

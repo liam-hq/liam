@@ -1,10 +1,14 @@
 {
   "name": "@liam-hq/neverthrow",
-  "private": true,
-  "version": "0.0.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/liam-hq/liam.git"
+  },
+  "license": "Apache-2.0",
+  "version": "0.0.1",
   "type": "module",
   "publishConfig": {
-    "access": "restricted"
+    "access": "public"
   },
   "main": "src/index.ts",
   "exports": {
@@ -30,5 +34,11 @@
     "lint:biome": "biome check .",
     "lint:eslint": "eslint .",
     "lint:tsc": "tsc --noEmit"
-  }
+  },
+  "files": [
+    "src/**/*",
+    "README.md",
+    "package.json",
+    "LICENSE"
+  ]
 }

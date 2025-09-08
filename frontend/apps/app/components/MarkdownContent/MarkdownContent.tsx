@@ -10,7 +10,6 @@ import remarkGfm from 'remark-gfm'
 import styles from './MarkdownContent.module.css'
 
 type CodeProps = {
-  node?: unknown
   inline?: boolean
   className?: string
   children?: ReactNode
@@ -27,7 +26,7 @@ export const MarkdownContent: FC<MarkdownContentProps> = ({ content }) => {
       remarkPlugins={[remarkGfm]}
       components={{
         code(props: CodeProps) {
-          const { children, className, node, ...rest } = props
+          const { children, className, ...rest } = props
           const match = /language-(\w+)/.exec(className || '')
           const isInline = !match && !className
 
