@@ -120,7 +120,7 @@ export const tableSchema = v.object({
 })
 export type Table = v.InferOutput<typeof tableSchema>
 
-const tablesSchema = v.record(tableNameSchema, tableSchema)
+export const tablesSchema = v.record(tableNameSchema, tableSchema)
 export type Tables = v.InferOutput<typeof tablesSchema>
 
 // Enum definitions

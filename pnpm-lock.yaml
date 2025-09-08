@@ -416,6 +416,9 @@ importers:
 
   frontend/internal-packages/artifact:
     dependencies:
+      '@liam-hq/schema':
+        specifier: workspace:*
+        version: link:../../packages/schema
       valibot:
         specifier: 1.1.0
         version: 1.1.0(typescript@5.9.2)

@@ -41,4 +41,5 @@ export {
   indexSchema,
   schemaSchema,
   tableSchema,
+  tablesSchema,
 } from './schema.js'

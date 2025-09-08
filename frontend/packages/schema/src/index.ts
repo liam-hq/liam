@@ -56,6 +56,7 @@ export {
   schemaSchema,
   type Table,
   type Tables,
+  tablesSchema,
   type UniqueConstraint,
 } from './schema/index.js'
 export {

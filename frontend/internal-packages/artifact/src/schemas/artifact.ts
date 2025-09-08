@@ -1,3 +1,4 @@
+import { tablesSchema } from '@liam-hq/schema'
 import * as v from 'valibot'
 
 // DML execution log schema
@@ -33,6 +34,7 @@ export const functionalRequirementSchema = v.object({
   ...baseRequirementProperties,
   type: v.literal('functional'),
   test_cases: v.array(testCaseSchema),
+  related_tables: v.optional(tablesSchema),
 })
 
 // Non-functional requirement schema
