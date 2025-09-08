@@ -4,6 +4,7 @@ import type {
   FunctionalRequirement,
   NonFunctionalRequirement,
 } from '@liam-hq/artifact'
+import { v4 as uuidv4 } from 'uuid'
 import * as v from 'valibot'
 import type { Testcase } from '../qa-agent/types'
 import type { WorkflowState } from '../types'
@@ -31,6 +32,7 @@ const convertAnalyzedRequirementsToArtifact = (
     analyzedRequirements.functionalRequirements,
   )) {
     const functionalRequirement: FunctionalRequirement = {
+      id: uuidv4(),
       type: 'functional',
       name: category,
       description: items, // Keep as array
@@ -43,6 +45,7 @@ const convertAnalyzedRequirementsToArtifact = (
     analyzedRequirements.nonFunctionalRequirements,
   )) {
     const nonFunctionalRequirement: NonFunctionalRequirement = {
+      id: uuidv4(),
       type: 'non_functional',
       name: category,
       description: items, // Keep as array
@@ -90,6 +93,7 @@ const mergeTestCasesIntoRequirements = (
     } else if (!existingReq) {
       if (type === 'functional') {
         const functionalRequirement: FunctionalRequirement = {
+          id: uuidv4(),
           type: 'functional',
           name: category,
           description: wrapDescription(
@@ -102,6 +106,7 @@ const mergeTestCasesIntoRequirements = (
         requirements.push(functionalRequirement)
       } else {
         const nonFunctionalRequirement: NonFunctionalRequirement = {
+          id: uuidv4(),
           type: 'non_functional',
           name: category,
           description: wrapDescription(

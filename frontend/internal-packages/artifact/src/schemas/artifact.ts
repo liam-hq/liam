@@ -25,8 +25,10 @@ export const testCaseSchema = v.object({
 
 // Base requirement schema properties
 const baseRequirementProperties = {
+  id: v.pipe(v.string(), v.uuid()),
   name: v.string(),
   description: v.array(v.string()),
+  related_tables: v.optional(tablesSchema),
 }
 
 // Functional requirement schema
@@ -34,7 +36,6 @@ export const functionalRequirementSchema = v.object({
   ...baseRequirementProperties,
   type: v.literal('functional'),
   test_cases: v.array(testCaseSchema),
-  related_tables: v.optional(tablesSchema),
 })
 
 // Non-functional requirement schema

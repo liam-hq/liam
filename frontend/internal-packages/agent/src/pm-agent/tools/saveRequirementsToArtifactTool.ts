@@ -53,6 +53,7 @@ const createArtifactFromRequirements = (
     analyzedRequirements.functionalRequirements,
   )) {
     const functionalRequirement: FunctionalRequirement = {
+      id: uuidv4(),
       type: 'functional',
       name: category,
       description: items,
@@ -65,6 +66,7 @@ const createArtifactFromRequirements = (
     analyzedRequirements.nonFunctionalRequirements,
   )) {
     const nonFunctionalRequirement: NonFunctionalRequirement = {
+      id: uuidv4(),
       type: 'non_functional',
       name: category,
       description: items,
