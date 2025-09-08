@@ -1,4 +1,4 @@
-# Feature Specification: Move SQL Syntax Validation from Execution Time to DML Generation Time
+# Feature Specification: Add SQL Syntax Validation to Test Case Saving
 
 **Feature Branch**: `002-frontend-packages-pglite`  
 **Created**: 2025-09-08  
@@ -24,23 +24,23 @@ private async executeSql(sqlText: string, db: PGlite): Promise<SqlResult[]> {
 
 実行時に構文エラーを発見しても、すでにDML生成が完了しているため修正が困難です。
 
-### 2. DML生成時には構文チェックなし
+### 2. テストケース保存時には構文チェックなし
 - `frontend/internal-packages/agent/src/qa-agent/generateDml/` でDML生成を行う
 - AIモデル（generateDmlNode）がSQL文を生成するが、構文の妥当性は検証されていない
-- `saveDmlOperationsTool` で保存される時点でも構文チェックは行われない
+- `saveTestcaseTool` でテストケースを保存する時点でも、含まれるDML操作のSQL構文チェックは行われない
 
 ## 提案する改善
 
-### 1. DML生成時の構文検証
-`saveDmlOperationsTool` でDML操作を保存する前に、各SQL文に対して`pgParse`を実行し、構文エラーがあれば：
+### 1. テストケース保存時の構文検証
+`saveTestcaseTool` でテストケースを保存する前に、含まれるDML操作のSQL文に対して`pgParse`を実行し、構文エラーがあれば：
 - エラーメッセージを返す
 - AIモデルに再生成を促す
-- 正しい構文のSQLのみを保存する
+- 正しい構文のSQLを含むテストケースのみを保存する
 
 ### 2. 実装箇所
-- `frontend/internal-packages/agent/src/qa-agent/tools/saveDmlOperationsTool.ts` に構文チェックロジックを追加
-- 各`dmlOperation.sql`に対して`pgParse`を実行
-- エラーがあれば適切なエラーメッセージと共に拒否
+- 既存の `frontend/internal-packages/agent/src/qa-agent/tools/saveTestcaseTool.ts` に構文チェックロジックを追加
+- テストケース内の`dmlOperation.sql`に対して`pgParse`を実行
+- エラーがあれば適切なエラーメッセージと共にテストケース保存を拒否
 
 ### 3. PGliteInstanceManagerの簡素化
 構文チェックをDML生成時に移動することで：
@@ -51,9 +51,9 @@ private async executeSql(sqlText: string, db: PGlite): Promise<SqlResult[]> {
 ## 技術的詳細
 
 ### 影響を受けるファイル
-1. `frontend/internal-packages/agent/src/qa-agent/tools/saveDmlOperationsTool.ts`
+1. `frontend/internal-packages/agent/src/qa-agent/tools/saveTestcaseTool.ts`
    - `pgParse`を追加インポート
-   - DML保存前の構文検証ロジックを実装
+   - テストケース保存前のDML操作SQL構文検証ロジックを実装
 
 2. `frontend/packages/pglite-server/src/PGliteInstanceManager.ts`
    - 構文チェックロジックの削除またはオプション化を検討
@@ -64,13 +64,13 @@ private async executeSql(sqlText: string, db: PGlite): Promise<SqlResult[]> {
 - エラーメッセージの一貫性を保つ必要がある
 
 ## メリット
-1. **早期エラー検出**: DML生成段階で構文エラーを発見・修正
-2. **品質向上**: 無効なSQLがデータベースに到達しない
+1. **早期エラー検出**: テストケース保存段階で構文エラーを発見・修正
+2. **品質向上**: 無効なSQLを含むテストケースがデータベースに到達しない
 3. **開発効率**: エラーの原因をより早く特定可能
-4. **責務の明確化**: 構文チェックは生成側の責任として明確化
+4. **責務の明確化**: 構文チェックはテストケース保存時の責任として明確化
 
 ## 検討事項
-- パフォーマンスへの影響（生成時に追加の構文チェック）
+- パフォーマンスへの影響（テストケース保存時に追加の構文チェック）
 - エラーリトライのロジック
 - 既存のテストへの影響
 
@@ -127,32 +127,32 @@ When creating this spec from a user prompt:
 ## User Scenarios & Testing *(mandatory)*
 
 ### Primary User Story
-As a user working with the QA agent, I want to receive immediate feedback when generating DML operations so that I can quickly correct any SQL syntax errors before attempting execution, reducing development time and improving the overall user experience.
+As a user working with the QA agent, I want to receive immediate feedback when saving test cases with DML operations so that I can quickly correct any SQL syntax errors before attempting execution, reducing development time and improving the overall user experience.
 
 ### Acceptance Scenarios
-1. **Given** a user requests DML generation through the QA agent, **When** the AI generates SQL with correct syntax, **Then** the DML operations are saved successfully and ready for execution
-2. **Given** a user requests DML generation through the QA agent, **When** the AI generates SQL with syntax errors, **Then** the system provides clear error messages and prompts for regeneration without saving invalid SQL
-3. **Given** valid DML operations have been generated and saved, **When** the user executes them, **Then** the execution process runs efficiently without redundant syntax checking
-4. **Given** the system encounters syntax validation during DML generation, **When** the validation process runs, **Then** it completes within acceptable time limits without significantly impacting user experience
+1. **Given** a user attempts to save a test case through the QA agent, **When** the test case contains DML operations with correct SQL syntax, **Then** the test case is saved successfully and ready for execution
+2. **Given** a user attempts to save a test case through the QA agent, **When** the test case contains DML operations with SQL syntax errors, **Then** the system provides clear error messages and prevents saving the invalid test case
+3. **Given** valid test cases with DML operations have been saved, **When** the user executes them, **Then** the execution process runs efficiently without redundant syntax checking
+4. **Given** the system encounters syntax validation during test case saving, **When** the validation process runs, **Then** it completes within acceptable time limits without significantly impacting user experience
 
 ### Edge Cases
-- What happens when syntax validation takes too long during DML generation?
+- What happens when syntax validation takes too long during test case saving?
 - How does the system handle intermittent failures in the syntax parsing service?
-- What occurs when the AI model repeatedly generates invalid SQL despite error feedback?
+- What occurs when the AI model repeatedly generates test cases with invalid SQL despite error feedback?
 
 ## Requirements *(mandatory)*
 
 ### Functional Requirements
-- **FR-001**: System MUST validate SQL syntax during DML generation before saving operations
+- **FR-001**: System MUST validate SQL syntax during test case saving before storing test cases with DML operations
 - **FR-002**: System MUST provide clear, actionable error messages when syntax validation fails
-- **FR-003**: System MUST prevent invalid SQL from being saved to the DML operations store
-- **FR-004**: System MUST allow AI model regeneration when syntax errors are detected
-- **FR-005**: System MUST maintain backward compatibility for existing valid DML operations
+- **FR-003**: System MUST prevent test cases containing invalid SQL from being saved
+- **FR-004**: System MUST allow AI model regeneration when syntax errors are detected in test cases
+- **FR-005**: System MUST maintain backward compatibility for existing valid test cases with DML operations
 - **FR-006**: System MUST complete syntax validation without specific performance requirements for initial implementation
 - **FR-007**: System MUST implement retry logic with maximum of 3 attempts before giving up
 - **FR-008**: System MUST simplify SQL execution flow by removing redundant syntax checking
 - **FR-009**: System MUST preserve error message consistency across validation points
-- **FR-010**: Users MUST receive immediate feedback when DML generation encounters syntax errors
+- **FR-010**: Users MUST receive immediate feedback when test case saving encounters SQL syntax errors
 
 ### Key Entities *(include if feature involves data)*
 - **DML Operation**: Represents a data manipulation operation with SQL content, metadata, and validation status
