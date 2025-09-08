@@ -46,5 +46,6 @@ export async function designSchemaNode(
     ...state,
     messages: [response],
     latestVersionNumber: state.latestVersionNumber + 1,
+    designSchemaRetryCount: state.designSchemaRetryCount + 1,
   }
 }

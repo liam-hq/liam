@@ -80,6 +80,7 @@ describe('invokeSchemaDesignToolNode Integration', () => {
       userId: context.userId,
       organizationId: context.organizationId,
       next: END,
+      designSchemaRetryCount: 0,
     }
 
     // Act
@@ -139,6 +140,7 @@ describe('invokeSchemaDesignToolNode Integration', () => {
       userId: context.userId,
       organizationId: context.organizationId,
       next: END,
+      designSchemaRetryCount: 0,
     }
 
     // Act

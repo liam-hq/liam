@@ -83,6 +83,8 @@ export const invokeSchemaDesignToolNode = async (
     ...state,
     ...result,
     messages: messages,
+    // Reset retry counter after successful tool invocation
+    designSchemaRetryCount: 0,
   }
 
   if (wasSchemaDesignToolSuccessful(messages)) {
