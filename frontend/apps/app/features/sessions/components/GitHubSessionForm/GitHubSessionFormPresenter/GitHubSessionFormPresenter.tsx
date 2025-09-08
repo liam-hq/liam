@@ -25,7 +25,6 @@ type Props = {
   formAction: (formData: FormData) => void
   isTransitioning?: boolean
   schemaFilePath: string | null
-  onCancel?: () => void
 }
 
 export const GitHubSessionFormPresenter: FC<Props> = ({
@@ -40,7 +39,6 @@ export const GitHubSessionFormPresenter: FC<Props> = ({
   formAction,
   isTransitioning = false,
   schemaFilePath,
-  onCancel,
 }) => {
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const formRef = useRef<HTMLFormElement>(null)
@@ -214,7 +212,7 @@ export const GitHubSessionFormPresenter: FC<Props> = ({
               isPending={isPending}
               hasContent={hasContent}
               onFileSelect={handleFileSelect}
-              onCancel={onCancel || (() => window.location.reload())}
+              onCancel={() => window.location.reload()}
             />
           </div>
         </form>
