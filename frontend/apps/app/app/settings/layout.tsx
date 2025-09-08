@@ -1,6 +1,7 @@
 import { TabsContent, TabsRoot } from '@liam-hq/ui'
 import { headers } from 'next/headers'
 import { safeParse } from 'valibot'
+import { CommonLayout } from '../../components/CommonLayout'
 import type { LayoutProps } from '../types'
 import { SettingsHeader } from './components/components/SettingsHeader'
 import {
@@ -29,38 +30,40 @@ export default async function OrganizationSettingsLayout({
   const defaultTabFromPath = await getDefaultTabFromPath()
 
   return (
-    <div className={styles.container}>
-      <div className={styles.contentContainer}>
-        <h1 className={styles.heading}>Settings</h1>
+    <CommonLayout>
+      <div className={styles.container}>
+        <div className={styles.contentContainer}>
+          <h1 className={styles.heading}>Settings</h1>
 
-        <TabsRoot defaultValue={defaultTabFromPath}>
-          <SettingsHeader />
-          <TabsContent
-            value={SETTINGS_TAB.GENERAL}
-            className={styles.tabContent}
-          >
-            {children}
-          </TabsContent>
-          <TabsContent
-            value={SETTINGS_TAB.MEMBERS}
-            className={styles.tabContent}
-          >
-            {children}
-          </TabsContent>
-          <TabsContent
-            value={SETTINGS_TAB.BILLING}
-            className={styles.tabContent}
-          >
-            {children}
-          </TabsContent>
-          <TabsContent
-            value={SETTINGS_TAB.PROJECTS}
-            className={styles.tabContent}
-          >
-            {children}
-          </TabsContent>
-        </TabsRoot>
+          <TabsRoot defaultValue={defaultTabFromPath}>
+            <SettingsHeader />
+            <TabsContent
+              value={SETTINGS_TAB.GENERAL}
+              className={styles.tabContent}
+            >
+              {children}
+            </TabsContent>
+            <TabsContent
+              value={SETTINGS_TAB.MEMBERS}
+              className={styles.tabContent}
+            >
+              {children}
+            </TabsContent>
+            <TabsContent
+              value={SETTINGS_TAB.BILLING}
+              className={styles.tabContent}
+            >
+              {children}
+            </TabsContent>
+            <TabsContent
+              value={SETTINGS_TAB.PROJECTS}
+              className={styles.tabContent}
+            >
+              {children}
+            </TabsContent>
+          </TabsRoot>
+        </div>
       </div>
-    </div>
+    </CommonLayout>
   )
 }

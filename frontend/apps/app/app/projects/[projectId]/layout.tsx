@@ -1,5 +1,4 @@
 import * as v from 'valibot'
-import { CommonLayout } from '../../../components/CommonLayout'
 import { ProjectLayout } from '../../../components/ProjectLayout'
 import type { LayoutProps } from '../../types'
 
@@ -16,9 +15,5 @@ export default async function Layout({ children, params }: LayoutProps) {
 
   const { projectId } = parsedParams.output
 
-  return (
-    <CommonLayout projectId={projectId}>
-      <ProjectLayout projectId={projectId}>{children}</ProjectLayout>
-    </CommonLayout>
-  )
+  return <ProjectLayout projectId={projectId}>{children}</ProjectLayout>
 }
