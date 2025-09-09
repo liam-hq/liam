@@ -3,6 +3,7 @@
 import {
   type BaseMessage,
   coerceMessageLikeToMessage,
+  HumanMessage,
   isHumanMessage,
 } from '@langchain/core/messages'
 import { SSE_EVENTS } from '@liam-hq/agent/client'
@@ -55,6 +56,16 @@ export const useStream = ({ designSessionId, initialMessages }: Props) => {
     abortRef.current?.abort()
     abortRef.current = new AbortController()
     setIsStreaming(true)
+
+    const optimisticUserMessage = new HumanMessage({
+      id: crypto.randomUUID(),
+      content: params.userInput,
+      additional_kwargs: {
+        userName: 'You',
+      },
+    })
+
+    setMessages((prev) => [...prev, optimisticUserMessage])
 
     try {
       const res = await fetch('/api/chat/stream', {
