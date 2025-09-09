@@ -76,6 +76,10 @@ test('Cardinality should be highlighted when table node is clicked', async ({
 
   await tableNode.click()
 
+  // Wait for the table node to be highlighted before checking edge markers
+  const highlighted = tableNode.locator('[data-erd="table-node-highlighted"]')
+  await expect(highlighted).toBeVisible()
+
   const cardinalityAfter = edge.locator('path').first()
 
   // Check that marker attributes change to highlight versions (should be different IDs)
