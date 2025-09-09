@@ -24,6 +24,14 @@ export function isValidReturnPath(path: string): boolean {
   // Additional safety: reject paths with @ which could be used in URLs
   if (path.includes('@')) return false
 
+  // Reject paths containing control characters (including CR/LF)
+  // This prevents header injection and other control character attacks
+  // Matches any character with ASCII code < 32 (space) or = 127 (DEL)
+  // Also checks for URL encoded CR (%0d/%0D) and LF (%0a/%0A)
+  // biome-ignore lint/suspicious/noControlCharactersInRegex: Intentionally detecting control characters for security
+  if (/[\x00-\x1f\x7f]/.test(path)) return false
+  if (/%0[ad]/i.test(path)) return false
+
   return true
 }
 

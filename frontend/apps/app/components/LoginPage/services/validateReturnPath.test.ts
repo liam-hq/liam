@@ -42,6 +42,46 @@ describe('validateReturnPath', () => {
         expect(isValidReturnPath(undefined)).toBe(false)
       })
 
+      it('should reject paths containing CR/LF and control characters', () => {
+        // Direct newline and carriage return characters
+        expect(isValidReturnPath('/path\nwith\nnewlines')).toBe(false)
+        expect(isValidReturnPath('/path\rwith\rcarriage')).toBe(false)
+        expect(isValidReturnPath('/path\r\nwith\r\ncrlf')).toBe(false)
+
+        // URL encoded CR/LF
+        expect(isValidReturnPath('/path%0awith%0anewlines')).toBe(false)
+        expect(isValidReturnPath('/path%0dwith%0dcarriage')).toBe(false)
+        expect(isValidReturnPath('/path%0a%0dheader%0a%0dinjection')).toBe(
+          false,
+        )
+
+        // Mixed encoded and literal
+        expect(isValidReturnPath('/path\n%0dmixed')).toBe(false)
+
+        // Other control characters
+        expect(isValidReturnPath('/path\twith\ttabs')).toBe(false)
+        expect(isValidReturnPath('/path\x00null\x00bytes')).toBe(false)
+        expect(isValidReturnPath('/path\x08backspace')).toBe(false)
+        expect(isValidReturnPath('/path\x1bescape')).toBe(false)
+
+        // Control characters at different positions
+        expect(isValidReturnPath('\n/path')).toBe(false)
+        expect(isValidReturnPath('/path\n')).toBe(false)
+        expect(isValidReturnPath('/pa\nth')).toBe(false)
+
+        // URL encoded variations (uppercase and lowercase)
+        expect(isValidReturnPath('/path%0A%0D')).toBe(false)
+        expect(isValidReturnPath('/path%0a%0d')).toBe(false)
+
+        // Common header injection patterns
+        expect(
+          isValidReturnPath('/redirect%0d%0aLocation:%20http://evil.com'),
+        ).toBe(false)
+        expect(
+          isValidReturnPath('/path%0aSet-Cookie:%20session=hijacked'),
+        ).toBe(false)
+      })
+
       it('should reject paths not starting with /', () => {
         expect(isValidReturnPath('home')).toBe(false)
         expect(isValidReturnPath('projects/123')).toBe(false)
