@@ -1,5 +1,11 @@
+import * as v from 'valibot'
 import { describe, expect, it } from 'vitest'
-import { isValidReturnPath, sanitizeReturnPath } from './validateReturnPath'
+import {
+  isValidReturnPath,
+  parseReturnPath,
+  RelativeReturnPathSchema,
+  sanitizeReturnPath,
+} from './validateReturnPath'
 
 describe('validateReturnPath', () => {
   describe('isValidReturnPath', () => {
@@ -241,6 +247,74 @@ describe('validateReturnPath', () => {
           expect(sanitizeReturnPath(path, defaultPath)).toBe(path)
         })
       })
+    })
+  })
+
+  describe('parseReturnPath', () => {
+    it('should parse valid paths successfully', () => {
+      expect(parseReturnPath('/home')).toBe('/home')
+      expect(parseReturnPath('/projects/123')).toBe('/projects/123')
+      expect(parseReturnPath('/search?q=test')).toBe('/search?q=test')
+    })
+
+    it('should throw for invalid paths', () => {
+      expect(() => parseReturnPath('http://evil.com')).toThrow()
+      expect(() => parseReturnPath('//evil.com')).toThrow()
+      expect(() => parseReturnPath('javascript:alert(1)')).toThrow()
+      expect(() => parseReturnPath('/path\n')).toThrow()
+      expect(() => parseReturnPath('/@evil.com')).toThrow()
+    })
+  })
+
+  describe('RelativeReturnPathSchema', () => {
+    it('should be a valibot schema', () => {
+      // Verify it's a proper valibot schema that can be used with safeParse
+      const result = v.safeParse(RelativeReturnPathSchema, '/valid/path')
+      expect(result.success).toBe(true)
+      if (result.success) {
+        expect(result.output).toBe('/valid/path')
+      }
+    })
+
+    it('should provide meaningful error messages', () => {
+      const testCases = [
+        { input: 'no-slash', expectedError: 'Path must start with /' },
+        {
+          input: '/path\n',
+          expectedError: 'Path must not contain control characters',
+        },
+        { input: 'http://evil.com', expectedError: 'Path must start with /' },
+        {
+          input: '//evil.com',
+          expectedError: 'Path must not be protocol-relative',
+        },
+        {
+          input: '/@evil.com',
+          expectedError: 'Path must not contain @ character',
+        },
+      ]
+
+      testCases.forEach(({ input, expectedError }) => {
+        const result = v.safeParse(RelativeReturnPathSchema, input)
+        expect(result.success).toBe(false)
+        if (!result.success) {
+          expect(result.issues[0].message).toBe(expectedError)
+        }
+      })
+    })
+
+    it('should be reusable in other schemas', () => {
+      // Demonstrate that the schema can be composed with other valibot schemas
+      const FormSchema = v.object({
+        returnTo: v.optional(RelativeReturnPathSchema),
+        username: v.string(),
+      })
+
+      const validForm = { username: 'john', returnTo: '/dashboard' }
+      const invalidForm = { username: 'john', returnTo: 'http://evil.com' }
+
+      expect(v.safeParse(FormSchema, validForm).success).toBe(true)
+      expect(v.safeParse(FormSchema, invalidForm).success).toBe(false)
     })
   })
 })

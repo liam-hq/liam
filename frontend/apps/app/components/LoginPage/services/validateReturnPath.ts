@@ -1,3 +1,77 @@
+import * as v from 'valibot'
+
+/**
+ * Custom validator that checks if a path starts with '/'
+ */
+const startsWithSlash = v.custom<string>((value) => {
+  const str = String(value)
+  return str.startsWith('/')
+}, 'Path must start with /')
+
+/**
+ * Custom validator that rejects paths containing control characters
+ */
+const noControlCharacters = v.custom<string>((value) => {
+  const str = String(value)
+  // Reject any control characters (ASCII < 32 or = 127)
+  // biome-ignore lint/suspicious/noControlCharactersInRegex: Intentionally detecting control characters for security
+  if (/[\x00-\x1f\x7f]/.test(str)) return false
+  // Reject URL encoded CR (%0d/%0D) and LF (%0a/%0A)
+  if (/%0[ad]/i.test(str)) return false
+  return true
+}, 'Path must not contain control characters')
+
+/**
+ * Custom validator that rejects absolute URLs with protocol
+ */
+const noProtocol = v.custom<string>((value) => {
+  const str = String(value)
+  return !str.includes('://')
+}, 'Path must not contain protocol')
+
+/**
+ * Custom validator that rejects protocol-relative URLs
+ */
+const notProtocolRelative = v.custom<string>((value) => {
+  const str = String(value)
+  return !str.startsWith('//')
+}, 'Path must not be protocol-relative')
+
+/**
+ * Custom validator that rejects javascript: and data: URLs
+ */
+const noJavascriptOrDataUrl = v.custom<string>((value) => {
+  const str = String(value)
+  return !str.match(/^(data|javascript):/i)
+}, 'Path must not be a javascript: or data: URL')
+
+/**
+ * Custom validator that rejects paths containing @ (userinfo-like patterns)
+ */
+const noUserInfo = v.custom<string>((value) => {
+  const str = String(value)
+  return !str.includes('@')
+}, 'Path must not contain @ character')
+
+/**
+ * Valibot schema for validating relative return paths.
+ * Only allows safe, same-origin relative paths to prevent open redirect vulnerabilities.
+ */
+export const RelativeReturnPathSchema = v.pipe(
+  v.string(),
+  startsWithSlash,
+  noControlCharacters,
+  noProtocol,
+  notProtocolRelative,
+  noJavascriptOrDataUrl,
+  noUserInfo,
+)
+
+/**
+ * Type for a validated relative return path
+ */
+type RelativeReturnPath = v.InferOutput<typeof RelativeReturnPathSchema>
+
 /**
  * Validates that a return path is safe to redirect to.
  * Only allows same-origin, relative paths to prevent open redirect vulnerabilities.
@@ -9,30 +83,16 @@ export function isValidReturnPath(path: string): boolean {
   // Type check for non-string values
   if (typeof path !== 'string') return false
 
-  // Must start with / (relative path)
-  if (!path.startsWith('/')) return false
+  const result = v.safeParse(RelativeReturnPathSchema, path)
+  return result.success
+}
 
-  // Reject absolute URLs (containing protocol)
-  if (path.includes('://')) return false
-
-  // Reject protocol-relative URLs (//example.com)
-  if (path.startsWith('//')) return false
-
-  // Reject data: and javascript: URLs
-  if (path.match(/^(data|javascript):/i)) return false
-
-  // Additional safety: reject paths with @ which could be used in URLs
-  if (path.includes('@')) return false
-
-  // Reject paths containing control characters (including CR/LF)
-  // This prevents header injection and other control character attacks
-  // Matches any character with ASCII code < 32 (space) or = 127 (DEL)
-  // Also checks for URL encoded CR (%0d/%0D) and LF (%0a/%0A)
-  // biome-ignore lint/suspicious/noControlCharactersInRegex: Intentionally detecting control characters for security
-  if (/[\x00-\x1f\x7f]/.test(path)) return false
-  if (/%0[ad]/i.test(path)) return false
-
-  return true
+/**
+ * Parses a return path using the schema, throwing on invalid input.
+ * Use this when you need the parsed value and want to handle errors explicitly.
+ */
+export function parseReturnPath(path: string): RelativeReturnPath {
+  return v.parse(RelativeReturnPathSchema, path)
 }
 
 /**
@@ -43,5 +103,7 @@ export function sanitizeReturnPath(
   defaultPath = '/design_sessions/new',
 ): string {
   if (!path) return defaultPath
-  return isValidReturnPath(path) ? path : defaultPath
+
+  const result = v.safeParse(RelativeReturnPathSchema, path)
+  return result.success ? result.output : defaultPath
 }
