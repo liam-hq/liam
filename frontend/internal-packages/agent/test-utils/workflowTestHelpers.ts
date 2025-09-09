@@ -10,6 +10,7 @@ import {
 } from '@langchain/core/messages'
 import type { RunnableConfig } from '@langchain/core/runnables'
 import { err, ok, type Result } from 'neverthrow'
+import * as v from 'valibot'
 import {
   createLogger,
   getLogLevel,
@@ -169,6 +170,77 @@ class SimpleMessageManager {
   }
 }
 
+// Reasoning message extraction (copied from UI utils)
+const summaryItemSchema = v.object({
+  type: v.literal('summary_text'),
+  text: v.string(),
+  index: v.number(),
+})
+
+const reasoningSchema = v.object({
+  id: v.string(),
+  type: v.literal('reasoning'),
+  summary: v.array(summaryItemSchema),
+})
+
+const additionalKwargsSchema = v.object({
+  reasoning: v.optional(reasoningSchema),
+})
+
+function extractReasoningFromMessage(message: BaseMessage): string | null {
+  const parsed = v.safeParse(additionalKwargsSchema, message.additional_kwargs)
+  if (!parsed.success || !parsed.output.reasoning) return null
+
+  const { summary } = parsed.output.reasoning
+  return summary
+    .map((s) => s.text || '')
+    .filter(Boolean)
+    .join('\n\n')
+}
+
+function handleReasoningMessage(
+  message: BaseMessage,
+  messageId: string,
+  lastReasoningContent: Map<string, string>,
+): void {
+  const currentReasoningText = extractReasoningFromMessage(message) || ''
+  const lastReasoningText = lastReasoningContent.get(messageId) || ''
+
+  if (currentReasoningText && currentReasoningText !== lastReasoningText) {
+    const newReasoningContent = currentReasoningText.slice(
+      lastReasoningText.length,
+    )
+    if (newReasoningContent) {
+      const name = 'name' in message && message.name ? ` (${message.name})` : ''
+      const reasoningPrefix = lastReasoningText ? '' : `🧠 Reasoning${name}: `
+      process.stdout.write(`${reasoningPrefix}${newReasoningContent}\n\n`)
+      lastReasoningContent.set(messageId, currentReasoningText)
+    }
+  }
+}
+
+function handleRegularMessage(
+  message: BaseMessage,
+  messageId: string,
+  lastOutputContent: Map<string, string>,
+): void {
+  const currentContent = message.text
+  const lastContent = lastOutputContent.get(messageId) || ''
+
+  const newContent = currentContent.slice(lastContent.length)
+  if (!newContent) return
+
+  lastOutputContent.set(messageId, currentContent)
+
+  const formattedOutput = formatStreamingMessage(
+    message,
+    newContent,
+    !lastContent,
+  )
+
+  process.stdout.write(formattedOutput)
+}
+
 /**
  * Processes and outputs LangChain streamEvents from agent workflows
  */
@@ -238,6 +310,7 @@ export const outputStreamEvents = async (
 ): Promise<void> => {
   const messageManager = new SimpleMessageManager()
   const lastOutputContent = new Map<string, string>()
+  const lastReasoningContent = new Map<string, string>()
 
   for await (const ev of stream) {
     if (!isLangChainStreamEvent(ev)) continue
@@ -256,20 +329,8 @@ export const outputStreamEvents = async (
     if (!result?.chunk) continue
 
     const message = coerceMessageLikeToMessage(result.chunk)
-    const currentContent = message.text
-    const lastContent = lastOutputContent.get(messageId) || ''
 
-    const newContent = currentContent.slice(lastContent.length)
-    if (!newContent) continue
-
-    lastOutputContent.set(messageId, currentContent)
-
-    const formattedOutput = formatStreamingMessage(
-      message,
-      newContent,
-      !lastContent,
-    )
-
-    process.stdout.write(formattedOutput)
+    handleReasoningMessage(message, messageId, lastReasoningContent)
+    handleRegularMessage(message, messageId, lastOutputContent)
   }
 }
