@@ -4,7 +4,7 @@ import { aColumn, aSchema, aTable } from '@liam-hq/schema'
 import { describe, it } from 'vitest'
 import {
   getTestConfig,
-  outputStream,
+  outputStreamEvents,
 } from '../../test-utils/workflowTestHelpers'
 import { createQaAgentGraph } from './createQaAgentGraph'
 import type { QaAgentState } from './shared/qaAgentAnnotation'
@@ -109,9 +109,13 @@ describe('createQaAgentGraph Integration', () => {
     }
 
     // Act
-    const stream = await graph.stream(state, config)
+    const streamEvents = graph.streamEvents(state, {
+      ...config,
+      streamMode: 'messages',
+      version: 'v2',
+    })
 
     // Assert (Output)
-    await outputStream(stream)
+    await outputStreamEvents(streamEvents)
   })
 })
