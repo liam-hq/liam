@@ -11,6 +11,7 @@ import {
 import type { RunnableConfig } from '@langchain/core/runnables'
 import { err, ok, type Result } from 'neverthrow'
 import * as v from 'valibot'
+import { gray, italic } from 'yoctocolors'
 import {
   createLogger,
   getLogLevel,
@@ -212,8 +213,13 @@ function handleReasoningMessage(
     )
     if (newReasoningContent) {
       const name = 'name' in message && message.name ? ` (${message.name})` : ''
-      const reasoningPrefix = lastReasoningText ? '' : `🧠 Reasoning${name}: `
-      process.stdout.write(`${reasoningPrefix}${newReasoningContent}\n\n`)
+      const reasoningPrefix = lastReasoningText
+        ? ''
+        : `\n\n🧠 Thinking${name}...\n\n`
+      const styledContent = gray(
+        italic(`${reasoningPrefix}${newReasoningContent}`),
+      )
+      process.stdout.write(styledContent)
       lastReasoningContent.set(messageId, currentReasoningText)
     }
   }
@@ -254,7 +260,7 @@ function formatStreamingMessage(
 
   switch (messageType) {
     case 'human':
-      return isFirstChunk ? `> ${newContent}` : newContent
+      return isFirstChunk ? `\n\n> ${newContent}` : newContent
     case 'ai':
       return formatAIMessage(message, newContent, isFirstChunk)
     case 'tool':
@@ -270,7 +276,7 @@ function formatAIMessage(
   isFirstChunk: boolean,
 ): string {
   const name = 'name' in message && message.name ? ` (${message.name})` : ''
-  return isFirstChunk ? `⏺ ${name}: ${newContent}` : newContent
+  return isFirstChunk ? `\n\n⏺ ${name}:\n\n${newContent}` : newContent
 }
 
 function formatToolMessage(
