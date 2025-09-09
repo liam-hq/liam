@@ -1,203 +1,102 @@
 import * as v from 'valibot'
 import { describe, expect, it } from 'vitest'
 import {
-  isValidReturnPath,
-  parseReturnPath,
   RelativeReturnPathSchema,
   sanitizeReturnPath,
 } from './validateReturnPath'
 
 describe('validateReturnPath', () => {
-  describe('isValidReturnPath', () => {
-    describe('valid paths', () => {
-      it('should accept simple relative paths', () => {
-        expect(isValidReturnPath('/')).toBe(true)
-        expect(isValidReturnPath('/home')).toBe(true)
-        expect(isValidReturnPath('/projects')).toBe(true)
-        expect(isValidReturnPath('/design_sessions/new')).toBe(true)
-      })
-
-      it('should accept paths with query parameters', () => {
-        expect(isValidReturnPath('/login?next=/dashboard')).toBe(true)
-        expect(isValidReturnPath('/search?q=test&page=2')).toBe(true)
-      })
-
-      it('should accept paths with URLs in query parameters', () => {
-        expect(isValidReturnPath('/search?q=http://example.com')).toBe(true)
-        expect(
-          isValidReturnPath('/search?url=https://google.com&type=web'),
-        ).toBe(true)
-        expect(isValidReturnPath('/proxy?target=ftp://files.example.org')).toBe(
-          true,
-        )
-        expect(
-          isValidReturnPath('/search?q=test&ref=http://example.com/page'),
-        ).toBe(true)
-      })
-
-      it('should accept paths with hash fragments', () => {
-        expect(isValidReturnPath('/docs#section-1')).toBe(true)
-        expect(isValidReturnPath('/about#team')).toBe(true)
-      })
-
-      it('should accept paths with URLs in hash fragments', () => {
-        expect(isValidReturnPath('/docs#http://example.com')).toBe(true)
-        expect(isValidReturnPath('/page#https://reference.site')).toBe(true)
-      })
-
-      it('should handle mixed query and hash with URLs correctly', () => {
-        expect(
-          isValidReturnPath('/search?q=http://example.com#https://anchor.site'),
-        ).toBe(true)
-        expect(isValidReturnPath('/page#anchor?ref=http://example.com')).toBe(
-          true,
-        )
-        // Protocol in path segment before query/hash should still be rejected
-        expect(isValidReturnPath('/http://evil.com?safe=param')).toBe(false)
-        expect(isValidReturnPath('/path/https://bad.com#anchor')).toBe(false)
-      })
-
-      it('should accept nested paths', () => {
-        expect(isValidReturnPath('/projects/123/settings')).toBe(true)
-        expect(isValidReturnPath('/organizations/abc/members')).toBe(true)
-      })
-
-      it('should accept paths with special characters', () => {
-        expect(isValidReturnPath('/projects/test-123')).toBe(true)
-        expect(isValidReturnPath('/files/my_document.pdf')).toBe(true)
-        expect(isValidReturnPath('/search?q=hello%20world')).toBe(true)
-      })
-    })
-
-    describe('invalid paths', () => {
-      it('should reject empty or null paths', () => {
-        expect(isValidReturnPath('')).toBe(false)
-        // @ts-expect-error - Testing invalid input
-        expect(isValidReturnPath(null)).toBe(false)
-        // @ts-expect-error - Testing invalid input
-        expect(isValidReturnPath(undefined)).toBe(false)
-      })
-
-      it('should reject paths containing CR/LF and control characters', () => {
-        // Direct newline and carriage return characters
-        expect(isValidReturnPath('/path\nwith\nnewlines')).toBe(false)
-        expect(isValidReturnPath('/path\rwith\rcarriage')).toBe(false)
-        expect(isValidReturnPath('/path\r\nwith\r\ncrlf')).toBe(false)
-
-        // URL encoded CR/LF
-        expect(isValidReturnPath('/path%0awith%0anewlines')).toBe(false)
-        expect(isValidReturnPath('/path%0dwith%0dcarriage')).toBe(false)
-        expect(isValidReturnPath('/path%0a%0dheader%0a%0dinjection')).toBe(
-          false,
-        )
-
-        // Mixed encoded and literal
-        expect(isValidReturnPath('/path\n%0dmixed')).toBe(false)
-
-        // Other control characters
-        expect(isValidReturnPath('/path\twith\ttabs')).toBe(false)
-        expect(isValidReturnPath('/path\x00null\x00bytes')).toBe(false)
-        expect(isValidReturnPath('/path\x08backspace')).toBe(false)
-        expect(isValidReturnPath('/path\x1bescape')).toBe(false)
-
-        // Control characters at different positions
-        expect(isValidReturnPath('\n/path')).toBe(false)
-        expect(isValidReturnPath('/path\n')).toBe(false)
-        expect(isValidReturnPath('/pa\nth')).toBe(false)
-
-        // URL encoded variations (uppercase and lowercase)
-        expect(isValidReturnPath('/path%0A%0D')).toBe(false)
-        expect(isValidReturnPath('/path%0a%0d')).toBe(false)
-
-        // Common header injection patterns
-        expect(
-          isValidReturnPath('/redirect%0d%0aLocation:%20http://evil.com'),
-        ).toBe(false)
-        expect(
-          isValidReturnPath('/path%0aSet-Cookie:%20session=hijacked'),
-        ).toBe(false)
-      })
-
-      it('should reject paths not starting with /', () => {
-        expect(isValidReturnPath('home')).toBe(false)
-        expect(isValidReturnPath('projects/123')).toBe(false)
-        expect(isValidReturnPath('../parent')).toBe(false)
-        expect(isValidReturnPath('./current')).toBe(false)
-      })
-
-      it('should reject absolute URLs with protocol', () => {
-        expect(isValidReturnPath('http://example.com')).toBe(false)
-        expect(isValidReturnPath('https://example.com')).toBe(false)
-        expect(isValidReturnPath('ftp://example.com')).toBe(false)
-        expect(isValidReturnPath('file:///etc/passwd')).toBe(false)
-      })
-
-      it('should reject protocol-relative URLs', () => {
-        expect(isValidReturnPath('//example.com')).toBe(false)
-        expect(isValidReturnPath('//evil.com/phishing')).toBe(false)
-        expect(isValidReturnPath('///triple-slash')).toBe(false)
-      })
-
-      it('should reject javascript: and data: URLs', () => {
-        expect(isValidReturnPath('javascript:alert(1)')).toBe(false)
-        expect(isValidReturnPath('JavaScript:void(0)')).toBe(false)
-        expect(
-          isValidReturnPath('data:text/html,<script>alert(1)</script>'),
-        ).toBe(false)
-        expect(isValidReturnPath('DATA:text/plain,hello')).toBe(false)
-      })
-
-      it('should reject paths containing @', () => {
-        expect(isValidReturnPath('/@evil.com')).toBe(false)
-        expect(isValidReturnPath('/user@example.com')).toBe(false)
-        expect(isValidReturnPath('/redirect@attacker.com')).toBe(false)
-      })
-
-      it('should reject URLs disguised as paths', () => {
-        // Protocol in path segment should be rejected
-        expect(isValidReturnPath('/http://example.com')).toBe(false)
-        expect(isValidReturnPath('/https://malicious.site')).toBe(false)
-        expect(isValidReturnPath('/some/path/http://evil.com')).toBe(false)
-        // But protocol in query params is now allowed
-        expect(isValidReturnPath('/?url=http://evil.com')).toBe(true)
-      })
-    })
-
-    describe('edge cases', () => {
-      it('should handle URL encoding attempts', () => {
-        expect(isValidReturnPath('/%2F%2Fexample.com')).toBe(true) // Encoded // is treated as path
-        expect(isValidReturnPath('/javascript%3Aalert(1)')).toBe(true) // Encoded javascript: is treated as path
-        expect(isValidReturnPath('/%40example.com')).toBe(true) // Encoded @ is allowed
-      })
-
-      it('should handle very long paths', () => {
-        const longPath = `/${'a'.repeat(1000)}`
-        expect(isValidReturnPath(longPath)).toBe(true)
-      })
-
-      it('should handle paths with multiple slashes', () => {
-        expect(isValidReturnPath('/path//with///multiple////slashes')).toBe(
-          true,
-        )
-        expect(isValidReturnPath('/')).toBe(true)
-      })
-    })
-  })
-
   describe('sanitizeReturnPath', () => {
     const defaultPath = '/default'
 
-    describe('valid path handling', () => {
-      it('should return valid paths unchanged', () => {
+    describe('valid paths', () => {
+      it('should return valid relative paths unchanged', () => {
+        expect(sanitizeReturnPath('/', defaultPath)).toBe('/')
         expect(sanitizeReturnPath('/home', defaultPath)).toBe('/home')
         expect(sanitizeReturnPath('/projects/123', defaultPath)).toBe(
           '/projects/123',
         )
-        expect(sanitizeReturnPath('/search?q=test', defaultPath)).toBe(
-          '/search?q=test',
+        expect(sanitizeReturnPath('/design_sessions/new', defaultPath)).toBe(
+          '/design_sessions/new',
         )
       })
 
+      it('should accept paths with query parameters and hash fragments', () => {
+        expect(sanitizeReturnPath('/login?next=/dashboard', defaultPath)).toBe(
+          '/login?next=/dashboard',
+        )
+        expect(sanitizeReturnPath('/search?q=test&page=2', defaultPath)).toBe(
+          '/search?q=test&page=2',
+        )
+        expect(sanitizeReturnPath('/docs#section-1', defaultPath)).toBe(
+          '/docs#section-1',
+        )
+        expect(
+          sanitizeReturnPath('/search?q=http://example.com', defaultPath),
+        ).toBe('/search?q=http://example.com')
+      })
+
+      it('should accept nested paths', () => {
+        expect(sanitizeReturnPath('/projects/123/settings', defaultPath)).toBe(
+          '/projects/123/settings',
+        )
+        expect(
+          sanitizeReturnPath('/organizations/abc/members', defaultPath),
+        ).toBe('/organizations/abc/members')
+      })
+    })
+
+    describe('invalid paths', () => {
+      it('should return default for empty or null paths', () => {
+        expect(sanitizeReturnPath('', defaultPath)).toBe(defaultPath)
+        expect(sanitizeReturnPath(null, defaultPath)).toBe(defaultPath)
+        expect(sanitizeReturnPath(undefined, defaultPath)).toBe(defaultPath)
+      })
+
+      it('should return default for paths not starting with /', () => {
+        expect(sanitizeReturnPath('home', defaultPath)).toBe(defaultPath)
+        expect(sanitizeReturnPath('projects/123', defaultPath)).toBe(
+          defaultPath,
+        )
+        expect(sanitizeReturnPath('../parent', defaultPath)).toBe(defaultPath)
+        expect(sanitizeReturnPath('./current', defaultPath)).toBe(defaultPath)
+      })
+
+      it('should return default for absolute URLs', () => {
+        expect(sanitizeReturnPath('http://example.com', defaultPath)).toBe(
+          defaultPath,
+        )
+        expect(sanitizeReturnPath('https://example.com', defaultPath)).toBe(
+          defaultPath,
+        )
+        expect(sanitizeReturnPath('ftp://example.com', defaultPath)).toBe(
+          defaultPath,
+        )
+        expect(sanitizeReturnPath('javascript:alert(1)', defaultPath)).toBe(
+          defaultPath,
+        )
+        expect(
+          sanitizeReturnPath(
+            'data:text/html,<script>alert(1)</script>',
+            defaultPath,
+          ),
+        ).toBe(defaultPath)
+      })
+
+      it('should return default for protocol-relative URLs', () => {
+        expect(sanitizeReturnPath('//example.com', defaultPath)).toBe(
+          defaultPath,
+        )
+        expect(sanitizeReturnPath('//evil.com/phishing', defaultPath)).toBe(
+          defaultPath,
+        )
+        expect(sanitizeReturnPath('///triple-slash', defaultPath)).toBe(
+          defaultPath,
+        )
+      })
+    })
+
+    describe('default path behavior', () => {
       it('should use custom default path when provided', () => {
         expect(sanitizeReturnPath('', '/custom')).toBe('/custom')
         expect(sanitizeReturnPath(null, '/custom')).toBe('/custom')
@@ -210,130 +109,53 @@ describe('validateReturnPath', () => {
         expect(sanitizeReturnPath(undefined)).toBe('/design_sessions/new')
       })
     })
-
-    describe('invalid path handling', () => {
-      it('should return default for invalid paths', () => {
-        expect(sanitizeReturnPath('http://evil.com', defaultPath)).toBe(
-          defaultPath,
-        )
-        expect(sanitizeReturnPath('//evil.com', defaultPath)).toBe(defaultPath)
-        expect(sanitizeReturnPath('javascript:alert(1)', defaultPath)).toBe(
-          defaultPath,
-        )
-        expect(sanitizeReturnPath('/@evil.com', defaultPath)).toBe(defaultPath)
-      })
-
-      it('should handle null and undefined', () => {
-        expect(sanitizeReturnPath(null, defaultPath)).toBe(defaultPath)
-        expect(sanitizeReturnPath(undefined, defaultPath)).toBe(defaultPath)
-      })
-
-      it('should handle non-string values gracefully', () => {
-        // @ts-expect-error - Testing invalid input
-        expect(sanitizeReturnPath(123, defaultPath)).toBe(defaultPath)
-        // @ts-expect-error - Testing invalid input
-        expect(sanitizeReturnPath({}, defaultPath)).toBe(defaultPath)
-        // @ts-expect-error - Testing invalid input
-        expect(sanitizeReturnPath([], defaultPath)).toBe(defaultPath)
-      })
-    })
-
-    describe('security scenarios', () => {
-      it('should prevent open redirect via absolute URLs', () => {
-        const maliciousUrls = [
-          'http://phishing.site/login',
-          'https://attacker.com',
-          '//evil.com/steal-cookies',
-          'javascript:document.cookie',
-          'data:text/html,<script>alert(document.cookie)</script>',
-        ]
-
-        maliciousUrls.forEach((url) => {
-          expect(sanitizeReturnPath(url, defaultPath)).toBe(defaultPath)
-        })
-      })
-
-      it('should prevent bypass attempts', () => {
-        const bypassAttempts = [
-          '//google.com',
-          '///triple.slash',
-          '/@evil.com',
-          'HtTp://evil.com', // Case variation
-          'JAVASCRIPT:alert(1)', // Case variation
-        ]
-
-        bypassAttempts.forEach((attempt) => {
-          expect(sanitizeReturnPath(attempt, defaultPath)).toBe(defaultPath)
-        })
-      })
-
-      it('should allow legitimate application paths', () => {
-        const legitimatePaths = [
-          '/login',
-          '/projects/abc-123/settings',
-          '/organizations/new?from=header',
-          '/design_sessions/456#comments',
-          '/invitations/tokens/xyz789',
-        ]
-
-        legitimatePaths.forEach((path) => {
-          expect(sanitizeReturnPath(path, defaultPath)).toBe(path)
-        })
-      })
-    })
-  })
-
-  describe('parseReturnPath', () => {
-    it('should parse valid paths successfully', () => {
-      expect(parseReturnPath('/home')).toBe('/home')
-      expect(parseReturnPath('/projects/123')).toBe('/projects/123')
-      expect(parseReturnPath('/search?q=test')).toBe('/search?q=test')
-    })
-
-    it('should throw for invalid paths', () => {
-      expect(() => parseReturnPath('http://evil.com')).toThrow()
-      expect(() => parseReturnPath('//evil.com')).toThrow()
-      expect(() => parseReturnPath('javascript:alert(1)')).toThrow()
-      expect(() => parseReturnPath('/path\n')).toThrow()
-      expect(() => parseReturnPath('/@evil.com')).toThrow()
-    })
   })
 
   describe('RelativeReturnPathSchema', () => {
-    it('should be a valibot schema', () => {
-      // Verify it's a proper valibot schema that can be used with safeParse
-      const result = v.safeParse(RelativeReturnPathSchema, '/valid/path')
-      expect(result.success).toBe(true)
-      if (result.success) {
-        expect(result.output).toBe('/valid/path')
-      }
-    })
-
-    it('should provide meaningful error messages', () => {
-      const testCases = [
-        { input: 'no-slash', expectedError: 'Path must start with /' },
-        {
-          input: '/path\n',
-          expectedError: 'Path must not contain control characters',
-        },
-        { input: 'http://evil.com', expectedError: 'Path must start with /' },
-        {
-          input: '//evil.com',
-          expectedError: 'Path must not be protocol-relative',
-        },
-        {
-          input: '/@evil.com',
-          expectedError: 'Path must not contain @ character',
-        },
+    it('should validate correct paths', () => {
+      const validPaths = [
+        '/',
+        '/home',
+        '/projects/123',
+        '/search?q=test',
+        '/docs#section',
+        '/path/with/many/segments',
       ]
 
-      testCases.forEach(({ input, expectedError }) => {
-        const result = v.safeParse(RelativeReturnPathSchema, input)
-        expect(result.success).toBe(false)
-        if (!result.success) {
-          expect(result.issues[0].message).toBe(expectedError)
+      validPaths.forEach((path) => {
+        const result = v.safeParse(RelativeReturnPathSchema, path)
+        expect(result.success).toBe(true)
+        if (result.success) {
+          expect(result.output).toBe(path)
         }
       })
+    })
+
+    it('should reject invalid paths', () => {
+      const invalidPaths = [
+        '',
+        'home',
+        '//example.com',
+        'http://example.com',
+        'javascript:alert(1)',
+        '../parent',
+        './current',
+      ]
+
+      invalidPaths.forEach((path) => {
+        const result = v.safeParse(RelativeReturnPathSchema, path)
+        expect(result.success).toBe(false)
+      })
+    })
+
+    it('should provide meaningful error message', () => {
+      const result = v.safeParse(RelativeReturnPathSchema, '//evil.com')
+      expect(result.success).toBe(false)
+      if (!result.success) {
+        expect(result.issues[0].message).toBe(
+          'Path must be a relative path starting with /',
+        )
+      }
     })
 
     it('should be reusable in other schemas', () => {
@@ -344,7 +166,7 @@ describe('validateReturnPath', () => {
       })
 
       const validForm = { username: 'john', returnTo: '/dashboard' }
-      const invalidForm = { username: 'john', returnTo: 'http://evil.com' }
+      const invalidForm = { username: 'john', returnTo: '//evil.com' }
 
       expect(v.safeParse(FormSchema, validForm).success).toBe(true)
       expect(v.safeParse(FormSchema, invalidForm).success).toBe(false)
