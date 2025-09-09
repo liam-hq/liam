@@ -176,9 +176,10 @@ graph TD;
 	invokeSchemaDesignTool(invokeSchemaDesignTool)
 	__end__([<p>__end__</p>]):::last
 	__start__ --> designSchema;
-	invokeSchemaDesignTool --> designSchema;
 	designSchema -.-> invokeSchemaDesignTool;
 	designSchema -. &nbsp;generateTestcase&nbsp; .-> __end__;
+	invokeSchemaDesignTool -. &nbsp;END&nbsp; .-> __end__;
+	invokeSchemaDesignTool -.-> designSchema;
 	designSchema -.-> designSchema;
 	classDef default fill:#f2f0ff,line-height:1.2;
 	classDef first fill-opacity:0;
@@ -202,8 +203,9 @@ graph TD;
 
 ### Subgraph Flow Patterns
 
-1. **Simple Design**: `START → designSchema → END` (when no tool calls needed)
-2. **Iterative Design**: `START → designSchema → invokeSchemaDesignTool → designSchema → ... → END`
+1. **Successful Design**: `START → designSchema → invokeSchemaDesignTool → END`
+2. **Retry on Error**: `START → designSchema → invokeSchemaDesignTool → designSchema → invokeSchemaDesignTool → END`
+3. **Retry on No Tool Call**: `START → designSchema → designSchema (retry) → invokeSchemaDesignTool → END`
 
 ### Subgraph Benefits
 
