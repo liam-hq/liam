@@ -5,7 +5,7 @@ import { TableDetail } from '../../ERDContent/components/TableNode/TableDetail'
 import styles from './TableDetailDrawer.module.css'
 
 export const TableDetailDrawerRoot: FC<PropsWithChildren> = ({ children }) => {
-  const { activeTableName, setActiveTableName, setFocusColumnName } =
+  const { activeTableName, setActiveTableName, setHash } =
     useUserEditingOrThrow()
 
   const { current } = useSchemaOrThrow()
@@ -14,8 +14,8 @@ export const TableDetailDrawerRoot: FC<PropsWithChildren> = ({ children }) => {
 
   const handleClose = useCallback(() => {
     setActiveTableName(null)
-    setFocusColumnName(null)
-  }, [setActiveTableName, setFocusColumnName])
+    setHash(null)
+  }, [setActiveTableName, setHash])
 
   return (
     <DrawerRoot

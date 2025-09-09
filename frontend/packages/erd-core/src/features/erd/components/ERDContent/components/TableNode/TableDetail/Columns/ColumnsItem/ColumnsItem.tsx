@@ -20,6 +20,7 @@ type Props = {
   tableId: string
   column: Column
   constraints: Constraints
+  scrollToElement: (columnName: string) => void
 }
 
 const getColumninkHref = (focusColumnName: string) => {
@@ -31,9 +32,14 @@ const getColumninkHref = (focusColumnName: string) => {
   return url.toString()
 }
 
-export const ColumnsItem: FC<Props> = ({ tableId, column, constraints }) => {
+export const ColumnsItem: FC<Props> = ({
+  tableId,
+  column,
+  constraints,
+  scrollToElement,
+}) => {
   const { operations } = useSchemaOrThrow()
-  const { showDiff, setFocusColumnName } = useUserEditingOrThrow()
+  const { showDiff } = useUserEditingOrThrow()
   const { copy } = useCopy()
 
   const changeStatus = useMemo(() => {
@@ -65,7 +71,7 @@ export const ColumnsItem: FC<Props> = ({ tableId, column, constraints }) => {
           type="button"
           className={styles.linkButton}
           onClick={() => {
-            setFocusColumnName(column.name)
+            scrollToElement(column.name)
             copy(getColumninkHref(column.name))
           }}
         >

@@ -54,10 +54,14 @@ export const UserEditingProvider: FC<Props> = ({
     parseAsString.withDefault('').withOptions({ history: 'push' }),
   )
 
-  const [focusColumnName, setFocusColumnName] = useQueryState(
-    'column',
-    parseAsString.withDefault('').withOptions({ history: 'push' }),
-  )
+  const [hash, _setHash] = useState<string | null>(null)
+  const setHash = useCallback((hash: string | null) => {
+    _setHash(hash)
+    location.hash = hash ?? ''
+  }, [])
+  useEffect(() => {
+    _setHash(location.hash)
+  }, [])
 
   const [showMode, setShowMode] = useQueryState(
     'showMode',
@@ -207,8 +211,8 @@ export const UserEditingProvider: FC<Props> = ({
         // URL synchronized state
         activeTableName,
         setActiveTableName,
-        focusColumnName,
-        setFocusColumnName,
+        hash,
+        setHash,
         showMode,
         setShowMode,
         hiddenNodeIds,
