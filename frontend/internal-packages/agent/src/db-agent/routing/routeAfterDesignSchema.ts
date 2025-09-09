@@ -14,7 +14,12 @@ export const routeAfterDesignSchema = (
   const { messages, designSchemaRetryCount } = state
   const lastMessage = messages[messages.length - 1]
 
-  // Check if retry limit exceeded
+  // If last message has tool calls, execute them (success path)
+  if (lastMessage && hasToolCalls(lastMessage)) {
+    return 'invokeSchemaDesignTool'
+  }
+
+  // No tool calls present, check if retry limit exceeded
   if (designSchemaRetryCount >= MAX_DESIGN_RETRY_COUNT) {
     throw new WorkflowTerminationError(
       new Error(
@@ -24,11 +29,6 @@ export const routeAfterDesignSchema = (
     )
   }
 
-  // If last message has tool calls, execute them
-  if (lastMessage && hasToolCalls(lastMessage)) {
-    return 'invokeSchemaDesignTool'
-  }
-
-  // No tool calls present -> retry design schema
+  // Retry design schema
   return 'designSchema'
 }

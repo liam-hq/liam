@@ -73,7 +73,7 @@ describe('routeAfterDesignSchema', () => {
     expect(result).toBe('designSchema')
   })
 
-  it('should throw error when retry count reaches maximum', () => {
+  it('should throw error when retry count reaches maximum without tool calls', () => {
     const messageWithoutToolCalls = new AIMessage({
       content: 'Schema analysis complete',
     })
@@ -86,6 +86,25 @@ describe('routeAfterDesignSchema', () => {
     expect(() => routeAfterDesignSchema(state)).toThrow(
       'Failed to design schema with tool usage after 3 attempts',
     )
+  })
+
+  it('should return invokeSchemaDesignTool on successful 3rd attempt with tool calls', () => {
+    const messageWithToolCalls = new AIMessage({
+      content: 'I need to update the schema',
+      tool_calls: [
+        {
+          name: 'schemaDesignTool',
+          args: { operations: [] },
+          id: 'test-id',
+        },
+      ],
+    })
+
+    // Even with retry count at 3, if we have tool calls, we should proceed
+    const state = createDbAgentState([messageWithToolCalls], 3)
+    const result = routeAfterDesignSchema(state)
+
+    expect(result).toBe('invokeSchemaDesignTool')
   })
 
   it('should handle multiple messages and check only the last one', () => {
