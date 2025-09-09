@@ -5,8 +5,8 @@ import {
   getTestConfig,
   outputStream,
 } from '../../../test-utils/workflowTestHelpers'
-import { workflowAnnotation } from '../../chat/workflow/shared/workflowAnnotation'
-import type { WorkflowState } from '../../chat/workflow/types'
+import type { WorkflowState } from '../../types'
+import { workflowAnnotation } from '../../workflowAnnotation'
 import { designSchemaNode } from './designSchemaNode'
 
 describe('designSchemaNode Integration', () => {
@@ -29,6 +29,11 @@ describe('designSchemaNode Integration', () => {
         tables: {},
         enums: {},
         extensions: {},
+      },
+      analyzedRequirements: {
+        businessRequirement: '',
+        functionalRequirements: {},
+        nonFunctionalRequirements: {},
       },
       testcases: [],
       buildingSchemaId: context.buildingSchemaId,

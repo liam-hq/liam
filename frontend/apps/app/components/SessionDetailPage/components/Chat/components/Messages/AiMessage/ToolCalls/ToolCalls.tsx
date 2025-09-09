@@ -1,6 +1,6 @@
 import type { ToolMessage as ToolMessageType } from '@langchain/core/messages'
 import type { FC } from 'react'
-import type { ToolCalls as ToolCallsType } from '../../schema'
+import type { ToolCalls as ToolCallsType } from '../../../../../../schema'
 import { ToolCall } from './ToolCall'
 import styles from './ToolCalls.module.css'
 

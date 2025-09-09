@@ -15,7 +15,7 @@
   },
   "license": "Apache-2.0",
   "private": false,
-  "version": "0.7.9",
+  "version": "0.7.11",
   "type": "module",
   "publishConfig": {
     "access": "public"
@@ -37,7 +37,7 @@
     "react": "19.1.1",
     "react-dom": "19.1.1",
     "valibot": "1.1.0",
-    "yoctocolors": "2.1.1"
+    "yoctocolors": "2.1.2"
   },
   "devDependencies": {
     "@biomejs/biome": "2.1.4",

@@ -1,7 +1,11 @@
 {
   "name": "@liam-hq/schema",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/liam-hq/liam.git"
+  },
   "license": "Apache-2.0",
-  "version": "0.5.2",
+  "version": "0.5.4",
   "type": "module",
   "publishConfig": {
     "access": "public"
@@ -48,5 +52,11 @@
     "lint:tsc": "tsc --noEmit",
     "test": "vitest --watch=false"
   },
+  "files": [
+    "dist/**/*",
+    "README.md",
+    "package.json",
+    "LICENSE"
+  ],
   "types": "dist/index.d.ts"
 }

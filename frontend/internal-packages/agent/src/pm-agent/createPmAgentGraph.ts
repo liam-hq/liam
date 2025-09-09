@@ -1,6 +1,6 @@
 import { END, START, StateGraph } from '@langchain/langgraph'
 import type { BaseCheckpointSaver } from '@langchain/langgraph-checkpoint'
-import { RETRY_POLICY } from '../shared/errorHandling'
+import { RETRY_POLICY } from '../utils/errorHandling'
 import { analyzeRequirementsNode } from './nodes/analyzeRequirementsNode'
 import { invokeSaveArtifactToolNode } from './nodes/invokeSaveArtifactToolNode'
 import { pmAgentStateAnnotation } from './pmAgentAnnotations'

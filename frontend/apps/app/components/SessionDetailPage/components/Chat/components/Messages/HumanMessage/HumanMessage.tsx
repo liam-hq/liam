@@ -3,9 +3,9 @@ import { Avatar } from '@liam-hq/ui'
 import type { FC } from 'react'
 import * as v from 'valibot'
 import { MarkdownContent } from '../../../../../../MarkdownContent'
+import { extractResponseFromMessage } from '../../../../../utils'
 import { CopyButton } from '../../../../CopyButton'
 import markdownStyles from '../Markdown.module.css'
-import { extractResponseFromMessage } from '../utils/extractResponseFromMessage'
 import styles from './HumanMessage.module.css'
 
 const additionalKwargsSchema = v.object({

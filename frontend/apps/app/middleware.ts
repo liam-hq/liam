@@ -4,8 +4,11 @@ import { NextResponse } from 'next/server'
 import { ROUTE_PREFIXES } from './libs/routes/constants'
 
 export async function updateSession(request: NextRequest) {
-  // Skip middleware if path doesn't start with /app
-  if (!request.nextUrl.pathname.startsWith(ROUTE_PREFIXES.APP)) {
+  // Skip middleware for public routes, erd pages, and static files
+  if (
+    request.nextUrl.pathname.startsWith(ROUTE_PREFIXES.PUBLIC) ||
+    request.nextUrl.pathname.startsWith(ROUTE_PREFIXES.ERD)
+  ) {
     return NextResponse.next()
   }
 

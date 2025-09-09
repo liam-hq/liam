@@ -11,13 +11,10 @@ import { ChatOpenAI } from '@langchain/openai'
 import { fromAsyncThrowable } from '@liam-hq/neverthrow'
 import { ResultAsync } from 'neverthrow'
 import { v4 as uuidv4 } from 'uuid'
-import { getConfigurable } from '../../chat/workflow/shared/getConfigurable'
-import type {
-  WorkflowConfigurable,
-  WorkflowState,
-} from '../../chat/workflow/types'
 import { SSE_EVENTS } from '../../client'
-import { WorkflowTerminationError } from '../../shared/errorHandling'
+import type { WorkflowConfigurable, WorkflowState } from '../../types'
+import { WorkflowTerminationError } from '../../utils/errorHandling'
+import { getConfigurable } from '../../utils/getConfigurable'
 import { routeToAgent } from '../tools/routeToAgent'
 import { isQACompleted } from '../utils/workflowStatus'
 import { prompt } from './prompt'

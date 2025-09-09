@@ -50,11 +50,7 @@ export const IconButton = ({
           <button
             ref={ref}
             type="button"
-            className={clsx(
-              styles.iconWrapper,
-              variantClassName,
-              props.className,
-            )}
+            className={clsx(styles.iconWrapper, variantClassName, className)}
             {...rest}
           >
             <span className={clsx(styles.icon, sizeClassName)}>{icon}</span>

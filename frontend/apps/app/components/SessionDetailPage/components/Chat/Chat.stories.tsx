@@ -3,12 +3,9 @@ import { aBuildingSchemaVersion } from '@liam-hq/db'
 import { aSchema } from '@liam-hq/schema'
 import type { Meta, StoryObj } from '@storybook/nextjs'
 import { HttpResponse, http } from 'msw'
-import { aTypicalConversation } from '../../factories'
 import { AnimatedChatDemo } from './AnimatedChatDemo'
 import { Chat } from './Chat'
 import { aMessage } from './factories'
-
-const ITEMS = aTypicalConversation()
 
 // Sample messages for testing
 const MESSAGES: BaseMessage[] = [
@@ -84,7 +81,6 @@ type Story = StoryObj<typeof meta>
 export const Default: Story = {
   args: {
     schemaData: aSchema(),
-    timelineItems: ITEMS,
     messages: MESSAGES,
     onMessageSend: () => {},
   },
@@ -93,7 +89,6 @@ export const Default: Story = {
 export const AnimatedDemo: Story = {
   args: {
     schemaData: aSchema(),
-    timelineItems: ITEMS,
     messages: MESSAGES,
     onMessageSend: () => {},
   },
@@ -123,7 +118,6 @@ export const WithComplexMessages: Story = {
           'The database design is complete. Would you like me to add payment processing tables?',
       }),
     ],
-    timelineItems: ITEMS,
     onMessageSend: () => {},
   },
 }

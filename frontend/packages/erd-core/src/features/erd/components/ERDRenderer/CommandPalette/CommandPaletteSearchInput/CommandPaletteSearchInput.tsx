@@ -59,7 +59,7 @@ export const CommandPaletteSearchInput: FC<Props> = ({
 
     document.addEventListener('keydown', down)
     return () => document.removeEventListener('keydown', down)
-  }, [value, mode])
+  }, [value, mode, setMode])
 
   return (
     <div className={styles.container}>

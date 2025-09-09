@@ -3,7 +3,7 @@ import { DialogClose } from '@radix-ui/react-dialog'
 import { Command, defaultFilter } from 'cmdk'
 import { type FC, useMemo, useState } from 'react'
 import { TableOptions } from '../CommandPaletteOptions'
-import { TablePreview } from '../CommandPalettePreview/TablePreview'
+import { TablePreview } from '../CommandPalettePreview'
 import { CommandPaletteSearchInput } from '../CommandPaletteSearchInput'
 import type { CommandPaletteInputMode } from '../types'
 import { textToSuggestion } from '../utils'
@@ -75,7 +75,7 @@ export const CommandPaletteContent: FC = () => {
           )}
           {
             suggestion?.type === 'command' && null
-            // TODO(command options): display a preview component for command options, as like:
+            // TODO(command options): uncomment the following line to release command preview
             // <CommandPreview commandName={suggestion.name} />
           }
         </div>

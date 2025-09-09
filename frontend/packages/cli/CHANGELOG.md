@@ -1,5 +1,13 @@
 # @liam-hq/cli
 
+## 0.7.11
+
+## 0.7.10
+
+### Patch Changes
+
+- [#3314](https://github.com/liam-hq/liam/pull/3314) - Optimize published content by adding files field to exclude development files while maintaining TypeScript direct publishing / Thanks [@devin-ai-integration](https://github.com/apps/devin-ai-integration)!
+
 ## 0.7.9
 
 ### Patch Changes

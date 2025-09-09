@@ -24,7 +24,7 @@ export const Comment: FC<Props> = ({ tableId, column }) => {
       operations: operations ?? [],
       columnId: column.name,
     })
-  }, [showDiff, tableId, operations])
+  }, [showDiff, tableId, operations, column.name])
 
   const diffStyle = useDiffStyle(showDiff, changeStatus)
 

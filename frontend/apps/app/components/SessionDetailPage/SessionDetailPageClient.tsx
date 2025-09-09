@@ -1,6 +1,7 @@
 'use client'
 
 import {
+  isHumanMessage,
   mapStoredMessagesToChatMessages,
   type StoredMessage,
 } from '@langchain/core/messages'
@@ -23,6 +24,7 @@ import type {
   Version,
   WorkflowRunStatus,
 } from './types'
+import { extractResponseFromMessage } from './utils'
 
 type Props = {
   buildingSchemaId: string
@@ -77,7 +79,7 @@ export const SessionDetailPageClient: FC<Props> = ({
   //   setSelectedVersion(version)
   // }, [])
 
-  const { timelineItems, addOrUpdateTimelineItem } = useRealtimeTimelineItems(
+  const { addOrUpdateTimelineItem } = useRealtimeTimelineItems(
     designSessionId,
     designSessionWithTimelineItems.timeline_items.map((timelineItem) =>
       convertTimelineItemToTimelineItemEntry(timelineItem),
@@ -106,6 +108,7 @@ export const SessionDetailPageClient: FC<Props> = ({
   const chatMessages = mapStoredMessagesToChatMessages(initialMessages)
   const { isStreaming, messages, start } = useStream({
     initialMessages: chatMessages,
+    designSessionId,
   })
   // Track if initial workflow has been triggered to prevent multiple executions
   const hasTriggeredInitialWorkflow = useRef(false)
@@ -117,10 +120,10 @@ export const SessionDetailPageClient: FC<Props> = ({
       if (hasTriggeredInitialWorkflow.current) return
 
       // Check if there's exactly one timeline item and it's a user message
-      if (timelineItems.length !== 1) return
+      if (messages.length !== 1) return
 
-      const firstItem = timelineItems[0]
-      if (!firstItem || firstItem.type !== 'user') return
+      const firstItem = messages[0]
+      if (!firstItem || !isHumanMessage(firstItem)) return
 
       // Check if there's already a workflow running
       if (status === 'pending') return
@@ -131,13 +134,13 @@ export const SessionDetailPageClient: FC<Props> = ({
       // Trigger the workflow for the initial user message
       await start({
         designSessionId,
-        userInput: firstItem.content,
+        userInput: extractResponseFromMessage(firstItem),
         isDeepModelingEnabled,
       })
     }
 
     triggerInitialWorkflow()
-  }, [timelineItems, status, designSessionId, isDeepModelingEnabled])
+  }, [messages, designSessionId, isDeepModelingEnabled])
 
   // Show Output if artifact exists OR workflow is not pending
   const shouldShowOutput = hasRealtimeArtifact || status !== 'pending'
@@ -154,7 +157,6 @@ export const SessionDetailPageClient: FC<Props> = ({
           <Chat
             schemaData={displayedSchema}
             messages={messages}
-            timelineItems={timelineItems}
             isWorkflowRunning={status === 'pending' || isStreaming}
             onMessageSend={addOrUpdateTimelineItem}
           />

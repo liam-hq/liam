@@ -14,18 +14,14 @@ export const AnimatedChatDemo = ({
   animationInterval = 1000,
   ...props
 }: AnimatedChatDemoProps) => {
-  const [timelineItems, setTimelineItems] = useState<TimelineItemEntry[]>([])
   const [isAnimating, setIsAnimating] = useState(false)
   const [currentIndex, setCurrentIndex] = useState(0)
 
-  const handleMessageSend = (entry: TimelineItemEntry) => {
-    setTimelineItems((prev) => [...prev, entry])
-  }
+  const handleMessageSend = (_entry: TimelineItemEntry) => {}
 
   const handleStart = () => {
     if (currentIndex === 0 || currentIndex >= ITEMS.length) {
       setCurrentIndex(0)
-      setTimelineItems([])
     }
     setIsAnimating(true)
   }
@@ -37,7 +33,6 @@ export const AnimatedChatDemo = ({
   const handleReset = () => {
     setIsAnimating(false)
     setCurrentIndex(0)
-    setTimelineItems([])
   }
 
   useEffect(() => {
@@ -49,10 +44,6 @@ export const AnimatedChatDemo = ({
     }
 
     const timer = setTimeout(() => {
-      const nextItem = ITEMS[currentIndex]
-      if (nextItem) {
-        setTimelineItems((prev) => [...prev, nextItem])
-      }
       setCurrentIndex((prev) => prev + 1)
     }, animationInterval)
 
@@ -92,11 +83,7 @@ export const AnimatedChatDemo = ({
           Reset
         </Button>
       </div>
-      <Chat
-        {...props}
-        timelineItems={timelineItems}
-        onMessageSend={handleMessageSend}
-      />
+      <Chat {...props} onMessageSend={handleMessageSend} />
     </>
   )
 }

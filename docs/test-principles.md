@@ -89,6 +89,31 @@ Per Khorikov's "observable behavior" principle:
 - Re-export modules
 - Type-only files
 
+## Practical Guidelines
+
+### String Validation
+
+Prefer complete validation over partial checks:
+
+```ts
+// ❌: Multiple partial assertions
+expect(result).toContain("success");
+expect(result).toContain("user");
+
+// ✅: Complete validation
+expect(result).toMatchInlineSnapshot(`"User login successful"`)
+```
+
+Use `toMatchInlineSnapshot()` when regression protection outweighs refactoring resistance.
+
+### Prioritizing the Four Pillars
+
+Projects must trade off between the four pillars based on context:
+
+- **Stable APIs**: Prioritize regression protection
+- **High-churn code**: Prioritize refactoring resistance  
+- **Performance-critical**: Prioritize fast feedback
+
 ## Key Takeaways
 
 1. **One behavior per test** - Each test should verify one specific behavior

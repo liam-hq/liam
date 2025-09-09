@@ -1,17 +1,12 @@
 {
-  "app/(app)/app/(with-project-and-branch)/projects/[projectId]/ref/[branchOrCommit]/layout.module.css": {
-    "css-modules-kit/no-unused-class-names": {
-      "count": 2
-    }
-  },
-  "app/(app)/app/confirm/route.ts": {
+  "app/confirm/route.ts": {
     "@typescript-eslint/consistent-type-assertions": {
       "count": 1
     }
   },
-  "app/api/webhook/github/route.ts": {
-    "@typescript-eslint/consistent-type-assertions": {
-      "count": 3
+  "app/projects/[projectId]/ref/[branchOrCommit]/layout.module.css": {
+    "css-modules-kit/no-unused-class-names": {
+      "count": 2
     }
   },
   "components/BranchDetailPage/BranchDetailPage.module.css": {

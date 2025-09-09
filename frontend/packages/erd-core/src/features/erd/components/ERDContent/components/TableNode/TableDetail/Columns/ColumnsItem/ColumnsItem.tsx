@@ -32,7 +32,7 @@ export const ColumnsItem: FC<Props> = ({ tableId, column, constraints }) => {
       operations: operations ?? [],
       columnId: column.name,
     })
-  }, [showDiff, tableId, operations])
+  }, [showDiff, tableId, operations, column.name])
 
   const diffStyle = useDiffStyle(showDiff, changeStatus)
 
@@ -43,7 +43,7 @@ export const ColumnsItem: FC<Props> = ({ tableId, column, constraints }) => {
           constraint.type === 'PRIMARY KEY' &&
           constraint.columnNames.includes(column.name),
       ),
-    [constraints],
+    [constraints, column.name],
   )
 
   return (

@@ -62,7 +62,6 @@ To set up a development environment, please follow these steps:
    Next, create a `.env.local` file at the root directory and set values for the following keys:
 
    - `OPENAI_API_KEY`
-   - `TRIGGER_SECRET_KEY`
 
 4. Start the development server
 

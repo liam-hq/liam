@@ -5,9 +5,9 @@ import { END } from '@langchain/langgraph'
 import type { Schema } from '@liam-hq/schema'
 import type { Result } from 'neverthrow'
 import { err, ok, okAsync } from 'neverthrow'
-import { DEFAULT_RECURSION_LIMIT } from '../src/chat/workflow/shared/workflowConstants'
-import type { WorkflowState } from '../src/chat/workflow/types'
+import { DEFAULT_RECURSION_LIMIT } from '../src/constants'
 import { createDbAgentGraph } from '../src/db-agent/createDbAgentGraph'
+import type { WorkflowState } from '../src/types'
 import { hasHelpFlag, parseDesignProcessArgs } from './shared/argumentParser'
 import {
   createLogger,
@@ -54,6 +54,11 @@ const createWorkflowState = (
     userInput,
     messages: [new HumanMessage(userInput)],
     schemaData: sampleSchema,
+    analyzedRequirements: {
+      businessRequirement: '',
+      functionalRequirements: {},
+      nonFunctionalRequirements: {},
+    },
     testcases: [],
     buildingSchemaId: buildingSchema.id,
     latestVersionNumber: buildingSchema.latest_version_number,

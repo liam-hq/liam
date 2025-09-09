@@ -1,10 +1,14 @@
+'use client'
+
 import {
   type BaseMessage,
   coerceMessageLikeToMessage,
+  isHumanMessage,
 } from '@langchain/core/messages'
 import { SSE_EVENTS } from '@liam-hq/agent/client'
 import { err, ok } from 'neverthrow'
-import { useCallback, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { LG_INITIAL_MESSAGE_PREFIX } from '../../../../constants/storageKeys'
 import { ERROR_MESSAGES } from '../../components/Chat/constants/chatConstants'
 import { MessageTupleManager } from './MessageTupleManager'
 import { parseSse } from './parseSse'
@@ -20,9 +24,10 @@ type ChatRequest = {
  * @see https://github.com/langchain-ai/langgraphjs/blob/3320793bffffa02682227644aefbee95dee330a2/libs/sdk/src/react/stream.tsx
  */
 type Props = {
+  designSessionId: string
   initialMessages: BaseMessage[]
 }
-export const useStream = ({ initialMessages }: Props) => {
+export const useStream = ({ designSessionId, initialMessages }: Props) => {
   const [messages, setMessages] = useState<BaseMessage[]>(initialMessages)
   const messageManagerRef = useRef(new MessageTupleManager())
 
@@ -102,6 +107,15 @@ export const useStream = ({ initialMessages }: Props) => {
       })
     }
   }, [])
+
+  useEffect(() => {
+    const key = `${LG_INITIAL_MESSAGE_PREFIX}:${designSessionId}`
+    const stored = sessionStorage.getItem(key)
+    if (!stored) return
+    const msg = coerceMessageLikeToMessage(JSON.parse(stored))
+    sessionStorage.removeItem(key)
+    if (isHumanMessage(msg)) setMessages((prev) => [msg, ...prev])
+  }, [designSessionId])
 
   return {
     messages,

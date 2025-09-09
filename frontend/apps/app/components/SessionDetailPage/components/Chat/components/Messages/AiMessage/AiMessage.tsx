@@ -3,11 +3,13 @@ import type { FC } from 'react'
 import { match } from 'ts-pattern'
 import * as v from 'valibot'
 import { MarkdownContent } from '../../../../../../MarkdownContent'
+import {
+  extractReasoningFromMessage,
+  extractResponseFromMessage,
+  extractToolCallsFromMessage,
+} from '../../../../../utils'
 import { CopyButton } from '../../../../CopyButton'
 import markdownStyles from '../Markdown.module.css'
-import { extractReasoningFromMessage } from '../utils/extractReasoningFromMessage'
-import { extractResponseFromMessage } from '../utils/extractResponseFromMessage'
-import { extractToolCallsFromMessage } from '../utils/extractToolCallsFromMessage'
 import { DBAgent, LeadAgent, PMAgent, QAAgent } from './AgentAvatar'
 import styles from './AiMessage.module.css'
 import { ReasoningMessage } from './ReasoningMessage'

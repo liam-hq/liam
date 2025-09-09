@@ -19,8 +19,6 @@
     "frontend/apps/docs/app/docs/sitemap.ts",
     "frontend/apps/app/next.config.ts",
     "frontend/apps/docs/next.config.mjs",
-    // - Temporarily unused vectorstore files (will be re-enabled later)
-    "frontend/internal-packages/agent/src/vectorstore/index.ts",
     "frontend/internal-packages/agent/src/vectorstore/supabaseVectorStore.ts",
     "frontend/internal-packages/agent/src/vectorstore/syncSchemaVectorStore.ts",
     // - Newly added enum schema definitions (will be used in future implementations)

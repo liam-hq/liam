@@ -26,7 +26,7 @@ export const SignInModal: FC<Props> = ({
   isOpen,
   onClose,
   onSwitchToSignUp,
-  returnTo = '/app/design_sessions/new',
+  returnTo = '/design_sessions/new',
 }) => {
   return (
     <ModalRoot open={isOpen} onOpenChange={(open) => !open && onClose()}>

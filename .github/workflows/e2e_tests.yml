@@ -25,7 +25,7 @@ jobs:
       ENVIRONMENT: ${{ github.event.deployment.environment }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
         with:
           ref: ${{ github.event.deployment.sha }}
           persist-credentials: false
@@ -46,7 +46,7 @@ jobs:
               if (environment_val.include?("Production") && target_url.include?("liam-app-git-main"))
                 "should_run=true"
               # Preview deployment
-              elsif environment_val.include?("Preview") && !target_url.include?("liam-erd-sample") && !target_url.include?("liam-docs") && !target_url.include?("liam-storybook")
+              elsif environment_val.include?("Preview") && environment_val.include?("liam-app")
                 "should_run=true"
               else
                 "should_run=false"

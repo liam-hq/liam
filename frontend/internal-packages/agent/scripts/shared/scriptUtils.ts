@@ -6,8 +6,9 @@ import type { Result } from 'neverthrow'
 import { err, errAsync, ok, okAsync, ResultAsync } from 'neverthrow'
 import { createSupabaseRepositories } from '../../src/repositories/factory'
 
-// Load environment variables from ../../../../../.env
+// Load environment variables from ../../../../../.env and .env.local
 config({ path: resolve(__dirname, '../../../../../.env') })
+config({ path: resolve(__dirname, '../../../../../.env.local') })
 
 // Type guards for safe property access
 export const isObject = (value: unknown): value is Record<string, unknown> =>
