@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import * as v from 'valibot'
 
 import { createClient } from '../../../libs/db/server'
+import { urlgen } from '../../../libs/routes/urlgen'
 import { ensureUserHasOrganization } from './ensureUserHasOrganization'
 import { sanitizeReturnPath } from './validateReturnPath'
 
@@ -30,7 +31,7 @@ export async function loginByEmail(formData: FormData) {
 
   const parsedData = v.safeParse(loginFormSchema, formDataObject)
   if (!parsedData.success) {
-    redirect('/error')
+    redirect(urlgen('error'))
   }
 
   const data = parsedData.output
@@ -38,7 +39,7 @@ export async function loginByEmail(formData: FormData) {
   const { error } = await supabase.auth.signInWithPassword(data)
 
   if (error) {
-    redirect('/error')
+    redirect(urlgen('error'))
   }
 
   await ensureUserHasOrganization()

@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import type { NextRequest } from 'next/server'
 import { sanitizeReturnPath } from '../../components/LoginPage/services/validateReturnPath'
 import { createClient } from '../../libs/db/server'
+import { urlgen } from '../../libs/routes/urlgen'
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url)
@@ -24,5 +25,5 @@ export async function GET(request: NextRequest) {
   }
 
   // redirect the user to an error page with some instructions
-  redirect('/error')
+  redirect(urlgen('error'))
 }

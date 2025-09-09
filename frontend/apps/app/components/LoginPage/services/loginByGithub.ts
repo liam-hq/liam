@@ -3,6 +3,7 @@ import { cookies, headers } from 'next/headers'
 import { redirect } from 'next/navigation'
 
 import { createClient } from '../../../libs/db/server'
+import { urlgen } from '../../../libs/routes/urlgen'
 import { sanitizeReturnPath } from './validateReturnPath'
 
 type OAuthProvider = 'github'
@@ -67,7 +68,7 @@ export async function loginByGithub(formData: FormData) {
   })
 
   if (error) {
-    redirect('/error')
+    redirect(urlgen('error'))
   }
 
   if (data.url) {
