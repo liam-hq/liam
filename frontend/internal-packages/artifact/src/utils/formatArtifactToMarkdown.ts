@@ -1,5 +1,9 @@
-import type { Artifact, TestCase } from '@liam-hq/artifact'
-import { EXECUTION_SECTION_TITLE, FAILURE_ICON, SUCCESS_ICON } from '../utils'
+import type { Artifact, TestCase } from '../schemas/artifact'
+import {
+  EXECUTION_SECTION_TITLE,
+  FAILURE_ICON,
+  SUCCESS_ICON,
+} from './constants'
 
 function formatTestCase(
   testCase: TestCase,

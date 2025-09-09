@@ -1,9 +1,11 @@
 'use client'
 
-import type { Artifact as ArtifactType } from '@liam-hq/artifact'
+import {
+  type Artifact as ArtifactType,
+  formatArtifactToMarkdown,
+} from '@liam-hq/artifact'
 import type { FC } from 'react'
 import { Artifact } from './Artifact'
-import { formatArtifactToMarkdown } from './utils/formatArtifactToMarkdown'
 
 type Props = {
   artifact: ArtifactType | null

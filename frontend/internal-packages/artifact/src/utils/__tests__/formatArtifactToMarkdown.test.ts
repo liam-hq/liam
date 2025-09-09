@@ -1,5 +1,5 @@
-import type { Artifact } from '@liam-hq/artifact'
 import { describe, expect, it } from 'vitest'
+import type { Artifact } from '../../schemas/artifact'
 import { formatArtifactToMarkdown } from '../formatArtifactToMarkdown'
 
 describe('formatArtifactToMarkdown', () => {
@@ -11,6 +11,7 @@ describe('formatArtifactToMarkdown', () => {
             'Define database requirements for consistently managing airline-owned aircraft, operated flights, and pilots (captains and first officers) involved in operations, while maintaining scheduled and actual times for flights. This enables consistent tracking of aircraft used and personnel assigned for each flight.',
           requirements: [
             {
+              id: '550e8400-e29b-41d4-a716-446655440001',
               name: 'Aircraft Management',
               description: [
                 'The company owns multiple aircraft, each with an aircraft number, model, and seating capacity. The aircraft number must be unique, and seating capacity must be an integer greater than 0.',
@@ -66,6 +67,7 @@ ORDER BY f.scheduled_departure;`,
               ],
             },
             {
+              id: '550e8400-e29b-41d4-a716-446655440002',
               name: 'Flight Information Management',
               description: [
                 'Flight information includes flight name, departure time, arrival time, origin, destination, aircraft number, captain ID, first officer ID, start time, and end time. Origin and destination cannot be the same, and scheduled times must satisfy departure time < arrival time.',
@@ -113,6 +115,7 @@ WHERE id = 'fc70279f-04d3-41ea-97e9-3a1bb7ee358f';`,
               ],
             },
             {
+              id: '550e8400-e29b-41d4-a716-446655440003',
               name: 'Pilot Management',
               description: [
                 'Each flight is operated by a captain and first officer, each with an ID, name, and phone number. Pilot IDs must be unique, and for flights, the captain ID and first officer ID cannot be the same person.',
@@ -148,6 +151,7 @@ WHERE id = 'fc70279f-04d3-41ea-97e9-3a1bb7ee358f';`,
               ],
             },
             {
+              id: '550e8400-e29b-41d4-a716-446655440004',
               name: 'Data Integrity and Validation',
               description: [
                 'Enforce referential integrity through foreign keys and implement various business rules through CHECK constraints. Protect related data with ON DELETE RESTRICT during deletions.',
@@ -176,6 +180,7 @@ WHERE id = 'fc70279f-04d3-41ea-97e9-3a1bb7ee358f';`,
               ],
             },
             {
+              id: '550e8400-e29b-41d4-a716-446655440005',
               name: 'Performance',
               description: [
                 'The system must be able to search 1000 flight records within 3 seconds and support concurrent access from 50 users.',
@@ -183,6 +188,7 @@ WHERE id = 'fc70279f-04d3-41ea-97e9-3a1bb7ee358f';`,
               type: 'non_functional',
             },
             {
+              id: '550e8400-e29b-41d4-a716-446655440006',
               name: 'Security',
               description: [
                 'Pilot personal information must be encrypted for storage and access logs must be recorded. Database access must be restricted to authenticated users only.',
@@ -377,6 +383,7 @@ WHERE id = 'fc70279f-04d3-41ea-97e9-3a1bb7ee358f';`,
           business_requirement: 'Task management system',
           requirements: [
             {
+              id: '550e8400-e29b-41d4-a716-446655440007',
               name: 'Task CRUD',
               description: ['Create, read, update, delete tasks'],
               type: 'functional',
@@ -398,6 +405,7 @@ WHERE id = 'fc70279f-04d3-41ea-97e9-3a1bb7ee358f';`,
           business_requirement: 'System optimization',
           requirements: [
             {
+              id: '550e8400-e29b-41d4-a716-446655440008',
               name: 'Security',
               description: ['All data must be encrypted'],
               type: 'non_functional',
@@ -434,23 +442,27 @@ WHERE id = 'fc70279f-04d3-41ea-97e9-3a1bb7ee358f';`,
           business_requirement: 'Multi-requirement system',
           requirements: [
             {
+              id: '550e8400-e29b-41d4-a716-446655440009',
               name: 'Feature A',
               description: ['Description A'],
               type: 'functional',
               test_cases: [],
             },
             {
+              id: '550e8400-e29b-41d4-a716-446655440010',
               name: 'Feature B',
               description: ['Description B'],
               type: 'functional',
               test_cases: [],
             },
             {
+              id: '550e8400-e29b-41d4-a716-446655440011',
               name: 'Requirement X',
               description: ['Description X'],
               type: 'non_functional',
             },
             {
+              id: '550e8400-e29b-41d4-a716-446655440012',
               name: 'Requirement Y',
               description: ['Description Y'],
               type: 'non_functional',
@@ -473,12 +485,14 @@ WHERE id = 'fc70279f-04d3-41ea-97e9-3a1bb7ee358f';`,
           business_requirement: 'Test',
           requirements: [
             {
+              id: '550e8400-e29b-41d4-a716-446655440013',
               name: 'First',
               description: ['First desc'],
               type: 'functional',
               test_cases: [],
             },
             {
+              id: '550e8400-e29b-41d4-a716-446655440014',
               name: 'Second',
               description: ['Second desc'],
               type: 'functional',
@@ -510,6 +524,7 @@ WHERE id = 'fc70279f-04d3-41ea-97e9-3a1bb7ee358f';`,
           business_requirement: 'Test',
           requirements: [
             {
+              id: '550e8400-e29b-41d4-a716-446655440015',
               name: 'Test Feature',
               description: ['Test description'],
               type: 'functional',
@@ -542,6 +557,7 @@ WHERE id = 'fc70279f-04d3-41ea-97e9-3a1bb7ee358f';`,
           business_requirement: 'Test',
           requirements: [
             {
+              id: '550e8400-e29b-41d4-a716-446655440016',
               name: 'Test Feature',
               description: ['Test description'],
               type: 'functional',
@@ -573,6 +589,7 @@ WHERE id = 'fc70279f-04d3-41ea-97e9-3a1bb7ee358f';`,
           business_requirement: 'Test',
           requirements: [
             {
+              id: '550e8400-e29b-41d4-a716-446655440017',
               name: 'Test Feature',
               description: ['Test description'],
               type: 'functional',
@@ -611,6 +628,7 @@ WHERE id = 'fc70279f-04d3-41ea-97e9-3a1bb7ee358f';`,
           business_requirement: 'Test',
           requirements: [
             {
+              id: '550e8400-e29b-41d4-a716-446655440018',
               name: 'Test Feature',
               description: ['Test description'],
               type: 'functional',
@@ -648,6 +666,7 @@ WHERE id = 'fc70279f-04d3-41ea-97e9-3a1bb7ee358f';`,
           business_requirement: 'Test',
           requirements: [
             {
+              id: '550e8400-e29b-41d4-a716-446655440019',
               name: 'Test Feature',
               description: ['Test description'],
               type: 'functional',
@@ -692,6 +711,7 @@ WHERE id = 'fc70279f-04d3-41ea-97e9-3a1bb7ee358f';`,
           business_requirement: 'Test',
           requirements: [
             {
+              id: '550e8400-e29b-41d4-a716-446655440020',
               name: 'Test Feature',
               description: ['Test description'],
               type: 'functional',
@@ -722,6 +742,7 @@ WHERE id = 'fc70279f-04d3-41ea-97e9-3a1bb7ee358f';`,
           business_requirement: 'Test',
           requirements: [
             {
+              id: '550e8400-e29b-41d4-a716-446655440021',
               name: 'Test Feature',
               description: ['Test description'],
               type: 'functional',
@@ -755,6 +776,7 @@ WHERE id = 'fc70279f-04d3-41ea-97e9-3a1bb7ee358f';`,
           business_requirement: 'Test',
           requirements: [
             {
+              id: '550e8400-e29b-41d4-a716-446655440022',
               name: 'Test Feature',
               description: ['Test description'],
               type: 'functional',
@@ -788,6 +810,7 @@ WHERE id = 'fc70279f-04d3-41ea-97e9-3a1bb7ee358f';`,
           business_requirement: 'Test',
           requirements: [
             {
+              id: '550e8400-e29b-41d4-a716-446655440023',
               name: 'Test Feature',
               description: ['Test description'],
               type: 'functional',
@@ -820,6 +843,7 @@ WHERE id = 'fc70279f-04d3-41ea-97e9-3a1bb7ee358f';`,
           business_requirement: 'Test',
           requirements: [
             {
+              id: '550e8400-e29b-41d4-a716-446655440024',
               name: 'User Management',
               description: ['User management features'],
               type: 'functional',
@@ -870,6 +894,7 @@ WHERE id = 'fc70279f-04d3-41ea-97e9-3a1bb7ee358f';`,
           business_requirement: 'Complex system',
           requirements: [
             {
+              id: '550e8400-e29b-41d4-a716-446655440025',
               name: 'Feature 1',
               description: ['First feature'],
               type: 'functional',
@@ -895,6 +920,7 @@ WHERE id = 'fc70279f-04d3-41ea-97e9-3a1bb7ee358f';`,
               ],
             },
             {
+              id: '550e8400-e29b-41d4-a716-446655440026',
               name: 'Feature 2',
               description: ['Second feature'],
               type: 'functional',
@@ -931,6 +957,7 @@ WHERE id = 'fc70279f-04d3-41ea-97e9-3a1bb7ee358f';`,
           business_requirement: 'Test all operations',
           requirements: [
             {
+              id: '550e8400-e29b-41d4-a716-446655440027',
               name: 'Test Feature',
               description: ['Test all operation types'],
               type: 'functional',
@@ -994,6 +1021,7 @@ WHERE id = 'fc70279f-04d3-41ea-97e9-3a1bb7ee358f';`,
           business_requirement: longDescription,
           requirements: [
             {
+              id: '550e8400-e29b-41d4-a716-446655440028',
               name: 'Long Feature',
               description: [longDescription],
               type: 'functional',
@@ -1032,6 +1060,7 @@ WHERE id = 'fc70279f-04d3-41ea-97e9-3a1bb7ee358f';`,
           business_requirement: 'Special chars: * _ ` # [ ] ( ) ! < >',
           requirements: [
             {
+              id: '550e8400-e29b-41d4-a716-446655440029',
               name: 'Special & Characters',
               description: ['Description with **bold** and _italic_ text'],
               type: 'functional',
