@@ -6,6 +6,9 @@ export function isValidReturnPath(path: string): boolean {
   // Empty path is invalid
   if (!path) return false
 
+  // Type check for non-string values
+  if (typeof path !== 'string') return false
+
   // Must start with / (relative path)
   if (!path.startsWith('/')) return false
 
