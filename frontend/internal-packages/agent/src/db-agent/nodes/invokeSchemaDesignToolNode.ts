@@ -83,8 +83,8 @@ export const invokeSchemaDesignToolNode = async (
     ...state,
     ...result,
     messages: messages,
-    // Reset retry counter after successful tool invocation
-    designSchemaRetryCount: 0,
+    // Preserve retry counter - will be reset only on success
+    designSchemaRetryCount: state.designSchemaRetryCount,
   }
 
   if (wasSchemaDesignToolSuccessful(messages)) {
@@ -98,14 +98,18 @@ export const invokeSchemaDesignToolNode = async (
         ...updatedResult,
         schemaData: schemaResult.value.schema,
         latestVersionNumber: schemaResult.value.latestVersionNumber,
+        // Reset retry counter only after confirmed successful tool execution
+        designSchemaRetryCount: 0,
       }
     } else {
       console.warn(
         'Failed to fetch updated schema after tool execution:',
         schemaResult.error,
       )
+      // Even though tool said success, fetching failed - keep retry counter
     }
   }
+  // If tool execution failed, retry counter is preserved
 
   return updatedResult
 }
