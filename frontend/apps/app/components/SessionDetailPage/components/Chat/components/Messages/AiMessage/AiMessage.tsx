@@ -1,10 +1,10 @@
 import type { AIMessage, ToolMessage } from '@langchain/core/messages'
+import { extractReasoningFromMessage } from '@liam-hq/agent'
 import type { FC } from 'react'
 import { match } from 'ts-pattern'
 import * as v from 'valibot'
 import { MarkdownContent } from '../../../../../../MarkdownContent'
 import {
-  extractReasoningFromMessage,
   extractResponseFromMessage,
   extractToolCallsFromMessage,
 } from '../../../../../utils'
