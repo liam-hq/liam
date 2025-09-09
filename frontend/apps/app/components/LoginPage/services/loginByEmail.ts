@@ -4,16 +4,18 @@ import * as v from 'valibot'
 
 import { createClient } from '../../../libs/db/server'
 import { ensureUserHasOrganization } from './ensureUserHasOrganization'
+import { sanitizeReturnPath } from './validateReturnPath'
 
 export async function loginByEmail(formData: FormData) {
   const supabase = await createClient()
 
-  // Get the returnTo path from the form data
+  // Get the returnTo path from the form data and sanitize it
   // This will be set by the login page which reads from the cookie
   const formReturnTo = formData.get('returnTo')
-  const returnTo = formReturnTo
-    ? formReturnTo.toString()
-    : '/design_sessions/new'
+  const returnTo = sanitizeReturnPath(
+    formReturnTo?.toString(),
+    '/design_sessions/new',
+  )
 
   const loginFormSchema = v.object({
     email: v.pipe(v.string(), v.email('Please enter a valid email address')),
