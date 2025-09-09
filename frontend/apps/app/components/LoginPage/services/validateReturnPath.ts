@@ -26,7 +26,15 @@ const noControlCharacters = v.custom<string>((value) => {
  */
 const noProtocol = v.custom<string>((value) => {
   const str = String(value)
-  return !str.includes('://')
+  // Only check the path segment before query parameters or hash
+  const queryIndex = str.indexOf('?')
+  const hashIndex = str.indexOf('#')
+  const firstDelimiter = Math.min(
+    queryIndex === -1 ? str.length : queryIndex,
+    hashIndex === -1 ? str.length : hashIndex,
+  )
+  const pathSegment = str.slice(0, firstDelimiter)
+  return !pathSegment.includes('://')
 }, 'Path must not contain protocol')
 
 /**

@@ -22,9 +22,39 @@ describe('validateReturnPath', () => {
         expect(isValidReturnPath('/search?q=test&page=2')).toBe(true)
       })
 
+      it('should accept paths with URLs in query parameters', () => {
+        expect(isValidReturnPath('/search?q=http://example.com')).toBe(true)
+        expect(
+          isValidReturnPath('/search?url=https://google.com&type=web'),
+        ).toBe(true)
+        expect(isValidReturnPath('/proxy?target=ftp://files.example.org')).toBe(
+          true,
+        )
+        expect(
+          isValidReturnPath('/search?q=test&ref=http://example.com/page'),
+        ).toBe(true)
+      })
+
       it('should accept paths with hash fragments', () => {
         expect(isValidReturnPath('/docs#section-1')).toBe(true)
         expect(isValidReturnPath('/about#team')).toBe(true)
+      })
+
+      it('should accept paths with URLs in hash fragments', () => {
+        expect(isValidReturnPath('/docs#http://example.com')).toBe(true)
+        expect(isValidReturnPath('/page#https://reference.site')).toBe(true)
+      })
+
+      it('should handle mixed query and hash with URLs correctly', () => {
+        expect(
+          isValidReturnPath('/search?q=http://example.com#https://anchor.site'),
+        ).toBe(true)
+        expect(isValidReturnPath('/page#anchor?ref=http://example.com')).toBe(
+          true,
+        )
+        // Protocol in path segment before query/hash should still be rejected
+        expect(isValidReturnPath('/http://evil.com?safe=param')).toBe(false)
+        expect(isValidReturnPath('/path/https://bad.com#anchor')).toBe(false)
       })
 
       it('should accept nested paths', () => {
@@ -124,9 +154,12 @@ describe('validateReturnPath', () => {
       })
 
       it('should reject URLs disguised as paths', () => {
+        // Protocol in path segment should be rejected
         expect(isValidReturnPath('/http://example.com')).toBe(false)
         expect(isValidReturnPath('/https://malicious.site')).toBe(false)
-        expect(isValidReturnPath('/?url=http://evil.com')).toBe(false)
+        expect(isValidReturnPath('/some/path/http://evil.com')).toBe(false)
+        // But protocol in query params is now allowed
+        expect(isValidReturnPath('/?url=http://evil.com')).toBe(true)
       })
     })
 
