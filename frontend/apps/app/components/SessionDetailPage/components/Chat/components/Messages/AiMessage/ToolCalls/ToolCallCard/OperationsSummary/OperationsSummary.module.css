@@ -1,0 +1,54 @@
+.container {
+  height: 150px; /* Fixed height to prevent layout shift */
+  overflow-y: auto;
+  padding: var(--spacing-2);
+  border-radius: var(--border-radius-base);
+  background-color: var(--color-gray-900);
+  font-size: var(--font-size-2);
+  font-family: var(--code-font);
+  color: var(--color-gray-100);
+  position: relative; /* For absolute positioning of cursor */
+}
+
+/* カスタムスクロールバー */
+.container::-webkit-scrollbar {
+  width: 6px;
+}
+
+.container::-webkit-scrollbar-track {
+  background: var(--color-gray-1000);
+  border-radius: 3px;
+}
+
+.container::-webkit-scrollbar-thumb {
+  background: var(--color-gray-500);
+  border-radius: 3px;
+}
+
+.container::-webkit-scrollbar-thumb:hover {
+  background: var(--color-gray-300);
+}
+
+.line {
+  padding: var(--spacing-1) 0;
+}
+
+.line[style] {
+  animation: fadeIn 0.3s ease forwards;
+  opacity: 0;
+}
+
+.line:not([style]) {
+  opacity: 1;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

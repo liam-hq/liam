@@ -166,6 +166,24 @@
   outline-offset: 2px;
 }
 
+.operationsBlock {
+  margin-top: var(--spacing-4);
+}
+
+.operationsHeader {
+  display: flex;
+  align-items: center;
+  margin-bottom: var(--spacing-2);
+}
+
+.operationsTitle {
+  font-size: var(--font-size-2);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-gray-300);
+}
+
 .result {
   margin-top: var(--spacing-4);
 }

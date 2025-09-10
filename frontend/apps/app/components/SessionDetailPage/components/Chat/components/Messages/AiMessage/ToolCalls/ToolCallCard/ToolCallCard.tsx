@@ -10,9 +10,10 @@ import {
   Wrench,
   X,
 } from '@liam-hq/ui'
-import { type FC, useState } from 'react'
+import { type FC, useMemo, useState } from 'react'
 import type { ToolCalls } from '../../../../../../../schema'
 import { ArgumentsDisplay } from './ArgumentsDisplay'
+import { OperationsSummary } from './OperationsSummary'
 import styles from './ToolCallCard.module.css'
 import { getToolDisplayInfo } from './utils/getToolDisplayInfo'
 import { parseToolArguments } from './utils/parseToolArguments'
@@ -51,6 +52,29 @@ export const ToolCallCard: FC<Props> = ({ toolCall, toolMessage }) => {
   const handleArgumentsOverflow = (hasOverflow: boolean) => {
     setNeedsExpandButton(hasOverflow)
   }
+
+  // Check if this tool should show operations summary
+  const shouldShowOperations = useMemo(() => {
+    const toolName = toolCall.name.toLowerCase()
+    return (
+      toolName.includes('operation') ||
+      toolName.includes('modify') ||
+      toolName.includes('update')
+    )
+  }, [toolCall.name])
+
+  // Extract operations from arguments if available
+  const operations = useMemo(() => {
+    if (!shouldShowOperations) return []
+
+    // Try to find operations in the parsed arguments
+    const args = parsedArguments
+    if (args && typeof args === 'object' && 'operations' in args) {
+      return Array.isArray(args.operations) ? args.operations : []
+    }
+
+    return []
+  }, [shouldShowOperations, parsedArguments])
 
   return (
     <div className={styles.container} data-collapsed={isCollapsed}>
@@ -116,6 +140,16 @@ export const ToolCallCard: FC<Props> = ({ toolCall, toolMessage }) => {
             toolName={toolCall.name}
           />
         </div>
+
+        {/* Operations summary display */}
+        {shouldShowOperations && operations.length > 0 && (
+          <div className={styles.operationsBlock}>
+            <div className={styles.operationsHeader}>
+              <span className={styles.operationsTitle}>OPERATIONS SUMMARY</span>
+            </div>
+            <OperationsSummary operations={operations} />
+          </div>
+        )}
 
         {/* Result display */}
         {hasResult && (
