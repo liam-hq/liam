@@ -18,6 +18,7 @@ const createDbAgentState = (
   designSessionId: 'test-session',
   next: END,
   designSchemaRetryCount,
+  schemaDesignSuccessful: false,
 })
 
 describe('routeAfterDesignSchema', () => {

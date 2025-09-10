@@ -47,5 +47,7 @@ export async function designSchemaNode(
     messages: [response],
     // Don't modify latestVersionNumber here - let invokeSchemaDesignToolNode handle it
     designSchemaRetryCount: (state.designSchemaRetryCount ?? 0) + 1,
+    // Reset success flag when retrying
+    schemaDesignSuccessful: false,
   }
 }
