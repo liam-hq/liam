@@ -42,7 +42,7 @@ export const Columns: FC<Props> = ({ table }) => {
           data-column={column.name}
           id={`${table.name}__column__${column.name}`}
         >
-          {hash === `${table.name}__column__${column.name}` && (
+          {hash === `#${table.name}__column__${column.name}` && (
             <div className={styles.blinkCircleWrapper}>
               <BlinkCircle />
             </div>
