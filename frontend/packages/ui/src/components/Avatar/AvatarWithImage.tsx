@@ -3,6 +3,7 @@
 import clsx from 'clsx'
 import type { ComponentProps } from 'react'
 import { match } from 'ts-pattern'
+import { Image } from '../Image'
 import styles from './Avatar.module.css'
 
 type AvatarSize = 'xxs' | 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl'
@@ -56,7 +57,7 @@ export const AvatarWithImage = ({
       type="button"
       {...props}
     >
-      <img
+      <Image
         src={src}
         alt={alt}
         style={{

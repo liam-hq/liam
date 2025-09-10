@@ -5,6 +5,9 @@
     "rules": {
       "nursery": {
         "useUniqueElementIds": "error"
+      },
+      "performance": {
+        "noImgElement": "error"
       }
     }
   }
