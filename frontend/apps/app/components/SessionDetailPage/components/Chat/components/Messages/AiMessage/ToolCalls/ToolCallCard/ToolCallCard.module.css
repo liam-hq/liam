@@ -51,7 +51,7 @@
 .headerLeft {
   display: flex;
   align-items: center;
-  gap: var(--spacing-1-5, 6px);
+  gap: var(--spacing-1half);
 }
 
 .headerRight {
