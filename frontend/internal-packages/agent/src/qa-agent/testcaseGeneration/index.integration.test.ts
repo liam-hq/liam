@@ -41,6 +41,7 @@ Table: tasks
 - status: varchar (not null)
       `,
       testcases: [],
+      schemaIssues: [],
     }
 
     // Act
