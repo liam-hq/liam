@@ -1,7 +1,7 @@
 import type { ToolMessage as ToolMessageType } from '@langchain/core/messages'
 import type { FC } from 'react'
 import type { ToolCalls as ToolCallsType } from '../../../../../../schema'
-import { ToolCall } from './ToolCall'
+import { ToolCallCard } from './ToolCallCard'
 import styles from './ToolCalls.module.css'
 
 type Props = {
@@ -25,11 +25,13 @@ export const ToolCalls: FC<Props> = ({ toolCalls, toolMessages }) => {
 
   return (
     <div className={styles.container}>
-      {toolCalls.map((tc, _idx) => {
+      {toolCalls.map((tc) => {
         const toolMessage = toolMessages.find(
           (msg) => msg.tool_call_id === tc.id,
         )
-        return <ToolCall key={tc.id} toolCall={tc} toolMessage={toolMessage} />
+        return (
+          <ToolCallCard key={tc.id} toolCall={tc} toolMessage={toolMessage} />
+        )
       })}
     </div>
   )
