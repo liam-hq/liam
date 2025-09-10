@@ -19,7 +19,7 @@ export const Columns: FC<Props> = ({ table }) => {
     (columnName: string) => {
       const elementId = `${table.name}__column__${columnName}`
       document.getElementById(elementId)?.scrollIntoView()
-      history.pushState(null, '', `#${elementId}`)
+      setTimeout(() => history.pushState(null, '', `#${elementId}`), 0)
     },
     [table],
   )
