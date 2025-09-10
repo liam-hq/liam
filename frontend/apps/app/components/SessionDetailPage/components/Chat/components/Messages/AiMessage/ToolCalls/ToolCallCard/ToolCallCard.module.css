@@ -7,7 +7,6 @@
 
 .container:focus-within {
   box-shadow: 0 0 0 2px var(--color-accent);
-  overflow: visible;
 }
 
 .header {
@@ -70,7 +69,7 @@
   gap: var(--spacing-md);
 }
 
-.arguments {
+.argumentsBlock {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-xs);
@@ -90,7 +89,7 @@
   letter-spacing: 0.05em;
 }
 
-.arguments pre {
+.argumentsPre {
   margin: 0;
   padding: var(--spacing-sm);
   background: var(--bg-primary);

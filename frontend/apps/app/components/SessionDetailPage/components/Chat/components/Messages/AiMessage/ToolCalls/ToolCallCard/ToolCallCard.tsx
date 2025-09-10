@@ -67,12 +67,12 @@ export const ToolCallCard: FC<Props> = ({ toolCall, toolMessage }) => {
       {!isCollapsed && (
         <div className={styles.content}>
           {/* Arguments display */}
-          <div className={styles.arguments}>
+          <div className={styles.argumentsBlock}>
             <div className={styles.argumentsHeader}>
               <span className={styles.argumentsTitle}>ARGUMENTS</span>
             </div>
             <div className={styles.content}>
-              <pre className={styles.arguments}>
+              <pre className={styles.argumentsPre}>
                 {JSON.stringify(parsedArguments, null, 2)}
               </pre>
             </div>
