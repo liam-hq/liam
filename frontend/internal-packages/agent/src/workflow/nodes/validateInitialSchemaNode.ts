@@ -1,5 +1,5 @@
 import { dispatchCustomEvent } from '@langchain/core/callbacks/dispatch'
-import { AIMessage } from '@langchain/core/messages'
+import { SystemMessage } from '@langchain/core/messages'
 import { RunnableLambda } from '@langchain/core/runnables'
 import { END } from '@langchain/langgraph'
 import { executeQuery } from '@liam-hq/pglite-server'
@@ -16,18 +16,36 @@ const MESSAGE_TEMPLATES = {
   EXISTING_SCHEMA_SUCCESS:
     '**Instant Database Ready**\n\nLive PostgreSQL environment with your schema active.\nSchema design operations enabled.',
   VALIDATION_ERROR: (errorDetails: string, errorType: 'ddl' | 'sql' = 'sql') =>
-    `**Instant Database Startup Failed**\n\nSchema validation errors detected:\n\n\`\`\`${errorType}\n${errorDetails}\n\`\`\`\n\n**Required Actions:**\n• Fix schema syntax errors\n• Update schema definition\n• Resubmit request after corrections\n\nThank you for helping us create the perfect database environment for your project.`,
+    `**Instant Database Startup Failed**
+
+Schema validation errors detected:
+
+\`\`\`${errorType}
+${errorDetails}
+\`\`\`
+
+**Required Actions:**
+- Fix schema syntax errors
+- Update schema definition  
+- Resubmit request after corrections
+
+Thank you for helping us create the perfect database environment for your project.`,
 } as const
+
+type MessageType = 'error' | 'success' | 'info'
 
 async function createAndDispatchMessage(
   content: string,
   state: WorkflowState,
+  messageType: MessageType,
   next?: string | typeof END,
 ): Promise<WorkflowState> {
-  const message = new AIMessage({
+  const message = new SystemMessage({
     id: crypto.randomUUID(),
     content,
-    name: 'DatabaseManager',
+    additional_kwargs: {
+      messageType,
+    },
   })
 
   await dispatchCustomEvent(SSE_EVENTS.MESSAGES, message)
@@ -46,6 +64,7 @@ async function validateInitialSchemaLogic(
     return await createAndDispatchMessage(
       MESSAGE_TEMPLATES.EMPTY_SCHEMA_SUCCESS,
       state,
+      'info',
       'leadAgent',
     )
   }
@@ -60,6 +79,7 @@ async function validateInitialSchemaLogic(
     return await createAndDispatchMessage(
       MESSAGE_TEMPLATES.VALIDATION_ERROR(errorDetails, 'ddl'),
       state,
+      'error',
       END,
     )
   }
@@ -81,6 +101,7 @@ async function validateInitialSchemaLogic(
     return await createAndDispatchMessage(
       MESSAGE_TEMPLATES.VALIDATION_ERROR(errorDetails, 'sql'),
       state,
+      'error',
       END,
     )
   }
@@ -88,6 +109,7 @@ async function validateInitialSchemaLogic(
   return await createAndDispatchMessage(
     MESSAGE_TEMPLATES.EXISTING_SCHEMA_SUCCESS,
     state,
+    'info',
   )
 }
 
