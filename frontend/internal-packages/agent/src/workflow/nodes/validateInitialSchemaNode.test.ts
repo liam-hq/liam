@@ -42,9 +42,12 @@ describe('validateInitialSchemaNode Integration', () => {
 
       const result = await graph.invoke(state, config)
 
-      // Assert
-      // Empty schema should return unchanged state
-      expect(result).toEqual(state)
+      expect(result.messages).toHaveLength(2)
+      expect(result.messages[1]).toMatchObject({
+        content: expect.stringContaining('**Instant Database Ready**'),
+        name: 'DatabaseManager',
+      })
+      expect(result.next).toBe('leadAgent')
     })
 
     it('should validate existing schema successfully', async () => {
@@ -96,12 +99,17 @@ describe('validateInitialSchemaNode Integration', () => {
 
       const result = await graph.invoke(state, config)
 
-      expect(result).toEqual(state)
+      expect(result.messages).toHaveLength(2)
+      expect(result.messages[1]).toMatchObject({
+        content: expect.stringContaining('**Instant Database Ready**'),
+        name: 'DatabaseManager',
+      })
+      expect(result.next).toBe('leadAgent')
     }, 30000) // 30 second timeout for CI/preview environments
   })
 
   describe('Non-first execution scenarios', () => {
-    it('should skip validation when AI messages already exist', async () => {
+    it('should still validate when called directly (routing logic tested elsewhere)', async () => {
       const graph = new StateGraph(workflowAnnotation)
         .addNode('validateInitialSchema', validateInitialSchemaNode)
         .addEdge(START, 'validateInitialSchema')
@@ -149,7 +157,12 @@ describe('validateInitialSchemaNode Integration', () => {
 
       const result = await graph.invoke(state, config)
 
-      expect(result).toEqual(state)
+      expect(result.messages).toHaveLength(4)
+      expect(result.messages[3]).toMatchObject({
+        content: expect.stringContaining('**Instant Database Ready**'),
+        name: 'DatabaseManager',
+      })
+      expect(result.next).toBe('leadAgent')
     }, 30000) // 30 second timeout for CI/preview environments
   })
 
@@ -190,9 +203,14 @@ describe('validateInitialSchemaNode Integration', () => {
         next: 'leadAgent',
       }
 
-      await expect(validateInitialSchemaNode(state)).rejects.toThrowError(
-        'Error in validateInitialSchemaNode: Schema validation failed: {"error":"type \\"unknown_invalid_type\\" does not exist"}',
-      )
+      const result = await validateInitialSchemaNode.invoke(state)
+
+      expect(result.messages).toHaveLength(2)
+      expect(result.messages[1]).toMatchObject({
+        content: expect.stringContaining('**Instant Database Startup Failed**'),
+        name: 'DatabaseManager',
+      })
+      expect(result.next).toBe(END)
     }, 30000) // 30 second timeout for CI/preview environments
   })
 })
