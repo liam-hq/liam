@@ -60,7 +60,9 @@ const formatColumnMessage = (path: string, value: unknown): string => {
 const formatIndexMessage = (path: string, value: unknown): string => {
   const indexName = extractIndexName(path)
   const indexInfo = isIndexInfo(value) ? value : {}
-  const columns = indexInfo.columns ? indexInfo.columns.join(', ') : ''
+  const columns = Array.isArray(indexInfo.columns)
+    ? indexInfo.columns.join(', ')
+    : ''
   return `  Adding index '${indexName}'${columns ? ` on (${columns})` : ''}`
 }
 

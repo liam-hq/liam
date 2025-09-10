@@ -39,6 +39,28 @@ export const OperationsSummary: FC<Props> = ({
   )
   const scrollRef = useRef<HTMLDivElement>(null)
   const hasStarted = useRef(false)
+  const timerRef = useRef<NodeJS.Timeout | null>(null)
+
+  // Reset state when operations or isAnimated changes
+  useEffect(() => {
+    // Clear any active timer
+    if (timerRef.current) {
+      clearTimeout(timerRef.current)
+      timerRef.current = null
+    }
+
+    // Reset state based on isAnimated flag
+    if (isAnimated) {
+      setDisplayedLines([])
+      setCurrentIndex(0)
+    } else {
+      setDisplayedLines(summaryLines)
+      setCurrentIndex(summaryLines.length)
+    }
+
+    // Reset hasStarted flag
+    hasStarted.current = false
+  }, [summaryLines, isAnimated])
 
   useEffect(() => {
     // Skip animation if not animated
@@ -62,7 +84,13 @@ export const OperationsSummary: FC<Props> = ({
         }
       }, 200) // Add one line every 200ms (slower for better readability)
 
-      return () => clearTimeout(timer)
+      timerRef.current = timer
+      return () => {
+        clearTimeout(timer)
+        if (timerRef.current === timer) {
+          timerRef.current = null
+        }
+      }
     }
     return undefined
   }, [currentIndex, summaryLines, isAnimated])
