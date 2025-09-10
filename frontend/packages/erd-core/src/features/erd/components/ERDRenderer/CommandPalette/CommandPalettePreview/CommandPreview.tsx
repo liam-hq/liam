@@ -1,8 +1,36 @@
 import type { FC } from 'react'
+import { useState } from 'react'
 import styles from './CommandPalettePreview.module.css'
 
 type Props = {
   commandName: string
+}
+
+type CommandImageProps = {
+  src: string
+  alt: string
+  className?: string
+}
+
+const CommandImage: FC<CommandImageProps> = ({ src, alt, className }) => {
+  const [loaded, setLoaded] = useState(false)
+
+  const handleImageLoad = () => {
+    setLoaded(true)
+  }
+
+  return (
+    // biome-ignore lint/performance/noImgElement: This is an optimized wrapper component that adds lazy loading and opacity transitions
+    <img
+      src={src}
+      alt={alt}
+      className={className}
+      loading="lazy"
+      decoding="async"
+      onLoad={handleImageLoad}
+      style={{ opacity: loaded ? 1 : 0.7 }}
+    />
+  )
 }
 
 const COMMAND_VIDEO_SOURCE: Record<string, string> = {
@@ -37,7 +65,7 @@ export const CommandPreview: FC<Props> = ({ commandName }) => {
         </video>
       )}
       {COMMAND_IMAGE_SOURCE[commandName] && (
-        <img
+        <CommandImage
           src={COMMAND_IMAGE_SOURCE[commandName]}
           className={styles.image}
           alt={`Demonstration of the ${commandName} command execution result`}

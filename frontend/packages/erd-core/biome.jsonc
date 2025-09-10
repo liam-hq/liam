@@ -5,6 +5,9 @@
     "rules": {
       "correctness": {
         "noNodejsModules": "error"
+      },
+      "performance": {
+        "noImgElement": "error"
       }
     }
   },
