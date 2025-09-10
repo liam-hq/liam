@@ -2,6 +2,9 @@ import { resolve } from 'node:path'
 import { config } from 'dotenv'
 import { defineConfig } from 'vitest/config'
 
+config({ path: resolve(__dirname, '../../../.env') })
+config({ path: resolve(__dirname, '../../../.env.local') })
+
 export default defineConfig({
   test: {
     globals: true,
@@ -16,10 +19,6 @@ export default defineConfig({
       // Setting this to 'false' ensures callbacks complete before test finishes
       // Reference: https://js.langchain.com/docs/how_to/callbacks_serverless
       LANGCHAIN_CALLBACKS_BACKGROUND: 'false',
-      ...config({ path: resolve(__dirname, '../../../.env') }).parsed,
-      ...config({
-        path: resolve(__dirname, '../../../.env.local'),
-      }).parsed,
     },
   },
 })
