@@ -64,7 +64,14 @@ export const createGraph = (checkpointer?: BaseCheckpointSaver) => {
         leadAgent: 'leadAgent',
       },
     )
-    .addEdge('validateInitialSchema', 'leadAgent')
+    .addConditionalEdges(
+      'validateInitialSchema',
+      (state) => state.next || 'leadAgent',
+      {
+        leadAgent: 'leadAgent',
+        [END]: END,
+      },
+    )
 
     .addConditionalEdges('leadAgent', (state) => state.next, {
       pmAgent: 'pmAgent',

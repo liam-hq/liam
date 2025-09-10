@@ -1,37 +1,67 @@
+import { dispatchCustomEvent } from '@langchain/core/callbacks/dispatch'
+import { AIMessage } from '@langchain/core/messages'
+import { RunnableLambda } from '@langchain/core/runnables'
+import { END } from '@langchain/langgraph'
 import { executeQuery } from '@liam-hq/pglite-server'
 import { isEmptySchema, postgresqlSchemaDeparser } from '@liam-hq/schema'
+import { SSE_EVENTS } from '../../client'
 import type { WorkflowState } from '../../types'
-import { WorkflowTerminationError } from '../../utils/errorHandling'
-
-const createValidationError = (
-  error: Error | string,
-): WorkflowTerminationError => {
-  const errorInstance = error instanceof Error ? error : new Error(error)
-  return new WorkflowTerminationError(
-    errorInstance,
-    'validateInitialSchemaNode',
-  )
-}
 
 /**
- * Validates initial schema and provides Instant Database initialization experience.
- * Only runs on first workflow execution.
+ * Message templates for DatabaseManager
  */
-export async function validateInitialSchemaNode(
+const MESSAGE_TEMPLATES = {
+  EMPTY_SCHEMA_SUCCESS:
+    '**Instant Database Ready**\n\nFresh PostgreSQL environment initialized.\nReady to design your schema from scratch.',
+  EXISTING_SCHEMA_SUCCESS:
+    '**Instant Database Ready**\n\nLive PostgreSQL environment with your schema active.\nSchema design operations enabled.',
+  VALIDATION_ERROR: (errorDetails: string, errorType: 'ddl' | 'sql' = 'sql') =>
+    `**Instant Database Startup Failed**\n\nSchema validation errors detected:\n\n\`\`\`${errorType}\n${errorDetails}\n\`\`\`\n\n**Required Actions:**\n• Fix schema syntax errors\n• Update schema definition\n• Resubmit request after corrections\n\nThank you for helping us create the perfect database environment for your project.`,
+} as const
+
+async function createAndDispatchMessage(
+  content: string,
+  state: WorkflowState,
+  next?: string | typeof END,
+): Promise<WorkflowState> {
+  const message = new AIMessage({
+    id: crypto.randomUUID(),
+    content,
+    name: 'DatabaseManager',
+  })
+
+  await dispatchCustomEvent(SSE_EVENTS.MESSAGES, message)
+
+  return {
+    ...state,
+    messages: [...state.messages, message],
+    ...(next && { next }),
+  }
+}
+
+async function validateInitialSchemaLogic(
   state: WorkflowState,
 ): Promise<WorkflowState> {
   if (isEmptySchema(state.schemaData)) {
-    // TODO: Add message creation in next PR
-    return state
+    return await createAndDispatchMessage(
+      MESSAGE_TEMPLATES.EMPTY_SCHEMA_SUCCESS,
+      state,
+      'leadAgent',
+    )
   }
 
   const ddlResult = postgresqlSchemaDeparser(state.schemaData)
 
   if (ddlResult.errors.length > 0) {
-    const errorMessage = ddlResult.errors
+    const errorDetails = ddlResult.errors
       .map((error) => error.message)
       .join('; ')
-    throw createValidationError(`Schema deparser failed: ${errorMessage}`)
+
+    return await createAndDispatchMessage(
+      MESSAGE_TEMPLATES.VALIDATION_ERROR(errorDetails, 'ddl'),
+      state,
+      END,
+    )
   }
 
   const ddlStatements = ddlResult.value
@@ -43,14 +73,29 @@ export async function validateInitialSchemaNode(
     ddlStatements,
     requiredExtensions,
   )
-  const hasErrors = validationResults.some((result) => !result.success)
 
-  if (hasErrors) {
-    const errorResult = validationResults.find((result) => !result.success)
-    const errorMessage = JSON.stringify(errorResult?.result)
-    throw createValidationError(`Schema validation failed: ${errorMessage}`)
+  const failedResult = validationResults.find((result) => !result.success)
+  if (failedResult) {
+    const errorDetails = JSON.stringify(failedResult.result)
+
+    return await createAndDispatchMessage(
+      MESSAGE_TEMPLATES.VALIDATION_ERROR(errorDetails, 'sql'),
+      state,
+      END,
+    )
   }
 
-  // TODO: Add message creation in next PR
-  return state
+  return await createAndDispatchMessage(
+    MESSAGE_TEMPLATES.EXISTING_SCHEMA_SUCCESS,
+    state,
+  )
 }
+
+/**
+ * Validates initial schema and provides Instant Database initialization experience.
+ * Only runs on first workflow execution.
+ * Exported as RunnableLambda to enable dispatchCustomEvent usage.
+ */
+export const validateInitialSchemaNode = RunnableLambda.from(
+  validateInitialSchemaLogic,
+)
