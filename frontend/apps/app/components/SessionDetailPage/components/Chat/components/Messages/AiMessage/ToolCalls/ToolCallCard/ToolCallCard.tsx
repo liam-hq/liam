@@ -34,54 +34,54 @@ export const ToolCallCard: FC<Props> = ({ toolCall, toolMessage }) => {
   }
 
   return (
-    <div className={styles.container}>
+    <div className={styles.container} data-collapsed={isCollapsed}>
       <button
         type="button"
         className={styles.header}
         onClick={handleToggle}
         aria-expanded={!isCollapsed}
       >
-        <div className={styles.headerLeft}>
-          <div className={styles.iconWrapper}>
-            <Wrench className={styles.icon} size={16} />
+        <div className={styles.headerContent}>
+          <div className={styles.headerLeft}>
             {isCollapsed ? (
               <ChevronRight className={styles.chevron} size={16} />
             ) : (
               <ChevronDown className={styles.chevron} size={16} />
             )}
+            <div className={styles.iconWrapper}>
+              <Wrench className={styles.icon} size={16} />
+            </div>
+            <div className={styles.titleWrapper}>
+              <span className={styles.toolName}>{toolInfo.displayName}</span>
+            </div>
           </div>
-          <div className={styles.titleWrapper}>
-            <span className={styles.toolName}>{toolInfo.displayName}</span>
+          <div className={styles.headerRight}>
+            {hasResult &&
+              (isSuccess ? (
+                <Check className={styles.icon} size={16} />
+              ) : (
+                <X className={styles.icon} size={16} />
+              ))}
           </div>
-        </div>
-        <div className={styles.headerRight}>
-          {hasResult &&
-            (isSuccess ? (
-              <Check className={styles.icon} size={16} />
-            ) : (
-              <X className={styles.icon} size={16} />
-            ))}
         </div>
       </button>
 
-      {!isCollapsed && (
-        <div className={styles.content}>
-          {/* Arguments display */}
-          <div className={styles.argumentsBlock}>
-            <div className={styles.argumentsHeader}>
-              <span className={styles.argumentsTitle}>ARGUMENTS</span>
-            </div>
-            <div className={styles.content}>
-              <pre className={styles.argumentsPre}>
-                {JSON.stringify(parsedArguments, null, 2)}
-              </pre>
-            </div>
+      <div className={styles.content}>
+        {/* Arguments display */}
+        <div className={styles.argumentsBlock}>
+          <div className={styles.argumentsHeader}>
+            <span className={styles.argumentsTitle}>ARGUMENTS</span>
           </div>
+          <pre className={styles.argumentsPre}>
+            {JSON.stringify(parsedArguments, null, 2)}
+          </pre>
+        </div>
 
-          {/* Result display */}
-          {hasResult && (
-            <div className={styles.result}>
-              <div className={styles.resultHeader}>
+        {/* Result display */}
+        {hasResult && (
+          <div className={styles.result}>
+            <div className={styles.resultHeader}>
+              <div className={styles.resultTitleWrapper}>
                 <span className={styles.resultTitle}>RESULT</span>
                 {isSuccess ? (
                   <Check className={styles.resultSuccessIcon} size={12} />
@@ -89,17 +89,17 @@ export const ToolCallCard: FC<Props> = ({ toolCall, toolMessage }) => {
                   <X className={styles.resultErrorIcon} size={12} />
                 )}
               </div>
-              <div className={styles.resultContent}>
-                <pre className={styles.resultPre}>
-                  {typeof result === 'string'
-                    ? result
-                    : JSON.stringify(result, null, 2)}
-                </pre>
-              </div>
             </div>
-          )}
-        </div>
-      )}
+            <div className={styles.resultContent}>
+              <pre className={styles.resultPre}>
+                {typeof result === 'string'
+                  ? result
+                  : JSON.stringify(result, null, 2)}
+              </pre>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   )
 }
