@@ -81,6 +81,7 @@ describe('invokeSchemaDesignToolNode Integration', () => {
       organizationId: context.organizationId,
       next: END,
       designSchemaRetryCount: 0,
+      schemaDesignSuccessful: false,
     }
 
     // Act
@@ -141,6 +142,7 @@ describe('invokeSchemaDesignToolNode Integration', () => {
       organizationId: context.organizationId,
       next: END,
       designSchemaRetryCount: 0,
+      schemaDesignSuccessful: false,
     }
 
     // Act

@@ -19,6 +19,12 @@ export const dbAgentAnnotation = Annotation.Root({
     reducer: (current, update) => update ?? current ?? 0,
     default: () => 0,
   }),
+
+  // Flag to indicate successful schema design tool execution
+  schemaDesignSuccessful: Annotation<boolean>({
+    reducer: (current, update) => update ?? current ?? false,
+    default: () => false,
+  }),
 })
 
 export type DbAgentState = typeof dbAgentAnnotation.State
