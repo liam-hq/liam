@@ -6,16 +6,27 @@ import { CopyButton } from '../../../../CopyButton'
 import markdownStyles from '../Markdown.module.css'
 import styles from './SystemMessage.module.css'
 
+type MessageType = 'error' | 'success' | 'info'
+
+type SystemMessageAdditionalKwargs = {
+  messageType?: MessageType
+}
+
+type TypedSystemMessage = BaseMessage & {
+  additional_kwargs?: SystemMessageAdditionalKwargs
+}
+
 type Props = {
-  message: BaseMessage
+  message: TypedSystemMessage
 }
 
 export const SystemMessage: FC<Props> = ({ message }) => {
   const messageContent =
     typeof message.content === 'string' ? message.content : ''
 
-  // Get message type from additional_kwargs for styling
-  const messageType = message.additional_kwargs?.messageType
+  // Get message type from additional_kwargs for styling with type safety
+  const messageType: MessageType | undefined =
+    message.additional_kwargs?.messageType
   const isErrorMessage = messageType === 'error'
   const isSuccessMessage = messageType === 'success'
   const isInfoMessage = messageType === 'info'
