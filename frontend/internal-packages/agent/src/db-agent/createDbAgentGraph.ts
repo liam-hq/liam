@@ -37,7 +37,9 @@ export const createDbAgentGraph = (checkpointer?: BaseCheckpointSaver) => {
     .addEdge(START, 'designSchema')
     .addConditionalEdges('designSchema', routeAfterDesignSchema, {
       invokeSchemaDesignTool: 'invokeSchemaDesignTool',
-      generateTestcase: END,
+      // Note: After successful schema design, the workflow ends here.
+      // Actual test case generation is handled by QA Agent in the parent workflow.
+      END: END,
       designSchema: 'designSchema', // Self-loop for retry
     })
     .addConditionalEdges(
