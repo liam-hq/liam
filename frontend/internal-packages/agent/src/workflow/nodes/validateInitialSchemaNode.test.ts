@@ -1,4 +1,8 @@
-import { AIMessage, HumanMessage } from '@langchain/core/messages'
+import {
+  AIMessage,
+  HumanMessage,
+  SystemMessage,
+} from '@langchain/core/messages'
 import { END, START, StateGraph } from '@langchain/langgraph'
 import { aColumn, aSchema, aTable } from '@liam-hq/schema'
 import { describe, expect, it } from 'vitest'
@@ -43,9 +47,12 @@ describe('validateInitialSchemaNode Integration', () => {
       const result = await graph.invoke(state, config)
 
       expect(result.messages).toHaveLength(2)
+      expect(result.messages[1]).toBeInstanceOf(SystemMessage)
       expect(result.messages[1]).toMatchObject({
         content: expect.stringContaining('**Instant Database Ready**'),
-        name: 'DatabaseManager',
+        additional_kwargs: {
+          messageType: 'info',
+        },
       })
       expect(result.next).toBe('leadAgent')
     })
@@ -100,9 +107,12 @@ describe('validateInitialSchemaNode Integration', () => {
       const result = await graph.invoke(state, config)
 
       expect(result.messages).toHaveLength(2)
+      expect(result.messages[1]).toBeInstanceOf(SystemMessage)
       expect(result.messages[1]).toMatchObject({
         content: expect.stringContaining('**Instant Database Ready**'),
-        name: 'DatabaseManager',
+        additional_kwargs: {
+          messageType: 'info',
+        },
       })
       expect(result.next).toBe('leadAgent')
     }, 30000) // 30 second timeout for CI/preview environments
@@ -158,9 +168,12 @@ describe('validateInitialSchemaNode Integration', () => {
       const result = await graph.invoke(state, config)
 
       expect(result.messages).toHaveLength(4)
+      expect(result.messages[3]).toBeInstanceOf(SystemMessage)
       expect(result.messages[3]).toMatchObject({
         content: expect.stringContaining('**Instant Database Ready**'),
-        name: 'DatabaseManager',
+        additional_kwargs: {
+          messageType: 'info',
+        },
       })
       expect(result.next).toBe('leadAgent')
     }, 30000) // 30 second timeout for CI/preview environments
@@ -206,9 +219,12 @@ describe('validateInitialSchemaNode Integration', () => {
       const result = await validateInitialSchemaNode.invoke(state)
 
       expect(result.messages).toHaveLength(2)
+      expect(result.messages[1]).toBeInstanceOf(SystemMessage)
       expect(result.messages[1]).toMatchObject({
         content: expect.stringContaining('**Instant Database Startup Failed**'),
-        name: 'DatabaseManager',
+        additional_kwargs: {
+          messageType: 'error',
+        },
       })
       expect(result.next).toBe(END)
     }, 30000) // 30 second timeout for CI/preview environments
