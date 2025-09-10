@@ -1,9 +1,18 @@
 'use client'
 
 import type { ToolMessage as ToolMessageType } from '@langchain/core/messages'
-import { Check, ChevronDown, ChevronRight, Wrench, X } from '@liam-hq/ui'
+import {
+  Check,
+  ChevronDown,
+  ChevronRight,
+  FoldVertical,
+  UnfoldVertical,
+  Wrench,
+  X,
+} from '@liam-hq/ui'
 import { type FC, useState } from 'react'
 import type { ToolCalls } from '../../../../../../../schema'
+import { ArgumentsDisplay } from './ArgumentsDisplay'
 import styles from './ToolCallCard.module.css'
 import { getToolDisplayInfo } from './utils/getToolDisplayInfo'
 import { parseToolArguments } from './utils/parseToolArguments'
@@ -17,6 +26,8 @@ type Props = {
 
 export const ToolCallCard: FC<Props> = ({ toolCall, toolMessage }) => {
   const [isCollapsed, setIsCollapsed] = useState(false)
+  const [isArgumentsExpanded, setIsArgumentsExpanded] = useState(false)
+  const [needsExpandButton, setNeedsExpandButton] = useState(false)
 
   // Parse arguments
   const parsedArguments = parseToolArguments(toolCall.args)
@@ -31,6 +42,14 @@ export const ToolCallCard: FC<Props> = ({ toolCall, toolMessage }) => {
 
   const handleToggle = () => {
     setIsCollapsed((prev) => !prev)
+  }
+
+  const handleToggleArgumentsExpand = () => {
+    setIsArgumentsExpanded((prev) => !prev)
+  }
+
+  const handleArgumentsOverflow = (hasOverflow: boolean) => {
+    setNeedsExpandButton(hasOverflow)
   }
 
   return (
@@ -71,10 +90,31 @@ export const ToolCallCard: FC<Props> = ({ toolCall, toolMessage }) => {
         <div className={styles.argumentsBlock}>
           <div className={styles.argumentsHeader}>
             <span className={styles.argumentsTitle}>ARGUMENTS</span>
+            {needsExpandButton && (
+              <button
+                className={styles.argumentsExpandButton}
+                onClick={handleToggleArgumentsExpand}
+                aria-label={
+                  isArgumentsExpanded
+                    ? 'Collapse arguments'
+                    : 'Expand arguments'
+                }
+                type="button"
+              >
+                {isArgumentsExpanded ? (
+                  <FoldVertical size={14} />
+                ) : (
+                  <UnfoldVertical size={14} />
+                )}
+              </button>
+            )}
           </div>
-          <pre className={styles.argumentsPre}>
-            {JSON.stringify(parsedArguments, null, 2)}
-          </pre>
+          <ArgumentsDisplay
+            args={parsedArguments}
+            isExpanded={isArgumentsExpanded}
+            onOverflowDetected={handleArgumentsOverflow}
+            toolName={toolCall.name}
+          />
         </div>
 
         {/* Result display */}

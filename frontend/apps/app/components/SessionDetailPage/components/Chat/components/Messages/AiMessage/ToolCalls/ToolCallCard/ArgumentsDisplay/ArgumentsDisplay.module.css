@@ -1,0 +1,88 @@
+.wrapper {
+  position: relative;
+  border-radius: var(--border-radius-base);
+  background-color: var(--color-gray-1000);
+  padding: var(--spacing-2);
+}
+
+.container {
+  font-size: var(--font-size-2);
+  font-family: var(--code-font);
+  color: var(--color-gray-100);
+  overflow-x: auto;
+  overflow-y: auto;
+  max-width: 100%;
+  /* Smoother expand/collapse animation */
+  transition: max-height 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  /* Add small padding to ensure full scroll */
+  padding-bottom: 1px;
+  box-sizing: border-box;
+}
+
+/* Gradient overlays */
+.wrapper {
+  position: relative;
+}
+
+.gradientTop,
+.gradientBottom {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 30px;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.gradientTop {
+  top: 0;
+  background: linear-gradient(
+    180deg,
+    var(--color-gray-1000) 0%,
+    var(--color-gray-1000-alpha-90, rgba(16, 19, 21, 0.9)) 30%,
+    var(--color-gray-1000-alpha-60, rgba(16, 19, 21, 0.6)) 60%,
+    transparent 100%
+  );
+}
+
+.gradientBottom {
+  bottom: 0;
+  background: linear-gradient(
+    0deg,
+    var(--color-gray-1000) 0%,
+    var(--color-gray-1000-alpha-90, rgba(16, 19, 21, 0.9)) 30%,
+    var(--color-gray-1000-alpha-60, rgba(16, 19, 21, 0.6)) 60%,
+    transparent 100%
+  );
+}
+
+/* Custom scrollbar */
+.container::-webkit-scrollbar {
+  width: 6px;
+}
+
+.container::-webkit-scrollbar-track {
+  background: var(--color-gray-1000);
+  border-radius: 3px;
+}
+
+.container::-webkit-scrollbar-thumb {
+  background: var(--color-gray-500);
+  border-radius: 3px;
+}
+
+.container::-webkit-scrollbar-thumb:hover {
+  background: var(--color-gray-300);
+}
+
+/* Animation for fade in */
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}

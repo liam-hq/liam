@@ -124,7 +124,9 @@
 .argumentsHeader {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   margin-bottom: var(--spacing-2);
+  height: 22px; /* Fixed height to prevent layout shift */
 }
 
 .argumentsTitle {
@@ -135,16 +137,33 @@
   color: var(--color-gray-300);
 }
 
-.argumentsPre {
-  margin: 0;
-  padding: var(--spacing-3);
-  border-radius: var(--border-radius-base);
-  background-color: var(--color-gray-1000);
-  font-size: var(--font-size-3);
-  font-family: var(--font-family-mono);
+.argumentsExpandButton {
+  background: transparent;
+  border: none;
+  padding: var(--spacing-1);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-gray-400);
+  transition:
+    color 0.15s ease,
+    transform 0.15s ease;
+  border-radius: var(--border-radius-sm);
+}
+
+.argumentsExpandButton:hover {
   color: var(--color-gray-100);
-  overflow-x: auto;
-  line-height: 1.5;
+  transform: scale(1.1);
+}
+
+.argumentsExpandButton:focus {
+  outline: none;
+}
+
+.argumentsExpandButton:focus-visible {
+  outline: 2px solid var(--color-blue-500);
+  outline-offset: 2px;
 }
 
 .result {
