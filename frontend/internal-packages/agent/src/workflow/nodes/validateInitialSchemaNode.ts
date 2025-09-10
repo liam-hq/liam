@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto'
 import { dispatchCustomEvent } from '@langchain/core/callbacks/dispatch'
 import { SystemMessage } from '@langchain/core/messages'
 import { RunnableLambda } from '@langchain/core/runnables'
@@ -41,7 +42,7 @@ async function createAndDispatchMessage(
   next?: string | typeof END,
 ): Promise<WorkflowState> {
   const message = new SystemMessage({
-    id: crypto.randomUUID(),
+    id: randomUUID(),
     content,
     additional_kwargs: {
       messageType,
