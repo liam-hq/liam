@@ -1,10 +1,10 @@
 import type { RunnableConfig } from '@langchain/core/runnables'
-import { convertSchemaToText } from '../../utils/convertSchemaToText'
-import { WorkflowTerminationError } from '../../utils/errorHandling'
-import { getConfigurable } from '../../utils/getConfigurable'
-import { removeReasoningFromMessages } from '../../utils/messageCleanup'
-import { invokeDesignAgent } from '../invokeDesignAgent'
-import type { DbAgentState } from '../shared/dbAgentAnnotation'
+import { convertSchemaToText } from '../../../utils/convertSchemaToText'
+import { WorkflowTerminationError } from '../../../utils/errorHandling'
+import { getConfigurable } from '../../../utils/getConfigurable'
+import { removeReasoningFromMessages } from '../../../utils/messageCleanup'
+import type { DbAgentState } from '../../shared/dbAgentAnnotation'
+import { invokeDesignAgent } from './invokeDesignAgent'
 
 /**
  * Design Schema Node - DB Design & DDL Execution

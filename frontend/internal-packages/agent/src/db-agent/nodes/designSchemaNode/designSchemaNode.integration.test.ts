@@ -4,9 +4,9 @@ import { describe, it } from 'vitest'
 import {
   getTestConfig,
   outputStreamEvents,
-} from '../../../test-utils/workflowTestHelpers'
-import type { WorkflowState } from '../../types'
-import { workflowAnnotation } from '../../workflowAnnotation'
+} from '../../../../test-utils/workflowTestHelpers'
+import type { WorkflowState } from '../../../types'
+import { workflowAnnotation } from '../../../workflowAnnotation'
 import { designSchemaNode } from './designSchemaNode'
 
 describe('designSchemaNode Integration', () => {
