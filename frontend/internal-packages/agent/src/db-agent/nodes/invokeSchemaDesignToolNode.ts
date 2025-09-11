@@ -21,12 +21,34 @@ const isToolMessage = (message: BaseMessage): message is ToolMessage => {
  */
 const wasSchemaDesignToolSuccessful = (messages: BaseMessage[]): boolean => {
   const toolMessages = messages.filter(isToolMessage)
-  return toolMessages.some(
+  console.info(
+    `[wasSchemaDesignToolSuccessful] Found ${toolMessages.length} tool messages at ${new Date().toISOString()}`,
+  )
+
+  for (const msg of toolMessages) {
+    console.info(
+      `[wasSchemaDesignToolSuccessful] Tool message: name="${msg.name}", content type="${typeof msg.content}", content="${msg.content}" at ${new Date().toISOString()}`,
+    )
+    if (msg.name === 'schemaDesignTool' && typeof msg.content === 'string') {
+      const hasSuccessMessage = msg.content.includes(
+        'Schema successfully updated',
+      )
+      console.info(
+        `[wasSchemaDesignToolSuccessful] schemaDesignTool message found, hasSuccessMessage: ${hasSuccessMessage} at ${new Date().toISOString()}`,
+      )
+    }
+  }
+
+  const result = toolMessages.some(
     (msg) =>
       msg.name === 'schemaDesignTool' &&
       typeof msg.content === 'string' &&
       msg.content.includes('Schema successfully updated'),
   )
+  console.info(
+    `[wasSchemaDesignToolSuccessful] Returning: ${result} at ${new Date().toISOString()}`,
+  )
+  return result
 }
 
 /**
@@ -48,8 +70,15 @@ export const invokeSchemaDesignToolNode = async (
   state: DbAgentState,
   config: RunnableConfig,
 ) => {
+  console.info(
+    `[invokeSchemaDesignToolNode] Starting tool execution at ${new Date().toISOString()}`,
+  )
+
   const configurableResult = getConfigurable(config)
   if (configurableResult.isErr()) {
+    console.info(
+      `[invokeSchemaDesignToolNode] Failed with error at ${new Date().toISOString()}`,
+    )
     return {
       ...state,
       error: configurableResult.error,
@@ -86,12 +115,18 @@ export const invokeSchemaDesignToolNode = async (
   }
 
   if (wasSchemaDesignToolSuccessful(messages)) {
+    console.info(
+      `[invokeSchemaDesignToolNode] Tool execution successful, fetching updated schema at ${new Date().toISOString()}`,
+    )
     const schemaResult = await fetchUpdatedSchemaWithResult(
       repositories,
       state.designSessionId,
     )
 
     if (schemaResult.isOk()) {
+      console.info(
+        `[invokeSchemaDesignToolNode] Schema fetch successful at ${new Date().toISOString()}`,
+      )
       updatedResult = {
         ...updatedResult,
         schemaData: schemaResult.value.schema,
@@ -103,7 +138,14 @@ export const invokeSchemaDesignToolNode = async (
         schemaResult.error,
       )
     }
+  } else {
+    console.info(
+      `[invokeSchemaDesignToolNode] Tool execution not successful at ${new Date().toISOString()}`,
+    )
   }
 
+  console.info(
+    `[invokeSchemaDesignToolNode] Completed at ${new Date().toISOString()}`,
+  )
   return updatedResult
 }
