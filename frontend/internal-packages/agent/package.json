@@ -8,6 +8,7 @@
     "./client": "./src/client.ts"
   },
   "dependencies": {
+    "@langchain/anthropic": "0.3.27",
     "@langchain/community": "0.3.53",
     "@langchain/core": "0.3.73",
     "@langchain/langgraph": "0.4.6",
