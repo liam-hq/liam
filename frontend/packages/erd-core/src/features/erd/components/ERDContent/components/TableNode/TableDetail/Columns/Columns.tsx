@@ -13,15 +13,15 @@ type Props = {
 
 export const Columns: FC<Props> = ({ table }) => {
   const collapsibleContainer = useRef<HTMLDivElement>(null)
-  const { hash } = useUserEditingOrThrow()
+  const { hash, setHash } = useUserEditingOrThrow()
 
   const scrollToElement = useCallback(
     (columnName: string) => {
       const elementId = `${table.name}__column__${columnName}`
       document.getElementById(elementId)?.scrollIntoView()
-      setTimeout(() => history.pushState(null, '', `#${elementId}`), 0)
+      setTimeout(() => setHash(`#${elementId}`), 0)
     },
-    [table],
+    [table, setHash],
   )
 
   // NOTE: 300px is the height of one item in the list(when comments are lengthy)

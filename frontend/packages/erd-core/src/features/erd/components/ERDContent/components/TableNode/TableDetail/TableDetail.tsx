@@ -1,5 +1,5 @@
 import type { Table } from '@liam-hq/schema'
-import { type FC, useCallback } from 'react'
+import { type FC, useCallback, useEffect } from 'react'
 import { useVersionOrThrow } from '../../../../../../../providers'
 import {
   useSchemaOrThrow,
@@ -80,6 +80,13 @@ export const TableDetail: FC<Props> = ({ table }) => {
     setEdges,
     fitView,
   ])
+
+  useEffect(() => {
+    const target = document.getElementById(location.hash.substring(1))
+    if (!target) return
+
+    target.scrollIntoView()
+  }, [])
 
   return (
     <section className={styles.wrapper}>
