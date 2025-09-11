@@ -1,4 +1,4 @@
-type Operation = {
+export type Operation = {
   op?: string
   type?: string
   path?: string
@@ -21,15 +21,60 @@ type ConstraintInfo = {
 }
 
 const isColumnInfo = (value: unknown): value is ColumnInfo => {
-  return typeof value === 'object' && value !== null
+  if (typeof value !== 'object' || value === null) {
+    return false
+  }
+
+  // type field is optional, but if present, must be a string
+  if ('type' in value) {
+    const record = value as Record<string, unknown>
+    if (record.type !== undefined && typeof record.type !== 'string') {
+      return false
+    }
+  }
+
+  // ColumnInfo should be an object with optional type field
+  // and may have other properties
+  return true
 }
 
 const isIndexInfo = (value: unknown): value is IndexInfo => {
-  return typeof value === 'object' && value !== null
+  if (typeof value !== 'object' || value === null) {
+    return false
+  }
+
+  // columns field is optional, but if present, must be an array of strings
+  if ('columns' in value) {
+    const record = value as Record<string, unknown>
+    const { columns } = record
+    if (columns !== undefined) {
+      if (!Array.isArray(columns)) {
+        return false
+      }
+      // Check that all elements in columns array are strings
+      if (!columns.every((col) => typeof col === 'string')) {
+        return false
+      }
+    }
+  }
+
+  return true
 }
 
 const isConstraintInfo = (value: unknown): value is ConstraintInfo => {
-  return typeof value === 'object' && value !== null
+  if (typeof value !== 'object' || value === null) {
+    return false
+  }
+
+  // type field is optional, but if present, must be a string
+  if ('type' in value) {
+    const record = value as Record<string, unknown>
+    if (record.type !== undefined && typeof record.type !== 'string') {
+      return false
+    }
+  }
+
+  return true
 }
 
 // Helper function to check if path is a table creation

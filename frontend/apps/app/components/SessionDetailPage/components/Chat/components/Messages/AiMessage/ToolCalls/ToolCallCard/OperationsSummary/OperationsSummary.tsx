@@ -34,11 +34,8 @@ export const OperationsSummary: FC<Props> = ({
   const [displayedLines, setDisplayedLines] = useState<string[]>(() =>
     isAnimated ? [] : summaryLines,
   )
-  const [currentIndex, setCurrentIndex] = useState(
-    isAnimated ? 0 : summaryLines.length,
-  )
   const scrollRef = useRef<HTMLDivElement>(null)
-  const hasStarted = useRef(false)
+  const animationRunning = useRef(false)
   const timerRef = useRef<NodeJS.Timeout | null>(null)
 
   // Reset state when operations or isAnimated changes
@@ -49,51 +46,57 @@ export const OperationsSummary: FC<Props> = ({
       timerRef.current = null
     }
 
+    // Stop animation
+    animationRunning.current = false
+
     // Reset state based on isAnimated flag
     if (isAnimated) {
       setDisplayedLines([])
-      setCurrentIndex(0)
     } else {
       setDisplayedLines(summaryLines)
-      setCurrentIndex(summaryLines.length)
     }
-
-    // Reset hasStarted flag
-    hasStarted.current = false
   }, [summaryLines, isAnimated])
 
+  // Single controlled animation loop
   useEffect(() => {
-    // Skip animation if not animated
-    if (!isAnimated) {
-      setDisplayedLines(summaryLines)
-      setCurrentIndex(summaryLines.length)
+    // Skip animation if not animated or already running
+    if (!isAnimated || animationRunning.current || summaryLines.length === 0) {
       return
     }
 
-    // Start animation only once
-    if (!hasStarted.current && summaryLines.length > 0) {
-      hasStarted.current = true
-    }
+    // Start animation
+    animationRunning.current = true
+    let currentIndex = 0
 
-    if (hasStarted.current && currentIndex < summaryLines.length) {
-      const timer = setTimeout(() => {
+    const animateNextLine = () => {
+      if (currentIndex < summaryLines.length && animationRunning.current) {
         const nextLine = summaryLines[currentIndex]
         if (nextLine) {
           setDisplayedLines((prev) => [...prev, nextLine])
-          setCurrentIndex((prev) => prev + 1)
-        }
-      }, 200) // Add one line every 200ms (slower for better readability)
+          currentIndex++
 
-      timerRef.current = timer
-      return () => {
-        clearTimeout(timer)
-        if (timerRef.current === timer) {
-          timerRef.current = null
+          // Schedule next line
+          timerRef.current = setTimeout(animateNextLine, 200)
         }
+      } else {
+        // Animation complete
+        animationRunning.current = false
+        timerRef.current = null
       }
     }
-    return undefined
-  }, [currentIndex, summaryLines, isAnimated])
+
+    // Start the animation
+    timerRef.current = setTimeout(animateNextLine, 200)
+
+    // Cleanup function
+    return () => {
+      if (timerRef.current) {
+        clearTimeout(timerRef.current)
+        timerRef.current = null
+      }
+      animationRunning.current = false
+    }
+  }, [summaryLines, isAnimated])
 
   useLayoutEffect(() => {
     // Auto-scroll only when animated and when new lines are added

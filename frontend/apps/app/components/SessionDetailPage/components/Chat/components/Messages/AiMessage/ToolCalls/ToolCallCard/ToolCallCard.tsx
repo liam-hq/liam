@@ -14,6 +14,7 @@ import { type FC, useMemo, useState } from 'react'
 import type { ToolCalls } from '../../../../../../../schema'
 import { ArgumentsDisplay } from './ArgumentsDisplay'
 import { OperationsSummary } from './OperationsSummary'
+import type { Operation } from './OperationsSummary/utils/parseOperations'
 import styles from './ToolCallCard.module.css'
 import { getToolDisplayInfo } from './utils/getToolDisplayInfo'
 import { parseToolArguments } from './utils/parseToolArguments'
@@ -64,16 +65,54 @@ export const ToolCallCard: FC<Props> = ({ toolCall, toolMessage }) => {
   }, [toolCall.name])
 
   // Extract operations from arguments if available
-  const operations = useMemo(() => {
+  const operations = useMemo((): Operation[] => {
     if (!shouldShowOperations) return []
 
-    // Try to find operations in the parsed arguments
-    const args = parsedArguments
-    if (args && typeof args === 'object' && 'operations' in args) {
-      return Array.isArray(args.operations) ? args.operations : []
+    // Type guard to check if an object has valid operations
+    const hasValidOperations = (
+      obj: unknown,
+    ): obj is { operations: unknown[] } => {
+      if (typeof obj !== 'object' || obj === null) {
+        return false
+      }
+      const record = obj as Record<string, unknown>
+      return 'operations' in obj && Array.isArray(record.operations)
     }
 
-    return []
+    // Type guard to validate individual operation
+    const isValidOperation = (item: unknown): item is Operation => {
+      if (typeof item !== 'object' || item === null) {
+        return false
+      }
+
+      // Check if it has at least one of the expected operation fields
+      const hasOpField = 'op' in item || 'type' in item
+      if (!hasOpField) {
+        return false
+      }
+
+      // Validate field types if present
+      const record = item as Record<string, unknown>
+      if ('op' in item && record.op !== undefined && typeof record.op !== 'string') {
+        return false
+      }
+      if ('type' in item && record.type !== undefined && typeof record.type !== 'string') {
+        return false
+      }
+      if ('path' in item && record.path !== undefined && typeof record.path !== 'string') {
+        return false
+      }
+
+      return true
+    }
+
+    // Check if parsedArguments has valid operations
+    if (!hasValidOperations(parsedArguments)) {
+      return []
+    }
+
+    // Filter and validate each operation
+    return parsedArguments.operations.filter(isValidOperation)
   }, [shouldShowOperations, parsedArguments])
 
   return (
