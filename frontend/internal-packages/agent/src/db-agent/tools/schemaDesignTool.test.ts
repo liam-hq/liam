@@ -288,8 +288,14 @@ describe('schemaDesignTool', () => {
 
     // Verify DDL was attempted
     expect(vi.mocked(executeQuery)).toHaveBeenCalledWith(
-      expect.stringContaining('CREATE TABLE'),
-      expect.any(Array),
+      `CREATE TABLE "posts" (
+  "id" integer NOT NULL,
+  "user_id" integer NOT NULL,
+  "title" varchar(255)
+);
+
+ALTER TABLE "posts" ADD CONSTRAINT "posts_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users" ("id") ON UPDATE NO ACTION ON DELETE NO ACTION;`,
+      [],
     )
 
     // Verify createVersion was NOT called due to DDL failure
