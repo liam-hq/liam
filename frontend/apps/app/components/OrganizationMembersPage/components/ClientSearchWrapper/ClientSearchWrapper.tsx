@@ -73,7 +73,7 @@ export const ClientSearchWrapper: FC<ClientSearchWrapperProps> = ({
 
   const handleRemoveSuccess = (isSelf: boolean) => {
     if (isSelf) {
-      router.push('/app/organizations')
+      router.push('/organizations')
     } else {
       router.refresh()
     }

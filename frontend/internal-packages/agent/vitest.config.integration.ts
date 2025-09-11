@@ -5,7 +5,7 @@ export default defineConfig({
     globals: true,
     environment: 'node',
     include: ['**/*.integration.test.ts'],
-    testTimeout: 300000,
+    testTimeout: 1800000,
     reporters: ['dot'],
     env: {
       // Disable background callbacks for LangChain to ensure proper tracing in tests

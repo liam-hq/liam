@@ -23,7 +23,7 @@ export const usePublicShareServerAction = ({
   useEffect(() => {
     setIsPublic(initialIsPublic)
     isPublicRef.current = initialIsPublic
-  }, [designSessionId, initialIsPublic])
+  }, [initialIsPublic])
 
   // Keep ref in sync with state after commit
   useEffect(() => {

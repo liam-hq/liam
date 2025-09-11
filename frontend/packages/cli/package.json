@@ -15,7 +15,7 @@
   },
   "license": "Apache-2.0",
   "private": false,
-  "version": "0.7.11",
+  "version": "0.7.12",
   "type": "module",
   "publishConfig": {
     "access": "public"
@@ -37,7 +37,7 @@
     "react": "19.1.1",
     "react-dom": "19.1.1",
     "valibot": "1.1.0",
-    "yoctocolors": "2.1.1"
+    "yoctocolors": "2.1.2"
   },
   "devDependencies": {
     "@biomejs/biome": "2.1.4",
@@ -54,7 +54,7 @@
     "rollup-plugin-execute": "1.1.1",
     "typed-css-modules": "0.9.1",
     "typescript": "5.9.2",
-    "vite": "6.3.5",
+    "vite": "6.3.6",
     "vite-tsconfig-paths": "5.1.4",
     "vitest": "3.2.4"
   },

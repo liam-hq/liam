@@ -1,8 +1,8 @@
 import type { RunnableConfig } from '@langchain/core/runnables'
 import { err, ok, type Result } from 'neverthrow'
 import * as v from 'valibot'
-import { getConfigurable } from '../chat/workflow/shared/getConfigurable'
 import type { Repositories } from '../repositories'
+import { getConfigurable } from '../utils/getConfigurable'
 
 const toolConfigurableSchema = v.object({
   buildingSchemaId: v.string(),

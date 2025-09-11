@@ -1,7 +1,8 @@
 import { END, START, StateGraph } from '@langchain/langgraph'
 import type { BaseCheckpointSaver } from '@langchain/langgraph-checkpoint'
-import { RETRY_POLICY } from '../shared/errorHandling'
+import { RETRY_POLICY } from '../utils/errorHandling'
 import { continueToRequirements } from './distributeRequirements'
+import { invokeRunTestToolNode } from './nodes/invokeRunTestToolNode'
 import { qaAgentAnnotation } from './shared/qaAgentAnnotation'
 import { testcaseGeneration } from './testcaseGeneration'
 import { validateSchemaNode } from './validateSchema'
@@ -16,6 +17,9 @@ export const createQaAgentGraph = (checkpointer?: BaseCheckpointSaver) => {
     .addNode('validateSchema', validateSchemaNode, {
       retryPolicy: RETRY_POLICY,
     })
+    .addNode('invokeRunTestTool', invokeRunTestToolNode, {
+      retryPolicy: RETRY_POLICY,
+    })
 
     // Define edges for map-reduce flow
     // Use conditional edge with Send API for parallel execution from START
@@ -25,8 +29,9 @@ export const createQaAgentGraph = (checkpointer?: BaseCheckpointSaver) => {
     // After all parallel subgraph executions complete, validate
     .addEdge('testcaseGeneration', 'validateSchema')
 
-    // End after validation
-    .addEdge('validateSchema', END)
+    // Add new test execution step after validation
+    .addEdge('validateSchema', 'invokeRunTestTool')
+    .addEdge('invokeRunTestTool', END)
 
   return checkpointer
     ? qaAgentGraph.compile({ checkpointer })

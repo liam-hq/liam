@@ -1,13 +1,18 @@
 import { AIMessage, HumanMessage } from '@langchain/core/messages'
 import { END } from '@langchain/langgraph'
 import { describe, expect, it } from 'vitest'
-import type { WorkflowState } from '../../chat/workflow/types'
+import type { WorkflowState } from '../../types'
 import { routeAfterDesignSchema } from './routeAfterDesignSchema'
 
 const workflowState = (messages: WorkflowState['messages']): WorkflowState => ({
   messages,
   userInput: 'test input',
   schemaData: { tables: {}, enums: {}, extensions: {} },
+  analyzedRequirements: {
+    businessRequirement: '',
+    functionalRequirements: {},
+    nonFunctionalRequirements: {},
+  },
   buildingSchemaId: 'test-id',
   latestVersionNumber: 1,
   organizationId: 'test-org',

@@ -6,6 +6,7 @@ import {
 import { ChatOpenAI } from '@langchain/openai'
 import { fromAsyncThrowable } from '@liam-hq/neverthrow'
 import { removeReasoningFromMessages } from '../../utils/messageCleanup'
+import { streamLLMResponse } from '../../utils/streamingLlmUtils'
 import { saveTestcaseTool } from '../tools/saveTestcaseTool'
 import {
   humanPromptTemplateForTestcaseGeneration,
@@ -43,25 +44,30 @@ export async function generateTestcaseNode(
 
   const cleanedMessages = removeReasoningFromMessages(messages)
 
-  const invokeModel = fromAsyncThrowable(() =>
-    model.invoke([
+  const streamModel = fromAsyncThrowable(() => {
+    return model.stream([
       new SystemMessage(SYSTEM_PROMPT_FOR_TESTCASE_GENERATION),
       new HumanMessage(contextMessage),
       // Include all previous messages in this subgraph's scope
       ...cleanedMessages,
-    ]),
-  )
+    ])
+  })
 
-  const result = await invokeModel()
+  const streamResult = await streamModel()
 
-  if (result.isErr()) {
+  if (streamResult.isErr()) {
     // eslint-disable-next-line no-throw-error/no-throw-error -- Required for LangGraph retry mechanism
     throw new Error(
-      `Failed to generate test case for ${currentRequirement.category}: ${result.error.message}`,
+      `Failed to generate test case for ${currentRequirement.category}: ${streamResult.error.message}`,
     )
   }
 
+  const response = await streamLLMResponse(streamResult.value, {
+    agentName: 'qa',
+    eventType: 'messages',
+  })
+
   return {
-    messages: [result.value],
+    messages: [response],
   }
 }

@@ -1,11 +1,9 @@
 'use server'
 
 import path from 'node:path'
-import { createSupabaseRepositories } from '@liam-hq/agent'
 import type { SupabaseClientType } from '@liam-hq/db'
 import type { Schema } from '@liam-hq/schema'
 import { parse, setPrismWasmUrl } from '@liam-hq/schema/parser'
-import { redirect } from 'next/navigation'
 import { createClient } from '../../../../../libs/db/server'
 import { getOrganizationId } from '../../../../organizations/services/getOrganizationId'
 import type {
@@ -43,6 +41,16 @@ const getCurrentUserId = async (
 ): Promise<string | null> => {
   const { data: userData } = await supabase.auth.getUser()
   return userData?.user?.id || null
+}
+
+const getUserInfo = async (supabase: SupabaseClientType, userId: string) => {
+  const { data } = await supabase
+    .from('users')
+    .select('name')
+    .eq('id', userId)
+    .single()
+
+  return data
 }
 
 const createDesignSession = async (
@@ -100,30 +108,6 @@ const createBuildingSchema = async (
   return buildingSchema
 }
 
-const saveInitialMessage = async (
-  initialMessage: string,
-  designSessionId: string,
-  organizationId: string,
-  currentUserId: string,
-): Promise<CreateSessionState> => {
-  const supabase = await createClient()
-  const repositories = createSupabaseRepositories(supabase, organizationId)
-
-  // Save initial user message to timeline
-  const userMessageResult = await repositories.schema.createTimelineItem({
-    designSessionId,
-    content: initialMessage,
-    type: 'user',
-    userId: currentUserId,
-  })
-
-  if (!userMessageResult.success) {
-    console.error('Error saving initial user message:', userMessageResult.error)
-    return { success: false, error: 'Failed to save initial user message' }
-  }
-
-  return { success: true }
-}
 export const parseSchemaContent = async (
   content: string,
   format: SchemaFormat,
@@ -153,6 +137,11 @@ export const createSessionWithSchema = async (
     return { success: false, error: 'Authentication required' }
   }
 
+  const userData = await getUserInfo(supabase, currentUserId)
+  if (!userData) {
+    return { success: false, error: 'Could not fetch user info' }
+  }
+
   const organizationIdResult = await getOrganizationId()
   if (organizationIdResult.isErr()) {
     return { success: false, error: organizationIdResult.error.message }
@@ -170,9 +159,10 @@ export const createSessionWithSchema = async (
     return designSessionResult
   }
   const designSession = designSessionResult
+  const designSessionId = designSession.id
 
   const buildingSchemaResult = await createBuildingSchema(
-    designSession.id,
+    designSessionId,
     schemaSource.schema,
     schemaSource.schemaFilePath,
     params.gitSha || null,
@@ -183,21 +173,19 @@ export const createSessionWithSchema = async (
     return buildingSchemaResult
   }
 
-  // Save the initial message to timeline
-  const messageResult = await saveInitialMessage(
-    params.initialMessage,
-    designSession.id,
-    organizationId,
-    currentUserId,
-  )
-  if (!messageResult.success) {
-    return messageResult
-  }
-
   // Just redirect without starting the workflow
   // Pass isDeepModelingEnabled as query parameter
   const queryParams = new URLSearchParams({
     deepModeling: params.isDeepModelingEnabled.toString(),
   })
-  redirect(`/app/design_sessions/${designSession.id}?${queryParams.toString()}`)
+
+  const redirectTo = `/design_sessions/${designSessionId}?${queryParams.toString()}`
+
+  return {
+    success: true,
+    designSessionId,
+    redirectTo,
+    userName: userData.name,
+    initialMessage: params.initialMessage,
+  }
 }

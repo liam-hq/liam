@@ -1,6 +1,6 @@
 import { Send } from '@langchain/langgraph'
-import { WorkflowTerminationError } from '../../shared/errorHandling'
 import { convertSchemaToText } from '../../utils/convertSchemaToText'
+import { WorkflowTerminationError } from '../../utils/errorHandling'
 import type { QaAgentState } from '../shared/qaAgentAnnotation'
 
 /**
@@ -59,16 +59,6 @@ function processRequirementsByType(
  */
 function prepareRequirements(state: QaAgentState): RequirementData[] {
   const { analyzedRequirements } = state
-
-  if (!analyzedRequirements) {
-    throw new WorkflowTerminationError(
-      new Error(
-        'No analyzed requirements found. Cannot distribute requirements for test case generation.',
-      ),
-      'continueToRequirements',
-    )
-  }
-
   const allRequirements: RequirementData[] = []
   const businessContext = analyzedRequirements.businessRequirement || ''
 

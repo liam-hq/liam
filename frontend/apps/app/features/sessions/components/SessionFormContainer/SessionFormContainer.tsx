@@ -102,7 +102,7 @@ export const SessionFormContainer: FC<Props> = ({
     return () => {
       resizeObserver.disconnect()
     }
-  }, [mode])
+  }, [])
 
   // Cleanup timers on unmount
   useEffect(() => {

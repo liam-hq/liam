@@ -1,13 +1,14 @@
+import { AIMessage } from '@langchain/core/messages'
 import type { RunnableConfig } from '@langchain/core/runnables'
 import { END, START, StateGraph } from '@langchain/langgraph'
 import type { BaseCheckpointSaver } from '@langchain/langgraph-checkpoint'
-import { workflowAnnotation } from './chat/workflow/shared/workflowAnnotation'
-import type { WorkflowState } from './chat/workflow/types'
 import { createDbAgentGraph } from './db-agent/createDbAgentGraph'
 import { createLeadAgentGraph } from './lead-agent/createLeadAgentGraph'
 import { createPmAgentGraph } from './pm-agent/createPmAgentGraph'
 import { createQaAgentGraph } from './qa-agent/createQaAgentGraph'
+import type { WorkflowState } from './types'
 import { validateInitialSchemaNode } from './workflow/nodes/validateInitialSchemaNode'
+import { workflowAnnotation } from './workflowAnnotation'
 
 /**
  * Create and configure the LangGraph workflow
@@ -32,11 +33,7 @@ export const createGraph = (checkpointer?: BaseCheckpointSaver) => {
     const pmAgentOutput = await pmAgentSubgraph.invoke(
       {
         messages: state.messages,
-        analyzedRequirements: state.analyzedRequirements || {
-          businessRequirement: '',
-          functionalRequirements: {},
-          nonFunctionalRequirements: {},
-        },
+        analyzedRequirements: state.analyzedRequirements,
         designSessionId: state.designSessionId,
         schemaData: state.schemaData,
         analyzedRequirementsRetryCount: 0,
@@ -54,8 +51,21 @@ export const createGraph = (checkpointer?: BaseCheckpointSaver) => {
     .addNode('dbAgent', dbAgentSubgraph)
     .addNode('qaAgent', callQaAgent)
 
-    .addEdge(START, 'validateInitialSchema')
+    .addConditionalEdges(
+      START,
+      (state) => {
+        const isFirstExecution = !state.messages.some(
+          (msg) => msg instanceof AIMessage,
+        )
+        return isFirstExecution ? 'validateInitialSchema' : 'leadAgent'
+      },
+      {
+        validateInitialSchema: 'validateInitialSchema',
+        leadAgent: 'leadAgent',
+      },
+    )
     .addEdge('validateInitialSchema', 'leadAgent')
+
     .addConditionalEdges('leadAgent', (state) => state.next, {
       pmAgent: 'pmAgent',
       [END]: END,

@@ -13,11 +13,12 @@ graph TD;
 	dbAgent(dbAgent)
 	qaAgent(qaAgent)
 	__end__([<p>__end__</p>]):::last
-	__start__ --> validateInitialSchema;
 	dbAgent --> qaAgent;
 	pmAgent --> dbAgent;
 	qaAgent --> leadAgent;
 	validateInitialSchema --> leadAgent;
+	__start__ -.-> validateInitialSchema;
+	__start__ -.-> leadAgent;
 	leadAgent -.-> pmAgent;
 	leadAgent -.-> __end__;
 	classDef default fill:#f2f0ff,line-height:1.2;

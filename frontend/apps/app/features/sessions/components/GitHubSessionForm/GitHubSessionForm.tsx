@@ -2,6 +2,7 @@
 
 import { type FC, useActionState, useEffect, useTransition } from 'react'
 import type { Projects } from '../../../../components/CommonLayout/AppBar/ProjectsDropdownMenu/services/getProjects'
+import { useSessionNavigation } from '../shared/hooks/useSessionNavigation'
 import { createGitHubSession } from './actions/createGitHubSession'
 import { getBranches } from './actions/getBranches'
 import { getSchemaFilePath } from './actions/getSchemaFilePath'
@@ -16,9 +17,10 @@ export const GitHubSessionForm: FC<Props> = ({
   projects,
   defaultProjectId,
 }) => {
-  const [, startTransition] = useTransition()
+  const [, startChangingProject] = useTransition()
   const [state, formAction, isPending] = useActionState(createGitHubSession, {
     success: false,
+    error: '',
   })
 
   const [branchesState, branchesAction, isBranchesLoading] = useActionState(
@@ -31,8 +33,10 @@ export const GitHubSessionForm: FC<Props> = ({
     { path: null },
   )
 
+  const { isRouting } = useSessionNavigation(state)
+
   const handleProjectChange = (projectId: string) => {
-    startTransition(() => {
+    startChangingProject(() => {
       const formData = new FormData()
       formData.append('projectId', projectId)
       branchesAction(formData)
@@ -44,7 +48,7 @@ export const GitHubSessionForm: FC<Props> = ({
   // This ensures users don't need to manually reselect the project to see branch options
   useEffect(() => {
     if (defaultProjectId && projects.some((p) => p.id === defaultProjectId)) {
-      startTransition(() => {
+      startChangingProject(() => {
         const formData = new FormData()
         formData.append('projectId', defaultProjectId)
         branchesAction(formData)
@@ -60,8 +64,8 @@ export const GitHubSessionForm: FC<Props> = ({
       branches={branchesState.branches}
       isBranchesLoading={isBranchesLoading}
       branchesError={branchesState.error}
-      formError={state.error}
-      isPending={isPending}
+      formError={!state.success ? state.error : undefined}
+      isPending={isPending || isRouting}
       onProjectChange={handleProjectChange}
       formAction={formAction}
       schemaFilePath={schemaPathState.path}

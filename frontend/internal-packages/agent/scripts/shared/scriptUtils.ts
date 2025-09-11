@@ -6,8 +6,9 @@ import type { Result } from 'neverthrow'
 import { err, errAsync, ok, okAsync, ResultAsync } from 'neverthrow'
 import { createSupabaseRepositories } from '../../src/repositories/factory'
 
-// Load environment variables from ../../../../../.env
+// Load environment variables from ../../../../../.env and .env.local
 config({ path: resolve(__dirname, '../../../../../.env') })
+config({ path: resolve(__dirname, '../../../../../.env.local') })
 
 // Type guards for safe property access
 export const isObject = (value: unknown): value is Record<string, unknown> =>
@@ -321,106 +322,3 @@ export const setupDatabaseAndUser =
       })
     })
   }
-
-/**
- * Show help information for scripts
- */
-export const showHelp = (
-  scriptName: string,
-  description: string,
-  examples: string[],
-) => {
-  console.info(`
-Usage: ${scriptName} [options]
-
-Description:
-  ${description}
-
-Options:
-  --help, -h           Show this help message and exit
-  --log-level=LEVEL    Set the logging level (DEBUG, INFO, WARN, ERROR)
-                       Default: INFO (can also be set via LOG_LEVEL env var)
-
-Environment Variables:
-  SUPABASE_SERVICE_ROLE_KEY  Required. Supabase service role key for database access
-  NEXT_PUBLIC_SUPABASE_URL   Required. Supabase project URL
-  OPENAI_API_KEY             Required. OpenAI API key for AI functionality
-  LOG_LEVEL                  Optional. Set logging level (overridden by --log-level)
-
-Examples:
-${examples.map((example) => `  ${example}`).join('\n')}
-`)
-}
-
-/**
- * Common user input for business management system design
- */
-export const getBusinessManagementSystemUserInput = (): string => {
-  return `Design a business management system database with the following core requirements:
-
-1. **Organization Structure**:
-   - Hierarchical organizations with self-referencing parent-child relationships
-   - Each organization has a unique code and name
-
-2. **Position & Employee Management**:
-   - Position master table with unique position codes and names
-   - Employee master table with employee codes and names
-   - Employee affiliations linking employees to organizations and positions
-   - Support for reporting relationships (employees reporting to other employees)
-
-3. **Business Partner System**:
-   - Unified business partner table for both clients and suppliers
-   - Business partner categories with CHECK constraints (CLIENT/SUPPLIER)
-   - Client-specific data with order amounts from last year
-   - Supplier-specific data with procurement amounts from last year
-
-4. **Product Management**:
-   - Brand master table with unique brand names
-   - Item categories for product classification
-   - Items with manufacturer part numbers as primary keys
-   - Items linked to brands and categories
-   - Supplier-brand handling relationships
-
-Please design a normalized database schema with proper primary keys, foreign key relationships, and constraints to support these business operations effectively.`
-}
-
-/**
- * Log schema results
- */
-export const logSchemaResults = (
-  logger: ReturnType<typeof createLogger>,
-  schemaData: Schema | undefined,
-  currentLogLevel: LogLevel,
-  error?: Error,
-) => {
-  if (error) {
-    logger.error(`Workflow completed with error: ${error.message}`)
-  }
-
-  // Debug: Log the final workflow state
-  logger.debug('Final workflow state:', {
-    hasSchemaData: !!schemaData,
-    schemaTableKeys: schemaData?.tables
-      ? Object.keys(schemaData.tables)
-      : 'undefined',
-  })
-
-  if (schemaData?.tables) {
-    const tableCount = Object.keys(schemaData.tables).length
-    if (tableCount > 0) {
-      const tableNames = Object.keys(schemaData.tables)
-      logger.info(
-        `RESULT: ${tableCount} tables created - ${tableNames.join(', ')}`,
-      )
-
-      // Log detailed schema information in debug mode
-      if (currentLogLevel === 'DEBUG') {
-        logger.debug('Schema details:', schemaData)
-      }
-    } else {
-      logger.info('RESULT: No tables created')
-    }
-  } else {
-    logger.info('RESULT: No schema data found')
-  }
-}

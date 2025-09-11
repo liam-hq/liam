@@ -10,9 +10,9 @@ import {
 } from '@liam-hq/ui'
 import { type FC, useMemo, useState } from 'react'
 import { MarkdownContent } from '../../../../../../../../MarkdownContent'
+import type { ToolCall as ToolCallType } from '../../../../../../../schema'
 import markdownStyles from '../../../Markdown.module.css'
-import type { ToolCall as ToolCallType } from '../../../schema'
-import { extractResponseFromMessage } from '../../../utils/extractResponseFromMessage'
+import { extractResponseFromMessage } from '../../../utils'
 import styles from './ToolCall.module.css'
 
 type Props = {

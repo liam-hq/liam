@@ -29,7 +29,7 @@ jobs:
           permission-issues: write
           repositories: liam
 
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
         with:
           # Checkout using GitHub App Token
           token: ${{ steps.app-token.outputs.token }}
@@ -42,7 +42,7 @@ jobs:
         run: bash .github/scripts/setup-claude.sh
 
       - name: Run Claude Code Action
-        uses: anthropics/claude-code-action@b60e3f0e60509e51886110d313b82bf9d0df84dd # v1
+        uses: anthropics/claude-code-action@fd2c17f101639b10696381c1fd85fa735239090a # v1.0.5
         id: claude-code
         env:
           ISSUE_NUMBER: ${{ github.event.issue.number }}
@@ -80,7 +80,7 @@ jobs:
             --allowedTools Bash(pnpm fmt:*),Bash(pnpm install),Bash(pnpm lint:*),Bash(pnpm test:*)
 
       - name: Create Pull Request
-        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7.1.0
         env:
           ISSUE_NUMBER: ${{ github.event.issue.number }}
           ISSUE_TITLE: ${{ toJSON(github.event.issue.title) }}

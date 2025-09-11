@@ -1,7 +1,8 @@
 // Route prefixes for middleware and other path checks
 export const ROUTE_PREFIXES = {
-  APP: '/app',
+  APP: '',
   PUBLIC: '/public',
-  LOGIN: '/app/login',
-  AUTH: '/app/auth',
+  LOGIN: '/login',
+  AUTH: '/auth',
+  ERD: '/erd',
 } as const

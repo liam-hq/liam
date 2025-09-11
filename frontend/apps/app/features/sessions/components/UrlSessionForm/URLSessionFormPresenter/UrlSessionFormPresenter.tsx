@@ -318,7 +318,7 @@ export const URLSessionFormPresenter: FC<Props> = ({
     handleDrop: handleAttachmentDrop,
   } = useFileDragAndDrop(handleFileSelect)
 
-  const { handleChange } = useAutoResizeTextarea(textareaRef, state.textContent)
+  const { handleChange } = useAutoResizeTextarea(textareaRef)
   const handleTextareaChange = handleChange(
     (e: ChangeEvent<HTMLTextAreaElement>) => {
       state.setTextContent(e.target.value)

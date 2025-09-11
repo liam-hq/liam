@@ -1,13 +1,16 @@
+'use client'
+
 import {
   type BaseMessage,
   coerceMessageLikeToMessage,
 } from '@langchain/core/messages'
 import { SSE_EVENTS } from '@liam-hq/agent/client'
 import { err, ok } from 'neverthrow'
-import { useCallback, useRef, useState } from 'react'
+import { useCallback, useMemo, useRef, useState } from 'react'
 import { ERROR_MESSAGES } from '../../components/Chat/constants/chatConstants'
 import { MessageTupleManager } from './MessageTupleManager'
 import { parseSse } from './parseSse'
+import { useSessionStorageOnce } from './useSessionStorageOnce'
 
 type ChatRequest = {
   userInput: string
@@ -20,11 +23,24 @@ type ChatRequest = {
  * @see https://github.com/langchain-ai/langgraphjs/blob/3320793bffffa02682227644aefbee95dee330a2/libs/sdk/src/react/stream.tsx
  */
 type Props = {
+  designSessionId: string
   initialMessages: BaseMessage[]
 }
-export const useStream = ({ initialMessages }: Props) => {
-  const [messages, setMessages] = useState<BaseMessage[]>(initialMessages)
+export const useStream = ({ designSessionId, initialMessages }: Props) => {
   const messageManagerRef = useRef(new MessageTupleManager())
+
+  const storedMessage = useSessionStorageOnce(designSessionId)
+
+  const processedInitialMessages = useMemo(() => {
+    if (storedMessage) {
+      return [storedMessage, ...initialMessages]
+    }
+    return initialMessages
+  }, [storedMessage, initialMessages])
+
+  const [messages, setMessages] = useState<BaseMessage[]>(
+    processedInitialMessages,
+  )
 
   const [isStreaming, setIsStreaming] = useState(false)
   const abortRef = useRef<AbortController | null>(null)

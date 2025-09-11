@@ -12,15 +12,18 @@ import { Header } from './Header'
 const HeaderDemo: FC<ComponentProps<typeof Header>> = (props) => {
   const [tabValue, setTabValue] = useState<OutputTabValue>(DEFAULT_OUTPUT_TAB)
 
-  const isTabValue = (value: string): value is OutputTabValue => {
+  const isTabValue = useCallback((value: string): value is OutputTabValue => {
     return Object.values(OUTPUT_TABS).some((tabValue) => tabValue === value)
-  }
-
-  const handleChangeValue = useCallback((value: string) => {
-    if (isTabValue(value)) {
-      setTabValue(value)
-    }
   }, [])
+
+  const handleChangeValue = useCallback(
+    (value: string) => {
+      if (isTabValue(value)) {
+        setTabValue(value)
+      }
+    },
+    [isTabValue],
+  )
 
   return (
     <TabsRoot

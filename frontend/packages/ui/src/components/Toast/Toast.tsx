@@ -83,10 +83,13 @@ const useToastDisplay = () => {
   const closeToastItem = useCallback(() => {
     setToastItem((prev) => (prev === null ? null : { ...prev, isOpen: false }))
   }, [])
-  const createToastItem = useCallback((options: ToastOptions) => {
-    closeToastItem()
-    window.setTimeout(() => setToastItem({ ...options, isOpen: true }), 100)
-  }, [])
+  const createToastItem = useCallback(
+    (options: ToastOptions) => {
+      closeToastItem()
+      window.setTimeout(() => setToastItem({ ...options, isOpen: true }), 100)
+    },
+    [closeToastItem],
+  )
 
   return { toastItem, createToastItem, closeToastItem }
 }

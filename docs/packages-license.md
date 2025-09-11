@@ -2,7 +2,7 @@
 
 
 ## Summary
-* 1381 MIT
+* 1380 MIT
 * 128 Apache 2.0
 * 88 ISC
 * 39 New BSD
@@ -1874,7 +1874,7 @@ Unknown manually approved
 
 
 <a name="@eslint/css-tree"></a>
-### @eslint/css-tree v3.6.2
+### @eslint/css-tree v3.6.5
 #### 
 
 ##### Paths
@@ -2083,7 +2083,7 @@ Unknown manually approved
 
 
 <a name="@ibm-cloud/watsonx-ai"></a>
-### @ibm-cloud/watsonx-ai v1.6.10
+### @ibm-cloud/watsonx-ai v1.6.12
 #### 
 
 ##### Paths
@@ -2500,17 +2500,6 @@ LGPL-3.0-or-later permitted
 
 
 
-<a name="@langchain/anthropic"></a>
-### @langchain/anthropic v0.3.26
-#### 
-
-##### Paths
-* /home/runner/work/liam/liam
-
-<a href="http://opensource.org/licenses/mit-license">MIT</a> permitted
-
-
-
 <a name="@langchain/community"></a>
 ### @langchain/community v0.3.53
 #### 
@@ -2556,7 +2545,7 @@ LGPL-3.0-or-later permitted
 
 
 <a name="@langchain/langgraph-sdk"></a>
-### @langchain/langgraph-sdk v0.0.109
+### @langchain/langgraph-sdk v0.0.112
 #### 
 
 ##### Paths
@@ -2677,7 +2666,7 @@ LGPL-3.0-or-later permitted
 
 
 <a name="@mdx-js/mdx"></a>
-### @mdx-js/mdx v3.1.0
+### @mdx-js/mdx v3.1.1
 #### 
 
 ##### Paths
@@ -2688,7 +2677,7 @@ LGPL-3.0-or-later permitted
 
 
 <a name="@mdx-js/react"></a>
-### @mdx-js/react v3.1.0
+### @mdx-js/react v3.1.1
 #### 
 
 ##### Paths
@@ -2699,7 +2688,7 @@ LGPL-3.0-or-later permitted
 
 
 <a name="@modelcontextprotocol/sdk"></a>
-### @modelcontextprotocol/sdk v1.17.3
+### @modelcontextprotocol/sdk v1.17.4
 #### 
 
 ##### Paths
@@ -3392,7 +3381,7 @@ LGPL-3.0-or-later permitted
 
 
 <a name="@orama/orama"></a>
-### @orama/orama v3.1.11
+### @orama/orama v3.1.12
 #### 
 
 ##### Paths
@@ -3403,7 +3392,7 @@ LGPL-3.0-or-later permitted
 
 
 <a name="@oxc-resolver/binding-linux-x64-gnu"></a>
-### @oxc-resolver/binding-linux-x64-gnu v11.6.2
+### @oxc-resolver/binding-linux-x64-gnu v11.7.1
 #### 
 
 ##### Paths
@@ -3414,7 +3403,7 @@ LGPL-3.0-or-later permitted
 
 
 <a name="@oxc-resolver/binding-linux-x64-musl"></a>
-### @oxc-resolver/binding-linux-x64-musl v11.6.2
+### @oxc-resolver/binding-linux-x64-musl v11.7.1
 #### 
 
 ##### Paths
@@ -3843,7 +3832,7 @@ LGPL-3.0-or-later permitted
 
 
 <a name="@radix-ui/react-context-menu"></a>
-### @radix-ui/react-context-menu v2.2.15
+### @radix-ui/react-context-menu v2.2.16
 #### 
 
 ##### Paths
@@ -3854,7 +3843,7 @@ LGPL-3.0-or-later permitted
 
 
 <a name="@radix-ui/react-dialog"></a>
-### @radix-ui/react-dialog v1.1.14
+### @radix-ui/react-dialog v1.1.15
 #### 
 
 ##### Paths
@@ -3887,7 +3876,7 @@ LGPL-3.0-or-later permitted
 
 
 <a name="@radix-ui/react-dropdown-menu"></a>
-### @radix-ui/react-dropdown-menu v2.1.15
+### @radix-ui/react-dropdown-menu v2.1.16
 #### 
 
 ##### Paths
@@ -3931,7 +3920,7 @@ LGPL-3.0-or-later permitted
 
 
 <a name="@radix-ui/react-menu"></a>
-### @radix-ui/react-menu v2.1.15
+### @radix-ui/react-menu v2.1.16
 #### 
 
 ##### Paths
@@ -4008,7 +3997,7 @@ LGPL-3.0-or-later permitted
 
 
 <a name="@radix-ui/react-radio-group"></a>
-### @radix-ui/react-radio-group v1.3.7
+### @radix-ui/react-radio-group v1.3.8
 #### 
 
 ##### Paths
@@ -4074,7 +4063,7 @@ LGPL-3.0-or-later permitted
 
 
 <a name="@radix-ui/react-switch"></a>
-### @radix-ui/react-switch v1.2.5
+### @radix-ui/react-switch v1.2.6
 #### 
 
 ##### Paths
@@ -4096,7 +4085,7 @@ LGPL-3.0-or-later permitted
 
 
 <a name="@radix-ui/react-toast"></a>
-### @radix-ui/react-toast v1.2.14
+### @radix-ui/react-toast v1.2.15
 #### 
 
 ##### Paths
@@ -4107,7 +4096,7 @@ LGPL-3.0-or-later permitted
 
 
 <a name="@radix-ui/react-toggle"></a>
-### @radix-ui/react-toggle v1.1.9
+### @radix-ui/react-toggle v1.1.10
 #### 
 
 ##### Paths
@@ -4118,7 +4107,7 @@ LGPL-3.0-or-later permitted
 
 
 <a name="@radix-ui/react-toggle-group"></a>
-### @radix-ui/react-toggle-group v1.1.10
+### @radix-ui/react-toggle-group v1.1.11
 #### 
 
 ##### Paths
@@ -4129,7 +4118,7 @@ LGPL-3.0-or-later permitted
 
 
 <a name="@radix-ui/react-toolbar"></a>
-### @radix-ui/react-toolbar v1.1.10
+### @radix-ui/react-toolbar v1.1.11
 #### 
 
 ##### Paths
@@ -4140,7 +4129,7 @@ LGPL-3.0-or-later permitted
 
 
 <a name="@radix-ui/react-tooltip"></a>
-### @radix-ui/react-tooltip v1.2.7
+### @radix-ui/react-tooltip v1.2.8
 #### 
 
 ##### Paths
@@ -4580,7 +4569,7 @@ LGPL-3.0-or-later permitted
 
 
 <a name="@shikijs/core"></a>
-### @shikijs/core v3.11.0
+### @shikijs/core v3.12.0
 #### 
 
 ##### Paths
@@ -4591,7 +4580,7 @@ LGPL-3.0-or-later permitted
 
 
 <a name="@shikijs/engine-javascript"></a>
-### @shikijs/engine-javascript v3.11.0
+### @shikijs/engine-javascript v3.12.0
 #### 
 
 ##### Paths
@@ -4602,7 +4591,7 @@ LGPL-3.0-or-later permitted
 
 
 <a name="@shikijs/engine-oniguruma"></a>
-### @shikijs/engine-oniguruma v3.11.0
+### @shikijs/engine-oniguruma v3.12.0
 #### 
 
 ##### Paths
@@ -4613,7 +4602,7 @@ LGPL-3.0-or-later permitted
 
 
 <a name="@shikijs/langs"></a>
-### @shikijs/langs v3.11.0
+### @shikijs/langs v3.12.0
 #### 
 
 ##### Paths
@@ -4624,7 +4613,7 @@ LGPL-3.0-or-later permitted
 
 
 <a name="@shikijs/rehype"></a>
-### @shikijs/rehype v3.11.0
+### @shikijs/rehype v3.12.0
 #### 
 
 ##### Paths
@@ -4635,7 +4624,7 @@ LGPL-3.0-or-later permitted
 
 
 <a name="@shikijs/themes"></a>
-### @shikijs/themes v3.11.0
+### @shikijs/themes v3.12.0
 #### 
 
 ##### Paths
@@ -4646,7 +4635,7 @@ LGPL-3.0-or-later permitted
 
 
 <a name="@shikijs/transformers"></a>
-### @shikijs/transformers v3.11.0
+### @shikijs/transformers v3.12.0
 #### 
 
 ##### Paths
@@ -4657,7 +4646,7 @@ LGPL-3.0-or-later permitted
 
 
 <a name="@shikijs/types"></a>
-### @shikijs/types v3.11.0
+### @shikijs/types v3.12.0
 #### 
 
 ##### Paths
@@ -5459,6 +5448,17 @@ Apache-2.0 AND MIT permitted
 
 
 
+<a name="@types/fs-extra"></a>
+### @types/fs-extra v11.0.4
+#### 
+
+##### Paths
+* /home/runner/work/liam/liam
+
+<a href="http://opensource.org/licenses/mit-license">MIT</a> permitted
+
+
+
 <a name="@types/glob"></a>
 ### @types/glob v7.2.0
 #### 
@@ -5516,6 +5516,17 @@ Apache-2.0 AND MIT permitted
 
 <a name="@types/json-schema"></a>
 ### @types/json-schema v7.0.15
+#### 
+
+##### Paths
+* /home/runner/work/liam/liam
+
+<a href="http://opensource.org/licenses/mit-license">MIT</a> permitted
+
+
+
+<a name="@types/jsonfile"></a>
+### @types/jsonfile v6.1.4
 #### 
 
 ##### Paths
@@ -6432,7 +6443,7 @@ Unknown manually approved
 
 
 <a name="@xyflow/react"></a>
-### @xyflow/react v12.8.2
+### @xyflow/react v12.8.3
 #### 
 
 ##### Paths
@@ -6443,7 +6454,7 @@ Unknown manually approved
 
 
 <a name="@xyflow/system"></a>
-### @xyflow/system v0.0.66
+### @xyflow/system v0.0.67
 #### 
 
 ##### Paths
@@ -6865,7 +6876,7 @@ Python-2.0 manually approved
 
 
 <a name="ast-v8-to-istanbul"></a>
-### ast-v8-to-istanbul v0.3.4
+### ast-v8-to-istanbul v0.3.5
 #### 
 
 ##### Paths
@@ -7272,7 +7283,7 @@ Python-2.0 manually approved
 
 
 <a name="browserslist"></a>
-### browserslist v4.25.3
+### browserslist v4.25.4
 #### 
 
 ##### Paths
@@ -7448,7 +7459,7 @@ Python-2.0 manually approved
 
 
 <a name="caniuse-lite"></a>
-### caniuse-lite v1.0.30001737
+### caniuse-lite v1.0.30001739
 #### 
 
 ##### Paths
@@ -9021,7 +9032,7 @@ Artistic-2.0 permitted
 
 
 <a name="electron-to-chromium"></a>
-### electron-to-chromium v1.5.208
+### electron-to-chromium v1.5.211
 #### 
 
 ##### Paths
@@ -9615,7 +9626,7 @@ Artistic-2.0 permitted
 
 
 <a name="eventsource-parser"></a>
-### eventsource-parser v3.0.5
+### eventsource-parser v3.0.6
 #### 
 
 ##### Paths
@@ -9824,24 +9835,13 @@ Artistic-2.0 permitted
 
 
 <a name="fast-uri"></a>
-### fast-uri v3.0.6
+### fast-uri v3.1.0
 #### 
 
 ##### Paths
 * /home/runner/work/liam/liam
 
 <a href="http://opensource.org/licenses/BSD-3-Clause">New BSD</a> permitted
-
-
-
-<a name="fast-xml-parser"></a>
-### fast-xml-parser v4.5.3
-#### 
-
-##### Paths
-* /home/runner/work/liam/liam
-
-<a href="http://opensource.org/licenses/mit-license">MIT</a> permitted
 
 
 
@@ -10352,7 +10352,7 @@ Artistic-2.0 permitted
 
 
 <a name="get-east-asian-width"></a>
-### get-east-asian-width v1.3.0
+### get-east-asian-width v1.3.1
 #### 
 
 ##### Paths
@@ -12105,7 +12105,7 @@ Public Domain manually approved
 
 
 <a name="langchain"></a>
-### langchain v0.3.30
+### langchain v0.3.31
 #### 
 
 ##### Paths
@@ -12776,7 +12776,7 @@ Public Domain manually approved
 
 
 <a name="mdn-data"></a>
-### mdn-data v2.21.0
+### mdn-data v2.23.0
 #### 
 
 ##### Paths
@@ -12809,7 +12809,7 @@ Public Domain manually approved
 
 
 <a name="memfs"></a>
-### memfs v4.38.1
+### memfs v4.38.2
 #### 
 
 ##### Paths
@@ -14107,7 +14107,7 @@ Public Domain manually approved
 
 
 <a name="oxc-resolver"></a>
-### oxc-resolver v11.6.2
+### oxc-resolver v11.7.1
 #### 
 
 ##### Paths
@@ -15790,7 +15790,7 @@ BlueOak-1.0.0 permitted
 
 
 <a name="remark-mdx"></a>
-### remark-mdx v3.1.0
+### remark-mdx v3.1.1
 #### 
 
 ##### Paths
@@ -16307,7 +16307,7 @@ BlueOak-1.0.0 permitted
 
 
 <a name="shiki"></a>
-### shiki v3.11.0
+### shiki v3.12.0
 #### 
 
 ##### Paths
@@ -16873,17 +16873,6 @@ CC-BY-3.0 permitted
 
 <a name="strip-literal"></a>
 ### strip-literal v3.0.0
-#### 
-
-##### Paths
-* /home/runner/work/liam/liam
-
-<a href="http://opensource.org/licenses/mit-license">MIT</a> permitted
-
-
-
-<a name="strnum"></a>
-### strnum v1.1.2
 #### 
 
 ##### Paths

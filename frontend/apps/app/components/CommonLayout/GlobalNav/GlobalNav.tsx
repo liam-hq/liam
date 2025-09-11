@@ -46,11 +46,7 @@ export const GlobalNav: FC<Props> = ({
             />
           )}
 
-          <LinkItem
-            href="/app/projects"
-            icon={<LayoutGrid />}
-            label="Projects"
-          />
+          <LinkItem href="/projects" icon={<LayoutGrid />} label="Projects" />
 
           <NewSessionButton />
           <RecentsSection />
@@ -58,7 +54,7 @@ export const GlobalNav: FC<Props> = ({
       }
       footerContent={
         <LinkItem
-          href="/app/settings/general"
+          href="/settings/general"
           icon={<Settings />}
           label="Settings"
         />

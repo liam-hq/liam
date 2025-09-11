@@ -7,7 +7,8 @@
     "helpers:pinGitHubActionDigestsToSemver"
   ],
   "lockFileMaintenance": {
-    "enabled": true
+    "enabled": true,
+    "schedule": ["before 4am on tuesday"]
   },
   "minimumReleaseAge": "14 days",
   "schedule": ["* * * * 0,6"],
@@ -18,7 +19,8 @@
         "/^fumadocs-core$/",
         "/^fumadocs-mdx$/",
         "/^fumadocs-ui$/"
-      ]
+      ],
+      "enabled": false  // Temporarily disabled due to Zod v4 dependency conflicts. See route06/liam-internal#5606
     },
     {
       "matchUpdateTypes": [

@@ -12,20 +12,15 @@ import { fromValibotSafeParse } from '@liam-hq/neverthrow'
 import { err, ok, type Result } from 'neverthrow'
 import { v4 as uuidv4 } from 'uuid'
 import * as v from 'valibot'
-import { getConfigurable } from '../../chat/workflow/shared/getConfigurable'
 import { SSE_EVENTS } from '../../client'
 import type { Repositories } from '../../repositories'
-import { WorkflowTerminationError } from '../../shared/errorHandling'
-import { toJsonSchema } from '../../shared/jsonSchema'
-
-// Valibot schema for validating analyzedRequirements structure
-const analyzedRequirementsSchema = v.object({
-  businessRequirement: v.string(),
-  functionalRequirements: v.record(v.string(), v.array(v.string())),
-  nonFunctionalRequirements: v.record(v.string(), v.array(v.string())),
-})
-
-type AnalyzedRequirements = v.InferOutput<typeof analyzedRequirementsSchema>
+import { WorkflowTerminationError } from '../../utils/errorHandling'
+import { getConfigurable } from '../../utils/getConfigurable'
+import { toJsonSchema } from '../../utils/jsonSchema'
+import {
+  type AnalyzedRequirements,
+  analyzedRequirementsSchema,
+} from '../../utils/schema/analyzedRequirements'
 
 const toolSchema = toJsonSchema(analyzedRequirementsSchema)
 

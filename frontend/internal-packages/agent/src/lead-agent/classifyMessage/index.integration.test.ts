@@ -10,8 +10,8 @@ import {
   getTestConfig,
   outputStream,
 } from '../../../test-utils/workflowTestHelpers'
-import { workflowAnnotation } from '../../chat/workflow/shared/workflowAnnotation'
-import type { WorkflowState } from '../../chat/workflow/types'
+import type { WorkflowState } from '../../types'
+import { workflowAnnotation } from '../../workflowAnnotation'
 import { classifyMessage } from './index'
 
 const createTestStateAndConfig = async (
@@ -25,6 +25,11 @@ const createTestStateAndConfig = async (
     userInput,
     messages: messages || [new HumanMessage(userInput)],
     schemaData: schemaData || { tables: {}, enums: {}, extensions: {} },
+    analyzedRequirements: {
+      businessRequirement: '',
+      functionalRequirements: {},
+      nonFunctionalRequirements: {},
+    },
     testcases: [],
     buildingSchemaId: context.buildingSchemaId,
     latestVersionNumber: context.latestVersionNumber,

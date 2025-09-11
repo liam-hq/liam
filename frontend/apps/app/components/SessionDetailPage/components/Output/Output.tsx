@@ -51,15 +51,18 @@ export const Output: FC<Props> = ({
 
   const { artifact, loading, error } = useRealtimeArtifact(designSessionId)
 
-  const isTabValue = (value: string): value is OutputTabValue => {
+  const isTabValue = useCallback((value: string): value is OutputTabValue => {
     return Object.values(OUTPUT_TABS).some((tabValue) => tabValue === value)
-  }
-
-  const handleChangeValue = useCallback((value: string) => {
-    if (isTabValue(value)) {
-      setInternalTabValue(value)
-    }
   }, [])
+
+  const handleChangeValue = useCallback(
+    (value: string) => {
+      if (isTabValue(value)) {
+        setInternalTabValue(value)
+      }
+    },
+    [isTabValue],
+  )
 
   // Use external control if provided, otherwise use internal state
   const isControlled = activeTab !== undefined

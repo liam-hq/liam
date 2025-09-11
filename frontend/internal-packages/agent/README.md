@@ -14,11 +14,12 @@ graph TD;
 	dbAgent(dbAgent)
 	qaAgent(qaAgent)
 	__end__([<p>__end__</p>]):::last
-	__start__ --> validateInitialSchema;
 	dbAgent --> qaAgent;
 	pmAgent --> dbAgent;
 	qaAgent --> leadAgent;
 	validateInitialSchema --> leadAgent;
+	__start__ -.-> validateInitialSchema;
+	__start__ -.-> leadAgent;
 	leadAgent -.-> pmAgent;
 	leadAgent -.-> __end__;
 	classDef default fill:#f2f0ff,line-height:1.2;
@@ -235,11 +236,14 @@ graph TD;
 	__start__([<p>__start__</p>]):::first
 	testcaseGeneration(testcaseGeneration)
 	validateSchema(validateSchema)
+	invokeRunTestTool(invokeRunTestTool)
 	__end__([<p>__end__</p>]):::last
+	invokeRunTestTool --> __end__;
 	testcaseGeneration --> validateSchema;
-	validateSchema --> __end__;
+	validateSchema --> invokeRunTestTool;
 	__start__ -.-> testcaseGeneration;
 	__start__ -.-> validateSchema;
+	__start__ -.-> invokeRunTestTool;
 	__start__ -.-> __end__;
 	classDef default fill:#f2f0ff,line-height:1.2;
 	classDef first fill-opacity:0;
@@ -257,16 +261,23 @@ graph TD;
 
 #### 2. validateSchema Node
 
+- **Purpose**: Creates AI message to trigger test execution for schema validation
+- **Performed by**: validateSchemaNode function
+- **Retry Policy**: maxAttempts: 3 (internal to subgraph)
+- **Output**: Generates tool call for runTestTool execution
+
+#### 3. invokeRunTestTool Node
+
 - **Purpose**: Executes DML statements and validates schema functionality
-- **Performed by**: DML Generation Agent with database execution
+- **Performed by**: ToolNode with runTestTool
 - **Retry Policy**: maxAttempts: 3 (internal to subgraph)
 - **Validation**: Schema integrity and DML execution results
 
 ### QA Agent Flow Patterns
 
-1. **Map-Reduce Flow**: `START → testcaseGeneration (parallel) → validateSchema → END`
-2. **Parallel Processing**: Multiple testcase generation instances run concurrently
-3. **Comprehensive Validation**: All testcases are validated together after generation
+1. **Map-Reduce Flow**: `START → testcaseGeneration (parallel) → validateSchema → invokeRunTestTool → END`
+2. **Parallel Processing**: Multiple testcase generation instances run concurrently  
+3. **Split Validation**: Test case generation and execution are now separated - generation creates test cases, then validation triggers test execution via the new runTestTool
 
 ### QA Agent Benefits
 

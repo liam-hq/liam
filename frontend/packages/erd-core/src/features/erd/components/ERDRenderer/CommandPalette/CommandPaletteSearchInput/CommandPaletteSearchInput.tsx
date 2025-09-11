@@ -32,15 +32,15 @@ export const CommandPaletteSearchInput: FC<Props> = ({
   }, [mode])
 
   useEffect(() => {
+    // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Complex logic for handling CommandPalette input mode with user keyboard interactions
     const down = (event: KeyboardEvent) => {
       if (mode.type === 'default') {
         // switch to "command" mode if value is empty and `>` is pressed
-        // TODO(command options): uncomment the following lines to release command options
-        // if (event.key === '>' && value === '') {
-        //   event.preventDefault()
-        //   setMode({ type: 'command' })
-        //   return
-        // }
+        if (event.key === '>' && value === '') {
+          event.preventDefault()
+          setMode({ type: 'command' })
+          return
+        }
 
         return
       }
@@ -59,7 +59,7 @@ export const CommandPaletteSearchInput: FC<Props> = ({
 
     document.addEventListener('keydown', down)
     return () => document.removeEventListener('keydown', down)
-  }, [value, mode])
+  }, [value, mode, setMode])
 
   return (
     <div className={styles.container}>

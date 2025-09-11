@@ -1,7 +1,6 @@
-import { DEFAULT_RECURSION_LIMIT } from '../chat/workflow/shared/workflowConstants'
-import type { WorkflowConfigurable } from '../chat/workflow/types'
-import { setupWorkflowState } from '../shared/workflowSetup'
-import type { AgentWorkflowParams } from '../types'
+import { DEFAULT_RECURSION_LIMIT } from '../constants'
+import type { AgentWorkflowParams, WorkflowConfigurable } from '../types'
+import { setupWorkflowState } from '../utils/workflowSetup'
 import { createDbAgentGraph } from './createDbAgentGraph'
 
 // TODO: Move to invokeDBAgent.ts once the streaming migration is established

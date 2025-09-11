@@ -30,7 +30,7 @@ export const PrimaryKey: FC<Props> = ({
       constraintId: constraintName,
       operations: operations ?? [],
     })
-  }, [showDiff, tableId, operations, columnName])
+  }, [showDiff, tableId, operations, columnName, constraintName])
 
   const diffStyle = useDiffStyle(showDiff, changeStatus)
 

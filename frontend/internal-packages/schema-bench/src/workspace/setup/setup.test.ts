@@ -120,7 +120,7 @@ describe('setupWorkspace', () => {
       const inputContent = fs.readFileSync(inputFile, 'utf-8')
       const referenceContent = fs.readFileSync(referenceFile, 'utf-8')
 
-      expect(inputContent).toBe('{"test": "data"}')
+      expect(inputContent).toBe('{\n  "test": "data"\n}')
       expect(referenceContent).toBe('{"reference": "data"}')
     })
 

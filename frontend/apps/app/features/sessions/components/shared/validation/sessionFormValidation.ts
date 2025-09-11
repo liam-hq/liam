@@ -1,9 +1,17 @@
 import * as v from 'valibot'
 
-export type CreateSessionState = {
-  success: boolean
-  error?: string
-}
+export type CreateSessionState =
+  | {
+      success: true
+      designSessionId: string
+      userName: string
+      initialMessage: string
+      redirectTo: string
+    }
+  | {
+      success: false
+      error: string
+    }
 
 // A pipe that transforms an empty string to null.
 const emptyStringToNull = v.pipe(

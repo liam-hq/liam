@@ -75,7 +75,7 @@ export const sendInvitationEmail = async ({
   }
 
   // Construct invitation link
-  const invitationLink = `${baseUrl || ''}/app/invitations/tokens/${invitationToken}`
+  const invitationLink = `${baseUrl || ''}/invitations/tokens/${invitationToken}`
 
   // Send email
   const resend = new Resend(process.env.RESEND_API_KEY)

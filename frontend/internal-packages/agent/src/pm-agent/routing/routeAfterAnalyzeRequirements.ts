@@ -1,4 +1,4 @@
-import { WorkflowTerminationError } from '../../shared/errorHandling'
+import { WorkflowTerminationError } from '../../utils/errorHandling'
 import { hasToolCalls } from '../../utils/hasToolCalls'
 import type { PmAgentState } from '../pmAgentAnnotations'
 

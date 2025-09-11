@@ -5,8 +5,8 @@ import {
   getTestConfig,
   outputStream,
 } from '../../../test-utils/workflowTestHelpers'
-import { workflowAnnotation } from '../../chat/workflow/shared/workflowAnnotation'
-import type { WorkflowState } from '../../chat/workflow/types'
+import type { WorkflowState } from '../../types'
+import { workflowAnnotation } from '../../workflowAnnotation'
 import { summarizeWorkflow } from './index'
 
 describe('summarizeWorkflow Integration', () => {
@@ -41,6 +41,11 @@ describe('summarizeWorkflow Integration', () => {
         }),
       ],
       schemaData: { tables: {}, enums: {}, extensions: {} }, // Not used by summarizeWorkflow
+      analyzedRequirements: {
+        businessRequirement: '',
+        functionalRequirements: {},
+        nonFunctionalRequirements: {},
+      },
       testcases: [],
       buildingSchemaId: context.buildingSchemaId,
       latestVersionNumber: context.latestVersionNumber,

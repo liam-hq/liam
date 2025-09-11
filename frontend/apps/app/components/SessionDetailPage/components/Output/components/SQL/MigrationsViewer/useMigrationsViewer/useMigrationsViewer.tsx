@@ -7,7 +7,7 @@ import { unifiedMergeView } from '@codemirror/merge'
 import { EditorState, type Extension } from '@codemirror/state'
 import { drawSelection, lineNumbers } from '@codemirror/view'
 import { EditorView } from 'codemirror'
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import type { ReviewComment } from '../../../../../../types'
 import { commentStateField, setCommentsEffect } from './commentExtension'
 import { customTheme, sqlHighlightStyle } from './editorTheme'
@@ -62,60 +62,69 @@ export const useMigrationsViewer = ({
     }
   }, [])
 
-  const buildExtensions = (
-    showComments: boolean,
-    onQuickFix?: (comment: string) => void,
-    showDiff?: boolean,
-    prevDoc?: string,
-  ): Extension[] => {
-    const extensions = [...baseExtensions]
+  const buildExtensions = useCallback(
+    (
+      showComments: boolean,
+      onQuickFix?: (comment: string) => void,
+      showDiff?: boolean,
+      prevDoc?: string,
+    ): Extension[] => {
+      const extensions = [...baseExtensions]
 
-    if (showComments && onQuickFix) {
-      extensions.push(commentStateField(onQuickFix))
-    }
+      if (showComments && onQuickFix) {
+        extensions.push(commentStateField(onQuickFix))
+      }
 
-    if (showDiff) {
-      extensions.push(
-        ...unifiedMergeView({
-          original: prevDoc || '',
-          highlightChanges: true,
-          gutter: true,
-          mergeControls: false,
-          syntaxHighlightDeletions: true,
-          allowInlineDiffs: true,
-        }),
-      )
-    }
+      if (showDiff) {
+        extensions.push(
+          ...unifiedMergeView({
+            original: prevDoc || '',
+            highlightChanges: true,
+            gutter: true,
+            mergeControls: false,
+            syntaxHighlightDeletions: true,
+            allowInlineDiffs: true,
+          }),
+        )
+      }
 
-    return extensions
-  }
+      return extensions
+    },
+    [],
+  )
 
-  const createEditorView = (
-    doc: string,
-    extensions: Extension[],
-    container: HTMLDivElement,
-  ): EditorView => {
-    const state = EditorState.create({
-      doc,
-      extensions,
-    })
+  const createEditorView = useCallback(
+    (
+      doc: string,
+      extensions: Extension[],
+      container: HTMLDivElement,
+    ): EditorView => {
+      const state = EditorState.create({
+        doc,
+        extensions,
+      })
 
-    return new EditorView({
-      state,
-      parent: container,
-    })
-  }
+      return new EditorView({
+        state,
+        parent: container,
+      })
+    },
+    [],
+  )
 
-  const applyComments = (
-    view: EditorView,
-    showComments: boolean,
-    comments: ReviewComment[],
-  ): void => {
-    if (showComments && comments.length > 0) {
-      const commentEffect = setCommentsEffect.of(comments)
-      view.dispatch({ effects: [commentEffect] })
-    }
-  }
+  const applyComments = useCallback(
+    (
+      view: EditorView,
+      showComments: boolean,
+      comments: ReviewComment[],
+    ): void => {
+      if (showComments && comments.length > 0) {
+        const commentEffect = setCommentsEffect.of(comments)
+        view.dispatch({ effects: [commentEffect] })
+      }
+    },
+    [],
+  )
 
   useEffect(() => {
     if (!container) return
@@ -136,7 +145,19 @@ export const useMigrationsViewer = ({
     setView(viewCurrent)
 
     applyComments(viewCurrent, showComments, comments)
-  }, [doc, prevDoc, showDiff, container, showComments, comments])
+  }, [
+    doc,
+    prevDoc,
+    showDiff,
+    container,
+    showComments,
+    comments,
+    applyComments,
+    buildExtensions,
+    createEditorView,
+    onQuickFix,
+    view,
+  ])
 
   useEffect(() => {
     if (!view || !showComments) return

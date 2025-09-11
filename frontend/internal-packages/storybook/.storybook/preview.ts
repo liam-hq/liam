@@ -32,6 +32,9 @@ const preview: Preview = {
       },
     },
     layout: 'centered',
+    nextjs: {
+      appDirectory: true,
+    },
   },
   initialGlobals: {
     backgrounds: { value: 'dark' },
