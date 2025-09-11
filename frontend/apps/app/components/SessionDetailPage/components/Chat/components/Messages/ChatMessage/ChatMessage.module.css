@@ -1,11 +1,12 @@
-.wrapper {
+/* Notification styles */
+.notificationWrapper {
   display: flex;
   flex-direction: column;
   width: 100%;
   gap: var(--spacing-2);
 }
 
-.headerContainer {
+.notificationHeaderContainer {
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -14,12 +15,12 @@
   gap: var(--spacing-1);
 }
 
-.systemIcon {
+.notificationIcon {
   font-size: var(--font-size-3);
   line-height: 1;
 }
 
-.systemLabel {
+.notificationLabel {
   font-family: var(--main-font);
   font-weight: 500;
   font-size: var(--font-size-3);
@@ -27,13 +28,13 @@
   color: var(--global-body-text);
 }
 
-.contentContainer {
+.notificationContentContainer {
   display: flex;
   flex-direction: column;
   width: 100%;
 }
 
-.messageWrapper {
+.notificationMessageWrapper {
   display: flex;
   flex-direction: column;
   align-items: stretch;
@@ -51,12 +52,12 @@
   pointer-events: none;
 }
 
-.messageWrapper:hover .copyButtonWrapper {
+.notificationMessageWrapper:hover .copyButtonWrapper {
   opacity: 1;
   pointer-events: auto;
 }
 
-/* Message type specific styles */
+/* Message type specific styles for notifications */
 .errorMessage {
   background-color: var(--severity-critical-20);
   border: 1px solid var(--severity-critical-5);

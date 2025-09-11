@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto'
 import { dispatchCustomEvent } from '@langchain/core/callbacks/dispatch'
-import { SystemMessage } from '@langchain/core/messages'
+import { ChatMessage } from '@langchain/core/messages'
 import { RunnableLambda } from '@langchain/core/runnables'
 import { END } from '@langchain/langgraph'
 import { executeQuery } from '@liam-hq/pglite-server'
@@ -41,9 +41,10 @@ async function createAndDispatchMessage(
   messageType: MessageType,
   next?: string | typeof END,
 ): Promise<WorkflowState> {
-  const message = new SystemMessage({
+  const message = new ChatMessage({
     id: randomUUID(),
     content,
+    role: 'operational',
     additional_kwargs: {
       messageType,
     },

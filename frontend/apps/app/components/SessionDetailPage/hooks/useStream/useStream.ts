@@ -2,6 +2,7 @@
 
 import {
   type BaseMessage,
+  ChatMessage,
   coerceMessageLikeToMessage,
 } from '@langchain/core/messages'
 import { SSE_EVENTS } from '@liam-hq/agent/client'
@@ -81,7 +82,28 @@ export const useStream = ({ designSessionId, initialMessages }: Props) => {
         if (ev.event !== SSE_EVENTS.MESSAGES) continue
 
         const parsedData = JSON.parse(ev.data)
-        const [serialized, metadata] = parsedData
+        // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+        const [serialized, metadata] = parsedData as [
+          ChatMessage,
+          Record<string, unknown>,
+        ]
+
+        // ChatMessage bypass: Handle ChatMessage directly without MessageTupleManager
+        if (serialized.role === 'operational') {
+          setMessages((prev) => {
+            const message = new ChatMessage({
+              id: serialized.id,
+              content: serialized.content,
+              role: serialized.role || 'operational',
+              additional_kwargs: serialized.additional_kwargs || {},
+            })
+
+            return [...prev, message]
+          })
+
+          continue
+        }
+
         const messageId = messageManagerRef.current.add(serialized, metadata)
         if (!messageId) continue
 

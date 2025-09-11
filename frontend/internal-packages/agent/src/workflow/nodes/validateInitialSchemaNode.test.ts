@@ -1,8 +1,4 @@
-import {
-  AIMessage,
-  HumanMessage,
-  SystemMessage,
-} from '@langchain/core/messages'
+import { ChatMessage, HumanMessage } from '@langchain/core/messages'
 import { END, START, StateGraph } from '@langchain/langgraph'
 import { aColumn, aSchema, aTable } from '@liam-hq/schema'
 import { describe, expect, it } from 'vitest'
@@ -47,9 +43,10 @@ describe('validateInitialSchemaNode Integration', () => {
       const result = await graph.invoke(state, config)
 
       expect(result.messages).toHaveLength(2)
-      expect(result.messages[1]).toBeInstanceOf(SystemMessage)
+      expect(result.messages[1]).toBeInstanceOf(ChatMessage)
       expect(result.messages[1]).toMatchObject({
         content: expect.stringContaining('**Instant Database Ready**'),
+        role: 'operational',
         additional_kwargs: {
           messageType: 'info',
         },
@@ -107,9 +104,10 @@ describe('validateInitialSchemaNode Integration', () => {
       const result = await graph.invoke(state, config)
 
       expect(result.messages).toHaveLength(2)
-      expect(result.messages[1]).toBeInstanceOf(SystemMessage)
+      expect(result.messages[1]).toBeInstanceOf(ChatMessage)
       expect(result.messages[1]).toMatchObject({
         content: expect.stringContaining('**Instant Database Ready**'),
+        role: 'operational',
         additional_kwargs: {
           messageType: 'info',
         },
@@ -131,7 +129,10 @@ describe('validateInitialSchemaNode Integration', () => {
       const state: WorkflowState = {
         messages: [
           new HumanMessage('First message'),
-          new AIMessage('AI response'), // This indicates non-first execution
+          new ChatMessage({
+            content: 'AI response',
+            role: 'assistant',
+          }), // This indicates non-first execution
           new HumanMessage('Follow-up message'),
         ],
         designSessionId: context.designSessionId,
@@ -168,9 +169,10 @@ describe('validateInitialSchemaNode Integration', () => {
       const result = await graph.invoke(state, config)
 
       expect(result.messages).toHaveLength(4)
-      expect(result.messages[3]).toBeInstanceOf(SystemMessage)
+      expect(result.messages[3]).toBeInstanceOf(ChatMessage)
       expect(result.messages[3]).toMatchObject({
         content: expect.stringContaining('**Instant Database Ready**'),
+        role: 'operational',
         additional_kwargs: {
           messageType: 'info',
         },
@@ -219,9 +221,10 @@ describe('validateInitialSchemaNode Integration', () => {
       const result = await validateInitialSchemaNode.invoke(state)
 
       expect(result.messages).toHaveLength(2)
-      expect(result.messages[1]).toBeInstanceOf(SystemMessage)
+      expect(result.messages[1]).toBeInstanceOf(ChatMessage)
       expect(result.messages[1]).toMatchObject({
         content: expect.stringContaining('**Instant Database Startup Failed**'),
+        role: 'operational',
         additional_kwargs: {
           messageType: 'error',
         },
