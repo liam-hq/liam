@@ -9,10 +9,13 @@ graph TD;
 	__start__([<p>__start__</p>]):::first
 	designSchema(designSchema)
 	invokeSchemaDesignTool(invokeSchemaDesignTool)
+	invokeRequirementMappingTool(invokeRequirementMappingTool)
 	__end__([<p>__end__</p>]):::last
 	__start__ --> designSchema;
+	invokeRequirementMappingTool --> designSchema;
 	invokeSchemaDesignTool --> designSchema;
 	designSchema -.-> invokeSchemaDesignTool;
+	designSchema -.-> invokeRequirementMappingTool;
 	designSchema -. &nbsp;generateTestcase&nbsp; .-> __end__;
 	classDef default fill:#f2f0ff,line-height:1.2;
 	classDef first fill-opacity:0;

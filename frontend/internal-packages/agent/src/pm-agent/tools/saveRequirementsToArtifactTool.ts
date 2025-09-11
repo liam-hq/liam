@@ -58,6 +58,7 @@ const createArtifactFromRequirements = (
       name: category,
       description: items,
       test_cases: [], // Empty array as test cases don't exist at this point
+      related_tables: {},
     }
     requirements.push(functionalRequirement)
   }
@@ -70,6 +71,7 @@ const createArtifactFromRequirements = (
       type: 'non_functional',
       name: category,
       description: items,
+      related_tables: {},
     }
     requirements.push(nonFunctionalRequirement)
   }
@@ -141,6 +143,7 @@ export const saveRequirementsToArtifactTool: StructuredTool = tool(
 
     return new Command({
       update: {
+        artifact,
         analyzedRequirements,
         messages: [toolMessage],
       },

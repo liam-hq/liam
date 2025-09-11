@@ -1,24 +1,28 @@
 import { AIMessage, HumanMessage } from '@langchain/core/messages'
 import { END } from '@langchain/langgraph'
 import { describe, expect, it } from 'vitest'
-import type { WorkflowState } from '../../types'
+import type { DbAgentState } from '../shared/dbAgentAnnotation'
 import { routeAfterDesignSchema } from './routeAfterDesignSchema'
 
-const workflowState = (messages: WorkflowState['messages']): WorkflowState => ({
+const dbAgentState = (messages: DbAgentState['messages']): DbAgentState => ({
   messages,
-  userInput: 'test input',
-  schemaData: { tables: {}, enums: {}, extensions: {} },
   analyzedRequirements: {
     businessRequirement: '',
     functionalRequirements: {},
     nonFunctionalRequirements: {},
   },
+  artifact: {
+    requirement_analysis: {
+      business_requirement: '',
+      requirements: [],
+    },
+  },
+  schemaData: { tables: {}, enums: {}, extensions: {} },
   buildingSchemaId: 'test-id',
   latestVersionNumber: 1,
   organizationId: 'test-org',
   userId: 'test-user',
   designSessionId: 'test-session',
-  testcases: [],
   next: END,
 })
 
@@ -35,7 +39,7 @@ describe('routeAfterDesignSchema', () => {
       ],
     })
 
-    const state = workflowState([messageWithToolCalls])
+    const state = dbAgentState([messageWithToolCalls])
     const result = routeAfterDesignSchema(state)
 
     expect(result).toBe('invokeSchemaDesignTool')
@@ -46,7 +50,7 @@ describe('routeAfterDesignSchema', () => {
       content: 'Schema analysis complete',
     })
 
-    const state = workflowState([messageWithoutToolCalls])
+    const state = dbAgentState([messageWithoutToolCalls])
     const result = routeAfterDesignSchema(state)
 
     expect(result).toBe('generateTestcase')
@@ -58,7 +62,7 @@ describe('routeAfterDesignSchema', () => {
       tool_calls: [],
     })
 
-    const state = workflowState([messageWithEmptyToolCalls])
+    const state = dbAgentState([messageWithEmptyToolCalls])
     const result = routeAfterDesignSchema(state)
 
     expect(result).toBe('generateTestcase')
@@ -69,7 +73,7 @@ describe('routeAfterDesignSchema', () => {
       content: 'User input',
     })
 
-    const state = workflowState([humanMessage])
+    const state = dbAgentState([humanMessage])
     const result = routeAfterDesignSchema(state)
 
     expect(result).toBe('generateTestcase')
@@ -91,7 +95,7 @@ describe('routeAfterDesignSchema', () => {
       content: 'Schema analysis complete',
     })
 
-    const state = workflowState([messageWithToolCalls, messageWithoutToolCalls])
+    const state = dbAgentState([messageWithToolCalls, messageWithoutToolCalls])
     const result = routeAfterDesignSchema(state)
 
     expect(result).toBe('generateTestcase')
@@ -114,7 +118,7 @@ describe('routeAfterDesignSchema', () => {
       ],
     })
 
-    const state = workflowState([messageWithMultipleToolCalls])
+    const state = dbAgentState([messageWithMultipleToolCalls])
     const result = routeAfterDesignSchema(state)
 
     expect(result).toBe('invokeSchemaDesignTool')

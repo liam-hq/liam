@@ -28,7 +28,7 @@ const baseRequirementProperties = {
   id: v.pipe(v.string(), v.uuid()),
   name: v.string(),
   description: v.array(v.string()),
-  related_tables: v.optional(tablesSchema),
+  related_tables: tablesSchema,
 }
 
 // Functional requirement schema

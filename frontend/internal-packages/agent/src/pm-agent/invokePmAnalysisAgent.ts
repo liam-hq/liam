@@ -71,6 +71,8 @@ export const invokePmAnalysisAgent = (
     .andThen(stream)
     .andThen(response)
     .andThen((response) => {
+      console.log('invoke!!')
+      console.log(response)
       const parsed = v.safeParse(
         reasoningSchema,
         response.additional_kwargs['reasoning'],

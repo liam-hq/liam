@@ -23,6 +23,9 @@ export async function designSchemaNode(
   }
   const { repositories } = configurableResult.value
 
+  console.log(state.analyzedRequirements)
+  console.log(state.artifact.requirement_analysis.requirements)
+
   const schemaText = convertSchemaToText(state.schemaData)
 
   // Remove reasoning field from AIMessages to avoid API issues

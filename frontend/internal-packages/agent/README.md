@@ -172,10 +172,13 @@ graph TD;
 	__start__([<p>__start__</p>]):::first
 	designSchema(designSchema)
 	invokeSchemaDesignTool(invokeSchemaDesignTool)
+	invokeRequirementMappingTool(invokeRequirementMappingTool)
 	__end__([<p>__end__</p>]):::last
 	__start__ --> designSchema;
+	invokeRequirementMappingTool --> designSchema;
 	invokeSchemaDesignTool --> designSchema;
 	designSchema -.-> invokeSchemaDesignTool;
+	designSchema -.-> invokeRequirementMappingTool;
 	designSchema -. &nbsp;generateTestcase&nbsp; .-> __end__;
 	classDef default fill:#f2f0ff,line-height:1.2;
 	classDef first fill-opacity:0;
@@ -197,10 +200,18 @@ graph TD;
 - **Retry Policy**: maxAttempts: 3 (internal to subgraph)
 - **Tool Integration**: Direct database schema modifications
 
+#### 3. invokeRequirementMappingTool Node
+
+- **Purpose**: Maps newly created tables to specific functional or non-functional requirements
+- **Performed by**: requirementMappingTool
+- **Retry Policy**: maxAttempts: 3 (internal to subgraph)
+- **Tool Integration**: Updates artifact with table-requirement relationships
+
 ### Subgraph Flow Patterns
 
 1. **Simple Design**: `START → designSchema → END` (when no tool calls needed)
 2. **Iterative Design**: `START → designSchema → invokeSchemaDesignTool → designSchema → ... → END`
+3. **Requirement Mapping**: `START → designSchema → invokeRequirementMappingTool → designSchema → ... → END`
 
 ### Subgraph Benefits
 

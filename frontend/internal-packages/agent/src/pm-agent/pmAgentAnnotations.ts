@@ -1,4 +1,5 @@
 import { Annotation, MessagesAnnotation } from '@langchain/langgraph'
+import type { Artifact } from '@liam-hq/artifact'
 import type { Schema } from '@liam-hq/schema'
 import type { AnalyzedRequirements } from '../utils/schema/analyzedRequirements'
 
@@ -8,7 +9,23 @@ import type { AnalyzedRequirements } from '../utils/schema/analyzedRequirements'
  */
 export const pmAgentStateAnnotation = Annotation.Root({
   ...MessagesAnnotation.spec,
-  analyzedRequirements: Annotation<AnalyzedRequirements>,
+  analyzedRequirements: Annotation<AnalyzedRequirements>({
+    reducer: (x, y) => y ?? x,
+    default: () => ({
+      businessRequirement: '',
+      functionalRequirements: {},
+      nonFunctionalRequirements: {},
+    }),
+  }),
+  artifact: Annotation<Artifact>({
+    reducer: (x, y) => y ?? x,
+    default: () => ({
+      requirement_analysis: {
+        business_requirement: '',
+        requirements: [],
+      },
+    }),
+  }),
   designSessionId: Annotation<string>,
   schemaData: Annotation<Schema>,
 
