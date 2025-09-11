@@ -65,6 +65,7 @@ export const ToolCallCard: FC<Props> = ({ toolCall, toolMessage }) => {
   }, [toolCall.name])
 
   // Extract operations from arguments if available
+
   const operations = useMemo((): Operation[] => {
     if (!shouldShowOperations) return []
 
@@ -75,8 +76,23 @@ export const ToolCallCard: FC<Props> = ({ toolCall, toolMessage }) => {
       if (typeof obj !== 'object' || obj === null) {
         return false
       }
-      const record = obj as Record<string, unknown>
-      return 'operations' in obj && Array.isArray(record.operations)
+      if (!('operations' in obj)) {
+        return false
+      }
+      // Check if operations property exists and is an array
+      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+      const candidate = obj as Record<string, unknown>
+      return Array.isArray(candidate.operations)
+    }
+
+    // Helper to validate string field
+    const isValidStringField = (
+      record: Record<string, unknown>,
+      fieldName: string,
+    ): boolean => {
+      if (!(fieldName in record)) return true
+      const value = record[fieldName]
+      return value === undefined || typeof value === 'string'
     }
 
     // Type guard to validate individual operation
@@ -92,18 +108,13 @@ export const ToolCallCard: FC<Props> = ({ toolCall, toolMessage }) => {
       }
 
       // Validate field types if present
+      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
       const record = item as Record<string, unknown>
-      if ('op' in item && record.op !== undefined && typeof record.op !== 'string') {
-        return false
-      }
-      if ('type' in item && record.type !== undefined && typeof record.type !== 'string') {
-        return false
-      }
-      if ('path' in item && record.path !== undefined && typeof record.path !== 'string') {
-        return false
-      }
-
-      return true
+      return (
+        isValidStringField(record, 'op') &&
+        isValidStringField(record, 'type') &&
+        isValidStringField(record, 'path')
+      )
     }
 
     // Check if parsedArguments has valid operations

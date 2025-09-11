@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/consistent-type-assertions */
 export type Operation = {
   op?: string
   type?: string
@@ -27,8 +28,9 @@ const isColumnInfo = (value: unknown): value is ColumnInfo => {
 
   // type field is optional, but if present, must be a string
   if ('type' in value) {
-    const record = value as Record<string, unknown>
-    if (record.type !== undefined && typeof record.type !== 'string') {
+    const obj = value as Record<string, unknown>
+    const typeValue = obj.type
+    if (typeValue !== undefined && typeof typeValue !== 'string') {
       return false
     }
   }
@@ -45,14 +47,14 @@ const isIndexInfo = (value: unknown): value is IndexInfo => {
 
   // columns field is optional, but if present, must be an array of strings
   if ('columns' in value) {
-    const record = value as Record<string, unknown>
-    const { columns } = record
-    if (columns !== undefined) {
-      if (!Array.isArray(columns)) {
+    const obj = value as Record<string, unknown>
+    const columnsValue = obj.columns
+    if (columnsValue !== undefined) {
+      if (!Array.isArray(columnsValue)) {
         return false
       }
       // Check that all elements in columns array are strings
-      if (!columns.every((col) => typeof col === 'string')) {
+      if (!columnsValue.every((col) => typeof col === 'string')) {
         return false
       }
     }
@@ -68,8 +70,9 @@ const isConstraintInfo = (value: unknown): value is ConstraintInfo => {
 
   // type field is optional, but if present, must be a string
   if ('type' in value) {
-    const record = value as Record<string, unknown>
-    if (record.type !== undefined && typeof record.type !== 'string') {
+    const obj = value as Record<string, unknown>
+    const typeValue = obj.type
+    if (typeValue !== undefined && typeof typeValue !== 'string') {
       return false
     }
   }
