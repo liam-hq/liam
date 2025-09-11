@@ -1,10 +1,10 @@
+import { ChatAnthropic } from '@langchain/anthropic'
 import {
   type AIMessage,
   type AIMessageChunk,
   type BaseMessage,
   SystemMessage,
 } from '@langchain/core/messages'
-import { ChatOpenAI } from '@langchain/openai'
 import { fromAsyncThrowable } from '@liam-hq/neverthrow'
 import { okAsync, ResultAsync } from 'neverthrow'
 import * as v from 'valibot'
@@ -41,24 +41,24 @@ export const invokePmAnalysisAgent = (
     pmAnalysisPrompt.format(variables),
   )
 
-  const model = new ChatOpenAI({
-    model: 'gpt-5',
-    reasoning: { effort: 'medium', summary: 'detailed' },
-    useResponsesApi: true,
+  const anthropic = new ChatAnthropic({
+    model: 'claude-4-opus-20250514',
     streaming: true,
-  }).bindTools(
-    [{ type: 'web_search_preview' }, saveRequirementsToArtifactTool],
-    {
-      parallel_tool_calls: false,
-      tool_choice: 'required',
+    maxTokens: 16000,
+    thinking: {
+      type: 'enabled',
+      budget_tokens: 8000,
     },
-  )
+  }).bindTools([saveRequirementsToArtifactTool])
 
-  const stream = fromAsyncThrowable((systemPrompt: string) =>
-    model.stream([new SystemMessage(systemPrompt), ...cleanedMessages], {
-      configurable,
-    }),
-  )
+  const stream = fromAsyncThrowable((systemPrompt: string) => {
+    return anthropic.stream(
+      [new SystemMessage(systemPrompt), ...cleanedMessages],
+      {
+        configurable,
+      },
+    )
+  })
 
   const response = fromAsyncThrowable((stream: AsyncIterable<AIMessageChunk>) =>
     streamLLMResponse(stream, {

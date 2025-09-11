@@ -1,10 +1,10 @@
+import { ChatAnthropic } from '@langchain/anthropic'
 import {
   type AIMessage,
   type AIMessageChunk,
   type BaseMessage,
   SystemMessage,
 } from '@langchain/core/messages'
-import { ChatOpenAI } from '@langchain/openai'
 import { fromAsyncThrowable } from '@liam-hq/neverthrow'
 import { okAsync, ResultAsync } from 'neverthrow'
 import * as v from 'valibot'
@@ -18,12 +18,16 @@ import { schemaDesignTool } from './tools/schemaDesignTool'
 
 const AGENT_NAME = 'db' as const
 
-const model = new ChatOpenAI({
-  model: 'gpt-5',
-  reasoning: { effort: 'medium', summary: 'detailed' },
-  useResponsesApi: true,
+const anthropic = new ChatAnthropic({
+  model: 'claude-4-opus-20250514',
+  streaming: true,
+  maxTokens: 16000,
+  thinking: {
+    type: 'enabled',
+    budget_tokens: 8000,
+  },
 }).bindTools([schemaDesignTool], {
-  strict: true,
+  tool_choice: schemaDesignTool.name,
 })
 
 type DesignAgentResult = {
@@ -40,7 +44,7 @@ export const invokeDesignAgent = (
     designAgentPrompt.format(variables),
   )
   const stream = fromAsyncThrowable((systemPrompt: string) =>
-    model.stream([new SystemMessage(systemPrompt), ...messages], {
+    anthropic.stream([new SystemMessage(systemPrompt), ...messages], {
       configurable,
     }),
   )
