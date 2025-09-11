@@ -26,7 +26,7 @@ describe('createDbAgentGraph Integration', () => {
         nonFunctionalRequirements: {},
       },
       testcases: [],
-      schemaData: aSchema(),
+      schemaData: aSchema({ tables: {} }),
       designSessionId: context.designSessionId,
       buildingSchemaId: context.buildingSchemaId,
       latestVersionNumber: context.latestVersionNumber,
