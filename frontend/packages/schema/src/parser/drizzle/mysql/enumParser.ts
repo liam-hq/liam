@@ -7,7 +7,7 @@ import {
   getArgumentExpression,
   getStringValue,
   isArrayExpression,
-} from './astUtils.js'
+} from '../shared/astUtils.js'
 import type { DrizzleEnumDefinition } from './types.js'
 
 /**

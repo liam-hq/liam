@@ -1,8 +1,9 @@
 /**
- * Expression parsing utilities for Drizzle ORM MySQL schema parsing
+ * Shared expression parsing utilities for Drizzle ORM schema parsing
  */
 
 import type { Expression, ObjectExpression } from '@swc/core'
+import { getPropertyValue, hasProperty, isObject } from '../mysql/types.js'
 import {
   getArgumentExpression,
   getIdentifierName,
@@ -11,7 +12,6 @@ import {
   isIdentifier,
   isMemberExpression,
 } from './astUtils.js'
-import { getPropertyValue, hasProperty, isObject } from './types.js'
 
 /**
  * Parse special function/identifier values

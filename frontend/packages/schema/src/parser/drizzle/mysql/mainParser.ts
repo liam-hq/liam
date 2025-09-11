@@ -5,11 +5,8 @@
 import type { Module, VariableDeclarator } from '@swc/core'
 import { parseSync } from '@swc/core'
 import type { Processor, ProcessResult } from '../../types.js'
-import {
-  isMysqlSchemaCall,
-  isMysqlTableCall,
-  isSchemaTableCall,
-} from './astUtils.js'
+import { isSchemaTableCall } from '../shared/astUtils.js'
+import { isMysqlSchemaCall, isMysqlTableCall } from './astUtils.js'
 import {
   convertDrizzleEnumsToInternal,
   convertDrizzleTablesToInternal,

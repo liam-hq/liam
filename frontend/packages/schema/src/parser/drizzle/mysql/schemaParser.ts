@@ -3,7 +3,7 @@
  */
 
 import type { CallExpression } from '@swc/core'
-import { getArgumentExpression, getStringValue } from './astUtils.js'
+import { getArgumentExpression, getStringValue } from '../shared/astUtils.js'
 import type { DrizzleSchemaDefinition } from './types.js'
 
 /**

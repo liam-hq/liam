@@ -47,16 +47,19 @@ export type CompositePrimaryKeyDefinition = {
 }
 
 /**
+ * Type guard for CompositePrimaryKeyDefinition
+ */
+/**
  * Type guard to check if a value is an object
  */
-export const isObject = (value: unknown): value is Record<string, unknown> => {
+const isObject = (value: unknown): value is Record<string, unknown> => {
   return typeof value === 'object' && value !== null
 }
 
 /**
  * Safe property checker without type casting
  */
-export const hasProperty = <K extends string>(
+const hasProperty = <K extends string>(
   obj: unknown,
   key: K,
 ): obj is Record<K, unknown> => {
@@ -66,7 +69,7 @@ export const hasProperty = <K extends string>(
 /**
  * Safe property getter without type casting
  */
-export const getPropertyValue = (obj: unknown, key: string): unknown => {
+const getPropertyValue = (obj: unknown, key: string): unknown => {
   if (hasProperty(obj, key)) {
     return obj[key]
   }
