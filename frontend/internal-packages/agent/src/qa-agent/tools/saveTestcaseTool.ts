@@ -92,6 +92,7 @@ export const saveTestcaseTool: StructuredTool = tool(
 
     const testcase: Testcase = {
       id: testcaseId,
+      requirementId: testcaseWithDml.requirementId,
       requirementType: testcaseWithDml.requirementType,
       requirementCategory: testcaseWithDml.requirementCategory,
       requirement: testcaseWithDml.requirement,

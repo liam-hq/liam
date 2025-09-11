@@ -5,27 +5,25 @@ import type {
   NonFunctionalRequirement,
 } from '@liam-hq/artifact'
 import type { Testcase } from '../qa-agent/types'
-import type { WorkflowState } from '../types'
 import type { AnalyzedRequirements } from '../utils/schema/analyzedRequirements'
-
-/**
- * Wraps a description string in an array format with fallback
- */
-const wrapDescription = (
-  description: string | undefined,
-  prefix: string,
-  category: string,
-): string[] => {
-  return description ? [description] : [`${prefix}${category}`]
-}
 
 /**
  * Convert analyzed requirements to artifact requirements
  */
 const convertAnalyzedRequirementsToArtifact = (
-  analyzedRequirements: NonNullable<WorkflowState['analyzedRequirements']>,
-): (FunctionalRequirement | NonFunctionalRequirement)[] => {
+  analyzedRequirements: AnalyzedRequirements,
+): {
+  requirements: (FunctionalRequirement | NonFunctionalRequirement)[]
+  requirementIdMap: Map<
+    string,
+    FunctionalRequirement | NonFunctionalRequirement
+  >
+} => {
   const requirements: (FunctionalRequirement | NonFunctionalRequirement)[] = []
+  const requirementIdMap = new Map<
+    string,
+    FunctionalRequirement | NonFunctionalRequirement
+  >()
 
   for (const [category, items] of Object.entries(
     analyzedRequirements.functionalRequirements,
@@ -37,6 +35,9 @@ const convertAnalyzedRequirementsToArtifact = (
       test_cases: [], // Will be populated later if testcases exist
     }
     requirements.push(functionalRequirement)
+
+    // Since we don't have individual IDs for string-based requirements,
+    requirementIdMap.set(category, functionalRequirement)
   }
 
   for (const [category, items] of Object.entries(
@@ -48,9 +49,12 @@ const convertAnalyzedRequirementsToArtifact = (
       description: items.map((item) => item.desc), // Extract descriptions from RequirementItems
     }
     requirements.push(nonFunctionalRequirement)
+
+    // Since we don't have individual IDs for string-based requirements,
+    requirementIdMap.set(category, nonFunctionalRequirement)
   }
 
-  return requirements
+  return { requirements, requirementIdMap }
 }
 
 /**
@@ -69,49 +73,24 @@ const mapTestCasesToRequirements = (
 })
 
 /**
- * Merge use cases into existing requirements
+ * Merge use cases into existing requirements using ID-based mapping
  */
 const mergeTestCasesIntoRequirements = (
-  requirements: (FunctionalRequirement | NonFunctionalRequirement)[],
+  requirementIdMap: Map<
+    string,
+    FunctionalRequirement | NonFunctionalRequirement
+  >,
   testcases: Testcase[],
 ): void => {
-  const requirementGroups = groupTestcasesByRequirement(testcases)
+  for (const testcase of testcases) {
+    const requirement = requirementIdMap.get(testcase.requirementCategory)
 
-  for (const [category, data] of Object.entries(requirementGroups)) {
-    const { type, testcases: groupedTestcases, description } = data
-    const existingReq = requirements.find((req) => req.name === category)
-
-    if (
-      existingReq &&
-      existingReq.type === 'functional' &&
-      type === 'functional'
-    ) {
-      existingReq.test_cases = groupedTestcases.map(mapTestCasesToRequirements)
-    } else if (!existingReq) {
-      if (type === 'functional') {
-        const functionalRequirement: FunctionalRequirement = {
-          type: 'functional',
-          name: category,
-          description: wrapDescription(
-            description,
-            'Functional requirement: ',
-            category,
-          ),
-          test_cases: groupedTestcases.map(mapTestCasesToRequirements),
-        }
-        requirements.push(functionalRequirement)
-      } else {
-        const nonFunctionalRequirement: NonFunctionalRequirement = {
-          type: 'non_functional',
-          name: category,
-          description: wrapDescription(
-            description,
-            'Non-functional requirement: ',
-            category,
-          ),
-        }
-        requirements.push(nonFunctionalRequirement)
-      }
+    if (requirement && requirement.type === 'functional') {
+      requirement.test_cases.push(mapTestCasesToRequirements(testcase))
+    } else if (!requirement) {
+      console.warn(
+        `Testcase "${testcase.title}" references non-existent category: ${testcase.requirementCategory}`,
+      )
     }
   }
 }
@@ -128,12 +107,11 @@ type State = {
 export const transformStateToArtifact = (state: State): Artifact => {
   const businessRequirement = state.analyzedRequirements.businessRequirement
 
-  const requirements = convertAnalyzedRequirementsToArtifact(
-    state.analyzedRequirements,
-  )
+  const { requirements, requirementIdMap } =
+    convertAnalyzedRequirementsToArtifact(state.analyzedRequirements)
 
   if (state.testcases.length > 0) {
-    mergeTestCasesIntoRequirements(requirements, state.testcases)
+    mergeTestCasesIntoRequirements(requirementIdMap, state.testcases)
   }
 
   return {
@@ -142,34 +120,4 @@ export const transformStateToArtifact = (state: State): Artifact => {
       requirements,
     },
   }
-}
-
-/**
- * Group use cases by requirement category and type
- */
-const groupTestcasesByRequirement = (testcases: Testcase[]) => {
-  const groups: Record<
-    string,
-    {
-      type: 'functional' | 'non_functional'
-      testcases: Testcase[]
-      description?: string
-    }
-  > = {}
-
-  for (const testcase of testcases) {
-    const category = testcase.requirementCategory
-
-    if (!groups[category]) {
-      groups[category] = {
-        type: testcase.requirementType,
-        testcases: [],
-        description: testcase.requirement, // Use the first requirement description
-      }
-    }
-
-    groups[category].testcases.push(testcase)
-  }
-
-  return groups
 }
