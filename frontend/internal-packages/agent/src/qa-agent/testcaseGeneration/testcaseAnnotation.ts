@@ -9,7 +9,4 @@ export const testcaseAnnotation = Annotation.Root({
   testcases: Annotation<Testcase[]>({
     reducer: (prev, next) => prev.concat(next),
   }),
-  schemaIssues: Annotation<string[]>({
-    reducer: (prev, next) => prev.concat(next),
-  }),
 })
