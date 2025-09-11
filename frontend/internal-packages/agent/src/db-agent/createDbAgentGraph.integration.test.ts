@@ -27,6 +27,8 @@ describe('createDbAgentGraph Integration', () => {
       userId: context.userId,
       prompt: userInput,
       next: END,
+      designSchemaRetryCount: 0,
+      schemaDesignSuccessful: false,
     }
 
     // Act
