@@ -1,12 +1,13 @@
 import { NextResponse } from 'next/server'
 import { ensureUserHasOrganization } from '../../../../components/LoginPage/services/ensureUserHasOrganization'
+import { sanitizeReturnPath } from '../../../../components/LoginPage/services/validateReturnPath'
 import { createClient } from '../../../../libs/db/server'
 
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url)
   const code = searchParams.get('code')
-  // Use query parameter "next" to redirect after auth, defaults to "/"
-  const next = searchParams.get('next') ?? '/'
+  // Use query parameter "next" to redirect after auth, sanitize for security
+  const next = sanitizeReturnPath(searchParams.get('next'), '/')
 
   if (code) {
     const supabase = await createClient()

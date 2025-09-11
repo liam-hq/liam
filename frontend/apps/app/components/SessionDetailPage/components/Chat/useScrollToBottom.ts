@@ -11,6 +11,7 @@ export const useScrollToBottom = <T extends HTMLElement>(
 ) => {
   const containerRef = useRef<T | null>(null)
   const [locked, setLocked] = useState(false)
+  const prevItemsLengthRef = useRef(itemsLength)
 
   const scrollToBottom = useCallback(() => {
     const el = containerRef.current
@@ -18,9 +19,13 @@ export const useScrollToBottom = <T extends HTMLElement>(
     el.scrollTo({ top: el.scrollHeight, behavior })
   }, [behavior])
 
+  // Auto-scroll when not locked (items added or lock state changed)
   useEffect(() => {
-    if (!locked) scrollToBottom()
-  }, [itemsLength])
+    if (!locked) {
+      scrollToBottom()
+    }
+    prevItemsLengthRef.current = itemsLength
+  }, [itemsLength, locked, scrollToBottom])
 
   useEffect(() => {
     const el = containerRef.current

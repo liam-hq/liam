@@ -15,8 +15,7 @@ afterEach(() => {
   vi.clearAllMocks()
 })
 
-// TODO(command options): remove .skip to release command options
-describe.skip('in case input mode is "default"', () => {
+describe('in case input mode is "default"', () => {
   describe('when the user pressed > key', () => {
     it('should switch to "command" mode when value is empty', async () => {
       const user = userEvent.setup()
@@ -55,8 +54,7 @@ describe.skip('in case input mode is "default"', () => {
   })
 })
 
-// TODO(command options): remove .skip to release command options
-describe.skip('in case input mode is "command"', () => {
+describe('in case input mode is "command"', () => {
   describe('when the user pressed Backspace key', () => {
     it('should switch to "default" mode when value is empty', async () => {
       const user = userEvent.setup()

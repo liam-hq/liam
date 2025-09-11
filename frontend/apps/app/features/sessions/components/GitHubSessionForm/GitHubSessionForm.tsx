@@ -1,10 +1,8 @@
 'use client'
 
-import { HumanMessage } from '@langchain/core/messages'
-import { useRouter } from 'next/navigation'
 import { type FC, useActionState, useEffect, useTransition } from 'react'
 import type { Projects } from '../../../../components/CommonLayout/AppBar/ProjectsDropdownMenu/services/getProjects'
-import { LG_INITIAL_MESSAGE_PREFIX } from '../../../../constants/storageKeys'
+import { useSessionNavigation } from '../shared/hooks/useSessionNavigation'
 import { createGitHubSession } from './actions/createGitHubSession'
 import { getBranches } from './actions/getBranches'
 import { getSchemaFilePath } from './actions/getSchemaFilePath'
@@ -19,9 +17,7 @@ export const GitHubSessionForm: FC<Props> = ({
   projects,
   defaultProjectId,
 }) => {
-  const router = useRouter()
   const [, startChangingProject] = useTransition()
-  const [isRouting, startRouting] = useTransition()
   const [state, formAction, isPending] = useActionState(createGitHubSession, {
     success: false,
     error: '',
@@ -36,6 +32,8 @@ export const GitHubSessionForm: FC<Props> = ({
     getSchemaFilePath,
     { path: null },
   )
+
+  const { isRouting } = useSessionNavigation(state)
 
   const handleProjectChange = (projectId: string) => {
     startChangingProject(() => {
@@ -58,27 +56,6 @@ export const GitHubSessionForm: FC<Props> = ({
       })
     }
   }, [defaultProjectId, projects, branchesAction, schemaPathAction])
-
-  useEffect(() => {
-    if (!state.success) return
-
-    startRouting(() => {
-      // Store the initial message for optimistic rendering
-      const humanMessage = new HumanMessage({
-        id: crypto.randomUUID(),
-        content: state.initialMessage,
-        additional_kwargs: {
-          userName: state.userName,
-        },
-      })
-      sessionStorage.setItem(
-        `${LG_INITIAL_MESSAGE_PREFIX}:${state.designSessionId}`,
-        JSON.stringify(humanMessage),
-      )
-
-      router.push(state.redirectTo)
-    })
-  }, [state, router])
 
   return (
     <GitHubSessionFormPresenter

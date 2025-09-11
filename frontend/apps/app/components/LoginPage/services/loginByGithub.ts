@@ -3,6 +3,8 @@ import { cookies, headers } from 'next/headers'
 import { redirect } from 'next/navigation'
 
 import { createClient } from '../../../libs/db/server'
+import { urlgen } from '../../../libs/routes/urlgen'
+import { sanitizeReturnPath } from './validateReturnPath'
 
 type OAuthProvider = 'github'
 
@@ -36,18 +38,19 @@ async function getAuthCallbackUrl({
   }
 
   url = url.endsWith('/') ? url : `${url}/`
-  return `${url}app/auth/callback/${provider}?next=${encodeURIComponent(next)}`
+  return `${url}auth/callback/${provider}?next=${encodeURIComponent(next)}`
 }
 
 export async function loginByGithub(formData: FormData) {
   const supabase = await createClient()
 
-  // Get the returnTo path from the form data
+  // Get the returnTo path from the form data and sanitize it
   // This will be set by the login page which reads from the cookie
   const formReturnTo = formData.get('returnTo')
-  const returnTo = formReturnTo
-    ? formReturnTo.toString()
-    : '/design_sessions/new'
+  const returnTo = sanitizeReturnPath(
+    formReturnTo?.toString(),
+    '/design_sessions/new',
+  )
 
   // Clear the returnTo cookie since we've used it
   const cookieStore = await cookies()
@@ -65,7 +68,7 @@ export async function loginByGithub(formData: FormData) {
   })
 
   if (error) {
-    redirect('/error')
+    redirect(urlgen('error'))
   }
 
   if (data.url) {

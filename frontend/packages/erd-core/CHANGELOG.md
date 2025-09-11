@@ -1,5 +1,13 @@
 # @liam-hq/erd-core
 
+## 0.6.9
+
+### Patch Changes
+
+- [#3268](https://github.com/liam-hq/liam/pull/3268) - - ✨ add CommandOptions to CommandPalette / Thanks [@tnyo43](https://github.com/tnyo43)!
+  - type `>` to enter `command` mode, showing only command options
+  - execute a command by clicking an option
+
 ## 0.6.8
 
 ### Patch Changes

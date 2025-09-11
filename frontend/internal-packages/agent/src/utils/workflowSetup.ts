@@ -17,14 +17,14 @@ import { createEnhancedTraceData } from './traceEnhancer'
 /**
  * Shared workflow setup configuration
  */
-export type WorkflowSetupConfig = {
+type WorkflowSetupConfig = {
   configurable: WorkflowConfigurable
 }
 
 /**
  * Result of workflow setup, containing the prepared state and run metadata
  */
-export type WorkflowSetupResult = {
+type WorkflowSetupResult = {
   workflowState: WorkflowState
   workflowRunId: string
   runCollector: RunCollectorCallbackHandler

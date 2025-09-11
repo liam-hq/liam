@@ -106,7 +106,7 @@ describe('formatValidationErrors', () => {
     `)
   })
 
-  it('should truncate long SQL statements', () => {
+  it('should display full long SQL statements', () => {
     const longSql = `INSERT INTO very_long_table_name_with_many_columns (
       column1, column2, column3, column4, column5, column6, column7, column8,
       column9, column10, column11, column12, column13, column14, column15,
@@ -143,7 +143,12 @@ describe('formatValidationErrors', () => {
             column1, column2, column3, column4, column5, column6, column7, column8,
             column9, column10, column11, column12, column13, column14, column15,
             column16, column17, column18, column19, column20, column21, column22,
-            column23, co...
+            column23, column24, column25, column26, column27, column28, column29,
+            column30, column31, column32, column33, column34, column35
+          ) VALUES (
+            'value1', 'value2', 'value3', 'value4', 'value5', 'value6', 'value7',
+            'value8', 'value9', 'value10', 'value11', 'value12', 'value13'
+          )
       \`\`\`"
     `)
   })

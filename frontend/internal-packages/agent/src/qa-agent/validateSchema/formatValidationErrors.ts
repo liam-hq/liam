@@ -1,18 +1,9 @@
 import type { FailedOperation, TestcaseDmlExecutionResult } from './types'
 
-function formatSqlForDisplay(sql: string, maxLength = 300): string {
-  const cleanSql = sql.trim()
-
-  if (cleanSql.length > maxLength) {
-    return `${cleanSql.substring(0, maxLength)}...`
-  }
-  return cleanSql
-}
-
 function formatFailedOperation(failedOperation: FailedOperation): string {
   let details = `#### 1. Error: \`${failedOperation.error}\`\n`
   details += '```sql\n'
-  details += formatSqlForDisplay(failedOperation.sql)
+  details += failedOperation.sql
   details += '\n```'
   return details
 }

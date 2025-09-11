@@ -11,8 +11,8 @@ import {
 import { type FC, useMemo, useState } from 'react'
 import { MarkdownContent } from '../../../../../../../../MarkdownContent'
 import type { ToolCall as ToolCallType } from '../../../../../../../schema'
-import { extractResponseFromMessage } from '../../../../../../../utils'
 import markdownStyles from '../../../Markdown.module.css'
+import { extractResponseFromMessage } from '../../../utils'
 import styles from './ToolCall.module.css'
 
 type Props = {

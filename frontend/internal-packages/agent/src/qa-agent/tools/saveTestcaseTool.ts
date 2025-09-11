@@ -4,6 +4,7 @@ import type { RunnableConfig } from '@langchain/core/runnables'
 import { type StructuredTool, tool } from '@langchain/core/tools'
 import { Command } from '@langchain/langgraph'
 import { dmlOperationSchema } from '@liam-hq/artifact'
+import { type PgParseResult, pgParse } from '@liam-hq/schema/parser'
 import { v4 as uuidv4 } from 'uuid'
 import * as v from 'valibot'
 import { SSE_EVENTS } from '../../client'
@@ -31,6 +32,21 @@ const configSchema = v.object({
     id: v.string(),
   }),
 })
+
+/**
+ * Validate SQL syntax using pgParse
+ */
+const validateSqlSyntax = async (sql: string): Promise<void> => {
+  const parseResult: PgParseResult = await pgParse(sql)
+
+  if (parseResult.error) {
+    // LangGraph tool nodes require throwing errors to trigger retry mechanism
+    // eslint-disable-next-line no-throw-error/no-throw-error
+    throw new Error(
+      `SQL syntax error: ${parseResult.error.message}. Please fix the SQL and try again.`,
+    )
+  }
+}
 
 /**
  * Extract tool call ID from config
@@ -61,6 +77,9 @@ export const saveTestcaseTool: StructuredTool = tool(
     }
 
     const { testcaseWithDml } = parsed.output
+
+    // Validate SQL syntax before saving
+    await validateSqlSyntax(testcaseWithDml.dmlOperation.sql)
 
     const toolCallId = getToolCallId(config)
 

@@ -4,6 +4,7 @@ import type {
   FunctionalRequirement,
   NonFunctionalRequirement,
 } from '@liam-hq/artifact'
+import * as v from 'valibot'
 import type { Testcase } from '../qa-agent/types'
 import type { WorkflowState } from '../types'
 
@@ -115,13 +116,25 @@ const mergeTestCasesIntoRequirements = (
   }
 }
 
+// Valibot schema for validating analyzedRequirements structure
+const analyzedRequirementsSchema = v.object({
+  businessRequirement: v.string(),
+  functionalRequirements: v.record(v.string(), v.array(v.string())),
+  nonFunctionalRequirements: v.record(v.string(), v.array(v.string())),
+})
+
+type AnalyzedRequirements = v.InferOutput<typeof analyzedRequirementsSchema>
+
+type State = {
+  analyzedRequirements: AnalyzedRequirements
+  testcases: Testcase[]
+}
+
 /**
  * Transform WorkflowState to Artifact format
  * This handles the conversion from the workflow's data structure to the artifact schema
  */
-export const transformWorkflowStateToArtifact = (
-  state: WorkflowState,
-): Artifact => {
+export const transformStateToArtifact = (state: State): Artifact => {
   const businessRequirement = state.analyzedRequirements.businessRequirement
 
   const requirements = convertAnalyzedRequirementsToArtifact(

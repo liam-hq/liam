@@ -1,15 +1,15 @@
-import { dispatchCustomEvent } from '@langchain/core/callbacks/dispatch'
 import {
-  AIMessage,
-  AIMessageChunk,
+  type AIMessage,
+  type AIMessageChunk,
   SystemMessage,
 } from '@langchain/core/messages'
 import { END } from '@langchain/langgraph'
 import { ChatOpenAI } from '@langchain/openai'
-import { ResultAsync } from 'neverthrow'
-import { v4 as uuidv4 } from 'uuid'
+import { fromAsyncThrowable } from '@liam-hq/neverthrow'
+import type { ResultAsync } from 'neverthrow'
 import { SSE_EVENTS } from '../../client'
 import type { WorkflowState } from '../../types'
+import { streamLLMResponse } from '../../utils/streamingLlmUtils'
 
 const AGENT_NAME = 'lead' as const
 
@@ -55,49 +55,16 @@ Please summarize:
 
 Keep the summary informative but concise, focusing on the key achievements and decisions made during this database design session.`
 
-  const invoke = ResultAsync.fromThrowable(
-    () => {
-      return llm.stream([new SystemMessage(summaryPrompt), ...state.messages])
-    },
-    (error) => (error instanceof Error ? error : new Error(String(error))),
+  const stream = fromAsyncThrowable(() =>
+    llm.stream([new SystemMessage(summaryPrompt), ...state.messages]),
   )
 
-  return invoke().andThen((stream) => {
-    return ResultAsync.fromPromise(
-      (async () => {
-        // OpenAI ("chatcmpl-...") and LangGraph ("run-...") use different id formats,
-        // so we overwrite with a UUID to unify chunk ids for consistent handling.
-        const id = uuidv4()
-        let accumulatedChunk: AIMessageChunk | null = null
+  const response = fromAsyncThrowable((stream: AsyncIterable<AIMessageChunk>) =>
+    streamLLMResponse(stream, {
+      agentName: AGENT_NAME,
+      eventType: SSE_EVENTS.MESSAGES,
+    }),
+  )
 
-        for await (const _chunk of stream) {
-          const chunk = new AIMessageChunk({ ..._chunk, id, name: AGENT_NAME })
-          await dispatchCustomEvent(SSE_EVENTS.MESSAGES, chunk)
-
-          // Accumulate chunks using concat method
-          accumulatedChunk = accumulatedChunk
-            ? accumulatedChunk.concat(chunk)
-            : chunk
-        }
-
-        // Convert the final accumulated chunk to AIMessage
-        // Note: AIMessageChunk.concat() doesn't preserve the name field,
-        // so we need to explicitly set it
-        const response = accumulatedChunk
-          ? new AIMessage({
-              id,
-              content: accumulatedChunk.content,
-              additional_kwargs: accumulatedChunk.additional_kwargs,
-              name: AGENT_NAME, // Always set name as concat() doesn't preserve it
-              ...(accumulatedChunk.tool_calls && {
-                tool_calls: accumulatedChunk.tool_calls,
-              }),
-            })
-          : new AIMessage({ id, content: '', name: AGENT_NAME })
-
-        return response
-      })(),
-      (error) => (error instanceof Error ? error : new Error(String(error))),
-    )
-  })
+  return stream().andThen(response)
 }

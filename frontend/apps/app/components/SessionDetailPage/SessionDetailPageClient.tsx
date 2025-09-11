@@ -9,6 +9,7 @@ import type { Schema } from '@liam-hq/schema'
 import clsx from 'clsx'
 import { type FC, useCallback, useEffect, useRef, useState } from 'react'
 import { Chat } from './components/Chat'
+import { extractResponseFromMessage } from './components/Chat/components/Messages/utils'
 import { Output } from './components/Output'
 import { useRealtimeArtifact } from './components/Output/components/Artifact/hooks/useRealtimeArtifact'
 import { OutputPlaceholder } from './components/OutputPlaceholder'
@@ -24,7 +25,6 @@ import type {
   Version,
   WorkflowRunStatus,
 } from './types'
-import { extractResponseFromMessage } from './utils'
 
 type Props = {
   buildingSchemaId: string
@@ -140,7 +140,7 @@ export const SessionDetailPageClient: FC<Props> = ({
     }
 
     triggerInitialWorkflow()
-  }, [messages, designSessionId, isDeepModelingEnabled])
+  }, [messages, designSessionId, isDeepModelingEnabled, start, status])
 
   // Show Output if artifact exists OR workflow is not pending
   const shouldShowOutput = hasRealtimeArtifact || status !== 'pending'

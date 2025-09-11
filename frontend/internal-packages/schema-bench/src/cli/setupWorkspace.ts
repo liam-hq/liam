@@ -30,6 +30,13 @@ const runSetupWorkspace = async (): Promise<void> => {
         '../../benchmark-workspace-entity-extraction',
       ),
     },
+    {
+      name: 'ambiguous-recall',
+      path: path.resolve(
+        __dirname,
+        '../../benchmark-workspace-ambiguous-recall',
+      ),
+    },
   ]
 
   for (const dataset of datasets) {

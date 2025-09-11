@@ -9,11 +9,14 @@ graph TD;
 	__start__([<p>__start__</p>]):::first
 	testcaseGeneration(testcaseGeneration)
 	validateSchema(validateSchema)
+	invokeRunTestTool(invokeRunTestTool)
 	__end__([<p>__end__</p>]):::last
+	invokeRunTestTool --> __end__;
 	testcaseGeneration --> validateSchema;
-	validateSchema --> __end__;
+	validateSchema --> invokeRunTestTool;
 	__start__ -.-> testcaseGeneration;
 	__start__ -.-> validateSchema;
+	__start__ -.-> invokeRunTestTool;
 	__start__ -.-> __end__;
 	classDef default fill:#f2f0ff,line-height:1.2;
 	classDef first fill-opacity:0;

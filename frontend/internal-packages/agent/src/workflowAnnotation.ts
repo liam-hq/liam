@@ -25,9 +25,6 @@ export const workflowAnnotation = Annotation.Root({
   userId: Annotation<string>,
   designSessionId: Annotation<string>,
 
-  // DML execution results
-  dmlExecutionErrors: Annotation<string | undefined>,
-
   next: Annotation<string>({
     reducer: (x, y) => y ?? x ?? END,
     default: () => END,

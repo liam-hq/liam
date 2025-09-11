@@ -68,7 +68,7 @@ export function useRealtimeVersionsWithSchema({
         }
       })
     },
-    [],
+    [handleError],
   )
 
   const handleAddOrUpdateVersion = useCallback((version: Version) => {

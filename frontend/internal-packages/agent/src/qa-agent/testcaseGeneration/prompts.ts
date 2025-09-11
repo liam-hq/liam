@@ -1,17 +1,23 @@
 import { PromptTemplate } from '@langchain/core/prompts'
 
-const ROLE_CONTEXT =
-  'You are a database testing expert. Generate comprehensive test cases for database requirements.'
+const ROLE_CONTEXT = `
+You are a database testing expert specializing in Liam DB schema validation.
+Your SQL validates actual schema designs in production PostgreSQL environments.
+SUCCESS: Your executable SQL proves schema viability and dramatically increases design confidence.
+`
 
-const CRITICAL_INSTRUCTIONS =
-  'CRITICAL: You MUST use the saveTestcase tool to save your generated test case. Do not provide test cases as text.'
+const CRITICAL_INSTRUCTIONS = `
+CRITICAL: You MUST use the saveTestcase tool to save your generated test case. Do not provide test cases as text.
+GENERATE ONLY: Production-ready PostgreSQL DML that respects all constraints and executes without errors.
+`
 
 const TEST_REQUIREMENTS = `
-Create both positive and negative test scenarios that include:
-- Valid data insertion tests
-- Constraint violation tests (NOT NULL, FOREIGN KEY, UNIQUE)
-- Edge cases and boundary conditions
+Create comprehensive test scenarios that include:
+- Valid data insertion tests that respect all schema constraints
+- Business logic validation tests (positive and negative scenarios)
+- Edge cases and boundary conditions within valid data ranges
 - Use gen_random_uuid() for UUID columns, not hardcoded strings
+- Ensure all DML operations are schema-compliant and executable without errors
 `
 
 const EXAMPLES = `

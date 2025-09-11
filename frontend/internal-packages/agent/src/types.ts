@@ -17,9 +17,6 @@ export type WorkflowState = {
   testcases: Testcase[]
   schemaData: Schema
 
-  // DML execution results
-  dmlExecutionErrors?: string | undefined
-
   // Schema update fields
   buildingSchemaId: string
   latestVersionNumber: number
