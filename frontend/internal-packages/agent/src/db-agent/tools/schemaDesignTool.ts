@@ -92,6 +92,10 @@ export const schemaDesignTool: StructuredTool = tool(
       )
     }
 
+    // Debug logging for JSON Patch operations
+    console.info('[schemaDesignTool] Applying JSON Patch operations:')
+    console.info(JSON.stringify(parsed.output.operations, null, 2))
+
     const applyResult = applyPatchOperations(
       schemaResult.value.schema,
       parsed.output.operations,
@@ -107,6 +111,14 @@ export const schemaDesignTool: StructuredTool = tool(
 
     const { ddlStatements, results } = await validateAndExecuteDDL(
       applyResult.value,
+    )
+
+    // Debug logging for DDL statements
+    console.info('[schemaDesignTool] Generated DDL statements:')
+    console.info(ddlStatements)
+    console.info(
+      '[schemaDesignTool] Validation results:',
+      JSON.stringify(results, null, 2),
     )
 
     const queryResult = await repositories.schema.createValidationQuery({

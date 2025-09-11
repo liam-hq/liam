@@ -14,6 +14,8 @@ export async function designSchemaNode(
   state: DbAgentState,
   config: RunnableConfig,
 ): Promise<DbAgentState> {
+  console.info(`[designSchemaNode] Starting at ${new Date().toISOString()}`)
+
   const configurableResult = getConfigurable(config)
   if (configurableResult.isErr()) {
     throw new WorkflowTerminationError(
@@ -24,6 +26,11 @@ export async function designSchemaNode(
   const { repositories } = configurableResult.value
 
   const schemaText = convertSchemaToText(state.schemaData)
+  console.info(`[designSchemaNode] Initial schema text:\n${schemaText}`)
+  console.info(
+    '[designSchemaNode] Schema tables:',
+    JSON.stringify(state.schemaData.tables, null, 2),
+  )
 
   // Remove reasoning field from AIMessages to avoid API issues
   // This prevents the "reasoning without required following item" error
@@ -41,6 +48,8 @@ export async function designSchemaNode(
   }
 
   const { response } = invokeResult.value
+
+  console.info(`[designSchemaNode] Completed at ${new Date().toISOString()}`)
 
   return {
     ...state,
