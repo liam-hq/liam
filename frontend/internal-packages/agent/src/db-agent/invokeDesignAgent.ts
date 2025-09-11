@@ -29,6 +29,7 @@ const model = new ChatOpenAI({
   useResponsesApi: true,
 }).bindTools([schemaDesignTool], {
   strict: true,
+  tool_choice: schemaDesignTool.name,
 })
 
 type DesignAgentResult = {
