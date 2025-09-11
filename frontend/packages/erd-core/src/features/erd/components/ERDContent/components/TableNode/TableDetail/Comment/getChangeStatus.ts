@@ -2,13 +2,8 @@ import {
   type ChangeStatus,
   getTableChangeStatus,
   getTableCommentChangeStatus,
-  type Operation,
+  type TableChangeParams,
 } from '@liam-hq/schema'
-
-type Params = {
-  tableId: string
-  operations: Operation[]
-}
 
 /**
  * Determines the change status for the table comment component.
@@ -31,7 +26,10 @@ type Params = {
  * Note: Table-level changes take precedence because when a table is
  * added/removed, its comment is implicitly affected.
  */
-export function getChangeStatus({ tableId, operations }: Params): ChangeStatus {
+export function getChangeStatus({
+  tableId,
+  operations,
+}: TableChangeParams): ChangeStatus {
   const tableStatus = getTableChangeStatus({ tableId, operations })
   if (tableStatus === 'added' || tableStatus === 'removed') {
     return tableStatus

@@ -1,4 +1,14 @@
 export { applyPatchOperations } from './applyPatchOperations.js'
+export type {
+  BaseChangeParams,
+  ColumnChangeParams,
+  ConstraintChangeParams,
+  IndexChangeParams,
+  OptionalColumnChangeParams,
+  OptionalConstraintChangeParams,
+  OptionalIndexChangeParams,
+  TableChangeParams,
+} from './base/index.js'
 export {
   getColumnCommentChangeStatus,
   getColumnDefaultChangeStatus,

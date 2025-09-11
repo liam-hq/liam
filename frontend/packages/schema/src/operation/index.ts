@@ -5,6 +5,9 @@ export {
 } from './schema/index.js'
 export {
   applyPatchOperations,
+  type BaseChangeParams,
+  type ColumnChangeParams,
+  type ConstraintChangeParams,
   getColumnCommentChangeStatus,
   getColumnDefaultChangeStatus,
   getColumnNotNullChangeStatus,
@@ -27,4 +30,9 @@ export {
   getTableChangeStatus,
   getTableCommentChangeStatus,
   getTableRelatedChangeStatus,
+  type IndexChangeParams,
+  type OptionalColumnChangeParams,
+  type OptionalConstraintChangeParams,
+  type OptionalIndexChangeParams,
+  type TableChangeParams,
 } from './utils/index.js'

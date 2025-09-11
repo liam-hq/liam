@@ -6,7 +6,10 @@ export type { OperationDeparser, SchemaDeparser } from './deparser/type.js'
 export { PATH_PATTERNS } from './operation/constants.js'
 export {
   applyPatchOperations,
+  type BaseChangeParams,
   type ChangeStatus,
+  type ColumnChangeParams,
+  type ConstraintChangeParams,
   getColumnCommentChangeStatus,
   getColumnDefaultChangeStatus,
   getColumnNotNullChangeStatus,
@@ -29,8 +32,13 @@ export {
   getTableChangeStatus,
   getTableCommentChangeStatus,
   getTableRelatedChangeStatus,
+  type IndexChangeParams,
   type Operation,
+  type OptionalColumnChangeParams,
+  type OptionalConstraintChangeParams,
+  type OptionalIndexChangeParams,
   operationsSchema,
+  type TableChangeParams,
 } from './operation/index.js'
 export type { ProcessError } from './parser.js'
 export {

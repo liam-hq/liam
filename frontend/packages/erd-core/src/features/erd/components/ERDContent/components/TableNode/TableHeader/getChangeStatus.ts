@@ -4,13 +4,8 @@ import {
   getConstraintRelatedChangeStatus,
   getIndexRelatedChangeStatus,
   getTableRelatedChangeStatus,
-  type Operation,
+  type TableChangeParams,
 } from '@liam-hq/schema'
-
-type Params = {
-  tableId: string
-  operations: Operation[]
-}
 
 /**
  *
@@ -32,7 +27,10 @@ type Params = {
  * 5. No changes
  *    - None of the above → returns 'unchanged'
  */
-export function getChangeStatus({ tableId, operations }: Params): ChangeStatus {
+export function getChangeStatus({
+  tableId,
+  operations,
+}: TableChangeParams): ChangeStatus {
   const tableStatus = getTableRelatedChangeStatus({ tableId, operations })
   if (tableStatus !== 'unchanged') {
     return tableStatus
