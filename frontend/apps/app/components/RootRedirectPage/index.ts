@@ -1,0 +1,1 @@
+export { RootRedirectPage } from './RootRedirectPage'

@@ -4,9 +4,9 @@ import type {
   FunctionalRequirement,
   NonFunctionalRequirement,
 } from '@liam-hq/artifact'
-import * as v from 'valibot'
 import type { Testcase } from '../qa-agent/types'
 import type { WorkflowState } from '../types'
+import type { AnalyzedRequirements } from '../utils/schema/analyzedRequirements'
 
 /**
  * Wraps a description string in an array format with fallback
@@ -33,7 +33,7 @@ const convertAnalyzedRequirementsToArtifact = (
     const functionalRequirement: FunctionalRequirement = {
       type: 'functional',
       name: category,
-      description: items, // Keep as array
+      description: items.map((item) => item.desc), // Extract descriptions from RequirementItems
       test_cases: [], // Will be populated later if testcases exist
     }
     requirements.push(functionalRequirement)
@@ -45,7 +45,7 @@ const convertAnalyzedRequirementsToArtifact = (
     const nonFunctionalRequirement: NonFunctionalRequirement = {
       type: 'non_functional',
       name: category,
-      description: items, // Keep as array
+      description: items.map((item) => item.desc), // Extract descriptions from RequirementItems
     }
     requirements.push(nonFunctionalRequirement)
   }
@@ -115,15 +115,6 @@ const mergeTestCasesIntoRequirements = (
     }
   }
 }
-
-// Valibot schema for validating analyzedRequirements structure
-const analyzedRequirementsSchema = v.object({
-  businessRequirement: v.string(),
-  functionalRequirements: v.record(v.string(), v.array(v.string())),
-  nonFunctionalRequirements: v.record(v.string(), v.array(v.string())),
-})
-
-type AnalyzedRequirements = v.InferOutput<typeof analyzedRequirementsSchema>
 
 type State = {
   analyzedRequirements: AnalyzedRequirements

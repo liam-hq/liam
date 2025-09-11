@@ -5,14 +5,16 @@ import {
   getTestConfig,
   outputStreamEvents,
 } from '../../../test-utils/workflowTestHelpers'
-import type { WorkflowState } from '../../types'
-import { workflowAnnotation } from '../../workflowAnnotation'
+import {
+  type DbAgentState,
+  dbAgentAnnotation,
+} from '../shared/dbAgentAnnotation'
 import { designSchemaNode } from './designSchemaNode'
 
 describe('designSchemaNode Integration', () => {
   it('should execute designSchemaNode with real APIs', async () => {
     // Arrange
-    const graph = new StateGraph(workflowAnnotation)
+    const graph = new StateGraph(dbAgentAnnotation)
       .addNode('designSchemaNode', designSchemaNode)
       .addEdge(START, 'designSchemaNode')
       .addEdge('designSchemaNode', END)
@@ -22,25 +24,19 @@ describe('designSchemaNode Integration', () => {
     const userInput =
       'Create a user management system with users, roles, and permissions tables'
 
-    const state: WorkflowState = {
-      userInput,
+    const state: DbAgentState = {
       messages: [new HumanMessage(userInput)],
       schemaData: {
         tables: {},
         enums: {},
         extensions: {},
       },
-      analyzedRequirements: {
-        businessRequirement: '',
-        functionalRequirements: {},
-        nonFunctionalRequirements: {},
-      },
-      testcases: [],
       buildingSchemaId: context.buildingSchemaId,
       latestVersionNumber: context.latestVersionNumber,
-      designSessionId: context.designSessionId,
-      userId: context.userId,
       organizationId: context.organizationId,
+      userId: context.userId,
+      designSessionId: context.designSessionId,
+      prompt: userInput,
       next: END,
     }
 

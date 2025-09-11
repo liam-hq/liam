@@ -1,32 +1,18 @@
 import { Send } from '@langchain/langgraph'
 import { convertSchemaToText } from '../../utils/convertSchemaToText'
 import { WorkflowTerminationError } from '../../utils/errorHandling'
+import type { RequirementItem } from '../../utils/schema/analyzedRequirements'
 import type { QaAgentState } from '../shared/qaAgentAnnotation'
 
 /**
  * Requirement data structure for parallel processing
  */
 export type RequirementData = {
-  type: 'business' | 'functional' | 'non_functional'
+  type: 'functional' | 'non_functional'
   category: string
   requirement: string
   businessContext: string
-}
-
-/**
- * Add business requirement to the requirements list
- */
-function addBusinessRequirement(
-  requirements: RequirementData[],
-  businessRequirement: string,
-  businessContext: string,
-): void {
-  requirements.push({
-    type: 'business',
-    category: 'business',
-    requirement: businessRequirement,
-    businessContext,
-  })
+  requirementId: string
 }
 
 /**
@@ -34,7 +20,7 @@ function addBusinessRequirement(
  */
 function processRequirementsByType(
   requirements: RequirementData[],
-  requirementsData: Record<string, string[]> | undefined,
+  requirementsData: Record<string, RequirementItem[]> | undefined,
   type: 'functional' | 'non_functional',
   businessContext: string,
 ): void {
@@ -42,12 +28,13 @@ function processRequirementsByType(
 
   for (const [category, reqList] of Object.entries(requirementsData)) {
     if (reqList?.length > 0) {
-      for (const requirement of reqList) {
+      for (const requirementItem of reqList) {
         requirements.push({
           type,
           category,
-          requirement,
+          requirement: requirementItem.desc,
           businessContext,
+          requirementId: requirementItem.id,
         })
       }
     }
@@ -61,15 +48,6 @@ function prepareRequirements(state: QaAgentState): RequirementData[] {
   const { analyzedRequirements } = state
   const allRequirements: RequirementData[] = []
   const businessContext = analyzedRequirements.businessRequirement || ''
-
-  // Add business requirement if exists
-  if (analyzedRequirements.businessRequirement) {
-    addBusinessRequirement(
-      allRequirements,
-      analyzedRequirements.businessRequirement,
-      businessContext,
-    )
-  }
 
   // Process functional requirements
   processRequirementsByType(

@@ -17,12 +17,18 @@ import { SSE_EVENTS } from '../../streaming/constants'
 import { WorkflowTerminationError } from '../../utils/errorHandling'
 import { getConfigurable } from '../../utils/getConfigurable'
 import { toJsonSchema } from '../../utils/jsonSchema'
-import {
-  type AnalyzedRequirements,
-  analyzedRequirementsSchema,
+import type {
+  AnalyzedRequirements,
+  RequirementItem,
 } from '../../utils/schema/analyzedRequirements'
 
-const toolSchema = toJsonSchema(analyzedRequirementsSchema)
+const analyzedRequirementsWithoutIdSchema = v.object({
+  businessRequirement: v.string(),
+  functionalRequirements: v.record(v.string(), v.array(v.string())),
+  nonFunctionalRequirements: v.record(v.string(), v.array(v.string())),
+})
+
+const toolSchema = toJsonSchema(analyzedRequirementsWithoutIdSchema)
 
 const configSchema = v.object({
   toolCall: v.object({
@@ -38,6 +44,43 @@ type ToolConfigurable = {
   designSessionId: string
   toolCallId: string
 }
+
+type AnalyzedRequirementsWithoutId = v.InferOutput<
+  typeof analyzedRequirementsWithoutIdSchema
+>
+
+/**
+ * Convert string[] format to RequirementItem[] format with generated UUIDs
+ */
+const convertToRequirementItems = (
+  requirements: Record<string, string[]>,
+): Record<string, RequirementItem[]> => {
+  const result: Record<string, RequirementItem[]> = {}
+
+  for (const [category, items] of Object.entries(requirements)) {
+    result[category] = items.map((desc) => ({
+      id: uuidv4(),
+      desc,
+    }))
+  }
+
+  return result
+}
+
+/**
+ * Convert LLM output format to RequirementItems format with generated UUIDs
+ */
+const convertLlmAnalyzedRequirements = (
+  input: AnalyzedRequirementsWithoutId,
+): AnalyzedRequirements => ({
+  businessRequirement: input.businessRequirement,
+  functionalRequirements: convertToRequirementItems(
+    input.functionalRequirements,
+  ),
+  nonFunctionalRequirements: convertToRequirementItems(
+    input.nonFunctionalRequirements,
+  ),
+})
 
 /**
  * Create an Artifact from analyzed requirements
@@ -55,7 +98,7 @@ const createArtifactFromRequirements = (
     const functionalRequirement: FunctionalRequirement = {
       type: 'functional',
       name: category,
-      description: items,
+      description: items.map((item) => item.desc), // Extract descriptions from RequirementItems
       test_cases: [], // Empty array as test cases don't exist at this point
     }
     requirements.push(functionalRequirement)
@@ -67,7 +110,7 @@ const createArtifactFromRequirements = (
     const nonFunctionalRequirement: NonFunctionalRequirement = {
       type: 'non_functional',
       name: category,
-      description: items,
+      description: items.map((item) => item.desc), // Extract descriptions from RequirementItems
     }
     requirements.push(nonFunctionalRequirement)
   }
@@ -101,7 +144,8 @@ const getToolConfigurable = (
  */
 export const saveRequirementsToArtifactTool: StructuredTool = tool(
   async (input: unknown, config: RunnableConfig): Promise<Command> => {
-    const analyzedRequirements = v.parse(analyzedRequirementsSchema, input)
+    const parseResult = v.parse(analyzedRequirementsWithoutIdSchema, input)
+    const analyzedRequirements = convertLlmAnalyzedRequirements(parseResult)
 
     const toolConfigurableResult = getToolConfigurable(config)
     if (toolConfigurableResult.isErr()) {

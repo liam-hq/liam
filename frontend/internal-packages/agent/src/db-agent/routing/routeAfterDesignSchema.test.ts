@@ -16,6 +16,7 @@ const createDbAgentState = (
   organizationId: 'test-org',
   userId: 'test-user',
   designSessionId: 'test-session',
+  prompt: 'test input',
   next: END,
   designSchemaRetryCount,
   schemaDesignSuccessful: false,

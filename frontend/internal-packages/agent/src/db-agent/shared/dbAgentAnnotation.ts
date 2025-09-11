@@ -9,6 +9,7 @@ export const dbAgentAnnotation = Annotation.Root({
   organizationId: Annotation<string>,
   userId: Annotation<string>,
   designSessionId: Annotation<string>,
+  prompt: Annotation<string>,
   next: Annotation<string>({
     reducer: (x, y) => y ?? x ?? END,
     default: () => END,

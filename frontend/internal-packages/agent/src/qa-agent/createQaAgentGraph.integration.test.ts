@@ -1,6 +1,7 @@
 import { HumanMessage } from '@langchain/core/messages'
 import { END } from '@langchain/langgraph'
 import { aColumn, aSchema, aTable } from '@liam-hq/schema'
+import { v4 as uuidv4 } from 'uuid'
 import { describe, it } from 'vitest'
 import {
   getTestConfig,
@@ -78,25 +79,55 @@ describe('createQaAgentGraph Integration', () => {
           'Implement secure user authentication and role-based access control system',
         functionalRequirements: {
           Authentication: [
-            'Users should be able to register with valid email and password',
-            'Users should be able to login with correct credentials',
-            'System should validate email format and password strength',
+            {
+              id: uuidv4(),
+              desc: 'Users should be able to register with valid email and password',
+            },
+            {
+              id: uuidv4(),
+              desc: 'Users should be able to login with correct credentials',
+            },
+            {
+              id: uuidv4(),
+              desc: 'System should validate email format and password strength',
+            },
           ],
           Authorization: [
-            'Only admin users should be able to create new roles',
-            'Users should only access resources allowed by their role',
-            'System should enforce role-based permissions on all endpoints',
+            {
+              id: uuidv4(),
+              desc: 'Only admin users should be able to create new roles',
+            },
+            {
+              id: uuidv4(),
+              desc: 'Users should only access resources allowed by their role',
+            },
+            {
+              id: uuidv4(),
+              desc: 'System should enforce role-based permissions on all endpoints',
+            },
           ],
         },
         nonFunctionalRequirements: {
           Security: [
-            'Passwords must be hashed using bcrypt',
-            'Session tokens should expire after inactivity',
-            'Failed login attempts should be rate limited',
+            { id: uuidv4(), desc: 'Passwords must be hashed using bcrypt' },
+            {
+              id: uuidv4(),
+              desc: 'Session tokens should expire after inactivity',
+            },
+            {
+              id: uuidv4(),
+              desc: 'Failed login attempts should be rate limited',
+            },
           ],
           Performance: [
-            'Authentication should complete within 200ms',
-            'Role validation should be cached for 5 minutes',
+            {
+              id: uuidv4(),
+              desc: 'Authentication should complete within 200ms',
+            },
+            {
+              id: uuidv4(),
+              desc: 'Role validation should be cached for 5 minutes',
+            },
           ],
         },
       },
