@@ -7,7 +7,7 @@ import { END } from '@langchain/langgraph'
 import { ChatOpenAI } from '@langchain/openai'
 import { fromAsyncThrowable } from '@liam-hq/neverthrow'
 import type { ResultAsync } from 'neverthrow'
-import { SSE_EVENTS } from '../../client'
+import { SSE_EVENTS } from '../../streaming/constants'
 import type { WorkflowState } from '../../types'
 import { streamLLMResponse } from '../../utils/streamingLlmUtils'
 

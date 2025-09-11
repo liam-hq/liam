@@ -2,7 +2,10 @@ import { HumanMessage } from '@langchain/core/messages'
 import { END } from '@langchain/langgraph'
 import { aSchema } from '@liam-hq/schema'
 import { describe, it } from 'vitest'
-import { getTestConfig, outputStream } from '../test-utils/workflowTestHelpers'
+import {
+  getTestConfig,
+  outputStreamEvents,
+} from '../test-utils/workflowTestHelpers'
 import { createGraph } from './createGraph'
 import type { WorkflowState } from './types'
 
@@ -33,9 +36,13 @@ describe('createGraph Integration', () => {
     }
 
     // Act
-    const stream = await graph.stream(initialState, config)
+    const streamEvents = graph.streamEvents(initialState, {
+      ...config,
+      streamMode: 'messages',
+      version: 'v2',
+    })
 
     // Assert
-    await outputStream(stream)
+    await outputStreamEvents(streamEvents)
   })
 })

@@ -4,7 +4,7 @@ import { aColumn, aSchema, aTable } from '@liam-hq/schema'
 import { describe, it } from 'vitest'
 import {
   getTestConfig,
-  outputStream,
+  outputStreamEvents,
 } from '../../../test-utils/workflowTestHelpers'
 import {
   type PmAgentState,
@@ -90,8 +90,12 @@ describe('invokeSaveArtifactToolNode Integration', () => {
       analyzedRequirementsRetryCount: 0,
     }
 
-    const stream = await graph.stream(state, config)
+    const streamEvents = graph.streamEvents(state, {
+      ...config,
+      streamMode: 'messages',
+      version: 'v2',
+    })
 
-    await outputStream(stream)
+    await outputStreamEvents(streamEvents)
   })
 })

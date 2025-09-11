@@ -8,12 +8,9 @@ import {
   ToolMessageChunk,
 } from '@langchain/core/messages'
 
-function tryConvertToChunk(message: BaseMessage) {
-  try {
-    return convertToChunk(message)
-  } catch {
-    return null
-  }
+const tryConvertToChunk = (message: BaseMessage): BaseMessageChunk | null => {
+  const result = convertToChunk(message)
+  return result || null
 }
 
 type MessageTuple = {
@@ -48,13 +45,17 @@ export class MessageTupleManager {
     if (!id) return null
 
     this.chunks[id] ??= {}
-    this.chunks[id].metadata = metadata ?? this.chunks[id].metadata
+    if (metadata) {
+      this.chunks[id].metadata = metadata
+    }
     if (chunk) {
       const prev = this.chunks[id].chunk
       this.chunks[id].chunk =
         (isBaseMessageChunk(prev) ? prev : null)?.concat(chunk) ?? chunk
       // NOTE: chunk.concat() always makes name undefined, so override it separately
-      this.chunks[id].chunk.name = chunk.name
+      if (chunk.name !== undefined) {
+        this.chunks[id].chunk.name = chunk.name
+      }
     } else {
       this.chunks[id].chunk = message
     }

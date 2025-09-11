@@ -9,7 +9,6 @@ import type { Schema } from '@liam-hq/schema'
 import clsx from 'clsx'
 import { type FC, useCallback, useEffect, useRef, useState } from 'react'
 import { Chat } from './components/Chat'
-import { extractResponseFromMessage } from './components/Chat/components/Messages/utils'
 import { Output } from './components/Output'
 import { useRealtimeArtifact } from './components/Output/components/Artifact/hooks/useRealtimeArtifact'
 import { OutputPlaceholder } from './components/OutputPlaceholder'
@@ -134,7 +133,7 @@ export const SessionDetailPageClient: FC<Props> = ({
       // Trigger the workflow for the initial user message
       await start({
         designSessionId,
-        userInput: extractResponseFromMessage(firstItem),
+        userInput: firstItem.text,
         isDeepModelingEnabled,
       })
     }

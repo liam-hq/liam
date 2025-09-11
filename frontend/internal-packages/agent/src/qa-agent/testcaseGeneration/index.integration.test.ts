@@ -2,7 +2,7 @@ import { END, START, StateGraph } from '@langchain/langgraph'
 import { describe, it } from 'vitest'
 import {
   getTestConfig,
-  outputStream,
+  outputStreamEvents,
 } from '../../../test-utils/workflowTestHelpers'
 import { testcaseGeneration } from './index'
 import { testcaseAnnotation } from './testcaseAnnotation'
@@ -41,12 +41,17 @@ Table: tasks
 - status: varchar (not null)
       `,
       testcases: [],
+      schemaIssues: [],
     }
 
     // Act
-    const stream = await graph.stream(state, config)
+    const streamEvents = graph.streamEvents(state, {
+      ...config,
+      streamMode: 'messages',
+      version: 'v2',
+    })
 
     // Assert (Output)
-    await outputStream(stream)
+    await outputStreamEvents(streamEvents)
   })
 })

@@ -29,6 +29,9 @@ export const ToolCalls: FC<Props> = ({ toolCalls, toolMessages }) => {
         const toolMessage = toolMessages.find(
           (msg) => msg.tool_call_id === tc.id,
         )
+        if (!toolMessage) {
+          return null
+        }
         return <ToolCall key={tc.id} toolCall={tc} toolMessage={toolMessage} />
       })}
     </div>

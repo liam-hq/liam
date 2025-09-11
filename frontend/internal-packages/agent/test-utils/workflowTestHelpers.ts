@@ -1,31 +1,23 @@
+import {
+  coerceMessageLikeToMessage,
+  isBaseMessage,
+} from '@langchain/core/messages'
 import type { RunnableConfig } from '@langchain/core/runnables'
 import {
   createLogger,
-  getLogLevel,
   setupDatabaseAndUser,
   validateEnvironment,
 } from '../scripts/shared/scriptUtils'
 import { findOrCreateDesignSession } from '../scripts/shared/sessionUtils'
-import { processStreamChunk } from '../scripts/shared/streamingUtils'
-
-/**
- * Processes and outputs the stream from a workflow execution
- * Encapsulates the streaming and logging logic
- */
-export const outputStream = async <T extends Record<string, unknown>>(
-  stream: AsyncGenerator<T, void, unknown>,
-  logLevel: 'ERROR' | 'INFO' | 'DEBUG' | 'WARN' = getLogLevel(),
-): Promise<void> => {
-  const logger = createLogger(logLevel)
-
-  for await (const chunk of stream) {
-    // Find the first non-null node output in the chunk
-    const nodeOutput = Object.values(chunk).find((value) => value !== undefined)
-    if (nodeOutput) {
-      processStreamChunk(logger, nodeOutput)
-    }
-  }
-}
+import { MessageTupleManager } from '../src/streaming/core/MessageTupleManager'
+import {
+  isLangChainStreamEvent,
+  isMetadataRecord,
+} from '../src/streaming/core/typeGuards'
+import {
+  handleReasoningMessage,
+  handleRegularMessage,
+} from '../src/streaming/server/handlers'
 
 /**
  * Gets the minimal configuration needed for integration tests
@@ -85,5 +77,35 @@ export const getTestConfig = async (options?: {
       userId: user.id,
       organizationId: organization.id,
     },
+  }
+}
+
+export const outputStreamEvents = async (
+  stream: AsyncGenerator<unknown, void, unknown>,
+): Promise<void> => {
+  const messageManager = new MessageTupleManager()
+  const lastOutputContent = new Map<string, string>()
+  const lastReasoningContent = new Map<string, string>()
+
+  for await (const ev of stream) {
+    if (!isLangChainStreamEvent(ev)) continue
+    if (ev.name !== 'messages') continue
+
+    const [serialized, metadata] = [ev.data, ev.metadata]
+
+    if (!isBaseMessage(serialized) || !isMetadataRecord(metadata)) {
+      continue
+    }
+
+    const messageId = messageManager.add(serialized, metadata)
+    if (!messageId) continue
+
+    const result = messageManager.get(messageId)
+    if (!result?.chunk) continue
+
+    const message = coerceMessageLikeToMessage(result.chunk)
+
+    handleReasoningMessage(message, messageId, lastReasoningContent)
+    handleRegularMessage(message, messageId, lastOutputContent)
   }
 }
