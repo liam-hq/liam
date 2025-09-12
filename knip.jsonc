@@ -60,5 +60,8 @@
     "frontend/packages/cli": {
       "entry": ["bin/cli.ts", "src/main.tsx"]
     },
+    "frontend/internal-packages/schema-bench": {
+      "entry": ["src/cli/index.ts"]
+    }
   }
 }
