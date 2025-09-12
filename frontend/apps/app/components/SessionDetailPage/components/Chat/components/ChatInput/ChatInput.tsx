@@ -192,13 +192,9 @@ export const ChatInput: FC<Props> = ({
                 className={styles.input}
                 rows={1}
                 data-error={error ? 'true' : undefined}
-                {...{
-                  role: 'combobox',
-                }}
-                aria-controls={mentionSuggestorId}
-                aria-expanded={isMentionSuggestorOpen}
-                aria-autocomplete="list"
-                aria-haspopup="listbox"
+                aria-controls={
+                  isMentionSuggestorOpen ? mentionSuggestorId : undefined
+                }
                 onChange={handleChange}
                 onKeyDown={handleKeyDown}
                 onCompositionStart={handleCompositionStart}
