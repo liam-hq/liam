@@ -23,9 +23,14 @@ const tsxPath = () => {
 
 const runTsCli = (tsFile: string, args: string[]): Promise<number> => {
   return new Promise((resolve) => {
+    const env = { ...process.env }
+    // Avoid nested inspector/IPC issues when spawning tsx from tsx
+    if (env['NODE_OPTIONS']?.includes('--inspect')) {
+      delete env['NODE_OPTIONS']
+    }
     const child = spawn(process.execPath, [tsxPath(), tsFile, ...args], {
       stdio: 'inherit',
-      env: process.env,
+      env,
       cwd: process.cwd(),
     })
     child.on('exit', (code) => resolve(code ?? 0))
