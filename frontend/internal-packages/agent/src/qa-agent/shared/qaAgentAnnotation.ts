@@ -32,6 +32,18 @@ export const qaAgentAnnotation = Annotation.Root({
     reducer: (x, y) => y ?? x ?? END,
     default: () => END,
   }),
+  retryCount: Annotation<number>({
+    reducer: (x, y) => y ?? x,
+    default: () => 0,
+  }),
+  maxRetries: Annotation<number>({
+    reducer: (x, y) => y ?? x,
+    default: () => 3,
+  }),
+  lastValidationErrors: Annotation<string>({
+    reducer: (x, y) => y ?? x,
+    default: () => '',
+  }),
 })
 
 export type QaAgentState = typeof qaAgentAnnotation.State
