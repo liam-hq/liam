@@ -5,7 +5,7 @@
 import * as Sentry from '@sentry/nextjs'
 
 Sentry.init({
-  dsn: 'https://cf02c97479e701934911c93e6cc02119@o544600.ingest.us.sentry.io/4508578446442496',
+  dsn: process.env.SENTRY_DSN,
 
   // Add optional integrations for additional features
   integrations: [Sentry.replayIntegration()],
@@ -25,6 +25,8 @@ Sentry.init({
 
   // Setting this option to true will print useful information to the console while you're setting up Sentry.
   debug: false,
+
+  environment: process.env.NEXT_PUBLIC_ENV_NAME,
 })
 
 export const onRouterTransitionStart = Sentry.captureRouterTransitionStart
