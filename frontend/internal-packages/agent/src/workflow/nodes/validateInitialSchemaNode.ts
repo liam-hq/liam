@@ -1,17 +1,7 @@
+import { END } from '@langchain/langgraph'
 import { executeQuery } from '@liam-hq/pglite-server'
 import { isEmptySchema, postgresqlSchemaDeparser } from '@liam-hq/schema'
 import type { WorkflowState } from '../../types'
-import { WorkflowTerminationError } from '../../utils/errorHandling'
-
-const createValidationError = (
-  error: Error | string,
-): WorkflowTerminationError => {
-  const errorInstance = error instanceof Error ? error : new Error(error)
-  return new WorkflowTerminationError(
-    errorInstance,
-    'validateInitialSchemaNode',
-  )
-}
 
 /**
  * Validates initial schema and provides Instant Database initialization experience.
@@ -21,17 +11,19 @@ export async function validateInitialSchemaNode(
   state: WorkflowState,
 ): Promise<WorkflowState> {
   if (isEmptySchema(state.schemaData)) {
-    // TODO: Add message creation in next PR
+    // No validation needed for empty schema, continue to leadAgent
     return state
   }
 
   const ddlResult = postgresqlSchemaDeparser(state.schemaData)
 
   if (ddlResult.errors.length > 0) {
-    const errorMessage = ddlResult.errors
-      .map((error) => error.message)
-      .join('; ')
-    throw createValidationError(`Schema deparser failed: ${errorMessage}`)
+    // TODO: Add error messages to state
+    return {
+      ...state,
+      messages: [...state.messages],
+      next: END,
+    }
   }
 
   const ddlStatements = ddlResult.value
@@ -46,11 +38,14 @@ export async function validateInitialSchemaNode(
   const hasErrors = validationResults.some((result) => !result.success)
 
   if (hasErrors) {
-    const errorResult = validationResults.find((result) => !result.success)
-    const errorMessage = JSON.stringify(errorResult?.result)
-    throw createValidationError(`Schema validation failed: ${errorMessage}`)
+    // TODO: Add error message to state
+    return {
+      ...state,
+      messages: [...state.messages],
+      next: END,
+    }
   }
 
-  // TODO: Add message creation in next PR
+  // Schema validation successful, continue to leadAgent
   return state
 }

@@ -190,9 +190,17 @@ describe('validateInitialSchemaNode Integration', () => {
         next: 'leadAgent',
       }
 
-      await expect(validateInitialSchemaNode(state)).rejects.toThrowError(
-        'Error in validateInitialSchemaNode: Schema validation failed: {"error":"type \\"unknown_invalid_type\\" does not exist"}',
-      )
+      const result = await validateInitialSchemaNode(state)
+
+      expect(result.next).toBe('__end__')
+      expect(result.messages).toHaveLength(2) // Original + AI error message
+
+      const aiMessage = result.messages[1]
+      expect(aiMessage).toBeInstanceOf(AIMessage)
+      if (aiMessage instanceof AIMessage) {
+        expect(aiMessage.content).toContain('❌ **Database Execution Failed**')
+        expect(aiMessage.content).toContain('unknown_invalid_type')
+      }
     }, 30000) // 30 second timeout for CI/preview environments
   })
 })
