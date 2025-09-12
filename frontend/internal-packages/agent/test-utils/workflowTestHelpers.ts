@@ -1,7 +1,5 @@
-import {
-  coerceMessageLikeToMessage,
-  isBaseMessage,
-} from '@langchain/core/messages'
+import type { SerializedConstructor } from '@langchain/core/load/serializable'
+import { coerceMessageLikeToMessage } from '@langchain/core/messages'
 import type { RunnableConfig } from '@langchain/core/runnables'
 import {
   createLogger,
@@ -123,9 +121,13 @@ export const outputStreamEvents = async (
     if (!isLangChainStreamEvent(ev)) continue
     if (ev.name !== 'messages') continue
 
-    const [serialized, metadata] = [ev.data, ev.metadata]
+    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+    const [serialized, metadata] = [ev.data, ev.metadata] as [
+      SerializedConstructor,
+      Record<string, unknown>,
+    ]
 
-    if (!isBaseMessage(serialized) || !isMetadataRecord(metadata)) {
+    if (!isMetadataRecord(metadata)) {
       continue
     }
 

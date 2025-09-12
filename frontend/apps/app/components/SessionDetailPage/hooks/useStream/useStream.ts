@@ -104,11 +104,7 @@ export const useStream = ({ designSessionId, initialMessages }: Props) => {
           continue
         }
 
-        const messageId = messageManagerRef.current.add(
-          // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-          serialized.kwargs as BaseMessage,
-          metadata,
-        )
+        const messageId = messageManagerRef.current.add(serialized, metadata)
         if (!messageId) continue
 
         setMessages((prev) => {

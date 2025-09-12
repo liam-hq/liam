@@ -1,3 +1,4 @@
+import type { SerializedConstructor } from '@langchain/core/load/serializable'
 import {
   type BaseMessage,
   type BaseMessageChunk,
@@ -30,7 +31,10 @@ export class MessageTupleManager {
     this.chunks = {}
   }
 
-  add(serialized: BaseMessage, metadata: Record<string, unknown> | undefined) {
+  add(
+    serialized: SerializedConstructor,
+    metadata: Record<string, unknown> | undefined,
+  ) {
     const message = coerceMessageLikeToMessage(serialized)
 
     // Handle ToolMessage separately since convertToChunk doesn't support it
