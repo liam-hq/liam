@@ -23,13 +23,18 @@ import { schemaDesignTool } from './tools/schemaDesignTool'
 
 const AGENT_NAME = 'db' as const
 
-const model = new ChatOpenAI({
-  model: 'gpt-5',
-  reasoning: { effort: 'medium', summary: 'detailed' },
-  useResponsesApi: true,
-}).bindTools([schemaDesignTool], {
-  strict: true,
-})
+const resolveDbEffortFromEnv = (): 'off' | 'low' | 'medium' | 'high' => {
+  const raw = (process.env['LIAM_DB_EFFORT'] || '').trim().toLowerCase()
+  if (!raw) return 'medium' // default stays as before
+  if (raw === 'off' || raw === 'none' || raw === 'disabled') return 'off'
+  if (raw === 'minimal' || raw === 'low') return 'low'
+  if (raw === 'medium') return 'medium'
+  if (raw === 'high' || raw === 'max' || raw === 'maximum') return 'high'
+  console.warn(
+    `[liam-db] Unknown LIAM_DB_EFFORT="${raw}". Falling back to off. Allowed: off|minimal|low|medium|high`,
+  )
+  return 'off'
+}
 
 type DesignAgentResult = {
   response: AIMessage
@@ -41,12 +46,22 @@ export const invokeDesignAgent = (
   messages: BaseMessage[],
   configurable: ToolConfigurable,
 ): ResultAsync<DesignAgentResult, Error> => {
+  const effort = resolveDbEffortFromEnv()
+  const base = {
+    model: 'gpt-5',
+    useResponsesApi: true,
+  } as const
+  const model =
+    effort === 'off'
+      ? new ChatOpenAI(base)
+      : new ChatOpenAI({ ...base, reasoning: { effort, summary: 'detailed' } })
+  const bound = model.bindTools([schemaDesignTool], { strict: true })
   const formatContextPrompt = ResultAsync.fromSafePromise(
     contextPromptTemplate.format(variables),
   )
 
   const stream = fromAsyncThrowable((contextPrompt: string) =>
-    model.stream(
+    bound.stream(
       [
         new SystemMessage(SYSTEM_PROMPT),
         new HumanMessage(contextPrompt),
