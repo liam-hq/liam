@@ -5,6 +5,10 @@ import * as v from 'valibot'
 import { type Testcase, testcaseSchema } from '../qa-agent/types'
 import type { Repositories } from '../repositories'
 import { getConfigurable } from '../utils/getConfigurable'
+import {
+  type AnalyzedRequirements,
+  analyzedRequirementsSchema,
+} from '../utils/schema/analyzedRequirements'
 
 const toolConfigurableSchema = v.object({
   toolCall: v.object({
@@ -15,11 +19,7 @@ const toolConfigurableSchema = v.object({
     ddlStatements: v.string(),
     requiredExtensions: v.array(v.string()),
     designSessionId: v.string(),
-    analyzedRequirements: v.object({
-      businessRequirement: v.string(),
-      functionalRequirements: v.record(v.string(), v.array(v.string())),
-      nonFunctionalRequirements: v.record(v.string(), v.array(v.string())),
-    }),
+    analyzedRequirements: analyzedRequirementsSchema,
   }),
 })
 
@@ -29,11 +29,7 @@ type ToolConfigurable = {
   ddlStatements: string
   requiredExtensions: string[]
   designSessionId: string
-  analyzedRequirements: {
-    businessRequirement: string
-    functionalRequirements: Record<string, string[]>
-    nonFunctionalRequirements: Record<string, string[]>
-  }
+  analyzedRequirements: AnalyzedRequirements
   toolCallId: string
 }
 

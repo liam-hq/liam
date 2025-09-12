@@ -29,12 +29,19 @@ export async function designSchemaNode(
   // This prevents the "reasoning without required following item" error
   const messages = removeReasoningFromMessages(state.messages)
 
-  const invokeResult = await invokeDesignAgent({ schemaText }, messages, {
-    buildingSchemaId: state.buildingSchemaId,
-    latestVersionNumber: state.latestVersionNumber,
-    designSessionId: state.designSessionId,
-    repositories,
-  })
+  const invokeResult = await invokeDesignAgent(
+    {
+      schemaText,
+      prompt: state.prompt,
+    },
+    messages,
+    {
+      buildingSchemaId: state.buildingSchemaId,
+      latestVersionNumber: state.latestVersionNumber,
+      designSessionId: state.designSessionId,
+      repositories,
+    },
+  )
 
   if (invokeResult.isErr()) {
     throw new WorkflowTerminationError(invokeResult.error, 'designSchemaNode')

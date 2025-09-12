@@ -1,4 +1,5 @@
 import type { ToolMessage as ToolMessageType } from '@langchain/core/messages'
+import type { ToolCall as ToolCallType } from '@liam-hq/agent/client'
 import {
   CollapsibleContent,
   CollapsibleRoot,
@@ -10,7 +11,6 @@ import {
 } from '@liam-hq/ui'
 import { type FC, useMemo, useState } from 'react'
 import { MarkdownContent } from '../../../../../../../../MarkdownContent'
-import type { ToolCall as ToolCallType } from '../../../../../../../schema'
 import markdownStyles from '../../../Markdown.module.css'
 import styles from './ToolCall.module.css'
 

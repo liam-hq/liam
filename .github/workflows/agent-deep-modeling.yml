@@ -52,6 +52,8 @@ jobs:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           LANGSMITH_API_KEY: ${{ secrets.LANGSMITH_API_KEY }}
           LANGSMITH_PROJECT: "liam-app"
+          LANGSMITH_ORGANIZATION_ID: ${{ secrets.LANGSMITH_ORGANIZATION_ID }}
+          LANGSMITH_PROJECT_ID: ${{ secrets.LANGSMITH_PROJECT_ID }}
           NO_COLOR: 1
         shell: bash
         run: |

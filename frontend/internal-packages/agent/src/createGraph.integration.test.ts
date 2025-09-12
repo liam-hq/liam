@@ -19,7 +19,6 @@ describe('createGraph Integration', () => {
 
     const initialState: WorkflowState = {
       messages: [new HumanMessage(userInput)],
-      userInput,
       analyzedRequirements: {
         businessRequirement: '',
         functionalRequirements: {},
@@ -27,6 +26,7 @@ describe('createGraph Integration', () => {
       },
       testcases: [],
       schemaData: aSchema(),
+      schemaIssues: [],
       designSessionId: context.designSessionId,
       buildingSchemaId: context.buildingSchemaId,
       latestVersionNumber: context.latestVersionNumber,

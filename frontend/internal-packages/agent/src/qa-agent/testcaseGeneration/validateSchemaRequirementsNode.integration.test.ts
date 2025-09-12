@@ -1,4 +1,5 @@
 import { END } from '@langchain/langgraph'
+import { v4 as uuidv4 } from 'uuid'
 import { describe, expect, it } from 'vitest'
 import type { testcaseAnnotation } from './testcaseAnnotation'
 import { validateSchemaRequirementsNode } from './validateSchemaRequirementsNode'
@@ -16,6 +17,7 @@ describe('validateSchemaRequirementsNode Integration', () => {
         requirement: 'Users can create tasks with title and status',
         businessContext:
           'A task management system where users create projects and tasks',
+        requirementId: uuidv4(),
       },
       schemaContext: `
 Table: users
@@ -53,6 +55,7 @@ Table: tasks
           'Users can create projects with clients and assign tasks to specific projects with deadlines and priority levels',
         businessContext:
           'A comprehensive project management system where users manage multiple client projects with detailed task assignment',
+        requirementId: uuidv4(),
       },
       // Limited schema - missing projects/clients tables and deadline/priority columns
       schemaContext: `

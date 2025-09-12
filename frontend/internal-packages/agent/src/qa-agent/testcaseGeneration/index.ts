@@ -2,6 +2,7 @@ import { END, START, StateGraph } from '@langchain/langgraph'
 import { RETRY_POLICY } from '../../utils/errorHandling'
 import { generateTestcaseNode } from './generateTestcaseNode'
 import { routeAfterGenerate } from './routeAfterGenerate'
+import { routeAfterSave } from './routeAfterSave'
 import { saveToolNode } from './saveToolNode'
 import { testcaseAnnotation } from './testcaseAnnotation'
 import { validateSchemaRequirementsNode } from './validateSchemaRequirementsNode'
@@ -24,6 +25,9 @@ graph
     invokeSaveTool: 'invokeSaveTool',
     [END]: END,
   })
-  .addEdge('invokeSaveTool', 'generateTestcase')
+  .addConditionalEdges('invokeSaveTool', routeAfterSave, {
+    generateTestcase: 'generateTestcase',
+    [END]: END,
+  })
 
 export const testcaseGeneration = graph.compile()
