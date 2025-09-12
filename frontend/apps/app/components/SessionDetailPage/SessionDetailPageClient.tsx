@@ -11,6 +11,7 @@ import { type FC, useCallback, useEffect, useRef, useState } from 'react'
 import { Chat } from './components/Chat'
 import { Output } from './components/Output'
 import { useRealtimeArtifact } from './components/Output/components/Artifact/hooks/useRealtimeArtifact'
+import { OUTPUT_TABS } from './components/Output/constants'
 import { OutputPlaceholder } from './components/OutputPlaceholder'
 import { useRealtimeTimelineItems } from './hooks/useRealtimeTimelineItems'
 import { useRealtimeVersionsWithSchema } from './hooks/useRealtimeVersionsWithSchema'
@@ -87,6 +88,15 @@ export const SessionDetailPageClient: FC<Props> = ({
 
   const [activeTab, setActiveTab] = useState<string | undefined>(undefined)
 
+  // Handler for navigating to specific tabs from tool calls
+  const handleNavigateToTab = useCallback((tab: 'erd' | 'artifact') => {
+    if (tab === 'erd') {
+      setActiveTab(OUTPUT_TABS.ERD)
+    } else if (tab === 'artifact') {
+      setActiveTab(OUTPUT_TABS.ARTIFACT)
+    }
+  }, [])
+
   // TODO: Connect to Messages component once migration path from TimelineItems to Messages is established
   // const handleArtifactLinkClick = useCallback(() => {
   //   setActiveTab(OUTPUT_TABS.ARTIFACT)
@@ -158,6 +168,7 @@ export const SessionDetailPageClient: FC<Props> = ({
             messages={messages}
             isWorkflowRunning={status === 'pending' || isStreaming}
             onMessageSend={addOrUpdateTimelineItem}
+            onNavigate={handleNavigateToTab}
           />
         </div>
         {hasSelectedVersion && (

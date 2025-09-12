@@ -21,6 +21,7 @@ type Props = {
   isWorkflowRunning?: boolean
   // onArtifactLinkClick: () => void
   // isDeepModelingEnabled: boolean
+  onNavigate: (tab: 'erd' | 'artifact') => void
 }
 
 export const Chat: FC<Props> = ({
@@ -28,6 +29,7 @@ export const Chat: FC<Props> = ({
   messages,
   onMessageSend,
   isWorkflowRunning = false,
+  onNavigate,
 }) => {
   const { containerRef } = useScrollToBottom<HTMLDivElement>(messages.length)
   const [, startTransition] = useTransition()
@@ -59,7 +61,11 @@ export const Chat: FC<Props> = ({
   return (
     <div className={styles.wrapper}>
       <div className={styles.messagesContainer} ref={containerRef}>
-        <Messages messages={messages} />
+        <Messages
+          messages={messages}
+          onNavigate={onNavigate}
+          isWorkflowRunning={isWorkflowRunning}
+        />
         {isWorkflowRunning && <WorkflowRunningIndicator />}
       </div>
       <ChatInput

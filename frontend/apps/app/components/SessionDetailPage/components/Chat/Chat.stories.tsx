@@ -83,6 +83,7 @@ export const Default: Story = {
     schemaData: aSchema(),
     messages: MESSAGES,
     onMessageSend: () => {},
+    onNavigate: () => {},
   },
 }
 
@@ -91,6 +92,7 @@ export const AnimatedDemo: Story = {
     schemaData: aSchema(),
     messages: MESSAGES,
     onMessageSend: () => {},
+    onNavigate: () => {},
   },
   render: (props) => <AnimatedChatDemo {...props} />,
 }
@@ -119,5 +121,6 @@ export const WithComplexMessages: Story = {
       }),
     ],
     onMessageSend: () => {},
+    onNavigate: () => {},
   },
 }

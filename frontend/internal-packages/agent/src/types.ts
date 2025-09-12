@@ -38,3 +38,12 @@ export type AgentWorkflowParams = {
 export type AgentWorkflowResult = ResultAsync<WorkflowState, Error>
 
 export type Reasoning = v.InferOutput<typeof reasoningSchema>
+
+/**
+ * Union type of all available tool names in the agent package
+ */
+export type ToolName =
+  | 'runTestTool'
+  | 'saveRequirementsToArtifactTool'
+  | 'saveTestcase'
+  | 'schemaDesignTool'
