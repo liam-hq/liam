@@ -137,6 +137,9 @@ describe('createQaAgentGraph Integration', () => {
       latestVersionNumber: context.latestVersionNumber,
       schemaIssues: [],
       next: END,
+      retryCount: 0,
+      maxRetries: 3,
+      lastValidationErrors: '',
     }
 
     // Act
