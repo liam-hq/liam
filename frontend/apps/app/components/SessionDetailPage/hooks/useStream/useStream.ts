@@ -1,5 +1,6 @@
 'use client'
 
+import type { SerializedConstructor } from '@langchain/core/load/serializable'
 import {
   type BaseMessage,
   ChatMessage,
@@ -83,18 +84,18 @@ export const useStream = ({ designSessionId, initialMessages }: Props) => {
         const parsedData = JSON.parse(ev.data)
         // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
         const [serialized, metadata] = parsedData as [
-          ChatMessage,
+          SerializedConstructor,
           Record<string, unknown>,
         ]
 
         // ChatMessage bypass: Handle ChatMessage directly without MessageTupleManager
-        if (serialized.role === 'operational') {
+        if (serialized.kwargs.role === 'operational') {
           setMessages((prev) => {
             const message = new ChatMessage({
-              id: serialized.id,
-              content: serialized.content,
-              role: serialized.role || 'operational',
-              additional_kwargs: serialized.additional_kwargs || {},
+              id: serialized.kwargs.id,
+              content: serialized.kwargs.content,
+              role: serialized.kwargs.role || 'operational',
+              additional_kwargs: serialized.kwargs.additional_kwargs || {},
             })
 
             return [...prev, message]
@@ -103,7 +104,11 @@ export const useStream = ({ designSessionId, initialMessages }: Props) => {
           continue
         }
 
-        const messageId = messageManagerRef.current.add(serialized, metadata)
+        const messageId = messageManagerRef.current.add(
+          // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+          serialized.kwargs as BaseMessage,
+          metadata,
+        )
         if (!messageId) continue
 
         setMessages((prev) => {
