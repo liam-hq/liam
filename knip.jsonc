@@ -30,7 +30,9 @@
     // - Foundation code for Public Share feature (createPublicServerClient will be used in future phases)
     "frontend/apps/app/libs/db/server.ts",
     // - Server Actions are not detected by knip due to 'use server' directive
-    "frontend/apps/app/features/public-share/actions.ts"
+    "frontend/apps/app/features/public-share/actions.ts",
+    // - CLI entry is launched via bin shim; knip can't detect it
+    "frontend/internal-packages/schema-bench/src/cli/index.ts"
   ],
 
 
