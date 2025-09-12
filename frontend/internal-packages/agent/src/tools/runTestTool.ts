@@ -178,6 +178,7 @@ export const runTestTool: StructuredTool = tool(
       return new Command({
         update: {
           messages: [toolMessage],
+          lastValidationErrors: '',
         },
       })
     }
@@ -265,6 +266,7 @@ export const runTestTool: StructuredTool = tool(
     const updateData = {
       testcases: updatedTestcases,
       messages: [toolMessage],
+      lastValidationErrors: failedTests > 0 ? validationMessage : '',
     }
 
     return new Command({
