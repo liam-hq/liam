@@ -7,92 +7,54 @@ import type {
 import type { Testcase } from '../qa-agent/types'
 import type { AnalyzedRequirements } from '../utils/schema/analyzedRequirements'
 
-/**
- * Convert analyzed requirements to artifact requirements
- */
-const convertAnalyzedRequirementsToArtifact = (
-  analyzedRequirements: AnalyzedRequirements,
-): {
-  requirements: (FunctionalRequirement | NonFunctionalRequirement)[]
-  requirementIdMap: Map<
-    string,
-    FunctionalRequirement | NonFunctionalRequirement
-  >
-} => {
-  const requirements: (FunctionalRequirement | NonFunctionalRequirement)[] = []
-  const requirementIdMap = new Map<
-    string,
-    FunctionalRequirement | NonFunctionalRequirement
-  >()
-
-  for (const [category, items] of Object.entries(
-    analyzedRequirements.functionalRequirements,
-  )) {
-    const functionalRequirement: FunctionalRequirement = {
-      type: 'functional',
-      name: category,
-      description: items.map((item) => item.desc), // Extract descriptions from RequirementItems
-      test_cases: [], // Will be populated later if testcases exist
-    }
-    requirements.push(functionalRequirement)
-
-    // Since we don't have individual IDs for string-based requirements,
-    requirementIdMap.set(category, functionalRequirement)
-  }
-
-  for (const [category, items] of Object.entries(
-    analyzedRequirements.nonFunctionalRequirements,
-  )) {
-    const nonFunctionalRequirement: NonFunctionalRequirement = {
-      type: 'non_functional',
-      name: category,
-      description: items.map((item) => item.desc), // Extract descriptions from RequirementItems
-    }
-    requirements.push(nonFunctionalRequirement)
-
-    // Since we don't have individual IDs for string-based requirements,
-    requirementIdMap.set(category, nonFunctionalRequirement)
-  }
-
-  return { requirements, requirementIdMap }
-}
-
-/**
- * Map use cases to functional requirements
- */
-const mapTestCasesToRequirements = (
-  testcase: Testcase,
-): {
+type TestCase = {
   title: string
   description: string
   dmlOperation: DmlOperation
-} => ({
+}
+
+const createTestCase = (testcase: Testcase): TestCase => ({
   title: testcase.title,
   description: testcase.description,
   dmlOperation: testcase.dmlOperation,
 })
 
-/**
- * Merge use cases into existing requirements using ID-based mapping
- */
-const mergeTestCasesIntoRequirements = (
-  requirementIdMap: Map<
-    string,
-    FunctionalRequirement | NonFunctionalRequirement
-  >,
-  testcases: Testcase[],
-): void => {
-  for (const testcase of testcases) {
-    const requirement = requirementIdMap.get(testcase.requirementCategory)
+const createFunctionalRequirement = (
+  category: string,
+  description: string[],
+  testCases: TestCase[] = [],
+): FunctionalRequirement => ({
+  type: 'functional',
+  name: category,
+  description,
+  test_cases: testCases,
+})
 
-    if (requirement && requirement.type === 'functional') {
-      requirement.test_cases.push(mapTestCasesToRequirements(testcase))
-    } else if (!requirement) {
-      console.warn(
-        `Testcase "${testcase.title}" references non-existent category: ${testcase.requirementCategory}`,
-      )
+const createNonFunctionalRequirement = (
+  category: string,
+  description: string[],
+): NonFunctionalRequirement => ({
+  type: 'non_functional',
+  name: category,
+  description,
+})
+
+const groupTestCasesByRequirementId = (
+  testcases: Testcase[],
+): Map<string, TestCase[]> => {
+  const grouped = new Map<string, TestCase[]>()
+
+  for (const testcase of testcases) {
+    if (testcase.requirementType !== 'functional') continue
+
+    const requirementId = testcase.requirementId
+    if (!grouped.has(requirementId)) {
+      grouped.set(requirementId, [])
     }
+    grouped.get(requirementId)?.push(createTestCase(testcase))
   }
+
+  return grouped
 }
 
 type State = {
@@ -101,23 +63,37 @@ type State = {
 }
 
 /**
- * Transform WorkflowState to Artifact format
- * This handles the conversion from the workflow's data structure to the artifact schema
+ * Transform WorkflowState to Artifact format with immutable design
  */
 export const transformStateToArtifact = (state: State): Artifact => {
-  const businessRequirement = state.analyzedRequirements.businessRequirement
+  const { analyzedRequirements, testcases } = state
+  const testCasesByRequirementId = groupTestCasesByRequirementId(testcases)
 
-  const { requirements, requirementIdMap } =
-    convertAnalyzedRequirementsToArtifact(state.analyzedRequirements)
+  const functionalRequirements = Object.entries(
+    analyzedRequirements.functionalRequirements,
+  ).map(([category, items]) => {
+    // Collect test cases for all requirement items in this category
+    const allTestCases: TestCase[] = []
+    for (const item of items) {
+      const testCases = testCasesByRequirementId.get(item.id) || []
+      allTestCases.push(...testCases)
+    }
 
-  if (state.testcases.length > 0) {
-    mergeTestCasesIntoRequirements(requirementIdMap, state.testcases)
-  }
+    const descriptions = items.map((item) => item.desc)
+    return createFunctionalRequirement(category, descriptions, allTestCases)
+  })
+
+  const nonFunctionalRequirements = Object.entries(
+    analyzedRequirements.nonFunctionalRequirements,
+  ).map(([category, items]) => {
+    const descriptions = items.map((item) => item.desc)
+    return createNonFunctionalRequirement(category, descriptions)
+  })
 
   return {
     requirement_analysis: {
-      business_requirement: businessRequirement,
-      requirements,
+      business_requirement: analyzedRequirements.businessRequirement,
+      requirements: [...functionalRequirements, ...nonFunctionalRequirements],
     },
   }
 }
