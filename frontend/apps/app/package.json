@@ -21,7 +21,7 @@
     "@liam-hq/ui": "workspace:*",
     "@next/third-parties": "15.3.5",
     "@rive-app/react-canvas": "4.22.1",
-    "@sentry/nextjs": "9",
+    "@sentry/nextjs": "10.11.0",
     "@swc/core": "1.12.11",
     "@swc/wasm": "1.12.11",
     "@types/react-syntax-highlighter": "15.5.13",
