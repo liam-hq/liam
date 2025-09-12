@@ -37,6 +37,13 @@ const runSetupWorkspace = async (): Promise<void> => {
         '../../benchmark-workspace-ambiguous-recall',
       ),
     },
+    {
+      name: 'relational-inference',
+      path: path.resolve(
+        __dirname,
+        '../../benchmark-workspace-relational-inference',
+      ),
+    },
   ]
 
   for (const dataset of datasets) {
