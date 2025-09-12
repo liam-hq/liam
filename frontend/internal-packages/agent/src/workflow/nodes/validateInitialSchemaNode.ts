@@ -112,6 +112,7 @@ async function validateInitialSchemaLogic(
     MESSAGE_TEMPLATES.EXISTING_SCHEMA_SUCCESS,
     state,
     'info',
+    'leadAgent',
   )
 }
 
