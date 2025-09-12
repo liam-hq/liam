@@ -3,6 +3,9 @@
   "private": true,
   "version": "0.1.0",
   "main": "src/index.ts",
+  "bin": {
+    "schema-bench": "bin/schema-bench.mjs"
+  },
   "dependencies": {
     "@huggingface/transformers": "3.3.3",
     "@liam-hq/agent": "workspace:*",
@@ -34,6 +37,7 @@
     "lint:biome": "biome check .",
     "lint:eslint": "eslint .",
     "lint:tsc": "tsc --noEmit",
+    "schema-bench": "tsx src/cli/index.ts",
     "setupWorkspace": "tsx src/cli/setupWorkspace.ts",
     "test": "vitest --watch=false --passWithNoTests"
   }
