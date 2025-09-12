@@ -29,6 +29,21 @@ type DatasetResult = {
   failure: number
 }
 
+const normalizeDbEffort = (
+  raw: string | undefined,
+): 'off' | 'low' | 'medium' | 'high' => {
+  const v = (raw || '').trim().toLowerCase()
+  if (!v) return 'medium'
+  if (v === 'off' || v === 'none' || v === 'disabled') return 'off'
+  if (v === 'minimal' || v === 'low') return 'low'
+  if (v === 'medium') return 'medium'
+  if (v === 'high' || v === 'max' || v === 'maximum') return 'high'
+  console.warn(
+    `[liam-db] Unknown LIAM_DB_EFFORT="${v}". Falling back to off. Allowed: off|minimal|low|medium|high`,
+  )
+  return 'off'
+}
+
 async function loadInputFiles(
   datasetPath: string,
 ): Promise<
@@ -127,11 +142,32 @@ async function saveOutputFile(
   return writeResult.map(() => undefined)
 }
 
+async function saveMetaFile(
+  datasetPath: string,
+  caseId: string,
+  meta: unknown,
+): Promise<Result<void, Error>> {
+  const outputDir = join(datasetPath, 'execution/output')
+  if (!existsSync(outputDir)) {
+    mkdirSync(outputDir, { recursive: true })
+  }
+  const outputPath = join(outputDir, `${caseId}.meta.json`)
+  const writeResult = await fromPromise(
+    writeFile(outputPath, JSON.stringify(meta, null, 2)),
+    (error) =>
+      error instanceof Error
+        ? error
+        : new Error(`Failed to save meta for ${caseId}`),
+  )
+  return writeResult.map(() => undefined)
+}
+
 async function executeCase(
   datasetPath: string,
   caseId: string,
   input: LiamDbExecutorInput,
 ): Promise<Result<void, Error>> {
+  const startedAt = Date.now()
   const result = await execute(input)
   if (result.isErr()) {
     return err(
@@ -142,6 +178,23 @@ async function executeCase(
   const saveResult = await saveOutputFile(datasetPath, caseId, result.value)
   if (saveResult.isErr()) {
     return saveResult
+  }
+  // Save sidecar meta (non-fatal on failure)
+  const endedAt = Date.now()
+  const effectiveEffort = normalizeDbEffort(process.env['LIAM_DB_EFFORT'])
+  const meta = {
+    effectiveConfig: { db: { effort: effectiveEffort } },
+    timing: {
+      startIso: new Date(startedAt).toISOString(),
+      endIso: new Date(endedAt).toISOString(),
+      durationMs: endedAt - startedAt,
+    },
+  }
+  const metaResult = await saveMetaFile(datasetPath, caseId, meta)
+  if (metaResult.isErr()) {
+    console.warn(
+      `⚠️  Failed to save meta for ${caseId}: ${metaResult.error.message}`,
+    )
   }
   return ok(undefined)
 }

@@ -95,6 +95,36 @@ const parseExecutor = (
   return { executor, pass }
 }
 
+const parseLiamDbEffort = (
+  args: string[],
+): { effort?: string; pass: string[] } => {
+  let effort: string | undefined
+  const pass: string[] = []
+  let expectValue = false
+  for (const tok of args) {
+    if (expectValue) {
+      if (!tok.startsWith('-')) {
+        effort = tok
+      } else {
+        pass.push(tok)
+      }
+      expectValue = false
+      continue
+    }
+    if (tok === '--liam-db-effort') {
+      expectValue = true
+      continue
+    }
+    if (tok.startsWith('--liam-db-effort=')) {
+      effort = tok.slice('--liam-db-effort='.length)
+      continue
+    }
+    pass.push(tok)
+  }
+  if (effort === undefined) return { pass }
+  return { effort, pass }
+}
+
 async function main() {
   const { sub, rest } = parseTopLevel()
   if (sub === 'help') {
@@ -106,7 +136,7 @@ async function main() {
     return
   }
   if (sub === 'execute') {
-    const { executor, pass } = parseExecutor(rest)
+    const { executor, pass: afterExec } = parseExecutor(rest)
     if (!executor) {
       console.error('Missing required option: --executor <liam|openai>')
       process.exit(1)
@@ -119,6 +149,18 @@ async function main() {
     if (!target) {
       console.error('Unknown executor. Use one of: liam | openai')
       process.exit(1)
+    }
+    let pass = afterExec
+    // For liam, intercept --liam-db-effort and pass via env
+    let envEffort: string | undefined
+    if (String(executor).toLowerCase() === 'liam') {
+      const { effort, pass: afterEffort } = parseLiamDbEffort(pass)
+      envEffort = effort
+      pass = afterEffort
+      if (envEffort) {
+        // Inject into environment for child process
+        process.env['LIAM_DB_EFFORT'] = envEffort
+      }
     }
     const code = await runTsCli(target, pass)
     process.exit(code)

@@ -26,6 +26,9 @@ Recommended (new):
 # Liam (wraps executeLiamDbUnified.ts). Flags after `execute` pass through.
 pnpm -F @liam-hq/schema-bench schema-bench execute --executor liam -all
 
+# Liam (DBエージェントのreasoning effortを外部指定)
+pnpm -F @liam-hq/schema-bench schema-bench execute --executor liam --liam-db-effort minimal -all
+
 # OpenAI (wraps executeOpenai.ts)
 pnpm -F @liam-hq/schema-bench schema-bench execute --executor openai
 ```
