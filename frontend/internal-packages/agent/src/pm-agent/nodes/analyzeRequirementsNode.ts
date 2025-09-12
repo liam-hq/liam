@@ -2,6 +2,7 @@ import type { RunnableConfig } from '@langchain/core/runnables'
 import { convertSchemaToText } from '../../utils/convertSchemaToText'
 import { WorkflowTerminationError } from '../../utils/errorHandling'
 import { getConfigurable } from '../../utils/getConfigurable'
+import { excludeOperationalMessages } from '../../utils/messageCleanup'
 import { invokePmAnalysisAgent } from '../invokePmAnalysisAgent'
 import type { PmAgentState } from '../pmAgentAnnotations'
 
@@ -23,9 +24,12 @@ export async function analyzeRequirementsNode(
 
   const schemaText = convertSchemaToText(state.schemaData)
 
+  // Exclude operational messages that are incompatible with LLM APIs
+  const filteredMessages = excludeOperationalMessages(state.messages)
+
   const analysisResult = await invokePmAnalysisAgent(
     { schemaText },
-    state.messages,
+    filteredMessages,
     configurableResult.value,
   )
 

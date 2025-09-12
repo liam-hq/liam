@@ -9,6 +9,7 @@ import { fromAsyncThrowable } from '@liam-hq/neverthrow'
 import type { ResultAsync } from 'neverthrow'
 import { SSE_EVENTS } from '../../streaming/constants'
 import type { WorkflowState } from '../../types'
+import { excludeOperationalMessages } from '../../utils/messageCleanup'
 import { streamLLMResponse } from '../../utils/streamingLlmUtils'
 
 const AGENT_NAME = 'lead' as const
@@ -55,8 +56,11 @@ Please summarize:
 
 Keep the summary informative but concise, focusing on the key achievements and decisions made during this database design session.`
 
+  // Exclude operational messages that are incompatible with LLM APIs
+  const filteredMessages = excludeOperationalMessages(state.messages)
+
   const stream = fromAsyncThrowable(() =>
-    llm.stream([new SystemMessage(summaryPrompt), ...state.messages]),
+    llm.stream([new SystemMessage(summaryPrompt), ...filteredMessages]),
   )
 
   const response = fromAsyncThrowable((stream: AsyncIterable<AIMessageChunk>) =>

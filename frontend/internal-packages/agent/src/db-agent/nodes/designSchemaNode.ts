@@ -2,7 +2,10 @@ import type { RunnableConfig } from '@langchain/core/runnables'
 import { convertSchemaToText } from '../../utils/convertSchemaToText'
 import { WorkflowTerminationError } from '../../utils/errorHandling'
 import { getConfigurable } from '../../utils/getConfigurable'
-import { removeReasoningFromMessages } from '../../utils/messageCleanup'
+import {
+  excludeOperationalMessages,
+  removeReasoningFromMessages,
+} from '../../utils/messageCleanup'
 import { invokeDesignAgent } from '../invokeDesignAgent'
 import type { DbAgentState } from '../shared/dbAgentAnnotation'
 
@@ -27,7 +30,9 @@ export async function designSchemaNode(
 
   // Remove reasoning field from AIMessages to avoid API issues
   // This prevents the "reasoning without required following item" error
-  const messages = removeReasoningFromMessages(state.messages)
+  // Also exclude operational messages that are incompatible with LLM APIs
+  const cleanedMessages = removeReasoningFromMessages(state.messages)
+  const messages = excludeOperationalMessages(cleanedMessages)
 
   const invokeResult = await invokeDesignAgent(
     {

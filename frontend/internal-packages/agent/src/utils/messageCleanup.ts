@@ -57,3 +57,25 @@ export function removeReasoningFromMessages(
 ): BaseMessage[] {
   return messages.map(removeReasoningFromMessage)
 }
+
+/**
+ * Exclude operational messages that are not compatible with LLM APIs
+ * These messages are meant for UI display only and should not be sent to LLMs
+ */
+export function excludeOperationalMessages(
+  messages: BaseMessage[],
+): BaseMessage[] {
+  return messages.filter((message) => {
+    // Check if it's a ChatMessage with operational role
+    if ('role' in message && message.role === 'operational') {
+      return false
+    }
+
+    // Also check additional_kwargs.messageType for operational notifications
+    if (message.additional_kwargs?.['messageType']) {
+      return false
+    }
+
+    return true
+  })
+}

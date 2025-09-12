@@ -1,6 +1,7 @@
-import { AIMessage, HumanMessage } from '@langchain/core/messages'
+import { AIMessage, ChatMessage, HumanMessage } from '@langchain/core/messages'
 import { describe, expect, it } from 'vitest'
 import {
+  excludeOperationalMessages,
   removeReasoningFromMessage,
   removeReasoningFromMessages,
 } from './messageCleanup'
@@ -158,6 +159,91 @@ describe('messageCleanup', () => {
     it('should handle empty message array', () => {
       const result = removeReasoningFromMessages([])
       expect(result).toEqual([])
+    })
+  })
+
+  describe('excludeOperationalMessages', () => {
+    it('should exclude ChatMessage with operational role', () => {
+      const messages = [
+        new HumanMessage('User message'),
+        new ChatMessage({
+          content: 'Operational notification',
+          role: 'operational',
+          additional_kwargs: { messageType: 'info' },
+        }),
+        new AIMessage('AI response'),
+      ]
+
+      const filtered = excludeOperationalMessages(messages)
+
+      expect(filtered).toHaveLength(2)
+      expect(filtered[0]).toBeInstanceOf(HumanMessage)
+      expect(filtered[1]).toBeInstanceOf(AIMessage)
+      expect(
+        filtered.find((m) => 'role' in m && m.role === 'operational'),
+      ).toBeUndefined()
+    })
+
+    it('should exclude messages with messageType in additional_kwargs', () => {
+      const messages = [
+        new HumanMessage('User message'),
+        new AIMessage({
+          content: 'System notification',
+          additional_kwargs: { messageType: 'error' },
+        }),
+        new AIMessage('Normal AI response'),
+      ]
+
+      const filtered = excludeOperationalMessages(messages)
+
+      expect(filtered).toHaveLength(2)
+      expect(filtered[0]).toBeInstanceOf(HumanMessage)
+      expect(filtered[1]).toBeInstanceOf(AIMessage)
+      expect(filtered[1]?.additional_kwargs).toEqual({})
+    })
+
+    it('should preserve non-operational messages', () => {
+      const messages = [
+        new HumanMessage('User message'),
+        new AIMessage('AI response'),
+        new ChatMessage({
+          content: 'Assistant message',
+          role: 'assistant',
+        }),
+      ]
+
+      const filtered = excludeOperationalMessages(messages)
+
+      expect(filtered).toHaveLength(3)
+      expect(filtered).toEqual(messages)
+    })
+
+    it('should handle empty message array', () => {
+      const filtered = excludeOperationalMessages([])
+      expect(filtered).toEqual([])
+    })
+
+    it('should exclude multiple operational messages', () => {
+      const messages = [
+        new ChatMessage({
+          content: 'Success notification',
+          role: 'operational',
+          additional_kwargs: { messageType: 'success' },
+        }),
+        new HumanMessage('User message'),
+        new ChatMessage({
+          content: 'Error notification',
+          role: 'operational',
+          additional_kwargs: { messageType: 'error' },
+        }),
+        new AIMessage('AI response'),
+      ]
+
+      const filtered = excludeOperationalMessages(messages)
+
+      expect(filtered).toHaveLength(2)
+      expect(filtered[0]).toBeInstanceOf(HumanMessage)
+      expect(filtered[1]).toBeInstanceOf(AIMessage)
     })
   })
 })
