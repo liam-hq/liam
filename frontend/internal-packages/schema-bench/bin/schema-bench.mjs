@@ -6,20 +6,24 @@ import { createRequire } from 'node:module'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-const require = createRequire(import.meta.url)
+const _require = createRequire(import.meta.url)
 
 function main() {
-  const tsxCli = require.resolve('tsx/dist/cli.js')
+  // Use Node's ESM loader for tsx to run TS files
   const __filename = fileURLToPath(import.meta.url)
   const __dirname = path.dirname(__filename)
   const entryTs = path.resolve(__dirname, '../src/cli/index.ts')
 
+  const env = { ...process.env }
+  if (env.NODE_OPTIONS?.includes('--inspect')) {
+    delete env.NODE_OPTIONS
+  }
   const child = spawn(
     process.execPath,
-    [tsxCli, entryTs, ...process.argv.slice(2)],
+    ['--import', 'tsx', entryTs, ...process.argv.slice(2)],
     {
       stdio: 'inherit',
-      env: process.env,
+      env,
       cwd: process.cwd(),
     },
   )

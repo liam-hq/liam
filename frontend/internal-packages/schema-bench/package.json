@@ -37,7 +37,7 @@
     "lint:biome": "biome check .",
     "lint:eslint": "eslint .",
     "lint:tsc": "tsc --noEmit",
-    "schema-bench": "tsx src/cli/index.ts",
+    "schema-bench": "node bin/schema-bench.mjs",
     "setupWorkspace": "tsx src/cli/setupWorkspace.ts",
     "test": "vitest --watch=false --passWithNoTests"
   }

@@ -38,26 +38,31 @@ The system features:
 - **Smart Concurrency**: Each dataset uses MAX_CONCURRENT=5 for stability
 - **Input Standardization**: Entity-extraction inputs are automatically wrapped in `{"input": "..."}` format
 
-Next, I'll execute the specified model with dataset selection:
+Next, I'll execute the specified model with dataset selection. The unified CLI is recommended; legacy scripts remain available and unchanged:
 
 {{#if (eq (lower model) "liamdb")}}
 ```bash
-# Run LiamDB on all datasets in the workspace
-pnpm --filter @liam-hq/schema-bench executeLiamDB -all
+# Unified CLI (recommended): Liam on all datasets
+pnpm -F @liam-hq/schema-bench schema-bench execute --executor liam -all
 
-# Run LiamDB on a specific dataset
-pnpm --filter @liam-hq/schema-bench executeLiamDB -entity-extraction
+# Unified CLI: run specific datasets
+pnpm -F @liam-hq/schema-bench schema-bench execute --executor liam -entity-extraction
+pnpm -F @liam-hq/schema-bench schema-bench execute --executor liam -ambiguous-recall
+pnpm -F @liam-hq/schema-bench schema-bench execute --executor liam -default -entity-extraction -ambiguous-recall
 
-# Run LiamDB on the ambiguous-recall dataset only
-pnpm --filter @liam-hq/schema-bench executeLiamDB -ambiguous-recall
-
-# Run LiamDB on multiple datasets
-pnpm --filter @liam-hq/schema-bench executeLiamDB -default -entity-extraction -ambiguous-recall
+# Legacy (still supported):
+pnpm -F @liam-hq/schema-bench executeLiamDB -all
+pnpm -F @liam-hq/schema-bench executeLiamDB -entity-extraction
+pnpm -F @liam-hq/schema-bench executeLiamDB -ambiguous-recall
+pnpm -F @liam-hq/schema-bench executeLiamDB -default -entity-extraction -ambiguous-recall
 ```
 {{else if (eq (lower model) "openai")}}
 ```bash
-# OpenAI currently targets the default dataset
-pnpm --filter @liam-hq/schema-bench executeOpenai
+# Unified CLI (recommended): OpenAI currently targets the default dataset
+pnpm -F @liam-hq/schema-bench schema-bench execute --executor openai
+
+# Legacy (still supported):
+pnpm -F @liam-hq/schema-bench executeOpenai
 ```
 {{else}}
 **Error**: Invalid model specified. Please use 'LiamDB' or 'OpenAI'.
@@ -66,8 +71,14 @@ pnpm --filter @liam-hq/schema-bench executeOpenai
 If execution succeeds, I'll run the evaluation on all datasets:
 
 ```bash
-pnpm --filter @liam-hq/schema-bench evaluateSchemaMulti
+# Unified CLI (recommended)
+pnpm -F @liam-hq/schema-bench schema-bench evaluate
+
+# Legacy (still supported)
+pnpm -F @liam-hq/schema-bench evaluateSchemaMulti
 ```
+
+Note: For OpenAI execution, ensure `OPENAI_API_KEY` is set in your environment.
 
 The evaluation will display comprehensive metrics for each dataset:
 

@@ -1,11 +1,8 @@
 #!/usr/bin/env node
 
 import { spawn } from 'node:child_process'
-import { createRequire } from 'node:module'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-
-const require = createRequire(import.meta.url)
 
 const VERSION = '0.1.0'
 
@@ -16,11 +13,6 @@ const resolveCli = (file: string) => {
   return path.resolve(__dirname, file)
 }
 
-const tsxPath = () => {
-  // Use local tsx binary to run TypeScript files
-  return require.resolve('tsx/dist/cli.js')
-}
-
 const runTsCli = (tsFile: string, args: string[]): Promise<number> => {
   return new Promise((resolve) => {
     const env = { ...process.env }
@@ -28,11 +20,15 @@ const runTsCli = (tsFile: string, args: string[]): Promise<number> => {
     if (env['NODE_OPTIONS']?.includes('--inspect')) {
       delete env['NODE_OPTIONS']
     }
-    const child = spawn(process.execPath, [tsxPath(), tsFile, ...args], {
-      stdio: 'inherit',
-      env,
-      cwd: process.cwd(),
-    })
+    const child = spawn(
+      process.execPath,
+      ['--import', 'tsx', tsFile, ...args],
+      {
+        stdio: 'inherit',
+        env,
+        cwd: process.cwd(),
+      },
+    )
     child.on('exit', (code) => resolve(code ?? 0))
     child.on('error', () => resolve(1))
   })
