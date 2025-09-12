@@ -86,7 +86,7 @@ const calculateTableMetrics = (
     tablePrecision + tableRecall === 0
       ? 0
       : (2 * tablePrecision * tableRecall) / (tablePrecision + tableRecall)
-  const tableAllcorrect = tableF1 === 1 ? 1 : 0
+  const tableAllcorrect = Math.abs(tableF1 - 1) < EPSILON ? 1 : 0
 
   return { tableF1, tableRecall, tableAllcorrect }
 }

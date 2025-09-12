@@ -20,9 +20,7 @@ describe('formatValidationErrors', () => {
     const formatted = formatValidationErrors(results)
 
     expect(formatted).toMatchInlineSnapshot(`
-      "Database validation found 1 issues. Please fix the following errors:
-
-      ### ❌ **Test Case:** Test Insert Operation
+      "### ❌ **Test Case:** Test Insert Operation
       #### 1. Error: \`duplicate key value violates unique constraint\`
       \`\`\`sql
       INSERT INTO users (id, name) VALUES (1, 'John')
@@ -47,9 +45,7 @@ describe('formatValidationErrors', () => {
     const formatted = formatValidationErrors(results)
 
     expect(formatted).toMatchInlineSnapshot(`
-      "Database validation found 1 issues. Please fix the following errors:
-
-      ### ❌ **Test Case:** Complex Transaction Test
+      "### ❌ **Test Case:** Complex Transaction Test
       #### 1. Error: \`invalid input syntax for type uuid\`
       \`\`\`sql
       INSERT INTO accounts (id) VALUES ('invalid-uuid')
@@ -90,9 +86,7 @@ describe('formatValidationErrors', () => {
     const formatted = formatValidationErrors(results)
 
     expect(formatted).toMatchInlineSnapshot(`
-      "Database validation found 2 issues. Please fix the following errors:
-
-      ### ❌ **Test Case:** First Test Case
+      "### ❌ **Test Case:** First Test Case
       #### 1. Error: \`table1 does not exist\`
       \`\`\`sql
       INSERT INTO table1 VALUES (1)
@@ -134,9 +128,7 @@ describe('formatValidationErrors', () => {
     const formatted = formatValidationErrors(results)
 
     expect(formatted).toMatchInlineSnapshot(`
-      "Database validation found 1 issues. Please fix the following errors:
-
-      ### ❌ **Test Case:** Long SQL Test
+      "### ❌ **Test Case:** Long SQL Test
       #### 1. Error: \`syntax error\`
       \`\`\`sql
       INSERT INTO very_long_table_name_with_many_columns (
@@ -175,9 +167,7 @@ describe('formatValidationErrors', () => {
     const formatted = formatValidationErrors(results)
 
     expect(formatted).toMatchInlineSnapshot(`
-      "Database validation found 1 issues. Please fix the following errors:
-
-      ### ❌ **Test Case:** SQL with Comments
+      "### ❌ **Test Case:** SQL with Comments
       #### 1. Error: \`some error\`
       \`\`\`sql
       -- This is a comment
@@ -205,9 +195,7 @@ describe('formatValidationErrors', () => {
     const formatted = formatValidationErrors(results)
 
     expect(formatted).toMatchInlineSnapshot(`
-      "Database validation found 1 issues. Please fix the following errors:
-
-      ### ❌ **Test Case:** Test with minimal error info
+      "### ❌ **Test Case:** Test with minimal error info
       #### 1. Error: \`Unknown error occurred\`
       \`\`\`sql
 
@@ -232,9 +220,7 @@ describe('formatValidationErrors', () => {
     const formatted = formatValidationErrors(results)
 
     expect(formatted).toMatchInlineSnapshot(`
-      "Database validation found 1 issues. Please fix the following errors:
-
-      ### ❌ **Test Case:** Test with Special Characters
+      "### ❌ **Test Case:** Test with Special Characters
       #### 1. Error: \`Error with \`backticks\` and \"quotes\" and 'single quotes'\`
       \`\`\`sql
       INSERT INTO test VALUES ('data')

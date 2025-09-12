@@ -4,7 +4,7 @@ import { aColumn, aTable } from '@liam-hq/schema'
 import { describe, it } from 'vitest'
 import {
   getTestConfig,
-  outputStream,
+  outputStreamEvents,
 } from '../../../test-utils/workflowTestHelpers'
 import type { DbAgentState } from '../shared/dbAgentAnnotation'
 import { dbAgentAnnotation } from '../shared/dbAgentAnnotation'
@@ -79,14 +79,19 @@ describe('invokeSchemaDesignToolNode Integration', () => {
       designSessionId: context.designSessionId,
       userId: context.userId,
       organizationId: context.organizationId,
+      prompt: 'Test schema design',
       next: END,
     }
 
     // Act
-    const stream = await graph.stream(state, config)
+    const streamEvents = graph.streamEvents(state, {
+      ...config,
+      streamMode: 'messages',
+      version: 'v2',
+    })
 
     // Assert (Output)
-    await outputStream(stream)
+    await outputStreamEvents(streamEvents)
   })
 
   it('should handle tool execution errors gracefully', async () => {
@@ -138,13 +143,18 @@ describe('invokeSchemaDesignToolNode Integration', () => {
       designSessionId: context.designSessionId,
       userId: context.userId,
       organizationId: context.organizationId,
+      prompt: 'Test invalid schema design',
       next: END,
     }
 
     // Act
-    const stream = await graph.stream(state, config)
+    const streamEvents = graph.streamEvents(state, {
+      ...config,
+      streamMode: 'messages',
+      version: 'v2',
+    })
 
     // Assert (Output)
-    await outputStream(stream)
+    await outputStreamEvents(streamEvents)
   })
 })

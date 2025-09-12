@@ -3,7 +3,6 @@ import { Avatar } from '@liam-hq/ui'
 import type { FC } from 'react'
 import * as v from 'valibot'
 import { MarkdownContent } from '../../../../../../MarkdownContent'
-import { extractResponseFromMessage } from '../../../../../utils'
 import { CopyButton } from '../../../../CopyButton'
 import markdownStyles from '../Markdown.module.css'
 import styles from './HumanMessage.module.css'
@@ -37,7 +36,7 @@ export const HumanMessage: FC<Props> = ({ message }) => {
       .join('')
       .toUpperCase()
       .slice(0, 2) || 'U'
-  const content = extractResponseFromMessage(message)
+  const content = message.text
 
   return (
     <div className={styles.container}>

@@ -2,6 +2,7 @@ import { ROUTE_PREFIXES } from './constants'
 
 export type RouteDefinitions = {
   login: string
+  error: string
   projects: string
   'projects/new': string
   'projects/[projectId]': (params: { projectId: string }) => string
@@ -36,6 +37,7 @@ export type RouteDefinitions = {
 
 export const routeDefinitions: RouteDefinitions = {
   login: '/login',
+  error: '/error',
   projects: '/projects',
   'projects/new': '/projects/new',
   'organizations/new': '/organizations/new',

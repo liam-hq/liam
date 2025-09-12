@@ -24,7 +24,6 @@ import type {
   Version,
   WorkflowRunStatus,
 } from './types'
-import { extractResponseFromMessage } from './utils'
 
 type Props = {
   buildingSchemaId: string
@@ -134,7 +133,7 @@ export const SessionDetailPageClient: FC<Props> = ({
       // Trigger the workflow for the initial user message
       await start({
         designSessionId,
-        userInput: extractResponseFromMessage(firstItem),
+        userInput: firstItem.text,
         isDeepModelingEnabled,
       })
     }

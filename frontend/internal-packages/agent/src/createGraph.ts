@@ -3,6 +3,7 @@ import type { RunnableConfig } from '@langchain/core/runnables'
 import { END, START, StateGraph } from '@langchain/langgraph'
 import type { BaseCheckpointSaver } from '@langchain/langgraph-checkpoint'
 import { createDbAgentGraph } from './db-agent/createDbAgentGraph'
+import { convertRequirementsToPrompt } from './db-agent/utils/convertAnalyzedRequirementsToPrompt'
 import { createLeadAgentGraph } from './lead-agent/createLeadAgentGraph'
 import { createPmAgentGraph } from './pm-agent/createPmAgentGraph'
 import { createQaAgentGraph } from './qa-agent/createQaAgentGraph'
@@ -18,7 +19,16 @@ import { workflowAnnotation } from './workflowAnnotation'
 export const createGraph = (checkpointer?: BaseCheckpointSaver) => {
   const graph = new StateGraph(workflowAnnotation)
   const leadAgentSubgraph = createLeadAgentGraph(checkpointer)
-  const dbAgentSubgraph = createDbAgentGraph(checkpointer)
+
+  const callDbAgent = async (state: WorkflowState, config: RunnableConfig) => {
+    const dbAgentSubgraph = createDbAgentGraph(checkpointer)
+    const prompt = convertRequirementsToPrompt(state.analyzedRequirements)
+
+    const modifiedState = { ...state, messages: [], prompt }
+    const output = await dbAgentSubgraph.invoke(modifiedState, config)
+
+    return { ...state, ...output }
+  }
 
   const callQaAgent = async (state: WorkflowState, config: RunnableConfig) => {
     const qaAgentSubgraph = createQaAgentGraph(checkpointer)
@@ -48,7 +58,7 @@ export const createGraph = (checkpointer?: BaseCheckpointSaver) => {
     .addNode('validateInitialSchema', validateInitialSchemaNode)
     .addNode('leadAgent', leadAgentSubgraph)
     .addNode('pmAgent', callPmAgent)
-    .addNode('dbAgent', dbAgentSubgraph)
+    .addNode('dbAgent', callDbAgent)
     .addNode('qaAgent', callQaAgent)
 
     .addConditionalEdges(

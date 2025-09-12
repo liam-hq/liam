@@ -28,7 +28,15 @@ export async function invokeDbAgentStream(
     traceEnhancement,
   } = setupResult.value
 
-  const stream = compiled.streamEvents(workflowState, {
+  // Convert workflow state to DB agent state format
+  const prompt = params.userInput
+
+  const dbAgentState = {
+    ...workflowState,
+    prompt,
+  }
+
+  const stream = compiled.streamEvents(dbAgentState, {
     recursionLimit,
     configurable,
     runId: workflowRunId,

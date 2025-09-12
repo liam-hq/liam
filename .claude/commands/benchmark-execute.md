@@ -28,9 +28,10 @@ First, I'll clean up any existing workspace and set up a fresh benchmark environ
 rm -rf benchmark-workspace && pnpm --filter @liam-hq/schema-bench setupWorkspace
 ```
 
-This will set up two benchmark datasets:
+This will set up three benchmark datasets:
 - **default**: Standard schema generation benchmark (3 complex cases)
 - **entity-extraction**: Tests if specified table/column names appear in output (5 cases)
+- **ambiguous-recall**: Measures recall of core tables from an ambiguous prompt. Uses the same input across 3 cases with different expected schemas (3/5/10 tables) to evaluate robustness.
 
 The system features:
 - **Parallel Processing**: Datasets are processed simultaneously for faster execution
@@ -47,8 +48,11 @@ pnpm --filter @liam-hq/schema-bench executeLiamDB -all
 # Run LiamDB on a specific dataset
 pnpm --filter @liam-hq/schema-bench executeLiamDB -entity-extraction
 
+# Run LiamDB on the ambiguous-recall dataset only
+pnpm --filter @liam-hq/schema-bench executeLiamDB -ambiguous-recall
+
 # Run LiamDB on multiple datasets
-pnpm --filter @liam-hq/schema-bench executeLiamDB -default -entity-extraction
+pnpm --filter @liam-hq/schema-bench executeLiamDB -default -entity-extraction -ambiguous-recall
 ```
 {{else if (eq (lower model) "openai")}}
 ```bash
@@ -84,8 +88,9 @@ The evaluation will display comprehensive metrics for each dataset:
 ### Expected Performance:
 - **Default dataset**: ~60-80% overall accuracy for complex schemas
 - **Entity-extraction dataset**: ~100% recall for mentioned entities
+- **Ambiguous-recall dataset**: Focuses on table recall from a vague prompt; primary metric is how many core tables are retrieved across 3/5/10-table references.
 
 ### Execution Time:
 - Setup: ~5 seconds
-- LiamDB execution: ~20-30 minutes for all 8 cases
+- LiamDB execution: ~20-30 minutes for all cases (adds 3 more with ambiguous-recall)
 - Evaluation: ~10 seconds

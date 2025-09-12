@@ -11,13 +11,12 @@ import {
 import { type FC, useMemo, useState } from 'react'
 import { MarkdownContent } from '../../../../../../../../MarkdownContent'
 import type { ToolCall as ToolCallType } from '../../../../../../../schema'
-import { extractResponseFromMessage } from '../../../../../../../utils'
 import markdownStyles from '../../../Markdown.module.css'
 import styles from './ToolCall.module.css'
 
 type Props = {
   toolCall: ToolCallType
-  toolMessage: ToolMessageType | undefined
+  toolMessage: ToolMessageType
 }
 
 export const ToolCall: FC<Props> = ({ toolCall, toolMessage }) => {
@@ -28,10 +27,7 @@ ${JSON.stringify(toolCall.args, null, 2)}
 \`\`\``
 
   const toolCallResult = useMemo(
-    () =>
-      toolMessage
-        ? extractResponseFromMessage(toolMessage)
-        : 'Tool call result not found.',
+    () => toolMessage.text ?? 'Tool call result not found.',
     [toolMessage],
   )
 

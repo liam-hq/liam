@@ -56,38 +56,32 @@ const listAllDatasets = (workspacePath: string): string[] => {
     return []
   }
 }
-// biome-ignore lint: temporary suppression for complexity; will refactor in a separate issue
-async function main() {
-  const options = parseArgs(process.argv)
+type DatasetResult = { datasetName: string; success: number; failure: number }
 
-  const workspacePath = getWorkspacePath()
-  let targetDatasets: string[] = []
+const selectTargetDatasets = (
+  options: CliOptions,
+  workspacePath: string,
+): string[] => {
+  let targets: string[] = []
   if (options.useAll) {
-    targetDatasets = listAllDatasets(workspacePath)
+    targets = listAllDatasets(workspacePath)
   } else if (!options.datasets || options.datasets.length === 0) {
-    targetDatasets = discoverDefaultDatasets(workspacePath)
+    targets = discoverDefaultDatasets(workspacePath)
   }
   if (options.datasets && options.datasets.length > 0) {
-    const union = new Set([...targetDatasets, ...options.datasets])
-    targetDatasets = Array.from(union)
+    const union = new Set([...targets, ...options.datasets])
+    targets = Array.from(union)
   }
+  return targets
+}
 
-  if (targetDatasets.length === 0) {
-    handleCliError('No datasets found to process')
-    return
-  }
-
-  const results: Array<{
-    datasetName: string
-    success: number
-    failure: number
-  }> = []
-
-  // Resolve workspace path once for containment checks
+const filterAndResolveDatasets = (
+  targetDatasets: string[],
+  workspacePath: string,
+): Array<{ name: string; path: string }> => {
   const resolvedWorkspace = resolve(workspacePath)
-
+  const resolved: Array<{ name: string; path: string }> = []
   for (const name of targetDatasets) {
-    // Resolve and verify the path stays within the workspace
     const datasetPath = resolve(workspacePath, name)
     const rel = relative(resolvedWorkspace, datasetPath)
     if (rel.startsWith('..') || isAbsolute(rel)) {
@@ -98,28 +92,46 @@ async function main() {
       // Silently skip missing datasets to mirror existing behavior
       continue
     }
-    const result = await processDataset(name, datasetPath)
+    resolved.push({ name, path: datasetPath })
+  }
+  return resolved
+}
+
+const runDatasets = async (
+  datasets: Array<{ name: string; path: string }>,
+): Promise<DatasetResult[]> => {
+  const results: DatasetResult[] = []
+  for (const { name, path } of datasets) {
+    const result = await processDataset(name, path)
     results.push(result)
   }
+  return results
+}
 
-  // Fail fast if nothing was processed (all targets missing/invalid)
+const summarizeAndAssert = (results: DatasetResult[]): void => {
   if (results.length === 0) {
     handleCliError('No datasets were processed (all were missing or invalid).')
-    return
   }
-
   const totalSuccess = results.reduce((sum, r) => sum + r.success, 0)
   const totalFailure = results.reduce((sum, r) => sum + r.failure, 0)
-
-  // Treat all-zero aggregate as failure to surface empty/invalid datasets
   if (totalSuccess === 0 && totalFailure === 0) {
     handleCliError('No cases were processed across selected datasets')
-    return
   }
   if (totalFailure > 0) {
     handleCliError(`${totalFailure} case(s) failed across selected datasets`)
-    return
   }
+}
+
+async function main() {
+  const options = parseArgs(process.argv)
+  const workspacePath = getWorkspacePath()
+  const targetDatasets = selectTargetDatasets(options, workspacePath)
+  if (targetDatasets.length === 0) {
+    handleCliError('No datasets found to process')
+  }
+  const validDatasets = filterAndResolveDatasets(targetDatasets, workspacePath)
+  const results = await runDatasets(validDatasets)
+  summarizeAndAssert(results)
 }
 
 main().catch(handleUnexpectedError)

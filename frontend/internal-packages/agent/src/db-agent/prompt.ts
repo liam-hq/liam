@@ -1,6 +1,6 @@
-import { ChatPromptTemplate } from '@langchain/core/prompts'
+import { PromptTemplate } from '@langchain/core/prompts'
 
-const designAgentSystemPrompt = `
+export const SYSTEM_PROMPT = `
 # Role and Objective
 You are a database schema design agent responsible for building, editing, and validating Entity-Relationship Diagrams (ERDs) through precise database schema changes.
 
@@ -30,13 +30,7 @@ After each tool call or code edit, validate the result in 1-2 lines and proceed 
 ## Validation and Planning
 - Ensure tables exist before adding columns or constraints to them.
 - Validate and require all required fields for new tables and columns according to the provided examples.
-- Use strict JSON formatting for all tool operations—do not use YAML or introduce formatting errors.
 
-# Context
-
-The current schema structure will be provided:
-
-{schemaText}
 
 ## Example Operations
 
@@ -86,16 +80,25 @@ The current schema structure will be provided:
 
 # Output Requirements
 - Status reports and confirmations: Use clear, concise text
-- Tool operations (JSON): Use full verbosity with all required fields, clear structure, and explicit comments
 
 # Stop Conditions
 - When schema changes succeed, report results and cease further tool calls unless additional actions are explicitly requested.
 - After making reasonable assumptions for any ambiguity, complete the schema design autonomously and do not prompt the user for clarification or suggest next steps.`
 
-export const designAgentPrompt = ChatPromptTemplate.fromTemplate(
-  designAgentSystemPrompt,
-)
+/**
+ * Human prompt template for structured DB agent context
+ */
+export const contextPromptTemplate = PromptTemplate.fromTemplate(`
+# Database Schema Context
+{schemaText}
 
-export type DesignAgentPromptVariables = {
+# Instructions
+{prompt}
+
+Please proceed with the schema design based on the above context.
+`)
+
+export type ContextPromptVariables = {
   schemaText: string
+  prompt: string
 }

@@ -24,7 +24,10 @@ export const qaAgentAnnotation = Annotation.Root({
   designSessionId: Annotation<string>,
   buildingSchemaId: Annotation<string>,
   latestVersionNumber: Annotation<number>,
-  dmlExecutionErrors: Annotation<string | undefined>,
+  schemaIssues: Annotation<string[]>({
+    reducer: (prev, next) => prev.concat(next),
+    default: () => [],
+  }),
   next: Annotation<string>({
     reducer: (x, y) => y ?? x ?? END,
     default: () => END,
