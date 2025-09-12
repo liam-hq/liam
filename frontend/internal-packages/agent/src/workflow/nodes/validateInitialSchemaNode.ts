@@ -12,7 +12,10 @@ export async function validateInitialSchemaNode(
 ): Promise<WorkflowState> {
   if (isEmptySchema(state.schemaData)) {
     // No validation needed for empty schema, continue to leadAgent
-    return state
+    return {
+      ...state,
+      next: 'leadAgent',
+    }
   }
 
   const ddlResult = postgresqlSchemaDeparser(state.schemaData)
@@ -21,7 +24,6 @@ export async function validateInitialSchemaNode(
     // TODO: Add error messages to state
     return {
       ...state,
-      messages: [...state.messages],
       next: END,
     }
   }
@@ -41,7 +43,6 @@ export async function validateInitialSchemaNode(
     // TODO: Add error message to state
     return {
       ...state,
-      messages: [...state.messages],
       next: END,
     }
   }
