@@ -19,29 +19,35 @@ System features:
 - Smart concurrency per dataset (MAX_CONCURRENT=5)
 - Automatic input standardization (strings get wrapped to `{ "input": "..." }`)
 
-### 2) Execute a model
+### 2) Execute a model (unified CLI)
 
-LiamDB:
+Recommended (new):
 ```bash
-# Run on all datasets in the workspace
-pnpm --filter @liam-hq/schema-bench executeLiamDB -all
+# Liam (wraps executeLiamDbUnified.ts). Flags after `execute` pass through.
+pnpm -F @liam-hq/schema-bench schema-bench execute --executor liam -all
 
-# Run on a specific dataset
-pnpm --filter @liam-hq/schema-bench executeLiamDB -entity-extraction
-
-# Run on multiple datasets
-pnpm --filter @liam-hq/schema-bench executeLiamDB -default -entity-extraction
+# OpenAI (wraps executeOpenai.ts)
+pnpm -F @liam-hq/schema-bench schema-bench execute --executor openai
 ```
 
-OpenAI:
+Legacy scripts (still available / unchanged):
 ```bash
-# OpenAI currently targets the default dataset
-pnpm --filter @liam-hq/schema-bench executeOpenai
+# LiamDB unified executor (all datasets / specific datasets)
+pnpm -F @liam-hq/schema-bench executeLiamDB -all
+pnpm -F @liam-hq/schema-bench executeLiamDB -entity-extraction
+pnpm -F @liam-hq/schema-bench executeLiamDB -default -entity-extraction
+
+# OpenAI default dataset executor
+pnpm -F @liam-hq/schema-bench executeOpenai
 ```
 
 ### 3) Evaluate results (all datasets)
 ```bash
-pnpm --filter @liam-hq/schema-bench evaluateSchemaMulti
+# New unified CLI (wraps evaluateSchemaMulti.ts)
+pnpm -F @liam-hq/schema-bench schema-bench evaluate
+
+# Legacy script (unchanged)
+pnpm -F @liam-hq/schema-bench evaluateSchemaMulti
 ```
 
 ### Execution time (rough guide)
@@ -51,12 +57,17 @@ pnpm --filter @liam-hq/schema-bench evaluateSchemaMulti
 
 ## Available Commands
 
+- schema-bench execute: Unified entrypoint for execution
+  - `--executor liam|openai` (required)
+  - Pass-through flags are forwarded to the underlying script unchanged
+- schema-bench evaluate: Unified entrypoint for evaluation (wraps `evaluateSchemaMulti`)
+- schema-bench compare: MVP1 placeholder that prints guidance and exits with code 0
+
+Legacy scripts remain fully supported:
 - setupWorkspace: Initialize benchmark workspace with datasets
 - executeLiamDB: Unified executor with dataset flags (`-all`, `-default`, `-entity-extraction`)
 - executeOpenai: Execute on default dataset
 - evaluateSchemaMulti: Evaluate all available datasets
-
-Note: Legacy dataset-specific scripts exist but the unified `executeLiamDB` is recommended.
 
 ## Executors
 

@@ -2,7 +2,8 @@
 
 import { existsSync, mkdirSync } from 'node:fs'
 import { readdir, readFile, writeFile } from 'node:fs/promises'
-import { join } from 'node:path'
+import { dirname, join, resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import {
   err,
   fromPromise,
@@ -25,10 +26,21 @@ const InputSchema = v.object({
 
 // Workspace path is now handled by common utilities
 
-async function loadInputFiles(): Promise<
+const getExecutionBaseDir = (): string => {
+  // Prefer top-level benchmark workspace execution dir, fallback to internal default dataset
+  const workspaceExecution = getWorkspaceSubPath('execution')
+  if (existsSync(workspaceExecution)) return workspaceExecution
+  const __filename = fileURLToPath(import.meta.url)
+  const __dirname = dirname(__filename)
+  return resolve(__dirname, '../../benchmark-workspace-default/execution')
+}
+
+async function loadInputFiles(
+  baseExecutionDir: string,
+): Promise<
   Result<Array<{ caseId: string; input: OpenAIExecutorInput }>, Error>
 > {
-  const inputDir = getWorkspaceSubPath('execution/input')
+  const inputDir = join(baseExecutionDir, 'input')
 
   if (!existsSync(inputDir)) {
     return err(
@@ -91,10 +103,11 @@ async function loadInputFiles(): Promise<
 }
 
 async function saveOutputFile(
+  baseExecutionDir: string,
   caseId: string,
   output: unknown,
 ): Promise<Result<void, Error>> {
-  const outputDir = getWorkspaceSubPath('execution/output')
+  const outputDir = join(baseExecutionDir, 'output')
 
   if (!existsSync(outputDir)) {
     mkdirSync(outputDir, { recursive: true })
@@ -114,6 +127,7 @@ async function saveOutputFile(
 
 async function executeCase(
   executor: OpenAIExecutor,
+  baseExecutionDir: string,
   caseId: string,
   input: OpenAIExecutorInput,
 ): Promise<Result<void, Error>> {
@@ -124,7 +138,11 @@ async function executeCase(
     )
   }
 
-  const saveResult = await saveOutputFile(caseId, result.value)
+  const saveResult = await saveOutputFile(
+    baseExecutionDir,
+    caseId,
+    result.value,
+  )
   if (saveResult.isErr()) {
     return saveResult
   }
@@ -139,8 +157,11 @@ async function main() {
     return // This will never be reached but helps TypeScript
   }
 
+  // Resolve execution base dir (workspace or internal default)
+  const baseExecutionDir = getExecutionBaseDir()
+
   // Load input files
-  const inputsResult = await loadInputFiles()
+  const inputsResult = await loadInputFiles(baseExecutionDir)
   if (inputsResult.isErr()) {
     handleCliError('Failed to load input files', inputsResult.error)
     return // This will never be reached but helps TypeScript
@@ -176,7 +197,7 @@ async function main() {
     batch: Array<{ caseId: string; input: OpenAIExecutorInput }>,
   ) => {
     const promises = batch.map(({ caseId, input }) =>
-      executeCase(executor, caseId, input),
+      executeCase(executor, baseExecutionDir, caseId, input),
     )
     const results = await Promise.allSettled(promises)
 
