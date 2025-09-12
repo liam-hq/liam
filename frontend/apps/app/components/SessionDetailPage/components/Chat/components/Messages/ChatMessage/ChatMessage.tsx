@@ -2,7 +2,6 @@ import type { ChatMessage as ChatMessageType } from '@langchain/core/messages'
 import clsx from 'clsx'
 import type { FC } from 'react'
 import { MarkdownContent } from '../../../../../../MarkdownContent'
-import { extractResponseFromMessage } from '../../../../../utils'
 import { CopyButton } from '../../../../CopyButton'
 import markdownStyles from '../Markdown.module.css'
 import styles from './ChatMessage.module.css'
@@ -12,7 +11,10 @@ type Props = {
 }
 
 export const ChatMessage: FC<Props> = ({ message }) => {
-  const messageContentString = extractResponseFromMessage(message)
+  const messageContentString =
+    typeof message.content === 'string'
+      ? message.content
+      : JSON.stringify(message.content)
   const messageType = message.additional_kwargs?.messageType
   const isErrorMessage = messageType === 'error'
   const isSuccessMessage = messageType === 'success'
