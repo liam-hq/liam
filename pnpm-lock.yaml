@@ -10,7 +10,7 @@ overrides:
   esbuild: 0.25.9
   path-to-regexp: 8.2.0
   prismjs: 1.30.0
-  undici: 7.13.0
+  undici: 7.15.0
   zod: 3.25.76
 
 importers:
@@ -10448,8 +10448,8 @@ packages:
   undici-types@6.21.0:
     resolution: {integrity: sha512-iwDZqg0QAGrg9Rav5H4n0M64c3mkR59cJ6wQp+7C4nI0gsmExaedaYLNO44eT4AtBBwjbTiGPMlt2Md0T9H9JQ==}
 
-  undici@7.13.0:
-    resolution: {integrity: sha512-l+zSMssRqrzDcb3fjMkjjLGmuiiK2pMIcV++mJaAc9vhjSGpvM7h43QgP+OAMb1GImHmbPyG2tBXeuyG5iY4gA==}
+  undici@7.15.0:
+    resolution: {integrity: sha512-7oZJCPvvMvTd0OlqWsIxTuItTpJBpU1tcbVl24FMn3xt3+VSunwUasmfPJRE57oNO1KsZ4PgA1xTdAX4hq8NyQ==}
     engines: {node: '>=20.18.1'}
 
   unicode-canonical-property-names-ecmascript@2.0.1:
@@ -15690,7 +15690,7 @@ snapshots:
       ts-morph: 12.0.0
       ts-node: 10.9.1(@swc/core@1.12.11)(@swc/wasm@1.12.11)(@types/node@16.18.11)(typescript@4.9.5)
       typescript: 4.9.5
-      undici: 7.13.0
+      undici: 7.15.0
     transitivePeerDependencies:
       - '@swc/core'
       - '@swc/wasm'
@@ -16460,7 +16460,7 @@ snapshots:
       parse5: 7.3.0
       parse5-htmlparser2-tree-adapter: 7.1.0
       parse5-parser-stream: 7.1.2
-      undici: 7.13.0
+      undici: 7.15.0
       whatwg-mimetype: 4.0.0
 
   chokidar@3.6.0:
@@ -21985,7 +21985,7 @@ snapshots:
 
   undici-types@6.21.0: {}
 
-  undici@7.13.0: {}
+  undici@7.15.0: {}
 
   unicode-canonical-property-names-ecmascript@2.0.1: {}
 

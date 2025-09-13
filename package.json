@@ -53,7 +53,7 @@
       "esbuild": "0.25.9",
       "path-to-regexp": "8.2.0",
       "prismjs": "1.30.0",
-      "undici": "7.13.0",
+      "undici": "7.15.0",
       "zod": "3.25.76"
     }
   }
