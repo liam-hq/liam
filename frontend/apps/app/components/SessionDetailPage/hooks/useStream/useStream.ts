@@ -4,11 +4,10 @@ import {
   type BaseMessage,
   coerceMessageLikeToMessage,
 } from '@langchain/core/messages'
-import { SSE_EVENTS } from '@liam-hq/agent/client'
+import { MessageTupleManager, SSE_EVENTS } from '@liam-hq/agent/client'
 import { err, ok } from 'neverthrow'
 import { useCallback, useMemo, useRef, useState } from 'react'
 import { ERROR_MESSAGES } from '../../components/Chat/constants/chatConstants'
-import { MessageTupleManager } from './MessageTupleManager'
 import { parseSse } from './parseSse'
 import { useSessionStorageOnce } from './useSessionStorageOnce'
 

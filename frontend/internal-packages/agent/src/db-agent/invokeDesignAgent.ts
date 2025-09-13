@@ -2,18 +2,23 @@ import {
   type AIMessage,
   type AIMessageChunk,
   type BaseMessage,
+  HumanMessage,
   SystemMessage,
 } from '@langchain/core/messages'
 import { ChatOpenAI } from '@langchain/openai'
 import { fromAsyncThrowable } from '@liam-hq/neverthrow'
 import { okAsync, ResultAsync } from 'neverthrow'
 import * as v from 'valibot'
-import { SSE_EVENTS } from '../client'
+import { SSE_EVENTS } from '../streaming/constants'
 import type { Reasoning } from '../types'
 import { streamLLMResponse } from '../utils/streamingLlmUtils'
 import { reasoningSchema } from '../utils/validationSchema'
 import type { ToolConfigurable } from './getToolConfigurable'
-import { type DesignAgentPromptVariables, designAgentPrompt } from './prompt'
+import {
+  type ContextPromptVariables,
+  contextPromptTemplate,
+  SYSTEM_PROMPT,
+} from './prompt'
 import { schemaDesignTool } from './tools/schemaDesignTool'
 
 const AGENT_NAME = 'db' as const
@@ -32,17 +37,23 @@ type DesignAgentResult = {
 }
 
 export const invokeDesignAgent = (
-  variables: DesignAgentPromptVariables,
+  variables: ContextPromptVariables,
   messages: BaseMessage[],
   configurable: ToolConfigurable,
 ): ResultAsync<DesignAgentResult, Error> => {
-  const formatPrompt = ResultAsync.fromSafePromise(
-    designAgentPrompt.format(variables),
+  const formatContextPrompt = ResultAsync.fromSafePromise(
+    contextPromptTemplate.format(variables),
   )
-  const stream = fromAsyncThrowable((systemPrompt: string) =>
-    model.stream([new SystemMessage(systemPrompt), ...messages], {
-      configurable,
-    }),
+
+  const stream = fromAsyncThrowable((contextPrompt: string) =>
+    model.stream(
+      [
+        new SystemMessage(SYSTEM_PROMPT),
+        new HumanMessage(contextPrompt),
+        ...messages,
+      ],
+      { configurable },
+    ),
   )
 
   const response = fromAsyncThrowable((stream: AsyncIterable<AIMessageChunk>) =>
@@ -52,7 +63,7 @@ export const invokeDesignAgent = (
     }),
   )
 
-  return formatPrompt
+  return formatContextPrompt
     .andThen(stream)
     .andThen(response)
     .andThen((response) => {

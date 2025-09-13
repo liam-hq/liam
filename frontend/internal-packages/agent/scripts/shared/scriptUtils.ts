@@ -10,15 +10,6 @@ import { createSupabaseRepositories } from '../../src/repositories/factory'
 config({ path: resolve(__dirname, '../../../../../.env') })
 config({ path: resolve(__dirname, '../../../../../.env.local') })
 
-// Type guards for safe property access
-export const isObject = (value: unknown): value is Record<string, unknown> =>
-  typeof value === 'object' && value !== null
-
-export const hasProperty = <T extends string>(
-  obj: Record<string, unknown>,
-  prop: T,
-): obj is Record<T, unknown> & Record<string, unknown> => prop in obj
-
 // Log levels
 const LOG_LEVELS = {
   DEBUG: 0,
@@ -28,29 +19,6 @@ const LOG_LEVELS = {
 } as const
 
 type LogLevel = keyof typeof LOG_LEVELS
-
-// Get log level from command line arguments or environment
-export const getLogLevel = (): LogLevel => {
-  const args = process.argv.slice(2)
-  const logLevelArg = args
-    .find((arg) => arg.startsWith('--log-level='))
-    ?.split('=')[1]
-  const envLogLevel = process.env['LOG_LEVEL']
-
-  const level = (logLevelArg || envLogLevel || 'INFO').toUpperCase()
-
-  if (
-    level === 'DEBUG' ||
-    level === 'INFO' ||
-    level === 'WARN' ||
-    level === 'ERROR'
-  ) {
-    return level
-  }
-
-  console.warn(`Invalid log level: ${level}. Using INFO instead.`)
-  return 'INFO'
-}
 
 // Enhanced logger implementation with configurable log levels
 export const createLogger = (logLevel: LogLevel) => ({

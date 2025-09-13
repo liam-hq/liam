@@ -2,7 +2,7 @@ import { END, START, StateGraph } from '@langchain/langgraph'
 import { describe, it } from 'vitest'
 import {
   getTestConfig,
-  outputStream,
+  outputStreamEvents,
 } from '../../../test-utils/workflowTestHelpers'
 import { testcaseGeneration } from './index'
 import { testcaseAnnotation } from './testcaseAnnotation'
@@ -28,6 +28,7 @@ describe('testcaseGeneration Integration', () => {
         requirement: 'Users can create tasks with title and status',
         businessContext:
           'A task management system where users create projects and tasks',
+        requirementId: '550e8400-e29b-41d4-a716-446655440000',
       },
       schemaContext: `
 Table: users
@@ -41,12 +42,17 @@ Table: tasks
 - status: varchar (not null)
       `,
       testcases: [],
+      schemaIssues: [],
     }
 
     // Act
-    const stream = await graph.stream(state, config)
+    const streamEvents = graph.streamEvents(state, {
+      ...config,
+      streamMode: 'messages',
+      version: 'v2',
+    })
 
     // Assert (Output)
-    await outputStream(stream)
+    await outputStreamEvents(streamEvents)
   })
 })

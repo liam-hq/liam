@@ -1,6 +1,5 @@
 import { createAppAuth } from '@octokit/auth-app'
 import { Octokit } from '@octokit/rest'
-import type { FileChange } from './types'
 
 const createOctokit = async (installationId: number) => {
   const octokit = new Octokit({
@@ -30,112 +29,6 @@ export const getPullRequestDetails = async (
   })
 
   return pullRequest
-}
-
-export const getPullRequestFiles = async (
-  installationId: number,
-  owner: string,
-  repo: string,
-  pullNumber: number,
-): Promise<FileChange[]> => {
-  const octokit = await createOctokit(installationId)
-
-  const { data: files } = await octokit.pulls.listFiles({
-    owner,
-    repo,
-    pull_number: pullNumber,
-    per_page: 100,
-  })
-
-  return files.map(
-    (file: {
-      filename: string
-      status:
-        | 'added'
-        | 'removed'
-        | 'modified'
-        | 'renamed'
-        | 'copied'
-        | 'changed'
-        | 'unchanged'
-      additions: number
-      deletions: number
-      changes: number
-      patch?: string | undefined
-    }) => {
-      const extension = file.filename.split('.').pop() || 'unknown'
-
-      return {
-        filename: file.filename,
-        status: file.status,
-        additions: file.additions,
-        deletions: file.deletions,
-        changes: file.changes,
-        fileType: extension,
-        patch: file.patch || '',
-      }
-    },
-  )
-}
-
-export const createPullRequestComment = async (
-  installationId: number,
-  owner: string,
-  repo: string,
-  pullNumber: number,
-  body: string,
-) => {
-  const octokit = await createOctokit(installationId)
-
-  const response = await octokit.issues.createComment({
-    owner,
-    repo,
-    issue_number: pullNumber,
-    body,
-  })
-
-  return response.data
-}
-
-export const updatePullRequestComment = async (
-  installationId: number,
-  owner: string,
-  repo: string,
-  commentId: number,
-  body: string,
-) => {
-  const octokit = await createOctokit(installationId)
-
-  const response = await octokit.issues.updateComment({
-    owner,
-    repo,
-    comment_id: commentId,
-    body,
-  })
-
-  return response.data
-}
-
-/**
- * Gets comments from a GitHub issue or pull request
- * @returns Array of issue comments
- */
-export const getIssueComments = async (
-  installationId: number,
-  owner: string,
-  repo: string,
-  issueNumber: number,
-) => {
-  const octokit = await createOctokit(installationId)
-
-  const { data: comments } = await octokit.issues.listComments({
-    owner,
-    repo,
-    issue_number: issueNumber,
-    per_page: 100,
-  })
-
-  return comments
 }
 
 export async function getRepositoriesByInstallationId(installationId: number) {
@@ -219,54 +112,6 @@ export const getRepositoryBranches = async (
   })
 
   return branches
-}
-
-/**
- * Creates a new file in the GitHub repository
- * @returns Object containing success status and SHA of the created file
- */
-/**
- * Creates or updates a file in the GitHub repository
- * @param sha If provided, updates an existing file. If not provided, creates a new file.
- * @returns Object containing success status and SHA of the created/updated file
- */
-export const createOrUpdateFileContent = async (
-  repositoryFullName: string,
-  filePath: string,
-  content: string,
-  message: string,
-  installationId: number,
-  branch = 'main',
-  sha?: string,
-): Promise<{ success: boolean; sha: string | null }> => {
-  const [owner, repo] = repositoryFullName.split('/')
-
-  if (!owner || !repo) {
-    console.error('Invalid repository format:', repositoryFullName)
-    return { success: false, sha: null }
-  }
-
-  const octokit = await createOctokit(installationId)
-
-  try {
-    const response = await octokit.repos.createOrUpdateFileContents({
-      owner,
-      repo,
-      path: filePath,
-      message,
-      content: Buffer.from(content).toString('base64'),
-      branch,
-      ...(sha ? { sha } : {}),
-    })
-
-    return {
-      success: true,
-      sha: response.data.content?.sha || null,
-    }
-  } catch (error) {
-    console.error(`Error creating/updating file ${filePath}:`, error)
-    return { success: false, sha: null }
-  }
 }
 
 /**

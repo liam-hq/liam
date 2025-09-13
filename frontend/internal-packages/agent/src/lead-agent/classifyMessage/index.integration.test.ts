@@ -8,7 +8,7 @@ import { aColumn, aSchema, aTable, type Schema } from '@liam-hq/schema'
 import { describe, it } from 'vitest'
 import {
   getTestConfig,
-  outputStream,
+  outputStreamEvents,
 } from '../../../test-utils/workflowTestHelpers'
 import type { WorkflowState } from '../../types'
 import { workflowAnnotation } from '../../workflowAnnotation'
@@ -22,7 +22,6 @@ const createTestStateAndConfig = async (
   const { config, context } = await getTestConfig()
 
   const state: WorkflowState = {
-    userInput,
     messages: messages || [new HumanMessage(userInput)],
     schemaData: schemaData || { tables: {}, enums: {}, extensions: {} },
     analyzedRequirements: {
@@ -31,6 +30,7 @@ const createTestStateAndConfig = async (
       nonFunctionalRequirements: {},
     },
     testcases: [],
+    schemaIssues: [],
     buildingSchemaId: context.buildingSchemaId,
     latestVersionNumber: context.latestVersionNumber,
     designSessionId: context.designSessionId,
@@ -54,8 +54,12 @@ describe('classifyMessage Integration', () => {
       'Create a user management system with users, roles, and permissions tables'
     const { state, config } = await createTestStateAndConfig(userInput)
 
-    const stream = await graph.stream(state, config)
-    await outputStream(stream)
+    const streamEvents = graph.streamEvents(state, {
+      ...config,
+      streamMode: 'messages',
+      version: 'v2',
+    })
+    await outputStreamEvents(streamEvents)
   })
 
   it('should handle unsupported tasks without routing', async () => {
@@ -68,8 +72,12 @@ describe('classifyMessage Integration', () => {
     const userInput = 'Generate Python code for a REST API'
     const { state, config } = await createTestStateAndConfig(userInput)
 
-    const stream = await graph.stream(state, config)
-    await outputStream(stream)
+    const streamEvents = graph.streamEvents(state, {
+      ...config,
+      streamMode: 'messages',
+      version: 'v2',
+    })
+    await outputStreamEvents(streamEvents)
   })
 
   it('should route to summarizeWorkflow when QA is completed', async () => {
@@ -118,7 +126,11 @@ describe('classifyMessage Integration', () => {
       schemaData,
     )
 
-    const stream = await graph.stream(state, config)
-    await outputStream(stream)
+    const streamEvents = graph.streamEvents(state, {
+      ...config,
+      streamMode: 'messages',
+      version: 'v2',
+    })
+    await outputStreamEvents(streamEvents)
   })
 })

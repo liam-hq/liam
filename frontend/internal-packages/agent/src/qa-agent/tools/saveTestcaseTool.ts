@@ -7,7 +7,7 @@ import { dmlOperationSchema } from '@liam-hq/artifact'
 import { type PgParseResult, pgParse } from '@liam-hq/schema/parser'
 import { v4 as uuidv4 } from 'uuid'
 import * as v from 'valibot'
-import { SSE_EVENTS } from '../../client'
+import { SSE_EVENTS } from '../../streaming/constants'
 import { WorkflowTerminationError } from '../../utils/errorHandling'
 import { toJsonSchema } from '../../utils/jsonSchema'
 import { type Testcase, testcaseSchema } from '../types'
@@ -17,7 +17,7 @@ const dmlOperationWithoutLogsSchema = v.omit(dmlOperationSchema, [
 ])
 
 const testcaseWithDmlSchema = v.object({
-  ...v.omit(testcaseSchema, ['id', 'dmlOperation']).entries,
+  ...v.omit(testcaseSchema, ['id', 'requirementId', 'dmlOperation']).entries,
   dmlOperation: dmlOperationWithoutLogsSchema,
 })
 
@@ -30,6 +30,9 @@ const toolSchema = toJsonSchema(saveTestcaseToolSchema)
 const configSchema = v.object({
   toolCall: v.object({
     id: v.string(),
+  }),
+  configurable: v.object({
+    requirementId: v.pipe(v.string(), v.uuid()),
   }),
 })
 
@@ -49,17 +52,22 @@ const validateSqlSyntax = async (sql: string): Promise<void> => {
 }
 
 /**
- * Extract tool call ID from config
+ * Extract tool call ID and requirementId from config
  */
-const getToolCallId = (config: RunnableConfig): string => {
+const getConfigData = (
+  config: RunnableConfig,
+): { toolCallId: string; requirementId: string } => {
   const configParseResult = v.safeParse(configSchema, config)
   if (!configParseResult.success) {
     throw new WorkflowTerminationError(
-      new Error('Tool call ID not found in config'),
+      new Error('Tool call ID or requirementId not found in config'),
       'saveTestcaseTool',
     )
   }
-  return configParseResult.output.toolCall.id
+  return {
+    toolCallId: configParseResult.output.toolCall.id,
+    requirementId: configParseResult.output.configurable.requirementId,
+  }
 }
 
 export const saveTestcaseTool: StructuredTool = tool(
@@ -81,7 +89,7 @@ export const saveTestcaseTool: StructuredTool = tool(
     // Validate SQL syntax before saving
     await validateSqlSyntax(testcaseWithDml.dmlOperation.sql)
 
-    const toolCallId = getToolCallId(config)
+    const { toolCallId, requirementId } = getConfigData(config)
 
     const testcaseId = uuidv4()
 
@@ -92,6 +100,7 @@ export const saveTestcaseTool: StructuredTool = tool(
 
     const testcase: Testcase = {
       id: testcaseId,
+      requirementId: requirementId,
       requirementType: testcaseWithDml.requirementType,
       requirementCategory: testcaseWithDml.requirementCategory,
       requirement: testcaseWithDml.requirement,

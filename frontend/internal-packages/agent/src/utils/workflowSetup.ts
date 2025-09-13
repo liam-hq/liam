@@ -111,7 +111,6 @@ export const setupWorkflowState = (
 
       return ok({
         workflowState: {
-          userInput: userInput,
           messages: allMessages,
           schemaData,
           analyzedRequirements: {
@@ -120,6 +119,7 @@ export const setupWorkflowState = (
             nonFunctionalRequirements: {},
           },
           testcases: [],
+          schemaIssues: [],
           organizationId,
           buildingSchemaId,
           latestVersionNumber,

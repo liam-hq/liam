@@ -1,5 +1,11 @@
 # @liam-hq/erd-core
 
+## 0.6.10
+
+### Patch Changes
+
+- [#3432](https://github.com/liam-hq/liam/pull/3432) - - 💄 add CommandPalette closing animation / Thanks [@tnyo43](https://github.com/tnyo43)!
+
 ## 0.6.9
 
 ### Patch Changes

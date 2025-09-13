@@ -1,30 +1,49 @@
+import {
+  coerceMessageLikeToMessage,
+  isBaseMessage,
+} from '@langchain/core/messages'
 import type { RunnableConfig } from '@langchain/core/runnables'
 import {
   createLogger,
-  getLogLevel,
   setupDatabaseAndUser,
   validateEnvironment,
 } from '../scripts/shared/scriptUtils'
 import { findOrCreateDesignSession } from '../scripts/shared/sessionUtils'
-import { processStreamChunk } from '../scripts/shared/streamingUtils'
+import { MessageTupleManager } from '../src/streaming/core/MessageTupleManager'
+import {
+  isLangChainStreamEvent,
+  isMetadataRecord,
+} from '../src/streaming/core/typeGuards'
+import {
+  handleReasoningMessage,
+  handleRegularMessage,
+  handleToolCallMessage,
+} from '../src/streaming/server/handlers'
 
 /**
- * Processes and outputs the stream from a workflow execution
- * Encapsulates the streaming and logging logic
+ * Generate LangSmith thread_id search URL
+ *
+ * Note: This function depends on LangSmith's implicit behavior of recording thread_id as metadata.
+ * When thread_id is set in LangChain RunnableConfig, LangSmith automatically records the following metadata:
+ * - metadata_key: "thread_id"
+ * - metadata_value: actual thread_id value
+ *
+ * If this implicit behavior changes, the generated URL may not be able to find traces.
  */
-export const outputStream = async <T extends Record<string, unknown>>(
-  stream: AsyncGenerator<T, void, unknown>,
-  logLevel: 'ERROR' | 'INFO' | 'DEBUG' | 'WARN' = getLogLevel(),
-): Promise<void> => {
-  const logger = createLogger(logLevel)
+const generateLangSmithUrl = (threadId: string): string | null => {
+  const organizationId = process.env['LANGSMITH_ORGANIZATION_ID']
+  const projectId = process.env['LANGSMITH_PROJECT_ID']
 
-  for await (const chunk of stream) {
-    // Find the first non-null node output in the chunk
-    const nodeOutput = Object.values(chunk).find((value) => value !== undefined)
-    if (nodeOutput) {
-      processStreamChunk(logger, nodeOutput)
-    }
+  if (!organizationId || !projectId) {
+    return null
   }
+
+  const baseUrl = `https://smith.langchain.com/o/${organizationId}/projects/p/${projectId}`
+  const filter = `and(eq(is_root, true), and(eq(metadata_key, "thread_id"), eq(metadata_value, "${threadId}")))`
+  const searchModel = { filter }
+  const encodedSearchModel = encodeURIComponent(JSON.stringify(searchModel))
+
+  return `${baseUrl}?searchModel=${encodedSearchModel}`
 }
 
 /**
@@ -71,6 +90,12 @@ export const getTestConfig = async (options?: {
   const { organization, buildingSchema, designSession, user, repositories } =
     setupResult.value
 
+  // Generate and log LangSmith trace URL if environment variables are set
+  const langSmithUrl = generateLangSmithUrl(designSession.id)
+  if (langSmithUrl) {
+    logger.info(`LangSmith Trace URL: ${langSmithUrl}`)
+  }
+
   return {
     config: {
       configurable: {
@@ -85,5 +110,37 @@ export const getTestConfig = async (options?: {
       userId: user.id,
       organizationId: organization.id,
     },
+  }
+}
+
+export const outputStreamEvents = async (
+  stream: AsyncGenerator<unknown, void, unknown>,
+): Promise<void> => {
+  const messageManager = new MessageTupleManager()
+  const lastOutputContent = new Map<string, string>()
+  const lastReasoningContent = new Map<string, string>()
+  const lastToolCallsContent = new Map<string, number>()
+
+  for await (const ev of stream) {
+    if (!isLangChainStreamEvent(ev)) continue
+    if (ev.name !== 'messages') continue
+
+    const [serialized, metadata] = [ev.data, ev.metadata]
+
+    if (!isBaseMessage(serialized) || !isMetadataRecord(metadata)) {
+      continue
+    }
+
+    const messageId = messageManager.add(serialized, metadata)
+    if (!messageId) continue
+
+    const result = messageManager.get(messageId)
+    if (!result?.chunk) continue
+
+    const message = coerceMessageLikeToMessage(result.chunk)
+
+    handleReasoningMessage(message, messageId, lastReasoningContent)
+    handleToolCallMessage(message, messageId, lastToolCallsContent)
+    handleRegularMessage(message, messageId, lastOutputContent)
   }
 }

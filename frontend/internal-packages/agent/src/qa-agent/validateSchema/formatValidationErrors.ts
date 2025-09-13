@@ -19,7 +19,6 @@ export function formatValidationErrors(
     return 'Database validation complete: all checks passed successfully'
   }
 
-  const errorCount = failedResults.length
   const errorDetails = failedResults
     .map((result) => {
       let details = `### ❌ **Test Case:** ${result.testCaseTitle}`
@@ -32,5 +31,5 @@ export function formatValidationErrors(
     })
     .join('\n\n')
 
-  return `Database validation found ${errorCount} issues. Please fix the following errors:\n\n${errorDetails}`
+  return errorDetails
 }

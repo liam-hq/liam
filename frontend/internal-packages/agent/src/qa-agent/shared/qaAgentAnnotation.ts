@@ -1,6 +1,7 @@
 import { Annotation, END, MessagesAnnotation } from '@langchain/langgraph'
 import type { Schema } from '@liam-hq/schema'
 import type { AnalyzedRequirements } from '../../utils/schema/analyzedRequirements'
+import { schemaIssuesAnnotation } from '../testcaseGeneration/testcaseAnnotation'
 import type { Testcase } from '../types'
 
 /**
@@ -24,7 +25,7 @@ export const qaAgentAnnotation = Annotation.Root({
   designSessionId: Annotation<string>,
   buildingSchemaId: Annotation<string>,
   latestVersionNumber: Annotation<number>,
-  dmlExecutionErrors: Annotation<string | undefined>,
+  schemaIssues: schemaIssuesAnnotation,
   next: Annotation<string>({
     reducer: (x, y) => y ?? x ?? END,
     default: () => END,

@@ -1,5 +1,11 @@
 # @liam-hq/cli
 
+## 0.7.13
+
+### Patch Changes
+
+- [#3432](https://github.com/liam-hq/liam/pull/3432) - - 💄 add CommandPalette closing animation / Thanks [@tnyo43](https://github.com/tnyo43)!
+
 ## 0.7.12
 
 ### Patch Changes

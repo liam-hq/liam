@@ -1,4 +1,9 @@
+import { resolve } from 'node:path'
+import { config } from 'dotenv'
 import { defineConfig } from 'vitest/config'
+
+config({ path: resolve(__dirname, '../../../.env') })
+config({ path: resolve(__dirname, '../../../.env.local') })
 
 export default defineConfig({
   test: {

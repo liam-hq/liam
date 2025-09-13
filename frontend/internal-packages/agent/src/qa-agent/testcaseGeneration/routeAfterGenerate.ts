@@ -10,12 +10,7 @@ import type { testcaseAnnotation } from './testcaseAnnotation'
 export const routeAfterGenerate = (
   state: typeof testcaseAnnotation.State,
 ): 'invokeSaveTool' | typeof END => {
-  const { messages, testcases } = state
-
-  // If we already have testcases, generation is complete
-  if (testcases.length > 0) {
-    return END
-  }
+  const { messages } = state
 
   const lastMessage = messages[messages.length - 1]
 
