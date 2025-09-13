@@ -12,6 +12,6 @@
   line-height: normal;
 }
 
-.linkButton {
-  margin-left: var(--spacing-1);
+.columnLink:hover {
+  text-decoration: underline;
 }
