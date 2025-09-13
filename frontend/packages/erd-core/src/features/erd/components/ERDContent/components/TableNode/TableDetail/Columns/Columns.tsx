@@ -14,6 +14,12 @@ type Props = {
 export const Columns: FC<Props> = ({ table }) => {
   const { hash, setHash } = useUserEditingOrThrow()
 
+  const scrollToHeader = useCallback(() => {
+    const headerId = `${table.name}__columns`
+    document.getElementById(headerId)?.scrollIntoView()
+    setTimeout(() => setHash(`#${headerId}`), 0)
+  }, [table, setHash])
+
   const scrollToElement = useCallback(
     (columnName: string) => {
       const elementId = `${table.name}__column__${columnName}`
@@ -28,6 +34,8 @@ export const Columns: FC<Props> = ({ table }) => {
   return (
     <CollapsibleHeader
       title="Columns"
+      headerId={`${table.name}__columns`}
+      scrollToHeader={scrollToHeader}
       icon={<Rows3Icon width={12} />}
       isContentVisible={true}
       stickyTopHeight={0}

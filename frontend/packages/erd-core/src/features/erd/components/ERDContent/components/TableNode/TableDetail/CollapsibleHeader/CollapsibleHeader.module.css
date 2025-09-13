@@ -38,6 +38,10 @@
   line-height: normal;
 }
 
+.heading:hover {
+  text-decoration: underline;
+}
+
 .iconContainer {
   display: grid;
   grid-auto-flow: column;

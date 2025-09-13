@@ -9,6 +9,8 @@ import styles from './CollapsibleHeader.module.css'
 
 type CollapsibleHeaderProps = {
   title: string
+  headerId: string
+  scrollToHeader: () => void
   icon: ReactNode
   children: ReactNode
   isContentVisible: boolean
@@ -24,6 +26,8 @@ export const CollapsibleHeader = React.forwardRef<
   (
     {
       title,
+      headerId,
+      scrollToHeader,
       icon,
       children,
       isContentVisible,
@@ -56,10 +60,28 @@ export const CollapsibleHeader = React.forwardRef<
           tabIndex={0}
           onClick={handleClose}
           onKeyDown={handleKeyDown}
+          id={headerId}
         >
           <div className={styles.iconTitleContainer}>
             {icon}
-            <h2 className={styles.heading}>{title}</h2>
+            <h2 className={styles.heading}>
+              <a
+                href={`#${headerId}`}
+                onClick={(event) => {
+                  if (event.metaKey || event.ctrlKey) {
+                    return
+                  }
+
+                  event.preventDefault()
+                  event.stopPropagation()
+
+                  scrollToHeader()
+                  setIsClosed(false)
+                }}
+              >
+                {title} #
+              </a>
+            </h2>
           </div>
           <div className={styles.iconContainer}>
             {additionalButtons}
