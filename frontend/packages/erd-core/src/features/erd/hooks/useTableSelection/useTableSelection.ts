@@ -7,17 +7,19 @@ import { highlightNodesAndEdges } from '../../utils'
 type SelectTableParams = {
   tableId: string
   displayArea: DisplayArea
+  columnName?: string | null
 }
 
 export const useTableSelection = () => {
-  const { setActiveTableName } = useUserEditingOrThrow()
+  const { setActiveTableName, setHash } = useUserEditingOrThrow()
 
   const { getNodes, getEdges, setNodes, setEdges, fitView } =
     useCustomReactflow()
 
   const selectTable = useCallback(
-    async ({ tableId, displayArea }: SelectTableParams) => {
+    async ({ tableId, displayArea, columnName }: SelectTableParams) => {
       setActiveTableName(tableId)
+      // setHash(columnName ? `${tableId}__column__${}`null)
 
       const { nodes, edges } = highlightNodesAndEdges(getNodes(), getEdges(), {
         activeTableName: tableId,
@@ -34,18 +36,27 @@ export const useTableSelection = () => {
         })
       }
     },
-    [getNodes, getEdges, setNodes, setEdges, fitView, setActiveTableName],
+    [
+      getNodes,
+      getEdges,
+      setNodes,
+      setEdges,
+      fitView,
+      setActiveTableName,
+      setHash,
+    ],
   )
 
   const deselectTable = useCallback(() => {
     setActiveTableName(null)
+    setHash(null)
 
     const { nodes, edges } = highlightNodesAndEdges(getNodes(), getEdges(), {
       activeTableName: undefined,
     })
     setNodes(nodes)
     setEdges(edges)
-  }, [setActiveTableName, getNodes, getEdges, setNodes, setEdges])
+  }, [setActiveTableName, setHash, getNodes, getEdges, setNodes, setEdges])
 
   return {
     selectTable,

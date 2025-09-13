@@ -19,9 +19,15 @@ type Props = {
   tableId: string
   column: Column
   constraints: Constraints
+  scrollToElement: (columnName: string) => void
 }
 
-export const ColumnsItem: FC<Props> = ({ tableId, column, constraints }) => {
+export const ColumnsItem: FC<Props> = ({
+  tableId,
+  column,
+  constraints,
+  scrollToElement,
+}) => {
   const { operations } = useSchemaOrThrow()
   const { showDiff } = useUserEditingOrThrow()
 
@@ -48,7 +54,25 @@ export const ColumnsItem: FC<Props> = ({ tableId, column, constraints }) => {
 
   return (
     <div className={clsx(styles.wrapper, diffStyle)}>
-      <h3 className={styles.heading}>{column.name}</h3>
+      <h3 className={styles.heading}>
+        <a
+          className={styles.columnLink}
+          href={`#${tableId}__column__${column.name}`}
+          onClick={(event) => {
+            // Do not call preventDefault to allow the default link behavior when ⌘ key is pressed
+            if (event.metaKey || event.ctrlKey) {
+              return
+            }
+
+            event.preventDefault()
+            scrollToElement(column.name)
+          }}
+          aria-label={column.name}
+        >
+          {column.name} #
+        </a>
+      </h3>
+
       {column.comment && <Comment tableId={tableId} column={column} />}
       <GridTableRoot>
         <Type tableId={tableId} column={column} />

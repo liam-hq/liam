@@ -38,6 +38,10 @@
   line-height: normal;
 }
 
+.heading:hover {
+  text-decoration: underline;
+}
+
 .iconContainer {
   display: grid;
   grid-auto-flow: column;
@@ -48,5 +52,7 @@
 .content {
   max-height: 0;
   overflow: hidden;
+  margin-top: -41px;
+  padding-top: 41px;
   transition: max-height 0.1s var(--default-timing-function);
 }

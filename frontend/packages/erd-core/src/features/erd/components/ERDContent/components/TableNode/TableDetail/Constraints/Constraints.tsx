@@ -1,6 +1,8 @@
 import type { Table } from '@liam-hq/schema'
 import { Lock } from '@liam-hq/ui'
 import type React from 'react'
+import { useCallback } from 'react'
+import { useUserEditingOrThrow } from '../../../../../../../../stores'
 import { CollapsibleHeader } from '../CollapsibleHeader'
 import { CheckConstraints } from './CheckConstraints'
 import { ForeignKeyConstraints } from './ForeignKeyConstraints'
@@ -31,9 +33,18 @@ export const Constraints: React.FC<Props> = ({ table }) => {
   // NOTE: 400px is higher enough than each table, even considering titles and padding of its section.
   const contentMaxHeight = constraints.length * 400
 
+  const { setHash } = useUserEditingOrThrow()
+  const scrollToHeader = useCallback(() => {
+    const headerId = `${table.name}__constraints`
+    document.getElementById(headerId)?.scrollIntoView()
+    setTimeout(() => setHash(`#${headerId}`), 0)
+  }, [table, setHash])
+
   return (
     <CollapsibleHeader
-      title="Constraints #"
+      title="Constraints"
+      headerId={`${table.name}__constraints`}
+      scrollToHeader={scrollToHeader}
       icon={<Lock width={12} />}
       isContentVisible={true}
       // NOTE: Header height for Columns and Indexes section:

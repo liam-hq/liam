@@ -1,5 +1,5 @@
 import type { Table } from '@liam-hq/schema'
-import { type FC, useCallback } from 'react'
+import { type FC, useCallback, useEffect } from 'react'
 import { useVersionOrThrow } from '../../../../../../../providers'
 import {
   useSchemaOrThrow,
@@ -23,7 +23,8 @@ type Props = {
 }
 
 export const TableDetail: FC<Props> = ({ table }) => {
-  const { setActiveTableName, setHiddenNodeIds } = useUserEditingOrThrow()
+  const { setActiveTableName, setHash, setHiddenNodeIds } =
+    useUserEditingOrThrow()
 
   const { current } = useSchemaOrThrow()
 
@@ -51,6 +52,7 @@ export const TableDetail: FC<Props> = ({ table }) => {
 
     setHiddenNodeIds(hiddenNodeIds)
     setActiveTableName(null)
+    setHash(null)
 
     const { nodes: layoutedNodes, edges: layoutedEdges } =
       await computeAutoLayout(updatedNodes, getEdges())
@@ -70,6 +72,7 @@ export const TableDetail: FC<Props> = ({ table }) => {
     table,
     version,
     setActiveTableName,
+    setHash,
     setHiddenNodeIds,
     getNodes,
     getEdges,
@@ -77,6 +80,13 @@ export const TableDetail: FC<Props> = ({ table }) => {
     setEdges,
     fitView,
   ])
+
+  useEffect(() => {
+    const target = document.getElementById(location.hash.substring(1))
+    if (!target) return
+
+    target.scrollIntoView()
+  }, [])
 
   return (
     <section className={styles.wrapper}>

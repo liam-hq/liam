@@ -11,3 +11,7 @@
   font-weight: 400;
   line-height: normal;
 }
+
+.columnLink:hover {
+  text-decoration: underline;
+}
