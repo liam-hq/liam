@@ -1,6 +1,6 @@
 import type { Table } from '@liam-hq/schema'
 import { Rows3 as Rows3Icon } from '@liam-hq/ui'
-import { type FC, useCallback, useRef } from 'react'
+import { type FC, useCallback } from 'react'
 import { useUserEditingOrThrow } from '../../../../../../../../stores'
 import { BlinkCircle } from '../BlinkCircle/BlinkCircle'
 import { CollapsibleHeader } from '../CollapsibleHeader'
@@ -12,7 +12,6 @@ type Props = {
 }
 
 export const Columns: FC<Props> = ({ table }) => {
-  const collapsibleContainer = useRef<HTMLDivElement>(null)
   const { hash, setHash } = useUserEditingOrThrow()
 
   const scrollToElement = useCallback(
@@ -28,7 +27,6 @@ export const Columns: FC<Props> = ({ table }) => {
   const contentMaxHeight = Object.keys(table.columns).length * 300
   return (
     <CollapsibleHeader
-      ref={collapsibleContainer}
       title="Columns"
       icon={<Rows3Icon width={12} />}
       isContentVisible={true}

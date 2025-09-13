@@ -6,8 +6,8 @@
   position: absolute;
   display: block;
   content: '';
-  width: 3px;
-  height: 3px;
+  width: 0;
+  height: 0;
   border-radius: 50%;
   transform: translate(-50%, -50%);
   background-color: var(--primary-accent);
@@ -16,34 +16,30 @@
 }
 
 @keyframes sizePulse {
-  12.5% {
-    width: 3px;
-    height: 3px;
-  }
-  25% {
+  14% {
     width: 10px;
     height: 10px;
     animation-timing-function: ease-out;
   }
-  37.5% {
+  28% {
     width: 10px;
     height: 10px;
   }
-  50% {
+  43% {
     width: 3px;
     height: 3px;
     animation-timing-function: ease-out;
   }
-  62.5% {
+  57% {
     width: 3px;
     height: 3px;
   }
-  75% {
+  71% {
     width: 10px;
     height: 10px;
     animation-timing-function: ease-out;
   }
-  87.5% {
+  86% {
     width: 10px;
     height: 10px;
     opacity: 1;
