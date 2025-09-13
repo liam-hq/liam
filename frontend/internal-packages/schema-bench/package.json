@@ -11,7 +11,7 @@
     "langsmith": "0.3.66",
     "neverthrow": "8.2.0",
     "openai": "5.9.2",
-    "tsx": "4.20.4",
+    "tsx": "4.20.5",
     "valibot": "1.1.0"
   },
   "devDependencies": {
