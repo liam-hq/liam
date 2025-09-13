@@ -1,0 +1,830 @@
+{
+  "name": "testdb.sqlite3",
+  "desc": "Sample database document.",
+  "tables": [
+    {
+      "name": "users",
+      "type": "table",
+      "columns": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "nullable": true
+        },
+        {
+          "name": "username",
+          "type": "TEXT",
+          "nullable": false
+        },
+        {
+          "name": "password",
+          "type": "TEXT",
+          "nullable": false,
+          "labels": [
+            {
+              "name": "secure",
+              "virtual": true
+            },
+            {
+              "name": "encrypted",
+              "virtual": true
+            }
+          ]
+        },
+        {
+          "name": "email",
+          "type": "TEXT",
+          "nullable": false,
+          "labels": [
+            {
+              "name": "secure",
+              "virtual": true
+            }
+          ]
+        },
+        {
+          "name": "created",
+          "type": "NUMERIC",
+          "nullable": false
+        },
+        {
+          "name": "updated",
+          "type": "NUMERIC",
+          "nullable": true
+        }
+      ],
+      "indexes": [
+        {
+          "name": "users_username_key",
+          "def": "CREATE UNIQUE INDEX users_username_key ON users(username)",
+          "table": "users",
+          "columns": ["username"]
+        },
+        {
+          "name": "sqlite_autoindex_users_2",
+          "def": "UNIQUE (email)",
+          "table": "users",
+          "columns": ["email"]
+        },
+        {
+          "name": "sqlite_autoindex_users_1",
+          "def": "UNIQUE (username)",
+          "table": "users",
+          "columns": ["username"]
+        }
+      ],
+      "constraints": [
+        {
+          "name": "id",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (id)",
+          "table": "users",
+          "columns": ["id"]
+        },
+        {
+          "name": "sqlite_autoindex_users_2",
+          "type": "UNIQUE",
+          "def": "UNIQUE (email)",
+          "table": "users",
+          "columns": ["email"]
+        },
+        {
+          "name": "sqlite_autoindex_users_1",
+          "type": "UNIQUE",
+          "def": "UNIQUE (username)",
+          "table": "users",
+          "columns": ["username"]
+        },
+        {
+          "name": "-",
+          "type": "CHECK",
+          "def": "CHECK(length(username) > 4)",
+          "table": "users",
+          "columns": ["username"]
+        }
+      ],
+      "def": "CREATE TABLE users (\n  id INTEGER PRIMARY KEY AUTOINCREMENT,\n  username TEXT UNIQUE NOT NULL CHECK(length(username) > 4),\n  password TEXT NOT NULL,\n  email TEXT UNIQUE NOT NULL,\n  created NUMERIC NOT NULL,\n  updated NUMERIC\n)"
+    },
+    {
+      "name": "user_options",
+      "type": "table",
+      "columns": [
+        {
+          "name": "user_id",
+          "type": "INTEGER",
+          "nullable": true
+        },
+        {
+          "name": "show_email",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": "0"
+        },
+        {
+          "name": "created",
+          "type": "NUMERIC",
+          "nullable": false
+        },
+        {
+          "name": "updated",
+          "type": "NUMERIC",
+          "nullable": true
+        }
+      ],
+      "constraints": [
+        {
+          "name": "user_id",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (user_id)",
+          "table": "user_options",
+          "columns": ["user_id"]
+        },
+        {
+          "name": "- (Foreign key ID: 0)",
+          "type": "FOREIGN KEY",
+          "def": "FOREIGN KEY (user_id) REFERENCES users (id) ON UPDATE NO ACTION ON DELETE CASCADE MATCH NONE",
+          "table": "user_options",
+          "referenced_table": "users",
+          "columns": ["user_id"],
+          "referenced_columns": ["id"]
+        }
+      ],
+      "def": "CREATE TABLE user_options (\n  user_id INTEGER PRIMARY KEY,\n  show_email INTEGER NOT NULL DEFAULT 0,\n  created NUMERIC NOT NULL,\n  updated NUMERIC,\n  CONSTRAINT user_options_user_id_fk FOREIGN KEY(user_id) REFERENCES users(id) MATCH NONE ON UPDATE NO ACTION ON DELETE CASCADE\n)"
+    },
+    {
+      "name": "posts",
+      "type": "table",
+      "columns": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "nullable": true
+        },
+        {
+          "name": "user_id",
+          "type": "INTEGER",
+          "nullable": false
+        },
+        {
+          "name": "title",
+          "type": "TEXT",
+          "nullable": false
+        },
+        {
+          "name": "body",
+          "type": "TEXT",
+          "nullable": false,
+          "comment": "post body"
+        },
+        {
+          "name": "created",
+          "type": "NUMERIC",
+          "nullable": false
+        },
+        {
+          "name": "updated",
+          "type": "NUMERIC",
+          "nullable": true
+        }
+      ],
+      "indexes": [
+        {
+          "name": "posts_user_id_idx",
+          "def": "CREATE INDEX posts_user_id_idx ON posts(user_id)",
+          "table": "posts",
+          "columns": ["user_id"]
+        }
+      ],
+      "constraints": [
+        {
+          "name": "id",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (id)",
+          "table": "posts",
+          "columns": ["id"]
+        },
+        {
+          "name": "- (Foreign key ID: 0)",
+          "type": "FOREIGN KEY",
+          "def": "FOREIGN KEY (user_id) REFERENCES users (id) ON UPDATE NO ACTION ON DELETE CASCADE MATCH NONE",
+          "table": "posts",
+          "referenced_table": "users",
+          "columns": ["user_id"],
+          "referenced_columns": ["id"]
+        }
+      ],
+      "triggers": [
+        {
+          "name": "update_posts_updated",
+          "def": "CREATE TRIGGER update_posts_updated AFTER UPDATE ON posts FOR EACH ROW\nBEGIN\n  UPDATE posts SET updated = current_timestamp WHERE id = OLD.id;\nEND"
+        }
+      ],
+      "def": "CREATE TABLE posts (\n  id INTEGER PRIMARY KEY AUTOINCREMENT,\n  user_id INTEGER NOT NULL,\n  title TEXT NOT NULL,\n  body TEXT NOT NULL,\n  created NUMERIC NOT NULL,\n  updated NUMERIC,\n  CONSTRAINT posts_user_id_fk FOREIGN KEY(user_id) REFERENCES users(id) MATCH NONE ON UPDATE NO ACTION ON DELETE CASCADE\n)",
+      "labels": [
+        {
+          "name": "green",
+          "virtual": true
+        },
+        {
+          "name": "red",
+          "virtual": true
+        },
+        {
+          "name": "blue",
+          "virtual": true
+        }
+      ]
+    },
+    {
+      "name": "comments",
+      "type": "table",
+      "columns": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "nullable": true
+        },
+        {
+          "name": "post_id",
+          "type": "INTEGER",
+          "nullable": false
+        },
+        {
+          "name": "user_id",
+          "type": "INTEGER",
+          "nullable": false
+        },
+        {
+          "name": "comment",
+          "type": "TEXT",
+          "nullable": false
+        },
+        {
+          "name": "created",
+          "type": "NUMERIC",
+          "nullable": false
+        },
+        {
+          "name": "updated",
+          "type": "NUMERIC",
+          "nullable": true
+        }
+      ],
+      "indexes": [
+        {
+          "name": "comments_post_id_user_id_idx",
+          "def": "CREATE INDEX comments_post_id_user_id_idx ON comments(post_id, user_id)",
+          "table": "comments",
+          "columns": ["post_id", "user_id"]
+        },
+        {
+          "name": "sqlite_autoindex_comments_1",
+          "def": "UNIQUE (post_id, user_id)",
+          "table": "comments",
+          "columns": ["post_id", "user_id"]
+        }
+      ],
+      "constraints": [
+        {
+          "name": "id",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (id)",
+          "table": "comments",
+          "columns": ["id"]
+        },
+        {
+          "name": "- (Foreign key ID: 0)",
+          "type": "FOREIGN KEY",
+          "def": "FOREIGN KEY (user_id) REFERENCES users (id) ON UPDATE NO ACTION ON DELETE NO ACTION MATCH NONE",
+          "table": "comments",
+          "referenced_table": "users",
+          "columns": ["user_id"],
+          "referenced_columns": ["id"]
+        },
+        {
+          "name": "- (Foreign key ID: 1)",
+          "type": "FOREIGN KEY",
+          "def": "FOREIGN KEY (post_id) REFERENCES posts (id) ON UPDATE NO ACTION ON DELETE NO ACTION MATCH NONE",
+          "table": "comments",
+          "referenced_table": "posts",
+          "columns": ["post_id"],
+          "referenced_columns": ["id"]
+        },
+        {
+          "name": "sqlite_autoindex_comments_1",
+          "type": "UNIQUE",
+          "def": "UNIQUE (post_id, user_id)",
+          "table": "comments",
+          "columns": ["post_id", "user_id"]
+        }
+      ],
+      "def": "CREATE TABLE comments (\n  id INTEGER PRIMARY KEY AUTOINCREMENT,\n  post_id INTEGER NOT NULL,\n  user_id INTEGER NOT NULL,\n  comment TEXT NOT NULL,\n  created NUMERIC NOT NULL,\n  updated NUMERIC,\n  CONSTRAINT comments_post_id_fk FOREIGN KEY(post_id) REFERENCES posts(id),\n  CONSTRAINT comments_user_id_fk FOREIGN KEY(user_id) REFERENCES users(id),\n  UNIQUE(post_id, user_id)\n)"
+    },
+    {
+      "name": "comment_stars",
+      "type": "table",
+      "columns": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "nullable": true
+        },
+        {
+          "name": "user_id",
+          "type": "INTEGER",
+          "nullable": false
+        },
+        {
+          "name": "comment_post_id",
+          "type": "INTEGER",
+          "nullable": false
+        },
+        {
+          "name": "comment_user_id",
+          "type": "INTEGER",
+          "nullable": false
+        },
+        {
+          "name": "created",
+          "type": "NUMERIC",
+          "nullable": false
+        },
+        {
+          "name": "updated",
+          "type": "NUMERIC",
+          "nullable": true
+        }
+      ],
+      "indexes": [
+        {
+          "name": "sqlite_autoindex_comment_stars_1",
+          "def": "UNIQUE (user_id, comment_post_id, comment_user_id)",
+          "table": "comment_stars",
+          "columns": ["user_id", "comment_post_id", "comment_user_id"]
+        }
+      ],
+      "constraints": [
+        {
+          "name": "id",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (id)",
+          "table": "comment_stars",
+          "columns": ["id"]
+        },
+        {
+          "name": "- (Foreign key ID: 0)",
+          "type": "FOREIGN KEY",
+          "def": "FOREIGN KEY (comment_user_id) REFERENCES users (id) ON UPDATE NO ACTION ON DELETE NO ACTION MATCH NONE",
+          "table": "comment_stars",
+          "referenced_table": "users",
+          "columns": ["comment_user_id"],
+          "referenced_columns": ["id"]
+        },
+        {
+          "name": "- (Foreign key ID: 1)",
+          "type": "FOREIGN KEY",
+          "def": "FOREIGN KEY (comment_post_id, comment_user_id) REFERENCES comments (post_id, user_id) ON UPDATE NO ACTION ON DELETE NO ACTION MATCH NONE",
+          "table": "comment_stars",
+          "referenced_table": "comments",
+          "columns": ["comment_post_id", "comment_user_id"],
+          "referenced_columns": ["post_id", "user_id"]
+        },
+        {
+          "name": "sqlite_autoindex_comment_stars_1",
+          "type": "UNIQUE",
+          "def": "UNIQUE (user_id, comment_post_id, comment_user_id)",
+          "table": "comment_stars",
+          "columns": ["user_id", "comment_post_id", "comment_user_id"]
+        }
+      ],
+      "def": "CREATE TABLE comment_stars (\n  id INTEGER PRIMARY KEY AUTOINCREMENT,\n  user_id INTEGER NOT NULL,\n  comment_post_id INTEGER NOT NULL,\n  comment_user_id INTEGER NOT NULL,\n  created NUMERIC NOT NULL,\n  updated NUMERIC,\n  CONSTRAINT comment_stars_user_id_post_id_fk FOREIGN KEY(comment_post_id, comment_user_id) REFERENCES comments(post_id, user_id),\n  CONSTRAINT comment_stars_user_id_fk FOREIGN KEY(comment_user_id) REFERENCES users(id),\n  UNIQUE(user_id, comment_post_id, comment_user_id)\n)"
+    },
+    {
+      "name": "logs",
+      "type": "table",
+      "columns": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "nullable": true
+        },
+        {
+          "name": "user_id",
+          "type": "INTEGER",
+          "nullable": false
+        },
+        {
+          "name": "post_id",
+          "type": "INTEGER",
+          "nullable": true
+        },
+        {
+          "name": "comment_id",
+          "type": "INTEGER",
+          "nullable": true
+        },
+        {
+          "name": "comment_star_id",
+          "type": "INTEGER",
+          "nullable": true
+        },
+        {
+          "name": "payload",
+          "type": "TEXT",
+          "nullable": true
+        },
+        {
+          "name": "created",
+          "type": "NUMERIC",
+          "nullable": false
+        }
+      ],
+      "constraints": [
+        {
+          "name": "id",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (id)",
+          "table": "logs",
+          "columns": ["id"]
+        }
+      ],
+      "def": "CREATE TABLE logs (\n  id INTEGER PRIMARY KEY AUTOINCREMENT,\n  user_id INTEGER NOT NULL,\n  post_id INTEGER,\n  comment_id INTEGER,\n  comment_star_id INTEGER,\n  payload TEXT,\n  created NUMERIC NOT NULL\n)"
+    },
+    {
+      "name": "post_comments",
+      "type": "view",
+      "comment": "post and comments View table",
+      "columns": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "nullable": true,
+          "comment": "comments.id"
+        },
+        {
+          "name": "title",
+          "type": "TEXT",
+          "nullable": true,
+          "comment": "posts.title"
+        },
+        {
+          "name": "post_user",
+          "type": "TEXT",
+          "nullable": true,
+          "comment": "posts.users.username"
+        },
+        {
+          "name": "comment",
+          "type": "TEXT",
+          "nullable": true
+        },
+        {
+          "name": "comment_user",
+          "type": "TEXT",
+          "nullable": true,
+          "comment": "comments.users.username"
+        },
+        {
+          "name": "created",
+          "type": "NUMERIC",
+          "nullable": true,
+          "comment": "comments.created"
+        },
+        {
+          "name": "updated",
+          "type": "NUMERIC",
+          "nullable": true,
+          "comment": "comments.updated"
+        }
+      ],
+      "def": "CREATE VIEW post_comments AS\n  SELECT c.id, p.title, u2.username AS post_user, c.comment, u2.username AS comment_user, c.created, c.updated\n  FROM posts AS p\n  LEFT JOIN comments AS c on p.id = c.post_id\n  LEFT JOIN users AS u on u.id = p.user_id\n  LEFT JOIN users AS u2 on u2.id = c.user_id",
+      "referenced_tables": ["posts", "comments", "users"]
+    },
+    {
+      "name": "CamelizeTable",
+      "type": "table",
+      "columns": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "nullable": true
+        },
+        {
+          "name": "created",
+          "type": "NUMERIC",
+          "nullable": false
+        }
+      ],
+      "constraints": [
+        {
+          "name": "id",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (id)",
+          "table": "CamelizeTable",
+          "columns": ["id"]
+        }
+      ],
+      "def": "CREATE TABLE CamelizeTable (\n  id INTEGER PRIMARY KEY AUTOINCREMENT,\n  created NUMERIC NOT NULL\n)"
+    },
+    {
+      "name": "hyphen-table",
+      "type": "table",
+      "columns": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "nullable": true
+        },
+        {
+          "name": "hyphen-column",
+          "type": "TEXT",
+          "nullable": false
+        },
+        {
+          "name": "created",
+          "type": "NUMERIC",
+          "nullable": false
+        }
+      ],
+      "constraints": [
+        {
+          "name": "id",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (id)",
+          "table": "hyphen-table",
+          "columns": ["id"]
+        }
+      ],
+      "def": "CREATE TABLE 'hyphen-table' (\n  id INTEGER PRIMARY KEY AUTOINCREMENT,\n  'hyphen-column' TEXT NOT NULL,\n  created NUMERIC NOT NULL\n)"
+    },
+    {
+      "name": "check_constraints",
+      "type": "table",
+      "columns": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "nullable": true
+        },
+        {
+          "name": "col",
+          "type": "TEXT",
+          "nullable": true
+        },
+        {
+          "name": "brackets",
+          "type": "TEXT",
+          "nullable": false
+        },
+        {
+          "name": "checkcheck",
+          "type": "TEXT",
+          "nullable": false
+        },
+        {
+          "name": "downcase",
+          "type": "TEXT",
+          "nullable": false
+        },
+        {
+          "name": "nl",
+          "type": "TEXT",
+          "nullable": false
+        }
+      ],
+      "indexes": [
+        {
+          "name": "sqlite_autoindex_check_constraints_4",
+          "def": "UNIQUE (nl)",
+          "table": "check_constraints",
+          "columns": ["nl"]
+        },
+        {
+          "name": "sqlite_autoindex_check_constraints_3",
+          "def": "UNIQUE (downcase)",
+          "table": "check_constraints",
+          "columns": ["downcase"]
+        },
+        {
+          "name": "sqlite_autoindex_check_constraints_2",
+          "def": "UNIQUE (checkcheck)",
+          "table": "check_constraints",
+          "columns": ["checkcheck"]
+        },
+        {
+          "name": "sqlite_autoindex_check_constraints_1",
+          "def": "UNIQUE (brackets)",
+          "table": "check_constraints",
+          "columns": ["brackets"]
+        }
+      ],
+      "constraints": [
+        {
+          "name": "id",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (id)",
+          "table": "check_constraints",
+          "columns": ["id"]
+        },
+        {
+          "name": "sqlite_autoindex_check_constraints_4",
+          "type": "UNIQUE",
+          "def": "UNIQUE (nl)",
+          "table": "check_constraints",
+          "columns": ["nl"]
+        },
+        {
+          "name": "sqlite_autoindex_check_constraints_3",
+          "type": "UNIQUE",
+          "def": "UNIQUE (downcase)",
+          "table": "check_constraints",
+          "columns": ["downcase"]
+        },
+        {
+          "name": "sqlite_autoindex_check_constraints_2",
+          "type": "UNIQUE",
+          "def": "UNIQUE (checkcheck)",
+          "table": "check_constraints",
+          "columns": ["checkcheck"]
+        },
+        {
+          "name": "sqlite_autoindex_check_constraints_1",
+          "type": "UNIQUE",
+          "def": "UNIQUE (brackets)",
+          "table": "check_constraints",
+          "columns": ["brackets"]
+        },
+        {
+          "name": "-",
+          "type": "CHECK",
+          "def": "CHECK(length(col) > 4)",
+          "table": "check_constraints",
+          "columns": ["col"]
+        },
+        {
+          "name": "-",
+          "type": "CHECK",
+          "def": "CHECK(((length(brackets) > 4)))",
+          "table": "check_constraints",
+          "columns": ["brackets"]
+        },
+        {
+          "name": "-",
+          "type": "CHECK",
+          "def": "CHECK(length(checkcheck) > 4)",
+          "table": "check_constraints",
+          "columns": ["checkcheck"]
+        },
+        {
+          "name": "-",
+          "type": "CHECK",
+          "def": "check(length(downcase) > 4)",
+          "table": "check_constraints",
+          "columns": ["downcase"]
+        },
+        {
+          "name": "-",
+          "type": "CHECK",
+          "def": "check(length(nl) > 4 OR nl != 'ln')",
+          "table": "check_constraints",
+          "columns": ["nl"]
+        }
+      ],
+      "def": "CREATE TABLE check_constraints (\n  id INTEGER PRIMARY KEY AUTOINCREMENT,\n  col TEXT CHECK(length(col) > 4),\n  brackets TEXT UNIQUE NOT NULL CHECK(((length(brackets) > 4))),\n  checkcheck TEXT UNIQUE NOT NULL CHECK(length(checkcheck) > 4),\n  downcase TEXT UNIQUE NOT NULL check(length(downcase) > 4),\n  nl TEXT UNIQUE NOT\n  NULL check(length(nl) > 4 OR\n    nl != 'ln')\n)"
+    },
+    {
+      "name": "syslog",
+      "type": "virtual table",
+      "columns": [
+        {
+          "name": "logs",
+          "type": "",
+          "nullable": true
+        }
+      ],
+      "def": "CREATE VIRTUAL TABLE syslog USING fts3(logs)"
+    },
+    {
+      "name": "access_log",
+      "type": "virtual table",
+      "columns": [
+        {
+          "name": "logs",
+          "type": "",
+          "nullable": true
+        }
+      ],
+      "def": "CREATE VIRTUAL TABLE access_log USING fts4(logs)"
+    }
+  ],
+  "relations": [
+    {
+      "table": "user_options",
+      "columns": ["user_id"],
+      "cardinality": "zero_or_one",
+      "parent_table": "users",
+      "parent_columns": ["id"],
+      "parent_cardinality": "zero_or_one",
+      "def": "FOREIGN KEY (user_id) REFERENCES users (id) ON UPDATE NO ACTION ON DELETE CASCADE MATCH NONE"
+    },
+    {
+      "table": "posts",
+      "columns": ["user_id"],
+      "cardinality": "zero_or_more",
+      "parent_table": "users",
+      "parent_columns": ["id"],
+      "parent_cardinality": "exactly_one",
+      "def": "FOREIGN KEY (user_id) REFERENCES users (id) ON UPDATE NO ACTION ON DELETE CASCADE MATCH NONE"
+    },
+    {
+      "table": "comments",
+      "columns": ["user_id"],
+      "cardinality": "zero_or_more",
+      "parent_table": "users",
+      "parent_columns": ["id"],
+      "parent_cardinality": "exactly_one",
+      "def": "FOREIGN KEY (user_id) REFERENCES users (id) ON UPDATE NO ACTION ON DELETE NO ACTION MATCH NONE"
+    },
+    {
+      "table": "comments",
+      "columns": ["post_id"],
+      "cardinality": "zero_or_more",
+      "parent_table": "posts",
+      "parent_columns": ["id"],
+      "parent_cardinality": "exactly_one",
+      "def": "FOREIGN KEY (post_id) REFERENCES posts (id) ON UPDATE NO ACTION ON DELETE NO ACTION MATCH NONE"
+    },
+    {
+      "table": "comment_stars",
+      "columns": ["comment_user_id"],
+      "cardinality": "zero_or_more",
+      "parent_table": "users",
+      "parent_columns": ["id"],
+      "parent_cardinality": "exactly_one",
+      "def": "FOREIGN KEY (comment_user_id) REFERENCES users (id) ON UPDATE NO ACTION ON DELETE NO ACTION MATCH NONE"
+    },
+    {
+      "table": "comment_stars",
+      "columns": ["comment_post_id", "comment_user_id"],
+      "cardinality": "zero_or_more",
+      "parent_table": "comments",
+      "parent_columns": ["post_id", "user_id"],
+      "parent_cardinality": "exactly_one",
+      "def": "FOREIGN KEY (comment_post_id, comment_user_id) REFERENCES comments (post_id, user_id) ON UPDATE NO ACTION ON DELETE NO ACTION MATCH NONE"
+    },
+    {
+      "table": "logs",
+      "columns": ["user_id"],
+      "cardinality": "zero_or_more",
+      "parent_table": "users",
+      "parent_columns": ["id"],
+      "parent_cardinality": "exactly_one",
+      "def": "logs->users",
+      "virtual": true
+    },
+    {
+      "table": "logs",
+      "columns": ["post_id"],
+      "cardinality": "zero_or_more",
+      "parent_table": "posts",
+      "parent_columns": ["id"],
+      "parent_cardinality": "zero_or_one",
+      "def": "Additional Relation",
+      "virtual": true
+    },
+    {
+      "table": "logs",
+      "columns": ["comment_id"],
+      "cardinality": "zero_or_more",
+      "parent_table": "comments",
+      "parent_columns": ["id"],
+      "parent_cardinality": "zero_or_one",
+      "def": "Additional Relation",
+      "virtual": true
+    },
+    {
+      "table": "logs",
+      "columns": ["comment_star_id"],
+      "cardinality": "exactly_one",
+      "parent_table": "comment_stars",
+      "parent_columns": ["id"],
+      "parent_cardinality": "exactly_one",
+      "def": "Additional Relation",
+      "virtual": true
+    }
+  ],
+  "driver": {
+    "name": "sqlite",
+    "database_version": "3.46.1"
+  },
+  "labels": [
+    {
+      "name": "sample",
+      "virtual": true
+    },
+    {
+      "name": "tbls",
+      "virtual": true
+    }
+  ]
+}

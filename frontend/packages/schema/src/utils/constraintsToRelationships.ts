@@ -57,8 +57,7 @@ export const constraintsToRelationships = (tables: Tables): Relationships => {
         }
 
         // For composite keys, append index to make unique relationship names
-        const relationshipKey =
-          columnCount > 1 ? `${constraint.name}_${i}` : constraint.name
+        const relationshipKey = `${table.name}_${constraint.name}_${i}`
 
         relationships[relationshipKey] = {
           name: relationshipKey,
