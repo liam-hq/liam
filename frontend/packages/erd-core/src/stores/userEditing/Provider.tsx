@@ -56,7 +56,12 @@ export const UserEditingProvider: FC<Props> = ({
 
   const setActiveTableName: typeof _setActiveTableName = useCallback(
     (...args) => {
-      location.hash = ''
+      // reset location.hash when the active table changes or is removed
+      // Setting location.hash = '' immediately can be slow for the transitions.
+      // We defer the operation using setTimeout(..., 0) to avoid blocking and ensure smooth execution of the current updates.
+      setTimeout(() => {
+        location.hash = ''
+      }, 0)
       return _setActiveTableName(...args)
     },
     [_setActiveTableName],
