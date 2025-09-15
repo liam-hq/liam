@@ -54,7 +54,27 @@ export const ColumnsItem: FC<Props> = ({ tableId, column, constraints }) => {
   return (
     <div id={elementId} className={clsx(styles.wrapper, diffStyle)}>
       <h3 className={styles.heading}>
-        <a href={`#${elementId}`}>{column.name} #</a>
+        <a
+          href={`#${elementId}`}
+          onClick={(event) => {
+            // Do not call preventDefault to allow the default link behavior when ⌘ key is pressed
+            if (event.metaKey || event.ctrlKey) {
+              return
+            }
+
+            event.preventDefault()
+
+            const element = document.getElementById(elementId)
+            element?.scrollIntoView()
+            // Setting location.hash = '' immediately can be slow for the transitions.
+            // We defer the operation using setTimeout(..., 0) to avoid blocking and ensure smooth execution of the current updates.
+            setTimeout(() => {
+              location.hash = elementId
+            }, 0)
+          }}
+        >
+          {column.name} #
+        </a>
       </h3>
       {column.comment && <Comment tableId={tableId} column={column} />}
       <GridTableRoot>
