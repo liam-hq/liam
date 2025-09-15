@@ -1,8 +1,9 @@
 import { aColumn, aPrimaryKeyConstraint } from '@liam-hq/schema'
 import { render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { NuqsTestingAdapter } from 'nuqs/adapters/testing'
 import type { FC, PropsWithChildren } from 'react'
-import { describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it } from 'vitest'
 import {
   SchemaProvider,
   UserEditingProvider,
@@ -16,6 +17,10 @@ const wrapper: FC<PropsWithChildren> = ({ children }) => (
     </SchemaProvider>
   </NuqsTestingAdapter>
 )
+
+beforeEach(() => {
+  location.hash = ''
+})
 
 describe('id', () => {
   it('renders column name as a inked heading', () => {
@@ -34,6 +39,29 @@ describe('id', () => {
     expect(screen.getByRole('link', { name: 'id #' })).toHaveAttribute(
       'href',
       '#users__columns__id',
+    )
+  })
+
+  describe('interactions', () => {
+    it('scrolls to element when the link is clicked', async () => {
+      const user = userEvent.setup()
+      render(
+        <ColumnsItem
+          tableId="users"
+          column={aColumn({ name: 'id', type: 'bigserial' })}
+          constraints={{}}
+        />,
+        { wrapper },
+      )
+
+      await user.click(screen.getByRole('link', { name: 'id #' }))
+
+      expect(location.hash).toBe('#users__columns__id')
+      // TODO: check element.scrollIntoView is called
+    })
+
+    it.todo(
+      'does nothing with ⌘ + click (default browser action: open in new tab)',
     )
   })
 })
