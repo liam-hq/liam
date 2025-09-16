@@ -15,18 +15,19 @@ import { NotNull } from './NotNull'
 import { PrimaryKey } from './PrimaryKey'
 import { Type } from './Type'
 
-const columnElementId = (tableName: string, columnName: string) =>
-  `${tableName}__columns__${columnName}`
-
 type Props = {
   tableId: string
   column: Column
   constraints: Constraints
+  elementId: string
 }
 
-export const ColumnsItem: FC<Props> = ({ tableId, column, constraints }) => {
-  const elementId = columnElementId(tableId, column.name)
-
+export const ColumnsItem: FC<Props> = ({
+  tableId,
+  column,
+  constraints,
+  elementId,
+}) => {
   const { operations } = useSchemaOrThrow()
   const { showDiff } = useUserEditingOrThrow()
 
