@@ -1,17 +1,12 @@
+import { randomUUID } from 'node:crypto'
+import { dispatchCustomEvent } from '@langchain/core/callbacks/dispatch'
+import { AIMessage } from '@langchain/core/messages'
+import type { Command } from '@langchain/langgraph'
 import { executeQuery } from '@liam-hq/pglite-server'
 import { isEmptySchema, postgresqlSchemaDeparser } from '@liam-hq/schema'
+import { SSE_EVENTS } from '../../streaming/constants'
 import type { WorkflowState } from '../../types'
 import { WorkflowTerminationError } from '../../utils/errorHandling'
-
-const createValidationError = (
-  error: Error | string,
-): WorkflowTerminationError => {
-  const errorInstance = error instanceof Error ? error : new Error(error)
-  return new WorkflowTerminationError(
-    errorInstance,
-    'validateInitialSchemaNode',
-  )
-}
 
 /**
  * Validates initial schema and provides Instant Database initialization experience.
@@ -19,9 +14,8 @@ const createValidationError = (
  */
 export async function validateInitialSchemaNode(
   state: WorkflowState,
-): Promise<WorkflowState> {
+): Promise<WorkflowState | Command> {
   if (isEmptySchema(state.schemaData)) {
-    // TODO: Add message creation in next PR
     return state
   }
 
@@ -31,7 +25,18 @@ export async function validateInitialSchemaNode(
     const errorMessage = ddlResult.errors
       .map((error) => error.message)
       .join('; ')
-    throw createValidationError(`Schema deparser failed: ${errorMessage}`)
+
+    const aiMessage = new AIMessage({
+      id: randomUUID(),
+      content: '**Schema Validation Failed**',
+    })
+
+    await dispatchCustomEvent(SSE_EVENTS.MESSAGES, aiMessage)
+
+    throw new WorkflowTerminationError(
+      new Error(`Schema deparser failed: ${errorMessage}`),
+      'validateInitialSchemaNode',
+    )
   }
 
   const ddlStatements = ddlResult.value
@@ -48,9 +53,19 @@ export async function validateInitialSchemaNode(
   if (hasErrors) {
     const errorResult = validationResults.find((result) => !result.success)
     const errorMessage = JSON.stringify(errorResult?.result)
-    throw createValidationError(`Schema validation failed: ${errorMessage}`)
+
+    const aiMessage = new AIMessage({
+      id: randomUUID(),
+      content: '**Database Execution Failed**',
+    })
+
+    await dispatchCustomEvent(SSE_EVENTS.MESSAGES, aiMessage)
+
+    throw new WorkflowTerminationError(
+      new Error(`Schema validation failed: ${errorMessage}`),
+      'validateInitialSchemaNode',
+    )
   }
 
-  // TODO: Add message creation in next PR
   return state
 }
