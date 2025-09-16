@@ -37,6 +37,7 @@ export {
   aColumn,
   aForeignKeyConstraint,
   anIndex,
+  aPrimaryKeyConstraint,
   aSchema,
   aTable,
   aUniqueConstraint,

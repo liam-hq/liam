@@ -4,8 +4,10 @@
 @import 'fumadocs-ui/css/neutral.css';
 @import 'fumadocs-ui/css/preset.css';
 
+/* biome-ignore lint/suspicious/noUnknownAtRules: @source is a Tailwind CSS v4 directive for importing component styles */
 @source '../node_modules/fumadocs-ui/dist/**/*.js';
 
+/* biome-ignore lint/suspicious/noUnknownAtRules: @theme is a Tailwind CSS v4 directive for defining theme configuration */
 @theme {
   --color-liam-green-300: hsl(var(--liam-green-300));
   --color-liam-green-400: hsl(var(--liam-green-400));

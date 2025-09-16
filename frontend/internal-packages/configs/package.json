@@ -6,18 +6,17 @@
   "exports": {
     "./eslint/index.js": "./eslint/index.js",
     "./eslint/base.js": "./eslint/base.js",
-    "./tsconfig/base.json": "./tsconfig/base.json",
-    "./tsconfig": "./tsconfig"
+    "./tsconfig/base.json": "./tsconfig/base.json"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.1.4",
+    "@biomejs/biome": "2.2.2",
     "@css-modules-kit/eslint-plugin": "0.2.2",
-    "@eslint/compat": "1.3.1",
-    "@eslint/css": "0.10.0",
+    "@eslint/compat": "1.3.2",
+    "@eslint/css": "0.11.0",
     "@tsconfig/strictest": "2.0.5",
-    "@typescript-eslint/eslint-plugin": "8.39.0",
-    "@typescript-eslint/parser": "8.39.0",
-    "eslint": "9.33.0",
+    "@typescript-eslint/eslint-plugin": "8.41.0",
+    "@typescript-eslint/parser": "8.41.0",
+    "eslint": "9.34.0",
     "eslint-plugin-unicorn": "58.0.0"
   },
   "files": [

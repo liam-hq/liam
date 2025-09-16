@@ -4,12 +4,12 @@
   "private": true,
   "version": "0.1.0",
   "devDependencies": {
-    "@biomejs/biome": "2.1.4",
+    "@biomejs/biome": "2.2.2",
     "@liam-hq/configs": "workspace:*",
     "@types/fs-extra": "11.0.4",
-    "@types/node": "22.17.1",
-    "concurrently": "9.2.0",
-    "eslint": "9.33.0",
+    "@types/node": "22.18.0",
+    "concurrently": "9.2.1",
+    "eslint": "9.34.0",
     "fs-extra": "11.3.1"
   },
   "scripts": {

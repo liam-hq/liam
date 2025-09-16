@@ -22,7 +22,10 @@ export const createGraph = (checkpointer?: BaseCheckpointSaver) => {
 
   const callDbAgent = async (state: WorkflowState, config: RunnableConfig) => {
     const dbAgentSubgraph = createDbAgentGraph(checkpointer)
-    const prompt = convertRequirementsToPrompt(state.analyzedRequirements)
+    const prompt = convertRequirementsToPrompt(
+      state.analyzedRequirements,
+      state.schemaIssues,
+    )
 
     const modifiedState = { ...state, messages: [], prompt }
     const output = await dbAgentSubgraph.invoke(modifiedState, config)

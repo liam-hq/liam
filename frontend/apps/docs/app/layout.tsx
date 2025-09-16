@@ -78,7 +78,7 @@ export default function Layout({ children }: { children: ReactNode }) {
             },
           }}
         >
-          {/* biome-ignore lint/nursery/useUniqueElementIds: Banner ID is used for localStorage persistence and CSS styling */}
+          {/* biome-ignore lint/correctness/useUniqueElementIds: Banner ID is used for localStorage persistence and CSS styling */}
           <Banner
             id="liam-erd-introduction"
             variant="dark"

@@ -28,7 +28,7 @@ describe('testcaseGeneration Integration', () => {
         requirement: 'Users can create tasks with title and status',
         businessContext:
           'A task management system where users create projects and tasks',
-        requirementId: 'test-requirement-id',
+        requirementId: '550e8400-e29b-41d4-a716-446655440000',
       },
       schemaContext: `
 Table: users

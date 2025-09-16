@@ -10,11 +10,11 @@
     "zod": "3.25.76"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.1.4",
+    "@biomejs/biome": "2.2.2",
     "@liam-hq/configs": "workspace:*",
-    "@types/node": "22.17.1",
-    "concurrently": "9.2.0",
-    "tsx": "4.20.4",
+    "@types/node": "22.18.0",
+    "concurrently": "9.2.1",
+    "tsx": "4.20.5",
     "typescript": "5.9.2"
   },
   "scripts": {

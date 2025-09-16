@@ -3,7 +3,7 @@ import type { FC } from 'react'
 
 export const GtagScript: FC = () => {
   return (
-    // biome-ignore lint/nursery/useUniqueElementIds: GTM script injection requires stable ID
+    // biome-ignore lint/correctness/useUniqueElementIds: GTM script injection requires stable ID
     <Script
       id="gtag"
       strategy="afterInteractive"

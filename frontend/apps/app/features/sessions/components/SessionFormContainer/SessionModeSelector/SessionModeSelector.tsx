@@ -91,21 +91,27 @@ export const SessionModeSelector: FC<Props> = ({
     }
   }, [selectedMode])
 
-  const keyHandlers: Record<string, (currentIndex: number) => number | null> = {
-    ArrowLeft: (currentIndex) =>
-      currentIndex > 0 ? currentIndex - 1 : modes.length - 1,
-    ArrowRight: (currentIndex) =>
-      currentIndex < modes.length - 1 ? currentIndex + 1 : 0,
-    Home: () => 0,
-    End: () => modes.length - 1,
-  }
-
   const handleKeyDown = (e: React.KeyboardEvent, currentIndex: number) => {
-    const handler = keyHandlers[e.key]
-    if (!handler) return
+    let newIndex: number | null = null
+
+    switch (e.key) {
+      case 'ArrowLeft':
+        newIndex = currentIndex > 0 ? currentIndex - 1 : modes.length - 1
+        break
+      case 'ArrowRight':
+        newIndex = currentIndex < modes.length - 1 ? currentIndex + 1 : 0
+        break
+      case 'Home':
+        newIndex = 0
+        break
+      case 'End':
+        newIndex = modes.length - 1
+        break
+      default:
+        return
+    }
 
     e.preventDefault()
-    const newIndex = handler(currentIndex)
     if (newIndex === null) return
 
     shouldFocusOnModeChange.current = true

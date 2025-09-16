@@ -13,10 +13,10 @@
     "valibot": "1.1.0"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.1.4",
+    "@biomejs/biome": "2.2.2",
     "@liam-hq/configs": "workspace:*",
-    "eslint": "9.33.0",
-    "supabase": "2.34.1",
+    "eslint": "9.34.0",
+    "supabase": "2.40.1",
     "type-fest": "4.41.0",
     "typescript": "5.9.2"
   },

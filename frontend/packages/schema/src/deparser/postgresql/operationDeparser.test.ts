@@ -130,7 +130,7 @@ describe('postgresqlOperationDeparser', () => {
 
       expect(result.errors).toHaveLength(0)
       expect(result.value).toMatchInlineSnapshot(`
-        "DROP TABLE \"users\";"
+        "DROP TABLE "users";"
       `)
 
       await expectGeneratedSQLToBeParseable(result.value)
@@ -147,7 +147,7 @@ describe('postgresqlOperationDeparser', () => {
 
       expect(result.errors).toHaveLength(0)
       expect(result.value).toMatchInlineSnapshot(`
-        "ALTER TABLE \"users\" RENAME TO \"user_accounts\";"
+        "ALTER TABLE "users" RENAME TO "user_accounts";"
       `)
 
       await expectGeneratedSQLToBeParseable(result.value)
@@ -174,9 +174,9 @@ describe('postgresqlOperationDeparser', () => {
 
       expect(result.errors).toHaveLength(0)
       expect(result.value).toMatchInlineSnapshot(`
-        "ALTER TABLE \"users\" ADD COLUMN \"age\" integer;
+        "ALTER TABLE "users" ADD COLUMN "age" integer;
 
-        COMMENT ON COLUMN \"users\".\"age\" IS 'User age';"
+        COMMENT ON COLUMN "users"."age" IS 'User age';"
       `)
 
       await expectGeneratedSQLToBeParseable(result.value)
@@ -201,7 +201,7 @@ describe('postgresqlOperationDeparser', () => {
 
       expect(result.errors).toHaveLength(0)
       expect(result.value).toMatchInlineSnapshot(`
-        "ALTER TABLE \"products\" ADD COLUMN \"price\" decimal(10,2) NOT NULL DEFAULT 0;"
+        "ALTER TABLE "products" ADD COLUMN "price" decimal(10,2) NOT NULL DEFAULT 0;"
       `)
 
       await expectGeneratedSQLToBeParseable(result.value)
@@ -217,7 +217,7 @@ describe('postgresqlOperationDeparser', () => {
 
       expect(result.errors).toHaveLength(0)
       expect(result.value).toMatchInlineSnapshot(`
-        "ALTER TABLE \"users\" DROP COLUMN \"age\";"
+        "ALTER TABLE "users" DROP COLUMN "age";"
       `)
 
       await expectGeneratedSQLToBeParseable(result.value)
@@ -234,7 +234,7 @@ describe('postgresqlOperationDeparser', () => {
 
       expect(result.errors).toHaveLength(0)
       expect(result.value).toMatchInlineSnapshot(`
-        "ALTER TABLE \"users\" RENAME COLUMN \"email\" TO \"email_address\";"
+        "ALTER TABLE "users" RENAME COLUMN "email" TO "email_address";"
       `)
 
       await expectGeneratedSQLToBeParseable(result.value)
@@ -251,7 +251,7 @@ describe('postgresqlOperationDeparser', () => {
 
       expect(result.errors).toHaveLength(0)
       expect(result.value).toMatchInlineSnapshot(`
-        "ALTER TABLE \"user_profiles\" RENAME COLUMN \"first_name\" TO \"given_name\";"
+        "ALTER TABLE "user_profiles" RENAME COLUMN "first_name" TO "given_name";"
       `)
 
       await expectGeneratedSQLToBeParseable(result.value)
@@ -275,7 +275,7 @@ describe('postgresqlOperationDeparser', () => {
 
       expect(result.errors).toHaveLength(0)
       expect(result.value).toMatchInlineSnapshot(`
-        "CREATE INDEX \"idx_users_email\" ON \"users\" USING BTREE (\"email\");"
+        "CREATE INDEX "idx_users_email" ON "users" USING BTREE ("email");"
       `)
 
       await expectGeneratedSQLToBeParseable(result.value)
@@ -297,7 +297,7 @@ describe('postgresqlOperationDeparser', () => {
 
       expect(result.errors).toHaveLength(0)
       expect(result.value).toMatchInlineSnapshot(`
-        "CREATE UNIQUE INDEX \"idx_users_username_unique\" ON \"users\" USING BTREE (\"username\");"
+        "CREATE UNIQUE INDEX "idx_users_username_unique" ON "users" USING BTREE ("username");"
       `)
 
       await expectGeneratedSQLToBeParseable(result.value)
@@ -319,7 +319,7 @@ describe('postgresqlOperationDeparser', () => {
 
       expect(result.errors).toHaveLength(0)
       expect(result.value).toMatchInlineSnapshot(`
-        "CREATE INDEX \"idx_orders_user_date\" ON \"orders\" USING BTREE (\"user_id\", \"created_at\");"
+        "CREATE INDEX "idx_orders_user_date" ON "orders" USING BTREE ("user_id", "created_at");"
       `)
 
       await expectGeneratedSQLToBeParseable(result.value)
@@ -341,7 +341,7 @@ describe('postgresqlOperationDeparser', () => {
 
       expect(result.errors).toHaveLength(0)
       expect(result.value).toMatchInlineSnapshot(`
-        "CREATE INDEX \"idx_products_category\" ON \"products\" (\"category_id\");"
+        "CREATE INDEX "idx_products_category" ON "products" ("category_id");"
       `)
 
       await expectGeneratedSQLToBeParseable(result.value)
@@ -357,7 +357,7 @@ describe('postgresqlOperationDeparser', () => {
 
       expect(result.errors).toHaveLength(0)
       expect(result.value).toMatchInlineSnapshot(`
-        "DROP INDEX \"idx_users_email\";"
+        "DROP INDEX "idx_users_email";"
       `)
 
       await expectGeneratedSQLToBeParseable(result.value)
@@ -373,7 +373,7 @@ describe('postgresqlOperationDeparser', () => {
 
       expect(result.errors).toHaveLength(0)
       expect(result.value).toMatchInlineSnapshot(`
-        "DROP INDEX \"idx_user_profiles_email_unique\";"
+        "DROP INDEX "idx_user_profiles_email_unique";"
       `)
 
       await expectGeneratedSQLToBeParseable(result.value)
@@ -396,7 +396,7 @@ describe('postgresqlOperationDeparser', () => {
 
       expect(result.errors).toHaveLength(0)
       expect(result.value).toMatchInlineSnapshot(`
-        "ALTER TABLE \"users\" ADD CONSTRAINT \"pk_users_id\" PRIMARY KEY (\"id\");"
+        "ALTER TABLE "users" ADD CONSTRAINT "pk_users_id" PRIMARY KEY ("id");"
       `)
 
       await expectGeneratedSQLToBeParseable(result.value)
@@ -421,7 +421,7 @@ describe('postgresqlOperationDeparser', () => {
 
       expect(result.errors).toHaveLength(0)
       expect(result.value).toMatchInlineSnapshot(`
-        "ALTER TABLE \"orders\" ADD CONSTRAINT \"fk_orders_user_id\" FOREIGN KEY (\"user_id\") REFERENCES \"users\" (\"id\") ON UPDATE CASCADE ON DELETE SET NULL;"
+        "ALTER TABLE "orders" ADD CONSTRAINT "fk_orders_user_id" FOREIGN KEY ("user_id") REFERENCES "users" ("id") ON UPDATE CASCADE ON DELETE SET NULL;"
       `)
 
       // Foreign key constraints require both source and target tables to exist for parsing
@@ -449,7 +449,7 @@ describe('postgresqlOperationDeparser', () => {
 
       expect(result.errors).toHaveLength(0)
       expect(result.value).toMatchInlineSnapshot(`
-        "ALTER TABLE \"users\" ADD CONSTRAINT \"uk_users_email\" UNIQUE (\"email\");"
+        "ALTER TABLE "users" ADD CONSTRAINT "uk_users_email" UNIQUE ("email");"
       `)
 
       await expectGeneratedSQLToBeParseable(result.value)
@@ -470,7 +470,7 @@ describe('postgresqlOperationDeparser', () => {
 
       expect(result.errors).toHaveLength(0)
       expect(result.value).toMatchInlineSnapshot(`
-        "ALTER TABLE \"products\" ADD CONSTRAINT \"ck_products_price_positive\" CHECK (price > 0);"
+        "ALTER TABLE "products" ADD CONSTRAINT "ck_products_price_positive" CHECK (price > 0);"
       `)
 
       await expectGeneratedSQLToBeParseable(result.value)
@@ -486,7 +486,7 @@ describe('postgresqlOperationDeparser', () => {
 
       expect(result.errors).toHaveLength(0)
       expect(result.value).toMatchInlineSnapshot(`
-        "ALTER TABLE \"users\" DROP CONSTRAINT \"pk_users_id\";"
+        "ALTER TABLE "users" DROP CONSTRAINT "pk_users_id";"
       `)
 
       await expectGeneratedSQLToBeParseable(result.value)
@@ -502,7 +502,7 @@ describe('postgresqlOperationDeparser', () => {
 
       expect(result.errors).toHaveLength(0)
       expect(result.value).toMatchInlineSnapshot(`
-        "ALTER TABLE \"orders\" DROP CONSTRAINT \"fk_orders_user_id\";"
+        "ALTER TABLE "orders" DROP CONSTRAINT "fk_orders_user_id";"
       `)
 
       await expectGeneratedSQLToBeParseable(result.value)
@@ -518,7 +518,7 @@ describe('postgresqlOperationDeparser', () => {
 
       expect(result.errors).toHaveLength(0)
       expect(result.value).toMatchInlineSnapshot(`
-        "ALTER TABLE \"user_profiles\" DROP CONSTRAINT \"uk_user_profiles_email\";"
+        "ALTER TABLE "user_profiles" DROP CONSTRAINT "uk_user_profiles_email";"
       `)
 
       await expectGeneratedSQLToBeParseable(result.value)
@@ -537,7 +537,7 @@ describe('postgresqlOperationDeparser', () => {
 
       expect(result.errors).toHaveLength(0)
       expect(result.value).toMatchInlineSnapshot(`
-        "COMMENT ON TABLE \"users\" IS 'Updated user table comment';"
+        "COMMENT ON TABLE "users" IS 'Updated user table comment';"
       `)
 
       await expectGeneratedSQLToBeParseable(result.value)
@@ -554,7 +554,7 @@ describe('postgresqlOperationDeparser', () => {
 
       expect(result.errors).toHaveLength(0)
       expect(result.value).toMatchInlineSnapshot(`
-        "COMMENT ON TABLE \"users\" IS NULL;"
+        "COMMENT ON TABLE "users" IS NULL;"
       `)
 
       await expectGeneratedSQLToBeParseable(result.value)
@@ -573,7 +573,7 @@ describe('postgresqlOperationDeparser', () => {
 
       expect(result.errors).toHaveLength(0)
       expect(result.value).toMatchInlineSnapshot(`
-        "ALTER TABLE \"users\" ALTER COLUMN \"email\" TYPE text;"
+        "ALTER TABLE "users" ALTER COLUMN "email" TYPE text;"
       `)
 
       await expectGeneratedSQLToBeParseable(result.value)
@@ -592,7 +592,7 @@ describe('postgresqlOperationDeparser', () => {
 
       expect(result.errors).toHaveLength(0)
       expect(result.value).toMatchInlineSnapshot(`
-        "COMMENT ON COLUMN \"users\".\"email\" IS 'User email address';"
+        "COMMENT ON COLUMN "users"."email" IS 'User email address';"
       `)
 
       await expectGeneratedSQLToBeParseable(result.value)
@@ -609,7 +609,7 @@ describe('postgresqlOperationDeparser', () => {
 
       expect(result.errors).toHaveLength(0)
       expect(result.value).toMatchInlineSnapshot(`
-        "COMMENT ON COLUMN \"users\".\"email\" IS NULL;"
+        "COMMENT ON COLUMN "users"."email" IS NULL;"
       `)
 
       await expectGeneratedSQLToBeParseable(result.value)
@@ -628,7 +628,7 @@ describe('postgresqlOperationDeparser', () => {
 
       expect(result.errors).toHaveLength(0)
       expect(result.value).toMatchInlineSnapshot(`
-        "ALTER TABLE \"users\" ALTER COLUMN \"email\" SET NOT NULL;"
+        "ALTER TABLE "users" ALTER COLUMN "email" SET NOT NULL;"
       `)
 
       await expectGeneratedSQLToBeParseable(result.value)
@@ -645,7 +645,7 @@ describe('postgresqlOperationDeparser', () => {
 
       expect(result.errors).toHaveLength(0)
       expect(result.value).toMatchInlineSnapshot(`
-        "ALTER TABLE \"users\" ALTER COLUMN \"email\" DROP NOT NULL;"
+        "ALTER TABLE "users" ALTER COLUMN "email" DROP NOT NULL;"
       `)
 
       await expectGeneratedSQLToBeParseable(result.value)
@@ -664,7 +664,7 @@ describe('postgresqlOperationDeparser', () => {
 
       expect(result.errors).toHaveLength(0)
       expect(result.value).toMatchInlineSnapshot(`
-        "ALTER TABLE \"users\" ALTER COLUMN \"status\" SET DEFAULT 'active';"
+        "ALTER TABLE "users" ALTER COLUMN "status" SET DEFAULT 'active';"
       `)
 
       await expectGeneratedSQLToBeParseable(result.value)
@@ -681,7 +681,7 @@ describe('postgresqlOperationDeparser', () => {
 
       expect(result.errors).toHaveLength(0)
       expect(result.value).toMatchInlineSnapshot(`
-        "ALTER TABLE \"users\" ALTER COLUMN \"status\" DROP DEFAULT;"
+        "ALTER TABLE "users" ALTER COLUMN "status" DROP DEFAULT;"
       `)
 
       await expectGeneratedSQLToBeParseable(result.value)
@@ -698,7 +698,7 @@ describe('postgresqlOperationDeparser', () => {
 
       expect(result.errors).toHaveLength(0)
       expect(result.value).toMatchInlineSnapshot(`
-        "ALTER TABLE \"users\" ALTER COLUMN \"created_at\" SET DEFAULT now();"
+        "ALTER TABLE "users" ALTER COLUMN "created_at" SET DEFAULT now();"
       `)
 
       await expectGeneratedSQLToBeParseable(result.value)
@@ -717,7 +717,7 @@ describe('postgresqlOperationDeparser', () => {
 
       expect(result.errors).toHaveLength(0)
       expect(result.value).toMatchInlineSnapshot(`
-        "ALTER TABLE \"products\" ADD CONSTRAINT \"products_price_check\" CHECK (price > 0);"
+        "ALTER TABLE "products" ADD CONSTRAINT "products_price_check" CHECK (price > 0);"
       `)
 
       await expectGeneratedSQLToBeParseable(result.value)
@@ -734,7 +734,7 @@ describe('postgresqlOperationDeparser', () => {
 
       expect(result.errors).toHaveLength(0)
       expect(result.value).toMatchInlineSnapshot(`
-        "ALTER TABLE \"products\" DROP CONSTRAINT IF EXISTS \"products_price_check\";"
+        "ALTER TABLE "products" DROP CONSTRAINT IF EXISTS "products_price_check";"
       `)
 
       await expectGeneratedSQLToBeParseable(result.value)

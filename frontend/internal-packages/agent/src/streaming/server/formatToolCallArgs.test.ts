@@ -10,7 +10,7 @@ describe('formatToolCallArgs - Observable Behavior', () => {
     it('formats single argument', () => {
       expect(
         formatToolCallArgs({ command: 'pnpm lint' }),
-      ).toMatchInlineSnapshot(`"command: \"pnpm lint\""`)
+      ).toMatchInlineSnapshot(`"command: "pnpm lint""`)
     })
 
     it('truncates long strings', () => {
@@ -19,7 +19,7 @@ describe('formatToolCallArgs - Observable Behavior', () => {
           long_string:
             'this is a very long string that exceeds the maximum length',
         }),
-      ).toMatchInlineSnapshot(`"long_string: \"this is a very lo...\""`)
+      ).toMatchInlineSnapshot(`"long_string: "this is a very lo...""`)
     })
 
     it('shows first 2 arguments when more than 2 provided', () => {
@@ -30,9 +30,7 @@ describe('formatToolCallArgs - Observable Behavior', () => {
           third: 'value3',
           fourth: 'value4',
         }),
-      ).toMatchInlineSnapshot(
-        `"first: \"value1\", second: \"value2\", +2 more"`,
-      )
+      ).toMatchInlineSnapshot(`"first: "value1", second: "value2", +2 more"`)
     })
   })
 
@@ -42,7 +40,7 @@ describe('formatToolCallArgs - Observable Behavior', () => {
         formatToolCallArgs({
           text: 'hello',
         }),
-      ).toMatchInlineSnapshot(`"text: \"hello\""`)
+      ).toMatchInlineSnapshot(`"text: "hello""`)
     })
 
     it('handles number values', () => {
@@ -106,7 +104,7 @@ describe('formatToolCallArgs - Observable Behavior', () => {
         formatToolCallArgs({
           config: { key: 'value' },
         }),
-      ).toMatchInlineSnapshot(`"config: {key: \"value\"}"`)
+      ).toMatchInlineSnapshot(`"config: {key: "value"}"`)
     })
 
     it('handles large objects', () => {
@@ -152,7 +150,7 @@ describe('formatToolCallArgs - Observable Behavior', () => {
           max_results: 100,
         }),
       ).toMatchInlineSnapshot(
-        `"pattern: \"extractToolCallsF...\", recursive: true, +1 more"`,
+        `"pattern: "extractToolCallsF...", recursive: true, +1 more"`,
       )
     })
   })
