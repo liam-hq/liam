@@ -48,5 +48,8 @@ export async function validateInitialSchemaNode(
   }
 
   // Schema validation successful, continue to leadAgent
-  return state
+  return {
+    ...state,
+    next: 'leadAgent',
+  }
 }
