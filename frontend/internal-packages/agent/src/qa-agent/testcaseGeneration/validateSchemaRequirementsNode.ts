@@ -3,6 +3,7 @@ import { Command, END } from '@langchain/langgraph'
 import { ChatOpenAI } from '@langchain/openai'
 import { fromPromise } from '@liam-hq/neverthrow'
 import * as v from 'valibot'
+import { convertSchemaToText } from '../../utils/convertSchemaToText'
 import { toJsonSchema } from '../../utils/jsonSchema'
 import type { testcaseAnnotation } from './testcaseAnnotation'
 
@@ -44,7 +45,9 @@ Be decisive and focus on what is missing, not how to design it. Do not suggest s
 export async function validateSchemaRequirementsNode(
   state: typeof testcaseAnnotation.State,
 ): Promise<Command> {
-  const { currentRequirement, schemaContext } = state
+  const { currentRequirement, schemaData } = state
+
+  const schemaContext = convertSchemaToText(schemaData)
 
   const contextMessage = `
 # Database Schema Context

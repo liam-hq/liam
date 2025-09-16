@@ -1,4 +1,5 @@
 import { END } from '@langchain/langgraph'
+import type { Schema } from '@liam-hq/schema'
 import { v4 as uuidv4 } from 'uuid'
 import { describe, expect, it } from 'vitest'
 import type { testcaseAnnotation } from './testcaseAnnotation'
@@ -8,6 +9,77 @@ describe('validateSchemaRequirementsNode Integration', () => {
   it('validates schema as sufficient when all required elements exist', async () => {
     // Arrange
     type TestcaseState = typeof testcaseAnnotation.State
+
+    const mockSchema: Schema = {
+      tables: {
+        users: {
+          name: 'users',
+          columns: {
+            id: {
+              name: 'id',
+              type: 'uuid',
+              notNull: true,
+              default: null,
+              check: null,
+              comment: null,
+            },
+            email: {
+              name: 'email',
+              type: 'varchar',
+              notNull: true,
+              default: null,
+              check: null,
+              comment: null,
+            },
+          },
+          comment: null,
+          indexes: {},
+          constraints: {},
+        },
+        tasks: {
+          name: 'tasks',
+          columns: {
+            id: {
+              name: 'id',
+              type: 'uuid',
+              notNull: true,
+              default: null,
+              check: null,
+              comment: null,
+            },
+            user_id: {
+              name: 'user_id',
+              type: 'uuid',
+              notNull: true,
+              default: null,
+              check: null,
+              comment: null,
+            },
+            title: {
+              name: 'title',
+              type: 'varchar',
+              notNull: true,
+              default: null,
+              check: null,
+              comment: null,
+            },
+            status: {
+              name: 'status',
+              type: 'varchar',
+              notNull: true,
+              default: null,
+              check: null,
+              comment: null,
+            },
+          },
+          comment: null,
+          indexes: {},
+          constraints: {},
+        },
+      },
+      enums: {},
+      extensions: {},
+    }
 
     const state: TestcaseState = {
       messages: [],
@@ -19,17 +91,7 @@ describe('validateSchemaRequirementsNode Integration', () => {
           'A task management system where users create projects and tasks',
         requirementId: uuidv4(),
       },
-      schemaContext: `
-Table: users
-- id: uuid (not null)
-- email: varchar (not null)
-
-Table: tasks
-- id: uuid (not null)
-- user_id: uuid (not null)
-- title: varchar (not null)
-- status: varchar (not null)
-      `,
+      schemaData: mockSchema,
       testcases: [],
       schemaIssues: [],
     }
@@ -46,6 +108,78 @@ Table: tasks
     // Arrange
     type TestcaseState = typeof testcaseAnnotation.State
 
+    // Limited schema - missing projects/clients tables and deadline/priority columns
+    const mockSchema: Schema = {
+      tables: {
+        users: {
+          name: 'users',
+          columns: {
+            id: {
+              name: 'id',
+              type: 'uuid',
+              notNull: true,
+              default: null,
+              check: null,
+              comment: null,
+            },
+            email: {
+              name: 'email',
+              type: 'varchar',
+              notNull: true,
+              default: null,
+              check: null,
+              comment: null,
+            },
+          },
+          comment: null,
+          indexes: {},
+          constraints: {},
+        },
+        tasks: {
+          name: 'tasks',
+          columns: {
+            id: {
+              name: 'id',
+              type: 'uuid',
+              notNull: true,
+              default: null,
+              check: null,
+              comment: null,
+            },
+            user_id: {
+              name: 'user_id',
+              type: 'uuid',
+              notNull: true,
+              default: null,
+              check: null,
+              comment: null,
+            },
+            title: {
+              name: 'title',
+              type: 'varchar',
+              notNull: true,
+              default: null,
+              check: null,
+              comment: null,
+            },
+            status: {
+              name: 'status',
+              type: 'varchar',
+              notNull: true,
+              default: null,
+              check: null,
+              comment: null,
+            },
+          },
+          comment: null,
+          indexes: {},
+          constraints: {},
+        },
+      },
+      enums: {},
+      extensions: {},
+    }
+
     const state: TestcaseState = {
       messages: [],
       currentRequirement: {
@@ -57,18 +191,7 @@ Table: tasks
           'A comprehensive project management system where users manage multiple client projects with detailed task assignment',
         requirementId: uuidv4(),
       },
-      // Limited schema - missing projects/clients tables and deadline/priority columns
-      schemaContext: `
-Table: users
-- id: uuid (not null)
-- email: varchar (not null)
-
-Table: tasks
-- id: uuid (not null)
-- user_id: uuid (not null)
-- title: varchar (not null)
-- status: varchar (not null)
-      `,
+      schemaData: mockSchema,
       testcases: [],
       schemaIssues: [],
     }

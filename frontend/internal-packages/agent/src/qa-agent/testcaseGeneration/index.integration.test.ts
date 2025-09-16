@@ -1,4 +1,5 @@
 import { END, START, StateGraph } from '@langchain/langgraph'
+import type { Schema } from '@liam-hq/schema'
 import { describe, it } from 'vitest'
 import {
   getTestConfig,
@@ -20,6 +21,77 @@ describe('testcaseGeneration Integration', () => {
 
     type TestcaseState = typeof testcaseAnnotation.State
 
+    const mockSchema: Schema = {
+      tables: {
+        users: {
+          name: 'users',
+          columns: {
+            id: {
+              name: 'id',
+              type: 'uuid',
+              notNull: true,
+              default: null,
+              check: null,
+              comment: null,
+            },
+            email: {
+              name: 'email',
+              type: 'varchar',
+              notNull: true,
+              default: null,
+              check: null,
+              comment: null,
+            },
+          },
+          comment: null,
+          indexes: {},
+          constraints: {},
+        },
+        tasks: {
+          name: 'tasks',
+          columns: {
+            id: {
+              name: 'id',
+              type: 'uuid',
+              notNull: true,
+              default: null,
+              check: null,
+              comment: null,
+            },
+            user_id: {
+              name: 'user_id',
+              type: 'uuid',
+              notNull: true,
+              default: null,
+              check: null,
+              comment: null,
+            },
+            title: {
+              name: 'title',
+              type: 'varchar',
+              notNull: true,
+              default: null,
+              check: null,
+              comment: null,
+            },
+            status: {
+              name: 'status',
+              type: 'varchar',
+              notNull: true,
+              default: null,
+              check: null,
+              comment: null,
+            },
+          },
+          comment: null,
+          indexes: {},
+          constraints: {},
+        },
+      },
+      enums: {},
+      extensions: {},
+    }
+
     const state: TestcaseState = {
       messages: [],
       currentRequirement: {
@@ -30,17 +102,7 @@ describe('testcaseGeneration Integration', () => {
           'A task management system where users create projects and tasks',
         requirementId: '550e8400-e29b-41d4-a716-446655440000',
       },
-      schemaContext: `
-Table: users
-- id: uuid (not null)
-- email: varchar (not null)
-
-Table: tasks  
-- id: uuid (not null)
-- user_id: uuid (not null)
-- title: varchar (not null)
-- status: varchar (not null)
-      `,
+      schemaData: mockSchema,
       testcases: [],
       schemaIssues: [],
     }
@@ -50,6 +112,7 @@ Table: tasks
       ...config,
       streamMode: 'messages',
       version: 'v2',
+      ...config,
     })
 
     // Assert (Output)

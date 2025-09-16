@@ -10,7 +10,12 @@ import type { Testcase } from '../types'
  */
 export const qaAgentAnnotation = Annotation.Root({
   ...MessagesAnnotation.spec,
-  schemaData: Annotation<Schema>,
+  schemaData: Annotation<Schema>({
+    // Read-only field: QA agent should not modify schema data, only read it
+    // Using identity reducer to maintain existing value and avoid InvalidUpdateError
+    // when multiple subgraphs pass the same schemaData back to parent state
+    reducer: (x) => x,
+  }),
   analyzedRequirements: Annotation<AnalyzedRequirements>({
     reducer: (x, y) => y ?? x,
     default: () => ({
