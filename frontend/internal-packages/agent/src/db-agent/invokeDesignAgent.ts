@@ -25,7 +25,7 @@ const AGENT_NAME = 'db' as const
 
 const resolveDbEffortFromEnv = (): 'off' | 'low' | 'medium' | 'high' => {
   const raw = (process.env['LIAM_DB_EFFORT'] || '').trim().toLowerCase()
-  if (!raw) return 'medium' // default stays as before
+  if (!raw) return 'low' // default stays as before
   if (raw === 'off' || raw === 'none' || raw === 'disabled') return 'off'
   if (raw === 'minimal' || raw === 'low') return 'low'
   if (raw === 'medium') return 'medium'
