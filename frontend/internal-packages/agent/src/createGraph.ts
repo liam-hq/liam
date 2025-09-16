@@ -30,7 +30,8 @@ export const createGraph = (checkpointer?: BaseCheckpointSaver) => {
     const modifiedState = { ...state, messages: [], prompt }
     const output = await dbAgentSubgraph.invoke(modifiedState, config)
 
-    return { ...state, ...output }
+    // Clear schemaIssues after DB agent processing to prevent infinite loops
+    return { ...state, ...output, schemaIssues: [] }
   }
 
   const callQaAgent = async (state: WorkflowState, config: RunnableConfig) => {
