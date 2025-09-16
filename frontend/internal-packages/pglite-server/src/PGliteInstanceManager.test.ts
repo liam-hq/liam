@@ -300,4 +300,140 @@ describe('PGliteInstanceManager', () => {
       })
     })
   })
+
+  describe('COMMENT Statement String Processing', () => {
+    it('should handle COMMENT ON TABLE statements correctly', async () => {
+      const sql = `
+        CREATE TABLE users (id INT PRIMARY KEY, name TEXT);
+        COMMENT ON TABLE users IS 'User information table';
+        SELECT 1;
+      `
+      const results = await manager.executeQuery(sql, [])
+
+      expect(results).toHaveLength(3)
+      expect(results[0]?.success).toBe(true)
+      expect(results[1]?.success).toBe(true)
+      expect(results[1]?.sql).toContain('COMMENT ON TABLE users')
+      expect(results[1]?.sql).toMatch(/^COMMENT ON TABLE/)
+      expect(results[2]?.success).toBe(true)
+    })
+
+    it('should handle COMMENT ON COLUMN statements correctly', async () => {
+      const sql = `
+        CREATE TABLE users (id INT PRIMARY KEY, name TEXT);
+        COMMENT ON COLUMN users.id IS 'Primary key';
+        COMMENT ON COLUMN users.name IS 'User name';
+      `
+      const results = await manager.executeQuery(sql, [])
+
+      expect(results).toHaveLength(3)
+      expect(results[1]?.sql).toContain('COMMENT ON COLUMN users.id')
+      expect(results[1]?.sql).toMatch(/^COMMENT ON COLUMN/)
+      expect(results[2]?.sql).toContain('COMMENT ON COLUMN users.name')
+      expect(results[2]?.sql).toMatch(/^COMMENT ON COLUMN/)
+    })
+
+    it('should handle COMMENT statements with various whitespace patterns', async () => {
+      const testCases = [
+        "\n\nCOMMENT ON TABLE test IS 'comment';",
+        "\t\tCOMMENT ON TABLE test IS 'comment';",
+        " \n \t COMMENT ON TABLE test IS 'comment';",
+        "\r\nCOMMENT ON TABLE test IS 'comment';",
+      ]
+
+      for (const commentSql of testCases) {
+        const sql = `CREATE TABLE test (id INT);${commentSql}`
+        const results = await manager.executeQuery(sql, [])
+
+        expect(results).toHaveLength(2)
+        expect(results[1]?.sql).toContain('COMMENT ON TABLE test')
+        expect(results[1]?.sql).toMatch(/^COMMENT ON TABLE/)
+        expect(results[1]?.success).toBe(true)
+      }
+    })
+
+    it('should handle mixed statements with COMMENT at different positions', async () => {
+      const sql = `
+        CREATE TABLE table1 (id INT);
+        
+        COMMENT ON TABLE table1 IS 'First table';
+        
+        CREATE TABLE table2 (id INT);
+        COMMENT ON TABLE table2 IS 'Second table';
+        
+        SELECT COUNT(*) FROM table1;
+      `
+      const results = await manager.executeQuery(sql, [])
+
+      expect(results).toHaveLength(5)
+      const commentResults = results.filter((r) => r.sql.includes('COMMENT ON'))
+      expect(commentResults).toHaveLength(2)
+      commentResults.forEach((result) => {
+        expect(result.sql).toContain('COMMENT ON TABLE')
+        expect(result.sql).toMatch(/^COMMENT ON TABLE/)
+        expect(result.success).toBe(true)
+      })
+    })
+
+    it('should handle COMMENT statements with special characters', async () => {
+      const sql = `
+        CREATE TABLE test_table (id INT);
+        COMMENT ON TABLE test_table IS 'Table comment with special chars and emojis';
+      `
+      const results = await manager.executeQuery(sql, [])
+
+      expect(results).toHaveLength(2)
+      expect(results[1]?.sql).toContain('COMMENT ON TABLE')
+      expect(results[1]?.sql).toMatch(/^COMMENT ON TABLE/)
+      expect(results[1]?.success).toBe(true)
+    })
+
+    it('should handle edge case where stmt_location points to whitespace', async () => {
+      const sql = `CREATE TABLE test (id INT);
+
+COMMENT ON TABLE test IS 'comment with leading newlines';`
+      const results = await manager.executeQuery(sql, [])
+
+      expect(results).toHaveLength(2)
+      expect(results[1]?.sql).toContain('COMMENT ON TABLE test')
+      expect(results[1]?.sql).toMatch(/^COMMENT ON TABLE/)
+      expect(results[1]?.success).toBe(true)
+    })
+
+    it('should handle multiple COMMENT statements in sequence', async () => {
+      const sql = `
+        CREATE TABLE users (id INT, name TEXT, email TEXT);
+        COMMENT ON TABLE users IS 'User table';
+        COMMENT ON COLUMN users.id IS 'User ID';
+        COMMENT ON COLUMN users.name IS 'User name';
+        COMMENT ON COLUMN users.email IS 'User email';
+      `
+      const results = await manager.executeQuery(sql, [])
+
+      expect(results).toHaveLength(5)
+      const commentResults = results.filter((r) => r.sql.includes('COMMENT ON'))
+      expect(commentResults).toHaveLength(4)
+
+      commentResults.forEach((result) => {
+        expect(result.sql).toContain('COMMENT ON')
+        expect(result.sql).toMatch(/^COMMENT ON/)
+        expect(result.success).toBe(true)
+      })
+    })
+
+    it('should handle COMMENT statements with complex whitespace and formatting', async () => {
+      const sql = `CREATE TABLE test (id INT);
+      
+      
+      COMMENT ON TABLE test IS 'comment after multiple blank lines';
+      
+      SELECT 1;`
+      const results = await manager.executeQuery(sql, [])
+
+      expect(results).toHaveLength(3)
+      expect(results[1]?.sql).toContain('COMMENT ON TABLE test')
+      expect(results[1]?.sql).toMatch(/^COMMENT ON TABLE/)
+      expect(results[1]?.success).toBe(true)
+    })
+  })
 })

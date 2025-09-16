@@ -192,27 +192,81 @@ export class PGliteInstanceManager {
       const stmt = stmts[i]
       if (!stmt) continue
 
-      const startPos = stmt.stmt_location || 0
-
-      let endPos: number
-      if (stmt.stmt_len !== undefined) {
-        // Use explicit statement length if available
-        endPos = startPos + stmt.stmt_len
-      } else if (i < stmts.length - 1) {
-        // Use start of next statement as end position
-        const nextStmt = stmts[i + 1]
-        endPos = nextStmt?.stmt_location || originalSql.length
-      } else {
-        // Last statement goes to end of string
-        endPos = originalSql.length
-      }
-
-      const statementText = originalSql.slice(startPos, endPos).trim()
+      const statementText = this.extractSingleStatement(
+        originalSql,
+        stmt,
+        stmts,
+        i,
+      )
       if (statementText) {
         statements.push(statementText)
       }
     }
 
     return statements
+  }
+
+  private extractSingleStatement(
+    originalSql: string,
+    stmt: RawStmt,
+    stmts: RawStmt[],
+    index: number,
+  ): string {
+    let startPos = this.validateStartPosition(
+      stmt.stmt_location || 0,
+      originalSql.length,
+    )
+    const endPos = this.calculateEndPosition(
+      stmt,
+      stmts,
+      index,
+      originalSql.length,
+    )
+    startPos = this.skipLeadingWhitespace(originalSql, startPos, endPos)
+
+    return originalSql.slice(startPos, endPos).trim()
+  }
+
+  private validateStartPosition(startPos: number, sqlLength: number): number {
+    if (startPos < 0 || startPos >= sqlLength) {
+      return 0
+    }
+    return startPos
+  }
+
+  private calculateEndPosition(
+    stmt: RawStmt,
+    stmts: RawStmt[],
+    index: number,
+    sqlLength: number,
+  ): number {
+    const startPos = stmt.stmt_location || 0
+
+    if (stmt.stmt_len !== undefined) {
+      return Math.min(startPos + stmt.stmt_len, sqlLength)
+    }
+
+    if (index < stmts.length - 1) {
+      const nextStmt = stmts[index + 1]
+      return Math.min(nextStmt?.stmt_location || sqlLength, sqlLength)
+    }
+
+    return sqlLength
+  }
+
+  private skipLeadingWhitespace(
+    originalSql: string,
+    startPos: number,
+    endPos: number,
+  ): number {
+    let currentPos = startPos
+    while (
+      currentPos < endPos &&
+      currentPos < originalSql.length &&
+      /\s/.test(originalSql[currentPos]!)
+    ) {
+      currentPos++
+    }
+    return currentPos
   }
 }
