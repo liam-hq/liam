@@ -27,7 +27,7 @@ export async function validateInitialSchemaNode(
 
     const aiMessage = new AIMessage({
       id: randomUUID(),
-      content: '**Schema Validation Failed**',
+      content: '**Instant Database Startup Failed**',
     })
 
     await dispatchCustomEvent(SSE_EVENTS.MESSAGES, aiMessage)
@@ -55,7 +55,7 @@ export async function validateInitialSchemaNode(
 
     const aiMessage = new AIMessage({
       id: randomUUID(),
-      content: '**Database Execution Failed**',
+      content: '**Instant Database Startup Failed**',
     })
 
     await dispatchCustomEvent(SSE_EVENTS.MESSAGES, aiMessage)
