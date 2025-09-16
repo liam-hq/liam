@@ -50,6 +50,18 @@ pnpm -F @liam-hq/schema-bench schema-bench execute --executor liam -entity-extra
 pnpm -F @liam-hq/schema-bench schema-bench execute --executor liam -ambiguous-recall
 pnpm -F @liam-hq/schema-bench schema-bench execute --executor liam -default -entity-extraction -ambiguous-recall
 
+# Optional: control DB agent reasoning effort (Liam only)
+# Accepted values: off | minimal | low | medium | high (default: medium)
+# Examples:
+#   via flag
+pnpm -F @liam-hq/schema-bench schema-bench execute --executor liam --liam-db-effort minimal -all
+#   via env var (same accepted values)
+LIAM_DB_EFFORT=high pnpm -F @liam-hq/schema-bench schema-bench execute --executor liam -all
+
+# Notes:
+# - Aliases: none/disabled => off, max/maximum => high
+# - The effort setting can influence latency and output quality.
+
 # Legacy (still supported):
 pnpm -F @liam-hq/schema-bench executeLiamDB -all
 pnpm -F @liam-hq/schema-bench executeLiamDB -entity-extraction
