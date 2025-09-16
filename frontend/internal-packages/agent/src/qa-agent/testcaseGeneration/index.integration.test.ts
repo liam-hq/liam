@@ -1,5 +1,5 @@
 import { END, START, StateGraph } from '@langchain/langgraph'
-import type { Schema } from '@liam-hq/schema'
+import { aColumn, aSchema, aTable } from '@liam-hq/schema'
 import { describe, it } from 'vitest'
 import {
   getTestConfig,
@@ -21,76 +21,26 @@ describe('testcaseGeneration Integration', () => {
 
     type TestcaseState = typeof testcaseAnnotation.State
 
-    const mockSchema: Schema = {
+    const mockSchema = aSchema({
       tables: {
-        users: {
+        users: aTable({
           name: 'users',
           columns: {
-            id: {
-              name: 'id',
-              type: 'uuid',
-              notNull: true,
-              default: null,
-              check: null,
-              comment: null,
-            },
-            email: {
-              name: 'email',
-              type: 'varchar',
-              notNull: true,
-              default: null,
-              check: null,
-              comment: null,
-            },
+            id: aColumn({ name: 'id', type: 'uuid', notNull: true }),
+            email: aColumn({ name: 'email', type: 'varchar', notNull: true }),
           },
-          comment: null,
-          indexes: {},
-          constraints: {},
-        },
-        tasks: {
+        }),
+        tasks: aTable({
           name: 'tasks',
           columns: {
-            id: {
-              name: 'id',
-              type: 'uuid',
-              notNull: true,
-              default: null,
-              check: null,
-              comment: null,
-            },
-            user_id: {
-              name: 'user_id',
-              type: 'uuid',
-              notNull: true,
-              default: null,
-              check: null,
-              comment: null,
-            },
-            title: {
-              name: 'title',
-              type: 'varchar',
-              notNull: true,
-              default: null,
-              check: null,
-              comment: null,
-            },
-            status: {
-              name: 'status',
-              type: 'varchar',
-              notNull: true,
-              default: null,
-              check: null,
-              comment: null,
-            },
+            id: aColumn({ name: 'id', type: 'uuid', notNull: true }),
+            user_id: aColumn({ name: 'user_id', type: 'uuid', notNull: true }),
+            title: aColumn({ name: 'title', type: 'varchar', notNull: true }),
+            status: aColumn({ name: 'status', type: 'varchar', notNull: true }),
           },
-          comment: null,
-          indexes: {},
-          constraints: {},
-        },
+        }),
       },
-      enums: {},
-      extensions: {},
-    }
+    })
 
     const state: TestcaseState = {
       messages: [],
@@ -112,7 +62,6 @@ describe('testcaseGeneration Integration', () => {
       ...config,
       streamMode: 'messages',
       version: 'v2',
-      ...config,
     })
 
     // Assert (Output)
