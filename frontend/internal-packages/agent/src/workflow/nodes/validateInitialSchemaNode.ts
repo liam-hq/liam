@@ -1,7 +1,6 @@
 import { randomUUID } from 'node:crypto'
 import { dispatchCustomEvent } from '@langchain/core/callbacks/dispatch'
 import { AIMessage } from '@langchain/core/messages'
-import type { Command } from '@langchain/langgraph'
 import { executeQuery } from '@liam-hq/pglite-server'
 import { isEmptySchema, postgresqlSchemaDeparser } from '@liam-hq/schema'
 import { SSE_EVENTS } from '../../streaming/constants'
@@ -14,7 +13,7 @@ import { WorkflowTerminationError } from '../../utils/errorHandling'
  */
 export async function validateInitialSchemaNode(
   state: WorkflowState,
-): Promise<WorkflowState | Command> {
+): Promise<WorkflowState> {
   if (isEmptySchema(state.schemaData)) {
     return state
   }
