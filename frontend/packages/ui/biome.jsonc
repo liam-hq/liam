@@ -3,7 +3,7 @@
   "root": false,
   "linter": {
     "rules": {
-      "nursery": {
+      "correctness": {
         "useUniqueElementIds": "error"
       }
     }

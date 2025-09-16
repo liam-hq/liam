@@ -17,17 +17,15 @@
     "enabled": true,
     "rules": {
       "recommended": true,
-      "nursery": {
-        // TODO: Re-enable useUniqueElementIds after fixing hardcoded IDs across codebase
-        "useUniqueElementIds": "off"
-      },
       "correctness": {
         "noUndeclaredDependencies": "error",
         "noUndeclaredVariables": "error",
         "noUnusedImports": "error",
         "noUnusedVariables": "error",
         "useExhaustiveDependencies": "error",
-        "useImportExtensions": "off"
+        "useImportExtensions": "off",
+        // TODO: Re-enable useUniqueElementIds after fixing hardcoded IDs across codebase
+        "useUniqueElementIds": "off"
       },
       "performance": {
         // TODO: Re-enable noImgElement after replacing img with Next.js Image

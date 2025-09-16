@@ -347,12 +347,12 @@ describe('postgresqlSchemaDeparser', () => {
 
       expect(result.errors).toHaveLength(0)
       expect(result.value).toMatchInlineSnapshot(`
-        "CREATE TABLE \"users\" (
-          \"id\" bigint NOT NULL,
-          \"email\" varchar(255) NOT NULL
+        "CREATE TABLE "users" (
+          "id" bigint NOT NULL,
+          "email" varchar(255) NOT NULL
         );
 
-        CREATE INDEX \"idx_users_email\" ON \"users\" USING BTREE (\"email\");"
+        CREATE INDEX "idx_users_email" ON "users" USING BTREE ("email");"
       `)
 
       await expectGeneratedSQLToBeParseable(result.value)
@@ -391,12 +391,12 @@ describe('postgresqlSchemaDeparser', () => {
 
       expect(result.errors).toHaveLength(0)
       expect(result.value).toMatchInlineSnapshot(`
-        "CREATE TABLE \"users\" (
-          \"id\" bigint NOT NULL,
-          \"username\" varchar(50) NOT NULL
+        "CREATE TABLE "users" (
+          "id" bigint NOT NULL,
+          "username" varchar(50) NOT NULL
         );
 
-        CREATE UNIQUE INDEX \"idx_users_username_unique\" ON \"users\" USING BTREE (\"username\");"
+        CREATE UNIQUE INDEX "idx_users_username_unique" ON "users" USING BTREE ("username");"
       `)
 
       await expectGeneratedSQLToBeParseable(result.value)
@@ -439,13 +439,13 @@ describe('postgresqlSchemaDeparser', () => {
 
       expect(result.errors).toHaveLength(0)
       expect(result.value).toMatchInlineSnapshot(`
-        "CREATE TABLE \"orders\" (
-          \"id\" bigint NOT NULL,
-          \"user_id\" bigint NOT NULL,
-          \"created_at\" timestamp NOT NULL
+        "CREATE TABLE "orders" (
+          "id" bigint NOT NULL,
+          "user_id" bigint NOT NULL,
+          "created_at" timestamp NOT NULL
         );
 
-        CREATE INDEX \"idx_orders_user_date\" ON \"orders\" USING BTREE (\"user_id\", \"created_at\");"
+        CREATE INDEX "idx_orders_user_date" ON "orders" USING BTREE ("user_id", "created_at");"
       `)
 
       await expectGeneratedSQLToBeParseable(result.value)
@@ -478,12 +478,12 @@ describe('postgresqlSchemaDeparser', () => {
 
       expect(result.errors).toHaveLength(0)
       expect(result.value).toMatchInlineSnapshot(`
-        "CREATE TABLE \"products\" (
-          \"id\" bigint NOT NULL,
-          \"category_id\" bigint
+        "CREATE TABLE "products" (
+          "id" bigint NOT NULL,
+          "category_id" bigint
         );
 
-        CREATE INDEX \"idx_products_category\" ON \"products\" (\"category_id\");"
+        CREATE INDEX "idx_products_category" ON "products" ("category_id");"
       `)
 
       await expectGeneratedSQLToBeParseable(result.value)
@@ -513,11 +513,11 @@ describe('postgresqlSchemaDeparser', () => {
 
       expect(result.errors).toHaveLength(0)
       expect(result.value).toMatchInlineSnapshot(`
-        "CREATE TABLE \"users\" (
-          \"id\" bigint NOT NULL
+        "CREATE TABLE "users" (
+          "id" bigint NOT NULL
         );
 
-        ALTER TABLE \"users\" ADD CONSTRAINT \"pk_users_id\" PRIMARY KEY (\"id\");"
+        ALTER TABLE "users" ADD CONSTRAINT "pk_users_id" PRIMARY KEY ("id");"
       `)
 
       await expectGeneratedSQLToBeParseable(result.value)
@@ -568,16 +568,16 @@ describe('postgresqlSchemaDeparser', () => {
 
       expect(result.errors).toHaveLength(0)
       expect(result.value).toMatchInlineSnapshot(`
-        "CREATE TABLE \"users\" (
-          \"id\" bigint NOT NULL
+        "CREATE TABLE "users" (
+          "id" bigint NOT NULL
         );
 
-        CREATE TABLE \"orders\" (
-          \"id\" bigint NOT NULL,
-          \"user_id\" bigint NOT NULL
+        CREATE TABLE "orders" (
+          "id" bigint NOT NULL,
+          "user_id" bigint NOT NULL
         );
 
-        ALTER TABLE \"orders\" ADD CONSTRAINT \"fk_orders_user_id\" FOREIGN KEY (\"user_id\") REFERENCES \"users\" (\"id\") ON UPDATE CASCADE ON DELETE SET NULL;"
+        ALTER TABLE "orders" ADD CONSTRAINT "fk_orders_user_id" FOREIGN KEY ("user_id") REFERENCES "users" ("id") ON UPDATE CASCADE ON DELETE SET NULL;"
       `)
 
       await expectGeneratedSQLToBeParseable(result.value)
@@ -614,12 +614,12 @@ describe('postgresqlSchemaDeparser', () => {
 
       expect(result.errors).toHaveLength(0)
       expect(result.value).toMatchInlineSnapshot(`
-        "CREATE TABLE \"users\" (
-          \"id\" bigint NOT NULL,
-          \"email\" varchar(255) NOT NULL
+        "CREATE TABLE "users" (
+          "id" bigint NOT NULL,
+          "email" varchar(255) NOT NULL
         );
 
-        ALTER TABLE \"users\" ADD CONSTRAINT \"uk_users_email\" UNIQUE (\"email\");"
+        ALTER TABLE "users" ADD CONSTRAINT "uk_users_email" UNIQUE ("email");"
       `)
 
       await expectGeneratedSQLToBeParseable(result.value)
@@ -656,12 +656,12 @@ describe('postgresqlSchemaDeparser', () => {
 
       expect(result.errors).toHaveLength(0)
       expect(result.value).toMatchInlineSnapshot(`
-        "CREATE TABLE \"products\" (
-          \"id\" bigint NOT NULL,
-          \"price\" decimal(10,2) NOT NULL
+        "CREATE TABLE "products" (
+          "id" bigint NOT NULL,
+          "price" decimal(10,2) NOT NULL
         );
 
-        ALTER TABLE \"products\" ADD CONSTRAINT \"ck_products_price_positive\" CHECK (price > 0);"
+        ALTER TABLE "products" ADD CONSTRAINT "ck_products_price_positive" CHECK (price > 0);"
       `)
 
       await expectGeneratedSQLToBeParseable(result.value)
@@ -959,21 +959,21 @@ describe('postgresqlSchemaDeparser', () => {
 
       expect(result.errors).toHaveLength(0)
       expect(result.value).toMatchInlineSnapshot(`
-        "CREATE TABLE \"departments\" (
-          \"id\" bigint NOT NULL,
-          \"name\" varchar(100) NOT NULL,
-          \"manager_id\" bigint
+        "CREATE TABLE "departments" (
+          "id" bigint NOT NULL,
+          "name" varchar(100) NOT NULL,
+          "manager_id" bigint
         );
 
-        CREATE TABLE \"employees\" (
-          \"id\" bigint NOT NULL,
-          \"name\" varchar(100) NOT NULL,
-          \"department_id\" bigint NOT NULL
+        CREATE TABLE "employees" (
+          "id" bigint NOT NULL,
+          "name" varchar(100) NOT NULL,
+          "department_id" bigint NOT NULL
         );
 
-        ALTER TABLE \"departments\" ADD CONSTRAINT \"fk_departments_manager\" FOREIGN KEY (\"manager_id\") REFERENCES \"employees\" (\"id\") ON UPDATE CASCADE ON DELETE SET NULL;
+        ALTER TABLE "departments" ADD CONSTRAINT "fk_departments_manager" FOREIGN KEY ("manager_id") REFERENCES "employees" ("id") ON UPDATE CASCADE ON DELETE SET NULL;
 
-        ALTER TABLE \"employees\" ADD CONSTRAINT \"fk_employees_department\" FOREIGN KEY (\"department_id\") REFERENCES \"departments\" (\"id\") ON UPDATE CASCADE ON DELETE RESTRICT;"
+        ALTER TABLE "employees" ADD CONSTRAINT "fk_employees_department" FOREIGN KEY ("department_id") REFERENCES "departments" ("id") ON UPDATE CASCADE ON DELETE RESTRICT;"
       `)
 
       await expectGeneratedSQLToBeParseable(result.value)
@@ -1117,9 +1117,9 @@ describe('postgresqlSchemaDeparser', () => {
 
       expect(result.errors).toHaveLength(0)
       expect(result.value).toMatchInlineSnapshot(`
-        "CREATE TYPE \"UserRole\" AS ENUM ('USER', 'ADMIN', 'MODERATOR');
+        "CREATE TYPE "UserRole" AS ENUM ('USER', 'ADMIN', 'MODERATOR');
 
-        CREATE TYPE \"OrderStatus\" AS ENUM ('PENDING', 'CONFIRMED', 'SHIPPED');"
+        CREATE TYPE "OrderStatus" AS ENUM ('PENDING', 'CONFIRMED', 'SHIPPED');"
       `)
 
       await expectGeneratedSQLToBeParseable(result.value)
@@ -1162,14 +1162,14 @@ describe('postgresqlSchemaDeparser', () => {
 
       expect(result.errors).toHaveLength(0)
       expect(result.value).toMatchInlineSnapshot(`
-        "CREATE TYPE \"ScoreSource\" AS ENUM ('MANUAL', 'AUTOMATIC', 'IMPORTED');
+        "CREATE TYPE "ScoreSource" AS ENUM ('MANUAL', 'AUTOMATIC', 'IMPORTED');
 
-        CREATE TABLE \"scores\" (
-          \"id\" bigint NOT NULL,
-          \"source\" \"ScoreSource\" NOT NULL
+        CREATE TABLE "scores" (
+          "id" bigint NOT NULL,
+          "source" "ScoreSource" NOT NULL
         );
 
-        ALTER TABLE \"scores\" ADD CONSTRAINT \"scores_pkey\" PRIMARY KEY (\"id\");"
+        ALTER TABLE "scores" ADD CONSTRAINT "scores_pkey" PRIMARY KEY ("id");"
       `)
 
       await expectGeneratedSQLToBeParseable(result.value)
@@ -1217,14 +1217,14 @@ describe('postgresqlSchemaDeparser', () => {
 
       expect(result.errors).toHaveLength(0)
       expect(result.value).toMatchInlineSnapshot(`
-        "CREATE TABLE \"users\" (
-          \"id\" bigint NOT NULL,
-          \"name\" text NOT NULL,
-          \"age\" integer,
-          \"created_at\" timestamp(3) NOT NULL
+        "CREATE TABLE "users" (
+          "id" bigint NOT NULL,
+          "name" text NOT NULL,
+          "age" integer,
+          "created_at" timestamp(3) NOT NULL
         );
 
-        ALTER TABLE \"users\" ADD CONSTRAINT \"users_pkey\" PRIMARY KEY (\"id\");"
+        ALTER TABLE "users" ADD CONSTRAINT "users_pkey" PRIMARY KEY ("id");"
       `)
 
       await expectGeneratedSQLToBeParseable(result.value)

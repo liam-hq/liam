@@ -221,7 +221,7 @@ describe('formatValidationErrors', () => {
 
     expect(formatted).toMatchInlineSnapshot(`
       "### ❌ **Test Case:** Test with Special Characters
-      #### 1. Error: \`Error with \`backticks\` and \"quotes\" and 'single quotes'\`
+      #### 1. Error: \`Error with \`backticks\` and "quotes" and 'single quotes'\`
       \`\`\`sql
       INSERT INTO test VALUES ('data')
       \`\`\`"

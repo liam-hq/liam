@@ -491,8 +491,8 @@ WHERE id = 'fc70279f-04d3-41ea-97e9-3a1bb7ee358f';`,
       const result = formatArtifactToMarkdown(artifact)
       const lines = result.split('\n')
 
-      const firstIndex = lines.findIndex((line) => line === '### 1. First')
-      const secondIndex = lines.findIndex((line) => line === '### 2. Second')
+      const firstIndex = lines.indexOf('### 1. First')
+      const secondIndex = lines.indexOf('### 2. Second')
       const separatorIndex = lines.findIndex(
         (line, index) =>
           index > firstIndex && index < secondIndex && line === '---',

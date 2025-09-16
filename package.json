@@ -7,13 +7,13 @@
     "@changesets/get-github-info": "0.6.0",
     "@changesets/types": "6.1.0",
     "@turbo/gen": "2.5.6",
-    "@types/node": "22.17.1",
+    "@types/node": "22.18.0",
     "@vitest/coverage-v8": "3.2.4",
-    "concurrently": "9.2.0",
-    "knip": "5.62.0",
+    "concurrently": "9.2.1",
+    "knip": "5.63.0",
     "lefthook": "1.12.3",
     "syncpack": "13.0.4",
-    "turbo": "2.5.5",
+    "turbo": "2.5.6",
     "typescript": "5.9.2",
     "vercel": "41.7.8",
     "vitest": "3.2.4"
@@ -42,7 +42,7 @@
     "vercel:env-pull": "vercel env pull .env",
     "vercel:link": "vercel link -p liam-app -S \"liambx\" -y"
   },
-  "packageManager": "pnpm@10.12.1+sha512.f0dda8580f0ee9481c5c79a1d927b9164f2c478e90992ad268bbb2465a736984391d6333d2c327913578b2804af33474ca554ba29c04a8b13060a717675ae3ac",
+  "packageManager": "pnpm@10.15.1+sha512.34e538c329b5553014ca8e8f4535997f96180a1d0f614339357449935350d924e22f8614682191264ec33d1462ac21561aff97f6bb18065351c162c7e8f6de67",
   "pnpm": {
     "onlyBuiltDependencies": [
       "supabase"
@@ -53,7 +53,7 @@
       "esbuild": "0.25.9",
       "path-to-regexp": "8.2.0",
       "prismjs": "1.30.0",
-      "undici": "7.13.0",
+      "undici": "7.15.0",
       "zod": "3.25.76"
     }
   }

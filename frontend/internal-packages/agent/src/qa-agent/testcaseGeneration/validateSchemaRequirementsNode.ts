@@ -74,8 +74,16 @@ Can this schema fulfill this requirement for test case generation?
   if (validationResult.status === 'SUFFICIENT') {
     return new Command({ goto: 'generateTestcase' })
   }
+
+  const schemaIssue = {
+    requirementId: currentRequirement.requirementId,
+    description: validationResult.issueDescription,
+  }
+
   return new Command({
-    update: { schemaIssues: [validationResult.issueDescription] },
+    update: {
+      schemaIssues: [schemaIssue],
+    },
     goto: END,
   })
 }

@@ -2,7 +2,12 @@ import { Annotation, MessagesAnnotation } from '@langchain/langgraph'
 import type { RequirementData } from '../distributeRequirements'
 import type { Testcase } from '../types'
 
-export const schemaIssuesAnnotation = Annotation<string[]>({
+type SchemaIssue = {
+  requirementId: string
+  description: string
+}
+
+export const schemaIssuesAnnotation = Annotation<Array<SchemaIssue>>({
   reducer: (prev, next) => prev.concat(next),
   default: () => [],
 })

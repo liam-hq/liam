@@ -61,8 +61,8 @@ test('zoom in button should increase zoom level', async ({
   await expect(zoomLevelText).not.toHaveText(zoomLevelBefore || '')
 
   const zoomLevelAfter = await zoomLevelText.textContent()
-  expect(Number.parseInt(zoomLevelBefore || '0')).toBeLessThan(
-    Number.parseInt(zoomLevelAfter || '0'),
+  expect(Number.parseInt(zoomLevelBefore || '0', 10)).toBeLessThan(
+    Number.parseInt(zoomLevelAfter || '0', 10),
   )
 })
 
@@ -88,8 +88,8 @@ test('zoom out button should decrease zoom level', async ({
   await expect(zoomLevelText).not.toHaveText(zoomLevelBefore || '')
 
   const zoomLevelAfter = await zoomLevelText.textContent()
-  expect(Number.parseInt(zoomLevelBefore || '0')).toBeGreaterThan(
-    Number.parseInt(zoomLevelAfter || '0'),
+  expect(Number.parseInt(zoomLevelBefore || '0', 10)).toBeGreaterThan(
+    Number.parseInt(zoomLevelAfter || '0', 10),
   )
 })
 

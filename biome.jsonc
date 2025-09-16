@@ -4,6 +4,9 @@
     "rules": {
       "correctness": {
         "noUndeclaredDependencies": "off"
+      },
+      "complexity": {
+        "noImportantStyles": "off"
       }
     }
   }
