@@ -1,4 +1,4 @@
-import { END } from '@langchain/langgraph'
+import type { END } from '@langchain/langgraph'
 import type { testcaseAnnotation } from './testcaseAnnotation'
 
 /**
@@ -6,11 +6,11 @@ import type { testcaseAnnotation } from './testcaseAnnotation'
  */
 export const routeAfterSave = (
   state: typeof testcaseAnnotation.State,
-): 'generateTestcase' | typeof END => {
+): 'generateTestcase' | 'executeSingleTest' | typeof END => {
   const { testcases } = state
 
   if (testcases.length > 0) {
-    return END
+    return 'executeSingleTest'
   }
 
   return 'generateTestcase'
