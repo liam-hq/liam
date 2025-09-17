@@ -31,7 +31,7 @@ export const fetchDesignSessionWithTimelineItems = (
             id,
             number,
             patch
-          ),
+          )
         )
       `)
       .eq('id', designSessionId)
