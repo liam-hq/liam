@@ -228,7 +228,6 @@ export class InMemoryRepository implements SchemaRepository {
       organization_id: 'test-org-id',
       design_session_id: params.designSessionId,
       building_schema_version_id: null,
-      query_result_id: null,
       assistant_role: null,
       type: 'user',
     }

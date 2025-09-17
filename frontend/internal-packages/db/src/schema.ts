@@ -54,5 +54,4 @@ export const timelineItemsSchema: v.GenericSchema<Tables<'timeline_items'>> =
     updated_at: v.string(),
     organization_id: v.pipe(v.string(), v.uuid()),
     building_schema_version_id: v.nullable(v.pipe(v.string(), v.uuid())),
-    query_result_id: v.nullable(v.pipe(v.string(), v.uuid())),
   })
