@@ -1,5 +1,4 @@
 import { Send } from '@langchain/langgraph'
-import { convertSchemaToText } from '../../utils/convertSchemaToText'
 import type { QaAgentState } from '../shared/qaAgentAnnotation'
 import { getUnprocessedRequirements } from './getUnprocessedRequirements'
 
@@ -11,7 +10,6 @@ export type { RequirementData } from './types'
  */
 export function continueToRequirements(state: QaAgentState) {
   const targetRequirements = getUnprocessedRequirements(state)
-  const schemaContext = convertSchemaToText(state.schemaData)
 
   // Use Send API to distribute each requirement for parallel processing
   // Each requirement will be processed by testcaseGeneration with isolated state
@@ -20,7 +18,7 @@ export function continueToRequirements(state: QaAgentState) {
       new Send('testcaseGeneration', {
         // Each subgraph gets its own isolated state
         currentRequirement: reqData,
-        schemaContext,
+        schemaData: state.schemaData,
         messages: [], // Start with empty messages for isolation
         testcases: [], // Will be populated by the subgraph
       }),

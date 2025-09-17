@@ -5,7 +5,6 @@ import type { StructuredTool } from '@langchain/core/tools'
 import { tool } from '@langchain/core/tools'
 import { Command } from '@langchain/langgraph'
 import type { DmlOperation } from '@liam-hq/artifact'
-import { executeQuery } from '@liam-hq/pglite-server'
 import type { SqlResult } from '@liam-hq/pglite-server/src/types'
 import { v4 as uuidv4 } from 'uuid'
 import * as v from 'valibot'
@@ -14,53 +13,9 @@ import { formatValidationErrors } from '../qa-agent/validateSchema/formatValidat
 import type { TestcaseDmlExecutionResult } from '../qa-agent/validateSchema/types'
 import { SSE_EVENTS } from '../streaming/constants'
 import { WorkflowTerminationError } from '../utils/errorHandling'
+import { executeTestcase } from '../utils/executeTestcase'
 import { getToolConfigurable } from './getToolConfigurable'
 import { transformStateToArtifact } from './transformStateToArtifact'
-
-function isErrorResult(value: unknown): value is { error: unknown } {
-  return typeof value === 'object' && value !== null && 'error' in value
-}
-
-/**
- * Build combined SQL for DDL and testcase DML
- */
-function buildCombinedSql(ddlStatements: string, testcase: Testcase): string {
-  const sqlParts = []
-
-  if (ddlStatements.trim()) {
-    sqlParts.push('-- DDL Statements', ddlStatements, '')
-  }
-
-  const op: DmlOperation = testcase.dmlOperation
-  const header = op.description
-    ? `-- ${op.description}`
-    : `-- ${op.operation_type} operation`
-  sqlParts.push(
-    `-- Test Case: ${testcase.id}`,
-    `-- ${testcase.title}`,
-    `${header}\n${op.sql};`,
-  )
-
-  return sqlParts.filter(Boolean).join('\n')
-}
-
-/**
- * Extract failed operation from SQL results
- */
-function extractFailedOperation(
-  sqlResults: SqlResult[],
-): { sql: string; error: string } | undefined {
-  const firstFailed = sqlResults.find((r) => !r.success)
-  if (!firstFailed) {
-    return undefined
-  }
-
-  const error = isErrorResult(firstFailed.result)
-    ? String(firstFailed.result.error)
-    : String(firstFailed.result)
-
-  return { sql: firstFailed.sql, error }
-}
 
 /**
  * Execute DML operations by testcase with DDL statements
@@ -71,39 +26,11 @@ async function executeDmlOperationsByTestcase(
   testcases: Testcase[],
   requiredExtensions: string[],
 ): Promise<TestcaseDmlExecutionResult[]> {
-  const results: TestcaseDmlExecutionResult[] = []
-
-  for (const testcase of testcases) {
-    const combinedSql = buildCombinedSql(ddlStatements, testcase)
-    const startTime = new Date()
-
-    const sqlResults = await executeQuery(combinedSql, requiredExtensions)
-    const hasErrors = sqlResults.some((result) => !result.success)
-    const failedOperation = hasErrors
-      ? extractFailedOperation(sqlResults)
-      : undefined
-
-    const baseResult = {
-      testCaseId: testcase.id,
-      testCaseTitle: testcase.title,
-      executedAt: startTime,
-    }
-
-    if (hasErrors && failedOperation) {
-      results.push({
-        ...baseResult,
-        success: false,
-        failedOperation,
-      })
-    } else {
-      results.push({
-        ...baseResult,
-        success: true,
-      })
-    }
-  }
-
-  return results
+  return Promise.all(
+    testcases.map((testcase) =>
+      executeTestcase(ddlStatements, testcase, requiredExtensions),
+    ),
+  )
 }
 
 const toolSchema = v.object({})

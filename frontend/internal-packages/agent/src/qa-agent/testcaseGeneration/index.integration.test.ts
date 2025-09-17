@@ -1,4 +1,5 @@
 import { END, START, StateGraph } from '@langchain/langgraph'
+import { aColumn, aSchema, aTable } from '@liam-hq/schema'
 import { describe, it } from 'vitest'
 import {
   getTestConfig,
@@ -20,6 +21,27 @@ describe('testcaseGeneration Integration', () => {
 
     type TestcaseState = typeof testcaseAnnotation.State
 
+    const mockSchema = aSchema({
+      tables: {
+        users: aTable({
+          name: 'users',
+          columns: {
+            id: aColumn({ name: 'id', type: 'uuid', notNull: true }),
+            email: aColumn({ name: 'email', type: 'varchar', notNull: true }),
+          },
+        }),
+        tasks: aTable({
+          name: 'tasks',
+          columns: {
+            id: aColumn({ name: 'id', type: 'uuid', notNull: true }),
+            user_id: aColumn({ name: 'user_id', type: 'uuid', notNull: true }),
+            title: aColumn({ name: 'title', type: 'varchar', notNull: true }),
+            status: aColumn({ name: 'status', type: 'varchar', notNull: true }),
+          },
+        }),
+      },
+    })
+
     const state: TestcaseState = {
       messages: [],
       currentRequirement: {
@@ -30,17 +52,7 @@ describe('testcaseGeneration Integration', () => {
           'A task management system where users create projects and tasks',
         requirementId: '550e8400-e29b-41d4-a716-446655440000',
       },
-      schemaContext: `
-Table: users
-- id: uuid (not null)
-- email: varchar (not null)
-
-Table: tasks  
-- id: uuid (not null)
-- user_id: uuid (not null)
-- title: varchar (not null)
-- status: varchar (not null)
-      `,
+      schemaData: mockSchema,
       testcases: [],
       schemaIssues: [],
     }
