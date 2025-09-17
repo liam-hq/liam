@@ -25,6 +25,18 @@ export const workflowAnnotation = Annotation.Root({
   userId: Annotation<string>,
   designSessionId: Annotation<string>,
   schemaIssues: schemaIssuesAnnotation,
+  prompt: Annotation<string | undefined>({
+    reducer: (x, y) => y ?? x,
+    default: () => undefined,
+  }),
+  currentRequirementId: Annotation<string | undefined>({
+    reducer: (x, y) => y ?? x,
+    default: () => undefined,
+  }),
+  currentRequirementCategory: Annotation<string | undefined>({
+    reducer: (x, y) => y ?? x,
+    default: () => undefined,
+  }),
 
   next: Annotation<string>({
     reducer: (x, y) => y ?? x ?? END,

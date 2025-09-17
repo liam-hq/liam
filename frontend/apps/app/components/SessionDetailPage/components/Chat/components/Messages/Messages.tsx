@@ -13,6 +13,7 @@ type Props = {
 }
 
 export const Messages: FC<Props> = ({ messages }) => {
+  console.log(messages)
   const toolMessages = messages.filter(isToolMessage)
 
   return messages.map((message) => {

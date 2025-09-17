@@ -1,9 +1,12 @@
 import { AIMessage } from '@langchain/core/messages'
 import type { RunnableConfig } from '@langchain/core/runnables'
-import { END, START, StateGraph } from '@langchain/langgraph'
+import { END, Send, START, StateGraph } from '@langchain/langgraph'
 import type { BaseCheckpointSaver } from '@langchain/langgraph-checkpoint'
 import { createDbAgentGraph } from './db-agent/createDbAgentGraph'
-import { convertRequirementsToPrompt } from './db-agent/utils/convertAnalyzedRequirementsToPrompt'
+import {
+  convertRequirementsToPrompt,
+  convertRequirementToPrompt,
+} from './db-agent/utils/convertAnalyzedRequirementsToPrompt'
 import { createLeadAgentGraph } from './lead-agent/createLeadAgentGraph'
 import { createPmAgentGraph } from './pm-agent/createPmAgentGraph'
 import { createQaAgentGraph } from './qa-agent/createQaAgentGraph'
@@ -22,10 +25,14 @@ export const createGraph = (checkpointer?: BaseCheckpointSaver) => {
 
   const callDbAgent = async (state: WorkflowState, config: RunnableConfig) => {
     const dbAgentSubgraph = createDbAgentGraph(checkpointer)
-    const prompt = convertRequirementsToPrompt(
-      state.analyzedRequirements,
-      state.schemaIssues,
-    )
+
+    // Handle single requirement when prompt is provided via Send
+    const prompt =
+      state.prompt ||
+      convertRequirementsToPrompt(
+        state.analyzedRequirements,
+        state.schemaIssues,
+      )
 
     const modifiedState = { ...state, messages: [], prompt }
     const output = await dbAgentSubgraph.invoke(modifiedState, config)
@@ -83,9 +90,58 @@ export const createGraph = (checkpointer?: BaseCheckpointSaver) => {
       pmAgent: 'pmAgent',
       [END]: END,
     })
-    .addEdge('pmAgent', 'dbAgent')
+    .addConditionalEdges('pmAgent', fanOutDbAgent)
+    // .addEdge('pmAgent', 'dbAgent')
     .addEdge('dbAgent', 'qaAgent')
     .addEdge('qaAgent', 'leadAgent')
 
   return checkpointer ? graph.compile({ checkpointer }) : graph.compile()
+}
+
+export function fanOutDbAgent(state: WorkflowState) {
+  const sends: Send[] = []
+  const allCategories = new Set<string>()
+
+  // Collect all unique category names
+  for (const [categoryName, requirements] of Object.entries(
+    state.analyzedRequirements.functionalRequirements,
+  )) {
+    if (requirements.length > 0) {
+      allCategories.add(categoryName)
+    }
+  }
+
+  for (const [categoryName, requirements] of Object.entries(
+    state.analyzedRequirements.nonFunctionalRequirements,
+  )) {
+    if (requirements.length > 0) {
+      allCategories.add(categoryName)
+    }
+  }
+
+  // Process each unique category
+  for (const categoryName of allCategories) {
+    const prompt = convertRequirementToPrompt(
+      state.analyzedRequirements,
+      categoryName,
+    )
+    sends.push(
+      new Send('dbAgent', {
+        ...state,
+        prompt,
+        currentRequirementCategory: categoryName,
+      }),
+    )
+  }
+
+  // If no requirements found, send the full prompt
+  if (sends.length === 0) {
+    const prompt = convertRequirementsToPrompt(
+      state.analyzedRequirements,
+      state.schemaIssues,
+    )
+    return new Send('dbAgent', { ...state, prompt })
+  }
+
+  return sends
 }

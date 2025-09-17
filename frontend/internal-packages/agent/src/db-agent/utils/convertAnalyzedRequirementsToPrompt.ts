@@ -1,4 +1,62 @@
-import type { AnalyzedRequirements } from '../../utils/schema/analyzedRequirements'
+import type {
+  AnalyzedRequirements,
+  Requirements,
+} from '../../utils/schema/analyzedRequirements'
+
+export const convertRequirementToPrompt = (
+  requirements: AnalyzedRequirements,
+  categoryName: string,
+): string => {
+  const filteredFuncReq: Requirements = {}
+  const filteredNonFuncReq: Requirements = {}
+
+  // Filter functional requirements by category
+  if (requirements.functionalRequirements[categoryName]) {
+    filteredFuncReq[categoryName] =
+      requirements.functionalRequirements[categoryName]
+  }
+
+  // Filter non-functional requirements by category
+  if (requirements.nonFunctionalRequirements[categoryName]) {
+    filteredNonFuncReq[categoryName] =
+      requirements.nonFunctionalRequirements[categoryName]
+  }
+
+  // Build prompt with only the specified category
+  const functionalSection =
+    Object.entries(filteredFuncReq).length > 0
+      ? `# Functional Requirements:
+
+${Object.entries(filteredFuncReq)
+  .map(
+    ([category, requirements]) =>
+      `## ${category}
+${requirements.map((req) => `- ${req.desc}`).join('\n')}`,
+  )
+  .join('\n\n')}`
+      : ''
+
+  const nonFunctionalSection =
+    Object.entries(filteredNonFuncReq).length > 0
+      ? `# Non-Functional Requirements:
+
+${Object.entries(filteredNonFuncReq)
+  .map(
+    ([category, requirements]) =>
+      `## ${category}
+${requirements.map((req) => `- ${req.desc}`).join('\n')}`,
+  )
+  .join('\n\n')}`
+      : ''
+
+  return `-------\n
+# Business Requirement: ${requirements.businessRequirement}
+
+${functionalSection}
+
+${nonFunctionalSection}\n
+-------`.trim()
+}
 
 export const convertRequirementsToPrompt = (
   requirements: AnalyzedRequirements,
