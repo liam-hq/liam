@@ -1,3 +1,9 @@
 .itemWrapper {
   border-bottom: 1px solid var(--global-border);
 }
+
+.blinkCircleWrapper {
+  position: relative;
+  top: var(--spacing-6);
+  left: var(--spacing-2);
+}
