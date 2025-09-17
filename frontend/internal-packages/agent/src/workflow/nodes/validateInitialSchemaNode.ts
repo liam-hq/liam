@@ -11,6 +11,24 @@ import { WorkflowTerminationError } from '../../utils/errorHandling'
  * Validates initial schema and provides Instant Database initialization experience.
  * Only runs on first workflow execution.
  */
+
+async function handleValidationError(
+  userMessage: string,
+  errorMessage: string,
+): Promise<never> {
+  const aiMessage = new AIMessage({
+    id: randomUUID(),
+    content: userMessage,
+  })
+
+  await dispatchCustomEvent(SSE_EVENTS.MESSAGES, aiMessage)
+
+  throw new WorkflowTerminationError(
+    new Error(errorMessage),
+    'validateInitialSchemaNode',
+  )
+}
+
 export async function validateInitialSchemaNode(
   state: WorkflowState,
 ): Promise<WorkflowState> {
@@ -25,16 +43,9 @@ export async function validateInitialSchemaNode(
       .map((error) => error.message)
       .join('; ')
 
-    const aiMessage = new AIMessage({
-      id: randomUUID(),
-      content: '**Instant Database Startup Failed**',
-    })
-
-    await dispatchCustomEvent(SSE_EVENTS.MESSAGES, aiMessage)
-
-    throw new WorkflowTerminationError(
-      new Error(`Schema deparser failed: ${errorMessage}`),
-      'validateInitialSchemaNode',
+    await handleValidationError(
+      '**Instant Database Startup Failed**',
+      `Schema deparser failed: ${errorMessage}`,
     )
   }
 
@@ -53,16 +64,9 @@ export async function validateInitialSchemaNode(
     const errorResult = validationResults.find((result) => !result.success)
     const errorMessage = JSON.stringify(errorResult?.result)
 
-    const aiMessage = new AIMessage({
-      id: randomUUID(),
-      content: '**Instant Database Startup Failed**',
-    })
-
-    await dispatchCustomEvent(SSE_EVENTS.MESSAGES, aiMessage)
-
-    throw new WorkflowTerminationError(
-      new Error(`Schema validation failed: ${errorMessage}`),
-      'validateInitialSchemaNode',
+    await handleValidationError(
+      '**Instant Database Startup Failed**',
+      `Schema validation failed: ${errorMessage}`,
     )
   }
 
