@@ -12,13 +12,33 @@ import { WorkflowTerminationError } from '../../utils/errorHandling'
  * Only runs on first workflow execution.
  */
 
+const createSchemaValidationErrorMessage = (errorDetails: string): string => {
+  return `**Instant Database Startup Failed**
+
+Schema validation errors detected:
+\`\`\`json
+${errorDetails}
+\`\`\`
+
+**Required Actions:**
+- Fix schema syntax errors
+- Update schema definition
+- Resubmit request after corrections
+
+Thank you for helping us create the perfect database environment for your project.`
+}
+
 async function handleValidationError(
   userMessage: string,
   errorMessage: string,
 ): Promise<never> {
   const aiMessage = new AIMessage({
     id: randomUUID(),
-    content: userMessage,
+    content: createSchemaValidationErrorMessage(userMessage),
+    additional_kwargs: {
+      type: 'alert',
+      severity: 'error',
+    },
   })
 
   await dispatchCustomEvent(SSE_EVENTS.MESSAGES, aiMessage)
@@ -43,10 +63,7 @@ export async function validateInitialSchemaNode(
       .map((error) => error.message)
       .join('; ')
 
-    await handleValidationError(
-      '**Instant Database Startup Failed**',
-      `Schema deparser failed: ${errorMessage}`,
-    )
+    await handleValidationError(errorMessage, 'Schema deparser failed')
   }
 
   const ddlStatements = ddlResult.value
@@ -64,10 +81,7 @@ export async function validateInitialSchemaNode(
     const errorResult = validationResults.find((result) => !result.success)
     const errorMessage = JSON.stringify(errorResult?.result)
 
-    await handleValidationError(
-      '**Instant Database Startup Failed**',
-      `Schema validation failed: ${errorMessage}`,
-    )
+    await handleValidationError(errorMessage, 'Schema validation failed')
   }
 
   return state
