@@ -8,6 +8,7 @@ import { match } from 'ts-pattern'
 import * as v from 'valibot'
 import { MarkdownContent } from '../../../../../../MarkdownContent'
 import { CopyButton } from '../../../../CopyButton'
+import { AlertMessage } from '../AlertMessage'
 import markdownStyles from '../Markdown.module.css'
 import { DBAgent, LeadAgent, PMAgent, QAAgent } from './AgentAvatar'
 import styles from './AiMessage.module.css'
@@ -43,6 +44,12 @@ export const AiMessage: FC<Props> = ({ message, toolMessages }) => {
   const messageContentString = message.text
   const reasoningText = extractReasoningFromMessage(message)
   const toolCalls = extractToolCallsFromMessage(message)
+
+  const isAlertMessage = message.additional_kwargs?.type === 'alert'
+
+  if (isAlertMessage) {
+    return <AlertMessage message={message} />
+  }
 
   return (
     <div className={styles.wrapper}>
