@@ -42,8 +42,18 @@ function escapeTypeIdentifier(type: string): string {
   const allPartsSimple = parts.every((p) => simpleIdentifier.test(p))
   if (!allPartsSimple) return type
 
+  // For each part, decide if it needs quoting
+  // Schema names (like 'public') typically don't need quoting
+  // Only the type name itself might need quoting
   const escaped = parts
-    .map((p) => (/[A-Z]/.test(p) ? escapeIdentifier(p) : p))
+    .map((p, index) => {
+      const isLastPart = index === parts.length - 1
+      // Only quote the type name (last part) if it has uppercase or is an enum
+      if (isLastPart && (/[A-Z]/.test(p) || isLikelyEnumType(p))) {
+        return escapeIdentifier(p)
+      }
+      return p
+    })
     .join('.')
 
   return `${escaped}${arraySuffix}`
@@ -62,29 +72,53 @@ function generateColumnDefinition(
   }
 
   if (column.default !== null) {
-    // Special handling for jsonb type to prevent double-escaping
-    // NOTE: This is a workaround for issues that have surfaced with default values.
-    // A simpler approach with type-specific handling might be possible.
-    if (column.type === 'jsonb' && typeof column.default === 'string') {
-      const trimmed = column.default.trim()
-      // If it's a cast expression (contains ::), use as-is
-      if (trimmed.includes('::')) {
-        definition += ` DEFAULT ${column.default}`
-      }
-      // If already quoted (but not a cast expression), use as-is
-      else if (trimmed.startsWith("'") && trimmed.endsWith("'")) {
-        definition += ` DEFAULT ${column.default}`
-      }
-      // Unquoted JSON, let formatDefaultValue handle it
-      else {
-        definition += ` DEFAULT ${formatDefaultValue(column.default)}`
-      }
-    } else {
-      definition += ` DEFAULT ${formatDefaultValue(column.default)}`
-    }
+    definition += ` DEFAULT ${formatColumnDefault(column.type, column.default)}`
   }
 
   return definition
+}
+
+/**
+ * Format column default value based on column type
+ */
+function formatColumnDefault(
+  columnType: string,
+  defaultValue: string | number | boolean,
+): string {
+  // Special handling for jsonb type to prevent double-escaping
+  // NOTE: This is a workaround for issues that have surfaced with default values.
+  // A simpler approach with type-specific handling might be possible.
+  if (columnType === 'jsonb' && typeof defaultValue === 'string') {
+    const trimmed = defaultValue.trim()
+    // If it's a cast expression (contains ::), use as-is
+    if (trimmed.includes('::')) {
+      return defaultValue
+    }
+    // If already quoted (but not a cast expression), use as-is
+    if (trimmed.startsWith("'") && trimmed.endsWith("'")) {
+      return defaultValue
+    }
+    // Unquoted JSON, let formatDefaultValue handle it
+    return formatDefaultValue(defaultValue)
+  }
+
+  // Special handling for potential enum types (custom types)
+  // Check if it's likely an enum by detecting if it's not a standard PostgreSQL type
+  if (typeof defaultValue === 'string' && isLikelyEnumType(columnType)) {
+    const trimmed = defaultValue.trim()
+    // If it's a cast expression (contains ::), use as-is
+    if (trimmed.includes('::')) {
+      return defaultValue
+    }
+    // If already quoted, use as-is
+    if (trimmed.startsWith("'") && trimmed.endsWith("'")) {
+      return defaultValue
+    }
+    // Unquoted enum value, let formatDefaultValue handle it
+    return formatDefaultValue(defaultValue)
+  }
+
+  return formatDefaultValue(defaultValue)
 }
 
 /**
@@ -115,6 +149,79 @@ function formatDefaultValue(value: string | number | boolean): string {
 
   // Numbers as-is
   return value.toString()
+}
+
+/**
+ * Check if a type is likely an enum (custom type)
+ * by excluding known PostgreSQL built-in types
+ */
+function isLikelyEnumType(type: string): boolean {
+  // List of common PostgreSQL built-in types
+  const builtInTypes = [
+    // Numeric types
+    'smallint',
+    'integer',
+    'bigint',
+    'decimal',
+    'numeric',
+    'real',
+    'double precision',
+    'smallserial',
+    'serial',
+    'bigserial',
+    // Monetary
+    'money',
+    // Character types
+    'character',
+    'char',
+    'character varying',
+    'varchar',
+    'text',
+    // Binary
+    'bytea',
+    // Date/Time types
+    'timestamp',
+    'timestamptz',
+    'date',
+    'time',
+    'timetz',
+    'interval',
+    // Boolean
+    'boolean',
+    'bool',
+    // Geometric types
+    'point',
+    'line',
+    'lseg',
+    'box',
+    'path',
+    'polygon',
+    'circle',
+    // Network types
+    'cidr',
+    'inet',
+    'macaddr',
+    'macaddr8',
+    // UUID
+    'uuid',
+    // JSON types
+    'json',
+    'jsonb',
+    // Arrays (handled by suffix)
+    // XML
+    'xml',
+    // Other
+    'bit',
+    'bit varying',
+    'tsvector',
+    'tsquery',
+  ]
+
+  const normalizedType = type.toLowerCase().replace(/\[\]$/, '') // Remove array suffix
+  const baseType = (normalizedType.split('(')[0] || '').trim() // Remove size parameters like varchar(255)
+
+  // If it's not a built-in type, it's likely a custom type (enum)
+  return !builtInTypes.includes(baseType)
 }
 
 /**
