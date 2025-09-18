@@ -156,8 +156,8 @@ async function main() {
   // Create executor
   const executor = new OpenAIExecutor({ apiKey })
 
-  // Process each case with max 5 concurrent requests
-  const MAX_CONCURRENT = 5
+  // Process each case with max 3 concurrent requests
+  const MAX_CONCURRENT = 3
   let failureCount = 0
 
   const getErrorMessage = (

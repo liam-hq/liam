@@ -18,7 +18,7 @@ This creates a benchmark workspace with multiple datasets:
 
 System features:
 - Parallel dataset processing for faster execution
-- Smart concurrency per dataset (MAX_CONCURRENT=5)
+- Smart concurrency per dataset (MAX_CONCURRENT=3)
 - Automatic input standardization (strings get wrapped to `{ "input": "..." }`)
 
 ### 2) Execute a model
