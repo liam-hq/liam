@@ -48,9 +48,19 @@ function escapeTypeIdentifier(type: string): string {
   const escaped = parts
     .map((p, index) => {
       const isLastPart = index === parts.length - 1
-      // Only quote the type name (last part) if it has uppercase or is an enum
-      if (isLastPart && (/[A-Z]/.test(p) || isLikelyEnumType(p))) {
-        return escapeIdentifier(p)
+      // Only quote the type name (last part) if it's a user-defined type/enum
+      // Quote when it's likely an enum (not a built-in type)
+      // Built-in types like 'bigint', 'uuid' are all lowercase and shouldn't be quoted
+      // User-defined types with mixed case (like 'UserStatus') should be quoted
+      if (isLastPart) {
+        // If it's likely an enum/custom type, quote it
+        if (isLikelyEnumType(p)) {
+          return escapeIdentifier(p)
+        }
+        // If it has uppercase letters mixed with lowercase (camelCase/PascalCase), quote it
+        if (/[a-z]/.test(p) && /[A-Z]/.test(p)) {
+          return escapeIdentifier(p)
+        }
       }
       return p
     })
@@ -492,10 +502,13 @@ export function generateAlterColumnNotNullStatement(
 
 /**
  * Generate ALTER TABLE ... ALTER COLUMN ... SET/DROP DEFAULT statement
+ * @param columnType - Optional column type for type-aware default formatting.
+ *                     If not provided, falls back to basic formatting.
  */
 export function generateAlterColumnDefaultStatement(
   tableName: string,
   columnName: string,
+  columnType: string | null,
   defaultValue: string | null,
 ): string {
   if (defaultValue === null) {
@@ -503,11 +516,17 @@ export function generateAlterColumnDefaultStatement(
       tableName,
     )} ALTER COLUMN ${escapeIdentifier(columnName)} DROP DEFAULT;`
   }
+
+  // Use type-aware formatting if type is provided, otherwise fallback to basic formatting
+  const formattedDefault = columnType
+    ? formatColumnDefault(columnType, defaultValue)
+    : formatDefaultValue(defaultValue)
+
   return `ALTER TABLE ${escapeIdentifier(
     tableName,
   )} ALTER COLUMN ${escapeIdentifier(
     columnName,
-  )} SET DEFAULT ${formatDefaultValue(defaultValue)};`
+  )} SET DEFAULT ${formattedDefault};`
 }
 
 /**
