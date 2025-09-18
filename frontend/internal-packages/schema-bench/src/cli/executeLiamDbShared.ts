@@ -14,7 +14,7 @@ import {
 import * as v from 'valibot'
 import { execute, type LiamDbExecutorInput } from '../executors/liamDb/index.ts'
 
-config({ path: resolve(__dirname, '../../../../../.env') })
+config({ path: resolve(__dirname, '../../../.env') })
 
 const InputSchema = v.union([
   v.object({
@@ -134,6 +134,8 @@ async function executeCase(
 ): Promise<Result<void, Error>> {
   const result = await execute(input)
   if (result.isErr()) {
+    console.error(`❌ Failed to execute ${caseId}:`, result.error.message)
+    console.error('Full error:', result.error)
     return err(
       new Error(`Failed to execute ${caseId}: ${result.error.message}`),
     )
@@ -164,8 +166,8 @@ export async function processDataset(
     return { datasetName, success: 0, failure: 0 }
   }
 
-  // Process each case with max 5 concurrent requests for stability
-  const MAX_CONCURRENT = 5
+  // Process each case with max 3 concurrent requests for stability
+  const MAX_CONCURRENT = 3
   let successCount = 0
   let failureCount = 0
 
