@@ -5,8 +5,10 @@ import type { StructuredTool } from '@langchain/core/tools'
 import { tool } from '@langchain/core/tools'
 import { Command } from '@langchain/langgraph'
 import type { DmlOperation } from '@liam-hq/artifact'
+import pLimit from 'p-limit'
 import { v4 as uuidv4 } from 'uuid'
 import * as v from 'valibot'
+import { getTestExecutionConfig } from '../config/testExecutionConfig'
 import type { Testcase } from '../qa-agent/types'
 import { formatValidationErrors } from '../qa-agent/validateSchema/formatValidationErrors'
 import type { TestcaseDmlExecutionResult } from '../qa-agent/validateSchema/types'
@@ -19,17 +21,57 @@ import { transformStateToArtifact } from './transformStateToArtifact'
 /**
  * Execute DML operations by testcase with DDL statements
  * Combines DDL and testcase-specific DML into single execution units
+ * Uses bounded concurrency to prevent memory spikes
  */
 async function executeDmlOperationsByTestcase(
   ddlStatements: string,
   testcases: Testcase[],
   requiredExtensions: string[],
+  signal?: AbortSignal,
 ): Promise<TestcaseDmlExecutionResult[]> {
-  return Promise.all(
-    testcases.map((testcase) =>
-      executeTestcase(ddlStatements, testcase, requiredExtensions),
-    ),
+  const config = getTestExecutionConfig()
+  const limit = pLimit(config.maxConcurrency)
+
+  // Create individual AbortController for each test with timeout
+  const testControllers = testcases.map(() => new AbortController())
+
+  // Propagate parent abort signal to all test controllers
+  if (signal) {
+    signal.addEventListener('abort', () => {
+      testControllers.forEach((controller) => {
+        controller.abort()
+      })
+    })
+  }
+
+  const promises = testcases.map((testcase, index) =>
+    limit(async () => {
+      const controller = testControllers[index]
+      if (!controller) {
+        // eslint-disable-next-line no-throw-error/no-throw-error -- Defensive check for array access
+        throw new Error(`No controller for test at index ${index}`)
+      }
+
+      // Set timeout for individual test
+      const timeoutId = setTimeout(() => {
+        controller.abort()
+      }, config.timeoutMs)
+
+      // eslint-disable-next-line no-restricted-syntax -- Try-finally needed for timeout cleanup
+      try {
+        return await executeTestcase(
+          ddlStatements,
+          testcase,
+          requiredExtensions,
+          controller.signal,
+        )
+      } finally {
+        clearTimeout(timeoutId)
+      }
+    }),
   )
+
+  return Promise.all(promises)
 }
 
 const toolSchema = v.object({})

@@ -51,37 +51,67 @@ function extractFailedOperation(
 
 /**
  * Execute a single testcase with DDL statements
+ * @param signal - Optional AbortSignal for cancellation
  */
 export async function executeTestcase(
   ddlStatements: string,
   testcase: Testcase,
   requiredExtensions: string[],
+  signal?: AbortSignal,
 ): Promise<TestcaseDmlExecutionResult> {
   const combinedSql = buildCombinedSql(ddlStatements, testcase)
   const startTime = new Date()
 
-  const sqlResults = await executeQuery(combinedSql, requiredExtensions)
-  const hasErrors = sqlResults.some((result) => !result.success)
-  const failedOperation = hasErrors
-    ? extractFailedOperation(sqlResults)
-    : undefined
+  // eslint-disable-next-line no-restricted-syntax -- Try-catch needed for AbortSignal handling
+  try {
+    // Check if already aborted before executing
+    if (signal?.aborted) {
+      // eslint-disable-next-line no-throw-error/no-throw-error -- AbortSignal requires throwing to propagate cancellation
+      throw new Error(`Test execution aborted: ${signal.reason || 'timeout'}`)
+    }
 
-  const baseResult = {
-    testCaseId: testcase.id,
-    testCaseTitle: testcase.title,
-    executedAt: startTime,
-  }
+    const sqlResults = await executeQuery(
+      combinedSql,
+      requiredExtensions,
+      signal,
+    )
+    const hasErrors = sqlResults.some((result) => !result.success)
+    const failedOperation = hasErrors
+      ? extractFailedOperation(sqlResults)
+      : undefined
 
-  if (hasErrors && failedOperation) {
+    const baseResult = {
+      testCaseId: testcase.id,
+      testCaseTitle: testcase.title,
+      executedAt: startTime,
+    }
+
+    if (hasErrors && failedOperation) {
+      return {
+        ...baseResult,
+        success: false,
+        failedOperation,
+      }
+    }
+
     return {
       ...baseResult,
-      success: false,
-      failedOperation,
+      success: true,
     }
-  }
-
-  return {
-    ...baseResult,
-    success: true,
+  } catch (error) {
+    // Handle abort/timeout errors
+    if (signal?.aborted) {
+      return {
+        testCaseId: testcase.id,
+        testCaseTitle: testcase.title,
+        executedAt: startTime,
+        success: false,
+        failedOperation: {
+          sql: `${combinedSql.substring(0, 100)}...`,
+          error: `Test execution aborted: ${signal.reason || 'timeout'}`,
+        },
+      }
+    }
+    throw error
   }
 }

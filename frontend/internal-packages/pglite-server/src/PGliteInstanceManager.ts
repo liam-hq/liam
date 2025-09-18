@@ -15,10 +15,14 @@ export class PGliteInstanceManager {
   private async createInstance(
     requiredExtensions: string[],
   ): Promise<{ db: PGlite; supportedExtensions: string[] }> {
+    // Get memory configuration from environment or use default
+    const memoryMb = Number(process.env['PGLITE_INITIAL_MEMORY_MB']) || 64
+    const initialMemory = memoryMb * 1024 * 1024 // Convert MB to bytes
+
     if (requiredExtensions.length === 0) {
       return {
         db: new PGlite({
-          initialMemory: 2 * 1024 * 1024 * 1024, // 2GB initial memory allocation
+          initialMemory,
           extensions: {},
         }),
         supportedExtensions: [],
@@ -30,7 +34,7 @@ export class PGliteInstanceManager {
 
     return {
       db: new PGlite({
-        initialMemory: 2 * 1024 * 1024 * 1024, // 2GB initial memory allocation
+        initialMemory,
         extensions: extensionModules,
       }),
       supportedExtensions: supportedExtensionNames,
@@ -40,11 +44,21 @@ export class PGliteInstanceManager {
   /**
    * Execute SQL query with immediate instance cleanup
    * Only executes DDL for supported extensions
+   * @param signal - Optional AbortSignal for cancellation
    */
   async executeQuery(
     sql: string,
     requiredExtensions: string[],
+    signal?: AbortSignal,
   ): Promise<SqlResult[]> {
+    // Check if already aborted
+    if (signal?.aborted) {
+      // eslint-disable-next-line no-throw-error/no-throw-error -- AbortSignal requires throwing to propagate cancellation
+      throw new Error(
+        `Query execution aborted: ${signal.reason || 'cancelled'}`,
+      )
+    }
+
     const { db, supportedExtensions } =
       await this.createInstance(requiredExtensions)
 
@@ -52,8 +66,20 @@ export class PGliteInstanceManager {
     const filteredSql = filterExtensionDDL(sql, supportedExtensions)
 
     try {
-      return await this.executeSql(filteredSql, db)
+      // Register abort handler to close database
+      const abortHandler = () => {
+        db.close?.()
+      }
+      signal?.addEventListener('abort', abortHandler)
+
+      const results = await this.executeSql(filteredSql, db, signal)
+
+      // Clean up abort handler
+      signal?.removeEventListener('abort', abortHandler)
+
+      return results
     } finally {
+      // Ensure database is closed even if aborted
       db.close?.()
     }
   }
@@ -62,8 +88,20 @@ export class PGliteInstanceManager {
    * Execute SQL statements and return results with metadata
    * Uses PostgreSQL parser to properly handle complex statements including dollar-quoted strings
    */
-  private async executeSql(sqlText: string, db: PGlite): Promise<SqlResult[]> {
+  private async executeSql(
+    sqlText: string,
+    db: PGlite,
+    signal?: AbortSignal,
+  ): Promise<SqlResult[]> {
     try {
+      // Check abort before parsing
+      if (signal?.aborted) {
+        // eslint-disable-next-line no-throw-error/no-throw-error -- AbortSignal requires throwing to propagate cancellation
+        throw new Error(
+          `Query execution aborted: ${signal.reason || 'cancelled'}`,
+        )
+      }
+
       const parseResult: PgParseResult = await pgParse(sqlText)
 
       if (parseResult.error) {
@@ -74,8 +112,15 @@ export class PGliteInstanceManager {
         sqlText,
         parseResult.parse_tree.stmts,
       )
-      return await this.executeStatements(statements, db)
+      return await this.executeStatements(statements, db, signal)
     } catch (error) {
+      // Check if aborted
+      if (signal?.aborted) {
+        // eslint-disable-next-line no-throw-error/no-throw-error -- AbortSignal requires throwing to propagate cancellation
+        throw new Error(
+          `Query execution aborted: ${signal.reason || 'cancelled'}`,
+        )
+      }
       return await this.executeFallback(sqlText, db, error)
     }
   }
@@ -105,11 +150,20 @@ export class PGliteInstanceManager {
   private async executeStatements(
     statements: string[],
     db: PGlite,
+    signal?: AbortSignal,
   ): Promise<SqlResult[]> {
     const results: SqlResult[] = []
 
     for (const sql of statements) {
-      const result = await this.executeSingleStatement(sql, db)
+      // Check for abort before each statement
+      if (signal?.aborted) {
+        // eslint-disable-next-line no-throw-error/no-throw-error -- AbortSignal requires throwing to propagate cancellation
+        throw new Error(
+          `Query execution aborted: ${signal.reason || 'cancelled'}`,
+        )
+      }
+
+      const result = await this.executeSingleStatement(sql, db, signal)
       results.push(result)
     }
 
@@ -122,10 +176,19 @@ export class PGliteInstanceManager {
   private async executeSingleStatement(
     sql: string,
     db: PGlite,
+    signal?: AbortSignal,
   ): Promise<SqlResult> {
     const startTime = performance.now()
 
     try {
+      // Check for abort before executing query
+      if (signal?.aborted) {
+        // eslint-disable-next-line no-throw-error/no-throw-error -- AbortSignal requires throwing to propagate cancellation
+        throw new Error(
+          `Query execution aborted: ${signal.reason || 'cancelled'}`,
+        )
+      }
+
       const result = await db.query(sql)
       const executionTime = Math.round(performance.now() - startTime)
 
@@ -141,6 +204,12 @@ export class PGliteInstanceManager {
       }
     } catch (error) {
       const executionTime = Math.round(performance.now() - startTime)
+
+      // Re-throw abort errors
+      if (signal?.aborted) {
+        throw error
+      }
+
       const errorMessage =
         error instanceof Error ? error.message : String(error)
 
