@@ -95,37 +95,20 @@ function formatColumnDefault(
   columnType: string,
   defaultValue: string | number | boolean,
 ): string {
-  // Special handling for jsonb type to prevent double-escaping
-  // NOTE: This is a workaround for issues that have surfaced with default values.
-  // A simpler approach with type-specific handling might be possible.
-  if (columnType === 'jsonb' && typeof defaultValue === 'string') {
+  // For jsonb and enum types, handle pre-quoted values and cast expressions specially
+  if (
+    typeof defaultValue === 'string' &&
+    (columnType === 'jsonb' || isLikelyEnumType(columnType))
+  ) {
     const trimmed = defaultValue.trim()
     // If it's a cast expression (contains ::), use as-is
     if (trimmed.includes('::')) {
       return defaultValue
     }
-    // If already quoted (but not a cast expression), use as-is
+    // If already quoted, use as-is (don't double-escape)
     if (trimmed.startsWith("'") && trimmed.endsWith("'")) {
       return defaultValue
     }
-    // Unquoted JSON, let formatDefaultValue handle it
-    return formatDefaultValue(defaultValue)
-  }
-
-  // Special handling for potential enum types (custom types)
-  // Check if it's likely an enum by detecting if it's not a standard PostgreSQL type
-  if (typeof defaultValue === 'string' && isLikelyEnumType(columnType)) {
-    const trimmed = defaultValue.trim()
-    // If it's a cast expression (contains ::), use as-is
-    if (trimmed.includes('::')) {
-      return defaultValue
-    }
-    // If already quoted, use as-is
-    if (trimmed.startsWith("'") && trimmed.endsWith("'")) {
-      return defaultValue
-    }
-    // Unquoted enum value, let formatDefaultValue handle it
-    return formatDefaultValue(defaultValue)
   }
 
   return formatDefaultValue(defaultValue)
