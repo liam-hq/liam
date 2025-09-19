@@ -433,11 +433,15 @@ function extractIndexOptions(hashNode: KeywordHashNode, index: Index): void {
 
 function extractDefaultValue(
   value: TrueNode | FalseNode | StringNode | IntegerNode,
-): string | number | boolean | null {
-  if (value instanceof TrueNode) return true
-  if (value instanceof FalseNode) return false
-  if (value instanceof StringNode) return value.unescaped.value
-  if (value instanceof IntegerNode) return value.value
+): string | null {
+  if (value instanceof TrueNode) return 'TRUE'
+  if (value instanceof FalseNode) return 'FALSE'
+  if (value instanceof StringNode) {
+    const strValue = value.unescaped.value
+    // Wrap string literals in single quotes
+    return `'${strValue.replace(/'/g, "''")}'` // SQL escape
+  }
+  if (value instanceof IntegerNode) return value.value.toString()
   return null
 }
 

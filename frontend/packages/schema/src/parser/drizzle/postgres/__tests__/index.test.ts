@@ -47,7 +47,7 @@ describe(processor, () => {
 
       // Test pgEnum usage
       expect(value.tables['users']?.columns['role']?.type).toBe('user_role')
-      expect(value.tables['users']?.columns['role']?.default).toBe('student')
+      expect(value.tables['users']?.columns['role']?.default).toBe("'student'")
 
       // Test jsonb type (PostgreSQL-specific)
       expect(value.tables['users']?.columns['metadata']?.type).toBe('jsonb')

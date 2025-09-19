@@ -406,7 +406,7 @@ describe(processor, () => {
             name: 'age',
             type: 'int',
             notNull: true,
-            default: 30,
+            default: '30',
           }),
         },
       })
@@ -452,7 +452,7 @@ describe(processor, () => {
             name: 'active',
             type: 'bool',
             notNull: true,
-            default: true,
+            default: 'true',
           }),
         },
       })

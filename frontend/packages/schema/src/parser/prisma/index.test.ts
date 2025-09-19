@@ -118,7 +118,7 @@ describe(_processor, () => {
           age: aColumn({
             name: 'age',
             type: 'integer',
-            default: 30,
+            default: '30',
             notNull: true,
           }),
         },
@@ -140,7 +140,7 @@ describe(_processor, () => {
           active: aColumn({
             name: 'active',
             type: 'boolean',
-            default: true,
+            default: 'TRUE',
             notNull: true,
           }),
         },
@@ -567,7 +567,7 @@ describe(_processor, () => {
                 name: 'role',
                 type: 'Role',
                 notNull: true,
-                default: 'USER',
+                default: "'USER'",
               }),
             },
             indexes: {
@@ -1129,7 +1129,7 @@ describe(_processor, () => {
       expect(userTable?.columns['role']).toMatchObject({
         name: 'role',
         type: 'Role',
-        default: 'USER',
+        default: "'USER'",
         notNull: true,
       })
     })
@@ -1163,7 +1163,7 @@ describe(_processor, () => {
       expect(userTable?.columns['status']).toMatchObject({
         name: 'status',
         type: 'Status', // original enum name
-        default: 'ACTIVE', // original value name in default
+        default: "'ACTIVE'", // original value name in default
         notNull: true,
       })
     })
