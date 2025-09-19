@@ -571,7 +571,7 @@ exports[`parse > should parse schema.rb to JSON correctly 1`] = `
         "status": {
           "check": null,
           "comment": "The current status of the task (e.g., 0: pending, 1: in progress, 2: completed).",
-          "default": 0,
+          "default": "0",
           "name": "status",
           "notNull": false,
           "type": "integer",
@@ -837,7 +837,7 @@ exports[`parse > should parse schema.rb to JSON correctly 1`] = `
         "age": {
           "check": null,
           "comment": "The user's age.",
-          "default": 30,
+          "default": "30",
           "name": "age",
           "notNull": false,
           "type": "integer",
@@ -877,7 +877,7 @@ exports[`parse > should parse schema.rb to JSON correctly 1`] = `
         "is_deleted": {
           "check": null,
           "comment": "Indicates whether the user is deleted (soft delete).",
-          "default": false,
+          "default": "FALSE",
           "name": "is_deleted",
           "notNull": false,
           "type": "boolean",
@@ -885,7 +885,7 @@ exports[`parse > should parse schema.rb to JSON correctly 1`] = `
         "name": {
           "check": null,
           "comment": "The user's full name.",
-          "default": "new user",
+          "default": "'new user'",
           "name": "name",
           "notNull": false,
           "type": "varchar",

@@ -432,27 +432,8 @@ async function parseTblsSchema(schemaString: string): Promise<ProcessResult> {
   }
 }
 
-function extractDefaultValue(
-  value: string | null | undefined,
-): Columns[string]['default'] {
-  if (value === null || value === undefined) {
-    return null
-  }
-
-  // Convert string to number if it represents a number
-  if (!Number.isNaN(Number(value))) {
-    return Number(value)
-  }
-
-  // Convert string to boolean if it represents a boolean
-  if (value.toLowerCase() === 'true') {
-    return true
-  }
-  if (value.toLowerCase() === 'false') {
-    return false
-  }
-
-  return value
+function extractDefaultValue(value: string | null | undefined): string | null {
+  return value ?? null
 }
 
 export const processor: Processor = (str) => parseTblsSchema(str)

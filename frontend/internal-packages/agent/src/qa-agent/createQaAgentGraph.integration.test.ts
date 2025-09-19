@@ -45,7 +45,7 @@ describe('createQaAgentGraph Integration', () => {
             is_active: aColumn({
               name: 'is_active',
               type: 'boolean',
-              default: true,
+              default: 'TRUE',
             }),
           },
         }),

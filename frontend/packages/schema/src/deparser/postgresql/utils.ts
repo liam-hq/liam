@@ -70,7 +70,6 @@ function generateColumnDefinition(
   return definition
 }
 
-
 /**
  * Escape SQL strings
  */
@@ -323,14 +322,12 @@ export function generateAlterColumnDefaultStatement(
       tableName,
     )} ALTER COLUMN ${escapeIdentifier(columnName)} DROP DEFAULT;`
   }
-  
+
   // Since defaultValue is now always a string containing the PostgreSQL expression,
   // we can simply output it as-is
   return `ALTER TABLE ${escapeIdentifier(
     tableName,
-  )} ALTER COLUMN ${escapeIdentifier(
-    columnName,
-  )} SET DEFAULT ${defaultValue};`
+  )} ALTER COLUMN ${escapeIdentifier(columnName)} SET DEFAULT ${defaultValue};`
 }
 
 /**
