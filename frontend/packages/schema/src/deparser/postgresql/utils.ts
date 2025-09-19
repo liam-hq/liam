@@ -43,24 +43,24 @@ function escapeTypeIdentifier(type: string): string {
   if (!allPartsSimple) return type
 
   // For each part, decide if it needs quoting
-  // Schema names (like 'public') typically don't need quoting
-  // Only the type name itself might need quoting
+  // Schema names (like 'public') typically don't need quoting unless they have special chars or mixed case
   const escaped = parts
     .map((p, index) => {
       const isLastPart = index === parts.length - 1
-      // Only quote the type name (last part) if it's a user-defined type/enum
+      const isSimpleLower = /^[a-z_][a-z0-9_]*$/.test(p)
+
+      if (!isLastPart) {
+        // Quote schema part if not simple lowercase (preserve case, handle reserved chars)
+        return isSimpleLower ? p : escapeIdentifier(p)
+      }
+
+      // Type name (last part)
+      // Only quote the type name if it's a user-defined type/enum
       // Quote when it's likely an enum (not a built-in type)
       // Built-in types like 'bigint', 'uuid' are all lowercase and shouldn't be quoted
       // User-defined types with mixed case (like 'UserStatus') should be quoted
-      if (isLastPart) {
-        // If it's likely an enum/custom type, quote it
-        if (isLikelyEnumType(p)) {
-          return escapeIdentifier(p)
-        }
-        // If it has uppercase letters mixed with lowercase (camelCase/PascalCase), quote it
-        if (/[a-z]/.test(p) && /[A-Z]/.test(p)) {
-          return escapeIdentifier(p)
-        }
+      if (isLikelyEnumType(p) || (/[a-z]/.test(p) && /[A-Z]/.test(p))) {
+        return escapeIdentifier(p)
       }
       return p
     })
