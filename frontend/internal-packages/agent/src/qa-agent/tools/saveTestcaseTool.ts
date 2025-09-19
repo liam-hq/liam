@@ -10,6 +10,7 @@ import * as v from 'valibot'
 import { SSE_EVENTS } from '../../streaming/constants'
 import { WorkflowTerminationError } from '../../utils/errorHandling'
 import { toJsonSchema } from '../../utils/jsonSchema'
+import { withSentryCaptureException } from '../../utils/withSentryCaptureException'
 import { type Testcase, testcaseSchema } from '../types'
 
 const dmlOperationWithoutLogsSchema = v.omit(dmlOperationSchema, [
@@ -72,54 +73,56 @@ const getConfigData = (
 
 export const saveTestcaseTool: StructuredTool = tool(
   async (input: unknown, config: RunnableConfig): Promise<Command> => {
-    const parsed = v.safeParse(saveTestcaseToolSchema, input)
-    if (!parsed.success) {
-      throw new WorkflowTerminationError(
-        new Error(
-          `Invalid tool input: ${parsed.issues
-            .map((issue) => issue.message)
-            .join(', ')}`,
-        ),
-        'saveTestcaseTool',
-      )
-    }
+    return withSentryCaptureException(async () => {
+      const parsed = v.safeParse(saveTestcaseToolSchema, input)
+      if (!parsed.success) {
+        throw new WorkflowTerminationError(
+          new Error(
+            `Invalid tool input: ${parsed.issues
+              .map((issue) => issue.message)
+              .join(', ')}`,
+          ),
+          'saveTestcaseTool',
+        )
+      }
 
-    const { testcaseWithDml } = parsed.output
+      const { testcaseWithDml } = parsed.output
 
-    // Validate SQL syntax before saving
-    await validateSqlSyntax(testcaseWithDml.dmlOperation.sql)
+      // Validate SQL syntax before saving
+      await validateSqlSyntax(testcaseWithDml.dmlOperation.sql)
 
-    const { toolCallId, requirementId } = getConfigData(config)
+      const { toolCallId, requirementId } = getConfigData(config)
 
-    const testcaseId = uuidv4()
+      const testcaseId = uuidv4()
 
-    const dmlOperationWithId = {
-      ...testcaseWithDml.dmlOperation,
-      dml_execution_logs: [],
-    }
+      const dmlOperationWithId = {
+        ...testcaseWithDml.dmlOperation,
+        dml_execution_logs: [],
+      }
 
-    const testcase: Testcase = {
-      id: testcaseId,
-      requirementId: requirementId,
-      requirementType: testcaseWithDml.requirementType,
-      requirementCategory: testcaseWithDml.requirementCategory,
-      requirement: testcaseWithDml.requirement,
-      title: testcaseWithDml.title,
-      description: testcaseWithDml.description,
-      dmlOperation: dmlOperationWithId,
-    }
+      const testcase: Testcase = {
+        id: testcaseId,
+        requirementId: requirementId,
+        requirementType: testcaseWithDml.requirementType,
+        requirementCategory: testcaseWithDml.requirementCategory,
+        requirement: testcaseWithDml.requirement,
+        title: testcaseWithDml.title,
+        description: testcaseWithDml.description,
+        dmlOperation: dmlOperationWithId,
+      }
 
-    const toolMessage = new ToolMessage({
-      content: `Successfully saved test case "${testcase.title}" with DML operation`,
-      tool_call_id: toolCallId,
-    })
-    await dispatchCustomEvent(SSE_EVENTS.MESSAGES, toolMessage)
+      const toolMessage = new ToolMessage({
+        content: `Successfully saved test case "${testcase.title}" with DML operation`,
+        tool_call_id: toolCallId,
+      })
+      await dispatchCustomEvent(SSE_EVENTS.MESSAGES, toolMessage)
 
-    return new Command({
-      update: {
-        testcases: [testcase],
-        messages: [toolMessage],
-      },
+      return new Command({
+        update: {
+          testcases: [testcase],
+          messages: [toolMessage],
+        },
+      })
     })
   },
   {
