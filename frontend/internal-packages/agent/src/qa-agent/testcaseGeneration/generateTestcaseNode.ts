@@ -21,7 +21,8 @@ const model = new ChatOpenAI({
   verbosity: 'low',
   useResponsesApi: true,
   timeout: 60000, // 60 seconds timeout
-  maxRetries: 2, // OpenAI SDK level retry limit
+  maxRetries: 0, // Disable OpenAI SDK level retries (controlled by LangGraph)
+  maxConcurrency: 1, // Limit concurrent requests
 }).bindTools([saveTestcaseTool], {
   parallel_tool_calls: false,
   tool_choice: 'auto',
@@ -37,6 +38,16 @@ export async function generateTestcaseNode(
 ): Promise<{ messages: BaseMessage[] }> {
   const startTime = Date.now()
   const { currentRequirement, schemaData, messages } = state
+
+  // Set up AbortController for forced timeout
+  const abortController = new AbortController()
+  const timeoutId = setTimeout(() => {
+    console.error(
+      `[generateTestcaseNode] Aborting due to timeout after 60s - ` +
+      `Category: ${currentRequirement.category}`,
+    )
+    abortController.abort()
+  }, 60000) // 60 second absolute timeout
 
   // Log start of processing
   console.info(
@@ -72,53 +83,61 @@ export async function generateTestcaseNode(
     `[generateTestcaseNode] Previous messages count: ${cleanedMessages.length}`,
   )
 
-  // Log API call start
-  const apiStart = Date.now()
-  console.info(`[generateTestcaseNode] Calling OpenAI API (gpt-5-nano)...`)
+  try {
+    // Log API call start
+    const apiStart = Date.now()
+    console.info(`[generateTestcaseNode] Calling OpenAI API (gpt-5-nano)...`)
 
-  const streamModel = fromAsyncThrowable(() => {
-    return model.stream([
-      new SystemMessage(SYSTEM_PROMPT_FOR_TESTCASE_GENERATION),
-      new HumanMessage(contextMessage),
-      // Include all previous messages in this subgraph's scope
-      ...cleanedMessages,
-    ])
-  })
+    const streamModel = fromAsyncThrowable(() => {
+      return model.stream([
+        new SystemMessage(SYSTEM_PROMPT_FOR_TESTCASE_GENERATION),
+        new HumanMessage(contextMessage),
+        // Include all previous messages in this subgraph's scope
+        ...cleanedMessages,
+      ], {
+        signal: abortController.signal, // Add AbortSignal for timeout
+      })
+    })
 
-  const streamResult = await streamModel()
+    const streamResult = await streamModel()
 
-  if (streamResult.isErr()) {
-    const apiErrorTime = Date.now() - apiStart
-    console.error(
-      `[generateTestcaseNode] API Error after ${apiErrorTime}ms: ${streamResult.error.message}`,
+    if (streamResult.isErr()) {
+      const apiErrorTime = Date.now() - apiStart
+      console.error(
+        `[generateTestcaseNode] API Error after ${apiErrorTime}ms: ${streamResult.error.message}`,
+      )
+      // eslint-disable-next-line no-throw-error/no-throw-error -- Required for LangGraph retry mechanism
+      throw new Error(
+        `Failed to generate test case for ${currentRequirement.category}: ${streamResult.error.message}`,
+      )
+    }
+
+    console.info(
+      `[generateTestcaseNode] API stream started after ${Date.now() - apiStart}ms`,
     )
-    // eslint-disable-next-line no-throw-error/no-throw-error -- Required for LangGraph retry mechanism
-    throw new Error(
-      `Failed to generate test case for ${currentRequirement.category}: ${streamResult.error.message}`,
+
+    // Log streaming processing with timeout check
+    const streamStart = Date.now()
+    const response = await streamLLMResponse(streamResult.value, {
+      agentName: 'qa',
+      eventType: 'messages',
+      maxStreamTime: 50000, // 50 seconds max for streaming (within 60s total)
+    })
+    console.info(
+      `[generateTestcaseNode] Stream processing completed: ${Date.now() - streamStart}ms`,
     )
-  }
 
-  console.info(
-    `[generateTestcaseNode] API stream started after ${Date.now() - apiStart}ms`,
-  )
+    // Log total time
+    const totalTime = Date.now() - startTime
+    console.info(
+      `[generateTestcaseNode] END - Total time: ${totalTime}ms (${Math.round(totalTime / 1000)}s)`,
+    )
 
-  // Log streaming processing
-  const streamStart = Date.now()
-  const response = await streamLLMResponse(streamResult.value, {
-    agentName: 'qa',
-    eventType: 'messages',
-  })
-  console.info(
-    `[generateTestcaseNode] Stream processing completed: ${Date.now() - streamStart}ms`,
-  )
-
-  // Log total time
-  const totalTime = Date.now() - startTime
-  console.info(
-    `[generateTestcaseNode] END - Total time: ${totalTime}ms (${Math.round(totalTime / 1000)}s)`,
-  )
-
-  return {
-    messages: [response],
+    return {
+      messages: [response],
+    }
+  } finally {
+    // Always clear the timeout
+    clearTimeout(timeoutId)
   }
 }
