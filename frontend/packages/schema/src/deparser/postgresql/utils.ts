@@ -62,88 +62,14 @@ function generateColumnDefinition(
   }
 
   if (column.default !== null) {
-    // Special handling for jsonb type to prevent double-escaping
-    // NOTE: This is a workaround for issues that have surfaced with default values.
-    // A simpler approach with type-specific handling might be possible.
-    if (column.type === 'jsonb' && typeof column.default === 'string') {
-      const trimmed = column.default.trim()
-      // If it's a cast expression (contains ::), use as-is
-      if (trimmed.includes('::')) {
-        definition += ` DEFAULT ${column.default}`
-      }
-      // If already quoted (but not a cast expression), use as-is
-      else if (trimmed.startsWith("'") && trimmed.endsWith("'")) {
-        definition += ` DEFAULT ${column.default}`
-      }
-      // Unquoted JSON, let formatDefaultValue handle it
-      else {
-        definition += ` DEFAULT ${formatDefaultValue(column.default)}`
-      }
-    } else {
-      definition += ` DEFAULT ${formatDefaultValue(column.default)}`
-    }
+    // Since default is now always a string containing the PostgreSQL expression,
+    // we can simply output it as-is
+    definition += ` DEFAULT ${column.default}`
   }
 
   return definition
 }
 
-/**
- * Format default value to proper SQL format
- */
-function formatDefaultValue(value: string | number | boolean): string {
-  if (typeof value === 'string') {
-    // Check if it's a PostgreSQL function call (e.g., gen_random_uuid(), now(), current_timestamp())
-    if (isPostgreSQLFunction(value)) {
-      return value // Don't quote function calls
-    }
-
-    // Check if value is already quoted (handles enum values that might come pre-quoted)
-    const trimmedValue = value.trim()
-    if (trimmedValue.startsWith("'") && trimmedValue.endsWith("'")) {
-      // Value is already quoted, return as-is
-      return trimmedValue
-    }
-
-    // Wrap string literals in single quotes
-    return `'${trimmedValue.replace(/'/g, "''")}'` // SQL escape
-  }
-
-  if (typeof value === 'boolean') {
-    // Boolean values are TRUE/FALSE in PostgreSQL
-    return value.toString().toUpperCase()
-  }
-
-  // Numbers as-is
-  return value.toString()
-}
-
-/**
- * Check if a string represents a PostgreSQL function call
- */
-function isPostgreSQLFunction(value: string): boolean {
-  const trimmedValue = value.trim()
-
-  // Match PostgreSQL function patterns:
-  // - Function name: starts with letter or underscore, followed by letters, numbers, underscores
-  // - Optional whitespace before opening parenthesis
-  // - Must have opening parenthesis (function calls always have parentheses)
-  // Examples: gen_random_uuid(), now(), current_timestamp(), extract(epoch from now())
-  const functionPattern = /^[a-zA-Z_][a-zA-Z0-9_]*\s*\(/
-
-  // PostgreSQL functions that can be used without parentheses
-  // (The regex pattern above handles functions with parentheses)
-  const commonFunctions = ['current_timestamp', 'current_date', 'current_time']
-
-  // Check if it matches the general function pattern
-  if (functionPattern.test(trimmedValue)) {
-    return true
-  }
-
-  // Check for common functions that might have specific patterns
-  return commonFunctions.some((func) =>
-    trimmedValue.toLowerCase().startsWith(func.toLowerCase()),
-  )
-}
 
 /**
  * Escape SQL strings
@@ -391,16 +317,20 @@ export function generateAlterColumnDefaultStatement(
   columnName: string,
   defaultValue: string | null,
 ): string {
+  // If defaultValue is null, generate DROP DEFAULT statement
   if (defaultValue === null) {
     return `ALTER TABLE ${escapeIdentifier(
       tableName,
     )} ALTER COLUMN ${escapeIdentifier(columnName)} DROP DEFAULT;`
   }
+  
+  // Since defaultValue is now always a string containing the PostgreSQL expression,
+  // we can simply output it as-is
   return `ALTER TABLE ${escapeIdentifier(
     tableName,
   )} ALTER COLUMN ${escapeIdentifier(
     columnName,
-  )} SET DEFAULT ${formatDefaultValue(defaultValue)};`
+  )} SET DEFAULT ${defaultValue};`
 }
 
 /**

@@ -160,13 +160,13 @@ describe('postgresqlSchemaDeparser', () => {
               name: 'enabled',
               type: 'boolean',
               notNull: true,
-              default: true,
+              default: 'TRUE',
             }),
-            count: aColumn({ name: 'count', type: 'integer', default: 0 }),
+            count: aColumn({ name: 'count', type: 'integer', default: '0' }),
             title: aColumn({
               name: 'title',
               type: 'varchar(50)',
-              default: 'Default Title',
+              default: "'Default Title'",
             }),
           },
           constraints: {
@@ -779,7 +779,7 @@ describe('postgresqlSchemaDeparser', () => {
                 name: 'price',
                 type: 'decimal(10,2)',
                 notNull: true,
-                default: 0,
+                default: '0',
               }),
             },
             indexes: {
@@ -817,7 +817,7 @@ describe('postgresqlSchemaDeparser', () => {
                 name: 'quantity',
                 type: 'integer',
                 notNull: true,
-                default: 1,
+                default: '1',
               }),
             },
             indexes: {
@@ -1469,13 +1469,13 @@ describe('postgresqlSchemaDeparser', () => {
                   name: 'status',
                   type: 'varchar',
                   notNull: true,
-                  default: 'active', // This SHOULD be quoted as it's a string literal
+                  default: "'active'", // String literal in PostgreSQL format
                 }),
                 role: aColumn({
                   name: 'role',
                   type: 'varchar',
                   notNull: true,
-                  default: 'user', // This SHOULD be quoted as it's a string literal
+                  default: "'user'", // String literal in PostgreSQL format
                 }),
               },
             }),
@@ -1501,13 +1501,13 @@ describe('postgresqlSchemaDeparser', () => {
                   name: 'enabled',
                   type: 'boolean',
                   notNull: true,
-                  default: false, // Boolean should not be quoted
+                  default: 'FALSE', // Boolean in PostgreSQL format
                 }),
                 count: aColumn({
                   name: 'count',
                   type: 'integer',
                   notNull: true,
-                  default: 0, // Number should not be quoted
+                  default: '0', // Number in PostgreSQL format
                 }),
               },
             }),
@@ -1729,19 +1729,19 @@ describe('postgresqlSchemaDeparser', () => {
                   name: 'status',
                   type: 'varchar',
                   notNull: true,
-                  default: 'pending', // String literal - should be quoted
+                  default: "'pending'", // String literal in PostgreSQL format
                 }),
                 is_active: aColumn({
                   name: 'is_active',
                   type: 'boolean',
                   notNull: true,
-                  default: true, // Boolean - should not be quoted
+                  default: 'TRUE', // Boolean in PostgreSQL format
                 }),
                 count: aColumn({
                   name: 'count',
                   type: 'integer',
                   notNull: true,
-                  default: 0, // Number - should not be quoted
+                  default: '0', // Number in PostgreSQL format
                 }),
                 created_at: aColumn({
                   name: 'created_at',
