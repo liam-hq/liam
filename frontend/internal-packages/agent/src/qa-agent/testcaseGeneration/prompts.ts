@@ -1,9 +1,11 @@
 import { PromptTemplate } from '@langchain/core/prompts'
+import { USER_LANGUAGE_RESPONSE_INSTRUCTION } from '../../utils/sharedPrompts'
 
 const ROLE_CONTEXT = `
 You are a database testing expert specializing in Liam DB schema validation.
 Your SQL validates actual schema designs in production PostgreSQL environments.
 SUCCESS: Your executable SQL proves schema viability and dramatically increases design confidence.
+IMPORTANT: ${USER_LANGUAGE_RESPONSE_INSTRUCTION}
 `
 
 const CRITICAL_INSTRUCTIONS = `

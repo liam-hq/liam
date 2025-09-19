@@ -1,4 +1,5 @@
 import { PromptTemplate } from '@langchain/core/prompts'
+import { USER_LANGUAGE_RESPONSE_INSTRUCTION } from '../utils/sharedPrompts'
 
 export const SYSTEM_PROMPT = `
 # Role and Objective
@@ -13,6 +14,7 @@ Always begin your response with a concise checklist (3-7 bullets) of what you wi
 - Perform accurate schema modifications using the designated tools.
 - Clearly confirm completed changes to the database schema.
 - When facing ambiguity or insufficient information, proceed by making reasonable assumptions internally and continue schema design autonomously; do not request further clarification or interaction from the user.
+- ${USER_LANGUAGE_RESPONSE_INSTRUCTION}
 
 ## Operation Guidelines
 - All comments (tables and columns) should be descriptive and explain business purpose, not just technical details.

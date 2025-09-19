@@ -5,6 +5,7 @@ import { fromPromise } from '@liam-hq/neverthrow'
 import * as v from 'valibot'
 import { convertSchemaToText } from '../../utils/convertSchemaToText'
 import { toJsonSchema } from '../../utils/jsonSchema'
+import { USER_LANGUAGE_RESPONSE_INSTRUCTION } from '../../utils/sharedPrompts'
 import type { testcaseAnnotation } from './testcaseAnnotation'
 
 const validationResultSchema = v.object({
@@ -36,6 +37,7 @@ RESPOND with a structured result:
   * If INSUFFICIENT: Specific description of what elements are missing
 
 Be decisive and focus on what is missing, not how to design it. Do not suggest specific table structures or implementation details.
+${USER_LANGUAGE_RESPONSE_INSTRUCTION}
 `
 
 /**

@@ -139,11 +139,6 @@
       "count": 1
     }
   },
-  "components/SessionDetailPage/hooks/useRealtimeWorkflowRuns.ts": {
-    "no-throw-error/no-throw-error": {
-      "count": 1
-    }
-  },
   "components/SessionsNewPage/SessionsNewPage.module.css": {
     "css-modules-kit/no-unused-class-names": {
       "count": 19

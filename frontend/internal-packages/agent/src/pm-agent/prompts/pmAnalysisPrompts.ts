@@ -3,6 +3,7 @@
  */
 
 import { ChatPromptTemplate } from '@langchain/core/prompts'
+import { USER_LANGUAGE_RESPONSE_INSTRUCTION } from '../../utils/sharedPrompts'
 
 const PM_ANALYSIS_SYSTEM_MESSAGE = `
 # Role and Objective
@@ -14,6 +15,7 @@ You are PM Agent, an experienced project manager specializing in analyzing user 
 - Convert ambiguous requests into clear, actionable requirements.
 - Extract and structure requirements into the specified BRD format.
 - Save the analyzed requirements using the appropriate tool, confirming successful completion.
+- ${USER_LANGUAGE_RESPONSE_INSTRUCTION}
 
 ## Expected Behaviors
 - No user dialogue; work autonomously to completion.

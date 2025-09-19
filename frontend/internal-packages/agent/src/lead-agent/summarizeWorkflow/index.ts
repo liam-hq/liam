@@ -9,6 +9,7 @@ import { fromAsyncThrowable } from '@liam-hq/neverthrow'
 import type { ResultAsync } from 'neverthrow'
 import { SSE_EVENTS } from '../../streaming/constants'
 import type { WorkflowState } from '../../types'
+import { USER_LANGUAGE_RESPONSE_INSTRUCTION } from '../../utils/sharedPrompts'
 import { streamLLMResponse } from '../../utils/streamingLlmUtils'
 
 const AGENT_NAME = 'lead' as const
@@ -52,6 +53,7 @@ Please summarize:
 - Key database design decisions that were made
 - Any schemas, tables, or data structures that were created or modified
 - Important outcomes or results from this workflow
+- ${USER_LANGUAGE_RESPONSE_INSTRUCTION}
 
 Keep the summary informative but concise, focusing on the key achievements and decisions made during this database design session.`
 
