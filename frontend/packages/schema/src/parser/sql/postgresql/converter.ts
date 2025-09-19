@@ -67,6 +67,7 @@ function getConstraintAction(
 /**
  * Extract default value from constraints
  */
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: This function needs to handle multiple AST node types
 function extractDefaultValueFromConstraints(
   constraints: Node[] | undefined,
 ): string | null {
@@ -82,28 +83,31 @@ function extractDefaultValueFromConstraints(
     }
 
     // Convert the raw_expr to PostgreSQL string representation
-    // This is a simplified version - in a real implementation, 
+    // This is a simplified version - in a real implementation,
     // we would need to properly deparse the AST to SQL
-    
+
     if ('A_Const' in constraint.raw_expr) {
       const aConst = constraint.raw_expr.A_Const
-      
-      // Extract string value with quotes
+
+      // Extract string value with quotes and proper escaping
       if ('sval' in aConst && 'sval' in aConst.sval) {
-        return `'${aConst.sval.sval}'`
+        const value = aConst.sval.sval
+        // Escape single quotes by doubling them
+        const escapedValue = value.replace(/'/g, "''")
+        return `'${escapedValue}'`
       }
-      
+
       // Extract integer value as string
       if ('ival' in aConst && 'ival' in aConst.ival) {
         return aConst.ival.ival.toString()
       }
-      
+
       // Extract boolean value as PostgreSQL format
       if ('boolval' in aConst && 'boolval' in aConst.boolval) {
         return aConst.boolval.boolval ? 'TRUE' : 'FALSE'
       }
     }
-    
+
     // For function calls and other expressions, we'd need more complex handling
     // For now, return null for unsupported cases
   }

@@ -52,7 +52,7 @@ export const createParserTestCases = (
       description: aColumn({
         name: 'description',
         type: 'text',
-        default: "'user's description'",
+        default: "'user''s description'",
       }),
     },
   }),

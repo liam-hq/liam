@@ -45,12 +45,12 @@ export const convertDrizzleTypeToMysqlType = (
 }
 
 /**
- * Convert default values from Drizzle to MySQL format
+ * Convert default values from Drizzle to PostgreSQL format strings
  */
 export const convertDefaultValue = (
   value: unknown,
   _drizzleType: string,
-): string | number | boolean | null => {
+): string | null => {
   if (value === undefined || value === null) {
     return null
   }
@@ -67,15 +67,17 @@ export const convertDefaultValue = (
       // Note: MySQL's UUID() generates UUID v1 (time-based), not truly random like PostgreSQL's gen_random_uuid()
       return 'UUID()'
     }
+    // For other strings, return as SQL string literal
+    return `'${value.replace(/'/g, "''")}'`
   }
 
   // Handle primitive values
-  if (
-    typeof value === 'string' ||
-    typeof value === 'number' ||
-    typeof value === 'boolean'
-  ) {
-    return value
+  if (typeof value === 'number') {
+    return String(value)
+  }
+
+  if (typeof value === 'boolean') {
+    return value ? 'TRUE' : 'FALSE'
   }
 
   return null

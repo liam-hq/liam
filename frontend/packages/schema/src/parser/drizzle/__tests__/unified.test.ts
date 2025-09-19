@@ -241,7 +241,7 @@ describe.each(Object.entries(dbConfigs))(
             age: aColumn({
               name: 'age',
               type: config.expectedTypes.integer,
-              default: 30,
+              default: '30',
               notNull: true,
             }),
           },
@@ -267,7 +267,7 @@ describe.each(Object.entries(dbConfigs))(
             active: aColumn({
               name: 'active',
               type: config.expectedTypes.boolean,
-              default: true,
+              default: 'TRUE',
               notNull: true,
             }),
           },
@@ -468,7 +468,7 @@ describe.each(Object.entries(dbConfigs))(
             isActive: aColumn({
               name: 'is_active',
               type: config.expectedTypes.boolean,
-              default: true,
+              default: 'TRUE',
               notNull: false,
             }),
             createdAt: aColumn({
@@ -525,7 +525,7 @@ describe.each(Object.entries(dbConfigs))(
             role: aColumn({
               name: 'role',
               type: enumType,
-              default: 'user',
+              default: "'user'",
               notNull: false,
             }),
           },

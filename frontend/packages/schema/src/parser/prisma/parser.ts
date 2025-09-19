@@ -592,7 +592,7 @@ function isPrimitiveType(
 }
 
 // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: TODO: Refactor to reduce complexity
-function extractDefaultValue(field: DMMF.Field) {
+function extractDefaultValue(field: DMMF.Field): string | null {
   const value = field.default?.valueOf()
   const defaultValue = value === undefined ? null : value
   // NOTE: When `@default(autoincrement())` is specified, `defaultValue` becomes an object
@@ -662,7 +662,22 @@ function extractDefaultValue(field: DMMF.Field) {
       }
     }
   }
-  return isPrimitiveType(defaultValue) ? defaultValue : null
+
+  // Convert primitive values to PostgreSQL format strings
+  if (typeof defaultValue === 'string') {
+    // Wrap string literals in single quotes
+    return `'${defaultValue.replace(/'/g, "''")}'` // SQL escape
+  }
+
+  if (typeof defaultValue === 'number') {
+    return defaultValue.toString()
+  }
+
+  if (typeof defaultValue === 'boolean') {
+    return defaultValue ? 'TRUE' : 'FALSE'
+  }
+
+  return null
 }
 
 function normalizeConstraintName(
