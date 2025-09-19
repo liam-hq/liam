@@ -5,6 +5,9 @@
     "rules": {
       "correctness": {
         "useUniqueElementIds": "error"
+      },
+      "a11y": {
+        "useAriaPropsSupportedByRole": "error"
       }
     }
   }

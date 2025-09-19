@@ -143,7 +143,7 @@ export const MentionSuggestor = ({
   if (!enabled) return null
 
   return (
-    <div ref={containerRef} className={styles.wrapper} id={id}>
+    <div ref={containerRef} className={styles.wrapper} id={id} role="listbox">
       {matches.length === 0 ? (
         <div className={styles.emptyMessage} aria-disabled="true">
           {DEFAULT_NO_ITEMS_MESSAGE}
@@ -153,6 +153,7 @@ export const MentionSuggestor = ({
           <button
             key={item.id}
             type="button"
+            role="option"
             className={styles.suggestorItem}
             aria-selected={highlightedIndex === i}
             data-index={i}
