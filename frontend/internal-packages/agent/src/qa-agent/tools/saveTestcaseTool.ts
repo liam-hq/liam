@@ -46,7 +46,7 @@ const validateSqlSyntax = async (sql: string): Promise<void> => {
     // LangGraph tool nodes require throwing errors to trigger retry mechanism
     // eslint-disable-next-line no-throw-error/no-throw-error
     throw new Error(
-      `SQL syntax error: ${parseResult.error.message}. Please fix the SQL and try again.`,
+      `SQL syntax error: ${parseResult.error.message}. Fix testcaseWithDml.dmlOperation.sql and retry.`,
     )
   }
 }
