@@ -1372,7 +1372,7 @@ describe('postgresqlSchemaDeparser', () => {
 
         CREATE TABLE "users" (
           "id" bigint NOT NULL,
-          "status" user_status NOT NULL
+          "status" "user_status" NOT NULL
         );
 
         ALTER TABLE "users" ADD CONSTRAINT "users_pkey" PRIMARY KEY ("id");"
@@ -1825,6 +1825,72 @@ describe('postgresqlSchemaDeparser', () => {
   "metadata" jsonb DEFAULT '{}'::jsonb,
   "settings" jsonb DEFAULT '{"theme": "dark"}'::jsonb,
   "tags" jsonb DEFAULT '[]'::jsonb
+);
+
+ALTER TABLE "users" ADD CONSTRAINT "users_pkey" PRIMARY KEY ("id");`
+
+        expect(result.value).toBe(expectedDDL)
+      })
+
+      it('should handle enum default values with cast expressions correctly', () => {
+        const schema = aSchema({
+          enums: {
+            user_status: anEnum({
+              name: 'user_status',
+              values: ['active', 'inactive', 'invited', 'suspended'],
+            }),
+          },
+          tables: {
+            users: aTable({
+              name: 'users',
+              columns: {
+                id: aColumn({
+                  name: 'id',
+                  type: 'uuid',
+                  notNull: true,
+                  default: 'gen_random_uuid()',
+                }),
+                status: aColumn({
+                  name: 'status',
+                  type: 'user_status',
+                  notNull: true,
+                  default: "'invited'::user_status", // Cast expression for enum
+                }),
+                role: aColumn({
+                  name: 'role',
+                  type: 'user_status',
+                  notNull: false,
+                  default: "'active'", // Pre-quoted enum value
+                }),
+                state: aColumn({
+                  name: 'state',
+                  type: 'user_status',
+                  notNull: false,
+                  default: 'inactive', // Unquoted enum value
+                }),
+              },
+              constraints: {
+                users_pkey: aPrimaryKeyConstraint({
+                  name: 'users_pkey',
+                  columnNames: ['id'],
+                }),
+              },
+            }),
+          },
+        })
+
+        const result = postgresqlSchemaDeparser(schema)
+
+        expect(result.errors).toHaveLength(0)
+
+        // Verify the exact DDL output
+        const expectedDDL = `CREATE TYPE "user_status" AS ENUM ('active', 'inactive', 'invited', 'suspended');
+
+CREATE TABLE "users" (
+  "id" uuid NOT NULL DEFAULT gen_random_uuid(),
+  "status" "user_status" NOT NULL DEFAULT 'invited'::user_status,
+  "role" "user_status" DEFAULT 'active',
+  "state" "user_status" DEFAULT 'inactive'
 );
 
 ALTER TABLE "users" ADD CONSTRAINT "users_pkey" PRIMARY KEY ("id");`

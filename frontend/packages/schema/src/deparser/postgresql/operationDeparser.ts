@@ -489,10 +489,13 @@ function generateAlterColumnDefaultFromOperation(
     return err(new Error(`Invalid column default path: ${operation.path}`))
   }
 
+  // Note: Column type is not available in the operation context
+  // Using null to fallback to basic formatting
   return ok(
     generateAlterColumnDefaultStatement(
       pathInfo.tableName,
       pathInfo.columnName,
+      null, // TODO: Pass column type when schema context is available
       operation.value,
     ),
   )
