@@ -536,37 +536,6 @@ WHERE id = 'fc70279f-04d3-41ea-97e9-3a1bb7ee358f';`,
       expect(result).toContain('```sql\nUPDATE users SET status = $1\n```')
     })
 
-    it('should format operation without description', () => {
-      const artifact: Artifact = {
-        requirement_analysis: {
-          business_requirement: 'Test',
-          requirements: [
-            {
-              name: 'Test Feature',
-              description: ['Test description'],
-              type: 'functional',
-              test_cases: [
-                {
-                  title: 'Test Use Case',
-                  description: 'Use case description',
-                  dmlOperation: {
-                    operation_type: 'DELETE',
-                    sql: 'DELETE FROM users WHERE id = $1',
-                    dml_execution_logs: [],
-                  },
-                },
-              ],
-            },
-          ],
-        },
-      }
-
-      const result = formatArtifactToMarkdown(artifact)
-
-      expect(result).toContain('**DELETE**')
-      expect(result).not.toContain('**DELETE** -')
-    })
-
     it('should format successful execution logs', () => {
       const artifact: Artifact = {
         requirement_analysis: {
@@ -583,6 +552,7 @@ WHERE id = 'fc70279f-04d3-41ea-97e9-3a1bb7ee358f';`,
                   dmlOperation: {
                     operation_type: 'SELECT',
                     sql: 'SELECT * FROM users',
+                    description: 'Test operation',
                     dml_execution_logs: [
                       {
                         executed_at: '2024-03-20T14:45:30Z',
@@ -621,6 +591,7 @@ WHERE id = 'fc70279f-04d3-41ea-97e9-3a1bb7ee358f';`,
                   dmlOperation: {
                     operation_type: 'INSERT',
                     sql: 'INSERT INTO users (email) VALUES ($1)',
+                    description: 'Test operation',
                     dml_execution_logs: [
                       {
                         executed_at: '2024-03-20T14:45:30Z',
@@ -658,6 +629,7 @@ WHERE id = 'fc70279f-04d3-41ea-97e9-3a1bb7ee358f';`,
                   dmlOperation: {
                     operation_type: 'INSERT',
                     sql: 'INSERT INTO orders (user_id, total) VALUES ($1, $2)',
+                    description: 'Test operation',
                     dml_execution_logs: [
                       {
                         executed_at: '2024-03-20T10:00:00Z',
@@ -702,6 +674,7 @@ WHERE id = 'fc70279f-04d3-41ea-97e9-3a1bb7ee358f';`,
                   dmlOperation: {
                     operation_type: 'SELECT',
                     sql: 'SELECT * FROM products',
+                    description: 'Test operation',
                     dml_execution_logs: [],
                   },
                 },
@@ -732,6 +705,7 @@ WHERE id = 'fc70279f-04d3-41ea-97e9-3a1bb7ee358f';`,
                   dmlOperation: {
                     operation_type: 'SELECT',
                     sql: '  \n  SELECT * FROM users  \n  ',
+                    description: 'Test operation',
                     dml_execution_logs: [],
                   },
                 },
@@ -765,6 +739,7 @@ WHERE id = 'fc70279f-04d3-41ea-97e9-3a1bb7ee358f';`,
                   dmlOperation: {
                     operation_type: 'INSERT',
                     sql: 'INSERT INTO logs (message) VALUES ($1)',
+                    description: 'Test operation',
                     dml_execution_logs: [],
                   },
                 },
@@ -798,6 +773,7 @@ WHERE id = 'fc70279f-04d3-41ea-97e9-3a1bb7ee358f';`,
                   dmlOperation: {
                     operation_type: 'SELECT',
                     sql: 'SELECT 1',
+                    description: 'Test operation',
                     dml_execution_logs: [],
                   },
                 },
@@ -830,6 +806,7 @@ WHERE id = 'fc70279f-04d3-41ea-97e9-3a1bb7ee358f';`,
                   dmlOperation: {
                     operation_type: 'SELECT',
                     sql: 'SELECT 1',
+                    description: 'Test operation',
                     dml_execution_logs: [],
                   },
                 },
@@ -839,6 +816,7 @@ WHERE id = 'fc70279f-04d3-41ea-97e9-3a1bb7ee358f';`,
                   dmlOperation: {
                     operation_type: 'SELECT',
                     sql: 'SELECT 1',
+                    description: 'Test operation',
                     dml_execution_logs: [],
                   },
                 },
@@ -848,6 +826,7 @@ WHERE id = 'fc70279f-04d3-41ea-97e9-3a1bb7ee358f';`,
                   dmlOperation: {
                     operation_type: 'SELECT',
                     sql: 'SELECT 1',
+                    description: 'Test operation',
                     dml_execution_logs: [],
                   },
                 },
@@ -880,6 +859,7 @@ WHERE id = 'fc70279f-04d3-41ea-97e9-3a1bb7ee358f';`,
                   dmlOperation: {
                     operation_type: 'SELECT',
                     sql: 'SELECT 1',
+                    description: 'Test operation',
                     dml_execution_logs: [],
                   },
                 },
@@ -889,6 +869,7 @@ WHERE id = 'fc70279f-04d3-41ea-97e9-3a1bb7ee358f';`,
                   dmlOperation: {
                     operation_type: 'SELECT',
                     sql: 'SELECT 1',
+                    description: 'Test operation',
                     dml_execution_logs: [],
                   },
                 },
@@ -905,6 +886,7 @@ WHERE id = 'fc70279f-04d3-41ea-97e9-3a1bb7ee358f';`,
                   dmlOperation: {
                     operation_type: 'SELECT',
                     sql: 'SELECT 1',
+                    description: 'Test operation',
                     dml_execution_logs: [],
                   },
                 },
@@ -941,6 +923,7 @@ WHERE id = 'fc70279f-04d3-41ea-97e9-3a1bb7ee358f';`,
                   dmlOperation: {
                     operation_type: 'INSERT',
                     sql: 'INSERT INTO test',
+                    description: 'Test operation',
                     dml_execution_logs: [],
                   },
                 },
@@ -950,6 +933,7 @@ WHERE id = 'fc70279f-04d3-41ea-97e9-3a1bb7ee358f';`,
                   dmlOperation: {
                     operation_type: 'UPDATE',
                     sql: 'UPDATE test',
+                    description: 'Test operation',
                     dml_execution_logs: [],
                   },
                 },
@@ -959,6 +943,7 @@ WHERE id = 'fc70279f-04d3-41ea-97e9-3a1bb7ee358f';`,
                   dmlOperation: {
                     operation_type: 'DELETE',
                     sql: 'DELETE FROM test',
+                    description: 'Test operation',
                     dml_execution_logs: [],
                   },
                 },
@@ -968,6 +953,7 @@ WHERE id = 'fc70279f-04d3-41ea-97e9-3a1bb7ee358f';`,
                   dmlOperation: {
                     operation_type: 'SELECT',
                     sql: 'SELECT * FROM test',
+                    description: 'Test operation',
                     dml_execution_logs: [],
                   },
                 },

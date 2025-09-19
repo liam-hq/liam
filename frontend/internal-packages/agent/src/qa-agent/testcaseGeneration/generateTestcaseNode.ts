@@ -21,6 +21,7 @@ const model = new ChatOpenAI({
   verbosity: 'low',
   useResponsesApi: true,
 }).bindTools([saveTestcaseTool], {
+  strict: true,
   parallel_tool_calls: false,
   tool_choice: 'auto',
 })

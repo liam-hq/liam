@@ -11,7 +11,7 @@ export const dmlExecutionLogSchema = v.object({
 export const dmlOperationSchema = v.object({
   operation_type: v.picklist(['INSERT', 'UPDATE', 'DELETE', 'SELECT']),
   sql: v.string(),
-  description: v.optional(v.string()),
+  description: v.string(),
   dml_execution_logs: v.array(dmlExecutionLogSchema),
 })
 
