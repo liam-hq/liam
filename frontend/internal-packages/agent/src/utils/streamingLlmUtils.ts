@@ -10,6 +10,8 @@ type StreamLLMOptions = {
   agentName: string
   /** Event type for dispatching chunks. Defaults to SSE_EVENTS.MESSAGES */
   eventType?: string
+  /** Maximum time in milliseconds to wait for streaming to complete */
+  maxStreamTime?: number
 }
 
 /**
@@ -19,14 +21,28 @@ export async function streamLLMResponse(
   stream: AsyncIterable<AIMessageChunk>,
   options: StreamLLMOptions,
 ): Promise<AIMessage> {
-  const { agentName, eventType = SSE_EVENTS.MESSAGES } = options
+  const { agentName, eventType = SSE_EVENTS.MESSAGES, maxStreamTime } = options
 
   // OpenAI ("chatcmpl-...") and LangGraph ("run-...") use different id formats,
   // so we overwrite with a UUID to unify chunk ids for consistent handling.
   const id = crypto.randomUUID()
   let accumulatedChunk: AIMessageChunk | null = null
+  const streamStart = Date.now()
+  let chunkCount = 0
 
   for await (const _chunk of stream) {
+    // Check streaming time limit only if maxStreamTime is specified
+    if (maxStreamTime) {
+      const elapsed = Date.now() - streamStart
+      if (elapsed > maxStreamTime) {
+        console.error(
+          `[streamLLM] Stream timeout after ${elapsed}ms (${chunkCount} chunks received)`,
+        )
+        throw new Error(`Stream processing timeout after ${elapsed}ms`)
+      }
+    }
+
+    chunkCount++
     const chunk = new AIMessageChunk({ ..._chunk, id, name: agentName })
     await dispatchCustomEvent(eventType, chunk)
 
