@@ -5,9 +5,7 @@ const columnNameSchema = v.string()
 
 const columnTypeSchema = v.string()
 
-const columnDefaultSchema = v.nullable(
-  v.union([v.string(), v.number(), v.boolean()]),
-)
+const columnDefaultSchema = v.nullable(v.string())
 
 const columnCheckSchema = v.nullable(v.string())
 

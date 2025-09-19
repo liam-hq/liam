@@ -52,7 +52,7 @@ export const createParserTestCases = (
       description: aColumn({
         name: 'description',
         type: 'text',
-        default: "user's description",
+        default: "'user's description'",
       }),
     },
   }),
@@ -61,7 +61,7 @@ export const createParserTestCases = (
       age: aColumn({
         name: 'age',
         type: 'int4',
-        default: 30,
+        default: '30',
       }),
     },
   }),
@@ -70,7 +70,7 @@ export const createParserTestCases = (
       active: aColumn({
         name: 'active',
         type: 'bool',
-        default: true,
+        default: 'TRUE',
       }),
     },
   }),

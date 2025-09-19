@@ -69,38 +69,43 @@ function getConstraintAction(
  */
 function extractDefaultValueFromConstraints(
   constraints: Node[] | undefined,
-): string | number | boolean | null {
+): string | null {
   if (!constraints) return null
 
   const constraintNodes = constraints.filter(isConstraintNode)
   for (const c of constraintNodes) {
     const constraint = c.Constraint
 
-    // Skip if not a default constraint or missing required properties
-    if (
-      constraint.contype !== 'CONSTR_DEFAULT' ||
-      !constraint.raw_expr ||
-      !('A_Const' in constraint.raw_expr)
-    ) {
+    // Skip if not a default constraint
+    if (constraint.contype !== 'CONSTR_DEFAULT' || !constraint.raw_expr) {
       continue
     }
 
-    const aConst = constraint.raw_expr.A_Const
-
-    // Extract string value
-    if ('sval' in aConst && 'sval' in aConst.sval) {
-      return aConst.sval.sval
+    // Convert the raw_expr to PostgreSQL string representation
+    // This is a simplified version - in a real implementation, 
+    // we would need to properly deparse the AST to SQL
+    
+    if ('A_Const' in constraint.raw_expr) {
+      const aConst = constraint.raw_expr.A_Const
+      
+      // Extract string value with quotes
+      if ('sval' in aConst && 'sval' in aConst.sval) {
+        return `'${aConst.sval.sval}'`
+      }
+      
+      // Extract integer value as string
+      if ('ival' in aConst && 'ival' in aConst.ival) {
+        return aConst.ival.ival.toString()
+      }
+      
+      // Extract boolean value as PostgreSQL format
+      if ('boolval' in aConst && 'boolval' in aConst.boolval) {
+        return aConst.boolval.boolval ? 'TRUE' : 'FALSE'
+      }
     }
-
-    // Extract integer value
-    if ('ival' in aConst && 'ival' in aConst.ival) {
-      return aConst.ival.ival
-    }
-
-    // Extract boolean value
-    if ('boolval' in aConst && 'boolval' in aConst.boolval) {
-      return aConst.boolval.boolval
-    }
+    
+    // For function calls and other expressions, we'd need more complex handling
+    // For now, return null for unsupported cases
   }
 
   return null
@@ -368,7 +373,7 @@ export const convertToSchema = (
   type Column = {
     name: string
     type: string
-    default: string | number | boolean | null
+    default: string | null
     check: string | null
     notNull: boolean
     comment: string | null
