@@ -2,6 +2,7 @@
   display: grid;
   gap: var(--spacing-2);
   padding: var(--spacing-4);
+  scroll-margin-top: 40px;
 }
 
 .heading {
@@ -10,4 +11,8 @@
   font-style: normal;
   font-weight: 400;
   line-height: normal;
+}
+
+.link:hover {
+  text-decoration: underline;
 }

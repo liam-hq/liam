@@ -15,6 +15,9 @@ import { NotNull } from './NotNull'
 import { PrimaryKey } from './PrimaryKey'
 import { Type } from './Type'
 
+const columnElementId = (tableName: string, columnName: string) =>
+  `${tableName}__columns__${columnName}`
+
 type Props = {
   tableId: string
   column: Column
@@ -22,6 +25,8 @@ type Props = {
 }
 
 export const ColumnsItem: FC<Props> = ({ tableId, column, constraints }) => {
+  const elementId = columnElementId(tableId, column.name)
+
   const { operations } = useSchemaOrThrow()
   const { showDiff } = useUserEditingOrThrow()
 
@@ -47,8 +52,12 @@ export const ColumnsItem: FC<Props> = ({ tableId, column, constraints }) => {
   )
 
   return (
-    <div className={clsx(styles.wrapper, diffStyle)}>
-      <h3 className={styles.heading}>{column.name}</h3>
+    <div id={elementId} className={clsx(styles.wrapper, diffStyle)}>
+      <h3 className={styles.heading}>
+        <a className={styles.link} href={`#${elementId}`}>
+          {column.name} #
+        </a>
+      </h3>
       {column.comment && <Comment tableId={tableId} column={column} />}
       <GridTableRoot>
         <Type tableId={tableId} column={column} />
