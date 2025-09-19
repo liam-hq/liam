@@ -1,5 +1,11 @@
 # @liam-hq/schema
 
+## 0.5.6
+
+### Patch Changes
+
+- [#3509](https://github.com/liam-hq/liam/pull/3509) - Extract fromAsyncThrowable, fromPromise, and defaultErrorFn into separate files for better code organization / Thanks [@devin-ai-integration](https://github.com/apps/devin-ai-integration)!
+
 ## 0.5.5
 
 ### Patch Changes
