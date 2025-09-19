@@ -42,8 +42,71 @@ function escapeTypeIdentifier(type: string): string {
   const allPartsSimple = parts.every((p) => simpleIdentifier.test(p))
   if (!allPartsSimple) return type
 
+  // Built-in PostgreSQL types that should not be quoted
+  const builtInTypes = new Set([
+    'bigint',
+    'bigserial',
+    'bit',
+    'boolean',
+    'box',
+    'bytea',
+    'character',
+    'char',
+    'cidr',
+    'circle',
+    'date',
+    'decimal',
+    'float',
+    'inet',
+    'integer',
+    'interval',
+    'json',
+    'jsonb',
+    'line',
+    'lseg',
+    'macaddr',
+    'money',
+    'numeric',
+    'path',
+    'point',
+    'polygon',
+    'real',
+    'serial',
+    'smallint',
+    'smallserial',
+    'text',
+    'time',
+    'timestamp',
+    'timestamptz',
+    'uuid',
+    'varchar',
+    'xml',
+  ])
+
+  // PostgreSQL schemas that should not be quoted
+  const builtInSchemas = new Set(['public', 'pg_catalog'])
+
   const escaped = parts
-    .map((p) => (/[A-Z]/.test(p) ? escapeIdentifier(p) : p))
+    .map((p, index) => {
+      // For schema-qualified types, don't quote known schema names
+      if (index === 0 && parts.length > 1 && builtInSchemas.has(p)) {
+        return p
+      }
+
+      // Quote if it has uppercase letters or is not a built-in type
+      // (for the last part which is the actual type name)
+      if (index === parts.length - 1) {
+        if (/[A-Z]/.test(p) || !builtInTypes.has(p)) {
+          return escapeIdentifier(p)
+        }
+      } else {
+        // For non-last parts (schemas), only quote if has uppercase
+        if (/[A-Z]/.test(p)) {
+          return escapeIdentifier(p)
+        }
+      }
+      return p
+    })
     .join('.')
 
   return `${escaped}${arraySuffix}`
@@ -62,24 +125,31 @@ function generateColumnDefinition(
   }
 
   if (column.default !== null) {
-    // Special handling for jsonb type to prevent double-escaping
-    // NOTE: This is a workaround for issues that have surfaced with default values.
-    // A simpler approach with type-specific handling might be possible.
-    if (column.type === 'jsonb' && typeof column.default === 'string') {
+    if (typeof column.default === 'string') {
       const trimmed = column.default.trim()
+
       // If it's a cast expression (contains ::), use as-is
+      // This applies to any type, not just jsonb
       if (trimmed.includes('::')) {
         definition += ` DEFAULT ${column.default}`
       }
-      // If already quoted (but not a cast expression), use as-is
+      // If already quoted (but not a cast expression), check if it should be used as-is
       else if (trimmed.startsWith("'") && trimmed.endsWith("'")) {
-        definition += ` DEFAULT ${column.default}`
+        // For jsonb, use as-is to prevent double-escaping
+        if (column.type === 'jsonb') {
+          definition += ` DEFAULT ${column.default}`
+        }
+        // For other types, also use as-is since it's already quoted
+        else {
+          definition += ` DEFAULT ${column.default}`
+        }
       }
-      // Unquoted JSON, let formatDefaultValue handle it
+      // Unquoted value, let formatDefaultValue handle it
       else {
         definition += ` DEFAULT ${formatDefaultValue(column.default)}`
       }
     } else {
+      // For non-string defaults (numbers, booleans)
       definition += ` DEFAULT ${formatDefaultValue(column.default)}`
     }
   }
