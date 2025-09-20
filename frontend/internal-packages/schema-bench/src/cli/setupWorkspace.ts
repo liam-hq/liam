@@ -38,6 +38,13 @@ const runSetupWorkspace = async (): Promise<void> => {
       ),
     },
     {
+      name: 'relational-inference',
+      path: path.resolve(
+        __dirname,
+        '../../benchmark-workspace-relational-inference',
+      ),
+    },
+    {
       name: 'logical-deletion',
       path: path.resolve(
         __dirname,
