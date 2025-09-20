@@ -38,7 +38,7 @@
     "vaul": "1.1.2"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.2.2",
+    "@biomejs/biome": "2.2.3",
     "@liam-hq/configs": "workspace:*",
     "@storybook/nextjs": "9.1.5",
     "@testing-library/jest-dom": "6.8.0",
@@ -46,7 +46,7 @@
     "@testing-library/user-event": "14.6.1",
     "@types/react": "19.1.12",
     "@vitejs/plugin-react": "4.6.0",
-    "eslint": "9.34.0",
+    "eslint": "9.35.0",
     "happy-dom": "17.6.3",
     "typed-css-modules": "0.9.1",
     "typescript": "5.9.2",
